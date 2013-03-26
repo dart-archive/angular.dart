@@ -10,8 +10,22 @@ $(html) {
   return body.children;
 }
 
+STRINGIFY(obj) {
+
+  if (obj is List) {
+    var out = [];
+    obj.forEach((i) => out.add(STRINGIFY(i)));
+    return out.join('');
+  } else if (obj is Comment) {
+    return '<!--${obj.text}-->';
+  } else if (obj is Element) {
+    return obj.outerHtml;
+  } else {
+    return obj.toString();
+  }
+}
+
 main() {
-  return;
   describe('NodeCursor', () {
     var a, b, c, d;
 
@@ -20,7 +34,8 @@ main() {
       b = $('<b>B</b>')[0];
       c = $('<i>C</i>')[0];
       d = $('<span></span>')[0];
-      d.append(a).append(b);
+      d.append(a);
+      d.append(b);
     });
 
 
@@ -71,18 +86,9 @@ main() {
       parentCursor.descend(); // <span>
 
       var childCursor = parentCursor.replaceWithAnchor('child');
-      expect(dom.html(), equals('<!--ANCHOR: child-->'));
+      expect(STRINGIFY(dom), equals('<div><!--ANCHOR: child--></div>'));
 
       expect(STRINGIFY(childCursor.elements[0]), equals('<span>text</span>'));
-    });
-
-    describe('include-next', () {
-      it('should select multiple items', () {
-        var dom = $('<span include-next>a</span><span>b</span>');
-        var cursor = new NodeCursor(dom);
-
-        expect(cursor.nodeList(), equals([dom[0], dom[1]]));
-      });
     });
   });
 }

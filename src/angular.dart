@@ -1,7 +1,7 @@
 library angular;
 
-
 import "dart:mirrors";
+import 'dart:html' as dom;
 
 part 'Block.dart';
 part 'BlockType.dart';

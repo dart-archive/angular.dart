@@ -1,5 +1,6 @@
 part of angular;
 
+
 class NodeCursor {
   var stack = [];
   var elements;
@@ -38,19 +39,20 @@ class NodeCursor {
     var nodes = [];
 
     for(var i = 0, ii = cursorSize(); i < ii; i++) {
-      nodes.push(elements[index + i]);
+      nodes.add(elements[index + i]);
     }
 
     return nodes;
   }
 
   descend() {
-    var childNodes = elements[index].childNodes;
-    var hasChildren = !!(childNodes && childNodes.length);
+    var childNodes = elements[index].children;
+    var hasChildren = !!(childNodes != null && childNodes.length > 0);
 
     if (hasChildren) {
-      stack.push(index, elements);
-      elements = angular.core.dom.NodeCursor.slice.call(childNodes);
+      stack.add(index);
+      stack.add(elements);
+      elements = new List.from(childNodes);
       index = 0;
     }
 
@@ -58,19 +60,24 @@ class NodeCursor {
   }
 
   ascend() {
-    elements = stack.pop();
-    index = stack.pop();
+    index = stack.removeAt(0);
+    elements = stack.removeAt(0);
   }
 
   insertAnchorBefore(name) {
     var current = elements[index];
     var parent = current.parentNode;
-    var anchor = document.createComment('ANCHOR: ' + name);
 
-    angular.core.dom.NodeCursor.splice.call(this.elements, this.index, 0, anchor);
-    index++;
+    // HACK
+    // var anchor = new dom.Comment('Anchore: $name');
+    var anchor = ((body) {
+      body.innerHtml = '<!--ANCHOR: $name-->';
+      return body.nodes[0];
+    })(new dom.BodyElement());
 
-    if (parent) {
+    elements.insert(index++, anchor);
+
+    if (parent != null) {
       parent.insertBefore(anchor, current);
     }
   }
@@ -84,15 +91,13 @@ class NodeCursor {
 
   remove() {
     var nodes = nodeList();
-    var parent = nodes[0].parentNode;
 
-    angular.core.dom.NodeCursor.splice.call(this.elements, this.index, nodes.length);
-    if (parent) {
-      for (var i = 0, ii = nodes.length; i < ii; i++) {
-        parent.removeChild(nodes[i]);
-      }
+    for (var i = 0, ii = nodes.length; i < ii; i++) {
+      nodes[i].remove();
+      elements.removeAt(index);
     }
-    return new angular.core.dom.NodeCursor(nodes);
+
+    return new NodeCursor(nodes);
   }
 
   isInstance() {
