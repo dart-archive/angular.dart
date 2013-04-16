@@ -1,3 +1,4 @@
 .idea
 packages
 pubspec.lock
+node_modules

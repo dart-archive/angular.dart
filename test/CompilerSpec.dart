@@ -42,7 +42,7 @@ main() {
 
       expect(element.text, equals('foo'));
     });
-;  });
+  });
 }
 
 

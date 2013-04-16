@@ -2,5 +2,7 @@ name: angular
 description: Angular for dart.
 
 dependencies:
-  browser: any
   unittest: any
+  browser: any
+  js: any
+

@@ -2,7 +2,7 @@ part of angular;
 
 class BlockType {
   List directivePositions;
-  List<Element> templateElements;
+  List<dom.Node> templateElements;
 
   BlockType(this.templateElements, this.directivePositions);
 
@@ -13,7 +13,7 @@ class BlockType {
 
     // HACK
     DirectiveDef directiveDef = directivePositions[1];
-    Directive directive = directiveDef.directiveType(elements[0], directiveDef.value);
+    Directive directive = directiveDef.factory(elements[0], directiveDef.value);
 
     return new Block(elements, [directive]);
   }

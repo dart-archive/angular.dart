@@ -5,11 +5,11 @@ abstract class Directive {
 }
 
 class DirectiveDef {
-  Type directiveType;
+  DirectiveFactory factory;
   String value;
   Map blockTypes;
 
-  DirectiveDef(this.directiveType, this.value, [this.blockTypes]);
+  DirectiveDef(this.factory, this.value, [this.blockTypes]);
 
   Boolean isComponent() => !!this.blockTypes;
 }

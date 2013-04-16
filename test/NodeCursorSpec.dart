@@ -7,22 +7,7 @@ $(html) {
   var body = new BodyElement();
   body.innerHtml = html;
 
-  return body.children;
-}
-
-STRINGIFY(obj) {
-
-  if (obj is List) {
-    var out = [];
-    obj.forEach((i) => out.add(STRINGIFY(i)));
-    return out.join('');
-  } else if (obj is Comment) {
-    return '<!--${obj.text}-->';
-  } else if (obj is Element) {
-    return obj.outerHtml;
-  } else {
-    return obj.toString();
-  }
+  return body.nodes;
 }
 
 main() {
@@ -86,7 +71,7 @@ main() {
       parentCursor.descend(); // <span>
 
       var childCursor = parentCursor.replaceWithAnchor('child');
-      expect(STRINGIFY(dom), equals('<div><!--ANCHOR: child--></div>'));
+      expect(STRINGIFY(dom), equals('[<div><!--ANCHOR: child--></div>]'));
 
       expect(STRINGIFY(childCursor.elements[0]), equals('<span>text</span>'));
     });

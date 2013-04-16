@@ -1,17 +1,20 @@
 part of angular;
 
+typedef Directive DirectiveFactory(dom.Element element, String value);
 
 class Directives {
-  Map<String, Type> _directives = new Map();
+  Map<String, DirectiveFactory> _directives = new Map();
 
   Directives() {}
 
-  register(String name, Type directiveType) {
+  register(String name, DirectiveFactory directiveType) {
     _directives[name] = directiveType;
   }
 
-  operator [](String selector) {
+  DirectiveFactory operator [](String selector) {
     return _directives[selector];
   }
+
+  List<String> enumerate() => new List.from(_directives.keys);
 
 }
