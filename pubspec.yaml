@@ -5,4 +5,6 @@ dependencies:
   unittest: any
   browser: any
   js: any
+  di:
+    path: modules/dart-di
 

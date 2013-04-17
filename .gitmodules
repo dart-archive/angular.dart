@@ -1,0 +1,3 @@
+[submodule "modules/dart-di"]
+	path = modules/dart-di
+	url = git@github.com:mhevery/dart-di.git
