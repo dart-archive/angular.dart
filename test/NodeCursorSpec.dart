@@ -1,7 +1,4 @@
-import 'package:unittest/unittest.dart';
-import 'jasmineSyntax.dart';
-import '../src/angular.dart';
-import 'dart:html';
+import '_specs.dart';
 
 $(html) {
   var body = new BodyElement();

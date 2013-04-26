@@ -13,7 +13,7 @@ class Scope {
   operator []=(String name, value) => properties[name] = value;
   operator [](String name) => properties[name];
 
-  $watch(expr, reactionFn) {
+  $watch(expr, [reactionFn]) {
     watches.add(() => reactionFn(this[expr]));
   }
 

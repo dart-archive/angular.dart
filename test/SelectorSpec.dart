@@ -1,7 +1,4 @@
-import 'package:unittest/unittest.dart';
-import 'jasmineSyntax.dart';
-import '../src/angular.dart';
-import 'dart:html';
+import "_specs.dart";
 
 main() {
   describe('Selector', () {
@@ -12,11 +9,6 @@ main() {
     var selector;
     var element;
     var directives;
-    var e = (String html) {
-      var div = new DivElement();
-      div.innerHtml = html;
-      return element = div.nodes.first;
-    };
 
     beforeEach(() {
       // TODO(dart): why can't I have global noop?
@@ -40,14 +32,14 @@ main() {
 
     it('should match directive on element', () {
       expect(
-        selector(e('<b></b>')),
+        selector(element = e('<b></b>')),
         toEqualsDirectiveInfos([
           { "selector": 'b', "value": null, "element": element, "name": null }
         ]));
     });
 
     it('should match directive on class', () {
-      expect(selector(e('<div class="a b c"></div>')),
+      expect(selector(element = e('<div class="a b c"></div>')),
         toEqualsDirectiveInfos([
           { "selector": '.b', "value": 'b', "element": element, "name": 'class' }
       ]));
@@ -55,12 +47,12 @@ main() {
 
 
     it('should match directive on [attribute]', () {
-      expect(selector(e('<div directive=abc></div>')),
+      expect(selector(element = e('<div directive=abc></div>')),
         toEqualsDirectiveInfos([
           { "selector": '[directive]', "value": 'abc', "element": element,
             "name": 'directive' }]));
 
-      expect(selector(e('<div directive></div>')),
+      expect(selector(element = e('<div directive></div>')),
         toEqualsDirectiveInfos([
           { "selector": '[directive]', "value": '', "element": element,
             "name": 'directive' }]));
@@ -68,7 +60,7 @@ main() {
 
 
     it('should match directive on element[attribute]', () {
-      expect(selector(e('<b directive=abc></b>')),
+      expect(selector(element = e('<b directive=abc></b>')),
         toEqualsDirectiveInfos([
           { "selector": 'b', "value": null, "element": element, "name": null},
           { "selector": 'b[directive]', "value": 'abc', "element": element, "name": 'directive'},
@@ -78,7 +70,7 @@ main() {
 
 
     it('should match directive on [attribute=value]', () {
-      expect(selector(e('<div directive=value></div>')),
+      expect(selector(element = e('<div directive=value></div>')),
         toEqualsDirectiveInfos([
           { "selector": '[directive]', "value": 'value', "element": element, "name": 'directive'},
           { "selector": '[directive=value]', "value": 'value', "element": element, "name": 'directive'}
@@ -87,7 +79,7 @@ main() {
 
 
     it('should match directive on element[attribute=value]', () {
-      expect(selector(e('<b directive=value></div>')),
+      expect(selector(element = e('<b directive=value></div>')),
         toEqualsDirectiveInfos([
           { "selector": 'b', "value": null, "element": element, "name": null},
           { "selector": 'b[directive]', "value": 'value', "element": element, "name": 'directive'},
@@ -98,7 +90,7 @@ main() {
     });
 
     it('should match attributes', () {
-      expect(selector(e('<div attr="before-xyz-after"></div>')),
+      expect(selector(element = e('<div attr="before-xyz-after"></div>')),
         toEqualsDirectiveInfos([
           { "selector": '[*=/xyz/]', "value": 'attr=before-xyz-after',
             "element": element, "name": 'attr'}
@@ -106,7 +98,7 @@ main() {
     });
 
     it('should match text', () {
-      expect(selector(e('before-abc-after')),
+      expect(selector(element = e('before-abc-after')),
         toEqualsDirectiveInfos([
           { "selector": ':contains(/abc/)', "value": 'before-abc-after',
             "element": element, "name": '#text'}

@@ -11,10 +11,10 @@ class SelectorInfo {
   }
 }
 
-RegExp SELECTOR_REGEXP_ = new RegExp(r'^([\w\-]*)(?:\.([\w\-]*))?(?:\[([\w\-]*)(?:=(.*))?\])?$');
-RegExp COMMENT_COMPONENT_REGEXP_ = new RegExp(r'^\[([\w\-]+)(?:\=(.*))?\]$');
-RegExp CONTAINS_REGEXP_ = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
-RegExp ATTR_CONTAINS_REGEXP_ = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
+RegExp _SELECTOR_REGEXP = new RegExp(r'^([\w\-]*)(?:\.([\w\-]*))?(?:\[([\w\-]*)(?:=(.*))?\])?$');
+RegExp _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([\w\-]+)(?:\=(.*))?\]$');
+RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
+RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
 
 
 Selector selectorFactory(List<String> selectors, [String startWith]) {
@@ -36,11 +36,11 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
       }
     }
 
-    if ((match = CONTAINS_REGEXP_.firstMatch(selector)) != null) {
+    if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
       textSelector.add(new SelectorInfo(selector, match.group(1)));
-    } else if ((match = ATTR_CONTAINS_REGEXP_.firstMatch(selector)) != null) {
+    } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
       attrSelector.add(new SelectorInfo(selector, match[1]));
-    } else if ((match = SELECTOR_REGEXP_.firstMatch(selector)) != null){
+    } else if ((match = _SELECTOR_REGEXP.firstMatch(selector)) != null){
       var elementName = match.group(1);
       var className = match.group(2);
       var attrName = match.group(3);
