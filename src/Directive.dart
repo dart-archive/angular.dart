@@ -16,7 +16,8 @@ class DirectiveDef {
   String value;
   Map<String, BlockType> blockTypes;
 
-  DirectiveDef(DirectiveFactory this.directiveFactory, String this.value,
+  DirectiveDef(DirectiveFactory this.directiveFactory,
+               String this.value,
                [Map<String, BlockType> this.blockTypes]);
 
   bool isComponent() => this.blockTypes != null;
