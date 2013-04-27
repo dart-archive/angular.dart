@@ -49,10 +49,7 @@ class JQuery implements List<Node> {
     if (!?selector) {
       // do nothing;
     } else if (selector is String) {
-      print(selector);
-      Iterable<Node> nodes = es(selector);
-      print(nodes);
-      _list.addAll(nodes);
+      _list.addAll(es(selector));
     } else if (selector is Node) {
       add(selector);
     } else {

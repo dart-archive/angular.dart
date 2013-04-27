@@ -34,7 +34,7 @@ class BlockCache {
     });
   }
 
-  Block retrieve(String type) {
+  Block get(String type) {
     if (groupCache.containsKey(type)) {
       var blocks = groupCache[type];
       return blocks.isEmpty ? null : blocks.removeAt(0);
@@ -126,32 +126,6 @@ class Block implements ElementWrapper {
                          List<String> directiveNames,
                          dom.Node node,
                          Map<String, BlockList> anchorsByName) {
-    Block block = this;
-
-    LocalFactoryFn localFactoryFn(String name, Injector elementInjector) {
-      List<String> match = name.match(angular.core.Block.DYNAMIC_SERVICES_REGEX_);
-      DynamicServiceFactoryFn dynamicServiceFactoryFn = match && angular.core.Block.DYNAMIC_SERVICES_[match[1]];
-
-      if (dynamicServiceFactoryFn) {
-        return locals[name] = dynamicServiceFactoryFn(match[2], block, node, block.$injector);
-      } else if (locals.hasOwnProperty(name)) {
-        return locals[name];
-      } else if (directiveDefsByName.hasOwnProperty(name)) {
-        try {
-          var directiveDef = directiveDefsByName[name];
-
-          locals['$anchor'] = anchorsByName.hasOwnProperty(name) ? anchorsByName[name] : undefined;
-          locals['$value'] = directiveDef.value;
-          return locals[name] = elementInjector.instantiate(/** @type {Function} */(directiveDef.DirectiveType));
-        } catch (e) {
-          block.$exceptionHandler(e);
-        } finally {
-          locals['$value'] = undefined;
-          locals['$anchor'] = undefined;
-        }
-      }
-    };
-
     var elementModule = new Module();
     elementModule.value(Block, this);
     elementModule.value(dom.Element, node);
@@ -159,13 +133,16 @@ class Block implements ElementWrapper {
                 def.directiveFactory.directiveType, def.directiveFactory.directiveType));
 
     for (var i = 0, ii = directiveNames.length; i < ii; i++) {
+      var directiveName = directiveNames[i];
       var directiveModule = new Module();
-      directiveModule.value(BlockList, null);
+
       directiveModule.value(String, null);
+      if (anchorsByName.containsKey(directiveName)) {
+        elementModule.value(BlockList, anchorsByName[directiveName]);
+      }
 
       var injector = new Injector([elementModule, directiveModule], $injector);
 
-      String directiveName = directiveNames[i];
       DirectiveDef directiveDef = directiveDefsByName[directiveName];
       Type directiveType = directiveDef.directiveFactory.directiveType;
       directives.add(injector.get(directiveType));
@@ -249,7 +226,7 @@ class Block implements ElementWrapper {
     Function removeDomElements = () {
       for(var j = 0, jj = elements.length; j < jj; j++) {
         dom.Node current = elements[j];
-        dom.Node next = jj < j+1 ? elements[j+1] : null;
+        dom.Node next = j+1 < jj ? elements[j+1] : null;
 
         while(next != null && current.nextNode != next) {
           current.nextNode.remove();
@@ -262,7 +239,7 @@ class Block implements ElementWrapper {
       onRemove({
         "preventDefault": () {
           preventDefault = true;
-          return removeDomElements;
+          return removeDomElements();
         },
         "element": elements[0]
       });

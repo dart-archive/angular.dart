@@ -1,0 +1,1 @@
+dart-injector: should throw error rather then injecting null

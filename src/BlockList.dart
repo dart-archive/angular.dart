@@ -26,10 +26,7 @@ class BlockList extends ElementWrapper {
 
   BlockList(Scope this.$rootScope, List<dom.Node> this.elements,
             Map<String, BlockType> this.blockTypes, [BlockCache blockCache]) {
-    if (!?blockCache) {
-      blockCache = new BlockCache();
-    }
-    this.blockCache = blockCache;
+    this.blockCache = (?blockCache && blockCache != null) ? blockCache : new BlockCache();
 
     // This is a bit of a hack.
     // We need to run after the first watch, that means we have to wait for
@@ -48,7 +45,7 @@ class BlockList extends ElementWrapper {
     Block block = this.blockCache.get(type);
 
     if (block == null) {
-      if (!this.blockTypes.hasOwnProperty(type)) {
+      if (!this.blockTypes.containsKey(type)) {
         throw new ArgumentError("Unknown block type: '$type'.");
       }
 

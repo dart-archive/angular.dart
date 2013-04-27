@@ -3,6 +3,9 @@ import "_specs.dart";
 class LoggerBlockDirective {
   static String $name = 'foo';
   LoggerBlockDirective(BlockList list, Logger logger) {
+    if (list == null) {
+      throw new ArgumentError('BlockList must be injected.');
+    }
     logger.add(list);
   }
 }
@@ -104,7 +107,7 @@ main() {
           expect(b.previous).toBe(anchor);
         });
 
-        iit('should remove', () {
+        it('should remove', () {
           a.remove();
           b.remove();
 
@@ -123,6 +126,7 @@ main() {
           ]);
 
           var outterBlock = outerBlockType();
+          var outterAnchor = logger[0];
 
           outterBlock.insertAfter(anchor);
           outterAnchor.newBlock().insertAfter(outterAnchor);

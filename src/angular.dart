@@ -3,6 +3,7 @@ library angular;
 import "dart:mirrors";
 import 'dart:html' as dom;
 import 'package:di/di.dart';
+import '../test/debug.dart';
 
 part 'Block.dart';
 part 'BlockList.dart';
@@ -23,5 +24,5 @@ ASSERT(condition) {
 num id = 0;
 
 nextUid() {
-  return '_${id++}}';
+  return '_${id++}';
 }
