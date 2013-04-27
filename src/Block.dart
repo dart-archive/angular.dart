@@ -274,11 +274,13 @@ class Block implements ElementWrapper {
     }
 
     // Remove block from list
-    if (previous.next = next) {
+    previous.next = next;
+    if (next != null) {
       next.previous = previous;
     }
     // Add block to list
-    if (next = previousBlock.next) {
+    next = previousBlock.next;
+    if (next != null) {
       next.previous = this;
     }
     previous = previousBlock;

@@ -16,18 +16,11 @@ main() {
       var noop = (Element e, String v) => null;
 
       log = [];
-      directives = new Directives();
-      directives.register('b', noop);
-      directives.register('.b', noop);
-      directives.register('[directive]', noop);
-      directives.register('b[directive]', noop);
-      directives.register('[directive=value]', noop);
-      directives.register('b[directive=value]', noop);
-      directives.register(':contains(/abc/)', noop);
-      directives.register('[*=/xyz/]', noop);
+      directives = ['b', '.b', '[directive]', 'b[directive]',
+          '[directive=value]', 'b[directive=value]', ':contains(/abc/)',
+          '[*=/xyz/]'];
 
-      var directiveNames = directives.enumerate();
-      selector = selectorFactory(directiveNames);
+      selector = selectorFactory(directives);
     });
 
     it('should match directive on element', () {
