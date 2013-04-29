@@ -51,9 +51,13 @@ class BlockFactory {
                BlockListFactory this.$blockListFactory,
                Injector this.$injector);
 
-  call(blockNodeList, directivePositions, blockCaches, group) =>
-    new Block($exceptionHandler, $blockListFactory, $injector,
+  call(blockNodeList, directivePositions, blockCaches, group) {
+    ASSERT(blockNodeList != null);
+    ASSERT(directivePositions != null);
+    ASSERT(blockCaches != null);
+    return new Block($exceptionHandler, $blockListFactory, $injector,
               blockNodeList, directivePositions, blockCaches, group);
+  }
 }
 
 class Block implements ElementWrapper {
@@ -76,7 +80,9 @@ class Block implements ElementWrapper {
         List directivePositions,
         List<BlockCache> blockCaches,
         String this.group) {
-    if (elements == null) throw new ArgumentError();
+    ASSERT(elements != null);
+    ASSERT(directivePositions != null);
+    ASSERT(blockCaches != null);
     _link(elements, directivePositions, blockCaches);
   }
 
@@ -96,7 +102,7 @@ class Block implements ElementWrapper {
         for (var j = 0, jj = directiveDefs.length; j < jj; j++) {
           var blockCache;
 
-          if (blockCaches != null && blockCaches.length) {
+          if (blockCaches != null && blockCaches.length > 0) {
             blockCache = blockCaches.shift();
             preRenderedIndexOffset += blockCache.preRenderedElementCount;
           }

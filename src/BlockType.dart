@@ -7,7 +7,7 @@ class BlockTypeFactory {
 
   BlockType call(templateElements, directivePositions, [group]) {
     return new BlockType(blockFactory, templateElements, directivePositions,
-                         ?group ? '' : group);
+                         ?group && group != null ? group : '');
   }
 }
 
@@ -18,11 +18,19 @@ class BlockType {
   String group;
 
   BlockType(this.blockFactory, this.templateElements, this.directivePositions,
-            this.group);
+            this.group) {
+    ASSERT(blockFactory != null);
+    ASSERT(templateElements != null);
+    ASSERT(directivePositions != null);
+    ASSERT(group != null);
+  }
 
   Block call([List<dom.Node> elements, List<BlockCache> blockCaches]) {
     if (!?elements) {
       elements = cloneElements(templateElements);
+    }
+    if (!?blockCaches || blockCaches == null) {
+      blockCaches = [];
     }
 
     return blockFactory(elements, directivePositions, blockCaches, group);
