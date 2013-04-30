@@ -1,4 +1,5 @@
 import "_specs.dart";
+import "dart:mirrors";
 
 main() {
 
@@ -13,7 +14,14 @@ main() {
       if (injector == null) {
         injector = new Injector();
       }
-      injector.invoke(fn);
+      try {
+        injector.invoke(fn);
+      } catch (e,s) {
+        if (e is MirroredUncaughtExceptionError) {
+          throw e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
+        }
+        throw "Not mirrored" + e.toString() + " Stack trace:" + s.toString();
+      }
     };
   }
 
@@ -39,22 +47,16 @@ main() {
       $rootScope = injector.get(Scope);
     }));
 
-    iit('should compile basic hello world', inject(() {
-      try {
-        var element = $('<div bind="name"></div>');
-        var template = $compile(element);
+    it('should compile basic hello world', inject(() {
+      var element = $('<div bind="name"></div>');
+      var template = $compile(element);
 
-        $rootScope['name'] = 'angular';
-        template(element).attach($rootScope);
+      $rootScope['name'] = 'angular';
+      template(element).attach($rootScope);
 
-        expect(element.text()).toEqual('');
-        $rootScope.$digest();
-        expect(element.text()).toEqual('angular');
-      } catch(e, s) {
-        // TODO(misko): remove me after dart bug is fixed.
-        dump(e);
-        dump(s);
-      }
+      expect(element.text()).toEqual('');
+      $rootScope.$digest();
+      expect(element.text()).toEqual('angular');
     }));
 
 
