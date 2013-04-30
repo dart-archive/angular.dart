@@ -14,7 +14,7 @@ class Scope {
   operator [](String name) => properties[name];
 
   $watch(expr, [reactionFn]) {
-    dump(expr)
+    dump(expr);
     watches.add(() => reactionFn(this[expr]));
   }
 
