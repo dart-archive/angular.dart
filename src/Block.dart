@@ -166,10 +166,10 @@ class Block implements ElementWrapper {
   // Attach directives
     for(var i = 0, ii = directives.length; i < ii; i++) {
       try {
-        for (var j = 0, jj = elements.length; j < jj; j++) {
+        /*for (var j = 0, jj = elements.length; j < jj; j++) {
           elements[j].$scope = scope;
-        }
-        if (directives[i].attach) directives[i].attach(scope);
+        }*/
+        /*if (directives[i].attach)*/ directives[i].attach(scope);
       } catch(e) {
         $exceptionHandler(e);
       }
