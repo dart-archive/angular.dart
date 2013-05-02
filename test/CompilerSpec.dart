@@ -56,11 +56,12 @@ main() {
 
       expect(element.text()).toEqual('');
       $rootScope.$digest();
+      dump(element);
       expect(element.text()).toEqual('angular');
     }));
 
 
-    it('should compile repeater', inject(() {
+    xit('should compile repeater', inject(() {
       var element = $('<div><div repeat="item in items" bind="item"></div></div>');
       var template = $compile(element);
 
@@ -77,7 +78,7 @@ main() {
     }));
 
 
-    it('should compile multi-root repeater', inject(() {
+    xit('should compile multi-root repeater', inject(() {
       var element = $(
           '<div>' +
             '<div repeat="item in items" bind="item" include-next></div>' +
@@ -102,7 +103,7 @@ main() {
     }));
 
 
-    it('should compile text', inject(() {
+    xit('should compile text', inject(() {
       var element = $('<div>{{name}}<span>!</span></div>').contents();
       element.remove();
 
@@ -121,7 +122,7 @@ main() {
     }));
 
 
-    it('should compile nested repeater', inject(() {
+    xit('should compile nested repeater', inject(() {
       var element = $(
           '<div>' +
             '<ul repeat="lis in uls">' +
@@ -170,7 +171,7 @@ main() {
         $provide.value('directive:[switch]', Switch);
       }));
 
-      it('should transclude multiple templates', inject(($rootScope) {
+      xit('should transclude multiple templates', inject(($rootScope) {
         var element = $(
             '<div switch="name">' +
                 '<span switch-when="a">when</span>' +
@@ -260,7 +261,7 @@ main() {
 
 
     describe("interpolation", () {
-      it('should interpolate attribute nodes', inject(() {
+      xit('should interpolate attribute nodes', inject(() {
         var element = $('<div test="{{name}}"></div>');
         var template = $compile(element);
 
@@ -272,7 +273,7 @@ main() {
       }));
 
 
-      it('should interpolate text nodes', inject(() {
+      xit('should interpolate text nodes', inject(() {
         var element = $('<div>{{name}}</div>');
         var template = $compile(element);
 
@@ -305,7 +306,7 @@ main() {
       }));
 
 
-      it('should generate directive from a directive', inject(() {
+      xit('should generate directive from a directive', inject(() {
         var element = $('<ul><li generate="abc"></li></ul>');
         var blockType = $compile(element);
         var block = blockType(element);
@@ -320,7 +321,7 @@ main() {
 
 
     describe('reuse DOM instances', () {
-      it('should compile with no transclusion', inject(($compile) {
+      xit('should compile with no transclusion', inject(($compile) {
         var element = $('<span bind="name"></span>');
         var spanBT = $compile(element);
         var block = spanBT(element);
@@ -332,7 +333,7 @@ main() {
         expect(element.text()).toEqual('world');
       }));
 
-      it('should compile with transclusion and no block reuse', inject(() {
+      xit('should compile with transclusion and no block reuse', inject(() {
         var element = $(
             '<ul>' +
                 '<li>-</li>' +
@@ -356,7 +357,7 @@ main() {
       }));
 
 
-      it('should compile and collect template instances', inject(() {
+      xit('should compile and collect template instances', inject(() {
         var element = $(
             '<ul>' +
                 '<li>-</li>' +
@@ -382,7 +383,7 @@ main() {
             '<li>-</li>');
       }));
 
-      it('should compile and collect template instances, and correctly compute offsets', inject(() {
+      xit('should compile and collect template instances, and correctly compute offsets', inject(() {
         var element = $(
             '<ul>' +
                 '<li>-</li>' +
