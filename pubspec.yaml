@@ -6,5 +6,5 @@ dependencies:
   browser: any
   js: any
   di:
-    path: modules/dart-di
+    git: git@github.com:mhevery/dart-di.git
 
