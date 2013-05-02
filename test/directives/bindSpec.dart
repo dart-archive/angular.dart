@@ -1,17 +1,6 @@
 import "../_specs.dart";
 import "dart:mirrors";
 
-var VALUE_FOR_A = 'valueFromScope';
-
-class MockScope {
-  $watch(String value, doer) {
-    if (value == 'a') {
-      doer(VALUE_FOR_A);
-    } else {
-      throw "Not implemented";
-    }
-  }
-}
 
 main() {
 
@@ -54,7 +43,12 @@ main() {
       //var bind = injector.createChild([module]).get(BindDirective);
       var bind = new Injector([module]).get(BindDirective);
 
-      bind.attach(new MockScope());
+      var scope = new Scope();
+      var VALUE_FOR_A = 'valueFromScope';
+
+      scope['a'] = VALUE_FOR_A;
+      bind.attach(scope);
+      scope.$digest();
 
       expect(element.text()).toEqual(VALUE_FOR_A);
     });

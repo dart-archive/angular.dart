@@ -28,7 +28,8 @@ class BindDirective  {
     dump('BIND');
   }
 
-  attach(scope) {
+  attach(Scope scope) {
+    dump('BIND attach');
     scope.$watch(value.value, text);
   }
 
