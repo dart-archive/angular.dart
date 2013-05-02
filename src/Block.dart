@@ -140,18 +140,25 @@ class Block implements ElementWrapper {
 
     for (var i = 0, ii = directiveNames.length; i < ii; i++) {
       var directiveName = directiveNames[i];
+      DirectiveDef directiveDef = directiveDefsByName[directiveName];
+
       var directiveModule = new Module();
 
-      directiveModule.value(String, null);
+      directiveModule.value(BindValue,
+          new BindValue.fromString(directiveDef.value));
+      directiveModule.value(List, [node]);
+
       if (anchorsByName.containsKey(directiveName)) {
         elementModule.value(BlockList, anchorsByName[directiveName]);
       }
 
-      var injector = new Injector([elementModule, directiveModule], $injector);
-
-      DirectiveDef directiveDef = directiveDefsByName[directiveName];
       Type directiveType = directiveDef.directiveFactory.directiveType;
-      directives.add(injector.get(directiveType));
+      var injector = $injector.createChild([elementModule, directiveModule],
+          // TextAccessor here is wrong.  Talking with vojta re dart-di
+          [directiveType, TextAccessor]);
+
+      var directive = injector.get(directiveType);
+      directives.add(directive);
     }
   }
 
