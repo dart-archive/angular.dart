@@ -3,12 +3,13 @@ library ng_specs;
 
 import 'dart:html';
 import 'package:unittest/unittest.dart' as unit;
-import 'debug.dart';
+import 'package:angular/debug.dart';
 import 'dart:mirrors' as mirror;
+import 'package:angular/angular.dart';
 
 export 'package:unittest/unittest.dart';
-export 'debug.dart';
-export '../src/angular.dart';
+export 'package:angular/debug.dart';
+export 'package:angular/angular.dart';
 export 'dart:html';
 export 'jasmineSyntax.dart';
 export 'package:di/di.dart';

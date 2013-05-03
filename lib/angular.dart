@@ -3,7 +3,7 @@ library angular;
 import "dart:mirrors";
 import 'dart:html' as dom;
 import 'package:di/di.dart';
-import '../test/debug.dart';
+import 'debug.dart';
 
 part 'Block.dart';
 part 'BlockList.dart';
