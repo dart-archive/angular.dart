@@ -169,20 +169,14 @@ class Compiler {
 
 
   call(List<dom.Node> elements, [List<BlockCache> blockCaches]) {
-    try {
-      List<dom.Node> domElements = elements;
-      List<dom.Node> templateElements = cloneElements(domElements);
-      var directivePositions = _compileBlock(
-          new NodeCursor(domElements), new NodeCursor(templateElements),
-          ?blockCaches && blockCaches != null ? blockCaches : [],
-          null);
+    List<dom.Node> domElements = elements;
+    List<dom.Node> templateElements = cloneElements(domElements);
+    var directivePositions = _compileBlock(
+        new NodeCursor(domElements), new NodeCursor(templateElements),
+        ?blockCaches && blockCaches != null ? blockCaches : [],
+        null);
 
-      return $blockTypeFactory(templateElements,
-                               directivePositions == null ? [] : directivePositions);
-    } catch(e, s) {
-      // TODO(misko): remove me after dart bug is fixed.
-      dump(e);
-      dump(s);
-    }
+    return $blockTypeFactory(templateElements,
+                             directivePositions == null ? [] : directivePositions);
   }
 }
