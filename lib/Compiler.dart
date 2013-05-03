@@ -97,7 +97,7 @@ class Compiler {
                       NodeCursor domCursor, NodeCursor templateCursor,
                       DirectiveInfo directiveInfo, List<DirectiveInfo>
                       transcludedDirectiveInfos) {
-    var anchorName = directiveInfo.name + (directiveInfo.value ? '=' + directiveInfo.value : '');
+    var anchorName = directiveInfo.name + (directiveInfo.value != null ? '=' + directiveInfo.value : '');
     var blockTypes = {};
     var BlockType;
     var blocks;
@@ -125,7 +125,8 @@ class Compiler {
       domCursor.replaceWithAnchor(anchorName);
     }
 
-    return {blockTypes: blockTypes, blockCache: blocks ? new BlockCache(blocks) : null};
+    return {'blockTypes': blockTypes,
+            'blockCache': blocks ? new BlockCache(blocks) : null};
   }
 
 
@@ -160,8 +161,8 @@ class Compiler {
   }
 
   priorityComparator(DirectiveInfo a, DirectiveInfo b) {
-    var aPriority = a.DirectiveType.$priority || 0,
-    bPriority = b.DirectiveType.$priority || 0;
+    int aPriority = a.directiveFactory.$priority || 0,
+    bPriority = b.directiveFactory.$priority || 0;
 
     return bPriority - aPriority;
   }
