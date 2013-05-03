@@ -123,7 +123,7 @@ class Block implements ElementWrapper {
         _instantiateDirectives(directiveDefsByName, directiveNames, node, anchorsByName);
       }
       if (childDirectivePositions != null) {
-        link_(node.childNodes, childDirectivePositions, blockCaches);
+        _link(node.nodes, childDirectivePositions, blockCaches);
       }
     }
   }

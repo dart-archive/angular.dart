@@ -56,7 +56,20 @@ main() {
 
       expect(element.text()).toEqual('');
       $rootScope.$digest();
-      dump(element);
+      expect(element.text()).toEqual('angular');
+    }));
+
+    it('should compile a directive in a child', inject(() {
+      var element = $('<div><div bind="name"></div></div>');
+      var template = $compile(element);
+
+      $rootScope['name'] = 'angular';
+
+
+      template(element).attach($rootScope);
+
+      expect(element.text()).toEqual('');
+      $rootScope.$digest();
       expect(element.text()).toEqual('angular');
     }));
 
