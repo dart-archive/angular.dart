@@ -1,92 +1,83 @@
 import '_specs.dart';
 
+class LexerExpect extends Expect {
+  LexerExpect(actual) : super(actual);
+  toBeToken(int index, String text) {
+    expect(actual is Token).toEqual(true);
+    expect(actual.index).toEqual(index);
+    expect(actual.text).toEqual(text);
+  }
+}
+expect(actual) => new LexerExpect(actual);
+
 main() {
   describe('lexer', () {
     // New test case
     it('should tokenize a simple identifier', () {
       var tokens = Parser.lex("j");
       expect(tokens.length).toEqual(1);
-      expect(tokens[0].index).toEqual(0);
-      expect(tokens[0].text).toEqual('j');
+      expect(tokens[0]).toBeToken(0, 'j');
     });
 
     // New test case
     it('should tokenize a dotted identifier', () {
       var tokens = Parser.lex("j.k");
       expect(tokens.length).toEqual(1);
-      expect(tokens[0].index).toEqual(0);
-      expect(tokens[0].text).toEqual('j.k');
+      expect(tokens[0]).toBeToken(0, 'j.k');
     });
 
     it('should tokenize an operator', () {
       var tokens = Parser.lex('j-k');
       expect(tokens.length).toEqual(3);
-      expect(tokens[1].index).toEqual(1);
-      expect(tokens[1].text).toEqual('-');
-
+      expect(tokens[1]).toBeToken(1, '-');
     });
 
-    xit('should tokenize an indexed operator', () {
+    it('should tokenize an indexed operator', () {
       var tokens = Parser.lex('j[k]');
       expect(tokens.length).toEqual(4);
-      expect(tokens[1].index).toEqual(1);
-      expect(tokens[1].text).toEqual('[');
+      expect(tokens[1]).toBeToken(1, '[');
     });
 
-    it('should tokenize a string', () {
-
+    xit('should tokenize a string', () {
       var tokens = Parser.lex("j-a.bc[22]+1.3|f:'a\\\'c':\"d\\\"e\"");
       var i = 0;
-      expect(tokens[i].index).toEqual(0);
-      expect(tokens[i].text).toEqual('j');
+      expect(tokens[i]).toBeToken(0, 'j');
 
       i++;
-      expect(tokens[i].index).toEqual(2);
-      expect(tokens[i].text).toEqual('a.bc');
+      expect(tokens[i]).toBeToken(2, 'a.bc');
 
       i++;
-      expect(tokens[i].index).toEqual(6);
-      expect(tokens[i].text).toEqual('[');
+      expect(tokens[i]).toBeToken(6, '[');
 
       i++;
-      expect(tokens[i].index).toEqual(7);
-      expect(tokens[i].text).toEqual(22);
+      expect(tokens[i]).toBeToken(7, '22');
 
       i++;
-      expect(tokens[i].index).toEqual(9);
-      expect(tokens[i].text).toEqual(']');
+      expect(tokens[i]).toBeToken(9, ']');
 
       i++;
-      expect(tokens[i].index).toEqual(10);
-      expect(tokens[i].text).toEqual('+');
+      expect(tokens[i]).toBeToken(10, '+');
 
       i++;
-      expect(tokens[i].index).toEqual(11);
-      expect(tokens[i].text).toEqual(1.3);
+      expect(tokens[i]).toBeToken(11, '1.3');
 
       i++;
-      expect(tokens[i].index).toEqual(14);
-      expect(tokens[i].text).toEqual('|');
+      expect(tokens[i]).toBeToken(14, '|');
 
       i++;
-      expect(tokens[i].index).toEqual(15);
-      expect(tokens[i].text).toEqual('f');
+      expect(tokens[i]).toBeToken(15, 'f');
 
       i++;
-      expect(tokens[i].index).toEqual(16);
-      expect(tokens[i].text).toEqual(':');
+      expect(tokens[i]).toBeToken(16, ':');
 
       i++;
-      expect(tokens[i].index).toEqual(17);
-      expect(tokens[i].string).toEqual("a'c");
+      expect(tokens[i]).toBeToken(17, 'a\'c');
 
       i++;
-      expect(tokens[i].index).toEqual(23);
-      expect(tokens[i].text).toEqual(':');
+      expect(tokens[i]).toBeToken(23, ':');
 
       i++;
-      expect(tokens[i].index).toEqual(24);
-      expect(tokens[i].string).toEqual('d"e');
+      expect(tokens[i]).toBeToken(24, 'd"e');
     });
   });
 }

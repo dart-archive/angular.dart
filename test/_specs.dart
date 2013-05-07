@@ -22,12 +22,11 @@ es(String html) {
 
 e(String html) => es(html).first;
 
-expect(actual, [unit.Matcher matcher]) {
+Expect expect(actual, [unit.Matcher matcher]) {
   if (?matcher) {
-    return unit.expect(actual, matcher);
-  } else {
-    return new Expect(actual);
+    unit.expect(actual, matcher);
   }
+  return new Expect(actual);
 }
 
 class Expect {
