@@ -14,6 +14,7 @@ part 'directives/Bind.dart';
 part 'dom_utilities.dart';
 part 'ExceptionHandler.dart';
 part 'NodeCursor.dart';
+part 'Parser.dart';
 part 'Scope.dart';
 part 'Selector.dart';
 
