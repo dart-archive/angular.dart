@@ -4,8 +4,11 @@ class Token {
   bool json;
   int index;
   String text;
+  Operator fn;
 
   Token(this.index, this.text);
+
+  withFn(fn) { this.fn = fn; }
 }
 
 // TODO(deboer): Type this typedef further
@@ -15,8 +18,16 @@ String QUOTES = "\"'";
 String DOT = ".";
 String SPECIAL = "(){}[].,;:";
 String JSON_SEP = "{,";
+String JSON_OPEN = "{[";
+String JSON_CLOSE = "}]";
 
-Map<String, Operator> OPERATORS = { };
+Map<String, Operator> OPERATORS = {
+  '-': (locals, a, b) {
+    var aResult = a(locals);
+    var bResult = b(locals);
+    return (a == null ? 0 : a) - (b == null ? 0 : b);
+  }
+};
 
 class Parser {
 
@@ -41,7 +52,7 @@ class Parser {
         cc('_') == cch || cch == cc('\$');
     }
 
-    isWhitespace() => false;
+    isWhitespace([String c]) => false;
 
     String peek() => index + 1 < textLength ? text[index + 1] : "EOF";
 
@@ -54,7 +65,9 @@ class Parser {
       while (index < textLength) {
         ch = text[index];
         if (ch == '.' || isIdent() || isNumber()) {
-          if (ch == '.') throw "not impl ident dots";
+          if (ch == '.') {
+            lastDot = index;
+          }
           ident += ch;
         } else {
           break;
@@ -62,8 +75,21 @@ class Parser {
         index++;
       }
 
+      // The identifier had a . in the identifier
       if (lastDot != -1) {
-        throw "not impl last dot";
+        peekIndex = index;
+        while (peekIndex < textLength) {
+          String peekChar = text[peekIndex];
+          if (peekChar == "(") {
+            throw "not impl method name";
+          }
+          if (isWhitespace(peekChar)) {
+            throw "not impl space before method name";
+            //peekIndex++;
+          } else {
+            break;
+          }
+        }
       }
 
       var token = new Token(start, ident);
@@ -95,7 +121,10 @@ class Parser {
 //          token.json = token.text.indexOf('.') == -1;
         }
       } else if (isIn(SPECIAL)) {
-        throw "not implemented special";
+        tokens.add(new Token(index, ch));
+        index++;
+//        if (isIn(OPEN_JSON)) json.unshift(ch);
+//        if (isIn(CLOSE_JSON)) json.shift();
       } else if (isWhitespace()) {
         throw "not impl ws";
       } else {
@@ -107,7 +136,8 @@ class Parser {
         if (fn2 != null) {
           throw "not impl double op";
         } else if (fn != null) {
-          throw "not impl op";
+          tokens.add(new Token(index, ch)..withFn(fn));
+          index++;
         } else {
           throw "Unexpected next character $index $ch";
         }
@@ -125,7 +155,6 @@ class Parser {
       }
 
     }
-
     return tokens;
 
   }

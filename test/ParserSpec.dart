@@ -10,8 +10,30 @@ main() {
       expect(tokens[0].text).toEqual('j');
     });
 
+    // New test case
+    it('should tokenize a dotted identifier', () {
+      var tokens = Parser.lex("j.k");
+      expect(tokens.length).toEqual(1);
+      expect(tokens[0].index).toEqual(0);
+      expect(tokens[0].text).toEqual('j.k');
+    });
 
-    xit('should tokenize a string', () {
+    it('should tokenize an operator', () {
+      var tokens = Parser.lex('j-k');
+      expect(tokens.length).toEqual(3);
+      expect(tokens[1].index).toEqual(1);
+      expect(tokens[1].text).toEqual('-');
+
+    });
+
+    xit('should tokenize an indexed operator', () {
+      var tokens = Parser.lex('j[k]');
+      expect(tokens.length).toEqual(4);
+      expect(tokens[1].index).toEqual(1);
+      expect(tokens[1].text).toEqual('[');
+    });
+
+    it('should tokenize a string', () {
 
       var tokens = Parser.lex("j-a.bc[22]+1.3|f:'a\\\'c':\"d\\\"e\"");
       var i = 0;
