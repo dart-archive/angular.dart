@@ -106,7 +106,7 @@ main() {
       var tokens = Parser.lex("undefined");
       var i = 0;
       expect(tokens[i]).toBeToken(0, 'undefined');
-      expect(tokens[i].fn0()).toEqual(null);
+      expect(tokens[i].fn(null, null, null, null)).toEqual(null);
     });
 
     it('should ignore whitespace', () {
@@ -225,7 +225,33 @@ main() {
         lex("'\\u1''bla'");
       }).toThrow("Lexer Error: Invalid unicode escape [\\u1''b] at column 2 in expression ['\\u1''bla'].");
     });
+  });
 
+
+  describe('parse', () {
+    eval(String text) => Parser.parse(text)(null, null);
+
+    it('should parse numerical expressions', () {
+      expect(eval("1")).toEqual(1);
+    });
+
+    it('should parse unary - expressions', () {
+      expect(eval("-1")).toEqual(-1);
+    });
+
+    it('should parse unary ! expressions', () {
+      expect(eval("!true")).toEqual(false);
+    });
+
+    xit('should parse expressions', () {
+      expect(eval("-1")).toEqual(-1);
+      expect(eval("1 + 2.5")).toEqual(3.5);
+      expect(eval("1 + -2.5")).toEqual(-1.5);
+      expect(eval("1+2*3/4")).toEqual(1+2*3/4);
+      expect(eval("0--1+1.5")).toEqual(0- -1 + 1.5);
+      expect(eval("-0--1++2*-3/-4")).toEqual(-0- -1+ 2*-3/-4);
+      expect(eval("1/2*3")).toEqual(1/2*3);
+    });
 
   });
 }

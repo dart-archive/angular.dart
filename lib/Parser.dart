@@ -6,17 +6,29 @@ class Token {
   String text;
   String string;
   Operator fn;
+  // access fn as a function that doesn't take a or b values.
+  ParsedFn primaryFn;
 
   Token(this.index, this.text);
 
-  withFn(fn) { this.fn = fn; }
+  withFn(fn) {
+    this.fn = fn;
+    this.primaryFn = (s, l) => fn(s, l, null, null);
+  }
+
+  withFn0(fn()) => withFn(op0(fn));
+
   withString(string) { this.string = string; }
 
-  fn0() => fn(null, null, null);
+  fn0() => primaryFn(null, null);
 }
 
 // TODO(deboer): Type this typedef further
-typedef Operator(locals, a, b);
+typedef Operator(scope, locals, ParsedFn a, ParsedFn b);
+
+typedef ParsedFn(scope, locals);
+
+op0(fn()) => (_, _1, _2, _3) => fn();
 
 String QUOTES = "\"'";
 String DOT = ".";
@@ -28,24 +40,26 @@ String WHITESPACE = " \r\t\n\v\u00A0";
 String EXP_OP = "Ee";
 String SIGN_OP = "+-";
 
-Operator NOT_IMPL_OP = (_, _0, _1) => null;
+Operator NULL_OP = (_, _x, _0, _1) => null;
+Operator NOT_IMPL_OP = (_, _x, _0, _1) => throw "Op not implemented";
 
 Map<String, Operator> OPERATORS = {
-  'undefined': (_, _0, _1) => null,
-  '+': (locals, a, b) {
-    return null;
+  'undefined': NULL_OP,
+  'true': (scope, locals, a, b) => true,
+  'false': (scope, locals, a, b) => false,
+  '+': NOT_IMPL_OP, //(locals, a, b) {
 //    var aResult = a(locals);
 //    var bResult = b(locals);
 //    if (a != null && b != null) return a + b;
 //    if (a != null) return a;
 //    if (b != null) return b;
 //    return null;
-  },
-  '-': (locals, a, b) {
+//  },
+  '-': (scope, locals, a, b) {
     assert(a != null || b != null);
-    var aResult = a != null ? a(locals) : null;
-    var bResult = b != null ? b(locals) : null;
-    return (a == null ? 0 : a) - (b == null ? 0 : b);
+    var aResult = a != null ? a(scope, locals) : null;
+    var bResult = b != null ? b(scope, locals) : null;
+    return (aResult == null ? 0 : aResult) - (bResult == null ? 0 : bResult);
   },
   '*': NOT_IMPL_OP,
   '/': NOT_IMPL_OP,
@@ -61,12 +75,13 @@ Map<String, Operator> OPERATORS = {
   '&&': NOT_IMPL_OP,
   '||': NOT_IMPL_OP,
   '&': NOT_IMPL_OP,
-  '|': (locals, a, b) => null, //b(locals)(locals, a(locals))
-  '!': NOT_IMPL_OP
+  '|': NOT_IMPL_OP, //b(locals)(locals, a(locals))
+  '!': (scope, locals, a, b) => !a(scope, locals)
 };
 
 Map<String, String> ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'};
 
+ParsedFn ZERO = (_, _x) => 0;
 
 class BreakException {}
 
@@ -159,7 +174,7 @@ class Parser {
           index++;
           tokens.add(new Token(start, rawString)
               ..withString(string)
-              ..withFn((_, _0, _1) => string));
+              ..withFn0(() => string));
           breakWhile();
         } else {
           string += ch;
@@ -191,7 +206,7 @@ class Parser {
         }
         index++;
       });
-      tokens.add(new Token(start, number)..withFn((_,_1,_2) => double.parse(number)));
+      tokens.add(new Token(start, number)..withFn0(() => double.parse(number)));
     }
 
     readIdent() {
@@ -236,7 +251,7 @@ class Parser {
       if (OPERATORS.containsKey(ident)) {
         token.withFn(OPERATORS[ident]);
       } else {
-        token.withFn((_, _0, _1) => throw "not impl ident getter");
+        token.withFn0(() => throw "not impl ident getter");
       }
 
       tokens.add(token);
@@ -296,6 +311,161 @@ class Parser {
 
   }
 
+  static ParsedFn parse(text) {
+    List<Token> tokens = Parser.lex(text);
+    Token token;
 
+
+
+    Token peek([String e1, String e2, String e3, String e4]) {
+      if (tokens.length > 0) {
+        Token token = tokens[0];
+        String t = token.text;
+        if (t==e1 || t==e2 || t==e3 || t==e4 ||
+            (e1 == null && e2 == null && e3 == null && e4 == null)) {
+          return token;
+        }
+      }
+      return null;
+    }
+
+    Token expect([String e1, String e2, String e3, String e4]){
+      Token token = peek(e1, e2, e3, e4);
+      if (token != null) {
+        // TODO json
+//        if (json && !token.json) {
+//          throwError("is not valid json", token);
+//        }
+        tokens.removeAt(0);
+        return token;
+      }
+      return null;
+    }
+
+    ParsedFn primary() {
+      var primary;
+      if (expect('(') != null) {
+        throw "not impl (";
+//        primary = filterChain();
+//        consume(')');
+      } else if (expect('[') != null) {
+        throw "not impl array decl";
+        //primary = arrayDeclaration();
+      } else if (expect('{') != null) {
+        throw "not impl brace";
+        //primary = object();
+      } else {
+        var token = expect();
+        primary = token.primaryFn;
+        if (primary == null) {
+          throw "not impl error";
+          //throwError("not a primary expression", token);
+        }
+      }
+
+      var next, context;
+      while ((next = expect('(', '[', '.')) != null) {
+        if (next.text == '(') {
+          throw "not impl function call";
+//          primary = functionCall(primary, context);
+//          context = null;
+        } else if (next.text == '[') {
+          throw "not impl object index";
+//          context = primary;
+//          primary = objectIndex(primary);
+        } else if (next.text == '.') {
+          throw "not impl field access";
+//          context = primary;
+//          primary = fieldAccess(primary);
+        } else {
+          throw "Impossible.. what?";
+        }
+      }
+      return primary;
+    }
+
+    ParsedFn binaryFn(ParsedFn left, Operator fn, ParsedFn right) {
+      return (self, locals) {
+        return fn(self, locals, left, right);
+      };
+    }
+
+    ParsedFn unaryFn(Operator fn, ParsedFn right) {
+      return (self, locals) {
+        return fn(self, locals, right, null);
+      };
+    }
+
+    ParsedFn unary() {
+      var token;
+      if (expect('+') != null) {
+        return primary();
+      } else if ((token = expect('-')) != null) {
+        return binaryFn(ZERO, token.fn, unary());
+      } else if ((token = expect('!')) != null) {
+        return unaryFn(token.fn, unary());
+      } else {
+        return primary();
+      }
+    }
+
+    ParsedFn assignment() {
+      var left = unary();
+      //var left = logicalOR();
+      var right;
+      var token;
+      if ((token = expect('=')) != null) {
+        if (!left.assign) {
+          throw "not impl bad assignment error";
+//          throwError("implies assignment but [" +
+//              text.substring(0, token.index) + "] can not be assigned to", token);
+        }
+        right = logicalOR();
+        return (scope, locals) =>
+          left.assign(scope, right(scope, locals), locals);
+      } else {
+        return left;
+      }
+    }
+
+
+    ParsedFn expression() {
+      return assignment();
+    }
+
+    ParsedFn filterChain() {
+      var left = expression();
+      var token;
+      while(true) {
+        if ((token = expect('|') != null)) {
+          //left = binaryFn(left, token.fn, filter());
+          throw "not impl filter";
+        } else {
+          return left;
+        }
+      }
+    }
+
+    statements() {
+      List<ParsedFn> statements = [];
+      while (true) {
+        if (tokens.length > 0 && peek('}', ')', ';', ']') == null)
+          statements.add(filterChain());
+        if (expect(';') == null) {
+          return statements.length == 1
+              ? statements[0]
+              : throw "not impl multiple statements";
+        }
+      }
+    }
+
+    // TODO(deboer): json
+    ParsedFn value = statements();
+
+    if (tokens.length != 0) {
+      throw "not impl, error msg";
+    }
+    return value;
+  }
 
 }
