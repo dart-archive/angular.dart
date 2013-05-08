@@ -42,9 +42,16 @@ class Parser {
 
     isIn(String charSet) =>  charSet.indexOf(ch) != -1;
     was(String charSet) => charSet.indexOf(lastCh) != -1;
-    isNumber() => false;
+
+    cc(String s) => s.codeUnitAt(0);
+
+    bool isNumber([String c]) {
+      int cch = cc(c != null ? c : ch);
+      return cc('0') <= cch && cch <= cc('9');
+    }
+
     isIdent() {
-      cc(String s) => s.codeUnitAt(0);
+
       int cch = cc(ch);
       return
         cc('a') <= cch && cch <= cc('z') ||
@@ -54,8 +61,33 @@ class Parser {
 
     isWhitespace([String c]) => false;
 
+    isExpOperator([String c]) => false;
+
     String peek() => index + 1 < textLength ? text[index + 1] : "EOF";
 
+    readNumber() {
+      String number = "";
+      int start = index;
+      while (index < textLength) {
+        if (ch == '.' || isNumber()) {
+          number += ch;
+        } else {
+          String peekCh = peek();
+          if (ch == 'e' && isExpOperator(peekCh)) {
+            throw "exp not implemented";
+          } else if (isExpOperator() && peekCh != '' && isNumber(peekCh) && number[number.length - 1] == 'e') {
+            throw "exp 2 not impl";
+          } else if (isExpOperator() && (peekCh == '' || !isNumber(peekCh)) &&
+              number[number.length - 1] == 'e') {
+            throw "Invalid exponent";
+          } else {
+            break;
+          }
+        }
+        index++;
+      }
+      tokens.add(new Token(start, number)..withFn((_,_1,_2) => int.parse(number)));
+    }
     readIdent() {
       String ident = "";
       int start = index;
@@ -111,7 +143,7 @@ class Parser {
       if (isIn(QUOTES)) {
         throw "not implemented";
       } else if (isNumber() || isIn(DOT) && isNumber(peek())) {
-        throw "not implemented";
+        readNumber();
       } else if (isIdent()) {
         readIdent();
         // TODO(deboer): WTF is this doing?

@@ -38,6 +38,12 @@ main() {
       expect(tokens[1]).toBeToken(1, '[');
     });
 
+    it('should tokenize numbers', () {
+      var tokens = Parser.lex('88');
+      expect(tokens.length).toEqual(1);
+      expect(tokens[0]).toBeToken(0, '88');
+    });
+
     xit('should tokenize a string', () {
       var tokens = Parser.lex("j-a.bc[22]+1.3|f:'a\\\'c':\"d\\\"e\"");
       var i = 0;
