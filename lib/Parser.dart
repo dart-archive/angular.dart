@@ -29,6 +29,8 @@ Map<String, Operator> OPERATORS = {
   }
 };
 
+class BreakException {}
+
 class Parser {
 
   static List<Token> lex(String text) {
@@ -65,11 +67,28 @@ class Parser {
 
     String peek() => index + 1 < textLength ? text[index + 1] : "EOF";
 
+    breakWhile() { throw new BreakException(); }
+    whileChars(fn(), [endFn()]) {
+      while (index < textLength) {
+        ch = text[index];
+        int lastIndex = index;
+	      try {
+          fn();
+	      } on BreakException catch(e) {
+	        endFn = null;
+          break;
+	      }
+        if (lastIndex == index) {
+	        throw "while chars loop must advance at index $index";
+	      }
+      }
+      if (endFn != null) { endFn(); }
+    }
+
     readNumber() {
       String number = "";
       int start = index;
-      while (index < textLength) {
-        ch = text[index];
+      whileChars(() {
         if (ch == '.' || isNumber()) {
           number += ch;
         } else {
@@ -82,11 +101,11 @@ class Parser {
               number[number.length - 1] == 'e') {
             throw "Invalid exponent";
           } else {
-            break;
+            breakWhile();
           }
         }
         index++;
-      }
+      });
       tokens.add(new Token(start, number)..withFn((_,_1,_2) => int.parse(number)));
     }
     readIdent() {
@@ -95,18 +114,18 @@ class Parser {
       int lastDot = -1, peekIndex = -1;
       String methodName;
 
-      while (index < textLength) {
-        ch = text[index];
+
+      whileChars(() {
         if (ch == '.' || isIdent() || isNumber()) {
           if (ch == '.') {
             lastDot = index;
           }
           ident += ch;
         } else {
-          break;
+          breakWhile();
         }
         index++;
-      }
+      });
 
       // The identifier had a . in the identifier
       if (lastDot != -1) {
@@ -139,8 +158,6 @@ class Parser {
     }
 
     oneLexLoop() {
-      lastIndex = index;
-      ch = text[index];
       if (isIn(QUOTES)) {
         throw "not implemented";
       } else if (isNumber() || isIn(DOT) && isNumber(peek())) {
@@ -175,19 +192,15 @@ class Parser {
           throw "Unexpected next character $index $ch";
         }
       }
-      if (index == lastIndex) {
-        throw "Lex loop must advance: $index";
-      }
     }
 
-    while (index < textLength) {
+    whileChars(() {
       try {
         oneLexLoop();
       } catch (e, s) {
         throw "index: $index $e\nORIG STACK:\n" + s.toString();
       }
-
-    }
+    });
     return tokens;
 
   }
