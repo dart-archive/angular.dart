@@ -42,6 +42,9 @@ Map<String, Operator> OPERATORS = {
   '|': (locals, a, b) => null //b(locals)(locals, a(locals))
 };
 
+Map<String, String> ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'};
+
+
 class BreakException {}
 
 class Parser {
@@ -104,16 +107,28 @@ class Parser {
       String string = "";
       String rawString = ch;
       String quote = ch;
-      bool escape = false;
 
       index++;
 
       whileChars(() {
         rawString += ch;
-        if (escape) {
-          throw "not impl escape";
-        } else if (ch == '\\') {
-          throw "not impl slash";
+        if (ch == '\\') {
+          index++;
+          whileChars(() {
+            rawString += ch;
+            if (ch == 'u') {
+              throw "not impl unicode escape";
+            } else {
+              var rep = ESCAPE[ch];
+              if (rep != null) {
+                string += rep;
+              } else {
+                throw "not impl unneeded escape";
+              }
+              index++;
+              breakWhile();
+            }
+          });
         } else if (ch == quote) {
           index++;
           tokens.add(new Token(start, rawString)

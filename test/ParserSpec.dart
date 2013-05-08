@@ -52,6 +52,10 @@ main() {
       expect(Parser.lex('"a"')[0]).toBeToken(0, '"a"');
     });
 
+    it('should tokenize quoted strings with escaped quotes', () {
+      expect(Parser.lex('"a\\""')[0]).toBeToken(0, '"a\\""');
+    });
+
     it('should tokenize a string', () {
       var tokens = Parser.lex("j-a.bc[22]+1.3|f:'a\\\'c':\"d\\\"e\"");
       var i = 0;
@@ -88,13 +92,13 @@ main() {
       expect(tokens[i]).toBeToken(16, ':');
 
       i++;
-      expect(tokens[i]).toBeToken(17, 'a\'c');
+      expect(tokens[i]).toBeToken(17, '\'a\\\'c\'');
 
       i++;
       expect(tokens[i]).toBeToken(23, ':');
 
       i++;
-      expect(tokens[i]).toBeToken(24, 'd"e');
+      expect(tokens[i]).toBeToken(24, '"d\\"e"');
     });
   });
 }
