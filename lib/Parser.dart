@@ -4,11 +4,13 @@ class Token {
   bool json;
   int index;
   String text;
+  String string;
   Operator fn;
 
   Token(this.index, this.text);
 
   withFn(fn) { this.fn = fn; }
+  withString(string) { this.string = string; }
 }
 
 // TODO(deboer): Type this typedef further
@@ -22,11 +24,22 @@ String JSON_OPEN = "{[";
 String JSON_CLOSE = "}]";
 
 Map<String, Operator> OPERATORS = {
+  '+': (locals, a, b) {
+    return null;
+//    var aResult = a(locals);
+//    var bResult = b(locals);
+//    if (a != null && b != null) return a + b;
+//    if (a != null) return a;
+//    if (b != null) return b;
+//    return null;
+  },
   '-': (locals, a, b) {
-    var aResult = a(locals);
-    var bResult = b(locals);
-    return (a == null ? 0 : a) - (b == null ? 0 : b);
-  }
+    return null;
+//    var aResult = a(locals);
+//    var bResult = b(locals);
+//    return (a == null ? 0 : a) - (b == null ? 0 : b);
+  },
+  '|': (locals, a, b) => null //b(locals)(locals, a(locals))
 };
 
 class BreakException {}
@@ -85,6 +98,37 @@ class Parser {
       if (endFn != null) { endFn(); }
     }
 
+    readString() {
+      int start = index;
+
+      String string = "";
+      String rawString = ch;
+      String quote = ch;
+      bool escape = false;
+
+      index++;
+
+      whileChars(() {
+        rawString += ch;
+        if (escape) {
+          throw "not impl escape";
+        } else if (ch == '\\') {
+          throw "not impl slash";
+        } else if (ch == quote) {
+          index++;
+          tokens.add(new Token(start, rawString)
+              ..withString(string)
+              ..withFn((_, _0, _1) => string));
+          breakWhile();
+        } else {
+          string += ch;
+          index++;
+        }
+      }, () {
+        throw "Unterminated quote starting at $start";
+      });
+    }
+
     readNumber() {
       String number = "";
       int start = index;
@@ -108,6 +152,7 @@ class Parser {
       });
       tokens.add(new Token(start, number)..withFn((_,_1,_2) => int.parse(number)));
     }
+
     readIdent() {
       String ident = "";
       int start = index;
@@ -159,7 +204,7 @@ class Parser {
 
     oneLexLoop() {
       if (isIn(QUOTES)) {
-        throw "not implemented";
+        readString();
       } else if (isNumber() || isIn(DOT) && isNumber(peek())) {
         readNumber();
       } else if (isIdent()) {

@@ -44,11 +44,15 @@ main() {
       expect(tokens[0]).toBeToken(0, '88');
     });
 
-    iit('should tokenize numbers within index ops', () {
+    it('should tokenize numbers within index ops', () {
       expect(Parser.lex('a[22]')[2]).toBeToken(2, '22');
     });
 
-    xit('should tokenize a string', () {
+    it('should tokenize simple quoted strings', () {
+      expect(Parser.lex('"a"')[0]).toBeToken(0, '"a"');
+    });
+
+    it('should tokenize a string', () {
       var tokens = Parser.lex("j-a.bc[22]+1.3|f:'a\\\'c':\"d\\\"e\"");
       var i = 0;
       expect(tokens[i]).toBeToken(0, 'j');
