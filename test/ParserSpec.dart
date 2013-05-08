@@ -205,6 +205,15 @@ main() {
       expect(tokens[0].fn0()).toEqual(0.5E+10);
     });
 
+    it('should throws exception for invalid exponent', () {
+      expect(() {
+        lex("0.5E-");
+      }).toThrow('Lexer Error: Invalid exponent at column 4 in expression [0.5E-].');
+
+      expect(() {
+        lex("0.5E-A");
+      }).toThrow('Lexer Error: Invalid exponent at column 4 in expression [0.5E-A].');
+    });
 
   });
 }

@@ -183,7 +183,7 @@ class Parser {
             number += ch;
           } else if (isExpOperator() && (peekCh == '' || !isNumber(peekCh)) &&
               isIn(EXP_OP, number[number.length - 1])) {
-            throw "Invalid exponent";
+            throw "Lexer Error: Invalid exponent at column $index in expression [$text].";
           } else {
             breakWhile();
           }
