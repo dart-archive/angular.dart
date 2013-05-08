@@ -191,5 +191,20 @@ main() {
       expect(tokens[0].fn0()).toEqual(0.5);
     });
 
+    // NOTE(deboer): NOT A LEXER TEST
+//    it('should tokenize negative number', () {
+//      var tokens = lex("-0.5");
+//      expect(tokens[0].fn0()).toEqual(-0.5);
+//    });
+
+    it('should tokenize number with exponent', () {
+      var tokens = lex("0.5E-10");
+      expect(tokens.length).toEqual(1);
+      expect(tokens[0].fn0()).toEqual(0.5E-10);
+      tokens = lex("0.5E+10");
+      expect(tokens[0].fn0()).toEqual(0.5E+10);
+    });
+
+
   });
 }

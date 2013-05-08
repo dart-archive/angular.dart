@@ -25,6 +25,8 @@ String JSON_SEP = "{,";
 String JSON_OPEN = "{[";
 String JSON_CLOSE = "}]";
 String WHITESPACE = " \r\t\n\v\u00A0";
+String EXP_OP = "Ee";
+String SIGN_OP = "+-";
 
 Operator NOT_IMPL_OP = (_, _0, _1) => null;
 
@@ -40,10 +42,10 @@ Map<String, Operator> OPERATORS = {
 //    return null;
   },
   '-': (locals, a, b) {
-    return null;
-//    var aResult = a(locals);
-//    var bResult = b(locals);
-//    return (a == null ? 0 : a) - (b == null ? 0 : b);
+    assert(a != null || b != null);
+    var aResult = a != null ? a(locals) : null;
+    var bResult = b != null ? b(locals) : null;
+    return (a == null ? 0 : a) - (b == null ? 0 : b);
   },
   '*': NOT_IMPL_OP,
   '/': NOT_IMPL_OP,
@@ -99,7 +101,7 @@ class Parser {
 
     isWhitespace([String c]) => isIn(WHITESPACE, c);
 
-    isExpOperator([String c]) => false;
+    isExpOperator([String c]) => isIn(SIGN_OP, c) || isNumber(c);
 
     String peek() => index + 1 < textLength ? text[index + 1] : "EOF";
 
@@ -175,12 +177,12 @@ class Parser {
           number += ch;
         } else {
           String peekCh = peek();
-          if (ch == 'e' && isExpOperator(peekCh)) {
-            throw "exp not implemented";
-          } else if (isExpOperator() && peekCh != '' && isNumber(peekCh) && number[number.length - 1] == 'e') {
-            throw "exp 2 not impl";
+          if (isIn(EXP_OP) && isExpOperator(peekCh)) {
+            number += ch;
+          } else if (isExpOperator() && peekCh != '' && isNumber(peekCh) && isIn(EXP_OP, number[number.length - 1])) {
+            number += ch;
           } else if (isExpOperator() && (peekCh == '' || !isNumber(peekCh)) &&
-              number[number.length - 1] == 'e') {
+              isIn(EXP_OP, number[number.length - 1])) {
             throw "Invalid exponent";
           } else {
             breakWhile();
