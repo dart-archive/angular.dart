@@ -22,6 +22,7 @@ String SPECIAL = "(){}[].,;:";
 String JSON_SEP = "{,";
 String JSON_OPEN = "{[";
 String JSON_CLOSE = "}]";
+String WHITESPACE = " \r\t\n\v\u00A0";
 
 Map<String, Operator> OPERATORS = {
   'undefined': (_, _0, _1) => null,
@@ -59,7 +60,7 @@ class Parser {
     String ch;
     String lastCh = ":";
 
-    isIn(String charSet) =>  charSet.indexOf(ch) != -1;
+    isIn(String charSet, [String c]) =>  charSet.indexOf(c != null ? c : ch) != -1;
     was(String charSet) => charSet.indexOf(lastCh) != -1;
 
     cc(String s) => s.codeUnitAt(0);
@@ -70,7 +71,6 @@ class Parser {
     }
 
     isIdent() {
-
       int cch = cc(ch);
       return
         cc('a') <= cch && cch <= cc('z') ||
@@ -78,7 +78,7 @@ class Parser {
         cc('_') == cch || cch == cc('\$');
     }
 
-    isWhitespace([String c]) => false;
+    isWhitespace([String c]) => isIn(WHITESPACE, c);
 
     isExpOperator([String c]) => false;
 
@@ -239,7 +239,7 @@ class Parser {
 //        if (isIn(OPEN_JSON)) json.unshift(ch);
 //        if (isIn(CLOSE_JSON)) json.shift();
       } else if (isWhitespace()) {
-        throw "not impl ws";
+        index++;
       } else {
         // Check for two character operators (e.g. "==")
         String ch2 = ch + peek();

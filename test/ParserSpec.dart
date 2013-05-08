@@ -11,6 +11,7 @@ class LexerExpect extends Expect {
 expect(actual) => new LexerExpect(actual);
 
 main() {
+  var lex = Parser.lex;
   describe('lexer', () {
     // New test case
     it('should tokenize a simple identifier', () {
@@ -107,6 +108,24 @@ main() {
       expect(tokens[i]).toBeToken(0, 'undefined');
       expect(tokens[i].fn(null, null, null)).toEqual(null);
     });
+
+    it('should ignore whitespace', () {
+      var tokens = lex("a \t \n \r b");
+      expect(tokens[0].text).toEqual('a');
+      expect(tokens[1].text).toEqual('b');
+    });
+
+    xit('should tokenize quoted string', () {
+      var str = "['\\'', \"\\\"\"]";
+      var tokens = lex(str);
+
+      expect(tokens[1].index).toEqual(1);
+      expect(tokens[1].string).toEqual("'");
+
+      expect(tokens[3].index).toEqual(7);
+      expect(tokens[3].string).toEqual('"');
+    });
+
 
   });
 }
