@@ -438,11 +438,19 @@ class Parser {
       return left;
     }
 
+    ParsedFn equality() {
+      var left = relational();
+      var token;
+      if ((token = expect('==','!=')) != null) {
+        left = binaryFn(left, token.fn, equality());
+      }
+      return left;
+    }
     // =========================
     // =========================
 
     ParsedFn assignment() {
-      var left = relational();
+      var left = equality();
       //var left = logicalOR();
       var right;
       var token;

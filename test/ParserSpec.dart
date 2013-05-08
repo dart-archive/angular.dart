@@ -258,6 +258,11 @@ main() {
       expect(eval("2>=2")).toEqual(true);
     });
 
+    it('should parse equality expressions', () {
+      expect(eval("2==3")).toEqual(false);
+      expect(eval("2!=3")).toEqual(true);
+    });
+
     xit('should parse expressions', () {
       expect(eval("-1")).toEqual(-1);
       expect(eval("1 + 2.5")).toEqual(3.5);
