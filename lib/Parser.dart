@@ -140,7 +140,8 @@ class Parser {
             rawString += ch;
             if (ch == 'u') {
               String hex = text.substring(index + 1, index + 5);
-              int charCode = int.parse(hex, radix: 16, onError: (s) => throw "Invalid unicode escape [\\u$hex]");
+              int charCode = int.parse(hex, radix: 16,
+                  onError: (s) => throw "Lexer Error: Invalid unicode escape [\\u$hex] at column $index in expression [$text].");
               string += new String.fromCharCode(charCode);
               index += 5;
             } else {

@@ -215,5 +215,17 @@ main() {
       }).toThrow('Lexer Error: Invalid exponent at column 4 in expression [0.5E-A].');
     });
 
+    it('should tokenize number starting with a dot', () {
+      var tokens = lex(".5");
+      expect(tokens[0].fn0()).toEqual(0.5);
+    });
+
+    it('should throw error on invalid unicode', () {
+      expect(() {
+        lex("'\\u1''bla'");
+      }).toThrow("Lexer Error: Invalid unicode escape [\\u1''b] at column 2 in expression ['\\u1''bla'].");
+    });
+
+
   });
 }
