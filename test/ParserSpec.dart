@@ -229,7 +229,7 @@ main() {
 
 
   describe('parse', () {
-    eval(String text) => Parser.parse(text)(null, null);
+    eval(String text, [scope]) => Parser.parse(text)(scope, null);
 
     it('should parse numerical expressions', () {
       expect(eval("1")).toEqual(1);
@@ -304,6 +304,20 @@ main() {
       expect(eval("0||1&&2")).toEqual(0!=0||1!=0&&2!=0);
     });
 
+    it('should parse string', () {
+      expect(eval("'a' + 'b c'")).toEqual("ab c");
+    });
+
+    // TODO filters
+
+    it('should access scope', () {
+      var scope = {};
+      scope['a'] =  123;
+      scope['b'] = {'c': 456};
+      expect(eval("a", scope)).toEqual(123);
+      expect(eval("b.c", scope)).toEqual(456);
+      expect(eval("x.y.z", scope)).toEqual(null);
+    });
 
 
   });

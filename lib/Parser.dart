@@ -259,7 +259,18 @@ class Parser {
       if (OPERATORS.containsKey(ident)) {
         token.withFn(OPERATORS[ident]);
       } else {
-        token.withFn0(() => throw "not impl ident getter");
+        // TODO(deboer): In the JS version this method is incredibly optimized.
+        // We should likely do the same.
+        token.withFn((scope, locals, a, b) {
+          List<String> pathKeys = ident.split('.');
+          var pathKeysLength = pathKeys.length;
+          var currentValue = scope;
+          for (var i = 0; i < pathKeysLength; i++) {
+            if (currentValue == null) return null;
+            currentValue = currentValue[pathKeys[i]];
+          }
+          return currentValue;
+        });
       }
 
       tokens.add(token);
