@@ -185,5 +185,11 @@ main() {
       expect(tokens[10]).toBeToken(15, '(');
       expect(tokens[11]).toBeToken(16, ')');
     });
+
+    it('should tokenize number', () {
+      var tokens = lex("0.5");
+      expect(tokens[0].fn0()).toEqual(0.5);
+    });
+
   });
 }

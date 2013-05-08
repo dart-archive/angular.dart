@@ -188,7 +188,7 @@ class Parser {
         }
         index++;
       });
-      tokens.add(new Token(start, number)..withFn((_,_1,_2) => int.parse(number)));
+      tokens.add(new Token(start, number)..withFn((_,_1,_2) => double.parse(number)));
     }
 
     readIdent() {
