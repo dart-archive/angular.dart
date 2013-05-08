@@ -21,6 +21,8 @@ class Token {
   withString(string) { this.string = string; }
 
   fn0() => primaryFn(null, null);
+
+  toString() => "Token($text)";
 }
 
 // TODO(deboer): Type this typedef further
@@ -61,9 +63,9 @@ Map<String, Operator> OPERATORS = {
     var bResult = b != null ? b(scope, locals) : null;
     return (aResult == null ? 0 : aResult) - (bResult == null ? 0 : bResult);
   },
-  '*': NOT_IMPL_OP,
-  '/': NOT_IMPL_OP,
-  '%': NOT_IMPL_OP,
+  '*': (s, l, a, b) => a(s, l) * b(s, l),
+  '/': (s, l, a, b) => a(s, l) / b(s, l),
+  '%': (s, l, a, b) => a(s, l) % b(s, l),
   '^': NOT_IMPL_OP,
   '=': NOT_IMPL_OP,
   '==': NOT_IMPL_OP,
@@ -409,8 +411,18 @@ class Parser {
       }
     }
 
-    ParsedFn assignment() {
+    ParsedFn multiplicative() {
       var left = unary();
+      var token;
+      while ((token = expect('*','/','%')) != null) {
+        left = binaryFn(left, token.fn, unary());
+      }
+      return left;
+    }
+
+
+    ParsedFn assignment() {
+      var left = multiplicative();
       //var left = logicalOR();
       var right;
       var token;
@@ -463,7 +475,7 @@ class Parser {
     ParsedFn value = statements();
 
     if (tokens.length != 0) {
-      throw "not impl, error msg";
+      throw "not impl, error msg $tokens";
     }
     return value;
   }

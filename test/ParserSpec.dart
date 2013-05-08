@@ -243,6 +243,10 @@ main() {
       expect(eval("!true")).toEqual(false);
     });
 
+    it('should parse multiplicative expressions', () {
+      expect(eval("3*4/2%5")).toEqual(1);
+    });
+
     xit('should parse expressions', () {
       expect(eval("-1")).toEqual(-1);
       expect(eval("1 + 2.5")).toEqual(3.5);
