@@ -118,17 +118,20 @@ class Parser {
           whileChars(() {
             rawString += ch;
             if (ch == 'u') {
-              throw "not impl unicode escape";
+              String hex = text.substring(index + 1, index + 5);
+              int charCode = int.parse(hex, radix: 16, onError: (s) => throw "Invalid unicode escape [\\u$hex]");
+              string += new String.fromCharCode(charCode);
+              index += 5;
             } else {
               var rep = ESCAPE[ch];
               if (rep != null) {
                 string += rep;
               } else {
-                throw "not impl unneeded escape";
+                string += ch;
               }
               index++;
-              breakWhile();
             }
+            breakWhile();
           });
         } else if (ch == quote) {
           index++;

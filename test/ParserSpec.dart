@@ -115,7 +115,7 @@ main() {
       expect(tokens[1].text).toEqual('b');
     });
 
-    xit('should tokenize quoted string', () {
+    it('should tokenize quoted string', () {
       var str = "['\\'', \"\\\"\"]";
       var tokens = lex(str);
 
@@ -125,6 +125,14 @@ main() {
       expect(tokens[3].index).toEqual(7);
       expect(tokens[3].string).toEqual('"');
     });
+
+    it('should tokenize escaped quoted string', () {
+      var str = '"\\"\\n\\f\\r\\t\\v\\u00A0"';
+      var tokens = lex(str);
+
+      expect(tokens[0].fn(null, null, null)).toEqual('"\n\f\r\t\v\u00A0');
+    });
+
 
 
   });
