@@ -11,6 +11,8 @@ class Token {
 
   withFn(fn) { this.fn = fn; }
   withString(string) { this.string = string; }
+
+  fn0() => fn(null, null, null);
 }
 
 // TODO(deboer): Type this typedef further
@@ -23,6 +25,8 @@ String JSON_SEP = "{,";
 String JSON_OPEN = "{[";
 String JSON_CLOSE = "}]";
 String WHITESPACE = " \r\t\n\v\u00A0";
+
+Operator NOT_IMPL_OP = (_, _0, _1) => null;
 
 Map<String, Operator> OPERATORS = {
   'undefined': (_, _0, _1) => null,
@@ -41,7 +45,22 @@ Map<String, Operator> OPERATORS = {
 //    var bResult = b(locals);
 //    return (a == null ? 0 : a) - (b == null ? 0 : b);
   },
-  '|': (locals, a, b) => null //b(locals)(locals, a(locals))
+  '*': NOT_IMPL_OP,
+  '/': NOT_IMPL_OP,
+  '%': NOT_IMPL_OP,
+  '^': NOT_IMPL_OP,
+  '=': NOT_IMPL_OP,
+  '==': NOT_IMPL_OP,
+  '!=': NOT_IMPL_OP,
+  '<': NOT_IMPL_OP,
+  '>': NOT_IMPL_OP,
+  '<=': NOT_IMPL_OP,
+  '>=': NOT_IMPL_OP,
+  '&&': NOT_IMPL_OP,
+  '||': NOT_IMPL_OP,
+  '&': NOT_IMPL_OP,
+  '|': (locals, a, b) => null, //b(locals)(locals, a(locals))
+  '!': NOT_IMPL_OP
 };
 
 Map<String, String> ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'};
@@ -250,7 +269,8 @@ class Parser {
         Operator fn2 = OPERATORS[ch2];
 
         if (fn2 != null) {
-          throw "not impl double op";
+          tokens.add(new Token(index, ch2)..withFn(fn2));
+          index += 2;
         } else if (fn != null) {
           tokens.add(new Token(index, ch)..withFn(fn));
           index++;

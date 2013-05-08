@@ -106,7 +106,7 @@ main() {
       var tokens = Parser.lex("undefined");
       var i = 0;
       expect(tokens[i]).toBeToken(0, 'undefined');
-      expect(tokens[i].fn(null, null, null)).toEqual(null);
+      expect(tokens[i].fn0()).toEqual(null);
     });
 
     it('should ignore whitespace', () {
@@ -130,9 +130,25 @@ main() {
       var str = '"\\"\\n\\f\\r\\t\\v\\u00A0"';
       var tokens = lex(str);
 
-      expect(tokens[0].fn(null, null, null)).toEqual('"\n\f\r\t\v\u00A0');
+      expect(tokens[0].fn0()).toEqual('"\n\f\r\t\v\u00A0');
     });
 
+    it('should tokenize unicode', () {
+      var tokens = lex('"\\u00A0"');
+      expect(tokens.length).toEqual(1);
+      expect(tokens[0].fn0()).toEqual('\u00a0');
+    });
+
+    it('should tokenize relation', () {
+      var tokens = lex("! == != < > <= >=");
+      expect(tokens[0].text).toEqual('!');
+      expect(tokens[1].text).toEqual('==');
+      expect(tokens[2].text).toEqual('!=');
+      expect(tokens[3].text).toEqual('<');
+      expect(tokens[4].text).toEqual('>');
+      expect(tokens[5].text).toEqual('<=');
+      expect(tokens[6].text).toEqual('>=');
+    });
 
 
   });
