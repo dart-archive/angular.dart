@@ -150,6 +150,40 @@ main() {
       expect(tokens[6].text).toEqual('>=');
     });
 
+    it('should tokenize statements', () {
+      var tokens = lex("a;b;");
+      expect(tokens[0].text).toEqual('a');
+      expect(tokens[1].text).toEqual(';');
+      expect(tokens[2].text).toEqual('b');
+      expect(tokens[3].text).toEqual(';');
+    });
 
+    it('should tokenize function invocation', () {
+      var tokens = lex("a()");
+      expect(tokens[0]).toBeToken(0, 'a');
+      expect(tokens[1]).toBeToken(1, '(');
+      expect(tokens[2]).toBeToken(2, ')');
+    });
+
+    it('should tokenize simple method invocations', () {
+      var tokens = lex("a.method()");
+      expect(tokens[2]).toBeToken(2, 'method');
+    });
+
+    it('should tokenize method invocation', () {
+      var tokens = lex("a.b.c (d) - e.f()");
+      expect(tokens[0]).toBeToken(0, 'a.b');
+      expect(tokens[1]).toBeToken(3, '.');
+      expect(tokens[2]).toBeToken(4, 'c');
+      expect(tokens[3]).toBeToken(6, '(');
+      expect(tokens[4]).toBeToken(7, 'd');
+      expect(tokens[5]).toBeToken(8, ')');
+      expect(tokens[6]).toBeToken(10, '-');
+      expect(tokens[7]).toBeToken(12, 'e');
+      expect(tokens[8]).toBeToken(13, '.');
+      expect(tokens[9]).toBeToken(14, 'f');
+      expect(tokens[10]).toBeToken(15, '(');
+      expect(tokens[11]).toBeToken(16, ')');
+    });
   });
 }

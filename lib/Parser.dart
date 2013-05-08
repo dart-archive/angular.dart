@@ -114,7 +114,7 @@ class Parser {
 	        endFn = null;
           break;
 	      }
-        if (lastIndex == index) {
+        if (lastIndex >= index) {
 	        throw "while chars loop must advance at index $index";
 	      }
       }
@@ -216,11 +216,12 @@ class Parser {
         while (peekIndex < textLength) {
           String peekChar = text[peekIndex];
           if (peekChar == "(") {
-            throw "not impl method name";
+            methodName = ident.substring(lastDot - start + 1);
+            ident = ident.substring(0, lastDot - start);
+            index = peekIndex;
           }
           if (isWhitespace(peekChar)) {
-            throw "not impl space before method name";
-            //peekIndex++;
+            peekIndex++;
           } else {
             break;
           }
@@ -238,7 +239,8 @@ class Parser {
       tokens.add(token);
 
       if (methodName != null) {
-        throw "not impl ident methodName";
+        tokens.add(new Token(lastDot, '.'));
+        tokens.add(new Token(lastDot + 1, methodName));
       }
     }
 
