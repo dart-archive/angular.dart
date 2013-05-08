@@ -319,6 +319,23 @@ main() {
       expect(eval("x.y.z", scope)).toEqual(null);
     });
 
+    it('should resolve deeply nested paths (important for CSP mode)', () {
+      var scope = {};
+      scope['a'] = {'b': {'c': {'d': {'e': {'f': {'g': {'h': {'i': {'j': {'k': {'l': {'m': {'n': 'nooo!'}}}}}}}}}}}}};
+      expect(eval("a.b.c.d.e.f.g.h.i.j.k.l.m.n", scope)).toBe('nooo!');
+    });
+
+    it('should be forgiving', () {
+      var scope = {'a': {'b': 23}};
+      expect(eval('b')).toBeNull();
+      expect(eval('a.x')).toBeNull();
+      expect(eval('a.b.c.d')).toBeNull();
+    });
+
+    xit('should evaluate grouped expressions', () {
+      expect(eval("(1+2)*3")).toEqual((1+2)*3);
+    });
+
 
   });
 }
