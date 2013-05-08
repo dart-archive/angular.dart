@@ -49,14 +49,14 @@ Map<String, Operator> OPERATORS = {
   'undefined': NULL_OP,
   'true': (scope, locals, a, b) => true,
   'false': (scope, locals, a, b) => false,
-  '+': NOT_IMPL_OP, //(locals, a, b) {
-//    var aResult = a(locals);
-//    var bResult = b(locals);
-//    if (a != null && b != null) return a + b;
-//    if (a != null) return a;
-//    if (b != null) return b;
-//    return null;
-//  },
+  '+': (scope, locals, aFn, bFn) {
+    var a = aFn(scope, locals);
+    var b = bFn(scope, locals);
+    if (a != null && b != null) return a + b;
+    if (a != null) return a;
+    if (b != null) return b;
+    return null;
+  },
   '-': (scope, locals, a, b) {
     assert(a != null || b != null);
     var aResult = a != null ? a(scope, locals) : null;
@@ -420,9 +420,17 @@ class Parser {
       return left;
     }
 
+    ParsedFn additive() {
+      var left = multiplicative();
+      var token;
+      while ((token = expect('+','-')) != null) {
+        left = binaryFn(left, token.fn, multiplicative());
+      }
+      return left;
+    }
 
     ParsedFn assignment() {
-      var left = multiplicative();
+      var left = additive();
       //var left = logicalOR();
       var right;
       var token;

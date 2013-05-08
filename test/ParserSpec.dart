@@ -247,6 +247,10 @@ main() {
       expect(eval("3*4/2%5")).toEqual(1);
     });
 
+    it('should parse additive expressions', () {
+      expect(eval("3+6-2")).toEqual(7);
+    });
+
     xit('should parse expressions', () {
       expect(eval("-1")).toEqual(-1);
       expect(eval("1 + 2.5")).toEqual(3.5);
