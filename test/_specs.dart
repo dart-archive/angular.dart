@@ -37,6 +37,8 @@ class Expect {
   toBe(expected) => unit.expect(actual,
       unit.predicate((actual) => identical(expected, actual)));
   toThrow(exception) => unit.expect(actual, unit.throwsA(unit.contains(exception)));
+  toBeFalsy() => unit.expect(actual, unit.isFalse);
+  toBeTruthy() => unit.expect(actual, unit.isTrue);
 }
 
 $(selector) {

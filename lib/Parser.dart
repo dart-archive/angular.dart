@@ -446,12 +446,33 @@ class Parser {
       }
       return left;
     }
+
+    ParsedFn logicalAND() {
+      var left = equality();
+      var token;
+      if ((token = expect('&&')) != null) {
+        left = binaryFn(left, token.fn, logicalAND());
+      }
+      return left;
+    }
+
+    ParsedFn logicalOR() {
+      var left = logicalAND();
+      var token;
+      while(true) {
+        if ((token = expect('||')) != null) {
+          left = binaryFn(left, token.fn, logicalAND());
+        } else {
+          return left;
+        }
+      }
+    }
+
     // =========================
     // =========================
 
     ParsedFn assignment() {
-      var left = equality();
-      //var left = logicalOR();
+      var left = logicalOR();
       var right;
       var token;
       if ((token = expect('=')) != null) {

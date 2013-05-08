@@ -240,30 +240,43 @@ main() {
     });
 
     it('should parse unary ! expressions', () {
-      expect(eval("!true")).toEqual(false);
+      expect(eval("!true")).toEqual(!true);
     });
 
     it('should parse multiplicative expressions', () {
-      expect(eval("3*4/2%5")).toEqual(1);
+      expect(eval("3*4/2%5")).toEqual(3*4/2%5);
     });
 
     it('should parse additive expressions', () {
-      expect(eval("3+6-2")).toEqual(7);
+      expect(eval("3+6-2")).toEqual(3+6-2);
     });
 
     it('should parse relational expressions', () {
-      expect(eval("2<3")).toEqual(true);
-      expect(eval("2>3")).toEqual(false);
-      expect(eval("2<=2")).toEqual(true);
-      expect(eval("2>=2")).toEqual(true);
+      expect(eval("2<3")).toEqual(2<3);
+      expect(eval("2>3")).toEqual(2>3);
+      expect(eval("2<=2")).toEqual(2<=2);
+      expect(eval("2>=2")).toEqual(2>=2);
     });
 
     it('should parse equality expressions', () {
-      expect(eval("2==3")).toEqual(false);
-      expect(eval("2!=3")).toEqual(true);
+      expect(eval("2==3")).toEqual(2==3);
+      expect(eval("2!=3")).toEqual(2!=3);
     });
 
-    xit('should parse expressions', () {
+    it('should parse logicalAND expressions', () {
+      expect(eval("true&&true")).toEqual(true&&true);
+      expect(eval("true&&false")).toEqual(true&&false);
+    });
+
+    it('should parse logicalOR expressions', () {
+      expect(eval("true||true")).toEqual(true||true);
+      expect(eval("true||false")).toEqual(true||false);
+      expect(eval("false||false")).toEqual(false||false);
+    });
+
+    //// ==== IMPORTED ITs
+
+    it('should parse expressions', () {
       expect(eval("-1")).toEqual(-1);
       expect(eval("1 + 2.5")).toEqual(3.5);
       expect(eval("1 + -2.5")).toEqual(-1.5);
@@ -272,6 +285,29 @@ main() {
       expect(eval("-0--1++2*-3/-4")).toEqual(-0- -1+ 2*-3/-4);
       expect(eval("1/2*3")).toEqual(1/2*3);
     });
+
+    it('should parse comparison', () {
+      expect(eval("false")).toBeFalsy();
+      expect(eval("!true")).toBeFalsy();
+      expect(eval("1==1")).toBeTruthy();
+      expect(eval("1!=2")).toBeTruthy();
+      expect(eval("1<2")).toBeTruthy();
+      expect(eval("1<=1")).toBeTruthy();
+      expect(eval("1>2")).toEqual(1>2);
+      expect(eval("2>=1")).toEqual(2>=1);
+      expect(eval("true==2<3")).toEqual(true == 2<3);
+    });
+
+
+
+
+    xit('should parse logical', () {
+      expect(eval("0&&2")).toEqual(0&&2);
+      expect(eval("0||2")).toEqual(0||2);
+      expect(eval("0||1&&2")).toEqual(0||1&&2);
+    });
+
+
 
   });
 }
