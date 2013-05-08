@@ -66,17 +66,17 @@ Map<String, Operator> OPERATORS = {
   '*': (s, l, a, b) => a(s, l) * b(s, l),
   '/': (s, l, a, b) => a(s, l) / b(s, l),
   '%': (s, l, a, b) => a(s, l) % b(s, l),
-  '^': NOT_IMPL_OP,
-  '=': NOT_IMPL_OP,
-  '==': NOT_IMPL_OP,
-  '!=': NOT_IMPL_OP,
-  '<': NOT_IMPL_OP,
-  '>': NOT_IMPL_OP,
-  '<=': NOT_IMPL_OP,
-  '>=': NOT_IMPL_OP,
-  '&&': NOT_IMPL_OP,
-  '||': NOT_IMPL_OP,
-  '&': NOT_IMPL_OP,
+  '^': (s, l, a, b) => a(s, l) ^ b(s, l),
+  '=': NULL_OP,
+  '==': (s, l, a, b) => a(s, l) == b(s, l),
+  '!=': (s, l, a, b) => a(s, l) != b(s, l),
+  '<': (s, l, a, b) => a(s, l) < b(s, l),
+  '>': (s, l, a, b) => a(s, l) > b(s, l),
+  '<=': (s, l, a, b) => a(s, l) <= b(s, l),
+  '>=': (s, l, a, b) => a(s, l) >= b(s, l),
+  '&&': (s, l, a, b) => a(s, l) && b(s, l),
+  '||': (s, l, a, b) => a(s, l) || b(s, l),
+  '&': (s, l, a, b) => a(s, l) & b(s, l),
   '|': NOT_IMPL_OP, //b(locals)(locals, a(locals))
   '!': (scope, locals, a, b) => !a(scope, locals)
 };
@@ -429,8 +429,20 @@ class Parser {
       return left;
     }
 
-    ParsedFn assignment() {
+    ParsedFn relational() {
       var left = additive();
+      var token;
+      if ((token = expect('<', '>', '<=', '>=')) != null) {
+        left = binaryFn(left, token.fn, relational());
+      }
+      return left;
+    }
+
+    // =========================
+    // =========================
+
+    ParsedFn assignment() {
+      var left = relational();
       //var left = logicalOR();
       var right;
       var token;
