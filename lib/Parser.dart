@@ -45,6 +45,12 @@ String SIGN_OP = "+-";
 Operator NULL_OP = (_, _x, _0, _1) => null;
 Operator NOT_IMPL_OP = (_, _x, _0, _1) => throw "Op not implemented";
 
+toBool(x) {
+  if (x is bool) return x;
+  if (x is int || x is double) return x != 0;
+  throw "Can't convert $x to boolean";
+}
+
 Map<String, Operator> OPERATORS = {
   'undefined': NULL_OP,
   'true': (scope, locals, a, b) => true,
@@ -74,11 +80,11 @@ Map<String, Operator> OPERATORS = {
   '>': (s, l, a, b) => a(s, l) > b(s, l),
   '<=': (s, l, a, b) => a(s, l) <= b(s, l),
   '>=': (s, l, a, b) => a(s, l) >= b(s, l),
-  '&&': (s, l, a, b) => a(s, l) && b(s, l),
-  '||': (s, l, a, b) => a(s, l) || b(s, l),
+  '&&': (s, l, a, b) => toBool(a(s, l)) && toBool(b(s, l)),
+  '||': (s, l, a, b) => toBool(a(s, l)) || toBool(b(s, l)),
   '&': (s, l, a, b) => a(s, l) & b(s, l),
   '|': NOT_IMPL_OP, //b(locals)(locals, a(locals))
-  '!': (scope, locals, a, b) => !a(scope, locals)
+  '!': (scope, locals, a, b) => !toBool(a(scope, locals))
 };
 
 Map<String, String> ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'};

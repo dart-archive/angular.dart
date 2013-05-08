@@ -298,13 +298,10 @@ main() {
       expect(eval("true==2<3")).toEqual(true == 2<3);
     });
 
-
-
-
-    xit('should parse logical', () {
-      expect(eval("0&&2")).toEqual(0&&2);
-      expect(eval("0||2")).toEqual(0||2);
-      expect(eval("0||1&&2")).toEqual(0||1&&2);
+    it('should parse logical', () {
+      expect(eval("0&&2")).toEqual((0!=0)&&(2!=0));
+      expect(eval("0||2")).toEqual(0!=0||2!=0);
+      expect(eval("0||1&&2")).toEqual(0!=0||1!=0&&2!=0);
     });
 
 
