@@ -24,6 +24,7 @@ String JSON_OPEN = "{[";
 String JSON_CLOSE = "}]";
 
 Map<String, Operator> OPERATORS = {
+  'undefined': (_, _0, _1) => null,
   '+': (locals, a, b) {
     return null;
 //    var aResult = a(locals);
@@ -207,7 +208,9 @@ class Parser {
       var token = new Token(start, ident);
 
       if (OPERATORS.containsKey(ident)) {
-        throw "not impl ident operator";
+        token.withFn(OPERATORS[ident]);
+      } else {
+        token.withFn((_, _0, _1) => throw "not impl ident getter");
       }
 
       tokens.add(token);

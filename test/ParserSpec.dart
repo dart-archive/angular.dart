@@ -100,5 +100,13 @@ main() {
       i++;
       expect(tokens[i]).toBeToken(24, '"d\\"e"');
     });
+
+    it('should tokenize undefined', () {
+      var tokens = Parser.lex("undefined");
+      var i = 0;
+      expect(tokens[i]).toBeToken(0, 'undefined');
+      expect(tokens[i].fn(null, null, null)).toEqual(null);
+    });
+
   });
 }
