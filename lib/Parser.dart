@@ -69,6 +69,7 @@ class Parser {
       String number = "";
       int start = index;
       while (index < textLength) {
+        ch = text[index];
         if (ch == '.' || isNumber()) {
           number += ch;
         } else {
