@@ -336,6 +336,20 @@ main() {
       expect(eval("(1+2)*3")).toEqual((1+2)*3);
     });
 
+    it('should evaluate assignments', () {
+      var scope = {'g': 4};
+
+      expect(eval("a=12", scope)).toEqual(12);
+      expect(scope["a"]).toEqual(12);
+
+      expect(eval("x.y.z=123;", scope)).toEqual(123);
+      expect(scope["x"]["y"]["z"]).toEqual(123);
+
+      expect(eval("a=123; b=234", scope)).toEqual(234);
+      expect(scope["a"]).toEqual(123);
+      expect(scope["b"]).toEqual(234);
+    });
+
 
   });
 }

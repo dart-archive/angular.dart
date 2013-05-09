@@ -1,5 +1,16 @@
 part of angular;
 
+class ParsedFn {
+  ParsedGetterFn getterFn;
+  ParsedAssignFn assignFn;
+
+  ParsedFn(this.getterFn, [this.assignFn]);
+  call(s, l) => getterFn(s, l);
+  assign(s, v) => assignFn(s, v);
+
+  get assignable => assignFn != null;
+}
+
 class Token {
   bool json;
   int index;
@@ -11,9 +22,11 @@ class Token {
 
   Token(this.index, this.text);
 
-  withFn(fn) {
+  withFn(fn, [assignFn]) {
     this.fn = fn;
-    this.primaryFn = (s, l) => fn(s, l, null, null);
+    this.primaryFn = new ParsedFn(
+        (s, l) => fn(s, l, null, null),
+        assignFn);
   }
 
   withFn0(fn()) => withFn(op0(fn));
@@ -28,7 +41,8 @@ class Token {
 // TODO(deboer): Type this typedef further
 typedef Operator(scope, locals, ParsedFn a, ParsedFn b);
 
-typedef ParsedFn(scope, locals);
+typedef ParsedGetterFn(scope, locals);
+typedef ParsedAssignFn(scope, value);
 
 op0(fn()) => (_, _1, _2, _3) => fn();
 
@@ -89,7 +103,7 @@ Map<String, Operator> OPERATORS = {
 
 Map<String, String> ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'};
 
-ParsedFn ZERO = (_, _x) => 0;
+ParsedFn ZERO = new ParsedFn((_, _x) => 0);
 
 class BreakException {}
 
@@ -256,6 +270,22 @@ class Parser {
 
       var token = new Token(start, ident);
 
+       setter(Map obj, path, setValue) {
+        var element = path.split('.');
+        for (var i = 0; element.length > 1; i++) {
+          var key = element.removeAt(0);
+          var propertyObj = obj[key];
+          if (propertyObj == null) {
+            propertyObj = {};
+            obj[key] = propertyObj;
+          }
+          obj = propertyObj;
+        }
+        obj[element.removeAt(0)] = setValue;
+        return setValue;
+      }
+
+
       if (OPERATORS.containsKey(ident)) {
         token.withFn(OPERATORS[ident]);
       } else {
@@ -270,7 +300,10 @@ class Parser {
             currentValue = currentValue[pathKeys[i]];
           }
           return currentValue;
-        });
+        },
+        (scope, value) =>
+          setter(scope, ident, value)
+        );
       }
 
       tokens.add(token);
@@ -412,17 +445,15 @@ class Parser {
       return primary;
     }
 
-    ParsedFn binaryFn(ParsedFn left, Operator fn, ParsedFn right) {
-      return (self, locals) {
+    ParsedFn binaryFn(ParsedFn left, Operator fn, ParsedFn right) =>
+      new ParsedFn((self, locals) {
         return fn(self, locals, left, right);
-      };
-    }
+      });
 
-    ParsedFn unaryFn(Operator fn, ParsedFn right) {
-      return (self, locals) {
+    ParsedFn unaryFn(Operator fn, ParsedFn right) =>
+      new ParsedFn((self, locals) {
         return fn(self, locals, right, null);
-      };
-    }
+      });
 
     ParsedFn unary() {
       var token;
@@ -502,14 +533,14 @@ class Parser {
       var right;
       var token;
       if ((token = expect('=')) != null) {
-        if (!left.assign) {
+        if (!left.assignable) {
           throw "not impl bad assignment error";
 //          throwError("implies assignment but [" +
 //              text.substring(0, token.index) + "] can not be assigned to", token);
         }
         right = logicalOR();
-        return (scope, locals) =>
-          left.assign(scope, right(scope, locals), locals);
+        return new ParsedFn((scope, locals) =>
+          left.assign(scope, right(scope, locals)/*, locals*/));
       } else {
         return left;
       }
@@ -541,7 +572,15 @@ class Parser {
         if (expect(';') == null) {
           return statements.length == 1
               ? statements[0]
-              : throw "not impl multiple statements";
+              : new ParsedFn((scope, locals) {
+                var value;
+                for ( var i = 0; i < statements.length; i++) {
+                  var statement = statements[i];
+                  if (statement != null)
+                    value = statement(scope, locals);
+                }
+                return value;
+              });
         }
       }
     }
