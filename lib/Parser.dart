@@ -361,12 +361,21 @@ class Parser {
       return null;
     }
 
+    ParsedFn consume(e1){
+      if (expect(e1) == null) {
+        throw "not impl consume error";
+        //throwError("is unexpected, expecting [" + e1 + "]", peek());
+      }
+    }
+
+
+    var filterChain = null;
+
     ParsedFn primary() {
       var primary;
       if (expect('(') != null) {
-        throw "not impl (";
-//        primary = filterChain();
-//        consume(')');
+        primary = filterChain();
+        consume(')');
       } else if (expect('[') != null) {
         throw "not impl array decl";
         //primary = arrayDeclaration();
@@ -511,7 +520,7 @@ class Parser {
       return assignment();
     }
 
-    ParsedFn filterChain() {
+    filterChain = () {
       var left = expression();
       var token;
       while(true) {
@@ -522,7 +531,7 @@ class Parser {
           return left;
         }
       }
-    }
+    };
 
     statements() {
       List<ParsedFn> statements = [];

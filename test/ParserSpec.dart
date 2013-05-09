@@ -332,7 +332,7 @@ main() {
       expect(eval('a.b.c.d')).toBeNull();
     });
 
-    xit('should evaluate grouped expressions', () {
+    it('should evaluate grouped expressions', () {
       expect(eval("(1+2)*3")).toEqual((1+2)*3);
     });
 
