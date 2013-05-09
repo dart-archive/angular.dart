@@ -1,5 +1,6 @@
 part of angular;
 
+
 class ParsedFn {
   ParsedGetterFn getterFn;
   ParsedAssignFn assignFn;
@@ -368,6 +369,11 @@ class Parser {
     Token token;
 
 
+    Token peekToken() {
+      if (tokens.length == 0)
+        throw "not impl peekToken error"; //throw Error("Unexpected end of expression: " + text);
+      return tokens[0];
+    }
 
     Token peek([String e1, String e2, String e3, String e4]) {
       if (tokens.length > 0) {
@@ -402,7 +408,13 @@ class Parser {
     }
 
 
+
+
+
     var filterChain = null;
+    var functionCall;
+
+
 
     ParsedFn primary() {
       var primary;
@@ -424,12 +436,12 @@ class Parser {
         }
       }
 
+      // TODO(deboer): I don't think context applies to Dart..
       var next, context;
       while ((next = expect('(', '[', '.')) != null) {
         if (next.text == '(') {
-          throw "not impl function call";
-//          primary = functionCall(primary, context);
-//          context = null;
+          primary = functionCall(primary);
+          context = null;
         } else if (next.text == '[') {
           throw "not impl object index";
 //          context = primary;
@@ -584,6 +596,25 @@ class Parser {
         }
       }
     }
+
+    functionCall = (fn) {
+      var argsFn = [];
+      if (peekToken().text != ')') {
+        do {
+          argsFn.add(expression());
+        } while (expect(',') != null);
+      }
+      consume(')');
+      return new ParsedFn((self, locals){
+        List args = [];
+        for ( var i = 0; i < argsFn.length; i++) {
+          args.add(argsFn[i](self, locals));
+        }
+        return Function.apply(fn(self, locals), args);
+      });
+    };
+
+
 
     // TODO(deboer): json
     ParsedFn value = statements();

@@ -237,6 +237,7 @@ main() {
 
     it('should parse unary - expressions', () {
       expect(eval("-1")).toEqual(-1);
+      expect(eval("+1")).toEqual(1);
     });
 
     it('should parse unary ! expressions', () {
@@ -348,6 +349,12 @@ main() {
       expect(eval("a=123; b=234", scope)).toEqual(234);
       expect(scope["a"]).toEqual(123);
       expect(scope["b"]).toEqual(234);
+    });
+
+    it('should evaluate function call without arguments', () {
+      var scope = {};
+      scope['const'] = () => 123;
+      expect(eval("const()", scope)).toEqual(123);
     });
 
 
