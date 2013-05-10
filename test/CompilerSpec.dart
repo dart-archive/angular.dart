@@ -10,17 +10,23 @@ main() {
   }
 
   inject(Function fn) {
+    var stack = null;
+    try {
+      throw '';
+    } catch (e, s) {
+      stack = s;
+    }
     return () {
       if (injector == null) {
         injector = new Injector();
       }
       try {
         injector.invoke(fn);
-      } catch (e,s) {
-        if (e is MirroredUncaughtExceptionError) {
-          throw e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
-        }
-        throw "Not mirrored" + e.toString() + " Stack trace:" + s.toString();
+      } catch (e, s) {
+        var frames = stack.toString().split('\n');
+        frames.removeAt(0);
+        var declaredAt = frames.join('\n');
+        throw e.toString() + "\n DECLARED AT:\n" + declaredAt;
       }
     };
   }
@@ -41,14 +47,14 @@ main() {
     beforeEach(inject((Injector injector) {
       directives = injector.get(Directives);
 
-      directives.register(BindDirective);
+      directives.register(NgBindAttrDirective);
 
       $compile = injector.get(Compiler);
       $rootScope = injector.get(Scope);
     }));
 
     it('should compile basic hello world', inject(() {
-      var element = $('<div bind="name"></div>');
+      var element = $('<div ng-bind="name"></div>');
       var template = $compile(element);
 
       $rootScope['name'] = 'angular';
@@ -60,7 +66,7 @@ main() {
     }));
 
     it('should compile a directive in a child', inject(() {
-      var element = $('<div><div bind="name"></div></div>');
+      var element = $('<div><div ng-bind="name"></div></div>');
       var template = $compile(element);
 
       $rootScope['name'] = 'angular';

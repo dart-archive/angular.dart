@@ -4,13 +4,31 @@ abstract class Directive {
   attach(Scope scope);
 }
 
+String _DIRECTIVE = '-directive';
+String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
+
 class DirectiveFactory {
   Type directiveType;
   String $name;
   Function $generate;
   String $transclude;
 
-  DirectiveFactory(this.directiveType);
+  DirectiveFactory(this.directiveType) {
+    var name = directiveType.toString();
+    var isAttr = false;
+    $name = name.splitMapJoin(
+        new RegExp(r'[A-Z]'),
+        onMatch: (m) => '-' + m.group(0).toLowerCase())
+      .substring(1);
+
+    if ($name.endsWith(_ATTR_DIRECTIVE)) {
+      $name = '[${$name.substring(0, $name.length - _ATTR_DIRECTIVE.length)}]';
+    } else if ($name.endsWith(_DIRECTIVE)) {
+      $name = $name.substring(0, $name.length - _DIRECTIVE.length);
+    } else {
+      throw "Directive name must end with $_DIRECTIVE or $_ATTR_DIRECTIVE.";
+    }
+  }
 }
 
 class DirectiveDef {
@@ -50,7 +68,6 @@ class Directives {
 
   register(Type directiveType) {
    var directiveFactory = new DirectiveFactory(directiveType);
-   directiveFactory.$name = '[bind]';
 
    directiveMap[directiveFactory.$name] = directiveFactory;
   }

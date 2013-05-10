@@ -164,13 +164,12 @@ class Block implements ElementWrapper {
   }
 
   attach(Scope scope) {
-    dump('scope attach');
     // Attach directives
     for(var i = 0, ii = directives.length; i < ii; i++) {
       try {
         directives[i].attach(scope);
-      } catch(e) {
-        $exceptionHandler(e);
+      } catch(e, s) {
+        $exceptionHandler(e, s);
       }
     }
   }

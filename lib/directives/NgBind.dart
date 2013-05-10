@@ -18,18 +18,15 @@ class BindValue {
   BindValue.fromString(this.value);
 }
 
-class BindDirective  {
-  static String name = ['bind'];
+class NgBindAttrDirective  {
 
   TextAccessor text;
   BindValue value;
 
-  BindDirective(TextAccessor this.text, BindValue this.value) {
-    dump('BIND');
+  NgBindAttrDirective(TextAccessor this.text, BindValue this.value) {
   }
 
   attach(Scope scope) {
-    dump('BIND attach');
     scope.$watch(value.value, text);
   }
 

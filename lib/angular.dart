@@ -10,7 +10,7 @@ part 'BlockList.dart';
 part 'BlockType.dart';
 part 'Compiler.dart';
 part 'Directive.dart';
-part 'directives/Bind.dart';
+part 'directives/NgBind.dart';
 part 'dom_utilities.dart';
 part 'ExceptionHandler.dart';
 part 'NodeCursor.dart';

@@ -8,26 +8,6 @@ iit(name, fn) => solo_test(name, fn);
 xit(name, fn) {}
 xdescribe(name, fn) {}
 
-//TODO(dart): why are the beforeEach not nested? -> code.google.com/p/dart/issues
-
-//TODO(dart): I should not have to do this!
-// https://code.google.com/p/dart/issues/detail?id=9899
-printExceptions(fn) {
-  return () {
-    try {
-      fn();
-    } catch (e, stackTrace) {
-      var log1 = "${e.toString()}";
-      var log2 = "${stackTrace}";
-      js.scoped(() {
-        js.context.console.log(log1);
-        js.context.console.log(log2);
-      });
-      throw e;
-    }
-  };
-}
-
 class Describe {
   Describe parent;
   String name;
@@ -59,7 +39,7 @@ describe(name, fn) {
   try {
     group(name, () {
       setUp(currentDescribe.setUp);
-      printExceptions(fn)();
+      fn();
       tearDown(currentDescribe.tearDown);
     });
   } finally {
@@ -67,7 +47,7 @@ describe(name, fn) {
   }
 }
 
-beforeEach(fn) => currentDescribe.beforeEachFns.add(printExceptions(fn));
-afterEach(fn) => currentDescribe.afterEachFns.add(printExceptions(fn));
+beforeEach(fn) => currentDescribe.beforeEachFns.add(fn);
+afterEach(fn) => currentDescribe.afterEachFns.add(fn);
 
 main(){}
