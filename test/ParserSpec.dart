@@ -327,7 +327,7 @@ main() {
       expect(eval("a.b.c.d.e.f.g.h.i.j.k.l.m.n")).toBe('nooo!');
     });
 
-    iit('should be forgiving', () {
+    it('should be forgiving', () {
       scope = {'a': {'b': 23}};
       expect(eval('b')).toBeNull();
       expect(eval('a.x')).toBeNull();
@@ -365,10 +365,26 @@ main() {
     });
 
     it('should evaluate function call from a return value', () {
-      scope.val = 33;
-      scope.getter = () { return () { return scope.val; }; };
+      scope["val"] = 33;
+      scope["getter"] = () { return () { return scope["val"]; };};
       expect(eval("getter()()")).toBe(33);
     });
+
+    it('should evaluate multiplication and division', () {
+      scope["taxRate"] =  8;
+      scope["subTotal"] =  100;
+      expect(eval("taxRate / 100 * subTotal")).toEqual(8);
+      expect(eval("subTotal * taxRate / 100")).toEqual(8);
+    });
+
+    it('should evaluate array', () {
+      expect(eval("[]").length).toEqual(0);
+      expect(eval("[1, 2]").length).toEqual(2);
+      expect(eval("[1, 2]")[0]).toEqual(1);
+      expect(eval("[1, 2]")[1]).toEqual(2);
+    });
+
+
 
 
   });

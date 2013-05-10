@@ -415,7 +415,7 @@ class Parser {
 
 
     var filterChain = null;
-    var functionCall;
+    var functionCall, arrayDeclaration;
 
 
 
@@ -425,8 +425,7 @@ class Parser {
         primary = filterChain();
         consume(')');
       } else if (expect('[') != null) {
-        throw "not impl array decl";
-        //primary = arrayDeclaration();
+        primary = arrayDeclaration();
       } else if (expect('{') != null) {
         throw "not impl brace";
         //primary = object();
@@ -615,6 +614,24 @@ class Parser {
         }
         var userFn = fn(self, locals);
         return Function.apply(userFn, args);
+      });
+    };
+
+    // This is used with json array declaration
+    arrayDeclaration = () {
+      var elementFns = [];
+      if (peekToken().text != ']') {
+        do {
+          elementFns.add(expression());
+        } while (expect(',') != null);
+      }
+      consume(']');
+      return new ParsedFn((self, locals){
+        var array = [];
+        for ( var i = 0; i < elementFns.length; i++) {
+          array.add(elementFns[i](self, locals));
+        }
+        return array;
       });
     };
 
