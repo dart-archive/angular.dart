@@ -21,7 +21,10 @@ class Token {
   // access fn as a function that doesn't take a or b values.
   ParsedFn primaryFn;
 
-  Token(this.index, this.text);
+  Token(this.index, this.text) {
+    // default fn
+    this.withFn((s, l, a, b) => text);
+  }
 
   withFn(fn, [assignFn]) {
     this.fn = fn;
@@ -424,7 +427,7 @@ class Parser {
 
 
     var filterChain = null;
-    var functionCall, arrayDeclaration, objectIndex, fieldAccess;
+    var functionCall, arrayDeclaration, objectIndex, fieldAccess, object;
 
 
 
@@ -436,8 +439,7 @@ class Parser {
       } else if (expect('[') != null) {
         primary = arrayDeclaration();
       } else if (expect('{') != null) {
-        throw "not impl brace";
-        //primary = object();
+        primary = object();
       } else {
         var token = expect();
         primary = token.primaryFn;
@@ -675,6 +677,30 @@ class Parser {
       return new ParsedFn((self, locals) => getterFn(object(self, locals), field),
           (self, value, locals) => setter(object(self, locals), field, value));
     };
+
+    object = () {
+      var keyValues = [];
+      if (peekToken().text != '}') {
+        do {
+          var token = expect(),
+              key = token.string != null ? token.string : token.text;
+          consume(":");
+          var value = expression();
+          keyValues.add({"key":key, "value":value});
+        } while (expect(',') != null);
+      }
+      consume('}');
+      return new ParsedFn((self, locals){
+        var object = {};
+        for ( var i = 0; i < keyValues.length; i++) {
+          var keyValue = keyValues[i];
+          var value = keyValue["value"](self, locals);
+          object[keyValue["key"]] = value;
+        }
+        return object;
+      });
+    };
+
 
 
 
