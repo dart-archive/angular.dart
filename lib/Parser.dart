@@ -645,6 +645,29 @@ class Parser {
     };
 
     objectIndex = (obj) {
+      // TODO(deboer): Combine these into a single function.
+      getField(o, i) {
+        if (o is List) {
+          return o[i.toInt()];
+        } else if (o is Map) {
+          return o[i.toString()]; // toString dangerous?
+        }
+        throw "not impl odd object access";
+      }
+
+      setField(o, i, v) {
+        if (o is List) {
+          int arrayIndex = i.toInt();
+          if (o.length <= arrayIndex) { o.length = arrayIndex + 1; }
+          o[arrayIndex] = v;
+        } else if (o is Map) {
+          o[i.toString()] = v; // toString dangerous?
+        } else {
+          throw "not impl odd object access";
+        }
+        return v;
+      }
+
       var indexFn = expression();
       consume(']');
       return new ParsedFn((self, locals){
@@ -654,13 +677,7 @@ class Parser {
 
             if (o == null) return throw "not impl null obj";  // null
 
-            if (o is List) {
-              v = o[i.toInt()];
-            } else if (o is Map) {
-              v = o[i.toString()]; // toString dangerous?
-            } else {
-              throw "not impl odd object access";
-            }
+            v = getField(o, i);
 
             // TODO futures
             /*
@@ -674,7 +691,7 @@ class Parser {
             } */
             return v;
           }, (self, value, locals) =>
-              obj(self, locals)[indexFn(self, locals)] = value
+            setField(obj(self, locals), indexFn(self, locals), value)
           );
 
     };

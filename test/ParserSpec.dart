@@ -402,6 +402,47 @@ main() {
       expect(eval("{false:'WC', true:'CC'}[false]")).toEqual("WC");
     });
 
+    it('should evaluate JSON', () {
+      expect(eval("[{}]")).toEqual([{}]);
+      expect(eval("[{a:[]}, {b:1}]")).toEqual([{"a":[]},{"b":1}]);
+    });
+
+    it('should evaluate multiple statements', () {
+      expect(eval("a=1;b=3;a+b")).toEqual(4);
+      expect(eval(";;1;;")).toEqual(1);
+    });
+
+    // skipping should evaluate object methods in correct context (this)
+    // skipping should evaluate methods in correct context (this) in argument
+
+    it('should evaluate objects on scope context', () {
+      scope["a"] =  "abc";
+      expect(eval("{a:a}")["a"]).toEqual("abc");
+    });
+
+    it('should evaluate field access on function call result', () {
+      scope["a"] =  () {
+        return {'name':'misko'};
+      };
+      expect(eval("a().name")).toEqual("misko");
+    });
+
+    it('should evaluate field access after array access', () {
+      scope["items"] =  [{}, {'name':'misko'}];
+      expect(eval('items[1].name')).toEqual("misko");
+    });
+
+    it('should evaluate array assignment', () {
+      scope["items"] =  [];
+
+      expect(eval('items[1] = "abc"')).toEqual("abc");
+      expect(eval('items[1]')).toEqual("abc");
+      //    Dont know how to make this work....
+      //    expect(eval('books[1] = "moby"')).toEqual("moby");
+      //    expect(eval('books[1]')).toEqual("moby");
+    });
+
+
 
 
   });
