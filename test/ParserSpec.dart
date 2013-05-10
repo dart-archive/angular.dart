@@ -456,6 +456,66 @@ main() {
       }).toThrow('Unexpected end of expression: [].count(');
     });
 
+    it('should evaluate double negation', () {
+      expect(eval('true')).toBeTruthy();
+      expect(eval('!true')).toBeFalsy();
+      expect(eval('!!true')).toBeTruthy();
+      expect(eval('{true:"a", false:"b"}[!!true]')).toEqual('a');
+    });
+
+    it('should evaluate negation', () {
+      expect(eval("!false || true")).toEqual(!false || true);
+      expect(eval("!(11 == 10)")).toEqual(!(11 == 10));
+      expect(eval("12/6/2")).toEqual(12/6/2);
+    });
+
+    it('should evaluate exclamation mark', () {
+      expect(eval('suffix = "!"')).toEqual('!');
+    });
+
+    it('should evaluate minus', () {
+      expect(eval("{a:'-'}")).toEqual({'a': "-"});
+    });
+
+    it('should evaluate undefined', () {
+      expect(eval("undefined")).toBeNull();
+      expect(eval("a=undefined")).toBeNull();
+      expect(scope["a"]).toBeNull();
+    });
+
+    it('should allow assignment after array dereference', () {
+      scope["obj"] = [{}];
+      eval('obj[0].name=1');
+      // can not be expressed in Dart expect(scope["obj"]["name"]).toBeNull();
+      expect(scope["obj"][0]["name"]).toEqual(1);
+    });
+
+    it('should short-circuit AND operator', () {
+      scope["run"] = () {
+        throw "IT SHOULD NOT HAVE RUN";
+      };
+      expect(eval('false && run()')).toBe(false);
+    });
+
+    it('should short-circuit OR operator', () {
+      scope["run"] = () {
+        throw "IT SHOULD NOT HAVE RUN";
+      };
+      expect(eval('true || run()')).toBe(true);
+    });
+
+    it('should support method calls on primitive types', () {
+      scope["empty"] = '';
+      scope["zero"] = 0;
+      scope["bool"] = false;
+
+      expect(eval('empty.substring(0)')).toEqual('');
+      expect(eval('zero.toString()')).toEqual('0');
+      //expect(eval('bool.toString()')).toEqual('false');
+    });
+
+
+
 
 
   });

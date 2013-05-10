@@ -111,19 +111,65 @@ ParsedFn ZERO = new ParsedFn((_, _x) => 0);
 
 class BreakException {}
 
+// returns a function that calls fn with numArgs args as an array
+varArgs(numArgs, fn) {
+  switch (numArgs) {
+    case 0: return () => fn([]);
+    case 1: return (p0) => fn([p0]);
+    case 2: return (p0, p1) => fn([p0, p1]);
+    case 3: return (p0, p1, p2) => fn([p0, p1, p3]);
+    case 4: return (p0, p1, p2, p3) => fn([p0, p1, p2, p3]);
+    case 5: return (p0, p1, p2, p3) => fn([p0, p1, p2, p3, p4]);
+  }
+  throw "varArgs with $numArgs is not supported.";
+}
+
+getNumArgs(userFn) {
+  ClassMirror reflectType = reflect(userFn).type;
+  assert(reflectType is FunctionTypeMirror);
+  return reflectType.parameters.length;
+}
+applyWithOptional(userFn, args) {
+  var numArgs = getNumArgs(userFn);
+  if (args.length > numArgs) {
+    throw "Too many arguments. Got $args. Need at most $numArgs";
+  }
+  if (args.length != numArgs) {
+    args = new List.from(args);
+    args.length = numArgs;
+  }
+  return Function.apply(userFn, args);
+}
+
 getterFn(scope, path) {
   List<String> pathKeys = path.split('.');
   var pathKeysLength = pathKeys.length;
   var currentValue = scope;
   for (var i = 0; i < pathKeysLength; i++) {
+    var curKey = pathKeys[i];
     try {
-      currentValue = currentValue[pathKeys[i]];
+      currentValue = currentValue[curKey];
     } catch (e) {
-      // maybe it is a member field?
+      InstanceMirror instanceMirror = reflect(currentValue);
+      Symbol curSym = new Symbol(curKey);
       try {
-        currentValue = reflect(currentValue).getField(new Symbol(pathKeys[i])).reflectee;
+        // maybe it is a member field?
+        currentValue = instanceMirror.getField(curSym).reflectee;
       } catch (e) {
-        return null;
+        // maybe it is a member method?
+        if (instanceMirror.type.members.containsKey(curSym)) {
+          MethodMirror methodMirror = instanceMirror.type.members[curSym];
+          currentValue = varArgs(methodMirror.parameters.length, (args) {
+            try {
+              return instanceMirror.invoke(curSym, args).reflectee;
+            } catch (e) {
+              dump(e.stacktrace);
+              throw "$e \n\n${e.stacktrace}";
+            }
+          });
+        } else {
+          return null;
+        }
       }
     }
   }
@@ -248,14 +294,20 @@ class Parser {
     readNumber() {
       String number = "";
       int start = index;
+      bool simpleInt = true;
       whileChars(() {
-        if (ch == '.' || isNumber()) {
+        if (ch == '.') {
+          number += ch;
+          simpleInt = false;
+        } else if (isNumber()) {
           number += ch;
         } else {
           String peekCh = peek();
           if (isIn(EXP_OP) && isExpOperator(peekCh)) {
+            simpleInt = false;
             number += ch;
           } else if (isExpOperator() && peekCh != '' && isNumber(peekCh) && isIn(EXP_OP, number[number.length - 1])) {
+            simpleInt = false;
             number += ch;
           } else if (isExpOperator() && (peekCh == '' || !isNumber(peekCh)) &&
               isIn(EXP_OP, number[number.length - 1])) {
@@ -266,7 +318,8 @@ class Parser {
         }
         index++;
       });
-      tokens.add(new Token(start, number)..withFn0(() => double.parse(number)));
+      var ret = simpleInt ? int.parse(number) : double.parse(number);
+      tokens.add(new Token(start, number)..withFn0(() => ret));
     }
 
     readIdent() {
@@ -622,7 +675,7 @@ class Parser {
           args.add(argsFn[i](self, locals));
         }
         var userFn = fn(self, locals);
-        return Function.apply(userFn, args);
+        return applyWithOptional(userFn, args);
       });
     };
 
