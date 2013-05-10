@@ -8,7 +8,7 @@ main() {
 
     describe(r'$watch/$digest', () {
       it('should watch and fire on simple property change', () {
-      // TODO deboer: spys?
+        // TODO deboer: spys?
         var timesRun = 0;
         var lastValue;
 

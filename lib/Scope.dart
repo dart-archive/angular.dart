@@ -29,12 +29,12 @@ class Scope {
   }
 
   noSuchMethod(Invocation invocation) {
-    var methodName = invocation.memberName.toString();
-    var name = _symbolRegexp.firstMatch(methodName).group(1);
+    var name = MirrorSystem.getName(invocation.memberName);
     if (invocation.isGetter) {
       return properties[name];
     } else if (invocation.isSetter) {
       var value = invocation.positionalArguments[0];
+      name = name.substring(0, name.length - 1);
       properties[name] = value;
       return value;
     } else {
