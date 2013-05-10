@@ -229,7 +229,10 @@ main() {
 
 
   describe('parse', () {
-    eval(String text, [scope]) => Parser.parse(text)(scope, null);
+    var scope;
+    eval(String text) => Parser.parse(text)(scope, null);
+
+    beforeEach(() { scope = {}; });
 
     it('should parse numerical expressions', () {
       expect(eval("1")).toEqual(1);
@@ -312,22 +315,20 @@ main() {
     // TODO filters
 
     it('should access scope', () {
-      var scope = {};
       scope['a'] =  123;
       scope['b'] = {'c': 456};
-      expect(eval("a", scope)).toEqual(123);
-      expect(eval("b.c", scope)).toEqual(456);
-      expect(eval("x.y.z", scope)).toEqual(null);
+      expect(eval("a")).toEqual(123);
+      expect(eval("b.c")).toEqual(456);
+      expect(eval("x.y.z")).toEqual(null);
     });
 
     it('should resolve deeply nested paths (important for CSP mode)', () {
-      var scope = {};
       scope['a'] = {'b': {'c': {'d': {'e': {'f': {'g': {'h': {'i': {'j': {'k': {'l': {'m': {'n': 'nooo!'}}}}}}}}}}}}};
-      expect(eval("a.b.c.d.e.f.g.h.i.j.k.l.m.n", scope)).toBe('nooo!');
+      expect(eval("a.b.c.d.e.f.g.h.i.j.k.l.m.n")).toBe('nooo!');
     });
 
     it('should be forgiving', () {
-      var scope = {'a': {'b': 23}};
+      scope = {'a': {'b': 23}};
       expect(eval('b')).toBeNull();
       expect(eval('a.x')).toBeNull();
       expect(eval('a.b.c.d')).toBeNull();
@@ -338,25 +339,30 @@ main() {
     });
 
     it('should evaluate assignments', () {
-      var scope = {'g': 4};
+      scope = {'g': 4};
 
-      expect(eval("a=12", scope)).toEqual(12);
+      expect(eval("a=12")).toEqual(12);
       expect(scope["a"]).toEqual(12);
 
-      expect(eval("x.y.z=123;", scope)).toEqual(123);
+      expect(eval("x.y.z=123;")).toEqual(123);
       expect(scope["x"]["y"]["z"]).toEqual(123);
 
-      expect(eval("a=123; b=234", scope)).toEqual(234);
+      expect(eval("a=123; b=234")).toEqual(234);
       expect(scope["a"]).toEqual(123);
       expect(scope["b"]).toEqual(234);
     });
 
     it('should evaluate function call without arguments', () {
-      var scope = {};
       scope['const'] = () => 123;
-      expect(eval("const()", scope)).toEqual(123);
+      expect(eval("const()")).toEqual(123);
     });
 
+    iit('should evaluate function call with arguments', () {
+      scope["add"] =  (a,b) {
+        return a+b;
+      };
+      expect(eval("add(1,2)")).toEqual(3);
+    });
 
   });
 }

@@ -610,7 +610,8 @@ class Parser {
         for ( var i = 0; i < argsFn.length; i++) {
           args.add(argsFn[i](self, locals));
         }
-        return Function.apply(fn(self, locals), args);
+        var userFn = fn(self, locals);
+        return Function.apply(userFn, args);
       });
     };
 
