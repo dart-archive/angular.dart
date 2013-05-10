@@ -40,6 +40,7 @@ class Expect {
   toBeFalsy() => unit.expect(actual, unit.isFalse);
   toBeTruthy() => unit.expect(actual, unit.isTrue);
   toBeNull() => unit.expect(actual, unit.isNull);
+  toBeNotNull() => unit.expect(actual, unit.isNotNull);
 }
 
 $(selector) {

@@ -2,11 +2,11 @@ part of angular;
 
 
 class ParsedFn {
-  ParsedGetterFn getterFn;
+  Parsedgetter getter;
   ParsedAssignFn assignFn;
 
-  ParsedFn(this.getterFn, [this.assignFn]);
-  call(s, l) => getterFn(s, l);
+  ParsedFn(this.getter, [this.assignFn]);
+  call(s, l) => getter(s, l);
   assign(s, v, l) => assignFn(s, v, l);
 
   get assignable => assignFn != null;
@@ -45,7 +45,7 @@ class Token {
 // TODO(deboer): Type this typedef further
 typedef Operator(scope, locals, ParsedFn a, ParsedFn b);
 
-typedef ParsedGetterFn(scope, locals);
+typedef Parsedgetter(scope, locals);
 typedef ParsedAssignFn(scope, value, locals);
 
 op0(fn()) => (_, _1, _2, _3) => fn();
@@ -126,7 +126,11 @@ varArgs(numArgs, fn) {
 
 getNumArgs(userFn) {
   ClassMirror reflectType = reflect(userFn).type;
-  assert(reflectType is FunctionTypeMirror);
+  try {
+    assert(reflectType is FunctionTypeMirror);
+  } catch (e) {
+    dump("reflectType: $reflectType ${reflectType.methods}");
+  }
   return reflectType.parameters.length;
 }
 applyWithOptional(userFn, args) {
@@ -141,37 +145,59 @@ applyWithOptional(userFn, args) {
   return Function.apply(userFn, args);
 }
 
-getterFn(scope, path) {
+// Returns a tuple [found, value]
+getterChild(value, childKey) {
+  if (value is List && childKey is num) {
+    if (childKey < value.length) {
+      return [true, value[childKey]];
+    } else {
+      return [false, null];
+    }
+  } else if (value is Map && value.containsKey(childKey)) {
+    return [true, value[childKey]];
+  } else {
+    InstanceMirror instanceMirror = reflect(value);
+    Symbol curSym = new Symbol(childKey);
+    try {
+      // maybe it is a member field?
+      return [true, instanceMirror.getField(curSym).reflectee];
+    } catch (e) {
+      // maybe it is a member method?
+      if (instanceMirror.type.members.containsKey(curSym)) {
+        MethodMirror methodMirror = instanceMirror.type.members[curSym];
+        return [true, varArgs(methodMirror.parameters.length, (args) {
+          try {
+            return instanceMirror.invoke(curSym, args).reflectee;
+          } catch (e) {
+            dump(e.stacktrace);
+            throw "$e \n\n${e.stacktrace}";
+          }
+        })];
+      }
+      return [false, null];
+    }
+  }
+}
+
+getter(scope, locals, path) {
   List<String> pathKeys = path.split('.');
   var pathKeysLength = pathKeys.length;
+
+  if (pathKeysLength == 0) { return scope; }
+
+  // Use the locals object is the first key is defined on locals.
+  // This allows users to hide sub-trees by setting the locals
+  // value to 'null'.
+  if (locals != null && getterChild(locals, pathKeys[0])[0]) {
+    return getter(locals, null, path);
+  }
+
+
   var currentValue = scope;
   for (var i = 0; i < pathKeysLength; i++) {
     var curKey = pathKeys[i];
-    try {
-      currentValue = currentValue[curKey];
-    } catch (e) {
-      InstanceMirror instanceMirror = reflect(currentValue);
-      Symbol curSym = new Symbol(curKey);
-      try {
-        // maybe it is a member field?
-        currentValue = instanceMirror.getField(curSym).reflectee;
-      } catch (e) {
-        // maybe it is a member method?
-        if (instanceMirror.type.members.containsKey(curSym)) {
-          MethodMirror methodMirror = instanceMirror.type.members[curSym];
-          currentValue = varArgs(methodMirror.parameters.length, (args) {
-            try {
-              return instanceMirror.invoke(curSym, args).reflectee;
-            } catch (e) {
-              dump(e.stacktrace);
-              throw "$e \n\n${e.stacktrace}";
-            }
-          });
-        } else {
-          return null;
-        }
-      }
-    }
+    currentValue = getterChild(currentValue, curKey)[1];
+    if (currentValue == null) { return null; }
   }
   return currentValue;
 }
@@ -369,7 +395,7 @@ class Parser {
       } else {
         // TODO(deboer): In the JS version this method is incredibly optimized.
         // We should likely do the same.
-        token.withFn((scope, locals, a, b) => getterFn(scope, ident),
+        token.withFn((scope, locals, a, b) => getter(scope, locals, ident),
         (scope, value, unused_locals) =>
           setter(scope, ident, value)
         );
@@ -751,8 +777,8 @@ class Parser {
 
     fieldAccess = (object) {
       var field = expect().text;
-      //var getter = getterFn(field);
-      return new ParsedFn((self, locals) => getterFn(object(self, locals), field),
+      //var getter = getter(field);
+      return new ParsedFn((self, locals) => getter(object(self, locals), locals, field),
           (self, value, locals) => setter(object(self, locals), field, value));
     };
 

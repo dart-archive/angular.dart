@@ -511,12 +511,32 @@ main() {
 
       expect(eval('empty.substring(0)')).toEqual('');
       expect(eval('zero.toString()')).toEqual('0');
-      //expect(eval('bool.toString()')).toEqual('false');
+      // DOES NOT WORK.  bool.toString is not reflected
+      // expect(eval('bool.toString()')).toEqual('false');
+    });
+  });
+
+  describe('assignable', () {
+    it('should expose assignment function', () {
+      var fn = Parser.parse('a');
+      expect(fn.assign).toBeNotNull();
+      var scope = {};
+      fn.assign(scope, 123, null);
+      expect(scope).toEqual({'a':123});
+    });
+  });
+
+  describe('locals', () {
+    it('should expose local variables', () {
+      expect(Parser.parse('a')({'a': 6}, {'a': 1})).toEqual(1);
+      expect(Parser.parse('add(a,b)')({'b': 1, 'add': (a, b) { return a + b; }}, {'a': 2})).toEqual(3);
     });
 
-
-
-
-
+    it('should expose traverse locals', () {
+      expect(Parser.parse('a.b')({'a': {'b': 6}}, {'a': {'b':1}})).toEqual(1);
+      expect(Parser.parse('a.b')({'a': null}, {'a': {'b':1}})).toEqual(1);
+      expect(Parser.parse('a.b')({'a': {'b': 5}}, {'a': null})).toEqual(null);
+    });
   });
+
 }
