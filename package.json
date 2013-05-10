@@ -1,0 +1,5 @@
+{ "dependencies" :
+  { "karma" : "canary-dart"
+  , "karma-dart" : "canary"
+  }
+}
