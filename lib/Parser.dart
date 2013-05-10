@@ -648,12 +648,20 @@ class Parser {
       var indexFn = expression();
       consume(']');
       return new ParsedFn((self, locals){
-            int i = indexFn(self, locals).toInt();
+            var i = indexFn(self, locals);
             var o = obj(self, locals),
                 v, p;
 
             if (o == null) return throw "not impl null obj";  // null
-            v = o[i];
+
+            if (o is List) {
+              v = o[i.toInt()];
+            } else if (o is Map) {
+              v = o[i.toString()]; // toString dangerous?
+            } else {
+              throw "not impl odd object access";
+            }
+
             // TODO futures
             /*
             if (v && v.then) {

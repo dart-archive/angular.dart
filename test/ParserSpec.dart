@@ -398,6 +398,9 @@ main() {
       expect(eval("{\"a\":'b'}")).toEqual({"a":"b"});
     });
 
+    it('should evaluate object access', () {
+      expect(eval("{false:'WC', true:'CC'}[false]")).toEqual("WC");
+    });
 
 
 
