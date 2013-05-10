@@ -297,8 +297,11 @@ class Parser {
           var pathKeysLength = pathKeys.length;
           var currentValue = scope;
           for (var i = 0; i < pathKeysLength; i++) {
-            if (currentValue == null) return null;
-            currentValue = currentValue[pathKeys[i]];
+            try {
+              currentValue = currentValue[pathKeys[i]];
+            } on NoSuchMethodError catch (e) {
+              return null;
+            }
           }
           return currentValue;
         },

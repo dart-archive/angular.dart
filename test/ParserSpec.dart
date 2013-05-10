@@ -327,7 +327,7 @@ main() {
       expect(eval("a.b.c.d.e.f.g.h.i.j.k.l.m.n")).toBe('nooo!');
     });
 
-    it('should be forgiving', () {
+    iit('should be forgiving', () {
       scope = {'a': {'b': 23}};
       expect(eval('b')).toBeNull();
       expect(eval('a.x')).toBeNull();
@@ -357,12 +357,19 @@ main() {
       expect(eval("const()")).toEqual(123);
     });
 
-    iit('should evaluate function call with arguments', () {
+    it('should evaluate function call with arguments', () {
       scope["add"] =  (a,b) {
         return a+b;
       };
       expect(eval("add(1,2)")).toEqual(3);
     });
+
+    it('should evaluate function call from a return value', () {
+      scope.val = 33;
+      scope.getter = () { return () { return scope.val; }; };
+      expect(eval("getter()()")).toBe(33);
+    });
+
 
   });
 }
