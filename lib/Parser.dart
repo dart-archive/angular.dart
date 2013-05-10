@@ -386,7 +386,7 @@ class Parser {
 
     Token peekToken() {
       if (tokens.length == 0)
-        throw "not impl peekToken error"; //throw Error("Unexpected end of expression: " + text);
+        throw "Unexpected end of expression: " + text;
       return tokens[0];
     }
 

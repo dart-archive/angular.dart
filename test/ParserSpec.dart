@@ -442,6 +442,19 @@ main() {
       //    expect(eval('books[1]')).toEqual("moby");
     });
 
+    it('should evaluate remainder', () {
+      expect(eval('1%2')).toEqual(1);
+    });
+
+    it('should evaluate sum with undefined', () {
+      expect(eval('1+undefined')).toEqual(1);
+      expect(eval('undefined+1')).toEqual(1);
+    });
+    it('should throw exception on non-closed bracket', () {
+      expect(() {
+        eval('[].count(');
+      }).toThrow('Unexpected end of expression: [].count(');
+    });
 
 
 
