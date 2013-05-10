@@ -67,7 +67,6 @@ class Compiler {
         }
         directiveDefs.add(new DirectiveDef(directiveFactory, directiveInfo.value, blockTypes));
       }
-
       if (compileChildren && domCursor.descend()) {
         templateCursor.descend();
 
@@ -125,8 +124,10 @@ class Compiler {
       domCursor.replaceWithAnchor(anchorName);
     }
 
-    return {'blockTypes': blockTypes,
-            'blockCache': blocks ? new BlockCache(blocks) : null};
+    return {
+      "blockTypes": blockTypes, 
+      "blockCache": blocks ? new BlockCache(blocks) : null
+    };
   }
 
 

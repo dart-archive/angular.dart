@@ -2,3 +2,4 @@
 packages
 pubspec.lock
 node_modules
+.project

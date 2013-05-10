@@ -1,6 +1,7 @@
 part of angular;
 
 abstract class ElementWrapper {
+  List<dom.Node> elements;
   ElementWrapper next;
   ElementWrapper previous;
 }
@@ -16,7 +17,7 @@ class BlockCache {
         String group = block.group;
 
         preRenderedElementCount += block.elements.length;
-        if (groupCache.hasOwnProperty(group)) {
+        if (groupCache.containsKey(group)) {
           groupCache[group].add(block);
         } else {
           groupCache[group] = [block];
@@ -103,7 +104,7 @@ class Block implements ElementWrapper {
           var blockCache;
 
           if (blockCaches != null && blockCaches.length > 0) {
-            blockCache = blockCaches.shift();
+            blockCache = blockCaches.removeAt(0);
             preRenderedIndexOffset += blockCache.preRenderedElementCount;
           }
 
@@ -163,13 +164,11 @@ class Block implements ElementWrapper {
   }
 
   attach(Scope scope) {
-  // Attach directives
+    dump('scope attach');
+    // Attach directives
     for(var i = 0, ii = directives.length; i < ii; i++) {
       try {
-        /*for (var j = 0, jj = elements.length; j < jj; j++) {
-          elements[j].$scope = scope;
-        }*/
-        /*if (directives[i].attach)*/ directives[i].attach(scope);
+        directives[i].attach(scope);
       } catch(e) {
         $exceptionHandler(e);
       }
@@ -180,7 +179,7 @@ class Block implements ElementWrapper {
     for(var i = 0, ii = directives.length, directive; i < ii; i++) {
       try {
         directive = directives[i];
-        directive.detach && directive.detach(scope);
+        directive.detach != null && directive.detach(scope);
       } catch(e) {
         $exceptionHandler(e);
       }
