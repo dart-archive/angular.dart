@@ -17,8 +17,8 @@ class Scope {
 
   $watch(expr, [reactionFn]) {
     if (expr is String) {
-      dump('\$watch ' + expr);
-      watches.add(() => reactionFn(this[expr]));
+      var parsed = Parser.parse(expr);
+      watches.add(() => reactionFn(parsed(this.properties, null)));
     } else {
       watches.add(() => expr(this));
     }

@@ -5,4 +5,4 @@ dependencies:
   unittest: any
   js: any
   angular:
-   git: git@github.com:jbdeboer/angular.dart.git
+   path: ..
