@@ -384,6 +384,14 @@ main() {
       expect(eval("[1, 2]")[1]).toEqual(2);
     });
 
+    iit('should evaluate array access', () {
+      expect(eval("[1][0]")).toEqual(1);
+      expect(eval("[[1]][0][0]")).toEqual(1);
+      expect(eval("[].length")).toEqual(0);
+      expect(eval("[1, 2].length")).toEqual(2);
+    });
+
+
 
 
 

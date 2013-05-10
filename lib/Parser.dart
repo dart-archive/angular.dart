@@ -7,7 +7,7 @@ class ParsedFn {
 
   ParsedFn(this.getterFn, [this.assignFn]);
   call(s, l) => getterFn(s, l);
-  assign(s, v) => assignFn(s, v);
+  assign(s, v, l) => assignFn(s, v, l);
 
   get assignable => assignFn != null;
 }
@@ -43,7 +43,7 @@ class Token {
 typedef Operator(scope, locals, ParsedFn a, ParsedFn b);
 
 typedef ParsedGetterFn(scope, locals);
-typedef ParsedAssignFn(scope, value);
+typedef ParsedAssignFn(scope, value, locals);
 
 op0(fn()) => (_, _1, _2, _3) => fn();
 
@@ -107,6 +107,40 @@ Map<String, String> ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", 
 ParsedFn ZERO = new ParsedFn((_, _x) => 0);
 
 class BreakException {}
+
+getterFn(scope, path) {
+  List<String> pathKeys = path.split('.');
+  var pathKeysLength = pathKeys.length;
+  var currentValue = scope;
+  for (var i = 0; i < pathKeysLength; i++) {
+    try {
+      currentValue = currentValue[pathKeys[i]];
+    } catch (e) {
+      // maybe it is a member field?
+      try {
+        currentValue = reflect(currentValue).getField(new Symbol(pathKeys[i])).reflectee;
+      } catch (e) {
+        return null;
+      }
+    }
+  }
+  return currentValue;
+}
+
+setter(Map obj, path, setValue) {
+  var element = path.split('.');
+  for (var i = 0; element.length > 1; i++) {
+    var key = element.removeAt(0);
+    var propertyObj = obj[key];
+    if (propertyObj == null) {
+      propertyObj = {};
+      obj[key] = propertyObj;
+    }
+    obj = propertyObj;
+  }
+  obj[element.removeAt(0)] = setValue;
+  return setValue;
+}
 
 class Parser {
 
@@ -271,20 +305,7 @@ class Parser {
 
       var token = new Token(start, ident);
 
-       setter(Map obj, path, setValue) {
-        var element = path.split('.');
-        for (var i = 0; element.length > 1; i++) {
-          var key = element.removeAt(0);
-          var propertyObj = obj[key];
-          if (propertyObj == null) {
-            propertyObj = {};
-            obj[key] = propertyObj;
-          }
-          obj = propertyObj;
-        }
-        obj[element.removeAt(0)] = setValue;
-        return setValue;
-      }
+
 
 
       if (OPERATORS.containsKey(ident)) {
@@ -292,20 +313,8 @@ class Parser {
       } else {
         // TODO(deboer): In the JS version this method is incredibly optimized.
         // We should likely do the same.
-        token.withFn((scope, locals, a, b) {
-          List<String> pathKeys = ident.split('.');
-          var pathKeysLength = pathKeys.length;
-          var currentValue = scope;
-          for (var i = 0; i < pathKeysLength; i++) {
-            try {
-              currentValue = currentValue[pathKeys[i]];
-            } on NoSuchMethodError catch (e) {
-              return null;
-            }
-          }
-          return currentValue;
-        },
-        (scope, value) =>
+        token.withFn((scope, locals, a, b) => getterFn(scope, ident),
+        (scope, value, unused_locals) =>
           setter(scope, ident, value)
         );
       }
@@ -415,7 +424,7 @@ class Parser {
 
 
     var filterChain = null;
-    var functionCall, arrayDeclaration;
+    var functionCall, arrayDeclaration, objectIndex, fieldAccess;
 
 
 
@@ -445,13 +454,11 @@ class Parser {
           primary = functionCall(primary);
           context = null;
         } else if (next.text == '[') {
-          throw "not impl object index";
-//          context = primary;
-//          primary = objectIndex(primary);
+          context = primary;
+          primary = objectIndex(primary);
         } else if (next.text == '.') {
-          throw "not impl field access";
-//          context = primary;
-//          primary = fieldAccess(primary);
+          context = primary;
+          primary = fieldAccess(primary);
         } else {
           throw "Impossible.. what?";
         }
@@ -554,7 +561,7 @@ class Parser {
         }
         right = logicalOR();
         return new ParsedFn((scope, locals) =>
-          left.assign(scope, right(scope, locals)/*, locals*/));
+          left.assign(scope, right(scope, locals), locals));
       } else {
         return left;
       }
@@ -634,6 +641,42 @@ class Parser {
         return array;
       });
     };
+
+    objectIndex = (obj) {
+      var indexFn = expression();
+      consume(']');
+      return new ParsedFn((self, locals){
+            int i = indexFn(self, locals).toInt();
+            var o = obj(self, locals),
+                v, p;
+
+            if (o == null) return throw "not impl null obj";  // null
+            v = o[i];
+            // TODO futures
+            /*
+            if (v && v.then) {
+              p = v;
+              if (!('$$v' in v)) {
+                p.$$v = undefined;
+                p.then(ParsedFn(val) { p.$$v = val; });
+              }
+              v = v.$$v;
+            } */
+            return v;
+          }, (self, value, locals) =>
+              obj(self, locals)[indexFn(self, locals)] = value
+          );
+
+    };
+
+    fieldAccess = (object) {
+      var field = expect().text;
+      //var getter = getterFn(field);
+      return new ParsedFn((self, locals) => getterFn(object(self, locals), field),
+          (self, value, locals) => setter(object(self, locals), field, value));
+    };
+
+
 
 
 
