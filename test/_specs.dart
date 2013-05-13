@@ -6,6 +6,7 @@ import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/debug.dart';
 import 'dart:mirrors' as mirror;
 import 'package:angular/angular.dart';
+import 'package:di/di.dart';
 
 export 'package:unittest/unittest.dart';
 export 'package:angular/debug.dart';
@@ -97,6 +98,41 @@ class Logger implements List {
   List<Node> _list = [];
 
   noSuchMethod(Invocation invocation) => mirror.reflect(_list).delegate(invocation);
+}
+
+class SpecInjector {
+  var injector;
+
+  inject(Function fn) {
+    var stack = null;
+    try {
+      throw '';
+    } catch (e, s) {
+      stack = s;
+    }
+    return () {
+      if (injector == null) {
+        injector = new Injector();
+      }
+      try {
+        injector.invoke(fn);
+      } catch (e, s) {
+        var msg;
+        if (e is mirror.MirroredUncaughtExceptionError) {
+          msg = e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
+        } else {
+          msg = e.toString();
+        }
+        var frames = stack.toString().split('\n');
+        frames.removeAt(0);
+        var declaredAt = frames.join('\n');
+        throw msg + "\n DECLARED AT:\n" + declaredAt;
+      }
+    };
+
+  }
+
+  reset() { injector = null; }
 }
 
 

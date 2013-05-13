@@ -5,30 +5,15 @@ import "dart:mirrors";
 main() {
 
   // TODO move the "inject" function into a shared library.
-  var injector;
-
-  inject(Function fn) {
-    return () {
-      if (injector == null) {
-        injector = new Injector();
-      }
-      try {
-        injector.invoke(fn);
-      } catch (e,s) {
-        if (e is MirroredUncaughtExceptionError) {
-          throw e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
-        }
-        throw "Not mirrored" + e.toString() + " Stack trace:" + s.toString();
-      }
-    };
-  }
+  var specInjector = new SpecInjector();
+  var inject = specInjector.inject;
 
   beforeEach(() {
-    injector = null;
+    specInjector.reset();
   });
 
   afterEach(() {
-    injector = null;
+    specInjector.reset();
   });
 
   describe('BindDirective', inject((Injector injector) {

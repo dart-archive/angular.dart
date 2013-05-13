@@ -3,40 +3,19 @@ import "dart:mirrors";
 
 main() {
 
-  var injector;
+  var specInjector = new SpecInjector();
+  var inject = specInjector.inject;
 
   module(fn) {
     return () {};
   }
 
-  inject(Function fn) {
-    var stack = null;
-    try {
-      throw '';
-    } catch (e, s) {
-      stack = s;
-    }
-    return () {
-      if (injector == null) {
-        injector = new Injector();
-      }
-      try {
-        injector.invoke(fn);
-      } catch (e, s) {
-        var frames = stack.toString().split('\n');
-        frames.removeAt(0);
-        var declaredAt = frames.join('\n');
-        throw e.toString() + "\n DECLARED AT:\n" + declaredAt;
-      }
-    };
-  }
-
   beforeEach(() {
-    injector = null;
+    specInjector.reset();
   });
 
   afterEach(() {
-    injector = null;
+    specInjector.reset();
   });
 
   describe('dte.compiler', () {
