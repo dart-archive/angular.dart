@@ -145,8 +145,8 @@ class Block implements ElementWrapper {
 
       var directiveModule = new Module();
 
-      directiveModule.value(BindValue,
-          new BindValue.fromString(directiveDef.value));
+      directiveModule.value(DirectiveValue,
+          new DirectiveValue.fromString(directiveDef.value));
       directiveModule.value(List, [node]);
 
       if (anchorsByName.containsKey(directiveName)) {

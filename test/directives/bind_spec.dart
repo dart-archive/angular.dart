@@ -19,10 +19,9 @@ main() {
       var element = $('<div bind="a"></div>');
       expect(element.text()).toEqual('');
 
-
       var module = new Module();
       module.value(List, element);
-      module.value(BindValue, new BindValue.fromString('a'));
+      module.value(DirectiveValue, new DirectiveValue.fromString('a'));
       var bind = new Injector([module]).get(NgBindAttrDirective);
 
       var scope = new Scope();

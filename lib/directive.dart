@@ -80,3 +80,9 @@ class Directives {
     }
   }
 }
+
+class DirectiveValue {
+  String value;
+  DirectiveValue() : this.value = "ERROR DEFAULT";
+  DirectiveValue.fromString(this.value);
+}

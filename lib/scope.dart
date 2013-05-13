@@ -19,6 +19,8 @@ class Scope {
     if (expr is String) {
       var parsed = Parser.parse(expr);
       watches.add(() => reactionFn(parsed(this.properties, null)));
+    } else if (expr is DirectiveValue) {
+      $watch(expr.value, reactionFn);
     } else {
       watches.add(() => expr(this));
     }
