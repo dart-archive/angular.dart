@@ -30,7 +30,7 @@ main() {
   // Set up the Angular directives.
   Injector injector = new Injector();
   Directives directives = injector.get(Directives);
-  directives.register(BindDirective);
+  directives.register(NgBindAttrDirective);
 
   injector.get(AngularBootstrap)();
 
