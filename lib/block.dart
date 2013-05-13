@@ -155,8 +155,7 @@ class Block implements ElementWrapper {
 
       Type directiveType = directiveDef.directiveFactory.directiveType;
       var injector = $injector.createChild([elementModule, directiveModule],
-          // TextAccessor here is wrong.  Talking with vojta re dart-di
-          [directiveType, TextAccessor]);
+          [directiveType]);
 
       var directive = injector.get(directiveType);
       directives.add(directive);

@@ -1,16 +1,7 @@
 part of angular;
 
 // TODO(deboer)
-// Move these helper classes somewhere else
-
-class TextAccessor {
-  List<dom.Node> jquery;
-  TextAccessor(List<dom.Node> this.jquery);
-
-  call(String value) {
-    jquery[0].text = value;
-  }
-}
+// Move this helper classes somewhere else
 
 class BindValue {
   String value;
@@ -20,14 +11,14 @@ class BindValue {
 
 class NgBindAttrDirective  {
 
-  TextAccessor text;
+  List<dom.Node> nodeList;
   BindValue value;
 
-  NgBindAttrDirective(TextAccessor this.text, BindValue this.value) {
+  NgBindAttrDirective(List<dom.Node> this.nodeList, BindValue this.value) {
   }
 
   attach(Scope scope) {
-    scope.$watch(value.value, text);
+    scope.$watch(value.value, (value) { nodeList[0].text = value; });
   }
 
 }

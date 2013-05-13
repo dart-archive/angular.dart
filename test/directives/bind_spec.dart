@@ -1,6 +1,4 @@
 import "../_specs.dart";
-import "dart:mirrors";
-
 
 main() {
 
@@ -25,7 +23,6 @@ main() {
       var module = new Module();
       module.value(List, element);
       module.value(BindValue, new BindValue.fromString('a'));
-      //var bind = injector.createChild([module]).get(BindDirective);
       var bind = new Injector([module]).get(NgBindAttrDirective);
 
       var scope = new Scope();
