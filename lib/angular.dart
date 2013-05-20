@@ -5,18 +5,18 @@ import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'debug.dart';
 
-part 'Block.dart';
-part 'BlockList.dart';
-part 'BlockType.dart';
-part 'Compiler.dart';
-part 'Directive.dart';
-part 'directives/NgBind.dart';
+part 'block.dart';
+part 'block_list.dart';
+part 'block_type.dart';
+part 'compiler.dart';
+part 'directive.dart';
+part 'directives/ng_bind.dart';
 part 'dom_utilities.dart';
-part 'ExceptionHandler.dart';
-part 'NodeCursor.dart';
-part 'Parser.dart';
-part 'Scope.dart';
-part 'Selector.dart';
+part 'exception_handler.dart';
+part 'node_cursor.dart';
+part 'parser.dart';
+part 'scope.dart';
+part 'selector.dart';
 
 ASSERT(condition) {
   if (!condition) {

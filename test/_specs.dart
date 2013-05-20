@@ -12,7 +12,7 @@ export 'package:unittest/unittest.dart';
 export 'package:angular/debug.dart';
 export 'package:angular/angular.dart';
 export 'dart:html';
-export 'jasmineSyntax.dart';
+export 'jasmine_syntax.dart';
 export 'package:di/di.dart';
 
 es(String html) {
