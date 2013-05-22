@@ -32,15 +32,7 @@ class DirectiveFactory {
     // Check the $transclude.
     // TODO(deboer): I'm not a fan of 'null' as a configuration value.
     // It would be awesome if $transclude could be an enum.
-    Symbol transcludeSymbol = new Symbol('\$transclude');
-    var reflection = reflectClass(directiveType);
-    if (!reflection.members.containsKey(transcludeSymbol)) {
-      $transclude = null;
-    } else {
-      var field = reflection.getField(transcludeSymbol);
-      if (field == null) { $transclude = null; }
-      else { $transclude = field.reflectee; }
-    }
+    $transclude = reflectStaticField(directiveType, '\$transclude');
   }
 }
 

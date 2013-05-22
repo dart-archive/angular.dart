@@ -13,6 +13,7 @@ part 'directive.dart';
 part 'directives/ng_bind.dart';
 part 'dom_utilities.dart';
 part 'exception_handler.dart';
+part 'mirrors.dart';
 part 'node_cursor.dart';
 part 'parser.dart';
 part 'scope.dart';
