@@ -20,7 +20,7 @@ main() {
       expect(element.text()).toEqual('');
 
       var module = new Module();
-      module.value(List, element);
+      module.value(Element, element[0]);
       module.value(DirectiveValue, new DirectiveValue.fromString('a'));
       var bind = new Injector([module]).get(NgBindAttrDirective);
 

@@ -2,13 +2,13 @@ part of angular;
 
 class NgBindAttrDirective  {
 
-  List<dom.Node> nodeList;
+  dom.Element element;
   DirectiveValue value;
 
-  NgBindAttrDirective(List<dom.Node> this.nodeList, DirectiveValue this.value);
+  NgBindAttrDirective(dom.Element this.element, DirectiveValue this.value);
 
   attach(Scope scope) {
-    scope.$watch(value, (value) { nodeList[0].text = value; });
+    scope.$watch(value, (value) { element.text = value; });
   }
 
 }
