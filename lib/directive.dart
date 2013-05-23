@@ -12,6 +12,7 @@ class DirectiveFactory {
   String $name;
   Function $generate;
   String $transclude;
+  int $priority = 0;
 
   DirectiveFactory(this.directiveType) {
     var name = directiveType.toString();

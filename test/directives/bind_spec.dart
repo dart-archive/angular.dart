@@ -16,7 +16,7 @@ main() {
 
   describe('BindDirective', inject((Injector injector) {
     it('should set text', () {
-      var element = $('<div bind="a"></div>');
+      var element = $('<div></div>');
       expect(element.text()).toEqual('');
 
       var module = new Module();

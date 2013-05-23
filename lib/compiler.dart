@@ -30,7 +30,7 @@ class Compiler {
 
       for (var j = 0, jj = directiveInfos.length; j < jj; j++) {
         var directiveInfo = directiveInfos[j];
-        var directiveFactory = directiveInfo.directiveFactory;
+        DirectiveFactory directiveFactory = directiveInfo.directiveFactory;
         var blockTypes = null;
 
         if (directiveFactory.$generate != null) {
@@ -49,15 +49,15 @@ class Compiler {
           }
         }
         if (directiveFactory.$transclude != null) {
-          var remaindingDirectives = directiveInfos.slice(j + 1);
+          var remaindingDirectives = directiveInfos.sublist(j + 1);
           var transclusion = compileTransclusion(directiveFactory.$transclude,
               domCursor, templateCursor,
               directiveInfo, remaindingDirectives);
 
-          if (transclusion.blockCache) {
-            blockCaches.add(transclusion.blockCache);
+          if (transclusion['blockCache'] != null) {
+            blockCaches.add(transclusion['blockCache']);
           }
-          blockTypes = transclusion.blockTypes;
+          blockTypes = transclusion['blockTypes'];
 
           j = jj; // stop processing further directives since they belong to transclusion;
           compileChildren = false;
@@ -104,7 +104,8 @@ class Compiler {
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
     var groupName = '';
     var domCursorIndex = domCursor.index;
-    var directivePositions = _compileBlock(domCursor, transcludeCursor, [], transcludedDirectiveInfos) || [];
+    var directivePositions = _compileBlock(domCursor, transcludeCursor, [], transcludedDirectiveInfos);
+    if (directivePositions == null) directivePositions = [];
 
     BlockType = $blockTypeFactory(transcludeCursor.elements, directivePositions, groupName);
     domCursor.index = domCursorIndex;
@@ -126,7 +127,7 @@ class Compiler {
 
     return {
       "blockTypes": blockTypes, 
-      "blockCache": blocks ? new BlockCache(blocks) : null
+      "blockCache": blocks != null ? new BlockCache(blocks) : null
     };
   }
 
@@ -162,8 +163,8 @@ class Compiler {
   }
 
   priorityComparator(DirectiveInfo a, DirectiveInfo b) {
-    int aPriority = a.directiveFactory.$priority || 0,
-    bPriority = b.directiveFactory.$priority || 0;
+    int aPriority = a.directiveFactory.$priority,
+    bPriority = b.directiveFactory.$priority;
 
     return bPriority - aPriority;
   }

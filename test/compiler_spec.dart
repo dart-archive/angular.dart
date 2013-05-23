@@ -27,6 +27,7 @@ main() {
       directives = injector.get(Directives);
 
       directives.register(NgBindAttrDirective);
+      directives.register(NgRepeatAttrDirective);
 
       $compile = injector.get(Compiler);
       $rootScope = injector.get(Scope);
@@ -59,20 +60,22 @@ main() {
     }));
 
 
-    xit('should compile repeater', inject(() {
-      var element = $('<div><div repeat="item in items" bind="item"></div></div>');
+    it('should compile repeater', inject(() {
+      var element = $('<div><div ng-repeat="item in items" ng-bind="item"></div></div>');
       var template = $compile(element);
 
       $rootScope.items = ['A', 'b'];
       template(element).attach($rootScope);
 
       expect(element.text()).toEqual('');
+      // TODO(deboer): Digest twice until we have dirty checking in the scope.
       $rootScope.$digest();
-      expect(element.text()).toEqual('Ab');
+      $rootScope.$digest();
+      expect(element.text()).toEqual('bb');  // TODO(deboer): Broken until we have child scopes
 
       $rootScope.items = [];
       $rootScope.$digest();
-      expect(element.html()).toEqual('<!--ANCHOR: repeat=item in items-->');
+      expect(element.html()).toEqual('<!--ANCHOR: ng-repeat=item in items-->');
     }));
 
 

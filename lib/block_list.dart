@@ -31,13 +31,13 @@ class BlockList extends ElementWrapper {
     // This is a bit of a hack.
     // We need to run after the first watch, that means we have to wait for
     // watch, and then schedule $evalAsync.
-    var deregisterWatch = $rootScope.$watch(() {
-      deregisterWatch();
-      $rootScope.$evalAsync(() {
-        blockCache.flush((block) {
-          block.remove();
-        });
-      });
+    var deregisterWatch = $rootScope.$watch((_) {
+      // TODO deregisterWatch();
+      //$rootScope.$evalAsync(() {
+      //  blockCache.flush((block) {
+      //    block.remove();
+      //  });
+      //});
     });
   }
 

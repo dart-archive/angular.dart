@@ -46,7 +46,7 @@ class NodeCursor {
   }
 
   descend() {
-    var childNodes = elements[index].children;
+    var childNodes = elements[index].nodes;
     var hasChildren = !!(childNodes != null && childNodes.length > 0);
 
     if (hasChildren) {

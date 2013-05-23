@@ -136,6 +136,7 @@ class Block implements ElementWrapper {
     var elementModule = new Module();
     elementModule.value(Block, this);
     elementModule.value(dom.Element, node);
+    elementModule.value(dom.Node, node);
     directiveDefsByName.values.forEach((DirectiveDef def) => elementModule.type(
                 def.directiveFactory.directiveType, def.directiveFactory.directiveType));
 
@@ -149,14 +150,14 @@ class Block implements ElementWrapper {
           new DirectiveValue.fromString(directiveDef.value));
 
       if (anchorsByName.containsKey(directiveName)) {
-        elementModule.value(BlockList, anchorsByName[directiveName]);
+        directiveModule.value(BlockList, anchorsByName[directiveName]);
       }
 
       Type directiveType = directiveDef.directiveFactory.directiveType;
       var injector = $injector.createChild([elementModule, directiveModule],
           [directiveType]);
 
-      var directive = injector.get(directiveType);
+      var directive = injector.get(directiveType);;
       directives.add(directive);
     }
   }

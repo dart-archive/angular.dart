@@ -27,7 +27,12 @@ class Scope {
   }
 
   $digest() {
-    watches.forEach((fn) => fn());
+    // Note, Dart's "forEach" is not debuggable and bad new
+    // for tricky situations like this one.
+    var watchesLen = watches.length;
+    for (var i = 0; i < watchesLen; i++) {
+      watches[i]();
+    }
   }
 
   noSuchMethod(Invocation invocation) {
