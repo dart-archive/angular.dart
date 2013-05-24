@@ -6,8 +6,8 @@ class ParsedFn {
   ParsedAssignFn assignFn;
 
   ParsedFn(this.getter, [this.assignFn]);
-  call(s, l) => getter(s, l);
-  assign(s, v, l) => assignFn(s, v, l);
+  call(s, [l]) => getter(s, l);
+  assign(s, v, [l]) => assignFn(s, v, l);
 
   get assignable => assignFn != null;
 }
@@ -202,7 +202,7 @@ getter(scope, locals, path) {
   return currentValue;
 }
 
-setter(Map obj, path, setValue) {
+setter(obj, path, setValue) {
   var element = path.split('.');
   for (var i = 0; element.length > 1; i++) {
     var key = element.removeAt(0);
@@ -456,6 +456,10 @@ class Parser {
     });
     return tokens;
 
+  }
+
+  ParsedFn call(String text) {
+    return Parser.parse(text);
   }
 
   static ParsedFn parse(text) {

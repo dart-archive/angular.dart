@@ -3,20 +3,7 @@ import "dart:mirrors";
 
 
 main() {
-
-  // TODO move the "inject" function into a shared library.
-  var specInjector = new SpecInjector();
-  var inject = specInjector.inject;
-
-  beforeEach(() {
-    specInjector.reset();
-  });
-
-  afterEach(() {
-    specInjector.reset();
-  });
-
-  describe('BindDirective', inject((Injector injector) {
+  describe('BindDirective', () {
     it('should set text', () {
       var element = $('<div bind="a"></div>');
       expect(element.text()).toEqual('');
@@ -37,5 +24,5 @@ main() {
 
       expect(element.text()).toEqual(VALUE_FOR_A);
     });
-  }));
+  });
 }

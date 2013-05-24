@@ -1,0 +1,4 @@
+class NgBindAttrDirective {
+  NgBindAttrDirective() {
+  }
+}
