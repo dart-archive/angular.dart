@@ -112,7 +112,7 @@ class SpecInjector {
     }
     return () {
       if (injector == null) {
-        injector = new Injector();
+        injector = new Injector([new Module()..value(Expando, new Expando('specExpando'))]);
       }
       try {
         injector.invoke(fn);

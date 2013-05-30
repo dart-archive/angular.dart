@@ -149,15 +149,39 @@ class Block implements ElementWrapper {
       directiveModule.value(DirectiveValue,
           new DirectiveValue.fromString(directiveDef.value));
 
+      var controllerType = directiveDef.directiveFactory.$controllerType;
+      var requiredController = directiveDef.directiveFactory.$requiredController;
+
+      if (requiredController != null) {
+        directiveModule.factory(Controller, (dom.Node node, Expando elementControllers) {
+          return elementControllers[node][requiredController];
+        });
+      } else {
+        directiveModule.value(Controller, null);
+      }
+
       if (anchorsByName.containsKey(directiveName)) {
         directiveModule.value(BlockList, anchorsByName[directiveName]);
       }
 
       Type directiveType = directiveDef.directiveFactory.directiveType;
-      var injector = $injector.createChild([elementModule, directiveModule],
-          [directiveType]);
 
-      var directive = injector.get(directiveType);;
+      var types = [directiveType];
+      if (controllerType != null) types.add(controllerType);
+      var injector = $injector.createChild([elementModule, directiveModule],
+          types);
+
+      if (controllerType != null) {
+        var controller = injector.get(controllerType);
+        var elementControllers = injector.get(Expando);
+        var controllers = elementControllers[node];
+        if (controllers == null) {
+          elementControllers[node] = controllers = {};
+        }
+        controllers[requiredController] = controller;
+      }
+
+      var directive = injector.get(directiveType);
       directives.add(directive);
     }
   }

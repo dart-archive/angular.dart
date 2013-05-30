@@ -13,6 +13,8 @@ class DirectiveFactory {
   Function $generate;
   String $transclude;
   int $priority = 0;
+  Type $controllerType;
+  String $requiredController;
 
   DirectiveFactory(this.directiveType) {
     var name = directiveType.toString();
@@ -34,6 +36,17 @@ class DirectiveFactory {
     // TODO(deboer): I'm not a fan of 'null' as a configuration value.
     // It would be awesome if $transclude could be an enum.
     $transclude = reflectStaticField(directiveType, '\$transclude');
+    $controllerType = reflectStaticField(directiveType, '\$controller');
+    var required = reflectStaticField(directiveType, '\$require');
+    if (required != null) {
+      $requiredController = "\$${required}Controller";
+    }
+
+    if ($controllerType != null) {
+      assert($requiredController == null);
+      $requiredController = "\$${$name}Controller";
+    }
+
   }
 }
 
@@ -91,4 +104,8 @@ class DirectiveValue {
   String value;
   DirectiveValue() : this.value = "ERROR DEFAULT";
   DirectiveValue.fromString(this.value);
+}
+
+class Controller {
+
 }
