@@ -50,4 +50,35 @@ describe(name, fn) {
 beforeEach(fn) => currentDescribe.beforeEachFns.add(fn);
 afterEach(fn) => currentDescribe.afterEachFns.add(fn);
 
+var jasmine = new Jasmine();
+
+class SpyFunction {
+  String name;
+  List<List<dynamic>> invocations = [];
+
+  SpyFunction([this.name]);
+  call([a0, a1, a2, a3, a4, a5, a6]) {
+    var args = [];
+    if (?a0) args.add(a0);
+    if (?a1) args.add(a1);
+    if (?a2) args.add(a2);
+    if (?a3) args.add(a3);
+    if (?a4) args.add(a4);
+    if (?a5) args.add(a5);
+    if (?a6) args.add(a6);
+    invocations.add(args);
+  }
+
+  reset() => invocations = [];
+
+  num get count => invocations.length;
+  bool get called => count > 0;
+}
+
+class Jasmine {
+  createSpy([String name]) {
+    return new SpyFunction(name);
+  }
+}
+
 main(){}
