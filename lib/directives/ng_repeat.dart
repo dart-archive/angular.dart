@@ -26,7 +26,7 @@ class NgRepeatAttrDirective  {
     // TODO(deboer): huge hack. I can't update nicely the list yet.
     var lastListLen = 0;
     // should be watchprops
-    scope.$watch(listExpr, (List value) {
+    scope.$watch(listExpr, (List value, _, __) {
       if (value.length == lastListLen) { return; }
       lastListLen = value.length;
 

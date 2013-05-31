@@ -211,6 +211,7 @@ getter(scope, locals, path) {
     currentValue = getterChild(currentValue, curKey)[1];
     if (currentValue == null) { return null; }
   }
+  //throw "getter parser";
   return currentValue;
 }
 

@@ -8,7 +8,7 @@ class NgBindAttrDirective  {
   NgBindAttrDirective(dom.Element this.element, DirectiveValue this.value);
 
   attach(Scope scope) {
-    scope.$watch(value, (value) { element.text = value; });
+    scope.$watch(value, (value, _, __) { element.text = value; });
   }
 
 }

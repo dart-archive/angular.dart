@@ -12,30 +12,28 @@ class LoggerBlockDirective {
 
 main() {
   describe('Block', () {
+    // NOTE(deboer): beforeEach and nested describes don't play nicely.  Repeat.
+    beforeEach(() => currentSpecInjector = new SpecInjector());
+    beforeEach(module(angularModule));
+    afterEach(() => currentSpecInjector = null);
+
     var anchor;
     var $rootElement;
-    var $blockTypeFactory;
-    var $blockListFactory;
-    var logger;
     var blockCache;
 
     beforeEach(() {
       $rootElement = $('<div></div>');
-      var injector = new Injector();
-      $blockTypeFactory = injector.get(BlockTypeFactory);
-      $blockListFactory = injector.get(BlockListFactory);
-      logger = injector.get(Logger);
     });
 
     describe('mutation', () {
       var a, b;
 
-      beforeEach(() {
+      beforeEach(inject((BlockTypeFactory $blockTypeFactory, BlockListFactory $blockListFactory) {
         $rootElement.html('<!-- anchor -->');
         anchor = $blockListFactory($rootElement.contents().eq(0), {});
         a = $blockTypeFactory($('<span>A</span>a'), [])();
         b = $blockTypeFactory($('<span>B</span>b'), [])();
-      });
+      }));
 
 
       describe('insertAfter', () {
@@ -107,7 +105,7 @@ main() {
           expect(b.previous).toBe(anchor);
         });
 
-        it('should remove', () {
+        it('should remove', inject((BlockTypeFactory $blockTypeFactory, Logger logger) {
           a.remove();
           b.remove();
 
@@ -136,7 +134,7 @@ main() {
           outterBlock.remove();
 
           expect($rootElement.text()).toEqual('');
-        });
+        }));
       });
 
 

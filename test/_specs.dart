@@ -44,7 +44,7 @@ class Expect {
   toBe(expected) => unit.expect(actual,
       unit.predicate((actual) => identical(expected, actual), '$expected'));
   toThrow(exception) => unit.expect(actual, unit.throwsA(unit.contains(exception)));
-  toBeFalsy() => unit.expect(actual, (v) => v is bool ? v == false : !(v is Object));
+  toBeFalsy() => unit.expect(actual, (v) => v == null ? true : v is bool ? v == false : !(v is Object));
   toBeTruthy() => unit.expect(actual, (v) => v is bool ? v == true : v is Object);
   toBeDefined() => unit.expect(actual, (v) => v is Object);
   toBeNull() => unit.expect(actual, unit.isNull);
@@ -180,5 +180,6 @@ module(Function fn) {
 
 main() {
   beforeEach(() => currentSpecInjector = new SpecInjector());
+  beforeEach(module(angularModule));
   afterEach(() => currentSpecInjector = null);
 }

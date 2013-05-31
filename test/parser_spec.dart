@@ -428,6 +428,12 @@ main() {
       expect(eval("{a:a}")["a"]).toEqual("abc");
     });
 
+    it('should evalulate objects on Scope', inject((Scope scope) {
+      scope.a = "abc";
+      var result = Parser.parse("a")(scope, null);
+      expect(result).toEqual("abc");
+    }));
+
     it('should evaluate field access on function call result', () {
       scope["a"] =  () {
         return {'name':'misko'};

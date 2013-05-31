@@ -1,6 +1,7 @@
 library angular;
 
 import "dart:mirrors";
+import "dart:json" as json;
 import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'debug.dart';
@@ -31,4 +32,18 @@ num id = 0;
 
 nextUid() {
   return '_${id++}';
+}
+
+noop() {}
+
+toJson(obj) {
+  try {
+    return json.stringify(obj);
+  } catch(e) {
+    return "NOT-JSONABLE (see toJson(obj) in angular.dart)";
+  }
+}
+
+angularModule(Module module) {
+  module.value(ScopeDigestTTL, new ScopeDigestTTL(5));
 }

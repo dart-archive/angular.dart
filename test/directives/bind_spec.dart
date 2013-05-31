@@ -1,6 +1,11 @@
 import "../_specs.dart";
 
 main() {
+  // NOTE(deboer): beforeEach and nested describes don't play nicely.  Repeat.
+  beforeEach(() => currentSpecInjector = new SpecInjector());
+  beforeEach(module(angularModule));
+  afterEach(() => currentSpecInjector = null);
+
   describe('BindDirective', () {
     it('should set text', inject((Scope scope) {
       var element = $('<div></div>');
