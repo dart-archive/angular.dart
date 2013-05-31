@@ -120,38 +120,65 @@ class Logger implements List {
 }
 
 class SpecInjector {
-  var injector;
+  Injector injector;
+  List<Module> modules = [new Module()..value(Expando, new Expando('specExpando'))];
 
-  inject(Function fn) {
-    var stack = null;
-    try {
-      throw '';
-    } catch (e, s) {
-      stack = s;
+  module(Function fn) {
+    Module module = new Module();
+    modules.add(module);
+    fn(module);
+  }
+
+  inject(Function fn, declarationStack) {
+    if (injector == null) {
+      injector = new Injector(modules);
     }
-    return () {
-      if (injector == null) {
-        injector = new Injector([new Module()..value(Expando, new Expando('specExpando'))]);
+    try {
+      injector.invoke(fn);
+    } catch (e, s) {
+      var msg;
+      if (e is mirror.MirroredUncaughtExceptionError) {
+        msg = e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
+      } else {
+        msg = e.toString();
       }
-      try {
-        injector.invoke(fn);
-      } catch (e, s) {
-        var msg;
-        if (e is mirror.MirroredUncaughtExceptionError) {
-          msg = e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
-        } else {
-          msg = e.toString();
-        }
-        var frames = stack.toString().split('\n');
-        frames.removeAt(0);
-        var declaredAt = frames.join('\n');
-        throw msg + "\n DECLARED AT:\n" + declaredAt;
-      }
-    };
-
+      var frames = declarationStack.toString().split('\n');
+      frames.removeAt(0);
+      var declaredAt = frames.join('\n');
+      throw msg + "\n DECLARED AT:\n" + declaredAt;
+    }
   }
 
   reset() { injector = null; }
 }
 
+SpecInjector currentSpecInjector = null;
+inject(Function fn) {
+  var stack = null;
+  try {
+    throw '';
+  } catch (e, s) {
+    stack = s;
+  }
+  if (currentSpecInjector == null ) {
+    return () {
+      return currentSpecInjector.inject(fn, stack);
+    };
+  } else {
+    return currentSpecInjector.inject(fn, stack);
+  }
+}
+module(Function fn) {
+  if (currentSpecInjector == null ) {
+    return () {
+      return currentSpecInjector.module(fn);
+    };
+  } else {
+    return currentSpecInjector.module(fn);
+  }
+}
 
+main() {
+  beforeEach(() => currentSpecInjector = new SpecInjector());
+  afterEach(() => currentSpecInjector = null);
+}

@@ -1,21 +1,8 @@
 import "../_specs.dart";
 
 main() {
-
-  // TODO move the "inject" function into a shared library.
-  var specInjector = new SpecInjector();
-  var inject = specInjector.inject;
-
-  beforeEach(() {
-    specInjector.reset();
-  });
-
-  afterEach(() {
-    specInjector.reset();
-  });
-
-  describe('BindDirective', inject((Injector injector) {
-    it('should set text', () {
+  describe('BindDirective', () {
+    it('should set text', inject((Scope scope) {
       var element = $('<div></div>');
       expect(element.text()).toEqual('');
 
@@ -24,7 +11,6 @@ main() {
       module.value(DirectiveValue, new DirectiveValue.fromString('a'));
       var bind = new Injector([module]).get(NgBindAttrDirective);
 
-      var scope = new Scope();
       var VALUE_FOR_A = 'valueFromScope';
 
       scope['a'] = VALUE_FOR_A;
@@ -32,6 +18,6 @@ main() {
       scope.$digest();
 
       expect(element.text()).toEqual(VALUE_FOR_A);
-    });
-  }));
+    }));
+  });
 }

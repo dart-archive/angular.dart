@@ -3,21 +3,6 @@ import "dart:mirrors";
 
 main() {
 
-  var specInjector = new SpecInjector();
-  var inject = specInjector.inject;
-
-  module(fn) {
-    return () {};
-  }
-
-  beforeEach(() {
-    specInjector.reset();
-  });
-
-  afterEach(() {
-    specInjector.reset();
-  });
-
   describe('dte.compiler', () {
     Compiler $compile;
     Scope $rootScope;
@@ -194,7 +179,7 @@ main() {
     });
 
 
-    it('should allow multiple transclusions on one element and in correct order.', () {
+    xit('should allow multiple transclusions on one element and in correct order.', () {
       module(($provide) {
         /*
         var One = ($anchor) {
@@ -241,7 +226,7 @@ main() {
         });
         */
       });
-      inject(($compile) {
+      inject((Compiler $compile) {
         var element = $(
             '<div><b>prefix<span two one three>{{test}}</span>suffix</b></div>');
         var block = $compile(element)(element);

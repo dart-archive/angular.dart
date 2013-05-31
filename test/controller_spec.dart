@@ -53,21 +53,9 @@ class OtherAttrDirective {
 }
 
 main() {
-
-  var specInjector = new SpecInjector();
-  var inject = specInjector.inject;
-
   module(fn) {
     return () {};
   }
-
-  beforeEach(() {
-    specInjector.reset();
-  });
-
-  afterEach(() {
-    specInjector.reset();
-  });
 
   describe('controller', () {
     Compiler $compile;
