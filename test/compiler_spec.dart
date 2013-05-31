@@ -56,7 +56,7 @@ main() {
       // TODO(deboer): Digest twice until we have dirty checking in the scope.
       $rootScope.$digest();
       $rootScope.$digest();
-      expect(element.text()).toEqual('bb');  // TODO(deboer): Broken until we have child scopes
+      expect(element.text()).toEqual('Ab');
 
       $rootScope.items = [];
       $rootScope.$digest();

@@ -40,9 +40,9 @@ class NgRepeatAttrDirective  {
       // for each value, create a child scope and call the compiler's linker
       // function.
       value.forEach((oneValue) {
-        // TODO(deboer): child scopes!
-        scope[itemExpr] = oneValue;
-        var newBlock = blockList.newBlock()..attach(scope)..insertAfter(cursor);
+        var child = scope.$new();
+        child[itemExpr] = oneValue;
+        var newBlock = blockList.newBlock()..attach(child)..insertAfter(cursor);
         cursor = newBlock;
       });
 
