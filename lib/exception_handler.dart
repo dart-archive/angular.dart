@@ -5,3 +5,11 @@ class ExceptionHandler {
     throw "$error \nORIGINAL STACKTRACE:\n $stack";
   }
 }
+
+class LogExceptionHandler implements ExceptionHandler {
+  List errors = [];
+
+  call(error, stack, [reason]){
+    errors.add(error);
+  }
+}
