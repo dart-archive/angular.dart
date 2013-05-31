@@ -278,6 +278,14 @@ main() {
       expect(eval("false||false")).toEqual(false||false);
     });
 
+    it('should auto convert ints to strings', () {
+      expect(eval("'str ' + 4")).toEqual("str 4");
+      expect(eval("4 + ' str'")).toEqual("4 str");
+      expect(eval("4 + 4")).toEqual(8);
+      expect(eval("4 + 4 + ' str'")).toEqual("8 str");
+      expect(eval("'str ' + 4 + 4")).toEqual("str 44");
+    });
+
     //// ==== IMPORTED ITs
 
     it('should parse expressions', () {

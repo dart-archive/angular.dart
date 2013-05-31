@@ -69,6 +69,18 @@ toBool(x) {
   throw "Can't convert $x to boolean";
 }
 
+// Automatic type conversion.
+autoConvertAdd(a, b) {
+  // TODO(deboer): Support others.
+  if (a is String && b is! String) {
+    return a + b.toString();
+  }
+  if (a is! String && b is String) {
+    return a.toString() + b;
+  }
+  return a + b;
+}
+
 Map<String, Operator> OPERATORS = {
   'undefined': NULL_OP,
   'true': (scope, locals, a, b) => true,
@@ -76,7 +88,7 @@ Map<String, Operator> OPERATORS = {
   '+': (scope, locals, aFn, bFn) {
     var a = aFn(scope, locals);
     var b = bFn(scope, locals);
-    if (a != null && b != null) return a + b;
+    if (a != null && b != null) return autoConvertAdd(a, b);
     if (a != null) return a;
     if (b != null) return b;
     return null;
