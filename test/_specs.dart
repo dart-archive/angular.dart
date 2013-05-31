@@ -6,7 +6,9 @@ import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/debug.dart';
 import 'dart:mirrors' as mirror;
 import 'package:angular/angular.dart';
+import 'jasmine_syntax.dart';
 import 'package:di/di.dart';
+import 'package:unittest/mock.dart';
 
 export 'package:unittest/unittest.dart';
 export 'package:angular/debug.dart';
@@ -14,6 +16,7 @@ export 'package:angular/angular.dart';
 export 'dart:html';
 export 'jasmine_syntax.dart';
 export 'package:di/di.dart';
+export 'package:unittest/mock.dart';
 
 es(String html) {
   var div = new DivElement();
@@ -32,16 +35,32 @@ Expect expect(actual, [unit.Matcher matcher]) {
 
 class Expect {
   var actual;
-  Expect(this.actual);
+  var not;
+  Expect(this.actual) {
+    not = new NotExpect(this);
+  }
 
   toEqual(expected) => unit.expect(actual, unit.equals(expected));
   toBe(expected) => unit.expect(actual,
-      unit.predicate((actual) => identical(expected, actual)));
+      unit.predicate((actual) => identical(expected, actual), '$expected'));
   toThrow(exception) => unit.expect(actual, unit.throwsA(unit.contains(exception)));
-  toBeFalsy() => unit.expect(actual, unit.isFalse);
-  toBeTruthy() => unit.expect(actual, unit.isTrue);
+  toBeFalsy() => unit.expect(actual, (v) => v is bool ? v == false : !(v is Object));
+  toBeTruthy() => unit.expect(actual, (v) => v is bool ? v == true : v is Object);
+  toBeDefined() => unit.expect(actual, (v) => v is Object);
   toBeNull() => unit.expect(actual, unit.isNull);
   toBeNotNull() => unit.expect(actual, unit.isNotNull);
+
+  toHaveBeenCalled() => unit.expect(actual.called, true, reason: 'method not called');
+  toHaveBeenCalledOnce() => unit.expect(actual.count, 1, reason: 'method invoked ${actual.count} expected once');
+}
+
+class NotExpect {
+  Expect expect;
+  get actual => expect.actual;
+  NotExpect(this.expect);
+
+  toHaveBeenCalled() => unit.expect(actual.called, false, reason: 'method called');
+  toThrow() => actual();
 }
 
 $(selector) {
