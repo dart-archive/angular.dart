@@ -4,10 +4,17 @@
     <script src="main.dart" type="application/dart"></script>
 </head>
 <body>
+<div  ng-app>
 <h1>A Demo of the Bind Directive</h1>
-<div ng-app>
+<div>
   <div ng-bind="greeting"></div>
   <div ng-bind="random()"></div>
 </div>
+
+<h1>A Demo of the Repeat Directive</h1>
+<ul>
+  <li ng-repeat="name in people" ng-bind="name"></li>
+</ul>
+  </div>
 </body>
 </html>

@@ -11,11 +11,16 @@ class AngularBootstrap {
   AngularBootstrap(Compiler this.$compile, Scope this.$rootScope, Directives this.directives);
 
   call() {
-    List<dom.Element> topElt = [dom.query('[ng-app]')];
+    List<dom.Node> topElt = dom.query('[ng-app]').nodes.toList();
     assert(topElt.length > 0);
 
     $rootScope['greeting'] = "Hello world!";
-    $rootScope['random'] = () { return "Random: ${new math.Random().nextInt(100)}"; };
+    var lastRandom;
+    $rootScope['random'] = () {
+      if (lastRandom == null) lastRandom = "Random: ${new math.Random().nextInt(100)}";
+      return lastRandom;
+    };
+    $rootScope['people'] = ["James", "Misko"];
 
     var template = $compile.call(topElt);
     template.call(topElt).attach($rootScope);
@@ -28,9 +33,12 @@ class AngularBootstrap {
 }
 main() {
   // Set up the Angular directives.
-  Injector injector = new Injector();
+  var module = new Module();
+  angularModule(module);
+  Injector injector = new Injector([module]);
   Directives directives = injector.get(Directives);
   directives.register(NgBindAttrDirective);
+  directives.register(NgRepeatAttrDirective);
 
   injector.get(AngularBootstrap)();
 
