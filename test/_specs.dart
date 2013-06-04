@@ -26,6 +26,24 @@ es(String html) {
 
 e(String html) => es(html).first;
 
+renderedText(n, [bool notShadow = false]) {
+  if (n is List) {
+    return n.map((nn) => renderedText(nn)).join("");
+  }
+
+  if (n is Comment) return '';
+
+  if (!notShadow && n is Element && n.shadowRoot != null) {
+    var shadowText = n.shadowRoot.text;
+    var domText = renderedText(n, true);
+    return shadowText.replaceFirst("SHADOW-CONTENT", domText);
+  }
+
+  if (n.nodes == null || n.nodes.length == 0) return n.text;
+
+  return n.nodes.map((cn) => renderedText(cn)).join("");
+}
+
 Expect expect(actual, [unit.Matcher matcher]) {
   if (?matcher) {
     unit.expect(actual, matcher);
