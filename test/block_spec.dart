@@ -124,9 +124,14 @@ main() {
           ]);
 
           var outterBlock = outerBlockType();
-          var outterAnchor = logger[0];
+          // The LoggerBlockDirective caused a BlockList for innerBlockType to
+          // be created at logger[0];
+          BlockList outterAnchor = logger[0];
 
           outterBlock.insertAfter(anchor);
+          // outterAnchor is a BlockList, but it has "elements" set to the 0th element
+          // of outerBlockType.  So, calling insertAfter() will insert the new
+          // block after the <!--start--> element.
           outterAnchor.newBlock().insertAfter(outterAnchor);
 
           expect($rootElement.text()).toEqual('text');
