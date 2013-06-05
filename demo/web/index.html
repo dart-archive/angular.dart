@@ -5,16 +5,22 @@
 </head>
 <body>
 <div  ng-app>
-<h1>A Demo of the Bind Directive</h1>
-<div>
-  <div ng-bind="greeting"></div>
-  <div ng-bind="random()"></div>
-</div>
+    <h1>A Demo of the Bind Directive</h1>
+    <div>
+        <div ng-bind="greeting"></div>
+        <div ng-bind="random()"></div>
+    </div>
 
-<h1>A Demo of the Repeat Directive</h1>
-<ul>
-  <li ng-repeat="name in people" ng-bind="name"></li>
-</ul>
-  </div>
+    <h1>A Demo of the Repeat Directive</h1>
+    <ul>
+        <li ng-repeat="name in people" ng-bind="name"></li>
+    </ul>
+
+    <h1>A Demo of Components</h1>
+    <div tabs>
+        <div pane title="Pane 1">Pane 1 Contents</div>
+        <div pane title="Pane 2">Pane 2 Contents</div>
+    </div>
+</div>
 </body>
 </html>
