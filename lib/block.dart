@@ -209,7 +209,20 @@ class Block implements ElementWrapper {
         controllers[requiredController] = controller;
       }
 
-      var directive = injector.get(directiveType);
+      var directive;
+      try {
+
+      directive = injector.get(directiveType);
+      } catch (e,s) {
+        var msg;
+        if (e is MirroredUncaughtExceptionError) {
+          msg = e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
+        } else {
+          msg = "Creating $directiveName: "  + e.toString();
+        }
+
+        throw msg;
+      }
       directives.add(directive);
     }
   }

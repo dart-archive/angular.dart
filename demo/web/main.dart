@@ -21,6 +21,7 @@ class AngularBootstrap {
       return lastRandom;
     };
     $rootScope['people'] = ["James", "Misko"];
+    $rootScope['objs'] = [{'v': 'v1'}, {'v': 'v2'}];
 
     var template = $compile.call(topElt);
     template.call(topElt).attach($rootScope);
@@ -30,67 +31,68 @@ class AngularBootstrap {
   }
 }
 
-class TabsController implements Controller {
+class BookController implements Controller {
   Scope $scope;
-  List panes;
-  var selectedPanes = new Expando<dom.Node>();
+  List chapters;
 
-  MainController(Scope this.$scope) {
-    panes = $scope.panes = [];
+  BookController(Scope this.$scope) {
+    $scope.greeting = "TabController";
+    chapters = [];
+    $scope.chapters = chapters;
 
-    $scope.selected = (pane) {
-      panes.forEach((p) {
-        selectedPanes[p]['selected'] = false;
+    $scope.selected = (chapterScope) {
+      chapters.forEach((p) {
+        p["selected"] = false;
       });
-      selectedPanes[pane]['selected'] = true;
+      chapterScope["selected"] = true;
     };
   }
 
-  addPane(dom.Node pane) {
-    if (panes.length == 0) { $scope.selected(pane); }
-    panes.add(pane);
+  addChapter(var chapterScope) {
+    if (chapters.length == 0) { ($scope.selected)(chapterScope); }
+    chapters.add(chapterScope);
   }
 }
 
-class TabsAttrDirective {
-  static var $transclude = "true";
-  static String $template = '<div class="tabbable">Shadow' +
-    '<ul class="nav nav-tabs">' +
-    '<li ng-repeat="pane in panes" ng-class="{active:pane.selected}">'+
-    '<a href="" ng-click="select(pane)">{{pane.title}}</a>' +
-    '</li>' +
+class BookAttrDirective {
+  static var $controller = BookController;
+  static String $template =
+    '<div>Shadow backed template. Greeting from the controller: <span ng-bind="greeting"></span>' +
+    '<h2>Table of Contents</h2><ul class="nav nav-tabs">' +
+    '  <li ng-repeat="chapter in chapters" ng-bind="chapter.title"></li>' +
     '</ul>' +
-    '<content class="tab-content" ng-transclude>CONTENT</content>' +
+    '<content></content>' +
     '</div>';
- // static String $template = '<div>Hello shaddow</div>';
-  BlockList blockList;
 
+  attach(Scope scope) {}
+}
 
-  TabsAttrDirective(BlockList this.blockList,
-                    dom.Element element) {
-    dom.ShadowRoot shadow = element.createShadowRoot();
-
-
-    print("tab attr: ${element.text}");
-    print("shadow: ${shadow.text}");
-
-  }
+class ChapterAttrDirective {
+  static var $require = "^[book]";
+  BookController controller;
+  dom.Element element;
+  ChapterAttrDirective(dom.Element this.element, Controller this.controller);
 
   attach(Scope scope) {
-    print("tab attach");
+    // automatic scope management isn't implemented yet.
+    var child = scope.$new();
+    child.title = element.attributes['title'];
+    controller.addChapter(child);
   }
 }
 
 main() {
   // Set up the Angular directives.
   var module = new Module();
+  module.value(Expando, new Expando());
   angularModule(module);
   Injector injector = new Injector([module]);
   Directives directives = injector.get(Directives);
   directives.register(NgBindAttrDirective);
   directives.register(NgRepeatAttrDirective);
   directives.register(NgShadowDomAttrDirective);
-  directives.register(TabsAttrDirective);
+  directives.register(BookAttrDirective);
+  directives.register(ChapterAttrDirective);
 
   injector.get(AngularBootstrap)();
 

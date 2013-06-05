@@ -14,12 +14,13 @@
     <h1>A Demo of the Repeat Directive</h1>
     <ul>
         <li ng-repeat="name in people" ng-bind="name"></li>
+        <li ng-repeat="obj in objs" ng-bind="obj.v"></li>
     </ul>
 
     <h1>A Demo of Components</h1>
-    <div tabs>
-        <div pane title="Pane 1">Pane 1 Contents</div>
-        <div pane title="Pane 2">Pane 2 Contents</div>
+    <div book>
+        <div chapter title="The First Act">The contents of the first act.</div>
+        <div chapter title="The Second Act">The contents of the second act.</div>
     </div>
 </div>
 </body>
