@@ -38,6 +38,18 @@ class DepAttrDirective {
   }
 }
 
+class InheritDepAttrDirective {
+  static var $require = '^[main]';
+  Log log;
+  Controller controller;
+  InheritDepAttrDirective(Log this.log, Controller this.controller) { dump("id"); }
+
+  attach(Scope scope) {
+    log('inheritDep:${controller.name}:${controller.calledFromMainDirective}');
+  }
+}
+
+
 class OtherAttrDirective {
   Log log;
   Controller controller;
@@ -62,6 +74,7 @@ main() {
       injector.get(Directives)
       ..register(MainAttrDirective)
       ..register(DepAttrDirective)
+      ..register(InheritDepAttrDirective)
       ..register(OtherAttrDirective);
 
       $compile = injector.get(Compiler);
@@ -84,6 +97,24 @@ main() {
 
        expect($log.result()).toEqual('main; dep:main:true; other:false');
     });
+
+    it('should get a required controller from the parent element', () {
+      var element = $('<div main><div inherit-dep></div></div>');
+      var template = $compile(element);
+      template(element).attach($rootScope);
+
+      expect($log.result()).toEqual('main; inheritDep:main:true');
+    });
+
+    it('should get a required controller from an ancestor', () {
+      var element = $('<div main><div><div inherit-dep></div></div></div>');
+      var template = $compile(element);
+      template(element).attach($rootScope);
+
+      expect($log.result()).toEqual('main; inheritDep:main:true');
+    });
+
+    xit('should error nicely on missing controller', () {});
 
   });
 }

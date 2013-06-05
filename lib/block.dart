@@ -166,10 +166,22 @@ class Block implements ElementWrapper {
           new DirectiveValue.fromString(directiveDef.value));
 
       var controllerType = directiveDef.directiveFactory.$controllerType;
-      var requiredController = directiveDef.directiveFactory.$requiredController;
+      String requiredController = directiveDef.directiveFactory.$requiredController;
 
       if (requiredController != null) {
         directiveModule.factory(Controller, (dom.Node node, Expando elementControllers) {
+          getInheritedController(n, requiredController) {
+            if (n == null) return null;
+            var controller, expando;
+            if ((expando = elementControllers[n]) != null && (controller = expando[requiredController]) != null) {
+              return controller;
+            }
+            return getInheritedController(n.parentNode, requiredController);
+          }
+          if (requiredController.startsWith('\$^')) {
+            return getInheritedController(node.parentNode, requiredController.replaceFirst('^', ''));
+          }
+          if (elementControllers[node] == null) return null;
           return elementControllers[node][requiredController];
         });
       } else {
