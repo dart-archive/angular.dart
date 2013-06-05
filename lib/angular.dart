@@ -12,6 +12,7 @@ part 'block_type.dart';
 part 'compiler.dart';
 part 'directive.dart';
 part 'directives/ng_bind.dart';
+part 'directives/ng_shadow_dom.dart';
 part 'directives/ng_repeat.dart';
 
 part 'dom_utilities.dart';

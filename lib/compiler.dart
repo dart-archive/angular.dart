@@ -66,7 +66,17 @@ class Compiler {
           directiveDefs = [];
         }
         directiveDefs.add(new DirectiveDef(directiveFactory, directiveInfo.value, blockTypes));
+        if (directiveFactory.$template != null) {
+          // TODO(deboer): port this function.
+          denormalizeTemplate(x) => x;
+          var templateValue = denormalizeTemplate(directiveFactory.$template);
+          var div = new dom.DivElement();
+          div.innerHtml = templateValue;
+          var templateBlockType = $injector.get(Compiler)(div.nodes);
+          directiveDefs.add(new DirectiveDef(directives['[ng-shadow-dom]'], '', {'': templateBlockType}));
+        }
       }
+
       if (compileChildren && domCursor.descend()) {
         templateCursor.descend();
 

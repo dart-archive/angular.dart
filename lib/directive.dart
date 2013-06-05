@@ -15,6 +15,7 @@ class DirectiveFactory {
   int $priority = 0;
   Type $controllerType;
   String $requiredController;
+  String $template;
 
   DirectiveFactory(this.directiveType) {
     var name = directiveType.toString();
@@ -36,6 +37,7 @@ class DirectiveFactory {
     // TODO(deboer): I'm not a fan of 'null' as a configuration value.
     // It would be awesome if $transclude could be an enum.
     $transclude = reflectStaticField(directiveType, '\$transclude');
+    $template = reflectStaticField(directiveType, '\$template');
     $controllerType = reflectStaticField(directiveType, '\$controller');
     var required = reflectStaticField(directiveType, '\$require');
     if (required != null) {
