@@ -1,12 +1,8 @@
 import "_specs.dart";
+import "_log.dart";
 import "dart:mirrors";
 
 
-class Log {
-  List<String> output = [];
-  call(s) { output.add(s); }
-  String result() => output.join('; ');
-}
 
 class MainController implements Controller {
   var name;
