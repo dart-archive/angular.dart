@@ -93,9 +93,21 @@ class Block implements ElementWrapper {
 
     for (num i = 0, ii = directivePositions.length; i < ii;) {
       num index = directivePositions[i++];
+
       List<DirectiveDef> directiveDefs = directivePositions[i++];
       List childDirectivePositions = directivePositions[i++];
-      dom.Node node = nodeList[index + preRenderedIndexOffset];
+      var nodeListIndex = index + preRenderedIndexOffset;
+      dom.Node node = nodeList[nodeListIndex];
+
+      // if node isn't attached to the DOM, create a parent for it.
+      var parentNode = node.parentNode;
+      var fakeParent = false;
+      if (parentNode == null) {
+        fakeParent = true;
+        parentNode = new dom.DivElement();
+        parentNode.append(node);
+      }
+
       Map<String, BlockListFactory> anchorsByName = {};
       List<String> directiveNames = [];
 
@@ -126,6 +138,10 @@ class Block implements ElementWrapper {
       if (childDirectivePositions != null) {
         _link(node.nodes, childDirectivePositions, blockCaches);
       }
+
+      if (fakeParent)
+        // extract the node from the parentNode.
+        nodeList[nodeListIndex] = parentNode.nodes[0];
     }
   }
 

@@ -10,6 +10,24 @@ class LoggerBlockDirective {
   }
 }
 
+class ReplaceBlockDirective {
+  ReplaceBlockDirective(BlockList list, Node node) {
+    var block = list.newBlock();
+    block.insertAfter(list);
+    node.remove();
+  }
+}
+
+class ShadowBlockDirective {
+  ShadowBlockDirective(BlockList list, Element element) {
+    var block = list.newBlock();
+    var shadowRoot = element.createShadowRoot();
+    for (var i = 0, ii = block.elements.length; i < ii; i++) {
+      shadowRoot.append(block.elements[i]);
+    }
+  }
+}
+
 main() {
   describe('Block', () {
     // NOTE(deboer): beforeEach and nested describes don't play nicely.  Repeat.
@@ -75,6 +93,36 @@ main() {
         });
       });
 
+
+      describe('replace', () {
+        it('should allow directives to remove elements', inject((BlockTypeFactory $blockTypeFactory) {
+          var innerBlockType = $blockTypeFactory($('<b>text</b>'), []);
+          var outerBlockType = $blockTypeFactory($('<div>TO BE REPLACED</div><div>:ok</div>'), [
+              0, [new DirectiveDef(
+                  new DirectiveFactory(ReplaceBlockDirective),
+                  '', {'': innerBlockType})], null
+          ]);
+
+          var outerBlock = outerBlockType();
+          outerBlock.insertAfter(anchor);
+          expect($rootElement.text()).toEqual('text:ok');
+        }));
+
+        it('should allow directives to create shadow DOM', inject((BlockTypeFactory $blockTypeFactory) {
+          var innerBlockType = $blockTypeFactory($('<b>shadow</b>'), []);
+          var outerBlockType = $blockTypeFactory($('<x-shadowy>boo</x-shadowy><div>:ok</div>'), [
+              0, [new DirectiveDef(
+                  new DirectiveFactory(ShadowBlockDirective),
+                  '', {'': innerBlockType})], null
+          ]);
+
+          var outerBlock = outerBlockType();
+          outerBlock.insertAfter(anchor);
+          expect($rootElement.text()).toEqual('boo:ok');
+          expect(renderedText($rootElement)).toEqual('shadow:ok');
+
+        }));
+      });
 
       describe('remove', () {
         beforeEach(() {
