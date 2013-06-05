@@ -45,6 +45,30 @@ main() {
       expect(cursor.microNext(), equals(false));
     });
 
+    it('should descend and ascend two levels', () {
+      var l1 = $('<span></span>')[0];
+      var l2 = $('<span></span>')[0];
+      var e = $('<e>E</e>')[0];
+      var f = $('<f>F</f>')[0];
+      l1.append(l2);
+      l1.append(f);
+      l2.append(e);
+      var cursor = new NodeCursor([l1, c]);
+
+      expect(cursor.descend(), equals(true));
+      expect(cursor.nodeList(), equals([l2]));
+      expect(cursor.descend(), equals(true));
+      expect(cursor.nodeList(), equals([e]));
+      cursor.ascend();
+      expect(cursor.microNext(), equals(true));
+      expect(cursor.nodeList(), equals([f]));
+      expect(cursor.microNext(), equals(false));
+      cursor.ascend();
+      expect(cursor.microNext(), equals(true));
+      expect(cursor.nodeList(), equals([c]));
+      expect(cursor.microNext(), equals(false));
+    });
+
 
     it('should create child cursor upon replace of top level', () {
       var parentCursor = new NodeCursor([a]);

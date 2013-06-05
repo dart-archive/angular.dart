@@ -60,8 +60,8 @@ class NodeCursor {
   }
 
   ascend() {
-    index = stack.removeAt(0);
-    elements = stack.removeAt(0);
+    elements = stack.removeLast();
+    index = stack.removeLast();
   }
 
   insertAnchorBefore(name) {
