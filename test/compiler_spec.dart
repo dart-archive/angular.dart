@@ -63,6 +63,24 @@ main() {
       expect(element.html()).toEqual('<!--ANCHOR: ng-repeat=item in items-->');
     }));
 
+    xit('should compile repeater with children', inject(() {
+      var element = $('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>');
+      var template = $compile(element);
+
+      $rootScope.items = ['A', 'b'];
+      template(element).attach($rootScope);
+
+      expect(element.text()).toEqual('');
+// TODO(deboer): Digest twice until we have dirty checking in the scope.
+      $rootScope.$digest();
+      $rootScope.$digest();
+      expect(element.text()).toEqual('Ab');
+
+      $rootScope.items = [];
+      $rootScope.$digest();
+      expect(element.html()).toEqual('<!--ANCHOR: ng-repeat=item in items-->');
+    }));
+
 
     xit('should compile multi-root repeater', inject(() {
       var element = $(
