@@ -4,10 +4,34 @@ typedef FnWith0Args();
 typedef FnWith1Args(a0);
 typedef FnWith2Args(a0, a1);
 typedef FnWith3Args(a0, a1, a2);
+typedef FnWith4Args(a0, a1, a2, a3);
+typedef FnWith5Args(a0, a1, a2, a3, a4);
+
+_relaxApply(fn, args) {
+  if (fn is FnWith5Args) {
+    return fn(args[0], args[1], args[2], args[3], args[4]);
+  } else if (fn is FnWith4Args) {
+    return fn(args[0], args[1], args[2], args[3]);
+  } else if (fn is FnWith3Args) {
+    return fn(args[0], args[1], args[2]);
+  } else if (fn is FnWith2Args) {
+    return fn(args[0], args[1]);
+  } else if (fn is FnWith1Args) {
+    return fn(args[0]);
+  } else if (fn is FnWith0Args) {
+    return fn();
+  } else {
+    throw "Unknown function type, expecting 0 to 5 args.";
+  }
+}
 
 _relaxArgs(fn) {
-  return ([a0, a1, a2]) {
-    if (fn is FnWith3Args) {
+  return ([a0, a1, a2, a3, a4]) {
+    if (fn is FnWith5Args) {
+      return fn(a0, a1, a2, a3, a4);
+    } else if (fn is FnWith4Args) {
+      return fn(a0, a1, a2, a3);
+    } else if (fn is FnWith3Args) {
       return fn(a0, a1, a2);
     } else if (fn is FnWith2Args) {
       return fn(a0, a1);
@@ -16,7 +40,7 @@ _relaxArgs(fn) {
     } else if (fn is FnWith0Args) {
       return fn();
     } else {
-      throw "Unknown function type, expecting 0 to 3 args.";
+      throw "Unknown function type, expecting 0 to 5 args.";
     }
   };
 }
@@ -295,30 +319,35 @@ class Scope implements Map {
   }
 
 
-  $emit(name, [args]) {
+  $emit(name, [List args]) {
     var empty = [],
         namedListeners,
         scope = this,
-        stopPropagation = false,
         event = new Event(name, this),
-        listenerArgs = concat([event], arguments, 1),
-        i, length;
+        listenerArgs = [event],
+        i;
+
+    if (args != null) {
+      listenerArgs.addAll(args);
+    }
 
     do {
-      namedListeners = scope._listeners[name] || empty;
-      event.currentScope = scope;
-      i = 0;
-      for (length = namedListeners.length; i<length; i++) {
-        try {
-          namedListeners[i].apply(null, listenerArgs);
-          if (stopPropagation) return event;
-        } catch (e) {
-          _exceptionHandler(e);
+      namedListeners = scope._listeners[name];
+      if (namedListeners != null) {
+        event.currentScope = scope;
+        i = 0;
+        for (var length = namedListeners.length; i<length; i++) {
+          try {
+            _relaxApply(namedListeners[i], listenerArgs);
+            if (event.propagationStopped) return event;
+          } catch (e, s) {
+            _exceptionHandler(e, s);
+          }
         }
       }
       //traverse upwards
       scope = scope.$parent;
-    } while (scope);
+    } while (scope != null);
 
     return event;
   }
@@ -334,14 +363,14 @@ class Scope implements Map {
     if (!?listenerArgs) {
       listenerArgs = [];
     }
-    listenerArgs.insert(0, name);
+    listenerArgs.insert(0, event);
     do {
       current = next;
       event.currentScope = current;
       if (current._listeners.containsKey(name)) {
         current._listeners[name].forEach((listener) {
           try {
-            Function.apply(listener, listenerArgs);
+            _relaxApply(listener, listenerArgs);
           } catch(e, s) {
             _exceptionHandler(e, s);
           }

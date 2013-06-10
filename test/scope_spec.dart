@@ -571,7 +571,7 @@ main() {
     });
 
 
-    xdescribe(r'events', () {
+    describe(r'events', () {
 
       describe(r'$on', () {
 
@@ -594,7 +594,7 @@ main() {
         }));
 
 
-        it(r'should return a function that deregisters the listener', inject((Scope $rootScope) {
+        iit(r'should return a function that deregisters the listener', inject((Scope $rootScope) {
           var log = '',
               child = $rootScope.$new(),
               listenerRemove;
@@ -620,18 +620,18 @@ main() {
       });
 
 
-      describe(r'$emit', () {
+      xdescribe(r'$emit', () {
         var log, child, grandChild, greatGrandChild;
 
         function logger(event) {
-          log += event.currentScope.id + '>';
+          log.add(event.currentScope.id);
         }
 
-        beforeEach(module(($exceptionHandlerProvider) {
-          $exceptionHandlerProvider.mode('log');
+        beforeEach(module((module) {
+          return module.type(ExceptionHandler, LogExceptionHandler);
         }));
         beforeEach(inject((Scope $rootScope) {
-          log = '';
+          log = [];
           child = $rootScope.$new();
           grandChild = child.$new();
           greatGrandChild = grandChild.$new();
@@ -649,23 +649,23 @@ main() {
 
         it(r'should bubble event up to the root scope', () {
           grandChild.$emit(r'myEvent');
-          expect(log).toEqual('2>1>0>');
+          expect(log.join('>')).toEqual('2>1>0');
         });
 
 
         it(r'should dispatch exceptions to the $exceptionHandler',
-            inject(($exceptionHandler) {
+            inject((ExceptionHandler $exceptionHandler) {
           child.$on('myEvent', () { throw 'bubbleException'; });
           grandChild.$emit(r'myEvent');
-          expect(log).toEqual('2>1>0>');
-          expect($exceptionHandler.errors).toEqual(['bubbleException']);
+          expect(log.join('>')).toEqual('2>1>0');
+          expect($exceptionHandler.errors[0].error).toEqual('bubbleException');
         }));
 
 
         it(r'should allow stopping event propagation', () {
           child.$on('myEvent', (event) { event.stopPropagation(); });
           grandChild.$emit(r'myEvent');
-          expect(log).toEqual('2>1>');
+          expect(log.join('>')).toEqual('2>1');
         });
 
 
@@ -675,7 +675,7 @@ main() {
             expect(arg1).toBe('arg1');
             expect(arg2).toBe('arg2');
           });
-          child.$emit(r'abc', 'arg1', 'arg2');
+          child.$emit(r'abc', ['arg1', 'arg2']);
         });
 
 
@@ -713,11 +713,11 @@ main() {
               greatGrandChild211;
 
           function logger(event) {
-            log += event.currentScope.id + '>';
+            log.add(event.currentScope.id);
           }
 
           beforeEach(inject((Scope $rootScope) {
-            log = '';
+            log = [];
             child1 = $rootScope.$new();
             child2 = $rootScope.$new();
             child3 = $rootScope.$new();
@@ -757,33 +757,33 @@ main() {
           }));
 
 
-          it(r'should broadcast an event from the root scope', inject((Scope $rootScope) {
+          xit(r'should broadcast an event from the root scope', inject((Scope $rootScope) {
             $rootScope.$broadcast('myEvent');
-            expect(log).toBe('0>1>11>2>21>211>22>23>3>');
+            expect(log.join('>')).toEqual('0>1>11>2>21>211>22>23>3');
           }));
 
 
           it(r'should broadcast an event from a child scope', () {
             child2.$broadcast('myEvent');
-            expect(log).toBe('2>21>211>22>23>');
+            expect(log.join('>')).toEqual('2>21>211>22>23');
           });
 
 
           it(r'should broadcast an event from a leaf scope with a sibling', () {
             grandChild22.$broadcast('myEvent');
-            expect(log).toBe('22>');
+            expect(log.join('>')).toEqual('22');
           });
 
 
           it(r'should broadcast an event from a leaf scope without a sibling', () {
             grandChild23.$broadcast('myEvent');
-            expect(log).toBe('23>');
+            expect(log.join('>')).toEqual('23');
           });
 
 
           it(r'should not not fire any listeners for other events', inject((Scope $rootScope) {
             $rootScope.$broadcast('fooEvent');
-            expect(log).toBe('');
+            expect(log.join('>')).toEqual('');
           }));
 
 
@@ -819,13 +819,13 @@ main() {
                 child = scope.$new(),
                 args;
 
-            child.$on('fooEvent', () {
-              args = arguments;
+            child.$on('fooEvent', (a, b, c, d, e) {
+              args = [a, b, c, d, e];
             });
-            scope.$broadcast('fooEvent', 'do', 're', 'me', 'fa');
+            scope.$broadcast('fooEvent', ['do', 're', 'me', 'fa']);
 
             expect(args.length).toBe(5);
-            expect(sliceArgs(args, 1)).toEqual(['do', 're', 'me', 'fa']);
+            expect(args.sublist(1)).toEqual(['do', 're', 'me', 'fa']);
           }));
         });
       });
