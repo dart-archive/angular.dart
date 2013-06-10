@@ -59,6 +59,7 @@ class Expect {
   }
 
   toEqual(expected) => unit.expect(actual, unit.equals(expected));
+  toContain(expected) => unit.expect(actual, unit.contains(expected));
   toBe(expected) => unit.expect(actual,
       unit.predicate((actual) => identical(expected, actual), '$expected'));
   toThrow(exception) => unit.expect(actual, unit.throwsA(unit.contains(exception)));
@@ -156,14 +157,14 @@ class SpecInjector {
     } catch (e, s) {
       var msg;
       if (e is mirror.MirroredUncaughtExceptionError) {
-        msg = e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
+        msg = e.exception_string + "\nORIGINAL Stack trace:\n" + e.stacktrace.toString();
       } else {
-        msg = e.toString();
+        msg = '$e\nORIGINAL Stack trace:\n$s';
       }
       var frames = declarationStack.toString().split('\n');
       frames.removeAt(0);
       var declaredAt = frames.join('\n');
-      throw msg + "\n DECLARED AT:\n" + declaredAt;
+      throw msg + "\nDECLARED AT:\n" + declaredAt;
     }
   }
 

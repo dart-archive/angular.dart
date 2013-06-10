@@ -84,7 +84,6 @@ main() {
         expect(log).toEqual(null);
         $rootScope.name = 'misko';
         $rootScope.$digest();
-        dump(log);
         expect(log).toEqual(['misko', null, $rootScope]);
       }));
 
@@ -113,11 +112,11 @@ main() {
           module.type(ExceptionHandler, LogExceptionHandler);
         });
         inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
-          $rootScope.$watch('a', (a, b, c) {throw 'abc';});
+          $rootScope.$watch('a', () {throw 'abc';});
           $rootScope.a = 1;
           $rootScope.$digest();
           expect($exceptionHandler.errors.length).toEqual(1);
-          expect($exceptionHandler.errors[0]).toEqual('abc');
+          expect($exceptionHandler.errors[0].error).toEqual('abc');
         });
       });
 
@@ -149,8 +148,7 @@ main() {
       }));
 
 
-      // NOTE(deboer): Watch is called too often...
-      xit(r'should allow $digest on a child scope with and without a right sibling', inject(
+      it(r'should allow $digest on a child scope with and without a right sibling', inject(
           (Scope $rootScope) {
         // tests a traversal edge case which we originally missed
         var log = [],
@@ -191,8 +189,7 @@ main() {
       }));
 
 
-      // NOTE(deboer): Watch is called more often: but: was 'aaabbbaaabbb'.
-      xit(r'should repeat watch cycle from the root element', inject((Scope $rootScope) {
+      it(r'should repeat watch cycle from the root element', inject((Scope $rootScope) {
         var log = '';
         var child = $rootScope.$new();
         $rootScope.$watch((a) { log += 'a'; });
@@ -443,49 +440,49 @@ main() {
     });
 
 
-    xdescribe(r'$apply', () {
+    describe(r'$apply', () {
       it(r'should apply expression with full lifecycle', inject((Scope $rootScope) {
         var log = '';
         var child = $rootScope.$new();
-        $rootScope.$watch('a', (a) { log += '1'; });
+        $rootScope.$watch('a', (a, _, __) { log += '1'; });
         child.$apply(r'$parent.a=0');
         expect(log).toEqual('1');
       }));
 
 
       it(r'should catch exceptions', () {
-        module(($exceptionHandlerProvider) {
-          $exceptionHandlerProvider.mode('log');
-        });
-        inject((Scope $rootScope, $exceptionHandler, $log) {
-          var log = '';
+        module((Module module) => module.type(ExceptionHandler, LogExceptionHandler));
+        inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
+          var log = [];
           var child = $rootScope.$new();
-          $rootScope.$watch('a', (a) { log += '1'; });
+          $rootScope.$watch('a', (a, _, __) => log.add('1'));
           $rootScope.a = 0;
-          child.$apply(() { throw new Error('MyError'); });
-          expect(log).toEqual('1');
-          expect($exceptionHandler.errors[0].message).toEqual('MyError');
-          $log.error.logs.shift();
+          child.$apply((_, __) { throw 'MyError'; });
+          expect(log.join(',')).toEqual('1');
+          expect($exceptionHandler.errors[0].error).toEqual('MyError');
+          $exceptionHandler.errors.removeAt(0);
+          $exceptionHandler.assertEmpty();
         });
       });
 
 
       it(r'should log exceptions from $digest', () {
-        module(($rootScopeProvider, $exceptionHandlerProvider) {
-          $rootScopeProvider.digestTtl(2);
-          $exceptionHandlerProvider.mode('log');
+        module((Module module) {
+          module.value(ScopeDigestTTL, new ScopeDigestTTL(2));
+          module.type(ExceptionHandler, LogExceptionHandler);
         });
-        inject((Scope $rootScope, $exceptionHandler) {
-          $rootScope.$watch('a', () {$rootScope.b++;});
-          $rootScope.$watch('b', () {$rootScope.a++;});
+        inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
+          $rootScope.$watch('a', (_, __, ___) {$rootScope.b++;});
+          $rootScope.$watch('b', (_, __, ___) {$rootScope.a++;});
           $rootScope.a = $rootScope.b = 0;
 
           expect(() {
             $rootScope.$apply();
-          }).toThrow();
+          }).toThrow('2 \$digest() iterations reached. Aborting!');
 
-          expect($exceptionHandler.errors[0]).toBeDefined();
-
+          expect($exceptionHandler.errors[0].error).toContain('2 \$digest() iterations reached.');
+          $exceptionHandler.errors.removeAt(0);
+          $exceptionHandler.assertEmpty();
           expect($rootScope.$$phase).toBeNull();
         });
       });
@@ -493,40 +490,38 @@ main() {
 
       describe(r'exceptions', () {
         var log;
-        beforeEach(module(($exceptionHandlerProvider) {
-          $exceptionHandlerProvider.mode('log');
+        beforeEach(module((module) {
+          return module.type(ExceptionHandler, LogExceptionHandler);
         }));
         beforeEach(inject((Scope $rootScope) {
           log = '';
-          $rootScope.$watch(() { log += '$digest;'; });
+          $rootScope.$watch(() { log += '\$digest;'; });
           $rootScope.$digest();
           log = '';
         }));
 
 
         it(r'should execute and return value and update', inject(
-            ($rootScope, $exceptionHandler) {
+            (Scope $rootScope, ExceptionHandler $exceptionHandler) {
           $rootScope.name = 'abc';
-          expect($rootScope.$apply((scope) {
-            return scope.name;
-          })).toEqual('abc');
+          expect($rootScope.$apply((scope) => scope.name)).toEqual('abc');
           expect(log).toEqual(r'$digest;');
-          expect($exceptionHandler.errors).toEqual([]);
+          $exceptionHandler.assertEmpty();
         }));
 
 
-        it(r'should catch exception and update', inject((Scope $rootScope, $exceptionHandler) {
-          var error = new Error('MyError');
+        it(r'should catch exception and update', inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
+          var error = 'MyError';
           $rootScope.$apply(() { throw error; });
           expect(log).toEqual(r'$digest;');
-          expect($exceptionHandler.errors).toEqual([error]);
+          expect($exceptionHandler.errors[0].error).toEqual(error);
         }));
       });
 
 
       describe(r'recursive $apply protection', () {
         it(r'should throw an exception if $apply is called while an $apply is in progress', inject(
-            ($rootScope) {
+            (Scope $rootScope) {
           expect(() {
             $rootScope.$apply(() {
               $rootScope.$apply();
@@ -536,7 +531,7 @@ main() {
 
 
         it(r'should throw an exception if $apply is called while flushing evalAsync queue', inject(
-            ($rootScope) {
+            (Scope $rootScope) {
           expect(() {
             $rootScope.$apply(() {
               $rootScope.$evalAsync(() {
@@ -548,7 +543,7 @@ main() {
 
 
         it(r'should throw an exception if $apply is called while a watch is being initialized', inject(
-            ($rootScope) {
+            (Scope $rootScope) {
           var childScope1 = $rootScope.$new();
           childScope1.$watch('x', () {
             childScope1.$apply();
@@ -558,7 +553,7 @@ main() {
 
 
         it(r'should thrown an exception if $apply in called from a watch fn (after init)', inject(
-            ($rootScope) {
+            (Scope $rootScope) {
           var childScope2 = $rootScope.$new();
           childScope2.$apply(() {
             childScope2.$watch('x', (newVal, oldVal) {

@@ -1,6 +1,27 @@
 part of angular;
 
-var _ttl = 10;
+typedef FnWith0Args();
+typedef FnWith1Args(a0);
+typedef FnWith2Args(a0, a1);
+typedef FnWith3Args(a0, a1, a2);
+
+_relaxArgs(fn) {
+  return ([a0, a1, a2]) {
+    if (fn is FnWith3Args) {
+      return fn(a0, a1, a2);
+    } else if (fn is FnWith2Args) {
+      return fn(a0, a1);
+    } else if (fn is FnWith1Args) {
+      return fn(a0);
+    } else if (fn is FnWith0Args) {
+      return fn();
+    } else {
+      throw "Unknown function type, expecting 0 to 3 args.";
+    }
+  };
+}
+
+
 var initWatchVal = new Object();
 
 class Watch {
@@ -9,7 +30,10 @@ class Watch {
   Function get;
   String exp;
 
-  Watch(this.fn, this.last, this.get, this.exp);
+  Watch(fn, this.last, get, this.exp) {
+    this.fn = _relaxArgs(fn);
+    this.get = _relaxArgs(get);
+  }
 }
 
 class Event {
@@ -102,7 +126,7 @@ class Scope implements Map {
       this[name] = value;
       return value;
     } else {
-      throw "Only getters/setters supported got '${name}(...). Check argument length?'.";
+      super.noSuchMethod(invocation);
     }
   }
 
@@ -119,13 +143,7 @@ class Scope implements Map {
     if (watchExp is DirectiveValue) watchExp = watchExp.value;
 
     var getFn = _compileToFn(watchExp);
-    var watcher = new Watch(listener, initWatchVal, getFn, watchExp.toString());
-
-    // in the case user pass string, we need to compile it, do we really need this ?
-    if (!(listener is Function)) {
-      var listenFn = _compileToFn(listener);
-      watcher.fn = (newVal, oldVal, scope) {listenFn(scope);};
-    }
+    var watcher = new Watch(_compileToFn(listener), initWatchVal, getFn, watchExp.toString());
 
     // we use unshift since we use a while loop in $digest for speed.
     // the while loop reads in reverse order.
@@ -178,7 +196,7 @@ class Scope implements Map {
                 watch.fn(value, ((last == initWatchVal) ? value : last), current);
                 if (_ttlLeft < 5) {
                   logIdx = 4 - _ttlLeft;
-                  if (watchLog.length <= logIdx) {
+                  while (watchLog.length <= logIdx) {
                     watchLog.add([]);
                   }
                   logMsg = (watch.exp is Function)
@@ -237,7 +255,7 @@ class Scope implements Map {
 
 
   $eval(expr, [locals]) {
-    return _compileToFn(expr)(this, locals);
+    return _relaxArgs(_compileToFn(expr))(this, locals);
   }
 
 
@@ -246,16 +264,16 @@ class Scope implements Map {
   }
 
 
-  $apply(expr) {
+  $apply([expr]) {
     try {
-      beginPhase('\$apply');
+      _beginPhase('\$apply');
       return $eval(expr);
     } catch (e, s) {
       _exceptionHandler(e, s);
     } finally {
-      clearPhase();
+      _clearPhase();
       try {
-        $rootScope.$digest();
+        $root.$digest();
       } catch (e, s) {
         _exceptionHandler(e, s);
         throw e;
@@ -277,7 +295,7 @@ class Scope implements Map {
   }
 
 
-  $emit(name, args) {
+  $emit(name, [args]) {
     var empty = [],
         namedListeners,
         scope = this,
@@ -352,7 +370,6 @@ class Scope implements Map {
     return event;
   }
 
-  
   _beginPhase(phase) {
     if ($root._phase != null) {
       throw '${$root._phase} already in progress';
@@ -367,7 +384,7 @@ class Scope implements Map {
 
   Function _compileToFn(exp) {
     if (exp == null) {
-      return (a) => null;
+      return () => null;
     } else if (exp is String) {
       return _parser(exp);
     } else if (exp is Function) {
