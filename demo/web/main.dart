@@ -35,7 +35,7 @@ class TabsController implements Controller {
   List panes;
   var selectedPanes = new Expando<dom.Node>();
 
-  MainController(Scope this.$scope) {
+  TabsController(Scope this.$scope) {
     panes = $scope.panes = [];
 
     $scope.selected = (pane) {
