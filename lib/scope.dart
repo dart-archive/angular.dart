@@ -66,7 +66,7 @@ class Event {
   Scope currentScope;
   bool propagationStopped = false;
   bool defaultPrevented = false;
-  
+
   Event(this.name, this.targetScope);
 
   stopPropagation () => propagationStopped = true;
@@ -245,7 +245,7 @@ class Scope implements Map {
           } else {
             next = current._nextSibling;
             if (next == null) {
-              while(current !== target && (next = current._nextSibling) == null) {
+              while(current != target && (next = current._nextSibling) == null) {
                 current = current.$parent;
               }
             }
@@ -386,7 +386,7 @@ class Scope implements Map {
         } else {
           next = current._nextSibling;
           if (next == null) {
-            while(current !== target && (next = current._nextSibling) == null) {
+            while(current != target && (next = current._nextSibling) == null) {
               current = current.$parent;
             }
           }
