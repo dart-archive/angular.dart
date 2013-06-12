@@ -1,8 +1,8 @@
-name: angular-dart-demo
+name: angular_dart_demo
 version: 0.0.1
 dependencies:
-  browser: any
-  unittest: any
-  js: any
   angular:
-   path: ..
+    path: ..
+  browser: any
+  js: any
+  unittest: any
