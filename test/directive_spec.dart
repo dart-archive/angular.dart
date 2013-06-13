@@ -13,7 +13,7 @@ class ExplicitNullTranscludeDirective {
 }
 
 main() {
-  d escribe('directive factory', () {
+  describe('directive factory', () {
     it('should guess the directive name correctly', () {
       DirectiveFactory factory = new DirectiveFactory(SomeDirective);
       expect(factory.$name).toEqual('some');
