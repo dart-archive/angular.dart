@@ -594,7 +594,7 @@ main() {
         }));
 
 
-        iit(r'should return a function that deregisters the listener', inject((Scope $rootScope) {
+        it(r'should return a function that deregisters the listener', inject((Scope $rootScope) {
           var log = '',
               child = $rootScope.$new(),
               listenerRemove;
