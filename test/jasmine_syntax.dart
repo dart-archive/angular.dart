@@ -3,18 +3,27 @@ library jamine;
 import 'package:unittest/unittest.dart';
 import 'package:js/js.dart' as js;
 
-it(name, fn) => test(name, fn);
+it(name, fn) {
+  if (currentDescribe.exclusive) {
+    solo_test(name, fn);
+  } else {
+    test(name, fn);
+  }
+}
 iit(name, fn) => solo_test(name, fn);
 xit(name, fn) {}
 xdescribe(name, fn) {}
+ddescribe(name, fn) => describe(name, fn, true);
+
 
 class Describe {
   Describe parent;
   String name;
+  bool exclusive;
   List<Function> beforeEachFns = [];
   List<Function> afterEachFns = [];
 
-  Describe(this.name, this.parent);
+  Describe(this.name, this.parent, [bool this.exclusive=false]);
 
   setUp() {
     if (parent != null) {
@@ -33,9 +42,9 @@ class Describe {
 
 Describe currentDescribe = new Describe('', null);
 
-describe(name, fn) {
+describe(name, fn, [bool exclusive=false]) {
   var lastDescribe = currentDescribe;
-  currentDescribe = new Describe(name, lastDescribe);
+  currentDescribe = new Describe(name, lastDescribe, exclusive);
   try {
     group(name, () {
       setUp(currentDescribe.setUp);
