@@ -52,7 +52,7 @@ class BlockFactory {
                BlockListFactory this.$blockListFactory,
                Injector this.$injector);
 
-  call(blockNodeList, directivePositions, blockCaches, group) {
+  call(List<dom.Node> blockNodeList, List directivePositions, List<BlockCache> blockCaches, String group) {
     ASSERT(blockNodeList != null);
     ASSERT(directivePositions != null);
     ASSERT(blockCaches != null);
@@ -88,6 +88,8 @@ class Block implements ElementWrapper {
   }
 
   _link(List<dom.Node> nodeList, List directivePositions, List<BlockCache> blockCaches) {
+    var stack;
+    try {throw '';} catch(e,s) {stack = s;}
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
 

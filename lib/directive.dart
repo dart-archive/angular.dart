@@ -39,6 +39,7 @@ class DirectiveFactory {
     $transclude = reflectStaticField(directiveType, '\$transclude');
     $template = reflectStaticField(directiveType, '\$template');
     $controllerType = reflectStaticField(directiveType, '\$controller');
+    //TODO (misko): remove this. No need for $require since the directives can just ask for each other
     var required = reflectStaticField(directiveType, '\$require');
     if (required != null) {
       $requiredController = "\$${required}Controller";
@@ -48,7 +49,10 @@ class DirectiveFactory {
       assert($requiredController == null);
       $requiredController = "\$${$name}Controller";
     }
-
+    var $selector = reflectStaticField(directiveType, r'$selector');
+    if ($selector != null) {
+      $name = $selector;
+    }
   }
 }
 

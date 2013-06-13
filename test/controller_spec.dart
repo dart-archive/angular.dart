@@ -42,7 +42,7 @@ class InheritDepAttrDirective {
   static var $require = '^[main]';
   Log log;
   Controller controller;
-  InheritDepAttrDirective(Log this.log, Controller this.controller) { dump("id"); }
+  InheritDepAttrDirective(Log this.log, Controller this.controller) { }
 
   attach(Scope scope) {
     log('inheritDep:${controller.name}:${controller.calledFromMainDirective}');

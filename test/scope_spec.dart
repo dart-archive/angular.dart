@@ -620,7 +620,7 @@ main() {
       });
 
 
-      xdescribe(r'$emit', () {
+      describe(r'$emit', () {
         var log, child, grandChild, greatGrandChild;
 
         function logger(event) {

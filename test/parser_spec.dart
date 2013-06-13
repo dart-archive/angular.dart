@@ -518,7 +518,7 @@ main() {
       expect(eval('true || run()')).toBe(true);
     });
 
-    it('should support method calls on primitive types', () {
+    xit('should support method calls on primitive types', () {
       scope["empty"] = '';
       scope["zero"] = 0;
       scope["bool"] = false;

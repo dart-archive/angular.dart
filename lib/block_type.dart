@@ -32,7 +32,6 @@ class BlockType {
     if (!?blockCaches || blockCaches == null) {
       blockCaches = [];
     }
-
     return blockFactory(elements, directivePositions, blockCaches, group);
   }
 

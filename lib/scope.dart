@@ -1,51 +1,5 @@
 part of angular;
 
-typedef FnWith0Args();
-typedef FnWith1Args(a0);
-typedef FnWith2Args(a0, a1);
-typedef FnWith3Args(a0, a1, a2);
-typedef FnWith4Args(a0, a1, a2, a3);
-typedef FnWith5Args(a0, a1, a2, a3, a4);
-
-_relaxApply(fn, args) {
-  if (fn is FnWith5Args) {
-    return fn(args[0], args[1], args[2], args[3], args[4]);
-  } else if (fn is FnWith4Args) {
-    return fn(args[0], args[1], args[2], args[3]);
-  } else if (fn is FnWith3Args) {
-    return fn(args[0], args[1], args[2]);
-  } else if (fn is FnWith2Args) {
-    return fn(args[0], args[1]);
-  } else if (fn is FnWith1Args) {
-    return fn(args[0]);
-  } else if (fn is FnWith0Args) {
-    return fn();
-  } else {
-    throw "Unknown function type, expecting 0 to 5 args.";
-  }
-}
-
-_relaxArgs(fn) {
-  return ([a0, a1, a2, a3, a4]) {
-    if (fn is FnWith5Args) {
-      return fn(a0, a1, a2, a3, a4);
-    } else if (fn is FnWith4Args) {
-      return fn(a0, a1, a2, a3);
-    } else if (fn is FnWith3Args) {
-      return fn(a0, a1, a2);
-    } else if (fn is FnWith2Args) {
-      return fn(a0, a1);
-    } else if (fn is FnWith1Args) {
-      return fn(a0);
-    } else if (fn is FnWith0Args) {
-      return fn();
-    } else {
-      throw "Unknown function type, expecting 0 to 5 args.";
-    }
-  };
-}
-
-
 var initWatchVal = new Object();
 
 class Watch {
@@ -55,8 +9,8 @@ class Watch {
   String exp;
 
   Watch(fn, this.last, get, this.exp) {
-    this.fn = _relaxArgs(fn);
-    this.get = _relaxArgs(get);
+    this.fn = _relaxFnArgs(fn);
+    this.get = _relaxFnArgs(get);
   }
 }
 
@@ -162,20 +116,16 @@ class Scope implements Map {
 
 
   $watch(watchExp, [Function listener]) {
-    var scope = this;
-
     if (watchExp is DirectiveValue) watchExp = watchExp.value;
 
-    var getFn = _compileToFn(watchExp);
-    var watcher = new Watch(_compileToFn(listener), initWatchVal, getFn, watchExp.toString());
+    var watcher = new Watch(_compileToFn(listener), initWatchVal,
+        _compileToFn(watchExp), watchExp.toString());
 
     // we use unshift since we use a while loop in $digest for speed.
     // the while loop reads in reverse order.
     _watchers.insert(0, watcher);
 
-    return () {
-      _watchers.remove(watcher);
-    };
+    return () => _watchers.remove(watcher);
   }
 
 
@@ -279,7 +229,7 @@ class Scope implements Map {
 
 
   $eval(expr, [locals]) {
-    return _relaxArgs(_compileToFn(expr))(this, locals);
+    return _relaxFnArgs(_compileToFn(expr))(this, locals);
   }
 
 
@@ -338,7 +288,7 @@ class Scope implements Map {
         i = 0;
         for (var length = namedListeners.length; i<length; i++) {
           try {
-            _relaxApply(namedListeners[i], listenerArgs);
+            _relaxFnApply(namedListeners[i], listenerArgs);
             if (event.propagationStopped) return event;
           } catch (e, s) {
             _exceptionHandler(e, s);
@@ -370,7 +320,7 @@ class Scope implements Map {
       if (current._listeners.containsKey(name)) {
         current._listeners[name].forEach((listener) {
           try {
-            _relaxApply(listener, listenerArgs);
+            _relaxFnApply(listener, listenerArgs);
           } catch(e, s) {
             _exceptionHandler(e, s);
           }

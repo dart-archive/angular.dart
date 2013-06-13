@@ -4,9 +4,11 @@ part of angular;
 class ParsedFn {
   Parsedgetter getter;
   ParsedAssignFn assignFn;
+  String exp;
+  List parts;
 
   ParsedFn(this.getter, [this.assignFn]);
-  call(s, [l]) => getter(s, l);
+  call([s, l]) => getter(s, l);
   assign(s, v, [l]) => assignFn(s, v, l);
 
   get assignable => assignFn != null;
@@ -136,27 +138,6 @@ varArgs(numArgs, fn) {
   throw "varArgs with $numArgs is not supported.";
 }
 
-getNumArgs(userFn) {
-  ClassMirror reflectType = reflect(userFn).type;
-  try {
-    assert(reflectType is FunctionTypeMirror);
-  } catch (e) {
-    dump("reflectType: $reflectType ${reflectType.methods}");
-  }
-  return reflectType.parameters.length;
-}
-applyWithOptional(userFn, args) {
-  var numArgs = getNumArgs(userFn);
-  if (args.length > numArgs) {
-    throw "Too many arguments. Got $args. Need at most $numArgs";
-  }
-  if (args.length != numArgs) {
-    args = new List.from(args);
-    args.length = numArgs;
-  }
-  return Function.apply(userFn, args);
-}
-
 // Returns a tuple [found, value]
 getterChild(value, childKey) {
   if (value is List && childKey is num) {
@@ -177,11 +158,10 @@ getterChild(value, childKey) {
       // maybe it is a member method?
       if (instanceMirror.type.members.containsKey(curSym)) {
         MethodMirror methodMirror = instanceMirror.type.members[curSym];
-        return [true, varArgs(methodMirror.parameters.length, (args) {
+        return [true, _relaxFnArgs((args) {
           try {
             return instanceMirror.invoke(curSym, args).reflectee;
           } catch (e) {
-            dump(e.stacktrace);
             throw "$e \n\n${e.stacktrace}";
           }
         })];
@@ -718,7 +698,7 @@ class Parser {
           args.add(argsFn[i](self, locals));
         }
         var userFn = fn(self, locals);
-        return applyWithOptional(userFn, args);
+        return _relaxFnApply(userFn, args);
       });
     };
 
