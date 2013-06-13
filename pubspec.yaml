@@ -5,6 +5,5 @@ dependencies:
   unittest: any
   browser: any
   js: any
-  di:
-    git: git@github.com:mhevery/dart-di.git
+  di: any
 
