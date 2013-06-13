@@ -83,7 +83,7 @@ class ChapterAttrDirective {
 
 main() {
   // Set up the Angular directives.
-  var module = new Module();
+  var module = new AngularModule();
   module.value(Expando, new Expando());
   angularModule(module);
   Injector injector = new Injector([module]);
