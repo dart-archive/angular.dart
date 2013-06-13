@@ -1,6 +1,6 @@
 part of angular;
 
-typedef List<DirectiveInfo> Selector(dom.Node node);
+typedef List<DirectiveRef> Selector(dom.Node node);
 
 class SelectorInfo {
   String selector;
@@ -71,18 +71,18 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
     }
   });
 
-  addAttrDirective(List<DirectiveInfo> directives, dom.Node element,
+  addAttrDirective(List<DirectiveRef> directives, dom.Node element,
                             Map<String, String>valueMap, String name, String value) {
     if (valueMap.containsKey('')) {
-      directives.add(new DirectiveInfo(element, valueMap[''], name, value));
+      directives.add(new DirectiveRef(element, valueMap[''], name, value));
     }
     if (value != '' && valueMap.containsKey(value)) {
-      directives.add(new DirectiveInfo(element, valueMap[value], name, value));
+      directives.add(new DirectiveRef(element, valueMap[value], name, value));
     }
   }
 
   Selector selector = (dom.Node node) {
-    List<DirectiveInfo> directiveInfos = [];
+    List<DirectiveRef> directiveInfos = [];
     dom.CssClassSet classNames;
 
     switch(node.nodeType) {
@@ -94,7 +94,7 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
         if (elementAttrMap != null && elementAttrMap.containsKey('')) {
           var valueMap = elementAttrMap[''];
           if (valueMap.containsKey('')) {
-            directiveInfos.add(new DirectiveInfo(node, valueMap['']));
+            directiveInfos.add(new DirectiveRef(node, valueMap['']));
           }
         }
 
@@ -102,7 +102,7 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
         if ((classNames = node.classes) != null) {
           for(var name in classNames) {
             if (anyClassMap.containsKey(name)) {
-              directiveInfos.add(new DirectiveInfo(node, anyClassMap[name], 'class', name));
+              directiveInfos.add(new DirectiveRef(node, anyClassMap[name], 'class', name));
             }
           }
         }
@@ -115,7 +115,7 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
               // this directive is matched on any attribute name, and so
               // we need to pass the name to the directive by prefixing it to the
               // value. Yes it is a bit of a hack.
-              directiveInfos.add(new DirectiveInfo(
+              directiveInfos.add(new DirectiveRef(
                   node, selectorRegExp.selector, attrName, '$attrName=$value'));
             }
           }
@@ -133,7 +133,7 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
           var selectorRegExp = textSelector[k];
 
           if (selectorRegExp.regexp.hasMatch(value)) {
-            directiveInfos.add(new DirectiveInfo(node, selectorRegExp.selector, '#text', value));
+            directiveInfos.add(new DirectiveRef(node, selectorRegExp.selector, '#text', value));
           }
         }
         break;

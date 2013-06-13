@@ -11,6 +11,6 @@ class NgShadowDomAttrDirective {
   }
 
   attach(Scope scope) {
-    block.attach(scope);
+    block.attach(scope.$new(true));
   }
 }

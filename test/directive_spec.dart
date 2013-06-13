@@ -15,27 +15,27 @@ class ExplicitNullTranscludeDirective {
 main() {
   describe('directive factory', () {
     it('should guess the directive name correctly', () {
-      DirectiveFactory factory = new DirectiveFactory(SomeDirective);
+      Directive factory = new Directive(SomeDirective);
       expect(factory.$name).toEqual('some');
     });
 
     it('should guess the attr directive name correctly', () {
-      DirectiveFactory factory = new DirectiveFactory(AnotherAttrDirective);
+      Directive factory = new Directive(AnotherAttrDirective);
       expect(factory.$name).toEqual('[another]');
     });
 
     it('should set \$transclude based on the directive type for undef transclude', () {
-      DirectiveFactory factory = new DirectiveFactory(SomeDirective);
+      Directive factory = new Directive(SomeDirective);
       expect(factory.$transclude).toEqual(null);
     });
 
     it('should set \$transclude based on the directive type for transclude=true', () {
-      DirectiveFactory factory = new DirectiveFactory(TranscludeDirective);
+      Directive factory = new Directive(TranscludeDirective);
       expect(factory.$transclude).toEqual("true");
     });
 
     it('should set \$transclude based on the directive type for transclude=null', () {
-      DirectiveFactory factory = new DirectiveFactory(ExplicitNullTranscludeDirective);
+      Directive factory = new Directive(ExplicitNullTranscludeDirective);
       expect(factory.$transclude).toEqual(null);
     });
   });

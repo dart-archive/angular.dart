@@ -99,7 +99,7 @@ main() {
           var innerBlockType = $blockTypeFactory($('<b>text</b>'), []);
           var outerBlockType = $blockTypeFactory($('<div>TO BE REPLACED</div><div>:ok</div>'), [
               0, [new DirectiveDef(
-                  new DirectiveFactory(ReplaceBlockDirective),
+                  new Directive(ReplaceBlockDirective),
                   '', {'': innerBlockType})], null
           ]);
 
@@ -112,7 +112,7 @@ main() {
           var innerBlockType = $blockTypeFactory($('<b>shadow</b>'), []);
           var outerBlockType = $blockTypeFactory($('<x-shadowy>boo</x-shadowy><div>:ok</div>'), [
               0, [new DirectiveDef(
-                  new DirectiveFactory(ShadowBlockDirective),
+                  new Directive(ShadowBlockDirective),
                   '', {'': innerBlockType})], null
           ]);
 
@@ -167,7 +167,7 @@ main() {
           var innerBlockType = $blockTypeFactory($('<b>text</b>'), []);
           var outerBlockType = $blockTypeFactory($('<!--start--><!--end-->'), [
             0, [new DirectiveDef(
-                new DirectiveFactory(LoggerBlockDirective),
+                new Directive(LoggerBlockDirective),
                 '', {'': innerBlockType})], null
           ]);
 

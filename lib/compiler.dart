@@ -1,12 +1,12 @@
 part of angular;
 
 class Compiler {
-  Directives directives;
+  DirectiveRegistry directives;
   Injector $injector;
   BlockTypeFactory $blockTypeFactory;
   Selector selector;
 
-  Compiler(Directives this.directives,
+  Compiler(DirectiveRegistry this.directives,
            Injector this.$injector,
            BlockTypeFactory this.$blockTypeFactory) {
     selector = selectorFactory(directives.enumerate());
@@ -14,45 +14,45 @@ class Compiler {
 
   _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,
                List<BlockCache> blockCaches,
-               List<DirectiveInfo> useExistingDirectiveInfos) {
+               List<DirectiveRef> useExistingDirectiveRefs) {
     var directivePositions = null; // don't pre-create to create spars tree and prevent GC pressure.
     var cursorAlreadyAdvanced;
 
     do {
-      var directiveInfos = useExistingDirectiveInfos == null
-          ? extractDirectiveInfos(domCursor.nodeList()[0])
-          : useExistingDirectiveInfos;
+      var directiveRefs = useExistingDirectiveRefs == null
+          ? extractDirectiveRefs(domCursor.nodeList()[0])
+          : useExistingDirectiveRefs;
       var compileChildren = true;
       var childDirectivePositions = null;
       var directiveDefs = null;
 
       cursorAlreadyAdvanced = false;
 
-      for (var j = 0, jj = directiveInfos.length; j < jj; j++) {
-        var directiveInfo = directiveInfos[j];
-        DirectiveFactory directiveFactory = directiveInfo.directiveFactory;
+      for (var j = 0, jj = directiveRefs.length; j < jj; j++) {
+        var directiveRef = directiveRefs[j];
+        Directive directive = directiveRef.directive;
         var blockTypes = null;
 
-        if (directiveFactory.$generate != null) {
+        if (directive.$generate != null) {
           var nodeList = domCursor.nodeList();
-          var generatedDirectives = directiveFactory.$generate(directiveInfo.value, nodeList);
+          var generatedDirectives = directive.$generate(directiveRef.value, nodeList);
 
           for (var k = 0, kk = generatedDirectives.length; k < kk; k++) {
             String generatedSelector = generatedDirectives[k][0];
             String generatedValue = generatedDirectives[k][1];
             Type generatedDirectiveType = $directiveInjector.get(generatedSelector);
-            var generatedDirectiveInfo = new DirectiveInfo(
-                new DirectiveFactory(generatedDirectiveType),
+            var generatedDirectiveRef = new DirectiveRef(
+                new Directive(generatedDirectiveType),
                 generatedValue);
 
-            directiveInfos.add(generatedDirectiveInfo);
+            directiveRefs.add(generatedDirectiveRef);
           }
         }
-        if (directiveFactory.$transclude != null) {
-          var remaindingDirectives = directiveInfos.sublist(j + 1);
-          var transclusion = compileTransclusion(directiveFactory.$transclude,
+        if (directive.$transclude != null) {
+          var remaindingDirectives = directiveRefs.sublist(j + 1);
+          var transclusion = compileTransclusion(directive.$transclude,
               domCursor, templateCursor,
-              directiveInfo, remaindingDirectives);
+              directiveRef, remaindingDirectives);
 
           if (transclusion['blockCache'] != null) {
             blockCaches.add(transclusion['blockCache']);
@@ -65,11 +65,11 @@ class Compiler {
         if (directiveDefs == null) {
           directiveDefs = [];
         }
-        directiveDefs.add(new DirectiveDef(directiveFactory, directiveInfo.value, blockTypes));
-        if (directiveFactory.$template != null) {
+        directiveDefs.add(new DirectiveDef(directive, directiveRef.value, blockTypes));
+        if (directive.$template != null) {
           // TODO(deboer): port this function.
           denormalizeTemplate(x) => x;
-          var templateValue = denormalizeTemplate(directiveFactory.$template);
+          var templateValue = denormalizeTemplate(directive.$template);
           var div = new dom.DivElement();
           div.innerHtml = templateValue;
           var templateBlockType = $injector.get(Compiler)(div.nodes);
@@ -81,7 +81,7 @@ class Compiler {
         templateCursor.descend();
 
         childDirectivePositions = compileChildren
-            ? _compileBlock(domCursor, templateCursor, blockCaches, useExistingDirectiveInfos)
+            ? _compileBlock(domCursor, templateCursor, blockCaches, useExistingDirectiveRefs)
             : null;
 
         domCursor.ascend();
@@ -104,9 +104,9 @@ class Compiler {
 
   compileTransclusion(String selector,
                       NodeCursor domCursor, NodeCursor templateCursor,
-                      DirectiveInfo directiveInfo, List<DirectiveInfo>
-                      transcludedDirectiveInfos) {
-    var anchorName = directiveInfo.name + (directiveInfo.value != null ? '=' + directiveInfo.value : '');
+                      DirectiveRef directiveRef,
+                      List<DirectiveRef> transcludedDirectiveRefs) {
+    var anchorName = directiveRef.name + (directiveRef.value != null ? '=' + directiveRef.value : '');
     var blockTypes = {};
     var BlockType;
     var blocks;
@@ -114,7 +114,7 @@ class Compiler {
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
     var groupName = '';
     var domCursorIndex = domCursor.index;
-    var directivePositions = _compileBlock(domCursor, transcludeCursor, [], transcludedDirectiveInfos);
+    var directivePositions = _compileBlock(domCursor, transcludeCursor, [], transcludedDirectiveRefs);
     if (directivePositions == null) directivePositions = [];
 
     BlockType = $blockTypeFactory(transcludeCursor.elements, directivePositions, groupName);
@@ -142,39 +142,39 @@ class Compiler {
   }
 
 
-  List<DirectiveInfo> extractDirectiveInfos(dom.Node node) {
-    List<DirectiveInfo> directiveInfos = selector(node);
+  List<DirectiveRef> extractDirectiveRefs(dom.Node node) {
+    List<DirectiveRef> directiveRefs = selector(node);
 
     // Resolve the Directive Controllers
-    for(var j = 0, jj = directiveInfos.length; j < jj; j++) {
-      DirectiveInfo directiveInfo = directiveInfos[j];
-      DirectiveFactory directiveFactory  = directives[directiveInfo.selector];
+    for(var j = 0, jj = directiveRefs.length; j < jj; j++) {
+      DirectiveRef directiveRef = directiveRefs[j];
+      Directive directive  = directives[directiveRef.selector];
 
-      if (directiveFactory.$generate != null) {
-        var generatedDirectives = directiveFactory.$generate(directiveInfo.value);
+      if (directive.$generate != null) {
+        var generatedDirectives = directive.$generate(directiveRef.value);
 
         for (var k = 0, kk = generatedDirectives.length; k < kk; k++) {
           var generatedSelector = generatedDirectives[k][0];
           var generatedValue = generatedDirectives[k][1];
-          DirectiveFactory generatedDirectiveType = directives[generatedSelector];
-          DirectiveInfo generatedDirectiveInfo = new DirectiveInfo(
-              new DirectiveFactory(null),
+          Directive generatedDirectiveType = directives[generatedSelector];
+          DirectiveRef generatedDirectiveRey = new DirectiveRef(
+              new Directive(null),
               generatedValue);
 
-          directiveInfos.add(generatedDirectiveInfo);
+          directiveRefs.add(generatedDirectiveRey);
         }
-        jj = directiveInfos.length;
+        jj = directiveRefs.length;
       }
 
-      directiveInfo.directiveFactory = directiveFactory;
+      directiveRef.directive = directive;
     }
-    directiveInfos.sort(priorityComparator);
-    return directiveInfos;
+    directiveRefs.sort(priorityComparator);
+    return directiveRefs;
   }
 
-  priorityComparator(DirectiveInfo a, DirectiveInfo b) {
-    int aPriority = a.directiveFactory.$priority,
-    bPriority = b.directiveFactory.$priority;
+  priorityComparator(DirectiveRef a, DirectiveRef b) {
+    int aPriority = a.directive.$priority,
+    bPriority = b.directive.$priority;
 
     return bPriority - aPriority;
   }

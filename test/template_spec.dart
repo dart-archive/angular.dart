@@ -50,7 +50,7 @@ main() {
 
     beforeEach(inject((Injector injector) {
       element = null;
-      injector.get(Directives)
+      injector.get(DirectiveRegistry)
       ..register(LogAttrDirective)
       ..register(ReplaceAttrDirective)
       ..register(ReplacetwoAttrDirective)

@@ -71,7 +71,7 @@ main() {
     Log $log;
 
     beforeEach(inject((Injector injector) {
-      injector.get(Directives)
+      injector.get(DirectiveRegistry)
       ..register(MainAttrDirective)
       ..register(DepAttrDirective)
       ..register(InheritDepAttrDirective)

@@ -6,19 +6,18 @@ main() {
   describe('dte.compiler', () {
     Compiler $compile;
     Scope $rootScope;
-    Directives directives;
+    DirectiveRegistry directives;
 
     beforeEach(inject((Injector injector) {
-      directives = injector.get(Directives);
+      directives = injector.get(DirectiveRegistry);
 
       directives.register(NgBindAttrDirective);
       directives.register(NgRepeatAttrDirective);
 
-      $compile = injector.get(Compiler);
       $rootScope = injector.get(Scope);
     }));
 
-    it('should compile basic hello world', inject(() {
+    it('should compile basic hello world', inject((Compiler $compile) {
       var element = $('<div ng-bind="name"></div>');
       var template = $compile(element);
 
@@ -30,7 +29,7 @@ main() {
       expect(element.text()).toEqual('angular');
     }));
 
-    it('should compile a directive in a child', inject(() {
+    it('should compile a directive in a child', inject((Compiler $compile) {
       var element = $('<div><div ng-bind="name"></div></div>');
       var template = $compile(element);
 
@@ -45,7 +44,7 @@ main() {
     }));
 
 
-    it('should compile repeater', inject(() {
+    it('should compile repeater', inject((Compiler $compile) {
       var element = $('<div><div ng-repeat="item in items" ng-bind="item"></div></div>');
       var template = $compile(element);
 

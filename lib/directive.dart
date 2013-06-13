@@ -1,14 +1,10 @@
 part of angular;
 
-abstract class Directive {
-  attach(Scope scope);
-}
-
 String _DIRECTIVE = '-directive';
 String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
 
-class DirectiveFactory {
-  Type directiveType;
+class Directive {
+  Type directiveControllerType;
   String $name;
   Function $generate;
   String $transclude;
@@ -17,8 +13,8 @@ class DirectiveFactory {
   String $requiredController;
   String $template;
 
-  DirectiveFactory(this.directiveType) {
-    var name = directiveType.toString();
+  Directive(this.directiveControllerType) {
+    var name = directiveControllerType.toString();
     var isAttr = false;
     $name = name.splitMapJoin(
         new RegExp(r'[A-Z]'),
@@ -36,11 +32,11 @@ class DirectiveFactory {
     // Check the $transclude.
     // TODO(deboer): I'm not a fan of 'null' as a configuration value.
     // It would be awesome if $transclude could be an enum.
-    $transclude = reflectStaticField(directiveType, '\$transclude');
-    $template = reflectStaticField(directiveType, '\$template');
-    $controllerType = reflectStaticField(directiveType, '\$controller');
+    $transclude = reflectStaticField(directiveControllerType, '\$transclude');
+    $template = reflectStaticField(directiveControllerType, '\$template');
+    $controllerType = reflectStaticField(directiveControllerType, '\$controller');
     //TODO (misko): remove this. No need for $require since the directives can just ask for each other
-    var required = reflectStaticField(directiveType, '\$require');
+    var required = reflectStaticField(directiveControllerType, '\$require');
     if (required != null) {
       $requiredController = "\$${required}Controller";
     }
@@ -49,7 +45,7 @@ class DirectiveFactory {
       assert($requiredController == null);
       $requiredController = "\$${$name}Controller";
     }
-    var $selector = reflectStaticField(directiveType, r'$selector');
+    var $selector = reflectStaticField(directiveControllerType, r'$selector');
     if ($selector != null) {
       $name = $selector;
     }
@@ -57,25 +53,25 @@ class DirectiveFactory {
 }
 
 class DirectiveDef {
-  DirectiveFactory directiveFactory;
+  Directive directive;
   String value;
   Map<String, BlockType> blockTypes;
 
-  DirectiveDef(DirectiveFactory this.directiveFactory,
+  DirectiveDef(Directive this.directive,
                String this.value,
                [Map<String, BlockType> this.blockTypes]);
 
   bool isComponent() => this.blockTypes != null;
 }
 
-class DirectiveInfo {
+class DirectiveRef {
   dom.Node element;
   String selector;
   String name;
   String value;
-  DirectiveFactory directiveFactory;
+  Directive directive;
 
-  DirectiveInfo(this.element, this.selector, [this.name = null, this.value = null]) {
+  DirectiveRef(this.element, this.selector, [this.name = null, this.value = null]) {
     ASSERT(element != null);
     ASSERT(selector != null);
   }
@@ -86,18 +82,18 @@ class DirectiveInfo {
 }
 
 
-class Directives {
-  Map<String, DirectiveFactory> directiveMap = {};
+class DirectiveRegistry {
+  Map<String, Directive> directiveMap = {};
 
   List<String> enumerate() => directiveMap.keys.toList();
 
   register(Type directiveType) {
-   var directiveFactory = new DirectiveFactory(directiveType);
+   var directive = new Directive(directiveType);
 
-   directiveMap[directiveFactory.$name] = directiveFactory;
+   directiveMap[directive.$name] = directive;
   }
 
-  DirectiveFactory operator[](String selector) {
+  Directive operator[](String selector) {
     if (directiveMap.containsKey(selector)){
       return directiveMap[selector];
     } else {

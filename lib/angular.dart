@@ -99,10 +99,10 @@ _relaxFnArgs(Function fn) {
 
 
 class AngularModule extends Module {
-  Directives _directives = new Directives();
+  DirectiveRegistry _directives = new DirectiveRegistry();
 
   AngularModule() {
-    value(Directives, _directives);
+    value(DirectiveRegistry, _directives);
   }
 
   directive(Type directive) {

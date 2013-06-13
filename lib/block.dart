@@ -123,7 +123,7 @@ class Block implements ElementWrapper {
           }
 
           var directiveDef = directiveDefs[j];
-          var name = directiveDef.directiveFactory.$name;
+          var name = directiveDef.directive.$name;
 
           if (name == null) {
             name = nextUid();
@@ -156,7 +156,7 @@ class Block implements ElementWrapper {
     elementModule.value(dom.Element, node);
     elementModule.value(dom.Node, node);
     directiveDefsByName.values.forEach((DirectiveDef def) => elementModule.type(
-                def.directiveFactory.directiveType, def.directiveFactory.directiveType));
+                def.directive.directiveControllerType, def.directive.directiveControllerType));
 
     for (var i = 0, ii = directiveNames.length; i < ii; i++) {
       var directiveName = directiveNames[i];
@@ -167,8 +167,8 @@ class Block implements ElementWrapper {
       directiveModule.value(DirectiveValue,
           new DirectiveValue.fromString(directiveDef.value));
 
-      var controllerType = directiveDef.directiveFactory.$controllerType;
-      String requiredController = directiveDef.directiveFactory.$requiredController;
+      var controllerType = directiveDef.directive.$controllerType;
+      String requiredController = directiveDef.directive.$requiredController;
 
       if (requiredController != null) {
         directiveModule.factory(Controller, (dom.Node node, Expando elementControllers) {
@@ -194,7 +194,7 @@ class Block implements ElementWrapper {
         directiveModule.value(BlockList, anchorsByName[directiveName]);
       }
 
-      Type directiveType = directiveDef.directiveFactory.directiveType;
+      Type directiveType = directiveDef.directive.directiveControllerType;
 
       var types = [directiveType];
       if (controllerType != null) types.add(controllerType);

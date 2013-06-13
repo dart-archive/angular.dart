@@ -111,18 +111,18 @@ class DirectiveInfosMatcher extends BaseMatcher {
     return description;
   }
 
-  bool matches(directiveInfos, MatchState matchState) {
-    var pass = expected.length == directiveInfos.length;
+  bool matches(directiveRefs, MatchState matchState) {
+    var pass = expected.length == directiveRefs.length;
     if (pass) {
       for(var i = 0, ii = expected.length; i < ii; i++) {
-        var directiveInfo = directiveInfos[i];
+        var directiveRef = directiveRefs[i];
         var expectedMap = expected[i];
 
         pass = pass &&
-          directiveInfo.element == expectedMap['element'] &&
-          directiveInfo.selector == expectedMap['selector'] &&
-          directiveInfo.name == expectedMap['name'] &&
-          directiveInfo.value == expectedMap['value'];
+          directiveRef.element == expectedMap['element'] &&
+          directiveRef.selector == expectedMap['selector'] &&
+          directiveRef.name == expectedMap['name'] &&
+          directiveRef.value == expectedMap['value'];
       }
     }
     return pass;
