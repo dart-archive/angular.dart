@@ -19,5 +19,22 @@ main() {
       $rootScope.$digest();
       expect(element.text()).toEqual('OK!');
     }));
+
+
+    it('should replace {{}} in attribute', inject((Compiler $compile, Scope $rootScope) {
+      var element = $('<div some-attr="{{name}}"></div>');
+      var template = $compile(element);
+
+      $rootScope.name = 'OK';
+      var block = template();
+
+      element = $(block.elements);
+
+      block.attach($rootScope);
+
+      expect(element.attr('some-attr')).toEqual('');
+      $rootScope.$digest();
+      expect(element.attr('some-attr')).toEqual('OK');
+    }));
   });
 }
