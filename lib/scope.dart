@@ -128,6 +128,42 @@ class Scope implements Map {
     return () => _watchers.remove(watcher);
   }
 
+  $watchCollection(obj, listener) {
+    List oldValue = [];
+    var newValue;
+    num changeDetected = 0;
+    Function objGetter = _compileToFn(obj);
+    List internalArray = [];
+    num oldLength = 0;
+
+    var $watchCollectionWatch = () {
+      newValue = objGetter(this);
+      if (!(newValue is List)) newValue = [];
+
+      var newLength = newValue.length;
+
+      if (oldLength != newLength) {
+        // if lengths do not match we need to trigger change notification
+        changeDetected++;
+        oldValue.length = oldLength = newLength;
+      }
+      // copy the items to oldValue and look for changes.
+      for (var i = 0; i < newLength; i++) {
+        if (oldValue[i] != newValue[i]) {
+          changeDetected++;
+          oldValue[i] = newValue[i];
+        }
+      }
+      return changeDetected;
+    };
+
+    var $watchCollectionAction = () {
+      _relaxFnApply(listener, [newValue, oldValue, self]);
+    };
+
+    return this.$watch($watchCollectionWatch, $watchCollectionAction);
+  }
+
 
   $digest() {
     var value, last,

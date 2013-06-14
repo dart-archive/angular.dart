@@ -830,5 +830,97 @@ main() {
         });
       });
     });
+
+
+    describe('\$watchCollection', () {
+      var log, $rootScope, deregister;
+
+      beforeEach(inject((Scope _$rootScope_) {
+        log = [];
+        $rootScope = _$rootScope_;
+        deregister = $rootScope.$watchCollection('obj', (obj) {
+          log.add(toJson(obj));
+        });
+      }));
+
+
+      it('should not trigger if nothing change', inject((Scope $rootScope) {
+        $rootScope.$digest();
+        expect(log).toEqual(['[]']);
+
+        $rootScope.$digest();
+        expect(log).toEqual(['[]']);
+      }));
+
+
+      it('should allow deregistration', inject((Scope $rootScope) {
+        $rootScope.obj = [];
+        $rootScope.$digest();
+
+        expect(log).toEqual(['[]']);
+
+        $rootScope.obj.add('a');
+        deregister();
+
+        $rootScope.$digest();
+        expect(log).toEqual(['[]']);
+      }));
+
+
+      describe('array', () {
+        it('should trigger when property changes into array', () {
+          $rootScope.obj = 'test';
+          $rootScope.$digest();
+          expect(log).toEqual(['[]']);
+
+          $rootScope.obj = [];
+          $rootScope.$digest();
+          expect(log).toEqual(['[]']);
+        });
+
+
+        it('should not trigger change when object in collection changes', () {
+          $rootScope.obj = [{}];
+          $rootScope.$digest();
+          expect(log).toEqual(['[{}]']);
+
+          $rootScope.obj[0]['name'] = 'foo';
+          $rootScope.$digest();
+          expect(log).toEqual(['[{}]']);
+        });
+
+
+        it('should watch array properties', () {
+          $rootScope.obj = [];
+          $rootScope.$digest();
+          expect(log).toEqual(['[]']);
+
+          $rootScope.obj.add('a');
+          $rootScope.$digest();
+          expect(log).toEqual(['[]', '["a"]']);
+
+          $rootScope.obj[0] = 'b';
+          $rootScope.$digest();
+          expect(log).toEqual(['[]', '["a"]', '["b"]']);
+
+          $rootScope.obj.add([]);
+          $rootScope.obj.add({});
+          log = [];
+          $rootScope.$digest();
+          expect(log).toEqual(['["b",[],{}]']);
+
+          var temp = $rootScope.obj[1];
+          $rootScope.obj[1] = $rootScope.obj[2];
+          $rootScope.obj[2] = temp;
+          $rootScope.$digest();
+          expect(log).toEqual([ '["b",[],{}]', '["b",{},[]]' ]);
+
+          $rootScope.obj.removeAt(0);
+          log = [];
+          $rootScope.$digest();
+          expect(log).toEqual([ '[{},[]]' ]);
+        });
+      });
+    });
   });
 }
