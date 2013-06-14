@@ -6,9 +6,9 @@ import 'dart:math' as math;
 class AngularBootstrap {
   Compiler $compile;
   Scope $rootScope;
-  Directives directives;
+  DirectiveRegistry directives;
 
-  AngularBootstrap(Compiler this.$compile, Scope this.$rootScope, Directives this.directives);
+  AngularBootstrap(Compiler this.$compile, Scope this.$rootScope, DirectiveRegistry this.directives);
 
   call() {
     List<dom.Node> topElt = dom.query('[ng-app]').nodes.toList();
@@ -87,7 +87,7 @@ main() {
   module.value(Expando, new Expando());
   angularModule(module);
   Injector injector = new Injector([module]);
-  Directives directives = injector.get(Directives);
+  DirectiveRegistry directives = injector.get(DirectiveRegistry);
   directives.register(NgBindAttrDirective);
   directives.register(NgRepeatAttrDirective);
   directives.register(NgShadowDomAttrDirective);

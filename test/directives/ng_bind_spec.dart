@@ -1,4 +1,6 @@
 import "../_specs.dart";
+import '../jasmine_syntax.dart';
+import "dart:html";
 
 main() {
   // NOTE(deboer): beforeEach and nested describes don't play nicely.  Repeat.

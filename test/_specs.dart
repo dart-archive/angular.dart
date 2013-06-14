@@ -13,8 +13,6 @@ import 'package:unittest/mock.dart';
 export 'package:unittest/unittest.dart';
 export 'package:angular/debug.dart';
 export 'package:angular/angular.dart';
-export 'dart:html';
-export 'jasmine_syntax.dart';
 export 'package:di/di.dart';
 export 'package:unittest/mock.dart';
 
@@ -132,7 +130,7 @@ class JQuery implements List<Node> {
   contents() => fold(new JQuery(), (jq, node) => jq..addAll(node.nodes));
   toString() => fold('', (html, node) => '$html${_toHtml(node, true)}');
   eq(num childIndex) => $(this[childIndex]);
-  remove() => forEach((n) => n.remove());
+  remove(Object value) => forEach((n) => n.remove());
   attr([String name]) => accessor((n) => n.attributes[name], (n, v) => n.attributes[name] = v);
 }
 

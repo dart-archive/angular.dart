@@ -1,5 +1,7 @@
 import "_specs.dart";
+import "dart:html";
 import "_log.dart";
+import 'jasmine_syntax.dart';
 
 class LogAttrDirective {
   static var $priority = 0;

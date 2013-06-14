@@ -1,3 +1,4 @@
+import 'jasmine_syntax.dart';
 import "_specs.dart";
 import "dart:mirrors";
 

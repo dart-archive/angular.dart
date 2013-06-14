@@ -1,4 +1,6 @@
 import '_specs.dart';
+import 'jasmine_syntax.dart';
+import 'dart:html';
 
 $(html) {
   var body = new BodyElement();
