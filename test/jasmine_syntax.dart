@@ -23,7 +23,11 @@ class Describe {
   List<Function> beforeEachFns = [];
   List<Function> afterEachFns = [];
 
-  Describe(this.name, this.parent, [bool this.exclusive=false]);
+  Describe(this.name, this.parent, [bool this.exclusive=false]) {
+    if (parent != null && parent.exclusive) {
+      exclusive = true;
+    }
+  }
 
   setUp() {
     if (parent != null) {
