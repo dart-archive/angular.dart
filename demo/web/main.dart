@@ -68,7 +68,6 @@ class BookAttrDirective {
 }
 
 class ChapterAttrDirective {
-  static var $require = "^[book]";
   BookController controller;
   dom.Element element;
   ChapterAttrDirective(dom.Element this.element, Controller this.controller);

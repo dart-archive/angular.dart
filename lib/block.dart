@@ -157,7 +157,7 @@ class Block implements ElementWrapper {
     elementModule.value(dom.Element, node);
     elementModule.value(dom.Node, node);
     directiveDefsByName.values.forEach((DirectiveRef def) => elementModule.type(
-                def.directive.directiveControllerType, def.directive.directiveControllerType));
+                def.directive.type, def.directive.type));
 
     for (var i = 0, ii = directiveNames.length; i < ii; i++) {
       var directiveName = directiveNames[i];
@@ -168,54 +168,18 @@ class Block implements ElementWrapper {
       directiveModule.value(DirectiveValue,
           new DirectiveValue.fromString(directiveRef.value));
 
-      var controllerType = directiveRef.directive.$controllerType;
-      String requiredController = directiveRef.directive.$requiredController;
-
-      if (requiredController != null) {
-        directiveModule.factory(Controller, (dom.Node node, Expando elementControllers) {
-          getInheritedController(n, requiredController) {
-            if (n == null) return null;
-            var controller, expando;
-            if ((expando = elementControllers[n]) != null && (controller = expando[requiredController]) != null) {
-              return controller;
-            }
-            return getInheritedController(n.parentNode, requiredController);
-          }
-          if (requiredController.startsWith('\$^')) {
-            return getInheritedController(node.parentNode, requiredController.replaceFirst('^', ''));
-          }
-          if (elementControllers[node] == null) return null;
-          return elementControllers[node][requiredController];
-        });
-      } else {
-        directiveModule.value(Controller, null);
-      }
-
       if (anchorsByName.containsKey(directiveName)) {
         directiveModule.value(BlockList, anchorsByName[directiveName]);
       }
 
-      Type directiveType = directiveRef.directive.directiveControllerType;
+      Type directiveType = directiveRef.directive.type;
 
-      var types = [directiveType];
-      if (controllerType != null) types.add(controllerType);
-      var injector = $injector.createChild([elementModule, directiveModule],
-          types);
+      var injector = $injector.createChild(
+          [elementModule, directiveModule],
+          [directiveType]);
 
-      if (controllerType != null) {
-        var controller = injector.get(controllerType);
-        var elementControllers = injector.get(Expando);
-        var controllers = elementControllers[node];
-        if (controllers == null) {
-          elementControllers[node] = controllers = {};
-        }
-        controllers[requiredController] = controller;
-      }
-
-      var directive;
       try {
-
-      directive = injector.get(directiveType);
+        directives.add(injector.get(directiveType));
       } catch (e,s) {
         var msg;
         if (e is MirroredUncaughtExceptionError) {
@@ -226,7 +190,6 @@ class Block implements ElementWrapper {
 
         throw msg;
       }
-      directives.add(directive);
     }
   }
 

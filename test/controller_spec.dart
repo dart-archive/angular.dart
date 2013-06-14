@@ -4,15 +4,8 @@ import "dart:mirrors";
 
 
 
-class MainController implements Controller {
-  var name;
-  var calledFromMainDirective = false;
-  MainController() { name = "main"; }
-}
-
 class MainAttrDirective {
   static var $priority = 2;
-  static var $controller = MainController;
 
   Log log;
   Controller controller;
@@ -27,11 +20,10 @@ class MainAttrDirective {
 
 class DepAttrDirective {
   static var $priority = 2;
-  static var $require = '[main]';
 
   Log log;
   Controller controller;
-  DepAttrDirective(Log this.log, Controller this.controller);
+  DepAttrDirective(Log this.log, MainAttrDirective this.controller);
 
   attach(Scope scope) {
     log('dep:${controller.name}:${controller.calledFromMainDirective}');
@@ -39,10 +31,9 @@ class DepAttrDirective {
 }
 
 class InheritDepAttrDirective {
-  static var $require = '^[main]';
   Log log;
   Controller controller;
-  InheritDepAttrDirective(Log this.log, Controller this.controller) { }
+  InheritDepAttrDirective(Log this.log, MainAttrDirective this.controller) { }
 
   attach(Scope scope) {
     log('inheritDep:${controller.name}:${controller.calledFromMainDirective}');
@@ -65,7 +56,12 @@ main() {
     return () {};
   }
 
-  describe('controller', () {
+  // TODO(misko): These tests are wrong since they assume that a directive
+  // will have additional controller is in JS version of angular, but
+  // this is based on DTE branch and the directive is the controller
+  // so no need for this. Disabling for now until we need it and will
+  // rewrite then.
+  xdescribe('controller', () {
     Compiler $compile;
     Scope $rootScope;
     Log $log;

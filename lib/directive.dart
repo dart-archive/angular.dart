@@ -4,17 +4,16 @@ String _DIRECTIVE = '-directive';
 String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
 
 class Directive {
-  Type directiveControllerType;
+  Type type;
   String $name;
   Function $generate;
   String $transclude;
   int $priority = 0;
   Type $controllerType;
-  String $requiredController;
   String $template;
 
-  Directive(this.directiveControllerType) {
-    var name = directiveControllerType.toString();
+  Directive(this.type) {
+    var name = type.toString();
     var isAttr = false;
     $name = name.splitMapJoin(
         new RegExp(r'[A-Z]'),
@@ -32,20 +31,9 @@ class Directive {
     // Check the $transclude.
     // TODO(deboer): I'm not a fan of 'null' as a configuration value.
     // It would be awesome if $transclude could be an enum.
-    $transclude = reflectStaticField(directiveControllerType, '\$transclude');
-    $template = reflectStaticField(directiveControllerType, '\$template');
-    $controllerType = reflectStaticField(directiveControllerType, '\$controller');
-    //TODO (misko): remove this. No need for $require since the directives can just ask for each other
-    var required = reflectStaticField(directiveControllerType, '\$require');
-    if (required != null) {
-      $requiredController = "\$${required}Controller";
-    }
-
-    if ($controllerType != null) {
-      assert($requiredController == null);
-      $requiredController = "\$${$name}Controller";
-    }
-    var $selector = reflectStaticField(directiveControllerType, r'$selector');
+    $transclude = reflectStaticField(type, '\$transclude');
+    $template = reflectStaticField(type, '\$template');
+    var $selector = reflectStaticField(type, r'$selector');
     if ($selector != null) {
       $name = $selector;
     }
