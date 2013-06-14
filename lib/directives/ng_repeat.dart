@@ -27,7 +27,7 @@ class NgRepeatAttrDirective  {
     var lastListLen = 0;
     // should be watchprops
     scope.$watch(listExpr, (List value, _, __) {
-      if (value.length == lastListLen) { return; }
+      if (value == null || value.length == lastListLen) { return; }
       lastListLen = value.length;
 
       // List changed! Erase everything.
