@@ -1,3 +1,5 @@
+import 'dart:html';
+import 'jasmine_syntax.dart';
 import "_specs.dart";
 
 class LoggerBlockDirective {

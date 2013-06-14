@@ -1,4 +1,5 @@
 import "_specs.dart";
+import 'jasmine_syntax.dart';
 
 class NoStatic { }
 class Static {

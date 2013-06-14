@@ -1,6 +1,7 @@
 import "_specs.dart";
 import "_log.dart";
 import "dart:mirrors";
+import 'jasmine_syntax.dart';
 
 
 

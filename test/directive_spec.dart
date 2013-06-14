@@ -1,4 +1,5 @@
 import "_specs.dart";
+import 'jasmine_syntax.dart';
 
 // Types must be declared on the top level. Ugh.
 class SomeDirective { }

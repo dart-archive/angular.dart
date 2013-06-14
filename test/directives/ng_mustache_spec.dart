@@ -1,4 +1,5 @@
 import "../_specs.dart";
+import '../jasmine_syntax.dart';
 
 main() {
   describe('ng-mustache', () {
