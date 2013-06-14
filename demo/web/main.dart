@@ -13,13 +13,14 @@ class AngularBootstrap {
     List<dom.Node> topElt = dom.query('[ng-app]').nodes.toList();
     assert(topElt.length > 0);
 
-    $rootScope['greeting'] = "Hello world!";
+    $rootScope['greeting'] = 'Hello world!';
     var lastRandom;
     $rootScope['random'] = () {
-      if (lastRandom == null) lastRandom = "Random: ${new math.Random().nextInt(100)}";
+      if (lastRandom == null) lastRandom =
+          'Random: ${new math.Random().nextInt(100)}';
       return lastRandom;
     };
-    $rootScope['people'] = ["James", "Misko"];
+    $rootScope['people'] = ['James', 'Misko'];
     $rootScope['objs'] = [{'v': 'v1'}, {'v': 'v2'}];
 
     var template = $compile.call(topElt);
@@ -37,15 +38,15 @@ class BookController implements Controller {
   attach(Scope scope) {
     $scope = scope;
 
-    $scope.greeting = "TabController";
+    $scope.greeting = 'TabController';
     chapters = [];
     $scope.chapters = chapters;
 
     $scope.selected = (chapterScope) {
       chapters.forEach((p) {
-        p["selected"] = false;
+        p['selected'] = false;
       });
-      chapterScope["selected"] = true;
+      chapterScope['selected'] = true;
     };
   }
 
@@ -59,15 +60,14 @@ class BookComponent {
   BookController controller;
   BookComponent(BookController this.controller);
 
-  //static var $transclude = ".";
-
-  static String $template =
-    '<div>Shadow backed template. Greeting from the controller: <span ng-bind="greeting"></span>' +
-    '<h2>Table of Contents</h2><ul class="nav nav-tabs">' +
-    '  <li ng-repeat="chapter in chapters" ng-bind="chapter.title"></li>' +
-    '</ul>' +
-    '<content></content>' +
-    '</div>';
+  static String $template = '''
+    <div>Shadow backed template. Greeting from the controller:
+        <span ng-bind='greeting'></span>
+    <h2>Table of Contents</h2><ul class='nav nav-tabs'>
+      <li ng-repeat='chapter in chapters' ng-bind='chapter.title'></li>
+    </ul>
+    <content></content>
+    </div>''';
 
   attach(Scope scope) {
     controller.attach(scope);
