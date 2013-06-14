@@ -135,6 +135,7 @@ class JQuery implements List<Node> {
   remove() => forEach((n) => n.remove());
   attr([String name]) => accessor((n) => n.attributes[name], (n, v) => n.attributes[name] = v);
   textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
+  find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(n.queryAll(selector)));
 }
 
 class Logger implements List {

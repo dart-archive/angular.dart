@@ -177,78 +177,78 @@ class Scope implements Map {
     Scope next, current, target = this;
 
     _beginPhase('\$digest');
+    try {
+      do { // "while dirty" loop
+        dirty = false;
+        current = target;
+        //asyncQueue = current._asyncQueue;
+        //dump('aQ: ${asyncQueue.length}');
 
-    do { // "while dirty" loop
-      dirty = false;
-      current = target;
-      //asyncQueue = current._asyncQueue;
-      //dump('aQ: ${asyncQueue.length}');
-
-      while(asyncQueue.length > 0) {
-        try {
-          current.$eval(asyncQueue.removeAt(0));
-        } catch (e, s) {
-          _exceptionHandler(e, s);
+        while(asyncQueue.length > 0) {
+          try {
+            current.$eval(asyncQueue.removeAt(0));
+          } catch (e, s) {
+            _exceptionHandler(e, s);
+          }
         }
-      }
 
-      do { // "traverse the scopes" loop
-        if ((watchers = current._watchers) != null) {
-          // process our watches
-          length = watchers.length;
-          while (length-- > 0) {
-            try {
-              watch = watchers[length];
-              if ((value = watch.get(current)) != (last = watch.last) &&
-                  !(value is num && last is num && value.isNaN && last.isNaN)) {
-                dirty = true;
-                watch.last = value;
-                watch.fn(value, ((last == initWatchVal) ? value : last), current);
-                if (_ttlLeft < 5) {
-                  logIdx = 4 - _ttlLeft;
-                  while (watchLog.length <= logIdx) {
-                    watchLog.add([]);
+        do { // "traverse the scopes" loop
+          if ((watchers = current._watchers) != null) {
+            // process our watches
+            length = watchers.length;
+            while (length-- > 0) {
+              try {
+                watch = watchers[length];
+                if ((value = watch.get(current)) != (last = watch.last) &&
+                    !(value is num && last is num && value.isNaN && last.isNaN)) {
+                  dirty = true;
+                  watch.last = value;
+                  watch.fn(value, ((last == initWatchVal) ? value : last), current);
+                  if (_ttlLeft < 5) {
+                    logIdx = 4 - _ttlLeft;
+                    while (watchLog.length <= logIdx) {
+                      watchLog.add([]);
+                    }
+                    logMsg = (watch.exp is Function)
+                        ? 'fn: ' + (watch.exp.name || watch.exp.toString())
+                        : watch.exp;
+                    logMsg += '; newVal: ' + toJson(value) + '; oldVal: ' + toJson(last);
+                    watchLog[logIdx].add(logMsg);
                   }
-                  logMsg = (watch.exp is Function)
-                      ? 'fn: ' + (watch.exp.name || watch.exp.toString())
-                      : watch.exp;
-                  logMsg += '; newVal: ' + toJson(value) + '; oldVal: ' + toJson(last);
-                  watchLog[logIdx].add(logMsg);
+                }
+              } catch (e, s) {
+                _exceptionHandler(e, s);
+              }
+            }
+          }
+
+          // Insanity Warning: scope depth-first traversal
+          // yes, this code is a bit crazy, but it works and we have tests to prove it!
+          // this piece should be kept in sync with the traversal in $broadcast
+          if (current._childHead == null) {
+            if (current == target) {
+              next = null;
+            } else {
+              next = current._nextSibling;
+              if (next == null) {
+                while(current != target && (next = current._nextSibling) == null) {
+                  current = current.$parent;
                 }
               }
-            } catch (e, s) {
-              _exceptionHandler(e, s);
             }
-          }
-        }
-
-        // Insanity Warning: scope depth-first traversal
-        // yes, this code is a bit crazy, but it works and we have tests to prove it!
-        // this piece should be kept in sync with the traversal in $broadcast
-        if (current._childHead == null) {
-          if (current == target) {
-            next = null;
           } else {
-            next = current._nextSibling;
-            if (next == null) {
-              while(current != target && (next = current._nextSibling) == null) {
-                current = current.$parent;
-              }
-            }
+            next = current._childHead;
           }
-        } else {
-          next = current._childHead;
+        } while ((current = next) != null);
+
+        if(dirty && (_ttlLeft--) == 0) {
+          throw '$_ttl \$digest() iterations reached. Aborting!\n' +
+              'Watchers fired in the last 5 iterations: ${toJson(watchLog)}';
         }
-      } while ((current = next) != null);
-
-      if(dirty && (_ttlLeft--) == 0) {
-        _clearPhase();
-        throw '$_ttl \$digest() iterations reached. Aborting!\n' +
-            'Watchers fired in the last 5 iterations: ${toJson(watchLog)}';
-      }
-    } while (dirty || asyncQueue.length > 0);
-
-    _clearPhase();
+      } while (dirty || asyncQueue.length > 0);
+    } finally {
+      _clearPhase();
+    }
   }
 
 
