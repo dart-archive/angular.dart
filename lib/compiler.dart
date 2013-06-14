@@ -71,14 +71,7 @@ class Compiler {
           var templateValue = denormalizeTemplate(directive.$template);
           var div = new dom.DivElement();
           div.innerHtml = templateValue;
-          var templateBlockType = this(div.nodes);
-          usableDirectiveRefs.add(
-              new DirectiveRef(directiveRef.element,
-                               directiveRef.selector,
-                               directiveRef.name,
-                               directiveRef.value,
-                               directives['[ng-shadow-dom]'],
-                               {'': templateBlockType}));
+          directiveRef.blockTypes = {'': this(div.nodes)};
         }
       }
 

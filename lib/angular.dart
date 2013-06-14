@@ -14,7 +14,6 @@ part 'directive.dart';
 part 'directives/ng_bind.dart';
 part 'directives/ng_mustache.dart';
 part 'directives/ng_repeat.dart';
-part 'directives/ng_shadow_dom.dart';
 part 'dom_utilities.dart';
 part 'exception_handler.dart';
 part 'interpolate.dart';

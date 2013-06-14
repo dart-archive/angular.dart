@@ -69,7 +69,7 @@ class Block implements ElementWrapper {
   ElementWrapper previous = null;
   ElementWrapper next = null;
   String group;
-  List<Directive> directives = [];
+  List<dynamic> directives = [];
   Function onInsert;
   Function onRemove;
   Function onMove;
@@ -122,7 +122,7 @@ class Block implements ElementWrapper {
             preRenderedIndexOffset += blockCache.preRenderedElementCount;
           }
 
-          var directiveRef = directiveRefs[j];
+          DirectiveRef directiveRef = directiveRefs[j];
           var name = directiveRef.directive.$name;
 
           if (name == null) {
@@ -131,7 +131,7 @@ class Block implements ElementWrapper {
 
           directiveNames.add(name);
           directiveDefsByName[name] = directiveRef;
-          if (directiveRef.isComponent()) {
+          if (directiveRef.directive.isStructural) {
             anchorsByName[name] = $blockListFactory([node], directiveRef.blockTypes, blockCache);
           }
         }
@@ -168,9 +168,7 @@ class Block implements ElementWrapper {
       directiveModule.value(DirectiveValue,
           new DirectiveValue.fromString(directiveRef.value));
 
-      if (anchorsByName.containsKey(directiveName)) {
-        directiveModule.value(BlockList, anchorsByName[directiveName]);
-      }
+      directiveModule.value(BlockList, anchorsByName[directiveName]);
 
       Type directiveType = directiveRef.directive.type;
 
@@ -179,13 +177,21 @@ class Block implements ElementWrapper {
           [directiveType]);
 
       try {
-        directives.add(injector.get(directiveType));
+        var directiveInstance = injector.get(directiveType);
+        if (directiveRef.directive.isComponent) {
+          // TODO(misko): this way of getting shadowBlock is dumb!
+          Block shadowBlock = directiveRef.blockTypes['']();
+          directiveInstance = new ComponentWrapper(directiveInstance, node, shadowBlock);
+        }
+        directives.add(directiveInstance);
       } catch (e,s) {
         var msg;
         if (e is MirroredUncaughtExceptionError) {
+          //TODO(misko): why is this here? Injector should never throw this exception
           msg = e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
         } else {
-          msg = "Creating $directiveName: "  + e.toString();
+          msg = "Creating $directiveName: "  + e.toString() +
+                "\n ORIGINAL Stack trace:\n" + s.toString();
         }
 
         throw msg;
@@ -327,6 +333,26 @@ class Block implements ElementWrapper {
     previous = previousBlock;
     previousBlock.next = this;
     return this;
+  }
+}
+
+class ComponentWrapper {
+  dynamic controller;
+  dom.Element elementRoot;
+  Block shadowBlock;
+  Scope shadowScope;
+
+  ComponentWrapper(this.controller, this.elementRoot, this.shadowBlock) {
+    var shadowRoot = elementRoot.createShadowRoot();
+    for (var i = 0, ii = shadowBlock.elements.length; i < ii; i++) {
+      shadowRoot.append(shadowBlock.elements[i]);
+    }
+  }
+
+  attach(scope) {
+    shadowScope = scope.$new();
+    controller.attach(shadowScope);
+    shadowBlock.attach(shadowScope);
   }
 }
 

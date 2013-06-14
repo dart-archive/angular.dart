@@ -62,7 +62,7 @@ main() {
       expect(element.html()).toEqual('<!--ANCHOR: ng-repeat=item in items-->');
     }));
 
-    xit('should compile repeater with children', inject(() {
+    xit('should compile repeater with children', inject((Compiler $compile) {
       var element = $('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>');
       var template = $compile(element);
 
@@ -81,7 +81,7 @@ main() {
     }));
 
 
-    xit('should compile multi-root repeater', inject(() {
+    xit('should compile multi-root repeater', inject((Compiler $compile) {
       var element = $(
           '<div>' +
             '<div repeat="item in items" bind="item" include-next></div>' +
@@ -106,7 +106,7 @@ main() {
     }));
 
 
-    xit('should compile text', inject(() {
+    xit('should compile text', inject((Compiler $compile) {
       var element = $('<div>{{name}}<span>!</span></div>').contents();
       element.remove();
 
@@ -125,7 +125,7 @@ main() {
     }));
 
 
-    xit('should compile nested repeater', inject(() {
+    xit('should compile nested repeater', inject((Compiler $compile) {
       var element = $(
           '<div>' +
             '<ul repeat="lis in uls">' +
@@ -264,7 +264,7 @@ main() {
 
 
     describe("interpolation", () {
-      xit('should interpolate attribute nodes', inject(() {
+      xit('should interpolate attribute nodes', inject((Compiler $compile) {
         var element = $('<div test="{{name}}"></div>');
         var template = $compile(element);
 
@@ -276,7 +276,7 @@ main() {
       }));
 
 
-      xit('should interpolate text nodes', inject(() {
+      xit('should interpolate text nodes', inject((Compiler $compile) {
         var element = $('<div>{{name}}</div>');
         var template = $compile(element);
 
@@ -309,7 +309,7 @@ main() {
       }));
 
 
-      xit('should generate directive from a directive', inject(() {
+      xit('should generate directive from a directive', inject((Compiler $compile) {
         var element = $('<ul><li generate="abc"></li></ul>');
         var blockType = $compile(element);
         var block = blockType(element);
@@ -336,7 +336,7 @@ main() {
         expect(element.text()).toEqual('world');
       }));
 
-      xit('should compile with transclusion and no block reuse', inject(() {
+      xit('should compile with transclusion and no block reuse', inject((Compiler $compile) {
         var element = $(
             '<ul>' +
                 '<li>-</li>' +
@@ -360,7 +360,7 @@ main() {
       }));
 
 
-      xit('should compile and collect template instances', inject(() {
+      xit('should compile and collect template instances', inject((Compiler $compile) {
         var element = $(
             '<ul>' +
                 '<li>-</li>' +
@@ -386,7 +386,7 @@ main() {
             '<li>-</li>');
       }));
 
-      xit('should compile and collect template instances, and correctly compute offsets', inject(() {
+      xit('should compile and collect template instances, and correctly compute offsets', inject((Compiler $compile) {
         var element = $(
             '<ul>' +
                 '<li>-</li>' +
@@ -419,5 +419,34 @@ main() {
             '<li>-</li>');
       }));
     });
+
+    describe('components', () {
+      beforeEach(() {
+        directives.register(SimpleComponent);
+      });
+
+      it('should create a simple component', inject((Compiler $compile) {
+        $rootScope.name = 'OUTTER';
+        var element = $(r'<div>{{name}}{{$id}}:<simple>{{name}}{{$id}}</simple></div>');
+        BlockType blockType = $compile(element);
+        Block block = blockType(element);
+        block.attach($rootScope);
+        $rootScope.$digest();
+
+        expect(element.textWithShadow()).toEqual('OUTTER_1:INNER_2(OUTTER_1)');
+      }));
+    });
   });
+}
+
+class SimpleComponent {
+  static String $template = r'{{name}}{{$id}}(<content>SHADOW-CONTENT</content>)';
+
+  SimpleComponent() {
+  }
+
+  attach(Scope scope) {
+    scope.name = 'INNER';
+  }
+
 }

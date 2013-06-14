@@ -134,6 +134,7 @@ class JQuery implements List<Node> {
   eq(num childIndex) => $(this[childIndex]);
   remove() => forEach((n) => n.remove());
   attr([String name]) => accessor((n) => n.attributes[name], (n, v) => n.attributes[name] = v);
+  textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
 }
 
 class Logger implements List {
@@ -202,6 +203,7 @@ module(Function fn) {
 }
 
 main() {
+  beforeEach(() => id = 1);
   beforeEach(() => currentSpecInjector = new SpecInjector());
   beforeEach(module(angularModule));
   afterEach(() => currentSpecInjector = null);

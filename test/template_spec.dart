@@ -45,7 +45,7 @@ class AppendAttrDirective {
 }
 
 main() {
-  describe('template', () {
+  xdescribe('template', () {
     var element, directive, $compile, $rootScope;
 
     beforeEach(inject((Injector injector) {

@@ -2,6 +2,7 @@ import "_specs.dart";
 
 class LoggerBlockDirective {
   static String $name = 'foo';
+  static String $transclude = '.';
   LoggerBlockDirective(BlockList list, Logger logger) {
     if (list == null) {
       throw new ArgumentError('BlockList must be injected.');
@@ -94,7 +95,7 @@ main() {
       });
 
 
-      describe('replace', () {
+      xdescribe('replace', () {
         it('should allow directives to remove elements', inject((BlockTypeFactory $blockTypeFactory) {
           var innerBlockType = $blockTypeFactory($('<b>text</b>'), []);
           var outerBlockType = $blockTypeFactory($('<div>TO BE REPLACED</div><div>:ok</div>'), [
