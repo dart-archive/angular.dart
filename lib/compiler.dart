@@ -2,12 +2,10 @@ part of angular;
 
 class Compiler {
   DirectiveRegistry directives;
-  Injector $injector;
   BlockTypeFactory $blockTypeFactory;
   Selector selector;
 
   Compiler(DirectiveRegistry this.directives,
-           Injector this.$injector,
            BlockTypeFactory this.$blockTypeFactory) {
     selector = selectorFactory(directives.enumerate());
   }
@@ -73,7 +71,7 @@ class Compiler {
           var templateValue = denormalizeTemplate(directive.$template);
           var div = new dom.DivElement();
           div.innerHtml = templateValue;
-          var templateBlockType = $injector.get(Compiler)(div.nodes);
+          var templateBlockType = this(div.nodes);
           usableDirectiveRefs.add(
               new DirectiveRef(directiveRef.element,
                                directiveRef.selector,
