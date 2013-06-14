@@ -40,6 +40,10 @@ class Directive {
     // It would be awesome if $transclude could be an enum.
     $transclude = reflectStaticField(type, '\$transclude');
     $template = reflectStaticField(type, '\$template');
+    $priority = reflectStaticField(type, '\$priority');
+    if ($priority == null) {
+      $priority = 0;
+    }
     isStructural = $transclude != null;
     var $selector = reflectStaticField(type, r'$selector');
     if ($selector != null) {
