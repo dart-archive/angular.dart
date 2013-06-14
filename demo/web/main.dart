@@ -34,7 +34,9 @@ class BookController implements Controller {
   Scope $scope;
   List chapters;
 
-  BookController(Scope this.$scope) {
+  attach(Scope scope) {
+    $scope = scope;
+
     $scope.greeting = "TabController";
     chapters = [];
     $scope.chapters = chapters;
@@ -53,8 +55,12 @@ class BookController implements Controller {
   }
 }
 
-class BookAttrDirective {
-  static var $controller = BookController;
+class BookComponent {
+  BookController controller;
+  BookComponent(BookController this.controller);
+
+  //static var $transclude = ".";
+
   static String $template =
     '<div>Shadow backed template. Greeting from the controller: <span ng-bind="greeting"></span>' +
     '<h2>Table of Contents</h2><ul class="nav nav-tabs">' +
@@ -63,13 +69,15 @@ class BookAttrDirective {
     '<content></content>' +
     '</div>';
 
-  attach(Scope scope) {}
+  attach(Scope scope) {
+    controller.attach(scope);
+  }
 }
 
-class ChapterAttrDirective {
+class ChapterDirective {
   BookController controller;
   dom.Element element;
-  ChapterAttrDirective(dom.Element this.element, Controller this.controller);
+  ChapterDirective(dom.Element this.element, BookController this.controller);
 
   attach(Scope scope) {
     // automatic scope management isn't implemented yet.
@@ -88,9 +96,8 @@ main() {
   injector.get(DirectiveRegistry)
       ..register(NgBindAttrDirective)
       ..register(NgRepeatAttrDirective)
-      ..register(NgShadowDomAttrDirective)
-      ..register(BookAttrDirective)
-      ..register(ChapterAttrDirective);
+      ..register(BookComponent)
+      ..register(ChapterDirective);
 
   injector.get(AngularBootstrap)();
 
