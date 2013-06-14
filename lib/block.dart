@@ -96,7 +96,7 @@ class Block implements ElementWrapper {
     for (num i = 0, ii = directivePositions.length; i < ii;) {
       num index = directivePositions[i++];
 
-      List<DirectiveRef> directiveDefs = directivePositions[i++];
+      List<DirectiveRef> directiveRefs = directivePositions[i++];
       List childDirectivePositions = directivePositions[i++];
       var nodeListIndex = index + preRenderedIndexOffset;
       dom.Node node = nodeList[nodeListIndex];
@@ -113,8 +113,8 @@ class Block implements ElementWrapper {
       Map<String, BlockListFactory> anchorsByName = {};
       List<String> directiveNames = [];
 
-      if (directiveDefs != null) {
-        for (var j = 0, jj = directiveDefs.length; j < jj; j++) {
+      if (directiveRefs != null) {
+        for (var j = 0, jj = directiveRefs.length; j < jj; j++) {
           var blockCache;
 
           if (blockCaches != null && blockCaches.length > 0) {
@@ -122,7 +122,7 @@ class Block implements ElementWrapper {
             preRenderedIndexOffset += blockCache.preRenderedElementCount;
           }
 
-          var directiveRef = directiveDefs[j];
+          var directiveRef = directiveRefs[j];
           var name = directiveRef.directive.$name;
 
           if (name == null) {
@@ -141,9 +141,10 @@ class Block implements ElementWrapper {
         _link(node.nodes, childDirectivePositions, blockCaches);
       }
 
-      if (fakeParent)
+      if (fakeParent) {
         // extract the node from the parentNode.
         nodeList[nodeListIndex] = parentNode.nodes[0];
+      }
     }
   }
 

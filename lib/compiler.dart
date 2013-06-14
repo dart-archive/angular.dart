@@ -47,10 +47,10 @@ class Compiler {
           }
         }
         if (directive.$transclude != null) {
-          var remaindingDirectives = declaredDirectiveRefs.sublist(j + 1);
+          var remainingDirectives = declaredDirectiveRefs.sublist(j + 1);
           var transclusion = compileTransclusion(directive.$transclude,
               domCursor, templateCursor,
-              directiveRef, remaindingDirectives);
+              directiveRef, remainingDirectives);
 
           if (transclusion['blockCache'] != null) {
             blockCaches.add(transclusion['blockCache']);
