@@ -98,9 +98,9 @@ main() {
         it('should allow directives to remove elements', inject((BlockTypeFactory $blockTypeFactory) {
           var innerBlockType = $blockTypeFactory($('<b>text</b>'), []);
           var outerBlockType = $blockTypeFactory($('<div>TO BE REPLACED</div><div>:ok</div>'), [
-              0, [new DirectiveDef(
-                  new Directive(ReplaceBlockDirective),
-                  '', {'': innerBlockType})], null
+              0, [new DirectiveRef(null, null, '', '',
+                                   new Directive(ReplaceBlockDirective),
+                                   {'': innerBlockType})], null
           ]);
 
           var outerBlock = outerBlockType();
@@ -111,9 +111,9 @@ main() {
         it('should allow directives to create shadow DOM', inject((BlockTypeFactory $blockTypeFactory) {
           var innerBlockType = $blockTypeFactory($('<b>shadow</b>'), []);
           var outerBlockType = $blockTypeFactory($('<x-shadowy>boo</x-shadowy><div>:ok</div>'), [
-              0, [new DirectiveDef(
-                  new Directive(ShadowBlockDirective),
-                  '', {'': innerBlockType})], null
+              0, [new DirectiveRef(null, null, '', '',
+                                   new Directive(ShadowBlockDirective),
+                                   {'': innerBlockType})], null
           ]);
 
           var outerBlock = outerBlockType();
@@ -166,9 +166,9 @@ main() {
 
           var innerBlockType = $blockTypeFactory($('<b>text</b>'), []);
           var outerBlockType = $blockTypeFactory($('<!--start--><!--end-->'), [
-            0, [new DirectiveDef(
-                new Directive(LoggerBlockDirective),
-                '', {'': innerBlockType})], null
+            0, [new DirectiveRef(null, null, '', '',
+                                 new Directive(LoggerBlockDirective),
+                                 {'': innerBlockType})], null
           ]);
 
           var outterBlock = outerBlockType();

@@ -19,17 +19,17 @@ class Compiler {
     var cursorAlreadyAdvanced;
 
     do {
-      var directiveRefs = useExistingDirectiveRefs == null
+      var declaredDirectiveRefs = useExistingDirectiveRefs == null
           ? extractDirectiveRefs(domCursor.nodeList()[0])
           : useExistingDirectiveRefs;
       var compileChildren = true;
       var childDirectivePositions = null;
-      var directiveDefs = null;
+      List<DirectiveRef> usableDirectiveRefs = null;
 
       cursorAlreadyAdvanced = false;
 
-      for (var j = 0, jj = directiveRefs.length; j < jj; j++) {
-        var directiveRef = directiveRefs[j];
+      for (var j = 0, jj = declaredDirectiveRefs.length; j < jj; j++) {
+        var directiveRef = declaredDirectiveRefs[j];
         Directive directive = directiveRef.directive;
         var blockTypes = null;
 
@@ -45,11 +45,11 @@ class Compiler {
                 new Directive(generatedDirectiveType),
                 generatedValue);
 
-            directiveRefs.add(generatedDirectiveRef);
+            declaredDirectiveRefs.add(generatedDirectiveRef);
           }
         }
         if (directive.$transclude != null) {
-          var remaindingDirectives = directiveRefs.sublist(j + 1);
+          var remaindingDirectives = declaredDirectiveRefs.sublist(j + 1);
           var transclusion = compileTransclusion(directive.$transclude,
               domCursor, templateCursor,
               directiveRef, remaindingDirectives);
@@ -62,10 +62,11 @@ class Compiler {
           j = jj; // stop processing further directives since they belong to transclusion;
           compileChildren = false;
         }
-        if (directiveDefs == null) {
-          directiveDefs = [];
+        if (usableDirectiveRefs == null) {
+          usableDirectiveRefs = [];
         }
-        directiveDefs.add(new DirectiveDef(directive, directiveRef.value, blockTypes));
+        directiveRef.blockTypes = blockTypes;
+        usableDirectiveRefs.add(directiveRef);
         if (directive.$template != null) {
           // TODO(deboer): port this function.
           denormalizeTemplate(x) => x;
@@ -73,7 +74,13 @@ class Compiler {
           var div = new dom.DivElement();
           div.innerHtml = templateValue;
           var templateBlockType = $injector.get(Compiler)(div.nodes);
-          directiveDefs.add(new DirectiveDef(directives['[ng-shadow-dom]'], '', {'': templateBlockType}));
+          usableDirectiveRefs.add(
+              new DirectiveRef(directiveRef.element,
+                               directiveRef.selector,
+                               directiveRef.name,
+                               directiveRef.value,
+                               directives['[ng-shadow-dom]'],
+                               {'': templateBlockType}));
         }
       }
 
@@ -88,13 +95,13 @@ class Compiler {
         templateCursor.ascend();
       }
 
-      if (childDirectivePositions != null || directiveDefs != null) {
+      if (childDirectivePositions != null || usableDirectiveRefs != null) {
         if (directivePositions == null) directivePositions = [];
         var directiveOffsetIndex = templateCursor.index;
 
         directivePositions
             ..add(directiveOffsetIndex)
-            ..add(directiveDefs)
+            ..add(usableDirectiveRefs)
             ..add(childDirectivePositions);
       }
     } while (templateCursor.microNext() && domCursor.microNext());

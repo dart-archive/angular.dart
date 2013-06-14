@@ -52,29 +52,22 @@ class Directive {
   }
 }
 
-class DirectiveDef {
-  Directive directive;
-  String value;
-  Map<String, BlockType> blockTypes;
-
-  DirectiveDef(Directive this.directive,
-               String this.value,
-               [Map<String, BlockType> this.blockTypes]);
-
-  bool isComponent() => this.blockTypes != null;
-}
-
 class DirectiveRef {
   dom.Node element;
   String selector;
   String name;
   String value;
   Directive directive;
+  Map<String, BlockType> blockTypes;
 
-  DirectiveRef(this.element, this.selector, [this.name = null, this.value = null]) {
-    ASSERT(element != null);
-    ASSERT(selector != null);
+  DirectiveRef(this.element, this.selector, [
+               String this.name,
+               String this.value,
+               Directive this.directive,
+               Map<String, BlockType> this.blockTypes]) {
   }
+
+  bool isComponent() => this.blockTypes != null;
 
   String toString() {
     return '{ element: ${element.outerHtml}, selector: $selector, name: $name, value: $value }';
