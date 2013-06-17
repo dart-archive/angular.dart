@@ -18,6 +18,7 @@ part 'directives/ng_repeat.dart';
 part 'dom_utilities.dart';
 part 'exception_handler.dart';
 part 'http.dart';
+part 'interface_typing.dart';
 part 'interpolate.dart';
 part 'mirrors.dart';
 part 'node_cursor.dart';
@@ -55,17 +56,19 @@ typedef FnWith3Args(a0, a1, a2);
 typedef FnWith4Args(a0, a1, a2, a3);
 typedef FnWith5Args(a0, a1, a2, a3, a4);
 
-_relaxFnApply(Function fn, List args) {
+relaxFnApply(Function fn, List args) {
+  // Check the args.length to support functions with optional parameters.
+  var argsLen = args.length;
   if (fn is Function && fn != null) {
-    if (fn is FnWith5Args) {
+    if (fn is FnWith5Args && argsLen > 4) {
       return fn(args[0], args[1], args[2], args[3], args[4]);
-    } else if (fn is FnWith4Args) {
+    } else if (fn is FnWith4Args && argsLen > 3) {
       return fn(args[0], args[1], args[2], args[3]);
-    } else if (fn is FnWith3Args) {
+    } else if (fn is FnWith3Args&& argsLen > 2 ) {
       return fn(args[0], args[1], args[2]);
-    } else if (fn is FnWith2Args) {
+    } else if (fn is FnWith2Args && argsLen > 1 ) {
       return fn(args[0], args[1]);
-    } else if (fn is FnWith1Args) {
+    } else if (fn is FnWith1Args && argsLen > 0) {
       return fn(args[0]);
     } else if (fn is FnWith0Args) {
       return fn();

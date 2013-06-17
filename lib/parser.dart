@@ -125,17 +125,13 @@ ParsedFn ZERO = new ParsedFn((_, _x) => 0);
 
 class BreakException {}
 
-// returns a function that calls fn with numArgs args as an array
-varArgs(numArgs, fn) {
-  switch (numArgs) {
-    case 0: return () => fn([]);
-    case 1: return (p0) => fn([p0]);
-    case 2: return (p0, p1) => fn([p0, p1]);
-    case 3: return (p0, p1, p2) => fn([p0, p1, p3]);
-    case 4: return (p0, p1, p2, p3) => fn([p0, p1, p2, p3]);
-    case 5: return (p0, p1, p2, p3) => fn([p0, p1, p2, p3, p4]);
-  }
-  throw "varArgs with $numArgs is not supported.";
+class Setter {
+  operator[]=(name, value){}
+}
+
+abstract class Getter {
+  bool containsKey(name);
+  operator[](name);
 }
 
 // Returns a tuple [found, value]
@@ -146,7 +142,9 @@ getterChild(value, childKey) {
     } else {
       return [false, null];
     }
-  } else if (value is Map && value.containsKey(childKey)) {
+  }
+
+  if (isInterface(value, Getter) && value.containsKey(childKey)) {
     return [true, value[childKey]];
   } else {
     InstanceMirror instanceMirror = reflect(value);
@@ -159,6 +157,7 @@ getterChild(value, childKey) {
       if (instanceMirror.type.members.containsKey(curSym)) {
         MethodMirror methodMirror = instanceMirror.type.members[curSym];
         return [true, _relaxFnArgs((args) {
+          if (args == null) args = [];
           try {
             return instanceMirror.invoke(curSym, args).reflectee;
           } catch (e) {
@@ -195,6 +194,21 @@ getter(scope, locals, path) {
   return currentValue;
 }
 
+setterChild(obj, childKey, value) {
+  if (isInterface(obj, Setter)) {
+    obj[childKey] = value;
+    return value;
+  }
+  InstanceMirror instanceMirror = reflect(obj);
+  Symbol curSym = new Symbol(childKey);
+  try {
+    // maybe it is a member field?
+    return instanceMirror.setField(curSym, value).reflectee;
+  } catch (e) {
+    throw "$e \n\n${e.stacktrace}";
+  }
+}
+
 setter(obj, path, setValue) {
   var element = path.split('.');
   for (var i = 0; element.length > 1; i++) {
@@ -206,8 +220,7 @@ setter(obj, path, setValue) {
     }
     obj = propertyObj;
   }
-  obj[element.removeAt(0)] = setValue;
-  return setValue;
+  return setterChild(obj, element.removeAt(0), setValue);
 }
 
 class Parser {
@@ -698,7 +711,7 @@ class Parser {
           args.add(argsFn[i](self, locals));
         }
         var userFn = fn(self, locals);
-        return _relaxFnApply(userFn, args);
+        return relaxFnApply(userFn, args);
       });
     };
 
