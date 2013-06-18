@@ -11,7 +11,6 @@ class Compiler {
   }
 
   _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,
-               List<BlockCache> blockCaches,
                List<DirectiveRef> useExistingDirectiveRefs) {
     if (domCursor.nodeList().length == 0) return null;
 
@@ -50,14 +49,9 @@ class Compiler {
         }
         if (directive.$transclude != null) {
           var remainingDirectives = declaredDirectiveRefs.sublist(j + 1);
-          var transclusion = compileTransclusion(directive.$transclude,
+          blockTypes = compileTransclusion(directive.$transclude,
               domCursor, templateCursor,
               directiveRef, remainingDirectives);
-
-          if (transclusion['blockCache'] != null) {
-            blockCaches.add(transclusion['blockCache']);
-          }
-          blockTypes = transclusion['blockTypes'];
 
           j = jj; // stop processing further directives since they belong to transclusion;
           compileChildren = false;
@@ -73,7 +67,7 @@ class Compiler {
         templateCursor.descend();
 
         childDirectivePositions = compileChildren
-            ? _compileBlock(domCursor, templateCursor, blockCaches, null)
+            ? _compileBlock(domCursor, templateCursor, null)
             : null;
 
         domCursor.ascend();
@@ -106,7 +100,7 @@ class Compiler {
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
     var groupName = '';
     var domCursorIndex = domCursor.index;
-    var directivePositions = _compileBlock(domCursor, transcludeCursor, [], transcludedDirectiveRefs);
+    var directivePositions = _compileBlock(domCursor, transcludeCursor, transcludedDirectiveRefs);
     if (directivePositions == null) directivePositions = [];
 
     BlockType = $blockTypeFactory(transcludeCursor.elements, directivePositions, groupName);
@@ -127,10 +121,7 @@ class Compiler {
       domCursor.replaceWithAnchor(anchorName);
     }
 
-    return {
-      "blockTypes": blockTypes, 
-      "blockCache": blocks != null ? new BlockCache(blocks) : null
-    };
+    return blockTypes;
   }
 
 
@@ -172,12 +163,11 @@ class Compiler {
   }
 
 
-  call(List<dom.Node> elements, [List<BlockCache> blockCaches]) {
-    List<dom.Node> domElements = elements;
-    List<dom.Node> templateElements = cloneElements(domElements);
+  BlockType call(List<dom.Node> elements) {
+                 List<dom.Node> domElements = elements;
+                 List<dom.Node> templateElements = cloneElements(domElements);
     var directivePositions = _compileBlock(
         new NodeCursor(domElements), new NodeCursor(templateElements),
-        ?blockCaches && blockCaches != null ? blockCaches : [],
         null);
 
     return $blockTypeFactory(templateElements,

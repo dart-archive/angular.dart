@@ -4,24 +4,12 @@ part of angular;
 class NgIfAttrDirective {
   static String $transclude = 'element';
 
-  String expression;
-  dom.Element node;
-  Injector injector;
-  BlockList blockList;
-
-  NgIfAttrDirective(DirectiveValue value, Injector this.injector, BlockList this.blockList, dom.Node this.node) {
-    expression = value.value;
-  }
-
-  attach(Scope scope) {
-    // TODO(vojta): detach the scope when block is removed
+  NgIfAttrDirective(NodeAttrs attrs, Injector injector, BlockList blockList, dom.Node node, Scope scope) {
     var childScope = scope.$new();
-    var block = blockList.newBlock();
+    var block = blockList.newBlock(childScope);
     var isInserted = false;
 
-    block.attach(childScope);
-
-    scope.$watch(expression, (value, _, __) {
+    scope.$watch(attrs[this], (value) {
       // TODO(vojta): ignore changes like null -> false
       if (value != null && toBool(value)) {
         if (!isInserted) {

@@ -2,15 +2,8 @@ part of angular;
 
 
 class NgClickAttrDirective {
-  String expression;
-  dom.Node node;
-
-
-  NgClickAttrDirective(dom.Node this.node, DirectiveValue directiveValue) {
-    expression = directiveValue.value;
-  }
-
-  attach(Scope scope) {
+  NgClickAttrDirective(dom.Node node, NodeAttrs attrs, Scope scope) {
+    var expression = attrs[this];
     node.onClick.listen((event) => scope.$apply(expression));
   }
 }

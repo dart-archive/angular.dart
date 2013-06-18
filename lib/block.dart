@@ -1,46 +1,11 @@
 part of angular;
 
+Symbol _SHADOW = new Symbol('SHADOW_INJECTOR');
+
 abstract class ElementWrapper {
   List<dom.Node> elements;
   ElementWrapper next;
   ElementWrapper previous;
-}
-
-class BlockCache {
-  Map<String, List<Block>> groupCache = {};
-  num preRenderedElementCount = 0;
-
-  BlockCache([List<Block> blockInstances]) {
-    if (?blockInstances) {
-      for (var i = 0, ii = blockInstances.length; i < ii; i++) {
-        Block block = blockInstances[i];
-        String group = block.group;
-
-        preRenderedElementCount += block.elements.length;
-        if (groupCache.containsKey(group)) {
-          groupCache[group].add(block);
-        } else {
-          groupCache[group] = [block];
-        }
-      }
-    }
-  }
-
-  flush([Function callback]) {
-    groupCache.forEach((blocks) {
-      while(blocks.isNotEmpty) {
-        Block block = blocks.removeLast();
-        if (callback != null) callback(block);
-      }
-    });
-  }
-
-  Block get(String type) {
-    if (groupCache.containsKey(type)) {
-      var blocks = groupCache[type];
-      return blocks.isEmpty ? null : blocks.removeAt(0);
-    }
-  }
 }
 
 class BlockFactory {
@@ -52,12 +17,12 @@ class BlockFactory {
                BlockListFactory this.$blockListFactory,
                Injector this.$injector);
 
-  call(List<dom.Node> blockNodeList, List directivePositions, List<BlockCache> blockCaches, String group, {injector: null}) {
+  call(List<dom.Node> blockNodeList, List directivePositions, String group, Injector injector) {
     ASSERT(blockNodeList != null);
     ASSERT(directivePositions != null);
-    ASSERT(blockCaches != null);
-    return new Block($exceptionHandler, $blockListFactory, injector != null ? injector : $injector,
-              blockNodeList, directivePositions, blockCaches, group);
+    ASSERT(injector != null);
+    return new Block($exceptionHandler, $blockListFactory, injector,
+              blockNodeList, directivePositions, group);
   }
 }
 
@@ -79,15 +44,14 @@ class Block implements ElementWrapper {
         Injector this.$injector,
         List<dom.Node> this.elements,
         List directivePositions,
-        List<BlockCache> blockCaches,
         String this.group) {
     ASSERT(elements != null);
     ASSERT(directivePositions != null);
-    ASSERT(blockCaches != null);
-    _link(elements, directivePositions, blockCaches, $injector);
+    ASSERT($injector != null);
+    _link(elements, directivePositions, $injector);
   }
 
-  _link(List<dom.Node> nodeList, List directivePositions, List<BlockCache> blockCaches, Injector parentInjector) {
+  _link(List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
     var stack;
     try {throw '';} catch(e,s) {stack = s;}
     var preRenderedIndexOffset = 0;
@@ -110,35 +74,10 @@ class Block implements ElementWrapper {
         parentNode.append(node);
       }
 
-      Map<String, BlockListFactory> anchorsByName = {};
-      List<String> directiveNames = [];
-      var injector = parentInjector;
-      if (directiveRefs != null) {
-        for (var j = 0, jj = directiveRefs.length; j < jj; j++) {
-          var blockCache;
+      var childInjector = _instantiateDirectives(parentInjector, node, directiveRefs);
 
-          if (blockCaches != null && blockCaches.length > 0) {
-            blockCache = blockCaches.removeAt(0);
-            preRenderedIndexOffset += blockCache.preRenderedElementCount;
-          }
-
-          DirectiveRef directiveRef = directiveRefs[j];
-          var name = directiveRef.directive.$name;
-
-          if (name == null) {
-            name = nextUid();
-          }
-
-          directiveNames.add(name);
-          directiveDefsByName[name] = directiveRef;
-          if (directiveRef.directive.isStructural) {
-            anchorsByName[name] = $blockListFactory([node], directiveRef.blockTypes, blockCache);
-          }
-        }
-        injector = _instantiateDirectives(directiveDefsByName, directiveNames, node, anchorsByName, parentInjector);
-      }
       if (childDirectivePositions != null) {
-        _link(node.nodes, childDirectivePositions, blockCaches, injector);
+        _link(node.nodes, childDirectivePositions, childInjector);
       }
 
       if (fakeParent) {
@@ -148,124 +87,58 @@ class Block implements ElementWrapper {
     }
   }
 
-  Injector _instantiateDirectives(Map<String, DirectiveRef> directiveDefsByName,
-                         List<String> directiveNames,
-                         dom.Node node,
-                         Map<String, BlockList> anchorsByName,
-                         Injector parentInjector) {
-    var elementModule = new Module();
-    elementModule.value(Block, this);
-    elementModule.value(dom.Element, node);
-    elementModule.value(dom.Node, node);
-    directiveDefsByName.values.forEach((DirectiveRef def) => elementModule.type(
-                def.directive.type, def.directive.type));
+  Injector _instantiateDirectives(Injector parentInjector, dom.Node node, List<DirectiveRef> directiveRefs) {
+    if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
+    var nodeModule = new Module();
+    var blockListFactory = () => null;
+    var nodeAttrs = new NodeAttrs(node);
 
-    for (var i = 0, ii = directiveNames.length; i < ii; i++) {
-      DirectiveRef directiveRef = directiveDefsByName[directiveNames[i]];
-      Type directiveType = directiveRef.directive.type;
-      var visibility = local;
-      if (directiveRef.directive.$visibility == DirectiveVisibility.CHILDREN) {
+    nodeModule.value(Block, this);
+    nodeModule.value(dom.Element, node);
+    nodeModule.value(dom.Node, node);
+    nodeModule.value(NodeAttrs, nodeAttrs);
+    directiveRefs.forEach((DirectiveRef ref) {
+      Type type = ref.directive.type;
+      var visibility = elementOnly;
+      if (ref.directive.$visibility == DirectiveVisibility.CHILDREN) {
         visibility = null;
-      } else if (directiveRef.directive.$visibility == DirectiveVisibility.DIRECT_CHILDREN) {
-        visibility = directChildren;
+      } else if (ref.directive.$visibility == DirectiveVisibility.DIRECT_CHILDREN) {
+        visibility = elementDirectChildren;
       }
-      elementModule.type(directiveType, directiveType, creation: directOnly, visibility: visibility);
-    }
-
-    var injector = parentInjector.createChild([elementModule]);
-
-    int prevInstantiatedCount;
-    List<String> alreadyInstantiated = <String>[];
-    // TODO(pavelgj): this is a workaround for the lack of directive
-    // instantiation ordering. A better way is to sort directives in the
-    // order they must be instantiated in.
-    do {
-      prevInstantiatedCount = alreadyInstantiated.length;
-      for (var i = 0, ii = directiveNames.length; i < ii; i++) {
-        var directiveName = directiveNames[i];
-        if (alreadyInstantiated.contains(directiveName)) continue;
-        DirectiveRef directiveRef = directiveDefsByName[directiveName];
-
-        Map<Type, dynamic> locals = new HashMap<Type, dynamic>();
-        locals[DirectiveValue] =
-            new DirectiveValue.fromString(directiveRef.value);
-        locals[BlockList] = anchorsByName[directiveName];
-
-        if (locals[BlockList] != null)
-          locals[BlockList].customInjector = injector;
-
-        Type directiveType = directiveRef.directive.type;
-
-        try {
-          var directiveInstance = injector.instantiate(directiveType, locals);
-          alreadyInstantiated.add(directiveName);
-          if (directiveRef.directive.isComponent) {
-            directiveInstance = new ComponentWrapper(directiveRef, directiveInstance, node,
-                $injector.get(Parser), $injector.get(Compiler), $injector.get(Http));
-
-          }
-          directives.add(directiveInstance);
-        } catch (e, s) {
-          if (e is MirroredUncaughtExceptionError) {
-            //TODO(misko): why is this here? Injector should never throw this exception
-            throw e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
-          } else if (e is IndirectInstantiationError) {
-            // ignore.
-          } else {
-            throw "Creating $directiveName: "  + e.toString() +
-                "\n ORIGINAL Stack trace:\n" + s.toString();
-          }
-        }
+      if (ref.directive.isComponent) {
+        //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
+        // TODO(misko): there should be no need to wrap function like this.
+        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, Parser parser, Http $http) =>
+          (new ComponentFactory(node, ref.directive))(injector, compiler, scope, parser, $http),
+          visibility: visibility);
+      } else {
+        nodeModule.type(type, type, visibility: visibility);
       }
-    } while(alreadyInstantiated.length != prevInstantiatedCount);
-
-    if (alreadyInstantiated.length != directiveNames.length) {
-      throw 'Cyclic dependency in directives on $node.';
-    }
-    return injector;
+      nodeAttrs[ref.directive.$name] = ref.value;
+      if (ref.directive.isStructural) {
+        blockListFactory = (Injector injector) => $blockListFactory([node], ref.blockTypes, injector);
+      }
+    });
+    nodeModule.factory(BlockList, blockListFactory);
+    var nodeInjector = parentInjector.createChild([nodeModule]);
+    directiveRefs.forEach((ref) => nodeInjector.get(ref.directive.type));
+    return nodeInjector;
   }
 
-
-  /// DI creation strategy that only allows 'explicit' injection.
-  dynamic directOnly(Symbol type,
-                   Injector requesting,
-                   Injector defining,
-                   bool directInstantation,
-                   Factory factory) {
-    if (!directInstantation) {
-      throw new IndirectInstantiationError(type);
+  /// DI visibility callback allowing node-local visibility.
+  bool elementOnly(Injector requesting, Injector defining) {
+    if (requesting.instances.containsKey(_SHADOW)) {
+      requesting = requesting.instances[_SHADOW];
     }
-    return factory();
+    return identical(requesting, defining);
   }
 
-  /// DI visibility callback allowin node-local visibility.
-  bool local(Injector requesting, Injector defining) =>
-      identical(requesting, defining);
-
-  /// DI visibility callback allowin visibility from direct child into parent.
-  bool directChildren(Injector requesting, Injector defining) =>
-      local(requesting, defining) || identical(requesting.parent, defining);
-
-  attach(Scope scope) {
-    // Attach directives
-    for(var i = 0, ii = directives.length; i < ii; i++) {
-      try {
-        directives[i].attach(scope);
-      } catch(e, s) {
-        $exceptionHandler(e, s);
-      }
+  /// DI visibility callback allowing visibility from direct child into parent.
+  bool elementDirectChildren(Injector requesting, Injector defining) {
+    if (requesting.instances.containsKey(_SHADOW)) {
+      requesting = requesting.instances[_SHADOW];
     }
-  }
-
-  detach(Scope scope) {
-    for(var i = 0, ii = directives.length, directive; i < ii; i++) {
-      try {
-        directive = directives[i];
-        directive.detach != null && directive.detach(scope);
-      } catch(e) {
-        $exceptionHandler(e);
-      }
-    }
+    return elementOnly(requesting, defining) || identical(requesting.parent, defining);
   }
 
 
@@ -383,96 +256,80 @@ class Block implements ElementWrapper {
   }
 }
 
-class IndirectInstantiationError {
-  IndirectInstantiationError(type)
-      : exception_string = '$type must be directly instantated before being '
-                           'injected from child injection';
-
-  /** The result of toString() for the exception object. */
-  final String exception_string;
-
-  String toString() {
-    return exception_string;
-  }
-}
-
-class ComponentWrapper {
-  DirectiveRef directiveRef;
-  dynamic controller;
-  dom.Element elementRoot;
+class ComponentFactory {
+  dom.Element element;
+  Directive directive;
+  dom.ShadowRoot shadowDom;
   Scope shadowScope;
-  Parser parser;
-  Block shadowBlock;
+  Injector shadowInjector;
+  Compiler compiler;
 
-  ComponentWrapper(this.directiveRef, this.controller, this.elementRoot, this.parser, $compiler, $http) {
-    var directive = directiveRef.directive;
-    var shadowRoot = elementRoot.createShadowRoot();
-    shadowRoot.applyAuthorStyles =
-        directive.$shadowRootOptions.$applyAuthorStyles;
-    shadowRoot.resetStyleInheritance =
-        directive.$shadowRootOptions.$resetStyleInheritance;
+  ComponentFactory(this.element, this.directive);
 
-    var styleData = '';
+  dynamic call(Injector injector, Compiler compiler, Scope scope, Parser parser, Http $http) {
+    this.compiler = compiler;
+    shadowDom = element.createShadowRoot();
+    shadowScope = scope.$new(true);
+    createAttributeMapping(scope, shadowScope, parser);
+    var controller = createShadowInjector(injector).get(directive.type);
     if (directive.$cssUrl != null) {
-      styleData = '<style>@import "${directive.$cssUrl}"</style>';
+      shadowDom.innerHtml = '<style>@import "${directive.$cssUrl}"</style>';
     }
-
-    _appendAndCompileTemplate(data) {
-      shadowRoot.innerHtml = styleData + data;
-      shadowBlock = $compiler(shadowRoot.nodes)(shadowRoot.nodes);
+    if (directive.$template != null) {
+      compileTemplate(directive.$template);
+    } else if (directive.$templateUrl != null) {
+      $http.
+        getString(directive.$templateUrl).
+        then((data) => shadowScope.$apply(() => compileTemplate(data)));
     }
-    // There is support here for directives having both $template and
-    // $templateUrl.  This could be a clever way to add a 'LOADING'
-    // message.
-    _appendAndCompileTemplate(directive.$template != null ? directive.$template : '');
-
-    if (directive.$templateUrl != null) {
-      $http.getString(directive.$templateUrl).then((data) {
-        _appendAndCompileTemplate(data);
-        // re-attach the scope.
-        if (shadowScope != null) {
-          shadowBlock.attach(shadowScope);
-          shadowScope.$digest();
-        }
-      });
-    }
+    return controller;
   }
 
-  attach(scope) {
-    shadowScope = scope.$new(true);
-    directiveRef.directive.$map.forEach((attrName, mapping) {
-      var attrValue = elementRoot.attributes[attrName];
+  compileTemplate(html) {
+    shadowDom.innerHtml += html;
+    compiler(shadowDom.nodes)(shadowInjector, shadowDom.nodes);
+  }
+
+  createShadowInjector(injector) {
+    var shadowModule = new ScopeModule(shadowScope);
+    shadowModule.type(directive.type, directive.type);
+    shadowInjector = injector.createChild([shadowModule]);
+    // TODO(misko): creazy hack to mark injector
+    shadowInjector.instances[_SHADOW] = injector;
+    return shadowInjector;
+  }
+
+  createAttributeMapping(Scope parentScope, Scope shadowScope, Parser parser) {
+    directive.$map.forEach((attrName, mapping) {
+      var attrValue = element.attributes[attrName];
       if (mapping == '@') {
         shadowScope[attrName] = attrValue;
       } else if (mapping == '=') {
         ParsedFn expr = parser(attrValue);
         var shadowValue;
         shadowScope.$watch(
-                () => expr(scope),
-                (v) => shadowScope[attrName] = shadowValue = v);
+            () => expr(parentScope),
+            (v) => shadowScope[attrName] = shadowValue = v);
         if (expr.assignable) {
           shadowScope.$watch(
-                () => shadowScope[attrName],
-                (v) {
-                  if (shadowValue != v) {
-                    shadowValue = v;
-                    expr.assign(scope, v);
-                  }
-                } );
+            () => shadowScope[attrName],
+            (v) {
+              if (shadowValue != v) {
+                shadowValue = v;
+                expr.assign(parentScope, v);
+              }
+            } );
         }
       } else if (mapping == '&') {
         ParsedFn fn = parser(attrValue);
-        shadowScope[attrName] = ([locals]) => fn(scope, locals);
+        shadowScope[attrName] = ([locals]) => fn(parentScope, locals);
       } else {
         throw "Unknown mapping $mapping for attribute $attrName.";
       }
     });
-    controller.attach(shadowScope);
-    if (shadowBlock != null) {
-      shadowBlock.attach(shadowScope);
-    }
   }
 }
+
 
 attrAccessorFactory(dom.Element element, String name) {
   return ([String value]) {
@@ -581,3 +438,24 @@ Map<String, Function> _DYNAMIC_SERVICES = {
   }
 };
 
+class NodeAttrs {
+  dom.Node node;
+  Map<String, String> attributes;
+
+  NodeAttrs(dom.Node this.node, [Map<String, String> this.attributes]) {
+    if (attributes == null) {
+      attributes = {};
+    }
+  }
+
+  operator []=(String name, String value) => attributes[name] = value;
+  operator [](name) {
+    if (!(name is String)) {
+      name = new Directive(name.runtimeType).$name;
+    }
+    var value = attributes[name];
+    return value;
+  }
+
+  dom.Element get element => node;
+}

@@ -8,8 +8,7 @@ class TabComponent {
   int id = 0;
   Log log;
   LocalAttrDirective local;
-  TabComponent(Log this.log, LocalAttrDirective this.local);
-  attach(Scope scope) {
+  TabComponent(Log this.log, LocalAttrDirective this.local, Scope scope) {
     log('TabComponent-${id++}');
     local.ping();
   }
@@ -19,8 +18,7 @@ class PaneComponent {
   TabComponent tabComponent;
   LocalAttrDirective localDirective;
   Log log;
-  PaneComponent(TabComponent this.tabComponent, LocalAttrDirective this.localDirective, Log this.log);
-  attach(Scope scope) {
+  PaneComponent(TabComponent this.tabComponent, LocalAttrDirective this.localDirective, Log this.log, Scope scope) {
     log('PaneComponent-${tabComponent.id++}');
     localDirective.ping();
   }
@@ -31,7 +29,6 @@ class LocalAttrDirective {
   int id = 0;
   Log log;
   LocalAttrDirective(Log this.log);
-  attach(Scope scope) {}
   ping() {
     log('LocalAttrDirective-${id++}');
   }
@@ -44,12 +41,12 @@ class SimpleTranscludeInAttachAttrDirective {
   Log log;
   BlockList blockList;
 
-  SimpleTranscludeInAttachAttrDirective(BlockList this.blockList, Log this.log);
-
-  attach(Scope scope) {
-    var block = blockList.newBlock();
-    block.insertAfter(blockList);
-    log('SimpleTransclude');
+  SimpleTranscludeInAttachAttrDirective(BlockList this.blockList, Log this.log, Scope scope) {
+    scope.$evalAsync(() {
+      var block = blockList.newBlock(scope);
+      block.insertAfter(blockList);
+      log('SimpleTransclude');
+    });
   }
 }
 
@@ -79,12 +76,12 @@ main() {
       $rootScope = injector.get(Scope);
     }));
 
-    it('should compile basic hello world', inject((Compiler $compile) {
+    it('should compile basic hello world', inject((Compiler $compile, Injector injector) {
       var element = $('<div ng-bind="name"></div>');
       var template = $compile(element);
 
       $rootScope['name'] = 'angular';
-      template(element).attach($rootScope);
+      template(injector, element);
 
       expect(element.text()).toEqual('');
       $rootScope.$digest();
@@ -95,14 +92,14 @@ main() {
       $compile([]);
     }));
 
-    it('should compile a directive in a child', inject((Compiler $compile) {
+    it('should compile a directive in a child', inject((Compiler $compile, Injector injector) {
       var element = $('<div><div ng-bind="name"></div></div>');
       var template = $compile(element);
 
       $rootScope['name'] = 'angular';
 
 
-      template(element).attach($rootScope);
+      template(injector, element);
 
       expect(element.text()).toEqual('');
       $rootScope.$digest();
@@ -110,12 +107,12 @@ main() {
     }));
 
 
-    it('should compile repeater', inject((Compiler $compile) {
+    it('should compile repeater', inject((Compiler $compile, Injector injector) {
       var element = $('<div><div ng-repeat="item in items" ng-bind="item"></div></div>');
       var template = $compile(element);
 
       $rootScope.items = ['A', 'b'];
-      template(element).attach($rootScope);
+      template(injector, element);
 
       expect(element.text()).toEqual('');
       // TODO(deboer): Digest twice until we have dirty checking in the scope.
@@ -133,7 +130,7 @@ main() {
       var template = $compile(element);
 
       $rootScope.items = ['A', 'b'];
-      template(element).attach($rootScope);
+      template(element);
 
       expect(element.text()).toEqual('');
       // TODO(deboer): Digest twice until we have dirty checking in the scope.
@@ -156,7 +153,7 @@ main() {
       var template = $compile(element);
 
       $rootScope.items = ['A', 'b'];
-      template(element).attach($rootScope);
+      template(element);
 
       expect(element.text()).toEqual('');
       $rootScope.$digest();
@@ -183,7 +180,7 @@ main() {
 
       element = $(block.elements);
 
-      block.attach($rootScope);
+      block;
 
       expect(element.text()).toEqual('!');
       $rootScope.$digest();
@@ -201,7 +198,7 @@ main() {
       var template = $compile(element);
 
       $rootScope.uls = [['A'], ['b']];
-      template(element).attach($rootScope);
+      template(element);
 
       expect(element.text()).toEqual('');
       $rootScope.$digest();
@@ -249,7 +246,7 @@ main() {
         var template = $compile(element);
         var block = template(element);
 
-        block.attach($rootScope);
+        block;
 
         $rootScope.name = 'a';
         $rootScope.$apply();
@@ -315,7 +312,7 @@ main() {
         var block = $compile(element)(element);
 
         $rootScope.test = 0;
-        block.attach($rootScope);
+        block;
         $rootScope.$apply();
 
         expect(element.length).toEqual(1);
@@ -335,7 +332,7 @@ main() {
         var template = $compile(element);
 
         $rootScope.name = 'angular';
-        template(element).attach($rootScope);
+        template(element);
 
         $rootScope.$digest();
         expect(element.attr('test')).toEqual('angular');
@@ -347,7 +344,7 @@ main() {
         var template = $compile(element);
 
         $rootScope.name = 'angular';
-        template(element).attach($rootScope);
+        template(element);
 
         expect(element.text()).toEqual('');
         $rootScope.$digest();
@@ -380,7 +377,7 @@ main() {
         var blockType = $compile(element);
         var block = blockType(element);
 
-        block.attach($rootScope);
+        block;
         $rootScope.names = ['james;', 'misko;'];
         $rootScope.$apply();
 
@@ -395,7 +392,7 @@ main() {
         var spanBT = $compile(element);
         var block = spanBT(element);
 
-        block.attach($rootScope);
+        block;
         $rootScope.name = 'world';
         $rootScope.$apply();
 
@@ -412,7 +409,7 @@ main() {
         var ulBlockType = $compile(element);
         var block = ulBlockType(element);
 
-        block.attach($rootScope);
+        block;
         $rootScope.upper = ['A', 'B'];
         $rootScope.$apply();
 
@@ -439,7 +436,7 @@ main() {
 
         var block = ulBlockType(element, blockCache);
 
-        block.attach($rootScope);
+        block;
         $rootScope.upper = ['A', 'B'];
         $rootScope.$apply();
 
@@ -467,7 +464,7 @@ main() {
         var ulBlockType = $compile(element, blockCache);
         var block = ulBlockType(element, blockCache);
 
-        block.attach($rootScope);
+        block;
         $rootScope.upper = ['A', 'B'];
         $rootScope.lower = ['a', 'b'];
         $rootScope.$apply();
@@ -492,21 +489,20 @@ main() {
         directives.register(IoComponent);
       });
 
-      it('should create a simple component', inject((Compiler $compile) {
+      it('should create a simple component', inject((Compiler $compile, Injector injector) {
         $rootScope.name = 'OUTTER';
         $rootScope.sep = '-';
         var element = $(r'<div>{{name}}{{sep}}{{$id}}:<simple>{{name}}{{sep}}{{$id}}</simple></div>');
         BlockType blockType = $compile(element);
-        Block block = blockType(element);
-        block.attach($rootScope);
+        Block block = blockType(injector, element);
         $rootScope.$digest();
 
         expect(element.textWithShadow()).toEqual('OUTTER-_1:INNER_2(OUTTER-_1)');
       }));
 
-      it('should create a component with IO', inject((Compiler $compile) {
+      it('should create a component with IO', inject((Compiler $compile, Injector injector) {
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
-        $compile(element)(element).attach($rootScope);
+        $compile(element)(injector, element);
         $rootScope.name = 'misko';
         $rootScope.$apply();
         var component = $rootScope.ioComponent;
@@ -525,23 +521,24 @@ main() {
 
     describe('controller scoping', () {
 
-      it('shoud make controllers available to sibling and child controllers', inject((Compiler $compile, Scope $rootScope, Log log) {
+      it('shoud make controllers available to sibling and child controllers', inject((Compiler $compile, Scope $rootScope, Log log, Injector injector) {
         var element = $('<tab local><pane local></pane><pane local></pane></tab>');
-        $compile(element)(element)..attach($rootScope);
+        $compile(element)(injector, element);
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
       }));
 
-      it('should reuse controllers for transclusions', inject((Compiler $compile, Scope $rootScope, Log log) {
+      it('should reuse controllers for transclusions', inject((Compiler $compile, Scope $rootScope, Log log, Injector injector) {
         var element = $('<div simple-transclude-in-attach include-transclude>block</div>');
-        $compile(element)(element)..attach($rootScope);
+        $compile(element)(injector, element);
+        $rootScope.$apply();
         expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
       }));
 
-      it('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope) {
+      it('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope, Injector injector) {
         expect(() {
           var element = $('<tab local><pane></pane><pane local></pane></tab>');
-          $compile(element)(element)..attach($rootScope);
-        }, throwsA(startsWith('Creating pane: Illegal argument(s): No provider found for LocalAttrDirective! (resolving LocalAttrDirective)')));
+          $compile(element)(injector, element);
+        }, throwsA(contains('No provider found for LocalAttrDirective! (resolving LocalAttrDirective)')));
       }));
 
     });
@@ -550,7 +547,7 @@ main() {
 
 class SimpleComponent {
   static String $template = r'{{name}}{{sep}}{{$id}}(<content>SHADOW-CONTENT</content>)';
-  attach(Scope scope) {
+  SimpleComponent(Scope scope) {
     scope.name = 'INNER';
   }
 }
@@ -559,7 +556,7 @@ class IoComponent {
   static String $template = r'<content></content>';
   static Map $map = {"attr": "@", "expr": "=", "ondone": "&"};
   Scope scope;
-  attach(Scope scope) {
+  IoComponent(Scope scope) {
     this.scope = scope;
     scope.$root.ioComponent = this;
   }

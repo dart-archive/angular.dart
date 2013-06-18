@@ -7,24 +7,20 @@ main() {
 
     beforeEach(inject((Injector injector, Scope $rootScope, Compiler compiler) {
       $exceptionHandler = injector.get(ExceptionHandler);
-      scope = $rootScope.$new();
+      scope = $rootScope;
       $compile = (html) {
         element = $(html);
         var blockType = compiler(element);
-        var block = blockType(element);
-        return (scope) {
-          block.attach(scope);
-          return element;
-        };
+        var block = blockType(injector, element);
+        return element;
       };
     }));
 
-    it(r'should set create a list of items', inject((Scope scope, Compiler compiler) {
+    it(r'should set create a list of items', inject((Scope scope, Compiler compiler, Injector injector) {
       var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
       BlockType blockType = compiler(element);
-      Block block = blockType(element);
+      Block block = blockType(injector, element);
       scope.items = ['a', 'b'];
-      block.attach(scope);
       scope.$apply();
       expect(element.text()).toEqual('ab');
     }));
@@ -34,7 +30,7 @@ main() {
       element = $compile(
         '<ul>' +
           '<li ng-repeat="item in items">{{item.name}};</li>' +
-        '</ul>')(scope);
+        '</ul>');
 
       // INIT
       scope.items = [{"name": 'misko'}, {"name":'shyam'}];
@@ -62,7 +58,7 @@ main() {
         element = $compile(
             '<ul>' +
                 '<li ng-repeat="item in items track by item.id">{{item.name}};</li>' +
-            '</ul>')(scope);
+            '</ul>');
         scope.items = [{"id": 'misko'}, {"id": 'igor'}];
         scope.$digest();
         var li0 = element.find('li')[0];
@@ -79,7 +75,7 @@ main() {
         element = $compile(
             '<ul>' +
                 '<li ng-repeat="item in items track by $id(item)">{{item.name}};</li>' +
-                '</ul>')(scope);
+                '</ul>');
         scope.items = [{"name": 'misko'}, {"name": 'igor'}];
         scope.$digest();
         var li0 = element.find('li')[0];
@@ -96,7 +92,7 @@ main() {
         element = $compile(
             '<ul>' +
                 '<li ng-repeat="item in items track by $index">{{item}};</li>' +
-            '</ul>')(scope);
+            '</ul>');
 
         Array.prototype.extraProperty = "should be ignored";
         // INIT
@@ -179,7 +175,7 @@ main() {
     it(r'should error on wrong parsing of ngRepeat', () {
       element = $('<ul><li ng-repeat="i dont parse"></li></ul>');
       expect(() {
-        $compile(element)(scope);
+        $compile(element);
       }).toThrow("[NgErr7] ngRepeat error! Expected expression in form of '_item_ in _collection_[ track by _id_]' but got 'i dont parse'.");
     });
 
@@ -187,7 +183,7 @@ main() {
     it("should throw error when left-hand-side of ngRepeat can't be parsed", () {
         element = $('<ul><li ng-repeat="i dont parse in foo"></li></ul>');
         expect(() {
-          $compile(element)(scope);
+          $compile(element);
         }).toThrow("[NgErr8] ngRepeat error! '_item_' in '_item_ in _collection_' should be an identifier or '(_key_, _value_)' expression, but got 'i dont parse'.");
     });
 
@@ -197,7 +193,7 @@ main() {
       element = $compile(
         '<ul>' +
           '<li ng-repeat="item in items">{{item}}:{{\$index}}|</li>' +
-        '</ul>')(scope);
+        '</ul>');
       scope.items = ['misko', 'shyam', 'frodo'];
       scope.$digest();
       expect(element.text()).toEqual('misko:0|shyam:1|frodo:2|');
@@ -209,7 +205,7 @@ main() {
       element = $compile(
         '<ul>' +
           '<li ng-repeat="item in items">{{item}}:{{\$first}}-{{\$middle}}-{{\$last}}|</li>' +
-        '</ul>')(scope);
+        '</ul>');
       scope.items = ['misko', 'shyam', 'doug'];
       scope.$digest();
       expect(element.text()).
@@ -240,7 +236,7 @@ main() {
           '<li ng-repeat="subgroup in groups">' +
             '<div ng-repeat="group in subgroup">{{group}}|</div>X' +
           '</li>' +
-        '</ul>')(scope);
+        '</ul>');
       scope.groups = [['a', 'b'], ['c','d']];
       scope.$digest();
 
@@ -255,7 +251,7 @@ main() {
         element = $compile(
           '<ul>' +
             '<li ng-repeat="item in items">{{key}}:{{val}}|></li>' +
-          '</ul>')(scope);
+          '</ul>');
         a = {};
         b = {};
         c = {};

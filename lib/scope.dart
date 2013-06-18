@@ -27,6 +27,12 @@ class Event {
   preventDefault() => defaultPrevented = true;
 }
 
+class ScopeModule extends Module {
+  ScopeModule(Scope scope) {
+    this.value(Scope, scope);
+  }
+}
+
 class ScopeDigestTTL {
   num ttl;
   ScopeDigestTTL(num this.ttl);
@@ -120,8 +126,6 @@ class Scope implements Map {
 
 
   $watch(watchExp, [Function listener]) {
-    if (watchExp is DirectiveValue) watchExp = watchExp.value;
-
     var watcher = new Watch(_compileToFn(listener), initWatchVal,
         _compileToFn(watchExp), watchExp.toString());
 

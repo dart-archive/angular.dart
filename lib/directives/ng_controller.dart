@@ -9,27 +9,27 @@ class NgControllerAttrDirective {
   Injector injector;
   BlockList blockList;
 
-  NgControllerAttrDirective(DirectiveValue value, Injector this.injector, BlockList this.blockList) {
-    var match = CTRL_REGEXP.firstMatch(value.value);
+  NgControllerAttrDirective(NodeAttrs attrs, Injector this.injector, BlockList this.blockList, Scope scope) {
+    var match = CTRL_REGEXP.firstMatch(attrs[this]);
 
     ctrlSymbol = new Symbol(match.group(1) + 'Controller');
     alias = match.group(3);
-  }
 
-  attach(Scope scope) {
-    var childScope = scope.$new();
-    var module = new Module();
-    module.value(Scope, childScope);
+    scope.$evalAsync(() {
+      var childScope = scope.$new();
 
-    // attach the child scope
-    blockList.newBlock()..attach(childScope)..insertAfter(blockList);
+      // attach the child scope
+      blockList.newBlock(childScope).insertAfter(blockList);
 
-    // instantiate the controller
-    var controller = injector.createChild([module], [ctrlSymbol]).getBySymbol(ctrlSymbol);
+      // instantiate the controller
+      var controller = injector.
+      createChild([new ScopeModule(childScope)], [ctrlSymbol]).
+      getBySymbol(ctrlSymbol);
 
-    // publish the controller into the scope
-    if (alias != null) {
-      childScope[alias] = controller;
-    }
+      // publish the controller into the scope
+      if (alias != null) {
+        childScope[alias] = controller;
+      }
+    });
   }
 }

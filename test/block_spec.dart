@@ -31,10 +31,7 @@ class ShadowBlockDirective {
 
 main() {
   describe('Block', () {
-    // NOTE(deboer): beforeEach and nested describes don't play nicely.  Repeat.
-    beforeEach(() => currentSpecInjector = new SpecInjector());
     beforeEach(module(angularModule));
-    afterEach(() => currentSpecInjector = null);
 
     var anchor;
     var $rootElement;
@@ -47,11 +44,11 @@ main() {
     describe('mutation', () {
       var a, b;
 
-      beforeEach(inject((BlockTypeFactory $blockTypeFactory, BlockListFactory $blockListFactory) {
+      beforeEach(inject((BlockTypeFactory $blockTypeFactory, BlockListFactory $blockListFactory, Injector injector) {
         $rootElement.html('<!-- anchor -->');
-        anchor = $blockListFactory($rootElement.contents().eq(0), {});
-        a = $blockTypeFactory($('<span>A</span>a'), [])();
-        b = $blockTypeFactory($('<span>B</span>b'), [])();
+        anchor = $blockListFactory($rootElement.contents().eq(0), {}, injector);
+        a = $blockTypeFactory($('<span>A</span>a'), [])(injector);
+        b = $blockTypeFactory($('<span>B</span>b'), [])(injector);
       }));
 
 
@@ -154,7 +151,7 @@ main() {
           expect(b.previous).toBe(anchor);
         });
 
-        it('should remove', inject((BlockTypeFactory $blockTypeFactory, Logger logger) {
+        it('should remove', inject((BlockTypeFactory $blockTypeFactory, Logger logger, Injector injector) {
           a.remove();
           b.remove();
 
@@ -172,7 +169,7 @@ main() {
                                  {'': innerBlockType})], null
           ]);
 
-          var outterBlock = outerBlockType();
+          var outterBlock = outerBlockType(injector);
           // The LoggerBlockDirective caused a BlockList for innerBlockType to
           // be created at logger[0];
           BlockList outterAnchor = logger[0];
@@ -181,7 +178,7 @@ main() {
           // outterAnchor is a BlockList, but it has "elements" set to the 0th element
           // of outerBlockType.  So, calling insertAfter() will insert the new
           // block after the <!--start--> element.
-          outterAnchor.newBlock().insertAfter(outterAnchor);
+          outterAnchor.newBlock(null).insertAfter(outterAnchor);
 
           expect($rootElement.text()).toEqual('text');
 

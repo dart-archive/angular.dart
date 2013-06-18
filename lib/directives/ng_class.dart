@@ -2,15 +2,8 @@ part of angular;
 
 
 class NgClassAttrDirective {
-  String expression;
-  dom.Element node;
-
-  NgClassAttrDirective(dom.Node this.node, DirectiveValue value) {
-    expression = value.value;
-  }
-
-  attach(Scope scope) {
-    scope.$watch(expression, (current, previous, __) {
+  NgClassAttrDirective(dom.Node node, NodeAttrs attrs, Scope scope) {
+    scope.$watch(attrs[this], (current, previous, __) {
       var previousSet;
       var currentSet;
 

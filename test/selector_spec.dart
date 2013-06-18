@@ -111,7 +111,7 @@ class DirectiveInfosMatcher extends BaseMatcher {
     return description;
   }
 
-  bool matches(directiveRefs, Map matchState) {
+  bool matches(directiveRefs, matchState) {
     var pass = expected.length == directiveRefs.length;
     if (pass) {
       for(var i = 0, ii = expected.length; i < ii; i++) {

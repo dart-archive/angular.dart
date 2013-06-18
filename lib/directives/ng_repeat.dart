@@ -32,8 +32,9 @@ class NgRepeatAttrDirective  {
   NgRepeatAttrDirective(BlockListFactory blockListFactory,
                         BlockList this.blockList,
                         dom.Node node,
-                        DirectiveValue value) {
-    expression = value.value;
+                        NodeAttrs attrs,
+                        Scope scope) {
+    expression = attrs[this];
     Match match = SYNTAX.firstMatch(expression);
     if (match == null) {
       throw "[NgErr7] ngRepeat error! Expected expression in form of '_item_ in _collection_[ track by _id_]' but got '$expression'.";
@@ -47,9 +48,7 @@ class NgRepeatAttrDirective  {
     valueIdentifier = match.group(3);
     if (valueIdentifier == null) valueIdentifier = match.group(1);
     keyIdentifier = match.group(2);
-  }
 
-  attach(Scope scope) {
     scope.$watchCollection(listExpr, (collection) {
       var previousNode = blockList.elements[0],     // current position of the node
           nextNode,
@@ -129,14 +128,13 @@ class NgRepeatAttrDirective  {
 
         if (row.startNode == null) {
           newRows[row.id] = row;
-          var block = blockList.newBlock();
+          var block = blockList.newBlock(childScope);
           row.block = block;
           row.scope = childScope;
           row.elements = block.elements;
           row.startNode = row.elements[0];
           row.endNode = row.elements[row.elements.length - 1];
           block.insertAfter(cursor);
-          block.attach(childScope);
         }
         cursor = row.block;
       }

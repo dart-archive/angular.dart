@@ -20,11 +20,12 @@ main() {
   describe('NgController', () {
     var compile, element, rootScope;
 
-    beforeEach(inject((Scope scope, Compiler compiler) {
+    beforeEach(inject((Scope scope, Compiler compiler, Injector injector) {
       compile = (html, [applyFn]) {
         element = $(html);
         rootScope = scope;
-        compiler(element)(element).attach(scope);
+        compiler(element)(injector, element);
+        dump(1, element);
         scope.$apply(applyFn);
       };
     }));
@@ -41,6 +42,7 @@ main() {
         rootScope['name'] = 'parent';
       });
 
+      dump(2, element);
       expect(element.find('.controller').text()).toEqual('Hi Vojta');
       expect(element.find('.siblink').text()).toEqual('parent');
     });

@@ -4,9 +4,8 @@ class BlockListFactory {
   Scope $rootScope;
   BlockListFactory(Scope this.$rootScope);
 
-  BlockList call(List<dom.Node> elements, Map<String, BlockType> blockTypes,
-                 [List<BlockCache> blockCaches]) {
-    return new BlockList($rootScope, elements, blockTypes, blockCaches);
+  BlockList call(List<dom.Node> elements, Map<String, BlockType> blockTypes, Injector injector) {
+    return new BlockList($rootScope, elements, blockTypes, injector);
   }
 }
 
@@ -19,40 +18,21 @@ class BlockList extends ElementWrapper {
   Scope $rootScope;
   List<dom.Node> elements;
   Map<String, BlockType> blockTypes;
-  BlockCache blockCache;
-  Injector customInjector;
+  Injector injector;
 
   ElementWrapper previous;
   ElementWrapper next;
 
   BlockList(Scope this.$rootScope, List<dom.Node> this.elements,
-            Map<String, BlockType> this.blockTypes, [BlockCache blockCache]) {
-    this.blockCache = (?blockCache && blockCache != null) ? blockCache : new BlockCache();
-
-    // This is a bit of a hack.
-    // We need to run after the first watch, that means we have to wait for
-    // watch, and then schedule $evalAsync.
-    var deregisterWatch = $rootScope.$watch((_) {
-      // TODO deregisterWatch();
-      //$rootScope.$evalAsync(() {
-      //  blockCache.flush((block) {
-      //    block.remove();
-      //  });
-      //});
-    });
+            Map<String, BlockType> this.blockTypes, Injector this.injector) {
   }
 
-  Block newBlock([String type = '']) {
-    Block block = this.blockCache.get(type);
-
-    if (block == null) {
-      if (!this.blockTypes.containsKey(type)) {
-        throw new ArgumentError("Unknown block type: '$type'.");
-      }
-
-      block = this.blockTypes[type](null, null, customInjector);
+  Block newBlock(Scope scope, [String type = '']) {
+    //TODO(misko): BlockList should not be resposible for BlockTypes. This should be simplified.
+    if (!this.blockTypes.containsKey(type)) {
+      throw new ArgumentError("Unknown block type: '$type'.");
     }
 
-    return block;
+    return this.blockTypes[type](injector.createChild([new ScopeModule(scope)]));
   }
 }

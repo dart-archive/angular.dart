@@ -111,12 +111,6 @@ class DirectiveRegistry {
   }
 }
 
-class DirectiveValue {
-  String value;
-  DirectiveValue() : this.value = "ERROR DEFAULT";
-  DirectiveValue.fromString(this.value);
-}
-
 abstract class DirectiveVisibility {
   static const String LOCAL = 'local';
   static const String CHILDREN = 'children';

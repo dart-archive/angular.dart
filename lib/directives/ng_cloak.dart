@@ -2,11 +2,7 @@ part of angular;
 
 
 class NgCloakAttrDirective {
-  dom.Element node;
-
-  NgCloakAttrDirective(dom.Node this.node) {}
-
-  attach(Scope scope) {
+  NgCloakAttrDirective(dom.Node node) {
     node.attributes.remove('ng-cloak');
   }
 }

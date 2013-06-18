@@ -5,32 +5,27 @@ import "_http.dart";
 class LogAttrDirective {
   static var $priority = 0;
   Log log;
-  LogAttrDirective(Log this.log, DirectiveValue value) {
-    log(value.value == "" ? "LOG" : value.value);
+  LogAttrDirective(Log this.log, NodeAttrs attrs) {
+    log(attrs[this] == "" ? "LOG" : attrs[this]);
   }
-  attach(Scope scope) {}
 }
 
 class SimpleUrlComponent {
   static String $templateUrl = 'simple.html';
-  attach(Scope scope) {}
 }
 
 class HtmlAndCssComponent {
   static String $templateUrl = 'simple.html';
   static String $cssUrl = 'simple.css';
-  attach(Scope scope) {}
 }
 
 class InlineWithCssComponent {
   static String $template = '<div>inline!</div>';
   static String $cssUrl = 'simple.css';
-  attach(Scope scope) {}
 }
 
 class OnlyCssComponent {
   static String $cssUrl = 'simple.css';
-  attach(Scope scope) {}
 }
 
 main() {
@@ -46,11 +41,11 @@ main() {
       module.directive(InlineWithCssComponent);
     }));
 
-    it('should replace element with template from url', inject((MockHttp $http, Compiler $compile, Scope $rootScope,  Log log) {
+    it('should replace element with template from url', inject((MockHttp $http, Compiler $compile, Scope $rootScope,  Log log, Injector injector) {
       $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>');
 
-      var element = $('<div><simple-url log>ignore</replace><div>');
-      $compile(element)(element)..attach($rootScope);
+      var element = $('<div><simple-url log>ignore</simple-url><div>');
+      $compile(element)(injector, element);
 
       $http.flush().then(expectAsync1((data) {
         expect(renderedText(element)).toEqual('Simple!');
@@ -59,11 +54,11 @@ main() {
       }));
     }));
 
-    it('should load a CSS file into a style', inject((MockHttp $http, Compiler $compile, Scope $rootScope, Log log) {
+    it('should load a CSS file into a style', inject((MockHttp $http, Compiler $compile, Scope $rootScope, Log log, Injector injector) {
       $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>');
 
       var element = $('<div><html-and-css log>ignore</html-and-css><div>');
-      $compile(element)(element)..attach($rootScope);
+      $compile(element)(injector, element);
 
       $http.flush().then(expectAsync1((data) {
         expect(renderedText(element)).toEqual('@import "simple.css"Simple!');
@@ -75,24 +70,24 @@ main() {
       }));
     }));
 
-    it('should load a CSS file with a \$template', inject((Compiler $compile, Scope $rootScope) {
+    it('should load a CSS file with a \$template', inject((Compiler $compile, Scope $rootScope, Injector injector) {
       var element = $('<div><inline-with-css log>ignore</inline-with-css><div>');
-      $compile(element)(element)..attach($rootScope);
+      $compile(element)(injector, element);
       expect(renderedText(element)).toEqual('@import "simple.css"inline!');
     }));
 
-    it('should load a CSS with no template', inject((Compiler $compile, Scope $rootScope) {
+    it('should load a CSS with no template', inject((Compiler $compile, Scope $rootScope, Injector injector) {
       var element = $('<div><only-css log>ignore</only-css><div>');
-      $compile(element)(element)..attach($rootScope);
+      $compile(element)(injector, element);
 
       expect(renderedText(element)).toEqual('@import "simple.css"');
     }));
 
-    it('should load the CSS before the template is loaded', inject((MockHttp $http, Compiler $compile, Scope $rootScope) {
+    it('should load the CSS before the template is loaded', inject((MockHttp $http, Compiler $compile, Scope $rootScope, Injector injector) {
       $http.expectGET('simple.html', '<div>Simple!</div>');
 
       var element = $('<html-and-css>ignore</html-and-css>');
-      $compile(element)(element)..attach($rootScope);
+      $compile(element)(injector, element);
 
       // The HTML is not loaded yet, but the CSS @import should be in the DOM.
       expect(renderedText(element)).toEqual('@import "simple.css"');
