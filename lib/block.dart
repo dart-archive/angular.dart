@@ -179,9 +179,8 @@ class Block implements ElementWrapper {
       try {
         var directiveInstance = injector.get(directiveType);
         if (directiveRef.directive.isComponent) {
-          // TODO(misko): this way of getting shadowBlock is dumb!
-          Block shadowBlock = directiveRef.blockTypes['']();
-          directiveInstance = new ComponentWrapper(directiveInstance, node, shadowBlock);
+          directiveInstance = new ComponentWrapper(directiveInstance, node, $injector.get(Compiler),
+              directiveRef, $injector.get(Http));
         }
         directives.add(directiveInstance);
       } catch (e,s) {
@@ -339,20 +338,40 @@ class Block implements ElementWrapper {
 class ComponentWrapper {
   dynamic controller;
   dom.Element elementRoot;
-  Block shadowBlock;
   Scope shadowScope;
+  Block shadowBlock;
 
-  ComponentWrapper(this.controller, this.elementRoot, this.shadowBlock) {
+  ComponentWrapper(this.controller, this.elementRoot, Compiler $compiler, DirectiveRef directiveRef, Http http) {
+    var directive = directiveRef.directive;
     var shadowRoot = elementRoot.createShadowRoot();
-    for (var i = 0, ii = shadowBlock.elements.length; i < ii; i++) {
-      shadowRoot.append(shadowBlock.elements[i]);
+
+    // There is support here for directives having both $template and
+    // $templateUrl.  This could be a clever way to add a 'LOADING'
+    // message.
+    if (directive.$template != null) {
+      shadowRoot.innerHtml = '<div>${directive.$template}</div>';
+      shadowBlock = $compiler(shadowRoot.nodes)(shadowRoot.nodes);
+    }
+
+    if (directive.$templateUrl != null) {
+      http.getString(directive.$templateUrl).then((data) {
+        shadowRoot.innerHtml = '<div>${data}</div>';
+        shadowBlock = $compiler(shadowRoot.nodes)(shadowRoot.nodes);
+        // re-attach the scope.
+        if (shadowScope != null) {
+          shadowBlock.attach(shadowScope);
+          shadowScope.$digest();
+        }
+      });
     }
   }
 
   attach(scope) {
     shadowScope = scope.$new();
     controller.attach(shadowScope);
-    shadowBlock.attach(shadowScope);
+    if (shadowBlock != null) {
+      shadowBlock.attach(shadowScope);
+    }
   }
 }
 

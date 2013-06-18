@@ -60,14 +60,7 @@ class BookComponent {
   BookController controller;
   BookComponent(BookController this.controller);
 
-  static String $template = '''
-    <div>Shadow backed template. Greeting from the controller:
-        <span ng-bind='greeting'></span>
-    <h2>Table of Contents</h2><ul class='nav nav-tabs'>
-      <li ng-repeat='chapter in chapters' ng-bind='chapter.title'></li>
-    </ul>
-    <content></content>
-    </div>''';
+  static String $templateUrl = 'book.html';
 
   attach(Scope scope) {
     controller.attach(scope);
