@@ -1,6 +1,7 @@
 library angular;
 
 import "dart:mirrors";
+import "dart:async" as async;
 import "dart:json" as json;
 import 'dart:html' as dom;
 import 'package:di/di.dart';
@@ -16,6 +17,7 @@ part 'directives/ng_mustache.dart';
 part 'directives/ng_repeat.dart';
 part 'dom_utilities.dart';
 part 'exception_handler.dart';
+part 'http.dart';
 part 'interpolate.dart';
 part 'mirrors.dart';
 part 'node_cursor.dart';
