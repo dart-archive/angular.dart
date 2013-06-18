@@ -10,25 +10,25 @@ class LogAttrDirective {
   attach(Scope scope) {}
 }
 
-class ReplaceAttrDirective {
+class ReplaceComponent {
   static String $template = '<div log="REPLACE" style="width: 10px" high-log>Replace!</div>';
   static var $replace = true;
-  ReplaceAttrDirective(Node node) {
+  ReplaceComponent(Node node) {
     node.attributes['compiled'] = 'COMPILED';
   }
   attach(Scope scope) {}
 }
 
-class ReplacetwoAttrDirective {
+class ReplacetwoComponent {
   static String $template = '<div log="REPLACE" style="width: 10px" high-log>Re<div>place!</div></div>';
   static var $replace = true;
-  ReplaceAttrDirective(Node node) {
+  ReplaceComponent(Node node) {
     node.attributes['compiled'] = 'COMPILED';
   }
   attach(Scope scope) {}
 }
 
-class ShadowtranscludeAttrDirective {
+class ShadowtranscludeComponent {
   static String $template = '<div log="REPLACE" style="width: 10px" high-log>Replace!<content>SHADOW-CONTENT</content></div>';
   static var $replace = true;
   ShadowtranscludeDirective(Node node) {
@@ -45,36 +45,35 @@ class AppendAttrDirective {
 }
 
 main() {
-  xdescribe('template', () {
+  describe('template', () {
     var element, directive, $compile, $rootScope;
 
     beforeEach(inject((Injector injector) {
       element = null;
       injector.get(DirectiveRegistry)
       ..register(LogAttrDirective)
-      ..register(ReplaceAttrDirective)
-      ..register(ReplacetwoAttrDirective)
-      ..register(ShadowtranscludeAttrDirective)
-      ..register(NgShadowDomAttrDirective);
+      ..register(ReplaceComponent)
+      ..register(ReplacetwoComponent)
+      ..register(ShadowtranscludeComponent);
     }));
 
 
     it('should replace element with template', inject((Compiler $compile, Scope $rootScope, Log log) {
-      var element = $('<div><div replace log>ignore</div><div>');
+      var element = $('<div><replace log>ignore</replace><div>');
       $compile(element)(element)..attach($rootScope);
       expect(renderedText(element)).toEqual('Replace!');
       expect(log.result()).toEqual('REPLACE; LOG');
     }));
 
     it('should replacetwo element with template', inject((Compiler $compile, Scope $rootScope, Log log) {
-      var element = $('<div><div replacetwo log>ignore</div><div>');
+      var element = $('<div><replacetwo log>ignore</replacetwo><div>');
       $compile(element)(element)..attach($rootScope);
       expect(renderedText(element)).toEqual('Replace!');
       expect(log.result()).toEqual('REPLACE; LOG');
     }));
 
     it('should support transclusion within the template', inject((Compiler $compile, Scope $rootScope, Log log) {
-      var element = $('<div><div shadowtransclude log>transcluded</div><div>');
+      var element = $('<div><shadowtransclude log>transcluded</shadowtransclude><div>');
       $compile(element)(element)..attach($rootScope);
       expect(renderedText(element)).toEqual('Replace!transcluded');
       expect(log.result()).toEqual('REPLACE; LOG');
