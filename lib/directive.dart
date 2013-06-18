@@ -12,6 +12,7 @@ class Directive {
   int $priority = 0;
   Type $controllerType;
   String $template;
+  String $templateUrl;
   Map<String, String> $map;
 
   bool isComponent = false;
@@ -41,6 +42,7 @@ class Directive {
     // It would be awesome if $transclude could be an enum.
     $transclude = reflectStaticField(type, '\$transclude');
     $template = reflectStaticField(type, '\$template');
+    $templateUrl = reflectStaticField(type, '\$templateUrl');
     $priority = reflectStaticField(type, '\$priority');
     $map = reflectStaticField(type, '\$map');
     if ($priority == null) {

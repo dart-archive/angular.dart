@@ -179,7 +179,9 @@ class Block implements ElementWrapper {
       try {
         var directiveInstance = injector.get(directiveType);
         if (directiveRef.directive.isComponent) {
-          directiveInstance = new ComponentWrapper(directiveRef, directiveInstance, node, $injector.get(Parser));
+          directiveInstance = new ComponentWrapper(directiveRef, directiveInstance, node,
+              $injector.get(Parser), $injector.get(Compiler), $injector.get(Http));
+
         }
         directives.add(directiveInstance);
       } catch (e,s) {
@@ -338,17 +340,35 @@ class ComponentWrapper {
   DirectiveRef directiveRef;
   dynamic controller;
   dom.Element elementRoot;
-  Block shadowBlock;
   Scope shadowScope;
   Parser parser;
+  Block shadowBlock;
 
-  ComponentWrapper(this.directiveRef, this.controller, this.elementRoot, this.parser) {
-    // TODO(misko): this way of getting shadowBlock is dumb!
-    shadowBlock = directiveRef.blockTypes['']();
+
+  ComponentWrapper(this.directiveRef, this.controller, this.elementRoot, this.parser, $compiler, $http) {
+    var directive = directiveRef.directive;
     var shadowRoot = elementRoot.createShadowRoot();
-    // TODO(misko): this look should be moved into Block: shodowBlock.appendTo(shadowRoot);
-    for (var i = 0, ii = shadowBlock.elements.length; i < ii; i++) {
-      shadowRoot.append(shadowBlock.elements[i]);
+
+    _appendAndCompileTemplate(data) {
+      shadowRoot.innerHtml = data;
+      shadowBlock = $compiler(shadowRoot.nodes)(shadowRoot.nodes);
+    }
+    // There is support here for directives having both $template and
+    // $templateUrl.  This could be a clever way to add a 'LOADING'
+    // message.
+    if (directive.$template != null) {
+      _appendAndCompileTemplate(directive.$template);
+    }
+
+    if (directive.$templateUrl != null) {
+      $http.getString(directive.$templateUrl).then((data) {
+        _appendAndCompileTemplate(data);
+        // re-attach the scope.
+        if (shadowScope != null) {
+          shadowBlock.attach(shadowScope);
+          shadowScope.$digest();
+        }
+      });
     }
   }
 
@@ -382,7 +402,9 @@ class ComponentWrapper {
       }
     });
     controller.attach(shadowScope);
-    shadowBlock.attach(shadowScope);
+    if (shadowBlock != null) {
+      shadowBlock.attach(shadowScope);
+    }
   }
 }
 
