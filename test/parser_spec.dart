@@ -1,5 +1,14 @@
 import '_specs.dart';
 
+// Used to test getter / setter logic.
+class TestData {
+  String _str = "testString";
+  get str => _str;
+  set str(x) => _str = x;
+
+  method() => "testMethod";
+}
+
 class LexerExpect extends Expect {
   LexerExpect(actual) : super(actual);
   toBeToken(int index, String text) {
@@ -527,6 +536,34 @@ main() {
       expect(eval('zero.toString()')).toEqual('0');
       // DOES NOT WORK.  bool.toString is not reflected
       // expect(eval('bool.toString()')).toEqual('false');
+    });
+
+    it('should support map getters', () {
+      expect(Parser.parse('a')({'a': 4})).toEqual(4);
+    });
+
+    it('should support member getters', () {
+      expect(Parser.parse('str')(new TestData())).toEqual('testString');
+    });
+
+    it('should support returning member functions', () {
+      expect(Parser.parse('method')(new TestData())()).toEqual('testMethod');
+    });
+
+    it('should support calling member functions', () {
+      expect(Parser.parse('method()')(new TestData())).toEqual('testMethod');
+    });
+
+    it('should support array setters', () {
+      var data = {'a': [1,3]};
+      expect(Parser.parse('a[1]=2')(data)).toEqual(2);
+      expect(data['a'][1]).toEqual(2);
+    });
+
+    it('should support member field setters', () {
+      TestData data = new TestData();
+      expect(Parser.parse('str="bob"')(data)).toEqual('bob');
+      expect(data.str).toEqual("bob");
     });
   });
 

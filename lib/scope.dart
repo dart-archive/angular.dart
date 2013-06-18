@@ -158,7 +158,7 @@ class Scope implements Map {
     };
 
     var $watchCollectionAction = () {
-      _relaxFnApply(listener, [newValue, oldValue, self]);
+      relaxFnApply(listener, [newValue, oldValue, self]);
     };
 
     return this.$watch($watchCollectionWatch, $watchCollectionAction);
@@ -324,7 +324,7 @@ class Scope implements Map {
         i = 0;
         for (var length = namedListeners.length; i<length; i++) {
           try {
-            _relaxFnApply(namedListeners[i], listenerArgs);
+            relaxFnApply(namedListeners[i], listenerArgs);
             if (event.propagationStopped) return event;
           } catch (e, s) {
             _exceptionHandler(e, s);
@@ -356,7 +356,7 @@ class Scope implements Map {
       if (current._listeners.containsKey(name)) {
         current._listeners[name].forEach((listener) {
           try {
-            _relaxFnApply(listener, listenerArgs);
+            relaxFnApply(listener, listenerArgs);
           } catch(e, s) {
             _exceptionHandler(e, s);
           }
