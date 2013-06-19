@@ -13,6 +13,7 @@ class Directive {
   Type $controllerType;
   String $template;
   String $templateUrl;
+  String $cssUrl;
   Map<String, String> $map;
 
   bool isComponent = false;
@@ -43,6 +44,7 @@ class Directive {
     $transclude = reflectStaticField(type, '\$transclude');
     $template = reflectStaticField(type, '\$template');
     $templateUrl = reflectStaticField(type, '\$templateUrl');
+    $cssUrl = reflectStaticField(type, '\$cssUrl');
     $priority = reflectStaticField(type, '\$priority');
     $map = reflectStaticField(type, '\$map');
     if ($priority == null) {
