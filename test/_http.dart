@@ -13,7 +13,8 @@ class MockHttp extends Http {
     gets[url] = content;
   }
 
-  flush() => Future.wait(futures);
+  flush() => gets.length == 0 ? Future.wait(futures) :
+      throw "Expected GETs not called $gets";
 
   Future<String> getString(String url, {bool withCredentials, void onProgress(ProgressEvent e)}) {
     if (!gets.containsKey(url)) throw "Unexpected URL $url";

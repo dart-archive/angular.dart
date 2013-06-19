@@ -61,6 +61,7 @@ class BookComponent {
   BookComponent(BookController this.controller);
 
   static String $templateUrl = 'book.html';
+  static String $cssUrl = 'book.css';
 
   attach(Scope scope) {
     controller.attach(scope);
