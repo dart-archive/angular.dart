@@ -65,14 +65,6 @@ class Compiler {
         }
         directiveRef.blockTypes = blockTypes;
         usableDirectiveRefs.add(directiveRef);
-        if (directive.$template != null) {
-          // TODO(deboer): port this function.
-          denormalizeTemplate(x) => x;
-          var templateValue = denormalizeTemplate(directive.$template);
-          var div = new dom.DivElement();
-          div.innerHtml = templateValue;
-          directiveRef.blockTypes = {'': this(div.nodes)};
-        }
       }
 
       if (compileChildren && domCursor.descend()) {
