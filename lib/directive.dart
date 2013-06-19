@@ -12,6 +12,7 @@ class Directive {
   int $priority = 0;
   Type $controllerType;
   String $template;
+  Map<String, String> $map;
 
   bool isComponent = false;
   bool isStructural = false;
@@ -41,6 +42,7 @@ class Directive {
     $transclude = reflectStaticField(type, '\$transclude');
     $template = reflectStaticField(type, '\$template');
     $priority = reflectStaticField(type, '\$priority');
+    $map = reflectStaticField(type, '\$map');
     if ($priority == null) {
       $priority = 0;
     }
@@ -48,6 +50,9 @@ class Directive {
     var $selector = reflectStaticField(type, r'$selector');
     if ($selector != null) {
       $name = $selector;
+    }
+    if (isComponent && $map == null) {
+      $map = new Map<String, String>();
     }
   }
 }

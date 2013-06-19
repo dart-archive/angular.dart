@@ -104,7 +104,11 @@ class Scope implements Map {
       this[name] = value;
       return value;
     } else {
-      super.noSuchMethod(invocation);
+      if (this[name] is Function) {
+        return this[name]();
+      } else {
+        super.noSuchMethod(invocation);
+      }
     }
   }
 

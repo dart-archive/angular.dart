@@ -70,7 +70,7 @@ main() {
       template(element).attach($rootScope);
 
       expect(element.text()).toEqual('');
-// TODO(deboer): Digest twice until we have dirty checking in the scope.
+      // TODO(deboer): Digest twice until we have dirty checking in the scope.
       $rootScope.$digest();
       $rootScope.$digest();
       expect(element.text()).toEqual('Ab');
@@ -423,30 +423,54 @@ main() {
     describe('components', () {
       beforeEach(() {
         directives.register(SimpleComponent);
+        directives.register(IoComponent);
       });
 
       it('should create a simple component', inject((Compiler $compile) {
         $rootScope.name = 'OUTTER';
-        var element = $(r'<div>{{name}}{{$id}}:<simple>{{name}}{{$id}}</simple></div>');
+        $rootScope.sep = '-';
+        var element = $(r'<div>{{name}}{{sep}}{{$id}}:<simple>{{name}}{{sep}}{{$id}}</simple></div>');
         BlockType blockType = $compile(element);
         Block block = blockType(element);
         block.attach($rootScope);
         $rootScope.$digest();
 
-        expect(element.textWithShadow()).toEqual('OUTTER_1:INNER_2(OUTTER_1)');
+        expect(element.textWithShadow()).toEqual('OUTTER-_1:INNER_2(OUTTER-_1)');
+      }));
+
+      it('should create a component with IO', inject((Compiler $compile) {
+        var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
+        $compile(element)(element).attach($rootScope);
+        $rootScope.name = 'misko';
+        $rootScope.$apply();
+        var component = $rootScope.ioComponent;
+        expect(component.scope.name).toEqual(null);
+        expect(component.scope.attr).toEqual('A');
+        expect(component.scope.expr).toEqual('misko');
+        component.scope.expr = 'angular';
+        $rootScope.$apply();
+        expect($rootScope.name).toEqual('angular');
+        expect($rootScope.done).toEqual(null);
+        component.scope.ondone();
+        expect($rootScope.done).toEqual(true);
       }));
     });
   });
 }
 
 class SimpleComponent {
-  static String $template = r'{{name}}{{$id}}(<content>SHADOW-CONTENT</content>)';
-
-  SimpleComponent() {
-  }
-
+  static String $template = r'{{name}}{{sep}}{{$id}}(<content>SHADOW-CONTENT</content>)';
   attach(Scope scope) {
     scope.name = 'INNER';
   }
+}
 
+class IoComponent {
+  static String $template = r'<content></content>';
+  static Map $map = {"attr": "@", "expr": "=", "ondone": "&"};
+  Scope scope;
+  attach(Scope scope) {
+    this.scope = scope;
+    scope.$root.ioComponent = this;
+  }
 }

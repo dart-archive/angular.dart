@@ -179,9 +179,7 @@ class Block implements ElementWrapper {
       try {
         var directiveInstance = injector.get(directiveType);
         if (directiveRef.directive.isComponent) {
-          // TODO(misko): this way of getting shadowBlock is dumb!
-          Block shadowBlock = directiveRef.blockTypes['']();
-          directiveInstance = new ComponentWrapper(directiveInstance, node, shadowBlock);
+          directiveInstance = new ComponentWrapper(directiveRef, directiveInstance, node, $injector.get(Parser));
         }
         directives.add(directiveInstance);
       } catch (e,s) {
@@ -337,20 +335,52 @@ class Block implements ElementWrapper {
 }
 
 class ComponentWrapper {
+  DirectiveRef directiveRef;
   dynamic controller;
   dom.Element elementRoot;
   Block shadowBlock;
   Scope shadowScope;
+  Parser parser;
 
-  ComponentWrapper(this.controller, this.elementRoot, this.shadowBlock) {
+  ComponentWrapper(this.directiveRef, this.controller, this.elementRoot, this.parser) {
+    // TODO(misko): this way of getting shadowBlock is dumb!
+    shadowBlock = directiveRef.blockTypes['']();
     var shadowRoot = elementRoot.createShadowRoot();
+    // TODO(misko): this look should be moved into Block: shodowBlock.appendTo(shadowRoot);
     for (var i = 0, ii = shadowBlock.elements.length; i < ii; i++) {
       shadowRoot.append(shadowBlock.elements[i]);
     }
   }
 
   attach(scope) {
-    shadowScope = scope.$new();
+    shadowScope = scope.$new(true);
+    directiveRef.directive.$map.forEach((attrName, mapping) {
+      var attrValue = elementRoot.attributes[attrName];
+      if (mapping == '@') {
+        shadowScope[attrName] = attrValue;
+      } else if (mapping == '=') {
+        ParsedFn expr = parser(attrValue);
+        var shadowValue;
+        shadowScope.$watch(
+                () => expr(scope),
+                (v) => shadowScope[attrName] = shadowValue = v);
+        if (expr.assignable) {
+          shadowScope.$watch(
+                () => shadowScope[attrName],
+                (v) {
+                  if (shadowValue != v) {
+                    shadowValue = v;
+                    expr.assign(scope, v);
+                  }
+                } );
+        }
+      } else if (mapping == '&') {
+        ParsedFn fn = parser(attrValue);
+        shadowScope[attrName] = ([locals]) => fn(scope, locals);
+      } else {
+        throw "Unknown mapping $mapping for attribute $attrName.";
+      }
+    });
     controller.attach(shadowScope);
     shadowBlock.attach(shadowScope);
   }
