@@ -176,7 +176,7 @@ class Block implements ElementWrapper {
 
     int prevInstantiatedCount;
     List<String> alreadyInstantiated = <String>[];
-    // TODO(pavelgj): this is a workaround for the lack of direction
+    // TODO(pavelgj): this is a workaround for the lack of directive
     // instantiation ordering. A better way is to sort directives in the
     // order they must be instantiated in.
     do {
@@ -202,8 +202,7 @@ class Block implements ElementWrapper {
 
           }
           directives.add(directiveInstance);
-        } catch (e,s) {
-          var msg;
+        } catch (e, s) {
           if (e is MirroredUncaughtExceptionError) {
             //TODO(misko): why is this here? Injector should never throw this exception
             throw e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();

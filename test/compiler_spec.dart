@@ -498,13 +498,13 @@ main() {
 
     describe('controller scoping', () {
 
-      iit('shoud make controllers available to sibling and child controllers', inject((Compiler $compile, Scope $rootScope, Log log) {
+      it('shoud make controllers available to sibling and child controllers', inject((Compiler $compile, Scope $rootScope, Log log) {
         var element = $('<tab local><pane local></pane><pane local></pane></tab>');
         $compile(element)(element)..attach($rootScope);
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
       }));
 
-      iit('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope) {
+      it('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope) {
         expect(() {
           var element = $('<tab local><pane></pane><pane local></pane></tab>');
           $compile(element)(element)..attach($rootScope);

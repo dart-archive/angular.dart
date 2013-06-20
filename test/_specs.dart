@@ -150,9 +150,9 @@ class SpecInjector {
   List<Module> modules = [new Module()..value(Expando, new Expando('specExpando'))];
 
   module(Function fn) {
-    Module module = new AngularModule();
-    module.type(Log, Log);
-    module.type(Logger, Logger);
+    Module module = new AngularModule()
+      ..type(Log, Log)
+      ..type(Logger, Logger);
     modules.add(module);
     fn(module);
   }
