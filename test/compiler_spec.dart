@@ -29,6 +29,10 @@ main() {
       expect(element.text()).toEqual('angular');
     }));
 
+    it('should not throw on an empty list', inject((Compiler $compile) {
+      $compile([]);
+    }));
+
     it('should compile a directive in a child', inject((Compiler $compile) {
       var element = $('<div><div ng-bind="name"></div></div>');
       var template = $compile(element);

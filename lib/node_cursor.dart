@@ -35,6 +35,8 @@ class NodeCursor {
   }
 
   nodeList() {
+    if (!isValid()) return [];  // or should we return null?
+
     var node = elements[index];
     var nodes = [];
 

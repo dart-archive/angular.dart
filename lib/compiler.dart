@@ -13,6 +13,8 @@ class Compiler {
   _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,
                List<BlockCache> blockCaches,
                List<DirectiveRef> useExistingDirectiveRefs) {
+    if (domCursor.nodeList().length == 0) return null;
+
     var directivePositions = null; // don't pre-create to create spars tree and prevent GC pressure.
     var cursorAlreadyAdvanced;
 
