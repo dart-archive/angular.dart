@@ -14,6 +14,7 @@ class Directive {
   String $template;
   String $templateUrl;
   Map<String, String> $map;
+  String $visibility;
 
   bool isComponent = false;
   bool isStructural = false;
@@ -44,6 +45,10 @@ class Directive {
     $template = reflectStaticField(type, '\$template');
     $templateUrl = reflectStaticField(type, '\$templateUrl');
     $priority = reflectStaticField(type, '\$priority');
+    $visibility = reflectStaticField(type, '\$visibility');
+    if ($visibility == null) {
+      $visibility = DirectiveVisibility.LOCAL;
+    }
     $map = reflectStaticField(type, '\$map');
     if ($priority == null) {
       $priority = 0;
@@ -104,6 +109,12 @@ class DirectiveValue {
   String value;
   DirectiveValue() : this.value = "ERROR DEFAULT";
   DirectiveValue.fromString(this.value);
+}
+
+abstract class DirectiveVisibility {
+  static const String LOCAL = 'local';
+  static const String CHILDREN = 'children';
+  static const String DIRECT_CHILDREN = 'direct_children';
 }
 
 class Controller {

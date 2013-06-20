@@ -1,5 +1,6 @@
 library angular;
 
+import "dart:collection";
 import "dart:mirrors";
 import "dart:async" as async;
 import "dart:json" as json;
@@ -107,6 +108,15 @@ class AngularModule extends Module {
 
   AngularModule() {
     value(DirectiveRegistry, _directives);
+    type(Compiler, Compiler);
+    type(BlockFactory, BlockFactory);
+    type(BlockTypeFactory, BlockTypeFactory);
+    type(BlockListFactory, BlockListFactory);
+    type(ExceptionHandler, ExceptionHandler);
+    type(Scope, Scope);
+    type(Parser, Parser);
+    type(Interpolate, Interpolate);
+    type(Http, Http);
   }
 
   directive(Type directive) {

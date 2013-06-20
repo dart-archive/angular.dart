@@ -1,5 +1,42 @@
 import "_specs.dart";
+import "_log.dart";
 import "dart:mirrors";
+
+
+class TabComponent {
+  static String $visibility = DirectiveVisibility.DIRECT_CHILDREN;
+  int id = 0;
+  Log log;
+  LocalAttrDirective local;
+  TabComponent(Log this.log, LocalAttrDirective this.local);
+  attach(Scope scope) {
+    log('TabComponent-${id++}');
+    local.ping();
+  }
+}
+
+class PaneComponent {
+  TabComponent tabComponent;
+  LocalAttrDirective localDirective;
+  Log log;
+  PaneComponent(TabComponent this.tabComponent, LocalAttrDirective this.localDirective, Log this.log);
+  attach(Scope scope) {
+    log('PaneComponent-${tabComponent.id++}');
+    localDirective.ping();
+  }
+}
+
+class LocalAttrDirective {
+  static String $visibility = DirectiveVisibility.LOCAL;
+  int id = 0;
+  Log log;
+  LocalAttrDirective(Log this.log);
+  attach(Scope scope) {}
+  ping() {
+    log('LocalAttrDirective-${id++}');
+  }
+}
+
 
 main() {
 
@@ -9,10 +46,12 @@ main() {
     DirectiveRegistry directives;
 
     beforeEach(inject((Injector injector) {
-      directives = injector.get(DirectiveRegistry);
-
-      directives.register(NgBindAttrDirective);
-      directives.register(NgRepeatAttrDirective);
+      directives = injector.get(DirectiveRegistry)
+        ..register(NgBindAttrDirective)
+        ..register(NgRepeatAttrDirective)
+        ..register(TabComponent)
+        ..register(PaneComponent)
+        ..register(LocalAttrDirective);
 
       $rootScope = injector.get(Scope);
     }));
@@ -454,6 +493,24 @@ main() {
         component.scope.ondone();
         expect($rootScope.done).toEqual(true);
       }));
+
+    });
+
+    describe('controller scoping', () {
+
+      iit('shoud make controllers available to sibling and child controllers', inject((Compiler $compile, Scope $rootScope, Log log) {
+        var element = $('<tab local><pane local></pane><pane local></pane></tab>');
+        $compile(element)(element)..attach($rootScope);
+        expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
+      }));
+
+      iit('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope) {
+        expect(() {
+          var element = $('<tab local><pane></pane><pane local></pane></tab>');
+          $compile(element)(element)..attach($rootScope);
+        }, throwsA(startsWith('Creating pane: Illegal argument(s): No provider found for LocalAttrDirective! (resolving LocalAttrDirective)')));
+      }));
+
     });
   });
 }
