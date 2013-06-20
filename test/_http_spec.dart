@@ -20,5 +20,12 @@ main() {
         http.getString('unknown');
       }).toThrow('Unexpected URL unknown');
     });
+
+    it('should barf on hanging requests', () {
+      http.expectGET('request', 'response');
+      expect(() {
+        http.flush();
+      }).toThrow('Expected GETs not called {request: response}');
+    });
   });
 }

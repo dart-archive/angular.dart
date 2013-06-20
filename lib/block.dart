@@ -344,21 +344,23 @@ class ComponentWrapper {
   Parser parser;
   Block shadowBlock;
 
-
   ComponentWrapper(this.directiveRef, this.controller, this.elementRoot, this.parser, $compiler, $http) {
     var directive = directiveRef.directive;
     var shadowRoot = elementRoot.createShadowRoot();
 
+    var styleData = '';
+    if (directive.$cssUrl != null) {
+      styleData = '<style>@import "${directive.$cssUrl}"</style>';
+    }
+
     _appendAndCompileTemplate(data) {
-      shadowRoot.innerHtml = data;
+      shadowRoot.innerHtml = styleData + data
       shadowBlock = $compiler(shadowRoot.nodes)(shadowRoot.nodes);
     }
     // There is support here for directives having both $template and
     // $templateUrl.  This could be a clever way to add a 'LOADING'
     // message.
-    if (directive.$template != null) {
-      _appendAndCompileTemplate(directive.$template);
-    }
+    _appendAndCompileTemplate(directive.$template != null ? directive.$template : '');
 
     if (directive.$templateUrl != null) {
       $http.getString(directive.$templateUrl).then((data) {
