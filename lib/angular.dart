@@ -13,6 +13,7 @@ part 'block_type.dart';
 part 'compiler.dart';
 part 'directive.dart';
 part 'directives/ng_bind.dart';
+part 'directives/ng_click.dart';
 part 'directives/ng_controller.dart';
 part 'directives/ng_mustache.dart';
 part 'directives/ng_repeat.dart';
@@ -124,5 +125,6 @@ angularModule(AngularModule module) {
 
   module.directive(NgBindAttrDirective);
   module.directive(NgRepeatAttrDirective);
+  module.directive(NgClickAttrDirective);
   module.directive(NgControllerAttrDirective);
 }
