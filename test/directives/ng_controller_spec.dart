@@ -12,7 +12,10 @@ class MainController {
 
 
 main() {
-  beforeEach(module(angularModule));
+  beforeEach(module((AngularModule module) {
+    module.type(MainController, MainController);
+    angularModule(module);
+  }));
 
   describe('NgController', () {
     var compile, element, rootScope;
