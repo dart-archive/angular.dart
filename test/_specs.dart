@@ -9,6 +9,7 @@ import 'package:angular/angular.dart';
 import 'jasmine_syntax.dart';
 import 'package:di/di.dart';
 import 'package:unittest/mock.dart';
+import "_log.dart";
 
 export 'package:unittest/unittest.dart';
 export 'package:angular/debug.dart';
@@ -149,14 +150,16 @@ class SpecInjector {
   List<Module> modules = [new Module()..value(Expando, new Expando('specExpando'))];
 
   module(Function fn) {
-    Module module = new AngularModule();
+    Module module = new AngularModule()
+      ..type(Log, Log)
+      ..type(Logger, Logger);
     modules.add(module);
     fn(module);
   }
 
   inject(Function fn, declarationStack) {
     if (injector == null) {
-      injector = new Injector(modules);
+      injector = new Injector(modules, false); // Implicit injection is disabled.
     }
     try {
       injector.invoke(fn);

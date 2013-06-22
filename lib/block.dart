@@ -28,9 +28,9 @@ class BlockCache {
 
   flush([Function callback]) {
     groupCache.forEach((blocks) {
-      while(!blocks.isEmpty) {
+      while(blocks.isNotEmpty) {
         Block block = blocks.removeLast();
-        if (?callback) callback(block);
+        if (callback != null) callback(block);
       }
     });
   }
@@ -84,10 +84,10 @@ class Block implements ElementWrapper {
     ASSERT(elements != null);
     ASSERT(directivePositions != null);
     ASSERT(blockCaches != null);
-    _link(elements, directivePositions, blockCaches);
+    _link(elements, directivePositions, blockCaches, $injector);
   }
 
-  _link(List<dom.Node> nodeList, List directivePositions, List<BlockCache> blockCaches) {
+  _link(List<dom.Node> nodeList, List directivePositions, List<BlockCache> blockCaches, Injector parentInjector) {
     var stack;
     try {throw '';} catch(e,s) {stack = s;}
     var preRenderedIndexOffset = 0;
@@ -112,7 +112,7 @@ class Block implements ElementWrapper {
 
       Map<String, BlockListFactory> anchorsByName = {};
       List<String> directiveNames = [];
-
+      var injector = parentInjector;
       if (directiveRefs != null) {
         for (var j = 0, jj = directiveRefs.length; j < jj; j++) {
           var blockCache;
@@ -135,10 +135,10 @@ class Block implements ElementWrapper {
             anchorsByName[name] = $blockListFactory([node], directiveRef.blockTypes, blockCache);
           }
         }
-        _instantiateDirectives(directiveDefsByName, directiveNames, node, anchorsByName);
+        injector = _instantiateDirectives(directiveDefsByName, directiveNames, node, anchorsByName, parentInjector);
       }
       if (childDirectivePositions != null) {
-        _link(node.nodes, childDirectivePositions, blockCaches);
+        _link(node.nodes, childDirectivePositions, blockCaches, injector);
       }
 
       if (fakeParent) {
@@ -148,10 +148,11 @@ class Block implements ElementWrapper {
     }
   }
 
-  _instantiateDirectives(Map<String, DirectiveRef> directiveDefsByName,
+  Injector _instantiateDirectives(Map<String, DirectiveRef> directiveDefsByName,
                          List<String> directiveNames,
                          dom.Node node,
-                         Map<String, BlockList> anchorsByName) {
+                         Map<String, BlockList> anchorsByName,
+                         Injector parentInjector) {
     var elementModule = new Module();
     elementModule.value(Block, this);
     elementModule.value(dom.Element, node);
@@ -160,44 +161,87 @@ class Block implements ElementWrapper {
                 def.directive.type, def.directive.type));
 
     for (var i = 0, ii = directiveNames.length; i < ii; i++) {
-      var directiveName = directiveNames[i];
-      DirectiveRef directiveRef = directiveDefsByName[directiveName];
-
-      var directiveModule = new Module();
-
-      directiveModule.value(DirectiveValue,
-          new DirectiveValue.fromString(directiveRef.value));
-
-      directiveModule.value(BlockList, anchorsByName[directiveName]);
-
+      DirectiveRef directiveRef = directiveDefsByName[directiveNames[i]];
       Type directiveType = directiveRef.directive.type;
-
-      var injector = $injector.createChild(
-          [elementModule, directiveModule],
-          [directiveType]);
-
-      try {
-        var directiveInstance = injector.get(directiveType);
-        if (directiveRef.directive.isComponent) {
-          directiveInstance = new ComponentWrapper(directiveRef, directiveInstance, node,
-              $injector.get(Parser), $injector.get(Compiler), $injector.get(Http));
-
-        }
-        directives.add(directiveInstance);
-      } catch (e,s) {
-        var msg;
-        if (e is MirroredUncaughtExceptionError) {
-          //TODO(misko): why is this here? Injector should never throw this exception
-          msg = e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
-        } else {
-          msg = "Creating $directiveName: "  + e.toString() +
-                "\n ORIGINAL Stack trace:\n" + s.toString();
-        }
-
-        throw msg;
+      var visibility = local;
+      if (directiveRef.directive.$visibility == DirectiveVisibility.CHILDREN) {
+        visibility = null;
+      } else if (directiveRef.directive.$visibility == DirectiveVisibility.DIRECT_CHILDREN) {
+        visibility = directChildren;
       }
+      elementModule.type(directiveType, directiveType, creation: directOnly, visibility: visibility);
     }
+
+    var injector = parentInjector.createChild([elementModule]);
+
+    int prevInstantiatedCount;
+    List<String> alreadyInstantiated = <String>[];
+    // TODO(pavelgj): this is a workaround for the lack of directive
+    // instantiation ordering. A better way is to sort directives in the
+    // order they must be instantiated in.
+    do {
+      prevInstantiatedCount = alreadyInstantiated.length;
+      for (var i = 0, ii = directiveNames.length; i < ii; i++) {
+        var directiveName = directiveNames[i];
+        if (alreadyInstantiated.contains(directiveName)) continue;
+        DirectiveRef directiveRef = directiveDefsByName[directiveName];
+
+        Map<Type, dynamic> locals = new HashMap<Type, dynamic>();
+        locals[DirectiveValue] =
+            new DirectiveValue.fromString(directiveRef.value);
+        locals[BlockList] = anchorsByName[directiveName];
+
+        Type directiveType = directiveRef.directive.type;
+
+        try {
+          var directiveInstance = injector.instantiate(directiveType, locals);
+          alreadyInstantiated.add(directiveName);
+          if (directiveRef.directive.isComponent) {
+            directiveInstance = new ComponentWrapper(directiveRef, directiveInstance, node,
+                $injector.get(Parser), $injector.get(Compiler), $injector.get(Http));
+
+          }
+          directives.add(directiveInstance);
+        } catch (e, s) {
+          if (e is MirroredUncaughtExceptionError) {
+            //TODO(misko): why is this here? Injector should never throw this exception
+            throw e.exception_string + "\n ORIGINAL Stack trace:\n" + e.stacktrace.toString();
+          } else if (e is IndirectInstantiationError) {
+            // ignore.
+          } else {
+            throw "Creating $directiveName: "  + e.toString() +
+                "\n ORIGINAL Stack trace:\n" + s.toString();
+          }
+        }
+      }
+    } while(alreadyInstantiated.length != prevInstantiatedCount);
+
+    if (alreadyInstantiated.length != directiveNames.length) {
+      throw 'Cyclic dependency in directives on $node.';
+    }
+    return injector;
   }
+
+
+  /// DI creation strategy that only allows 'explicit' injection.
+  dynamic directOnly(Symbol type,
+                   Injector requesting,
+                   Injector defining,
+                   bool directInstantation,
+                   Factory factory) {
+    if (!directInstantation) {
+      throw new IndirectInstantiationError(type);
+    }
+    return factory();
+  }
+
+  /// DI visibility callback allowin node-local visibility.
+  bool local(Injector requesting, Injector defining) =>
+      identical(requesting, defining);
+
+  /// DI visibility callback allowin visibility from direct child into parent.
+  bool directChildren(Injector requesting, Injector defining) =>
+      local(requesting, defining) || identical(requesting.parent, defining);
 
   attach(Scope scope) {
     // Attach directives
@@ -333,6 +377,19 @@ class Block implements ElementWrapper {
     previous = previousBlock;
     previousBlock.next = this;
     return this;
+  }
+}
+
+class IndirectInstantiationError {
+  IndirectInstantiationError(type)
+      : exception_string = '$type must be directly instantated before being '
+                           'injected from child injection';
+
+  /** The result of toString() for the exception object. */
+  final String exception_string;
+
+  String toString() {
+    return exception_string;
   }
 }
 
