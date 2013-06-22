@@ -25,14 +25,14 @@ class BlockType {
     ASSERT(group != null);
   }
 
-  Block call([List<dom.Node> elements, List<BlockCache> blockCaches]) {
-    if (!?elements) {
+  Block call([List<dom.Node> elements, List<BlockCache> blockCaches, Injector injector]) {
+    if (!?elements || elements == null) {
       elements = cloneElements(templateElements);
     }
     if (!?blockCaches || blockCaches == null) {
       blockCaches = [];
     }
-    return blockFactory(elements, directivePositions, blockCaches, group);
+    return blockFactory(elements, directivePositions, blockCaches, group, injector: injector);
   }
 
   ClassMirror _getClassMirror(Type type) {

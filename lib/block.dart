@@ -52,11 +52,11 @@ class BlockFactory {
                BlockListFactory this.$blockListFactory,
                Injector this.$injector);
 
-  call(List<dom.Node> blockNodeList, List directivePositions, List<BlockCache> blockCaches, String group) {
+  call(List<dom.Node> blockNodeList, List directivePositions, List<BlockCache> blockCaches, String group, {injector: null}) {
     ASSERT(blockNodeList != null);
     ASSERT(directivePositions != null);
     ASSERT(blockCaches != null);
-    return new Block($exceptionHandler, $blockListFactory, $injector,
+    return new Block($exceptionHandler, $blockListFactory, injector != null ? injector : $injector,
               blockNodeList, directivePositions, blockCaches, group);
   }
 }
@@ -190,6 +190,9 @@ class Block implements ElementWrapper {
         locals[DirectiveValue] =
             new DirectiveValue.fromString(directiveRef.value);
         locals[BlockList] = anchorsByName[directiveName];
+
+        if (locals[BlockList] != null)
+          locals[BlockList].customInjector = injector;
 
         Type directiveType = directiveRef.directive.type;
 

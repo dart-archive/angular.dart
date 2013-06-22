@@ -20,6 +20,7 @@ class BlockList extends ElementWrapper {
   List<dom.Node> elements;
   Map<String, BlockType> blockTypes;
   BlockCache blockCache;
+  Injector customInjector;
 
   ElementWrapper previous;
   ElementWrapper next;
@@ -49,7 +50,7 @@ class BlockList extends ElementWrapper {
         throw new ArgumentError("Unknown block type: '$type'.");
       }
 
-      block = this.blockTypes[type]();
+      block = this.blockTypes[type](null, null, customInjector);
     }
 
     return block;

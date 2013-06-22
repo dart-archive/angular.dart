@@ -37,6 +37,27 @@ class LocalAttrDirective {
   }
 }
 
+class SimpleTranscludeInAttachAttrDirective {
+  static String $transclude = '.';
+  static String $visibility = DirectiveVisibility.CHILDREN;
+
+  Log log;
+  BlockList blockList;
+
+  SimpleTranscludeInAttachAttrDirective(BlockList this.blockList, Log this.log);
+
+  attach(Scope scope) {
+    var block = blockList.newBlock();
+    block.insertAfter(blockList);
+    log('SimpleTransclude');
+  }
+}
+
+class IncludeTranscludeAttrDirective {
+  IncludeTranscludeAttrDirective(SimpleTranscludeInAttachAttrDirective simple, Log log) {
+    log('IncludeTransclude');
+  }
+}
 
 main() {
 
@@ -51,6 +72,8 @@ main() {
         ..register(NgRepeatAttrDirective)
         ..register(TabComponent)
         ..register(PaneComponent)
+        ..register(SimpleTranscludeInAttachAttrDirective)
+        ..register(IncludeTranscludeAttrDirective)
         ..register(LocalAttrDirective);
 
       $rootScope = injector.get(Scope);
@@ -506,6 +529,12 @@ main() {
         var element = $('<tab local><pane local></pane><pane local></pane></tab>');
         $compile(element)(element)..attach($rootScope);
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
+      }));
+
+      it('should reuse controllers for transclusions', inject((Compiler $compile, Scope $rootScope, Log log) {
+        var element = $('<div simple-transclude-in-attach include-transclude>block</div>');
+        $compile(element)(element)..attach($rootScope);
+        expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
       }));
 
       it('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope) {
