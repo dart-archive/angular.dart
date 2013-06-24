@@ -16,6 +16,7 @@ class Directive {
   String $cssUrl;
   Map<String, String> $map;
   String $visibility;
+  ShadowRootOptions $shadowRootOptions;
 
   bool isComponent = false;
   bool isStructural = false;
@@ -46,15 +47,10 @@ class Directive {
     $template = reflectStaticField(type, '\$template');
     $templateUrl = reflectStaticField(type, '\$templateUrl');
     $cssUrl = reflectStaticField(type, '\$cssUrl');
-    $priority = reflectStaticField(type, '\$priority');
-    $visibility = reflectStaticField(type, '\$visibility');
-    if ($visibility == null) {
-      $visibility = DirectiveVisibility.LOCAL;
-    }
+    $priority = _defaultIfNull(reflectStaticField(type, '\$priority'), 0);
+    $visibility = _defaultIfNull(
+        reflectStaticField(type, '\$visibility'), DirectiveVisibility.LOCAL);
     $map = reflectStaticField(type, '\$map');
-    if ($priority == null) {
-      $priority = 0;
-    }
     isStructural = $transclude != null;
     var $selector = reflectStaticField(type, r'$selector');
     if ($selector != null) {
@@ -63,8 +59,16 @@ class Directive {
     if (isComponent && $map == null) {
       $map = new Map<String, String>();
     }
+    if (isComponent) {
+      $shadowRootOptions = _defaultIfNull(
+          reflectStaticField(type, '\$shadowRootOptions'),
+          new ShadowRootOptions());
+    }
   }
 }
+
+dynamic _defaultIfNull(dynamic value, dynamic defaultValue) =>
+    value == null ? defaultValue : value;
 
 class DirectiveRef {
   dom.Node element;
@@ -117,6 +121,17 @@ abstract class DirectiveVisibility {
   static const String LOCAL = 'local';
   static const String CHILDREN = 'children';
   static const String DIRECT_CHILDREN = 'direct_children';
+}
+
+/**
+ * See:
+ * http://www.html5rocks.com/en/tutorials/webcomponents/shadowdom-201/#toc-style-inheriting
+ */
+class ShadowRootOptions {
+  bool $applyAuthorStyles = false;
+  bool $resetStyleInheritance = false;
+  ShadowRootOptions([this.$applyAuthorStyles = false,
+                     this.$resetStyleInheritance = false]);
 }
 
 class Controller {
