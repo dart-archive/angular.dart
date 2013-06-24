@@ -407,6 +407,10 @@ class ComponentWrapper {
   ComponentWrapper(this.directiveRef, this.controller, this.elementRoot, this.parser, $compiler, $http) {
     var directive = directiveRef.directive;
     var shadowRoot = elementRoot.createShadowRoot();
+    shadowRoot.applyAuthorStyles =
+        directive.$shadowRootOptions.$applyAuthorStyles;
+    shadowRoot.resetStyleInheritance =
+        directive.$shadowRootOptions.$resetStyleInheritance;
 
     var styleData = '';
     if (directive.$cssUrl != null) {
