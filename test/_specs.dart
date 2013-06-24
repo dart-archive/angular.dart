@@ -72,6 +72,8 @@ class Expect {
 
   toHaveBeenCalled() => unit.expect(actual.called, true, reason: 'method not called');
   toHaveBeenCalledOnce() => unit.expect(actual.count, 1, reason: 'method invoked ${actual.count} expected once');
+
+  toHaveClass(cls) => unit.expect(actual.hasClass(cls), true, reason: ' Expected ${actual} to have css class ${cls}');
 }
 
 class NotExpect {
@@ -81,6 +83,8 @@ class NotExpect {
 
   toHaveBeenCalled() => unit.expect(actual.called, false, reason: 'method called');
   toThrow() => actual();
+
+  toHaveClass(cls) => unit.expect(actual.hasClass(cls), false, reason: ' Expected ${actual} to not have css class ${cls}');
 }
 
 $(selector) {
@@ -137,6 +141,7 @@ class JQuery implements List<Node> {
   attr([String name]) => accessor((n) => n.attributes[name], (n, v) => n.attributes[name] = v);
   textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(n.queryAll(selector)));
+  hasClass(String name) => fold(false, (hasClass, node) => hasClass ? true : node.classes.contains(name));
 }
 
 class Logger implements List {
