@@ -19,6 +19,7 @@ part 'directives/ng_click.dart';
 part 'directives/ng_cloak.dart';
 part 'directives/ng_controller.dart';
 part 'directives/ng_hide.dart';
+part 'directives/ng_if.dart';
 part 'directives/ng_mustache.dart';
 part 'directives/ng_repeat.dart';
 part 'directives/ng_show.dart';
@@ -143,6 +144,7 @@ angularModule(AngularModule module) {
   module.directive(NgCloakAttrDirective);
   module.directive(NgControllerAttrDirective);
   module.directive(NgHideAttrDirective);
+  module.directive(NgIfAttrDirective);
   module.directive(NgRepeatAttrDirective);
   module.directive(NgShowAttrDirective);
 }
