@@ -598,7 +598,7 @@ main() {
       expect(Parser.parse('str')(data)).toEqual('mapped-str');
      });
 
-     iit('should gracefully handle bad containsKey', () {
+     it('should gracefully handle bad containsKey', () {
        expect(Parser.parse('str')(new BadContainsKeys())).toEqual('member');
      });
   });
