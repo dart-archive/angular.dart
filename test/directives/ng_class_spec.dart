@@ -7,9 +7,10 @@ main() {
     var compile, element, rootScope;
 
     beforeEach(inject((Scope scope, Compiler compiler, Injector injector) {
+      rootScope = scope;
+
       compile = (html, [applyFn]) {
         element = $(html);
-        rootScope = scope;
         compiler(element)(injector, element);
         scope.$apply(applyFn);
       };
@@ -74,6 +75,13 @@ main() {
       expect(element).not.toHaveClass('second');
       expect(element).toHaveClass('third');
       expect(element).toHaveClass('original');
+    });
+
+
+    it('should update value that was set before compilation', () {
+      rootScope['active'] = 'something';
+      compile('<div ng-class="active"></div>');
+      expect(element).toHaveClass('something');
     });
   });
 }

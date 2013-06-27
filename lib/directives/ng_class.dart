@@ -13,7 +13,7 @@ class NgClassAttrDirective {
         currentSet = current.split(' ');
       }
 
-      if (previous == null) {
+      if (previous == null || previous == current /* first digest */) {
         previousSet = [];
       } else {
         previousSet = previous.split(' ');
