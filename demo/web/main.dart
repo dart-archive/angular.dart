@@ -6,8 +6,9 @@ import 'dart:math' as math;
 class AngularBootstrap {
   Compiler $compile;
   Scope $rootScope;
+  Injector injector;
 
-  AngularBootstrap(Compiler this.$compile, Scope this.$rootScope);
+  AngularBootstrap(Compiler this.$compile, Scope this.$rootScope, Injector this.injector);
 
   call() {
     List<dom.Node> topElt = dom.query('[ng-app]').nodes.toList();
@@ -23,8 +24,8 @@ class AngularBootstrap {
     $rootScope['people'] = ['James', 'Misko'];
     $rootScope['objs'] = [{'v': 'v1'}, {'v': 'v2'}];
 
-    var template = $compile.call(topElt);
-    template.call(topElt).attach($rootScope);
+    var template = $compile(topElt);
+    template(injector, topElt);
 
     // Digest the scope.
     $rootScope.$digest();
@@ -84,10 +85,10 @@ class ChapterDirective {
 main() {
   // Set up the Angular directives.
   var module = new AngularModule()
-    ..register(NgBindAttrDirective)
-    ..register(NgRepeatAttrDirective)
-    ..register(BookComponent)
-    ..register(ChapterDirective);
+    ..directive(NgBindAttrDirective)
+    ..directive(NgRepeatAttrDirective)
+    ..directive(BookComponent)
+    ..directive(ChapterDirective);
   Injector injector = new Injector([module]);
   injector.get(AngularBootstrap)();
 }
