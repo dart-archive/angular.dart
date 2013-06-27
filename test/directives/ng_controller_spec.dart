@@ -14,7 +14,6 @@ class MainController {
 main() {
   beforeEach(module((AngularModule module) {
     module.type(MainController, MainController);
-    angularModule(module);
   }));
 
   describe('NgController', () {
@@ -25,7 +24,6 @@ main() {
         element = $(html);
         rootScope = scope;
         compiler(element)(injector, element);
-        dump(1, element);
         scope.$apply(applyFn);
       };
     }));
@@ -42,7 +40,6 @@ main() {
         rootScope['name'] = 'parent';
       });
 
-      dump(2, element);
       expect(element.find('.controller').text()).toEqual('Hi Vojta');
       expect(element.find('.siblink').text()).toEqual('parent');
     });

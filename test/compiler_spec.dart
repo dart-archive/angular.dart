@@ -60,23 +60,25 @@ main() {
 
   describe('dte.compiler', () {
     Compiler $compile;
+    Injector injector;
     Scope $rootScope;
     DirectiveRegistry directives;
 
-    beforeEach(inject((Injector injector) {
-      directives = injector.get(DirectiveRegistry)
-        ..register(NgBindAttrDirective)
-        ..register(NgRepeatAttrDirective)
-        ..register(TabComponent)
-        ..register(PaneComponent)
-        ..register(SimpleTranscludeInAttachAttrDirective)
-        ..register(IncludeTranscludeAttrDirective)
-        ..register(LocalAttrDirective);
-
-      $rootScope = injector.get(Scope);
+    beforeEach(module((AngularModule module) {
+      module
+        ..directive(TabComponent)
+        ..directive(PaneComponent)
+        ..directive(SimpleTranscludeInAttachAttrDirective)
+        ..directive(IncludeTranscludeAttrDirective)
+        ..directive(LocalAttrDirective);
+      return (Injector _injector) {
+        injector = _injector;
+        $compile = injector.get(Compiler);
+        $rootScope = injector.get(Scope);
+      };
     }));
 
-    it('should compile basic hello world', inject((Compiler $compile, Injector injector) {
+    it('should compile basic hello world', inject(() {
       var element = $('<div ng-bind="name"></div>');
       var template = $compile(element);
 
@@ -88,11 +90,11 @@ main() {
       expect(element.text()).toEqual('angular');
     }));
 
-    it('should not throw on an empty list', inject((Compiler $compile) {
+    it('should not throw on an empty list', inject(() {
       $compile([]);
     }));
 
-    it('should compile a directive in a child', inject((Compiler $compile, Injector injector) {
+    it('should compile a directive in a child', inject(() {
       var element = $('<div><div ng-bind="name"></div></div>');
       var template = $compile(element);
 
@@ -107,7 +109,7 @@ main() {
     }));
 
 
-    it('should compile repeater', inject((Compiler $compile, Injector injector) {
+    it('should compile repeater', inject(() {
       var element = $('<div><div ng-repeat="item in items" ng-bind="item"></div></div>');
       var template = $compile(element);
 
@@ -327,24 +329,24 @@ main() {
 
 
     describe("interpolation", () {
-      xit('should interpolate attribute nodes', inject((Compiler $compile) {
+      it('should interpolate attribute nodes', inject(() {
         var element = $('<div test="{{name}}"></div>');
         var template = $compile(element);
 
         $rootScope.name = 'angular';
-        template(element);
+        template(injector, element);
 
         $rootScope.$digest();
         expect(element.attr('test')).toEqual('angular');
       }));
 
 
-      xit('should interpolate text nodes', inject((Compiler $compile) {
+      it('should interpolate text nodes', inject(() {
         var element = $('<div>{{name}}</div>');
         var template = $compile(element);
 
         $rootScope.name = 'angular';
-        template(element);
+        template(injector, element);
 
         expect(element.text()).toEqual('');
         $rootScope.$digest();
@@ -372,7 +374,7 @@ main() {
       }));
 
 
-      xit('should generate directive from a directive', inject((Compiler $compile) {
+      xit('should generate directive from a directive', inject(() {
         var element = $('<ul><li generate="abc"></li></ul>');
         var blockType = $compile(element);
         var block = blockType(element);
@@ -386,110 +388,13 @@ main() {
     });
 
 
-    describe('reuse DOM instances', () {
-      xit('should compile with no transclusion', inject(($compile) {
-        var element = $('<span bind="name"></span>');
-        var spanBT = $compile(element);
-        var block = spanBT(element);
-
-        block;
-        $rootScope.name = 'world';
-        $rootScope.$apply();
-
-        expect(element.text()).toEqual('world');
-      }));
-
-      xit('should compile with transclusion and no block reuse', inject((Compiler $compile) {
-        var element = $(
-            '<ul>' +
-                '<li>-</li>' +
-                '<li repeat="i in upper" bind="i">1</li>' +
-                '<li>-</li>' +
-            '</ul>');
-        var ulBlockType = $compile(element);
-        var block = ulBlockType(element);
-
-        block;
-        $rootScope.upper = ['A', 'B'];
-        $rootScope.$apply();
-
-        expect(element.text()).toEqual('-AB-');
-        expect(element.html()).toEqual(
-            '<li>-</li>' +
-            '<!--ANCHOR: repeat=i in upper-->' +
-            '<li repeat="i in upper" bind="i">A</li>' +
-            '<li repeat="i in upper" bind="i">B</li>' +
-            '<li>-</li>');
-      }));
-
-
-      xit('should compile and collect template instances', inject((Compiler $compile) {
-        var element = $(
-            '<ul>' +
-                '<li>-</li>' +
-                '<li repeat="i in upper" instance="1" bind="i">1</li>' +
-                '<li instance="2">2</li>' +
-                '<li>-</li>' +
-            '</ul>');
-        var blockCache = [];
-        var ulBlockType = $compile(element, blockCache);
-
-        var block = ulBlockType(element, blockCache);
-
-        block;
-        $rootScope.upper = ['A', 'B'];
-        $rootScope.$apply();
-
-        expect(element.text()).toEqual('-AB-');
-        expect(element.html()).toEqual(
-            '<li>-</li>' +
-            '<!--ANCHOR: repeat=i in upper-->' +
-            '<li repeat="i in upper" instance="1" bind="i">A</li>' +
-            '<li instance="2">B</li>' +
-            '<li>-</li>');
-      }));
-
-      xit('should compile and collect template instances, and correctly compute offsets', inject((Compiler $compile) {
-        var element = $(
-            '<ul>' +
-                '<li>-</li>' +
-                '<li repeat="i in upper" instance="1" bind="i">1</li>' +
-                '<li instance="2">2</li>' +
-                '<li>-</li>' +
-                '<li repeat="i in lower" instance="3" bind="i">3</li>' +
-                '<li instance="4">4</li>' +
-                '<li>-</li>' +
-            '</ul>');
-        var blockCache = [];
-        var ulBlockType = $compile(element, blockCache);
-        var block = ulBlockType(element, blockCache);
-
-        block;
-        $rootScope.upper = ['A', 'B'];
-        $rootScope.lower = ['a', 'b'];
-        $rootScope.$apply();
-
-        expect(element.text()).toEqual('-AB-ab-');
-        expect(element.html()).toEqual(
-            '<li>-</li>' +
-            '<!--ANCHOR: repeat=i in upper-->' +
-            '<li repeat="i in upper" instance="1" bind="i">A</li>' +
-            '<li instance="2">B</li>' +
-            '<li>-</li>' +
-            '<!--ANCHOR: repeat=i in lower-->' +
-            '<li repeat="i in lower" instance="3" bind="i">a</li>' +
-            '<li instance="4">b</li>' +
-            '<li>-</li>');
-      }));
-    });
-
     describe('components', () {
-      beforeEach(() {
-        directives.register(SimpleComponent);
-        directives.register(IoComponent);
-      });
+      beforeEach(module((AngularModule module) {
+        module.directive(SimpleComponent);
+        module.directive(IoComponent);
+      }));
 
-      it('should create a simple component', inject((Compiler $compile, Injector injector) {
+      it('should create a simple component', inject(() {
         $rootScope.name = 'OUTTER';
         $rootScope.sep = '-';
         var element = $(r'<div>{{name}}{{sep}}{{$id}}:<simple>{{name}}{{sep}}{{$id}}</simple></div>');
@@ -500,7 +405,7 @@ main() {
         expect(element.textWithShadow()).toEqual('OUTTER-_1:INNER_2(OUTTER-_1)');
       }));
 
-      it('should create a component with IO', inject((Compiler $compile, Injector injector) {
+      it('should create a component with IO', inject(() {
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         $compile(element)(injector, element);
         $rootScope.name = 'misko';
@@ -515,6 +420,10 @@ main() {
         expect($rootScope.done).toEqual(null);
         component.scope.ondone();
         expect($rootScope.done).toEqual(true);
+      }));
+
+      it('should allow the component to publish itself into the scope', inject(() {
+
       }));
 
     });

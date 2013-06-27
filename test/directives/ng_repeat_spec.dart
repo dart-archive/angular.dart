@@ -1,7 +1,6 @@
 import "../_specs.dart";
 
 main() {
-  beforeEach(module(angularModule));
   describe('NgRepeater', () {
     var element, $compile, scope, $exceptionHandler;
 

@@ -2,11 +2,6 @@ import "_specs.dart";
 
 main() {
   describe(r'Scope', () {
-    // NOTE(deboer): beforeEach and nested describes don't play nicely.  Repeat.
-    beforeEach(() => currentSpecInjector = new SpecInjector());
-    beforeEach(module(angularModule));
-    afterEach(() => currentSpecInjector = null);
-
     describe(r'$root', () {
       it(r'should point to itself', inject((Scope $rootScope) {
         expect($rootScope.$root).toEqual($rootScope);
@@ -108,7 +103,7 @@ main() {
 
 
       it(r'should delegate exceptions', () {
-        module((module) {
+        module((AngularModule module) {
           module.type(ExceptionHandler, LogExceptionHandler);
         });
         inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
@@ -200,7 +195,7 @@ main() {
 
 
       it(r'should prevent infinite recursion and print watcher expression',() {
-        module((module) {
+        module((AngularModule module) {
           module.value(ScopeDigestTTL, new ScopeDigestTTL(100));
         });
         inject((Scope $rootScope) {
@@ -236,7 +231,7 @@ main() {
 
 
       it(r'should watch functions', () {
-        module((module) {
+        module((AngularModule module) {
           module.type(ExceptionHandler, LogExceptionHandler);
         });
         inject((Scope $rootScope, ExceptionHandler exceptionHandler) {
@@ -490,7 +485,7 @@ main() {
 
       describe(r'exceptions', () {
         var log;
-        beforeEach(module((module) {
+        beforeEach(module((AngularModule module) {
           return module.type(ExceptionHandler, LogExceptionHandler);
         }));
         beforeEach(inject((Scope $rootScope) {
@@ -627,7 +622,7 @@ main() {
           log.add(event.currentScope.id);
         }
 
-        beforeEach(module((module) {
+        beforeEach(module((AngularModule module) {
           return module.type(ExceptionHandler, LogExceptionHandler);
         }));
         beforeEach(inject((Scope $rootScope) {

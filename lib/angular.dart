@@ -124,27 +124,25 @@ class AngularModule extends Module {
     type(Parser, Parser);
     type(Interpolate, Interpolate);
     type(Http, Http);
+
+    value(ScopeDigestTTL, new ScopeDigestTTL(5));
+
+    directive(NgTextMustacheDirective);
+    directive(NgAttrMustacheDirective);
+
+    directive(NgBindAttrDirective);
+    directive(NgClassAttrDirective);
+    directive(NgClickAttrDirective);
+    directive(NgCloakAttrDirective);
+    directive(NgControllerAttrDirective);
+    directive(NgHideAttrDirective);
+    directive(NgIfAttrDirective);
+    directive(NgRepeatAttrDirective);
+    directive(NgShowAttrDirective);
   }
 
   directive(Type directive) {
     _directives.register(directive);
     return this;
   }
-}
-
-angularModule(AngularModule module) {
-  module.value(ScopeDigestTTL, new ScopeDigestTTL(5));
-
-  module.directive(NgTextMustacheDirective);
-  module.directive(NgAttrMustacheDirective);
-
-  module.directive(NgBindAttrDirective);
-  module.directive(NgClassAttrDirective);
-  module.directive(NgClickAttrDirective);
-  module.directive(NgCloakAttrDirective);
-  module.directive(NgControllerAttrDirective);
-  module.directive(NgHideAttrDirective);
-  module.directive(NgIfAttrDirective);
-  module.directive(NgRepeatAttrDirective);
-  module.directive(NgShowAttrDirective);
 }

@@ -2,8 +2,6 @@ import "../_specs.dart";
 
 main() {
   describe('ng-mustache', () {
-    beforeEach(module(angularModule));
-
     it('should replace {{}} in text', inject((Compiler $compile, Scope $rootScope, Injector injector) {
       var element = $('<div>{{name}}<span>!</span></div>');
       var template = $compile(element);

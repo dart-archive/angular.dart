@@ -3,8 +3,6 @@ import 'dart:html' as dom;
 
 
 main() {
-  beforeEach(module(angularModule));
-
   describe('NgIf', () {
     var compile, element, rootScope;
 

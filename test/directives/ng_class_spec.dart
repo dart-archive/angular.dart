@@ -3,8 +3,6 @@ import 'dart:html' as dom;
 
 
 main() {
-  beforeEach(module(angularModule));
-
   describe('NgClass', () {
     var compile, element, rootScope;
 

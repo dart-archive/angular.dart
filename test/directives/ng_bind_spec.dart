@@ -1,8 +1,6 @@
 import "../_specs.dart";
 
 main() {
-  beforeEach(module(angularModule));
-
   describe('BindDirective', () {
     it('should set text', inject((Scope scope, Injector injector, Compiler compiler) {
       var element = $('<div ng-bind="a"></div>');

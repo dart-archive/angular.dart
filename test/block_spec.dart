@@ -31,8 +31,6 @@ class ShadowBlockDirective {
 
 main() {
   describe('Block', () {
-    beforeEach(module(angularModule));
-
     var anchor;
     var $rootElement;
     var blockCache;

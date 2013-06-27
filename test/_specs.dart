@@ -151,34 +151,44 @@ class Logger implements List {
 }
 
 class SpecInjector {
+  Injector moduleInjector;
   Injector injector;
-  List<Module> modules = [new Module()..value(Expando, new Expando('specExpando'))];
+  List<Module> modules = [];
+  DirectiveRegistry directives = new DirectiveRegistry();
+  List<Function> initFns = [];
 
-  module(Function fn) {
-    Module module = new AngularModule()
-      ..type(Log, Log)
-      ..type(Logger, Logger);
+  SpecInjector() {
+    var moduleModule = new Module()
+      ..factory(AngularModule, () => addModule(new AngularModule()))
+      ..factory(Module, () => addModule(new Module()));
+    moduleInjector = new Injector([moduleModule], false);
+  }
+
+  addModule(module) {
     modules.add(module);
-    fn(module);
+    return module;
+  }
+
+  module(Function fn, declarationStack) {
+    try {
+      var initFn = moduleInjector.invoke(fn);
+      if (initFn is Function) {
+        initFns.add(initFn);
+      }
+    } catch (e, s) {
+      throw "$e\n$s\nDECLARED AT:$declarationStack";
+    }
   }
 
   inject(Function fn, declarationStack) {
-    if (injector == null) {
-      injector = new Injector(modules, false); // Implicit injection is disabled.
-    }
     try {
+      if (injector == null) {
+        injector = new Injector(modules, false); // Implicit injection is disabled.
+        initFns.forEach((fn) => injector.invoke(fn));
+      }
       injector.invoke(fn);
     } catch (e, s) {
-      var msg;
-      if (e is mirror.MirroredUncaughtExceptionError) {
-        msg = e.exception_string + "\nORIGINAL Stack trace:\n" + e.stacktrace.toString();
-      } else {
-        msg = '$e\nORIGINAL Stack trace:\n$s';
-      }
-      var frames = declarationStack.toString().split('\n');
-      frames.removeAt(0);
-      var declaredAt = frames.join('\n');
-      throw msg + "\nDECLARED AT:\n" + declaredAt;
+      throw "$e\n$s\nDECLARED AT:$declarationStack";
     }
   }
 
@@ -187,33 +197,34 @@ class SpecInjector {
 
 SpecInjector currentSpecInjector = null;
 inject(Function fn) {
-  var stack = null;
-  try {
-    throw '';
-  } catch (e, s) {
-    stack = s;
-  }
-  if (currentSpecInjector == null ) {
-    return () {
+  try { throw ''; } catch (e, stack) {
+    if (currentSpecInjector == null ) {
+      return () {
+        return currentSpecInjector.inject(fn, stack);
+      };
+    } else {
       return currentSpecInjector.inject(fn, stack);
-    };
-  } else {
-    return currentSpecInjector.inject(fn, stack);
+    }
   }
 }
 module(Function fn) {
-  if (currentSpecInjector == null ) {
-    return () {
-      return currentSpecInjector.module(fn);
-    };
-  } else {
-    return currentSpecInjector.module(fn);
+  try { throw ''; } catch(e, stack) {
+    if (currentSpecInjector == null ) {
+      return () {
+        return currentSpecInjector.module(fn, stack);
+      };
+    } else {
+      return currentSpecInjector.module(fn, stack);
+    }
   }
 }
 
 main() {
   beforeEach(() => id = 1);
   beforeEach(() => currentSpecInjector = new SpecInjector());
-  beforeEach(module(angularModule));
+  beforeEach(module((AngularModule module) {
+    module.type(Logger, Logger);
+    module.type(Log, Log);
+  }));
   afterEach(() => currentSpecInjector = null);
 }

@@ -83,17 +83,11 @@ class ChapterDirective {
 
 main() {
   // Set up the Angular directives.
-  var module = new AngularModule();
-  module.value(Expando, new Expando());
-  angularModule(module);
+  var module = new AngularModule()
+    ..register(NgBindAttrDirective)
+    ..register(NgRepeatAttrDirective)
+    ..register(BookComponent)
+    ..register(ChapterDirective);
   Injector injector = new Injector([module]);
-  injector.get(DirectiveRegistry)
-      ..register(NgBindAttrDirective)
-      ..register(NgRepeatAttrDirective)
-      ..register(BookComponent)
-      ..register(ChapterDirective);
-
   injector.get(AngularBootstrap)();
-
-
 }
