@@ -9,6 +9,22 @@ class TestData {
   method() => "testMethod";
 }
 
+class Mixin {}
+class MixedTestData extends TestData with Mixin {
+}
+
+class MapData {
+  operator[](x) => "mapped-$x";
+  containsKey(x) => true;
+}
+class MixedMapData extends MapData with Mixin { }
+class InheritedMapData extends MapData { }
+
+class BadContainsKeys {
+  containsKey(x) => null;
+  String str = "member";
+}
+
 class LexerExpect extends Expect {
   LexerExpect(actual) : super(actual);
   toBeToken(int index, String text) {
@@ -565,6 +581,26 @@ main() {
       expect(Parser.parse('str="bob"')(data)).toEqual('bob');
       expect(data.str).toEqual("bob");
     });
+
+    it('should support member field getters from mixins', () {
+      MixedTestData data = new MixedTestData();
+      data.str = 'dole';
+      expect(Parser.parse('str')(data)).toEqual('dole');
+    });
+
+     it('should support map getters from superclass', () {
+       InheritedMapData mapData = new InheritedMapData();
+       expect(Parser.parse('notmixed')(mapData)).toEqual('mapped-notmixed');
+     });
+
+     it('should support map getters from mixins', () {
+      MixedMapData data = new MixedMapData();
+      expect(Parser.parse('str')(data)).toEqual('mapped-str');
+     });
+
+     iit('should gracefully handle bad containsKey', () {
+       expect(Parser.parse('str')(new BadContainsKeys())).toEqual('member');
+     });
   });
 
   describe('assignable', () {
