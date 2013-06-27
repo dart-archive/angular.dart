@@ -33,6 +33,12 @@ class ClassWithDifferentMethods {
   method({c, d}) {}
 }
 
+class Mixin {
+  bool mixed = true;
+}
+class ClassWithMixin extends ClassWithFields with Mixin {
+}
+
 main() {
   describe('Interface Typing', () {
     it('should recognize built-in objects as an object', () {
@@ -58,6 +64,12 @@ main() {
     xit('should recognize interfaces with methods', () {
       expect(isInterface(new ClassWithMethods(), InterfaceWithMethods)).toBeTruthy();
       expect(isInterface(new ClassWithDifferentMethods(), InterfaceWithMethods)).toBeFalsy();
+    });
+
+    // waiting on dartbug 9434
+    xit('should match mix ins', () {
+      expect(isInterface(new ClassWithMixin(), ClassWithFields)).toBeTruthy();
+      expect(isInterface(new ClassWithMixin(), Mixin)).toBeTruthy();
     });
   });
 }
