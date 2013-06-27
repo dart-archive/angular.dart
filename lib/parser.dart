@@ -144,29 +144,35 @@ getterChild(value, childKey) {
     }
   }
 
-  if (isInterface(value, Getter) && value.containsKey(childKey)) {
-    return [true, value[childKey]];
-  } else {
-    InstanceMirror instanceMirror = reflect(value);
-    Symbol curSym = new Symbol(childKey);
-    try {
-      // maybe it is a member field?
-      return [true, instanceMirror.getField(curSym).reflectee];
-    } catch (e) {
-      // maybe it is a member method?
-      if (instanceMirror.type.members.containsKey(curSym)) {
-        MethodMirror methodMirror = instanceMirror.type.members[curSym];
-        return [true, _relaxFnArgs((args) {
-          if (args == null) args = [];
-          try {
-            return instanceMirror.invoke(curSym, args).reflectee;
-          } catch (e) {
-            throw "$e \n\n${e.stacktrace}";
-          }
-        })];
-      }
-      return [false, null];
+  // TODO: replace with isInterface(value, Getter) when dart:mirrors
+  // can support mixins.
+  try {
+    // containsKey() might not return a boolean, so explicitly test
+    // against true.
+    if (value.containsKey(childKey) == true) {
+      return [true, value[childKey]];
     }
+  } on NoSuchMethodError catch(e) {}
+
+  InstanceMirror instanceMirror = reflect(value);
+  Symbol curSym = new Symbol(childKey);
+  try {
+    // maybe it is a member field?
+    return [true, instanceMirror.getField(curSym).reflectee];
+  } catch (e) {
+    // maybe it is a member method?
+    if (instanceMirror.type.members.containsKey(curSym)) {
+      MethodMirror methodMirror = instanceMirror.type.members[curSym];
+      return [true, _relaxFnArgs((args) {
+        if (args == null) args = [];
+        try {
+          return instanceMirror.invoke(curSym, args).reflectee;
+        } catch (e) {
+          throw "$e \n\n${e.stacktrace}";
+        }
+      })];
+    }
+    return [false, null];
   }
 }
 
@@ -195,10 +201,13 @@ getter(scope, locals, path) {
 }
 
 setterChild(obj, childKey, value) {
-  if (isInterface(obj, Setter)) {
+  // TODO: replace with isInterface(value, Setter) when dart:mirrors
+  // can support mixins.
+  try {
     obj[childKey] = value;
     return value;
-  }
+  } on NoSuchMethodError catch(e) {}
+
   InstanceMirror instanceMirror = reflect(obj);
   Symbol curSym = new Symbol(childKey);
   try {
