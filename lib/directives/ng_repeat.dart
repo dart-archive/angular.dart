@@ -29,9 +29,7 @@ class NgRepeatAttrDirective  {
   };
   Map<Object, Row> lastRows = new Map<dynamic, Row>();
 
-  NgRepeatAttrDirective(BlockListFactory blockListFactory,
-                        BlockList this.blockList,
-                        dom.Node node,
+  NgRepeatAttrDirective(BlockList this.blockList,
                         NodeAttrs attrs,
                         Scope scope) {
     expression = attrs[this];
