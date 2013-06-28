@@ -430,7 +430,7 @@ main() {
         }, throwsA(contains('No provider found for LocalAttrDirective! (resolving LocalAttrDirective)')));
       }));
 
-      iit('should publish component controller into the scope', inject(() {
+      it('should publish component controller into the scope', inject(() {
         var element = $(r'<div><publish-me></publish-me></div>');
         $compile(element)(injector, element);
         $rootScope.$apply();
