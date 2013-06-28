@@ -14,6 +14,7 @@ class Directive {
   String $template;
   String $templateUrl;
   String $cssUrl;
+  String $publishAs;
   Map<String, String> $map;
   String $visibility;
   ShadowRootOptions $shadowRootOptions;
@@ -51,6 +52,7 @@ class Directive {
     $visibility = _defaultIfNull(
         reflectStaticField(type, '\$visibility'), DirectiveVisibility.LOCAL);
     $map = reflectStaticField(type, '\$map');
+    $publishAs = reflectStaticField(type, r'$publishAs');
     isStructural = $transclude != null;
     var $selector = reflectStaticField(type, r'$selector');
     if ($selector != null) {

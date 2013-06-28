@@ -392,6 +392,7 @@ main() {
       beforeEach(module((AngularModule module) {
         module.directive(SimpleComponent);
         module.directive(IoComponent);
+        module.directive(PublishMeComponent);
       }));
 
       it('should create a simple component', inject(() {
@@ -422,10 +423,19 @@ main() {
         expect($rootScope.done).toEqual(true);
       }));
 
-      it('should allow the component to publish itself into the scope', inject(() {
-
+      it('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope, Injector injector) {
+        expect(() {
+          var element = $('<tab local><pane></pane><pane local></pane></tab>');
+          $compile(element)(injector, element);
+        }, throwsA(contains('No provider found for LocalAttrDirective! (resolving LocalAttrDirective)')));
       }));
 
+      iit('should publish component controller into the scope', inject(() {
+        var element = $(r'<div><publish-me></publish-me></div>');
+        $compile(element)(injector, element);
+        $rootScope.$apply();
+        expect(element.textWithShadow()).toEqual('WORKED');
+      }));
     });
 
     describe('controller scoping', () {
@@ -441,13 +451,6 @@ main() {
         $compile(element)(injector, element);
         $rootScope.$apply();
         expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
-      }));
-
-      it('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope, Injector injector) {
-        expect(() {
-          var element = $('<tab local><pane></pane><pane local></pane></tab>');
-          $compile(element)(injector, element);
-        }, throwsA(contains('No provider found for LocalAttrDirective! (resolving LocalAttrDirective)')));
       }));
 
     });
@@ -469,4 +472,12 @@ class IoComponent {
     this.scope = scope;
     scope.$root.ioComponent = this;
   }
+}
+
+class PublishMeComponent {
+  static String $template = r'<content>{{ctrlName.value}}</content>';
+  static String $publishAs = 'ctrlName';
+
+  String value = 'WORKED';
+  PublishMeComponent() {}
 }

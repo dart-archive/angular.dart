@@ -282,6 +282,9 @@ class ComponentFactory {
         getString(directive.$templateUrl).
         then((data) => shadowScope.$apply(() => compileTemplate(data)));
     }
+    if (directive.$publishAs != null) {
+      shadowScope[directive.$publishAs] = controller;
+    }
     return controller;
   }
 
