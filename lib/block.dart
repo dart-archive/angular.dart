@@ -333,7 +333,7 @@ class ComponentFactory {
 
 attrAccessorFactory(dom.Element element, String name) {
   return ([String value]) {
-    if (?value) {
+    if (value != null) {
       if (value == null) {
         element.removeAttribute(name);
       } else {

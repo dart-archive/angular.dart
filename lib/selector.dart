@@ -28,7 +28,7 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
   selectors.forEach((selector) {
     var match;
 
-    if (?startWith) {
+    if (startWith != null) {
       if (selector.substring(0, startWith.length) == startWith) {
         selector = selector.substring(startWith.length);
       } else {
