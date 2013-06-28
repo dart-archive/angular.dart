@@ -7,7 +7,7 @@ class BlockTypeFactory {
 
   BlockType call(templateElements, directivePositions, [group]) {
     return new BlockType(blockFactory, templateElements, directivePositions,
-                         ?group && group != null ? group : '');
+                         group != null ? group : '');
   }
 }
 
@@ -26,7 +26,7 @@ class BlockType {
   }
 
   Block call(Injector injector, [List<dom.Node> elements]) {
-    if (!?elements || elements == null) {
+    if (elements == null) {
       elements = cloneElements(templateElements);
     }
     return blockFactory(elements, directivePositions, group, injector);

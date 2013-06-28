@@ -354,7 +354,7 @@ class Scope implements Map {
         event = new Event(name, this);
 
     //down while you can, then up and next sibling or up and next sibling until back at root
-    if (!?listenerArgs) {
+    if (listenerArgs == null) {
       listenerArgs = [];
     }
     listenerArgs.insert(0, event);
