@@ -20,6 +20,7 @@ part 'directives/ng_cloak.dart';
 part 'directives/ng_controller.dart';
 part 'directives/ng_hide.dart';
 part 'directives/ng_if.dart';
+part 'directives/ng_model.dart';
 part 'directives/ng_mustache.dart';
 part 'directives/ng_repeat.dart';
 part 'directives/ng_show.dart';
@@ -139,6 +140,9 @@ class AngularModule extends Module {
     directive(NgIfAttrDirective);
     directive(NgRepeatAttrDirective);
     directive(NgShowAttrDirective);
+
+    directive(InputDirective);
+    directive(NgModel);
   }
 
   directive(Type directive) {
