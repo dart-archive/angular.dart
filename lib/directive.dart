@@ -6,6 +6,7 @@ String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
 
 class Directive {
   Type type;
+  // TODO(misko): this should be renamed to selector once we change over to meta-data.
   String $name;
   Function $generate;
   String $transclude;
@@ -30,7 +31,10 @@ class Directive {
         onMatch: (m) => '-' + m.group(0).toLowerCase())
       .substring(1);
 
-    if ($name.endsWith(_ATTR_DIRECTIVE)) {
+    var $selector = reflectStaticField(type, r'$selector');
+    if ($selector != null) {
+      $name = $selector;
+    } else if ($name.endsWith(_ATTR_DIRECTIVE)) {
       $name = '[${$name.substring(0, $name.length - _ATTR_DIRECTIVE.length)}]';
     } else if ($name.endsWith(_DIRECTIVE)) {
       $name = $name.substring(0, $name.length - _DIRECTIVE.length);
@@ -54,10 +58,6 @@ class Directive {
     $map = reflectStaticField(type, '\$map');
     $publishAs = reflectStaticField(type, r'$publishAs');
     isStructural = $transclude != null;
-    var $selector = reflectStaticField(type, r'$selector');
-    if ($selector != null) {
-      $name = $selector;
-    }
     if (isComponent && $map == null) {
       $map = new Map<String, String>();
     }

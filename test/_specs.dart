@@ -139,6 +139,7 @@ class JQuery implements List<Node> {
   eq(num childIndex) => $(this[childIndex]);
   remove() => forEach((n) => n.remove());
   attr([String name]) => accessor((n) => n.attributes[name], (n, v) => n.attributes[name] = v);
+  prop([String name]) => accessor((n) => getter(n, null, name), (n, v) => setter(n, name, v));
   textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(n.queryAll(selector)));
   hasClass(String name) => fold(false, (hasClass, node) => hasClass ? true : node.classes.contains(name));
