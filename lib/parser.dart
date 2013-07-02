@@ -132,6 +132,13 @@ abstract class Getter {
   operator[](name);
 }
 
+stripTrailingNulls(List l) {
+  while (l.length > 0 && l.last == null) {
+    l.removeLast();
+  }
+  return l;
+}
+
 // Returns a tuple [found, value]
 getterChild(value, childKey) {
   if (value is List && childKey is num) {
@@ -161,8 +168,8 @@ getterChild(value, childKey) {
     // maybe it is a member method?
     if (instanceMirror.type.members.containsKey(curSym)) {
       MethodMirror methodMirror = instanceMirror.type.members[curSym];
-      return [true, _relaxFnArgs((args) {
-        if (args == null) args = [];
+      return [true, _relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
+        var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
         try {
           return instanceMirror.invoke(curSym, args).reflectee;
         } catch (e) {

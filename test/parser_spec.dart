@@ -9,6 +9,11 @@ class TestData {
   method() => "testMethod";
 }
 
+class Ident {
+  id(x) => x;
+  doubleId(x,y) => [x,y];
+}
+
 class Mixin {}
 class MixedTestData extends TestData with Mixin {
 }
@@ -352,6 +357,12 @@ main() {
       expect(eval("a")).toEqual(123);
       expect(eval("b.c")).toEqual(456);
       expect(eval("x.y.z")).toEqual(null);
+    });
+
+    it('should access classes on scope', () {
+      scope['ident'] = new Ident();
+      expect(eval('ident.id(6)')).toEqual(6);
+      expect(eval('ident.doubleId(4,5)')).toEqual([4, 5]);
     });
 
     it('should resolve deeply nested paths (important for CSP mode)', () {
