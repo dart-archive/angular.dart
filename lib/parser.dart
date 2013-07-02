@@ -500,6 +500,16 @@ class Parser {
       return null;
     }
 
+    /**
+     * Token savers are synchronous lists that allows Parser functions to
+     * access the tokens parsed during some amount of time.  They are useful
+     * for printing helpful debugging messages.
+     */
+    List<List<Token>> tokenSavers = [];
+    List<Token> saveTokens() { var n = []; tokenSavers.add(n); return n; }
+    stopSavingTokens(x) { if (!tokenSavers.remove(x)) { throw "bad token saver"; } return x; }
+    tokensText(List x) => x.map((x) => x.text).join();
+
     Token expect([String e1, String e2, String e3, String e4]){
       Token token = peek(e1, e2, e3, e4);
       if (token != null) {
@@ -507,7 +517,8 @@ class Parser {
 //        if (json && !token.json) {
 //          throwError("is not valid json", token);
 //        }
-        tokens.removeAt(0);
+        var consumed = tokens.removeAt(0);
+        tokenSavers.forEach((ts) => ts.add(consumed));
         return token;
       }
       return null;
@@ -520,17 +531,12 @@ class Parser {
       }
     }
 
-
-
-
-
     var filterChain = null;
     var functionCall, arrayDeclaration, objectIndex, fieldAccess, object;
 
-
-
     ParsedFn primary() {
       var primary;
+      var ts = saveTokens();
       if (expect('(') != null) {
         primary = filterChain();
         consume(')');
@@ -539,7 +545,7 @@ class Parser {
       } else if (expect('{') != null) {
         primary = object();
       } else {
-        var token = expect();
+        Token token = expect();
         primary = token.primaryFn;
         if (primary == null) {
           throw "not impl error";
@@ -551,7 +557,7 @@ class Parser {
       var next, context;
       while ((next = expect('(', '[', '.')) != null) {
         if (next.text == '(') {
-          primary = functionCall(primary);
+          primary = functionCall(primary, tokensText(ts.sublist(0, ts.length-1)));
           context = null;
         } else if (next.text == '[') {
           context = primary;
@@ -563,6 +569,7 @@ class Parser {
           throw "Impossible.. what?";
         }
       }
+      stopSavingTokens(ts);
       return primary;
     }
 
@@ -706,7 +713,7 @@ class Parser {
       }
     }
 
-    functionCall = (fn) {
+    functionCall = (fn, fnName) {
       var argsFn = [];
       if (peekToken().text != ')') {
         do {
@@ -720,6 +727,12 @@ class Parser {
           args.add(argsFn[i](self, locals));
         }
         var userFn = fn(self, locals);
+        if (userFn == null) {
+          throw "Undefined function $fnName";
+        }
+        if (userFn is! Function) {
+          throw "$fnName is not a function";
+        }
         return relaxFnApply(userFn, args);
       });
     };
