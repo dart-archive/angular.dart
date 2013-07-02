@@ -123,8 +123,6 @@ Map<String, String> ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", 
 
 ParsedFn ZERO = new ParsedFn((_, _x) => 0);
 
-class BreakException {}
-
 class Setter {
   operator[]=(name, value){}
 }
@@ -267,16 +265,16 @@ class Parser {
 
     String peek() => index + 1 < textLength ? text[index + 1] : "EOF";
 
-    breakWhile() { throw new BreakException(); }
+    // whileChars takes two functions: One called for each character
+    // and a second, optional function call at the end of the file.
+    // If the first function returns false, the the loop stops and endFn
+    // is not run.
     whileChars(fn(), [endFn()]) {
       while (index < textLength) {
         ch = text[index];
         int lastIndex = index;
-	      try {
-          fn();
-	      } on BreakException catch(e) {
-	        endFn = null;
-          break;
+        if (fn() == false) {
+	        return;
 	      }
         if (lastIndex >= index) {
 	        throw "while chars loop must advance at index $index";
@@ -315,14 +313,14 @@ class Parser {
               }
               index++;
             }
-            breakWhile();
+            return false; // BREAK
           });
         } else if (ch == quote) {
           index++;
           tokens.add(new Token(start, rawString)
               ..withString(string)
               ..withFn0(() => string));
-          breakWhile();
+          return false; // BREAK
         } else {
           string += ch;
           index++;
@@ -354,7 +352,7 @@ class Parser {
               isIn(EXP_OP, number[number.length - 1])) {
             throw "Lexer Error: Invalid exponent at column $index in expression [$text].";
           } else {
-            breakWhile();
+            return false; // BREAK
           }
         }
         index++;
@@ -377,7 +375,7 @@ class Parser {
           }
           ident += ch;
         } else {
-          breakWhile();
+          return false; // BREAK
         }
         index++;
       });
