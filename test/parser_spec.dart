@@ -252,7 +252,6 @@ main() {
     });
   });
 
-
   describe('parse', () {
     var scope;
     eval(String text) => Parser.parse(text)(scope, null);
@@ -588,19 +587,49 @@ main() {
       expect(Parser.parse('str')(data)).toEqual('dole');
     });
 
-     it('should support map getters from superclass', () {
-       InheritedMapData mapData = new InheritedMapData();
-       expect(Parser.parse('notmixed')(mapData)).toEqual('mapped-notmixed');
-     });
+    it('should support map getters from superclass', () {
+     InheritedMapData mapData = new InheritedMapData();
+     expect(Parser.parse('notmixed')(mapData)).toEqual('mapped-notmixed');
+    });
 
-     it('should support map getters from mixins', () {
-      MixedMapData data = new MixedMapData();
-      expect(Parser.parse('str')(data)).toEqual('mapped-str');
-     });
+    it('should support map getters from mixins', () {
+    MixedMapData data = new MixedMapData();
+    expect(Parser.parse('str')(data)).toEqual('mapped-str');
+    });
 
-     it('should gracefully handle bad containsKey', () {
-       expect(Parser.parse('str')(new BadContainsKeys())).toEqual('member');
-     });
+    it('should gracefully handle bad containsKey', () {
+     expect(Parser.parse('str')(new BadContainsKeys())).toEqual('member');
+    });
+
+    it('should parse functions for object indices', () {
+      expect(Parser.parse('a[x()]()')({'a': [()=>6], 'x': () => 0})).toEqual(6);
+    });
+
+    it('should fail gracefully when missing a function', () {
+      expect(() {
+        Parser.parse('doesNotExist()')({});
+      }).toThrow('Undefined function doesNotExist');
+
+      expect(() {
+        Parser.parse('exists(doesNotExist())')({'exists': () => true});
+      }).toThrow('Undefined function doesNotExist');
+
+      expect(() {
+        Parser.parse('doesNotExists(exists())')({'exists': () => true});
+      }).toThrow('Undefined function doesNotExist');
+
+      expect(() {
+        Parser.parse('a[0]()')({'a': [4]});
+      }).toThrow('a[0] is not a function');
+
+      expect(() {
+        Parser.parse('a[x()]()')({'a': [4], 'x': () => 0});
+      }).toThrow('a[x()] is not a function');
+
+      expect(() {
+        Parser.parse('{}()')({});
+      }).toThrow('{} is not a function');
+    });
   });
 
   describe('assignable', () {
