@@ -72,13 +72,13 @@ class SpyFunction {
   SpyFunction([this.name]);
   call([a0, a1, a2, a3, a4, a5, a6]) {
     var args = [];
-    if (?a0) args.add(a0);
-    if (?a1) args.add(a1);
-    if (?a2) args.add(a2);
-    if (?a3) args.add(a3);
-    if (?a4) args.add(a4);
-    if (?a5) args.add(a5);
-    if (?a6) args.add(a6);
+    if (a0 != null) args.add(a0);
+    if (a1 != null) args.add(a1);
+    if (a2 != null) args.add(a2);
+    if (a3 != null) args.add(a3);
+    if (a4 != null) args.add(a4);
+    if (a5 != null) args.add(a5);
+    if (a6 != null) args.add(a6);
     invocations.add(args);
   }
 

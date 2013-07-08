@@ -16,11 +16,20 @@ class MockHttp extends Http {
   flush() => gets.length == 0 ? Future.wait(futures) :
       throw "Expected GETs not called $gets";
 
-  Future<String> getString(String url, {bool withCredentials, void onProgress(ProgressEvent e)}) {
+  Future<String> getString(String url, {bool withCredentials, void onProgress(ProgressEvent e), Cache cache}) {
+    var cachedValue = cache != null ? cache.get(url) : null;
+    if (cachedValue != null) {
+      return new Future.value(cachedValue);
+    }
+
     if (!gets.containsKey(url)) throw "Unexpected URL $url";
-    var f = new Future.value(gets.remove(url));
-    futures.add(f);
-    return f;
+    var expectedValue = gets.remove(url);
+    if (cache != null) {
+      cache.put(url, expectedValue);
+    }
+    var future = new Future.value(expectedValue);
+    futures.add(future);
+    return future;
   }
 }
 
