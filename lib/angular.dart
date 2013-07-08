@@ -127,6 +127,8 @@ class AngularModule extends Module {
     type(Interpolate, Interpolate);
     type(CacheFactory, CacheFactory);
     type(Http, Http);
+    type(BlockCache, BlockCache);
+    type(TemplateCache, TemplateCache);
 
     value(ScopeDigestTTL, new ScopeDigestTTL(5));
 

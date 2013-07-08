@@ -403,7 +403,9 @@ main() {
         Block block = blockType(injector, element);
         $rootScope.$digest();
 
-        expect(element.textWithShadow()).toEqual('OUTTER-_1:INNER_2(OUTTER-_1)');
+        SimpleComponent.lastTemplateLoader.template.then(expectAsync1((_) {
+          expect(element.textWithShadow()).toEqual('OUTTER-_1:INNER_2(OUTTER-_1)');
+        }));
       }));
 
       it('should create a component with IO', inject(() {
@@ -434,7 +436,9 @@ main() {
         var element = $(r'<div><publish-me></publish-me></div>');
         $compile(element)(injector, element);
         $rootScope.$apply();
-        expect(element.textWithShadow()).toEqual('WORKED');
+        PublishMeComponent.lastTemplateLoader.template.then(expectAsync1((_) {
+          expect(element.textWithShadow()).toEqual('WORKED');
+        }));
       }));
     });
 
@@ -459,8 +463,10 @@ main() {
 
 class SimpleComponent {
   static String $template = r'{{name}}{{sep}}{{$id}}(<content>SHADOW-CONTENT</content>)';
-  SimpleComponent(Scope scope) {
+  static TemplateLoader lastTemplateLoader;
+  SimpleComponent(Scope scope, TemplateLoader templateLoader) {
     scope.name = 'INNER';
+    lastTemplateLoader = templateLoader;
   }
 }
 
@@ -477,7 +483,10 @@ class IoComponent {
 class PublishMeComponent {
   static String $template = r'<content>{{ctrlName.value}}</content>';
   static String $publishAs = 'ctrlName';
+  static TemplateLoader lastTemplateLoader;
 
   String value = 'WORKED';
-  PublishMeComponent() {}
+  PublishMeComponent(TemplateLoader templateLoader) {
+    lastTemplateLoader = templateLoader;
+  }
 }

@@ -108,8 +108,8 @@ class Block implements ElementWrapper {
       if (ref.directive.isComponent) {
         //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
         // TODO(misko): there should be no need to wrap function like this.
-        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, Parser parser, Http $http) =>
-          (new ComponentFactory(node, ref.directive))(injector, compiler, scope, parser, $http),
+        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, Parser parser, BlockCache $blockCache) =>
+          (new ComponentFactory(node, ref.directive))(injector, compiler, scope, parser, $blockCache),
           visibility: visibility);
       } else {
         nodeModule.type(type, type, visibility: visibility);
@@ -266,36 +266,45 @@ class ComponentFactory {
 
   ComponentFactory(this.element, this.directive);
 
-  dynamic call(Injector injector, Compiler compiler, Scope scope, Parser parser, Http $http) {
+  dynamic call(Injector injector, Compiler compiler, Scope scope,
+      Parser parser, BlockCache $blockCache) {
     this.compiler = compiler;
     shadowDom = element.createShadowRoot();
     shadowScope = scope.$new(true);
     createAttributeMapping(scope, shadowScope, parser);
-    var controller = createShadowInjector(injector).get(directive.type);
     if (directive.$cssUrl != null) {
       shadowDom.innerHtml = '<style>@import "${directive.$cssUrl}"</style>';
     }
+    TemplateLoader templateLoader;
     if (directive.$template != null) {
-      compileTemplate(directive.$template);
+      var blockFuture = new async.Future.value().then((_) =>
+          attachBlockToShadowDom($blockCache.fromHtml(directive.$template)));
+      templateLoader = new TemplateLoader(blockFuture);
     } else if (directive.$templateUrl != null) {
-      $http.
-        getString(directive.$templateUrl).
-        then((data) => shadowScope.$apply(() => compileTemplate(data)));
+      var blockFuture = $blockCache.fromUrl(directive.$templateUrl)
+          .then((BlockType blockType) => attachBlockToShadowDom(blockType));
+      templateLoader = new TemplateLoader(blockFuture);
     }
+    var controller =
+        createShadowInjector(injector, templateLoader).get(directive.type);
     if (directive.$publishAs != null) {
       shadowScope[directive.$publishAs] = controller;
     }
     return controller;
   }
 
-  compileTemplate(html) {
-    shadowDom.innerHtml += html;
-    compiler(shadowDom.nodes)(shadowInjector, shadowDom.nodes);
+  attachBlockToShadowDom(BlockType blockType) {
+    var block = blockType(shadowInjector);
+    shadowDom.nodes.addAll(block.elements);
+    shadowInjector.get(Scope).$digest();
+    return shadowDom;
   }
 
-  createShadowInjector(injector) {
-    var shadowModule = new ScopeModule(shadowScope);
-    shadowModule.type(directive.type, directive.type);
+  createShadowInjector(injector, TemplateLoader templateLoader) {
+    var shadowModule = new ScopeModule(shadowScope)
+      ..type(directive.type, directive.type)
+      ..value(TemplateLoader, templateLoader)
+      ..value(dom.ShadowRoot, shadowDom);
     shadowInjector = injector.createChild([shadowModule]);
     // TODO(misko): creazy hack to mark injector
     shadowInjector.instances[_SHADOW] = injector;
@@ -333,18 +342,70 @@ class ComponentFactory {
   }
 }
 
+class BlockCache {
+  Cache _blockCache;
+  Http $http;
+  TemplateCache $templateCache;
+  Compiler compiler;
+
+  BlockCache(CacheFactory $cacheFactory, Http this.$http,
+      TemplateCache this.$templateCache, Compiler this.compiler) {
+    _blockCache = $cacheFactory('blocks');
+  }
+
+  BlockType fromHtml(String html) {
+    BlockType blockType = _blockCache.get(html);
+    if (blockType == null) {
+      var div = new dom.Element.tag('div');
+      div.innerHtml = html;
+      blockType = compiler(div.nodes);
+      _blockCache.put(html, blockType);
+    }
+    return blockType;
+  }
+
+  async.Future<BlockType> fromUrl(String url) {
+    return $http.getString(url, cache: $templateCache).then((String tmpl) {
+      return fromHtml(tmpl);
+    });
+  }
+}
+
+/**
+ * A convinience wrapper for "templates" cache.
+ */
+class TemplateCache implements Cache {
+  Cache _cache;
+
+  TemplateCache(CacheFactory $cacheFactory) {
+    _cache = $cacheFactory('templates');
+  }
+
+  Object get(key) => _cache.get(key);
+  Object put(key, Object value) => _cache.put(key, value);
+  void remove(key) => _cache.remove(key);
+  void removeAll() => _cache.removeAll();
+  CacheInfo info() => _cache.info();
+  void destroy() => _cache.destroy();
+}
+
+class TemplateLoader {
+  final async.Future<dom.ShadowRoot> _template;
+  async.Future<dom.ShadowRoot> get template => _template;
+  TemplateLoader(this._template);
+}
 
 attrAccessorFactory(dom.Element element, String name) {
   return ([String value]) {
     if (value != null) {
       if (value == null) {
-        element.removeAttribute(name);
+        element.attributes.remove(name);
       } else {
-        element.setAttribute(name, value);
+        element.attributes[name] = value;
       }
       return value;
     } else {
-      return element.getAttribute(name);
+      return element.attributes[name];
     }
   };
 }
