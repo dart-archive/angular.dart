@@ -45,8 +45,8 @@ renderedText(n, [bool notShadow = false]) {
   return n.nodes.map((cn) => renderedText(cn)).join("");
 }
 
-Expect expect(actual, [unit.Matcher matcher]) {
-  if (?matcher) {
+Expect expect(actual, [unit.Matcher matcher = null]) {
+  if (matcher != null) {
     unit.expect(actual, matcher);
   }
   return new Expect(actual);
