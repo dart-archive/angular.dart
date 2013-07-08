@@ -58,3 +58,5 @@ class Probe {
 
   directive(Type type) => injector.get(type);
 }
+
+main() {}
