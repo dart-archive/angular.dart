@@ -44,6 +44,10 @@ main() {
       module.directive(OnlyCssComponent);
       module.directive(InlineWithCssComponent);
     }));
+    
+    afterEach(inject((MockHttp $http) {
+      $http.assertAllGetsCalled();
+    }));
 
     it('should replace element with template from url', inject((MockHttp $http, Compiler $compile, Scope $rootScope,  Log log, Injector injector) {
       $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>');
@@ -59,7 +63,7 @@ main() {
     }));
 
     it('should load template from URL once', inject((MockHttp $http, Compiler $compile, Scope $rootScope,  Log log, Injector injector) {
-      $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>');
+      $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>', times: 2);
 
       var element = $('<div><simple-url log>ignore</simple-url><simple-url log>ignore</simple-url><div>');
       $compile(element)(injector, element);

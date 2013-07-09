@@ -6,24 +6,29 @@ import 'dart:html';
 import 'package:angular/angular.dart';
 
 class MockHttp extends Http {
-  Map<String, String> gets = {};
+  Map<String, MockHttpData> gets = {};
   List futures = [];
 
-  expectGET(url, content) {
-    gets[url] = content;
+  expectGET(String url, String content, {int times: 1}) {
+    gets[url] = new MockHttpData(content, times);
   }
 
-  flush() => gets.length == 0 ? Future.wait(futures) :
+  flush() => Future.wait(futures);
+  
+  assertAllGetsCalled() {
+    if (gets.length != 0) {
       throw "Expected GETs not called $gets";
+    }
+  }
 
   Future<String> getString(String url, {bool withCredentials, void onProgress(ProgressEvent e), Cache cache}) {
-    var cachedValue = cache != null ? cache.get(url) : null;
-    if (cachedValue != null) {
-      return new Future.value(cachedValue);
+    if (!gets.containsKey(url)) throw "Unexpected URL $url $gets";
+    var data = gets[url];
+    data.times--;
+    if (data.times <= 0) {
+      gets.remove(url);
     }
-
-    if (!gets.containsKey(url)) throw "Unexpected URL $url";
-    var expectedValue = gets.remove(url);
+    var expectedValue = data.value;
     if (cache != null) {
       cache.put(url, expectedValue);
     }
@@ -31,6 +36,14 @@ class MockHttp extends Http {
     futures.add(future);
     return future;
   }
+}
+
+class MockHttpData {
+  String value;
+  int times;
+  MockHttpData(this.value, this.times);
+  
+  toString() => value;
 }
 
 main() {}
