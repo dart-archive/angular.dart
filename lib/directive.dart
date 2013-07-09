@@ -42,7 +42,7 @@ class Directive {
       isComponent = true;
       $name = $name.substring(0, $name.length - _COMPONENT.length);
     } else {
-      throw "Directive name must end with $_DIRECTIVE or $_ATTR_DIRECTIVE.";
+      throw "Directive name '$name' must end with $_DIRECTIVE, $_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
     }
 
     // Check the $transclude.
