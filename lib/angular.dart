@@ -11,6 +11,7 @@ import 'debug.dart';
 part 'block.dart';
 part 'block_list.dart';
 part 'block_type.dart';
+part 'cache.dart';
 part 'compiler.dart';
 part 'directive.dart';
 part 'directives/ng_bind.dart';
@@ -124,7 +125,10 @@ class AngularModule extends Module {
     type(Scope, Scope);
     type(Parser, Parser);
     type(Interpolate, Interpolate);
+    type(CacheFactory, CacheFactory);
     type(Http, Http);
+    type(BlockCache, BlockCache);
+    type(TemplateCache, TemplateCache);
 
     value(ScopeDigestTTL, new ScopeDigestTTL(5));
 

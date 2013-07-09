@@ -85,6 +85,8 @@ class NotExpect {
   toThrow() => actual();
 
   toHaveClass(cls) => unit.expect(actual.hasClass(cls), false, reason: ' Expected ${actual} to not have css class ${cls}');
+  toBe(expected) => unit.expect(actual,
+      unit.predicate((actual) => !identical(expected, actual), '$expected'));
 }
 
 $(selector) {
@@ -95,7 +97,7 @@ class JQuery implements List<Node> {
   List<Node> _list = [];
 
   JQuery([selector]) {
-    if (!?selector) {
+    if (selector == null) {
       // do nothing;
     } else if (selector is String) {
       _list.addAll(es(selector));
@@ -120,7 +122,7 @@ class JQuery implements List<Node> {
 
   accessor(Function getter, Function setter, [value]) {
     // TODO(dart): ?value does not work, since value was passed. :-(
-    var setterMode = ?value && value != null;
+    var setterMode = value != null;
     var result = setterMode ? this : '';
     _list.forEach((node) {
       if (setterMode) {
