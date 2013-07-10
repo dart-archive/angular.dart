@@ -314,6 +314,7 @@ class ComponentFactory {
   createAttributeMapping(Scope parentScope, Scope shadowScope, Parser parser) {
     directive.$map.forEach((attrName, mapping) {
       var attrValue = element.attributes[attrName];
+      if (attrValue == null) attrValue = '';
       if (mapping == '@') {
         shadowScope[attrName] = attrValue;
       } else if (mapping == '=') {
