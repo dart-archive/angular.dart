@@ -14,14 +14,14 @@ class Watch {
   }
 }
 
-class Event {
+class ScopeEvent {
   String name;
   Scope targetScope;
   Scope currentScope;
   bool propagationStopped = false;
   bool defaultPrevented = false;
 
-  Event(this.name, this.targetScope);
+  ScopeEvent(this.name, this.targetScope);
 
   stopPropagation () => propagationStopped = true;
   preventDefault() => defaultPrevented = true;
@@ -317,7 +317,7 @@ class Scope implements Map {
     var empty = [],
         namedListeners,
         scope = this,
-        event = new Event(name, this),
+        event = new ScopeEvent(name, this),
         listenerArgs = [event],
         i;
 
@@ -351,7 +351,7 @@ class Scope implements Map {
     var target = this,
         current = target,
         next = target,
-        event = new Event(name, this);
+        event = new ScopeEvent(name, this);
 
     //down while you can, then up and next sibling or up and next sibling until back at root
     if (listenerArgs == null) {
