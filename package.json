@@ -1,5 +1,7 @@
-{ "dependencies" :
-  { "karma" : "canary-dart"
-  , "karma-dart" : "canary"
+{
+  "name": "angular.dart",
+  "dependencies" : {
+    "karma" : "canary",
+    "karma-dart" : "canary"
   }
 }
