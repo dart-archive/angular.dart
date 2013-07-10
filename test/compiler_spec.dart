@@ -392,6 +392,7 @@ main() {
       beforeEach(module((AngularModule module) {
         module.directive(SimpleComponent);
         module.directive(IoComponent);
+        module.directive(ParentExpressionComponent);
         module.directive(PublishMeComponent);
       }));
 
@@ -405,6 +406,35 @@ main() {
 
         SimpleComponent.lastTemplateLoader.template.then(expectAsync1((_) {
           expect(element.textWithShadow()).toEqual('OUTTER-_1:INNER_2(OUTTER-_1)');
+        }));
+      }));
+
+      it('should create a component that can access parent scope', inject(() {
+        $rootScope.fromParent = "should not be used";
+        $rootScope.val = "poof";
+        var element = $('<parent-expression fromParent=val></parent-expression>');
+
+        $compile(element)(injector, element);
+
+        ParentExpressionComponent.lastTemplateLoader.template.then(expectAsync1((_) {
+          expect(renderedText(element)).toEqual('inside poof');
+        }));
+      }));
+
+      it('should behave nicely if a mapped attribute is missing', inject(() {
+        var element = $('<parent-expression></parent-expression>');
+        $compile(element)(injector, element);
+        ParentExpressionComponent.lastTemplateLoader.template.then(expectAsync1((_) {
+          expect(renderedText(element)).toEqual('inside ');
+        }));
+      }));
+
+      it('should behave nicely if a mapped attribute evals to null', inject(() {
+        $rootScope.val = null;
+        var element = $('<parent-expression fromParent=val></parent-expression>');
+        $compile(element)(injector, element);
+        ParentExpressionComponent.lastTemplateLoader.template.then(expectAsync1((_) {
+          expect(renderedText(element)).toEqual('inside ');
         }));
       }));
 
@@ -477,6 +507,15 @@ class IoComponent {
   IoComponent(Scope scope) {
     this.scope = scope;
     scope.$root.ioComponent = this;
+  }
+}
+
+class ParentExpressionComponent {
+  static String $template = '<div>inside {{fromParent()}}</div>';
+  static Map $map = {"fromParent": "&"};
+  static TemplateLoader lastTemplateLoader;
+  ParentExpressionComponent(Scope shadowScope, TemplateLoader templateLoader) {
+    lastTemplateLoader = templateLoader;
   }
 }
 
