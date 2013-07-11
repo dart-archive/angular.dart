@@ -32,7 +32,38 @@ class OnlyCssComponent {
   static String $cssUrl = 'simple.css';
 }
 
+class PrefixedUrlRewriter extends UrlRewriter {
+  call(url) => "PREFIX:$url";
+}
+
 main() {
+  describe('loading with http rewriting', () {
+    var backend;
+    beforeEach(module((AngularModule module) {
+      backend = new MockHttpBackend();
+      module
+        ..directive(HtmlAndCssComponent)
+        ..value(HttpBackend, backend)
+        ..type(UrlRewriter, PrefixedUrlRewriter);
+    }));
+
+    it('should use the UrlRewriter for both HTML and CSS URLs', inject((Http $http, Compiler $compile, Scope $rootScope, Log log, Injector injector) {
+
+      backend.expectGET('PREFIX:simple.html', '<div log="SIMPLE">Simple!</div>');
+
+      var element = $('<div><html-and-css log>ignore</html-and-css><div>');
+      $compile(element)(injector, element);
+
+      backend.flush();
+
+      expect(renderedText(element)).toEqual('@import "PREFIX:simple.css"Simple!');
+      expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
+          '<style>@import "PREFIX:simple.css"</style><div log="SIMPLE">Simple!</div>'
+      );
+    }));
+  });
+
+
   describe('async template loading', () {
     beforeEach(module((AngularModule module) {
       module.factory(Http, (Injector injector) => injector.get(MockHttp));
