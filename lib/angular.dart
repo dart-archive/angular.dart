@@ -19,6 +19,7 @@ part 'directives/ng_class.dart';
 part 'directives/ng_click.dart';
 part 'directives/ng_cloak.dart';
 part 'directives/ng_controller.dart';
+part 'directives/ng_disabled.dart';
 part 'directives/ng_hide.dart';
 part 'directives/ng_if.dart';
 part 'directives/ng_model.dart';
@@ -140,6 +141,7 @@ class AngularModule extends Module {
     directive(NgClickAttrDirective);
     directive(NgCloakAttrDirective);
     directive(NgControllerAttrDirective);
+    directive(NgDisabledAttrDirective);
     directive(NgHideAttrDirective);
     directive(NgIfAttrDirective);
     directive(NgRepeatAttrDirective);
