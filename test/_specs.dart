@@ -10,6 +10,7 @@ import 'jasmine_syntax.dart';
 import 'package:di/di.dart';
 import 'package:unittest/mock.dart';
 import "_log.dart";
+import "_http.dart";
 
 export 'package:unittest/unittest.dart';
 export 'package:angular/debug.dart';
@@ -226,8 +227,10 @@ main() {
   beforeEach(() => id = 1);
   beforeEach(() => currentSpecInjector = new SpecInjector());
   beforeEach(module((AngularModule module) {
-    module.type(Logger, Logger);
-    module.type(Log, Log);
+    module
+      ..type(Logger, Logger)
+      ..type(MockHttp, MockHttp)
+      ..type(Log, Log);
   }));
   afterEach(() => currentSpecInjector = null);
 }

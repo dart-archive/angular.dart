@@ -4,9 +4,9 @@ import "_http.dart";
 main() {
   describe("MockHttp", () {
     MockHttp http;
-    beforeEach(() {
-      http = new MockHttp();
-    });
+    beforeEach(inject((MockHttp mock_http) {
+      http = mock_http;
+    }));
 
     it('should replay an http request', () {
       http.expectGET('request', 'response');

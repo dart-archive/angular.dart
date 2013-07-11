@@ -35,9 +35,7 @@ class OnlyCssComponent {
 main() {
   describe('async template loading', () {
     beforeEach(module((AngularModule module) {
-      var mockHttp = new MockHttp();
-      module.value(MockHttp, mockHttp);
-      module.value(Http, mockHttp);
+      module.factory(Http, (Injector injector) => injector.get(MockHttp));
       module.directive(LogAttrDirective);
       module.directive(SimpleUrlComponent);
       module.directive(HtmlAndCssComponent);
