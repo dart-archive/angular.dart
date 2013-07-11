@@ -47,10 +47,30 @@ class InputDirective {
   Scope scope;
 
   InputDirective(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope) {
-    ngModel.render = (value) => inputElement.value = value == null ? '' : value;
+    var type = inputElement.attributes['type'];
 
-    inputElement.onChange.listen(_relaxFnArgs(processValue));
-    inputElement.onKeyDown.listen((e) => new async.Timer(Duration.ZERO, processValue));
+    // NOTE(vojta):
+    // I think this will perform better than having multiple directives (eg. InputCheckbox) with different selectors,
+    // especially because the selector for the default input would be pretty weird.
+    // Also, why can't I use inputElement is dom.CheckboxInputElement ?
+    if (type == 'checkbox') {
+      dump('checkbox');
+      ngModel.render = this.renderCheckbox;
+      inputElement.onChange.listen(this.onCheckboxChange);
+    } else {
+      dump('default', inputElement);
+      ngModel.render = this.render;
+      inputElement.onChange.listen(_relaxFnArgs(processValue));
+      inputElement.onKeyDown.listen((e) => new async.Timer(Duration.ZERO, processValue));
+    }
+  }
+
+  onCheckboxChange(value) {
+    scope.$apply(() => ngModel.viewValue = inputElement.checked);
+  }
+
+  renderCheckbox(value) {
+    inputElement.checked = value == null ? false : toBool(value);
   }
 
   processValue() {
@@ -58,5 +78,9 @@ class InputDirective {
     if (value != ngModel.viewValue) {
       scope.$apply(() => ngModel.viewValue = value);
     }
+  }
+
+  render(value) {
+    inputElement.value = value == null ? '' : value;
   }
 }

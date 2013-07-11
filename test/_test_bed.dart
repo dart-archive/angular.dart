@@ -1,3 +1,4 @@
+import 'dart:html' as dom;
 import "_specs.dart";
 
 
@@ -24,6 +25,11 @@ class TestBed {
   compile(html) {
     rootElement = $(html);
     rootBlock = compiler(rootElement)(injector, rootElement);
+    return rootElement;
+  }
+
+  triggerEvent(elementWrapper, name) {
+    elementWrapper[0].dispatchEvent(new dom.Event.eventType('MouseEvent', name));
   }
 }
 
