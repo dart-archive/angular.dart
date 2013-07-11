@@ -54,11 +54,9 @@ class InputDirective {
     // especially because the selector for the default input would be pretty weird.
     // Also, why can't I use inputElement is dom.CheckboxInputElement ?
     if (type == 'checkbox') {
-      dump('checkbox');
       ngModel.render = this.renderCheckbox;
       inputElement.onChange.listen(this.onCheckboxChange);
     } else {
-      dump('default', inputElement);
       ngModel.render = this.render;
       inputElement.onChange.listen(_relaxFnArgs(processValue));
       inputElement.onKeyDown.listen((e) => new async.Timer(Duration.ZERO, processValue));
