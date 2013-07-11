@@ -128,6 +128,9 @@ class AngularModule extends Module {
     type(Interpolate, Interpolate);
     type(CacheFactory, CacheFactory);
     type(Http, Http);
+    type(UrlRewriter, UrlRewriter);
+    type(HttpFutures, HttpFutures);
+    type(HttpBackend, HttpBackend);
     type(BlockCache, BlockCache);
     type(TemplateCache, TemplateCache);
 

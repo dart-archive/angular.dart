@@ -108,8 +108,8 @@ class Block implements ElementWrapper {
       if (ref.directive.isComponent) {
         //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
         // TODO(misko): there should be no need to wrap function like this.
-        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, Parser parser, BlockCache $blockCache) =>
-          (new ComponentFactory(node, ref.directive))(injector, compiler, scope, parser, $blockCache),
+        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, Parser parser, BlockCache $blockCache, UrlRewriter urlRewriter) =>
+          (new ComponentFactory(node, ref.directive))(injector, compiler, scope, parser, $blockCache, urlRewriter),
           visibility: visibility);
       } else {
         nodeModule.type(type, type, visibility: visibility);
@@ -267,13 +267,13 @@ class ComponentFactory {
   ComponentFactory(this.element, this.directive);
 
   dynamic call(Injector injector, Compiler compiler, Scope scope,
-      Parser parser, BlockCache $blockCache) {
+      Parser parser, BlockCache $blockCache, UrlRewriter urlRewriter) {
     this.compiler = compiler;
     shadowDom = element.createShadowRoot();
     shadowScope = scope.$new(true);
     createAttributeMapping(scope, shadowScope, parser);
     if (directive.$cssUrl != null) {
-      shadowDom.innerHtml = '<style>@import "${directive.$cssUrl}"</style>';
+      shadowDom.innerHtml = '<style>@import "${urlRewriter(directive.$cssUrl)}"</style>';
     }
     TemplateLoader templateLoader;
     if (directive.$template != null) {
