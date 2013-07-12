@@ -11,7 +11,7 @@ class UrlRewriter {
 }
 
 class HttpBackend {
-  getString(String rawUrl, {bool withCredentials, void onProgress(dom.ProgressEvent e)}) {
+  getString(String url, {bool withCredentials, void onProgress(dom.ProgressEvent e)}) {
     return dom.HttpRequest.getString(url, withCredentials: withCredentials, onProgress: onProgress);
   }
 }
