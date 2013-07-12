@@ -16,7 +16,7 @@ main() {
     }));
 
 
-    xit('should add/remove the element', () {
+    it('should add/remove the element', () {
       compile('<div><span ng-if="isVisible">content</span></div>');
 
       expect(element.find('span').html()).toEqual('');
