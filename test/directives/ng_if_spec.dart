@@ -45,8 +45,7 @@ main() {
       expect(element.find('span').html()).toEqual('');
     });
 
-    // This is currently broken: the directives are being run with elements not in the DOM.
-    xit('should prevent other directives from running when disabled', inject((Log log) {
+    it('should prevent other directives from running when disabled', inject((Log log) {
       compile('<div><li log="ALWAYS"></li><span log="JAMES" ng-if="isVisible">content</span></div>');
 
       expect(element.find('span').html()).toEqual('');

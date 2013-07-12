@@ -6,20 +6,25 @@ class NgIfAttrDirective {
   static String $transclude = 'element';
 
   NgIfAttrDirective(NodeAttrs attrs, Injector injector, BlockList blockList, dom.Node node, Scope scope) {
-    var childScope = scope.$new();
-    var block = blockList.newBlock(childScope);
+    var _block;
+    block() {
+      if (_block != null) return _block;
+      var childScope = scope.$new();
+      _block = blockList.newBlock(childScope);
+      return _block;
+    }
     var isInserted = false;
 
     scope.$watch(attrs[this], (value) {
       // TODO(vojta): ignore changes like null -> false
       if (value != null && toBool(value)) {
         if (!isInserted) {
-          block.insertAfter(blockList);
+          block().insertAfter(blockList);
           isInserted = true;
         }
       } else {
         if (isInserted) {
-          block.remove();
+          block().remove();
           isInserted = false;
         }
       }
