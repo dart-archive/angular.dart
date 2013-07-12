@@ -1,14 +1,6 @@
 import "_specs.dart";
 import "_log.dart";
 
-class LogAttrDirective {
-  static var $priority = 0;
-  Log log;
-  LogAttrDirective(Log this.log, NodeAttrs attrs) {
-    log(attrs[this] == "" ? "LOG" : attrs[this]);
-  }
-}
-
 class ReplaceComponent {
   static String $template = '<div log="REPLACE" style="width: 10px" high-log>Replace!</div>';
   static var $replace = true;

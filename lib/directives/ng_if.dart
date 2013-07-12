@@ -2,6 +2,7 @@ part of angular;
 
 
 class NgIfAttrDirective {
+  static var $priority = 100;
   static String $transclude = 'element';
 
   NgIfAttrDirective(NodeAttrs attrs, Injector injector, BlockList blockList, dom.Node node, Scope scope) {
