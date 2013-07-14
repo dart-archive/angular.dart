@@ -270,6 +270,11 @@ class ComponentFactory {
       Parser parser, BlockCache $blockCache, UrlRewriter urlRewriter) {
     this.compiler = compiler;
     shadowDom = element.createShadowRoot();
+    shadowDom.applyAuthorStyles =
+        directive.$shadowRootOptions.$applyAuthorStyles;
+    shadowDom.resetStyleInheritance =
+        directive.$shadowRootOptions.$resetStyleInheritance;
+
     shadowScope = scope.$new(true);
     createAttributeMapping(scope, shadowScope, parser);
     if (directive.$cssUrl != null) {
