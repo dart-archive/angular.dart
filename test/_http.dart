@@ -2,8 +2,7 @@ library ng_mock_http;
 
 
 import 'dart:async';
-import 'dart:html';
-import 'package:angular/angular.dart';
+import '_specs.dart';
 
 class MockHttp extends Http {
   Map<String, MockHttpData> gets = {};
@@ -62,6 +61,13 @@ class MockHttpFutures extends HttpFutures {
   }
 }
 
+// NOTE(deboer): If I try to extend HttpRequest, I get an error:
+// class 'MockHttpRequest' is trying to extend a native fields class, but library '_http.dart' has no native resolvers
+class MockHttpRequest /*extends HttpRequest*/ {
+  String responseText;
+  MockHttpRequest(this.responseText);
+}
+
 class MockHttpBackend extends HttpBackend {
   Map<String, MockHttpData> gets = {};
   List completersAndValues = [];
@@ -81,14 +87,17 @@ class MockHttpBackend extends HttpBackend {
     }
   }
 
-  getString(String url, {bool withCredentials, void onProgress(ProgressEvent e)}) {
+  Future<HttpRequest> request(String url,
+      {String method, bool withCredentials, String responseType,
+      String mimeType, Map<String, String> requestHeaders, sendData,
+      void onProgress(ProgressEvent e)}) {
     if (!gets.containsKey(url)) throw "Unexpected URL $url $gets";
     var data = gets[url];
     data.times--;
     if (data.times <= 0) {
       gets.remove(url);
     }
-    var expectedValue = data.value;
+    var expectedValue = new MockHttpRequest(data.value);
     var completer = new Completer.sync();
     completersAndValues.add([completer, expectedValue]);
     return completer.future;

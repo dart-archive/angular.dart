@@ -6,7 +6,7 @@ var CACHED_VALUE = 'cached_value';
 
 
 class FakeCache implements Cache {
-  get(x) => x == 'f' ? CACHED_VALUE : null;
+  get(x) => x == 'f' ? new MockHttpRequest(CACHED_VALUE) : null;
   put(_,__) => null;
 
 }
