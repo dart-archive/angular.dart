@@ -391,6 +391,7 @@ main() {
     describe('components', () {
       beforeEach(module((AngularModule module) {
         module.directive(SimpleComponent);
+        module.directive(CamelCaseMapComponent);
         module.directive(IoComponent);
         module.directive(ParentExpressionComponent);
         module.directive(PublishMeComponent);
@@ -412,7 +413,7 @@ main() {
       it('should create a component that can access parent scope', inject(() {
         $rootScope.fromParent = "should not be used";
         $rootScope.val = "poof";
-        var element = $('<parent-expression fromParent=val></parent-expression>');
+        var element = $('<parent-expression from-parent=val></parent-expression>');
 
         $compile(element)(injector, element);
 
@@ -453,6 +454,14 @@ main() {
         expect($rootScope.done).toEqual(null);
         component.scope.ondone();
         expect($rootScope.done).toEqual(true);
+      }));
+
+      it('should expose mapped attributes as camel case', inject(() {
+        var element = $('<camel-case-map camel-case=6></camel-case-map>');
+        $compile(element)(injector, element);
+        $rootScope.$apply();
+        var componentScope = $rootScope.camelCase;
+        expect(componentScope.camelCase).toEqual('6');
       }));
 
       it('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope, Injector injector) {
@@ -507,6 +516,13 @@ class IoComponent {
   IoComponent(Scope scope) {
     this.scope = scope;
     scope.$root.ioComponent = this;
+  }
+}
+
+class CamelCaseMapComponent {
+  static Map $map = {"camelCase": "@"};
+  CamelCaseMapComponent(Scope scope) {
+    scope.$root.camelCase = scope;
   }
 }
 
