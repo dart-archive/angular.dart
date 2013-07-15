@@ -22,6 +22,7 @@ part 'directives/ng_controller.dart';
 part 'directives/ng_disabled.dart';
 part 'directives/ng_hide.dart';
 part 'directives/ng_if.dart';
+part 'directives/ng_include.dart';
 part 'directives/ng_model.dart';
 part 'directives/ng_mustache.dart';
 part 'directives/ng_repeat.dart';
@@ -147,6 +148,7 @@ class AngularModule extends Module {
     directive(NgDisabledAttrDirective);
     directive(NgHideAttrDirective);
     directive(NgIfAttrDirective);
+    directive(NgIncludeAttrDirective);
     directive(NgRepeatAttrDirective);
     directive(NgShowAttrDirective);
 
