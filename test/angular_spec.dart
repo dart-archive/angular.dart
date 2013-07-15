@@ -1,6 +1,14 @@
 import '_specs.dart';
 
 main() {
+  describe('angular.dart unittests', () {
+    it('should run in checked moded only', () {
+      expect(() {
+        String s = 6;
+      }).toThrow();
+    });
+  });
+
   describe('relaxFnApply', () {
     it('should work with 6 arguments', () {
       var sixArgs = [1, 1, 2, 3, 5, 8];
