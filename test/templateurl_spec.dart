@@ -55,6 +55,7 @@ main() {
       $compile(element)(injector, element);
 
       backend.flush();
+      backend.assertAllGetsCalled();
 
       expect(renderedText(element)).toEqual('@import "PREFIX:simple.css"Simple!');
       expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(

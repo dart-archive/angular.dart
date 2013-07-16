@@ -4,20 +4,20 @@ part of angular;
  * A simple map-backed cache.
  * TODO(pavelgj): add LRU support.
  */
-class Cache {
+class Cache<T> {
   final String _id;
   Map<String, Object> _data = <String, Object>{};
   CacheFactory _factory;
 
   Cache._newCache(String this._id, CacheFactory this._factory);
 
-  Object get(key) {
+  T get(String key) {
     _checkIfDestroyed();
     key = _stringifyKey(key);
     return _data[key];
   }
 
-  Object put(key, Object value) {
+  T put(String key, T value) {
     _checkIfDestroyed();
     if (value == null) {
       return null;
@@ -26,7 +26,7 @@ class Cache {
     return _data[key] = value;
   }
 
-  void remove(key) {
+  void remove(String key) {
     _checkIfDestroyed();
     key = _stringifyKey(key);
     _data.remove(key);
@@ -59,19 +59,19 @@ class Cache {
   }
 }
 
-class CacheFactory {
+class CacheFactory<T> {
   Map<String, Cache> _cacheMap = <String, Cache>{};
 
-  Cache call(String cacheId) {
+  Cache<T> call(String cacheId) {
     var cache = _cacheMap[cacheId];
     if (cache != null) {
       throw "[\$cacheFactory:iid] CacheId '$cacheId' is already taken!";
     }
-    _cacheMap[cacheId] = cache = new Cache._newCache(cacheId, this);
+    _cacheMap[cacheId] = cache = new Cache<T>._newCache(cacheId, this);
     return cache;
   }
 
-  Cache get(String cacheId) {
+  Cache<T> get(String cacheId) {
     return _cacheMap[cacheId];
   }
 

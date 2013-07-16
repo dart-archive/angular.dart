@@ -93,19 +93,6 @@ main() => describe('CacheFactory', () {
         expect(cache.remove('non-existent')).toBeNull();
       }));
 
-
-      it('should stringify keys', inject((CacheFactory $cacheFactory) {
-        cache.put('123', 'foo');
-        cache.put(123, 'bar');
-
-        expect(cache.get('123')).toBe('bar');
-        expect(cache.info().size).toBe(1);
-
-        cache.remove(123);
-        expect(cache.info().size).toBe(0);
-      }));
-
-
       it("should return value from put", inject((CacheFactory $cacheFactory) {
         var obj = {};
         expect(cache.put('k1', obj)).toBe(obj);

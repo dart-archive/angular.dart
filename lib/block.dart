@@ -380,7 +380,7 @@ class BlockCache {
 /**
  * A convinience wrapper for "templates" cache.
  */
-class TemplateCache implements Cache {
+class TemplateCache implements Cache<HttpResponse> {
   Cache _cache;
 
   TemplateCache(CacheFactory $cacheFactory) {
@@ -388,7 +388,8 @@ class TemplateCache implements Cache {
   }
 
   Object get(key) => _cache.get(key);
-  Object put(key, Object value) => _cache.put(key, value);
+  put(key, HttpResponse value) => _cache.put(key, value);
+  putString(key, String value) => _cache.put(key, new HttpResponse(200, value));
   void remove(key) => _cache.remove(key);
   void removeAll() => _cache.removeAll();
   CacheInfo info() => _cache.info();
