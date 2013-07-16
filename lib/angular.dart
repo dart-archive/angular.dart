@@ -37,6 +37,7 @@ part 'node_cursor.dart';
 part 'parser.dart';
 part 'scope.dart';
 part 'selector.dart';
+part 'string_utilities.dart';
 
 ASSERT(condition) {
   if (!condition) {
