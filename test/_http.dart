@@ -31,7 +31,7 @@ class MockHttp extends Http {
     }
     var expectedValue = data.value;
     if (cache != null) {
-      cache.put(url, expectedValue);
+      cache.put(url, new HttpResponse(200, expectedValue));
     }
     var future = new Future.value(expectedValue);
     futures.add(future);
@@ -59,13 +59,6 @@ class MockHttpFutures extends HttpFutures {
     completersAndValues.forEach((cv) => cv[0].complete(cv[1]));
     completersAndValues = [];
   }
-}
-
-// NOTE(deboer): If I try to extend HttpRequest, I get an error:
-// class 'MockHttpRequest' is trying to extend a native fields class, but library '_http.dart' has no native resolvers
-class MockHttpRequest /*extends HttpRequest*/ {
-  String responseText;
-  MockHttpRequest(this.responseText);
 }
 
 class MockHttpBackend extends HttpBackend {
@@ -97,7 +90,7 @@ class MockHttpBackend extends HttpBackend {
     if (data.times <= 0) {
       gets.remove(url);
     }
-    var expectedValue = new MockHttpRequest(data.value);
+    var expectedValue = new HttpResponse(200, data.value);
     var completer = new Completer.sync();
     completersAndValues.add([completer, expectedValue]);
     return completer.future;

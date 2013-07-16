@@ -42,7 +42,7 @@ main() {
       http.getString('request', cache: cache).then(expectAsync1((data) {
         expect(data).toEqual('response');
         expect(cache.info().size).toEqual(1);
-        expect(cache.get('request')).toEqual('response');
+        expect(cache.get('request').responseText).toEqual('response');
       }));
     }));
 

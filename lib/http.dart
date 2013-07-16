@@ -25,6 +25,13 @@ class HttpBackend {
         onProgress: onProgress);
 }
 
+class HttpResponse {
+  int status;
+  String responseText;
+  Map<String, String> headers;
+  HttpResponse([this.status, this.responseText, this.headers]);
+}
+
 class Http {
   Map<String, async.Future<String>> _pendingRequests = <String, async.Future<String>>{};
   UrlRewriter rewriter;
@@ -38,17 +45,17 @@ class Http {
     return request(url,
         withCredentials: withCredentials,
         onProgress: onProgress,
-        cache: cache).then((xhr) => xhr.responseText);
+        cache: cache).then((HttpResponse xhr) => xhr.responseText);
   }
 
   // TODO(deboer): The cache is keyed on the url only.  It should be keyed on
   //     (url, method, mimeType, requestHeaders, ...)
   //     Better yet, we should be using a HTTP standard cache.
-  async.Future request(String rawUrl,
+  async.Future<HttpResponse> request(String rawUrl,
       {String method, bool withCredentials, String responseType,
       String mimeType, Map<String, String> requestHeaders, sendData,
       void onProgress(dom.ProgressEvent e),
-      Cache cache}) {
+      Cache<HttpResponse> cache}) {
     String url = rewriter(rawUrl);
 
     // We return a pending request only if caching is enabled.
@@ -67,11 +74,14 @@ class Http {
         requestHeaders: requestHeaders,
         sendData: sendData,
         onProgress: onProgress).then((value) {
+      // NOTE(deboer): Missing headers.  Ask the Dart team for a sane API.
+      var response = new HttpResponse(value.status, value.responseText);
+
       if (cache != null) {
-        cache.put(url, value);
+        cache.put(url, response);
       }
       _pendingRequests.remove(url);
-      return value;
+      return response;
     }, onError: (error) {
       _pendingRequests.remove(url);
       throw error;
