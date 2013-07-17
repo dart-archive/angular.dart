@@ -1,36 +1,7 @@
-import 'package:angular/angular.dart';
-import 'package:di/di.dart';
 import 'dart:html' as dom;
 import 'dart:math' as math;
 
-class AngularBootstrap {
-  Compiler $compile;
-  Scope $rootScope;
-  Injector injector;
-
-  AngularBootstrap(Compiler this.$compile, Scope this.$rootScope, Injector this.injector);
-
-  call() {
-    List<dom.Node> topElt = dom.query('[ng-app]').nodes.toList();
-    assert(topElt.length > 0);
-
-    $rootScope['greeting'] = 'Hello world!';
-    var lastRandom;
-    $rootScope['random'] = () {
-      if (lastRandom == null) lastRandom =
-          'Random: ${new math.Random().nextInt(100)}';
-      return lastRandom;
-    };
-    $rootScope['people'] = ['James', 'Misko'];
-    $rootScope['objs'] = [{'v': 'v1'}, {'v': 'v2'}];
-
-    var template = $compile(topElt);
-    template(injector, topElt);
-
-    // Digest the scope.
-    $rootScope.$digest();
-  }
-}
+import 'package:angular/angular.dart';
 
 class BookController implements Controller {
   Scope $scope;
@@ -82,6 +53,20 @@ class ChapterDirective {
   }
 }
 
+class MainController {
+
+  String _random = 'Random: ${new math.Random().nextInt(100)}';
+
+  MainController(Scope scope) {
+    scope['greeting'] = 'Hello world!';
+    scope['people'] = ['James', 'Misko'];
+    scope['objs'] = [{'v': 'v1'}, {'v': 'v2'}];
+    scope['random'] = () {
+      return _random;
+    };
+  }
+}
+
 main() {
   // Set up the Angular directives.
   var module = new AngularModule()
@@ -89,6 +74,6 @@ main() {
     ..directive(NgRepeatAttrDirective)
     ..directive(BookComponent)
     ..directive(ChapterDirective);
-  Injector injector = new Injector([module]);
-  injector.get(AngularBootstrap)();
+
+  bootstrapAngular([module]);
 }
