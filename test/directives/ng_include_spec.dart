@@ -12,8 +12,8 @@ main() {
       module.type(HttpFutures, MockHttpFutures);
     }));
 
-    it('should fail', inject((Scope scope, TemplateCache cache, HttpFutures futures) {
-      cache.put('tpl.html', 'my name is {{name}}');
+    it('should fetch tempalte from url', inject((Scope scope, TemplateCache cache, HttpFutures futures) {
+      cache.put('tpl.html', new HttpResponse(200, 'my name is {{name}}'));
 
       var element = _.compile('<div ng-include="template"></div>');
 
