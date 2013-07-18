@@ -1,11 +1,5 @@
 part of angular;
 
-// NOTE(deboer): This should be a generic utility class, but lets make sure
-// it works in this case first!
-class HttpFutures {
-  async.Future value(x) => new async.Future.value(x);
-}
-
 class UrlRewriter {
   String call(url) => url;
 }
@@ -36,9 +30,8 @@ class Http {
   Map<String, async.Future<String>> _pendingRequests = <String, async.Future<String>>{};
   UrlRewriter rewriter;
   HttpBackend backend;
-  HttpFutures futures;
 
-  Http(UrlRewriter this.rewriter, HttpBackend this.backend, HttpFutures this.futures);
+  Http(UrlRewriter this.rewriter, HttpBackend this.backend);
 
   async.Future<String> getString(String url,
       {bool withCredentials, void onProgress(ProgressEvent e), Cache cache}) {
@@ -64,7 +57,7 @@ class Http {
     }
     var cachedValue = cache != null ? cache.get(url) : null;
     if (cachedValue != null) {
-      return futures.value(cachedValue);
+      return new async.Future.value(cachedValue);
     }
     var result = backend.request(url,
         method: method,

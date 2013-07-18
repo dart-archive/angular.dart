@@ -8,7 +8,7 @@ class MockHttp extends Http {
   Map<String, MockHttpData> gets = {};
   List futures = [];
 
-  MockHttp(UrlRewriter rewriter, HttpBackend backend, HttpFutures futures) : super(rewriter, backend, futures);
+  MockHttp(UrlRewriter rewriter, HttpBackend backend) : super(rewriter, backend);
 
   expectGET(String url, String content, {int times: 1}) {
     gets[url] = new MockHttpData(content, times);
@@ -45,20 +45,6 @@ class MockHttpData {
   MockHttpData(this.value, this.times);
   
   toString() => value;
-}
-
-class MockHttpFutures extends HttpFutures {
-  List completersAndValues = [];
-  Future value(x) {
-    var completer = new Completer.sync();
-    completersAndValues.add([completer, x]);
-    return completer.future;
-  }
-
-  trigger() {
-    completersAndValues.forEach((cv) => cv[0].complete(cv[1]));
-    completersAndValues = [];
-  }
 }
 
 class MockHttpBackend extends HttpBackend {

@@ -2,6 +2,7 @@ library ng_specs;
 
 
 import 'dart:html';
+import 'dart:async' as dartAsync;
 import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/debug.dart';
 import 'dart:mirrors' as mirror;
@@ -153,6 +154,21 @@ class Logger implements List {
 
   noSuchMethod(Invocation invocation) => mirror.reflect(_list).delegate(invocation);
 }
+
+List<Function> _asyncQueue = [];
+
+nextTurn() {
+  // copy the queue as it may change.
+  var toRun = new List.from(_asyncQueue);
+  _asyncQueue = [];
+  toRun.forEach((fn) => fn());
+}
+
+async(Function fn) =>
+  () {
+    dartAsync.runZonedExperimental(fn, onRunAsync: (asyncFn) => _asyncQueue.add(asyncFn));
+    expect(_asyncQueue.isEmpty).toBe(true);
+  };
 
 class SpecInjector {
   Injector moduleInjector;

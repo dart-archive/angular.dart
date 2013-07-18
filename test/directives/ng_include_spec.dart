@@ -8,11 +8,7 @@ main() {
 
     beforeEach(beforeEachTestBed((tb) => _ = tb));
 
-    beforeEach(module((AngularModule module) {
-      module.type(HttpFutures, MockHttpFutures);
-    }));
-
-    it('should fetch tempalte from url', inject((Scope scope, TemplateCache cache, HttpFutures futures) {
+    it('should fetch tempalte from url', async(inject((Scope scope, TemplateCache cache) {
       cache.put('tpl.html', new HttpResponse(200, 'my name is {{name}}'));
 
       var element = _.compile('<div ng-include="template"></div>');
@@ -23,9 +19,10 @@ main() {
         scope['name'] = 'Vojta';
         scope['template'] = 'tpl.html';
       });
-      futures.trigger();
+
+      nextTurn();  // load the template from cache.
       expect(element.text()).toEqual('my name is Vojta');
-    }));
+    })));
 
 
     it('should support inlined templates', inject((Scope scope) {

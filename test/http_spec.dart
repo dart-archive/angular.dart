@@ -20,7 +20,6 @@ main() {
     var rewriter, futures, backend, cache;
     beforeEach(() {
       rewriter = new SubstringRewriter();
-      futures = new MockHttpFutures();
       backend = new MockHttpBackend();
       cache = new FakeCache();
     });
@@ -28,7 +27,7 @@ main() {
     it('should rewrite URLs before calling the backend', () {
       backend.expectGET('a', VALUE, times: 1);
 
-      var http = new Http(rewriter, backend, futures);
+      var http = new Http(rewriter, backend);
       var called = 0;
       http.getString('a[not sent to backed]').then((v) {
         expect(v).toBe(VALUE);
@@ -46,7 +45,7 @@ main() {
     it('should support pending requests for different raw URLs', () {
       backend.expectGET('a', VALUE, times: 1);
 
-      var http = new Http(rewriter, backend, futures);
+      var http = new Http(rewriter, backend);
       var called = 0;
       http.getString('a[some string]', cache: cache).then((v) {
         expect(v).toBe(VALUE);
@@ -63,8 +62,8 @@ main() {
       backend.assertAllGetsCalled();
     });
 
-    it('should support caching', () {
-      var http = new Http(rewriter, backend, futures);
+    it('should support caching', async(() {
+      var http = new Http(rewriter, backend);
       var called = 0;
       http.getString('fromCache', cache: cache).then((v) {
         expect(v).toBe(CACHED_VALUE);
@@ -73,25 +72,24 @@ main() {
 
       expect(called).toEqual(0);
       backend.flush();
-      futures.trigger();
+      nextTurn();
 
       expect(called).toEqual(1);
       backend.assertAllGetsCalled();
-    });
+    }));
   });
 
   describe('http caching', () {
-    var rewriter, futures, backend, cache;
+    var rewriter, backend, cache;
     beforeEach(() {
       rewriter = new UrlRewriter();
-      futures = new MockHttpFutures();
       backend = new MockHttpBackend();
       cache = new FakeCache();
     });
     it('should not cache if no cache is present', () {
       backend.expectGET('a', VALUE, times: 2);
 
-      var http = new Http(rewriter, backend, futures);
+      var http = new Http(rewriter, backend);
       var called = 0;
       http.getString('a').then((v) {
         expect(v).toBe(VALUE);
@@ -114,7 +112,7 @@ main() {
     it('should return a pending request', inject(() {
       backend.expectGET('a', VALUE, times: 1);
 
-      var http = new Http(rewriter, backend, futures);
+      var http = new Http(rewriter, backend);
       var called = 0;
       http.getString('a', cache: cache).then((v) {
         expect(v).toBe(VALUE);
@@ -135,7 +133,7 @@ main() {
     it('should not return a pending request after the request is complete', () {
       backend.expectGET('a', VALUE, times: 2);
 
-      var http = new Http(rewriter, backend, futures);
+      var http = new Http(rewriter, backend);
       var called = 0;
       http.getString('a', cache: cache).then((v) {
         expect(v).toBe(VALUE);
@@ -157,8 +155,8 @@ main() {
     });
 
 
-    it('should return a cached value if present', () {
-      var http = new Http(rewriter, backend, futures);
+    it('should return a cached value if present', async(() {
+      var http = new Http(rewriter, backend);
       var called = 0;
       // The URL string 'f' is primed in the FakeCache
       http.getString('f', cache: cache).then((v) {
@@ -168,10 +166,10 @@ main() {
 
       expect(called).toEqual(0);
       backend.flush();
-      futures.trigger();
+      nextTurn();
 
       expect(called).toEqual(1);
       backend.assertAllGetsCalled();
-    });
+    }));
   });
 }
