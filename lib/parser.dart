@@ -486,6 +486,14 @@ class Parser {
     List<Token> tokens = Parser.lex(text);
     Token token;
 
+    parserError(String s, [Token t]) {
+      if (t == null && !tokens.isEmpty) t = tokens[0];
+      String location = t == null ?
+          'the end of the expression' :
+          'at column ${t.index + 1} in';
+      return 'Parser Error: $s $location [$text]';
+    }
+    evalError(String s) => 'Eval Error: $s while evaling [$text]';
 
     Token peekToken() {
       if (tokens.length == 0)
@@ -531,7 +539,7 @@ class Parser {
 
     ParsedFn consume(e1){
       if (expect(e1) == null) {
-        throw "not impl consume error";
+        throw parserError("Missing expected $e1");
         //throwError("is unexpected, expecting [" + e1 + "]", peek());
       }
     }
@@ -553,8 +561,7 @@ class Parser {
         Token token = expect();
         primary = token.primaryFn;
         if (primary == null) {
-          throw "not impl error";
-          //throwError("not a primary expression", token);
+          throw parserError("Internal Angular Error: Unreachable code A.");
         }
       }
 
@@ -571,7 +578,7 @@ class Parser {
           context = primary;
           primary = fieldAccess(primary);
         } else {
-          throw "Impossible.. what?";
+          throw parserError("Internal Angular Error: Unreachable code B.");
         }
       }
       stopSavingTokens(ts);
@@ -662,14 +669,14 @@ class Parser {
     // =========================
 
     ParsedFn assignment() {
+      var ts = saveTokens();
       var left = logicalOR();
+      stopSavingTokens(ts);
       var right;
       var token;
       if ((token = expect('=')) != null) {
         if (!left.assignable) {
-          throw "not impl bad assignment error";
-//          throwError("implies assignment but [" +
-//              text.substring(0, token.index) + "] can not be assigned to", token);
+          throw parserError('Expression ${tokensText(ts)} is not assignable', token);
         }
         right = logicalOR();
         return new ParsedFn((scope, locals) =>
@@ -688,9 +695,9 @@ class Parser {
       var left = expression();
       var token;
       while(true) {
-        if ((token = expect('|') != null)) {
+        if ((token = expect('|')) != null) {
           //left = binaryFn(left, token.fn, filter());
-          throw "not impl filter";
+          throw parserError("Filters are not implemented", token);
         } else {
           return left;
         }
@@ -733,10 +740,10 @@ class Parser {
         }
         var userFn = fn(self, locals);
         if (userFn == null) {
-          throw "Undefined function $fnName";
+          throw evalError("Undefined function $fnName");
         }
         if (userFn is! Function) {
-          throw "$fnName is not a function";
+          throw evalError("$fnName is not a function");
         }
         return relaxFnApply(userFn, args);
       });
@@ -768,7 +775,7 @@ class Parser {
         } else if (o is Map) {
           return o[i.toString()]; // toString dangerous?
         }
-        throw "not impl odd object access";
+        throw evalError("Attempted field access on a non-list, non-map");
       }
 
       setField(o, i, v) {
@@ -779,7 +786,7 @@ class Parser {
         } else if (o is Map) {
           o[i.toString()] = v; // toString dangerous?
         } else {
-          throw "not impl odd object access";
+          throw evalError("Attempting to set a field on a non-list, non-map");
         }
         return v;
       }
@@ -791,7 +798,7 @@ class Parser {
             var o = obj(self, locals),
                 v, p;
 
-            if (o == null) return throw "not impl null obj";  // null
+            if (o == null) return throw evalError('Accessing null object');
 
             v = getField(o, i);
 
@@ -846,7 +853,7 @@ class Parser {
     ParsedFn value = statements();
 
     if (tokens.length != 0) {
-      throw "not impl, error msg $tokens";
+      throw parserError("Unconsumed token ${tokens[0].text}");
     }
     return value;
   }

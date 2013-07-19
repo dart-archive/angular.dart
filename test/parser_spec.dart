@@ -315,6 +315,52 @@ main() {
       expect(eval("'str ' + 4 + 4")).toEqual("str 44");
     });
 
+    expectEval(String expr) => expect(() => eval(expr));
+
+    // PARSER ERRORS
+
+    it('should throw a reasonable error for unconsumed tokens', () {
+      expectEval(")").toThrow('Parser Error: Unconsumed token ) at column 1 in [)]');
+    });
+
+    it('should throw a "not implemented" error for filters', () {
+      expectEval("4|a").toThrow(
+          'Parser Error: Filters are not implemented at column 2 in [4|a]');
+    });
+
+    it('should throw on missing expected token', () {
+      expectEval("a(b").toThrow('Parser Error: Missing expected ) the end of the expression [a(b]');
+    });
+
+    it('should throw on bad assignment', () {
+      expectEval("5=4").toThrow('Parser Error: Expression 5 is not assignable at column 2 in [5=4]');
+      expectEval("array[5=4]").toThrow('Parser Error: Expression 5 is not assignable at column 8 in [array[5=4]]');
+    });
+
+    // EVAL ERRORS
+
+    it('should throw on null object field access', () {
+      expectEval("null[3]").toThrow(
+          "Eval Error: Accessing null object while evaling [null[3]]");
+    });
+
+    it('should throw on non-list, non-map field access', () {
+      expectEval("6[3]").toThrow('Eval Error: Attempted field access on a non-list, non-map while evaling [6[3]]');
+      expectEval("6[3]=2").toThrow('Eval Error: Attempting to set a field on a non-list, non-map while evaling [6[3]=2');
+    });
+
+
+
+    it('should throw on undefined functions', () {
+      expectEval("notAFn()").toThrow('Eval Error: Undefined function notAFn while evaling [notAFn()]');
+    });
+
+    it('should throw on not-function function calls', () {
+      expectEval("4()").toThrow('Eval Error: 4 is not a function while evaling [4()]');
+    });
+
+
+
     //// ==== IMPORTED ITs
 
     it('should parse expressions', () {
@@ -382,10 +428,13 @@ main() {
     });
 
     it('should evaluate assignments', () {
-      scope = {'g': 4};
+      scope = {'g': 4, 'arr': [3,4]};
 
       expect(eval("a=12")).toEqual(12);
       expect(scope["a"]).toEqual(12);
+
+      expect(eval("arr[c=1]")).toEqual(4);
+      expect(scope["c"]).toEqual(1);
 
       expect(eval("x.y.z=123;")).toEqual(123);
       expect(scope["x"]["y"]["z"]).toEqual(123);
