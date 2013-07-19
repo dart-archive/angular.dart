@@ -96,6 +96,16 @@ main() {
 
       expect(STRINGIFY(childCursor.elements[0]), equals('<span>text</span>'));
     });
+
+    it('should preserve the top-level elements', () {
+      var dom = $('<span>text</span>MoreText<div>other</div>');
+      var parentCursor = new NodeCursor(dom);
+
+      var childCursor = parentCursor.replaceWithAnchor('child');
+      expect(STRINGIFY(dom), equals('[<!--ANCHOR: child-->, MoreText, <div>other</div>]'));
+
+      expect(STRINGIFY(childCursor.elements[0]), equals('<span>text</span>'));
+    });
   });
 }
 
