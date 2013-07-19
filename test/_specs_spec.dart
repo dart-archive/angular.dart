@@ -88,6 +88,22 @@ main() {
       })();
     });
 
+    it('should run all the async calls if asked', () {
+      var log = [];
+      async(() {
+        new Future.value('s')
+        .then((_) {
+          log.add('firstThen');
+          new Future.value('t').then((_) {
+            log.add('2ndThen');
+          });
+        });
+        expect(log.join(' ')).toEqual('');
+        nextTurn(true);
+        expect(log.join(' ')).toEqual('firstThen 2ndThen');
+      })();
+    });
+
 
     it('should complain if you dangle callbacks', () {
       expect(() {

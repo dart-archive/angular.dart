@@ -157,11 +157,15 @@ class Logger implements List {
 
 List<Function> _asyncQueue = [];
 
-nextTurn() {
+nextTurn([bool runUntilEmpty = false]) {
   // copy the queue as it may change.
   var toRun = new List.from(_asyncQueue);
   _asyncQueue = [];
   toRun.forEach((fn) => fn());
+
+  if (runUntilEmpty && !_asyncQueue.isEmpty) {
+    nextTurn(runUntilEmpty);
+  }
 }
 
 async(Function fn) =>
