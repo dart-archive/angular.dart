@@ -156,6 +156,7 @@ class Logger implements List {
 }
 
 List<Function> _asyncQueue = [];
+List _asyncErrors = [];
 
 nextTurn([bool runUntilEmpty = false]) {
   // copy the queue as it may change.
@@ -170,7 +171,15 @@ nextTurn([bool runUntilEmpty = false]) {
 
 async(Function fn) =>
   () {
-    dartAsync.runZonedExperimental(fn, onRunAsync: (asyncFn) => _asyncQueue.add(asyncFn));
+    _asyncErrors = [];
+    dartAsync.runZonedExperimental(fn,
+        onRunAsync: (asyncFn) => _asyncQueue.add(asyncFn),
+        onError: (e) => _asyncErrors.add(e));
+
+    _asyncErrors.forEach((e) {
+      throw "During runZoned: $e.  Stack:\n${dartAsync.getAttachedStackTrace(e)}";
+    });
+
     expect(_asyncQueue.isEmpty).toBe(true);
   };
 

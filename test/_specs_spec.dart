@@ -121,5 +121,14 @@ main() {
         })();
       }).toThrow("blah");
     });
+
+
+    it('should complain if the test throws an exception during async calls', () {
+      var ran = false;
+      expect(async(() {
+        new Future.value('s').then((_) { throw "blah then"; });
+        nextTurn(true);
+      })).toThrow("blah then");
+    });
   });
 }
