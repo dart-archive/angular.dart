@@ -322,7 +322,8 @@ class ComponentFactory {
         shadowScope[attrName] = attrValue;
       } else if (mapping == '=') {
         ParsedFn expr = parser(attrValue);
-        var shadowValue;
+        var shadowValue = expr(parentScope);
+        shadowScope[attrName] = shadowValue;
         shadowScope.$watch(
             () => expr(parentScope),
             (v) => shadowScope[attrName] = shadowValue = v);
