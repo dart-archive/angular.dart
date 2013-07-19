@@ -52,8 +52,6 @@ class Block implements ElementWrapper {
   }
 
   _link(List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
-    var stack;
-    try {throw '';} catch(e,s) {stack = s;}
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
 
