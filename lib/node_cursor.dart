@@ -95,8 +95,11 @@ class NodeCursor {
     var nodes = nodeList();
 
     for (var i = 0, ii = nodes.length; i < ii; i++) {
-      nodes[i].remove();
+      // NOTE(deboer): If elements is a list of child nodes on a node, then
+      // calling Node.remove() may also remove it from the list.  Thus, we
+      // call elements.removeAt first so only one node is removed.
       elements.removeAt(index);
+      nodes[i].remove();
     }
 
     return new NodeCursor(nodes);
