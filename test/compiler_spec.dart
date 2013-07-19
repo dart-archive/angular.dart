@@ -456,6 +456,18 @@ main() {
         expect($rootScope.done).toEqual(true);
       }));
 
+      it('should create a component with IO and "=" binding value should be available', inject(() {
+        $rootScope.name = 'misko';
+        var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
+        $compile(element)(injector, element);
+        var component = $rootScope.ioComponent;
+        expect(component.scope.expr).toEqual('misko');
+        $rootScope.$apply();
+        component.scope.expr = 'angular';
+        $rootScope.$apply();
+        expect($rootScope.name).toEqual('angular');
+      }));
+
       it('should expose mapped attributes as camel case', inject(() {
         var element = $('<camel-case-map camel-case=6></camel-case-map>');
         $compile(element)(injector, element);
