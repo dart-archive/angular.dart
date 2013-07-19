@@ -45,35 +45,31 @@ main() {
   }));
 
   describe('shadow dom options', () {
-    it('should respect the apply-author-style option', inject(() {
+    it('should respect the apply-author-style option', async(inject(() {
       var element = $(
           '<style>div { border: 3px solid green }</style>' +
           '<apply-author-style>not included</apply-author-style>' +
           '<default-options>not included</default-options>');
       element.forEach((elt) { document.body.append(elt); }); // we need the computed style.
       $compile(element)(injector, element);
-      ApplyAuthorStyleComponent.lastTemplateLoader.then(expectAsync1((_) {
-        expect(element[1].shadowRoot.query('div').getComputedStyle().border).toContain('3px solid');
-      }));
-      DefaultOptionsComponent.lastTemplateLoader.then(expectAsync1((_) {
-        // ""0px none"" is the default style.
-        expect(element[2].shadowRoot.query('div').getComputedStyle().border).toContain('0px none');
-      }));
-    }));
 
-    it('should respect the reset-style-inheritance option', inject(() {
+      nextTurn();
+      expect(element[1].shadowRoot.query('div').getComputedStyle().border).toContain('3px solid');
+      // ""0px none"" is the default style.
+      expect(element[2].shadowRoot.query('div').getComputedStyle().border).toContain('0px none');
+    })));
+
+    it('should respect the reset-style-inheritance option', async(inject(() {
       var element = $(
           '<style>body { font-size: 20px; }</style>' +  // font-size inherit's by default
           '<reset-style-inheritance>not included</reset-style-inheritance>' +
           '<default-options>not included</default-options>');
       element.forEach((elt) { document.body.append(elt); }); // we need the computed style.
       $compile(element)(injector, element);
-      ResetStyleInheritanceComponent.lastTemplateLoader.then(expectAsync1((_) {
-        expect(element[1].shadowRoot.query('div').getComputedStyle().fontSize).toEqual('16px');
-      }));
-      DefaultOptionsComponent.lastTemplateLoader.then(expectAsync1((_) {
-        expect(element[2].shadowRoot.query('div').getComputedStyle().fontSize).toEqual('20px');
-      }));
-    }));
+
+      nextTurn();
+      expect(element[1].shadowRoot.query('div').getComputedStyle().fontSize).toEqual('16px');
+      expect(element[2].shadowRoot.query('div').getComputedStyle().fontSize).toEqual('20px');
+    })));
   });
 }

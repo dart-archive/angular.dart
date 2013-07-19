@@ -397,7 +397,7 @@ main() {
         module.directive(PublishMeComponent);
       }));
 
-      it('should create a simple component', inject(() {
+      it('should create a simple component', async(inject(() {
         $rootScope.name = 'OUTTER';
         $rootScope.sep = '-';
         var element = $(r'<div>{{name}}{{sep}}{{$id}}:<simple>{{name}}{{sep}}{{$id}}</simple></div>');
@@ -405,39 +405,37 @@ main() {
         Block block = blockType(injector, element);
         $rootScope.$digest();
 
-        SimpleComponent.lastTemplateLoader.template.then(expectAsync1((_) {
-          expect(element.textWithShadow()).toEqual('OUTTER-_1:INNER_2(OUTTER-_1)');
-        }));
-      }));
+        nextTurn();
+        expect(element.textWithShadow()).toEqual('OUTTER-_1:INNER_2(OUTTER-_1)');
+      })));
 
-      it('should create a component that can access parent scope', inject(() {
+      it('should create a component that can access parent scope', async(inject(() {
         $rootScope.fromParent = "should not be used";
         $rootScope.val = "poof";
         var element = $('<parent-expression from-parent=val></parent-expression>');
 
         $compile(element)(injector, element);
 
-        ParentExpressionComponent.lastTemplateLoader.template.then(expectAsync1((_) {
-          expect(renderedText(element)).toEqual('inside poof');
-        }));
-      }));
+        nextTurn();
+        expect(renderedText(element)).toEqual('inside poof');
+      })));
 
-      it('should behave nicely if a mapped attribute is missing', inject(() {
+      it('should behave nicely if a mapped attribute is missing', async(inject(() {
         var element = $('<parent-expression></parent-expression>');
         $compile(element)(injector, element);
-        ParentExpressionComponent.lastTemplateLoader.template.then(expectAsync1((_) {
-          expect(renderedText(element)).toEqual('inside ');
-        }));
-      }));
 
-      it('should behave nicely if a mapped attribute evals to null', inject(() {
+        nextTurn();
+        expect(renderedText(element)).toEqual('inside ');
+      })));
+
+      it('should behave nicely if a mapped attribute evals to null', async(inject(() {
         $rootScope.val = null;
         var element = $('<parent-expression fromParent=val></parent-expression>');
         $compile(element)(injector, element);
-        ParentExpressionComponent.lastTemplateLoader.template.then(expectAsync1((_) {
-          expect(renderedText(element)).toEqual('inside ');
-        }));
-      }));
+
+        nextTurn();
+        expect(renderedText(element)).toEqual('inside ');
+      })));
 
       it('should create a component with IO', inject(() {
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
@@ -471,14 +469,14 @@ main() {
         }, throwsA(contains('No provider found for LocalAttrDirective! (resolving LocalAttrDirective)')));
       }));
 
-      it('should publish component controller into the scope', inject(() {
+      it('should publish component controller into the scope', async(inject(() {
         var element = $(r'<div><publish-me></publish-me></div>');
         $compile(element)(injector, element);
         $rootScope.$apply();
-        PublishMeComponent.lastTemplateLoader.template.then(expectAsync1((_) {
-          expect(element.textWithShadow()).toEqual('WORKED');
-        }));
-      }));
+
+        nextTurn();
+        expect(element.textWithShadow()).toEqual('WORKED');
+      })));
     });
 
     describe('controller scoping', () {
@@ -502,10 +500,8 @@ main() {
 
 class SimpleComponent {
   static String $template = r'{{name}}{{sep}}{{$id}}(<content>SHADOW-CONTENT</content>)';
-  static TemplateLoader lastTemplateLoader;
   SimpleComponent(Scope scope, TemplateLoader templateLoader) {
     scope.name = 'INNER';
-    lastTemplateLoader = templateLoader;
   }
 }
 
@@ -529,19 +525,11 @@ class CamelCaseMapComponent {
 class ParentExpressionComponent {
   static String $template = '<div>inside {{fromParent()}}</div>';
   static Map $map = {"fromParent": "&"};
-  static TemplateLoader lastTemplateLoader;
-  ParentExpressionComponent(Scope shadowScope, TemplateLoader templateLoader) {
-    lastTemplateLoader = templateLoader;
-  }
 }
 
 class PublishMeComponent {
   static String $template = r'<content>{{ctrlName.value}}</content>';
   static String $publishAs = 'ctrlName';
-  static TemplateLoader lastTemplateLoader;
 
   String value = 'WORKED';
-  PublishMeComponent(TemplateLoader templateLoader) {
-    lastTemplateLoader = templateLoader;
-  }
 }
