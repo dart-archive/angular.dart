@@ -1,9 +1,7 @@
 part of angular;
 
-
+@NgDirective(transclude: '.', priority: 100)
 class NgIfAttrDirective {
-  static var $priority = 100;
-  static String $transclude = 'element';
 
   NgIfAttrDirective(NodeAttrs attrs, Injector injector, BlockList blockList, dom.Node node, Scope scope) {
     var _block;

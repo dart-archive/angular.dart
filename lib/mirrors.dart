@@ -28,3 +28,9 @@ reflectStaticField(Type type, String field) {
   if (fieldReflection == null) return null;
   return fieldReflection.reflectee;
 }
+
+// TODO(pavelgj): cache.
+Iterable reflectMetadata(Type type, Type metadata) =>
+    fastReflectClass(type).metadata.where(
+        (InstanceMirror im) => im.reflectee.runtimeType == metadata)
+            .map((InstanceMirror im) => im.reflectee);

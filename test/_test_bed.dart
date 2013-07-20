@@ -51,9 +51,8 @@ beforeEachTestBed(assign) {
  *
  *    rootScope.myProbe.directive(SomeAttrDirective);
  */
+@NgDirective(selector: '[probe]')
 class Probe {
-  static String $selector = '[probe]';
-
   Scope scope;
   Injector injector;
   Element element;

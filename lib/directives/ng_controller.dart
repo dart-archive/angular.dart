@@ -1,7 +1,7 @@
 part of angular;
 
+@NgDirective(transclude: '.')
 class NgControllerAttrDirective {
-  static String $transclude = 'element';
   static RegExp CTRL_REGEXP = new RegExp(r'^(\S+)(\s+as\s+(\w+))?$');
 
   Symbol ctrlSymbol;

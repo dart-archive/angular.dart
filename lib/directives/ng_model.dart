@@ -10,9 +10,8 @@ part of angular;
  * knwos how to (in)validate the model and the form in which it is declared
  * (to be implemented)
  */
+@NgDirective(selector: '[ng-model]')
 class NgModel {
-  static String $selector = '[ng-model]';
-
   Scope scope;
   ParsedFn getter;
   ParsedAssignFn setter;

@@ -1,8 +1,7 @@
 part of angular;
 
+@NgDirective(selector: r':contains(/{{.*}}/)')
 class NgTextMustacheDirective {
-  static String $selector = r':contains(/{{.*}}/)';
-
   dom.Node element;
   ParsedFn interpolateFn;
 
@@ -14,8 +13,8 @@ class NgTextMustacheDirective {
 
 }
 
+@NgDirective(selector: r'[*=/{{.*}}/]')
 class NgAttrMustacheDirective {
-  static String $selector = r'[*=/{{.*}}/]';
   static RegExp ATTR_NAME_VALUE_REGEXP = new RegExp(r'^([^=]+)=(.*)$');
 
   NgAttrMustacheDirective(dom.Element element, NodeAttrs attrs, Interpolate interpolate, Scope scope) {

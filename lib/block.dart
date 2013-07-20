@@ -98,9 +98,9 @@ class Block implements ElementWrapper {
     directiveRefs.forEach((DirectiveRef ref) {
       Type type = ref.directive.type;
       var visibility = elementOnly;
-      if (ref.directive.$visibility == DirectiveVisibility.CHILDREN) {
+      if (ref.directive.$visibility == NgDirective.CHILDREN_VISIBILITY) {
         visibility = null;
-      } else if (ref.directive.$visibility == DirectiveVisibility.DIRECT_CHILDREN) {
+      } else if (ref.directive.$visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
         visibility = elementDirectChildren;
       }
       if (ref.directive.isComponent) {
@@ -269,9 +269,9 @@ class ComponentFactory {
     this.compiler = compiler;
     shadowDom = element.createShadowRoot();
     shadowDom.applyAuthorStyles =
-        directive.$shadowRootOptions.$applyAuthorStyles;
+        directive.$shadowRootOptions.applyAuthorStyles;
     shadowDom.resetStyleInheritance =
-        directive.$shadowRootOptions.$resetStyleInheritance;
+        directive.$shadowRootOptions.resetStyleInheritance;
 
     shadowScope = scope.$new(true);
     createAttributeMapping(scope, shadowScope, parser);
