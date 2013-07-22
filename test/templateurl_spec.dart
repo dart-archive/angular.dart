@@ -2,30 +2,28 @@ import "_specs.dart";
 import "_log.dart";
 import "_http.dart";
 
+@NgDirective(priority: 0)
 class LogAttrDirective {
-  static var $priority = 0;
   Log log;
   LogAttrDirective(Log this.log, NodeAttrs attrs) {
     log(attrs[this] == "" ? "LOG" : attrs[this]);
   }
 }
 
+@NgComponent(templateUrl: 'simple.html')
 class SimpleUrlComponent {
-  static String $templateUrl = 'simple.html';
 }
 
+@NgComponent(templateUrl: 'simple.html', cssUrl: 'simple.css')
 class HtmlAndCssComponent {
-  static String $templateUrl = 'simple.html';
-  static String $cssUrl = 'simple.css';
 }
 
+@NgComponent(template: '<div>inline!</div>', cssUrl: 'simple.css')
 class InlineWithCssComponent {
-  static String $template = '<div>inline!</div>';
-  static String $cssUrl = 'simple.css';
 }
 
+@NgComponent(cssUrl: 'simple.css')
 class OnlyCssComponent {
-  static String $cssUrl = 'simple.css';
 }
 
 class PrefixedUrlRewriter extends UrlRewriter {
@@ -70,7 +68,7 @@ main() {
       module.directive(OnlyCssComponent);
       module.directive(InlineWithCssComponent);
     }));
-    
+
     afterEach(inject((MockHttp $http) {
       $http.assertAllGetsCalled();
     }));

@@ -1,8 +1,7 @@
 import "_specs.dart";
 
+@NgDirective(transclude: '.', selector: 'foo')
 class LoggerBlockDirective {
-  static String $name = 'foo';
-  static String $transclude = '.';
   LoggerBlockDirective(BlockList list, Logger logger) {
     if (list == null) {
       throw new ArgumentError('BlockList must be injected.');
@@ -12,16 +11,16 @@ class LoggerBlockDirective {
 }
 
 class ReplaceBlockDirective {
-  ReplaceBlockDirective(BlockList list, Node node) {
-    var block = list.newBlock();
+  ReplaceBlockDirective(BlockList list, Node node, Scope scope) {
+    var block = list.newBlock(scope);
     block.insertAfter(list);
     node.remove();
   }
 }
 
 class ShadowBlockDirective {
-  ShadowBlockDirective(BlockList list, Element element) {
-    var block = list.newBlock();
+  ShadowBlockDirective(BlockList list, Element element, Scope scope) {
+    var block = list.newBlock(scope);
     var shadowRoot = element.createShadowRoot();
     for (var i = 0, ii = block.elements.length; i < ii; i++) {
       shadowRoot.append(block.elements[i]);

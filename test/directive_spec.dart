@@ -4,19 +4,22 @@ import "_specs.dart";
 class SomeDirective { }
 class AnotherAttrDirective { }
 
+@NgDirective(transclude: 'true')
 class TranscludeDirective {
-  static var $transclude = "true";
 }
 
+@NgDirective(transclude: null)
 class ExplicitNullTranscludeDirective {
-  static var $transclude = null;
 }
 
 class WithDefaultShadowRootOptionsComponent {
 }
 
+@NgComponent(
+    applyAuthorStyles: true,
+    resetStyleInheritance: true
+)
 class WithCustomShadowRootOptionsComponent {
-  static var $shadowRootOptions = new ShadowRootOptions(true, true);
 }
 
 main() {
@@ -48,14 +51,14 @@ main() {
 
     it('should default \$shadowRootOptions to false/false', () {
       Directive factory = new Directive(WithDefaultShadowRootOptionsComponent);
-      expect(factory.$shadowRootOptions.$applyAuthorStyles, isFalse);
-      expect(factory.$shadowRootOptions.$resetStyleInheritance, isFalse);
+      expect(factory.$shadowRootOptions.applyAuthorStyles, isFalse);
+      expect(factory.$shadowRootOptions.resetStyleInheritance, isFalse);
     });
 
     it('should override \$shadowRootOptions with values provided by component type', () {
       Directive factory = new Directive(WithCustomShadowRootOptionsComponent);
-      expect(factory.$shadowRootOptions.$applyAuthorStyles, isTrue);
-      expect(factory.$shadowRootOptions.$resetStyleInheritance, isTrue);
+      expect(factory.$shadowRootOptions.applyAuthorStyles, isTrue);
+      expect(factory.$shadowRootOptions.resetStyleInheritance, isTrue);
     });
   });
 }

@@ -3,8 +3,8 @@ import "_log.dart";
 import "dart:mirrors";
 
 
+@NgComponent(visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY)
 class TabComponent {
-  static String $visibility = DirectiveVisibility.DIRECT_CHILDREN;
   int id = 0;
   Log log;
   LocalAttrDirective local;
@@ -24,8 +24,8 @@ class PaneComponent {
   }
 }
 
+@NgDirective(visibility: NgDirective.LOCAL_VISIBILITY)
 class LocalAttrDirective {
-  static String $visibility = DirectiveVisibility.LOCAL;
   int id = 0;
   Log log;
   LocalAttrDirective(Log this.log);
@@ -34,10 +34,8 @@ class LocalAttrDirective {
   }
 }
 
+@NgDirective(visibility: NgDirective.CHILDREN_VISIBILITY, transclude: '.')
 class SimpleTranscludeInAttachAttrDirective {
-  static String $transclude = '.';
-  static String $visibility = DirectiveVisibility.CHILDREN;
-
   Log log;
   BlockList blockList;
 
@@ -510,16 +508,24 @@ main() {
   });
 }
 
+@NgComponent(
+    template: r'{{name}}{{sep}}{{$id}}(<content>SHADOW-CONTENT</content>)'
+)
 class SimpleComponent {
-  static String $template = r'{{name}}{{sep}}{{$id}}(<content>SHADOW-CONTENT</content>)';
-  SimpleComponent(Scope scope, TemplateLoader templateLoader) {
+  SimpleComponent(Scope scope) {
     scope.name = 'INNER';
   }
 }
 
+@NgComponent(
+    template: r'<content></content>',
+    map: const {
+      'attr': '@',
+      'expr': '=',
+      'ondone': '&',
+    }
+)
 class IoComponent {
-  static String $template = r'<content></content>';
-  static Map $map = {"attr": "@", "expr": "=", "ondone": "&"};
   Scope scope;
   IoComponent(Scope scope) {
     this.scope = scope;
@@ -527,21 +533,30 @@ class IoComponent {
   }
 }
 
+@NgComponent(
+    map: const {
+      'camelCase': '@',
+    }
+)
 class CamelCaseMapComponent {
-  static Map $map = {"camelCase": "@"};
   CamelCaseMapComponent(Scope scope) {
     scope.$root.camelCase = scope;
   }
 }
 
+@NgComponent(
+    template: '<div>inside {{fromParent()}}</div>',
+    map: const {
+      'fromParent': '&',
+    }
+)
 class ParentExpressionComponent {
-  static String $template = '<div>inside {{fromParent()}}</div>';
-  static Map $map = {"fromParent": "&"};
 }
 
+@NgComponent(
+    template: r'<content>{{ctrlName.value}}</content>',
+    publishAs: 'ctrlName'
+)
 class PublishMeComponent {
-  static String $template = r'<content>{{ctrlName.value}}</content>';
-  static String $publishAs = 'ctrlName';
-
   String value = 'WORKED';
 }

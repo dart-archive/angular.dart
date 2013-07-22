@@ -1,25 +1,30 @@
 import "_specs.dart";
 
+@NgComponent(
+    template: '<div class="c">Reset me foo</div>',
+    applyAuthorStyles: false,
+    resetStyleInheritance: true
+)
 class ResetStyleInheritanceComponent {
-  static String $template = '<div class="c">Reset me foo</div>';
-  static var $shadowRootOptions = new ShadowRootOptions(false, true);
   static var lastTemplateLoader;
   ResetStyleInheritanceComponent(Element elt, TemplateLoader tl) {
     lastTemplateLoader = tl.template;
   }
 }
 
+@NgComponent(
+    template: '<div>Style me foo</div>',
+    applyAuthorStyles: true
+)
 class ApplyAuthorStyleComponent {
-  static String $template = '<div>Style me foo</div>';
-  static var $shadowRootOptions = new ShadowRootOptions(true);
   static var lastTemplateLoader;
   ApplyAuthorStyleComponent(Element elt, TemplateLoader tl) {
     lastTemplateLoader = tl.template;
   }
 }
 
+@NgComponent(template: '<div class="c">Style me foo</div>')
 class DefaultOptionsComponent {
-  static String $template = '<div class="c">Style me foo</div>';
   static var lastTemplateLoader;
   DefaultOptionsComponent(Element elt, TemplateLoader tl) {
     lastTemplateLoader = tl.template;

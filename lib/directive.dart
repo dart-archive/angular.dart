@@ -4,6 +4,58 @@ String _COMPONENT = '-component';
 String _DIRECTIVE = '-directive';
 String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
 
+class NgComponent {
+  final String template;
+  final String templateUrl;
+  final String cssUrl;
+  final String visibility;
+  final Map<String, String> map;
+  final String publishAs;
+  final bool applyAuthorStyles;
+  final bool resetStyleInheritance;
+
+  const NgComponent({
+    this.template,
+    this.templateUrl,
+    this.cssUrl,
+    this.visibility: NgDirective.LOCAL_VISIBILITY,
+    this.map,
+    this.publishAs,
+    this.applyAuthorStyles,
+    this.resetStyleInheritance
+  });
+}
+
+class NgDirective {
+  static const String LOCAL_VISIBILITY = 'local';
+  static const String CHILDREN_VISIBILITY = 'children';
+  static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
+
+  final String selector;
+  final String transclude;
+  final int priority;
+  final String visibility;
+
+  const NgDirective({
+    this.selector,
+    this.transclude,
+    this.priority : 0,
+    this.visibility: LOCAL_VISIBILITY
+  });
+}
+
+/**
+ * See:
+ * http://www.html5rocks.com/en/tutorials/webcomponents/shadowdom-201/#toc-style-inheriting
+ */
+class NgShadowRootOptions {
+  final bool applyAuthorStyles;
+  final bool resetStyleInheritance;
+  const NgShadowRootOptions([this.applyAuthorStyles = false,
+                             this.resetStyleInheritance = false]);
+}
+
+// TODO(pavelgj): Get rid of Directive and use NgComponent/NgDirective directly.
 class Directive {
   Type type;
   // TODO(misko): this should be renamed to selector once we change over to meta-data.
@@ -11,14 +63,13 @@ class Directive {
   Function $generate;
   String $transclude;
   int $priority = 0;
-  Type $controllerType;
   String $template;
   String $templateUrl;
   String $cssUrl;
   String $publishAs;
   Map<String, String> $map;
   String $visibility;
-  ShadowRootOptions $shadowRootOptions;
+  NgShadowRootOptions $shadowRootOptions = new NgShadowRootOptions();
 
   bool isComponent = false;
   bool isStructural = false;
@@ -31,9 +82,32 @@ class Directive {
         onMatch: (m) => '-' + m.group(0).toLowerCase())
       .substring(1);
 
-    var $selector = reflectStaticField(type, r'$selector');
-    if ($selector != null) {
-      $name = $selector;
+    var directive = _reflectSingleMetadata(type, NgDirective);
+    var component = _reflectSingleMetadata(type, NgComponent);
+    if (directive != null && component != null) {
+      throw 'Cannot have both NgDirective and NgComponent annotations.';
+    }
+
+    var selector;
+    if (directive != null) {
+      selector = directive.selector;
+      $transclude = directive.transclude;
+      $priority = directive.priority;
+      $visibility = directive.visibility;
+    }
+    if (component != null) {
+      $template = component.template;
+      $templateUrl = component.templateUrl;
+      $cssUrl = component.cssUrl;
+      $visibility = component.visibility;
+      $map = component.map;
+      $publishAs = component.publishAs;
+      $shadowRootOptions = new NgShadowRootOptions(component.applyAuthorStyles,
+          component.resetStyleInheritance);
+    }
+
+    if (selector != null) {
+      $name = selector;
     } else if ($name.endsWith(_ATTR_DIRECTIVE)) {
       $name = '[${$name.substring(0, $name.length - _ATTR_DIRECTIVE.length)}]';
     } else if ($name.endsWith(_DIRECTIVE)) {
@@ -45,28 +119,22 @@ class Directive {
       throw "Directive name '$name' must end with $_DIRECTIVE, $_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
     }
 
-    // Check the $transclude.
-    // TODO(deboer): I'm not a fan of 'null' as a configuration value.
-    // It would be awesome if $transclude could be an enum.
-    $transclude = reflectStaticField(type, '\$transclude');
-    $template = reflectStaticField(type, '\$template');
-    $templateUrl = reflectStaticField(type, '\$templateUrl');
-    $cssUrl = reflectStaticField(type, '\$cssUrl');
-    $priority = _defaultIfNull(reflectStaticField(type, '\$priority'), 0);
-    $visibility = _defaultIfNull(
-        reflectStaticField(type, '\$visibility'), DirectiveVisibility.LOCAL);
-    $map = reflectStaticField(type, '\$map');
-    $publishAs = reflectStaticField(type, r'$publishAs');
     isStructural = $transclude != null;
     if (isComponent && $map == null) {
       $map = new Map<String, String>();
     }
-    if (isComponent) {
-      $shadowRootOptions = _defaultIfNull(
-          reflectStaticField(type, '\$shadowRootOptions'),
-          new ShadowRootOptions());
-    }
   }
+}
+
+_reflectSingleMetadata(Type type, Type metadataType) {
+  var metadata = reflectMetadata(type, metadataType);
+  if (metadata.length == 0) {
+    return null;
+  }
+  if (metadata.length > 1) {
+    throw 'Expecting not more than one annotation of type $metadataType';
+  }
+  return metadata.first;
 }
 
 dynamic _defaultIfNull(dynamic value, dynamic defaultValue) =>
@@ -111,23 +179,6 @@ class DirectiveRegistry {
       throw new ArgumentError('Unknown selector: $selector');
     }
   }
-}
-
-abstract class DirectiveVisibility {
-  static const String LOCAL = 'local';
-  static const String CHILDREN = 'children';
-  static const String DIRECT_CHILDREN = 'direct_children';
-}
-
-/**
- * See:
- * http://www.html5rocks.com/en/tutorials/webcomponents/shadowdom-201/#toc-style-inheriting
- */
-class ShadowRootOptions {
-  bool $applyAuthorStyles = false;
-  bool $resetStyleInheritance = false;
-  ShadowRootOptions([this.$applyAuthorStyles = false,
-                     this.$resetStyleInheritance = false]);
 }
 
 class Controller {
