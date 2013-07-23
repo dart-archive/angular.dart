@@ -4,11 +4,20 @@ String _COMPONENT = '-component';
 String _DIRECTIVE = '-directive';
 String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
 
-class NgComponent {
+class NgAnnotationBase {
+  final String visibility;
+  final List<Type> publishTypes;
+
+  const NgAnnotationBase({
+    this.visibility: NgDirective.LOCAL_VISIBILITY,
+    this.publishTypes
+  });
+}
+
+class NgComponent extends NgAnnotationBase {
   final String template;
   final String templateUrl;
   final String cssUrl;
-  final String visibility;
   final Map<String, String> map;
   final String publishAs;
   final bool applyAuthorStyles;
@@ -18,15 +27,16 @@ class NgComponent {
     this.template,
     this.templateUrl,
     this.cssUrl,
-    this.visibility: NgDirective.LOCAL_VISIBILITY,
+    visibility,
     this.map,
     this.publishAs,
     this.applyAuthorStyles,
-    this.resetStyleInheritance
-  });
+    this.resetStyleInheritance,
+    publishTypes : const <Type>[]
+  }) : super(visibility: visibility, publishTypes: publishTypes);
 }
 
-class NgDirective {
+class NgDirective extends NgAnnotationBase {
   static const String LOCAL_VISIBILITY = 'local';
   static const String CHILDREN_VISIBILITY = 'children';
   static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
@@ -34,14 +44,14 @@ class NgDirective {
   final String selector;
   final String transclude;
   final int priority;
-  final String visibility;
 
   const NgDirective({
     this.selector,
     this.transclude,
     this.priority : 0,
-    this.visibility: LOCAL_VISIBILITY
-  });
+    visibility,
+    publishTypes : const <Type>[]
+  }) : super(visibility: visibility, publishTypes: publishTypes);
 }
 
 /**
@@ -54,6 +64,8 @@ class NgShadowRootOptions {
   const NgShadowRootOptions([this.applyAuthorStyles = false,
                              this.resetStyleInheritance = false]);
 }
+
+Map<Type, Directive> _directiveCache = new Map<Type, Directive>();
 
 // TODO(pavelgj): Get rid of Directive and use NgComponent/NgDirective directly.
 class Directive {
@@ -70,14 +82,23 @@ class Directive {
   Map<String, String> $map;
   String $visibility;
   NgShadowRootOptions $shadowRootOptions = new NgShadowRootOptions();
+  List<Type> $publishTypes = <Type>[];
 
   bool isComponent = false;
   bool isStructural = false;
 
-  Directive(this.type) {
+  Directive._new(Type this.type);
+
+  factory Directive(Type type) {
+    var instance = _directiveCache[type];
+    if (instance != null) {
+      return instance;
+    }
+
+    instance = new Directive._new(type);
     var name = type.toString();
     var isAttr = false;
-    $name = name.splitMapJoin(
+    instance.$name = name.splitMapJoin(
         new RegExp(r'[A-Z]'),
         onMatch: (m) => '-' + m.group(0).toLowerCase())
       .substring(1);
@@ -91,38 +112,48 @@ class Directive {
     var selector;
     if (directive != null) {
       selector = directive.selector;
-      $transclude = directive.transclude;
-      $priority = directive.priority;
-      $visibility = directive.visibility;
+      instance.$transclude = directive.transclude;
+      instance.$priority = directive.priority;
+      instance.$visibility = directive.visibility;
+      instance.$publishTypes = directive.publishTypes;
     }
     if (component != null) {
-      $template = component.template;
-      $templateUrl = component.templateUrl;
-      $cssUrl = component.cssUrl;
-      $visibility = component.visibility;
-      $map = component.map;
-      $publishAs = component.publishAs;
-      $shadowRootOptions = new NgShadowRootOptions(component.applyAuthorStyles,
-          component.resetStyleInheritance);
+      instance.$template = component.template;
+      instance.$templateUrl = component.templateUrl;
+      instance.$cssUrl = component.cssUrl;
+      instance.$visibility = component.visibility;
+      instance.$map = component.map;
+      instance.$publishAs = component.publishAs;
+      instance.$shadowRootOptions =
+          new NgShadowRootOptions(component.applyAuthorStyles,
+                                  component.resetStyleInheritance);
+      instance.$publishTypes = component.publishTypes;
     }
 
     if (selector != null) {
-      $name = selector;
-    } else if ($name.endsWith(_ATTR_DIRECTIVE)) {
-      $name = '[${$name.substring(0, $name.length - _ATTR_DIRECTIVE.length)}]';
-    } else if ($name.endsWith(_DIRECTIVE)) {
-      $name = $name.substring(0, $name.length - _DIRECTIVE.length);
-    } else if ($name.endsWith(_COMPONENT)) {
-      isComponent = true;
-      $name = $name.substring(0, $name.length - _COMPONENT.length);
+      instance.$name = selector;
+    } else if (instance.$name.endsWith(_ATTR_DIRECTIVE)) {
+      var attrName = instance.$name.
+          substring(0, instance.$name.length - _ATTR_DIRECTIVE.length);
+      instance.$name = '[$attrName]';
+    } else if (instance.$name.endsWith(_DIRECTIVE)) {
+      instance.$name = instance.$name.
+          substring(0, instance.$name.length - _DIRECTIVE.length);
+    } else if (instance.$name.endsWith(_COMPONENT)) {
+      instance.isComponent = true;
+      instance.$name = instance.$name.
+          substring(0, instance.$name.length - _COMPONENT.length);
     } else {
-      throw "Directive name '$name' must end with $_DIRECTIVE, $_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
+      throw "Directive name '$name' must end with $_DIRECTIVE, "
+            "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
     }
 
-    isStructural = $transclude != null;
-    if (isComponent && $map == null) {
-      $map = new Map<String, String>();
+    instance.isStructural = instance.$transclude != null;
+    if (instance.isComponent && instance.$map == null) {
+      instance.$map = new Map<String, String>();
     }
+    _directiveCache[type] = instance;
+    return instance;
   }
 }
 

@@ -30,7 +30,16 @@ reflectStaticField(Type type, String field) {
 }
 
 // TODO(pavelgj): cache.
-Iterable reflectMetadata(Type type, Type metadata) =>
-    fastReflectClass(type).metadata.where(
-        (InstanceMirror im) => im.reflectee.runtimeType == metadata)
-            .map((InstanceMirror im) => im.reflectee);
+Iterable reflectMetadata(Type type, Type metadata) {
+  var meta;
+  try {
+    meta = fastReflectClass(type).metadata;
+  } catch(e) {
+    // TODO(pavelgj): A temporary workaround for http://dartbug.com/11960
+    if (e.message == 'Function.prototype.toString is not generic') {
+      meta = [];
+    }
+  }
+  return meta.where((InstanceMirror im) => im.reflectee.runtimeType == metadata)
+        .map((InstanceMirror im) => im.reflectee);
+}

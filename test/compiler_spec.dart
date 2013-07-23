@@ -54,6 +54,17 @@ class IncludeTranscludeAttrDirective {
   }
 }
 
+class PublishTypesDirectiveSuperType {
+}
+
+@NgDirective(publishTypes: const [PublishTypesDirectiveSuperType])
+class PublishTypesAttrDirective implements PublishTypesDirectiveSuperType {
+  static Injector _injector;
+  PublishTypesAttrDirective(Injector injector) {
+    _injector = injector;
+  }
+}
+
 main() {
 
   describe('dte.compiler', () {
@@ -65,6 +76,7 @@ main() {
     beforeEach(module((AngularModule module) {
       module
         ..directive(TabComponent)
+        ..directive(PublishTypesAttrDirective)
         ..directive(PaneComponent)
         ..directive(SimpleTranscludeInAttachAttrDirective)
         ..directive(IncludeTranscludeAttrDirective)
@@ -487,6 +499,13 @@ main() {
         nextTurn();
         expect(element.textWithShadow()).toEqual('WORKED');
       })));
+
+      it('should "publish" controller to injector under provided publishTypes', inject(() {
+        var element = $(r'<div publish-types></div>');
+        $compile(element)(injector, element);
+        expect(PublishTypesAttrDirective._injector.get(PublishTypesAttrDirective)).
+            toBe(PublishTypesAttrDirective._injector.get(PublishTypesDirectiveSuperType));
+      }));
     });
 
     describe('controller scoping', () {
