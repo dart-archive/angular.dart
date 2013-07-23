@@ -38,9 +38,8 @@ class NgModel {
  * The UI portion of the ng-model directive. This directive registers the UI
  * events and provides a rendering function for the ng-model directive.
  */
+@NgDirective(selector: 'input[ng-model]')
 class InputDirective {
-  static String $selector = 'input[ng-model]';
-
   dom.InputElement inputElement;
   NgModel ngModel;
   Scope scope;
