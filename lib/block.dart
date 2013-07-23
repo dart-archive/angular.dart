@@ -112,6 +112,11 @@ class Block implements ElementWrapper {
       } else {
         nodeModule.type(type, type, visibility: visibility);
       }
+      for (var publishType in ref.directive.$publishTypes) {
+        nodeModule.factory(publishType,
+            (Injector injector) => injector.get(type),
+            visibility: visibility);
+      }
       nodeAttrs[ref.directive.$name] = ref.value;
       if (ref.directive.isStructural) {
         blockListFactory = (Injector injector) => $blockListFactory([node], ref.blockTypes, injector);
