@@ -9,8 +9,6 @@ import 'package:di/di.dart';
 import 'debug.dart';
 
 part 'block.dart';
-part 'block_list.dart';
-part 'block_type.dart';
 part 'cache.dart';
 part 'compiler.dart';
 part 'directive.dart';
