@@ -1,11 +1,10 @@
 part of angular;
 
 class BlockListFactory {
-  Scope $rootScope;
-  BlockListFactory(Scope this.$rootScope);
+  BlockListFactory();
 
   BlockList call(List<dom.Node> elements, Map<String, BlockType> blockTypes, Injector injector) {
-    return new BlockList($rootScope, elements, blockTypes, injector);
+    return new BlockList(elements, blockTypes, injector);
   }
 }
 
@@ -15,7 +14,6 @@ class BlockListFactory {
  * which allows more blocks to be added.
  */
 class BlockList extends ElementWrapper {
-  Scope $rootScope;
   List<dom.Node> elements;
   Map<String, BlockType> blockTypes;
   Injector injector;
@@ -23,7 +21,7 @@ class BlockList extends ElementWrapper {
   ElementWrapper previous;
   ElementWrapper next;
 
-  BlockList(Scope this.$rootScope, List<dom.Node> this.elements,
+  BlockList(List<dom.Node> this.elements,
             Map<String, BlockType> this.blockTypes, Injector this.injector) {
   }
 
