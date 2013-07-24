@@ -177,13 +177,13 @@ class DirectiveRef {
   String name;
   String value;
   Directive directive;
-  Map<String, BlockType> blockTypes;
+  BlockType blockType;
 
   DirectiveRef(this.element, this.selector, [
                String this.name,
                String this.value,
                Directive this.directive,
-               Map<String, BlockType> this.blockTypes]) {
+               BlockType this.blockType]) {
   }
 
   String toString() {

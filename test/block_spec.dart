@@ -43,7 +43,7 @@ main() {
 
       beforeEach(inject((BlockTypeFactory $blockTypeFactory, Injector injector) {
         $rootElement.html('<!-- anchor -->');
-        anchor = new BlockList($rootElement.contents().eq(0), {}, injector);
+        anchor = new BlockList($rootElement.contents().eq(0), null, injector);
         a = $blockTypeFactory($('<span>A</span>a'), [])(injector);
         b = $blockTypeFactory($('<span>B</span>b'), [])(injector);
       }));
@@ -163,7 +163,7 @@ main() {
           var outerBlockType = $blockTypeFactory($('<!--start--><!--end-->'), [
             0, [new DirectiveRef(null, null, '', '',
                                  new Directive(LoggerBlockDirective),
-                                 {'': innerBlockType})], null
+                                 innerBlockType)], null
           ]);
 
           var outterBlock = outerBlockType(injector);

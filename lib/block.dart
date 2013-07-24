@@ -95,7 +95,7 @@ class Block implements ElementWrapper {
       }
       nodeAttrs[ref.directive.$name] = ref.value;
       if (ref.directive.isStructural) {
-        blockListFactory = (Injector injector) => new BlockList([node], ref.blockTypes, injector);
+        blockListFactory = (Injector injector) => new BlockList([node], ref.blockType, injector);
       }
     });
     nodeModule.factory(BlockList, blockListFactory);
