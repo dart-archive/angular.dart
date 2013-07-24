@@ -1,25 +1,21 @@
 part of angular;
 
 class BlockTypeFactory {
-  BlockFactory blockFactory;
 
-  BlockTypeFactory(BlockFactory this.blockFactory);
+  BlockTypeFactory();
 
   BlockType call(templateElements, directivePositions, [group]) {
-    return new BlockType(blockFactory, templateElements, directivePositions,
+    return new BlockType(templateElements, directivePositions,
                          group != null ? group : '');
   }
 }
 
 class BlockType {
-  BlockFactory blockFactory;
   List directivePositions;
   List<dom.Node> templateElements;
   String group;
 
-  BlockType(this.blockFactory, this.templateElements, this.directivePositions,
-            this.group) {
-    ASSERT(blockFactory != null);
+  BlockType(this.templateElements, this.directivePositions, this.group) {
     ASSERT(templateElements != null);
     ASSERT(directivePositions != null);
     ASSERT(group != null);
@@ -29,7 +25,7 @@ class BlockType {
     if (elements == null) {
       elements = cloneElements(templateElements);
     }
-    return blockFactory(elements, directivePositions, group, injector);
+    return new Block(injector, elements, directivePositions, group);
   }
 
   ClassMirror _getClassMirror(Type type) {
