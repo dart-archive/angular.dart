@@ -28,7 +28,7 @@ class Compiler {
       for (var j = 0, jj = declaredDirectiveRefs.length; j < jj; j++) {
         var directiveRef = declaredDirectiveRefs[j];
         Directive directive = directiveRef.directive;
-        var blockType = null;
+        var blockFactory = null;
 
         if (directive.$generate != null) {
           var nodeList = domCursor.nodeList();
@@ -47,7 +47,7 @@ class Compiler {
         }
         if (directive.$transclude != null) {
           var remainingDirectives = declaredDirectiveRefs.sublist(j + 1);
-          blockType = compileTransclusion(directive.$transclude,
+          blockFactory = compileTransclusion(directive.$transclude,
               domCursor, templateCursor,
               directiveRef, remainingDirectives);
 
@@ -57,7 +57,7 @@ class Compiler {
         if (usableDirectiveRefs == null) {
           usableDirectiveRefs = [];
         }
-        directiveRef.blockType = blockType;
+        directiveRef.blockFactory = blockFactory;
         usableDirectiveRefs.add(directiveRef);
       }
 
@@ -86,12 +86,12 @@ class Compiler {
     return directivePositions;
   }
 
-  BlockType compileTransclusion(String selector,
+  BlockFactory compileTransclusion(String selector,
                       NodeCursor domCursor, NodeCursor templateCursor,
                       DirectiveRef directiveRef,
                       List<DirectiveRef> transcludedDirectiveRefs) {
     var anchorName = directiveRef.name + (directiveRef.value != null ? '=' + directiveRef.value : '');
-    var blockType;
+    var blockFactory;
     var blocks;
 
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
@@ -99,16 +99,16 @@ class Compiler {
     var directivePositions = _compileBlock(domCursor, transcludeCursor, transcludedDirectiveRefs);
     if (directivePositions == null) directivePositions = [];
 
-    blockType = new BlockType(transcludeCursor.elements, directivePositions);
+    blockFactory = new BlockFactory(transcludeCursor.elements, directivePositions);
     domCursor.index = domCursorIndex;
 
     if (domCursor.isInstance()) {
       domCursor.insertAnchorBefore(anchorName);
-      blocks = [blockType(domCursor.nodeList())];
+      blocks = [blockFactory(domCursor.nodeList())];
       domCursor.macroNext();
       templateCursor.macroNext();
       while (domCursor.isValid() && domCursor.isInstance()) {
-        blocks.add(blockType(domCursor.nodeList()));
+        blocks.add(blockFactory(domCursor.nodeList()));
         domCursor.macroNext();
         templateCursor.remove();
       }
@@ -116,7 +116,7 @@ class Compiler {
       domCursor.replaceWithAnchor(anchorName);
     }
 
-    return blockType;
+    return blockFactory;
   }
 
 
@@ -158,14 +158,14 @@ class Compiler {
   }
 
 
-  BlockType call(List<dom.Node> elements) {
+  BlockFactory call(List<dom.Node> elements) {
                  List<dom.Node> domElements = elements;
                  List<dom.Node> templateElements = cloneElements(domElements);
     var directivePositions = _compileBlock(
         new NodeCursor(domElements), new NodeCursor(templateElements),
         null);
 
-    return new BlockType(templateElements,
+    return new BlockFactory(templateElements,
                          directivePositions == null ? [] : directivePositions);
   }
 }

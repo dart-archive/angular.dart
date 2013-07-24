@@ -177,13 +177,13 @@ class DirectiveRef {
   String name;
   String value;
   Directive directive;
-  BlockType blockType;
+  BlockFactory blockFactory;
 
   DirectiveRef(this.element, this.selector, [
                String this.name,
                String this.value,
                Directive this.directive,
-               BlockType this.blockType]) {
+               BlockFactory this.blockFactory]) {
   }
 
   String toString() {
