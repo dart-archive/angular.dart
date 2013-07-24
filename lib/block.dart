@@ -10,10 +10,8 @@ abstract class ElementWrapper {
 
 class BlockFactory {
   ExceptionHandler $exceptionHandler;
-  Injector $injector;
 
-  BlockFactory(ExceptionHandler this.$exceptionHandler,
-               Injector this.$injector);
+  BlockFactory(ExceptionHandler this.$exceptionHandler);
 
   call(List<dom.Node> blockNodeList, List directivePositions, String group, Injector injector) {
     ASSERT(blockNodeList != null);
