@@ -9,21 +9,18 @@ abstract class ElementWrapper {
 }
 
 class BlockFactory {
-  ExceptionHandler $exceptionHandler;
-
-  BlockFactory(ExceptionHandler this.$exceptionHandler);
+  BlockFactory();
 
   call(List<dom.Node> blockNodeList, List directivePositions, String group, Injector injector) {
     ASSERT(blockNodeList != null);
     ASSERT(directivePositions != null);
     ASSERT(injector != null);
-    return new Block($exceptionHandler, injector,
+    return new Block(injector,
               blockNodeList, directivePositions, group);
   }
 }
 
 class Block implements ElementWrapper {
-  ExceptionHandler $exceptionHandler;
   Injector $injector;
   List<dom.Node> elements;
   ElementWrapper previous = null;
@@ -34,8 +31,7 @@ class Block implements ElementWrapper {
   Function onRemove;
   Function onMove;
 
-  Block(ExceptionHandler this.$exceptionHandler,
-        Injector this.$injector,
+  Block(Injector this.$injector,
         List<dom.Node> this.elements,
         List directivePositions,
         String this.group) {
