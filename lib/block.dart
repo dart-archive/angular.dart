@@ -95,7 +95,7 @@ class Block implements ElementWrapper {
       }
       nodeAttrs[ref.directive.$name] = ref.value;
       if (ref.directive.isStructural) {
-        blockListFactory = (Injector injector) => new BlockList([node], ref.blockType, injector);
+        blockListFactory = (Injector injector) => new BlockList([node], ref.blockFactory, injector);
       }
     });
     nodeModule.factory(BlockList, blockListFactory);
@@ -266,7 +266,7 @@ class ComponentFactory {
       templateLoader = new TemplateLoader(blockFuture);
     } else if (directive.$templateUrl != null) {
       var blockFuture = $blockCache.fromUrl(directive.$templateUrl)
-          .then((BlockType blockType) => attachBlockToShadowDom(blockType));
+          .then((BlockFactory blockFactory) => attachBlockToShadowDom(blockFactory));
       templateLoader = new TemplateLoader(blockFuture);
     }
     var controller =
@@ -277,8 +277,8 @@ class ComponentFactory {
     return controller;
   }
 
-  attachBlockToShadowDom(BlockType blockType) {
-    var block = blockType(shadowInjector);
+  attachBlockToShadowDom(BlockFactory blockFactory) {
+    var block = blockFactory(shadowInjector);
     shadowDom.nodes.addAll(block.elements);
     shadowInjector.get(Scope).$digest();
     return shadowDom;
@@ -339,18 +339,18 @@ class BlockCache {
     _blockCache = $cacheFactory('blocks');
   }
 
-  BlockType fromHtml(String html) {
-    BlockType blockType = _blockCache.get(html);
-    if (blockType == null) {
+  BlockFactory fromHtml(String html) {
+    BlockFactory blockFactory = _blockCache.get(html);
+    if (blockFactory == null) {
       var div = new dom.Element.tag('div');
       div.innerHtml = html;
-      blockType = compiler(div.nodes);
-      _blockCache.put(html, blockType);
+      blockFactory = compiler(div.nodes);
+      _blockCache.put(html, blockFactory);
     }
-    return blockType;
+    return blockFactory;
   }
 
-  async.Future<BlockType> fromUrl(String url) {
+  async.Future<BlockFactory> fromUrl(String url) {
     return $http.getString(url, cache: $templateCache).then((String tmpl) {
       return fromHtml(tmpl);
     });
@@ -518,33 +518,33 @@ class NodeAttrs {
  */
 class BlockList extends ElementWrapper {
   List<dom.Node> elements;
-  BlockType blockType;
+  BlockFactory blockFactory;
   Injector injector;
 
   ElementWrapper previous;
   ElementWrapper next;
 
   BlockList(List<dom.Node> this.elements,
-            BlockType this.blockType,
+            BlockFactory this.blockFactory,
             Injector this.injector) {
   }
 
   Block newBlock(Scope scope) {
-//TODO(misko): BlockList should not be resposible for BlockTypes. This should be simplified.
-    if (this.blockType == null) {
+    //TODO(misko): BlockList should not be resposible for BlockFactory. This should be simplified.
+    if (this.blockFactory == null) {
       throw new ArgumentError("Unknown block type.");
     }
 
-    return this.blockType(injector.createChild([new ScopeModule(scope)]));
+    return this.blockFactory(injector.createChild([new ScopeModule(scope)]));
   }
 }
 
 
-class BlockType {
+class BlockFactory {
   List directivePositions;
   List<dom.Node> templateElements;
 
-  BlockType(this.templateElements, this.directivePositions) {
+  BlockFactory(this.templateElements, this.directivePositions) {
     ASSERT(templateElements != null);
     ASSERT(directivePositions != null);
   }

@@ -9,16 +9,16 @@ main() {
       scope = $rootScope;
       $compile = (html) {
         element = $(html);
-        var blockType = compiler(element);
-        var block = blockType(injector, element);
+        var blockFactory = compiler(element);
+        var block = blockFactory(injector, element);
         return element;
       };
     }));
 
     it(r'should set create a list of items', inject((Scope scope, Compiler compiler, Injector injector) {
       var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
-      BlockType blockType = compiler(element);
-      Block block = blockType(injector, element);
+      BlockFactory blockFactory = compiler(element);
+      Block block = blockFactory(injector, element);
       scope.items = ['a', 'b'];
       scope.$apply();
       expect(element.text()).toEqual('ab');
