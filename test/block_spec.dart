@@ -41,11 +41,11 @@ main() {
     describe('mutation', () {
       var a, b;
 
-      beforeEach(inject((BlockTypeFactory $blockTypeFactory, Injector injector) {
+      beforeEach(inject((Injector injector) {
         $rootElement.html('<!-- anchor -->');
         anchor = new BlockList($rootElement.contents().eq(0), null, injector);
-        a = $blockTypeFactory($('<span>A</span>a'), [])(injector);
-        b = $blockTypeFactory($('<span>B</span>b'), [])(injector);
+        a = (new BlockType($('<span>A</span>a'), []))(injector);
+        b = (new BlockType($('<span>B</span>b'), []))(injector);
       }));
 
 
@@ -148,7 +148,7 @@ main() {
           expect(b.previous).toBe(anchor);
         });
 
-        it('should remove', inject((BlockTypeFactory $blockTypeFactory, Logger logger, Injector injector) {
+        it('should remove', inject((Logger logger, Injector injector) {
           a.remove();
           b.remove();
 
@@ -159,8 +159,8 @@ main() {
           //   }
           // }
 
-          var innerBlockType = $blockTypeFactory($('<b>text</b>'), []);
-          var outerBlockType = $blockTypeFactory($('<!--start--><!--end-->'), [
+          var innerBlockType = new BlockType($('<b>text</b>'), []);
+          var outerBlockType = new BlockType($('<!--start--><!--end-->'), [
             0, [new DirectiveRef(null, null, '', '',
                                  new Directive(LoggerBlockDirective),
                                  innerBlockType)], null
