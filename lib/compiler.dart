@@ -98,14 +98,13 @@ class Compiler {
     var blocks;
 
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
-    var groupName = '';
     var domCursorIndex = domCursor.index;
     var directivePositions = _compileBlock(domCursor, transcludeCursor, transcludedDirectiveRefs);
     if (directivePositions == null) directivePositions = [];
 
-    BlockType = $blockTypeFactory(transcludeCursor.elements, directivePositions, groupName);
+    BlockType = $blockTypeFactory(transcludeCursor.elements, directivePositions);
     domCursor.index = domCursorIndex;
-    blockTypes[groupName] = BlockType;
+    blockTypes[''] = BlockType;
 
     if (domCursor.isInstance()) {
       domCursor.insertAnchorBefore(anchorName);

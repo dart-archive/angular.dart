@@ -13,7 +13,6 @@ class Block implements ElementWrapper {
   List<dom.Node> elements;
   ElementWrapper previous = null;
   ElementWrapper next = null;
-  String group;
   List<dynamic> directives = [];
   Function onInsert;
   Function onRemove;
@@ -21,8 +20,7 @@ class Block implements ElementWrapper {
 
   Block(Injector this.$injector,
         List<dom.Node> this.elements,
-        List directivePositions,
-        String this.group) {
+        List directivePositions) {
     ASSERT(elements != null);
     ASSERT(directivePositions != null);
     ASSERT($injector != null);
