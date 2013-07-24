@@ -171,7 +171,8 @@ bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
   Injector injector = new Injector(modules);
 
   injector.invoke((Compiler $compile, Scope $rootScope) {
-    $compile(topElt)(injector, topElt);
-    $rootScope.$digest();
+    $rootScope.$apply(() {
+      $compile(topElt)(injector, topElt);
+    });
   });
 }
