@@ -2,11 +2,9 @@ part of angular;
 
 class Compiler {
   DirectiveRegistry directives;
-  BlockTypeFactory $blockTypeFactory;
   Selector selector;
 
-  Compiler(DirectiveRegistry this.directives,
-           BlockTypeFactory this.$blockTypeFactory) {
+  Compiler(DirectiveRegistry this.directives) {
     selector = selectorFactory(directives.enumerate());
   }
 
@@ -101,7 +99,7 @@ class Compiler {
     var directivePositions = _compileBlock(domCursor, transcludeCursor, transcludedDirectiveRefs);
     if (directivePositions == null) directivePositions = [];
 
-    blockType = $blockTypeFactory(transcludeCursor.elements, directivePositions);
+    blockType = new BlockType(transcludeCursor.elements, directivePositions);
     domCursor.index = domCursorIndex;
 
     if (domCursor.isInstance()) {
@@ -167,7 +165,7 @@ class Compiler {
         new NodeCursor(domElements), new NodeCursor(templateElements),
         null);
 
-    return $blockTypeFactory(templateElements,
-                             directivePositions == null ? [] : directivePositions);
+    return new BlockType(templateElements,
+                         directivePositions == null ? [] : directivePositions);
   }
 }

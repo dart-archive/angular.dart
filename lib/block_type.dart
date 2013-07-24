@@ -1,14 +1,5 @@
 part of angular;
 
-class BlockTypeFactory {
-
-  BlockTypeFactory();
-
-  BlockType call(templateElements, directivePositions) {
-    return new BlockType(templateElements, directivePositions);
-  }
-}
-
 class BlockType {
   List directivePositions;
   List<dom.Node> templateElements;
