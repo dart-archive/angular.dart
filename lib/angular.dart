@@ -121,7 +121,6 @@ class AngularModule extends Module {
   AngularModule() {
     value(DirectiveRegistry, _directives);
     type(Compiler, Compiler);
-    type(BlockFactory, BlockFactory);
     type(BlockTypeFactory, BlockTypeFactory);
     type(ExceptionHandler, ExceptionHandler);
     type(Scope, Scope);

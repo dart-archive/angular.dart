@@ -8,18 +8,6 @@ abstract class ElementWrapper {
   ElementWrapper previous;
 }
 
-class BlockFactory {
-  BlockFactory();
-
-  call(List<dom.Node> blockNodeList, List directivePositions, String group, Injector injector) {
-    ASSERT(blockNodeList != null);
-    ASSERT(directivePositions != null);
-    ASSERT(injector != null);
-    return new Block(injector,
-              blockNodeList, directivePositions, group);
-  }
-}
-
 class Block implements ElementWrapper {
   Injector $injector;
   List<dom.Node> elements;
