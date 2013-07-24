@@ -10,25 +10,22 @@ abstract class ElementWrapper {
 
 class BlockFactory {
   ExceptionHandler $exceptionHandler;
-  BlockListFactory $blockListFactory;
   Injector $injector;
 
   BlockFactory(ExceptionHandler this.$exceptionHandler,
-               BlockListFactory this.$blockListFactory,
                Injector this.$injector);
 
   call(List<dom.Node> blockNodeList, List directivePositions, String group, Injector injector) {
     ASSERT(blockNodeList != null);
     ASSERT(directivePositions != null);
     ASSERT(injector != null);
-    return new Block($exceptionHandler, $blockListFactory, injector,
+    return new Block($exceptionHandler, injector,
               blockNodeList, directivePositions, group);
   }
 }
 
 class Block implements ElementWrapper {
   ExceptionHandler $exceptionHandler;
-  BlockListFactory $blockListFactory;
   Injector $injector;
   List<dom.Node> elements;
   ElementWrapper previous = null;
@@ -40,7 +37,6 @@ class Block implements ElementWrapper {
   Function onMove;
 
   Block(ExceptionHandler this.$exceptionHandler,
-        BlockListFactory this.$blockListFactory,
         Injector this.$injector,
         List<dom.Node> this.elements,
         List directivePositions,
@@ -119,7 +115,7 @@ class Block implements ElementWrapper {
       }
       nodeAttrs[ref.directive.$name] = ref.value;
       if (ref.directive.isStructural) {
-        blockListFactory = (Injector injector) => $blockListFactory([node], ref.blockTypes, injector);
+        blockListFactory = (Injector injector) => new BlockList([node], ref.blockTypes, injector);
       }
     });
     nodeModule.factory(BlockList, blockListFactory);

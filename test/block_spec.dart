@@ -41,9 +41,9 @@ main() {
     describe('mutation', () {
       var a, b;
 
-      beforeEach(inject((BlockTypeFactory $blockTypeFactory, BlockListFactory $blockListFactory, Injector injector) {
+      beforeEach(inject((BlockTypeFactory $blockTypeFactory, Injector injector) {
         $rootElement.html('<!-- anchor -->');
-        anchor = $blockListFactory($rootElement.contents().eq(0), {}, injector);
+        anchor = new BlockList($rootElement.contents().eq(0), {}, injector);
         a = $blockTypeFactory($('<span>A</span>a'), [])(injector);
         b = $blockTypeFactory($('<span>B</span>b'), [])(injector);
       }));

@@ -123,7 +123,6 @@ class AngularModule extends Module {
     type(Compiler, Compiler);
     type(BlockFactory, BlockFactory);
     type(BlockTypeFactory, BlockTypeFactory);
-    type(BlockListFactory, BlockListFactory);
     type(ExceptionHandler, ExceptionHandler);
     type(Scope, Scope);
     type(Parser, Parser);
