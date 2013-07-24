@@ -3,12 +3,13 @@ part of angular;
 @NgDirective(transclude: '.', priority: 100)
 class NgIfAttrDirective {
 
-  NgIfAttrDirective(NodeAttrs attrs, Injector injector, BlockList blockList, dom.Node node, Scope scope) {
+  NgIfAttrDirective(BoundBlockFactory boundBlockFactory, BlockHole blockHole,
+                    NodeAttrs attrs, dom.Node node, Scope scope) {
     var _block;
     block() {
       if (_block != null) return _block;
       var childScope = scope.$new();
-      _block = blockList.newBlock(childScope);
+      _block = boundBlockFactory(childScope);
       return _block;
     }
     var isInserted = false;
@@ -17,7 +18,7 @@ class NgIfAttrDirective {
       // TODO(vojta): ignore changes like null -> false
       if (value != null && toBool(value)) {
         if (!isInserted) {
-          block().insertAfter(blockList);
+          block().insertAfter(blockHole);
           isInserted = true;
         }
       } else {
