@@ -303,7 +303,6 @@ class _ComponentFactory {
   attachBlockToShadowDom(BlockFactory blockFactory) {
     var block = blockFactory(shadowInjector);
     shadowDom.nodes.addAll(block.elements);
-    shadowInjector.get(Scope).$digest();
     return shadowDom;
   }
 
