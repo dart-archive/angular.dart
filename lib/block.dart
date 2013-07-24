@@ -64,7 +64,8 @@ class Block implements ElementWrapper {
   Injector _instantiateDirectives(Injector parentInjector, dom.Node node, List<DirectiveRef> directiveRefs) {
     if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
     var nodeModule = new Module();
-    var blockListFactory = () => null;
+    var blockHoleFactory = () => null;
+    var boundBlockFactory = () => null;
     var nodeAttrs = new NodeAttrs(node);
 
     nodeModule.value(Block, this);
@@ -95,10 +96,12 @@ class Block implements ElementWrapper {
       }
       nodeAttrs[ref.directive.$name] = ref.value;
       if (ref.directive.isStructural) {
-        blockListFactory = (Injector injector) => new BlockList([node], ref.blockFactory, injector);
+        blockHoleFactory = (Injector injector) => new BlockHole([node]);
+        boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
       }
     });
-    nodeModule.factory(BlockList, blockListFactory);
+    nodeModule.factory(BlockHole, blockHoleFactory);
+    nodeModule.factory(BoundBlockFactory, boundBlockFactory);
     var nodeInjector = parentInjector.createChild([nodeModule]);
     directiveRefs.forEach((ref) => nodeInjector.get(ref.directive.type));
     return nodeInjector;
@@ -516,29 +519,25 @@ class NodeAttrs {
  * be added in parent Block. Anchors wrap a DOM element, and act as references
  * which allows more blocks to be added.
  */
-class BlockList extends ElementWrapper {
+class BlockHole extends ElementWrapper {
   List<dom.Node> elements;
-  BlockFactory blockFactory;
-  Injector injector;
 
   ElementWrapper previous;
   ElementWrapper next;
 
-  BlockList(List<dom.Node> this.elements,
-            BlockFactory this.blockFactory,
-            Injector this.injector) {
-  }
-
-  Block newBlock(Scope scope) {
-    //TODO(misko): BlockList should not be resposible for BlockFactory. This should be simplified.
-    if (this.blockFactory == null) {
-      throw new ArgumentError("Unknown block type.");
-    }
-
-    return this.blockFactory(injector.createChild([new ScopeModule(scope)]));
-  }
+  BlockHole(List<dom.Node> this.elements);
 }
 
+class BoundBlockFactory {
+  BlockFactory blockFactory;
+  Injector injector;
+
+  BoundBlockFactory(BlockFactory this.blockFactory, Injector this.injector);
+
+  Block call(Scope scope) {
+    return blockFactory(injector.createChild([new ScopeModule(scope)]));
+  }
+}
 
 class BlockFactory {
   List directivePositions;
@@ -554,6 +553,10 @@ class BlockFactory {
       elements = cloneElements(templateElements);
     }
     return new Block(injector, elements, directivePositions);
+  }
+
+  BoundBlockFactory bind(Injector injector) {
+    return new BoundBlockFactory(this, injector);
   }
 
   ClassMirror _getClassMirror(Type type) {
