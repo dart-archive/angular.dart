@@ -4,28 +4,25 @@ class BlockTypeFactory {
 
   BlockTypeFactory();
 
-  BlockType call(templateElements, directivePositions, [group]) {
-    return new BlockType(templateElements, directivePositions,
-                         group != null ? group : '');
+  BlockType call(templateElements, directivePositions) {
+    return new BlockType(templateElements, directivePositions);
   }
 }
 
 class BlockType {
   List directivePositions;
   List<dom.Node> templateElements;
-  String group;
 
-  BlockType(this.templateElements, this.directivePositions, this.group) {
+  BlockType(this.templateElements, this.directivePositions) {
     ASSERT(templateElements != null);
     ASSERT(directivePositions != null);
-    ASSERT(group != null);
   }
 
   Block call(Injector injector, [List<dom.Node> elements]) {
     if (elements == null) {
       elements = cloneElements(templateElements);
     }
-    return new Block(injector, elements, directivePositions, group);
+    return new Block(injector, elements, directivePositions);
   }
 
   ClassMirror _getClassMirror(Type type) {
