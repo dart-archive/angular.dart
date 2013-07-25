@@ -2,11 +2,9 @@ part of angular;
 
 class Compiler {
   DirectiveRegistry directives;
-  BlockTypeFactory $blockTypeFactory;
   Selector selector;
 
-  Compiler(DirectiveRegistry this.directives,
-           BlockTypeFactory this.$blockTypeFactory) {
+  Compiler(DirectiveRegistry this.directives) {
     selector = selectorFactory(directives.enumerate());
   }
 
@@ -30,7 +28,7 @@ class Compiler {
       for (var j = 0, jj = declaredDirectiveRefs.length; j < jj; j++) {
         var directiveRef = declaredDirectiveRefs[j];
         Directive directive = directiveRef.directive;
-        var blockTypes = null;
+        var blockFactory = null;
 
         if (directive.$generate != null) {
           var nodeList = domCursor.nodeList();
@@ -49,7 +47,7 @@ class Compiler {
         }
         if (directive.$transclude != null) {
           var remainingDirectives = declaredDirectiveRefs.sublist(j + 1);
-          blockTypes = compileTransclusion(directive.$transclude,
+          blockFactory = compileTransclusion(directive.$transclude,
               domCursor, templateCursor,
               directiveRef, remainingDirectives);
 
@@ -59,7 +57,7 @@ class Compiler {
         if (usableDirectiveRefs == null) {
           usableDirectiveRefs = [];
         }
-        directiveRef.blockTypes = blockTypes;
+        directiveRef.blockFactory = blockFactory;
         usableDirectiveRefs.add(directiveRef);
       }
 
@@ -88,32 +86,29 @@ class Compiler {
     return directivePositions;
   }
 
-  compileTransclusion(String selector,
+  BlockFactory compileTransclusion(String selector,
                       NodeCursor domCursor, NodeCursor templateCursor,
                       DirectiveRef directiveRef,
                       List<DirectiveRef> transcludedDirectiveRefs) {
     var anchorName = directiveRef.name + (directiveRef.value != null ? '=' + directiveRef.value : '');
-    var blockTypes = {};
-    var BlockType;
+    var blockFactory;
     var blocks;
 
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
-    var groupName = '';
     var domCursorIndex = domCursor.index;
     var directivePositions = _compileBlock(domCursor, transcludeCursor, transcludedDirectiveRefs);
     if (directivePositions == null) directivePositions = [];
 
-    BlockType = $blockTypeFactory(transcludeCursor.elements, directivePositions, groupName);
+    blockFactory = new BlockFactory(transcludeCursor.elements, directivePositions);
     domCursor.index = domCursorIndex;
-    blockTypes[groupName] = BlockType;
 
     if (domCursor.isInstance()) {
       domCursor.insertAnchorBefore(anchorName);
-      blocks = [BlockType(domCursor.nodeList())];
+      blocks = [blockFactory(domCursor.nodeList())];
       domCursor.macroNext();
       templateCursor.macroNext();
       while (domCursor.isValid() && domCursor.isInstance()) {
-        blocks.add(BlockType(domCursor.nodeList()));
+        blocks.add(blockFactory(domCursor.nodeList()));
         domCursor.macroNext();
         templateCursor.remove();
       }
@@ -121,7 +116,7 @@ class Compiler {
       domCursor.replaceWithAnchor(anchorName);
     }
 
-    return blockTypes;
+    return blockFactory;
   }
 
 
@@ -163,14 +158,14 @@ class Compiler {
   }
 
 
-  BlockType call(List<dom.Node> elements) {
+  BlockFactory call(List<dom.Node> elements) {
                  List<dom.Node> domElements = elements;
                  List<dom.Node> templateElements = cloneElements(domElements);
     var directivePositions = _compileBlock(
         new NodeCursor(domElements), new NodeCursor(templateElements),
         null);
 
-    return $blockTypeFactory(templateElements,
-                             directivePositions == null ? [] : directivePositions);
+    return new BlockFactory(templateElements,
+                         directivePositions == null ? [] : directivePositions);
   }
 }

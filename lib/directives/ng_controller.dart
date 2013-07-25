@@ -6,10 +6,11 @@ class NgControllerAttrDirective {
 
   Symbol ctrlSymbol;
   String alias;
-  Injector injector;
-  BlockList blockList;
 
-  NgControllerAttrDirective(NodeAttrs attrs, Injector this.injector, BlockList this.blockList, Scope scope) {
+  NgControllerAttrDirective(BoundBlockFactory boundBlockFactory,
+                            BlockHole blockHole,
+                            Injector injector,
+                            NodeAttrs attrs, Scope scope) {
     var match = CTRL_REGEXP.firstMatch(attrs[this]);
 
     ctrlSymbol = new Symbol(match.group(1) + 'Controller');
@@ -19,12 +20,12 @@ class NgControllerAttrDirective {
       var childScope = scope.$new();
 
       // attach the child scope
-      blockList.newBlock(childScope).insertAfter(blockList);
+      boundBlockFactory(childScope).insertAfter(blockHole);
 
       // instantiate the controller
       var controller = injector.
-      createChild([new ScopeModule(childScope)], [ctrlSymbol]).
-      getBySymbol(ctrlSymbol);
+        createChild([new ScopeModule(childScope)], [ctrlSymbol]).
+        getBySymbol(ctrlSymbol);
 
       // publish the controller into the scope
       if (alias != null) {

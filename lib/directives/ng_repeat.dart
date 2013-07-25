@@ -22,13 +22,15 @@ class NgRepeatAttrDirective  {
   String listExpr;
   ElementWrapper anchor;
   ElementWrapper cursor;
-  BlockList blockList;
+  BlockHole blockHole;
+  BoundBlockFactory boundBlockFactory;
   Function trackByIdFn = (key, value, index) {
     return value;
   };
   Map<Object, Row> lastRows = new Map<dynamic, Row>();
 
-  NgRepeatAttrDirective(BlockList this.blockList,
+  NgRepeatAttrDirective(BlockHole this.blockHole,
+                        BoundBlockFactory this.boundBlockFactory,
                         NodeAttrs attrs,
                         Scope scope) {
     expression = attrs[this];
@@ -47,13 +49,13 @@ class NgRepeatAttrDirective  {
     keyIdentifier = match.group(2);
 
     scope.$watchCollection(listExpr, (collection) {
-      var previousNode = blockList.elements[0],     // current position of the node
+      var previousNode = blockHole.elements[0],     // current position of the node
           nextNode,
           arrayLength,
           childScope,
           trackById,
           newRowOrder = [],
-          cursor = blockList;
+          cursor = blockHole;
       // Same as lastBlockMap but it has the current state. It will become the
       // lastBlockMap on the next iteration.
       Map<dynamic, Row> newRows = new Map<dynamic, Row>();
@@ -125,7 +127,7 @@ class NgRepeatAttrDirective  {
 
         if (row.startNode == null) {
           newRows[row.id] = row;
-          var block = blockList.newBlock(childScope);
+          var block = boundBlockFactory(childScope);
           row.block = block;
           row.scope = childScope;
           row.elements = block.elements;

@@ -2,25 +2,26 @@ import "_specs.dart";
 
 @NgDirective(transclude: '.', selector: 'foo')
 class LoggerBlockDirective {
-  LoggerBlockDirective(BlockList list, Logger logger) {
-    if (list == null) {
-      throw new ArgumentError('BlockList must be injected.');
+  LoggerBlockDirective(BlockHole hole, BoundBlockFactory boundBlockFactory, Logger logger) {
+    if (hole == null) {
+      throw new ArgumentError('BlockHole must be injected.');
     }
-    logger.add(list);
+    logger.add(hole);
+    logger.add(boundBlockFactory);
   }
 }
 
 class ReplaceBlockDirective {
-  ReplaceBlockDirective(BlockList list, Node node, Scope scope) {
-    var block = list.newBlock(scope);
-    block.insertAfter(list);
+  ReplaceBlockDirective(BlockHole hole, BoundBlockFactory boundBlockFactory, Node node, Scope scope) {
+    var block = boundBlockFactory(scope);
+    block.insertAfter(hole);
     node.remove();
   }
 }
 
 class ShadowBlockDirective {
-  ShadowBlockDirective(BlockList list, Element element, Scope scope) {
-    var block = list.newBlock(scope);
+  ShadowBlockDirective(BlockHole hole, BoundBlockFactory boundBlockFactory, Element element, Scope scope) {
+    var block = boundBlockFactory(scope);
     var shadowRoot = element.createShadowRoot();
     for (var i = 0, ii = block.elements.length; i < ii; i++) {
       shadowRoot.append(block.elements[i]);
@@ -41,11 +42,11 @@ main() {
     describe('mutation', () {
       var a, b;
 
-      beforeEach(inject((BlockTypeFactory $blockTypeFactory, BlockListFactory $blockListFactory, Injector injector) {
+      beforeEach(inject((Injector injector) {
         $rootElement.html('<!-- anchor -->');
-        anchor = $blockListFactory($rootElement.contents().eq(0), {}, injector);
-        a = $blockTypeFactory($('<span>A</span>a'), [])(injector);
-        b = $blockTypeFactory($('<span>B</span>b'), [])(injector);
+        anchor = new BlockHole($rootElement.contents().eq(0));
+        a = (new BlockFactory($('<span>A</span>a'), []))(injector);
+        b = (new BlockFactory($('<span>B</span>b'), []))(injector);
       }));
 
 
@@ -148,34 +149,35 @@ main() {
           expect(b.previous).toBe(anchor);
         });
 
-        it('should remove', inject((BlockTypeFactory $blockTypeFactory, Logger logger, Injector injector) {
+        it('should remove', inject((Logger logger, Injector injector) {
           a.remove();
           b.remove();
 
           // TODO(dart): I really want to do this:
           // class Directive {
-          //   Directive(BlockList $anchor, Logger logger) {
+          //   Directive(BlockHole $anchor, Logger logger) {
           //     logger.add($anchor);
           //   }
           // }
 
-          var innerBlockType = $blockTypeFactory($('<b>text</b>'), []);
-          var outerBlockType = $blockTypeFactory($('<!--start--><!--end-->'), [
+          var innerBlockType = new BlockFactory($('<b>text</b>'), []);
+          var outerBlockType = new BlockFactory($('<!--start--><!--end-->'), [
             0, [new DirectiveRef(null, null, '', '',
                                  new Directive(LoggerBlockDirective),
-                                 {'': innerBlockType})], null
+                                 innerBlockType)], null
           ]);
 
           var outterBlock = outerBlockType(injector);
-          // The LoggerBlockDirective caused a BlockList for innerBlockType to
+          // The LoggerBlockDirective caused a BlockHole for innerBlockType to
           // be created at logger[0];
-          BlockList outterAnchor = logger[0];
+          BlockHole outterAnchor = logger[0];
+          BoundBlockFactory outterBoundBlockFactory = logger[1];
 
           outterBlock.insertAfter(anchor);
-          // outterAnchor is a BlockList, but it has "elements" set to the 0th element
+          // outterAnchor is a BlockHole, but it has "elements" set to the 0th element
           // of outerBlockType.  So, calling insertAfter() will insert the new
           // block after the <!--start--> element.
-          outterAnchor.newBlock(null).insertAfter(outterAnchor);
+          outterBoundBlockFactory(null).insertAfter(outterAnchor);
 
           expect($rootElement.text()).toEqual('text');
 

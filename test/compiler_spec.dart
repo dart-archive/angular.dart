@@ -36,13 +36,10 @@ class LocalAttrDirective {
 
 @NgDirective(visibility: NgDirective.CHILDREN_VISIBILITY, transclude: '.')
 class SimpleTranscludeInAttachAttrDirective {
-  Log log;
-  BlockList blockList;
-
-  SimpleTranscludeInAttachAttrDirective(BlockList this.blockList, Log this.log, Scope scope) {
+  SimpleTranscludeInAttachAttrDirective(BlockHole blockHole, BoundBlockFactory boundBlockFactory, Log log, Scope scope) {
     scope.$evalAsync(() {
-      var block = blockList.newBlock(scope);
-      block.insertAfter(blockList);
+      var block = boundBlockFactory(scope);
+      block.insertAfter(blockHole);
       log('SimpleTransclude');
     });
   }
@@ -386,8 +383,8 @@ main() {
 
       xit('should generate directive from a directive', inject(() {
         var element = $('<ul><li generate="abc"></li></ul>');
-        var blockType = $compile(element);
-        var block = blockType(element);
+        var blockFactory = $compile(element);
+        var block = blockFactory(element);
 
         block;
         $rootScope.names = ['james;', 'misko;'];
@@ -411,8 +408,8 @@ main() {
         $rootScope.name = 'OUTTER';
         $rootScope.sep = '-';
         var element = $(r'<div>{{name}}{{sep}}{{$id}}:<simple>{{name}}{{sep}}{{$id}}</simple></div>');
-        BlockType blockType = $compile(element);
-        Block block = blockType(injector, element);
+        BlockFactory blockFactory = $compile(element);
+        Block block = blockFactory(injector, element);
         $rootScope.$digest();
 
         nextTurn();

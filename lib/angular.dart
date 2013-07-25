@@ -9,8 +9,6 @@ import 'package:di/di.dart';
 import 'debug.dart';
 
 part 'block.dart';
-part 'block_list.dart';
-part 'block_type.dart';
 part 'cache.dart';
 part 'compiler.dart';
 part 'directive.dart';
@@ -121,9 +119,6 @@ class AngularModule extends Module {
   AngularModule() {
     value(DirectiveRegistry, _directives);
     type(Compiler, Compiler);
-    type(BlockFactory, BlockFactory);
-    type(BlockTypeFactory, BlockTypeFactory);
-    type(BlockListFactory, BlockListFactory);
     type(ExceptionHandler, ExceptionHandler);
     type(Scope, Scope);
     type(Parser, Parser);

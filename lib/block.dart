@@ -8,43 +8,19 @@ abstract class ElementWrapper {
   ElementWrapper previous;
 }
 
-class BlockFactory {
-  ExceptionHandler $exceptionHandler;
-  BlockListFactory $blockListFactory;
-  Injector $injector;
-
-  BlockFactory(ExceptionHandler this.$exceptionHandler,
-               BlockListFactory this.$blockListFactory,
-               Injector this.$injector);
-
-  call(List<dom.Node> blockNodeList, List directivePositions, String group, Injector injector) {
-    ASSERT(blockNodeList != null);
-    ASSERT(directivePositions != null);
-    ASSERT(injector != null);
-    return new Block($exceptionHandler, $blockListFactory, injector,
-              blockNodeList, directivePositions, group);
-  }
-}
-
 class Block implements ElementWrapper {
-  ExceptionHandler $exceptionHandler;
-  BlockListFactory $blockListFactory;
   Injector $injector;
   List<dom.Node> elements;
   ElementWrapper previous = null;
   ElementWrapper next = null;
-  String group;
   List<dynamic> directives = [];
   Function onInsert;
   Function onRemove;
   Function onMove;
 
-  Block(ExceptionHandler this.$exceptionHandler,
-        BlockListFactory this.$blockListFactory,
-        Injector this.$injector,
+  Block(Injector this.$injector,
         List<dom.Node> this.elements,
-        List directivePositions,
-        String this.group) {
+        List directivePositions) {
     ASSERT(elements != null);
     ASSERT(directivePositions != null);
     ASSERT($injector != null);
@@ -88,7 +64,8 @@ class Block implements ElementWrapper {
   Injector _instantiateDirectives(Injector parentInjector, dom.Node node, List<DirectiveRef> directiveRefs) {
     if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
     var nodeModule = new Module();
-    var blockListFactory = () => null;
+    var blockHoleFactory = () => null;
+    var boundBlockFactory = () => null;
     var nodeAttrs = new NodeAttrs(node);
 
     nodeModule.value(Block, this);
@@ -119,10 +96,12 @@ class Block implements ElementWrapper {
       }
       nodeAttrs[ref.directive.$name] = ref.value;
       if (ref.directive.isStructural) {
-        blockListFactory = (Injector injector) => $blockListFactory([node], ref.blockTypes, injector);
+        blockHoleFactory = (Injector injector) => new BlockHole([node]);
+        boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
       }
     });
-    nodeModule.factory(BlockList, blockListFactory);
+    nodeModule.factory(BlockHole, blockHoleFactory);
+    nodeModule.factory(BoundBlockFactory, boundBlockFactory);
     var nodeInjector = parentInjector.createChild([nodeModule]);
     directiveRefs.forEach((ref) => nodeInjector.get(ref.directive.type));
     return nodeInjector;
@@ -290,7 +269,7 @@ class ComponentFactory {
       templateLoader = new TemplateLoader(blockFuture);
     } else if (directive.$templateUrl != null) {
       var blockFuture = $blockCache.fromUrl(directive.$templateUrl)
-          .then((BlockType blockType) => attachBlockToShadowDom(blockType));
+          .then((BlockFactory blockFactory) => attachBlockToShadowDom(blockFactory));
       templateLoader = new TemplateLoader(blockFuture);
     }
     var controller =
@@ -301,8 +280,8 @@ class ComponentFactory {
     return controller;
   }
 
-  attachBlockToShadowDom(BlockType blockType) {
-    var block = blockType(shadowInjector);
+  attachBlockToShadowDom(BlockFactory blockFactory) {
+    var block = blockFactory(shadowInjector);
     shadowDom.nodes.addAll(block.elements);
     shadowInjector.get(Scope).$digest();
     return shadowDom;
@@ -363,18 +342,18 @@ class BlockCache {
     _blockCache = $cacheFactory('blocks');
   }
 
-  BlockType fromHtml(String html) {
-    BlockType blockType = _blockCache.get(html);
-    if (blockType == null) {
+  BlockFactory fromHtml(String html) {
+    BlockFactory blockFactory = _blockCache.get(html);
+    if (blockFactory == null) {
       var div = new dom.Element.tag('div');
       div.innerHtml = html;
-      blockType = compiler(div.nodes);
-      _blockCache.put(html, blockType);
+      blockFactory = compiler(div.nodes);
+      _blockCache.put(html, blockFactory);
     }
-    return blockType;
+    return blockFactory;
   }
 
-  async.Future<BlockType> fromUrl(String url) {
+  async.Future<BlockFactory> fromUrl(String url) {
     return $http.getString(url, cache: $templateCache).then((String tmpl) {
       return fromHtml(tmpl);
     });
@@ -534,3 +513,56 @@ class NodeAttrs {
 
   dom.Element get element => node;
 }
+
+/**
+ * An Anchor is an instance of a hole. Anchors designate where child Blocks can
+ * be added in parent Block. Anchors wrap a DOM element, and act as references
+ * which allows more blocks to be added.
+ */
+class BlockHole extends ElementWrapper {
+  List<dom.Node> elements;
+
+  ElementWrapper previous;
+  ElementWrapper next;
+
+  BlockHole(List<dom.Node> this.elements);
+}
+
+typedef Block BoundBlockFactory(Scope scope);
+
+class BlockFactory {
+  List directivePositions;
+  List<dom.Node> templateElements;
+
+  BlockFactory(this.templateElements, this.directivePositions) {
+    ASSERT(templateElements != null);
+    ASSERT(directivePositions != null);
+  }
+
+  Block call(Injector injector, [List<dom.Node> elements]) {
+    if (elements == null) {
+      elements = cloneElements(templateElements);
+    }
+    return new Block(injector, elements, directivePositions);
+  }
+
+  BoundBlockFactory bind(Injector injector) {
+    return (Scope scope) {
+      return this(injector.createChild([new ScopeModule(scope)]));
+    };
+  }
+
+  ClassMirror _getClassMirror(Type type) {
+// terrible hack because we can't get a qualified name from a Type
+    var name = type.toString();
+    name = new RegExp(r"^Instance of '(.*)'$").firstMatch(name).group(1);
+    for (var lib in currentMirrorSystem().libraries.values) {
+      if (lib.classes.containsKey(name)) {
+        return lib.classes[name];
+      }
+    }
+    throw new ArgumentError();
+  }
+
+}
+
