@@ -304,7 +304,6 @@ class ComponentFactory {
   attachBlockToShadowDom(BlockType blockType) {
     var block = blockType(shadowInjector);
     shadowDom.nodes.addAll(block.elements);
-    shadowInjector.get(Scope).$digest();
     return shadowDom;
   }
 
