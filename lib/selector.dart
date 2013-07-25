@@ -139,6 +139,14 @@ Selector selectorFactory(DirectiveRegistry directives, [String startWith]) {
         break;
       }
 
+      directiveInfos.sort(priorityComparator);
       return directiveInfos;
     };
+}
+
+int priorityComparator(DirectiveRef a, DirectiveRef b) {
+  int aPriority = a.directive.$priority,
+  bPriority = b.directive.$priority;
+
+  return bPriority - aPriority;
 }

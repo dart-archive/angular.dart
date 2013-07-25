@@ -504,6 +504,13 @@ main() {
         expect(PublishTypesAttrDirective._injector.get(PublishTypesAttrDirective)).
             toBe(PublishTypesAttrDirective._injector.get(PublishTypesDirectiveSuperType));
       }));
+
+      it('should allow repeaters over controllers', inject((Logger logger) {
+        var element = $(r'<log ng-repeat="i in [1, 2]"></log>');
+        $compile(element)(injector, element);
+        $rootScope.$apply();
+        expect(logger.length).toEqual(2);
+      }));
     });
 
     describe('controller scoping', () {
@@ -576,4 +583,15 @@ class ParentExpressionComponent {
 )
 class PublishMeComponent {
   String value = 'WORKED';
+}
+
+
+@NgComponent(
+    template: r'<content></content>',
+    publishAs: 'ctrlName'
+)
+class LogComponent {
+  LogComponent(Scope scope, Logger logger) {
+    logger.add(scope);
+  }
 }

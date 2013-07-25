@@ -17,7 +17,7 @@ class Compiler {
 
     do {
       var declaredDirectiveRefs = useExistingDirectiveRefs == null
-          ? extractDirectiveRefs(domCursor.nodeList()[0])
+          ?  selector(domCursor.nodeList()[0])
           : useExistingDirectiveRefs;
       var compileChildren = true;
       var childDirectivePositions = null;
@@ -118,22 +118,6 @@ class Compiler {
 
     return blockFactory;
   }
-
-
-  List<DirectiveRef> extractDirectiveRefs(dom.Node node) {
-    List<DirectiveRef> directiveRefs = selector(node);
-
-    directiveRefs.sort(priorityComparator);
-    return directiveRefs;
-  }
-
-  priorityComparator(DirectiveRef a, DirectiveRef b) {
-    int aPriority = a.directive.$priority,
-    bPriority = b.directive.$priority;
-
-    return bPriority - aPriority;
-  }
-
 
   BlockFactory call(List<dom.Node> elements) {
                  List<dom.Node> domElements = elements;

@@ -9,6 +9,11 @@ import "_specs.dart";
 @NgDirective(selector:':contains(/abc/)')   class _ContainsAbc{}
 @NgDirective(selector:'[*=/xyz/]')          class _AttributeContainsXyz{}
 
+@NgComponent(selector:'component')          class _Component{}
+@NgDirective(selector:'[attribute]')        class _Attribute{}
+@NgDirective(selector:'[structural]',
+             transclude: '.')               class _Structural{}
+
 main() {
   describe('Selector', () {
     //TODO(karma): throwing error here gets ignored
@@ -33,7 +38,10 @@ main() {
           ..register(_DirectiveValueAttr)
           ..register(_BElementDirectiveValue)
           ..register(_ContainsAbc)
-          ..register(_AttributeContainsXyz);
+          ..register(_AttributeContainsXyz)
+          ..register(_Component)
+          ..register(_Attribute)
+          ..register(_Structural);
 
       selector = selectorFactory(directives);
     });
@@ -111,6 +119,15 @@ main() {
           { "selector": ':contains(/abc/)', "value": 'before-abc-after',
             "element": element, "name": '#text'}
         ]));
+    });
+
+    it('should sort by priority', () {
+      expect(selector(element = e('<component attribute structural></div>')),
+      toEqualsDirectiveInfos([
+        { "selector": "[structural]", "value": "", "element": element },
+        { "selector": "[attribute]", "value": "", "element": element },
+        { "selector": "component", "value": null, "element": element }
+      ]));
     });
   });
 }

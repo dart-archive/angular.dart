@@ -15,6 +15,7 @@ class NgAnnotationBase {
 }
 
 class NgComponent extends NgAnnotationBase {
+  final String selector;
   final String template;
   final String templateUrl;
   final String cssUrl;
@@ -24,6 +25,7 @@ class NgComponent extends NgAnnotationBase {
   final bool resetStyleInheritance;
 
   const NgComponent({
+    this.selector,
     this.template,
     this.templateUrl,
     this.cssUrl,
@@ -43,12 +45,10 @@ class NgDirective extends NgAnnotationBase {
 
   final String selector;
   final String transclude;
-  final int priority;
 
   const NgDirective({
     this.selector,
     this.transclude,
-    this.priority : 0,
     visibility,
     publishTypes : const <Type>[]
   }) : super(visibility: visibility, publishTypes: publishTypes);
@@ -69,12 +69,16 @@ Map<Type, Directive> _directiveCache = new Map<Type, Directive>();
 
 // TODO(pavelgj): Get rid of Directive and use NgComponent/NgDirective directly.
 class Directive {
+  static int STRUCTURAL_PRIORITY = 2;
+  static int ATTR_PRIORITY = 1;
+  static int COMPONENT_PRIORITY = 0;
+
   Type type;
   // TODO(misko): this should be renamed to selector once we change over to meta-data.
   String $name;
   Function $generate;
   String $transclude;
-  int $priority = 0;
+  int $priority = Directive.ATTR_PRIORITY;
   String $template;
   String $templateUrl;
   String $cssUrl;
@@ -113,12 +117,13 @@ class Directive {
     if (directive != null) {
       selector = directive.selector;
       instance.$transclude = directive.transclude;
-      instance.$priority = directive.priority;
       instance.$visibility = directive.visibility;
       instance.$publishTypes = directive.publishTypes;
     }
     if (component != null) {
+      instance.$priority = Directive.COMPONENT_PRIORITY;
       instance.$template = component.template;
+      selector = component.selector;
       instance.$templateUrl = component.templateUrl;
       instance.$cssUrl = component.cssUrl;
       instance.$visibility = component.visibility;
@@ -149,6 +154,9 @@ class Directive {
     }
 
     instance.isStructural = instance.$transclude != null;
+    if (instance.isStructural) {
+      instance.$priority = Directive.STRUCTURAL_PRIORITY;
+    }
     if (instance.isComponent && instance.$map == null) {
       instance.$map = new Map<String, String>();
     }

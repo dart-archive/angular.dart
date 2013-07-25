@@ -2,7 +2,7 @@ import "_specs.dart";
 import "_log.dart";
 import "_http.dart";
 
-@NgDirective(priority: 0)
+@NgDirective()
 class LogAttrDirective {
   Log log;
   LogAttrDirective(Log this.log, NodeAttrs attrs) {
