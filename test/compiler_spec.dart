@@ -131,11 +131,11 @@ main() {
 
       $rootScope.items = [];
       $rootScope.$digest();
-      expect(element.html()).toEqual('<!--ANCHOR: ng-repeat=item in items-->');
+      expect(element.html()).toEqual('<!--ANCHOR: [ng-repeat]=item in items-->');
     }));
 
     xit('should compile repeater with children', inject((Compiler $compile) {
-      var element = $('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>');
+      var element = $('<div><div [ng-repeat]="item in items"><div ng-bind="item"></div></div></div>');
       var template = $compile(element);
 
       $rootScope.items = ['A', 'b'];
@@ -149,7 +149,7 @@ main() {
 
       $rootScope.items = [];
       $rootScope.$digest();
-      expect(element.html()).toEqual('<!--ANCHOR: ng-repeat=item in items-->');
+      expect(element.html()).toEqual('<!--ANCHOR: [ng-repeat]=item in items-->');
     }));
 
 
@@ -402,6 +402,7 @@ main() {
         module.directive(IoComponent);
         module.directive(ParentExpressionComponent);
         module.directive(PublishMeComponent);
+        module.directive(LogComponent);
       }));
 
       it('should create a simple component', async(inject(() {

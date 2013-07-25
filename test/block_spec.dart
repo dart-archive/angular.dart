@@ -162,8 +162,9 @@ main() {
 
           var innerBlockType = new BlockFactory($('<b>text</b>'), []);
           var outerBlockType = new BlockFactory($('<!--start--><!--end-->'), [
-            0, [new DirectiveRef(null, null, '', '',
+            0, [new DirectiveRef(null,
                                  new Directive(LoggerBlockDirective),
+                                 '',
                                  innerBlockType)], null
           ]);
 

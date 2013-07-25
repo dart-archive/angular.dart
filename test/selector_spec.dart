@@ -1,5 +1,14 @@
 import "_specs.dart";
 
+@NgDirective(selector:'b')                  class _BElement{}
+@NgDirective(selector:'.b')                 class _BClass{}
+@NgDirective(selector:'[directive]')        class _DirectiveAttr{}
+@NgDirective(selector:'b[directive]')       class _BElementDirectiveAttr{}
+@NgDirective(selector:'[directive=value]')  class _DirectiveValueAttr{}
+@NgDirective(selector:'b[directive=value]') class _BElementDirectiveValue{}
+@NgDirective(selector:':contains(/abc/)')   class _ContainsAbc{}
+@NgDirective(selector:'[*=/xyz/]')          class _AttributeContainsXyz{}
+
 main() {
   describe('Selector', () {
     //TODO(karma): throwing error here gets ignored
@@ -16,9 +25,15 @@ main() {
       var noop = (Element e, String v) => null;
 
       log = [];
-      directives = ['b', '.b', '[directive]', 'b[directive]',
-          '[directive=value]', 'b[directive=value]', ':contains(/abc/)',
-          '[*=/xyz/]'];
+      directives = new DirectiveRegistry()
+          ..register(_BElement)
+          ..register(_BClass)
+          ..register(_DirectiveAttr)
+          ..register(_BElementDirectiveAttr)
+          ..register(_DirectiveValueAttr)
+          ..register(_BElementDirectiveValue)
+          ..register(_ContainsAbc)
+          ..register(_AttributeContainsXyz);
 
       selector = selectorFactory(directives);
     });
@@ -27,14 +42,14 @@ main() {
       expect(
         selector(element = e('<b></b>')),
         toEqualsDirectiveInfos([
-          { "selector": 'b', "value": null, "element": element, "name": null }
+          { "selector": 'b', "value": null, "element": element}
         ]));
     });
 
     it('should match directive on class', () {
       expect(selector(element = e('<div class="a b c"></div>')),
         toEqualsDirectiveInfos([
-          { "selector": '.b', "value": 'b', "element": element, "name": 'class' }
+          { "selector": '.b', "value": null, "element": element}
       ]));
     });
 
@@ -56,8 +71,8 @@ main() {
       expect(selector(element = e('<b directive=abc></b>')),
         toEqualsDirectiveInfos([
           { "selector": 'b', "value": null, "element": element, "name": null},
-          { "selector": 'b[directive]', "value": 'abc', "element": element, "name": 'directive'},
-          { "selector": '[directive]', "value": 'abc', "element": element, "name": 'directive'}
+          { "selector": 'b[directive]', "value": 'abc', "element": element},
+          { "selector": '[directive]', "value": 'abc', "element": element}
         ]));
     });
 
@@ -65,8 +80,8 @@ main() {
     it('should match directive on [attribute=value]', () {
       expect(selector(element = e('<div directive=value></div>')),
         toEqualsDirectiveInfos([
-          { "selector": '[directive]', "value": 'value', "element": element, "name": 'directive'},
-          { "selector": '[directive=value]', "value": 'value', "element": element, "name": 'directive'}
+          { "selector": '[directive]', "value": 'value', "element": element},
+          { "selector": '[directive=value]', "value": 'value', "element": element}
         ]));
     });
 
@@ -75,10 +90,10 @@ main() {
       expect(selector(element = e('<b directive=value></div>')),
         toEqualsDirectiveInfos([
           { "selector": 'b', "value": null, "element": element, "name": null},
-          { "selector": 'b[directive]', "value": 'value', "element": element, "name": 'directive'},
-          { "selector": 'b[directive=value]', "value": 'value', "element": element, "name": 'directive'},
-          { "selector": '[directive]', "value": 'value', "element": element, "name": 'directive'},
-          { "selector": '[directive=value]', "value": 'value', "element": element, "name": 'directive'}
+          { "selector": 'b[directive]', "value": 'value', "element": element},
+          { "selector": 'b[directive=value]', "value": 'value', "element": element},
+          { "selector": '[directive]', "value": 'value', "element": element},
+          { "selector": '[directive=value]', "value": 'value', "element": element}
         ]));
     });
 
@@ -115,13 +130,12 @@ class DirectiveInfosMatcher extends BaseMatcher {
     var pass = expected.length == directiveRefs.length;
     if (pass) {
       for(var i = 0, ii = expected.length; i < ii; i++) {
-        var directiveRef = directiveRefs[i];
+        DirectiveRef directiveRef = directiveRefs[i];
         var expectedMap = expected[i];
 
         pass = pass &&
           directiveRef.element == expectedMap['element'] &&
-          directiveRef.selector == expectedMap['selector'] &&
-          directiveRef.name == expectedMap['name'] &&
+          directiveRef.directive.$name == expectedMap['selector'] &&
           directiveRef.value == expectedMap['value'];
       }
     }

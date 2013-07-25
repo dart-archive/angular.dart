@@ -5,7 +5,7 @@ class Compiler {
   Selector selector;
 
   Compiler(DirectiveRegistry this.directives) {
-    selector = selectorFactory(directives.enumerate());
+    selector = selectorFactory(directives);
   }
 
   _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,
@@ -90,7 +90,7 @@ class Compiler {
                       NodeCursor domCursor, NodeCursor templateCursor,
                       DirectiveRef directiveRef,
                       List<DirectiveRef> transcludedDirectiveRefs) {
-    var anchorName = directiveRef.name + (directiveRef.value != null ? '=' + directiveRef.value : '');
+    var anchorName = directiveRef.directive.$name + (directiveRef.value != null ? '=' + directiveRef.value : '');
     var blockFactory;
     var blocks;
 
@@ -123,29 +123,6 @@ class Compiler {
   List<DirectiveRef> extractDirectiveRefs(dom.Node node) {
     List<DirectiveRef> directiveRefs = selector(node);
 
-    // Resolve the Directive Controllers
-    for(var j = 0, jj = directiveRefs.length; j < jj; j++) {
-      DirectiveRef directiveRef = directiveRefs[j];
-      Directive directive  = directives[directiveRef.selector];
-
-      if (directive.$generate != null) {
-        var generatedDirectives = directive.$generate(directiveRef.value);
-
-        for (var k = 0, kk = generatedDirectives.length; k < kk; k++) {
-          var generatedSelector = generatedDirectives[k][0];
-          var generatedValue = generatedDirectives[k][1];
-          Directive generatedDirectiveType = directives[generatedSelector];
-          DirectiveRef generatedDirectiveRey = new DirectiveRef(
-              new Directive(null),
-              generatedValue);
-
-          directiveRefs.add(generatedDirectiveRey);
-        }
-        jj = directiveRefs.length;
-      }
-
-      directiveRef.directive = directive;
-    }
     directiveRefs.sort(priorityComparator);
     return directiveRefs;
   }

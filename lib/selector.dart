@@ -17,7 +17,7 @@ RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
 RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
 
 
-Selector selectorFactory(List<String> selectors, [String startWith]) {
+Selector selectorFactory(DirectiveRegistry directives, [String startWith]) {
 
   Map<String, Map<String, Map<String, String>>> elementMap = {};
   Map<String, Map<String, String>> anyAttrMap = {};
@@ -25,7 +25,7 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
   List<SelectorInfo> attrSelector = [];
   List<SelectorInfo> textSelector = [];
 
-  selectors.forEach((selector) {
+  directives.enumerate().forEach((selector) {
     var match;
 
     if (startWith != null) {
@@ -71,17 +71,17 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
     }
   });
 
-  addAttrDirective(List<DirectiveRef> directives, dom.Node element,
-                            Map<String, String>valueMap, String name, String value) {
+  addAttrDirective(List<DirectiveRef> directiveRefs, dom.Node element,
+                            Map<String, String>valueMap, String value) {
     if (valueMap.containsKey('')) {
-      directives.add(new DirectiveRef(element, valueMap[''], name, value));
+      directiveRefs.add(new DirectiveRef(element, directives[valueMap['']], value));
     }
     if (value != '' && valueMap.containsKey(value)) {
-      directives.add(new DirectiveRef(element, valueMap[value], name, value));
+      directiveRefs.add(new DirectiveRef(element, directives[valueMap[value]], value));
     }
   }
 
-  Selector selector = (dom.Node node) {
+  return (dom.Node node) {
     List<DirectiveRef> directiveInfos = [];
     dom.CssClassSet classNames;
 
@@ -94,7 +94,7 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
         if (elementAttrMap != null && elementAttrMap.containsKey('')) {
           var valueMap = elementAttrMap[''];
           if (valueMap.containsKey('')) {
-            directiveInfos.add(new DirectiveRef(node, valueMap['']));
+            directiveInfos.add(new DirectiveRef(node, directives[valueMap['']]));
           }
         }
 
@@ -102,7 +102,7 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
         if ((classNames = node.classes) != null) {
           for(var name in classNames) {
             if (anyClassMap.containsKey(name)) {
-              directiveInfos.add(new DirectiveRef(node, anyClassMap[name], 'class', name));
+              directiveInfos.add(new DirectiveRef(node, directives[anyClassMap[name]]));
             }
           }
         }
@@ -116,15 +116,15 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
               // we need to pass the name to the directive by prefixing it to the
               // value. Yes it is a bit of a hack.
               directiveInfos.add(new DirectiveRef(
-                  node, selectorRegExp.selector, attrName, '$attrName=$value'));
+                  node, directives[selectorRegExp.selector], '$attrName=$value'));
             }
           }
 
           if (elementAttrMap != null && elementAttrMap.containsKey(attrName)) {
-            addAttrDirective(directiveInfos, node, elementAttrMap[attrName], attrName, value);
+            addAttrDirective(directiveInfos, node, elementAttrMap[attrName], value);
           }
           if (anyAttrMap.containsKey(attrName)) {
-            addAttrDirective(directiveInfos, node, anyAttrMap[attrName], attrName, value);
+            addAttrDirective(directiveInfos, node, anyAttrMap[attrName], value);
           }
         });
         break;
@@ -133,7 +133,7 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
           var selectorRegExp = textSelector[k];
 
           if (selectorRegExp.regexp.hasMatch(value)) {
-            directiveInfos.add(new DirectiveRef(node, selectorRegExp.selector, '#text', value));
+            directiveInfos.add(new DirectiveRef(node, directives[selectorRegExp.selector], value));
           }
         }
         break;
@@ -141,5 +141,4 @@ Selector selectorFactory(List<String> selectors, [String startWith]) {
 
       return directiveInfos;
     };
-  return selector;
 }

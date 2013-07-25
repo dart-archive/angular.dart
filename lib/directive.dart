@@ -173,21 +173,17 @@ dynamic _defaultIfNull(dynamic value, dynamic defaultValue) =>
 
 class DirectiveRef {
   dom.Node element;
-  String selector;
-  String name;
   String value;
   Directive directive;
   BlockFactory blockFactory;
 
-  DirectiveRef(this.element, this.selector, [
-               String this.name,
+  DirectiveRef(dom.Node this.element, Directive this.directive, [
                String this.value,
-               Directive this.directive,
                BlockFactory this.blockFactory]) {
   }
 
   String toString() {
-    return '{ element: ${element.outerHtml}, selector: $selector, name: $name, value: $value }';
+    return '{ element: ${element.outerHtml}, selector: ${directive.$name}, value: $value }';
   }
 }
 
