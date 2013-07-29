@@ -77,7 +77,7 @@ class Directive {
   // TODO(misko): this should be renamed to selector once we change over to meta-data.
   String $name;
   Function $generate;
-  String $transclude;
+  bool $transclude = false;
   int $priority = Directive.ATTR_PRIORITY;
   String $template;
   String $templateUrl;
@@ -116,7 +116,7 @@ class Directive {
     var selector;
     if (directive != null) {
       selector = directive.selector;
-      instance.$transclude = directive.transclude;
+      instance.$transclude = directive.transclude != null;
       instance.$visibility = directive.visibility;
       instance.$publishTypes = directive.publishTypes;
     }
@@ -153,7 +153,7 @@ class Directive {
             "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
     }
 
-    instance.isStructural = instance.$transclude != null;
+    instance.isStructural = instance.$transclude;
     if (instance.isStructural) {
       instance.$priority = Directive.STRUCTURAL_PRIORITY;
     }

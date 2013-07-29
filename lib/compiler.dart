@@ -45,9 +45,9 @@ class Compiler {
             declaredDirectiveRefs.add(generatedDirectiveRef);
           }
         }
-        if (directive.$transclude != null) {
+        if (directive.$transclude) {
           var remainingDirectives = declaredDirectiveRefs.sublist(j + 1);
-          blockFactory = compileTransclusion(directive.$transclude,
+          blockFactory = compileTransclusion(
               domCursor, templateCursor,
               directiveRef, remainingDirectives);
 
@@ -86,7 +86,7 @@ class Compiler {
     return directivePositions;
   }
 
-  BlockFactory compileTransclusion(String selector,
+  BlockFactory compileTransclusion(
                       NodeCursor domCursor, NodeCursor templateCursor,
                       DirectiveRef directiveRef,
                       List<DirectiveRef> transcludedDirectiveRefs) {

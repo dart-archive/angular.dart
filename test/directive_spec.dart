@@ -36,17 +36,17 @@ main() {
 
     it('should set \$transclude based on the directive type for undef transclude', () {
       Directive factory = new Directive(SomeDirective);
-      expect(factory.$transclude).toEqual(null);
+      expect(factory.$transclude).toEqual(false);
     });
 
     it('should set \$transclude based on the directive type for transclude=true', () {
       Directive factory = new Directive(TranscludeDirective);
-      expect(factory.$transclude).toEqual("true");
+      expect(factory.$transclude).toEqual(true);
     });
 
     it('should set \$transclude based on the directive type for transclude=null', () {
       Directive factory = new Directive(ExplicitNullTranscludeDirective);
-      expect(factory.$transclude).toEqual(null);
+      expect(factory.$transclude).toEqual(false);
     });
 
     it('should default \$shadowRootOptions to false/false', () {
