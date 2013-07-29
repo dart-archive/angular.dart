@@ -2,29 +2,50 @@ part of angular;
 
 Symbol _SHADOW = new Symbol('SHADOW_INJECTOR');
 
+/**
+* ElementWrapper is an interface for Blocks and BlockHoles. Its purpose is to
+* allow treating Block and BlockHole under same interface so that Blocks can
+* be added after BlockHole.
+*/
 abstract class ElementWrapper {
   List<dom.Node> elements;
   ElementWrapper next;
   ElementWrapper previous;
 }
 
+/**
+ * A Block is a fundamental building block of DOM. It is a chunk of DOM which
+ * Can not be structural changed. It can only have its attributes changed.
+ * A Block can have BlockHoles embedded in its DOM.  A BlockHole can contain
+ * other Blocks and it is the only way in which DOM can be changed structurally.
+ *
+ * A Block is a collection of DOM nodes and Directives for those nodes.
+ *
+ * A Block is responsible for instantiating the Directives and for
+ * inserting / removing itself to/from DOM.
+ *
+ * A Block can be created from BlockFactory.
+ *
+ */
 class Block implements ElementWrapper {
-  Injector $injector;
   List<dom.Node> elements;
   ElementWrapper previous = null;
   ElementWrapper next = null;
-  List<dynamic> directives = [];
+
   Function onInsert;
   Function onRemove;
   Function onMove;
 
-  Block(Injector this.$injector,
+  Injector _injector;
+  List<dynamic> _directives = [];
+
+  Block(Injector this._injector,
         List<dom.Node> this.elements,
         List directivePositions) {
     ASSERT(elements != null);
     ASSERT(directivePositions != null);
-    ASSERT($injector != null);
-    _link(elements, directivePositions, $injector);
+    ASSERT(_injector != null);
+    _link(elements, directivePositions, _injector);
   }
 
   _link(List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
@@ -74,17 +95,17 @@ class Block implements ElementWrapper {
     nodeModule.value(NodeAttrs, nodeAttrs);
     directiveRefs.forEach((DirectiveRef ref) {
       Type type = ref.directive.type;
-      var visibility = elementOnly;
+      var visibility = _elementOnly;
       if (ref.directive.$visibility == NgDirective.CHILDREN_VISIBILITY) {
         visibility = null;
       } else if (ref.directive.$visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
-        visibility = elementDirectChildren;
+        visibility = _elementDirectChildren;
       }
       if (ref.directive.isComponent) {
         //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
         // TODO(misko): there should be no need to wrap function like this.
         nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, Parser parser, BlockCache $blockCache, UrlRewriter urlRewriter) =>
-          (new ComponentFactory(node, ref.directive))(injector, compiler, scope, parser, $blockCache, urlRewriter),
+          (new _ComponentFactory(node, ref.directive))(injector, compiler, scope, parser, $blockCache, urlRewriter),
           visibility: visibility);
       } else {
         nodeModule.type(type, type, visibility: visibility);
@@ -108,7 +129,7 @@ class Block implements ElementWrapper {
   }
 
   /// DI visibility callback allowing node-local visibility.
-  bool elementOnly(Injector requesting, Injector defining) {
+  bool _elementOnly(Injector requesting, Injector defining) {
     if (requesting.instances.containsKey(_SHADOW)) {
       requesting = requesting.instances[_SHADOW];
     }
@@ -116,11 +137,11 @@ class Block implements ElementWrapper {
   }
 
   /// DI visibility callback allowing visibility from direct child into parent.
-  bool elementDirectChildren(Injector requesting, Injector defining) {
+  bool _elementDirectChildren(Injector requesting, Injector defining) {
     if (requesting.instances.containsKey(_SHADOW)) {
       requesting = requesting.instances[_SHADOW];
     }
-    return elementOnly(requesting, defining) || identical(requesting.parent, defining);
+    return _elementOnly(requesting, defining) || identical(requesting.parent, defining);
   }
 
 
@@ -238,7 +259,12 @@ class Block implements ElementWrapper {
   }
 }
 
-class ComponentFactory {
+/**
+ * ComponentFactory is responsible for setting up components. This includes
+ * the shadowDom, fetching template, importing styles, setting up attribute
+ * mappings, publishing the controller, and compiling and caching the template.
+ */
+class _ComponentFactory {
   dom.Element element;
   Directive directive;
   dom.ShadowRoot shadowDom;
@@ -246,7 +272,7 @@ class ComponentFactory {
   Injector shadowInjector;
   Compiler compiler;
 
-  ComponentFactory(this.element, this.directive);
+  _ComponentFactory(this.element, this.directive);
 
   dynamic call(Injector injector, Compiler compiler, Scope scope,
       Parser parser, BlockCache $blockCache, UrlRewriter urlRewriter) {
@@ -331,6 +357,11 @@ class ComponentFactory {
   }
 }
 
+/**
+ * BlockCache is used to cache the compilation of templates into Blocks.
+ * It can be used synchronously if HTML is known or asynchronously if the
+ * template HTML needs to be looked up from the URL.
+ */
 class BlockCache {
   Cache _blockCache;
   Http $http;
@@ -361,7 +392,8 @@ class BlockCache {
 }
 
 /**
- * A convinience wrapper for "templates" cache.
+ * A convenience wrapper for "templates" cache, its purpose is
+ * to create new Type which can be used for injection.
  */
 class TemplateCache implements Cache<HttpResponse> {
   Cache _cache;
@@ -379,119 +411,22 @@ class TemplateCache implements Cache<HttpResponse> {
   void destroy() => _cache.destroy();
 }
 
+/**
+ * TemplateLoader is an asynchronous access to ShadowRoot which is
+ * loaded asynchronously. It allows a Component to be notified when its
+ * ShadowRoot is ready.
+ */
 class TemplateLoader {
   final async.Future<dom.ShadowRoot> _template;
   async.Future<dom.ShadowRoot> get template => _template;
   TemplateLoader(this._template);
 }
 
-attrAccessorFactory(dom.Element element, String name) {
-  return ([String value]) {
-    if (value != null) {
-      if (value == null) {
-        element.attributes.remove(name);
-      } else {
-        element.attributes[name] = value;
-      }
-      return value;
-    } else {
-      return element.attributes[name];
-    }
-  };
-}
-
-Function classAccessorFactory(dom.Element element, String name) {
-  return ([bool value]) {
-    var className = element.className,
-        paddedClassName = ' ' + className + ' ',
-        hasClass = paddedClassName.indexOf(' ' + name + ' ') != -1;
-
-    if (arguments.length) {
-      if (!value && hasClass) {
-        paddedClassName = paddedClassName.replace(' ' + name + ' ', ' ');
-        element.className =
-            paddedClassName.substring(1, paddedClassName.length - 2);
-      } else if (value && !hasClass) {
-        element.className = className + ' ' + name;
-      }
-      hasClass = !!value;
-    }
-    return hasClass;
-  };
-}
-
-styleAccessorFactory(dom.Element element, String name) {
-  return ([String value]) {
-    if (arguments.length) {
-      if (!value) {
-        value = '';
-      }
-      element.style[name] = value;
-    } else {
-      value = element.style[name];
-    }
-    return value;
-  };
-}
-
-RegExp _DYNAMIC_SERVICES_REGEX = new RegExp(
-    r'^(\$text|\$attr_?|\$style_?|\$class_?|\$on_?|\$prop_?|\$service_)(.*)$');
-
-Map<String, Function> _DYNAMIC_SERVICES = {
-  r'$text': (String name, Block block, dom.Element element) {
-    return element.nodeType == 3 /* text node */
-        ? (value) { element.nodeValue = value || ''; }
-        : (value) { element.innerText = value || ''; };
-  },
-
-  r'$attr_': (String name, Block block, dom.Element element) {
-    return attrAccessorFactory(name, element);
-  },
-
-  r'$attr': (String name, Block block, dom.Element element) {
-    return bind(null, attrAccessorFactory, element);
-  },
-
-  r'$style_': (String name, Block block, dom.Element element) {
-    return styleAccessorFactory(name, element);
-  },
-
-  r'$style': (String name, Block block, dom.Element element) {
-    return bind(null, styleAccessorFactory, element);
-  },
-
-  r'$class_': (String name, Block block, dom.Element element) {
-    return classAccessorFactory(name, element);
-  },
-
-  r'$class': (String name, Block block, dom.Element element) {
-    return bind(null, classAccessorFactory, element);
-  },
-
-  r'$on_': (String name, Block block, dom.Element element) {
-    // TODO: there needs to be a way to clean this up on block detach
-    return (callback) {
-      if (name == 'remove') {
-        block.onRemove = callback;
-      } else if (name == 'insert') {
-        block.onInsert = callback;
-      } else {
-        element.addEventListener(name, callback);
-      }
-    };
-  },
-
-  r'$prop_': (String name, Block block, dom.Element element) {
-    return (value) {
-      return element[name];
-    };
-  },
-
-  r'$service_': (String name, Block block, dom.Element element) {
-    return $injector.get(name);
-  }
-};
-
+/**
+ * NodeAttrs is a facade for node attributes. The facade is responsible
+ * for normalizing attribute names as well as allowing access to the
+ * value of the directive.
+ */
 class NodeAttrs {
   dom.Node node;
   Map<String, String> attributes;
@@ -528,6 +463,14 @@ class BlockHole extends ElementWrapper {
   BlockHole(List<dom.Node> this.elements);
 }
 
+/**
+ * BoundBlockFactory is a BlockFactory which does not need Injector because
+ * it is pre-bound to an injector from the parent. This means that this
+ * BoundBlockFactory can only be used from within a specific Directive such
+ * as ng-repeat, but it can not be stored in a cache.abstract
+ *
+ * The BoundBlockFactory needs Scope to be created.
+ */
 class BoundBlockFactory {
   BlockFactory blockFactory;
   Injector injector;
@@ -539,6 +482,10 @@ class BoundBlockFactory {
   }
 }
 
+/**
+* BlockFactory is used to create new Blocks. BlockFactory is created by the
+* Compiler as a result of compiling a template.
+*/
 class BlockFactory {
   List directivePositions;
   List<dom.Node> templateElements;
@@ -560,7 +507,7 @@ class BlockFactory {
   }
 
   ClassMirror _getClassMirror(Type type) {
-// terrible hack because we can't get a qualified name from a Type
+    // terrible hack because we can't get a qualified name from a Type
     var name = type.toString();
     name = new RegExp(r"^Instance of '(.*)'$").firstMatch(name).group(1);
     for (var lib in currentMirrorSystem().libraries.values) {
@@ -570,6 +517,5 @@ class BlockFactory {
     }
     throw new ArgumentError();
   }
-
 }
 
