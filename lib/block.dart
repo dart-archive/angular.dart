@@ -483,9 +483,9 @@ class BoundBlockFactory {
 }
 
 /**
-* BlockFactory is used to create new Blocks. BlockFactory is created by the
-* Compiler as a result of compiling a template.
-*/
+ * BlockFactory is used to create new Blocks. BlockFactory is created by the
+ * Compiler as a result of compiling a template.
+ */
 class BlockFactory {
   List directivePositions;
   List<dom.Node> templateElements;
