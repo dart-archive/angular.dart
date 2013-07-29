@@ -602,7 +602,7 @@ main() {
       expect(eval('true || run()')).toBe(true);
     });
 
-    xit('should support method calls on primitive types', () {
+    it('should support method calls on primitive types', () {
       scope["empty"] = '';
       scope["zero"] = 0;
       scope["bool"] = false;

@@ -134,12 +134,12 @@ main() {
       expect(element.html()).toEqual('<!--ANCHOR: [ng-repeat]=item in items-->');
     }));
 
-    xit('should compile repeater with children', inject((Compiler $compile) {
-      var element = $('<div><div [ng-repeat]="item in items"><div ng-bind="item"></div></div></div>');
+    it('should compile repeater with children', inject((Compiler $compile) {
+      var element = $('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>');
       var template = $compile(element);
 
       $rootScope.items = ['A', 'b'];
-      template(element);
+      template(injector, element);
 
       expect(element.text()).toEqual('');
       // TODO(deboer): Digest twice until we have dirty checking in the scope.
@@ -153,39 +153,14 @@ main() {
     }));
 
 
-    xit('should compile multi-root repeater', inject((Compiler $compile) {
-      var element = $(
-          '<div>' +
-            '<div repeat="item in items" bind="item" include-next></div>' +
-            '<span bind="item"></span>' +
-          '</div>');
-      var template = $compile(element);
-
-      $rootScope.items = ['A', 'b'];
-      template(element);
-
-      expect(element.text()).toEqual('');
-      $rootScope.$digest();
-      expect(element.text()).toEqual('AAbb');
-      expect(element.html()).toEqual(
-          '<!--ANCHOR: repeat=item in items-->' +
-          '<div repeat="item in items" bind="item" include-next="">A</div><span bind="item">A</span>' +
-          '<div repeat="item in items" bind="item" include-next="">b</div><span bind="item">b</span>');
-
-      $rootScope.items = [];
-      $rootScope.$digest();
-      expect(element.html()).toEqual('<!--ANCHOR: repeat=item in items-->');
-    }));
-
-
-    xit('should compile text', inject((Compiler $compile) {
+    it('should compile text', inject((Compiler $compile) {
       var element = $('<div>{{name}}<span>!</span></div>').contents();
       element.remove();
 
       var template = $compile(element);
 
       $rootScope.name = 'OK';
-      var block = template();
+      var block = template(injector);
 
       element = $(block.elements);
 
@@ -197,142 +172,22 @@ main() {
     }));
 
 
-    xit('should compile nested repeater', inject((Compiler $compile) {
+    it('should compile nested repeater', inject((Compiler $compile) {
       var element = $(
           '<div>' +
-            '<ul repeat="lis in uls">' +
-               '<li repeat="li in lis" bind="li"></li>' +
+            '<ul ng-repeat="lis in uls">' +
+               '<li ng-repeat="li in lis">{{li}}</li>' +
             '</ul>' +
           '</div>');
       var template = $compile(element);
 
       $rootScope.uls = [['A'], ['b']];
-      template(element);
+      template(injector, element);
 
       expect(element.text()).toEqual('');
       $rootScope.$digest();
       expect(element.text()).toEqual('Ab');
     }));
-
-
-    describe('transclusion', () {
-      beforeEach(module(($provide) {
-        /*
-        Switch.$transclude = '>[switch-when],>[switch-default]';
-        Switch.$inject=['$anchor', '$value'];
-        Switch($anchor, $value) {
-          var block;
-
-          attach = (scope) {
-            scope.$watch($value, (value) {
-              if (block) {
-                block.remove();
-              }
-              var type = 'switch-when=' + value;
-
-              if (!$anchor.blockTypes.hasOwnProperty(type)) {
-                type = 'switch-default';
-              }
-              block = $anchor.newBlock(type);
-              LOG(block);
-              LOG($anchor);
-              block.insertAfter($anchor);
-              block.attach(scope.$new());
-            });
-          }
-        };
-        */
-
-        $provide.value('directive:[switch]', Switch);
-      }));
-
-      xit('should transclude multiple templates', inject(($rootScope) {
-        var element = $(
-            '<div switch="name">' +
-                '<span switch-when="a">when</span>' +
-                '<span switch-default>default</span>' +
-            '</div>');
-        var template = $compile(element);
-        var block = template(element);
-
-        block;
-
-        $rootScope.name = 'a';
-        $rootScope.$apply();
-        expect(element.text()).toEqual('when');
-
-        $rootScope.name = 'abc';
-        $rootScope.$apply();
-        expect(element.text()).toEqual('default');
-      }));
-    });
-
-
-    xit('should allow multiple transclusions on one element and in correct order.', () {
-      module(($provide) {
-        /*
-        var One = ($anchor) {
-          this.attach = (scope) {
-            var block = $anchor.newBlock();
-            var childScope = scope.$new();
-
-            childScope.test = childScope.test + 1;
-            block.insertAfter($anchor);
-            block.attach(childScope);
-          }
-        };
-        One.$transclude = '.';
-        One.$priority = 100;
-
-        var Two = ($anchor) {
-          this.attach = (scope) {
-            var block = $anchor.newBlock();
-            var childScope = scope.$new();
-
-            childScope.test = childScope.test + 1;
-            block.insertAfter($anchor);
-            block.attach(childScope);
-          }
-        };
-        Two.$transclude = '.';
-
-        var Three = ($anchor) {
-          this.attach = (scope) {
-            var block = $anchor.newBlock();
-            var childScope = scope.$new();
-
-            childScope.test = childScope.test + 1;
-            block.insertAfter($anchor);
-            block.attach(childScope);
-          }
-        };
-        Three.$transclude = '.';
-
-        $provide.value({
-          'directive:[one]': One,
-          'directive:[two]': Two,
-          'directive:[three]': Three
-        });
-        */
-      });
-      inject((Compiler $compile) {
-        var element = $(
-            '<div><b>prefix<span two one three>{{test}}</span>suffix</b></div>');
-        var block = $compile(element)(element);
-
-        $rootScope.test = 0;
-        block;
-        $rootScope.$apply();
-
-        expect(element.length).toEqual(1);
-        expect(STRINGIFY(element[0])).toEqual(
-          '<div>' +
-            '<b>prefix' +
-              '<!--ANCHOR: one--><!--ANCHOR: two--><!--ANCHOR: three--><span two="" one="" three="">3</span>' +
-            'suffix</b>' +
-          '</div>');
-      });
-    });
 
 
     describe("interpolation", () {
@@ -358,39 +213,6 @@ main() {
         expect(element.text()).toEqual('');
         $rootScope.$digest();
         expect(element.text()).toEqual('angular');
-      }));
-    });
-
-
-    describe('directive generation', () {
-      var Bind, Repeat;
-
-      beforeEach(module(($provide) {
-        /*
-        Generate() {};
-
-        Generate.$generate = (value) {
-          expect(value).toEqual('abc');
-
-          return [['[bind]', 'name'], ['[repeat]', 'name in names']];
-        };
-
-        */
-
-        $provide.value('directive:[generate]', Generate);
-      }));
-
-
-      xit('should generate directive from a directive', inject(() {
-        var element = $('<ul><li generate="abc"></li></ul>');
-        var blockFactory = $compile(element);
-        var block = blockFactory(element);
-
-        block;
-        $rootScope.names = ['james;', 'misko;'];
-        $rootScope.$apply();
-
-        expect(element.text()).toEqual('james;misko;');
       }));
     });
 

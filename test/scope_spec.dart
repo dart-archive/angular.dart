@@ -752,7 +752,7 @@ main() {
           }));
 
 
-          xit(r'should broadcast an event from the root scope', inject((Scope $rootScope) {
+          it(r'should broadcast an event from the root scope', inject((Scope $rootScope) {
             $rootScope.$broadcast('myEvent');
             expect(log.join('>')).toEqual('0>1>11>2>21>211>22>23>3');
           }));
