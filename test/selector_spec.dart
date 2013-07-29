@@ -12,7 +12,7 @@ import "_specs.dart";
 @NgComponent(selector:'component')          class _Component{}
 @NgDirective(selector:'[attribute]')        class _Attribute{}
 @NgDirective(selector:'[structural]',
-             transclude: '.')               class _Structural{}
+             transclude: true)              class _Structural{}
 
 main() {
   describe('Selector', () {

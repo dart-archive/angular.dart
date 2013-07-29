@@ -1,6 +1,6 @@
 part of angular;
 
-@NgDirective(transclude: '.')
+@NgDirective(transclude: true)
 class NgIfAttrDirective {
 
   NgIfAttrDirective(BoundBlockFactory boundBlockFactory, BlockHole blockHole,

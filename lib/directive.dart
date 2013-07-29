@@ -44,11 +44,11 @@ class NgDirective extends NgAnnotationBase {
   static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
 
   final String selector;
-  final String transclude;
+  final bool transclude;
 
   const NgDirective({
     this.selector,
-    this.transclude,
+    this.transclude: false,
     visibility,
     publishTypes : const <Type>[]
   }) : super(visibility: visibility, publishTypes: publishTypes);
@@ -116,7 +116,7 @@ class Directive {
     var selector;
     if (directive != null) {
       selector = directive.selector;
-      instance.$transclude = directive.transclude != null;
+      instance.$transclude = directive.transclude;
       instance.$visibility = directive.visibility;
       instance.$publishTypes = directive.publishTypes;
     }

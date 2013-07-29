@@ -11,7 +11,7 @@ class Row {
   Row(this.id);
 }
 
-@NgDirective(transclude: '.')
+@NgDirective(transclude: true)
 class NgRepeatAttrDirective  {
   static RegExp SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s+(.+)\s*)?$');
   static RegExp LHS_SYNTAX = new RegExp(r'^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$');

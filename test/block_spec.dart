@@ -1,6 +1,6 @@
 import "_specs.dart";
 
-@NgDirective(transclude: '.', selector: 'foo')
+@NgDirective(transclude: true, selector: 'foo')
 class LoggerBlockDirective {
   LoggerBlockDirective(BlockHole hole, BoundBlockFactory boundBlockFactory, Logger logger) {
     if (hole == null) {

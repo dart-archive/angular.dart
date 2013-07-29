@@ -4,12 +4,8 @@ import "_specs.dart";
 class SomeDirective { }
 class AnotherAttrDirective { }
 
-@NgDirective(transclude: 'true')
+@NgDirective(transclude: true)
 class TranscludeDirective {
-}
-
-@NgDirective(transclude: null)
-class ExplicitNullTranscludeDirective {
 }
 
 class WithDefaultShadowRootOptionsComponent {
@@ -42,11 +38,6 @@ main() {
     it('should set \$transclude based on the directive type for transclude=true', () {
       Directive factory = new Directive(TranscludeDirective);
       expect(factory.$transclude).toEqual(true);
-    });
-
-    it('should set \$transclude based on the directive type for transclude=null', () {
-      Directive factory = new Directive(ExplicitNullTranscludeDirective);
-      expect(factory.$transclude).toEqual(false);
     });
 
     it('should default \$shadowRootOptions to false/false', () {

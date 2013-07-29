@@ -1,6 +1,6 @@
 part of angular;
 
-@NgDirective(transclude: '.')
+@NgDirective(transclude: true)
 class NgControllerAttrDirective {
   static RegExp CTRL_REGEXP = new RegExp(r'^(\S+)(\s+as\s+(\w+))?$');
 
