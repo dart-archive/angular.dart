@@ -3,9 +3,9 @@ part of angular;
 Symbol _SHADOW = new Symbol('SHADOW_INJECTOR');
 
 /**
-* ElementWrapper is an interface for Blocks and BlockHoles. Its purpose is to
-* allow treating Block and BlockHole under same interface so that Blocks can
-* be added after BlockHole.
+* ElementWrapper is an interface for [Blocks] and [BlockHole]s. Its purpose is
+* to allow treating [Block] and [BlockHole] under same interface so that
+* [Block]s can be added after [BlockHole].
 */
 abstract class ElementWrapper {
   List<dom.Node> elements;
@@ -16,15 +16,16 @@ abstract class ElementWrapper {
 /**
  * A Block is a fundamental building block of DOM. It is a chunk of DOM which
  * Can not be structural changed. It can only have its attributes changed.
- * A Block can have BlockHoles embedded in its DOM.  A BlockHole can contain
- * other Blocks and it is the only way in which DOM can be changed structurally.
+ * A Block can have [BlockHole]s embedded in its DOM.  A [BlockHole] can
+ * contain other [Block]s and it is the only way in which DOM can be changed
+ * structurally.
  *
- * A Block is a collection of DOM nodes and Directives for those nodes.
+ * A [Block] is a collection of DOM nodes and [Directive]s for those nodes.
  *
- * A Block is responsible for instantiating the Directives and for
+ * A [Block] is responsible for instantiating the [Directive]s and for
  * inserting / removing itself to/from DOM.
  *
- * A Block can be created from BlockFactory.
+ * A [Block] can be created from [BlockFactory].
  *
  */
 class Block implements ElementWrapper {
@@ -187,10 +188,7 @@ class Block implements ElementWrapper {
     return this;
   }
 
-  /**
-   * @return {angular.core.Block}
-   */
-  remove() {
+  Block remove() {
     bool preventDefault = false;
 
     Function removeDomElements = () {
@@ -228,11 +226,7 @@ class Block implements ElementWrapper {
   }
 
 
-  /**
-   * @param {angular.core.Block} previousBlock
-   * @return {angular.core.Block}
-   */
-  moveAfter(previousBlock) {
+  Block moveAfter(ElementWrapper previousBlock) {
     var previousElements = previousBlock.elements,
         previousElement = previousElements[previousElements.length - 1],
         insertBeforeElement = previousElement.nextNode,
@@ -358,7 +352,7 @@ class _ComponentFactory {
 }
 
 /**
- * BlockCache is used to cache the compilation of templates into Blocks.
+ * BlockCache is used to cache the compilation of templates into [Block]s.
  * It can be used synchronously if HTML is known or asynchronously if the
  * template HTML needs to be looked up from the URL.
  */
@@ -450,9 +444,9 @@ class NodeAttrs {
 }
 
 /**
- * An Anchor is an instance of a hole. Anchors designate where child Blocks can
- * be added in parent Block. Anchors wrap a DOM element, and act as references
- * which allows more blocks to be added.
+ * A BlockHole is an instance of a hole. BlockHoles designate where child
+ * [Block]s can be added in parent [Block]. BlockHoles wrap a DOM element,
+ * and act as references which allows more blocks to be added.
  */
 class BlockHole extends ElementWrapper {
   List<dom.Node> elements;
@@ -464,12 +458,12 @@ class BlockHole extends ElementWrapper {
 }
 
 /**
- * BoundBlockFactory is a BlockFactory which does not need Injector because
+ * BoundBlockFactory is a [BlockFactory] which does not need Injector because
  * it is pre-bound to an injector from the parent. This means that this
  * BoundBlockFactory can only be used from within a specific Directive such
- * as ng-repeat, but it can not be stored in a cache.abstract
+ * as [NgRepeat], but it can not be stored in a cache.
  *
- * The BoundBlockFactory needs Scope to be created.
+ * The BoundBlockFactory needs [Scope] to be created.
  */
 class BoundBlockFactory {
   BlockFactory blockFactory;
@@ -483,8 +477,8 @@ class BoundBlockFactory {
 }
 
 /**
- * BlockFactory is used to create new Blocks. BlockFactory is created by the
- * Compiler as a result of compiling a template.
+ * BlockFactory is used to create new [Block]s. BlockFactory is created by the
+ * [Compiler] as a result of compiling a template.
  */
 class BlockFactory {
   List directivePositions;
