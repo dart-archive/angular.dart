@@ -3,7 +3,7 @@ part of angular;
 Symbol _SHADOW = new Symbol('SHADOW_INJECTOR');
 
 /**
-* ElementWrapper is an interface for [Blocks] and [BlockHole]s. Its purpose is
+* ElementWrapper is an interface for [Block]s and [BlockHole]s. Its purpose is
 * to allow treating [Block] and [BlockHole] under same interface so that
 * [Block]s can be added after [BlockHole].
 */
