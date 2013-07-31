@@ -95,7 +95,7 @@ class ExceptionContains extends unit.Matcher {
 
   final _expected;
 
-  const ExceptionContains(this._expected);
+  ExceptionContains(this._expected);
 
   bool matches(item, Map matchState) {
     if (item is String) {
