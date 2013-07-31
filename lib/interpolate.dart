@@ -9,7 +9,7 @@ num endSymbolLength = endSymbol.length;
 class Interpolate {
   Parser $parse;
   ExceptionHandler $exceptionHandler;
-  
+
   Interpolate(Parser this.$parse, ExceptionHandler this.$exceptionHandler);
 
   ParsedFn call(String text, [bool mustHaveExpression = false]) {
@@ -54,7 +54,7 @@ class Interpolate {
               if (chunk == null) {
                 chunk = '';
               } else if (!(chunk is String)) {
-                chunk = toJson(chunk);
+                chunk = '$chunk';
               }
             }
             concat.add(chunk);
