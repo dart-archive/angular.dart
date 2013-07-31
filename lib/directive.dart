@@ -4,18 +4,19 @@ String _COMPONENT = '-component';
 String _DIRECTIVE = '-directive';
 String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
 
-class NgAnnotationBase {
+class _NgAnnotationBase {
+  final String selector;
   final String visibility;
   final List<Type> publishTypes;
 
-  const NgAnnotationBase({
+  const _NgAnnotationBase({
+    this.selector,
     this.visibility: NgDirective.LOCAL_VISIBILITY,
     this.publishTypes
   });
 }
 
-class NgComponent extends NgAnnotationBase {
-  final String selector;
+class NgComponent extends _NgAnnotationBase {
   final String template;
   final String templateUrl;
   final String cssUrl;
@@ -25,33 +26,32 @@ class NgComponent extends NgAnnotationBase {
   final bool resetStyleInheritance;
 
   const NgComponent({
-    this.selector,
     this.template,
     this.templateUrl,
     this.cssUrl,
-    visibility,
     this.map,
     this.publishAs,
     this.applyAuthorStyles,
     this.resetStyleInheritance,
+    selector,
+    visibility,
     publishTypes : const <Type>[]
-  }) : super(visibility: visibility, publishTypes: publishTypes);
+  }) : super(selector: selector, visibility: visibility, publishTypes: publishTypes);
 }
 
-class NgDirective extends NgAnnotationBase {
+class NgDirective extends _NgAnnotationBase {
   static const String LOCAL_VISIBILITY = 'local';
   static const String CHILDREN_VISIBILITY = 'children';
   static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
 
-  final String selector;
   final bool transclude;
 
   const NgDirective({
-    this.selector,
     this.transclude: false,
+    selector,
     visibility,
     publishTypes : const <Type>[]
-  }) : super(visibility: visibility, publishTypes: publishTypes);
+  }) : super(selector: selector, visibility: visibility, publishTypes: publishTypes);
 }
 
 /**
