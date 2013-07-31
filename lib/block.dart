@@ -262,6 +262,8 @@ class Block implements ElementWrapper {
  * mappings, publishing the controller, and compiling and caching the template.
  */
 class _ComponentFactory {
+  static RegExp _MAPPING = new RegExp(r'^([\@\=\&])(\.?)\s*(.*)$');
+
   dom.Element element;
   Directive directive;
   dom.ShadowRoot shadowDom;
@@ -282,8 +284,6 @@ class _ComponentFactory {
         directive.$shadowRootOptions.resetStyleInheritance;
 
     shadowScope = scope.$new(true);
-    createAttributeMapping(scope, shadowScope, parser);
-
     // TODO(pavelgj): fetching CSS with Http is mainly an attempt to
     // work around an unfiled Chrome bug when reloading same CSS breaks
     // styles all over the page. We shouldn't be doing browsers work,
@@ -318,6 +318,8 @@ class _ComponentFactory {
     if (directive.$publishAs != null) {
       shadowScope[directive.$publishAs] = controller;
     }
+    createAttributeMapping(scope, shadowScope, controller, parser);
+
     return controller;
   }
 
@@ -333,39 +335,56 @@ class _ComponentFactory {
       ..value(TemplateLoader, templateLoader)
       ..value(dom.ShadowRoot, shadowDom);
     shadowInjector = injector.createChild([shadowModule]);
-    // TODO(misko): creazy hack to mark injector
+    // TODO(misko): crazy hack to mark injector
     shadowInjector.instances[_SHADOW] = injector;
     return shadowInjector;
   }
 
-  createAttributeMapping(Scope parentScope, Scope shadowScope, Parser parser) {
+  createAttributeMapping(Scope parentScope, Scope shadowScope,
+                         Object controller, Parser parser) {
     directive.$map.forEach((attrName, mapping) {
+      Match match = _MAPPING.firstMatch(mapping);
+      if (match == null) {
+        throw "Unknown mapping '$mapping' for attribute '$attrName'.";
+      }
       var attrValue = element.attributes[snakeCase(attrName, '-')];
       if (attrValue == null) attrValue = '';
-      if (mapping == '@') {
-        shadowScope[attrName] = attrValue;
-      } else if (mapping == '=') {
-        ParsedFn expr = parser(attrValue);
-        var shadowValue = expr(parentScope);
-        shadowScope[attrName] = shadowValue;
-        shadowScope.$watch(
-            () => expr(parentScope),
-            (v) => shadowScope[attrName] = shadowValue = v);
-        if (expr.assignable) {
+
+      var mode = match[1];
+      var controllerContext = match[2];
+      var dstPath = match[3];
+      var context = controllerContext == '.' ? controller : shadowScope;
+
+      ParsedFn dstPathFn = parser(dstPath.isEmpty ? attrName : dstPath);
+      if (!dstPathFn.assignable) {
+        throw "Expression '$dstPath' is not assignable in mapping '$mapping' for attribute '$attrName'.";
+      }
+      switch(mode) {
+        case '@':
+          dstPathFn.assign(context, attrValue);
+          break;
+        case '=':
+          ParsedFn attrExprFn = parser(attrValue);
+          var shadowValue = attrExprFn(parentScope);
+          dstPathFn.assign(context, shadowValue);
           shadowScope.$watch(
-            () => shadowScope[attrName],
-            (v) {
-              if (shadowValue != v) {
-                shadowValue = v;
-                expr.assign(parentScope, v);
-              }
-            } );
-        }
-      } else if (mapping == '&') {
-        ParsedFn fn = parser(attrValue);
-        shadowScope[attrName] = ([locals]) => fn(parentScope, locals);
-      } else {
-        throw "Unknown mapping $mapping for attribute $attrName.";
+                  () => attrExprFn(parentScope),
+                  (v) => dstPathFn.assign(context, shadowValue = v));
+          if (attrExprFn.assignable) {
+            shadowScope.$watch(
+                () => dstPathFn(context),
+                (v) {
+                  if (shadowValue != v) {
+                    shadowValue = v;
+                    attrExprFn.assign(parentScope, v);
+                  }
+                });
+          }
+          break;
+        case '&':
+          ParsedFn callBackFn = parser(attrValue);
+          dstPathFn.assign(context, ([locals]) => callBackFn(parentScope, locals));
+          break;
       }
     });
   }

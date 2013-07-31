@@ -222,6 +222,10 @@ main() {
         module.directive(SimpleComponent);
         module.directive(CamelCaseMapComponent);
         module.directive(IoComponent);
+        module.directive(IoControllerComponent);
+        module.directive(UnpublishedIoControllerComponent);
+        module.directive(IncorrectMappingComponent);
+        module.directive(NonAssignableMappingComponent);
         module.directive(ParentExpressionComponent);
         module.directive(PublishMeComponent);
         module.directive(LogComponent);
@@ -272,7 +276,7 @@ main() {
         expect(renderedText(element)).toEqual('inside ');
       })));
 
-      it('should create a component with IO', inject(() {
+      it('should create a component with I/O', inject(() {
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         $compile(element)(injector, element);
         $rootScope.name = 'misko';
@@ -289,7 +293,7 @@ main() {
         expect($rootScope.done).toEqual(true);
       }));
 
-      it('should create a component with IO and "=" binding value should be available', inject(() {
+      it('should create a component with I/O and "=" binding value should be available', inject(() {
         $rootScope.name = 'misko';
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         $compile(element)(injector, element);
@@ -299,6 +303,62 @@ main() {
         component.scope.expr = 'angular';
         $rootScope.$apply();
         expect($rootScope.name).toEqual('angular');
+      }));
+
+      it('should create a component with I/O bound to controller and "=" binding value should be available', inject(() {
+        $rootScope.name = 'misko';
+        $rootScope.done = false;
+        var element = $(r'<div><io-controller attr="A" expr="name" ondone="done=true"></io-controller></div>');
+        $compile(element)(injector, element);
+        IoControllerComponent component = $rootScope.ioComponent;
+        expect(component.attr).toEqual('A');
+        expect(component.expr).toEqual('misko');
+        $rootScope.$apply();
+        component.expr = 'angular';
+        $rootScope.$apply();
+        expect($rootScope.name).toEqual('angular');
+
+        expect($rootScope.done).toEqual(false);
+        component.onDone();
+        expect($rootScope.done).toEqual(true);
+
+        // Should be noop
+        component.onOptional();
+      }));
+
+      it('should create a unpublished component with I/O bound to controller and "=" binding value should be available', inject(() {
+        $rootScope.name = 'misko';
+        $rootScope.done = false;
+        var element = $(r'<div><unpublished-io-controller attr="A" expr="name" ondone="done=true"></unpublished-io-controller></div>');
+        $compile(element)(injector, element);
+        UnpublishedIoControllerComponent component = $rootScope.ioComponent;
+        expect(component.attr).toEqual('A');
+        expect(component.expr).toEqual('misko');
+        $rootScope.$apply();
+        component.expr = 'angular';
+        $rootScope.$apply();
+        expect($rootScope.name).toEqual('angular');
+
+        expect($rootScope.done).toEqual(false);
+        component.onDone();
+        expect($rootScope.done).toEqual(true);
+
+        // Should be noop
+        component.onOptional();
+      }));
+
+      it('should error on incorect mapping', inject(() {
+        expect(() {
+          var element = $(r'<div><incorrect-mapping></incorrect-mapping</div>');
+          $compile(element)(injector, element);
+        }).toThrow("Unknown mapping 'foo\' for attribute 'attr'.");
+      }));
+
+      it('should error on non-asignable-mapping', inject(() {
+        expect(() {
+          var element = $(r'<div><non-assignable-mapping></non-assignable-mapping</div>');
+          $compile(element)(injector, element);
+        }).toThrow("Expression '1+2' is not assignable in mapping '@1+2' for attribute 'attr'.");
       }));
 
       it('should expose mapped attributes as camel case', inject(() {
@@ -371,9 +431,9 @@ class SimpleComponent {
 @NgComponent(
     template: r'<content></content>',
     map: const {
-      'attr': '@',
-      'expr': '=',
-      'ondone': '&',
+        'attr': '@',
+        'expr': '=',
+        'ondone': '&',
     }
 )
 class IoComponent {
@@ -383,6 +443,59 @@ class IoComponent {
     scope.$root.ioComponent = this;
   }
 }
+
+@NgComponent(
+    template: r'<content></content>',
+    publishAs: 'ctrl',
+    map: const {
+        'attr': '@ctrl.attr',
+        'expr': '=ctrl.expr',
+        'ondone': '&ctrl.onDone',
+        'onOptional': '&ctrl.onOptional'
+    }
+)
+class IoControllerComponent {
+  Scope scope;
+  var attr;
+  var expr;
+  var onDone;
+  var onOptional;
+  IoControllerComponent(Scope scope) {
+    this.scope = scope;
+    scope.$root.ioComponent = this;
+  }
+}
+
+@NgComponent(
+    template: r'<content></content>',
+    map: const {
+        'attr': '@.attr',
+        'expr': '=.expr',
+        'ondone': '&.onDone',
+        'onOptional': '&.onOptional'
+    }
+)
+class UnpublishedIoControllerComponent {
+  Scope scope;
+  var attr;
+  var expr;
+  var onDone;
+  var onOptional;
+  UnpublishedIoControllerComponent(Scope scope) {
+    this.scope = scope;
+    scope.$root.ioComponent = this;
+  }
+}
+
+@NgComponent(
+    template: r'<content></content>',
+    map: const { 'attr': 'foo' })
+class IncorrectMappingComponent { }
+
+@NgComponent(
+    template: r'<content></content>',
+    map: const { 'attr': '@1+2' })
+class NonAssignableMappingComponent { }
 
 @NgComponent(
     map: const {
