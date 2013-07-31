@@ -173,8 +173,6 @@ class Scope implements Map {
   }
 
 
-
-
   $digest() {
     var value, last,
         asyncQueue = _asyncQueue,
@@ -285,53 +283,20 @@ class Scope implements Map {
 
 
   $apply([expr]) {
-    var toThrow;
-    var returnValue;
-    bool executingAsyncCallback = false;
-    async.runZonedExperimental(() {
+    try {
+      _beginPhase('\$apply');
+      return $eval(expr);
+    } catch (e, s) {
+      _exceptionHandler(e, s);
+    } finally {
+      _clearPhase();
       try {
-        _beginPhase('\$apply');
-        returnValue = $eval(expr);
+        $root.$digest();
       } catch (e, s) {
         _exceptionHandler(e, s);
-      } finally {
-        _clearPhase();
-        try {
-          $root.$digest();
-        } catch (e, s) {
-          _exceptionHandler(e, s);
-          throw e;
-        }
+        throw e;
       }
-    }, onRunAsync: (fn) {
-      async.runAsync(() {
-        // exceptions from fn() can not be caught here, but
-        // are handled by onError.
-        executingAsyncCallback = true;
-        fn();
-        executingAsyncCallback = false;
-        try {
-          $root.$digest();
-        } catch (e, s) {
-          _exceptionHandler(e, s);
-        }
-      });
-    },
-    onError: (e) {
-      if (executingAsyncCallback) {
-        // NOTE(deboer): Thrown strings don't have an attached stack trace
-        // http://dartbug.com/12000
-        _exceptionHandler(e, async.getAttachedStackTrace(e));
-      }
-      if (toThrow == null)
-        toThrow = e;
-    });
-    // This will only throw exceptions from the runZoned body.
-    // The async code will be executed after this check.
-    if (toThrow != null) {
-      throw toThrow;
     }
-    return returnValue;
   }
 
 

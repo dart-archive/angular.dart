@@ -232,9 +232,8 @@ main() {
         $rootScope.sep = '-';
         var element = $(r'<div>{{name}}{{sep}}{{$id}}:<simple>{{name}}{{sep}}{{$id}}</simple></div>');
         BlockFactory blockFactory = $compile(element);
-        $rootScope.$apply(() {
-          Block block = blockFactory(injector, element);
-        });
+        Block block = blockFactory(injector, element);
+        $rootScope.$digest();
 
         nextTurn();
         expect(element.textWithShadow()).toEqual('OUTTER-_1:INNER_2(OUTTER-_1)');
@@ -245,9 +244,7 @@ main() {
         $rootScope.val = "poof";
         var element = $('<parent-expression from-parent=val></parent-expression>');
 
-        $rootScope.$apply(() {
-          $compile(element)(injector, element);
-        });
+        $compile(element)(injector, element);
 
         nextTurn();
         expect(renderedText(element)).toEqual('inside poof');
@@ -255,9 +252,7 @@ main() {
 
       it('should behave nicely if a mapped attribute is missing', async(inject(() {
         var element = $('<parent-expression></parent-expression>');
-        $rootScope.$apply(() {
-          $compile(element)(injector, element);
-        });
+        $compile(element)(injector, element);
 
         nextTurn();
         expect(renderedText(element)).toEqual('inside ');
@@ -266,9 +261,7 @@ main() {
       it('should behave nicely if a mapped attribute evals to null', async(inject(() {
         $rootScope.val = null;
         var element = $('<parent-expression fromParent=val></parent-expression>');
-        $rootScope.$apply(() {
-          $compile(element)(injector, element);
-        });
+        $compile(element)(injector, element);
 
         nextTurn();
         expect(renderedText(element)).toEqual('inside ');
@@ -318,11 +311,10 @@ main() {
         }).toThrow('No provider found for LocalAttrDirective! (resolving LocalAttrDirective)');
       }));
 
-      it('should publish component controller into the scope', async(inject((Scope $rootScope) {
+      it('should publish component controller into the scope', async(inject(() {
         var element = $(r'<div><publish-me></publish-me></div>');
-        $rootScope.$apply(() {
-          $compile(element)(injector, element);
-        });
+        $compile(element)(injector, element);
+        $rootScope.$apply();
 
         nextTurn();
         expect(element.textWithShadow()).toEqual('WORKED');

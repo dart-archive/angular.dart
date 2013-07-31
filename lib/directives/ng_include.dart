@@ -47,6 +47,9 @@ class NgIncludeAttrDirective {
         // an url template
         blockCache.fromUrl(value).then((createBlock) {
           updateContent(createBlock);
+
+          // Http should take care of this
+          scope.$digest();
         });
       }
     });
