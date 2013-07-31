@@ -315,7 +315,7 @@ main() {
         expect(() {
           var element = $('<tab local><pane></pane><pane local></pane></tab>');
           $compile(element)(injector, element);
-        }, throwsA(contains('No provider found for LocalAttrDirective! (resolving LocalAttrDirective)')));
+        }).toThrow('No provider found for LocalAttrDirective! (resolving LocalAttrDirective)');
       }));
 
       it('should publish component controller into the scope', async(inject((Scope $rootScope) {

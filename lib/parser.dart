@@ -161,10 +161,11 @@ getterChild(value, childKey) {
 
   InstanceMirror instanceMirror = reflect(value);
   Symbol curSym = new Symbol(childKey);
+
   try {
     // maybe it is a member field?
     return [true, instanceMirror.getField(curSym).reflectee];
-  } catch (e) {
+  } on NoSuchMethodError catch (e) {
     // maybe it is a member method?
     if (instanceMirror.type.members.containsKey(curSym)) {
       MethodMirror methodMirror = instanceMirror.type.members[curSym];
@@ -178,10 +179,16 @@ getterChild(value, childKey) {
       })];
     }
     return [false, null];
+  } catch (e) {
+    throw;
   }
 }
 
 getter(scope, locals, path) {
+  if (scope == null) {
+    return null;
+  }
+
   List<String> pathKeys = path.split('.');
   var pathKeysLength = pathKeys.length;
 

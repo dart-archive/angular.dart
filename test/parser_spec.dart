@@ -690,6 +690,32 @@ main() {
         Parser.parse('{}()')({});
       }).toThrow('{} is not a function');
     });
+
+    it('should let null be null', () {
+      scope['map'] = {};
+
+      expect(eval('null')).toBe(null);
+      expect(eval('map.null')).toBe(null);
+    });
+
+
+    it('should behave gracefully with a null scope', () {
+      expect(Parser.parse('null')(null)).toBe(null);
+    });
+
+
+    it('should pass exceptions through getters', () {
+      expect(() {
+        Parser.parse('boo')(new ScopeWithErrors());
+      }).toThrow('boo to you');
+    });
+
+
+    it('should pass exceptions through methods', () {
+      expect(() {
+        Parser.parse('foo()')(new ScopeWithErrors());
+      }).toThrow('foo to you');
+    });
   });
 
   describe('assignable', () {
@@ -714,5 +740,9 @@ main() {
       expect(Parser.parse('a.b')({'a': {'b': 5}}, {'a': null})).toEqual(null);
     });
   });
+}
 
+class ScopeWithErrors {
+  String get boo { dump("got a boo"); throw "boo to you"; }
+  String foo() { dump("got a foo"); throw "foo to you"; }
 }
