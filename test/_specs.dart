@@ -65,7 +65,7 @@ class Expect {
   toContain(expected) => unit.expect(actual, unit.contains(expected));
   toBe(expected) => unit.expect(actual,
       unit.predicate((actual) => identical(expected, actual), '$expected'));
-  toThrow([exception]) => unit.expect(actual, exception == null ? unit.throws : unit.throwsA(unit.contains(exception)));
+  toThrow([exception]) => unit.expect(actual, exception == null ? unit.throws : unit.throwsA(new ExceptionContains(exception)));
   toBeFalsy() => unit.expect(actual, (v) => v == null ? true : v is bool ? v == false : !(v is Object));
   toBeTruthy() => unit.expect(actual, (v) => v is bool ? v == true : v is Object);
   toBeDefined() => unit.expect(actual, (v) => v is Object);
@@ -89,6 +89,29 @@ class NotExpect {
   toHaveClass(cls) => unit.expect(actual.hasClass(cls), false, reason: ' Expected ${actual} to not have css class ${cls}');
   toBe(expected) => unit.expect(actual,
       unit.predicate((actual) => !identical(expected, actual), '$expected'));
+}
+
+class ExceptionContains extends unit.BaseMatcher {
+
+  final _expected;
+
+  const ExceptionContains(this._expected);
+
+  bool matches(item, Map matchState) {
+    if (item is String) {
+      return item.indexOf(_expected) >= 0;
+    }
+    return matches('$item', matchState);
+  }
+
+  unit.Description describe(unit.Description description) =>
+      description.add('exception contains ').addDescriptionOf(_expected);
+
+  unit.Description describeMismatch(item, unit.Description mismatchDescription,
+                               Map matchState, bool verbose) {
+      return super.describeMismatch('$item', mismatchDescription, matchState,
+          verbose);
+  }
 }
 
 $(selector) {
