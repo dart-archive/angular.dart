@@ -263,458 +263,524 @@ main() {
 
     beforeEach(() { scope = {}; });
 
-    it('should parse numerical expressions', () {
-      expect(eval("1")).toEqual(1);
-    });
+    describe('expressions', () {
+      it('should parse numerical expressions', () {
+        expect(eval("1")).toEqual(1);
+      });
 
-    it('should parse unary - expressions', () {
-      expect(eval("-1")).toEqual(-1);
-      expect(eval("+1")).toEqual(1);
-    });
 
-    it('should parse unary ! expressions', () {
-      expect(eval("!true")).toEqual(!true);
-    });
+      it('should parse unary - expressions', () {
+        expect(eval("-1")).toEqual(-1);
+        expect(eval("+1")).toEqual(1);
+      });
 
-    it('should parse multiplicative expressions', () {
-      expect(eval("3*4/2%5")).toEqual(3*4/2%5);
-    });
 
-    it('should parse additive expressions', () {
-      expect(eval("3+6-2")).toEqual(3+6-2);
-    });
+      it('should parse unary ! expressions', () {
+        expect(eval("!true")).toEqual(!true);
+      });
 
-    it('should parse relational expressions', () {
-      expect(eval("2<3")).toEqual(2<3);
-      expect(eval("2>3")).toEqual(2>3);
-      expect(eval("2<=2")).toEqual(2<=2);
-      expect(eval("2>=2")).toEqual(2>=2);
-    });
 
-    it('should parse equality expressions', () {
-      expect(eval("2==3")).toEqual(2==3);
-      expect(eval("2!=3")).toEqual(2!=3);
-    });
+      it('should parse multiplicative expressions', () {
+        expect(eval("3*4/2%5")).toEqual(3*4/2%5);
+      });
 
-    it('should parse logicalAND expressions', () {
-      expect(eval("true&&true")).toEqual(true&&true);
-      expect(eval("true&&false")).toEqual(true&&false);
-    });
 
-    it('should parse logicalOR expressions', () {
-      expect(eval("true||true")).toEqual(true||true);
-      expect(eval("true||false")).toEqual(true||false);
-      expect(eval("false||false")).toEqual(false||false);
-    });
+      it('should parse additive expressions', () {
+        expect(eval("3+6-2")).toEqual(3+6-2);
+      });
 
-    it('should auto convert ints to strings', () {
-      expect(eval("'str ' + 4")).toEqual("str 4");
-      expect(eval("4 + ' str'")).toEqual("4 str");
-      expect(eval("4 + 4")).toEqual(8);
-      expect(eval("4 + 4 + ' str'")).toEqual("8 str");
-      expect(eval("'str ' + 4 + 4")).toEqual("str 44");
-    });
 
-    expectEval(String expr) => expect(() => eval(expr));
+      it('should parse relational expressions', () {
+        expect(eval("2<3")).toEqual(2<3);
+        expect(eval("2>3")).toEqual(2>3);
+        expect(eval("2<=2")).toEqual(2<=2);
+        expect(eval("2>=2")).toEqual(2>=2);
+      });
 
-    // PARSER ERRORS
 
-    it('should throw a reasonable error for unconsumed tokens', () {
-      expectEval(")").toThrow('Parser Error: Unconsumed token ) at column 1 in [)]');
-    });
+      it('should parse equality expressions', () {
+        expect(eval("2==3")).toEqual(2==3);
+        expect(eval("2!=3")).toEqual(2!=3);
+      });
 
-    it('should throw a "not implemented" error for filters', () {
-      expectEval("4|a").toThrow(
-          'Parser Error: Filters are not implemented at column 2 in [4|a]');
-    });
 
-    it('should throw on missing expected token', () {
-      expectEval("a(b").toThrow('Parser Error: Missing expected ) the end of the expression [a(b]');
-    });
+      it('should parse logicalAND expressions', () {
+        expect(eval("true&&true")).toEqual(true&&true);
+        expect(eval("true&&false")).toEqual(true&&false);
+      });
 
-    it('should throw on bad assignment', () {
-      expectEval("5=4").toThrow('Parser Error: Expression 5 is not assignable at column 2 in [5=4]');
-      expectEval("array[5=4]").toThrow('Parser Error: Expression 5 is not assignable at column 8 in [array[5=4]]');
-    });
 
-    // EVAL ERRORS
+      it('should parse logicalOR expressions', () {
+        expect(eval("true||true")).toEqual(true||true);
+        expect(eval("true||false")).toEqual(true||false);
+        expect(eval("false||false")).toEqual(false||false);
+      });
 
-    it('should throw on null object field access', () {
-      expectEval("null[3]").toThrow(
-          "Eval Error: Accessing null object while evaling [null[3]]");
-    });
 
-    it('should throw on non-list, non-map field access', () {
-      expectEval("6[3]").toThrow('Eval Error: Attempted field access on a non-list, non-map while evaling [6[3]]');
-      expectEval("6[3]=2").toThrow('Eval Error: Attempting to set a field on a non-list, non-map while evaling [6[3]=2');
+      it('should auto convert ints to strings', () {
+        expect(eval("'str ' + 4")).toEqual("str 4");
+        expect(eval("4 + ' str'")).toEqual("4 str");
+        expect(eval("4 + 4")).toEqual(8);
+        expect(eval("4 + 4 + ' str'")).toEqual("8 str");
+        expect(eval("'str ' + 4 + 4")).toEqual("str 44");
+      });
     });
 
+    describe('error handling', () {
+      expectEval(String expr) => expect(() => eval(expr));
 
+      // PARSER ERRORS
+      it('should throw a reasonable error for unconsumed tokens', () {
+        expectEval(")").toThrow('Parser Error: Unconsumed token ) at column 1 in [)]');
+      });
 
-    it('should throw on undefined functions', () {
-      expectEval("notAFn()").toThrow('Eval Error: Undefined function notAFn while evaling [notAFn()]');
-    });
 
-    it('should throw on not-function function calls', () {
-      expectEval("4()").toThrow('Eval Error: 4 is not a function while evaling [4()]');
-    });
+      it('should throw a "not implemented" error for filters', () {
+        expectEval("4|a").toThrow(
+            'Parser Error: Filters are not implemented at column 2 in [4|a]');
+      });
 
 
+      it('should throw on missing expected token', () {
+        expectEval("a(b").toThrow('Parser Error: Missing expected ) the end of the expression [a(b]');
+      });
 
-    //// ==== IMPORTED ITs
 
-    it('should parse expressions', () {
-      expect(eval("-1")).toEqual(-1);
-      expect(eval("1 + 2.5")).toEqual(3.5);
-      expect(eval("1 + -2.5")).toEqual(-1.5);
-      expect(eval("1+2*3/4")).toEqual(1+2*3/4);
-      expect(eval("0--1+1.5")).toEqual(0- -1 + 1.5);
-      expect(eval("-0--1++2*-3/-4")).toEqual(-0- -1+ 2*-3/-4);
-      expect(eval("1/2*3")).toEqual(1/2*3);
-    });
+      it('should throw on bad assignment', () {
+        expectEval("5=4").toThrow('Parser Error: Expression 5 is not assignable at column 2 in [5=4]');
+        expectEval("array[5=4]").toThrow('Parser Error: Expression 5 is not assignable at column 8 in [array[5=4]]');
+      });
 
-    it('should parse comparison', () {
-      expect(eval("false")).toBeFalsy();
-      expect(eval("!true")).toBeFalsy();
-      expect(eval("1==1")).toBeTruthy();
-      expect(eval("1!=2")).toBeTruthy();
-      expect(eval("1<2")).toBeTruthy();
-      expect(eval("1<=1")).toBeTruthy();
-      expect(eval("1>2")).toEqual(1>2);
-      expect(eval("2>=1")).toEqual(2>=1);
-      expect(eval("true==2<3")).toEqual(true == 2<3);
-    });
+      // EVAL ERRORS
+      it('should throw on null object field access', () {
+        expectEval("null[3]").toThrow(
+            "Eval Error: Accessing null object while evaling [null[3]]");
+      });
 
-    it('should parse logical', () {
-      expect(eval("0&&2")).toEqual((0!=0)&&(2!=0));
-      expect(eval("0||2")).toEqual(0!=0||2!=0);
-      expect(eval("0||1&&2")).toEqual(0!=0||1!=0&&2!=0);
-    });
 
-    it('should parse string', () {
-      expect(eval("'a' + 'b c'")).toEqual("ab c");
-    });
+      it('should throw on non-list, non-map field access', () {
+        expectEval("6[3]").toThrow('Eval Error: Attempted field access on a non-list, non-map while evaling [6[3]]');
+        expectEval("6[3]=2").toThrow('Eval Error: Attempting to set a field on a non-list, non-map while evaling [6[3]=2');
+      });
 
-    // TODO filters
-
-    it('should access scope', () {
-      scope['a'] =  123;
-      scope['b'] = {'c': 456};
-      expect(eval("a")).toEqual(123);
-      expect(eval("b.c")).toEqual(456);
-      expect(eval("x.y.z")).toEqual(null);
-    });
 
-    it('should access classes on scope', () {
-      scope['ident'] = new Ident();
-      expect(eval('ident.id(6)')).toEqual(6);
-      expect(eval('ident.doubleId(4,5)')).toEqual([4, 5]);
-    });
+      it('should throw on undefined functions', () {
+        expectEval("notAFn()").toThrow('Eval Error: Undefined function notAFn while evaling [notAFn()]');
+      });
 
-    it('should resolve deeply nested paths (important for CSP mode)', () {
-      scope['a'] = {'b': {'c': {'d': {'e': {'f': {'g': {'h': {'i': {'j': {'k': {'l': {'m': {'n': 'nooo!'}}}}}}}}}}}}};
-      expect(eval("a.b.c.d.e.f.g.h.i.j.k.l.m.n")).toBe('nooo!');
-    });
 
-    it('should be forgiving', () {
-      scope = {'a': {'b': 23}};
-      expect(eval('b')).toBeNull();
-      expect(eval('a.x')).toBeNull();
-      expect(eval('a.b.c.d')).toBeNull();
-    });
+      it('should throw on not-function function calls', () {
+        expectEval("4()").toThrow('Eval Error: 4 is not a function while evaling [4()]');
+      });
 
-    it('should evaluate grouped expressions', () {
-      expect(eval("(1+2)*3")).toEqual((1+2)*3);
-    });
 
-    it('should evaluate assignments', () {
-      scope = {'g': 4, 'arr': [3,4]};
+      it('should fail gracefully when missing a function', () {
+        expect(() {
+          Parser.parse('doesNotExist()')({});
+        }).toThrow('Undefined function doesNotExist');
 
-      expect(eval("a=12")).toEqual(12);
-      expect(scope["a"]).toEqual(12);
+        expect(() {
+          Parser.parse('exists(doesNotExist())')({'exists': () => true});
+        }).toThrow('Undefined function doesNotExist');
 
-      expect(eval("arr[c=1]")).toEqual(4);
-      expect(scope["c"]).toEqual(1);
+        expect(() {
+          Parser.parse('doesNotExists(exists())')({'exists': () => true});
+        }).toThrow('Undefined function doesNotExist');
 
-      expect(eval("x.y.z=123;")).toEqual(123);
-      expect(scope["x"]["y"]["z"]).toEqual(123);
+        expect(() {
+          Parser.parse('a[0]()')({'a': [4]});
+        }).toThrow('a[0] is not a function');
 
-      expect(eval("a=123; b=234")).toEqual(234);
-      expect(scope["a"]).toEqual(123);
-      expect(scope["b"]).toEqual(234);
-    });
+        expect(() {
+          Parser.parse('a[x()]()')({'a': [4], 'x': () => 0});
+        }).toThrow('a[x()] is not a function');
 
-    it('should evaluate function call without arguments', () {
-      scope['const'] = () => 123;
-      expect(eval("const()")).toEqual(123);
-    });
+        expect(() {
+          Parser.parse('{}()')({});
+        }).toThrow('{} is not a function');
+      });
 
-    it('should evaluate function call with arguments', () {
-      scope["add"] =  (a,b) {
-        return a+b;
-      };
-      expect(eval("add(1,2)")).toEqual(3);
-    });
 
-    it('should evaluate function call from a return value', () {
-      scope["val"] = 33;
-      scope["getter"] = () { return () { return scope["val"]; };};
-      expect(eval("getter()()")).toBe(33);
-    });
+      it('should let null be null', () {
+        scope['map'] = {};
 
-    it('should evaluate multiplication and division', () {
-      scope["taxRate"] =  8;
-      scope["subTotal"] =  100;
-      expect(eval("taxRate / 100 * subTotal")).toEqual(8);
-      expect(eval("subTotal * taxRate / 100")).toEqual(8);
-    });
+        expect(eval('null')).toBe(null);
+        expect(eval('map.null')).toBe(null);
+      });
 
-    it('should evaluate array', () {
-      expect(eval("[]").length).toEqual(0);
-      expect(eval("[1, 2]").length).toEqual(2);
-      expect(eval("[1, 2]")[0]).toEqual(1);
-      expect(eval("[1, 2]")[1]).toEqual(2);
-    });
 
-    it('should evaluate array access', () {
-      expect(eval("[1][0]")).toEqual(1);
-      expect(eval("[[1]][0][0]")).toEqual(1);
-      expect(eval("[].length")).toEqual(0);
-      expect(eval("[1, 2].length")).toEqual(2);
-    });
+      it('should behave gracefully with a null scope', () {
+        expect(Parser.parse('null')(null)).toBe(null);
+      });
 
-    it('should evaluate object', () {
-      expect(eval("{}")).toEqual({});
-      expect(eval("{a:'b'}")).toEqual({"a":"b"});
-      expect(eval("{'a':'b'}")).toEqual({"a":"b"});
-      expect(eval("{\"a\":'b'}")).toEqual({"a":"b"});
-    });
 
-    it('should evaluate object access', () {
-      expect(eval("{false:'WC', true:'CC'}[false]")).toEqual("WC");
-    });
+      it('should pass exceptions through getters', () {
+        expect(() {
+          Parser.parse('boo')(new ScopeWithErrors());
+        }).toThrow('boo to you');
+      });
 
-    it('should evaluate JSON', () {
-      expect(eval("[{}]")).toEqual([{}]);
-      expect(eval("[{a:[]}, {b:1}]")).toEqual([{"a":[]},{"b":1}]);
-    });
 
-    it('should evaluate multiple statements', () {
-      expect(eval("a=1;b=3;a+b")).toEqual(4);
-      expect(eval(";;1;;")).toEqual(1);
+      it('should pass exceptions through methods', () {
+        expect(() {
+          Parser.parse('foo()')(new ScopeWithErrors());
+        }).toThrow('foo to you');
+      });
     });
 
-    // skipping should evaluate object methods in correct context (this)
-    // skipping should evaluate methods in correct context (this) in argument
+    describe('test cases imported from AngularJS', () {
+      //// ==== IMPORTED ITs
+      it('should parse expressions', () {
+        expect(eval("-1")).toEqual(-1);
+        expect(eval("1 + 2.5")).toEqual(3.5);
+        expect(eval("1 + -2.5")).toEqual(-1.5);
+        expect(eval("1+2*3/4")).toEqual(1+2*3/4);
+        expect(eval("0--1+1.5")).toEqual(0- -1 + 1.5);
+        expect(eval("-0--1++2*-3/-4")).toEqual(-0- -1+ 2*-3/-4);
+        expect(eval("1/2*3")).toEqual(1/2*3);
+      });
 
-    it('should evaluate objects on scope context', () {
-      scope["a"] =  "abc";
-      expect(eval("{a:a}")["a"]).toEqual("abc");
-    });
 
-    it('should evalulate objects on Scope', inject((Scope scope) {
-      scope.a = "abc";
-      var result = Parser.parse("a")(scope, null);
-      expect(result).toEqual("abc");
-    }));
-
-    it('should evaluate field access on function call result', () {
-      scope["a"] =  () {
-        return {'name':'misko'};
-      };
-      expect(eval("a().name")).toEqual("misko");
-    });
+      it('should parse comparison', () {
+        expect(eval("false")).toBeFalsy();
+        expect(eval("!true")).toBeFalsy();
+        expect(eval("1==1")).toBeTruthy();
+        expect(eval("1!=2")).toBeTruthy();
+        expect(eval("1<2")).toBeTruthy();
+        expect(eval("1<=1")).toBeTruthy();
+        expect(eval("1>2")).toEqual(1>2);
+        expect(eval("2>=1")).toEqual(2>=1);
+        expect(eval("true==2<3")).toEqual(true == 2<3);
+      });
 
-    it('should evaluate field access after array access', () {
-      scope["items"] =  [{}, {'name':'misko'}];
-      expect(eval('items[1].name')).toEqual("misko");
-    });
 
-    it('should evaluate array assignment', () {
-      scope["items"] =  [];
-
-      expect(eval('items[1] = "abc"')).toEqual("abc");
-      expect(eval('items[1]')).toEqual("abc");
-      //    Dont know how to make this work....
-      //    expect(eval('books[1] = "moby"')).toEqual("moby");
-      //    expect(eval('books[1]')).toEqual("moby");
-    });
+      it('should parse logical', () {
+        expect(eval("0&&2")).toEqual((0!=0)&&(2!=0));
+        expect(eval("0||2")).toEqual(0!=0||2!=0);
+        expect(eval("0||1&&2")).toEqual(0!=0||1!=0&&2!=0);
+      });
 
-    it('should evaluate remainder', () {
-      expect(eval('1%2')).toEqual(1);
-    });
 
-    it('should evaluate sum with undefined', () {
-      expect(eval('1+undefined')).toEqual(1);
-      expect(eval('undefined+1')).toEqual(1);
-    });
-    it('should throw exception on non-closed bracket', () {
-      expect(() {
-        eval('[].count(');
-      }).toThrow('Unexpected end of expression: [].count(');
-    });
+      it('should parse string', () {
+        expect(eval("'a' + 'b c'")).toEqual("ab c");
+      });
 
-    it('should evaluate double negation', () {
-      expect(eval('true')).toBeTruthy();
-      expect(eval('!true')).toBeFalsy();
-      expect(eval('!!true')).toBeTruthy();
-      expect(eval('{true:"a", false:"b"}[!!true]')).toEqual('a');
-    });
 
-    it('should evaluate negation', () {
-      expect(eval("!false || true")).toEqual(!false || true);
-      expect(eval("!(11 == 10)")).toEqual(!(11 == 10));
-      expect(eval("12/6/2")).toEqual(12/6/2);
-    });
+      // TODO filters
 
-    it('should evaluate exclamation mark', () {
-      expect(eval('suffix = "!"')).toEqual('!');
-    });
 
-    it('should evaluate minus', () {
-      expect(eval("{a:'-'}")).toEqual({'a': "-"});
-    });
+      it('should access scope', () {
+        scope['a'] =  123;
+        scope['b'] = {'c': 456};
+        expect(eval("a")).toEqual(123);
+        expect(eval("b.c")).toEqual(456);
+        expect(eval("x.y.z")).toEqual(null);
+      });
 
-    it('should evaluate undefined', () {
-      expect(eval("undefined")).toBeNull();
-      expect(eval("a=undefined")).toBeNull();
-      expect(scope["a"]).toBeNull();
-    });
 
-    it('should allow assignment after array dereference', () {
-      scope["obj"] = [{}];
-      eval('obj[0].name=1');
-      // can not be expressed in Dart expect(scope["obj"]["name"]).toBeNull();
-      expect(scope["obj"][0]["name"]).toEqual(1);
-    });
+      it('should access classes on scope', () {
+        scope['ident'] = new Ident();
+        expect(eval('ident.id(6)')).toEqual(6);
+        expect(eval('ident.doubleId(4,5)')).toEqual([4, 5]);
+      });
 
-    it('should short-circuit AND operator', () {
-      scope["run"] = () {
-        throw "IT SHOULD NOT HAVE RUN";
-      };
-      expect(eval('false && run()')).toBe(false);
-    });
 
-    it('should short-circuit OR operator', () {
-      scope["run"] = () {
-        throw "IT SHOULD NOT HAVE RUN";
-      };
-      expect(eval('true || run()')).toBe(true);
-    });
+      it('should resolve deeply nested paths (important for CSP mode)', () {
+        scope['a'] = {'b': {'c': {'d': {'e': {'f': {'g': {'h': {'i': {'j': {'k': {'l': {'m': {'n': 'nooo!'}}}}}}}}}}}}};
+        expect(eval("a.b.c.d.e.f.g.h.i.j.k.l.m.n")).toBe('nooo!');
+      });
 
-    it('should support method calls on primitive types', () {
-      scope["empty"] = '';
-      scope["zero"] = 0;
-      scope["bool"] = false;
-
-      expect(eval('empty.substring(0)')).toEqual('');
-      expect(eval('zero.toString()')).toEqual('0');
-      // DOES NOT WORK.  bool.toString is not reflected
-      // expect(eval('bool.toString()')).toEqual('false');
-    });
 
-    it('should support map getters', () {
-      expect(Parser.parse('a')({'a': 4})).toEqual(4);
-    });
+      it('should be forgiving', () {
+        scope = {'a': {'b': 23}};
+        expect(eval('b')).toBeNull();
+        expect(eval('a.x')).toBeNull();
+        expect(eval('a.b.c.d')).toBeNull();
+      });
 
-    it('should support member getters', () {
-      expect(Parser.parse('str')(new TestData())).toEqual('testString');
-    });
 
-    it('should support returning member functions', () {
-      expect(Parser.parse('method')(new TestData())()).toEqual('testMethod');
-    });
+      it('should evaluate grouped expressions', () {
+        expect(eval("(1+2)*3")).toEqual((1+2)*3);
+      });
 
-    it('should support calling member functions', () {
-      expect(Parser.parse('method()')(new TestData())).toEqual('testMethod');
-    });
 
-    it('should support array setters', () {
-      var data = {'a': [1,3]};
-      expect(Parser.parse('a[1]=2')(data)).toEqual(2);
-      expect(data['a'][1]).toEqual(2);
-    });
+      it('should evaluate assignments', () {
+        scope = {'g': 4, 'arr': [3,4]};
 
-    it('should support member field setters', () {
-      TestData data = new TestData();
-      expect(Parser.parse('str="bob"')(data)).toEqual('bob');
-      expect(data.str).toEqual("bob");
-    });
+        expect(eval("a=12")).toEqual(12);
+        expect(scope["a"]).toEqual(12);
 
-    it('should support member field getters from mixins', () {
-      MixedTestData data = new MixedTestData();
-      data.str = 'dole';
-      expect(Parser.parse('str')(data)).toEqual('dole');
-    });
+        expect(eval("arr[c=1]")).toEqual(4);
+        expect(scope["c"]).toEqual(1);
 
-    it('should support map getters from superclass', () {
-     InheritedMapData mapData = new InheritedMapData();
-     expect(Parser.parse('notmixed')(mapData)).toEqual('mapped-notmixed');
-    });
+        expect(eval("x.y.z=123;")).toEqual(123);
+        expect(scope["x"]["y"]["z"]).toEqual(123);
 
-    it('should support map getters from mixins', () {
-    MixedMapData data = new MixedMapData();
-    expect(Parser.parse('str')(data)).toEqual('mapped-str');
-    });
+        expect(eval("a=123; b=234")).toEqual(234);
+        expect(scope["a"]).toEqual(123);
+        expect(scope["b"]).toEqual(234);
+      });
 
-    it('should gracefully handle bad containsKey', () {
-     expect(Parser.parse('str')(new BadContainsKeys())).toEqual('member');
-    });
 
-    it('should parse functions for object indices', () {
-      expect(Parser.parse('a[x()]()')({'a': [()=>6], 'x': () => 0})).toEqual(6);
-    });
+      it('should evaluate function call without arguments', () {
+        scope['const'] = () => 123;
+        expect(eval("const()")).toEqual(123);
+      });
 
-    it('should fail gracefully when missing a function', () {
-      expect(() {
-        Parser.parse('doesNotExist()')({});
-      }).toThrow('Undefined function doesNotExist');
-
-      expect(() {
-        Parser.parse('exists(doesNotExist())')({'exists': () => true});
-      }).toThrow('Undefined function doesNotExist');
-
-      expect(() {
-        Parser.parse('doesNotExists(exists())')({'exists': () => true});
-      }).toThrow('Undefined function doesNotExist');
-
-      expect(() {
-        Parser.parse('a[0]()')({'a': [4]});
-      }).toThrow('a[0] is not a function');
-
-      expect(() {
-        Parser.parse('a[x()]()')({'a': [4], 'x': () => 0});
-      }).toThrow('a[x()] is not a function');
-
-      expect(() {
-        Parser.parse('{}()')({});
-      }).toThrow('{} is not a function');
-    });
 
-    it('should let null be null', () {
-      scope['map'] = {};
+      it('should evaluate function call with arguments', () {
+        scope["add"] =  (a,b) {
+          return a+b;
+        };
+        expect(eval("add(1,2)")).toEqual(3);
+      });
 
-      expect(eval('null')).toBe(null);
-      expect(eval('map.null')).toBe(null);
-    });
 
+      it('should evaluate function call from a return value', () {
+        scope["val"] = 33;
+        scope["getter"] = () { return () { return scope["val"]; };};
+        expect(eval("getter()()")).toBe(33);
+      });
 
-    it('should behave gracefully with a null scope', () {
-      expect(Parser.parse('null')(null)).toBe(null);
-    });
 
+      it('should evaluate multiplication and division', () {
+        scope["taxRate"] =  8;
+        scope["subTotal"] =  100;
+        expect(eval("taxRate / 100 * subTotal")).toEqual(8);
+        expect(eval("subTotal * taxRate / 100")).toEqual(8);
+      });
 
-    it('should pass exceptions through getters', () {
-      expect(() {
-        Parser.parse('boo')(new ScopeWithErrors());
-      }).toThrow('boo to you');
-    });
+
+      it('should evaluate array', () {
+        expect(eval("[]").length).toEqual(0);
+        expect(eval("[1, 2]").length).toEqual(2);
+        expect(eval("[1, 2]")[0]).toEqual(1);
+        expect(eval("[1, 2]")[1]).toEqual(2);
+      });
+
+
+      it('should evaluate array access', () {
+        expect(eval("[1][0]")).toEqual(1);
+        expect(eval("[[1]][0][0]")).toEqual(1);
+        expect(eval("[].length")).toEqual(0);
+        expect(eval("[1, 2].length")).toEqual(2);
+      });
+
+
+      it('should evaluate object', () {
+        expect(eval("{}")).toEqual({});
+        expect(eval("{a:'b'}")).toEqual({"a":"b"});
+        expect(eval("{'a':'b'}")).toEqual({"a":"b"});
+        expect(eval("{\"a\":'b'}")).toEqual({"a":"b"});
+      });
+
+
+      it('should evaluate object access', () {
+        expect(eval("{false:'WC', true:'CC'}[false]")).toEqual("WC");
+      });
+
+
+      it('should evaluate JSON', () {
+        expect(eval("[{}]")).toEqual([{}]);
+        expect(eval("[{a:[]}, {b:1}]")).toEqual([{"a":[]},{"b":1}]);
+      });
+
+
+      it('should evaluate multiple statements', () {
+        expect(eval("a=1;b=3;a+b")).toEqual(4);
+        expect(eval(";;1;;")).toEqual(1);
+      });
+
+
+      // skipping should evaluate object methods in correct context (this)
+      // skipping should evaluate methods in correct context (this) in argument
+
+
+      it('should evaluate objects on scope context', () {
+        scope["a"] =  "abc";
+        expect(eval("{a:a}")["a"]).toEqual("abc");
+      });
+
+
+      it('should evalulate objects on Scope', inject((Scope scope) {
+        scope.a = "abc";
+        var result = Parser.parse("a")(scope, null);
+        expect(result).toEqual("abc");
+      }));
+
+
+      it('should evaluate field access on function call result', () {
+        scope["a"] =  () {
+          return {'name':'misko'};
+        };
+        expect(eval("a().name")).toEqual("misko");
+      });
+
+
+      it('should evaluate field access after array access', () {
+        scope["items"] =  [{}, {'name':'misko'}];
+        expect(eval('items[1].name')).toEqual("misko");
+      });
+
+
+      it('should evaluate array assignment', () {
+        scope["items"] =  [];
+
+        expect(eval('items[1] = "abc"')).toEqual("abc");
+        expect(eval('items[1]')).toEqual("abc");
+        //    Dont know how to make this work....
+        //    expect(eval('books[1] = "moby"')).toEqual("moby");
+        //    expect(eval('books[1]')).toEqual("moby");
+      });
+
+
+      it('should evaluate remainder', () {
+        expect(eval('1%2')).toEqual(1);
+      });
+
+
+      it('should evaluate sum with undefined', () {
+        expect(eval('1+undefined')).toEqual(1);
+        expect(eval('undefined+1')).toEqual(1);
+      });
+
+
+      it('should throw exception on non-closed bracket', () {
+        expect(() {
+          eval('[].count(');
+        }).toThrow('Unexpected end of expression: [].count(');
+      });
+
+
+      it('should evaluate double negation', () {
+        expect(eval('true')).toBeTruthy();
+        expect(eval('!true')).toBeFalsy();
+        expect(eval('!!true')).toBeTruthy();
+        expect(eval('{true:"a", false:"b"}[!!true]')).toEqual('a');
+      });
+
+
+      it('should evaluate negation', () {
+        expect(eval("!false || true")).toEqual(!false || true);
+        expect(eval("!(11 == 10)")).toEqual(!(11 == 10));
+        expect(eval("12/6/2")).toEqual(12/6/2);
+      });
+
+
+      it('should evaluate exclamation mark', () {
+        expect(eval('suffix = "!"')).toEqual('!');
+      });
+
+
+      it('should evaluate minus', () {
+        expect(eval("{a:'-'}")).toEqual({'a': "-"});
+      });
+
+
+      it('should evaluate undefined', () {
+        expect(eval("undefined")).toBeNull();
+        expect(eval("a=undefined")).toBeNull();
+        expect(scope["a"]).toBeNull();
+      });
+
+
+      it('should allow assignment after array dereference', () {
+        scope["obj"] = [{}];
+        eval('obj[0].name=1');
+        // can not be expressed in Dart expect(scope["obj"]["name"]).toBeNull();
+        expect(scope["obj"][0]["name"]).toEqual(1);
+      });
+
+
+      it('should short-circuit AND operator', () {
+        scope["run"] = () {
+          throw "IT SHOULD NOT HAVE RUN";
+        };
+        expect(eval('false && run()')).toBe(false);
+      });
+
+
+      it('should short-circuit OR operator', () {
+        scope["run"] = () {
+          throw "IT SHOULD NOT HAVE RUN";
+        };
+        expect(eval('true || run()')).toBe(true);
+      });
+
+
+      it('should support method calls on primitive types', () {
+        scope["empty"] = '';
+        scope["zero"] = 0;
+        scope["bool"] = false;
+
+        expect(eval('empty.substring(0)')).toEqual('');
+        expect(eval('zero.toString()')).toEqual('0');
+        // DOES NOT WORK.  bool.toString is not reflected
+        // expect(eval('bool.toString()')).toEqual('false');
+      });
+
+
+      it('should support map getters', () {
+        expect(Parser.parse('a')({'a': 4})).toEqual(4);
+      });
+
+
+      it('should support member getters', () {
+        expect(Parser.parse('str')(new TestData())).toEqual('testString');
+      });
+
+
+      it('should support returning member functions', () {
+        expect(Parser.parse('method')(new TestData())()).toEqual('testMethod');
+      });
+
+
+      it('should support calling member functions', () {
+        expect(Parser.parse('method()')(new TestData())).toEqual('testMethod');
+      });
+
+
+      it('should support array setters', () {
+        var data = {'a': [1,3]};
+        expect(Parser.parse('a[1]=2')(data)).toEqual(2);
+        expect(data['a'][1]).toEqual(2);
+      });
+
+
+      it('should support member field setters', () {
+        TestData data = new TestData();
+        expect(Parser.parse('str="bob"')(data)).toEqual('bob');
+        expect(data.str).toEqual("bob");
+      });
+
+
+      it('should support member field getters from mixins', () {
+        MixedTestData data = new MixedTestData();
+        data.str = 'dole';
+        expect(Parser.parse('str')(data)).toEqual('dole');
+      });
+
+
+      it('should support map getters from superclass', () {
+       InheritedMapData mapData = new InheritedMapData();
+       expect(Parser.parse('notmixed')(mapData)).toEqual('mapped-notmixed');
+      });
+
+
+      it('should support map getters from mixins', () {
+        MixedMapData data = new MixedMapData();
+        expect(Parser.parse('str')(data)).toEqual('mapped-str');
+      });
+
+
+      it('should gracefully handle bad containsKey', () {
+       expect(Parser.parse('str')(new BadContainsKeys())).toEqual('member');
+      });
 
 
-    it('should pass exceptions through methods', () {
-      expect(() {
-        Parser.parse('foo()')(new ScopeWithErrors());
-      }).toThrow('foo to you');
+      it('should parse functions for object indices', () {
+        expect(Parser.parse('a[x()]()')({'a': [()=>6], 'x': () => 0})).toEqual(6);
+      });
     });
   });
 
@@ -733,6 +799,7 @@ main() {
       expect(Parser.parse('a')({'a': 6}, {'a': 1})).toEqual(1);
       expect(Parser.parse('add(a,b)')({'b': 1, 'add': (a, b) { return a + b; }}, {'a': 2})).toEqual(3);
     });
+
 
     it('should expose traverse locals', () {
       expect(Parser.parse('a.b')({'a': {'b': 6}}, {'a': {'b':1}})).toEqual(1);
