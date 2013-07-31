@@ -33,8 +33,6 @@ class NgIncludeAttrDirective {
     };
 
     scope.$watch(attrs[this], (value, another) {
-      print('ng-include tpl changed to $value');
-
       if (value == null || value == '') {
         cleanUp();
         return;

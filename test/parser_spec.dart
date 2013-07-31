@@ -905,6 +905,6 @@ class OverloadObject {
 }
 
 class ScopeWithErrors {
-  String get boo { dump("got a boo"); throw "boo to you"; }
-  String foo() { dump("got a foo"); throw "foo to you"; }
+  String get boo => throw "boo to you";
+  String foo() => throw "foo to you";
 }
