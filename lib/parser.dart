@@ -171,16 +171,10 @@ getterChild(value, childKey) {
       MethodMirror methodMirror = instanceMirror.type.members[curSym];
       return [true, _relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
         var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
-        try {
-          return instanceMirror.invoke(curSym, args).reflectee;
-        } catch (e) {
-          throw "$e \n\n${e.stacktrace}";
-        }
+        return instanceMirror.invoke(curSym, args).reflectee;
       })];
     }
     return [false, null];
-  } catch (e) {
-    throw;
   }
 }
 
