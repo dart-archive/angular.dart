@@ -428,6 +428,82 @@ main() {
       });
     });
 
+    describe('setters', () {
+      it('should set a field in a map', () {
+        scope['map'] = {};
+        eval('map["square"] = 6');
+        eval('map.dot = 7');
+
+        expect(scope['map']['square']).toEqual(6);
+        expect(scope['map']['dot']).toEqual(7);
+      });
+
+
+      it('should set a field in a list', () {
+        scope['list'] = [];
+        eval('list[3] = 2');
+
+        expect(scope['list'].length).toEqual(4);
+        expect(scope['list'][3]).toEqual(2);
+      });
+
+
+      it('should set a field on an object', () {
+        scope['obj'] = new SetterObject();
+        eval('obj.field = 1');
+
+        expect(scope['obj'].field).toEqual(1);
+      });
+
+
+      it('should set a setter on an object', () {
+        scope['obj'] = new SetterObject();
+        eval('obj.setter = 2');
+
+        expect(scope['obj'].setterValue).toEqual(2);
+      });
+
+
+      it('should set a []= on an object', () {
+        scope['obj'] = new OverloadObject();
+        eval('obj.overload = 7');
+
+        expect(scope['obj'].overloadValue).toEqual(7);
+      });
+
+
+      it('should set a field in a nested map on an object', () {
+        scope['obj'] = new SetterObject();
+        eval('obj.map.mapKey = 3');
+
+        expect(scope['obj'].map['mapKey']).toEqual(3);
+      });
+
+
+      it('should set a field in a nested object on an object', () {
+        scope['obj'] = new SetterObject();
+        eval('obj.nested.field = 1');
+
+        expect(scope['obj'].nested.field).toEqual(1);
+      });
+
+
+      it('should create a map for dotted acces', () {
+        scope['obj'] = new SetterObject();
+        eval('obj.field.key = 4');
+
+        expect(scope['obj'].field['key']).toEqual(4);
+      });
+
+
+      it('should throw a nice error for type mismatch', () {
+        scope['obj'] = new SetterObject();
+        expect(() {
+          eval('obj.integer = "hello"');
+        }).toThrow("Eval Error: Caught type 'String' is not a subtype of type 'int' of 'value'. while evaling [obj.integer = \"hello\"]");
+      });
+    });
+
     describe('test cases imported from AngularJS', () {
       //// ==== IMPORTED ITs
       it('should parse expressions', () {
@@ -807,6 +883,25 @@ main() {
       expect(Parser.parse('a.b')({'a': {'b': 5}}, {'a': null})).toEqual(null);
     });
   });
+}
+
+class SetterObject {
+  var field;
+  int integer;
+  var map = {};
+
+  var nest;
+  SetterObject get nested => nest != null ? nest : (nest = new SetterObject());
+
+  var setterValue;
+  void set setter(x) { setterValue = x; }
+}
+
+class OverloadObject {
+  var overloadValue;
+  operator []=(String name, var value) {
+    overloadValue = value;
+  }
 }
 
 class ScopeWithErrors {

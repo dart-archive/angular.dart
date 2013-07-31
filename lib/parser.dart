@@ -216,22 +216,18 @@ setterChild(obj, childKey, value) {
 
   InstanceMirror instanceMirror = reflect(obj);
   Symbol curSym = new Symbol(childKey);
-  try {
-    // maybe it is a member field?
-    return instanceMirror.setField(curSym, value).reflectee;
-  } catch (e) {
-    throw "$e \n\n${e.stacktrace}";
-  }
+  // maybe it is a member field?
+  return instanceMirror.setField(curSym, value).reflectee;
 }
 
 setter(obj, path, setValue) {
   var element = path.split('.');
   for (var i = 0; element.length > 1; i++) {
     var key = element.removeAt(0);
-    var propertyObj = obj[key];
+    var propertyObj = getterChild(obj, key)[1];
     if (propertyObj == null) {
       propertyObj = {};
-      obj[key] = propertyObj;
+      setterChild(obj, key, propertyObj);
     }
     obj = propertyObj;
   }
@@ -494,7 +490,8 @@ class Parser {
           'at column ${t.index + 1} in';
       return 'Parser Error: $s $location [$text]';
     }
-    evalError(String s) => 'Eval Error: $s while evaling [$text]';
+    evalError(String s, [stack]) => 'Eval Error: $s while evaling [$text]' +
+        (stack != null ? '\n\nFROM:\n$stack' : '');
 
     Token peekToken() {
       if (tokens.length == 0)
@@ -680,8 +677,13 @@ class Parser {
           throw parserError('Expression ${tokensText(ts)} is not assignable', token);
         }
         right = logicalOR();
-        return new ParsedFn((scope, locals) =>
-          left.assign(scope, right(scope, locals), locals));
+        return new ParsedFn((scope, locals) {
+          try {
+            return left.assign(scope, right(scope, locals), locals);
+          } catch (e, s) {
+            throw evalError('Caught $e', s);
+          }
+        });
       } else {
         return left;
       }
