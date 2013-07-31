@@ -87,6 +87,7 @@ class Block implements ElementWrapper {
     if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
     var nodeModule = new Module();
     var blockHoleFactory = () => null;
+    var blockFactory = () => null;
     var boundBlockFactory = () => null;
     var nodeAttrs = new NodeAttrs(node);
 
@@ -118,11 +119,13 @@ class Block implements ElementWrapper {
       }
       nodeAttrs[ref.directive.$name] = ref.value;
       if (ref.directive.isStructural) {
-        blockHoleFactory = (Injector injector) => new BlockHole([node]);
+        blockHoleFactory = () => new BlockHole([node]);
+        blockFactory = () => ref.blockFactory;
         boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
       }
     });
     nodeModule.factory(BlockHole, blockHoleFactory);
+    nodeModule.factory(BlockFactory, blockFactory);
     nodeModule.factory(BoundBlockFactory, boundBlockFactory);
     var nodeInjector = parentInjector.createChild([nodeModule]);
     directiveRefs.forEach((ref) => nodeInjector.get(ref.directive.type));
