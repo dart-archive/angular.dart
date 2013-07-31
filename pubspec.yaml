@@ -7,3 +7,5 @@ dependencies:
   js: any
   di: any
 
+dev_dependencies:
+    benchmark_harness: any
