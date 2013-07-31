@@ -91,7 +91,7 @@ class NotExpect {
       unit.predicate((actual) => !identical(expected, actual), '$expected'));
 }
 
-class ExceptionContains extends unit.BaseMatcher {
+class ExceptionContains extends unit.Matcher {
 
   final _expected;
 

@@ -133,7 +133,7 @@ main() {
 }
 
 
-class DirectiveInfosMatcher extends BaseMatcher {
+class DirectiveInfosMatcher extends Matcher {
   List<Map> expected;
 
   DirectiveInfosMatcher(this.expected);
