@@ -2,12 +2,20 @@ import "_specs.dart";
 
 @NgDirective(transclude: true, selector: 'foo')
 class LoggerBlockDirective {
-  LoggerBlockDirective(BlockHole hole, BoundBlockFactory boundBlockFactory, Logger logger) {
+  LoggerBlockDirective(BlockHole hole, BlockFactory blockFactory,
+      BoundBlockFactory boundBlockFactory, Logger logger) {
     if (hole == null) {
       throw new ArgumentError('BlockHole must be injected.');
     }
+    if (boundBlockFactory == null) {
+      throw new ArgumentError('BoundBlockFactory must be injected.');
+    }
+    if (blockFactory == null) {
+      throw new ArgumentError('BlockFactory must be injected.');
+    }
     logger.add(hole);
     logger.add(boundBlockFactory);
+    logger.add(blockFactory);
   }
 }
 
