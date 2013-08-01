@@ -17,7 +17,7 @@ RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
 RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
 
 
-Selector selectorFactory(DirectiveRegistry directives, [String startWith]) {
+Selector selectorFactory(DirectiveRegistry directives) {
 
   Map<String, Map<String, Map<String, String>>> elementMap = {};
   Map<String, Map<String, String>> anyAttrMap = {};
@@ -27,14 +27,6 @@ Selector selectorFactory(DirectiveRegistry directives, [String startWith]) {
 
   directives.enumerate().forEach((selector) {
     var match;
-
-    if (startWith != null) {
-      if (selector.substring(0, startWith.length) == startWith) {
-        selector = selector.substring(startWith.length);
-      } else {
-        throw new ArgumentError('Selector must start with: $startWith was: $selector');
-      }
-    }
 
     if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
       textSelector.add(new SelectorInfo(selector, match.group(1)));
