@@ -1,5 +1,9 @@
 import "_specs.dart";
 
+class ToStringableObject {
+  toString() => 'World';
+}
+
 main() {
   describe('\$interpolate', () {
 
@@ -46,6 +50,11 @@ main() {
     it('should ignore undefined return value', inject((Interpolate $interpolate, Scope $rootScope) {
       $rootScope.foo = () => null;
       expect($interpolate("Hello {{'World' + foo()}}")($rootScope)).toEqual('Hello World');
+    }));
+
+    it('should use toString to conver objects to string', inject((Interpolate $interpolate, Scope $rootScope) {
+      $rootScope.obj = new ToStringableObject();
+      expect($interpolate("Hello, {{obj}}!")($rootScope)).toEqual('Hello, World!');
     }));
 
 
