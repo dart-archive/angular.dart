@@ -184,7 +184,7 @@ class Scope implements Map {
     Watch watch;
     Scope next, current, target = this;
 
-    _beginPhase('\$digest');
+    $beginPhase('\$digest');
     try {
       do { // "while dirty" loop
         dirty = false;
@@ -255,7 +255,7 @@ class Scope implements Map {
         }
       } while (dirty || asyncQueue.length > 0);
     } finally {
-      _clearPhase();
+      $clearPhase();
     }
   }
 
@@ -284,12 +284,12 @@ class Scope implements Map {
 
   $apply([expr]) {
     try {
-      _beginPhase('\$apply');
+      $beginPhase('\$apply');
       return $eval(expr);
     } catch (e, s) {
       _exceptionHandler(e, s);
     } finally {
-      _clearPhase();
+      $clearPhase();
       try {
         $root.$digest();
       } catch (e, s) {
@@ -393,15 +393,15 @@ class Scope implements Map {
     return event;
   }
 
-  _beginPhase(phase) {
+  $beginPhase(phase) {
     if ($root._phase != null) {
-      throw '${$root._phase} already in progress';
+      throw '${$root._phase} already in progress trying to start $phase.';
     }
 
     $root._phase = phase;
   }
 
-  _clearPhase() {
+  $clearPhase() {
     $root._phase = null;
   }
 

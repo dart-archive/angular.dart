@@ -8,14 +8,14 @@ class MockHttp extends Http {
   Map<String, MockHttpData> gets = {};
   List futures = [];
 
-  MockHttp(UrlRewriter rewriter, HttpBackend backend) : super(rewriter, backend);
+  MockHttp(Scope scope, UrlRewriter rewriter, HttpBackend backend) : super(scope, rewriter, backend);
 
   expectGET(String url, String content, {int times: 1}) {
     gets[url] = new MockHttpData(content, times);
   }
 
   flush() => Future.wait(futures);
-  
+
   assertAllGetsCalled() {
     if (gets.length != 0) {
       throw "Expected GETs not called $gets";
@@ -56,8 +56,9 @@ class MockHttpBackend extends HttpBackend {
   }
 
   flush() {
-    completersAndValues.forEach((cv) => cv[0].complete(cv[1]));
+    var toFlush = new List.from(completersAndValues);
     completersAndValues = [];
+    toFlush.forEach((cv) => runAsync(() => cv[0].complete(cv[1])));
   }
 
   assertAllGetsCalled() {
