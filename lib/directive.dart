@@ -215,7 +215,3 @@ class DirectiveRegistry {
     }
   }
 }
-
-class Controller {
-
-}
