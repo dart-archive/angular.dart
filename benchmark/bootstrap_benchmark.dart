@@ -4,6 +4,9 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:angular/angular.dart';
 import 'package:di/di.dart';
 
+// TODO(pavelgj): Ignore this benchmark for now because it does not give a
+// good measure of the actual boostrap time, specifically the "cold start"
+// of the mirrors. Look into launching boostrap benchmark in an isolate.
 class BootstrapBenchmark extends BenchmarkBase {
   BootstrapBenchmark() : super("Bootstrap");
 
