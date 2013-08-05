@@ -2,10 +2,10 @@ part of angular;
 
 class Compiler {
   DirectiveRegistry directives;
-  Selector selector;
+  DirectiveSelector selector;
 
   Compiler(DirectiveRegistry this.directives) {
-    selector = selectorFactory(directives);
+    selector = directiveSelectorFactory(directives);
   }
 
   _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,

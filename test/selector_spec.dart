@@ -1,18 +1,19 @@
 import "_specs.dart";
 
-@NgDirective(selector:'b')                  class _BElement{}
-@NgDirective(selector:'.b')                 class _BClass{}
-@NgDirective(selector:'[directive]')        class _DirectiveAttr{}
-@NgDirective(selector:'b[directive]')       class _BElementDirectiveAttr{}
-@NgDirective(selector:'[directive=value]')  class _DirectiveValueAttr{}
-@NgDirective(selector:'b[directive=value]') class _BElementDirectiveValue{}
-@NgDirective(selector:':contains(/abc/)')   class _ContainsAbc{}
-@NgDirective(selector:'[*=/xyz/]')          class _AttributeContainsXyz{}
+@NgDirective(selector:'b')                    class _BElement{}
+@NgDirective(selector:'.b')                   class _BClass{}
+@NgDirective(selector:'[directive]')          class _DirectiveAttr{}
+@NgDirective(selector:'[directive=d][foo=f]') class _DirectiveFooAttr{}
+@NgDirective(selector:'b[directive]')         class _BElementDirectiveAttr{}
+@NgDirective(selector:'[directive=value]')    class _DirectiveValueAttr{}
+@NgDirective(selector:'b[directive=value]')   class _BElementDirectiveValue{}
+@NgDirective(selector:':contains(/abc/)')     class _ContainsAbc{}
+@NgDirective(selector:'[*=/xyz/]')            class _AttributeContainsXyz{}
 
-@NgComponent(selector:'component')          class _Component{}
-@NgDirective(selector:'[attribute]')        class _Attribute{}
+@NgComponent(selector:'component')            class _Component{}
+@NgDirective(selector:'[attribute]')          class _Attribute{}
 @NgDirective(selector:'[structural]',
-             transclude: true)              class _Structural{}
+             transclude: true)                class _Structural{}
 
 main() {
   describe('Selector', () {
@@ -31,19 +32,20 @@ main() {
 
       log = [];
       directives = new DirectiveRegistry()
-          ..register(_BElement)
-          ..register(_BClass)
-          ..register(_DirectiveAttr)
-          ..register(_BElementDirectiveAttr)
-          ..register(_DirectiveValueAttr)
-          ..register(_BElementDirectiveValue)
-          ..register(_ContainsAbc)
-          ..register(_AttributeContainsXyz)
-          ..register(_Component)
-          ..register(_Attribute)
-          ..register(_Structural);
+        ..register(_BElement)
+        ..register(_BClass)
+        ..register(_DirectiveAttr)
+        ..register(_DirectiveFooAttr)
+        ..register(_BElementDirectiveAttr)
+        ..register(_DirectiveValueAttr)
+        ..register(_BElementDirectiveValue)
+        ..register(_ContainsAbc)
+        ..register(_AttributeContainsXyz)
+        ..register(_Component)
+        ..register(_Attribute)
+        ..register(_Structural);
 
-      selector = selectorFactory(directives);
+      selector = directiveSelectorFactory(directives);
     });
 
     it('should match directive on element', () {
@@ -78,9 +80,9 @@ main() {
     it('should match directive on element[attribute]', () {
       expect(selector(element = e('<b directive=abc></b>')),
         toEqualsDirectiveInfos([
-          { "selector": 'b', "value": null, "element": element, "name": null},
-          { "selector": 'b[directive]', "value": 'abc', "element": element},
-          { "selector": '[directive]', "value": 'abc', "element": element}
+          { "selector": 'b', "value": null, "element": element},
+          { "selector": '[directive]', "value": 'abc', "element": element},
+          { "selector": 'b[directive]', "value": 'abc', "element": element}
         ]));
     });
 
@@ -98,10 +100,10 @@ main() {
       expect(selector(element = e('<b directive=value></div>')),
         toEqualsDirectiveInfos([
           { "selector": 'b', "value": null, "element": element, "name": null},
-          { "selector": 'b[directive]', "value": 'value', "element": element},
-          { "selector": 'b[directive=value]', "value": 'value', "element": element},
           { "selector": '[directive]', "value": 'value', "element": element},
-          { "selector": '[directive=value]', "value": 'value', "element": element}
+          { "selector": '[directive=value]', "value": 'value', "element": element},
+          { "selector": 'b[directive]', "value": 'value', "element": element},
+          { "selector": 'b[directive=value]', "value": 'value', "element": element}
         ]));
     });
 
@@ -122,11 +124,19 @@ main() {
     });
 
     it('should sort by priority', () {
-      expect(selector(element = e('<component attribute structural></div>')),
+      expect(selector(element = e('<component attribute structural></component>')),
       toEqualsDirectiveInfos([
-        { "selector": "[structural]", "value": "", "element": element },
-        { "selector": "[attribute]", "value": "", "element": element },
-        { "selector": "component", "value": null, "element": element }
+          { "selector": "[structural]", "value": "", "element": element },
+          { "selector": "[attribute]", "value": "", "element": element },
+          { "selector": "component", "value": null, "element": element }
+      ]));
+    });
+
+    it('should match on multiple directives', () {
+      expect(selector(element = e('<div directive="d" foo="f"></div>')),
+      toEqualsDirectiveInfos([
+          { "selector": '[directive]', "value": 'd', "element": element},
+          { "selector": '[directive=d][foo=f]', "value": 'f', "element": element}
       ]));
     });
   });
