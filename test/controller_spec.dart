@@ -2,7 +2,7 @@ import "_specs.dart";
 import "_log.dart";
 import "dart:mirrors";
 
-
+class Controller {}
 
 class MainAttrDirective {
   static var $priority = 2;
