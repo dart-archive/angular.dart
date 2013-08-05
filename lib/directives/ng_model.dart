@@ -38,35 +38,18 @@ class NgModel {
  * The UI portion of the ng-model directive. This directive registers the UI
  * events and provides a rendering function for the ng-model directive.
  */
-@NgDirective(selector: 'input[ng-model]')
-class InputDirective {
+@NgDirective(selector: 'input[type=text][ng-model]')
+class InputTextDirective {
   dom.InputElement inputElement;
   NgModel ngModel;
   Scope scope;
 
-  InputDirective(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope) {
-    var type = inputElement.attributes['type'];
-
-    // NOTE(vojta):
-    // I think this will perform better than having multiple directives (eg. InputCheckbox) with different selectors,
-    // especially because the selector for the default input would be pretty weird.
-    // Also, why can't I use inputElement is dom.CheckboxInputElement ?
-    if (type == 'checkbox') {
-      ngModel.render = this.renderCheckbox;
-      inputElement.onChange.listen(this.onCheckboxChange);
-    } else {
-      ngModel.render = this.render;
-      inputElement.onChange.listen(_relaxFnArgs(processValue));
-      inputElement.onKeyDown.listen((e) => new async.Timer(Duration.ZERO, processValue));
-    }
-  }
-
-  onCheckboxChange(value) {
-    scope.$apply(() => ngModel.viewValue = inputElement.checked);
-  }
-
-  renderCheckbox(value) {
-    inputElement.checked = value == null ? false : toBool(value);
+  InputTextDirective(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope) {
+    ngModel.render = (value) {
+      inputElement.value = value == null ? '' : value;
+    };
+    inputElement.onChange.listen(_relaxFnArgs(processValue));
+    inputElement.onKeyDown.listen((e) => new async.Timer(Duration.ZERO, processValue));
   }
 
   processValue() {
@@ -75,8 +58,24 @@ class InputDirective {
       scope.$apply(() => ngModel.viewValue = value);
     }
   }
+}
 
-  render(value) {
-    inputElement.value = value == null ? '' : value;
+/**
+ * The UI portion of the ng-model directive. This directive registers the UI
+ * events and provides a rendering function for the ng-model directive.
+ */
+@NgDirective(selector: 'input[type=checkbox][ng-model]')
+class InputCheckboxDirective {
+  dom.InputElement inputElement;
+  NgModel ngModel;
+  Scope scope;
+
+  InputCheckboxDirective(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope) {
+    ngModel.render = (value) {
+      inputElement.checked = value == null ? false : toBool(value);
+    };
+    inputElement.onChange.listen((value) {
+      scope.$apply(() => ngModel.viewValue = inputElement.checked);
+    });
   }
 }
