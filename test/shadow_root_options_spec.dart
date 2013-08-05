@@ -58,7 +58,7 @@ main() {
       element.forEach((elt) { document.body.append(elt); }); // we need the computed style.
       $compile(element)(injector, element);
 
-      nextTurn();
+      nextTurn(true);
       expect(element[1].shadowRoot.query('div').getComputedStyle().border).toContain('3px solid');
       // ""0px none"" is the default style.
       expect(element[2].shadowRoot.query('div').getComputedStyle().border).toContain('0px none');
@@ -72,7 +72,7 @@ main() {
       element.forEach((elt) { document.body.append(elt); }); // we need the computed style.
       $compile(element)(injector, element);
 
-      nextTurn();
+      nextTurn(true);
       expect(element[1].shadowRoot.query('div').getComputedStyle().fontSize).toEqual('16px');
       expect(element[2].shadowRoot.query('div').getComputedStyle().fontSize).toEqual('20px');
     })));

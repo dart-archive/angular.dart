@@ -44,6 +44,7 @@ main() {
     it('should use the UrlRewriter for both HTML and CSS URLs', inject((Http $http, Compiler $compile, Scope $rootScope, Log log, Injector injector) {
 
       backend.expectGET('PREFIX:simple.html', '<div log="SIMPLE">Simple!</div>');
+      backend.expectGET('PREFIX:simple.css', '.hello{}');
 
       var element = $('<div><html-and-css log>ignore</html-and-css><div>');
       $compile(element)(injector, element);
@@ -51,9 +52,9 @@ main() {
       backend.flush();
       backend.assertAllGetsCalled();
 
-      expect(renderedText(element)).toEqual('@import "PREFIX:simple.css"Simple!');
+      expect(renderedText(element)).toEqual('.hello{}Simple!');
       expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
-          '<style>@import "PREFIX:simple.css"</style><div log="SIMPLE">Simple!</div>'
+          '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
       );
     }));
   });
@@ -103,6 +104,7 @@ main() {
 
     it('should load a CSS file into a style', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope, Log log, Injector injector) {
       $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>');
+      $http.expectGET('simple.css', '.hello{}');
 
       var element = $('<div><html-and-css log>ignore</html-and-css><div>');
       $compile(element)(injector, element);
@@ -110,40 +112,44 @@ main() {
       $http.flush();
       nextTurn(true);
 
-      expect(renderedText(element)).toEqual('@import "simple.css"Simple!');
+      expect(renderedText(element)).toEqual('.hello{}Simple!');
       expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
-        '<style>@import "simple.css"</style><div log="SIMPLE">Simple!</div>'
+        '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
       );
       // Note: There is no ordering.  It is who ever comes off the wire first!
       expect(log.result()).toEqual('LOG; SIMPLE');
     })));
 
-    it('should load a CSS file with a \$template', async(inject((Compiler $compile, Scope $rootScope, Injector injector) {
+    it('should load a CSS file with a \$template', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope, Injector injector) {
       var element = $('<div><inline-with-css log>ignore</inline-with-css><div>');
+      $http.expectGET('simple.css', '.hello{}');
       $compile(element)(injector, element);
 
       nextTurn(true);
-      expect(renderedText(element)).toEqual('@import "simple.css"inline!');
+      expect(renderedText(element)).toEqual('.hello{}inline!');
     })));
 
-    it('should load a CSS with no template', inject((Compiler $compile, Scope $rootScope, Injector injector) {
+    it('should load a CSS with no template', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope, Injector injector) {
       var element = $('<div><only-css log>ignore</only-css><div>');
+      $http.expectGET('simple.css', '.hello{}');
       $compile(element)(injector, element);
 
-      expect(renderedText(element)).toEqual('@import "simple.css"');
-    }));
+      nextTurn(true);
+      expect(renderedText(element)).toEqual('.hello{}');
+    })));
 
     it('should load the CSS before the template is loaded', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope, Injector injector) {
       $http.expectGET('simple.html', '<div>Simple!</div>');
+      $http.expectGET('simple.css', '.hello{}');
 
       var element = $('<html-and-css>ignore</html-and-css>');
       $compile(element)(injector, element);
 
-      // The HTML is not loaded yet, but the CSS @import should be in the DOM.
-      expect(renderedText(element)).toEqual('@import "simple.css"');
+      nextTurn();
+      expect(renderedText(element)).toEqual('.hello{}');
 
-      nextTurn(true);
-      expect(renderedText(element)).toEqual('@import "simple.css"Simple!');
+      nextTurn();
+      expect(renderedText(element)).toEqual('.hello{}Simple!');
     })));
   });
 }
