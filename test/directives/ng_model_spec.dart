@@ -9,7 +9,7 @@ describe('ng-model', () {
 
   describe('type="text"', () {
     it('should update input value from model', inject(() {
-      _.compile('<input ng-model="model">');
+      _.compile('<input type="text" ng-model="model">');
       _.rootScope.$digest();
 
       expect(_.rootElement.prop('value')).toEqual('');
@@ -19,10 +19,10 @@ describe('ng-model', () {
     }));
 
     it('should update model from the input value', inject(() {
-      _.compile('<input ng-model="model" probe="p">');
+      _.compile('<input type="text" ng-model="model" probe="p">');
       Probe probe = _.rootScope.p;
       var ngModel = probe.directive(NgModel);
-      var input = probe.directive(InputDirective);
+      var input = probe.directive(InputTextDirective);
 
       probe.element.value = 'abc';
       input.processValue();

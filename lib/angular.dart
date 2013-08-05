@@ -148,7 +148,8 @@ class AngularModule extends Module {
     directive(NgRepeatAttrDirective);
     directive(NgShowAttrDirective);
 
-    directive(InputDirective);
+    directive(InputTextDirective);
+    directive(InputCheckboxDirective);
     directive(NgModel);
   }
 
