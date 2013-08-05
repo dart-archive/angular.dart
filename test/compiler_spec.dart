@@ -235,7 +235,7 @@ main() {
         Block block = blockFactory(injector, element);
         $rootScope.$digest();
 
-        nextTurn();
+        nextTurn(true);
         expect(element.textWithShadow()).toEqual('OUTTER-_1:INNER_2(OUTTER-_1)');
       })));
 
@@ -246,7 +246,7 @@ main() {
 
         $compile(element)(injector, element);
 
-        nextTurn();
+        nextTurn(true);
         expect(renderedText(element)).toEqual('inside poof');
       })));
 
@@ -254,7 +254,7 @@ main() {
         var element = $('<parent-expression></parent-expression>');
         $compile(element)(injector, element);
 
-        nextTurn();
+        nextTurn(true);
         expect(renderedText(element)).toEqual('inside ');
       })));
 
@@ -263,7 +263,7 @@ main() {
         var element = $('<parent-expression fromParent=val></parent-expression>');
         $compile(element)(injector, element);
 
-        nextTurn();
+        nextTurn(true);
         expect(renderedText(element)).toEqual('inside ');
       })));
 
@@ -316,7 +316,7 @@ main() {
         $compile(element)(injector, element);
         $rootScope.$apply();
 
-        nextTurn();
+        nextTurn(true);
         expect(element.textWithShadow()).toEqual('WORKED');
       })));
 

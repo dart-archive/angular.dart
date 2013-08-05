@@ -106,8 +106,8 @@ class Block implements ElementWrapper {
       if (ref.directive.isComponent) {
         //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
         // TODO(misko): there should be no need to wrap function like this.
-        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, Parser parser, BlockCache $blockCache, UrlRewriter urlRewriter) =>
-          (new _ComponentFactory(node, ref.directive))(injector, compiler, scope, parser, $blockCache, urlRewriter),
+        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, Parser parser, BlockCache $blockCache, Http http, TemplateCache templateCache) =>
+            (new _ComponentFactory(node, ref.directive))(injector, compiler, scope, parser, $blockCache, http, templateCache),
           visibility: visibility);
       } else {
         nodeModule.type(type, type, visibility: visibility);
@@ -272,7 +272,8 @@ class _ComponentFactory {
   _ComponentFactory(this.element, this.directive);
 
   dynamic call(Injector injector, Compiler compiler, Scope scope,
-      Parser parser, BlockCache $blockCache, UrlRewriter urlRewriter) {
+      Parser parser, BlockCache $blockCache,  Http $http,
+      TemplateCache $templateCache) {
     this.compiler = compiler;
     shadowDom = element.createShadowRoot();
     shadowDom.applyAuthorStyles =
@@ -282,19 +283,36 @@ class _ComponentFactory {
 
     shadowScope = scope.$new(true);
     createAttributeMapping(scope, shadowScope, parser);
+
+    // TODO(pavelgj): fetching CSS with Http is mainly an attempt to
+    // work around an unfiled Chrome bug when reloading same CSS breaks
+    // styles all over the page. We shouldn't be doing browsers work,
+    // so change back to using @import once Chrome bug is fixed or a
+    // better work around is found.
+    async.Future<String> cssFuture;
     if (directive.$cssUrl != null) {
-      shadowDom.innerHtml = '<style>@import "${urlRewriter(directive.$cssUrl)}"</style>';
+      cssFuture = $http.getString(directive.$cssUrl, cache: $templateCache);
+    } else {
+      cssFuture = new async.Future.value(null);
     }
-    TemplateLoader templateLoader;
+    var blockFuture;
     if (directive.$template != null) {
-      var blockFuture = new async.Future.value().then((_) =>
-          attachBlockToShadowDom($blockCache.fromHtml(directive.$template)));
-      templateLoader = new TemplateLoader(blockFuture);
+      blockFuture =
+          new async.Future.value($blockCache.fromHtml(directive.$template));
     } else if (directive.$templateUrl != null) {
-      var blockFuture = $blockCache.fromUrl(directive.$templateUrl)
-          .then((BlockFactory blockFactory) => attachBlockToShadowDom(blockFactory));
-      templateLoader = new TemplateLoader(blockFuture);
+      blockFuture = $blockCache.fromUrl(directive.$templateUrl);
     }
+    TemplateLoader templateLoader = new TemplateLoader(
+        cssFuture.then((String css) {
+          if (css != null) {
+            shadowDom.innerHtml = '<style>$css</style>';
+          }
+          if (blockFuture != null) {
+            return blockFuture.then((BlockFactory blockFactory) =>
+                attachBlockToShadowDom(blockFactory));
+          }
+          return shadowDom;
+        }));
     var controller =
         createShadowInjector(injector, templateLoader).get(directive.type);
     if (directive.$publishAs != null) {
