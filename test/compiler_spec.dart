@@ -267,39 +267,46 @@ main() {
         expect(renderedText(element)).toEqual('inside ');
       })));
 
-      it('should create a component with IO', inject(() {
+      it('should create a component with IO', async(inject(() {
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         $compile(element)(injector, element);
         $rootScope.name = 'misko';
         $rootScope.$apply();
+        nextTurn(true);
+
         var component = $rootScope.ioComponent;
         expect(component.scope.name).toEqual(null);
         expect(component.scope.attr).toEqual('A');
         expect(component.scope.expr).toEqual('misko');
         component.scope.expr = 'angular';
         $rootScope.$apply();
+        nextTurn(true);
+
         expect($rootScope.name).toEqual('angular');
         expect($rootScope.done).toEqual(null);
         component.scope.ondone();
         expect($rootScope.done).toEqual(true);
-      }));
+      })));
 
-      it('should create a component with IO and "=" binding value should be available', inject(() {
+      it('should create a component with IO and "=" binding value should be available', async(inject(() {
         $rootScope.name = 'misko';
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         $compile(element)(injector, element);
         var component = $rootScope.ioComponent;
         expect(component.scope.expr).toEqual('misko');
         $rootScope.$apply();
+        nextTurn(true);
+
         component.scope.expr = 'angular';
         $rootScope.$apply();
+        nextTurn(true);
+
         expect($rootScope.name).toEqual('angular');
-      }));
+      })));
 
       it('should expose mapped attributes as camel case', inject(() {
         var element = $('<camel-case-map camel-case=6></camel-case-map>');
         $compile(element)(injector, element);
-        $rootScope.$apply();
         var componentScope = $rootScope.camelCase;
         expect(componentScope.camelCase).toEqual('6');
       }));
@@ -315,8 +322,8 @@ main() {
         var element = $(r'<div><publish-me></publish-me></div>');
         $compile(element)(injector, element);
         $rootScope.$apply();
-
         nextTurn(true);
+
         expect(element.textWithShadow()).toEqual('WORKED');
       })));
 
@@ -327,12 +334,14 @@ main() {
             toBe(PublishTypesAttrDirective._injector.get(PublishTypesDirectiveSuperType));
       }));
 
-      it('should allow repeaters over controllers', inject((Logger logger) {
+      it('should allow repeaters over controllers', async(inject((Logger logger) {
         var element = $(r'<log ng-repeat="i in [1, 2]"></log>');
         $compile(element)(injector, element);
         $rootScope.$apply();
+        nextTurn(true);
+
         expect(logger.length).toEqual(2);
-      }));
+      })));
     });
 
     describe('controller scoping', () {
@@ -343,12 +352,14 @@ main() {
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
       }));
 
-      it('should reuse controllers for transclusions', inject((Compiler $compile, Scope $rootScope, Log log, Injector injector) {
+      it('should reuse controllers for transclusions', async(inject((Compiler $compile, Scope $rootScope, Log log, Injector injector) {
         var element = $('<div simple-transclude-in-attach include-transclude>block</div>');
         $compile(element)(injector, element);
         $rootScope.$apply();
+        nextTurn(true);
+
         expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
-      }));
+      })));
 
     });
   });

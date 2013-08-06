@@ -19,20 +19,22 @@ main() {
         scope['name'] = 'Vojta';
         scope['template'] = 'tpl.html';
       });
+      nextTurn(true);
 
-      nextTurn();  // load the template from cache.
       expect(element.text()).toEqual('my name is Vojta');
     })));
 
 
-    it('should support inlined templates', inject((Scope scope) {
+    it('should support inlined templates', async(inject((Scope scope) {
       var element = _.compile('<div ng-include="template"></div>');
 
       scope.$apply(() {
         scope['name'] = 'Vojta';
         scope['template'] = '<span>my inlined name is {{name}}</span>';
       });
+      nextTurn(true);
+
       expect(element.text()).toEqual('my inlined name is Vojta');
-    }));
+    })));
   });
 }

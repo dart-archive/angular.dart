@@ -12,11 +12,12 @@ main() {
         rootScope = scope;
         compiler(element)(injector, element);
         scope.$apply(applyFn);
+        nextTurn(true);
       };
     }));
 
 
-    it('should add/remove ng-hide class', () {
+    it('should add/remove ng-hide class', async(() {
       compile('<div ng-hide="isHidden"></div>');
 
       expect(element).not.toHaveClass('ng-hide');
@@ -24,12 +25,16 @@ main() {
       rootScope.$apply(() {
         rootScope['isHidden'] = true;
       });
+      nextTurn(true);
+
       expect(element).toHaveClass('ng-hide');
 
       rootScope.$apply(() {
         rootScope['isHidden'] = false;
       });
+      nextTurn(true);
+
       expect(element).not.toHaveClass('ng-hide');
-    });
+    }));
   });
 }

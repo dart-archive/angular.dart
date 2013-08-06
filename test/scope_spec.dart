@@ -436,16 +436,18 @@ main() {
 
 
     describe(r'$apply', () {
-      it(r'should apply expression with full lifecycle', inject((Scope $rootScope) {
+      it(r'should apply expression with full lifecycle', async(inject((Scope $rootScope) {
         var log = '';
         var child = $rootScope.$new();
         $rootScope.$watch('a', (a, _, __) { log += '1'; });
         child.$apply(r'$parent.a=0');
+        nextTurn(true);
+
         expect(log).toEqual('1');
-      }));
+      })));
 
 
-      it(r'should catch exceptions', () {
+      it(r'should catch exceptions', async(() {
         module((Module module) => module.type(ExceptionHandler, LogExceptionHandler));
         inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
           var log = [];
@@ -453,12 +455,14 @@ main() {
           $rootScope.$watch('a', (a, _, __) => log.add('1'));
           $rootScope.a = 0;
           child.$apply((_, __) { throw 'MyError'; });
+          nextTurn(true);
+
           expect(log.join(',')).toEqual('1');
           expect($exceptionHandler.errors[0].error).toEqual('MyError');
           $exceptionHandler.errors.removeAt(0);
           $exceptionHandler.assertEmpty();
         });
-      });
+      }));
 
 
       it(r'should log exceptions from $digest', () {
@@ -471,9 +475,10 @@ main() {
           $rootScope.$watch('b', (_, __, ___) {$rootScope.a++;});
           $rootScope.a = $rootScope.b = 0;
 
-          expect(() {
+          expect(async(() {
             $rootScope.$apply();
-          }).toThrow('2 \$digest() iterations reached. Aborting!');
+            nextTurn(true);
+          })).toThrow('2 \$digest() iterations reached. Aborting!');
 
           expect($exceptionHandler.errors[0].error).toContain('2 \$digest() iterations reached.');
           $exceptionHandler.errors.removeAt(0);
@@ -482,6 +487,17 @@ main() {
         });
       });
 
+      it(r'should run $digest a minimum number of times', async(inject((Scope scope) {
+        var a = 0;
+        // This watch value getter is executed twice during a digest.
+        scope.$watch(() => a++ == -4);
+
+        scope.$apply();
+        scope.$apply();
+        nextTurn(true);
+
+        expect(a).toEqual(2);
+      })));
 
       describe(r'exceptions', () {
         var log;
@@ -496,21 +512,25 @@ main() {
         }));
 
 
-        it(r'should execute and return value and update', inject(
+        it(r'should execute and return value and update', async(inject(
             (Scope $rootScope, ExceptionHandler $exceptionHandler) {
           $rootScope.name = 'abc';
           expect($rootScope.$apply((scope) => scope.name)).toEqual('abc');
+          nextTurn(true);
+
           expect(log).toEqual(r'$digest;');
           $exceptionHandler.assertEmpty();
-        }));
+        })));
 
 
-        it(r'should catch exception and update', inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
+        it(r'should catch exception and update', async(inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
           var error = 'MyError';
           $rootScope.$apply(() { throw error; });
+          nextTurn(true);
+
           expect(log).toEqual(r'$digest;');
           expect($exceptionHandler.errors[0].error).toEqual(error);
-        }));
+        })));
       });
 
 
@@ -527,13 +547,14 @@ main() {
 
         it(r'should throw an exception if $apply is called while flushing evalAsync queue', inject(
             (Scope $rootScope) {
-          expect(() {
+          expect(async(() {
             $rootScope.$apply(() {
               $rootScope.$evalAsync(() {
                 $rootScope.$apply();
               });
             });
-          }).toThrow(r'$digest already in progress');
+            nextTurn(true);
+          })).toThrow(r'$digest already in progress');
         }));
 
 
@@ -543,24 +564,39 @@ main() {
           childScope1.$watch('x', () {
             childScope1.$apply();
           });
-          expect(() { childScope1.$apply(); }).toThrow(r'$digest already in progress');
+          expect(async(() {
+            childScope1.$apply();
+            nextTurn(true);
+          })).toThrow(r'$digest already in progress');
         }));
 
 
         it(r'should thrown an exception if $apply in called from a watch fn (after init)', inject(
             (Scope $rootScope) {
+          // async calls in this test.  Since async() traps exceptions, we need
+          // to embed an async *inside* the expect().toThrow() call instead
+          // of wrapping the entire function in an async().
+          //
+          // However, the first $apply() need to resolve before the second
+          // $apply.  Thus, we have two async() calls.
           var childScope2 = $rootScope.$new();
-          childScope2.$apply(() {
-            childScope2.$watch('x', (newVal, oldVal) {
-              if (newVal != oldVal) {
-                childScope2.$apply();
-              }
+          async(() {
+            childScope2.$apply(() {
+              childScope2.$watch('x', (newVal, oldVal) {
+                if (newVal != oldVal) {
+                  childScope2.$apply();
+                }
+              });
             });
-          });
+            nextTurn(true);
+          })();
 
-          expect(() { childScope2.$apply(() {
-            childScope2.x = 'something';
-          }); }).toThrow(r'$digest already in progress');
+          expect(async(() {
+            childScope2.$apply(() {
+              childScope2.x = 'something';
+            });
+            nextTurn(true);
+          })).toThrow(r'$digest already in progress');
         }));
       });
     });

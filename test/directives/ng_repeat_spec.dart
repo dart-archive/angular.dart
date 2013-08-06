@@ -20,7 +20,7 @@ main() {
       BlockFactory blockFactory = compiler(element);
       Block block = blockFactory(injector, element);
       scope.items = ['a', 'b'];
-      scope.$apply();
+      scope.$digest();
       expect(element.text()).toEqual('ab');
     }));
 
