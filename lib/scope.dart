@@ -282,6 +282,22 @@ class Scope implements Map {
   }
 
 
+  bool _rootDigestScheduled = false;
+  _scheduleRootDigest() {
+    if ($root._rootDigestScheduled) return;
+    $root._rootDigestScheduled = true;
+    async.runAsync(() {
+      $root._rootDigestScheduled = false;
+      try {
+        $root.$digest();
+      } catch (e, s) {
+        // Sadly, this stack trace is mostly useless now.
+        _exceptionHandler(e, s);
+        throw e;
+      }
+    });
+  }
+
   $apply([expr]) {
     try {
       _beginPhase('\$apply');
@@ -290,12 +306,7 @@ class Scope implements Map {
       _exceptionHandler(e, s);
     } finally {
       _clearPhase();
-      try {
-        $root.$digest();
-      } catch (e, s) {
-        _exceptionHandler(e, s);
-        throw e;
-      }
+      _scheduleRootDigest();
     }
   }
 

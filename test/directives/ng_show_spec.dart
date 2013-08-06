@@ -12,11 +12,12 @@ main() {
         rootScope = scope;
         compiler(element)(injector, element);
         scope.$apply(applyFn);
+        nextTurn(true);
       };
     }));
 
 
-    it('should add/remove ng-show class', () {
+    it('should add/remove ng-show class', async(() {
       compile('<div ng-show="isVisible"></div>');
 
       expect(element).not.toHaveClass('ng-show');
@@ -24,15 +25,19 @@ main() {
       rootScope.$apply(() {
         rootScope['isVisible'] = true;
       });
+      nextTurn(true);
+
       expect(element).toHaveClass('ng-show');
 
       rootScope.$apply(() {
         rootScope['isVisible'] = false;
       });
-      expect(element).not.toHaveClass('ng-show');
-    });
+      nextTurn(true);
 
-    it('should work together with ng-class', () {
+      expect(element).not.toHaveClass('ng-show');
+    }));
+
+    it('should work together with ng-class', async(() {
       compile('<div ng-class="currentCls" ng-show="isVisible"></div>');
 
       expect(element).not.toHaveClass('active');
@@ -41,14 +46,18 @@ main() {
       rootScope.$apply(() {
         rootScope['currentCls'] = 'active';
       });
+      nextTurn(true);
+
       expect(element).toHaveClass('active');
       expect(element).not.toHaveClass('ng-show');
 
       rootScope.$apply(() {
         rootScope['isVisible'] = true;
       });
+      nextTurn(true);
+
       expect(element).toHaveClass('active');
       expect(element).toHaveClass('ng-show');
-    });
+    }));
   });
 }

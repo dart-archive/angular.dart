@@ -18,10 +18,11 @@ main() {
         rootScope = scope;
         compiler(element)(injector, element);
         scope.$apply(applyFn);
+        nextTurn(true);
       };
     }));
 
-    it('should add/remove the element', () {
+    it('should add/remove the element', async(() {
       compile('<div><span ng-if="isVisible">content</span></div>');
 
       expect(element.find('span').html()).toEqual('');
@@ -29,23 +30,29 @@ main() {
       rootScope.$apply(() {
         rootScope['isVisible'] = true;
       });
+      nextTurn(true);
+
       expect(element.find('span').html()).toEqual('content');
 
       rootScope.$apply(() {
         rootScope['isVisible'] = false;
       });
-      expect(element.find('span').html()).toEqual('');
-    });
+      nextTurn(true);
 
-    it('should not cause ng-click to throw an exception', () {
+      expect(element.find('span').html()).toEqual('');
+    }));
+
+    it('should not cause ng-click to throw an exception', async(() {
       compile('<div><span ng-click="click" ng-if="isVisible">content</span></div>');
       rootScope.$apply(() {
         rootScope['isVisible'] = false;
       });
-      expect(element.find('span').html()).toEqual('');
-    });
+      nextTurn(true);
 
-    it('should prevent other directives from running when disabled', inject((Log log) {
+      expect(element.find('span').html()).toEqual('');
+    }));
+
+    it('should prevent other directives from running when disabled', async(inject((Log log) {
       compile('<div><li log="ALWAYS"></li><span log="JAMES" ng-if="isVisible">content</span></div>');
 
       expect(element.find('span').html()).toEqual('');
@@ -53,6 +60,8 @@ main() {
       rootScope.$apply(() {
         rootScope['isVisible'] = false;
       });
+      nextTurn(true);
+
       expect(element.find('span').html()).toEqual('');
       expect(log.result()).toEqual('ALWAYS');
 
@@ -60,9 +69,10 @@ main() {
       rootScope.$apply(() {
         rootScope['isVisible'] = true;
       });
+      nextTurn(true);
+
       expect(element.find('span').html()).toEqual('content');
       expect(log.result()).toEqual('ALWAYS; JAMES');
-
-    }));
+    })));
   });
 }
