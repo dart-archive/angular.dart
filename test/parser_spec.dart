@@ -426,6 +426,13 @@ main() {
           Parser.parse('foo()')(new ScopeWithErrors());
         }).toThrow('foo to you');
       });
+
+
+      it('should throw on NoSuchMethod exceptions in getters', () {
+        expect(() {
+          Parser.parse('nsm')(new NSMGetter());
+        }).toThrow('method not found: \'notAMethod\'');
+      });
     });
 
     describe('setters', () {
@@ -907,4 +914,9 @@ class OverloadObject {
 class ScopeWithErrors {
   String get boo => throw "boo to you";
   String foo() => throw "foo to you";
+}
+
+class NSMGetter {
+  var obj;
+  String get nsm => obj.notAMethod;
 }
