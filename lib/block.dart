@@ -296,9 +296,17 @@ class _ComponentFactory {
       cssFuture = new async.Future.value(null);
     }
     var blockFuture;
+    // Since we create a new Future, we need to manage the scope $apply
+    // explicitly instead of letting HTTP handle it.
+    // TODO(deboer): Move this $apply into a higher level of the framework
+    // (e.g. the compiler)
+    var onFutureDone = () {};
     if (directive.$template != null) {
       blockFuture =
           new async.Future.value($blockCache.fromHtml(directive.$template));
+      onFutureDone = () {
+        shadowInjector.get(Scope).$apply();
+      };
     } else if (directive.$templateUrl != null) {
       blockFuture = $blockCache.fromUrl(directive.$templateUrl);
     }
@@ -308,8 +316,10 @@ class _ComponentFactory {
             shadowDom.innerHtml = '<style>$css</style>';
           }
           if (blockFuture != null) {
-            return blockFuture.then((BlockFactory blockFactory) =>
-                attachBlockToShadowDom(blockFactory));
+            return blockFuture.then((BlockFactory blockFactory) {
+                attachBlockToShadowDom(blockFactory);
+                onFutureDone();
+            });
           }
           return shadowDom;
         }));
@@ -324,7 +334,6 @@ class _ComponentFactory {
   attachBlockToShadowDom(BlockFactory blockFactory) {
     var block = blockFactory(shadowInjector);
     shadowDom.nodes.addAll(block.elements);
-    shadowInjector.get(Scope).$digest();
     return shadowDom;
   }
 

@@ -20,7 +20,8 @@ main() {
         scope['template'] = 'tpl.html';
       });
 
-      nextTurn();  // load the template from cache.
+      nextTurn(true);  // load the template from cache.
+
       expect(element.text()).toEqual('my name is Vojta');
     })));
 
