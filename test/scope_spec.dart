@@ -461,28 +461,6 @@ main() {
       });
 
 
-      it(r'should log exceptions from $digest', () {
-        module((Module module) {
-          module.value(ScopeDigestTTL, new ScopeDigestTTL(2));
-          module.type(ExceptionHandler, LogExceptionHandler);
-        });
-        inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
-          $rootScope.$watch('a', (_, __, ___) {$rootScope.b++;});
-          $rootScope.$watch('b', (_, __, ___) {$rootScope.a++;});
-          $rootScope.a = $rootScope.b = 0;
-
-          expect(() {
-            $rootScope.$apply();
-          }).toThrow('2 \$digest() iterations reached. Aborting!');
-
-          expect($exceptionHandler.errors[0].error).toContain('2 \$digest() iterations reached.');
-          $exceptionHandler.errors.removeAt(0);
-          $exceptionHandler.assertEmpty();
-          expect($rootScope.$$phase).toBeNull();
-        });
-      });
-
-
       describe(r'exceptions', () {
         var log;
         beforeEach(module((AngularModule module) {
@@ -521,7 +499,7 @@ main() {
             $rootScope.$apply(() {
               $rootScope.$apply();
             });
-          }).toThrow(r'$apply already in progress');
+          }).toThrow(r'already in progress');
         }));
 
 

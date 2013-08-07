@@ -31,49 +31,59 @@ main() {
       }));
 
 
-      it('should rewrite URLs before calling the backend', inject((Http http) {
+      it('should rewrite URLs before calling the backend', async(inject((Http http, Zone zone) {
         backend.expectGET('a', VALUE, times: 1);
 
         var called = 0;
-        http.getString('a[not sent to backed]').then((v) {
-          expect(v).toBe(VALUE);
-          called += 1;
+        zone.run(() {
+          http.getString('a[not sent to backed]').then((v) {
+            expect(v).toBe(VALUE);
+            called += 1;
+          });
         });
 
         expect(called).toEqual(0);
 
         backend.flush();
+        nextTurn(true);
 
         expect(called).toEqual(1);
         backend.assertAllGetsCalled();
-      }));
+      })));
 
 
-      it('should support pending requests for different raw URLs', inject((Http http) {
+      it('should support pending requests for different raw URLs', async(inject((Http http, Zone zone) {
         backend.expectGET('a', VALUE, times: 1);
 
         var called = 0;
-        http.getString('a[some string]', cache: cache).then((v) {
-          expect(v).toBe(VALUE);
-          called += 1;
-        });
-        http.getString('a[different string]', cache: cache).then((v) {
-          expect(v).toBe(VALUE);
-          called += 10;
+        zone.run(() {
+          http.getString('a[some string]', cache: cache).then((v) {
+            expect(v).toBe(VALUE);
+            called += 1;
+          });
+          http.getString('a[different string]', cache: cache).then((v) {
+            expect(v).toBe(VALUE);
+            called += 10;
+          });
         });
 
         expect(called).toEqual(0);
         backend.flush();
+
+        nextTurn(true);
+
         expect(called).toEqual(11);
         backend.assertAllGetsCalled();
-      }));
+      })));
 
 
-      it('should support caching', async(inject((Http http) {
+      it('should support caching', async(inject((Http http, Zone zone) {
         var called = 0;
-        http.getString('fromCache', cache: cache).then((v) {
-          expect(v).toBe(CACHED_VALUE);
-          called += 1;
+        zone.run(() {
+          http.getString('fromCache', cache: cache).then((v) {
+            expect(v).toBe(CACHED_VALUE);
+            called += 1;
+          });
         });
 
         expect(called).toEqual(0);
@@ -86,78 +96,94 @@ main() {
     });
 
     describe('caching', () {
-      it('should not cache if no cache is present', inject((Http http) {
+      it('should not cache if no cache is present', async(inject((Http http, Zone zone) {
         backend.expectGET('a', VALUE, times: 2);
 
         var called = 0;
-        http.getString('a').then((v) {
-          expect(v).toBe(VALUE);
-          called += 1;
-        });
-        http.getString('a').then((v) {
-          expect(v).toBe(VALUE);
-          called += 10;
+        zone.run(() {
+          http.getString('a').then((v) {
+            expect(v).toBe(VALUE);
+            called += 1;
+          });
+          http.getString('a').then((v) {
+            expect(v).toBe(VALUE);
+            called += 10;
+          });
         });
 
         expect(called).toEqual(0);
 
         backend.flush();
+        nextTurn(true);
 
         expect(called).toEqual(11);
         backend.assertAllGetsCalled();
-      }));
+      })));
 
 
-      it('should return a pending request', inject((Http http) {
+      it('should return a pending request', async(inject((Http http, Zone zone) {
         backend.expectGET('a', VALUE, times: 1);
 
         var called = 0;
-        http.getString('a', cache: cache).then((v) {
-          expect(v).toBe(VALUE);
-          called += 1;
-        });
-        http.getString('a', cache: cache).then((v) {
-          expect(v).toBe(VALUE);
-          called += 10;
+        zone.run(() {
+          http.getString('a', cache: cache).then((v) {
+            expect(v).toBe(VALUE);
+            called += 1;
+          });
+          http.getString('a', cache: cache).then((v) {
+            expect(v).toBe(VALUE);
+            called += 10;
+          });
         });
 
         expect(called).toEqual(0);
         backend.flush();
+        nextTurn(true);
+
         expect(called).toEqual(11);
         backend.assertAllGetsCalled();
-      }));
+      })));
 
 
-      it('should not return a pending request after the request is complete', inject((Http http) {
+      it('should not return a pending request after the request is complete', async(inject((Http http, Zone zone) {
         backend.expectGET('a', VALUE, times: 2);
 
         var called = 0;
-        http.getString('a', cache: cache).then((v) {
-          expect(v).toBe(VALUE);
-          called += 1;
+        zone.run(() {
+          http.getString('a', cache: cache).then((v) {
+            expect(v).toBe(VALUE);
+            called += 1;
+          });
         });
 
         expect(called).toEqual(0);
         backend.flush();
+        nextTurn(true);
 
-        http.getString('a', cache: cache).then((v) {
-          expect(v).toBe(VALUE);
-          called += 10;
+        zone.run(() {
+          http.getString('a', cache: cache).then((v) {
+            expect(v).toBe(VALUE);
+            called += 10;
+          });
         });
 
         expect(called).toEqual(1);
         backend.flush();
+        nextTurn(true);
+
         expect(called).toEqual(11);
         backend.assertAllGetsCalled();
-      }));
+      })));
 
 
-      it('should return a cached value if present', async(inject((Http http) {
+      it('should return a cached value if present', async(inject((Http http, Zone zone) {
         var called = 0;
         // The URL string 'f' is primed in the FakeCache
-        http.getString('f', cache: cache).then((v) {
-          expect(v).toBe(CACHED_VALUE);
-          called += 1;
+        zone.run(() {
+          http.getString('f', cache: cache).then((v) {
+            expect(v).toBe(CACHED_VALUE);
+            called += 1;
+          });
         });
 
         expect(called).toEqual(0);
