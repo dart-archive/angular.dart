@@ -34,6 +34,7 @@ class CompilerBenchmark extends BenchmarkBase {
 
   void teardown() {
     compiler = null;
+    dumpTimerStats();
   }
 }
 

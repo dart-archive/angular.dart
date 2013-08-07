@@ -29,6 +29,7 @@ class BootstrapBenchmark extends BenchmarkBase {
   }
 
   void teardown() {
+    dumpTimerStats();
   }
 }
 

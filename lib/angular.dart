@@ -172,3 +172,74 @@ bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
     $rootScope.$digest();
   });
 }
+
+class TimerStat {
+  int count = 0;
+  double total = 0.0;
+  double avg = 0.0;
+  double min = double.MAX_FINITE;
+  double max = 0.0;
+  List<double> top = <double>[];
+}
+
+Map<String, TimerStat> stats = <String, TimerStat>{};
+
+int _depth = 0;
+
+time(desc, fn) {
+  //_depth++;
+  desc = _prefix(_depth - 1, desc);
+  var stat = stats[desc];
+  if (stat == null) {
+    stat = new TimerStat();
+    stats[desc] = stat;
+  }
+  var start = dom.window.performance.now();
+  try {
+    return fn();
+  } finally {
+    var diff = dom.window.performance.now() - start;
+    stat.count++;
+    stat.total += diff;
+    if (diff < stat.min) stat.min = diff;
+    if (diff > stat.max) stat.max = diff;
+    stat.avg = (stat.avg * (stat.count - 1) + diff) / stat.count;
+    _insertIntoTop20(stat.top, diff);
+    //_depth--;
+  }
+}
+
+String _prefix(int depth, String str) {
+  if (depth > 0) {
+    return ' - ' + _prefix(depth - 1, str);
+  }
+  return str;
+}
+
+_insertIntoTop20(List<double> top, double val) {
+  int i = 0;
+  for (; i < top.length; i++) {
+    if (top[i] >= val) {
+      break;
+    }
+  }
+  top.insert(i, val);
+  while (top.length > 10) {
+    top.removeAt(0);
+  }
+}
+
+clearTimerStats() {
+  stats.clear();
+}
+
+dumpTimerStats() {
+  print('------------------------');
+  double total = 0.0;
+  stats.forEach((desc, stat) {
+    print('$desc; count: ${stat.count} total:${stat.total} avg:${stat.avg} min:${stat.min} max:${stat.max} top:${stat.top.map((v) => v.round()).join(', ')}');
+    total += stat.total;
+  });
+  print('------------------------');
+}
+

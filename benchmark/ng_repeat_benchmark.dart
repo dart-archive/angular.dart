@@ -41,6 +41,7 @@ class NgRepeatBenchmark extends BenchmarkBase {
     injector = null;
     rootScope = null;
     blockFactory = null;
+    dumpTimerStats();
   }
 }
 

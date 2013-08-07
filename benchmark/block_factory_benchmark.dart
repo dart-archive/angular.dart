@@ -38,6 +38,7 @@ class BlockFactoryBenchmark extends BenchmarkBase {
   void teardown() {
     injector = null;
     blockFactory = null;
+    dumpTimerStats();
   }
 }
 

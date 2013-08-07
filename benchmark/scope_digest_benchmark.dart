@@ -33,6 +33,7 @@ class ScopeDigestBenchmark extends BenchmarkBase {
   void teardown() {
     interpolator = null;
     rootScope = null;
+    dumpTimerStats();
   }
 }
 
