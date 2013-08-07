@@ -37,6 +37,8 @@ part 'scope.dart';
 part 'selector.dart';
 part 'string_utilities.dart';
 
+bool useMirrorsInParser = true;
+
 ASSERT(condition) {
   if (!condition) {
     throw new AssertionError();
