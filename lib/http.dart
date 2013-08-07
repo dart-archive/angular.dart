@@ -8,16 +8,35 @@ class HttpBackend {
   async.Future request(String url,
       {String method, bool withCredentials, String responseType,
       String mimeType, Map<String, String> requestHeaders, sendData,
-      void onProgress(dom.ProgressEvent e)}) =>
-    dom.HttpRequest.request(url,
-        method: method,
-        withCredentials: withCredentials,
-        responseType: responseType,
-        mimeType: mimeType,
-        requestHeaders: requestHeaders,
-        sendData: sendData,
-        onProgress: onProgress);
-}
+      void onProgress(dom.ProgressEvent e)}) {
+    if (method == null) {
+      method = "GET";
+    }
+    var xhr = new HttpRequest()
+      ..open(method, url, async: true);
+    if (withCredentials != null) {
+      xhr.withCredentials = withCredentials;
+    }
+    if (responseType != null) {
+      xhr.responseType = responseType;
+    }
+    if (mimeType != null) {
+      xhr.overrideMimeType(mimeType);
+    }
+    if (requestHeaders != null) {
+      requestHeaders.forEach(xhr.setRequestHeader);
+    }
+    if (onProgress != null) {
+      xhr.onProgress.listen(onProgress);
+    }
+    xhr.send(sendData);
+    
+    // Complete the future with the HttpRequest either way, regardless of whether
+    // there's an error or not.
+    return xhr.onLoad.first
+        .then((_) => xhr)
+        .catchError((_) => xhr);
+  }
 
 class HttpResponse {
   int status;
@@ -67,8 +86,10 @@ class Http {
         requestHeaders: requestHeaders,
         sendData: sendData,
         onProgress: onProgress).then((value) {
+            
       // NOTE(deboer): Missing headers.  Ask the Dart team for a sane API.
-      var response = new HttpResponse(value.status, value.responseText);
+      var response = new HttpResponse(value.status, value.responseText)
+        ..headers = _parseHttpHeaders(value.getAllResponseHeaders());
 
       if (cache != null) {
         cache.put(url, response);
@@ -84,3 +105,14 @@ class Http {
   }
 }
 
+_parseHttpHeaders(String headers) {
+  var headerMap = new Map<String, String>();
+  headers.split("\r\n").forEach((header) {
+    var colon = header.indexOf(':');
+    if (colon < 0) {
+      return;
+    }
+    headerMap[header.substring(0, colon).trim()] = header.substring(colon + 1).trim();
+  });
+  return headerMap;
+}
