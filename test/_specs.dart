@@ -282,6 +282,7 @@ main() {
     module
       ..type(Logger, Logger)
       ..type(MockHttp, MockHttp)
+      ..type(Zone, Zone)
       ..type(Log, Log);
   }));
   afterEach(() => currentSpecInjector = null);

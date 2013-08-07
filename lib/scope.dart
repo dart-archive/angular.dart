@@ -46,6 +46,7 @@ class Scope implements Map {
 
   ExceptionHandler _exceptionHandler;
   Parser _parser;
+  Zone _zone;
   num _ttl;
   String _phase;
   Map<String, Object> _properties = {};
@@ -56,11 +57,21 @@ class Scope implements Map {
   bool _isolate = false;
 
 
-  Scope(ExceptionHandler this._exceptionHandler, Parser this._parser, ScopeDigestTTL ttl) {
+  Scope(ExceptionHandler this._exceptionHandler, Parser this._parser, ScopeDigestTTL ttl, Zone this._zone) {
     _properties[r'this']= this;
     _ttl = ttl.ttl;
     _$root = this;
     $id = nextUid();
+
+    // Set up the zone to auto digest this scope.
+    _zone.onTurnDone = $digest;
+
+    _zone.interceptCall = (body) {
+      _beginPhase('auto-digesting zoned call');
+      var ret = body();
+      _clearPhase();
+      return ret;
+    };
   }
 
   Scope._child(Scope this.$parent, bool this._isolate) {
@@ -68,6 +79,7 @@ class Scope implements Map {
     _parser = $parent._parser;
     _ttl = $parent._ttl;
     _properties[r'this'] = this;
+    _zone = $parent._zone;
     $id = nextUid();
     if (_isolate) {
       _$root = $parent.$root;
@@ -172,6 +184,16 @@ class Scope implements Map {
     return this.$watch($watchCollectionWatch, $watchCollectionAction);
   }
 
+
+  /**
+   * Add this function to your code if you want to add a $digest
+   * and want to assert that the digest will be called on this turn.
+   * This method will be deleted when we are comfortable with
+   * auto-digesting scope.
+   */
+  $$verifyDigestWillRun() {
+    _zone.assertInZone();
+  }
 
   $digest() {
     var value, last,
@@ -283,20 +305,13 @@ class Scope implements Map {
 
 
   $apply([expr]) {
-    try {
-      _beginPhase('\$apply');
-      return $eval(expr);
-    } catch (e, s) {
-      _exceptionHandler(e, s);
-    } finally {
-      _clearPhase();
+    return _zone.run(() {
       try {
-        $root.$digest();
+        return $eval(expr);
       } catch (e, s) {
         _exceptionHandler(e, s);
-        throw e;
       }
-    }
+    });
   }
 
 
@@ -395,7 +410,8 @@ class Scope implements Map {
 
   _beginPhase(phase) {
     if ($root._phase != null) {
-      throw '${$root._phase} already in progress';
+      // TODO(deboer): Remove the []s when dartbug.com/11999 is fixed.
+      throw ['${$root._phase} already in progress'];
     }
 
     $root._phase = phase;

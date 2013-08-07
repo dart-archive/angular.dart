@@ -36,6 +36,7 @@ part 'parser.dart';
 part 'scope.dart';
 part 'selector.dart';
 part 'string_utilities.dart';
+part 'zone.dart';
 
 ASSERT(condition) {
   if (!condition) {
@@ -157,16 +158,23 @@ class AngularModule extends Module {
   }
 }
 
-
 // helper for bootstrapping angular
 bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
+  var allModules = new List.from(modules);
   List<dom.Node> topElt = dom.query(rootElementSelector).nodes.toList();
   assert(topElt.length > 0);
 
-  Injector injector = new Injector(modules);
+  // The injector must be created inside the zone, so we create the
+  // zone manually and give it back to the injector as a value.
+  Zone zone = new Zone();
+  allModules.add(new Module()..value(Zone, zone));
 
-  injector.invoke((Compiler $compile, Scope $rootScope) {
-    $compile(topElt)(injector, topElt);
-    $rootScope.$digest();
+  zone.run(() {
+    Injector injector = new Injector(allModules);
+
+    injector.invoke((Compiler $compile) {
+      $compile(topElt)(injector, topElt);
+    });
   });
+
 }
