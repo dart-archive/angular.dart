@@ -37,6 +37,7 @@ class HttpBackend {
         .then((_) => xhr)
         .catchError((_) => xhr);
   }
+}
 
 class HttpResponse {
   int status;
