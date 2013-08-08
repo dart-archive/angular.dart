@@ -162,18 +162,10 @@ getterChild(value, childKey) {
   InstanceMirror instanceMirror = reflect(value);
   Symbol curSym = new Symbol(childKey);
 
-  // TODO(deboer): I don't like this try block.
-  // It should be replaced with a if(instanceMirror.hasField(curSym)) block.
-  // But hasField doesn't exist.  Checking the variables + getters maps almost
-  // works, but it doesn't support mixins.
   try {
     // maybe it is a member field?
     return [true, instanceMirror.getField(curSym).reflectee];
   } on NoSuchMethodError catch (e) {
-    // TODO(deboer): I want a NoSuchInstanceGetter error instead.
-    if (!e.toString().contains('has no instance getter')) {
-      rethrow;
-    }
     // maybe it is a member method?
     if (instanceMirror.type.members.containsKey(curSym)) {
       MethodMirror methodMirror = instanceMirror.type.members[curSym];
