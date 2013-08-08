@@ -64,14 +64,13 @@ class Scope implements Map {
     $id = nextUid();
 
     // Set up the zone to auto digest this scope.
-    _zone.onTurnDone = () {
-      $digest();
-    };
+    _zone.onTurnDone = $digest;
 
     _zone.interceptCall = (body) {
       _beginPhase('auto-digesting zoned call');
-      body();
+      var ret = body();
       _clearPhase();
+      return ret;
     };
   }
 
@@ -306,15 +305,13 @@ class Scope implements Map {
 
 
   $apply([expr]) {
-    var returnValue;
-    _zone.run(() {
+    return _zone.run(() {
       try {
-        returnValue = $eval(expr);
+        return $eval(expr);
       } catch (e, s) {
         _exceptionHandler(e, s);
       }
     });
-    return returnValue;
   }
 
 
@@ -413,6 +410,7 @@ class Scope implements Map {
 
   _beginPhase(phase) {
     if ($root._phase != null) {
+      // TODO(deboer): Remove the []s when dartbug.com/11999 is fixed.
       throw ['${$root._phase} already in progress'];
     }
 

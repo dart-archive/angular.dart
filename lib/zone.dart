@@ -22,8 +22,7 @@ class Zone {
   // If tryDone is called from the parent zone, it will have runInNewZone = true
   // This function will create a new zone if it calls onTurnDone.
   _tryDone([runInNewZone = false]) {
-    --_asyncCount;
-    if (_asyncCount == 0) {
+    if ((--_asyncCount) == 0) {
       if (runInNewZone) {
         // This run call will trigger a synchronous onTurnDone.
         run((){});
@@ -31,6 +30,7 @@ class Zone {
         onTurnDone();
       }
     } else if (_asyncCount < 0) {
+      // TODO(deboer): Remove []s when dartbug.com/11999 is fixed.
       throw ["bad asyncCount $_asyncCount"];
     }
   }
@@ -38,12 +38,15 @@ class Zone {
   /**
    * Runs the provided function in the zone.  Any runAsync calls (e.g. futures)
    * will also be run in this zone.
+   *
+   * Returns the return value of body.
    */
   run(body()) {
     var exceptionFromZone;
+    var returnValueFromZone;
     _asyncCount++;
     async.runZonedExperimental(() {
-      interceptCall(body);
+      returnValueFromZone = interceptCall(body);
       _tryDone();
     },
     onRunAsync: (delegate()) {
@@ -70,12 +73,13 @@ class Zone {
       exceptionFromZone = e;
       // Dump the exception as well because we aren't sure where it
       // will show up.
-      dump('EXCEPTION: $e\n${async.getAttachedStackTrace(e)}}');
+      print('EXCEPTION: $e\n${async.getAttachedStackTrace(e)}}');
     });
 
     if (exceptionFromZone != null) {
       throw exceptionFromZone;
     }
+    return returnValueFromZone;
   }
 
   var _assertInZoneStack;

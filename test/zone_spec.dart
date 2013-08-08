@@ -24,12 +24,12 @@ main() => describe('zone', () {
 
 
     it('should handle exceptions in onRunAsync', () {
-
+      // TODO(deboer): Define how exceptions should behave in zones.
     });
 
 
     it('should handle exceptioned in onTurnDone', () {
-
+      // TODO(deboer): Define how exceptions should behave in zones.
     });
   });
 
@@ -40,6 +40,11 @@ main() => describe('zone', () {
     });
     expect(log.result()).toEqual('run; onTurnDone');
   }));
+
+
+  it('should return the body return value from run', () {
+    expect(zone.run(() { return 6; })).toEqual(6);
+  });
 
 
   it('should call onTurnDone for a runAsync in onTurnDone', async(inject((Log log) {
@@ -81,7 +86,6 @@ main() => describe('zone', () {
 
 
   it('should call onTurnDone once after a turn', async(inject((Log log) {
-
     zone.run(() {
       log('run start');
       runAsync(() {
@@ -121,11 +125,6 @@ main() => describe('zone', () {
 
     expect(log.result()).toEqual('run start; run end; future then; future 2; future 3; onTurnDone; onTurn future; onTurnDone');
   })));
-
-
-  it('should work for thens defined outside of the zone', () {
-
-  });
 
 
   it('should call onTurnDone after each turn', async(inject((Log log) {
