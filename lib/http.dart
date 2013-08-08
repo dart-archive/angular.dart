@@ -89,8 +89,10 @@ class Http {
         onProgress: onProgress).then((value) {
             
       // NOTE(deboer): Missing headers.  Ask the Dart team for a sane API.
-      var response = new HttpResponse(value.status, value.responseText)
-        ..headers = _parseHttpHeaders(value.getAllResponseHeaders());
+      var response = new HttpResponse(value.status, value.responseText);
+      if (value is HttpRequest) {
+        response.headers = _parseHttpHeaders(value.getAllResponseHeaders());
+      }
 
       if (cache != null) {
         cache.put(url, response);
