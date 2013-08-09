@@ -23,6 +23,48 @@ _isType(obj, type) {
   return false;
 }
 
+var OBJECT_MIRROR = fastReflectClass(Object);
+
+bool hasField(Type type, Symbol fieldSymbol) {
+  return _hasField(fastReflectClass(type), fieldSymbol);
+}
+
+bool _hasField(ClassMirror cm, Symbol fieldSymbol) {
+  if (cm.members.containsKey(fieldSymbol)) {
+    return true;
+  }
+  if (cm.superclass != null && cm.superclass != OBJECT_MIRROR && _hasField(cm.superclass, fieldSymbol)) {
+    return true;
+  }
+  /*
+  for (ClassMirror interface in cm.superinterfaces) {
+    if (_hasField(interface, fieldSymbol)) {
+      return true;
+    }
+  }*/
+  return false;
+}
+
+bool hasMethod(Type type, Symbol fieldSymbol) {
+  return _hasMethod(fastReflectClass(type), fieldSymbol);
+}
+
+bool _hasMethod(ClassMirror cm, Symbol fieldSymbol) {
+  if (cm.methods.containsKey(fieldSymbol)) {
+    return true;
+  }
+  if (cm.superclass != null && cm.superclass != OBJECT_MIRROR && _hasMethod(cm.superclass, fieldSymbol)) {
+    return true;
+  }
+  /*
+  for (ClassMirror interface in cm.superinterfaces) {
+    if (_hasMethod(interface, fieldSymbol)) {
+      return true;
+    }
+  }*/
+  return false;
+}
+
 isInterface(obj, Type type) {
   if (_isType(obj, type)) return true;
 

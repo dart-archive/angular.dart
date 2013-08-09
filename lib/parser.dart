@@ -149,6 +149,26 @@ getterChild(value, childKey) {
     }
   }
 
+  if (useMirrorsInParser) {
+    if (hasMethod(value.runtimeType, new Symbol('[]')) &&
+        hasMethod(value.runtimeType, new Symbol('containsKey')) &&
+        value.containsKey(childKey)) {
+      return [true, value[childKey]];
+    } else {
+      InstanceMirror instanceMirror = reflect(value);
+      Symbol curSym = new Symbol(childKey);
+      if (hasMethod(value.runtimeType, curSym)) {
+        return [true, _relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
+          var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
+          return instanceMirror.invoke(curSym, args).reflectee;
+        })];
+      } else if (hasField(value.runtimeType, curSym)) {
+        return [true, instanceMirror.getField(curSym).reflectee];
+      }
+    }
+    return [false, null];
+  }
+
   // TODO: replace with isInterface(value, Getter) when dart:mirrors
   // can support mixins.
   try {

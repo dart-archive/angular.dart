@@ -128,7 +128,9 @@ class Block implements ElementWrapper {
     nodeModule.factory(BlockFactory, blockFactory);
     nodeModule.factory(BoundBlockFactory, boundBlockFactory);
     var nodeInjector = parentInjector.createChild([nodeModule]);
-    directiveRefs.forEach((ref) => nodeInjector.get(ref.directive.type));
+    time('Block nodeInjector.get', () {
+      directiveRefs.forEach((ref) => nodeInjector.get(ref.directive.type));
+    });
     return nodeInjector;
   }
 
@@ -510,10 +512,12 @@ class BlockFactory {
   }
 
   Block call(Injector injector, [List<dom.Node> elements]) {
-    if (elements == null) {
-      elements = cloneElements(templateElements);
-    }
-    return new Block(injector, elements, directivePositions);
+    return time('BlockFactory', () {
+      if (elements == null) {
+        elements = cloneElements(templateElements);
+      }
+      return new Block(injector, elements, directivePositions);
+    });
   }
 
   BoundBlockFactory bind(Injector injector) {

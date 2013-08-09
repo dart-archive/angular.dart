@@ -122,11 +122,13 @@ class Compiler {
   BlockFactory call(List<dom.Node> elements) {
                  List<dom.Node> domElements = elements;
                  List<dom.Node> templateElements = cloneElements(domElements);
-    var directivePositions = _compileBlock(
-        new NodeCursor(domElements), new NodeCursor(templateElements),
-        null);
+    return time('compiler', () {
+      var directivePositions = _compileBlock(
+          new NodeCursor(domElements), new NodeCursor(templateElements),
+          null);
 
-    return new BlockFactory(templateElements,
-                         directivePositions == null ? [] : directivePositions);
+      return new BlockFactory(templateElements,
+          directivePositions == null ? [] : directivePositions);
+    });
   }
 }
