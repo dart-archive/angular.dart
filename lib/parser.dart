@@ -149,15 +149,10 @@ getterChild(value, childKey) {
     }
   }
 
-  // TODO: replace with isInterface(value, Getter) when dart:mirrors
-  // can support mixins.
-  try {
-    // containsKey() might not return a boolean, so explicitly test
-    // against true.
-    if (value.containsKey(childKey) == true) {
-      return [true, value[childKey]];
-    }
-  } on NoSuchMethodError catch(e) {}
+  // TODO: We would love to drop the 'is Map' for a more generic 'is Getter'
+  if (value is Map && childKey is String && value.containsKey(childKey)) {
+    return [true, value[childKey]];
+  }
 
   InstanceMirror instanceMirror = reflect(value);
   Symbol curSym = new Symbol(childKey);
