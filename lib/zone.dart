@@ -82,10 +82,14 @@ class Zone {
     return returnValueFromZone;
   }
 
-  var _assertInZoneStack;
+  var _assertInZoneStack =
+      'Stack traces are disabled for performance.  ' +
+      'See angular:lib/zone.dart to re-enable them.';
   var _inAssertInZone = false;
   assertInZone() {
-    try { throw ""; } catch (e,s) { _assertInZoneStack = s; }
+    // Uncomment the next line to have stack traces attached to
+    // assertInZone() errors.
+    // try { throw ""; } catch (e,s) { _assertInZoneStack = s; }
     _inAssertInZone = true;
     async.runAsync(() => throw [_ZONE_CHECK, _assertInZoneStack]);
     _inAssertInZone = false;
