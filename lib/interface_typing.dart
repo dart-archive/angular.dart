@@ -5,6 +5,10 @@ var OBJECT_QUAL_NAME = fastReflectClass(Object).qualifiedName;
 _equalTypes(ClassMirror a, ClassMirror b) => a.qualifiedName == b.qualifiedName;
 
 _isType(obj, type) {
+  // Work around for https://code.google.com/p/dart/issues/detail?id=12337
+  // and also a decent optimization.
+  if (obj == null) return false;
+
   InstanceMirror instanceMirror = reflect(obj);
   ClassMirror classM = instanceMirror.type;
 
