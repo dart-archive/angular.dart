@@ -50,7 +50,6 @@ main() => describe('zone', () {
   it('should call onTurnDone for a runAsync in onTurnDone', async(inject((Log log) {
     var ran = false;
     zone.onTurnDone = () {
-      dump('onTurn $ran');
       if (!ran) {
         runAsync(() { ran = true; log('onTurnAsync'); });
       }
@@ -69,7 +68,6 @@ main() => describe('zone', () {
     var ran = false;
     zone.onTurnDone = () {
       if (!ran) {
-        dump('...');
         runAsync(() { ran = true; log('onTurnAsync'); });
       }
       log('onTurnDone');
