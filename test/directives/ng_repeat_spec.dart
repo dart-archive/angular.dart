@@ -52,7 +52,7 @@ main() {
     });
 
 
-    xdescribe('track by', () {
+    describe('track by', () {
       it(r'should track using expression function', () {
         element = $compile(
             '<ul>' +
@@ -73,8 +73,8 @@ main() {
       it(r'should track using build in $id function', () {
         element = $compile(
             '<ul>' +
-                '<li ng-repeat="item in items track by $id(item)">{{item.name}};</li>' +
-                '</ul>');
+                r'<li ng-repeat="item in items track by $id(item)">{{item.name}};</li>' +
+            '</ul>');
         scope.items = [{"name": 'misko'}, {"name": 'igor'}];
         scope.$digest();
         var li0 = element.find('li')[0];
@@ -87,13 +87,12 @@ main() {
       });
 
 
-      it(r'should iterate over an array of primitives', () {
+      xit(r'should iterate over an array of primitives', () {
         element = $compile(
-            '<ul>' +
-                '<li ng-repeat="item in items track by $index">{{item}};</li>' +
-            '</ul>');
+            r'<ul>' +
+                r'<li ng-repeat="item in items track by $index">{{item}};</li>' +
+            r'</ul>');
 
-        Array.prototype.extraProperty = "should be ignored";
         // INIT
         scope.items = [true, true, true];
         scope.$digest();

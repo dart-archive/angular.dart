@@ -71,7 +71,7 @@ class NodeCursor {
     var parent = current.parentNode;
 
     // HACK
-    // var anchor = new dom.Comment('Anchore: $name');
+    // var anchor = new dom.Comment('ANCHOR: $name');
     var anchor = ((body) {
       body.innerHtml = '<!--ANCHOR: $name-->';
       return body.nodes[0];

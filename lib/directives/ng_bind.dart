@@ -1,9 +1,12 @@
 part of angular;
 
+@NgDirective(
+  selector: '[ng-bind]',
+  map: const {'.': '=.value'})
 class NgBindAttrDirective {
+  dom.Element element;
 
-  NgBindAttrDirective(dom.Element element, NodeAttrs attrs, Scope scope) {
-    scope.$watch(attrs[this], (value) => element.text = value == null ? '' : value.toString());
-  }
+  NgBindAttrDirective(dom.Element this.element);
 
+  set value(value) => element.text = value == null ? '' : value.toString();
 }

@@ -1,9 +1,12 @@
 part of angular;
 
+@NgDirective(
+    selector: '[ng-disabled]',
+    map: const {'ng-disabled': '=.disabled'})
 class NgDisabledAttrDirective {
-  NgDisabledAttrDirective(dom.Node element, NodeAttrs attrs, Scope scope) {
-    scope.$watch(attrs[this], (value, _, __) {
-      element.disabled = value == null ? false : toBool(value);
-    });
-  }
+  dom.Node node;
+
+  NgDisabledAttrDirective(dom.Node this.node);
+
+  set disabled(value) => node.disabled = toBool(value);
 }

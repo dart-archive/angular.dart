@@ -12,7 +12,7 @@ class Interpolate {
 
   Interpolate(Parser this.$parse, ExceptionHandler this.$exceptionHandler);
 
-  ParsedFn call(String text, [bool mustHaveExpression = false]) {
+  Expression call(String text, [bool mustHaveExpression = false]) {
     num startIndex;
     num endIndex;
     num index = 0;
@@ -21,7 +21,7 @@ class Interpolate {
     bool hasInterpolation = false;
     String exp;
     List concat = [];
-    ParsedFn fn;
+    Expression fn;
 
     while(index < length) {
       if ( ((startIndex = text.indexOf(startSymbol, index)) != -1) &&
@@ -46,7 +46,7 @@ class Interpolate {
     }
 
     if (!mustHaveExpression  || hasInterpolation) {
-      fn = new ParsedFn((context, locals) {
+      fn = new Expression((context, locals) {
         try {
           for(var i = 0, ii = length, chunk; i<ii; i++) {
             if ((chunk = chunks[i]) is Function) {

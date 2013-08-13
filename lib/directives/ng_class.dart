@@ -1,35 +1,35 @@
 part of angular;
 
-
+@NgDirective(
+    selector: '[ng-class]',
+    map: const {'ng-class': '=.value'})
 class NgClassAttrDirective {
-  NgClassAttrDirective(dom.Node node, NodeAttrs attrs, Scope scope) {
-    scope.$watch(attrs[this], (current, previous, __) {
-      var previousSet;
-      var currentSet;
+  dom.Node node;
+  var previousSet = [];
 
-      if (current == null) {
-        currentSet = [];
-      } else {
-        currentSet = current.split(' ');
+  NgClassAttrDirective(dom.Node this.node);
+
+  set value(current) {
+    var currentSet;
+
+    if (current == null) {
+      currentSet = [];
+    } else {
+      currentSet = current.split(' ');
+    }
+
+    previousSet.forEach((cls) {
+      if (!currentSet.contains(cls)) {
+        node.classes.remove(cls);
       }
-
-      if (previous == null || previous == current /* first digest */) {
-        previousSet = [];
-      } else {
-        previousSet = previous.split(' ');
-      }
-
-      previousSet.forEach((cls) {
-        if (!currentSet.contains(cls)) {
-          node.classes.remove(cls);
-        }
-      });
-
-      currentSet.forEach((cls) {
-        if (!previousSet.contains(cls)) {
-          node.classes.add(cls);
-        }
-      });
     });
+
+    currentSet.forEach((cls) {
+      if (!previousSet.contains(cls)) {
+        node.classes.add(cls);
+      }
+    });
+
+    previousSet = currentSet;
   }
 }

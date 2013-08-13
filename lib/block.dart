@@ -73,7 +73,8 @@ class Block implements ElementWrapper {
         parentNode.append(node);
       }
 
-      var childInjector = _instantiateDirectives(parentInjector, node, directiveRefs);
+      var childInjector = _instantiateDirectives(parentInjector, node,
+          directiveRefs, parentInjector.get(Parser));
 
       if (childDirectivePositions != null) {
         _link(node.nodes, childDirectivePositions, childInjector);
@@ -86,8 +87,10 @@ class Block implements ElementWrapper {
     }
   }
 
-  Injector _instantiateDirectives(Injector parentInjector, dom.Node node,
-      List<DirectiveRef> directiveRefs) => _perf.time('angular.block.instantiateDirectives', () {
+  Injector _instantiateDirectives(Injector parentInjector, dom.Node node, 
+                                  List<DirectiveRef> directiveRefs, 
+                                  Parser parser) => 
+  _perf.time('angular.block.instantiateDirectives', () {
     if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
     var nodeModule = new Module();
     var blockHoleFactory = () => null;
@@ -95,6 +98,7 @@ class Block implements ElementWrapper {
     var boundBlockFactory = () => null;
     var nodeAttrs = new NodeAttrs(node);
     var nodesAttrsDirectives = null;
+    Map<Type, _ComponentFactory> fctrs;
 
     nodeModule.value(Block, this);
     nodeModule.value(dom.Element, node);
@@ -102,6 +106,7 @@ class Block implements ElementWrapper {
     nodeModule.value(NodeAttrs, nodeAttrs);
     directiveRefs.forEach((DirectiveRef ref) {
       Type type = ref.directive.type;
+      _NgAnnotationBase annotation = ref.directive.annotation;
       var visibility = _elementOnly;
       if (ref.directive.$visibility == NgDirective.CHILDREN_VISIBILITY) {
         visibility = null;
@@ -125,8 +130,13 @@ class Block implements ElementWrapper {
       } else if (ref.directive.isComponent) {
         //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
         // TODO(misko): there should be no need to wrap function like this.
-        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, Parser parser, BlockCache $blockCache, Http http, TemplateCache templateCache) =>
-            (new _ComponentFactory(node, ref.directive))(injector, compiler, scope, parser, $blockCache, http, templateCache),
+        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http http, TemplateCache templateCache) {
+            // This is a bit of a hack since we are returning different type then we are.
+            var componentFactory = new _ComponentFactory(node, ref.directive);
+            if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
+            fctrs[type] = componentFactory;
+            return componentFactory(injector, compiler, scope, $blockCache, http, templateCache);
+          },
           visibility: visibility);
       } else {
         nodeModule.type(type, type, visibility: visibility);
@@ -136,8 +146,7 @@ class Block implements ElementWrapper {
             (Injector injector) => injector.get(type),
             visibility: visibility);
       }
-      nodeAttrs[ref.directive.$name] = ref.value;
-      if (ref.directive.isStructural) {
+      if (annotation is NgDirective && annotation.transclude) {
         blockHoleFactory = () => new BlockHole([node]);
         blockFactory = () => ref.blockFactory;
         boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
@@ -147,7 +156,23 @@ class Block implements ElementWrapper {
     nodeModule.factory(BlockFactory, blockFactory);
     nodeModule.factory(BoundBlockFactory, boundBlockFactory);
     var nodeInjector = parentInjector.createChild([nodeModule]);
-    directiveRefs.forEach((ref) => nodeInjector.get(ref.directive.type));
+    var scope = nodeInjector.get(Scope);
+    directiveRefs.forEach((ref) {
+      var controller = nodeInjector.get(ref.directive.type);
+      var shadowScope = (fctrs != null && fctrs.containsKey(ref.directive.type))
+          ? fctrs[ref.directive.type].shadowScope : null;
+      _createAttributeMapping(ref, node, scope, shadowScope, controller, parser);
+      if (understands(controller, 'attach')) {
+        var removeWatcher;
+        removeWatcher = scope.$watch(() {
+          removeWatcher();
+          controller.attach();
+        });
+      }
+      if (understands(controller, 'detach')) {
+        scope.$on(r'$destroy', controller.detach);
+      }
+    });
     return nodeInjector;
   });
 
@@ -281,7 +306,6 @@ class Block implements ElementWrapper {
  * mappings, publishing the controller, and compiling and caching the template.
  */
 class _ComponentFactory {
-  static RegExp _MAPPING = new RegExp(r'^([\@\=\&])(\.?)\s*(.*)$');
 
   dom.Element element;
   Directive directive;
@@ -289,11 +313,12 @@ class _ComponentFactory {
   Scope shadowScope;
   Injector shadowInjector;
   Compiler compiler;
+  var controller;
 
   _ComponentFactory(this.element, this.directive);
 
   dynamic call(Injector injector, Compiler compiler, Scope scope,
-      Parser parser, BlockCache $blockCache,  Http $http,
+      BlockCache $blockCache,  Http $http,
       TemplateCache $templateCache) {
     this.compiler = compiler;
     shadowDom = element.createShadowRoot();
@@ -332,26 +357,11 @@ class _ComponentFactory {
           }
           return shadowDom;
         }));
-    var controller =
+    controller =
         createShadowInjector(injector, templateLoader).get(directive.type);
     if (directive.$publishAs != null) {
       shadowScope[directive.$publishAs] = controller;
     }
-    createAttributeMapping(scope, shadowScope, controller, parser);
-
-    if (understands(controller, 'attach')) {
-      blockFuture.then((_) {
-        var removeWatcher;
-        removeWatcher = scope.$watch(() {
-          removeWatcher();
-          controller.attach();
-        });
-      });
-    }
-    if (understands(controller, 'detach')) {
-      scope.$on(r'$destroy', controller.detach);
-    }
-
     return controller;
   }
 
@@ -370,55 +380,6 @@ class _ComponentFactory {
     // TODO(misko): crazy hack to mark injector
     shadowInjector.instances[_SHADOW] = injector;
     return shadowInjector;
-  }
-
-  createAttributeMapping(Scope parentScope, Scope shadowScope,
-                         Object controller, Parser parser) {
-    directive.$map.forEach((attrName, mapping) {
-      Match match = _MAPPING.firstMatch(mapping);
-      if (match == null) {
-        throw "Unknown mapping '$mapping' for attribute '$attrName'.";
-      }
-      var attrValue = element.attributes[snakeCase(attrName, '-')];
-      if (attrValue == null) attrValue = '';
-
-      var mode = match[1];
-      var controllerContext = match[2];
-      var dstPath = match[3];
-      var context = controllerContext == '.' ? controller : shadowScope;
-
-      ParsedFn dstPathFn = parser(dstPath.isEmpty ? attrName : dstPath);
-      if (!dstPathFn.assignable) {
-        throw "Expression '$dstPath' is not assignable in mapping '$mapping' for attribute '$attrName'.";
-      }
-      switch(mode) {
-        case '@':
-          dstPathFn.assign(context, attrValue);
-          break;
-        case '=':
-          ParsedFn attrExprFn = parser(attrValue);
-          var shadowValue = attrExprFn(parentScope);
-          dstPathFn.assign(context, shadowValue);
-          shadowScope.$watch(
-                  () => attrExprFn(parentScope),
-                  (v) => dstPathFn.assign(context, shadowValue = v));
-          if (attrExprFn.assignable) {
-            shadowScope.$watch(
-                () => dstPathFn(context),
-                (v) {
-                  if (shadowValue != v) {
-                    shadowValue = v;
-                    attrExprFn.assign(parentScope, v);
-                  }
-                });
-          }
-          break;
-        case '&':
-          ParsedFn callBackFn = parser(attrValue);
-          dstPathFn.assign(context, ([locals]) => callBackFn(parentScope, locals));
-          break;
-      }
-    });
   }
 }
 
@@ -494,21 +455,19 @@ class TemplateLoader {
  */
 class NodeAttrs {
   dom.Node node;
-  Map<String, String> attributes;
 
-  NodeAttrs(dom.Node this.node, [Map<String, String> this.attributes]) {
-    if (attributes == null) {
-      attributes = {};
-    }
-  }
+  NodeAttrs(dom.Node this.node);
 
-  operator []=(String name, String value) => attributes[name] = value;
+  operator []=(String name, String value) => node.attributes[name] = value;
   operator [](name) {
     if (!(name is String)) {
-      name = new Directive(name.runtimeType).$name;
+      var annotations = reflectMetadata(name.runtimeType, NgDirective);
+      if (annotations.length == 0) {
+        return null;
+      }
+      name = annotations.first.defaultAttributeName;
     }
-    var value = attributes[name];
-    return value;
+    return node is dom.Element ? node.attributes[name] : null;
   }
 
   dom.Element get element => node;
@@ -573,3 +532,56 @@ class BlockFactory {
   }
 }
 
+RegExp _MAPPING = new RegExp(r'^([\@\=\&])(\.?)\s*(.*)$');
+_createAttributeMapping(DirectiveRef directiveRef, dom.Node element,
+                        Scope scope, Scope shadowScope,
+                        Object controller, Parser parser) {
+  Directive directive = directiveRef.directive;
+  directive.$map.forEach((attrName, mapping) {
+    Match match = _MAPPING.firstMatch(mapping);
+    if (match == null) {
+      throw "Unknown mapping '$mapping' for attribute '$attrName'.";
+    }
+    var attrValue = attrName == '.'
+        ? directiveRef.value
+        : element.attributes[snakeCase(attrName, '-')];
+    if (attrValue == null) attrValue = '';
+
+    var mode = match[1];
+    var controllerContext = match[2];
+    var dstPath = match[3];
+    var context = controllerContext == '.' ? controller : shadowScope;
+
+    Expression dstPathFn = parser(dstPath.isEmpty ? attrName : dstPath);
+    if (!dstPathFn.assignable) {
+      throw "Expression '$dstPath' is not assignable in mapping '$mapping' for attribute '$attrName'.";
+    }
+    switch(mode) {
+      case '@':
+        dstPathFn.assign(context, attrValue);
+        break;
+      case '=':
+        Expression attrExprFn = parser(attrValue);
+        var shadowValue = null;
+        scope.$watch(
+                () => attrExprFn(scope),
+                (v) => dstPathFn.assign(context, shadowValue = v));
+        if (shadowScope != null) {
+          if (attrExprFn.assignable) {
+            shadowScope.$watch(
+                    () => dstPathFn(context),
+                    (v) {
+                  if (shadowValue != v) {
+                    shadowValue = v;
+                    attrExprFn.assign(scope, v);
+                  }
+                });
+          }
+        }
+        break;
+      case '&':
+        dstPathFn.assign(context, parser(attrValue).bind(scope));
+        break;
+    }
+  });
+}

@@ -28,25 +28,10 @@ class Compiler {
 
       for (var j = 0, jj = declaredDirectiveRefs.length; j < jj; j++) {
         var directiveRef = declaredDirectiveRefs[j];
-        Directive directive = directiveRef.directive;
+        _NgAnnotationBase annotation = directiveRef.directive.annotation;
         var blockFactory = null;
 
-        if (directive.$generate != null) {
-          var nodeList = domCursor.nodeList();
-          var generatedDirectives = directive.$generate(directiveRef.value, nodeList);
-
-          for (var k = 0, kk = generatedDirectives.length; k < kk; k++) {
-            String generatedSelector = generatedDirectives[k][0];
-            String generatedValue = generatedDirectives[k][1];
-            Type generatedDirectiveType = $directiveInjector.get(generatedSelector);
-            var generatedDirectiveRef = new DirectiveRef(
-                new Directive(generatedDirectiveType),
-                generatedValue);
-
-            declaredDirectiveRefs.add(generatedDirectiveRef);
-          }
-        }
-        if (directive.$transclude) {
+        if (annotation is NgDirective && annotation.transclude) {
           var remainingDirectives = declaredDirectiveRefs.sublist(j + 1);
           blockFactory = compileTransclusion(
               domCursor, templateCursor,

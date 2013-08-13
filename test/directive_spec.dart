@@ -1,13 +1,17 @@
 import "_specs.dart";
 
 // Types must be declared on the top level. Ugh.
+@NgDirective(selector: 'some')
 class SomeDirective { }
+
+@NgDirective(selector: '[another]')
 class AnotherAttrDirective { }
 
-@NgDirective(transclude: true)
+@NgDirective(transclude: true, selector: '[transclude]')
 class TranscludeDirective {
 }
 
+@NgDirective(selector: 'with-default-shadow-root-options')
 class WithDefaultShadowRootOptionsComponent {
 }
 
@@ -28,16 +32,6 @@ main() {
     it('should guess the attr directive name correctly', () {
       Directive factory = new Directive(AnotherAttrDirective);
       expect(factory.$name).toEqual('[another]');
-    });
-
-    it('should set \$transclude based on the directive type for undef transclude', () {
-      Directive factory = new Directive(SomeDirective);
-      expect(factory.$transclude).toEqual(false);
-    });
-
-    it('should set \$transclude based on the directive type for transclude=true', () {
-      Directive factory = new Directive(TranscludeDirective);
-      expect(factory.$transclude).toEqual(true);
     });
 
     it('should default \$shadowRootOptions to false/false', () {

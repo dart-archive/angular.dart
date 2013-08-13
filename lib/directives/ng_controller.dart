@@ -1,17 +1,22 @@
 part of angular;
 
-@NgDirective(transclude: true)
+@NgDirective(
+    transclude: true,
+    selector:'[ng-controller]',
+    map: const {'.': '@.expression'})
 class NgControllerAttrDirective {
   static RegExp CTRL_REGEXP = new RegExp(r'^(\S+)(\s+as\s+(\w+))?$');
+
+  BoundBlockFactory boundBlockFactory;
+  BlockHole blockHole;
+  Injector injector;
+  Scope scope;
 
   Symbol ctrlSymbol;
   String alias;
 
-  NgControllerAttrDirective(BoundBlockFactory boundBlockFactory,
-                            BlockHole blockHole,
-                            Injector injector,
-                            NodeAttrs attrs, Scope scope) {
-    var match = CTRL_REGEXP.firstMatch(attrs[this]);
+  set expression(value) {
+    var match = CTRL_REGEXP.firstMatch(value);
 
     ctrlSymbol = new Symbol(match.group(1) + 'Controller');
     alias = match.group(3);
@@ -24,8 +29,8 @@ class NgControllerAttrDirective {
 
       // instantiate the controller
       var controller = injector.
-        createChild([new ScopeModule(childScope)], [ctrlSymbol]).
-        getBySymbol(ctrlSymbol);
+      createChild([new ScopeModule(childScope)], [ctrlSymbol]).
+      getBySymbol(ctrlSymbol);
 
       // publish the controller into the scope
       if (alias != null) {
@@ -33,4 +38,9 @@ class NgControllerAttrDirective {
       }
     });
   }
+
+  NgControllerAttrDirective(BoundBlockFactory this.boundBlockFactory,
+                            BlockHole this.blockHole,
+                            Injector this.injector,
+                            Scope this.scope);
 }

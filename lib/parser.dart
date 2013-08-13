@@ -1,15 +1,32 @@
 part of angular;
 
 
-class ParsedFn {
-  Parsedgetter getter;
-  ParsedAssignFn assignFn;
+typedef ParsedGetter(scope, locals);
+typedef ParsedSetter(scope, value, locals);
+
+typedef Getter([locals]);
+typedef Setter(value, [locals]);
+
+class BoundExpression {
+  var _context;
+  Expression _parsedFn;
+
+  BoundExpression(this._context, Expression this._parsedFn);
+
+  call([locals]) => _parsedFn(_context, locals);
+  assign(value, [locals]) => _parsedFn.assign(_context, value, locals);
+}
+
+class Expression {
+  ParsedGetter getterFn;
+  ParsedSetter assignFn;
   String exp;
   List parts;
 
-  ParsedFn(this.getter, [this.assignFn]);
-  call([s, l]) => getter(s, l);
+  Expression(ParsedGetter this.getterFn, [ParsedSetter this.assignFn]);
+  call([s, l]) => getterFn(s, l);
   assign(s, v, [l]) => assignFn(s, v, l);
+  bind(context) => new BoundExpression(context, this);
 
   get assignable => assignFn != null;
 }
@@ -21,7 +38,7 @@ class Token {
   String string;
   Operator fn;
   // access fn as a function that doesn't take a or b values.
-  ParsedFn primaryFn;
+  Expression primaryFn;
 
   Token(this.index, this.text) {
     // default fn
@@ -30,7 +47,7 @@ class Token {
 
   withFn(fn, [assignFn]) {
     this.fn = fn;
-    this.primaryFn = new ParsedFn(
+    this.primaryFn = new Expression(
         (s, l) => fn(s, l, null, null),
         assignFn);
   }
@@ -45,10 +62,7 @@ class Token {
 }
 
 // TODO(deboer): Type this typedef further
-typedef Operator(scope, locals, ParsedFn a, ParsedFn b);
-
-typedef Parsedgetter(scope, locals);
-typedef ParsedAssignFn(scope, value, locals);
+typedef Operator(scope, locals, Expression a, Expression b);
 
 op0(fn()) => (_, _1, _2, _3) => fn();
 
@@ -68,7 +82,7 @@ Operator NOT_IMPL_OP = (_, _x, _0, _1) => throw "Op not implemented";
 toBool(x) {
   if (x is bool) return x;
   if (x is int || x is double) return x != 0;
-  throw "Can't convert $x to boolean";
+  return false;
 }
 
 // Automatic type conversion.
@@ -121,7 +135,7 @@ Map<String, Operator> OPERATORS = {
 
 Map<String, String> ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'};
 
-ParsedFn ZERO = new ParsedFn((_, _x) => 0);
+Expression ZERO = new Expression((_, _x) => 0);
 
 class Setter {
   operator[]=(name, value){}
@@ -477,11 +491,11 @@ class Parser {
 
   }
 
-  ParsedFn call(String text) {
+  Expression call(String text) {
     return Parser.parse(text, _perf);
   }
 
-  static ParsedFn parse(text, [_perf]) {
+  static Expression parse(text, [_pref]) {
     List<Token> tokens = Parser.lex(text);
     Token token;
 
@@ -537,7 +551,7 @@ class Parser {
       return null;
     }
 
-    ParsedFn consume(e1){
+    Expression consume(e1){
       if (expect(e1) == null) {
         throw parserError("Missing expected $e1");
         //throwError("is unexpected, expecting [" + e1 + "]", peek());
@@ -547,7 +561,7 @@ class Parser {
     var filterChain = null;
     var functionCall, arrayDeclaration, objectIndex, fieldAccess, object;
 
-    ParsedFn primary() {
+    Expression primary() {
       var primary;
       var ts = saveTokens();
       if (expect('(') != null) {
@@ -585,17 +599,17 @@ class Parser {
       return primary;
     }
 
-    ParsedFn binaryFn(ParsedFn left, Operator fn, ParsedFn right) =>
-      new ParsedFn((self, locals) {
+    Expression binaryFn(Expression left, Operator fn, Expression right) =>
+      new Expression((self, locals) {
         return fn(self, locals, left, right);
       });
 
-    ParsedFn unaryFn(Operator fn, ParsedFn right) =>
-      new ParsedFn((self, locals) {
+    Expression unaryFn(Operator fn, Expression right) =>
+      new Expression((self, locals) {
         return fn(self, locals, right, null);
       });
 
-    ParsedFn unary() {
+    Expression unary() {
       var token;
       if (expect('+') != null) {
         return primary();
@@ -608,7 +622,7 @@ class Parser {
       }
     }
 
-    ParsedFn multiplicative() {
+    Expression multiplicative() {
       var left = unary();
       var token;
       while ((token = expect('*','/','%')) != null) {
@@ -617,7 +631,7 @@ class Parser {
       return left;
     }
 
-    ParsedFn additive() {
+    Expression additive() {
       var left = multiplicative();
       var token;
       while ((token = expect('+','-')) != null) {
@@ -626,7 +640,7 @@ class Parser {
       return left;
     }
 
-    ParsedFn relational() {
+    Expression relational() {
       var left = additive();
       var token;
       if ((token = expect('<', '>', '<=', '>=')) != null) {
@@ -635,7 +649,7 @@ class Parser {
       return left;
     }
 
-    ParsedFn equality() {
+    Expression equality() {
       var left = relational();
       var token;
       if ((token = expect('==','!=')) != null) {
@@ -644,7 +658,7 @@ class Parser {
       return left;
     }
 
-    ParsedFn logicalAND() {
+    Expression logicalAND() {
       var left = equality();
       var token;
       if ((token = expect('&&')) != null) {
@@ -653,7 +667,7 @@ class Parser {
       return left;
     }
 
-    ParsedFn logicalOR() {
+    Expression logicalOR() {
       var left = logicalAND();
       var token;
       while(true) {
@@ -668,7 +682,7 @@ class Parser {
     // =========================
     // =========================
 
-    ParsedFn assignment() {
+    Expression assignment() {
       var ts = saveTokens();
       var left = logicalOR();
       stopSavingTokens(ts);
@@ -679,7 +693,7 @@ class Parser {
           throw parserError('Expression ${tokensText(ts)} is not assignable', token);
         }
         right = logicalOR();
-        return new ParsedFn((scope, locals) {
+        return new Expression((scope, locals) {
           try {
             return left.assign(scope, right(scope, locals), locals);
           } catch (e, s) {
@@ -692,7 +706,7 @@ class Parser {
     }
 
 
-    ParsedFn expression() {
+    Expression expression() {
       return assignment();
     }
 
@@ -710,14 +724,14 @@ class Parser {
     };
 
     statements() {
-      List<ParsedFn> statements = [];
+      List<Expression> statements = [];
       while (true) {
         if (tokens.length > 0 && peek('}', ')', ';', ']') == null)
           statements.add(filterChain());
         if (expect(';') == null) {
           return statements.length == 1
               ? statements[0]
-              : new ParsedFn((scope, locals) {
+              : new Expression((scope, locals) {
                 var value;
                 for ( var i = 0; i < statements.length; i++) {
                   var statement = statements[i];
@@ -738,7 +752,7 @@ class Parser {
         } while (expect(',') != null);
       }
       consume(')');
-      return new ParsedFn((self, locals){
+      return new Expression((self, locals){
         List args = [];
         for ( var i = 0; i < argsFn.length; i++) {
           args.add(argsFn[i](self, locals));
@@ -763,7 +777,7 @@ class Parser {
         } while (expect(',') != null);
       }
       consume(']');
-      return new ParsedFn((self, locals){
+      return new Expression((self, locals){
         var array = [];
         for ( var i = 0; i < elementFns.length; i++) {
           array.add(elementFns[i](self, locals));
@@ -798,7 +812,7 @@ class Parser {
 
       var indexFn = expression();
       consume(']');
-      return new ParsedFn((self, locals){
+      return new Expression((self, locals){
             var i = indexFn(self, locals);
             var o = obj(self, locals),
                 v, p;
@@ -813,7 +827,7 @@ class Parser {
               p = v;
               if (!('$$v' in v)) {
                 p.$$v = undefined;
-                p.then(ParsedFn(val) { p.$$v = val; });
+                p.then(Expression(val) { p.$$v = val; });
               }
               v = v.$$v;
             } */
@@ -827,7 +841,7 @@ class Parser {
     fieldAccess = (object) {
       var field = expect().text;
       //var getter = getter(field);
-      return new ParsedFn((self, locals) => getter(object(self, locals), locals, field),
+      return new Expression((self, locals) => getter(object(self, locals), locals, field),
           (self, value, locals) => setter(object(self, locals), field, value));
     };
 
@@ -843,7 +857,7 @@ class Parser {
         } while (expect(',') != null);
       }
       consume('}');
-      return new ParsedFn((self, locals){
+      return new Expression((self, locals){
         var object = {};
         for ( var i = 0; i < keyValues.length; i++) {
           var keyValue = keyValues[i];
@@ -855,7 +869,7 @@ class Parser {
     };
 
     // TODO(deboer): json
-    ParsedFn value = statements();
+    Expression value = statements();
 
     if (tokens.length != 0) {
       throw parserError("Unconsumed token ${tokens[0].text}");
@@ -863,14 +877,14 @@ class Parser {
     if (_perf == null) return value;
 
     var wrappedGetter = (s, l) =>
-        _perf.time('angular.parser.getter', () => value.getter(s, l), text);
+        _perf.time('angular.parser.getter', () => value(s, l), text);
     var wrappedAssignFn = null;
     if (value.assignFn != null) {
       wrappedAssignFn = (s, v, l) =>
           _perf.time('angular.parser.assignFn',
               () => value.assignFn(s, v, l), text);
     }
-    return new ParsedFn(wrappedGetter, wrappedAssignFn);
+    return new Expression(wrappedGetter, wrappedAssignFn);
   }
 
 }

@@ -1,52 +1,63 @@
 part of angular;
 
+@NgDirective(
+    selector: '[ng-include]',
+    map: const {'.': '=.url'} )
 class NgIncludeAttrDirective {
 
-  NgIncludeAttrDirective(dom.Element element, Scope scope, NodeAttrs attrs, BlockCache blockCache, Injector injector) {
+  dom.Element element;
+  Scope scope;
+  BlockCache blockCache;
+  Injector injector;
 
-    var previousBlock = null;
-    var previousScope = null;
+  Block _previousBlock;
+  Scope _previousScope;
 
-    cleanUp() {
-      if (previousBlock == null) {
-        return;
-      }
+  NgIncludeAttrDirective(dom.Element this.element,
+                         Scope this.scope,
+                         BlockCache this.blockCache,
+                         Injector this.injector);
 
-      previousBlock.remove();
-      previousScope.$destroy();
-      element.innerHtml = '';
+  _cleanUp() {
+    if (_previousBlock == null) {
+      return;
+    }
 
-      previousBlock = null;
-      previousScope = null;
-    };
+    _previousBlock.remove();
+    _previousScope.$destroy();
+    element.innerHtml = '';
 
-    updateContent(createBlock) {
-      cleanUp();
+    _previousBlock = null;
+    _previousScope = null;
+  }
 
-      // create a new scope
-      previousScope = scope.$new();
-      previousBlock = createBlock(injector.createChild([new ScopeModule(previousScope)]));
+  _updateContent(createBlock) {
+    _cleanUp();
 
-      previousBlock.elements.forEach((elm) {
-        element.append(elm);
-      });
-    };
+    // create a new scope
+    _previousScope = scope.$new();
+    _previousBlock = createBlock(injector.createChild([new ScopeModule(_previousScope)]));
 
-    scope.$watch(attrs[this], (value, another) {
-      if (value == null || value == '') {
-        cleanUp();
-        return;
-      }
-
-      if (value.startsWith('<')) {
-        // inlined template
-        updateContent(blockCache.fromHtml(value));
-      } else {
-        // an url template
-        blockCache.fromUrl(value).then((createBlock) {
-          updateContent(createBlock);
-        });
-      }
+    _previousBlock.elements.forEach((elm) {
+      element.append(elm);
     });
+  }
+
+
+  set url(value) {
+    if (value == null || value == '') {
+      _cleanUp();
+      return;
+    }
+
+    if (value.startsWith('<')) {
+      // inlined template
+      _updateContent(blockCache.fromHtml(value));
+    } else {
+      // an url template
+      blockCache.fromUrl(value).then((createBlock) {
+        _updateContent(createBlock);
+      });
+    }
   }
 }

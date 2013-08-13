@@ -1,9 +1,13 @@
 part of angular;
 
-
+@NgDirective(
+    selector: '[ng-click]',
+    map: const {'ng-click': '&.onClick'}
+)
 class NgClickAttrDirective {
-  NgClickAttrDirective(dom.Node node, NodeAttrs attrs, Scope scope) {
-    var expression = attrs[this];
-    node.onClick.listen((event) => scope.$apply(expression));
+  Function onClick;
+
+  NgClickAttrDirective(dom.Node node, Scope scope) {
+    node.onClick.listen((event) => scope.$apply(onClick));
   }
 }

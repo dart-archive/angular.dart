@@ -1,32 +1,44 @@
 part of angular;
 
-@NgDirective(transclude: true)
+@NgDirective(
+    transclude: true,
+    selector:'[ng-if]',
+    map: const {'.': '=.condition'})
 class NgIfAttrDirective {
 
-  NgIfAttrDirective(BoundBlockFactory boundBlockFactory, BlockHole blockHole,
-                    NodeAttrs attrs, dom.Node node, Scope scope) {
-    var _block;
-    block() {
-      if (_block != null) return _block;
-      var childScope = scope.$new();
-      _block = boundBlockFactory(childScope);
-      return _block;
-    }
-    var isInserted = false;
+  BoundBlockFactory boundBlockFactory;
+  BlockHole blockHole;
+  dom.Node node;
+  Scope scope;
 
-    scope.$watch(attrs[this], (value) {
-      // TODO(vojta): ignore changes like null -> false
-      if (value != null && toBool(value)) {
-        if (!isInserted) {
-          block().insertAfter(blockHole);
-          isInserted = true;
-        }
-      } else {
-        if (isInserted) {
-          block().remove();
-          isInserted = false;
-        }
+  Block _block;
+  Scope _childScope;
+
+  NgIfAttrDirective(BoundBlockFactory this.boundBlockFactory,
+                    BlockHole this.blockHole,
+                    dom.Node this.node,
+                    Scope this.scope) {
+  }
+
+  block() {
+    if (_block != null) return _block;
+    return _block;
+  }
+
+  set condition(value) {
+    // TODO(vojta): ignore changes like null -> false
+    if (toBool(value)) {
+      if (_block == null) {
+        _block = boundBlockFactory(_childScope = scope.$new());
+        _block.insertAfter(blockHole);
       }
-    });
+    } else {
+      if (_block != null) {
+        _block.remove();
+        _childScope.$destroy();
+        _block = null;
+        _childScope = null;
+      }
+    }
   }
 }

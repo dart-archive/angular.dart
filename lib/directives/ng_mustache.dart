@@ -3,7 +3,7 @@ part of angular;
 @NgDirective(selector: r':contains(/{{.*}}/)')
 class NgTextMustacheDirective {
   dom.Node element;
-  ParsedFn interpolateFn;
+  Expression interpolateFn;
 
   // This Directive is special and does not go through injection.
   NgTextMustacheDirective(dom.Node this.element, String markup, Interpolate interpolate, Scope scope) {
@@ -22,7 +22,7 @@ class NgAttrMustacheDirective {
   NgAttrMustacheDirective(dom.Element element, String markup, Interpolate interpolate, Scope scope) {
     var match = ATTR_NAME_VALUE_REGEXP.firstMatch(markup);
     var attrName = match[1];
-    ParsedFn interpolateFn = interpolate(match[2]);
+    Expression interpolateFn = interpolate(match[2]);
     Function attrSetter = (text) => element.attributes[attrName] = text;
     attrSetter('');
     scope.$watch(interpolateFn, attrSetter);

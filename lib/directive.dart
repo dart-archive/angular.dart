@@ -36,46 +36,6 @@ class _NgAnnotationBase {
   final String visibility;
   final List<Type> publishTypes;
 
-  const _NgAnnotationBase({
-    this.selector,
-    this.visibility: NgDirective.LOCAL_VISIBILITY,
-    this.publishTypes
-  });
-}
-
-/**
- * Meta-data marker placed on a class which should act as a controller for the
- * component. Angular components are a light-weight version of web-components.
- * Angular components use shadow-DOM for rendering their templates.
- *
- * Angular components are instantiated using dependency injection, and can
- * ask for any injectable object in their constructor. Components
- * can also ask for other components or directives declared on the DOM element.
- *
- * Components can declared these optional methods:
- *
- * * `attach()` - Called on first [Scope.$digest()].
- *
- * * `detach()` - Called on when owning scope is destroyed.
- *
- */
-class NgComponent extends _NgAnnotationBase {
-  /**
-   * Inlined HTML template for the component.
-   */
-  final String template;
-
-  /**
-   * A URL to HTML template. This will be loaded asynchronously and
-   * cached for future component instances.
-   */
-  final String templateUrl;
-
-  /**
-   * A CSS URL to load into the shadow DOM.
-   */
-  final String cssUrl;
-
   /**
    * Use map to define the mapping of component's DOM attributes into
    * the component instance or scope. The map's key is the DOM attribute name
@@ -137,6 +97,47 @@ class NgComponent extends _NgAnnotationBase {
    */
   final Map<String, String> map;
 
+  const _NgAnnotationBase({
+    this.selector,
+    this.visibility: NgDirective.LOCAL_VISIBILITY,
+    this.publishTypes,
+    this.map
+  });
+}
+
+/**
+ * Meta-data marker placed on a class which should act as a controller for the
+ * component. Angular components are a light-weight version of web-components.
+ * Angular components use shadow-DOM for rendering their templates.
+ *
+ * Angular components are instantiated using dependency injection, and can
+ * ask for any injectable object in their constructor. Components
+ * can also ask for other components or directives declared on the DOM element.
+ *
+ * Components can declared these optional methods:
+ *
+ * * `attach()` - Called on first [Scope.$digest()].
+ *
+ * * `detach()` - Called on when owning scope is destroyed.
+ *
+ */
+class NgComponent extends _NgAnnotationBase {
+  /**
+   * Inlined HTML template for the component.
+   */
+  final String template;
+
+  /**
+   * A URL to HTML template. This will be loaded asynchronously and
+   * cached for future component instances.
+   */
+  final String templateUrl;
+
+  /**
+   * A CSS URL to load into the shadow DOM.
+   */
+  final String cssUrl;
+
   /**
    * An expression under which the controller instance will be published into.
    * This allows the expressions in the template to be referring to controller
@@ -160,15 +161,17 @@ class NgComponent extends _NgAnnotationBase {
     this.template,
     this.templateUrl,
     this.cssUrl,
-    this.map,
     this.publishAs,
     this.applyAuthorStyles,
     this.resetStyleInheritance,
+    map,
     selector,
     visibility,
     publishTypes : const <Type>[]
-  }) : super(selector: selector, visibility: visibility, publishTypes: publishTypes);
+  }) : super(selector: selector, visibility: visibility, publishTypes: publishTypes, map: map);
 }
+
+RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
 class NgDirective extends _NgAnnotationBase {
   static const String LOCAL_VISIBILITY = 'local';
@@ -176,13 +179,24 @@ class NgDirective extends _NgAnnotationBase {
   static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
 
   final bool transclude;
+  final String attrName;
 
   const NgDirective({
     this.transclude: false,
+    this.attrName: null,
+    map,
     selector,
     visibility,
     publishTypes : const <Type>[]
-  }) : super(selector: selector, visibility: visibility, publishTypes: publishTypes);
+  }) : super(selector: selector, visibility: visibility, publishTypes: publishTypes, map: map);
+
+  get defaultAttributeName {
+    if (attrName == null && selector != null) {
+      var match = _ATTR_NAME.firstMatch(selector);
+      return match != null ? match[1] : null;
+    }
+    return attrName;
+  }
 }
 
 /**
@@ -205,10 +219,11 @@ class Directive {
   static int COMPONENT_PRIORITY = 0;
 
   Type type;
+  _NgAnnotationBase annotation;
+
+
   // TODO(misko): this should be renamed to selector once we change over to meta-data.
   String $name;
-  Function $generate;
-  bool $transclude = false;
   int $priority = Directive.ATTR_PRIORITY;
   String $template;
   String $templateUrl;
@@ -220,9 +235,16 @@ class Directive {
   List<Type> $publishTypes = <Type>[];
 
   bool isComponent = false;
-  bool isStructural = false;
 
-  Directive._new(Type this.type);
+  Directive._new(Type this.type) {
+    var annotations = [];
+    annotations.addAll(reflectMetadata(type, NgDirective));
+    annotations.addAll(reflectMetadata(type, NgComponent));
+    if (annotations.length != 1) {
+      throw 'Expecting exatly one annotation of type NgComponent or NgDirective on $type';
+    }
+    annotation =  annotations.first;
+  }
 
   factory Directive(Type type) {
     var instance = _directiveCache[type];
@@ -247,9 +269,9 @@ class Directive {
     var selector;
     if (directive != null) {
       selector = directive.selector;
-      instance.$transclude = directive.transclude;
       instance.$visibility = directive.visibility;
       instance.$publishTypes = directive.publishTypes;
+      instance.$map = directive.map;
     }
     if (component != null) {
       instance.$priority = Directive.COMPONENT_PRIORITY;
@@ -284,14 +306,13 @@ class Directive {
             "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
     }
 
-    instance.isStructural = instance.$transclude;
-    if (instance.isStructural) {
-      instance.$priority = Directive.STRUCTURAL_PRIORITY;
-    }
-    if (instance.isComponent && instance.$map == null) {
+    if (instance.$map == null) {
       instance.$map = new Map<String, String>();
     }
     _directiveCache[type] = instance;
+    if (instance.annotation is NgDirective && instance.annotation.transclude) {
+      instance.$priority = Directive.STRUCTURAL_PRIORITY;
+    }
     return instance;
   }
 }

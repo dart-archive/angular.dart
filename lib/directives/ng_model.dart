@@ -10,19 +10,22 @@ part of angular;
  * knwos how to (in)validate the model and the form in which it is declared
  * (to be implemented)
  */
-@NgDirective(selector: '[ng-model]')
+@NgDirective(
+    selector: '[ng-model]',
+    map: const {'.': '&.model'})
 class NgModel {
-  Scope scope;
-  ParsedFn getter;
-  ParsedAssignFn setter;
+  Getter getterXXX = ([_]) => null;
+  Setter setter = (_, [__]) => null;
 
   Function render = (value) => null;
 
-  NgModel(NodeAttrs attrs, Parser parser, Scope this.scope) {
-    getter = parser(attrs[this]);
-    setter = getter.assign;
+  NgModel(Scope scope) {
+    scope.$watch(() => getterXXX(), (value) => render(value) );
+  }
 
-    scope.$watch(getter, (value) => render(value) );
+  set model(BoundExpression boundExpression) {
+    getterXXX = boundExpression;
+    setter = boundExpression.assign;
   }
 
   // TODO(misko): right now viewValue and modelValue are the same,
@@ -30,8 +33,8 @@ class NgModel {
   get viewValue        => modelValue;
   set viewValue(value) => modelValue = value;
 
-  get modelValue        => getter(scope);
-  set modelValue(value) => setter(scope, value);
+  get modelValue        => getterXXX();
+  set modelValue(value) => setter(value);
 }
 
 /**

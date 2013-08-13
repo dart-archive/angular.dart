@@ -27,7 +27,6 @@ main() {
 
       element = $(block.elements);
 
-      dump(element);
       expect(element.attr('some-attr')).toEqual('');
       expect(element.attr('other-attr')).toEqual('');
       $rootScope.$digest();

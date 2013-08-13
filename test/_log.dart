@@ -9,6 +9,7 @@ class Log {
   String result() => output.join('; ');
 }
 
+@NgDirective(selector: '[log]')
 class LogAttrDirective {
   static var $priority = 0;
   Log log;

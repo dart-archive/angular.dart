@@ -14,6 +14,7 @@ class TabComponent {
   }
 }
 
+@NgComponent()
 class PaneComponent {
   TabComponent tabComponent;
   LocalAttrDirective localDirective;
@@ -45,12 +46,14 @@ class SimpleTranscludeInAttachAttrDirective {
   }
 }
 
+@NgDirective()
 class IncludeTranscludeAttrDirective {
   IncludeTranscludeAttrDirective(SimpleTranscludeInAttachAttrDirective simple, Log log) {
     log('IncludeTransclude');
   }
 }
 
+@NgDirective()
 class PublishTypesDirectiveSuperType {
 }
 
@@ -299,8 +302,8 @@ main() {
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         $compile(element)(injector, element);
         var component = $rootScope.ioComponent;
-        expect(component.scope.expr).toEqual('misko');
         $rootScope.$apply();
+        expect(component.scope.expr).toEqual('misko');
         component.scope.expr = 'angular';
         $rootScope.$apply();
         expect($rootScope.name).toEqual('angular');
@@ -312,9 +315,9 @@ main() {
         var element = $(r'<div><io-controller attr="A" expr="name" ondone="done=true"></io-controller></div>');
         $compile(element)(injector, element);
         IoControllerComponent component = $rootScope.ioComponent;
+        $rootScope.$apply();
         expect(component.attr).toEqual('A');
         expect(component.expr).toEqual('misko');
-        $rootScope.$apply();
         component.expr = 'angular';
         $rootScope.$apply();
         expect($rootScope.name).toEqual('angular');
@@ -333,9 +336,9 @@ main() {
         var element = $(r'<div><unpublished-io-controller attr="A" expr="name" ondone="done=true"></unpublished-io-controller></div>');
         $compile(element)(injector, element);
         UnpublishedIoControllerComponent component = $rootScope.ioComponent;
+        $rootScope.$apply();
         expect(component.attr).toEqual('A');
         expect(component.expr).toEqual('misko');
-        $rootScope.$apply();
         component.expr = 'angular';
         $rootScope.$apply();
         expect($rootScope.name).toEqual('angular');
