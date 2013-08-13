@@ -5,7 +5,34 @@ String _DIRECTIVE = '-directive';
 String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
 
 class _NgAnnotationBase {
+  /**
+   * CSS selector which will trigger this component/directive.
+   * CSS Selectors are limited to a single element and can contain:
+   *
+   * * `element-name` limit to a given element name.
+   * * `.class` limit to an element with a given class.
+   * * `[attribute]` limit to an element with a given attribute name.
+   * * `[attribute=value]` limit to an element with a given attribute and value.
+   *
+   *
+   * Example: `input[type=checkbox][ng-model]`
+   */
   final String selector;
+
+  /**
+   * A directive/component controller class can be injected into other
+   * directives/components. This attribute controls whether the
+   * controller is available to others.
+   *
+   * * `local` [NgDirective.LOCAL_VISIBILITY] - the controller can be injected
+   *   into other directives / components on the same DOM element.
+   * * `children` [NgDirective.CHILDREN_VISIBILITY] - the controller can be
+   *   injected into other directives / components on the same or child DOM
+   *   elements.
+   * * `direct_children` [NgDirective.DIRECT_CHILDREN_VISIBILITY] - the
+   *   controller can be injected into other directives / components on the
+   *   direct children of the current DOM element.
+   */
   final String visibility;
   final List<Type> publishTypes;
 
@@ -20,6 +47,17 @@ class _NgAnnotationBase {
  * Meta-data marker placed on a class which should act as a controller for the
  * component. Angular components are a light-weight version of web-components.
  * Angular components use shadow-DOM for rendering their templates.
+ *
+ * Angular components are instantiated using dependency injection, and can
+ * ask for any injectable object in their constructor. Components
+ * can also ask for other components or directives declared on the DOM element.
+ *
+ * Components can declared these optional methods:
+ *
+ * * `attach()` - Called on first [Scope.$digest()].
+ *
+ * * `detach()` - Called on when owning scope is destroyed.
+ *
  */
 class NgComponent extends _NgAnnotationBase {
   /**
