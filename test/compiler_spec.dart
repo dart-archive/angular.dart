@@ -229,6 +229,7 @@ main() {
         module.directive(ParentExpressionComponent);
         module.directive(PublishMeComponent);
         module.directive(LogComponent);
+        module.directive(AttachDetachComponent);
       }));
 
       it('should create a simple component', async(inject((Zone zone) {
@@ -398,6 +399,22 @@ main() {
         $rootScope.$apply();
         expect(logger.length).toEqual(2);
       }));
+
+      describe('lifecycle', () {
+        it('should fire attach/detach methods', async(inject((Logger logger) {
+          var scope = $rootScope.$new();
+          var element = $('<attach-detach></attach-detach>');
+          $compile(element)(injector.createChild([new ScopeModule(scope)]), element);
+          expect(logger).toEqual(['new']);
+
+          nextTurn(true);
+          $rootScope.$digest();
+          expect(logger).toEqual(['new', 'attach']);
+
+          scope.$destroy();
+          expect(logger).toEqual(['new', 'attach', 'detach']);
+        })));
+      });
     });
 
     describe('controller scoping', () {
@@ -534,4 +551,18 @@ class LogComponent {
   LogComponent(Scope scope, Logger logger) {
     logger.add(scope);
   }
+}
+
+@NgComponent(
+    template: r'<content></content>'
+)
+class AttachDetachComponent {
+  Logger logger;
+
+  AttachDetachComponent(Logger this.logger) {
+    logger.add('new');
+  }
+
+  attach() => logger.add('attach');
+  detach() => logger.add('detach');
 }
