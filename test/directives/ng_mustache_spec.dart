@@ -18,17 +18,20 @@ main() {
 
 
     it('should replace {{}} in attribute', inject((Compiler $compile, Scope $rootScope, Injector injector) {
-      var element = $('<div some-attr="{{name}}"></div>');
+      var element = $('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
       var template = $compile(element);
 
       $rootScope.name = 'OK';
+      $rootScope.age = 23;
       var block = template(injector);
 
       element = $(block.elements);
 
       expect(element.attr('some-attr')).toEqual('');
+      expect(element.attr('other-attr')).toEqual('');
       $rootScope.$digest();
       expect(element.attr('some-attr')).toEqual('OK');
+      expect(element.attr('other-attr')).toEqual('23');
     }));
   });
 }

@@ -90,6 +90,7 @@ class Block implements ElementWrapper {
     var blockFactory = () => null;
     var boundBlockFactory = () => null;
     var nodeAttrs = new NodeAttrs(node);
+    var nodesAttrsDirectives = null;
 
     nodeModule.value(Block, this);
     nodeModule.value(dom.Element, node);
@@ -103,7 +104,21 @@ class Block implements ElementWrapper {
       } else if (ref.directive.$visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
         visibility = _elementDirectChildren;
       }
-      if (ref.directive.isComponent) {
+      if (ref.directive.type == NgTextMustacheDirective) {
+        nodeModule.factory(NgTextMustacheDirective, (Interpolate interpolate, Scope scope) {
+          return new NgTextMustacheDirective(node, ref.value, interpolate, scope);
+        });
+      } else if (ref.directive.type == NgAttrMustacheDirective) {
+        if (nodesAttrsDirectives == null) {
+          nodesAttrsDirectives = [];
+          nodeModule.factory(NgAttrMustacheDirective, (Interpolate interpolate, Scope scope) {
+            nodesAttrsDirectives.forEach((ref) {
+              new NgAttrMustacheDirective(node, ref.value, interpolate, scope);
+            });
+          });
+        }
+        nodesAttrsDirectives.add(ref);
+      } else if (ref.directive.isComponent) {
         //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
         // TODO(misko): there should be no need to wrap function like this.
         nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, Parser parser, BlockCache $blockCache, Http http, TemplateCache templateCache) =>
