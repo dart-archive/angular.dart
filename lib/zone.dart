@@ -5,6 +5,7 @@ part of angular;
  */
 class Zone {
   static var _ZONE_CHECK = "Function must be called in a zone.";
+  bool _runningInTurn = false;
 
   /**
    * A function that is called at the end of each VM turn in which the
@@ -51,22 +52,32 @@ class Zone {
     var returnValueFromZone;
     _asyncCount++;
     async.runZonedExperimental(() {
-      returnValueFromZone = interceptCall(body);
-      _tryDone();
+      _runningInTurn = true;
+      try {
+        returnValueFromZone = interceptCall(body);
+        _tryDone();
+      } finally {
+        _runningInTurn = false;
+      }
     },
     onRunAsync: (delegate()) {
       // assertInZone() should not trigger a onTurnDone call.  To prevent
       // this, we use the _inAssertInZone guard.
       var calledFromAssertInZone = _inAssertInZone;
       if (!_inAssertInZone) {
-       _asyncCount++;
+        _asyncCount++;
       }
       async.runAsync(() {
-        interceptCall(delegate);
-        // This runAsync body is run in the parent zone.  If
-        // we are going to run onTurnDone, we need to zone it.
-        if (!calledFromAssertInZone) {
-          _tryDone(true);
+        _runningInTurn = true;
+        try {
+          interceptCall(delegate);
+          // This runAsync body is run in the parent zone.  If
+          // we are going to run onTurnDone, we need to zone it.
+          if (!calledFromAssertInZone) {
+            _tryDone(true);
+          }
+        } finally {
+          _runningInTurn = false;
         }
       });
     }, onError:(e) {
@@ -85,6 +96,10 @@ class Zone {
       throw exceptionFromZone;
     }
     return returnValueFromZone;
+  }
+
+  assertInTurn() {
+    assert(_runningInTurn);
   }
 
   var _assertInZoneStack =
