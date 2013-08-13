@@ -192,7 +192,7 @@ class Scope implements Map {
    * auto-digesting scope.
    */
   $$verifyDigestWillRun() {
-    _zone.assertInZone();
+    assert(_zone.runningInZone);
   }
 
   $digest() {

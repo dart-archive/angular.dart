@@ -5,6 +5,7 @@ part of angular;
  */
 class Zone {
   bool _runningInZone = false;
+  bool get runningInZone => _runningInZone;
 
   /**
    * A function that is called at the end of each VM turn in which the
@@ -81,11 +82,5 @@ class Zone {
       throw exceptionFromZone;
     }
     return returnValueFromZone;
-  }
-
-  assertInZone() {
-    if (!_runningInZone) {
-      throw new Exception("Function must be called in a zone");
-    }
   }
 }

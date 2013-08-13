@@ -206,26 +206,28 @@ main() => describe('zone', () {
   })));
 
 
-  it('should support assertInZone', () {
-      zone.onTurnDone = () {
-        zone.assertInZone();
-      };
-      zone.run(() {
-        zone.assertInZone();
+  it('should support return true when running in the zone', () {
+    zone.onTurnDone = () {
+      expect(zone.runningInZone).toBe(true);
+    };
+    zone.run(() {
+      expect(zone.runningInZone).toBe(true);
+      runAsync(() {
+        expect(zone.runningInZone).toBe(true);
         runAsync(() {
-          zone.assertInZone();
-          runAsync(() {
-            zone.assertInZone();
-          });
+          expect(zone.runningInZone).toBe(true);
         });
       });
     });
+  });
 
+  it('should return false when running outside the zone', () {
+    expect(zone.runningInZone).toBe(false);
+  });
 
-    it('should throw outside of the zone', () {
-      expect(async(() {
-        zone.assertInZone();
-        nextTurn(true);
-      })).toThrow('Function must be called in a zone');
+  runZonedExperimental(() {
+    it('should return false when running inside another zone', (){
+      expect(zone.runningInZone).toBe(false);
     });
+  });
 });
