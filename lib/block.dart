@@ -320,6 +320,19 @@ class _ComponentFactory {
     }
     createAttributeMapping(scope, shadowScope, controller, parser);
 
+    if (understands(controller, 'attach')) {
+      blockFuture.then((_) {
+        var removeWatcher;
+        removeWatcher = scope.$watch(() {
+          removeWatcher();
+          controller.attach();
+        });
+      });
+    }
+    if (understands(controller, 'detach')) {
+      scope.$on(r'$destroy', controller.detach);
+    }
+
     return controller;
   }
 

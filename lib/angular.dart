@@ -179,3 +179,8 @@ bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
   });
 
 }
+
+bool understands(obj, symbol) {
+  if (symbol is String) symbol = new Symbol(symbol);
+  return reflect(obj).type.methods.containsKey(symbol);
+}
