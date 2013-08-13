@@ -214,6 +214,9 @@ main() => describe('zone', () {
         zone.assertInZone();
         runAsync(() {
           zone.assertInZone();
+          runAsync(() {
+            zone.assertInZone();
+          });
         });
       });
     });
