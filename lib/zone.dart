@@ -13,6 +13,11 @@ class Zone {
   Function onTurnDone = () => null;
 
   /**
+   * A function that is called when uncaught errors are thrown inside the zone.
+   */
+  Function onError = (e) => print('EXCEPTION: $e\n${async.getAttachedStackTrace(e)}}');
+
+  /**
    * Called with each zone.run or runAsync method.  This allows the program
    * to modify state during a call.
   */
@@ -71,9 +76,9 @@ class Zone {
       // This only works if we caught the exception in the synchronous
       // run() call.
       exceptionFromZone = e;
-      // Dump the exception as well because we aren't sure where it
-      // will show up.
-      print('EXCEPTION: $e\n${async.getAttachedStackTrace(e)}}');
+
+      // Call the error handler.
+      onError(e);
     });
 
     if (exceptionFromZone != null) {
