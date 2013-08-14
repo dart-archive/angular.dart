@@ -4,8 +4,8 @@ part of angular;
  * A better zone API which implements onTurnDone.
  */
 class Zone {
-  bool _runningInZone = false;
-  bool get runningInZone => _runningInZone;
+  static var _ZONE_CHECK = "Function must be called in a zone.";
+  bool _runningInTurn = false;
 
   /**
    * A function that is called at the end of each VM turn in which the
@@ -47,33 +47,42 @@ class Zone {
     var returnValueFromZone;
     _asyncCount++;
     async.runZonedExperimental(() {
-      _runningInZone = true;
+      _runningInTurn = true;
       try {
         returnValueFromZone = interceptCall(body);
         _tryDone();
       } finally {
-        _runningInZone = false;
+        _runningInTurn = false;
       }
     },
     onRunAsync: (delegate()) {
-      _asyncCount++;
+      // assertInZone() should not trigger a onTurnDone call.  To prevent
+      // this, we use the _inAssertInZone guard.
+      var calledFromAssertInZone = _inAssertInZone;
+      if (!_inAssertInZone) {
+        _asyncCount++;
+      }
       async.runAsync(() {
-        _runningInZone = true;
+        _runningInTurn = true;
         try {
           interceptCall(delegate);
           // This runAsync body is run in the parent zone.  If
           // we are going to run onTurnDone, we need to zone it.
-          _tryDone(true);
+          if (!calledFromAssertInZone) {
+            _tryDone(true);
+          }
         } finally {
-          _runningInZone = false;
+          _runningInTurn = false;
         }
       });
     }, onError:(e) {
+      if (e is List && e[0] == _ZONE_CHECK) return;
+
       // Save the exception so we can throw it in the parent zone.
       // This only works if we caught the exception in the synchronous
       // run() call.
       exceptionFromZone = e;
-      // Print the exception as well because we aren't sure where it
+      // Dump the exception as well because we aren't sure where it
       // will show up.
       print('EXCEPTION: $e\n${async.getAttachedStackTrace(e)}}');
     });
@@ -82,5 +91,22 @@ class Zone {
       throw exceptionFromZone;
     }
     return returnValueFromZone;
+  }
+
+  assertInTurn() {
+    assert(_runningInTurn);
+  }
+
+  var _assertInZoneStack =
+      'Stack traces are disabled for performance.  ' +
+      'See angular:lib/zone.dart to re-enable them.';
+  var _inAssertInZone = false;
+  assertInZone() {
+    // Uncomment the next line to have stack traces attached to
+    // assertInZone() errors.
+    // try { throw ""; } catch (e,s) { _assertInZoneStack = s; }
+    _inAssertInZone = true;
+    async.runAsync(() => throw [_ZONE_CHECK, _assertInZoneStack]);
+    _inAssertInZone = false;
   }
 }

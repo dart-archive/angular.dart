@@ -206,28 +206,76 @@ main() => describe('zone', () {
   })));
 
 
-  it('should support return true when running in the zone', () {
+  it('should support assertInZone', () {
     zone.onTurnDone = () {
-      expect(zone.runningInZone).toBe(true);
+      zone.assertInZone();
     };
     zone.run(() {
-      expect(zone.runningInZone).toBe(true);
+      zone.assertInZone();
       runAsync(() {
-        expect(zone.runningInZone).toBe(true);
-        runAsync(() {
-          expect(zone.runningInZone).toBe(true);
-        });
+        zone.assertInZone();
       });
     });
   });
 
-  it('should return false when running outside the zone', () {
-    expect(zone.runningInZone).toBe(false);
+
+  iit('should assertInZone for chained futures not in zone', () {
+    expect(async(() {
+      var future = new Future.value(4);
+      zone.run(() {
+        future = future.then((_) {
+          return 5;
+        });
+      });
+      future.then((_) {
+        expect(_).toEqual(5);
+        zone.assertInZone();
+      });
+      nextTurn(true);
+    })).toThrow('Function must be called in a zone');
   });
 
-  runZonedExperimental(() {
-    it('should return false when running inside another zone', (){
-      expect(zone.runningInZone).toBe(false);
+
+  it('should throw outside of the zone', () {
+    expect(async(() {
+      zone.assertInZone();
+      nextTurn(true);
+    })).toThrow('Function must be called in a zone');
+  });
+
+
+  it('should support assertInTurn', () {
+    zone.onTurnDone = () {
+      zone.assertInTurn();
+    };
+    zone.run(() {
+      zone.assertInTurn();
+      runAsync(() {
+        zone.assertInTurn();
+      });
     });
+  });
+
+
+  iit('should assertInTurn for chained futures originating in a zone', () {
+    var future = new Future.value(4);
+    zone.run(() {
+      future = future.then((_) {
+        return 5;
+      });
+    });
+    future.then((_) {
+      expect(_).toEqual(5);
+      zone.assertInTurn();
+    });
+    nextTurn(true);
+  });
+
+
+  it('should assertInTurn outside of the zone', () {
+    expect(async(() {
+      zone.assertInTurn();
+      nextTurn(true);
+    })).toThrow('Function must be called in a zone');
   });
 });
