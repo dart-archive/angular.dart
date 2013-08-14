@@ -205,22 +205,75 @@ main() => describe('zone', () {
 
 
   it('should support assertInZone', () {
-      zone.onTurnDone = () {
+    zone.onTurnDone = () {
+      zone.assertInZone();
+    };
+    zone.run(() {
+      zone.assertInZone();
+      runAsync(() {
         zone.assertInZone();
-      };
-      zone.run(() {
-        zone.assertInZone();
-        runAsync(() {
-          zone.assertInZone();
-        });
       });
     });
+  });
 
 
-    it('should throw outside of the zone', () {
-      expect(async(() {
+  iit('should assertInZone for chained futures not in zone', () {
+    expect(async(() {
+      var future = new Future.value(4);
+      zone.run(() {
+        future = future.then((_) {
+          return 5;
+        });
+      });
+      future.then((_) {
+        expect(_).toEqual(5);
         zone.assertInZone();
-        nextTurn(true);
-      })).toThrow('Function must be called in a zone');
+      });
+      nextTurn(true);
+    })).toThrow('Function must be called in a zone');
+  });
+
+
+  it('should throw outside of the zone', () {
+    expect(async(() {
+      zone.assertInZone();
+      nextTurn(true);
+    })).toThrow('Function must be called in a zone');
+  });
+
+
+  it('should support assertInTurn', () {
+    zone.onTurnDone = () {
+      zone.assertInTurn();
+    };
+    zone.run(() {
+      zone.assertInTurn();
+      runAsync(() {
+        zone.assertInTurn();
+      });
     });
+  });
+
+
+  iit('should assertInTurn for chained futures originating in a zone', () {
+    var future = new Future.value(4);
+    zone.run(() {
+      future = future.then((_) {
+        return 5;
+      });
+    });
+    future.then((_) {
+      expect(_).toEqual(5);
+      zone.assertInTurn();
+    });
+    nextTurn(true);
+  });
+
+
+  it('should assertInTurn outside of the zone', () {
+    expect(async(() {
+      zone.assertInTurn();
+      nextTurn(true);
+    })).toThrow('Function must be called in a zone');
+  });
 });
