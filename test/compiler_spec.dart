@@ -371,10 +371,15 @@ main() {
       }));
 
       it('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope, Injector injector) {
-        expect(() {
+        try {
           var element = $('<tab local><pane></pane><pane local></pane></tab>');
           $compile(element)(injector, element);
-        }).toThrow('No provider found for LocalAttrDirective! (resolving LocalAttrDirective)');
+        } catch (e) {
+          var text = '$e';
+          expect(text).toContain('No provider found for');
+          expect(text).toContain('(resolving ');
+          expect(text).toContain('LocalAttrDirective');
+        }
       }));
 
       it('should publish component controller into the scope', async(inject((Zone zone) {
