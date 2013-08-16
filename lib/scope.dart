@@ -70,9 +70,11 @@ class Scope implements Map {
 
     _zone.interceptCall = (body) {
       _beginPhase('auto-digesting zoned call');
-      var ret = body();
-      _clearPhase();
-      return ret;
+      try {
+        return body();
+      } finally {
+        _clearPhase();
+      }
     };
   }
 

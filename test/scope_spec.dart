@@ -491,6 +491,12 @@ main() {
         }));
       });
 
+      it(r'should proprely reset phase on execption', inject((Scope $rootScope) {
+        var error = 'MyError';
+        expect(() =>$rootScope.$apply(() { throw error; })).toThrow(error);
+        expect(() =>$rootScope.$apply(() { throw error; })).toThrow(error);
+      }));
+
 
       describe(r'recursive $apply protection', () {
         it(r'should throw an exception if $apply is called while an $apply is in progress', inject(
