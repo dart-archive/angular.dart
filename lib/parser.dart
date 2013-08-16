@@ -137,15 +137,6 @@ Map<String, String> ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", 
 
 Expression ZERO = new Expression((_, _x) => 0);
 
-class Setter {
-  operator[]=(name, value){}
-}
-
-abstract class Getter {
-  bool containsKey(name);
-  operator[](name);
-}
-
 stripTrailingNulls(List l) {
   while (l.length > 0 && l.last == null) {
     l.removeLast();

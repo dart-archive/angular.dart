@@ -34,7 +34,7 @@ class Http {
   Http(UrlRewriter this.rewriter, HttpBackend this.backend);
 
   async.Future<String> getString(String url,
-      {bool withCredentials, void onProgress(ProgressEvent e), Cache cache}) {
+      {bool withCredentials, void onProgress(dom.ProgressEvent e), Cache cache}) {
     return request(url,
         withCredentials: withCredentials,
         onProgress: onProgress,
