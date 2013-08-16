@@ -506,8 +506,8 @@ class Parser {
           'at column ${t.index + 1} in';
       return 'Parser Error: $s $location [$text]';
     }
-    evalError(String s, [stack]) => 'Eval Error: $s while evaling [$text]' +
-        (stack != null ? '\n\nFROM:\n$stack' : '');
+    evalError(String s, [stack]) => ['Eval Error: $s while evaling [$text]' +
+        (stack != null ? '\n\nFROM:\n$stack' : '')];
 
     Token peekToken() {
       if (tokens.length == 0)
