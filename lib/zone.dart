@@ -107,14 +107,14 @@ class Zone {
       'See angular:lib/zone.dart to re-enable them.';
   var _inAssertInZone = false;
   assertInZone() {
-    assert(() {
+    assert((() {
       // Uncomment the next line to have stack traces attached to
       // assertInZone() errors.
       // try { throw ""; } catch (e,s) { _assertInZoneStack = s; }
       _inAssertInZone = true;
-      async.runAsync(() => throw [_ZONE_CHECK, _assertInZoneStack]);
+      async.runAsync(() { throw [_ZONE_CHECK, _assertInZoneStack]; });
       _inAssertInZone = false;
       return true;
-    }());
+    })());
   }
 }
