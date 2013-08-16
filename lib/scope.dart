@@ -55,9 +55,11 @@ class Scope implements Map {
   Map<String, Function> _listeners = {};
   Scope _nextSibling, _prevSibling, _childHead, _childTail;
   bool _isolate = false;
+  Profiler _perf;
 
 
-  Scope(ExceptionHandler this._exceptionHandler, Parser this._parser, ScopeDigestTTL ttl, Zone this._zone) {
+  Scope(ExceptionHandler this._exceptionHandler, Parser this._parser,
+      ScopeDigestTTL ttl, Zone this._zone, Profiler this._perf) {
     _properties[r'this']= this;
     _ttl = ttl.ttl;
     _$root = this;
@@ -74,7 +76,7 @@ class Scope implements Map {
     };
   }
 
-  Scope._child(Scope this.$parent, bool this._isolate) {
+  Scope._child(Scope this.$parent, bool this._isolate, Profiler this._perf) {
     _exceptionHandler = $parent._exceptionHandler;
     _parser = $parent._parser;
     _ttl = $parent._ttl;
@@ -133,7 +135,7 @@ class Scope implements Map {
 
 
   $new([bool isolate = false]) {
-    return new Scope._child(this, isolate);
+    return new Scope._child(this, isolate, _perf);
   }
 
 
@@ -195,7 +197,7 @@ class Scope implements Map {
     _zone.assertInTurn();
   }
 
-  $digest() {
+  $digest() => _perf.time('angular.scope.digest', () {
     var value, last,
         asyncQueue = _asyncQueue,
         length,
@@ -279,7 +281,7 @@ class Scope implements Map {
     } finally {
       _clearPhase();
     }
-  }
+  });
 
 
   $destroy() {

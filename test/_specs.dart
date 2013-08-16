@@ -20,6 +20,7 @@ export 'dart:html';
 export 'jasmine_syntax.dart';
 export 'package:di/di.dart';
 export 'package:unittest/mock.dart';
+export 'package:perf_api/perf_api.dart';
 
 es(String html) {
   var div = new DivElement();

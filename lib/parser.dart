@@ -230,6 +230,13 @@ setter(obj, path, setValue) {
 }
 
 class Parser {
+  static Profiler _perf;
+
+  Parser(Profiler _perf) {
+    // TODO(pavelgj): This is extremely ugly way, but it works for now.
+    // Parser needs to be refactored so we don't have to do this.
+    Parser._perf = _perf;
+  }
 
   static List<Token> lex(String text) {
     List<Token> tokens = [];
@@ -471,10 +478,10 @@ class Parser {
   }
 
   ParsedFn call(String text) {
-    return Parser.parse(text);
+    return Parser.parse(text, _perf);
   }
 
-  static ParsedFn parse(text) {
+  static ParsedFn parse(text, [_perf]) {
     List<Token> tokens = Parser.lex(text);
     Token token;
 
@@ -853,7 +860,17 @@ class Parser {
     if (tokens.length != 0) {
       throw parserError("Unconsumed token ${tokens[0].text}");
     }
-    return value;
+    if (_perf == null) return value;
+
+    var wrappedGetter = (s, l) =>
+        _perf.time('angular.parser.getter', () => value.getter(s, l), text);
+    var wrappedAssignFn = null;
+    if (value.assignFn != null) {
+      wrappedAssignFn = (s, v, l) =>
+          _perf.time('angular.parser.assignFn',
+              () => value.assignFn(s, v, l), text);
+    }
+    return new ParsedFn(wrappedGetter, wrappedAssignFn);
   }
 
 }

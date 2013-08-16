@@ -3,8 +3,9 @@ part of angular;
 class Compiler {
   DirectiveRegistry directives;
   DirectiveSelector selector;
+  Profiler _perf;
 
-  Compiler(DirectiveRegistry this.directives) {
+  Compiler(DirectiveRegistry this.directives, Profiler this._perf) {
     selector = directiveSelectorFactory(directives);
   }
 
@@ -99,7 +100,7 @@ class Compiler {
     var directivePositions = _compileBlock(domCursor, transcludeCursor, transcludedDirectiveRefs);
     if (directivePositions == null) directivePositions = [];
 
-    blockFactory = new BlockFactory(transcludeCursor.elements, directivePositions);
+    blockFactory = new BlockFactory(transcludeCursor.elements, directivePositions, _perf);
     domCursor.index = domCursorIndex;
 
     if (domCursor.isInstance()) {
@@ -119,14 +120,14 @@ class Compiler {
     return blockFactory;
   }
 
-  BlockFactory call(List<dom.Node> elements) {
-                 List<dom.Node> domElements = elements;
-                 List<dom.Node> templateElements = cloneElements(domElements);
+  BlockFactory call(List<dom.Node> elements) => _perf.time('angular.compiler', () {
+    List<dom.Node> domElements = elements;
+    List<dom.Node> templateElements = cloneElements(domElements);
     var directivePositions = _compileBlock(
         new NodeCursor(domElements), new NodeCursor(templateElements),
         null);
 
     return new BlockFactory(templateElements,
-                         directivePositions == null ? [] : directivePositions);
-  }
+        directivePositions == null ? [] : directivePositions, _perf);
+  });
 }
