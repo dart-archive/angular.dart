@@ -77,7 +77,7 @@ String EXP_OP = "Ee";
 String SIGN_OP = "+-";
 
 Operator NULL_OP = (_, _x, _0, _1) => null;
-Operator NOT_IMPL_OP = (_, _x, _0, _1) => throw "Op not implemented";
+Operator NOT_IMPL_OP = (_, _x, _0, _1) { throw "Op not implemented"; };
 
 toBool(x) {
   if (x is bool) return x;
@@ -321,7 +321,7 @@ class Parser {
             if (ch == 'u') {
               String hex = text.substring(index + 1, index + 5);
               int charCode = int.parse(hex, radix: 16,
-                  onError: (s) => throw "Lexer Error: Invalid unicode escape [\\u$hex] at column $index in expression [$text].");
+                  onError: (s) { throw "Lexer Error: Invalid unicode escape [\\u$hex] at column $index in expression [$text]."; });
               string += new String.fromCharCode(charCode);
               index += 5;
             } else {
@@ -817,7 +817,7 @@ class Parser {
             var o = obj(self, locals),
                 v, p;
 
-            if (o == null) return throw evalError('Accessing null object');
+            if (o == null) throw evalError('Accessing null object');
 
             v = getField(o, i);
 
@@ -841,8 +841,11 @@ class Parser {
     fieldAccess = (object) {
       var field = expect().text;
       //var getter = getter(field);
-      return new Expression((self, locals) => getter(object(self, locals), locals, field),
-          (self, value, locals) => setter(object(self, locals), field, value));
+      return new Expression(
+              (self, locals) =>
+                  getter(object(self, locals), locals, field),
+              (self, value, locals) =>
+                  setter(object(self, locals), field, value));
     };
 
     object = () {
