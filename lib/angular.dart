@@ -1,11 +1,11 @@
 library angular;
 
-import "dart:collection";
 import "dart:mirrors";
 import "dart:async" as async;
 import "dart:json" as json;
 import 'dart:html' as dom;
 import 'package:di/di.dart';
+import 'package:perf_api/perf_api.dart';
 import 'debug.dart';
 
 part 'block.dart';
@@ -130,6 +130,7 @@ class AngularModule extends Module {
     type(HttpBackend, HttpBackend);
     type(BlockCache, BlockCache);
     type(TemplateCache, TemplateCache);
+    type(Profiler, _NoOpProfiler);
 
     value(ScopeDigestTTL, new ScopeDigestTTL(5));
 
@@ -183,4 +184,12 @@ bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
 bool understands(obj, symbol) {
   if (symbol is String) symbol = new Symbol(symbol);
   return reflect(obj).type.methods.containsKey(symbol);
+}
+
+class _NoOpProfiler extends Profiler {
+  void markTime(String name, [String extraData]) { }
+
+  int startTimer(String name, [String extraData]) => null;
+
+  void stopTimer(idOrName) { }
 }

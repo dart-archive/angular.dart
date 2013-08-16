@@ -39,14 +39,17 @@ class Block implements ElementWrapper {
 
   Injector _injector;
   List<dynamic> _directives = [];
+  Profiler _perf;
 
   Block(Injector this._injector,
         List<dom.Node> this.elements,
-        List directivePositions) {
+        List directivePositions,
+        Profiler this._perf) {
     ASSERT(elements != null);
     ASSERT(directivePositions != null);
     ASSERT(_injector != null);
-    _link(elements, directivePositions, _injector);
+    _perf.time('angular.block',
+        () => _link(elements, directivePositions, _injector));
   }
 
   _link(List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
@@ -83,7 +86,8 @@ class Block implements ElementWrapper {
     }
   }
 
-  Injector _instantiateDirectives(Injector parentInjector, dom.Node node, List<DirectiveRef> directiveRefs) {
+  Injector _instantiateDirectives(Injector parentInjector, dom.Node node,
+      List<DirectiveRef> directiveRefs) => _perf.time('angular.block.instantiateDirectives', () {
     if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
     var nodeModule = new Module();
     var blockHoleFactory = () => null;
@@ -145,7 +149,7 @@ class Block implements ElementWrapper {
     var nodeInjector = parentInjector.createChild([nodeModule]);
     directiveRefs.forEach((ref) => nodeInjector.get(ref.directive.type));
     return nodeInjector;
-  }
+  });
 
   /// DI visibility callback allowing node-local visibility.
   bool _elementOnly(Injector requesting, Injector defining) {
@@ -550,8 +554,9 @@ class BoundBlockFactory {
 class BlockFactory {
   List directivePositions;
   List<dom.Node> templateElements;
+  Profiler _perf;
 
-  BlockFactory(this.templateElements, this.directivePositions) {
+  BlockFactory(this.templateElements, this.directivePositions, this._perf) {
     ASSERT(templateElements != null);
     ASSERT(directivePositions != null);
   }
@@ -560,23 +565,11 @@ class BlockFactory {
     if (elements == null) {
       elements = cloneElements(templateElements);
     }
-    return new Block(injector, elements, directivePositions);
+    return new Block(injector, elements, directivePositions, _perf);
   }
 
   BoundBlockFactory bind(Injector injector) {
     return new BoundBlockFactory(this, injector);
-  }
-
-  ClassMirror _getClassMirror(Type type) {
-    // terrible hack because we can't get a qualified name from a Type
-    var name = type.toString();
-    name = new RegExp(r"^Instance of '(.*)'$").firstMatch(name).group(1);
-    for (var lib in currentMirrorSystem().libraries.values) {
-      if (lib.classes.containsKey(name)) {
-        return lib.classes[name];
-      }
-    }
-    throw new ArgumentError();
   }
 }
 

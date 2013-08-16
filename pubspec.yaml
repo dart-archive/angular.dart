@@ -6,4 +6,5 @@ dependencies:
   browser: any
   js: any
   di: any
+  perf_api: any
 

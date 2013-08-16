@@ -50,11 +50,11 @@ main() {
     describe('mutation', () {
       var a, b;
 
-      beforeEach(inject((Injector injector) {
+      beforeEach(inject((Injector injector, Profiler perf) {
         $rootElement.html('<!-- anchor -->');
         anchor = new BlockHole($rootElement.contents().eq(0));
-        a = (new BlockFactory($('<span>A</span>a'), []))(injector);
-        b = (new BlockFactory($('<span>B</span>b'), []))(injector);
+        a = (new BlockFactory($('<span>A</span>a'), [], perf))(injector);
+        b = (new BlockFactory($('<span>B</span>b'), [], perf))(injector);
       }));
 
 
@@ -157,7 +157,7 @@ main() {
           expect(b.previous).toBe(anchor);
         });
 
-        it('should remove', inject((Logger logger, Injector injector) {
+        it('should remove', inject((Logger logger, Injector injector, Profiler perf) {
           a.remove();
           b.remove();
 
@@ -168,13 +168,13 @@ main() {
           //   }
           // }
 
-          var innerBlockType = new BlockFactory($('<b>text</b>'), []);
+          var innerBlockType = new BlockFactory($('<b>text</b>'), [], perf);
           var outerBlockType = new BlockFactory($('<!--start--><!--end-->'), [
             0, [new DirectiveRef(null,
                                  new Directive(LoggerBlockDirective),
                                  '',
                                  innerBlockType)], null
-          ]);
+          ], perf);
 
           var outterBlock = outerBlockType(injector);
           // The LoggerBlockDirective caused a BlockHole for innerBlockType to
