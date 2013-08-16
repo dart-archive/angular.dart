@@ -104,6 +104,9 @@ class Scope implements Map {
 
   operator []=(String name, value) => _properties[name] = value;
   operator [](String name) {
+    if (name == r'$id') return this.$id;
+    if (name == r'$parent') return this.$parent;
+    if (name == r'$root') return this.$root;
     if (_properties.containsKey(name)) {
       return _properties[name];
     } else if (!_isolate) {

@@ -261,7 +261,7 @@ main() {
     var scope;
     eval(String text) => Parser.parse(text)(scope, null);
 
-    beforeEach(() { scope = {}; });
+    beforeEach(inject((Scope rootScope) { scope = rootScope; }));
 
     describe('expressions', () {
       it('should parse numerical expressions', () {
@@ -619,6 +619,22 @@ main() {
       });
 
 
+      it('should evaluate methods on object', () {
+        scope['obj'] = "abc";
+        var fn = Parser.parse("obj.toUpperCase()").bind(scope);
+        expect(fn()).toEqual('ABC');
+        expect(scope.$eval(fn)).toEqual('ABC');
+      });
+
+
+      it('should only check locals on first dereference', () {
+        scope['a'] = {'b': 1};
+        var locals = {'b': 2};
+        var fn = Parser.parse("this['a'].b").bind(scope);
+        expect(fn(locals)).toEqual(1);
+      });
+
+
       it('should evaluate multiplication and division', () {
         scope["taxRate"] =  8;
         scope["subTotal"] =  100;
@@ -638,6 +654,7 @@ main() {
       it('should evaluate array access', () {
         expect(eval("[1][0]")).toEqual(1);
         expect(eval("[[1]][0][0]")).toEqual(1);
+        expect(eval("[]")).toEqual([]);
         expect(eval("[].length")).toEqual(0);
         expect(eval("[1, 2].length")).toEqual(2);
       });
@@ -679,9 +696,9 @@ main() {
 
 
       it('should evalulate objects on Scope', inject((Scope scope) {
-        scope.a = "abc";
-        var result = Parser.parse("a")(scope, null);
-        expect(result).toEqual("abc");
+        expect(eval(r'$id')).toEqual(scope.$id);
+        expect(eval(r'$root')).toEqual(scope.$root);
+        expect(eval(r'$parent')).toEqual(scope.$parent);
       }));
 
 

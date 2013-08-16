@@ -153,38 +153,38 @@ stripTrailingNulls(List l) {
   return l;
 }
 
+var _undefined_ = new Symbol("UNDEFINED");
+
 // Returns a tuple [found, value]
-getterChild(value, childKey) {
+_getterChild(value, childKey) {
   if (value is List && childKey is num) {
     if (childKey < value.length) {
-      return [true, value[childKey]];
-    } else {
-      return [false, null];
+      return value[childKey];
+    }
+  } else if (value is Map) {
+    // TODO: We would love to drop the 'is Map' for a more generic 'is Getter'
+    if (childKey is String && value.containsKey(childKey)) {
+      return value[childKey];
+    }
+  } else {
+    InstanceMirror instanceMirror = reflect(value);
+    Symbol curSym = new Symbol(childKey);
+
+    try {
+      // maybe it is a member field?
+      return instanceMirror.getField(curSym).reflectee;
+    } on NoSuchMethodError catch (e) {
+      // maybe it is a member method?
+      if (instanceMirror.type.members.containsKey(curSym)) {
+        MethodMirror methodMirror = instanceMirror.type.members[curSym];
+        return _relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
+          var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
+          return instanceMirror.invoke(curSym, args).reflectee;
+        });
+      }
     }
   }
-
-  // TODO: We would love to drop the 'is Map' for a more generic 'is Getter'
-  if (value is Map && childKey is String && value.containsKey(childKey)) {
-    return [true, value[childKey]];
-  }
-
-  InstanceMirror instanceMirror = reflect(value);
-  Symbol curSym = new Symbol(childKey);
-
-  try {
-    // maybe it is a member field?
-    return [true, instanceMirror.getField(curSym).reflectee];
-  } on NoSuchMethodError catch (e) {
-    // maybe it is a member method?
-    if (instanceMirror.type.members.containsKey(curSym)) {
-      MethodMirror methodMirror = instanceMirror.type.members[curSym];
-      return [true, _relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
-        var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
-        return instanceMirror.invoke(curSym, args).reflectee;
-      })];
-    }
-    return [false, null];
-  }
+  return _undefined_;
 }
 
 getter(scope, locals, path) {
@@ -194,33 +194,32 @@ getter(scope, locals, path) {
 
   List<String> pathKeys = path.split('.');
   var pathKeysLength = pathKeys.length;
+  var value = _undefined_;
 
   if (pathKeysLength == 0) { return scope; }
-
-  // Use the locals object is the first key is defined on locals.
-  // This allows users to hide sub-trees by setting the locals
-  // value to 'null'.
-  if (locals != null && getterChild(locals, pathKeys[0])[0]) {
-    return getter(locals, null, path);
-  }
-
 
   var currentValue = scope;
   for (var i = 0; i < pathKeysLength; i++) {
     var curKey = pathKeys[i];
-    currentValue = getterChild(currentValue, curKey)[1];
-    if (currentValue == null) { return null; }
+    if (locals == null) {
+      currentValue = _getterChild(currentValue, curKey);
+    } else {
+      currentValue = _getterChild(locals, curKey);
+      locals = null;
+      if (currentValue == _undefined_) {
+        currentValue = _getterChild(scope, curKey);
+      }
+    }
+    if (currentValue == null || currentValue == _undefined_) { return null; }
   }
-  //throw "getter parser";
   return currentValue;
 }
 
-setterChild(obj, childKey, value) {
+_setterChild(obj, childKey, value) {
   // TODO: replace with isInterface(value, Setter) when dart:mirrors
   // can support mixins.
   try {
-    obj[childKey] = value;
-    return value;
+    return obj[childKey] = value;
   } on NoSuchMethodError catch(e) {}
 
   InstanceMirror instanceMirror = reflect(obj);
@@ -233,14 +232,14 @@ setter(obj, path, setValue) {
   var element = path.split('.');
   for (var i = 0; element.length > 1; i++) {
     var key = element.removeAt(0);
-    var propertyObj = getterChild(obj, key)[1];
-    if (propertyObj == null) {
+    var propertyObj = _getterChild(obj, key);
+    if (propertyObj == null || propertyObj == _undefined_) {
       propertyObj = {};
-      setterChild(obj, key, propertyObj);
+      _setterChild(obj, key, propertyObj);
     }
     obj = propertyObj;
   }
-  return setterChild(obj, element.removeAt(0), setValue);
+  return _setterChild(obj, element.removeAt(0), setValue);
 }
 
 class Parser {
@@ -843,7 +842,7 @@ class Parser {
       //var getter = getter(field);
       return new Expression(
               (self, locals) =>
-                  getter(object(self, locals), locals, field),
+                  getter(object(self, locals), null, field),
               (self, value, locals) =>
                   setter(object(self, locals), field, value));
     };
