@@ -9,12 +9,12 @@ typedef Setter(value, [locals]);
 
 class BoundExpression {
   var _context;
-  Expression _parsedFn;
+  Expression expression;
 
-  BoundExpression(this._context, Expression this._parsedFn);
+  BoundExpression(this._context, Expression this.expression);
 
-  call([locals]) => _parsedFn(_context, locals);
-  assign(value, [locals]) => _parsedFn.assign(_context, value, locals);
+  call([locals]) => expression(_context, locals);
+  assign(value, [locals]) => expression.assign(_context, value, locals);
 }
 
 class Expression {
