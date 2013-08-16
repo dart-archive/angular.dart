@@ -884,6 +884,12 @@ main() {
       expect(Parser.parse('a.b')({'a': null}, {'a': {'b':1}})).toEqual(1);
       expect(Parser.parse('a.b')({'a': {'b': 5}}, {'a': null})).toEqual(null);
     });
+
+
+    it('should work with scopes', inject((Scope scope) {
+      scope.a = {'b': 6};
+      expect(Parser.parse('a.b')(scope, {'a': {'b':1}})).toEqual(1);
+    }));
   });
 }
 
