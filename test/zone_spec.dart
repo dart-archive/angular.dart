@@ -204,6 +204,34 @@ main() => describe('zone', () {
   })));
 
 
+  it('should call onTurnDone even if there was an exception in body', async(inject((Log log) {
+    zone.onError = (e) => log('onError');
+    expect(() => zone.run(() {
+      log('zone run');
+      throw 'zoneError';
+    })).toThrow('zoneError');
+    expect(() => zone.assertInTurn()).toThrow();
+    expect(log.result()).toEqual('zone run; onTurnDone; onError');
+  })));
+
+
+  it('should call onTurnDone even if there was an exception in runAsync', async(inject((Log log) {
+    zone.onError = (e) => log('onError');
+    zone.run(() {
+      log('zone run');
+      runAsync(() {
+        log('runAsync');
+        throw new Error();
+      });
+    });
+
+    nextTurn(true);
+
+    expect(() => zone.assertInTurn()).toThrow();
+    expect(log.result()).toEqual('zone run; runAsync; onError; onTurnDone');
+  })));
+
+
   it('should support assertInZone', () {
     zone.onTurnDone = () {
       zone.assertInZone();

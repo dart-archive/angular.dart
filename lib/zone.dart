@@ -54,8 +54,11 @@ class Zone {
     async.runZonedExperimental(() {
       _runningInTurn = true;
       try {
-        returnValueFromZone = interceptCall(body);
-        _tryDone();
+        try {
+          returnValueFromZone = interceptCall(body);
+        } finally {
+          _tryDone();
+        }
       } finally {
         _runningInTurn = false;
       }
@@ -70,11 +73,14 @@ class Zone {
       async.runAsync(() {
         _runningInTurn = true;
         try {
-          interceptCall(delegate);
-          // This runAsync body is run in the parent zone.  If
-          // we are going to run onTurnDone, we need to zone it.
-          if (!calledFromAssertInZone) {
-            _tryDone(true);
+          try {
+            interceptCall(delegate);
+            // This runAsync body is run in the parent zone.  If
+            // we are going to run onTurnDone, we need to zone it.
+          } finally {
+            if (!calledFromAssertInZone) {
+              _tryDone(true);
+            }
           }
         } finally {
           _runningInTurn = false;
