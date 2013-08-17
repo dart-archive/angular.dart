@@ -620,8 +620,8 @@ main() {
 
 
       it('should evaluate methods on object', () {
-        scope['obj'] = "abc";
-        var fn = Parser.parse("obj.toUpperCase()").bind(scope);
+        scope['obj'] = ['ABC'];
+        var fn = Parser.parse("obj.elementAt(0)").bind(scope);
         expect(fn()).toEqual('ABC');
         expect(scope.$eval(fn)).toEqual('ABC');
       });
