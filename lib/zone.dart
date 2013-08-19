@@ -16,7 +16,7 @@ class Zone {
   /**
    * A function that is called when uncaught errors are thrown inside the zone.
    */
-  Function onError = (e) => print('EXCEPTION: $e\n${async.getAttachedStackTrace(e)}}');
+  Function onError = (e) => print('EXCEPTION: $e\n${async.getAttachedStackTrace(e)}');
 
   /**
    * Called with each zone.run or runAsync method.  This allows the program
