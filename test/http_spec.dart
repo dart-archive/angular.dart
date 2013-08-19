@@ -194,5 +194,27 @@ main() {
         backend.assertAllGetsCalled();
       })));
     });
+
+
+    describe('error handling', () {
+      it('should reject 404 status codes', async(inject((Http http, Zone zone) {
+        backend.expectGET('404.html', VALUE, code: 404);
+
+        var response = null;
+        zone.run(() {
+          http.getString('404.html').then(
+            (v) => response = 'FAILED',
+            onError:(v) => response = v);
+        });
+
+        expect(response).toBe(null);
+        backend.flush();
+        nextTurn(true);
+        expect(response.status).toEqual(404);
+        expect(response.toString()).toEqual('HTTP 404: val');
+
+        backend.assertAllGetsCalled();
+      })));
+    });
   });
 }

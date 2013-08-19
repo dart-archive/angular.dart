@@ -11,7 +11,7 @@ class MockHttp extends Http {
   MockHttp(UrlRewriter rewriter, HttpBackend backend) : super(rewriter, backend);
 
   expectGET(String url, String content, {int times: 1}) {
-    gets[url] = new MockHttpData(content, times);
+    gets[url] = new MockHttpData(200, content, times);
   }
 
   flush() => Future.wait(futures);
@@ -40,24 +40,38 @@ class MockHttp extends Http {
 }
 
 class MockHttpData {
+  int code;
   String value;
   int times;
-  MockHttpData(this.value, this.times);
+  MockHttpData(this.code, this.value, this.times);
   
   toString() => value;
 }
 
+class MockHttpRequestProgressEvent implements HttpRequestProgressEvent {
+  MockHttpRequest currentTarget;
+
+  MockHttpRequestProgressEvent(MockHttpRequest this.currentTarget);
+}
+
+class MockHttpRequest implements HttpRequest {
+  int status;
+  String response;
+
+  MockHttpRequest(int this.status, String this.response);
+}
+
 class MockHttpBackend extends HttpBackend {
   Map<String, MockHttpData> gets = {};
-  List completersAndValues = [];
+  List flushFns = [];
 
-  expectGET(String url, String content, {int times: 1}) {
-    gets[url] = new MockHttpData(content, times);
+  expectGET(String url, String content, {int times: 1, int code: 200}) {
+    gets[url] = new MockHttpData(code, content, times);
   }
 
   flush() {
-    completersAndValues.forEach((cv) => cv[0].complete(cv[1]));
-    completersAndValues = [];
+    flushFns.forEach((fn) => fn());
+    flushFns = [];
   }
 
   assertAllGetsCalled() {
@@ -76,9 +90,14 @@ class MockHttpBackend extends HttpBackend {
     if (data.times <= 0) {
       gets.remove(url);
     }
-    var expectedValue = new HttpResponse(200, data.value);
     var completer = new Completer.sync();
-    completersAndValues.add([completer, expectedValue]);
+    if (data.code >= 200 && data.code < 300) {
+      flushFns.add(() => completer.complete(new HttpResponse(data.code, data.value)));
+    } else {
+      flushFns.add(() => completer.completeError(
+          new MockHttpRequestProgressEvent(new MockHttpRequest(data.code, data.value))
+      ));
+    }
     return completer.future;
   }
 }

@@ -24,14 +24,20 @@ class HttpResponse {
   String responseText;
   Map<String, String> headers;
   HttpResponse([this.status, this.responseText, this.headers]);
+
+  toString() => 'HTTP $status: $responseText';
 }
 
+/**
+ * Wrapper around the browser XHR. Use Http service to fetch data
+ * from the server.
+ */
 class Http {
   Map<String, async.Future<String>> _pendingRequests = <String, async.Future<String>>{};
-  UrlRewriter rewriter;
-  HttpBackend backend;
+  UrlRewriter _rewriter;
+  HttpBackend _backend;
 
-  Http(UrlRewriter this.rewriter, HttpBackend this.backend);
+  Http(UrlRewriter this._rewriter, HttpBackend this._backend);
 
   async.Future<String> getString(String url,
       {bool withCredentials, void onProgress(dom.ProgressEvent e), Cache cache}) {
@@ -41,25 +47,26 @@ class Http {
         cache: cache).then((HttpResponse xhr) => xhr.responseText);
   }
 
-  // TODO(deboer): The cache is keyed on the url only.  It should be keyed on
-  //     (url, method, mimeType, requestHeaders, ...)
-  //     Better yet, we should be using a HTTP standard cache.
   async.Future<HttpResponse> request(String rawUrl,
-      {String method, bool withCredentials, String responseType,
-      String mimeType, Map<String, String> requestHeaders, sendData,
-      void onProgress(dom.ProgressEvent e),
-      Cache<HttpResponse> cache}) {
-    String url = rewriter(rawUrl);
+      { String method: 'GET',
+        bool withCredentials: false,
+        String responseType,
+        String mimeType,
+        Map<String, String> requestHeaders,
+        sendData,
+        void onProgress(dom.ProgressEvent e),
+        Cache<HttpResponse> cache }) {
+    String url = _rewriter(rawUrl);
 
     // We return a pending request only if caching is enabled.
     if (cache != null && _pendingRequests.containsKey(url)) {
       return _pendingRequests[url];
     }
-    var cachedValue = cache != null ? cache.get(url) : null;
+    var cachedValue = (cache != null && method == 'GET') ? cache.get(url) : null;
     if (cachedValue != null) {
       return new async.Future.value(cachedValue);
     }
-    var result = backend.request(url,
+    var result = _backend.request(url,
         method: method,
         withCredentials: withCredentials,
         responseType: responseType,
@@ -75,9 +82,11 @@ class Http {
       }
       _pendingRequests.remove(url);
       return response;
-    }, onError: (error) {
+    }, onError: (HttpRequestProgressEvent event) {
       _pendingRequests.remove(url);
-      throw error;
+      HttpRequest request = event.currentTarget;
+      return new async.Future.error(
+          new HttpResponse(request.status, request.response));
     });
     _pendingRequests[url] = result;
     return result;
