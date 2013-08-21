@@ -132,10 +132,10 @@ class NgRepeatAttrDirective  {
       }
 
       childScope[valueIdentifier] = value;
-      childScope.$index = index;
-      childScope.$first = (index == 0);
-      childScope.$last = (index == (collection.length - 1));
-      childScope.$middle = !(childScope.$first || childScope.$last);
+      childScope[r'$index'] = index;
+      childScope[r'$first'] = (index == 0);
+      childScope[r'$last'] = (index == (collection.length - 1));
+      childScope[r'$middle'] = !(childScope.$first || childScope.$last);
 
       if (row.startNode == null) {
         rows[row.id] = row;
