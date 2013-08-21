@@ -1,5 +1,6 @@
 module.exports = function(config) {
   config.set({
+    logLevel: config.LOG_DEBUG,
     basePath: '.',
     frameworks: ['dart-unittest'],
 
@@ -7,7 +8,6 @@ module.exports = function(config) {
     // all tests must be 'included', but all other libraries must be 'served' and
     // optionally 'watched' only.
     files: [
-      'test/list_of_expressions',
       'test/*.dart',
       'test/directives/*.dart',
       'test/tools/*_spec.dart',

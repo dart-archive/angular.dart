@@ -1,0 +1,7 @@
+name: parser_generator
+version: 0.0.1
+dependencies:
+  angular:
+    path: ../..
+  js: any
+  di: any
