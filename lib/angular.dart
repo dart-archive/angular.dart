@@ -76,7 +76,7 @@ relaxFnApply(Function fn, List args) {
       return fn(args[0], args[1], args[2], args[3], args[4]);
     } else if (fn is FnWith4Args && argsLen > 3) {
       return fn(args[0], args[1], args[2], args[3]);
-    } else if (fn is FnWith3Args&& argsLen > 2 ) {
+    } else if (fn is FnWith3Args && argsLen > 2 ) {
       return fn(args[0], args[1], args[2]);
     } else if (fn is FnWith2Args && argsLen > 1 ) {
       return fn(args[0], args[1]);
@@ -108,23 +108,23 @@ _relaxFnArgs3(Function fn) {
 }
 
 _relaxFnArgs(Function fn) {
-  return ([a0, a1, a2, a3, a4]) {
-    if (fn is FnWith5Args) {
-      return fn(a0, a1, a2, a3, a4);
-    } else if (fn is FnWith4Args) {
-      return fn(a0, a1, a2, a3);
-    } else if (fn is FnWith3Args) {
-      return fn(a0, a1, a2);
-    } else if (fn is FnWith2Args) {
-      return fn(a0, a1);
-    } else if (fn is FnWith1Args) {
-      return fn(a0);
-    } else if (fn is FnWith0Args) {
-      return fn();
-    } else {
+  if (fn is FnWith5Args) {
+    return ([a0, a1, a2, a3, a4]) => fn(a0, a1, a2, a3, a4);
+  } else if (fn is FnWith4Args) {
+    return ([a0, a1, a2, a3, a4]) => fn(a0, a1, a2, a3);
+  } else if (fn is FnWith3Args) {
+    return ([a0, a1, a2, a3, a4]) => fn(a0, a1, a2);
+  } else if (fn is FnWith2Args) {
+    return ([a0, a1, a2, a3, a4]) => fn(a0, a1);
+  } else if (fn is FnWith1Args) {
+    return ([a0, a1, a2, a3, a4]) => fn(a0);
+  } else if (fn is FnWith0Args) {
+    return ([a0, a1, a2, a3, a4]) => fn();
+  } else {
+    return ([a0, a1, a2, a3, a4]) {
       throw "Unknown function type, expecting 0 to 5 args.";
-    }
-  };
+    };
+  }
 }
 
 
