@@ -203,8 +203,7 @@ class Scope implements Map {
   }
 
   $digest() => _perf.time('angular.scope.digest', () {
-    var value, last,
-        asyncQueue = _asyncQueue,
+    var asyncQueue = _asyncQueue,
         length,
         dirty, _ttlLeft = _ttl,
         logIdx, logMsg;
@@ -236,7 +235,9 @@ class Scope implements Map {
             while (length-- > 0) {
               try {
                 watch = watchers[length];
-                if ((value = watch.get(current)) != (last = watch.last) &&
+                var value = watch.get(current);
+                var last = watch.last;
+                if (!(identical(value, last) || (value is String && last is String && value == last)) &&
                     !(value is num && last is num && value.isNaN && last.isNaN)) {
                   dirty = true;
                   watch.last = value;
