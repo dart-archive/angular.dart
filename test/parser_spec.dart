@@ -44,7 +44,7 @@ main() {
     beforeEach(inject((Scope rootScope) { scope = rootScope; }));
 
     describe('expressions', () {
-      it('should parse numerical expressions', () {
+      iit('should parse numerical expressions', () {
         expect(eval("1")).toEqual(1);
       });
 

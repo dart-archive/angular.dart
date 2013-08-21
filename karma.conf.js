@@ -7,6 +7,7 @@ module.exports = function(config) {
     // all tests must be 'included', but all other libraries must be 'served' and
     // optionally 'watched' only.
     files: [
+      'test/list_of_expressions',
       'test/*.dart',
       'test/directives/*.dart',
       'test/tools/*_spec.dart',
@@ -24,8 +25,13 @@ module.exports = function(config) {
       'karma-dart',
       'karma-chrome-launcher',
       'karma-script-launcher',
-      'karma-junit-reporter'
+      'karma-junit-reporter',
+      '../../../karma-parser-generator'
     ],
+
+    preprocessors: {
+      'test/parser_spec.dart': ['parser-generator']
+    },
 
     junitReporter: {
       outputFile: 'test_out/unit.xml',
