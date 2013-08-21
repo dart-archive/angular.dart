@@ -30,6 +30,7 @@ part 'exception_handler.dart';
 part 'http.dart';
 part 'interface_typing.dart';
 part 'interpolate.dart';
+part 'lexer.dart';
 part 'mirrors.dart';
 part 'node_cursor.dart';
 part 'parser.dart';
@@ -138,6 +139,7 @@ class AngularModule extends Module {
     type(ExceptionHandler, ExceptionHandler);
     type(Scope, Scope);
     type(Parser, Parser);
+    type(Lexer, Lexer);
     type(Interpolate, Interpolate);
     type(CacheFactory, CacheFactory);
     type(Http, Http);

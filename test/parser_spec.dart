@@ -30,236 +30,16 @@ class BadContainsKeys implements Map {
   String str = "member";
 }
 
-class LexerExpect extends Expect {
-  LexerExpect(actual) : super(actual);
-  toBeToken(int index, String text) {
-    expect(actual is Token).toEqual(true);
-    expect(actual.index).toEqual(index);
-    expect(actual.text).toEqual(text);
-  }
-}
-expect(actual) => new LexerExpect(actual);
+
 
 main() {
-  var lex = Parser.lex;
-  describe('lexer', () {
-    // New test case
-    it('should tokenize a simple identifier', () {
-      var tokens = Parser.lex("j");
-      expect(tokens.length).toEqual(1);
-      expect(tokens[0]).toBeToken(0, 'j');
-    });
-
-    // New test case
-    it('should tokenize a dotted identifier', () {
-      var tokens = Parser.lex("j.k");
-      expect(tokens.length).toEqual(1);
-      expect(tokens[0]).toBeToken(0, 'j.k');
-    });
-
-    it('should tokenize an operator', () {
-      var tokens = Parser.lex('j-k');
-      expect(tokens.length).toEqual(3);
-      expect(tokens[1]).toBeToken(1, '-');
-    });
-
-    it('should tokenize an indexed operator', () {
-      var tokens = Parser.lex('j[k]');
-      expect(tokens.length).toEqual(4);
-      expect(tokens[1]).toBeToken(1, '[');
-    });
-
-    it('should tokenize numbers', () {
-      var tokens = Parser.lex('88');
-      expect(tokens.length).toEqual(1);
-      expect(tokens[0]).toBeToken(0, '88');
-    });
-
-    it('should tokenize numbers within index ops', () {
-      expect(Parser.lex('a[22]')[2]).toBeToken(2, '22');
-    });
-
-    it('should tokenize simple quoted strings', () {
-      expect(Parser.lex('"a"')[0]).toBeToken(0, '"a"');
-    });
-
-    it('should tokenize quoted strings with escaped quotes', () {
-      expect(Parser.lex('"a\\""')[0]).toBeToken(0, '"a\\""');
-    });
-
-    it('should tokenize a string', () {
-      var tokens = Parser.lex("j-a.bc[22]+1.3|f:'a\\\'c':\"d\\\"e\"");
-      var i = 0;
-      expect(tokens[i]).toBeToken(0, 'j');
-
-      i++;
-      expect(tokens[i]).toBeToken(1, '-');
-
-      i++;
-      expect(tokens[i]).toBeToken(2, 'a.bc');
-
-      i++;
-      expect(tokens[i]).toBeToken(6, '[');
-
-      i++;
-      expect(tokens[i]).toBeToken(7, '22');
-
-      i++;
-      expect(tokens[i]).toBeToken(9, ']');
-
-      i++;
-      expect(tokens[i]).toBeToken(10, '+');
-
-      i++;
-      expect(tokens[i]).toBeToken(11, '1.3');
-
-      i++;
-      expect(tokens[i]).toBeToken(14, '|');
-
-      i++;
-      expect(tokens[i]).toBeToken(15, 'f');
-
-      i++;
-      expect(tokens[i]).toBeToken(16, ':');
-
-      i++;
-      expect(tokens[i]).toBeToken(17, '\'a\\\'c\'');
-
-      i++;
-      expect(tokens[i]).toBeToken(23, ':');
-
-      i++;
-      expect(tokens[i]).toBeToken(24, '"d\\"e"');
-    });
-
-    it('should tokenize undefined', () {
-      var tokens = Parser.lex("undefined");
-      var i = 0;
-      expect(tokens[i]).toBeToken(0, 'undefined');
-      expect(tokens[i].fn(null, null, null, null)).toEqual(null);
-    });
-
-    it('should ignore whitespace', () {
-      var tokens = lex("a \t \n \r b");
-      expect(tokens[0].text).toEqual('a');
-      expect(tokens[1].text).toEqual('b');
-    });
-
-    it('should tokenize quoted string', () {
-      var str = "['\\'', \"\\\"\"]";
-      var tokens = lex(str);
-
-      expect(tokens[1].index).toEqual(1);
-      expect(tokens[1].string).toEqual("'");
-
-      expect(tokens[3].index).toEqual(7);
-      expect(tokens[3].string).toEqual('"');
-    });
-
-    it('should tokenize escaped quoted string', () {
-      var str = '"\\"\\n\\f\\r\\t\\v\\u00A0"';
-      var tokens = lex(str);
-
-      expect(tokens[0].fn0()).toEqual('"\n\f\r\t\v\u00A0');
-    });
-
-    it('should tokenize unicode', () {
-      var tokens = lex('"\\u00A0"');
-      expect(tokens.length).toEqual(1);
-      expect(tokens[0].fn0()).toEqual('\u00a0');
-    });
-
-    it('should tokenize relation', () {
-      var tokens = lex("! == != < > <= >=");
-      expect(tokens[0].text).toEqual('!');
-      expect(tokens[1].text).toEqual('==');
-      expect(tokens[2].text).toEqual('!=');
-      expect(tokens[3].text).toEqual('<');
-      expect(tokens[4].text).toEqual('>');
-      expect(tokens[5].text).toEqual('<=');
-      expect(tokens[6].text).toEqual('>=');
-    });
-
-    it('should tokenize statements', () {
-      var tokens = lex("a;b;");
-      expect(tokens[0].text).toEqual('a');
-      expect(tokens[1].text).toEqual(';');
-      expect(tokens[2].text).toEqual('b');
-      expect(tokens[3].text).toEqual(';');
-    });
-
-    it('should tokenize function invocation', () {
-      var tokens = lex("a()");
-      expect(tokens[0]).toBeToken(0, 'a');
-      expect(tokens[1]).toBeToken(1, '(');
-      expect(tokens[2]).toBeToken(2, ')');
-    });
-
-    it('should tokenize simple method invocations', () {
-      var tokens = lex("a.method()");
-      expect(tokens[2]).toBeToken(2, 'method');
-    });
-
-    it('should tokenize method invocation', () {
-      var tokens = lex("a.b.c (d) - e.f()");
-      expect(tokens[0]).toBeToken(0, 'a.b');
-      expect(tokens[1]).toBeToken(3, '.');
-      expect(tokens[2]).toBeToken(4, 'c');
-      expect(tokens[3]).toBeToken(6, '(');
-      expect(tokens[4]).toBeToken(7, 'd');
-      expect(tokens[5]).toBeToken(8, ')');
-      expect(tokens[6]).toBeToken(10, '-');
-      expect(tokens[7]).toBeToken(12, 'e');
-      expect(tokens[8]).toBeToken(13, '.');
-      expect(tokens[9]).toBeToken(14, 'f');
-      expect(tokens[10]).toBeToken(15, '(');
-      expect(tokens[11]).toBeToken(16, ')');
-    });
-
-    it('should tokenize number', () {
-      var tokens = lex("0.5");
-      expect(tokens[0].fn0()).toEqual(0.5);
-    });
-
-    // NOTE(deboer): NOT A LEXER TEST
-//    it('should tokenize negative number', () {
-//      var tokens = lex("-0.5");
-//      expect(tokens[0].fn0()).toEqual(-0.5);
-//    });
-
-    it('should tokenize number with exponent', () {
-      var tokens = lex("0.5E-10");
-      expect(tokens.length).toEqual(1);
-      expect(tokens[0].fn0()).toEqual(0.5E-10);
-      tokens = lex("0.5E+10");
-      expect(tokens[0].fn0()).toEqual(0.5E+10);
-    });
-
-    it('should throws exception for invalid exponent', () {
-      expect(() {
-        lex("0.5E-");
-      }).toThrow('Lexer Error: Invalid exponent at column 4 in expression [0.5E-].');
-
-      expect(() {
-        lex("0.5E-A");
-      }).toThrow('Lexer Error: Invalid exponent at column 4 in expression [0.5E-A].');
-    });
-
-    it('should tokenize number starting with a dot', () {
-      var tokens = lex(".5");
-      expect(tokens[0].fn0()).toEqual(0.5);
-    });
-
-    it('should throw error on invalid unicode', () {
-      expect(() {
-        lex("'\\u1''bla'");
-      }).toThrow("Lexer Error: Invalid unicode escape [\\u1''b] at column 2 in expression ['\\u1''bla'].");
-    });
-  });
-
   describe('parse', () {
-    var scope;
-    eval(String text) => Parser.parse(text).eval(scope, null);
+    var scope, parser;
+    beforeEach(inject((Parser injectedParser) {
+      parser = injectedParser;
+    }));
+    
+    eval(String text) => parser(text).eval(scope, null);
 
     beforeEach(inject((Scope rootScope) { scope = rootScope; }));
 
@@ -376,27 +156,27 @@ main() {
 
       it('should fail gracefully when missing a function', () {
         expect(() {
-          Parser.parse('doesNotExist()').eval({});
+          parser('doesNotExist()').eval({});
         }).toThrow('Undefined function doesNotExist');
 
         expect(() {
-          Parser.parse('exists(doesNotExist())').eval({'exists': () => true});
+          parser('exists(doesNotExist())').eval({'exists': () => true});
         }).toThrow('Undefined function doesNotExist');
 
         expect(() {
-          Parser.parse('doesNotExists(exists())').eval({'exists': () => true});
+          parser('doesNotExists(exists())').eval({'exists': () => true});
         }).toThrow('Undefined function doesNotExist');
 
         expect(() {
-          Parser.parse('a[0]()').eval({'a': [4]});
+          parser('a[0]()').eval({'a': [4]});
         }).toThrow('a[0] is not a function');
 
         expect(() {
-          Parser.parse('a[x()]()').eval({'a': [4], 'x': () => 0});
+          parser('a[x()]()').eval({'a': [4], 'x': () => 0});
         }).toThrow('a[x()] is not a function');
 
         expect(() {
-          Parser.parse('{}()').eval({});
+          parser('{}()').eval({});
         }).toThrow('{} is not a function');
       });
 
@@ -410,20 +190,20 @@ main() {
 
 
       it('should behave gracefully with a null scope', () {
-        expect(Parser.parse('null').eval(null)).toBe(null);
+        expect(parser('null').eval(null)).toBe(null);
       });
 
 
       it('should pass exceptions through getters', () {
         expect(() {
-          Parser.parse('boo').eval(new ScopeWithErrors());
+          parser('boo').eval(new ScopeWithErrors());
         }).toThrow('boo to you');
       });
 
 
       it('should pass exceptions through methods', () {
         expect(() {
-          Parser.parse('foo()').eval(new ScopeWithErrors());
+          parser('foo()').eval(new ScopeWithErrors());
         }).toThrow('foo to you');
       });
     });
@@ -621,7 +401,7 @@ main() {
 
       it('should evaluate methods on object', () {
         scope['obj'] = ['ABC'];
-        var fn = Parser.parse("obj.elementAt(0)").bind(scope);
+        var fn = parser("obj.elementAt(0)").bind(scope);
         expect(fn()).toEqual('ABC');
         expect(scope.$eval(fn)).toEqual('ABC');
       });
@@ -630,7 +410,7 @@ main() {
       it('should only check locals on first dereference', () {
         scope['a'] = {'b': 1};
         var locals = {'b': 2};
-        var fn = Parser.parse("this['a'].b").bind(scope);
+        var fn = parser("this['a'].b").bind(scope);
         expect(fn(locals)).toEqual(1);
       });
 
@@ -815,35 +595,35 @@ main() {
 
 
       it('should support map getters', () {
-        expect(Parser.parse('a').eval({'a': 4})).toEqual(4);
+        expect(parser('a').eval({'a': 4})).toEqual(4);
       });
 
 
       it('should support member getters', () {
-        expect(Parser.parse('str').eval(new TestData())).toEqual('testString');
+        expect(parser('str').eval(new TestData())).toEqual('testString');
       });
 
 
       it('should support returning member functions', () {
-        expect(Parser.parse('method').eval(new TestData())()).toEqual('testMethod');
+        expect(parser('method').eval(new TestData())()).toEqual('testMethod');
       });
 
 
       it('should support calling member functions', () {
-        expect(Parser.parse('method()').eval(new TestData())).toEqual('testMethod');
+        expect(parser('method()').eval(new TestData())).toEqual('testMethod');
       });
 
 
       it('should support array setters', () {
         var data = {'a': [1,3]};
-        expect(Parser.parse('a[1]=2').eval(data)).toEqual(2);
+        expect(parser('a[1]=2').eval(data)).toEqual(2);
         expect(data['a'][1]).toEqual(2);
       });
 
 
       it('should support member field setters', () {
         TestData data = new TestData();
-        expect(Parser.parse('str="bob"').eval(data)).toEqual('bob');
+        expect(parser('str="bob"').eval(data)).toEqual('bob');
         expect(data.str).toEqual("bob");
       });
 
@@ -851,62 +631,62 @@ main() {
       it('should support member field getters from mixins', () {
         MixedTestData data = new MixedTestData();
         data.str = 'dole';
-        expect(Parser.parse('str').eval(data)).toEqual('dole');
+        expect(parser('str').eval(data)).toEqual('dole');
       });
 
 
       it('should support map getters from superclass', () {
        InheritedMapData mapData = new InheritedMapData();
-       expect(Parser.parse('notmixed').eval(mapData)).toEqual('mapped-notmixed');
+       expect(parser('notmixed').eval(mapData)).toEqual('mapped-notmixed');
       });
 
 
       it('should support map getters from mixins', () {
         MixedMapData data = new MixedMapData();
-        expect(Parser.parse('str').eval(data)).toEqual('mapped-str');
+        expect(parser('str').eval(data)).toEqual('mapped-str');
       });
 
 
       // forget grace, this is Dart!
       xit('should gracefully handle bad containsKey', () {
-       expect(Parser.parse('str').eval(new BadContainsKeys())).toEqual('member');
+       expect(parser('str').eval(new BadContainsKeys())).toEqual('member');
       });
 
 
       it('should parse functions for object indices', () {
-        expect(Parser.parse('a[x()]()').eval({'a': [()=>6], 'x': () => 0})).toEqual(6);
+        expect(parser('a[x()]()').eval({'a': [()=>6], 'x': () => 0})).toEqual(6);
       });
     });
-  });
 
-  describe('assignable', () {
-    it('should expose assignment function', () {
-      var fn = Parser.parse('a');
-      expect(fn.assign).toBeNotNull();
-      var scope = {};
-      fn.assign(scope, 123, null);
-      expect(scope).toEqual({'a':123});
-    });
-  });
-
-  describe('locals', () {
-    it('should expose local variables', () {
-      expect(Parser.parse('a').eval({'a': 6}, {'a': 1})).toEqual(1);
-      expect(Parser.parse('add(a,b)').eval({'b': 1, 'add': (a, b) { return a + b; }}, {'a': 2})).toEqual(3);
+    describe('assignable', () {
+      it('should expose assignment function', () {
+        var fn = parser('a');
+        expect(fn.assign).toBeNotNull();
+        var scope = {};
+        fn.assign(scope, 123, null);
+        expect(scope).toEqual({'a':123});
+      });
     });
 
+    describe('locals', () {
+      it('should expose local variables', () {
+        expect(parser('a').eval({'a': 6}, {'a': 1})).toEqual(1);
+        expect(parser('add(a,b)').eval({'b': 1, 'add': (a, b) { return a + b; }}, {'a': 2})).toEqual(3);
+      });
 
-    it('should expose traverse locals', () {
-      expect(Parser.parse('a.b').eval({'a': {'b': 6}}, {'a': {'b':1}})).toEqual(1);
-      expect(Parser.parse('a.b').eval({'a': null}, {'a': {'b':1}})).toEqual(1);
-      expect(Parser.parse('a.b').eval({'a': {'b': 5}}, {'a': null})).toEqual(null);
+
+      it('should expose traverse locals', () {
+        expect(parser('a.b').eval({'a': {'b': 6}}, {'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').eval({'a': null}, {'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').eval({'a': {'b': 5}}, {'a': null})).toEqual(null);
+      });
+
+
+      it('should work with scopes', inject((Scope scope) {
+        scope.a = {'b': 6};
+        expect(parser('a.b').eval(scope, {'a': {'b':1}})).toEqual(1);
+      }));
     });
-
-
-    it('should work with scopes', inject((Scope scope) {
-      scope.a = {'b': 6};
-      expect(Parser.parse('a.b').eval(scope, {'a': {'b':1}})).toEqual(1);
-    }));
   });
 }
 
