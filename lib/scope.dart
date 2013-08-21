@@ -433,7 +433,7 @@ class Scope implements Map {
     if (exp == null) {
       return () => null;
     } else if (exp is String) {
-      return _parser(exp);
+      return _parser(exp).eval;
     } else if (exp is Function) {
       return exp;
     } else {

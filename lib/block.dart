@@ -564,12 +564,12 @@ _createAttributeMapping(DirectiveRef directiveRef, dom.Node element,
         Expression attrExprFn = parser(attrValue);
         var shadowValue = null;
         scope.$watch(
-                () => attrExprFn(scope),
+                () => attrExprFn.eval(scope),
                 (v) => dstPathFn.assign(context, shadowValue = v));
         if (shadowScope != null) {
           if (attrExprFn.assignable) {
             shadowScope.$watch(
-                    () => dstPathFn(context),
+                    () => dstPathFn.eval(context),
                     (v) {
                   if (shadowValue != v) {
                     shadowValue = v;

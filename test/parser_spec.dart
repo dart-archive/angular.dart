@@ -259,7 +259,7 @@ main() {
 
   describe('parse', () {
     var scope;
-    eval(String text) => Parser.parse(text)(scope, null);
+    eval(String text) => Parser.parse(text).eval(scope, null);
 
     beforeEach(inject((Scope rootScope) { scope = rootScope; }));
 
@@ -376,27 +376,27 @@ main() {
 
       it('should fail gracefully when missing a function', () {
         expect(() {
-          Parser.parse('doesNotExist()')({});
+          Parser.parse('doesNotExist()').eval({});
         }).toThrow('Undefined function doesNotExist');
 
         expect(() {
-          Parser.parse('exists(doesNotExist())')({'exists': () => true});
+          Parser.parse('exists(doesNotExist())').eval({'exists': () => true});
         }).toThrow('Undefined function doesNotExist');
 
         expect(() {
-          Parser.parse('doesNotExists(exists())')({'exists': () => true});
+          Parser.parse('doesNotExists(exists())').eval({'exists': () => true});
         }).toThrow('Undefined function doesNotExist');
 
         expect(() {
-          Parser.parse('a[0]()')({'a': [4]});
+          Parser.parse('a[0]()').eval({'a': [4]});
         }).toThrow('a[0] is not a function');
 
         expect(() {
-          Parser.parse('a[x()]()')({'a': [4], 'x': () => 0});
+          Parser.parse('a[x()]()').eval({'a': [4], 'x': () => 0});
         }).toThrow('a[x()] is not a function');
 
         expect(() {
-          Parser.parse('{}()')({});
+          Parser.parse('{}()').eval({});
         }).toThrow('{} is not a function');
       });
 
@@ -410,20 +410,20 @@ main() {
 
 
       it('should behave gracefully with a null scope', () {
-        expect(Parser.parse('null')(null)).toBe(null);
+        expect(Parser.parse('null').eval(null)).toBe(null);
       });
 
 
       it('should pass exceptions through getters', () {
         expect(() {
-          Parser.parse('boo')(new ScopeWithErrors());
+          Parser.parse('boo').eval(new ScopeWithErrors());
         }).toThrow('boo to you');
       });
 
 
       it('should pass exceptions through methods', () {
         expect(() {
-          Parser.parse('foo()')(new ScopeWithErrors());
+          Parser.parse('foo()').eval(new ScopeWithErrors());
         }).toThrow('foo to you');
       });
     });
@@ -815,35 +815,35 @@ main() {
 
 
       it('should support map getters', () {
-        expect(Parser.parse('a')({'a': 4})).toEqual(4);
+        expect(Parser.parse('a').eval({'a': 4})).toEqual(4);
       });
 
 
       it('should support member getters', () {
-        expect(Parser.parse('str')(new TestData())).toEqual('testString');
+        expect(Parser.parse('str').eval(new TestData())).toEqual('testString');
       });
 
 
       it('should support returning member functions', () {
-        expect(Parser.parse('method')(new TestData())()).toEqual('testMethod');
+        expect(Parser.parse('method').eval(new TestData())()).toEqual('testMethod');
       });
 
 
       it('should support calling member functions', () {
-        expect(Parser.parse('method()')(new TestData())).toEqual('testMethod');
+        expect(Parser.parse('method()').eval(new TestData())).toEqual('testMethod');
       });
 
 
       it('should support array setters', () {
         var data = {'a': [1,3]};
-        expect(Parser.parse('a[1]=2')(data)).toEqual(2);
+        expect(Parser.parse('a[1]=2').eval(data)).toEqual(2);
         expect(data['a'][1]).toEqual(2);
       });
 
 
       it('should support member field setters', () {
         TestData data = new TestData();
-        expect(Parser.parse('str="bob"')(data)).toEqual('bob');
+        expect(Parser.parse('str="bob"').eval(data)).toEqual('bob');
         expect(data.str).toEqual("bob");
       });
 
@@ -851,30 +851,30 @@ main() {
       it('should support member field getters from mixins', () {
         MixedTestData data = new MixedTestData();
         data.str = 'dole';
-        expect(Parser.parse('str')(data)).toEqual('dole');
+        expect(Parser.parse('str').eval(data)).toEqual('dole');
       });
 
 
       it('should support map getters from superclass', () {
        InheritedMapData mapData = new InheritedMapData();
-       expect(Parser.parse('notmixed')(mapData)).toEqual('mapped-notmixed');
+       expect(Parser.parse('notmixed').eval(mapData)).toEqual('mapped-notmixed');
       });
 
 
       it('should support map getters from mixins', () {
         MixedMapData data = new MixedMapData();
-        expect(Parser.parse('str')(data)).toEqual('mapped-str');
+        expect(Parser.parse('str').eval(data)).toEqual('mapped-str');
       });
 
 
       // forget grace, this is Dart!
       xit('should gracefully handle bad containsKey', () {
-       expect(Parser.parse('str')(new BadContainsKeys())).toEqual('member');
+       expect(Parser.parse('str').eval(new BadContainsKeys())).toEqual('member');
       });
 
 
       it('should parse functions for object indices', () {
-        expect(Parser.parse('a[x()]()')({'a': [()=>6], 'x': () => 0})).toEqual(6);
+        expect(Parser.parse('a[x()]()').eval({'a': [()=>6], 'x': () => 0})).toEqual(6);
       });
     });
   });
@@ -891,21 +891,21 @@ main() {
 
   describe('locals', () {
     it('should expose local variables', () {
-      expect(Parser.parse('a')({'a': 6}, {'a': 1})).toEqual(1);
-      expect(Parser.parse('add(a,b)')({'b': 1, 'add': (a, b) { return a + b; }}, {'a': 2})).toEqual(3);
+      expect(Parser.parse('a').eval({'a': 6}, {'a': 1})).toEqual(1);
+      expect(Parser.parse('add(a,b)').eval({'b': 1, 'add': (a, b) { return a + b; }}, {'a': 2})).toEqual(3);
     });
 
 
     it('should expose traverse locals', () {
-      expect(Parser.parse('a.b')({'a': {'b': 6}}, {'a': {'b':1}})).toEqual(1);
-      expect(Parser.parse('a.b')({'a': null}, {'a': {'b':1}})).toEqual(1);
-      expect(Parser.parse('a.b')({'a': {'b': 5}}, {'a': null})).toEqual(null);
+      expect(Parser.parse('a.b').eval({'a': {'b': 6}}, {'a': {'b':1}})).toEqual(1);
+      expect(Parser.parse('a.b').eval({'a': null}, {'a': {'b':1}})).toEqual(1);
+      expect(Parser.parse('a.b').eval({'a': {'b': 5}}, {'a': null})).toEqual(null);
     });
 
 
     it('should work with scopes', inject((Scope scope) {
       scope.a = {'b': 6};
-      expect(Parser.parse('a.b')(scope, {'a': {'b':1}})).toEqual(1);
+      expect(Parser.parse('a.b').eval(scope, {'a': {'b':1}})).toEqual(1);
     }));
   });
 }

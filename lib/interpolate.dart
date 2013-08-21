@@ -46,11 +46,11 @@ class Interpolate {
     }
 
     if (!mustHaveExpression  || hasInterpolation) {
-      fn = new Expression((context, locals) {
+      fn = new Expression((context, [locals]) {
         try {
           for(var i = 0, ii = length, chunk; i<ii; i++) {
-            if ((chunk = chunks[i]) is Function) {
-              chunk = chunk(context);
+            if ((chunk = chunks[i]) is Expression) {
+              chunk = chunk.eval(context);
               if (chunk == null) {
                 chunk = '';
               } else if (!(chunk is String)) {

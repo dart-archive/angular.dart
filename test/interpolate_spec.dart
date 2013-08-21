@@ -13,16 +13,16 @@ main() {
     }));
 
     it('should suppress falsy objects', inject((Interpolate $interpolate) {
-      expect($interpolate('{{undefined}}')()).toEqual('');
-      expect($interpolate('{{undefined+undefined}}')()).toEqual('');
-      expect($interpolate('{{null}}')()).toEqual('');
-      expect($interpolate('{{a.b}}')()).toEqual('');
+      expect($interpolate('{{undefined}}').eval(null)).toEqual('');
+      expect($interpolate('{{undefined+undefined}}').eval(null)).toEqual('');
+      expect($interpolate('{{null}}').eval(null)).toEqual('');
+      expect($interpolate('{{a.b}}').eval(null)).toEqual('');
     }));
 
     it('should jsonify objects', inject((Interpolate $interpolate) {
-      expect($interpolate('{{ {} }}')()).toEqual('{}');
-      expect($interpolate('{{ true }}')()).toEqual('true');
-      expect($interpolate('{{ false }}')()).toEqual('false');
+      expect($interpolate('{{ {} }}').eval(null)).toEqual('{}');
+      expect($interpolate('{{ true }}').eval(null)).toEqual('true');
+      expect($interpolate('{{ false }}').eval(null)).toEqual('false');
     }));
 
     it('should rethrow exceptions', inject((Interpolate $interpolate, Scope $rootScope) {
@@ -30,31 +30,31 @@ main() {
         throw 'oops';
       };
       expect(() {
-        $interpolate('{{err()}}')($rootScope);
+        $interpolate('{{err()}}').eval($rootScope);
       }).toThrow(r"$interpolate error! Can't interpolate: {{err()}}");
     }));
 
     it('should return interpolation function', inject((Interpolate $interpolate, Scope $rootScope) {
       $rootScope.name = 'Misko';
       var fn = $interpolate('Hello {{name}}!');
-      expect(fn($rootScope)).toEqual('Hello Misko!');
-      expect(fn($rootScope)).toEqual('Hello Misko!');
+      expect(fn.eval($rootScope)).toEqual('Hello Misko!');
+      expect(fn.eval($rootScope)).toEqual('Hello Misko!');
     }));
 
 
     it('should ignore undefined model', inject((Interpolate $interpolate) {
-      expect($interpolate("Hello {{'World' + foo}}")()).toEqual('Hello World');
+      expect($interpolate("Hello {{'World' + foo}}").eval(null)).toEqual('Hello World');
     }));
 
 
     it('should ignore undefined return value', inject((Interpolate $interpolate, Scope $rootScope) {
       $rootScope.foo = () => null;
-      expect($interpolate("Hello {{'World' + foo()}}")($rootScope)).toEqual('Hello World');
+      expect($interpolate("Hello {{'World' + foo()}}").eval($rootScope)).toEqual('Hello World');
     }));
 
     it('should use toString to conver objects to string', inject((Interpolate $interpolate, Scope $rootScope) {
       $rootScope.obj = new ToStringableObject();
-      expect($interpolate("Hello, {{obj}}!")($rootScope)).toEqual('Hello, World!');
+      expect($interpolate("Hello, {{obj}}!").eval($rootScope)).toEqual('Hello, World!');
     }));
 
 
@@ -76,7 +76,7 @@ main() {
         expect(parts.length).toEqual(3);
         expect(parts[0]).toEqual("a");
         expect(parts[1].exp).toEqual("b");
-        expect(parts[1]({'b':123})).toEqual(123);
+        expect(parts[1].eval({'b':123})).toEqual(123);
         expect(parts[2]).toEqual("C");
       }));
 
@@ -85,7 +85,7 @@ main() {
         expect(parts.length).toEqual(2);
         expect(parts[0]).toEqual("a");
         expect(parts[1].exp).toEqual("b");
-        expect(parts[1]({'b':123})).toEqual(123);
+        expect(parts[1].eval({'b':123})).toEqual(123);
       }));
 
       it('should Parse Begging Binding', inject((Interpolate $interpolate) {

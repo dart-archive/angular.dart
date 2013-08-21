@@ -9,7 +9,7 @@ class NgTextMustacheDirective {
   NgTextMustacheDirective(dom.Node this.element, String markup, Interpolate interpolate, Scope scope) {
     interpolateFn = interpolate(markup);
     element.text = '';
-    scope.$watch(interpolateFn, (text) => element.text = text);
+    scope.$watch(interpolateFn.eval, (text) => element.text = text);
   }
 
 }
@@ -25,6 +25,6 @@ class NgAttrMustacheDirective {
     Expression interpolateFn = interpolate(match[2]);
     Function attrSetter = (text) => element.attributes[attrName] = text;
     attrSetter('');
-    scope.$watch(interpolateFn, attrSetter);
+    scope.$watch(interpolateFn.eval, attrSetter);
   }
 }

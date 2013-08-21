@@ -1,8 +1,8 @@
 part of angular;
 
 
-typedef ParsedGetter(scope, locals);
-typedef ParsedSetter(scope, value, locals);
+typedef ParsedGetter(self, [locals]);
+typedef ParsedSetter(self, value, [locals]);
 
 typedef Getter([locals]);
 typedef Setter(value, [locals]);
@@ -13,22 +13,21 @@ class BoundExpression {
 
   BoundExpression(this._context, Expression this.expression);
 
-  call([locals]) => expression(_context, locals);
+  call([locals]) => expression.eval(_context, locals);
   assign(value, [locals]) => expression.assign(_context, value, locals);
 }
 
 class Expression {
-  ParsedGetter getterFn;
-  ParsedSetter assignFn;
+  ParsedGetter eval;
+  ParsedSetter assign;
   String exp;
   List parts;
 
-  Expression(ParsedGetter this.getterFn, [ParsedSetter this.assignFn]);
-  call([s, l]) => getterFn(s, l);
-  assign(s, v, [l]) => assignFn(s, v, l);
+  Expression(ParsedGetter this.eval, [ParsedSetter this.assign]);
+
   bind(context) => new BoundExpression(context, this);
 
-  get assignable => assignFn != null;
+  get assignable => assign != null;
 }
 
 class Token {
@@ -48,7 +47,7 @@ class Token {
   withFn(fn, [assignFn]) {
     this.fn = fn;
     this.primaryFn = new Expression(
-        (s, l) => fn(s, l, null, null),
+        (s, [l]) => fn(s, l, null, null),
         assignFn);
   }
 
@@ -56,13 +55,13 @@ class Token {
 
   withString(string) { this.string = string; }
 
-  fn0() => primaryFn(null, null);
+  fn0() => primaryFn.eval(null, null);
 
   toString() => "Token($text)";
 }
 
 // TODO(deboer): Type this typedef further
-typedef Operator(scope, locals, Expression a, Expression b);
+typedef Operator(self, locals, Expression a, Expression b);
 
 op0(fn()) => (_, _1, _2, _3) => fn();
 
@@ -99,43 +98,43 @@ autoConvertAdd(a, b) {
 
 Map<String, Operator> OPERATORS = {
   'undefined': NULL_OP,
-  'true': (scope, locals, a, b) => true,
-  'false': (scope, locals, a, b) => false,
-  '+': (scope, locals, aFn, bFn) {
-    var a = aFn(scope, locals);
-    var b = bFn(scope, locals);
+  'true': (self, locals, a, b) => true,
+  'false': (self, locals, a, b) => false,
+  '+': (self, locals, aFn, bFn) {
+    var a = aFn.eval(self, locals);
+    var b = bFn.eval(self, locals);
     if (a != null && b != null) return autoConvertAdd(a, b);
     if (a != null) return a;
     if (b != null) return b;
     return null;
   },
-  '-': (scope, locals, a, b) {
+  '-': (self, locals, a, b) {
     assert(a != null || b != null);
-    var aResult = a != null ? a(scope, locals) : null;
-    var bResult = b != null ? b(scope, locals) : null;
+    var aResult = a != null ? a.eval(self, locals) : null;
+    var bResult = b != null ? b.eval(self, locals) : null;
     return (aResult == null ? 0 : aResult) - (bResult == null ? 0 : bResult);
   },
-  '*': (s, l, a, b) => a(s, l) * b(s, l),
-  '/': (s, l, a, b) => a(s, l) / b(s, l),
-  '%': (s, l, a, b) => a(s, l) % b(s, l),
-  '^': (s, l, a, b) => a(s, l) ^ b(s, l),
+  '*': (s, l, a, b) => a.eval(s, l) * b.eval(s, l),
+  '/': (s, l, a, b) => a.eval(s, l) / b.eval(s, l),
+  '%': (s, l, a, b) => a.eval(s, l) % b.eval(s, l),
+  '^': (s, l, a, b) => a.eval(s, l) ^ b.eval(s, l),
   '=': NULL_OP,
-  '==': (s, l, a, b) => a(s, l) == b(s, l),
-  '!=': (s, l, a, b) => a(s, l) != b(s, l),
-  '<': (s, l, a, b) => a(s, l) < b(s, l),
-  '>': (s, l, a, b) => a(s, l) > b(s, l),
-  '<=': (s, l, a, b) => a(s, l) <= b(s, l),
-  '>=': (s, l, a, b) => a(s, l) >= b(s, l),
-  '&&': (s, l, a, b) => toBool(a(s, l)) && toBool(b(s, l)),
-  '||': (s, l, a, b) => toBool(a(s, l)) || toBool(b(s, l)),
-  '&': (s, l, a, b) => a(s, l) & b(s, l),
+  '==': (s, l, a, b) => a.eval(s, l) == b.eval(s, l),
+  '!=': (s, l, a, b) => a.eval(s, l) != b.eval(s, l),
+  '<': (s, l, a, b) => a.eval(s, l) < b.eval(s, l),
+  '>': (s, l, a, b) => a.eval(s, l) > b.eval(s, l),
+  '<=': (s, l, a, b) => a.eval(s, l) <= b.eval(s, l),
+  '>=': (s, l, a, b) => a.eval(s, l) >= b.eval(s, l),
+  '&&': (s, l, a, b) => toBool(a.eval(s, l)) && toBool(b.eval(s, l)),
+  '||': (s, l, a, b) => toBool(a.eval(s, l)) || toBool(b.eval(s, l)),
+  '&': (s, l, a, b) => a.eval(s, l) & b.eval(s, l),
   '|': NOT_IMPL_OP, //b(locals)(locals, a(locals))
-  '!': (scope, locals, a, b) => !toBool(a(scope, locals))
+  '!': (self, locals, a, b) => !toBool(a.eval(self, locals))
 };
 
 Map<String, String> ESCAPE = {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'};
 
-Expression ZERO = new Expression((_, _x) => 0);
+Expression ZERO = new Expression((_, [_x]) => 0);
 
 stripTrailingNulls(List l) {
   while (l.length > 0 && l.last == null) {
@@ -178,8 +177,8 @@ _getterChild(value, childKey) {
   return _undefined_;
 }
 
-getter(scope, locals, path) {
-  if (scope == null) {
+getter(self, locals, path) {
+  if (self == null) {
     return null;
   }
 
@@ -187,9 +186,9 @@ getter(scope, locals, path) {
   var pathKeysLength = pathKeys.length;
   var value = _undefined_;
 
-  if (pathKeysLength == 0) { return scope; }
+  if (pathKeysLength == 0) { return self; }
 
-  var currentValue = scope;
+  var currentValue = self;
   for (var i = 0; i < pathKeysLength; i++) {
     var curKey = pathKeys[i];
     if (locals == null) {
@@ -198,7 +197,7 @@ getter(scope, locals, path) {
       currentValue = _getterChild(locals, curKey);
       locals = null;
       if (currentValue == _undefined_) {
-        currentValue = _getterChild(scope, curKey);
+        currentValue = _getterChild(self, curKey);
       }
     }
     if (currentValue == null || currentValue == _undefined_) { return null; }
@@ -418,9 +417,9 @@ class Parser {
       } else {
         // TODO(deboer): In the JS version this method is incredibly optimized.
         // We should likely do the same.
-        token.withFn((scope, locals, a, b) => getter(scope, locals, ident),
-        (scope, value, unused_locals) =>
-          setter(scope, ident, value)
+        token.withFn((self, locals, a, b) => getter(self, locals, ident),
+        (self, value, [unused_locals]) =>
+          setter(self, ident, value)
         );
       }
 
@@ -590,12 +589,12 @@ class Parser {
     }
 
     Expression binaryFn(Expression left, Operator fn, Expression right) =>
-      new Expression((self, locals) {
+      new Expression((self, [locals]) {
         return fn(self, locals, left, right);
       });
 
     Expression unaryFn(Operator fn, Expression right) =>
-      new Expression((self, locals) {
+      new Expression((self, [locals]) {
         return fn(self, locals, right, null);
       });
 
@@ -683,9 +682,9 @@ class Parser {
           throw parserError('Expression ${tokensText(ts)} is not assignable', token);
         }
         right = logicalOR();
-        return new Expression((scope, locals) {
+        return new Expression((self, [locals]) {
           try {
-            return left.assign(scope, right(scope, locals), locals);
+            return left.assign(self, right.eval(self, locals), locals);
           } catch (e, s) {
             throw evalError('Caught $e', s);
           }
@@ -721,12 +720,12 @@ class Parser {
         if (expect(';') == null) {
           return statements.length == 1
               ? statements[0]
-              : new Expression((scope, locals) {
+              : new Expression((self, [locals]) {
                 var value;
                 for ( var i = 0; i < statements.length; i++) {
                   var statement = statements[i];
                   if (statement != null)
-                    value = statement(scope, locals);
+                    value = statement.eval(self, locals);
                 }
                 return value;
               });
@@ -742,12 +741,12 @@ class Parser {
         } while (expect(',') != null);
       }
       consume(')');
-      return new Expression((self, locals){
+      return new Expression((self, [locals]){
         List args = [];
         for ( var i = 0; i < argsFn.length; i++) {
-          args.add(argsFn[i](self, locals));
+          args.add(argsFn[i].eval(self, locals));
         }
-        var userFn = fn(self, locals);
+        var userFn = fn.eval(self, locals);
         if (userFn == null) {
           throw evalError("Undefined function $fnName");
         }
@@ -767,10 +766,10 @@ class Parser {
         } while (expect(',') != null);
       }
       consume(']');
-      return new Expression((self, locals){
+      return new Expression((self, [locals]){
         var array = [];
         for ( var i = 0; i < elementFns.length; i++) {
-          array.add(elementFns[i](self, locals));
+          array.add(elementFns[i].eval(self, locals));
         }
         return array;
       });
@@ -802,9 +801,9 @@ class Parser {
 
       var indexFn = expression();
       consume(']');
-      return new Expression((self, locals){
-            var i = indexFn(self, locals);
-            var o = obj(self, locals),
+      return new Expression((self, [locals]){
+            var i = indexFn.eval(self, locals);
+            var o = obj.eval(self, locals),
                 v, p;
 
             if (o == null) throw evalError('Accessing null object');
@@ -822,8 +821,8 @@ class Parser {
               v = v.$$v;
             } */
             return v;
-          }, (self, value, locals) =>
-            setField(obj(self, locals), indexFn(self, locals), value)
+          }, (self, value, [locals]) =>
+            setField(obj.eval(self, locals), indexFn.eval(self, locals), value)
           );
 
     };
@@ -832,10 +831,10 @@ class Parser {
       var field = expect().text;
       //var getter = getter(field);
       return new Expression(
-              (self, locals) =>
-                  getter(object(self, locals), null, field),
-              (self, value, locals) =>
-                  setter(object(self, locals), field, value));
+              (self, [locals]) =>
+                  getter(object.eval(self, locals), null, field),
+              (self, value, [locals]) =>
+                  setter(object.eval(self, locals), field, value));
     };
 
     object = () {
@@ -850,11 +849,11 @@ class Parser {
         } while (expect(',') != null);
       }
       consume('}');
-      return new Expression((self, locals){
+      return new Expression((self, [locals]){
         var object = {};
         for ( var i = 0; i < keyValues.length; i++) {
           var keyValue = keyValues[i];
-          var value = keyValue["value"](self, locals);
+          var value = keyValue["value"].eval(self, locals);
           object[keyValue["key"]] = value;
         }
         return object;
@@ -869,13 +868,13 @@ class Parser {
     }
     if (_perf == null) return value;
 
-    var wrappedGetter = (s, l) =>
-        _perf.time('angular.parser.getter', () => value(s, l), text);
+    var wrappedGetter = (s, [l]) =>
+        _perf.time('angular.parser.getter', () => value.eval(s, l), text);
     var wrappedAssignFn = null;
-    if (value.assignFn != null) {
-      wrappedAssignFn = (s, v, l) =>
-          _perf.time('angular.parser.assignFn',
-              () => value.assignFn(s, v, l), text);
+    if (value.assign != null) {
+      wrappedAssignFn = (s, v, [l]) =>
+          _perf.time('angular.parser.assign',
+              () => value.assign(s, v, l), text);
     }
     return new Expression(wrappedGetter, wrappedAssignFn);
   }
