@@ -7,4 +7,5 @@ dependencies:
   js: any
   di: any
   perf_api: any
+  intl: any
 
