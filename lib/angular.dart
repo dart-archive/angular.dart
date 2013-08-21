@@ -92,6 +92,21 @@ relaxFnApply(Function fn, List args) {
   }
 }
 
+_relaxFnArgs1(Function fn) {
+  if (fn is Expression) return _relaxFnArgs1(fn.eval);
+  if (fn is FnWith3Args) return (_1) => fn(_1, null, null);
+  if (fn is FnWith2Args) return (_1) => fn(_1, null);
+  if (fn is FnWith1Args) return fn;
+  if (fn is FnWith0Args) return (_1) => fn();
+}
+
+_relaxFnArgs3(Function fn) {
+  if (fn is FnWith3Args) return fn;
+  if (fn is FnWith2Args) return (_1, _2, _3) => fn(_1, null);
+  if (fn is FnWith1Args) return (_1, _2, _3) => fn(_1);
+  if (fn is FnWith0Args) return (_1, _2, _3) => fn();
+}
+
 _relaxFnArgs(Function fn) {
   return ([a0, a1, a2, a3, a4]) {
     if (fn is FnWith5Args) {

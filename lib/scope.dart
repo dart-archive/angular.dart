@@ -9,8 +9,8 @@ class Watch {
   String exp;
 
   Watch(fn, this.last, get, this.exp) {
-    this.fn = _relaxFnArgs(fn);
-    this.get = _relaxFnArgs(get);
+    this.fn = _relaxFnArgs3(fn);
+    this.get = _relaxFnArgs1(get);
   }
 }
 
