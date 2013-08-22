@@ -55,8 +55,6 @@ class Token {
 
   withString(string) { this.string = string; }
 
-  fn0() => primaryFn.eval(null, null);
-
   toString() => "Token($text)";
 }
 
@@ -232,11 +230,136 @@ setter(obj, path, setValue) {
   return _setterChild(obj, element.removeAt(0), setValue);
 }
 
+
+class ExpressionFactory {
+  Expression binaryFn(Expression left, Operator fn, Expression right) =>
+    new Expression((self, [locals]) => fn(self, locals, left, right));
+
+  Expression unaryFn(Operator fn, Expression right) =>
+      new Expression((self, [locals]) => fn(self, locals, right, null));
+
+  Expression assignment(Expression left, Expression right, evalError) =>
+    new Expression((self, [locals]) {
+      try {
+        return left.assign(self, right.eval(self, locals), locals);
+      } catch (e, s) {
+        throw evalError('Caught $e', s);
+      }
+    });
+
+  Expression multipleStatements(statements) =>
+    new Expression((self, [locals]) {
+      var value;
+      for ( var i = 0; i < statements.length; i++) {
+        var statement = statements[i];
+        if (statement != null)
+          value = statement.eval(self, locals);
+      }
+      return value;
+    });
+
+  Expression functionCall(fn, fnName, argsFn, evalError) =>
+    new Expression((self, [locals]){
+        List args = [];
+        for ( var i = 0; i < argsFn.length; i++) {
+          args.add(argsFn[i].eval(self, locals));
+        }
+        var userFn = fn.eval(self, locals);
+        if (userFn == null) {
+          throw evalError("Undefined function $fnName");
+        }
+        if (userFn is! Function) {
+          throw evalError("$fnName is not a function");
+        }
+        return relaxFnApply(userFn, args);
+      });
+
+  Expression arrayDeclaration(elementFns) =>
+    new Expression((self, [locals]){
+        var array = [];
+        for ( var i = 0; i < elementFns.length; i++) {
+          array.add(elementFns[i].eval(self, locals));
+        }
+        return array;
+      });
+
+  Expression objectIndex(obj, indexFn, evalError) {
+    // TODO(deboer): Combine these into a single function.
+    getField(o, i) {
+      if (o is List) {
+        return o[i.toInt()];
+      } else if (o is Map) {
+        return o[i.toString()]; // toString dangerous?
+      }
+      throw evalError("Attempted field access on a non-list, non-map");
+    }
+
+    setField(o, i, v) {
+      if (o is List) {
+        int arrayIndex = i.toInt();
+        if (o.length <= arrayIndex) { o.length = arrayIndex + 1; }
+        o[arrayIndex] = v;
+      } else if (o is Map) {
+        o[i.toString()] = v; // toString dangerous?
+      } else {
+        throw evalError("Attempting to set a field on a non-list, non-map");
+      }
+      return v;
+    }
+
+    return new Expression((self, [locals]){
+      var i = indexFn.eval(self, locals);
+      var o = obj.eval(self, locals),
+      v, p;
+
+      if (o == null) throw evalError('Accessing null object');
+
+      v = getField(o, i);
+
+      return v;
+    }, (self, value, [locals]) =>
+    setField(obj.eval(self, locals), indexFn.eval(self, locals), value)
+    );
+  }
+
+  Expression fieldAccess(object, field) =>
+    new Expression(
+          (self, [locals]) =>
+      getter(object.eval(self, locals), null, field),
+          (self, value, [locals]) =>
+      setter(object.eval(self, locals), field, value));
+
+  Expression object(keyValues) =>
+    new Expression((self, [locals]){
+      var object = {};
+      for ( var i = 0; i < keyValues.length; i++) {
+        var keyValue = keyValues[i];
+        var value = keyValue["value"].eval(self, locals);
+        object[keyValue["key"]] = value;
+      }
+      return object;
+    });
+
+  Expression profiled(value, _perf, text) {
+    var wrappedGetter = (s, [l]) =>
+    _perf.time('angular.parser.getter', () => value.eval(s, l), text);
+    var wrappedAssignFn = null;
+    if (value.assign != null) {
+      wrappedAssignFn = (s, v, [l]) =>
+      _perf.time('angular.parser.assign',
+          () => value.assign(s, v, l), text);
+    }
+    return new Expression(wrappedGetter, wrappedAssignFn);
+  }
+
+}
+
 class Parser {
   Profiler _perf;
   Lexer _lexer;
+  ExpressionFactory _ef;
 
-  Parser(Profiler this._perf, Lexer this._lexer);
+  Parser(Profiler this._perf, Lexer this._lexer, ExpressionFactory this._ef);
 
   Expression call(String text) {
     List<Token> tokens = _lexer.call(text);
@@ -343,14 +466,10 @@ class Parser {
     }
 
     Expression binaryFn(Expression left, Operator fn, Expression right) =>
-      new Expression((self, [locals]) {
-        return fn(self, locals, left, right);
-      });
+      _ef.binaryFn(left, fn, right);
 
     Expression unaryFn(Operator fn, Expression right) =>
-      new Expression((self, [locals]) {
-        return fn(self, locals, right, null);
-      });
+      _ef.unaryFn(fn, right);
 
     Expression unary() {
       var token;
@@ -436,13 +555,7 @@ class Parser {
           throw parserError('Expression ${tokensText(ts)} is not assignable', token);
         }
         right = logicalOR();
-        return new Expression((self, [locals]) {
-          try {
-            return left.assign(self, right.eval(self, locals), locals);
-          } catch (e, s) {
-            throw evalError('Caught $e', s);
-          }
-        });
+        return _ef.assignment(left, right, evalError);
       } else {
         return left;
       }
@@ -474,15 +587,7 @@ class Parser {
         if (expect(';') == null) {
           return statements.length == 1
               ? statements[0]
-              : new Expression((self, [locals]) {
-                var value;
-                for ( var i = 0; i < statements.length; i++) {
-                  var statement = statements[i];
-                  if (statement != null)
-                    value = statement.eval(self, locals);
-                }
-                return value;
-              });
+              : _ef.multipleStatements(statements);
         }
       }
     }
@@ -495,20 +600,7 @@ class Parser {
         } while (expect(',') != null);
       }
       consume(')');
-      return new Expression((self, [locals]){
-        List args = [];
-        for ( var i = 0; i < argsFn.length; i++) {
-          args.add(argsFn[i].eval(self, locals));
-        }
-        var userFn = fn.eval(self, locals);
-        if (userFn == null) {
-          throw evalError("Undefined function $fnName");
-        }
-        if (userFn is! Function) {
-          throw evalError("$fnName is not a function");
-        }
-        return relaxFnApply(userFn, args);
-      });
+      return _ef.functionCall(fn, fnName, argsFn, evalError);
     };
 
     // This is used with json array declaration
@@ -520,75 +612,19 @@ class Parser {
         } while (expect(',') != null);
       }
       consume(']');
-      return new Expression((self, [locals]){
-        var array = [];
-        for ( var i = 0; i < elementFns.length; i++) {
-          array.add(elementFns[i].eval(self, locals));
-        }
-        return array;
-      });
+      return _ef.arrayDeclaration(elementFns);
     };
 
     objectIndex = (obj) {
-      // TODO(deboer): Combine these into a single function.
-      getField(o, i) {
-        if (o is List) {
-          return o[i.toInt()];
-        } else if (o is Map) {
-          return o[i.toString()]; // toString dangerous?
-        }
-        throw evalError("Attempted field access on a non-list, non-map");
-      }
-
-      setField(o, i, v) {
-        if (o is List) {
-          int arrayIndex = i.toInt();
-          if (o.length <= arrayIndex) { o.length = arrayIndex + 1; }
-          o[arrayIndex] = v;
-        } else if (o is Map) {
-          o[i.toString()] = v; // toString dangerous?
-        } else {
-          throw evalError("Attempting to set a field on a non-list, non-map");
-        }
-        return v;
-      }
-
       var indexFn = expression();
       consume(']');
-      return new Expression((self, [locals]){
-            var i = indexFn.eval(self, locals);
-            var o = obj.eval(self, locals),
-                v, p;
-
-            if (o == null) throw evalError('Accessing null object');
-
-            v = getField(o, i);
-
-            // TODO futures
-            /*
-            if (v && v.then) {
-              p = v;
-              if (!('$$v' in v)) {
-                p.$$v = undefined;
-                p.then(Expression(val) { p.$$v = val; });
-              }
-              v = v.$$v;
-            } */
-            return v;
-          }, (self, value, [locals]) =>
-            setField(obj.eval(self, locals), indexFn.eval(self, locals), value)
-          );
-
+      return _ef.objectIndex(obj, indexFn, evalError);
     };
 
     fieldAccess = (object) {
       var field = expect().text;
       //var getter = getter(field);
-      return new Expression(
-              (self, [locals]) =>
-                  getter(object.eval(self, locals), null, field),
-              (self, value, [locals]) =>
-                  setter(object.eval(self, locals), field, value));
+      return _ef.fieldAccess(object, field);
     };
 
     object = () {
@@ -603,15 +639,7 @@ class Parser {
         } while (expect(',') != null);
       }
       consume('}');
-      return new Expression((self, [locals]){
-        var object = {};
-        for ( var i = 0; i < keyValues.length; i++) {
-          var keyValue = keyValues[i];
-          var value = keyValue["value"].eval(self, locals);
-          object[keyValue["key"]] = value;
-        }
-        return object;
-      });
+      return _ef.object(keyValues);
     };
 
     // TODO(deboer): json
@@ -622,14 +650,6 @@ class Parser {
     }
     if (_perf == null) return value;
 
-    var wrappedGetter = (s, [l]) =>
-        _perf.time('angular.parser.getter', () => value.eval(s, l), text);
-    var wrappedAssignFn = null;
-    if (value.assign != null) {
-      wrappedAssignFn = (s, v, [l]) =>
-          _perf.time('angular.parser.assign',
-              () => value.assign(s, v, l), text);
-    }
-    return new Expression(wrappedGetter, wrappedAssignFn);
+    return _ef.profiled(value, _perf, text);
   }
 }

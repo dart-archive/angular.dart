@@ -12,6 +12,8 @@ expect(actual) => new LexerExpect(actual);
 
 main() {
   describe('lexer', () {
+    var fn0 = (Token token) => token.primaryFn.eval(null, null);
+
     var lex;
     beforeEach(inject((Lexer lexer) {
       lex = lexer;
@@ -134,13 +136,13 @@ main() {
       var str = '"\\"\\n\\f\\r\\t\\v\\u00A0"';
       var tokens = lex(str);
 
-      expect(tokens[0].fn0()).toEqual('"\n\f\r\t\v\u00A0');
+      expect(fn0(tokens[0])).toEqual('"\n\f\r\t\v\u00A0');
     });
 
     it('should tokenize unicode', () {
       var tokens = lex('"\\u00A0"');
       expect(tokens.length).toEqual(1);
-      expect(tokens[0].fn0()).toEqual('\u00a0');
+      expect(fn0(tokens[0])).toEqual('\u00a0');
     });
 
     it('should tokenize relation', () {
@@ -192,7 +194,7 @@ main() {
 
     it('should tokenize number', () {
       var tokens = lex("0.5");
-      expect(tokens[0].fn0()).toEqual(0.5);
+      expect(fn0(tokens[0])).toEqual(0.5);
     });
 
     // NOTE(deboer): NOT A LEXER TEST
@@ -204,9 +206,9 @@ main() {
     it('should tokenize number with exponent', () {
       var tokens = lex("0.5E-10");
       expect(tokens.length).toEqual(1);
-      expect(tokens[0].fn0()).toEqual(0.5E-10);
+      expect(fn0(tokens[0])).toEqual(0.5E-10);
       tokens = lex("0.5E+10");
-      expect(tokens[0].fn0()).toEqual(0.5E+10);
+      expect(fn0(tokens[0])).toEqual(0.5E+10);
     });
 
     it('should throws exception for invalid exponent', () {
@@ -221,7 +223,7 @@ main() {
 
     it('should tokenize number starting with a dot', () {
       var tokens = lex(".5");
-      expect(tokens[0].fn0()).toEqual(0.5);
+      expect(fn0(tokens[0])).toEqual(0.5);
     });
 
     it('should throw error on invalid unicode', () {
