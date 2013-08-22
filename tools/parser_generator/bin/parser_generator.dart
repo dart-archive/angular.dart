@@ -3,28 +3,33 @@ import 'package:angular/parser_library.dart';
 
 class ParserGenerator {
   Lexer _lexer;
-  ParserGenerator(Lexer this._lexer);
+  NestedPrinter _p;
+  ParserGenerator(Lexer this._lexer, NestedPrinter this._p);
 
-  String generateParser(List<String> expressions) {
-    return null;
+  generateParser(List<String> expressions) {
+    _printParser();
+    _printTestMain();
   }
+
   String generateDart(String expression) {
     var tokens = _lexer(expression);
   }
-}
 
-main() {
-  Injector injector = new Injector();
+  _printParser() {
+    _p('class GeneratedParser implements Parser {');
+    _p.indent();
+    _printParserClass();
+    _p.dedent();
+    _p('}');
+  }
 
-  injector.get(ParserGenerator).generateDart("2 + 3");
+  _printParserClass() {
+    _p('GeneratedParser(Profiler x);');
+    _p('call(String t) { return new Expression((_, [__]) => 1); }');
+  }
 
-  print("""
-class GeneratedParser implements Parser {
-  GeneratedParser(Profiler x);
-  call(String t) { return new Expression((_, [__]) => 1); }
-}
-
-generatedMain() {
+  _printTestMain() {
+    _p("""generatedMain() {
   describe(\'generated parser\', () {
     beforeEach(module((AngularModule module) {
       module.type(Parser, GeneratedParser);
@@ -32,5 +37,30 @@ generatedMain() {
     main();
   });
 }""");
+  }
+}
 
+class NestedPrinter {
+  String indentString = '';
+  call(String s) {
+    var lines = s.split('\n');
+    lines.forEach((l) { _oneLine(l); });
+  }
+
+  _oneLine(String s) {
+    print("$indentString$s");
+  }
+
+  indent() {
+    indentString += '  ';
+  }
+  dedent() {
+    indentString = indentString.replaceFirst('  ', '');
+  }
+}
+
+main() {
+  Injector injector = new Injector();
+
+  injector.get(ParserGenerator).generateParser(["1"]);
 }
