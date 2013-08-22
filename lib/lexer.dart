@@ -1,4 +1,4 @@
-part of angular;
+part of parser_library;
 
 class Lexer {
   List<Token> call(String text) {

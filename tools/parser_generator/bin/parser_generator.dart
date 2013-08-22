@@ -10,7 +10,6 @@ class ParserGenerator {
   }
   String generateDart(String expression) {
     var tokens = _lexer(expression);
-    print(tokens);
   }
 }
 
@@ -18,4 +17,20 @@ main() {
   Injector injector = new Injector();
 
   injector.get(ParserGenerator).generateDart("2 + 3");
+
+  print("""
+class GeneratedParser implements Parser {
+  GeneratedParser(Profiler x);
+  call(String t) { return new Expression((_, [__]) => 1); }
+}
+
+generatedMain() {
+  describe(\'generated parser\', () {
+    beforeEach(module((AngularModule module) {
+      module.type(Parser, GeneratedParser);
+    }));
+    main();
+  });
+}""");
+
 }
