@@ -49,7 +49,7 @@ main() {
       });
 
 
-      it('should parse unary - expressions', () {
+      iit('should parse unary - expressions', () {
         expect(eval("-1")).toEqual(-1);
         expect(eval("+1")).toEqual(1);
       });

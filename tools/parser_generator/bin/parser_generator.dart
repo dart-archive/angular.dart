@@ -1,12 +1,40 @@
 import 'package:di/di.dart';
 import 'package:angular/parser_library.dart';
 
+class Code {
+  String exp;
+  Code(this.exp);
+
+  returnExp() => "return $exp;";
+}
+
+class CodeExpressionFactory {
+  _op(fn) => fn;
+
+  binaryFn(left, fn, right) =>
+    new Code("${left.exp} ${_op(fn)} ${right.exp}");
+
+  unaryFn(fn, right) { throw "unaryFn"; }
+  assignment(left, right, evalError) { throw "assignment"; }
+  multipleStatements(statements) { throw "mS"; }
+  functionCall(fn, fnName, argsFn, evalError) { throw "func"; }
+  arrayDeclaration(elementFns) { throw "arrayDecl"; }
+  objectIndex(obj, indexFn, evalError) { throw "objectIndex"; }
+  fieldAccess(object, field) { throw "fieldAccess"; }
+  object(keyValues) { throw "object"; }
+  profiled(value, perf, text) => value; // no profiling for now
+  fromOperator(op) { throw "op"; }
+  getterSetter(key) { throw "getterSetter"; }
+  value(v) => new Code(v);
+  zero() => new Code(0);
+}
+
 class ParserGenerator {
-  Lexer _lexer;
+  Parser _parser;
   NestedPrinter _p;
   List<String> _expressions;
 
-  ParserGenerator(Lexer this._lexer, NestedPrinter this._p);
+  ParserGenerator(Parser this._parser, NestedPrinter this._p);
 
   generateParser(List<String> expressions) {
     _expressions = expressions;
@@ -45,8 +73,8 @@ class ParserGenerator {
   }
 
   _functionBody(exp) {
-    var tokens = _lexer(exp);
-    _p('return 1;');
+    var codeExpression = _parser(exp);
+    _p(codeExpression.returnExp());
   }
 
   _printParserClass() {
@@ -93,7 +121,10 @@ class NestedPrinter {
 }
 
 main() {
-  Injector injector = new Injector();
+  Module module = new Module()
+    ..type(ExpressionFactory, CodeExpressionFactory);
 
-  injector.get(ParserGenerator).generateParser(["1"]);
+  Injector injector = new Injector([module]);
+
+  injector.get(ParserGenerator).generateParser(["1", "-1", "+1"]);
 }
