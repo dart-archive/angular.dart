@@ -358,6 +358,8 @@ class ExpressionFactory {
 
   Expression value(v) =>
     new Expression((self, [locals]) => v);
+
+  zero() => ZERO;
 }
 
 class Parser {
@@ -375,11 +377,9 @@ class Parser {
       return _ef.fromOperator(token.opKey);
     }
     if (token.value != null) {
-      print('value');
       return _ef.value(token.value);
     }
     if (token.text != null) {
-      print('text');
       return _ef.value(token.text);
     }
     throw parserError("Internal Angular Error: Tokens should have keys, text or fns");
@@ -499,7 +499,7 @@ class Parser {
       if (expect('+') != null) {
         return primary();
       } else if ((token = expect('-')) != null) {
-        return binaryFn(ZERO, token.opKey, unary());
+        return binaryFn(_ef.zero(), token.opKey, unary());
       } else if ((token = expect('!')) != null) {
         return unaryFn(token.opKey, unary());
       } else {
