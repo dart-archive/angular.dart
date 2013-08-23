@@ -351,7 +351,12 @@ main() {
         scope = {'a': {'b': 23}};
         expect(eval('b')).toBeNull();
         expect(eval('a.x')).toBeNull();
-        expect(eval('a.b.c.d')).toBeNull();
+      });
+
+
+      it('should catch NoSuchMethod', () {
+        scope = {'a': {'b': 23}};
+        expect(() => eval('a.b.c.d')).toThrow('NoSuchMethod');
       });
 
 

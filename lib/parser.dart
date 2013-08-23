@@ -166,6 +166,7 @@ _getterChild(value, childKey) {
           return instanceMirror.invoke(curSym, args).reflectee;
         });
       }
+      rethrow;
     }
   }
   return _undefined_;
