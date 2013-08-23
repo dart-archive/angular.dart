@@ -70,7 +70,7 @@ main() {
       });
 
 
-      it('should parse relational expressions', () {
+      iit('should parse relational expressions', () {
         expect(eval("2<3")).toEqual(2<3);
         expect(eval("2>3")).toEqual(2>3);
         expect(eval("2<=2")).toEqual(2<=2);
@@ -78,26 +78,26 @@ main() {
       });
 
 
-      it('should parse equality expressions', () {
+      iit('should parse equality expressions', () {
         expect(eval("2==3")).toEqual(2==3);
         expect(eval("2!=3")).toEqual(2!=3);
       });
 
 
-      it('should parse logicalAND expressions', () {
+      iit('should parse logicalAND expressions', () {
         expect(eval("true&&true")).toEqual(true&&true);
         expect(eval("true&&false")).toEqual(true&&false);
       });
 
 
-      it('should parse logicalOR expressions', () {
+      iit('should parse logicalOR expressions', () {
         expect(eval("true||true")).toEqual(true||true);
         expect(eval("true||false")).toEqual(true||false);
         expect(eval("false||false")).toEqual(false||false);
       });
 
 
-      it('should auto convert ints to strings', () {
+      iit('should auto convert ints to strings', () {
         expect(eval("'str ' + 4")).toEqual("str 4");
         expect(eval("4 + ' str'")).toEqual("4 str");
         expect(eval("4 + 4")).toEqual(8);
@@ -325,7 +325,7 @@ main() {
       // TODO filters
 
 
-      it('should access scope', () {
+      iit('should access scope', () {
         scope['a'] =  123;
         scope['b'] = {'c': 456};
         expect(eval("a")).toEqual(123);

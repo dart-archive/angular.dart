@@ -8,11 +8,18 @@ class Code {
   returnExp() => "return $exp;";
 }
 
+escape(String s) => s.replaceAll('\'', '\\\'').replaceAll(r'$', r'\$');
+
+
 class CodeExpressionFactory {
   _op(fn) => fn;
 
-  binaryFn(left, fn, right) =>
-    new Code("${left.exp} ${_op(fn)} ${right.exp}");
+  binaryFn(left, fn, right) {
+    if (fn == '+') {
+      return new Code("autoConvertAdd(${left.exp}, ${right.exp})");
+    }
+    return new Code("${left.exp} ${_op(fn)} ${right.exp}");
+  }
 
   unaryFn(fn, right) => new Code("${_op(fn)}${right.exp}");
   assignment(left, right, evalError) { throw "assignment"; }
@@ -25,7 +32,7 @@ class CodeExpressionFactory {
   profiled(value, perf, text) => value; // no profiling for now
   fromOperator(op) => new Code(_op(op));
   getterSetter(key) { throw "getterSetter"; }
-  value(v) => new Code(v);
+  value(v) => v is String ? new Code("r\'${escape(v)}\'") : new Code(v);
   zero() => new Code(0);
 }
 
@@ -65,7 +72,7 @@ class ParserGenerator {
   }
 
   _printFunction(exp) {
-    _p('\'$exp\': new Expression((scope, [locals]) {');
+    _p('\'${escape(exp)}\': new Expression((scope, [locals]) {');
     _p.indent();
     _functionBody(exp);
     _p.dedent();
@@ -129,5 +136,12 @@ main() {
   injector.get(ParserGenerator).generateParser([
       "1", "-1", "+1",
       "!true",
-      "3*4/2%5", "3+6-2", ]);
+      "3*4/2%5", "3+6-2",
+  "2<3", "2>3", "2<=2", "2>=2",
+  "2==3", "2!=3",
+  "true&&true", "true&&false",
+      "true||true", "true||false", "false||false",
+"'str ' + 4", "4 + ' str'", "4 + 4", "4 + 4 + ' str'",
+"'str ' + 4 + 4"
+  ]);
 }

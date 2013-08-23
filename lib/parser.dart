@@ -78,14 +78,19 @@ toBool(x) {
 
 // Automatic type conversion.
 autoConvertAdd(a, b) {
-  // TODO(deboer): Support others.
-  if (a is String && b is! String) {
-    return a + b.toString();
+  if (a != null && b != null) {
+    // TODO(deboer): Support others.
+    if (a is String && b is! String) {
+      return a + b.toString();
+    }
+    if (a is! String && b is String) {
+      return a.toString() + b;
+    }
+    return a + b;
   }
-  if (a is! String && b is String) {
-    return a.toString() + b;
-  }
-  return a + b;
+  if (a != null) return a;
+  if (b != null) return b;
+  return null;
 }
 
 Map<String, Operator> OPERATORS = {
@@ -95,10 +100,7 @@ Map<String, Operator> OPERATORS = {
   '+': (self, locals, aFn, bFn) {
     var a = aFn.eval(self, locals);
     var b = bFn.eval(self, locals);
-    if (a != null && b != null) return autoConvertAdd(a, b);
-    if (a != null) return a;
-    if (b != null) return b;
-    return null;
+    return autoConvertAdd(a, b);
   },
   '-': (self, locals, a, b) {
     assert(a != null || b != null);
