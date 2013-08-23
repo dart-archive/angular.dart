@@ -14,7 +14,7 @@ class CodeExpressionFactory {
   binaryFn(left, fn, right) =>
     new Code("${left.exp} ${_op(fn)} ${right.exp}");
 
-  unaryFn(fn, right) { throw "unaryFn"; }
+  unaryFn(fn, right) => new Code("${_op(fn)}${right.exp}");
   assignment(left, right, evalError) { throw "assignment"; }
   multipleStatements(statements) { throw "mS"; }
   functionCall(fn, fnName, argsFn, evalError) { throw "func"; }
@@ -23,7 +23,7 @@ class CodeExpressionFactory {
   fieldAccess(object, field) { throw "fieldAccess"; }
   object(keyValues) { throw "object"; }
   profiled(value, perf, text) => value; // no profiling for now
-  fromOperator(op) { throw "op"; }
+  fromOperator(op) => new Code(_op(op));
   getterSetter(key) { throw "getterSetter"; }
   value(v) => new Code(v);
   zero() => new Code(0);
@@ -126,5 +126,8 @@ main() {
 
   Injector injector = new Injector([module]);
 
-  injector.get(ParserGenerator).generateParser(["1", "-1", "+1"]);
+  injector.get(ParserGenerator).generateParser([
+      "1", "-1", "+1",
+      "!true",
+      "3*4/2%5", "3+6-2", ]);
 }

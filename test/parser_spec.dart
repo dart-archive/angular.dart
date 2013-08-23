@@ -55,17 +55,17 @@ main() {
       });
 
 
-      it('should parse unary ! expressions', () {
+      iit('should parse unary ! expressions', () {
         expect(eval("!true")).toEqual(!true);
       });
 
 
-      it('should parse multiplicative expressions', () {
+      iit('should parse multiplicative expressions', () {
         expect(eval("3*4/2%5")).toEqual(3*4/2%5);
       });
 
 
-      it('should parse additive expressions', () {
+      iit('should parse additive expressions', () {
         expect(eval("3+6-2")).toEqual(3+6-2);
       });
 
