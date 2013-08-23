@@ -12,16 +12,15 @@ expect(actual) => new LexerExpect(actual);
 
 main() {
   describe('lexer', () {
-    ExpressionFactory ef;
+    Parser parser;
 
     // It would be better if we could call Parser.primary() directly.
-    var fn0 = (Token token) =>
-      (token.key != null ? ef.getterSetter(token.key) : ef.fromOperator(token.fn)).eval(null, null);
+    fn0(Token token) => parser.primaryFromToken(token, (x) => x).eval(null, null);
 
     Lexer lex;
-    beforeEach(inject((Lexer lexer, ExpressionFactory expressionFactory) {
+    beforeEach(inject((Lexer lexer, Parser p) {
       lex = lexer;
-      ef = expressionFactory;
+      parser = p;
     }));
 
     // New test case
@@ -131,10 +130,10 @@ main() {
       var tokens = lex(str);
 
       expect(tokens[1].index).toEqual(1);
-      expect(tokens[1].string).toEqual("'");
+      expect(tokens[1].value).toEqual("'");
 
       expect(tokens[3].index).toEqual(7);
-      expect(tokens[3].string).toEqual('"');
+      expect(tokens[3].value).toEqual('"');
     });
 
     it('should tokenize escaped quoted string', () {

@@ -87,8 +87,7 @@ class Lexer {
         } else if (ch == quote) {
           index++;
           tokens.add(new Token(start, rawString)
-          ..withString(string)
-          ..withFn0(() => string));
+          ..withValue(string));
           return false; // BREAK
         } else {
           string += ch;
@@ -127,7 +126,7 @@ class Lexer {
         index++;
       });
       var ret = simpleInt ? int.parse(number) : double.parse(number);
-      tokens.add(new Token(start, number)..withFn0(() => ret));
+      tokens.add(new Token(start, number)..withValue(ret));
     }
 
     readIdent() {

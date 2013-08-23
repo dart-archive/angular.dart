@@ -34,15 +34,12 @@ class Token {
   bool json;
   int index;
   String text;
-  String string;
+  var value;
   // Tokens should have one of these set.
   Operator fn;
   String key;
 
-  Token(this.index, this.text) {
-    // default fn
-    this.withFn((s, l, a, b) => text);
-  }
+  Token(this.index, this.text);
 
   withFn(fn) {
     this.fn = fn;
@@ -52,17 +49,13 @@ class Token {
     this.key = key;
   }
 
-    withFn0(fn()) => withFn(op0(fn));
+  withValue(value) { this.value = value; }
 
-    withString(string) { this.string = string; }
-
-    toString() => "Token($text)";
+  toString() => "Token($text)";
 }
 
 // TODO(deboer): Type this typedef further
 typedef Operator(self, locals, Expression a, Expression b);
-
-op0(fn()) => (_, _1, _2, _3) => fn();
 
 String QUOTES = "\"'";
 String DOT = ".";
@@ -361,6 +354,8 @@ class ExpressionFactory {
         (self, [locals]) => getter(self, locals, key),
         (self, value, [locals]) => setter(self, key, value));
 
+  Expression value(v) =>
+    new Expression((self, [locals]) => v);
 }
 
 class Parser {
@@ -370,7 +365,25 @@ class Parser {
 
   Parser(Profiler this._perf, Lexer this._lexer, ExpressionFactory this._ef);
 
-  Expression call(String text) {
+  primaryFromToken(Token token, parserError) {
+    if (token.key != null) {
+      return _ef.getterSetter(token.key);
+    }
+    if (token.fn != null) {
+      return _ef.fromOperator(token.fn);
+    }
+    if (token.value != null) {
+      print('value');
+      return _ef.value(token.value);
+    }
+    if (token.text != null) {
+      print('text');
+      return _ef.value(token.text);
+    }
+    throw parserError("Internal Angular Error: Tokens should have keys, text or fns");
+  }
+
+  call(String text) {
     List<Token> tokens = _lexer.call(text);
     Token token;
 
@@ -447,14 +460,7 @@ class Parser {
         primary = object();
       } else {
         Token token = expect();
-        if (token.key != null) {
-          primary = _ef.getterSetter(token.key);
-        } else if (token.fn != null) {
-          primary = _ef.fromOperator(token.fn);
-        } else {
-          throw parserError(
-              "Internal Angular Error: Tokens should have keys or fns");
-        }
+        primary = primaryFromToken(token, parserError);
         if (primary == null) {
           throw parserError("Internal Angular Error: Unreachable code A.");
         }
@@ -647,7 +653,7 @@ class Parser {
       if (peekToken().text != '}') {
         do {
           var token = expect(),
-              key = token.string != null ? token.string : token.text;
+              key = token.value != null && token.value is String ? token.value : token.text;
           consume(":");
           var value = expression();
           keyValues.add({"key":key, "value":value});
