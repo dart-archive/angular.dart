@@ -3,9 +3,12 @@ import 'package:angular/parser_library.dart';
 
 class Code {
   String exp;
-  Code(this.exp);
+  String assignKey;
+  Code(this.exp, [this.assignKey]);
 
   returnExp() => "return $exp;";
+
+  get assignable => assignKey != null;
 }
 
 escape(String s) => s.replaceAll('\'', '\\\'').replaceAll(r'$', r'\$');
@@ -14,46 +17,84 @@ var LAST_PATH_PART = new RegExp(r'(.*)\.(.*)');
 
 class GetterSetterGenerator {
   String functions = "// GETTER AND SETTER FUNCTIONS\n\n";
-  var _keyToFnName = {};
+  var _keyToGetterFnName = {};
+  var _keyToSetterFnName = {};
   var nextUid = 0;
 
-  call(String key) {
-    if (_keyToFnName.containsKey(key)) {
-      return _keyToFnName[key];
+  fieldGetter(String field, String obj) {
+    var eKey = escape(field);
+    return """
+  if ($obj is Map) {
+    if ($obj.containsKey('$eKey')) {
+      return $obj['$eKey'];
     }
+    return null;
+  }
+  return $obj.$field;
+}
+""";
+  }
 
+  fieldSetter(String field, String obj) {
+    var eKey = escape(field);
+    return """
+  if ($obj is Map) {
+    $obj['$eKey'] = value;
+  } else {
+    $obj.$field = value;
+  }
+  return value;
+}
+""";
+  }
+
+  _accessor(String key, fieldAccessor, isGetter) {
     var uid = nextUid++;
-    var fnName = "_getter_$uid";
+    var fnName = isGetter ? "_getter_$uid" : "_setter_$uid";
 
-    var f = "$fnName(scope, locals) { // for $key\n";
+    var f = "$fnName(scope, locals${!isGetter ? ", value" : ""}) { // for $key\n";
     var obj = "scope";
 
+    var field = key;
     var pathSplit = LAST_PATH_PART.firstMatch(key);
     if (pathSplit != null) {
       var prefixFn = call(pathSplit[1]);
-      key = pathSplit[2];
+      field = pathSplit[2];
       f += """  var prefix = $prefixFn(scope, locals);
   if (prefix == null) return null;
 """;
       obj = "prefix";
     }
-    var eKey = escape(key);
-
-    f += """
-  if ($obj is Map && $obj.containsKey('$eKey')) {
-    return $obj['$eKey'];
-  }
-  return $obj.$key;
-}
-""";
+    f += fieldAccessor(field, obj);
 
     functions += f;
 
-    _keyToFnName[key] = fnName;
     return fnName;
   }
 
+  call(String key) {
+    if (_keyToGetterFnName.containsKey(key)) {
+      return _keyToGetterFnName[key];
+    }
+
+    var fnName = _accessor(key, fieldGetter, true);
+
+    _keyToGetterFnName[key] = fnName;
+    return fnName;
+  }
+
+  setter(String key) {
+    if (_keyToSetterFnName.containsKey(key)) {
+      return _keyToSetterFnName[key];
+    }
+
+    var fnName = _accessor(key, fieldSetter, false);
+
+    _keyToSetterFnName[key] = fnName;
+    return fnName;
+  }
 }
+
 
 class CodeExpressionFactory {
   GetterSetterGenerator _getterGen;
@@ -69,19 +110,30 @@ class CodeExpressionFactory {
   }
 
   unaryFn(fn, right) => new Code("${_op(fn)}${right.exp}");
-  assignment(left, right, evalError) { throw "assignment"; }
+
+  assignment(left, right, evalError) {
+    var setterFnName = _getterGen.setter(left.assignKey);
+
+    return new Code("$setterFnName(scope, locals, ${right.exp})");
+  }
+
   multipleStatements(statements) { throw "mS"; }
-  functionCall(fn, fnName, argsFn, evalError) { throw "func"; }
+  functionCall(Code fn, fnName, List<Code> argsFn, evalError) {
+    return new Code("${fn.exp}(${argsFn.map((a) => a.exp).join(', ')})");
+  }
   arrayDeclaration(elementFns) { throw "arrayDecl"; }
   objectIndex(obj, indexFn, evalError) { throw "objectIndex"; }
-  fieldAccess(object, field) { throw "fieldAccess"; }
+  fieldAccess(Code object, field) {
+    var getterFnName = _getterGen(field);
+    return new Code("$getterFnName/*field:$field*/(${object.exp}, null)");
+  }
   object(keyValues) { throw "object"; }
   profiled(value, perf, text) => value; // no profiling for now
   fromOperator(op) => new Code(_op(op));
 
   getterSetter(key) {
     var getterFnName = _getterGen(key);
-    return new Code("$getterFnName(scope, locals) /* for $key */");
+    return new Code("$getterFnName/*$key*/(scope, locals)", key);
   }
 
   value(v) => v is String ? new Code("r\'${escape(v)}\'") : new Code(v);
@@ -198,6 +250,11 @@ main() {
       "true||true", "true||false", "false||false",
 "'str ' + 4", "4 + ' str'", "4 + 4", "4 + 4 + ' str'",
 "'str ' + 4 + 4",
-      "a", "b.c" , "x.y.z" 
+      "a", "b.c" , "x.y.z",
+      'ident.id(6)', 'ident.doubleId(4,5)',
+      "a.b.c.d.e.f.g.h.i.j.k.l.m.n",
+      'b', 'a.x', 'a.b.c.d',
+      "(1+2)*3",
+      "a=12"
   ]);
 }
