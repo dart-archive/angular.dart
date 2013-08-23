@@ -178,14 +178,16 @@ class CodeExpressionFactory {
     return new Code("[${elementFns.map((e) => e.exp).join(', ')}]");
   }
   objectIndex(Code obj, Code indexFn, evalError) {
-    return new Code("${obj.exp}[${indexFn.exp}]");
+    return new Code("objectIndexGetField(${obj.exp}, ${indexFn.exp}, genEvalError)");
   }
   fieldAccess(Code object, field) {
     var getterFnName = _getterGen(field);
     return new Code("$getterFnName/*field:$field*/(${object.exp}, null)");
   }
+
   object(List keyValues) {
-    return new Code("{${keyValues.map((k) => "r\'${escape(k["key"])}\': ${k["value"].exp}").join(', ')}}");
+    return new Code(
+        "{${keyValues.map((k) => "${_value(k["key"])}: ${k["value"].exp}").join(', ')}}");
   }
   profiled(value, perf, text) => value; // no profiling for now
   fromOperator(op) => new Code(_op(op));
@@ -195,7 +197,8 @@ class CodeExpressionFactory {
     return new Code("$getterFnName/*$key*/(scope, locals)", key);
   }
 
-  value(v) => v is String ? new Code("r\'${escape(v)}\'") : new Code(v);
+  _value(v) => v is String ? "r\'${escape(v)}\'" : v;
+  value(v) => new Code(_value(v));
   zero() => new Code(0);
 }
 
@@ -262,7 +265,10 @@ call(String t) {
   }
 
   _printTestMain() {
-    _p("""generatedMain() {
+    _p("""
+    genEvalError(msg) { throw msg; }
+
+    generatedMain() {
   describe(\'generated parser\', () {
     beforeEach(module((AngularModule module) {
       module.type(Parser, GeneratedParser);
@@ -330,6 +336,8 @@ main() {
       "{}",
 "{a:'b'}",
     "{'a':'b'}",
-"{\"a\":'b'}"
+"{\"a\":'b'}",
+      "{false:'WC', true:'CC'}[false]",
+
   ]);
 }

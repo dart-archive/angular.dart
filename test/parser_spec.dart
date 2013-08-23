@@ -455,7 +455,7 @@ main() {
       });
 
 
-      it('should evaluate object access', () {
+      iit('should evaluate object access', () {
         expect(eval("{false:'WC', true:'CC'}[false]")).toEqual("WC");
       });
 

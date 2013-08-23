@@ -70,6 +70,8 @@ String SIGN_OP = "+-";
 Operator NULL_OP = (_, _x, _0, _1) => null;
 Operator NOT_IMPL_OP = (_, _x, _0, _1) { throw "Op not implemented"; };
 
+// FUNCTIONS USED AT RUNTIME.
+
 toBool(x) {
   if (x is bool) return x;
   if (x is int || x is double) return x != 0;
@@ -91,6 +93,28 @@ autoConvertAdd(a, b) {
   if (a != null) return a;
   if (b != null) return b;
   return null;
+}
+
+objectIndexGetField(o, i, evalError) {
+  if (o is List) {
+    return o[i.toInt()];
+  } else if (o is Map) {
+    return o[i.toString()]; // toString dangerous?
+  }
+  throw evalError("Attempted field access on a non-list, non-map");
+}
+
+objectIndexSetField(o, i, v, evalError) {
+  if (o is List) {
+    int arrayIndex = i.toInt();
+    if (o.length <= arrayIndex) { o.length = arrayIndex + 1; }
+    o[arrayIndex] = v;
+  } else if (o is Map) {
+    o[i.toString()] = v; // toString dangerous?
+  } else {
+    throw evalError("Attempting to set a field on a non-list, non-map");
+  }
+  return v;
 }
 
 Map<String, Operator> OPERATORS = {
@@ -283,28 +307,7 @@ class ExpressionFactory {
       });
 
   Expression objectIndex(obj, indexFn, evalError) {
-    // TODO(deboer): Combine these into a single function.
-    getField(o, i) {
-      if (o is List) {
-        return o[i.toInt()];
-      } else if (o is Map) {
-        return o[i.toString()]; // toString dangerous?
-      }
-      throw evalError("Attempted field access on a non-list, non-map");
-    }
 
-    setField(o, i, v) {
-      if (o is List) {
-        int arrayIndex = i.toInt();
-        if (o.length <= arrayIndex) { o.length = arrayIndex + 1; }
-        o[arrayIndex] = v;
-      } else if (o is Map) {
-        o[i.toString()] = v; // toString dangerous?
-      } else {
-        throw evalError("Attempting to set a field on a non-list, non-map");
-      }
-      return v;
-    }
 
     return new Expression((self, [locals]){
       var i = indexFn.eval(self, locals);
@@ -313,11 +316,11 @@ class ExpressionFactory {
 
       if (o == null) throw evalError('Accessing null object');
 
-      v = getField(o, i);
+      v = objectIndexGetField(o, i, evalError);
 
       return v;
     }, (self, value, [locals]) =>
-    setField(obj.eval(self, locals), indexFn.eval(self, locals), value)
+    objectIndexSetField(obj.eval(self, locals), indexFn.eval(self, locals), value, evalError)
     );
   }
 
