@@ -172,7 +172,7 @@ class Lexer {
 
 
       if (OPERATORS.containsKey(ident)) {
-        token.withFn(OPERATORS[ident]);
+        token.withOp(ident);
       } else {
         token.withGetterSetter(ident);
       }
@@ -208,14 +208,12 @@ class Lexer {
       } else {
         // Check for two character operators (e.g. "==")
         String ch2 = ch + peek();
-        Operator fn = OPERATORS[ch];
-        Operator fn2 = OPERATORS[ch2];
 
-        if (fn2 != null) {
-          tokens.add(new Token(index, ch2)..withFn(fn2));
+        if (OPERATORS.containsKey(ch2)) {
+          tokens.add(new Token(index, ch2)..withOp(ch2));
           index += 2;
-        } else if (fn != null) {
-          tokens.add(new Token(index, ch)..withFn(fn));
+        } else if (OPERATORS.containsKey(ch)) {
+          tokens.add(new Token(index, ch)..withOp(ch));
           index++;
         } else {
           throw "Unexpected next character $index $ch";

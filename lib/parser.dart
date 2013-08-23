@@ -36,13 +36,13 @@ class Token {
   String text;
   var value;
   // Tokens should have one of these set.
-  Operator fn;
+  String opKey;
   String key;
 
   Token(this.index, this.text);
 
-  withFn(fn) {
-    this.fn = fn;
+  withOp(op) {
+    this.opKey = op;
   }
 
   withGetterSetter(key) {
@@ -226,11 +226,13 @@ setter(obj, path, setValue) {
 
 
 class ExpressionFactory {
-  Expression binaryFn(Expression left, Operator fn, Expression right) =>
-    new Expression((self, [locals]) => fn(self, locals, left, right));
+  _op(opKey) => OPERATORS[opKey];
 
-  Expression unaryFn(Operator fn, Expression right) =>
-      new Expression((self, [locals]) => fn(self, locals, right, null));
+  Expression binaryFn(Expression left, String op, Expression right) =>
+    new Expression((self, [locals]) => _op(op)(self, locals, left, right));
+
+  Expression unaryFn(String op, Expression right) =>
+      new Expression((self, [locals]) => _op(op)(self, locals, right, null));
 
   Expression assignment(Expression left, Expression right, evalError) =>
     new Expression((self, [locals]) {
@@ -346,8 +348,8 @@ class ExpressionFactory {
     return new Expression(wrappedGetter, wrappedAssignFn);
   }
 
-  Expression fromOperator(op) =>
-    new Expression((s, [l]) => op(s, l, null, null));
+  Expression fromOperator(String op) =>
+    new Expression((s, [l]) => OPERATORS[op](s, l, null, null));
 
   Expression getterSetter(key) =>
     new Expression(
@@ -369,8 +371,8 @@ class Parser {
     if (token.key != null) {
       return _ef.getterSetter(token.key);
     }
-    if (token.fn != null) {
-      return _ef.fromOperator(token.fn);
+    if (token.opKey != null) {
+      return _ef.fromOperator(token.opKey);
     }
     if (token.value != null) {
       print('value');
@@ -486,20 +488,20 @@ class Parser {
       return primary;
     }
 
-    Expression binaryFn(Expression left, Operator fn, Expression right) =>
-      _ef.binaryFn(left, fn, right);
+    Expression binaryFn(Expression left, String op, Expression right) =>
+      _ef.binaryFn(left, op, right);
 
-    Expression unaryFn(Operator fn, Expression right) =>
-      _ef.unaryFn(fn, right);
+    Expression unaryFn(String op, Expression right) =>
+      _ef.unaryFn(op, right);
 
     Expression unary() {
       var token;
       if (expect('+') != null) {
         return primary();
       } else if ((token = expect('-')) != null) {
-        return binaryFn(ZERO, token.fn, unary());
+        return binaryFn(ZERO, token.opKey, unary());
       } else if ((token = expect('!')) != null) {
-        return unaryFn(token.fn, unary());
+        return unaryFn(token.opKey, unary());
       } else {
         return primary();
       }
@@ -509,7 +511,7 @@ class Parser {
       var left = unary();
       var token;
       while ((token = expect('*','/','%')) != null) {
-        left = binaryFn(left, token.fn, unary());
+        left = binaryFn(left, token.opKey, unary());
       }
       return left;
     }
@@ -518,7 +520,7 @@ class Parser {
       var left = multiplicative();
       var token;
       while ((token = expect('+','-')) != null) {
-        left = binaryFn(left, token.fn, multiplicative());
+        left = binaryFn(left, token.opKey, multiplicative());
       }
       return left;
     }
@@ -527,7 +529,7 @@ class Parser {
       var left = additive();
       var token;
       if ((token = expect('<', '>', '<=', '>=')) != null) {
-        left = binaryFn(left, token.fn, relational());
+        left = binaryFn(left, token.opKey, relational());
       }
       return left;
     }
@@ -536,7 +538,7 @@ class Parser {
       var left = relational();
       var token;
       if ((token = expect('==','!=')) != null) {
-        left = binaryFn(left, token.fn, equality());
+        left = binaryFn(left, token.opKey, equality());
       }
       return left;
     }
@@ -545,7 +547,7 @@ class Parser {
       var left = equality();
       var token;
       if ((token = expect('&&')) != null) {
-        left = binaryFn(left, token.fn, logicalAND());
+        left = binaryFn(left, token.opKey, logicalAND());
       }
       return left;
     }
@@ -555,7 +557,7 @@ class Parser {
       var token;
       while(true) {
         if ((token = expect('||')) != null) {
-          left = binaryFn(left, token.fn, logicalAND());
+          left = binaryFn(left, token.opKey, logicalAND());
         } else {
           return left;
         }
@@ -592,7 +594,7 @@ class Parser {
       var token;
       while(true) {
         if ((token = expect('|')) != null) {
-          //left = binaryFn(left, token.fn, filter());
+          //left = binaryFn(left, token.opKey, filter());
           throw parserError("Filters are not implemented", token);
         } else {
           return left;

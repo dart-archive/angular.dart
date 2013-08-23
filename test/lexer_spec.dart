@@ -116,7 +116,7 @@ main() {
       var tokens = lex("undefined");
       var i = 0;
       expect(tokens[i]).toBeToken(0, 'undefined');
-      expect(tokens[i].fn(null, null, null, null)).toEqual(null);
+      expect(fn0(tokens[i])).toEqual(null);
     });
 
     it('should ignore whitespace', () {
