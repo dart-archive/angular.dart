@@ -22,6 +22,15 @@ escape(String s) => s.replaceAll('\'', '\\\'').replaceAll(r'$', r'\$');
 
 var LAST_PATH_PART = new RegExp(r'(.*)\.(.*)');
 
+// From https://www.dartlang.org/docs/spec/latest/dart-language-specification.html#h.huusvrzea3q
+var RESERVED_DART_KEYWORDS = [
+    "assert", "break", "case", "catch", "class", "const", "continue",
+    "default", "do", "else", "enum", "extends", "false", "final",
+    "finally", "for", "if", "in", "is", "new", "null", "rethrow",
+    "return", "super", "switch", "this", "throw", "true", "try",
+    "var", "void", "while", "with"];
+isReserved(String key) => RESERVED_DART_KEYWORDS.contains(key);
+
 class GetterSetterGenerator {
   String functions = "// GETTER AND SETTER FUNCTIONS\n\n";
   var _keyToGetterFnName = {};
@@ -30,6 +39,9 @@ class GetterSetterGenerator {
 
   fieldGetter(String field, String obj) {
     var eKey = escape(field);
+
+    var returnValue = isReserved(field) ? "null /* $field is reserved */" : "$obj.$field";
+
     return """
   if ($obj is Map) {
     if ($obj.containsKey('$eKey')) {
@@ -37,20 +49,25 @@ class GetterSetterGenerator {
     }
     return null;
   }
-  return $obj.$field;
+  return $returnValue;
 }
 """;
   }
 
   fieldSetter(String field, String obj) {
     var eKey = escape(field);
+
+    var maybeField = isReserved(field) ? "/* $field is reserved */" : """
+  $obj.$field = value;
+  return value;
+    """;
+
     return """
   if ($obj is Map) {
     $obj['$eKey'] = value;
-  } else {
-    $obj.$field = value;
+    return value;
   }
-  return value;
+  $maybeField
 }
 """;
   }
@@ -294,6 +311,7 @@ main() {
       'b', 'a.x', 'a.b.c.d',
       "(1+2)*3",
       "a=12", "arr[c=1]", "x.y.z=123;",
-      "a=123; b=234"
+      "a=123; b=234",
+      "constN()", "const"
   ]);
 }

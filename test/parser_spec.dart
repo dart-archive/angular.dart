@@ -376,12 +376,18 @@ main() {
       });
 
       // TODO: assignment to an arr[c]
+      // TODO: failed assignment
       // TODO: null statements in multiple statements
 
 
-      it('should evaluate function call without arguments', () {
-        scope['const'] = () => 123;
-        expect(eval("const()")).toEqual(123);
+      iit('should evaluate function call without arguments', () {
+        scope['constN'] = () => 123;
+        expect(eval("constN()")).toEqual(123);
+      });
+
+      iit('should access a protected keyword on scope', () {
+        scope['const'] = 3;
+        expect(eval('const')).toEqual(3);
       });
 
 
