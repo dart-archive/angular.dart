@@ -38,8 +38,6 @@ class Token {
   // Tokens should have one of these set.
   Operator fn;
   String key;
-  // access fn as a function that doesn't take a or b values.
-  Expression primaryFn;
 
   Token(this.index, this.text) {
     // default fn
@@ -48,15 +46,10 @@ class Token {
 
   withFn(fn) {
     this.fn = fn;
-    this.primaryFn = new Expression(
-        (s, [l]) => fn(s, l, null, null));
   }
 
   withGetterSetter(key) {
     this.key = key;
-    this.primaryFn = new Expression(
-        (self, [locals]) => getter(self, locals, key),
-        (self, value, [locals]) => setter(self, key, value));
   }
 
     withFn0(fn()) => withFn(op0(fn));
