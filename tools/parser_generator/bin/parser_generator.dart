@@ -2,12 +2,19 @@ import 'package:di/di.dart';
 import 'package:angular/parser_library.dart';
 
 class Code {
-  String exp;
+  String _exp;
+  String _returnOnly;
   String assignKey;
-  Code(this.exp, [this.assignKey]);
+  Code(this._exp, [this.assignKey]);
 
-  returnExp() => "return $exp;";
+  Code.returnOnly(this._returnOnly);
 
+  returnExp() => _returnOnly != null ? _returnOnly : "return $exp;";
+
+  get exp {
+    if (_exp == null) { throw "Can not be used in an expression"; }
+    return _exp;
+  }
   get assignable => assignKey != null;
 }
 
@@ -88,7 +95,29 @@ class GetterSetterGenerator {
       return _keyToSetterFnName[key];
     }
 
-    var fnName = _accessor(key, fieldSetter, false);
+    var uid = nextUid++;
+    var fnName = "_setter_$uid";
+
+    var f = "$fnName(scope, locals, value) { // for $key\n";
+    var obj = "scope";
+
+    var field = key;
+    var pathSplit = LAST_PATH_PART.firstMatch(key);
+    if (pathSplit != null) {
+      var prefixFn = call(pathSplit[1]);
+      var prefixSetter = setter(pathSplit[1]);
+      field = pathSplit[2];
+      f += """  var prefix = $prefixFn(scope, locals);
+  if (prefix == null) {
+    prefix = {};
+    $prefixSetter(scope, locals, prefix);
+  }
+""";
+      obj = "prefix";
+    }
+
+    f += fieldSetter(field, obj);
+    functions += f;
 
     _keyToSetterFnName[key] = fnName;
     return fnName;
@@ -117,12 +146,21 @@ class CodeExpressionFactory {
     return new Code("$setterFnName(scope, locals, ${right.exp})");
   }
 
-  multipleStatements(statements) { throw "mS"; }
+  multipleStatements(statements) {
+    var code = "var ret, last;\n";
+    code += statements.map((s) =>
+        "last = ${s.exp};\nif (last != null) { ret = last; }\n").join('\n');
+    code += "return ret;\n";
+    return new Code.returnOnly(code);
+  }
+
   functionCall(Code fn, fnName, List<Code> argsFn, evalError) {
     return new Code("${fn.exp}(${argsFn.map((a) => a.exp).join(', ')})");
   }
   arrayDeclaration(elementFns) { throw "arrayDecl"; }
-  objectIndex(obj, indexFn, evalError) { throw "objectIndex"; }
+  objectIndex(Code obj, Code indexFn, evalError) {
+    return new Code("${obj.exp}[${indexFn.exp}]");
+  }
   fieldAccess(Code object, field) {
     var getterFnName = _getterGen(field);
     return new Code("$getterFnName/*field:$field*/(${object.exp}, null)");
@@ -255,6 +293,7 @@ main() {
       "a.b.c.d.e.f.g.h.i.j.k.l.m.n",
       'b', 'a.x', 'a.b.c.d',
       "(1+2)*3",
-      "a=12"
+      "a=12", "arr[c=1]", "x.y.z=123;",
+      "a=123; b=234"
   ]);
 }
