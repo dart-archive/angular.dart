@@ -8,9 +8,11 @@ class Watch {
   Function get;
   String exp;
 
-  Watch(fn, this.last, get, this.exp) {
-    this.fn = _relaxFnArgs3(fn);
-    this.get = _relaxFnArgs1(get);
+  Watch(fn, this.last, getFn, this.exp) {
+    this.fn = relaxFnArgs3(fn);
+    this.get = getFn is Expression ?
+        relaxFnArgs1(getFn.eval) :
+        relaxFnArgs1(getFn);
   }
 }
 
@@ -303,7 +305,7 @@ class Scope implements Map {
 
 
   $eval(expr, [locals]) {
-    return _relaxFnArgs(_compileToFn(expr))(this, locals);
+    return relaxFnArgs(_compileToFn(expr))(this, locals);
   }
 
 

@@ -51,7 +51,7 @@ class InputTextDirective {
     ngModel.render = (value) {
       inputElement.value = value == null ? '' : value;
     };
-    inputElement.onChange.listen(_relaxFnArgs(processValue));
+    inputElement.onChange.listen(relaxFnArgs(processValue));
     inputElement.onKeyDown.listen((e) => new async.Timer(Duration.ZERO, processValue));
   }
 

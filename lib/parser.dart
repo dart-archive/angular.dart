@@ -173,7 +173,7 @@ _getterChild(value, childKey) {
       // maybe it is a member method?
       if (instanceMirror.type.members.containsKey(curSym)) {
         MethodMirror methodMirror = instanceMirror.type.members[curSym];
-        return _relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
+        return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
           var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
           return instanceMirror.invoke(curSym, args).reflectee;
         });
