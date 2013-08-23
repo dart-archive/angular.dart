@@ -391,7 +391,7 @@ main() {
       });
 
 
-      it('should evaluate function call with arguments', () {
+      iit('should evaluate function call with arguments', () {
         scope["add"] =  (a,b) {
           return a+b;
         };
@@ -399,14 +399,14 @@ main() {
       });
 
 
-      it('should evaluate function call from a return value', () {
+      iit('should evaluate function call from a return value', () {
         scope["val"] = 33;
         scope["getter"] = () { return () { return scope["val"]; };};
         expect(eval("getter()()")).toBe(33);
       });
 
 
-      it('should evaluate methods on object', () {
+      iit('should evaluate methods on object', () {
         scope['obj'] = ['ABC'];
         var fn = parser("obj.elementAt(0)").bind(scope);
         expect(fn()).toEqual('ABC');
@@ -414,7 +414,7 @@ main() {
       });
 
 
-      it('should only check locals on first dereference', () {
+      iit('should only check locals on first dereference', () {
         scope['a'] = {'b': 1};
         var locals = {'b': 2};
         var fn = parser("this['a'].b").bind(scope);
@@ -430,7 +430,7 @@ main() {
       });
 
 
-      it('should evaluate array', () {
+      iit('should evaluate array', () {
         expect(eval("[]").length).toEqual(0);
         expect(eval("[1, 2]").length).toEqual(2);
         expect(eval("[1, 2]")[0]).toEqual(1);
@@ -438,7 +438,7 @@ main() {
       });
 
 
-      it('should evaluate array access', () {
+      iit('should evaluate array access', () {
         expect(eval("[1][0]")).toEqual(1);
         expect(eval("[[1]][0][0]")).toEqual(1);
         expect(eval("[]")).toEqual([]);
@@ -447,7 +447,7 @@ main() {
       });
 
 
-      it('should evaluate object', () {
+      iit('should evaluate object', () {
         expect(eval("{}")).toEqual({});
         expect(eval("{a:'b'}")).toEqual({"a":"b"});
         expect(eval("{'a':'b'}")).toEqual({"a":"b"});

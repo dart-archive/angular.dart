@@ -174,7 +174,9 @@ class CodeExpressionFactory {
   functionCall(Code fn, fnName, List<Code> argsFn, evalError) {
     return new Code("${fn.exp}(${argsFn.map((a) => a.exp).join(', ')})");
   }
-  arrayDeclaration(elementFns) { throw "arrayDecl"; }
+  arrayDeclaration(elementFns) {
+    return new Code("[${elementFns.map((e) => e.exp).join(', ')}]");
+  }
   objectIndex(Code obj, Code indexFn, evalError) {
     return new Code("${obj.exp}[${indexFn.exp}]");
   }
@@ -182,7 +184,9 @@ class CodeExpressionFactory {
     var getterFnName = _getterGen(field);
     return new Code("$getterFnName/*field:$field*/(${object.exp}, null)");
   }
-  object(keyValues) { throw "object"; }
+  object(List keyValues) {
+    return new Code("{${keyValues.map((k) => "r\'${escape(k["key"])}\': ${k["value"].exp}").join(', ')}}");
+  }
   profiled(value, perf, text) => value; // no profiling for now
   fromOperator(op) => new Code(_op(op));
 
@@ -312,6 +316,20 @@ main() {
       "(1+2)*3",
       "a=12", "arr[c=1]", "x.y.z=123;",
       "a=123; b=234",
-      "constN()", "const"
+      "constN()", "const",
+      "add(1,2)",
+      "getter()()",
+      "obj.elementAt(0)",
+      "this['a'].b",
+      "[]",
+      "[1, 2]",
+      "[1][0]",
+      "[[1]][0][0]",
+      "[].length",
+"[1, 2].length",
+      "{}",
+"{a:'b'}",
+    "{'a':'b'}",
+"{\"a\":'b'}"
   ]);
 }
