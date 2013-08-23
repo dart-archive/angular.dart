@@ -12,11 +12,16 @@ expect(actual) => new LexerExpect(actual);
 
 main() {
   describe('lexer', () {
-    var fn0 = (Token token) => token.primaryFn.eval(null, null);
+    ExpressionFactory ef;
 
-    var lex;
-    beforeEach(inject((Lexer lexer) {
+    // It would be better if we could call Parser.primary() directly.
+    var fn0 = (Token token) =>
+      (token.key != null ? ef.getterSetter(token.key) : ef.fromOperator(token.fn)).eval(null, null);
+
+    Lexer lex;
+    beforeEach(inject((Lexer lexer, ExpressionFactory expressionFactory) {
       lex = lexer;
+      ef = expressionFactory;
     }));
 
     // New test case

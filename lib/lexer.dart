@@ -175,12 +175,7 @@ class Lexer {
       if (OPERATORS.containsKey(ident)) {
         token.withFn(OPERATORS[ident]);
       } else {
-        // TODO(deboer): In the JS version this method is incredibly optimized.
-        // We should likely do the same.
-        token.withFn((self, locals, a, b) => getter(self, locals, ident),
-            (self, value, [unused_locals]) =>
-        setter(self, ident, value)
-        );
+        token.withGetterSetter(ident);
       }
 
       tokens.add(token);

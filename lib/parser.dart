@@ -35,7 +35,9 @@ class Token {
   int index;
   String text;
   String string;
+  // Tokens should have one of these set.
   Operator fn;
+  String key;
   // access fn as a function that doesn't take a or b values.
   Expression primaryFn;
 
@@ -44,18 +46,24 @@ class Token {
     this.withFn((s, l, a, b) => text);
   }
 
-  withFn(fn, [assignFn]) {
+  withFn(fn) {
     this.fn = fn;
     this.primaryFn = new Expression(
-        (s, [l]) => fn(s, l, null, null),
-        assignFn);
+        (s, [l]) => fn(s, l, null, null));
   }
 
-  withFn0(fn()) => withFn(op0(fn));
+  withGetterSetter(key) {
+    this.key = key;
+    this.primaryFn = new Expression(
+        (self, [locals]) => getter(self, locals, key),
+        (self, value, [locals]) => setter(self, key, value));
+  }
 
-  withString(string) { this.string = string; }
+    withFn0(fn()) => withFn(op0(fn));
 
-  toString() => "Token($text)";
+    withString(string) { this.string = string; }
+
+    toString() => "Token($text)";
 }
 
 // TODO(deboer): Type this typedef further
@@ -352,6 +360,14 @@ class ExpressionFactory {
     return new Expression(wrappedGetter, wrappedAssignFn);
   }
 
+  Expression fromOperator(op) =>
+    new Expression((s, [l]) => op(s, l, null, null));
+
+  Expression getterSetter(key) =>
+    new Expression(
+        (self, [locals]) => getter(self, locals, key),
+        (self, value, [locals]) => setter(self, key, value));
+
 }
 
 class Parser {
@@ -420,7 +436,6 @@ class Parser {
     Expression consume(e1){
       if (expect(e1) == null) {
         throw parserError("Missing expected $e1");
-        //throwError("is unexpected, expecting [" + e1 + "]", peek());
       }
     }
 
@@ -439,7 +454,14 @@ class Parser {
         primary = object();
       } else {
         Token token = expect();
-        primary = token.primaryFn;
+        if (token.key != null) {
+          primary = _ef.getterSetter(token.key);
+        } else if (token.fn != null) {
+          primary = _ef.fromOperator(token.fn);
+        } else {
+          throw parserError(
+              "Internal Angular Error: Tokens should have keys or fns");
+        }
         if (primary == null) {
           throw parserError("Internal Angular Error: Unreachable code A.");
         }
