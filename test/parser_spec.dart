@@ -669,7 +669,7 @@ main() {
       });
     });
 
-    xdescribe('locals', () {
+    describe('locals', () {
       it('should expose local variables', () {
         expect(parser('a').eval({'a': 6}, {'a': 1})).toEqual(1);
         expect(parser('add(a,b)').eval({'b': 1, 'add': (a, b) { return a + b; }}, {'a': 2})).toEqual(3);

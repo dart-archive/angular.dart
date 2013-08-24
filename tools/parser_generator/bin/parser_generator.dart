@@ -40,17 +40,19 @@ class GetterSetterGenerator {
   fieldGetter(String field, String obj) {
     var eKey = escape(field);
 
-    var returnValue = isReserved(field) ? "null /* $field is reserved */" : "$obj.$field";
+    var returnValue = isReserved(field) ? "undefined_ /* $field is reserved */" : "$obj.$field";
 
     return """
   if ($obj is Map) {
     if ($obj.containsKey('$eKey')) {
-      return $obj['$eKey'];
+      val = $obj['$eKey'];
+    } else {
+      val = undefined_;
     }
-    return null;
+  } else {
+    val = $returnValue;
   }
-  return $returnValue;
-}
+
 """;
   }
 
@@ -73,10 +75,21 @@ class GetterSetterGenerator {
   }
 
   _accessor(String key, fieldAccessor, isGetter) {
-    var uid = nextUid++;
-    var fnName = isGetter ? "_getter_$uid" : "_setter_$uid";
 
-    var f = "$fnName(scope, locals${!isGetter ? ", value" : ""}) { // for $key\n";
+
+    return fnName;
+  }
+
+  call(String key) {
+    if (_keyToGetterFnName.containsKey(key)) {
+      return _keyToGetterFnName[key];
+    }
+
+    var uid = nextUid++;
+    var fnName = "_getter_$uid";
+
+    var f = "$fnName(scope, locals) { // for $key\n";
+    f += "  var val;\n";
     var obj = "scope";
 
     var field = key;
@@ -88,20 +101,21 @@ class GetterSetterGenerator {
   if (prefix == null) return null;
 """;
       obj = "prefix";
+    } else {
+      // Check for locals on scope keys only.
+
+      // This try block is needed because we attempt to access locals.foo
+      // If foo does not exist, we should fall through.
+      f += "  try {\n";
+      f += fieldGetter(field, "locals");
+      f += "    if (val != undefined_) { return val; }\n";
+      f += "  } catch (e) {}\n";
     }
-    f += fieldAccessor(field, obj);
+    f += fieldGetter(field, obj);
+    f += "  return val == undefined_ ? null : val;\n";
+    f += "}";
 
     functions += f;
-
-    return fnName;
-  }
-
-  call(String key) {
-    if (_keyToGetterFnName.containsKey(key)) {
-      return _keyToGetterFnName[key];
-    }
-
-    var fnName = _accessor(key, fieldGetter, true);
 
     _keyToGetterFnName[key] = fnName;
     return fnName;
@@ -499,7 +513,7 @@ main() {
       'undefined+1',
       "12/6/2",
       "a=undefined",
-
+'add(a,b)',
 
   ]);
 }

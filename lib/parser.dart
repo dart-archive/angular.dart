@@ -133,6 +133,8 @@ safeFunctionCall(userFn, fnName, evalError) {
   return userFn;
 }
 
+var undefined_ = new Symbol("UNDEFINED");
+
 Map<String, Operator> OPERATORS = {
   'undefined': NULL_OP,
   'true': (self, locals, a, b) => true,
@@ -177,7 +179,7 @@ stripTrailingNulls(List l) {
   return l;
 }
 
-var _undefined_ = new Symbol("UNDEFINED");
+
 
 // Returns a tuple [found, value]
 _getterChild(value, childKey) {
@@ -209,7 +211,7 @@ _getterChild(value, childKey) {
       rethrow;
     }
   }
-  return _undefined_;
+  return undefined_;
 }
 
 getter(self, locals, path) {
@@ -219,7 +221,7 @@ getter(self, locals, path) {
 
   List<String> pathKeys = path.split('.');
   var pathKeysLength = pathKeys.length;
-  var value = _undefined_;
+  var value = undefined_;
 
   if (pathKeysLength == 0) { return self; }
 
@@ -231,11 +233,11 @@ getter(self, locals, path) {
     } else {
       currentValue = _getterChild(locals, curKey);
       locals = null;
-      if (currentValue == _undefined_) {
+      if (currentValue == undefined_) {
         currentValue = _getterChild(self, curKey);
       }
     }
-    if (currentValue == null || currentValue == _undefined_) { return null; }
+    if (currentValue == null || currentValue == undefined_) { return null; }
   }
   return currentValue;
 }
@@ -264,7 +266,7 @@ setter(obj, path, setValue) {
   for (var i = 0; element.length > 1; i++) {
     var key = element.removeAt(0);
     var propertyObj = _getterChild(obj, key);
-    if (propertyObj == null || propertyObj == _undefined_) {
+    if (propertyObj == null || propertyObj == undefined_) {
       propertyObj = {};
       _setterChild(obj, key, propertyObj);
     }
