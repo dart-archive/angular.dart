@@ -26,7 +26,7 @@ class MixedMapData extends MapData with Mixin { }
 class InheritedMapData extends MapData { }
 
 main() {
-  describe('parse', () {
+  ddescribe('parse', () {
     var scope, parser;
     beforeEach(inject((Parser injectedParser) {
       parser = injectedParser;
@@ -201,7 +201,7 @@ main() {
       });
     });
 
-    ddescribe('setters', () {
+    describe('setters', () {
       it('should set a field in a map', () {
         scope['map'] = {};
         eval('map["square"] = 6');
@@ -303,7 +303,7 @@ main() {
       });
 
 
-      it('should parse logical', () {
+      iit('should parse logical', () {
         expect(eval("0&&2")).toEqual((0!=0)&&(2!=0));
         expect(eval("0||2")).toEqual(0!=0||2!=0);
         expect(eval("0||1&&2")).toEqual(0!=0||1!=0&&2!=0);
@@ -669,7 +669,7 @@ main() {
       });
     });
 
-    describe('locals', () {
+    xdescribe('locals', () {
       it('should expose local variables', () {
         expect(parser('a').eval({'a': 6}, {'a': 1})).toEqual(1);
         expect(parser('add(a,b)').eval({'b': 1, 'add': (a, b) { return a + b; }}, {'a': 2})).toEqual(3);

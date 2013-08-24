@@ -123,6 +123,16 @@ objectIndexSetField(o, i, v, evalError) {
   return v;
 }
 
+safeFunctionCall(userFn, fnName, evalError) {
+  if (userFn == null) {
+    throw evalError("Undefined function $fnName");
+  }
+  if (userFn is! Function) {
+    throw evalError("$fnName is not a function");
+  }
+  return userFn;
+}
+
 Map<String, Operator> OPERATORS = {
   'undefined': NULL_OP,
   'true': (self, locals, a, b) => true,
@@ -299,13 +309,8 @@ class ExpressionFactory {
         for ( var i = 0; i < argsFn.length; i++) {
           args.add(argsFn[i].eval(self, locals));
         }
-        var userFn = fn.eval(self, locals);
-        if (userFn == null) {
-          throw evalError("Undefined function $fnName");
-        }
-        if (userFn is! Function) {
-          throw evalError("$fnName is not a function");
-        }
+        var userFn = safeFunctionCall(fn.eval(self, locals), fnName, evalError);
+
         return relaxFnApply(userFn, args);
       });
 

@@ -146,16 +146,28 @@ class CodeExpressionFactory {
   GetterSetterGenerator _getterGen;
 
   CodeExpressionFactory(GetterSetterGenerator this._getterGen);
-  _op(fn) => fn;
+  _op(fn) => fn == "undefined" ? "null" : fn;
 
   binaryFn(left, fn, right) {
     if (fn == '+') {
       return new Code("autoConvertAdd(${left.exp}, ${right.exp})");
     }
-    return new Code("${left.exp} ${_op(fn)} ${right.exp}");
+    var leftExp = left.exp;
+    var rightExp = right.exp;
+    if (fn == '&&' || fn == '||') {
+      leftExp = "toBool($leftExp)";
+      rightExp = "toBool($rightExp)";
+    }
+    return new Code("(${leftExp} ${_op(fn)} ${rightExp})");
   }
 
-  unaryFn(fn, right) => new Code("${_op(fn)}${right.exp}");
+  unaryFn(fn, right) {
+   var rightExp = right.exp;
+   if (fn == '!') {
+     rightExp = "toBool($rightExp)";
+   }
+   return new Code("${_op(fn)}${rightExp}");
+  }
 
   assignment(left, right, evalError) {
     return left.assign(right);
@@ -170,7 +182,7 @@ class CodeExpressionFactory {
   }
 
   functionCall(Code fn, fnName, List<Code> argsFn, evalError) {
-    return new Code("${fn.exp}(${argsFn.map((a) => a.exp).join(', ')})");
+    return new Code("safeFunctionCall(${fn.exp}, \'${escape(fnName)}\', evalError)(${argsFn.map((a) => a.exp).join(', ')})");
   }
   arrayDeclaration(elementFns) {
     return new Code("[${elementFns.map((e) => e.exp).join(', ')}]");
@@ -183,7 +195,11 @@ class CodeExpressionFactory {
   }
   fieldAccess(Code object, field) {
     var getterFnName = _getterGen(field);
-    return new Code("$getterFnName/*field:$field*/(${object.exp}, null)");
+    var assign = (Code right) {
+      var setterFnName = _getterGen.setter(field);
+      return new Code("$setterFnName(${object.exp}, null, ${right.exp})");
+    };
+    return new Code("$getterFnName/*field:$field*/(${object.exp}, null)", assign);
   }
 
   object(List keyValues) {
@@ -247,36 +263,50 @@ class ParserGenerator {
   //'1': new Expression((scope, [locals]) => 1)
   }
 
-  _printFunction(exp) {
+  Code VALUE_CODE = new Code("value");
+
+  _printFunction(Code exp) {
+    Code codeExpression = safeCode(exp);
+
     _p('\'${escape(exp)}\': new Expression((scope, [locals]) {');
     _p.indent();
-    _functionBody(exp);
+    _functionBody(exp, codeExpression);
     _p.dedent();
-    _p('}),');
+
+    if (codeExpression.assignable) {
+      _p('}, (scope, value, [locals]) { ${codeExpression.assign(VALUE_CODE).returnExp()} }),');
+    } else {
+      _p('}),');
+    }
   }
 
-  _functionBody(exp) {
-    var codeExpression;
+  safeCode(exp) {
+    try {
+      return _parser(exp);
+    } catch (e) {
+      if ("$e".contains('Parser Error') ||
+      "$e".contains('Unexpected end of expression')) {
+        return  new Code.returnOnly("throw r'$e';");
+      } else {
+        rethrow;
+      }
+    }
+  }
 
+  _functionBody(exp, codeExpression) {
     _p('String exp = \'${escape(exp)}\';');
     _p('evalError(s, [stack]) => parserEvalError(s, exp, stack);');
     _p('try {');
     _p.indent();
 
-    try {
-      codeExpression = _parser(exp);
-    } catch (e) {
-      if ("$e".contains('Parser Error') ||
-          "$e".contains('Unexpected end of expression')) {
-        codeExpression = new Code.returnOnly("throw r'$e';");
-      } else {
-        rethrow;
-      }
-    }
+
     _p(codeExpression.returnExp());
 
     _p.dedent();
-    _p('} catch (e, s) { throw parserEvalError(\'Caught \$e\', exp, s); }');
+    _p("""} catch (e, s) {
+  if ("\$e".contains("Eval Error")) rethrow;
+  throw parserEvalError(\'Caught \$e\', exp, s);
+}""");
   }
 
   _printParserClass() {
@@ -455,7 +485,21 @@ main() {
       'true==2<3',
 '6[3]=2',
 
-      'map.dot = 7'
+      'map.dot = 7',
+      'exists(doesNotExist())',
+      'doesNotExists(exists())',
+      'a[0]()',
+      'a[x()]()',
+      '{}()',
+      'items[1]',
+      "-0--1++2*-3/-4",
+      "1/2*3",
+      "0||2",
+"0||1&&2",
+      'undefined+1',
+      "12/6/2",
+      "a=undefined",
+
 
   ]);
 }
