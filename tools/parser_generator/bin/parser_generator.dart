@@ -4,8 +4,8 @@ import 'package:angular/parser_library.dart';
 class Code {
   String _exp;
   String _returnOnly;
-  String assignKey;
-  Code(this._exp, [this.assignKey]);
+  Function assign;
+  Code(this._exp, [this.assign]);
 
   Code.returnOnly(this._returnOnly);
 
@@ -15,7 +15,7 @@ class Code {
     if (_exp == null) { throw "Can not be used in an expression"; }
     return _exp;
   }
-  get assignable => assignKey != null;
+  get assignable => assign != null;
 }
 
 escape(String s) => s.replaceAll('\'', '\\\'').replaceAll(r'$', r'\$');
@@ -158,9 +158,7 @@ class CodeExpressionFactory {
   unaryFn(fn, right) => new Code("${_op(fn)}${right.exp}");
 
   assignment(left, right, evalError) {
-    var setterFnName = _getterGen.setter(left.assignKey);
-
-    return new Code("$setterFnName(scope, locals, ${right.exp})");
+    return left.assign(right);
   }
 
   multipleStatements(statements) {
@@ -178,7 +176,10 @@ class CodeExpressionFactory {
     return new Code("[${elementFns.map((e) => e.exp).join(', ')}]");
   }
   objectIndex(Code obj, Code indexFn, evalError) {
-    return new Code("objectIndexGetField(${obj.exp}, ${indexFn.exp}, evalError)");
+    var assign = (Code right) {
+      return new Code("objectIndexSetField(${obj.exp}, ${indexFn.exp}, ${right.exp}, evalError)");
+    };
+    return new Code("objectIndexGetField(${obj.exp}, ${indexFn.exp}, evalError)", assign);
   }
   fieldAccess(Code object, field) {
     var getterFnName = _getterGen(field);
@@ -194,7 +195,13 @@ class CodeExpressionFactory {
 
   getterSetter(key) {
     var getterFnName = _getterGen(key);
-    return new Code("$getterFnName/*$key*/(scope, locals)", key);
+
+    var assign = (Code right) {
+      var setterFnName = _getterGen.setter(key);
+      return new Code("${setterFnName}(scope, locals, ${right.exp})");
+    };
+
+    return new Code("$getterFnName/*$key*/(scope, locals)", assign);
   }
 
   _value(v) => v is String ? "r\'${escape(v)}\'" : v;
@@ -440,6 +447,8 @@ main() {
       '2>=1',
       'true==2<3',
 '6[3]=2',
+
+      'map.dot = 7'
 
   ]);
 }
