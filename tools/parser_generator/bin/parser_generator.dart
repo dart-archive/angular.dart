@@ -258,7 +258,11 @@ class ParserGenerator {
   _functionBody(exp) {
     var codeExpression;
 
-    _p('evalError(s, [stack]) => parserEvalError(s, \'${escape(exp)}\', stack);');
+    _p('String exp = \'${escape(exp)}\';');
+    _p('evalError(s, [stack]) => parserEvalError(s, exp, stack);');
+    _p('try {');
+    _p.indent();
+
     try {
       codeExpression = _parser(exp);
     } catch (e) {
@@ -270,6 +274,9 @@ class ParserGenerator {
       }
     }
     _p(codeExpression.returnExp());
+
+    _p.dedent();
+    _p('} catch (e, s) { throw parserEvalError(\'Caught \$e\', exp, s); }');
   }
 
   _printParserClass() {

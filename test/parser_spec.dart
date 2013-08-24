@@ -26,7 +26,7 @@ class MixedMapData extends MapData with Mixin { }
 class InheritedMapData extends MapData { }
 
 main() {
-  ddescribe('parse', () {
+  describe('parse', () {
     var scope, parser;
     beforeEach(inject((Parser injectedParser) {
       parser = injectedParser;
@@ -201,7 +201,7 @@ main() {
       });
     });
 
-    describe('setters', () {
+    ddescribe('setters', () {
       it('should set a field in a map', () {
         scope['map'] = {};
         eval('map["square"] = 6');
