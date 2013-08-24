@@ -703,7 +703,7 @@ class SetterObject {
   void set setter(x) { setterValue = x; }
 }
 
-class OverloadObject {
+class OverloadObject implements Map {
   var overloadValue;
   operator []=(String name, var value) {
     overloadValue = value;

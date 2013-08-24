@@ -231,16 +231,22 @@ getter(self, locals, path) {
 }
 
 _setterChild(obj, childKey, value) {
-  // TODO: replace with isInterface(value, Setter) when dart:mirrors
-  // can support mixins.
-  try {
-    return obj[childKey] = value;
-  } on NoSuchMethodError catch(e) {}
-
-  InstanceMirror instanceMirror = reflect(obj);
-  Symbol curSym = new Symbol(childKey);
-  // maybe it is a member field?
-  return instanceMirror.setField(curSym, value).reflectee;
+  if (obj is List && childKey is num) {
+    if (childKey < value.length) {
+      return obj[childKey] = value;
+    }
+  } else if (obj is Map) {
+  // TODO: We would love to drop the 'is Map' for a more generic 'is Getter'
+    if (childKey is String) {
+      return obj[childKey] = value;
+    }
+  } else {
+    InstanceMirror instanceMirror = reflect(obj);
+    Symbol curSym = new Symbol(childKey);
+    // maybe it is a member field?
+    return instanceMirror.setField(curSym, value).reflectee;
+  }
+  throw "Could not set $childKey value $value  obj:${obj is Map}";
 }
 
 setter(obj, path, setValue) {
