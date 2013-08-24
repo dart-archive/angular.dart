@@ -26,7 +26,7 @@ class MixedMapData extends MapData with Mixin { }
 class InheritedMapData extends MapData { }
 
 main() {
-  describe('parse', () {
+  ddescribe('parse', () {
     var scope, parser;
     beforeEach(inject((Parser injectedParser) {
       parser = injectedParser;
@@ -37,33 +37,33 @@ main() {
     beforeEach(inject((Scope rootScope) { scope = rootScope; }));
 
     describe('expressions', () {
-      iit('should parse numerical expressions', () {
+      it('should parse numerical expressions', () {
         expect(eval("1")).toEqual(1);
       });
 
 
-      iit('should parse unary - expressions', () {
+      it('should parse unary - expressions', () {
         expect(eval("-1")).toEqual(-1);
         expect(eval("+1")).toEqual(1);
       });
 
 
-      iit('should parse unary ! expressions', () {
+      it('should parse unary ! expressions', () {
         expect(eval("!true")).toEqual(!true);
       });
 
 
-      iit('should parse multiplicative expressions', () {
+      it('should parse multiplicative expressions', () {
         expect(eval("3*4/2%5")).toEqual(3*4/2%5);
       });
 
 
-      iit('should parse additive expressions', () {
+      it('should parse additive expressions', () {
         expect(eval("3+6-2")).toEqual(3+6-2);
       });
 
 
-      iit('should parse relational expressions', () {
+      it('should parse relational expressions', () {
         expect(eval("2<3")).toEqual(2<3);
         expect(eval("2>3")).toEqual(2>3);
         expect(eval("2<=2")).toEqual(2<=2);
@@ -71,26 +71,26 @@ main() {
       });
 
 
-      iit('should parse equality expressions', () {
+      it('should parse equality expressions', () {
         expect(eval("2==3")).toEqual(2==3);
         expect(eval("2!=3")).toEqual(2!=3);
       });
 
 
-      iit('should parse logicalAND expressions', () {
+      it('should parse logicalAND expressions', () {
         expect(eval("true&&true")).toEqual(true&&true);
         expect(eval("true&&false")).toEqual(true&&false);
       });
 
 
-      iit('should parse logicalOR expressions', () {
+      it('should parse logicalOR expressions', () {
         expect(eval("true||true")).toEqual(true||true);
         expect(eval("true||false")).toEqual(true||false);
         expect(eval("false||false")).toEqual(false||false);
       });
 
 
-      iit('should auto convert ints to strings', () {
+      it('should auto convert ints to strings', () {
         expect(eval("'str ' + 4")).toEqual("str 4");
         expect(eval("4 + ' str'")).toEqual("4 str");
         expect(eval("4 + 4")).toEqual(8);
@@ -318,7 +318,7 @@ main() {
       // TODO filters
 
 
-      iit('should access scope', () {
+      it('should access scope', () {
         scope['a'] =  123;
         scope['b'] = {'c': 456};
         expect(eval("a")).toEqual(123);
@@ -327,38 +327,38 @@ main() {
       });
 
 
-      iit('should access classes on scope', () {
+      it('should access classes on scope', () {
         scope['ident'] = new Ident();
         expect(eval('ident.id(6)')).toEqual(6);
         expect(eval('ident.doubleId(4,5)')).toEqual([4, 5]);
       });
 
 
-      iit('should resolve deeply nested paths (important for CSP mode)', () {
+      it('should resolve deeply nested paths (important for CSP mode)', () {
         scope['a'] = {'b': {'c': {'d': {'e': {'f': {'g': {'h': {'i': {'j': {'k': {'l': {'m': {'n': 'nooo!'}}}}}}}}}}}}};
         expect(eval("a.b.c.d.e.f.g.h.i.j.k.l.m.n")).toBe('nooo!');
       });
 
 
-      iit('should be forgiving', () {
+      it('should be forgiving', () {
         scope = {'a': {'b': 23}};
         expect(eval('b')).toBeNull();
         expect(eval('a.x')).toBeNull();
       });
 
 
-      iit('should catch NoSuchMethod', () {
+      it('should catch NoSuchMethod', () {
         scope = {'a': {'b': 23}};
         expect(() => eval('a.b.c.d')).toThrow('NoSuchMethod');
       });
 
 
-      iit('should evaluate grouped expressions', () {
+      it('should evaluate grouped expressions', () {
         expect(eval("(1+2)*3")).toEqual((1+2)*3);
       });
 
 
-      iit('should evaluate assignments', () {
+      it('should evaluate assignments', () {
         scope = {'g': 4, 'arr': [3,4]};
 
         expect(eval("a=12")).toEqual(12);
@@ -380,18 +380,18 @@ main() {
       // TODO: null statements in multiple statements
 
 
-      iit('should evaluate function call without arguments', () {
+      it('should evaluate function call without arguments', () {
         scope['constN'] = () => 123;
         expect(eval("constN()")).toEqual(123);
       });
 
-      iit('should access a protected keyword on scope', () {
+      it('should access a protected keyword on scope', () {
         scope['const'] = 3;
         expect(eval('const')).toEqual(3);
       });
 
 
-      iit('should evaluate function call with arguments', () {
+      it('should evaluate function call with arguments', () {
         scope["add"] =  (a,b) {
           return a+b;
         };
@@ -399,14 +399,14 @@ main() {
       });
 
 
-      iit('should evaluate function call from a return value', () {
+      it('should evaluate function call from a return value', () {
         scope["val"] = 33;
         scope["getter"] = () { return () { return scope["val"]; };};
         expect(eval("getter()()")).toBe(33);
       });
 
 
-      iit('should evaluate methods on object', () {
+      it('should evaluate methods on object', () {
         scope['obj'] = ['ABC'];
         var fn = parser("obj.elementAt(0)").bind(scope);
         expect(fn()).toEqual('ABC');
@@ -414,7 +414,7 @@ main() {
       });
 
 
-      iit('should only check locals on first dereference', () {
+      it('should only check locals on first dereference', () {
         scope['a'] = {'b': 1};
         var locals = {'b': 2};
         var fn = parser("this['a'].b").bind(scope);
@@ -430,7 +430,7 @@ main() {
       });
 
 
-      iit('should evaluate array', () {
+      it('should evaluate array', () {
         expect(eval("[]").length).toEqual(0);
         expect(eval("[1, 2]").length).toEqual(2);
         expect(eval("[1, 2]")[0]).toEqual(1);
@@ -438,7 +438,7 @@ main() {
       });
 
 
-      iit('should evaluate array access', () {
+      it('should evaluate array access', () {
         expect(eval("[1][0]")).toEqual(1);
         expect(eval("[[1]][0][0]")).toEqual(1);
         expect(eval("[]")).toEqual([]);
@@ -447,7 +447,7 @@ main() {
       });
 
 
-      iit('should evaluate object', () {
+      it('should evaluate object', () {
         expect(eval("{}")).toEqual({});
         expect(eval("{a:'b'}")).toEqual({"a":"b"});
         expect(eval("{'a':'b'}")).toEqual({"a":"b"});
@@ -455,7 +455,7 @@ main() {
       });
 
 
-      iit('should evaluate object access', () {
+      it('should evaluate object access', () {
         expect(eval("{false:'WC', true:'CC'}[false]")).toEqual("WC");
       });
 

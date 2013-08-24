@@ -178,7 +178,7 @@ class CodeExpressionFactory {
     return new Code("[${elementFns.map((e) => e.exp).join(', ')}]");
   }
   objectIndex(Code obj, Code indexFn, evalError) {
-    return new Code("objectIndexGetField(${obj.exp}, ${indexFn.exp}, genEvalError)");
+    return new Code("objectIndexGetField(${obj.exp}, ${indexFn.exp}, evalError)");
   }
   fieldAccess(Code object, field) {
     var getterFnName = _getterGen(field);
@@ -249,7 +249,19 @@ class ParserGenerator {
   }
 
   _functionBody(exp) {
-    var codeExpression = _parser(exp);
+    var codeExpression;
+
+    _p('evalError(s, [stack]) => parserEvalError(s, \'${escape(exp)}\', stack);');
+    try {
+      codeExpression = _parser(exp);
+    } catch (e) {
+      if ("$e".contains('Parser Error') ||
+          "$e".contains('Unexpected end of expression')) {
+        codeExpression = new Code.returnOnly("throw r'$e';");
+      } else {
+        rethrow;
+      }
+    }
     _p(codeExpression.returnExp());
   }
 
@@ -257,7 +269,8 @@ class ParserGenerator {
     _p(r"""GeneratedParser(Profiler x);
 call(String t) {
   if (!_FUNCTIONS.containsKey(t)) {
-    dump("Expression $t is not supported be GeneratedParser");
+    dump(":XNAY:$t:XNAY:");
+    //dump("Expression $t is not supported be GeneratedParser");
   }
 
   return _FUNCTIONS[t];
@@ -305,6 +318,8 @@ main() {
 
   Injector injector = new Injector([module]);
 
+  // List generated using:
+  // node node_modules/karma/bin/karma run | grep -Eo ":XNAY:.*:XNAY:" | sed -e 's/:XNAY://g' | sed -e "s/^/'/" | sed -e "s/$/',/" | sort | uniq > missing_expressions
   injector.get(ParserGenerator).generateParser([
       "1", "-1", "+1",
       "!true",
@@ -338,6 +353,93 @@ main() {
     "{'a':'b'}",
 "{\"a\":'b'}",
       "{false:'WC', true:'CC'}[false]",
+')',
+'[{}]',
+'0&&2',
+'1%2',
+'1 + 2.5',
+'1+undefined',
+'4()',
+'4|a',
+'5=4',
+'6[3]',
+'{a',
+'a[1]=2',
+'a=1;b=3;a+b',
+'a.b',
+'a(b',
+'\'a\' + \'b c\'',
+'a().name',
+'a[x()]()',
+'boo',
+'[].count(',
+'doesNotExist()',
+'false',
+'false && run()',
+'!false || true',
+'foo()',
+'\$id',
+'items[1] = "abc"',
+'items[1].name',
+'list[3] = 2',
+'map["square"] = 6',
+'method',
+'method()',
+'notAFn()',
+'notmixed',
+'null',
+'null[3]',
+'obj[0].name=1',
+'obj.field = 1',
+'obj.field.key = 4',
+'obj.integer = "hello"',
+'obj.map.mapKey = 3',
+'obj.nested.field = 1',
+'obj.overload = 7',
+'obj.setter = 2',
+'str',
+'str="bob"',
+'suffix = "!"',
+'taxRate / 100 * subTotal',
+'true',
+'true || run()',
+'undefined',
+
+';;1;;',
+'1==1',
+'!(11 == 10)',
+'1 + -2.5',
+'[{a',
+'{a',
+'array[5=4]',
+'map.null',
+'\$root',
+'subTotal * taxRate / 100',
+'!!true',
+
+      '1!=2',
+'1+2*3/4',
+'[{a',
+'{a',
+'\$parent',
+'{true',
+
+'0--1+1.5',
+'1<2',
+'[{a',
+'{a',
+'{true',
+'1<=1',
+
+      '1>2',
+'{a:\'-\'}',
+'{a:a}',
+'[{a:[]}, {b:1}]',
+'{true:"a", false:"b"}[!!true]',
+
+      '2>=1',
+      'true==2<3',
+'6[3]=2',
 
   ]);
 }

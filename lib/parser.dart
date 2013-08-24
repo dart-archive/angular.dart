@@ -72,6 +72,10 @@ Operator NOT_IMPL_OP = (_, _x, _0, _1) { throw "Op not implemented"; };
 
 // FUNCTIONS USED AT RUNTIME.
 
+parserEvalError(String s, String text, stack) =>
+  ['Eval Error: $s while evaling [$text]' +
+      (stack != null ? '\n\nFROM:\n$stack' : '')];
+
 toBool(x) {
   if (x is bool) return x;
   if (x is int || x is double) return x != 0;
@@ -96,6 +100,8 @@ autoConvertAdd(a, b) {
 }
 
 objectIndexGetField(o, i, evalError) {
+  if (o == null) throw evalError('Accessing null object');
+
   if (o is List) {
     return o[i.toInt()];
   } else if (o is Map) {
@@ -307,14 +313,12 @@ class ExpressionFactory {
       });
 
   Expression objectIndex(obj, indexFn, evalError) {
-
-
     return new Expression((self, [locals]){
       var i = indexFn.eval(self, locals);
       var o = obj.eval(self, locals),
       v, p;
 
-      if (o == null) throw evalError('Accessing null object');
+
 
       v = objectIndexGetField(o, i, evalError);
 
@@ -402,8 +406,7 @@ class Parser {
           'at column ${t.index + 1} in';
       return 'Parser Error: $s $location [$text]';
     }
-    evalError(String s, [stack]) => ['Eval Error: $s while evaling [$text]' +
-        (stack != null ? '\n\nFROM:\n$stack' : '')];
+    evalError(String s, [stack]) => parserEvalError(s, text, stack);
 
     Token peekToken() {
       if (tokens.length == 0)
