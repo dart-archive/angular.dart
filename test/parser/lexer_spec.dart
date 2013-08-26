@@ -11,7 +11,7 @@ class LexerExpect extends Expect {
 expect(actual) => new LexerExpect(actual);
 
 main() {
-  ddescribe('lexer', () {
+  describe('lexer', () {
     Parser parser;
 
     // It would be better if we could call Parser.primary() directly.

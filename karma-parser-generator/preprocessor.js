@@ -11,7 +11,7 @@ var generateParser = function(logger) {
     fs.readFile(file.originalPath, function(err, data) {
       if (err) throw err;
 
-      exec('dart tools/parser_generator/bin/parser_generator.dart', function(err, stdout, stderr) {
+      exec('dart --checked bin/parser_generator_for_spec.dart', function(err, stdout, stderr) {
         if (err) throw err;
         done(data + '\n\n' + stdout);
       });
