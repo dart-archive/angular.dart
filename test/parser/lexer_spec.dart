@@ -1,4 +1,4 @@
-import '_specs.dart';
+import '../_specs.dart';
 
 class LexerExpect extends Expect {
   LexerExpect(actual) : super(actual);
@@ -11,7 +11,7 @@ class LexerExpect extends Expect {
 expect(actual) => new LexerExpect(actual);
 
 main() {
-  describe('lexer', () {
+  ddescribe('lexer', () {
     Parser parser;
 
     // It would be better if we could call Parser.primary() directly.

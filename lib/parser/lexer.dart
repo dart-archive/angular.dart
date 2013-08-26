@@ -1,6 +1,19 @@
 part of parser_library;
 
 class Lexer {
+  static const String QUOTES = "\"'";
+  static const String DOT = ".";
+  static const String SPECIAL = "(){}[].,;:";
+  static const String JSON_SEP = "{,";
+  static const String JSON_OPEN = "{[";
+  static const String JSON_CLOSE = "}]";
+  static const String WHITESPACE = " \r\t\n\v\u00A0";
+  static const String EXP_OP = "Ee";
+  static const String SIGN_OP = "+-";
+
+  static Map<String, String> ESCAPE =
+      {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'};
+
   List<Token> call(String text) {
     List<Token> tokens = [];
     Token token;
@@ -167,9 +180,6 @@ class Lexer {
       }
 
       var token = new Token(start, ident);
-
-
-
 
       if (OPERATORS.containsKey(ident)) {
         token.withOp(ident);

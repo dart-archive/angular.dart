@@ -1,4 +1,4 @@
-import '_specs.dart';
+import '../_specs.dart';
 
 // Used to test getter / setter logic.
 class TestData {
