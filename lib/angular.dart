@@ -8,7 +8,7 @@ import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 import 'debug.dart';
 import 'relax_fn_apply.dart';
-import 'parser_library.dart';
+import 'parser/parser_library.dart';
 
 part 'block.dart';
 part 'cache.dart';

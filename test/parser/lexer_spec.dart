@@ -1,4 +1,4 @@
-import '_specs.dart';
+import '../_specs.dart';
 
 class LexerExpect extends Expect {
   LexerExpect(actual) : super(actual);

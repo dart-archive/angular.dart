@@ -11,6 +11,7 @@ module.exports = function(config) {
       'test/*.dart',
       'test/directives/*.dart',
       'test/tools/*_spec.dart',
+      'test/parser/*.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js',
       'packages/browser/interop.js'
@@ -30,7 +31,7 @@ module.exports = function(config) {
     ],
 
     preprocessors: {
-      'test/parser_spec.dart': ['parser-generator']
+      'test/parser/parser_spec.dart': ['parser-generator']
     },
 
     junitReporter: {

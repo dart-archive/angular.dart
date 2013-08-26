@@ -1,5 +1,5 @@
 import 'package:di/di.dart';
-import 'package:angular/parser_library.dart';
+import 'package:angular/parser/parser_library.dart';
 
 class Code {
   String _exp;
