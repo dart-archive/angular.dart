@@ -11,6 +11,8 @@ class Lexer {
   static const String EXP_OP = "Ee";
   static const String SIGN_OP = "+-";
 
+  static Map<String, String> ESCAPE =
+      {"n":"\n", "f":"\f", "r":"\r", "t":"\t", "v":"\v", "'":"'", '"':'"'};
 
   List<Token> call(String text) {
     List<Token> tokens = [];
