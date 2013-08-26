@@ -19,18 +19,19 @@ class Code {
 
 escape(String s) => s.replaceAll('\'', '\\\'').replaceAll(r'$', r'\$');
 
-var LAST_PATH_PART = new RegExp(r'(.*)\.(.*)');
-
-// From https://www.dartlang.org/docs/spec/latest/dart-language-specification.html#h.huusvrzea3q
-var RESERVED_DART_KEYWORDS = [
-    "assert", "break", "case", "catch", "class", "const", "continue",
-    "default", "do", "else", "enum", "extends", "false", "final",
-    "finally", "for", "if", "in", "is", "new", "null", "rethrow",
-    "return", "super", "switch", "this", "throw", "true", "try",
-    "var", "void", "while", "with"];
-isReserved(String key) => RESERVED_DART_KEYWORDS.contains(key);
-
 class GetterSetterGenerator {
+  static RegExp LAST_PATH_PART = new RegExp(r'(.*)\.(.*)');
+
+  // From https://www.dartlang.org/docs/spec/latest/dart-language-specification.html#h.huusvrzea3q
+  static List<String> RESERVED_DART_KEYWORDS = [
+      "assert", "break", "case", "catch", "class", "const", "continue",
+      "default", "do", "else", "enum", "extends", "false", "final",
+      "finally", "for", "if", "in", "is", "new", "null", "rethrow",
+      "return", "super", "switch", "this", "throw", "true", "try",
+      "var", "void", "while", "with"];
+  isReserved(String key) => RESERVED_DART_KEYWORDS.contains(key);
+
+
   String functions = "// GETTER AND SETTER FUNCTIONS\n\n";
   var _keyToGetterFnName = {};
   var _keyToSetterFnName = {};
@@ -73,12 +74,6 @@ class GetterSetterGenerator {
 """;
   }
 
-  _accessor(String key, fieldAccessor, isGetter) {
-
-
-    return fnName;
-  }
-
   call(String key) {
     if (_keyToGetterFnName.containsKey(key)) {
       return _keyToGetterFnName[key];
@@ -101,10 +96,10 @@ class GetterSetterGenerator {
 """;
       obj = "prefix";
     } else {
-// Check for locals on scope keys only.
+      // Check for locals on scope keys only.
 
-// This try block is needed because we attempt to access locals.foo
-// If foo does not exist, we should fall through.
+      // This try block is needed because we attempt to access locals.foo
+      // If foo does not exist, we should fall through.
       f += "  try {\n";
       f += fieldGetter(field, "locals");
       f += "    if (val != undefined_) { return val; }\n";
@@ -159,6 +154,8 @@ class DartCodeGen {
   GetterSetterGenerator _getterGen;
 
   DartCodeGen(GetterSetterGenerator this._getterGen);
+
+  // Returns the Dart code for a particular operator.
   _op(fn) => fn == "undefined" ? "null" : fn;
 
   binaryFn(left, fn, right) {
