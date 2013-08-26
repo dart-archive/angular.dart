@@ -153,6 +153,8 @@ class GetterSetterGenerator {
 
 
 class DartCodeGen implements ParserBackend {
+  static Code ZERO = new Code("0");
+
   GetterSetterGenerator _getterGen;
 
   DartCodeGen(GetterSetterGenerator this._getterGen);
@@ -160,7 +162,7 @@ class DartCodeGen implements ParserBackend {
   // Returns the Dart code for a particular operator.
   _op(fn) => fn == "undefined" ? "null" : fn;
 
-  binaryFn(left, fn, right) {
+  Code binaryFn(Code left, String fn, Code right) {
     if (fn == '+') {
       return new Code("autoConvertAdd(${left.exp}, ${right.exp})");
     }
@@ -173,7 +175,7 @@ class DartCodeGen implements ParserBackend {
     return new Code("(${leftExp} ${_op(fn)} ${rightExp})");
   }
 
-  unaryFn(fn, right) {
+  Code unaryFn(String fn, Code right) {
     var rightExp = right.exp;
     if (fn == '!') {
       rightExp = "toBool($rightExp)";
@@ -181,31 +183,31 @@ class DartCodeGen implements ParserBackend {
     return new Code("${_op(fn)}${rightExp}");
   }
 
-  assignment(left, right, evalError) {
-    return left.assign(right);
-  }
+  Code assignment(Code left, Code right, evalError) =>
+    left.assign(right);
 
-  multipleStatements(statements) {
+  Code multipleStatements(List<Code >statements) {
     var code = "var ret, last;\n";
-    code += statements.map((s) =>
-    "last = ${s.exp};\nif (last != null) { ret = last; }\n").join('\n');
+    code += statements.map((Code s) =>
+        "last = ${s.exp};\nif (last != null) { ret = last; }\n").join('\n');
     code += "return ret;\n";
     return new Code.returnOnly(code);
   }
 
-  functionCall(Code fn, fnName, List<Code> argsFn, evalError) {
-    return new Code("safeFunctionCall(${fn.exp}, \'${escape(fnName)}\', evalError)(${argsFn.map((a) => a.exp).join(', ')})");
-  }
-  arrayDeclaration(elementFns) {
-    return new Code("[${elementFns.map((e) => e.exp).join(', ')}]");
-  }
-  objectIndex(Code obj, Code indexFn, evalError) {
-    var assign = (Code right) {
-      return new Code("objectIndexSetField(${obj.exp}, ${indexFn.exp}, ${right.exp}, evalError)");
-    };
+  Code functionCall(Code fn, fnName, List<Code> argsFn, evalError) =>
+      new Code("safeFunctionCall(${fn.exp}, \'${escape(fnName)}\', evalError)(${argsFn.map((a) => a.exp).join(', ')})");
+
+  Code arrayDeclaration(List<Code> elementFns) =>
+    new Code("[${elementFns.map((Code e) => e.exp).join(', ')}]");
+
+  Code objectIndex(Code obj, Code indexFn, evalError) {
+    var assign = (Code right)  =>
+        new Code("objectIndexSetField(${obj.exp}, ${indexFn.exp}, ${right.exp}, evalError)");
+
     return new Code("objectIndexGetField(${obj.exp}, ${indexFn.exp}, evalError)", assign);
   }
-  fieldAccess(Code object, field) {
+
+  Code fieldAccess(Code object, String field) {
     var getterFnName = _getterGen(field);
     var assign = (Code right) {
       var setterFnName = _getterGen.setter(field);
@@ -214,14 +216,15 @@ class DartCodeGen implements ParserBackend {
     return new Code("$getterFnName/*field:$field*/(${object.exp}, null)", assign);
   }
 
-  object(List keyValues) {
-    return new Code(
+  Code object(List keyValues) =>
+      new Code(
         "{${keyValues.map((k) => "${_value(k["key"])}: ${k["value"].exp}").join(', ')}}");
-  }
-  profiled(value, perf, text) => value; // no profiling for now
-  fromOperator(op) => new Code(_op(op));
 
-  getterSetter(key) {
+  profiled(value, perf, text) => value; // no profiling for now
+
+  Code fromOperator(String op) => new Code(_op(op));
+
+  Code getterSetter(String key) {
     var getterFnName = _getterGen(key);
 
     var assign = (Code right) {
@@ -232,7 +235,10 @@ class DartCodeGen implements ParserBackend {
     return new Code("$getterFnName/*$key*/(scope, locals)", assign);
   }
 
-  String _value(v) => v is String ? "r\'${escape(v)}\'" : "$v";
-  value(v) => new Code(_value(v));
-  zero() => new Code("0");
+  String _value(v) =>
+      v is String ? "r\'${escape(v)}\'" : "$v";
+
+  Code value(v) => new Code(_value(v));
+
+  Code zero() => ZERO;
 }
