@@ -43,7 +43,7 @@ class ParserGenerator {
 
   Code VALUE_CODE = new Code("value");
 
-  _printFunction(Code exp) {
+  _printFunction(String exp) {
     Code codeExpression = safeCode(exp);
 
     _p('\'${escape(exp)}\': new Expression((scope, [locals]) {');
@@ -58,7 +58,7 @@ class ParserGenerator {
     }
   }
 
-  safeCode(exp) {
+  Code safeCode(String exp) {
     try {
       return _parser(exp);
     } catch (e) {

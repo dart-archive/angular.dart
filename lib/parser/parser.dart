@@ -6,27 +6,8 @@ typedef ParsedSetter(self, value, [locals]);
 typedef Getter([locals]);
 typedef Setter(value, [locals]);
 
-class BoundExpression {
-  var _context;
-  Expression expression;
-
-  BoundExpression(this._context, Expression this.expression);
-
-  call([locals]) => expression.eval(_context, locals);
-  assign(value, [locals]) => expression.assign(_context, value, locals);
-}
-
-class Expression {
-  ParsedGetter eval;
-  ParsedSetter assign;
-  String exp;
-  List parts;
-
-  Expression(ParsedGetter this.eval, [ParsedSetter this.assign]);
-
-  bind(context) => new BoundExpression(context, this);
-
-  get assignable => assign != null;
+abstract class ParserAST {
+  bool get assignable;
 }
 
 class Token {
@@ -54,7 +35,7 @@ class Token {
 }
 
 // TODO(deboer): Type this typedef further
-typedef Operator(self, locals, Expression a, Expression b);
+typedef Operator(self, locals, ParserAST a, ParserAST b);
 
 Operator NULL_OP = (_, _x, _0, _1) => null;
 Operator NOT_IMPL_OP = (_, _x, _0, _1) { throw "Op not implemented"; };
@@ -235,7 +216,7 @@ class Parser {
       return null;
     }
 
-    Expression consume(e1){
+    ParserAST consume(e1){
       if (expect(e1) == null) {
         throw parserError("Missing expected $e1");
       }
@@ -244,7 +225,7 @@ class Parser {
     var filterChain = null;
     var functionCall, arrayDeclaration, objectIndex, fieldAccess, object;
 
-    Expression primary() {
+    ParserAST primary() {
       var primary;
       var ts = saveTokens();
       if (expect('(') != null) {
@@ -282,13 +263,13 @@ class Parser {
       return primary;
     }
 
-    Expression binaryFn(Expression left, String op, Expression right) =>
+    ParserAST binaryFn(ParserAST left, String op, ParserAST right) =>
       _b.binaryFn(left, op, right);
 
-    Expression unaryFn(String op, Expression right) =>
+    ParserAST unaryFn(String op, ParserAST right) =>
       _b.unaryFn(op, right);
 
-    Expression unary() {
+    ParserAST unary() {
       var token;
       if (expect('+') != null) {
         return primary();
@@ -301,7 +282,7 @@ class Parser {
       }
     }
 
-    Expression multiplicative() {
+    ParserAST multiplicative() {
       var left = unary();
       var token;
       while ((token = expect('*','/','%')) != null) {
@@ -310,7 +291,7 @@ class Parser {
       return left;
     }
 
-    Expression additive() {
+    ParserAST additive() {
       var left = multiplicative();
       var token;
       while ((token = expect('+','-')) != null) {
@@ -319,7 +300,7 @@ class Parser {
       return left;
     }
 
-    Expression relational() {
+    ParserAST relational() {
       var left = additive();
       var token;
       if ((token = expect('<', '>', '<=', '>=')) != null) {
@@ -328,7 +309,7 @@ class Parser {
       return left;
     }
 
-    Expression equality() {
+    ParserAST equality() {
       var left = relational();
       var token;
       if ((token = expect('==','!=')) != null) {
@@ -337,7 +318,7 @@ class Parser {
       return left;
     }
 
-    Expression logicalAND() {
+    ParserAST logicalAND() {
       var left = equality();
       var token;
       if ((token = expect('&&')) != null) {
@@ -346,7 +327,7 @@ class Parser {
       return left;
     }
 
-    Expression logicalOR() {
+    ParserAST logicalOR() {
       var left = logicalAND();
       var token;
       while(true) {
@@ -361,7 +342,7 @@ class Parser {
     // =========================
     // =========================
 
-    Expression assignment() {
+    ParserAST assignment() {
       var ts = saveTokens();
       var left = logicalOR();
       stopSavingTokens(ts);
@@ -379,7 +360,7 @@ class Parser {
     }
 
 
-    Expression expression() {
+    ParserAST expression() {
       return assignment();
     }
 
@@ -397,7 +378,7 @@ class Parser {
     };
 
     statements() {
-      List<Expression> statements = [];
+      List<ParserAST> statements = [];
       while (true) {
         if (tokens.length > 0 && peek('}', ')', ';', ']') == null)
           statements.add(filterChain());
@@ -460,7 +441,7 @@ class Parser {
     };
 
     // TODO(deboer): json
-    Expression value = statements();
+    ParserAST value = statements();
 
     if (tokens.length != 0) {
       throw parserError("Unconsumed token ${tokens[0].text}");

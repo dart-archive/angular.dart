@@ -1,5 +1,28 @@
 part of parser_library;
 
+class BoundExpression {
+  var _context;
+  Expression expression;
+
+  BoundExpression(this._context, Expression this.expression);
+
+  call([locals]) => expression.eval(_context, locals);
+  assign(value, [locals]) => expression.assign(_context, value, locals);
+}
+
+class Expression implements ParserAST {
+  ParsedGetter eval;
+  ParsedSetter assign;
+  String exp;
+  List parts;
+
+  Expression(ParsedGetter this.eval, [ParsedSetter this.assign]);
+
+  bind(context) => new BoundExpression(context, this);
+
+  get assignable => assign != null;
+}
+
 class ParserBackend {
   static Expression ZERO = new Expression((_, [_x]) => 0);
 

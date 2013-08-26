@@ -1,6 +1,8 @@
 library dart_code_gen;
 
-class Code {
+import 'package:angular/parser/parser_library.dart';  // For ParserBackend.
+
+class Code implements ParserAST {
   String _exp;
   String _returnOnly;
   Function assign;
@@ -150,7 +152,7 @@ class GetterSetterGenerator {
 }
 
 
-class DartCodeGen {
+class DartCodeGen implements ParserBackend {
   GetterSetterGenerator _getterGen;
 
   DartCodeGen(GetterSetterGenerator this._getterGen);
@@ -230,7 +232,7 @@ class DartCodeGen {
     return new Code("$getterFnName/*$key*/(scope, locals)", assign);
   }
 
-  _value(v) => v is String ? "r\'${escape(v)}\'" : v;
+  String _value(v) => v is String ? "r\'${escape(v)}\'" : "$v";
   value(v) => new Code(_value(v));
-  zero() => new Code(0);
+  zero() => new Code("0");
 }
