@@ -1,6 +1,5 @@
 part of parser_library;
 
-
 typedef ParsedGetter(self, [locals]);
 typedef ParsedSetter(self, value, [locals]);
 
@@ -56,16 +55,6 @@ class Token {
 
 // TODO(deboer): Type this typedef further
 typedef Operator(self, locals, Expression a, Expression b);
-
-String QUOTES = "\"'";
-String DOT = ".";
-String SPECIAL = "(){}[].,;:";
-String JSON_SEP = "{,";
-String JSON_OPEN = "{[";
-String JSON_CLOSE = "}]";
-String WHITESPACE = " \r\t\n\v\u00A0";
-String EXP_OP = "Ee";
-String SIGN_OP = "+-";
 
 Operator NULL_OP = (_, _x, _0, _1) => null;
 Operator NOT_IMPL_OP = (_, _x, _0, _1) { throw "Op not implemented"; };
@@ -179,8 +168,6 @@ stripTrailingNulls(List l) {
   return l;
 }
 
-
-
 // Returns a tuple [found, value]
 _getterChild(value, childKey) {
   if (value is List && childKey is num) {
@@ -276,134 +263,25 @@ setter(obj, path, setValue) {
 }
 
 
-class ExpressionFactory {
-  _op(opKey) => OPERATORS[opKey];
-
-  Expression binaryFn(Expression left, String op, Expression right) =>
-    new Expression((self, [locals]) => _op(op)(self, locals, left, right));
-
-  Expression unaryFn(String op, Expression right) =>
-      new Expression((self, [locals]) => _op(op)(self, locals, right, null));
-
-  Expression assignment(Expression left, Expression right, evalError) =>
-    new Expression((self, [locals]) {
-      try {
-        return left.assign(self, right.eval(self, locals), locals);
-      } catch (e, s) {
-        throw evalError('Caught $e', s);
-      }
-    });
-
-  Expression multipleStatements(statements) =>
-    new Expression((self, [locals]) {
-      var value;
-      for ( var i = 0; i < statements.length; i++) {
-        var statement = statements[i];
-        if (statement != null)
-          value = statement.eval(self, locals);
-      }
-      return value;
-    });
-
-  Expression functionCall(fn, fnName, argsFn, evalError) =>
-    new Expression((self, [locals]){
-        List args = [];
-        for ( var i = 0; i < argsFn.length; i++) {
-          args.add(argsFn[i].eval(self, locals));
-        }
-        var userFn = safeFunctionCall(fn.eval(self, locals), fnName, evalError);
-
-        return relaxFnApply(userFn, args);
-      });
-
-  Expression arrayDeclaration(elementFns) =>
-    new Expression((self, [locals]){
-        var array = [];
-        for ( var i = 0; i < elementFns.length; i++) {
-          array.add(elementFns[i].eval(self, locals));
-        }
-        return array;
-      });
-
-  Expression objectIndex(obj, indexFn, evalError) {
-    return new Expression((self, [locals]){
-      var i = indexFn.eval(self, locals);
-      var o = obj.eval(self, locals),
-      v, p;
-
-
-
-      v = objectIndexGetField(o, i, evalError);
-
-      return v;
-    }, (self, value, [locals]) =>
-    objectIndexSetField(obj.eval(self, locals), indexFn.eval(self, locals), value, evalError)
-    );
-  }
-
-  Expression fieldAccess(object, field) =>
-    new Expression(
-          (self, [locals]) =>
-      getter(object.eval(self, locals), null, field),
-          (self, value, [locals]) =>
-      setter(object.eval(self, locals), field, value));
-
-  Expression object(keyValues) =>
-    new Expression((self, [locals]){
-      var object = {};
-      for ( var i = 0; i < keyValues.length; i++) {
-        var keyValue = keyValues[i];
-        var value = keyValue["value"].eval(self, locals);
-        object[keyValue["key"]] = value;
-      }
-      return object;
-    });
-
-  Expression profiled(value, _perf, text) {
-    var wrappedGetter = (s, [l]) =>
-    _perf.time('angular.parser.getter', () => value.eval(s, l), text);
-    var wrappedAssignFn = null;
-    if (value.assign != null) {
-      wrappedAssignFn = (s, v, [l]) =>
-      _perf.time('angular.parser.assign',
-          () => value.assign(s, v, l), text);
-    }
-    return new Expression(wrappedGetter, wrappedAssignFn);
-  }
-
-  Expression fromOperator(String op) =>
-    new Expression((s, [l]) => OPERATORS[op](s, l, null, null));
-
-  Expression getterSetter(key) =>
-    new Expression(
-        (self, [locals]) => getter(self, locals, key),
-        (self, value, [locals]) => setter(self, key, value));
-
-  Expression value(v) =>
-    new Expression((self, [locals]) => v);
-
-  zero() => ZERO;
-}
-
 class Parser {
   Profiler _perf;
   Lexer _lexer;
-  ExpressionFactory _ef;
+  ParserBackend _b;
 
-  Parser(Profiler this._perf, Lexer this._lexer, ExpressionFactory this._ef);
+  Parser(Profiler this._perf, Lexer this._lexer, ParserBackend this._b);
 
   primaryFromToken(Token token, parserError) {
     if (token.key != null) {
-      return _ef.getterSetter(token.key);
+      return _b.getterSetter(token.key);
     }
     if (token.opKey != null) {
-      return _ef.fromOperator(token.opKey);
+      return _b.fromOperator(token.opKey);
     }
     if (token.value != null) {
-      return _ef.value(token.value);
+      return _b.value(token.value);
     }
     if (token.text != null) {
-      return _ef.value(token.text);
+      return _b.value(token.text);
     }
     throw parserError("Internal Angular Error: Tokens should have keys, text or fns");
   }
@@ -511,17 +389,17 @@ class Parser {
     }
 
     Expression binaryFn(Expression left, String op, Expression right) =>
-      _ef.binaryFn(left, op, right);
+      _b.binaryFn(left, op, right);
 
     Expression unaryFn(String op, Expression right) =>
-      _ef.unaryFn(op, right);
+      _b.unaryFn(op, right);
 
     Expression unary() {
       var token;
       if (expect('+') != null) {
         return primary();
       } else if ((token = expect('-')) != null) {
-        return binaryFn(_ef.zero(), token.opKey, unary());
+        return binaryFn(_b.zero(), token.opKey, unary());
       } else if ((token = expect('!')) != null) {
         return unaryFn(token.opKey, unary());
       } else {
@@ -600,7 +478,7 @@ class Parser {
           throw parserError('Expression ${tokensText(ts)} is not assignable', token);
         }
         right = logicalOR();
-        return _ef.assignment(left, right, evalError);
+        return _b.assignment(left, right, evalError);
       } else {
         return left;
       }
@@ -632,7 +510,7 @@ class Parser {
         if (expect(';') == null) {
           return statements.length == 1
               ? statements[0]
-              : _ef.multipleStatements(statements);
+              : _b.multipleStatements(statements);
         }
       }
     }
@@ -645,7 +523,7 @@ class Parser {
         } while (expect(',') != null);
       }
       consume(')');
-      return _ef.functionCall(fn, fnName, argsFn, evalError);
+      return _b.functionCall(fn, fnName, argsFn, evalError);
     };
 
     // This is used with json array declaration
@@ -657,19 +535,19 @@ class Parser {
         } while (expect(',') != null);
       }
       consume(']');
-      return _ef.arrayDeclaration(elementFns);
+      return _b.arrayDeclaration(elementFns);
     };
 
     objectIndex = (obj) {
       var indexFn = expression();
       consume(']');
-      return _ef.objectIndex(obj, indexFn, evalError);
+      return _b.objectIndex(obj, indexFn, evalError);
     };
 
     fieldAccess = (object) {
       var field = expect().text;
       //var getter = getter(field);
-      return _ef.fieldAccess(object, field);
+      return _b.fieldAccess(object, field);
     };
 
     object = () {
@@ -684,7 +562,7 @@ class Parser {
         } while (expect(',') != null);
       }
       consume('}');
-      return _ef.object(keyValues);
+      return _b.object(keyValues);
     };
 
     // TODO(deboer): json
@@ -695,6 +573,6 @@ class Parser {
     }
     if (_perf == null) return value;
 
-    return _ef.profiled(value, _perf, text);
+    return _b.profiled(value, _perf, text);
   }
 }

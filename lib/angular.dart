@@ -71,7 +71,7 @@ class AngularModule extends Module {
     type(Scope, Scope);
     type(Parser, Parser);
     type(Lexer, Lexer);
-    type(ExpressionFactory, ExpressionFactory);
+    type(ParserBackend, ParserBackend);
     type(Interpolate, Interpolate);
     type(CacheFactory, CacheFactory);
     type(Http, Http);

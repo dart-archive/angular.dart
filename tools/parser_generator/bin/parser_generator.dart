@@ -156,10 +156,10 @@ class GetterSetterGenerator {
 }
 
 
-class CodeExpressionFactory {
+class DartCodeGen {
   GetterSetterGenerator _getterGen;
 
-  CodeExpressionFactory(GetterSetterGenerator this._getterGen);
+  DartCodeGen(GetterSetterGenerator this._getterGen);
   _op(fn) => fn == "undefined" ? "null" : fn;
 
   binaryFn(left, fn, right) {
@@ -372,7 +372,7 @@ class NestedPrinter {
 
 main() {
   Module module = new Module()
-    ..type(ExpressionFactory, CodeExpressionFactory);
+    ..type(ParserBackend, DartCodeGen);
 
   Injector injector = new Injector([module]);
 
