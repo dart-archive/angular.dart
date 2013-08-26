@@ -26,7 +26,7 @@ class MixedMapData extends MapData with Mixin { }
 class InheritedMapData extends MapData { }
 
 main() {
-  ddescribe('parse', () {
+  describe('parse', () {
     var scope, parser;
     beforeEach(inject((Parser injectedParser) {
       parser = injectedParser;
@@ -303,7 +303,7 @@ main() {
       });
 
 
-      iit('should parse logical', () {
+      it('should parse logical', () {
         expect(eval("0&&2")).toEqual((0!=0)&&(2!=0));
         expect(eval("0||2")).toEqual(0!=0||2!=0);
         expect(eval("0||1&&2")).toEqual(0!=0||1!=0&&2!=0);
