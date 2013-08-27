@@ -8,4 +8,5 @@ dependencies:
   di: any
   perf_api: any
   intl: any
-
+  html5lib: any
+  analyzer_experimental: any
