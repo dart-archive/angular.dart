@@ -1,0 +1,128 @@
+library selector;
+
+import 'package:html5lib/dom.dart';
+
+// TODO(pavelgj): this code largely duplicates functionality of client
+// selector code. Needs refactoring to reuse reusable parts.
+
+class ContainsSelector {
+  String selector;
+  RegExp regexp;
+
+  ContainsSelector(this.selector, regexp) {
+    this.regexp = new RegExp(regexp);
+  }
+}
+
+RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-]+)(?:=([^\]]*))?\]))');
+RegExp _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([\w\-]+)(?:\=(.*))?\]$');
+RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
+RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
+
+class _SelectorPart {
+  final String element;
+  final String className;
+  final String attrName;
+  final String attrValue;
+
+  const _SelectorPart.fromElement(String this.element)
+      : className = null, attrName = null, attrValue = null;
+
+  const _SelectorPart.fromClass(String this.className)
+      : element = null, attrName = null, attrValue = null;
+
+
+  const _SelectorPart.fromAttribute(String this.attrName, String this.attrValue)
+      : element = null, className = null;
+
+  toString() =>
+    element == null
+      ? (className == null
+         ? (attrValue == '' ? '[$attrName]' : '[$attrName=$attrValue]')
+         : '.$className')
+      : element;
+}
+
+List<_SelectorPart> _splitCss(String selector) {
+  List<_SelectorPart> parts = [];
+  var remainder = selector;
+  var match;
+  while (!remainder.isEmpty) {
+    if ((match = _SELECTOR_REGEXP.firstMatch(remainder)) != null) {
+      if (match[1] != null) {
+        parts.add(new _SelectorPart.fromElement(match[1].toLowerCase()));
+      } else if (match[2] != null) {
+        parts.add(new _SelectorPart.fromClass(match[2].toLowerCase()));
+      } else if (match[3] != null) {
+        var attrValue = match[4] == null ? '' : match[4].toLowerCase();
+        parts.add(new _SelectorPart.fromAttribute(match[3].toLowerCase(),
+                                                  attrValue));
+      } else {
+        throw "Missmatched RegExp $_SELECTOR_REGEXP on $remainder";
+      }
+    } else {
+      throw "Unknown selector format '$remainder'.";
+    }
+    remainder = remainder.substring(match.end);
+  }
+  return parts;
+}
+
+// TODO(pavelgj): this is super inefficient. But we don't really care about
+// performance here.
+bool matchesNode(Node node, String selector) {
+  var match, selectorParts;
+  if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
+    if (node is! Text) {
+      return false;
+    }
+    return new RegExp(match.group(1)).hasMatch((node as Text).value);
+  } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
+    if (node is! Element) {
+      return false;
+    }
+    var regexp = new RegExp(match.group(1));
+    for (String attrName in node.attributes.keys) {
+      if (regexp.hasMatch(node.attributes[attrName])) {
+        return true;
+      }
+    }
+    return false;
+  } else if ((selectorParts = _splitCss(selector)) != null) {
+    if (node is! Element) {
+      return false;
+    }
+    String nodeName = node.tagName.toLowerCase();
+
+    bool stillGood = true;
+    selectorParts.forEach((_SelectorPart part) {
+      if (part.element != null) {
+        if (nodeName != part.element) {
+          stillGood = false;
+        }
+      } else if (part.className != null) {
+        if (!node.attributes['class'].split(' ').contains(part.className)) {
+          stillGood = false;
+        }
+      } else if (part.attrName != null) {
+        if (part.attrValue == '' ?
+              node.attributes[part.attrName] == null :
+              node.attributes[part.attrName] != part.attrValue) {
+          stillGood = false;
+        }
+      }
+    });
+
+    return stillGood;
+  } else {
+    throw new ArgumentError('Unsupported Selector: $selector');
+  }
+
+  switch(node.nodeType) {
+    case 1: // Element
+      break;
+    case 3: // Text Node
+      break;
+  }
+  return false;
+}

@@ -97,11 +97,25 @@ class _NgAnnotationBase {
    */
   final Map<String, String> map;
 
+  /**
+   * Use the list to specify expression containing attributes which are not
+   * included under [map] with '=' or '@' specification.
+   */
+  final List<String> exportExpressionAttrs;
+
+  /**
+   * Use the list to specify a expressions which are evaluated dynamically
+   * (ex. via [Scope.$eval]) and are otherwise not statically discoverable.
+   */
+  final List<String> exportExpressions;
+
   const _NgAnnotationBase({
     this.selector,
     this.visibility: NgDirective.LOCAL_VISIBILITY,
     this.publishTypes,
-    this.map
+    this.map,
+    this.exportExpressions,
+    this.exportExpressionAttrs
   });
 }
 
@@ -167,8 +181,13 @@ class NgComponent extends _NgAnnotationBase {
     map,
     selector,
     visibility,
-    publishTypes : const <Type>[]
-  }) : super(selector: selector, visibility: visibility, publishTypes: publishTypes, map: map);
+    publishTypes : const <Type>[],
+    exportExpressions,
+    exportExpressionAttrs
+  }) : super(selector: selector, visibility: visibility,
+      publishTypes: publishTypes, map: map,
+      exportExpressions: exportExpressions,
+      exportExpressionAttrs: exportExpressionAttrs);
 }
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
@@ -187,8 +206,13 @@ class NgDirective extends _NgAnnotationBase {
     map,
     selector,
     visibility,
-    publishTypes : const <Type>[]
-  }) : super(selector: selector, visibility: visibility, publishTypes: publishTypes, map: map);
+    publishTypes : const <Type>[],
+    exportExpressions,
+    exportExpressionAttrs
+  }) : super(selector: selector, visibility: visibility,
+      publishTypes: publishTypes, map: map,
+      exportExpressions: exportExpressions,
+      exportExpressionAttrs: exportExpressionAttrs);
 
   get defaultAttributeName {
     if (attrName == null && selector != null) {
