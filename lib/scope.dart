@@ -52,7 +52,8 @@ class Scope implements Map {
   num _ttl;
   String _phase;
   Map<String, Object> _properties = {};
-  List<Function> _asyncQueue = [];
+  List<Function> _innerAsyncQueue;
+  List<Function> _outerAsyncQueue;
   List<Watch> _watchers = [];
   Map<String, Function> _listeners = {};
   Scope _nextSibling, _prevSibling, _childHead, _childTail;
@@ -66,6 +67,8 @@ class Scope implements Map {
     _ttl = ttl.ttl;
     _$root = this;
     $id = nextUid();
+    _innerAsyncQueue = [];
+    _outerAsyncQueue = [];
 
     // Set up the zone to auto digest this scope.
     _zone.onTurnDone = $digest;
@@ -90,7 +93,8 @@ class Scope implements Map {
     if (_isolate) {
       _$root = $parent.$root;
     } else {
-      _asyncQueue = $parent._asyncQueue;
+      _innerAsyncQueue = $parent._innerAsyncQueue;
+      _outerAsyncQueue = $parent._outerAsyncQueue;
     }
 
     _prevSibling = $parent._childTail;
@@ -205,7 +209,7 @@ class Scope implements Map {
   }
 
   $digest() => _perf.time('angular.scope.digest', () {
-    var asyncQueue = _asyncQueue,
+    var innerAsyncQueue = _innerAsyncQueue,
         length,
         dirty, _ttlLeft = _ttl,
         logIdx, logMsg;
@@ -222,9 +226,9 @@ class Scope implements Map {
         //asyncQueue = current._asyncQueue;
         //dump('aQ: ${asyncQueue.length}');
 
-        while(asyncQueue.length > 0) {
+        while(innerAsyncQueue.length > 0) {
           try {
-            current.$eval(asyncQueue.removeAt(0));
+            _$root.$eval(innerAsyncQueue.removeAt(0));
           } catch (e, s) {
             _exceptionHandler(e, s);
           }
@@ -285,7 +289,14 @@ class Scope implements Map {
           throw '$_ttl \$digest() iterations reached. Aborting!\n' +
               'Watchers fired in the last 5 iterations: ${toJson(watchLog)}';
         }
-      } while (dirty || asyncQueue.length > 0);
+      } while (dirty || innerAsyncQueue.length > 0);
+      while(_outerAsyncQueue.length > 0) {
+        try {
+          _$root.$eval(_outerAsyncQueue.removeAt(0));
+        } catch (e, s) {
+          _exceptionHandler(e, s);
+        }
+      }
     } finally {
       _clearPhase();
     }
@@ -309,8 +320,12 @@ class Scope implements Map {
   }
 
 
-  $evalAsync(expr) {
-    _asyncQueue.add(expr);
+  $evalAsync(expr, {outsideDigest: false}) {
+    if (outsideDigest) {
+      _outerAsyncQueue.add(expr);
+    } else {
+      _innerAsyncQueue.add(expr);
+    }
   }
 
 

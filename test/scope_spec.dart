@@ -438,6 +438,14 @@ main() {
         expect($rootScope.log).toEqual('12');
       }));
 
+      it(r'should allow running after digest', inject((Scope $rootScope) {
+        $rootScope.log = '';
+        $rootScope.$evalAsync(() => $rootScope.log += 'eval;', outsideDigest: true);
+        $rootScope.$watch(() { $rootScope.log += 'digest;'; });
+        $rootScope.$digest();
+        expect($rootScope.log).toEqual('digest;digest;eval;');
+      }));
+
     });
 
 
