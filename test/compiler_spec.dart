@@ -330,6 +330,20 @@ main() {
         component.onOptional();
       }));
 
+      it('should create a map attribute to contorller', inject(() {
+        var element = $(r'<div><io-controller attr="{{name}}"></io-controller></div>');
+        $compile(element)(injector, element);
+        IoControllerComponent component = $rootScope.ioComponent;
+
+        $rootScope.name = 'misko';
+        $rootScope.$apply();
+        expect(component.attr).toEqual('misko');
+
+        $rootScope.name = 'james';
+        $rootScope.$apply();
+        expect(component.attr).toEqual('james');
+      }));
+
       it('should create a unpublished component with I/O bound to controller and "=" binding value should be available', inject(() {
         $rootScope.name = 'misko';
         $rootScope.done = false;

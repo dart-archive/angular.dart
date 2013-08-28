@@ -12,7 +12,7 @@ part of angular;
  */
 @NgDirective(
     selector: '[ng-model]',
-    map: const {'.': '&.model'})
+    map: const {'ng-model': '&.model'})
 class NgModel {
   Getter getterXXX = ([_]) => null;
   Setter setter = (_, [__]) => null;

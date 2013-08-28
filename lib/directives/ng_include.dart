@@ -2,7 +2,7 @@ part of angular;
 
 @NgDirective(
     selector: '[ng-include]',
-    map: const {'.': '=.url'} )
+    map: const {'ng-include': '=.url'} )
 class NgIncludeAttrDirective {
 
   dom.Element element;

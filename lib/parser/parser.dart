@@ -162,6 +162,7 @@ class Parser {
   }
 
   call(String text) {
+    if (text == null) text = '';
     List<Token> tokens = _lexer.call(text);
     Token token;
 

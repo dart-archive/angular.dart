@@ -2,7 +2,7 @@ part of angular;
 
 @NgDirective(
   selector: '[ng-bind]',
-  map: const {'.': '=.value'})
+  map: const {'ng-bind': '=.value'})
 class NgBindAttrDirective {
   dom.Element element;
 

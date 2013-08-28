@@ -295,21 +295,59 @@ class TemplateLoader {
 }
 
 /**
- * NodeAttrs is a facade for node attributes. The facade is responsible
+ * Callback function used to notify of attribute changes.
+ */
+typedef AttributeChanged(String newValue);
+
+/**
+ * NodeAttrs is a facade for element attributes. The facade is responsible
  * for normalizing attribute names as well as allowing access to the
  * value of the directive.
  */
 class NodeAttrs {
-  dom.Node node;
+  final dom.Element element;
+  Map<String, List<AttributeChanged>> _observers;
 
-  NodeAttrs(dom.Node this.node);
+  NodeAttrs(dom.Element this.element);
 
-  operator []=(String name, String value) => node.attributes[name] = value;
-  operator [](name) {
-    return node.attributes[name];
+  operator [](name) => element.attributes[snakeCase(name, '-')];
+  operator []=(String name, String value) {
+    name = snakeCase(name, '-');
+    element.attributes[name] = value;
+    if (_observers != null && _observers.containsKey(name)) {
+      _observers[name].forEach((fn) => fn(value));
+    }
   }
 
-  dom.Element get element => node;
+ /**
+  * Observe changes to the attribute by invoking the [AttributeChanged]
+  * function. On registration the [AttributeChanged] function gets invoked
+  * synchronise with the current value.
+  */
+  observe(String attributeName, AttributeChanged notifyFn) {
+    attributeName = snakeCase(attributeName, '-');
+    if (_observers == null) {
+      _observers = new Map<String, List<AttributeChanged>>();
+    }
+    if (!_observers.containsKey(attributeName)) {
+      _observers[attributeName] = new List<AttributeChanged>();
+    }
+    _observers[attributeName].add(notifyFn);
+    notifyFn(this[attributeName]);
+  }
+}
+
+class _AnchorAttrs implements NodeAttrs {
+  DirectiveRef _directiveRef;
+  _AnchorAttrs(DirectiveRef this._directiveRef);
+  operator[](name) => name == '.' ? _directiveRef.value : null;
+  observe(String attributeName, AttributeChanged notifyFn) {
+    if (attributeName == '.') {
+      notifyFn(_directiveRef.value);
+    } else {
+      notifyFn(null);
+    }
+  }
 }
 
 /**
@@ -417,7 +455,7 @@ class BlockFactory {
     var blockHoleFactory = (_) => null;
     var blockFactory = (_) => null;
     var boundBlockFactory = (_) => null;
-    var nodeAttrs = new NodeAttrs(node);
+    var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
     var nodesAttrsDirectives = null;
     Map<Type, _ComponentFactory> fctrs;
 
@@ -444,7 +482,7 @@ class BlockFactory {
           nodesAttrsDirectives = [];
           nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
             nodesAttrsDirectives.forEach((ref) {
-              new NgAttrMustacheDirective(node, ref.value,
+              new NgAttrMustacheDirective(nodeAttrs, ref.value,
                   injector.get(Interpolate), injector.get(Scope));
             });
           });
@@ -489,7 +527,9 @@ class BlockFactory {
       var controller = nodeInjector.get(ref.directive.type);
       var shadowScope = (fctrs != null && fctrs.containsKey(ref.directive.type))
           ? fctrs[ref.directive.type].shadowScope : null;
-      _createAttributeMapping(ref, node, scope, shadowScope, controller, parser);
+      _createAttributeMapping(ref.directive,
+          nodeAttrs == null ? new _AnchorAttrs(ref) : nodeAttrs,
+          scope, shadowScope, controller, parser);
       if (understands(controller, 'attach')) {
         var removeWatcher;
         removeWatcher = scope.$watch(() {
@@ -522,20 +562,17 @@ class BlockFactory {
 }
 
 RegExp _MAPPING = new RegExp(r'^([\@\=\&])(\.?)\s*(.*)$');
-_createAttributeMapping(DirectiveRef directiveRef, dom.Node element,
-                        Scope scope, Scope shadowScope,
-                        Object controller, Parser parser) {
-  Directive directive = directiveRef.directive;
+_createAttributeMapping(Directive directive,
+                        NodeAttrs nodeAttrs,
+                        Scope scope,
+                        Scope shadowScope,
+                        Object controller,
+                        Parser parser) {
   directive.$map.forEach((attrName, mapping) {
     Match match = _MAPPING.firstMatch(mapping);
     if (match == null) {
       throw "Unknown mapping '$mapping' for attribute '$attrName'.";
     }
-    var attrValue = attrName == '.'
-        ? directiveRef.value
-        : element.attributes[snakeCase(attrName, '-')];
-    if (attrValue == null) attrValue = '';
-
     var mode = match[1];
     var controllerContext = match[2];
     var dstPath = match[3];
@@ -547,10 +584,10 @@ _createAttributeMapping(DirectiveRef directiveRef, dom.Node element,
     }
     switch(mode) {
       case '@':
-        dstPathFn.assign(context, attrValue);
+        nodeAttrs.observe(attrName, (value) => dstPathFn.assign(context, value));
         break;
       case '=':
-        Expression attrExprFn = parser(attrValue);
+        Expression attrExprFn = parser(nodeAttrs[attrName]);
         var shadowValue = null;
         scope.$watch(
                 () => attrExprFn.eval(scope),
@@ -558,8 +595,8 @@ _createAttributeMapping(DirectiveRef directiveRef, dom.Node element,
         if (shadowScope != null) {
           if (attrExprFn.assignable) {
             shadowScope.$watch(
-                    () => dstPathFn.eval(context),
-                    (v) {
+                () => dstPathFn.eval(context),
+                (v) {
                   if (shadowValue != v) {
                     shadowValue = v;
                     attrExprFn.assign(scope, v);
@@ -569,7 +606,7 @@ _createAttributeMapping(DirectiveRef directiveRef, dom.Node element,
         }
         break;
       case '&':
-        dstPathFn.assign(context, parser(attrValue).bind(scope));
+        dstPathFn.assign(context, parser(nodeAttrs[attrName]).bind(scope));
         break;
     }
   });
