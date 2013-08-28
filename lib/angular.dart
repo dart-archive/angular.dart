@@ -7,6 +7,7 @@ import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 import 'debug.dart';
+import 'parser_library.dart';
 
 part 'block.dart';
 part 'cache.dart';
@@ -30,10 +31,8 @@ part 'exception_handler.dart';
 part 'http.dart';
 part 'interface_typing.dart';
 part 'interpolate.dart';
-part 'lexer.dart';
 part 'mirrors.dart';
 part 'node_cursor.dart';
-part 'parser.dart';
 part 'scope.dart';
 part 'selector.dart';
 part 'string_utilities.dart';
@@ -140,6 +139,7 @@ class AngularModule extends Module {
     type(Scope, Scope);
     type(Parser, Parser);
     type(Lexer, Lexer);
+    type(ExpressionFactory, ExpressionFactory);
     type(Interpolate, Interpolate);
     type(CacheFactory, CacheFactory);
     type(Http, Http);

@@ -1,4 +1,4 @@
-part of angular;
+part of parser_library;
 
 class Lexer {
   List<Token> call(String text) {
@@ -87,8 +87,7 @@ class Lexer {
         } else if (ch == quote) {
           index++;
           tokens.add(new Token(start, rawString)
-          ..withString(string)
-          ..withFn0(() => string));
+          ..withValue(string));
           return false; // BREAK
         } else {
           string += ch;
@@ -127,7 +126,7 @@ class Lexer {
         index++;
       });
       var ret = simpleInt ? int.parse(number) : double.parse(number);
-      tokens.add(new Token(start, number)..withFn0(() => ret));
+      tokens.add(new Token(start, number)..withValue(ret));
     }
 
     readIdent() {
@@ -173,14 +172,9 @@ class Lexer {
 
 
       if (OPERATORS.containsKey(ident)) {
-        token.withFn(OPERATORS[ident]);
+        token.withOp(ident);
       } else {
-        // TODO(deboer): In the JS version this method is incredibly optimized.
-        // We should likely do the same.
-        token.withFn((self, locals, a, b) => getter(self, locals, ident),
-            (self, value, [unused_locals]) =>
-        setter(self, ident, value)
-        );
+        token.withGetterSetter(ident);
       }
 
       tokens.add(token);
@@ -214,14 +208,12 @@ class Lexer {
       } else {
         // Check for two character operators (e.g. "==")
         String ch2 = ch + peek();
-        Operator fn = OPERATORS[ch];
-        Operator fn2 = OPERATORS[ch2];
 
-        if (fn2 != null) {
-          tokens.add(new Token(index, ch2)..withFn(fn2));
+        if (OPERATORS.containsKey(ch2)) {
+          tokens.add(new Token(index, ch2)..withOp(ch2));
           index += 2;
-        } else if (fn != null) {
-          tokens.add(new Token(index, ch)..withFn(fn));
+        } else if (OPERATORS.containsKey(ch)) {
+          tokens.add(new Token(index, ch)..withOp(ch));
           index++;
         } else {
           throw "Unexpected next character $index $ch";

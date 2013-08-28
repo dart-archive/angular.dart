@@ -25,15 +25,8 @@ class MapData implements Map {
 class MixedMapData extends MapData with Mixin { }
 class InheritedMapData extends MapData { }
 
-class BadContainsKeys implements Map {
-  containsKey(x) => null;
-  String str = "member";
-}
-
-
-
 main() {
-  describe('parse', () {
+  ddescribe('parse', () {
     var scope, parser;
     beforeEach(inject((Parser injectedParser) {
       parser = injectedParser;
@@ -310,7 +303,7 @@ main() {
       });
 
 
-      it('should parse logical', () {
+      iit('should parse logical', () {
         expect(eval("0&&2")).toEqual((0!=0)&&(2!=0));
         expect(eval("0||2")).toEqual(0!=0||2!=0);
         expect(eval("0||1&&2")).toEqual(0!=0||1!=0&&2!=0);
@@ -382,10 +375,19 @@ main() {
         expect(scope["b"]).toEqual(234);
       });
 
+      // TODO: assignment to an arr[c]
+      // TODO: failed assignment
+      // TODO: null statements in multiple statements
+
 
       it('should evaluate function call without arguments', () {
-        scope['const'] = () => 123;
-        expect(eval("const()")).toEqual(123);
+        scope['constN'] = () => 123;
+        expect(eval("constN()")).toEqual(123);
+      });
+
+      it('should access a protected keyword on scope', () {
+        scope['const'] = 3;
+        expect(eval('const')).toEqual(3);
       });
 
 
@@ -649,12 +651,6 @@ main() {
       it('should support map getters from mixins', () {
         MixedMapData data = new MixedMapData();
         expect(parser('str').eval(data)).toEqual('mapped-str');
-      });
-
-
-      // forget grace, this is Dart!
-      xit('should gracefully handle bad containsKey', () {
-       expect(parser('str').eval(new BadContainsKeys())).toEqual('member');
       });
 
 
