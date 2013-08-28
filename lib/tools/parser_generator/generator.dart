@@ -4,17 +4,17 @@ import 'dart_code_gen.dart';
 import '../../parser/parser_library.dart';
 
 class ParserGenerator {
-  Parser _parser;
+  DynamicParser _parser;
   NestedPrinter _p;
   List<String> _expressions;
   GetterSetterGenerator _getters;
 
-  ParserGenerator(Parser this._parser, NestedPrinter this._p,
+  ParserGenerator(DynamicParser this._parser, NestedPrinter this._p,
                   GetterSetterGenerator this._getters);
 
   generateParser(List<String> expressions) {
     _expressions = expressions;
-    _printParser();
+    _printParserFunctions();
     _printTestMain();
   }
 
@@ -22,13 +22,8 @@ class ParserGenerator {
     var tokens = _lexer(expression);
   }
 
-  _printParser() {
+  _printParserFunctions() {
     _printFunctions();
-    _p('class GeneratedParser implements Parser {');
-    _p.indent();
-    _printParserClass();
-    _p.dedent();
-    _p('}');
     _p(_getters.functions);
   }
 
@@ -63,6 +58,7 @@ class ParserGenerator {
       return _parser(exp);
     } catch (e) {
       if ("$e".contains('Parser Error') ||
+      "$e".contains('Lexer Error') ||
       "$e".contains('Unexpected end of expression')) {
         return  new Code.returnOnly("throw r'$e';");
       } else {
@@ -87,18 +83,6 @@ class ParserGenerator {
 }""");
   }
 
-  _printParserClass() {
-    _p(r"""GeneratedParser(Profiler x);
-call(String t) {
-  if (!_FUNCTIONS.containsKey(t)) {
-    dump(":XNAY:$t:XNAY:");
-    //dump("Expression $t is not supported be GeneratedParser");
-  }
-
-  return _FUNCTIONS[t];
-}""");
-  }
-
   _printTestMain() {
     _p("""
     genEvalError(msg) { throw msg; }
@@ -106,7 +90,8 @@ call(String t) {
     generatedMain() {
   describe(\'generated parser\', () {
     beforeEach(module((AngularModule module) {
-      module.type(Parser, implementedBy: GeneratedParser);
+      module.type(Parser, implementedBy: StaticParser);
+      module.value(StaticParserFunctions, new StaticParserFunctions(_FUNCTIONS));
     }));
     main();
   });
@@ -123,6 +108,8 @@ class NestedPrinter {
   }
 
   _oneLine(String s) {
+    assert(s != null);
+    assert(indentString != null);
     print("$indentString$s");
   }
 

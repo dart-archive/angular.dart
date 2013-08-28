@@ -74,7 +74,8 @@ class AngularModule extends Module {
     type(Compiler);
     type(ExceptionHandler);
     type(Scope);
-    type(Parser);
+    type(Parser, implementedBy: DynamicParser);
+    type(DynamicParser);
     type(Lexer);
     type(ParserBackend);
     type(Interpolate);

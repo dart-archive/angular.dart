@@ -138,12 +138,12 @@ Map<String, Operator> OPERATORS = {
   '!': (self, locals, a, b) => !toBool(a.eval(self, locals))
 };
 
-class Parser {
+class DynamicParser implements Parser {
   Profiler _perf;
   Lexer _lexer;
   ParserBackend _b;
 
-  Parser(Profiler this._perf, Lexer this._lexer, ParserBackend this._b);
+  DynamicParser(Profiler this._perf, Lexer this._lexer, ParserBackend this._b);
 
   primaryFromToken(Token token, parserError) {
     if (token.key != null) {
