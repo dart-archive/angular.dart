@@ -47,6 +47,8 @@ class Lexer {
 
     String peek() => index + 1 < textLength ? text[index + 1] : "EOF";
 
+    lexError(String s) { throw "Lexer Error: $s at column $index in expression [$text]"; }
+
     // whileChars takes two functions: One called for each character
     // and a second, optional function call at the end of the file.
     // If the first function returns false, the the loop stops and endFn
@@ -83,7 +85,7 @@ class Lexer {
             if (ch == 'u') {
               String hex = text.substring(index + 1, index + 5);
               int charCode = int.parse(hex, radix: 16,
-              onError: (s) { throw "Lexer Error: Invalid unicode escape [\\u$hex] at column $index in expression [$text]."; });
+              onError: (s) { lexError('Invalid unicode escape [\\u$hex]'); });
               string += new String.fromCharCode(charCode);
               index += 5;
             } else {
@@ -107,7 +109,7 @@ class Lexer {
           index++;
         }
       }, () {
-        throw "Unterminated quote starting at $start";
+        lexError('Unterminated quote starting at $start');
       });
     }
 
@@ -131,7 +133,7 @@ class Lexer {
             number += ch;
           } else if (isExpOperator() && (peekCh == '' || !isNumber(peekCh)) &&
           isIn(EXP_OP, number[number.length - 1])) {
-            throw "Lexer Error: Invalid exponent at column $index in expression [$text].";
+            lexError('Invalid exponent');
           } else {
             return false; // BREAK
           }
@@ -226,17 +228,13 @@ class Lexer {
           tokens.add(new Token(index, ch)..withOp(ch));
           index++;
         } else {
-          throw "Unexpected next character $index $ch";
+          lexError('Unexpected next character [$ch]');
         }
       }
     }
 
     whileChars(() {
-      try {
-        oneLexLoop();
-      } catch (e, s) {
-        throw "index: $index $e\nORIG STACK:\n" + s.toString();
-      }
+      oneLexLoop();
     });
     return tokens;
   }
