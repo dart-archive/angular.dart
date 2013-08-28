@@ -1,5 +1,6 @@
 module.exports = function(config) {
   config.set({
+    logLevel: config.LOG_DEBUG,
     basePath: '.',
     frameworks: ['dart-unittest'],
 
@@ -24,8 +25,13 @@ module.exports = function(config) {
       'karma-dart',
       'karma-chrome-launcher',
       'karma-script-launcher',
-      'karma-junit-reporter'
+      'karma-junit-reporter',
+      '../../../karma-parser-generator'
     ],
+
+    preprocessors: {
+      'test/parser_spec.dart': ['parser-generator']
+    },
 
     junitReporter: {
       outputFile: 'test_out/unit.xml',
