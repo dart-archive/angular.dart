@@ -310,14 +310,26 @@ main() {
       }));
 
       it('should create a component with I/O bound to controller and "=" binding value should be available', inject(() {
-        $rootScope.name = 'misko';
         $rootScope.done = false;
-        var element = $(r'<div><io-controller attr="A" expr="name" ondone="done=true"></io-controller></div>');
+        var element = $(r'<div><io-controller attr="A" expr="name" once="name" ondone="done=true"></io-controller></div>');
         $compile(element)(injector, element);
         IoControllerComponent component = $rootScope.ioComponent;
-        $rootScope.$apply();
+
+        expect(component.expr).toEqual(null);
+        expect(component.exprOnce).toEqual(null);
         expect(component.attr).toEqual('A');
+        $rootScope.$apply();
+
+        $rootScope.name = 'misko';
+        $rootScope.$apply();
         expect(component.expr).toEqual('misko');
+        expect(component.exprOnce).toEqual('misko');
+
+        $rootScope.name = 'igor';
+        $rootScope.$apply();
+        expect(component.expr).toEqual('igor');
+        expect(component.exprOnce).toEqual('misko');
+
         component.expr = 'angular';
         $rootScope.$apply();
         expect($rootScope.name).toEqual('angular');
@@ -489,6 +501,7 @@ class IoComponent {
     map: const {
         'attr': '@ctrl.attr',
         'expr': '=ctrl.expr',
+        'once': '!.exprOnce',
         'ondone': '&ctrl.onDone',
         'onOptional': '&ctrl.onOptional'
     }
@@ -497,6 +510,7 @@ class IoControllerComponent {
   Scope scope;
   var attr;
   var expr;
+  var exprOnce;
   var onDone;
   var onOptional;
   IoControllerComponent(Scope scope) {
@@ -518,6 +532,7 @@ class UnpublishedIoControllerComponent {
   Scope scope;
   var attr;
   var expr;
+  var exprOnce;
   var onDone;
   var onOptional;
   UnpublishedIoControllerComponent(Scope scope) {

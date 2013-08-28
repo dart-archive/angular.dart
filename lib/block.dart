@@ -561,7 +561,7 @@ class BlockFactory {
   }
 }
 
-RegExp _MAPPING = new RegExp(r'^([\@\=\&])(\.?)\s*(.*)$');
+RegExp _MAPPING = new RegExp(r'^([\@\=\&\!])(\.?)\s*(.*)$');
 _createAttributeMapping(Directive directive,
                         NodeAttrs nodeAttrs,
                         Scope scope,
@@ -604,6 +604,17 @@ _createAttributeMapping(Directive directive,
                 });
           }
         }
+        break;
+      case '!':
+        Expression attrExprFn = parser(nodeAttrs[attrName]);
+        var stopWatching;
+        stopWatching = scope.$watch(
+                () => attrExprFn.eval(scope),
+                (value) {
+                  if (dstPathFn.assign(context, value) != null) {
+                    stopWatching();
+                  }
+                });
         break;
       case '&':
         dstPathFn.assign(context, parser(nodeAttrs[attrName]).bind(scope));

@@ -50,6 +50,10 @@ class _NgAnnotationBase {
    *   on both outside as well as component scope to keep the src and
    *   destination in sync.
    *
+   * * `!` - Treat the DOM attribute value as an expression. Set up a one time
+   *   watch on expression. Once the expression turns truthy it will no longer
+   *   update.
+   *
    * * `&` - Treat the DOM attribute value as an expression. Assign a closure
    *   function into the component. This allows the component to control
    *   the invocation of the closure. This is useful for passing
