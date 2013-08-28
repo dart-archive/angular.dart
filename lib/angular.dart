@@ -10,6 +10,8 @@ import 'debug.dart';
 import 'relax_fn_apply.dart';
 import 'parser/parser_library.dart';
 
+export 'parser/parser_library.dart';
+
 part 'block.dart';
 part 'cache.dart';
 part 'compiler.dart';

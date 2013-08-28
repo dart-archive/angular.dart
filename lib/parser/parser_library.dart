@@ -1,4 +1,4 @@
-library parser;
+library parser_library;
 
 import 'dart:mirrors';
 import 'package:perf_api/perf_api.dart';
