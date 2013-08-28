@@ -1,6 +1,6 @@
 part of angular;
 
-Symbol _SHADOW = new Symbol('SHADOW_INJECTOR');
+String _SHADOW = 'SHADOW_INJECTOR';
 
 /**
 * ElementWrapper is an interface for [Block]s and [BlockHole]s. Its purpose is
@@ -221,12 +221,10 @@ class _ComponentFactory {
 
   createShadowInjector(injector, TemplateLoader templateLoader) {
     var shadowModule = new ScopeModule(shadowScope)
-      ..type(directive.type, directive.type)
+      ..type(directive.type)
       ..value(TemplateLoader, templateLoader)
       ..value(dom.ShadowRoot, shadowDom);
-    shadowInjector = injector.createChild([shadowModule]);
-    // TODO(misko): crazy hack to mark injector
-    shadowInjector.instances[_SHADOW] = injector;
+    shadowInjector = injector.createChild([shadowModule], name: _SHADOW);
     return shadowInjector;
   }
 }
@@ -416,9 +414,9 @@ class BlockFactory {
   _perf.time('angular.blockFactory.instantiateDirectives', () {
     if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
     var nodeModule = new Module();
-    var blockHoleFactory = () => null;
-    var blockFactory = () => null;
-    var boundBlockFactory = () => null;
+    var blockHoleFactory = (_) => null;
+    var blockFactory = (_) => null;
+    var boundBlockFactory = (_) => null;
     var nodeAttrs = new NodeAttrs(node);
     var nodesAttrsDirectives = null;
     Map<Type, _ComponentFactory> fctrs;
@@ -437,15 +435,17 @@ class BlockFactory {
         visibility = _elementDirectChildren;
       }
       if (ref.directive.type == NgTextMustacheDirective) {
-        nodeModule.factory(NgTextMustacheDirective, (Interpolate interpolate, Scope scope) {
-          return new NgTextMustacheDirective(node, ref.value, interpolate, scope);
+        nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
+          return new NgTextMustacheDirective(node, ref.value,
+              injector.get(Interpolate), injector.get(Scope));
         });
       } else if (ref.directive.type == NgAttrMustacheDirective) {
         if (nodesAttrsDirectives == null) {
           nodesAttrsDirectives = [];
-          nodeModule.factory(NgAttrMustacheDirective, (Interpolate interpolate, Scope scope) {
+          nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
             nodesAttrsDirectives.forEach((ref) {
-              new NgAttrMustacheDirective(node, ref.value, interpolate, scope);
+              new NgAttrMustacheDirective(node, ref.value,
+                  injector.get(Interpolate), injector.get(Scope));
             });
           });
         }
@@ -453,16 +453,21 @@ class BlockFactory {
       } else if (ref.directive.isComponent) {
         //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
         // TODO(misko): there should be no need to wrap function like this.
-        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http http, TemplateCache templateCache) {
+        nodeModule.factory(type, (Injector injector) {
+            Compiler compiler = injector.get(Compiler);
+            Scope scope = injector.get(Scope);
+            BlockCache blockCache = injector.get(BlockCache);
+            Http http = injector.get(Http);
+            TemplateCache templateCache = injector.get(TemplateCache);
             // This is a bit of a hack since we are returning different type then we are.
             var componentFactory = new _ComponentFactory(node, ref.directive);
             if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
             fctrs[type] = componentFactory;
-            return componentFactory(injector, compiler, scope, $blockCache, http, templateCache);
+            return componentFactory(injector, compiler, scope, blockCache, http, templateCache);
           },
           visibility: visibility);
       } else {
-        nodeModule.type(type, type, visibility: visibility);
+        nodeModule.type(type, visibility: visibility);
       }
       for (var publishType in ref.directive.$publishTypes) {
         nodeModule.factory(publishType,
@@ -470,8 +475,8 @@ class BlockFactory {
             visibility: visibility);
       }
       if (annotation is NgDirective && annotation.transclude) {
-        blockHoleFactory = () => new BlockHole([node]);
-        blockFactory = () => ref.blockFactory;
+        blockHoleFactory = (_) => new BlockHole([node]);
+        blockFactory = (_) => ref.blockFactory;
         boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
       }
     });
@@ -501,16 +506,16 @@ class BlockFactory {
 
   /// DI visibility callback allowing node-local visibility.
   bool _elementOnly(Injector requesting, Injector defining) {
-    if (requesting.instances.containsKey(_SHADOW)) {
-      requesting = requesting.instances[_SHADOW];
+    if (requesting.name == _SHADOW) {
+      requesting = requesting.parent;
     }
     return identical(requesting, defining);
   }
 
   /// DI visibility callback allowing visibility from direct child into parent.
   bool _elementDirectChildren(Injector requesting, Injector defining) {
-    if (requesting.instances.containsKey(_SHADOW)) {
-      requesting = requesting.instances[_SHADOW];
+    if (requesting.name == _SHADOW) {
+      requesting = requesting.parent;
     }
     return _elementOnly(requesting, defining) || identical(requesting.parent, defining);
   }

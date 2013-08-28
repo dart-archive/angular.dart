@@ -5,6 +5,7 @@ import "dart:async" as async;
 import "dart:json" as json;
 import 'dart:html' as dom;
 import 'package:di/di.dart';
+import 'package:di/dynamic_injector.dart';
 import 'package:perf_api/perf_api.dart';
 import 'debug.dart';
 import 'relax_fn_apply.dart';
@@ -65,23 +66,25 @@ toJson(obj) {
 
 class AngularModule extends Module {
   DirectiveRegistry _directives = new DirectiveRegistry();
+  ControllerRegistry _controllers = new ControllerRegistry();
 
   AngularModule() {
     value(DirectiveRegistry, _directives);
-    type(Compiler, Compiler);
-    type(ExceptionHandler, ExceptionHandler);
-    type(Scope, Scope);
-    type(Parser, Parser);
-    type(Lexer, Lexer);
-    type(ParserBackend, ParserBackend);
-    type(Interpolate, Interpolate);
-    type(CacheFactory, CacheFactory);
-    type(Http, Http);
-    type(UrlRewriter, UrlRewriter);
-    type(HttpBackend, HttpBackend);
-    type(BlockCache, BlockCache);
-    type(TemplateCache, TemplateCache);
-    type(Profiler, _NoOpProfiler);
+    value(ControllerRegistry, _controllers);
+    type(Compiler);
+    type(ExceptionHandler);
+    type(Scope);
+    type(Parser);
+    type(Lexer);
+    type(ParserBackend);
+    type(Interpolate);
+    type(CacheFactory);
+    type(Http);
+    type(UrlRewriter);
+    type(HttpBackend);
+    type(BlockCache);
+    type(TemplateCache);
+    type(Profiler, implementedBy: _NoOpProfiler);
 
     value(ScopeDigestTTL, new ScopeDigestTTL(5));
 
@@ -109,7 +112,30 @@ class AngularModule extends Module {
     _directives.register(directive);
     return this;
   }
+
+  controller(String name, Type controllerType) {
+    _controllers.register(name, controllerType);
+    type(controllerType);
+  }
 }
+
+
+class ControllerRegistry {
+  Map<String, Type> controllerMap = {};
+
+  register(String name, Type controllerType) {
+    controllerMap[name] = controllerType;
+  }
+
+  Type operator[](String name) {
+    if (controllerMap.containsKey(name)){
+      return controllerMap[name];
+    } else {
+      throw new ArgumentError('Unknown controller: $name');
+    }
+  }
+}
+
 
 // helper for bootstrapping angular
 bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
@@ -123,13 +149,9 @@ bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
   allModules.add(new Module()..value(Zone, zone));
 
   zone.run(() {
-    Injector injector = new Injector(allModules);
-
-    injector.invoke((Compiler $compile) {
-      $compile(topElt)(injector, topElt);
-    });
+    Injector injector = new DynamicInjector(modules: allModules);
+    injector.get(Compiler)(topElt)(injector, topElt);
   });
-
 }
 
 bool understands(obj, symbol) {

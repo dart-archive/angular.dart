@@ -17,8 +17,8 @@ main() {
   describe('NgController', () {
     var compile, element, rootScope;
 
-    beforeEach(module((Module module) {
-      module.type(MainController, MainController);
+    beforeEach(module((AngularModule module) {
+      module.controller('Main', MainController);
     }));
 
     beforeEach(inject((Scope scope, Compiler compiler, Injector injector) {
@@ -32,13 +32,13 @@ main() {
 
 
     it('should instantiate controller', () {
-      compile('<div><div ng-controller="ctrlTest.Main" class="controller">Hi {{name}}</div></div>');
+      compile('<div><div ng-controller="Main" class="controller">Hi {{name}}</div></div>');
       expect(element.find('.controller').text()).toEqual('Hi Vojta');
     });
 
 
     it('should create a new scope', () {
-      compile('<div><div ng-controller="ctrlTest.Main" class="controller">Hi {{name}}</div><div class="siblink">{{name}}</div></div>', () {
+      compile('<div><div ng-controller="Main" class="controller">Hi {{name}}</div><div class="siblink">{{name}}</div></div>', () {
         rootScope['name'] = 'parent';
       });
 
@@ -48,7 +48,7 @@ main() {
 
 
     it('should export controller', () {
-      compile('<div><div ng-controller="ctrlTest.Main as main" class="controller">Hi {{main.name}}</div></div>');
+      compile('<div><div ng-controller="Main as main" class="controller">Hi {{main.name}}</div></div>');
       expect(element.find('.controller').text()).toEqual('Hi name on controller');
     });
   });

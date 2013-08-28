@@ -1,13 +1,15 @@
 import 'package:di/di.dart';
+import 'package:di/dynamic_injector.dart';
 import 'package:angular/parser/parser_library.dart';
 import 'package:angular/tools/parser_generator/dart_code_gen.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 
 main() {
   Module module = new Module()
-    ..type(ParserBackend, DartCodeGen);
+    ..type(ParserBackend, implementedBy: DartCodeGen);
 
-  Injector injector = new Injector([module]);
+  Injector injector = new DynamicInjector(modules: [module],
+      allowImplicitInjection: true);
 
   // List generated using:
   // node node_modules/karma/bin/karma run | grep -Eo ":XNAY:.*:XNAY:" | sed -e 's/:XNAY://g' | sed -e "s/^/'/" | sed -e "s/$/',/" | sort | uniq > missing_expressions

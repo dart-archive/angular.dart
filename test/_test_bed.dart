@@ -35,7 +35,7 @@ class TestBed {
 
 beforeEachTestBed(assign) {
   return module((AngularModule module) {
-    module.type(TestBed, TestBed);
+    module.type(TestBed);
     module.directive(Probe);
     return (TestBed tb) => assign(tb);
   });
