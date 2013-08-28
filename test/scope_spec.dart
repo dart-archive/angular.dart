@@ -2,6 +2,12 @@ import "_specs.dart";
 
 main() {
   describe(r'Scope', () {
+    beforeEach(module(() {
+      return (Zone zone) {
+        zone.onError = (e) => null;
+      };
+    }));
+
     describe(r'$root', () {
       it(r'should point to itself', inject((Scope $rootScope) {
         expect($rootScope.$root).toEqual($rootScope);
@@ -491,7 +497,7 @@ main() {
         }));
       });
 
-      it(r'should proprely reset phase on execption', inject((Scope $rootScope) {
+      it(r'should proprely reset phase on exception', inject((Scope $rootScope) {
         var error = 'MyError';
         expect(() =>$rootScope.$apply(() { throw error; })).toThrow(error);
         expect(() =>$rootScope.$apply(() { throw error; })).toThrow(error);

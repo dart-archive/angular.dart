@@ -283,7 +283,13 @@ main() {
     module
       ..type(Logger)
       ..type(MockHttp)
-      ..type(Zone)
+      ..type(Logger)
+      ..type(MockHttp)
+      ..factory(Zone, (_) {
+        Zone zone = new Zone();
+        zone.onError = (e) => dump('EXCEPTION: $e\n${dartAsync.getAttachedStackTrace(e)}');
+        return zone;
+      })
       ..type(Log);
   }));
   afterEach(() => currentSpecInjector = null);
