@@ -9,7 +9,7 @@ import 'dart:mirrors' as mirror;
 import 'package:angular/angular.dart';
 import 'jasmine_syntax.dart';
 import 'package:di/di.dart';
-import 'package:unittest/mock.dart';
+import 'package:di/dynamic_injector.dart';
 import "_log.dart";
 import "_http.dart";
 
@@ -17,7 +17,7 @@ export 'package:unittest/unittest.dart';
 export 'package:angular/debug.dart';
 export 'package:angular/angular.dart';
 export 'dart:html';
-export 'jasmine_syntax.dart';
+export 'jasmine_syntax.dart' hide main;
 export 'package:di/di.dart';
 export 'package:unittest/mock.dart';
 export 'package:perf_api/perf_api.dart';
@@ -208,17 +208,17 @@ async(Function fn) =>
   };
 
 class SpecInjector {
-  Injector moduleInjector;
-  Injector injector;
+  DynamicInjector moduleInjector;
+  DynamicInjector injector;
   List<Module> modules = [];
   DirectiveRegistry directives = new DirectiveRegistry();
   List<Function> initFns = [];
 
   SpecInjector() {
     var moduleModule = new Module()
-      ..factory(AngularModule, () => addModule(new AngularModule()))
-      ..factory(Module, () => addModule(new Module()));
-    moduleInjector = new Injector([moduleModule], false);
+      ..factory(AngularModule, (Injector injector) => addModule(new AngularModule()))
+      ..factory(Module, (Injector injector) => addModule(new Module()));
+    moduleInjector = new DynamicInjector(modules: [moduleModule]);
   }
 
   addModule(module) {
@@ -240,7 +240,7 @@ class SpecInjector {
   inject(Function fn, declarationStack) {
     try {
       if (injector == null) {
-        injector = new Injector(modules, false); // Implicit injection is disabled.
+        injector = new DynamicInjector(modules: modules); // Implicit injection is disabled.
         initFns.forEach((fn) => injector.invoke(fn));
       }
       injector.invoke(fn);
@@ -281,10 +281,10 @@ main() {
   beforeEach(() => currentSpecInjector = new SpecInjector());
   beforeEach(module((AngularModule module) {
     module
-      ..type(Logger, Logger)
-      ..type(MockHttp, MockHttp)
-      ..type(Zone, Zone)
-      ..type(Log, Log);
+      ..type(Logger)
+      ..type(MockHttp)
+      ..type(Zone)
+      ..type(Log);
   }));
   afterEach(() => currentSpecInjector = null);
 }

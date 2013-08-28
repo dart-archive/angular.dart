@@ -27,7 +27,7 @@ main() {
     describe('url rewriting', () {
       beforeEach(module((AngularModule module) {
         module
-          ..type(UrlRewriter, SubstringRewriter);
+          ..type(UrlRewriter, implementedBy: SubstringRewriter);
       }));
 
 

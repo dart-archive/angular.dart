@@ -104,7 +104,7 @@ main() {
 
       it(r'should delegate exceptions', () {
         module((AngularModule module) {
-          module.type(ExceptionHandler, LogExceptionHandler);
+          module.type(ExceptionHandler, implementedBy: LogExceptionHandler);
         });
         inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
           $rootScope.$watch('a', () {throw 'abc';});
@@ -232,7 +232,7 @@ main() {
 
       it(r'should watch functions', () {
         module((AngularModule module) {
-          module.type(ExceptionHandler, LogExceptionHandler);
+          module.type(ExceptionHandler, implementedBy: LogExceptionHandler);
         });
         inject((Scope $rootScope, ExceptionHandler exceptionHandler) {
           $rootScope.fn = () {return 'a';};
@@ -446,7 +446,7 @@ main() {
 
 
       it(r'should catch exceptions', () {
-        module((Module module) => module.type(ExceptionHandler, LogExceptionHandler));
+        module((Module module) => module.type(ExceptionHandler, implementedBy: LogExceptionHandler));
         inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
           var log = [];
           var child = $rootScope.$new();
@@ -464,7 +464,7 @@ main() {
       describe(r'exceptions', () {
         var log;
         beforeEach(module((AngularModule module) {
-          return module.type(ExceptionHandler, LogExceptionHandler);
+          return module.type(ExceptionHandler, implementedBy: LogExceptionHandler);
         }));
         beforeEach(inject((Scope $rootScope) {
           log = '';
@@ -607,7 +607,7 @@ main() {
         }
 
         beforeEach(module((AngularModule module) {
-          return module.type(ExceptionHandler, LogExceptionHandler);
+          return module.type(ExceptionHandler, implementedBy: LogExceptionHandler);
         }));
         beforeEach(inject((Scope $rootScope) {
           log = [];

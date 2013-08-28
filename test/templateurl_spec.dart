@@ -30,7 +30,7 @@ main() {
       module
         ..directive(HtmlAndCssComponent)
         ..value(HttpBackend, backend)
-        ..type(UrlRewriter, PrefixedUrlRewriter);
+        ..type(UrlRewriter, implementedBy: PrefixedUrlRewriter);
     }));
 
     it('should use the UrlRewriter for both HTML and CSS URLs', async(inject((Http $http, Compiler $compile, Scope $rootScope, Log log, Injector injector, Zone zone) {

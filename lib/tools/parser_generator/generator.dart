@@ -106,7 +106,7 @@ call(String t) {
     generatedMain() {
   describe(\'generated parser\', () {
     beforeEach(module((AngularModule module) {
-      module.type(Parser, GeneratedParser);
+      module.type(Parser, implementedBy: GeneratedParser);
     }));
     main();
   });

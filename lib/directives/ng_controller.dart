@@ -11,14 +11,14 @@ class NgControllerAttrDirective {
   BlockHole blockHole;
   Injector injector;
   Scope scope;
+  ControllerRegistry controllerRegistry;
 
-  Symbol ctrlSymbol;
   String alias;
 
   set expression(value) {
     var match = CTRL_REGEXP.firstMatch(value);
 
-    ctrlSymbol = new Symbol(match.group(1) + 'Controller');
+    Type ctrlType = controllerRegistry[match.group(1)];
     alias = match.group(3);
 
     scope.$evalAsync(() {
@@ -28,9 +28,9 @@ class NgControllerAttrDirective {
       boundBlockFactory(childScope).insertAfter(blockHole);
 
       // instantiate the controller
-      var controller = injector.
-      createChild([new ScopeModule(childScope)], [ctrlSymbol]).
-      getBySymbol(ctrlSymbol);
+      var controller = injector
+          .createChild([new ScopeModule(childScope)],
+                       forceNewInstances: [ctrlType]).get(ctrlType);
 
       // publish the controller into the scope
       if (alias != null) {
@@ -42,5 +42,6 @@ class NgControllerAttrDirective {
   NgControllerAttrDirective(BoundBlockFactory this.boundBlockFactory,
                             BlockHole this.blockHole,
                             Injector this.injector,
-                            Scope this.scope);
+                            Scope this.scope,
+                            ControllerRegistry this.controllerRegistry);
 }
