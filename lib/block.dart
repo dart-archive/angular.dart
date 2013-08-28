@@ -39,159 +39,8 @@ class Block implements ElementWrapper {
 
   Injector _injector;
   List<dynamic> _directives = [];
-  Profiler _perf;
 
-  Block(Injector this._injector,
-        List<dom.Node> this.elements,
-        List directivePositions,
-        Profiler this._perf) {
-    ASSERT(elements != null);
-    ASSERT(directivePositions != null);
-    ASSERT(_injector != null);
-    _perf.time('angular.block',
-        () => _link(elements, directivePositions, _injector));
-  }
-
-  _link(List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
-    var preRenderedIndexOffset = 0;
-    var directiveDefsByName = {};
-
-    for (num i = 0, ii = directivePositions.length; i < ii;) {
-      num index = directivePositions[i++];
-
-      List<DirectiveRef> directiveRefs = directivePositions[i++];
-      List childDirectivePositions = directivePositions[i++];
-      var nodeListIndex = index + preRenderedIndexOffset;
-      dom.Node node = nodeList[nodeListIndex];
-
-      // if node isn't attached to the DOM, create a parent for it.
-      var parentNode = node.parentNode;
-      var fakeParent = false;
-      if (parentNode == null) {
-        fakeParent = true;
-        parentNode = new dom.DivElement();
-        parentNode.append(node);
-      }
-
-      var childInjector = _instantiateDirectives(parentInjector, node,
-          directiveRefs, parentInjector.get(Parser));
-
-      if (childDirectivePositions != null) {
-        _link(node.nodes, childDirectivePositions, childInjector);
-      }
-
-      if (fakeParent) {
-        // extract the node from the parentNode.
-        nodeList[nodeListIndex] = parentNode.nodes[0];
-      }
-    }
-  }
-
-  Injector _instantiateDirectives(Injector parentInjector, dom.Node node, 
-                                  List<DirectiveRef> directiveRefs, 
-                                  Parser parser) => 
-  _perf.time('angular.block.instantiateDirectives', () {
-    if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
-    var nodeModule = new Module();
-    var blockHoleFactory = () => null;
-    var blockFactory = () => null;
-    var boundBlockFactory = () => null;
-    var nodeAttrs = new NodeAttrs(node);
-    var nodesAttrsDirectives = null;
-    Map<Type, _ComponentFactory> fctrs;
-
-    nodeModule.value(Block, this);
-    nodeModule.value(dom.Element, node);
-    nodeModule.value(dom.Node, node);
-    nodeModule.value(NodeAttrs, nodeAttrs);
-    directiveRefs.forEach((DirectiveRef ref) {
-      Type type = ref.directive.type;
-      _NgAnnotationBase annotation = ref.directive.annotation;
-      var visibility = _elementOnly;
-      if (ref.directive.$visibility == NgDirective.CHILDREN_VISIBILITY) {
-        visibility = null;
-      } else if (ref.directive.$visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
-        visibility = _elementDirectChildren;
-      }
-      if (ref.directive.type == NgTextMustacheDirective) {
-        nodeModule.factory(NgTextMustacheDirective, (Interpolate interpolate, Scope scope) {
-          return new NgTextMustacheDirective(node, ref.value, interpolate, scope);
-        });
-      } else if (ref.directive.type == NgAttrMustacheDirective) {
-        if (nodesAttrsDirectives == null) {
-          nodesAttrsDirectives = [];
-          nodeModule.factory(NgAttrMustacheDirective, (Interpolate interpolate, Scope scope) {
-            nodesAttrsDirectives.forEach((ref) {
-              new NgAttrMustacheDirective(node, ref.value, interpolate, scope);
-            });
-          });
-        }
-        nodesAttrsDirectives.add(ref);
-      } else if (ref.directive.isComponent) {
-        //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
-        // TODO(misko): there should be no need to wrap function like this.
-        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http http, TemplateCache templateCache) {
-            // This is a bit of a hack since we are returning different type then we are.
-            var componentFactory = new _ComponentFactory(node, ref.directive);
-            if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
-            fctrs[type] = componentFactory;
-            return componentFactory(injector, compiler, scope, $blockCache, http, templateCache);
-          },
-          visibility: visibility);
-      } else {
-        nodeModule.type(type, type, visibility: visibility);
-      }
-      for (var publishType in ref.directive.$publishTypes) {
-        nodeModule.factory(publishType,
-            (Injector injector) => injector.get(type),
-            visibility: visibility);
-      }
-      if (annotation is NgDirective && annotation.transclude) {
-        blockHoleFactory = () => new BlockHole([node]);
-        blockFactory = () => ref.blockFactory;
-        boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
-      }
-    });
-    nodeModule.factory(BlockHole, blockHoleFactory);
-    nodeModule.factory(BlockFactory, blockFactory);
-    nodeModule.factory(BoundBlockFactory, boundBlockFactory);
-    var nodeInjector = parentInjector.createChild([nodeModule]);
-    var scope = nodeInjector.get(Scope);
-    directiveRefs.forEach((ref) {
-      var controller = nodeInjector.get(ref.directive.type);
-      var shadowScope = (fctrs != null && fctrs.containsKey(ref.directive.type))
-          ? fctrs[ref.directive.type].shadowScope : null;
-      _createAttributeMapping(ref, node, scope, shadowScope, controller, parser);
-      if (understands(controller, 'attach')) {
-        var removeWatcher;
-        removeWatcher = scope.$watch(() {
-          removeWatcher();
-          controller.attach();
-        });
-      }
-      if (understands(controller, 'detach')) {
-        scope.$on(r'$destroy', controller.detach);
-      }
-    });
-    return nodeInjector;
-  });
-
-  /// DI visibility callback allowing node-local visibility.
-  bool _elementOnly(Injector requesting, Injector defining) {
-    if (requesting.instances.containsKey(_SHADOW)) {
-      requesting = requesting.instances[_SHADOW];
-    }
-    return identical(requesting, defining);
-  }
-
-  /// DI visibility callback allowing visibility from direct child into parent.
-  bool _elementDirectChildren(Injector requesting, Injector defining) {
-    if (requesting.instances.containsKey(_SHADOW)) {
-      requesting = requesting.instances[_SHADOW];
-    }
-    return _elementOnly(requesting, defining) || identical(requesting.parent, defining);
-  }
-
+  Block(List<dom.Node> this.elements);
 
   Block insertAfter(ElementWrapper previousBlock) {
     // TODO(misko): this will try to insert regardless if the node is an existing server side pre-rendered instance.
@@ -271,7 +120,6 @@ class Block implements ElementWrapper {
     next = previous = null;
     return this;
   }
-
 
   Block moveAfter(ElementWrapper previousBlock) {
     var previousElements = previousBlock.elements,
@@ -520,15 +368,158 @@ class BlockFactory {
     ASSERT(directivePositions != null);
   }
 
+  BoundBlockFactory bind(Injector injector) {
+    return new BoundBlockFactory(this, injector);
+  }
+
   Block call(Injector injector, [List<dom.Node> elements]) {
     if (elements == null) {
       elements = cloneElements(templateElements);
     }
-    return new Block(injector, elements, directivePositions, _perf);
+    var block = new Block(elements);
+    _link(block, elements, directivePositions, injector);
+    return block;
   }
 
-  BoundBlockFactory bind(Injector injector) {
-    return new BoundBlockFactory(this, injector);
+  _link(Block block, List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
+    var preRenderedIndexOffset = 0;
+    var directiveDefsByName = {};
+
+    for (num i = 0, ii = directivePositions.length; i < ii;) {
+      num index = directivePositions[i++];
+
+      List<DirectiveRef> directiveRefs = directivePositions[i++];
+      List childDirectivePositions = directivePositions[i++];
+      var nodeListIndex = index + preRenderedIndexOffset;
+      dom.Node node = nodeList[nodeListIndex];
+
+      // if node isn't attached to the DOM, create a parent for it.
+      var parentNode = node.parentNode;
+      var fakeParent = false;
+      if (parentNode == null) {
+        fakeParent = true;
+        parentNode = new dom.DivElement();
+        parentNode.append(node);
+      }
+
+      var childInjector = _instantiateDirectives(block, parentInjector, node,
+          directiveRefs, parentInjector.get(Parser));
+
+      if (childDirectivePositions != null) {
+        _link(block, node.nodes, childDirectivePositions, childInjector);
+      }
+
+      if (fakeParent) {
+        // extract the node from the parentNode.
+        nodeList[nodeListIndex] = parentNode.nodes[0];
+      }
+    }
+  }
+
+  Injector _instantiateDirectives(Block block,
+                                  Injector parentInjector, dom.Node node,
+                                  List<DirectiveRef> directiveRefs,
+                                  Parser parser) =>
+  _perf.time('angular.blockFactory.instantiateDirectives', () {
+    if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
+    var nodeModule = new Module();
+    var blockHoleFactory = () => null;
+    var blockFactory = () => null;
+    var boundBlockFactory = () => null;
+    var nodeAttrs = new NodeAttrs(node);
+    var nodesAttrsDirectives = null;
+    Map<Type, _ComponentFactory> fctrs;
+
+    nodeModule.value(Block, block);
+    nodeModule.value(dom.Element, node);
+    nodeModule.value(dom.Node, node);
+    nodeModule.value(NodeAttrs, nodeAttrs);
+    directiveRefs.forEach((DirectiveRef ref) {
+      Type type = ref.directive.type;
+      _NgAnnotationBase annotation = ref.directive.annotation;
+      var visibility = _elementOnly;
+      if (ref.directive.$visibility == NgDirective.CHILDREN_VISIBILITY) {
+        visibility = null;
+      } else if (ref.directive.$visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
+        visibility = _elementDirectChildren;
+      }
+      if (ref.directive.type == NgTextMustacheDirective) {
+        nodeModule.factory(NgTextMustacheDirective, (Interpolate interpolate, Scope scope) {
+          return new NgTextMustacheDirective(node, ref.value, interpolate, scope);
+        });
+      } else if (ref.directive.type == NgAttrMustacheDirective) {
+        if (nodesAttrsDirectives == null) {
+          nodesAttrsDirectives = [];
+          nodeModule.factory(NgAttrMustacheDirective, (Interpolate interpolate, Scope scope) {
+            nodesAttrsDirectives.forEach((ref) {
+              new NgAttrMustacheDirective(node, ref.value, interpolate, scope);
+            });
+          });
+        }
+        nodesAttrsDirectives.add(ref);
+      } else if (ref.directive.isComponent) {
+        //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
+        // TODO(misko): there should be no need to wrap function like this.
+        nodeModule.factory(type, (Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http http, TemplateCache templateCache) {
+            // This is a bit of a hack since we are returning different type then we are.
+            var componentFactory = new _ComponentFactory(node, ref.directive);
+            if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
+            fctrs[type] = componentFactory;
+            return componentFactory(injector, compiler, scope, $blockCache, http, templateCache);
+          },
+          visibility: visibility);
+      } else {
+        nodeModule.type(type, type, visibility: visibility);
+      }
+      for (var publishType in ref.directive.$publishTypes) {
+        nodeModule.factory(publishType,
+            (Injector injector) => injector.get(type),
+            visibility: visibility);
+      }
+      if (annotation is NgDirective && annotation.transclude) {
+        blockHoleFactory = () => new BlockHole([node]);
+        blockFactory = () => ref.blockFactory;
+        boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
+      }
+    });
+    nodeModule.factory(BlockHole, blockHoleFactory);
+    nodeModule.factory(BlockFactory, blockFactory);
+    nodeModule.factory(BoundBlockFactory, boundBlockFactory);
+    var nodeInjector = parentInjector.createChild([nodeModule]);
+    var scope = nodeInjector.get(Scope);
+    directiveRefs.forEach((ref) {
+      var controller = nodeInjector.get(ref.directive.type);
+      var shadowScope = (fctrs != null && fctrs.containsKey(ref.directive.type))
+          ? fctrs[ref.directive.type].shadowScope : null;
+      _createAttributeMapping(ref, node, scope, shadowScope, controller, parser);
+      if (understands(controller, 'attach')) {
+        var removeWatcher;
+        removeWatcher = scope.$watch(() {
+          removeWatcher();
+          controller.attach();
+        });
+      }
+      if (understands(controller, 'detach')) {
+        scope.$on(r'$destroy', controller.detach);
+      }
+    });
+    return nodeInjector;
+  });
+
+  /// DI visibility callback allowing node-local visibility.
+  bool _elementOnly(Injector requesting, Injector defining) {
+    if (requesting.instances.containsKey(_SHADOW)) {
+      requesting = requesting.instances[_SHADOW];
+    }
+    return identical(requesting, defining);
+  }
+
+  /// DI visibility callback allowing visibility from direct child into parent.
+  bool _elementDirectChildren(Injector requesting, Injector defining) {
+    if (requesting.instances.containsKey(_SHADOW)) {
+      requesting = requesting.instances[_SHADOW];
+    }
+    return _elementOnly(requesting, defining) || identical(requesting.parent, defining);
   }
 }
 
