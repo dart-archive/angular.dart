@@ -308,14 +308,7 @@ class NodeAttrs {
 
   operator []=(String name, String value) => node.attributes[name] = value;
   operator [](name) {
-    if (!(name is String)) {
-      var annotations = reflectMetadata(name.runtimeType, NgDirective);
-      if (annotations.length == 0) {
-        return null;
-      }
-      name = annotations.first.defaultAttributeName;
-    }
-    return node is dom.Element ? node.attributes[name] : null;
+    return node.attributes[name];
   }
 
   dom.Element get element => node;

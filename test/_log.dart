@@ -9,13 +9,17 @@ class Log {
   String result() => output.join('; ');
 }
 
-@NgDirective(selector: '[log]')
+@NgDirective(
+    selector: '[log]',
+    map: const {
+      'log': '@.message'
+    }
+)
 class LogAttrDirective {
-  static var $priority = 0;
   Log log;
-  LogAttrDirective(Log this.log, NodeAttrs attrs) {
-    log(attrs[this] == "" ? "LOG" : attrs[this]);
-  }
+  String message;
+  LogAttrDirective(Log this.log);
+  attach() => log(message == '' ? 'LOG' : message);
 }
 
 main() {}

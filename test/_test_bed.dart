@@ -58,7 +58,7 @@ class Probe {
   Element element;
 
   Probe(Scope this.scope, Injector this.injector, Element this.element, NodeAttrs attrs) {
-    scope.$root[attrs[this]] = this;
+    scope.$root[attrs['probe']] = this;
   }
 
   directive(Type type) => injector.get(type);

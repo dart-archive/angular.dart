@@ -2,14 +2,6 @@ import "_specs.dart";
 import "_log.dart";
 import "_http.dart";
 
-@NgDirective(selector: '[log]')
-class LogAttrDirective {
-  Log log;
-  LogAttrDirective(Log this.log, NodeAttrs attrs) {
-    log(attrs[this] == "" ? "LOG" : attrs[this]);
-  }
-}
-
 @NgComponent(templateUrl: 'simple.html')
 class SimpleUrlComponent {
 }
@@ -88,6 +80,7 @@ main() {
       nextTurn(true);
 
       expect(renderedText(element)).toEqual('Simple!');
+      $rootScope.$digest();
       // Note: There is no ordering.  It is who ever comes off the wire first!
       expect(log.result()).toEqual('LOG; SIMPLE');
     })));
@@ -102,6 +95,7 @@ main() {
       nextTurn(true);
 
       expect(renderedText(element)).toEqual('Simple!Simple!');
+      $rootScope.$digest();
       // Note: There is no ordering.  It is who ever comes off the wire first!
       expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
     })));
@@ -120,6 +114,7 @@ main() {
       expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
         '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
       );
+      $rootScope.$digest();
       // Note: There is no ordering.  It is who ever comes off the wire first!
       expect(log.result()).toEqual('LOG; SIMPLE');
     })));
