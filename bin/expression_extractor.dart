@@ -8,7 +8,17 @@ import 'package:angular/tools/io.dart';
 import 'package:angular/tools/io_impl.dart';
 import 'package:angular/tools/common.dart';
 
+import 'package:di/di.dart';
+import 'package:angular/parser/parser_library.dart';
+import 'package:angular/tools/parser_generator/dart_code_gen.dart';
+import 'package:angular/tools/parser_generator/generator.dart';
+
 main() {
+  Module module = new Module()
+    ..type(ParserBackend, DartCodeGen);
+
+  Injector injector = new Injector([module]);
+
   var args = new Options().arguments;
   if (args.length < 3) {
     print('Usage: expression_extractor file_to_scan html_root package_roots+');
@@ -22,5 +32,10 @@ main() {
       sourceMetadataExtractor.gatherDirectiveInfo(args[0]);
   var htmlExtractor = new HtmlExpressionExtractor(directives, ioService);
   htmlExtractor.crawl(args[1]);
-  print(htmlExtractor.expressions.join('\n'));
+
+  var expressions = htmlExtractor.expressions;
+
+  print ('// Found ${expressions.length} expressions');
+
+  injector.get(ParserGenerator).generateParser(htmlExtractor.expressions);
 }
