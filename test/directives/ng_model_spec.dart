@@ -1,5 +1,6 @@
 import "../_specs.dart";
 import "../_test_bed.dart";
+import 'dart:html' as dom;
 
 main() =>
 describe('ng-model', () {
@@ -27,6 +28,30 @@ describe('ng-model', () {
       probe.element.value = 'abc';
       input.processValue();
       expect(_.rootScope.model).toEqual('abc');
+    }));
+
+    it('should write to input only if value is different', inject(() {
+      var scope = _.rootScope;
+      var model = new NgModel(scope);
+      var element = new dom.InputElement();
+      dom.query('body').append(element);
+      var input = new InputTextDirective(element, model, scope);
+
+      element.value = 'abc';
+      element.selectionStart = 1;
+      element.selectionEnd = 2;
+
+      model.render('abc');
+
+      expect(element.value).toEqual('abc');
+      expect(element.selectionStart).toEqual(1);
+      expect(element.selectionEnd).toEqual(2);
+
+      model.render('xyz');
+
+      expect(element.value).toEqual('xyz');
+      expect(element.selectionStart).toEqual(1);
+      expect(element.selectionEnd).toEqual(2);
     }));
   });
 

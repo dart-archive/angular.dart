@@ -14,17 +14,17 @@ part of angular;
     selector: '[ng-model]',
     map: const {'ng-model': '&.model'})
 class NgModel {
-  Getter getterXXX = ([_]) => null;
+  Getter getter = ([_]) => null;
   Setter setter = (_, [__]) => null;
 
   Function render = (value) => null;
 
   NgModel(Scope scope) {
-    scope.$watch(() => getterXXX(), (value) => render(value) );
+    scope.$watch(() => getter(), (value) => render(value) );
   }
 
   set model(BoundExpression boundExpression) {
-    getterXXX = boundExpression;
+    getter = boundExpression;
     setter = boundExpression.assign;
   }
 
@@ -33,7 +33,7 @@ class NgModel {
   get viewValue        => modelValue;
   set viewValue(value) => modelValue = value;
 
-  get modelValue        => getterXXX();
+  get modelValue        => getter();
   set modelValue(value) => setter(value);
 }
 
@@ -49,7 +49,16 @@ class InputTextDirective {
 
   InputTextDirective(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope) {
     ngModel.render = (value) {
-      inputElement.value = value == null ? '' : value;
+      if (value == null) value = '';
+
+      var currentValue = inputElement.value;
+      if (value == currentValue) return;
+
+      var start = inputElement.selectionStart;
+      var end = inputElement.selectionEnd;
+      inputElement.value = value;
+      inputElement.selectionStart = start;
+      inputElement.selectionEnd = end;
     };
     inputElement.onChange.listen(relaxFnArgs(processValue));
     inputElement.onKeyDown.listen((e) => new async.Timer(Duration.ZERO, processValue));
