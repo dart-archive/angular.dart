@@ -40,7 +40,9 @@ Iterable reflectMetadata(Type type, Type metadata) {
       meta = [];
     }
   }
-  if (meta == null) meta = [];
+  if (meta == null) {
+    throw "Type $type does not have metadata. Syntax error, perhaps?";
+  }
   return meta.where((InstanceMirror im) => im.reflectee.runtimeType == metadata)
         .map((InstanceMirror im) => im.reflectee);
 }
