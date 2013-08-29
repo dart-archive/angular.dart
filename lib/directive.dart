@@ -1,9 +1,5 @@
 part of angular;
 
-String _COMPONENT = '-component';
-String _DIRECTIVE = '-directive';
-String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
-
 class _NgAnnotationBase {
   /**
    * CSS selector which will trigger this component/directive.
@@ -251,7 +247,7 @@ class Directive {
 
 
   // TODO(misko): this should be renamed to selector once we change over to meta-data.
-  String $name;
+  String $selector;
   int $priority = Directive.ATTR_PRIORITY;
   String $template;
   String $templateUrl;
@@ -269,7 +265,8 @@ class Directive {
     annotations.addAll(reflectMetadata(type, NgDirective));
     annotations.addAll(reflectMetadata(type, NgComponent));
     if (annotations.length != 1) {
-      throw 'Expecting exatly one annotation of type NgComponent or NgDirective on $type';
+      throw 'Expecting exatly one annotation of type NgComponent or '
+            'NgDirective on $type found ${annotations.length} annotations.';
     }
     annotation =  annotations.first;
   }
@@ -283,7 +280,7 @@ class Directive {
     instance = new Directive._new(type);
     var name = type.toString();
     var isAttr = false;
-    instance.$name = name.splitMapJoin(
+    instance.$selector = name.splitMapJoin(
         new RegExp(r'[A-Z]'),
         onMatch: (m) => '-' + m.group(0).toLowerCase())
       .substring(1);
@@ -294,17 +291,17 @@ class Directive {
       throw 'Cannot have both NgDirective and NgComponent annotations.';
     }
 
-    var selector;
     if (directive != null) {
-      selector = directive.selector;
+      instance.$selector = directive.selector;
       instance.$visibility = directive.visibility;
       instance.$publishTypes = directive.publishTypes;
       instance.$map = directive.map;
     }
     if (component != null) {
+      instance.isComponent = true;
       instance.$priority = Directive.COMPONENT_PRIORITY;
       instance.$template = component.template;
-      selector = component.selector;
+      instance.$selector = component.selector;
       instance.$templateUrl = component.templateUrl;
       instance.$cssUrl = component.cssUrl;
       instance.$visibility = component.visibility;
@@ -316,22 +313,8 @@ class Directive {
       instance.$publishTypes = component.publishTypes;
     }
 
-    if (selector != null) {
-      instance.$name = selector;
-    } else if (instance.$name.endsWith(_ATTR_DIRECTIVE)) {
-      var attrName = instance.$name.
-          substring(0, instance.$name.length - _ATTR_DIRECTIVE.length);
-      instance.$name = '[$attrName]';
-    } else if (instance.$name.endsWith(_DIRECTIVE)) {
-      instance.$name = instance.$name.
-          substring(0, instance.$name.length - _DIRECTIVE.length);
-    } else if (instance.$name.endsWith(_COMPONENT)) {
-      instance.isComponent = true;
-      instance.$name = instance.$name.
-          substring(0, instance.$name.length - _COMPONENT.length);
-    } else {
-      throw "Directive name '$name' must end with $_DIRECTIVE, "
-            "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
+    if (instance.$selector == null || instance.$selector.isEmpty) {
+      throw new Exception('Selector is required on $type.');
     }
 
     if (instance.$map == null) {
@@ -371,7 +354,7 @@ class DirectiveRef {
   }
 
   String toString() {
-    return '{ element: ${element.outerHtml}, selector: ${directive.$name}, value: $value }';
+    return '{ element: ${element.outerHtml}, selector: ${directive.$selector}, value: $value }';
   }
 }
 
@@ -384,7 +367,7 @@ class DirectiveRegistry {
   register(Type directiveType) {
    var directive = new Directive(directiveType);
 
-   directiveMap[directive.$name] = directive;
+   directiveMap[directive.$selector] = directive;
   }
 
   Directive operator[](String selector) {

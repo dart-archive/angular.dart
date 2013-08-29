@@ -1,6 +1,7 @@
 import "_specs.dart";
 
 @NgComponent(
+    selector: 'reset-style-inheritance',
     template: '<div class="c">Reset me foo</div>',
     applyAuthorStyles: false,
     resetStyleInheritance: true
@@ -13,6 +14,7 @@ class ResetStyleInheritanceComponent {
 }
 
 @NgComponent(
+    selector: 'apply-author-style',
     template: '<div>Style me foo</div>',
     applyAuthorStyles: true
 )
@@ -23,7 +25,10 @@ class ApplyAuthorStyleComponent {
   }
 }
 
-@NgComponent(template: '<div class="c">Style me foo</div>')
+@NgComponent(
+    selector: 'default-options',
+    template: '<div class="c">Style me foo</div>'
+)
 class DefaultOptionsComponent {
   static var lastTemplateLoader;
   DefaultOptionsComponent(Element elt, TemplateLoader tl) {

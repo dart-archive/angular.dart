@@ -16,6 +16,7 @@ class WithDefaultShadowRootOptionsComponent {
 }
 
 @NgComponent(
+    selector: 'with-custom-shadow-root-options',
     applyAuthorStyles: true,
     resetStyleInheritance: true
 )
@@ -26,12 +27,12 @@ main() {
   describe('directive factory', () {
     it('should guess the directive name correctly', () {
       Directive factory = new Directive(SomeDirective);
-      expect(factory.$name).toEqual('some');
+      expect(factory.$selector).toEqual('some');
     });
 
     it('should guess the attr directive name correctly', () {
       Directive factory = new Directive(AnotherAttrDirective);
-      expect(factory.$name).toEqual('[another]');
+      expect(factory.$selector).toEqual('[another]');
     });
 
     it('should default \$shadowRootOptions to false/false', () {

@@ -2,19 +2,29 @@ import "_specs.dart";
 import "_log.dart";
 import "_http.dart";
 
-@NgComponent(templateUrl: 'simple.html')
+@NgComponent(
+    selector: 'simple-url',
+    templateUrl: 'simple.html')
 class SimpleUrlComponent {
 }
 
-@NgComponent(templateUrl: 'simple.html', cssUrl: 'simple.css')
+@NgComponent(
+    selector: 'html-and-css',
+    templateUrl: 'simple.html',
+    cssUrl: 'simple.css')
 class HtmlAndCssComponent {
 }
 
-@NgComponent(template: '<div>inline!</div>', cssUrl: 'simple.css')
+@NgComponent(
+    selector: 'inline-with-css',
+    template: '<div>inline!</div>',
+    cssUrl: 'simple.css')
 class InlineWithCssComponent {
 }
 
-@NgComponent(cssUrl: 'simple.css')
+@NgComponent(
+    selector: 'only-css',
+    cssUrl: 'simple.css')
 class OnlyCssComponent {
 }
 

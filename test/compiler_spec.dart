@@ -3,68 +3,6 @@ import "_log.dart";
 import "dart:mirrors";
 
 
-@NgComponent(visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY)
-class TabComponent {
-  int id = 0;
-  Log log;
-  LocalAttrDirective local;
-  TabComponent(Log this.log, LocalAttrDirective this.local, Scope scope) {
-    log('TabComponent-${id++}');
-    local.ping();
-  }
-}
-
-@NgComponent()
-class PaneComponent {
-  TabComponent tabComponent;
-  LocalAttrDirective localDirective;
-  Log log;
-  PaneComponent(TabComponent this.tabComponent, LocalAttrDirective this.localDirective, Log this.log, Scope scope) {
-    log('PaneComponent-${tabComponent.id++}');
-    localDirective.ping();
-  }
-}
-
-@NgDirective(visibility: NgDirective.LOCAL_VISIBILITY)
-class LocalAttrDirective {
-  int id = 0;
-  Log log;
-  LocalAttrDirective(Log this.log);
-  ping() {
-    log('LocalAttrDirective-${id++}');
-  }
-}
-
-@NgDirective(visibility: NgDirective.CHILDREN_VISIBILITY, transclude: true)
-class SimpleTranscludeInAttachAttrDirective {
-  SimpleTranscludeInAttachAttrDirective(BlockHole blockHole, BoundBlockFactory boundBlockFactory, Log log, Scope scope) {
-    scope.$evalAsync(() {
-      var block = boundBlockFactory(scope);
-      block.insertAfter(blockHole);
-      log('SimpleTransclude');
-    });
-  }
-}
-
-@NgDirective()
-class IncludeTranscludeAttrDirective {
-  IncludeTranscludeAttrDirective(SimpleTranscludeInAttachAttrDirective simple, Log log) {
-    log('IncludeTransclude');
-  }
-}
-
-@NgDirective()
-class PublishTypesDirectiveSuperType {
-}
-
-@NgDirective(publishTypes: const [PublishTypesDirectiveSuperType])
-class PublishTypesAttrDirective implements PublishTypesDirectiveSuperType {
-  static Injector _injector;
-  PublishTypesAttrDirective(Injector injector) {
-    _injector = injector;
-  }
-}
-
 main() {
 
   describe('dte.compiler', () {
@@ -233,7 +171,20 @@ main() {
         module.directive(PublishMeComponent);
         module.directive(LogComponent);
         module.directive(AttachDetachComponent);
+        module.directive(SimpleComponent);
       }));
+
+      it('should select on element', async(inject((Zone zone) {
+        var element = $(r'<div><simple></simple></div>');
+
+        zone.run(() {
+          BlockFactory blockFactory = $compile(element);
+          Block block = blockFactory(injector, element);
+        });
+
+        nextTurn(true);
+        expect(element.textWithShadow()).toEqual('INNER_2()');
+      })));
 
       it('should create a simple component', async(inject((Zone zone) {
         $rootScope.name = 'OUTTER';
@@ -471,6 +422,76 @@ main() {
 }
 
 @NgComponent(
+    selector: 'tab',
+    visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY)
+class TabComponent {
+  int id = 0;
+  Log log;
+  LocalAttrDirective local;
+  TabComponent(Log this.log, LocalAttrDirective this.local, Scope scope) {
+    log('TabComponent-${id++}');
+    local.ping();
+  }
+}
+
+@NgComponent(selector: 'pane')
+class PaneComponent {
+  TabComponent tabComponent;
+  LocalAttrDirective localDirective;
+  Log log;
+  PaneComponent(TabComponent this.tabComponent, LocalAttrDirective this.localDirective, Log this.log, Scope scope) {
+    log('PaneComponent-${tabComponent.id++}');
+    localDirective.ping();
+  }
+}
+
+@NgDirective(
+    selector: '[local]',
+    visibility: NgDirective.LOCAL_VISIBILITY)
+class LocalAttrDirective {
+  int id = 0;
+  Log log;
+  LocalAttrDirective(Log this.log);
+  ping() {
+    log('LocalAttrDirective-${id++}');
+  }
+}
+
+@NgDirective(
+    selector: '[simple-transclude-in-attach]',
+    visibility: NgDirective.CHILDREN_VISIBILITY, transclude: true)
+class SimpleTranscludeInAttachAttrDirective {
+  SimpleTranscludeInAttachAttrDirective(BlockHole blockHole, BoundBlockFactory boundBlockFactory, Log log, Scope scope) {
+    scope.$evalAsync(() {
+      var block = boundBlockFactory(scope);
+      block.insertAfter(blockHole);
+      log('SimpleTransclude');
+    });
+  }
+}
+
+@NgDirective(selector: '[include-transclude]')
+class IncludeTranscludeAttrDirective {
+  IncludeTranscludeAttrDirective(SimpleTranscludeInAttachAttrDirective simple, Log log) {
+    log('IncludeTransclude');
+  }
+}
+
+class PublishTypesDirectiveSuperType {
+}
+
+@NgDirective(
+    selector: '[publish-types]',
+    publishTypes: const [PublishTypesDirectiveSuperType])
+class PublishTypesAttrDirective implements PublishTypesDirectiveSuperType {
+  static Injector _injector;
+  PublishTypesAttrDirective(Injector injector) {
+    _injector = injector;
+  }
+}
+
+@NgComponent(
+    selector: 'simple',
     template: r'{{name}}{{sep}}{{$id}}(<content>SHADOW-CONTENT</content>)'
 )
 class SimpleComponent {
@@ -480,6 +501,7 @@ class SimpleComponent {
 }
 
 @NgComponent(
+    selector: 'io',
     template: r'<content></content>',
     map: const {
         'attr': '@',
@@ -496,6 +518,7 @@ class IoComponent {
 }
 
 @NgComponent(
+    selector: 'io-controller',
     template: r'<content></content>',
     publishAs: 'ctrl',
     map: const {
@@ -520,6 +543,7 @@ class IoControllerComponent {
 }
 
 @NgComponent(
+    selector: 'unpublished-io-controller',
     template: r'<content></content>',
     map: const {
         'attr': '@.attr',
@@ -542,16 +566,19 @@ class UnpublishedIoControllerComponent {
 }
 
 @NgComponent(
+    selector: 'incorrect-mapping',
     template: r'<content></content>',
     map: const { 'attr': 'foo' })
 class IncorrectMappingComponent { }
 
 @NgComponent(
+    selector: 'non-assignable-mapping',
     template: r'<content></content>',
     map: const { 'attr': '@1+2' })
 class NonAssignableMappingComponent { }
 
 @NgComponent(
+    selector: 'camel-case-map',
     map: const {
       'camelCase': '@',
     }
@@ -563,6 +590,7 @@ class CamelCaseMapComponent {
 }
 
 @NgComponent(
+    selector: 'parent-expression',
     template: '<div>inside {{fromParent()}}</div>',
     map: const {
       'fromParent': '&',
@@ -572,6 +600,7 @@ class ParentExpressionComponent {
 }
 
 @NgComponent(
+    selector: 'publish-me',
     template: r'<content>{{ctrlName.value}}</content>',
     publishAs: 'ctrlName'
 )
@@ -581,6 +610,7 @@ class PublishMeComponent {
 
 
 @NgComponent(
+    selector: 'log',
     template: r'<content></content>',
     publishAs: 'ctrlName'
 )
@@ -591,6 +621,7 @@ class LogComponent {
 }
 
 @NgComponent(
+    selector: 'attach-detach',
     template: r'<content></content>'
 )
 class AttachDetachComponent {

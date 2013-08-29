@@ -40,6 +40,7 @@ Iterable reflectMetadata(Type type, Type metadata) {
       meta = [];
     }
   }
+  if (meta == null) meta = [];
   return meta.where((InstanceMirror im) => im.reflectee.runtimeType == metadata)
         .map((InstanceMirror im) => im.reflectee);
 }

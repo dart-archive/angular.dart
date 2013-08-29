@@ -76,7 +76,7 @@ class Compiler {
                       NodeCursor domCursor, NodeCursor templateCursor,
                       DirectiveRef directiveRef,
                       List<DirectiveRef> transcludedDirectiveRefs) {
-    var anchorName = directiveRef.directive.$name + (directiveRef.value != null ? '=' + directiveRef.value : '');
+    var anchorName = directiveRef.directive.$selector + (directiveRef.value != null ? '=' + directiveRef.value : '');
     var blockFactory;
     var blocks;
 
