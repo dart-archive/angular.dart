@@ -113,15 +113,16 @@ class Scope implements Map {
     if (name == r'$id') return this.$id;
     if (name == r'$parent') return this.$parent;
     if (name == r'$root') return this.$root;
-    if (_properties.containsKey(name)) {
-      return _properties[name];
-    } else if (!_isolate) {
-      //var $parent = _properties[r'$parent'];
-      //var $root = _properties[r'$root'];
-      if ($parent != null /*&& $parent != $root*/) {
-        return $parent[name];
+    var scope = this;
+    do {
+      if (scope._properties.containsKey(name)) {
+        return scope._properties[name];
+      } else if (!scope._isolate) {
+        scope = scope.$parent;
+      } else {
+        return null;
       }
-    }
+    } while(scope != null);
     return null;
   }
 

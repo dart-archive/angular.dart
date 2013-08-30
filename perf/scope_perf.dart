@@ -3,8 +3,20 @@ import "_perf.dart";
 
 main() => describe('scope', () {
   var scope;
+  var scope2, scope3, scope4, scope5;
+  var fill = (scope) {
+    for(var i = 0; i < 10000; i++) {
+      scope['key_$i'] = i;
+    }
+    return scope;
+  };
+
   beforeEach(inject((Scope _scope){
-    scope = _scope;
+    scope = fill(_scope);
+    scope2 = fill(scope.$new());
+    scope3 = fill(scope2.$new());
+    scope4 = fill(scope3.$new());
+    scope5 = fill(scope4.$new());
   }));
 
   time('noop', () {});
@@ -28,9 +40,15 @@ main() => describe('scope', () {
       }
     });
 
-    ttime('3000 watchers on scope', () {
+    time('3000 watchers on scope', () {
       scope.$digest();
     });
+
+    ttime('scope[] 1 deep', () => scope['nenexistant']);
+    ttime('scope[] 2 deep', () => scope2['nenexistant']);
+    ttime('scope[] 3 deep', () => scope3['nenexistant']);
+    ttime('scope[] 4 deep', () => scope4['nenexistant']);
+    ttime('scope[] 5 deep', () => scope5['nenexistant']);
 
   });
 });
