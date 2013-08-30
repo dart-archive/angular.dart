@@ -23,6 +23,8 @@ class Expression implements ParserAST {
   get assignable => assign != null;
 }
 
+var undefined_ = const Symbol("UNDEFINED");
+
 class ParserBackend {
   static Expression ZERO = new Expression((_, [_x]) => 0);
 
@@ -84,11 +86,11 @@ class ParserBackend {
       } else {
         currentValue = _getterChild(locals, curKey);
         locals = null;
-        if (currentValue == undefined_) {
+        if (identical(currentValue, undefined_)) {
           currentValue = _getterChild(self, curKey);
         }
       }
-      if (currentValue == null || currentValue == undefined_) { return null; }
+      if (currentValue == null || identical(currentValue, undefined_)) { return null; }
     }
     return currentValue;
   }
@@ -117,7 +119,7 @@ class ParserBackend {
     for (var i = 0; element.length > 1; i++) {
       var key = element.removeAt(0);
       var propertyObj = _getterChild(obj, key);
-      if (propertyObj == null || propertyObj == undefined_) {
+      if (propertyObj == null || identical(propertyObj, undefined_)) {
         propertyObj = {};
         _setterChild(obj, key, propertyObj);
       }

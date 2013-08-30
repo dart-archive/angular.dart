@@ -40,15 +40,13 @@ main() => describe('scope', () {
       }
     });
 
-    time('3000 watchers on scope', () {
-      scope.$digest();
-    });
+    ttime('3000 watchers on scope', () => scope.$digest());
 
-    ttime('scope[] 1 deep', () => scope['nenexistant']);
-    ttime('scope[] 2 deep', () => scope2['nenexistant']);
-    ttime('scope[] 3 deep', () => scope3['nenexistant']);
-    ttime('scope[] 4 deep', () => scope4['nenexistant']);
-    ttime('scope[] 5 deep', () => scope5['nenexistant']);
+    time('scope[] 1 deep', () => scope['nenexistant']);
+    time('scope[] 2 deep', () => scope2['nenexistant']);
+    time('scope[] 3 deep', () => scope3['nenexistant']);
+    time('scope[] 4 deep', () => scope4['nenexistant']);
+    time('scope[] 5 deep', () => scope5['nenexistant']);
 
   });
 });

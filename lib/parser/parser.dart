@@ -103,7 +103,6 @@ safeFunctionCall(userFn, fnName, evalError) {
   return userFn;
 }
 
-var undefined_ = new Symbol("UNDEFINED");
 
 Map<String, Operator> OPERATORS = {
   'undefined': NULL_OP,
