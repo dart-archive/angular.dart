@@ -14,6 +14,10 @@ main() {
   // List generated using:
   // node node_modules/karma/bin/karma run | grep -Eo ":XNAY:.*:XNAY:" | sed -e 's/:XNAY://g' | sed -e "s/^/'/" | sed -e "s/$/',/" | sort | uniq > missing_expressions
   injector.get(ParserGenerator).generateParser([
+      "doesNotExist",
+      "null",
+      "a.b.c",
+      "e1.b",
       "1", "-1", "+1",
       "!true",
       "3*4/2%5", "3+6-2",
