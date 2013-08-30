@@ -94,7 +94,7 @@ class GetterSetterGenerator {
       var prefixFn = call(pathSplit[1]);
       field = pathSplit[2];
       f += """  var prefix = $prefixFn(scope, locals);
-  if (prefix == null) return null;
+  if (identical(prefix, null)) return null;
 """;
       obj = "prefix";
     } else {
@@ -102,13 +102,15 @@ class GetterSetterGenerator {
 
       // This try block is needed because we attempt to access locals.foo
       // If foo does not exist, we should fall through.
-      f += "  try {\n";
+      f += "  if (locals != null) {\n";
+      f += "    try {\n";
       f += fieldGetter(field, "locals");
-      f += "    if (val != undefined_) { return val; }\n";
-      f += "  } catch (e) {}\n";
+      f += "      if (val != undefined_) { return val; }\n";
+      f += "    } catch (e) {}\n";
+      f += "  }\n";
     }
     f += fieldGetter(field, obj);
-    f += "  return val == undefined_ ? null : val;\n";
+    f += "  return identical(val, undefined_) ? null : val;\n";
     f += "}";
 
     functions += f;
