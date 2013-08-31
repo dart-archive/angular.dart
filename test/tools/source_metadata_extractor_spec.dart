@@ -23,7 +23,10 @@ main() => describe('SourceMetadataExtractor', () {
     ]);
 
     expect(flattenList(info, (DirectiveInfo i) => i.expressionAttrs),
-        equals(['foo-expr',
+        equals(['foo-val',
+                'bar-val',
+                'baz-val',
+                'foo-expr',
                 'bar-expr',
                 'baz-expr',
                 'foo-callback',
@@ -32,10 +35,13 @@ main() => describe('SourceMetadataExtractor', () {
     expect(flattenList(info, (DirectiveInfo i) => i.expressions),
         equals(['fooVal',
                 'ctrl.bar',
+                'baz',
                 'fooExpr',
                 'ctrl.bar',
+                'baz',
                 'fooCallback',
-                'ctrl.bar']));
+                'ctrl.bar',
+                'baz']));
   });
 
   it('should build a component selector if one is not explicitly specified', () {

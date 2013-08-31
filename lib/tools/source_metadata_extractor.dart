@@ -30,7 +30,7 @@ class SourceMetadataExtractor {
       DirectiveInfo dirInfo = new DirectiveInfo();
       dirInfo.selector = meta.selector;
       meta.attributeMappings.forEach((attrName, mappingSpec) {
-        if (mappingSpec.startsWith('=') || mappingSpec.startsWith('&')) {
+        if (mappingSpec.startsWith('=') || mappingSpec.startsWith('&') || mappingSpec.startsWith('@')) {
           dirInfo.expressionAttrs.add(snakecase(attrName));
         }
         if (mappingSpec.length == 1) { // shorthand
@@ -41,8 +41,9 @@ class SourceMetadataExtractor {
           }
         } else {
           mappingSpec = mappingSpec.substring(1);
-          // We don't care about short-hand controller field assignment.
-          if (mappingSpec.startsWith('.')) return;
+          if (mappingSpec.startsWith('.')) {
+            mappingSpec = mappingSpec.substring(1);
+          }
           dirInfo.expressions.add(mappingSpec);
         }
       });
@@ -60,46 +61,46 @@ class SourceMetadataExtractor {
         }
       });
 
-      if (dirInfo.expressionAttrs.length > 0) {
-        // No explicit selector specified on the directive, compute one.
-        var className = snakecase(meta.className);
-        if (dirInfo.selector == null) {
-          if (meta.type == COMPONENT) {
-            if (className.endsWith(_COMPONENT)) {
-              dirInfo.selector = className.
-                  substring(0, className.length - _COMPONENT.length);
-            } else {
-              throw "Directive name '$className' must end with $_DIRECTIVE, "
-              "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
-            }
+
+      // No explicit selector specified on the directive, compute one.
+      var className = snakecase(meta.className);
+      if (dirInfo.selector == null) {
+        if (meta.type == COMPONENT) {
+          if (className.endsWith(_COMPONENT)) {
+            dirInfo.selector = className.
+                substring(0, className.length - _COMPONENT.length);
           } else {
-            if (className.endsWith(_ATTR_DIRECTIVE)) {
-              var attrName = className.
-                  substring(0, className.length - _ATTR_DIRECTIVE.length);
-              dirInfo.selector = '[$attrName]';
-            } else if (className.endsWith(_DIRECTIVE)) {
-              dirInfo.selector = className.
-                  substring(0, className.length - _DIRECTIVE.length);
-            } else {
-              throw "Directive name '$className' must end with $_DIRECTIVE, "
-              "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
-            }
+            throw "Directive name '$className' must end with $_DIRECTIVE, "
+            "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
+          }
+        } else {
+          if (className.endsWith(_ATTR_DIRECTIVE)) {
+            var attrName = className.
+                substring(0, className.length - _ATTR_DIRECTIVE.length);
+            dirInfo.selector = '[$attrName]';
+          } else if (className.endsWith(_DIRECTIVE)) {
+            dirInfo.selector = className.
+                substring(0, className.length - _DIRECTIVE.length);
+          } else {
+            throw "Directive name '$className' must end with $_DIRECTIVE, "
+            "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
           }
         }
-        var reprocessedAttrs = <String>[];
-        dirInfo.expressionAttrs.forEach((String attr) {
-          if (attr == '.') {
-            var matches = _ATTR_SELECTOR_REGEXP.allMatches(dirInfo.selector);
-            if (matches.length > 0) {
-              reprocessedAttrs.add(matches.last.group(1));
-            }
-          } else {
-            reprocessedAttrs.add(attr);
-          }
-        });
-        dirInfo.expressionAttrs = reprocessedAttrs;
-        directives.add(dirInfo);
       }
+      var reprocessedAttrs = <String>[];
+      dirInfo.expressionAttrs.forEach((String attr) {
+        if (attr == '.') {
+          var matches = _ATTR_SELECTOR_REGEXP.allMatches(dirInfo.selector);
+          if (matches.length > 0) {
+            reprocessedAttrs.add(matches.last.group(1));
+          }
+        } else {
+          reprocessedAttrs.add(attr);
+        }
+      });
+      dirInfo.expressionAttrs = reprocessedAttrs;
+      directives.add(dirInfo);
+
     });
 
     return directives;

@@ -60,7 +60,7 @@ class ParserGenerator {
       if ("$e".contains('Parser Error') ||
       "$e".contains('Lexer Error') ||
       "$e".contains('Unexpected end of expression')) {
-        return  new Code.returnOnly("throw r'$e';");
+        return  new Code.returnOnly("throw '${escape(e)}';");
       } else {
         rethrow;
       }
@@ -87,11 +87,13 @@ class ParserGenerator {
     _p("""
     genEvalError(msg) { throw msg; }
 
+    functions() => new StaticParserFunctions(_FUNCTIONS);
+
     generatedMain() {
   describe(\'generated parser\', () {
     beforeEach(module((AngularModule module) {
       module.type(Parser, implementedBy: StaticParser);
-      module.value(StaticParserFunctions, new StaticParserFunctions(_FUNCTIONS));
+      module.value(StaticParserFunctions, functions());
     }));
     main();
   });

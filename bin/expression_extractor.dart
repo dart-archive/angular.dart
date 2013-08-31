@@ -35,6 +35,7 @@ main() {
   htmlExtractor.crawl(args[1]);
 
   var expressions = htmlExtractor.expressions;
+  expressions.add('null');
 
   print ('// Found ${expressions.length} expressions');
 
