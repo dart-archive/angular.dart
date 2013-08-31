@@ -9,15 +9,16 @@ import 'package:angular/tools/io_impl.dart';
 import 'package:angular/tools/common.dart';
 
 import 'package:di/di.dart';
+import 'package:di/dynamic_injector.dart';
 import 'package:angular/parser/parser_library.dart';
 import 'package:angular/tools/parser_generator/dart_code_gen.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 
 main() {
   Module module = new Module()
-    ..type(ParserBackend, DartCodeGen);
+    ..type(ParserBackend, implementedBy: DartCodeGen);
 
-  Injector injector = new Injector([module]);
+  Injector injector = new DynamicInjector(modules: [module], allowImplicitInjection: true);
 
   var args = new Options().arguments;
   if (args.length < 3) {
