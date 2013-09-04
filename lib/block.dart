@@ -162,8 +162,9 @@ class _ComponentFactory {
   Injector shadowInjector;
   Compiler compiler;
   var controller;
+  dom.NodeTreeSanitizer treeSanitizer;
 
-  _ComponentFactory(this.element, this.directive);
+  _ComponentFactory(this.element, this.directive, this.treeSanitizer);
 
   dynamic call(Injector injector, Compiler compiler, Scope scope,
       BlockCache $blockCache,  Http $http,
@@ -197,7 +198,7 @@ class _ComponentFactory {
     TemplateLoader templateLoader = new TemplateLoader(
         cssFuture.then((String css) {
           if (css != null) {
-            shadowDom.innerHtml = '<style>$css</style>';
+            shadowDom.setInnerHtml('<style>$css</style>', treeSanitizer: treeSanitizer);
           }
           if (blockFuture != null) {
             return blockFuture.then((BlockFactory blockFactory) =>
@@ -239,9 +240,11 @@ class BlockCache {
   Http $http;
   TemplateCache $templateCache;
   Compiler compiler;
+  dom.NodeTreeSanitizer treeSanitizer;
 
   BlockCache(CacheFactory $cacheFactory, Http this.$http,
-      TemplateCache this.$templateCache, Compiler this.compiler) {
+      TemplateCache this.$templateCache, Compiler this.compiler,
+      dom.NodeTreeSanitizer this.treeSanitizer) {
     _blockCache = $cacheFactory('blocks');
   }
 
@@ -249,7 +252,7 @@ class BlockCache {
     BlockFactory blockFactory = _blockCache.get(html);
     if (blockFactory == null) {
       var div = new dom.Element.tag('div');
-      div.innerHtml = html;
+      div.setInnerHtml(html, treeSanitizer: treeSanitizer);
       blockFactory = compiler(div.nodes);
       _blockCache.put(html, blockFactory);
     }
@@ -498,7 +501,7 @@ class BlockFactory {
             Http http = injector.get(Http);
             TemplateCache templateCache = injector.get(TemplateCache);
             // This is a bit of a hack since we are returning different type then we are.
-            var componentFactory = new _ComponentFactory(node, ref.directive);
+            var componentFactory = new _ComponentFactory(node, ref.directive, injector.get(dom.NodeTreeSanitizer));
             if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
             fctrs[type] = componentFactory;
             return componentFactory(injector, compiler, scope, blockCache, http, templateCache);

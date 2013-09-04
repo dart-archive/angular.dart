@@ -62,6 +62,16 @@ toJson(obj) {
   } catch(e) {
     return "NOT-JSONABLE (see toJson(obj) in angular.dart)";
   }
+  type(DynamicParser);
+  type(Lexer);
+  type(ParserBackend);
+  type(Interpolate);
+  type(CacheFactory);
+  type(Http);
+  type(UrlRewriter);
+  type(HttpBackend);
+  type(BlockCache);
+  type(TemplateCache);
 }
 
 class AngularModule extends Module {
@@ -86,6 +96,7 @@ class AngularModule extends Module {
     type(BlockCache);
     type(TemplateCache);
     type(Profiler, implementedBy: _NoOpProfiler);
+    type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
 
     value(ScopeDigestTTL, new ScopeDigestTTL(5));
 
@@ -166,4 +177,8 @@ class _NoOpProfiler extends Profiler {
   int startTimer(String name, [String extraData]) => null;
 
   void stopTimer(idOrName) { }
+}
+
+class NullTreeSanitizer implements dom.NodeTreeSanitizer {
+  void sanitizeTree(Node node) {}
 }

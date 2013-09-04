@@ -24,7 +24,7 @@ export 'package:perf_api/perf_api.dart';
 
 es(String html) {
   var div = new DivElement();
-  div.innerHtml = html;
+  div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
   return div.nodes;
 }
 
@@ -160,7 +160,10 @@ class JQuery implements List<Node> {
     return result;
   }
 
-  html([String html]) => accessor((n) => _toHtml(n), (n, v) => n.innerHtml = v, html);
+  html([String html]) => accessor(
+          (n) => _toHtml(n),
+          (n, v) => n.setInnerHtml(v, treeSanitizer: new NullTreeSanitizer()),
+          html);
   text([String text]) => accessor((n) => n.text, (n, v) => n.text = v, text);
   contents() => fold(new JQuery(), (jq, node) => jq..addAll(node.nodes));
   toString() => fold('', (html, node) => '$html${_toHtml(node, true)}');

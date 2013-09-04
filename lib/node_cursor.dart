@@ -70,12 +70,7 @@ class NodeCursor {
     var current = elements[index];
     var parent = current.parentNode;
 
-    // HACK
-    // var anchor = new dom.Comment('ANCHOR: $name');
-    var anchor = ((body) {
-      body.innerHtml = '<!--ANCHOR: $name-->';
-      return body.nodes[0];
-    })(new dom.BodyElement());
+    var anchor = new dom.Comment('ANCHOR: $name');
 
     elements.insert(index++, anchor);
 

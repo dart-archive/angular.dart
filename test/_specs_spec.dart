@@ -10,7 +10,9 @@ main() {
     it('should work with shadow DOM', () {
       var elt = $('<div>DOM content</div>');
       var shadow = elt[0].createShadowRoot();
-      shadow.innerHtml = '<div>Shadow content</div><content>SHADOW-CONTENT</content>';
+      shadow.setInnerHtml(
+          '<div>Shadow content</div><content>SHADOW-CONTENT</content>',
+          treeSanitizer: new NullTreeSanitizer());
       expect(renderedText(elt)).toEqual('Shadow contentDOM content');
     });
 

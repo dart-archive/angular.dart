@@ -1,12 +1,5 @@
 import '_specs.dart';
 
-$(html) {
-  var body = new BodyElement();
-  body.innerHtml = html;
-
-  return body.nodes;
-}
-
 main() {
   describe('NodeCursor', () {
     var a, b, c, d;
