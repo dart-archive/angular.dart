@@ -8,7 +8,10 @@ class HttpBackend {
   async.Future request(String url,
       {String method, bool withCredentials, String responseType,
       String mimeType, Map<String, String> requestHeaders, sendData,
-      void onProgress(dom.ProgressEvent e)}) =>
+      void onProgress(dom.ProgressEvent e)}) {
+    // Complete inside a then to work-around dartbug.com/13051
+    var c = new async.Completer();
+
     dom.HttpRequest.request(url,
         method: method,
         withCredentials: withCredentials,
@@ -16,7 +19,9 @@ class HttpBackend {
         mimeType: mimeType,
         requestHeaders: requestHeaders,
         sendData: sendData,
-        onProgress: onProgress);
+        onProgress: onProgress).then((x) => c.complete(x));
+    return c.future;
+  }
 }
 
 class HttpResponse {
