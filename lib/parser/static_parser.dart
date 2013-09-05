@@ -18,7 +18,7 @@ class StaticParser implements Parser {
   call(String exp) {
     if (exp == null) exp = "null";
     if (!_functions.containsKey(exp)) {
-      print("Expression [$exp] is not supported in static parser");
+      //print("Expression [$exp] is not supported in static parser");
       return _fallbackParser.call(exp);
     }
     return _functions[exp];
