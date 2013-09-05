@@ -62,16 +62,6 @@ toJson(obj) {
   } catch(e) {
     return "NOT-JSONABLE (see toJson(obj) in angular.dart)";
   }
-  type(DynamicParser);
-  type(Lexer);
-  type(ParserBackend);
-  type(Interpolate);
-  type(CacheFactory);
-  type(Http);
-  type(UrlRewriter);
-  type(HttpBackend);
-  type(BlockCache);
-  type(TemplateCache);
 }
 
 class AngularModule extends Module {
