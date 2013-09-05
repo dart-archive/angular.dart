@@ -446,6 +446,15 @@ main() {
         expect($rootScope.log).toEqual('digest;digest;eval;');
       }));
 
+      it(r'should allow running after digest in issolate scope', inject((Scope $rootScope) {
+        var isolateScope = $rootScope.$new(true);
+        isolateScope.log = '';
+        isolateScope.$evalAsync(() => isolateScope.log += 'eval;', outsideDigest: true);
+        isolateScope.$watch(() { isolateScope.log += 'digest;'; });
+        isolateScope.$digest();
+        expect(isolateScope.log).toEqual('digest;digest;eval;');
+      }));
+
     });
 
 

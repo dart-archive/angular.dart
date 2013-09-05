@@ -92,10 +92,9 @@ class Scope implements Map {
     $id = nextUid();
     if (_isolate) {
       _$root = $parent.$root;
-    } else {
-      _innerAsyncQueue = $parent._innerAsyncQueue;
-      _outerAsyncQueue = $parent._outerAsyncQueue;
     }
+    _innerAsyncQueue = $parent._innerAsyncQueue;
+    _outerAsyncQueue = $parent._outerAsyncQueue;
 
     _prevSibling = $parent._childTail;
     if ($parent._childHead != null) {
