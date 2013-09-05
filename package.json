@@ -2,6 +2,9 @@
   "name": "angular.dart",
   "dependencies" : {
     "karma" : "~0.10",
-    "karma-dart" : "~0.2"
+    "karma-dart" : "~0.2",
+    "karma-chrome-launcher": "*",
+    "karma-firefox-launcher": "*",
+    "karma-junit-reporter": "*"
   }
 }
