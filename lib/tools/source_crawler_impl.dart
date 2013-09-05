@@ -19,7 +19,11 @@ class SourceCrawlerImpl implements SourceCrawler {
     List<String> visited = <String>[];
     List<String> toVisit = <String>[];
     if (entryPoint.startsWith(PACKAGE_PREFIX)) {
-      toVisit.add(resolvePackagePath(entryPoint));
+      var path = resolvePackagePath(entryPoint);
+      if (path == null) {
+        throw 'Unable to resolve $entryPoint';
+      }
+      toVisit.add(path);
     } else {
       toVisit.add(entryPoint);
     }
@@ -78,7 +82,7 @@ class SourceCrawlerImpl implements SourceCrawler {
         return resolvedPath;
       }
     }
-    throw 'Unable to resolve $uri in $packageRoots!';
+    return null;
   }
 
   String _packageUriResolver(String uri, String packageRoot) {
