@@ -8,6 +8,8 @@ class NgClickAttrDirective {
   Function onClick;
 
   NgClickAttrDirective(dom.Node node, Scope scope) {
-    node.onClick.listen((event) => scope.$apply(onClick));
+    node.onClick.listen((event) => scope.$apply(() {
+      onClick({r"$event": event});
+    }));
   }
 }

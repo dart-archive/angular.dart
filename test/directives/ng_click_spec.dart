@@ -21,9 +21,10 @@ main() {
 
 
     it('should evaluate the expression on click', () {
-      compile('<button ng-click="abc = true"></button>');
+      compile(r'<button ng-click="abc = true; event = $event"></button>');
       triggerEvent(element, 'click');
       expect(rootScope['abc']).toEqual(true);
+      expect(rootScope['event'] is dom.MouseEvent).toEqual(true);
     });
   });
 }
