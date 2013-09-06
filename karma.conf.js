@@ -1,6 +1,6 @@
 module.exports = function(config) {
   config.set({
-    //logLevel: config.LOG_DEBUG,
+    logLevel: config.LOG_DEBUG,
     basePath: '.',
     frameworks: ['dart-unittest'],
 

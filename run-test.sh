@@ -28,7 +28,7 @@ if [ ! -e "$KARMA_PATH" ]; then
 fi
 
 # Set up the parser_generator
-(cd parser_generator; pub install)
+(cd tools/parser_generator; pub install)
 
 node "$KARMA_PATH" start karma.conf \
   --reporters=junit,dots --port=8765 --runner-port=8766 \
