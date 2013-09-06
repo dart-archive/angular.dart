@@ -58,13 +58,7 @@ class TodoController {
     item.done ? 'done' : '';
   }
 
-  remaining() {
-    var remaining = 0;
+  remaining() =>
+    items.fold(0, (count, todo) => count + (todo.done ? 0 : 1));
 
-    items.forEach((item) {
-      if (!item.done) remaining++;
-    });
-
-    return remaining;
-  }
 }
