@@ -1,21 +1,5 @@
 part of angular;
 
-var initWatchVal = new Object();
-
-class Watch {
-  Function fn;
-  dynamic last;
-  Function get;
-  String exp;
-
-  Watch(fn, this.last, getFn, this.exp) {
-    this.fn = relaxFnArgs3(fn);
-    this.get = getFn is Expression ?
-        relaxFnArgs1(getFn.eval) :
-        relaxFnArgs1(getFn);
-  }
-}
-
 class ScopeEvent {
   String name;
   Scope targetScope;
@@ -27,12 +11,6 @@ class ScopeEvent {
 
   stopPropagation () => propagationStopped = true;
   preventDefault() => defaultPrevented = true;
-}
-
-class ScopeModule extends Module {
-  ScopeModule(Scope scope) {
-    this.value(Scope, scope);
-  }
 }
 
 class ScopeDigestTTL {
@@ -54,7 +32,7 @@ class Scope implements Map {
   Map<String, Object> _properties = {};
   List<Function> _innerAsyncQueue;
   List<Function> _outerAsyncQueue;
-  List<Watch> _watchers = [];
+  List<_Watch> _watchers = [];
   Map<String, Function> _listeners = {};
   Scope _nextSibling, _prevSibling, _childHead, _childTail;
   bool _isolate = false;
@@ -151,7 +129,7 @@ class Scope implements Map {
 
 
   $watch(watchExp, [Function listener]) {
-    var watcher = new Watch(_compileToFn(listener), initWatchVal,
+    var watcher = new _Watch(_compileToFn(listener), _initWatchVal,
         _compileToFn(watchExp), watchExp.toString());
 
     // we use unshift since we use a while loop in $digest for speed.
@@ -214,8 +192,8 @@ class Scope implements Map {
         dirty, _ttlLeft = _ttl,
         logIdx, logMsg;
     List<List<String>> watchLog = [];
-    List<Watch> watchers;
-    Watch watch;
+    List<_Watch> watchers;
+    _Watch watch;
     Scope next, current, target = this;
 
     _beginPhase('\$digest');
@@ -247,7 +225,7 @@ class Scope implements Map {
                     !(value is num && last is num && value.isNaN && last.isNaN)) {
                   dirty = true;
                   watch.last = value;
-                  watch.fn(value, ((last == initWatchVal) ? value : last), current);
+                  watch.fn(value, ((last == _initWatchVal) ? value : last), current);
                   if (_ttlLeft < 5) {
                     logIdx = 4 - _ttlLeft;
                     while (watchLog.length <= logIdx) {
@@ -459,3 +437,26 @@ class Scope implements Map {
   }
 
 }
+
+var _initWatchVal = new Object();
+
+class _Watch {
+  Function fn;
+  dynamic last;
+  Function get;
+  String exp;
+
+  _Watch(fn, this.last, getFn, this.exp) {
+    this.fn = relaxFnArgs3(fn);
+    this.get = getFn is Expression ?
+    relaxFnArgs1(getFn.eval) :
+    relaxFnArgs1(getFn);
+  }
+}
+
+class _ScopeModule extends Module {
+  _ScopeModule(Scope scope) {
+    this.value(Scope, scope);
+  }
+}
+

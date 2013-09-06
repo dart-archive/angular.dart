@@ -389,7 +389,7 @@ main() {
         it('should fire attach/detach methods', async(inject((Logger logger) {
           var scope = $rootScope.$new();
           var element = $('<attach-detach></attach-detach>');
-          $compile(element)(injector.createChild([new ScopeModule(scope)]), element);
+          $compile(element)(injector.createChild([new Module()..value(Scope, scope)]), element);
           expect(logger).toEqual(['new']);
 
           nextTurn(true);

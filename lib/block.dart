@@ -221,7 +221,7 @@ class _ComponentFactory {
   }
 
   createShadowInjector(injector, TemplateLoader templateLoader) {
-    var shadowModule = new ScopeModule(shadowScope)
+    var shadowModule = new _ScopeModule(shadowScope)
       ..type(directive.type)
       ..value(TemplateLoader, templateLoader)
       ..value(dom.ShadowRoot, shadowDom);
@@ -382,7 +382,7 @@ class BoundBlockFactory {
   BoundBlockFactory(BlockFactory this.blockFactory, Injector this.injector);
 
   Block call(Scope scope) {
-    return blockFactory(injector.createChild([new ScopeModule(scope)]));
+    return blockFactory(injector.createChild([new _ScopeModule(scope)]));
   }
 }
 
