@@ -47,7 +47,9 @@ class ParserGenerator {
     _p.dedent();
 
     if (codeExpression.assignable) {
-      _p('}, (scope, value, [locals]) { ${codeExpression.assign(VALUE_CODE).returnExp()} }),');
+      _p('}, (scope, value, [locals]) { ');
+      _p('evalError(s, [stack]) => parserEvalError(s, \'${escape(exp)}\', stack);');
+      _p('${codeExpression.assign(VALUE_CODE).returnExp()} }),');
     } else {
       _p('}),');
     }
