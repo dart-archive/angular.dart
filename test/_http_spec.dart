@@ -1,3 +1,5 @@
+library _http_spec;
+
 import "_specs.dart";
 import "_http.dart";
 

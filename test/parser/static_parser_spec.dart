@@ -1,3 +1,5 @@
+library static_parser_spec;
+
 import '../_specs.dart';
 
 var FUNCTIONS = { '1': 1 };

@@ -1,3 +1,5 @@
+library controller_spec;
+
 import "_specs.dart";
 import "_log.dart";
 import "dart:mirrors";

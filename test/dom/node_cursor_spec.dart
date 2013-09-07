@@ -1,3 +1,5 @@
+library node_cursor_spec;
+
 import '../_specs.dart';
 import '../../lib/dom/node_cursor.dart';
 

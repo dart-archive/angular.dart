@@ -1,3 +1,5 @@
+library shadow_root_options_spec;
+
 import "../_specs.dart";
 
 @NgComponent(

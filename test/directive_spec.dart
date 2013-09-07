@@ -1,3 +1,5 @@
+library directive_spec;
+
 import "_specs.dart";
 
 // Types must be declared on the top level. Ugh.

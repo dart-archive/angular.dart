@@ -1,3 +1,5 @@
+library selector_spec;
+
 import "../_specs.dart";
 
 @NgDirective(selector:'b')                    class _BElement{}

@@ -1,3 +1,5 @@
+library block_spec;
+
 import "../_specs.dart";
 
 @NgDirective(transclude: true, selector: 'foo')

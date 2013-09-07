@@ -1,3 +1,5 @@
+library _test_bed;
+
 import 'dart:html' as dom;
 import "_specs.dart";
 

@@ -1,3 +1,5 @@
+library zone_spec;
+
 import "_specs.dart";
 import "_log.dart";
 

@@ -1,3 +1,5 @@
+library ng_mustache_spec;
+
 import "../_specs.dart";
 
 main() {

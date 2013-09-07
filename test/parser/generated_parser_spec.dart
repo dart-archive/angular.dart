@@ -1,3 +1,5 @@
+library generated_parser_spec;
+
 import '../_specs.dart';
 import 'parser_spec.dart' as parser_spec;
 import 'generated_functions.dart' as generated_functions;

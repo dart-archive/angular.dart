@@ -1,3 +1,5 @@
+library parser_spec;
+
 import '../_specs.dart';
 
 // Used to test getter / setter logic.

@@ -1,3 +1,5 @@
+library ng_if_spec;
+
 import '../_specs.dart';
 import '../_log.dart';
 import 'dart:html' as dom;

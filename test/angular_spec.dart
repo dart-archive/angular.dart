@@ -1,3 +1,5 @@
+library angular_spec;
+
 import '_specs.dart';
 import 'package:angular/utils.dart';
 

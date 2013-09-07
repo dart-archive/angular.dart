@@ -1,3 +1,5 @@
+library ng_cloak_spec;
+
 import '../_specs.dart';
 import 'dart:html' as dom;
 

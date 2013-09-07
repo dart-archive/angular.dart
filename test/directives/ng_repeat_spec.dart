@@ -1,3 +1,5 @@
+library ng_repeat_spec;
+
 import "../_specs.dart";
 
 main() {

@@ -1,3 +1,5 @@
+library ng_show_spec;
+
 import '../_specs.dart';
 import 'dart:html' as dom;
 

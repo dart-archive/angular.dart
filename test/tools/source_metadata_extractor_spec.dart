@@ -1,3 +1,5 @@
+library source_metadata_extractor_spec;
+
 import "../_specs.dart" hide Node, Element, Text, Token;
 
 import 'package:analyzer_experimental/src/generated/ast.dart';

@@ -1,3 +1,5 @@
+library html_extractor_spec;
+
 import "../_specs.dart";
 
 import 'package:angular/tools/html_extractor.dart';

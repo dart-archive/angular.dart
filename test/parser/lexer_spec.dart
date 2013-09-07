@@ -1,3 +1,5 @@
+library lexer_spec;
+
 import '../_specs.dart';
 
 class LexerExpect extends Expect {

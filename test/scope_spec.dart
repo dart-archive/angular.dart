@@ -1,3 +1,5 @@
+library scope_spec;
+
 import "_specs.dart";
 import "dart:json" as json;
 

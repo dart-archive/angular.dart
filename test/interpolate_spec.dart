@@ -1,3 +1,5 @@
+library interpolate_spec;
+
 import "_specs.dart";
 
 class ToStringableObject {

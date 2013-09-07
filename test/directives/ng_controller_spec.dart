@@ -1,4 +1,4 @@
-library ctrlTest;
+library ng_controller_spec;
 
 import '../_specs.dart';
 
