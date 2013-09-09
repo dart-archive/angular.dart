@@ -40,7 +40,7 @@ main() => describe('scope', () {
       }
     });
 
-    time('3000 watchers on scope', () => scope.$digest());
+    ttime('3000 watchers on scope', () => scope.$digest());
 
     time('scope[] 1 deep', () => scope['nenexistant']);
     time('scope[] 2 deep', () => scope2['nenexistant']);

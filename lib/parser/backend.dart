@@ -35,7 +35,7 @@ class ParserBackend {
     return l;
   }
 
-  static _getterChild(value, childKey) {
+  static _getterChild(value, childKey, childSymbol) {
     if (value is List && childKey is num) {
       if (childKey < value.length) {
         return value[childKey];
@@ -47,18 +47,17 @@ class ParserBackend {
       }
     } else {
       InstanceMirror instanceMirror = reflect(value);
-      Symbol curSym = new Symbol(childKey);
 
       try {
         // maybe it is a member field?
-        return instanceMirror.getField(curSym).reflectee;
+        return instanceMirror.getField(childSymbol).reflectee;
       } on NoSuchMethodError catch (e) {
         // maybe it is a member method?
-        if (instanceMirror.type.members.containsKey(curSym)) {
-          MethodMirror methodMirror = instanceMirror.type.members[curSym];
+        if (instanceMirror.type.members.containsKey(childSymbol)) {
+          MethodMirror methodMirror = instanceMirror.type.members[childSymbol];
           return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
             var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
-            return instanceMirror.invoke(curSym, args).reflectee;
+            return instanceMirror.invoke(childSymbol, args).reflectee;
           });
         }
         rethrow;
@@ -68,34 +67,36 @@ class ParserBackend {
   }
 
   static getter(path) {
-    List<String> pathKeys = path.split('.');
-    var pathKeysLength = pathKeys.length;
+    List<String> keys = path.split('.');
+    List<Symbol> symbols = keys.map((key) => new Symbol(key)).toList();
+    var pathKeysLength = keys.length;
 
-    return (self, [locals]) {
-      if (self == null) {
-        return null;
-      }
-
-      var value = undefined_;
-
-      if (pathKeysLength == 0) { return self; }
-
-      var currentValue = self;
-      for (var i = 0; i < pathKeysLength; i++) {
-        var curKey = pathKeys[i];
-        if (locals == null) {
-          currentValue = _getterChild(currentValue, curKey);
-        } else {
-          currentValue = _getterChild(locals, curKey);
-          locals = null;
-          if (identical(currentValue, undefined_)) {
-            currentValue = _getterChild(self, curKey);
-          }
+    if (pathKeysLength == 0) {
+      return (self, [locals]) => self;
+    } else {
+      return (self, [locals]) {
+        if (self == null) {
+          return null;
         }
-        if (currentValue == null || identical(currentValue, undefined_)) { return null; }
-      }
-      return currentValue;
-    };
+
+        var currentValue = self;
+        for (var i = 0; i < pathKeysLength; i++) {
+          var curKey = keys[i];
+          var symbol = symbols[i];
+          if (locals == null) {
+            currentValue = _getterChild(currentValue, curKey, symbol);
+          } else {
+            currentValue = _getterChild(locals, curKey, symbol);
+            locals = null;
+            if (identical(currentValue, undefined_)) {
+              currentValue = _getterChild(self, curKey, symbol);
+            }
+          }
+          if (currentValue == null || identical(currentValue, undefined_)) { return null; }
+        }
+        return currentValue;
+      };
+    }
   }
 
   static _setterChild(obj, childKey, value) {
@@ -118,18 +119,21 @@ class ParserBackend {
   }
 
   static setter(path) {
+    var keys = path.split('.');
+    var symbols = keys.map((key) => new Symbol(key)).toList();
+    var keyLengthLessOne = keys.length - 1;
     return (self, value, [locals]) {
-      var element = path.split('.');
-      for (var i = 0; element.length > 1; i++) {
-        var key = element.removeAt(0);
-        var propertyObj = _getterChild(self, key);
+      for (var i = 0; i < keyLengthLessOne; i++) {
+        var key = keys[i];
+        var symbol = symbols[i];
+        var propertyObj = _getterChild(self, key, symbol);
         if (propertyObj == null || identical(propertyObj, undefined_)) {
           propertyObj = {};
           _setterChild(self, key, propertyObj);
         }
         self = propertyObj;
       }
-      return _setterChild(self, element.removeAt(0), value);
+      return _setterChild(self, keys[keyLengthLessOne], value);
     };
   }
 
