@@ -67,32 +67,35 @@ class ParserBackend {
     return undefined_;
   }
 
-  static getter(self, locals, path) {
-    if (self == null) {
-      return null;
-    }
-
+  static getter(path) {
     List<String> pathKeys = path.split('.');
     var pathKeysLength = pathKeys.length;
-    var value = undefined_;
 
-    if (pathKeysLength == 0) { return self; }
-
-    var currentValue = self;
-    for (var i = 0; i < pathKeysLength; i++) {
-      var curKey = pathKeys[i];
-      if (locals == null) {
-        currentValue = _getterChild(currentValue, curKey);
-      } else {
-        currentValue = _getterChild(locals, curKey);
-        locals = null;
-        if (identical(currentValue, undefined_)) {
-          currentValue = _getterChild(self, curKey);
-        }
+    return (self, [locals]) {
+      if (self == null) {
+        return null;
       }
-      if (currentValue == null || identical(currentValue, undefined_)) { return null; }
-    }
-    return currentValue;
+
+      var value = undefined_;
+
+      if (pathKeysLength == 0) { return self; }
+
+      var currentValue = self;
+      for (var i = 0; i < pathKeysLength; i++) {
+        var curKey = pathKeys[i];
+        if (locals == null) {
+          currentValue = _getterChild(currentValue, curKey);
+        } else {
+          currentValue = _getterChild(locals, curKey);
+          locals = null;
+          if (identical(currentValue, undefined_)) {
+            currentValue = _getterChild(self, curKey);
+          }
+        }
+        if (currentValue == null || identical(currentValue, undefined_)) { return null; }
+      }
+      return currentValue;
+    };
   }
 
   static _setterChild(obj, childKey, value) {
@@ -114,18 +117,20 @@ class ParserBackend {
     throw "Could not set $childKey value $value  obj:${obj is Map}";
   }
 
-  static setter(obj, path, setValue) {
-    var element = path.split('.');
-    for (var i = 0; element.length > 1; i++) {
-      var key = element.removeAt(0);
-      var propertyObj = _getterChild(obj, key);
-      if (propertyObj == null || identical(propertyObj, undefined_)) {
-        propertyObj = {};
-        _setterChild(obj, key, propertyObj);
+  static setter(path) {
+    return (self, value, [locals]) {
+      var element = path.split('.');
+      for (var i = 0; element.length > 1; i++) {
+        var key = element.removeAt(0);
+        var propertyObj = _getterChild(self, key);
+        if (propertyObj == null || identical(propertyObj, undefined_)) {
+          propertyObj = {};
+          _setterChild(self, key, propertyObj);
+        }
+        self = propertyObj;
       }
-      obj = propertyObj;
-    }
-    return _setterChild(obj, element.removeAt(0), setValue);
+      return _setterChild(self, element.removeAt(0), value);
+    };
   }
 
   _op(opKey) => OPERATORS[opKey];
@@ -190,12 +195,13 @@ class ParserBackend {
               indexFn.eval(self, locals), value, evalError)
       );
 
-  Expression fieldAccess(object, field) =>
-      new Expression(
-              (self, [locals]) =>
-          getter(object.eval(self, locals), null, field),
-              (self, value, [locals]) =>
-          setter(object.eval(self, locals), field, value));
+  Expression fieldAccess(object, field) {
+    var setterFn = setter(field);
+    var getterFn = getter(field);
+    return new Expression(
+        (self, [locals]) => getterFn(object.eval(self, locals)),
+        (self, value, [locals]) => setterFn(object.eval(self, locals), value));
+  }
 
   Expression object(keyValues) =>
       new Expression((self, [locals]){
@@ -224,9 +230,7 @@ class ParserBackend {
       new Expression((s, [l]) => OPERATORS[op](s, l, null, null));
 
   Expression getterSetter(key) =>
-      new Expression(
-          (self, [locals]) => getter(self, locals, key),
-          (self, value, [locals]) => setter(self, key, value));
+      new Expression(getter(key), setter(key));
 
   Expression value(v) =>
       new Expression((self, [locals]) => v);
