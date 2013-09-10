@@ -15,7 +15,7 @@ class Log {
       'log': '@.message'
     }
 )
-class LogAttrDirective {
+class LogAttrDirective implements NgAttachAware {
   Log log;
   String message;
   LogAttrDirective(Log this.log);

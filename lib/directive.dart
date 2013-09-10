@@ -226,6 +226,24 @@ class NgDirective extends NgAnnotationBase {
 }
 
 /**
+ * Implementing directives or components [attach] method will be called when
+ * the next scope digest occurs after component instantiation. It is guaranteed
+ * that when [attach] is invoked, that all attribute mappings have already
+ * been processed.
+ */
+abstract class NgAttachAware {
+  void attach();
+}
+
+/**
+ * Implementing directives or components [detach] method will be called when
+ * the associated scope is destroyed.
+ */
+abstract class NgDetachAware {
+  void detach();
+}
+
+/**
  * See:
  * http://www.html5rocks.com/en/tutorials/webcomponents/shadowdom-201/#toc-style-inheriting
  */
