@@ -687,6 +687,16 @@ main() {
         scope.a = {'b': 6};
         expect(parser('a.b').eval(scope, {'a': {'b':1}})).toEqual(1);
       }));
+
+      it('should expose assignment function', () {
+        var fn = parser('a.b');
+        expect(fn.assign).toBeNotNull();
+        var scope = {};
+        var locals = {"a": {}};
+        fn.assign(scope, 123, locals);
+        expect(scope).toEqual({});
+        expect(locals["a"]).toEqual({'b':123});
+      });
     });
   });
 }

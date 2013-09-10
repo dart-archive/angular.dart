@@ -28,112 +28,95 @@ var undefined_ = const Symbol("UNDEFINED");
 class ParserBackend {
   static Expression ZERO = new Expression((_, [_x]) => 0);
 
-  static stripTrailingNulls(List l) {
-    while (l.length > 0 && l.last == null) {
-      l.removeLast();
-    }
-    return l;
-  }
-
-  static _getterChild(value, childKey, childSymbol) {
-    if (value is List && childKey is num) {
-      if (childKey < value.length) {
-        return value[childKey];
-      }
-    } else if (value is Map) {
-      // TODO: We would love to drop the 'is Map' for a more generic 'is Getter'
-      if (childKey is String && value.containsKey(childKey)) {
-        return value[childKey];
-      }
-    } else {
-      InstanceMirror instanceMirror = reflect(value);
-
-      try {
-        // maybe it is a member field?
-        return instanceMirror.getField(childSymbol).reflectee;
-      } on NoSuchMethodError catch (e) {
-        // maybe it is a member method?
-        if (instanceMirror.type.members.containsKey(childSymbol)) {
-          MethodMirror methodMirror = instanceMirror.type.members[childSymbol];
-          return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
-            var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
-            return instanceMirror.invoke(childSymbol, args).reflectee;
-          });
-        }
-        rethrow;
-      }
-    }
-    return undefined_;
-  }
-
-  static getter(path) {
+  static getter(String path) {
     List<String> keys = path.split('.');
     List<Symbol> symbols = keys.map((key) => new Symbol(key)).toList();
-    var pathKeysLength = keys.length;
 
-    if (pathKeysLength == 0) {
+    if (keys.isEmpty) {
       return (self, [locals]) => self;
     } else {
-      return (self, [locals]) {
+      return (dynamic self, [Map locals]) {
         if (self == null) {
           return null;
         }
 
-        var currentValue = self;
-        for (var i = 0; i < pathKeysLength; i++) {
-          var curKey = keys[i];
-          var symbol = symbols[i];
-          if (locals == null) {
-            currentValue = _getterChild(currentValue, curKey, symbol);
-          } else {
-            currentValue = _getterChild(locals, curKey, symbol);
-            locals = null;
-            if (identical(currentValue, undefined_)) {
-              currentValue = _getterChild(self, curKey, symbol);
+        // Cache for local closure access
+        List<String> _keys = keys;
+        List<Symbol> _symbols = symbols;
+        var _pathKeysLength = _keys.length;
+
+        num i = 0;
+        if (locals != null) {
+          dynamic selfNext = locals[_keys[0]];
+          if (selfNext == null) {
+            if (locals.containsKey(_keys[0])) {
+              return null;
             }
+          } else {
+            i++;
+            self = selfNext;
           }
-          if (currentValue == null || identical(currentValue, undefined_)) { return null; }
         }
-        return currentValue;
+        for (; i < _pathKeysLength; i++) {
+          if (self is Map) {
+            self = self[_keys[i]];
+          } else {
+            self = reflect(self).getField(_symbols[i]).reflectee;
+          }
+          if (self == null) {
+            return null;
+          }
+        }
+        return self;
       };
     }
   }
 
-  static _setterChild(obj, childKey, value) {
-    if (obj is List && childKey is num) {
-      if (childKey < value.length) {
-        return obj[childKey] = value;
-      }
-    } else if (obj is Map) {
-      // TODO: We would love to drop the 'is Map' for a more generic 'is Getter'
-      if (childKey is String) {
-        return obj[childKey] = value;
-      }
-    } else {
-      InstanceMirror instanceMirror = reflect(obj);
-      Symbol curSym = new Symbol(childKey);
-      // maybe it is a member field?
-      return instanceMirror.setField(curSym, value).reflectee;
-    }
-    throw "Could not set $childKey value $value  obj:${obj is Map}";
-  }
+  static setter(String path) {
+    List<String> keys = path.split('.');
+    List<Symbol> symbols = keys.map((key) => new Symbol(key)).toList();
+    return (dynamic self, dynamic value, [Map locals]) {
+      num i = 0;
+      List<String> _keys = keys;
+      List<Symbol> _symbols = symbols;
+      var keyLengthLessOne = _keys.length - 1;
 
-  static setter(path) {
-    var keys = path.split('.');
-    var symbols = keys.map((key) => new Symbol(key)).toList();
-    var keyLengthLessOne = keys.length - 1;
-    return (self, value, [locals]) {
-      for (var i = 0; i < keyLengthLessOne; i++) {
-        var key = keys[i];
-        var symbol = symbols[i];
-        var propertyObj = _getterChild(self, key, symbol);
-        if (propertyObj == null || identical(propertyObj, undefined_)) {
-          propertyObj = {};
-          _setterChild(self, key, propertyObj);
+      dynamic selfNext;
+      if (locals != null && i < keyLengthLessOne) {
+        selfNext = locals[_keys[0]];
+        if (selfNext == null) {
+          if (locals.containsKey(_keys[0])) {
+            return null;
+          }
+        } else {
+          i++;
+          self = selfNext;
         }
-        self = propertyObj;
       }
-      return _setterChild(self, keys[keyLengthLessOne], value);
+
+      for (; i < keyLengthLessOne; i++) {
+        if (self is Map) {
+          selfNext = self[_keys[i]];
+        } else {
+          selfNext = reflect(self).getField(_symbols[i]).reflectee;
+        }
+
+        if (selfNext == null) {
+          selfNext = {};
+          if (self is Map) {
+            self[_keys[i]] = selfNext;
+          } else {
+            reflect(self).setField(_symbols[i], selfNext);
+          }
+        }
+        self = selfNext;
+      }
+      if (self is Map) {
+        self[_keys[keyLengthLessOne]] = value;
+      } else {
+        reflect(self).setField(_symbols[keyLengthLessOne], value);
+      }
+      return value;
     };
   }
 
