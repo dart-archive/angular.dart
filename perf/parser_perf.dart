@@ -1,6 +1,7 @@
 import "../test/_specs.dart";
 import "_perf.dart";
 import '../test/parser/generated_functions.dart' as generated_functions;
+import '../test/parser/generated_getter_setter.dart' as generated_getter_setter;
 import 'package:intl/intl.dart';
 
 class ATest {
@@ -24,7 +25,7 @@ class EqualsThrows {
 
 main() => describe('parser', () {
   var scope;
-  var reflectivParser, generatedParser;
+  var reflectivParser, generatedParser, hybridParser;
 
   beforeEach(module((Module module) {
     module.type(StaticParser);
@@ -33,6 +34,12 @@ main() => describe('parser', () {
 
   beforeEach(inject((Scope _scope, DynamicParser _dynamic, StaticParser _parser){
     scope = _scope;
+    new SpecInjector()
+      ..module((AngularModule module) {
+          module.type(DynamicParser);
+          module.type(GetterSetter, implementedBy: generated_getter_setter.StaticGetterSetter);
+      })
+      ..inject((DynamicParser p) => hybridParser = p);
     reflectivParser = _dynamic;
     generatedParser = _parser;
     scope['a'] = new ATest();
@@ -44,14 +51,20 @@ main() => describe('parser', () {
       var nf = new NumberFormat.decimalPattern();
       var reflectionExpr = reflectivParser(expr);
       var generatedExpr = generatedParser(expr);
+      var hybridExpr = hybridParser(expr);
       var gTime = measure(() => generatedExpr.eval(scope));
       var rTime = measure(() => reflectionExpr.eval(scope));
+      var hTime = measure(() => hybridExpr.eval(scope));
       var iTime = measure(() => idealFn(scope));
       dump('$expr => g: ${nf.format(gTime)} ops/sec   ' +
                     'r: ${nf.format(rTime)} ops/sec   ' +
+                    'h: ${nf.format(hTime)} ops/sec   ' +
                     'i: ${nf.format(iTime)} ops/sec = ' +
                     'i/g: ${nf.format(iTime / gTime)} x  ' +
                     'i/r: ${nf.format(iTime / rTime)} x  ' +
+                    'i/h: ${nf.format(iTime / hTime)} x  ' +
+                    'g/h: ${nf.format(gTime / hTime)} x  ' +
+                    'h/r: ${nf.format(hTime / rTime)} x  ' +
                     'g/r: ${nf.format(gTime / rTime)} x');
     });
   }

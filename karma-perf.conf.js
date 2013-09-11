@@ -8,6 +8,7 @@ module.exports = function(config) {
     // optionally 'watched' only.
     files: [
       'test/parser/generated_functions.dart',
+      'test/parser/generated_getter_setter.dart',
       'test/_specs.dart',
       'perf/*.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
@@ -21,7 +22,8 @@ module.exports = function(config) {
     captureTimeout: 5000,
 
     preprocessors: {
-      'test/parser/generated_functions.dart': ['parser-generator']
+      'test/parser/generated_functions.dart': ['parser-generator'],
+      'test/parser/generated_getter_setter.dart': ['parser-getter-setters']
     },
 
     plugins: [
@@ -29,7 +31,8 @@ module.exports = function(config) {
       'karma-chrome-launcher',
       'karma-script-launcher',
       'karma-junit-reporter',
-      '../../../karma-parser-generator'
+      '../../../karma-parser-generator',
+      '../../../karma-parser-getter-setter'
     ]
   });
 };

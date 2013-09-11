@@ -231,7 +231,7 @@ class SpecInjector {
     return module;
   }
 
-  module(Function fn, declarationStack) {
+  module(Function fn, [declarationStack]) {
     try {
       var initFn = moduleInjector.invoke(fn);
       if (initFn is Function) {
@@ -242,7 +242,7 @@ class SpecInjector {
     }
   }
 
-  inject(Function fn, declarationStack) {
+  inject(Function fn, [declarationStack]) {
     try {
       if (injector == null) {
         injector = new DynamicInjector(modules: modules); // Implicit injection is disabled.
