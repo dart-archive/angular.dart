@@ -54,17 +54,11 @@ class TodoController {
     items.removeWhere((item) => item.done);
   }
 
-  classFor(Item item) {
+  String classFor(Item item) {
     item.done ? 'done' : '';
   }
 
-  remaining() {
-    var remaining = 0;
-
-    items.forEach((item) {
-      if (!item.done) remaining++;
-    });
-
-    return remaining;
+  int remaining() {
+    return items.where((item) => !item.done).length;
   }
 }
