@@ -1,6 +1,7 @@
 import "../test/_specs.dart";
 import "_perf.dart";
-import '../test/parser/parser_spec.dart' as parser_spec;
+import '../test/parser/generated_functions.dart' as generated_functions;
+import 'package:intl/intl.dart';
 
 class ATest {
   var b = new BTest();
@@ -30,7 +31,7 @@ main() => describe('parser', () {
 
   beforeEach(module((Module module) {
     module.type(StaticParser);
-    module.value(StaticParserFunctions, parser_spec.functions());
+    module.value(StaticParserFunctions, generated_functions.functions());
   }));
 
   beforeEach(inject((Scope _scope, DynamicParser _dynamic, StaticParser _parser){

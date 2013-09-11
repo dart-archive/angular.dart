@@ -91,14 +91,6 @@ class ParserGenerator {
 
     functions() => new StaticParserFunctions(_FUNCTIONS);
 
-    generatedMain() {
-  describe(\'generated parser\', () {
-    beforeEach(module((AngularModule module) {
-      module.type(Parser, implementedBy: StaticParser);
-      module.value(StaticParserFunctions, functions());
-    }));
-    main();
-  });
 }""");
   }
 }

@@ -31,7 +31,7 @@ module.exports = function(config) {
     ],
 
     preprocessors: {
-      'test/parser/parser_spec.dart': ['parser-generator']
+      'test/parser/generated_functions.dart': ['parser-generator']
     },
 
     junitReporter: {
