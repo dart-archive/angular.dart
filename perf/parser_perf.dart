@@ -40,7 +40,7 @@ main() => describe('parser', () {
   }));
 
   compare(expr, idealFn) {
-    it(expr, () {
+    iit(expr, () {
       var nf = new NumberFormat.decimalPattern();
       var reflectionExpr = reflectivParser(expr);
       var generatedExpr = generatedParser(expr);

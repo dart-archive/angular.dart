@@ -23,16 +23,37 @@ class Expression implements ParserAST {
   get assignable => assign != null;
 }
 
+class GetterSetter {
+
+  Function getter(String key) {
+    var symbol = new Symbol(key);
+    return (o) => reflect(o).getField(symbol).reflectee;
+  }
+
+  Function setter(String key) {
+    var symbol = new Symbol(key);
+    return (o, v) {
+      reflect(o).setField(symbol, v);
+      return v;
+    };
+  }
+}
+
 var undefined_ = const Symbol("UNDEFINED");
 
 class ParserBackend {
+  GetterSetter _getterSetter;
+
+
+  ParserBackend(GetterSetter this._getterSetter);
+
   static Expression ZERO = new Expression((_, [_x]) => 0);
 
-  static getter(String path) {
+  getter(String path) {
     List<String> keys = path.split('.');
-    List<Symbol> symbols = keys.map((key) => new Symbol(key)).toList();
+    List<Function> getters = keys.map(_getterSetter.getter).toList();
 
-    if (keys.isEmpty) {
+    if (getters.isEmpty) {
       return (self, [locals]) => self;
     } else {
       return (dynamic self, [Map locals]) {
@@ -41,9 +62,9 @@ class ParserBackend {
         }
 
         // Cache for local closure access
-        List<String> _keys = keys;
-        List<Symbol> _symbols = symbols;
-        var _pathKeysLength = _keys.length;
+        List<Function> _keys = keys;
+        List<Function> _getters = getters;
+        var _gettersLength = _getters.length;
 
         num i = 0;
         if (locals != null) {
@@ -57,11 +78,11 @@ class ParserBackend {
             self = selfNext;
           }
         }
-        for (; i < _pathKeysLength; i++) {
+        for (; i < _gettersLength; i++) {
           if (self is Map) {
             self = self[_keys[i]];
           } else {
-            self = reflect(self).getField(_symbols[i]).reflectee;
+            self = _getters[i](self);
           }
           if (self == null) {
             return null;
@@ -72,17 +93,19 @@ class ParserBackend {
     }
   }
 
-  static setter(String path) {
+  setter(String path) {
     List<String> keys = path.split('.');
-    List<Symbol> symbols = keys.map((key) => new Symbol(key)).toList();
+    List<Function> getters = keys.map(_getterSetter.getter).toList();
+    List<Function> setters = keys.map(_getterSetter.setter).toList();
     return (dynamic self, dynamic value, [Map locals]) {
       num i = 0;
       List<String> _keys = keys;
-      List<Symbol> _symbols = symbols;
-      var keyLengthLessOne = _keys.length - 1;
+      List<Function> _getters = getters;
+      List<Function> _setters = setters;
+      var setterLengthMinusOne = _keys.length - 1;
 
       dynamic selfNext;
-      if (locals != null && i < keyLengthLessOne) {
+      if (locals != null && i < setterLengthMinusOne) {
         selfNext = locals[_keys[0]];
         if (selfNext == null) {
           if (locals.containsKey(_keys[0])) {
@@ -94,11 +117,11 @@ class ParserBackend {
         }
       }
 
-      for (; i < keyLengthLessOne; i++) {
+      for (; i < setterLengthMinusOne; i++) {
         if (self is Map) {
           selfNext = self[_keys[i]];
         } else {
-          selfNext = reflect(self).getField(_symbols[i]).reflectee;
+          selfNext = _getters[i](self);
         }
 
         if (selfNext == null) {
@@ -106,15 +129,15 @@ class ParserBackend {
           if (self is Map) {
             self[_keys[i]] = selfNext;
           } else {
-            reflect(self).setField(_symbols[i], selfNext);
+            _setters[i](self, selfNext);
           }
         }
         self = selfNext;
       }
       if (self is Map) {
-        self[_keys[keyLengthLessOne]] = value;
+        self[_keys[setterLengthMinusOne]] = value;
       } else {
-        reflect(self).setField(_symbols[keyLengthLessOne], value);
+        _setters[i](self, value);
       }
       return value;
     };

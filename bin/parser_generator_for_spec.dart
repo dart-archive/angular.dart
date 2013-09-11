@@ -1,19 +1,24 @@
+import 'dart:io';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:angular/parser/parser_library.dart';
 import 'package:angular/tools/parser_generator/dart_code_gen.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
+import 'package:angular/tools/parser_getter_setter/generator.dart';
 
 main() {
+  var options = new Options();
+  var isGetter = !options.arguments.isEmpty;
+
   Module module = new Module()
-    ..type(ParserBackend, implementedBy: DartCodeGen);
+    ..type(ParserBackend, implementedBy: isGetter ? DartGetterSetterGen : DartCodeGen);
 
   Injector injector = new DynamicInjector(modules: [module],
       allowImplicitInjection: true);
 
   // List generated using:
   // node node_modules/karma/bin/karma run | grep -Eo ":XNAY:.*:XNAY:" | sed -e 's/:XNAY://g' | sed -e "s/^/'/" | sed -e "s/$/',/" | sort | uniq > missing_expressions
-  injector.get(ParserGenerator).generateParser([
+  injector.get(isGetter ? ParserGetterSetter : ParserGenerator).generateParser([
       "null",
       "doesNotExist",
       "a.b.c",

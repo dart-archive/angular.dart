@@ -119,6 +119,8 @@ $(selector) {
   return new JQuery(selector);
 }
 
+var parserBackend = new ParserBackend(new GetterSetter());
+
 class JQuery implements List<Node> {
   List<Node> _list = [];
 
@@ -170,7 +172,7 @@ class JQuery implements List<Node> {
   eq(num childIndex) => $(this[childIndex]);
   remove() => forEach((n) => n.remove());
   attr([String name]) => accessor((n) => n.attributes[name], (n, v) => n.attributes[name] = v);
-  prop([String name]) => accessor((n) => ParserBackend.getter(name)(n, null), (n, v) => ParserBackend.setter(name)(n, v));
+  prop([String name]) => accessor((n) => parserBackend.getter(name)(n, null), (n, v) => parserBackend.setter(name)(n, v));
   textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(n.queryAll(selector)));
   hasClass(String name) => fold(false, (hasClass, node) => hasClass ? true : node.classes.contains(name));

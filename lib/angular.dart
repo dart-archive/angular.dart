@@ -85,6 +85,7 @@ class AngularModule extends Module {
     type(HttpBackend);
     type(BlockCache);
     type(TemplateCache);
+    type(GetterSetter);
     type(Profiler, implementedBy: _NoOpProfiler);
     type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
 
