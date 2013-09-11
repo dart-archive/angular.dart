@@ -8,7 +8,7 @@ main() {
       module.type(Parser, implementedBy: DynamicParser);
       module.type(GetterSetter, implementedBy: generated.StaticGetterSetter);
     }));
-    parser_spec.main();
+    //parser_spec.main();
   });
 }
 

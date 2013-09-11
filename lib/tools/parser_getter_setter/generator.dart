@@ -51,7 +51,7 @@ class ParserGetterSetter {
   }
 
   generateCode(List<String> keys) {
-    return'''
+    return '''
 class StaticGetterSetter extends GetterSetter {
   Map<String, Function> _getters = ${generateGetterMap(keys)};
   Map<String, Function> _setters = ${generateSetterMap(keys)};

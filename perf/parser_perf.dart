@@ -52,6 +52,7 @@ main() => describe('parser', () {
       var reflectionExpr = reflectivParser(expr);
       var generatedExpr = generatedParser(expr);
       var hybridExpr = hybridParser(expr);
+      var measure = (b) => statMeasure(b).mean_ops_sec;
       var gTime = measure(() => generatedExpr.eval(scope));
       var rTime = measure(() => reflectionExpr.eval(scope));
       var hTime = measure(() => hybridExpr.eval(scope));
@@ -69,6 +70,9 @@ main() => describe('parser', () {
     });
   }
 
+  compare('a.b.c', (scope) => scope['a'].b.c);
+  compare('e1.b', (scope) => scope['e1'].b);
+  compare('null', (scope) => null);
   compare('x.b.c', (s, [l]) {
     if (l != null && l.containsKey('x')) s = l['x'];
     else if (s != null ) s = s is Map ? s['x'] : s.x;
@@ -76,8 +80,5 @@ main() => describe('parser', () {
     if (s != null ) s = s is Map ? s['c'] : s.c;
     return s;
   });
-  compare('a.b.c', (scope) => scope['a'].b.c);
-  compare('e1.b', (scope) => scope['e1'].b);
-  compare('null', (scope) => null);
   compare('doesNotExist', (scope) => scope['doesNotExists']);
 });
