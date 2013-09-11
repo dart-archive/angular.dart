@@ -5,8 +5,9 @@ import '../../parser/parser_library.dart';  // For ParserBackend.
 class Code implements ParserAST {
   String _exp;
   String _returnOnly;
+  String simpleGetter;
   Function assign;
-  Code(this._exp, [this.assign]);
+  Code(this._exp, [this.assign, this.simpleGetter]);
 
   Code.returnOnly(this._returnOnly);
 
@@ -23,6 +24,7 @@ escape(String s) => s.replaceAll('\'', '\\\'').replaceAll(r'$', r'\$');
 
 class GetterSetterGenerator {
   static RegExp LAST_PATH_PART = new RegExp(r'(.*)\.(.*)');
+  static RegExp NON_WORDS = new RegExp(r'\W');
 
   // From https://www.dartlang.org/docs/spec/latest/dart-language-specification.html#h.huusvrzea3q
   static List<String> RESERVED_DART_KEYWORDS = [
@@ -38,6 +40,8 @@ class GetterSetterGenerator {
   var _keyToGetterFnName = {};
   var _keyToSetterFnName = {};
   var nextUid = 0;
+
+  _flatten(key) => key.replaceAll(NON_WORDS, '_');
 
   fieldGetter(String field, String obj) {
     var eKey = escape(field);
@@ -73,6 +77,7 @@ class GetterSetterGenerator {
   }
   $maybeField
 }
+
 """;
   }
 
@@ -81,39 +86,25 @@ class GetterSetterGenerator {
       return _keyToGetterFnName[key];
     }
 
-    var uid = nextUid++;
-    var fnName = "_getter_$uid";
+    var fnName = "_${_flatten(key)}";
 
-    var f = "$fnName(scope, locals) { // for $key\n";
-    f += "  var val;\n";
-    var obj = "scope";
-
-    var field = key;
-    var pathSplit = LAST_PATH_PART.firstMatch(key);
-    if (pathSplit != null) {
-      var prefixFn = call(pathSplit[1]);
-      field = pathSplit[2];
-      f += """  var prefix = $prefixFn(scope, locals);
-  if (identical(prefix, null)) return null;
-""";
-      obj = "prefix";
-    } else {
-      // Check for locals on scope keys only.
-
-      // This try block is needed because we attempt to access locals.foo
-      // If foo does not exist, we should fall through.
-      f += "  if (locals != null) {\n";
-      f += "    try {\n";
-      f += fieldGetter(field, "locals");
-      f += "      if (val != undefined_) { return val; }\n";
-      f += "    } catch (e) {}\n";
-      f += "  }\n";
+    var keys = key.split('.');
+    var lines = [
+        "$fnName(s, [l]) { // for $key"];
+    _(line) => lines.add('  $line');
+    for(var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (i == 0) {
+        _('if (l != null && l.containsKey("${escape(k)}")) s = l["${escape(k)}"];');
+        _('else if (s != null ) s = s is Map ? s["${escape(k)}"] : s.$k;');
+      } else {
+        _('if (s != null ) s = s is Map ? s["${escape(k)}"] : s.$k;');
+      }
     }
-    f += fieldGetter(field, obj);
-    f += "  return identical(val, undefined_) ? null : val;\n";
-    f += "}";
+    _('return s;');
+    lines.add('}\n\n');
 
-    functions += f;
+    functions += lines.join('\n');
 
     _keyToGetterFnName[key] = fnName;
     return fnName;
@@ -124,29 +115,33 @@ class GetterSetterGenerator {
       return _keyToSetterFnName[key];
     }
 
-    var uid = nextUid++;
-    var fnName = "_setter_$uid";
+    var fnName = "_set_${_flatten(key)}";
 
-    var f = "$fnName(scope, locals, value) { // for $key\n";
-    var obj = "scope";
-
-    var field = key;
-    var pathSplit = LAST_PATH_PART.firstMatch(key);
-    if (pathSplit != null) {
-      var prefixFn = call(pathSplit[1]);
-      var prefixSetter = setter(pathSplit[1]);
-      field = pathSplit[2];
-      f += """  var prefix = $prefixFn(scope, locals);
-  if (prefix == null) {
-    prefix = {};
-    $prefixSetter(scope, locals, prefix);
-  }
-""";
-      obj = "prefix";
+    var lines = [
+        "$fnName(s, v, [l]) { // for $key"];
+    _(line) => lines.add('  $line');
+    var keys = key.split('.');
+    _(keys.length == 1 ? 'var n = s;' : 'var n;');
+    var k = keys[0];
+    if (keys.length > 1) {
+      // locals
+      _('if (l != null) n = l["${escape(k)}"];');
+      _('if (l == null || (n == null && !l.containsKey("${escape(k)}"))) n = s is Map ? s["${escape(k)}"] : s.$k;');
+      _('if (n == null) n = s is Map ? (s["${escape(k)}"] = {}) : (s.$k = {});');
     }
+    for(var i = 1; i < keys.length - 1; i++) {
+      k = keys[i];
+      // middle
+      _('s = n; n = n is Map ? n["${escape(k)}"] : n.$k;');
+      _('if (n == null) n = s is Map ? (s["${escape(k)}"] = {}) : (s.$k = {});');
+    }
+    k = keys[keys.length - 1];
+    _('if (n is Map) n["${escape(k)}"] = v; else n.$k = v;');
+    // finish
+    _('return v;');
+    lines.add('}\n\n');
 
-    f += fieldSetter(field, obj);
-    functions += f;
+    functions += lines.join('\n');
 
     _keyToSetterFnName[key] = fnName;
     return fnName;
@@ -213,7 +208,7 @@ class DartCodeGen implements ParserBackend {
     var getterFnName = _getterGen(field);
     var assign = (Code right) {
       var setterFnName = _getterGen.setter(field);
-      return new Code("$setterFnName(${object.exp}, null, ${right.exp})");
+      return new Code("$setterFnName(${object.exp}, ${right.exp})");
     };
     return new Code("$getterFnName/*field:$field*/(${object.exp}, null)", assign);
   }
@@ -231,10 +226,10 @@ class DartCodeGen implements ParserBackend {
 
     var assign = (Code right) {
       var setterFnName = _getterGen.setter(key);
-      return new Code("${setterFnName}(scope, locals, ${right.exp})");
+      return new Code("${setterFnName}(scope, ${right.exp}, locals)");
     };
 
-    return new Code("$getterFnName/*$key*/(scope, locals)", assign);
+    return new Code("$getterFnName(scope, locals)", assign, "$getterFnName");
   }
 
   String _value(v) =>

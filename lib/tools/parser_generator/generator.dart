@@ -28,11 +28,12 @@ class ParserGenerator {
   }
 
   _printFunctions() {
+    _p('var evalError = (text, [s]) => text;');
     _p('var _FUNCTIONS = {');
     _p.indent();
     _expressions.forEach((exp) => _printFunction(exp));
     _p.dedent();
-    _p('};');
+    _p('};\n');
 //'1': new Expression((scope, [locals]) => 1)
   }
 
@@ -41,18 +42,26 @@ class ParserGenerator {
   _printFunction(String exp) {
     Code codeExpression = safeCode(exp);
 
-    _p('\'${escape(exp)}\': new Expression((scope, [locals]) {');
+    _p('\'${escape(exp)}\': new Expression(');
     _p.indent();
-    _functionBody(exp, codeExpression);
-    _p.dedent();
-
-    if (codeExpression.assignable) {
-      _p('}, (scope, value, [locals]) { ');
-      _p('evalError(s, [stack]) => parserEvalError(s, \'${escape(exp)}\', stack);');
-      _p('${codeExpression.assign(VALUE_CODE).returnExp()} }),');
+    if (codeExpression.simpleGetter != null) {
+      _p(codeExpression.simpleGetter);
     } else {
-      _p('}),');
+      _p('(scope, [locals]) {');
+      _p.indent();
+      _functionBody(exp, codeExpression);
+      _p.dedent();
+      _p('}');
     }
+    if (codeExpression.assignable) {
+      _p(', (scope, value, [locals]) { ');
+      _p.indent();
+      _p('${codeExpression.assign(VALUE_CODE).returnExp()}');
+      _p.dedent();
+      _p('}');
+    }
+    _p.dedent();
+    _p('),');
   }
 
   Code safeCode(String exp) {
@@ -69,29 +78,17 @@ class ParserGenerator {
     }
   }
 
-  _functionBody(exp, codeExpression) {
-    _p('String exp = \'${escape(exp)}\';');
-    _p('evalError(s, [stack]) => parserEvalError(s, exp, stack);');
-    _p('try {');
-    _p.indent();
-
-
+  _functionBody(exp, Code codeExpression) {
     _p(codeExpression.returnExp());
-
-    _p.dedent();
-    _p("""} catch (e, s) {
-  if ("\$e".contains("Eval Error")) rethrow;
-  throw parserEvalError(\'Caught \$e\', exp, s);
-}""");
   }
 
   _printTestMain() {
     _p("""
-    genEvalError(msg) { throw msg; }
+genEvalError(msg) { throw msg; }
 
-    functions() => new StaticParserFunctions(_FUNCTIONS);
+functions() => new StaticParserFunctions(_FUNCTIONS);
 
-}""");
+""");
   }
 }
 
