@@ -106,6 +106,7 @@ safeFunctionCall(userFn, fnName, evalError) {
 
 Map<String, Operator> OPERATORS = {
   'undefined': NULL_OP,
+  'null': NULL_OP,
   'true': (self, locals, a, b) => true,
   'false': (self, locals, a, b) => false,
   '+': (self, locals, aFn, bFn) {
