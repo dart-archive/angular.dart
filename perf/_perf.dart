@@ -89,7 +89,7 @@ measure(body) {
     body(); // 9
     body(); // 10
 
-    count += 50;
+    count += 60;
   } while(stopwatch.elapsedMicroseconds < 1000000);
   stopwatch.stop();
   var rate = count / stopwatch.elapsedMicroseconds;

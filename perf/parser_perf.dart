@@ -24,10 +24,7 @@ class EqualsThrows {
 
 main() => describe('parser', () {
   var scope;
-  var dABC, sABC;
-  var dET, staticEqualsThrows;
-  var dynamicNull, staticNull;
-  var dynamicDoesNotExist, staticDoesNotExist;
+  var reflectivParser, generatedParser;
 
   beforeEach(module((Module module) {
     module.type(StaticParser);
@@ -36,70 +33,38 @@ main() => describe('parser', () {
 
   beforeEach(inject((Scope _scope, DynamicParser _dynamic, StaticParser _parser){
     scope = _scope;
+    reflectivParser = _dynamic;
+    generatedParser = _parser;
     scope['a'] = new ATest();
     scope['e1'] = new EqualsThrows();
-
-    dABC = _dynamic.call('a.b.c');
-    sABC = _parser.call('a.b.c');
-
-    dET = _dynamic.call('e1.b');
-    staticEqualsThrows = _parser.call('e1.b');
-
-    dynamicNull = _dynamic.call(null);
-    staticNull = _parser.call(null);
-
-    dynamicDoesNotExist = _dynamic.call('doesNotExist');
-    staticDoesNotExist = _parser.call('doesNotExist');
   }));
 
-  time('dynamic a.b.c', () {
-    dABC.eval(scope);
+  compare(expr, idealFn) {
+    it(expr, () {
+      var nf = new NumberFormat.decimalPattern();
+      var reflectionExpr = reflectivParser(expr);
+      var generatedExpr = generatedParser(expr);
+      var gTime = measure(() => generatedExpr.eval(scope));
+      var rTime = measure(() => reflectionExpr.eval(scope));
+      var iTime = measure(() => idealFn(scope));
+      dump('$expr => g: ${nf.format(gTime)} ops/sec   ' +
+                    'r: ${nf.format(rTime)} ops/sec   ' +
+                    'i: ${nf.format(iTime)} ops/sec = ' +
+                    'i/g: ${nf.format(iTime / gTime)} x  ' +
+                    'i/r: ${nf.format(iTime / rTime)} x  ' +
+                    'g/r: ${nf.format(gTime / rTime)} x');
+    });
+  }
+
+  compare('x.b.c', (s, [l]) {
+    if (l != null && l.containsKey('x')) s = l['x'];
+    else if (s != null ) s = s is Map ? s['x'] : s.x;
+    if (s != null ) s = s is Map ? s['b'] : s.b;
+    if (s != null ) s = s is Map ? s['c'] : s.c;
+    return s;
   });
-
-  time('static a.b.c', () {
-    sABC.eval(scope);
-  });
-
-  time('static equal throws', () {
-    staticEqualsThrows.eval(scope);
-  });
-
-  time('dynamic equal throws', () {
-    dET.eval(scope);
-  });
-
-  time('static null', () {
-    staticNull.eval(scope);
-  });
-
-  time('dynamic null', () {
-    dynamicNull.eval(scope);
-  });
-
-/**
-  * Results:
-  * LOG: '"dynamic a.b.c: 511,357 ops/sec (2 us.)"'
-.
-LOG: '"static a.b.c: 2,670,663 ops/sec (0 us.)"'
-.
-LOG: '"static equal throws: 2,294,588 ops/sec (0 us.)"'
-.
-LOG: '"dynamic equal throws: 650,984 ops/sec (2 us.)"'
-.
-LOG: '"static null: 9,923,340 ops/sec (0 us.)"'
-.
-LOG: '"dynamic null: 9,895,741 ops/sec (0 us.)"'
-
-LOG: '"static does not exist: 6,525,547 ops/sec (0 us.)"'
-.
-LOG: '"dynamic does not exist: 2,050,241 ops/sec (0 us.)"'
-*/
-
-  ttime('static does not exist', () {
-    staticDoesNotExist.eval(scope);
-  });
-
-  ttime('dynamic does not exist', () {
-    dynamicDoesNotExist.eval(scope);
-  });
+  compare('a.b.c', (scope) => scope['a'].b.c);
+  compare('e1.b', (scope) => scope['e1'].b);
+  compare('null', (scope) => null);
+  compare('doesNotExist', (scope) => scope['doesNotExists']);
 });
