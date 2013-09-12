@@ -24,10 +24,31 @@ class Expression implements ParserAST {
 }
 
 class GetterSetter {
+  static stripTrailingNulls(List l) {
+    while (l.length > 0 && l.last == null) {
+      l.removeLast();
+    }
+    return l;
+  }
+
 
   Function getter(String key) {
     var symbol = new Symbol(key);
-    return (o) => reflect(o).getField(symbol).reflectee;
+    return (o) {
+      InstanceMirror instanceMirror = reflect(o);
+      try {
+        return instanceMirror.getField(symbol).reflectee;
+      } on NoSuchMethodError catch (e) {
+        if (instanceMirror.type.members.containsKey(symbol)) {
+	  MethodMirror methodMirror = instanceMirror.type.members[symbol];
+	  return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
+	    var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
+	    return instanceMirror.invoke(symbol, args).reflectee;
+	  });
+	}
+        rethrow;
+      }
+    };
   }
 
   Function setter(String key) {
