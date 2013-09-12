@@ -66,7 +66,7 @@ class _NgAnnotationBase {
    *
    *     @NgComponent(
    *       selector: 'my-component'
-   *       map: cost {
+   *       map: const {
    *         'title': '@.title',
    *         'selection': '=.currentItem',
    *         'onSelectionChange': '&.onChange'
