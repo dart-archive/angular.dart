@@ -4,9 +4,10 @@ part of angular;
     selector: '[ng-disabled]',
     map: const {'ng-disabled': '=.disabled'})
 class NgDisabledAttrDirective {
-  dom.Node node;
+  dom.Element element;
 
-  NgDisabledAttrDirective(dom.Node this.node);
+  NgDisabledAttrDirective(dom.Element this.element);
 
-  set disabled(value) => node.disabled = toBool(value);
+  // TODO: should be if (understands(element, #disabled)) ...
+  set disabled(value) => (element as dynamic).disabled = toBool(value);
 }

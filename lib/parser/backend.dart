@@ -83,7 +83,7 @@ class ParserBackend {
         }
 
         // Cache for local closure access
-        List<Function> _keys = keys;
+        List<String> _keys = keys;
         List<Function> _getters = getters;
         var _gettersLength = _getters.length;
 

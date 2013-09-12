@@ -227,22 +227,23 @@ DirectiveSelector directiveSelectorFactory(DirectiveRegistry directives) {
 
     switch(node.nodeType) {
       case 1: // Element
-        String nodeName = node.tagName.toLowerCase();
+        dom.Element element = node;
+        String nodeName = element.tagName.toLowerCase();
         Map<String, String> attrs = {};
 
         // Select node
-        partialSelection = elementSelector.selectNode(directiveRefs, partialSelection, node, nodeName);
+        partialSelection = elementSelector.selectNode(directiveRefs, partialSelection, element, nodeName);
 
         // Select .name
-        if ((node.classes) != null) {
-          for(var name in node.classes) {
+        if ((element.classes) != null) {
+          for(var name in element.classes) {
             classes[name] = true;
-            partialSelection = elementSelector.selectClass(directiveRefs, partialSelection, node, name);
+            partialSelection = elementSelector.selectClass(directiveRefs, partialSelection, element, name);
           }
         }
 
         // Select [attributes]
-        node.attributes.forEach((attrName, value){
+        element.attributes.forEach((attrName, value){
           attrs[attrName] = value;
           for(var k = 0, kk = attrSelector.length; k < kk; k++) {
             var selectorRegExp = attrSelector[k];

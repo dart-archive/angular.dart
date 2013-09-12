@@ -7,15 +7,15 @@ part of angular;
 class NgHideAttrDirective {
   static String NG_HIDE_CLASS = 'ng-hide';
 
-  dom.Node node;
+  dom.Element element;
 
-  NgHideAttrDirective(dom.Node this.node);
+  NgHideAttrDirective(dom.Element this.element);
 
   set hide(value) {
     if (toBool(value)) {
-      node.classes.add(NG_HIDE_CLASS);
+      element.classes.add(NG_HIDE_CLASS);
     } else {
-      node.classes.remove(NG_HIDE_CLASS);
+      element.classes.remove(NG_HIDE_CLASS);
     }
   }
 }

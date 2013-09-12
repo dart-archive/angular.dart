@@ -1,4 +1,6 @@
-part of angular;
+library angular.core.service.zone;
+
+import "dart:async" as async;
 
 /**
  * A better zone API which implements onTurnDone.

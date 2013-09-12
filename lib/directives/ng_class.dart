@@ -4,10 +4,10 @@ part of angular;
     selector: '[ng-class]',
     map: const {'ng-class': '=.value'})
 class NgClassAttrDirective {
-  dom.Node node;
+  dom.Element element;
   var previousSet = [];
 
-  NgClassAttrDirective(dom.Node this.node);
+  NgClassAttrDirective(dom.Element this.element);
 
   set value(current) {
     var currentSet;
@@ -20,13 +20,13 @@ class NgClassAttrDirective {
 
     previousSet.forEach((cls) {
       if (!currentSet.contains(cls)) {
-        node.classes.remove(cls);
+        element.classes.remove(cls);
       }
     });
 
     currentSet.forEach((cls) {
       if (!previousSet.contains(cls)) {
-        node.classes.add(cls);
+        element.classes.add(cls);
       }
     });
 

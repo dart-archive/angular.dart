@@ -221,8 +221,9 @@ class _ComponentFactory {
   }
 
   createShadowInjector(injector, TemplateLoader templateLoader) {
-    var shadowModule = new _ScopeModule(shadowScope)
+    var shadowModule = new Module()
       ..type(directive.type)
+      ..value(Scope, shadowScope)
       ..value(TemplateLoader, templateLoader)
       ..value(dom.ShadowRoot, shadowDom);
     shadowInjector = injector.createChild([shadowModule], name: _SHADOW);
@@ -236,25 +237,23 @@ class _ComponentFactory {
  * template HTML needs to be looked up from the URL.
  */
 class BlockCache {
-  Cache _blockCache;
+  Cache<BlockFactory> _blockFactoryCache = new Cache<BlockFactory>();
   Http $http;
   TemplateCache $templateCache;
   Compiler compiler;
   dom.NodeTreeSanitizer treeSanitizer;
 
-  BlockCache(CacheFactory $cacheFactory, Http this.$http,
+  BlockCache(Http this.$http,
       TemplateCache this.$templateCache, Compiler this.compiler,
-      dom.NodeTreeSanitizer this.treeSanitizer) {
-    _blockCache = $cacheFactory('blocks');
-  }
+      dom.NodeTreeSanitizer this.treeSanitizer);
 
   BlockFactory fromHtml(String html) {
-    BlockFactory blockFactory = _blockCache.get(html);
+    BlockFactory blockFactory = _blockFactoryCache.get(html);
     if (blockFactory == null) {
       var div = new dom.Element.tag('div');
       div.setInnerHtml(html, treeSanitizer: treeSanitizer);
       blockFactory = compiler(div.nodes);
-      _blockCache.put(html, blockFactory);
+      _blockFactoryCache.put(html, blockFactory);
     }
     return blockFactory;
   }
@@ -270,21 +269,7 @@ class BlockCache {
  * A convenience wrapper for "templates" cache, its purpose is
  * to create new Type which can be used for injection.
  */
-class TemplateCache implements Cache<HttpResponse> {
-  Cache _cache;
-
-  TemplateCache(CacheFactory $cacheFactory) {
-    _cache = $cacheFactory('templates');
-  }
-
-  Object get(key) => _cache.get(key);
-  put(key, HttpResponse value) => _cache.put(key, value);
-  putString(key, String value) => _cache.put(key, new HttpResponse(200, value));
-  void remove(key) => _cache.remove(key);
-  void removeAll() => _cache.removeAll();
-  CacheInfo info() => _cache.info();
-  void destroy() => _cache.destroy();
-}
+class TemplateCache extends Cache<HttpResponse> {}
 
 /**
  * TemplateLoader is an asynchronous access to ShadowRoot which is
@@ -340,9 +325,9 @@ class NodeAttrs {
   }
 }
 
-class _AnchorAttrs implements NodeAttrs {
+class _AnchorAttrs extends NodeAttrs {
   DirectiveRef _directiveRef;
-  _AnchorAttrs(DirectiveRef this._directiveRef);
+  _AnchorAttrs(DirectiveRef this._directiveRef):super(null);
   operator[](name) => name == '.' ? _directiveRef.value : null;
   observe(String attributeName, AttributeChanged notifyFn) {
     if (attributeName == '.') {
@@ -382,7 +367,7 @@ class BoundBlockFactory {
   BoundBlockFactory(BlockFactory this.blockFactory, Injector this.injector);
 
   Block call(Scope scope) {
-    return blockFactory(injector.createChild([new _ScopeModule(scope)]));
+    return blockFactory(injector.createChild([new Module()..value(Scope, scope)]));
   }
 }
 
@@ -515,7 +500,7 @@ class BlockFactory {
             (Injector injector) => injector.get(type),
             visibility: visibility);
       }
-      if (annotation is NgDirective && annotation.transclude) {
+      if (annotation is NgDirective && (annotation as NgDirective).transclude) {
         blockHoleFactory = (_) => new BlockHole([node]);
         blockFactory = (_) => ref.blockFactory;
         boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);

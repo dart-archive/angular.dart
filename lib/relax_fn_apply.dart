@@ -1,4 +1,4 @@
-library relax_fn_apply;
+library angular.core.functions;
 
 typedef FnWith0Args();
 typedef FnWith1Args(a0);

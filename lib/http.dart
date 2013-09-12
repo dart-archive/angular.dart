@@ -38,7 +38,7 @@ class HttpResponse {
  * from the server.
  */
 class Http {
-  Map<String, async.Future<String>> _pendingRequests = <String, async.Future<String>>{};
+  Map<String, async.Future<HttpResponse>> _pendingRequests = <String, async.Future<HttpResponse>>{};
   UrlRewriter _rewriter;
   HttpBackend _backend;
 
@@ -87,9 +87,9 @@ class Http {
       }
       _pendingRequests.remove(url);
       return response;
-    }, onError: (HttpRequestProgressEvent event) {
+    }, onError: (dom.HttpRequestProgressEvent event) {
       _pendingRequests.remove(url);
-      HttpRequest request = event.currentTarget;
+      dom.HttpRequest request = event.currentTarget;
       return new async.Future.error(
           new HttpResponse(request.status, request.response));
     });

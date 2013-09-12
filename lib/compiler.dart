@@ -31,7 +31,7 @@ class Compiler {
         _NgAnnotationBase annotation = directiveRef.directive.annotation;
         var blockFactory = null;
 
-        if (annotation is NgDirective && annotation.transclude) {
+        if (annotation is NgDirective && (annotation as NgDirective).transclude) {
           var remainingDirectives = declaredDirectiveRefs.sublist(j + 1);
           blockFactory = compileTransclusion(
               domCursor, templateCursor,

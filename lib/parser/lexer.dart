@@ -204,17 +204,9 @@ class Lexer {
         readNumber();
       } else if (isIdent()) {
         readIdent();
-        // TODO(deboer): WTF is this doing?
-        if (was(JSON_SEP) && inJsonObject() && hasToken()) {
-          throw "not impl json fixup";
-//          token = tokens.last;
-//          token.json = token.text.indexOf('.') == -1;
-        }
       } else if (isIn(SPECIAL)) {
         tokens.add(new Token(index, ch));
         index++;
-//        if (isIn(OPEN_JSON)) json.unshift(ch);
-//        if (isIn(CLOSE_JSON)) json.shift();
       } else if (isWhitespace()) {
         index++;
       } else {

@@ -31,15 +31,7 @@ reflectStaticField(Type type, String field) {
 
 // TODO(pavelgj): cache.
 Iterable reflectMetadata(Type type, Type metadata) {
-  var meta;
-  try {
-    meta = fastReflectClass(type).metadata;
-  } catch(e) {
-    // TODO(pavelgj): A temporary workaround for http://dartbug.com/11960
-    if (e.message == 'Function.prototype.toString is not generic') {
-      meta = [];
-    }
-  }
+  var meta = fastReflectClass(type).metadata;
   if (meta == null) {
     throw "Type $type does not have metadata. Syntax error, perhaps?";
   }

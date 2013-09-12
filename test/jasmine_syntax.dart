@@ -37,7 +37,7 @@ class Describe {
   }
 
   tearDown() {
-    afterEachFns.reverse.forEach((fn) => fn());
+    afterEachFns.reversed.forEach((fn) => fn());
     if (parent != null) {
       parent.tearDown();
     }

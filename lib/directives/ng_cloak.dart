@@ -5,7 +5,7 @@ part of angular;
     selector: '[ng-cloak]'
 )
 class NgCloakAttrDirective {
-  NgCloakAttrDirective(dom.Node node) {
-    node.attributes.remove('ng-cloak');
+  NgCloakAttrDirective(dom.Element element) {
+    element.attributes.remove('ng-cloak');
   }
 }

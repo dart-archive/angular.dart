@@ -183,7 +183,7 @@ main() {
         });
 
         nextTurn(true);
-        expect(element.textWithShadow()).toEqual('INNER_2()');
+        expect(element.textWithShadow()).toEqual('INNER_1()');
       })));
 
       it('should create a simple component', async(inject((Zone zone) {
@@ -197,7 +197,7 @@ main() {
         });
 
         nextTurn(true);
-        expect(element.textWithShadow()).toEqual('OUTTER-_1:INNER_2(OUTTER-_1)');
+        expect(element.textWithShadow()).toEqual('OUTTER-_0:INNER_1(OUTTER-_0)');
       })));
 
       it('should create a component that can access parent scope', async(inject((Zone zone) {

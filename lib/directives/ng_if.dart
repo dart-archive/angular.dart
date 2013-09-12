@@ -8,7 +8,6 @@ class NgIfAttrDirective {
 
   BoundBlockFactory boundBlockFactory;
   BlockHole blockHole;
-  dom.Node node;
   Scope scope;
 
   Block _block;
@@ -16,7 +15,6 @@ class NgIfAttrDirective {
 
   NgIfAttrDirective(BoundBlockFactory this.boundBlockFactory,
                     BlockHole this.blockHole,
-                    dom.Node this.node,
                     Scope this.scope) {
   }
 

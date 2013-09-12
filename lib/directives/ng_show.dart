@@ -6,15 +6,15 @@ part of angular;
 class NgShowAttrDirective {
   static String NG_SHOW_CLASS = 'ng-show';
 
-  dom.Node node;
+  dom.Element element;
 
-  NgShowAttrDirective(dom.Node this.node);
+  NgShowAttrDirective(dom.Element this.element);
 
   set show(value) {
     if (toBool(value)) {
-      node.classes.add(NG_SHOW_CLASS);
+      element.classes.add(NG_SHOW_CLASS);
     } else {
-      node.classes.remove(NG_SHOW_CLASS);
+      element.classes.remove(NG_SHOW_CLASS);
     }
   }
 }

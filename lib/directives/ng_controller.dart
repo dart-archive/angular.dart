@@ -29,7 +29,7 @@ class NgControllerAttrDirective {
 
       // instantiate the controller
       var controller = injector
-          .createChild([new _ScopeModule(childScope)],
+          .createChild([new Module()..value(Scope, childScope)],
                        forceNewInstances: [ctrlType]).get(ctrlType);
 
       // publish the controller into the scope

@@ -36,12 +36,11 @@ main() {
       }));
     });
 
-    it('should cache results', inject((CacheFactory $cacheFactory) {
+    it('should cache results', inject(() {
       http.expectGET('request', 'response');
-      Cache cache = $cacheFactory('test');
+      Cache cache = new Cache();
       http.getString('request', cache: cache).then(expectAsync1((data) {
         expect(data).toEqual('response');
-        expect(cache.info().size).toEqual(1);
         expect(cache.get('request').responseText).toEqual('response');
       }));
     }));

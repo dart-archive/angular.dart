@@ -354,7 +354,7 @@ class DirectiveRef {
   }
 
   String toString() {
-    return '{ element: ${element.outerHtml}, selector: ${directive.$selector}, value: $value }';
+    return '{ element: ${(element as dom.Element).outerHtml}, selector: ${directive.$selector}, value: $value }';
   }
 }
 

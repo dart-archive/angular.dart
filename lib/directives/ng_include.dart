@@ -36,11 +36,9 @@ class NgIncludeAttrDirective {
 
     // create a new scope
     _previousScope = scope.$new();
-    _previousBlock = createBlock(injector.createChild([new _ScopeModule(_previousScope)]));
+    _previousBlock = createBlock(injector.createChild([new Module()..value(Scope, _previousScope)]));
 
-    _previousBlock.elements.forEach((elm) {
-      element.append(elm);
-    });
+    _previousBlock.elements.forEach((elm) => element.append(elm));
   }
 
 
@@ -55,9 +53,7 @@ class NgIncludeAttrDirective {
       _updateContent(blockCache.fromHtml(value));
     } else {
       // an url template
-      blockCache.fromUrl(value).then((createBlock) {
-        _updateContent(createBlock);
-      });
+      blockCache.fromUrl(value).then((createBlock) => _updateContent(createBlock));
     }
   }
 }

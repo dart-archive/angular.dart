@@ -1,4 +1,15 @@
-part of angular;
+library angular.core.service.scope;
+
+import "dart:mirrors";
+import "dart:json";
+import 'package:perf_api/perf_api.dart';
+
+import 'exception_handler.dart';
+import 'parser/parser_library.dart';
+import 'relax_fn_apply.dart';
+import 'zone.dart';
+
+
 
 /**
  * Used by [Scope.$on] to notify the listeners of events.
@@ -37,8 +48,8 @@ class ScopeDigestTTL {
 class Scope implements Map {
   String $id;
   Scope $parent;
-  Scope get $root => _$root != null ? _$root : $parent.$root;
-  Scope _$root;
+  Scope $root;
+  num _nextId = 0;
 
   ExceptionHandler _exceptionHandler;
   Parser _parser;
@@ -49,7 +60,7 @@ class Scope implements Map {
   List<Function> _innerAsyncQueue;
   List<Function> _outerAsyncQueue;
   List<_Watch> _watchers = [];
-  Map<String, Function> _listeners = {};
+  Map<String, List<Function>> _listeners = {};
   Scope _nextSibling, _prevSibling, _childHead, _childTail;
   bool _isolate = false;
   Profiler _perf;
@@ -59,8 +70,8 @@ class Scope implements Map {
       ScopeDigestTTL ttl, Zone this._zone, Profiler this._perf) {
     _properties[r'this']= this;
     _ttl = ttl.ttl;
-    _$root = this;
-    $id = nextUid();
+    $root = this;
+    $id = '_${$root._nextId++}';
     _innerAsyncQueue = [];
     _outerAsyncQueue = [];
 
@@ -83,10 +94,8 @@ class Scope implements Map {
     _ttl = $parent._ttl;
     _properties[r'this'] = this;
     _zone = $parent._zone;
-    $id = nextUid();
-    if (_isolate) {
-      _$root = $parent.$root;
-    }
+    $root = $parent.$root;
+    $id = '_${$root._nextId++}';
     _innerAsyncQueue = $parent._innerAsyncQueue;
     _outerAsyncQueue = $parent._outerAsyncQueue;
 
@@ -185,7 +194,7 @@ class Scope implements Map {
     };
 
     var $watchCollectionAction = () {
-      relaxFnApply(listener, [newValue, oldValue, self]);
+      relaxFnApply(listener, [newValue, oldValue, this]);
     };
 
     return this.$watch($watchCollectionWatch, $watchCollectionAction);
@@ -222,7 +231,7 @@ class Scope implements Map {
 
         while(innerAsyncQueue.length > 0) {
           try {
-            _$root.$eval(innerAsyncQueue.removeAt(0));
+            $root.$eval(innerAsyncQueue.removeAt(0));
           } catch (e, s) {
             _exceptionHandler(e, s);
           }
@@ -248,9 +257,9 @@ class Scope implements Map {
                       watchLog.add([]);
                     }
                     logMsg = (watch.exp is Function)
-                        ? 'fn: ' + (watch.exp.name || watch.exp.toString())
+                        ? 'fn: ' + (watch.exp.toString())
                         : watch.exp;
-                    logMsg += '; newVal: ' + toJson(value) + '; oldVal: ' + toJson(last);
+                    logMsg += '; newVal: ' + _toJson(value) + '; oldVal: ' + _toJson(last);
                     watchLog[logIdx].add(logMsg);
                   }
                 }
@@ -281,12 +290,12 @@ class Scope implements Map {
 
         if(dirty && (_ttlLeft--) == 0) {
           throw '$_ttl \$digest() iterations reached. Aborting!\n' +
-              'Watchers fired in the last 5 iterations: ${toJson(watchLog)}';
+              'Watchers fired in the last 5 iterations: ${_toJson(watchLog)}';
         }
       } while (dirty || innerAsyncQueue.length > 0);
       while(_outerAsyncQueue.length > 0) {
         try {
-          _$root.$eval(_outerAsyncQueue.removeAt(0));
+          $root.$eval(_outerAsyncQueue.removeAt(0));
         } catch (e, s) {
           _exceptionHandler(e, s);
         }
@@ -335,10 +344,10 @@ class Scope implements Map {
 
 
   $on(name, listener) {
+    var namedListeners = _listeners[name];
     if (!_listeners.containsKey(name)) {
       _listeners[name] = namedListeners = [];
     }
-    var namedListeners = _listeners[name];
     namedListeners.add(listener);
 
     return () {
@@ -451,7 +460,6 @@ class Scope implements Map {
       throw 'Expecting String or Function';
     }
   }
-
 }
 
 var _initWatchVal = new Object();
@@ -464,15 +472,14 @@ class _Watch {
 
   _Watch(fn, this.last, getFn, this.exp) {
     this.fn = relaxFnArgs3(fn);
-    this.get = getFn is Expression ?
-    relaxFnArgs1(getFn.eval) :
-    relaxFnArgs1(getFn);
+    this.get = relaxFnArgs1(getFn);
   }
 }
 
-class _ScopeModule extends Module {
-  _ScopeModule(Scope scope) {
-    this.value(Scope, scope);
+_toJson(obj) {
+  try {
+    return stringify(obj);
+  } catch(e) {
+    return "NOT-JSONABLE";
   }
 }
-

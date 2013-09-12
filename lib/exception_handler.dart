@@ -1,4 +1,4 @@
-part of angular;
+library angular.core.service.exception;
 
 class ExceptionHandler {
   call(error, stack, [reason]){

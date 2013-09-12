@@ -4,9 +4,9 @@ class _Row {
   var id;
   Scope scope;
   Block block;
-  dom.Node startNode;
-  dom.Node endNode;
-  List<dom.Node> elements;
+  dom.Element startNode;
+  dom.Element endNode;
+  List<dom.Element> elements;
 
   _Row(this.id);
 }

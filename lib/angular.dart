@@ -10,8 +10,12 @@ import 'package:perf_api/perf_api.dart';
 import 'debug.dart';
 import 'relax_fn_apply.dart';
 import 'parser/parser_library.dart';
+import 'scope.dart';
+import 'exception_handler.dart';
+import 'zone.dart';
 
 export 'parser/parser_library.dart';
+export 'scope.dart';
 
 part 'block.dart';
 part 'cache.dart';
@@ -31,16 +35,13 @@ part 'directives/ng_mustache.dart';
 part 'directives/ng_repeat.dart';
 part 'directives/ng_show.dart';
 part 'dom_utilities.dart';
-part 'exception_handler.dart';
 part 'http.dart';
 part 'interface_typing.dart';
 part 'interpolate.dart';
 part 'mirrors.dart';
 part 'node_cursor.dart';
-part 'scope.dart';
 part 'selector.dart';
 part 'string_utilities.dart';
-part 'zone.dart';
 
 ASSERT(condition) {
   if (!condition) {
@@ -79,7 +80,6 @@ class AngularModule extends Module {
     type(Lexer);
     type(ParserBackend);
     type(Interpolate);
-    type(CacheFactory);
     type(Http);
     type(UrlRewriter);
     type(HttpBackend);
@@ -171,5 +171,5 @@ class _NoOpProfiler extends Profiler {
 }
 
 class NullTreeSanitizer implements dom.NodeTreeSanitizer {
-  void sanitizeTree(Node node) {}
+  void sanitizeTree(dom.Node node) {}
 }
