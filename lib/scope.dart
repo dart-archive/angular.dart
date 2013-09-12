@@ -1,5 +1,8 @@
 part of angular;
 
+/**
+ * Used by [Scope.$on] to notify the listeners of events.
+ */
 class ScopeEvent {
   String name;
   Scope targetScope;
@@ -13,11 +16,24 @@ class ScopeEvent {
   preventDefault() => defaultPrevented = true;
 }
 
+/**
+ * Allows the configuration of [Scope.$digest] iteration maximum time-to-live
+ * value. Digest keeps checking the state of the watcher getters until it
+ * can execute one full iteration with no watchers triggering. TTL is used
+ * to prevent an infinite loop where watch A triggers watch B which in turn
+ * triggers watch A. If the system does not stabilize in TTL iteration then
+ * an digest is stop an an exception is thrown.
+ */
 class ScopeDigestTTL {
   num ttl;
   ScopeDigestTTL(num this.ttl);
 }
 
+/**
+ * Scope has two responsibilities. 1) to keep track af watches and 2)
+ * to keep references to the model so that they are available for
+ * data-binding.
+ */
 class Scope implements Map {
   String $id;
   Scope $parent;
