@@ -94,11 +94,12 @@ class GetterSetterGenerator {
     _(line) => lines.add('  $line');
     for(var i = 0; i < keys.length; i++) {
       var k = keys[i];
+      var sk = isReserved(k) ? "null" : "s.$k";
       if (i == 0) {
         _('if (l != null && l.containsKey("${escape(k)}")) s = l["${escape(k)}"];');
-        _('else if (s != null ) s = s is Map ? s["${escape(k)}"] : s.$k;');
+        _('else if (s != null ) s = s is Map ? s["${escape(k)}"] : $sk;');
       } else {
-        _('if (s != null ) s = s is Map ? s["${escape(k)}"] : s.$k;');
+        _('if (s != null ) s = s is Map ? s["${escape(k)}"] : $sk;');
       }
     }
     _('return s;');
@@ -123,20 +124,26 @@ class GetterSetterGenerator {
     var keys = key.split('.');
     _(keys.length == 1 ? 'var n = s;' : 'var n;');
     var k = keys[0];
+    var sk = isReserved(k) ? "null" : "s.$k";
+    var nk = isReserved(k) ? "null" : "n.$k";
     if (keys.length > 1) {
       // locals
       _('if (l != null) n = l["${escape(k)}"];');
-      _('if (l == null || (n == null && !l.containsKey("${escape(k)}"))) n = s is Map ? s["${escape(k)}"] : s.$k;');
-      _('if (n == null) n = s is Map ? (s["${escape(k)}"] = {}) : (s.$k = {});');
+      _('if (l == null || (n == null && !l.containsKey("${escape(k)}"))) n = s is Map ? s["${escape(k)}"] : $sk;');
+      _('if (n == null) n = s is Map ? (s["${escape(k)}"] = {}) : ($sk = {});');
     }
     for(var i = 1; i < keys.length - 1; i++) {
       k = keys[i];
+      sk = isReserved(k) ? "null" : "s.$k";
+      nk = isReserved(k) ? "null" : "n.$k";
       // middle
-      _('s = n; n = n is Map ? n["${escape(k)}"] : n.$k;');
-      _('if (n == null) n = s is Map ? (s["${escape(k)}"] = {}) : (s.$k = {});');
+      _('s = n; n = n is Map ? n["${escape(k)}"] : $nk;');
+      _('if (n == null) n = s is Map ? (s["${escape(k)}"] = {}) : (${isReserved(k) ? "null" : "$sk = {}"});');
     }
     k = keys[keys.length - 1];
-    _('if (n is Map) n["${escape(k)}"] = v; else n.$k = v;');
+    sk = isReserved(k) ? "null" : "s.$k";
+    nk = isReserved(k) ? "null" : "n.$k";
+    _('if (n is Map) n["${escape(k)}"] = v; else ${isReserved(k) ? "null" : "$nk = v"};');
     // finish
     _('return v;');
     lines.add('}\n\n');
