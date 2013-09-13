@@ -4,7 +4,7 @@ library ng_specs;
 import 'dart:html';
 import 'dart:async' as dartAsync;
 import 'package:unittest/unittest.dart' as unit;
-import 'package:angular/debug.dart';
+import 'package:angular/dom/debug.dart';
 import 'dart:mirrors' as mirror;
 import 'package:angular/angular.dart';
 import 'jasmine_syntax.dart';
@@ -16,7 +16,7 @@ import "package:angular/zone.dart";
 import "package:angular/exception_handler.dart";
 
 export 'package:unittest/unittest.dart';
-export 'package:angular/debug.dart';
+export 'package:angular/dom/debug.dart';
 export 'package:angular/angular.dart';
 export 'dart:html';
 export 'jasmine_syntax.dart' hide main;
@@ -286,7 +286,6 @@ module(Function fn) {
 }
 
 main() {
-  beforeEach(() => id = 1);
   beforeEach(() => currentSpecInjector = new SpecInjector());
   beforeEach(module((AngularModule module) {
     module

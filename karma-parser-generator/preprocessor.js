@@ -4,7 +4,6 @@ var exec = require('child_process').exec;
 
 var generateParser = function(logger) {
   var log = logger.create('generate-parser');
-  log.info('hello');
   return function(content, file, done) {
     log.info('Generating parser for parser test: %s', file.originalPath);
 

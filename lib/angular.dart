@@ -7,7 +7,7 @@ import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:perf_api/perf_api.dart';
-import 'debug.dart';
+import 'dom/debug.dart';
 import 'relax_fn_apply.dart';
 import 'parser/parser_library.dart';
 import 'scope.dart';
@@ -17,10 +17,10 @@ import 'zone.dart';
 export 'parser/parser_library.dart';
 export 'scope.dart';
 
-part 'block.dart';
+part 'dom/block.dart';
 part 'cache.dart';
-part 'compiler.dart';
-part 'directive.dart';
+part 'dom/compiler.dart';
+part 'dom/directive.dart';
 part 'directives/ng_bind.dart';
 part 'directives/ng_class.dart';
 part 'directives/ng_click.dart';
@@ -34,28 +34,14 @@ part 'directives/ng_model.dart';
 part 'directives/ng_mustache.dart';
 part 'directives/ng_repeat.dart';
 part 'directives/ng_show.dart';
-part 'dom_utilities.dart';
+part 'dom/dom_utilities.dart';
 part 'http.dart';
 part 'interface_typing.dart';
 part 'interpolate.dart';
 part 'mirrors.dart';
-part 'node_cursor.dart';
-part 'selector.dart';
+part 'dom/node_cursor.dart';
+part 'dom/selector.dart';
 part 'string_utilities.dart';
-
-ASSERT(condition) {
-  if (!condition) {
-    throw new AssertionError();
-  }
-}
-
-num id = 0;
-
-nextUid() {
-  return '_${id++}';
-}
-
-noop() {}
 
 toJson(obj) {
   try {

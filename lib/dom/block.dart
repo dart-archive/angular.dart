@@ -380,10 +380,7 @@ class BlockFactory {
   List<dom.Node> templateElements;
   Profiler _perf;
 
-  BlockFactory(this.templateElements, this.directivePositions, this._perf) {
-    ASSERT(templateElements != null);
-    ASSERT(directivePositions != null);
-  }
+  BlockFactory(this.templateElements, this.directivePositions, this._perf);
 
   BoundBlockFactory bind(Injector injector) {
     return new BoundBlockFactory(this, injector);
