@@ -1,4 +1,11 @@
-part of angular;
+library angular.directive.ng_if;
+
+import "dart:html" as dom;
+import "../dom/directive.dart";
+import "../dom/block.dart";
+import "../dom/block_factory.dart";
+import "../scope.dart";
+import "../utils.dart";
 
 @NgDirective(
     transclude: true,

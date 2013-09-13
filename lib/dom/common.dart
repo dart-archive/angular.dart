@@ -9,3 +9,7 @@ List<dom.Node> cloneElements(elements) {
   }
   return clones;
 }
+
+class NullTreeSanitizer implements dom.NodeTreeSanitizer {
+  void sanitizeTree(dom.Node node) {}
+}

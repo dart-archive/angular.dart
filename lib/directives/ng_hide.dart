@@ -1,4 +1,8 @@
-part of angular;
+library angular.directive.ng_hide;
+
+import "dart:html" as dom;
+import "../dom/directive.dart";
+import "../utils.dart";
 
 
 @NgDirective(

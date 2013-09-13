@@ -2,7 +2,8 @@ library angular.service.parser;
 
 import 'dart:mirrors';
 import 'package:perf_api/perf_api.dart';
-import '../relax_fn_apply.dart';
+import "../utils.dart";
+
 
 part 'backend.dart';
 part 'parser.dart';

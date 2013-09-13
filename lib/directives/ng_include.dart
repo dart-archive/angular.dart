@@ -1,4 +1,11 @@
-part of angular;
+library angular.directive.ng_include;
+
+import "dart:html" as dom;
+import 'package:di/di.dart';
+import "../dom/directive.dart";
+import "../dom/block.dart";
+import "../dom/block_factory.dart";
+import "../scope.dart";
 
 @NgDirective(
     selector: '[ng-include]',

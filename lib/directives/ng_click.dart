@@ -1,4 +1,8 @@
-part of angular;
+library angular.directive.ng_click;
+
+import "dart:html" as dom;
+import "../dom/directive.dart";
+import "../scope.dart";
 
 @NgDirective(
     selector: '[ng-click]',

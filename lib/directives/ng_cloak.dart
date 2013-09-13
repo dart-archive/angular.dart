@@ -1,4 +1,7 @@
-part of angular;
+library angular.directive.ng_cloak;
+
+import "dart:html" as dom;
+import "../dom/directive.dart";
 
 
 @NgDirective(

@@ -46,12 +46,6 @@ parserEvalError(String s, String text, stack) =>
   ['Eval Error: $s while evaling [$text]' +
       (stack != null ? '\n\nFROM:\n$stack' : '')];
 
-toBool(x) {
-  if (x is bool) return x;
-  if (x is int || x is double) return x != 0;
-  return false;
-}
-
 // Automatic type conversion.
 autoConvertAdd(a, b) {
   if (a != null && b != null) {

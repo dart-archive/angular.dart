@@ -1,4 +1,10 @@
-library angular.core.functions;
+library angular.util;
+
+toBool(x) {
+  if (x is bool) return x;
+  if (x is int || x is double) return x != 0;
+  return false;
+}
 
 typedef FnWith0Args();
 typedef FnWith1Args(a0);

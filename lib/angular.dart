@@ -4,37 +4,19 @@ import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:perf_api/perf_api.dart';
 
-// TODO(misko): to be deleted
-import 'dom/debug.dart';
-import 'relax_fn_apply.dart';
-import 'exception_handler.dart';
-import "dart:mirrors";
-import "dart:async" as async;
-import 'dart:html' as dom;
+import 'dart:html' as dom; // TODO(misko): to be deleted
+import 'controller.dart';
 
 import 'zone.dart';                   export 'zone.dart';
 import 'cache.dart';                  export 'cache.dart';
 import 'interpolate.dart';            export 'interpolate.dart';
 import 'dom/http.dart';               export 'dom/http.dart';
-import 'parser/parser_library.dart';  export 'parser/parser_library.dart';
 import 'scope.dart';                  export 'scope.dart';
-
+import 'exception_handler.dart';      export 'exception_handler.dart';
+import 'parser/parser_library.dart';  export 'parser/parser_library.dart';
 import 'dom/all.dart';                export 'dom/all.dart';
+import 'directives/all.dart';         export 'directives/all.dart';
 
-import "directives/ng_mustache.dart";
-
-part 'directives/ng_bind.dart';
-part 'directives/ng_class.dart';
-part 'directives/ng_click.dart';
-part 'directives/ng_cloak.dart';
-part 'directives/ng_controller.dart';
-part 'directives/ng_disabled.dart';
-part 'directives/ng_hide.dart';
-part 'directives/ng_if.dart';
-part 'directives/ng_include.dart';
-part 'directives/ng_model.dart';
-part 'directives/ng_repeat.dart';
-part 'directives/ng_show.dart';
 
 class AngularModule extends Module {
   DirectiveRegistry _directives = new DirectiveRegistry();
@@ -94,23 +76,6 @@ class AngularModule extends Module {
 }
 
 
-class ControllerRegistry {
-  Map<String, Type> controllerMap = {};
-
-  register(String name, Type controllerType) {
-    controllerMap[name] = controllerType;
-  }
-
-  Type operator[](String name) {
-    if (controllerMap.containsKey(name)){
-      return controllerMap[name];
-    } else {
-      throw new ArgumentError('Unknown controller: $name');
-    }
-  }
-}
-
-
 // helper for bootstrapping angular
 bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
   var allModules = new List.from(modules);
@@ -128,6 +93,3 @@ bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
   });
 }
 
-class NullTreeSanitizer implements dom.NodeTreeSanitizer {
-  void sanitizeTree(dom.Node node) {}
-}

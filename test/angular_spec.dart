@@ -1,5 +1,5 @@
 import '_specs.dart';
-import 'package:angular/relax_fn_apply.dart';
+import 'package:angular/utils.dart';
 
 main() {
   describe('angular.dart unittests', () {
