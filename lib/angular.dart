@@ -23,7 +23,6 @@ import 'scope.dart';                  export 'scope.dart';
 
 part 'interface_typing.dart';
 part 'mirrors.dart';
-part 'string_utilities.dart';
 part 'directives/ng_bind.dart';
 part 'directives/ng_class.dart';
 part 'directives/ng_click.dart';

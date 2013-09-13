@@ -298,9 +298,9 @@ class NodeAttrs {
 
   NodeAttrs(dom.Element this.element);
 
-  operator [](name) => element.attributes[snakeCase(name, '-')];
+  operator [](name) => element.attributes[_snakeCase(name, '-')];
   operator []=(String name, String value) {
-    name = snakeCase(name, '-');
+    name = _snakeCase(name, '-');
     element.attributes[name] = value;
     if (_observers != null && _observers.containsKey(name)) {
       _observers[name].forEach((fn) => fn(value));
@@ -313,7 +313,7 @@ class NodeAttrs {
   * synchronise with the current value.
   */
   observe(String attributeName, AttributeChanged notifyFn) {
-    attributeName = snakeCase(attributeName, '-');
+    attributeName = _snakeCase(attributeName, '-');
     if (_observers == null) {
       _observers = new Map<String, List<AttributeChanged>>();
     }
@@ -607,3 +607,10 @@ _createAttributeMapping(Directive directive,
     }
   });
 }
+
+
+var _SNAKE_CASE_REGEXP = new RegExp("[A-Z]");
+
+_snakeCase(String name, [separator = '_']) =>
+  name.replaceAllMapped(_SNAKE_CASE_REGEXP, (Match match) =>
+    (match.start != 0 ? separator : '') + match.group(0).toLowerCase());
