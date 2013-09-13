@@ -342,23 +342,6 @@ _reflectSingleMetadata(Type type, Type metadataType) {
 dynamic _defaultIfNull(dynamic value, dynamic defaultValue) =>
     value == null ? defaultValue : value;
 
-class DirectiveRef {
-  dom.Node element;
-  String value;
-  Directive directive;
-  BlockFactory blockFactory;
-
-  DirectiveRef(dom.Node this.element, Directive this.directive, [
-               String this.value,
-               BlockFactory this.blockFactory]) {
-  }
-
-  String toString() {
-    return '{ element: ${(element as dom.Element).outerHtml}, selector: ${directive.$selector}, value: $value }';
-  }
-}
-
-
 class DirectiveRegistry {
   Map<String, Directive> directiveMap = {};
 

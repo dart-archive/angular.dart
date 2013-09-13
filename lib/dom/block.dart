@@ -614,3 +614,21 @@ var _SNAKE_CASE_REGEXP = new RegExp("[A-Z]");
 _snakeCase(String name, [separator = '_']) =>
   name.replaceAllMapped(_SNAKE_CASE_REGEXP, (Match match) =>
     (match.start != 0 ? separator : '') + match.group(0).toLowerCase());
+
+
+class DirectiveRef {
+  dom.Node element;
+  String value;
+  Directive directive;
+  BlockFactory blockFactory;
+
+  DirectiveRef(dom.Node this.element, Directive this.directive, [
+  String this.value,
+  BlockFactory this.blockFactory]) {
+  }
+
+  String toString() {
+    return '{ element: ${(element as dom.Element).outerHtml}, selector: ${directive.$selector}, value: $value }';
+  }
+}
+

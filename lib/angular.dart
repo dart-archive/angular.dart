@@ -37,7 +37,7 @@ part 'directives/ng_repeat.dart';
 part 'directives/ng_show.dart';
 part 'dom/block.dart';
 part 'dom/compiler.dart';
-part 'dom/directive.dart';
+part 'directive.dart';
 part 'dom/dom_utilities.dart';
 part 'dom/node_cursor.dart';
 part 'dom/selector.dart';
