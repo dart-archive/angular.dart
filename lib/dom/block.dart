@@ -515,14 +515,14 @@ class BlockFactory {
       _createAttributeMapping(ref.directive,
           nodeAttrs == null ? new _AnchorAttrs(ref) : nodeAttrs,
           scope, shadowScope, controller, parser);
-      if (understands(controller, 'attach')) {
+      if (_understands(controller, 'attach')) {
         var removeWatcher;
         removeWatcher = scope.$watch(() {
           removeWatcher();
           controller.attach();
         });
       }
-      if (understands(controller, 'detach')) {
+      if (_understands(controller, 'detach')) {
         scope.$on(r'$destroy', controller.detach);
       }
     });
@@ -614,6 +614,12 @@ var _SNAKE_CASE_REGEXP = new RegExp("[A-Z]");
 _snakeCase(String name, [separator = '_']) =>
   name.replaceAllMapped(_SNAKE_CASE_REGEXP, (Match match) =>
     (match.start != 0 ? separator : '') + match.group(0).toLowerCase());
+
+
+bool _understands(obj, symbol) {
+  if (symbol is String) symbol = new Symbol(symbol);
+  return reflect(obj).type.methods.containsKey(symbol);
+}
 
 
 class DirectiveRef {
