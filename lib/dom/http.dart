@@ -1,4 +1,9 @@
-part of angular;
+library angular.core.service.http;
+
+import "../cache.dart";
+import "dart:async" as async;
+import "dart:html" as dom;
+
 
 class UrlRewriter {
   String call(url) => url;

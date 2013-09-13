@@ -1,10 +1,13 @@
-part of angular;
+library angular.core.service.interpolate;
+
+import 'parser/parser_library.dart';
+import 'exception_handler.dart';
 
 
-String startSymbol = '{{';
-String endSymbol = '}}';
-num startSymbolLength = startSymbol.length;
-num endSymbolLength = endSymbol.length;
+String _startSymbol = '{{';
+String _endSymbol = '}}';
+num _startSymbolLength = _startSymbol.length;
+num _endSymbolLength = _endSymbol.length;
 
 class Interpolate {
   Parser $parse;
@@ -24,13 +27,13 @@ class Interpolate {
     Expression fn;
 
     while(index < length) {
-      if ( ((startIndex = text.indexOf(startSymbol, index)) != -1) &&
-           ((endIndex = text.indexOf(endSymbol, startIndex + startSymbolLength)) != -1) ) {
+      if ( ((startIndex = text.indexOf(_startSymbol, index)) != -1) &&
+           ((endIndex = text.indexOf(_endSymbol, startIndex + _startSymbolLength)) != -1) ) {
         (index != startIndex) && chunks.add(text.substring(index, startIndex));
-        fn = $parse(exp = text.substring(startIndex + startSymbolLength, endIndex));
+        fn = $parse(exp = text.substring(startIndex + _startSymbolLength, endIndex));
         chunks.add(fn);
         fn.exp = exp;
-        index = endIndex + endSymbolLength;
+        index = endIndex + _endSymbolLength;
         hasInterpolation = true;
       } else {
         // we did not find anything, so we have to add the remainder to the chunks array

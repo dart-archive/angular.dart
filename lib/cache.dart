@@ -1,4 +1,4 @@
-part of angular;
+library angular.service.cache;
 
 /**
  * A simple map-backed cache.

@@ -12,7 +12,6 @@ import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import "_log.dart";
 import "_http.dart";
-import "package:angular/zone.dart";
 import "package:angular/exception_handler.dart";
 
 export 'package:unittest/unittest.dart';
@@ -23,7 +22,6 @@ export 'jasmine_syntax.dart' hide main;
 export 'package:di/di.dart';
 export 'package:unittest/mock.dart';
 export 'package:perf_api/perf_api.dart';
-export "package:angular/zone.dart";
 export "package:angular/exception_handler.dart";
 
 es(String html) {
