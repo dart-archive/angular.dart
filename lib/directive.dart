@@ -2,7 +2,7 @@ library angular.service.directive;
 
 import "dart:mirrors";
 
-class _NgAnnotationBase {
+class NgAnnotationBase {
   /**
    * CSS selector which will trigger this component/directive.
    * CSS Selectors are limited to a single element and can contain:
@@ -111,7 +111,7 @@ class _NgAnnotationBase {
    */
   final List<String> exportExpressions;
 
-  const _NgAnnotationBase({
+  const NgAnnotationBase({
     this.selector,
     this.visibility: NgDirective.LOCAL_VISIBILITY,
     this.publishTypes,
@@ -137,7 +137,7 @@ class _NgAnnotationBase {
  * * `detach()` - Called on when owning scope is destroyed.
  *
  */
-class NgComponent extends _NgAnnotationBase {
+class NgComponent extends NgAnnotationBase {
   /**
    * Inlined HTML template for the component.
    */
@@ -194,7 +194,7 @@ class NgComponent extends _NgAnnotationBase {
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
-class NgDirective extends _NgAnnotationBase {
+class NgDirective extends NgAnnotationBase {
   static const String LOCAL_VISIBILITY = 'local';
   static const String CHILDREN_VISIBILITY = 'children';
   static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
@@ -245,7 +245,7 @@ class Directive {
   static int COMPONENT_PRIORITY = 0;
 
   Type type;
-  _NgAnnotationBase annotation;
+  NgAnnotationBase annotation;
 
 
   // TODO(misko): this should be renamed to selector once we change over to meta-data.

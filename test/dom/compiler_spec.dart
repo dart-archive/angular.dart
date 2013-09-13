@@ -1,5 +1,5 @@
-import "_specs.dart";
-import "_log.dart";
+import "../_specs.dart";
+import "../_log.dart";
 import "dart:mirrors";
 
 

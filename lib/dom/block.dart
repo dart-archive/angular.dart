@@ -450,7 +450,7 @@ class BlockFactory {
     nodeModule.value(NodeAttrs, nodeAttrs);
     directiveRefs.forEach((DirectiveRef ref) {
       Type type = ref.directive.type;
-      _NgAnnotationBase annotation = ref.directive.annotation;
+      NgAnnotationBase annotation = ref.directive.annotation;
       var visibility = _elementOnly;
       if (ref.directive.$visibility == NgDirective.CHILDREN_VISIBILITY) {
         visibility = null;
@@ -620,21 +620,3 @@ bool _understands(obj, symbol) {
   if (symbol is String) symbol = new Symbol(symbol);
   return reflect(obj).type.methods.containsKey(symbol);
 }
-
-
-class DirectiveRef {
-  dom.Node element;
-  String value;
-  Directive directive;
-  BlockFactory blockFactory;
-
-  DirectiveRef(dom.Node this.element, Directive this.directive, [
-  String this.value,
-  BlockFactory this.blockFactory]) {
-  }
-
-  String toString() {
-    return '{ element: ${(element as dom.Element).outerHtml}, selector: ${directive.$selector}, value: $value }';
-  }
-}
-

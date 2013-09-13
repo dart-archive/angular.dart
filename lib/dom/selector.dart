@@ -1,4 +1,7 @@
-part of angular;
+library angular.dom.selector;
+
+import "dart:html" as dom;
+import "../directive.dart";
 
 /**
  * DirectiveSelector is a function which given a node it will return a
@@ -294,3 +297,18 @@ int priorityComparator(DirectiveRef a, DirectiveRef b) {
 
   return bPriority - aPriority;
 }
+
+class DirectiveRef {
+  dom.Node element;
+  String value;
+  Directive directive;
+  dynamic blockFactory; // TODO(misko): move it out of this library
+
+  DirectiveRef(dom.Node this.element, Directive this.directive,
+               [ String this.value ]);
+
+  String toString() {
+    return '{ element: ${(element as dom.Element).outerHtml}, selector: ${directive.$selector}, value: $value }';
+  }
+}
+

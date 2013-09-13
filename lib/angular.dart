@@ -20,6 +20,10 @@ import 'dom/http.dart';               export 'dom/http.dart';
 import 'parser/parser_library.dart';  export 'parser/parser_library.dart';
 import 'scope.dart';                  export 'scope.dart';
 
+import 'dom/all.dart';                export 'dom/all.dart';
+
+import 'dom/node_cursor.dart';
+import 'dom/selector.dart';
 
 part 'directives/ng_bind.dart';
 part 'directives/ng_class.dart';
@@ -37,8 +41,6 @@ part 'directives/ng_show.dart';
 part 'dom/block.dart';
 part 'dom/compiler.dart';
 part 'dom/dom_utilities.dart';
-part 'dom/node_cursor.dart';
-part 'dom/selector.dart';
 
 class AngularModule extends Module {
   DirectiveRegistry _directives = new DirectiveRegistry();
@@ -61,7 +63,7 @@ class AngularModule extends Module {
     type(BlockCache);
     type(TemplateCache);
     type(GetterSetter);
-    type(Profiler, implementedBy: _NoOpProfiler);
+    type(Profiler);
     type(ScopeDigestTTL);
     type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
 
@@ -130,14 +132,6 @@ bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
     Injector injector = new DynamicInjector(modules: allModules);
     injector.get(Compiler)(topElt)(injector, topElt);
   });
-}
-
-class _NoOpProfiler extends Profiler {
-  void markTime(String name, [String extraData]) { }
-
-  int startTimer(String name, [String extraData]) => null;
-
-  void stopTimer(idOrName) { }
 }
 
 class NullTreeSanitizer implements dom.NodeTreeSanitizer {

@@ -1,12 +1,13 @@
-part of angular;
+library angular.dom.node_cursor;
 
+import "dart:html" as dom;
 
 class NodeCursor {
-  var stack = [];
-  var elements;
-  var index;
+  List<dynamic> stack = [];
+  List<dom.Node> elements;
+  num index;
 
-  NodeCursor(this.elements) {
+  NodeCursor(List<dom.Node> this.elements) {
     index = 0;
   }
 
@@ -66,7 +67,7 @@ class NodeCursor {
     index = stack.removeLast();
   }
 
-  insertAnchorBefore(name) {
+  insertAnchorBefore(String name) {
     var current = elements[index];
     var parent = current.parentNode;
 
@@ -79,7 +80,7 @@ class NodeCursor {
     }
   }
 
-  replaceWithAnchor(name) {
+  replaceWithAnchor(String name) {
     insertAnchorBefore(name);
     var childCursor = remove();
     this.index--;

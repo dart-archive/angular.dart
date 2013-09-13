@@ -1,4 +1,5 @@
-import '_specs.dart';
+import '../_specs.dart';
+import '../../lib/dom/node_cursor.dart';
 
 main() {
   describe('NodeCursor', () {

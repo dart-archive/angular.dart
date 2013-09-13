@@ -1,4 +1,4 @@
-import "_specs.dart";
+import "../_specs.dart";
 
 @NgComponent(
     selector: 'reset-style-inheritance',

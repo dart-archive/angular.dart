@@ -1,4 +1,4 @@
-import "_specs.dart";
+import "../_specs.dart";
 
 @NgDirective(selector:'b')                    class _BElement{}
 @NgDirective(selector:'.b')                   class _BClass{}
