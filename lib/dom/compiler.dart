@@ -1,4 +1,13 @@
-part of angular;
+library angular.dom.compiler;
+
+import "dart:html" as dom;
+import "package:perf_api/perf_api.dart";
+import "block.dart";
+import "block_factory.dart";
+import "common.dart";
+import "selector.dart";
+import "node_cursor.dart";
+import "../directive.dart";
 
 class Compiler {
   DirectiveRegistry directives;

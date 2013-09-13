@@ -14,7 +14,6 @@ import 'dart:html' as dom;
 
 import 'zone.dart';                   export 'zone.dart';
 import 'cache.dart';                  export 'cache.dart';
-import 'directive.dart';              export 'directive.dart';
 import 'interpolate.dart';            export 'interpolate.dart';
 import 'dom/http.dart';               export 'dom/http.dart';
 import 'parser/parser_library.dart';  export 'parser/parser_library.dart';
@@ -22,8 +21,7 @@ import 'scope.dart';                  export 'scope.dart';
 
 import 'dom/all.dart';                export 'dom/all.dart';
 
-import 'dom/node_cursor.dart';
-import 'dom/selector.dart';
+import "directives/ng_mustache.dart";
 
 part 'directives/ng_bind.dart';
 part 'directives/ng_class.dart';
@@ -35,12 +33,8 @@ part 'directives/ng_hide.dart';
 part 'directives/ng_if.dart';
 part 'directives/ng_include.dart';
 part 'directives/ng_model.dart';
-part 'directives/ng_mustache.dart';
 part 'directives/ng_repeat.dart';
 part 'directives/ng_show.dart';
-part 'dom/block.dart';
-part 'dom/compiler.dart';
-part 'dom/dom_utilities.dart';
 
 class AngularModule extends Module {
   DirectiveRegistry _directives = new DirectiveRegistry();

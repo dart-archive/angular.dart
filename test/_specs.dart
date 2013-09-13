@@ -3,22 +3,21 @@ library ng_specs;
 
 import 'dart:html';
 import 'dart:async' as dartAsync;
+import 'dart:mirrors' as mirror;
 import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/dom/debug.dart';
-import 'dart:mirrors' as mirror;
 import 'package:angular/angular.dart';
-import 'jasmine_syntax.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
+import 'jasmine_syntax.dart';
 import "_log.dart";
 import "_http.dart";
-import "package:angular/exception_handler.dart";
 
+export 'dart:html';
+export 'jasmine_syntax.dart' hide main;
 export 'package:unittest/unittest.dart';
 export 'package:angular/dom/debug.dart';
 export 'package:angular/angular.dart';
-export 'dart:html';
-export 'jasmine_syntax.dart' hide main;
 export 'package:di/di.dart';
 export 'package:unittest/mock.dart';
 export 'package:perf_api/perf_api.dart';

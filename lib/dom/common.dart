@@ -1,4 +1,6 @@
-part of angular;
+library angular.dom.common;
+
+import "dart:html" as dom;
 
 List<dom.Node> cloneElements(elements) {
   var clones = [];
