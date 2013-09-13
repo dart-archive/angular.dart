@@ -2,9 +2,6 @@ library selector;
 
 import 'package:html5lib/dom.dart';
 
-// TODO(pavelgj): this code largely duplicates functionality of client
-// selector code. Needs refactoring to reuse reusable parts.
-
 class ContainsSelector {
   String selector;
   RegExp regexp;
@@ -68,8 +65,6 @@ List<_SelectorPart> _splitCss(String selector) {
   return parts;
 }
 
-// TODO(pavelgj): this is super inefficient. But we don't really care about
-// performance here.
 bool matchesNode(Node node, String selector) {
   var match, selectorParts;
   if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {

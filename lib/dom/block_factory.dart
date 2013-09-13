@@ -12,7 +12,6 @@ import "common.dart";
 import "compiler.dart";
 import "directive.dart";
 import "http.dart";
-import "selector.dart";  // TODO(misko): import DirectiveRef only
 import "../cache.dart";
 import "../directives/ng_mustache.dart";
 import "../parser/parser_library.dart";

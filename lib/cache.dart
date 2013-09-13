@@ -2,7 +2,6 @@ library angular.service.cache;
 
 /**
  * A simple map-backed cache.
- * TODO(pavelgj): add LRU support.
  */
 class Cache<T> {
   Map<String, Object> _data = <String, Object>{};

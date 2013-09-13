@@ -31,7 +31,6 @@ class NgIfAttrDirective {
   }
 
   set condition(value) {
-    // TODO(vojta): ignore changes like null -> false
     if (toBool(value)) {
       if (_block == null) {
         _block = boundBlockFactory(_childScope = scope.$new());

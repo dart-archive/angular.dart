@@ -248,7 +248,6 @@ class Directive {
   NgAnnotationBase annotation;
 
 
-  // TODO(misko): this should be renamed to selector once we change over to meta-data.
   String $selector;
   int $priority = Directive.ATTR_PRIORITY;
   String $template;

@@ -34,8 +34,7 @@ class Token {
   toString() => "Token($text)";
 }
 
-// TODO(deboer): Type this typedef further
-typedef Operator(self, locals, ParserAST a, ParserAST b);
+typedef Operator(dynamic self, Map<String, dynamic>locals, ParserAST a, ParserAST b);
 
 Operator NULL_OP = (_, _x, _0, _1) => null;
 Operator NOT_IMPL_OP = (_, _x, _0, _1) { throw "Op not implemented"; };
@@ -200,10 +199,6 @@ class DynamicParser implements Parser {
     Token expect([String e1, String e2, String e3, String e4]){
       Token token = peek(e1, e2, e3, e4);
       if (token != null) {
-        // TODO json
-//        if (json && !token.json) {
-//          throwError("is not valid json", token);
-//        }
         var consumed = tokens.removeAt(0);
         tokenSavers.forEach((ts) => ts.add(consumed));
         return token;
@@ -238,17 +233,13 @@ class DynamicParser implements Parser {
         }
       }
 
-      // TODO(deboer): I don't think context applies to Dart..
-      var next, context;
+      var next;
       while ((next = expect('(', '[', '.')) != null) {
         if (next.text == '(') {
           primary = functionCall(primary, tokensText(ts.sublist(0, ts.length - 1)));
-          context = null;
         } else if (next.text == '[') {
-          context = primary;
           primary = objectIndex(primary);
         } else if (next.text == '.') {
-          context = primary;
           primary = fieldAccess(primary);
         } else {
           throw parserError("Internal Angular Error: Unreachable code B.");
@@ -435,7 +426,6 @@ class DynamicParser implements Parser {
       return _b.object(keyValues);
     };
 
-    // TODO(deboer): json
     ParserAST value = statements();
 
     if (tokens.length != 0) {

@@ -42,10 +42,6 @@ class Block implements ElementWrapper {
   Block(List<dom.Node> this.elements);
 
   Block insertAfter(ElementWrapper previousBlock) {
-    // TODO(misko): this will try to insert regardless if the node is an existing server side pre-rendered instance.
-    // This is inefficient since the node should already be at the right location. We should have a check
-    // for that. If pre-rendered then do nothing. This will also short circuit animation.
-
     // Update Link List.
     next = previousBlock.next;
     if (next != null) {
