@@ -1,4 +1,4 @@
-part of parser_library;
+part of angular.service.parser;
 
 typedef ParsedGetter(self, [locals]);
 typedef ParsedSetter(self, value, [locals]);

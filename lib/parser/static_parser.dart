@@ -1,4 +1,4 @@
-part of parser_library;
+part of angular.service.parser;
 
 class StaticParserFunctions {
   StaticParserFunctions(Map this.functions);

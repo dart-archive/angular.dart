@@ -1,14 +1,9 @@
-import '../test/_specs.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
 
-time(name, body) => _time(it, name, body);
 xtime(name, body) => null;
-ttime(name, body) => _time(iit, name, body);
-_time(fn, name, body) {
-  fn(name, () {
-    dump('$name: => ${statMeasure(body)}');
-  });
+time(name, body) {
+  print('$name: => ${statMeasure(body)}');
 }
 
 statMeasure(body) {

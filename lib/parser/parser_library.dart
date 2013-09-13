@@ -1,4 +1,4 @@
-library parser_library;
+library angular.service.parser;
 
 import 'dart:mirrors';
 import 'package:perf_api/perf_api.dart';
@@ -11,6 +11,6 @@ part 'static_parser.dart';
 
 // Placeholder for DI.
 // The parser you are looking for is DynamicParser
-class Parser {
+abstract class Parser {
   call(String text) {}
 }

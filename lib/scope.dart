@@ -36,8 +36,9 @@ class ScopeEvent {
  * an digest is stop an an exception is thrown.
  */
 class ScopeDigestTTL {
-  num ttl;
-  ScopeDigestTTL(num this.ttl);
+  final num ttl;
+  ScopeDigestTTL(): ttl = 5;
+  ScopeDigestTTL.value(num this.ttl);
 }
 
 /**

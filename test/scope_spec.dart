@@ -202,7 +202,7 @@ main() {
 
       it(r'should prevent infinite recursion and print watcher expression',() {
         module((AngularModule module) {
-          module.value(ScopeDigestTTL, new ScopeDigestTTL(100));
+          module.value(ScopeDigestTTL, new ScopeDigestTTL.value(100));
         });
         inject((Scope $rootScope) {
           $rootScope.$watch('a', (a, b, c) {$rootScope.b++;});

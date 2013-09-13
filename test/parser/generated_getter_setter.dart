@@ -1,14 +1,6 @@
-import '../_specs.dart';
-import 'parser_spec.dart' as parser_spec;
-import 'generated_getter_setter.dart' as generated;
+library angular.service.parser.generated_getter_setter;
 
-main() {
-  describe('hybrid getter-setter', () {
-    beforeEach(module((AngularModule module) {
-      module.type(Parser, implementedBy: DynamicParser);
-      module.type(GetterSetter, implementedBy: generated.StaticGetterSetter);
-    }));
-    //parser_spec.main();
-  });
-}
+import 'package:angular/parser/parser_library.dart';
+
+main() {}
 

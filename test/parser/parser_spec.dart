@@ -715,6 +715,6 @@ class OverloadObject implements Map {
 }
 
 class ScopeWithErrors {
-  String get boo => throw "boo to you";
-  String foo() => throw "foo to you";
+  String get boo { throw "boo to you"; }
+  String foo() { throw "foo to you"; }
 }

@@ -87,9 +87,9 @@ class AngularModule extends Module {
     type(TemplateCache);
     type(GetterSetter);
     type(Profiler, implementedBy: _NoOpProfiler);
+    type(ScopeDigestTTL);
     type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
 
-    value(ScopeDigestTTL, new ScopeDigestTTL(5));
 
     directive(NgTextMustacheDirective);
     directive(NgAttrMustacheDirective);
