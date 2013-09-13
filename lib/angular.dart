@@ -14,6 +14,7 @@ import 'dart:html' as dom;
 
 import 'zone.dart';                   export 'zone.dart';
 import 'cache.dart';                  export 'cache.dart';
+import 'directive.dart';              export 'directive.dart';
 import 'interpolate.dart';            export 'interpolate.dart';
 import 'dom/http.dart';               export 'dom/http.dart';
 import 'parser/parser_library.dart';  export 'parser/parser_library.dart';
@@ -35,7 +36,6 @@ part 'directives/ng_repeat.dart';
 part 'directives/ng_show.dart';
 part 'dom/block.dart';
 part 'dom/compiler.dart';
-part 'directive.dart';
 part 'dom/dom_utilities.dart';
 part 'dom/node_cursor.dart';
 part 'dom/selector.dart';
