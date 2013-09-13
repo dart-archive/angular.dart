@@ -262,8 +262,8 @@ class Directive {
 
   Directive._new(Type this.type) {
     var annotations = [];
-    annotations.addAll(reflectMetadata(type, NgDirective));
-    annotations.addAll(reflectMetadata(type, NgComponent));
+    annotations.addAll(_reflectMetadata(type, NgDirective));
+    annotations.addAll(_reflectMetadata(type, NgComponent));
     if (annotations.length != 1) {
       throw 'Expecting exatly one annotation of type NgComponent or '
             'NgDirective on $type found ${annotations.length} annotations.';
@@ -328,8 +328,47 @@ class Directive {
   }
 }
 
+Map<Type, ClassMirror> _reflectionCache = new Map<Type, ClassMirror>();
+
+// A hack for slow reflectClass.
+ClassMirror fastReflectClass(Type type) {
+  ClassMirror reflectee = _reflectionCache[type];
+  if (reflectee == null) {
+    reflectee = reflectClass(type);
+    _reflectionCache[type] = reflectee;
+  }
+  return reflectee;
+}
+
+/**
+ * A set of functions which build on top of dart:mirrors making them
+ * easier to use.
+ */
+
+// Return the value of a type's static field or null if it is not defined.
+_reflectStaticField(Type type, String field) {
+  Symbol fieldSym = new Symbol(field);
+  var reflection = fastReflectClass(type);
+  if (!reflection.members.containsKey(fieldSym)) return null;
+  if (!reflection.members[fieldSym].isStatic) return null;
+
+  var fieldReflection = reflection.getField(fieldSym);
+  if (fieldReflection == null) return null;
+  return fieldReflection.reflectee;
+}
+
+// TODO(pavelgj): cache.
+Iterable _reflectMetadata(Type type, Type metadata) {
+  var meta = fastReflectClass(type).metadata;
+  if (meta == null) {
+    throw "Type $type does not have metadata. Syntax error, perhaps?";
+  }
+  return meta.where((InstanceMirror im) => im.reflectee.runtimeType == metadata)
+  .map((InstanceMirror im) => im.reflectee);
+}
+
 _reflectSingleMetadata(Type type, Type metadataType) {
-  var metadata = reflectMetadata(type, metadataType);
+  var metadata = _reflectMetadata(type, metadataType);
   if (metadata.length == 0) {
     return null;
   }

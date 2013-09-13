@@ -21,7 +21,6 @@ import 'parser/parser_library.dart';  export 'parser/parser_library.dart';
 import 'scope.dart';                  export 'scope.dart';
 
 
-part 'mirrors.dart';
 part 'directives/ng_bind.dart';
 part 'directives/ng_class.dart';
 part 'directives/ng_click.dart';
