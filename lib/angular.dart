@@ -10,7 +10,6 @@ import 'relax_fn_apply.dart';
 import 'exception_handler.dart';
 import "dart:mirrors";
 import "dart:async" as async;
-import "dart:json" as json;
 import 'dart:html' as dom;
 
 import 'zone.dart';                   export 'zone.dart';
@@ -40,14 +39,6 @@ part 'directive.dart';
 part 'dom/dom_utilities.dart';
 part 'dom/node_cursor.dart';
 part 'dom/selector.dart';
-
-toJson(obj) {
-  try {
-    return json.stringify(obj);
-  } catch(e) {
-    return "NOT-JSONABLE (see toJson(obj) in angular.dart)";
-  }
-}
 
 class AngularModule extends Module {
   DirectiveRegistry _directives = new DirectiveRegistry();

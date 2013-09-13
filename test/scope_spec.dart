@@ -1,4 +1,6 @@
 import "_specs.dart";
+import "dart:json" as json;
+
 
 main() {
   describe(r'Scope', () {
@@ -841,7 +843,7 @@ main() {
         log = [];
         $rootScope = _$rootScope_;
         deregister = $rootScope.$watchCollection('obj', (obj) {
-          log.add(toJson(obj));
+          log.add(json.stringify(obj));
         });
       }));
 
