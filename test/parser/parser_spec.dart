@@ -101,7 +101,19 @@ main() {
       });
     });
 
-    xdescribe('error handling', () {
+    describe('error handling', () {
+      var parser;
+
+      beforeEach(inject((Parser p) {
+        parser = p;
+      }));
+
+      // We only care about the error strings in the DynamicParser.
+      var errStr = (x) {
+        if (parser is DynamicParser) { return x; }
+        return null;
+      };
+
       expectEval(String expr) => expect(() => eval(expr));
 
       // PARSER ERRORS
@@ -128,18 +140,18 @@ main() {
 
 
       it('should throw on non-list, non-map field access', () {
-        expectEval("6[3]").toThrow('Eval Error: Attempted field access on a non-list, non-map while evaling [6[3]]');
-        expectEval("6[3]=2").toThrow('Eval Error: Attempting to set a field on a non-list, non-map while evaling [6[3]=2');
+        expectEval("6[3]").toThrow(errStr('Eval Error: Attempted field access on a non-list, non-map while evaling [6[3]]'));
+        expectEval("6[3]=2").toThrow(errStr('Eval Error: Attempting to set a field on a non-list, non-map while evaling [6[3]=2'));
       });
 
 
       it('should throw on undefined functions', () {
-        expectEval("notAFn()").toThrow('Eval Error: Undefined function notAFn while evaling [notAFn()]');
+        expectEval("notAFn()").toThrow(errStr('Eval Error: Undefined function notAFn while evaling [notAFn()]'));
       });
 
 
       it('should throw on not-function function calls', () {
-        expectEval("4()").toThrow('Eval Error: 4 is not a function while evaling [4()]');
+        expectEval("4()").toThrow(errStr('Eval Error: 4 is not a function while evaling [4()]'));
       });
 
 
