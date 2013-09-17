@@ -178,14 +178,14 @@ class BlockFactory {
       var controller = nodeInjector.get(ref.directive.type);
       var shadowScope = (fctrs != null && fctrs.containsKey(ref.directive.type)) ? fctrs[ref.directive.type].shadowScope : null;
       _createAttributeMapping(ref.directive, nodeAttrs == null ? new _AnchorAttrs(ref) : nodeAttrs, scope, shadowScope, controller, parser);
-      if (_understands(controller, 'attach')) {
+      if (controller is NgAttachAware) {
         var removeWatcher;
         removeWatcher = scope.$watch(() {
           removeWatcher();
           controller.attach();
         });
       }
-      if (_understands(controller, 'detach')) {
+      if (controller is NgDetachAware) {
         scope.$on(r'$destroy', controller.detach);
       }
     });

@@ -626,7 +626,7 @@ class LogComponent {
     selector: 'attach-detach',
     template: r'<content></content>'
 )
-class AttachDetachComponent {
+class AttachDetachComponent implements NgAttachAware, NgDetachAware {
   Logger logger;
 
   AttachDetachComponent(Logger this.logger) {
