@@ -207,6 +207,13 @@ main() {
           parser('foo()').eval(new ScopeWithErrors());
         }).toThrow('foo to you');
       });
+
+
+      it('should fail if reflected object has no property', () {
+        expect(() {
+          parser('notAProperty').eval(new TestData());
+        }).toThrow("'TestData' has no instance getter 'notAProperty'");
+      });
     });
 
     describe('setters', () {

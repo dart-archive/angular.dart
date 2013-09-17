@@ -155,5 +155,6 @@ main() {
       "12/6/2",
       "a=undefined",
       'add(a,b)',
+      'notAProperty',
   ]);
 }
