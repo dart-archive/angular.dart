@@ -12,7 +12,7 @@ var generateParser = function(logger) {
       if (err) throw err;
 
       exec(
-          'dart --checked bin/parser_generator_for_spec.dart getter-setters',
+          'dart --checked bin/parser_generator_for_spec.dart getter-setter',
           function(err, stdout, stderr) {
             if (err) throw err;
             done(data + '\n\n' + stdout);

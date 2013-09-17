@@ -1,3 +1,3 @@
 module.exports = {
-  'preprocessor:parser-getter-setters': ['factory', require('./preprocessor')]
+  'preprocessor:parser-getter-setter': ['factory', require('./preprocessor')]
 };

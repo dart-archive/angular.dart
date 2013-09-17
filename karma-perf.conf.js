@@ -23,7 +23,7 @@ module.exports = function(config) {
 
     preprocessors: {
       'test/parser/generated_functions.dart': ['parser-generator'],
-      'test/parser/generated_getter_setter.dart': ['parser-getter-setters']
+      'test/parser/generated_getter_setter.dart': ['parser-getter-setter']
     },
 
     plugins: [
