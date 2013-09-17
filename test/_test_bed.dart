@@ -30,8 +30,8 @@ class TestBed {
     return rootElement;
   }
 
-  triggerEvent(elementWrapper, name) {
-    elementWrapper[0].dispatchEvent(new dom.Event.eventType('MouseEvent', name));
+  triggerEvent(elementWrapper, name, [type='MouseEvent']) {
+    elementWrapper[0].dispatchEvent(new dom.Event.eventType(type, name));
   }
 }
 
