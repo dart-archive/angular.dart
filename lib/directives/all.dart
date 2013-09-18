@@ -15,6 +15,7 @@ import 'ng_include.dart';
 import 'ng_model.dart';
 import 'ng_repeat.dart';
 import 'ng_show.dart';
+import 'ng_style.dart';
 
 export "ng_mustache.dart";
 export 'ng_bind.dart';
@@ -29,6 +30,8 @@ export 'ng_include.dart';
 export 'ng_model.dart';
 export 'ng_repeat.dart';
 export 'ng_show.dart';
+export 'ng_style.dart';
+
 
 void registerDirectives(AngularModule module) {
   module.directive(NgTextMustacheDirective);
@@ -75,4 +78,5 @@ void registerDirectives(AngularModule module) {
   module.directive(NgTouchEndAttrDirective);
   module.directive(NgTouchMoveAttrDirective);
   module.directive(NgTouchStartAttrDirective);
+  module.directive(NgStyleAttrDirective);
 }
