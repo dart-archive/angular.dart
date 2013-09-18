@@ -156,7 +156,7 @@ main() {
       var element = $('<html-and-css>ignore</html-and-css>');
       $compile(element)(injector, element);
 
-      nextTurn();
+      nextTurn(true);
       expect(renderedText(element)).toEqual('.hello{}Simple!');
     })));
   });
