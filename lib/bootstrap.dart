@@ -1,4 +1,4 @@
-library angular;
+library angular.bootstrap;
 
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
