@@ -39,7 +39,7 @@ beforeEachTestBed(assign) {
   return module((AngularModule module) {
     module.type(TestBed);
     module.directive(Probe);
-    return (TestBed tb) => assign(tb);
+    return inject((TestBed tb) => assign(tb));
   });
 }
 
