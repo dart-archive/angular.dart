@@ -21,10 +21,9 @@ import "../scope.dart";
     map: const {'ng-blur': '&.onBlur'}
 )
 class NgBlurAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-blur` attribute.  On a `Blur`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onBlur;
 
@@ -48,10 +47,9 @@ class NgBlurAttrDirective {
     map: const {'ng-change': '&.onChange'}
 )
 class NgChangeAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-change` attribute.  On a `Change`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onChange;
 
@@ -75,10 +73,9 @@ class NgChangeAttrDirective {
     map: const {'ng-click': '&.onClick'}
 )
 class NgClickAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-click` attribute.  On a `Click`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onClick;
 
@@ -102,10 +99,9 @@ class NgClickAttrDirective {
     map: const {'ng-contextmenu': '&.onContextMenu'}
 )
 class NgContextMenuAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-contextmenu` attribute.  On a `ContextMenu`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onContextMenu;
 
@@ -129,10 +125,9 @@ class NgContextMenuAttrDirective {
     map: const {'ng-doubleclick': '&.onDoubleClick'}
 )
 class NgDoubleClickAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-doubleclick` attribute.  On a `DoubleClick`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onDoubleClick;
 
@@ -156,10 +151,9 @@ class NgDoubleClickAttrDirective {
     map: const {'ng-drag': '&.onDrag'}
 )
 class NgDragAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-drag` attribute.  On a `Drag`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onDrag;
 
@@ -183,10 +177,9 @@ class NgDragAttrDirective {
     map: const {'ng-dragend': '&.onDragEnd'}
 )
 class NgDragEndAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-dragend` attribute.  On a `DragEnd`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onDragEnd;
 
@@ -210,10 +203,9 @@ class NgDragEndAttrDirective {
     map: const {'ng-dragenter': '&.onDragEnter'}
 )
 class NgDragEnterAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-dragenter` attribute.  On a `DragEnter`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onDragEnter;
 
@@ -237,10 +229,9 @@ class NgDragEnterAttrDirective {
     map: const {'ng-dragleave': '&.onDragLeave'}
 )
 class NgDragLeaveAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-dragleave` attribute.  On a `DragLeave`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onDragLeave;
 
@@ -264,10 +255,9 @@ class NgDragLeaveAttrDirective {
     map: const {'ng-dragover': '&.onDragOver'}
 )
 class NgDragOverAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-dragover` attribute.  On a `DragOver`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onDragOver;
 
@@ -291,10 +281,9 @@ class NgDragOverAttrDirective {
     map: const {'ng-dragstart': '&.onDragStart'}
 )
 class NgDragStartAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-dragstart` attribute.  On a `DragStart`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onDragStart;
 
@@ -318,10 +307,9 @@ class NgDragStartAttrDirective {
     map: const {'ng-drop': '&.onDrop'}
 )
 class NgDropAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-drop` attribute.  On a `Drop`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onDrop;
 
@@ -345,10 +333,9 @@ class NgDropAttrDirective {
     map: const {'ng-focus': '&.onFocus'}
 )
 class NgFocusAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-focus` attribute.  On a `Focus`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onFocus;
 
@@ -372,10 +359,9 @@ class NgFocusAttrDirective {
     map: const {'ng-keydown': '&.onKeyDown'}
 )
 class NgKeyDownAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-keydown` attribute.  On a `KeyDown`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onKeyDown;
 
@@ -399,10 +385,9 @@ class NgKeyDownAttrDirective {
     map: const {'ng-keypress': '&.onKeyPress'}
 )
 class NgKeyPressAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-keypress` attribute.  On a `KeyPress`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onKeyPress;
 
@@ -426,10 +411,9 @@ class NgKeyPressAttrDirective {
     map: const {'ng-keyup': '&.onKeyUp'}
 )
 class NgKeyUpAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-keyup` attribute.  On a `KeyUp`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onKeyUp;
 
@@ -453,10 +437,9 @@ class NgKeyUpAttrDirective {
     map: const {'ng-mousedown': '&.onMouseDown'}
 )
 class NgMouseDownAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-mousedown` attribute.  On a `MouseDown`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onMouseDown;
 
@@ -480,10 +463,9 @@ class NgMouseDownAttrDirective {
     map: const {'ng-mouseenter': '&.onMouseEnter'}
 )
 class NgMouseEnterAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-mouseenter` attribute.  On a `MouseEnter`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onMouseEnter;
 
@@ -507,10 +489,9 @@ class NgMouseEnterAttrDirective {
     map: const {'ng-mouseleave': '&.onMouseLeave'}
 )
 class NgMouseLeaveAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-mouseleave` attribute.  On a `MouseLeave`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onMouseLeave;
 
@@ -534,10 +515,9 @@ class NgMouseLeaveAttrDirective {
     map: const {'ng-mousemove': '&.onMouseMove'}
 )
 class NgMouseMoveAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-mousemove` attribute.  On a `MouseMove`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onMouseMove;
 
@@ -561,10 +541,9 @@ class NgMouseMoveAttrDirective {
     map: const {'ng-mouseout': '&.onMouseOut'}
 )
 class NgMouseOutAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-mouseout` attribute.  On a `MouseOut`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onMouseOut;
 
@@ -588,10 +567,9 @@ class NgMouseOutAttrDirective {
     map: const {'ng-mouseover': '&.onMouseOver'}
 )
 class NgMouseOverAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-mouseover` attribute.  On a `MouseOver`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onMouseOver;
 
@@ -615,10 +593,9 @@ class NgMouseOverAttrDirective {
     map: const {'ng-mouseup': '&.onMouseUp'}
 )
 class NgMouseUpAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-mouseup` attribute.  On a `MouseUp`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onMouseUp;
 
@@ -642,10 +619,9 @@ class NgMouseUpAttrDirective {
     map: const {'ng-mousewheel': '&.onMouseWheel'}
 )
 class NgMouseWheelAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-mousewheel` attribute.  On a `MouseWheel`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onMouseWheel;
 
@@ -669,10 +645,9 @@ class NgMouseWheelAttrDirective {
     map: const {'ng-scroll': '&.onScroll'}
 )
 class NgScrollAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-scroll` attribute.  On a `Scroll`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onScroll;
 
@@ -696,10 +671,9 @@ class NgScrollAttrDirective {
     map: const {'ng-touchcancel': '&.onTouchCancel'}
 )
 class NgTouchCancelAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-touchcancel` attribute.  On a `TouchCancel`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onTouchCancel;
 
@@ -723,10 +697,9 @@ class NgTouchCancelAttrDirective {
     map: const {'ng-touchend': '&.onTouchEnd'}
 )
 class NgTouchEndAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-touchend` attribute.  On a `TouchEnd`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onTouchEnd;
 
@@ -750,10 +723,9 @@ class NgTouchEndAttrDirective {
     map: const {'ng-touchmove': '&.onTouchMove'}
 )
 class NgTouchMoveAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-touchmove` attribute.  On a `TouchMove`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onTouchMove;
 
@@ -777,10 +749,9 @@ class NgTouchMoveAttrDirective {
     map: const {'ng-touchstart': '&.onTouchStart'}
 )
 class NgTouchStartAttrDirective {
-/**
+  /**
    * Parsed expression from the `ng-touchstart` attribute.  On a `TouchStart`
-   * event, this gets invoked with the event available as `$event` in it's
-   * local scope.
+   * event, this expression is evaluated.  The event is available as `$event`.
    */
   Getter onTouchStart;
 
