@@ -17,11 +17,14 @@ main() => describe('zone', () {
 
   describe('exceptions', () {
     it('should throw exceptions from the body', () {
+      var error;
+      zone.onError = (e) => error = e;
       expect(() {
         zone.run(() {
           throw ['hello'];
         });
       }).toThrow('hello');
+      expect(error).toEqual(['hello']);
     });
 
 
@@ -111,19 +114,21 @@ main() => describe('zone', () {
 
     zone.run(() {
       log('run start');
-      new Future.value(null).then((_) {
-        log('future then');
-        new Future.value(null).then((_) {
-          log('future 3'); });
+      new Future.value(null)
+        .then((_) {
+          log('future then');
+          new Future.value(null)
+            .then((_) { log('future ?'); });
           return new Future.value(null);
-      }).then((_) {
-        log('future 2');
-      });
+        })
+        .then((_) {
+          log('future ?');
+        });
       log('run end');
     });
     nextTurn(true);
 
-    expect(log.result()).toEqual('run start; run end; future then; future 2; future 3; onTurnDone; onTurn future; onTurnDone');
+    expect(log.result()).toEqual('run start; run end; future then; future ?; future ?; onTurnDone; onTurn future; onTurnDone');
   })));
 
 
@@ -282,21 +287,6 @@ main() => describe('zone', () {
         zone.assertInTurn();
       });
     });
-  });
-
-
-  it('should assertInTurn for chained futures originating in a zone', () {
-    var future = new Future.value(4);
-    zone.run(() {
-      future = future.then((_) {
-        return 5;
-      });
-    });
-    future.then((_) {
-      expect(_).toEqual(5);
-      zone.assertInTurn();
-    });
-    nextTurn(true);
   });
 
 

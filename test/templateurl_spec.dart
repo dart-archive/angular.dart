@@ -157,9 +157,6 @@ main() {
       $compile(element)(injector, element);
 
       nextTurn();
-      expect(renderedText(element)).toEqual('.hello{}');
-
-      nextTurn();
       expect(renderedText(element)).toEqual('.hello{}Simple!');
     })));
   });
