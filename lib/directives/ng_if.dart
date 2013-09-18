@@ -22,8 +22,7 @@ class NgIfAttrDirective {
 
   NgIfAttrDirective(BoundBlockFactory this.boundBlockFactory,
                     BlockHole this.blockHole,
-                    Scope this.scope) {
-  }
+                    Scope this.scope);
 
   block() {
     if (_block != null) return _block;

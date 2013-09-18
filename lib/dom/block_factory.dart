@@ -120,19 +120,18 @@ class BlockFactory {
     nodeModule.value(dom.Node, node);
     nodeModule.value(NodeAttrs, nodeAttrs);
     directiveRefs.forEach((DirectiveRef ref) {
-      Type type = ref.directive.type;
-      NgAnnotationBase annotation = ref.directive.annotation;
+      NgAnnotationBase annotation = ref.annotation;
       var visibility = _elementOnly;
-      if (ref.directive.$visibility == NgDirective.CHILDREN_VISIBILITY) {
+      if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
         visibility = null;
-      } else if (ref.directive.$visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
+      } else if (ref.annotation.visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
         visibility = _elementDirectChildren;
       }
-      if (ref.directive.type == NgTextMustacheDirective) {
+      if (ref.type == NgTextMustacheDirective) {
         nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
           return new NgTextMustacheDirective(node, ref.value, injector.get(Interpolate), injector.get(Scope));
         });
-      } else if (ref.directive.type == NgAttrMustacheDirective) {
+      } else if (ref.type == NgAttrMustacheDirective) {
         if (nodesAttrsDirectives == null) {
           nodesAttrsDirectives = [];
           nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
@@ -142,26 +141,26 @@ class BlockFactory {
           });
         }
         nodesAttrsDirectives.add(ref);
-      } else if (ref.directive.isComponent) {
+      } else if (ref.annotation is NgComponent) {
         //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
         // TODO(misko): there should be no need to wrap function like this.
-        nodeModule.factory(type, (Injector injector) {
+        nodeModule.factory(ref.type, (Injector injector) {
           Compiler compiler = injector.get(Compiler);
           Scope scope = injector.get(Scope);
           BlockCache blockCache = injector.get(BlockCache);
           Http http = injector.get(Http);
           TemplateCache templateCache = injector.get(TemplateCache);
           // This is a bit of a hack since we are returning different type then we are.
-          var componentFactory = new _ComponentFactory(node, ref.directive, injector.get(dom.NodeTreeSanitizer));
+          var componentFactory = new _ComponentFactory(node, ref.type, ref.annotation as NgComponent, injector.get(dom.NodeTreeSanitizer));
           if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
-          fctrs[type] = componentFactory;
+          fctrs[ref.type] = componentFactory;
           return componentFactory(injector, compiler, scope, blockCache, http, templateCache);
         }, visibility: visibility);
       } else {
-        nodeModule.type(type, visibility: visibility);
+        nodeModule.type(ref.type, visibility: visibility);
       }
-      for (var publishType in ref.directive.$publishTypes) {
-        nodeModule.factory(publishType, (Injector injector) => injector.get(type), visibility: visibility);
+      for (var publishType in ref.annotation.publishTypes) {
+        nodeModule.factory(publishType, (Injector injector) => injector.get(ref.type), visibility: visibility);
       }
       if (annotation is NgDirective && (annotation as NgDirective).transclude) {
         blockHoleFactory = (_) => new BlockHole([node]);
@@ -175,9 +174,9 @@ class BlockFactory {
     var nodeInjector = parentInjector.createChild([nodeModule]);
     var scope = nodeInjector.get(Scope);
     directiveRefs.forEach((ref) {
-      var controller = nodeInjector.get(ref.directive.type);
-      var shadowScope = (fctrs != null && fctrs.containsKey(ref.directive.type)) ? fctrs[ref.directive.type].shadowScope : null;
-      _createAttributeMapping(ref.directive, nodeAttrs == null ? new _AnchorAttrs(ref) : nodeAttrs, scope, shadowScope, controller, parser);
+      var controller = nodeInjector.get(ref.type);
+      var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
+      _createAttributeMapping(ref.annotation, nodeAttrs == null ? new _AnchorAttrs(ref) : nodeAttrs, scope, shadowScope, controller, parser);
       if (controller is NgAttachAware) {
         var removeWatcher;
         removeWatcher = scope.$watch(() {
@@ -264,29 +263,24 @@ class TemplateCache extends Cache<HttpResponse> {
 
 class _ComponentFactory {
 
-  dom.Element element;
-
-  Directive directive;
+  final dom.Element element;
+  final Type type;
+  final NgComponent component;
+  final dom.NodeTreeSanitizer treeSanitizer;
 
   dom.ShadowRoot shadowDom;
-
   Scope shadowScope;
-
   Injector shadowInjector;
-
   Compiler compiler;
-
   var controller;
 
-  dom.NodeTreeSanitizer treeSanitizer;
-
-  _ComponentFactory(this.element, this.directive, this.treeSanitizer);
+  _ComponentFactory(this.element, Type this.type, NgComponent this.component, this.treeSanitizer);
 
   dynamic call(Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http $http, TemplateCache $templateCache) {
     this.compiler = compiler;
     shadowDom = element.createShadowRoot();
-    shadowDom.applyAuthorStyles = directive.$shadowRootOptions.applyAuthorStyles;
-    shadowDom.resetStyleInheritance = directive.$shadowRootOptions.resetStyleInheritance;
+    shadowDom.applyAuthorStyles = component.applyAuthorStyles;
+    shadowDom.resetStyleInheritance = component.resetStyleInheritance;
 
     shadowScope = scope.$new(true);
     // TODO(pavelgj): fetching CSS with Http is mainly an attempt to
@@ -295,16 +289,16 @@ class _ComponentFactory {
     // so change back to using @import once Chrome bug is fixed or a
     // better work around is found.
     async.Future<String> cssFuture;
-    if (directive.$cssUrl != null) {
-      cssFuture = $http.getString(directive.$cssUrl, cache: $templateCache);
+    if (component.cssUrl != null) {
+      cssFuture = $http.getString(component.cssUrl, cache: $templateCache);
     } else {
       cssFuture = new async.Future.value(null);
     }
     var blockFuture;
-    if (directive.$template != null) {
-      blockFuture = new async.Future.value($blockCache.fromHtml(directive.$template));
-    } else if (directive.$templateUrl != null) {
-      blockFuture = $blockCache.fromUrl(directive.$templateUrl);
+    if (component.template != null) {
+      blockFuture = new async.Future.value($blockCache.fromHtml(component.template));
+    } else if (component.templateUrl != null) {
+      blockFuture = $blockCache.fromUrl(component.templateUrl);
     }
     TemplateLoader templateLoader = new TemplateLoader(cssFuture.then((String css) {
       if (css != null) {
@@ -315,9 +309,9 @@ class _ComponentFactory {
       }
       return shadowDom;
     }));
-    controller = createShadowInjector(injector, templateLoader).get(directive.type);
-    if (directive.$publishAs != null) {
-      shadowScope[directive.$publishAs] = controller;
+    controller = createShadowInjector(injector, templateLoader).get(type);
+    if (component.publishAs != null) {
+      shadowScope[component.publishAs] = controller;
     }
     return controller;
   }
@@ -329,7 +323,11 @@ class _ComponentFactory {
   }
 
   createShadowInjector(injector, TemplateLoader templateLoader) {
-    var shadowModule = new Module()..type(directive.type)..value(Scope, shadowScope)..value(TemplateLoader, templateLoader)..value(dom.ShadowRoot, shadowDom);
+    var shadowModule = new Module()
+        ..type(type)
+        ..value(Scope, shadowScope)
+        ..value(TemplateLoader, templateLoader)
+        ..value(dom.ShadowRoot, shadowDom);
     shadowInjector = injector.createChild([shadowModule], name: _SHADOW);
     return shadowInjector;
   }
@@ -354,8 +352,8 @@ class _AnchorAttrs extends NodeAttrs {
 
 RegExp _MAPPING = new RegExp(r'^([\@\=\&\!])(\.?)\s*(.*)$');
 
-_createAttributeMapping(Directive directive, NodeAttrs nodeAttrs, Scope scope, Scope shadowScope, Object controller, Parser parser) {
-  directive.$map.forEach((attrName, mapping) {
+_createAttributeMapping(NgAnnotationBase annotation, NodeAttrs nodeAttrs, Scope scope, Scope shadowScope, Object controller, Parser parser) {
+  if (annotation.map != null) annotation.map.forEach((attrName, mapping) {
     Match match = _MAPPING.firstMatch(mapping);
     if (match == null) {
       throw "Unknown mapping '$mapping' for attribute '$attrName'.";

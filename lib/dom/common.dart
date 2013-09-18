@@ -17,16 +17,19 @@ class NullTreeSanitizer implements dom.NodeTreeSanitizer {
 }
 
 class DirectiveRef {
-  dom.Node element;
-  String value;
-  Directive directive;
+  final dom.Node element;
+  final Type type;
+  final NgAnnotationBase annotation;
+  final String value;
+
   BlockFactory blockFactory;
 
-  DirectiveRef(dom.Node this.element, Directive this.directive,
+  DirectiveRef(dom.Node this.element, Type this.type, NgAnnotationBase this.annotation,
                [ String this.value ]);
 
   String toString() {
-    return '{ element: ${(element as dom.Element).outerHtml}, selector: ${directive.$selector}, value: $value }';
+    var html = element is dom.Element ? (element as dom.Element).outerHtml : element.nodeValue;
+    return '{ element: $html, selector: ${annotation.selector}, value: $value }';
   }
 }
 

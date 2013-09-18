@@ -36,8 +36,8 @@ class Compiler {
       cursorAlreadyAdvanced = false;
 
       for (var j = 0, jj = declaredDirectiveRefs.length; j < jj; j++) {
-        var directiveRef = declaredDirectiveRefs[j];
-        NgAnnotationBase annotation = directiveRef.directive.annotation;
+        DirectiveRef directiveRef = declaredDirectiveRefs[j];
+        NgAnnotationBase annotation = directiveRef.annotation;
         var blockFactory = null;
 
         if (annotation is NgDirective && (annotation as NgDirective).transclude) {
@@ -85,7 +85,7 @@ class Compiler {
                       NodeCursor domCursor, NodeCursor templateCursor,
                       DirectiveRef directiveRef,
                       List<DirectiveRef> transcludedDirectiveRefs) {
-    var anchorName = directiveRef.directive.$selector + (directiveRef.value != null ? '=' + directiveRef.value : '');
+    var anchorName = directiveRef.annotation.selector + (directiveRef.value != null ? '=' + directiveRef.value : '');
     var blockFactory;
     var blocks;
 

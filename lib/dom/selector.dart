@@ -124,7 +124,8 @@ class _ElementSelector {
   List<_ElementSelector> selectNode(List<DirectiveRef> refs, List<_ElementSelector> partialSelection,
              dom.Node node, String nodeName) {
     if (elementMap.containsKey(nodeName)) {
-      refs.add(new DirectiveRef(node, elementMap[nodeName]));
+      Directive directive = elementMap[nodeName];
+      refs.add(new DirectiveRef(node, directive.type, directive.annotation));
     }
     if (elementPartialMap.containsKey(nodeName)) {
       if (partialSelection == null) partialSelection = new List<_ElementSelector>();
@@ -136,7 +137,8 @@ class _ElementSelector {
   List<_ElementSelector> selectClass(List<DirectiveRef> refs, List<_ElementSelector> partialSelection,
          dom.Node node, String className) {
     if (classMap.containsKey(className)) {
-      refs.add(new DirectiveRef(node, classMap[className]));
+      var directive = classMap[className];
+      refs.add(new DirectiveRef(node, directive.type, directive.annotation));
     }
     if (classPartialMap.containsKey(className)) {
       if (partialSelection == null) partialSelection = new List<_ElementSelector>();
@@ -150,10 +152,12 @@ class _ElementSelector {
     if (attrValueMap.containsKey(attrName)) {
       Map<String, Directive> valuesMap = attrValueMap[attrName];
       if (valuesMap.containsKey('')) {
-        refs.add(new DirectiveRef(node, valuesMap[''], attrValue));
+        Directive directive = valuesMap[''];
+        refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
       }
       if (attrValue != '' && valuesMap.containsKey(attrValue)) {
-        refs.add(new DirectiveRef(node, valuesMap[attrValue], attrValue));
+        Directive directive = valuesMap[attrValue];
+        refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
       }
     }
     if (attrValuePartialMap.containsKey(attrName)) {
@@ -255,8 +259,9 @@ DirectiveSelector directiveSelectorFactory(DirectiveRegistry directives) {
               // this directive is matched on any attribute name, and so
               // we need to pass the name to the directive by prefixing it to the
               // value. Yes it is a bit of a hack.
+              Directive directive = directives[selectorRegExp.selector];
               directiveRefs.add(new DirectiveRef(
-                  node, directives[selectorRegExp.selector], '$attrName=$value'));
+                  node, directive.type, directive.annotation, '$attrName=$value'));
             }
           }
 
@@ -281,20 +286,29 @@ DirectiveSelector directiveSelectorFactory(DirectiveRegistry directives) {
           var selectorRegExp = textSelector[k];
 
           if (selectorRegExp.regexp.hasMatch(value)) {
-            directiveRefs.add(new DirectiveRef(node, directives[selectorRegExp.selector], value));
+            Directive directive = directives[selectorRegExp.selector];
+            directiveRefs.add(new DirectiveRef(node, directive.type, directive.annotation, value));
           }
         }
         break;
       }
 
-      directiveRefs.sort(priorityComparator);
+      directiveRefs.sort(_priorityComparator);
       return directiveRefs;
     };
 }
 
-int priorityComparator(DirectiveRef a, DirectiveRef b) {
-  int aPriority = a.directive.$priority,
-  bPriority = b.directive.$priority;
+int _directivePriority(NgAnnotationBase annotation) {
+  if (annotation is NgDirective)
+    if ((annotation as NgDirective).transclude)
+      return  2;
+    else
+      return 1;
+  if (annotation is NgComponent)
+    return 0;
+  throw "Unexpected Type: ${annotation}.";
+}
 
-  return bPriority - aPriority;
+int _priorityComparator(DirectiveRef a, DirectiveRef b) {
+  return _directivePriority(b.annotation) - _directivePriority(a.annotation);
 }

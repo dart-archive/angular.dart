@@ -243,172 +243,31 @@ abstract class NgDetachAware {
   void detach();
 }
 
-/**
- * See:
- * http://www.html5rocks.com/en/tutorials/webcomponents/shadowdom-201/#toc-style-inheriting
- */
-class NgShadowRootOptions {
-  final bool applyAuthorStyles;
-  final bool resetStyleInheritance;
-  const NgShadowRootOptions([this.applyAuthorStyles = false,
-                             this.resetStyleInheritance = false]);
-}
-
-Map<Type, Directive> _directiveCache = new Map<Type, Directive>();
-
-// TODO(pavelgj): Get rid of Directive and use NgComponent/NgDirective directly.
 class Directive {
-  static int STRUCTURAL_PRIORITY = 2;
-  static int ATTR_PRIORITY = 1;
-  static int COMPONENT_PRIORITY = 0;
+  final Type type;
+  final NgAnnotationBase annotation;
 
-  Type type;
-  NgAnnotationBase annotation;
-
-
-  String $selector;
-  int $priority = Directive.ATTR_PRIORITY;
-  String $template;
-  String $templateUrl;
-  String $cssUrl;
-  String $publishAs;
-  Map<String, String> $map;
-  String $visibility;
-  NgShadowRootOptions $shadowRootOptions = new NgShadowRootOptions();
-  List<Type> $publishTypes = <Type>[];
-
-  bool isComponent = false;
-
-  Directive._new(Type this.type) {
-    var annotations = [];
-    annotations.addAll(_reflectMetadata(type, NgDirective));
-    annotations.addAll(_reflectMetadata(type, NgComponent));
-    if (annotations.length != 1) {
-      throw 'Expecting exatly one annotation of type NgComponent or '
-            'NgDirective on $type found ${annotations.length} annotations.';
-    }
-    annotation =  annotations.first;
-  }
-
-  factory Directive(Type type) {
-    var instance = _directiveCache[type];
-    if (instance != null) {
-      return instance;
-    }
-
-    instance = new Directive._new(type);
-    var name = type.toString();
-    var isAttr = false;
-    instance.$selector = name.splitMapJoin(
-        new RegExp(r'[A-Z]'),
-        onMatch: (m) => '-' + m.group(0).toLowerCase())
-      .substring(1);
-
-    var directive = _reflectSingleMetadata(type, NgDirective);
-    var component = _reflectSingleMetadata(type, NgComponent);
-    if (directive != null && component != null) {
-      throw 'Cannot have both NgDirective and NgComponent annotations.';
-    }
-
-    if (directive != null) {
-      instance.$selector = directive.selector;
-      instance.$visibility = directive.visibility;
-      instance.$publishTypes = directive.publishTypes;
-      instance.$map = directive.map;
-    }
-    if (component != null) {
-      instance.isComponent = true;
-      instance.$priority = Directive.COMPONENT_PRIORITY;
-      instance.$template = component.template;
-      instance.$selector = component.selector;
-      instance.$templateUrl = component.templateUrl;
-      instance.$cssUrl = component.cssUrl;
-      instance.$visibility = component.visibility;
-      instance.$map = component.map;
-      instance.$publishAs = component.publishAs;
-      instance.$shadowRootOptions =
-          new NgShadowRootOptions(component.applyAuthorStyles,
-                                  component.resetStyleInheritance);
-      instance.$publishTypes = component.publishTypes;
-    }
-
-    if (instance.$selector == null || instance.$selector.isEmpty) {
-      throw new Exception('Selector is required on $type.');
-    }
-
-    if (instance.$map == null) {
-      instance.$map = new Map<String, String>();
-    }
-    _directiveCache[type] = instance;
-    if (instance.annotation is NgDirective && instance.annotation.transclude) {
-      instance.$priority = Directive.STRUCTURAL_PRIORITY;
-    }
-    return instance;
-  }
+  Directive(Type this.type, NgAnnotationBase this.annotation);
 }
-
-Map<Type, ClassMirror> _reflectionCache = new Map<Type, ClassMirror>();
-
-// A hack for slow reflectClass.
-ClassMirror fastReflectClass(Type type) {
-  ClassMirror reflectee = _reflectionCache[type];
-  if (reflectee == null) {
-    reflectee = reflectClass(type);
-    _reflectionCache[type] = reflectee;
-  }
-  return reflectee;
-}
-
-/**
- * A set of functions which build on top of dart:mirrors making them
- * easier to use.
- */
-
-// Return the value of a type's static field or null if it is not defined.
-_reflectStaticField(Type type, String field) {
-  Symbol fieldSym = new Symbol(field);
-  var reflection = fastReflectClass(type);
-  if (!reflection.members.containsKey(fieldSym)) return null;
-  if (!reflection.members[fieldSym].isStatic) return null;
-
-  var fieldReflection = reflection.getField(fieldSym);
-  if (fieldReflection == null) return null;
-  return fieldReflection.reflectee;
-}
-
-// TODO(pavelgj): cache.
-Iterable _reflectMetadata(Type type, Type metadata) {
-  var meta = fastReflectClass(type).metadata;
-  if (meta == null) {
-    throw "Type $type does not have metadata. Syntax error, perhaps?";
-  }
-  return meta.where((InstanceMirror im) => im.reflectee.runtimeType == metadata)
-  .map((InstanceMirror im) => im.reflectee);
-}
-
-_reflectSingleMetadata(Type type, Type metadataType) {
-  var metadata = _reflectMetadata(type, metadataType);
-  if (metadata.length == 0) {
-    return null;
-  }
-  if (metadata.length > 1) {
-    throw 'Expecting not more than one annotation of type $metadataType';
-  }
-  return metadata.first;
-}
-
-dynamic _defaultIfNull(dynamic value, dynamic defaultValue) =>
-    value == null ? defaultValue : value;
 
 class DirectiveRegistry {
   Map<String, Directive> directiveMap = {};
 
   List<String> enumerate() => directiveMap.keys.toList();
 
-  register(Type directiveType) {
-   var directive = new Directive(directiveType);
-
-   directiveMap[directive.$selector] = directive;
+  register(Type type) {
+    var meta = reflectClass(type).metadata;
+    if (meta == null) {
+      throw "Type $type does not have metadata. Syntax error, perhaps?";
+    }
+    NgAnnotationBase annotation = meta
+      .where((InstanceMirror im) => im.reflectee is NgAnnotationBase)
+      .map((InstanceMirror im) => im.reflectee)
+      .first;
+    if (annotation == null) {
+      throw "A $type directive needs to have either @NgDirective or @NgComponent metadata.";
+    }
+    directiveMap[annotation.selector] = new Directive(type, annotation);
   }
 
   Directive operator[](String selector) {
