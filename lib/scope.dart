@@ -109,6 +109,11 @@ class Scope implements Map {
     }
   }
 
+  _identical(a, b) =>
+    identical(a, b) ||
+    (a is String && b is String && a == b) ||
+    (a is num && b is num && a.isNaN && b.isNaN);
+
   containsKey(String name) => this[name] != null;
 
   operator []=(String name, value) => _properties[name] = value;
@@ -166,29 +171,81 @@ class Scope implements Map {
   }
 
   $watchCollection(obj, listener) {
-    List oldValue = [];
+    var oldValue;
     var newValue;
     num changeDetected = 0;
     Function objGetter = _compileToFn(obj);
     List internalArray = [];
+    Map internalMap = {};
     num oldLength = 0;
 
     var $watchCollectionWatch = () {
       newValue = objGetter(this);
-      if (!(newValue is List)) newValue = [];
+      var newLength, key;
 
-      var newLength = newValue.length;
-
-      if (oldLength != newLength) {
-        // if lengths do not match we need to trigger change notification
-        changeDetected++;
-        oldValue.length = oldLength = newLength;
-      }
-      // copy the items to oldValue and look for changes.
-      for (var i = 0; i < newLength; i++) {
-        if (oldValue[i] != newValue[i]) {
+      if (newValue is! Map && newValue is! List) {
+        if (!_identical(oldValue, newValue)) {
+          oldValue = newValue;
           changeDetected++;
-          oldValue[i] = newValue[i];
+        }
+      } else if (newValue is List) {
+        if (!_identical(oldValue, internalArray)) {
+          // we are transitioning from something which was not an array into array.
+          oldValue = internalArray;
+          oldLength = oldValue.length = 0;
+          changeDetected++;
+        }
+
+        newLength = newValue.length;
+
+        if (oldLength != newLength) {
+          // if lengths do not match we need to trigger change notification
+          changeDetected++;
+          oldValue.length = oldLength = newLength;
+        }
+        // copy the items to oldValue and look for changes.
+        for (var i = 0; i < newLength; i++) {
+          if (!_identical(oldValue[i], newValue[i])) {
+            changeDetected++;
+            oldValue[i] = newValue[i];
+          }
+        }
+      } else { // Map
+        if (!_identical(oldValue, internalMap)) {
+          // we are transitioning from something which was not an object into object.
+          oldValue = internalMap = {};
+          oldLength = 0;
+          changeDetected++;
+        }
+        // copy the items to oldValue and look for changes.
+        newLength = 0;
+        newValue.forEach((key, value) {
+          newLength++;
+          if (oldValue.containsKey(key)) {
+            if (!_identical(oldValue[key], value)) {
+              changeDetected++;
+              oldValue[key] = value;
+            }
+          } else {
+            oldLength++;
+            oldValue[key] = value;
+            changeDetected++;
+          }
+
+        });
+        if (oldLength > newLength) {
+          // we used to have more keys, need to find them and destroy them.
+          changeDetected++;
+          var keysToRemove = [];
+          oldValue.forEach((key, _) {
+            if (!newValue.containsKey(key)) {
+              oldLength--;
+              keysToRemove.add(key);
+            }
+          });
+          keysToRemove.forEach((k) {
+            oldValue.remove(k);
+          });
         }
       }
       return changeDetected;
@@ -247,8 +304,7 @@ class Scope implements Map {
                 watch = watchers[length];
                 var value = watch.get(current);
                 var last = watch.last;
-                if (!(identical(value, last) || (value is String && last is String && value == last)) &&
-                    !(value is num && last is num && value.isNaN && last.isNaN)) {
+                if (!_identical(value, last)) {
                   dirty = true;
                   watch.last = value;
                   watch.fn(value, ((last == _initWatchVal) ? value : last), current);

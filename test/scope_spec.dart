@@ -852,10 +852,10 @@ main() {
 
       it('should not trigger if nothing change', inject((Scope $rootScope) {
         $rootScope.$digest();
-        expect(log).toEqual(['[]']);
+        expect(log).toEqual(['null']);
 
         $rootScope.$digest();
-        expect(log).toEqual(['[]']);
+        expect(log).toEqual(['null']);
       }));
 
 
@@ -877,11 +877,11 @@ main() {
         it('should trigger when property changes into array', () {
           $rootScope.obj = 'test';
           $rootScope.$digest();
-          expect(log).toEqual(['[]']);
+          expect(log).toEqual(['"test"']);
 
           $rootScope.obj = [];
           $rootScope.$digest();
-          expect(log).toEqual(['[]']);
+          expect(log).toEqual(['"test"', '[]']);
         });
 
 
@@ -925,6 +925,62 @@ main() {
           log = [];
           $rootScope.$digest();
           expect(log).toEqual([ '[{},[]]' ]);
+        });
+      });
+
+
+      describe('objects', () {
+        it('should trigger when property changes into object', () {
+          $rootScope.obj = 'test';
+          $rootScope.$digest();
+          expect(log).toEqual(['"test"']);
+
+          $rootScope.obj = {};
+          $rootScope.$digest();
+          expect(log).toEqual(['"test"', '{}']);
+        });
+
+
+        it('should not trigger change when object in collection changes', () {
+          $rootScope.obj = {'name': {}};
+          $rootScope.$digest();
+          expect(log).toEqual(['{"name":{}}']);
+
+          $rootScope.obj['name']['bar'] = 'foo';
+          $rootScope.$digest();
+          expect(log).toEqual(['{"name":{}}']);
+        });
+
+
+        it('should watch object properties', () {
+          $rootScope.obj = {};
+          $rootScope.$digest();
+          expect(log).toEqual(['{}']);
+
+          $rootScope.obj['a']= 'A';
+          $rootScope.$digest();
+          expect(log).toEqual(['{}', '{"a":"A"}']);
+
+          $rootScope.obj['a'] = 'B';
+          $rootScope.$digest();
+          expect(log).toEqual(['{}', '{"a":"A"}', '{"a":"B"}']);
+
+          $rootScope.obj['b'] = [];
+          $rootScope.obj['c'] = {};
+          log = [];
+          $rootScope.$digest();
+          expect(log).toEqual(['{"a":"B","b":[],"c":{}}']);
+
+          var temp = $rootScope.obj['a'];
+          $rootScope.obj['a'] = $rootScope.obj['b'];
+          $rootScope.obj['c'] = temp;
+          $rootScope.$digest();
+          expect(log).toEqual([ '{"a":"B","b":[],"c":{}}', '{"a":[],"b":[],"c":"B"}' ]);
+
+          $rootScope.obj.remove('a');
+          log = [];
+          $rootScope.$digest();
+          expect(log).toEqual([ '{"b":[],"c":"B"}' ]);
         });
       });
     });
