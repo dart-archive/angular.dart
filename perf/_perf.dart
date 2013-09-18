@@ -1,6 +1,5 @@
 library _perf;
 
-import '../test/_specs.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
 

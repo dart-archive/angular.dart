@@ -1,6 +1,5 @@
 library parser_perf;
 
-import "../test/_specs.dart";
 import "_perf.dart";
 import "dart:async";
 import "package:angular/scope.dart";
