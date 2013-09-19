@@ -114,10 +114,10 @@ class NgAnnotationBase {
   const NgAnnotationBase({
     this.selector,
     this.visibility: NgDirective.LOCAL_VISIBILITY,
-    this.publishTypes,
-    this.map,
-    this.exportExpressions,
-    this.exportExpressionAttrs
+    this.publishTypes: const [],
+    this.map: const {},
+    this.exportExpressions: const [],
+    this.exportExpressionAttrs: const []
   });
 }
 
