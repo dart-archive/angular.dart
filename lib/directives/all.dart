@@ -4,6 +4,7 @@ import '../bootstrap.dart';
 
 import 'ng_mustache.dart';
 import 'ng_bind.dart';
+import 'ng_bind_html.dart';
 import 'ng_class.dart';
 import 'ng_events.dart';
 import 'ng_cloak.dart';
@@ -20,6 +21,7 @@ import 'ng_switch.dart';
 
 export 'ng_mustache.dart';
 export 'ng_bind.dart';
+export 'ng_bind_html.dart';
 export 'ng_class.dart';
 export 'ng_events.dart';
 export 'ng_cloak.dart';
@@ -39,6 +41,7 @@ void registerDirectives(AngularModule module) {
   module.directive(NgTextMustacheDirective);
   module.directive(NgAttrMustacheDirective);
   module.directive(NgBindAttrDirective);
+  module.directive(NgBindHtmlAttrDirective);
   module.directive(NgClassAttrDirective);
   module.directive(NgClassOddAttrDirective);
   module.directive(NgClassEvenAttrDirective);
