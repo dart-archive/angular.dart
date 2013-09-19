@@ -1,6 +1,6 @@
 library angular.dom.node_cursor;
 
-import "dart:html" as dom;
+import 'dart:html' as dom;
 
 class NodeCursor {
   List<dynamic> stack = [];

@@ -1,5 +1,5 @@
-import "_perf.dart";
-import "dart:async";
+import '_perf.dart';
+import 'dart:async';
 
 main() {
   var handleDirect = (a, b, c) => a + b + c;

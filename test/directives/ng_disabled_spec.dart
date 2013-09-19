@@ -1,7 +1,7 @@
 library ng_disabled_spec;
 
 import '../_specs.dart';
-import "../_test_bed.dart";
+import '../_test_bed.dart';
 
 main() =>
 describe('ng-disabled', () {

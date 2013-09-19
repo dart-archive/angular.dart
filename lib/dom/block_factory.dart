@@ -1,22 +1,22 @@
 library angular.dom.block_factory;
 
-import "dart:async" as async;
-import "dart:html" as dom;
-import "dart:mirrors";
-import "package:di/di.dart";
+import 'dart:async' as async;
+import 'dart:html' as dom;
+import 'dart:mirrors';
+import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
-import "block.dart";
-import "block_factory.dart";
-import "common.dart";
-import "compiler.dart";
-import "directive.dart";
-import "http.dart";
-import "../cache.dart";
-import "../directives/ng_mustache.dart";
-import "../parser/parser_library.dart";
-import "../interpolate.dart";
-import "../scope.dart";
+import 'block.dart';
+import 'block_factory.dart';
+import 'common.dart';
+import 'compiler.dart';
+import 'directive.dart';
+import 'http.dart';
+import '../cache.dart';
+import '../directives/ng_mustache.dart';
+import '../parser/parser_library.dart';
+import '../interpolate.dart';
+import '../scope.dart';
 
 /**
  * BoundBlockFactory is a [BlockFactory] which does not need Injector because

@@ -1,6 +1,6 @@
 library cache_spec;
 
-import "_specs.dart";
+import '_specs.dart';
 
 main() => describe('CacheFactory', () {
 

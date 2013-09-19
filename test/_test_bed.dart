@@ -1,7 +1,7 @@
 library _test_bed;
 
 import 'dart:html' as dom;
-import "_specs.dart";
+import '_specs.dart';
 
 
 /**

@@ -1,6 +1,6 @@
 library ng_log;
 
-import "package:angular/angular.dart";
+import 'package:angular/angular.dart';
 
 //TODO(misko): merge with Logger
 class Log {

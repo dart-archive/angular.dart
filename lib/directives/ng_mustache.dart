@@ -1,10 +1,10 @@
 library angular.directive.ng_mustache;
 
-import "dart:html" as dom;
-import "../dom/directive.dart";
-import "../parser/parser_library.dart";
-import "../interpolate.dart";
-import "../scope.dart";
+import 'dart:html' as dom;
+import '../dom/directive.dart';
+import '../parser/parser_library.dart';
+import '../interpolate.dart';
+import '../scope.dart';
 
 @NgDirective(selector: r':contains(/{{.*}}/)')
 class NgTextMustacheDirective {

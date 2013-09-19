@@ -1,8 +1,8 @@
 library angular.dom.directive;
 
-import "dart:async" as async;
-import "dart:html" as dom;
-import "../directive.dart";               export "../directive.dart";
+import 'dart:async' as async;
+import 'dart:html' as dom;
+import '../directive.dart';               export '../directive.dart';
 
 /**
  * Callback function used to notify of attribute changes.

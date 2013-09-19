@@ -1,8 +1,8 @@
 library templateurl_spec;
 
-import "_specs.dart";
-import "_log.dart";
-import "_http.dart";
+import '_specs.dart';
+import '_log.dart';
+import '_http.dart';
 
 @NgComponent(
     selector: 'simple-url',

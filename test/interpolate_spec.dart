@@ -1,6 +1,6 @@
 library interpolate_spec;
 
-import "_specs.dart";
+import '_specs.dart';
 
 class ToStringableObject {
   toString() => 'World';

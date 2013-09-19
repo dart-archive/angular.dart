@@ -1,9 +1,9 @@
 library angular.directive.ng_events;
 
-import "dart:html" as dom;
-import "../dom/directive.dart";
-import "../parser/parser_library.dart";
-import "../scope.dart";
+import 'dart:html' as dom;
+import '../dom/directive.dart';
+import '../parser/parser_library.dart';
+import '../scope.dart';
 
 /* All the directives in this file should look exactly the same except for the
  * name of the event itself.

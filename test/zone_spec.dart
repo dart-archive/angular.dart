@@ -1,9 +1,9 @@
 library zone_spec;
 
-import "_specs.dart";
-import "_log.dart";
+import '_specs.dart';
+import '_log.dart';
 
-import "dart:async";
+import 'dart:async';
 
 main() => describe('zone', () {
   var zone;

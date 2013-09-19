@@ -1,6 +1,6 @@
 library ng_mustache_spec;
 
-import "../_specs.dart";
+import '../_specs.dart';
 
 main() {
   describe('ng-mustache', () {

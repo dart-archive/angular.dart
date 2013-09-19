@@ -1,8 +1,8 @@
 library angular.directive.ng_disabled;
 
-import "dart:html" as dom;
-import "../dom/directive.dart";
-import "../utils.dart";
+import 'dart:html' as dom;
+import '../dom/directive.dart';
+import '../utils.dart';
 
 @NgDirective(
     selector: '[ng-disabled]',

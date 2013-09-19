@@ -1,8 +1,8 @@
 library angular.dom.common;
 
-import "dart:html" as dom;
-import "block_factory.dart";
-import "directive.dart";
+import 'dart:html' as dom;
+import 'block_factory.dart';
+import 'directive.dart';
 
 List<dom.Node> cloneElements(elements) {
   var clones = [];

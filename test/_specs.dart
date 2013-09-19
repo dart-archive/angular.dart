@@ -10,16 +10,17 @@ import 'package:angular/angular.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'jasmine_syntax.dart';
-import "_log.dart";
-import "_http.dart";
+import '_log.dart';
+import '_http.dart';
+import 'package:angular/mock/mock.dart';
 
 export 'dart:html';
 export 'jasmine_syntax.dart' hide main;
 export 'package:unittest/unittest.dart';
-export 'package:angular/dom/debug.dart';
-export 'package:angular/angular.dart';
-export 'package:di/di.dart';
 export 'package:unittest/mock.dart';
+export 'package:di/di.dart'; // TODO: remove
+export 'package:angular/dom/debug.dart'; // TODO:remove
+export 'package:angular/angular.dart';
 export 'package:perf_api/perf_api.dart';
 export "package:angular/exception_handler.dart";
 

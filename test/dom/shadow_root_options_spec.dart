@@ -1,6 +1,6 @@
 library shadow_root_options_spec;
 
-import "../_specs.dart";
+import '../_specs.dart';
 
 @NgComponent(
     selector: 'reset-style-inheritance',

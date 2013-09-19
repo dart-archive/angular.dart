@@ -1,7 +1,7 @@
 library angular.core.service.scope;
 
-import "dart:mirrors";
-import "dart:json";
+import 'dart:mirrors';
+import 'dart:json';
 import 'package:perf_api/perf_api.dart';
 
 import 'exception_handler.dart';

@@ -1,7 +1,7 @@
 library http_spec;
 
-import "../_specs.dart";
-import "../_http.dart";
+import '../_specs.dart';
+import '../_http.dart';
 
 var VALUE = 'val';
 var CACHED_VALUE = 'cached_value';

@@ -1,7 +1,7 @@
 library _specs_spec;
 
-import "_specs.dart";
-import "dart:async";
+import '_specs.dart';
+import 'dart:async';
 
 main() {
   describe('renderedText', () {

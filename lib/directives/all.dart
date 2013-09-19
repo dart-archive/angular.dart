@@ -2,7 +2,7 @@ library angular.directives.all;
 
 import '../bootstrap.dart';
 
-import "ng_mustache.dart";
+import 'ng_mustache.dart';
 import 'ng_bind.dart';
 import 'ng_class.dart';
 import 'ng_events.dart';
@@ -17,7 +17,7 @@ import 'ng_repeat.dart';
 import 'ng_show.dart';
 import 'ng_style.dart';
 
-export "ng_mustache.dart";
+export 'ng_mustache.dart';
 export 'ng_bind.dart';
 export 'ng_class.dart';
 export 'ng_events.dart';

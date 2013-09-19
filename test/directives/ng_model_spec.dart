@@ -1,7 +1,7 @@
 library ng_model_spec;
 
-import "../_specs.dart";
-import "../_test_bed.dart";
+import '../_specs.dart';
+import '../_test_bed.dart';
 import 'dart:html' as dom;
 
 main() =>

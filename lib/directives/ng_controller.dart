@@ -1,13 +1,13 @@
 library angular.directive.ng_controller;
 
-import "dart:html" as dom;
+import 'dart:html' as dom;
 import 'package:di/di.dart';
-import "../dom/directive.dart";
-import "../dom/block.dart";
-import "../dom/block_factory.dart";
-import "../scope.dart";
-import "../parser/parser_library.dart";
-import "../controller.dart";
+import '../dom/directive.dart';
+import '../dom/block.dart';
+import '../dom/block_factory.dart';
+import '../scope.dart';
+import '../parser/parser_library.dart';
+import '../controller.dart';
 
 @NgDirective(
     transclude: true,

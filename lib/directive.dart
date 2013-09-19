@@ -1,6 +1,6 @@
 library angular.service.directive;
 
-import "dart:mirrors";
+import 'dart:mirrors';
 
 class NgAnnotationBase {
   /**

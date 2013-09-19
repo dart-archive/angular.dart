@@ -1,6 +1,6 @@
 library block_spec;
 
-import "../_specs.dart";
+import '../_specs.dart';
 
 @NgDirective(transclude: true, selector: 'foo')
 class LoggerBlockDirective {

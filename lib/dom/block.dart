@@ -1,6 +1,6 @@
 library angular.dom.block;
 
-import "dart:html" as dom;
+import 'dart:html' as dom;
 
 /**
 * ElementWrapper is an interface for [Block]s and [BlockHole]s. Its purpose is

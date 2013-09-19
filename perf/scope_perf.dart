@@ -1,9 +1,9 @@
 library scope_perf;
 
-import "_perf.dart";
-import "dart:async";
-import "package:angular/scope.dart";
-import "package:angular/parser/parser_library.dart";
+import '_perf.dart';
+import 'dart:async';
+import 'package:angular/scope.dart';
+import 'package:angular/parser/parser_library.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 

@@ -1,7 +1,7 @@
 library ng_events_spec;
 
 import '../_specs.dart';
-import "../_test_bed.dart";
+import '../_test_bed.dart';
 import 'dart:html' as dom;
 
 void addTest(String name, [String eventType='MouseEvent', String eventName]) {

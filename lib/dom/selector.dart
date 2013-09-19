@@ -1,8 +1,8 @@
 library angular.dom.selector;
 
-import "dart:html" as dom;
-import "common.dart";
-import "../directive.dart";
+import 'dart:html' as dom;
+import 'common.dart';
+import '../directive.dart';
 
 /**
  * DirectiveSelector is a function which given a node it will return a

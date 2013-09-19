@@ -1,7 +1,7 @@
 library ng_bind_spec;
 
-import "../_specs.dart";
-import "../_test_bed.dart";
+import '../_specs.dart';
+import '../_test_bed.dart';
 
 main() {
   describe('BindDirective', () {
