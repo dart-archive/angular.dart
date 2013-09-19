@@ -125,13 +125,13 @@ class SelectDirective {
       selectElement.queryAll('option');
 
   void render(value) {
-
+    var actualValue;
     if (selectElement.multiple) {
       if (value is! List) {
         value = [value];
       }
 
-      var actualValue = [];
+      actualValue = [];
 
       for (int i = 0; i < optionElements.length; i++) {
         if (value.contains(options()[i])) {
@@ -141,31 +141,16 @@ class SelectDirective {
           optionElements[i].selected = false;
         }
       }
-      var updateModel = false;
-      if (ngModel.viewValue is List &&
-          ngModel.viewValue.length == actualValue.length) {
-        for (int i = 0; i < actualValue.length; i++) {
-          if (ngModel.viewValue[i] != actualValue[i]) {
-            updateModel = true;
-            break;
-          }
-        }
-      } else {
-        updateModel = true;
-      }
-      if (updateModel) {
-        ngModel.viewValue = actualValue;
-      }
+
     } else {
       var selectedIndex = options().indexOf(value);
       selectElement.selectedIndex = selectedIndex;
-      var actualValue;
       if (selectedIndex >= 0) {
         actualValue = value;
       }
-      if (actualValue != ngModel.viewValue) {
-        ngModel.viewValue = actualValue;
-      }
+    }
+    if (valueNeedsUpdating(actualValue)) {
+      ngModel.viewValue = actualValue;
     }
   }
 
@@ -184,8 +169,26 @@ class SelectDirective {
       }
     }
 
-    if (value != ngModel.viewValue) {
+    if (valueNeedsUpdating(value)) {
       scope.$apply(() => ngModel.viewValue = value);
+    }
+  }
+
+  bool valueNeedsUpdating(value) {
+    if (selectElement.multiple) {
+      if (ngModel.viewValue is List &&
+          ngModel.viewValue.length == value.length) {
+        for (int i = 0; i < value.length; i++) {
+          if (ngModel.viewValue[i] != value[i]) {
+            return true;
+          }
+        }
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      return ngModel.viewValue != value;
     }
   }
 }
