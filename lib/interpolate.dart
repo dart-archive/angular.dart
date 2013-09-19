@@ -82,7 +82,7 @@ class Interpolate {
           }
           return concat.join('');
         } catch(err, s) {
-          $exceptionHandler("\$interpolate error! Can't interpolate: $text\n$err", s);
+          _exceptionHandler("\$interpolate error! Can't interpolate: $text\n$err", s);
         } finally {
           concat.length = 0;
         }
