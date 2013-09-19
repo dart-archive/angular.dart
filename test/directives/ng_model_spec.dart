@@ -118,8 +118,6 @@ describe('ng-model', () {
              </select>''');
       _.rootScope.$digest();
 
-      expect(_.rootElement.prop('value')).toEqual('a');
-      expect(_.rootScope['model']).toEqual('a');
       _.rootScope.$apply('model = "d"');
       expect(_.rootElement.prop('value')).toEqual('d');
       expect(_.rootScope['model']).toEqual('d');
@@ -139,8 +137,6 @@ describe('ng-model', () {
       Probe probe = _.rootScope['p'];
       var select = probe.directive(SelectDirective);
 
-      expect(_.rootScope['model']).toEqual('a');
-
       (probe.element as SelectElement).selectedIndex = 3;
       select.processValue();
       expect(_.rootScope['model']).toEqual('d');
@@ -158,8 +154,6 @@ describe('ng-model', () {
              </select>''');
       _.rootScope.$digest();
 
-      expect(_.rootElement.prop('value')).toEqual('');
-      expect(_.rootScope['model']).toEqual([]);
       _.rootScope.$apply('model = ["d"]');
       expect(_.rootElement.prop('value')).toEqual('d');
       expect(_.rootScope['model']).toEqual(['d']);
@@ -186,7 +180,6 @@ describe('ng-model', () {
       Probe probe = _.rootScope['p'];
       var select = probe.directive(SelectDirective);
 
-      expect(_.rootScope['model']).toEqual([]);
 
       (probe.element as SelectElement).selectedIndex = 2;
       select.processValue();

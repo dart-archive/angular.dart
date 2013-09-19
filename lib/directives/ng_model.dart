@@ -115,7 +115,6 @@ class SelectDirective {
     options = _options;
     ngModel.render = render;
     selectElement.onChange.listen(relaxFnArgs(processValue));
-    processValue();
   }
 
   List<String> _options() =>
