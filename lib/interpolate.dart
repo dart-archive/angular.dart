@@ -48,7 +48,7 @@ class Interpolate {
       if ( ((startIndex = text.indexOf(_startSymbol, index)) != -1) &&
            ((endIndex = text.indexOf(_endSymbol, startIndex + _startSymbolLength)) != -1) ) {
         (index != startIndex) && chunks.add(text.substring(index, startIndex));
-        fn = $parse(exp = text.substring(startIndex + _startSymbolLength, endIndex));
+        fn = _parse(exp = text.substring(startIndex + _startSymbolLength, endIndex));
         chunks.add(fn);
         fn.exp = exp;
         index = endIndex + _endSymbolLength;
