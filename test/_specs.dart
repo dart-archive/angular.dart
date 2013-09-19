@@ -179,6 +179,7 @@ class JQuery implements List<Node> {
   textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(n.queryAll(selector)));
   hasClass(String name) => fold(false, (hasClass, node) => hasClass ? true : node.classes.contains(name));
+  addClass(String name) => _list.forEach((node) => node.classes.add(name));
   css(String name, [String value]) => accessor(
           (Element n) => n.style.getPropertyValue(name),
           (Element n, v) => n.style.setProperty(name, value), value);
