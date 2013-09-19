@@ -54,6 +54,7 @@ void registerDirectives(AngularModule module) {
   module.directive(NgChangeAttrDirective);
   module.directive(NgClickAttrDirective);
   module.directive(NgContextMenuAttrDirective);
+  module.directive(NgDoubleClickAttrDirective);
   module.directive(NgDragAttrDirective);
   module.directive(NgDragEndAttrDirective);
   module.directive(NgDragEnterAttrDirective);
