@@ -1,7 +1,6 @@
 library controller_spec;
 
 import '_specs.dart';
-import '_log.dart';
 import 'dart:mirrors';
 
 class Controller {}
@@ -9,10 +8,10 @@ class Controller {}
 class MainAttrDirective {
   static var $priority = 2;
 
-  Log log;
+  Logger log;
   Controller controller;
 
-  MainAttrDirective(Log this.log, Controller this.controller);
+  MainAttrDirective(Logger this.log, Controller this.controller);
 
   attach(Scope scope) {
     controller.calledFromMainDirective = true;
@@ -23,9 +22,9 @@ class MainAttrDirective {
 class DepAttrDirective {
   static var $priority = 2;
 
-  Log log;
+  Logger log;
   Controller controller;
-  DepAttrDirective(Log this.log, MainAttrDirective this.controller);
+  DepAttrDirective(Logger this.log, MainAttrDirective this.controller);
 
   attach(Scope scope) {
     log('dep:${controller.name}:${controller.calledFromMainDirective}');
@@ -33,9 +32,9 @@ class DepAttrDirective {
 }
 
 class InheritDepAttrDirective {
-  Log log;
+  Logger log;
   Controller controller;
-  InheritDepAttrDirective(Log this.log, MainAttrDirective this.controller) { }
+  InheritDepAttrDirective(Logger this.log, MainAttrDirective this.controller) { }
 
   attach(Scope scope) {
     log('inheritDep:${controller.name}:${controller.calledFromMainDirective}');
@@ -44,10 +43,10 @@ class InheritDepAttrDirective {
 
 
 class OtherAttrDirective {
-  Log log;
+  Logger log;
   Controller controller;
 
-  OtherAttrDirective(Log this.log, Controller this.controller);
+  OtherAttrDirective(Logger this.log, Controller this.controller);
   attach(Scope scope) {
     log('other:${controller != null}');
   }
@@ -66,7 +65,7 @@ main() {
   xdescribe('controller', () {
     Compiler $compile;
     Scope $rootScope;
-    Log $log;
+    Logger $log;
 
     beforeEach(inject((Injector injector) {
       injector.get(DirectiveRegistry)
@@ -77,7 +76,7 @@ main() {
 
       $compile = injector.get(Compiler);
       $rootScope = injector.get(Scope);
-      $log = injector.get(Log);
+      $log = injector.get(Logger);
     }));
 
     it('should create a controller', () {

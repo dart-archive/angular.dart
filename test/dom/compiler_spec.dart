@@ -1,7 +1,6 @@
 library compiler_spec;
 
 import '../_specs.dart';
-import '../_log.dart';
 import 'dart:mirrors';
 
 
@@ -406,13 +405,13 @@ main() {
 
     describe('controller scoping', () {
 
-      it('shoud make controllers available to sibling and child controllers', inject((Compiler $compile, Scope $rootScope, Log log, Injector injector) {
+      it('shoud make controllers available to sibling and child controllers', inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
         var element = $('<tab local><pane local></pane><pane local></pane></tab>');
         $compile(element)(injector, element);
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
       }));
 
-      it('should reuse controllers for transclusions', inject((Compiler $compile, Scope $rootScope, Log log, Injector injector) {
+      it('should reuse controllers for transclusions', inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
         var element = $('<div simple-transclude-in-attach include-transclude>block</div>');
         $compile(element)(injector, element);
         $rootScope.$apply();
@@ -428,9 +427,9 @@ main() {
     visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY)
 class TabComponent {
   int id = 0;
-  Log log;
+  Logger log;
   LocalAttrDirective local;
-  TabComponent(Log this.log, LocalAttrDirective this.local, Scope scope) {
+  TabComponent(Logger this.log, LocalAttrDirective this.local, Scope scope) {
     log('TabComponent-${id++}');
     local.ping();
   }
@@ -440,8 +439,8 @@ class TabComponent {
 class PaneComponent {
   TabComponent tabComponent;
   LocalAttrDirective localDirective;
-  Log log;
-  PaneComponent(TabComponent this.tabComponent, LocalAttrDirective this.localDirective, Log this.log, Scope scope) {
+  Logger log;
+  PaneComponent(TabComponent this.tabComponent, LocalAttrDirective this.localDirective, Logger this.log, Scope scope) {
     log('PaneComponent-${tabComponent.id++}');
     localDirective.ping();
   }
@@ -452,8 +451,8 @@ class PaneComponent {
     visibility: NgDirective.LOCAL_VISIBILITY)
 class LocalAttrDirective {
   int id = 0;
-  Log log;
-  LocalAttrDirective(Log this.log);
+  Logger log;
+  LocalAttrDirective(Logger this.log);
   ping() {
     log('LocalAttrDirective-${id++}');
   }
@@ -463,7 +462,7 @@ class LocalAttrDirective {
     selector: '[simple-transclude-in-attach]',
     visibility: NgDirective.CHILDREN_VISIBILITY, transclude: true)
 class SimpleTranscludeInAttachAttrDirective {
-  SimpleTranscludeInAttachAttrDirective(BlockHole blockHole, BoundBlockFactory boundBlockFactory, Log log, Scope scope) {
+  SimpleTranscludeInAttachAttrDirective(BlockHole blockHole, BoundBlockFactory boundBlockFactory, Logger log, Scope scope) {
     scope.$evalAsync(() {
       var block = boundBlockFactory(scope);
       block.insertAfter(blockHole);
@@ -474,7 +473,7 @@ class SimpleTranscludeInAttachAttrDirective {
 
 @NgDirective(selector: '[include-transclude]')
 class IncludeTranscludeAttrDirective {
-  IncludeTranscludeAttrDirective(SimpleTranscludeInAttachAttrDirective simple, Log log) {
+  IncludeTranscludeAttrDirective(SimpleTranscludeInAttachAttrDirective simple, Logger log) {
     log('IncludeTransclude');
   }
 }

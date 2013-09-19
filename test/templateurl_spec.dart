@@ -1,7 +1,6 @@
 library templateurl_spec;
 
 import '_specs.dart';
-import '_log.dart';
 import '_http.dart';
 
 @NgComponent(
@@ -45,7 +44,7 @@ main() {
         ..type(UrlRewriter, implementedBy: PrefixedUrlRewriter);
     }));
 
-    it('should use the UrlRewriter for both HTML and CSS URLs', async(inject((Http $http, Compiler $compile, Scope $rootScope, Log log, Injector injector, Zone zone) {
+    it('should use the UrlRewriter for both HTML and CSS URLs', async(inject((Http $http, Compiler $compile, Scope $rootScope, Logger log, Injector injector, Zone zone) {
 
       backend.expectGET('PREFIX:simple.html', '<div log="SIMPLE">Simple!</div>');
       backend.expectGET('PREFIX:simple.css', '.hello{}');
@@ -82,7 +81,7 @@ main() {
       $http.assertAllGetsCalled();
     }));
 
-    it('should replace element with template from url', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope,  Log log, Injector injector) {
+    it('should replace element with template from url', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope,  Logger log, Injector injector) {
       $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>');
 
       var element = $('<div><simple-url log>ignore</simple-url><div>');
@@ -97,7 +96,7 @@ main() {
       expect(log.result()).toEqual('LOG; SIMPLE');
     })));
 
-    it('should load template from URL once', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope,  Log log, Injector injector) {
+    it('should load template from URL once', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope,  Logger log, Injector injector) {
       $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>', times: 2);
 
       var element = $('<div><simple-url log>ignore</simple-url><simple-url log>ignore</simple-url><div>');
@@ -112,7 +111,7 @@ main() {
       expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
     })));
 
-    it('should load a CSS file into a style', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope, Log log, Injector injector) {
+    it('should load a CSS file into a style', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
       $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>');
       $http.expectGET('simple.css', '.hello{}');
 

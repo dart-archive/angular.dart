@@ -1,7 +1,6 @@
 library ng_if_spec;
 
 import '../_specs.dart';
-import '../_log.dart';
 import 'dart:html' as dom;
 
 
@@ -47,7 +46,7 @@ main() {
       expect(element.find('span').html()).toEqual('');
     });
 
-    it('should prevent other directives from running when disabled', inject((Log log) {
+    it('should prevent other directives from running when disabled', inject((Logger log) {
       compile('<div><li log="ALWAYS"></li><span log="JAMES" ng-if="isVisible">content</span></div>');
 
       expect(element.find('span').html()).toEqual('');

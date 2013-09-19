@@ -1,13 +1,12 @@
 library zone_spec;
 
 import '_specs.dart';
-import '_log.dart';
 
 import 'dart:async';
 
 main() => describe('zone', () {
   var zone;
-  beforeEach(inject((Log log) {
+  beforeEach(inject((Logger log) {
     zone = new Zone();
     zone.onTurnDone = () {
       log('onTurnDone');
@@ -39,7 +38,7 @@ main() => describe('zone', () {
   });
 
 
-  it('should call onTurnDone after a synchronous block', inject((Log log) {
+  it('should call onTurnDone after a synchronous block', inject((Logger log) {
     zone.run(() {
       log('run');
     });
@@ -52,7 +51,7 @@ main() => describe('zone', () {
   });
 
 
-  it('should call onTurnDone for a runAsync in onTurnDone', async(inject((Log log) {
+  it('should call onTurnDone for a runAsync in onTurnDone', async(inject((Logger log) {
     var ran = false;
     zone.onTurnDone = () {
       if (!ran) {
@@ -69,7 +68,7 @@ main() => describe('zone', () {
   })));
 
 
-  it('should call onTurnDone for a runAsync in onTurnDone triggered by a runAsync in run', async(inject((Log log) {
+  it('should call onTurnDone for a runAsync in onTurnDone triggered by a runAsync in run', async(inject((Logger log) {
     var ran = false;
     zone.onTurnDone = () {
       if (!ran) {
@@ -88,7 +87,7 @@ main() => describe('zone', () {
 
 
 
-  it('should call onTurnDone once after a turn', async(inject((Log log) {
+  it('should call onTurnDone once after a turn', async(inject((Logger log) {
     zone.run(() {
       log('run start');
       runAsync(() {
@@ -102,7 +101,7 @@ main() => describe('zone', () {
   })));
 
 
-  it('should work for Future.value as well', async(inject((Log log) {
+  it('should work for Future.value as well', async(inject((Logger log) {
     var futureRan = false;
     zone.onTurnDone = () {
       if (!futureRan) {
@@ -132,7 +131,7 @@ main() => describe('zone', () {
   })));
 
 
-  it('should call onTurnDone after each turn', async(inject((Log log) {
+  it('should call onTurnDone after each turn', async(inject((Logger log) {
     Completer a, b;
     zone.run(() {
       a = new Completer();
@@ -155,7 +154,7 @@ main() => describe('zone', () {
   })));
 
 
-  it('should call onTurnDone after each turn in a chain', async(inject((Log log) {
+  it('should call onTurnDone after each turn in a chain', async(inject((Logger log) {
     zone.run(() {
       log('run start');
       runAsync(() {
@@ -172,7 +171,7 @@ main() => describe('zone', () {
   })));
 
 
-  it('should call onTurnDone once even if run is called multiple times', async(inject((Log log) {
+  it('should call onTurnDone once even if run is called multiple times', async(inject((Logger log) {
     zone.run(() {
       log('runA start');
       runAsync(() {
@@ -194,7 +193,7 @@ main() => describe('zone', () {
   })));
 
 
-  it('should not call onTurnDone for futures created outside of run body', async(inject((Log log) {
+  it('should not call onTurnDone for futures created outside of run body', async(inject((Logger log) {
     // Odd? Yes. Since Future.value resolves immediately, it (and its thens)
     // are already on the runAsync queue when we schedule onTurnDone.
     // Since we want to test explicitly that onTurnDone is not waiting for
@@ -211,7 +210,7 @@ main() => describe('zone', () {
   })));
 
 
-  it('should call onTurnDone even if there was an exception in body', async(inject((Log log) {
+  it('should call onTurnDone even if there was an exception in body', async(inject((Logger log) {
     zone.onError = (e) => log('onError');
     expect(() => zone.run(() {
       log('zone run');
@@ -222,7 +221,7 @@ main() => describe('zone', () {
   })));
 
 
-  it('should call onTurnDone even if there was an exception in runAsync', async(inject((Log log) {
+  it('should call onTurnDone even if there was an exception in runAsync', async(inject((Logger log) {
     zone.onError = (e) => log('onError');
     zone.run(() {
       log('zone run');

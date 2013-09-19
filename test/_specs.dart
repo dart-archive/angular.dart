@@ -10,7 +10,6 @@ import 'package:angular/angular.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'jasmine_syntax.dart';
-import '_log.dart';
 import '_http.dart';
 import 'package:angular/mock/mock.dart';
 
@@ -185,12 +184,6 @@ class JQuery implements List<Node> {
           (Element n, v) => n.style.setProperty(name, value), value);
 }
 
-class Logger implements List {
-  List<Node> _list = [];
-
-  noSuchMethod(Invocation invocation) => mirror.reflect(_list).delegate(invocation);
-}
-
 List<Function> _asyncQueue = [];
 List _asyncErrors = [];
 
@@ -299,8 +292,7 @@ main() {
         Zone zone = new Zone();
         zone.onError = (e) => dump('EXCEPTION: $e\n${dartAsync.getAttachedStackTrace(e)}');
         return zone;
-      })
-      ..type(Log);
+      });
   }));
   afterEach(() => currentSpecInjector = null);
 }
