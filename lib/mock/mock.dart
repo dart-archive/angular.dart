@@ -1,7 +1,10 @@
 library angular.mock;
 
-import '../exception_handler.dart';
-import '../directive.dart';
+import 'package:di/di.dart';
+import 'package:angular/angular.dart';
+import 'dart:html';
 
-part "exception_handler.dart";
-part "log.dart";
+
+part 'exception_handler.dart';
+part 'log.dart';
+part 'probe.dart';
