@@ -147,6 +147,7 @@ class SelectDirective {
         for (int i = 0; i < actualValue.length; i++) {
           if (ngModel.viewValue[i] != actualValue[i]) {
             updateModel = true;
+            break;
           }
         }
       } else {
