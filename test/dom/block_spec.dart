@@ -6,15 +6,10 @@ import '../_specs.dart';
 class LoggerBlockDirective {
   LoggerBlockDirective(BlockHole hole, BlockFactory blockFactory,
       BoundBlockFactory boundBlockFactory, Logger logger) {
-    if (hole == null) {
-      throw new ArgumentError('BlockHole must be injected.');
-    }
-    if (boundBlockFactory == null) {
-      throw new ArgumentError('BoundBlockFactory must be injected.');
-    }
-    if (blockFactory == null) {
-      throw new ArgumentError('BlockFactory must be injected.');
-    }
+    assert(hole != null);
+    assert(blockFactory != null);
+    assert(boundBlockFactory != null);
+
     logger.add(hole);
     logger.add(boundBlockFactory);
     logger.add(blockFactory);
@@ -100,36 +95,6 @@ main() {
       });
 
 
-      xdescribe('replace', () {
-        it('should allow directives to remove elements', inject((BlockTypeFactory $blockTypeFactory) {
-          var innerBlockType = $blockTypeFactory($('<b>text</b>'), []);
-          var outerBlockType = $blockTypeFactory($('<div>TO BE REPLACED</div><div>:ok</div>'), [
-              0, [new DirectiveRef(null, null, '', '',
-                                   new Directive(ReplaceBlockDirective),
-                                   {'': innerBlockType})], null
-          ]);
-
-          var outerBlock = outerBlockType();
-          outerBlock.insertAfter(anchor);
-          expect($rootElement.text()).toEqual('text:ok');
-        }));
-
-        it('should allow directives to create shadow DOM', inject((BlockTypeFactory $blockTypeFactory) {
-          var innerBlockType = $blockTypeFactory($('<b>shadow</b>'), []);
-          var outerBlockType = $blockTypeFactory($('<x-shadowy>boo</x-shadowy><div>:ok</div>'), [
-              0, [new DirectiveRef(null, null, '', '',
-                                   new Directive(ShadowBlockDirective),
-                                   {'': innerBlockType})], null
-          ]);
-
-          var outerBlock = outerBlockType();
-          outerBlock.insertAfter(anchor);
-          expect($rootElement.text()).toEqual('boo:ok');
-          expect(renderedText($rootElement)).toEqual('shadow:ok');
-
-        }));
-      });
-
       describe('remove', () {
         beforeEach(() {
           b.insertAfter(a.insertAfter(anchor));
@@ -170,13 +135,12 @@ main() {
           //   }
           // }
 
-          var innerBlockType = new BlockFactory($('<b>text</b>'), [], perf);
-          var outerBlockType = new BlockFactory($('<!--start--><!--end-->'), [
-            0, [new DirectiveRef(null,
-                                 new Directive(LoggerBlockDirective),
-                                 '',
-                                 innerBlockType)], null
-          ], perf);
+          var directiveRef = new DirectiveRef(null, LoggerBlockDirective, new NgDirective(transclude: true, selector: 'foo'), '');
+          directiveRef.blockFactory = new BlockFactory($('<b>text</b>'), [], perf);
+          var outerBlockType = new BlockFactory(
+              $('<!--start--><!--end-->'),
+              [ 0, [ directiveRef ], null],
+              perf);
 
           var outterBlock = outerBlockType(injector);
           // The LoggerBlockDirective caused a BlockHole for innerBlockType to

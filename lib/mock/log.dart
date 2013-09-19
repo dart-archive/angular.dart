@@ -35,16 +35,18 @@ class LogAttrDirective implements NgAttachAware {
  *
  *     expect(logger).toEqual(['foo', 'bar']);
  */
-class Logger implements List<String> {
-  final List<Node> _list = [];
+class Logger implements List {
+  final List tokens = [];
 
   /**
    * Add string token to the list.
    */
-  call(String text) => _list.add(text);
+  call(dynamic text) => tokens.add(text);
 
   /**
    * Return a `;` separated list of recorded tokens.
    */
-  String result() => _list.join('; ');
+  String result() => tokens.join('; ');
+
+  noSuchMethod(Invocation invocation) => mirror.reflect(tokens).delegate(invocation);
 }

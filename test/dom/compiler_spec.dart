@@ -97,7 +97,7 @@ main() {
 
     it('should compile text', inject((Compiler $compile) {
       var element = $('<div>{{name}}<span>!</span></div>').contents();
-      element.remove();
+      element.remove(null);
 
       var template = $compile(element);
 
@@ -617,7 +617,7 @@ class PublishMeComponent {
 )
 class LogComponent {
   LogComponent(Scope scope, Logger logger) {
-    logger.add(scope);
+    logger(scope);
   }
 }
 
@@ -629,9 +629,9 @@ class AttachDetachComponent implements NgAttachAware, NgDetachAware {
   Logger logger;
 
   AttachDetachComponent(Logger this.logger) {
-    logger.add('new');
+    logger('new');
   }
 
-  attach() => logger.add('attach');
-  detach() => logger.add('detach');
+  attach() => logger('attach');
+  detach() => logger('detach');
 }
