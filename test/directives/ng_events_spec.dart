@@ -24,34 +24,34 @@ void addTest(String name, [String eventType='MouseEvent', String eventName]) {
 }
 
 main() {
-    addTest('blur', 'MouseEvent');
-    addTest('change', 'MouseEvent');
-    addTest('click', 'MouseEvent');
-    addTest('contextmenu', 'MouseEvent');
+    addTest('blur');
+    addTest('change');
+    addTest('click');
+    addTest('contextmenu');
     // The event name differs from the ng- directive name.
     addTest('doubleclick', 'MouseEvent', 'dblclick');
-    addTest('dragenter', 'MouseEvent');
-    addTest('dragleave', 'MouseEvent');
-    addTest('dragover', 'MouseEvent');
-    addTest('dragstart', 'MouseEvent');
-    addTest('drop', 'MouseEvent');
-    addTest('focus', 'MouseEvent');
+    addTest('dragenter');
+    addTest('dragleave');
+    addTest('dragover');
+    addTest('dragstart');
+    addTest('drop');
+    addTest('focus');
     addTest('keydown', 'KeyboardEvent');
     addTest('keypress', 'KeyboardEvent');
     addTest('keyup', 'KeyboardEvent');
-    addTest('mousedown', 'MouseEvent');
-    addTest('mouseenter', 'MouseEvent');
-    addTest('mouseleave', 'MouseEvent');
-    addTest('mousemove', 'MouseEvent');
-    addTest('mouseout', 'MouseEvent');
-    addTest('mouseover', 'MouseEvent');
-    addTest('mouseup', 'MouseEvent');
-    addTest('mousewheel', 'MouseEvent');
-    addTest('scroll', 'MouseEvent');
+    addTest('mousedown');
+    addTest('mouseenter');
+    addTest('mouseleave');
+    addTest('mousemove');
+    addTest('mouseout');
+    addTest('mouseover');
+    addTest('mouseup');
+    addTest('mousewheel');
+    addTest('scroll');
     // These should be of type TouchEvent but that causes the tests to fail.
     // They pass as a MouseEvent.
-    addTest('touchcancel', 'MouseEvent' /*TouchEvent*/);
-    addTest('touchend', 'MouseEvent' /*TouchEvent*/);
-    addTest('touchmove', 'MouseEvent' /*TouchEvent*/);
-    addTest('touchstart', 'MouseEvent' /*TouchEvent*/);
+    addTest('touchcancel'/*, 'TouchEvent'*/);
+    addTest('touchend'/*, 'TouchEvent'*/);
+    addTest('touchmove'/*, 'TouchEvent'*/);
+    addTest('touchstart'/*, 'TouchEvent'*/);
 }
