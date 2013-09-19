@@ -1,28 +1,22 @@
 library angular.core.service.exception;
 
+/**
+ * Any uncaught exception in angular expressions is delegated to this service.
+ * The default implementation logs exceptions into console.
+ *
+ * In your application it is expected that this service is overridden with
+ * your implementation which can store the exception for later processing.
+ */
 class ExceptionHandler {
-  call(error, stack, [reason]){
-    throw "$error \nORIGINAL STACKTRACE:\n $stack";
-  }
-}
 
-class ExceptionWithStack {
-  var error;
-  var stack;
-  ExceptionWithStack(this.error, this.stack);
-  toString() => "$error\n$stack";
-}
-
-class LogExceptionHandler implements ExceptionHandler {
-  List errors = [];
-
-  call(error, stack, [reason]){
-    errors.add(new ExceptionWithStack(error, stack));
-  }
-
-  assertEmpty() {
-    if (errors.length > 0) {
-      throw new ArgumentError('Exception Log not empty:\n$errors');
-    }
+ /**
+  * Delegate uncaught exception for central error handling.
+  *
+  * - [error] The error which was caught.
+  * - [stack] The stacktrace.
+  * - [reason] Optional contextual information for the error.
+  */
+  call(dynamic error, dynamic stack, [String reason = '']){
+    print("$error\n$reason\nSTACKTRACE:\n$stack");
   }
 }

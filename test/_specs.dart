@@ -22,7 +22,7 @@ export 'package:di/di.dart'; // TODO: remove
 export 'package:angular/dom/debug.dart'; // TODO:remove
 export 'package:angular/angular.dart';
 export 'package:perf_api/perf_api.dart';
-export "package:angular/exception_handler.dart";
+export 'package:angular/mock/mock.dart';
 
 es(String html) {
   var div = new DivElement();
@@ -294,8 +294,7 @@ main() {
     module
       ..type(Logger)
       ..type(MockHttp)
-      ..type(Logger)
-      ..type(MockHttp)
+      ..type(ExceptionHandler, implementedBy: RethrowExceptionHandler)
       ..factory(Zone, (_) {
         Zone zone = new Zone();
         zone.onError = (e) => dump('EXCEPTION: $e\n${dartAsync.getAttachedStackTrace(e)}');
