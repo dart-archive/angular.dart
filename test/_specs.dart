@@ -7,6 +7,8 @@ import 'dart:mirrors' as mirror;
 import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/dom/debug.dart';
 import 'package:angular/angular.dart';
+import 'package:angular/dom/common.dart';
+import 'package:angular/dom/selector.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'jasmine_syntax.dart';
@@ -20,6 +22,8 @@ export 'package:unittest/mock.dart';
 export 'package:di/di.dart'; // TODO: remove
 export 'package:angular/dom/debug.dart'; // TODO:remove
 export 'package:angular/angular.dart';
+export 'package:angular/dom/common.dart';
+export 'package:angular/dom/selector.dart';
 export 'package:perf_api/perf_api.dart';
 export 'package:angular/mock/mock.dart';
 
@@ -173,12 +177,13 @@ class JQuery implements List<Node> {
   contents() => fold(new JQuery(), (jq, node) => jq..addAll(node.nodes));
   toString() => fold('', (html, node) => '$html${_toHtml(node, true)}');
   eq(num childIndex) => $(this[childIndex]);
-  remove() => forEach((n) => n.remove());
+  remove(_) => forEach((n) => n.remove());
   attr([String name]) => accessor((n) => n.attributes[name], (n, v) => n.attributes[name] = v);
   prop([String name]) => accessor((n) => parserBackend.getter(name)(n, null), (n, v) => parserBackend.setter(name)(n, v));
   textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(n.queryAll(selector)));
   hasClass(String name) => fold(false, (hasClass, node) => hasClass ? true : node.classes.contains(name));
+  addClass(String name) => _list.forEach((node) => node.classes.add(name));
   css(String name, [String value]) => accessor(
           (Element n) => n.style.getPropertyValue(name),
           (Element n, v) => n.style.setProperty(name, value), value);

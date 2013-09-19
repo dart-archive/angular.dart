@@ -42,7 +42,7 @@ main() => describe('NgStyle', () {
     }));
 
     afterEach(() {
-      element.remove();
+      element.remove(null);
     });
 
 

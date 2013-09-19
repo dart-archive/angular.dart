@@ -38,6 +38,8 @@ void registerDirectives(AngularModule module) {
   module.directive(NgAttrMustacheDirective);
   module.directive(NgBindAttrDirective);
   module.directive(NgClassAttrDirective);
+  module.directive(NgClassOddAttrDirective);
+  module.directive(NgClassEvenAttrDirective);
   module.directive(NgCloakAttrDirective);
   module.directive(NgControllerAttrDirective);
   module.directive(NgDisabledAttrDirective);

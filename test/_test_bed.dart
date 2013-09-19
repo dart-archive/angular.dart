@@ -39,6 +39,11 @@ beforeEachTestBed(assign) {
   return module((AngularModule module) {
     module.type(TestBed);
     module.directive(Probe);
+
+    var httpBackend = new MockHttpBackend();
+    module.value(MockHttpBackend, httpBackend);
+    module.value(HttpBackend, httpBackend);
+
     return inject((TestBed tb) => assign(tb));
   });
 }

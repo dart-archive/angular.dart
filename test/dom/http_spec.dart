@@ -34,7 +34,7 @@ main() {
 
 
       it('should rewrite URLs before calling the backend', async(inject((Http http, Zone zone) {
-        backend.expectGET('a', VALUE, times: 1);
+        backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
         zone.run(() {
@@ -55,7 +55,7 @@ main() {
 
 
       it('should support pending requests for different raw URLs', async(inject((Http http, Zone zone) {
-        backend.expectGET('a', VALUE, times: 1);
+        backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
         zone.run(() {
@@ -99,7 +99,7 @@ main() {
 
     describe('caching', () {
       it('should not cache if no cache is present', async(inject((Http http, Zone zone) {
-        backend.expectGET('a', VALUE, times: 2);
+        backend.when('GET', 'a').respond(200, VALUE, null, 2);
 
         var called = 0;
         zone.run(() {
@@ -124,7 +124,7 @@ main() {
 
 
       it('should return a pending request', async(inject((Http http, Zone zone) {
-        backend.expectGET('a', VALUE, times: 1);
+        backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
         zone.run(() {
@@ -148,7 +148,7 @@ main() {
 
 
       it('should not return a pending request after the request is complete', async(inject((Http http, Zone zone) {
-        backend.expectGET('a', VALUE, times: 2);
+        backend.when('GET', 'a').respond(200, VALUE, null, 2);
 
         var called = 0;
         zone.run(() {
@@ -200,7 +200,7 @@ main() {
 
     describe('error handling', () {
       it('should reject 404 status codes', async(inject((Http http, Zone zone) {
-        backend.expectGET('404.html', VALUE, code: 404);
+        backend.when('GET', '404.html').respond(404, VALUE);
 
         var response = null;
         zone.run(() {
