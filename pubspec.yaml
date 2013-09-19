@@ -2,11 +2,12 @@ name: angular
 description: Angular for dart.
 
 dependencies:
-  unittest: any
-  browser: any
-  js: any
-  di: any
-  perf_api: any
-  intl: any
-  html5lib: any
   analyzer_experimental: any
+  browser: any
+  di: any
+  html5lib: any
+  intl: any
+  js: any
+  meta: any
+  perf_api: any
+  unittest: any

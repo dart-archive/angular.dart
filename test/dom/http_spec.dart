@@ -6,7 +6,7 @@ import '../_http.dart';
 var VALUE = 'val';
 var CACHED_VALUE = 'cached_value';
 
-class FakeCache implements Cache {
+class FakeCache extends Cache {
   get(x) => x == 'f' ? new HttpResponse(200, CACHED_VALUE) : null;
   put(_,__) => null;
 

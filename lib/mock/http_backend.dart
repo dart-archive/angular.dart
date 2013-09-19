@@ -15,16 +15,75 @@ class MockHttpData {
  * Mock implementation of the [HttpRequest] object returned from the HttpBackend.
  */
 class MockHttpRequest implements HttpRequest {
-  int status;
-  String response;
+  final bool supportsCrossOrigin = false;
+  final bool supportsLoadEndEvent = false;
+  final bool supportsOverrideMimeType = false;
+  final bool supportsProgressEvent = false;
+  final Events on = null;
+
+  final Stream<ProgressEvent> onAbort = null;
+  final Stream<ProgressEvent> onError = null;
+  final Stream<ProgressEvent> onLoad = null;
+  final Stream<ProgressEvent> onLoadEnd = null;
+  final Stream<ProgressEvent> onLoadStart = null;
+  final Stream<ProgressEvent> onProgress = null;
+  final Stream<ProgressEvent> onReadyStateChange = null;
+
+  final Stream<ProgressEvent> onTimeout = null;
+  final int readyState = 0;
+
+  final responseText = null;
+  final responseXml = null;
+  final String statusText = null;
+  final HttpRequestUpload upload = null;
+
+  String responseType = null;
+  int timeout = 0;
+  bool withCredentials;
+
+  final int status;
+  final response;
 
   MockHttpRequest(int this.status, String this.response);
+
+  void abort() {}
+  bool dispatchEvent(Event event) => false;
+  String getAllResponseHeaders() => null;
+  String getResponseHeader(String header) => null;
+
+  void open(String method, String url, {bool async, String user, String password}) {}
+  void overrideMimeType(String override) {}
+  void send([data]) {}
+  void setRequestHeader(String header, String value) {}
+  void $dom_addEventListener(String type, EventListener listener, [bool useCapture]) {}
+  void $dom_removeEventListener(String type, EventListener listener, [bool useCapture]) {}
 }
 
 class MockHttpRequestProgressEvent implements HttpRequestProgressEvent {
-  MockHttpRequest currentTarget;
+  final bool bubbles = false;
+  final bool cancelable = false;
+  final DataTransfer clipboardData = null;
+  final EventTarget currentTarget;
+  final bool defaultPrevented = false;
+  final int eventPhase = 0;
+  final bool lengthComputable = false;
+  final int loaded = 0;
+  final List<Node> path = null;
+  final int position = 0;
+  final Type runtimeType = null;
+  final EventTarget target = null;
+  final int timeStamp = 0;
+  final int total = 0;
+  final int totalSize = 0;
+  final String type = null;
+
+  bool cancelBubble = false;
 
   MockHttpRequestProgressEvent(MockHttpRequest this.currentTarget);
+
+  void preventDefault() {}
+  void stopImmediatePropagation() {}
+  void stopPropagation() {}
 }
 
 

@@ -1,4 +1,4 @@
-library selector_spec;
+library angular.dom.selector_spec;
 
 import '../_specs.dart';
 

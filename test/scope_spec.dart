@@ -116,7 +116,8 @@ main() {
         module((AngularModule module) {
           module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
         });
-        inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
+        inject((Scope $rootScope, ExceptionHandler e) {
+          LoggingExceptionHandler $exceptionHandler = e;
           $rootScope.$watch('a', () {throw 'abc';});
           $rootScope.a = 1;
           $rootScope.$digest();
@@ -244,7 +245,8 @@ main() {
         module((AngularModule module) {
           module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
         });
-        inject((Scope $rootScope, ExceptionHandler exceptionHandler) {
+        inject((Scope $rootScope, ExceptionHandler e) {
+          LoggingExceptionHandler exceptionHandler = e;
           $rootScope.fn = () {return 'a';};
           $rootScope.$watch('fn', (fn, a, b) {
             exceptionHandler.errors.add(fn());
@@ -474,7 +476,8 @@ main() {
 
       it(r'should catch exceptions', () {
         module((Module module) => module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler));
-        inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
+        inject((Scope $rootScope, ExceptionHandler e) {
+          LoggingExceptionHandler $exceptionHandler = e;
           var log = [];
           var child = $rootScope.$new();
           $rootScope.$watch('a', (a, _, __) => log.add('1'));
@@ -502,7 +505,8 @@ main() {
 
 
         it(r'should execute and return value and update', inject(
-            (Scope $rootScope, ExceptionHandler $exceptionHandler) {
+            (Scope $rootScope, ExceptionHandler e) {
+          LoggingExceptionHandler $exceptionHandler = e;
           $rootScope.name = 'abc';
           expect($rootScope.$apply((scope) => scope.name)).toEqual('abc');
           expect(log).toEqual(r'$digest;');
@@ -510,7 +514,8 @@ main() {
         }));
 
 
-        it(r'should catch exception and update', inject((Scope $rootScope, ExceptionHandler $exceptionHandler) {
+        it(r'should catch exception and update', inject((Scope $rootScope, ExceptionHandler e) {
+          LoggingExceptionHandler $exceptionHandler = e;
           var error = 'MyError';
           $rootScope.$apply(() { throw error; });
           expect(log).toEqual(r'$digest;');
@@ -585,7 +590,7 @@ main() {
           var log = '',
               child = $rootScope.$new();
 
-          function eventFn() {
+          eventFn() {
             log += 'X';
           }
 
@@ -605,7 +610,7 @@ main() {
               child = $rootScope.$new(),
               listenerRemove;
 
-          function eventFn() {
+          eventFn() {
             log += 'X';
           }
 
@@ -629,7 +634,7 @@ main() {
       describe(r'$emit', () {
         var log, child, grandChild, greatGrandChild;
 
-        function logger(event) {
+        logger(event) {
           log.add(event.currentScope.id);
         }
 
@@ -660,7 +665,8 @@ main() {
 
 
         it(r'should dispatch exceptions to the $exceptionHandler',
-            inject((ExceptionHandler $exceptionHandler) {
+            inject((ExceptionHandler e) {
+          LoggingExceptionHandler $exceptionHandler = e;
           child.$on('myEvent', () { throw 'bubbleException'; });
           grandChild.$emit(r'myEvent');
           expect(log.join('>')).toEqual('2>1>0');
@@ -718,7 +724,7 @@ main() {
           var log, child1, child2, child3, grandChild11, grandChild21, grandChild22, grandChild23,
               greatGrandChild211;
 
-          function logger(event) {
+          logger(event) {
             log.add(event.currentScope.id);
           }
 

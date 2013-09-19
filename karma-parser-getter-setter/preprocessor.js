@@ -14,6 +14,9 @@ var generateParser = function(logger) {
           'dart --checked bin/parser_generator_for_spec.dart getter-setter',
           function(err, stdout, stderr) {
             if (err) throw err;
+            data = data.toString();
+            data = data.replace(/^.* \/\/ REMOVE$/m, '');
+            data = data.replace(/_template;/, '_generated;');
             done(data + '\n\n' + stdout);
           });
     });
