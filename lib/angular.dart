@@ -1,12 +1,5 @@
 library angular;
 
-import 'package:di/di.dart';
-import 'package:di/dynamic_injector.dart';
-import 'package:perf_api/perf_api.dart';
-
-import 'dart:html' as dom; // TODO(misko): to be deleted
-import 'controller.dart';
-
 import 'zone.dart';                   export 'zone.dart';
 import 'cache.dart';                  export 'cache.dart';
 import 'interpolate.dart';            export 'interpolate.dart';
