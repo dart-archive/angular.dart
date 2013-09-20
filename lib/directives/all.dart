@@ -46,6 +46,7 @@ void registerDirectives(AngularModule module) {
   module.directive(NgClassOddAttrDirective);
   module.directive(NgClassEvenAttrDirective);
   module.directive(NgCloakAttrDirective);
+  module.directive(NgCloakClassDirective);
   module.directive(NgControllerAttrDirective);
   module.directive(NgDisabledAttrDirective);
   module.directive(NgHideAttrDirective);

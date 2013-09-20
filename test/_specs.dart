@@ -155,7 +155,7 @@ class JQuery implements List<Node> {
     }
   }
 
-  accessor(Function getter, Function setter, [value]) {
+  accessor(Function getter, Function setter, [value, single=false]) {
     // TODO(dart): ?value does not work, since value was passed. :-(
     var setterMode = value != null;
     var result = setterMode ? this : '';
@@ -163,7 +163,7 @@ class JQuery implements List<Node> {
       if (setterMode) {
         setter(node, value);
       } else {
-        result = '$result${getter(node)}';
+        result = single ? getter(node) : '$result${getter(node)}';
       }
     });
     return result;
@@ -178,7 +178,9 @@ class JQuery implements List<Node> {
   toString() => fold('', (html, node) => '$html${_toHtml(node, true)}');
   eq(num childIndex) => $(this[childIndex]);
   remove(_) => forEach((n) => n.remove());
-  attr([String name]) => accessor((n) => n.attributes[name], (n, v) => n.attributes[name] = v);
+  attr([String name, String value]) => accessor(
+          (n) => n.attributes[name],
+          (n, v) => n.attributes[name] = v, value, true);
   prop([String name]) => accessor((n) => parserBackend.getter(name)(n, null), (n, v) => parserBackend.setter(name)(n, v));
   textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(n.queryAll(selector)));
