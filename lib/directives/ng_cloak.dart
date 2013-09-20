@@ -28,7 +28,6 @@ import '../dom/directive.dart';
 @NgDirective(selector: '[ng-cloak]')
 class NgCloakAttrDirective {
   NgCloakAttrDirective(dom.Element element) {
-    print('attr');
     element.attributes.remove('ng-cloak');
   }
 }
@@ -36,7 +35,6 @@ class NgCloakAttrDirective {
 @NgDirective(selector: '.ng-cloak')
 class NgCloakClassDirective {
   NgCloakClassDirective(dom.Element element) {
-    print('class');
     element.classes.remove('ng-cloak');
   }
 }
