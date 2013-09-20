@@ -4,6 +4,15 @@ library ng_mock_http;
 import 'dart:async';
 import '_specs.dart';
 
+class MockHttpData {
+  int code;
+  String value;
+  int times;
+  MockHttpData(this.code, this.value, this.times);
+
+  toString() => value;
+}
+
 class MockHttp extends Http {
   Map<String, MockHttpData> gets = {};
   List futures = [];

@@ -80,6 +80,13 @@ class Expect {
 
   toHaveBeenCalled() => unit.expect(actual.called, true, reason: 'method not called');
   toHaveBeenCalledOnce() => unit.expect(actual.count, 1, reason: 'method invoked ${actual.count} expected once');
+  toHaveBeenCalledWith([a,b,c,d,e,f]) =>
+      unit.expect(actual.firstArgsMatch(a,b,c,d,e,f), true,
+      reason: 'method invoked with correct arguments');
+  toHaveBeenCalledOnceWith([a,b,c,d,e,f]) =>
+      unit.expect(actual.count == 1 && actual.firstArgsMatch(a,b,c,d,e,f),
+                 true,
+                 reason: 'method invoked once with correct arguments. (Called ${actual.count} times)');
 
   toHaveClass(cls) => unit.expect(actual.hasClass(cls), true, reason: ' Expected ${actual} to have css class ${cls}');
 }

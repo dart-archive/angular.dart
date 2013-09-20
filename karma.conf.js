@@ -11,6 +11,7 @@ module.exports = function(config) {
       'test/*.dart',
       'test/directives/*.dart',
       'test/dom/*.dart',
+      'test/mock/*.dart',
       'test/parser/*.dart',
       'test/tools/*_spec.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},

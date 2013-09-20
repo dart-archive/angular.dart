@@ -1,148 +1,640 @@
 part of angular.mock;
 
+class _MockXhr {
+  // hack for testing $http, $httpBackend
+  static var $$lastInstance = this;
+
+  var $$method, $$url, $$async, $$reqHeaders, $$respHeaders;
+
+  open(method, url, async) {
+    $$method = method;
+    $$url = url;
+    $$async = async;
+    $$reqHeaders = {};
+    $$respHeaders = {};
+  }
+
+  var $$data;
+
+  send(data) {
+    $$data = data;
+  }
+
+  setRequestHeader(key, value) {
+    $$reqHeaders[key] = value;
+  }
+
+  getResponseHeader(name) {
+    // the lookup must be case insensitive, that's why we try two quick lookups and full scan at last
+    if ($$respHeaders.containsKey(name)) {
+      return $$respHeaders[name];
+    }
+
+    name = name.toLowerCase();
+    if ($$respHeaders.containsKey(name)) {
+      return $$respHeaders[name];
+    }
+
+    String header = null;
+    $$respHeaders.forEach((headerName, headerVal) {
+      if (header != null) return;
+      if (headerName.toLowerCase()) header = headerVal;
+    });
+    return header;
+  }
+
+  getAllResponseHeaders() {
+    if ($$respHeaders == null) return '';
+
+    var lines = [];
+
+    $$respHeaders.forEach((key, value) {
+      lines.add("$key: $value");
+    });
+    return lines.join('\n');
+  }
+
+  // noop
+  abort() {}
+}
+
+/**
+ * An internal class used by [MockHttpBackend].
+ */
+class MockHttpExpectation {
+
+  var method, url, data, headers;
+
+  var response;
+
+  MockHttpExpectation(this.method, this.url, [this.data, this.headers]);
+
+  match(m, u, [d, h]) {
+    if (method != m) return false;
+    if (!matchUrl(u)) return false;
+    if (d != null && !matchData(d)) return false;
+    if (h != null && !matchHeaders(h)) return false;
+    return true;
+  }
+
+  matchUrl(u) {
+    if (url == null) return true;
+    if (url is RegExp) return url.hasMatch(u);
+    return url == u;
+  }
+
+  matchHeaders(h) {
+    if (headers == null) return true;
+    if (headers is Function) return headers(h);
+    return "$headers" == "$h";
+  }
+
+  matchData(d) {
+    if (data == null) return true;
+    if (data is RegExp) return data.hasMatch(d);
+    return json.stringify(data) == json.stringify(d);
+  }
+
+  toString() {
+    return "$method $url";
+  }
+}
 
 
-class MockHttpData {
-  int code;
-  String value;
-  int times;
-  MockHttpData(this.code, this.value, this.times);
+class _Chain {
+  var _respondFn;
+  _Chain({respond}) {
+    _respondFn = respond;
+  }
+  respond([x,y,z]) => _respondFn(x,y,z);
+}
 
-  toString() => value;
+/**
+ * A mock implementation of [HttpBackend], used in tests.
+ */
+class MockHttpBackend implements HttpBackend {
+  var definitions = [],
+      expectations = [],
+      responses = [];
+
+/**
+  * This function is called from [Http] and designed to mimic the Dart APIs.
+  */
+  Future request(String url,
+                 {String method, bool withCredentials, String responseType,
+                 String mimeType, Map<String, String> requestHeaders, sendData,
+                 void onProgress(ProgressEvent e)}) {
+    Completer c = new Completer();
+    var callback = (status, data, headers) {
+      if (status >= 200 && status < 300) {
+        c.complete(new HttpResponse(status, data, headers));
+      } else {
+        c.completeError(
+            new MockHttpRequestProgressEvent(
+                new MockHttpRequest(status, data)));
+      }
+    };
+    call(method == null ? 'GET' : method, url, sendData, callback, requestHeaders);
+    return c.future;
+  }
+
+  _createResponse(status, data, headers) {
+    if (status is Function) return status;
+
+    return ([a,b,c,d,e]) {
+      return status is num
+          ? [status, data, headers]
+          : [200, status, data];
+    };
+  }
+
+
+ /**
+  * A callback oriented API.  This function takes a callback with
+  * will be called with (status, data, headers)
+  */
+  call(method, [url, data, callback, headers, timeout]) {
+    var xhr = new _MockXhr(),
+        expectation = expectations.isEmpty ? null : expectations[0],
+        wasExpected = false;
+
+    var prettyPrint = (data) {
+      return (data is String || data is Function || data is RegExp)
+          ? data
+          : json.stringify(data);
+    };
+
+    var wrapResponse = (wrapped) {
+      var handleResponse = () {
+        var response = wrapped.response(method, url, data, headers);
+        xhr.$$respHeaders = response[2];
+        utils.relaxFnApply(callback, [response[0], response[1], xhr.getAllResponseHeaders()]);
+      };
+
+      var handleTimeout = () {
+        for (var i = 0, ii = responses.length; i < ii; i++) {
+          if (identical(responses[i], handleResponse)) {
+            responses.removeAt(i);
+            callback(-1, null, '');
+            break;
+          }
+        }
+      };
+
+      if (timeout != null) timeout.then(handleTimeout);
+      return handleResponse;
+    };
+
+    if (expectation != null && expectation.match(method, url)) {
+      if (!expectation.matchData(data))
+        throw 'Expected $expectation with different data\n' +
+            'EXPECTED: ${prettyPrint(expectation.data)}\nGOT:      $data';
+
+      if (!expectation.matchHeaders(headers))
+        throw 'Expected $expectation with different headers\n' +
+            'EXPECTED: ${prettyPrint(expectation.headers)}\nGOT:      ${prettyPrint(headers)}';
+
+      expectations.removeAt(0);
+
+      if (expectation.response != null) {
+        responses.add(wrapResponse(expectation));
+        return;
+      }
+      wasExpected = true;
+    }
+
+    for (var definition in definitions) {
+      print('Trying: $definition');
+      if (definition.match(method, url, data, headers != null ? headers : {})) {
+        if (definition.response != null) {
+          // if $browser specified, we do auto flush all requests
+          responses.add(wrapResponse(definition));
+        } else throw 'No response defined !';
+        return;
+      }
+    }
+    throw wasExpected ?
+        'No response defined !' :
+        ['Unexpected request: ' + method + ' ' + url + '\n' +
+            (expectation != null ? 'Expected $expectation' : 'No more requests expected')];
+  }
+
+  /**
+   * Creates a new backend definition.
+   *
+   * @param {string} method HTTP method.
+   * @param {string|RegExp} url HTTP url.
+   * @param {(string|RegExp)=} data HTTP request body.
+   * @param {(Object|function(Object))=} headers HTTP headers or function that receives http header
+   *   object and returns true if the headers match the current definition.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   *
+   *  - respond – `{function([status,] data[, headers])|function(function(method, url, data, headers)}`
+   *    – The respond method takes a set of static data to be returned or a function that can return
+   *    an array containing response status (number), response data (string) and response headers
+   *    (Object).
+   */
+  when(method, [url, data, headers]) {
+    var definition = new MockHttpExpectation(method, url, data, headers),
+        chain = new _Chain(respond: (status, data, headers) {
+            definition.response = _createResponse(status, data, headers);
+          });
+
+    definitions.add(definition);
+    return chain;
+  }
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#whenGET
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new backend definition for GET requests. For more info see `when()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {(Object|function(Object))=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   * request is handled.
+   */
+
+
+  whenGET(url, [headers]) =>
+  when('GET', url, null, headers);
+  whenDELETE(url, [headers]) =>
+  when('DELETE', url, null, headers);
+  whenJSONP(url, [headers]) =>
+  when('JSONP', url, null, headers);
+
+  whenPUT(url, [data, headers]) =>
+  when('PUT', url, data, headers);
+  whenPOST(url, [data, headers]) =>
+  when('POST', url, data, headers);
+  whenPATCH(url, [data, headers]) =>
+  when('PATCH', url, data, headers);
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#whenHEAD
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new backend definition for HEAD requests. For more info see `when()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {(Object|function(Object))=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   * request is handled.
+   */
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#whenDELETE
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new backend definition for DELETE requests. For more info see `when()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {(Object|function(Object))=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   * request is handled.
+   */
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#whenPOST
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new backend definition for POST requests. For more info see `when()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {(string|RegExp)=} data HTTP request body.
+   * @param {(Object|function(Object))=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   * request is handled.
+   */
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#whenPUT
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new backend definition for PUT requests.  For more info see `when()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {(string|RegExp)=} data HTTP request body.
+   * @param {(Object|function(Object))=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   * request is handled.
+   */
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#whenJSONP
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new backend definition for JSONP requests. For more info see `when()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   * request is handled.
+   */
+  //createShortMethods('when');
+
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#expect
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new request expectation.
+   *
+   * @param {string} method HTTP method.
+   * @param {string|RegExp} url HTTP url.
+   * @param {(string|RegExp)=} data HTTP request body.
+   * @param {(Object|function(Object))=} headers HTTP headers or function that receives http header
+   *   object and returns true if the headers match the current expectation.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *  request is handled.
+   *
+   *  - respond – `{function([status,] data[, headers])|function(function(method, url, data, headers)}`
+   *    – The respond method takes a set of static data to be returned or a function that can return
+   *    an array containing response status (number), response data (string) and response headers
+   *    (Object).
+   */
+  expect(method, [url, data, headers]) {
+    var expectation = new MockHttpExpectation(method, url, data, headers);
+    expectations.add(expectation);
+    return new _Chain(respond: (status, data, headers) {
+        expectation.response = _createResponse(status, data, headers);
+      });
+  }
+
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#expectGET
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new request expectation for GET requests. For more info see `expect()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   * request is handled. See #expect for more info.
+   */
+  expectGET(url, [headers]) =>
+  expect('GET', url, null, headers);
+  expectDELETE(url, [headers]) =>
+  expect('DELETE', url, null, headers);
+  expectJSONP(url, [headers]) =>
+  expect('JSONP', url, null, headers);
+
+  expectPUT(url, [data, headers]) =>
+  expect('PUT', url, data, headers);
+  expectPOST(url, [data, headers]) =>
+  expect('POST', url, data, headers);
+  expectPATCH(url, [data, headers]) =>
+  expect('PATCH', url, data, headers);
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#expectHEAD
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new request expectation for HEAD requests. For more info see `expect()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#expectDELETE
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new request expectation for DELETE requests. For more info see `expect()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#expectPOST
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new request expectation for POST requests. For more info see `expect()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {(string|RegExp)=} data HTTP request body.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#expectPUT
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new request expectation for PUT requests. For more info see `expect()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {(string|RegExp)=} data HTTP request body.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#expectPATCH
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new request expectation for PATCH requests. For more info see `expect()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {(string|RegExp)=} data HTTP request body.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#expectJSONP
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Creates a new request expectation for JSONP requests. For more info see `expect()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+  //createShortMethods('expect');
+
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#flush
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Flushes all pending requests using the trained responses.
+   *
+   * @param {number=} count Number of responses to flush (in the order they arrived). If undefined,
+   *   all pending requests will be flushed. If there are no pending requests when the flush method
+   *   is called an exception is thrown (as this typically a sign of programming error).
+   */
+  flush([count]) {
+    if (responses.isEmpty) throw 'No pending request to flush !';
+
+    if (count != null) {
+      while (count-- > 0) {
+        if (responses.isEmpty) throw 'No more pending request to flush !';
+        responses.removeAt(0)();
+      }
+    } else {
+      while (!responses.isEmpty) {
+        responses.removeAt(0)();
+      }
+    }
+    verifyNoOutstandingExpectation();
+  }
+
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#verifyNoOutstandingExpectation
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Verifies that all of the requests defined via the `expect` api were made. If any of the
+   * requests were not made, verifyNoOutstandingExpectation throws an exception.
+   *
+   * Typically, you would call this method following each test case that asserts requests using an
+   * "afterEach" clause.
+   *
+   * <pre>
+   *   afterEach($httpBackend.verifyNoOutstandingExpectation);
+   * </pre>
+   */
+  verifyNoOutstandingExpectation() {
+    if (!expectations.isEmpty) {
+      throw new Error('Unsatisfied requests: ' + expectations.join(', '));
+    }
+  }
+
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#verifyNoOutstandingRequest
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Verifies that there are no outstanding requests that need to be flushed.
+   *
+   * Typically, you would call this method following each test case that asserts requests using an
+   * "afterEach" clause.
+   *
+   * <pre>
+   *   afterEach($httpBackend.verifyNoOutstandingRequest);
+   * </pre>
+   */
+  verifyNoOutstandingRequest() {
+    if (!responses.isEmpty) {
+      throw 'Unflushed requests: ${responses.length}';
+    }
+  }
+
+
+  /**
+   * @ngdoc method
+   * @name ngMock.$httpBackend#resetExpectations
+   * @methodOf ngMock.$httpBackend
+   * @description
+   * Resets all request expectations, but preserves all backend definitions. Typically, you would
+   * call resetExpectations during a multiple-phase test when you want to reuse the same instance of
+   * $httpBackend mock.
+   */
+  resetExpectations() {
+    expectations.length = 0;
+    responses.length = 0;
+  }
 }
 
 /**
  * Mock implementation of the [HttpRequest] object returned from the HttpBackend.
  */
 class MockHttpRequest implements HttpRequest {
-  final bool supportsCrossOrigin = false;
-  final bool supportsLoadEndEvent = false;
-  final bool supportsOverrideMimeType = false;
-  final bool supportsProgressEvent = false;
-  final Events on = null;
+final bool supportsCrossOrigin = false;
+final bool supportsLoadEndEvent = false;
+final bool supportsOverrideMimeType = false;
+final bool supportsProgressEvent = false;
+final Events on = null;
 
-  final Stream<ProgressEvent> onAbort = null;
-  final Stream<ProgressEvent> onError = null;
-  final Stream<ProgressEvent> onLoad = null;
-  final Stream<ProgressEvent> onLoadEnd = null;
-  final Stream<ProgressEvent> onLoadStart = null;
-  final Stream<ProgressEvent> onProgress = null;
-  final Stream<ProgressEvent> onReadyStateChange = null;
+final Stream<ProgressEvent> onAbort = null;
+final Stream<ProgressEvent> onError = null;
+final Stream<ProgressEvent> onLoad = null;
+final Stream<ProgressEvent> onLoadEnd = null;
+final Stream<ProgressEvent> onLoadStart = null;
+final Stream<ProgressEvent> onProgress = null;
+final Stream<ProgressEvent> onReadyStateChange = null;
 
-  final Stream<ProgressEvent> onTimeout = null;
-  final int readyState = 0;
+final Stream<ProgressEvent> onTimeout = null;
+final int readyState = 0;
 
-  final responseText = null;
-  final responseXml = null;
-  final String statusText = null;
-  final HttpRequestUpload upload = null;
+final responseText = null;
+final responseXml = null;
+final String statusText = null;
+final HttpRequestUpload upload = null;
 
-  String responseType = null;
-  int timeout = 0;
-  bool withCredentials;
+String responseType = null;
+int timeout = 0;
+bool withCredentials;
 
-  final int status;
-  final response;
+final int status;
+final response;
 
-  MockHttpRequest(int this.status, String this.response);
+MockHttpRequest(int this.status, String this.response);
 
-  void abort() {}
-  bool dispatchEvent(Event event) => false;
-  String getAllResponseHeaders() => null;
-  String getResponseHeader(String header) => null;
+void abort() {}
+bool dispatchEvent(Event event) => false;
+String getAllResponseHeaders() => null;
+String getResponseHeader(String header) => null;
 
-  void open(String method, String url, {bool async, String user, String password}) {}
-  void overrideMimeType(String override) {}
-  void send([data]) {}
-  void setRequestHeader(String header, String value) {}
-  void $dom_addEventListener(String type, EventListener listener, [bool useCapture]) {}
-  void $dom_removeEventListener(String type, EventListener listener, [bool useCapture]) {}
+void open(String method, String url, {bool async, String user, String password}) {}
+void overrideMimeType(String override) {}
+void send([data]) {}
+void setRequestHeader(String header, String value) {}
+void $dom_addEventListener(String type, EventListener listener, [bool useCapture]) {}
+void $dom_removeEventListener(String type, EventListener listener, [bool useCapture]) {}
 }
 
 class MockHttpRequestProgressEvent implements HttpRequestProgressEvent {
-  final bool bubbles = false;
-  final bool cancelable = false;
-  final DataTransfer clipboardData = null;
-  final EventTarget currentTarget;
-  final bool defaultPrevented = false;
-  final int eventPhase = 0;
-  final bool lengthComputable = false;
-  final int loaded = 0;
-  final List<Node> path = null;
-  final int position = 0;
-  final Type runtimeType = null;
-  final EventTarget target = null;
-  final int timeStamp = 0;
-  final int total = 0;
-  final int totalSize = 0;
-  final String type = null;
+final bool bubbles = false;
+final bool cancelable = false;
+final DataTransfer clipboardData = null;
+final EventTarget currentTarget;
+final bool defaultPrevented = false;
+final int eventPhase = 0;
+final bool lengthComputable = false;
+final int loaded = 0;
+final List<Node> path = null;
+final int position = 0;
+final Type runtimeType = null;
+final EventTarget target = null;
+final int timeStamp = 0;
+final int total = 0;
+final int totalSize = 0;
+final String type = null;
 
-  bool cancelBubble = false;
+bool cancelBubble = false;
 
-  MockHttpRequestProgressEvent(MockHttpRequest this.currentTarget);
+MockHttpRequestProgressEvent(MockHttpRequest this.currentTarget);
 
-  void preventDefault() {}
-  void stopImmediatePropagation() {}
-  void stopPropagation() {}
-}
-
-
-class _WhenPartial {
-  String _url;
-  MockHttpBackend _backend;
-  _WhenPartial(method, this._url, this._backend) {
-    assert(method == 'GET');
-  }
-
-  respond(int code, String content, [Map headers, int times=1]) {
-    _backend.gets[_url] = new MockHttpData(code, content, times);
-  }
-}
-
-/**
- * Mock implementation of [HttpBackend].
- */
-class MockHttpBackend extends HttpBackend {
-  Map<String, MockHttpData> gets = {};
-  List flushFns = [];
-
-  when(String method, String url) {
-    return new _WhenPartial(method, url, this);
-  }
-
-  expectGET(String url, String content, {int times: 1, int code: 200}) {
-    gets[url] = new MockHttpData(code, content, times);
-  }
-
-  flush() {
-    flushFns.forEach((fn) => fn());
-    flushFns = [];
-  }
-
-  assertAllGetsCalled() {
-    if (gets.length != 0) {
-      throw "Expected GETs not called $gets";
-    }
-  }
-
-  Future<HttpRequest> request(String url,
-                              {String method, bool withCredentials, String responseType,
-                              String mimeType, Map<String, String> requestHeaders, sendData,
-                              void onProgress(ProgressEvent e)}) {
-    if (!gets.containsKey(url)) throw "Unexpected URL $url $gets";
-    var data = gets[url];
-    data.times--;
-    if (data.times <= 0) {
-      gets.remove(url);
-    }
-    var completer = new Completer.sync();
-    if (data.code >= 200 && data.code < 300) {
-      flushFns.add(() => completer.complete(new HttpResponse(data.code, data.value)));
-    } else {
-      flushFns.add(() => completer.completeError(
-          new MockHttpRequestProgressEvent(new MockHttpRequest(data.code, data.value))
-      ));
-    }
-    return completer.future;
-  }
+void preventDefault() {}
+void stopImmediatePropagation() {}
+void stopPropagation() {}
 }
