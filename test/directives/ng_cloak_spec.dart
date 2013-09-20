@@ -1,30 +1,51 @@
 library ng_cloak_spec;
 
 import '../_specs.dart';
-import 'dart:html' as dom;
-
+import '../_test_bed.dart';
 
 main() {
   describe('NgCloak', () {
-    var compile, element, rootScope;
+    TestBed _;
 
-    triggerEvent(elementWrapper, name) {
-      elementWrapper[0].dispatchEvent(new dom.Event.eventType('MouseEvent', name));
-    }
-
-    beforeEach(inject((Scope scope, Compiler compiler, Injector injector) {
-      compile = (html, [applyFn]) {
-        element = $(html);
-        rootScope = scope;
-        compiler(element)(injector, element);
-        scope.$apply(applyFn);
-      };
-    }));
+    beforeEach(beforeEachTestBed((tb) => _ = tb));
 
 
-    it('should remove ng-cloak when compiled', () {
-      compile('<div><span ng-cloak></span></div>');
-      expect(element.html()).toEqual('<span></span>');
+    it('should get removed when an element is compiled', () {
+      var element = $('<div ng-cloak></div>');
+      expect(element.attr('ng-cloak')).toEqual('');
+      _.compile(element);
+      expect(element.attr('ng-cloak')).toBeNull();
+    });
+
+
+    it('should remove ngCloak class from a compiled element with attribute', () {
+      var element = $('<div ng-cloak class="foo ng-cloak bar"></div>');
+
+      expect(element.hasClass('foo')).toBe(true);
+      expect(element.hasClass('ng-cloak')).toBe(true);
+      expect(element.hasClass('bar')).toBe(true);
+
+      _.compile(element);
+
+      expect(element.hasClass('foo')).toBe(true);
+      expect(element.hasClass('ng-cloak')).toBe(false);
+      expect(element.hasClass('bar')).toBe(true);
+    });
+
+
+    // TODO(pavelgj): enable when/if class directive matching is implemented.
+    xit('should remove ngCloak class from a compiled element', () {
+      var element = $('<div class="foo ng-cloak bar"></div>');
+
+      expect(element.hasClass('foo')).toBe(true);
+      expect(element.hasClass('ng-cloak')).toBe(true);
+      expect(element.hasClass('bar')).toBe(true);
+
+      _.compile(element);
+
+      expect(element.hasClass('foo')).toBe(true);
+      expect(element.hasClass('ng-cloak')).toBe(false);
+      expect(element.hasClass('bar')).toBe(true);
     });
   });
 }

@@ -163,7 +163,7 @@ class JQuery implements List<Node> {
       if (setterMode) {
         setter(node, value);
       } else {
-        result = '$result${getter(node)}';
+        result = getter(node);
       }
     });
     return result;
