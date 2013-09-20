@@ -1,6 +1,28 @@
 library angular.core.service.zone;
 
 import 'dart:async' as async;
+import 'dart:mirrors' as mirrors;
+
+typedef void ZoneOnTurn();
+typedef void ZoneOnError(dynamic error, dynamic stacktrace, LongStackTrace longStacktrace);
+
+/**
+ * Contains the locations of runAsync calls across VM turns.
+ */
+class LongStackTrace {
+  final String reason;
+  final dynamic stacktrace;
+  final LongStackTrace parent;
+
+  LongStackTrace(this.reason, this.stacktrace, this.parent);
+
+  toString() {
+    var stacktrace = (('${this.stacktrace}'.split('\n'))..removeRange(0, 2)..insert(0, reason))
+        .where((f) => f.indexOf('(dart:') == -1 && f.indexOf('(package:angular/zone.dart') == -1);
+    var parent = this.parent == null ? '' : this.parent;
+    return '${stacktrace.join("\n    ")}\n$parent';
+  }
+}
 
 /**
  * A better zone API which implements onTurnDone.
@@ -13,18 +35,20 @@ class Zone {
    * A function that is called at the end of each VM turn in which the
    * in-zone code or any runAsync callbacks were run.
    */
-  Function onTurnDone = () => null;
+  ZoneOnTurn onTurnDone = () => null;
 
   /**
    * A function that is called when uncaught errors are thrown inside the zone.
    */
-  Function onError = (e) => print('EXCEPTION: $e\n${async.getAttachedStackTrace(e)}');
+  ZoneOnError onError = (dynamic e, dynamic s, LongStackTrace ls) => print('EXCEPTION: $e\n$s\n$ls');
 
   /**
    * Called with each zone.run or runAsync method.  This allows the program
    * to modify state during a call.
   */
   Function interceptCall = (body) => body();
+
+  LongStackTrace _longStacktrace = null;
 
   var _asyncCount = 0;
   // If tryDone is called from the parent zone, it will have runInNewZone = true
@@ -40,6 +64,12 @@ class Zone {
     } else if (_asyncCount < 0) {
       // TODO(deboer): Remove []s when dartbug.com/11999 is fixed.
       throw ["bad asyncCount $_asyncCount"];
+    }
+  }
+
+  LongStackTrace _getLongStacktrace(name) {
+    try { throw []; } catch (e, s) {
+      return new LongStackTrace(name, s, _longStacktrace);
     }
   }
 
@@ -66,6 +96,7 @@ class Zone {
       }
     },
     onRunAsync: (delegate()) {
+      var longStacktrace = _getLongStacktrace('Location of: runAsync();');
       // assertInZone() should not trigger a onTurnDone call.  To prevent
       // this, we use the _inAssertInZone guard.
       var calledFromAssertInZone = _inAssertInZone;
@@ -76,7 +107,15 @@ class Zone {
         _runningInTurn = true;
         try {
           try {
-            interceptCall(delegate);
+            interceptCall(() {
+              var oldStacktrace = _longStacktrace;
+              _longStacktrace = longStacktrace;
+              try {
+                return delegate();
+              } finally {
+                _longStacktrace = oldStacktrace;
+              }
+            });
             // This runAsync body is run in the parent zone.  If
             // we are going to run onTurnDone, we need to zone it.
           } finally {
@@ -97,7 +136,7 @@ class Zone {
       exceptionFromZone = e;
 
       // Call the error handler.
-      onError(e);
+      onError(e, async.getAttachedStackTrace(e), _longStacktrace);
     });
 
     if (exceptionFromZone != null) {

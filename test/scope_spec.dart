@@ -8,7 +8,7 @@ main() {
   describe(r'Scope', () {
     beforeEach(module(() {
       return (Zone zone) {
-        zone.onError = (e) => null;
+        zone.onError = (e, s, l) => null;
       };
     }));
 
