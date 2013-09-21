@@ -520,7 +520,7 @@ class MockHttpBackend implements HttpBackend {
    */
   verifyNoOutstandingExpectation() {
     if (!expectations.isEmpty) {
-      throw new Error('Unsatisfied requests: ' + expectations.join(', '));
+      throw 'Unsatisfied requests: ${expectations.join(', ')}';
     }
   }
 
