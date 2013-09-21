@@ -1,9 +1,6 @@
 part of angular.mock;
 
 class _MockXhr {
-  // hack for testing $http, $httpBackend
-  static var $$lastInstance = this;
-
   var $$method, $$url, $$async, $$reqHeaders, $$respHeaders;
 
   open(method, url, async) {
