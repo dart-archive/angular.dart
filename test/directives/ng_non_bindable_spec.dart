@@ -12,19 +12,24 @@ main() {
     it('should set ignore all other markup/directives on the element and its descendants',
           inject((Scope scope, Injector injector, Compiler compiler) {
       var element = $('<div>' +
-                      '  {{a}}' +
-                      '  <span ng-bind="b"></span>' +
+                      '  <span id="s1">{{a}}</span>' +
+                      '  <span id="s2" ng-bind="b"></span>' +
                       '  <div foo="{{a}}" ng-non-bindable>' +
                       '    <span ng-bind="a"></span>{{b}}' +
                       '  </div>' +
+                      '  <span id="s3">{{a}}</span>' +
+                      '  <span id="s4" ng-bind="b"></span>' +
                       '</div>');
       compiler(element)(injector, element);
       scope.a = "one";
       scope.b = "two";
       scope.$digest();
-      var elements = element.contents();
-      expect(elements.eq(0).text().trim()).toEqual('one');
-      expect(elements.eq(1).text().trim()).toEqual('two');
+      // Bindings not contained by ng-non-bindable should resolve.
+      expect(element.find("#s1").text().trim()).toEqual('one');
+      expect(element.find("#s2").text().trim()).toEqual('two');
+      expect(element.find("#s3").text().trim()).toEqual('one');
+      expect(element.find("#s4").text().trim()).toEqual('two');
+      // Bindings contained by ng-non-bindable should be left alone.
       var nonBindableDiv = element.find("div");
       expect(nonBindableDiv.attr('foo')).toEqual('{{a}}');
       expect(nonBindableDiv.text().trim()).toEqual('{{b}}');
