@@ -47,7 +47,9 @@ class Interpolate {
     while(index < length) {
       if ( ((startIndex = text.indexOf(_startSymbol, index)) != -1) &&
            ((endIndex = text.indexOf(_endSymbol, startIndex + _startSymbolLength)) != -1) ) {
-        (index != startIndex) && chunks.add(text.substring(index, startIndex));
+        if (index != startIndex) {
+          chunks.add(text.substring(index, startIndex));
+        }
         fn = _parse(exp = text.substring(startIndex + _startSymbolLength, endIndex));
         chunks.add(fn);
         fn.exp = exp;
@@ -55,7 +57,9 @@ class Interpolate {
         hasInterpolation = true;
       } else {
         // we did not find anything, so we have to add the remainder to the chunks array
-        (index != length) && chunks.add(text.substring(index));
+        if (index != length) {
+          chunks.add(text.substring(index));
+        }
         index = length;
       }
     }
