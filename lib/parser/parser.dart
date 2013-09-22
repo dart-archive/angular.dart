@@ -11,9 +11,9 @@ abstract class ParserAST {
 }
 
 class Token {
-  bool json;
-  int index;
-  String text;
+  final int index;
+  final String text;
+
   var value;
   // Tokens should have one of these set.
   String opKey;
@@ -132,11 +132,37 @@ Map<String, Operator> OPERATORS = {
 };
 
 class DynamicParser implements Parser {
-  Profiler _perf;
-  Lexer _lexer;
-  ParserBackend _b;
+  final Profiler _perf;
+  final Lexer _lexer;
+  final ParserBackend _b;
 
   DynamicParser(Profiler this._perf, Lexer this._lexer, ParserBackend this._b);
+
+  List<Token> _tokens;
+  String _text;
+  var _evalError;
+
+  call(String text) {
+    try {
+      if (text == null) text = '';
+      _tokenSavers = [];
+      _text = text;
+      _tokens = _lexer.call(text);
+      _evalError = (String s, [stack]) => parserEvalError(s, text, stack);
+
+      ParserAST value = _statements();
+
+      if (_tokens.length != 0) {
+        throw _parserError("Unconsumed token ${_tokens[0].text}");
+      }
+      return _perf == null ? value : _b.profiled(value, _perf, text);
+    } finally {
+      _tokens = null;
+      _text = null;
+      _evalError = null;
+      _tokenSavers = null;
+    }
+  }
 
   primaryFromToken(Token token, parserError) {
     if (token.key != null) {
@@ -154,285 +180,266 @@ class DynamicParser implements Parser {
     throw parserError("Internal Angular Error: Tokens should have keys, text or fns");
   }
 
-  call(String text) {
-    if (text == null) text = '';
-    List<Token> tokens = _lexer.call(text);
-    Token token;
+  _parserError(String s, [Token t]) {
+    if (t == null && !_tokens.isEmpty) t = _tokens[0];
+    String location = t == null ?
+    'the end of the expression' :
+    'at column ${t.index + 1} in';
+    return 'Parser Error: $s $location [$_text]';
+  }
 
-    parserError(String s, [Token t]) {
-      if (t == null && !tokens.isEmpty) t = tokens[0];
-      String location = t == null ?
-          'the end of the expression' :
-          'at column ${t.index + 1} in';
-      return 'Parser Error: $s $location [$text]';
-    }
-    evalError(String s, [stack]) => parserEvalError(s, text, stack);
 
-    Token peekToken() {
-      if (tokens.length == 0)
-        throw "Unexpected end of expression: " + text;
-      return tokens[0];
-    }
+  Token _peekToken() {
+    if (_tokens.length == 0)
+      throw "Unexpected end of expression: " + _text;
+    return _tokens[0];
+  }
 
-    Token peek([String e1, String e2, String e3, String e4]) {
-      if (tokens.length > 0) {
-        Token token = tokens[0];
-        String t = token.text;
-        if (t==e1 || t==e2 || t==e3 || t==e4 ||
-            (e1 == null && e2 == null && e3 == null && e4 == null)) {
-          return token;
-        }
-      }
-      return null;
-    }
-
-    /**
-     * Token savers are synchronous lists that allows Parser functions to
-     * access the tokens parsed during some amount of time.  They are useful
-     * for printing helpful debugging messages.
-     */
-    List<List<Token>> tokenSavers = [];
-    List<Token> saveTokens() { var n = []; tokenSavers.add(n); return n; }
-    stopSavingTokens(x) { if (!tokenSavers.remove(x)) { throw 'bad token saver'; } return x; }
-    tokensText(List x) => x.map((x) => x.text).join();
-
-    Token expect([String e1, String e2, String e3, String e4]){
-      Token token = peek(e1, e2, e3, e4);
-      if (token != null) {
-        var consumed = tokens.removeAt(0);
-        tokenSavers.forEach((ts) => ts.add(consumed));
+  Token _peek([String e1, String e2, String e3, String e4]) {
+    if (_tokens.length > 0) {
+      Token token = _tokens[0];
+      String t = token.text;
+      if (t==e1 || t==e2 || t==e3 || t==e4 ||
+      (e1 == null && e2 == null && e3 == null && e4 == null)) {
         return token;
       }
-      return null;
     }
+    return null;
+  }
 
-    ParserAST consume(e1){
-      if (expect(e1) == null) {
-        throw parserError("Missing expected $e1");
+  /**
+   * Token savers are synchronous lists that allows Parser functions to
+   * access the tokens parsed during some amount of time.  They are useful
+   * for printing helpful debugging messages.
+   */
+  List<List<Token>> _tokenSavers;
+  List<Token> _saveTokens() { var n = []; _tokenSavers.add(n); return n; }
+  _stopSavingTokens(x) { if (!_tokenSavers.remove(x)) { throw 'bad token saver'; } return x; }
+  _tokensText(List x) => x.map((x) => x.text).join();
+
+
+  Token _expect([String e1, String e2, String e3, String e4]){
+    Token token = _peek(e1, e2, e3, e4);
+    if (token != null) {
+      var consumed = _tokens.removeAt(0);
+      _tokenSavers.forEach((ts) => ts.add(consumed));
+      return token;
+    }
+    return null;
+  }
+
+  ParserAST _consume(e1){
+    if (_expect(e1) == null) {
+      throw _parserError("Missing expected $e1");
+    }
+  }
+
+  ParserAST _primary() {
+    var primary;
+    var ts = _saveTokens();
+    if (_expect('(') != null) {
+      primary = _filterChain();
+      _consume(')');
+    } else if (_expect('[') != null) {
+      primary = _arrayDeclaration();
+    } else if (_expect('{') != null) {
+      primary = _object();
+    } else {
+      Token token = _expect();
+      primary = primaryFromToken(token, _parserError);
+      if (primary == null) {
+        throw _parserError("Internal Angular Error: Unreachable code A.");
       }
     }
 
-    var filterChain = null;
-    var functionCall, arrayDeclaration, objectIndex, fieldAccess, object;
-
-    ParserAST primary() {
-      var primary;
-      var ts = saveTokens();
-      if (expect('(') != null) {
-        primary = filterChain();
-        consume(')');
-      } else if (expect('[') != null) {
-        primary = arrayDeclaration();
-      } else if (expect('{') != null) {
-        primary = object();
+    var next;
+    while ((next = _expect('(', '[', '.')) != null) {
+      if (next.text == '(') {
+        primary = _functionCall(primary, _tokensText(ts.sublist(0, ts.length - 1)));
+      } else if (next.text == '[') {
+        primary = _objectIndex(primary);
+      } else if (next.text == '.') {
+        primary = _fieldAccess(primary);
       } else {
-        Token token = expect();
-        primary = primaryFromToken(token, parserError);
-        if (primary == null) {
-          throw parserError("Internal Angular Error: Unreachable code A.");
-        }
+        throw _parserError("Internal Angular Error: Unreachable code B.");
       }
-
-      var next;
-      while ((next = expect('(', '[', '.')) != null) {
-        if (next.text == '(') {
-          primary = functionCall(primary, tokensText(ts.sublist(0, ts.length - 1)));
-        } else if (next.text == '[') {
-          primary = objectIndex(primary);
-        } else if (next.text == '.') {
-          primary = fieldAccess(primary);
-        } else {
-          throw parserError("Internal Angular Error: Unreachable code B.");
-        }
-      }
-      stopSavingTokens(ts);
-      return primary;
     }
+    _stopSavingTokens(ts);
+    return primary;
+  }
 
-    ParserAST binaryFn(ParserAST left, String op, ParserAST right) =>
+  ParserAST _binaryFn(ParserAST left, String op, ParserAST right) =>
       _b.binaryFn(left, op, right);
 
-    ParserAST unaryFn(String op, ParserAST right) =>
+  ParserAST _unaryFn(String op, ParserAST right) =>
       _b.unaryFn(op, right);
 
-    ParserAST unary() {
-      var token;
-      if (expect('+') != null) {
-        return primary();
-      } else if ((token = expect('-')) != null) {
-        return binaryFn(_b.zero(), token.opKey, unary());
-      } else if ((token = expect('!')) != null) {
-        return unaryFn(token.opKey, unary());
-      } else {
-        return primary();
-      }
+  ParserAST _unary() {
+    var token;
+    if (_expect('+') != null) {
+      return _primary();
+    } else if ((token = _expect('-')) != null) {
+      return _binaryFn(_b.zero(), token.opKey, _unary());
+    } else if ((token = _expect('!')) != null) {
+      return _unaryFn(token.opKey, _unary());
+    } else {
+      return _primary();
     }
+  }
 
-    ParserAST multiplicative() {
-      var left = unary();
-      var token;
-      while ((token = expect('*','/','%')) != null) {
-        left = binaryFn(left, token.opKey, unary());
-      }
-      return left;
+  ParserAST _multiplicative() {
+    var left = _unary();
+    var token;
+    while ((token = _expect('*','/','%')) != null) {
+      left = _binaryFn(left, token.opKey, _unary());
     }
+    return left;
+  }
 
-    ParserAST additive() {
-      var left = multiplicative();
-      var token;
-      while ((token = expect('+','-')) != null) {
-        left = binaryFn(left, token.opKey, multiplicative());
-      }
-      return left;
+  ParserAST _additive() {
+    var left = _multiplicative();
+    var token;
+    while ((token = _expect('+','-')) != null) {
+      left = _binaryFn(left, token.opKey, _multiplicative());
     }
+    return left;
+  }
 
-    ParserAST relational() {
-      var left = additive();
-      var token;
-      if ((token = expect('<', '>', '<=', '>=')) != null) {
-        left = binaryFn(left, token.opKey, relational());
-      }
-      return left;
+  ParserAST _relational() {
+    var left = _additive();
+    var token;
+    if ((token = _expect('<', '>', '<=', '>=')) != null) {
+      left = _binaryFn(left, token.opKey, _relational());
     }
+    return left;
+  }
 
-    ParserAST equality() {
-      var left = relational();
-      var token;
-      if ((token = expect('==','!=')) != null) {
-        left = binaryFn(left, token.opKey, equality());
-      }
-      return left;
+  ParserAST _equality() {
+    var left = _relational();
+    var token;
+    if ((token = _expect('==','!=')) != null) {
+      left = _binaryFn(left, token.opKey, _equality());
     }
+    return left;
+  }
 
-    ParserAST logicalAND() {
-      var left = equality();
-      var token;
-      if ((token = expect('&&')) != null) {
-        left = binaryFn(left, token.opKey, logicalAND());
-      }
-      return left;
+  ParserAST _logicalAND() {
+    var left = _equality();
+    var token;
+    if ((token = _expect('&&')) != null) {
+      left = _binaryFn(left, token.opKey, _logicalAND());
     }
+    return left;
+  }
 
-    ParserAST logicalOR() {
-      var left = logicalAND();
-      var token;
-      while(true) {
-        if ((token = expect('||')) != null) {
-          left = binaryFn(left, token.opKey, logicalAND());
-        } else {
-          return left;
-        }
-      }
-    }
-
-    // =========================
-    // =========================
-
-    ParserAST assignment() {
-      var ts = saveTokens();
-      var left = logicalOR();
-      stopSavingTokens(ts);
-      var right;
-      var token;
-      if ((token = expect('=')) != null) {
-        if (!left.assignable) {
-          throw parserError('Expression ${tokensText(ts)} is not assignable', token);
-        }
-        right = logicalOR();
-        return _b.assignment(left, right, evalError);
+  ParserAST _logicalOR() {
+    var left = _logicalAND();
+    var token;
+    while(true) {
+      if ((token = _expect('||')) != null) {
+        left = _binaryFn(left, token.opKey, _logicalAND());
       } else {
         return left;
       }
     }
-
-
-    ParserAST expression() {
-      return assignment();
-    }
-
-    filterChain = () {
-      var left = expression();
-      var token;
-      while(true) {
-        if ((token = expect('|')) != null) {
-          //left = binaryFn(left, token.opKey, filter());
-          throw parserError("Filters are not implemented", token);
-        } else {
-          return left;
-        }
-      }
-    };
-
-    statements() {
-      List<ParserAST> statements = [];
-      while (true) {
-        if (tokens.length > 0 && peek('}', ')', ';', ']') == null)
-          statements.add(filterChain());
-        if (expect(';') == null) {
-          return statements.length == 1
-              ? statements[0]
-              : _b.multipleStatements(statements);
-        }
-      }
-    }
-
-    functionCall = (fn, fnName) {
-      var argsFn = [];
-      if (peekToken().text != ')') {
-        do {
-          argsFn.add(expression());
-        } while (expect(',') != null);
-      }
-      consume(')');
-      return _b.functionCall(fn, fnName, argsFn, evalError);
-    };
-
-    // This is used with json array declaration
-    arrayDeclaration = () {
-      var elementFns = [];
-      if (peekToken().text != ']') {
-        do {
-          elementFns.add(expression());
-        } while (expect(',') != null);
-      }
-      consume(']');
-      return _b.arrayDeclaration(elementFns);
-    };
-
-    objectIndex = (obj) {
-      var indexFn = expression();
-      consume(']');
-      return _b.objectIndex(obj, indexFn, evalError);
-    };
-
-    fieldAccess = (object) {
-      var field = expect().text;
-      //var getter = getter(field);
-      return _b.fieldAccess(object, field);
-    };
-
-    object = () {
-      var keyValues = [];
-      if (peekToken().text != '}') {
-        do {
-          var token = expect(),
-              key = token.value != null && token.value is String ? token.value : token.text;
-          consume(":");
-          var value = expression();
-          keyValues.add({"key":key, "value":value});
-        } while (expect(',') != null);
-      }
-      consume('}');
-      return _b.object(keyValues);
-    };
-
-    ParserAST value = statements();
-
-    if (tokens.length != 0) {
-      throw parserError("Unconsumed token ${tokens[0].text}");
-    }
-    if (_perf == null) return value;
-
-    return _b.profiled(value, _perf, text);
   }
+
+  ParserAST _assignment() {
+    var ts = _saveTokens();
+    var left = _logicalOR();
+    _stopSavingTokens(ts);
+    var right;
+    var token;
+    if ((token = _expect('=')) != null) {
+      if (!left.assignable) {
+        throw _parserError('Expression ${_tokensText(ts)} is not assignable', token);
+      }
+      right = _logicalOR();
+      return _b.assignment(left, right, _evalError);
+    } else {
+      return left;
+    }
+  }
+
+
+  ParserAST _expression() {
+    return _assignment();
+  }
+
+  _filterChain() {
+    var left = _expression();
+    var token;
+    while(true) {
+      if ((token = _expect('|')) != null) {
+        //left = binaryFn(left, token.opKey, filter());
+        throw _parserError("Filters are not implemented", token);
+      } else {
+        return left;
+      }
+    }
+  }
+
+  _statements() {
+    List<ParserAST> statements = [];
+    while (true) {
+      if (_tokens.length > 0 && _peek('}', ')', ';', ']') == null)
+        statements.add(_filterChain());
+      if (_expect(';') == null) {
+        return statements.length == 1
+        ? statements[0]
+        : _b.multipleStatements(statements);
+      }
+    }
+  }
+
+  _functionCall(fn, fnName) {
+    var argsFn = [];
+    if (_peekToken().text != ')') {
+      do {
+        argsFn.add(_expression());
+      } while (_expect(',') != null);
+    }
+    _consume(')');
+    return _b.functionCall(fn, fnName, argsFn, _evalError);
+  }
+
+  // This is used with json array declaration
+  _arrayDeclaration() {
+    var elementFns = [];
+    if (_peekToken().text != ']') {
+      do {
+        elementFns.add(_expression());
+      } while (_expect(',') != null);
+    }
+    _consume(']');
+    return _b.arrayDeclaration(elementFns);
+  }
+
+  _objectIndex(obj) {
+    var indexFn = _expression();
+    _consume(']');
+    return _b.objectIndex(obj, indexFn, _evalError);
+  }
+
+  _fieldAccess(object) {
+    var field = _expect().text;
+    //var getter = getter(field);
+    return _b.fieldAccess(object, field);
+  }
+
+  _object() {
+    var keyValues = [];
+    if (_peekToken().text != '}') {
+      do {
+        var token = _expect(),
+        key = token.value != null && token.value is String ? token.value : token.text;
+        _consume(":");
+        var value = _expression();
+        keyValues.add({"key":key, "value":value});
+      } while (_expect(',') != null);
+    }
+    _consume('}');
+    return _b.object(keyValues);
+  }
+
 }
