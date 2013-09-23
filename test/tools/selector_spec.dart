@@ -1,4 +1,4 @@
-library selector_spec;
+library angular.selector_spec;
 
 import '../_specs.dart' hide Node, Element, Text;
 

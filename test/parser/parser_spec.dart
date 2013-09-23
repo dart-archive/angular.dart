@@ -1,6 +1,7 @@
 library parser_spec;
 
 import '../_specs.dart';
+import 'package:meta/meta.dart';
 
 // Used to test getter / setter logic.
 class TestData {
@@ -20,12 +21,20 @@ class Mixin {}
 class MixedTestData extends TestData with Mixin {
 }
 
+@proxy
 class MapData implements Map {
   operator[](x) => "mapped-$x";
   containsKey(x) => true;
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
-class MixedMapData extends MapData with Mixin { }
-class InheritedMapData extends MapData { }
+@proxy
+class MixedMapData extends MapData with Mixin {
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+@proxy
+class InheritedMapData extends MapData {
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 main() {
   describe('parse', () {
@@ -728,11 +737,13 @@ class SetterObject {
   void set setter(x) { setterValue = x; }
 }
 
+@proxy
 class OverloadObject implements Map {
   var overloadValue;
   operator []=(String name, var value) {
     overloadValue = value;
   }
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class ScopeWithErrors {

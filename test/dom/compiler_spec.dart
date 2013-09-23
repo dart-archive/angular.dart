@@ -98,15 +98,14 @@ main() {
     it('should compile text', inject((Compiler $compile) {
       var element = $('<div>{{name}}<span>!</span></div>').contents();
       element.remove(null);
+      print('test');
 
       var template = $compile(element);
 
       $rootScope.name = 'OK';
-      var block = template(injector);
+      var block = template(injector, element);
 
       element = $(block.elements);
-
-      block;
 
       expect(element.text()).toEqual('!');
       $rootScope.$digest();

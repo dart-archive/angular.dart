@@ -1,11 +1,13 @@
 library angular.mock;
 
-import 'dart:mirrors' as mirror;
+import 'dart:async';
 import 'dart:html';
+import 'dart:json' as json;
+import 'dart:mirrors' as mirror;
+
 import 'package:di/di.dart';
 import 'package:angular/angular.dart';
-import 'dart:async';
-
+import 'package:angular/utils.dart' as utils;
 
 part 'exception_handler.dart';
 part 'log.dart';

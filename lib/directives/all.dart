@@ -2,47 +2,35 @@ library angular.directives.all;
 
 import '../bootstrap.dart';
 
-import 'ng_mustache.dart';
-import 'ng_bind.dart';
-import 'ng_class.dart';
-import 'ng_events.dart';
-import 'ng_cloak.dart';
-import 'ng_controller.dart';
-import 'ng_disabled.dart';
-import 'ng_hide.dart';
-import 'ng_if.dart';
-import 'ng_include.dart';
-import 'ng_model.dart';
-import 'ng_repeat.dart';
-import 'ng_show.dart';
-import 'ng_style.dart';
-import 'select.dart';
-
-export 'ng_mustache.dart';
-export 'ng_bind.dart';
-export 'ng_class.dart';
-export 'ng_events.dart';
-export 'ng_cloak.dart';
-export 'ng_controller.dart';
-export 'ng_disabled.dart';
-export 'ng_hide.dart';
-export 'ng_if.dart';
-export 'ng_include.dart';
-export 'ng_model.dart';
-export 'ng_repeat.dart';
-export 'ng_show.dart';
-export 'ng_style.dart';
-export 'select.dart';
-
+import 'ng_mustache.dart';             export 'ng_mustache.dart';
+import 'ng_bind.dart';                 export 'ng_bind.dart';
+import 'ng_bind_html.dart';            export 'ng_bind_html.dart';
+import 'ng_class.dart';                export 'ng_class.dart';
+import 'ng_events.dart';               export 'ng_events.dart';
+import 'ng_cloak.dart';                export 'ng_cloak.dart';
+import 'ng_controller.dart';           export 'ng_controller.dart';
+import 'ng_disabled.dart';             export 'ng_disabled.dart';
+import 'ng_hide.dart';                 export 'ng_hide.dart';
+import 'ng_if.dart';                   export 'ng_if.dart';
+import 'ng_include.dart';              export 'ng_include.dart';
+import 'ng_model.dart';                export 'ng_model.dart';
+import 'ng_repeat.dart';               export 'ng_repeat.dart';
+import 'ng_show.dart';                 export 'ng_show.dart';
+import 'ng_style.dart';                export 'ng_style.dart';
+import 'ng_switch.dart';               export 'ng_switch.dart';
+import 'ng_non_bindable.dart';         export 'ng_non_bindable.dart';
+import 'select.dart';                  export 'select.dart';
 
 void registerDirectives(AngularModule module) {
   module.directive(NgTextMustacheDirective);
   module.directive(NgAttrMustacheDirective);
   module.directive(NgBindAttrDirective);
+  module.directive(NgBindHtmlAttrDirective);
   module.directive(NgClassAttrDirective);
   module.directive(NgClassOddAttrDirective);
   module.directive(NgClassEvenAttrDirective);
   module.directive(NgCloakAttrDirective);
+  module.directive(NgCloakClassDirective);
   module.directive(NgControllerAttrDirective);
   module.directive(NgDisabledAttrDirective);
   module.directive(NgHideAttrDirective);
@@ -54,6 +42,9 @@ void registerDirectives(AngularModule module) {
   module.directive(InputCheckboxDirective);
   module.directive(NgModel);
   module.directive(SelectDirective);
+  module.directive(NgSwitchAttrDirective);
+  module.directive(NgSwitchWhenAttrDirective);
+  module.directive(NgSwitchDefaultAttrDirective);
 
   module.directive(NgBlurAttrDirective);
   module.directive(NgChangeAttrDirective);
@@ -85,4 +76,5 @@ void registerDirectives(AngularModule module) {
   module.directive(NgTouchMoveAttrDirective);
   module.directive(NgTouchStartAttrDirective);
   module.directive(NgStyleAttrDirective);
+  module.directive(NgNonBindableAttrDirective);
 }

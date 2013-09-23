@@ -1,4 +1,4 @@
-library selector_spec;
+library angular.dom.selector_spec;
 
 import '../_specs.dart';
 
@@ -16,6 +16,8 @@ import '../_specs.dart';
 @NgDirective(selector:'[attribute]')          class _Attribute{}
 @NgDirective(selector:'[structural]',
              transclude: true)                class _Structural{}
+
+@NgNonBindable(selector:'[non-bindable]')     class _NonBindable{}
 
 main() {
   describe('Selector', () {
@@ -45,7 +47,8 @@ main() {
         ..register(_AttributeContainsXyz)
         ..register(_Component)
         ..register(_Attribute)
-        ..register(_Structural);
+        ..register(_Structural)
+        ..register(_NonBindable);
 
       selector = directiveSelectorFactory(directives);
     });
@@ -126,8 +129,10 @@ main() {
     });
 
     it('should sort by priority', () {
-      expect(selector(element = e('<component attribute structural></component>')),
+      expect(selector(element = e(
+          '<component attribute non-bindable structural></component>')),
       toEqualsDirectiveInfos([
+          { "selector": "[non-bindable]", "value": "", "element": element },
           { "selector": "[structural]", "value": "", "element": element },
           { "selector": "[attribute]", "value": "", "element": element },
           { "selector": "component", "value": null, "element": element }

@@ -1,3 +1,5 @@
+library angular.perf.invoke;
+
 import '_perf.dart';
 import 'dart:async';
 

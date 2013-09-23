@@ -17,7 +17,7 @@ main() => describe('zone', () {
   describe('exceptions', () {
     it('should throw exceptions from the body', () {
       var error;
-      zone.onError = (e) => error = e;
+      zone.onError = (e, s, l) => error = e;
       expect(() {
         zone.run(() {
           throw ['hello'];
@@ -37,6 +37,34 @@ main() => describe('zone', () {
     });
   });
 
+
+  it('should have nice error when crossing runAsync boundries', async(inject(() {
+    var error;
+    var stack;
+    var longStacktrace;
+
+    zone.onError = (e, s, f) {
+      error = e;
+      stack = s;
+      longStacktrace = f;
+    };
+    var FRAME = new RegExp(r'.*\(.*\:(\d+):\d+\)');
+
+    var line = ((){ try {throw [];} catch(e, s) { return int.parse(FRAME.firstMatch('$s')[1]);}})();
+    var throwFn = () { throw ['double zonned']; };
+    var inner = () => zone.run(throwFn);
+    var middle = () => runAsync(inner);
+    var outer = () => runAsync(middle);
+    zone.run(outer);
+
+    nextTurn(true);
+    expect(error).toEqual(['double zonned']);
+    expect('$stack').toContain('zone_spec.dart:${line+1}');
+    expect('$stack').toContain('zone_spec.dart:${line+2}');
+    expect('$longStacktrace').toContain('zone_spec.dart:${line+3}');
+    expect('$longStacktrace').toContain('zone_spec.dart:${line+4}');
+    expect('$longStacktrace').toContain('zone_spec.dart:${line+5}');
+  })));
 
   it('should call onTurnDone after a synchronous block', inject((Logger log) {
     zone.run(() {
@@ -211,7 +239,7 @@ main() => describe('zone', () {
 
 
   it('should call onTurnDone even if there was an exception in body', async(inject((Logger log) {
-    zone.onError = (e) => log('onError');
+    zone.onError = (e, s, l) => log('onError');
     expect(() => zone.run(() {
       log('zone run');
       throw 'zoneError';
@@ -222,7 +250,7 @@ main() => describe('zone', () {
 
 
   it('should call onTurnDone even if there was an exception in runAsync', async(inject((Logger log) {
-    zone.onError = (e) => log('onError');
+    zone.onError = (e, s, l) => log('onError');
     zone.run(() {
       log('zone run');
       runAsync(() {

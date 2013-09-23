@@ -6,6 +6,7 @@ var FUNCTIONS = { '1': 1 };
 
 class AlwaysReturnX implements DynamicParser {
   call(String x) => 'x';
+  primaryFromToken(Token token, parserError) => null;
 }
 
 main() {

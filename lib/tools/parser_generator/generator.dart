@@ -7,6 +7,7 @@ class ParserGenerator {
   DynamicParser _parser;
   NestedPrinter _p;
   List<String> _expressions;
+  Map<String, boolean> _printedFunctions = {};
   GetterSetterGenerator _getters;
 
   ParserGenerator(DynamicParser this._parser, NestedPrinter this._p,
@@ -40,6 +41,8 @@ class ParserGenerator {
   Code VALUE_CODE = new Code("value");
 
   _printFunction(String exp) {
+    if (_printedFunctions.containsKey(exp)) return;
+    _printedFunctions[exp] = true;
     Code codeExpression = safeCode(exp);
 
     _p('\'${escape(exp)}\': new Expression(');

@@ -6,7 +6,7 @@ import '../_http.dart';
 var VALUE = 'val';
 var CACHED_VALUE = 'cached_value';
 
-class FakeCache implements Cache {
+class FakeCache extends Cache {
   get(x) => x == 'f' ? new HttpResponse(200, CACHED_VALUE) : null;
   put(_,__) => null;
 
@@ -18,13 +18,18 @@ class SubstringRewriter extends UrlRewriter {
 
 main() {
   describe('http', () {
-    var backend, cache;
+    MockHttpBackend backend;
+    var cache;
     beforeEach(module((AngularModule module) {
       backend = new MockHttpBackend();
       cache = new FakeCache();
       module
       ..value(HttpBackend, backend);
     }));
+
+    afterEach(() {
+      backend.verifyNoOutstandingRequest();
+    });
 
     describe('url rewriting', () {
       beforeEach(module((AngularModule module) {
@@ -50,7 +55,6 @@ main() {
         nextTurn(true);
 
         expect(called).toEqual(1);
-        backend.assertAllGetsCalled();
       })));
 
 
@@ -75,7 +79,6 @@ main() {
         nextTurn(true);
 
         expect(called).toEqual(11);
-        backend.assertAllGetsCalled();
       })));
 
 
@@ -89,17 +92,15 @@ main() {
         });
 
         expect(called).toEqual(0);
-        backend.flush();
         nextTurn();
 
         expect(called).toEqual(1);
-        backend.assertAllGetsCalled();
       })));
     });
 
     describe('caching', () {
       it('should not cache if no cache is present', async(inject((Http http, Zone zone) {
-        backend.when('GET', 'a').respond(200, VALUE, null, 2);
+        backend.when('GET', 'a').respond(200, VALUE, null);
 
         var called = 0;
         zone.run(() {
@@ -119,7 +120,6 @@ main() {
         nextTurn(true);
 
         expect(called).toEqual(11);
-        backend.assertAllGetsCalled();
       })));
 
 
@@ -143,12 +143,11 @@ main() {
         nextTurn(true);
 
         expect(called).toEqual(11);
-        backend.assertAllGetsCalled();
       })));
 
 
       it('should not return a pending request after the request is complete', async(inject((Http http, Zone zone) {
-        backend.when('GET', 'a').respond(200, VALUE, null, 2);
+        backend.when('GET', 'a').respond(200, VALUE, null);
 
         var called = 0;
         zone.run(() {
@@ -174,7 +173,6 @@ main() {
         nextTurn(true);
 
         expect(called).toEqual(11);
-        backend.assertAllGetsCalled();
       })));
 
 
@@ -189,11 +187,9 @@ main() {
         });
 
         expect(called).toEqual(0);
-        backend.flush();
         nextTurn();
 
         expect(called).toEqual(1);
-        backend.assertAllGetsCalled();
       })));
     });
 
@@ -214,8 +210,6 @@ main() {
         nextTurn(true);
         expect(response.status).toEqual(404);
         expect(response.toString()).toEqual('HTTP 404: val');
-
-        backend.assertAllGetsCalled();
       })));
     });
   });

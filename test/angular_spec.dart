@@ -7,7 +7,8 @@ main() {
   describe('angular.dart unittests', () {
     it('should run in checked moded only', () {
       expect(() {
-        String s = 6;
+        dynamic v = 6;
+        String s = v;
       }).toThrow();
     });
   });

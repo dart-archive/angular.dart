@@ -23,4 +23,8 @@ class StaticParser implements Parser {
     }
     return _functions[exp];
   }
+
+  primaryFromToken(Token token, parserError) {
+    throw 'Not Implemented';
+  }
 }

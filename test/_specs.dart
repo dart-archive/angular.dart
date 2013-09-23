@@ -80,6 +80,13 @@ class Expect {
 
   toHaveBeenCalled() => unit.expect(actual.called, true, reason: 'method not called');
   toHaveBeenCalledOnce() => unit.expect(actual.count, 1, reason: 'method invoked ${actual.count} expected once');
+  toHaveBeenCalledWith([a,b,c,d,e,f]) =>
+      unit.expect(actual.firstArgsMatch(a,b,c,d,e,f), true,
+      reason: 'method invoked with correct arguments');
+  toHaveBeenCalledOnceWith([a,b,c,d,e,f]) =>
+      unit.expect(actual.count == 1 && actual.firstArgsMatch(a,b,c,d,e,f),
+                 true,
+                 reason: 'method invoked once with correct arguments. (Called ${actual.count} times)');
 
   toHaveClass(cls) => unit.expect(actual.hasClass(cls), true, reason: ' Expected ${actual} to have css class ${cls}');
 
@@ -168,7 +175,7 @@ class JQuery implements List<Node> {
     }
   }
 
-  accessor(Function getter, Function setter, [value]) {
+  accessor(Function getter, Function setter, [value, single=false]) {
     // TODO(dart): ?value does not work, since value was passed. :-(
     var setterMode = value != null;
     var result = setterMode ? this : '';
@@ -176,7 +183,7 @@ class JQuery implements List<Node> {
       if (setterMode) {
         setter(node, value);
       } else {
-        result = '$result${getter(node)}';
+        result = single ? getter(node) : '$result${getter(node)}';
       }
     });
     return result;
@@ -191,7 +198,9 @@ class JQuery implements List<Node> {
   toString() => fold('', (html, node) => '$html${_toHtml(node, true)}');
   eq(num childIndex) => $(this[childIndex]);
   remove(_) => forEach((n) => n.remove());
-  attr([String name]) => accessor((n) => n.attributes[name], (n, v) => n.attributes[name] = v);
+  attr([String name, String value]) => accessor(
+          (n) => n.attributes[name],
+          (n, v) => n.attributes[name] = v, value, true);
   prop([String name]) => accessor((n) => parserBackend.getter(name)(n, null), (n, v) => parserBackend.setter(name)(n, v));
   textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(n.queryAll(selector)));
@@ -308,7 +317,7 @@ main() {
       ..type(ExceptionHandler, implementedBy: RethrowExceptionHandler)
       ..factory(Zone, (_) {
         Zone zone = new Zone();
-        zone.onError = (e) => dump('EXCEPTION: $e\n${dartAsync.getAttachedStackTrace(e)}');
+        zone.onError = (dynamic e, dynamic s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
         return zone;
       });
   }));

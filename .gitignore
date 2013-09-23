@@ -1,7 +1,8 @@
 .idea
-packages
-node_modules
 .project
+node_modules
+packages
 docs
 test_out
 gen
+tmp

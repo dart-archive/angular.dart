@@ -32,7 +32,7 @@ class HttpBackend {
 class HttpResponse {
   int status;
   String responseText;
-  Map<String, String> headers;
+  var headers;
   HttpResponse([this.status, this.responseText, this.headers]);
 
   toString() => 'HTTP $status: $responseText';

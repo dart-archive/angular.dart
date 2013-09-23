@@ -26,8 +26,9 @@ describe('ng-model', () {
       Probe probe = _.rootScope.p;
       var ngModel = probe.directive(NgModel);
       var input = probe.directive(InputTextDirective);
+      InputElement inputElement = probe.element;
 
-      probe.element.value = 'abc';
+      inputElement.value = 'abc';
       input.processValue();
       expect(_.rootScope.model).toEqual('abc');
     }));

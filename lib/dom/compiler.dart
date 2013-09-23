@@ -40,6 +40,11 @@ class Compiler {
         NgAnnotationBase annotation = directiveRef.annotation;
         var blockFactory = null;
 
+        if (annotation is NgNonBindable) {
+          compileChildren = false;
+          break;
+        }
+
         if (annotation is NgDirective && (annotation as NgDirective).transclude) {
           var remainingDirectives = declaredDirectiveRefs.sublist(j + 1);
           blockFactory = compileTransclusion(

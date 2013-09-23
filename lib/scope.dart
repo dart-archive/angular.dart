@@ -2,6 +2,7 @@ library angular.core.service.scope;
 
 import 'dart:mirrors';
 import 'dart:json';
+import 'package:meta/meta.dart';
 import 'package:perf_api/perf_api.dart';
 
 import 'exception_handler.dart';
@@ -46,6 +47,7 @@ class ScopeDigestTTL {
  * to keep references to the model so that they are available for
  * data-binding.
  */
+@proxy
 class Scope implements Map {
   String $id;
   Scope $parent;

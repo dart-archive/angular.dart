@@ -299,13 +299,13 @@ DirectiveSelector directiveSelectorFactory(DirectiveRegistry directives) {
 }
 
 int _directivePriority(NgAnnotationBase annotation) {
-  if (annotation is NgDirective)
-    if ((annotation as NgDirective).transclude)
-      return  2;
-    else
-      return 1;
-  if (annotation is NgComponent)
+  if (annotation is NgNonBindable) {
+    return 3;
+  } else if (annotation is NgDirective) {
+    return (annotation as NgDirective).transclude ? 2 : 1;
+  } else if (annotation is NgComponent) {
     return 0;
+  }
   throw "Unexpected Type: ${annotation}.";
 }
 

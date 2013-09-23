@@ -121,6 +121,18 @@ class NgAnnotationBase {
   });
 }
 
+
+/**
+ * Meta-data marker placed on a class to make the compiler skip processing
+ * Angular constructs on the element matched by the specified selector and all
+ * of its descendants.  This allows one to have DOM nodes that contains Angular
+ * markup but should not be processed as a template.
+ */
+class NgNonBindable extends NgAnnotationBase {
+  const NgNonBindable({ selector }) : super(selector: selector);
+}
+
+
 /**
  * Meta-data marker placed on a class which should act as a controller for the
  * component. Angular components are a light-weight version of web-components.
