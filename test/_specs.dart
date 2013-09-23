@@ -82,6 +82,19 @@ class Expect {
   toHaveBeenCalledOnce() => unit.expect(actual.count, 1, reason: 'method invoked ${actual.count} expected once');
 
   toHaveClass(cls) => unit.expect(actual.hasClass(cls), true, reason: ' Expected ${actual} to have css class ${cls}');
+
+  toEqualSelect(options) {
+    var actualOptions = [];
+
+    for(var option in actual.find('option')) {
+      if (option.selected) {
+        actualOptions.add([option.value]);
+      } else {
+        actualOptions.add(option.value);
+      }
+    }
+    return unit.expect(actualOptions, options);
+  }
 }
 
 class NotExpect {

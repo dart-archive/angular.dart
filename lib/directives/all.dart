@@ -16,6 +16,7 @@ import 'ng_model.dart';
 import 'ng_repeat.dart';
 import 'ng_show.dart';
 import 'ng_style.dart';
+import 'select.dart';
 
 export 'ng_mustache.dart';
 export 'ng_bind.dart';
@@ -31,6 +32,7 @@ export 'ng_model.dart';
 export 'ng_repeat.dart';
 export 'ng_show.dart';
 export 'ng_style.dart';
+export 'select.dart';
 
 
 void registerDirectives(AngularModule module) {
@@ -51,6 +53,7 @@ void registerDirectives(AngularModule module) {
   module.directive(InputTextDirective);
   module.directive(InputCheckboxDirective);
   module.directive(NgModel);
+  module.directive(SelectDirective);
 
   module.directive(NgBlurAttrDirective);
   module.directive(NgChangeAttrDirective);
