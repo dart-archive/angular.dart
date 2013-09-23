@@ -272,13 +272,13 @@ class DirectiveRegistry {
     if (meta == null) {
       throw "Type $type does not have metadata. Syntax error, perhaps?";
     }
-    NgAnnotationBase annotation = meta
+    var annotations = meta
       .where((InstanceMirror im) => im.reflectee is NgAnnotationBase)
-      .map((InstanceMirror im) => im.reflectee)
-      .first;
-    if (annotation == null) {
+      .map((InstanceMirror im) => im.reflectee);
+    if (annotations.isEmpty) {
       throw "A $type directive needs to have either @NgDirective or @NgComponent metadata.";
     }
+    NgAnnotationBase annotation = annotations.first;
     directiveMap[annotation.selector] = new Directive(type, annotation);
   }
 
