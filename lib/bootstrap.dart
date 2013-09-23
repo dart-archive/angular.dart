@@ -5,16 +5,18 @@ import 'package:di/dynamic_injector.dart';
 import 'package:perf_api/perf_api.dart';
 
 import 'dart:html' as dom; // TODO(misko): to be deleted
-import 'controller.dart';
 
-import 'zone.dart';
+import 'controller.dart';
+import 'directive.dart';
 import 'cache.dart';
-import 'interpolate.dart';
-import 'dom/http.dart';
-import 'scope.dart';
 import 'exception_handler.dart';
+import 'interpolate.dart';
+import 'scope.dart';
+import 'zone.dart';
+
 import 'parser/parser_library.dart';
 import 'dom/all.dart';
+import 'dom/http.dart';
 import 'directives/all.dart';
 
 
