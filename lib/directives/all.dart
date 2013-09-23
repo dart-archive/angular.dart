@@ -39,6 +39,7 @@ void registerDirectives(AngularModule module) {
   module.directive(NgShowAttrDirective);
   module.directive(InputTextDirective);
   module.directive(InputCheckboxDirective);
+  module.directive(SelectDirective);
   module.directive(NgModel);
   module.directive(NgSwitchAttrDirective);
   module.directive(NgSwitchWhenAttrDirective);

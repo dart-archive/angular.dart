@@ -107,4 +107,91 @@ describe('ng-model', () {
       expect(scope['model']).toBe(false);
     }));
   });
+
+  describe('select single', () {
+    it('should update input value from model', inject(() {
+      _.compile(
+          '''<select ng-model="model">
+             <option value="a">a</option>
+             <option value="b">b</option>
+             <option value="c">c</option>
+             <option value="d">d</option>
+             </select>''');
+      _.rootScope.$digest();
+
+      _.rootScope.$apply('model = "d"');
+      expect(_.rootElement.prop('value')).toEqual('d');
+      expect(_.rootScope['model']).toEqual('d');
+      _.rootScope.$apply('model = "e"');
+      expect(_.rootElement.prop('value')).toEqual('');
+      expect(_.rootScope['model']).toEqual(null);
+    }));
+
+    it('should update model from the input value', inject(() {
+      _.compile(
+          '''<select ng-model="model" probe="p">
+             <option value="a">a</option>
+             <option value="b">b</option>
+             <option value="c">c</option>
+             <option value="d">d</option>
+             </select>''');
+      Probe probe = _.rootScope['p'];
+      var select = probe.directive(SelectDirective);
+
+      (probe.element as SelectElement).selectedIndex = 3;
+      select.processValue();
+      expect(_.rootScope['model']).toEqual('d');
+    }));
+  });
+
+  describe('select multiple', () {
+    it('should update input value from model', inject(() {
+      _.compile(
+          '''<select ng-model="model" multiple>
+             <option value="a">a</option>
+             <option value="b">b</option>
+             <option value="c">c</option>
+             <option value="d">d</option>
+             </select>''');
+      _.rootScope.$digest();
+
+      _.rootScope.$apply('model = ["d"]');
+      expect(_.rootElement.prop('value')).toEqual('d');
+      expect(_.rootScope['model']).toEqual(['d']);
+      _.rootScope.$apply('model = ["d", "a"]');
+
+      var options = _.rootElement.find('option');
+      expect(options[0].selected).toEqual(true);
+      expect(options[1].selected).toEqual(false);
+      expect(options[2].selected).toEqual(false);
+      expect(options[3].selected).toEqual(true);
+
+      expect(_.rootScope['model']).toEqual(['a', 'd']);
+
+    }));
+
+    it('should update model from the input value', inject(() {
+      _.compile(
+          '''<select ng-model="model" probe="p" multiple>
+             <option value="a">a</option>
+             <option value="b">b</option>
+             <option value="c">c</option>
+             <option value="d">d</option>
+             </select>''');
+      Probe probe = _.rootScope['p'];
+      var select = probe.directive(SelectDirective);
+
+
+      (probe.element as SelectElement).selectedIndex = 2;
+      select.processValue();
+      expect(_.rootScope['model']).toEqual(['c']);
+      var options = probe.element.queryAll('option');
+      options[0].selected = true;
+      options[1].selected = false;
+      options[2].selected = false;
+      options[3].selected = true;
+      select.processValue();
+      expect(_.rootScope['model']).toEqual(['a', 'd']);
+    }));
+  });
 });
