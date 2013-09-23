@@ -14,14 +14,14 @@ part of angular.mock;
 @NgDirective(
     selector: '[log]',
     map: const {
-        'log': '@.message'
+        'log': '@.logMessage'
     }
 )
 class LogAttrDirective implements NgAttachAware {
   final Logger log;
-  String message;
+  String logMessage;
   LogAttrDirective(Logger this.log);
-  attach() => log(message == '' ? 'LOG' : message);
+  attach() => log(logMessage == '' ? 'LOG' : logMessage);
 }
 
 /**
