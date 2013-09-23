@@ -14,13 +14,30 @@ part of angular.directive;
     selector: '[ng-model]',
     map: const {'ng-model': '&.model'})
 class NgModel {
+  final Scope _scope;
   Getter getter = ([_]) => null;
   Setter setter = (_, [__]) => null;
 
+
+  Function _removeWatch = () => null;
+  bool _watchCollection;
+
   Function render = (value) => null;
 
-  NgModel(Scope scope) {
-    scope.$watch(() => getter(), (value) => render(value) );
+  NgModel(Scope this._scope) {
+    watchCollection = false;
+  }
+
+  get watchCollection => _watchCollection;
+  set watchCollection(value) {
+    if (_watchCollection == value) return;
+    _watchCollection = value;
+    _removeWatch();
+    if (_watchCollection) {
+      _removeWatch = _scope.$watchCollection((s) => getter(), (value) => render(value) );
+    } else {
+      _removeWatch = _scope.$watch((s) => getter(), (value) => render(value) );
+    }
   }
 
   set model(BoundExpression boundExpression) {

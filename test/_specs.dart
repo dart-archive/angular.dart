@@ -89,6 +89,32 @@ class Expect {
                  reason: 'method invoked once with correct arguments. (Called ${actual.count} times)');
 
   toHaveClass(cls) => unit.expect(actual.hasClass(cls), true, reason: ' Expected ${actual} to have css class ${cls}');
+
+  toEqualSelect(options) {
+    var actualOptions = [];
+
+    for(var option in actual.find('option')) {
+      if (option.selected) {
+        actualOptions.add([option.value]);
+      } else {
+        actualOptions.add(option.value);
+      }
+    }
+    return unit.expect(actualOptions, options);
+  }
+
+  toEqualValid() {
+    // TODO: implement onece we have forms
+  }
+  toEqualInvalid() {
+    // TODO: implement onece we have forms
+  }
+  toEqualPristine() {
+    // TODO: implement onece we have forms
+  }
+  toEqualDirty() {
+    // TODO: implement onece we have forms
+  }
 }
 
 class NotExpect {
@@ -180,6 +206,7 @@ class JQuery implements List<Node> {
           (n) => _toHtml(n),
           (n, v) => n.setInnerHtml(v, treeSanitizer: new NullTreeSanitizer()),
           html);
+  val([String text]) => accessor((n) => n.value, (n, v) => n.value = v);
   text([String text]) => accessor((n) => n.text, (n, v) => n.text = v, text);
   contents() => fold(new JQuery(), (jq, node) => jq..addAll(node.nodes));
   toString() => fold('', (html, node) => '$html${_toHtml(node, true)}');
@@ -187,8 +214,14 @@ class JQuery implements List<Node> {
   remove(_) => forEach((n) => n.remove());
   attr([String name, String value]) => accessor(
           (n) => n.attributes[name],
-          (n, v) => n.attributes[name] = v, value, true);
-  prop([String name]) => accessor((n) => getterSetter.getter(name)(n), (n, v) => getterSetter.setter(name)(n, v));
+          (n, v) => n.attributes[name] = v,
+          value,
+          true);
+  prop([String name]) => accessor(
+          (n) => getterSetter.getter(name)(n),
+          (n, v) => getterSetter.setter(name)(n, v),
+          null,
+          true);
   textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(
       (n is Element ? (n as Element).queryAll(selector) : [])));

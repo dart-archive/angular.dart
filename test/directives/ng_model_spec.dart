@@ -106,5 +106,17 @@ describe('ng-model', () {
       _.triggerEvent(element, 'change');
       expect(scope['model']).toBe(false);
     }));
+
+    it('should enter collection watch mode', inject((Scope scope) {
+      var element = _.compile('<input type="checkbox" ng-model="model">');
+
+      element[0].checked = true;
+      _.triggerEvent(element, 'change');
+      expect(scope['model']).toBe(true);
+
+      element[0].checked = false;
+      _.triggerEvent(element, 'change');
+      expect(scope['model']).toBe(false);
+    }));
   });
 });

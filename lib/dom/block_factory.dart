@@ -351,7 +351,8 @@ class _AnchorAttrs extends NodeAttrs {
 
 RegExp _MAPPING = new RegExp(r'^([\@\=\&\!])(\.?)\s*(.*)$');
 
-_createAttributeMapping(NgAnnotation annotation, NodeAttrs nodeAttrs, Scope scope, Scope shadowScope, Object controller, Parser parser) {
+_createAttributeMapping(NgAnnotation annotation, NodeAttrs nodeAttrs,
+                        Scope scope, Scope shadowScope, Object controller, Parser parser) {
   if (annotation.map != null) annotation.map.forEach((attrName, mapping) {
     Match match = _MAPPING.firstMatch(mapping);
     if (match == null) {

@@ -109,7 +109,7 @@ class Scope implements Map {
     (a is num && b is num && a.isNaN && b.isNaN);
 
   containsKey(String name) => this[name] != null;
-
+  remove(String name) => this._properties.remove(name);
   operator []=(String name, value) => _properties[name] = value;
   operator [](String name) {
     if (name == r'$id') return this.$id;
@@ -173,7 +173,7 @@ class Scope implements Map {
     Map internalMap = {};
     num oldLength = 0;
 
-    var $watchCollectionWatch = () {
+    var $watchCollectionWatch = (_) {
       newValue = objGetter(this);
       var newLength, key;
 
@@ -245,7 +245,7 @@ class Scope implements Map {
       return changeDetected;
     };
 
-    var $watchCollectionAction = () {
+    var $watchCollectionAction = (_, __, ___) {
       relaxFnApply(listener, [newValue, oldValue, this]);
     };
 

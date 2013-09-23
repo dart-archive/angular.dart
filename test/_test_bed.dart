@@ -33,6 +33,11 @@ class TestBed {
   triggerEvent(elementWrapper, name, [type='MouseEvent']) {
     elementWrapper[0].dispatchEvent(new dom.Event.eventType(type, name));
   }
+
+  selectOption(element, text) {
+    element.find('option').forEach((o) => o.selected = o.text == text);
+    triggerEvent(element, 'change');
+  }
 }
 
 beforeEachTestBed(assign) {
