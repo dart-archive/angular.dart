@@ -96,7 +96,8 @@ bool matchesNode(Node node, String selector) {
           stillGood = false;
         }
       } else if (part.className != null) {
-        if (!node.attributes['class'].split(' ').contains(part.className)) {
+        if (node.attributes['class'] == null ||
+            !node.attributes['class'].split(' ').contains(part.className)) {
           stillGood = false;
         }
       } else if (part.attrName != null) {
