@@ -35,12 +35,13 @@ class Zone {
    * A function that is called at the end of each VM turn in which the
    * in-zone code or any runAsync callbacks were run.
    */
-  ZoneOnTurn onTurnDone = () => null;
+  var onTurnDone = () => null;  // Type was ZoneOnTurn: dartbug 13519
 
   /**
    * A function that is called when uncaught errors are thrown inside the zone.
    */
-  ZoneOnError onError = (dynamic e, dynamic s, LongStackTrace ls) => print('EXCEPTION: $e\n$s\n$ls');
+  var onError = (dynamic e, dynamic s, LongStackTrace ls) => print('EXCEPTION: $e\n$s\n$ls');
+  // Type was ZoneOnError: dartbug 13519
 
   /**
    * Called with each zone.run or runAsync method.  This allows the program
