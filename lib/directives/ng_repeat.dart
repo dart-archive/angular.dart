@@ -108,6 +108,10 @@ class NgRepeatAttrDirective  {
         trackById,
         cursor = blockHole;
 
+    if (collection is! List) {
+      collection = [];
+    }
+
     List<_Row> newRowOrder = _computeNewRows(collection, trackById);
 
     for (var index = 0, length = collection.length; index < length; index++) {
