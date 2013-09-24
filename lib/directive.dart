@@ -122,6 +122,7 @@ class NgAnnotationBase {
 }
 
 
+// Explicitly pass all the named parameters to work around dartbug.com/13556
 /**
  * Meta-data marker placed on a class to make the compiler skip processing
  * Angular constructs on the element matched by the specified selector and all
@@ -129,7 +130,11 @@ class NgAnnotationBase {
  * markup but should not be processed as a template.
  */
 class NgNonBindable extends NgAnnotationBase {
-  const NgNonBindable({ selector }) : super(selector: selector);
+  const NgNonBindable({ selector }) : super(
+      selector: selector, visibility: null,
+      publishTypes: null, map: null,
+      exportExpressions: null,
+      exportExpressionAttrs: null);
 }
 
 
