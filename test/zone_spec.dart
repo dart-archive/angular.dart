@@ -59,6 +59,12 @@ main() => describe('zone', () {
 
     nextTurn(true);
     expect(error).toEqual(['double zonned']);
+
+    // Not in dart2js..
+    if ('$stack'.contains('.dart.js')) {
+      return;
+    }
+
     expect('$stack').toContain('zone_spec.dart:${line+1}');
     expect('$stack').toContain('zone_spec.dart:${line+2}');
     expect('$longStacktrace').toContain('zone_spec.dart:${line+3}');
