@@ -17,7 +17,7 @@ class MockHttp extends Http {
   Map<String, MockHttpData> gets = {};
   List futures = [];
 
-  MockHttp(UrlRewriter rewriter, HttpBackend backend) : super(rewriter, backend);
+  MockHttp(UrlRewriter rewriter, HttpBackend backend, HttpDefaults defaults) : super(rewriter, backend, defaults);
 
   expectGET(String url, String content, {int times: 1}) {
     gets[url] = new MockHttpData(200, content, times);

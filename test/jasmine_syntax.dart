@@ -125,6 +125,10 @@ class Jasmine {
   createSpy([String name]) {
     return new SpyFunction(name);
   }
+
+  SpyFunction spyOn(receiver, methodName) {
+    throw ["spyOn not implemented"];
+  }
 }
 
 main(){}

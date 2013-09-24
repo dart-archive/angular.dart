@@ -124,11 +124,11 @@ class MockHttpBackend implements HttpBackend {
     Completer c = new Completer();
     var callback = (status, data, headers) {
       if (status >= 200 && status < 300) {
-        c.complete(new HttpResponse(status, data, headers));
+        c.complete(new MockHttpRequest(status, data, headers));
       } else {
         c.completeError(
             new MockHttpRequestProgressEvent(
-                new MockHttpRequest(status, data)));
+                new MockHttpRequest(status, data, headers)));
       }
     };
     call(method == null ? 'GET' : method, url, sendData, callback, requestHeaders);
@@ -184,12 +184,12 @@ class MockHttpBackend implements HttpBackend {
 
     if (expectation != null && expectation.match(method, url)) {
       if (!expectation.matchData(data))
-        throw 'Expected $expectation with different data\n' +
-            'EXPECTED: ${prettyPrint(expectation.data)}\nGOT:      $data';
+        throw ['Expected $expectation with different data\n' +
+            'EXPECTED: ${prettyPrint(expectation.data)}\nGOT:      $data'];
 
       if (!expectation.matchHeaders(headers))
-        throw 'Expected $expectation with different headers\n' +
-            'EXPECTED: ${prettyPrint(expectation.headers)}\nGOT:      ${prettyPrint(headers)}';
+        throw ['Expected $expectation with different headers\n' +
+            'EXPECTED: ${prettyPrint(expectation.headers)}\nGOT:      ${prettyPrint(headers)}'];
 
       expectations.removeAt(0);
 
@@ -212,7 +212,7 @@ class MockHttpBackend implements HttpBackend {
     }
     throw wasExpected ?
         'No response defined !' :
-        ['Unexpected request: ' + method + ' ' + url + '\n' +
+        ['Unexpected request: $method $url\n' +
             (expectation != null ? 'Expected $expectation' : 'No more requests expected')];
   }
 
@@ -582,7 +582,7 @@ class MockHttpRequest implements HttpRequest {
   final Stream<ProgressEvent> onTimeout = null;
   final int readyState = 0;
 
-  final responseText = null;
+  get responseText => response == null ? null : "$response";
   final responseXml = null;
   final String statusText = null;
   final HttpRequestUpload upload = null;
@@ -593,12 +593,16 @@ class MockHttpRequest implements HttpRequest {
 
   final int status;
   final response;
+  final String headers;
 
-  MockHttpRequest(int this.status, String this.response);
+  MockHttpRequest(int this.status, String this.response, [this.headers]);
 
   void abort() {}
   bool dispatchEvent(Event event) => false;
-  String getAllResponseHeaders() => null;
+  String getAllResponseHeaders() {
+    if (headers == null) return null;
+    return headers;
+  }
   String getResponseHeader(String header) => null;
 
   void open(String method, String url, {bool async, String user, String password}) {}

@@ -36,6 +36,8 @@ class AngularModule extends Module {
     type(Http);
     type(UrlRewriter);
     type(HttpBackend);
+    type(HttpDefaultHeaders);
+    type(HttpDefaults);
     type(BlockCache);
     type(TemplateCache);
     type(GetterSetter);
