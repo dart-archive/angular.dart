@@ -19,7 +19,7 @@ import '../dom/directive.dart';
  */
 @NgDirective(
   selector: '[ng-bind-html]',
-  map: const {'ng-bind-html': '=.value'})
+  map: const {'ngBindHtml': '=.value'})
 class NgBindHtmlAttrDirective {
   // The default HTML sanitizer.  Eventually, we'll make this configurable or
   // use an optionally loaded `$sanitize` service.
