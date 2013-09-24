@@ -19,6 +19,7 @@ import 'ng_show.dart';                 export 'ng_show.dart';
 import 'ng_style.dart';                export 'ng_style.dart';
 import 'ng_switch.dart';               export 'ng_switch.dart';
 import 'ng_non_bindable.dart';         export 'ng_non_bindable.dart';
+import 'select.dart';                  export 'select.dart';
 
 void registerDirectives(AngularModule module) {
   module.directive(NgTextMustacheDirective);
@@ -40,6 +41,7 @@ void registerDirectives(AngularModule module) {
   module.directive(InputTextDirective);
   module.directive(InputCheckboxDirective);
   module.directive(NgModel);
+  module.directive(SelectDirective);
   module.directive(NgSwitchAttrDirective);
   module.directive(NgSwitchWhenAttrDirective);
   module.directive(NgSwitchDefaultAttrDirective);
