@@ -9,7 +9,7 @@ main() => describe('DirectiveRegistry', () {
     registry = r;
   }));
 
-  iit('should throw a useful error for directives missing metadata', () {
+  it('should throw a useful error for directives missing metadata', () {
     expect(() {
     registry.register(NotADirective);
     }).toThrow('directive needs to have either @NgDirective or @NgComponent metadata');
