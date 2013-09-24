@@ -221,7 +221,7 @@ main() {
       it('should fail if reflected object has no property', () {
         expect(() {
           parser('notAProperty').eval(new TestData());
-        }).toThrow("'TestData' has no instance getter 'notAProperty'");
+        }).toThrow("notAProperty");
       });
     });
 
