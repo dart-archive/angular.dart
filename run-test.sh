@@ -20,14 +20,13 @@ if [ -z "$(which node)" ]; then
   exit 1;
 fi
 
-# Check for karma
-KARMA_PATH="node_modules/karma/bin/karma"
-if [ ! -e "$KARMA_PATH" ]; then
-  echo "karma does not appear to be installed. Installing:"
-  npm install
-fi
+# Run npm install so we are up-to-date
+npm install karma karma-dart;
 
-./analyze.sh && node "$KARMA_PATH" start karma.conf \
+# Print the dart VM version to the logs
+dart --version
+
+./analyze.sh && node "node_modules/karma/bin/karma" start karma.conf \
   --reporters=junit,dots --port=8765 --runner-port=8766 \
   --browsers=ChromeCanary,Chrome --single-run --no-colors --no-color
 
