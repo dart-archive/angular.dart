@@ -31,7 +31,16 @@ class GetterSetter {
     return l;
   }
 
-
+  _maybeInvoke(instanceMirror, symbol) {
+    if (instanceMirror.type.members.containsKey(symbol)) {
+      MethodMirror methodMirror = instanceMirror.type.members[symbol];
+      return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
+        var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
+        return instanceMirror.invoke(symbol, args).reflectee;
+      });
+    }
+    return null;
+  }
   Function getter(String key) {
     var symbol = new Symbol(key);
     return (o) {
@@ -39,14 +48,17 @@ class GetterSetter {
       try {
         return instanceMirror.getField(symbol).reflectee;
       } on NoSuchMethodError catch (e) {
-        if (instanceMirror.type.members.containsKey(symbol)) {
-	  MethodMirror methodMirror = instanceMirror.type.members[symbol];
-	  return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
-	    var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
-	    return instanceMirror.invoke(symbol, args).reflectee;
-	  });
-	}
-        rethrow;
+        var invokeClosure = _maybeInvoke(instanceMirror, symbol);
+        if (invokeClosure == null) {
+          rethrow;
+        }
+        return invokeClosure;
+      } on UnsupportedError catch (e) {
+        var invokeClosure = _maybeInvoke(instanceMirror, symbol);
+        if (invokeClosure == null) {
+          rethrow;
+        }
+        return invokeClosure;
       }
     };
   }
