@@ -54,6 +54,19 @@ main() {
     });
 
 
+    it(r'should gracefully handle nulls', () {
+      element = $compile(
+        '<div>' +
+          '<ul>' +
+            '<li ng-repeat="item in null">{{item.name}};</li>' +
+          '</ul>' +
+        '</div>');
+      scope.$digest();
+      expect(element.find('ul').length).toEqual(1);
+      expect(element.find('li').length).toEqual(0);
+    });
+
+
     describe('track by', () {
       it(r'should track using expression function', () {
         element = $compile(
