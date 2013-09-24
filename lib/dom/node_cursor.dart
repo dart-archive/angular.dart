@@ -38,7 +38,6 @@ class NodeCursor {
   nodeList() {
     if (!isValid()) return [];  // or should we return null?
 
-    var node = elements[index];
     var nodes = [];
 
     for(var i = 0, ii = cursorSize(); i < ii; i++) {
