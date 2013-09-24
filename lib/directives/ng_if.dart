@@ -51,9 +51,9 @@ import '../utils.dart';
     map: const {'.': '=.condition'})
 class NgIfAttrDirective {
 
-  BoundBlockFactory boundBlockFactory;
-  BlockHole blockHole;
-  Scope scope;
+  final BoundBlockFactory _boundBlockFactory;
+  final BlockHole _blockHole;
+  final Scope _scope;
 
   Block _block;
 
@@ -65,20 +65,16 @@ class NgIfAttrDirective {
    */
   Scope _childScope;
 
-  NgIfAttrDirective(BoundBlockFactory this.boundBlockFactory,
-                    BlockHole this.blockHole,
-                    Scope this.scope);
-
-  block() {
-    if (_block != null) return _block;
-    return _block;
-  }
+  NgIfAttrDirective(BoundBlockFactory this._boundBlockFactory,
+                    BlockHole this._blockHole,
+                    Scope this._scope);
 
   set condition(value) {
     if (toBool(value)) {
       if (_block == null) {
-        _block = boundBlockFactory(_childScope = scope.$new());
-        _block.insertAfter(blockHole);
+        _childScope = _scope.$new();
+        _block = _boundBlockFactory(_childScope);
+        _block.insertAfter(_blockHole);
       }
     } else {
       if (_block != null) {
