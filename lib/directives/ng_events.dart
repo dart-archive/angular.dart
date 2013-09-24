@@ -5,6 +5,9 @@ import '../dom/directive.dart';
 import '../parser/parser_library.dart';
 import '../scope.dart';
 
+// NOTE(deboer): onXX functions are now typed as 'var' instead of 'Getter'
+// to work-around https://code.google.com/p/dart/issues/detail?id=13519
+
 /* All the directives in this file should look exactly the same except for the
  * name of the event itself.
  */
@@ -25,7 +28,7 @@ class NgBlurAttrDirective {
    * Parsed expression from the `ng-blur` attribute.  On a `Blur`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onBlur;
+  var onBlur;
 
   NgBlurAttrDirective(dom.Element element, Scope scope) {
     element.onBlur.listen((event) => scope.$apply(() {
@@ -51,7 +54,7 @@ class NgChangeAttrDirective {
    * Parsed expression from the `ng-change` attribute.  On a `Change`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onChange;
+  var onChange;
 
   NgChangeAttrDirective(dom.Element element, Scope scope) {
     element.onChange.listen((event) => scope.$apply(() {
@@ -77,7 +80,7 @@ class NgClickAttrDirective {
    * Parsed expression from the `ng-click` attribute.  On a `Click`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onClick;
+  var onClick;
 
   NgClickAttrDirective(dom.Element element, Scope scope) {
     element.onClick.listen((event) => scope.$apply(() {
@@ -103,7 +106,7 @@ class NgContextMenuAttrDirective {
    * Parsed expression from the `ng-contextmenu` attribute.  On a `ContextMenu`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onContextMenu;
+  var onContextMenu;
 
   NgContextMenuAttrDirective(dom.Element element, Scope scope) {
     element.onContextMenu.listen((event) => scope.$apply(() {
@@ -129,7 +132,7 @@ class NgDoubleClickAttrDirective {
    * Parsed expression from the `ng-doubleclick` attribute.  On a `DoubleClick`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onDoubleClick;
+  var onDoubleClick;
 
   NgDoubleClickAttrDirective(dom.Element element, Scope scope) {
     element.onDoubleClick.listen((event) => scope.$apply(() {
@@ -155,7 +158,7 @@ class NgDragAttrDirective {
    * Parsed expression from the `ng-drag` attribute.  On a `Drag`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onDrag;
+  var onDrag;
 
   NgDragAttrDirective(dom.Element element, Scope scope) {
     element.onDrag.listen((event) => scope.$apply(() {
@@ -181,7 +184,7 @@ class NgDragEndAttrDirective {
    * Parsed expression from the `ng-dragend` attribute.  On a `DragEnd`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onDragEnd;
+  var onDragEnd;
 
   NgDragEndAttrDirective(dom.Element element, Scope scope) {
     element.onDragEnd.listen((event) => scope.$apply(() {
@@ -207,7 +210,7 @@ class NgDragEnterAttrDirective {
    * Parsed expression from the `ng-dragenter` attribute.  On a `DragEnter`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onDragEnter;
+  var onDragEnter;
 
   NgDragEnterAttrDirective(dom.Element element, Scope scope) {
     element.onDragEnter.listen((event) => scope.$apply(() {
@@ -233,7 +236,7 @@ class NgDragLeaveAttrDirective {
    * Parsed expression from the `ng-dragleave` attribute.  On a `DragLeave`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onDragLeave;
+  var onDragLeave;
 
   NgDragLeaveAttrDirective(dom.Element element, Scope scope) {
     element.onDragLeave.listen((event) => scope.$apply(() {
@@ -259,7 +262,7 @@ class NgDragOverAttrDirective {
    * Parsed expression from the `ng-dragover` attribute.  On a `DragOver`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onDragOver;
+  var onDragOver;
 
   NgDragOverAttrDirective(dom.Element element, Scope scope) {
     element.onDragOver.listen((event) => scope.$apply(() {
@@ -285,7 +288,7 @@ class NgDragStartAttrDirective {
    * Parsed expression from the `ng-dragstart` attribute.  On a `DragStart`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onDragStart;
+  var onDragStart;
 
   NgDragStartAttrDirective(dom.Element element, Scope scope) {
     element.onDragStart.listen((event) => scope.$apply(() {
@@ -311,7 +314,7 @@ class NgDropAttrDirective {
    * Parsed expression from the `ng-drop` attribute.  On a `Drop`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onDrop;
+  var onDrop;
 
   NgDropAttrDirective(dom.Element element, Scope scope) {
     element.onDrop.listen((event) => scope.$apply(() {
@@ -337,7 +340,7 @@ class NgFocusAttrDirective {
    * Parsed expression from the `ng-focus` attribute.  On a `Focus`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onFocus;
+  var onFocus;
 
   NgFocusAttrDirective(dom.Element element, Scope scope) {
     element.onFocus.listen((event) => scope.$apply(() {
@@ -363,7 +366,7 @@ class NgKeyDownAttrDirective {
    * Parsed expression from the `ng-keydown` attribute.  On a `KeyDown`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onKeyDown;
+  var onKeyDown;
 
   NgKeyDownAttrDirective(dom.Element element, Scope scope) {
     element.onKeyDown.listen((event) => scope.$apply(() {
@@ -389,7 +392,7 @@ class NgKeyPressAttrDirective {
    * Parsed expression from the `ng-keypress` attribute.  On a `KeyPress`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onKeyPress;
+  var onKeyPress;
 
   NgKeyPressAttrDirective(dom.Element element, Scope scope) {
     element.onKeyPress.listen((event) => scope.$apply(() {
@@ -415,7 +418,7 @@ class NgKeyUpAttrDirective {
    * Parsed expression from the `ng-keyup` attribute.  On a `KeyUp`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onKeyUp;
+  var onKeyUp;
 
   NgKeyUpAttrDirective(dom.Element element, Scope scope) {
     element.onKeyUp.listen((event) => scope.$apply(() {
@@ -441,7 +444,7 @@ class NgMouseDownAttrDirective {
    * Parsed expression from the `ng-mousedown` attribute.  On a `MouseDown`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onMouseDown;
+  var onMouseDown;
 
   NgMouseDownAttrDirective(dom.Element element, Scope scope) {
     element.onMouseDown.listen((event) => scope.$apply(() {
@@ -467,7 +470,7 @@ class NgMouseEnterAttrDirective {
    * Parsed expression from the `ng-mouseenter` attribute.  On a `MouseEnter`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onMouseEnter;
+  var onMouseEnter;
 
   NgMouseEnterAttrDirective(dom.Element element, Scope scope) {
     element.onMouseEnter.listen((event) => scope.$apply(() {
@@ -493,7 +496,7 @@ class NgMouseLeaveAttrDirective {
    * Parsed expression from the `ng-mouseleave` attribute.  On a `MouseLeave`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onMouseLeave;
+  var onMouseLeave;
 
   NgMouseLeaveAttrDirective(dom.Element element, Scope scope) {
     element.onMouseLeave.listen((event) => scope.$apply(() {
@@ -519,7 +522,7 @@ class NgMouseMoveAttrDirective {
    * Parsed expression from the `ng-mousemove` attribute.  On a `MouseMove`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onMouseMove;
+  var onMouseMove;
 
   NgMouseMoveAttrDirective(dom.Element element, Scope scope) {
     element.onMouseMove.listen((event) => scope.$apply(() {
@@ -545,7 +548,7 @@ class NgMouseOutAttrDirective {
    * Parsed expression from the `ng-mouseout` attribute.  On a `MouseOut`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onMouseOut;
+  var onMouseOut;
 
   NgMouseOutAttrDirective(dom.Element element, Scope scope) {
     element.onMouseOut.listen((event) => scope.$apply(() {
@@ -571,7 +574,7 @@ class NgMouseOverAttrDirective {
    * Parsed expression from the `ng-mouseover` attribute.  On a `MouseOver`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onMouseOver;
+  var onMouseOver;
 
   NgMouseOverAttrDirective(dom.Element element, Scope scope) {
     element.onMouseOver.listen((event) => scope.$apply(() {
@@ -597,7 +600,7 @@ class NgMouseUpAttrDirective {
    * Parsed expression from the `ng-mouseup` attribute.  On a `MouseUp`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onMouseUp;
+  var onMouseUp;
 
   NgMouseUpAttrDirective(dom.Element element, Scope scope) {
     element.onMouseUp.listen((event) => scope.$apply(() {
@@ -623,7 +626,7 @@ class NgMouseWheelAttrDirective {
    * Parsed expression from the `ng-mousewheel` attribute.  On a `MouseWheel`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onMouseWheel;
+  var onMouseWheel;
 
   NgMouseWheelAttrDirective(dom.Element element, Scope scope) {
     element.onMouseWheel.listen((event) => scope.$apply(() {
@@ -649,7 +652,7 @@ class NgScrollAttrDirective {
    * Parsed expression from the `ng-scroll` attribute.  On a `Scroll`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onScroll;
+  var onScroll;
 
   NgScrollAttrDirective(dom.Element element, Scope scope) {
     element.onScroll.listen((event) => scope.$apply(() {
@@ -675,7 +678,7 @@ class NgTouchCancelAttrDirective {
    * Parsed expression from the `ng-touchcancel` attribute.  On a `TouchCancel`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onTouchCancel;
+  var onTouchCancel;
 
   NgTouchCancelAttrDirective(dom.Element element, Scope scope) {
     element.onTouchCancel.listen((event) => scope.$apply(() {
@@ -701,7 +704,7 @@ class NgTouchEndAttrDirective {
    * Parsed expression from the `ng-touchend` attribute.  On a `TouchEnd`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onTouchEnd;
+  var onTouchEnd;
 
   NgTouchEndAttrDirective(dom.Element element, Scope scope) {
     element.onTouchEnd.listen((event) => scope.$apply(() {
@@ -727,7 +730,7 @@ class NgTouchMoveAttrDirective {
    * Parsed expression from the `ng-touchmove` attribute.  On a `TouchMove`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onTouchMove;
+  var onTouchMove;
 
   NgTouchMoveAttrDirective(dom.Element element, Scope scope) {
     element.onTouchMove.listen((event) => scope.$apply(() {
@@ -753,7 +756,7 @@ class NgTouchStartAttrDirective {
    * Parsed expression from the `ng-touchstart` attribute.  On a `TouchStart`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
-  Getter onTouchStart;
+  var onTouchStart;
 
   NgTouchStartAttrDirective(dom.Element element, Scope scope) {
     element.onTouchStart.listen((event) => scope.$apply(() {
