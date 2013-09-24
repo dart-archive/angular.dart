@@ -321,6 +321,6 @@ main() => describe('zone', () {
     expect(async(() {
       zone.assertInTurn();
       nextTurn(true);
-    })).toThrow('\'_runningInTurn\' is not true');
+    })).toThrow('ssertion');  // Support both dart2js and the VM with half a word.
   });
 });
