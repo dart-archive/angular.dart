@@ -69,8 +69,14 @@ class Zone {
   }
 
   LongStackTrace _getLongStacktrace(name) {
+    var shortStacktrace = 'Long-stacktraces supressed in production.';
+    assert((shortStacktrace = _getStacktrace()) != null);
+    return new LongStackTrace(name, shortStacktrace, _longStacktrace);
+  }
+
+  _getStacktrace() {
     try { throw []; } catch (e, s) {
-      return new LongStackTrace(name, s, _longStacktrace);
+      return s;
     }
   }
 
