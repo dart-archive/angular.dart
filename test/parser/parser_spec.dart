@@ -39,11 +39,16 @@ class InheritedMapData extends MapData {
 main() {
   describe('parse', () {
     var scope, parser;
+    beforeEach(module((Module module) {
+      module.type(IncrementFilter);
+      module.type(SubstringFilter);
+    }));
     beforeEach(inject((Parser injectedParser) {
       parser = injectedParser;
     }));
     
     eval(String text) => parser(text).eval(scope, null);
+    expectEval(String expr) => expect(() => eval(expr));
 
     beforeEach(inject((Scope rootScope) { scope = rootScope; }));
 
@@ -123,17 +128,9 @@ main() {
         return null;
       };
 
-      expectEval(String expr) => expect(() => eval(expr));
-
       // PARSER ERRORS
       it('should throw a reasonable error for unconsumed tokens', () {
         expectEval(")").toThrow('Parser Error: Unconsumed token ) at column 1 in [)]');
-      });
-
-
-      it('should throw a "not implemented" error for filters', () {
-        expectEval("4|a").toThrow(
-            'Parser Error: Filters are not implemented at column 2 in [4|a]');
       });
 
 
@@ -337,9 +334,6 @@ main() {
       it('should parse string', () {
         expect(eval("'a' + 'b c'")).toEqual("ab c");
       });
-
-
-      // TODO filters
 
 
       it('should access scope', () {
@@ -722,6 +716,39 @@ main() {
         expect(locals["a"]).toEqual({'b':123});
       });
     });
+
+
+    describe('filters', () {
+      it('should call a filter', () {
+        expect(eval("'Foo'|uppercase")).toEqual("FOO");
+        expect(eval("'fOo'|uppercase|lowercase")).toEqual("foo");
+      });
+
+      it('Compiled filter should be instace of FilterExpression', () {
+        var expression = parser("'Foo'|uppercase");
+        expect(expression is FilterExpression).toEqual(true);
+      });
+
+      it('should call a filter with arguments', () {
+        expect(eval("1|increment:2")).toEqual(3);
+      });
+
+      it('should evaluate grouped filters', () {
+        scope.name = 'MISKO';
+        expect(scope.$eval('n = (name|lowercase)')).toEqual('misko');
+        expect(scope.$eval('n')).toEqual('misko');
+      });
+
+      it('should parse filters', () {
+        expect(() {
+          scope.$eval("1|nonexistent");
+        }).toThrow('No NgFilter: nonexistent found!');
+
+        scope.offset =  3;
+        expect(scope.$eval("'abcd'|substring:1:offset")).toEqual("bc");
+        expect(scope.$eval("'abcd'|substring:1:3|uppercase")).toEqual("BC");
+      });
+    });
   });
 }
 
@@ -749,4 +776,16 @@ class OverloadObject implements Map {
 class ScopeWithErrors {
   String get boo { throw "boo to you"; }
   String foo() { throw "foo to you"; }
+}
+
+@NgFilter(name:'increment')
+class IncrementFilter {
+  call(a, b) => a + b;
+}
+
+@NgFilter(name:'substring')
+class SubstringFilter {
+  call(String str, startIndex, [endIndex]) {
+    return str.substring(startIndex, endIndex);
+  }
 }

@@ -15,12 +15,14 @@ import 'dom/http.dart';
 import 'dom/template_cache.dart';
 import 'scope.dart';
 import 'zone.dart';
+import 'filter.dart';
 import 'registry.dart';
 
 import 'parser/parser_library.dart';
 import 'dom/all.dart';
 import 'dom/http.dart';
 import 'directives/all.dart';
+import 'filters/all.dart';
 
 
 class AngularModule extends Module {
@@ -28,6 +30,7 @@ class AngularModule extends Module {
     type(ControllerMap);
     type(DirectiveMap);
     type(MetadataExtractor);
+    type(FilterMap);
     type(Compiler);
     type(ExceptionHandler);
     type(Scope);
@@ -49,6 +52,7 @@ class AngularModule extends Module {
     type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
 
     registerDirectives(this);
+    registerFilters(this);
   }
 }
 

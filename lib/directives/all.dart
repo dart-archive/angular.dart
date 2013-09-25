@@ -1,7 +1,6 @@
 library angular.directives.all;
 
 import 'package:di/di.dart';
-import '../bootstrap.dart';
 
 import 'ng_mustache.dart';             export 'ng_mustache.dart';
 import 'ng_a.dart';                    export 'ng_a.dart';

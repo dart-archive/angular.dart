@@ -2,6 +2,7 @@ library parser_perf;
 
 import '_perf.dart';
 import 'dart:async';
+import 'package:angular/filter.dart';
 import 'package:angular/scope.dart';
 import 'package:angular/parser/parser_library.dart';
 import 'package:di/di.dart';
@@ -18,10 +19,11 @@ main() {
       allowImplicitInjection:true);
   var scope = injector.get(Scope);
   var reflectiveParser = injector.get(Parser);
+  var filterMap = injector.get(FilterMap);
   var generatedParser = new DynamicInjector(
       modules: [new Module()
         ..type(Parser, implementedBy: StaticParser)
-        ..value(StaticParserFunctions, generated_functions.functions())],
+        ..value(StaticParserFunctions, generated_functions.functions(filterMap))],
       allowImplicitInjection:true).get(Parser);
   var hybridParser = new DynamicInjector(
       modules: [new Module()

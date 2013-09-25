@@ -11,8 +11,9 @@ class BoundExpression {
 }
 
 class Expression implements ParserAST {
-  ParsedGetter eval;
-  ParsedSetter assign;
+  final ParsedGetter eval;
+  final ParsedSetter assign;
+
   String exp;
   List parts;
 
@@ -76,9 +77,9 @@ var undefined_ = const Symbol("UNDEFINED");
 
 class ParserBackend {
   GetterSetter _getterSetter;
+  FilterMap _filters;
 
-
-  ParserBackend(GetterSetter this._getterSetter);
+  ParserBackend(GetterSetter this._getterSetter, FilterMap this._filters);
 
   static Expression ZERO = new Expression((_, [_x]) => 0);
 
@@ -258,6 +259,7 @@ class ParserBackend {
       });
 
   Expression profiled(value, _perf, text) {
+    if (value is FilterExpression) return value;
     var wrappedGetter = (s, [l]) =>
     _perf.time('angular.parser.getter', () => value.eval(s, l), text);
     var wrappedAssignFn = null;
@@ -279,4 +281,32 @@ class ParserBackend {
       new Expression((self, [locals]) => v);
 
   zero() => ZERO;
+
+  FilterExpression filter(String filterName,
+                         Expression leftHandSide,
+                         List<Expression> parameters,
+                         Function evalError) {
+    var filterFn = _filters(filterName);
+    return new FilterExpression(filterFn, leftHandSide, parameters);
+  }
+}
+
+class FilterExpression extends Expression {
+  final Function filterFn;
+  final Expression leftHandSide;
+  final List<Expression> parameters;
+
+  FilterExpression(Function this.filterFn,
+                   Expression this.leftHandSide,
+                   List<Expression> this.parameters): super(null);
+
+  get eval => _eval;
+
+  dynamic _eval(self, [locals]) {
+    var args = [leftHandSide.eval(self, locals)];
+    for ( var i = 0; i < parameters.length; i++) {
+      args.add(parameters[i].eval(self, locals));
+    }
+    return Function.apply(filterFn, args);
+  }
 }

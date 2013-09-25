@@ -21,7 +21,13 @@ abstract class AnnotationMap<K> {
     });
   }
 
-  Type operator[](K annotation) => _map[annotation];
+  Type operator[](K annotation) {
+    var value = _map[annotation];
+    if (value == null) {
+      throw 'No $annotation found!';
+    }
+    return value;
+  }
 
   forEach(fn(K, Type)) => _map.forEach(fn);
 }

@@ -20,6 +20,7 @@ main() {
   // node node_modules/karma/bin/karma run | grep -Eo ":XNAY:.*:XNAY:" | sed -e 's/:XNAY://g' | sed -e "s/^/'/" | sed -e "s/$/',/" | sort | uniq > missing_expressions
   injector.get(isGetter ? ParserGetterSetter : ParserGenerator).generateParser([
       "null",
+      "[1, 2].length",
       "doesNotExist",
       "a.b.c",
       "x.b.c",
@@ -49,7 +50,6 @@ main() {
       "[1][0]",
       "[[1]][0][0]",
       "[].length",
-      "[1, 2].length",
       "{}",
       "{a:'b'}",
       "{'a':'b'}",
@@ -62,7 +62,6 @@ main() {
       '1 + 2.5',
       '1+undefined',
       '4()',
-      '4|a',
       '5=4',
       '6[3]',
       '{a',
@@ -110,7 +109,6 @@ main() {
       '!(11 == 10)',
       '1 + -2.5',
       '[{a',
-      '{a',
       'array[5=4]',
       '\$root',
       'subTotal * taxRate / 100',
@@ -118,16 +116,11 @@ main() {
 
       '1!=2',
       '1+2*3/4',
-      '[{a',
-      '{a',
       '\$parent',
       '{true',
 
       '0--1+1.5',
       '1<2',
-      '[{a',
-      '{a',
-      '{true',
       '1<=1',
 
       '1>2',
@@ -144,7 +137,6 @@ main() {
       'exists(doesNotExist())',
       'doesNotExists(exists())',
       'a[0]()',
-      'a[x()]()',
       '{}()',
       'items[1]',
       "-0--1++2*-3/-4",
@@ -156,5 +148,9 @@ main() {
       "a=undefined",
       'add(a,b)',
       'notAProperty',
+      "'Foo'|uppercase",
+      "1|increment:2",
+      "'abcd'|substring:1:offset",
+      "'abcd'|substring:1:3|uppercase"
   ]);
 }

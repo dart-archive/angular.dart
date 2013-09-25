@@ -5,9 +5,10 @@ import 'package:di/di.dart';
 import 'registry.dart';
 
 /**
- * Used to annotate
+ * Used to annotate Controllers used by ng-controller
  */
 class NgController {
+  //TODO(misko): move this with ng-controler
   final String name;
 
   const NgController({String this.name});

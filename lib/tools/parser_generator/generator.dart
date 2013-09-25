@@ -2,70 +2,44 @@ library generator;
 
 import 'dart_code_gen.dart';
 import '../../parser/parser_library.dart';
+import 'source.dart';
 
 class ParserGenerator {
   DynamicParser _parser;
-  NestedPrinter _p;
-  List<String> _expressions;
   Map<String, boolean> _printedFunctions = {};
   GetterSetterGenerator _getters;
+  SourceBuilder _ = new SourceBuilder();
 
-  ParserGenerator(DynamicParser this._parser, NestedPrinter this._p,
+  ParserGenerator(DynamicParser this._parser,
                   GetterSetterGenerator this._getters);
 
   generateParser(List<String> expressions) {
-    _expressions = expressions;
-    _printParserFunctions();
-    _printTestMain();
+    print("genEvalError(msg) { throw msg; }");
+    print("functions(FilterLookup filters) => new StaticParserFunctions(buildExpressions(filters));");
+    print('var evalError = (text, [s]) => text;');
+    print("");
+    BodySource body = new BodySource();
+    MapSource map = new MapSource();
+
+    // deterimine the order.
+    expressions.forEach((exp) {
+      var code = safeCode(exp);
+      map('${_.str(exp)}: ${_.ref(code)}');
+    });
+    // now do it in actual order
+    _.codeRefs.forEach((code) {
+      body(_.stmt('Expression ${_.ref(code)} = ', code.toSource(_)));
+    });
+    body(_.stmt('return ', map));
+    print("Map<String, Expression> buildExpressions(FilterLookup filters) ${body}");
+    print("\n");
+    print(_getters.functions);
   }
 
   String generateDart(String expression) {
     var tokens = _lexer(expression);
   }
 
-  _printParserFunctions() {
-    _printFunctions();
-    _p(_getters.functions);
-  }
-
-  _printFunctions() {
-    _p('var evalError = (text, [s]) => text;');
-    _p('var _FUNCTIONS = {');
-    _p.indent();
-    _expressions.forEach((exp) => _printFunction(exp));
-    _p.dedent();
-    _p('};\n');
-//'1': new Expression((scope, [locals]) => 1)
-  }
-
-  Code VALUE_CODE = new Code("value");
-
-  _printFunction(String exp) {
-    if (_printedFunctions.containsKey(exp)) return;
-    _printedFunctions[exp] = true;
-    Code codeExpression = safeCode(exp);
-
-    _p('\'${escape(exp)}\': new Expression(');
-    _p.indent();
-    if (codeExpression.simpleGetter != null) {
-      _p(codeExpression.simpleGetter);
-    } else {
-      _p('(scope, [locals]) {');
-      _p.indent();
-      _functionBody(exp, codeExpression);
-      _p.dedent();
-      _p('}');
-    }
-    if (codeExpression.assignable) {
-      _p(', (scope, value, [locals]) { ');
-      _p.indent();
-      _p('${codeExpression.assign(VALUE_CODE).returnExp()}');
-      _p.dedent();
-      _p('}');
-    }
-    _p.dedent();
-    _p('),');
-  }
 
   Code safeCode(String exp) {
     try {
@@ -74,45 +48,11 @@ class ParserGenerator {
       if ("$e".contains('Parser Error') ||
       "$e".contains('Lexer Error') ||
       "$e".contains('Unexpected end of expression')) {
-        return  new Code.returnOnly("throw '${escape(e)}';");
+        return  new ThrowCode("'${escape(e.toString())}';");
       } else {
         rethrow;
       }
     }
   }
 
-  _functionBody(exp, Code codeExpression) {
-    _p(codeExpression.returnExp());
-  }
-
-  _printTestMain() {
-    _p("""
-genEvalError(msg) { throw msg; }
-
-functions() => new StaticParserFunctions(_FUNCTIONS);
-
-""");
-  }
-}
-
-class NestedPrinter {
-  String indentString = '';
-  call(String s) {
-    if (s[0] == '\n') s.replaceFirst('\n', '');
-    var lines = s.split('\n');
-    lines.forEach((l) { _oneLine(l); });
-  }
-
-  _oneLine(String s) {
-    assert(s != null);
-    assert(indentString != null);
-    print("$indentString$s");
-  }
-
-  indent() {
-    indentString += '  ';
-  }
-  dedent() {
-    indentString = indentString.replaceFirst('  ', '');
-  }
 }

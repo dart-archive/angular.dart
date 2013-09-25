@@ -3,6 +3,7 @@ library angular.service.parser;
 import 'dart:mirrors';
 import 'package:perf_api/perf_api.dart';
 import '../utils.dart';
+import '../filter.dart';
 
 
 part 'backend.dart';

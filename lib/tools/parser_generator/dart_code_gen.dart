@@ -1,23 +1,84 @@
 library dart_code_gen;
 
 import '../../parser/parser_library.dart';  // For ParserBackend.
+import 'source.dart';
+
+Code VALUE_CODE = new Code("value");
 
 class Code implements ParserAST {
+  String id;
   String _exp;
-  String _returnOnly;
   String simpleGetter;
   Function assign;
-  Code(this._exp, [this.assign, this.simpleGetter]);
-
-  Code.returnOnly(this._returnOnly);
-
-  returnExp() => _returnOnly != null ? _returnOnly : "return $exp;";
+  Code(this._exp, [this.assign, this.simpleGetter]) {
+    id = _exp == null ? simpleGetter : _exp;
+    if (id == null) {
+        throw 'id is null';
+    }
+  }
 
   get exp {
-    if (_exp == null) { throw "Can not be used in an expression"; }
+    if (_exp == null) {
+      throw "Can not be used in an expression";
+    }
     return _exp;
   }
   get assignable => assign != null;
+
+  Source toSource(SourceBuilder _) {
+    return _('new Expression', _.parens(
+      _('(scope, [locals])', _.body(
+          'return $exp;'
+      )),
+      assignable ? _('(scope, value, [locals])', _.body(
+        'return ${assign(VALUE_CODE).exp};'
+      )) : 'null'
+    ));
+  }
+}
+
+class ThrowCode extends Code {
+  ThrowCode(code): super('throw $code');
+  Source toSource(SourceBuilder _) {
+    return _('new Expression', _.parens(
+        _('(scope, [locals])', _.body()..source.addAll(exp.split('\n'))),
+        assignable ? _('(scope, value, [locals])', _.body()) : 'null'
+    ));
+  }
+}
+
+class MultipleStatementCode extends Code {
+  MultipleStatementCode(code): super(code);
+
+  Source toSource(SourceBuilder _) {
+    return _('new Expression', _.parens(
+        _('(scope, [locals])', _.body()..source.addAll(exp.split('\n'))),
+        assignable ? _('(scope, value, [locals])', _.body()) : 'null'
+    ));
+  }
+}
+
+class FilterCode extends Code {
+  final String filterName;
+  final Code leftHandSide;
+  final List<Expression> parameters;
+  final Function evalError;
+
+  FilterCode(String this.filterName,
+             Code this.leftHandSide,
+             List<Code> this.parameters,
+             Function this.evalError): super(null);
+
+  get id => '${leftHandSide.id} | $filterName:${parameters.map((e)=>e.id).join(':')}}';
+
+  Source toSource(SourceBuilder _) {
+    var params = parameters.map((e) => _.ref(e));
+    return _('new FilterExpression', _.parens(
+      'filters(${_.str(filterName)})',
+      _.ref(leftHandSide),
+      '[${params.join(', ')}]'
+    ));
+  }
 }
 
 escape(String s) => s.replaceAll('\'', '\\\'').replaceAll(r'$', r'\$');
@@ -195,7 +256,7 @@ class DartCodeGen implements ParserBackend {
     code += statements.map((Code s) =>
         "last = ${s.exp};\nif (last != null) { ret = last; }\n").join('\n');
     code += "return ret;\n";
-    return new Code.returnOnly(code);
+    return new MultipleStatementCode(code);
   }
 
   Code functionCall(Code fn, fnName, List<Code> argsFn, evalError) =>
@@ -233,10 +294,10 @@ class DartCodeGen implements ParserBackend {
 
     var assign = (Code right) {
       var setterFnName = _getterGen.setter(key);
-      return new Code("${setterFnName}(scope, ${right.exp}, locals)");
+      return new Code("${setterFnName}(scope, ${right.exp}, locals)", null, setterFnName);
     };
 
-    return new Code("$getterFnName(scope, locals)", assign, "$getterFnName");
+    return new Code("$getterFnName(scope, locals)", assign, getterFnName);
   }
 
   String _value(v) =>
@@ -245,4 +306,11 @@ class DartCodeGen implements ParserBackend {
   Code value(v) => new Code(_value(v));
 
   Code zero() => ZERO;
+
+  Code filter(String filterName,
+              Code leftHandSide,
+              List<Code> parameters,
+              Function evalError) {
+    return new FilterCode(filterName, leftHandSide, parameters, evalError);
+  }
 }

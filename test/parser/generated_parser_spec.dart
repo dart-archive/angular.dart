@@ -8,7 +8,9 @@ main() {
   describe('generated parser', () {
     beforeEach(module((AngularModule module) {
       module.type(Parser, implementedBy: StaticParser);
-      module.value(StaticParserFunctions, generated_functions.functions());
+      module.factory(StaticParserFunctions, (Injector injector) {
+        return generated_functions.functions(injector.get(FilterMap));
+      });
     }));
     parser_spec.main();
   });

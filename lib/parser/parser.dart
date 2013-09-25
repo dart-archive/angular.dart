@@ -142,7 +142,7 @@ class DynamicParser implements Parser {
   String _text;
   var _evalError;
 
-  call(String text) {
+  ParserAST call(String text) {
     try {
       if (text == null) text = '';
       _tokenSavers = [];
@@ -183,8 +183,8 @@ class DynamicParser implements Parser {
   _parserError(String s, [Token t]) {
     if (t == null && !_tokens.isEmpty) t = _tokens[0];
     String location = t == null ?
-    'the end of the expression' :
-    'at column ${t.index + 1} in';
+      'the end of the expression' :
+      'at column ${t.index + 1} in';
     return 'Parser Error: $s $location [$_text]';
   }
 
@@ -371,13 +371,26 @@ class DynamicParser implements Parser {
     var token;
     while(true) {
       if ((token = _expect('|')) != null) {
-        //left = binaryFn(left, token.opKey, filter());
-        throw _parserError("Filters are not implemented", token);
+        left = _filter(left);
       } else {
         return left;
       }
     }
   }
+
+  ParserAST _filter(ParserAST left) {
+    var token = _expect();
+    var filterName = token.text;
+    var argsFn = [];
+    while(true) {
+      if ((token = _expect(':')) != null) {
+        argsFn.add(_expression());
+      } else {
+        return _b.filter(filterName, left, argsFn, _evalError);
+      }
+    }
+  }
+
 
   _statements() {
     List<ParserAST> statements = [];

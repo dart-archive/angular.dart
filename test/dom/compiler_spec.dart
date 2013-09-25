@@ -342,11 +342,11 @@ main() {
       }));
 
       it('should expose mapped attributes as camel case', inject(() {
-        var element = $('<camel-case-map camel-case=6></camel-case-map>');
+        var element = $('<camel-case-map camel-case=G></camel-case-map>');
         $compile(element)(injector, element);
         $rootScope.$apply();
         var componentScope = $rootScope.camelCase;
-        expect(componentScope.camelCase).toEqual('6');
+        expect(componentScope.camelCase).toEqual('G');
       }));
 
       it('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope, Injector injector) {
