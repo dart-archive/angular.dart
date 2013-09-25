@@ -84,7 +84,7 @@ class SpyFunction {
     invocations.add(args);
 
     var withoutNulls = new List.from(args);
-    while (withoutNulls.last == null) {
+    while (!withoutNulls.isEmpty && withoutNulls.last == null) {
       withoutNulls.removeLast();
     }
     invocationsWithoutTrailingNulls.add(withoutNulls);
