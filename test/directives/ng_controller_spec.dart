@@ -3,6 +3,7 @@ library ng_controller_spec;
 import '../_specs.dart';
 
 
+@NgController(name: 'Main')
 class MainController {
   Scope _scope;
   String name = 'name on controller';
@@ -18,7 +19,7 @@ main() {
     var compile, element, rootScope;
 
     beforeEach(module((AngularModule module) {
-      module.controller('Main', MainController);
+      module.type(MainController);
     }));
 
     beforeEach(inject((Scope scope, Compiler compiler, Injector injector) {

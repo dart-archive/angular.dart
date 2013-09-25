@@ -3,7 +3,7 @@ library ng_if_spec;
 import '../_specs.dart';
 import 'dart:html' as dom;
 
-@NgContoroller(name:'Child')
+@NgController(name:'Child')
 class ChildController {
   ChildController(Scope scope) {
     scope.setBy = 'childController';

@@ -2,6 +2,7 @@ library angular;
 
 export 'bootstrap.dart';
 export 'cache.dart';
+export 'controller.dart';
 export 'exception_handler.dart';
 export 'interpolate.dart';
 export 'scope.dart';

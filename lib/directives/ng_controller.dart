@@ -20,14 +20,14 @@ class NgControllerAttrDirective {
   BlockHole blockHole;
   Injector injector;
   Scope scope;
-  ControllerRegistry controllerRegistry;
+  ControllerMap controllers;
 
   String alias;
 
   set expression(value) {
     var match = CTRL_REGEXP.firstMatch(value);
 
-    Type ctrlType = controllerRegistry[match.group(1)];
+    Type ctrlType = controllers[new NgController(name: match.group(1))];
     alias = match.group(3);
 
     scope.$evalAsync(() {
@@ -52,5 +52,5 @@ class NgControllerAttrDirective {
                             BlockHole this.blockHole,
                             Injector this.injector,
                             Scope this.scope,
-                            ControllerRegistry this.controllerRegistry);
+                            ControllerMap this.controllers);
 }
