@@ -38,7 +38,7 @@ class TestBed {
 beforeEachTestBed(assign) {
   return module((AngularModule module) {
     module.type(TestBed);
-    module.directive(Probe);
+    module.type(Probe);
 
     var httpBackend = new MockHttpBackend();
     module.value(MockHttpBackend, httpBackend);

@@ -21,12 +21,11 @@ import 'directives/all.dart';
 
 
 class AngularModule extends Module {
-  DirectiveRegistry _directives = new DirectiveRegistry();
   ControllerRegistry _controllers = new ControllerRegistry();
 
   AngularModule() {
-    value(DirectiveRegistry, _directives);
     value(ControllerRegistry, _controllers);
+    type(DirectiveMap);
     type(Compiler);
     type(ExceptionHandler);
     type(Scope);
@@ -48,11 +47,6 @@ class AngularModule extends Module {
     type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
 
     registerDirectives(this);
-  }
-
-  directive(Type directive) {
-    _directives.register(directive);
-    return this;
   }
 
   controller(String name, Type controllerType) {

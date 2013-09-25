@@ -10,16 +10,15 @@ main() {
     Compiler $compile;
     Injector injector;
     Scope $rootScope;
-    DirectiveRegistry directives;
 
     beforeEach(module((AngularModule module) {
       module
-        ..directive(TabComponent)
-        ..directive(PublishTypesAttrDirective)
-        ..directive(PaneComponent)
-        ..directive(SimpleTranscludeInAttachAttrDirective)
-        ..directive(IncludeTranscludeAttrDirective)
-        ..directive(LocalAttrDirective);
+        ..type(TabComponent)
+        ..type(PublishTypesAttrDirective)
+        ..type(PaneComponent)
+        ..type(SimpleTranscludeInAttachAttrDirective)
+        ..type(IncludeTranscludeAttrDirective)
+        ..type(LocalAttrDirective);
       return (Injector _injector) {
         injector = _injector;
         $compile = injector.get(Compiler);
@@ -160,18 +159,18 @@ main() {
 
     describe('components', () {
       beforeEach(module((AngularModule module) {
-        module.directive(SimpleComponent);
-        module.directive(CamelCaseMapComponent);
-        module.directive(IoComponent);
-        module.directive(IoControllerComponent);
-        module.directive(UnpublishedIoControllerComponent);
-        module.directive(IncorrectMappingComponent);
-        module.directive(NonAssignableMappingComponent);
-        module.directive(ParentExpressionComponent);
-        module.directive(PublishMeComponent);
-        module.directive(LogComponent);
-        module.directive(AttachDetachComponent);
-        module.directive(SimpleComponent);
+        module.type(SimpleComponent);
+        module.type(CamelCaseMapComponent);
+        module.type(IoComponent);
+        module.type(IoControllerComponent);
+        module.type(UnpublishedIoControllerComponent);
+        module.type(IncorrectMappingComponent);
+        module.type(NonAssignableMappingComponent);
+        module.type(ParentExpressionComponent);
+        module.type(PublishMeComponent);
+        module.type(LogComponent);
+        module.type(AttachDetachComponent);
+        module.type(SimpleComponent);
       }));
 
       it('should select on element', async(inject((Zone zone) {

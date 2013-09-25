@@ -39,7 +39,7 @@ main() {
     beforeEach(module((AngularModule module) {
       backend = new MockHttpBackend();
       module
-        ..directive(HtmlAndCssComponent)
+        ..type(HtmlAndCssComponent)
         ..value(HttpBackend, backend)
         ..type(UrlRewriter, implementedBy: PrefixedUrlRewriter);
     }));
@@ -72,11 +72,11 @@ main() {
   describe('async template loading', () {
     beforeEach(module((AngularModule module) {
       module.factory(Http, (Injector injector) => injector.get(MockHttp));
-      module.directive(LogAttrDirective);
-      module.directive(SimpleUrlComponent);
-      module.directive(HtmlAndCssComponent);
-      module.directive(OnlyCssComponent);
-      module.directive(InlineWithCssComponent);
+      module.type(LogAttrDirective);
+      module.type(SimpleUrlComponent);
+      module.type(HtmlAndCssComponent);
+      module.type(OnlyCssComponent);
+      module.type(InlineWithCssComponent);
     }));
 
     afterEach(inject((MockHttp $http) {

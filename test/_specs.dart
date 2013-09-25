@@ -231,7 +231,6 @@ class SpecInjector {
   DynamicInjector moduleInjector;
   DynamicInjector injector;
   List<Module> modules = [];
-  DirectiveRegistry directives = new DirectiveRegistry();
   List<Function> initFns = [];
 
   SpecInjector() {
@@ -261,7 +260,9 @@ class SpecInjector {
     try {
       if (injector == null) {
         injector = new DynamicInjector(modules: modules); // Implicit injection is disabled.
-        initFns.forEach((fn) => injector.invoke(fn));
+        initFns.forEach((fn){
+          injector.invoke(fn);
+        });
       }
       injector.invoke(fn);
     } catch (e, s) {

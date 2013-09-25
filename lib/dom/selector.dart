@@ -32,11 +32,11 @@ import '../directive.dart';
  */
 typedef List<DirectiveRef> DirectiveSelector(dom.Node node);
 
-class ContainsSelector {
-  String selector;
+class _ContainsSelector {
+  NgAnnotationBase annotation;
   RegExp regexp;
 
-  ContainsSelector(this.selector, regexp) {
+  _ContainsSelector(NgAnnotationBase this.annotation, String regexp) {
     this.regexp = new RegExp(regexp);
   }
 }
@@ -206,22 +206,23 @@ List<_SelectorPart> _splitCss(String selector) {
  *
  * Factory method for creating a [DirectiveSelector].
  */
-DirectiveSelector directiveSelectorFactory(DirectiveRegistry directives) {
+DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
 
   _ElementSelector elementSelector = new _ElementSelector('');
-  List<ContainsSelector> attrSelector = [];
-  List<ContainsSelector> textSelector = [];
+  List<_ContainsSelector> attrSelector = [];
+  List<_ContainsSelector> textSelector = [];
 
-  directives.enumerate().forEach((selector) {
+  directives.forEach((NgAnnotationBase annotation, Type type) {
     var match;
+    var selector = annotation.selector;
     List<_SelectorPart> selectorParts;
 
     if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
-      textSelector.add(new ContainsSelector(selector, match.group(1)));
+      textSelector.add(new _ContainsSelector(annotation, match.group(1)));
     } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
-      attrSelector.add(new ContainsSelector(selector, match[1]));
+      attrSelector.add(new _ContainsSelector(annotation, match[1]));
     } else if ((selectorParts = _splitCss(selector)) != null){
-      elementSelector.addDirective(selectorParts, directives[selector]);
+      elementSelector.addDirective(selectorParts, new Directive(type, annotation));
     } else {
       throw new ArgumentError('Unsupported Selector: $selector');
     }
@@ -254,14 +255,14 @@ DirectiveSelector directiveSelectorFactory(DirectiveRegistry directives) {
         element.attributes.forEach((attrName, value){
           attrs[attrName] = value;
           for(var k = 0, kk = attrSelector.length; k < kk; k++) {
-            var selectorRegExp = attrSelector[k];
+            _ContainsSelector selectorRegExp = attrSelector[k];
             if (selectorRegExp.regexp.hasMatch(value)) {
               // this directive is matched on any attribute name, and so
               // we need to pass the name to the directive by prefixing it to the
               // value. Yes it is a bit of a hack.
-              Directive directive = directives[selectorRegExp.selector];
+              Type type = directives[selectorRegExp.annotation];
               directiveRefs.add(new DirectiveRef(
-                  node, directive.type, directive.annotation, '$attrName=$value'));
+                  node, type, selectorRegExp.annotation, '$attrName=$value'));
             }
           }
 
@@ -286,8 +287,8 @@ DirectiveSelector directiveSelectorFactory(DirectiveRegistry directives) {
           var selectorRegExp = textSelector[k];
 
           if (selectorRegExp.regexp.hasMatch(value)) {
-            Directive directive = directives[selectorRegExp.selector];
-            directiveRefs.add(new DirectiveRef(node, directive.type, directive.annotation, value));
+            Type type = directives[selectorRegExp.annotation];
+            directiveRefs.add(new DirectiveRef(node, type, selectorRegExp.annotation, value));
           }
         }
         break;

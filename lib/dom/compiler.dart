@@ -10,11 +10,11 @@ import 'node_cursor.dart';
 import '../directive.dart';
 
 class Compiler {
-  DirectiveRegistry directives;
+  DirectiveMap directives;
   DirectiveSelector selector;
   Profiler _perf;
 
-  Compiler(DirectiveRegistry this.directives, Profiler this._perf) {
+  Compiler(DirectiveMap this.directives, Profiler this._perf) {
     selector = directiveSelectorFactory(directives);
   }
 

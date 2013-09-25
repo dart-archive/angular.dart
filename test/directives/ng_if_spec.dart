@@ -3,6 +3,7 @@ library ng_if_spec;
 import '../_specs.dart';
 import 'dart:html' as dom;
 
+@NgContoroller(name:'Child')
 class ChildController {
   ChildController(Scope scope) {
     scope.setBy = 'childController';
@@ -15,8 +16,8 @@ main() {
 
     beforeEach(module((AngularModule module) {
       module
-        ..controller('Child', ChildController)
-        ..directive(LogAttrDirective);
+        ..type(ChildController)
+        ..type(LogAttrDirective);
     }));
 
     beforeEach(inject((Scope scope, Compiler compiler, Injector injector) {

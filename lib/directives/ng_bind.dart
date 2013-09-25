@@ -1,7 +1,7 @@
 library angular.directive.ng_bind;
 
 import 'dart:html' as dom;
-import '../dom/directive.dart';
+import '../angular.dart';
 
 @NgDirective(
   selector: '[ng-bind]',

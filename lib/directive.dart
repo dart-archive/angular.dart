@@ -1,6 +1,8 @@
 library angular.service.directive;
 
 import 'dart:mirrors';
+import 'package:meta/meta.dart';
+import 'package:di/di.dart';
 
 class NgAnnotationBase {
   /**
@@ -267,31 +269,25 @@ class Directive {
   Directive(Type this.type, NgAnnotationBase this.annotation);
 }
 
-class DirectiveRegistry {
-  Map<String, Directive> directiveMap = {};
+@proxy
+class DirectiveMap implements Map<NgAnnotationBase, Type> {
+  Map<NgAnnotationBase, Type> _directiveMap = {};
 
-  List<String> enumerate() => directiveMap.keys.toList();
-
-  register(Type type) {
-    var meta = reflectClass(type).metadata;
-    if (meta == null) {
-      throw "Type $type does not have metadata. Syntax error, perhaps?";
-    }
-    var annotations = meta
-      .where((InstanceMirror im) => im.reflectee is NgAnnotationBase)
-      .map((InstanceMirror im) => im.reflectee);
-    if (annotations.isEmpty) {
-      throw "A $type directive needs to have either @NgDirective or @NgComponent metadata.";
-    }
-    NgAnnotationBase annotation = annotations.first;
-    directiveMap[annotation.selector] = new Directive(type, annotation);
+  DirectiveMap(Injector injector) {
+    injector.types.forEach((type) {
+      var meta = reflectClass(type).metadata;
+      if (meta == null) return;
+      var iterable = meta
+        .where((InstanceMirror im) => im.reflectee is NgAnnotationBase)
+        .map((InstanceMirror im) => im.reflectee);
+      if (iterable.isEmpty) return;
+      _directiveMap[iterable.first] = type;
+    });
   }
 
-  Directive operator[](String selector) {
-    if (directiveMap.containsKey(selector)){
-      return directiveMap[selector];
-    } else {
-      throw new ArgumentError('Unknown selector: $selector');
-    }
-  }
+  Type operator[](NgAnnotationBase annotation) => _directiveMap[annotation];
+
+  forEach(fn) => _directiveMap.forEach(fn);
+
+  noSuchMethod(Invocation invocation) => mirror.reflect(_directiveMap).delegate(invocation);
 }

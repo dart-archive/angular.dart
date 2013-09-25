@@ -29,29 +29,26 @@ main() {
     var element;
     var directives;
 
-    beforeEach(() {
-      // TODO(dart): why can't I have global noop?
-      // TODO(dart): why does this not work?
-      var noop = (Element e, String v) => null;
-
-      log = [];
-      directives = new DirectiveRegistry()
-        ..register(_BElement)
-        ..register(_BClass)
-        ..register(_DirectiveAttr)
-        ..register(_DirectiveFooAttr)
-        ..register(_BElementDirectiveAttr)
-        ..register(_DirectiveValueAttr)
-        ..register(_BElementDirectiveValue)
-        ..register(_ContainsAbc)
-        ..register(_AttributeContainsXyz)
-        ..register(_Component)
-        ..register(_Attribute)
-        ..register(_Structural)
-        ..register(_NonBindable);
-
+    beforeEach(() => log = []);
+    beforeEach(module((AngularModule module) {
+      module
+        ..type(_BElement)
+        ..type(_BClass)
+        ..type(_DirectiveAttr)
+        ..type(_DirectiveFooAttr)
+        ..type(_BElementDirectiveAttr)
+        ..type(_DirectiveValueAttr)
+        ..type(_BElementDirectiveValue)
+        ..type(_ContainsAbc)
+        ..type(_AttributeContainsXyz)
+        ..type(_Component)
+        ..type(_Attribute)
+        ..type(_Structural)
+        ..type(_NonBindable);
+    }));
+    beforeEach(inject((DirectiveMap directives) {
       selector = directiveSelectorFactory(directives);
-    });
+    }));
 
     it('should match directive on element', () {
       expect(

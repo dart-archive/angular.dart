@@ -39,24 +39,24 @@ class DefaultOptionsComponent {
 }
 
 main() {
-  Compiler $compile;
-  Injector injector;
-  Scope $rootScope;
-  DirectiveRegistry directives;
-
-  beforeEach(module((AngularModule module) {
-    module
-    ..directive(ApplyAuthorStyleComponent)
-    ..directive(ResetStyleInheritanceComponent)
-    ..directive(DefaultOptionsComponent);
-    return (Injector _injector) {
-      injector = _injector;
-      $compile = injector.get(Compiler);
-      $rootScope = injector.get(Scope);
-    };
-  }));
-
   describe('shadow dom options', () {
+    Compiler $compile;
+    Injector injector;
+    Scope $rootScope;
+
+    beforeEach(module((AngularModule module) {
+      module
+      ..type(ApplyAuthorStyleComponent)
+      ..type(ResetStyleInheritanceComponent)
+      ..type(DefaultOptionsComponent);
+      return (Injector _injector) {
+        injector = _injector;
+        print(injector.get(DirectiveMap));
+        $compile = injector.get(Compiler);
+        $rootScope = injector.get(Scope);
+      };
+    }));
+
     it('should respect the apply-author-style option', async(inject(() {
       var element = $(
           '<style>div { border: 3px solid green }</style>' +
