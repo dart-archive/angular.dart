@@ -17,6 +17,7 @@ import 'ng_if.dart';                   export 'ng_if.dart';
 import 'ng_include.dart';              export 'ng_include.dart';
 import 'ng_model.dart';                export 'ng_model.dart';
 import 'ng_repeat.dart';               export 'ng_repeat.dart';
+import 'ng_template.dart';             export 'ng_template.dart';
 import 'ng_show.dart';                 export 'ng_show.dart';
 import 'ng_style.dart';                export 'ng_style.dart';
 import 'ng_switch.dart';               export 'ng_switch.dart';
@@ -78,4 +79,5 @@ void registerDirectives(Module module) {
   module.type(NgTouchStartAttrDirective);
   module.type(NgStyleAttrDirective);
   module.type(NgNonBindableAttrDirective);
+  module.type(NgTemplateElementDirective);
 }

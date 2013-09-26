@@ -18,38 +18,58 @@ import 'http.dart';
  * You are welcome to pre-load / seed the TemplateCache with templates for URLs
  * in advance to avoid the network hit on first load.
  *
+ * There are two ways to seed the TemplateCache – (1) imperatively via and
+ * `TemplateCache` service or (2) declaratively in HTML via the `<template>`
+ * element (handled by [NgTemplateElementDirective]).
+ *
+ * Here is an example that illustrates both techniques
+ * ([view in plunker](http://plnkr.co/edit/JCsxhH?p=info)):
+ *
  * Example:
  * 
  *     // main.dart
+ *     import 'package:angular/angular.dart';
+ * 
+ *     @NgController(name: 'Main')
  *     class MainController {
- *       MainController(TemplateCache $templateCache, Scope scope) {
- *         $templateCache.put(
- *             'tpl.html', new HttpResponse(200, 'my name is {{name}}'));
+ *       MainController(TemplateCache templateCache, Scope scope) {
+ *         // Method 1 (imperative): Via the injected TemplateCache service.
+ *         templateCache.put(
+ *             'template_1.html', new HttpResponse(200, 't1: My name is {{name}}.'));
  *         scope.name = "chirayu";
  *       }
  *     }
  *
  *     main() {
- *       bootstrapAngular([
- *           new AngularModule()..controller('Main', MainController)
- *       ]);
+ *       bootstrapAngular([new AngularModule()..type(MainController)], 'html');
  *     }
  *
  * and
  *
  *     <!-- index.html -->
- *     <html ng-app>
+ *     <html>
  *       <head>
  *         <script src="packages/browser/dart.js"></script>
  *         <script src="main.dart" type="application/dart"></script>
+ *
+ *         <!-- Method 2 (declarative): Via the template directive. -->
+ *         <template id="template_2.html" type="text/ng-template">
+ *           t2: My name is {{name}}.
+ *         </template>
  *       </head>
  *       <body ng-controller="Main">
- *         <div ng-include="tpl.html"></div>
+ *         template_1.html: <div ng-include="'template_1.html'"></div><br>
+ *         template_2.html: <div ng-include="'template_2.html'"></div><br>
  *       </body>
  *     </html>
  *
- * the `ng-include` above won't require a template hit and it won't matter if
- * your server serves the file `tpl.html` or not.
+ * Neither `ng-include` above will result in a network hit.  This means that it
+ * isn't necessary for your webserver to even serve those templates.
+ *
+ * `template_1.html` is preloaded into the [TemplateCache] imperatively by
+ * `MainController` while `template_2.html` is preloaded via the
+ * `<template id="template_2.html" type="text/ng-template">` element in the
+ * `<head>` of HTML.
  */
 class TemplateCache extends Cache<HttpResponse> {
 }
