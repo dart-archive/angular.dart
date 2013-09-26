@@ -552,7 +552,7 @@ main() => describe('http', () {
       });
     });
 
-    xdescribe('transformData', () {
+    describe('transformData', () {
 
       describe('request', () {
 
@@ -571,29 +571,16 @@ main() => describe('http', () {
 
 
           it('should ignore File objects', () {
-            /*
-            var file = {
-              some: true,
-              // httpBackend compares toJson values by default,
-              // we need to be sure it's not serialized into json string
-              test: (actualValue) {
-                return file == actualValue;
-              }
-            };
-
-            // I'm really sorry for doing this :-D
-            // Unfortunatelly I don't know how to trick toString.apply(obj) comparison
-            spyOn(window, 'isFile').andReturn(true);
+            var file = new FakeFile();
+            expect(file is File).toBeTruthy();
 
             httpBackend.expect('POST', '/some', file).respond('');
             http(method: 'POST', url: '/some', data: file);
-            */
-            expect('The above comment').toEqual('dart code');
           });
         });
 
 
-        it('should have access to request headers', () {
+        it('should have access to request headers', async(() {
           httpBackend.expect('POST', '/url', 'header1').respond(200);
           http.post('/url', 'req',
             headers: {'h1': 'header1'},
@@ -602,14 +589,15 @@ main() => describe('http', () {
             }
           ).then(callback);
           httpBackend.flush();
+          nextTurn(true);
 
           expect(callback).toHaveBeenCalledOnce();
-        });
+        }));
 
 
-        it('should pipeline more functions', () {
+        it('should pipeline more functions', async(() {
           first(d, h) {return d + '-first' + ':' + h('h1');}
-          second(d) {return d.toUpperCase();}
+          second(d, _) {return d.toUpperCase();}
 
           httpBackend.expect('POST', '/url', 'REQ-FIRST:V1').respond(200);
           http.post('/url', 'req',
@@ -617,9 +605,10 @@ main() => describe('http', () {
             transformRequest: [first, second]
           ).then(callback);
           httpBackend.flush();
+          nextTurn(true);
 
           expect(callback).toHaveBeenCalledOnce();
-        });
+        }));
       });
 
 
@@ -627,58 +616,63 @@ main() => describe('http', () {
 
         describe('default', () {
 
-          it('should deserialize json objects', () {
+          it('should deserialize json objects', async(() {
             httpBackend.expect('GET', '/url').respond('{"foo":"bar","baz":23}');
             http(method: 'GET', url: '/url').then(callback);
             httpBackend.flush();
+            nextTurn(true);
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0]).toEqual({'foo': 'bar', 'baz': 23});
-          });
+            expect(callback.mostRecentCall.args[0].data).toEqual({'foo': 'bar', 'baz': 23});
+          }));
 
 
-          it('should deserialize json arrays', () {
+          it('should deserialize json arrays', async(() {
             httpBackend.expect('GET', '/url').respond('[1, "abc", {"foo":"bar"}]');
             http(method: 'GET', url: '/url').then(callback);
             httpBackend.flush();
+            nextTurn(true);
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0]).toEqual([1, 'abc', {'foo': 'bar'}]);
-          });
+            expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo': 'bar'}]);
+          }));
 
 
-          it('should deserialize json with security prefix', () {
+          it('should deserialize json with security prefix', async(() {
             httpBackend.expect('GET', '/url').respond(')]}\',\n[1, "abc", {"foo":"bar"}]');
             http(method: 'GET', url: '/url').then(callback);
             httpBackend.flush();
+            nextTurn(true);
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0]).toEqual([1, 'abc', {'foo':'bar'}]);
-          });
+            expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
+          }));
 
 
-          it('should deserialize json with security prefix ")]}\'"', () {
+          it('should deserialize json with security prefix ")]}\'"', async(() {
             httpBackend.expect('GET', '/url').respond(')]}\'\n\n[1, "abc", {"foo":"bar"}]');
             http(method: 'GET', url: '/url').then(callback);
             httpBackend.flush();
+            nextTurn(true);
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0]).toEqual([1, 'abc', {'foo':'bar'}]);
-          });
+            expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
+          }));
 
 
-          it('should not deserialize tpl beginning with ng expression', () {
+          it('should not deserialize tpl beginning with ng expression', async(() {
             httpBackend.expect('GET', '/url').respond('{{some}}');
             http.get('/url').then(callback);
             httpBackend.flush();
+            nextTurn(true);
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0]).toEqual('{{some}}');
-          });
+            expect(callback.mostRecentCall.args[0].data).toEqual('{{some}}');
+          }));
         });
 
 
-        it('should have access to response headers', () {
+        it('should have access to response headers', async(() {
           httpBackend.expect('GET', '/url').respond(200, 'response', {'h1': 'header1'});
           http.get('/url',
             transformResponse: (data, headers) {
@@ -686,23 +680,25 @@ main() => describe('http', () {
             }
           ).then(callback);
           httpBackend.flush();
+          nextTurn(true);
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0]).toEqual('header1');
-        });
+          expect(callback.mostRecentCall.args[0].data).toEqual('header1');
+        }));
 
 
-        it('should pipeline more functions', () {
+        it('should pipeline more functions', async(() {
           first(d, h) {return d + '-first' + ':' + h('h1');}
-          second(d) {return d.toUpperCase();}
+          second(d, _) {return d.toUpperCase();}
 
           httpBackend.expect('POST', '/url').respond(200, 'resp', {'h1': 'v1'});
           http.post('/url', '', transformResponse: [first, second]).then(callback);
           httpBackend.flush();
+          nextTurn(true);
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0]).toEqual('RESP-FIRST:V1');
-        });
+          expect(callback.mostRecentCall.args[0].data).toEqual('RESP-FIRST:V1');
+        }));
       });
     });
 
@@ -1031,7 +1027,7 @@ main() => describe('http', () {
       it('should expose the defaults object at runtime', () {
         expect(http.defaults).toBeDefined();
 
-        http.defaults.headers.common.foo = 'bar';
+        //http.defaults.headers.common.foo = 'bar';
         httpBackend.expect('GET', '/url', null, (headers) {
           return headers['foo'] == 'bar';
         }).respond('');
@@ -1224,3 +1220,12 @@ main() => describe('http', () {
     })));
   });
 });
+
+class FakeFile implements File {
+  final DateTime lastModifiedDate = null;
+  final String name = null;
+  final String relativePath = null;
+  final int size = 0;
+  final String type = null;
+  Blob slice([int start, int end, String contentType]) => null;
+}

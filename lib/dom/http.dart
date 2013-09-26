@@ -38,10 +38,16 @@ class HttpResponseConfig {
 
 class HttpResponse {
   int status;
-  String responseText;
+  var responseText;
   var _headers;
   HttpResponseConfig config;
   HttpResponse([this.status, this.responseText, this._headers, this.config]);
+  HttpResponse.copy(HttpResponse r, {data}) {
+    status = r.status;
+    responseText = data == null ? r.responseText : data;
+    _headers = r._headers;
+    config = r.config;
+  }
 
   // AngularJS style:
   get data => responseText;
@@ -79,10 +85,32 @@ class HttpDefaultHeaders {
 }
 
 class HttpDefaults {
-  var headers;
+  HttpDefaultHeaders headers;
+  List<Function> transformRequest;
+  List<Function> transformResponse;
   var cache;
 
-  HttpDefaults(HttpDefaultHeaders this.headers);
+  static _defaultTransformRequest(d, _) =>
+    d is String || d is dom.File ? d : json.stringify(d);
+
+
+  static var JSON_START = new RegExp(r'^\s*(\[|\{[^\{])');
+  static var JSON_END = new RegExp(r'[\}\]]\s*$');
+  static var PROTECTION_PREFIX = new RegExp('^\\)\\]\\}\',?\\n');
+  static _defaultTransformResponse(d, _) {
+    if (d is String) {
+      d = d.replaceFirst(PROTECTION_PREFIX, '');
+      if (d.contains(JSON_START) && d.contains(JSON_END)) {
+        d = json.parse(d);
+      }
+    }
+    return d;
+  }
+
+  HttpDefaults(HttpDefaultHeaders this.headers) {
+    transformRequest = [_defaultTransformRequest];
+    transformResponse = [_defaultTransformResponse];
+  }
 }
 
 /**
@@ -121,15 +149,28 @@ class Http {
     timeout
   }) {
     if (xsrfHeaderName != null || xsrfCookieName != null ||
-        transformResponse != null ||
-        transformRequest != null || cache != null || timeout != null) {
+        cache != null || timeout != null) {
       throw ['not implemented'];
     }
+
+    if (transformRequest == null) transformRequest = defaults.transformRequest;
+    if (transformResponse == null) transformResponse = defaults.transformResponse;
 
     if (headers == null) { headers = {}; }
     defaults.headers.setHeaders(headers, method);
 
-    //
+    // Check for functions in headers
+    headers.forEach((k,v) {
+      if (v is Function) {
+        headers[k] = v();
+      }
+    });
+
+    // Transform data.
+    var reqData = _transformData(data, _headersGetter(headers), transformRequest);
+    assert(reqData is String || reqData is dom.File);
+
+    // Strip content-type if data is undefined
     if (data == null) {
       List<String> toRemove = [];
       headers.forEach((h, _) {
@@ -140,13 +181,18 @@ class Http {
       toRemove.forEach((x) => headers.remove(x));
     }
 
-    // Check for functions in headers
-    headers.forEach((k,v) {
-      if (v is Function) {
-        headers[k] = v();
+
+    return request(
+        _buildUrl(url, params),
+        method: method,
+        sendData: reqData,
+        requestHeaders: headers).then((HttpResponse r) {
+      var data = _transformData(r.data, r.headers, transformResponse);
+      if (!identical(data, r.data)) {
+        return new HttpResponse.copy(r, data: data);
       }
+      return r;
     });
-    return request(_buildUrl(url, params), method: method, sendData: data, requestHeaders: headers);
   }
 
   async.Future<HttpResponse> get(String url, {
@@ -343,4 +389,36 @@ class Http {
       .replaceAll('%24', r'$')
       .replaceAll('%2C', ',')
       .replaceAll('%20', pctEncodeSpaces ? '%20' : '+');
+
+  /*String or File*/ _transformData(data, headers, fns) {
+    if (fns is Function) {
+      return fns(data, headers);
+    }
+
+    fns.forEach((fn) {
+      data = fn(data, headers);
+    });
+    return data;
+  }
+
+  Function _headersGetter(Map headers) {
+  var headersObj;
+
+  return ([String name]) {
+    if (headersObj == null) {
+      headersObj = {};
+      headers.forEach((k,v) {
+        headersObj[k.toLowerCase()] = v;
+      });
+    }
+
+    if (name != null) {
+      name = name.toLowerCase();
+      if (!headersObj.containsKey(name)) return null;
+      return headersObj[name];
+    }
+
+    return headersObj;
+  };
+}
 }

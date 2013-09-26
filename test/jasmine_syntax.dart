@@ -66,6 +66,11 @@ afterEach(fn) => currentDescribe.afterEachFns.add(fn);
 
 var jasmine = new Jasmine();
 
+class SpyFunctionInvocationResult {
+  final List args;
+  SpyFunctionInvocationResult(this.args);
+}
+
 class SpyFunction {
   String name;
   List<List<dynamic>> invocations = [];
@@ -118,6 +123,13 @@ class SpyFunction {
     if ("${fi[5]}" != "$f") return false;
 
     return true;
+  }
+
+  get mostRecentCall {
+    if (invocations.isEmpty) {
+      throw ["No calls"];
+    }
+    return new SpyFunctionInvocationResult(invocations.last);
   }
 }
 
