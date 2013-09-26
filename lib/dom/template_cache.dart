@@ -71,5 +71,6 @@ import 'http.dart';
  * `<template id="template_2.html" type="text/ng-template">` element
  * declaratively in the `<head>` of HTML.
  */
-class TemplateCache extends Cache<HttpResponse> {
+class TemplateCache extends LruCache<String, HttpResponse> {
+  TemplateCache({int capacity}): super(capacity: capacity);
 }

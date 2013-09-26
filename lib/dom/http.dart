@@ -669,7 +669,7 @@ class Http {
         Map<String, String> requestHeaders,
         sendData,
         void onProgress(dom.ProgressEvent e),
-        /*Cache<HttpResponse> or false*/ cache }) {
+        /*Cache<String, HttpResponse> or false*/ cache }) {
     String url;
 
     if (config == null) {

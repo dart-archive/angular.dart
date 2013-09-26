@@ -47,7 +47,7 @@ class AngularModule extends Module {
     type(HttpDefaults);
     type(HttpInterceptors);
     type(BlockCache);
-    type(TemplateCache);
+    value(TemplateCache, new TemplateCache(capacity: 0));
     type(GetterSetter);
     type(Profiler);
     type(ScopeDigestTTL);

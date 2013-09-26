@@ -223,7 +223,9 @@ class BlockFactory {
  */
 
 class BlockCache {
-  Cache<BlockFactory> _blockFactoryCache = new Cache<BlockFactory>();
+  // _blockFactoryCache is unbounded
+  Cache<String, BlockFactory> _blockFactoryCache =
+      new LruCache<String, BlockFactory>(capacity: 0);
 
   Http $http;
 

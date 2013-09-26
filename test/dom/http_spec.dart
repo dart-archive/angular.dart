@@ -7,7 +7,7 @@ import 'dart:async';
 var VALUE = 'val';
 var CACHED_VALUE = 'cached_value';
 
-class FakeCache extends Cache {
+class FakeCache extends UnboundedCache<String, HttpResponse> {
   get(x) => x == 'f' ? new HttpResponse(200, CACHED_VALUE) : null;
   put(_,__) => null;
 
@@ -555,7 +555,7 @@ main() => describe('http', () {
       Cache cache;
 
       beforeEach((() {
-        cache = new Cache();
+        cache = new UnboundedCache();
       }));
 
 
@@ -736,7 +736,7 @@ main() => describe('http', () {
         }));
 
         it('should have less priority than explicitly given cache', async(() {
-          var localCache = new Cache();
+          var localCache = new UnboundedCache();
           http.defaults.cache = cache;
 
           // Fill local cache.
@@ -828,7 +828,7 @@ main() => describe('http', () {
       // pending requests should refer to the number of requests
       // on-the-wire, not the number of times a URL was requested.
       xit('should update pending requests even when served from cache', async(() {
-        var cache = new Cache();
+        var cache = new UnboundedCache();
         backend.when('GET').respond(200);
 
         http(method: 'get', url: '/cached', cache: cache);
