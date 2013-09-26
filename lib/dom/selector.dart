@@ -32,6 +32,14 @@ import '../directive.dart';
  */
 typedef List<DirectiveRef> DirectiveSelector(dom.Node node);
 
+class _Directive {
+  final Type type;
+  final NgAnnotationBase annotation;
+
+  _Directive(Type this.type, NgAnnotationBase this.annotation);
+}
+
+
 class _ContainsSelector {
   NgAnnotationBase annotation;
   RegExp regexp;
@@ -74,18 +82,18 @@ class _SelectorPart {
 class _ElementSelector {
   String name;
 
-  Map<String, Directive> elementMap = new Map<String, Directive>();
+  Map<String, _Directive> elementMap = new Map<String, _Directive>();
   Map<String, _ElementSelector> elementPartialMap = new Map<String, _ElementSelector>();
 
-  Map<String, Directive> classMap = new Map<String, Directive>();
+  Map<String, _Directive> classMap = new Map<String, _Directive>();
   Map<String, _ElementSelector> classPartialMap = new Map<String, _ElementSelector>();
 
-  Map<String, Map<String, Directive>> attrValueMap = new Map<String, Map<String, Directive>>();
+  Map<String, Map<String, _Directive>> attrValueMap = new Map<String, Map<String, _Directive>>();
   Map<String, Map<String, _ElementSelector>> attrValuePartialMap = new Map<String, Map<String, _ElementSelector>>();
 
   _ElementSelector(String this.name);
 
-  addDirective(List<_SelectorPart> selectorParts, Directive directive) {
+  addDirective(List<_SelectorPart> selectorParts, _Directive directive) {
     var selectorPart = selectorParts.removeAt(0);
     var terminal = selectorParts.isEmpty;
     var name;
@@ -108,7 +116,7 @@ class _ElementSelector {
     } else if ((name = selectorPart.attrName) != null) {
       if (terminal) {
         attrValueMap
-            .putIfAbsent(name, () => new Map<String, Directive>())
+            .putIfAbsent(name, () => new Map<String, _Directive>())
             [selectorPart.attrValue] = directive;
       } else {
         attrValuePartialMap
@@ -124,7 +132,7 @@ class _ElementSelector {
   List<_ElementSelector> selectNode(List<DirectiveRef> refs, List<_ElementSelector> partialSelection,
              dom.Node node, String nodeName) {
     if (elementMap.containsKey(nodeName)) {
-      Directive directive = elementMap[nodeName];
+      _Directive directive = elementMap[nodeName];
       refs.add(new DirectiveRef(node, directive.type, directive.annotation));
     }
     if (elementPartialMap.containsKey(nodeName)) {
@@ -150,13 +158,13 @@ class _ElementSelector {
   List<_ElementSelector> selectAttr(List<DirectiveRef> refs, List<_ElementSelector> partialSelection,
          dom.Node node, String attrName, String attrValue) {
     if (attrValueMap.containsKey(attrName)) {
-      Map<String, Directive> valuesMap = attrValueMap[attrName];
+      Map<String, _Directive> valuesMap = attrValueMap[attrName];
       if (valuesMap.containsKey('')) {
-        Directive directive = valuesMap[''];
+        _Directive directive = valuesMap[''];
         refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
       }
       if (attrValue != '' && valuesMap.containsKey(attrValue)) {
-        Directive directive = valuesMap[attrValue];
+        _Directive directive = valuesMap[attrValue];
         refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
       }
     }
@@ -222,7 +230,7 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
     } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
       attrSelector.add(new _ContainsSelector(annotation, match[1]));
     } else if ((selectorParts = _splitCss(selector)) != null){
-      elementSelector.addDirective(selectorParts, new Directive(type, annotation));
+      elementSelector.addDirective(selectorParts, new _Directive(type, annotation));
     } else {
       throw new ArgumentError('Unsupported Selector: $selector');
     }

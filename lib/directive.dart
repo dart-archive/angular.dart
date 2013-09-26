@@ -1,8 +1,7 @@
 library angular.service.directive;
 
-import 'dart:mirrors';
-import 'package:meta/meta.dart';
 import 'package:di/di.dart';
+import 'registry.dart';
 
 class NgAnnotationBase {
   /**
@@ -121,6 +120,12 @@ class NgAnnotationBase {
     this.exportExpressions: const [],
     this.exportExpressionAttrs: const []
   });
+
+  toString() => selector;
+  get hashCode => selector.hashCode;
+  operator==(other) =>
+      other is NgAnnotationBase && this.selector == other.selector;
+
 }
 
 
@@ -262,32 +267,7 @@ abstract class NgDetachAware {
   void detach();
 }
 
-class Directive {
-  final Type type;
-  final NgAnnotationBase annotation;
-
-  Directive(Type this.type, NgAnnotationBase this.annotation);
-}
-
-@proxy
-class DirectiveMap implements Map<NgAnnotationBase, Type> {
-  Map<NgAnnotationBase, Type> _directiveMap = {};
-
-  DirectiveMap(Injector injector) {
-    injector.types.forEach((type) {
-      var meta = reflectClass(type).metadata;
-      if (meta == null) return;
-      var iterable = meta
-        .where((InstanceMirror im) => im.reflectee is NgAnnotationBase)
-        .map((InstanceMirror im) => im.reflectee);
-      if (iterable.isEmpty) return;
-      _directiveMap[iterable.first] = type;
-    });
-  }
-
-  Type operator[](NgAnnotationBase annotation) => _directiveMap[annotation];
-
-  forEach(fn) => _directiveMap.forEach(fn);
-
-  noSuchMethod(Invocation invocation) => mirror.reflect(_directiveMap).delegate(invocation);
+class DirectiveMap extends AnnotationMap<NgAnnotationBase> {
+  DirectiveMap(Injector injector) : super(NgAnnotationBase, injector);
+  where(annotation) => annotation is NgAnnotationBase;
 }
