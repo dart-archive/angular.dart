@@ -86,7 +86,7 @@ class MockHttpExpectation {
     return "$headers" == "$h";
   }
 
-  matchData(d) {
+  matchData(String d) {
     if (data == null) return true;
     if (data is RegExp) return data.hasMatch(d);
     return json.stringify(data) == json.stringify(d);
@@ -150,7 +150,7 @@ class MockHttpBackend implements HttpBackend {
   * A callback oriented API.  This function takes a callback with
   * will be called with (status, data, headers)
   */
-  call(method, [url, data, callback, headers, timeout]) {
+  call(method, [url, String data, callback, headers, timeout]) {
     var xhr = new _MockXhr(),
         expectation = expectations.isEmpty ? null : expectations[0],
         wasExpected = false;

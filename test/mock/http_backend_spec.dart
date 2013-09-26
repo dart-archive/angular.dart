@@ -87,7 +87,7 @@ main() => describe('MockHttpBackend', () {
       expect(response).toBe('content1');
     });
 
-    hb('GET', '/a/b', {}, (status, response) {
+    hb('GET', '/a/b', '{}', (status, response) {
       expect(status).toBe(202);
       expect(response).toBe('content2');
     });
@@ -368,8 +368,8 @@ main() => describe('MockHttpBackend', () {
       hb.expect('POST', '/u3').respond(201, '', {});
       hb.when('DELETE', '/some').respond(200, '');
 
-      hb('GET', '/u2', noop);
-      hb('POST', '/u3', noop);
+      hb('GET', '/u2');
+      hb('POST', '/u3');
 
       expect(() {hb.verifyNoOutstandingExpectation();}).not.toThrow();
     });
