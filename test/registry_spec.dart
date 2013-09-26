@@ -33,8 +33,7 @@ main() => describe('RegistryMap', () {
 });
 
 class MyMap extends AnnotationMap<MyAnnotation> {
-  MyMap(Injector injector) : super(MyAnnotation, injector);
-  where(annotation) => annotation is MyAnnotation;
+  MyMap(Injector injector) : super(injector);
 }
 
 

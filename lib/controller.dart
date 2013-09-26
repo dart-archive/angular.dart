@@ -19,6 +19,5 @@ class NgController {
 }
 
 class ControllerMap extends AnnotationMap<NgController> {
-  ControllerMap(Injector injector) : super(NgController, injector);
-  where(annotation) => annotation is NgController;
+  ControllerMap(Injector injector) : super(injector);
 }

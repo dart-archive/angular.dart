@@ -268,6 +268,5 @@ abstract class NgDetachAware {
 }
 
 class DirectiveMap extends AnnotationMap<NgAnnotationBase> {
-  DirectiveMap(Injector injector) : super(NgAnnotationBase, injector);
-  where(annotation) => annotation is NgAnnotationBase;
+  DirectiveMap(Injector injector) : super(injector);
 }

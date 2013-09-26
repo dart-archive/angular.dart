@@ -6,15 +6,16 @@ import 'package:di/di.dart';
 abstract class AnnotationMap<K> {
   final Map<K, Type> _map = {};
 
-  AnnotationMap(Type annotationType, Injector injector) {
+  AnnotationMap(Injector injector) {
     injector.types.forEach((type) {
       var meta = reflectClass(type).metadata;
       if (meta == null) return;
       meta
         .map((InstanceMirror im) => im.reflectee)
-        .where(where)
+        .where((annotation) => annotation is K)
         .forEach((annotation) {
           if (_map.containsKey(annotation)) {
+            var annotationType = K;
             throw "Duplicate annotation found: $annotationType: $annotation. " +
                   "Exisitng: ${_map[annotation]}; New: $type.";
           }
@@ -22,8 +23,6 @@ abstract class AnnotationMap<K> {
         });
     });
   }
-
-  where(annotation);
 
   Type operator[](K annotation) => _map[annotation];
 
