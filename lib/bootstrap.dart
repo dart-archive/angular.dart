@@ -11,6 +11,8 @@ import 'directive.dart';
 import 'cache.dart';
 import 'exception_handler.dart';
 import 'interpolate.dart';
+import 'dom/http.dart';
+import 'dom/template_cache.dart';
 import 'scope.dart';
 import 'zone.dart';
 

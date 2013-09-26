@@ -12,6 +12,7 @@ import 'common.dart';
 import 'compiler.dart';
 import 'directive.dart';
 import 'http.dart';
+import 'template_cache.dart';
 import '../cache.dart';
 import '../directives/ng_mustache.dart';
 import '../parser/parser_library.dart';
@@ -245,14 +246,6 @@ class BlockCache {
       return fromHtml(tmpl);
     });
   }
-}
-
-/**
- * A convenience wrapper for "templates" cache, its purpose is
- * to create new Type which can be used for injection.
- */
-
-class TemplateCache extends Cache<HttpResponse> {
 }
 
 /**
