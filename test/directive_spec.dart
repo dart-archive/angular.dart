@@ -1,6 +1,5 @@
 library directive_spec;
 
-import 'package:angular/directive.dart';
 import '_specs.dart';
 
 main() => describe('DirectiveRegistry', () {
