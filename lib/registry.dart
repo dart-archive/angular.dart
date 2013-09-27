@@ -6,12 +6,9 @@ import 'package:di/di.dart';
 abstract class AnnotationMap<K> {
   final Map<K, Type> _map = {};
 
-  AnnotationMap(Injector injector) {
+  AnnotationMap(Injector injector, MetadataExtractor extractMetadata) {
     injector.types.forEach((type) {
-      var meta = reflectClass(type).metadata;
-      if (meta == null) return;
-      meta
-        .map((InstanceMirror im) => im.reflectee)
+      var meta = extractMetadata(type)
         .where((annotation) => annotation is K)
         .forEach((annotation) {
           if (_map.containsKey(annotation)) {
@@ -27,4 +24,13 @@ abstract class AnnotationMap<K> {
   Type operator[](K annotation) => _map[annotation];
 
   forEach(fn(K, Type)) => _map.forEach(fn);
+}
+
+class MetadataExtractor {
+
+  Iterable call(Type type) {
+    var metadata = reflectClass(type).metadata;
+    if (metadata == null) return [];
+    return metadata.map((InstanceMirror im) => im.reflectee);
+  }
 }

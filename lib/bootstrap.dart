@@ -15,6 +15,7 @@ import 'dom/http.dart';
 import 'dom/template_cache.dart';
 import 'scope.dart';
 import 'zone.dart';
+import 'registry.dart';
 
 import 'parser/parser_library.dart';
 import 'dom/all.dart';
@@ -26,6 +27,7 @@ class AngularModule extends Module {
   AngularModule() {
     type(ControllerMap);
     type(DirectiveMap);
+    type(MetadataExtractor);
     type(Compiler);
     type(ExceptionHandler);
     type(Scope);
