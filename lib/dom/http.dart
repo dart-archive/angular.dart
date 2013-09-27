@@ -66,21 +66,40 @@ class HttpResponse {
 }
 
 class HttpDefaultHeaders {
+  static String _defaultContentType = 'application/json;charset=utf-8';
+  Map _headers = {
+    'COMMON': {
+        'Accept': 'application/json, text/plain, */*'
+    },
+    'POST' : {
+        'Content-Type': _defaultContentType
+    },
+    'PUT' : {
+      'Content-Type': _defaultContentType
+    },
+    'PATCH' : {
+      'Content-Type': _defaultContentType
+    }
+  };
+
+  _applyHeaders(method, ucHeaders, headers) {
+    if (!_headers.containsKey(method)) return;
+    _headers[method].forEach((k, v) {
+      if (!ucHeaders.contains(k.toUpperCase())) {
+        headers[k] = v;
+      }
+    });
+  }
+
   setHeaders(Map<String, String> headers, String method) {
     assert(headers != null);
-     var ucHeaders = headers.keys.map((x) => x.toUpperCase()).toSet();
-    // common
-    if (!ucHeaders.contains('ACCEPT')) {
-      headers['Accept'] = 'application/json, text/plain, */*';
-    }
+    var ucHeaders = headers.keys.map((x) => x.toUpperCase()).toSet();
+    _applyHeaders('COMMON', ucHeaders, headers);
+    _applyHeaders(method.toUpperCase(), ucHeaders, headers);
+  }
 
-    // per-method
-    method = method.toUpperCase();
-    if (method == 'POST' || method == 'PUT' || method == 'PATCH') {
-      if (!ucHeaders.contains('CONTENT-TYPE')) {
-        headers['Content-Type'] = 'application/json;charset=utf-8';
-      }
-    }
+  operator[](method) {
+    return _headers[method.toUpperCase()];
   }
 }
 

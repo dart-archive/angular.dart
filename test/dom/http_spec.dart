@@ -1019,19 +1019,20 @@ main() => describe('http', () {
     });
 
 
-    xdescribe('defaults', () {
+    describe('defaults', () {
 
-      it('should expose the defaults object at runtime', () {
+      it('should expose the defaults object at runtime', async(() {
         expect(http.defaults).toBeDefined();
 
-        //http.defaults.headers.common.foo = 'bar';
+        http.defaults.headers['common']['foo'] = 'bar';
         httpBackend.expect('GET', '/url', null, (headers) {
           return headers['foo'] == 'bar';
         }).respond('');
 
         http.get('/url');
         httpBackend.flush();
-      });
+        nextTurn(true);
+      }));
     });
   });
 
