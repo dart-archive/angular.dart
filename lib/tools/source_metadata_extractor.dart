@@ -30,7 +30,10 @@ class SourceMetadataExtractor {
       DirectiveInfo dirInfo = new DirectiveInfo();
       dirInfo.selector = meta.selector;
       meta.attributeMappings.forEach((attrName, mappingSpec) {
-        if (mappingSpec.startsWith('=') || mappingSpec.startsWith('&') || mappingSpec.startsWith('@')) {
+        if (mappingSpec.startsWith('=') ||
+            mappingSpec.startsWith('&') ||
+            mappingSpec.startsWith('@') ||
+            mappingSpec.startsWith('!')) {
           dirInfo.expressionAttrs.add(snakecase(attrName));
         }
         if (mappingSpec.length == 1) { // shorthand

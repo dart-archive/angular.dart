@@ -20,7 +20,8 @@ main() => describe('SourceMetadataExtractor', () {
         'bazExpr': '=.baz',
         'fooCallback': '&',
         'barCallback': '&ctrl.bar',
-        'bazCallback': '&.baz'
+        'bazCallback': '&.baz',
+        'oneTime': '!'
       })
     ]);
 
@@ -33,7 +34,8 @@ main() => describe('SourceMetadataExtractor', () {
                 'baz-expr',
                 'foo-callback',
                 'bar-callback',
-                'baz-callback']));
+                'baz-callback',
+                'one-time']));
     expect(flattenList(info, (DirectiveInfo i) => i.expressions),
         equals(['fooVal',
                 'ctrl.bar',
@@ -43,7 +45,8 @@ main() => describe('SourceMetadataExtractor', () {
                 'baz',
                 'fooCallback',
                 'ctrl.bar',
-                'baz']));
+                'baz',
+                'oneTime']));
   });
 
   it('should build a component selector if one is not explicitly specified', () {
