@@ -39,13 +39,13 @@ class HttpResponseConfig {
 class HttpResponse {
   int status;
   var responseText;
-  var _headers;
+  Map _headers;
   HttpResponseConfig config;
   HttpResponse([this.status, this.responseText, this._headers, this.config]);
   HttpResponse.copy(HttpResponse r, {data}) {
     status = r.status;
     responseText = data == null ? r.responseText : data;
-    _headers = r._headers;
+    _headers = r._headers == null ? null : new Map.from(r._headers);
     config = r.config;
   }
 
@@ -149,9 +149,11 @@ class Http {
     timeout
   }) {
     if (xsrfHeaderName != null || xsrfCookieName != null ||
-        cache != null || timeout != null) {
+        timeout != null) {
       throw ['not implemented'];
     }
+
+    method = method.toUpperCase();
 
     if (transformRequest == null) transformRequest = defaults.transformRequest;
     if (transformResponse == null) transformResponse = defaults.transformResponse;
@@ -186,7 +188,8 @@ class Http {
         _buildUrl(url, params),
         method: method,
         sendData: reqData,
-        requestHeaders: headers).then((HttpResponse r) {
+        requestHeaders: headers,
+        cache: cache).then((HttpResponse r) {
       var data = _transformData(r.data, r.headers, transformResponse);
       if (!identical(data, r.data)) {
         return new HttpResponse.copy(r, data: data);
@@ -322,16 +325,21 @@ class Http {
         Map<String, String> requestHeaders,
         sendData,
         void onProgress(dom.ProgressEvent e),
-        Cache<HttpResponse> cache }) {
+        /*Cache<HttpResponse> or false*/ cache }) {
     String url = _rewriter(rawUrl);
 
+    if (cache is bool && cache == false) {
+      cache = null;
+    } else if (cache == null) {
+      cache = defaults.cache;
+    }
     // We return a pending request only if caching is enabled.
     if (cache != null && _pendingRequests.containsKey(url)) {
       return _pendingRequests[url];
     }
     var cachedValue = (cache != null && method == 'GET') ? cache.get(url) : null;
     if (cachedValue != null) {
-      return new async.Future.value(cachedValue);
+      return new async.Future.value(new HttpResponse.copy(cachedValue));
     }
     var result = _backend.request(url,
         method: method,
@@ -341,6 +349,7 @@ class Http {
         requestHeaders: requestHeaders,
         sendData: sendData,
         onProgress: onProgress).then((dom.HttpRequest value) {
+      assert(value.status >= 200 && value.status < 300);
 
       var response = new HttpResponse(
           value.status, value.responseText, parseHeaders(value),

@@ -703,175 +703,164 @@ main() => describe('http', () {
     });
 
 
-    xdescribe('cache', () {
+    describe('cache', () {
 
-      var cache;
+      Cache cache;
 
-      beforeEach(inject(($cacheFactory) {
-        cache = $cacheFactory('testCache');
+      beforeEach((() {
+        cache = new Cache();
       }));
 
 
       doFirstCacheRequest([String method, int respStatus, Map headers]) {
         httpBackend.expect(method != null ? method :'GET', '/url')
             .respond(respStatus != null ? respStatus : 200, 'content', headers);
-        http(method: method != null ? method : 'GET', url: '/url', cache: cache);
+        http(method: method != null ? method : 'GET', url: '/url', cache: cache)
+            .then((_){}, onError: (_){});
         httpBackend.flush();
+        nextTurn(true);
       }
 
 
-      it('should cache GET request when cache is provided', inject(($rootScope) {
+      it('should cache GET request when cache is provided', async(() {
         doFirstCacheRequest();
 
         http(method: 'get', url: '/url', cache: cache).then(callback);
-        // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
+
+        nextTurn(true);
 
         expect(callback).toHaveBeenCalledOnce();
-        expect(callback.mostRecentCall.args[0]).toEqual('content');
+        expect(callback.mostRecentCall.args[0].data).toEqual('content');
       }));
 
 
-      it('should not cache when cache is not provided', () {
+      it('should not cache when cache is not provided', async(() {
         doFirstCacheRequest();
 
         httpBackend.expect('GET', '/url').respond();
         http(method: 'GET', url: '/url');
-      });
+      }));
 
 
-      it('should perform request when cache cleared', () {
+      it('should perform request when cache cleared', async(() {
         doFirstCacheRequest();
 
         cache.removeAll();
         httpBackend.expect('GET', '/url').respond();
         http(method: 'GET', url: '/url', cache: cache);
-      });
+      }));
 
 
-      it('should always call callback asynchronously', () {
-        doFirstCacheRequest();
-        http(method: 'get', url: '/url', cache: cache).then(callback);
-
-        expect(callback).not.toHaveBeenCalled();
-      });
-
-
-      it('should not cache POST request', () {
+      it('should not cache POST request', async(() {
         doFirstCacheRequest('POST');
 
         httpBackend.expect('POST', '/url').respond('content2');
         http(method: 'POST', url: '/url', cache: cache).then(callback);
         httpBackend.flush();
+        nextTurn(true);
 
         expect(callback).toHaveBeenCalledOnce();
-        expect(callback.mostRecentCall.args[0]).toEqual('content2');
-      });
+        expect(callback.mostRecentCall.args[0].data).toEqual('content2');
+      }));
 
 
-      it('should not cache PUT request', () {
+      it('should not cache PUT request', async(() {
         doFirstCacheRequest('PUT');
 
         httpBackend.expect('PUT', '/url').respond('content2');
         http(method: 'PUT', url: '/url', cache: cache).then(callback);
         httpBackend.flush();
+        nextTurn(true);
 
         expect(callback).toHaveBeenCalledOnce();
-        expect(callback.mostRecentCall.args[0]).toEqual('content2');
-      });
+        expect(callback.mostRecentCall.args[0].data).toEqual('content2');
+      }));
 
 
-      it('should not cache DELETE request', () {
+      it('should not cache DELETE request', async(() {
         doFirstCacheRequest('DELETE');
 
         httpBackend.expect('DELETE', '/url').respond(206);
         http(method: 'DELETE', url: '/url', cache: cache).then(callback);
         httpBackend.flush();
+        nextTurn(true);
 
         expect(callback).toHaveBeenCalledOnce();
-      });
+      }));
 
 
-      it('should not cache non 2xx responses', () {
+      it('should not cache non 2xx responses', async(() {
         doFirstCacheRequest('GET', 404);
 
         httpBackend.expect('GET', '/url').respond('content2');
         http(method: 'GET', url: '/url', cache: cache).then(callback);
         httpBackend.flush();
+        nextTurn(true);
 
         expect(callback).toHaveBeenCalledOnce();
-        expect(callback.mostRecentCall.args[0]).toEqual('content2');
-      });
+        expect(callback.mostRecentCall.args[0].data).toEqual('content2');
+      }));
 
 
-      it('should cache the headers as well', inject(($rootScope) {
+      it('should cache the headers as well', async(() {
         doFirstCacheRequest('GET', 200, {'content-encoding': 'gzip', 'server': 'Apache'});
-        callback.andCallFake((r, s, headers) {
-          expect(headers()).toEqual({'content-encoding': 'gzip', 'server': 'Apache'});
-          expect(headers('server')).toEqual('Apache');
+        callback.andCallFake((r) {
+          expect(r.headers()).toEqual({'content-encoding': 'gzip', 'server': 'Apache'});
+          expect(r.headers('server')).toEqual('Apache');
         });
 
         http(method: 'GET', url: '/url', cache: cache).then(callback);
-        // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
+        nextTurn(true);
+
         expect(callback).toHaveBeenCalledOnce();
       }));
 
 
-      it('should not share the cached headers object instance', inject(($rootScope) {
+      it('should not share the cached headers object instance', async(() {
         doFirstCacheRequest('GET', 200, {'content-encoding': 'gzip', 'server': 'Apache'});
-        callback.andCallFake((r, s, headers) {
-          expect(headers()).toEqual(cache.get('/url')[2]);
-          expect(headers()).not.toEqual(cache.get('/url')[2]);
+        callback.andCallFake((r) {
+          expect(r.headers()).toEqual(cache.get('/url').headers());
+          expect(r.headers()).not.toBe(cache.get('/url').headers());
         });
 
         http(method: 'GET', url: '/url', cache: cache).then(callback);
-        // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
+        nextTurn(true);
+
         expect(callback).toHaveBeenCalledOnce();
       }));
 
 
-      it('should cache status code as well', inject(($rootScope) {
+      it('should cache status code as well', async(() {
         doFirstCacheRequest('GET', 201);
-        callback.andCallFake((r, status, h) {
-          expect(status).toEqual(201);
+        callback.andCallFake((r) {
+          expect(r.status).toEqual(201);
         });
 
         http(method: 'get', url: '/url', cache: cache).then(callback);
-        // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
+        nextTurn(true);
+
         expect(callback).toHaveBeenCalledOnce();
       }));
 
 
-      it('should use cache even if second request was made before the first returned', () {
+      it('should use cache even if second request was made before the first returned', async(() {
         httpBackend.expect('GET', '/url').respond(201, 'fake-response');
 
-        callback.andCallFake((response, status, headers) {
-          expect(response).toEqual('fake-response');
-          expect(status).toEqual(201);
+        callback.andCallFake((r) {
+          expect(r.data).toEqual('fake-response');
+          expect(r.status).toEqual(201);
         });
 
         http(method: 'GET', url: '/url', cache: cache).then(callback);
         http(method: 'GET', url: '/url', cache: cache).then(callback);
 
         httpBackend.flush();
+        nextTurn(true);
+
         expect(callback).toHaveBeenCalled();
         expect(callback.callCount).toEqual(2);
-      });
+      }));
 
-
-      it('should default to status code 200 and empty headers if cache contains a non-array element',
-          inject(($rootScope) {
-            cache.put('/myurl', 'simple response');
-            http.get('/myurl', cache: cache).then((HttpResponse r) {
-              expect(r.data).toEqual('simple response');
-              expect(r.status).toEqual(200);
-              expect(r.headers()).toEqual({});
-              callback();
-            });
-
-            // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
-            expect(callback).toHaveBeenCalledOnce();
-          })
-      );
 
       describe('http.defaults.cache', () {
 
@@ -879,20 +868,21 @@ main() => describe('http', () {
           expect(http.defaults.cache).toBeNull();
         });
 
-        it('should cache requests when no cache given in request config', () {
+        it('should cache requests when no cache given in request config', async(() {
           http.defaults.cache = cache;
 
           // First request fills the cache from server response.
           httpBackend.expect('GET', '/url').respond(200, 'content');
           http(method: 'GET', url: '/url'); // Notice no cache given in config.
           httpBackend.flush();
+          nextTurn(true);
 
           // Second should be served from cache, without sending request to server.
           http(method: 'get', url: '/url').then(callback);
-          // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
+          nextTurn(true);
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0]).toEqual('content');
+          expect(callback.mostRecentCall.args[0].data).toEqual('content');
 
           // Invalidate cache entry.
           http.defaults.cache.remove("/url");
@@ -901,47 +891,54 @@ main() => describe('http', () {
           httpBackend.expect('GET', '/url').respond(200, 'content');
           http(method: 'GET', url: '/url');
           httpBackend.flush();
-        });
+          nextTurn(true);
+        }));
 
-        it('should have less priority than explicitly given cache', inject(($cacheFactory) {
-          var localCache = $cacheFactory('localCache');
+        it('should have less priority than explicitly given cache', async(() {
+          var localCache = new Cache();
           http.defaults.cache = cache;
 
           // Fill local cache.
           httpBackend.expect('GET', '/url').respond(200, 'content-local-cache');
           http(method: 'GET', url: '/url', cache: localCache);
           httpBackend.flush();
+          nextTurn(true);
 
           // Fill default cache.
           httpBackend.expect('GET', '/url').respond(200, 'content-default-cache');
           http(method: 'GET', url: '/url');
           httpBackend.flush();
+          nextTurn(true);
 
           // Serve request from default cache when no local given.
           http(method: 'get', url: '/url').then(callback);
-          // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
+          nextTurn(true);
+
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0]).toEqual('content-default-cache');
+          expect(callback.mostRecentCall.args[0].data).toEqual('content-default-cache');
           callback.reset();
 
           // Serve request from local cache when it is given (but default filled too).
           http(method: 'get', url: '/url', cache: localCache).then(callback);
-          // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
+          nextTurn(true);
+
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0]).toEqual('content-local-cache');
+          expect(callback.mostRecentCall.args[0].data).toEqual('content-local-cache');
         }));
 
-        it('should be skipped if {cache: false} is passed in request config', () {
+        it('should be skipped if {cache: false} is passed in request config', async(() {
           http.defaults.cache = cache;
 
           httpBackend.expect('GET', '/url').respond(200, 'content');
           http(method: 'GET', url: '/url');
           httpBackend.flush();
+          nextTurn(true);
 
           httpBackend.expect('GET', '/url').respond();
           http(method: 'GET', url: '/url', cache: false);
           httpBackend.flush();
-        });
+          nextTurn(true);
+        }));
       });
     });
 

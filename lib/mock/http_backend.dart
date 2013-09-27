@@ -208,12 +208,12 @@ class MockHttpBackend implements HttpBackend {
         if (definition.response != null) {
           // if $browser specified, we do auto flush all requests
           responses.add(wrapResponse(definition));
-        } else throw 'No response defined !';
+        } else throw ['No response defined !'];
         return;
       }
     }
     throw wasExpected ?
-        'No response defined !' :
+        ['No response defined !'] :
         ['Unexpected request: $method $url\n' +
             (expectation != null ? 'Expected $expectation' : 'No more requests expected')];
   }
@@ -489,11 +489,11 @@ class MockHttpBackend implements HttpBackend {
    *   is called an exception is thrown (as this typically a sign of programming error).
    */
   flush([count]) {
-    if (responses.isEmpty) throw 'No pending request to flush !';
+    if (responses.isEmpty) throw ['No pending request to flush !'];
 
     if (count != null) {
       while (count-- > 0) {
-        if (responses.isEmpty) throw 'No more pending request to flush !';
+        if (responses.isEmpty) throw ['No more pending request to flush !'];
         responses.removeAt(0)();
       }
     } else {
@@ -522,7 +522,7 @@ class MockHttpBackend implements HttpBackend {
    */
   verifyNoOutstandingExpectation() {
     if (!expectations.isEmpty) {
-      throw 'Unsatisfied requests: ${expectations.join(', ')}';
+      throw ['Unsatisfied requests: ${expectations.join(', ')}'];
     }
   }
 
@@ -543,7 +543,7 @@ class MockHttpBackend implements HttpBackend {
    */
   verifyNoOutstandingRequest() {
     if (!responses.isEmpty) {
-      throw 'Unflushed requests: ${responses.length}';
+      throw ['Unflushed requests: ${responses.length}'];
     }
   }
 
