@@ -4,6 +4,7 @@ import 'package:di/di.dart';
 import '../bootstrap.dart';
 
 import 'ng_mustache.dart';             export 'ng_mustache.dart';
+import 'ng_a.dart';                    export 'ng_a.dart';
 import 'ng_bind.dart';                 export 'ng_bind.dart';
 import 'ng_bind_html.dart';            export 'ng_bind_html.dart';
 import 'ng_class.dart';                export 'ng_class.dart';
@@ -24,6 +25,7 @@ import 'ng_non_bindable.dart';         export 'ng_non_bindable.dart';
 void registerDirectives(Module module) {
   module.type(NgTextMustacheDirective);
   module.type(NgAttrMustacheDirective);
+  module.type(NgAAttrDirective);
   module.type(NgBindAttrDirective);
   module.type(NgBindHtmlAttrDirective);
   module.type(NgClassAttrDirective);
