@@ -8,6 +8,7 @@ main() => describe('RegistryMap', () {
   it('should throw error on identical keys', () {
     var module = new Module()
         ..type(MyMap)
+        ..type(MetadataExtractor)
         ..type(A1)
         ..type(A2);
 
@@ -20,6 +21,7 @@ main() => describe('RegistryMap', () {
   it('should iterate over all types', () {
     var module = new Module()
       ..type(MyMap)
+      ..type(MetadataExtractor)
       ..type(A1);
 
     var injector = new DynamicInjector(modules: [module]);
@@ -33,7 +35,8 @@ main() => describe('RegistryMap', () {
 });
 
 class MyMap extends AnnotationMap<MyAnnotation> {
-  MyMap(Injector injector) : super(injector);
+  MyMap(Injector injector, MetadataExtractor metadataExtractor)
+      : super(injector, metadataExtractor);
 }
 
 

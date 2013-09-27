@@ -19,5 +19,6 @@ class NgController {
 }
 
 class ControllerMap extends AnnotationMap<NgController> {
-  ControllerMap(Injector injector) : super(injector);
+  ControllerMap(Injector injector, MetadataExtractor metadataExtractor)
+      : super(injector, metadataExtractor);
 }
