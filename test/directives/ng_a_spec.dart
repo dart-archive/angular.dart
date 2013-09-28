@@ -29,5 +29,17 @@ main() {
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
       expect(window.location.href.endsWith("#")).toEqual(true);
     }));
+
+    it('should not cancel click with non-empty interpolated href', inject((Scope scope) {
+      _.compile('<a href="{{url}}" ng-click="abc = true; event = \$event"></a>');
+      _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
+      expect(_.rootScope['abc']).toEqual(true);
+      expect(_.rootScope['event'] is dom.UIEvent).toEqual(true);
+      window.location.href = '#';
+      _.rootScope['url'] = '#url';
+      _.rootScope.$digest();
+      _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
+      expect(window.location.href.endsWith("#url")).toEqual(true);
+    }));
   });
 }
