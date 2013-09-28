@@ -21,9 +21,11 @@ class NgAAttrDirective {
   dom.Element element;
 
   NgAAttrDirective(dom.Element element) {
-    if(element.attributes["href"] == "") {
+    if (element.attributes["href"] == "") {
       element.onClick.listen((event) {
-        event.preventDefault();
+        if (element.attributes["href"] == "") {
+          event.preventDefault();
+        }
       });
     }
   }
