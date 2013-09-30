@@ -19,6 +19,13 @@ class NgAnnotationBase {
   final String selector;
 
   /**
+   * This flag, when true, requests the compiler to either descend and compile
+   * all child nodes.  When false, the compiler does not process any child
+   * nodes.
+   */
+  final bool processChildNodes;
+
+  /**
    * A directive/component controller class can be injected into other
    * directives/components. This attribute controls whether the
    * controller is available to others.
@@ -114,6 +121,7 @@ class NgAnnotationBase {
 
   const NgAnnotationBase({
     this.selector,
+    this.processChildNodes: true,
     this.visibility: NgDirective.LOCAL_VISIBILITY,
     this.publishTypes: const [],
     this.map: const {},
@@ -138,8 +146,11 @@ class NgAnnotationBase {
  */
 class NgNonBindable extends NgAnnotationBase {
   const NgNonBindable({ selector }) : super(
-      selector: selector, visibility: null,
-      publishTypes: null, map: null,
+      selector: selector,
+      processChildNodes: false,
+      visibility: null,
+      publishTypes: null,
+      map: null,
       exportExpressions: null,
       exportExpressionAttrs: null);
 }
@@ -206,14 +217,18 @@ class NgComponent extends NgAnnotationBase {
     this.resetStyleInheritance,
     map,
     selector,
+    processChildNodes: true,
     visibility,
     publishTypes : const <Type>[],
     exportExpressions,
     exportExpressionAttrs
-  }) : super(selector: selector, visibility: visibility,
-      publishTypes: publishTypes, map: map,
-      exportExpressions: exportExpressions,
-      exportExpressionAttrs: exportExpressionAttrs);
+  }) : super(selector: selector,
+             processChildNodes: processChildNodes,
+             visibility: visibility,
+             publishTypes: publishTypes,
+             map: map,
+             exportExpressions: exportExpressions,
+             exportExpressionAttrs: exportExpressionAttrs);
 }
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
@@ -226,19 +241,47 @@ class NgDirective extends NgAnnotationBase {
   final bool transclude;
   final String attrName;
 
+  // Internal constructor has no default args.  This avoids the the compiler failure
+  // "Error: const constructor or factory may not have a function body" which
+  // is generated if the unnamed constructor assigns
+  // 'this.transclude = transclude' in its body.
+  const NgDirective._internal({
+    this.transclude,
+    processChildNodes,
+    this.attrName,
+    map,
+    selector,
+    visibility,
+    publishTypes,
+    exportExpressions,
+    exportExpressionAttrs
+  }) : super(selector: selector,
+             processChildNodes: processChildNodes,
+             visibility: visibility,
+             publishTypes: publishTypes,
+             map: map,
+             exportExpressions: exportExpressions,
+             exportExpressionAttrs: exportExpressionAttrs);
+
   const NgDirective({
-    this.transclude: false,
-    this.attrName: null,
+    transclude: false,
+    bool processChildNodes: true,
+    attrName: null,
     map,
     selector,
     visibility,
     publishTypes : const <Type>[],
     exportExpressions,
     exportExpressionAttrs
-  }) : super(selector: selector, visibility: visibility,
-      publishTypes: publishTypes, map: map,
-      exportExpressions: exportExpressions,
-      exportExpressionAttrs: exportExpressionAttrs);
+  }) : this._internal(transclude: transclude,
+                      processChildNodes: (processChildNodes && !transclude),
+                      attrName: attrName,
+                      map: map,
+                      selector: selector,
+                      visibility: visibility,
+                      publishTypes: publishTypes,
+                      exportExpressions: exportExpressions,
+                      exportExpressionAttrs: exportExpressionAttrs);
 
   get defaultAttributeName {
     if (attrName == null && selector != null) {

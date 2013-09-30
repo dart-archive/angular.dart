@@ -18,7 +18,9 @@ main() {
         ..type(PaneComponent)
         ..type(SimpleTranscludeInAttachAttrDirective)
         ..type(IncludeTranscludeAttrDirective)
-        ..type(LocalAttrDirective);
+        ..type(LocalAttrDirective)
+        ..type(ProcessChildNodes)
+        ..type(DontProcessChildNodes);
       return (Injector _injector) {
         injector = _injector;
         $compile = injector.get(Compiler);
@@ -417,6 +419,24 @@ main() {
       }));
 
     });
+
+    describe('processChildNodes', () {
+      it('should process child nodes', inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
+        $rootScope['name'] = 'angular';
+        var element = $('<div process-child-nodes>name: {{name}}</div>');
+        $compile(element)(injector, element);
+        $rootScope.$digest();
+        expect(element.text()).toEqual('name: angular');
+      }));
+
+      it('should NOT process child nodes', inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
+        $rootScope['name'] = 'angular';
+        var element = $('<div dont-process-child-nodes>name: {{name}}</div>');
+        $compile(element)(injector, element);
+        $rootScope.$digest();
+        expect(element.text()).toEqual('name: {{name}}');
+      }));
+    });
   });
 }
 
@@ -633,3 +653,13 @@ class AttachDetachComponent implements NgAttachAware, NgDetachAware {
   attach() => logger('attach');
   detach() => logger('detach');
 }
+
+@NgDirective(
+    selector: '[process-child-nodes]',
+    processChildNodes: true)
+class ProcessChildNodes {}
+
+@NgDirective(
+    selector: '[dont-process-child-nodes]',
+    processChildNodes: false)
+class DontProcessChildNodes {}
