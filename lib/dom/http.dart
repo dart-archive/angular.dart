@@ -133,8 +133,64 @@ class HttpDefaults {
 }
 
 /**
- * Wrapper around the browser XHR. Use Http service to fetch data
- * from the server.
+ * The [Http] service facilitates communication with the remote HTTP servers.  It
+ * uses dart:html's [HttpRequest] and provides a number of features on top
+ * of the core Dart library.
+ *
+ * For unit testing, applications should use the [MockHttpBackend] service.
+ *
+ * # General usage
+ * The [call] method takes a number of named parameters and returns a
+ * [Future<HttpResponse>].
+ *
+ *      http(method: 'GET', url: '/someUrl')
+ *        .then((HttpResponse response) { .. },
+ *               onError: (HttpRequest request) { .. });
+ *
+ * A response status code between 200 and 299 is considered a success status and
+ * will result in the 'then' being called. Note that if the response is a redirect,
+ * Dart's [HttpRequest] will transparently follow it, meaning that the error callback will not be
+ * called for such responses.
+ *
+ * # Shortcut methods
+ *
+ * The Http service also defines a number of shortcuts:
+ *
+ *      http.get('/someUrl') is the same as http(method: 'GET', url: '/someUrl')
+ *
+ * See the method definitions below.
+ *
+ * # Setting HTTP Headers
+ *
+ * The [Http] service will add certain HTTP headers to requests.  These defaults
+ * can be configured using the [HttpDefaultHeaders] object.  The defaults are:
+ *
+ * - For all requests: `Accept: application/json, text/plain, * / *`
+ * - For POST, PUT, PATCH requests: `Content-Type: application/json`
+ *
+ * # Transforming Requests and Responses
+ *
+ *  NOTE: < use interceptors >.
+ *
+ * # Caching
+ *
+ * To enable caching, pass a [Cache] object into the [call] method.  The [Http]
+ * service will store responses in the cache and return the response for
+ * any matching requests.
+ *
+ * Note that data is returned through a [Future], regardless of whether it
+ * came from the [Cache] or the server.
+ *
+ * If there are multiple GET requests for the same not-yet-in-cache URL
+ * while a cache is in use, only one request to the server will be made.
+ *
+ * # Interceptors
+ *
+ * NOTE: < not yet implemented >
+ *
+ * # Security Considerations
+ *
+ * NOTE: < not yet documented >
  */
 class Http {
   Map<String, async.Future<HttpResponse>> _pendingRequests = <String, async.Future<HttpResponse>>{};
@@ -142,8 +198,14 @@ class Http {
   HttpBackend _backend;
   HttpDefaults defaults;
 
+  /**
+   * Constructor, useful for DI.
+   */
   Http(UrlRewriter this._rewriter, HttpBackend this._backend, HttpDefaults this.defaults);
 
+  /**
+   * DEPRECATED
+   */
   async.Future<String> getString(String url,
       {bool withCredentials, void onProgress(dom.ProgressEvent e), Cache cache}) {
     return request(url,
@@ -152,6 +214,26 @@ class Http {
         cache: cache).then((HttpResponse xhr) => xhr.responseText);
   }
 
+/**
+  * Returns a [Future<HttpResponse>] when the request is fulfilled.
+  *
+  * Named Parameters:
+  * - method: HTTP method (e.g. 'GET', 'POST', etc)
+  * - url: Absolute or relative URL of the resource being requested.
+  * - data: Data to be sent as the request message data.
+  * - params: Map of strings or objects which will be turned to
+  *          `?key1=value1&key2=value2` after the url. If the values are
+  *           not strings, they will be JSONified.
+  * - headers: Map of strings or functions which return strings representing
+  *      HTTP headers to send to the server. If the return value of a function
+  *      is null, the header will not be sent.
+  * - xsrfHeaderName: TBI
+  * - xsrfCookieName: TBI
+  * - transformRequest: deprecated
+  * - transformResponse: deprecated
+  * - cache: Boolean or [Cache].  If true, the default cache will be used.
+  * - timeout: deprecated
+*/
   async.Future<HttpResponse> call({
     String url,
     String method,
@@ -215,6 +297,10 @@ class Http {
     });
   }
 
+  /**
+   * Shortcut method for GET requests.  See [call] for a complete description
+   * of parameters.
+   */
   async.Future<HttpResponse> get(String url, {
     String data,
     Map<String, dynamic> params,
@@ -230,6 +316,10 @@ class Http {
              transformRequest: transformRequest, transformResponse: transformResponse,
              cache: cache, timeout: timeout);
 
+  /**
+   * Shortcut method for DELETE requests.  See [call] for a complete description
+   * of parameters.
+   */
   async.Future<HttpResponse> delete(String url, {
     String data,
     Map<String, dynamic> params,
@@ -245,6 +335,10 @@ class Http {
              transformRequest: transformRequest, transformResponse: transformResponse,
              cache: cache, timeout: timeout);
 
+  /**
+   * Shortcut method for HEAD requests.  See [call] for a complete description
+   * of parameters.
+   */
   async.Future<HttpResponse> head(String url, {
     String data,
     Map<String, dynamic> params,
@@ -260,6 +354,10 @@ class Http {
              transformRequest: transformRequest, transformResponse: transformResponse,
              cache: cache, timeout: timeout);
 
+  /**
+   * Shortcut method for PUT requests.  See [call] for a complete description
+   * of parameters.
+   */
   async.Future<HttpResponse> put(String url, String data, {
     Map<String, dynamic> params,
     Map<String, String> headers,
@@ -274,6 +372,10 @@ class Http {
              transformRequest: transformRequest, transformResponse: transformResponse,
              cache: cache, timeout: timeout);
 
+  /**
+   * Shortcut method for POST requests.  See [call] for a complete description
+   * of parameters.
+   */
   async.Future<HttpResponse> post(String url, String data, {
     Map<String, dynamic> params,
     Map<String, String> headers,
@@ -288,6 +390,10 @@ class Http {
              transformRequest: transformRequest, transformResponse: transformResponse,
              cache: cache, timeout: timeout);
 
+  /**
+   * Shortcut method for JSONP requests.  See [call] for a complete description
+   * of parameters.
+   */
   async.Future<HttpResponse> jsonp(String url, {
     String data,
     Map<String, dynamic> params,
@@ -304,11 +410,8 @@ class Http {
              cache: cache, timeout: timeout);
 
 
-/**
-   * Parse headers into key value object
-   *
-   * @param {string} headers Raw headers as a string
-   * @returns {Object} Parsed headers as key value object
+  /**
+   * Parse raw headers into key-value object
    */
   static Map<String, String> parseHeaders(dom.HttpRequest value) {
     var headers = value.getAllResponseHeaders();
@@ -342,6 +445,9 @@ class Http {
     return _pendingRequests.values;
   }
 
+  /**
+   * DEPRECATED
+   */
   async.Future<HttpResponse> request(String rawUrl,
       { String method: 'GET',
         bool withCredentials: false,
@@ -436,23 +542,23 @@ class Http {
   }
 
   Function _headersGetter(Map headers) {
-  var headersObj;
+    var headersObj;
 
-  return ([String name]) {
-    if (headersObj == null) {
-      headersObj = {};
-      headers.forEach((k,v) {
-        headersObj[k.toLowerCase()] = v;
-      });
-    }
+    return ([String name]) {
+      if (headersObj == null) {
+        headersObj = {};
+        headers.forEach((k,v) {
+          headersObj[k.toLowerCase()] = v;
+        });
+      }
 
-    if (name != null) {
-      name = name.toLowerCase();
-      if (!headersObj.containsKey(name)) return null;
-      return headersObj[name];
-    }
+      if (name != null) {
+        name = name.toLowerCase();
+        if (!headersObj.containsKey(name)) return null;
+        return headersObj[name];
+      }
 
-    return headersObj;
-  };
-}
+      return headersObj;
+    };
+  }
 }
