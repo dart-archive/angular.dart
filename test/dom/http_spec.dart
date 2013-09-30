@@ -943,6 +943,8 @@ main() => describe('http', () {
     });
 
 
+    // NOTE: We are punting on timeouts for now until we understand
+    // Dart futures fully.
     xdescribe('timeout', () {
 
       it('should abort requests when timeout promise resolves', inject(($q) {
@@ -970,52 +972,56 @@ main() => describe('http', () {
     });
 
 
-    xdescribe('pendingRequests', () {
+    describe('pendingRequests', () {
 
-      it('should be an array of pending requests', () {
+      it('should be an array of pending requests', async(() {
         httpBackend.when('GET').respond(200);
         expect(http.pendingRequests.length).toEqual(0);
 
         http(method: 'get', url: '/some');
-        // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
         expect(http.pendingRequests.length).toEqual(1);
 
         httpBackend.flush();
-        expect(http.pendingRequests.length).toEqual(0);
-      });
+        nextTurn(true);
 
-
-      it('should update pending requests even when served from cache', inject(($rootScope) {
-        httpBackend.when('GET').respond(200);
-
-        http(method: 'get', url: '/cached', cache: true);
-        http(method: 'get', url: '/cached', cache: true);
-        // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
-        expect(http.pendingRequests.length).toEqual(2);
-
-        httpBackend.flush();
-        expect(http.pendingRequests.length).toEqual(0);
-
-        http(method: 'get', url: '/cached', cache: true);
-        jasmine.spyOn(http.pendingRequests, 'add').andCallThrough();
-        // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
-        expect(http.pendingRequests.add).toHaveBeenCalledOnce();
-
-        // $rootScope.$apply(); TODO: remove, http and scope are decoupled.
         expect(http.pendingRequests.length).toEqual(0);
       }));
 
 
-      it('should remove the request before firing callbacks', () {
+      // TODO(deboer): I think this test is incorrect.
+      // pending requests should refer to the number of requests
+      // on-the-wire, not the number of times a URL was requested.
+      xit('should update pending requests even when served from cache', async(() {
+        var cache = new Cache();
         httpBackend.when('GET').respond(200);
-        http(method: 'get', url: '/url').then(() {
+
+        http(method: 'get', url: '/cached', cache: cache);
+        http(method: 'get', url: '/cached', cache: cache);
+        expect(http.pendingRequests.length).toEqual(2);
+
+        httpBackend.flush();
+        nextTurn(true);
+
+        expect(http.pendingRequests.length).toEqual(0);
+
+        http(method: 'get', url: '/cached', cache: true);
+        jasmine.spyOn(http.pendingRequests, 'add').andCallThrough();
+        //expect(http.pendingRequests.add).toHaveBeenCalledOnce();
+
+        expect(http.pendingRequests.length).toEqual(0);
+      }));
+
+
+      it('should remove the request before firing callbacks', async(() {
+        httpBackend.when('GET').respond(200);
+        http(method: 'get', url: '/url').then((_) {
           expect(http.pendingRequests.length).toEqual(0);
         });
 
-        // $rootScope.$digest(); TODO: remove, http and scope are decoupled.
         expect(http.pendingRequests.length).toEqual(1);
         httpBackend.flush();
-      });
+        nextTurn(true);
+      }));
     });
 
 

@@ -142,8 +142,6 @@ class Http {
   HttpBackend _backend;
   HttpDefaults defaults;
 
-  List pendingRequests = []; // TODO(deboer): From the AngularJS API.
-
   Http(UrlRewriter this._rewriter, HttpBackend this._backend, HttpDefaults this.defaults);
 
   async.Future<String> getString(String url,
@@ -334,6 +332,14 @@ class Http {
       }
     });
     return parsed;
+  }
+
+  /**
+   * Returns an [Iterable] of [Future] [HttpResponse]s for the requests
+   * that the [Http] service is currently waiting for.
+   */
+  Iterable<async.Future<HttpResponse> > get pendingRequests {
+    return _pendingRequests.values;
   }
 
   async.Future<HttpResponse> request(String rawUrl,
