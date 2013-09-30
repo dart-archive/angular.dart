@@ -38,6 +38,7 @@ void registerDirectives(Module module) {
   module.type(NgDisabledAttrDirective);
   module.type(NgHideAttrDirective);
   module.type(NgIfAttrDirective);
+  module.type(NgUnlessAttrDirective);
   module.type(NgIncludeAttrDirective);
   module.type(NgRepeatAttrDirective);
   module.type(NgShowAttrDirective);
