@@ -12,7 +12,7 @@ class _Row {
 }
 
 @NgDirective(
-    transclude: true,
+    children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-repeat]',
     map: const {'.': '@.expression'})
 class NgRepeatDirective  {

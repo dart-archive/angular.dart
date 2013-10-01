@@ -468,7 +468,7 @@ class LocalAttrDirective {
 
 @NgDirective(
     selector: '[simple-transclude-in-attach]',
-    visibility: NgDirective.CHILDREN_VISIBILITY, transclude: true)
+    visibility: NgDirective.CHILDREN_VISIBILITY, children: NgAnnotation.TRANSCLUDE_CHILDREN)
 class SimpleTranscludeInAttachAttrDirective {
   SimpleTranscludeInAttachAttrDirective(BlockHole blockHole, BoundBlockFactory boundBlockFactory, Logger log, Scope scope) {
     scope.$evalAsync(() {

@@ -3,6 +3,16 @@ library angular.service.directive;
 import 'package:di/di.dart';
 import 'registry.dart';
 
+/**
+ * Common constants and enums that apply across [NgDirective] and [NgComponent].
+ */
+class NgAnnotation {
+  // Enum values for the 'children' property.
+  static const String COMPILE_CHILDREN = 'compile';
+  static const String TRANSCLUDE_CHILDREN = 'transclude';
+  static const String IGNORE_CHILDREN = 'ignore';
+}
+
 class NgAnnotationBase {
   /**
    * CSS selector which will trigger this component/directive.
@@ -17,6 +27,20 @@ class NgAnnotationBase {
    * Example: `input[type=checkbox][ng-model]`
    */
   final String selector;
+
+  /**
+   * Specifies the compiler action to be taken on the child nodes of the
+   * element which this currently being compiled.  The values are:
+   *
+   * * `compile` [NgAnnotation.COMPILE_CHILDREN] - compile the child nodes
+   *   of the element.  This is the default.
+   * * `transclude` [NgAnnotation.TRANSCLUDE_CHILDREN] - compile the child
+   *   nodes for transclusion and makes available [BoundBlockFactory],
+   *   [BlockFactory] and [BlockHole] for injection.
+   * * `ignore` [NgAnnotation.IGNORE_CHILDREN] - do not compile/visit the
+   *   child nodes.  Angular markup on descendants will not be processed.
+   */
+  final String children;
 
   /**
    * A directive/component controller class can be injected into other
@@ -121,6 +145,7 @@ class NgAnnotationBase {
 
   const NgAnnotationBase({
     this.selector,
+    this.children: NgAnnotation.COMPILE_CHILDREN,
     this.visibility: NgDirective.LOCAL_VISIBILITY,
     this.publishAs,
     this.publishTypes: const [],
@@ -134,22 +159,6 @@ class NgAnnotationBase {
   operator==(other) =>
       other is NgAnnotationBase && this.selector == other.selector;
 
-}
-
-
-// Explicitly pass all the named parameters to work around dartbug.com/13556
-/**
- * Meta-data marker placed on a class to make the compiler skip processing
- * Angular constructs on the element matched by the specified selector and all
- * of its descendants.  This allows one to have DOM nodes that contains Angular
- * markup but should not be processed as a template.
- */
-class NgNonBindable extends NgAnnotationBase {
-  const NgNonBindable({ selector }) : super(
-      selector: selector, visibility: null,
-      publishTypes: null, map: null,
-      exportExpressions: null,
-      exportExpressionAttrs: null);
 }
 
 
@@ -211,10 +220,14 @@ class NgComponent extends NgAnnotationBase {
     publishTypes : const <Type>[],
     exportExpressions,
     exportExpressionAttrs
-  }) : super(selector: selector, visibility: visibility,
-      publishTypes: publishTypes, publishAs: publishAs, map: map,
-      exportExpressions: exportExpressions,
-      exportExpressionAttrs: exportExpressionAttrs);
+  }) : super(selector: selector,
+             children: NgAnnotation.COMPILE_CHILDREN,
+             visibility: visibility,
+             publishTypes: publishTypes,
+             publishAs: publishAs,
+             map: map,
+             exportExpressions: exportExpressions,
+             exportExpressionAttrs: exportExpressionAttrs);
 }
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
@@ -224,11 +237,10 @@ class NgDirective extends NgAnnotationBase {
   static const String CHILDREN_VISIBILITY = 'children';
   static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
 
-  final bool transclude;
   final String attrName;
 
   const NgDirective({
-    this.transclude: false,
+    children: NgAnnotation.COMPILE_CHILDREN,
     this.attrName: null,
     publishAs,
     map,
@@ -237,7 +249,7 @@ class NgDirective extends NgAnnotationBase {
     publishTypes : const <Type>[],
     exportExpressions,
     exportExpressionAttrs
-  }) : super(selector: selector, visibility: visibility,
+  }) : super(selector: selector, children: children, visibility: visibility,
       publishTypes: publishTypes, publishAs: publishAs, map: map,
       exportExpressions: exportExpressions,
       exportExpressionAttrs: exportExpressionAttrs);

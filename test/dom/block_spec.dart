@@ -2,7 +2,7 @@ library block_spec;
 
 import '../_specs.dart';
 
-@NgDirective(transclude: true, selector: 'foo')
+@NgDirective(children: NgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo')
 class LoggerBlockDirective {
   LoggerBlockDirective(BlockHole hole, BlockFactory blockFactory,
       BoundBlockFactory boundBlockFactory, Logger logger) {
@@ -135,7 +135,10 @@ main() {
           //   }
           // }
 
-          var directiveRef = new DirectiveRef(null, LoggerBlockDirective, new NgDirective(transclude: true, selector: 'foo'), '');
+          var directiveRef = new DirectiveRef(null,
+                                              LoggerBlockDirective,
+                                              new NgDirective(children: NgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo'),
+                                              '');
           directiveRef.blockFactory = new BlockFactory($('<b>text</b>'), [], perf);
           var outerBlockType = new BlockFactory(
               $('<!--start--><!--end-->'),

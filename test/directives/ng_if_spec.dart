@@ -5,7 +5,7 @@ import 'dart:html' as dom;
 
 @NgDirective(
     selector: '[child-controller]',
-    transclude: true)
+    children: NgAnnotation.TRANSCLUDE_CHILDREN)
 class ChildController {
   ChildController(BoundBlockFactory boundBlockFactory,
                   BlockHole blockHole,
