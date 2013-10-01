@@ -3,6 +3,8 @@ library http_spec;
 import '../_specs.dart';
 import '../_http.dart';
 
+import 'dart:async';
+
 var VALUE = 'val';
 var CACHED_VALUE = 'cached_value';
 
@@ -20,6 +22,12 @@ main() => describe('http', () {
   MockHttpBackend backend;
   var cache;
 
+  flush() {
+    nextTurn(true);
+    backend.flush();
+    nextTurn(true);
+  }
+
   beforeEach(module((AngularModule module) {
     backend = new MockHttpBackend();
     cache = new FakeCache();
@@ -35,50 +43,48 @@ main() => describe('http', () {
   }));
 
   describe('the instance', () {
-    MockHttpBackend httpBackend;
     Http http;
     var callback;
 
-    beforeEach(inject((HttpBackend hb, Http h) {
-      httpBackend = hb;
+    beforeEach(inject((Http h) {
       http = h;
       callback = jasmine.createSpy('callback');
     }));
 
 
     it('should do basic request', () {
-      httpBackend.expect('GET', '/url').respond('');
+      backend.expect('GET', '/url').respond('');
       http(url: '/url', method: 'GET');
     });
 
 
     it('should pass data if specified', () {
-      httpBackend.expect('POST', '/url', 'some-data').respond('');
+      backend.expect('POST', '/url', 'some-data').respond('');
       http(url: '/url', method: 'POST', data: 'some-data');
     });
 
 
     describe('params', () {
       it('should do basic request with params and encode', () {
-        httpBackend.expect('GET', '/url?a%3D=%3F%26&b=2').respond('');
+        backend.expect('GET', '/url?a%3D=%3F%26&b=2').respond('');
         http(url: '/url', params: {'a=':'?&', 'b':2}, method: 'GET');
       });
 
 
       it('should merge params if url contains some already', () {
-        httpBackend.expect('GET', '/url?c=3&a=1&b=2').respond('');
+        backend.expect('GET', '/url?c=3&a=1&b=2').respond('');
         http(url: '/url?c=3', params: {'a':1, 'b':2}, method: 'GET');
       });
 
 
       it('should jsonify objects in params map', () {
-        httpBackend.expect('GET', '/url?a=1&b=%7B%22c%22:3%7D').respond('');
+        backend.expect('GET', '/url?a=1&b=%7B%22c%22:3%7D').respond('');
         http(url: '/url', params: {'a':1, 'b':{'c':3}}, method: 'GET');
       });
 
 
       it('should expand arrays in params map', () {
-          httpBackend.expect('GET', '/url?a=1&a=2&a=3').respond('');
+          backend.expect('GET', '/url?a=1&a=2&a=3').respond('');
           http(url: '/url', params: {'a': [1,2,3]}, method: 'GET');
       });
 
@@ -89,7 +95,7 @@ main() => describe('http', () {
         //so we need this test to make sure that we don't over-encode the params and break stuff
         //like buzz api which uses @self
 
-        httpBackend.expect('GET', r'/Path?!do%26h=g%3Da+h&:bar=$baz@1').respond('');
+        backend.expect('GET', r'/Path?!do%26h=g%3Da+h&:bar=$baz@1').respond('');
         http(url: '/Path', params: {':bar': r'$baz@1', '!do&h': 'g=a h'}, method: 'GET');
       });
     });
@@ -97,8 +103,8 @@ main() => describe('http', () {
 
     describe('callbacks', () {
 
-      it('should pass in the response object when a request is thenful', async(() {
-        httpBackend.expect('GET', '/url').respond(207, 'my content', {'content-encoding': 'smurf'});
+      it('should pass in the response object when a request is successful', async(() {
+        backend.expect('GET', '/url').respond(207, 'my content', {'content-encoding': 'smurf'});
         http(url: '/url', method: 'GET').then((HttpResponse response) {
           expect(response.data).toEqual('my content');
           expect(response.status).toEqual(207);
@@ -107,15 +113,14 @@ main() => describe('http', () {
           callback();
         });
 
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(callback).toHaveBeenCalledOnce();
       }));
 
 
       it('should pass in the response object when a request failed', async(() {
-        httpBackend.expect('GET', '/url').respond(543, 'bad error', {'request-id': '123'});
+        backend.expect('GET', '/url').respond(543, 'bad error', {'request-id': '123'});
         http(url: '/url', method: 'GET').then((_) {}, onError: (response) {
           expect(response.data).toEqual('bad error');
           expect(response.status).toEqual(543);
@@ -124,8 +129,7 @@ main() => describe('http', () {
           callback();
         });
 
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(callback).toHaveBeenCalledOnce();
       }));
@@ -133,7 +137,7 @@ main() => describe('http', () {
 
       describe('success', () {
         it('should allow http specific callbacks to be registered via "success"', async(() {
-          httpBackend.expect('GET', '/url').respond(207, 'my content', {'content-encoding': 'smurf'});
+          backend.expect('GET', '/url').respond(207, 'my content', {'content-encoding': 'smurf'});
           http(url: '/url', method: 'GET').then((r) {
             expect(r.data).toEqual('my content');
             expect(r.status).toEqual(207);
@@ -142,8 +146,7 @@ main() => describe('http', () {
             callback();
           });
 
-          httpBackend.flush();
-          nextTurn();
+          flush();
 
           expect(callback).toHaveBeenCalledOnce();
         }));
@@ -152,7 +155,7 @@ main() => describe('http', () {
 
       describe('error', () {
         it('should allow http specific callbacks to be registered via "error"', async(() {
-          httpBackend.expect('GET', '/url').respond(543, 'bad error', {'request-id': '123'});
+          backend.expect('GET', '/url').respond(543, 'bad error', {'request-id': '123'});
           http(url: '/url', method: 'GET').then((_) {}, onError: (r) {
             if (r is! HttpResponse) { throw r; }
             expect(r.data).toEqual('bad error');
@@ -162,8 +165,7 @@ main() => describe('http', () {
             callback();
           });
 
-          httpBackend.flush();
-          nextTurn(true);
+          flush();
 
           expect(callback).toHaveBeenCalledOnce();
         }));
@@ -174,37 +176,35 @@ main() => describe('http', () {
     describe('response headers', () {
 
       it('should return single header', async(() {
-        httpBackend.expect('GET', '/url').respond('', {'date': 'date-val'});
+        backend.expect('GET', '/url').respond('', {'date': 'date-val'});
         callback.andCallFake((r) {
           expect(r.headers('date')).toEqual('date-val');
         });
 
         http(url: '/url', method: 'GET').then(callback);
 
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(callback).toHaveBeenCalledOnce();
       }));
 
 
       it('should return null when single header does not exist', async(() {
-        httpBackend.expect('GET', '/url').respond('', {'Some-Header': 'Fake'});
+        backend.expect('GET', '/url').respond('', {'Some-Header': 'Fake'});
         callback.andCallFake((r) {
           r.headers(); // we need that to get headers parsed first
           expect(r.headers('nothing')).toEqual(null);
         });
 
         http(url: '/url', method: 'GET').then(callback);
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(callback).toHaveBeenCalledOnce();
       }));
 
 
       it('should return all headers as object', async(() {
-        httpBackend.expect('GET', '/url').respond('', {
+        backend.expect('GET', '/url').respond('', {
           'content-encoding': 'gzip',
           'server': 'Apache'
         });
@@ -214,8 +214,7 @@ main() => describe('http', () {
         });
 
         http(url: '/url', method: 'GET').then(callback);
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(callback).toHaveBeenCalledOnce();
       }));
@@ -226,10 +225,9 @@ main() => describe('http', () {
           expect(r.headers()).toEqual({});
         });
 
-        httpBackend.expect('JSONP', '/some').respond(200);
+        backend.expect('JSONP', '/some').respond(200);
         http(url: '/some', method: 'JSONP').then(callback);
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(callback).toHaveBeenCalledOnce();
       }));
@@ -303,8 +301,8 @@ main() => describe('http', () {
 
     describe('request headers', () {
 
-      it('should send custom headers', () {
-        httpBackend.expect('GET', '/url', null, (headers) {
+      it('should send custom headers', async(() {
+        backend.expect('GET', '/url', null, (headers) {
           return headers['Custom'] == 'header';
         }).respond('');
 
@@ -312,63 +310,63 @@ main() => describe('http', () {
           'Custom': 'header',
         });
 
-        httpBackend.flush();
-      });
+        flush();
+      }));
 
 
-      it('should set default headers for GET request', () {
-        httpBackend.expect('GET', '/url', null, (headers) {
+      it('should set default headers for GET request', async(() {
+        backend.expect('GET', '/url', null, (headers) {
           return headers['Accept'] == 'application/json, text/plain, */*';
         }).respond('');
 
         http(url: '/url', method: 'GET', headers: {});
-        httpBackend.flush();
-      });
+        flush();
+      }));
 
 
-      it('should set default headers for POST request', () {
-        httpBackend.expect('POST', '/url', 'messageBody', (headers) {
+      it('should set default headers for POST request', async(() {
+        backend.expect('POST', '/url', 'messageBody', (headers) {
           return headers['Accept'] == 'application/json, text/plain, */*' &&
                  headers['Content-Type'] == 'application/json;charset=utf-8';
         }).respond('');
 
         http(url: '/url', method: 'POST', headers: {}, data: 'messageBody');
-        httpBackend.flush();
-      });
+        flush();
+      }));
 
 
-      it('should set default headers for PUT request', () {
-        httpBackend.expect('PUT', '/url', 'messageBody', (headers) {
+      it('should set default headers for PUT request', async(() {
+        backend.expect('PUT', '/url', 'messageBody', (headers) {
           return headers['Accept'] == 'application/json, text/plain, */*' &&
                  headers['Content-Type'] == 'application/json;charset=utf-8';
         }).respond('');
 
         http(url: '/url', method: 'PUT', headers: {}, data: 'messageBody');
-        httpBackend.flush();
-      });
+        flush();
+      }));
 
-      it('should set default headers for PATCH request', () {
-        httpBackend.expect('PATCH', '/url', 'messageBody', (headers) {
+      it('should set default headers for PATCH request', async(() {
+        backend.expect('PATCH', '/url', 'messageBody', (headers) {
           return headers['Accept'] == 'application/json, text/plain, */*' &&
                  headers['Content-Type'] == 'application/json;charset=utf-8';
         }).respond('');
 
         http(url: '/url', method: 'PATCH', headers: {}, data: 'messageBody');
-        httpBackend.flush();
-      });
+        flush();
+      }));
 
-      it('should set default headers for custom HTTP method', () {
-        httpBackend.expect('FOO', '/url', null, (headers) {
+      it('should set default headers for custom HTTP method', async(() {
+        backend.expect('FOO', '/url', null, (headers) {
           return headers['Accept'] == 'application/json, text/plain, */*';
         }).respond('');
 
         http(url: '/url', method: 'FOO', headers: {});
-        httpBackend.flush();
-      });
+        flush();
+      }));
 
 
-      it('should override default headers with custom', () {
-        httpBackend.expect('POST', '/url', 'messageBody', (headers) {
+      it('should override default headers with custom', async(() {
+        backend.expect('POST', '/url', 'messageBody', (headers) {
           return headers['Accept'] == 'Rewritten' &&
                  headers['Content-Type'] == 'Rewritten';
         }).respond('');
@@ -377,11 +375,11 @@ main() => describe('http', () {
           'Accept': 'Rewritten',
           'Content-Type': 'Rewritten'
         });
-        httpBackend.flush();
-      });
+        flush();
+      }));
 
-      it('should override default headers with custom in a case insensitive manner', () {
-        httpBackend.expect('POST', '/url', 'messageBody', (headers) {
+      it('should override default headers with custom in a case insensitive manner', async(() {
+        backend.expect('POST', '/url', 'messageBody', (headers) {
           return headers['accept'] == 'Rewritten' &&
                  headers['content-type'] == 'Content-Type Rewritten' &&
                  headers['Accept'] == null &&
@@ -392,34 +390,34 @@ main() => describe('http', () {
           'accept': 'Rewritten',
           'content-type': 'Content-Type Rewritten'
         });
-        httpBackend.flush();
-      });
+        flush();
+      }));
 
       xit('should not set XSRF cookie for cross-domain requests', inject(($browser) {
         $browser.cookies('XSRF-TOKEN', 'secret');
         $browser.url('http://host.com/base');
-        httpBackend.expect('GET', 'http://www.test.com/url', null, (headers) {
+        backend.expect('GET', 'http://www.test.com/url', null, (headers) {
           return headers['X-XSRF-TOKEN'] == null;
         }).respond('');
 
         http(url: 'http://www.test.com/url', method: 'GET', headers: {});
-        httpBackend.flush();
+        flush();
       }));
 
 
-      it('should not send Content-Type header if request data/body is null', () {
-        httpBackend.expect('POST', '/url', null, (headers) {
+      it('should not send Content-Type header if request data/body is null', async(() {
+        backend.expect('POST', '/url', null, (headers) {
           return !headers.containsKey('Content-Type');
         }).respond('');
 
-        httpBackend.expect('POST', '/url2', null, (headers) {
+        backend.expect('POST', '/url2', null, (headers) {
           return !headers.containsKey('content-type');
         }).respond('');
 
         http(url: '/url', method: 'POST');
         http(url: '/url2', method: 'POST', headers: {'content-type': 'Rewritten'});
-        httpBackend.flush();
-      });
+        flush();
+      }));
 
 
       xit('should set the XSRF cookie into a XSRF header', inject(($browser) {
@@ -431,12 +429,12 @@ main() => describe('http', () {
 
         $browser.cookies('XSRF-TOKEN', 'secret');
         $browser.cookies('aCookie', 'secret2');
-        httpBackend.expect('GET', '/url', null, checkXSRF('secret')).respond('');
-        httpBackend.expect('POST', '/url', null, checkXSRF('secret')).respond('');
-        httpBackend.expect('PUT', '/url', null, checkXSRF('secret')).respond('');
-        httpBackend.expect('DELETE', '/url', null, checkXSRF('secret')).respond('');
-        httpBackend.expect('GET', '/url', null, checkXSRF('secret', 'aHeader')).respond('');
-        httpBackend.expect('GET', '/url', null, checkXSRF('secret2')).respond('');
+        backend.expect('GET', '/url', null, checkXSRF('secret')).respond('');
+        backend.expect('POST', '/url', null, checkXSRF('secret')).respond('');
+        backend.expect('PUT', '/url', null, checkXSRF('secret')).respond('');
+        backend.expect('DELETE', '/url', null, checkXSRF('secret')).respond('');
+        backend.expect('GET', '/url', null, checkXSRF('secret', 'aHeader')).respond('');
+        backend.expect('GET', '/url', null, checkXSRF('secret2')).respond('');
 
         http(url: '/url', method: 'GET');
         http(url: '/url', method: 'POST', headers: {'S-ome': 'Header'});
@@ -445,21 +443,21 @@ main() => describe('http', () {
         http(url: '/url', method: 'GET', xsrfHeaderName: 'aHeader');
         http(url: '/url', method: 'GET', xsrfCookieName: 'aCookie');
 
-        httpBackend.flush();
+        flush();
       }));
 
-      it('should send execute result if header value is function', inject(() {
+      it('should send execute result if header value is function', async(() {
         var headerConfig = {'Accept': () { return 'Rewritten'; }};
 
         checkHeaders(headers) {
           return headers['Accept'] == 'Rewritten';
         }
 
-        httpBackend.expect('GET', '/url', null, checkHeaders).respond('');
-        httpBackend.expect('POST', '/url', null, checkHeaders).respond('');
-        httpBackend.expect('PUT', '/url', null, checkHeaders).respond('');
-        httpBackend.expect('PATCH', '/url', null, checkHeaders).respond('');
-        httpBackend.expect('DELETE', '/url', null, checkHeaders).respond('');
+        backend.expect('GET', '/url', null, checkHeaders).respond('');
+        backend.expect('POST', '/url', null, checkHeaders).respond('');
+        backend.expect('PUT', '/url', null, checkHeaders).respond('');
+        backend.expect('PATCH', '/url', null, checkHeaders).respond('');
+        backend.expect('DELETE', '/url', null, checkHeaders).respond('');
 
         http(url: '/url', method: 'GET', headers: headerConfig);
         http(url: '/url', method: 'POST', headers: headerConfig);
@@ -467,7 +465,7 @@ main() => describe('http', () {
         http(url: '/url', method: 'PATCH', headers: headerConfig);
         http(url: '/url', method: 'DELETE', headers: headerConfig);
 
-        httpBackend.flush();
+        flush();
       }));
     });
 
@@ -481,73 +479,73 @@ main() => describe('http', () {
       }
 
       it('should have get()', () {
-        httpBackend.expect('GET', '/url').respond('');
+        backend.expect('GET', '/url').respond('');
         http.get('/url');
       });
 
 
       it('get() should allow config param', () {
-        httpBackend.expect('GET', '/url', null, checkHeader('Custom', 'Header')).respond('');
+        backend.expect('GET', '/url', null, checkHeader('Custom', 'Header')).respond('');
         http.get('/url', headers: {'Custom': 'Header'});
       });
 
 
       it('should have delete()', () {
-        httpBackend.expect('DELETE', '/url').respond('');
+        backend.expect('DELETE', '/url').respond('');
         http.delete('/url');
       });
 
 
       it('delete() should allow config param', () {
-        httpBackend.expect('DELETE', '/url', null, checkHeader('Custom', 'Header')).respond('');
+        backend.expect('DELETE', '/url', null, checkHeader('Custom', 'Header')).respond('');
         http.delete('/url', headers: {'Custom': 'Header'});
       });
 
 
       it('should have head()', () {
-        httpBackend.expect('HEAD', '/url').respond('');
+        backend.expect('HEAD', '/url').respond('');
         http.head('/url');
       });
 
 
       it('head() should allow config param', () {
-        httpBackend.expect('HEAD', '/url', null, checkHeader('Custom', 'Header')).respond('');
+        backend.expect('HEAD', '/url', null, checkHeader('Custom', 'Header')).respond('');
         http.head('/url', headers: {'Custom': 'Header'});
       });
 
 
       it('should have post()', () {
-        httpBackend.expect('POST', '/url', 'some-data').respond('');
+        backend.expect('POST', '/url', 'some-data').respond('');
         http.post('/url', 'some-data');
       });
 
 
       it('post() should allow config param', () {
-        httpBackend.expect('POST', '/url', 'some-data', checkHeader('Custom', 'Header')).respond('');
+        backend.expect('POST', '/url', 'some-data', checkHeader('Custom', 'Header')).respond('');
         http.post('/url', 'some-data', headers: {'Custom': 'Header'});
       });
 
 
       it('should have put()', () {
-        httpBackend.expect('PUT', '/url', 'some-data').respond('');
+        backend.expect('PUT', '/url', 'some-data').respond('');
         http.put('/url', 'some-data');
       });
 
 
       it('put() should allow config param', () {
-        httpBackend.expect('PUT', '/url', 'some-data', checkHeader('Custom', 'Header')).respond('');
+        backend.expect('PUT', '/url', 'some-data', checkHeader('Custom', 'Header')).respond('');
         http.put('/url', 'some-data', headers: {'Custom': 'Header'});
       });
 
 
       it('should have jsonp()', () {
-        httpBackend.expect('JSONP', '/url').respond('');
+        backend.expect('JSONP', '/url').respond('');
         http.jsonp('/url');
       });
 
 
       it('jsonp() should allow config param', () {
-        httpBackend.expect('JSONP', '/url', null, checkHeader('Custom', 'Header')).respond('');
+        backend.expect('JSONP', '/url', null, checkHeader('Custom', 'Header')).respond('');
         http.jsonp('/url', headers: {'Custom': 'Header'});
       });
     });
@@ -559,13 +557,13 @@ main() => describe('http', () {
         describe('default', () {
 
           it('should transform object into json', () {
-            httpBackend.expect('POST', '/url', '{"one":"two"}').respond('');
+            backend.expect('POST', '/url', '{"one":"two"}').respond('');
             http(method: 'POST', url: '/url', data: {'one': 'two'});
           });
 
 
           it('should ignore strings', () {
-            httpBackend.expect('POST', '/url', 'string-data').respond('');
+            backend.expect('POST', '/url', 'string-data').respond('');
             http(method: 'POST', url: '/url', data: 'string-data');
           });
 
@@ -574,22 +572,21 @@ main() => describe('http', () {
             var file = new FakeFile();
             expect(file is File).toBeTruthy();
 
-            httpBackend.expect('POST', '/some', file).respond('');
+            backend.expect('POST', '/some', file).respond('');
             http(method: 'POST', url: '/some', data: file);
           });
         });
 
 
         it('should have access to request headers', async(() {
-          httpBackend.expect('POST', '/url', 'header1').respond(200);
+          backend.expect('POST', '/url', 'header1').respond(200);
           http.post('/url', 'req',
             headers: {'h1': 'header1'},
             transformRequest: (data, headers) {
               return headers('h1');
             }
           ).then(callback);
-          httpBackend.flush();
-          nextTurn(true);
+          flush();
 
           expect(callback).toHaveBeenCalledOnce();
         }));
@@ -599,13 +596,12 @@ main() => describe('http', () {
           first(d, h) {return d + '-first' + ':' + h('h1');}
           second(d, _) {return d.toUpperCase();}
 
-          httpBackend.expect('POST', '/url', 'REQ-FIRST:V1').respond(200);
+          backend.expect('POST', '/url', 'REQ-FIRST:V1').respond(200);
           http.post('/url', 'req',
             headers: {'h1': 'v1'},
             transformRequest: [first, second]
           ).then(callback);
-          httpBackend.flush();
-          nextTurn(true);
+          flush();
 
           expect(callback).toHaveBeenCalledOnce();
         }));
@@ -617,10 +613,9 @@ main() => describe('http', () {
         describe('default', () {
 
           it('should deserialize json objects', async(() {
-            httpBackend.expect('GET', '/url').respond('{"foo":"bar","baz":23}');
+            backend.expect('GET', '/url').respond('{"foo":"bar","baz":23}');
             http(method: 'GET', url: '/url').then(callback);
-            httpBackend.flush();
-            nextTurn(true);
+            flush();
 
             expect(callback).toHaveBeenCalledOnce();
             expect(callback.mostRecentCall.args[0].data).toEqual({'foo': 'bar', 'baz': 23});
@@ -628,10 +623,9 @@ main() => describe('http', () {
 
 
           it('should deserialize json arrays', async(() {
-            httpBackend.expect('GET', '/url').respond('[1, "abc", {"foo":"bar"}]');
+            backend.expect('GET', '/url').respond('[1, "abc", {"foo":"bar"}]');
             http(method: 'GET', url: '/url').then(callback);
-            httpBackend.flush();
-            nextTurn(true);
+            flush();
 
             expect(callback).toHaveBeenCalledOnce();
             expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo': 'bar'}]);
@@ -639,10 +633,9 @@ main() => describe('http', () {
 
 
           it('should deserialize json with security prefix', async(() {
-            httpBackend.expect('GET', '/url').respond(')]}\',\n[1, "abc", {"foo":"bar"}]');
+            backend.expect('GET', '/url').respond(')]}\',\n[1, "abc", {"foo":"bar"}]');
             http(method: 'GET', url: '/url').then(callback);
-            httpBackend.flush();
-            nextTurn(true);
+            flush();
 
             expect(callback).toHaveBeenCalledOnce();
             expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
@@ -650,10 +643,9 @@ main() => describe('http', () {
 
 
           it('should deserialize json with security prefix ")]}\'"', async(() {
-            httpBackend.expect('GET', '/url').respond(')]}\'\n\n[1, "abc", {"foo":"bar"}]');
+            backend.expect('GET', '/url').respond(')]}\'\n\n[1, "abc", {"foo":"bar"}]');
             http(method: 'GET', url: '/url').then(callback);
-            httpBackend.flush();
-            nextTurn(true);
+            flush();
 
             expect(callback).toHaveBeenCalledOnce();
             expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
@@ -661,10 +653,9 @@ main() => describe('http', () {
 
 
           it('should not deserialize tpl beginning with ng expression', async(() {
-            httpBackend.expect('GET', '/url').respond('{{some}}');
+            backend.expect('GET', '/url').respond('{{some}}');
             http.get('/url').then(callback);
-            httpBackend.flush();
-            nextTurn(true);
+            flush();
 
             expect(callback).toHaveBeenCalledOnce();
             expect(callback.mostRecentCall.args[0].data).toEqual('{{some}}');
@@ -673,14 +664,13 @@ main() => describe('http', () {
 
 
         it('should have access to response headers', async(() {
-          httpBackend.expect('GET', '/url').respond(200, 'response', {'h1': 'header1'});
+          backend.expect('GET', '/url').respond(200, 'response', {'h1': 'header1'});
           http.get('/url',
             transformResponse: (data, headers) {
               return headers('h1');
             }
           ).then(callback);
-          httpBackend.flush();
-          nextTurn(true);
+          flush();
 
           expect(callback).toHaveBeenCalledOnce();
           expect(callback.mostRecentCall.args[0].data).toEqual('header1');
@@ -691,10 +681,9 @@ main() => describe('http', () {
           first(d, h) {return d + '-first' + ':' + h('h1');}
           second(d, _) {return d.toUpperCase();}
 
-          httpBackend.expect('POST', '/url').respond(200, 'resp', {'h1': 'v1'});
+          backend.expect('POST', '/url').respond(200, 'resp', {'h1': 'v1'});
           http.post('/url', '', transformResponse: [first, second]).then(callback);
-          httpBackend.flush();
-          nextTurn(true);
+          flush();
 
           expect(callback).toHaveBeenCalledOnce();
           expect(callback.mostRecentCall.args[0].data).toEqual('RESP-FIRST:V1');
@@ -713,12 +702,11 @@ main() => describe('http', () {
 
 
       doFirstCacheRequest([String method, int respStatus, Map headers]) {
-        httpBackend.expect(method != null ? method :'GET', '/url')
+        backend.expect(method != null ? method :'GET', '/url')
             .respond(respStatus != null ? respStatus : 200, 'content', headers);
         http(method: method != null ? method : 'GET', url: '/url', cache: cache)
             .then((_){}, onError: (_){});
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
       }
 
 
@@ -737,8 +725,9 @@ main() => describe('http', () {
       it('should not cache when cache is not provided', async(() {
         doFirstCacheRequest();
 
-        httpBackend.expect('GET', '/url').respond();
+        backend.expect('GET', '/url').respond();
         http(method: 'GET', url: '/url');
+        nextTurn(true);
       }));
 
 
@@ -746,18 +735,18 @@ main() => describe('http', () {
         doFirstCacheRequest();
 
         cache.removeAll();
-        httpBackend.expect('GET', '/url').respond();
+        backend.expect('GET', '/url').respond();
         http(method: 'GET', url: '/url', cache: cache);
+        nextTurn(true);
       }));
 
 
       it('should not cache POST request', async(() {
         doFirstCacheRequest('POST');
 
-        httpBackend.expect('POST', '/url').respond('content2');
+        backend.expect('POST', '/url').respond('content2');
         http(method: 'POST', url: '/url', cache: cache).then(callback);
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(callback).toHaveBeenCalledOnce();
         expect(callback.mostRecentCall.args[0].data).toEqual('content2');
@@ -767,10 +756,9 @@ main() => describe('http', () {
       it('should not cache PUT request', async(() {
         doFirstCacheRequest('PUT');
 
-        httpBackend.expect('PUT', '/url').respond('content2');
+        backend.expect('PUT', '/url').respond('content2');
         http(method: 'PUT', url: '/url', cache: cache).then(callback);
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(callback).toHaveBeenCalledOnce();
         expect(callback.mostRecentCall.args[0].data).toEqual('content2');
@@ -780,10 +768,9 @@ main() => describe('http', () {
       it('should not cache DELETE request', async(() {
         doFirstCacheRequest('DELETE');
 
-        httpBackend.expect('DELETE', '/url').respond(206);
+        backend.expect('DELETE', '/url').respond(206);
         http(method: 'DELETE', url: '/url', cache: cache).then(callback);
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(callback).toHaveBeenCalledOnce();
       }));
@@ -792,10 +779,9 @@ main() => describe('http', () {
       it('should not cache non 2xx responses', async(() {
         doFirstCacheRequest('GET', 404);
 
-        httpBackend.expect('GET', '/url').respond('content2');
+        backend.expect('GET', '/url').respond('content2');
         http(method: 'GET', url: '/url', cache: cache).then(callback);
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(callback).toHaveBeenCalledOnce();
         expect(callback.mostRecentCall.args[0].data).toEqual('content2');
@@ -844,7 +830,7 @@ main() => describe('http', () {
 
 
       it('should use cache even if second request was made before the first returned', async(() {
-        httpBackend.expect('GET', '/url').respond(201, 'fake-response');
+        backend.expect('GET', '/url').respond(201, 'fake-response');
 
         callback.andCallFake((r) {
           expect(r.data).toEqual('fake-response');
@@ -854,8 +840,7 @@ main() => describe('http', () {
         http(method: 'GET', url: '/url', cache: cache).then(callback);
         http(method: 'GET', url: '/url', cache: cache).then(callback);
 
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(callback).toHaveBeenCalled();
         expect(callback.callCount).toEqual(2);
@@ -872,10 +857,9 @@ main() => describe('http', () {
           http.defaults.cache = cache;
 
           // First request fills the cache from server response.
-          httpBackend.expect('GET', '/url').respond(200, 'content');
+          backend.expect('GET', '/url').respond(200, 'content');
           http(method: 'GET', url: '/url'); // Notice no cache given in config.
-          httpBackend.flush();
-          nextTurn(true);
+          flush();
 
           // Second should be served from cache, without sending request to server.
           http(method: 'get', url: '/url').then(callback);
@@ -888,10 +872,9 @@ main() => describe('http', () {
           http.defaults.cache.remove("/url");
 
           // After cache entry removed, a request should be sent to server.
-          httpBackend.expect('GET', '/url').respond(200, 'content');
+          backend.expect('GET', '/url').respond(200, 'content');
           http(method: 'GET', url: '/url');
-          httpBackend.flush();
-          nextTurn(true);
+          flush();
         }));
 
         it('should have less priority than explicitly given cache', async(() {
@@ -899,16 +882,14 @@ main() => describe('http', () {
           http.defaults.cache = cache;
 
           // Fill local cache.
-          httpBackend.expect('GET', '/url').respond(200, 'content-local-cache');
+          backend.expect('GET', '/url').respond(200, 'content-local-cache');
           http(method: 'GET', url: '/url', cache: localCache);
-          httpBackend.flush();
-          nextTurn(true);
+          flush();
 
           // Fill default cache.
-          httpBackend.expect('GET', '/url').respond(200, 'content-default-cache');
+          backend.expect('GET', '/url').respond(200, 'content-default-cache');
           http(method: 'GET', url: '/url');
-          httpBackend.flush();
-          nextTurn(true);
+          flush();
 
           // Serve request from default cache when no local given.
           http(method: 'get', url: '/url').then(callback);
@@ -929,15 +910,13 @@ main() => describe('http', () {
         it('should be skipped if {cache: false} is passed in request config', async(() {
           http.defaults.cache = cache;
 
-          httpBackend.expect('GET', '/url').respond(200, 'content');
+          backend.expect('GET', '/url').respond(200, 'content');
           http(method: 'GET', url: '/url');
-          httpBackend.flush();
-          nextTurn(true);
+          flush();
 
-          httpBackend.expect('GET', '/url').respond();
+          backend.expect('GET', '/url').respond();
           http(method: 'GET', url: '/url', cache: false);
-          httpBackend.flush();
-          nextTurn(true);
+          flush();
         }));
       });
     });
@@ -950,7 +929,7 @@ main() => describe('http', () {
       it('should abort requests when timeout promise resolves', inject(($q) {
         var canceler = $q.defer();
 
-        httpBackend.expect('GET', '/some').respond(200);
+        backend.expect('GET', '/some').respond(200);
 
         http(method: 'GET', url: '/some', timeout: canceler.promise).error(
             (data, status, headers, config) {
@@ -966,8 +945,8 @@ main() => describe('http', () {
         //});
 
         expect(callback).toHaveBeenCalled();
-        httpBackend.verifyNoOutstandingExpectation();
-        httpBackend.verifyNoOutstandingRequest();
+        backend.verifyNoOutstandingExpectation();
+        backend.verifyNoOutstandingRequest();
       }));
     });
 
@@ -975,15 +954,14 @@ main() => describe('http', () {
     describe('pendingRequests', () {
 
       it('should be an array of pending requests', async(() {
-        httpBackend.when('GET').respond(200);
+        backend.when('GET').respond(200);
         expect(http.pendingRequests.length).toEqual(0);
 
         http(method: 'get', url: '/some');
+        nextTurn(true);
         expect(http.pendingRequests.length).toEqual(1);
 
-        httpBackend.flush();
-        nextTurn(true);
-
+        flush();
         expect(http.pendingRequests.length).toEqual(0);
       }));
 
@@ -993,14 +971,13 @@ main() => describe('http', () {
       // on-the-wire, not the number of times a URL was requested.
       xit('should update pending requests even when served from cache', async(() {
         var cache = new Cache();
-        httpBackend.when('GET').respond(200);
+        backend.when('GET').respond(200);
 
         http(method: 'get', url: '/cached', cache: cache);
         http(method: 'get', url: '/cached', cache: cache);
         expect(http.pendingRequests.length).toEqual(2);
 
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
 
         expect(http.pendingRequests.length).toEqual(0);
 
@@ -1013,14 +990,14 @@ main() => describe('http', () {
 
 
       it('should remove the request before firing callbacks', async(() {
-        httpBackend.when('GET').respond(200);
+        backend.when('GET').respond(200);
         http(method: 'get', url: '/url').then((_) {
           expect(http.pendingRequests.length).toEqual(0);
         });
+        nextTurn(true);
 
         expect(http.pendingRequests.length).toEqual(1);
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
       }));
     });
 
@@ -1031,13 +1008,12 @@ main() => describe('http', () {
         expect(http.defaults).toBeDefined();
 
         http.defaults.headers['common']['foo'] = 'bar';
-        httpBackend.expect('GET', '/url', null, (headers) {
+        backend.expect('GET', '/url', null, (headers) {
           return headers['foo'] == 'bar';
         }).respond('');
 
         http.get('/url');
-        httpBackend.flush();
-        nextTurn(true);
+        flush();
       }));
     });
   });
@@ -1062,8 +1038,7 @@ main() => describe('http', () {
 
       expect(called).toEqual(0);
 
-      backend.flush();
-      nextTurn(true);
+      flush();
 
       expect(called).toEqual(1);
     })));
@@ -1085,9 +1060,7 @@ main() => describe('http', () {
       });
 
       expect(called).toEqual(0);
-      backend.flush();
-
-      nextTurn(true);
+      flush();
 
       expect(called).toEqual(11);
     })));
@@ -1127,8 +1100,7 @@ main() => describe('http', () {
 
       expect(called).toEqual(0);
 
-      backend.flush();
-      nextTurn(true);
+      flush();
 
       expect(called).toEqual(11);
     })));
@@ -1150,8 +1122,7 @@ main() => describe('http', () {
       });
 
       expect(called).toEqual(0);
-      backend.flush();
-      nextTurn(true);
+      flush();
 
       expect(called).toEqual(11);
     })));
@@ -1169,8 +1140,7 @@ main() => describe('http', () {
       });
 
       expect(called).toEqual(0);
-      backend.flush();
-      nextTurn(true);
+      flush();
 
       zone.run(() {
         http.getString('a', cache: cache).then((v) {
@@ -1180,8 +1150,7 @@ main() => describe('http', () {
       });
 
       expect(called).toEqual(1);
-      backend.flush();
-      nextTurn(true);
+      flush();
 
       expect(called).toEqual(11);
     })));
@@ -1198,7 +1167,7 @@ main() => describe('http', () {
       });
 
       expect(called).toEqual(0);
-      nextTurn();
+      nextTurn(true);
 
       expect(called).toEqual(1);
     })));
@@ -1217,10 +1186,80 @@ main() => describe('http', () {
       });
 
       expect(response).toEqual(null);
-      backend.flush();
-      nextTurn(true);
+      flush();
       expect(response.status).toEqual(404);
       expect(response.toString()).toEqual('HTTP 404: val');
+    })));
+  });
+
+
+  describe('interceptors', () {
+    it('should chain request, requestReject, response and responseReject interceptors', async(() {
+      inject((HttpInterceptors interceptors) {
+        var savedConfig, savedResponse;
+        interceptors.add(new HttpInterceptor(
+            request: (config) {
+              config.url += '/1';
+              savedConfig = config;
+              return new Future.error('/2');
+            }));
+        interceptors.add(new HttpInterceptor(
+            requestError: (error) {
+              savedConfig.url += error;
+              return new Future.value(savedConfig);
+            }));
+        interceptors.add(new HttpInterceptor(
+            responseError: (rejection) =>
+                new HttpResponse.copy(savedResponse,
+                    data: savedResponse.data + rejection)
+            ));
+        interceptors.add(new HttpInterceptor(
+            response: (response) {
+              savedResponse = new HttpResponse.copy(
+                  response, data: response.data + ':1');
+              return new Future.error(':2');
+            }));
+      });
+      inject((Http http) {
+        var response;
+        backend.expect('GET', '/url/1/2').respond('response');
+        http(method: 'GET', url: '/url').then((r) {
+          response = r;
+        });
+        flush();
+        expect(response.data).toEqual('response:1:2');
+      });
+    }));
+
+
+    it('should verify order of execution', async(
+          inject((HttpInterceptors interceptors, Http http) {
+      interceptors.add(new HttpInterceptor(
+          request: (config) {
+            config.url += '/outer';
+            return config;
+          },
+          response: (response) {
+            return new HttpResponse.copy(
+                response, data: '{' + response.data + '} outer');
+          }));
+      interceptors.add(new HttpInterceptor(
+          request: (config) {
+            config.url += '/inner';
+            return config;
+          },
+          response: (response) {
+            return new HttpResponse.copy(
+                response, data: '{' + response.data + '} inner');
+          }));
+
+      var response;
+      backend.expect('GET', '/url/outer/inner').respond('response');
+      http(method: 'GET', url: '/url').then((r) {
+        response = r;
+      });
+      flush();
+      expect(response.data).toEqual('{{response} inner} outer');
     })));
   });
 });

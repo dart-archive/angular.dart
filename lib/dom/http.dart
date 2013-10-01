@@ -42,6 +42,34 @@ class HttpBackend {
   }
 }
 
+class HttpInterceptor {
+
+  Function request, response, requestError, responseError;
+
+  HttpInterceptor({
+      this.request, this.response,
+      this.requestError, this.responseError});
+}
+
+
+class HttpInterceptors {
+  List<HttpInterceptor> _interceptors = new List();
+
+  add(x) => _interceptors.add(x);
+
+  constructChain(List chain) {
+    _interceptors.reversed.forEach((HttpInterceptor i) {
+      // AngularJS has an optimization of not including null interceptors.
+      chain.insert(0, [
+          i.request == null ? (x) => x : i.request,
+          i.requestError]);
+      chain.add([
+          i.response == null ? (x) => x : i.response,
+          i.responseError]);
+    });
+  }
+}
+
 /**
  * The request configuration of the request associated with this response.
  */
@@ -52,9 +80,14 @@ class HttpResponseConfig {
   String url;
 
   /**
+   * The request params as a Map
+   */
+  Map params;
+
+  /**
    * Constructor
    */
-  HttpResponseConfig({this.url});
+  HttpResponseConfig({this.url, this.params});
 }
 
 /**
@@ -284,12 +317,20 @@ class Http {
   Map<String, async.Future<HttpResponse>> _pendingRequests = <String, async.Future<HttpResponse>>{};
   UrlRewriter _rewriter;
   HttpBackend _backend;
+  HttpInterceptors _interceptors;
+
+  /**
+   * The defaults for [Http]
+   */
   HttpDefaults defaults;
 
   /**
    * Constructor, useful for DI.
    */
-  Http(UrlRewriter this._rewriter, HttpBackend this._backend, HttpDefaults this.defaults);
+  Http(UrlRewriter this._rewriter,
+       HttpBackend this._backend,
+       HttpDefaults this.defaults,
+       HttpInterceptors this._interceptors);
 
   /**
    * DEPRECATED
@@ -355,34 +396,52 @@ class Http {
       }
     });
 
-    // Transform data.
-    var reqData = _transformData(data, _headersGetter(headers), transformRequest);
-    assert(reqData is String || reqData is dom.File);
+    var serverRequest = (HttpResponseConfig config) {
+      print('server request');
+      // Transform data.
+      var reqData = _transformData(data, _headersGetter(headers), transformRequest);
+      assert(reqData is String || reqData is dom.File);
 
-    // Strip content-type if data is undefined
-    if (data == null) {
-      List<String> toRemove = [];
-      headers.forEach((h, _) {
-        if (h.toUpperCase() == 'CONTENT-TYPE') {
-          toRemove.add(h);
-        };
-      });
-      toRemove.forEach((x) => headers.remove(x));
-    }
-
-
-    return request(
-        _buildUrl(url, params),
-        method: method,
-        sendData: reqData,
-        requestHeaders: headers,
-        cache: cache).then((HttpResponse r) {
-      var data = _transformData(r.data, r.headers, transformResponse);
-      if (!identical(data, r.data)) {
-        return new HttpResponse.copy(r, data: data);
+      // Strip content-type if data is undefined
+      if (data == null) {
+        List<String> toRemove = [];
+        headers.forEach((h, _) {
+          if (h.toUpperCase() == 'CONTENT-TYPE') {
+            toRemove.add(h);
+          };
+        });
+        toRemove.forEach((x) => headers.remove(x));
       }
-      return r;
+
+
+      return request(
+          null,
+          config: config,
+          method: method,
+          sendData: reqData,
+          requestHeaders: headers,
+          cache: cache).then((HttpResponse r) {
+        var data = _transformData(r.data, r.headers, transformResponse);
+        if (!identical(data, r.data)) {
+          return new HttpResponse.copy(r, data: data);
+        }
+        return r;
+      });
+    };
+
+    var chain = [[serverRequest, null]];
+
+    var future = new async.Future.value(new HttpResponseConfig(
+        url: url,
+        params: params));
+
+    _interceptors.constructChain(chain);
+
+    chain.forEach((chainFns) {
+      future = future.then(chainFns[0], onError: chainFns[1]);
     });
+
+    return future;
   }
 
   /**
@@ -537,7 +596,8 @@ class Http {
    * DEPRECATED
    */
   async.Future<HttpResponse> request(String rawUrl,
-      { String method: 'GET',
+      { HttpResponseConfig config,
+        String method: 'GET',
         bool withCredentials: false,
         String responseType,
         String mimeType,
@@ -545,7 +605,15 @@ class Http {
         sendData,
         void onProgress(dom.ProgressEvent e),
         /*Cache<HttpResponse> or false*/ cache }) {
-    String url = _rewriter(rawUrl);
+    print('request');
+    String url;
+
+    if (config == null) {
+      url = _rewriter(rawUrl);
+      config = new HttpResponseConfig(url: url);
+    } else {
+      url = _buildUrl(config.url, config.params);
+    }
 
     if (cache is bool && cache == false) {
       cache = null;
@@ -560,6 +628,7 @@ class Http {
     if (cachedValue != null) {
       return new async.Future.value(new HttpResponse.copy(cachedValue));
     }
+
     var result = _backend.request(url,
         method: method,
         withCredentials: withCredentials,
@@ -572,7 +641,7 @@ class Http {
 
       var response = new HttpResponse(
           value.status, value.responseText, parseHeaders(value),
-          new HttpResponseConfig(url: url));
+          config);
 
       if (cache != null) {
         cache.put(url, response);
@@ -584,7 +653,7 @@ class Http {
       dom.HttpRequest request = event.currentTarget;
       return new async.Future.error(
           new HttpResponse(request.status, request.response,
-              parseHeaders(request), new HttpResponseConfig(url: url)));
+              parseHeaders(request), config));
     });
     _pendingRequests[url] = result;
     return result;
