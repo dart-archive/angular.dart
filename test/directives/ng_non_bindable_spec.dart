@@ -31,6 +31,7 @@ main() {
       expect(element.find("#s4").text().trim()).toEqual('two');
       // Bindings contained by ng-non-bindable should be left alone.
       var nonBindableDiv = element.find("div");
+      expect(nonBindableDiv.html().trim()).toEqual('<span ng-bind="a"></span>{{b}}');
       expect(nonBindableDiv.text().trim()).toEqual('{{b}}');
       // Bindings on the same node are processed.
       expect(nonBindableDiv.attr('foo')).toEqual('one');
