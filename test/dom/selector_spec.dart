@@ -15,9 +15,12 @@ import '../_specs.dart';
 @NgComponent(selector:'component')            class _Component{}
 @NgDirective(selector:'[attribute]')          class _Attribute{}
 @NgDirective(selector:'[structural]',
-             transclude: true)                class _Structural{}
+             children: NgAnnotation.TRANSCLUDE_CHILDREN)
+                                              class _Structural{}
 
-@NgNonBindable(selector:'[non-bindable]')     class _NonBindable{}
+@NgDirective(selector:'[ignore-children]',
+             children: NgAnnotation.IGNORE_CHILDREN)
+                                              class _IgnoreChildren{}
 
 main() {
   describe('Selector', () {
@@ -44,7 +47,7 @@ main() {
         ..type(_Component)
         ..type(_Attribute)
         ..type(_Structural)
-        ..type(_NonBindable);
+        ..type(_IgnoreChildren);
     }));
     beforeEach(inject((DirectiveMap directives) {
       selector = directiveSelectorFactory(directives);
@@ -127,11 +130,11 @@ main() {
 
     it('should sort by priority', () {
       expect(selector(element = e(
-          '<component attribute non-bindable structural></component>')),
+          '<component attribute ignore-children structural></component>')),
       toEqualsDirectiveInfos([
-          { "selector": "[non-bindable]", "value": "", "element": element },
           { "selector": "[structural]", "value": "", "element": element },
           { "selector": "[attribute]", "value": "", "element": element },
+          { "selector": "[ignore-children]", "value": "", "element": element },
           { "selector": "component", "value": null, "element": element }
       ]));
     });

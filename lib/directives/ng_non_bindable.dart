@@ -1,10 +1,10 @@
 part of angular.directive;
 
 /**
- * Causes the compiler to ignore all other directives and Angular markup present
- * on the matched elements and all of their descendants.  This allows one to
- * have DOM nodes that contains Angular markup but should not be processed as a
- * template.
+ * Causes the compiler to ignore all Angular directives and markup on descendant
+ * nodes of the matching element.  Note, however, that other directives and
+ * markup on the element are still processed and that only descending the DOM
+ * for compilation is prevented.
  *
  * Example:
  *
@@ -13,9 +13,11 @@ part of angular.directive;
  *     </div>
  *
  * In the above example, because the `div` element has the `ng-non-bindable`
- * attribute set on it, `foo` attribute won't be processed.  The `ng-bind`
- * directive and the interpolation for `{{b}}` are also not processed because
- * Angular will not process the `span` child element.
+ * attribute set on it, the `ng-bind` directive and the interpolation for
+ * `{{b}}` are not processed because Angular will not process the `span` child
+ * element.  However, the `foo` attribute *will* be interpolated because it is
+ * not on a child node. 
  */
-@NgNonBindable(selector: '[ng-non-bindable]')
+@NgDirective(selector: '[ng-non-bindable]',
+             children: NgAnnotation.IGNORE_CHILDREN)
 class NgNonBindableDirective {}

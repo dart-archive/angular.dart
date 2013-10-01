@@ -9,7 +9,7 @@ main() {
 
     beforeEach(beforeEachTestBed((tb) => _ = tb));
 
-    it('should set ignore all other markup/directives on the element and its descendants',
+    it('should set ignore all other markup/directives on the descendent nodes',
           inject((Scope scope, Injector injector, Compiler compiler) {
       var element = $('<div>' +
                       '  <span id="s1">{{a}}</span>' +
@@ -31,8 +31,9 @@ main() {
       expect(element.find("#s4").text().trim()).toEqual('two');
       // Bindings contained by ng-non-bindable should be left alone.
       var nonBindableDiv = element.find("div");
-      expect(nonBindableDiv.attr('foo')).toEqual('{{a}}');
       expect(nonBindableDiv.text().trim()).toEqual('{{b}}');
+      // Bindings on the same node are processed.
+      expect(nonBindableDiv.attr('foo')).toEqual('one');
     }));
   });
 }

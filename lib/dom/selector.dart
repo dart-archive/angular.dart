@@ -308,10 +308,8 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
 }
 
 int _directivePriority(NgAnnotationBase annotation) {
-  if (annotation is NgNonBindable) {
-    return 3;
-  } else if (annotation is NgDirective) {
-    return (annotation as NgDirective).transclude ? 2 : 1;
+  if (annotation is NgDirective) {
+    return (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) ? 2 : 1;
   } else if (annotation is NgComponent) {
     return 0;
   }

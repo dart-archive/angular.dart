@@ -85,7 +85,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
  *     </div>
  */
 @NgDirective(
-    transclude: true,
+    children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-if]',
     map: const {'.': '=.condition'})
 class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
@@ -141,7 +141,7 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
  *     </div>
  */
 @NgDirective(
-    transclude: true,
+    children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-unless]',
     map: const {'.': '=.condition'})
 class NgUnlessDirective extends _NgUnlessIfAttrDirectiveBase {

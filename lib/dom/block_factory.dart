@@ -163,7 +163,9 @@ class BlockFactory {
       for (var publishType in ref.annotation.publishTypes) {
         nodeModule.factory(publishType, (Injector injector) => injector.get(ref.type), visibility: visibility);
       }
-      if (annotation is NgDirective && (annotation as NgDirective).transclude) {
+      if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
+        // Currently, transclude is only supported for NgDirective.
+        assert(annotation is NgDirective);
         blockHoleFactory = (_) => new BlockHole([node]);
         blockFactory = (_) => ref.blockFactory;
         boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);

@@ -29,7 +29,7 @@ class Compiler {
       var declaredDirectiveRefs = useExistingDirectiveRefs == null
           ?  selector(domCursor.nodeList()[0])
           : useExistingDirectiveRefs;
-      var compileChildren = true;
+      var children = NgAnnotation.COMPILE_CHILDREN;
       var childDirectivePositions = null;
       List<DirectiveRef> usableDirectiveRefs = null;
 
@@ -40,19 +40,19 @@ class Compiler {
         NgAnnotationBase annotation = directiveRef.annotation;
         var blockFactory = null;
 
-        if (annotation is NgNonBindable) {
-          compileChildren = false;
-          break;
+        print("CKCK: annotation.children: ${annotation.children}, selector: ${annotation.selector}");
+        if (annotation.children != children &&
+            children == NgAnnotation.COMPILE_CHILDREN) {
+          children = annotation.children;
         }
 
-        if (annotation is NgDirective && (annotation as NgDirective).transclude) {
+        if (children == NgAnnotation.TRANSCLUDE_CHILDREN) {
           var remainingDirectives = declaredDirectiveRefs.sublist(j + 1);
           blockFactory = compileTransclusion(
               domCursor, templateCursor,
               directiveRef, remainingDirectives);
 
           j = jj; // stop processing further directives since they belong to transclusion;
-          compileChildren = false;
         }
         if (usableDirectiveRefs == null) {
           usableDirectiveRefs = [];
@@ -61,12 +61,10 @@ class Compiler {
         usableDirectiveRefs.add(directiveRef);
       }
 
-      if (compileChildren && domCursor.descend()) {
+      if (children == NgAnnotation.COMPILE_CHILDREN && domCursor.descend()) {
         templateCursor.descend();
 
-        childDirectivePositions = compileChildren
-            ? _compileBlock(domCursor, templateCursor, null)
-            : null;
+        childDirectivePositions = _compileBlock(domCursor, templateCursor, null);
 
         domCursor.ascend();
         templateCursor.ascend();
