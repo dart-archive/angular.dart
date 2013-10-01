@@ -177,6 +177,9 @@ class BlockFactory {
     directiveRefs.forEach((ref) {
       var controller = nodeInjector.get(ref.type);
       var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
+      if (ref.annotation.publishAs != null) {
+        (shadowScope == null ? scope : shadowScope)[ref.annotation.publishAs] = controller;
+      }
       _createAttributeMapping(ref.annotation, nodeAttrs == null ? new _AnchorAttrs(ref) : nodeAttrs, scope, shadowScope, controller, parser);
       if (controller is NgAttachAware) {
         var removeWatcher;
@@ -303,9 +306,6 @@ class _ComponentFactory {
       return shadowDom;
     }));
     controller = createShadowInjector(injector, templateLoader).get(type);
-    if (component.publishAs != null) {
-      shadowScope[component.publishAs] = controller;
-    }
     return controller;
   }
 

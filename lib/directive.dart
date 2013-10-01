@@ -112,9 +112,17 @@ class NgAnnotationBase {
    */
   final List<String> exportExpressions;
 
+  /**
+   * An expression under which the controller instance will be published into.
+   * This allows the expressions in the template to be referring to controller
+   * instance and its properties.
+   */
+  final String publishAs;
+
   const NgAnnotationBase({
     this.selector,
     this.visibility: NgDirective.LOCAL_VISIBILITY,
+    this.publishAs,
     this.publishTypes: const [],
     this.map: const {},
     this.exportExpressions: const [],
@@ -179,13 +187,6 @@ class NgComponent extends NgAnnotationBase {
   final String cssUrl;
 
   /**
-   * An expression under which the controller instance will be published into.
-   * This allows the expressions in the template to be referring to controller
-   * instance and its properties.
-   */
-  final String publishAs;
-
-  /**
    * Set the shadow root applyAuthorStyles property. See shadow-DOM
    * documentation for further details.
    */
@@ -201,9 +202,9 @@ class NgComponent extends NgAnnotationBase {
     this.template,
     this.templateUrl,
     this.cssUrl,
-    this.publishAs,
     this.applyAuthorStyles,
     this.resetStyleInheritance,
+    publishAs,
     map,
     selector,
     visibility,
@@ -211,7 +212,7 @@ class NgComponent extends NgAnnotationBase {
     exportExpressions,
     exportExpressionAttrs
   }) : super(selector: selector, visibility: visibility,
-      publishTypes: publishTypes, map: map,
+      publishTypes: publishTypes, publishAs: publishAs, map: map,
       exportExpressions: exportExpressions,
       exportExpressionAttrs: exportExpressionAttrs);
 }
@@ -229,6 +230,7 @@ class NgDirective extends NgAnnotationBase {
   const NgDirective({
     this.transclude: false,
     this.attrName: null,
+    publishAs,
     map,
     selector,
     visibility,
@@ -236,7 +238,7 @@ class NgDirective extends NgAnnotationBase {
     exportExpressions,
     exportExpressionAttrs
   }) : super(selector: selector, visibility: visibility,
-      publishTypes: publishTypes, map: map,
+      publishTypes: publishTypes, publishAs: publishAs, map: map,
       exportExpressions: exportExpressions,
       exportExpressionAttrs: exportExpressionAttrs);
 

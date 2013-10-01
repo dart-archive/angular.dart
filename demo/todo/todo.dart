@@ -19,6 +19,10 @@ class Item {
   }
 }
 
+@NgDirective(
+  selector: '[todo-controller]',
+  publishAs: 'todo'
+)
 class TodoController {
   List<Item> items;
   Item newItem;

@@ -3,7 +3,7 @@ import 'dart:math' as math;
 
 import 'package:angular/angular.dart';
 
-class BookController implements Controller {
+class BookController {
   Scope $scope;
   List chapters;
 
@@ -53,6 +53,9 @@ class ChapterDirective {
   }
 }
 
+@NgDirective(
+  selector: '[main-controller]'
+)
 class MainController {
 
   String _random = 'Random: ${new math.Random().nextInt(100)}';
@@ -70,10 +73,9 @@ class MainController {
 main() {
   // Set up the Angular directives.
   var module = new AngularModule()
-    ..directive(NgBindAttrDirective)
-    ..directive(NgRepeatAttrDirective)
-    ..directive(BookComponent)
-    ..directive(ChapterDirective);
+    ..type(BookComponent)
+    ..type(ChapterDirective)
+    ..type(MainController);
 
   bootstrapAngular([module]);
 }

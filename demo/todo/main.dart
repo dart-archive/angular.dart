@@ -2,5 +2,5 @@ import 'package:angular/angular.dart';
 import 'todo.dart';
 
 main() {
-  bootstrapAngular([new AngularModule()]);
+  bootstrapAngular([new AngularModule()..type(TodoController)]);
 }

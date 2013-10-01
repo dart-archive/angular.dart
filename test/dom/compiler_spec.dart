@@ -168,6 +168,7 @@ main() {
         module.type(NonAssignableMappingComponent);
         module.type(ParentExpressionComponent);
         module.type(PublishMeComponent);
+        module.type(PublishMeDirective);
         module.type(LogComponent);
         module.type(AttachDetachComponent);
         module.type(SimpleComponent);
@@ -364,10 +365,19 @@ main() {
       it('should publish component controller into the scope', async(inject((Zone zone) {
         var element = $(r'<div><publish-me></publish-me></div>');
         zone.run(() =>
-          $compile(element)(injector, element));
+        $compile(element)(injector, element));
 
         nextTurn(true);
         expect(element.textWithShadow()).toEqual('WORKED');
+      })));
+
+      it('should publish directive controller into the scope', async(inject((Zone zone) {
+        var element = $(r'<div><div publish-me>{{ctrlName.value}}</div></div>');
+        zone.run(() =>
+        $compile(element)(injector, element));
+
+        nextTurn(true);
+        expect(element.text()).toEqual('WORKED');
       })));
 
       it('should "publish" controller to injector under provided publishTypes', inject(() {
@@ -604,6 +614,15 @@ class ParentExpressionComponent {
     publishAs: 'ctrlName'
 )
 class PublishMeComponent {
+  String value = 'WORKED';
+}
+
+
+@NgDirective (
+    selector: '[publish-me]',
+    publishAs: 'ctrlName'
+)
+class PublishMeDirective {
   String value = 'WORKED';
 }
 
