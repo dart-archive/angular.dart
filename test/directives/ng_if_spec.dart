@@ -3,10 +3,15 @@ library ng_if_spec;
 import '../_specs.dart';
 import 'dart:html' as dom;
 
-@NgController(name:'Child')
+@NgDirective(
+    selector: '[child-controller]',
+    transclude: true)
 class ChildController {
-  ChildController(Scope scope) {
+  ChildController(BoundBlockFactory boundBlockFactory,
+                  BlockHole blockHole,
+                  Scope scope) {
     scope.setBy = 'childController';
+    boundBlockFactory(scope).insertAfter(blockHole);
   }
 }
 
@@ -76,14 +81,14 @@ main() {
       // ng-if
       '<div>' +
       '  <div ng-if="isVisible">'.trim() +
-      '    <span ng-controller="Child" id="inside">{{setBy}}</span>'.trim() +
+      '    <span child-controller id="inside">{{setBy}}</span>'.trim() +
       '  </div>'.trim() +
       '  <span id="outside">{{setBy}}</span>'.trim() +
       '</div>',
       // ng-unless
       '<div>' +
       '  <div ng-unless="!isVisible">'.trim() +
-      '    <span ng-controller="Child" id="inside">{{setBy}}</span>'.trim() +
+      '    <span child-controller id="inside">{{setBy}}</span>'.trim() +
       '  </div>'.trim() +
       '  <span id="outside">{{setBy}}</span>'.trim() +
       '</div>'],

@@ -6,7 +6,6 @@ import 'package:perf_api/perf_api.dart';
 
 import 'dart:html' as dom; // TODO(misko): to be deleted
 
-import 'controller.dart';
 import 'directive.dart';
 import 'cache.dart';
 import 'exception_handler.dart';
@@ -27,7 +26,6 @@ import 'filters/all.dart';
 
 class AngularModule extends Module {
   AngularModule() {
-    type(ControllerMap);
     type(DirectiveMap);
     type(MetadataExtractor);
     type(FilterMap);

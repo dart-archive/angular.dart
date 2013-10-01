@@ -9,7 +9,6 @@ import 'ng_bind_html.dart';            export 'ng_bind_html.dart';
 import 'ng_class.dart';                export 'ng_class.dart';
 import 'ng_events.dart';               export 'ng_events.dart';
 import 'ng_cloak.dart';                export 'ng_cloak.dart';
-import 'ng_controller.dart';           export 'ng_controller.dart';
 import 'ng_disabled.dart';             export 'ng_disabled.dart';
 import 'ng_hide.dart';                 export 'ng_hide.dart';
 import 'ng_if.dart';                   export 'ng_if.dart';
@@ -33,7 +32,6 @@ void registerDirectives(Module module) {
   module.type(NgClassEvenAttrDirective);
   module.type(NgCloakAttrDirective);
   module.type(NgCloakClassDirective);
-  module.type(NgControllerAttrDirective);
   module.type(NgDisabledAttrDirective);
   module.type(NgHideAttrDirective);
   module.type(NgIfAttrDirective);

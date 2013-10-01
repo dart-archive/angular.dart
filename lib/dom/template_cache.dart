@@ -30,7 +30,7 @@ import 'http.dart';
  *     // main.dart
  *     import 'package:angular/angular.dart';
  * 
- *     @NgController(name: 'Main')
+ *     @NgDirective(seloctor: '[main-controller]')
  *     class MainController {
  *       MainController(TemplateCache templateCache, Scope scope) {
  *         // Method 1 (imperative): Via the injected TemplateCache service.
@@ -57,7 +57,7 @@ import 'http.dart';
  *           t2: My name is {{name}}.
  *         </template>
  *       </head>
- *       <body ng-controller="Main">
+ *       <body main-controller>
  *         template_1.html: <div ng-include="'template_1.html'"></div><br>
  *         template_2.html: <div ng-include="'template_2.html'"></div><br>
  *       </body>
