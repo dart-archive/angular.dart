@@ -10,7 +10,19 @@ class UrlRewriter {
   String call(url) => url;
 }
 
+/**
+ * HTTP backend used by the [Http] service that delegates to dart:html's
+ * [HttpRequest] and deals with Dart bugs.
+ *
+ * Never use this service directly, instead use the higher-level [Http].
+ *
+ * During testing this implementation is swapped with [MockHttpBackend] which
+ * can be trained with responses.
+ */
 class HttpBackend {
+  /**
+   * Wrapper around dart:html's [HttpRequest.request]
+   */
   async.Future request(String url,
       {String method, bool withCredentials, String responseType,
       String mimeType, Map<String, String> requestHeaders, sendData,
@@ -30,18 +42,50 @@ class HttpBackend {
   }
 }
 
+/**
+ * The request configuration of the request associated with this response.
+ */
 class HttpResponseConfig {
+  /**
+   * The request's URL
+   */
   String url;
 
+  /**
+   * Constructor
+   */
   HttpResponseConfig({this.url});
 }
 
+/**
+ * The response for an HTTP request.  Returned from the [Http] service.
+ */
 class HttpResponse {
+/**
+  * The HTTP status code.
+*/
   int status;
+
+/**
+  * DEPRECATED
+*/
   var responseText;
   Map _headers;
+
+/**
+  * The [HttpResponseConfig] object which contains the requested URL
+*/
   HttpResponseConfig config;
+
+/**
+  * Constructor
+*/
   HttpResponse([this.status, this.responseText, this._headers, this.config]);
+
+  /**
+   * Copy constructor.  Creates a clone of the response, optionally with new
+   * data.
+   */
   HttpResponse.copy(HttpResponse r, {data}) {
     status = r.status;
     responseText = data == null ? r.responseText : data;
@@ -49,9 +93,16 @@ class HttpResponse {
     config = r.config;
   }
 
-  // AngularJS style:
+/**
+  * The response's data.  Either a string or a transformed object.
+*/
   get data => responseText;
 
+  /**
+   * The response's headers.  Without parameters, this method will return the
+   * [Map] of headers.  With [key] parameter, this method will return the specific
+   * header.
+   */
   headers([String key]) {
     if (key == null) {
       return _headers;
@@ -62,9 +113,15 @@ class HttpResponse {
     return null;
   }
 
-  toString() => 'HTTP $status: $responseText';
+  /**
+   * Useful for debugging.
+   */
+  toString() => 'HTTP $status: $data';
 }
 
+/**
+ * Default header configuration.
+ */
 class HttpDefaultHeaders {
   static String _defaultContentType = 'application/json;charset=utf-8';
   Map _headers = {
@@ -91,6 +148,9 @@ class HttpDefaultHeaders {
     });
   }
 
+  /**
+   * Called from [Http], this method sets default headers on [headers]
+   */
   setHeaders(Map<String, String> headers, String method) {
     assert(headers != null);
     var ucHeaders = headers.keys.map((x) => x.toUpperCase()).toSet();
@@ -98,34 +158,62 @@ class HttpDefaultHeaders {
     _applyHeaders(method.toUpperCase(), ucHeaders, headers);
   }
 
+  /**
+   * Returns the default header [Map] for a method.  You can then modify
+   * the map.
+   *
+   * Passing 'common' as [method] will return a Map that contains headers
+   * common to all operations.
+   */
   operator[](method) {
     return _headers[method.toUpperCase()];
   }
 }
 
+/**
+* Injected into the [Http] service.  This class contains application-wide
+* HTTP defaults.
+*
+* The default implementation provides headers and interceptors which the
+* Angular team believes to be useful.
+*/
 class HttpDefaults {
+  /**
+   * The [HttpDefaultHeaders] object used by [Http] to add default headers
+   * to requests.
+   */
   HttpDefaultHeaders headers;
+  /** DEPRECATED */
   List<Function> transformRequest;
+  /** DEPRECATED */
   List<Function> transformResponse;
+
+  /**
+   * The default cache.  To enable caching application-wide, instantiate with a
+   * [Cache] object.
+   */
   var cache;
 
   static _defaultTransformRequest(d, _) =>
     d is String || d is dom.File ? d : json.stringify(d);
 
 
-  static var JSON_START = new RegExp(r'^\s*(\[|\{[^\{])');
-  static var JSON_END = new RegExp(r'[\}\]]\s*$');
-  static var PROTECTION_PREFIX = new RegExp('^\\)\\]\\}\',?\\n');
+  static var _JSON_START = new RegExp(r'^\s*(\[|\{[^\{])');
+  static var _JSON_END = new RegExp(r'[\}\]]\s*$');
+  static var _PROTECTION_PREFIX = new RegExp('^\\)\\]\\}\',?\\n');
   static _defaultTransformResponse(d, _) {
     if (d is String) {
-      d = d.replaceFirst(PROTECTION_PREFIX, '');
-      if (d.contains(JSON_START) && d.contains(JSON_END)) {
+      d = d.replaceFirst(_PROTECTION_PREFIX, '');
+      if (d.contains(_JSON_START) && d.contains(_JSON_END)) {
         d = json.parse(d);
       }
     }
     return d;
   }
 
+  /**
+   * Constructor intended for DI.
+   */
   HttpDefaults(HttpDefaultHeaders this.headers) {
     transformRequest = [_defaultTransformRequest];
     transformResponse = [_defaultTransformResponse];
