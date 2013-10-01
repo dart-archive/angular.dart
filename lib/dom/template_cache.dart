@@ -30,7 +30,7 @@ import 'http.dart';
  *     // main.dart
  *     import 'package:angular/angular.dart';
  * 
- *     @NgDirective(seloctor: '[main-controller]')
+ *     @NgDirective(selector: '[main-controller]')
  *     class MainController {
  *       MainController(TemplateCache templateCache, Scope scope) {
  *         // Method 1 (imperative): Via the injected TemplateCache service.
