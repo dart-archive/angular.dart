@@ -40,8 +40,11 @@ class Compiler {
         NgAnnotationBase annotation = directiveRef.annotation;
         var blockFactory = null;
 
-        if (annotation is NgNonBindable) {
+        if (!annotation.processChildNodes) {
           compileChildren = false;
+        }
+
+        if (annotation is NgNonBindable) {
           break;
         }
 
@@ -52,7 +55,7 @@ class Compiler {
               directiveRef, remainingDirectives);
 
           j = jj; // stop processing further directives since they belong to transclusion;
-          compileChildren = false;
+          assert(annotation.processChildNodes == false);
         }
         if (usableDirectiveRefs == null) {
           usableDirectiveRefs = [];
