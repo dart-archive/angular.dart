@@ -40,7 +40,6 @@ class Compiler {
         NgAnnotationBase annotation = directiveRef.annotation;
         var blockFactory = null;
 
-        print("CKCK: annotation.children: ${annotation.children}, selector: ${annotation.selector}");
         if (annotation.children != children &&
             children == NgAnnotation.COMPILE_CHILDREN) {
           children = annotation.children;
