@@ -1,9 +1,4 @@
-library angular.directive.ng_template;
-
-import 'dart:html' as dom;
-import '../dom/http.dart';
-import '../dom/directive.dart';
-import '../dom/template_cache.dart';
+part of angular.directive;
 
 /**
  * The [NgTemplateElementDirective] allows one to preload an Angular template
@@ -21,10 +16,10 @@ import '../dom/template_cache.dart';
 @NgDirective(
   selector: 'template[type=text/ng-template]',
   map: const {'id': '@.templateUrl'})
-class NgTemplateElementDirective {
+class NgTemplateDirective {
   dom.Element element;
   TemplateCache templateCache;
 
-  NgTemplateElementDirective(dom.Element this.element, TemplateCache this.templateCache);
+  NgTemplateDirective(dom.Element this.element, TemplateCache this.templateCache);
   set templateUrl(url) => templateCache.put(url, new HttpResponse(200, element.content.innerHtml));
 }

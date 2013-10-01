@@ -1,7 +1,4 @@
-library angular.directive.ng_bind_html;
-
-import 'dart:html' as dom;
-import '../dom/directive.dart';
+part of angular.directive;
 
 /**
  * Creates a binding that will innerHTML the result of evaluating the
@@ -20,14 +17,14 @@ import '../dom/directive.dart';
 @NgDirective(
   selector: '[ng-bind-html]',
   map: const {'ngBindHtml': '=.value'})
-class NgBindHtmlAttrDirective {
+class NgBindHtmlDirective {
   // The default HTML sanitizer.  Eventually, we'll make this configurable or
   // use an optionally loaded `$sanitize` service.
   static final dom.NodeValidator validator = new dom.NodeValidatorBuilder.common();
 
   dom.Element element;
 
-  NgBindHtmlAttrDirective(dom.Element this.element);
+  NgBindHtmlDirective(dom.Element this.element);
 
   /**
    * Parsed expression from the `ng-bind-html` attribute.  The result of this

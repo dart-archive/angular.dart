@@ -12,6 +12,7 @@ import 'exception_handler.dart';
 import 'interpolate.dart';
 import 'dom/http.dart';
 import 'dom/template_cache.dart';
+import 'dom/ng_mustache.dart';
 import 'scope.dart';
 import 'zone.dart';
 import 'filter.dart';
@@ -27,6 +28,8 @@ import 'filters/all.dart';
 class AngularModule extends Module {
   AngularModule() {
     type(DirectiveMap);
+    type(NgTextMustacheDirective);
+    type(NgAttrMustacheDirective);
     type(MetadataExtractor);
     type(FilterMap);
     type(Compiler);

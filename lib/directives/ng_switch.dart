@@ -1,9 +1,4 @@
-library angular.directive.ng_switch;
-
-import "../dom/directive.dart";
-import "../dom/block.dart";
-import "../dom/block_factory.dart";
-import "../scope.dart";
+part of angular.directive;
 
 /**
  * The ngSwitch directive is used to conditionally swap DOM structure on your
@@ -62,13 +57,13 @@ import "../scope.dart";
     },
     visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY
 )
-class NgSwitchAttrDirective {
+class NgSwitchDirective {
   Map<String, List<_Case>> cases = new Map<String, List<_Case>>();
   List<_BlockScopePair> currentBlocks = <_BlockScopePair>[];
   Function onChange;
   Scope scope;
 
-  NgSwitchAttrDirective(Scope this.scope) {
+  NgSwitchDirective(Scope this.scope) {
     cases['?'] = <_Case>[];
   }
 
@@ -120,13 +115,13 @@ class _Case {
       '.': '@.value'
     }
 )
-class NgSwitchWhenAttrDirective {
-  final NgSwitchAttrDirective ngSwitch;
+class NgSwitchWhenDirective {
+  final NgSwitchDirective ngSwitch;
   final BlockHole hole;
   final BoundBlockFactory blockFactory;
   final Scope scope;
 
-  NgSwitchWhenAttrDirective(NgSwitchAttrDirective this.ngSwitch,
+  NgSwitchWhenDirective(NgSwitchDirective this.ngSwitch,
       BlockHole this.hole, BoundBlockFactory this.blockFactory,
       Scope this.scope);
 
@@ -139,9 +134,9 @@ class NgSwitchWhenAttrDirective {
     transclude: true,
     selector: '[ng-switch-default]'
 )
-class NgSwitchDefaultAttrDirective {
+class NgSwitchDefaultDirective {
 
-  NgSwitchDefaultAttrDirective(NgSwitchAttrDirective ngSwitch, BlockHole hole,
+  NgSwitchDefaultDirective(NgSwitchDirective ngSwitch, BlockHole hole,
                         BoundBlockFactory blockFactory, Scope scope) {
     ngSwitch.addCase('?', hole, blockFactory);
   }

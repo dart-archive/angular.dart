@@ -1,16 +1,9 @@
-library angular.directive.ng_include;
-
-import 'dart:html' as dom;
-import 'package:di/di.dart';
-import '../dom/directive.dart';
-import '../dom/block.dart';
-import '../dom/block_factory.dart';
-import '../scope.dart';
+part of angular.directive;
 
 @NgDirective(
     selector: '[ng-include]',
     map: const {'ng-include': '=.url'} )
-class NgIncludeAttrDirective {
+class NgIncludeDirective {
 
   dom.Element element;
   Scope scope;
@@ -20,7 +13,7 @@ class NgIncludeAttrDirective {
   Block _previousBlock;
   Scope _previousScope;
 
-  NgIncludeAttrDirective(dom.Element this.element,
+  NgIncludeDirective(dom.Element this.element,
                          Scope this.scope,
                          BlockCache this.blockCache,
                          Injector this.injector);

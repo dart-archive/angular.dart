@@ -1,9 +1,4 @@
-library angular.directive.ng_class;
-
-import "dart:html" as dom;
-import "../dom/directive.dart";
-import "../scope.dart";
-import "../utils.dart";
+part of angular.directive;
 
 /**
  * The `ngClass` allows you to set CSS classes on HTML an element, dynamically,
@@ -53,8 +48,8 @@ import "../utils.dart";
 @NgDirective(
     selector: '[ng-class]',
     map: const {'ng-class': '@.valueExpression'})
-class NgClassAttrDirective extends _NgClassBase {
-  NgClassAttrDirective(dom.Element element, Scope scope)
+class NgClassDirective extends _NgClassBase {
+  NgClassDirective(dom.Element element, Scope scope)
       : super(element, scope, null);
 }
 
@@ -87,8 +82,8 @@ class NgClassAttrDirective extends _NgClassBase {
 @NgDirective(
     selector: '[ng-class-odd]',
     map: const {'ng-class-odd': '@.valueExpression'})
-class NgClassOddAttrDirective extends _NgClassBase {
-  NgClassOddAttrDirective(dom.Element element, Scope scope)
+class NgClassOddDirective extends _NgClassBase {
+  NgClassOddDirective(dom.Element element, Scope scope)
       : super(element, scope, 0);
 }
 
@@ -121,8 +116,8 @@ class NgClassOddAttrDirective extends _NgClassBase {
 @NgDirective(
     selector: '[ng-class-even]',
     map: const {'ng-class-even': '@.valueExpression'})
-class NgClassEvenAttrDirective extends _NgClassBase {
-  NgClassEvenAttrDirective(dom.Element element, Scope scope)
+class NgClassEvenDirective extends _NgClassBase {
+  NgClassEvenDirective(dom.Element element, Scope scope)
       : super(element, scope, 1);
 }
 

@@ -14,7 +14,7 @@ import 'directive.dart';
 import 'http.dart';
 import 'template_cache.dart';
 import '../cache.dart';
-import '../directives/ng_mustache.dart';
+import 'ng_mustache.dart';
 import '../parser/parser_library.dart';
 import '../interpolate.dart';
 import '../scope.dart';

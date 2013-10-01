@@ -1,11 +1,4 @@
-library angular.directive.ng_model;
-
-import 'dart:html' as dom;
-import 'dart:async' as async;
-import '../dom/directive.dart';
-import '../scope.dart';
-import '../parser/parser_library.dart';
-import '../utils.dart';
+part of angular.directive;
 
 /**
  * Ng-model directive is responsible for reading/writing to the model.

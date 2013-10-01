@@ -1,9 +1,4 @@
-library angular.directive.ng_events;
-
-import 'dart:html' as dom;
-import '../dom/directive.dart';
-import '../parser/parser_library.dart';
-import '../scope.dart';
+part of angular.directive;
 
 // NOTE(deboer): onXX functions are now typed as 'var' instead of 'Getter'
 // to work-around https://code.google.com/p/dart/issues/detail?id=13519
@@ -23,14 +18,14 @@ import '../scope.dart';
     selector: '[ng-blur]',
     map: const {'ng-blur': '&.onBlur'}
 )
-class NgBlurAttrDirective {
+class NgBlurDirective {
   /**
    * Parsed expression from the `ng-blur` attribute.  On a `Blur`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onBlur;
 
-  NgBlurAttrDirective(dom.Element element, Scope scope) {
+  NgBlurDirective(dom.Element element, Scope scope) {
     element.onBlur.listen((event) => scope.$apply(() {
       onBlur({r"$event": event});
     }));
@@ -49,14 +44,14 @@ class NgBlurAttrDirective {
     selector: '[ng-change]',
     map: const {'ng-change': '&.onChange'}
 )
-class NgChangeAttrDirective {
+class NgChangeDirective {
   /**
    * Parsed expression from the `ng-change` attribute.  On a `Change`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onChange;
 
-  NgChangeAttrDirective(dom.Element element, Scope scope) {
+  NgChangeDirective(dom.Element element, Scope scope) {
     element.onChange.listen((event) => scope.$apply(() {
       onChange({r"$event": event});
     }));
@@ -75,14 +70,14 @@ class NgChangeAttrDirective {
     selector: '[ng-click]',
     map: const {'ng-click': '&.onClick'}
 )
-class NgClickAttrDirective {
+class NgClickDirective {
   /**
    * Parsed expression from the `ng-click` attribute.  On a `Click`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onClick;
 
-  NgClickAttrDirective(dom.Element element, Scope scope) {
+  NgClickDirective(dom.Element element, Scope scope) {
     element.onClick.listen((event) => scope.$apply(() {
       onClick({r"$event": event});
     }));
@@ -101,14 +96,14 @@ class NgClickAttrDirective {
     selector: '[ng-contextmenu]',
     map: const {'ng-contextmenu': '&.onContextMenu'}
 )
-class NgContextMenuAttrDirective {
+class NgContextMenuDirective {
   /**
    * Parsed expression from the `ng-contextmenu` attribute.  On a `ContextMenu`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onContextMenu;
 
-  NgContextMenuAttrDirective(dom.Element element, Scope scope) {
+  NgContextMenuDirective(dom.Element element, Scope scope) {
     element.onContextMenu.listen((event) => scope.$apply(() {
       onContextMenu({r"$event": event});
     }));
@@ -127,14 +122,14 @@ class NgContextMenuAttrDirective {
     selector: '[ng-doubleclick]',
     map: const {'ng-doubleclick': '&.onDoubleClick'}
 )
-class NgDoubleClickAttrDirective {
+class NgDoubleClickDirective {
   /**
    * Parsed expression from the `ng-doubleclick` attribute.  On a `DoubleClick`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onDoubleClick;
 
-  NgDoubleClickAttrDirective(dom.Element element, Scope scope) {
+  NgDoubleClickDirective(dom.Element element, Scope scope) {
     element.onDoubleClick.listen((event) => scope.$apply(() {
       onDoubleClick({r"$event": event});
     }));
@@ -153,14 +148,14 @@ class NgDoubleClickAttrDirective {
     selector: '[ng-drag]',
     map: const {'ng-drag': '&.onDrag'}
 )
-class NgDragAttrDirective {
+class NgDragDirective {
   /**
    * Parsed expression from the `ng-drag` attribute.  On a `Drag`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onDrag;
 
-  NgDragAttrDirective(dom.Element element, Scope scope) {
+  NgDragDirective(dom.Element element, Scope scope) {
     element.onDrag.listen((event) => scope.$apply(() {
       onDrag({r"$event": event});
     }));
@@ -179,14 +174,14 @@ class NgDragAttrDirective {
     selector: '[ng-dragend]',
     map: const {'ng-dragend': '&.onDragEnd'}
 )
-class NgDragEndAttrDirective {
+class NgDragEndDirective {
   /**
    * Parsed expression from the `ng-dragend` attribute.  On a `DragEnd`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onDragEnd;
 
-  NgDragEndAttrDirective(dom.Element element, Scope scope) {
+  NgDragEndDirective(dom.Element element, Scope scope) {
     element.onDragEnd.listen((event) => scope.$apply(() {
       onDragEnd({r"$event": event});
     }));
@@ -205,14 +200,14 @@ class NgDragEndAttrDirective {
     selector: '[ng-dragenter]',
     map: const {'ng-dragenter': '&.onDragEnter'}
 )
-class NgDragEnterAttrDirective {
+class NgDragEnterDirective {
   /**
    * Parsed expression from the `ng-dragenter` attribute.  On a `DragEnter`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onDragEnter;
 
-  NgDragEnterAttrDirective(dom.Element element, Scope scope) {
+  NgDragEnterDirective(dom.Element element, Scope scope) {
     element.onDragEnter.listen((event) => scope.$apply(() {
       onDragEnter({r"$event": event});
     }));
@@ -231,14 +226,14 @@ class NgDragEnterAttrDirective {
     selector: '[ng-dragleave]',
     map: const {'ng-dragleave': '&.onDragLeave'}
 )
-class NgDragLeaveAttrDirective {
+class NgDragLeaveDirective {
   /**
    * Parsed expression from the `ng-dragleave` attribute.  On a `DragLeave`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onDragLeave;
 
-  NgDragLeaveAttrDirective(dom.Element element, Scope scope) {
+  NgDragLeaveDirective(dom.Element element, Scope scope) {
     element.onDragLeave.listen((event) => scope.$apply(() {
       onDragLeave({r"$event": event});
     }));
@@ -257,14 +252,14 @@ class NgDragLeaveAttrDirective {
     selector: '[ng-dragover]',
     map: const {'ng-dragover': '&.onDragOver'}
 )
-class NgDragOverAttrDirective {
+class NgDragOverDirective {
   /**
    * Parsed expression from the `ng-dragover` attribute.  On a `DragOver`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onDragOver;
 
-  NgDragOverAttrDirective(dom.Element element, Scope scope) {
+  NgDragOverDirective(dom.Element element, Scope scope) {
     element.onDragOver.listen((event) => scope.$apply(() {
       onDragOver({r"$event": event});
     }));
@@ -283,14 +278,14 @@ class NgDragOverAttrDirective {
     selector: '[ng-dragstart]',
     map: const {'ng-dragstart': '&.onDragStart'}
 )
-class NgDragStartAttrDirective {
+class NgDragStartDirective {
   /**
    * Parsed expression from the `ng-dragstart` attribute.  On a `DragStart`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onDragStart;
 
-  NgDragStartAttrDirective(dom.Element element, Scope scope) {
+  NgDragStartDirective(dom.Element element, Scope scope) {
     element.onDragStart.listen((event) => scope.$apply(() {
       onDragStart({r"$event": event});
     }));
@@ -309,14 +304,14 @@ class NgDragStartAttrDirective {
     selector: '[ng-drop]',
     map: const {'ng-drop': '&.onDrop'}
 )
-class NgDropAttrDirective {
+class NgDropDirective {
   /**
    * Parsed expression from the `ng-drop` attribute.  On a `Drop`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onDrop;
 
-  NgDropAttrDirective(dom.Element element, Scope scope) {
+  NgDropDirective(dom.Element element, Scope scope) {
     element.onDrop.listen((event) => scope.$apply(() {
       onDrop({r"$event": event});
     }));
@@ -335,14 +330,14 @@ class NgDropAttrDirective {
     selector: '[ng-focus]',
     map: const {'ng-focus': '&.onFocus'}
 )
-class NgFocusAttrDirective {
+class NgFocusDirective {
   /**
    * Parsed expression from the `ng-focus` attribute.  On a `Focus`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onFocus;
 
-  NgFocusAttrDirective(dom.Element element, Scope scope) {
+  NgFocusDirective(dom.Element element, Scope scope) {
     element.onFocus.listen((event) => scope.$apply(() {
       onFocus({r"$event": event});
     }));
@@ -361,14 +356,14 @@ class NgFocusAttrDirective {
     selector: '[ng-keydown]',
     map: const {'ng-keydown': '&.onKeyDown'}
 )
-class NgKeyDownAttrDirective {
+class NgKeyDownDirective {
   /**
    * Parsed expression from the `ng-keydown` attribute.  On a `KeyDown`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onKeyDown;
 
-  NgKeyDownAttrDirective(dom.Element element, Scope scope) {
+  NgKeyDownDirective(dom.Element element, Scope scope) {
     element.onKeyDown.listen((event) => scope.$apply(() {
       onKeyDown({r"$event": event});
     }));
@@ -387,14 +382,14 @@ class NgKeyDownAttrDirective {
     selector: '[ng-keypress]',
     map: const {'ng-keypress': '&.onKeyPress'}
 )
-class NgKeyPressAttrDirective {
+class NgKeyPressDirective {
   /**
    * Parsed expression from the `ng-keypress` attribute.  On a `KeyPress`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onKeyPress;
 
-  NgKeyPressAttrDirective(dom.Element element, Scope scope) {
+  NgKeyPressDirective(dom.Element element, Scope scope) {
     element.onKeyPress.listen((event) => scope.$apply(() {
       onKeyPress({r"$event": event});
     }));
@@ -413,14 +408,14 @@ class NgKeyPressAttrDirective {
     selector: '[ng-keyup]',
     map: const {'ng-keyup': '&.onKeyUp'}
 )
-class NgKeyUpAttrDirective {
+class NgKeyUpDirective {
   /**
    * Parsed expression from the `ng-keyup` attribute.  On a `KeyUp`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onKeyUp;
 
-  NgKeyUpAttrDirective(dom.Element element, Scope scope) {
+  NgKeyUpDirective(dom.Element element, Scope scope) {
     element.onKeyUp.listen((event) => scope.$apply(() {
       onKeyUp({r"$event": event});
     }));
@@ -439,14 +434,14 @@ class NgKeyUpAttrDirective {
     selector: '[ng-mousedown]',
     map: const {'ng-mousedown': '&.onMouseDown'}
 )
-class NgMouseDownAttrDirective {
+class NgMouseDownDirective {
   /**
    * Parsed expression from the `ng-mousedown` attribute.  On a `MouseDown`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onMouseDown;
 
-  NgMouseDownAttrDirective(dom.Element element, Scope scope) {
+  NgMouseDownDirective(dom.Element element, Scope scope) {
     element.onMouseDown.listen((event) => scope.$apply(() {
       onMouseDown({r"$event": event});
     }));
@@ -465,14 +460,14 @@ class NgMouseDownAttrDirective {
     selector: '[ng-mouseenter]',
     map: const {'ng-mouseenter': '&.onMouseEnter'}
 )
-class NgMouseEnterAttrDirective {
+class NgMouseEnterDirective {
   /**
    * Parsed expression from the `ng-mouseenter` attribute.  On a `MouseEnter`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onMouseEnter;
 
-  NgMouseEnterAttrDirective(dom.Element element, Scope scope) {
+  NgMouseEnterDirective(dom.Element element, Scope scope) {
     element.onMouseEnter.listen((event) => scope.$apply(() {
       onMouseEnter({r"$event": event});
     }));
@@ -491,14 +486,14 @@ class NgMouseEnterAttrDirective {
     selector: '[ng-mouseleave]',
     map: const {'ng-mouseleave': '&.onMouseLeave'}
 )
-class NgMouseLeaveAttrDirective {
+class NgMouseLeaveDirective {
   /**
    * Parsed expression from the `ng-mouseleave` attribute.  On a `MouseLeave`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onMouseLeave;
 
-  NgMouseLeaveAttrDirective(dom.Element element, Scope scope) {
+  NgMouseLeaveDirective(dom.Element element, Scope scope) {
     element.onMouseLeave.listen((event) => scope.$apply(() {
       onMouseLeave({r"$event": event});
     }));
@@ -517,14 +512,14 @@ class NgMouseLeaveAttrDirective {
     selector: '[ng-mousemove]',
     map: const {'ng-mousemove': '&.onMouseMove'}
 )
-class NgMouseMoveAttrDirective {
+class NgMouseMoveDirective {
   /**
    * Parsed expression from the `ng-mousemove` attribute.  On a `MouseMove`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onMouseMove;
 
-  NgMouseMoveAttrDirective(dom.Element element, Scope scope) {
+  NgMouseMoveDirective(dom.Element element, Scope scope) {
     element.onMouseMove.listen((event) => scope.$apply(() {
       onMouseMove({r"$event": event});
     }));
@@ -543,14 +538,14 @@ class NgMouseMoveAttrDirective {
     selector: '[ng-mouseout]',
     map: const {'ng-mouseout': '&.onMouseOut'}
 )
-class NgMouseOutAttrDirective {
+class NgMouseOutDirective {
   /**
    * Parsed expression from the `ng-mouseout` attribute.  On a `MouseOut`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onMouseOut;
 
-  NgMouseOutAttrDirective(dom.Element element, Scope scope) {
+  NgMouseOutDirective(dom.Element element, Scope scope) {
     element.onMouseOut.listen((event) => scope.$apply(() {
       onMouseOut({r"$event": event});
     }));
@@ -569,14 +564,14 @@ class NgMouseOutAttrDirective {
     selector: '[ng-mouseover]',
     map: const {'ng-mouseover': '&.onMouseOver'}
 )
-class NgMouseOverAttrDirective {
+class NgMouseOverDirective {
   /**
    * Parsed expression from the `ng-mouseover` attribute.  On a `MouseOver`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onMouseOver;
 
-  NgMouseOverAttrDirective(dom.Element element, Scope scope) {
+  NgMouseOverDirective(dom.Element element, Scope scope) {
     element.onMouseOver.listen((event) => scope.$apply(() {
       onMouseOver({r"$event": event});
     }));
@@ -595,14 +590,14 @@ class NgMouseOverAttrDirective {
     selector: '[ng-mouseup]',
     map: const {'ng-mouseup': '&.onMouseUp'}
 )
-class NgMouseUpAttrDirective {
+class NgMouseUpDirective {
   /**
    * Parsed expression from the `ng-mouseup` attribute.  On a `MouseUp`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onMouseUp;
 
-  NgMouseUpAttrDirective(dom.Element element, Scope scope) {
+  NgMouseUpDirective(dom.Element element, Scope scope) {
     element.onMouseUp.listen((event) => scope.$apply(() {
       onMouseUp({r"$event": event});
     }));
@@ -621,14 +616,14 @@ class NgMouseUpAttrDirective {
     selector: '[ng-mousewheel]',
     map: const {'ng-mousewheel': '&.onMouseWheel'}
 )
-class NgMouseWheelAttrDirective {
+class NgMouseWheelDirective {
   /**
    * Parsed expression from the `ng-mousewheel` attribute.  On a `MouseWheel`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onMouseWheel;
 
-  NgMouseWheelAttrDirective(dom.Element element, Scope scope) {
+  NgMouseWheelDirective(dom.Element element, Scope scope) {
     element.onMouseWheel.listen((event) => scope.$apply(() {
       onMouseWheel({r"$event": event});
     }));
@@ -647,14 +642,14 @@ class NgMouseWheelAttrDirective {
     selector: '[ng-scroll]',
     map: const {'ng-scroll': '&.onScroll'}
 )
-class NgScrollAttrDirective {
+class NgScrollDirective {
   /**
    * Parsed expression from the `ng-scroll` attribute.  On a `Scroll`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onScroll;
 
-  NgScrollAttrDirective(dom.Element element, Scope scope) {
+  NgScrollDirective(dom.Element element, Scope scope) {
     element.onScroll.listen((event) => scope.$apply(() {
       onScroll({r"$event": event});
     }));
@@ -673,14 +668,14 @@ class NgScrollAttrDirective {
     selector: '[ng-touchcancel]',
     map: const {'ng-touchcancel': '&.onTouchCancel'}
 )
-class NgTouchCancelAttrDirective {
+class NgTouchCancelDirective {
   /**
    * Parsed expression from the `ng-touchcancel` attribute.  On a `TouchCancel`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onTouchCancel;
 
-  NgTouchCancelAttrDirective(dom.Element element, Scope scope) {
+  NgTouchCancelDirective(dom.Element element, Scope scope) {
     element.onTouchCancel.listen((event) => scope.$apply(() {
       onTouchCancel({r"$event": event});
     }));
@@ -699,14 +694,14 @@ class NgTouchCancelAttrDirective {
     selector: '[ng-touchend]',
     map: const {'ng-touchend': '&.onTouchEnd'}
 )
-class NgTouchEndAttrDirective {
+class NgTouchEndDirective {
   /**
    * Parsed expression from the `ng-touchend` attribute.  On a `TouchEnd`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onTouchEnd;
 
-  NgTouchEndAttrDirective(dom.Element element, Scope scope) {
+  NgTouchEndDirective(dom.Element element, Scope scope) {
     element.onTouchEnd.listen((event) => scope.$apply(() {
       onTouchEnd({r"$event": event});
     }));
@@ -725,14 +720,14 @@ class NgTouchEndAttrDirective {
     selector: '[ng-touchmove]',
     map: const {'ng-touchmove': '&.onTouchMove'}
 )
-class NgTouchMoveAttrDirective {
+class NgTouchMoveDirective {
   /**
    * Parsed expression from the `ng-touchmove` attribute.  On a `TouchMove`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onTouchMove;
 
-  NgTouchMoveAttrDirective(dom.Element element, Scope scope) {
+  NgTouchMoveDirective(dom.Element element, Scope scope) {
     element.onTouchMove.listen((event) => scope.$apply(() {
       onTouchMove({r"$event": event});
     }));
@@ -751,14 +746,14 @@ class NgTouchMoveAttrDirective {
     selector: '[ng-touchstart]',
     map: const {'ng-touchstart': '&.onTouchStart'}
 )
-class NgTouchStartAttrDirective {
+class NgTouchStartDirective {
   /**
    * Parsed expression from the `ng-touchstart` attribute.  On a `TouchStart`
    * event, this expression is evaluated.  The event is available as `$event`.
    */
   var onTouchStart;
 
-  NgTouchStartAttrDirective(dom.Element element, Scope scope) {
+  NgTouchStartDirective(dom.Element element, Scope scope) {
     element.onTouchStart.listen((event) => scope.$apply(() {
       onTouchStart({r"$event": event});
     }));

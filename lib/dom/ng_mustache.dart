@@ -1,7 +1,7 @@
 library angular.directive.ng_mustache;
 
 import 'dart:html' as dom;
-import '../dom/directive.dart';
+import 'directive.dart';
 import '../parser/parser_library.dart';
 import '../interpolate.dart';
 import '../scope.dart';

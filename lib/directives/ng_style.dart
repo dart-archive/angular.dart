@@ -1,9 +1,4 @@
-library angular.directive.ng_style;
-
-import "dart:html" as dom;
-import "../dom/directive.dart";
-import "../scope.dart";
-import "../utils.dart";
+part of angular.directive;
 
 /**
   * The `ngStyle` directive allows you to set CSS style on an HTML element conditionally.
@@ -14,13 +9,13 @@ import "../utils.dart";
 @NgDirective(
     selector: '[ng-style]',
     map: const { 'ng-style': '@.styleExpression'})
-class NgStyleAttrDirective {
+class NgStyleDirective {
   dom.Element _element;
   Scope _scope;
 
   String _styleExpression;
 
-  NgStyleAttrDirective(dom.Element this._element, Scope this._scope) { print('ng-style created'); }
+  NgStyleDirective(dom.Element this._element, Scope this._scope) { print('ng-style created'); }
 
   Function _removeWatch = () => null;
   var _lastStyles;

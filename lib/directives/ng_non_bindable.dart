@@ -1,9 +1,4 @@
-library angular.directive.ng_non_bindable;
-
-import 'dart:html' as dom;
-import '../dom/directive.dart';
-import '../parser/parser_library.dart';
-import '../scope.dart';
+part of angular.directive;
 
 /**
  * Causes the compiler to ignore all other directives and Angular markup present
@@ -23,4 +18,4 @@ import '../scope.dart';
  * Angular will not process the `span` child element.
  */
 @NgNonBindable(selector: '[ng-non-bindable]')
-class NgNonBindableAttrDirective {}
+class NgNonBindableDirective {}

@@ -1,16 +1,12 @@
-library angular.directive.ng_disabled;
-
-import 'dart:html' as dom;
-import '../dom/directive.dart';
-import '../utils.dart';
+part of angular.directive;
 
 @NgDirective(
     selector: '[ng-disabled]',
     map: const {'ng-disabled': '=.disabled'})
-class NgDisabledAttrDirective {
+class NgDisabledDirective {
   dom.Element element;
 
-  NgDisabledAttrDirective(dom.Element this.element);
+  NgDisabledDirective(dom.Element this.element);
 
   // TODO: should be if (understands(element, #disabled)) ...
   set disabled(value) => (element as dynamic).disabled = toBool(value);

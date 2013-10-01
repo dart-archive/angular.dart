@@ -1,10 +1,4 @@
-library angular.directive.ng_repeat;
-
-import 'dart:html' as dom;
-import '../dom/directive.dart';
-import '../dom/block.dart';
-import '../dom/block_factory.dart';
-import '../scope.dart';
+part of angular.directive;
 
 class _Row {
   var id;
@@ -21,7 +15,7 @@ class _Row {
     transclude: true,
     selector: '[ng-repeat]',
     map: const {'.': '@.expression'})
-class NgRepeatAttrDirective  {
+class NgRepeatDirective  {
   static RegExp SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s+(.+)\s*)?$');
   static RegExp LHS_SYNTAX = new RegExp(r'^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$');
 
@@ -37,7 +31,7 @@ class NgRepeatAttrDirective  {
   Function trackByIdFn = (key, value, index) => value;
   Function removeWatch = () => null;
 
-  NgRepeatAttrDirective(BlockHole this.blockHole,
+  NgRepeatDirective(BlockHole this.blockHole,
                         BoundBlockFactory this.boundBlockFactory,
                         Scope this.scope);
 

@@ -1,7 +1,4 @@
-library angular.directive.ng_cloak;
-
-import 'dart:html' as dom;
-import '../dom/directive.dart';
+part of angular.directive;
 
 /**
  * The `ngCloak` directive is used to prevent the Angular html template from
@@ -26,15 +23,10 @@ import '../dom/directive.dart';
  * element visible.
  */
 @NgDirective(selector: '[ng-cloak]')
-class NgCloakAttrDirective {
-  NgCloakAttrDirective(dom.Element element) {
-    element.attributes.remove('ng-cloak');
-  }
-}
-
 @NgDirective(selector: '.ng-cloak')
-class NgCloakClassDirective {
-  NgCloakClassDirective(dom.Element element) {
+class NgCloakDirective {
+  NgCloakDirective(dom.Element element) {
+    element.attributes.remove('ng-cloak');
     element.classes.remove('ng-cloak');
   }
 }

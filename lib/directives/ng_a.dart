@@ -1,7 +1,4 @@
-library angular.directive.ng_a;
-
-import 'dart:html' as dom;
-import '../dom/directive.dart';
+part of angular.directive;
 
 /**
  * @ngdoc directive
@@ -17,10 +14,10 @@ import '../dom/directive.dart';
  * `<a href="" ng-click="model.$save()">Save</a>`
  */
 @NgDirective(selector: 'a[href]')
-class NgAAttrDirective {
+class NgADirective {
   dom.Element element;
 
-  NgAAttrDirective(dom.Element element) {
+  NgADirective(dom.Element element) {
     if(element.attributes["href"] == "") {
       element.onClick.listen((event) {
         event.preventDefault();

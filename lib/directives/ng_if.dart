@@ -1,11 +1,4 @@
-library angular.directive.ng_if;
-
-import 'dart:html' as dom;
-import '../dom/directive.dart';
-import '../dom/block.dart';
-import '../dom/block_factory.dart';
-import '../scope.dart';
-import '../utils.dart';
+part of angular.directive;
 
 /**
  * Base class for NgIfAttrDirective and NgUnlessAttrDirective.
@@ -95,8 +88,8 @@ abstract class _NgUnlessIfAttrDirectiveBase {
     transclude: true,
     selector:'[ng-if]',
     map: const {'.': '=.condition'})
-class NgIfAttrDirective extends _NgUnlessIfAttrDirectiveBase {
-  NgIfAttrDirective(BoundBlockFactory boundBlockFactory,
+class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
+  NgIfDirective(BoundBlockFactory boundBlockFactory,
                     BlockHole blockHole,
                     Scope scope): super(boundBlockFactory, blockHole, scope);
 
@@ -151,9 +144,9 @@ class NgIfAttrDirective extends _NgUnlessIfAttrDirectiveBase {
     transclude: true,
     selector:'[ng-unless]',
     map: const {'.': '=.condition'})
-class NgUnlessAttrDirective extends _NgUnlessIfAttrDirectiveBase {
+class NgUnlessDirective extends _NgUnlessIfAttrDirectiveBase {
 
-  NgUnlessAttrDirective(BoundBlockFactory boundBlockFactory,
+  NgUnlessDirective(BoundBlockFactory boundBlockFactory,
                         BlockHole blockHole,
                         Scope scope): super(boundBlockFactory, blockHole, scope);
 
