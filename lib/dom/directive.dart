@@ -25,7 +25,11 @@ class NodeAttrs {
 
   operator []=(String name, String value) {
     name = _snakeCase(name, '-');
-    element.attributes[name] = value;
+    if (value == null) {
+      element.attributes.remove(name);
+    } else {
+      element.attributes[name] = value;
+    }
     if (_observers != null && _observers.containsKey(name)) {
       _observers[name].forEach((fn) => fn(value));
     }

@@ -18,13 +18,13 @@ part 'ng_bind_html.dart';
 part 'ng_class.dart';
 part 'ng_events.dart';
 part 'ng_cloak.dart';
-part 'ng_disabled.dart';
 part 'ng_if.dart';
 part 'ng_include.dart';
 part 'ng_model.dart';
 part 'ng_repeat.dart';
 part 'ng_template.dart';
 part 'ng_show_hide.dart';
+part 'ng_src_boolean.dart';
 part 'ng_style.dart';
 part 'ng_switch.dart';
 part 'ng_non_bindable.dart';
@@ -37,7 +37,6 @@ void registerDirectives(Module module) {
   module.type(NgClassOddDirective);
   module.type(NgClassEvenDirective);
   module.type(NgCloakDirective);
-  module.type(NgDisabledDirective);
   module.type(NgHideDirective);
   module.type(NgIfDirective);
   module.type(NgUnlessDirective);
@@ -50,6 +49,9 @@ void registerDirectives(Module module) {
   module.type(NgSwitchDirective);
   module.type(NgSwitchWhenDirective);
   module.type(NgSwitchDefaultDirective);
+
+  module.type(NgBooleanAttributeDirective);
+  module.type(NgSourceDirective);
 
   module.type(NgBlurDirective);
   module.type(NgChangeDirective);

@@ -1,4 +1,4 @@
-library ng_hide_spec;
+library ng_show_hide_spec;
 
 import '../_specs.dart';
 import 'dart:html' as dom;

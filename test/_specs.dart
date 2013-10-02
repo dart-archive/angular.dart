@@ -197,6 +197,7 @@ class JQuery implements List<Node> {
   css(String name, [String value]) => accessor(
           (Element n) => n.style.getPropertyValue(name),
           (Element n, v) => n.style.setProperty(name, value), value);
+  children() => new JQuery(this[0].childNodes);
 }
 
 List<Function> _asyncQueue = [];
