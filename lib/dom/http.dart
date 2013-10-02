@@ -197,25 +197,25 @@ class HttpResponseConfig {
  * The response for an HTTP request.  Returned from the [Http] service.
  */
 class HttpResponse {
-/**
-  * The HTTP status code.
-*/
+  /**
+   * The HTTP status code.
+   */
   int status;
 
-/**
-  * DEPRECATED
-*/
+  /**
+   * DEPRECATED
+   */
   var responseText;
   Map _headers;
 
-/**
-  * The [HttpResponseConfig] object which contains the requested URL
-*/
+  /**
+   * The [HttpResponseConfig] object which contains the requested URL
+   */
   HttpResponseConfig config;
 
-/**
-  * Constructor
-*/
+  /**
+   * Constructor
+   */
   HttpResponse([this.status, this.responseText, this._headers, this.config]);
 
   /**
@@ -229,9 +229,9 @@ class HttpResponse {
     config = r.config;
   }
 
-/**
-  * The response's data.  Either a string or a transformed object.
-*/
+  /**
+   * The response's data.  Either a string or a transformed object.
+   */
   get data => responseText;
 
   /**
@@ -310,7 +310,7 @@ class HttpDefaultHeaders {
 * Injected into the [Http] service.  This class contains application-wide
 * HTTP defaults.
 *
-* The default implementation provides headers and interceptors which the
+* The default implementation provides headers which the
 * Angular team believes to be useful.
 */
 class HttpDefaults {
@@ -319,10 +319,6 @@ class HttpDefaults {
    * to requests.
    */
   HttpDefaultHeaders headers;
-  /** DEPRECATED */
-  List<Function> transformRequest;
-  /** DEPRECATED */
-  List<Function> transformResponse;
 
   /**
    * The default cache.  To enable caching application-wide, instantiate with a
@@ -330,30 +326,10 @@ class HttpDefaults {
    */
   var cache;
 
-  static _defaultTransformRequest(d, _) =>
-    d is String || d is dom.File ? d : json.stringify(d);
-
-
-  static var _JSON_START = new RegExp(r'^\s*(\[|\{[^\{])');
-  static var _JSON_END = new RegExp(r'[\}\]]\s*$');
-  static var _PROTECTION_PREFIX = new RegExp('^\\)\\]\\}\',?\\n');
-  static _defaultTransformResponse(d, _) {
-    if (d is String) {
-      d = d.replaceFirst(_PROTECTION_PREFIX, '');
-      if (d.contains(_JSON_START) && d.contains(_JSON_END)) {
-        d = json.parse(d);
-      }
-    }
-    return d;
-  }
-
   /**
    * Constructor intended for DI.
    */
-  HttpDefaults(HttpDefaultHeaders this.headers) {
-    transformRequest = [_defaultTransformRequest];
-    transformResponse = [_defaultTransformResponse];
-  }
+  HttpDefaults(HttpDefaultHeaders this.headers);
 }
 
 /**
@@ -391,10 +367,6 @@ class HttpDefaults {
  *
  * - For all requests: `Accept: application/json, text/plain, * / *`
  * - For POST, PUT, PATCH requests: `Content-Type: application/json`
- *
- * # Transforming Requests and Responses
- *
- *  NOTE: < use interceptors >.
  *
  * # Caching
  *
@@ -650,7 +622,6 @@ class Http {
              interceptors: interceptors,
              cache: cache, timeout: timeout);
 
-
   /**
    * Parse raw headers into key-value object
    */
@@ -779,19 +750,4 @@ class Http {
       .replaceAll('%24', r'$')
       .replaceAll('%2C', ',')
       .replaceAll('%20', pctEncodeSpaces ? '%20' : '+');
-
-  /*String or File*/ _transformData(data, headers, fns) {
-    if (fns is Function) {
-      return fns(data, headers);
-    }
-
-    fns.forEach((fn) {
-      data = fn(data, headers);
-    });
-    return data;
-  }
-
-  Function _headersGetter(Map headers) {
-
-  }
 }
