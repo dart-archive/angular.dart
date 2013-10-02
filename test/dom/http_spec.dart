@@ -550,147 +550,6 @@ main() => describe('http', () {
       });
     });
 
-    describe('transformData', () {
-
-      describe('request', () {
-
-        describe('default', () {
-
-          it('should transform object into json', () {
-            backend.expect('POST', '/url', '{"one":"two"}').respond('');
-            http(method: 'POST', url: '/url', data: {'one': 'two'});
-          });
-
-
-          it('should ignore strings', () {
-            backend.expect('POST', '/url', 'string-data').respond('');
-            http(method: 'POST', url: '/url', data: 'string-data');
-          });
-
-
-          it('should ignore File objects', () {
-            var file = new FakeFile();
-            expect(file is File).toBeTruthy();
-
-            backend.expect('POST', '/some', file).respond('');
-            http(method: 'POST', url: '/some', data: file);
-          });
-        });
-
-
-        it('should have access to request headers', async(() {
-          backend.expect('POST', '/url', 'header1').respond(200);
-          http.post('/url', 'req',
-            headers: {'h1': 'header1'},
-            transformRequest: (data, headers) {
-              return headers('h1');
-            }
-          ).then(callback);
-          flush();
-
-          expect(callback).toHaveBeenCalledOnce();
-        }));
-
-
-        it('should pipeline more functions', async(() {
-          first(d, h) {return d + '-first' + ':' + h('h1');}
-          second(d, _) {return d.toUpperCase();}
-
-          backend.expect('POST', '/url', 'REQ-FIRST:V1').respond(200);
-          http.post('/url', 'req',
-            headers: {'h1': 'v1'},
-            transformRequest: [first, second]
-          ).then(callback);
-          flush();
-
-          expect(callback).toHaveBeenCalledOnce();
-        }));
-      });
-
-
-      describe('response', () {
-
-        describe('default', () {
-
-          it('should deserialize json objects', async(() {
-            backend.expect('GET', '/url').respond('{"foo":"bar","baz":23}');
-            http(method: 'GET', url: '/url').then(callback);
-            flush();
-
-            expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual({'foo': 'bar', 'baz': 23});
-          }));
-
-
-          it('should deserialize json arrays', async(() {
-            backend.expect('GET', '/url').respond('[1, "abc", {"foo":"bar"}]');
-            http(method: 'GET', url: '/url').then(callback);
-            flush();
-
-            expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo': 'bar'}]);
-          }));
-
-
-          it('should deserialize json with security prefix', async(() {
-            backend.expect('GET', '/url').respond(')]}\',\n[1, "abc", {"foo":"bar"}]');
-            http(method: 'GET', url: '/url').then(callback);
-            flush();
-
-            expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
-          }));
-
-
-          it('should deserialize json with security prefix ")]}\'"', async(() {
-            backend.expect('GET', '/url').respond(')]}\'\n\n[1, "abc", {"foo":"bar"}]');
-            http(method: 'GET', url: '/url').then(callback);
-            flush();
-
-            expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
-          }));
-
-
-          it('should not deserialize tpl beginning with ng expression', async(() {
-            backend.expect('GET', '/url').respond('{{some}}');
-            http.get('/url').then(callback);
-            flush();
-
-            expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual('{{some}}');
-          }));
-        });
-
-
-        it('should have access to response headers', async(() {
-          backend.expect('GET', '/url').respond(200, 'response', {'h1': 'header1'});
-          http.get('/url',
-            transformResponse: (data, headers) {
-              return headers('h1');
-            }
-          ).then(callback);
-          flush();
-
-          expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0].data).toEqual('header1');
-        }));
-
-
-        it('should pipeline more functions', async(() {
-          first(d, h) {return d + '-first' + ':' + h('h1');}
-          second(d, _) {return d.toUpperCase();}
-
-          backend.expect('POST', '/url').respond(200, 'resp', {'h1': 'v1'});
-          http.post('/url', '', transformResponse: [first, second]).then(callback);
-          flush();
-
-          expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0].data).toEqual('RESP-FIRST:V1');
-        }));
-      });
-    });
-
 
     describe('cache', () {
 
@@ -1261,6 +1120,163 @@ main() => describe('http', () {
       flush();
       expect(response.data).toEqual('{{response} inner} outer');
     })));
+
+    describe('transformData', () {
+      Http http;
+      var callback;
+
+      beforeEach(inject((Http h) {
+        http = h;
+        callback = jasmine.createSpy('callback');
+      }));
+
+      describe('request', () {
+
+        describe('default', () {
+
+          it('should transform object into json', () {
+            backend.expect('POST', '/url', '{"one":"two"}').respond('');
+            http(method: 'POST', url: '/url', data: {'one': 'two'});
+          });
+
+
+          it('should ignore strings', () {
+            backend.expect('POST', '/url', 'string-data').respond('');
+            http(method: 'POST', url: '/url', data: 'string-data');
+          });
+
+
+          it('should ignore File objects', () {
+            var file = new FakeFile();
+            expect(file is File).toBeTruthy();
+
+            backend.expect('POST', '/some', file).respond('');
+            http(method: 'POST', url: '/some', data: file);
+          });
+        });
+
+
+        it('should have access to request headers', async(() {
+          backend.expect('POST', '/url', 'header1').respond(200);
+          http.post('/url', 'req',
+          headers: {'h1': 'header1'},
+          interceptors: new HttpInterceptor(request: (config) {
+            config.data = config.header('h1');
+            return config;
+          })
+          ).then(callback);
+          flush();
+
+          expect(callback).toHaveBeenCalledOnce();
+        }));
+
+
+        it('should pipeline more functions', async(() {
+          backend.expect('POST', '/url', 'REQ-FIRST:V1').respond(200);
+          http.post('/url', 'req',
+          headers: {'h1': 'v1'},
+          interceptors: new HttpInterceptors.of([
+              new HttpInterceptor(request: (config) {
+                config.data = config.data + '-first' + ':' + config.header('h1');
+                return config;
+              }),
+              new HttpInterceptor(request: (config) {
+                config.data = config.data.toUpperCase();
+                return config;
+              })
+          ])
+          ).then(callback);
+          flush();
+
+          expect(callback).toHaveBeenCalledOnce();
+        }));
+      });
+
+
+      describe('response', () {
+
+        describe('default', () {
+
+          it('should deserialize json objects', async(() {
+            backend.expect('GET', '/url').respond('{"foo":"bar","baz":23}');
+            http(method: 'GET', url: '/url').then(callback);
+            flush();
+
+            expect(callback).toHaveBeenCalledOnce();
+            expect(callback.mostRecentCall.args[0].data).toEqual({'foo': 'bar', 'baz': 23});
+          }));
+
+
+          it('should deserialize json arrays', async(() {
+            backend.expect('GET', '/url').respond('[1, "abc", {"foo":"bar"}]');
+            http(method: 'GET', url: '/url').then(callback);
+            flush();
+
+            expect(callback).toHaveBeenCalledOnce();
+            expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo': 'bar'}]);
+          }));
+
+
+          it('should deserialize json with security prefix', async(() {
+            backend.expect('GET', '/url').respond(')]}\',\n[1, "abc", {"foo":"bar"}]');
+            http(method: 'GET', url: '/url').then(callback);
+            flush();
+
+            expect(callback).toHaveBeenCalledOnce();
+            expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
+          }));
+
+
+          it('should deserialize json with security prefix ")]}\'"', async(() {
+            backend.expect('GET', '/url').respond(')]}\'\n\n[1, "abc", {"foo":"bar"}]');
+            http(method: 'GET', url: '/url').then(callback);
+            flush();
+
+            expect(callback).toHaveBeenCalledOnce();
+            expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
+          }));
+
+
+          it('should not deserialize tpl beginning with ng expression', async(() {
+            backend.expect('GET', '/url').respond('{{some}}');
+            http.get('/url').then(callback);
+            flush();
+
+            expect(callback).toHaveBeenCalledOnce();
+            expect(callback.mostRecentCall.args[0].data).toEqual('{{some}}');
+          }));
+        });
+
+
+        it('should have access to response headers', async(() {
+          backend.expect('GET', '/url').respond(200, 'response', {'h1': 'header1'});
+          http.get('/url',
+          interceptors: new HttpInterceptor(response: (r) {
+            return new HttpResponse.copy(r, data: r.headers('h1'));
+          })
+          ).then(callback);
+          flush();
+
+          expect(callback).toHaveBeenCalledOnce();
+          expect(callback.mostRecentCall.args[0].data).toEqual('header1');
+        }));
+
+        it('should pipeline more functions', async(() {
+          backend.expect('POST', '/url').respond(200, 'resp', {'h1': 'v1'});
+          http.post('/url', '', interceptors: new HttpInterceptors.of([
+              new HttpInterceptor(response: (r) {
+                return new HttpResponse.copy(r, data: r.data.toUpperCase());
+              }),
+              new HttpInterceptor(response: (r) {
+                return new HttpResponse.copy(r, data: r.data + '-first' + ':' + r.headers('h1'));
+              })])).then(callback);
+          flush();
+
+          expect(callback).toHaveBeenCalledOnce();
+          expect(callback.mostRecentCall.args[0].data).toEqual('RESP-FIRST:V1');
+        }));
+      });
+    });
   });
 });
 

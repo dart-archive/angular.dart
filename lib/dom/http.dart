@@ -42,21 +42,78 @@ class HttpBackend {
   }
 }
 
+typedef RequestInterceptor(HttpResponseConfig);
+typedef RequestErrorInterceptor(dynamic);
+typedef Response(HttpResponse);
+typedef ResponseError(dynamic);
+
+/**
+* HttpInterceptors are used to modify the Http request.  They can be added to
+* [HttpInterceptors] or passed into [Http.call].
+*/
 class HttpInterceptor {
+  RequestInterceptor request;
+  Response response;
+  RequestErrorInterceptor requestError;
+  ResponseError responseError;
 
-  Function request, response, requestError, responseError;
-
+  /**
+   * All parameters are optional.
+   */
   HttpInterceptor({
       this.request, this.response,
       this.requestError, this.responseError});
 }
 
 
+/**
+* The default transform data interceptor.abstract
+*
+* For requests, this interceptor will
+* automatically stringify any non-string non-file objects.
+*
+* For responses, this interceptor will unwrap JSON objects and
+* parse them into [Map]s.
+*/
+class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
+  Function request = (HttpResponseConfig config) {
+    if (config.data is! String && config.data is! dom.File) {
+      config.data = json.stringify(config.data);
+    }
+    return config;
+  };
+
+  static var _JSON_START = new RegExp(r'^\s*(\[|\{[^\{])');
+  static var _JSON_END = new RegExp(r'[\}\]]\s*$');
+  static var _PROTECTION_PREFIX = new RegExp('^\\)\\]\\}\',?\\n');
+  Function response = (HttpResponse r) {
+    if (r.data is String) {
+      var d = r.data;
+      d = d.replaceFirst(_PROTECTION_PREFIX, '');
+      if (d.contains(_JSON_START) && d.contains(_JSON_END)) {
+        d = json.parse(d);
+      }
+      return new HttpResponse.copy(r, data: d);
+    }
+    return r;
+  };
+
+  Function requestError, responseError;
+
+}
+
+/**
+ * A list of [HttpInterceptor]s.
+ */
 class HttpInterceptors {
-  List<HttpInterceptor> _interceptors = new List();
+  List<HttpInterceptor> _interceptors = [new DefaultTransformDataHttpInterceptor()];
 
-  add(x) => _interceptors.add(x);
+  add(HttpInterceptor x) => _interceptors.add(x);
+  addAll(List<HttpInterceptor> x) => _interceptors.addAll(x);
 
+  /**
+   * Called from [Http] to construct a [Future] chain.
+   */
   constructChain(List chain) {
     _interceptors.reversed.forEach((HttpInterceptor i) {
       // AngularJS has an optimization of not including null interceptors.
@@ -67,6 +124,20 @@ class HttpInterceptors {
           i.response == null ? (x) => x : i.response,
           i.responseError]);
     });
+  }
+
+ /**
+   * Default constructor.
+   */
+  HttpInterceptors() {
+    _interceptors = [new DefaultTransformDataHttpInterceptor()];
+  }
+
+  /**
+   * Creates a [HttpInterceptors] from a [List].  Does not include the default interceptors.
+   */
+  HttpInterceptors.of([List interceptors]) {
+    _interceptors = interceptors;
   }
 }
 
@@ -85,9 +156,41 @@ class HttpResponseConfig {
   Map params;
 
   /**
+   * The header map without mangled keys
+   */
+  Map headers;
+
+  var data;
+
+
+  var _headersObj;
+
+  /**
+   * Header accessor.  Given a string, it will return the matching header,
+   * case-insentivitively.  Without a string, returns a header object will
+   * upper-case keys.
+   */
+  header([String name]) {
+    if (_headersObj == null) {
+      _headersObj = {};
+      headers.forEach((k,v) {
+        _headersObj[k.toLowerCase()] = v;
+      });
+    }
+
+    if (name != null) {
+      name = name.toLowerCase();
+      if (!_headersObj.containsKey(name)) return null;
+      return _headersObj[name];
+    }
+
+    return _headersObj;
+  }
+
+  /**
    * Constructor
    */
-  HttpResponseConfig({this.url, this.params});
+  HttpResponseConfig({this.url, this.params, this.headers, this.data});
 }
 
 /**
@@ -307,7 +410,8 @@ class HttpDefaults {
  *
  * # Interceptors
  *
- * NOTE: < not yet implemented >
+ * Http uses the interceptors from [HttpInterceptors]. You can also include
+ * interceptors in the [call] method.
  *
  * # Security Considerations
  *
@@ -358,8 +462,7 @@ class Http {
   *      is null, the header will not be sent.
   * - xsrfHeaderName: TBI
   * - xsrfCookieName: TBI
-  * - transformRequest: deprecated
-  * - transformResponse: deprecated
+  * - interceptors: Either a [HttpInterceptor] or a [HttpInterceptors]
   * - cache: Boolean or [Cache].  If true, the default cache will be used.
   * - timeout: deprecated
 */
@@ -371,8 +474,7 @@ class Http {
     Map<String, String> headers,
     xsrfHeaderName,
     xsrfCookieName,
-    transformRequest,
-    transformResponse,
+    interceptors,
     cache,
     timeout
   }) {
@@ -382,9 +484,6 @@ class Http {
     }
 
     method = method.toUpperCase();
-
-    if (transformRequest == null) transformRequest = defaults.transformRequest;
-    if (transformResponse == null) transformResponse = defaults.transformResponse;
 
     if (headers == null) { headers = {}; }
     defaults.headers.setHeaders(headers, method);
@@ -397,10 +496,7 @@ class Http {
     });
 
     var serverRequest = (HttpResponseConfig config) {
-      print('server request');
-      // Transform data.
-      var reqData = _transformData(data, _headersGetter(headers), transformRequest);
-      assert(reqData is String || reqData is dom.File);
+      assert(config.data is String || config.data is dom.File);
 
       // Strip content-type if data is undefined
       if (data == null) {
@@ -418,24 +514,28 @@ class Http {
           null,
           config: config,
           method: method,
-          sendData: reqData,
-          requestHeaders: headers,
-          cache: cache).then((HttpResponse r) {
-        var data = _transformData(r.data, r.headers, transformResponse);
-        if (!identical(data, r.data)) {
-          return new HttpResponse.copy(r, data: data);
-        }
-        return r;
-      });
+          sendData: config.data,
+          requestHeaders: config.headers,
+          cache: cache);
     };
 
     var chain = [[serverRequest, null]];
 
     var future = new async.Future.value(new HttpResponseConfig(
         url: url,
-        params: params));
+        params: params,
+        headers: headers,
+        data: data));
 
     _interceptors.constructChain(chain);
+
+    if (interceptors != null) {
+      if (interceptors is HttpInterceptor) {
+        interceptors = new HttpInterceptors.of([interceptors]);
+      }
+      assert(interceptors is HttpInterceptors);
+      interceptors.constructChain(chain);
+    }
 
     chain.forEach((chainFns) {
       future = future.then(chainFns[0], onError: chainFns[1]);
@@ -454,13 +554,12 @@ class Http {
     Map<String, String> headers,
     xsrfHeaderName,
     xsrfCookieName,
-    transformRequest,
-    transformResponse,
+    interceptors,
     cache,
     timeout
   }) => call(method: 'GET', url: url, data: data, params: params, headers: headers,
              xsrfHeaderName: xsrfHeaderName, xsrfCookieName: xsrfCookieName,
-             transformRequest: transformRequest, transformResponse: transformResponse,
+             interceptors: interceptors,
              cache: cache, timeout: timeout);
 
   /**
@@ -473,13 +572,12 @@ class Http {
     Map<String, String> headers,
     xsrfHeaderName,
     xsrfCookieName,
-    transformRequest,
-    transformResponse,
+    interceptors,
     cache,
     timeout
   }) => call(method: 'DELETE', url: url, data: data, params: params, headers: headers,
              xsrfHeaderName: xsrfHeaderName, xsrfCookieName: xsrfCookieName,
-             transformRequest: transformRequest, transformResponse: transformResponse,
+             interceptors: interceptors,
              cache: cache, timeout: timeout);
 
   /**
@@ -492,13 +590,12 @@ class Http {
     Map<String, String> headers,
     xsrfHeaderName,
     xsrfCookieName,
-    transformRequest,
-    transformResponse,
+    interceptors,
     cache,
     timeout
   }) => call(method: 'HEAD', url: url, data: data, params: params, headers: headers,
              xsrfHeaderName: xsrfHeaderName, xsrfCookieName: xsrfCookieName,
-             transformRequest: transformRequest, transformResponse: transformResponse,
+             interceptors: interceptors,
              cache: cache, timeout: timeout);
 
   /**
@@ -510,13 +607,12 @@ class Http {
     Map<String, String> headers,
     xsrfHeaderName,
     xsrfCookieName,
-    transformRequest,
-    transformResponse,
+    interceptors,
     cache,
     timeout
   }) => call(method: 'PUT', url: url, data: data, params: params, headers: headers,
              xsrfHeaderName: xsrfHeaderName, xsrfCookieName: xsrfCookieName,
-             transformRequest: transformRequest, transformResponse: transformResponse,
+             interceptors: interceptors,
              cache: cache, timeout: timeout);
 
   /**
@@ -528,13 +624,12 @@ class Http {
     Map<String, String> headers,
     xsrfHeaderName,
     xsrfCookieName,
-    transformRequest,
-    transformResponse,
+    interceptors,
     cache,
     timeout
   }) => call(method: 'POST', url: url, data: data, params: params, headers: headers,
              xsrfHeaderName: xsrfHeaderName, xsrfCookieName: xsrfCookieName,
-             transformRequest: transformRequest, transformResponse: transformResponse,
+             interceptors: interceptors,
              cache: cache, timeout: timeout);
 
   /**
@@ -547,13 +642,12 @@ class Http {
     Map<String, String> headers,
     xsrfHeaderName,
     xsrfCookieName,
-    transformRequest,
-    transformResponse,
+    interceptors,
     cache,
     timeout
   }) => call(method: 'JSONP', url: url, data: data, params: params, headers: headers,
              xsrfHeaderName: xsrfHeaderName, xsrfCookieName: xsrfCookieName,
-             transformRequest: transformRequest, transformResponse: transformResponse,
+             interceptors: interceptors,
              cache: cache, timeout: timeout);
 
 
@@ -605,7 +699,6 @@ class Http {
         sendData,
         void onProgress(dom.ProgressEvent e),
         /*Cache<HttpResponse> or false*/ cache }) {
-    print('request');
     String url;
 
     if (config == null) {
@@ -699,23 +792,6 @@ class Http {
   }
 
   Function _headersGetter(Map headers) {
-    var headersObj;
 
-    return ([String name]) {
-      if (headersObj == null) {
-        headersObj = {};
-        headers.forEach((k,v) {
-          headersObj[k.toLowerCase()] = v;
-        });
-      }
-
-      if (name != null) {
-        name = name.toLowerCase();
-        if (!headersObj.containsKey(name)) return null;
-        return headersObj[name];
-      }
-
-      return headersObj;
-    };
   }
 }
