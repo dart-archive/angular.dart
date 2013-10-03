@@ -22,9 +22,9 @@ main() => describe('http', () {
   var cache;
 
   flush() {
-    nextTurn(true);
+    microLeap();
     backend.flush();
-    nextTurn(true);
+    microLeap();
   }
 
   beforeEach(module((AngularModule module) {
@@ -573,7 +573,7 @@ main() => describe('http', () {
 
         http(method: 'get', url: '/url', cache: cache).then(callback);
 
-        nextTurn(true);
+        microLeap();
 
         expect(callback).toHaveBeenCalledOnce();
         expect(callback.mostRecentCall.args[0].data).toEqual('content');
@@ -585,7 +585,7 @@ main() => describe('http', () {
 
         backend.expect('GET', '/url').respond();
         http(method: 'GET', url: '/url');
-        nextTurn(true);
+        microLeap();
       }));
 
 
@@ -595,7 +595,7 @@ main() => describe('http', () {
         cache.removeAll();
         backend.expect('GET', '/url').respond();
         http(method: 'GET', url: '/url', cache: cache);
-        nextTurn(true);
+        microLeap();
       }));
 
 
@@ -654,7 +654,7 @@ main() => describe('http', () {
         });
 
         http(method: 'GET', url: '/url', cache: cache).then(callback);
-        nextTurn(true);
+        microLeap();
 
         expect(callback).toHaveBeenCalledOnce();
       }));
@@ -668,7 +668,7 @@ main() => describe('http', () {
         });
 
         http(method: 'GET', url: '/url', cache: cache).then(callback);
-        nextTurn(true);
+        microLeap();
 
         expect(callback).toHaveBeenCalledOnce();
       }));
@@ -681,7 +681,7 @@ main() => describe('http', () {
         });
 
         http(method: 'get', url: '/url', cache: cache).then(callback);
-        nextTurn(true);
+        microLeap();
 
         expect(callback).toHaveBeenCalledOnce();
       }));
@@ -721,7 +721,7 @@ main() => describe('http', () {
 
           // Second should be served from cache, without sending request to server.
           http(method: 'get', url: '/url').then(callback);
-          nextTurn(true);
+          microLeap();
 
           expect(callback).toHaveBeenCalledOnce();
           expect(callback.mostRecentCall.args[0].data).toEqual('content');
@@ -751,7 +751,7 @@ main() => describe('http', () {
 
           // Serve request from default cache when no local given.
           http(method: 'get', url: '/url').then(callback);
-          nextTurn(true);
+          microLeap();
 
           expect(callback).toHaveBeenCalledOnce();
           expect(callback.mostRecentCall.args[0].data).toEqual('content-default-cache');
@@ -759,7 +759,7 @@ main() => describe('http', () {
 
           // Serve request from local cache when it is given (but default filled too).
           http(method: 'get', url: '/url', cache: localCache).then(callback);
-          nextTurn(true);
+          microLeap();
 
           expect(callback).toHaveBeenCalledOnce();
           expect(callback.mostRecentCall.args[0].data).toEqual('content-local-cache');
@@ -816,7 +816,7 @@ main() => describe('http', () {
         expect(http.pendingRequests.length).toEqual(0);
 
         http(method: 'get', url: '/some');
-        nextTurn(true);
+        microLeap();
         expect(http.pendingRequests.length).toEqual(1);
 
         flush();
@@ -852,7 +852,7 @@ main() => describe('http', () {
         http(method: 'get', url: '/url').then((_) {
           expect(http.pendingRequests.length).toEqual(0);
         });
-        nextTurn(true);
+        microLeap();
 
         expect(http.pendingRequests.length).toEqual(1);
         flush();
@@ -934,7 +934,7 @@ main() => describe('http', () {
       });
 
       expect(called).toEqual(0);
-      nextTurn();
+      microLeap();
 
       expect(called).toEqual(1);
     })));
@@ -1025,7 +1025,7 @@ main() => describe('http', () {
       });
 
       expect(called).toEqual(0);
-      nextTurn(true);
+      microLeap();
 
       expect(called).toEqual(1);
     })));

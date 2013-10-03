@@ -57,7 +57,7 @@ main() => describe('zone', () {
     var outer = () => runAsync(middle);
     zone.run(outer);
 
-    nextTurn(true);
+    microLeap();
     expect(error).toEqual(['double zonned']);
 
     // Not in dart2js..
@@ -96,7 +96,7 @@ main() => describe('zone', () {
     zone.run(() {
       log('run');
     });
-    nextTurn(true);
+    microLeap();
 
     expect(log.result()).toEqual('run; onTurnDone; onTurnAsync; onTurnDone');
   })));
@@ -114,7 +114,7 @@ main() => describe('zone', () {
       runAsync(() { log('runAsync'); });
       log('run');
     });
-    nextTurn(true);
+    microLeap();
 
     expect(log.result()).toEqual('run; runAsync; onTurnDone; onTurnAsync; onTurnDone');
   })));
@@ -129,7 +129,7 @@ main() => describe('zone', () {
       });
       log('run end');
     });
-    nextTurn(true);
+    microLeap();
 
     expect(log.result()).toEqual('run start; run end; async; onTurnDone');
   })));
@@ -159,7 +159,7 @@ main() => describe('zone', () {
         });
       log('run end');
     });
-    nextTurn(true);
+    microLeap();
 
     expect(log.result()).toEqual('run start; run end; future then; future ?; future ?; onTurnDone; onTurn future; onTurnDone');
   })));
@@ -174,15 +174,15 @@ main() => describe('zone', () {
       b.future.then((_) => log('b then'));
       log('run start');
     });
-    nextTurn(true);
+    microLeap();
     zone.run(() {
       a.complete(null);
     });
-    nextTurn(true);
+    microLeap();
     zone.run(() {
       b.complete(null);
     });
-    nextTurn(true);
+    microLeap();
 
     expect(log.result()).toEqual('run start; onTurnDone; a then; onTurnDone; b then; onTurnDone');
   })));
@@ -199,7 +199,7 @@ main() => describe('zone', () {
       });
       log('run end');
     });
-    nextTurn(true);
+    microLeap();
 
     expect(log.result()).toEqual('run start; run end; async1; async2; onTurnDone');
   })));
@@ -221,7 +221,7 @@ main() => describe('zone', () {
       });
       log('runB end');
     });
-    nextTurn(true);
+    microLeap();
 
     expect(log.result()).toEqual('runA start; runA end; runB start; runB end; asyncA; asyncB; onTurnDone');
   })));
@@ -238,7 +238,7 @@ main() => describe('zone', () {
       future.then((_) => log('future then'));
       log('zone run');
     });
-    nextTurn(true);
+    microLeap();
 
     expect(log.result()).toEqual('zone run; onTurnDone; future then');
   })));
@@ -265,7 +265,7 @@ main() => describe('zone', () {
       });
     });
 
-    nextTurn(true);
+    microLeap();
 
     expect(() => zone.assertInTurn()).toThrow();
     expect(log.result()).toEqual('zone run; runAsync; onError; onTurnDone');
@@ -287,7 +287,7 @@ main() => describe('zone', () {
       });
     });
 
-    nextTurn(true);
+    microLeap();
     expect(calls).toEqual('sync;async;done;');
   }));
 
@@ -304,7 +304,7 @@ main() => describe('zone', () {
         expect(_).toEqual(5);
         zone.assertInZone();
       });
-      nextTurn(true);
+      microLeap();
     })).toThrow('Function must be called in a zone');
   });
 
@@ -312,7 +312,7 @@ main() => describe('zone', () {
   it('should throw outside of the zone', () {
     expect(async(() {
       zone.assertInZone();
-      nextTurn(true);
+      microLeap();
     })).toThrow('Function must be called in a zone');
   });
 
@@ -332,7 +332,7 @@ main() => describe('zone', () {
       });
     });
 
-    nextTurn(true);
+    microLeap();
     expect(calls).toEqual('sync;async;done;');
   }));
 
@@ -340,7 +340,7 @@ main() => describe('zone', () {
   it('should assertInTurn outside of the zone', () {
     expect(async(() {
       zone.assertInTurn();
-      nextTurn(true);
+      microLeap();
     })).toThrow('ssertion');  // Support both dart2js and the VM with half a word.
   });
 });

@@ -62,7 +62,7 @@ main() => describe('template url', () {
       });
 
       backend.flush();
-      nextTurn(true);
+      microLeap();
 
       expect(renderedText(element)).toEqual('.hello{}Simple!');
       expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
@@ -88,7 +88,7 @@ main() => describe('template url', () {
       $compile(element)(injector, element);
 
       backend.flush();
-      nextTurn(true);
+      microLeap();
 
       expect(renderedText(element)).toEqual('Simple!');
       $rootScope.$digest();
@@ -103,7 +103,7 @@ main() => describe('template url', () {
       $compile(element)(injector, element);
 
       backend.flush();
-      nextTurn(true);
+      microLeap();
 
       expect(renderedText(element)).toEqual('Simple!Simple!');
       $rootScope.$digest();
@@ -119,7 +119,7 @@ main() => describe('template url', () {
       $compile(element)(injector, element);
 
       backend.flush();
-      nextTurn(true);
+      microLeap();
 
       expect(renderedText(element)).toEqual('.hello{}Simple!');
       expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
@@ -136,7 +136,7 @@ main() => describe('template url', () {
       $compile(element)(injector, element);
 
       backend.flush();
-      nextTurn(true);
+      microLeap();
       expect(renderedText(element)).toEqual('.hello{}inline!');
     })));
 
@@ -146,7 +146,7 @@ main() => describe('template url', () {
       $compile(element)(injector, element);
 
       backend.flush();
-      nextTurn(true);
+      microLeap();
       expect(renderedText(element)).toEqual('.hello{}');
     })));
 
@@ -158,7 +158,7 @@ main() => describe('template url', () {
       $compile(element)(injector, element);
 
       backend.flush();
-      nextTurn(true);
+      microLeap();
       expect(renderedText(element)).toEqual('.hello{}Simple!');
     })));
   });
