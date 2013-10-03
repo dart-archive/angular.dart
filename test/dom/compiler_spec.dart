@@ -182,7 +182,7 @@ main() {
           Block block = blockFactory(injector, element);
         });
 
-        nextTurn(true);
+        fastForward();
         expect(element.textWithShadow()).toEqual('INNER_1()');
       })));
 
@@ -196,7 +196,7 @@ main() {
           Block block = blockFactory(injector, element);
         });
 
-        nextTurn(true);
+        fastForward();
         expect(element.textWithShadow()).toEqual('OUTTER-_0:INNER_1(OUTTER-_0)');
       })));
 
@@ -208,7 +208,7 @@ main() {
         zone.run(() =>
           $compile(element)(injector, element));
 
-        nextTurn(true);
+        fastForward();
         expect(renderedText(element)).toEqual('inside poof');
       })));
 
@@ -217,7 +217,7 @@ main() {
         zone.run(() =>
           $compile(element)(injector, element));
 
-        nextTurn(true);
+        fastForward();
         expect(renderedText(element)).toEqual('inside ');
       })));
 
@@ -227,14 +227,14 @@ main() {
         zone.run(() =>
           $compile(element)(injector, element));
 
-        nextTurn(true);
+        fastForward();
         expect(renderedText(element)).toEqual('inside ');
       })));
 
       it('should create a component with I/O', async(inject(() {
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         $compile(element)(injector, element);
-        nextTurn(true);
+        fastForward();
 
         $rootScope.name = 'misko';
         $rootScope.$apply();
@@ -254,7 +254,7 @@ main() {
         $rootScope.name = 'misko';
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         $compile(element)(injector, element);
-        nextTurn(true);
+        fastForward();
 
         var component = $rootScope.ioComponent;
         $rootScope.$apply();
@@ -271,7 +271,7 @@ main() {
 
         expect(injector).toBeDefined();
         $compile(element)(injector, element);
-        nextTurn(true);
+        fastForward();
 
         IoControllerComponent component = $rootScope.ioComponent;
 
@@ -305,7 +305,7 @@ main() {
       it('should create a map attribute to controller', async(() {
         var element = $(r'<div><io-controller attr="{{name}}"></io-controller></div>');
         $compile(element)(injector, element);
-        nextTurn(true);
+        fastForward();
 
         IoControllerComponent component = $rootScope.ioComponent;
 
@@ -323,7 +323,7 @@ main() {
         $rootScope.done = false;
         var element = $(r'<div><unpublished-io-controller attr="A" expr="name" ondone="done=true"></unpublished-io-controller></div>');
         $compile(element)(injector, element);
-        nextTurn(true);
+        fastForward();
 
         UnpublishedIoControllerComponent component = $rootScope.ioComponent;
         $rootScope.$apply();
@@ -358,7 +358,7 @@ main() {
       it('should expose mapped attributes as camel case', async(inject(() {
         var element = $('<camel-case-map camel-case=G></camel-case-map>');
         $compile(element)(injector, element);
-        nextTurn(true);
+        fastForward();
         $rootScope.$apply();
         var componentScope = $rootScope.camelCase;
         expect(componentScope.camelCase).toEqual('G');
@@ -381,7 +381,7 @@ main() {
         zone.run(() =>
         $compile(element)(injector, element));
 
-        nextTurn(true);
+        fastForward();
         expect(element.textWithShadow()).toEqual('WORKED');
       })));
 
@@ -390,7 +390,7 @@ main() {
         zone.run(() =>
         $compile(element)(injector, element));
 
-        nextTurn(true);
+        fastForward();
         expect(element.text()).toEqual('WORKED');
       })));
 
@@ -405,7 +405,7 @@ main() {
         var element = $(r'<log ng-repeat="i in [1, 2]"></log>');
         $compile(element)(injector, element);
         $rootScope.$apply();
-        nextTurn(true);
+        fastForward();
 
         expect(logger.length).toEqual(2);
       })));
@@ -417,7 +417,7 @@ main() {
           $compile(element)(injector.createChild([new Module()..value(Scope, scope)]), element);
           expect(logger).toEqual(['new']);
 
-          nextTurn(true);
+          fastForward();
           $rootScope.$digest();
           expect(logger).toEqual(['new', 'attach']);
 
@@ -432,7 +432,7 @@ main() {
       it('shoud make controllers available to sibling and child controllers', async(inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
         var element = $('<tab local><pane local></pane><pane local></pane></tab>');
         $compile(element)(injector, element);
-        nextTurn(true);
+        fastForward();
 
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
       })));
@@ -440,7 +440,7 @@ main() {
       it('should reuse controllers for transclusions', async(inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
         var element = $('<div simple-transclude-in-attach include-transclude>block</div>');
         $compile(element)(injector, element);
-        nextTurn(true);
+        fastForward();
 
         $rootScope.$apply();
         expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');

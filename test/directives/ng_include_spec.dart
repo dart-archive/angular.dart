@@ -21,7 +21,7 @@ main() {
         scope['template'] = 'tpl.html';
       });
 
-      nextTurn(true);  // load the template from cache.
+      fastForward();  // load the template from cache.
       expect(element.text()).toEqual('my name is Vojta');
     })));
 

@@ -26,7 +26,7 @@ main() => describe('mock zones', () {
       async(() {
         new Future.value('s').then((_) { thenRan = true; });
         expect(thenRan).toBe(false);
-        nextTurn();
+        fastForward();
         expect(thenRan).toBe(true);
         ran = true;
       })();
@@ -41,7 +41,7 @@ main() => describe('mock zones', () {
         .then((_) { log.add('firstThen'); })
         .then((_) { log.add('2ndThen'); });
         expect(log.join(' ')).toEqual('');
-        nextTurn();
+        fastForward();
         expect(log.join(' ')).toEqual('firstThen 2ndThen');
       })();
     });
@@ -58,9 +58,7 @@ main() => describe('mock zones', () {
           });
         });
         expect(log.join(' ')).toEqual('');
-        nextTurn();
-        expect(log.join(' ')).toEqual('firstThen');
-        nextTurn();
+        fastForward();
         expect(log.join(' ')).toEqual('firstThen 2ndThen');
       })();
     });
@@ -76,7 +74,7 @@ main() => describe('mock zones', () {
           });
         });
         expect(log.join(' ')).toEqual('');
-        nextTurn(true);
+        fastForward();
         expect(log.join(' ')).toEqual('firstThen 2ndThen');
       })();
     });
@@ -113,7 +111,7 @@ main() => describe('mock zones', () {
       var ran = false;
       expect(async(() {
         new Future.value('s').then((_) { throw "blah then"; });
-        nextTurn(true);
+        fastForward();
       })).toThrow("blah then");
     });
   });

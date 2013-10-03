@@ -7,21 +7,15 @@ List _asyncErrors = [];
 bool _noMoreAsync = false;
 
 /**
- * Runs any queued up async calls.
- *
- * If runUntilEmpty is true, nextTurn will also run any async calls
- * queued while running nextTurn.
- *
- * TODO(deboer): Rename to fastForward
+ * Runs any queued up async calls and any async calls queued with
+ * running fastForward.
  */
-nextTurn([bool runUntilEmpty = false]) {
-// copy the queue as it may change.
-  var toRun = new List.from(_asyncQueue);
-  _asyncQueue = [];
-  toRun.forEach((fn) => fn());
-
-  if (runUntilEmpty && !_asyncQueue.isEmpty) {
-    nextTurn(runUntilEmpty);
+fastForward() {
+  while (!_asyncQueue.isEmpty) {
+    // copy the queue as it may change.
+    var toRun = new List.from(_asyncQueue);
+    _asyncQueue = [];
+    toRun.forEach((fn) => fn());
   }
 }
 
@@ -47,7 +41,7 @@ async(Function fn) =>
   _asyncErrors = [];
   dartAsync.runZonedExperimental(() {
     fn();
-    nextTurn(true);
+    fastForward();
   },
   onRunAsync: (asyncFn) {
     if (_noMoreAsync) {

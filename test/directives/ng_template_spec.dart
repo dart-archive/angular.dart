@@ -54,7 +54,7 @@ main() {
         var templates = element.contents();
         compiler(element)(injector, element);
 
-        nextTurn(true);
+        fastForward();
         // This binding should have been left alone (i.e. not interpolated).
         expect(templates[2].innerHtml).toEqual('other {{binding}} <div></div>');
       }
