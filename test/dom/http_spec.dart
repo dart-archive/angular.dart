@@ -1,7 +1,6 @@
 library http_spec;
 
 import '../_specs.dart';
-import '../_http.dart';
 
 import 'dart:async';
 

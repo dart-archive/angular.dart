@@ -12,7 +12,6 @@ import 'package:angular/dom/selector.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'jasmine_syntax.dart';
-import '_http.dart';
 import 'package:angular/mock/mock.dart';
 
 export 'dart:html';
@@ -303,7 +302,6 @@ main() {
   beforeEach(module((AngularModule module) {
     module
       ..type(Logger)
-      ..type(MockHttp)
       ..type(ExceptionHandler, implementedBy: RethrowExceptionHandler)
       ..factory(Zone, (_) {
         Zone zone = new Zone();

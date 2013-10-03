@@ -2,7 +2,6 @@ library ng_include_spec;
 
 import '../_specs.dart';
 import '../_test_bed.dart';
-import '../_http.dart';
 
 main() {
   describe('NgInclude', () {

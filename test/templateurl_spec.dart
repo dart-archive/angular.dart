@@ -1,7 +1,6 @@
 library templateurl_spec;
 
 import '_specs.dart';
-import '_http.dart';
 
 @NgComponent(
     selector: 'simple-url',
@@ -33,20 +32,24 @@ class PrefixedUrlRewriter extends UrlRewriter {
   call(url) => "PREFIX:$url";
 }
 
-main() {
+main() => describe('template url', () {
+  var backend;
+  beforeEach(module((AngularModule module) {
+    backend = new MockHttpBackend();
+    module
+      ..value(HttpBackend, backend);
+  }));
+
+  afterEach(() {
+    backend.verifyNoOutstandingRequest();
+  });
+
   describe('loading with http rewriting', () {
-    var backend;
     beforeEach(module((AngularModule module) {
-      backend = new MockHttpBackend();
       module
         ..type(HtmlAndCssComponent)
-        ..value(HttpBackend, backend)
         ..type(UrlRewriter, implementedBy: PrefixedUrlRewriter);
     }));
-
-    afterEach(() {
-      backend.verifyNoOutstandingRequest();
-    });
 
     it('should use the UrlRewriter for both HTML and CSS URLs', async(inject((Http $http, Compiler $compile, Scope $rootScope, Logger log, Injector injector, Zone zone) {
 
@@ -71,7 +74,6 @@ main() {
 
   describe('async template loading', () {
     beforeEach(module((AngularModule module) {
-      module.factory(Http, (Injector injector) => injector.get(MockHttp));
       module.type(LogAttrDirective);
       module.type(SimpleUrlComponent);
       module.type(HtmlAndCssComponent);
@@ -79,17 +81,13 @@ main() {
       module.type(InlineWithCssComponent);
     }));
 
-    afterEach(inject((MockHttp $http) {
-      $http.assertAllGetsCalled();
-    }));
-
-    it('should replace element with template from url', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope,  Logger log, Injector injector) {
-      $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>');
+    it('should replace element with template from url', async(inject((Http $http, Compiler $compile, Scope $rootScope,  Logger log, Injector injector) {
+      backend.expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
       var element = $('<div><simple-url log>ignore</simple-url><div>');
       $compile(element)(injector, element);
 
-      $http.flush();
+      backend.flush();
       nextTurn(true);
 
       expect(renderedText(element)).toEqual('Simple!');
@@ -98,13 +96,13 @@ main() {
       expect(log.result()).toEqual('LOG; SIMPLE');
     })));
 
-    it('should load template from URL once', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope,  Logger log, Injector injector) {
-      $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>', times: 2);
+    it('should load template from URL once', async(inject((Http $http, Compiler $compile, Scope $rootScope,  Logger log, Injector injector) {
+      backend.whenGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
       var element = $('<div><simple-url log>ignore</simple-url><simple-url log>ignore</simple-url><div>');
       $compile(element)(injector, element);
 
-      $http.flush();
+      backend.flush();
       nextTurn(true);
 
       expect(renderedText(element)).toEqual('Simple!Simple!');
@@ -113,14 +111,14 @@ main() {
       expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
     })));
 
-    it('should load a CSS file into a style', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
-      $http.expectGET('simple.html', '<div log="SIMPLE">Simple!</div>');
-      $http.expectGET('simple.css', '.hello{}');
+    it('should load a CSS file into a style', async(inject((Http $http, Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
+      backend.expectGET('simple.css').respond('.hello{}');
+      backend.expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
       var element = $('<div><html-and-css log>ignore</html-and-css><div>');
       $compile(element)(injector, element);
 
-      $http.flush();
+      backend.flush();
       nextTurn(true);
 
       expect(renderedText(element)).toEqual('.hello{}Simple!');
@@ -132,33 +130,36 @@ main() {
       expect(log.result()).toEqual('LOG; SIMPLE');
     })));
 
-    it('should load a CSS file with a \$template', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope, Injector injector) {
+    it('should load a CSS file with a \$template', async(inject((Http $http, Compiler $compile, Scope $rootScope, Injector injector) {
       var element = $('<div><inline-with-css log>ignore</inline-with-css><div>');
-      $http.expectGET('simple.css', '.hello{}');
+      backend.expectGET('simple.css').respond('.hello{}');
       $compile(element)(injector, element);
 
+      backend.flush();
       nextTurn(true);
       expect(renderedText(element)).toEqual('.hello{}inline!');
     })));
 
-    it('should load a CSS with no template', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope, Injector injector) {
+    it('should load a CSS with no template', async(inject((Http $http, Compiler $compile, Scope $rootScope, Injector injector) {
       var element = $('<div><only-css log>ignore</only-css><div>');
-      $http.expectGET('simple.css', '.hello{}');
+      backend.expectGET('simple.css').respond('.hello{}');
       $compile(element)(injector, element);
 
+      backend.flush();
       nextTurn(true);
       expect(renderedText(element)).toEqual('.hello{}');
     })));
 
-    it('should load the CSS before the template is loaded', async(inject((MockHttp $http, Compiler $compile, Scope $rootScope, Injector injector) {
-      $http.expectGET('simple.html', '<div>Simple!</div>');
-      $http.expectGET('simple.css', '.hello{}');
+    it('should load the CSS before the template is loaded', async(inject((Http $http, Compiler $compile, Scope $rootScope, Injector injector) {
+      backend.expectGET('simple.css').respond('.hello{}');
+      backend.expectGET('simple.html').respond('<div>Simple!</div>');
 
       var element = $('<html-and-css>ignore</html-and-css>');
       $compile(element)(injector, element);
 
+      backend.flush();
       nextTurn(true);
       expect(renderedText(element)).toEqual('.hello{}Simple!');
     })));
   });
-}
+});
