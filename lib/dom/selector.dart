@@ -34,17 +34,17 @@ typedef List<DirectiveRef> DirectiveSelector(dom.Node node);
 
 class _Directive {
   final Type type;
-  final NgAnnotationBase annotation;
+  final NgAnnotation annotation;
 
-  _Directive(Type this.type, NgAnnotationBase this.annotation);
+  _Directive(Type this.type, NgAnnotation this.annotation);
 }
 
 
 class _ContainsSelector {
-  NgAnnotationBase annotation;
+  NgAnnotation annotation;
   RegExp regexp;
 
-  _ContainsSelector(NgAnnotationBase this.annotation, String regexp) {
+  _ContainsSelector(NgAnnotation this.annotation, String regexp) {
     this.regexp = new RegExp(regexp);
   }
 }
@@ -220,7 +220,7 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
   List<_ContainsSelector> attrSelector = [];
   List<_ContainsSelector> textSelector = [];
 
-  directives.forEach((NgAnnotationBase annotation, Type type) {
+  directives.forEach((NgAnnotation annotation, Type type) {
     var match;
     var selector = annotation.selector;
     List<_SelectorPart> selectorParts;
@@ -307,7 +307,7 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
     };
 }
 
-int _directivePriority(NgAnnotationBase annotation) {
+int _directivePriority(NgAnnotation annotation) {
   if (annotation is NgDirective) {
     return (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) ? 2 : 1;
   } else if (annotation is NgComponent) {

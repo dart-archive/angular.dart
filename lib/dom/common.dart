@@ -15,12 +15,12 @@ List<dom.Node> cloneElements(elements) {
 class DirectiveRef {
   final dom.Node element;
   final Type type;
-  final NgAnnotationBase annotation;
+  final NgAnnotation annotation;
   final String value;
 
   BlockFactory blockFactory;
 
-  DirectiveRef(dom.Node this.element, Type this.type, NgAnnotationBase this.annotation,
+  DirectiveRef(dom.Node this.element, Type this.type, NgAnnotation this.annotation,
                [ String this.value ]);
 
   String toString() {

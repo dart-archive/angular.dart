@@ -37,7 +37,7 @@ class Compiler {
 
       for (var j = 0, jj = declaredDirectiveRefs.length; j < jj; j++) {
         DirectiveRef directiveRef = declaredDirectiveRefs[j];
-        NgAnnotationBase annotation = directiveRef.annotation;
+        NgAnnotation annotation = directiveRef.annotation;
         var blockFactory = null;
 
         if (annotation.children != children &&

@@ -3,17 +3,7 @@ library angular.service.directive;
 import 'package:di/di.dart';
 import 'registry.dart';
 
-/**
- * Common constants and enums that apply across [NgDirective] and [NgComponent].
- */
 class NgAnnotation {
-  // Enum values for the 'children' property.
-  static const String COMPILE_CHILDREN = 'compile';
-  static const String TRANSCLUDE_CHILDREN = 'transclude';
-  static const String IGNORE_CHILDREN = 'ignore';
-}
-
-class NgAnnotationBase {
   /**
    * CSS selector which will trigger this component/directive.
    * CSS Selectors are limited to a single element and can contain:
@@ -32,15 +22,26 @@ class NgAnnotationBase {
    * Specifies the compiler action to be taken on the child nodes of the
    * element which this currently being compiled.  The values are:
    *
-   * * `compile` [NgAnnotation.COMPILE_CHILDREN] - compile the child nodes
-   *   of the element.  This is the default.
-   * * `transclude` [NgAnnotation.TRANSCLUDE_CHILDREN] - compile the child
-   *   nodes for transclusion and makes available [BoundBlockFactory],
-   *   [BlockFactory] and [BlockHole] for injection.
-   * * `ignore` [NgAnnotation.IGNORE_CHILDREN] - do not compile/visit the
-   *   child nodes.  Angular markup on descendants will not be processed.
+   * * [COMPILE_CHILDREN] (*default*)
+   * * [TRANSCLUDE_CHILDREN]
+   * * [IGNORE_CHILDREN]
    */
   final String children;
+
+  /**
+   * Compile the child nodes of the element.  This is the default.
+   */
+  static const String COMPILE_CHILDREN = 'compile';
+  /**
+   * Compile the child nodes for transclusion and makes available
+   * [BoundBlockFactory], [BlockFactory] and [BlockHole] for injection.
+   */
+  static const String TRANSCLUDE_CHILDREN = 'transclude';
+  /**
+   * Do not compile/visit the child nodes.  Angular markup on descendant nodes
+   * will not be processed.
+   */
+  static const String IGNORE_CHILDREN = 'ignore';
 
   /**
    * A directive/component controller class can be injected into other
@@ -143,7 +144,7 @@ class NgAnnotationBase {
    */
   final String publishAs;
 
-  const NgAnnotationBase({
+  const NgAnnotation({
     this.selector,
     this.children: NgAnnotation.COMPILE_CHILDREN,
     this.visibility: NgDirective.LOCAL_VISIBILITY,
@@ -157,7 +158,7 @@ class NgAnnotationBase {
   toString() => selector;
   get hashCode => selector.hashCode;
   operator==(other) =>
-      other is NgAnnotationBase && this.selector == other.selector;
+      other is NgAnnotation && this.selector == other.selector;
 
 }
 
@@ -178,7 +179,7 @@ class NgAnnotationBase {
  * * `detach()` - Called on when owning scope is destroyed.
  *
  */
-class NgComponent extends NgAnnotationBase {
+class NgComponent extends NgAnnotation {
   /**
    * Inlined HTML template for the component.
    */
@@ -232,7 +233,7 @@ class NgComponent extends NgAnnotationBase {
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
-class NgDirective extends NgAnnotationBase {
+class NgDirective extends NgAnnotation {
   static const String LOCAL_VISIBILITY = 'local';
   static const String CHILDREN_VISIBILITY = 'children';
   static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
@@ -281,7 +282,7 @@ abstract class NgDetachAware {
   void detach();
 }
 
-class DirectiveMap extends AnnotationMap<NgAnnotationBase> {
+class DirectiveMap extends AnnotationMap<NgAnnotation> {
   DirectiveMap(Injector injector, MetadataExtractor metadataExtractor)
       : super(injector, metadataExtractor);
 }

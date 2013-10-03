@@ -121,7 +121,7 @@ class BlockFactory {
     nodeModule.value(dom.Node, node);
     nodeModule.value(NodeAttrs, nodeAttrs);
     directiveRefs.forEach((DirectiveRef ref) {
-      NgAnnotationBase annotation = ref.annotation;
+      NgAnnotation annotation = ref.annotation;
       var visibility = _elementOnly;
       if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
         visibility = null;
@@ -347,7 +347,7 @@ class _AnchorAttrs extends NodeAttrs {
 
 RegExp _MAPPING = new RegExp(r'^([\@\=\&\!])(\.?)\s*(.*)$');
 
-_createAttributeMapping(NgAnnotationBase annotation, NodeAttrs nodeAttrs, Scope scope, Scope shadowScope, Object controller, Parser parser) {
+_createAttributeMapping(NgAnnotation annotation, NodeAttrs nodeAttrs, Scope scope, Scope shadowScope, Object controller, Parser parser) {
   if (annotation.map != null) annotation.map.forEach((attrName, mapping) {
     Match match = _MAPPING.firstMatch(mapping);
     if (match == null) {
