@@ -227,27 +227,23 @@ main() {
       _.rootScope.$apply(() {
         _.rootScope.cls = "too";
       });
-      // we have to wait for DOM mutation observer to fire.
-      return new Future(() {
-        print(element);
-        expect(element).toHaveClass('one');
-        expect(element).toHaveClass('too'); // interpolated
-        expect(element).toHaveClass('three');
-        expect(element).toHaveClass('four'); // should still be there
-        expect(element.hasClass('two')).toBeFalsy();
 
-        _.rootScope.$apply(() {
-          _.rootScope.cls = "to";
-        });
-        return new Future(() {
-          expect(element).toHaveClass('one');
-          expect(element).toHaveClass('to'); // interpolated
-          expect(element).toHaveClass('three');
-          expect(element).toHaveClass('four'); // should still be there
-          expect(element.hasClass('two')).toBeFalsy();
-          expect(element.hasClass('too')).toBeFalsy();
-        });
+      expect(element).toHaveClass('one');
+      expect(element).toHaveClass('too'); // interpolated
+      expect(element).toHaveClass('three');
+      expect(element).toHaveClass('four'); // should still be there
+      expect(element.hasClass('two')).toBeFalsy();
+
+      _.rootScope.$apply(() {
+        _.rootScope.cls = "to";
       });
+
+      expect(element).toHaveClass('one');
+      expect(element).toHaveClass('to'); // interpolated
+      expect(element).toHaveClass('three');
+      expect(element).toHaveClass('four'); // should still be there
+      expect(element.hasClass('two')).toBeFalsy();
+      expect(element.hasClass('too')).toBeFalsy();
     });
 
 

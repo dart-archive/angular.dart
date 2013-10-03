@@ -49,8 +49,8 @@ part of angular.directive;
     selector: '[ng-class]',
     map: const {'ng-class': '@.valueExpression'})
 class NgClassDirective extends _NgClassBase {
-  NgClassDirective(dom.Element element, Scope scope)
-      : super(element, scope, null);
+  NgClassDirective(dom.Element element, Scope scope, NodeAttrs attrs)
+      : super(element, scope, null, attrs);
 }
 
 /**
@@ -83,8 +83,8 @@ class NgClassDirective extends _NgClassBase {
     selector: '[ng-class-odd]',
     map: const {'ng-class-odd': '@.valueExpression'})
 class NgClassOddDirective extends _NgClassBase {
-  NgClassOddDirective(dom.Element element, Scope scope)
-      : super(element, scope, 0);
+  NgClassOddDirective(dom.Element element, Scope scope, NodeAttrs attrs)
+      : super(element, scope, 0, attrs);
 }
 
 /**
@@ -117,27 +117,27 @@ class NgClassOddDirective extends _NgClassBase {
     selector: '[ng-class-even]',
     map: const {'ng-class-even': '@.valueExpression'})
 class NgClassEvenDirective extends _NgClassBase {
-  NgClassEvenDirective(dom.Element element, Scope scope)
-      : super(element, scope, 1);
+  NgClassEvenDirective(dom.Element element, Scope scope, NodeAttrs attrs)
+      : super(element, scope, 1, attrs);
 }
 
 abstract class _NgClassBase {
   final dom.Element element;
   final Scope scope;
   final int mode;
+  final NodeAttrs nodeAttrs;
   var previousSet = [];
   var currentSet = [];
 
-  _NgClassBase(this.element, this.scope, this.mode) {
+  _NgClassBase(this.element, this.scope, this.mode, this.nodeAttrs) {
     var prevClass;
-    var observer = new dom.MutationObserver(
-        (List<dom.MutationRecord> mutations, _) {
-          if (prevClass != element.className) {
-            prevClass = element.className;
-            _handleChange(scope[r'$index']);
-          }
-        });
-    observer.observe(element, attributes: true, attributeFilter: ['class']);
+
+    nodeAttrs.observe('class', (String newValue) {
+      if (prevClass != newValue) {
+        prevClass = newValue;
+        _handleChange(scope[r'$index']);
+      }
+    });
   }
 
   set valueExpression(currentExpression) {
