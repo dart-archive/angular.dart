@@ -2,7 +2,6 @@ library ng_specs;
 
 
 import 'dart:html';
-import 'dart:async' as dartAsync;
 import 'dart:mirrors' as mirror;
 import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/dom/debug.dart';
@@ -13,6 +12,7 @@ import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'jasmine_syntax.dart';
 import 'package:angular/mock/mock.dart';
+import 'package:angular/mock/zone.dart';
 
 export 'dart:html';
 export 'jasmine_syntax.dart' hide main;
@@ -25,6 +25,7 @@ export 'package:angular/dom/common.dart';
 export 'package:angular/dom/selector.dart';
 export 'package:perf_api/perf_api.dart';
 export 'package:angular/mock/mock.dart';
+export 'package:angular/mock/zone.dart';
 
 es(String html) {
   var div = new DivElement();
@@ -198,64 +199,6 @@ class JQuery implements List<Node> {
           (Element n, v) => n.style.setProperty(name, value), value);
   children() => new JQuery(this[0].childNodes);
 }
-
-List<Function> _asyncQueue = [];
-List _asyncErrors = [];
-
-nextTurn([bool runUntilEmpty = false]) {
-  // copy the queue as it may change.
-  var toRun = new List.from(_asyncQueue);
-  _asyncQueue = [];
-  toRun.forEach((fn) => fn());
-
-  if (runUntilEmpty && !_asyncQueue.isEmpty) {
-    nextTurn(runUntilEmpty);
-  }
-}
-
-bool _noMoreAsync = false;
-/**
-* Causes runAsync calls to throw exceptions.
-*
-* This function is useful while debugging async tests: the exception
-* is thrown from the runAsync call-site instead later in the test.
-*/
-noMoreAsync() {
-  _noMoreAsync = true;
-}
-
-async(Function fn) =>
-  () {
-    _noMoreAsync = false;
-    _asyncErrors = [];
-    dartAsync.runZonedExperimental(() {
-          fn();
-          nextTurn(true);
-        },
-        onRunAsync: (asyncFn) {
-          if (_noMoreAsync) {
-            throw ['runAsync called after noMoreAsync()'];
-          } else {
-            _asyncQueue.add(asyncFn);
-          }
-        },
-        onError: (e) => _asyncErrors.add(e));
-
-    _asyncErrors.forEach((e) {
-      throw "During runZoned: $e.  Stack:\n${dartAsync.getAttachedStackTrace(e)}";
-    });
-
-    // Since we flush the queue after fn is called, nothing should
-    // be triggering this expect().
-    expect(_asyncQueue.isEmpty).toBe(true);
-  };
-
-sync(Function fn) => () {
-  dartAsync.runZonedExperimental(fn,
-      onRunAsync: (asyncFn) {
-        throw ["runAsync called from sync test. This test should be async."];
-      });
-};
 
 class SpecInjector {
   DynamicInjector moduleInjector;
