@@ -17,10 +17,14 @@ class LongStackTrace {
   LongStackTrace(this.reason, this.stacktrace, this.parent);
 
   toString() {
-    var stacktrace = (('${this.stacktrace}'.split('\n'))..removeRange(0, 2)..insert(0, reason))
-        .where((f) => f.indexOf('(dart:') == -1 && f.indexOf('(package:angular/zone.dart') == -1);
+    List<String> frames = '${this.stacktrace}'.split('\n');
+    frames = frames.where((frame) {
+      return frame.indexOf('(dart:') == -1 && // skip dart runtime libs
+             frame.indexOf('(package:angular/zone.dart') == -1; // skip angular zone
+    }).toList();
+    frames.insert(0, reason);
     var parent = this.parent == null ? '' : this.parent;
-    return '${stacktrace.join("\n    ")}\n$parent';
+    return '${frames.join("\n    ")}\n$parent';
   }
 }
 
