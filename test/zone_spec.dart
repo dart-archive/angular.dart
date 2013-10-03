@@ -272,17 +272,24 @@ main() => describe('zone', () {
   })));
 
 
-  it('should support assertInZone', () {
+  it('should support assertInZone', async(() {
+    var calls = '';
     zone.onTurnDone = () {
       zone.assertInZone();
+      calls += 'done;';
     };
     zone.run(() {
       zone.assertInZone();
+      calls += 'sync;';
       runAsync(() {
         zone.assertInZone();
+        calls += 'async;';
       });
     });
-  });
+
+    nextTurn(true);
+    expect(calls).toEqual('sync;async;done;');
+  }));
 
 
   it('should assertInZone for chained futures not in zone', () {
@@ -310,17 +317,24 @@ main() => describe('zone', () {
   });
 
 
-  it('should support assertInTurn', () {
+  it('should support assertInTurn', async(() {
+    var calls = '';
     zone.onTurnDone = () {
+      calls += 'done;';
       zone.assertInTurn();
     };
     zone.run(() {
+      calls += 'sync;';
       zone.assertInTurn();
       runAsync(() {
+        calls += 'async;';
         zone.assertInTurn();
       });
     });
-  });
+
+    nextTurn(true);
+    expect(calls).toEqual('sync;async;done;');
+  }));
 
 
   it('should assertInTurn outside of the zone', () {

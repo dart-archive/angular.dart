@@ -51,44 +51,44 @@ main() => describe('http', () {
     }));
 
 
-    it('should do basic request', () {
+    it('should do basic request', async(() {
       backend.expect('GET', '/url').respond('');
       http(url: '/url', method: 'GET');
-    });
+    }));
 
 
-    it('should pass data if specified', () {
+    it('should pass data if specified', async(() {
       backend.expect('POST', '/url', 'some-data').respond('');
       http(url: '/url', method: 'POST', data: 'some-data');
-    });
+    }));
 
 
     describe('params', () {
-      it('should do basic request with params and encode', () {
+      it('should do basic request with params and encode', async(() {
         backend.expect('GET', '/url?a%3D=%3F%26&b=2').respond('');
         http(url: '/url', params: {'a=':'?&', 'b':2}, method: 'GET');
-      });
+      }));
 
 
-      it('should merge params if url contains some already', () {
+      it('should merge params if url contains some already', async(() {
         backend.expect('GET', '/url?c=3&a=1&b=2').respond('');
         http(url: '/url?c=3', params: {'a':1, 'b':2}, method: 'GET');
-      });
+      }));
 
 
-      it('should jsonify objects in params map', () {
+      it('should jsonify objects in params map', async(() {
         backend.expect('GET', '/url?a=1&b=%7B%22c%22:3%7D').respond('');
         http(url: '/url', params: {'a':1, 'b':{'c':3}}, method: 'GET');
-      });
+      }));
 
 
-      it('should expand arrays in params map', () {
-          backend.expect('GET', '/url?a=1&a=2&a=3').respond('');
-          http(url: '/url', params: {'a': [1,2,3]}, method: 'GET');
-      });
+      it('should expand arrays in params map', async(() {
+        backend.expect('GET', '/url?a=1&a=2&a=3').respond('');
+        http(url: '/url', params: {'a': [1,2,3]}, method: 'GET');
+      }));
 
 
-      it('should not encode @ in url params', () {
+      it('should not encode @ in url params', async(() {
         //encodeURIComponent is too agressive and doesn't follow http://www.ietf.org/rfc/rfc3986.txt
         //with regards to the character set (pchar) allowed in path segments
         //so we need this test to make sure that we don't over-encode the params and break stuff
@@ -96,7 +96,7 @@ main() => describe('http', () {
 
         backend.expect('GET', r'/Path?!do%26h=g%3Da+h&:bar=$baz@1').respond('');
         http(url: '/Path', params: {':bar': r'$baz@1', '!do&h': 'g=a h'}, method: 'GET');
-      });
+      }));
     });
 
 
@@ -477,76 +477,76 @@ main() => describe('http', () {
         };
       }
 
-      it('should have get()', () {
+      it('should have get()', async(() {
         backend.expect('GET', '/url').respond('');
         http.get('/url');
-      });
+      }));
 
 
-      it('get() should allow config param', () {
+      it('get() should allow config param', async(() {
         backend.expect('GET', '/url', null, checkHeader('Custom', 'Header')).respond('');
         http.get('/url', headers: {'Custom': 'Header'});
-      });
+      }));
 
 
-      it('should have delete()', () {
+      it('should have delete()', async(() {
         backend.expect('DELETE', '/url').respond('');
         http.delete('/url');
-      });
+      }));
 
 
-      it('delete() should allow config param', () {
+      it('delete() should allow config param', async(() {
         backend.expect('DELETE', '/url', null, checkHeader('Custom', 'Header')).respond('');
         http.delete('/url', headers: {'Custom': 'Header'});
-      });
+      }));
 
 
-      it('should have head()', () {
+      it('should have head()', async(() {
         backend.expect('HEAD', '/url').respond('');
         http.head('/url');
-      });
+      }));
 
 
-      it('head() should allow config param', () {
+      it('head() should allow config param', async(() {
         backend.expect('HEAD', '/url', null, checkHeader('Custom', 'Header')).respond('');
         http.head('/url', headers: {'Custom': 'Header'});
-      });
+      }));
 
 
-      it('should have post()', () {
+      it('should have post()', async(() {
         backend.expect('POST', '/url', 'some-data').respond('');
         http.post('/url', 'some-data');
-      });
+      }));
 
 
-      it('post() should allow config param', () {
+      it('post() should allow config param', async(() {
         backend.expect('POST', '/url', 'some-data', checkHeader('Custom', 'Header')).respond('');
         http.post('/url', 'some-data', headers: {'Custom': 'Header'});
-      });
+      }));
 
 
-      it('should have put()', () {
+      it('should have put()', async(() {
         backend.expect('PUT', '/url', 'some-data').respond('');
         http.put('/url', 'some-data');
-      });
+      }));
 
 
-      it('put() should allow config param', () {
+      it('put() should allow config param', async(() {
         backend.expect('PUT', '/url', 'some-data', checkHeader('Custom', 'Header')).respond('');
         http.put('/url', 'some-data', headers: {'Custom': 'Header'});
-      });
+      }));
 
 
-      it('should have jsonp()', () {
+      it('should have jsonp()', async(() {
         backend.expect('JSONP', '/url').respond('');
         http.jsonp('/url');
-      });
+      }));
 
 
-      it('jsonp() should allow config param', () {
+      it('jsonp() should allow config param', async(() {
         backend.expect('JSONP', '/url', null, checkHeader('Custom', 'Header')).respond('');
         http.jsonp('/url', headers: {'Custom': 'Header'});
-      });
+      }));
     });
 
 
@@ -1133,25 +1133,25 @@ main() => describe('http', () {
 
         describe('default', () {
 
-          it('should transform object into json', () {
+          it('should transform object into json', async(() {
             backend.expect('POST', '/url', '{"one":"two"}').respond('');
             http(method: 'POST', url: '/url', data: {'one': 'two'});
-          });
+          }));
 
 
-          it('should ignore strings', () {
+          it('should ignore strings', async(() {
             backend.expect('POST', '/url', 'string-data').respond('');
             http(method: 'POST', url: '/url', data: 'string-data');
-          });
+          }));
 
 
-          it('should ignore File objects', () {
+          it('should ignore File objects', async(() {
             var file = new FakeFile();
             expect(file is File).toBeTruthy();
 
             backend.expect('POST', '/some', file).respond('');
             http(method: 'POST', url: '/some', data: file);
-          });
+          }));
         });
 
 

@@ -231,9 +231,11 @@ main() {
         expect(renderedText(element)).toEqual('inside ');
       })));
 
-      it('should create a component with I/O', inject(() {
+      it('should create a component with I/O', async(inject(() {
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         $compile(element)(injector, element);
+        nextTurn(true);
+
         $rootScope.name = 'misko';
         $rootScope.$apply();
         var component = $rootScope.ioComponent;
@@ -246,24 +248,31 @@ main() {
         expect($rootScope.done).toEqual(null);
         component.scope.ondone();
         expect($rootScope.done).toEqual(true);
-      }));
+      })));
 
-      it('should create a component with I/O and "=" binding value should be available', inject(() {
+      it('should create a component with I/O and "=" binding value should be available', async(inject(() {
         $rootScope.name = 'misko';
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         $compile(element)(injector, element);
+        nextTurn(true);
+
         var component = $rootScope.ioComponent;
         $rootScope.$apply();
         expect(component.scope.expr).toEqual('misko');
         component.scope.expr = 'angular';
         $rootScope.$apply();
         expect($rootScope.name).toEqual('angular');
-      }));
+      })));
 
-      it('should create a component with I/O bound to controller and "=" binding value should be available', inject(() {
+      it('should create a component with I/O bound to controller and "=" binding value should be available', async(inject(() {
         $rootScope.done = false;
         var element = $(r'<div><io-controller attr="A" expr="name" once="name" ondone="done=true"></io-controller></div>');
+
+
+        expect(injector).toBeDefined();
         $compile(element)(injector, element);
+        nextTurn(true);
+
         IoControllerComponent component = $rootScope.ioComponent;
 
         expect(component.expr).toEqual(null);
@@ -291,11 +300,13 @@ main() {
 
         // Should be noop
         component.onOptional();
-      }));
+      })));
 
-      it('should create a map attribute to contorller', inject(() {
+      it('should create a map attribute to controller', async(() {
         var element = $(r'<div><io-controller attr="{{name}}"></io-controller></div>');
         $compile(element)(injector, element);
+        nextTurn(true);
+
         IoControllerComponent component = $rootScope.ioComponent;
 
         $rootScope.name = 'misko';
@@ -307,11 +318,13 @@ main() {
         expect(component.attr).toEqual('james');
       }));
 
-      it('should create a unpublished component with I/O bound to controller and "=" binding value should be available', inject(() {
+      it('should create a unpublished component with I/O bound to controller and "=" binding value should be available', async(() {
         $rootScope.name = 'misko';
         $rootScope.done = false;
         var element = $(r'<div><unpublished-io-controller attr="A" expr="name" ondone="done=true"></unpublished-io-controller></div>');
         $compile(element)(injector, element);
+        nextTurn(true);
+
         UnpublishedIoControllerComponent component = $rootScope.ioComponent;
         $rootScope.$apply();
         expect(component.attr).toEqual('A');
@@ -328,29 +341,30 @@ main() {
         component.onOptional();
       }));
 
-      it('should error on incorect mapping', inject(() {
+      it('should error on incorrect mapping', async(inject(() {
         expect(() {
           var element = $(r'<div><incorrect-mapping></incorrect-mapping</div>');
           $compile(element)(injector, element);
         }).toThrow("Unknown mapping 'foo\' for attribute 'attr'.");
-      }));
+      })));
 
-      it('should error on non-asignable-mapping', inject(() {
+      it('should error on non-asignable-mapping', async(inject(() {
         expect(() {
           var element = $(r'<div><non-assignable-mapping></non-assignable-mapping</div>');
           $compile(element)(injector, element);
         }).toThrow("Expression '1+2' is not assignable in mapping '@1+2' for attribute 'attr'.");
-      }));
+      })));
 
-      it('should expose mapped attributes as camel case', inject(() {
+      it('should expose mapped attributes as camel case', async(inject(() {
         var element = $('<camel-case-map camel-case=G></camel-case-map>');
         $compile(element)(injector, element);
+        nextTurn(true);
         $rootScope.$apply();
         var componentScope = $rootScope.camelCase;
         expect(componentScope.camelCase).toEqual('G');
-      }));
+      })));
 
-      it('should throw an exception if required directive is missing', inject((Compiler $compile, Scope $rootScope, Injector injector) {
+      it('should throw an exception if required directive is missing', async(inject((Compiler $compile, Scope $rootScope, Injector injector) {
         try {
           var element = $('<tab local><pane></pane><pane local></pane></tab>');
           $compile(element)(injector, element);
@@ -360,7 +374,7 @@ main() {
           expect(text).toContain('(resolving ');
           expect(text).toContain('LocalAttrDirective');
         }
-      }));
+      })));
 
       it('should publish component controller into the scope', async(inject((Zone zone) {
         var element = $(r'<div><publish-me></publish-me></div>');
@@ -387,12 +401,14 @@ main() {
             toBe(PublishTypesAttrDirective._injector.get(PublishTypesDirectiveSuperType));
       }));
 
-      it('should allow repeaters over controllers', inject((Logger logger) {
+      it('should allow repeaters over controllers', async(inject((Logger logger) {
         var element = $(r'<log ng-repeat="i in [1, 2]"></log>');
         $compile(element)(injector, element);
         $rootScope.$apply();
+        nextTurn(true);
+
         expect(logger.length).toEqual(2);
-      }));
+      })));
 
       describe('lifecycle', () {
         it('should fire attach/detach methods', async(inject((Logger logger) {
@@ -413,18 +429,22 @@ main() {
 
     describe('controller scoping', () {
 
-      it('shoud make controllers available to sibling and child controllers', inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
+      it('shoud make controllers available to sibling and child controllers', async(inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
         var element = $('<tab local><pane local></pane><pane local></pane></tab>');
         $compile(element)(injector, element);
-        expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
-      }));
+        nextTurn(true);
 
-      it('should reuse controllers for transclusions', inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
+        expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
+      })));
+
+      it('should reuse controllers for transclusions', async(inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
         var element = $('<div simple-transclude-in-attach include-transclude>block</div>');
         $compile(element)(injector, element);
+        nextTurn(true);
+
         $rootScope.$apply();
         expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
-      }));
+      })));
 
     });
   });

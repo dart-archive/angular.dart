@@ -4,14 +4,25 @@ import 'package:unittest/unittest.dart';
 import 'package:js/js.dart' as js;
 import 'package:angular/utils.dart' as utils;
 
+Function _wrapFn;
+
+_maybeWrapFn(fn) => () {
+  if (_wrapFn != null) {
+    _wrapFn(fn)();
+  } else {
+    fn();
+  }
+};
+
 it(name, fn) {
+  fn = _maybeWrapFn(fn);
   if (currentDescribe.exclusive) {
     solo_test(name, fn);
   } else {
     test(name, fn);
   }
 }
-iit(name, fn) => solo_test(name, fn);
+iit(name, fn) => solo_test(name, _maybeWrapFn(fn));
 xit(name, fn) {}
 xdescribe(name, fn) {}
 ddescribe(name, fn) => describe(name, fn, true);
@@ -63,6 +74,8 @@ describe(name, fn, [bool exclusive=false]) {
 
 beforeEach(fn) => currentDescribe.beforeEachFns.add(fn);
 afterEach(fn) => currentDescribe.afterEachFns.add(fn);
+
+wrapFn(fn) => _wrapFn = fn;
 
 var jasmine = new Jasmine();
 

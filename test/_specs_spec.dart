@@ -109,12 +109,21 @@ main() {
     });
 
 
-    it('should complain if you dangle callbacks', () {
+    it('should not complain if you dangle callbacks', () {
+      async(() {
+        new Future.value("s").then((_) {});
+      })();
+    });
+
+
+    it('should complain if you dangle exceptions', () {
       expect(() {
         async(() {
-          new Future.value("s").then((_) {});
+          new Future.value("s").then((_) {
+            throw ["dangling"];
+          });
         })();
-      }).toThrow();
+      }).toThrow("dangling");
     });
 
 

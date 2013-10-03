@@ -213,19 +213,49 @@ nextTurn([bool runUntilEmpty = false]) {
   }
 }
 
+bool _noMoreAsync = false;
+/**
+* Causes runAsync calls to throw exceptions.
+*
+* This function is useful while debugging async tests: the exception
+* is thrown from the runAsync call-site instead later in the test.
+*/
+noMoreAsync() {
+  _noMoreAsync = true;
+}
+
 async(Function fn) =>
   () {
+    _noMoreAsync = false;
     _asyncErrors = [];
-    dartAsync.runZonedExperimental(fn,
-        onRunAsync: (asyncFn) => _asyncQueue.add(asyncFn),
+    dartAsync.runZonedExperimental(() {
+          fn();
+          nextTurn(true);
+        },
+        onRunAsync: (asyncFn) {
+          if (_noMoreAsync) {
+            throw ['runAsync called after noMoreAsync()'];
+          } else {
+            _asyncQueue.add(asyncFn);
+          }
+        },
         onError: (e) => _asyncErrors.add(e));
 
     _asyncErrors.forEach((e) {
       throw "During runZoned: $e.  Stack:\n${dartAsync.getAttachedStackTrace(e)}";
     });
 
+    // Since we flush the queue after fn is called, nothing should
+    // be triggering this expect().
     expect(_asyncQueue.isEmpty).toBe(true);
   };
+
+sync(Function fn) => () {
+  dartAsync.runZonedExperimental(fn,
+      onRunAsync: (asyncFn) {
+        throw ["runAsync called from sync test. This test should be async."];
+      });
+};
 
 class SpecInjector {
   DynamicInjector moduleInjector;
@@ -309,5 +339,8 @@ main() {
         return zone;
       });
   }));
+  beforeEach(() {
+    wrapFn(sync);
+  });
   afterEach(() => currentSpecInjector = null);
 }
