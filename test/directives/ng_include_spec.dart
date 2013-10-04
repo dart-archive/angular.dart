@@ -9,7 +9,7 @@ main() {
 
     beforeEach(beforeEachTestBed((tb) => _ = tb));
 
-    it('should fetch tempalte from url', async(inject((Scope scope, TemplateCache cache) {
+    it('should fetch template from url', async(inject((Scope scope, TemplateCache cache) {
       cache.put('tpl.html', new HttpResponse(200, 'my name is {{name}}'));
 
       var element = _.compile('<div ng-include="template"></div>');
