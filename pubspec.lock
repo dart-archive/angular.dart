@@ -4,15 +4,15 @@ packages:
   analyzer_experimental:
     description: analyzer_experimental
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   args:
     description: args
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   browser:
     description: browser
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   di:
     description: di
     source: hosted
@@ -20,27 +20,27 @@ packages:
   html5lib:
     description: html5lib
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   intl:
     description: intl
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   js:
     description: js
     source: hosted
-    version: "0.0.24"
+    version: "0.0.25"
   logging:
     description: logging
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   meta:
     description: meta
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   path:
     description: path
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   perf_api:
     description: perf_api
     source: hosted
@@ -48,20 +48,20 @@ packages:
   source_maps:
     description: source_maps
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   unittest:
     description: unittest
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   unmodifiable_collection:
     description: unmodifiable_collection
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
   utf:
     description: utf
     source: hosted
-    version: "0.7.5"
+    version: "0.7.6+4"
