@@ -4,11 +4,53 @@ part of angular.directive;
 // to work-around https://code.google.com/p/dart/issues/detail?id=13519
 
 /**
- * The `ng-blur` directive allows you to specify custom behavior for the `Blur` event.
+ * Allows you to specify custom behavior for DOM UI events such as mouse,
+ * keyboard and touch events.  The custom behavior is specified via an
+ * binding that evaluates the invokes Angular expression on the correct `scope`.
+ * The event is available as `$event`.
+ *
+ * This is also more secure than inline DOM handlers in HTML which execute
+ * arbitrary JavaScript code (as opposed to Dart code) with access to globals
+ * instead of the scope without the safety of the Angular expression language.
  *
  * Example:
  *
- *     <input ng-blur="lastEvent='Blur'" type="text"></input>
+ *     <button ng-click="lastEvent='Click'"
+ *             ng-doubleclick="lastEvent='DblClick'">
+ *         Button
+ *     </button>
+ *
+ * The full list of supported handlers are:
+ *
+ * - [ng-blur]
+ * - [ng-change]
+ * - [ng-click]
+ * - [ng-contextmenu]
+ * - [ng-doubleclick]
+ * - [ng-drag]
+ * - [ng-dragend]
+ * - [ng-dragenter]
+ * - [ng-dragleave]
+ * - [ng-dragover]
+ * - [ng-dragstart]
+ * - [ng-drop]
+ * - [ng-focus]
+ * - [ng-keydown]
+ * - [ng-keypress]
+ * - [ng-keyup]
+ * - [ng-mousedown]
+ * - [ng-mouseenter]
+ * - [ng-mouseleave]
+ * - [ng-mousemove]
+ * - [ng-mouseout]
+ * - [ng-mouseover]
+ * - [ng-mouseup]
+ * - [ng-mousewheel]
+ * - [ng-scroll]
+ * - [ng-touchcancel]
+ * - [ng-touchend]
+ * - [ng-touchmove]
+ * - [ng-touchstart]
  */
 @NgDirective(selector: '[ng-blur]',        map: const {'ng-blur':        '&.onBlur'})
 @NgDirective(selector: '[ng-change]',      map: const {'ng-change':      '&.onChange'})
