@@ -5,13 +5,16 @@ part of angular.directive;
 
 /**
  * Allows you to specify custom behavior for DOM UI events such as mouse,
- * keyboard and touch events.  The custom behavior is specified via an
- * binding that evaluates the invokes Angular expression on the correct `scope`.
- * The event is available as `$event`.
+ * keyboard and touch events.
  *
- * This is also more secure than inline DOM handlers in HTML which execute
- * arbitrary JavaScript code (as opposed to Dart code) with access to globals
- * instead of the scope without the safety of the Angular expression language.
+ * The custom behavior is specified via an Angular binding expression specified
+ * on the `ng-`*event* directive (e.g. `ng-click`).  This expression is evaluated
+ * on the correct `scope` every time the event occurs.  The event is available
+ * to the expression as `$event`.
+ *
+ * This is more secure than inline DOM handlers in HTML that execute arbitrary
+ * JavaScript code and have access to globals instead of the scope without the
+ * safety constraints of the Angular expression language.
  *
  * Example:
  *
