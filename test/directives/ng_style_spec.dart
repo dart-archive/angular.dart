@@ -36,7 +36,7 @@ main() => describe('NgStyle', () {
       document.body.append(element[0]);
       _.compile(element);
       scope = _.rootScope;
-      scope.styleObj = {'margin-top': '44px'};
+      scope['styleObj'] = {'margin-top': '44px'};
       scope.$apply();
       element.css(postCompStyle, postCompVal);
     }));
@@ -64,7 +64,7 @@ main() => describe('NgStyle', () {
 
 
     it(r'should not mess up stuff after $apply with non-colliding model changes', () {
-      scope.styleObj = {'padding-top': '99px'};
+      scope['styleObj'] = {'padding-top': '99px'};
       scope.$apply();
       expect(element.css(preCompStyle)).toEqual(preCompVal);
       expect(element.css('margin-top')).not.toEqual('44px');
@@ -74,11 +74,11 @@ main() => describe('NgStyle', () {
 
 
     it(r'should overwrite original styles after a colliding model change', () {
-      scope.styleObj = {'height': '99px', 'width': '88px'};
+      scope['styleObj'] = {'height': '99px', 'width': '88px'};
       scope.$apply();
       expect(element.css(preCompStyle)).toEqual('88px');
       expect(element.css(postCompStyle)).toEqual('99px');
-      scope.styleObj = {};
+      scope['styleObj'] = {};
       scope.$apply();
       expect(element.css(preCompStyle)).not.toEqual('88px');
       expect(element.css(postCompStyle)).not.toEqual('99px');

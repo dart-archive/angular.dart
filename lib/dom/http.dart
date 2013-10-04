@@ -712,7 +712,7 @@ class Http {
       }
       _pendingRequests.remove(url);
       return response;
-    }, onError: (dom.HttpRequestProgressEvent event) {
+    }, onError: (dom.ProgressEvent event) {
       _pendingRequests.remove(url);
       dom.HttpRequest request = event.currentTarget;
       return new async.Future.error(

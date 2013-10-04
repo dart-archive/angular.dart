@@ -129,7 +129,7 @@ class MockHttpBackend implements HttpBackend {
         c.complete(new MockHttpRequest(status, data, headers));
       } else {
         c.completeError(
-            new MockHttpRequestProgressEvent(
+            new MockProgressEvent(
                 new MockHttpRequest(status, data, headers)));
       }
     };
@@ -615,7 +615,7 @@ class MockHttpRequest implements HttpRequest {
   void $dom_removeEventListener(String type, EventListener listener, [bool useCapture]) {}
 }
 
-class MockHttpRequestProgressEvent implements HttpRequestProgressEvent {
+class MockProgressEvent implements ProgressEvent {
   final bool bubbles = false;
   final bool cancelable = false;
   final DataTransfer clipboardData = null;
@@ -635,7 +635,7 @@ class MockHttpRequestProgressEvent implements HttpRequestProgressEvent {
 
   bool cancelBubble = false;
 
-  MockHttpRequestProgressEvent(MockHttpRequest this.currentTarget);
+  MockProgressEvent(MockHttpRequest this.currentTarget);
 
   void preventDefault() {}
   void stopImmediatePropagation() {}

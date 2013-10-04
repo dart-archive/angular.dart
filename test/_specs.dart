@@ -189,10 +189,14 @@ class JQuery implements List<Node> {
           (n, v) => n.attributes[name] = v, value, true);
   prop([String name]) => accessor((n) => getterSetter.getter(name)(n), (n, v) => getterSetter.setter(name)(n, v));
   textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
-  find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(n.queryAll(selector)));
-  hasClass(String name) => fold(false, (hasClass, node) => hasClass ? true : node.classes.contains(name));
-  addClass(String name) => _list.forEach((node) => node.classes.add(name));
-  removeClass(String name) => _list.forEach((node) => node.classes.remove(name));
+  find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(
+      (n is Element ? (n as Element).queryAll(selector) : [])));
+  hasClass(String name) => fold(false, (hasClass, node) =>
+      hasClass || (node is Element && (node as Element).classes.contains(name)));
+  addClass(String name) => _list.forEach((node) =>
+      (node is Element) ? (node as Element).classes.add(name) : null);
+  removeClass(String name) => _list.forEach((node) =>
+      (node is Element) ? (node as Element).classes.remove(name) : null);
   css(String name, [String value]) => accessor(
           (Element n) => n.style.getPropertyValue(name),
           (Element n, v) => n.style.setProperty(name, value), value);
