@@ -22,7 +22,7 @@ class Compiler {
                List<DirectiveRef> useExistingDirectiveRefs) {
     if (domCursor.nodeList().length == 0) return null;
 
-    var directivePositions = null; // don't pre-create to create spars tree and prevent GC pressure.
+    var directivePositions = null; // don't pre-create to create sparse tree and prevent GC pressure.
     var cursorAlreadyAdvanced;
 
     do {

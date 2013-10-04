@@ -429,7 +429,7 @@ main() {
 
     describe('controller scoping', () {
 
-      it('shoud make controllers available to sibling and child controllers', async(inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
+      it('should make controllers available to sibling and child controllers', async(inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
         var element = $('<tab local><pane local></pane><pane local></pane></tab>');
         $compile(element)(injector, element);
         nextTurn(true);
