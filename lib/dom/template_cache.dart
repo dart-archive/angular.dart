@@ -31,8 +31,8 @@ import 'http.dart';
  *     import 'package:angular/angular.dart';
  * 
  *     @NgDirective(selector: '[main-controller]')
- *     class MainController {
- *       MainController(TemplateCache templateCache, Scope scope) {
+ *     class LoadTemplateCacheDirective {
+ *       LoadTemplateCacheDirective(TemplateCache templateCache, Scope scope) {
  *         // Method 1 (imperative): Via the injected TemplateCache service.
  *         templateCache.put(
  *             'template_1.html', new HttpResponse(200, 't1: My name is {{name}}.'));
@@ -41,7 +41,7 @@ import 'http.dart';
  *     }
  *
  *     main() {
- *       bootstrapAngular([new AngularModule()..type(MainController)], 'html');
+ *       bootstrapAngular([new AngularModule()..type(LoadTemplateCacheDirective)], 'html');
  *     }
  *
  * and
@@ -57,7 +57,7 @@ import 'http.dart';
  *           t2: My name is {{name}}.
  *         </template>
  *       </head>
- *       <body main-controller>
+ *       <body load-template-cache>
  *         template_1.html: <div ng-include="'template_1.html'"></div><br>
  *         template_2.html: <div ng-include="'template_2.html'"></div><br>
  *       </body>
@@ -67,9 +67,9 @@ import 'http.dart';
  * isn't necessary for your webserver to even serve those templates.
  *
  * `template_1.html` is preloaded into the [TemplateCache] imperatively by
- * `MainController` while `template_2.html` is preloaded via the
- * `<template id="template_2.html" type="text/ng-template">` element in the
- * `<head>` of HTML.
+ * `LoadTemplateCacheDirective` while `template_2.html` is preloaded via the
+ * `<template id="template_2.html" type="text/ng-template">` element
+ * declaratively in the `<head>` of HTML.
  */
 class TemplateCache extends Cache<HttpResponse> {
 }
