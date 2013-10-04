@@ -51,29 +51,28 @@ describe('select', () {
 
       var select = _.rootScope.p.directive(SelectDirective);
 
-      return new Future(() {
-        expect(_.rootElement).toEqualSelect(['c3p0', ['r2d2']]);
+      select.updateDom();
+      expect(_.rootElement).toEqualSelect(['c3p0', ['r2d2']]);
 
-        _.rootElement.find('option')[0].selected = true;
-        select.processValue();
+      _.rootElement.find('option')[0].selected = true;
+      select.processValue();
 
-        expect(_.rootElement).toEqualSelect([['c3p0'], 'r2d2']);
-        expect(_.rootScope.robot).toEqual('c3p0');
+      expect(_.rootElement).toEqualSelect([['c3p0'], 'r2d2']);
+      expect(_.rootScope.robot).toEqual('c3p0');
 
-        _.rootScope.$apply(() {
-          _.rootScope.robots.insert(0, 'wallee');
-        });
-        expect(_.rootElement).toEqualSelect(['wallee', ['c3p0'], 'r2d2']);
-        expect(_.rootScope.robot).toEqual('c3p0');
-
-        _.rootScope.$apply(() {
-          _.rootScope.robots = ['c3p0+', 'r2d2+'];
-          _.rootScope.robot = 'r2d2+';
-        });
-      }).then((_) {
-        expect(_.rootElement).toEqualSelect(['c3p0+', ['r2d2+']]);
-        expect(_.rootScope.robot).toBe('r2d2+');
+      _.rootScope.$apply(() {
+        _.rootScope.robots.insert(0, 'wallee');
       });
+      expect(_.rootElement).toEqualSelect(['wallee', ['c3p0'], 'r2d2']);
+      expect(_.rootScope.robot).toEqual('c3p0');
+
+      _.rootScope.$apply(() {
+        _.rootScope.robots = ['c3p0+', 'r2d2+'];
+        _.rootScope.robot = 'r2d2+';
+      });
+      select.updateDom();
+      expect(_.rootElement).toEqualSelect(['c3p0+', ['r2d2+']]);
+      expect(_.rootScope.robot).toBe('r2d2+');
     });
 
     // NOTE: Change in behaviour, null is treated as undefined
@@ -152,7 +151,7 @@ describe('select', () {
         });
 
         it('should not break if both the select and repeater models change at once', () {
-          _.compile('<select ng-model="robot">' +
+          _.compile('<select ng-model="robot" probe="p">' +
                     '<option value="">--select--</option>' +
                     '<option ng-repeat="r in robots">{{r}}</option>' +
                     '</select>');
@@ -161,16 +160,17 @@ describe('select', () {
             _.rootScope.robot = 'c3p0';
           });
 
-          return new Future(() {
-            expect(_.rootElement).toEqualSelect(['', ['c3p0'], 'r2d2']);
+          var select = _.rootScope.p.directive(SelectDirective);
+          select.updateDom();
 
-            _.rootScope.$apply(() {
-              _.rootScope.robots = ['wallee'];
-              _.rootScope.robot = '';
-            });
+          expect(_.rootElement).toEqualSelect(['', ['c3p0'], 'r2d2']);
 
-            expect(_.rootElement).toEqualSelect([[''], 'wallee']);
+          _.rootScope.$apply(() {
+            _.rootScope.robots = ['wallee'];
+            _.rootScope.robot = '';
           });
+          select.updateDom();
+          expect(_.rootElement).toEqualSelect([[''], 'wallee']);
         });
       });
 
@@ -249,12 +249,14 @@ describe('select', () {
         describe('interactions with repeated options', () {
           it('should work with repeated options', () {
             _.rootScope.robots = [];
-            _.compile('<select ng-model="robot">' +
+            _.compile('<select ng-model="robot" probe="p">' +
                       '<option ng-repeat="r in robots">{{r}}</option>' +
                       '</select>');
             _.rootScope.$apply(() {
               _.rootScope.robots = [];
             });
+            var select = _.rootScope.p.directive(SelectDirective);
+
             // NOTE: Change in behaviour
             expect(_.rootElement).toEqualSelect([['?']]);
             expect(_.rootScope.robot).toBeNull();
@@ -270,20 +272,20 @@ describe('select', () {
             _.rootScope.$apply(() {
               _.rootScope.robots = ['c3p0', 'r2d2'];
             });
-            return new Future(() {
-              expect(_.rootElement).toEqualSelect(['c3p0', ['r2d2']]);
-              expect(_.rootScope.robot).toEqual('r2d2');
-            });
+            select.updateDom();
+            expect(_.rootElement).toEqualSelect(['c3p0', ['r2d2']]);
+            expect(_.rootScope.robot).toEqual('r2d2');
           });
 
           it('should work with empty option and repeated options', () {
-            _.compile('<select ng-model="robot">' +
+            _.compile('<select ng-model="robot" probe="p">' +
                       '<option value="">--select--</option>' +
                       '<option ng-repeat="r in robots">{{r}}</option>' +
                       '</select>');
             _.rootScope.$apply(() {
               _.rootScope.robots = [];
             });
+            var select = _.rootScope.p.directive(SelectDirective);
 
             expect(_.rootElement).toEqualSelect([['']]);
             expect(_.rootScope.robot).toBeNull();
@@ -299,49 +301,53 @@ describe('select', () {
             _.rootScope.$apply(() {
               _.rootScope.robots = ['c3p0', 'r2d2'];
             });
-            return new Future(() {
-              expect(_.rootElement).toEqualSelect(['', 'c3p0', ['r2d2']]);
-              expect(_.rootScope.robot).toEqual('r2d2');
-            });
+            select.updateDom();
+            expect(_.rootElement).toEqualSelect(['', 'c3p0', ['r2d2']]);
+            expect(_.rootScope.robot).toEqual('r2d2');
           });
 
-          it('should insert unknown element when repeater shrinks and selected option is unavailable',
-              () {
-
-            _.compile('<select ng-model="robot">' +
+          it('should insert unknown element when repeater shrinks and selected option is unavailable', () {
+            _.compile('<select ng-model="robot" probe="p">' +
                       '<option ng-repeat="r in robots">{{r}}</option>' +
                       '</select>');
             _.rootScope.$apply(() {
               _.rootScope.robots = ['c3p0', 'r2d2'];
               _.rootScope.robot = 'r2d2';
             });
-            return new Future(() {
-              expect(_.rootElement).toEqualSelect(['c3p0', ['r2d2']]);
-              expect(_.rootScope.robot).toEqual('r2d2');
+            var select = _.rootScope.p.directive(SelectDirective);
+            select.updateDom();
 
-              _.rootScope.$apply(() {
-                _.rootScope.robots.remove('r2d2');
-              });
-            }).then((_) {
-              // NOTE: Change in behaviour
-              expect(_.rootElement).toEqualSelect([['?'], 'c3p0']);
-              expect(_.rootScope.robot).toEqual('r2d2');
+            expect(_.rootElement).toEqualSelect(['c3p0', ['r2d2']]);
+            expect(_.rootScope.robot).toEqual('r2d2');
 
-              _.rootScope.$apply(() {
-                _.rootScope.robots.insert(0, 'r2d2');
-              });
-            }).then((_) {
-              expect(_.rootElement).toEqualSelect([['r2d2'], 'c3p0']);
-              expect(_.rootScope.robot).toEqual('r2d2');
-
-              _.rootScope.$apply(() {
-                _.rootScope.robots.clear();
-              });
-            }).then((_) {
-              // NOTE: Change in behaviour
-              expect(_.rootElement).toEqualSelect([['?']]);
-              expect(_.rootScope.robot).toEqual('r2d2');
+            _.rootScope.$apply(() {
+              _.rootScope.robots.remove('r2d2');
             });
+
+            select.updateDom();
+
+            // NOTE: Change in behaviour
+            expect(_.rootElement).toEqualSelect([['?'], 'c3p0']);
+            expect(_.rootScope.robot).toEqual('r2d2');
+
+            _.rootScope.$apply(() {
+              _.rootScope.robots.insert(0, 'r2d2');
+            });
+
+            select.updateDom();
+
+            expect(_.rootElement).toEqualSelect([['r2d2'], 'c3p0']);
+            expect(_.rootScope.robot).toEqual('r2d2');
+
+            _.rootScope.$apply(() {
+              _.rootScope.robots.clear();
+            });
+
+            select.updateDom();
+
+            // NOTE: Change in behaviour
+            expect(_.rootElement).toEqualSelect([['?']]);
+            expect(_.rootScope.robot).toEqual('r2d2');
           });
         });
       });
