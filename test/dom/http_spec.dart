@@ -933,9 +933,6 @@ main() => describe('http', () {
         });
       });
 
-      expect(called).toEqual(0);
-      microLeap();
-
       expect(called).toEqual(1);
     })));
   });
@@ -1022,10 +1019,8 @@ main() => describe('http', () {
           expect(v).toEqual(CACHED_VALUE);
           called += 1;
         });
+        expect(called).toEqual(0);
       });
-
-      expect(called).toEqual(0);
-      microLeap();
 
       expect(called).toEqual(1);
     })));
@@ -1040,7 +1035,7 @@ main() => describe('http', () {
       zone.run(() {
         http.getString('404.html').then(
           (v) => response = 'FAILED',
-          onError:(v) => response = v);
+          onError:(v) { assert(v != null); return response = v; });
       });
 
       expect(response).toEqual(null);

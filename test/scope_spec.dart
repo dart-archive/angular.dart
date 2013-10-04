@@ -528,57 +528,6 @@ main() {
         expect(() =>$rootScope.$apply(() { throw error; })).toThrow(error);
         expect(() =>$rootScope.$apply(() { throw error; })).toThrow(error);
       }));
-
-
-      describe(r'recursive $apply protection', () {
-        it(r'should throw an exception if $apply is called while an $apply is in progress', inject(
-            (Scope $rootScope) {
-          expect(() {
-            $rootScope.$apply(() {
-              $rootScope.$apply();
-            });
-          }).toThrow(r'already in progress');
-        }));
-
-
-        it(r'should throw an exception if $apply is called while flushing evalAsync queue', inject(
-            (Scope $rootScope) {
-          expect(() {
-            $rootScope.$apply(() {
-              $rootScope.$evalAsync(() {
-                $rootScope.$apply();
-              });
-            });
-          }).toThrow(r'$digest already in progress');
-        }));
-
-
-        it(r'should throw an exception if $apply is called while a watch is being initialized', inject(
-            (Scope $rootScope) {
-          var childScope1 = $rootScope.$new();
-          childScope1.$watch('x', () {
-            childScope1.$apply();
-          });
-          expect(() { childScope1.$apply(); }).toThrow(r'$digest already in progress');
-        }));
-
-
-        it(r'should thrown an exception if $apply in called from a watch fn (after init)', inject(
-            (Scope $rootScope) {
-          var childScope2 = $rootScope.$new();
-          childScope2.$apply(() {
-            childScope2.$watch('x', (newVal, oldVal) {
-              if (newVal != oldVal) {
-                childScope2.$apply();
-              }
-            });
-          });
-
-          expect(() { childScope2.$apply(() {
-            childScope2.x = 'something';
-          }); }).toThrow(r'$digest already in progress');
-        }));
-      });
     });
 
 

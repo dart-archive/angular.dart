@@ -32,8 +32,74 @@ class LongStackTrace {
  * A better zone API which implements onTurnDone.
  */
 class Zone {
-  static var _ZONE_CHECK = "Function must be called in a zone.";
-  bool _runningInTurn = false;
+  Zone() {
+    _zone = async.Zone.current.fork(specification: new async.ZoneSpecification(
+        run: _onRun,
+        runUnary: _onRunUnary,
+        scheduleMicrotask: _onScheduleMicrotask,
+        handleUncaughtError: _uncaughtError
+    ));
+  }
+
+  async.Zone _zone;
+
+  List _asyncQueue = [];
+
+  _onRunBase(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
+    _runningInTurn++;
+    try {
+      return fn();
+    } catch (e, s) {
+      onError(e, s, _longStacktrace);
+      rethrow;
+    } finally {
+      _runningInTurn--;
+      if (_runningInTurn == 0)
+        _finishTurn(zone, delegate);
+    }
+  }
+  // Called from the parent zone.
+  _onRun(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
+    return _onRunBase(self, delegate, zone, () => delegate.run(zone, fn));
+  }
+
+  _onRunUnary(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn(args), args) {
+    return _onRunBase(self, delegate, zone, () => delegate.runUnary(zone, fn, args));
+  }
+
+  _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
+    _asyncQueue.add(() => delegate.run(zone, fn));
+    if (_runningInTurn == 0 && !_inFinishTurn) {
+      _finishTurn(zone, delegate);
+    }
+  }
+
+  _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, e) {
+    // We already called onError in onRun.  Eat the error here.
+  }
+
+  var _inFinishTurn = false;
+  _finishTurn(zone, delegate) {
+    if (_inFinishTurn) {
+      return;
+    }
+    _inFinishTurn = true;
+    try {
+      // Two loops here: the inner one runs all queued microtasks,
+      // the outer runs onTurnDone (e.g. scope.$digest) and then
+      // any microtasks which may have been queued from onTurnDone.
+      do {
+        while (!_asyncQueue.isEmpty) {
+          delegate.run(zone, _asyncQueue.removeAt(0));
+        }
+        delegate.run(zone, onTurnDone);
+      } while (!_asyncQueue.isEmpty);
+    } finally {
+    _inFinishTurn = false;
+    }
+  }
+
+  int _runningInTurn = 0;
 
   /**
    * A function that is called at the end of each VM turn in which the
@@ -47,30 +113,7 @@ class Zone {
   var onError = (dynamic e, dynamic s, LongStackTrace ls) => print('EXCEPTION: $e\n$s\n$ls');
   // Type was ZoneOnError: dartbug 13519
 
-  /**
-   * Called with each zone.run or runAsync method.  This allows the program
-   * to modify state during a call.
-  */
-  Function interceptCall = (body) => body();
-
   LongStackTrace _longStacktrace = null;
-
-  var _asyncCount = 0;
-  // If tryDone is called from the parent zone, it will have runInNewZone = true
-  // This function will create a new zone if it calls onTurnDone.
-  _tryDone([runInNewZone = false]) {
-    if ((--_asyncCount) == 0) {
-      if (runInNewZone) {
-        // This run call will trigger a synchronous onTurnDone.
-        run((){});
-      } else {
-        onTurnDone();
-      }
-    } else if (_asyncCount < 0) {
-      // TODO(deboer): Remove []s when dartbug.com/11999 is fixed.
-      throw ["bad asyncCount $_asyncCount"];
-    }
-  }
 
   LongStackTrace _getLongStacktrace(name) {
     var shortStacktrace = 'Long-stacktraces supressed in production.';
@@ -91,88 +134,14 @@ class Zone {
    * Returns the return value of body.
    */
   run(body()) {
-    var exceptionFromZone;
-    var returnValueFromZone;
-    _asyncCount++;
-    async.runZonedExperimental(() {
-      _runningInTurn = true;
-      try {
-        try {
-          returnValueFromZone = interceptCall(body);
-        } finally {
-          _tryDone();
-        }
-      } finally {
-        _runningInTurn = false;
-      }
-    },
-    onRunAsync: (delegate()) {
-      var longStacktrace = _getLongStacktrace('Location of: runAsync();');
-      // assertInZone() should not trigger a onTurnDone call.  To prevent
-      // this, we use the _inAssertInZone guard.
-      var calledFromAssertInZone = _inAssertInZone;
-      if (!_inAssertInZone) {
-        _asyncCount++;
-      }
-      async.runAsync(() {
-        _runningInTurn = true;
-        try {
-          try {
-            interceptCall(() {
-              var oldStacktrace = _longStacktrace;
-              _longStacktrace = longStacktrace;
-              try {
-                return delegate();
-              } finally {
-                _longStacktrace = oldStacktrace;
-              }
-            });
-            // This runAsync body is run in the parent zone.  If
-            // we are going to run onTurnDone, we need to zone it.
-          } finally {
-            if (!calledFromAssertInZone) {
-              _tryDone(true);
-            }
-          }
-        } finally {
-          _runningInTurn = false;
-        }
-      });
-    }, onError:(e) {
-      if (e is List && e[0] == _ZONE_CHECK) return;
-
-      // Save the exception so we can throw it in the parent zone.
-      // This only works if we caught the exception in the synchronous
-      // run() call.
-      exceptionFromZone = e;
-
-      // Call the error handler.
-      onError(e, async.getAttachedStackTrace(e), _longStacktrace);
-    });
-
-    if (exceptionFromZone != null) {
-      throw exceptionFromZone;
-    }
-    return returnValueFromZone;
+    return _zone.run(body);
   }
 
   assertInTurn() {
-    assert(_runningInTurn);
+    assert(_runningInTurn > 0 || _inFinishTurn);
   }
 
-  var _assertInZoneStack =
-      'Stack traces are disabled for performance.  ' +
-      'See angular:lib/zone.dart to re-enable them.';
-  var _inAssertInZone = false;
   assertInZone() {
-    assert((() {
-      // Uncomment the next line to have stack traces attached to
-      // assertInZone() errors.
-      // try { throw ""; } catch (e,s) { _assertInZoneStack = s; }
-      _inAssertInZone = true;
-      async.runAsync(() { throw [_ZONE_CHECK, _assertInZoneStack]; });
-      _inAssertInZone = false;
-      return true;
-    })());
+    assertInTurn();
   }
 }

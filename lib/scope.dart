@@ -80,15 +80,6 @@ class Scope implements Map {
 
     // Set up the zone to auto digest this scope.
     _zone.onTurnDone = $digest;
-
-    _zone.interceptCall = (body) {
-      _beginPhase('auto-digesting zoned call');
-      try {
-        return body();
-      } finally {
-        _clearPhase();
-      }
-    };
   }
 
   Scope._child(Scope this.$parent, bool this._isolate, Profiler this._perf) {

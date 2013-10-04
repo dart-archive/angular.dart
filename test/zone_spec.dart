@@ -37,40 +37,41 @@ main() => describe('zone', () {
     });
   });
 
+  xdescribe('long stack traces', () {
+    it('should have nice error when crossing runAsync boundries', async(inject(() {
+      var error;
+      var stack;
+      var longStacktrace;
 
-  it('should have nice error when crossing runAsync boundries', async(inject(() {
-    var error;
-    var stack;
-    var longStacktrace;
+      zone.onError = (e, s, f) {
+        error = e;
+        stack = s;
+        longStacktrace = f;
+      };
+      var FRAME = new RegExp(r'.*\(.*\:(\d+):\d+\)');
 
-    zone.onError = (e, s, f) {
-      error = e;
-      stack = s;
-      longStacktrace = f;
-    };
-    var FRAME = new RegExp(r'.*\(.*\:(\d+):\d+\)');
+      var line = ((){ try {throw [];} catch(e, s) { return int.parse(FRAME.firstMatch('$s')[1]);}})();
+      var throwFn = () { throw ['double zonned']; };
+      var inner = () => zone.run(throwFn);
+      var middle = () => runAsync(inner);
+      var outer = () => runAsync(middle);
+      zone.run(outer);
 
-    var line = ((){ try {throw [];} catch(e, s) { return int.parse(FRAME.firstMatch('$s')[1]);}})();
-    var throwFn = () { throw ['double zonned']; };
-    var inner = () => zone.run(throwFn);
-    var middle = () => runAsync(inner);
-    var outer = () => runAsync(middle);
-    zone.run(outer);
+      microLeap();
+      expect(error).toEqual(['double zonned']);
 
-    microLeap();
-    expect(error).toEqual(['double zonned']);
+      // Not in dart2js..
+      if ('$stack'.contains('.dart.js')) {
+        return;
+      }
 
-    // Not in dart2js..
-    if ('$stack'.contains('.dart.js')) {
-      return;
-    }
-
-    expect('$stack').toContain('zone_spec.dart:${line+1}');
-    expect('$stack').toContain('zone_spec.dart:${line+2}');
-    expect('$longStacktrace').toContain('zone_spec.dart:${line+3}');
-    expect('$longStacktrace').toContain('zone_spec.dart:${line+4}');
-    expect('$longStacktrace').toContain('zone_spec.dart:${line+5}');
-  })));
+      expect('$stack').toContain('zone_spec.dart:${line+1}');
+      expect('$stack').toContain('zone_spec.dart:${line+2}');
+      expect('$longStacktrace').toContain('zone_spec.dart:${line+3}');
+      expect('$longStacktrace').toContain('zone_spec.dart:${line+4}');
+      expect('$longStacktrace').toContain('zone_spec.dart:${line+5}');
+    })));
+  });
 
   it('should call onTurnDone after a synchronous block', inject((Logger log) {
     zone.run(() {
@@ -204,35 +205,7 @@ main() => describe('zone', () {
     expect(log.result()).toEqual('run start; run end; async1; async2; onTurnDone');
   })));
 
-
-  it('should call onTurnDone once even if run is called multiple times', async(inject((Logger log) {
-    zone.run(() {
-      log('runA start');
-      runAsync(() {
-        log('asyncA');
-
-      });
-      log('runA end');
-    });
-    zone.run(() {
-      log('runB start');
-      runAsync(() {
-        log('asyncB');
-      });
-      log('runB end');
-    });
-    microLeap();
-
-    expect(log.result()).toEqual('runA start; runA end; runB start; runB end; asyncA; asyncB; onTurnDone');
-  })));
-
-
-  it('should not call onTurnDone for futures created outside of run body', async(inject((Logger log) {
-    // Odd? Yes. Since Future.value resolves immediately, it (and its thens)
-    // are already on the runAsync queue when we schedule onTurnDone.
-    // Since we want to test explicitly that onTurnDone is not waiting for
-    // the future, we use a second Future.value in a then to reschedule
-    // the future on the runAsync queue.
+  it('should call onTurnDone for futures created outside of run body', async(inject((Logger log) {
     var future = new Future.value(4).then((x) => new Future.value(x));
     zone.run(() {
       future.then((_) => log('future then'));
@@ -240,7 +213,7 @@ main() => describe('zone', () {
     });
     microLeap();
 
-    expect(log.result()).toEqual('zone run; onTurnDone; future then');
+    expect(log.result()).toEqual('zone run; onTurnDone; future then; onTurnDone');
   })));
 
 
@@ -251,7 +224,7 @@ main() => describe('zone', () {
       throw 'zoneError';
     })).toThrow('zoneError');
     expect(() => zone.assertInTurn()).toThrow();
-    expect(log.result()).toEqual('zone run; onTurnDone; onError');
+    expect(log.result()).toEqual('zone run; onError; onTurnDone');
   })));
 
 
@@ -270,7 +243,6 @@ main() => describe('zone', () {
     expect(() => zone.assertInTurn()).toThrow();
     expect(log.result()).toEqual('zone run; runAsync; onError; onTurnDone');
   })));
-
 
   it('should support assertInZone', async(() {
     var calls = '';
@@ -291,29 +263,11 @@ main() => describe('zone', () {
     expect(calls).toEqual('sync;async;done;');
   }));
 
-
-  it('should assertInZone for chained futures not in zone', () {
-    expect(async(() {
-      var future = new Future.value(4);
-      zone.run(() {
-        future = future.then((_) {
-          return 5;
-        });
-      });
-      future.then((_) {
-        expect(_).toEqual(5);
-        zone.assertInZone();
-      });
-      microLeap();
-    })).toThrow('Function must be called in a zone');
-  });
-
-
   it('should throw outside of the zone', () {
     expect(async(() {
       zone.assertInZone();
       microLeap();
-    })).toThrow('Function must be called in a zone');
+    })).toThrow();
   });
 
 
