@@ -38,28 +38,6 @@ abstract class Cache<K, V> {
   int get capacity;
   int get size;
   CacheStats stats();
-
-  // Debugging helpers.
-  String _toString(String typeName);
-  String toString() => _toString("$runtimeType");
-}
-
-
-/**
- * Mixin that forwards to a backing cache implementation.
- */
-class ForwardingCache<K, V> implements Cache<K, V> {
-  Cache<K, V> _backingCache;
-
-  V get(K key) => _backingCache.get(key);
-  V put(K key, V value) => _backingCache.put(key, value);
-  V remove(K key) => _backingCache.remove(key);
-  void removeAll() => _backingCache.removeAll();
-  int get capacity => _backingCache.capacity;
-  int get size => _backingCache.size;
-  CacheStats stats() => _backingCache.stats();
-  String _toString(String typeName) => _backingCache._toString(typeName);
-  String toString() => _backingCache._toString("$runtimeType");
 }
 
 
@@ -86,22 +64,21 @@ class UnboundedCache<K, V> implements Cache<K, V> {
   int get capacity => 0;
   int get size => _entries.length;
   CacheStats stats() => new CacheStats(capacity, size, _hits, _misses);
-  String _toString(String typeName) => "[$typeName: size=${_entries.length}, items=$_entries]";
+  // Debugging helper.
+  String toString() => "[$runtimeType: size=${_entries.length}, items=$_entries]";
 }
 
 
 /**
- * Simple LRU cache implementation.
- *
- * The constructor takes an optional 
+ * Simple LRU cache.
  */
-class _LruCache<K, V> implements Cache<K, V> {
+class LruCache<K, V> extends Cache<K, V> {
   Map<K, V> _entries = new LinkedHashMap<K, V>();
   int _capacity;
   int _hits = 0;
   int _misses = 0;
 
-  _LruCache({int capacity}) {
+  LruCache({int capacity}) {
     this._capacity = (capacity == null) ? 0 : capacity;
   }
 
@@ -136,19 +113,6 @@ class _LruCache<K, V> implements Cache<K, V> {
   int get capacity => _capacity;
   int get size => _entries.length;
   CacheStats stats() => new CacheStats(capacity, size, _hits, _misses);
-
-  String _toString(String typeName) =>
-      "[$typeName: capacity=$capacity, size=$size, items=$_entries]";
-}
-
-
-class LruCache<K, V> extends Cache<K, V> with ForwardingCache<K, V> {
-  LruCache({int capacity}) {
-    if (capacity != null && capacity > 0) {
-      _backingCache = new _LruCache<K, V>(capacity: capacity);
-    } else {
-      // When unbounded, LRU has no advantage.
-      _backingCache = new UnboundedCache<K, V>();
-    }
-  }
+  // Debugging helper.
+  String toString() => "[$runtimeType: capacity=$capacity, size=$size, items=$_entries]";
 }
