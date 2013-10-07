@@ -12,10 +12,18 @@ class NgTextMustacheDirective {
   Expression interpolateFn;
 
   // This Directive is special and does not go through injection.
-  NgTextMustacheDirective(dom.Node this.element, String markup, Interpolate interpolate, Scope scope) {
+  NgTextMustacheDirective(dom.Node this.element,
+                          String markup,
+                          Interpolate interpolate,
+                          Scope scope,
+                          TextChangeListener listener) {
     interpolateFn = interpolate(markup);
-    element.text = '';
-    scope.$watch(interpolateFn.eval, (text) => element.text = text);
+    setter(text) {
+      element.text = text;
+      if (listener != null) listener.call(text);
+    }
+    setter('');
+    scope.$watch(interpolateFn.eval, setter);
   }
 
 }
@@ -34,3 +42,4 @@ class NgAttrMustacheDirective {
     scope.$watch(interpolateFn.eval, attrSetter);
   }
 }
+

@@ -28,6 +28,7 @@ import 'filters/all.dart';
 class AngularModule extends Module {
   AngularModule() {
     type(DirectiveMap);
+    value(TextChangeListener, null);
     type(NgTextMustacheDirective);
     type(NgAttrMustacheDirective);
     type(MetadataExtractor);

@@ -5,6 +5,12 @@ import '../_test_bed.dart';
 
 main() {
   describe('ng-mustache', () {
+    TestBed _;
+    beforeEach(module((Module module) {
+      module.type(_ListenerDirective);
+    }));
+    beforeEach(beforeEachTestBed((tb) => _ = tb));
+
     it('should replace {{}} in text', inject((Compiler $compile, Scope $rootScope, Injector injector) {
       var element = $('<div>{{name}}<span>!</span></div>');
       var template = $compile(element);
@@ -17,6 +23,15 @@ main() {
       expect(element.text()).toEqual('!');
       $rootScope.$digest();
       expect(element.text()).toEqual('OK!');
+    }));
+
+
+    it('should allow listening on text change events', inject((Logger logger) {
+      _.compile('<div listener>{{text}}</div>');
+      _.rootScope.text = 'works';
+      _.rootScope.$apply();
+      expect(_.rootElement.text()).toEqual('works');
+      expect(logger).toEqual(['', 'works']);
     }));
 
 
@@ -79,4 +94,15 @@ main() {
     });
   });
 
+}
+
+@NgDirective(
+    selector: '[listener]',
+    publishTypes: const [TextChangeListener],
+    visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY
+)
+class _ListenerDirective implements TextChangeListener {
+  Logger logger;
+  _ListenerDirective(Logger this.logger);
+  call(String text) => logger(text);
 }

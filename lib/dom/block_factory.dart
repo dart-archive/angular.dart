@@ -130,7 +130,9 @@ class BlockFactory {
       }
       if (ref.type == NgTextMustacheDirective) {
         nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
-          return new NgTextMustacheDirective(node, ref.value, injector.get(Interpolate), injector.get(Scope));
+          return new NgTextMustacheDirective(
+              node, ref.value, injector.get(Interpolate), injector.get(Scope),
+              injector.get(TextChangeListener));
         });
       } else if (ref.type == NgAttrMustacheDirective) {
         if (nodesAttrsDirectives == null) {
