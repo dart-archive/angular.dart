@@ -71,6 +71,11 @@ class UnboundedCache<K, V> implements Cache<K, V> {
 
 /**
  * Simple LRU cache.
+ *
+ * TODO(chirayu):
+ * - add docs
+ * - add tests
+ * - should stringify keys?
  */
 class LruCache<K, V> extends Cache<K, V> {
   Map<K, V> _entries = new LinkedHashMap<K, V>();
