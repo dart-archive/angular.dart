@@ -3,12 +3,32 @@ library angular.mock.zone;
 import 'dart:async' as dartAsync;
 
 List<Function> _asyncQueue = [];
+List<_TimerSpec> _timerQueue = [];
 List _asyncErrors = [];
 bool _noMoreAsync = false;
 
 /**
  * Runs any queued up async calls and any async calls queued with
- * running microLeap.
+ * running microLeap. Example:
+ *
+ *     it('should run async code', async(() {
+ *       var thenRan = false;
+ *       new Future.value('s').then((_) { thenRan = true; });
+ *       expect(thenRan).toBe(false);
+ *       microLeap();
+ *       expect(thenRan).toBe(true);
+ *     }));
+ *
+ *     it('should run chained thens', async(() {
+ *       var log = [];
+ *       new Future.value('s')
+ *         .then((_) { log.add('firstThen'); })
+ *         .then((_) { log.add('2ndThen'); });
+ *       expect(log.join(' ')).toEqual('');
+ *       microLeap();
+ *       expect(log.join(' ')).toEqual('firstThen 2ndThen');
+ *     }));
+ *
  */
 microLeap() {
   while (!_asyncQueue.isEmpty) {
@@ -19,6 +39,70 @@ microLeap() {
   }
 }
 
+/**
+ * Simulates a clock tick by running any scheduled timers. Can only be used
+ * in [async] tests. Example:
+ *
+ *     it('should run queued timer after sufficient clock ticks', async(() {
+ *       bool timerRan = false;
+ *       new Timer(new Duration(milliseconds: 10), () => timerRan = true);
+ *
+ *       clockTick(milliseconds: 9);
+ *       expect(timerRan).toBeFalsy();
+ *       clockTick(milliseconds: 1);
+ *       expect(timerRan).toBeTruthy();
+ *     }));
+ *
+ *     it('should run periodic timer', async(() {
+ *       int timerRan = 0;
+ *       new Timer.periodic(new Duration(milliseconds: 10), (_) => timerRan++);
+ *
+ *       clockTick(milliseconds: 9);
+ *       expect(timerRan).toBe(0);
+ *       clockTick(milliseconds: 1);
+ *       expect(timerRan).toBe(1);
+ *       clockTick(milliseconds: 30);
+ *       expect(timerRan).toBe(4);
+ *     }));
+ */
+clockTick({int days: 0,
+    int hours: 0,
+    int minutes: 0,
+    int seconds: 0,
+    int milliseconds: 0,
+    int microseconds: 0}) {
+  var tickDuration = new Duration(days: days, hours: hours, minutes: minutes,
+      seconds: seconds, milliseconds: milliseconds, microseconds: microseconds);
+
+  var queue = _timerQueue;
+  var remainingTimers = [];
+  _timerQueue = [];
+  queue.forEach((_TimerSpec spec) {
+    if (!spec.isActive) return; // Skip over inactive timers.
+
+    if (spec.periodic) {
+      if (tickDuration == Duration.ZERO) return;
+
+      spec.elapsed += tickDuration;
+      // Run the timer as many times as the timer priod fits into the tick.
+      while (spec.elapsed >= spec.duration) {
+        spec.elapsed -= spec.duration;
+        spec.fn(spec);
+      }
+      // We always add back the peridic timer unless it's cancelled.
+      remainingTimers.add(spec);
+    } else {
+      spec.duration -= tickDuration;
+      if (spec.duration <= Duration.ZERO) {
+        spec.fn();
+      } else {
+        remainingTimers.add(spec);
+      }
+    }
+  });
+  // Remaining timers should come before anything else scheduled after them.
+  _timerQueue.insertAll(0, remainingTimers);
+}
 
 /**
 * Causes runAsync calls to throw exceptions.
@@ -39,32 +123,63 @@ async(Function fn) =>
     () {
   _noMoreAsync = false;
   _asyncErrors = [];
-  dartAsync.runZonedExperimental(() {
-    fn();
-    microLeap();
-  },
-  onRunAsync: (asyncFn) {
-    if (_noMoreAsync) {
-      throw ['runAsync called after noMoreAsync()'];
-    } else {
-      _asyncQueue.add(asyncFn);
-    }
-  },
-  onError: (e) => _asyncErrors.add(e));
+  var zoneSpec = new dartAsync.ZoneSpecification(
+      scheduleMicrotask: (_, __, ___, asyncFn) {
+        if (_noMoreAsync) {
+          throw ['runAsync called after noMoreAsync()'];
+        } else {
+          _asyncQueue.add(asyncFn);
+        }
+      },
+      createTimer: (_, __, ____, Duration duration, void f()) =>
+          _createTimer(f, duration, false),
+      createPeriodicTimer:
+          (_, __, ___, Duration period, void f(dartAsync.Timer timer)) =>
+              _createTimer(f, period, true),
+      handleUncaughtError: (_, __, ___, e) => _asyncErrors.add(e)
+  );
+  dartAsync.runZoned(() {
+      fn();
+      microLeap();
+    }, zoneSpecification: zoneSpec);
 
   _asyncErrors.forEach((e) {
     throw "During runZoned: $e.  Stack:\n${dartAsync.getAttachedStackTrace(e)}";
   });
 };
 
+_createTimer(Function fn, Duration duration, bool periodic) {
+  var timer = new _TimerSpec(fn, duration, periodic);
+  _timerQueue.add(timer);
+  return timer;
+}
+
 /**
  * Enforces synchronous code.  Any calls to runAsync inside of 'sync'
  * will throw an exception.
  */
 sync(Function fn) => () {
-  dartAsync.runZonedExperimental(fn,
-    onRunAsync: (asyncFn) {
-      print('run sync');
-      throw ['runAsync called from sync function.'];
-    });
+  dartAsync.runZoned(fn, zoneSpecification: new dartAsync.ZoneSpecification(
+    scheduleMicrotask: (_, __, ___, asyncFn) =>
+        throw ['runAsync called from sync function.'],
+    createTimer: (_, __, ____, Duration duration, void f()) =>
+        throw ['Timer created from sync function.'],
+    createPeriodicTimer:
+        (_, __, ___, Duration period, void f(dartAsync.Timer timer)) =>
+            throw ['periodic Timer created from sync function.']
+    ));
 };
+
+class _TimerSpec implements dartAsync.Timer {
+  Function fn;
+  Duration duration;
+  Duration elapsed = Duration.ZERO;
+  bool periodic;
+  bool isActive = true;
+
+  _TimerSpec(this.fn, this.duration, this.periodic);
+
+  void cancel() {
+    isActive = false;
+  }
+}
