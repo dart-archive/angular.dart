@@ -80,6 +80,7 @@ class Scope implements Map {
 
     // Set up the zone to auto digest this scope.
     _zone.onTurnDone = $digest;
+    _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
   }
 
   Scope._child(Scope this.$parent, bool this._isolate, Profiler this._perf) {

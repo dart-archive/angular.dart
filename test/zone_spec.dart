@@ -6,16 +6,23 @@ import 'dart:async';
 
 main() => describe('zone', () {
   var zone;
-  beforeEach(inject((Logger log) {
+  var exceptionHandler;
+  beforeEach(module((Module module) {
+    exceptionHandler = new LoggingExceptionHandler();
+    module.value(ExceptionHandler, exceptionHandler);
+  }));
+
+  beforeEach(inject((Logger log, ExceptionHandler eh) {
     zone = new Zone();
     zone.onTurnDone = () {
       log('onTurnDone');
     };
+    zone.onError = (e, s, ls) => eh(e, s);
   }));
 
 
   describe('exceptions', () {
-    it('should throw exceptions from the body', () {
+    it('should rethrow exceptions from the body and call onError', () {
       var error;
       zone.onError = (e, s, l) => error = e;
       expect(() {
@@ -27,13 +34,50 @@ main() => describe('zone', () {
     });
 
 
-    it('should handle exceptions in onRunAsync', () {
-      // TODO(deboer): Define how exceptions should behave in zones.
+    it('should call onError for errors from runAsync', async(inject(() {
+      zone.run(() {
+        runAsync(() {
+          throw ["async exception"];
+        });
+      });
+
+      expect(exceptionHandler.errors.length).toEqual(1);
+      expect(exceptionHandler.errors[0].error).toEqual(["async exception"]);
+    })));
+
+
+    it('should rethrow exceptions from the onTurnDone and call onError when the zone is sync', () {
+      zone.onTurnDone = () {
+        throw ["fromOnTurnDone"];
+      };
+
+      expect(() {
+        zone.run(() { });
+      }).toThrow('fromOnTurnDone');
+
+      expect(exceptionHandler.errors.length).toEqual(1);
+      expect(exceptionHandler.errors[0].error).toEqual(["fromOnTurnDone"]);
     });
 
 
-    it('should handle exceptioned in onTurnDone', () {
-      // TODO(deboer): Define how exceptions should behave in zones.
+    it('should rethrow exceptions from the onTurnDone and call onError when the zone is async', () {
+      var asyncRan = false;
+
+      zone.onTurnDone = () {
+        throw ["fromOnTurnDone"];
+      };
+
+      expect(() {
+        zone.run(() {
+          runAsync(() {
+            asyncRan = true;
+          });
+        });
+      }).toThrow('fromOnTurnDone');
+
+      expect(asyncRan).toBeTruthy();
+      expect(exceptionHandler.errors.length).toEqual(1);
+      expect(exceptionHandler.errors[0].error).toEqual(["fromOnTurnDone"]);
     });
   });
 

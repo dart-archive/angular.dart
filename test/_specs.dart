@@ -282,7 +282,7 @@ main() {
       ..type(ExceptionHandler, implementedBy: RethrowExceptionHandler)
       ..factory(Zone, (_) {
         Zone zone = new Zone();
-        zone.onError = (dynamic e, dynamic s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
+        //zone.onError = (dynamic e, dynamic s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
         return zone;
       });
   }));

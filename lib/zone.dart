@@ -44,6 +44,7 @@ class Zone {
   async.Zone _zone;
 
   List _asyncQueue = [];
+  bool _errorThrownFromOnRun = false;
 
   _onRunBase(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
     _runningInTurn++;
@@ -51,6 +52,7 @@ class Zone {
       return fn();
     } catch (e, s) {
       onError(e, s, _longStacktrace);
+      _errorThrownFromOnRun = true;
       rethrow;
     } finally {
       _runningInTurn--;
@@ -75,7 +77,10 @@ class Zone {
   }
 
   _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, e) {
-    // We already called onError in onRun.  Eat the error here.
+    if (!_errorThrownFromOnRun) {
+      onError(e, async.getAttachedStackTrace(e), _longStacktrace);
+    }
+    _errorThrownFromOnRun = false;
   }
 
   var _inFinishTurn = false;
@@ -94,12 +99,21 @@ class Zone {
         }
         delegate.run(zone, onTurnDone);
       } while (!_asyncQueue.isEmpty);
+    } catch (e, s) {
+      onError(e, s, _longStacktrace);
+      _errorThrownFromOnRun = true;
+      rethrow;
     } finally {
     _inFinishTurn = false;
     }
   }
 
   int _runningInTurn = 0;
+
+  /**
+   * A function called with any errors from the zone.
+   */
+  var onError = (e, s, ls) => null;
 
   /**
    * A function that is called at the end of each VM turn in which the
@@ -110,7 +124,7 @@ class Zone {
   /**
    * A function that is called when uncaught errors are thrown inside the zone.
    */
-  var onError = (dynamic e, dynamic s, LongStackTrace ls) => print('EXCEPTION: $e\n$s\n$ls');
+  // var onError = (dynamic e, dynamic s, LongStackTrace ls) => print('EXCEPTION: $e\n$s\n$ls');
   // Type was ZoneOnError: dartbug 13519
 
   LongStackTrace _longStacktrace = null;
