@@ -41,15 +41,8 @@ class LimitToFilter {
 
   LimitToFilter(Injector this._injector, Parser this._parser);
 
-  int parseLimit(String limitExpression) {
-    var parsed = _parser(limitExpression).eval(_injector.get(Scope));
-    return (parsed is int) ? parsed : null;
-  }
-
-  dynamic call(dynamic items, [dynamic limitExpression]) {
-    int limit = (limitExpression is String)
-        ?  parseLimit(limitExpression as String)
-        : limitExpression;
+  dynamic call(dynamic items, [int limit]) {
+    print("CKCK: $items, $limit");
     if (items == null) {
       return null;
     }

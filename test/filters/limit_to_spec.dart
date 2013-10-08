@@ -37,7 +37,6 @@ main() {
       expect(scope.$eval('list | limitTo: bogus')).toEqual([]);
       expect(scope.$eval('string | limitTo: null')).toEqual([]);
       expect(scope.$eval('string | limitTo: thisIsNull')).toEqual([]);
-      expect(scope.$eval('string | limitTo: "null"')).toEqual([]);
     }));
 
     it('should return a copy of input array if X is exceeds array length',
