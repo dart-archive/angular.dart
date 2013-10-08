@@ -10,6 +10,7 @@ import '../scope.dart';
 part 'currency.dart';
 part 'date.dart';
 part 'json.dart';
+part 'limit_to.dart';
 part 'lowercase.dart';
 part 'number.dart';
 part 'order_by.dart';
@@ -19,6 +20,7 @@ void registerFilters(Module module) {
   module.type(CurrencyFilter);
   module.type(DateFilter);
   module.type(JsonFilter);
+  module.type(LimitToFilter);
   module.type(LowercaseFilter);
   module.type(NumberFilter);
   module.type(OrderByFilter);
