@@ -1,5 +1,7 @@
 part of angular.filter;
 
+typedef dynamic Mapper(dynamic e);
+
 /**
  * Orders the provided [Iterable] by supplied optional `expression` predicate.
  *
@@ -69,34 +71,69 @@ class OrderByFilter {
 
   OrderByFilter(Injector this._injector, Parser this._parser);
 
-  static List sorted(List items, var mapper, bool descending) {
+  static _nop(e) => e;
+  static bool _isNonZero(int n) => (n != 0);
+  static int _returnZero() => 0;
+  static int _defaultComparator(a, b) => Comparable.compare(a, b);
+  static int _reverseComparator(a, b) => _defaultComparator(b, a);
+
+  static int _compareLists(List a, List b, List<Comparator> comparators) {
+    return new Iterable.generate(a.length, (i) => comparators[i](a[i], b[i]))
+        .firstWhere(_isNonZero, orElse: _returnZero);
+  }
+
+  static List _sorted(
+      List items, List<Mapper> mappers, List<Comparator> comparators, bool descending) {
     // Do the standard decorate-sort-undecorate aka Schwartzian dance since Dart
     // doesn't support a key/transform parameter to sort().
     // Ref: http://en.wikipedia.org/wiki/Schwartzian_transform
+    mapper(e) => new List.generate(mappers.length, (i) => mappers[i](e));
     List decorated = items.map(mapper).toList(growable: false);
-    List<int> indices = new Iterable.generate(
-        decorated.length, (i) => i).toList(growable: false);
-    var comparator = (i, j) => Comparable.compare(decorated[i], decorated[j]);
+    List<int> indices = new Iterable.generate(decorated.length, (i) => i).toList(growable: false);
+    var comparator = (i, j) => _compareLists(decorated[i], decorated[j], comparators);
     indices.sort((descending) ? (i, j) => comparator(j, i) : comparator);
-    List sorted = indices.map((i) => items[i]).toList(growable: false);
-    return sorted;
+    return indices.map((i) => items[i]).toList(growable: false);
   }
 
-  List call(List items, [String expression, bool descending=false]) {
+  /**
+   * expression: String/Function or Array of String/Function.
+   */
+  List call(List items, [var expression, bool descending=false]) {
     Scope scope = _injector.get(Scope);
-    var mapper = (e) => e;
-    if (expression != null) {
-      if (expression.startsWith('-') || expression.startsWith('+')) {
-        if (expression.startsWith('-')) {
-          descending = !descending;
+    List expressions = null;
+    if (expression is String || expression is Mapper) {
+      expressions = [expression];
+    } else if (expression is List) {
+      expressions = expression as List;
+    }
+    if (expressions == null || expressions.length == 0) {
+      // AngularJS behavior.  You must have an expression to get any work done.
+      return items;
+    }
+    int numExpressions = expressions.length;
+    List<Mapper> mappers = new List(numExpressions);
+    List<Comparator> comparators = new List<Comparator>(numExpressions);
+    for (int i = 0; i < numExpressions; i++) {
+      expression = expressions[i];
+      if (expression is String) {
+        var strExp = expression as String;
+        var desc = false;
+        if (strExp.startsWith('-') || strExp.startsWith('+')) {
+          desc = strExp.startsWith('-');
+          strExp = strExp.substring(1);
         }
-        expression = expression.substring(1);
-      }
-      if (expression != '') {
-        var parsed = _parser(expression);
-        mapper = (e) => parsed.eval(scope, e);
+        comparators[i] = desc ? _reverseComparator : _defaultComparator;
+        if (strExp == '') {
+          mappers[i] = _nop;
+        } else {
+          var parsed = _parser(strExp);
+          mappers[i] = (e) => parsed.eval(scope, e);
+        }
+      } else if (expression is Mapper) {
+        mappers[i] = (expression as Mapper);
+        comparators[i] = _defaultComparator;
       }
     }
-    return sorted(items, mapper, descending);
+    return _sorted(items, mappers, comparators, descending);
   }
 }
