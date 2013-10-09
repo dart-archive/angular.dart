@@ -40,8 +40,9 @@ microLeap() {
 }
 
 /**
- * Simulates a clock tick by running any scheduled timers. Can only be used
- * in [async] tests. Example:
+ * Simulates a clock tick by running any scheduled timers. Clock tick will
+ * call [microLeap] to process the micro-task queue before each timer callback.
+ * Can only be used in [async] tests. Example:
  *
  *     it('should run queued timer after sufficient clock ticks', async(() {
  *       bool timerRan = false;
@@ -79,21 +80,24 @@ clockTick({int days: 0,
   _timerQueue = [];
   queue.forEach((_TimerSpec spec) {
     if (!spec.isActive) return; // Skip over inactive timers.
-
     if (spec.periodic) {
+      // We always add back the periodic timer unless it's cancelled.
+      remainingTimers.add(spec);
+
+      // Ignore ZERO duration ticks for periodic timers.
       if (tickDuration == Duration.ZERO) return;
 
       spec.elapsed += tickDuration;
       // Run the timer as many times as the timer priod fits into the tick.
       while (spec.elapsed >= spec.duration) {
         spec.elapsed -= spec.duration;
+        microLeap();
         spec.fn(spec);
       }
-      // We always add back the peridic timer unless it's cancelled.
-      remainingTimers.add(spec);
     } else {
       spec.duration -= tickDuration;
       if (spec.duration <= Duration.ZERO) {
+        microLeap();
         spec.fn();
       } else {
         remainingTimers.add(spec);
@@ -123,6 +127,7 @@ async(Function fn) =>
     () {
   _noMoreAsync = false;
   _asyncErrors = [];
+  _timerQueue = [];
   var zoneSpec = new dartAsync.ZoneSpecification(
       scheduleMicrotask: (_, __, ___, asyncFn) {
         if (_noMoreAsync) {

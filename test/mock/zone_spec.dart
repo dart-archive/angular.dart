@@ -224,6 +224,70 @@ main() => describe('mock zones', () {
         clockTick(milliseconds: 10);
         expect(timerRan).toBe(1);
       }));
+
+
+      it('should process micro-tasks before timers', async(() {
+        var log = [];
+
+        runAsync(() => log.add('runAsync'));
+        new Timer(new Duration(milliseconds: 10),
+            () => log.add('timer'));
+        new Timer.periodic(new Duration(milliseconds: 10),
+            (_) => log.add('periodic_timer'));
+
+        expect(log.join(' ')).toEqual('');
+
+        clockTick(milliseconds: 10);
+
+        expect(log.join(' ')).toEqual('runAsync timer periodic_timer');
+      }));
+
+
+      it('should process micro-tasks created in timers before next timers', async(() {
+        var log = [];
+
+        runAsync(() => log.add('runAsync'));
+        new Timer(new Duration(milliseconds: 10),
+            () {
+              log.add('timer');
+              runAsync(() => log.add('timer_runAsync'));
+            });
+        new Timer.periodic(new Duration(milliseconds: 10),
+            (_) {
+              log.add('periodic_timer');
+              runAsync(() => log.add('periodic_timer_runAsync'));
+            });
+
+        expect(log.join(' ')).toEqual('');
+
+        clockTick(milliseconds: 10);
+        expect(log.join(' ')).toEqual('runAsync timer timer_runAsync periodic_timer');
+
+        clockTick();
+        expect(log.join(' ')).toEqual('runAsync timer timer_runAsync periodic_timer');
+
+        clockTick(milliseconds: 10);
+        expect(log.join(' ')).toEqual('runAsync timer timer_runAsync periodic_timer periodic_timer_runAsync periodic_timer');
+      }));
+
+
+      it('should not leak timers between asyncs', () {
+        var log = [];
+
+        async(() {
+          new Timer.periodic(new Duration(milliseconds: 10),
+              (_) => log.add('periodic_timer'));
+          new Timer(new Duration(milliseconds: 10),
+              () => log.add('timer'));
+          clockTick(milliseconds: 10);
+        })();
+        expect(log.join(' ')).toEqual('periodic_timer timer');
+
+        async(() {
+          clockTick(milliseconds: 10);
+        })();
+        expect(log.join(' ')).toEqual('periodic_timer timer');
+      });
     });
   });
 });
