@@ -1,6 +1,6 @@
 library jamine;
 
-import 'package:unittest/unittest.dart';
+import 'package:unittest/unittest.dart' as unit;
 import 'package:js/js.dart' as js;
 import 'package:angular/utils.dart' as utils;
 
@@ -14,15 +14,8 @@ _maybeWrapFn(fn) => () {
   }
 };
 
-it(name, fn) {
-  fn = _maybeWrapFn(fn);
-  if (currentDescribe.exclusive) {
-    solo_test(name, fn);
-  } else {
-    test(name, fn);
-  }
-}
-iit(name, fn) => solo_test(name, _maybeWrapFn(fn));
+it(name, fn) => unit.test(name, _maybeWrapFn(fn));
+iit(name, fn) => unit.solo_test(name, _maybeWrapFn(fn));
 xit(name, fn) {}
 xdescribe(name, fn) {}
 ddescribe(name, fn) => describe(name, fn, true);
@@ -57,15 +50,20 @@ class Describe {
 }
 
 Describe currentDescribe = new Describe('', null);
+bool ddescribeActive = false;
 
 describe(name, fn, [bool exclusive=false]) {
   var lastDescribe = currentDescribe;
   currentDescribe = new Describe(name, lastDescribe, exclusive);
+  if (exclusive) {
+    name = 'DDESCRIBE: $name';
+    ddescribeActive = true;
+  }
   try {
-    group(name, () {
-      setUp(currentDescribe.setUp);
+    unit.group(name, () {
+      unit.setUp(currentDescribe.setUp);
       fn();
-      tearDown(currentDescribe.tearDown);
+      unit.tearDown(currentDescribe.tearDown);
     });
   } finally {
     currentDescribe = lastDescribe;
