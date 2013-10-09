@@ -242,6 +242,28 @@ main() {
       expect(element.text()).toEqual('misko:true-false-true|');
     });
 
+    it(r'should report odd', () {
+      element = $compile(
+        '<ul>' +
+          '<li ng-repeat="item in items">{{item}}:{{\$odd}}-{{\$even}}|</li>' +
+        '</ul>');
+      scope.items = ['misko', 'shyam', 'doug'];
+      scope.$digest();
+      expect(element.text()).toEqual('misko:false-true|shyam:true-false|doug:false-true|');
+
+      scope.items.add('frodo');
+      scope.$digest();
+      expect(element.text()).toEqual('misko:false-true|shyam:true-false|doug:false-true|frodo:true-false|');
+
+      scope.items.removeLast();
+      scope.items.removeLast();
+      scope.$digest();
+      expect(element.text()).toEqual('misko:false-true|shyam:true-false|');
+
+      scope.items.removeLast();
+      scope.$digest();
+      expect(element.text()).toEqual('misko:false-true|');
+    });
 
     it(r'should repeat over nested arrays', () {
       element = $compile(
