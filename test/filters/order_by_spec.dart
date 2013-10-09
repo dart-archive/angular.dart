@@ -21,9 +21,16 @@ main() {
       ];
     }));
 
-    it('should pass through argument without an expression', inject((Scope scope) {
-      var list = scope['list'] = [1, 2, 3];
-      expect(scope.$eval('list | orderBy')).toBe(list);
+    it('should pass through argument when expression is null', inject((Scope scope) {
+      var list = scope['list'] = [1, 3, 2];
+      expect(scope.$eval('list | orderBy:thisIsNull')).toBe(list);
+    }));
+
+    it('should sort with "empty" expression using default comparator', inject((Scope scope) {
+      scope['list'] = [1, 3, 2];
+      expect(scope.$eval('list | orderBy:""')).toEqual([1, 2, 3]);
+      expect(scope.$eval('list | orderBy:"+"')).toEqual([1, 2, 3]);
+      expect(scope.$eval('list | orderBy:"-"')).toEqual([3, 2, 1]);
     }));
 
     it('should sort by expression', inject((Scope scope) {

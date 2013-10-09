@@ -3,16 +3,16 @@ part of angular.filter;
 typedef dynamic Mapper(dynamic e);
 
 /**
- * Orders the provided [Iterable] by supplied optional `expression` predicate.
+ * Orders the provided [Iterable] by the `expression` predicate.
  *
- * Example 1: Simple array
+ * Example 1: Simple array and single/empty expression.
  *
- * Assume that you have an array on scope called `colors` and it has a list of
- * these strings – `['red', 'blue', 'green']`.  You might sort these in
+ * Assume that you have an array on scope called `colors` and that it has a list
+ * of these strings – `['red', 'blue', 'green']`.  You might sort these in
  * ascending order this way:
  *
  *     Colors: <ul>
- *       <li ng-repeat='color in colors | orderBy'>{{color}}</li>
+ *       <li ng-repeat='color in colors | orderBy:""'>{{color}}</li>
  *     </ul>
  *
  * That would result in:
@@ -23,16 +23,28 @@ typedef dynamic Mapper(dynamic e);
  *       <li>red</li>
  *     <ul>
  *
- * To list the colors in descending order, you would pass in the 2nd optional
- * parameter, `descending`, and set it to `true`.  Since this requires passing
- * in the sort expression, and we want to sort by the color, we pass `color` for
- * the expression making it an identity transformer.
+ * The empty string expression, `""`, here signifies sorting in ascending order
+ * using the default comparator.  Using `"+"` would also work as the `+` prefix
+ * is implied.
+ *
+ * To sort in descending order, you would use the `"-"` prefix.
  *
  *     Colors: <ul>
- *       <li ng-repeat='color in colors | orderBy:color:true'>{{color}}</li>
+ *       <li ng-repeat='color in colors | orderBy:"-"'>{{color}}</li>
  *     </ul>
  *
- * You may provide more complex expressions to sort non-primitives values or
+ * For this simple example, you could have also provided `true` as the addition
+ * optional parameter which requests a reverse order sort to get the same
+ * result.
+ *
+ *     <!-- Same result (descending order) as previous snippet. -->
+ *     Colors: <ul>
+ *       <li ng-repeat='color in colors | orderBy:"":true'>{{color}}</li>
+ *     </ul>
+ *
+ * Example 2: Complex objects, single expression.
+ *
+ * You may provide a more complex expression to sort non-primitives values or
  * if you want to sort on a decorated/transformed value.
  *
  * e.g. Support you have a list `users` that looks like this:
@@ -47,24 +59,52 @@ typedef dynamic Mapper(dynamic e);
  *
  * If you want to list the authors sorted by `lastName`, you would use
  *
- *     <li ng-repeat='author in authors | orderBy:lastName'>
+ *     <li ng-repeat='author in authors | orderBy:"lastName"'>
  *       {{author.lastName}}, {{author.firstName
  *     </li>
  *
- * To reverse the order when you have an expression, you have two choices.  You
- * may either pass in an optional parameter following the expression that
- * evaluates to true for descending / false for ascending OR you may prefix the
- * expression with a '-' to indicate reversing.  If you do both (i.e. prefix the
- * expression with a '-' and pass in `true` for the optional `descending`
- * parameter), they will cancel each other out and you'll get the list in
- * ascending order.
+ * The string expression, `"lastName"`, indicates that the sort should be on the
+ * `lastName` property of each item.
  *
- *     <!-- Two reversals result in ascending order -->
- *     <li ng-repeat='author in authors | orderBy:-lastName:true'>
- *       {{author.lastName}}, {{author.firstName
- *     </li>
+ * Using the lesson from the previous example, you may sort in reverse order of
+ * lastName using either of the two methods.
+ *
+ *     <!-- reverse order of last names -->
+ *     <li ng-repeat='author in authors | orderBy:"-lastName"'>
+ *     <!-- also does the same thing -->
+ *     <li ng-repeat='author in authors | orderBy:"lastName":true'>
+ *
+ * Note that, while we only discussed string expressions, such as `"lastName"`
+ * or the empty string, you can also directly provide a custom callable that
+ * will be called to transform the element before a sort.
+ *
+ *     <li ng-repeat='author in authors | orderBy:getAuthorId'>
+ *
+ * In the previous snippet, `getAuthorId` would evaluate to a callable when
+ * evaluated on the [Scope] of the `<li>` element.  That callable is called once
+ * for each element in the list (i.e. each author object) and the sort order is
+ * determined by the sort order of the value mapped by the callable.
+ *
+ * Example 3: List expressions
+ *
+ * Both a string expression and the callable expression are simple versions of
+ * the more general list expression.  You may pass a list as the orderBy
+ * expression and this list may consist of either of the string or callable
+ * expressions you saw in the previous examples.  A list expression indicates
+ * a list of fallback expressions to use when a comparision results in the items
+ * being equal.
+ *
+ * For example, one might want to sort the authors list, first by last name and
+ * then by first name when the last names are equal.  You would do that like
+ * this:
+ *
+ *     <li ng-repeat='author in authors | orderBy:["lastName", "firstName"]'>
+ *
+ * The items in such a list may either be string expressions or callables.  The
+ * list itself might be provided as an expression that is looked up on the scope
+ * chain.
  */
-@NgFilter(name:'orderBy')
+@NgFilter(name: 'orderBy')
 class OrderByFilter {
   Injector _injector;
   Parser _parser;
@@ -87,10 +127,10 @@ class OrderByFilter {
     // Do the standard decorate-sort-undecorate aka Schwartzian dance since Dart
     // doesn't support a key/transform parameter to sort().
     // Ref: http://en.wikipedia.org/wiki/Schwartzian_transform
-    mapper(e) => new List.generate(mappers.length, (i) => mappers[i](e));
+    mapper(e) => mappers.map((m) => m(e)).toList(growable: false);
     List decorated = items.map(mapper).toList(growable: false);
-    List<int> indices = new Iterable.generate(decorated.length, (i) => i).toList(growable: false);
-    var comparator = (i, j) => _compareLists(decorated[i], decorated[j], comparators);
+    List<int> indices = new Iterable.generate(decorated.length, _nop).toList(growable: false);
+    comparator(i, j) => _compareLists(decorated[i], decorated[j], comparators);
     indices.sort((descending) ? (i, j) => comparator(j, i) : comparator);
     return indices.map((i) => items[i]).toList(growable: false);
   }
@@ -98,7 +138,7 @@ class OrderByFilter {
   /**
    * expression: String/Function or Array of String/Function.
    */
-  List call(List items, [var expression, bool descending=false]) {
+  List call(List items, var expression, [bool descending=false]) {
     Scope scope = _injector.get(Scope);
     List expressions = null;
     if (expression is String || expression is Mapper) {
