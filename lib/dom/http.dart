@@ -701,7 +701,8 @@ class Http {
         requestHeaders: requestHeaders,
         sendData: sendData,
         onProgress: onProgress).then((dom.HttpRequest value) {
-      assert(value.status >= 200 && value.status < 300);
+      // TODO: Uncomment after apps migrate off of this class.
+      // assert(value.status >= 200 && value.status < 300);
 
       var response = new HttpResponse(
           value.status, value.responseText, parseHeaders(value),
