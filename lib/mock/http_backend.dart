@@ -203,7 +203,6 @@ class MockHttpBackend implements HttpBackend {
     }
 
     for (var definition in definitions) {
-      print('Trying: $definition');
       if (definition.match(method, url, data, headers != null ? headers : {})) {
         if (definition.response != null) {
           // if $browser specified, we do auto flush all requests
