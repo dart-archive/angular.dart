@@ -133,10 +133,13 @@ main() => describe('mock zones', () {
     describe('timers', () {
       it('should not run queued timer on insufficient clock tick', async(() {
         bool timerRan = false;
-        new Timer(new Duration(milliseconds: 10), () => timerRan = true);
+        var timer = new Timer(new Duration(milliseconds: 10),
+            () => timerRan = true);
 
         clockTick(milliseconds: 9);
         expect(timerRan).toBeFalsy();
+
+        timer.cancel();
       }));
 
 
@@ -175,7 +178,8 @@ main() => describe('mock zones', () {
 
       it('should run periodic timer', async(() {
         int timerRan = 0;
-        new Timer.periodic(new Duration(milliseconds: 10), (_) => timerRan++);
+        var timer = new Timer.periodic(new Duration(milliseconds: 10),
+            (_) => timerRan++);
 
         clockTick(milliseconds: 9);
         expect(timerRan).toBe(0);
@@ -183,6 +187,8 @@ main() => describe('mock zones', () {
         expect(timerRan).toBe(1);
         clockTick(milliseconds: 30);
         expect(timerRan).toBe(4);
+
+        timer.cancel();
       }));
 
 
@@ -212,10 +218,10 @@ main() => describe('mock zones', () {
 
       it('should be able to cancel periodic timer from callback', async(() {
         int timerRan = 0;
-        new Timer.periodic(new Duration(milliseconds: 10),
-            (timer) {
+        var timer = new Timer.periodic(new Duration(milliseconds: 10),
+            (t) {
               timerRan++;
-              timer.cancel();
+              t.cancel();
             });
 
         clockTick(milliseconds: 10);
@@ -223,7 +229,86 @@ main() => describe('mock zones', () {
 
         clockTick(milliseconds: 10);
         expect(timerRan).toBe(1);
+
+        timer.cancel();
       }));
+
+
+      it('should process micro-tasks before timers', async(() {
+        var log = [];
+
+        runAsync(() => log.add('runAsync'));
+        new Timer(new Duration(milliseconds: 10),
+            () => log.add('timer'));
+        var timer = new Timer.periodic(new Duration(milliseconds: 10),
+            (_) => log.add('periodic_timer'));
+
+        expect(log.join(' ')).toEqual('');
+
+        clockTick(milliseconds: 10);
+
+        expect(log.join(' ')).toEqual('runAsync timer periodic_timer');
+
+        timer.cancel();
+      }));
+
+
+      it('should process micro-tasks created in timers before next timers', async(() {
+        var log = [];
+
+        runAsync(() => log.add('runAsync'));
+        new Timer(new Duration(milliseconds: 10),
+            () {
+              log.add('timer');
+              runAsync(() => log.add('timer_runAsync'));
+            });
+        var timer = new Timer.periodic(new Duration(milliseconds: 10),
+            (_) {
+              log.add('periodic_timer');
+              runAsync(() => log.add('periodic_timer_runAsync'));
+            });
+
+        expect(log.join(' ')).toEqual('');
+
+        clockTick(milliseconds: 10);
+        expect(log.join(' ')).toEqual('runAsync timer timer_runAsync periodic_timer');
+
+        clockTick();
+        expect(log.join(' ')).toEqual('runAsync timer timer_runAsync periodic_timer');
+
+        clockTick(milliseconds: 10);
+        expect(log.join(' ')).toEqual('runAsync timer timer_runAsync periodic_timer periodic_timer_runAsync periodic_timer');
+
+        timer.cancel();
+      }));
+
+
+      it('should not leak timers between asyncs', () {
+        var log = [];
+
+        async(() {
+          var timer = new Timer.periodic(new Duration(milliseconds: 10),
+              (_) => log.add('periodic_timer'));
+          new Timer(new Duration(milliseconds: 10),
+              () => log.add('timer'));
+          clockTick(milliseconds: 10);
+          timer.cancel();
+        })();
+        expect(log.join(' ')).toEqual('periodic_timer timer');
+
+        async(() {
+          clockTick(milliseconds: 10);
+        })();
+        expect(log.join(' ')).toEqual('periodic_timer timer');
+      });
+
+
+      it('should throw an error on dangling timers', () {
+        expect(async(() {
+          new Timer.periodic(new Duration(milliseconds: 10),
+              (_) => dump("i never run"));
+        })).toThrow('1 active timer(s) are still in the queue.');
+      });
     });
   });
 });
