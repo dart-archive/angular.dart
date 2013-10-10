@@ -42,7 +42,6 @@ class LimitToFilter {
   LimitToFilter(Injector this._injector, Parser this._parser);
 
   dynamic call(dynamic items, [int limit]) {
-    print("CKCK: $items, $limit");
     if (items == null) {
       return null;
     }
