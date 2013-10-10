@@ -15,6 +15,7 @@ import '../utils.dart';
 part 'ng_a.dart';
 part 'ng_bind.dart';
 part 'ng_bind_html.dart';
+part 'ng_bind_template.dart';
 part 'ng_class.dart';
 part 'ng_events.dart';
 part 'ng_cloak.dart';
@@ -33,6 +34,7 @@ part 'input_select.dart';
 void registerDirectives(Module module) {
   module.value(NgADirective, null);
   module.value(NgBindDirective, null);
+  module.value(NgBindTemplateDirective, null);
   module.value(NgBindHtmlDirective, null);
   module.value(NgClassDirective, null);
   module.value(NgClassOddDirective, null);
