@@ -8,6 +8,7 @@ import '../core/parser/parser_library.dart';
 
 part 'currency.dart';
 part 'date.dart';
+part 'filter.dart';
 part 'json.dart';
 part 'limit_to.dart';
 part 'lowercase.dart';
@@ -19,6 +20,7 @@ class NgFilterModule extends Module {
   NgFilterModule() {
     type(CurrencyFilter);
     type(DateFilter);
+    type(FilterFilter);
     type(JsonFilter);
     type(LimitToFilter);
     type(LowercaseFilter);
