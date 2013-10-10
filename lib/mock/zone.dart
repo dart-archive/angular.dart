@@ -40,9 +40,13 @@ microLeap() {
 }
 
 /**
- * Simulates a clock tick by running any scheduled timers. Clock tick will
- * call [microLeap] to process the micro-task queue before each timer callback.
- * Can only be used in [async] tests. Example:
+ * Simulates a clock tick by running any scheduled timers. Can only be used
+ * in [async] tests.Clock tick will call [microLeap] to process the microtask
+ * queue before each timer callback.
+ *
+ * Note: microtasks scheduled form the last timer are not going to be processed.
+ *
+ * Example:
  *
  *     it('should run queued timer after sufficient clock ticks', async(() {
  *       bool timerRan = false;
@@ -151,6 +155,11 @@ async(Function fn) =>
   _asyncErrors.forEach((e) {
     throw "During runZoned: $e.  Stack:\n${dartAsync.getAttachedStackTrace(e)}";
   });
+
+  if (!_timerQueue.isEmpty && _timerQueue.any((_TimerSpec spec) => spec.isActive)) {
+    throw ["${_timerQueue.where((_TimerSpec spec) => spec.isActive).length} "
+           "active timer(s) are still in the queue."];
+  }
 };
 
 _createTimer(Function fn, Duration duration, bool periodic) {
