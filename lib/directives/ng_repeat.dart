@@ -140,8 +140,8 @@ class NgRepeatDirective  {
       childScope[r'$first'] = (index == 0);
       childScope[r'$last'] = (index == (collection.length - 1));
       childScope[r'$middle'] = !(childScope.$first || childScope.$last);
-      childScope[r'$odd'] = index % 2 == 1;
-      childScope[r'$even'] = index % 2 == 0;
+      childScope[r'$odd'] = index & 1 == 1;
+      childScope[r'$even'] = index & 1 == 0;
 
       if (row.startNode == null) {
         rows[row.id] = row;
