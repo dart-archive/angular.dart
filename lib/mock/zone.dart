@@ -35,7 +35,14 @@ microLeap() {
     // copy the queue as it may change.
     var toRun = new List.from(_asyncQueue);
     _asyncQueue = [];
+    // TODO: Support the case where multiple exceptions are thrown.
+    // e.g. with a throwNextException() method.
+    assert(_asyncErrors.isEmpty);
     toRun.forEach((fn) => fn());
+    if (!_asyncErrors.isEmpty) {
+      var e = _asyncErrors.removeAt(0);
+      throw ['Async error', e, dartAsync.getAttachedStackTrace(e)];
+    }
   }
 }
 

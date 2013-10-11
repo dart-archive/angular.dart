@@ -52,6 +52,19 @@ main() => describe('MockHttpBackend', () {
   });
 
 
+  it('should throw an error on an exception in then', async(() {
+    hb.expectGET('/url').respond(200, 'content');
+
+    expect(() {
+      hb.request('/url', method: 'GET').then((x) {
+        throw ["exceptiona"];
+      });
+      hb.flush();
+      microLeap();
+    }).toThrow('exceptiona');
+  }));
+
+
   it('should match headers if specified', () {
     try {
     hb.when('GET', '/url', null, {'X': 'val1'}).respond(201, 'content1');

@@ -49,6 +49,20 @@ main() => describe('mock zones', () {
     });
 
 
+    it('should run async code with runAsync', () {
+      var ran = false;
+      var thenRan = false;
+      async(() {
+        runAsync(() { thenRan = true; });
+        expect(thenRan).toBe(false);
+        microLeap();
+        expect(thenRan).toBe(true);
+        ran = true;
+      })();
+      expect(ran).toBe(true);
+    });
+
+
     it('should run chained thens', () {
       var log = [];
       async(() {
@@ -123,12 +137,18 @@ main() => describe('mock zones', () {
 
 
     it('should complain if the test throws an exception during async calls', () {
-      var ran = false;
       expect(async(() {
         new Future.value('s').then((_) { throw "blah then"; });
         microLeap();
       })).toThrow("blah then");
     });
+
+    it('should throw errors from the microLeap call', async(() {
+      new Future.value('s').then((_) { throw "blah then 2"; });
+      expect(() {
+        microLeap();
+      }).toThrow("blah then 2");
+    }));
 
     describe('timers', () {
       it('should not run queued timer on insufficient clock tick', async(() {
