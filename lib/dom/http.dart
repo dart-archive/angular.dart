@@ -77,7 +77,7 @@ class HttpInterceptor {
 */
 class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   Function request = (HttpResponseConfig config) {
-    if (config.data is! String && config.data is! dom.File) {
+    if (config.data != null && config.data is! String && config.data is! dom.File) {
       config.data = json.stringify(config.data);
     }
     return config;
@@ -468,10 +468,10 @@ class Http {
     });
 
     var serverRequest = (HttpResponseConfig config) {
-      assert(config.data is String || config.data is dom.File);
+      assert(config.data == null || config.data is String || config.data is dom.File);
 
       // Strip content-type if data is undefined
-      if (data == null) {
+      if (config.data == null) {
         List<String> toRemove = [];
         headers.forEach((h, _) {
           if (h.toUpperCase() == 'CONTENT-TYPE') {

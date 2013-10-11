@@ -88,6 +88,7 @@ class MockHttpExpectation {
 
   matchData(d) {
     if (data == null) return true;
+    if (d == null) return false; // data is not null, but d is.
     if (data is File) return data == d;
     assert(d is String);
     if (data is RegExp) return data.hasMatch(d);

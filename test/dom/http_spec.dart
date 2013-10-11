@@ -63,6 +63,19 @@ main() => describe('http', () {
     }));
 
 
+    it('should not pass data if not specificed', async(() {
+      // NOTE(deboer): I don't have a good why to test this since
+      // a null in backend.expect's data parameter means "undefined;
+      // we don't care about the data field.
+      backend.expect('POST', '/url', 'null').respond('');
+
+      http(url: '/url', method: 'POST');
+      expect(() {
+        flush();
+      }).toThrow('with different data');
+    }));
+
+
     describe('params', () {
       it('should do basic request with params and encode', async(() {
         backend.expect('GET', '/url?a%3D=%3F%26&b=2').respond('');
