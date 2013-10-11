@@ -3,15 +3,31 @@ library order_by_spec;
 import '../_specs.dart';
 import '../_test_bed.dart';
 
+
+class Name {
+  String firstName;
+  String lastName;
+  Name({String this.firstName, String this.lastName});
+  operator ==(Name other) =>
+      (firstName == other.firstName && lastName == other.lastName);
+  String toString() => 'Name(firstName: $firstName, lastName: $lastName)';
+}
+
+
 main() {
   describe('orderBy filter', () {
+    var Emily___Bronte = new Name(firstName: 'Emily', lastName: 'Bronte'),
+        Mark____Twain = {'firstName': 'Mark',    'lastName': 'Twain'},
+        Jeffrey_Archer = {'firstName': 'Jeffrey', 'lastName': 'Archer'},
+        Isaac___Asimov = new Name(firstName: 'Isaac', lastName: 'Asimov'),
+        Oscar___Wilde = {'firstName': 'Oscar',   'lastName': 'Wilde'};
     beforeEach(() => inject((Scope scope) {
       scope['authors'] = [
-        {'firstName': 'Emily',   'lastName': 'Bronte'},
-        {'firstName': 'Mark',    'lastName': 'Twain'},
-        {'firstName': 'Jeffrey', 'lastName': 'Archer'},
-        {'firstName': 'Isaac',   'lastName': 'Asimov'},
-        {'firstName': 'Oscar',   'lastName': 'Wilde'},
+        Emily___Bronte,
+        Mark____Twain,
+        Jeffrey_Archer,
+        Isaac___Asimov,
+        Oscar___Wilde,
       ];
       scope['items'] = [
         {'a': 10, 'b': 10},
@@ -35,84 +51,84 @@ main() {
 
     it('should sort by expression', inject((Scope scope) {
       expect(scope.$eval('authors | orderBy:"firstName"')).toEqual([
-        {'firstName': 'Emily',   'lastName': 'Bronte'},
-        {'firstName': 'Isaac',   'lastName': 'Asimov'},
-        {'firstName': 'Jeffrey', 'lastName': 'Archer'},
-        {'firstName': 'Mark',    'lastName': 'Twain'},
-        {'firstName': 'Oscar',   'lastName': 'Wilde'},
+        Emily___Bronte,
+        Isaac___Asimov,
+        Jeffrey_Archer,
+        Mark____Twain,
+        Oscar___Wilde,
       ]);
       expect(scope.$eval('authors | orderBy:"lastName"')).toEqual([
-        {'firstName': 'Jeffrey', 'lastName': 'Archer'},
-        {'firstName': 'Isaac',   'lastName': 'Asimov'},
-        {'firstName': 'Emily',   'lastName': 'Bronte'},
-        {'firstName': 'Mark',    'lastName': 'Twain'},
-        {'firstName': 'Oscar',   'lastName': 'Wilde'},
+        Jeffrey_Archer,
+        Isaac___Asimov,
+        Emily___Bronte,
+        Mark____Twain,
+        Oscar___Wilde,
       ]);
 
       scope['sortKey'] = 'firstName';
       expect(scope.$eval('authors | orderBy:sortKey')).toEqual([
-        {'firstName': 'Emily',   'lastName': 'Bronte'},
-        {'firstName': 'Isaac',   'lastName': 'Asimov'},
-        {'firstName': 'Jeffrey', 'lastName': 'Archer'},
-        {'firstName': 'Mark',    'lastName': 'Twain'},
-        {'firstName': 'Oscar',   'lastName': 'Wilde'},
+        Emily___Bronte,
+        Isaac___Asimov,
+        Jeffrey_Archer,
+        Mark____Twain,
+        Oscar___Wilde,
       ]);
 
     }));
 
     it('should reverse order when passed the additional descending param', inject((Scope scope) {
       expect(scope.$eval('authors | orderBy:"lastName":true')).toEqual([
-        {'firstName': 'Oscar',   'lastName': 'Wilde'},
-        {'firstName': 'Mark',    'lastName': 'Twain'},
-        {'firstName': 'Emily',   'lastName': 'Bronte'},
-        {'firstName': 'Isaac',   'lastName': 'Asimov'},
-        {'firstName': 'Jeffrey', 'lastName': 'Archer'},
+        Oscar___Wilde,
+        Mark____Twain,
+        Emily___Bronte,
+        Isaac___Asimov,
+        Jeffrey_Archer,
       ]);
     }));
 
     it('should reverse order when expression is prefixed with "-"', inject((Scope scope) {
       expect(scope.$eval('authors | orderBy:"-lastName"')).toEqual([
-        {'firstName': 'Oscar',   'lastName': 'Wilde'},
-        {'firstName': 'Mark',    'lastName': 'Twain'},
-        {'firstName': 'Emily',   'lastName': 'Bronte'},
-        {'firstName': 'Isaac',   'lastName': 'Asimov'},
-        {'firstName': 'Jeffrey', 'lastName': 'Archer'},
+        Oscar___Wilde,
+        Mark____Twain,
+        Emily___Bronte,
+        Isaac___Asimov,
+        Jeffrey_Archer,
       ]);
     }));
 
     it('should NOT reverse order when BOTH expression is prefixed with "-" AND additional parameter also asks reversal',
        inject((Scope scope) {
       expect(scope.$eval('authors | orderBy:"-lastName":true')).toEqual([
-        {'firstName': 'Jeffrey', 'lastName': 'Archer'},
-        {'firstName': 'Isaac',   'lastName': 'Asimov'},
-        {'firstName': 'Emily',   'lastName': 'Bronte'},
-        {'firstName': 'Mark',    'lastName': 'Twain'},
-        {'firstName': 'Oscar',   'lastName': 'Wilde'},
+        Jeffrey_Archer,
+        Isaac___Asimov,
+        Emily___Bronte,
+        Mark____Twain,
+        Oscar___Wilde,
       ]);
     }));
 
     it('should allow a "+" prefix on the expression that should be a nop (ascending order)',
        inject((Scope scope) {
       expect(scope.$eval('authors | orderBy:"+lastName"')).toEqual([
-        {'firstName': 'Jeffrey', 'lastName': 'Archer'},
-        {'firstName': 'Isaac',   'lastName': 'Asimov'},
-        {'firstName': 'Emily',   'lastName': 'Bronte'},
-        {'firstName': 'Mark',    'lastName': 'Twain'},
-        {'firstName': 'Oscar',   'lastName': 'Wilde'},
+        Jeffrey_Archer,
+        Isaac___Asimov,
+        Emily___Bronte,
+        Mark____Twain,
+        Oscar___Wilde,
       ]);
       expect(scope.$eval('authors | orderBy:"+lastName":false')).toEqual([
-        {'firstName': 'Jeffrey', 'lastName': 'Archer'},
-        {'firstName': 'Isaac',   'lastName': 'Asimov'},
-        {'firstName': 'Emily',   'lastName': 'Bronte'},
-        {'firstName': 'Mark',    'lastName': 'Twain'},
-        {'firstName': 'Oscar',   'lastName': 'Wilde'},
+        Jeffrey_Archer,
+        Isaac___Asimov,
+        Emily___Bronte,
+        Mark____Twain,
+        Oscar___Wilde,
       ]);
       expect(scope.$eval('authors | orderBy:"+lastName":true')).toEqual([
-        {'firstName': 'Oscar',   'lastName': 'Wilde'},
-        {'firstName': 'Mark',    'lastName': 'Twain'},
-        {'firstName': 'Emily',   'lastName': 'Bronte'},
-        {'firstName': 'Isaac',   'lastName': 'Asimov'},
-        {'firstName': 'Jeffrey', 'lastName': 'Archer'},
+        Oscar___Wilde,
+        Mark____Twain,
+        Emily___Bronte,
+        Isaac___Asimov,
+        Jeffrey_Archer,
       ]);
     }));
 
@@ -153,13 +169,13 @@ main() {
         {'a': 20, 'b': 10},
         {'a': 10, 'b': 10},
       ]);
-      scope['func'] = (e) => e['lastName'];
+      scope['func'] = (e) => (e is Name) ? e.lastName : e['lastName'];
       expect(scope.$eval('authors | orderBy:func')).toEqual([
-        {'firstName': 'Jeffrey', 'lastName': 'Archer'},
-        {'firstName': 'Isaac',   'lastName': 'Asimov'},
-        {'firstName': 'Emily',   'lastName': 'Bronte'},
-        {'firstName': 'Mark',    'lastName': 'Twain'},
-        {'firstName': 'Oscar',   'lastName': 'Wilde'},
+        Jeffrey_Archer,
+        Isaac___Asimov,
+        Emily___Bronte,
+        Mark____Twain,
+        Oscar___Wilde,
       ]);
     }));
 

@@ -106,10 +106,9 @@ typedef dynamic Mapper(dynamic e);
  */
 @NgFilter(name: 'orderBy')
 class OrderByFilter {
-  Injector _injector;
   Parser _parser;
 
-  OrderByFilter(Injector this._injector, Parser this._parser);
+  OrderByFilter(Parser this._parser);
 
   static _nop(e) => e;
   static bool _isNonZero(int n) => (n != 0);
@@ -139,7 +138,6 @@ class OrderByFilter {
    * expression: String/Function or Array of String/Function.
    */
   List call(List items, var expression, [bool descending=false]) {
-    Scope scope = _injector.get(Scope);
     List expressions = null;
     if (expression is String || expression is Mapper) {
       expressions = [expression];
@@ -167,7 +165,7 @@ class OrderByFilter {
           mappers[i] = _nop;
         } else {
           var parsed = _parser(strExp);
-          mappers[i] = (e) => parsed.eval(scope, e);
+          mappers[i] = (e) => parsed.eval(e, null);
         }
       } else if (expression is Mapper) {
         mappers[i] = (expression as Mapper);
