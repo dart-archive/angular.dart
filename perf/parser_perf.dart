@@ -3,6 +3,7 @@ library parser_perf;
 import '_perf.dart';
 import 'dart:async';
 import 'package:angular/filter.dart';
+import 'package:angular/filters/all.dart';
 import 'package:angular/scope.dart';
 import 'package:angular/parser/parser_library.dart';
 import 'package:di/di.dart';
@@ -13,18 +14,24 @@ import '../gen/generated_functions.dart' as generated_functions;
 import '../gen/generated_getter_setter.dart' as generated_getter_setter;
 
 main() {
+  var module = new Module()
+    ..type(Parser, implementedBy: DynamicParser)
+    ..type(SubstringFilter)
+    ..type(IncrementFilter);
+  registerFilters(module);
   var injector = new DynamicInjector(
-      modules: [new Module()
-        ..type(Parser, implementedBy: DynamicParser)],
+      modules: [module],
       allowImplicitInjection:true);
   var scope = injector.get(Scope);
   var reflectiveParser = injector.get(Parser);
   var filterMap = injector.get(FilterMap);
+
   var generatedParser = new DynamicInjector(
       modules: [new Module()
         ..type(Parser, implementedBy: StaticParser)
         ..value(StaticParserFunctions, generated_functions.functions(filterMap))],
       allowImplicitInjection:true).get(Parser);
+
   var hybridParser = new DynamicInjector(
       modules: [new Module()
         ..type(Parser, implementedBy: DynamicParser)
@@ -86,6 +93,18 @@ class EqualsThrows {
     } catch (e) {
       return false;
     }
+  }
+}
+
+@NgFilter(name:'increment')
+class IncrementFilter {
+  call(a, b) => a + b;
+}
+
+@NgFilter(name:'substring')
+class SubstringFilter {
+  call(String str, startIndex, [endIndex]) {
+    return str.substring(startIndex, endIndex);
   }
 }
 
