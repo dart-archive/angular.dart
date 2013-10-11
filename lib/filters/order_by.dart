@@ -12,7 +12,7 @@ typedef dynamic Mapper(dynamic e);
  * ascending order this way:
  *
  *     Colors: <ul>
- *       <li ng-repeat='color in colors | orderBy:""'>{{color}}</li>
+ *       <li ng-repeat="color in colors | orderBy:''">{{color}}</li>
  *     </ul>
  *
  * That would result in:
@@ -23,14 +23,14 @@ typedef dynamic Mapper(dynamic e);
  *       <li>red</li>
  *     <ul>
  *
- * The empty string expression, `""`, here signifies sorting in ascending order
- * using the default comparator.  Using `"+"` would also work as the `+` prefix
+ * The empty string expression, `''`, here signifies sorting in ascending order
+ * using the default comparator.  Using `'+'` would also work as the `+` prefix
  * is implied.
  *
- * To sort in descending order, you would use the `"-"` prefix.
+ * To sort in descending order, you would use the `'-'` prefix.
  *
  *     Colors: <ul>
- *       <li ng-repeat='color in colors | orderBy:"-"'>{{color}}</li>
+ *       <li ng-repeat="color in colors | orderBy:'-'">{{color}}</li>
  *     </ul>
  *
  * For this simple example, you could have also provided `true` as the addition
@@ -39,7 +39,7 @@ typedef dynamic Mapper(dynamic e);
  *
  *     <!-- Same result (descending order) as previous snippet. -->
  *     Colors: <ul>
- *       <li ng-repeat='color in colors | orderBy:"":true'>{{color}}</li>
+ *       <li ng-repeat="color in colors | orderBy:'':true">{{color}}</li>
  *     </ul>
  *
  * Example 2: Complex objects, single expression.
@@ -59,26 +59,26 @@ typedef dynamic Mapper(dynamic e);
  *
  * If you want to list the authors sorted by `lastName`, you would use
  *
- *     <li ng-repeat='author in authors | orderBy:"lastName"'>
+ *     <li ng-repeat="author in authors | orderBy:'lastName'">
  *       {{author.lastName}}, {{author.firstName
  *     </li>
  *
- * The string expression, `"lastName"`, indicates that the sort should be on the
+ * The string expression, `'lastName'`, indicates that the sort should be on the
  * `lastName` property of each item.
  *
  * Using the lesson from the previous example, you may sort in reverse order of
  * lastName using either of the two methods.
  *
  *     <!-- reverse order of last names -->
- *     <li ng-repeat='author in authors | orderBy:"-lastName"'>
+ *     <li ng-repeat="author in authors | orderBy:'-lastName'">
  *     <!-- also does the same thing -->
- *     <li ng-repeat='author in authors | orderBy:"lastName":true'>
+ *     <li ng-repeat="author in authors | orderBy:'lastName':true">
  *
  * Note that, while we only discussed string expressions, such as `"lastName"`
  * or the empty string, you can also directly provide a custom callable that
  * will be called to transform the element before a sort.
  *
- *     <li ng-repeat='author in authors | orderBy:getAuthorId'>
+ *     <li ng-repeat="author in authors | orderBy:getAuthorId">
  *
  * In the previous snippet, `getAuthorId` would evaluate to a callable when
  * evaluated on the [Scope] of the `<li>` element.  That callable is called once
@@ -98,7 +98,7 @@ typedef dynamic Mapper(dynamic e);
  * then by first name when the last names are equal.  You would do that like
  * this:
  *
- *     <li ng-repeat='author in authors | orderBy:["lastName", "firstName"]'>
+ *     <li ng-repeat="author in authors | orderBy:['lastName', 'firstName']">
  *
  * The items in such a list may either be string expressions or callables.  The
  * list itself might be provided as an expression that is looked up on the scope
