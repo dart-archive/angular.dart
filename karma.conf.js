@@ -9,13 +9,7 @@ module.exports = function(config) {
     // optionally 'watched' only.
     files: [
       'test/*.dart',
-      'test/directives/*.dart',
-      'test/dom/*.dart',
-      'test/filters/*.dart',
-      'test/mock/*.dart',
-      'test/parser/*.dart',
-      'test/tools/*_spec.dart',
-      'test/config/*.dart',
+      'test/**/*_spec.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js',
       'packages/browser/interop.js'
