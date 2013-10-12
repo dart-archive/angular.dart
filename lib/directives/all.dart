@@ -3,6 +3,7 @@ library angular.directive;
 import 'package:di/di.dart';
 import 'dart:html' as dom;
 import 'dart:async' as async;
+import 'dart:collection' show LinkedHashSet;
 import '../dom/directive.dart';
 import '../dom/block.dart';
 import '../dom/block_factory.dart';
@@ -28,6 +29,7 @@ part 'ng_src_boolean.dart';
 part 'ng_style.dart';
 part 'ng_switch.dart';
 part 'ng_non_bindable.dart';
+part 'select.dart';
 
 void registerDirectives(Module module) {
   module.type(NgADirective);
@@ -49,6 +51,8 @@ void registerDirectives(Module module) {
   module.type(NgSwitchDirective);
   module.type(NgSwitchWhenDirective);
   module.type(NgSwitchDefaultDirective);
+  module.type(SelectDirective);
+  module.type(NgOptionsDirective);
 
   module.type(NgBooleanAttributeDirective);
   module.type(NgSourceDirective);
