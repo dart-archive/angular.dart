@@ -59,9 +59,12 @@ class AngularModule extends Module {
   }
 }
 
+Injector _defaultInjectorFactory(List<Module> modules) =>
+    new DynamicInjector(modules: modules);
 
 // helper for bootstrapping angular
-bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
+bootstrapAngular(modules, [rootElementSelector = '[ng-app]',
+    Injector injectorFactory(List<Module> modules) = _defaultInjectorFactory]) {
   var allModules = new List.from(modules);
   List<dom.Node> topElt = dom.query(rootElementSelector).nodes.toList();
   assert(topElt.length > 0);
@@ -71,9 +74,10 @@ bootstrapAngular(modules, [rootElementSelector = '[ng-app]']) {
   Zone zone = new Zone();
   allModules.add(new Module()..value(Zone, zone));
 
-  zone.run(() {
-    Injector injector = new DynamicInjector(modules: allModules);
+  return zone.run(() {
+    Injector injector = injectorFactory(allModules);
     injector.get(Compiler)(topElt)(injector, topElt);
+    return injector;
   });
 }
 
