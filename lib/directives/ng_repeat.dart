@@ -11,6 +11,73 @@ class _Row {
   _Row(this.id);
 }
 
+/**
+ * @ngdoc directive
+ * @name ng.directive:ngRepeat
+ *
+ * @description
+ * The `ngRepeat` directive instantiates a template once per item from a collection. Each template
+ * instance gets its own scope, where the given loop variable is set to the current collection item,
+ * and `$index` is set to the item index or key.
+ *
+ * Special properties are exposed on the local scope of each template instance, including:
+ *
+ * | Variable  | Type            | Details                                                                     |
+ * |-----------|-----------------|-----------------------------------------------------------------------------|
+ * | `$index`  | {@type number}  | iterator offset of the repeated element (0..length-1)                       |
+ * | `$first`  | {@type boolean} | true if the repeated element is first in the iterator.                      |
+ * | `$middle` | {@type boolean} | true if the repeated element is between the first and last in the iterator. |
+ * | `$last`   | {@type boolean} | true if the repeated element is last in the iterator.                       |
+ * | `$even`   | {@type boolean} | true if the iterator position `$index` is even (otherwise false).           |
+ * | `$odd`    | {@type boolean} | true if the iterator position `$index` is odd (otherwise false).            |
+ *
+ *
+ * @element ANY
+ * @scope
+ * @priority 1000
+ * @param {repeat_expression} ngRepeat The expression indicating how to enumerate a collection. These
+ *   formats are currently supported:
+ *
+ *   * `variable in expression` – where variable is the user defined loop variable and `expression`
+ *     is a scope expression giving the collection to enumerate.
+ *
+ *     For example: `album in artist.albums`.
+ *
+ *   * `(key, value) in expression` – where `key` and `value` can be any user defined identifiers,
+ *     and `expression` is the scope expression giving the collection to enumerate.
+ *
+ *     For example: `(name, age) in {'adam':10, 'amalie':12}`.
+ *
+ *   * `variable in expression track by tracking_expression` – You can also provide an optional tracking function
+ *     which can be used to associate the objects in the collection with the DOM elements. If no tracking function
+ *     is specified the ng-repeat associates elements by identity in the collection. It is an error to have
+ *     more than one tracking function to resolve to the same key. (This would mean that two distinct objects are
+ *     mapped to the same DOM element, which is not possible.)  Filters should be applied to the expression,
+ *     before specifying a tracking expression.
+ *
+ *     For example: `item in items` is equivalent to `item in items track by $id(item)'. This implies that the DOM elements
+ *     will be associated by item identity in the array.
+ *
+ *     For example: `item in items track by $id(item)`. A built in `$id()` function can be used to assign a unique
+ *     `$$hashKey` property to each item in the array. This property is then used as a key to associated DOM elements
+ *     with the corresponding item in the array by identity. Moving the same object in array would move the DOM
+ *     element in the same way ian the DOM.
+ *
+ *     For example: `item in items track by item.id` is a typical pattern when the items come from the database. In this
+ *     case the object identity does not matter. Two objects are considered equivalent as long as their `id`
+ *     property is same.
+ *
+ *     For example: `item in items | filter:searchText track by item.id` is a pattern that might be used to apply a filter
+ *     to items in conjunction with a tracking expression.
+ *
+ *
+ * Example:
+ *
+ *  <ul ng-repeat="item in ['foo', 'bar', 'baz']">
+ *    <li>{{$item}}</li>
+ *  </ul>
+ */
+
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-repeat]',
