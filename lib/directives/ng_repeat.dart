@@ -74,43 +74,43 @@ class _Row {
     selector: '[ng-repeat]',
     map: const {'.': '@.expression'})
 class NgRepeatDirective  {
-  static RegExp SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s+(.+)\s*)?$');
-  static RegExp LHS_SYNTAX = new RegExp(r'^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$');
+  static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s+(.+)\s*)?$');
+  static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$');
 
-  BlockHole blockHole;
-  BoundBlockFactory boundBlockFactory;
-  Scope scope;
+  BlockHole _blockHole;
+  BoundBlockFactory _boundBlockFactory;
+  Scope _scope;
 
   String _expression;
-  String valueIdentifier;
-  String keyIdentifier;
-  String listExpr;
-  Map<Object, _Row> rows = new Map<dynamic, _Row>();
-  Function trackByIdFn = (key, value, index) => value;
-  Function removeWatch = () => null;
+  String _valueIdentifier;
+  String _keyIdentifier;
+  String _listExpr;
+  Map<Object, _Row> _rows = new Map<dynamic, _Row>();
+  Function _trackByIdFn = (key, value, index) => value;
+  Function _removeWatch = () => null;
 
-  NgRepeatDirective(BlockHole this.blockHole,
-                        BoundBlockFactory this.boundBlockFactory,
-                        Scope this.scope);
+  NgRepeatDirective(BlockHole this._blockHole,
+                    BoundBlockFactory this._boundBlockFactory,
+                    Scope this._scope);
 
   set expression(value) {
     _expression = value;
-    removeWatch();
-    Match match = SYNTAX.firstMatch(_expression);
+    _removeWatch();
+    Match match = _SYNTAX.firstMatch(_expression);
     if (match == null) {
       throw "[NgErr7] ngRepeat error! Expected expression in form of '_item_ in _collection_[ track by _id_]' but got '$_expression'.";
     }
-    listExpr = match.group(2);
+    _listExpr = match.group(2);
     var assignExpr = match.group(1);
-    match = LHS_SYNTAX.firstMatch(assignExpr);
+    match = _LHS_SYNTAX.firstMatch(assignExpr);
     if (match == null) {
       throw "[NgErr8] ngRepeat error! '_item_' in '_item_ in _collection_' should be an identifier or '(_key_, _value_)' expression, but got '$assignExpr'.";
     }
-    valueIdentifier = match.group(3);
-    if (valueIdentifier == null) valueIdentifier = match.group(1);
-    keyIdentifier = match.group(2);
+    _valueIdentifier = match.group(3);
+    if (_valueIdentifier == null) _valueIdentifier = match.group(1);
+    _keyIdentifier = match.group(2);
 
-    removeWatch = scope.$watchCollection(listExpr, _onCollectionChange);
+    _removeWatch = _scope.$watchCollection(_listExpr, _onCollectionChange);
   }
 
   List<_Row> _computeNewRows(collection, trackById) {
@@ -123,17 +123,17 @@ class NgRepeatDirective  {
     var length = newRowOrder.length = collection.length;
     for (var index = 0; index < length; index++) {
       var value = collection[index];
-      trackById = trackByIdFn(index, value, index);
-      if (rows.containsKey(trackById)) {
-        var row = rows[trackById];
-        rows.remove(trackById);
+      trackById = _trackByIdFn(index, value, index);
+      if (_rows.containsKey(trackById)) {
+        var row = _rows[trackById];
+        _rows.remove(trackById);
         newRows[trackById] = row;
         newRowOrder[index] = row;
       } else if (newRows.containsKey(trackById)) {
         // restore lastBlockMap
         newRowOrder.forEach((row) {
           if (row != null && row.startNode != null) {
-            rows[row.id] = row;
+            _rows[row.id] = row;
           }
         });
         // This is a duplicate and we need to throw an error
@@ -145,20 +145,20 @@ class NgRepeatDirective  {
       }
     }
     // remove existing items
-    rows.forEach((key, row){
+    _rows.forEach((key, row){
       row.block.remove();
       row.scope.$destroy();
     });
-    rows = newRows;
+    _rows = newRows;
     return newRowOrder;
   }
 
   _onCollectionChange(collection) {
-    var previousNode = blockHole.elements[0],     // current position of the node
+    var previousNode = _blockHole.elements[0],     // current position of the node
         nextNode,
         childScope,
         trackById,
-        cursor = blockHole;
+        cursor = _blockHole;
 
     if (collection is! List) {
       collection = [];
@@ -190,10 +190,10 @@ class NgRepeatDirective  {
         previousNode = row.endNode;
       } else {
         // new item which we don't know about
-        childScope = scope.$new();
+        childScope = _scope.$new();
       }
 
-      childScope[valueIdentifier] = value;
+      childScope[_valueIdentifier] = value;
       childScope[r'$index'] = index;
       childScope[r'$first'] = (index == 0);
       childScope[r'$last'] = (index == (collection.length - 1));
@@ -202,8 +202,8 @@ class NgRepeatDirective  {
       childScope[r'$even'] = index & 1 == 0;
 
       if (row.startNode == null) {
-        rows[row.id] = row;
-        var block = boundBlockFactory(childScope);
+        _rows[row.id] = row;
+        var block = _boundBlockFactory(childScope);
         row.block = block;
         row.scope = childScope;
         row.elements = block.elements;
