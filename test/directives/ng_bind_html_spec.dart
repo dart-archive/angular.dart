@@ -1,14 +1,13 @@
 library ng_bind_html_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 import 'dart:html' as dom;
 
 main() {
   describe('BindHtmlDirective', () {
     TestBed _;
 
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should sanitize and set innerHtml and sanitize and set html',
           inject((Scope scope, Injector injector, Compiler compiler) {

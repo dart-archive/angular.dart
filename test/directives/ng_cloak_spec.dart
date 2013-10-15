@@ -1,13 +1,12 @@
 library ng_cloak_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 main() {
   describe('NgCloak', () {
     TestBed _;
 
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
 
     it('should get removed when an element is compiled', () {

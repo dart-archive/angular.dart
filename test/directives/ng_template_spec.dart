@@ -1,7 +1,6 @@
 library ng_template_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 main() {
   describe('NgTemplateDirective', () {
@@ -12,7 +11,7 @@ main() {
       htmlForElements.forEach((html) {
         var tagName = html.contains('<template') ? 'template' : 'script';
         describe('$tagName[type="text/ng-template"]', () {
-          beforeEach(beforeEachTestBed((tb) => _ = tb));
+          beforeEach(inject((TestBed tb) => _ = tb));
           it(should, () {
              element = $(html);
              inject(callback);

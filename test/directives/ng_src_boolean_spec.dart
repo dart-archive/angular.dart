@@ -1,13 +1,12 @@
 library ng_src_boolean_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 import 'dart:html' as dom;
 
 main() {
   describe('boolean attr directives', () {
     TestBed _;
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
 
     it('should properly evaluate 0 as false', inject(() {
@@ -92,7 +91,7 @@ main() {
 
   describe('ngSrc', () {
     TestBed _;
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should interpolate the expression and bind to src with raw same-domain value',
     inject(() {
@@ -157,7 +156,7 @@ main() {
 
   describe('ngSrcset', () {
     TestBed _;
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should interpolate the expression and bind to srcset', inject(() {
       _.compile('<div ng-srcset="some/{{id}} 2x"></div>');
@@ -175,7 +174,7 @@ main() {
 
   describe('ngHref', () {
     TestBed _;
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should interpolate the expression and bind to href', inject(() {
       _.compile('<div ng-href="some/{{id}}"></div>');

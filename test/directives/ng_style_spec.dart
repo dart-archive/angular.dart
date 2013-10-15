@@ -1,13 +1,12 @@
 library ng_style_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 import 'dart:html' as dom;
 
 main() => describe('NgStyle', () {
   TestBed _;
 
-  beforeEach(beforeEachTestBed((tb) => _ = tb));
+  beforeEach(inject((TestBed tb) => _ = tb));
 
   it('should set', () {
     dom.Element element = _.compile('<div ng-style="{height: \'40px\'}"></div>');

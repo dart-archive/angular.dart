@@ -1,8 +1,4 @@
-library _test_bed;
-
-import 'dart:html' as dom;
-import '_specs.dart';
-
+part of angular.mock;
 
 /**
  * Class which simplifies bootstraping angular for tests.
@@ -14,8 +10,8 @@ class TestBed {
   Parser parser;
 
 
-  dom.Element rootElement;
-  List<dom.Node> rootElements;
+  Element rootElement;
+  List<Node> rootElements;
   Block rootBlock;
 
   TestBed(
@@ -25,12 +21,12 @@ class TestBed {
       Parser this.parser);
 
 
-  dom.Element compile(html) {
+  Element compile(html) {
     if (html is String) {
       rootElements = toNodeList(html);
-    } else if (html is dom.Node) {
+    } else if (html is Node) {
       rootElements = [html];
-    } else if (html is List<dom.Node>) {
+    } else if (html is List<Node>) {
       rootElements = html;
     } else {
       throw 'Expecting: String, Node, or List<Node> got $html.';
@@ -40,7 +36,7 @@ class TestBed {
     return rootElement;
   }
 
-  List<dom.Element> toNodeList(html) {
+  List<Element> toNodeList(html) {
     var div = new DivElement();
     div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
     var nodes = [];
@@ -51,7 +47,7 @@ class TestBed {
   }
 
   triggerEvent(element, name, [type='MouseEvent']) {
-    element.dispatchEvent(new dom.Event.eventType(type, name));
+    element.dispatchEvent(new Event.eventType(type, name));
   }
 
   selectOption(element, text) {
@@ -59,18 +55,3 @@ class TestBed {
     triggerEvent(element, 'change');
   }
 }
-
-beforeEachTestBed(assign) {
-  return module((AngularModule module) {
-    module.type(TestBed);
-    module.type(Probe);
-
-    var httpBackend = new MockHttpBackend();
-    module.value(MockHttpBackend, httpBackend);
-    module.value(HttpBackend, httpBackend);
-
-    return inject((TestBed tb) => assign(tb));
-  });
-}
-
-main() {}

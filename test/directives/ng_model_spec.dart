@@ -1,14 +1,13 @@
 library ng_model_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 import 'dart:html' as dom;
 
 main() =>
 describe('ng-model', () {
   TestBed _;
 
-  beforeEach(beforeEachTestBed((tb) => _ = tb));
+  beforeEach(inject((TestBed tb) => _ = tb));
 
   describe('type="text"', () {
     it('should update input value from model', inject(() {

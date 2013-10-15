@@ -1,7 +1,6 @@
 library curerncy_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 main() => describe('number', () {
   var currency;

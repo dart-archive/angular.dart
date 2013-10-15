@@ -1,14 +1,13 @@
 library ng_a_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 import 'dart:html' as dom;
 
 main() {
   describe('ADirective', () {
     TestBed _;
 
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should bind click listener when href zero length string', inject((Scope scope) {
       _.compile('<a href="" ng-click="abc = true; event = \$event"></a>');

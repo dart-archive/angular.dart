@@ -1,7 +1,6 @@
 library ng_mustache_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 main() {
   describe('ng-mustache', () {
@@ -9,7 +8,7 @@ main() {
     beforeEach(module((Module module) {
       module.type(_ListenerDirective);
     }));
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should replace {{}} in text', inject((Compiler $compile, Scope $rootScope, Injector injector) {
       var element = $('<div>{{name}}<span>!</span></div>');
@@ -56,7 +55,7 @@ main() {
   describe('NgShow', () {
     TestBed _;
 
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should add/remove ng-show class', () {
       var element = _.compile('<div ng-show="isVisible"></div>');

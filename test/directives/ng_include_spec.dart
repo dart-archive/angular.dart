@@ -1,13 +1,12 @@
 library ng_include_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 main() {
   describe('NgInclude', () {
     TestBed _;
 
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should fetch template from url', async(inject((Scope scope, TemplateCache cache) {
       cache.put('tpl.html', new HttpResponse(200, 'my name is {{name}}'));

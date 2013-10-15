@@ -3,7 +3,6 @@ library input_select_spec;
 import 'dart:async';
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 //TODO(misko): re-enabled dissabled tests once we have forms.
 
@@ -12,8 +11,7 @@ main() {
 
     describe('ng-value', () {
       TestBed _;
-
-      beforeEach(beforeEachTestBed((tb) => _ = tb));
+      beforeEach(inject((TestBed tb) => _ = tb));
 
       it('should retrieve using ng-value', () {
         _.compile(
@@ -54,7 +52,7 @@ main() {
     
     TestBed _;
 
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     describe('select-one', () {
       it('should compile children of a select without a ngModel, but not create a model for it',
@@ -385,7 +383,7 @@ main() {
 
     describe('select from angular.js', () {
       TestBed _;
-      beforeEach(beforeEachTestBed((tb) => _ = tb));
+      beforeEach(inject((TestBed tb) => _ = tb));
 
       var scope, formElement, element;
 

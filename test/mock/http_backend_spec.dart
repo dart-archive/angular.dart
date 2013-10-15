@@ -1,7 +1,6 @@
 library angular.mock.http_backend_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 class _Chain {
   var _thenFn;
@@ -14,8 +13,7 @@ class _Chain {
 
 main() => describe('MockHttpBackend', () {
   TestBed _;
-
-  beforeEach(beforeEachTestBed((tb) => _ = tb));
+  beforeEach(inject((TestBed tb) => _ = tb));
 
   var hb, callback, realBackendSpy;
 

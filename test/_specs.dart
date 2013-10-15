@@ -4,7 +4,6 @@ library ng_specs;
 import 'dart:html';
 import 'dart:mirrors' as mirror;
 import 'package:unittest/unittest.dart' as unit;
-import 'package:angular/dom/debug.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/dom/common.dart';
 import 'package:angular/dom/selector.dart';
@@ -12,22 +11,17 @@ import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'jasmine_syntax.dart';
 import 'package:angular/mock/mock.dart';
-import 'package:angular/mock/zone.dart';
-import '_test_bed.dart';
 
 export 'dart:html';
 export 'jasmine_syntax.dart' hide main;
 export 'package:unittest/unittest.dart';
 export 'package:unittest/mock.dart';
 export 'package:di/di.dart'; // TODO: remove
-export 'package:angular/dom/debug.dart'; // TODO:remove
 export 'package:angular/angular.dart';
 export 'package:angular/dom/common.dart';
 export 'package:angular/dom/selector.dart';
 export 'package:perf_api/perf_api.dart';
 export 'package:angular/mock/mock.dart';
-export 'package:angular/mock/zone.dart';
-export '_test_bed.dart';
 
 es(String html) {
   var div = new DivElement();
@@ -257,11 +251,17 @@ class SpecInjector {
     return module;
   }
 
-  module(Function fn, [declarationStack]) {
+  module(fnOrModule, [declarationStack]) {
     try {
-      var initFn = moduleInjector.invoke(fn);
-      if (initFn is Function) {
-        initFns.add(initFn);
+      if (fnOrModule is Function) {
+        var initFn = moduleInjector.invoke(fnOrModule);
+        if (initFn is Function) {
+          initFns.add(initFn);
+        }
+      } else if (fnOrModule is Module) {
+        addModule(fnOrModule);
+      } else {
+        throw 'Unsupported type: $fnOrModule';
       }
     } catch (e, s) {
       throw "$e\n$s\nDECLARED AT:$declarationStack";
@@ -297,30 +297,21 @@ inject(Function fn) {
     }
   }
 }
-module(Function fn) {
+module(fnOrModule) {
   try { throw ''; } catch(e, stack) {
     if (currentSpecInjector == null ) {
       return () {
-        return currentSpecInjector.module(fn, stack);
+        return currentSpecInjector.module(fnOrModule, stack);
       };
     } else {
-      return currentSpecInjector.module(fn, stack);
+      return currentSpecInjector.module(fnOrModule, stack);
     }
   }
 }
 
 main() {
   beforeEach(() => currentSpecInjector = new SpecInjector());
-  beforeEach(module((AngularModule module) {
-    module
-      ..type(Logger)
-      ..type(ExceptionHandler, implementedBy: RethrowExceptionHandler)
-      ..factory(Zone, (_) {
-        Zone zone = new Zone();
-        //zone.onError = (dynamic e, dynamic s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
-        return zone;
-      });
-  }));
+  beforeEach(module(new AngularMockModule()));
   beforeEach(() {
     wrapFn(sync);
   });

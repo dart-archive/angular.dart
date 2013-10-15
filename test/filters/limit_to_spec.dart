@@ -1,7 +1,6 @@
 library limit_to_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 main() {
   describe('orderBy filter', () {

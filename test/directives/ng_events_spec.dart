@@ -1,7 +1,6 @@
 library ng_events_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 import 'dart:html' as dom;
 
 void addTest(String name, [String eventType='MouseEvent', String eventName]) {
@@ -12,7 +11,7 @@ void addTest(String name, [String eventType='MouseEvent', String eventName]) {
   describe('ng-$name', () {
     TestBed _;
 
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should evaluate the expression on $name', inject(() {
       _.compile('<button ng-$name="abc = true; event = \$event"></button>');

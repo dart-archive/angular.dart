@@ -1,7 +1,4 @@
-library debug;
-
-import 'package:js/js.dart' as js;
-import 'dart:html';
+part of angular.mock;
 
 String depth = '';
 

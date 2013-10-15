@@ -4,13 +4,12 @@ import 'dart:async';
 import 'dart:html' as dom;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 main() {
   describe('ngClass', () {
     TestBed _;
 
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should add new and remove old classes dynamically', () {
       var element = _.compile('<div class="existing" ng-class="dynClass"></div>');

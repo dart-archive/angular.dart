@@ -1,14 +1,13 @@
 library ng_bind_template_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 import 'dart:html' as dom;
 
 main() {
   describe('BindTemplateDirective', () {
     TestBed _;
 
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should bind template',
           inject((Scope scope, Injector injector, Compiler compiler) {

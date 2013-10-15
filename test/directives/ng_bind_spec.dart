@@ -1,13 +1,12 @@
 library ng_bind_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 main() {
   describe('BindDirective', () {
     TestBed _;
 
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should set.text', inject((Scope scope, Injector injector, Compiler compiler) {
       var element = $('<div ng-bind="a"></div>');

@@ -1,12 +1,11 @@
 library ng_switch_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 main() => describe('ngSwitch', () {
   TestBed _;
 
-  beforeEach(beforeEachTestBed((tb) => _ = tb));
+  beforeEach(inject((TestBed tb) => _ = tb));
 
   it('should switch on value change', inject(() {
     var element = _.compile(

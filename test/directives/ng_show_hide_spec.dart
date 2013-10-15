@@ -7,7 +7,7 @@ import 'dart:html' as dom;
 main() {
   describe('NgHide', () {
     TestBed _;
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should add/remove ng-hide class', () {
       _.compile('<div ng-hide="isHidden"></div>');

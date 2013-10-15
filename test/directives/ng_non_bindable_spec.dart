@@ -1,13 +1,12 @@
 library ng_non_bindable_spec;
 
 import '../_specs.dart';
-import '../_test_bed.dart';
 
 main() {
   describe('NonBindableDirective', () {
     TestBed _;
 
-    beforeEach(beforeEachTestBed((tb) => _ = tb));
+    beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should set ignore all other markup/directives on the descendent nodes',
           inject((Scope scope, Injector injector, Compiler compiler) {
