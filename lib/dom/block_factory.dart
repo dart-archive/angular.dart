@@ -375,7 +375,7 @@ _createAttributeMapping(NgAnnotation annotation, NodeAttrs nodeAttrs,
       case '=':
         Expression attrExprFn = parser(nodeAttrs[attrName]);
         var shadowValue = null;
-        scope.$watch(() => attrExprFn.eval(scope), (v) => dstPathFn.assign(context, shadowValue = v));
+        scope.$watch(() => attrExprFn.eval(scope), (v) => dstPathFn.assign(context, shadowValue = v), nodeAttrs[attrName]);
         if (shadowScope != null) {
           if (attrExprFn.assignable) {
             shadowScope.$watch(() => dstPathFn.eval(context), (v) {
@@ -394,7 +394,7 @@ _createAttributeMapping(NgAnnotation annotation, NodeAttrs nodeAttrs,
           if (dstPathFn.assign(context, value) != null) {
             stopWatching();
           }
-        });
+        }, nodeAttrs[attrName]);
         break;
       case '&':
         dstPathFn.assign(context, parser(nodeAttrs[attrName]).bind(scope));

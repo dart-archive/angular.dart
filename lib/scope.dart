@@ -153,9 +153,23 @@ class Scope implements Map {
   }
 
 
-  $watch(watchExp, [Function listener]) {
+  $watch(watchExp, [Function listener, String watchStr]) {
+    if (watchStr == null) {
+      watchStr = watchExp.toString();
+
+      // Keep prod fast
+      assert((() {
+        if (watchExp is Function) {
+          var m = reflect(watchExp);
+          if (m is ClosureMirror) {
+            watchStr = "FN: ${m.function.source}";
+          }
+        }
+        return true;
+      })());
+    }
     var watcher = new _Watch(_compileToFn(listener), _initWatchVal,
-        _compileToFn(watchExp), watchExp.toString());
+        _compileToFn(watchExp), watchStr);
 
     // we use unshift since we use a while loop in $digest for speed.
     // the while loop reads in reverse order.
@@ -531,6 +545,15 @@ _toJson(obj) {
   try {
     return stringify(obj);
   } catch(e) {
-    return "NOT-JSONABLE";
+    var ret = "NOT-JSONABLE";
+    // Keep prod fast.
+    assert((() {
+      var mirror = reflect(obj);
+      if (mirror is ClosureMirror) {
+        ret = mirror.function.source;
+      }
+      return true;
+    })());
+    return ret;
   }
 }
