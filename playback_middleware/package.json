@@ -1,0 +1,23 @@
+{
+  "name": "dart_playback_middleware",
+  "version": "0.0.1",
+  "main": "lib/middleware.js",
+  "dependencies": {
+    "q": "~0.9.7",
+    "connect": "~2.9.0"
+  },
+  "description": "Node module supporting Angular.dart's HTTP playback mode.",
+  "scripts": {
+    "test": "jasmine-node spec/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/angular/angular.dart"
+  },
+  "keywords": [
+    "angular.dart",
+    "dart"
+  ],
+  "author": "James deBoer <james@huronbox.com>",
+  "license": "MIT"
+}

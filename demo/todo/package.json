@@ -1,0 +1,11 @@
+{
+  "name": "todo",
+  "version": "0.0.1",
+  "description": "Optional web server for Angular.dart's todo demo",
+  "main": "webserver.js",
+  "dependencies": {
+    "dart2jsaas": "~0.0.4",
+    "connect": "~2.9.0"
+  },
+  "license": "MIT"
+}
