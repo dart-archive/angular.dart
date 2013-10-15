@@ -14,7 +14,7 @@ main() {
 
       var element = _.compile('<div ng-include="template"></div>');
 
-      expect(element.html()).toEqual('');
+      expect(element.innerHtml).toEqual('');
 
       scope.$apply(() {
         scope['name'] = 'Vojta';
@@ -22,7 +22,7 @@ main() {
       });
 
       microLeap();  // load the template from cache.
-      expect(element.text()).toEqual('my name is Vojta');
+      expect(element.text).toEqual('my name is Vojta');
     })));
 
 
@@ -33,7 +33,7 @@ main() {
         scope['name'] = 'Vojta';
         scope['template'] = '<span>my inlined name is {{name}}</span>';
       });
-      expect(element.text()).toEqual('my inlined name is Vojta');
+      expect(element.text).toEqual('my inlined name is Vojta');
     }));
   });
 }

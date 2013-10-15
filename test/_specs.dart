@@ -13,6 +13,7 @@ import 'package:di/dynamic_injector.dart';
 import 'jasmine_syntax.dart';
 import 'package:angular/mock/mock.dart';
 import 'package:angular/mock/zone.dart';
+import '_test_bed.dart';
 
 export 'dart:html';
 export 'jasmine_syntax.dart' hide main;
@@ -26,6 +27,7 @@ export 'package:angular/dom/selector.dart';
 export 'package:perf_api/perf_api.dart';
 export 'package:angular/mock/mock.dart';
 export 'package:angular/mock/zone.dart';
+export '_test_bed.dart';
 
 es(String html) {
   var div = new DivElement();
@@ -88,12 +90,12 @@ class Expect {
                  true,
                  reason: 'method invoked once with correct arguments. (Called ${actual.count} times)');
 
-  toHaveClass(cls) => unit.expect(actual.hasClass(cls), true, reason: ' Expected ${actual} to have css class ${cls}');
+  toHaveClass(cls) => unit.expect(actual.classes.contains(cls), true, reason: ' Expected ${actual} to have css class ${cls}');
 
   toEqualSelect(options) {
     var actualOptions = [];
 
-    for(var option in actual.find('option')) {
+    for(var option in actual.queryAll('option')) {
       if (option.selected) {
         actualOptions.add([option.value]);
       } else {
@@ -125,7 +127,7 @@ class NotExpect {
   toHaveBeenCalled() => unit.expect(actual.called, false, reason: 'method called');
   toThrow() => actual();
 
-  toHaveClass(cls) => unit.expect(actual.hasClass(cls), false, reason: ' Expected ${actual} to not have css class ${cls}');
+  toHaveClass(cls) => unit.expect(actual.classes.contains(cls), false, reason: ' Expected ${actual} to not have css class ${cls}');
   toBe(expected) => unit.expect(actual,
       unit.predicate((actual) => !identical(expected, actual), '$expected'));
   toEqual(expected) => unit.expect(actual,

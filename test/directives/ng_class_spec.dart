@@ -16,29 +16,29 @@ main() {
       var element = _.compile('<div class="existing" ng-class="dynClass"></div>');
       _.rootScope.dynClass = 'A';
       _.rootScope.$digest();
-      expect(element.hasClass('existing')).toBe(true);
-      expect(element.hasClass('A')).toBe(true);
+      expect(element.classes.contains('existing')).toBe(true);
+      expect(element.classes.contains('A')).toBe(true);
 
       _.rootScope.dynClass = 'B';
       _.rootScope.$digest();
-      expect(element.hasClass('existing')).toBe(true);
-      expect(element.hasClass('A')).toBe(false);
-      expect(element.hasClass('B')).toBe(true);
+      expect(element.classes.contains('existing')).toBe(true);
+      expect(element.classes.contains('A')).toBe(false);
+      expect(element.classes.contains('B')).toBe(true);
 
       _.rootScope.dynClass = null;
       _.rootScope.$digest();
-      expect(element.hasClass('existing')).toBe(true);
-      expect(element.hasClass('A')).toBe(false);
-      expect(element.hasClass('B')).toBe(false);
+      expect(element.classes.contains('existing')).toBe(true);
+      expect(element.classes.contains('A')).toBe(false);
+      expect(element.classes.contains('B')).toBe(false);
     });
 
 
     it('should support adding multiple classes via an array', () {
       var element = _.compile('<div class="existing" ng-class="[\'A\', \'B\']"></div>');
       _.rootScope.$digest();
-      expect(element.hasClass('existing')).toBeTruthy();
-      expect(element.hasClass('A')).toBeTruthy();
-      expect(element.hasClass('B')).toBeTruthy();
+      expect(element.classes.contains('existing')).toBeTruthy();
+      expect(element.classes.contains('A')).toBeTruthy();
+      expect(element.classes.contains('B')).toBeTruthy();
     });
 
 
@@ -51,17 +51,17 @@ main() {
           _.rootScope.conditionA = true;
           _.rootScope.conditionB = () { return false; };
           _.rootScope.$digest();
-          expect(element.hasClass('existing')).toBeTruthy();
-          expect(element.hasClass('A')).toBeTruthy();
-          expect(element.hasClass('B')).toBeFalsy();
-          expect(element.hasClass('AnotB')).toBeTruthy();
+          expect(element.classes.contains('existing')).toBeTruthy();
+          expect(element.classes.contains('A')).toBeTruthy();
+          expect(element.classes.contains('B')).toBeFalsy();
+          expect(element.classes.contains('AnotB')).toBeTruthy();
 
           _.rootScope.conditionB = () { return true; };
           _.rootScope.$digest();
-          expect(element.hasClass('existing')).toBeTruthy();
-          expect(element.hasClass('A')).toBeTruthy();
-          expect(element.hasClass('B')).toBeTruthy();
-          expect(element.hasClass('AnotB')).toBeFalsy();
+          expect(element.classes.contains('existing')).toBeTruthy();
+          expect(element.classes.contains('A')).toBeTruthy();
+          expect(element.classes.contains('B')).toBeTruthy();
+          expect(element.classes.contains('AnotB')).toBeFalsy();
         });
 
 
@@ -70,20 +70,20 @@ main() {
           var element = _.compile('<div ng-class="classes"></div>');
           _.rootScope.classes = { 'A': true, 'B': true };
           _.rootScope.$digest();
-          expect(element.hasClass('A')).toBeTruthy();
-          expect(element.hasClass('B')).toBeTruthy();
+          expect(element.classes.contains('A')).toBeTruthy();
+          expect(element.classes.contains('B')).toBeTruthy();
           _.rootScope.classes['A'] = false;
           _.rootScope.$digest();
-          expect(element.hasClass('A')).toBeFalsy();
-          expect(element.hasClass('B')).toBeTruthy();
+          expect(element.classes.contains('A')).toBeFalsy();
+          expect(element.classes.contains('B')).toBeTruthy();
         });
 
     it('should support adding multiple classes via a space delimited string', () {
       var element = _.compile('<div class="existing" ng-class="\'A B\'"></div>');
       _.rootScope.$digest();
-      expect(element.hasClass('existing')).toBeTruthy();
-      expect(element.hasClass('A')).toBeTruthy();
-      expect(element.hasClass('B')).toBeTruthy();
+      expect(element.classes.contains('existing')).toBeTruthy();
+      expect(element.classes.contains('A')).toBeTruthy();
+      expect(element.classes.contains('B')).toBeTruthy();
     });
 
 
@@ -91,16 +91,16 @@ main() {
       var element = _.compile('<div class="existing" ng-class="dynClass"></div>');
       _.rootScope.dynClass = 'A';
       _.rootScope.$digest();
-      expect(element.hasClass('existing')).toBe(true);
+      expect(element.classes.contains('existing')).toBe(true);
 
       // add extra class, change model and eval
-      element.addClass('newClass');
+      element.classes.add('newClass');
       _.rootScope.dynClass = 'B';
       _.rootScope.$digest();
 
-      expect(element.hasClass('existing')).toBe(true);
-      expect(element.hasClass('B')).toBe(true);
-      expect(element.hasClass('newClass')).toBe(true);
+      expect(element.classes.contains('existing')).toBe(true);
+      expect(element.classes.contains('B')).toBe(true);
+      expect(element.classes.contains('newClass')).toBe(true);
     });
 
 
@@ -108,15 +108,15 @@ main() {
       var element = _.compile('<div ng-class="dynClass"></div>');
       _.rootScope.dynClass = 'A';
       _.rootScope.$digest();
-      expect(element.hasClass('A')).toBe(true);
+      expect(element.classes.contains('A')).toBe(true);
 
       // add extra class, change model and eval
-      element.addClass('newClass');
+      element.classes.add('newClass');
       _.rootScope.dynClass = 'B';
       _.rootScope.$digest();
 
-      expect(element.hasClass('B')).toBe(true);
-      expect(element.hasClass('newClass')).toBe(true);
+      expect(element.classes.contains('B')).toBe(true);
+      expect(element.classes.contains('newClass')).toBe(true);
     });
 
 
@@ -126,7 +126,7 @@ main() {
       _.rootScope.$digest();
       _.rootScope.dynCls = 'foo';
       _.rootScope.$digest();
-      expect(element[0].className).toEqual('ui-panel ui-selected foo');
+      expect(element.className).toEqual('ui-panel ui-selected foo');
     });
 
 
@@ -134,7 +134,7 @@ main() {
       var element = _.compile('<div class="panel bar" ng-class="dynCls"></div>');
       _.rootScope.dynCls = 'panel';
       _.rootScope.$digest();
-      expect(element[0].className).toEqual('panel bar');
+      expect(element.className).toEqual('panel bar');
     });
 
 
@@ -144,7 +144,7 @@ main() {
       _.rootScope.$digest();
       _.rootScope.dynCls = 'window';
       _.rootScope.$digest();
-      expect(element[0].className).toEqual('bar window');
+      expect(element.className).toEqual('bar window');
     });
 
 
@@ -152,7 +152,7 @@ main() {
       var element = _.compile('<div ng-class="dynCls"></div>');
       _.rootScope.dynCls = 'foo';
       _.rootScope.$digest();
-      element.addClass('foo');
+      element.classes.add('foo');
       _.rootScope.dynCls = '';
       _.rootScope.$digest();
     });
@@ -161,12 +161,12 @@ main() {
     it('should ngClass odd/even', () {
       var element = _.compile('<ul><li ng-repeat="i in [0,1]" class="existing" ng-class-odd="\'odd\'" ng-class-even="\'even\'"></li><ul>');
       _.rootScope.$digest();
-      var e1 = $(element[0].nodes[1]);
-      var e2 = $(element[0].nodes[2]);
-      expect(e1.hasClass('existing')).toBeTruthy();
-      expect(e1.hasClass('odd')).toBeTruthy();
-      expect(e2.hasClass('existing')).toBeTruthy();
-      expect(e2.hasClass('even')).toBeTruthy();
+      var e1 = element.nodes[1];
+      var e2 = element.nodes[2];
+      expect(e1.classes.contains('existing')).toBeTruthy();
+      expect(e1.classes.contains('odd')).toBeTruthy();
+      expect(e2.classes.contains('existing')).toBeTruthy();
+      expect(e2.classes.contains('even')).toBeTruthy();
     });
 
 
@@ -176,15 +176,15 @@ main() {
           'ng-class-odd="\'odd\'" ng-class-even="\'even\'">{{\$index}}</li>' +
       '<ul>');
       _.rootScope.$digest();
-      var e1 = $(element[0].nodes[1]);
-      var e2 = $(element[0].nodes[2]);
+      var e1 = element.nodes[1];
+      var e2 = element.nodes[2];
 
-      expect(e1.hasClass('plainClass')).toBeTruthy();
-      expect(e1.hasClass('odd')).toBeTruthy();
-      expect(e1.hasClass('even')).toBeFalsy();
-      expect(e2.hasClass('plainClass')).toBeTruthy();
-      expect(e2.hasClass('even')).toBeTruthy();
-      expect(e2.hasClass('odd')).toBeFalsy();
+      expect(e1.classes.contains('plainClass')).toBeTruthy();
+      expect(e1.classes.contains('odd')).toBeTruthy();
+      expect(e1.classes.contains('even')).toBeFalsy();
+      expect(e2.classes.contains('plainClass')).toBeTruthy();
+      expect(e2.classes.contains('even')).toBeTruthy();
+      expect(e2.classes.contains('odd')).toBeFalsy();
     });
 
     it('should allow both ngClass and ngClassOdd/Even with multiple classes', () {
@@ -193,22 +193,22 @@ main() {
         'ng-class-odd="[\'C\', \'D\']" ng-class-even="[\'E\', \'F\']"></li>' +
         '<ul>');
       _.rootScope.$apply();
-      var e1 = $(element[0].nodes[1]);
-      var e2 = $(element[0].nodes[2]);
+      var e1 = element.nodes[1];
+      var e2 = element.nodes[2];
 
-      expect(e1.hasClass('A')).toBeTruthy();
-      expect(e1.hasClass('B')).toBeTruthy();
-      expect(e1.hasClass('C')).toBeTruthy();
-      expect(e1.hasClass('D')).toBeTruthy();
-      expect(e1.hasClass('E')).toBeFalsy();
-      expect(e1.hasClass('F')).toBeFalsy();
+      expect(e1.classes.contains('A')).toBeTruthy();
+      expect(e1.classes.contains('B')).toBeTruthy();
+      expect(e1.classes.contains('C')).toBeTruthy();
+      expect(e1.classes.contains('D')).toBeTruthy();
+      expect(e1.classes.contains('E')).toBeFalsy();
+      expect(e1.classes.contains('F')).toBeFalsy();
 
-      expect(e2.hasClass('A')).toBeTruthy();
-      expect(e2.hasClass('B')).toBeTruthy();
-      expect(e2.hasClass('E')).toBeTruthy();
-      expect(e2.hasClass('F')).toBeTruthy();
-      expect(e2.hasClass('C')).toBeFalsy();
-      expect(e2.hasClass('D')).toBeFalsy();
+      expect(e2.classes.contains('A')).toBeTruthy();
+      expect(e2.classes.contains('B')).toBeTruthy();
+      expect(e2.classes.contains('E')).toBeTruthy();
+      expect(e2.classes.contains('F')).toBeTruthy();
+      expect(e2.classes.contains('C')).toBeFalsy();
+      expect(e2.classes.contains('D')).toBeFalsy();
     });
 
 
@@ -232,7 +232,7 @@ main() {
       expect(element).toHaveClass('too'); // interpolated
       expect(element).toHaveClass('three');
       expect(element).toHaveClass('four'); // should still be there
-      expect(element.hasClass('two')).toBeFalsy();
+      expect(element.classes.contains('two')).toBeFalsy();
 
       _.rootScope.$apply(() {
         _.rootScope.cls = "to";
@@ -242,8 +242,8 @@ main() {
       expect(element).toHaveClass('to'); // interpolated
       expect(element).toHaveClass('three');
       expect(element).toHaveClass('four'); // should still be there
-      expect(element.hasClass('two')).toBeFalsy();
-      expect(element.hasClass('too')).toBeFalsy();
+      expect(element.classes.contains('two')).toBeFalsy();
+      expect(element.classes.contains('too')).toBeFalsy();
     });
 
 
@@ -254,7 +254,7 @@ main() {
       });
       var element = _.compile('<div ng-class="{foo:foo}"></div>');
       _.rootScope.$digest();
-      expect(element.hasClass('foo')).toBe(false);
+      expect(element.classes.contains('foo')).toBe(false);
     });
 
 
@@ -269,14 +269,14 @@ main() {
       _.rootScope.items = ['a','b'];
       _.rootScope.$digest();
 
-      var e1 = $(element[0].nodes[1]);
-      var e2 = $(element[0].nodes[2]);
+      var e1 = element.nodes[1];
+      var e2 = element.nodes[2];
 
-      expect(e1.hasClass('odd')).toBeTruthy();
-      expect(e1.hasClass('even')).toBeFalsy();
+      expect(e1.classes.contains('odd')).toBeTruthy();
+      expect(e1.classes.contains('even')).toBeFalsy();
 
-      expect(e2.hasClass('even')).toBeTruthy();
-      expect(e2.hasClass('odd')).toBeFalsy();
+      expect(e2.classes.contains('even')).toBeTruthy();
+      expect(e2.classes.contains('odd')).toBeFalsy();
     });
 
 
@@ -291,14 +291,14 @@ main() {
       _.rootScope.items = ['b','a'];
       _.rootScope.$digest();
 
-      var e1 = $(element[0].nodes[1]);
-      var e2 = $(element[0].nodes[2]);
+      var e1 = element.nodes[1];
+      var e2 = element.nodes[2];
 
-      expect(e1.hasClass('odd')).toBeTruthy();
-      expect(e1.hasClass('even')).toBeFalsy();
+      expect(e1.classes.contains('odd')).toBeTruthy();
+      expect(e1.classes.contains('even')).toBeFalsy();
 
-      expect(e2.hasClass('even')).toBeTruthy();
-      expect(e2.hasClass('odd')).toBeFalsy();
+      expect(e2.classes.contains('even')).toBeTruthy();
+      expect(e2.classes.contains('odd')).toBeFalsy();
     });
   });
 }

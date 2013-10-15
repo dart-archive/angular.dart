@@ -9,7 +9,7 @@ main() {
 
     beforeEach(beforeEachTestBed((tb) => _ = tb));
 
-    it('should set text', inject((Scope scope, Injector injector, Compiler compiler) {
+    it('should set.text', inject((Scope scope, Injector injector, Compiler compiler) {
       var element = $('<div ng-bind="a"></div>');
       compiler(element)(injector, element);
       scope.a = "abc123";
@@ -24,17 +24,17 @@ main() {
       scope.$apply(() {
         scope['value'] = null;
       });
-      expect(element.text()).toEqual('');
+      expect(element.text).toEqual('');
 
       scope.$apply(() {
         scope['value'] = true;
       });
-      expect(element.text()).toEqual('true');
+      expect(element.text).toEqual('true');
 
       scope.$apply(() {
         scope['value'] = 1;
       });
-      expect(element.text()).toEqual('1');
+      expect(element.text).toEqual('1');
     }));
   });
 }

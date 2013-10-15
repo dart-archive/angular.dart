@@ -14,7 +14,8 @@ class TestBed {
   Parser parser;
 
 
-  JQuery rootElement;
+  dom.Element rootElement;
+  List<dom.Node> rootElements;
   Block rootBlock;
 
   TestBed(
@@ -24,18 +25,37 @@ class TestBed {
       Parser this.parser);
 
 
-  compile(html) {
-    rootElement = $(html);
-    rootBlock = compiler(rootElement)(injector, rootElement);
+  dom.Element compile(html) {
+    if (html is String) {
+      rootElements = toNodeList(html);
+    } else if (html is dom.Node) {
+      rootElements = [html];
+    } else if (html is List<dom.Node>) {
+      rootElements = html;
+    } else {
+      throw 'Expecting: String, Node, or List<Node> got $html.';
+    }
+    rootElement = rootElements[0];
+    rootBlock = compiler(rootElements)(injector, rootElements);
     return rootElement;
   }
 
-  triggerEvent(elementWrapper, name, [type='MouseEvent']) {
-    elementWrapper[0].dispatchEvent(new dom.Event.eventType(type, name));
+  List<dom.Element> toNodeList(html) {
+    var div = new DivElement();
+    div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
+    var nodes = [];
+    for(var node in div.nodes) {
+      nodes.add(node);
+    }
+    return nodes;
+  }
+
+  triggerEvent(element, name, [type='MouseEvent']) {
+    element.dispatchEvent(new dom.Event.eventType(type, name));
   }
 
   selectOption(element, text) {
-    element.find('option').forEach((o) => o.selected = o.text == text);
+    element.queryAll('option').forEach((o) => o.selected = o.text == text);
     triggerEvent(element, 'change');
   }
 }

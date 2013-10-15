@@ -17,12 +17,12 @@ main() {
       scope.name = 'Heisenberg';
       scope.$digest();
 
-      expect(element.text()).toEqual('Hello Heisenberg!');
+      expect(element.text).toEqual('Hello Heisenberg!');
 
       scope.salutation = 'Good-Bye';
       scope.$digest();
 
-      expect(element.text()).toEqual('Good-Bye Heisenberg!');
+      expect(element.text).toEqual('Good-Bye Heisenberg!');
     }));
   });
 }

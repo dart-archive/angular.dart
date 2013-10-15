@@ -10,14 +10,14 @@ main() => describe('NgStyle', () {
   beforeEach(beforeEachTestBed((tb) => _ = tb));
 
   it('should set', () {
-    dom.Element element = _.compile('<div ng-style="{height: \'40px\'}"></div>')[0];
+    dom.Element element = _.compile('<div ng-style="{height: \'40px\'}"></div>');
     _.rootScope.$digest();
     expect(element.style.height).toEqual('40px');
   });
 
 
   it('should silently ignore undefined style', () {
-    dom.Element element = _.compile('<div ng-style="myStyle"></div>')[0];
+    dom.Element element = _.compile('<div ng-style="myStyle"></div>');
     _.rootScope.$digest();
     expect(element.classes.contains('ng-exception')).toBeFalsy();
   });

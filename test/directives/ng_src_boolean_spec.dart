@@ -14,10 +14,10 @@ main() {
       _.compile('<button ng-disabled="isDisabled">Button</button>');
       _.rootScope.isDisabled = 0;
       _.rootScope.$digest();
-      expect(_.rootElement.attr('disabled')).toBeFalsy();
+      expect(_.rootElement.attributes['disabled']).toBeFalsy();
       _.rootScope.isDisabled = 1;
       _.rootScope.$digest();
-      expect(_.rootElement.attr('disabled')).toBeTruthy();
+      expect(_.rootElement.attributes['disabled']).toBeTruthy();
     }));
 
 
@@ -25,10 +25,10 @@ main() {
       _.compile('<button ng-disabled="isDisabled">Button</button>');
       _.rootScope.isDisabled = false;
       _.rootScope.$digest();
-      expect(_.rootElement.attr('disabled')).toBeFalsy();
+      expect(_.rootElement.attributes['disabled']).toBeFalsy();
       _.rootScope.isDisabled = true;
       _.rootScope.$digest();
-      expect(_.rootElement.attr('disabled')).toBeTruthy();
+      expect(_.rootElement.attributes['disabled']).toBeTruthy();
     }));
 
 
@@ -36,10 +36,10 @@ main() {
       _.compile('<input type="checkbox" ng-checked="isChecked" />');
       _.rootScope.isChecked = false;
       _.rootScope.$digest();
-      expect(_.rootElement.attr('checked')).toBeFalsy();
+      expect(_.rootElement.attributes['checked']).toBeFalsy();
       _.rootScope.isChecked=true;
       _.rootScope.$digest();
-      expect(_.rootElement.attr('checked')).toBeTruthy();
+      expect(_.rootElement.attributes['checked']).toBeTruthy();
     }));
 
 
@@ -47,10 +47,10 @@ main() {
       _.compile('<select><option value=""></option><option ng-selected="isSelected">Greetings!</option></select>');
       _.rootScope.isSelected=false;
       _.rootScope.$digest();
-      expect(_.rootElement.children()[1].selected).toBeFalsy();
+      expect((_.rootElement.childNodes[1] as dom.OptionElement).selected).toBeFalsy();
       _.rootScope.isSelected=true;
       _.rootScope.$digest();
-      expect(_.rootElement.children()[1].selected).toBeTruthy();
+      expect((_.rootElement.childNodes[1] as dom.OptionElement).selected).toBeTruthy();
     }));
 
 
@@ -58,10 +58,10 @@ main() {
       _.compile('<input type="text" ng-readonly="isReadonly" />');
       _.rootScope.isReadonly=false;
       _.rootScope.$digest();
-      expect(_.rootElement.attr('readOnly')).toBeFalsy();
+      expect(_.rootElement.attributes['readOnly']).toBeFalsy();
       _.rootScope.isReadonly=true;
       _.rootScope.$digest();
-      expect(_.rootElement.attr('readOnly')).toBeTruthy();
+      expect(_.rootElement.attributes['readOnly']).toBeTruthy();
     }));
 
 
@@ -69,10 +69,10 @@ main() {
       _.compile('<details ng-open="isOpen"></details>');
       _.rootScope.isOpen=false;
       _.rootScope.$digest();
-      expect(_.rootElement.attr('open')).toBeFalsy();
+      expect(_.rootElement.attributes['open']).toBeFalsy();
       _.rootScope.isOpen=true;
       _.rootScope.$digest();
-      expect(_.rootElement.attr('open')).toBeTruthy();
+      expect(_.rootElement.attributes['open']).toBeTruthy();
     }));
 
 
@@ -81,10 +81,10 @@ main() {
         _.compile('<select ng-multiple="isMultiple"></select>');
         _.rootScope.isMultiple=false;
         _.rootScope.$digest();
-        expect(_.rootElement.attr('multiple')).toBeFalsy();
+        expect(_.rootElement.attributes['multiple']).toBeFalsy();
         _.rootScope.isMultiple='multiple';
         _.rootScope.$digest();
-        expect(_.rootElement.attr('multiple')).toBeFalsy(); // ignore
+        expect(_.rootElement.attributes['multiple']).toBeFalsy(); // ignore
       }));
     });
   });
@@ -99,12 +99,12 @@ main() {
       _.compile('<div ng-src="{{id}}"></div>');
 
       _.rootScope.$digest();
-      expect(_.rootElement.attr('src')).toEqual('');
+      expect(_.rootElement.attributes['src']).toEqual('');
 
       _.rootScope.$apply(() {
         _.rootScope.id = '/somewhere/here';
       });
-      expect(_.rootElement.attr('src')).toEqual('/somewhere/here');
+      expect(_.rootElement.attributes['src']).toEqual('/somewhere/here');
     }));
 
 
@@ -112,12 +112,12 @@ main() {
       _.compile('<div ng-src="{{id}}"></div>');
 
       _.rootScope.$digest();
-      expect(_.rootElement.attr('src')).toEqual(null);
+      expect(_.rootElement.attributes['src']).toEqual(null);
 
       _.rootScope.$apply(() {
         _.rootScope.id = $sce.trustAsResourceUrl('http://somewhere');
       });
-      expect(_.rootElement.attr('src')).toEqual('http://somewhere');
+      expect(_.rootElement.attributes['src']).toEqual('http://somewhere');
     }));
 
 
@@ -133,11 +133,11 @@ main() {
     it('should interpolate a multi-part expression for regular attributes', inject(() {
       _.compile('<div foo="some/{{id}}"></div>');
       _.rootScope.$digest();
-      expect(_.rootElement.attr('foo')).toEqual('some/');
+      expect(_.rootElement.attributes['foo']).toEqual('some/');
       _.rootScope.$apply(() {
         _.rootScope.id = 1;
       });
-      expect(_.rootElement.attr('foo')).toEqual('some/1');
+      expect(_.rootElement.attributes['foo']).toEqual('some/1');
     }));
 
 
@@ -147,7 +147,7 @@ main() {
         _.rootScope.$apply(() {
           _.rootScope.id = $sce.trustAsUrl('http://somewhere');
         });
-        _.rootElement.attr('src');
+        _.rootElement.attributes['src'];
       }).toThrow("Can't interpolate: {{id}}\nError: [\$sce:insecurl] Blocked " +
           "loading resource from url not allowed by \$sceDelegate policy.  URL: http://somewhere");
     }));
@@ -163,12 +163,12 @@ main() {
       _.compile('<div ng-srcset="some/{{id}} 2x"></div>');
 
       _.rootScope.$digest();
-      expect(_.rootElement.attr('srcset')).toEqual('some/ 2x');
+      expect(_.rootElement.attributes['srcset']).toEqual('some/ 2x');
 
       _.rootScope.$apply(() {
         _.rootScope.id = 1;
       });
-      expect(_.rootElement.attr('srcset')).toEqual('some/1 2x');
+      expect(_.rootElement.attributes['srcset']).toEqual('some/1 2x');
     }));
   });
 
@@ -180,12 +180,12 @@ main() {
     it('should interpolate the expression and bind to href', inject(() {
       _.compile('<div ng-href="some/{{id}}"></div>');
       _.rootScope.$digest();
-      expect(_.rootElement.attr('href')).toEqual('some/');
+      expect(_.rootElement.attributes['href']).toEqual('some/');
 
       _.rootScope.$apply(() {
         _.rootScope.id = 1;
       });
-      expect(_.rootElement.attr('href')).toEqual('some/1');
+      expect(_.rootElement.attributes['href']).toEqual('some/1');
     }));
 
 
@@ -194,15 +194,15 @@ main() {
       _.rootScope.url = 'http://server';
       _.rootScope.rel = 'REL';
       _.rootScope.$digest();
-      expect(_.rootElement.attr('href')).toEqual('http://server');
-      expect(_.rootElement.attr('rel')).toEqual('REL');
+      expect(_.rootElement.attributes['href']).toEqual('http://server');
+      expect(_.rootElement.attributes['rel']).toEqual('REL');
     }));
 
 
     it('should bind href even if no interpolation', inject(() {
       _.compile('<a ng-href="http://server"></a>');
       _.rootScope.$digest();
-      expect(_.rootElement.attr('href')).toEqual('http://server');
+      expect(_.rootElement.attributes['href']).toEqual('http://server');
     }));
   });
 }

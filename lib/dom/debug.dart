@@ -52,5 +52,3 @@ STRINGIFY(obj) {
     return obj.toString();
   }
 }
-
-main() {}

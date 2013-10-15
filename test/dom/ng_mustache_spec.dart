@@ -30,7 +30,7 @@ main() {
       _.compile('<div listener>{{text}}</div>');
       _.rootScope.text = 'works';
       _.rootScope.$apply();
-      expect(_.rootElement.text()).toEqual('works');
+      expect(_.rootElement.text).toEqual('works');
       expect(logger).toEqual(['', 'works']);
     }));
 

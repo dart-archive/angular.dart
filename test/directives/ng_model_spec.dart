@@ -15,10 +15,10 @@ describe('ng-model', () {
       _.compile('<input type="text" ng-model="model">');
       _.rootScope.$digest();
 
-      expect(_.rootElement.prop('value')).toEqual('');
+      expect((_.rootElement as dom.InputElement).value).toEqual('');
 
       _.rootScope.$apply('model = "misko"');
-      expect(_.rootElement.prop('value')).toEqual('misko');
+      expect((_.rootElement as dom.InputElement).value).toEqual('misko');
     }));
 
     it('should update model from the input value', inject(() {
@@ -66,12 +66,12 @@ describe('ng-model', () {
       scope.$apply(() {
         scope['model'] = true;
       });
-      expect(element[0].checked).toBe(true);
+      expect(element.checked).toBe(true);
 
       scope.$apply(() {
         scope['model'] = false;
       });
-      expect(element[0].checked).toBe(false);
+      expect(element.checked).toBe(false);
     }));
 
 
@@ -81,28 +81,28 @@ describe('ng-model', () {
       scope.$apply(() {
         scope['model'] = 0;
       });
-      expect(element[0].checked).toBe(false);
+      expect(element.checked).toBe(false);
 
       scope.$apply(() {
         scope['model'] = 1;
       });
-      expect(element[0].checked).toBe(true);
+      expect(element.checked).toBe(true);
 
       scope.$apply(() {
         scope['model'] = null;
       });
-      expect(element[0].checked).toBe(false);
+      expect(element.checked).toBe(false);
     }));
 
 
     it('should update model from the input value', inject((Scope scope) {
       var element = _.compile('<input type="checkbox" ng-model="model">');
 
-      element[0].checked = true;
+      element.checked = true;
       _.triggerEvent(element, 'change');
       expect(scope['model']).toBe(true);
 
-      element[0].checked = false;
+      element.checked = false;
       _.triggerEvent(element, 'change');
       expect(scope['model']).toBe(false);
     }));
@@ -110,11 +110,11 @@ describe('ng-model', () {
     it('should enter collection watch mode', inject((Scope scope) {
       var element = _.compile('<input type="checkbox" ng-model="model">');
 
-      element[0].checked = true;
+      element.checked = true;
       _.triggerEvent(element, 'change');
       expect(scope['model']).toBe(true);
 
-      element[0].checked = false;
+      element.checked = false;
       _.triggerEvent(element, 'change');
       expect(scope['model']).toBe(false);
     }));
