@@ -185,9 +185,12 @@ class BlockFactory {
         (shadowScope == null ? scope : shadowScope)[ref.annotation.publishAs] = controller;
       }
       _createAttributeMapping(ref.annotation, nodeAttrs == null ? new _AnchorAttrs(ref) : nodeAttrs, scope, shadowScope, controller, parser);
-      if (controller is NgAttachAware && !(ref.annotation is NgComponent)) {
+      if (controller is NgAttachAware) {
         var removeWatcher;
-        removeWatcher = scope.$watch(() { removeWatcher(); controller.attach(); });
+        removeWatcher = scope.$watch(() {
+          removeWatcher();
+          controller.attach();
+        });
       }
       if (controller is NgDetachAware) {
         scope.$on(r'$destroy', controller.detach);
@@ -308,11 +311,7 @@ class _ComponentFactory {
       }
       return shadowDom;
     }));
-    var shadowInjector = createShadowInjector(injector, templateLoader);
-    controller = shadowInjector.get(type);
-    if (controller is NgAttachAware) {
-      templateLoader.template.then((_) => controller.attach());
-    }
+    controller = createShadowInjector(injector, templateLoader).get(type);
     return controller;
   }
 

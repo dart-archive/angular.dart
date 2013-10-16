@@ -411,33 +411,18 @@ main() {
       })));
 
       describe('lifecycle', () {
-        var backend;
-        beforeEach(module((AngularModule module) {
-          backend = new MockHttpBackend();
-          module
-            ..value(HttpBackend, backend)
-            ..value(MockHttpBackend, backend);
-        }));
-
-        it('should fire attach/detach methods', async(inject((Logger logger, MockHttpBackend backend) {
-          backend.whenGET('some/template.url').respond('<div>WORKED</div>');
+        it('should fire attach/detach methods', async(inject((Logger logger) {
           var scope = $rootScope.$new();
           var element = $('<attach-detach></attach-detach>');
           $compile(element)(injector.createChild([new Module()..value(Scope, scope)]), element);
           expect(logger).toEqual(['new']);
 
-          expect(logger).toEqual(['new']);
-
-          $rootScope.$digest();
-          expect(logger).toEqual(['new']);
-
-          backend.flush();
           microLeap();
-          expect(logger).toEqual(['new', 'templateLoaded', 'attach']);
+          $rootScope.$digest();
+          expect(logger).toEqual(['new', 'attach']);
 
           scope.$destroy();
-          expect(logger).toEqual(['new', 'templateLoaded', 'attach', 'detach']);
-          expect(element.textWithShadow()).toEqual('WORKED');
+          expect(logger).toEqual(['new', 'attach', 'detach']);
         })));
       });
     });
@@ -675,14 +660,13 @@ class LogComponent {
 
 @NgComponent(
     selector: 'attach-detach',
-    templateUrl: 'some/template.url'
+    template: r'<content></content>'
 )
 class AttachDetachComponent implements NgAttachAware, NgDetachAware {
   Logger logger;
 
-  AttachDetachComponent(Logger this.logger, TemplateLoader templateLoader) {
+  AttachDetachComponent(Logger this.logger) {
     logger('new');
-    templateLoader.template.then((_) => logger('templateLoaded'));
   }
 
   attach() => logger('attach');
