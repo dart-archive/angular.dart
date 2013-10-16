@@ -29,24 +29,29 @@ measure(b) {
     count++;
   } while(stopwatch.elapsedMicroseconds < targetTime);
 
-  var samples = [];
-  var repeat = (count / 100).toInt() + 1;
   stopwatch.reset();
-  for(var i = 0; i < repeat; i++) {
-    //0  1    2    3    4    5    6    7    8    9
-    b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 0
-    b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 1
-    b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 2
-    b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 3
-    b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 4
-    b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 5
-    b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 6
-    b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 7
-    b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 8
-    b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 9
+  if (count < 100) {
+    for(var i = 0; i < count; i++) {
+      b();
+    }
+  } else {
+    var repeat = (count / 100).toInt();
+    for(var i = 0; i < repeat; i++) {
+      //0  1    2    3    4    5    6    7    8    9
+      b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 0
+      b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 1
+      b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 2
+      b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 3
+      b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 4
+      b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 5
+      b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 6
+      b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 7
+      b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 8
+      b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 9
+    }
   }
   stopwatch.stop();
-  return new Sample(repeat * 100, stopwatch.elapsedMicroseconds);
+  return new Sample(count, stopwatch.elapsedMicroseconds);
 }
 
 main() {}

@@ -1,0 +1,31 @@
+import '_perf.dart';
+
+main() => describe('compiler', () {
+  describe('block instantiation', () {
+    iit('time ', inject((TestBed tb) {
+      tb.compile(UL_REPEATER);
+      var items = [];
+      for(var i = 0; i < 100; i++) {
+        items.add({"text":'text_$i', "done": i & 1 == 1});
+      }
+      var empty = [];
+      tb.rootScope.classFor = (item) => 'ng-${item["done"]}';
+
+      time('create 100 blocks',
+          () => tb.rootScope.$apply(() => tb.rootScope.items = items),
+          cleanUp: () => tb.rootScope.$apply(() => tb.rootScope.items = empty),
+          verify: () => expect(tb.rootElement.queryAll('li').length).toEqual(100));
+    }));
+  });
+});
+
+var UL_REPEATER =
+"""
+<ul class="well unstyled">
+    <li ng-repeat="item in items" ng-class="classFor(item)">
+        <label class="checkbox">
+            <input type="checkbox" ng-model="item.done"> {{item.text}}
+        </label>
+    </li>
+</ul>
+""";
