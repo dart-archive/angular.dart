@@ -1,4 +1,13 @@
-part of angular.mock;
+library angular.playback.playback_http;
+
+import "dart:async";
+import "dart:html";
+import "dart:json" as json;
+
+import "package:angular/core_dom/module.dart";
+import "package:angular/mock/module.dart" as mock;
+
+import "playback_data.dart" as playback_data;
 
 class PlaybackHttpBackendConfig {
   requestKey(String url,
@@ -73,7 +82,7 @@ class PlaybackHttpBackend implements HttpBackend {
 
   PlaybackHttpBackend(PlaybackHttpBackendConfig this._config);
 
-  Map data = playbackData;
+  Map data = playback_data.playbackData;
 
   Future request(String url,
                  {String method, bool withCredentials, String responseType,
@@ -93,7 +102,7 @@ class PlaybackHttpBackend implements HttpBackend {
     }
     var playback = data[key];
     return new Future.value(
-        new MockHttpRequest(
+        new mock.MockHttpRequest(
             playback['status'],
             playback['data'],
             playback['headers']));

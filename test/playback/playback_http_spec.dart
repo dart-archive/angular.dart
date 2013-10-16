@@ -1,4 +1,5 @@
 import '../_specs.dart';
+import 'package:angular/playback/playback_http.dart';
 
 main() => describe('Playback HTTP', () {
   MockHttpBackend backend;
