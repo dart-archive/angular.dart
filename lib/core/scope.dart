@@ -148,16 +148,7 @@ class Scope implements Map {
 
       // Keep prod fast
       assert((() {
-        if (watchExp is Function) {
-          var m = reflect(watchExp);
-          if (m is ClosureMirror) {
-            // work-around dartbug.com/14130
-            try {
-              watchStr = "FN: ${m.function.source}";
-            } on NoSuchMethodError catch (e) {}
-
-          }
-        }
+        watchStr = _source(watchExpr);
         return true;
       })());
     }
@@ -171,7 +162,7 @@ class Scope implements Map {
     return () => _watchers.remove(watcher);
   }
 
-  $watchCollection(obj, listener) {
+  $watchCollection(obj, listener, [String expression]) {
     var oldValue;
     var newValue;
     num changeDetected = 0;
@@ -256,7 +247,9 @@ class Scope implements Map {
       relaxFnApply(listener, [newValue, oldValue, this]);
     };
 
-    return this.$watch($watchCollectionWatch, $watchCollectionAction);
+    return this.$watch($watchCollectionWatch,
+                       $watchCollectionAction,
+                       expression == null ? obj : expression);
   }
 
 
@@ -270,11 +263,10 @@ class Scope implements Map {
     _zone.assertInTurn();
   }
 
-  $digest() => _perf.time('angular.scope.digest', () {
+  $digest() {
     var innerAsyncQueue = _innerAsyncQueue,
         length,
-        dirty, _ttlLeft = _ttl,
-        logIdx, logMsg;
+        dirty, _ttlLeft = _ttl;
     List<List<String>> watchLog = [];
     List<_Watch> watchers;
     _Watch watch;
@@ -290,12 +282,17 @@ class Scope implements Map {
 
         while(innerAsyncQueue.length > 0) {
           try {
-            $root.$eval(innerAsyncQueue.removeAt(0));
+            var workFn = innerAsyncQueue.removeAt(0);
+            assert(_perf.startTimer('ng.innerAsync(${_source(workFn)})') != false);
+            $root.$eval(workFn);
           } catch (e, s) {
             _exceptionHandler(e, s);
+          } finally {
+            assert(_perf.stopTimer('ng.innerAsync(${_source(workFn)})') != false);
           }
         }
 
+        assert(_perf.startTimer('ng.dirty_check.${_ttl-_ttlLeft}') != false);
         do { // "traverse the scopes" loop
           if ((watchers = current._watchers) != null) {
             // process our watches
@@ -308,18 +305,9 @@ class Scope implements Map {
                 if (!_identical(value, last)) {
                   dirty = true;
                   watch.last = value;
+                  assert(_perf.startTimer('ng.fire(${watch.exp})') != false);
                   watch.fn(value, ((last == _initWatchVal) ? value : last), current);
-                  if (_ttlLeft < 5) {
-                    logIdx = 4 - _ttlLeft;
-                    while (watchLog.length <= logIdx) {
-                      watchLog.add([]);
-                    }
-                    logMsg = (watch.exp is Function)
-                        ? 'fn: ' + (watch.exp.toString())
-                        : watch.exp;
-                    logMsg += '; newVal: ' + _toJson(value) + '; oldVal: ' + _toJson(last);
-                    watchLog[logIdx].add(logMsg);
-                  }
+                  assert(_perf.stopTimer('ng.fire(${watch.exp})') != false);
                 }
               } catch (e, s) {
                 _exceptionHandler(e, s);
@@ -346,6 +334,7 @@ class Scope implements Map {
           }
         } while ((current = next) != null);
 
+        assert(_perf.stopTimer('ng.dirty_check.${_ttl-_ttlLeft}') != false);
         if(dirty && (_ttlLeft--) == 0) {
           throw '$_ttl \$digest() iterations reached. Aborting!\n' +
               'Watchers fired in the last 5 iterations: ${_toJson(watchLog)}';
@@ -353,15 +342,19 @@ class Scope implements Map {
       } while (dirty || innerAsyncQueue.length > 0);
       while(_outerAsyncQueue.length > 0) {
         try {
-          $root.$eval(_outerAsyncQueue.removeAt(0));
+          var workFn = _outerAsyncQueue.removeAt(0);
+          assert(_perf.startTimer('ng.outerAsync(${_source(workFn)})') != false);
+          $root.$eval(workFn);
         } catch (e, s) {
           _exceptionHandler(e, s);
+        } finally {
+          assert(_perf.stopTimer('ng.outerAsync(${_source(workFn)})') != false);
         }
       }
     } finally {
       _clearPhase();
     }
-  });
+  }
 
 
   $destroy() {
@@ -393,9 +386,12 @@ class Scope implements Map {
   $apply([expr]) {
     return _zone.run(() {
       try {
+        assert(_perf.startTimer('ng.\$apply(${_source(expr)})') != false);
         return $eval(expr);
       } catch (e, s) {
         _exceptionHandler(e, s);
+      } finally {
+        assert(_perf.stopTimer('ng.\$apply(${_source(expr)})') != false);
       }
     });
   }
@@ -499,11 +495,13 @@ class Scope implements Map {
       // TODO(deboer): Remove the []s when dartbug.com/11999 is fixed.
       throw ['${$root._phase} already in progress'];
     }
+    assert(_perf.startTimer('ng.phase.${phase}') != false);
 
     $root._phase = phase;
   }
 
   _clearPhase() {
+    assert(_perf.stopTimer('ng.phase.${$root._phase}') != false);
     $root._phase = null;
   }
 
@@ -552,4 +550,18 @@ _toJson(obj) {
     })());
     return ret;
   }
+}
+
+String _source(obj) {
+  if (obj is Function) {
+    var m = reflect(obj);
+    if (m is ClosureMirror) {
+      // work-around dartbug.com/14130
+      try {
+        return "FN: ${m.function.source}";
+      } on NoSuchMethodError catch (e) {
+      }
+    }
+  }
+  return '$obj';
 }

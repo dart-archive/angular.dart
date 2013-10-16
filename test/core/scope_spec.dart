@@ -205,55 +205,6 @@ main() {
       }));
 
 
-      it(r'should prevent infinite recursion and print watcher expression',() {
-        module((Module module) {
-          module.value(ScopeDigestTTL, new ScopeDigestTTL.value(100));
-        });
-        inject((Scope $rootScope) {
-          $rootScope.$watch('a', (a, b, c) {$rootScope.b++;});
-          $rootScope.$watch('b', (a, b, c) {$rootScope.a++;});
-          $rootScope.a = $rootScope.b = 0;
-
-          expect(() {
-            $rootScope.$digest();
-          }).toThrow('100 \$digest() iterations reached. Aborting!\n'+
-              'Watchers fired in the last 5 iterations: ' +
-              '[["a; newVal: 96; oldVal: 95","b; newVal: 97; oldVal: 96"],' +
-              '["a; newVal: 97; oldVal: 96","b; newVal: 98; oldVal: 97"],' +
-              '["a; newVal: 98; oldVal: 97","b; newVal: 99; oldVal: 98"],' +
-              '["a; newVal: 99; oldVal: 98","b; newVal: 100; oldVal: 99"],' +
-              '["a; newVal: 100; oldVal: 99","b; newVal: 101; oldVal: 100"]]');
-
-          expect($rootScope.$$phase).toBeNull();
-        });
-      });
-
-      it(r'should prevent infinite recursion and print watcher ' +
-         r'expression with debug string',() {
-        module((Module module) {
-          module.value(ScopeDigestTTL, new ScopeDigestTTL.value(100));
-        });
-        inject((Scope $rootScope) {
-          $rootScope.$watch('a', (a, b, c) {$rootScope.b++;}, 'debugA');
-          $rootScope.$watch('b', (a, b, c) {$rootScope.a++;});
-          $rootScope.a = $rootScope.b = 0;
-
-          expect(() {
-            $rootScope.$digest();
-          }).toThrow('100 \$digest() iterations reached. Aborting!\n'+
-          'Watchers fired in the last 5 iterations: ' +
-          '[["debugA; newVal: 96; oldVal: 95","b; newVal: 97; oldVal: 96"],' +
-          '["debugA; newVal: 97; oldVal: 96","b; newVal: 98; oldVal: 97"],' +
-          '["debugA; newVal: 98; oldVal: 97","b; newVal: 99; oldVal: 98"],' +
-          '["debugA; newVal: 99; oldVal: 98","b; newVal: 100; oldVal: 99"],' +
-          '["debugA; newVal: 100; oldVal: 99","b; newVal: 101; oldVal: 100"]]');
-
-          expect($rootScope.$$phase).toBeNull();
-        });
-      });
-
-
-
       it(r'should not fire upon $watch registration on initial $digest', inject((Scope $rootScope) {
         var log = '';
         $rootScope.a = 1;

@@ -44,9 +44,14 @@ class BlockFactory {
     if (elements == null) {
       elements = cloneElements(templateElements);
     }
-    var block = new Block(elements);
-    _link(block, elements, directivePositions, injector);
-    return block;
+    try {
+      assert(_perf.startTimer('ng.block') != false);
+      var block = new Block(elements);
+      _link(block, elements, directivePositions, injector);
+      return block;
+    } finally {
+      assert(_perf.stopTimer('ng.block') != false);
+    }
   }
 
   _link(Block block, List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
@@ -62,124 +67,143 @@ class BlockFactory {
       var nodeListIndex = index + preRenderedIndexOffset;
       dom.Node node = nodeList[nodeListIndex];
 
-      // if node isn't attached to the DOM, create a parent for it.
-      var parentNode = node.parentNode;
-      var fakeParent = false;
-      if (parentNode == null) {
-        fakeParent = true;
-        parentNode = new dom.DivElement();
-        parentNode.append(node);
-      }
+      try {
+        assert(_perf.startTimer('ng.block.link(${_html(node)})') != false);
+        // if node isn't attached to the DOM, create a parent for it.
+        var parentNode = node.parentNode;
+        var fakeParent = false;
+        if (parentNode == null) {
+          fakeParent = true;
+          parentNode = new dom.DivElement();
+          parentNode.append(node);
+        }
 
-      var childInjector = _instantiateDirectives(block, parentInjector, node,
-                      directiveRefs, parentInjector.get(Parser));
+        var childInjector = _instantiateDirectives(block, parentInjector, node,
+                        directiveRefs, parentInjector.get(Parser));
 
-      if (childDirectivePositions != null) {
-        _link(block, node.nodes, childDirectivePositions, childInjector);
-      }
+        if (childDirectivePositions != null) {
+          _link(block, node.nodes, childDirectivePositions, childInjector);
+        }
 
-      if (fakeParent) {
-        // extract the node from the parentNode.
-        nodeList[nodeListIndex] = parentNode.nodes[0];
+        if (fakeParent) {
+          // extract the node from the parentNode.
+          nodeList[nodeListIndex] = parentNode.nodes[0];
+        }
+      } finally {
+        assert(_perf.stopTimer('ng.block.link(${_html(node)})') != false);
       }
     }
   }
 
   Injector _instantiateDirectives(Block block, Injector parentInjector,
                                   dom.Node node, List<DirectiveRef> directiveRefs,
-                                  Parser parser) =>
-    _perf.time('angular.blockFactory.instantiateDirectives', () {
-    if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
-    var nodeModule = new Module();
-    var blockHoleFactory = (_) => null;
-    var blockFactory = (_) => null;
-    var boundBlockFactory = (_) => null;
-    var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
-    var nodesAttrsDirectives = null;
+                                  Parser parser) {
+    assert(_perf.startTimer('ng.block.link.setUp(${_html(node)}})') != false);
+    Injector nodeInjector;
+    Scope scope;
     Map<Type, _ComponentFactory> fctrs;
+    var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
 
-    nodeModule.value(Block, block);
-    nodeModule.value(dom.Element, node);
-    nodeModule.value(dom.Node, node);
-    nodeModule.value(NodeAttrs, nodeAttrs);
-    directiveRefs.forEach((DirectiveRef ref) {
-      NgAnnotation annotation = ref.annotation;
-      var visibility = _elementOnly;
-      if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
-        visibility = null;
-      } else if (ref.annotation.visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
-        visibility = _elementDirectChildren;
-      }
-      if (ref.type == NgTextMustacheDirective) {
-        nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
-          return new NgTextMustacheDirective(
-              node, ref.value, injector.get(Interpolate), injector.get(Scope),
-              injector.get(TextChangeListener));
-        });
-      } else if (ref.type == NgAttrMustacheDirective) {
-        if (nodesAttrsDirectives == null) {
-          nodesAttrsDirectives = [];
-          nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
-            nodesAttrsDirectives.forEach((ref) {
-              new NgAttrMustacheDirective(nodeAttrs, ref.value, injector.get(Interpolate), injector.get(Scope));
+    try {
+      if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
+      var nodeModule = new Module();
+      var blockHoleFactory = (_) => null;
+      var blockFactory = (_) => null;
+      var boundBlockFactory = (_) => null;
+      var nodesAttrsDirectives = null;
+
+      nodeModule.value(Block, block);
+      nodeModule.value(dom.Element, node);
+      nodeModule.value(dom.Node, node);
+      nodeModule.value(NodeAttrs, nodeAttrs);
+      directiveRefs.forEach((DirectiveRef ref) {
+        NgAnnotation annotation = ref.annotation;
+        var visibility = _elementOnly;
+        if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
+          visibility = null;
+        } else if (ref.annotation.visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
+          visibility = _elementDirectChildren;
+        }
+        if (ref.type == NgTextMustacheDirective) {
+          nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
+            return new NgTextMustacheDirective(
+                node, ref.value, injector.get(Interpolate), injector.get(Scope),
+                injector.get(TextChangeListener));
+          });
+        } else if (ref.type == NgAttrMustacheDirective) {
+          if (nodesAttrsDirectives == null) {
+            nodesAttrsDirectives = [];
+            nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
+              nodesAttrsDirectives.forEach((ref) {
+                new NgAttrMustacheDirective(nodeAttrs, ref.value, injector.get(Interpolate), injector.get(Scope));
+              });
             });
+          }
+          nodesAttrsDirectives.add(ref);
+        } else if (ref.annotation is NgComponent) {
+          //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
+          // TODO(misko): there should be no need to wrap function like this.
+          nodeModule.factory(ref.type, (Injector injector) {
+            Compiler compiler = injector.get(Compiler);
+            Scope scope = injector.get(Scope);
+            BlockCache blockCache = injector.get(BlockCache);
+            Http http = injector.get(Http);
+            TemplateCache templateCache = injector.get(TemplateCache);
+            // This is a bit of a hack since we are returning different type then we are.
+            var componentFactory = new _ComponentFactory(node, ref.type, ref.annotation as NgComponent, injector.get(dom.NodeTreeSanitizer));
+            if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
+            fctrs[ref.type] = componentFactory;
+            return componentFactory(injector, compiler, scope, blockCache, http, templateCache);
+          }, visibility: visibility);
+        } else {
+          nodeModule.type(ref.type, visibility: visibility);
+        }
+        for (var publishType in ref.annotation.publishTypes) {
+          nodeModule.factory(publishType, (Injector injector) => injector.get(ref.type), visibility: visibility);
+        }
+        if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
+          // Currently, transclude is only supported for NgDirective.
+          assert(annotation is NgDirective);
+          blockHoleFactory = (_) => new BlockHole([node]);
+          blockFactory = (_) => ref.blockFactory;
+          boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
+        }
+      });
+      nodeModule.factory(BlockHole, blockHoleFactory);
+      nodeModule.factory(BlockFactory, blockFactory);
+      nodeModule.factory(BoundBlockFactory, boundBlockFactory);
+      nodeInjector = parentInjector.createChild([nodeModule]);
+      scope = nodeInjector.get(Scope);
+    } finally {
+      assert(_perf.stopTimer('ng.block.link.setUp(${_html(node)}})') != false);
+    }
+    directiveRefs.forEach((ref) {
+      try {
+        assert(_perf.startTimer('ng.block.link.${ref.type}') != false);
+        var controller = nodeInjector.get(ref.type);
+        assert(_perf.startTimer('ng.block.link.${ref.type}.map') != false);
+        var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
+        if (ref.annotation.publishAs != null) {
+          (shadowScope == null ? scope : shadowScope)[ref.annotation.publishAs] = controller;
+        }
+        _createAttributeMapping(ref.annotation, nodeAttrs == null ? new _AnchorAttrs(ref) : nodeAttrs, scope, shadowScope, controller, parser);
+        if (controller is NgAttachAware) {
+          var removeWatcher;
+          removeWatcher = scope.$watch(() {
+            removeWatcher();
+            controller.attach();
           });
         }
-        nodesAttrsDirectives.add(ref);
-      } else if (ref.annotation is NgComponent) {
-        //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
-        // TODO(misko): there should be no need to wrap function like this.
-        nodeModule.factory(ref.type, (Injector injector) {
-          Compiler compiler = injector.get(Compiler);
-          Scope scope = injector.get(Scope);
-          BlockCache blockCache = injector.get(BlockCache);
-          Http http = injector.get(Http);
-          TemplateCache templateCache = injector.get(TemplateCache);
-          // This is a bit of a hack since we are returning different type then we are.
-          var componentFactory = new _ComponentFactory(node, ref.type, ref.annotation as NgComponent, injector.get(dom.NodeTreeSanitizer));
-          if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
-          fctrs[ref.type] = componentFactory;
-          return componentFactory(injector, compiler, scope, blockCache, http, templateCache);
-        }, visibility: visibility);
-      } else {
-        nodeModule.type(ref.type, visibility: visibility);
-      }
-      for (var publishType in ref.annotation.publishTypes) {
-        nodeModule.factory(publishType, (Injector injector) => injector.get(ref.type), visibility: visibility);
-      }
-      if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
-        // Currently, transclude is only supported for NgDirective.
-        assert(annotation is NgDirective);
-        blockHoleFactory = (_) => new BlockHole([node]);
-        blockFactory = (_) => ref.blockFactory;
-        boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
-      }
-    });
-    nodeModule.factory(BlockHole, blockHoleFactory);
-    nodeModule.factory(BlockFactory, blockFactory);
-    nodeModule.factory(BoundBlockFactory, boundBlockFactory);
-    var nodeInjector = parentInjector.createChild([nodeModule]);
-    var scope = nodeInjector.get(Scope);
-    directiveRefs.forEach((ref) {
-      var controller = nodeInjector.get(ref.type);
-      var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
-      if (ref.annotation.publishAs != null) {
-        (shadowScope == null ? scope : shadowScope)[ref.annotation.publishAs] = controller;
-      }
-      _createAttributeMapping(ref.annotation, nodeAttrs == null ? new _AnchorAttrs(ref) : nodeAttrs, scope, shadowScope, controller, parser);
-      if (controller is NgAttachAware) {
-        var removeWatcher;
-        removeWatcher = scope.$watch(() {
-          removeWatcher();
-          controller.attach();
-        });
-      }
-      if (controller is NgDetachAware) {
-        scope.$on(r'$destroy', controller.detach);
+        if (controller is NgDetachAware) {
+          scope.$on(r'$destroy', controller.detach);
+        }
+        assert(_perf.stopTimer('ng.block.link.${ref.type}.map') != false);
+      } finally {
+        assert(_perf.stopTimer('ng.block.link.${ref.type}') != false);
       }
     });
     return nodeInjector;
-  });
+  }
 
   // DI visibility callback allowing node-local visibility.
 
@@ -359,23 +383,29 @@ _createAttributeMapping(NgAnnotation annotation, NodeAttrs nodeAttrs,
         scope.$watch(() => attrExprFn.eval(scope), (v) => dstPathFn.assign(context, shadowValue = v), nodeAttrs[attrName]);
         if (shadowScope != null) {
           if (attrExprFn.assignable) {
-            shadowScope.$watch(() => dstPathFn.eval(context), (v) {
-              if (shadowValue != v) {
-                shadowValue = v;
-                attrExprFn.assign(scope, v);
-              }
-            });
+            shadowScope.$watch(
+                () => dstPathFn.eval(context),
+                (v) {
+                  if (shadowValue != v) {
+                    shadowValue = v;
+                    attrExprFn.assign(scope, v);
+                  }
+                },
+                dstPath);
           }
         }
         break;
       case '!':
         Expression attrExprFn = parser(nodeAttrs[attrName]);
         var stopWatching;
-        stopWatching = scope.$watch(() => attrExprFn.eval(scope), (value) {
-          if (dstPathFn.assign(context, value) != null) {
-            stopWatching();
-          }
-        }, nodeAttrs[attrName]);
+        stopWatching = scope.$watch(
+            () => attrExprFn.eval(scope),
+            (value) {
+              if (dstPathFn.assign(context, value) != null) {
+                stopWatching();
+              }
+            },
+            nodeAttrs[attrName]);
         break;
       case '&':
         dstPathFn.assign(context, parser(nodeAttrs[attrName]).bind(scope));
@@ -392,3 +422,15 @@ bool _understands(obj, symbol) {
 
 String _SHADOW = 'SHADOW_INJECTOR';
 
+String _html(obj) {
+  if (obj is String) {
+    return obj;
+  } else if (obj is List) {
+    return (obj as List).fold('', (v, e) => v + _html(e));
+  } else if (obj is dom.Element) {
+    var text = (obj as dom.Element).outerHtml;
+    return text.substring(0, text.indexOf('>') + 1);
+  } else {
+    return obj.nodeName;
+  }
+}

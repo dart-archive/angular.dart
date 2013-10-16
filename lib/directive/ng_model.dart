@@ -15,8 +15,10 @@ part of angular.directive;
     map: const {'ng-model': '&.model'})
 class NgModel {
   final Scope _scope;
+
   Getter getter = ([_]) => null;
   Setter setter = (_, [__]) => null;
+  String _exp;
 
 
   Function _removeWatch = () => null;
@@ -24,7 +26,8 @@ class NgModel {
 
   Function render = (value) => null;
 
-  NgModel(Scope this._scope) {
+  NgModel(Scope this._scope, NodeAttrs attrs) {
+    _exp = 'ng-model=${attrs["ng-model"]}';
     watchCollection = false;
   }
 
@@ -34,9 +37,9 @@ class NgModel {
     _watchCollection = value;
     _removeWatch();
     if (_watchCollection) {
-      _removeWatch = _scope.$watchCollection((s) => getter(), (value) => render(value) );
+      _removeWatch = _scope.$watchCollection((s) => getter(), (value) => render(value), _exp);
     } else {
-      _removeWatch = _scope.$watch((s) => getter(), (value) => render(value) );
+      _removeWatch = _scope.$watch((s) => getter(), (value) => render(value), _exp);
     }
   }
 

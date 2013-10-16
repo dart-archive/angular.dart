@@ -2,22 +2,19 @@ part of angular.core.dom;
 
 @NgDirective(selector: r':contains(/{{.*}}/)')
 class NgTextMustacheDirective {
-  dom.Node element;
-  Expression interpolateFn;
-
   // This Directive is special and does not go through injection.
-  NgTextMustacheDirective(dom.Node this.element,
+  NgTextMustacheDirective(dom.Node element,
                           String markup,
                           Interpolate interpolate,
                           Scope scope,
                           TextChangeListener listener) {
-    interpolateFn = interpolate(markup);
+    Expression interpolateFn = interpolate(markup);
     setter(text) {
       element.text = text;
       if (listener != null) listener.call(text);
     }
     setter('');
-    scope.$watch(interpolateFn.eval, setter);
+    scope.$watch(interpolateFn.eval, setter, markup.trim());
   }
 
 }
@@ -33,7 +30,7 @@ class NgAttrMustacheDirective {
     Expression interpolateFn = interpolate(match[2]);
     Function attrSetter = (text) => attrs[attrName] = text;
     attrSetter('');
-    scope.$watch(interpolateFn.eval, attrSetter);
+    scope.$watch(interpolateFn.eval, attrSetter, markup.trim());
   }
 }
 

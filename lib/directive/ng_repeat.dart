@@ -110,7 +110,7 @@ class NgRepeatDirective  {
     if (_valueIdentifier == null) _valueIdentifier = match.group(1);
     _keyIdentifier = match.group(2);
 
-    _removeWatch = _scope.$watchCollection(_listExpr, _onCollectionChange);
+    _removeWatch = _scope.$watchCollection(_listExpr, _onCollectionChange, value);
   }
 
   List<_Row> _computeNewRows(collection, trackById) {

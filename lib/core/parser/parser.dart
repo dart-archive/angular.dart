@@ -132,11 +132,10 @@ Map<String, Operator> OPERATORS = {
 };
 
 class DynamicParser implements Parser {
-  final Profiler _perf;
   final Lexer _lexer;
   final ParserBackend _b;
 
-  DynamicParser(Profiler this._perf, Lexer this._lexer, ParserBackend this._b);
+  DynamicParser(Lexer this._lexer, ParserBackend this._b);
 
   List<Token> _tokens;
   String _text;
@@ -155,7 +154,7 @@ class DynamicParser implements Parser {
       if (_tokens.length != 0) {
         throw _parserError("Unconsumed token ${_tokens[0].text}");
       }
-      return _perf == null ? value : _b.profiled(value, _perf, text);
+      return value;
     } finally {
       _tokens = null;
       _text = null;

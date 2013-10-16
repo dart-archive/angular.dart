@@ -34,7 +34,7 @@ describe('ng-model', () {
 
     it('should write to input only if value is different', inject(() {
       var scope = _.rootScope;
-      var model = new NgModel(scope);
+      var model = new NgModel(scope, new NodeAttrs(new DivElement()));
       var element = new dom.InputElement();
       dom.query('body').append(element);
       var input = new InputTextDirective(element, model, scope);
