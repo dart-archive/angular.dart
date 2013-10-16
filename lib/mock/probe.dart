@@ -22,6 +22,9 @@ class Probe implements NgDetachAware {
 
   detach() => scope.$root[_attrs['probe']] = null;
 
+  /**
+   * Retrieve a Directive at the current element.
+   */
   directive(Type type) => injector.get(type);
 }
 

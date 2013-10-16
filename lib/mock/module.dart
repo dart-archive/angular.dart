@@ -21,9 +21,10 @@ part 'test_bed.dart';
 part 'zone.dart';
 
 /**
- * Use instead of [AngularModule] in your tests.
+ * Use in addition to [AngularModule] in your tests.
  *
  * [AngularMockModule] provides:
+ *
  *   - [TestBed]
  *   - [Probe]
  *   - [MockHttpBackend] instead of [HttpBackend]

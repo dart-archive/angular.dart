@@ -11,6 +11,16 @@ import 'directive/module.dart';
 import 'filter/module.dart';
 import 'perf/module.dart';
 
+/**
+ * This is the top level module which describes the whole of angular.
+ *
+ * The Module is made up or
+ *
+ * - [NgCoreModule]
+ * - [NgCoreDomModule]
+ * - [NgFilterModule]
+ * - [NgPerfModule]
+ */
 class AngularModule extends Module {
   AngularModule() {
     install(new NgCoreModule());
