@@ -1,5 +1,13 @@
 name: angular
-description: Angular for dart.
+version: 0.0.2
+authors:
+- Misko Hevery <misko@hevery.com>
+- Pavel Jbanov <pavelgj@gmail.com>
+- James deBoer <james@huronbox.com>
+- Chirayu Krishnappa <chirayu@google.com>
+homepage: https://github.com/angular/angular.dart
+description:
+  Angular for dart.
 
 dependencies:
   analyzer_experimental: any
