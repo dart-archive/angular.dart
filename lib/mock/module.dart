@@ -32,15 +32,12 @@ part 'zone.dart';
  */
 class AngularMockModule extends Module {
   AngularMockModule() {
-    var mockHttpBackend = new MockHttpBackend();
-
-    value(MockHttpBackend, mockHttpBackend);
-    value(HttpBackend, mockHttpBackend);
-
+    type(ExceptionHandler, implementedBy: RethrowExceptionHandler);
     type(TestBed);
     type(Probe);
     type(Logger);
-    type(ExceptionHandler, implementedBy: RethrowExceptionHandler);
+    type(MockHttpBackend);
+    factory(HttpBackend, (Injector i) => i.get(MockHttpBackend));
     factory(Zone, (_) {
       Zone zone = new Zone();
       zone.onError = (dynamic e, dynamic s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');

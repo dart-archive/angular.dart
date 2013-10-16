@@ -26,7 +26,7 @@ part 'tree_sanitizer.dart';
 class NgCoreDomModule extends Module {
   NgCoreDomModule() {
     value(TextChangeListener, null);
-    value(TemplateCache, new TemplateCache(capacity: 0));
+    factory(TemplateCache, (_) => new TemplateCache(capacity: 0));
     type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
 
     type(NgTextMustacheDirective);
