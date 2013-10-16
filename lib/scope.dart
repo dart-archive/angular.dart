@@ -162,7 +162,11 @@ class Scope implements Map {
         if (watchExp is Function) {
           var m = reflect(watchExp);
           if (m is ClosureMirror) {
-            watchStr = "FN: ${m.function.source}";
+            // work-around dartbug.com/14130
+            try {
+              watchStr = "FN: ${m.function.source}";
+            } on NoSuchMethodError catch (e) {}
+
           }
         }
         return true;
@@ -550,7 +554,10 @@ _toJson(obj) {
     assert((() {
       var mirror = reflect(obj);
       if (mirror is ClosureMirror) {
-        ret = mirror.function.source;
+        // work-around dartbug.com/14130
+        try {
+          ret = mirror.function.source;
+        } on NoSuchMethodError catch (e) {}
       }
       return true;
     })());
