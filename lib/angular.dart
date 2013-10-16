@@ -1,15 +1,8 @@
 library angular;
 
 export 'bootstrap.dart';
-export 'cache.dart';
-export 'filter.dart';
-export 'registry.dart';
-export 'exception_handler.dart';
-export 'interpolate.dart';
-export 'scope.dart';
-export 'zone.dart';
-
-export 'parser/parser_library.dart';
-export 'dom/all.dart';
-export 'dom/http.dart';
-export 'directives/all.dart';
+export 'core/module.dart';
+export 'core_dom/module.dart';
+export 'core/parser/parser_library.dart';
+export 'directive/module.dart';
+export 'filter/module.dart';

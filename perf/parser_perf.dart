@@ -2,10 +2,9 @@ library parser_perf;
 
 import '_perf.dart';
 import 'dart:async';
-import 'package:angular/filter.dart';
-import 'package:angular/filters/all.dart';
-import 'package:angular/scope.dart';
-import 'package:angular/parser/parser_library.dart';
+import 'package:angular/core/module.dart';
+import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/filter/module.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:intl/intl.dart';
@@ -17,8 +16,8 @@ main() {
   var module = new Module()
     ..type(Parser, implementedBy: DynamicParser)
     ..type(SubstringFilter)
-    ..type(IncrementFilter);
-  registerFilters(module);
+    ..type(IncrementFilter)
+    ..install(new NgFilterModule());
   var injector = new DynamicInjector(
       modules: [module],
       allowImplicitInjection:true);

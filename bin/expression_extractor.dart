@@ -10,7 +10,7 @@ import 'package:angular/tools/common.dart';
 
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
-import 'package:angular/parser/parser_library.dart';
+import 'package:angular/core/parser/parser_library.dart';
 import 'package:angular/tools/parser_generator/dart_code_gen.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 

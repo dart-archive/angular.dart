@@ -1,4 +1,4 @@
-import 'package:angular/parser/parser_library.dart';
+import 'package:angular/core/parser/parser_library.dart';
 
 class _AST implements ParserAST {
   bool get assignable => true;

@@ -117,9 +117,9 @@ class MockHttpBackend implements HttpBackend {
       expectations = [],
       responses = [];
 
-/**
-  * This function is called from [Http] and designed to mimic the Dart APIs.
-  */
+  /**
+   * This function is called from [Http] and designed to mimic the Dart APIs.
+   */
   Future request(String url,
                  {String method, bool withCredentials, String responseType,
                  String mimeType, Map<String, String> requestHeaders, sendData,

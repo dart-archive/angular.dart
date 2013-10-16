@@ -5,23 +5,21 @@ import 'dart:html';
 import 'dart:mirrors' as mirror;
 import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/angular.dart';
-import 'package:angular/dom/common.dart';
-import 'package:angular/dom/selector.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
+import 'package:angular/mock/module.dart';
+
 import 'jasmine_syntax.dart';
-import 'package:angular/mock/mock.dart';
 
 export 'dart:html';
 export 'jasmine_syntax.dart' hide main;
 export 'package:unittest/unittest.dart';
 export 'package:unittest/mock.dart';
-export 'package:di/di.dart'; // TODO: remove
+export 'package:di/di.dart';
+export 'package:di/dynamic_injector.dart';
 export 'package:angular/angular.dart';
-export 'package:angular/dom/common.dart';
-export 'package:angular/dom/selector.dart';
+export 'package:angular/mock/module.dart';
 export 'package:perf_api/perf_api.dart';
-export 'package:angular/mock/mock.dart';
 
 es(String html) {
   var div = new DivElement();
@@ -241,12 +239,14 @@ class SpecInjector {
 
   SpecInjector() {
     var moduleModule = new Module()
-      ..factory(AngularModule, (Injector injector) => addModule(new AngularModule()))
       ..factory(Module, (Injector injector) => addModule(new Module()));
     moduleInjector = new DynamicInjector(modules: [moduleModule]);
   }
 
   addModule(module) {
+    if (injector != null) {
+      throw ["Injector already crated, can not add more modules."];
+    }
     modules.add(module);
     return module;
   }
@@ -272,7 +272,7 @@ class SpecInjector {
     try {
       if (injector == null) {
         injector = new DynamicInjector(modules: modules); // Implicit injection is disabled.
-        initFns.forEach((fn){
+        initFns.forEach((fn) {
           injector.invoke(fn);
         });
       }
@@ -311,9 +311,8 @@ module(fnOrModule) {
 
 main() {
   beforeEach(() => currentSpecInjector = new SpecInjector());
-  beforeEach(module(new AngularMockModule()));
-  beforeEach(() {
-    wrapFn(sync);
-  });
+  beforeEach(module((Module m) => m.install(new AngularModule())));
+  beforeEach(module((Module m) => m.install(new AngularMockModule())));
+  beforeEach(() => wrapFn(sync));
   afterEach(() => currentSpecInjector = null);
 }

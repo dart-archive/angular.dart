@@ -1,61 +1,23 @@
 library angular.bootstrap;
 
+import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:perf_api/perf_api.dart';
 
-import 'dart:html' as dom; // TODO(misko): to be deleted
-
-import 'directive.dart';
-import 'cache.dart';
-import 'exception_handler.dart';
-import 'interpolate.dart';
-import 'dom/http.dart';
-import 'dom/template_cache.dart';
-import 'dom/ng_mustache.dart';
-import 'scope.dart';
-import 'zone.dart';
-import 'filter.dart';
-import 'registry.dart';
-
-import 'parser/parser_library.dart';
-import 'dom/all.dart';
-import 'dom/http.dart';
-import 'directives/all.dart';
-import 'filters/all.dart';
-
+import 'core/module.dart';
+import 'core_dom/module.dart';
+import 'directive/module.dart';
+import 'filter/module.dart';
+import 'perf/module.dart';
 
 class AngularModule extends Module {
   AngularModule() {
-    type(DirectiveMap);
-    value(TextChangeListener, null);
-    type(NgTextMustacheDirective);
-    type(NgAttrMustacheDirective);
-    type(MetadataExtractor);
-    type(FilterMap);
-    type(Compiler);
-    type(ExceptionHandler);
-    type(Scope);
-    type(Parser, implementedBy: DynamicParser);
-    type(DynamicParser);
-    type(Lexer);
-    type(ParserBackend);
-    type(Interpolate);
-    type(Http);
-    type(UrlRewriter);
-    type(HttpBackend);
-    type(HttpDefaultHeaders);
-    type(HttpDefaults);
-    type(HttpInterceptors);
-    type(BlockCache);
-    value(TemplateCache, new TemplateCache(capacity: 0));
-    type(GetterSetter);
-    type(Profiler);
-    type(ScopeDigestTTL);
-    type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
-
-    registerDirectives(this);
-    registerFilters(this);
+    install(new NgCoreModule());
+    install(new NgCoreDomModule());
+    install(new NgDirectiveModule());
+    install(new NgFilterModule());
+    install(new NgPerfModule());
   }
 }
 

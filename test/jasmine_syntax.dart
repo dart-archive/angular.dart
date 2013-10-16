@@ -35,17 +35,11 @@ class Describe {
   }
 
   setUp() {
-    if (parent != null) {
-      parent.setUp();
-    }
     beforeEachFns.forEach((fn) => fn());
   }
 
   tearDown() {
-    afterEachFns.reversed.forEach((fn) => fn());
-    if (parent != null) {
-      parent.tearDown();
-    }
+    afterEachFns.forEach((fn) => fn());
   }
 }
 
@@ -71,7 +65,7 @@ describe(name, fn, [bool exclusive=false]) {
 }
 
 beforeEach(fn) => currentDescribe.beforeEachFns.add(fn);
-afterEach(fn) => currentDescribe.afterEachFns.add(fn);
+afterEach(fn) => currentDescribe.afterEachFns.insert(0, fn);
 
 wrapFn(fn) => _wrapFn = fn;
 
@@ -154,4 +148,7 @@ class Jasmine {
   }
 }
 
-main(){}
+main(){
+  unit.setUp(currentDescribe.setUp);
+  unit.tearDown(currentDescribe.tearDown);
+}

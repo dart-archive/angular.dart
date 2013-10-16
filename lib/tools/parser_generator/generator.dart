@@ -1,7 +1,7 @@
 library generator;
 
 import 'dart_code_gen.dart';
-import '../../parser/parser_library.dart';
+import '../../core/parser/parser_library.dart';
 import 'source.dart';
 
 class ParserGenerator {

@@ -1,6 +1,6 @@
 library dart_code_gen;
 
-import '../../parser/parser_library.dart';  // For ParserBackend.
+import '../../core/parser/parser_library.dart';  // For ParserBackend.
 import 'source.dart';
 
 Code VALUE_CODE = new Code("value");
