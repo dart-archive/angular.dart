@@ -35,7 +35,7 @@ class NgCoreDomModule extends Module {
     type(Compiler);
     type(Http);
     type(UrlRewriter);
-    factory(HttpBackend, (i) { throw "Why not Override????"; });
+    type(HttpBackend);
     type(HttpDefaultHeaders);
     type(HttpDefaults);
     type(HttpInterceptors);
