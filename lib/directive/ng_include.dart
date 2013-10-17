@@ -1,5 +1,20 @@
 part of angular.directive;
 
+/**
+ * Fetches, compiles and includes an external Angular template/HTML.
+ *
+ * A new child [Scope] is created for the included DOM subtree.
+ *
+ * [NgIncludeDirective] provides only one small part of the power of
+ * [NgComponent].  Consider using directives and components instead as they
+ * provide this feature as well as much more.
+ *
+ * Note: The browser's Same Origin Policy (<http://v.gd/5LE5CA>) and
+ * Cross-Origin Resource Sharing (CORS) policy (<http://v.gd/nXoY8y>) restrict
+ * whether the template is successfully loaded.  For example,
+ * [NgIncludeDirective] won't work for cross-domain requests on all browsers and
+ * for `file://` access on some browsers.
+ */
 @NgDirective(
     selector: '[ng-include]',
     map: const {'ng-include': '=>url'} )
@@ -14,9 +29,9 @@ class NgIncludeDirective {
   Scope _previousScope;
 
   NgIncludeDirective(dom.Element this.element,
-                         Scope this.scope,
-                         BlockCache this.blockCache,
-                         Injector this.injector);
+                     Scope this.scope,
+                     BlockCache this.blockCache,
+                     Injector this.injector);
 
   _cleanUp() {
     if (_previousBlock == null) {
