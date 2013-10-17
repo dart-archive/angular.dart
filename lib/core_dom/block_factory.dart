@@ -261,9 +261,7 @@ class BlockCache {
   }
 
   async.Future<BlockFactory> fromUrl(String url) {
-    return $http.getString(url, cache: $templateCache).then((String tmpl) {
-      return fromHtml(tmpl);
-    });
+    return $http.getString(url, cache: $templateCache).then(fromHtml);
   }
 }
 

@@ -32,8 +32,6 @@ class NgIncludeDirective {
   }
 
   _updateContent(createBlock) {
-    _cleanUp();
-
     // create a new scope
     _previousScope = scope.$new();
     _previousBlock = createBlock(injector.createChild([new Module()..value(Scope, _previousScope)]));
@@ -43,17 +41,9 @@ class NgIncludeDirective {
 
 
   set url(value) {
-    if (value == null || value == '') {
-      _cleanUp();
-      return;
-    }
-
-    if (value.startsWith('<')) {
-      // inlined template
-      _updateContent(blockCache.fromHtml(value));
-    } else {
-      // an url template
-      blockCache.fromUrl(value).then((createBlock) => _updateContent(createBlock));
+    _cleanUp();
+    if (value != null && value != '') {
+      blockCache.fromUrl(value).then(_updateContent);
     }
   }
 }
