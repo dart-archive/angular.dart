@@ -32,5 +32,5 @@ main() {
     module.type(HttpBackend, implementedBy: PlaybackHttpBackend);
   }
 
-  bootstrapAngular([module]);
+  ngBootstrap([module]);
 }

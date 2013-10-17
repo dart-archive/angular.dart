@@ -75,7 +75,7 @@ typedef bool Equals(a, b);
  *     }
  *
  *     main() {
- *       bootstrapAngular([new AngularModule()..type(ToyData)], 'html');
+ *       ngBootstrap([new AngularModule()..type(ToyData)], 'html');
  *     }
  *
  * and

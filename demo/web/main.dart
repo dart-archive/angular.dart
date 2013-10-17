@@ -77,5 +77,5 @@ main() {
     ..type(ChapterDirective)
     ..type(MainController);
 
-  bootstrapAngular([module]);
+  ngBootstrap([module]);
 }

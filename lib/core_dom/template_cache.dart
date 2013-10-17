@@ -38,7 +38,7 @@ part of angular.core.dom;
  *     }
  *
  *     main() {
- *       bootstrapAngular([new AngularModule()..type(LoadTemplateCacheDirective)], 'html');
+ *       ngBootstrap([new AngularModule()..type(LoadTemplateCacheDirective)], 'html');
  *     }
  *
  * and

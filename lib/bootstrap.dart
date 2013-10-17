@@ -1,15 +1,4 @@
-library angular.bootstrap;
-
-import 'dart:html' as dom;
-import 'package:di/di.dart';
-import 'package:di/dynamic_injector.dart';
-import 'package:perf_api/perf_api.dart';
-
-import 'core/module.dart';
-import 'core_dom/module.dart';
-import 'directive/module.dart';
-import 'filter/module.dart';
-import 'perf/module.dart';
+part of angular;
 
 /**
  * This is the top level module which describes the whole of angular.
@@ -34,21 +23,61 @@ class AngularModule extends Module {
 Injector _defaultInjectorFactory(List<Module> modules) =>
     new DynamicInjector(modules: modules);
 
-// helper for bootstrapping angular
-bootstrapAngular(modules, [rootElementSelector = '[ng-app]',
-    Injector injectorFactory(List<Module> modules) = _defaultInjectorFactory]) {
-  var allModules = new List.from(modules);
-  List<dom.Node> topElt = dom.query(rootElementSelector).nodes.toList();
-  assert(topElt.length > 0);
+/**
+ * This method is the main entry point to an angular application.
+ *
+ * # The [ngBootstrap] is responsible for:
+ *
+ *   1. Locating the root element of the application,
+ *   2. Creating Angular [Zone]
+ *   3. Inside the [Zone] create an injector
+ *   4. Retrieve the [Compiler] and compile the root eleement
+ *
+ *
+ * # Parameters:
+ *
+ *   - [module] Option application module to add to the [Injector].
+ *   - [modules] Optional list of [Module]s to add to the [Injector] (if more then one is needed).
+ *   - [element] Optional root element of the application. If non specified, the
+ *     the root element is looked up usinge the [selector]. If selector can not
+ *     identify a root, the root [HTTML] element is used for bootstraping.
+ *   - [selector] Optional CSS selector used to locate the root element for the application.
+ *   - [injectorFactor] Optinoal factory responsible for creating the injector.
+ *
+ *
+ *
+ * # A typical way to boostrap an Angular application:
+ *
+ *     Module myAppModule = new Module();
+ *     myAppModule.type(MyType);
+ *     ....
+ *     Injector injector = ngBootstrap(module: myAppModule);
+ */
+Injector ngBootstrap({
+        Module module: null,
+        List<Module> modules: null,
+        dom.Element element: null,
+        String selector: '[ng-app]',
+        Injector injectorFactory(List<Module> modules): _defaultInjectorFactory}) {
+
+  var ngModules = [new AngularModule()];
+  if (module != null) ngModules.add(module);
+  if (modules != null) ngModules.addAll(modules);
+  if (element == null) {
+    element = dom.query(selector);
+    var document = dom.window.document;
+    if (element == null) element = document.childNodes.firstWhere((e) => e is dom.Element);
+  }
 
   // The injector must be created inside the zone, so we create the
   // zone manually and give it back to the injector as a value.
   Zone zone = new Zone();
-  allModules.add(new Module()..value(Zone, zone));
+  ngModules.add(new Module()..value(Zone, zone));
 
   return zone.run(() {
-    Injector injector = injectorFactory(allModules);
-    injector.get(Compiler)(topElt)(injector, topElt);
+    var rootElements = [element];
+    Injector injector = injectorFactory(ngModules);
+    injector.get(Compiler)(rootElements)(injector, rootElements);
     return injector;
   });
 }
