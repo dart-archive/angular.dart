@@ -8,20 +8,39 @@ main() {
 
     beforeEach(inject((TestBed tb) => _ = tb));
 
-    it('should fetch template from url', async(inject((Scope scope, TemplateCache cache) {
+    it('should fetch template from literal url', async(inject((Scope scope, TemplateCache cache) {
       cache.put('tpl.html', new HttpResponse(200, 'my name is {{name}}'));
 
-      var element = _.compile('<div ng-include="template"></div>');
+      var element = _.compile('<div ng-include="tpl.html"></div>');
+
+      expect(element.innerHtml).toEqual('');
+
+      microLeap();  // load the template from cache.
+      scope.$apply(() {
+        scope['name'] = 'Vojta';
+      });
+      expect(element.text).toEqual('my name is Vojta');
+    })));
+
+    it('should fetch template from url using interpolation', async(inject((Scope scope, TemplateCache cache) {
+      cache.put('tpl1.html', new HttpResponse(200, 'My name is {{name}}'));
+      cache.put('tpl2.html', new HttpResponse(200, 'I am {{name}}'));
+
+      var element = _.compile('<div ng-include="{{template}}"></div>');
 
       expect(element.innerHtml).toEqual('');
 
       scope.$apply(() {
         scope['name'] = 'Vojta';
-        scope['template'] = 'tpl.html';
+        scope['template'] = 'tpl1.html';
       });
+      expect(element.text).toEqual('My name is Vojta');
 
-      microLeap();  // load the template from cache.
-      expect(element.text).toEqual('my name is Vojta');
+      scope.$apply(() {
+        scope['template'] = 'tpl2.html';
+      });
+      expect(element.text).toEqual('I am Vojta');
     })));
+
   });
 }
