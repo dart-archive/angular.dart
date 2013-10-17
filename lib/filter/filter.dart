@@ -113,22 +113,17 @@ typedef bool Equals(a, b);
 class FilterFilter {
   Parser _parser;
   Equals _comparator;
-
-  FilterFilter(Parser this._parser);
+  Equals _stringComparator;
 
   static _nop(e) => e;
-
   static _ensureBool(val) => (val is bool && val);
-
   static _isSubstringCaseInsensitive(String a, String b) =>
       a != null && b != null && a.toLowerCase().contains(b.toLowerCase());
-
   static _identical(a, b) => identical(a, b) ||
-                      (a is String && b is String && a == b) ||
-                      (a is num && b is num && a.isNaN && b.isNaN);
+                             (a is String && b is String && a == b) ||
+                             (a is num && b is num && a.isNaN && b.isNaN);
 
-  // Used by _defaultComparator to compare strings.
-  Equals _stringComparator;
+  FilterFilter(Parser this._parser);
 
   Equals _configureComparator(var comparatorExpression) {
     if (comparatorExpression == null || comparatorExpression == false) {
@@ -163,7 +158,6 @@ class FilterFilter {
         return item == what;
       } else if (what is String) {
         what = (what as String).toLowerCase();
-        // TODO(chirayu): Support this extension?  Yes => add tests.
         return item ? (what == "true"  || what == "yes" || what == "on")
                     : (what == "false" || what == "no"  || what == "off");
       } else {
@@ -173,9 +167,6 @@ class FilterFilter {
       if (what is num) {
         return item == what || (item.isNaN && what.isNaN);
       } else {
-        // TODO(chirayu): I think this expression is more appropriate here.
-        //
-        // return what is String && '$item' == what;
         return what is String && _stringComparator('$item', what);
       }
     } else {
@@ -185,10 +176,8 @@ class FilterFilter {
 
   bool _search(var item, var what) {
     if (what is Map) {
-      return what.keys.every((key) {
-        return _search((key == r'$') ? item : _parser(key).eval(item, null),
-                       what[key]);
-      });
+      return what.keys.every((key) => _search(
+              (key == r'$') ? item : _parser(key).eval(item, null), what[key]));;
     } else {
       if (item is Map) {
         return item.keys.any((k) => !k.startsWith(r'$') && _search(item[k], what));
@@ -212,13 +201,14 @@ class FilterFilter {
 
   List call(List items, var expression, [var comparator]) {
     if (expression == null) {
-      return items.toList(); // Missing expression → passthrough.
+      return items.toList(growable: false); // Missing expression → passthrough.
     } else if (expression is! Map && expression is! Function &&
                expression is! String && expression is! bool && expression is! num) {
       return const []; // Bad expression → no items for you!
     }
     _configureComparator(comparator);
-    // TODO(chirayu): Important to set _comparator=null before return?
-    return items.where(_toPredicate(expression)).toList();
+    List results = items.where(_toPredicate(expression)).toList(growable: false);
+    _comparator = null;
+    return results;
   }
 }
