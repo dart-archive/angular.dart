@@ -8,11 +8,14 @@ List<dom.Node> cloneElements(elements) {
   return clones;
 }
 
+typedef ApplyMapping(NodeAttrs attrs, Scope scope, Object dst);
+
 class DirectiveRef {
   final dom.Node element;
   final Type type;
   final NgAnnotation annotation;
   final String value;
+  final List<ApplyMapping> mappings = new List<ApplyMapping>();
 
   BlockFactory blockFactory;
 

@@ -14,7 +14,7 @@ part of angular.mock;
 @NgDirective(
     selector: '[log]',
     map: const {
-        'log': '@.logMessage'
+        'log': '@logMessage'
     }
 )
 class LogAttrDirective implements NgAttachAware {

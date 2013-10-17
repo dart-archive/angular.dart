@@ -8,7 +8,7 @@ part of angular.directive;
   */
 @NgDirective(
     selector: '[ng-style]',
-    map: const { 'ng-style': '@.styleExpression'})
+    map: const { 'ng-style': '@styleExpression'})
 class NgStyleDirective {
   dom.Element _element;
   Scope _scope;

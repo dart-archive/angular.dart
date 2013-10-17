@@ -7,7 +7,7 @@ part of angular.directive;
  */
 @NgDirective(
   selector: '[ng-bind-template]',
-  map: const {'ng-bind-template': '@.bind'})
+  map: const {'ng-bind-template': '@bind'})
 class NgBindTemplateDirective {
   dom.Element element;
 

@@ -12,7 +12,7 @@ part of angular.directive;
  */
 @NgDirective(
     selector: '[ng-model]',
-    map: const {'ng-model': '&.model'})
+    map: const {'ng-model': '&model'})
 class NgModel {
   final Scope _scope;
 

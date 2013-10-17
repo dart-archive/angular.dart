@@ -52,8 +52,8 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-switch]',
     map: const {
-      'ng-switch': '=.value',
-      'change': '&.onChange'
+      'ng-switch': '=>value',
+      'change': '&onChange'
     },
     visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY
 )
@@ -112,7 +112,7 @@ class _Case {
     selector: '[ng-switch-when]',
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     map: const {
-      '.': '@.value'
+      '.': '@value'
     }
 )
 class NgSwitchWhenDirective {

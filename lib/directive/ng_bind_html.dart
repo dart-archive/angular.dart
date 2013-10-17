@@ -16,7 +16,7 @@ part of angular.directive;
  */
 @NgDirective(
   selector: '[ng-bind-html]',
-  map: const {'ngBindHtml': '=.value'})
+  map: const {'ngBindHtml': '=>value'})
 class NgBindHtmlDirective {
   // The default HTML sanitizer.  Eventually, we'll make this configurable or
   // use an optionally loaded `$sanitize` service.

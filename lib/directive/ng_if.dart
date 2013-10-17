@@ -87,7 +87,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-if]',
-    map: const {'.': '=.condition'})
+    map: const {'.': '=>condition'})
 class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
   NgIfDirective(BoundBlockFactory boundBlockFactory,
                     BlockHole blockHole,
@@ -143,7 +143,7 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-unless]',
-    map: const {'.': '=.condition'})
+    map: const {'.': '=>condition'})
 class NgUnlessDirective extends _NgUnlessIfAttrDirectiveBase {
 
   NgUnlessDirective(BoundBlockFactory boundBlockFactory,

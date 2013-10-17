@@ -1,11 +1,13 @@
 part of angular.core.dom;
 
 class Compiler {
-  DirectiveMap directives;
-  DirectiveSelector selector;
-  Profiler _perf;
+  final DirectiveMap directives;
+  final Profiler _perf;
+  final Parser _parser;
 
-  Compiler(DirectiveMap this.directives, Profiler this._perf) {
+  DirectiveSelector selector;
+
+  Compiler(DirectiveMap this.directives, Profiler this._perf, Parser this._parser) {
     selector = directiveSelectorFactory(directives);
   }
 
@@ -48,6 +50,7 @@ class Compiler {
           usableDirectiveRefs = [];
         }
         directiveRef.blockFactory = blockFactory;
+        createMappings(directiveRef);
         usableDirectiveRefs.add(directiveRef);
       }
 
@@ -120,5 +123,83 @@ class Compiler {
 
     assert(_perf.stopTimer('ng.compile(${_html(elements)}') != false);
     return blockFactory;
+  }
+
+  static RegExp _MAPPING = new RegExp(r'^(\@|=\>\!|\=\>|\<\=\>|\&)\s*(.*)$');
+
+  createMappings(DirectiveRef ref) {
+    NgAnnotation annotation = ref.annotation;
+    if (annotation.map != null) annotation.map.forEach((attrName, mapping) {
+      Match match = _MAPPING.firstMatch(mapping);
+      if (match == null) {
+        throw "Unknown mapping '$mapping' for attribute '$attrName'.";
+      }
+      var mode = match[1];
+      var dstPath = match[2];
+
+      Expression dstPathFn = _parser(dstPath.isEmpty ? attrName : dstPath);
+      if (!dstPathFn.assignable) {
+        throw "Expression '$dstPath' is not assignable in mapping '$mapping' for attribute '$attrName'.";
+      }
+      ApplyMapping mappingFn;
+      switch (mode) {
+        case '@':
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+            attrs.observe(attrName, (value) => dstPathFn.assign(dst, value));
+          };
+          break;
+        case '<=>':
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+            Expression attrExprFn = _parser(attrs[attrName]);
+            var shadowValue = null;
+            scope.$watch(
+                    () => attrExprFn.eval(scope),
+                    (v) => dstPathFn.assign(dst, shadowValue = v),
+                attrs[attrName]);
+            if (attrExprFn.assignable) {
+              scope.$watch(
+                      () => dstPathFn.eval(dst),
+                      (v) {
+                    if (shadowValue != v) {
+                      shadowValue = v;
+                      attrExprFn.assign(scope, v);
+                    }
+                  },
+                  dstPath);
+            }
+          };
+          break;
+        case '=>':
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+            Expression attrExprFn = _parser(attrs[attrName]);
+            var shadowValue = null;
+            scope.$watch(
+                    () => attrExprFn.eval(scope),
+                    (v) => dstPathFn.assign(dst, shadowValue = v),
+                    attrs[attrName]);
+          };
+          break;
+        case '=>!':
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+            Expression attrExprFn = _parser(attrs[attrName]);
+            var stopWatching;
+            stopWatching = scope.$watch(
+                () => attrExprFn.eval(scope),
+                (value) {
+                  if (dstPathFn.assign(dst, value) != null) {
+                    stopWatching();
+                  }
+                },
+                attrs[attrName]);
+          };
+          break;
+        case '&':
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope));
+          };
+          break;
+      }
+      ref.mappings.add(mappingFn);
+    });
   }
 }

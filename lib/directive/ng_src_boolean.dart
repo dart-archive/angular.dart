@@ -22,13 +22,13 @@ part of angular.directive;
  *  - [ng-required]
  *  - [ng-selected]
  */
-@NgDirective(selector: '[ng-checked]',  map: const {'ng-checked':  '=.checked'})
-@NgDirective(selector: '[ng-disabled]', map: const {'ng-disabled': '=.disabled'})
-@NgDirective(selector: '[ng-multiple]', map: const {'ng-multiple': '=.multiple'})
-@NgDirective(selector: '[ng-open]',     map: const {'ng-open':     '=.open'})
-@NgDirective(selector: '[ng-readonly]', map: const {'ng-readonly': '=.readonly'})
-@NgDirective(selector: '[ng-required]', map: const {'ng-required': '=.required'})
-@NgDirective(selector: '[ng-selected]', map: const {'ng-selected': '=.selected'})
+@NgDirective(selector: '[ng-checked]',  map: const {'ng-checked':  '=>checked'})
+@NgDirective(selector: '[ng-disabled]', map: const {'ng-disabled': '=>disabled'})
+@NgDirective(selector: '[ng-multiple]', map: const {'ng-multiple': '=>multiple'})
+@NgDirective(selector: '[ng-open]',     map: const {'ng-open':     '=>open'})
+@NgDirective(selector: '[ng-readonly]', map: const {'ng-readonly': '=>readonly'})
+@NgDirective(selector: '[ng-required]', map: const {'ng-required': '=>required'})
+@NgDirective(selector: '[ng-selected]', map: const {'ng-selected': '=>selected'})
 class NgBooleanAttributeDirective {
   NodeAttrs attrs;
   NgBooleanAttributeDirective(NodeAttrs this.attrs);
@@ -61,9 +61,9 @@ class NgBooleanAttributeDirective {
  * - [ng-src]
  * - [ng-srcset]
  */
-@NgDirective(selector: '[ng-href]',   map: const {'ng-href':   '@.href'})
-@NgDirective(selector: '[ng-src]',    map: const {'ng-src':    '@.src'})
-@NgDirective(selector: '[ng-srcset]', map: const {'ng-srcset': '@.srcset'})
+@NgDirective(selector: '[ng-href]',   map: const {'ng-href':   '@href'})
+@NgDirective(selector: '[ng-src]',    map: const {'ng-src':    '@src'})
+@NgDirective(selector: '[ng-srcset]', map: const {'ng-srcset': '@srcset'})
 class NgSourceDirective {
   NodeAttrs attrs;
   NgSourceDirective(NodeAttrs this.attrs);

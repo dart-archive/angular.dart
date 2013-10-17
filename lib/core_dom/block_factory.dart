@@ -28,11 +28,10 @@ class BoundBlockFactory {
  */
 
 class BlockFactory {
-  List directivePositions;
+  final List directivePositions;
+  final List<dom.Node> templateElements;
+  final Profiler _perf;
 
-  List<dom.Node> templateElements;
-
-  Profiler _perf;
 
   BlockFactory(this.templateElements, this.directivePositions, this._perf);
 
@@ -134,9 +133,11 @@ class BlockFactory {
           if (nodesAttrsDirectives == null) {
             nodesAttrsDirectives = [];
             nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
-              nodesAttrsDirectives.forEach((ref) {
-                new NgAttrMustacheDirective(nodeAttrs, ref.value, injector.get(Interpolate), injector.get(Scope));
-              });
+              var scope = injector.get(Scope);
+              var interpolate = injector.get(Interpolate);
+              for(var ref in nodesAttrsDirectives) {
+                new NgAttrMustacheDirective(nodeAttrs, ref.value, interpolate, scope);
+              }
             });
           }
           nodesAttrsDirectives.add(ref);
@@ -153,7 +154,7 @@ class BlockFactory {
             var componentFactory = new _ComponentFactory(node, ref.type, ref.annotation as NgComponent, injector.get(dom.NodeTreeSanitizer));
             if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
             fctrs[ref.type] = componentFactory;
-            return componentFactory(injector, compiler, scope, blockCache, http, templateCache);
+            return componentFactory.call(injector, compiler, scope, blockCache, http, templateCache);
           }, visibility: visibility);
         } else {
           nodeModule.type(ref.type, visibility: visibility);
@@ -177,7 +178,7 @@ class BlockFactory {
     } finally {
       assert(_perf.stopTimer('ng.block.link.setUp(${_html(node)}})') != false);
     }
-    directiveRefs.forEach((ref) {
+    directiveRefs.forEach((DirectiveRef ref) {
       try {
         assert(_perf.startTimer('ng.block.link.${ref.type}') != false);
         var controller = nodeInjector.get(ref.type);
@@ -186,7 +187,10 @@ class BlockFactory {
         if (ref.annotation.publishAs != null) {
           (shadowScope == null ? scope : shadowScope)[ref.annotation.publishAs] = controller;
         }
-        _createAttributeMapping(ref.annotation, nodeAttrs == null ? new _AnchorAttrs(ref) : nodeAttrs, scope, shadowScope, controller, parser);
+        if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
+        for(var map in ref.mappings) {
+          map(nodeAttrs, scope, controller);
+        }
         if (controller is NgAttachAware) {
           var removeWatcher;
           removeWatcher = scope.$watch(() {
@@ -207,21 +211,21 @@ class BlockFactory {
 
   // DI visibility callback allowing node-local visibility.
 
-  bool _elementOnly(Injector requesting, Injector defining) {
+  static final Function _elementOnly = (Injector requesting, Injector defining) {
     if (requesting.name == _SHADOW) {
       requesting = requesting.parent;
     }
     return identical(requesting, defining);
-  }
+  };
 
   // DI visibility callback allowing visibility from direct child into parent.
 
-  bool _elementDirectChildren(Injector requesting, Injector defining) {
+  static final Function _elementDirectChildren = (Injector requesting, Injector defining) {
     if (requesting.name == _SHADOW) {
       requesting = requesting.parent;
     }
     return _elementOnly(requesting, defining) || identical(requesting.parent, defining);
-  }
+  };
 }
 
 /**
@@ -352,66 +356,6 @@ class _AnchorAttrs extends NodeAttrs {
       notifyFn(null);
     }
   }
-}
-
-
-RegExp _MAPPING = new RegExp(r'^([\@\=\&\!])(\.?)\s*(.*)$');
-
-_createAttributeMapping(NgAnnotation annotation, NodeAttrs nodeAttrs,
-                        Scope scope, Scope shadowScope, Object controller, Parser parser) {
-  if (annotation.map != null) annotation.map.forEach((attrName, mapping) {
-    Match match = _MAPPING.firstMatch(mapping);
-    if (match == null) {
-      throw "Unknown mapping '$mapping' for attribute '$attrName'.";
-    }
-    var mode = match[1];
-    var controllerContext = match[2];
-    var dstPath = match[3];
-    var context = controllerContext == '.' ? controller : shadowScope;
-
-    Expression dstPathFn = parser(dstPath.isEmpty ? attrName : dstPath);
-    if (!dstPathFn.assignable) {
-      throw "Expression '$dstPath' is not assignable in mapping '$mapping' for attribute '$attrName'.";
-    }
-    switch (mode) {
-      case '@':
-        nodeAttrs.observe(attrName, (value) => dstPathFn.assign(context, value));
-        break;
-      case '=':
-        Expression attrExprFn = parser(nodeAttrs[attrName]);
-        var shadowValue = null;
-        scope.$watch(() => attrExprFn.eval(scope), (v) => dstPathFn.assign(context, shadowValue = v), nodeAttrs[attrName]);
-        if (shadowScope != null) {
-          if (attrExprFn.assignable) {
-            shadowScope.$watch(
-                () => dstPathFn.eval(context),
-                (v) {
-                  if (shadowValue != v) {
-                    shadowValue = v;
-                    attrExprFn.assign(scope, v);
-                  }
-                },
-                dstPath);
-          }
-        }
-        break;
-      case '!':
-        Expression attrExprFn = parser(nodeAttrs[attrName]);
-        var stopWatching;
-        stopWatching = scope.$watch(
-            () => attrExprFn.eval(scope),
-            (value) {
-              if (dstPathFn.assign(context, value) != null) {
-                stopWatching();
-              }
-            },
-            nodeAttrs[attrName]);
-        break;
-      case '&':
-        dstPathFn.assign(context, parser(nodeAttrs[attrName]).bind(scope));
-        break;
-    }
-  });
 }
 
 

@@ -58,30 +58,32 @@ class NgAnnotation {
   final List<Type> publishTypes;
 
   /**
-   * Use map to define the mapping of component's DOM attributes into
-   * the component instance or scope. The map's key is the DOM attribute name
-   * to map in camelCase (DOM attribute is in dash-case). The Map's value
-   * consists of a mode character, and an expression. If expression is not
-   * specified, it maps to the same scope parameter as is the DOM attribute.
+   * Use map to define the mapping of  DOM attributes to fields.
+   * The map's key is the DOM attribute name (DOM attribute is in dash-case).
+   * The Map's value consists of a mode prefix followed by an expression.
+   * The destination expression will be evaluated against the instance of the
+   * directive / component class.
    *
    * * `@` - Map the DOM attribute string. The attribute string will be taken
-   *   literally or interpolated if it contains binding {{}} systax.
+   *   literally or interpolated if it contains binding {{}} systax and assigned
+   *   to the expression. (cost: 0 watches)
    *
-   * * `=` - Treat the DOM attribute value as an expression. Set up a watch
+   * * `=>` - Treat the DOM attribute value as an expression. Set up a watch,
+   *   which will read the expression in the attribute and assign the value
+   *   to destination expression. (cost: 1 watch)
+   *
+   * * `<=>` - Treat the DOM attribute value as an expression. Set up a watch
    *   on both outside as well as component scope to keep the src and
-   *   destination in sync.
+   *   destination in sync. (cost: 2 watches)
    *
-   * * `!` - Treat the DOM attribute value as an expression. Set up a one time
+   * * `=>!` - Treat the DOM attribute value as an expression. Set up a one time
    *   watch on expression. Once the expression turns truthy it will no longer
-   *   update.
+   *   update. (cost: 1 watches until not null, then 0 watches)
    *
    * * `&` - Treat the DOM attribute value as an expression. Assign a closure
-   *   function into the component. This allows the component to control
+   *   function into the field. This allows the component to control
    *   the invocation of the closure. This is useful for passing
-   *   expressions into controllers which act like callbacks.
-   *
-   * NOTE: an expression may start with `.` which evaluates the expression
-   * against the current controller rather then current scope.
+   *   expressions into controllers which act like callbacks. (cost: 0 watches)
    *
    * Example:
    *
@@ -92,9 +94,9 @@ class NgAnnotation {
    *     @NgComponent(
    *       selector: 'my-component'
    *       map: const {
-   *         'title': '@.title',
-   *         'selection': '=.currentItem',
-   *         'onSelectionChange': '&.onChange'
+   *         'title': '@title',
+   *         'selection': '<=>currentItem',
+   *         'on-selection-change': '&onChange'
    *       }
    *     )
    *     class MyComponent {
@@ -105,16 +107,16 @@ class NgAnnotation {
    *
    *  The above example shows how all three mapping modes are used.
    *
-   *  * `@.title` maps the title DOM attribute to the controller `title`
+   *  * `@title` maps the title DOM attribute to the controller `title`
    *    field. Notice that this maps the content of the attribute, which
    *    means that it can be used with `{{}}` interpolation.
    *
-   *  * `=.currentItem` maps the expression (in this case the `selectedItem`
+   *  * `<=>currentItem` maps the expression (in this case the `selectedItem`
    *    in the current scope into the `currentItem` in the controller. Notice
-   *    that mapping is bi-directional. A change either in controller or on
-   *    parent scope will result in change of the other.
+   *    that mapping is bi-directional. A change either in field or on
+   *    parent scope will result in change to the other.
    *
-   *  * `&.onChange` maps the expression into tho controllers `onChange`
+   *  * `&onChange` maps the expression into tho controllers `onChange`
    *    field. The result of mapping is a callable function which can be
    *    invoked at any time by the controller. The invocation of the
    *    callable function will result in the expression `doSomething()` to

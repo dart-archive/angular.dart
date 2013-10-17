@@ -533,9 +533,9 @@ class SimpleComponent {
     selector: 'io',
     template: r'<content></content>',
     map: const {
-        'attr': '@',
-        'expr': '=',
-        'ondone': '&',
+        'attr': '@scope.attr',
+        'expr': '<=>scope.expr',
+        'ondone': '&scope.ondone',
     }
 )
 class IoComponent {
@@ -551,11 +551,11 @@ class IoComponent {
     template: r'<content></content>',
     publishAs: 'ctrl',
     map: const {
-        'attr': '@ctrl.attr',
-        'expr': '=ctrl.expr',
-        'once': '!.exprOnce',
-        'ondone': '&ctrl.onDone',
-        'onOptional': '&ctrl.onOptional'
+        'attr': '@attr',
+        'expr': '<=>expr',
+        'once': '=>!exprOnce',
+        'ondone': '&onDone',
+        'on-optional': '&onOptional'
     }
 )
 class IoControllerComponent {
@@ -575,10 +575,10 @@ class IoControllerComponent {
     selector: 'unpublished-io-controller',
     template: r'<content></content>',
     map: const {
-        'attr': '@.attr',
-        'expr': '=.expr',
-        'ondone': '&.onDone',
-        'onOptional': '&.onOptional'
+        'attr': '@attr',
+        'expr': '<=>expr',
+        'ondone': '&onDone',
+        'onOptional': '&onOptional'
     }
 )
 class UnpublishedIoControllerComponent {
@@ -609,11 +609,12 @@ class NonAssignableMappingComponent { }
 @NgComponent(
     selector: 'camel-case-map',
     map: const {
-      'camelCase': '@',
+      'camel-case': '@scope.camelCase',
     }
 )
 class CamelCaseMapComponent {
-  CamelCaseMapComponent(Scope scope) {
+  Scope scope;
+  CamelCaseMapComponent(Scope this.scope) {
     scope.$root.camelCase = scope;
   }
 }
@@ -622,10 +623,12 @@ class CamelCaseMapComponent {
     selector: 'parent-expression',
     template: '<div>inside {{fromParent()}}</div>',
     map: const {
-      'fromParent': '&',
+      'from-parent': '&scope.fromParent',
     }
 )
 class ParentExpressionComponent {
+  Scope scope;
+  ParentExpressionComponent(Scope this.scope);
 }
 
 @NgComponent(

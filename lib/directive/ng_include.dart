@@ -2,7 +2,7 @@ part of angular.directive;
 
 @NgDirective(
     selector: '[ng-include]',
-    map: const {'ng-include': '=.url'} )
+    map: const {'ng-include': '=>url'} )
 class NgIncludeDirective {
 
   dom.Element element;

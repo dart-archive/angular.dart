@@ -47,7 +47,7 @@ part of angular.directive;
  */
 @NgDirective(
     selector: '[ng-class]',
-    map: const {'ng-class': '@.valueExpression'})
+    map: const {'ng-class': '@valueExpression'})
 class NgClassDirective extends _NgClassBase {
   NgClassDirective(dom.Element element, Scope scope, NodeAttrs attrs)
       : super(element, scope, null, attrs);
@@ -81,7 +81,7 @@ class NgClassDirective extends _NgClassBase {
  */
 @NgDirective(
     selector: '[ng-class-odd]',
-    map: const {'ng-class-odd': '@.valueExpression'})
+    map: const {'ng-class-odd': '@valueExpression'})
 class NgClassOddDirective extends _NgClassBase {
   NgClassOddDirective(dom.Element element, Scope scope, NodeAttrs attrs)
       : super(element, scope, 0, attrs);
@@ -115,7 +115,7 @@ class NgClassOddDirective extends _NgClassBase {
  */
 @NgDirective(
     selector: '[ng-class-even]',
-    map: const {'ng-class-even': '@.valueExpression'})
+    map: const {'ng-class-even': '@valueExpression'})
 class NgClassEvenDirective extends _NgClassBase {
   NgClassEvenDirective(dom.Element element, Scope scope, NodeAttrs attrs)
       : super(element, scope, 1, attrs);

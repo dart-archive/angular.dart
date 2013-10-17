@@ -20,11 +20,11 @@ part of angular.directive;
  */
 @NgDirective(
   selector: 'template[type=text/ng-template]',
-  map: const {'id': '@.templateUrl'})
+  map: const {'id': '@templateUrl'})
 @NgDirective(
   selector: 'script[type=text/ng-template]',
   children: NgAnnotation.IGNORE_CHILDREN,
-  map: const {'id': '@.templateUrl'})
+  map: const {'id': '@templateUrl'})
 class NgTemplateDirective {
   dom.Element element;
   TemplateCache templateCache;

@@ -17,7 +17,7 @@ part of angular.directive;
  */
 @NgDirective(
   selector: '[ng-bind]',
-  map: const {'ng-bind': '=.value'})
+  map: const {'ng-bind': '=>value'})
 class NgBindDirective {
   dom.Element element;
 

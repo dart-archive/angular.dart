@@ -86,7 +86,7 @@ class InputSelectDirective implements NgAttachAware {
 @NgDirective(
     selector: 'option',
     publishTypes: const [TextChangeListener],
-    map: const {'ng-value': '&.ngValue'}
+    map: const {'ng-value': '&ngValue'}
 )
 class OptionValueDirective implements TextChangeListener, NgAttachAware, NgDetachAware {
   final InputSelectDirective _inputSelectDirective;

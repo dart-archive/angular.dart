@@ -7,7 +7,7 @@ part of angular.directive;
  */
 @NgDirective(
     selector: '[ng-hide]',
-    map: const {'ng-hide': '=.hide'} )
+    map: const {'ng-hide': '=>hide'} )
 class NgHideDirective {
   static String NG_HIDE_CLASS = 'ng-hide';
 
@@ -31,7 +31,7 @@ class NgHideDirective {
  */
 @NgDirective(
     selector: '[ng-show]',
-    map: const {'ng-show': '=.show'})
+    map: const {'ng-show': '=>show'})
 class NgShowDirective {
   static String NG_SHOW_CLASS = 'ng-show';
 
