@@ -320,6 +320,9 @@ class _ComponentFactory {
       return shadowDom;
     }));
     controller = createShadowInjector(injector, templateLoader).get(type);
+    if (controller is NgShadowRootAware) {
+      templateLoader.template.then((controller as NgShadowRootAware).onShadowRoot);
+    }
     return controller;
   }
 
