@@ -4,9 +4,7 @@ import '../_specs.dart';
 import 'dart:mirrors';
 
 
-main() {
-
-  describe('dte.compiler', () {
+main() => describe('dte.compiler', () {
     Compiler $compile;
     Injector injector;
     Scope $rootScope;
@@ -18,7 +16,8 @@ main() {
         ..type(PaneComponent)
         ..type(SimpleTranscludeInAttachAttrDirective)
         ..type(IncludeTranscludeAttrDirective)
-        ..type(LocalAttrDirective);
+        ..type(LocalAttrDirective)
+        ..type(MyController);
       return (Injector _injector) {
         injector = _injector;
         $compile = injector.get(Compiler);
@@ -56,7 +55,6 @@ main() {
       expect(element.text()).toEqual('angular');
     }));
 
-
     it('should compile repeater', inject(() {
       var element = $('<div><div ng-repeat="item in items" ng-bind="item"></div></div>');
       var template = $compile(element);
@@ -93,7 +91,6 @@ main() {
       expect(element.html()).toEqual('<!--ANCHOR: [ng-repeat]=item in items-->');
     }));
 
-
     it('should compile text', inject((Compiler $compile) {
       var element = $('<div>{{name}}<span>!</span></div>').contents();
       element.remove(null);
@@ -110,7 +107,6 @@ main() {
       $rootScope.$digest();
       expect(element.text()).toEqual('OK!');
     }));
-
 
     it('should compile nested repeater', inject((Compiler $compile) {
       var element = $(
@@ -141,7 +137,6 @@ main() {
         $rootScope.$digest();
         expect(element.attr('test')).toEqual('angular');
       }));
-
 
       it('should interpolate text nodes', inject(() {
         var element = $('<div>{{name}}</div>');
@@ -442,8 +437,8 @@ main() {
       });
     });
 
-    describe('controller scoping', () {
 
+    describe('controller scoping', () {
       it('should make controllers available to sibling and child controllers', async(inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
         var element = $('<tab local><pane local></pane><pane local></pane></tab>');
         $compile(element)(injector, element);
@@ -460,10 +455,21 @@ main() {
         $rootScope.$apply();
         expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
       })));
-
     });
+
+
+    describe('NgDirective', () {
+      it('should allow creation of a new scope', inject((TestBed _) {
+        _.rootScope.name = 'cover me';
+        _.compile('<div><div my-controller>{{name}}</div></div>');
+        _.rootScope.$digest();
+        expect(_.rootScope.name).toEqual('cover me');
+        expect(_.rootElement.text).toEqual('MyController');
+      }));
+    });
+
   });
-}
+
 
 @NgComponent(
     selector: 'tab',
@@ -696,3 +702,14 @@ class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRoo
     logger(shadowRoot);
   }
 }
+
+@NgController(
+    selector: '[my-controller]',
+    publishAs: 'myCtrl'
+)
+class MyController {
+  MyController(Scope scope) {
+    scope.name = 'MyController';
+  }
+}
+

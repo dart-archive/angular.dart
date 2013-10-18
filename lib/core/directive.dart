@@ -171,12 +171,12 @@ class NgAnnotation {
  * ask for any injectable object in their constructor. Components
  * can also ask for other components or directives declared on the DOM element.
  *
- * Components can declared these optional methods:
+ * Components can implement [NgAttachAware], [NgDetachAware], [NgShadowRoot] and
+ * declare these optional methods:
  *
  * * `attach()` - Called on first [Scope.$digest()].
- *
  * * `detach()` - Called on when owning scope is destroyed.
- *
+ * * `onShadowRoot(ShadowRoot shadowRoot)` - Called when [ShadowRoot] is loaded.
  */
 class NgComponent extends NgAnnotation {
   /**
@@ -232,35 +232,73 @@ class NgComponent extends NgAnnotation {
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
+/**
+ * Meta-data marker placed on a class which should act as a directive.
+ *
+ * Angular directives are instantiated using dependency injection, and can
+ * ask for any injectable object in their constructor. Directives
+ * can also ask for other components or directives declared on the DOM element.
+ *
+ * Directives can implement [NgAttachAware], [NgDetachAware] and
+ * declare these optional methods:
+ *
+ * * `attach()` - Called on first [Scope.$digest()].
+ * * `detach()` - Called on when owning scope is destroyed.
+ */
 class NgDirective extends NgAnnotation {
   static const String LOCAL_VISIBILITY = 'local';
   static const String CHILDREN_VISIBILITY = 'children';
   static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
 
-  final String attrName;
-
   const NgDirective({
-    children: NgAnnotation.COMPILE_CHILDREN,
-    this.attrName: null,
-    publishAs,
-    map,
-    selector,
-    visibility,
-    publishTypes : const <Type>[],
-    exportExpressions,
-    exportExpressionAttrs
-  }) : super(selector: selector, children: children, visibility: visibility,
-      publishTypes: publishTypes, publishAs: publishAs, map: map,
-      exportExpressions: exportExpressions,
-      exportExpressionAttrs: exportExpressionAttrs);
+                    children: NgAnnotation.COMPILE_CHILDREN,
+                    publishAs,
+                    map,
+                    selector,
+                    visibility,
+                    publishTypes : const <Type>[],
+                    exportExpressions,
+                    exportExpressionAttrs
+                    }) : super(selector: selector, children: children, visibility: visibility,
+  publishTypes: publishTypes, publishAs: publishAs, map: map,
+  exportExpressions: exportExpressions,
+  exportExpressionAttrs: exportExpressionAttrs);
+}
 
-  get defaultAttributeName {
-    if (attrName == null && selector != null) {
-      var match = _ATTR_NAME.firstMatch(selector);
-      return match != null ? match[1] : null;
-    }
-    return attrName;
-  }
+/**
+ * Meta-data marker placed on a class which should act as a controller for your application.
+ *
+ * Controllers are essentially [NgDirectives] with few key differences:
+ *
+ * * Controllers create a new scope at the element.
+ * * Controllers should not do any DOM manipulation.
+ * * Controllers are meant for application-logic
+ *   (rather then DOM monipulation logic which directives are meant for.)
+ *
+ * Controllers can implement [NgAttachAware], [NgDetachAware] and
+ * declare these optional methods:
+ *
+ * * `attach()` - Called on first [Scope.$digest()].
+ * * `detach()` - Called on when owning scope is destroyed.
+ */
+class NgController extends NgDirective {
+  static const String LOCAL_VISIBILITY = 'local';
+  static const String CHILDREN_VISIBILITY = 'children';
+  static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
+
+  const NgController({
+                    children: NgAnnotation.COMPILE_CHILDREN,
+                    publishAs,
+                    map,
+                    selector,
+                    visibility,
+                    publishTypes : const <Type>[],
+                    exportExpressions,
+                    exportExpressionAttrs
+                    }) : super(selector: selector, children: children, visibility: visibility,
+  publishTypes: publishTypes, publishAs: publishAs, map: map,
+  exportExpressions: exportExpressions,
+  exportExpressionAttrs: exportExpressionAttrs);
 }
 
 /**

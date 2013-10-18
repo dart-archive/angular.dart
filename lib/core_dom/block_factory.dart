@@ -99,7 +99,7 @@ class BlockFactory {
                                   Parser parser) {
     assert(_perf.startTimer('ng.block.link.setUp(${_html(node)}})') != false);
     Injector nodeInjector;
-    Scope scope;
+    Scope scope = parentInjector.get(Scope);
     Map<Type, _ComponentFactory> fctrs;
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
 
@@ -118,6 +118,10 @@ class BlockFactory {
       directiveRefs.forEach((DirectiveRef ref) {
         NgAnnotation annotation = ref.annotation;
         var visibility = _elementOnly;
+        if (ref.annotation is NgController) {
+          scope = scope.$new();
+          nodeModule.value(Scope, scope);
+        }
         if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
           visibility = null;
         } else if (ref.annotation.visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
@@ -174,7 +178,6 @@ class BlockFactory {
       nodeModule.factory(BlockFactory, blockFactory);
       nodeModule.factory(BoundBlockFactory, boundBlockFactory);
       nodeInjector = parentInjector.createChild([nodeModule]);
-      scope = nodeInjector.get(Scope);
     } finally {
       assert(_perf.stopTimer('ng.block.link.setUp(${_html(node)}})') != false);
     }
