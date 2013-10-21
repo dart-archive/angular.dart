@@ -124,6 +124,8 @@ class NotExpect {
       unit.predicate((actual) => !identical(expected, actual), '$expected'));
   toEqual(expected) => unit.expect(actual,
       unit.predicate((actual) => expected != actual, '$expected'));
+  toContain(expected) => unit.expect(actual,
+      unit.predicate((actual) => !actual.contains(expected), '$expected'));
 }
 
 class ExceptionContains extends unit.Matcher {
