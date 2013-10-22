@@ -2,6 +2,7 @@ import 'dart:html' as dom;
 import 'dart:math' as math;
 
 import 'package:angular/angular.dart';
+import 'package:di/di.dart';
 
 class BookController {
   Scope $scope;
@@ -72,10 +73,10 @@ class MainController {
 
 main() {
   // Set up the Angular directives.
-  var module = new AngularModule()
+  var module = new Module()
     ..type(BookComponent)
     ..type(ChapterDirective)
     ..type(MainController);
 
-  ngBootstrap([module]);
+  ngBootstrap(module:module);
 }
