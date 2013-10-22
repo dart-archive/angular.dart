@@ -19,6 +19,7 @@ import 'core_dom/module.dart';
 import 'directive/module.dart';
 import 'filter/module.dart';
 import 'perf/module.dart';
+import 'routing/module.dart';
 
 export 'core/module.dart';
 export 'core_dom/module.dart';

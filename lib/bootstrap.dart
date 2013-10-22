@@ -17,6 +17,9 @@ class AngularModule extends Module {
     install(new NgDirectiveModule());
     install(new NgFilterModule());
     install(new NgPerfModule());
+    install(new NgRoutingModule());
+
+    type(MetadataExtractor, implementedBy: WindowlessMetadataExtractor);
   }
 }
 
@@ -82,3 +85,12 @@ Injector ngBootstrap({
   });
 }
 
+/// A temporary workaround for:
+/// https://code.google.com/p/dart/issues/detail?id=13654
+class WindowlessMetadataExtractor extends MetadataExtractor {
+
+  Iterable call(Type type) {
+    if (type == dom.Window) return [];
+    return super.call(type);
+  }
+}

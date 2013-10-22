@@ -45,6 +45,10 @@ packages:
     description: perf_api
     source: hosted
     version: "0.0.6"
+  route_hierarchical:
+    description: route_hierarchical
+    source: hosted
+    version: "0.4.7"
   source_maps:
     description: source_maps
     source: hosted
