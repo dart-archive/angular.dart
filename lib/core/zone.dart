@@ -73,9 +73,9 @@ class Zone {
     }
   }
 
-  _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, e) {
+  _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, e, StackTrace s) {
     if (!_errorThrownFromOnRun) {
-      onError(e, async.getAttachedStackTrace(e), _longStacktrace);
+      onError(e, s, _longStacktrace);
     }
     _errorThrownFromOnRun = false;
   }
