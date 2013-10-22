@@ -150,7 +150,7 @@ async(Function fn) =>
       createPeriodicTimer:
           (_, __, ___, Duration period, void f(dartAsync.Timer timer)) =>
               _createTimer(f, period, true),
-      handleUncaughtError: (_, __, ___, e) => _asyncErrors.add(e)
+      handleUncaughtError: (_, __, ___, e, s) => _asyncErrors.add([e, s])
   );
   dartAsync.runZoned(() {
       fn();
@@ -158,7 +158,7 @@ async(Function fn) =>
     }, zoneSpecification: zoneSpec);
 
   _asyncErrors.forEach((e) {
-    throw "During runZoned: $e.  Stack:\n${dartAsync.getAttachedStackTrace(e)}";
+    throw "During runZoned: ${e[0]}.  Stack:\n${e[1]}";
   });
 
   if (!_timerQueue.isEmpty && _timerQueue.any((_TimerSpec spec) => spec.isActive)) {
