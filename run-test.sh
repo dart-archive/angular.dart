@@ -27,9 +27,9 @@ npm install karma karma-dart karma-chrome-launcher \
 # Print the dart VM version to the logs
 dart --version
 
-./analyze.sh &&
-  node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
-  node "node_modules/karma/bin/karma" start karma.conf \
-    --reporters=junit,dots --port=8765 --runner-port=8766 \
-    --browsers=ChromeCanary,Chrome --single-run --no-colors --no-color
+#./analyze.sh
+node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
+node "node_modules/karma/bin/karma" start karma.conf \
+  --reporters=junit,dots --port=8765 --runner-port=8766 \
+  --browsers=ChromeCanary,Chrome --single-run --no-colors --no-color
 
