@@ -9,6 +9,7 @@ import '../angular.dart';
 import '../utils.dart' as utils;
 import 'package:js/js.dart' as js;
 import 'package:di/di.dart';
+import 'package:unittest/mock.dart';
 
 part 'debug.dart';
 part 'exception_handler.dart';
@@ -17,6 +18,7 @@ part 'log.dart';
 part 'probe.dart';
 part 'test_bed.dart';
 part 'zone.dart';
+part 'mock_window.dart';
 
 /**
  * Use in addition to [AngularModule] in your tests.
@@ -43,5 +45,6 @@ class AngularMockModule extends Module {
       zone.onError = (dynamic e, dynamic s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
       return zone;
     });
+    type(Window, implementedBy: MockWindow);
   }
 }

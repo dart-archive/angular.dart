@@ -18,4 +18,5 @@ dependencies:
   js: any
   meta: any
   perf_api: any
+  route_hierarchical: any
   unittest: any
