@@ -45,7 +45,7 @@ class NgCoreDomModule extends Module {
     type(BlockCache);
     type(GetterSetter);
     type(BrowserCookies);
-
+    type(LocationWrapper);
   }
 }
 

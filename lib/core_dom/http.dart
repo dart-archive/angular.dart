@@ -36,6 +36,10 @@ class HttpBackend {
   }
 }
 
+class LocationWrapper {
+  get location => dom.window.location;
+}
+
 typedef RequestInterceptor(HttpResponseConfig);
 typedef RequestErrorInterceptor(dynamic);
 typedef Response(HttpResponse);
@@ -321,6 +325,16 @@ class HttpDefaults {
   var cache;
 
   /**
+   * The default XSRF cookie name. May not be null.
+   */
+  String xsrfCookieName = 'XSRF-TOKEN';
+
+  /**
+   * The default XSRF header name sent with the request. May not be null.
+   */
+  String xsrfHeaderName = 'X-XSRF-TOKEN';
+
+  /**
    * Constructor intended for DI.
    */
   HttpDefaults(HttpDefaultHeaders this.headers);
@@ -385,6 +399,8 @@ class HttpDefaults {
  */
 class Http {
   Map<String, async.Future<HttpResponse>> _pendingRequests = <String, async.Future<HttpResponse>>{};
+  BrowserCookies _cookies;
+  LocationWrapper _location;
   UrlRewriter _rewriter;
   HttpBackend _backend;
   HttpInterceptors _interceptors;
@@ -397,7 +413,9 @@ class Http {
   /**
    * Constructor, useful for DI.
    */
-  Http(UrlRewriter this._rewriter,
+  Http(BrowserCookies this._cookies,
+       LocationWrapper this._location,
+       UrlRewriter this._rewriter,
        HttpBackend this._backend,
        HttpDefaults this.defaults,
        HttpInterceptors this._interceptors);
@@ -411,6 +429,20 @@ class Http {
         withCredentials: withCredentials,
         onProgress: onProgress,
         cache: cache).then((HttpResponse xhr) => xhr.responseText);
+  }
+
+  /**
+   * Parse a request URL and determine whether this is a same-origin request as the application document.
+   *
+   * @param {string|Uri} requestUrl The url of the request as a string that will be resolved
+   * or a parsed URL object.
+   * @returns {boolean} Whether the request is for the same origin as the application document.
+   */
+  _urlIsSameOrigin(String requestUrl) {
+    Uri originUrl = Uri.parse(_location.location.toString());
+    Uri parsed = originUrl.resolve(requestUrl);
+    return (parsed.scheme == originUrl.scheme &&
+            parsed.host == originUrl.host);
   }
 
 /**
@@ -444,15 +476,20 @@ class Http {
     cache,
     timeout
   }) {
-    if (xsrfHeaderName != null || xsrfCookieName != null ||
-        timeout != null) {
-      throw ['not implemented'];
+    if (timeout != null) {
+      throw ['timeout not implemented'];
     }
 
     method = method.toUpperCase();
 
     if (headers == null) { headers = {}; }
     defaults.headers.setHeaders(headers, method);
+
+    var xsrfValue = _urlIsSameOrigin(url) ?
+        _cookies[xsrfCookieName != null ? xsrfCookieName : defaults.xsrfCookieName] : null;
+    if (xsrfValue != null) {
+      headers[xsrfHeaderName != null ? xsrfHeaderName : defaults.xsrfHeaderName] = xsrfValue;
+    }
 
     // Check for functions in headers
     headers.forEach((k,v) {

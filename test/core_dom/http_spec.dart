@@ -17,8 +17,21 @@ class SubstringRewriter extends UrlRewriter {
   call(String x) => x.substring(0, 1);
 }
 
+class MockLocation {
+  String _url;
+  MockLocation(this._url);
+  get href => _url == null ? '' : _url;
+}
+
+class MockLocationWrapper implements LocationWrapper {
+  String url;
+  get location => new MockLocation(url);
+}
+
 main() => describe('http', () {
   MockHttpBackend backend;
+  MockLocationWrapper locationWrapper;
+
   var cache;
 
   flush() {
@@ -29,9 +42,11 @@ main() => describe('http', () {
 
   beforeEach(module((Module module) {
     backend = new MockHttpBackend();
+    locationWrapper = new MockLocationWrapper();
     cache = new FakeCache();
     module
     ..value(HttpBackend, backend)
+    ..value(LocationWrapper, locationWrapper)
     ..type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
   }));
 
@@ -405,16 +420,16 @@ main() => describe('http', () {
         flush();
       }));
 
-      xit('should not set XSRF cookie for cross-domain requests', inject(($browser) {
-        $browser.cookies('XSRF-TOKEN', 'secret');
-        $browser.url('http://host.com/base');
+      it('should not set XSRF cookie for cross-domain requests', async(inject((BrowserCookies cookies) {
+        cookies['XSRF-TOKEN'] = 'secret';
+        locationWrapper.url = 'http://host.com/base';
         backend.expect('GET', 'http://www.test.com/url', null, (headers) {
           return headers['X-XSRF-TOKEN'] == null;
         }).respond('');
 
         http(url: 'http://www.test.com/url', method: 'GET', headers: {});
         flush();
-      }));
+      })));
 
 
       it('should not send Content-Type header if request data/body is null', async(() {
@@ -432,15 +447,15 @@ main() => describe('http', () {
       }));
 
 
-      xit('should set the XSRF cookie into a XSRF header', inject(($browser) {
+      it('should set the XSRF cookie into a XSRF header', async(inject((BrowserCookies cookies) {
         checkXSRF(secret, [header]) {
           return (headers) {
-            return headers[header || 'X-XSRF-TOKEN'] == secret;
+            return headers[header != null ? header : 'X-XSRF-TOKEN'] == secret;
           };
         }
 
-        $browser.cookies('XSRF-TOKEN', 'secret');
-        $browser.cookies('aCookie', 'secret2');
+        cookies['XSRF-TOKEN'] = 'secret';
+        cookies['aCookie'] = 'secret2';
         backend.expect('GET', '/url', null, checkXSRF('secret')).respond('');
         backend.expect('POST', '/url', null, checkXSRF('secret')).respond('');
         backend.expect('PUT', '/url', null, checkXSRF('secret')).respond('');
@@ -456,7 +471,7 @@ main() => describe('http', () {
         http(url: '/url', method: 'GET', xsrfCookieName: 'aCookie');
 
         flush();
-      }));
+      })));
 
       it('should send execute result if header value is function', async(() {
         var headerConfig = {'Accept': () { return 'Rewritten'; }};

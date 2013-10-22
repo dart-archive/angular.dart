@@ -35,7 +35,7 @@ main() => describe('Playback HTTP', () {
       backend.flush();
       backend
         .expectPOST('/record',
-            r'{"key":"{\"url\":\"request\",\"method\":\"GET\",\"requestHeaders\":{\"Accept\":\"application/json, text/plain, */*\"},\"data\":null}",' +
+            r'{"key":"{\"url\":\"request\",\"method\":\"GET\",\"requestHeaders\":{\"Accept\":\"application/json, text/plain, */*\",\"X-XSRF-TOKEN\":\"secret\"},\"data\":null}",' +
             r'"data":"{\"status\":200,\"headers\":\"\",\"data\":\"response\"}"}')
         .respond(200);
 
@@ -55,7 +55,7 @@ main() => describe('Playback HTTP', () {
 
     it('should replay a request', async(inject((Http http, HttpBackend hb) {
       (hb as PlaybackHttpBackend).data = {
-        r'{"url":"request","method":"GET","requestHeaders":{"Accept":"application/json, text/plain, */*"},"data":null}': {'status': 200, 'headers': '', 'data': 'playback data'}
+        r'{"url":"request","method":"GET","requestHeaders":{"Accept":"application/json, text/plain, */*","X-XSRF-TOKEN":"secret"},"data":null}': {'status': 200, 'headers': '', 'data': 'playback data'}
       };
 
       var responseData;
