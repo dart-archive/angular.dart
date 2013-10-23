@@ -120,11 +120,11 @@ class MockHttpBackend implements HttpBackend {
   /**
    * This function is called from [Http] and designed to mimic the Dart APIs.
    */
-  Future request(String url,
+  dart_async.Future request(String url,
                  {String method, bool withCredentials, String responseType,
                  String mimeType, Map<String, String> requestHeaders, sendData,
                  void onProgress(ProgressEvent e)}) {
-    Completer c = new Completer();
+    dart_async.Completer c = new dart_async.Completer();
     var callback = (status, data, headers) {
       if (status >= 200 && status < 300) {
         c.complete(new MockHttpRequest(status, data, headers));
@@ -573,18 +573,19 @@ class MockHttpRequest implements HttpRequest {
   final bool supportsProgressEvent = false;
   final Events on = null;
 
-  final Stream<ProgressEvent> onAbort = null;
-  final Stream<ProgressEvent> onError = null;
-  final Stream<ProgressEvent> onLoad = null;
-  final Stream<ProgressEvent> onLoadEnd = null;
-  final Stream<ProgressEvent> onLoadStart = null;
-  final Stream<ProgressEvent> onProgress = null;
-  final Stream<ProgressEvent> onReadyStateChange = null;
+  final dart_async.Stream<ProgressEvent> onAbort = null;
+  final dart_async.Stream<ProgressEvent> onError = null;
+  final dart_async.Stream<ProgressEvent> onLoad = null;
+  final dart_async.Stream<ProgressEvent> onLoadEnd = null;
+  final dart_async.Stream<ProgressEvent> onLoadStart = null;
+  final dart_async.Stream<ProgressEvent> onProgress = null;
+  final dart_async.Stream<ProgressEvent> onReadyStateChange = null;
 
-  final Stream<ProgressEvent> onTimeout = null;
+  final dart_async.Stream<ProgressEvent> onTimeout = null;
   final int readyState = 0;
 
   get responseText => response == null ? null : "$response";
+  Map<String, String> get responseHeaders => null;
   final responseXml = null;
   final String statusText = null;
   final HttpRequestUpload upload = null;
@@ -620,6 +621,7 @@ class MockProgressEvent implements ProgressEvent {
   final bool cancelable = false;
   final DataTransfer clipboardData = null;
   final EventTarget currentTarget;
+  final Element matchingTarget = null;
   final bool defaultPrevented = false;
   final int eventPhase = 0;
   final bool lengthComputable = false;

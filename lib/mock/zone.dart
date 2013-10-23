@@ -39,7 +39,7 @@ microLeap() {
     toRun.forEach((fn) => fn());
     if (!_asyncErrors.isEmpty) {
       var e = _asyncErrors.removeAt(0);
-      throw ['Async error', e, dartAsync.getAttachedStackTrace(e)];
+      throw ['Async error', e, dart_async.getAttachedStackTrace(e)];
     }
   }
 }
@@ -128,16 +128,16 @@ noMoreAsync() {
 }
 
 /**
-* Captures all runAsync calls inside of a function.
-*
-* Typically used within a test: it('should be async', async(() { ... }));
-*/
+ * Captures all runAsync calls inside of a function.
+ *
+ * Typically used within a test: it('should be async', async(() { ... }));
+ */
 async(Function fn) =>
     () {
   _noMoreAsync = false;
   _asyncErrors = [];
   _timerQueue = [];
-  var zoneSpec = new dartAsync.ZoneSpecification(
+  var zoneSpec = new dart_async.ZoneSpecification(
       scheduleMicrotask: (_, __, ___, asyncFn) {
         if (_noMoreAsync) {
           throw ['runAsync called after noMoreAsync()'];
@@ -148,11 +148,11 @@ async(Function fn) =>
       createTimer: (_, __, ____, Duration duration, void f()) =>
           _createTimer(f, duration, false),
       createPeriodicTimer:
-          (_, __, ___, Duration period, void f(dartAsync.Timer timer)) =>
+          (_, __, ___, Duration period, void f(dart_async.Timer timer)) =>
               _createTimer(f, period, true),
       handleUncaughtError: (_, __, ___, e, s) => _asyncErrors.add([e, s])
   );
-  dartAsync.runZoned(() {
+  dart_async.runZoned(() {
       fn();
       microLeap();
     }, zoneSpecification: zoneSpec);
@@ -178,18 +178,18 @@ _createTimer(Function fn, Duration duration, bool periodic) {
  * will throw an exception.
  */
 sync(Function fn) => () {
-  dartAsync.runZoned(fn, zoneSpecification: new dartAsync.ZoneSpecification(
+  dart_async.runZoned(fn, zoneSpecification: new dart_async.ZoneSpecification(
     scheduleMicrotask: (_, __, ___, asyncFn) =>
         throw ['runAsync called from sync function.'],
     createTimer: (_, __, ____, Duration duration, void f()) =>
         throw ['Timer created from sync function.'],
     createPeriodicTimer:
-        (_, __, ___, Duration period, void f(dartAsync.Timer timer)) =>
+        (_, __, ___, Duration period, void f(dart_async.Timer timer)) =>
             throw ['periodic Timer created from sync function.']
     ));
 };
 
-class _TimerSpec implements dartAsync.Timer {
+class _TimerSpec implements dart_async.Timer {
   Function fn;
   Duration duration;
   Duration elapsed = Duration.ZERO;

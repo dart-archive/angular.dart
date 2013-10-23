@@ -2,7 +2,7 @@ library angular.util;
 
 toBool(x) {
   if (x is bool) return x;
-  if (x is int || x is double) return x != 0;
+  if (x is num) return x != 0;
   return false;
 }
 

@@ -1,7 +1,6 @@
 library parser_perf;
 
 import '_perf.dart';
-import 'dart:async';
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser_library.dart';
 import 'package:angular/filter/module.dart';

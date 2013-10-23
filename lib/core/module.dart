@@ -34,7 +34,7 @@ class NgCoreModule extends Module {
     type(FilterMap);
     type(Interpolate);
     type(Scope);
-    type(Zone);
+    type(NgZone);
 
     type(Parser, implementedBy: DynamicParser);
     type(DynamicParser);

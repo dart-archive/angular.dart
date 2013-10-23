@@ -28,8 +28,8 @@ class LongStackTrace {
 /**
  * A better zone API which implements onTurnDone.
  */
-class Zone {
-  Zone() {
+class NgZone {
+  NgZone() {
     _zone = async.Zone.current.fork(specification: new async.ZoneSpecification(
         run: _onRun,
         runUnary: _onRunUnary,

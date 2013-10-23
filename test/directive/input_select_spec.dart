@@ -1,7 +1,5 @@
 library input_select_spec;
 
-import 'dart:async';
-
 import '../_specs.dart';
 
 //TODO(misko): re-enabled dissabled tests once we have forms.

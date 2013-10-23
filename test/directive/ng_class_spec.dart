@@ -1,8 +1,5 @@
 library ng_class_spec;
 
-import 'dart:async';
-import 'dart:html' as dom;
-
 import '../_specs.dart';
 
 main() {

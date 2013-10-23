@@ -1,7 +1,6 @@
 library jamine;
 
 import 'package:unittest/unittest.dart' as unit;
-import 'package:js/js.dart' as js;
 import 'package:angular/utils.dart' as utils;
 
 Function _wrapFn;

@@ -45,7 +45,7 @@ main() => describe('template url', () {
     }));
 
     it('should use the UrlRewriter for both HTML and CSS URLs', async(inject((Http $http,
-          Compiler $compile, Scope $rootScope, Logger log, Injector injector, Zone zone,
+          Compiler $compile, Scope $rootScope, Logger log, Injector injector, NgZone zone,
           MockHttpBackend backend) {
 
       backend.whenGET('PREFIX:simple.html').respond('<div log="SIMPLE">Simple!</div>');

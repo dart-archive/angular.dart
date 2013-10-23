@@ -1,7 +1,6 @@
 library ng_bind_template_spec;
 
 import '../_specs.dart';
-import 'dart:html' as dom;
 
 main() {
   describe('BindTemplateDirective', () {

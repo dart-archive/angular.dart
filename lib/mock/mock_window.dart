@@ -6,25 +6,32 @@ class MockWindow extends Mock implements Window {
   MockLocation location = new MockLocation();
   MockDocument document = new MockDocument();
 
-  StreamController<PopStateEvent> onPopStateController =
-      new StreamController<PopStateEvent>();
-  StreamController<Event> onHashChangeController =
-      new StreamController<Event>();
-  StreamController<MouseEvent> onClickController =
-      new StreamController<MouseEvent>();
+  dart_async.StreamController<PopStateEvent> onPopStateController =
+      new dart_async.StreamController<PopStateEvent>();
+  dart_async.StreamController<Event> onHashChangeController =
+      new dart_async.StreamController<Event>();
+  dart_async.StreamController<MouseEvent> onClickController =
+      new dart_async.StreamController<MouseEvent>();
 
 
-  Stream<PopStateEvent> get onPopState => onPopStateController.stream;
-  Stream<Event> get onHashChange => onHashChangeController.stream;
-  Stream<Event> get onClick => onClickController.stream;
+  dart_async.Stream<PopStateEvent> get onPopState => onPopStateController.stream;
+  dart_async.Stream<Event> get onHashChange => onHashChangeController.stream;
+  dart_async.Stream<Event> get onClick => onClickController.stream;
 
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 @proxy
-class MockHistory extends Mock implements History {}
+class MockHistory extends Mock implements History {
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 @proxy
-class MockLocation extends Mock implements Location {}
+class MockLocation extends Mock implements Location {
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 @proxy
-class MockDocument extends Mock implements HtmlDocument {}
+class MockDocument extends Mock implements HtmlDocument {
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}

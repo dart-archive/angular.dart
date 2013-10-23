@@ -1,7 +1,6 @@
 library angular.perf.try_catch;
 
 import '_perf.dart';
-import 'dart:async';
 
 /**
  * Compare with JS: http://jsperf.com/throw-new-error-vs-throw-name-error

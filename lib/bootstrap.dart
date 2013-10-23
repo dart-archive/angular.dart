@@ -32,8 +32,8 @@ Injector _defaultInjectorFactory(List<Module> modules) =>
  * # The [ngBootstrap] is responsible for:
  *
  *   1. Locating the root element of the application,
- *   2. Creating Angular [Zone]
- *   3. Inside the [Zone] create an injector
+ *   2. Creating Angular [NgZone]
+ *   3. Inside the [NgZone] create an injector
  *   4. Retrieve the [Compiler] and compile the root eleement
  *
  *
@@ -74,8 +74,8 @@ Injector ngBootstrap({
 
   // The injector must be created inside the zone, so we create the
   // zone manually and give it back to the injector as a value.
-  Zone zone = new Zone();
-  ngModules.add(new Module()..value(Zone, zone));
+  NgZone zone = new NgZone();
+  ngModules.add(new Module()..value(NgZone, zone));
 
   return zone.run(() {
     var rootElements = [element];

@@ -1,7 +1,6 @@
 library bootstrap_spec;
 
 import '_specs.dart';
-import 'package:angular/utils.dart';
 
 main() => describe('bootstrap', () {
   BodyElement body = window.document.query('body');

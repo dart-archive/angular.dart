@@ -1,7 +1,6 @@
 library angular.core.parser;
 
 import 'dart:mirrors';
-import 'package:perf_api/perf_api.dart';
 
 import '../../utils.dart';
 import '../module.dart';

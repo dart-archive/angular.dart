@@ -45,7 +45,7 @@ class Scope implements Map {
 
   ExceptionHandler _exceptionHandler;
   Parser _parser;
-  Zone _zone;
+  NgZone _zone;
   num _ttl;
   String _phase;
   Map<String, Object> _properties = {};
@@ -59,7 +59,7 @@ class Scope implements Map {
 
 
   Scope(ExceptionHandler this._exceptionHandler, Parser this._parser,
-      ScopeDigestTTL ttl, Zone this._zone, Profiler this._perf) {
+      ScopeDigestTTL ttl, NgZone this._zone, Profiler this._perf) {
     _properties[r'this']= this;
     _ttl = ttl.ttl;
     $root = this;

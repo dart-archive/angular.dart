@@ -35,7 +35,7 @@ measure(b) {
       b();
     }
   } else {
-    var repeat = (count / 100).toInt();
+    var repeat = count ~/ 100;
     for(var i = 0; i < repeat; i++) {
       //0  1    2    3    4    5    6    7    8    9
       b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 0

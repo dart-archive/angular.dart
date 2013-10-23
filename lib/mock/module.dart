@@ -1,10 +1,9 @@
 library angular.mock;
 
-import 'dart:async';
+import 'dart:async' as dart_async;
 import 'dart:html';
 import 'dart:json' as json;
 import 'dart:mirrors' as mirror;
-import 'dart:async' as dartAsync;
 import '../angular.dart';
 import '../utils.dart' as utils;
 import 'package:js/js.dart' as js;
@@ -31,7 +30,7 @@ part 'mock_window.dart';
  *   - [MockHttpBackend] instead of [HttpBackend]
  *   - [Logger]
  *   - [RethrowExceptionHandler] instead of [ExceptionHandler]
- *   - [ng.Zone] which displays errors to console;
+ *   - [NgZone] which displays errors to console;
  */
 class AngularMockModule extends Module {
   AngularMockModule() {
@@ -41,8 +40,8 @@ class AngularMockModule extends Module {
     type(Logger);
     type(MockHttpBackend);
     factory(HttpBackend, (Injector i) => i.get(MockHttpBackend));
-    factory(Zone, (_) {
-      Zone zone = new Zone();
+    factory(NgZone, (_) {
+      NgZone zone = new NgZone();
       zone.onError = (dynamic e, dynamic s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
       return zone;
     });

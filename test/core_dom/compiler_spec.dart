@@ -1,7 +1,6 @@
 library compiler_spec;
 
 import '../_specs.dart';
-import 'dart:mirrors';
 
 
 main() => describe('dte.compiler', () {
@@ -169,7 +168,7 @@ main() => describe('dte.compiler', () {
         module.type(SimpleComponent);
       }));
 
-      it('should select on element', async(inject((Zone zone) {
+      it('should select on element', async(inject((NgZone zone) {
         var element = $(r'<div><simple></simple></div>');
 
         zone.run(() {
@@ -181,7 +180,7 @@ main() => describe('dte.compiler', () {
         expect(element.textWithShadow()).toEqual('INNER_1()');
       })));
 
-      it('should create a simple component', async(inject((Zone zone) {
+      it('should create a simple component', async(inject((NgZone zone) {
         $rootScope.name = 'OUTTER';
         $rootScope.sep = '-';
         var element = $(r'<div>{{name}}{{sep}}{{$id}}:<simple>{{name}}{{sep}}{{$id}}</simple></div>');
@@ -195,7 +194,7 @@ main() => describe('dte.compiler', () {
         expect(element.textWithShadow()).toEqual('OUTTER-_0:INNER_1(OUTTER-_0)');
       })));
 
-      it('should create a component that can access parent scope', async(inject((Zone zone) {
+      it('should create a component that can access parent scope', async(inject((NgZone zone) {
         $rootScope.fromParent = "should not be used";
         $rootScope.val = "poof";
         var element = $('<parent-expression from-parent=val></parent-expression>');
@@ -207,7 +206,7 @@ main() => describe('dte.compiler', () {
         expect(renderedText(element)).toEqual('inside poof');
       })));
 
-      it('should behave nicely if a mapped attribute is missing', async(inject((Zone zone) {
+      it('should behave nicely if a mapped attribute is missing', async(inject((NgZone zone) {
         var element = $('<parent-expression></parent-expression>');
         zone.run(() =>
           $compile(element)(injector, element));
@@ -216,7 +215,7 @@ main() => describe('dte.compiler', () {
         expect(renderedText(element)).toEqual('inside ');
       })));
 
-      it('should behave nicely if a mapped attribute evals to null', async(inject((Zone zone) {
+      it('should behave nicely if a mapped attribute evals to null', async(inject((NgZone zone) {
         $rootScope.val = null;
         var element = $('<parent-expression fromParent=val></parent-expression>');
         zone.run(() =>
@@ -371,7 +370,7 @@ main() => describe('dte.compiler', () {
         }
       })));
 
-      it('should publish component controller into the scope', async(inject((Zone zone) {
+      it('should publish component controller into the scope', async(inject((NgZone zone) {
         var element = $(r'<div><publish-me></publish-me></div>');
         zone.run(() =>
         $compile(element)(injector, element));
@@ -380,7 +379,7 @@ main() => describe('dte.compiler', () {
         expect(element.textWithShadow()).toEqual('WORKED');
       })));
 
-      it('should publish directive controller into the scope', async(inject((Zone zone) {
+      it('should publish directive controller into the scope', async(inject((NgZone zone) {
         var element = $(r'<div><div publish-me>{{ctrlName.value}}</div></div>');
         zone.run(() =>
         $compile(element)(injector, element));

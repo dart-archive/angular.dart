@@ -1,6 +1,5 @@
 library routing_spec;
 
-import 'dart:html';
 import '../_specs.dart';
 import 'package:angular/routing/module.dart';
 import 'package:angular/mock/module.dart';

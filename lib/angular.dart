@@ -12,7 +12,6 @@ library angular;
 import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
-import 'package:perf_api/perf_api.dart';
 
 import 'core/module.dart';
 import 'core_dom/module.dart';

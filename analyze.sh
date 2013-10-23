@@ -20,7 +20,7 @@ echo // generated file > $OUT
 
 for FILE in $(ls lib/angular.dart perf/*_perf.dart test/*_spec.dart test/*/*_spec.dart)
 do
-  echo import \'../$FILE\'\; >> $OUT
+  echo export \'../$FILE\' hide main, NestedRouteInitializer\; >> $OUT
 done
 
 ./generate.sh && $DART_ANALYSER_BIN $OUT

@@ -13,7 +13,7 @@ main() => describe('zone', () {
   }));
 
   beforeEach(inject((Logger log, ExceptionHandler eh) {
-    zone = new Zone();
+    zone = new NgZone();
     zone.onTurnDone = () {
       log('onTurnDone');
     };

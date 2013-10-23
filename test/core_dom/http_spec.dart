@@ -911,7 +911,7 @@ main() => describe('http', () {
     }));
 
 
-    it('should rewrite URLs before calling the backend', async(inject((Http http, Zone zone) {
+    it('should rewrite URLs before calling the backend', async(inject((Http http, NgZone zone) {
       backend.when('GET', 'a').respond(200, VALUE);
 
       var called = 0;
@@ -930,7 +930,7 @@ main() => describe('http', () {
     })));
 
 
-    it('should support pending requests for different raw URLs', async(inject((Http http, Zone zone) {
+    it('should support pending requests for different raw URLs', async(inject((Http http, NgZone zone) {
       backend.when('GET', 'a').respond(200, VALUE);
 
       var called = 0;
@@ -952,7 +952,7 @@ main() => describe('http', () {
     })));
 
 
-    it('should support caching', async(inject((Http http, Zone zone) {
+    it('should support caching', async(inject((Http http, NgZone zone) {
       var called = 0;
       zone.run(() {
         http.getString('fromCache', cache: cache).then((v) {
@@ -966,7 +966,7 @@ main() => describe('http', () {
   });
 
   describe('caching', () {
-    it('should not cache if no cache is present', async(inject((Http http, Zone zone) {
+    it('should not cache if no cache is present', async(inject((Http http, NgZone zone) {
       backend.when('GET', 'a').respond(200, VALUE, null);
 
       var called = 0;
@@ -989,7 +989,7 @@ main() => describe('http', () {
     })));
 
 
-    it('should return a pending request', async(inject((Http http, Zone zone) {
+    it('should return a pending request', async(inject((Http http, NgZone zone) {
       backend.when('GET', 'a').respond(200, VALUE);
 
       var called = 0;
@@ -1011,7 +1011,7 @@ main() => describe('http', () {
     })));
 
 
-    it('should not return a pending request after the request is complete', async(inject((Http http, Zone zone) {
+    it('should not return a pending request after the request is complete', async(inject((Http http, NgZone zone) {
       backend.when('GET', 'a').respond(200, VALUE, null);
 
       var called = 0;
@@ -1039,7 +1039,7 @@ main() => describe('http', () {
     })));
 
 
-    it('should return a cached value if present', async(inject((Http http, Zone zone) {
+    it('should return a cached value if present', async(inject((Http http, NgZone zone) {
       var called = 0;
       // The URL string 'f' is primed in the FakeCache
       zone.run(() {
@@ -1056,7 +1056,7 @@ main() => describe('http', () {
 
 
   describe('error handling', () {
-    it('should reject 404 status codes', async(inject((Http http, Zone zone) {
+    it('should reject 404 status codes', async(inject((Http http, NgZone zone) {
       backend.when('GET', '404.html').respond(404, VALUE);
 
       var response = null;

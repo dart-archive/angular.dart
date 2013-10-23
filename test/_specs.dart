@@ -66,9 +66,9 @@ class Expect {
   toBe(expected) => unit.expect(actual,
       unit.predicate((actual) => identical(expected, actual), '$expected'));
   toThrow([exception]) => unit.expect(actual, exception == null ? unit.throws : unit.throwsA(new ExceptionContains(exception)));
-  toBeFalsy() => unit.expect(actual, (v) => v == null ? true : v is bool ? v == false : !(v is Object));
-  toBeTruthy() => unit.expect(actual, (v) => v is bool ? v == true : v is Object);
-  toBeDefined() => unit.expect(actual, (v) => v is Object);
+  toBeFalsy() => unit.expect(actual, (v) => v == null ? true : v is bool ? v == false : false);
+  toBeTruthy() => unit.expect(actual, (v) => v is bool ? v == true : true);
+  toBeDefined() => unit.expect(actual, (v) => v != null);
   toBeNull() => unit.expect(actual, unit.isNull);
   toBeNotNull() => unit.expect(actual, unit.isNotNull);
 

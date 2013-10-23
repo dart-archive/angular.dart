@@ -7,7 +7,7 @@ import 'dart:json' as json;
 main() {
   describe(r'Scope', () {
     beforeEach(module(() {
-      return (Zone zone) {
+      return (NgZone zone) {
         zone.onError = (e, s, l) => null;
       };
     }));
