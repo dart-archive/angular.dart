@@ -10,6 +10,7 @@ const String _COMPONENT = '-component';
 const String _DIRECTIVE = '-directive';
 String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
 RegExp _ATTR_SELECTOR_REGEXP = new RegExp(r'\[([^\]]+)\]');
+const List<String> _specs = const ['=>!', '=>', '<=>', '=', '!', '@', '&', '#', '%'];
 
 class SourceMetadataExtractor {
   SourceCrawler sourceCrawler;
@@ -30,20 +31,18 @@ class SourceMetadataExtractor {
       DirectiveInfo dirInfo = new DirectiveInfo();
       dirInfo.selector = meta.selector;
       meta.attributeMappings.forEach((attrName, mappingSpec) {
-        if (mappingSpec.startsWith('=') ||
-            mappingSpec.startsWith('&') ||
-            mappingSpec.startsWith('@') ||
-            mappingSpec.startsWith('!')) {
-          dirInfo.expressionAttrs.add(snakecase(attrName));
-        }
-        if (mappingSpec.length == 1) { // shorthand
+        dirInfo.expressionAttrs.add(snakecase(attrName));
+        if (mappingSpec.length == 1) { // Shorthand. Remove.
           // TODO(pavelgj): Figure out if short-hand LHS should be expanded
           // and added to the expressions list.
           if (attrName != '.') {
-            dirInfo.expressions.add(attrName);
+            dirInfo.expressions.add(_maybeCamelCase(attrName));
           }
         } else {
-          mappingSpec = mappingSpec.substring(1);
+          var spec = _specs
+              .firstWhere((specPrefix) => mappingSpec.startsWith(specPrefix),
+                  orElse: () => throw '$mappingSpec no matching spec');
+          mappingSpec = mappingSpec.substring(spec.length);
           if (mappingSpec.startsWith('.')) {
             mappingSpec = mappingSpec.substring(1);
           }
@@ -108,6 +107,13 @@ class SourceMetadataExtractor {
 
     return directives;
   }
+}
+
+String _maybeCamelCase(String s) {
+  if (s.indexOf('-') > -1) {
+    return camelcase(s);
+  }
+  return s;
 }
 
 class DirectiveMetadataCollectingVisitor {
