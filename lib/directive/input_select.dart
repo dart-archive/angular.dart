@@ -39,6 +39,7 @@ class InputSelectDirective implements NgAttachAware {
                        NgModel this._model,
                        Scope this._scope) {
     _unknownOption.value = '?';
+    _unknownOption.text = ''; // Explicit due to dartbug.com/14407
     _selectElement.queryAll('option').forEach((o) {
       if (_nullOption == null && o.value == '') {
         _nullOption = o;
