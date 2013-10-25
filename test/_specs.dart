@@ -5,8 +5,6 @@ import 'dart:html';
 import 'dart:mirrors' as mirror;
 import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/angular.dart';
-import 'package:di/di.dart';
-import 'package:di/dynamic_injector.dart';
 import 'package:angular/mock/module.dart';
 
 import 'jasmine_syntax.dart';
@@ -233,88 +231,9 @@ class JQuery implements List<Node> {
   children() => new JQuery(this[0].childNodes);
 }
 
-class SpecInjector {
-  DynamicInjector moduleInjector;
-  DynamicInjector injector;
-  List<Module> modules = [];
-  List<Function> initFns = [];
-
-  SpecInjector() {
-    var moduleModule = new Module()
-      ..factory(Module, (Injector injector) => addModule(new Module()));
-    moduleInjector = new DynamicInjector(modules: [moduleModule]);
-  }
-
-  addModule(module) {
-    if (injector != null) {
-      throw ["Injector already crated, can not add more modules."];
-    }
-    modules.add(module);
-    return module;
-  }
-
-  module(fnOrModule, [declarationStack]) {
-    try {
-      if (fnOrModule is Function) {
-        var initFn = moduleInjector.invoke(fnOrModule);
-        if (initFn is Function) {
-          initFns.add(initFn);
-        }
-      } else if (fnOrModule is Module) {
-        addModule(fnOrModule);
-      } else {
-        throw 'Unsupported type: $fnOrModule';
-      }
-    } catch (e, s) {
-      throw "$e\n$s\nDECLARED AT:$declarationStack";
-    }
-  }
-
-  inject(Function fn, [declarationStack]) {
-    try {
-      if (injector == null) {
-        injector = new DynamicInjector(modules: modules); // Implicit injection is disabled.
-        initFns.forEach((fn) {
-          injector.invoke(fn);
-        });
-      }
-      injector.invoke(fn);
-    } catch (e, s) {
-      throw "$e\n$s\nDECLARED AT:$declarationStack";
-    }
-  }
-
-  reset() { injector = null; }
-}
-
-SpecInjector currentSpecInjector = null;
-inject(Function fn) {
-  try { throw ''; } catch (e, stack) {
-    if (currentSpecInjector == null ) {
-      return () {
-        return currentSpecInjector.inject(fn, stack);
-      };
-    } else {
-      return currentSpecInjector.inject(fn, stack);
-    }
-  }
-}
-module(fnOrModule) {
-  try { throw ''; } catch(e, stack) {
-    if (currentSpecInjector == null ) {
-      return () {
-        return currentSpecInjector.module(fnOrModule, stack);
-      };
-    } else {
-      return currentSpecInjector.module(fnOrModule, stack);
-    }
-  }
-}
 
 main() {
-  beforeEach(() => currentSpecInjector = new SpecInjector());
-  beforeEach(module((Module m) => m.install(new AngularModule())));
-  beforeEach(module((Module m) => m.install(new AngularMockModule())));
+  beforeEach(setUpInjector);
   beforeEach(() => wrapFn(sync));
-  afterEach(() => currentSpecInjector = null);
+  afterEach(tearDownInjector);
 }

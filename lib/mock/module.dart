@@ -8,6 +8,7 @@ import '../angular.dart';
 import '../utils.dart' as utils;
 import 'package:js/js.dart' as js;
 import 'package:di/di.dart';
+import 'package:di/dynamic_injector.dart';
 import 'package:unittest/mock.dart';
 import 'package:meta/meta.dart';
 
@@ -19,6 +20,7 @@ part 'probe.dart';
 part 'test_bed.dart';
 part 'zone.dart';
 part 'mock_window.dart';
+part 'test_injection.dart';
 
 /**
  * Use in addition to [AngularModule] in your tests.

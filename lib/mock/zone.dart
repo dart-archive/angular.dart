@@ -130,7 +130,11 @@ noMoreAsync() {
 /**
  * Captures all runAsync calls inside of a function.
  *
- * Typically used within a test: it('should be async', async(() { ... }));
+ * Typically used within a test:
+ *
+ *     it('should be async', async(() {
+ *       ...
+ *     }));
  */
 async(Function fn) =>
     () {
@@ -179,13 +183,16 @@ _createTimer(Function fn, Duration duration, bool periodic) {
  */
 sync(Function fn) => () {
   dart_async.runZoned(fn, zoneSpecification: new dart_async.ZoneSpecification(
-    scheduleMicrotask: (_, __, ___, asyncFn) =>
-        throw ['runAsync called from sync function.'],
-    createTimer: (_, __, ____, Duration duration, void f()) =>
-        throw ['Timer created from sync function.'],
+    scheduleMicrotask: (_, __, ___, asyncFn) {
+        throw ['runAsync called from sync function.'];
+    },
+    createTimer: (_, __, ____, Duration duration, void f()) {
+        throw ['Timer created from sync function.'];
+    },
     createPeriodicTimer:
-        (_, __, ___, Duration period, void f(dart_async.Timer timer)) =>
-            throw ['periodic Timer created from sync function.']
+        (_, __, ___, Duration period, void f(dart_async.Timer timer)) {
+            throw ['periodic Timer created from sync function.'];
+        }
     ));
 };
 
