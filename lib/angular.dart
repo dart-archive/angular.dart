@@ -20,6 +20,7 @@ import 'filter/module.dart';
 import 'perf/module.dart';
 import 'routing/module.dart';
 
+export 'package:di/di.dart';
 export 'core/module.dart';
 export 'core_dom/module.dart';
 export 'core/parser/parser_library.dart';
