@@ -37,7 +37,7 @@ class NgBindRouteDirective implements RouteProvider {
   /// Returns the parent [RouteProvider].
   RouteProvider get _parent => _injector.parent.get(RouteProvider);
 
-  RouteHandle get route => _router.root.getRoute(routePath).newHandle();
+  Route get route => _router.root.getRoute(routePath);
 
   String get routePath {
     if (!routeName.startsWith('.')) {
@@ -88,10 +88,9 @@ class NgBindRouteDirective implements RouteProvider {
 abstract class RouteProvider {
 
   /**
-   * Returns [RouteHandle] for [routePath]. It is up to the caller to properly
-   * discard the handle (by calling [RouteHandle.discard]) when done using it.
+   * Returns [Route] for [routePath].
    */
-  RouteHandle get route;
+  Route get route;
 
   /**
    * Returns the name of the current route.
