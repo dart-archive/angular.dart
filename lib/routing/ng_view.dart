@@ -43,7 +43,7 @@ part of angular.routing;
  *
  * library.html:
  *
- *     <div ng-bind-route="portfolio">
+ *     <div ng-bind-route="library">
  *       <h1>Library!</h1>
  *
  *       <ng-view></ng-view>
@@ -52,8 +52,8 @@ part of angular.routing;
  * book_list.html:
  *
  *     <ul>
- *       <li><a href="/book/12345/overview">Book 12345</a>
- *       <li><a href="/book/23456/overview">Book 23456</a>
+ *       <li><a href="/library/12345/overview">Book 12345</a>
+ *       <li><a href="/library/23456/overview">Book 23456</a>
  *     </ul>
  */
 @NgDirective(selector: 'ng-view')
