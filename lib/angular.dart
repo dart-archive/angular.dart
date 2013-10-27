@@ -26,5 +26,6 @@ export 'core_dom/module.dart';
 export 'core/parser/parser_library.dart';
 export 'directive/module.dart';
 export 'filter/module.dart';
+export 'routing/module.dart';
 
 part 'bootstrap.dart';
