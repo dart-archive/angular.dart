@@ -43,8 +43,13 @@ class NgDirectiveModule extends Module {
     value(NgIncludeDirective, null);
     value(NgRepeatDirective, null);
     value(NgShowDirective, null);
+    value(InputEmailDirective, null);
+    value(InputNumberDirective, null);
+    value(InputRadioDirective, null);
     value(InputTextDirective, null);
+    value(InputUrlDirective, null);
     value(InputCheckboxDirective, null);
+    value(TextAreaDirective, null);
     value(InputSelectDirective, null);
     value(OptionValueDirective, null);
     value(NgModel, null);
