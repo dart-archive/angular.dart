@@ -2,7 +2,6 @@ library angular.mock;
 
 import 'dart:async' as dart_async;
 import 'dart:html';
-import 'dart:json' as json;
 import 'dart:mirrors' as mirror;
 import '../angular.dart';
 import '../utils.dart' as utils;
@@ -11,6 +10,7 @@ import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:unittest/mock.dart';
 import 'package:meta/meta.dart';
+import 'package:json/json.dart' as json;
 
 part 'debug.dart';
 part 'exception_handler.dart';

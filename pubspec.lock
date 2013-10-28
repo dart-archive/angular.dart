@@ -29,6 +29,10 @@ packages:
     description: js
     source: hosted
     version: "0.0.25"
+  json:
+    description: json
+    source: hosted
+    version: "0.8.7"
   logging:
     description: logging
     source: hosted

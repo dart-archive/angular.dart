@@ -2,10 +2,10 @@ library angular.playback.playback_http;
 
 import "dart:async";
 import "dart:html";
-import "dart:json" as json;
 
 import "package:angular/core_dom/module.dart";
 import "package:angular/mock/module.dart" as mock;
+import 'package:json/json.dart' as json;
 
 import "playback_data.dart" as playback_data;
 

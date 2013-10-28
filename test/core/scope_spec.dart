@@ -1,7 +1,7 @@
 library scope_spec;
 
 import '../_specs.dart';
-import 'dart:json' as json;
+import 'package:json/json.dart' as json;
 
 
 main() {
