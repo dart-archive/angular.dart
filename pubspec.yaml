@@ -5,10 +5,8 @@ authors:
 - Pavel Jbanov <pavelgj@gmail.com>
 - James deBoer <james@huronbox.com>
 - Chirayu Krishnappa <chirayu@google.com>
+description: Angular for dart.
 homepage: https://github.com/angular/angular.dart
-description:
-  Angular for dart.
-
 dependencies:
   analyzer_experimental: any
   browser: any
@@ -16,6 +14,7 @@ dependencies:
   html5lib: any
   intl: any
   js: any
+  json: any
   meta: any
   perf_api: any
   route_hierarchical: any
