@@ -10,5 +10,5 @@ part of angular.filter;
  */
 @NgFilter(name:'json')
 class JsonFilter {
-  call(text) => stringify(text);
+  call(text) => JSON.encode(text);
 }

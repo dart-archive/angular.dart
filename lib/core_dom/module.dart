@@ -1,7 +1,7 @@
 library angular.core.dom;
 
 import 'dart:async' as async;
-import 'dart:json' as json;
+import 'dart:convert' show JSON;
 import 'dart:html' as dom;
 import 'dart:mirrors';
 

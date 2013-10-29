@@ -1,8 +1,8 @@
 library angular.filter;
 
+import 'dart:convert' show JSON;
 import 'package:intl/intl.dart';
 import 'package:di/di.dart';
-import 'package:json/json.dart';
 import '../core/module.dart';
 import '../core/parser/parser_library.dart';
 

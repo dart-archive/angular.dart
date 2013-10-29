@@ -1,20 +1,20 @@
 library angular.playback.playback_http;
 
-import "dart:async";
-import "dart:html";
+import 'dart:async';
+import 'dart:convert' show JSON;
+import 'dart:html';
 
-import "package:angular/core_dom/module.dart";
-import "package:angular/mock/module.dart" as mock;
-import 'package:json/json.dart' as json;
+import 'package:angular/core_dom/module.dart';
+import 'package:angular/mock/module.dart' as mock;
 
-import "playback_data.dart" as playback_data;
+import 'playback_data.dart' as playback_data;
 
 class PlaybackHttpBackendConfig {
   requestKey(String url,
                  {String method, bool withCredentials, String responseType,
                  String mimeType, Map<String, String> requestHeaders, sendData,
                  void onProgress(ProgressEvent e)}) {
-    return json.stringify({
+    return JSON.encode({
         "url": url,
         "method": method,
         "requestHeaders": requestHeaders,
@@ -65,8 +65,8 @@ class RecordingHttpBackend implements HttpBackend {
 
       assert(key is String);
       _prodBackend.request('/record',  //TODO make this URL configurable.
-        method: 'POST', sendData: json.stringify({
-          "key": key, "data": json.stringify({
+        method: 'POST', sendData: JSON.encode({
+          "key": key, "data": JSON.encode({
               "status": r.status,
               "headers": r.getAllResponseHeaders(),
               "data": r.responseText})
