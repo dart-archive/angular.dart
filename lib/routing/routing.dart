@@ -66,7 +66,7 @@ class _RoutingHelper {
             _routePath(route).startsWith(_routePath(v.route));
       }, orElse: () => null);
       if (view != null && !alreadyActiveViews.contains(view)) {
-        view._show(templateUrl);
+        view._show(templateUrl, route);
         alreadyActiveViews.add(view);
         break;
       }

@@ -93,7 +93,14 @@ class NgViewDirective implements NgDetachAware {
     locationService._unregisterPortal(this);
   }
 
-  _show(String templateUrl) {
+  _show(String templateUrl, Route route) {
+    assert(route.isActive);
+    var subscription;
+    subscription = route.onLeave.listen((_) {
+      subscription.cancel();
+      _cleanUp();
+      _prevTemplateUrl = null;
+    });
     if (_prevTemplateUrl == templateUrl) return;
     _prevTemplateUrl = templateUrl;
 
