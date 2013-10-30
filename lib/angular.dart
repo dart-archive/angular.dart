@@ -5,6 +5,7 @@
  *
  *   - AngularJS [Overview](http://www.angularjs.org)
  *   - [Tutorial](https://github.com/angular/angular.dart.tutorial/wiki)
+ *   - [Mailing List](http://groups.google.com/d/forum/angular-dart?hl=en)
  *
  */
 library angular;
