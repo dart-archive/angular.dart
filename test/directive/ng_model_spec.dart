@@ -361,6 +361,12 @@ describe('ng-model', () {
       expect(redBtn.checked).toBe(true);
       expect(greenBtn.checked).toBe(false);
       expect(blueBtn.checked).toBe(false);
+
+      _.triggerEvent(greenBtn, 'click');
+      expect(_.rootScope['color']).toEqual('green');
+      expect(redBtn.checked).toBe(false);
+      expect(greenBtn.checked).toBe(true);
+      expect(blueBtn.checked).toBe(false);
     }));
   });
 
