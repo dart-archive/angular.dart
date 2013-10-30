@@ -31,5 +31,7 @@ class NgTemplateDirective {
 
   NgTemplateDirective(dom.Element this.element, TemplateCache this.templateCache);
   set templateUrl(url) => templateCache.put(url, new HttpResponse(200,
-      (element.isTemplate ? element.content.innerHtml : element.innerHtml)));
+      nodeBind(element) is TemplateBindExtension ?
+          templateBind(element).content.innerHtml :
+          element.innerHtml));
 }

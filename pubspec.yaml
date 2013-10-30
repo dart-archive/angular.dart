@@ -18,4 +18,5 @@ dependencies:
   meta: any
   perf_api: any
   route_hierarchical: any
+  template_binding: any
   unittest: any

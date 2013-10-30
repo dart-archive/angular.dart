@@ -1,6 +1,7 @@
 library angular.directive;
 
 import 'package:di/di.dart';
+import 'package:template_binding/template_binding.dart';
 import 'dart:html' as dom;
 import 'dart:async' as async;
 import '../core/module.dart';
