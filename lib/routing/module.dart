@@ -154,6 +154,7 @@
  */
 library angular.routing;
 
+import 'dart:async';
 import 'dart:html';
 
 import 'package:di/di.dart';

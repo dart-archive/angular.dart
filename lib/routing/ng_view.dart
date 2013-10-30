@@ -64,10 +64,10 @@ class NgViewDirective implements NgDetachAware {
   final Injector injector;
   final Element element;
   RouteHandle route;
+  bool _showingRoute = false;
 
   Block _previousBlock;
   Scope _previousScope;
-  String _prevTemplateUrl;
 
   NgViewDirective(Element this.element, RouteProvider routeProvider,
                   BlockCache this.blockCache, Scope this.scope,
@@ -95,14 +95,17 @@ class NgViewDirective implements NgDetachAware {
 
   _show(String templateUrl, Route route) {
     assert(route.isActive);
-    var subscription;
-    subscription = route.onLeave.listen((_) {
-      subscription.cancel();
+
+    if (_showingRoute) return;
+    _showingRoute = true;
+
+    StreamSubscription _leaveSubscription;
+    _leaveSubscription = route.onLeave.listen((_) {
+      _leaveSubscription.cancel();
+      _leaveSubscription = null;
+      _showingRoute = false;
       _cleanUp();
-      _prevTemplateUrl = null;
     });
-    if (_prevTemplateUrl == templateUrl) return;
-    _prevTemplateUrl = templateUrl;
 
     blockCache.fromUrl(templateUrl).then((blockFactory) {
       _cleanUp();

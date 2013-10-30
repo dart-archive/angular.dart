@@ -59,6 +59,20 @@ main() {
       expect(root.text).toEqual('Foo');
     }));
 
+
+    it('should clear template when route is deactivated', async(() {
+      Element root = _.compile('<ng-view></ng-view>');
+      expect(root.text).toEqual('');
+
+      router.route('/foo');
+      microLeap();
+      expect(root.text).toEqual('Foo');
+
+      router.route('/baz'); // route without a template
+      microLeap();
+      expect(root.text).toEqual('');
+    }));
+
   });
 
 
@@ -124,7 +138,10 @@ class FlatRouteInitializer implements RouteInitializer {
       ..addRoute(
           name: 'bar',
           path: '/bar',
-          enter: view('bar.html'));
+          enter: view('bar.html'))
+      ..addRoute(
+          name: 'baz',
+          path: '/baz'); // route without a template
   }
 }
 
