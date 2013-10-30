@@ -138,6 +138,9 @@ class OrderByFilter {
    * expression: String/Function or Array of String/Function.
    */
   List call(List items, var expression, [bool descending=false]) {
+    if (items == null) {
+      return null;
+    }
     List expressions = null;
     if (expression is String || expression is Mapper) {
       expressions = [expression];

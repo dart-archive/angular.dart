@@ -36,6 +36,11 @@ main() {
       ];
     }));
 
+    it('should pass through null list when input list is null', inject((Scope scope) {
+      var list = null;
+      expect(scope.$eval('list | orderBy:"foo"')).toBe(null);
+    }));
+
     it('should pass through argument when expression is null', inject((Scope scope) {
       var list = scope['list'] = [1, 3, 2];
       expect(scope.$eval('list | orderBy:thisIsNull')).toBe(list);
