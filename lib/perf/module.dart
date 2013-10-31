@@ -9,6 +9,6 @@ part 'dev_tools_timeline.dart';
 
 class NgPerfModule extends Module {
   NgPerfModule() {
-    type(Profiler, implementedBy: DevToolsTimelineProfiler);
+    type(Profiler, implementedBy: Profiler);
   }
 }

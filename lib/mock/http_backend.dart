@@ -612,8 +612,8 @@ class MockHttpRequest implements HttpRequest {
   void overrideMimeType(String override) {}
   void send([data]) {}
   void setRequestHeader(String header, String value) {}
-  void $dom_addEventListener(String type, EventListener listener, [bool useCapture]) {}
-  void $dom_removeEventListener(String type, EventListener listener, [bool useCapture]) {}
+  void addEventListener(String type, EventListener listener, [bool useCapture]) {}
+  void removeEventListener(String type, EventListener listener, [bool useCapture]) {}
 }
 
 class MockProgressEvent implements ProgressEvent {
