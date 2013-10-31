@@ -111,7 +111,8 @@ class Compiler {
   }
 
   BlockFactory call(List<dom.Node> elements) {
-    assert(_perf.startTimer('ng.compile(${_html(elements)}') != false);
+    var timerId;
+    assert((timerId = _perf.startTimer('ng.compile', _html(elements))) != false);
     List<dom.Node> domElements = elements;
     List<dom.Node> templateElements = cloneElements(domElements);
     var directivePositions = _compileBlock(
@@ -121,7 +122,7 @@ class Compiler {
     var blockFactory = new BlockFactory(templateElements,
         directivePositions == null ? [] : directivePositions, _perf);
 
-    assert(_perf.stopTimer('ng.compile(${_html(elements)}') != false);
+    assert(_perf.stopTimer(timerId) != false);
     return blockFactory;
   }
 

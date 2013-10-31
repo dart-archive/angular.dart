@@ -43,13 +43,14 @@ class BlockFactory {
     if (elements == null) {
       elements = cloneElements(templateElements);
     }
+    var timerId;
     try {
-      assert(_perf.startTimer('ng.block') != false);
+      assert((timerId = _perf.startTimer('ng.block')) != false);
       var block = new Block(elements);
       _link(block, elements, directivePositions, injector);
       return block;
     } finally {
-      assert(_perf.stopTimer('ng.block') != false);
+      assert(_perf.stopTimer(timerId) != false);
     }
   }
 
@@ -66,8 +67,9 @@ class BlockFactory {
       var nodeListIndex = index + preRenderedIndexOffset;
       dom.Node node = nodeList[nodeListIndex];
 
+      var timerId;
       try {
-        assert(_perf.startTimer('ng.block.link(${_html(node)})') != false);
+        assert((timerId = _perf.startTimer('ng.block.link', _html(node))) != false);
         // if node isn't attached to the DOM, create a parent for it.
         var parentNode = node.parentNode;
         var fakeParent = false;
@@ -89,7 +91,7 @@ class BlockFactory {
           nodeList[nodeListIndex] = parentNode.nodes[0];
         }
       } finally {
-        assert(_perf.stopTimer('ng.block.link(${_html(node)})') != false);
+        assert(_perf.stopTimer(timerId) != false);
       }
     }
   }
@@ -97,7 +99,8 @@ class BlockFactory {
   Injector _instantiateDirectives(Block block, Injector parentInjector,
                                   dom.Node node, List<DirectiveRef> directiveRefs,
                                   Parser parser) {
-    assert(_perf.startTimer('ng.block.link.setUp(${_html(node)}})') != false);
+    var timerId;
+    assert((timerId = _perf.startTimer('ng.block.link.setUp', _html(node))) != false);
     Injector nodeInjector;
     Scope scope = parentInjector.get(Scope);
     Map<Type, _ComponentFactory> fctrs;
@@ -179,13 +182,15 @@ class BlockFactory {
       nodeModule.factory(BoundBlockFactory, boundBlockFactory);
       nodeInjector = parentInjector.createChild([nodeModule]);
     } finally {
-      assert(_perf.stopTimer('ng.block.link.setUp(${_html(node)}})') != false);
+      assert(_perf.stopTimer(timerId) != false);
     }
     directiveRefs.forEach((DirectiveRef ref) {
+      var linkTimer;
       try {
-        assert(_perf.startTimer('ng.block.link.${ref.type}') != false);
+        var linkMapTimer;
+        assert((linkTimer = _perf.startTimer('ng.block.link', ref.type)) != false);
         var controller = nodeInjector.get(ref.type);
-        assert(_perf.startTimer('ng.block.link.${ref.type}.map') != false);
+        assert((linkMapTimer = _perf.startTimer('ng.block.link.map', ref.type)) != false);
         var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
         if (ref.annotation.publishAs != null) {
           (shadowScope == null ? scope : shadowScope)[ref.annotation.publishAs] = controller;
@@ -204,9 +209,9 @@ class BlockFactory {
         if (controller is NgDetachAware) {
           scope.$on(r'$destroy', controller.detach);
         }
-        assert(_perf.stopTimer('ng.block.link.${ref.type}.map') != false);
+        assert(_perf.stopTimer(linkMapTimer) != false);
       } finally {
-        assert(_perf.stopTimer('ng.block.link.${ref.type}') != false);
+        assert(_perf.stopTimer(linkTimer) != false);
       }
     });
     return nodeInjector;

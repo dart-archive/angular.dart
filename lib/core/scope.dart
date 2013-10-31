@@ -280,19 +280,20 @@ class Scope implements Map {
         //asyncQueue = current._asyncQueue;
         //dump('aQ: ${asyncQueue.length}');
 
+        var timerId;
         while(innerAsyncQueue.length > 0) {
           try {
             var workFn = innerAsyncQueue.removeAt(0);
-            assert(_perf.startTimer('ng.innerAsync(${_source(workFn)})') != false);
+            assert((timerId = _perf.startTimer('ng.innerAsync', _source(workFn))) != false);
             $root.$eval(workFn);
           } catch (e, s) {
             _exceptionHandler(e, s);
           } finally {
-            assert(_perf.stopTimer('ng.innerAsync(${_source(workFn)})') != false);
+            assert(_perf.stopTimer(timerId) != false);
           }
         }
 
-        assert(_perf.startTimer('ng.dirty_check.${_ttl-_ttlLeft}') != false);
+        assert((timerId = _perf.startTimer('ng.dirty_check', _ttl-_ttlLeft)) != false);
         do { // "traverse the scopes" loop
           if ((watchers = current._watchers) != null) {
             // process our watches
@@ -305,9 +306,10 @@ class Scope implements Map {
                 if (!_identical(value, last)) {
                   dirty = true;
                   watch.last = value;
-                  assert(_perf.startTimer('ng.fire(${watch.exp})') != false);
+                  var fireTimer;
+                  assert((fireTimer = _perf.startTimer('ng.fire', watch.exp)) != false);
                   watch.fn(value, ((last == _initWatchVal) ? value : last), current);
-                  assert(_perf.stopTimer('ng.fire(${watch.exp})') != false);
+                  assert(_perf.stopTimer(fireTimer) != false);
                 }
               } catch (e, s) {
                 _exceptionHandler(e, s);
@@ -334,21 +336,22 @@ class Scope implements Map {
           }
         } while ((current = next) != null);
 
-        assert(_perf.stopTimer('ng.dirty_check.${_ttl-_ttlLeft}') != false);
+        assert(_perf.stopTimer(timerId) != false);
         if(dirty && (_ttlLeft--) == 0) {
           throw '$_ttl \$digest() iterations reached. Aborting!\n' +
               'Watchers fired in the last 5 iterations: ${_toJson(watchLog)}';
         }
       } while (dirty || innerAsyncQueue.length > 0);
       while(_outerAsyncQueue.length > 0) {
+        var syncTimer;
         try {
           var workFn = _outerAsyncQueue.removeAt(0);
-          assert(_perf.startTimer('ng.outerAsync(${_source(workFn)})') != false);
+          assert((syncTimer = _perf.startTimer('ng.outerAsync', _source(workFn))) != false);
           $root.$eval(workFn);
         } catch (e, s) {
           _exceptionHandler(e, s);
         } finally {
-          assert(_perf.stopTimer('ng.outerAsync(${_source(workFn)})') != false);
+          assert(_perf.stopTimer(syncTimer) != false);
         }
       }
     } finally {
