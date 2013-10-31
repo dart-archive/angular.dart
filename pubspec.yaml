@@ -1,5 +1,5 @@
 name: angular
-version: 0.0.7
+version: 0.0.8
 authors:
 - Misko Hevery <misko@hevery.com>
 - Pavel Jbanov <pavelgj@gmail.com>
@@ -8,14 +8,14 @@ authors:
 description: Angular for dart.
 homepage: https://github.com/angular/angular.dart
 dependencies:
-  analyzer_experimental: any
-  browser: any
-  di: any
-  html5lib: any
-  intl: any
-  js: any
-  json: any
-  meta: any
-  perf_api: any
-  route_hierarchical: any
-  unittest: any
+  analyzer_experimental: ">=0.8.6 <0.9.0"
+  browser: ">=0.8.7 <0.9.0"
+  di: ">=0.0.24 <0.1.0"
+  html5lib: ">=0.8.7 <0.9.0"
+  intl: ">=0.8.7 <0.9.0"
+  js: ">=0.1.0 <0.2.0"
+  json: ">=0.8.7 <0.9.0"
+  meta: ">=0.8.7 <0.9.0"
+  perf_api: ">=0.0.8 <0.1.0"
+  route_hierarchical: ">=0.4.7 <0.5.0"
+  unittest: ">=0.8.7 <0.9.0"
