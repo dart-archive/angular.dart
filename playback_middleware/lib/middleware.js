@@ -38,7 +38,7 @@ function endpoint(opts) {
       var data = opts.playbackImpl.playback();
       res.writeHead(200, {
         'Content-Type': 'application/dart',
-        'Content-Length': data.length
+        'Content-Length': Buffer.byteLength(data)
       });
       res.end(data);
     }
