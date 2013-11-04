@@ -397,13 +397,14 @@ class Scope implements Map {
 
   $apply([expr]) {
     return _zone.run(() {
+      var timerId;
       try {
-        assert(_perf.startTimer('ng.\$apply(${_source(expr)})') != false);
+        assert((timerId = _perf.startTimer('ng.\$apply', _source(expr))) != false);
         return $eval(expr);
       } catch (e, s) {
         _exceptionHandler(e, s);
       } finally {
-        assert(_perf.stopTimer('ng.\$apply(${_source(expr)})') != false);
+        assert(_perf.stopTimer(timerId) != false);
       }
     });
   }
