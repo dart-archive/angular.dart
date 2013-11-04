@@ -6,3 +6,4 @@ docs
 test_out
 gen
 tmp
+npm-debug.log

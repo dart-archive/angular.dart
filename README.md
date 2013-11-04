@@ -1,4 +1,4 @@
-angular.dart
+AngularDart
 ============
 
 A port of [Angular][ng] to [Dart][dart].
