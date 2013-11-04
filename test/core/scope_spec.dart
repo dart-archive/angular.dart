@@ -915,5 +915,72 @@ main() {
         });
       });
     });
+
+
+    describe('perf', () {
+
+      describe('counters', () {
+
+        it('should expose scope count', inject((Profiler perf, Scope scope) {
+          scope.$digest();
+          expect(perf.counters['ng.scopes']).toEqual(1);
+
+          scope.$new();
+          scope.$new();
+          var lastChild = scope.$new();
+          scope.$digest();
+          expect(perf.counters['ng.scopes']).toEqual(4);
+
+          // Create a child scope and make sure it's counted as well.
+          lastChild.$new();
+          scope.$digest();
+          expect(perf.counters['ng.scopes']).toEqual(5);
+        }));
+
+
+        it('should update scope count when scope destroyed',
+            inject((Profiler perf, Scope scope) {
+
+          var child = scope.$new();
+          scope.$digest();
+          expect(perf.counters['ng.scopes']).toEqual(2);
+
+          child.$destroy();
+          scope.$digest();
+          expect(perf.counters['ng.scopes']).toEqual(1);
+        }));
+
+
+        it('should expose watcher count', inject((Profiler perf, Scope scope) {
+          scope.$digest();
+          expect(perf.counters['ng.scope.watchers']).toEqual(0);
+
+          scope.$watch(() => 0, (_) {});
+          scope.$watch(() => 0, (_) {});
+          scope.$watch(() => 0, (_) {});
+          scope.$digest();
+          expect(perf.counters['ng.scope.watchers']).toEqual(3);
+
+          // Create a child scope and make sure it's counted as well.
+          scope.$new().$watch(() => 0, (_) {});
+          scope.$digest();
+          expect(perf.counters['ng.scope.watchers']).toEqual(4);
+        }));
+
+
+        it('should update watcher count when watcher removed',
+            inject((Profiler perf, Scope scope) {
+
+          var unwatch = scope.$new().$watch(() => 0, (_) {});
+          scope.$digest();
+          expect(perf.counters['ng.scope.watchers']).toEqual(1);
+
+          unwatch();
+          scope.$digest();
+          expect(perf.counters['ng.scope.watchers']).toEqual(0);
+        }));
+      });
+
+    });
   });
 }

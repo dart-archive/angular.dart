@@ -274,6 +274,8 @@ class Scope implements Map {
 
     _beginPhase('\$digest');
     try {
+      var watcherCount;
+      var scopeCount;
       do { // "while dirty" loop
         dirty = false;
         current = target;
@@ -293,11 +295,15 @@ class Scope implements Map {
           }
         }
 
+        watcherCount = 0;
+        scopeCount = 0;
         assert((timerId = _perf.startTimer('ng.dirty_check', _ttl-_ttlLeft)) != false);
         do { // "traverse the scopes" loop
+          scopeCount++;
           if ((watchers = current._watchers) != null) {
             // process our watches
             length = watchers.length;
+            watcherCount += length;
             while (length-- > 0) {
               try {
                 watch = watchers[length];
@@ -342,6 +348,9 @@ class Scope implements Map {
               'Watchers fired in the last 5 iterations: ${_toJson(watchLog)}';
         }
       } while (dirty || innerAsyncQueue.length > 0);
+      _perf.counters['ng.scope.watchers'] = watcherCount;
+      _perf.counters['ng.scopes'] = scopeCount;
+
       while(_outerAsyncQueue.length > 0) {
         var syncTimer;
         try {
