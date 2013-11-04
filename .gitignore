@@ -2,7 +2,7 @@
 .project
 node_modules
 packages
-docs
+doc
 test_out
 gen
 tmp
