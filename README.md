@@ -7,6 +7,11 @@ A port of [Angular][ng] to [Dart][dart].
 
 Follow the instructions on [angular.dart's page on pub][pub].
 
+## API Documentation
+
+[API documentation][docs].
+
+
 ## Learning more
 
 Study the [Angular.dart Tutorial][tut] to learn more about Angular
@@ -23,6 +28,7 @@ and follow [@angularjs][tw] on Twitter.
 
 Please file bugs and feature requests using the [Github Issues Tracker][issues].
 
+[docs]: http://ci.angularjs.org/view/Dart/job/angular.dart-master/javadoc/
 [tw]: https://twitter.com/angularjs
 [plus]: https://plus.google.com/+AngularJS
 [so]: http://stackoverflow.com/questions/tagged/angulardart
