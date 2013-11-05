@@ -92,7 +92,7 @@ class MockHttpExpectation {
     if (data is File) return data == d;
     assert(d is String);
     if (data is RegExp) return data.hasMatch(d);
-    return json.stringify(data) == json.stringify(d);
+    return JSON.encode(data) == JSON.encode(d);
   }
 
   toString() {
@@ -161,7 +161,7 @@ class MockHttpBackend implements HttpBackend {
     var prettyPrint = (data) {
       return (data is String || data is Function || data is RegExp)
           ? data
-          : json.stringify(data);
+          : JSON.encode(data);
     };
 
     var wrapResponse = (wrapped) {

@@ -2,12 +2,12 @@ library angular.core;
 
 import 'dart:async' as async;
 import 'dart:collection';
+import 'dart:convert' show JSON;
 import 'dart:mirrors';
 
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 import 'package:meta/meta.dart';
-import 'package:json/json.dart';
 
 import 'parser/parser_library.dart';
 import '../utils.dart';
