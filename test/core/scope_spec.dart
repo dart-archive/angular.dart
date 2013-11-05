@@ -1,7 +1,7 @@
 library scope_spec;
 
 import '../_specs.dart';
-import 'package:json/json.dart' as json;
+import 'dart:convert' show JSON;
 
 
 main() {
@@ -776,7 +776,7 @@ main() {
         log = [];
         $rootScope = _$rootScope_;
         deregister = $rootScope.$watchCollection('obj', (obj) {
-          log.add(json.stringify(obj));
+          log.add(JSON.encode(obj));
         });
       }));
 

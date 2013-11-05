@@ -76,7 +76,7 @@ class HttpInterceptor {
 class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   Function request = (HttpResponseConfig config) {
     if (config.data != null && config.data is! String && config.data is! dom.File) {
-      config.data = json.stringify(config.data);
+      config.data = JSON.encode(config.data);
     }
     return config;
   };
@@ -89,7 +89,7 @@ class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
       var d = r.data;
       d = d.replaceFirst(_PROTECTION_PREFIX, '');
       if (d.contains(_JSON_START) && d.contains(_JSON_END)) {
-        d = json.parse(d);
+        d = JSON.decode(d);
       }
       return new HttpResponse.copy(r, data: d);
     }
@@ -770,7 +770,7 @@ class Http {
 
       value.forEach((v) {
         if (v is Map) {
-          v = json.stringify(v);
+          v = JSON.encode(v);
         }
         parts.add(_encodeUriQuery(key) + '=' +
         _encodeUriQuery("$v"));

@@ -547,7 +547,7 @@ class _Watch {
 
 _toJson(obj) {
   try {
-    return stringify(obj);
+    return JSON.encode(obj);
   } catch(e) {
     var ret = "NOT-JSONABLE";
     // Keep prod fast.
