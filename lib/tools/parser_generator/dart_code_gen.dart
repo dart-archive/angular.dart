@@ -61,7 +61,7 @@ class MultipleStatementCode extends Code {
 class FilterCode extends Code {
   final String filterName;
   final Code leftHandSide;
-  final List<Expression> parameters;
+  final List<Code> parameters;
   final Function evalError;
 
   FilterCode(String this.filterName,

@@ -1,6 +1,6 @@
 library source_crawler;
 
-import 'package:analyzer_experimental/src/generated/ast.dart';
+import 'package:analyzer/src/generated/ast.dart';
 
 typedef CompilationUnitVisitor(CompilationUnit cu);
 

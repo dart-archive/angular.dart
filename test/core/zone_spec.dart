@@ -34,9 +34,9 @@ main() => describe('zone', () {
     });
 
 
-    it('should call onError for errors from runAsync', async(inject(() {
+    it('should call onError for errors from scheduleMicrotask', async(inject(() {
       zone.run(() {
-        runAsync(() {
+        scheduleMicrotask(() {
           throw ["async exception"];
         });
       });
@@ -69,7 +69,7 @@ main() => describe('zone', () {
 
       expect(() {
         zone.run(() {
-          runAsync(() {
+          scheduleMicrotask(() {
             asyncRan = true;
           });
         });
@@ -82,7 +82,7 @@ main() => describe('zone', () {
   });
 
   xdescribe('long stack traces', () {
-    it('should have nice error when crossing runAsync boundries', async(inject(() {
+    it('should have nice error when crossing scheduleMicrotask boundries', async(inject(() {
       var error;
       var stack;
       var longStacktrace;
@@ -97,8 +97,8 @@ main() => describe('zone', () {
       var line = ((){ try {throw [];} catch(e, s) { return int.parse(FRAME.firstMatch('$s')[1]);}})();
       var throwFn = () { throw ['double zonned']; };
       var inner = () => zone.run(throwFn);
-      var middle = () => runAsync(inner);
-      var outer = () => runAsync(middle);
+      var middle = () => scheduleMicrotask(inner);
+      var outer = () => scheduleMicrotask(middle);
       zone.run(outer);
 
       microLeap();
@@ -130,11 +130,11 @@ main() => describe('zone', () {
   });
 
 
-  it('should call onTurnDone for a runAsync in onTurnDone', async(inject((Logger log) {
+  it('should call onTurnDone for a scheduleMicrotask in onTurnDone', async(inject((Logger log) {
     var ran = false;
     zone.onTurnDone = () {
       if (!ran) {
-        runAsync(() { ran = true; log('onTurnAsync'); });
+        scheduleMicrotask(() { ran = true; log('onTurnAsync'); });
       }
       log('onTurnDone');
     };
@@ -147,21 +147,21 @@ main() => describe('zone', () {
   })));
 
 
-  it('should call onTurnDone for a runAsync in onTurnDone triggered by a runAsync in run', async(inject((Logger log) {
+  it('should call onTurnDone for a scheduleMicrotask in onTurnDone triggered by a scheduleMicrotask in run', async(inject((Logger log) {
     var ran = false;
     zone.onTurnDone = () {
       if (!ran) {
-        runAsync(() { ran = true; log('onTurnAsync'); });
+        scheduleMicrotask(() { ran = true; log('onTurnAsync'); });
       }
       log('onTurnDone');
     };
     zone.run(() {
-      runAsync(() { log('runAsync'); });
+      scheduleMicrotask(() { log('scheduleMicrotask'); });
       log('run');
     });
     microLeap();
 
-    expect(log.result()).toEqual('run; runAsync; onTurnDone; onTurnAsync; onTurnDone');
+    expect(log.result()).toEqual('run; scheduleMicrotask; onTurnDone; onTurnAsync; onTurnDone');
   })));
 
 
@@ -169,7 +169,7 @@ main() => describe('zone', () {
   it('should call onTurnDone once after a turn', async(inject((Logger log) {
     zone.run(() {
       log('run start');
-      runAsync(() {
+      scheduleMicrotask(() {
         log('async');
       });
       log('run end');
@@ -236,9 +236,9 @@ main() => describe('zone', () {
   it('should call onTurnDone after each turn in a chain', async(inject((Logger log) {
     zone.run(() {
       log('run start');
-      runAsync(() {
+      scheduleMicrotask(() {
         log('async1');
-        runAsync(() {
+        scheduleMicrotask(() {
           log('async2');
         });
       });
@@ -272,12 +272,12 @@ main() => describe('zone', () {
   })));
 
 
-  it('should call onTurnDone even if there was an exception in runAsync', async(inject((Logger log) {
+  it('should call onTurnDone even if there was an exception in scheduleMicrotask', async(inject((Logger log) {
     zone.onError = (e, s, l) => log('onError');
     zone.run(() {
       log('zone run');
-      runAsync(() {
-        log('runAsync');
+      scheduleMicrotask(() {
+        log('scheduleMicrotask');
         throw new Error();
       });
     });
@@ -285,7 +285,7 @@ main() => describe('zone', () {
     microLeap();
 
     expect(() => zone.assertInTurn()).toThrow();
-    expect(log.result()).toEqual('zone run; runAsync; onError; onTurnDone');
+    expect(log.result()).toEqual('zone run; scheduleMicrotask; onError; onTurnDone');
   })));
 
   it('should support assertInZone', async(() {
@@ -297,7 +297,7 @@ main() => describe('zone', () {
     zone.run(() {
       zone.assertInZone();
       calls += 'sync;';
-      runAsync(() {
+      scheduleMicrotask(() {
         zone.assertInZone();
         calls += 'async;';
       });
@@ -324,7 +324,7 @@ main() => describe('zone', () {
     zone.run(() {
       calls += 'sync;';
       zone.assertInTurn();
-      runAsync(() {
+      scheduleMicrotask(() {
         calls += 'async;';
         zone.assertInTurn();
       });

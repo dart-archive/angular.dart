@@ -148,7 +148,7 @@ class Scope implements Map {
 
       // Keep prod fast
       assert((() {
-        watchStr = _source(watchExpr);
+        watchStr = _source(watchExp);
         return true;
       })());
     }

@@ -1,6 +1,6 @@
 library angular.source_metadata_extractor ;
 
-import 'package:analyzer_experimental/src/generated/ast.dart';
+import 'package:analyzer/src/generated/ast.dart';
 
 import 'source_crawler.dart';
 import 'utils.dart';

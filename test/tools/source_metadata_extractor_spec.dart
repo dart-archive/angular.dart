@@ -2,7 +2,7 @@ library source_metadata_extractor_spec;
 
 import '../_specs.dart' hide Node, Element, Text, Token;
 
-import 'package:analyzer_experimental/src/generated/ast.dart';
+import 'package:analyzer/src/generated/ast.dart';
 import 'package:angular/tools/source_metadata_extractor.dart';
 import 'package:angular/tools/source_crawler.dart';
 import 'package:angular/tools/common.dart';

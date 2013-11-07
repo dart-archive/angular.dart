@@ -6,14 +6,14 @@ import 'source.dart';
 
 class ParserGenerator {
   DynamicParser _parser;
-  Map<String, boolean> _printedFunctions = {};
+  Map<String, bool> _printedFunctions = {};
   GetterSetterGenerator _getters;
   SourceBuilder _ = new SourceBuilder();
 
   ParserGenerator(DynamicParser this._parser,
                   GetterSetterGenerator this._getters);
 
-  generateParser(List<String> expressions) {
+  generateParser(Iterable<String> expressions) {
     print("genEvalError(msg) { throw msg; }");
     print("functions(FilterLookup filters) => new StaticParserFunctions(buildExpressions(filters));");
     print('var evalError = (text, [s]) => text;');
@@ -35,11 +35,6 @@ class ParserGenerator {
     print("\n");
     print(_getters.functions);
   }
-
-  String generateDart(String expression) {
-    var tokens = _lexer(expression);
-  }
-
 
   Code safeCode(String exp) {
     try {
