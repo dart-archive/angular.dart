@@ -39,7 +39,7 @@ microLeap() {
     toRun.forEach((fn) => fn());
     if (!_asyncErrors.isEmpty) {
       var e = _asyncErrors.removeAt(0);
-      throw ['Async error', e, dart_async.getAttachedStackTrace(e)];
+      throw ['Async error', e[0], e[1]];
     }
   }
 }
@@ -118,17 +118,17 @@ clockTick({int days: 0,
 }
 
 /**
-* Causes runAsync calls to throw exceptions.
+* Causes scheduleMicrotask calls to throw exceptions.
 *
 * This function is useful while debugging async tests: the exception
-* is thrown from the runAsync call-site instead later in the test.
+* is thrown from the scheduleMicrotask call-site instead later in the test.
 */
 noMoreAsync() {
   _noMoreAsync = true;
 }
 
 /**
- * Captures all runAsync calls inside of a function.
+ * Captures all scheduleMicrotask calls inside of a function.
  *
  * Typically used within a test:
  *
@@ -144,7 +144,7 @@ async(Function fn) =>
   var zoneSpec = new dart_async.ZoneSpecification(
       scheduleMicrotask: (_, __, ___, asyncFn) {
         if (_noMoreAsync) {
-          throw ['runAsync called after noMoreAsync()'];
+          throw ['scheduleMicrotask called after noMoreAsync()'];
         } else {
           _asyncQueue.add(asyncFn);
         }
@@ -178,13 +178,13 @@ _createTimer(Function fn, Duration duration, bool periodic) {
 }
 
 /**
- * Enforces synchronous code.  Any calls to runAsync inside of 'sync'
+ * Enforces synchronous code.  Any calls to scheduleMicrotask inside of 'sync'
  * will throw an exception.
  */
 sync(Function fn) => () {
   dart_async.runZoned(fn, zoneSpecification: new dart_async.ZoneSpecification(
     scheduleMicrotask: (_, __, ___, asyncFn) {
-        throw ['runAsync called from sync function.'];
+        throw ['scheduleMicrotask called from sync function.'];
     },
     createTimer: (_, __, ____, Duration duration, void f()) {
         throw ['Timer created from sync function.'];

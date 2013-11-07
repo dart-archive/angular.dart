@@ -367,12 +367,6 @@ class _AnchorAttrs extends NodeAttrs {
   }
 }
 
-
-bool _understands(obj, symbol) {
-  if (symbol is String) symbol = new Symbol(symbol);
-  return reflect(obj).type.methods.containsKey(symbol);
-}
-
 String _SHADOW = 'SHADOW_INJECTOR';
 
 String _html(obj) {

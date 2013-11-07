@@ -1,7 +1,7 @@
 library angular.source_crawler_impl;
 
 import 'dart:io';
-import 'package:analyzer_experimental/analyzer.dart';
+import 'package:analyzer/analyzer.dart';
 import 'source_crawler.dart';
 
 const String PACKAGE_PREFIX = 'package:';
@@ -31,7 +31,7 @@ class SourceCrawlerImpl implements SourceCrawler {
     while (toVisit.isNotEmpty) {
       var currentFile = toVisit.removeAt(0);
       visited.add(currentFile);
-      var currentDir = new File(currentFile).directory.path;
+      var currentDir = new File(currentFile).parent.path;
       CompilationUnit cu = parseDartFile(currentFile);
       processImports(cu, currentDir, currentFile, visited, toVisit);
       visitor(cu);

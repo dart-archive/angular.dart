@@ -10,7 +10,6 @@ import 'package:js/js.dart' as js;
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:unittest/mock.dart';
-import 'package:meta/meta.dart';
 
 part 'debug.dart';
 part 'exception_handler.dart';

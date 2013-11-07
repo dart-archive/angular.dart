@@ -6,9 +6,8 @@ import 'package:angular/tools/parser_generator/dart_code_gen.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
 
-main() {
-  var options = new Options();
-  var isGetter = !options.arguments.isEmpty;
+main(arguments) {
+  var isGetter = !arguments.isEmpty;
 
   Module module = new Module()
     ..type(ParserBackend, implementedBy: isGetter ? DartGetterSetterGen : DartCodeGen);

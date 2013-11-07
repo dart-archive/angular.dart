@@ -7,7 +7,7 @@ import 'dart:mirrors';
 
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
-import 'package:meta/meta.dart';
+import 'package:meta/meta.dart' as meta;
 
 import 'parser/parser_library.dart';
 import '../utils.dart';

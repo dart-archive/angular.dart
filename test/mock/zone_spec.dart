@@ -5,10 +5,10 @@ import 'dart:async';
 
 main() => describe('mock zones', () {
   describe('sync', () {
-    it('should throw an error on runAsync', () {
+    it('should throw an error on scheduleMicrotask', () {
       expect(sync(() {
-        runAsync(() => dump("i never run"));
-      })).toThrow('runAsync called from sync function');
+        scheduleMicrotask(() => dump("i never run"));
+      })).toThrow('scheduleMicrotask called from sync function');
     });
 
 
@@ -49,11 +49,11 @@ main() => describe('mock zones', () {
     });
 
 
-    it('should run async code with runAsync', () {
+    it('should run async code with scheduleMicrotask', () {
       var ran = false;
       var thenRan = false;
       async(() {
-        runAsync(() { thenRan = true; });
+        scheduleMicrotask(() { thenRan = true; });
         expect(thenRan).toBe(false);
         microLeap();
         expect(thenRan).toBe(true);
@@ -257,7 +257,7 @@ main() => describe('mock zones', () {
       it('should process micro-tasks before timers', async(() {
         var log = [];
 
-        runAsync(() => log.add('runAsync'));
+        scheduleMicrotask(() => log.add('scheduleMicrotask'));
         new Timer(new Duration(milliseconds: 10),
             () => log.add('timer'));
         var timer = new Timer.periodic(new Duration(milliseconds: 10),
@@ -267,7 +267,7 @@ main() => describe('mock zones', () {
 
         clockTick(milliseconds: 10);
 
-        expect(log.join(' ')).toEqual('runAsync timer periodic_timer');
+        expect(log.join(' ')).toEqual('scheduleMicrotask timer periodic_timer');
 
         timer.cancel();
       }));
@@ -276,28 +276,28 @@ main() => describe('mock zones', () {
       it('should process micro-tasks created in timers before next timers', async(() {
         var log = [];
 
-        runAsync(() => log.add('runAsync'));
+        scheduleMicrotask(() => log.add('scheduleMicrotask'));
         new Timer(new Duration(milliseconds: 10),
             () {
               log.add('timer');
-              runAsync(() => log.add('timer_runAsync'));
+              scheduleMicrotask(() => log.add('timer_scheduleMicrotask'));
             });
         var timer = new Timer.periodic(new Duration(milliseconds: 10),
             (_) {
               log.add('periodic_timer');
-              runAsync(() => log.add('periodic_timer_runAsync'));
+              scheduleMicrotask(() => log.add('periodic_timer_scheduleMicrotask'));
             });
 
         expect(log.join(' ')).toEqual('');
 
         clockTick(milliseconds: 10);
-        expect(log.join(' ')).toEqual('runAsync timer timer_runAsync periodic_timer');
+        expect(log.join(' ')).toEqual('scheduleMicrotask timer timer_scheduleMicrotask periodic_timer');
 
         clockTick();
-        expect(log.join(' ')).toEqual('runAsync timer timer_runAsync periodic_timer');
+        expect(log.join(' ')).toEqual('scheduleMicrotask timer timer_scheduleMicrotask periodic_timer');
 
         clockTick(milliseconds: 10);
-        expect(log.join(' ')).toEqual('runAsync timer timer_runAsync periodic_timer periodic_timer_runAsync periodic_timer');
+        expect(log.join(' ')).toEqual('scheduleMicrotask timer timer_scheduleMicrotask periodic_timer periodic_timer_scheduleMicrotask periodic_timer');
 
         timer.cancel();
       }));

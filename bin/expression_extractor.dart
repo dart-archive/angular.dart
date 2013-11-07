@@ -14,13 +14,12 @@ import 'package:angular/core/parser/parser_library.dart';
 import 'package:angular/tools/parser_generator/dart_code_gen.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 
-main() {
+main(args) {
   Module module = new Module()
     ..type(ParserBackend, implementedBy: DartCodeGen);
 
   Injector injector = new DynamicInjector(modules: [module], allowImplicitInjection: true);
 
-  var args = new Options().arguments;
   if (args.length < 3) {
     print('Usage: expression_extractor file_to_scan html_root package_roots+');
     exit(0);
