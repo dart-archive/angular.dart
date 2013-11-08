@@ -1,5 +1,5 @@
 name: angular
-version: 0.9.0
+version: 0.9.0+1
 authors:
 - Misko Hevery <misko@hevery.com>
 - Pavel Jbanov <pavelgj@gmail.com>
@@ -7,6 +7,8 @@ authors:
 - Chirayu Krishnappa <chirayu@google.com>
 description: Angular for dart.
 homepage: https://github.com/angular/angular.dart
+environment:
+  sdk: '>=0.8.10'
 dependencies:
   analyzer: ">=0.10.0 <0.11.0"
   browser: ">=0.8.7 <0.10.0"

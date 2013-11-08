@@ -16,7 +16,7 @@ packages:
   di:
     description: di
     source: hosted
-    version: "0.0.26"
+    version: "0.0.27"
   html5lib:
     description: html5lib
     source: hosted
