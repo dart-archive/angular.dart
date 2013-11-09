@@ -1,7 +1,6 @@
 library parser_spec;
 
 import '../../_specs.dart';
-import 'package:meta/meta.dart';
 
 // Used to test getter / setter logic.
 class TestData {
