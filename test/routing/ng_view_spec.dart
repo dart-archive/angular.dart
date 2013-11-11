@@ -91,14 +91,14 @@ main() {
       router = _router;
 
       templates.put('library.html', new HttpResponse(200,
-          '<div ng-bind-route="library"><h1>Library</h1>'
+          '<div><h1>Library</h1>'
           '<ng-view></ng-view></div>'));
       templates.put('book_list.html', new HttpResponse(200,
           '<h1>Books</h1>'));
       templates.put('book_overview.html', new HttpResponse(200,
-      '<h2>Book 1234</h2>'));
+          '<h2>Book 1234</h2>'));
       templates.put('book_read.html', new HttpResponse(200,
-      '<h2>Read Book 1234</h2>'));
+         '<h2>Read Book 1234</h2>'));
     }));
 
 
