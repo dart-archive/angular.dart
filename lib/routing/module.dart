@@ -70,18 +70,16 @@
  *  order to know which recipe to load. Lets consider the following
  *  `viewRecipe.html`.
  *
- *      <view-recipe ng-bind-route="viewRecipe"></view-recipe>
+ *      <view-recipe></view-recipe>
  *
  *  The template contains a custom `view-recipe` component that handles the
- *  displaying of the recipe. We also use `ng-bind-route` directive to bind
- *  that compomnent to "viewRecipe" route. Now, our `view-recipe` can inject
- *  [RouteProvider] to get hold of the route and its parameters. It might look
- *  like this:
+ *  displaying of the recipe. Now, our `view-recipe` can inject [RouteProvider]
+ *  to get hold of the route and its parameters. It might look like this:
  *
  *      @NgComponent(...)
  *      class ViewRecipeComponent {
  *        ViewRecipeComponent(RouteProvider routeProvider) {
- *          String recipeId = routeProvider.route.parameters['recipeId'];
+ *          String recipeId = routeProvider.parameters['recipeId'];
  *          _loadRecipe(recipeId);
  *        }
  *      }
@@ -164,7 +162,6 @@ export 'package:route_hierarchical/client.dart';
 
 part 'routing.dart';
 part 'ng_view.dart';
-part 'ng_bind_route.dart';
 
 class NgRoutingModule extends Module {
   NgRoutingModule({bool usePushState: true}) {
@@ -180,7 +177,6 @@ class NgRoutingModule extends Module {
 
     // directives
     type(NgViewDirective);
-    type(NgBindRouteDirective);
   }
 }
 

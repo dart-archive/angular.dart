@@ -62,8 +62,8 @@ class _RoutingHelper {
       if (templateUrl == null) continue;
 
       NgViewDirective view = portals.lastWhere((NgViewDirective v) {
-        return _routePath(route) != _routePath(v.route) &&
-            _routePath(route).startsWith(_routePath(v.route));
+        return _routePath(route) != _routePath(v._route) &&
+            _routePath(route).startsWith(_routePath(v._route));
       }, orElse: () => null);
       if (view != null && !alreadyActiveViews.contains(view)) {
         view._show(templateUrl, route);
