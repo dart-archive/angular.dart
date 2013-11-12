@@ -11,13 +11,14 @@ import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:unittest/mock.dart';
 
+export 'zone.dart';
+
 part 'debug.dart';
 part 'exception_handler.dart';
 part 'http_backend.dart';
 part 'log.dart';
 part 'probe.dart';
 part 'test_bed.dart';
-part 'zone.dart';
 part 'mock_window.dart';
 part 'test_injection.dart';
 

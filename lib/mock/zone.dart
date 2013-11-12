@@ -1,4 +1,6 @@
-part of angular.mock;
+library angular.mock_zone;
+
+import 'dart:async' as dart_async;
 
 List<Function> _asyncQueue = [];
 List<_TimerSpec> _timerQueue = [];
