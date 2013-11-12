@@ -3,7 +3,7 @@ library angular.source_metadata_extractor ;
 import 'package:analyzer/src/generated/ast.dart';
 
 import 'source_crawler.dart';
-import 'utils.dart';
+import '../utils.dart';
 import 'common.dart';
 
 const String _COMPONENT = '-component';

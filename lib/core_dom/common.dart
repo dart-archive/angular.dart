@@ -13,18 +13,18 @@ typedef ApplyMapping(NodeAttrs attrs, Scope scope, Object dst);
 class DirectiveRef {
   final dom.Node element;
   final Type type;
-  final NgAnnotation annotation;
+  final DirectiveMetadataWrapper metadata;
   final String value;
   final List<ApplyMapping> mappings = new List<ApplyMapping>();
 
   BlockFactory blockFactory;
 
-  DirectiveRef(dom.Node this.element, Type this.type, NgAnnotation this.annotation,
-               [ String this.value ]);
+  DirectiveRef(dom.Node this.element, Type this.type,
+      DirectiveMetadataWrapper this.metadata, [ String this.value ]);
 
   String toString() {
     var html = element is dom.Element ? (element as dom.Element).outerHtml : element.nodeValue;
-    return '{ element: $html, selector: ${annotation.selector}, value: $value }';
+    return '{ element: $html, selector: ${metadata.annotation.selector}, value: $value }';
   }
 }
 

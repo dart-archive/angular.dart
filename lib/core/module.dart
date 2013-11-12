@@ -28,6 +28,8 @@ class NgCoreModule extends Module {
     type(ScopeDigestTTL);
 
     type(MetadataExtractor);
+    type(FieldMetadataExtractor);
+    type(DirectiveMetadataExtractor);
     type(Cache);
     type(DirectiveMap);
     type(ExceptionHandler);

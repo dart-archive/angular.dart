@@ -155,6 +155,7 @@ main() => describe('dte.compiler', () {
       beforeEach(module((Module module) {
         module.type(SimpleComponent);
         module.type(CamelCaseMapComponent);
+        module.type(AnnotatedIoComponent);
         module.type(IoComponent);
         module.type(IoControllerComponent);
         module.type(UnpublishedIoControllerComponent);
@@ -241,6 +242,42 @@ main() => describe('dte.compiler', () {
         expect($rootScope.name).toEqual('angular');
         expect($rootScope.done).toEqual(null);
         component.scope.ondone();
+        expect($rootScope.done).toEqual(true);
+      })));
+
+      it('should create a component with I/O using annotations', async(inject(() {
+
+        var element = $(r'<div><annotated-io attr="A" expr="name1" '
+            'expr-one-way="name2" expr-one-way-one-shot="name3" '
+            'callback="done=true"></annotated-io></div>');
+        $compile(element)(injector, element);
+        var component = $rootScope.ioComponent;
+        expect(component).toBeNotNull();
+        microLeap();
+
+        $rootScope.name1 = 'misko';
+        $rootScope.name2 = 'misko';
+        $rootScope.name3 = 'misko';
+        $rootScope.$apply();
+        expect(component.attr).toEqual('A');
+        String callback;
+        expect(component.expr).toEqual('misko');
+        expect(component.exprOneWay).toEqual('misko');
+        expect(component.exprOneWayOneShot).toEqual('misko');
+        component.expr = 'angular';
+        $rootScope.$apply();
+        expect($rootScope.name1).toEqual('angular');
+        expect($rootScope.name2).toEqual('misko');
+        expect($rootScope.name3).toEqual('misko');
+
+        $rootScope.name2 = 'james';
+        $rootScope.name3 = 'james';
+        $rootScope.$apply();
+        expect(component.exprOneWay).toEqual('james');
+        expect(component.exprOneWayOneShot).toEqual('misko');
+
+        expect($rootScope.done).toEqual(null);
+        component.callback();
         expect($rootScope.done).toEqual(true);
       })));
 
@@ -564,6 +601,31 @@ class IoComponent {
     this.scope = scope;
     scope.$root.ioComponent = this;
   }
+}
+
+@NgComponent(
+    selector: 'annotated-io',
+    template: r'<content></content>'
+)
+class AnnotatedIoComponent {
+  AnnotatedIoComponent(Scope scope) {
+    scope.$root.ioComponent = this;
+  }
+
+  @NgAttr()
+  String attr;
+
+  @NgTwoWay()
+  String expr;
+
+  @NgOneWay()
+  String exprOneWay;
+
+  @NgOneWayOneTime()
+  String exprOneWayOneShot;
+
+  @NgCallback()
+  Function callback;
 }
 
 @NgComponent(

@@ -3,11 +3,11 @@ library angular.core.dom;
 import 'dart:async' as async;
 import 'dart:convert' show JSON;
 import 'dart:html' as dom;
-import 'dart:mirrors';
 
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
+import '../utils.dart';
 import '../core/module.dart';
 import '../core/parser/parser_library.dart';
 

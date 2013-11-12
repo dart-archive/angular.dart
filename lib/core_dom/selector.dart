@@ -30,17 +30,17 @@ typedef List<DirectiveRef> DirectiveSelector(dom.Node node);
 
 class _Directive {
   final Type type;
-  final NgAnnotation annotation;
+  final DirectiveMetadataWrapper metadata;
 
-  _Directive(Type this.type, NgAnnotation this.annotation);
+  _Directive(Type this.type, DirectiveMetadataWrapper this.metadata);
 }
 
 
 class _ContainsSelector {
-  NgAnnotation annotation;
+  DirectiveMetadataWrapper annotation;
   RegExp regexp;
 
-  _ContainsSelector(NgAnnotation this.annotation, String regexp) {
+  _ContainsSelector(DirectiveMetadataWrapper this.annotation, String regexp) {
     this.regexp = new RegExp(regexp);
   }
 }
@@ -129,7 +129,7 @@ class _ElementSelector {
              dom.Node node, String nodeName) {
     if (elementMap.containsKey(nodeName)) {
       _Directive directive = elementMap[nodeName];
-      refs.add(new DirectiveRef(node, directive.type, directive.annotation));
+      refs.add(new DirectiveRef(node, directive.type, directive.metadata));
     }
     if (elementPartialMap.containsKey(nodeName)) {
       if (partialSelection == null) partialSelection = new List<_ElementSelector>();
@@ -142,7 +142,7 @@ class _ElementSelector {
          dom.Node node, String className) {
     if (classMap.containsKey(className)) {
       var directive = classMap[className];
-      refs.add(new DirectiveRef(node, directive.type, directive.annotation));
+      refs.add(new DirectiveRef(node, directive.type, directive.metadata));
     }
     if (classPartialMap.containsKey(className)) {
       if (partialSelection == null) partialSelection = new List<_ElementSelector>();
@@ -157,11 +157,11 @@ class _ElementSelector {
       Map<String, _Directive> valuesMap = attrValueMap[attrName];
       if (valuesMap.containsKey('')) {
         _Directive directive = valuesMap[''];
-        refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
+        refs.add(new DirectiveRef(node, directive.type, directive.metadata, attrValue));
       }
       if (attrValue != '' && valuesMap.containsKey(attrValue)) {
         _Directive directive = valuesMap[attrValue];
-        refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
+        refs.add(new DirectiveRef(node, directive.type, directive.metadata, attrValue));
       }
     }
     if (attrValuePartialMap.containsKey(attrName)) {
@@ -216,9 +216,9 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
   List<_ContainsSelector> attrSelector = [];
   List<_ContainsSelector> textSelector = [];
 
-  directives.forEach((NgAnnotation annotation, Type type) {
+  directives.forEach((DirectiveMetadataWrapper annotation, Type type) {
     var match;
-    var selector = annotation.selector;
+    var selector = annotation.annotation.selector;
     List<_SelectorPart> selectorParts;
 
     if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
@@ -312,6 +312,5 @@ int _directivePriority(NgAnnotation annotation) {
   throw "Unexpected Type: ${annotation}.";
 }
 
-int _priorityComparator(DirectiveRef a, DirectiveRef b) {
-  return _directivePriority(b.annotation) - _directivePriority(a.annotation);
-}
+int _priorityComparator(DirectiveRef a, DirectiveRef b) =>
+    _directivePriority(b.metadata.annotation) - _directivePriority(a.metadata.annotation);

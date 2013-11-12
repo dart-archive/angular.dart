@@ -301,6 +301,71 @@ class NgController extends NgDirective {
   exportExpressionAttrs: exportExpressionAttrs);
 }
 
+abstract class AttrFieldAnnotation {
+  final String attrName;
+  const AttrFieldAnnotation(this.attrName);
+  String get mappingSpec;
+}
+
+/**
+ * When applied as an annotation on a directive field specifies that
+ * the field is to be mapped to DOM attribute with the same name (unless the
+ * name is explicitly specified with [attrName] parameter). The value of the
+ * attribute to be treated as a string, equivalent to `@` specification.
+ */
+class NgAttr extends AttrFieldAnnotation {
+  final mappingSpec = '@';
+  const NgAttr([attrName]) : super(attrName);
+}
+
+/**
+ * When applied as an annotation on a directive field specifies that
+ * the field is to be mapped to DOM attribute with the same name (unless the
+ * name is explicitly specified with [attrName] parameter). The value of the
+ * attribute to be treated as a one-way expession, equivalent to `=>`
+ * specification.
+ */
+class NgOneWay extends AttrFieldAnnotation {
+  final mappingSpec = '=>';
+  const NgOneWay([attrName]) : super(attrName);
+}
+
+/**
+ * When applied as an annotation on a directive field specifies that
+ * the field is to be mapped to DOM attribute with the same name (unless the
+ * name is explicitly specified with [attrName] parameter). The value of the
+ * attribute to be treated as a one time one-way expession, equivalent to `=>!`
+ * specification.
+ */
+class NgOneWayOneTime extends AttrFieldAnnotation {
+  final mappingSpec = '=>!';
+  const NgOneWayOneTime([attrName]) : super(attrName);
+}
+
+/**
+ * When applied as an annotation on a directive field specifies that
+ * the field is to be mapped to DOM attribute with the same name (unless the
+ * name is explicitly specified with [attrName] parameter). The value of the
+ * attribute to be treated as a two-way expession, equivalent to `<=>`
+ * specification.
+ */
+class NgTwoWay extends AttrFieldAnnotation {
+  final mappingSpec = '<=>';
+  const NgTwoWay([attrName]) : super(attrName);
+}
+
+/**
+ * When applied as an annotation on a directive field specifies that
+ * the field is to be mapped to DOM attribute with the same name (unless the
+ * name is explicitly specified with [attrName] parameter). The value of the
+ * attribute to be treated as a callback expession, equivalent to `&`
+ * specification.
+ */
+class NgCallback extends AttrFieldAnnotation {
+  final mappingSpec = '&';
+  const NgCallback([attrName]) : super(attrName);
+}
+
 /**
  * Implementing directives or components [attach] method will be called when
  * the next scope digest occurs after component instantiation. It is guaranteed
@@ -319,7 +384,65 @@ abstract class NgDetachAware {
   void detach();
 }
 
-class DirectiveMap extends AnnotationMap<NgAnnotation> {
-  DirectiveMap(Injector injector, MetadataExtractor metadataExtractor)
-      : super(injector, metadataExtractor);
+class DirectiveMetadataWrapper {
+  final NgAnnotation annotation;
+  final Map<String, AttrFieldAnnotation> fieldAnnotations;
+  Map<String, String> attrMap;
+
+  DirectiveMetadataWrapper(this.annotation, this.fieldAnnotations) {
+    // Precompute attribute mappings from field annotations.
+    attrMap = <String, String>{};
+    if (annotation.map != null) {
+      attrMap.addAll(annotation.map);
+    }
+    fieldAnnotations.forEach((String fieldName, AttrFieldAnnotation ann) {
+      attrMap[ann.attrName == null ? snakecase(fieldName) : ann.attrName] =
+          '${ann.mappingSpec}$fieldName';
+    });
+  }
+}
+
+class DirectiveMetadataExtractor implements MetadataExtractor {
+  final MetadataExtractor metadataExtractor;
+  final FieldMetadataExtractor fieldMetadataExtractor;
+  DirectiveMetadataExtractor(MetadataExtractor this.metadataExtractor,
+      FieldMetadataExtractor this.fieldMetadataExtractor);
+
+  Iterable call(Type type) =>
+      metadataExtractor(type)
+          .where((ann) => ann is NgAnnotation)
+          .map((NgAnnotation ann) =>
+              new DirectiveMetadataWrapper(ann, fieldMetadataExtractor(type)));
+}
+
+class DirectiveMap extends AnnotationMap<DirectiveMetadataWrapper> {
+  DirectiveMap(Injector injector, DirectiveMetadataExtractor extractor)
+      : super(injector, extractor, filter: false);
+}
+
+class FieldMetadataExtractor {
+  List<TypeMirror> _fieldAnnotations = [reflectType(NgAttr),
+      reflectType(NgOneWay), reflectType(NgOneWayOneTime),
+      reflectType(NgTwoWay), reflectType(NgCallback)];
+
+  Map<String, AttrFieldAnnotation> call(Type type) {
+    ClassMirror cm = reflectType(type);
+    Map<String, AttrFieldAnnotation> fields = <String, AttrFieldAnnotation>{};
+    cm.declarations.forEach((Symbol name, DeclarationMirror decl) {
+      if (decl is VariableMirror ||
+          (decl is MethodMirror && (decl.isGetter || decl.isSetter))) {
+        decl.metadata.forEach((InstanceMirror meta) {
+          if (_fieldAnnotations.contains(meta.type)) {
+            var fieldName = MirrorSystem.getName(name);
+            if (fields[fieldName] != null) {
+              throw 'Attribute annotation for $fieldName is defined more '
+                    'than once in $type';
+            }
+            fields[fieldName] = meta.reflectee as AttrFieldAnnotation;
+          }
+        });
+      }
+    });
+    return fields;
+  }
 }
