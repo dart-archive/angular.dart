@@ -136,9 +136,9 @@ main() {
           // }
 
           var directiveRef = new DirectiveRef(null,
-                                              LoggerBlockDirective,
-                                              new NgDirective(children: NgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo'),
-                                              '');
+              LoggerBlockDirective,
+              new DirectiveMetadataWrapper(new NgDirective(children: NgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo'), {}),
+              '');
           directiveRef.blockFactory = new BlockFactory($('<b>text</b>'), [], perf);
           var outerBlockType = new BlockFactory(
               $('<!--start--><!--end-->'),

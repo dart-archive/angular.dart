@@ -169,7 +169,7 @@ class DirectiveInfosMatcher extends Matcher {
 
         pass = pass &&
           directiveRef.element == expectedMap['element'] &&
-          directiveRef.annotation.selector == expectedMap['selector'] &&
+          directiveRef.metadata.annotation.selector == expectedMap['selector'] &&
           directiveRef.value == expectedMap['value'];
       }
     }

@@ -3,10 +3,10 @@ part of angular.core;
 abstract class AnnotationMap<K> {
   final Map<K, Type> _map = {};
 
-  AnnotationMap(Injector injector, MetadataExtractor extractMetadata) {
+  AnnotationMap(Injector injector, MetadataExtractor extractMetadata, {bool filter: true}) {
     injector.types.forEach((type) {
       var meta = extractMetadata(type)
-        .where((annotation) => annotation is K)
+        .where((annotation) => !filter || annotation is K)
         .forEach((annotation) {
           if (_map.containsKey(annotation)) {
             var annotationType = K;

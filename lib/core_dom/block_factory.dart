@@ -119,15 +119,15 @@ class BlockFactory {
       nodeModule.value(dom.Node, node);
       nodeModule.value(NodeAttrs, nodeAttrs);
       directiveRefs.forEach((DirectiveRef ref) {
-        NgAnnotation annotation = ref.annotation;
+        NgAnnotation annotation = ref.metadata.annotation;
         var visibility = _elementOnly;
-        if (ref.annotation is NgController) {
+        if (annotation is NgController) {
           scope = scope.$new();
           nodeModule.value(Scope, scope);
         }
-        if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
+        if (annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
           visibility = null;
-        } else if (ref.annotation.visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
+        } else if (annotation.visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
           visibility = _elementDirectChildren;
         }
         if (ref.type == NgTextMustacheDirective) {
@@ -148,7 +148,7 @@ class BlockFactory {
             });
           }
           nodesAttrsDirectives.add(ref);
-        } else if (ref.annotation is NgComponent) {
+        } else if (annotation is NgComponent) {
           //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
           // TODO(misko): there should be no need to wrap function like this.
           nodeModule.factory(ref.type, (Injector injector) {
@@ -158,7 +158,7 @@ class BlockFactory {
             Http http = injector.get(Http);
             TemplateCache templateCache = injector.get(TemplateCache);
             // This is a bit of a hack since we are returning different type then we are.
-            var componentFactory = new _ComponentFactory(node, ref.type, ref.annotation as NgComponent, injector.get(dom.NodeTreeSanitizer));
+            var componentFactory = new _ComponentFactory(node, ref.type, annotation, injector.get(dom.NodeTreeSanitizer));
             if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
             fctrs[ref.type] = componentFactory;
             return componentFactory.call(injector, compiler, scope, blockCache, http, templateCache);
@@ -166,7 +166,7 @@ class BlockFactory {
         } else {
           nodeModule.type(ref.type, visibility: visibility);
         }
-        for (var publishType in ref.annotation.publishTypes) {
+        for (var publishType in annotation.publishTypes) {
           nodeModule.factory(publishType, (Injector injector) => injector.get(ref.type), visibility: visibility);
         }
         if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
@@ -192,8 +192,8 @@ class BlockFactory {
         var controller = nodeInjector.get(ref.type);
         assert((linkMapTimer = _perf.startTimer('ng.block.link.map', ref.type)) != false);
         var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
-        if (ref.annotation.publishAs != null) {
-          (shadowScope == null ? scope : shadowScope)[ref.annotation.publishAs] = controller;
+        if (ref.metadata.annotation.publishAs != null) {
+          (shadowScope == null ? scope : shadowScope)[ref.metadata.annotation.publishAs] = controller;
         }
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
         for(var map in ref.mappings) {

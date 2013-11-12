@@ -30,7 +30,7 @@ class Compiler {
 
       for (var j = 0, jj = declaredDirectiveRefs.length; j < jj; j++) {
         DirectiveRef directiveRef = declaredDirectiveRefs[j];
-        NgAnnotation annotation = directiveRef.annotation;
+        NgAnnotation annotation = directiveRef.metadata.annotation;
         var blockFactory = null;
 
         if (annotation.children != children &&
@@ -81,7 +81,7 @@ class Compiler {
                       NodeCursor domCursor, NodeCursor templateCursor,
                       DirectiveRef directiveRef,
                       List<DirectiveRef> transcludedDirectiveRefs) {
-    var anchorName = directiveRef.annotation.selector + (directiveRef.value != null ? '=' + directiveRef.value : '');
+    var anchorName = directiveRef.metadata.annotation.selector + (directiveRef.value != null ? '=' + directiveRef.value : '');
     var blockFactory;
     var blocks;
 
@@ -129,8 +129,7 @@ class Compiler {
   static RegExp _MAPPING = new RegExp(r'^(\@|=\>\!|\=\>|\<\=\>|\&)\s*(.*)$');
 
   createMappings(DirectiveRef ref) {
-    NgAnnotation annotation = ref.annotation;
-    if (annotation.map != null) annotation.map.forEach((attrName, mapping) {
+    ref.metadata.attrMap.forEach((attrName, mapping) {
       Match match = _MAPPING.firstMatch(mapping);
       if (match == null) {
         throw "Unknown mapping '$mapping' for attribute '$attrName'.";
