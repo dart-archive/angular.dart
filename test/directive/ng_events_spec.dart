@@ -45,7 +45,7 @@ main() {
     addTest('mouseout');
     addTest('mouseover');
     addTest('mouseup');
-    addTest('mousewheel');
+    addTest('mousewheel', 'WheelEvent', 'wheel');
     addTest('scroll');
     // These should be of type TouchEvent but that causes the tests to fail.
     // They pass as a MouseEvent.
