@@ -12,47 +12,31 @@ main() => describe('SourceMetadataExtractor', () {
   it('should extract expressions and attribute names with expressions', () {
     var info = extractDirectiveInfo([
       new DirectiveMetadata('FooComponent', COMPONENT, null, {
-        'fooVal': '@',
-        'barVal': '@ctrl.bar',
-        'bazVal': '@.baz',
-        'fooExpr': '=',
-        'barExpr': '=ctrl.bar',
-        'bazExpr': '=.baz',
-        'fooCallback': '&',
-        'barCallback': '&ctrl.bar',
-        'bazCallback': '&.baz',
-        'oneTime': '!'
+        'barVal': '@bar',
+        'bazExpr1': '<=>baz1',
+        'bazExpr2': '=>baz2',
+        'bazExpr3': '=>!baz3',
+        'bazCallback': '&aux',
       })
     ]);
 
     expect(flattenList(info, (DirectiveInfo i) => i.expressionAttrs),
-        equals(['foo-val',
-                'bar-val',
-                'baz-val',
-                'foo-expr',
-                'bar-expr',
-                'baz-expr',
-                'foo-callback',
-                'bar-callback',
-                'baz-callback',
-                'one-time']));
+        equals(['baz-expr1',
+                'baz-expr2',
+                'baz-expr3',
+                'baz-callback']));
     expect(flattenList(info, (DirectiveInfo i) => i.expressions),
-        equals(['fooVal',
-                'ctrl.bar',
-                'baz',
-                'fooExpr',
-                'ctrl.bar',
-                'baz',
-                'fooCallback',
-                'ctrl.bar',
-                'baz',
-                'oneTime']));
+        equals(['bar',
+                'baz1',
+                'baz2',
+                'baz3',
+                'aux']));
   });
 
   it('should build a component selector if one is not explicitly specified', () {
     var info = extractDirectiveInfo([
       new DirectiveMetadata('MyFooComponent', COMPONENT, null, {
-        'fooExpr': '='
+        'foo-expr': '=>fooExpr'
       })
     ]);
 
@@ -63,7 +47,7 @@ main() => describe('SourceMetadataExtractor', () {
   it('should build an element directive selector if one is not explicitly specified', () {
     var info = extractDirectiveInfo([
       new DirectiveMetadata('MyFooDirective', DIRECTIVE, null, {
-        'fooExpr': '='
+        'foo-expr': '=>fooExpr'
       })
     ]);
 
@@ -74,7 +58,7 @@ main() => describe('SourceMetadataExtractor', () {
   it('should build an attr directive selector if one is not explicitly specified', () {
     var info = extractDirectiveInfo([
       new DirectiveMetadata('MyFooAttrDirective', DIRECTIVE, null, {
-        'fooExpr': '='
+        'foo-expr': '=>fooExpr'
       })
     ]);
 
@@ -85,7 +69,7 @@ main() => describe('SourceMetadataExtractor', () {
   it('should figure out attribute name if dot(.) is used', () {
     var info = extractDirectiveInfo([
       new DirectiveMetadata('MyFooAttrDirective', DIRECTIVE, null, {
-        '.': '='
+        '.': '=>fooExpr'
       })
     ]);
 
@@ -96,7 +80,7 @@ main() => describe('SourceMetadataExtractor', () {
   it('should figure out attribute name from selector if dot(.) is used', () {
     var info = extractDirectiveInfo([
       new DirectiveMetadata('MyFooAttrDirective', DIRECTIVE, '[blah][foo]', {
-        '.': '='
+        '.': '=>fooExpr'
       })
     ]);
 
@@ -107,7 +91,7 @@ main() => describe('SourceMetadataExtractor', () {
   it('should include exported expression attributes', () {
     var info = extractDirectiveInfo([
       new DirectiveMetadata('MyFooAttrDirective', DIRECTIVE, '[blah][foo]', {
-        '.': '='
+        '.': '=>fooExpr'
       }, ['baz'])
     ]);
 
@@ -118,12 +102,12 @@ main() => describe('SourceMetadataExtractor', () {
   it('should include exported expressions', () {
     var info = extractDirectiveInfo([
       new DirectiveMetadata('MyFooAttrDirective', DIRECTIVE, '[blah][foo]', {
-        '.': '='
+        '.': '=>fooExpr'
       }, null, ['ctrl.baz'])
     ]);
 
     expect(flattenList(info, (DirectiveInfo i) => i.expressions),
-           equals(['ctrl.baz']));
+           equals(['fooExpr', 'ctrl.baz']));
   });
 
 });
