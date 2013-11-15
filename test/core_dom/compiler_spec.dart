@@ -244,6 +244,14 @@ main() => describe('dte.compiler', () {
         expect($rootScope.done).toEqual(true);
       })));
 
+      it('should should not create any watchers if no attributes are specified', async(inject((Profiler perf) {
+        var element = $(r'<div><io></io></div>');
+        $compile(element)(injector, element);
+        microLeap();
+        injector.get(Scope).$digest();
+        expect(perf.counters['ng.scope.watchers']).toEqual(0);
+      })));
+
       it('should create a component with I/O and "=" binding value should be available', async(inject(() {
         $rootScope.name = 'misko';
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');

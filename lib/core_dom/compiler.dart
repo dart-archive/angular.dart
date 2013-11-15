@@ -151,6 +151,7 @@ class Compiler {
           break;
         case '<=>':
           mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+            if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
             scope.$watch(
@@ -172,6 +173,7 @@ class Compiler {
           break;
         case '=>':
           mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+            if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
             scope.$watch(
@@ -182,6 +184,7 @@ class Compiler {
           break;
         case '=>!':
           mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+            if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var stopWatching;
             stopWatching = scope.$watch(
