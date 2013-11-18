@@ -93,8 +93,12 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
                     BlockHole blockHole,
                     Scope scope): super(boundBlockFactory, blockHole, scope);
 
-  set condition(value) =>
-      (toBool(value) ? _ensureBlockExists() : _ensureBlockDestroyed());
+  set condition(value) {
+      if (toBool(value))
+        _ensureBlockExists();
+      else
+        _ensureBlockDestroyed();
+  }
 }
 
 
@@ -150,6 +154,10 @@ class NgUnlessDirective extends _NgUnlessIfAttrDirectiveBase {
                         BlockHole blockHole,
                         Scope scope): super(boundBlockFactory, blockHole, scope);
 
-  set condition(value) =>
-      (!toBool(value) ? _ensureBlockExists() : _ensureBlockDestroyed());
+  set condition(value) {
+    if (!toBool(value))
+      _ensureBlockExists();
+    else
+      _ensureBlockDestroyed();
+  }
 }

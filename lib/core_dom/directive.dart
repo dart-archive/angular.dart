@@ -75,10 +75,5 @@ String _snakeCase(String name, [separator = '_']) {
   _snakeReplace(Match match) {
     return (match.start != 0 ? separator : '') + match.group(0).toLowerCase();
   }
-  var x=  name.replaceAllMapped(_SNAKE_CASE_REGEXP, _snakeReplace);
-  if (x is String) return x;
-  throw [];
-  return x;
+  return name.replaceAllMapped(_SNAKE_CASE_REGEXP, _snakeReplace);
 }
-
-
