@@ -1,6 +1,6 @@
 part of angular.core;
 
-class NgAnnotation {
+abstract class NgAnnotation {
   /**
    * CSS selector which will trigger this component/directive.
    * CSS Selectors are limited to a single element and can contain:
@@ -159,6 +159,7 @@ class NgAnnotation {
   operator==(other) =>
       other is NgAnnotation && this.selector == other.selector;
 
+  NgAnnotation cloneWithNewMap(newMap);
 }
 
 
@@ -228,6 +229,21 @@ class NgComponent extends NgAnnotation {
              map: map,
              exportExpressions: exportExpressions,
              exportExpressionAttrs: exportExpressionAttrs);
+
+  NgAnnotation cloneWithNewMap(newMap) =>
+      new NgComponent(
+          template: this.template,
+          templateUrl: this.templateUrl,
+          cssUrl: this.cssUrl,
+          applyAuthorStyles: this.applyAuthorStyles,
+          resetStyleInheritance: this.resetStyleInheritance,
+          publishAs: this.publishAs,
+          map: newMap,
+          selector: this.selector,
+          visibility: this.visibility,
+          publishTypes: this.publishTypes,
+          exportExpressions: this.exportExpressions,
+          exportExpressionAttrs: this.exportExpressionAttrs);
 }
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
@@ -263,6 +279,17 @@ class NgDirective extends NgAnnotation {
   publishTypes: publishTypes, publishAs: publishAs, map: map,
   exportExpressions: exportExpressions,
   exportExpressionAttrs: exportExpressionAttrs);
+
+  NgAnnotation cloneWithNewMap(newMap) =>
+      new NgDirective(
+          children: this.children,
+          publishAs: this.publishAs,
+          map: newMap,
+          selector: this.selector,
+          visibility: this.visibility,
+          publishTypes: this.publishTypes,
+          exportExpressions: this.exportExpressions,
+          exportExpressionAttrs: this.exportExpressionAttrs);
 }
 
 /**
@@ -299,6 +326,78 @@ class NgController extends NgDirective {
   publishTypes: publishTypes, publishAs: publishAs, map: map,
   exportExpressions: exportExpressions,
   exportExpressionAttrs: exportExpressionAttrs);
+
+  NgAnnotation cloneWithNewMap(newMap) =>
+      new NgController(
+          children: this.children,
+          publishAs: this.publishAs,
+          map: newMap,
+          selector: this.selector,
+          visibility: this.visibility,
+          publishTypes: this.publishTypes,
+          exportExpressions: this.exportExpressions,
+          exportExpressionAttrs: this.exportExpressionAttrs);
+}
+
+abstract class AttrFieldAnnotation {
+  final String attrName;
+  const AttrFieldAnnotation(this.attrName);
+  String get mappingSpec;
+}
+
+/**
+ * When applied as an annotation on a directive field specifies that
+ * the field is to be mapped to DOM attribute with the provided [attrName].
+ * The value of the attribute to be treated as a string, equivalent
+ * to `@` specification.
+ */
+class NgAttr extends AttrFieldAnnotation {
+  final mappingSpec = '@';
+  const NgAttr(String attrName) : super(attrName);
+}
+
+/**
+ * When applied as an annotation on a directive field specifies that
+ * the field is to be mapped to DOM attribute with the provided [attrName].
+ * The value of the attribute to be treated as a one-way expession, equivalent
+ * to `=>` specification.
+ */
+class NgOneWay extends AttrFieldAnnotation {
+  final mappingSpec = '=>';
+  const NgOneWay(String attrName) : super(attrName);
+}
+
+/**
+ * When applied as an annotation on a directive field specifies that
+ * the field is to be mapped to DOM attribute with the provided [attrName].
+ * The value of the attribute to be treated as a one time one-way expession,
+ * equivalent to `=>!` specification.
+ */
+class NgOneWayOneTime extends AttrFieldAnnotation {
+  final mappingSpec = '=>!';
+  const NgOneWayOneTime(String attrName) : super(attrName);
+}
+
+/**
+ * When applied as an annotation on a directive field specifies that
+ * the field is to be mapped to DOM attribute with the provided [attrName].
+ * The value of the attribute to be treated as a two-way expession,
+ * equivalent to `<=>` specification.
+ */
+class NgTwoWay extends AttrFieldAnnotation {
+  final mappingSpec = '<=>';
+  const NgTwoWay(String attrName) : super(attrName);
+}
+
+/**
+ * When applied as an annotation on a directive field specifies that
+ * the field is to be mapped to DOM attribute with the provided [attrName].
+ * The value of the attribute to be treated as a callback expession,
+ * equivalent to `&` specification.
+ */
+class NgCallback extends AttrFieldAnnotation {
+  final mappingSpec = '&';
+  const NgCallback(String attrName) : super(attrName);
 }
 
 /**
@@ -320,6 +419,59 @@ abstract class NgDetachAware {
 }
 
 class DirectiveMap extends AnnotationMap<NgAnnotation> {
-  DirectiveMap(Injector injector, MetadataExtractor metadataExtractor)
-      : super(injector, metadataExtractor);
+  DirectiveMap(Injector injector, MetadataExtractor metadataExtractor,
+      FieldMetadataExtractor fieldMetadataExtractor)
+      : super(injector, metadataExtractor) {
+    Map<NgAnnotation, Type> directives = {};
+    forEach((NgAnnotation annotation, Type type) {
+      var match;
+      var fieldMetadata = fieldMetadataExtractor(type);
+      if (fieldMetadata.isNotEmpty) {
+        var newMap = annotation.map == null ? {} : new Map.from(annotation.map);
+        fieldMetadata.forEach((String fieldName, AttrFieldAnnotation ann) {
+          var attrName = ann.attrName;
+          if (newMap.containsKey(attrName)) {
+            throw 'Mapping for attribute $attrName is already defined (while '
+                  'processing annottation for field $fieldName of $type)';
+          }
+          newMap[attrName] = '${ann.mappingSpec}$fieldName';
+        });
+        annotation = annotation.cloneWithNewMap(newMap);
+      }
+      directives[annotation] = type;
+    });
+    _map.clear();
+    _map.addAll(directives);
+  }
+}
+
+class FieldMetadataExtractor {
+  List<TypeMirror> _fieldAnnotations = [reflectType(NgAttr),
+      reflectType(NgOneWay), reflectType(NgOneWayOneTime),
+      reflectType(NgTwoWay), reflectType(NgCallback)];
+
+  Map<String, AttrFieldAnnotation> call(Type type) {
+    ClassMirror cm = reflectType(type);
+    Map<String, AttrFieldAnnotation> fields = <String, AttrFieldAnnotation>{};
+    cm.declarations.forEach((Symbol name, DeclarationMirror decl) {
+      if (decl is VariableMirror ||
+          (decl is MethodMirror && (decl.isGetter || decl.isSetter))) {
+        var fieldName = MirrorSystem.getName(name);
+        if (decl is MethodMirror && decl.isSetter) {
+          // Remove = from the end of the setter.
+          fieldName = fieldName.substring(0, fieldName.length - 1);
+        }
+        decl.metadata.forEach((InstanceMirror meta) {
+          if (_fieldAnnotations.contains(meta.type)) {
+            if (fields[fieldName] != null) {
+              throw 'Attribute annotation for $fieldName is defined more '
+                    'than once in $type';
+            }
+            fields[fieldName] = meta.reflectee as AttrFieldAnnotation;
+          }
+        });
+      }
+    });
+    return fields;
+  }
 }

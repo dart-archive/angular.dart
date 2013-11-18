@@ -27,6 +27,16 @@ abstract class AnnotationMap<K> {
   }
 
   forEach(fn(K, Type)) => _map.forEach(fn);
+
+  List<K> annotationsFor(Type type) {
+    var res = <K>[];
+    forEach((ann, annType) {
+      if (annType == type) {
+        res.add(ann);
+      }
+    });
+    return res;
+  }
 }
 
 class MetadataExtractor {
