@@ -55,6 +55,7 @@ class Scope implements Map {
   Map<String, List<Function>> _listeners = {};
   Scope _nextSibling, _prevSibling, _childHead, _childTail;
   bool _isolate = false;
+  bool _skipAutoDigest = false;
   Profiler _perf;
 
 
@@ -68,7 +69,7 @@ class Scope implements Map {
     _outerAsyncQueue = [];
 
     // Set up the zone to auto digest this scope.
-    _zone.onTurnDone = $digest;
+    _zone.onTurnDone = _autoDigestOnTurnDone;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
   }
 
@@ -89,6 +90,14 @@ class Scope implements Map {
       $parent._childTail = this;
     } else {
       $parent._childHead = $parent._childTail = this;
+    }
+  }
+
+  _autoDigestOnTurnDone() {
+    if (_skipAutoDigest) {
+      _skipAutoDigest = false;
+    } else {
+      $digest();
     }
   }
 
@@ -260,6 +269,7 @@ class Scope implements Map {
    * auto-digesting scope.
    */
   $$verifyDigestWillRun() {
+    assert(!_skipAutoDigest);
     _zone.assertInTurn();
   }
 
@@ -392,6 +402,31 @@ class Scope implements Map {
     } else {
       _innerAsyncQueue.add(expr);
     }
+  }
+
+
+  /**
+   * Skip running a $digest at the end of this turn.
+   * The primary use case is to skip the digest in the current VM turn because
+   * you just scheduled or are otherwise certain of an impending VM turn and the
+   * digest at the end of that turn is sufficient.  You should be able to answer
+   * "No" to the question "Is there any other code that is aware that this VM
+   * turn occured and therefore expected a digest?".  If your answer is "Yes",
+   * then you run the risk that the very next VM turn is not for your event and
+   * now that other code runs in that turn and sees stale values.
+   *
+   * You might call this function, for instance, from an event listener where,
+   * though the event occured, you need to wait for another event before you can
+   * perform something meaningful.  You might schedule that other event,
+   * set a flag for the handler of the other event to recognize, etc. and then
+   * call this method to skip the digest this cycle.  Note that you should call
+   * this function *after* you have successfully confirmed that the expected VM
+   * turn will occur (perhaps by scheduling it) to ensure that the digest
+   * actually does take place on that turn.
+   */
+  $skipAutoDigest() {
+    _zone.assertInTurn();
+    _skipAutoDigest = true;
   }
 
 

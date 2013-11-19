@@ -109,7 +109,10 @@ abstract class _InputTextlikeDirective {
       inputElement.selectionEnd = end;
     };
     inputElement.onChange.listen(relaxFnArgs(processValue));
-    inputElement.onKeyDown.listen((e) => new async.Timer(Duration.ZERO, processValue));
+    inputElement.onKeyDown.listen((e) {
+      new async.Timer(Duration.ZERO, processValue);
+      scope.$skipAutoDigest();
+    });
   }
 
   processValue() {
