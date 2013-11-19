@@ -6,8 +6,13 @@ import 'dart:convert' show JSON;
 
 main() {
   describe(r'Scope', () {
+    NgZone zone;
+
+    noop() {}
+
     beforeEach(module(() {
-      return (NgZone zone) {
+      return (NgZone _zone) {
+        zone = _zone;
         zone.onError = (e, s, l) => null;
       };
     }));
@@ -70,6 +75,46 @@ main() {
         expect(child.a).toEqual(null);
         expect(child.$parent).toEqual($rootScope);
         expect(child.$root).toBe($rootScope);
+      }));
+    });
+
+
+    describe(r'auto digest', () {
+      it(r'should auto digest at the end of the turn', inject((Scope $rootScope) {
+        var digestedValue = 0;
+        $rootScope.a = 1;
+        $rootScope.$watch('a', (newValue, oldValue, _this) {
+          digestedValue = newValue;
+        });
+        expect(digestedValue).toEqual(0);
+        zone.run(noop);
+        expect(digestedValue).toEqual(1);
+      }));
+
+      it(r'should skip auto digest if requested', inject((Scope $rootScope) {
+        var digestedValue = 0;
+        $rootScope.a = 1;
+        $rootScope.$watch('a', (newValue, oldValue, _this) {
+          digestedValue = newValue;
+        });
+        expect(digestedValue).toEqual(0);
+        zone.run(() {
+          $rootScope.$skipAutoDigest();
+        });
+        expect(digestedValue).toEqual(0);
+        zone.run(noop);
+        expect(digestedValue).toEqual(1);
+      }));
+
+      it(r'should throw exception if asked to skip auto digest outside of a turn',
+         inject((Scope $rootScope) {
+        var digestedValue = 0;
+        $rootScope.a = 1;
+        $rootScope.$watch('a', (newValue, oldValue, _this) {
+          digestedValue = newValue;
+        });
+        expect(digestedValue).toEqual(0);
+        expect($rootScope.$skipAutoDigest).toThrow();
       }));
     });
 
