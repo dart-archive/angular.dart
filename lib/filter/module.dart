@@ -3,8 +3,8 @@ library angular.filter;
 import 'dart:convert' show JSON;
 import 'package:intl/intl.dart';
 import 'package:di/di.dart';
-import '../core/module.dart';
-import '../core/parser/parser_library.dart';
+import 'package:angular/core/module.dart';
+import 'package:angular/core/parser/parser_library.dart';
 
 part 'currency.dart';
 part 'date.dart';

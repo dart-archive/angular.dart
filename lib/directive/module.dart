@@ -3,10 +3,10 @@ library angular.directive;
 import 'package:di/di.dart';
 import 'dart:html' as dom;
 import 'dart:async' as async;
-import '../core/module.dart';
-import '../core/parser/parser_library.dart';
-import '../core_dom/module.dart';
-import '../utils.dart';
+import 'package:angular/core/module.dart';
+import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core_dom/module.dart';
+import 'package:angular/utils.dart';
 
 part 'ng_a.dart';
 part 'ng_bind.dart';

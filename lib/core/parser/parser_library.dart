@@ -2,8 +2,8 @@ library angular.core.parser;
 
 import 'dart:mirrors';
 
-import '../../utils.dart';
-import '../module.dart';
+import 'package:angular/utils.dart';
+import 'package:angular/core/module.dart';
 
 
 part 'backend.dart';

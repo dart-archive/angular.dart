@@ -8,8 +8,8 @@ import 'dart:mirrors';
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
-import 'parser/parser_library.dart';
-import '../utils.dart';
+import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/utils.dart';
 
 
 part "cache.dart";

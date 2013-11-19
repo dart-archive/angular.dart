@@ -14,19 +14,19 @@ import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 
-import 'core/module.dart';
-import 'core_dom/module.dart';
-import 'directive/module.dart';
-import 'filter/module.dart';
-import 'perf/module.dart';
-import 'routing/module.dart';
+import 'package:angular/core/module.dart';
+import 'package:angular/core_dom/module.dart';
+import 'package:angular/directive/module.dart';
+import 'package:angular/filter/module.dart';
+import 'package:angular/perf/module.dart';
+import 'package:angular/routing/module.dart';
 
 export 'package:di/di.dart';
-export 'core/module.dart';
-export 'core_dom/module.dart';
-export 'core/parser/parser_library.dart';
-export 'directive/module.dart';
-export 'filter/module.dart';
-export 'routing/module.dart';
+export 'package:angular/core/module.dart';
+export 'package:angular/core_dom/module.dart';
+export 'package:angular/core/parser/parser_library.dart';
+export 'package:angular/directive/module.dart';
+export 'package:angular/filter/module.dart';
+export 'package:angular/routing/module.dart';
 
 part 'bootstrap.dart';
