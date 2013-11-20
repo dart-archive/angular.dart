@@ -42,24 +42,36 @@ class GetterSetter {
     }
     return null;
   }
+
+  Map<String, Function> _getter_cache = {};
+
   Function getter(String key) {
+    var value = _getter_cache[key];
+    if (value != null) return value;
+    return _getter_cache[key] = _getter(key);
+  }
+
+  Function _getter(String key) {
     var symbol = new Symbol(key);
+    Map<ClassMirror, Function> fieldCache = {};
     return (o) {
       InstanceMirror instanceMirror = reflect(o);
-      try {
-        return instanceMirror.getField(symbol).reflectee;
-      } on NoSuchMethodError catch (e) {
-        var invokeClosure = _maybeInvoke(instanceMirror, symbol);
-        if (invokeClosure == null) {
-          rethrow;
+      ClassMirror classMirror = instanceMirror.type;
+      Function fn = fieldCache[classMirror];
+      if (fn == null) {
+        try {
+          return (fieldCache[classMirror] = (instanceMirror) => instanceMirror.getField(symbol).reflectee)(instanceMirror);
+        } on NoSuchMethodError catch (e) {
+          var value = (fieldCache[classMirror] = (instanceMirror) => _maybeInvoke(instanceMirror, symbol))(instanceMirror);
+          if (value == null) { rethrow; }
+          return value;
+        } on UnsupportedError catch (e) {
+          var value = (fieldCache[classMirror] = (instanceMirror) => _maybeInvoke(instanceMirror, symbol))(instanceMirror);
+          if (value == null) { rethrow; }
+          return value;
         }
-        return invokeClosure;
-      } on UnsupportedError catch (e) {
-        var invokeClosure = _maybeInvoke(instanceMirror, symbol);
-        if (invokeClosure == null) {
-          rethrow;
-        }
-        return invokeClosure;
+      } else {
+        return fn(instanceMirror);
       }
     };
   }

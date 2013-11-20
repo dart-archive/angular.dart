@@ -141,7 +141,17 @@ class DynamicParser implements Parser {
   String _text;
   var _evalError;
 
+  Map<String, ParserAST> _cache = {};
+
   ParserAST call(String text) {
+    var value = _cache[text];
+    if (value != null) {
+      return value;
+    }
+    return _cache[text] = _call(text);
+  }
+
+  ParserAST _call(String text) {
     try {
       if (text == null) text = '';
       _tokenSavers = [];
