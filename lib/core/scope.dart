@@ -38,31 +38,32 @@ class ScopeDigestTTL {
  */
 @proxy
 class Scope implements Map {
+  final ExceptionHandler _exceptionHandler;
+  final Parser _parser;
+  final NgZone _zone;
+  final num _ttl;
+  final Map<String, Object> _properties = {};
+  final List<_Watch> _watchers = [];
+  final Map<String, List<Function>> _listeners = {};
+  final bool _isolate;
+  final bool _lazy;
+  final Profiler _perf;
+  final Scope $parent;
+
   String $id;
-  Scope $parent;
   Scope $root;
   num _nextId = 0;
-
-  ExceptionHandler _exceptionHandler;
-  Parser _parser;
-  NgZone _zone;
-  num _ttl;
   String _phase;
-  Map<String, Object> _properties = {};
   List<Function> _innerAsyncQueue;
   List<Function> _outerAsyncQueue;
-  List<_Watch> _watchers = [];
-  Map<String, List<Function>> _listeners = {};
   Scope _nextSibling, _prevSibling, _childHead, _childTail;
-  bool _isolate = false;
   bool _skipAutoDigest = false;
-  Profiler _perf;
-
+  bool _dirty = true;
 
   Scope(ExceptionHandler this._exceptionHandler, Parser this._parser,
-      ScopeDigestTTL ttl, NgZone this._zone, Profiler this._perf) {
+      ScopeDigestTTL ttl, NgZone this._zone, Profiler this._perf):
+        $parent = null, _isolate = false, _lazy = false, _ttl = ttl.ttl {
     _properties[r'this']= this;
-    _ttl = ttl.ttl;
     $root = this;
     $id = '_${$root._nextId++}';
     _innerAsyncQueue = [];
@@ -73,12 +74,10 @@ class Scope implements Map {
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
   }
 
-  Scope._child(Scope this.$parent, bool this._isolate, Profiler this._perf) {
-    _exceptionHandler = $parent._exceptionHandler;
-    _parser = $parent._parser;
-    _ttl = $parent._ttl;
+  Scope._child(Scope parent, bool this._isolate, bool this._lazy, Profiler this._perf):
+      $parent = parent, _ttl = parent._ttl, _parser = parent._parser,
+      _exceptionHandler = parent._exceptionHandler, _zone = parent._zone {
     _properties[r'this'] = this;
-    _zone = $parent._zone;
     $root = $parent.$root;
     $id = '_${$root._nextId++}';
     _innerAsyncQueue = $parent._innerAsyncQueue;
@@ -132,7 +131,7 @@ class Scope implements Map {
       return this[name];
     } else if (invocation.isSetter) {
       var value = invocation.positionalArguments[0];
-      name = name.substring(0, name.length - 1);
+      name = name.substring(0, na$me.length - 1);
       this[name] = value;
       return value;
     } else {
@@ -145,9 +144,17 @@ class Scope implements Map {
   }
 
 
-
-  $new([bool isolate = false]) {
-    return new Scope._child(this, isolate, _perf);
+  /**
+   * Create a new child [Scope].
+   *
+   * * [isolate] - If set to true the child scope does not inherit properties from the parent scope.
+   *   This in essence creates an independent (isolated) view for the users of the scope.
+   * * [lazy] - If set to true the scope digest will only run if the scope is marked as [$dirty].
+   *   This is usefull if we expect that the bindings in the scope are constant and there is no need
+   *   to check them on each digest. The digest can be forced by marking it [$dirty].
+   */
+  $new({bool isolate: false, bool lazy: false}) {
+    return new Scope._child(this, isolate, lazy, _perf);
   }
 
 
@@ -273,6 +280,16 @@ class Scope implements Map {
     _zone.assertInTurn();
   }
 
+  /**
+   * Marks a scope as dirty. If the scope is lazy (see [$new]) then the scope will be included
+   * in the next [$digest].
+   *
+   * NOTE: This has no effect for non-lazy scopes.
+   */
+  $dirty() {
+    this._dirty = true;
+  }
+
   $digest() {
     var innerAsyncQueue = _innerAsyncQueue,
         length,
@@ -336,7 +353,11 @@ class Scope implements Map {
           // Insanity Warning: scope depth-first traversal
           // yes, this code is a bit crazy, but it works and we have tests to prove it!
           // this piece should be kept in sync with the traversal in $broadcast
-          if (current._childHead == null) {
+          var childHead = current._childHead;
+          while (childHead != null && !childHead._dirty) {
+            childHead = childHead._nextSibling;
+          }
+          if (childHead == null) {
             if (current == target) {
               next = null;
             } else {
@@ -348,7 +369,8 @@ class Scope implements Map {
               }
             }
           } else {
-            next = current._childHead;
+            if (childHead._lazy) childHead._dirty = false;
+            next = childHead;
           }
         } while ((current = next) != null);
 

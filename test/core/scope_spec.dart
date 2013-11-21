@@ -70,7 +70,7 @@ main() {
       }));
 
       it(r'should create a non prototypically inherited child scope', inject((Scope $rootScope) {
-        var child = $rootScope.$new(true);
+        var child = $rootScope.$new(isolate: true);
         $rootScope.a = 123;
         expect(child.a).toEqual(null);
         expect(child.$parent).toEqual($rootScope);
@@ -348,6 +348,32 @@ main() {
         $rootScope.$digest();
         expect(log).toEqual([]);
       }));
+
+      describe('lazy digest', () {
+        var rootScope, lazyScope, eagerScope;
+
+        beforeEach(inject((Scope root) {
+          rootScope = root;
+          lazyScope = root.$new(lazy: true);
+          eagerScope = root.$new();
+        }));
+
+        it('should digest initially', () {
+          var log = '';
+          lazyScope.$watch(() {log += 'lazy;';});
+          eagerScope.$watch(() {log += 'eager;';});
+
+          rootScope.$digest();
+          expect(log).toEqual('lazy;eager;eager;');
+
+          rootScope.$digest();
+          expect(log).toEqual('lazy;eager;eager;eager;');
+
+          lazyScope.$dirty();
+          rootScope.$digest();
+          expect(log).toEqual('lazy;eager;eager;eager;lazy;eager;');
+        });
+      });
     });
 
 
@@ -474,7 +500,7 @@ main() {
       }));
 
       it(r'should allow running after digest in issolate scope', inject((Scope $rootScope) {
-        var isolateScope = $rootScope.$new(true);
+        var isolateScope = $rootScope.$new(isolate: true);
         isolateScope.log = '';
         isolateScope.$evalAsync(() => isolateScope.log += 'eval;', outsideDigest: true);
         isolateScope.$watch(() { isolateScope.log += 'digest;'; });

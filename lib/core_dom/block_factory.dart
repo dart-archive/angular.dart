@@ -300,7 +300,7 @@ class _ComponentFactory {
     shadowDom.applyAuthorStyles = component.applyAuthorStyles;
     shadowDom.resetStyleInheritance = component.resetStyleInheritance;
 
-    shadowScope = scope.$new(true);
+    shadowScope = scope.$new(isolate: true);
     // TODO(pavelgj): fetching CSS with Http is mainly an attempt to
     // work around an unfiled Chrome bug when reloading same CSS breaks
     // styles all over the page. We shouldn't be doing browsers work,
