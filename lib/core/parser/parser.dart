@@ -115,6 +115,7 @@ Map<String, Operator> OPERATORS = {
   },
   '*': (s, l, a, b) => a.eval(s, l) * b.eval(s, l),
   '/': (s, l, a, b) => a.eval(s, l) / b.eval(s, l),
+  '~/': (s, l, a, b) => a.eval(s, l) ~/ b.eval(s, l),
   '%': (s, l, a, b) => a.eval(s, l) % b.eval(s, l),
   '^': (s, l, a, b) => a.eval(s, l) ^ b.eval(s, l),
   '=': NULL_OP,
@@ -290,7 +291,7 @@ class DynamicParser implements Parser {
   ParserAST _multiplicative() {
     var left = _unary();
     var token;
-    while ((token = _expect('*','/','%')) != null) {
+    while ((token = _expect('*','%','/','~/')) != null) {
       left = _binaryFn(left, token.opKey, _unary());
     }
     return left;

@@ -72,6 +72,7 @@ main() {
 
       it('should parse multiplicative expressions', () {
         expect(eval("3*4/2%5")).toEqual(3*4/2%5);
+        expect(eval("3*4~/2%5")).toEqual(3*4~/2%5);
       });
 
 
@@ -539,6 +540,7 @@ main() {
         scope["taxRate"] =  8;
         scope["subTotal"] =  100;
         expect(eval("taxRate / 100 * subTotal")).toEqual(8);
+        expect(eval("taxRate ~/ 100 * subTotal")).toEqual(0);
         expect(eval("subTotal * taxRate / 100")).toEqual(8);
       });
 
