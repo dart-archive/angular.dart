@@ -128,7 +128,8 @@ Map<String, Operator> OPERATORS = {
   '||': (s, l, a, b) => toBool(a.eval(s, l)) || toBool(b.eval(s, l)),
   '&': (s, l, a, b) => a.eval(s, l) & b.eval(s, l),
   '|': NOT_IMPL_OP, //b(locals)(locals, a(locals))
-  '!': (self, locals, a, b) => !toBool(a.eval(self, locals))
+  '!': (s, l, a, b) => !toBool(a.eval(s, l)),
+  '?': (s, l, c, t, f) => toBool(c.eval(s, l)) ? t.eval(s, l) : f.eval(s, l),
 };
 
 class DynamicParser implements Parser {
@@ -343,9 +344,26 @@ class DynamicParser implements Parser {
     }
   }
 
+  ParserAST _ternary() {
+    var ts = _saveTokens();
+    var cond = _logicalOR();
+    var token = _expect('?');
+    if (token != null) {
+      var _true = _expression();
+      if ((token = _expect(':')) != null) {
+        cond = _b.ternaryFn(cond, _true, _expression());
+      } else {
+        throw _parserError('Conditional expression ${_tokensText(ts)} requires '
+                           'all 3 expressions');
+      }
+    }
+    _stopSavingTokens(ts);
+    return cond;
+  }
+
   ParserAST _assignment() {
     var ts = _saveTokens();
-    var left = _logicalOR();
+    var left = _ternary();
     _stopSavingTokens(ts);
     var right;
     var token;
@@ -353,7 +371,7 @@ class DynamicParser implements Parser {
       if (!left.assignable) {
         throw _parserError('Expression ${_tokensText(ts)} is not assignable', token);
       }
-      right = _logicalOR();
+      right = _ternary();
       return _b.assignment(left, right, _evalError);
     } else {
       return left;

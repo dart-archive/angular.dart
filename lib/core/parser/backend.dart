@@ -179,6 +179,10 @@ class ParserBackend {
 
   _op(opKey) => OPERATORS[opKey];
 
+  Expression ternaryFn(Expression cond, Expression _true, Expression _false) =>
+      new Expression((self, [locals]) => _op('?')(
+          self, locals, cond, _true, _false));
+
   Expression binaryFn(Expression left, String op, Expression right) =>
       new Expression((self, [locals]) => _op(op)(self, locals, left, right));
 
