@@ -14,11 +14,28 @@ part of angular.directive;
     selector: '[ng-model]',
     map: const {'ng-model': '&model'})
 class NgModel {
+  static const NG_DIRTY_CLASS    = "ng-dirty";
+  static const NG_PRISTINE_CLASS = "ng-prisine";
+  static const NG_INVALID_CLASS  = "ng-invalid";
+  static const NG_VALID_CLASS    = "ng-valid";
+
   final Scope _scope;
+  NgForm form;
+  dom.Element element;
 
   Getter getter = ([_]) => null;
   Setter setter = (_, [__]) => null;
   String _exp;
+  String name;
+
+  bool dirty;
+  bool pristine;
+
+  int invalidCount = 0;
+  bool valid;
+  bool invalid;
+
+  Map<String, bool> errors;
 
 
   Function _removeWatch = () => null;
@@ -26,7 +43,13 @@ class NgModel {
 
   Function render = (value) => null;
 
-  NgModel(Scope this._scope, NodeAttrs attrs) {
+  NgModel(Scope this._scope, dom.Element this.element, NodeAttrs attrs, NgForm this.form) {
+    name = attrs["name"];
+    errors = new Map<String, bool>();
+
+    if(this.form != null) {
+      this.form.addControl(this);
+    }
     _exp = 'ng-model=${attrs["ng-model"]}';
     watchCollection = false;
   }
@@ -55,6 +78,48 @@ class NgModel {
 
   get modelValue        => getter();
   set modelValue(value) => setter(value);
+
+  setAsPristine() {
+    this.dirty = false;
+    this.pristine = true;
+  }
+
+  setAsDirty() {
+    this.dirty = true;
+    this.pristine = false;
+  }
+
+  setValidity(String token, bool isValid) {
+    if(errors[token] == !isValid) return; //nothing has changed
+
+    if(isValid) {
+      if(errors[token] != null) {
+        this.invalidCount--;
+      }
+      this.valid = true;
+      this.invalid = false;
+    }
+    else {
+      this.invalidCount++;
+      errors[token] = isValid;
+      this.valid = false;
+      this.invalid = true;
+    }
+
+    toggleValidCssClasses(token, isValid);
+    errors[token] = !isValid;
+
+    if(form != null) {
+      form.setValidity(token, isValid, this);
+    }
+  }
+
+  toggleValidCssClasses(String token, bool isValid) {
+    String suffix = token != null ?
+      '-' + snakecase(token, '-') : '';
+    element.classes.remove((isValid ? NG_INVALID_CLASS : NG_VALID_CLASS) + suffix);
+    element.classes.add((isValid ? NG_VALID_CLASS : NG_INVALID_CLASS) + suffix);
+  }
 }
 
 /**
@@ -135,10 +200,18 @@ abstract class _InputTextlikeDirective {
  */
 @NgDirective(selector: 'input[type=text][ng-model]')
 class InputTextDirective extends _InputTextlikeDirective {
+
   InputTextDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
-      super(inputElement, ngModel, scope);
+    super(inputElement, ngModel, scope);
+
+  processValue() {
+    this.super();
+    var value = inputElement.value;
+    //handle the form validation stuff within here
+  }
 
   String get typedValue => inputElement.value;
+
   set typedValue(String value) {
     inputElement.value = (value == null) ? '' : value;
   }
