@@ -151,18 +151,48 @@ class Scope implements Map {
   }
 
 
-  $watch(watchExp, [Function listener, String watchStr]) {
+  /**
+   * Registers a listener callback to be executed whenever the [watchExpression] changes.
+   *
+   * The watchExpression is called on every call to [$digest] and should return the value that
+   * will be watched. (Since [$digest] reruns when it detects changes the watchExpression can
+   * execute multiple times per [$digest] and should be idempotent.)
+   *
+   * The listener is called only when the value from the current [watchExpression] and the
+   * previous call to [watchExpression] are not identical (with the exception of the initial run,
+   * see below).
+   *
+   * The watch listener may change the model, which may trigger other listeners to fire. This is
+   * achieved by rerunning the watchers until no changes are detected. The rerun iteration limit
+   * is 10 to prevent an infinite loop deadlock.
+   * If you want to be notified whenever [$digest] is called, you can register a [watchExpression]
+   * function with no listener. (Since [watchExpression] can execute multiple times per [$digest]
+   * cycle when a change is detected, be prepared for multiple calls to your listener.)
+   *
+   * After a watcher is registered with the scope, the listener fn is called asynchronously
+   * (via [$evalAsync]) to initialize the watcher. In rare cases, this is undesirable because the
+   * listener is called when the result of [watchExpression] didn't change. To detect this
+   * scenario within the listener fn, you can compare the newVal and oldVal. If these two values
+   * are identical then the listener was called due to initialization.
+   *
+   * * [watchExpression] - can be any one of these: a [Function] - `(Scope scope) => ...;` or a
+   *   [String]  - `expression` which is compiled with [Parser] service into a function
+   * * [listener] - A [Function] `(currentValue, previousValue, Scope scope) => ...;`
+   * * [watchStr] - Used as a debbuging hint to easier identify which expression is associated with
+   *   this watcher.
+   */
+  $watch(watchExpression, [Function listener, String watchStr]) {
     if (watchStr == null) {
-      watchStr = watchExp.toString();
+      watchStr = watchExpression.toString();
 
       // Keep prod fast
       assert((() {
-        watchStr = _source(watchExp);
+        watchStr = _source(watchExpression);
         return true;
       })());
     }
     var watcher = new _Watch(_compileToFn(listener), _initWatchVal,
-        _compileToFn(watchExp), watchStr);
+        _compileToFn(watchExpression), watchStr);
 
     // we use unshift since we use a while loop in $digest for speed.
     // the while loop reads in reverse order.
@@ -211,6 +241,17 @@ class Scope implements Map {
     };
   }
 
+  /**
+   * Shallow watches the properties of an object and fires whenever any of the properties change
+   * (for arrays, this implies watching the array items; for object maps, this implies watching
+   * the properties). If a change is detected, the listener callback is fired.
+   *
+   *  The obj collection is observed via standard [$watch] operation and is examined on every call
+   *  to [$digest] to see if any items have been added, removed, or moved.
+   *
+   *  The listener is called whenever anything within the obj has changed. Examples include
+   *  adding, removing, and moving items belonging to an object or array.
+   */
   $watchCollection(obj, listener, [String expression]) {
     var oldValue;
     var newValue;
