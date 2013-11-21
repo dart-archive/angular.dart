@@ -35,6 +35,8 @@ class InheritedMapData extends MapData {
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+toBool(x) => (x is num) ? x != 0 : x == true;
+
 main() {
   describe('parse', () {
     var scope, parser;
@@ -45,7 +47,7 @@ main() {
     beforeEach(inject((Parser injectedParser) {
       parser = injectedParser;
     }));
-    
+
     eval(String text) => parser(text).eval(scope, null);
     expectEval(String expr) => expect(() => eval(expr));
 
@@ -105,6 +107,24 @@ main() {
       });
 
 
+      it('should parse ternary/conditional expressions', () {
+        var a, b, c;
+        expect(eval("7==3+4?10:20")).toEqual(true?10:20);
+        expect(eval("false?10:20")).toEqual(false?10:20);
+        expect(eval("5?10:20")).toEqual(toBool(5)?10:20);
+        expect(eval("null?10:20")).toEqual(toBool(null)?10:20);
+        expect(eval("true||false?10:20")).toEqual(true||false?10:20);
+        expect(eval("true&&false?10:20")).toEqual(true&&false?10:20);
+        expect(eval("true?a=10:a=20")).toEqual(true?a=10:a=20);
+        expect([scope['a'], a]).toEqual([10, 10]);
+        scope['a'] = a = null;
+        expect(eval("b=true?a=false?11:c=12:a=13")).toEqual(
+                     b=true?a=false?11:c=12:a=13);
+        expect([scope['a'], scope['b'], scope['c']]).toEqual([a, b, c]);
+        expect([a, b, c]).toEqual([12, 12, 12]);
+      });
+
+
       it('should auto convert ints to strings', () {
         expect(eval("'str ' + 4")).toEqual("str 4");
         expect(eval("4 + ' str'")).toEqual("4 str");
@@ -157,6 +177,12 @@ main() {
 
       it('should throw on not-function function calls', () {
         expectEval("4()").toThrow(errStr('Eval Error: 4 is not a function while evaling [4()]'));
+      });
+
+
+      it('should throw on incorrect ternary operator syntax', () {
+        expectEval("true?1").toThrow(errStr(
+                'Conditional expression true?1 requires all 3 expressions'));
       });
 
 
@@ -327,6 +353,76 @@ main() {
         expect(eval("0&&2")).toEqual((0!=0)&&(2!=0));
         expect(eval("0||2")).toEqual(0!=0||2!=0);
         expect(eval("0||1&&2")).toEqual(0!=0||1!=0&&2!=0);
+      });
+
+
+      it('should parse ternary', () {
+        var returnTrue = scope['returnTrue'] = () => true;
+        var returnFalse = scope['returnFalse'] = () => false;
+        var returnString = scope['returnString'] = () => 'asd';
+        var returnInt = scope['returnInt'] = () => 123;
+        var identity = scope['identity'] = (x) => x;
+        var B = toBool;
+
+        // Simple.
+        expect(eval('0?0:2')).toEqual(B(0)?0:2);
+        expect(eval('1?0:2')).toEqual(B(1)?0:2);
+
+        // Nested on the left.
+        expect(eval('0?0?0:0:2')).toEqual(B(0)?B(0)?0:0:2);
+        expect(eval('1?0?0:0:2')).toEqual(B(1)?B(0)?0:0:2);
+        expect(eval('0?1?0:0:2')).toEqual(B(0)?B(1)?0:0:2);
+        expect(eval('0?0?1:0:2')).toEqual(B(0)?B(0)?1:0:2);
+        expect(eval('0?0?0:2:3')).toEqual(B(0)?B(0)?0:2:3);
+        expect(eval('1?1?0:0:2')).toEqual(B(1)?B(1)?0:0:2);
+        expect(eval('1?1?1:0:2')).toEqual(B(1)?B(1)?1:0:2);
+        expect(eval('1?1?1:2:3')).toEqual(B(1)?B(1)?1:2:3);
+        expect(eval('1?1?1:2:3')).toEqual(B(1)?B(1)?1:2:3);
+
+        // Nested on the right.
+        expect(eval('0?0:0?0:2')).toEqual(B(0)?0:B(0)?0:2);
+        expect(eval('1?0:0?0:2')).toEqual(B(1)?0:B(0)?0:2);
+        expect(eval('0?1:0?0:2')).toEqual(B(0)?1:B(0)?0:2);
+        expect(eval('0?0:1?0:2')).toEqual(B(0)?0:B(1)?0:2);
+        expect(eval('0?0:0?2:3')).toEqual(B(0)?0:B(0)?2:3);
+        expect(eval('1?1:0?0:2')).toEqual(B(1)?1:B(0)?0:2);
+        expect(eval('1?1:1?0:2')).toEqual(B(1)?1:B(1)?0:2);
+        expect(eval('1?1:1?2:3')).toEqual(B(1)?1:B(1)?2:3);
+        expect(eval('1?1:1?2:3')).toEqual(B(1)?1:B(1)?2:3);
+
+        // Precedence with respect to logical operators.
+        expect(eval('0&&1?0:1')).toEqual(B(0)&&B(1)?0:1);
+        expect(eval('1||0?0:0')).toEqual(B(1)||B(0)?0:0);
+
+        expect(eval('0?0&&1:2')).toEqual(B(0)?0&&1:2);
+        expect(eval('0?1&&1:2')).toEqual(B(0)?1&&1:2);
+        expect(eval('0?0||0:1')).toEqual(B(0)?0||0:1);
+        expect(eval('0?0||1:2')).toEqual(B(0)?0||1:2);
+
+        expect(eval('1?0&&1:2')).toEqual(B(1)?B(0)&&B(1):2);
+        expect(eval('1?1&&1:2')).toEqual(B(1)?B(1)&&B(1):2);
+        expect(eval('1?0||0:1')).toEqual(B(1)?B(0)||B(0):1);
+        expect(eval('1?0||1:2')).toEqual(B(1)?B(0)||B(1):2);
+
+        expect(eval('0?1:0&&1')).toEqual(B(0)?1:B(0)&&B(1));
+        expect(eval('0?2:1&&1')).toEqual(B(0)?2:B(1)&&B(1));
+        expect(eval('0?1:0||0')).toEqual(B(0)?1:B(0)||B(0));
+        expect(eval('0?2:0||1')).toEqual(B(0)?2:B(0)||B(1));
+
+        expect(eval('1?1:0&&1')).toEqual(B(1)?1:B(0)&&B(1));
+        expect(eval('1?2:1&&1')).toEqual(B(1)?2:B(1)&&B(1));
+        expect(eval('1?1:0||0')).toEqual(B(1)?1:B(0)||B(0));
+        expect(eval('1?2:0||1')).toEqual(B(1)?2:B(0)||B(1));
+
+        // Function calls.
+        expect(eval('returnTrue() ? returnString() : returnInt()')).toEqual(
+            returnTrue() ? returnString() : returnInt());
+        expect(eval('returnFalse() ? returnString() : returnInt()')).toEqual(
+            returnFalse() ? returnString() : returnInt());
+        expect(eval('returnTrue() ? returnString() : returnInt()')).toEqual(
+            returnTrue() ? returnString() : returnInt());
+        expect(eval('identity(returnFalse() ? returnString() : returnInt())')).toEqual(
+            identity(returnFalse() ? returnString() : returnInt()));
       });
 
 

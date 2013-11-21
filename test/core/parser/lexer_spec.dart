@@ -237,11 +237,5 @@ main() {
         lex("'\\u1''bla'");
       }).toThrow("Lexer Error: Invalid unicode escape [\\u1''b] at column 2 in expression ['\\u1''bla']");
     });
-
-    it('should throw error on unexpected characters', () {
-      expect(() {
-        lex("a == b ? 3 : 4");
-      }).toThrow('Lexer Error: Unexpected next character [?] at column 7 in expression [a == b ? 3 : 4]');
-    });
   });
 }
