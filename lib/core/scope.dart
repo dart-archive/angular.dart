@@ -171,6 +171,46 @@ class Scope implements Map {
     return () => _watchers.remove(watcher);
   }
 
+  /**
+   * A variant of [$watch] where it watches a collection of [watchExpressios]. If any
+   * one expression in the collection changes the [listener] is executed.
+   *
+   * * [watcherExpressions] - `List<String|(Scope scope){}>`
+   * * [Listener] - `(List newValues, List previousValues, Scope scope)`
+   */
+  $watchSet(List watchExpressions, [Function listener, String watchStr]) {
+    if (watchExpressions.length == 0) return () => null;
+
+    var lastValues = new List(watchExpressions.length);
+    var currentValues = new List(watchExpressions.length);
+
+    if (watchExpressions.length == 1) {
+      // Special case size of one.
+      return $watch(watchExpressions[0], (value, oldValue, scope) {
+        currentValues[0] = value;
+        lastValues[0] = oldValue;
+        listener(currentValues, lastValues, scope);
+      });
+    }
+    var deregesterFns = [];
+    var changeCount = 0;
+    for(var i = 0, ii = watchExpressions.length; i < ii; i++) {
+      deregesterFns.add($watch(watchExpressions[i], (value, oldValue, __) {
+        currentValues[i] = value;
+        lastValues[i] = oldValue;
+        changeCount++;
+      }));
+    }
+    deregesterFns.add($watch((s) => changeCount, (c, o, scope) {
+      listener(currentValues, lastValues, scope);
+    }));
+    return () {
+      for(var i = 0, ii = deregesterFns.length; i < ii; i++) {
+        deregesterFns[i]();
+      }
+    };
+  }
+
   $watchCollection(obj, listener, [String expression]) {
     var oldValue;
     var newValue;
