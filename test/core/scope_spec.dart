@@ -351,6 +351,75 @@ main() {
     });
 
 
+    ddescribe(r'$watchSet', () {
+      var scope;
+      beforeEach(inject((Scope s) => scope = s));
+
+      it('should skip empty sets', () {
+        expect(scope.$watchSet([], null)()).toBe(null);
+      });
+
+      it('should treat set of 1 as direct watch', () {
+        var lastValues = ['foo'];
+        var log = '';
+        var clean = scope.$watchSet(['a'], (values, oldValues, s) {
+          log += values.join(',') + ';';
+          expect(s).toBe(scope);
+          expect(oldValues).toEqual(lastValues);
+          lastValues = new List.from(values);
+        });
+
+        scope.a = 'foo';
+        scope.$digest();
+        expect(log).toEqual('foo;');
+
+        scope.$digest();
+        expect(log).toEqual('foo;');
+
+        scope.a = 'bar';
+        scope.$digest();
+        expect(log).toEqual('foo;bar;');
+
+        clean();
+        scope.a = 'xxx';
+        scope.$digest();
+        expect(log).toEqual('foo;bar;');
+      });
+
+      it('should detect a change to any one in a set', () {
+        var lastValues = ['foo', 'bar'];
+        var log = '';
+        var clean = scope.$watchSet(['a', 'b'], (values, oldValues, s) {
+          log += values.join(',') + ';';
+          expect(oldValues).toEqual(lastValues);
+          lastValues = new List.from(values);
+        });
+
+        scope.a = 'foo';
+        scope.b = 'bar';
+        scope.$digest();
+        expect(log).toEqual('foo,bar;');
+
+        scope.$digest();
+        expect(log).toEqual('foo,bar;');
+
+        scope.a = 'a';
+        scope.$digest();
+        expect(log).toEqual('foo,bar;a,bar;');
+
+        scope.a = 'A';
+        scope.b = 'B';
+        scope.$digest();
+        expect(log).toEqual('foo,bar;a,bar;A,B;');
+
+        clean();
+        scope.a = 'xxx';
+        scope.$digest();
+        expect(log).toEqual('foo,bar;a,bar;A,B;');
+      });
+    });
+
+
     describe(r'$destroy', () {
       var first = null, middle = null, last = null, log = null;
 
