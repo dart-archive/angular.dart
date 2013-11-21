@@ -4,9 +4,9 @@ part of angular.routing;
  * A factory of route to template bindings.
  */
 class ViewFactory {
-  _RoutingHelper locationService;
+  NgRoutingHelper locationService;
 
-  ViewFactory(_RoutingHelper this.locationService);
+  ViewFactory(NgRoutingHelper this.locationService);
 
   call(String templateUrl) =>
       (RouteEvent event) =>
@@ -28,12 +28,12 @@ abstract class RouteInitializer {
  * A singleton helper service that handles routing initialization, global
  * events and view registries.
  */
-class _RoutingHelper {
+class NgRoutingHelper {
   final Router router;
   List<NgViewDirective> portals = <NgViewDirective>[];
   Map<String, String> _templates = new Map<String, String>();
 
-  _RoutingHelper(RouteInitializer initializer, Router this.router) {
+  NgRoutingHelper(RouteInitializer initializer, Router this.router) {
     if (initializer == null) {
       window.console.error('No RouteInitializer implementation provided.');
       return;

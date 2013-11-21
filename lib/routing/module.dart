@@ -162,6 +162,7 @@ export 'package:route_hierarchical/client.dart';
 
 part 'routing.dart';
 part 'ng_view.dart';
+part 'ng_bind_route.dart';
 
 class NgRoutingModule extends Module {
   NgRoutingModule({bool usePushState: true}) {
@@ -171,12 +172,13 @@ class NgRoutingModule extends Module {
       return new Router(useFragment: useFragment,
                         windowImpl: injector.get(Window));
     });
-    type(_RoutingHelper);
+    type(NgRoutingHelper);
     value(RouteProvider, null);
     value(RouteInitializer, null);
 
     // directives
-    type(NgViewDirective);
+    value(NgViewDirective, null);
+    type(NgBindRouteDirective);
   }
 }
 

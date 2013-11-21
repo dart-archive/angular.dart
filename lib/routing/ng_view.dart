@@ -62,7 +62,7 @@ part of angular.routing;
     visibility: NgDirective.CHILDREN_VISIBILITY
 )
 class NgViewDirective implements NgDetachAware, RouteProvider {
-  final _RoutingHelper locationService;
+  final NgRoutingHelper locationService;
   final BlockCache blockCache;
   final Scope scope;
   final Injector injector;
@@ -75,8 +75,8 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
 
   NgViewDirective(Element this.element, BlockCache this.blockCache,
       Scope this.scope, Injector injector, Router router)
-      : injector = injector, locationService = injector.get(_RoutingHelper) {
-    RouteProvider routeProvider = injector.parent.get(RouteProvider);
+      : injector = injector, locationService = injector.get(NgRoutingHelper) {
+    RouteProvider routeProvider = injector.parent.get(NgViewDirective);
     if (routeProvider != null) {
       _route = routeProvider.route.newHandle();
     } else {
