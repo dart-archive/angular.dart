@@ -8,13 +8,14 @@ class NgTextMustacheDirective {
                           Interpolate interpolate,
                           Scope scope,
                           TextChangeListener listener) {
-    Expression interpolateFn = interpolate(markup);
-    setter(text) {
+    Interpolation interpolation = interpolate(markup);
+    interpolation.setter = (text) {
       element.text = text;
       if (listener != null) listener.call(text);
-    }
-    setter('');
-    scope.$watch(interpolateFn.eval, setter, markup.trim());
+    };
+    interpolation.setter('');
+    print(interpolation.watchExpressions);
+    scope.$watchSet(interpolation.watchExpressions, interpolation.call, markup.trim());
   }
 
 }
@@ -27,10 +28,10 @@ class NgAttrMustacheDirective {
   NgAttrMustacheDirective(NodeAttrs attrs, String markup, Interpolate interpolate, Scope scope) {
     var match = ATTR_NAME_VALUE_REGEXP.firstMatch(markup);
     var attrName = match[1];
-    Expression interpolateFn = interpolate(match[2]);
-    Function attrSetter = (text) => attrs[attrName] = text;
-    attrSetter('');
-    scope.$watch(interpolateFn.eval, attrSetter, markup.trim());
+    Interpolation interpolation = interpolate(match[2]);
+    interpolation.setter = (text) => attrs[attrName] = text;
+    interpolation.setter('');
+    scope.$watchSet(interpolation.watchExpressions, interpolation.call, markup.trim());
   }
 }
 
