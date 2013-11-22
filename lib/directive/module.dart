@@ -42,6 +42,7 @@ class NgDirectiveModule extends Module {
     value(NgUnlessDirective, null);
     value(NgIncludeDirective, null);
     value(NgRepeatDirective, null);
+    value(NgShalowRepeatDirective, null);
     value(NgShowDirective, null);
     value(InputEmailDirective, null);
     value(InputNumberDirective, null);

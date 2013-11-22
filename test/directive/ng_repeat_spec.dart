@@ -381,5 +381,33 @@ main() {
         expect(newLis[2]).toEqual(lis[1]);
       });
     });
+
+    describe('shalow', () {
+      TestBed _;
+      beforeEach(inject((TestBed tb) => _ = tb));
+
+      it('should x', () {
+        _.compile('<ul><li ng-shallow-repeat="i in items">{{i.name}}</li></ul>');
+        _.rootScope.items = [{'name': 'a'}, {'name':'b'}];
+        _.rootScope.$digest();
+        expect(_.rootElement.text).toEqual('ab');
+
+        // Should not see this.
+        _.rootScope.items[0]['name'] = 'x';
+        _.rootScope.$digest();
+        expect(_.rootElement.text).toEqual('ab');
+
+        // We see additions but not changse
+        _.rootScope.items.add({'name': 'C'});
+        _.rootScope.$digest();
+        expect(_.rootElement.text).toEqual('abC');
+
+
+        // Cloning list does a full update
+        _.rootScope.items = new List.from(_.rootScope.items);
+        _.rootScope.$digest();
+        expect(_.rootElement.text).toEqual('xbC');
+      });
+    });
   });
 }
