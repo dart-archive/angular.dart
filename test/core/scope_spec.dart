@@ -374,6 +374,33 @@ main() {
           expect(log).toEqual('lazy;eager;eager;eager;lazy;eager;');
         });
       });
+
+      describe('disabled digest', () {
+        var rootScope, childScope;
+
+        beforeEach(inject((Scope root) {
+          rootScope = root;
+          childScope = root.$new();
+        }));
+
+        it('should disable digest', () {
+          var log = '';
+          childScope.$watch(() {log += 'digest;';});
+
+          rootScope.$digest();
+          expect(log).toEqual('digest;digest;');
+
+          childScope.$disabled = true;
+          expect(childScope.$disabled).toEqual(true);
+          rootScope.$digest();
+          expect(log).toEqual('digest;digest;');
+
+          childScope.$disabled = false;
+          expect(childScope.$disabled).toEqual(false);
+          rootScope.$digest();
+          expect(log).toEqual('digest;digest;digest;');
+        });
+      });
     });
 
 
