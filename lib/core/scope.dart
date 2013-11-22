@@ -58,7 +58,7 @@ class Scope implements Map {
   List<Function> _outerAsyncQueue;
   Scope _nextSibling, _prevSibling, _childHead, _childTail;
   bool _skipAutoDigest = false;
-  bool _dirty = true;
+  bool _disabled = false;
 
   Scope(ExceptionHandler this._exceptionHandler, Parser this._parser,
       ScopeDigestTTL ttl, NgZone this._zone, Profiler this._perf):
@@ -157,6 +157,13 @@ class Scope implements Map {
     return new Scope._child(this, isolate, lazy, _perf);
   }
 
+  /**
+   * *EXPERIMENTAL:* This feature is experimental. We reserve the right to change or delete it.
+   *
+   * A dissabled scope will not be part of the [$digest] cycle until it is re-enabled.
+   */
+  set $disabled(value) => this._disabled = value;
+  get $disabled => this._disabled;
 
   $watch(watchExp, [Function listener, String watchStr]) {
     if (watchStr == null) {
@@ -299,13 +306,15 @@ class Scope implements Map {
   }
 
   /**
+   * *EXPERIMENTAL:* This feature is experimental. We reserve the right to change or delete it.
+   *
    * Marks a scope as dirty. If the scope is lazy (see [$new]) then the scope will be included
    * in the next [$digest].
    *
    * NOTE: This has no effect for non-lazy scopes.
    */
   $dirty() {
-    this._dirty = true;
+    this._disabled = false;
   }
 
   $digest() {
@@ -372,7 +381,7 @@ class Scope implements Map {
           // yes, this code is a bit crazy, but it works and we have tests to prove it!
           // this piece should be kept in sync with the traversal in $broadcast
           var childHead = current._childHead;
-          while (childHead != null && !childHead._dirty) {
+          while (childHead != null && childHead._disabled) {
             childHead = childHead._nextSibling;
           }
           if (childHead == null) {
@@ -387,7 +396,7 @@ class Scope implements Map {
               }
             }
           } else {
-            if (childHead._lazy) childHead._dirty = false;
+            if (childHead._lazy) childHead._disabled = true;
             next = childHead;
           }
         } while ((current = next) != null);
