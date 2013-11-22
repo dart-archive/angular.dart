@@ -351,7 +351,7 @@ main() {
     });
 
 
-    ddescribe(r'$watchSet', () {
+    describe(r'$watchSet', () {
       var scope;
       beforeEach(inject((Scope s) => scope = s));
 
