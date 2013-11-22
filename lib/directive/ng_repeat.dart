@@ -19,7 +19,7 @@ class _Row {
  * Special properties are exposed on the local scope of each template instance, including:
  *
  * <table>
- * <tr><th> Variable  </th><th> Type  </th><th> Details                                                                     <th></tr>
+ * <tr><th> Variable  </th><th> Type </th><th> Details                                                                     <th></tr>
  * <tr><td> `$index`  </td><td>[num] </td><td> iterator offset of the repeated element (0..length-1)                       <td></tr>
  * <tr><td> `$first`  </td><td>[bool]</td><td> true if the repeated element is first in the iterator.                      <td></tr>
  * <tr><td> `$middle` </td><td>[bool]</td><td> true if the repeated element is between the first and last in the iterator. <td></tr>
@@ -73,8 +73,44 @@ class _Row {
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-repeat]',
     map: const {'.': '@expression'})
-class NgRepeatDirective  {
-  static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s+(.+)\s*)?$');
+class NgRepeatDirective extends AbstractNgRepeatDirective {
+  NgRepeatDirective(BlockHole blockHole,
+                    BoundBlockFactory boundBlockFactory,
+                    Scope scope): super(blockHole, boundBlockFactory, scope);
+  get _shalow => false;
+}
+
+/**
+ * *EXPERIMENTAL* This feature is experimental and we reserve the right to change the API or
+ * delete it.
+ *
+ * [ng-shallow-repeat] is same as [ng-repeat] with some tradeoffs designed for speed. Use
+ * [ng-shollow-repeat] when you expect that your items you are repeating over do not change
+ * during the repeater lifetime.
+ *
+ * The shallow repeater introduces these changes:
+ *
+ *  * The repeater only fires if the identity of the list changes or if the list [length] property
+ *    changes. This means that the repeater will still see additions and deletions but not changes
+ *    to the array.
+ *  * The child scopes for each item are created in the lazy mode (see [Scope.$new]). This means
+ *    the scopes are effectivly taken out of the digest cycle and will not update on changes
+ *    to the model.
+ *
+ */
+@NgDirective(
+    children: NgAnnotation.TRANSCLUDE_CHILDREN,
+    selector: '[ng-shallow-repeat]',
+    map: const {'.': '@expression'})
+class NgShalowRepeatDirective extends AbstractNgRepeatDirective {
+  NgShalowRepeatDirective(BlockHole blockHole,
+                          BoundBlockFactory boundBlockFactory,
+                          Scope scope): super(blockHole, boundBlockFactory, scope);
+  get _shalow => true;
+}
+
+abstract class AbstractNgRepeatDirective  {
+  static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
   static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$');
 
   BlockHole _blockHole;
@@ -88,10 +124,13 @@ class NgRepeatDirective  {
   Map<Object, _Row> _rows = new Map<dynamic, _Row>();
   Function _trackByIdFn = (key, value, index) => value;
   Function _removeWatch = () => null;
+  List _lastCollection;
 
-  NgRepeatDirective(BlockHole this._blockHole,
-                    BoundBlockFactory this._boundBlockFactory,
-                    Scope this._scope);
+  AbstractNgRepeatDirective(BlockHole this._blockHole,
+                            BoundBlockFactory this._boundBlockFactory,
+                            Scope this._scope);
+
+  get _shalow;
 
   set expression(value) {
     _expression = value;
@@ -110,7 +149,7 @@ class NgRepeatDirective  {
     if (_valueIdentifier == null) _valueIdentifier = match.group(1);
     _keyIdentifier = match.group(2);
 
-    _removeWatch = _scope.$watchCollection(_listExpr, _onCollectionChange, value);
+    _removeWatch = _scope.$watchCollection(_listExpr, _onCollectionChange, value, _shalow);
   }
 
   List<_Row> _computeNewRows(collection, trackById) {
@@ -158,8 +197,10 @@ class NgRepeatDirective  {
         nextNode,
         childScope,
         trackById,
-        cursor = _blockHole;
+        cursor = _blockHole,
+        arrayChange = _lastCollection != collection;
 
+    if (arrayChange) { _lastCollection = collection; }
     if (collection is! List) {
       collection = [];
     }
@@ -190,16 +231,22 @@ class NgRepeatDirective  {
         previousNode = row.endNode;
       } else {
         // new item which we don't know about
-        childScope = _scope.$new();
+        childScope = _scope.$new(lazy:_shalow);
       }
 
-      childScope[_valueIdentifier] = value;
+      if (!identical(childScope[_valueIdentifier], value)) {
+        childScope[_valueIdentifier] = value;
+        childScope.$dirty();
+      }
       childScope[r'$index'] = index;
       childScope[r'$first'] = (index == 0);
       childScope[r'$last'] = (index == (collection.length - 1));
       childScope[r'$middle'] = !(childScope.$first || childScope.$last);
       childScope[r'$odd'] = index & 1 == 1;
       childScope[r'$even'] = index & 1 == 0;
+      if (arrayChange && _shalow) {
+        childScope.$dirty();
+      }
 
       if (row.startNode == null) {
         _rows[row.id] = row;

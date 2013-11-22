@@ -131,7 +131,7 @@ class Scope implements Map {
       return this[name];
     } else if (invocation.isSetter) {
       var value = invocation.positionalArguments[0];
-      name = name.substring(0, na$me.length - 1);
+      name = name.substring(0, name.length - 1);
       this[name] = value;
       return value;
     } else {
@@ -178,7 +178,7 @@ class Scope implements Map {
     return () => _watchers.remove(watcher);
   }
 
-  $watchCollection(obj, listener, [String expression]) {
+  $watchCollection(obj, listener, [String expression, bool shallow=false]) {
     var oldValue;
     var newValue;
     num changeDetected = 0;
@@ -187,77 +187,95 @@ class Scope implements Map {
     Map internalMap = {};
     num oldLength = 0;
 
-    var $watchCollectionWatch = (_) {
-      newValue = objGetter(this);
-      var newLength, key;
+    var $watchCollectionWatch;
 
-      if (newValue is! Map && newValue is! List) {
-        if (!_identical(oldValue, newValue)) {
+    if (shallow) {
+      $watchCollectionWatch = (_) {
+        newValue = objGetter(this);
+        var newLength = newValue == null ? 0 : newValue.length;
+        if (newLength != oldLength) {
+          oldLength = newLength;
+          changeDetected++;
+        }
+        if (!identical(oldValue, newValue)) {
           oldValue = newValue;
           changeDetected++;
         }
-      } else if (newValue is List) {
-        if (!_identical(oldValue, internalArray)) {
-          // we are transitioning from something which was not an array into array.
-          oldValue = internalArray;
-          oldLength = oldValue.length = 0;
-          changeDetected++;
-        }
+        return changeDetected;
+      };
+    } else {
+      $watchCollectionWatch = (_) {
+        newValue = objGetter(this);
+        var newLength, key;
 
-        newLength = newValue.length;
-
-        if (oldLength != newLength) {
-          // if lengths do not match we need to trigger change notification
-          changeDetected++;
-          oldValue.length = oldLength = newLength;
-        }
-        // copy the items to oldValue and look for changes.
-        for (var i = 0; i < newLength; i++) {
-          if (!_identical(oldValue[i], newValue[i])) {
+        if (newValue is! Map && newValue is! List) {
+          if (!_identical(oldValue, newValue)) {
+            oldValue = newValue;
             changeDetected++;
-            oldValue[i] = newValue[i];
           }
-        }
-      } else { // Map
-        if (!_identical(oldValue, internalMap)) {
-          // we are transitioning from something which was not an object into object.
-          oldValue = internalMap = {};
-          oldLength = 0;
-          changeDetected++;
-        }
-        // copy the items to oldValue and look for changes.
-        newLength = 0;
-        newValue.forEach((key, value) {
-          newLength++;
-          if (oldValue.containsKey(key)) {
-            if (!_identical(oldValue[key], value)) {
+        } else if (newValue is List) {
+          if (!_identical(oldValue, internalArray)) {
+            // we are transitioning from something which was not an array into array.
+            oldValue = internalArray;
+            oldLength = oldValue.length = 0;
+            changeDetected++;
+          }
+
+          newLength = newValue.length;
+
+          if (oldLength != newLength) {
+            // if lengths do not match we need to trigger change notification
+            changeDetected++;
+            oldValue.length = oldLength = newLength;
+          }
+          // copy the items to oldValue and look for changes.
+          for (var i = 0; i < newLength; i++) {
+            if (!_identical(oldValue[i], newValue[i])) {
               changeDetected++;
-              oldValue[key] = value;
+              oldValue[i] = newValue[i];
             }
-          } else {
-            oldLength++;
-            oldValue[key] = value;
+          }
+        } else { // Map
+          if (!_identical(oldValue, internalMap)) {
+            // we are transitioning from something which was not an object into object.
+            oldValue = internalMap = {};
+            oldLength = 0;
             changeDetected++;
           }
-
-        });
-        if (oldLength > newLength) {
-          // we used to have more keys, need to find them and destroy them.
-          changeDetected++;
-          var keysToRemove = [];
-          oldValue.forEach((key, _) {
-            if (!newValue.containsKey(key)) {
-              oldLength--;
-              keysToRemove.add(key);
+          // copy the items to oldValue and look for changes.
+          newLength = 0;
+          newValue.forEach((key, value) {
+            newLength++;
+            if (oldValue.containsKey(key)) {
+              if (!_identical(oldValue[key], value)) {
+                changeDetected++;
+                oldValue[key] = value;
+              }
+            } else {
+              oldLength++;
+              oldValue[key] = value;
+              changeDetected++;
             }
+
           });
-          keysToRemove.forEach((k) {
-            oldValue.remove(k);
-          });
+          if (oldLength > newLength) {
+            // we used to have more keys, need to find them and destroy them.
+            changeDetected++;
+            var keysToRemove = [];
+            oldValue.forEach((key, _) {
+              if (!newValue.containsKey(key)) {
+                oldLength--;
+                keysToRemove.add(key);
+              }
+            });
+            keysToRemove.forEach((k) {
+              oldValue.remove(k);
+            });
+          }
         }
-      }
-      return changeDetected;
-    };
+        return changeDetected;
+      };
+    }
 
     var $watchCollectionAction = (_, __, ___) {
       relaxFnApply(listener, [newValue, oldValue, this]);
