@@ -81,8 +81,7 @@ class NgRepeatDirective extends AbstractNgRepeatDirective {
 }
 
 /**
- * *EXPERIMENTAL* This feature is experimental and we reserve the right to change the API or
- * delete it.
+ * *EXPERIMENTAL:* This feature is experimental. We reserve the right to change or delete it.
  *
  * [ng-shallow-repeat] is same as [ng-repeat] with some tradeoffs designed for speed. Use
  * [ng-shollow-repeat] when you expect that your items you are repeating over do not change
