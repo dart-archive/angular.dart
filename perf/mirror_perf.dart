@@ -7,15 +7,38 @@ main() {
   var c = new Obj(1);
   InstanceMirror im = reflect(c);
   Symbol symbol = new Symbol('a');
+  Watch head = new Watch();
+  Watch current = head;
+  for(var i=1; i < 10000; i++) {
+    Watch next = new Watch();
+    current = (current.next = new Watch());
+  }
 
-  var r = new Row();
+  var dirtyCheck = () {
+    Watch current = head;
+    while(current != null) {
+      if (!identical(current.lastValue, current.im.getField(current.symbol).reflectee)) {
+        throw "We should not get here";
+      }
+      current = current.next;
+    }
+  };
 
   time('fieldRead', () => im.getField(symbol).reflectee );
-  time('dirtyCheck', () => !identical(r.im.getField(r.symbol).reflectee, r.lastValue) );
-  time('dirtyCheck.gc', () {
-    new List(5).join('');
-    return !identical(r.im.getField(r.symbol).reflectee, r.lastValue);
-  });
+  time('Object.observe', dirtyCheck);
+}
+
+class Watch {
+  dynamic lastValue = 1;
+  Watch next;
+  String location;
+  dynamic object = new Obj(1);
+  InstanceMirror im;
+  Symbol symbol = new Symbol('a');
+
+  Watch() {
+    im = reflect(object);
+  }
 }
 
 class Obj {
@@ -23,10 +46,3 @@ class Obj {
 
   Obj(this.a);
 }
-
-class Row {
-  var im = reflect(new Obj(1  ));
-  var symbol = new Symbol('a');
-  var lastValue;
-}
-
