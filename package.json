@@ -5,6 +5,6 @@
     "karma-dart" : "0.2.5",
     "karma-chrome-launcher": "*",
     "karma-firefox-launcher": "*",
-    "karma-junit-reporter": "*"
+    "karma-junit-reporter": "0.1.0"
   }
 }
