@@ -227,6 +227,9 @@ class DartCodeGen implements ParserBackend {
   // Returns the Dart code for a particular operator.
   _op(fn) => fn == "undefined" ? "null" : fn;
 
+  Code ternaryFn(Code cond, Code trueBranch, Code falseBranch) =>
+    new Code("toBool(${cond.exp}) ? ${trueBranch.exp} : ${falseBranch.exp}");
+
   Code binaryFn(Code left, String fn, Code right) {
     if (fn == '+') {
       return new Code("autoConvertAdd(${left.exp}, ${right.exp})");
