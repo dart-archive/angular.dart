@@ -1,7 +1,9 @@
 library dart_code_gen;
 
-import '../../core/parser/parser_library.dart';  // For ParserBackend.
+import 'package:angular/tools/reserved_dart_keywords.dart';
+import 'package:angular/core/parser/parser_library.dart';  // For ParserBackend.
 import 'source.dart';
+
 
 Code VALUE_CODE = new Code("value");
 
@@ -63,15 +65,6 @@ escape(String s) => s.replaceAll('\'', '\\\'').replaceAll(r'$', r'\$');
 class GetterSetterGenerator {
   static RegExp LAST_PATH_PART = new RegExp(r'(.*)\.(.*)');
   static RegExp NON_WORDS = new RegExp(r'\W');
-
-  // From https://www.dartlang.org/docs/spec/latest/dart-language-specification.html#h.huusvrzea3q
-  static List<String> RESERVED_DART_KEYWORDS = [
-      "assert", "break", "case", "catch", "class", "const", "continue",
-      "default", "do", "else", "enum", "extends", "false", "final",
-      "finally", "for", "if", "in", "is", "new", "null", "rethrow",
-      "return", "super", "switch", "this", "throw", "true", "try",
-      "var", "void", "while", "with"];
-  isReserved(String key) => RESERVED_DART_KEYWORDS.contains(key);
 
 
   String functions = "// GETTER AND SETTER FUNCTIONS\n\n";
