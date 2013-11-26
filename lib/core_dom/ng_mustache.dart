@@ -14,7 +14,6 @@ class NgTextMustacheDirective {
       if (listener != null) listener.call(text);
     };
     interpolation.setter('');
-    print(interpolation.watchExpressions);
     scope.$watchSet(interpolation.watchExpressions, interpolation.call, markup.trim());
   }
 
