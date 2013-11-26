@@ -8,7 +8,10 @@ class SourceBuilder {
   Map<String, Code> refs = {};
   List<Code> codeRefs = [];
 
-  String str(String s) => '\'' + s.replaceAll('\'', '\\\'').replaceAll(r'$', r'\$') + '\'';
+  String str(String s) => '\'' +
+      s.replaceAll('\'', '\\\'')
+        .replaceAll('\n', '\\n')
+        .replaceAll(r'$', r'\$') + '\'';
   String ident(String s) => '_${s.replaceAll(NON_WORDS, '_')}_${s.hashCode}';
 
   String ref(Code code) {

@@ -18,6 +18,7 @@ main(arguments) {
   // List generated using:
   // node node_modules/karma/bin/karma run | grep -Eo ":XNAY:.*:XNAY:" | sed -e 's/:XNAY://g' | sed -e "s/^/'/" | sed -e "s/$/',/" | sort | uniq > missing_expressions
   injector.get(isGetter ? ParserGetterSetter : ParserGenerator).generateParser([
+      "foo == 'bar' ||\nbaz"
       "null",
       "[1, 2].length",
       "doesNotExist",
