@@ -399,9 +399,11 @@ class Scope implements Map {
   }
 
   $digest() {
-    var innerAsyncQueue = _innerAsyncQueue,
-        length,
-        dirty, _ttlLeft = _ttl;
+    var innerAsyncQueue = _innerAsyncQueue;
+    num length;
+    _Watch lastDirtyWatch = null;
+    _Watch lastLoopLastDirtyWatch;
+    num _ttlLeft = _ttl;
     List<List<String>> watchLog = [];
     List<_Watch> watchers;
     _Watch watch;
@@ -412,7 +414,8 @@ class Scope implements Map {
       var watcherCount;
       var scopeCount;
       do { // "while dirty" loop
-        dirty = false;
+        lastLoopLastDirtyWatch = lastDirtyWatch;
+        lastDirtyWatch = null;
         current = target;
         //asyncQueue = current._asyncQueue;
         //dump('aQ: ${asyncQueue.length}');
@@ -433,6 +436,7 @@ class Scope implements Map {
         watcherCount = 0;
         scopeCount = 0;
         assert((timerId = _perf.startTimer('ng.dirty_check', _ttl-_ttlLeft)) != false);
+        digestLoop:
         do { // "traverse the scopes" loop
           scopeCount++;
           if ((watchers = current._watchers) != null) {
@@ -442,10 +446,14 @@ class Scope implements Map {
             while (length-- > 0) {
               try {
                 watch = watchers[length];
+                if (identical(lastLoopLastDirtyWatch, watch)) {
+                  break digestLoop;
+                }
                 var value = watch.get(current);
                 var last = watch.last;
                 if (!_identical(value, last)) {
-                  dirty = true;
+                  lastDirtyWatch = watch;
+                  lastLoopLastDirtyWatch = null;
                   watch.last = value;
                   var fireTimer;
                   assert((fireTimer = _perf.startTimer('ng.fire', watch.exp)) != false);
@@ -483,11 +491,11 @@ class Scope implements Map {
         } while ((current = next) != null);
 
         assert(_perf.stopTimer(timerId) != false);
-        if(dirty && (_ttlLeft--) == 0) {
+        if(lastDirtyWatch != null && (_ttlLeft--) == 0) {
           throw '$_ttl \$digest() iterations reached. Aborting!\n' +
               'Watchers fired in the last 5 iterations: ${_toJson(watchLog)}';
         }
-      } while (dirty || innerAsyncQueue.length > 0);
+      } while (lastDirtyWatch != null || innerAsyncQueue.length > 0);
       _perf.counters['ng.scope.watchers'] = watcherCount;
       _perf.counters['ng.scopes'] = scopeCount;
 
