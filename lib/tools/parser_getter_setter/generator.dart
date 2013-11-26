@@ -1,5 +1,15 @@
 import 'package:angular/core/parser/parser_library.dart';
 
+// TODO(deboer): Remove this duplicated code.
+// From https://www.dartlang.org/docs/spec/latest/dart-language-specification.html#h.huusvrzea3q
+List<String> RESERVED_DART_KEYWORDS = [
+    "assert", "break", "case", "catch", "class", "const", "continue",
+    "default", "do", "else", "enum", "extends", "false", "final",
+    "finally", "for", "if", "in", "is", "new", "null", "rethrow",
+    "return", "super", "switch", "this", "throw", "true", "try",
+    "var", "void", "while", "with"];
+isReserved(String key) => RESERVED_DART_KEYWORDS.contains(key);
+
 class _AST implements ParserAST {
   bool get assignable => true;
 }
@@ -50,7 +60,8 @@ class ParserGetterSetter {
     print(generateCode(backend.identifiers.keys.toList()));
   }
 
-  generateCode(List<String> keys) {
+  generateCode(Iterable<String> keys) {
+    keys = keys.where((key) => !isReserved(key));
     return '''
 class StaticGetterSetter extends GetterSetter {
   Map<String, Function> _getters = ${generateGetterMap(keys)};
@@ -68,12 +79,12 @@ class StaticGetterSetter extends GetterSetter {
 ''';
   }
 
-  generateGetterMap(List<String> keys) {
+  generateGetterMap(Iterable<String> keys) {
     var lines = keys.map((key) => 'r"${key}": (s) => s.$key');
     return '{\n   ${lines.join(",\n    ")}\n  }';
   }
 
-  generateSetterMap(List<String> keys) {
+  generateSetterMap(Iterable<String> keys) {
     var lines = keys.map((key) => 'r"${key}": (s, v) => s.$key = v');
     return '{\n   ${lines.join(",\n    ")}\n  }';
   }
