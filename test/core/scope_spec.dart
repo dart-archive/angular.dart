@@ -212,7 +212,7 @@ main() {
 
         // init
         $rootScope.$digest();
-        expect(log.join('')).toEqual('rabrab');
+        expect(log.join('')).toEqual('rabra');
 
         log.removeWhere((e) => true);
         childA.$digest();
@@ -246,7 +246,7 @@ main() {
         $rootScope.$watch((a) { log += 'a'; });
         child.$watch((a) { log += 'b'; });
         $rootScope.$digest();
-        expect(log).toEqual('abab');
+        expect(log).toEqual('aba');
       }));
 
 
@@ -364,14 +364,14 @@ main() {
           eagerScope.$watch(() {log += 'eager;';});
 
           rootScope.$digest();
-          expect(log).toEqual('lazy;eager;eager;');
+          expect(log).toEqual('lazy;eager;');
 
           rootScope.$digest();
-          expect(log).toEqual('lazy;eager;eager;eager;');
+          expect(log).toEqual('lazy;eager;eager;');
 
           lazyScope.$dirty();
           rootScope.$digest();
-          expect(log).toEqual('lazy;eager;eager;eager;lazy;eager;');
+          expect(log).toEqual('lazy;eager;eager;lazy;eager;');
         });
       });
 
@@ -388,17 +388,17 @@ main() {
           childScope.$watch(() {log += 'digest;';});
 
           rootScope.$digest();
-          expect(log).toEqual('digest;digest;');
+          expect(log).toEqual('digest;');
 
           childScope.$disabled = true;
           expect(childScope.$disabled).toEqual(true);
           rootScope.$digest();
-          expect(log).toEqual('digest;digest;');
+          expect(log).toEqual('digest;');
 
           childScope.$disabled = false;
           expect(childScope.$disabled).toEqual(false);
           rootScope.$digest();
-          expect(log).toEqual('digest;digest;digest;');
+          expect(log).toEqual('digest;digest;');
         });
       });
     });
@@ -523,7 +523,7 @@ main() {
         $rootScope.$evalAsync(() => $rootScope.log += 'eval;', outsideDigest: true);
         $rootScope.$watch(() { $rootScope.log += 'digest;'; });
         $rootScope.$digest();
-        expect($rootScope.log).toEqual('digest;digest;eval;');
+        expect($rootScope.log).toEqual('digest;eval;');
       }));
 
       it(r'should allow running after digest in issolate scope', inject((Scope $rootScope) {
@@ -532,7 +532,7 @@ main() {
         isolateScope.$evalAsync(() => isolateScope.log += 'eval;', outsideDigest: true);
         isolateScope.$watch(() { isolateScope.log += 'digest;'; });
         isolateScope.$digest();
-        expect(isolateScope.log).toEqual('digest;digest;eval;');
+        expect(isolateScope.log).toEqual('digest;eval;');
       }));
 
     });
@@ -1016,7 +1016,6 @@ main() {
 
 
     describe('perf', () {
-
       describe('counters', () {
 
         it('should expose scope count', inject((Profiler perf, Scope scope) {
@@ -1078,7 +1077,41 @@ main() {
           expect(perf.counters['ng.scope.watchers']).toEqual(0);
         }));
       });
+    });
 
+
+    describe('optimizations', () {
+      var scope;
+      var log;
+      beforeEach(inject((Scope _scope, Logger _log) {
+        scope = _scope;
+        log = _log;
+        scope['a'] = 1;
+        scope['b'] = 2;
+        scope['c'] = 3;
+        scope.$watch(() {log('a'); return scope['a'];}, (value) => log('fire:a'));
+        scope.$watch(() {log('b'); return scope['b'];}, (value) => log('fire:b'));
+        scope.$watch(() {log('c'); return scope['c'];}, (value) {log('fire:c'); scope['b']++; });
+        scope.$digest();
+        log.clear();
+      }));
+
+      it('should loop once on no dirty', () {
+        scope.$digest();
+        expect(log.result()).toEqual('a; b; c');
+      });
+
+      it('should exit early on second loop', () {
+        scope['b']++;
+        scope.$digest();
+        expect(log.result()).toEqual('a; b; fire:b; c; a');
+      });
+
+      it('should continue checking if second loop dirty', () {
+        scope['c']++;
+        scope.$digest();
+        expect(log.result()).toEqual('a; b; c; fire:c; a; b; fire:b; c; a');
+      });
     });
   });
 }
