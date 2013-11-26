@@ -19,7 +19,7 @@ class Code implements ParserAST {
 
   get exp {
     if (_exp == null) {
-      throw "Can not be used in an expression";
+      throw "Can not be used in an expression: $id";
     }
     return _exp;
   }
@@ -54,29 +54,6 @@ class MultipleStatementCode extends Code {
     return _('new Expression', _.parens(
         _('(scope, [locals])', _.body()..source.addAll(exp.split('\n'))),
         assignable ? _('(scope, value, [locals])', _.body()) : 'null'
-    ));
-  }
-}
-
-class FilterCode extends Code {
-  final String filterName;
-  final Code leftHandSide;
-  final List<Code> parameters;
-  final Function evalError;
-
-  FilterCode(String this.filterName,
-             Code this.leftHandSide,
-             List<Code> this.parameters,
-             Function this.evalError): super(null);
-
-  get id => '${leftHandSide.id} | $filterName:${parameters.map((e)=>e.id).join(':')}}';
-
-  Source toSource(SourceBuilder _) {
-    var params = parameters.map((e) => _.ref(e));
-    return _('new FilterExpression', _.parens(
-      'filters(${_.str(filterName)})',
-      _.ref(leftHandSide),
-      '[${params.join(', ')}]'
     ));
   }
 }
@@ -314,6 +291,9 @@ class DartCodeGen implements ParserBackend {
               Code leftHandSide,
               List<Code> parameters,
               Function evalError) {
-    return new FilterCode(filterName, leftHandSide, parameters, evalError);
+    return new Code(
+        'filters(\'${filterName}\')(${
+            ([leftHandSide]..addAll(parameters))
+              .map((Code p) => p.exp).join(', ')})');
   }
 }
