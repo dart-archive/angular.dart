@@ -821,11 +821,6 @@ main() {
         expect(eval("'fOo'|uppercase|lowercase")).toEqual("foo");
       });
 
-      it('Compiled filter should be instace of FilterExpression', () {
-        var expression = parser("'Foo'|uppercase");
-        expect(expression is FilterExpression).toEqual(true);
-      });
-
       it('should call a filter with arguments', () {
         expect(eval("1|increment:2")).toEqual(3);
       });

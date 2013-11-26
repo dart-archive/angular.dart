@@ -200,6 +200,10 @@ main(arguments) {
       'returnTrue() ? returnString() : returnInt()',
       'returnFalse() ? returnString() : returnInt()',
       'identity(returnFalse() ? returnString() : returnInt())',
-      "taxRate ~/ 100 * subTotal"
+      "taxRate ~/ 100 * subTotal",
+      "'fOo'|uppercase|lowercase",
+      "n = (name|lowercase)",
+      "n",
+      "1|nonexistent"
   ]);
 }
