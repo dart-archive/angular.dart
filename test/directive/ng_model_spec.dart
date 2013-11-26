@@ -123,7 +123,7 @@ describe('ng-model', () {
   });
 
   describe('type="textarea"', () {
-    it('should update textarea value from model', inject(() {
+    iit('should update textarea value from model', inject(() {
       _.compile('<textarea ng-model="model">');
       _.rootScope.$digest();
 
@@ -269,6 +269,7 @@ describe('ng-model', () {
       // Valid value
       inputElement.value = 'foo@example.com';
       _.triggerEvent(inputElement, 'change');
+      print(_.rootScope.model.viewValue);
       expect(_.rootScope.model).toEqual('foo@example.com');
 
       // Invalid value

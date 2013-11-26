@@ -19,13 +19,13 @@ describe('ng-model', () {
 
     expect(scope.myForm.pristine).toBe(true);
 
-    scope.myForm.setAsDirty();
+    scope.myForm.dirty = true;
     expect(scope.myForm.pristine).toBe(false);
     expect(scope.myForm.dirty).toBe(true);
     expect(scope.myForm['found'].dirty).toBe(true);
     expect(scope.myForm['found'].pristine).toBe(false);
 
-    scope.myForm.setAsPristine();
+    scope.myForm.pristine = true;
     expect(scope.myForm.pristine).toBe(true);
     expect(scope.myForm.dirty).toBe(false);
     expect(scope.myForm['found'].dirty).toBe(false);
@@ -34,22 +34,22 @@ describe('ng-model', () {
 
   it('should update the form accordingly when an input field is updated', inject((Scope scope, TemplateCache cache) {
     var element = $('<form name="myForm">' +
-                    '  <input type="text" name="model" ng-model="model" />' +
+                    '  <input type="text" name="model_name" ng-model="model_inst" />' +
                     '</form>');
 
     _.compile(element);
     scope.$apply();
 
     var myForm = scope.myForm;
-    var formElement = myForm['model'].element;
+    var formElement = element[0];
 
-    myForm['model'].setValidity("required", false);
+    myForm['model_name'].setValidity("required", false);
     expect(myForm.valid).toBe(false);
     expect(myForm.invalid).toBe(true);
     expect(formElement.classes.contains("ng-invalid-required")).toBe(true);
     expect(formElement.classes.contains("ng-valid-required")).toBe(false);
 
-    myForm['model'].setValidity("required", true);
+    myForm['model_name'].setValidity("required", true);
     expect(myForm.valid).toBe(true);
     expect(myForm.invalid).toBe(false);
     expect(formElement.classes.contains("ng-invalid-required")).toBe(false);

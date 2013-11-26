@@ -10,46 +10,47 @@ part of angular.directive;
  * knwos how to (in)validate the model and the form in which it is declared
  * (to be implemented)
  */
-@NgDirective(
-    selector: '[ng-model]',
-    map: const {'ng-model': '&model'})
+@NgDirective(selector: '[ng-model]')
 class NgModel {
-  static const NG_DIRTY_CLASS    = "ng-dirty";
-  static const NG_PRISTINE_CLASS = "ng-prisine";
-  static const NG_INVALID_CLASS  = "ng-invalid";
-  static const NG_VALID_CLASS    = "ng-valid";
-
-  final Scope _scope;
-  NgForm form;
-  dom.Element element;
-
   Getter getter = ([_]) => null;
   Setter setter = (_, [__]) => null;
-  String _exp;
-  String name;
 
-  bool dirty;
-  bool pristine;
+  final Scope _scope;
+  final NgForm _form;
+  final dom.Element element;
+
+  String _exp;
+  String _name;
+
+  final Map<String, bool> errors = new Map<String, bool>();
 
   int invalidCount = 0;
-  bool valid;
-  bool invalid;
-
-  Map<String, bool> errors;
-
+  bool _valid;
+  bool _invalid;
+  bool _dirty;
+  bool _pristine;
 
   Function _removeWatch = () => null;
-  bool _watchCollection;
+  bool _watchCollection = false;
 
   Function render = (value) => null;
 
-  NgModel(Scope this._scope, dom.Element this.element, NodeAttrs attrs, NgForm this.form) {
-    name = attrs["name"];
-    errors = new Map<String, bool>();
-
-    if(this.form != null) {
-      this.form.addControl(this);
+  @NgAttr('name')
+  get name => _name;
+  set name(value) {
+    _name = value;
+    if(_form != null) {
+      _form.addControl(this);
     }
+  }
+
+  @NgAttr('ng-model')
+  set model(BoundExpression boundExpression) {
+    getter = boundExpression;
+    setter = boundExpression.assign;
+  }
+
+  NgModel(Scope this._scope, NodeAttrs attrs, dom.Element this.element, NgForm this._form) {
     _exp = 'ng-model=${attrs["ng-model"]}';
     watchCollection = false;
   }
@@ -66,11 +67,6 @@ class NgModel {
     }
   }
 
-  set model(BoundExpression boundExpression) {
-    getter = boundExpression;
-    setter = boundExpression.assign;
-  }
-
   // TODO(misko): right now viewValue and modelValue are the same,
   // but this needs to be changed to support converters and form validation
   get viewValue        => modelValue;
@@ -79,14 +75,22 @@ class NgModel {
   get modelValue        => getter();
   set modelValue(value) => setter(value);
 
-  setAsPristine() {
-    this.dirty = false;
-    this.pristine = true;
+  get valid             => _valid;
+  set valid(value)      => _valid = value;
+
+  get invalid           => _invalid;
+  set invalid(value)    => _invalid = value;
+
+  get pristine => _pristine;
+  set pristine(value) {
+    _pristine = true;
+    _dirty = false;
   }
 
-  setAsDirty() {
-    this.dirty = true;
-    this.pristine = false;
+  get dirty => _dirty;
+  set dirty(value) {
+    _dirty = true;
+    _pristine = false;
   }
 
   setValidity(String token, bool isValid) {
@@ -109,16 +113,16 @@ class NgModel {
     toggleValidCssClasses(token, isValid);
     errors[token] = !isValid;
 
-    if(form != null) {
-      form.setValidity(token, isValid, this);
+    if(_form != null) {
+      _form.setValidity(token, isValid, this);
     }
   }
 
   toggleValidCssClasses(String token, bool isValid) {
     String suffix = token != null ?
       '-' + snakecase(token, '-') : '';
-    element.classes.remove((isValid ? NG_INVALID_CLASS : NG_VALID_CLASS) + suffix);
-    element.classes.add((isValid ? NG_VALID_CLASS : NG_INVALID_CLASS) + suffix);
+    element.classes.remove((isValid ? NgForm.NG_INVALID_CLASS : NgForm.NG_VALID_CLASS) + suffix);
+    element.classes.add((isValid ? NgForm.NG_VALID_CLASS : NgForm.NG_INVALID_CLASS) + suffix);
   }
 }
 
