@@ -10,23 +10,47 @@ part of angular.directive;
  * knwos how to (in)validate the model and the form in which it is declared
  * (to be implemented)
  */
-@NgDirective(
-    selector: '[ng-model]',
-    map: const {'ng-model': '&model'})
+@NgDirective(selector: '[ng-model]')
 class NgModel {
-  final Scope _scope;
-
   Getter getter = ([_]) => null;
   Setter setter = (_, [__]) => null;
-  String _exp;
 
+  final Scope _scope;
+  final NgForm _form;
+  final dom.Element element;
+
+  String _exp;
+  String _name;
+
+  final Map<String, bool> errors = new Map<String, bool>();
+
+  int invalidCount = 0;
+  bool _valid;
+  bool _invalid;
+  bool _dirty;
+  bool _pristine;
 
   Function _removeWatch = () => null;
-  bool _watchCollection;
+  bool _watchCollection = false;
 
   Function render = (value) => null;
 
-  NgModel(Scope this._scope, NodeAttrs attrs) {
+  @NgAttr('name')
+  get name => _name;
+  set name(value) {
+    _name = value;
+    if(_form != null) {
+      _form.addControl(this);
+    }
+  }
+
+  @NgAttr('ng-model')
+  set model(BoundExpression boundExpression) {
+    getter = boundExpression;
+    setter = boundExpression.assign;
+  }
+
+  NgModel(Scope this._scope, NodeAttrs attrs, dom.Element this.element, NgForm this._form) {
     _exp = 'ng-model=${attrs["ng-model"]}';
     watchCollection = false;
   }
@@ -43,11 +67,6 @@ class NgModel {
     }
   }
 
-  set model(BoundExpression boundExpression) {
-    getter = boundExpression;
-    setter = boundExpression.assign;
-  }
-
   // TODO(misko): right now viewValue and modelValue are the same,
   // but this needs to be changed to support converters and form validation
   get viewValue        => modelValue;
@@ -55,6 +74,56 @@ class NgModel {
 
   get modelValue        => getter();
   set modelValue(value) => setter(value);
+
+  get valid             => _valid;
+  set valid(value)      => _valid = value;
+
+  get invalid           => _invalid;
+  set invalid(value)    => _invalid = value;
+
+  get pristine => _pristine;
+  set pristine(value) {
+    _pristine = true;
+    _dirty = false;
+  }
+
+  get dirty => _dirty;
+  set dirty(value) {
+    _dirty = true;
+    _pristine = false;
+  }
+
+  setValidity(String token, bool isValid) {
+    if(errors[token] == !isValid) return; //nothing has changed
+
+    if(isValid) {
+      if(errors[token] != null) {
+        this.invalidCount--;
+      }
+      this.valid = true;
+      this.invalid = false;
+    }
+    else {
+      this.invalidCount++;
+      errors[token] = isValid;
+      this.valid = false;
+      this.invalid = true;
+    }
+
+    toggleValidCssClasses(token, isValid);
+    errors[token] = !isValid;
+
+    if(_form != null) {
+      _form.setValidity(token, isValid, this);
+    }
+  }
+
+  toggleValidCssClasses(String token, bool isValid) {
+    String suffix = token != null ?
+      '-' + snakecase(token, '-') : '';
+    element.classes.remove((isValid ? NgForm.NG_INVALID_CLASS : NgForm.NG_VALID_CLASS) + suffix);
+    element.classes.add((isValid ? NgForm.NG_VALID_CLASS : NgForm.NG_INVALID_CLASS) + suffix);
+  }
 }
 
 /**
@@ -135,10 +204,18 @@ abstract class _InputTextlikeDirective {
  */
 @NgDirective(selector: 'input[type=text][ng-model]')
 class InputTextDirective extends _InputTextlikeDirective {
+
   InputTextDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
-      super(inputElement, ngModel, scope);
+    super(inputElement, ngModel, scope);
+
+  processValue() {
+    this.super();
+    var value = inputElement.value;
+    //handle the form validation stuff within here
+  }
 
   String get typedValue => inputElement.value;
+
   set typedValue(String value) {
     inputElement.value = (value == null) ? '' : value;
   }

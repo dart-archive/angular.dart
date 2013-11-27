@@ -123,7 +123,7 @@ describe('ng-model', () {
   });
 
   describe('type="textarea"', () {
-    it('should update textarea value from model', inject(() {
+    iit('should update textarea value from model', inject(() {
       _.compile('<textarea ng-model="model">');
       _.rootScope.$digest();
 
@@ -269,6 +269,7 @@ describe('ng-model', () {
       // Valid value
       inputElement.value = 'foo@example.com';
       _.triggerEvent(inputElement, 'change');
+      print(_.rootScope.model.viewValue);
       expect(_.rootScope.model).toEqual('foo@example.com');
 
       // Invalid value
@@ -368,6 +369,40 @@ describe('ng-model', () {
       expect(greenBtn.checked).toBe(true);
       expect(blueBtn.checked).toBe(false);
     }));
+  });
+
+  describe('form validation', () {
+
+    it('should properly set the validity', inject((Scope scope) {
+      var element = $('<form name="myForm">' +
+                      '  <input type="text" name="input_name" ng-model="model_name" />' +
+                      '</form>');
+
+      _.compile(element);
+
+      NgModel model = scope.myForm['input_name'];
+      var node = model.element;
+
+      model.setValidity("required", false);
+      expect(model.valid).toBe(false);
+      expect(model.invalid).toBe(true);
+      expect(node.classes.contains("ng-invalid-required")).toBe(true);
+      expect(node.classes.contains("ng-valid-required")).toBe(false);
+
+      model.setValidity("required", true);
+      expect(model.valid).toBe(true);
+      expect(model.invalid).toBe(false);
+      expect(node.classes.contains("ng-invalid-required")).toBe(false);
+      expect(node.classes.contains("ng-valid-required")).toBe(true);
+    }));
+
+    it('should handle input change events', async(inject((Scope scope) {
+      var element = $('<input type="text" name="input_name" ng-model="model_name" />');
+      _.compile(element);
+
+      _.triggerEvent(element[0], 'keydown');
+    })));
+
   });
 
 });
