@@ -13,4 +13,18 @@ main() => describe('introspection', () {
     expect(probe.scope).toBe(_.rootScope);
     expect(ngScope(_.rootElement)).toBe(_.rootScope);
   }));
+
+  toHtml(List list) => list.map((e) => e.outerHtml).join('');
+
+  it('should select elements using CSS selector', () {
+    var div = new Element.html('<div><p><span></span></p></div>');
+    var span = div.query('span');
+    var shadowRoot = span.createShadowRoot();
+    shadowRoot.innerHtml = '<ul><li>stash</li><li>secret</li><ul>';
+
+    expect(toHtml(ngQuery(div, 'li'))).toEqual('<li>stash</li><li>secret</li>');
+    expect(toHtml(ngQuery(div, 'li', 'stash'))).toEqual('<li>stash</li>');
+    expect(toHtml(ngQuery(div, 'li', 'secret'))).toEqual('<li>secret</li>');
+    expect(toHtml(ngQuery(div, 'li', 'xxx'))).toEqual('');
+  });
 });

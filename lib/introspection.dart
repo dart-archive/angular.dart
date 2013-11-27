@@ -43,6 +43,21 @@ Injector ngInjector(dom.Node node) => ngProbe(node).injector;
 Scope ngScope(dom.Node node) => ngProbe(node).scope;
 
 
+List<dom.Element> ngQuery(dom.Node element, String selector, [String containsText]) {
+  var list = [];
+  var children = [element];
+  while (!children.isEmpty) {
+    var child = children.removeAt(0);
+    child.queryAll(selector).forEach((e) {
+      if (containsText == null || e.text.contains(containsText)) list.add(e);
+    });
+    child.queryAll('*').forEach((e) {
+      if (e.shadowRoot != null) children.add(e.shadowRoot);
+    });
+  }
+  return list;
+}
+
 /**
  * Return a List of directive controllers associated with a current [Element].
  *
@@ -59,6 +74,8 @@ _publishToJavaScript() {
   js.context.ngProbe = (dom.Node node) => _jsProbe(ngProbe(node));
   js.context.ngInjector = (dom.Node node) => _jsInjector(ngInjector(node));
   js.context.ngScope = (dom.Node node) => _jsScope(ngScope(node));
+  js.context.ngQuery = (dom.Node node, String selector, [String containsText]) =>
+    new JsArray.from(ngQuery(node, selector, containsText));
 }
 
 JsObject _jsProbe(ElementProbe probe) {
