@@ -50,6 +50,7 @@ part of angular.directive;
  * - [ng-mouseup]
  * - [ng-mousewheel]
  * - [ng-scroll]
+ * - [ng-submit]
  * - [ng-touchcancel]
  * - [ng-touchend]
  * - [ng-touchmove]
@@ -80,6 +81,7 @@ part of angular.directive;
 @NgDirective(selector: '[ng-mouseup]',     map: const {'ng-mouseup':     '&onMouseUp'})
 @NgDirective(selector: '[ng-mousewheel]',  map: const {'ng-mousewheel':  '&onMouseWheel'})
 @NgDirective(selector: '[ng-scroll]',      map: const {'ng-scroll':      '&onScroll'})
+@NgDirective(selector: '[ng-submit]',      map: const {'ng-submit':      '&onSubmit'})
 @NgDirective(selector: '[ng-touchcancel]', map: const {'ng-touchcancel': '&onTouchCancel'})
 @NgDirective(selector: '[ng-touchend]',    map: const {'ng-touchend':    '&onTouchEnd'})
 @NgDirective(selector: '[ng-touchmove]',   map: const {'ng-touchmove':   '&onTouchMove'})
@@ -129,6 +131,7 @@ class NgEventDirective {
   set onMouseUp(value)     => initListener(element.onMouseUp,     value);
   set onMouseWheel(value)  => initListener(element.onMouseWheel,  value);
   set onScroll(value)      => initListener(element.onScroll,      value);
+  set onSubmit(value)      => initListener(element.onSubmit,      value);
   set onTouchCancel(value) => initListener(element.onTouchCancel, value);
   set onTouchEnd(value)    => initListener(element.onTouchEnd,    value);
   set onTouchMove(value)   => initListener(element.onTouchMove,   value);
