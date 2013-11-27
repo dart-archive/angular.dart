@@ -30,3 +30,4 @@ export 'package:angular/filter/module.dart';
 export 'package:angular/routing/module.dart';
 
 part 'bootstrap.dart';
+part 'introspection.dart';

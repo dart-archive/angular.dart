@@ -46,12 +46,13 @@ main() {
 
     describe('mutation', () {
       var a, b;
+      var expando = new Expando();
 
       beforeEach(inject((Injector injector, Profiler perf) {
         $rootElement.html('<!-- anchor -->');
         anchor = new BlockHole($rootElement.contents().eq(0));
-        a = (new BlockFactory($('<span>A</span>a'), [], perf))(injector);
-        b = (new BlockFactory($('<span>B</span>b'), [], perf))(injector);
+        a = (new BlockFactory($('<span>A</span>a'), [], perf, expando))(injector);
+        b = (new BlockFactory($('<span>B</span>b'), [], perf, expando))(injector);
       }));
 
 
@@ -139,11 +140,12 @@ main() {
                                               LoggerBlockDirective,
                                               new NgDirective(children: NgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo'),
                                               '');
-          directiveRef.blockFactory = new BlockFactory($('<b>text</b>'), [], perf);
+          directiveRef.blockFactory = new BlockFactory($('<b>text</b>'), [], perf, new Expando());
           var outerBlockType = new BlockFactory(
               $('<!--start--><!--end-->'),
               [ 0, [ directiveRef ], null],
-              perf);
+              perf,
+              new Expando());
 
           var outterBlock = outerBlockType(injector);
           // The LoggerBlockDirective caused a BlockHole for innerBlockType to

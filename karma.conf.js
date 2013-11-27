@@ -8,6 +8,7 @@ module.exports = function(config) {
     // all tests must be 'included', but all other libraries must be 'served' and
     // optionally 'watched' only.
     files: [
+      'test/jasmine_syntax.dart',
       'test/*.dart',
       'test/**/*_spec.dart',
       'test/config/filter_tests.dart',
