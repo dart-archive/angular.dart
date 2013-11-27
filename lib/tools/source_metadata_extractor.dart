@@ -11,6 +11,13 @@ const String _DIRECTIVE = '-directive';
 String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
 RegExp _ATTR_SELECTOR_REGEXP = new RegExp(r'\[([^\]]+)\]');
 const List<String> _specs = const ['=>!', '=>', '<=>', '@', '&'];
+const Map<String, String> _attrAnnotationsToSpec = const {
+  'NgAttr': '@',
+  'NgOneWay': '=>',
+  'NgOneWayOneTime': '=>!',
+  'NgTwoWay': '<=>',
+  'NgCallback': '&'
+};
 
 class SourceMetadataExtractor {
   SourceCrawler sourceCrawler;
@@ -126,6 +133,8 @@ class DirectiveMetadataCollectingVisitor {
       // We only care about classes.
       if (declaration is! ClassDeclaration) return;
       ClassDeclaration clazz = declaration;
+      // Check class annotations for presense of NgComponent/NgDirective.
+      DirectiveMetadata meta;
       clazz.metadata.forEach((Annotation ann) {
         if (ann.arguments == null) return; // Ignore non-class annotations.
         // TODO(pavelj): this is not a safe check for the type of the
@@ -135,7 +144,7 @@ class DirectiveMetadataCollectingVisitor {
 
         bool isComponent = ann.name.name == 'NgComponent';
 
-        DirectiveMetadata meta = new DirectiveMetadata()
+        meta = new DirectiveMetadata()
           ..className = clazz.name.name
           ..type = isComponent ? COMPONENT : DIRECTIVE;
         metadata.add(meta);
@@ -163,6 +172,33 @@ class DirectiveMetadataCollectingVisitor {
           }
         });
       });
+
+      // Check fields/getters/setter for presense of attr mapping annotations.
+      if (meta != null) {
+        clazz.members.forEach((ClassMember member) {
+          if (member is FieldDeclaration ||
+              (member is MethodDeclaration &&
+                  (member.isSetter || member.isGetter))) {
+            member.metadata.forEach((Annotation ann) {
+              if (_attrAnnotationsToSpec.containsKey(ann.name.name)) {
+                String fieldName;
+                if (member is FieldDeclaration) {
+                  fieldName = member.fields.variables.first.name.name;
+                } else { // MethodDeclaration
+                  fieldName = (member as MethodDeclaration).name.name;
+                }
+                StringLiteral attNameLiteral = ann.arguments.arguments.first;
+                if (meta.attributeMappings
+                        .containsKey(attNameLiteral.stringValue)) {
+                  throw 'Attribute mapping already defined for $fieldName';
+                }
+                meta.attributeMappings[attNameLiteral.stringValue] =
+                    _attrAnnotationsToSpec[ann.name.name] + fieldName;
+              }
+            });
+          }
+        });
+      }
     });
   }
 }
@@ -176,6 +212,8 @@ List<String> getStringValues(ListLiteral listLiteral) {
 }
 
 StringLiteral assertString(Expression key) {
-  if (key is! StringLiteral) throw 'must be a string literal: ${key.runtimeType}';
+  if (key is! StringLiteral) {
+    throw 'must be a string literal: ${key.runtimeType}';
+  }
   return key;
 }

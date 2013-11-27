@@ -27,6 +27,9 @@ npm install karma karma-dart karma-chrome-launcher \
 # Print the dart VM version to the logs
 dart --version
 
+# run io tests
+dart --checked test/io/all.dart
+
 ./analyze.sh &&
   node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
   node "node_modules/karma/bin/karma" start karma.conf \

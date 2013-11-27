@@ -1,0 +1,26 @@
+library ng.tool.source_metadata_extractor_spec;
+
+import 'package:angular/tools/common.dart';
+import 'package:angular/tools/source_crawler_impl.dart';
+import 'package:angular/tools/source_metadata_extractor.dart';
+import '../jasmine_syntax.dart';
+import 'package:unittest/unittest.dart';
+
+main() => describe('source_metadata_extarctor', () {
+  it('should extract all attribute mappings including annotations', () {
+    var sourceCrawler = new SourceCrawlerImpl(['packages/']);
+    var sourceMetadataExtractor = new SourceMetadataExtractor(sourceCrawler);
+    List<DirectiveInfo> directives =
+        sourceMetadataExtractor
+            .gatherDirectiveInfo('test/io/test_files/main.dart');
+
+    expect(directives, hasLength(1));
+
+    DirectiveInfo info = directives.first;
+    expect(info.expressionAttrs, unorderedEquals(['expr', 'another-expression',
+        'callback', 'two-way-stuff', 'exported-attr']));
+    expect(info.expressions, unorderedEquals(['attr', 'expr',
+        'anotherExpression', 'callback', 'twoWayStuff',
+        'exported + expression']));
+  });
+});
