@@ -8,3 +8,7 @@ gen
 tmp
 npm-debug.log
 .DS_Store
+**/*.dart.js
+**/*.dart.js.deps
+**/*.dart.js.map
+**/*.dart.precompiled.js
