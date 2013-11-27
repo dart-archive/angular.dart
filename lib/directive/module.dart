@@ -26,6 +26,7 @@ part 'ng_style.dart';
 part 'ng_switch.dart';
 part 'ng_non_bindable.dart';
 part 'input_select.dart';
+part 'ng_form.dart';
 
 class NgDirectiveModule extends Module {
   NgDirectiveModule() {
@@ -65,5 +66,6 @@ class NgDirectiveModule extends Module {
     value(NgStyleDirective, null);
     value(NgNonBindableDirective, null);
     value(NgTemplateDirective, null);
+    value(NgForm, null);
   }
 }
