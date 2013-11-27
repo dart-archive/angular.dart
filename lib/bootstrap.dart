@@ -20,6 +20,7 @@ class AngularModule extends Module {
     install(new NgRoutingModule());
 
     type(MetadataExtractor);
+    value(Expando, _elementExpando);
   }
 }
 

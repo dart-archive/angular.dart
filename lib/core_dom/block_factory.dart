@@ -31,9 +31,10 @@ class BlockFactory {
   final List directivePositions;
   final List<dom.Node> templateElements;
   final Profiler _perf;
+  final Expando _expando;
 
 
-  BlockFactory(this.templateElements, this.directivePositions, this._perf);
+  BlockFactory(this.templateElements, this.directivePositions, this._perf, Expando this._expando);
 
   BoundBlockFactory bind(Injector injector) {
     return new BoundBlockFactory(this, injector);
@@ -105,6 +106,7 @@ class BlockFactory {
     Scope scope = parentInjector.get(Scope);
     Map<Type, _ComponentFactory> fctrs;
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
+    ElementProbe probe;
 
     try {
       if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
@@ -181,6 +183,7 @@ class BlockFactory {
       nodeModule.factory(BlockFactory, blockFactory);
       nodeModule.factory(BoundBlockFactory, boundBlockFactory);
       nodeInjector = parentInjector.createChild([nodeModule]);
+      probe = _expando[node] = new ElementProbe(node, nodeInjector, scope);
     } finally {
       assert(_perf.stopTimer(timerId) != false);
     }
@@ -190,6 +193,7 @@ class BlockFactory {
         var linkMapTimer;
         assert((linkTimer = _perf.startTimer('ng.block.link', ref.type)) != false);
         var controller = nodeInjector.get(ref.type);
+        probe.directives.add(controller);
         assert((linkMapTimer = _perf.startTimer('ng.block.link.map', ref.type)) != false);
         var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
         if (ref.annotation.publishAs != null) {
@@ -380,4 +384,20 @@ String _html(obj) {
   } else {
     return obj.nodeName;
   }
+}
+
+/**
+ * [ElementProbe] is attached to each [Element] in the DOM. Its sole purpose is to
+ * allow access to the [Injector], [Scope], and Directives for debugging and automated
+ * test purposes. The information here is not used by Angular in any way.
+ *
+ * SEE: [ngInjector], [ngScope], [ngDirectives]
+ */
+class ElementProbe {
+  final dom.Node element;
+  final Injector injector;
+  final Scope scope;
+  final directives = [];
+
+  ElementProbe(this.element, this.injector, this.scope);
 }
