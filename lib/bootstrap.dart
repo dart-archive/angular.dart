@@ -20,6 +20,7 @@ class AngularModule extends Module {
     install(new NgRoutingModule());
 
     type(MetadataExtractor);
+    value(Expando, _elementExpando);
   }
 }
 
@@ -62,6 +63,7 @@ Injector ngBootstrap({
         dom.Element element: null,
         String selector: '[ng-app]',
         Injector injectorFactory(List<Module> modules): _defaultInjectorFactory}) {
+  _publishToJavaScript();
 
   var ngModules = [new AngularModule()];
   if (module != null) ngModules.add(module);

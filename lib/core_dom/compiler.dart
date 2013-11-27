@@ -4,10 +4,12 @@ class Compiler {
   final DirectiveMap directives;
   final Profiler _perf;
   final Parser _parser;
+  final Expando _expando;
 
   DirectiveSelector selector;
 
-  Compiler(DirectiveMap this.directives, Profiler this._perf, Parser this._parser) {
+  Compiler(DirectiveMap this.directives, Profiler this._perf, Parser this._parser,
+           Expando this._expando) {
     selector = directiveSelectorFactory(directives);
   }
 
@@ -90,7 +92,7 @@ class Compiler {
     var directivePositions = _compileBlock(domCursor, transcludeCursor, transcludedDirectiveRefs);
     if (directivePositions == null) directivePositions = [];
 
-    blockFactory = new BlockFactory(transcludeCursor.elements, directivePositions, _perf);
+    blockFactory = new BlockFactory(transcludeCursor.elements, directivePositions, _perf, _expando);
     domCursor.index = domCursorIndex;
 
     if (domCursor.isInstance()) {
@@ -120,7 +122,7 @@ class Compiler {
         null);
 
     var blockFactory = new BlockFactory(templateElements,
-        directivePositions == null ? [] : directivePositions, _perf);
+        directivePositions == null ? [] : directivePositions, _perf, _expando);
 
     assert(_perf.stopTimer(timerId) != false);
     return blockFactory;
