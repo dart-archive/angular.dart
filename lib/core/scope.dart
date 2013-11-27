@@ -400,10 +400,10 @@ class Scope implements Map {
 
   $digest() {
     var innerAsyncQueue = _innerAsyncQueue;
-    num length;
+    int length;
     _Watch lastDirtyWatch = null;
     _Watch lastLoopLastDirtyWatch;
-    num _ttlLeft = _ttl;
+    int _ttlLeft = _ttl;
     List<List<String>> watchLog = [];
     List<_Watch> watchers;
     _Watch watch;
@@ -411,8 +411,8 @@ class Scope implements Map {
 
     _beginPhase('\$digest');
     try {
-      var watcherCount;
-      var scopeCount;
+      int watcherCount;
+      int scopeCount;
       do { // "while dirty" loop
         lastLoopLastDirtyWatch = lastDirtyWatch;
         lastDirtyWatch = null;
@@ -420,7 +420,7 @@ class Scope implements Map {
         //asyncQueue = current._asyncQueue;
         //dump('aQ: ${asyncQueue.length}');
 
-        var timerId;
+        int timerId;
         while(innerAsyncQueue.length > 0) {
           try {
             var workFn = innerAsyncQueue.removeAt(0);
@@ -469,7 +469,7 @@ class Scope implements Map {
           // Insanity Warning: scope depth-first traversal
           // yes, this code is a bit crazy, but it works and we have tests to prove it!
           // this piece should be kept in sync with the traversal in $broadcast
-          var childHead = current._childHead;
+          Scope childHead = current._childHead;
           while (childHead != null && childHead._disabled) {
             childHead = childHead._nextSibling;
           }
