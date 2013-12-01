@@ -5,7 +5,6 @@ part of angular.core.dom;
 * It is not meant to be used directly by applications.  Instead
 * use the Cookies service.
 *
-* NOTE the Cookies service is not yet implemented.
 */
 class BrowserCookies {
   dom.Document _document;
@@ -101,3 +100,21 @@ class BrowserCookies {
 
   get all => _updateLastCookies();
 }
+
+class Cookies {
+
+  BrowserCookies _browserCookies;
+
+  Cookies(BrowserCookies this._browserCookies);
+
+  operator[](name) => this._browserCookies[name];
+
+  operator[]=(name, value) {
+    this._browserCookies[name] = value;
+  }
+
+  remove(name) {
+    this._browserCookies[name] = null;
+  }
+}
+
