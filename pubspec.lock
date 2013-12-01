@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.10.1"
+    version: "0.10.2"
   args:
     description: args
     source: hosted
@@ -16,11 +16,11 @@ packages:
   di:
     description: di
     source: hosted
-    version: "0.0.27"
+    version: "0.0.28"
   html5lib:
     description: html5lib
     source: hosted
-    version: "0.9.0"
+    version: "0.9.1"
   intl:
     description: intl
     source: hosted
@@ -33,10 +33,6 @@ packages:
     description: logging
     source: hosted
     version: "0.9.0"
-  meta:
-    description: meta
-    source: hosted
-    version: "0.8.8"
   path:
     description: path
     source: hosted
@@ -48,7 +44,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.8"
+    version: "0.4.10"
   source_maps:
     description: source_maps
     source: hosted
