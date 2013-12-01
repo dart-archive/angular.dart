@@ -17,6 +17,10 @@ module.exports = function(config) {
       'packages/browser/interop.js',
     ],
 
+    exclude: [
+      'test/io/**',
+    ],
+
     autoWatch: false,
 
     // If browser does not capture in given timeout [ms], kill it
