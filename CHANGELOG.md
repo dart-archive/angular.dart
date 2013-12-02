@@ -1,3 +1,72 @@
+<a name="0.9.2"></a>
+# v0.9.2 limited-omnipotence (2013-12-02)
+
+### WARNING
+
+We reserve the right to change the APIs in v.0.9.x versions.
+
+## Bug Fixes
+
+- **expression_extractor:** support extracting expresions from attr mapping annotations
+  ([76fbac8c](https://github.com/angular/angular.dart/commit/76fbac8c87827c7b995d3097ad1993552089f6ec),
+   [#291](https://github.com/angular/angular.dart/issues/291))
+- **filters:** Fix filters in the code-gen parser
+  ([8b2c3b62](https://github.com/angular/angular.dart/commit/8b2c3b629a739b246c0b2b44476691993968c1f2))
+- **ng-class:** exportExpressionAttrs for ng-class, ng-class-odd, ng-class-even
+  ([cecf3b6d](https://github.com/angular/angular.dart/commit/cecf3b6da1868f045cc54d3a989b5c5df39c27d5))
+- **parser:**
+  - Add ternary support to the static parser
+  ([e37bd8f7](https://github.com/angular/angular.dart/commit/e37bd8f777acb8160c7723a1e68797b2dcb62e60))
+  - Add caching to the dynamic parser.
+  ([9cdd77a5](https://github.com/angular/angular.dart/commit/9cdd77a5f7e04609f2fa91d41090c8e93c4d56a6))
+- **static parser:** Allow newlines in expressions.
+  ([d21817ff](https://github.com/angular/angular.dart/commit/d21817ff961d2aec27b385fcc7da2579bf87e3d2),
+   [#297](https://github.com/angular/angular.dart/issues/297))
+- **syntax:** warnings in directive code
+  ([1f3e3f72](https://github.com/angular/angular.dart/commit/1f3e3f72292c91dc21e3482726be5f61561752b5))
+
+
+## Features
+
+- **parse:**
+  - support the integer division operator
+  ([b29dff93](https://github.com/angular/angular.dart/commit/b29dff93fd5d2688735e5001e977b2c0cc98a5ea),
+   [#233](https://github.com/angular/angular.dart/issues/233))
+  - support the ternary/conditional operator
+  ([e38da6f5](https://github.com/angular/angular.dart/commit/e38da6f542aa3a0c3e29b614ed444feee3e8ef4c),
+   [#272](https://github.com/angular/angular.dart/issues/272))
+- **di:** introduced @NgInjectableService to make di codegen easier
+  ([54328d78](https://github.com/angular/angular.dart/commit/54328d785e9293f38fd5752cb13ff2eb3bc6e01c))
+- **interpolate:** use $watchSet to remove memory pressure
+  ([283ea257](https://github.com/angular/angular.dart/commit/283ea257309f8c91f80942c894ec4193b60fd725))
+- **ngForm:** introduce basic support for the form directive
+  ([26ca46d8](https://github.com/angular/angular.dart/commit/26ca46d8ed7de4f19e77b15cc6b1a1e99fd4bcc3))
+- **parser_generator:** allow specifying output file
+  ([0615456e](https://github.com/angular/angular.dart/commit/0615456ef7836b215dc56bd2dc3abc09806e6859))
+- **probe:**
+  - add ngQuery which can cross shadow root boundaries
+  ([20897917](https://github.com/angular/angular.dart/commit/20897917525febec6572cb00cb1729b48da4cbee))
+  - Access injector, scope, directives from REPL
+  ([70c3e8d3](https://github.com/angular/angular.dart/commit/70c3e8d3e44fa35adcb739225abf1e6349101d8c),
+   [#305](https://github.com/angular/angular.dart/issues/305))
+- **repeater:**
+  - implement shallow repeater
+  ([c6e38afd](https://github.com/angular/angular.dart/commit/c6e38afd6927d15f64a80821a5aa511b34ba70cf),
+  [99670fb8](https://github.com/angular/angular.dart/commit/99670fb8e8792b522f4ec375d882dbc92bbcd8d1))
+- **scope:**
+  - early exit of digest loop
+  ([929e564b](https://github.com/angular/angular.dart/commit/929e564bac20bcc1a40de6906fbd21d5dd8d0e9f))
+  - add $watchSet API
+  ([a3c31ce1](https://github.com/angular/angular.dart/commit/a3c31ce1dddb4423faa316cb144568f3fc28b1a9))
+  - implement scope.$disabled
+  ([7e6e32dc](https://github.com/angular/angular.dart/commit/7e6e32dcffa1eefe0a9466f7742c9c91c303bc8a))
+  - Implement lazy scope digest
+  ([1d9e2575](https://github.com/angular/angular.dart/commit/1d9e2575f8dbf26676f1ff87b7f0d4274e6f5004))
+  - add support to skip auto digest in a turn
+  ([82da8e5d](https://github.com/angular/angular.dart/commit/82da8e5d9bdda7f042d5d52ae658db83e5666b73),
+   [#235](https://github.com/angular/angular.dart/issues/235))
+
+
 <a name="0.9.1"></a>
 # v0.9.1 elemental-mimicry (2013-11-18)
 
