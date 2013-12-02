@@ -245,7 +245,7 @@ class BlockFactory {
  * It can be used synchronously if HTML is known or asynchronously if the
  * template HTML needs to be looked up from the URL.
  */
-
+@NgInjectableService()
 class BlockCache {
   // _blockFactoryCache is unbounded
   Cache<String, BlockFactory> _blockFactoryCache =

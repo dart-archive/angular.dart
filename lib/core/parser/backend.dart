@@ -24,6 +24,7 @@ class Expression implements ParserAST {
   get assignable => assign != null;
 }
 
+@NgInjectableService()
 class GetterSetter {
   static stripTrailingNulls(List l) {
     while (l.length > 0 && l.last == null) {
@@ -87,6 +88,7 @@ class GetterSetter {
 
 var undefined_ = const Symbol("UNDEFINED");
 
+@NgInjectableService()
 class ParserBackend {
   GetterSetter _getterSetter;
   FilterMap _filters;

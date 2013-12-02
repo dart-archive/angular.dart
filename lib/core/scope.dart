@@ -25,6 +25,7 @@ class ScopeEvent {
  * triggers watch A. If the system does not stabilize in TTL iteration then
  * an digest is stop an an exception is thrown.
  */
+@NgInjectableService()
 class ScopeDigestTTL {
   final num ttl;
   ScopeDigestTTL(): ttl = 5;
@@ -37,6 +38,7 @@ class ScopeDigestTTL {
  * data-binding.
  */
 @proxy
+@NgInjectableService()
 class Scope implements Map {
   final ExceptionHandler _exceptionHandler;
   final Parser _parser;

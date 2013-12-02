@@ -1,5 +1,6 @@
 part of angular.core.dom;
 
+@NgInjectableService()
 class UrlRewriter {
   String call(url) => url;
 }
@@ -13,6 +14,7 @@ class UrlRewriter {
  * During testing this implementation is swapped with [MockHttpBackend] which
  * can be trained with responses.
  */
+@NgInjectableService()
 class HttpBackend {
   /**
    * Wrapper around dart:html's [HttpRequest.request]
@@ -36,6 +38,7 @@ class HttpBackend {
   }
 }
 
+@NgInjectableService()
 class LocationWrapper {
   get location => dom.window.location;
 }
@@ -103,6 +106,7 @@ class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
 /**
  * A list of [HttpInterceptor]s.
  */
+@NgInjectableService()
 class HttpInterceptors {
   List<HttpInterceptor> _interceptors = [new DefaultTransformDataHttpInterceptor()];
 
@@ -256,6 +260,7 @@ class HttpResponse {
 /**
  * Default header configuration.
  */
+@NgInjectableService()
 class HttpDefaultHeaders {
   static String _defaultContentType = 'application/json;charset=utf-8';
   Map _headers = {
@@ -311,6 +316,7 @@ class HttpDefaultHeaders {
 * The default implementation provides headers which the
 * Angular team believes to be useful.
 */
+@NgInjectableService()
 class HttpDefaults {
   /**
    * The [HttpDefaultHeaders] object used by [Http] to add default headers
@@ -397,6 +403,7 @@ class HttpDefaults {
  *
  * NOTE: < not yet documented >
  */
+@NgInjectableService()
 class Http {
   Map<String, async.Future<HttpResponse>> _pendingRequests = <String, async.Future<HttpResponse>>{};
   BrowserCookies _cookies;

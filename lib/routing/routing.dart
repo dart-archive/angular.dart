@@ -28,6 +28,7 @@ abstract class RouteInitializer {
  * A singleton helper service that handles routing initialization, global
  * events and view registries.
  */
+@NgInjectableService()
 class NgRoutingHelper {
   final Router router;
   List<NgViewDirective> portals = <NgViewDirective>[];

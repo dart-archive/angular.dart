@@ -37,6 +37,7 @@ class NgFilter {
 /**
  * Registry of filters at runtime.
  */
+@NgInjectableService()
 class FilterMap extends AnnotationMap<NgFilter> {
   Injector _injector;
   FilterMap(Injector injector, MetadataExtractor extractMetadata) : super(injector, extractMetadata) {

@@ -6,6 +6,7 @@ class StaticParserFunctions {
   Map<String, dynamic> functions;
 }
 
+@NgInjectableService()
 class StaticParser implements Parser {
   Map<String, dynamic> _functions;
   Parser _fallbackParser;

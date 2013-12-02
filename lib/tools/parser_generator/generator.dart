@@ -4,20 +4,29 @@ import 'dart_code_gen.dart';
 import '../../core/parser/parser_library.dart';
 import 'source.dart';
 
+class SourcePrinter {
+  printSrc(src) {
+    print(src);
+  }
+}
+
 class ParserGenerator {
   DynamicParser _parser;
   Map<String, bool> _printedFunctions = {};
   GetterSetterGenerator _getters;
   SourceBuilder _ = new SourceBuilder();
+  SourcePrinter _prt;
 
   ParserGenerator(DynamicParser this._parser,
-                  GetterSetterGenerator this._getters);
+                  GetterSetterGenerator this._getters,
+                  SourcePrinter this._prt);
 
   generateParser(Iterable<String> expressions) {
-    print("genEvalError(msg) { throw msg; }");
-    print("functions(FilterLookup filters) => new StaticParserFunctions(buildExpressions(filters));");
-    print('var evalError = (text, [s]) => text;');
-    print("");
+    _prt.printSrc("genEvalError(msg) { throw msg; }");
+    _prt.printSrc("functions(FilterLookup filters) => "
+                  "new StaticParserFunctions(buildExpressions(filters));");
+    _prt.printSrc('var evalError = (text, [s]) => text;');
+    _prt.printSrc("");
     BodySource body = new BodySource();
     MapSource map = new MapSource();
 
@@ -31,9 +40,9 @@ class ParserGenerator {
       body(_.stmt('Expression ${_.ref(code)} = ', code.toSource(_)));
     });
     body(_.stmt('return ', map));
-    print("Map<String, Expression> buildExpressions(FilterLookup filters) ${body}");
-    print("\n");
-    print(_getters.functions);
+    _prt.printSrc("Map<String, Expression> buildExpressions(FilterLookup filters) ${body}");
+    _prt.printSrc("\n");
+    _prt.printSrc(_getters.functions);
   }
 
   Code safeCode(String exp) {

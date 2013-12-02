@@ -11,6 +11,8 @@ import 'package:perf_api/perf_api.dart';
 import 'package:angular/core/parser/parser_library.dart';
 import 'package:angular/utils.dart';
 
+import 'service.dart';
+export 'service.dart';
 
 part "cache.dart";
 part "directive.dart";

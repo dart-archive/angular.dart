@@ -34,6 +34,7 @@ class Interpolation {
  *     var exp = $interpolate('Hello {{name}}!');
  *     expect(exp({name:'Angular'}).toEqual('Hello Angular!');
  */
+@NgInjectableService()
 class Interpolate {
   final Parser _parse;
 

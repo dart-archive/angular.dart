@@ -81,7 +81,7 @@ class BodySource extends Source {
     //this('');
   }
   toString([String indent='']) {
-    return '{' + super.toString(indent + '  ', true) + '\n$indent}';
+    return '{${super.toString(indent + '  ', true)}\n$indent}';
   }
 }
 

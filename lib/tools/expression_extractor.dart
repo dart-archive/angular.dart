@@ -15,13 +15,9 @@ import 'package:angular/tools/parser_generator/dart_code_gen.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 
 main(args) {
-  Module module = new Module()
-    ..type(ParserBackend, implementedBy: DartCodeGen);
-
-  Injector injector = new DynamicInjector(modules: [module], allowImplicitInjection: true);
-
-  if (args.length < 3) {
-    print('Usage: expression_extractor file_to_scan html_root package_roots+');
+  if (args.length < 6) {
+    print('Usage: expression_extractor file_to_scan html_root header_file '
+          'footer_file output package_roots+');
     exit(0);
   }
   IoService ioService = new IoServiceImpl();
@@ -36,7 +32,47 @@ main(args) {
   var expressions = htmlExtractor.expressions;
   expressions.add('null');
 
-  print ('// Found ${expressions.length} expressions');
+  var headerFile = args[2];
+  var footerFile = args[3];
+  var outputFile = args[4];
+  SourcePrinter _prt;
+  if (outputFile == '--') {
+    _prt = new SourcePrinter();
+  } else {
+    _prt = new FileSourcePrinter(outputFile);
+  }
 
+  // Output the header file first.
+  if (headerFile != '') {
+    _prt.printSrc(_readFile(headerFile));
+  }
+
+  _prt.printSrc('// Found ${expressions.length} expressions');
+  Module module = new Module()
+    ..type(ParserBackend, implementedBy: DartCodeGen)
+    ..value(SourcePrinter, _prt);
+  Injector injector =
+      new DynamicInjector(modules: [module], allowImplicitInjection: true);
+
+  // Run the generator.
   injector.get(ParserGenerator).generateParser(htmlExtractor.expressions);
+
+  // Output footer last.
+  if (footerFile != '') {
+    _prt.printSrc(_readFile(footerFile));
+  }
+}
+
+String _readFile(String filePath) => new File(filePath).readAsStringSync();
+
+class FileSourcePrinter implements SourcePrinter {
+  final File _file;
+
+  FileSourcePrinter(String filePath)
+      : _file = new File(filePath) {
+    // clear file
+    _file.writeAsStringSync('');
+  }
+
+  printSrc(src) => _file.writeAsStringSync('$src\n', mode: FileMode.APPEND);
 }
