@@ -1,5 +1,6 @@
 part of angular.core.dom;
 
+@NgInjectableService()
 class Compiler {
   final DirectiveMap directives;
   final Profiler _perf;

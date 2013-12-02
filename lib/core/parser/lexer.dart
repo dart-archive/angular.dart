@@ -1,5 +1,6 @@
 part of angular.core.parser;
 
+@NgInjectableService()
 class Lexer {
   static const String QUOTES = "\"'";
   static const String DOT = ".";

@@ -7,6 +7,7 @@ part of angular.core.dom;
 *
 * NOTE the Cookies service is not yet implemented.
 */
+@NgInjectableService()
 class BrowserCookies {
   dom.Document _document;
 

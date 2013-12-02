@@ -418,6 +418,7 @@ abstract class NgDetachAware {
   void detach();
 }
 
+@NgInjectableService()
 class DirectiveMap extends AnnotationMap<NgAnnotation> {
   DirectiveMap(Injector injector, MetadataExtractor metadataExtractor,
       FieldMetadataExtractor fieldMetadataExtractor)
@@ -445,6 +446,7 @@ class DirectiveMap extends AnnotationMap<NgAnnotation> {
   }
 }
 
+@NgInjectableService()
 class FieldMetadataExtractor {
   List<TypeMirror> _fieldAnnotations = [reflectType(NgAttr),
       reflectType(NgOneWay), reflectType(NgOneWayOneTime),

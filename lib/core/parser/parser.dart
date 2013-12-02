@@ -133,6 +133,7 @@ Map<String, Operator> OPERATORS = {
   '?': (s, l, c, t, f) => toBool(c.eval(s, l)) ? t.eval(s, l) : f.eval(s, l),
 };
 
+@NgInjectableService()
 class DynamicParser implements Parser {
   final Lexer _lexer;
   final ParserBackend _b;

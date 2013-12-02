@@ -191,6 +191,7 @@ class NgRoutingModule extends Module {
  * "http://host:port/path#/foo/bar?baz=qux". Everything after hash (#) is used
  * by the router.
  */
+@NgInjectableService()
 class NgRoutingUsePushState {
   final bool usePushState;
   NgRoutingUsePushState(): usePushState = true;
