@@ -192,7 +192,7 @@ class NgComponent extends NgAnnotation {
   final String templateUrl;
 
   /**
-   * A CSS URL to load into the shadow DOM.
+   * A list of CSS URLs to load into the shadow DOM.
    */
   final List<String> cssUrl;
 

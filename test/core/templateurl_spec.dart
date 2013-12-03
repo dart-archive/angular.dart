@@ -16,6 +16,13 @@ class HtmlAndCssComponent {
 }
 
 @NgComponent(
+    selector: 'html-and-css',
+    templateUrl: 'simple.html',
+    cssUrl: const ['simple.css', 'another.css'])
+class HtmlAndMultipleCssComponent {
+}
+
+@NgComponent(
     selector: 'inline-with-css',
     template: '<div>inline!</div>',
     cssUrl: const ['simple.css'])
@@ -168,6 +175,35 @@ main() => describe('template url', () {
       backend.flush();
       microLeap();
       expect(renderedText(element)).toEqual('.hello{}Simple!');
+    })));
+  });
+
+  describe('multiple css loading', () {
+    beforeEach(module((Module module) {
+      module.type(LogAttrDirective);
+      module.type(HtmlAndMultipleCssComponent);
+    }));
+
+    it('should load multiple CSS files into a style', async(inject((Http $http,
+        Compiler $compile, Scope $rootScope, Logger log, Injector injector,
+        MockHttpBackend backend) {
+      backend.expectGET('simple.css').respond('.hello{}');
+      backend.expectGET('another.css').respond('.world{}');
+      backend.expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
+
+      var element = $('<div><html-and-css log>ignore</html-and-css><div>');
+      $compile(element)(injector, element);
+
+      backend.flush();
+      microLeap();
+
+      expect(renderedText(element)).toEqual('.hello{}.world{}Simple!');
+      expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
+        '<style>.hello{}.world{}</style><div log="SIMPLE">Simple!</div>'
+      );
+      $rootScope.$digest();
+      // Note: There is no ordering.  It is who ever comes off the wire first!
+      expect(log.result()).toEqual('LOG; SIMPLE');
     })));
   });
 });

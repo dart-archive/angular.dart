@@ -325,7 +325,7 @@ class _ComponentFactory {
     TemplateLoader templateLoader = new TemplateLoader( async.Future.wait(cssFutures).then((Iterable<String> cssList) {
       if (cssList != null) {
         var filteredCssList = cssList.where((css) => css != null );
-        shadowDom.setInnerHtml('<style>${filteredCssList.join('\n')}</style>', treeSanitizer: treeSanitizer);
+        shadowDom.setInnerHtml('<style>${filteredCssList.join('')}</style>', treeSanitizer: treeSanitizer);
       }
       if (blockFuture != null) {
         return blockFuture.then((BlockFactory blockFactory) => attachBlockToShadowDom(blockFactory));
