@@ -194,7 +194,7 @@ class NgComponent extends NgAnnotation {
   /**
    * A CSS URL to load into the shadow DOM.
    */
-  final String cssUrl;
+  final List<String> cssUrl;
 
   /**
    * Set the shadow root applyAuthorStyles property. See shadow-DOM

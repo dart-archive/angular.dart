@@ -310,11 +310,11 @@ class _ComponentFactory {
     // styles all over the page. We shouldn't be doing browsers work,
     // so change back to using @import once Chrome bug is fixed or a
     // better work around is found.
-    async.Future<String> cssFuture;
+    List<async.Future<String>> cssFutures = new List();
     if (component.cssUrl != null) {
-      cssFuture = $http.getString(component.cssUrl, cache: $templateCache);
+      component.cssUrl.forEach((css) => cssFutures.add( $http.getString(css, cache: $templateCache) ) );
     } else {
-      cssFuture = new async.Future.value(null);
+      cssFutures.add( new async.Future.value(null) );
     }
     var blockFuture;
     if (component.template != null) {
@@ -322,9 +322,10 @@ class _ComponentFactory {
     } else if (component.templateUrl != null) {
       blockFuture = $blockCache.fromUrl(component.templateUrl);
     }
-    TemplateLoader templateLoader = new TemplateLoader(cssFuture.then((String css) {
-      if (css != null) {
-        shadowDom.setInnerHtml('<style>$css</style>', treeSanitizer: treeSanitizer);
+    TemplateLoader templateLoader = new TemplateLoader( async.Future.wait(cssFutures).then((Iterable<String> cssList) {
+      if (cssList != null) {
+        var filteredCssList = cssList.where((css) => css != null );
+        shadowDom.setInnerHtml('<style>${filteredCssList.join('\n')}</style>', treeSanitizer: treeSanitizer);
       }
       if (blockFuture != null) {
         return blockFuture.then((BlockFactory blockFactory) => attachBlockToShadowDom(blockFactory));

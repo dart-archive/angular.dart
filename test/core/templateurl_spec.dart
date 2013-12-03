@@ -11,20 +11,20 @@ class SimpleUrlComponent {
 @NgComponent(
     selector: 'html-and-css',
     templateUrl: 'simple.html',
-    cssUrl: 'simple.css')
+    cssUrl: const ['simple.css'])
 class HtmlAndCssComponent {
 }
 
 @NgComponent(
     selector: 'inline-with-css',
     template: '<div>inline!</div>',
-    cssUrl: 'simple.css')
+    cssUrl: const ['simple.css'])
 class InlineWithCssComponent {
 }
 
 @NgComponent(
     selector: 'only-css',
-    cssUrl: 'simple.css')
+    cssUrl: const ['simple.css'])
 class OnlyCssComponent {
 }
 
