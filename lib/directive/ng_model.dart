@@ -104,9 +104,9 @@ abstract class _InputTextlikeDirective {
       if (value == currentValue || (value is num && currentValue is num && value.isNaN && currentValue.isNaN)) return;
       var start = inputElement.selectionStart;
       var end = inputElement.selectionEnd;
+      var direction = inputElement.selectionDirection;
       typedValue =  value;
-      inputElement.selectionStart = start;
-      inputElement.selectionEnd = end;
+//      inputElement.setSelectionRange(start, end, direction);
     };
     inputElement.onChange.listen(relaxFnArgs(processValue));
     inputElement.onKeyDown.listen((e) {
