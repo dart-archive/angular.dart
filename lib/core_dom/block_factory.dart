@@ -145,7 +145,7 @@ class BlockFactory {
               var scope = injector.get(Scope);
               var interpolate = injector.get(Interpolate);
               for(var ref in nodesAttrsDirectives) {
-                new NgAttrMustacheDirective(node, nodeAttrs, ref.value, interpolate, scope, parser);
+                new NgAttrMustacheDirective(node, ref.value, interpolate, scope, parser);
               }
             });
           }
