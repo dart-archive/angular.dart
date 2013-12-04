@@ -105,8 +105,10 @@ abstract class _InputTextlikeDirective {
       var start = inputElement.selectionStart;
       var end = inputElement.selectionEnd;
       typedValue =  value;
-      inputElement.selectionStart = start;
-      inputElement.selectionEnd = end;
+      // prevent reflow if there was no change in selection
+      if (start > 0 || end > 0) {
+        inputElement.setSelectionRange(start, end);
+      }
     };
     inputElement.onChange.listen(relaxFnArgs(processValue));
     inputElement.onKeyDown.listen((e) {
