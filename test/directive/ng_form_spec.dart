@@ -77,6 +77,64 @@ describe('form', () {
       expect(element.hasClass('ng-invalid')).toBe(false);
       expect(element.hasClass('ng-valid')).toBe(true);
     }));
+
+    it('should set the validity with respect to all existing validations when setValidity() is used', inject((Scope scope) {
+      var element = $('<form name="myForm">' + 
+                      '  <input type="text" ng-model="one" name="one" />' +
+                      '  <input type="text" ng-model="two" name="two" />' +
+                      '  <input type="text" ng-model="three" name="three" />' +
+                      '</form>');
+
+      _.compile(element);
+      scope.$apply();
+
+      var form = scope['myForm'];
+      NgModel one = form['one'];
+      NgModel two = form['two'];
+      NgModel three = form['three'];
+
+      expect(form.valid).toBe(true);
+
+      form.setValidity(one, false, "some error");
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      form.setValidity(two, false, "some error");
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      form.setValidity(one, true, "some error");
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      form.setValidity(two, true, "some error");
+      expect(form.valid).toBe(true);
+      expect(form.invalid).toBe(false);
+    }));
+
+    it('should not handle the control + errorType pair more than once', inject((Scope scope) {
+      var element = $('<form name="myForm">' + 
+                      '  <input type="text" ng-model="one" name="one" />' +
+                      '</form>');
+
+      _.compile(element);
+      scope.$apply();
+
+      var form = scope['myForm'];
+      NgModel one = form['one'];
+
+      form.setValidity(one, false, "validation error");
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      form.setValidity(one, false, "validation error");
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      form.setValidity(one, true, "validation error");
+      expect(form.valid).toBe(true);
+      expect(form.invalid).toBe(false);
+    }));
   });
 
   describe('controls', () {
