@@ -11,24 +11,39 @@ part of angular.directive;
  * (to be implemented)
  */
 @NgDirective(
-    selector: '[ng-model]',
-    map: const {'ng-model': '&model'})
+    selector: '[ng-model]')
 class NgModel {
+  final NgForm _form;
+  final dom.Element element;
   final Scope _scope;
 
   Getter getter = ([_]) => null;
   Setter setter = (_, [__]) => null;
-  String _exp;
 
+  String _exp;
+  String _name;
 
   Function _removeWatch = () => null;
   bool _watchCollection;
 
   Function render = (value) => null;
 
-  NgModel(Scope this._scope, NodeAttrs attrs) {
+  NgModel(Scope this._scope, NodeAttrs attrs, [NgForm this._form]) {
     _exp = 'ng-model=${attrs["ng-model"]}';
     watchCollection = false;
+
+    if(_form != null) {
+      _form.addControl(this);
+    }
+  }
+
+  @NgAttr('name')
+  get name => _name;
+  set name(value) {
+    _name = value;
+    if(_form != null) {
+      _form.addControl(this);
+    }
   }
 
   get watchCollection => _watchCollection;
@@ -43,6 +58,7 @@ class NgModel {
     }
   }
 
+  @NgCallback('ng-model')
   set model(BoundExpression boundExpression) {
     getter = boundExpression;
     setter = boundExpression.assign;
@@ -55,6 +71,12 @@ class NgModel {
 
   get modelValue        => getter();
   set modelValue(value) => setter(value);
+
+  destroy() {
+    if(_form != null) {
+      _form.removeControl(this);
+    }
+  }
 }
 
 /**
