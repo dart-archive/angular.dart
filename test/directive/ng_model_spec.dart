@@ -486,6 +486,46 @@ describe('ng-model', () {
       expect(element.classes.contains('ng-invalid')).toBe(false);
       expect(element.classes.contains('ng-valid')).toBe(true);
     }));
+
+    it('should set the validity with respect to all existing validations when setValidity() is used', inject((Scope scope) {
+      _.compile('<input type="text" ng-model="my_model" probe="i" />');
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+
+      model.setValidity("required", false);
+      expect(model.valid).toEqual(false);
+      expect(model.invalid).toEqual(true);
+
+      model.setValidity("format", false);
+      expect(model.valid).toEqual(false);
+      expect(model.invalid).toEqual(true);
+
+      model.setValidity("format", true);
+      expect(model.valid).toEqual(false);
+      expect(model.invalid).toEqual(true);
+
+      model.setValidity("required", true);
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+    }));
+
+    it('should register each error only once when invalid', inject((Scope scope) {
+      _.compile('<input type="text" ng-model="my_model" probe="i" />');
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+
+      model.setValidity("distinct-error", false);
+      expect(model.valid).toEqual(false);
+      expect(model.invalid).toEqual(true);
+
+      model.setValidity("distinct-error", false);
+      expect(model.valid).toEqual(false);
+      expect(model.invalid).toEqual(true);
+
+      model.setValidity("distinct-error", true);
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+    }));
   });
 
 });

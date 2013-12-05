@@ -95,19 +95,19 @@ describe('form', () {
 
       expect(form.valid).toBe(true);
 
-      form.setValidity(one, false, "some error");
+      form.setValidity(one, "some error", false);
       expect(form.valid).toBe(false);
       expect(form.invalid).toBe(true);
 
-      form.setValidity(two, false, "some error");
+      form.setValidity(two, "some error", false);
       expect(form.valid).toBe(false);
       expect(form.invalid).toBe(true);
 
-      form.setValidity(one, true, "some error");
+      form.setValidity(one, "some error", true);
       expect(form.valid).toBe(false);
       expect(form.invalid).toBe(true);
 
-      form.setValidity(two, true, "some error");
+      form.setValidity(two, "some error", true);
       expect(form.valid).toBe(true);
       expect(form.invalid).toBe(false);
     }));
@@ -123,15 +123,47 @@ describe('form', () {
       var form = scope['myForm'];
       NgModel one = form['one'];
 
-      form.setValidity(one, false, "validation error");
+      form.setValidity(one, "validation error", false);
       expect(form.valid).toBe(false);
       expect(form.invalid).toBe(true);
 
-      form.setValidity(one, false, "validation error");
+      form.setValidity(one, "validation error", false);
       expect(form.valid).toBe(false);
       expect(form.invalid).toBe(true);
 
-      form.setValidity(one, true, "validation error");
+      form.setValidity(one, "validation error", true);
+      expect(form.valid).toBe(true);
+      expect(form.invalid).toBe(false);
+    }));
+
+    it('should update the validity of the parent form when the inner model changes', inject((Scope scope) {
+      var element = $('<form name="myForm">' + 
+                      '  <input type="text" ng-model="one" name="one" />' +
+                      '  <input type="text" ng-model="two" name="two" />' +
+                      '</form>');
+
+      _.compile(element);
+      scope.$apply();
+
+      var form = scope['myForm'];
+      NgModel one = form['one'];
+      NgModel two = form['two'];
+
+      expect(form.valid).toBe(true);
+
+      one.setValidity("required", false);
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      two.setValidity("required", false);
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      one.setValidity("required", true);
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      two.setValidity("required", true);
       expect(form.valid).toBe(true);
       expect(form.invalid).toBe(false);
     }));

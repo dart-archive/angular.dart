@@ -27,6 +27,7 @@ class NgModel {
   bool _pristine;
   bool _valid;
   bool _invalid;
+  final Map<String, bool> currentErrors = new Map<String, bool>();
 
   Function _removeWatch = () => null;
   bool _watchCollection;
@@ -123,6 +124,23 @@ class NgModel {
     }
   }
 
+  setValidity(String errorType, bool isValid) {
+    if(isValid) {
+      if(currentErrors.containsKey(errorType)) {
+        currentErrors.remove(errorType);
+        if(currentErrors.isEmpty) {
+          valid = true;
+        }
+      }
+    } else if(!currentErrors.containsKey(errorType)) {
+      currentErrors[errorType] = true;
+      invalid = true;
+    }
+
+    if(_form != null) {
+      _form.setValidity(this, errorType, isValid);
+    }
+  }
 
   destroy() {
     if(_form != null) {
