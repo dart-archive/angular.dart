@@ -9,12 +9,16 @@ part of angular.directive;
     selector: 'form',
     visibility: NgDirective.CHILDREN_VISIBILITY)
 @NgDirective(
+    selector: 'fieldset',
+    visibility: NgDirective.CHILDREN_VISIBILITY)
+@NgDirective(
     selector: '.ng-form',
     visibility: NgDirective.CHILDREN_VISIBILITY)
 @NgDirective(
     selector: '[ng-form]',
     visibility: NgDirective.CHILDREN_VISIBILITY)
 class NgForm extends NgControl implements NgDetachAware {
+  final NgForm _parentForm;
   final dom.Element _element;
   final Scope _scope;
 
@@ -23,7 +27,9 @@ class NgForm extends NgControl implements NgDetachAware {
   final List<NgControl> _controls = new List<NgControl>();
   final Map<String, NgControl> _controlByName = new Map<String, NgControl>();
 
-  NgForm(this._scope, this._element) {
+  NgForm(this._scope, dom.Element this._element, Injector injector):
+    _parentForm = injector.parent.get(NgForm)
+  {
     if(!this._element.attributes.containsKey('action')) {
       this._element.onSubmit.listen((event) {
         event.preventDefault();
@@ -59,12 +65,14 @@ class NgForm extends NgControl implements NgDetachAware {
           if(currentErrors.isEmpty) {
             valid = true;
           }
+          _parentForm.setValidity(this, errorType, true);
         }
       }
     } else {
       if(queue == null) {
         queue = new List<NgControl>();
         currentErrors[errorType] = queue;
+        _parentForm.setValidity(this, errorType, false);
       } else if(queue.contains(control)) {
         return;
       }
