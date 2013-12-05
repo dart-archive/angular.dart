@@ -77,6 +77,92 @@ describe('form', () {
       expect(element.hasClass('ng-invalid')).toBe(false);
       expect(element.hasClass('ng-valid')).toBe(true);
     }));
+
+    it('should set the validity with respect to all existing validations when setValidity() is used', inject((Scope scope) {
+      var element = $('<form name="myForm">' + 
+                      '  <input type="text" ng-model="one" name="one" />' +
+                      '  <input type="text" ng-model="two" name="two" />' +
+                      '  <input type="text" ng-model="three" name="three" />' +
+                      '</form>');
+
+      _.compile(element);
+      scope.$apply();
+
+      var form = scope['myForm'];
+      NgModel one = form['one'];
+      NgModel two = form['two'];
+      NgModel three = form['three'];
+
+      form.setValidity(one, "some error", false);
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      form.setValidity(two, "some error", false);
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      form.setValidity(one, "some error", true);
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      form.setValidity(two, "some error", true);
+      expect(form.valid).toBe(true);
+      expect(form.invalid).toBe(false);
+    }));
+
+    it('should not handle the control + errorType pair more than once', inject((Scope scope) {
+      var element = $('<form name="myForm">' + 
+                      '  <input type="text" ng-model="one" name="one" />' +
+                      '</form>');
+
+      _.compile(element);
+      scope.$apply();
+
+      var form = scope['myForm'];
+      NgModel one = form['one'];
+
+      form.setValidity(one, "validation error", false);
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      form.setValidity(one, "validation error", false);
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      form.setValidity(one, "validation error", true);
+      expect(form.valid).toBe(true);
+      expect(form.invalid).toBe(false);
+    }));
+
+    it('should update the validity of the parent form when the inner model changes', inject((Scope scope) {
+      var element = $('<form name="myForm">' + 
+                      '  <input type="text" ng-model="one" name="one" />' +
+                      '  <input type="text" ng-model="two" name="two" />' +
+                      '</form>');
+
+      _.compile(element);
+      scope.$apply();
+
+      var form = scope['myForm'];
+      NgModel one = form['one'];
+      NgModel two = form['two'];
+
+      one.setValidity("required", false);
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      two.setValidity("required", false);
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      one.setValidity("required", true);
+      expect(form.valid).toBe(false);
+      expect(form.invalid).toBe(true);
+
+      two.setValidity("required", true);
+      expect(form.valid).toBe(true);
+      expect(form.invalid).toBe(false);
+    }));
   });
 
   describe('controls', () {

@@ -18,6 +18,7 @@ part 'ng_events.dart';
 part 'ng_cloak.dart';
 part 'ng_if.dart';
 part 'ng_include.dart';
+part 'ng_control.dart';
 part 'ng_model.dart';
 part 'ng_pluralize.dart';
 part 'ng_repeat.dart';
