@@ -96,7 +96,7 @@ class NgForm {
     _element.classes.add(NG_INVALID_CLASS);
   }
 
-  setValidity(NgModel control, bool isValid, String errorType) {
+  setValidity(NgModel control, String errorType, bool isValid) {
     List queue = currentErrors[errorType];
 
     if(isValid) {
