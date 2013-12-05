@@ -9,6 +9,9 @@ part of angular.directive;
     selector: 'form',
     visibility: NgDirective.CHILDREN_VISIBILITY)
 @NgDirective(
+    selector: 'fieldset',
+    visibility: NgDirective.CHILDREN_VISIBILITY)
+@NgDirective(
     selector: '.ng-form',
     visibility: NgDirective.CHILDREN_VISIBILITY)
 @NgDirective(
@@ -20,21 +23,24 @@ class NgForm {
   static const NG_PRISTINE_CLASS = "ng-pristine";
   static const NG_DIRTY_CLASS    = "ng-dirty";
 
+  NgForm _parentForm;
   final dom.Element _element;
   final Scope _scope;
 
   String _name;
 
-  final Map<String, List<NgModel>> currentErrors = new Map<String, List<NgModel>>();
+  final Map currentErrors = new Map();
   bool _dirty;
   bool _pristine;
   bool _valid;
   bool _invalid;
 
-  final List<NgModel> _controls = new List<NgModel>();
-  final Map<String, NgModel> _controlByName = new Map<String, NgModel>();
+  final List _controls = new List();
+  final Map _controlByName = new Map();
 
-  NgForm(Scope this._scope, dom.Element this._element) {
+  NgForm(Scope this._scope, dom.Element this._element, Injector injector) {
+    _parentForm = injector.parent.get(NgForm);
+
     if(!this._element.attributes.containsKey('action')) {
       this._element.onSubmit.listen((event) {
         event.preventDefault();
@@ -96,7 +102,7 @@ class NgForm {
     _element.classes.add(NG_INVALID_CLASS);
   }
 
-  setValidity(NgModel control, String errorType, bool isValid) {
+  setValidity(control, String errorType, bool isValid) {
     List queue = currentErrors[errorType];
 
     if(isValid) {
@@ -107,12 +113,18 @@ class NgForm {
           if(currentErrors.isEmpty) {
             valid = true;
           }
+          if(_parentForm != null) {
+            _parentForm.setValidity(this, errorType, true);
+          }
         }
       }
     } else {
       if(queue == null) {
-        queue = new List<NgModel>();
+        queue = new List();
         currentErrors[errorType] = queue;
+        if(_parentForm != null) {
+          _parentForm.setValidity(this, errorType, false);
+        }
       } else if(queue.contains(control)) {
         return;
       }
@@ -126,14 +138,14 @@ class NgForm {
     return _controlByName[name];
   }
 
-  addControl(NgModel control) {
+  addControl(control) {
     _controls.add(control);
     if(control.name != null) {
       _controlByName[control.name] = control;
     }
   }
 
-  removeControl(NgModel control) {
+  removeControl(control) {
     _controls.remove(control);
     if(control.name != null) {
       _controlByName.remove(control.name);

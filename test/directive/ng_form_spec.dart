@@ -167,6 +167,43 @@ describe('form', () {
       expect(form.valid).toBe(true);
       expect(form.invalid).toBe(false);
     }));
+
+    it('should set the validity for the parent form when fieldsets are used', inject((Scope scope) {
+      var element = $('<form name="myForm">' + 
+                      '  <fieldset probe="f">' +
+                      '    <input type="text" ng-model="one" name="one" probe="m" />' +
+                      '  </fieldset>' +
+                      '</form>');
+
+      _.compile(element);
+      scope.$apply();
+
+      var form = scope['myForm'];
+      var fieldset = _.rootScope.f.directive(NgForm);
+      var model = _.rootScope.m.directive(NgModel);
+
+      model.setValidity("error", false);
+
+      expect(model.valid).toBe(false);
+      expect(fieldset.valid).toBe(false);
+      expect(form.valid).toBe(false);
+
+      model.setValidity("error", true);
+
+      expect(model.valid).toBe(true);
+      expect(fieldset.valid).toBe(true);
+      expect(form.valid).toBe(true);
+
+      form.setValidity(fieldset, "error", false);
+      expect(model.valid).toBe(true);
+      expect(fieldset.valid).toBe(true);
+      expect(form.valid).toBe(false);
+
+      fieldset.setValidity(model, "error", false);
+      expect(model.valid).toBe(true);
+      expect(fieldset.valid).toBe(false);
+      expect(form.valid).toBe(false);
+    }));
   });
 
   describe('controls', () {
