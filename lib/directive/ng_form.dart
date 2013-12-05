@@ -14,24 +14,14 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-form]',
     visibility: NgDirective.CHILDREN_VISIBILITY)
-class NgForm extends NgDetachAware {
-  static const String NG_VALID_CLASS    = "ng-valid";
-  static const String NG_INVALID_CLASS  = "ng-invalid";
-  static const String NG_PRISTINE_CLASS = "ng-pristine";
-  static const String NG_DIRTY_CLASS    = "ng-dirty";
-
+class NgForm extends NgControl implements NgDetachAware {
   final dom.Element _element;
   final Scope _scope;
 
-  String _name;
+  final Map<String, List<NgControl>> currentErrors = new Map<String, List<NgControl>>();
 
-  bool _dirty;
-  bool _pristine;
-  bool _valid;
-  bool _invalid;
-
-  final List<NgModel> _controls = new List<NgModel>();
-  final Map<String, NgModel> _controlByName = new Map<String, NgModel>();
+  final List<NgControl> _controls = new List<NgControl>();
+  final Map<String, NgControl> _controlByName = new Map<String, NgControl>();
 
   NgForm(this._scope, this._element) {
     if(!this._element.attributes.containsKey('action')) {
@@ -49,6 +39,8 @@ class NgForm extends NgDetachAware {
     }
   }
 
+  get element => _element;
+
   @NgAttr('name')
   get name => _name;
   set name(name) {
@@ -56,54 +48,44 @@ class NgForm extends NgDetachAware {
     _scope[name] = this;
   }
 
-  get pristine => _pristine;
-  set pristine(value) {
-    _pristine = true;
-    _dirty = false;
+  setValidity(NgControl control, String errorType, bool isValid) {
+    List queue = currentErrors[errorType];
 
-    _element.classes.remove(NG_DIRTY_CLASS);
-    _element.classes.add(NG_PRISTINE_CLASS);
-  }
+    if(isValid) {
+      if(queue != null) {
+        queue.remove(control);
+        if(queue.isEmpty) {
+          currentErrors.remove(errorType);
+          if(currentErrors.isEmpty) {
+            valid = true;
+          }
+        }
+      }
+    } else {
+      if(queue == null) {
+        queue = new List<NgControl>();
+        currentErrors[errorType] = queue;
+      } else if(queue.contains(control)) {
+        return;
+      }
 
-  get dirty => _dirty;
-  set dirty(value) {
-    _dirty = true;
-    _pristine = false;
-
-    _element.classes.remove(NG_PRISTINE_CLASS);
-    _element.classes.add(NG_DIRTY_CLASS);
-  }
-
-  get valid => _valid;
-  set valid(value) {
-    _invalid = false;
-    _valid = true;
-
-    _element.classes.remove(NG_INVALID_CLASS);
-    _element.classes.add(NG_VALID_CLASS);
-  }
-
-  get invalid => _invalid;
-  set invalid(value) {
-    _valid = false;
-    _invalid = true;
-
-    _element.classes.remove(NG_VALID_CLASS);
-    _element.classes.add(NG_INVALID_CLASS);
+      queue.add(control);
+      invalid = true;
+    }
   }
 
   operator[](name) {
     return _controlByName[name];
   }
 
-  addControl(NgModel control) {
+  addControl(NgControl control) {
     _controls.add(control);
     if(control.name != null) {
       _controlByName[control.name] = control;
     }
   }
 
-  removeControl(NgModel control) {
+  removeControl(NgControl control) {
     _controls.remove(control);
     if(control.name != null) {
       _controlByName.remove(control.name);

@@ -12,7 +12,7 @@ part of angular.directive;
  */
 @NgDirective(
     selector: '[ng-model]')
-class NgModel {
+class NgModel extends NgControl {
   final NgForm _form;
   final dom.Element _element;
   final Scope _scope;
@@ -23,10 +23,7 @@ class NgModel {
   String _exp;
   String _name;
 
-  bool _dirty;
-  bool _pristine;
-  bool _valid;
-  bool _invalid;
+  final Map<String, bool> currentErrors = new Map<String, bool>();
 
   Function _removeWatch = () => null;
   bool _watchCollection;
@@ -40,6 +37,8 @@ class NgModel {
     _form.addControl(this);
     pristine = true;
   }
+
+  get element => _element;
 
   @NgAttr('name')
   get name => _name;
@@ -74,38 +73,23 @@ class NgModel {
   get modelValue        => getter();
   set modelValue(value) => setter(value);
 
-  get pristine => _pristine;
-  set pristine(value) {
-    _pristine = true;
-    _dirty = false;
-    _element.classes.remove(NgForm.NG_DIRTY_CLASS);
-    _element.classes.add(NgForm.NG_PRISTINE_CLASS);
-  }
+  setValidity(String errorType, bool isValid) {
+    if(isValid) {
+      if(currentErrors.containsKey(errorType)) {
+        currentErrors.remove(errorType);
+        if(currentErrors.isEmpty) {
+          valid = true;
+        }
+      }
+    } else if(!currentErrors.containsKey(errorType)) {
+      currentErrors[errorType] = true;
+      invalid = true;
+    }
 
-  get dirty => _dirty;
-  set dirty(value) {
-    _dirty = true;
-    _pristine = false;
-    _element.classes.remove(NgForm.NG_PRISTINE_CLASS);
-    _element.classes.add(NgForm.NG_DIRTY_CLASS);
+    if(_form != null) {
+      _form.setValidity(this, errorType, isValid);
+    }
   }
-
-  get valid => _valid;
-  set valid(value) {
-    _invalid = false;
-    _valid = true;
-    _element.classes.remove(NgForm.NG_INVALID_CLASS);
-    _element.classes.add(NgForm.NG_VALID_CLASS);
-  }
-
-  get invalid => _invalid;
-  set invalid(value) {
-    _valid = false;
-    _invalid = true;
-    _element.classes.remove(NgForm.NG_VALID_CLASS);
-    _element.classes.add(NgForm.NG_INVALID_CLASS);
-  }
-
 
   destroy() {
     _form.removeControl(this);
