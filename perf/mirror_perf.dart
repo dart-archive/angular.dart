@@ -24,8 +24,19 @@ main() {
     }
   };
 
+  var dirtyCheckFn = () {
+    Watch current = head;
+    while(current != null) {
+      if (!identical(current.lastValue, current.getter(current.object))) {
+        throw "We should not get here";
+      }
+      current = current.next;
+    }
+  };
+
   time('fieldRead', () => im.getField(symbol).reflectee );
   time('Object.observe', dirtyCheck);
+  time('Object.observe fn()', dirtyCheckFn);
 }
 
 class Watch {
@@ -35,6 +46,7 @@ class Watch {
   dynamic object = new Obj(1);
   InstanceMirror im;
   Symbol symbol = new Symbol('a');
+  Function getter = (s) => s.a;
 
   Watch() {
     im = reflect(object);
