@@ -25,6 +25,7 @@ class NgForm {
 
   String _name;
 
+  final Map<String, List<NgModel>> currentErrors = new Map<String, List<NgModel>>();
   bool _dirty;
   bool _pristine;
   bool _valid;
@@ -90,6 +91,32 @@ class NgForm {
 
     _element.classes.remove(NG_VALID_CLASS);
     _element.classes.add(NG_INVALID_CLASS);
+  }
+
+  setValidity(NgModel control, String errorType, bool isValid) {
+    List queue = currentErrors[errorType];
+
+    if(isValid) {
+      if(queue != null) {
+        queue.remove(control);
+        if(queue.isEmpty) {
+          currentErrors.remove(errorType);
+          if(currentErrors.isEmpty) {
+            valid = true;
+          }
+        }
+      }
+    } else {
+      if(queue == null) {
+        queue = new List<NgModel>();
+        currentErrors[errorType] = queue;
+      } else if(queue.contains(control)) {
+        return;
+      }
+
+      queue.add(control);
+      invalid = true;
+    }
   }
 
   operator[](name) {
