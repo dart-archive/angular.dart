@@ -370,4 +370,55 @@ describe('ng-model', () {
     }));
   });
 
+  describe('pristine / dirty', () {
+    it('should be set to pristine by default', inject((Scope scope) {
+      _.compile('<input type="text" ng-model="my_model" probe="i" />');
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+
+      expect(model.pristine).toEqual(true);
+      expect(model.dirty).toEqual(false);
+    }));
+
+    it('should add and remove the correct CSS classes when set to dirty and to pristine', inject((Scope scope) {
+      _.compile('<input type="text" ng-model="my_model" probe="i" />');
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+      InputElement element = probe.element;
+
+      model.dirty = true;
+      expect(model.pristine).toEqual(false);
+      expect(model.dirty).toEqual(true);
+      expect(element.classes.contains('ng-pristine')).toBe(false);
+      expect(element.classes.contains('ng-dirty')).toBe(true);
+
+      model.pristine = true;
+      expect(model.pristine).toEqual(true);
+      expect(model.dirty).toEqual(false);
+      expect(element.classes.contains('ng-pristine')).toBe(true);
+      expect(element.classes.contains('ng-dirty')).toBe(false);
+    }));
+  });
+
+  describe('valid / invalid', () {
+    it('should add and remove the correct flags when set to valid and to invalid', inject((Scope scope) {
+      _.compile('<input type="text" ng-model="my_model" probe="i" />');
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+      InputElement element = probe.element;
+
+      model.invalid = true;
+      expect(model.valid).toEqual(false);
+      expect(model.invalid).toEqual(true);
+      expect(element.classes.contains('ng-valid')).toBe(false);
+      expect(element.classes.contains('ng-invalid')).toBe(true);
+
+      model.valid = true;
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+      expect(element.classes.contains('ng-invalid')).toBe(false);
+      expect(element.classes.contains('ng-valid')).toBe(true);
+    }));
+  });
+
 });

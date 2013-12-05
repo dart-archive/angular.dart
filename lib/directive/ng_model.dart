@@ -14,7 +14,7 @@ part of angular.directive;
     selector: '[ng-model]')
 class NgModel {
   final NgForm _form;
-  final dom.Element element;
+  final dom.Element _element;
   final Scope _scope;
 
   Getter getter = ([_]) => null;
@@ -23,18 +23,25 @@ class NgModel {
   String _exp;
   String _name;
 
+  bool _dirty;
+  bool _pristine;
+  bool _valid;
+  bool _invalid;
+
   Function _removeWatch = () => null;
   bool _watchCollection;
 
   Function render = (value) => null;
 
-  NgModel(Scope this._scope, NodeAttrs attrs, [NgForm this._form]) {
+  NgModel(Scope this._scope, NodeAttrs attrs, [dom.Element this._element, NgForm this._form]) {
     _exp = 'ng-model=${attrs["ng-model"]}';
     watchCollection = false;
 
     if(_form != null) {
       _form.addControl(this);
     }
+
+    pristine = true;
   }
 
   @NgAttr('name')
@@ -71,6 +78,51 @@ class NgModel {
 
   get modelValue        => getter();
   set modelValue(value) => setter(value);
+
+  get pristine => _pristine;
+  set pristine(value) {
+    _pristine = true;
+    _dirty = false;
+
+    if(_element != null) {
+      _element.classes.remove(NgForm.NG_DIRTY_CLASS);
+      _element.classes.add(NgForm.NG_PRISTINE_CLASS);
+    }
+  }
+
+  get dirty => _dirty;
+  set dirty(value) {
+    _dirty = true;
+    _pristine = false;
+
+    if(_element != null) {
+      _element.classes.remove(NgForm.NG_PRISTINE_CLASS);
+      _element.classes.add(NgForm.NG_DIRTY_CLASS);
+    }
+  }
+
+  get valid => _valid;
+  set valid(value) {
+    _invalid = false;
+    _valid = true;
+
+    if(_element != null) {
+      _element.classes.remove(NgForm.NG_INVALID_CLASS);
+      _element.classes.add(NgForm.NG_VALID_CLASS);
+    }
+  }
+
+  get invalid => _invalid;
+  set invalid(value) {
+    _valid = false;
+    _invalid = true;
+
+    if(_element != null) {
+      _element.classes.remove(NgForm.NG_VALID_CLASS);
+      _element.classes.add(NgForm.NG_INVALID_CLASS);
+    }
+  }
+
 
   destroy() {
     if(_form != null) {
