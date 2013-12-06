@@ -1,11 +1,12 @@
 library source_metadata_extractor_spec;
 
-import '../_specs.dart' hide Node, Element, Text, Token;
-
 import 'package:analyzer/src/generated/ast.dart';
-import 'package:angular/tools/source_metadata_extractor.dart';
-import 'package:angular/tools/source_crawler.dart';
 import 'package:angular/tools/common.dart';
+import 'package:angular/tools/source_crawler.dart';
+import 'package:angular/tools/source_metadata_extractor.dart';
+import 'package:unittest/unittest.dart';
+
+import '../jasmine_syntax.dart';
 
 main() => describe('SourceMetadataExtractor', () {
 
