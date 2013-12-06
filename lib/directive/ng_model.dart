@@ -147,6 +147,27 @@ class InputTextDirective extends _InputTextlikeDirective {
 /**
  * Usage:
  *
+ *     <input type="password" ng-model="name">
+ *
+ * This creates a two way databinding between the expression specified in
+ * ng-model and the password input element in the DOM.  If the ng-model value is
+ * `null`, it is treated as equivalent to the empty string for rendering
+ * purposes.
+ */
+@NgDirective(selector: 'input[type=password][ng-model]')
+class InputPasswordDirective extends _InputTextlikeDirective {
+  InputPasswordDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
+      super(inputElement, ngModel, scope);
+
+  String get typedValue => inputElement.value;
+  set typedValue(String value) {
+    inputElement.value = (value == null) ? '' : value;
+  }
+}
+
+/**
+ * Usage:
+ *
  *     <textarea ng-model="text">
  *
  * This creates a two way databinding between the expression specified in

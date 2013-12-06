@@ -49,6 +49,7 @@ class NgDirectiveModule extends Module {
     value(InputNumberDirective, null);
     value(InputRadioDirective, null);
     value(InputTextDirective, null);
+    value(InputPasswordDirective, null);
     value(InputUrlDirective, null);
     value(InputCheckboxDirective, null);
     value(TextAreaDirective, null);
