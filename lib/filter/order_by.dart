@@ -108,7 +108,7 @@ typedef dynamic Mapper(dynamic e);
 class OrderByFilter {
   Parser _parser;
 
-  OrderByFilter(Parser this._parser);
+  OrderByFilter(this._parser);
 
   static _nop(e) => e;
   static bool _isNonZero(int n) => (n != 0);

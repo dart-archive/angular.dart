@@ -12,7 +12,7 @@ class NgForm {
   dom.Element _element;
   Scope _scope;
 
-  NgForm(Scope this._scope, dom.Element this._element) {
+  NgForm(this._scope, this._element) {
     if(!this._element.attributes.containsKey('action')) {
       this._element.onSubmit.listen((event) {
         event.preventDefault();

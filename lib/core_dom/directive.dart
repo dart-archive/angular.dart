@@ -23,7 +23,7 @@ class NodeAttrs {
 
   Map<String, List<AttributeChanged>> _observers;
 
-  NodeAttrs(dom.Element this.element);
+  NodeAttrs(this.element);
 
   operator [](String name) => element.attributes[_snakeCase(name, '-')];
 
@@ -72,8 +72,8 @@ class TemplateLoader {
 
 var _SNAKE_CASE_REGEXP = new RegExp("[A-Z]");
 String _snakeCase(String name, [separator = '_']) {
-  _snakeReplace(Match match) {
-    return (match.start != 0 ? separator : '') + match.group(0).toLowerCase();
-  }
+  _snakeReplace(Match match) =>
+    (match.start != 0 ? separator : '') + match.group(0).toLowerCase();
+
   return name.replaceAllMapped(_SNAKE_CASE_REGEXP, _snakeReplace);
 }

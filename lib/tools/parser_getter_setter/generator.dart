@@ -39,7 +39,7 @@ class ParserGetterSetter {
   DynamicParser parser;
   DartGetterSetterGen backend;
 
-  ParserGetterSetter(DynamicParser this.parser, ParserBackend this.backend);
+  ParserGetterSetter(this.parser, this.backend);
 
   generateParser(List<String> exprs) {
     exprs.forEach((expr) {

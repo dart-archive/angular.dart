@@ -62,8 +62,8 @@ class Scope implements Map {
   bool _skipAutoDigest = false;
   bool _disabled = false;
 
-  Scope(ExceptionHandler this._exceptionHandler, Parser this._parser,
-      ScopeDigestTTL ttl, NgZone this._zone, Profiler this._perf):
+  Scope(this._exceptionHandler, this._parser, ScopeDigestTTL ttl,
+      this._zone, this._perf):
         $parent = null, _isolate = false, _lazy = false, _ttl = ttl.ttl {
     _properties[r'this']= this;
     $root = this;
@@ -155,9 +155,8 @@ class Scope implements Map {
    *   This is usefull if we expect that the bindings in the scope are constant and there is no need
    *   to check them on each digest. The digest can be forced by marking it [$dirty].
    */
-  $new({bool isolate: false, bool lazy: false}) {
-    return new Scope._child(this, isolate, lazy, _perf);
-  }
+  $new({bool isolate: false, bool lazy: false}) =>
+    new Scope._child(this, isolate, lazy, _perf);
 
   /**
    * *EXPERIMENTAL:* This feature is experimental. We reserve the right to change or delete it.

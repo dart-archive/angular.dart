@@ -13,7 +13,7 @@ class NgHideDirective {
 
   dom.Element element;
 
-  NgHideDirective(dom.Element this.element);
+  NgHideDirective(this.element);
 
   set hide(value) {
     if (toBool(value)) {
@@ -37,7 +37,7 @@ class NgShowDirective {
 
   dom.Element element;
 
-  NgShowDirective(dom.Element this.element);
+  NgShowDirective(this.element);
 
   set show(value) {
     if (toBool(value)) {

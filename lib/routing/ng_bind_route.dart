@@ -36,8 +36,7 @@ class NgBindRouteDirective implements RouteProvider {
   Injector _injector;
 
   // We inject NgRoutingHelper to force initialization of routing.
-  NgBindRouteDirective(Router this._router, Injector this._injector,
-      NgRoutingHelper _);
+  NgBindRouteDirective(this._router, this._injector, NgRoutingHelper _);
 
   /// Returns the parent [RouteProvider].
   RouteProvider get _parent => _injector.parent.get(RouteProvider);

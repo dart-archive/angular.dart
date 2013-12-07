@@ -4,7 +4,7 @@ class BoundExpression {
   var _context;
   Expression expression;
 
-  BoundExpression(this._context, Expression this.expression);
+  BoundExpression(this._context, this.expression);
 
   call([locals]) => expression.eval(_context, locals);
   assign(value, [locals]) => expression.assign(_context, value, locals);
@@ -17,7 +17,7 @@ class Expression implements ParserAST {
   String exp;
   List parts;
 
-  Expression(ParsedGetter this.eval, [ParsedSetter this.assign]);
+  Expression(this.eval, [this.assign]);
 
   bind(context) => new BoundExpression(context, this);
 
@@ -93,7 +93,7 @@ class ParserBackend {
   GetterSetter _getterSetter;
   FilterMap _filters;
 
-  ParserBackend(GetterSetter this._getterSetter, FilterMap this._filters);
+  ParserBackend(this._getterSetter, this._filters);
 
   static Expression ZERO = new Expression((_, [_x]) => 0);
 
@@ -314,9 +314,7 @@ class FilterExpression extends Expression {
   final Expression leftHandSide;
   final List<Expression> parameters;
 
-  FilterExpression(Function this.filterFn,
-                   Expression this.leftHandSide,
-                   List<Expression> this.parameters): super(null);
+  FilterExpression(this.filterFn, this.leftHandSide, this.parameters): super(null);
 
   get eval => _eval;
 

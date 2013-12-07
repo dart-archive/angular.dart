@@ -35,10 +35,8 @@ class RecordingHttpBackend implements HttpBackend {
   HttpBackend _prodBackend;
   PlaybackHttpBackendConfig _config;
 
-  RecordingHttpBackend(HttpBackendWrapper wrapper,
-                       PlaybackHttpBackendConfig this._config) {
+  RecordingHttpBackend(HttpBackendWrapper wrapper, this._config) {
     this._prodBackend = wrapper.backend;
-
   }
 
   Future request(String url,
@@ -80,7 +78,7 @@ class PlaybackHttpBackend implements HttpBackend {
 
   PlaybackHttpBackendConfig _config;
 
-  PlaybackHttpBackend(PlaybackHttpBackendConfig this._config);
+  PlaybackHttpBackend(this._config);
 
   Map data = playback_data.playbackData;
 

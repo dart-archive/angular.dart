@@ -15,7 +15,7 @@ class NgStyleDirective {
 
   String _styleExpression;
 
-  NgStyleDirective(dom.Element this._element, Scope this._scope);
+  NgStyleDirective(this._element, this._scope);
 
   Function _removeWatch = () => null;
   var _lastStyles;

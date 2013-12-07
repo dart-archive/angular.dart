@@ -192,7 +192,7 @@ class DartCodeGen implements ParserBackend {
 
   GetterSetterGenerator _getterGen;
 
-  DartCodeGen(GetterSetterGenerator this._getterGen);
+  DartCodeGen(this._getterGen);
 
   // Returns the Dart code for a particular operator.
   _op(fn) => fn == "undefined" ? "null" : fn;
