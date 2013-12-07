@@ -16,7 +16,7 @@ class HtmlExpressionExtractor {
   List<DirectiveInfo> directiveInfos;
   IoService ioService;
 
-  HtmlExpressionExtractor(this.directiveInfos, IoService this.ioService);
+  HtmlExpressionExtractor(this.directiveInfos, this.ioService);
 
   Set<String> expressions = new Set<String>();
 

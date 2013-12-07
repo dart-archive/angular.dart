@@ -250,11 +250,11 @@ abstract class AbstractNgRepeatDirective  {
       if (row.startNode == null) {
         _rows[row.id] = row;
         var block = _boundBlockFactory(childScope);
-        row.block = block;
-        row.scope = childScope;
-        row.elements = block.elements;
-        row.startNode = row.elements[0];
-        row.endNode = row.elements[row.elements.length - 1];
+        row..block = block
+          ..scope = childScope
+          ..elements = block.elements
+          ..startNode = row.elements[0]
+          ..endNode = row.elements[row.elements.length - 1];
         block.insertAfter(cursor);
       }
       cursor = row.block;

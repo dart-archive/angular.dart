@@ -598,7 +598,7 @@ class MockHttpRequest implements HttpRequest {
   final response;
   final String headers;
 
-  MockHttpRequest(int this.status, String this.response, [this.headers]);
+  MockHttpRequest(this.status, this.response, [this.headers]);
 
   void abort() {}
   bool dispatchEvent(Event event) => false;

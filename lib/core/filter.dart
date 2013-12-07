@@ -26,7 +26,7 @@ part of angular.core;
 class NgFilter {
   final String name;
 
-  const NgFilter({String this.name});
+  const NgFilter({this.name});
 
   int get hashCode => name.hashCode;
   bool operator==(other) => this.name == other.name;

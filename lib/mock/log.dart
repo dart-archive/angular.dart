@@ -20,7 +20,7 @@ part of angular.mock;
 class LogAttrDirective implements NgAttachAware {
   final Logger log;
   String logMessage;
-  LogAttrDirective(Logger this.log);
+  LogAttrDirective(this.log);
   attach() => log(logMessage == '' ? 'LOG' : logMessage);
 }
 

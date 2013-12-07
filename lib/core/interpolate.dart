@@ -38,7 +38,7 @@ class Interpolation {
 class Interpolate {
   final Parser _parse;
 
-  Interpolate(Parser this._parse);
+  Interpolate(this._parse);
 
   /**
    * Compile markup text into interpolation function.
@@ -50,10 +50,10 @@ class Interpolate {
    *      interpolation function.
    */
   Interpolation call(String template, [bool mustHaveExpression = false]) {
-    num startIndex;
-    num endIndex;
-    num index = 0;
-    num length = template.length;
+    int startIndex;
+    int endIndex;
+    int index = 0;
+    int length = template.length;
     bool hasInterpolation = false;
     String exp;
     List<String> separators = [];

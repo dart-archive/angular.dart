@@ -11,7 +11,7 @@ part of angular.directive;
 class NgBindTemplateDirective {
   dom.Element element;
 
-  NgBindTemplateDirective(dom.Element this.element);
+  NgBindTemplateDirective(this.element);
 
   set bind(value) {
     element.text = value;

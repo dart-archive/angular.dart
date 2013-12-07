@@ -26,7 +26,7 @@ class NgModel {
 
   Function render = (value) => null;
 
-  NgModel(Scope this._scope, NodeAttrs attrs) {
+  NgModel(this._scope, NodeAttrs attrs) {
     _exp = 'ng-model=${attrs["ng-model"]}';
     watchCollection = false;
   }
@@ -76,7 +76,7 @@ class InputCheckboxDirective {
   NgModel ngModel;
   Scope scope;
 
-  InputCheckboxDirective(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope) {
+  InputCheckboxDirective(dom.Element this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
       inputElement.checked = value == null ? false : toBool(value);
     };
@@ -95,7 +95,7 @@ abstract class _InputTextlikeDirective {
   get typedValue => (inputElement as dynamic).value;
   set typedValue(String value) => (inputElement as dynamic).value = (value == null) ? '' : value;
 
-  _InputTextlikeDirective(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope) {
+  _InputTextlikeDirective(dom.Element this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
       if (value == null) value = '';
 
@@ -308,8 +308,8 @@ class InputRadioDirective {
   NgModel ngModel;
   Scope scope;
 
-  InputRadioDirective(dom.Element this.radioButtonElement, NgModel this.ngModel,
-                      Scope this.scope, NodeAttrs attrs) {
+  InputRadioDirective(dom.Element this.radioButtonElement, this.ngModel,
+                      this.scope, NodeAttrs attrs) {
     // If there's no "name" set, we'll set a unique name.  This ensures
     // less surprising behavior about which radio buttons are grouped together.
     if (attrs['name'] == '' || attrs['name'] == null) {

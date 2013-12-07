@@ -5,7 +5,7 @@ class CacheStats {
   final int size;
   final int hits;
   final int misses;
-  CacheStats(int this.capacity, int this.size, int this.hits, int this.misses);
+  CacheStats(this.capacity, this.size, this.hits, this.misses);
   String toString() =>
       "[CacheStats: capacity: $capacity, size: $size, hits: $hits, misses: $misses]";
 }

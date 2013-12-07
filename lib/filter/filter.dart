@@ -123,7 +123,7 @@ class FilterFilter {
                              (a is String && b is String && a == b) ||
                              (a is num && b is num && a.isNaN && b.isNaN);
 
-  FilterFilter(Parser this._parser);
+  FilterFilter(this._parser);
 
   Equals _configureComparator(var comparatorExpression) {
     if (comparatorExpression == null || comparatorExpression == false) {
