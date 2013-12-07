@@ -73,8 +73,7 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
   Scope _previousScope;
   Route _viewRoute;
 
-  NgViewDirective(Element this.element, BlockCache this.blockCache,
-      Scope this.scope, Injector injector, Router router)
+  NgViewDirective(this.element, this.blockCache, this.scope, Injector injector, Router router)
       : injector = injector, locationService = injector.get(NgRoutingHelper) {
     RouteProvider routeProvider = injector.parent.get(NgViewDirective);
     if (routeProvider != null) {

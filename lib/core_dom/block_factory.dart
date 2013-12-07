@@ -15,7 +15,7 @@ class BoundBlockFactory {
 
   Injector injector;
 
-  BoundBlockFactory(BlockFactory this.blockFactory, Injector this.injector);
+  BoundBlockFactory(this.blockFactory, this.injector);
 
   Block call(Scope scope) {
     return blockFactory(injector.createChild([new Module()..value(Scope, scope)]));
@@ -34,11 +34,10 @@ class BlockFactory {
   final Expando _expando;
 
 
-  BlockFactory(this.templateElements, this.directivePositions, this._perf, Expando this._expando);
+  BlockFactory(this.templateElements, this.directivePositions, this._perf, this._expando);
 
-  BoundBlockFactory bind(Injector injector) {
-    return new BoundBlockFactory(this, injector);
-  }
+  BoundBlockFactory bind(Injector injector) =>
+    new BoundBlockFactory(this, injector);
 
   Block call(Injector injector, [List<dom.Node> elements]) {
     if (elements == null) {
@@ -57,8 +56,7 @@ class BlockFactory {
 
   _link(Block block, List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
     var preRenderedIndexOffset = 0;
-    var directiveDefsByName = {
-    };
+    var directiveDefsByName = {};
 
     for (num i = 0, ii = directivePositions.length; i < ii;) {
       num index = directivePositions[i++];
@@ -259,7 +257,7 @@ class BlockCache {
 
   dom.NodeTreeSanitizer treeSanitizer;
 
-  BlockCache(Http this.$http, TemplateCache this.$templateCache, Compiler this.compiler, dom.NodeTreeSanitizer this.treeSanitizer);
+  BlockCache(this.$http, this.$templateCache, this.compiler, this.treeSanitizer);
 
   BlockFactory fromHtml(String html) {
     BlockFactory blockFactory = _blockFactoryCache.get(html);
@@ -296,7 +294,7 @@ class _ComponentFactory {
   Compiler compiler;
   var controller;
 
-  _ComponentFactory(this.element, Type this.type, NgComponent this.component, this.treeSanitizer);
+  _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer);
 
   dynamic call(Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http $http, TemplateCache $templateCache) {
     this.compiler = compiler;

@@ -31,7 +31,7 @@ part of angular.directive;
 @NgDirective(selector: '[ng-selected]', map: const {'ng-selected': '=>selected'})
 class NgBooleanAttributeDirective {
   NodeAttrs attrs;
-  NgBooleanAttributeDirective(NodeAttrs this.attrs);
+  NgBooleanAttributeDirective(this.attrs);
 
   _setBooleanAttribute(name, value) => attrs[name] = (toBool(value) ? '' : null);
 
@@ -66,7 +66,7 @@ class NgBooleanAttributeDirective {
 @NgDirective(selector: '[ng-srcset]', map: const {'ng-srcset': '@srcset'})
 class NgSourceDirective {
   NodeAttrs attrs;
-  NgSourceDirective(NodeAttrs this.attrs);
+  NgSourceDirective(this.attrs);
 
   set href(value)   => attrs['href']   = value;
   set src(value)    => attrs['src']    = value;

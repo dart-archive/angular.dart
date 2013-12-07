@@ -5,17 +5,11 @@ class NodeCursor {
   List<dom.Node> elements;
   num index;
 
-  NodeCursor(List<dom.Node> this.elements) {
-    index = 0;
-  }
+  NodeCursor(this.elements) : index = 0;
 
-  isValid() {
-    return index < elements.length;
-  }
+  isValid() => index < elements.length;
 
-  cursorSize() {
-    return 1;
-  }
+  cursorSize() => 1;
 
   macroNext() {
     for(var i = 0, ii = cursorSize(); i < ii; i++, index++){}
@@ -98,7 +92,5 @@ class NodeCursor {
     return new NodeCursor(nodes);
   }
 
-  isInstance() {
-    return false;
-  }
+  isInstance() => false;
 }

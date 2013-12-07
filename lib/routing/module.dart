@@ -195,5 +195,5 @@ class NgRoutingModule extends Module {
 class NgRoutingUsePushState {
   final bool usePushState;
   NgRoutingUsePushState(): usePushState = true;
-  NgRoutingUsePushState.value(bool this.usePushState);
+  NgRoutingUsePushState.value(this.usePushState);
 }

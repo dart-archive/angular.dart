@@ -103,7 +103,7 @@ class Lexer {
         } else if (ch == quote) {
           index++;
           tokens.add(new Token(start, rawString)
-          ..withValue(string));
+            ..withValue(string));
           return false; // BREAK
         } else {
           string += ch;

@@ -23,8 +23,7 @@ class SourceMetadataExtractor {
   SourceCrawler sourceCrawler;
   DirectiveMetadataCollectingVisitor metadataVisitor;
 
-  SourceMetadataExtractor(this.sourceCrawler,
-      [DirectiveMetadataCollectingVisitor this.metadataVisitor]) {
+  SourceMetadataExtractor(this.sourceCrawler, [ this.metadataVisitor ]) {
     if (metadataVisitor == null) {
       metadataVisitor = new DirectiveMetadataCollectingVisitor();
     }
@@ -118,12 +117,7 @@ class SourceMetadataExtractor {
   }
 }
 
-String _maybeCamelCase(String s) {
-  if (s.indexOf('-') > -1) {
-    return camelcase(s);
-  }
-  return s;
-}
+String _maybeCamelCase(String s) => (s.indexOf('-') > -1) ? camelcase(s) : s;
 
 class DirectiveMetadataCollectingVisitor {
   List<DirectiveMetadata> metadata = <DirectiveMetadata>[];

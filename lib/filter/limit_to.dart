@@ -39,7 +39,7 @@ class LimitToFilter {
   Injector _injector;
   Parser _parser;
 
-  LimitToFilter(Injector this._injector, Parser this._parser);
+  LimitToFilter(this._injector, this._parser);
 
   dynamic call(dynamic items, [int limit]) {
     if (items == null) {

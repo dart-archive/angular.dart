@@ -21,7 +21,7 @@ part of angular.directive;
 class NgBindDirective {
   dom.Element element;
 
-  NgBindDirective(dom.Element this.element);
+  NgBindDirective(this.element);
 
   set value(value) => element.text = value == null ? '' : value.toString();
 }

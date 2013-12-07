@@ -16,7 +16,7 @@ class Probe implements NgDetachAware {
   final Element element;
   final NodeAttrs _attrs;
 
-  Probe(Scope this.scope, Injector this.injector, Element this.element, NodeAttrs this._attrs) {
+  Probe(this.scope, this.injector, this.element, this._attrs) {
     scope.$root[_attrs['probe']] = this;
   }
 
