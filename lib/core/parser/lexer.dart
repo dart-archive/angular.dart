@@ -243,8 +243,8 @@ class Scanner {
   }
 
   void error(String message, [int offset = 0]) {
-    // TODO(kasperl): Get rid of this position hack once the lexer tests
-    // have been updated.
+    // TODO(kasperl): Try to get rid of the offset. It is only used to match
+    // the error expectations in the lexer tests for numbers with exponents.
     int position = index + offset;
     throw "Lexer Error: $message at column $position in expression [$input]";
   }
