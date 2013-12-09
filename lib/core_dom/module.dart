@@ -11,6 +11,9 @@ import 'package:perf_api/perf_api.dart';
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser_library.dart';
 
+import 'package:observe/observe.dart';
+import 'package:template_binding/template_binding.dart';
+
 part 'block.dart';
 part 'block_factory.dart';
 part 'cookies.dart';
