@@ -17,7 +17,7 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-form]',
     visibility: NgDirective.CHILDREN_VISIBILITY)
-class NgForm extends NgControl implements NgDetachAware {
+class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
   final NgForm _parentForm;
   final dom.Element _element;
   final Scope _scope;
@@ -82,8 +82,24 @@ class NgForm extends NgControl implements NgDetachAware {
     }
   }
 
+  //FIXME: fix this reflection bug that shows up when Map is implemented
+  operator []=(String name, value) {
+    if(name == 'name'){
+      this.name = value;
+    } else {
+      _controlByName[name] = value;
+    }
+  }
+
+  //FIXME: fix this reflection bug that shows up when Map is implemented
   operator[](name) {
-    return _controlByName[name];
+    if(name == 'valid') {
+      return valid;
+    } else if(name == 'invalid') {
+      return invalid;
+    } else {
+      return _controlByName[name];
+    }
   }
 
   addControl(NgControl control) {
