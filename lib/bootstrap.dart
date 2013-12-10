@@ -69,7 +69,7 @@ Injector ngBootstrap({
   if (module != null) ngModules.add(module);
   if (modules != null) ngModules.addAll(modules);
   if (element == null) {
-    element = dom.query(selector);
+    element = dom.querySelector(selector);
     var document = dom.window.document;
     if (element == null) element = document.childNodes.firstWhere((e) => e is dom.Element);
   }
