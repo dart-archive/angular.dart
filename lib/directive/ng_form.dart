@@ -17,7 +17,7 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-form]',
     visibility: NgDirective.CHILDREN_VISIBILITY)
-class NgForm {
+class NgForm implements Map<String, NgModel> {
   static const NG_VALID_CLASS    = "ng-valid";
   static const NG_INVALID_CLASS  = "ng-invalid";
   static const NG_PRISTINE_CLASS = "ng-pristine";
@@ -130,8 +130,24 @@ class NgForm {
     }
   }
 
+  //FIXME: fix this reflection bug that shows up when Map is implemented
+  operator []=(String name, value) {
+    if(name == 'name'){
+      this.name = value;
+    } else {
+      _controlByName[name] = value;
+    }
+  }
+
+  //FIXME: fix this reflection bug that shows up when Map is implemented
   operator[](name) {
-    return _controlByName[name];
+    if(name == 'valid') {
+      return valid;
+    } else if(name == 'invalid') {
+      return invalid;
+    } else {
+      return _controlByName[name];
+    }
   }
 
   addControl(control) {

@@ -27,6 +27,7 @@ part 'ng_switch.dart';
 part 'ng_non_bindable.dart';
 part 'input_select.dart';
 part 'ng_form.dart';
+part 'ng_model_validators.dart';
 
 class NgDirectiveModule extends Module {
   NgDirectiveModule() {
@@ -45,14 +46,9 @@ class NgDirectiveModule extends Module {
     value(NgRepeatDirective, null);
     value(NgShalowRepeatDirective, null);
     value(NgShowDirective, null);
-    value(InputEmailDirective, null);
-    value(InputNumberDirective, null);
+    value(InputTextLikeDirective, null);
     value(InputRadioDirective, null);
-    value(InputTextDirective, null);
-    value(InputPasswordDirective, null);
-    value(InputUrlDirective, null);
     value(InputCheckboxDirective, null);
-    value(TextAreaDirective, null);
     value(InputSelectDirective, null);
     value(OptionValueDirective, null);
     value(NgModel, null);
@@ -68,5 +64,13 @@ class NgDirectiveModule extends Module {
     value(NgNonBindableDirective, null);
     value(NgTemplateDirective, null);
     value(NgForm, null);
+
+    value(NgModelRequiredValidator, null);
+    value(NgModelUrlValidator, null);
+    value(NgModelEmailValidator, null);
+    value(NgModelNumberValidator, null);
+    value(NgModelPatternValidator, null);
+    value(NgModelMinLengthValidator, null);
+    value(NgModelMaxLengthValidator, null);
   }
 }
