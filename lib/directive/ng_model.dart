@@ -27,6 +27,8 @@ class NgModel {
   bool _pristine;
   bool _valid;
   bool _invalid;
+
+  final List<_NgModelValidator> _validators = new List<_NgModelValidator>();
   final Map<String, bool> currentErrors = new Map<String, bool>();
 
   Function _removeWatch = () => null;
@@ -124,13 +126,24 @@ class NgModel {
     }
   }
 
+  get validators => _validators;
+  validate() {
+    if(validators.length > 0) {
+      validators.forEach((validator) {
+        setValidity(validator.name, validator.isValid());
+      });
+    } else {
+      valid = true;
+    }
+  }
+
   setValidity(String errorType, bool isValid) {
     if(isValid) {
       if(currentErrors.containsKey(errorType)) {
         currentErrors.remove(errorType);
-        if(currentErrors.isEmpty) {
-          valid = true;
-        }
+      }
+      if(valid != true && currentErrors.isEmpty) {
+        valid = true;
       }
     } else if(!currentErrors.containsKey(errorType)) {
       currentErrors[errorType] = true;
@@ -271,6 +284,7 @@ class TextAreaDirective extends _InputTextlikeDirective {
  * element is an invalid number, then the expression specified by the `ng-model`
  * is set to null.,
  */
+<<<<<<< HEAD
 @NgDirective(selector: 'input[type=number][ng-model]')
 class InputNumberDirective extends _InputTextlikeDirective {
   InputNumberDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
@@ -317,7 +331,6 @@ class InputEmailDirective extends _InputTextlikeDirective {
     }
   }
 }
-
 
 /**
  * Usage:

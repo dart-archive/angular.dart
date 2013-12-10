@@ -241,21 +241,22 @@ describe('form', () {
     }));
 
     it('should remove all controls when the scope is destroyed', inject((Scope scope) {
+      Scope childScope = scope.$new();
       var element = $('<form name="myForm">' + 
                       '  <input type="text" ng-model="one" name="one" />' +
                       '  <input type="text" ng-model="two" name="two" />' +
                       '  <input type="text" ng-model="three" name="three" />' +
                       '</form>');
 
-      _.compile(element);
-      scope.$apply();
+      _.compile(element, scope: childScope);
+      childScope.$apply();
 
-      var form = scope['myForm'];
+      var form = childScope['myForm'];
       expect(form['one']).toBeDefined();
       expect(form['two']).toBeDefined();
       expect(form['three']).toBeDefined();
 
-      scope.$broadcast(r'$destroy');
+      childScope.$destroy();
 
       expect(form['one']).toBeNull();
       expect(form['two']).toBeNull();
