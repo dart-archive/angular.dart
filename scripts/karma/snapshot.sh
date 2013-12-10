@@ -17,4 +17,4 @@ echo ================
 
 
 curl $URL/debug.html --silent | sed -e 's/\/base/\.\/base/' > debug.html
-curl $URL/base/__adapter_dart_unittest.dart --silent | sed -e 's/\/base/\./' > base/__adapter_dart_unittest.dart
+curl $URL/__adapter_dart_unittest.dart --silent | sed -e 's/\/base/\./' > __adapter_dart_unittest.dart
