@@ -6,7 +6,7 @@ part of angular.routing;
 class ViewFactory {
   NgRoutingHelper locationService;
 
-  ViewFactory(NgRoutingHelper this.locationService);
+  ViewFactory(this.locationService);
 
   call(String templateUrl) =>
       (RouteEvent event) =>
@@ -34,7 +34,7 @@ class NgRoutingHelper {
   List<NgViewDirective> portals = <NgViewDirective>[];
   Map<String, String> _templates = new Map<String, String>();
 
-  NgRoutingHelper(RouteInitializer initializer, Router this.router) {
+  NgRoutingHelper(RouteInitializer initializer, this.router) {
     if (initializer == null) {
       window.console.error('No RouteInitializer implementation provided.');
       return;

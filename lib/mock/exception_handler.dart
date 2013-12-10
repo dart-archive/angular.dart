@@ -12,7 +12,7 @@ class RethrowExceptionHandler extends ExceptionHandler {
 class ExceptionWithStack {
   final dynamic error;
   final dynamic stack;
-  ExceptionWithStack(dynamic this.error, dynamic this.stack);
+  ExceptionWithStack(this.error, this.stack);
   toString() => "$error\n$stack";
 }
 

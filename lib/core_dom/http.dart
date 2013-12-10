@@ -343,7 +343,7 @@ class HttpDefaults {
   /**
    * Constructor intended for DI.
    */
-  HttpDefaults(HttpDefaultHeaders this.headers);
+  HttpDefaults(this.headers);
 }
 
 /**
@@ -420,12 +420,7 @@ class Http {
   /**
    * Constructor, useful for DI.
    */
-  Http(BrowserCookies this._cookies,
-       LocationWrapper this._location,
-       UrlRewriter this._rewriter,
-       HttpBackend this._backend,
-       HttpDefaults this.defaults,
-       HttpInterceptors this._interceptors);
+  Http(this._cookies, this._location, this._rewriter, this._backend, this.defaults, this._interceptors);
 
   /**
    * DEPRECATED
@@ -691,9 +686,8 @@ class Http {
    * Returns an [Iterable] of [Future] [HttpResponse]s for the requests
    * that the [Http] service is currently waiting for.
    */
-  Iterable<async.Future<HttpResponse> > get pendingRequests {
-    return _pendingRequests.values;
-  }
+  Iterable<async.Future<HttpResponse> > get pendingRequests =>
+    _pendingRequests.values;
 
   /**
    * DEPRECATED

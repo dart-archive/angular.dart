@@ -37,7 +37,7 @@ class Block implements ElementWrapper {
 
   List<dynamic> _directives = [];
 
-  Block(List<dom.Node> this.elements);
+  Block(this.elements);
 
   Block insertAfter(ElementWrapper previousBlock) {
     // Update Link List.
@@ -154,6 +154,6 @@ class BlockHole extends ElementWrapper {
 
   ElementWrapper next;
 
-  BlockHole(List<dom.Node> this.elements);
+  BlockHole(this.elements);
 }
 

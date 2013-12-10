@@ -144,9 +144,7 @@ class NgZone {
    *
    * Returns the return value of body.
    */
-  run(body()) {
-    return _zone.run(body);
-  }
+  run(body()) => _zone.run(body);
 
   assertInTurn() {
     assert(_runningInTurn > 0 || _inFinishTurn);

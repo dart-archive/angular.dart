@@ -17,16 +17,14 @@ class ParserGenerator {
   SourceBuilder _ = new SourceBuilder();
   SourcePrinter _prt;
 
-  ParserGenerator(DynamicParser this._parser,
-                  GetterSetterGenerator this._getters,
-                  SourcePrinter this._prt);
+  ParserGenerator(this._parser, this._getters, this._prt);
 
   generateParser(Iterable<String> expressions) {
-    _prt.printSrc("genEvalError(msg) { throw msg; }");
-    _prt.printSrc("functions(FilterLookup filters) => "
-                  "new StaticParserFunctions(buildExpressions(filters));");
-    _prt.printSrc('var evalError = (text, [s]) => text;');
-    _prt.printSrc("");
+    _prt..printSrc("genEvalError(msg) { throw msg; }")
+      ..printSrc("functions(FilterLookup filters) => "
+                 "new StaticParserFunctions(buildExpressions(filters));")
+      ..printSrc('var evalError = (text, [s]) => text;')
+      ..printSrc("");
     BodySource body = new BodySource();
     MapSource map = new MapSource();
 
@@ -40,9 +38,9 @@ class ParserGenerator {
       body(_.stmt('Expression ${_.ref(code)} = ', code.toSource(_)));
     });
     body(_.stmt('return ', map));
-    _prt.printSrc("Map<String, Expression> buildExpressions(FilterLookup filters) ${body}");
-    _prt.printSrc("\n");
-    _prt.printSrc(_getters.functions);
+    _prt..printSrc("Map<String, Expression> buildExpressions(FilterLookup filters) ${body}")
+      ..printSrc("\n")
+      ..printSrc(_getters.functions);
   }
 
   Code safeCode(String exp) {

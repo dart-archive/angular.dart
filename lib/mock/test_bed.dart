@@ -17,11 +17,7 @@ class TestBed {
   List<Node> rootElements;
   Block rootBlock;
 
-  TestBed(
-      Injector this.injector,
-      Scope this.rootScope,
-      Compiler this.compiler,
-      Parser this.parser);
+  TestBed(this.injector, this.rootScope, this.compiler, this.parser);
 
 
   /**

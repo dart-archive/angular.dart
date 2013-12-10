@@ -28,10 +28,7 @@ class NgIncludeDirective {
   Block _previousBlock;
   Scope _previousScope;
 
-  NgIncludeDirective(dom.Element this.element,
-                     Scope this.scope,
-                     BlockCache this.blockCache,
-                     Injector this.injector);
+  NgIncludeDirective(this.element, this.scope, this.blockCache, this.injector);
 
   _cleanUp() {
     if (_previousBlock == null) {

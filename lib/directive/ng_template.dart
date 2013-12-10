@@ -29,7 +29,7 @@ class NgTemplateDirective {
   dom.Element element;
   TemplateCache templateCache;
 
-  NgTemplateDirective(dom.Element this.element, TemplateCache this.templateCache);
+  NgTemplateDirective(this.element, this.templateCache);
   set templateUrl(url) => templateCache.put(url, new HttpResponse(200,
       (element is dom.TemplateElement
         ? (element as dom.TemplateElement).content.innerHtml

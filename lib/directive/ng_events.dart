@@ -144,5 +144,5 @@ class NgEventDirective {
   dom.Element element;
   Scope scope;
 
-  NgEventDirective(dom.Element this.element, Scope this.scope);
+  NgEventDirective(this.element, this.scope);
 }

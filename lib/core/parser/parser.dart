@@ -138,7 +138,7 @@ class DynamicParser implements Parser {
   final Lexer _lexer;
   final ParserBackend _b;
 
-  DynamicParser(Lexer this._lexer, ParserBackend this._b);
+  DynamicParser(this._lexer, this._b);
 
   List<Token> _tokens;
   String _text;
@@ -390,7 +390,6 @@ class DynamicParser implements Parser {
     }
   }
 
-
   ParserAST _expression() {
     return _assignment();
   }
@@ -419,7 +418,6 @@ class DynamicParser implements Parser {
       }
     }
   }
-
 
   _statements() {
     List<ParserAST> statements = [];
