@@ -169,7 +169,8 @@ main() {
         toEqualsDirectiveInfos([
           { "selector": '[ng-model]',                 "value": 'val',   "element": element},
           { "selector": '[probe]',                    "value": 'i',     "element": element},
-          { "selector": 'input[type=text][ng-model]', "value": 'val',   "element": element}
+          { "selector": 'input[ng-model]',            "value": 'val',   "element": element},
+          { "selector": '[ng-model][required]',       "value": 'true',  "element": element}
         ]));
     });
 
