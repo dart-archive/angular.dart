@@ -117,11 +117,11 @@ class NotExpect {
 
   toHaveClass(cls) => unit.expect(actual.classes.contains(cls), false, reason: ' Expected ${actual} to not have css class ${cls}');
   toBe(expected) => unit.expect(actual,
-      unit.predicate((actual) => !identical(expected, actual), '$expected'));
+      unit.predicate((actual) => !identical(expected, actual), 'not $expected'));
   toEqual(expected) => unit.expect(actual,
-      unit.predicate((actual) => expected != actual, '$expected'));
+      unit.predicate((actual) => expected != actual, 'not $expected'));
   toContain(expected) => unit.expect(actual,
-      unit.predicate((actual) => !actual.contains(expected), '$expected'));
+      unit.predicate((actual) => !actual.contains(expected), 'not $expected'));
 }
 
 class ExceptionContains extends unit.Matcher {
