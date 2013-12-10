@@ -61,14 +61,16 @@ describe('ng-model', () {
       model.render('abc');
 
       expect(element.value).toEqual('abc');
+      // No update.  selectionStart/End is unchanged.
       expect(element.selectionStart).toEqual(1);
       expect(element.selectionEnd).toEqual(2);
 
       model.render('xyz');
 
+      // Value updated.  selectionStart/End changed.
       expect(element.value).toEqual('xyz');
-      expect(element.selectionStart).toEqual(1);
-      expect(element.selectionEnd).toEqual(2);
+      expect(element.selectionStart).toEqual(3);
+      expect(element.selectionEnd).toEqual(3);
     }));
   });
 
@@ -130,8 +132,8 @@ describe('ng-model', () {
       model.render('xyz');
 
       expect(element.value).toEqual('xyz');
-      expect(element.selectionStart).toEqual(1);
-      expect(element.selectionEnd).toEqual(2);
+      expect(element.selectionStart).toEqual(3);
+      expect(element.selectionEnd).toEqual(3);
     }));
   });
 
@@ -242,9 +244,11 @@ describe('ng-model', () {
 
       model.render('xyz');
 
+      // Setting the value on a textarea doesn't update the selection the way it
+      // does on input elements.  This stays unchanged.
       expect(element.value).toEqual('xyz');
-      expect(element.selectionStart).toEqual(1);
-      expect(element.selectionEnd).toEqual(2);
+      expect(element.selectionStart).toEqual(0);
+      expect(element.selectionEnd).toEqual(0);
     }));
   });
 

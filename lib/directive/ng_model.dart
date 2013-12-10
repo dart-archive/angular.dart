@@ -88,25 +88,21 @@ class InputCheckboxDirective {
 
 
 abstract class _InputTextlikeDirective {
-  dom.InputElement inputElement;
+  dom.Element inputElement;
   NgModel ngModel;
   Scope scope;
 
-  // override in subclass
-  get typedValue;
-  set typedValue(value);
+  get typedValue => (inputElement as dynamic).value;
+  set typedValue(String value) => (inputElement as dynamic).value = (value == null) ? '' : value;
 
   _InputTextlikeDirective(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope) {
     ngModel.render = (value) {
       if (value == null) value = '';
 
       var currentValue = typedValue;
-      if (value == currentValue || (value is num && currentValue is num && value.isNaN && currentValue.isNaN)) return;
-      var start = inputElement.selectionStart;
-      var end = inputElement.selectionEnd;
-      typedValue =  value;
-      inputElement.selectionStart = start;
-      inputElement.selectionEnd = end;
+      if (value != currentValue && !(value is num && currentValue is num && value.isNaN && currentValue.isNaN)) {
+        typedValue =  value;
+      }
     };
     inputElement.onChange.listen(relaxFnArgs(processValue));
     inputElement.onKeyDown.listen((e) {
@@ -138,10 +134,6 @@ class InputTextDirective extends _InputTextlikeDirective {
   InputTextDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
       super(inputElement, ngModel, scope);
 
-  String get typedValue => inputElement.value;
-  set typedValue(String value) {
-    inputElement.value = (value == null) ? '' : value;
-  }
 }
 
 /**
@@ -158,11 +150,6 @@ class InputTextDirective extends _InputTextlikeDirective {
 class InputPasswordDirective extends _InputTextlikeDirective {
   InputPasswordDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
       super(inputElement, ngModel, scope);
-
-  String get typedValue => inputElement.value;
-  set typedValue(String value) {
-    inputElement.value = (value == null) ? '' : value;
-  }
 }
 
 /**
@@ -176,33 +163,9 @@ class InputPasswordDirective extends _InputTextlikeDirective {
  * purposes.
  */
 @NgDirective(selector: 'textarea[ng-model]')
-class TextAreaDirective {
-  dom.TextAreaElement textAreaElement;
-  NgModel ngModel;
-  Scope scope;
-
-  TextAreaDirective(dom.Element this.textAreaElement, NgModel this.ngModel, Scope this.scope) {
-    ngModel.render = (value) {
-      if (value == null) value = '';
-
-      var currentValue = textAreaElement.value;
-      if (value == currentValue) return;
-      var start = textAreaElement.selectionStart;
-      var end = textAreaElement.selectionEnd;
-      textAreaElement.value =  value;
-      textAreaElement.selectionStart = start;
-      textAreaElement.selectionEnd = end;
-    };
-    textAreaElement.onChange.listen(relaxFnArgs(processValue));
-    textAreaElement.onKeyDown.listen((e) => new async.Timer(Duration.ZERO, processValue));
-  }
-
-  processValue() {
-    var value = textAreaElement.value;
-    if (value != ngModel.viewValue) {
-      scope.$apply(() => ngModel.viewValue = value);
-    }
-  }
+class TextAreaDirective extends _InputTextlikeDirective {
+  TextAreaDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
+        super(inputElement, ngModel, scope);
 }
 
 /**
@@ -221,13 +184,13 @@ class InputNumberDirective extends _InputTextlikeDirective {
   InputNumberDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
       super(inputElement, ngModel, scope);
 
-  num get typedValue => inputElement.valueAsNumber;
+  get typedValue => (inputElement as dom.InputElement).valueAsNumber;
 
   set typedValue(var value) {
     if (value != null && value is num) {
       num number = value as num;
       if (!value.isNaN) {
-        inputElement.valueAsNumber = value;
+        (inputElement as dom.InputElement).valueAsNumber = value;
       }
     }
   }
@@ -252,13 +215,13 @@ class InputEmailDirective extends _InputTextlikeDirective {
       super(inputElement, ngModel, scope);
 
   String get typedValue {
-    String value = inputElement.value;
+    String value = (inputElement as dom.InputElement).value;
     return EMAIL_REGEXP.hasMatch(value) ? value : null;
   }
 
   set typedValue(String value) {
     if (value != null && EMAIL_REGEXP.hasMatch(value)) {
-      inputElement.value = value;
+      (inputElement as dom.InputElement).value = value;
     }
   }
 }
@@ -284,13 +247,13 @@ class InputUrlDirective extends _InputTextlikeDirective {
       super(inputElement, ngModel, scope);
 
   String get typedValue {
-    String value = inputElement.value;
+    String value = (inputElement as dom.InputElement).value;
     return URL_REGEXP.hasMatch(value) ? value : null;
   }
 
   set typedValue(String value) {
     if (value != null && URL_REGEXP.hasMatch(value)) {
-      inputElement.value = value;
+      (inputElement as dom.InputElement).value = value;
     }
   }
 }
