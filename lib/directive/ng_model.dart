@@ -27,6 +27,8 @@ class NgModel {
   bool _pristine;
   bool _valid;
   bool _invalid;
+
+  final List<_NgModelValidator> _validators = new List<_NgModelValidator>();
   final Map<String, bool> currentErrors = new Map<String, bool>();
 
   Function _removeWatch = () => null;
@@ -124,13 +126,24 @@ class NgModel {
     }
   }
 
+  get validators => _validators;
+  validate() {
+    if(validators.length > 0) {
+      validators.forEach((validator) {
+        setValidity(validator.name, validator.isValid());
+      });
+    } else {
+      valid = true;
+    }
+  }
+
   setValidity(String errorType, bool isValid) {
     if(isValid) {
       if(currentErrors.containsKey(errorType)) {
         currentErrors.remove(errorType);
-        if(currentErrors.isEmpty) {
-          valid = true;
-        }
+      }
+      if(valid != true && currentErrors.isEmpty) {
+        valid = true;
       }
     } else if(!currentErrors.containsKey(errorType)) {
       currentErrors[errorType] = true;
@@ -308,22 +321,6 @@ class TextAreaDirective {
  * element is an invalid number, then the expression specified by the `ng-model`
  * is set to null.,
  */
-@NgDirective(selector: 'input[type=number][ng-model]')
-class InputNumberDirective extends _InputTextlikeDirective {
-  InputNumberDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
-      super(inputElement, ngModel, scope);
-
-  num get typedValue => inputElement.valueAsNumber;
-
-  set typedValue(var value) {
-    if (value != null && value is num) {
-      num number = value as num;
-      if (!value.isNaN) {
-        inputElement.valueAsNumber = value;
-      }
-    }
-  }
-}
 
 /**
  * Usage:
@@ -336,24 +333,6 @@ class InputNumberDirective extends _InputTextlikeDirective {
  * an invalid e-mail address, then the expression specified by the `ng-model` is
  * set to null.,
  */
-@NgDirective(selector: 'input[type=email][ng-model]')
-class InputEmailDirective extends _InputTextlikeDirective {
-  static final EMAIL_REGEXP = new RegExp(
-      r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$');
-  InputEmailDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
-      super(inputElement, ngModel, scope);
-
-  String get typedValue {
-    String value = inputElement.value;
-    return EMAIL_REGEXP.hasMatch(value) ? value : null;
-  }
-
-  set typedValue(String value) {
-    if (value != null && EMAIL_REGEXP.hasMatch(value)) {
-      inputElement.value = value;
-    }
-  }
-}
 
 
 /**
@@ -367,25 +346,6 @@ class InputEmailDirective extends _InputTextlikeDirective {
  * an invalid URL, then the expression specified by the `ng-model` is set to
  * null.,
  */
-@NgDirective(selector: 'input[type=url][ng-model]')
-class InputUrlDirective extends _InputTextlikeDirective {
-  static final URL_REGEXP = new RegExp(
-      r'^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?' +
-      r'(\/|\/([\w#!:.?+=&%@!\-\/]))?$');
-  InputUrlDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
-      super(inputElement, ngModel, scope);
-
-  String get typedValue {
-    String value = inputElement.value;
-    return URL_REGEXP.hasMatch(value) ? value : null;
-  }
-
-  set typedValue(String value) {
-    if (value != null && URL_REGEXP.hasMatch(value)) {
-      inputElement.value = value;
-    }
-  }
-}
 
 class _UidCounter {
   static final int CHAR_0 = "0".codeUnitAt(0);

@@ -12,6 +12,7 @@ import '../_specs.dart';
 @NgDirective(selector:':contains(/abc/)')     class _ContainsAbc{}
 @NgDirective(selector:'[*=/xyz/]')            class _AttributeContainsXyz{}
 
+@NgComponent(selector:'[my-model][required]') class _NgModelRequired{}
 @NgComponent(selector:'component')            class _Component{}
 @NgDirective(selector:'[attribute]')          class _Attribute{}
 @NgDirective(selector:'[structural]',
@@ -47,7 +48,8 @@ main() {
         ..type(_Component)
         ..type(_Attribute)
         ..type(_Structural)
-        ..type(_IgnoreChildren);
+        ..type(_IgnoreChildren)
+        ..type(_NgModelRequired);
     }));
     beforeEach(inject((DirectiveMap directives) {
       selector = directiveSelectorFactory(directives);
@@ -145,6 +147,14 @@ main() {
           { "selector": '[directive]', "value": 'd', "element": element},
           { "selector": '[directive=d][foo=f]', "value": 'f', "element": element}
       ]));
+    });
+
+    it('should match ng-model + required on the same element', () {
+      expect(
+        selector(element = e('<input type="text" ng-model="val" probe="i" required="true" />')),
+        toEqualsDirectiveInfos([
+          { "selector": 'b', "value": null, "element": element}
+        ]));
     });
   });
 }

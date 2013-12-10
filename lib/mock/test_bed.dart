@@ -37,7 +37,13 @@ class TestBed {
    * and [rootElement] contains the first element from the [rootElemets].
    *
    */
-  Element compile(html) {
+
+  //make an optional named param
+  Element compile(html, {Scope scope}) {
+    var injector = this.injector;
+    if(scope != null) {
+      injector = injector.createChild([new Module()..value(Scope, scope)]);
+    }
     if (html is String) {
       rootElements = toNodeList(html);
     } else if (html is Node) {

@@ -425,6 +425,7 @@ class DirectiveMap extends AnnotationMap<NgAnnotation> {
       : super(injector, metadataExtractor) {
     Map<NgAnnotation, Type> directives = {};
     forEach((NgAnnotation annotation, Type type) {
+      print("annotation: ${annotation.selector}");
       var match;
       var fieldMetadata = fieldMetadataExtractor(type);
       if (fieldMetadata.isNotEmpty) {
