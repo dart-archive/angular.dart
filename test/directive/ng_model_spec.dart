@@ -51,7 +51,7 @@ describe('ng-model', () {
       var scope = _.rootScope;
       var model = new NgModel(scope, new NodeAttrs(new DivElement()));
       var element = new dom.InputElement();
-      dom.query('body').append(element);
+      dom.querySelector('body').append(element);
       var input = new InputTextDirective(element, model, scope);
 
       element.value = 'abc';
@@ -114,7 +114,7 @@ describe('ng-model', () {
       var scope = _.rootScope;
       var model = new NgModel(scope, new NodeAttrs(new DivElement()));
       var element = new dom.InputElement();
-      dom.query('body').append(element);
+      dom.querySelector('body').append(element);
       var input = new InputPasswordDirective(element, model, scope);
 
       element.value = 'abc';
@@ -227,7 +227,7 @@ describe('ng-model', () {
       var scope = _.rootScope;
       var model = new NgModel(scope, new NodeAttrs(new DivElement()));
       var element = new dom.TextAreaElement();
-      dom.query('body').append(element);
+      dom.querySelector('body').append(element);
       var input = new TextAreaDirective(element, model, scope);
 
       element.value = 'abc';
