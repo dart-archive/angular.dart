@@ -20,7 +20,7 @@ class ParserGenerator {
   ParserGenerator(this._parser, this._getters, this._prt);
 
   generateParser(Iterable<String> expressions) {
-    _prt.printSrc("genEvalError(msg) { throw msg; }")
+    _prt..printSrc("genEvalError(msg) { throw msg; }")
       ..printSrc("functions(FilterLookup filters) => "
                  "new StaticParserFunctions(buildExpressions(filters));")
       ..printSrc('var evalError = (text, [s]) => text;')
@@ -38,7 +38,7 @@ class ParserGenerator {
       body(_.stmt('Expression ${_.ref(code)} = ', code.toSource(_)));
     });
     body(_.stmt('return ', map));
-    _prt.printSrc("Map<String, Expression> buildExpressions(FilterLookup filters) ${body}")
+    _prt..printSrc("Map<String, Expression> buildExpressions(FilterLookup filters) ${body}")
       ..printSrc("\n")
       ..printSrc(_getters.functions);
   }

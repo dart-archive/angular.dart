@@ -76,7 +76,7 @@ class InputCheckboxDirective {
   NgModel ngModel;
   Scope scope;
 
-  InputCheckboxDirective(this.inputElement, this.ngModel, this.scope) {
+  InputCheckboxDirective(dom.Element this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
       inputElement.checked = value == null ? false : toBool(value);
     };
