@@ -47,7 +47,7 @@ main() {
         expect(_.rootElement).toEqualSelect([['r2d2'], 'c3p0']);
       });
     });
-    
+
     TestBed _;
 
     beforeEach(inject((TestBed tb) => _ = tb));
@@ -387,7 +387,7 @@ main() {
 
       compile(html) {
         _.compile('<form name="form">' + html + '</form>');
-        element = _.rootElement.query('select');
+        element = _.rootElement.querySelector('select');
         scope.$apply();
       }
 
@@ -1213,7 +1213,7 @@ main() {
 
           _.rootScope.foo = 'success';
           _.rootScope.$digest();
-          expect(_.rootElement.query('span').text).toEqual('success');
+          expect(_.rootElement.querySelector('span').text).toEqual('success');
         });
       });
     });
