@@ -2,6 +2,8 @@ library angular.perf.mirror;
 
 import '_perf.dart';
 import 'dart:mirrors';
+import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 
 main() {
   var c = new Obj(1);
@@ -9,9 +11,11 @@ main() {
   Symbol symbol = new Symbol('a');
   Watch head = new Watch();
   Watch current = head;
+  var detector = new DirtyCheckingChangeDetector<String, String>();
   for(var i=1; i < 10000; i++) {
     Watch next = new Watch();
     current = (current.next = new Watch());
+    detector.watch(c, 'a', '', '');
   }
 
   var dirtyCheck = () {
@@ -37,6 +41,7 @@ main() {
   time('fieldRead', () => im.getField(symbol).reflectee );
   time('Object.observe', dirtyCheck);
   time('Object.observe fn()', dirtyCheckFn);
+  time('ChangeDetection', detector.collectChanges);
 }
 
 class Watch {

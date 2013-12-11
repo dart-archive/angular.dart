@@ -1,9 +1,11 @@
+library change_detection;
+
 /**
  * Factory method for creating dirty checkers. This method would return a polyfill or
  * native VM implemention depending on the browser.
  *
  */
-ChangeDetector createChangeDetector() => new DirtyCheckingChangeDetector();
+ChangeDetector createChangeDetector() => null;
 
 /**
  * An interface for ChangeDetector. An application can have multiple instance of the
@@ -61,7 +63,7 @@ abstract class ChangeDetector<ID extends Comparable, H> {
    * This method does the work of collecting the changes and returns them as a List of
    * [ChangeRecord]s. The [ChangeRecord]s are to be sorted by the [ID].
    */
-  List<ChangeRecord<ID extends Comparable, H>> collectChanges();
+  ChangeRecords<ID, H> collectChanges();
 
 
   /**
@@ -71,6 +73,14 @@ abstract class ChangeDetector<ID extends Comparable, H> {
    * - [exclusiveTo] An [ID] where the removal will stop (exclusize).
    */
   void unWatch(ID inclusiveFrom, ID exclusiveTo);
+}
+
+class ChangeRecords<ID extends Comparable, H> {
+  final ObjectChangeRecord<ID, H> objectHead;
+  final ListChangeRecord<ID, H> listHead;
+  final MapChangeRecord<ID, H> mapHead;
+
+  ChangeRecords(this.objectHead, this.listHead, this.mapHead);
 }
 
 /**
@@ -85,66 +95,66 @@ abstract class ChangeRecord<ID extends Comparable, H> {
   /**
    * The object where the change occured.
    */
-  final Object object;
+  Object get object;
 
   /**
    * The id of the watch.
    */
-  final ID id;
+  ID get id;
 
   /**
    *  The handler is an application provided object which contains the specific logic
    *  which needs to be applied when the change is detected. The handler is opeque to the
    *  ChangeDector and as such can be anything the application desires.
    */
-  final T handler;
+  H get handler;
 }
 
 /**
  * Represents a change in the object field.
  */
-class ObjectChangeRecord<ID extends Comparable, H> extends ChangeRecord<ID extends Comparable, H> {
-  final Symbol field;
-  final dynamic previousValue;
+abstract class ObjectChangeRecord<ID extends Comparable, H> extends ChangeRecord<ID, H> {
+  Symbol get field;
+  dynamic get previousValue;
 }
 
 
 /**
  * Represents a change in the List.
  */
-class ListChangeRecord<ID extends Comparable, H> extends ChangeRecord<ID extends Comparable, H> {
+abstract class ListChangeRecord<ID extends Comparable, H> extends ChangeRecord<ID, H> {
   /**
    * A list of additions to the list.
    */
-  final List<ListChangeItem> additions;
-  final List<ListChangeItem> removals;
-  final List<ListChangeItem> exiting;
+  List<ListChangeItem> get additions;
+  List<ListChangeItem> get removals;
+  List<ListChangeItem> get exiting;
 }
 
 /**
  * Represents a change in the Map.
  */
-class MapChangeRecord<ID extends Comparable, H> extends ChangeRecord<ID extends Comparable, H> {
-  final List<MapChangeItem> additions;
-  final List<MapChangeItem> removals;
+abstract class MapChangeRecord<ID extends Comparable, H> extends ChangeRecord<ID, H> {
+  List<MapChangeItem> get additions;
+  List<MapChangeItem> get removals;
 }
 
-class ListChangeItem {
+abstract class ListChangeItem {
   /**
    * Previous item location in the list or [null] if addition.
    */
-  final int previousIndex;
+  int get previousIndex;
   /**
    * Current item location in the list or [null] if removal.
    */
-  final int currentIndex;
+  int get currentIndex;
   /**
    * The item.
    */
-  final dynamic item;
+  dynamic get item;
 }
 
-class MapChangeItem {
-  final dynamic key;
-  final dynamic value;
+abstract class MapChangeItem {
+  dynamic get key;
+  dynamic get value;
 }
