@@ -47,7 +47,7 @@ main() {
         expect(_.rootElement).toEqualSelect([['r2d2'], 'c3p0']);
       });
     });
-    
+
     TestBed _;
 
     beforeEach(inject((TestBed tb) => _ = tb));
