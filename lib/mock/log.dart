@@ -35,7 +35,7 @@ class LogAttrDirective implements NgAttachAware {
  *
  *     expect(logger).toEqual(['foo', 'bar']);
  */
-class Logger implements List {
+class Logger extends ListBase {
   final List tokens = [];
 
   /**
@@ -48,5 +48,12 @@ class Logger implements List {
    */
   String result() => tokens.join('; ');
 
-  noSuchMethod(Invocation invocation) => mirror.reflect(tokens).delegate(invocation);
+
+  int get length => tokens.length;
+
+  operator [](int index) => tokens[index];
+
+  void operator []=(int index, value) { tokens[index] = value; }
+
+  void set length(int newLength) { tokens.length = newLength; }
 }
