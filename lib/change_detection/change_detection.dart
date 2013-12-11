@@ -63,7 +63,7 @@ abstract class ChangeDetector<ID extends Comparable, H> {
    * This method does the work of collecting the changes and returns them as a List of
    * [ChangeRecord]s. The [ChangeRecord]s are to be sorted by the [ID].
    */
-  ChangeRecords<ID, H> collectChanges();
+  ChangeRecord<ID, H> collectChanges();
 
 
   /**
@@ -73,14 +73,6 @@ abstract class ChangeDetector<ID extends Comparable, H> {
    * - [exclusiveTo] An [ID] where the removal will stop (exclusize).
    */
   void unWatch(ID inclusiveFrom, ID exclusiveTo);
-}
-
-class ChangeRecords<ID extends Comparable, H> {
-  final ObjectChangeRecord<ID, H> objectHead;
-  final ListChangeRecord<ID, H> listHead;
-  final MapChangeRecord<ID, H> mapHead;
-
-  ChangeRecords(this.objectHead, this.listHead, this.mapHead);
 }
 
 /**
@@ -108,53 +100,24 @@ abstract class ChangeRecord<ID extends Comparable, H> {
    *  ChangeDector and as such can be anything the application desires.
    */
   H get handler;
-}
 
-/**
- * Represents a change in the object field.
- */
-abstract class ObjectChangeRecord<ID extends Comparable, H> extends ChangeRecord<ID, H> {
-  Symbol get field;
+  String field;
+  ChangeRecord<ID, H> get next;
   dynamic get previousValue;
+  dynamic get currentValue;
 }
 
-
-/**
- * Represents a change in the List.
- */
-abstract class ListChangeRecord<ID extends Comparable, H> extends ChangeRecord<ID, H> {
-  /**
-   * A list of additions to the list.
-   */
-  List<ListChangeItem> get additions;
-  List<ListChangeItem> get removals;
-  List<ListChangeItem> get exiting;
-}
-
-/**
- * Represents a change in the Map.
- */
-abstract class MapChangeRecord<ID extends Comparable, H> extends ChangeRecord<ID, H> {
-  List<MapChangeItem> get additions;
-  List<MapChangeItem> get removals;
-}
-
-abstract class ListChangeItem {
+abstract class CollectionChangeItem {
   /**
    * Previous item location in the list or [null] if addition.
    */
-  int get previousIndex;
+  dynamic get previousKey;
   /**
    * Current item location in the list or [null] if removal.
    */
-  int get currentIndex;
+  dynamic get currentKey;
   /**
    * The item.
    */
   dynamic get item;
-}
-
-abstract class MapChangeItem {
-  dynamic get key;
-  dynamic get value;
 }

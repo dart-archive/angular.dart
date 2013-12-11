@@ -6,15 +6,15 @@ import 'package:angular/change_detection/change_detection.dart';
 class DirtyCheckingChangeDetector<ID extends Comparable, H> implements ChangeDetector<ID, H> {
   static final ChangeRecords<ID, H> EMPTY_CHANGE_RECORDS = new ChangeRecords(null, null, null);
 
-  _Detector head;
-  _Detector tail;
+  WatchRecord head;
+  WatchRecord tail;
 
   DirtyCheckingChangeDetector() {
-    head = tail = new _Detector.head();
+    head = tail = new WatchRecord.head();
   }
 
   UnWatch watch(Object object, String field, ID id, H handler) {
-    var watch = new _Detector(object, field, id, handler);
+    var watch = new WatchRecord(object, field, id, handler);
     tail = tail._nextDetector = watch;
     return () {
       throw 'implement';
@@ -25,14 +25,14 @@ class DirtyCheckingChangeDetector<ID extends Comparable, H> implements ChangeDet
   UnWatch watchMap(Map map, ID id, H handler) {throw 'implement';}
 
 
-  _Detector<ID, H> collectChanges() {
-    _Detector changeHead = head;
-    _Detector changeTail = head;
-    _Detector c = head;
+  WatchRecord<ID, H> collectChanges() {
+    WatchRecord changeHead = head;
+    WatchRecord changeTail = head;
+    WatchRecord c = head;
     while( (c = c._nextDetector) != null) {
       var currentValue = c.currentValue;
-      var instanceMirror = c._instanceMirror;
-      if (identical(instanceMirror, null)) {
+      var getter = c.getter;
+      if (identical(getter, null)) {
         if (currentValue is List) {
           throw 'implement';
         } else if (currentValue is Map) {
@@ -41,8 +41,7 @@ class DirtyCheckingChangeDetector<ID extends Comparable, H> implements ChangeDet
           throw new StateError();
         }
       } else {
-        var symbol = c._symbol;
-        var value = symbol == null ? c.object[c.field] : instanceMirror.getField(symbol).reflectee;
+        var value = getter(c.object);
         if (!identical(currentValue, value)) {
           if (value is String && currentValue is String && value == currentValue) {
             // this is false change we need to recover.
@@ -64,40 +63,46 @@ class DirtyCheckingChangeDetector<ID extends Comparable, H> implements ChangeDet
 }
 
 
-class _Detector<ID extends Comparable, H> {
-  final dynamic object;
+class WatchRecord<ID extends Comparable, H> extends ChangeRecord<ID, H> {
   final ID id;
   final H handler;
 
   final String field;
-  final Symbol _symbol;
-  final InstanceMirror _instanceMirror;
+  Function getter;
 
   dynamic previousValue;
   dynamic currentValue;
-  _Detector<ID, H> _nextDetector;
-  _Detector<ID, H> _nextChange;
+  WatchRecord<ID, H> _nextDetector;
+  WatchRecord<ID, H> _nextChange;
+  dynamic _object;
 
-  _Detector(obj, fieldName, this.id, this.handler):
-        _instanceMirror = reflect(obj),
-        field = fieldName,
-        _symbol = obj is Map ? null : new Symbol(fieldName),
-        object = obj
-  {
-    if (_symbol != null) {
-      previousValue = currentValue = _instanceMirror.getField(_symbol).reflectee;
-    } else {
-      previousValue = currentValue = obj[fieldName];
-    }
+  WatchRecord(obj, this.field, this.id, this.handler) {
+    this.object = obj;
+    previousValue = currentValue = getter(obj);
   }
 
-  _Detector.head():
-      object = null,
-      _instanceMirror = null,
-      _symbol = null,
+  WatchRecord.head():
+      _object = null,
       field = null,
       id = null,
       handler = null;
 
   get next => _nextChange;
+
+  get object => _object;
+  set object(obj) {
+    this._object = obj;
+    if (obj is Map) {
+      var key = this.field;
+      this.getter = (obj) => obj[key];
+    } else {
+      var symbol = new Symbol(field);
+      var instanceMirror = reflect(obj);
+      this.getter = (obj) => instanceMirror.getField(symbol).reflectee;
+    }
+  }
+
+  call() {
+    throw 'implement removal';
+  }
 }

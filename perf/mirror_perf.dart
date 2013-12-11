@@ -38,9 +38,9 @@ main() {
     }
   };
 
-  time('fieldRead', () => im.getField(symbol).reflectee );
-  time('Object.observe', dirtyCheck);
-  time('Object.observe fn()', dirtyCheckFn);
+  xtime('fieldRead', () => im.getField(symbol).reflectee );
+  xtime('Object.observe', dirtyCheck);
+  xtime('Object.observe fn()', dirtyCheckFn);
   time('ChangeDetection', detector.collectChanges);
 }
 
