@@ -1,9 +1,10 @@
 library angular.selector_spec;
 
-import '../_specs.dart' hide Node, Element, Text;
-
 import 'package:angular/tools/selector.dart';
 import 'package:html5lib/dom.dart';
+import 'package:unittest/unittest.dart';
+
+import '../jasmine_syntax.dart';
 
 main() => describe('selector', () {
 

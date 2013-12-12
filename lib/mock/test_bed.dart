@@ -78,7 +78,7 @@ class TestBed {
    * appropriate DOM event. Used when testing [SELECT] controlls in forms.
    */
   selectOption(element, text) {
-    element.queryAll('option').forEach((o) => o.selected = o.text == text);
+    element.querySelectorAll('option').forEach((o) => o.selected = o.text == text);
     triggerEvent(element, 'change');
   }
 }

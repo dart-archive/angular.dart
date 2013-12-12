@@ -84,7 +84,7 @@ class Expect {
   toEqualSelect(options) {
     var actualOptions = [];
 
-    for(var option in actual.queryAll('option')) {
+    for(var option in actual.querySelectorAll('option')) {
       if (option.selected) {
         actualOptions.add([option.value]);
       } else {
@@ -217,7 +217,7 @@ class JQuery implements List<Node> {
           true);
   textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(
-      (n is Element ? (n as Element).queryAll(selector) : [])));
+      (n is Element ? (n as Element).querySelectorAll(selector) : [])));
   hasClass(String name) => fold(false, (hasClass, node) =>
       hasClass || (node is Element && (node as Element).classes.contains(name)));
   addClass(String name) => _list.forEach((node) =>

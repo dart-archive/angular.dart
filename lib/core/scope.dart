@@ -271,18 +271,42 @@ class Scope implements Map {
   $watchCollection(obj, listener, [String expression, bool shallow=false]) {
     var oldValue;
     var newValue;
-    num changeDetected = 0;
+    int changeDetected = 0;
     Function objGetter = _compileToFn(obj);
     List internalArray = [];
     Map internalMap = {};
-    num oldLength = 0;
+    int oldLength = 0;
+    int newLength;
+    var key;
+    List keysToRemove = [];
+    Function detectNewKeys = (key, value) {
+      newLength++;
+      if (oldValue.containsKey(key)) {
+        if (!_identical(oldValue[key], value)) {
+          changeDetected++;
+          oldValue[key] = value;
+        }
+      } else {
+        oldLength++;
+        oldValue[key] = value;
+        changeDetected++;
+      }
+    };
+    Function findMissingKeys = (key, _) {
+      if (!newValue.containsKey(key)) {
+        oldLength--;
+        keysToRemove.add(key);
+      }
+    };
+
+    Function removeMissingKeys = (k) => oldValue.remove(k);
 
     var $watchCollectionWatch;
 
     if (shallow) {
       $watchCollectionWatch = (_) {
         newValue = objGetter(this);
-        var newLength = newValue == null ? 0 : newValue.length;
+        newLength = newValue == null ? 0 : newValue.length;
         if (newLength != oldLength) {
           oldLength = newLength;
           changeDetected++;
@@ -296,7 +320,6 @@ class Scope implements Map {
     } else {
       $watchCollectionWatch = (_) {
         newValue = objGetter(this);
-        var newLength, key;
 
         if (newValue is! Map && newValue is! List) {
           if (!_identical(oldValue, newValue)) {
@@ -334,33 +357,13 @@ class Scope implements Map {
           }
           // copy the items to oldValue and look for changes.
           newLength = 0;
-          newValue.forEach((key, value) {
-            newLength++;
-            if (oldValue.containsKey(key)) {
-              if (!_identical(oldValue[key], value)) {
-                changeDetected++;
-                oldValue[key] = value;
-              }
-            } else {
-              oldLength++;
-              oldValue[key] = value;
-              changeDetected++;
-            }
-
-          });
+          newValue.forEach(detectNewKeys);
           if (oldLength > newLength) {
             // we used to have more keys, need to find them and destroy them.
             changeDetected++;
-            var keysToRemove = [];
-            oldValue.forEach((key, _) {
-              if (!newValue.containsKey(key)) {
-                oldLength--;
-                keysToRemove.add(key);
-              }
-            });
-            keysToRemove.forEach((k) {
-              oldValue.remove(k);
-            });
+            oldValue.forEach(findMissingKeys);
+            keysToRemove.forEach(removeMissingKeys);
+            keysToRemove.clear();
           }
         }
         return changeDetected;

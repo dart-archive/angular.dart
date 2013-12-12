@@ -51,8 +51,73 @@ describe('ng-model', () {
       var scope = _.rootScope;
       var model = new NgModel(scope, new NodeAttrs(new DivElement()));
       var element = new dom.InputElement();
-      dom.query('body').append(element);
+      dom.querySelector('body').append(element);
       var input = new InputTextDirective(element, model, scope);
+
+      element.value = 'abc';
+      element.selectionStart = 1;
+      element.selectionEnd = 2;
+
+      model.render('abc');
+
+      expect(element.value).toEqual('abc');
+      // No update.  selectionStart/End is unchanged.
+      expect(element.selectionStart).toEqual(1);
+      expect(element.selectionEnd).toEqual(2);
+
+      model.render('xyz');
+
+      // Value updated.  selectionStart/End changed.
+      expect(element.value).toEqual('xyz');
+      expect(element.selectionStart).toEqual(3);
+      expect(element.selectionEnd).toEqual(3);
+    }));
+  });
+
+  describe('type="password"', () {
+    it('should update input value from model', inject(() {
+      _.compile('<input type="password" ng-model="model">');
+      _.rootScope.$digest();
+
+      expect((_.rootElement as dom.InputElement).value).toEqual('');
+
+      _.rootScope.$apply('model = "misko"');
+      expect((_.rootElement as dom.InputElement).value).toEqual('misko');
+    }));
+
+    it('should render null as the empty string', inject(() {
+      _.compile('<input type="password" ng-model="model">');
+      _.rootScope.$digest();
+
+      expect((_.rootElement as dom.InputElement).value).toEqual('');
+
+      _.rootScope.$apply('model = null');
+      expect((_.rootElement as dom.InputElement).value).toEqual('');
+    }));
+
+    it('should update model from the input value', inject(() {
+      _.compile('<input type="password" ng-model="model" probe="p">');
+      Probe probe = _.rootScope.p;
+      var ngModel = probe.directive(NgModel);
+      InputElement inputElement = probe.element;
+
+      inputElement.value = 'abc';
+      _.triggerEvent(inputElement, 'change');
+      expect(_.rootScope.model).toEqual('abc');
+
+      inputElement.value = 'def';
+      var input = probe.directive(InputPasswordDirective);
+      input.processValue();
+      expect(_.rootScope.model).toEqual('def');
+
+    }));
+
+    it('should write to input only if value is different', inject(() {
+      var scope = _.rootScope;
+      var model = new NgModel(scope, new NodeAttrs(new DivElement()));
+      var element = new dom.InputElement();
+      dom.querySelector('body').append(element);
+      var input = new InputPasswordDirective(element, model, scope);
 
       element.value = 'abc';
       element.selectionStart = 1;
@@ -67,8 +132,8 @@ describe('ng-model', () {
       model.render('xyz');
 
       expect(element.value).toEqual('xyz');
-      expect(element.selectionStart).toEqual(1);
-      expect(element.selectionEnd).toEqual(2);
+      expect(element.selectionStart).toEqual(3);
+      expect(element.selectionEnd).toEqual(3);
     }));
   });
 
@@ -164,7 +229,7 @@ describe('ng-model', () {
       var scope = _.rootScope;
       var model = new NgModel(scope, new NodeAttrs(new DivElement()));
       var element = new dom.TextAreaElement();
-      dom.query('body').append(element);
+      dom.querySelector('body').append(element);
       var input = new TextAreaDirective(element, model, scope);
 
       element.value = 'abc';
@@ -179,9 +244,11 @@ describe('ng-model', () {
 
       model.render('xyz');
 
+      // Setting the value on a textarea doesn't update the selection the way it
+      // does on input elements.  This stays unchanged.
       expect(element.value).toEqual('xyz');
-      expect(element.selectionStart).toEqual(1);
-      expect(element.selectionEnd).toEqual(2);
+      expect(element.selectionStart).toEqual(0);
+      expect(element.selectionEnd).toEqual(0);
     }));
   });
 
