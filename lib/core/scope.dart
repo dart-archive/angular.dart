@@ -326,7 +326,7 @@ class Scope implements Map {
             oldValue = newValue;
             changeDetected++;
           }
-        } else if (newValue is List) {
+        } else if (newValue is Iterable) {
           if (!_identical(oldValue, internalArray)) {
             // we are transitioning from something which was not an array into array.
             oldValue = internalArray;
@@ -343,9 +343,9 @@ class Scope implements Map {
           }
           // copy the items to oldValue and look for changes.
           for (var i = 0; i < newLength; i++) {
-            if (!_identical(oldValue[i], newValue[i])) {
+            if (!_identical(oldValue[i], newValue.elementAt(i))) {
               changeDetected++;
-              oldValue[i] = newValue[i];
+              oldValue[i] = newValue.elementAt(i);
             }
           }
         } else { // Map
