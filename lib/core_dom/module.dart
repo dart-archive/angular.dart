@@ -38,6 +38,11 @@ class NgCoreDomModule extends Module {
     type(NgTextMustacheDirective);
     type(NgAttrMustacheDirective);
 
+    value(NgValue, null);
+
+    type(BoundInputDirective);
+    type(MaxLengthDirective);
+
     type(Compiler);
     type(Http);
     type(UrlRewriter);

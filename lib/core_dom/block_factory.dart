@@ -144,6 +144,8 @@ class BlockFactory {
             nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
               var scope = injector.get(Scope);
               var interpolate = injector.get(Interpolate);
+              var ngValue = injector.get(NgValue);
+              print("ngValue: $ngValue");
               for(var ref in nodesAttrsDirectives) {
                 new NgAttrMustacheDirective(node, ref.value, interpolate, scope, parser);
               }
@@ -169,6 +171,7 @@ class BlockFactory {
           nodeModule.type(ref.type, visibility: visibility);
         }
         for (var publishType in ref.annotation.publishTypes) {
+          print("using publishTypes: $ref");
           nodeModule.factory(publishType, (Injector injector) => injector.get(ref.type), visibility: visibility);
         }
         if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
