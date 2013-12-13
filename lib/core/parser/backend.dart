@@ -17,6 +17,14 @@ class Expression implements ParserAST {
   String exp;
   List parts;
 
+  // Expressions that represent field accesses have a couple of
+  // extra fields. We use that to generate an optimized closure
+  // for calling fields of objects without having to load the
+  // field separately.
+  Expression fieldHolder;
+  String fieldName;
+  bool get isFieldAccess => fieldHolder != null;
+
   Expression(ParsedGetter this.eval, [ParsedSetter this.assign]);
 
   bind(context) => new BoundExpression(context, this);
@@ -191,6 +199,15 @@ class ParserBackend {
     };
   }
 
+  List evalList(List<Expression> list, self, locals) {
+    int length = list.length;
+    List result = new List(length);
+    for (int i = 0; i < length; i++) {
+      result[i] = list[i].eval(self, locals);
+    }
+    return result;
+  }
+
   _op(opKey) => OPERATORS[opKey];
 
   Expression ternaryFn(Expression cond, Expression _true, Expression _false) =>
@@ -223,16 +240,23 @@ class ParserBackend {
         return value;
       });
 
-  Expression functionCall(fn, fnName, argsFn, evalError) =>
-      new Expression((self, [locals]){
-        List args = [];
-        for ( var i = 0; i < argsFn.length; i++) {
-          args.add(argsFn[i].eval(self, locals));
-        }
+  Expression functionCall(fn, fnName, argsFn, evalError) {
+    if (fn.isFieldAccess) {
+      Symbol key = new Symbol(fn.fieldName);
+      return new Expression((self, [locals]) {
+        List args = evalList(argsFn, self, locals);
+        var holder = fn.fieldHolder.eval(self, locals);
+        InstanceMirror instanceMirror = reflect(holder);
+        return instanceMirror.invoke(key, args).reflectee;
+      });
+    } else {
+      return new Expression((self, [locals]) {
+        List args = evalList(argsFn, self, locals);
         var userFn = safeFunctionCall(fn.eval(self, locals), fnName, evalError);
-
         return relaxFnApply(userFn, args);
       });
+    }
+  }
 
   Expression arrayDeclaration(elementFns) =>
       new Expression((self, [locals]){
@@ -262,7 +286,9 @@ class ParserBackend {
     var getterFn = getter(field);
     return new Expression(
         (self, [locals]) => getterFn(object.eval(self, locals)),
-        (self, value, [locals]) => setterFn(object.eval(self, locals), value));
+        (self, value, [locals]) => setterFn(object.eval(self, locals), value))
+            ..fieldHolder = object
+            ..fieldName = field;
   }
 
   Expression object(keyValues) =>
