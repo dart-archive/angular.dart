@@ -400,7 +400,6 @@ class Scope implements Map {
 
   $digest() {
     var innerAsyncQueue = _innerAsyncQueue;
-    int length;
     _Watch lastDirtyWatch = null;
     _Watch lastLoopLastDirtyWatch;
     int _ttlLeft = _ttl;
@@ -441,8 +440,7 @@ class Scope implements Map {
           scopeCount++;
           if ((watchers = current._watchers) != null) {
             // process our watches
-            length = watchers.length;
-            watcherCount += length;
+            watcherCount += watchers.length;
             for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
               try {
                 if (identical(lastLoopLastDirtyWatch, watch)) {
