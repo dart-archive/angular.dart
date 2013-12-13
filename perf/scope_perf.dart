@@ -33,6 +33,16 @@ main() {
 
   scope.a = new A();
 
+  List watchFns = new List.generate(4000, (i) => () => i);
+  time('adding/removing 4000 watchers', () {
+    List watchers = watchFns.map(scope.$watch).toList();
+    watchers.forEach((e) => e());
+  });
+
+  List watchers = watchFns.map(scope.$watch).toList();
+  time('4000 dummy watchers on scope', () => scope.$digest());
+  watchers.forEach((e) => e());
+
   for(var i = 0; i < 1000; i++ ) {
     scope.$watch('a.number', () => null);
     scope.$watch('a.str', () => null);

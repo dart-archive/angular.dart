@@ -51,7 +51,8 @@ measure(b) {
     }
   }
   stopwatch.stop();
-  return new Sample(count, stopwatch.elapsedMicroseconds);
+  int elapsed = max(1, stopwatch.elapsedMicroseconds);
+  return new Sample(count, elapsed);
 }
 
 main() {}
