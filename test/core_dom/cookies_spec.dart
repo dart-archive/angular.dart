@@ -3,26 +3,32 @@ library cookies_spec;
 import '../_specs.dart';
 import 'package:angular/core_dom/module.dart';
 
-main() => describe('browser cookies', () {
-    var cookies;
+main() => describe('cookies', () {
+  deleteAllCookies() {
+    var cookies = document.cookie.split(";");
+    var path = window.location.pathname;
 
-    deleteAllCookies() {
-      var cookies = document.cookie.split(";");
-      var path = window.location.pathname;
-
-      for (var i = 0; i < cookies.length; i++) {
-        var cookie = cookies[i];
-        var eqPos = cookie.indexOf("=");
-        var name = eqPos > -1 ? cookie.substring(0, eqPos) : '';
-        var parts = path.split('/');
-        while (!parts.isEmpty) {
-          var joinedParts = parts.join('/');
-          document.cookie = name + "=;path=" + (joinedParts.isEmpty ? '/': joinedParts) +
-              ";expires=Thu, 01 Jan 1970 00:00:00 GMT";
-          parts.removeLast();
-        }
+    for (var i = 0; i < cookies.length; i++) {
+      var cookie = cookies[i];
+      var eqPos = cookie.indexOf("=");
+      var name = eqPos > -1 ? cookie.substring(0, eqPos) : '';
+      var parts = path.split('/');
+      while (!parts.isEmpty) {
+        var joinedParts = parts.join('/');
+        document.cookie = name + "=;path=" + (joinedParts.isEmpty ? '/': joinedParts) +
+          ";expires=Thu, 01 Jan 1970 00:00:00 GMT";
+        parts.removeLast();
       }
     }
+  }
+
+  afterEach(() {
+    deleteAllCookies();
+    expect(document.cookie).toEqual('');
+  });
+
+  describe('browser cookies', () {
+    var cookies;
 
     beforeEach(inject((BrowserCookies iCookies) {
       deleteAllCookies();
@@ -30,13 +36,6 @@ main() => describe('browser cookies', () {
 
       cookies = iCookies;
     }));
-
-
-    afterEach(() {
-      deleteAllCookies();
-      expect(document.cookie).toEqual('');
-    });
-
 
     describe('remove via cookies(cookieName, null)', () {
 
@@ -114,7 +113,7 @@ main() => describe('browser cookies', () {
 
         if (document.cookie != cookieStr) {
           throw "browser didn't drop long cookie when it was expected. make the " +
-          "cookie in this test longer";
+            "cookie in this test longer";
         }
 
         expect(cookies['x']).toEqual('shortVal');
@@ -196,4 +195,35 @@ main() => describe('browser cookies', () {
       document.cookie = "existingCookie=existingValue;path=/";
       expect(cookies.all).toEqual({'existingCookie':'existingValue'});
     });
+  });
+  
+  describe('cookies service', () {
+    var cookiesService;
+    beforeEach(inject((Cookies iCookies) {
+      cookiesService = iCookies;
+      document.cookie = 'oatmealCookie=fresh;path=/';
+    }));
+
+    it('should read cookie', () {
+      expect(cookiesService["oatmealCookie"]).toEqual("fresh");
+    });
+
+    describe("set cookie", () {
+      it('should set new key value pair', () {
+        cookiesService["oven"] = "hot";
+        expect(document.cookie).toContain("oven=hot");
+      });
+
+      it('should override existing value', () {
+        cookiesService["oatmealCookie"] = "stale";
+        expect(document.cookie).toContain("oatmealCookie=stale");
+      });
+    });
+        
+    it('should remove cookie', () {
+      cookiesService.remove("oatmealCookie");
+      expect(document.cookie).not.toContain("oatmealCookie");
+    });
+  });
 });
+
