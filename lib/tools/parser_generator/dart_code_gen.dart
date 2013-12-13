@@ -7,25 +7,40 @@ import 'source.dart';
 
 Code VALUE_CODE = new Code("value");
 
-class Code implements ParserAST {
+typedef CodeAssign(Code c);
+
+class Code implements ParserAST, Expression {
   String id;
   String _exp;
   String simpleGetter;
-  Function assign;
-  Code(this._exp, [this.assign, this.simpleGetter]) {
+  CodeAssign _assign;
+
+  Code(this._exp, [this._assign, this.simpleGetter]) {
     id = _exp == null ? simpleGetter : _exp;
     if (id == null) {
         throw 'id is null';
     }
   }
 
-  get exp {
+  String get exp {
     if (_exp == null) {
       throw "Can not be used in an expression: $id";
     }
     return _exp;
   }
-  get assignable => assign != null;
+
+  get assignable => _assign != null;
+
+  // methods from Expression
+  Expression fieldHolder;
+  String fieldName;
+  bool get isFieldAccess => null;
+  void set exp(String s) => throw new UnimplementedError();
+  ParsedGetter get eval => throw new UnimplementedError();
+  ParsedSetter get assign => throw new UnimplementedError();
+  List get parts => throw new UnimplementedError();
+  set parts(List p) => throw new UnimplementedError();
+  bind(context) => throw new UnimplementedError();
 
   Source toSource(SourceBuilder _) {
     return _('new Expression', _.parens(
@@ -33,7 +48,7 @@ class Code implements ParserAST {
           'return $exp;'
       )),
       assignable ? _('(scope, value, [locals])', _.body(
-        'return ${assign(VALUE_CODE).exp};'
+        'return ${_assign(VALUE_CODE).exp};'
       )) : 'null'
     ));
   }
@@ -194,6 +209,9 @@ class DartCodeGen implements ParserBackend {
 
   DartCodeGen(this._getterGen);
 
+  setter(String path) => throw new UnimplementedError();
+  getter(String path) => throw new UnimplementedError();
+
   // Returns the Dart code for a particular operator.
   _op(fn) => fn == "undefined" ? "null" : fn;
 
@@ -222,7 +240,7 @@ class DartCodeGen implements ParserBackend {
   }
 
   Code assignment(Code left, Code right, evalError) =>
-    left.assign(right);
+    left._assign(right);
 
   Code multipleStatements(List<Code >statements) {
     var code = "var ret, last;\n";
