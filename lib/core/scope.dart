@@ -737,7 +737,7 @@ class _WatchList {
   void remove(_Watch watch) {
     if (watch == head) {
       _Watch next = watch.next;
-      if (next == null) tail = next;
+      if (next == null) tail = null;
       else next.previous = null;
       head = next;
     } else if (watch == tail) {
