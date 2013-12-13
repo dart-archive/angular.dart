@@ -308,7 +308,7 @@ class ParserBackend {
 
   zero() => ZERO;
 
-  FilterExpression filter(String filterName,
+  Expression filter(String filterName,
                          Expression leftHandSide,
                          List<Expression> parameters,
                          Function evalError) {
