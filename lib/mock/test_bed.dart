@@ -23,7 +23,7 @@ class TestBed {
   /**
    * Use to compile HTML and activete its directives.
    *
-   * If [html] parametr is:
+   * If [html] parameter is:
    *
    *   - [String] then treat it as HTML
    *   - [Node] then treat it as the root node
@@ -33,7 +33,11 @@ class TestBed {
    * and [rootElement] contains the first element from the [rootElemets].
    *
    */
-  Element compile(html) {
+  Element compile(html, {Scope scope}) {
+    var injector = this.injector;
+    if(scope != null) {
+      injector = injector.createChild([new Module()..value(Scope, scope)]);
+    }
     if (html is String) {
       rootElements = toNodeList(html);
     } else if (html is Node) {
