@@ -45,7 +45,7 @@ class Scope implements Map {
   final NgZone _zone;
   final num _ttl;
   final Map<String, Object> _properties = {};
-  final List<_Watch> _watchers = [];
+  final _WatchList _watchers = new _WatchList();
   final Map<String, List<Function>> _listeners = {};
   final bool _isolate;
   final bool _lazy;
@@ -208,11 +208,7 @@ class Scope implements Map {
     }
     var watcher = new _Watch(_compileToFn(listener), _initWatchVal,
         _compileToFn(watchExpression), watchStr);
-
-    // we use unshift since we use a while loop in $digest for speed.
-    // the while loop reads in reverse order.
-    _watchers.insert(0, watcher);
-
+    _watchers.addLast(watcher);
     return () => _watchers.remove(watcher);
   }
 
@@ -409,7 +405,7 @@ class Scope implements Map {
     _Watch lastLoopLastDirtyWatch;
     int _ttlLeft = _ttl;
     List<List<String>> watchLog = [];
-    List<_Watch> watchers;
+    _WatchList watchers;
     _Watch watch;
     Scope next, current, target = this;
 
@@ -447,9 +443,8 @@ class Scope implements Map {
             // process our watches
             length = watchers.length;
             watcherCount += length;
-            while (length-- > 0) {
+            for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
               try {
-                watch = watchers[length];
                 if (identical(lastLoopLastDirtyWatch, watch)) {
                   break digestLoop;
                 }
@@ -708,17 +703,58 @@ class Scope implements Map {
   }
 }
 
-var _initWatchVal = new Object();
+class _InitWatchVal { const _InitWatchVal(); }
+const _initWatchVal = const _InitWatchVal();
 
 class _Watch {
-  Function fn;
-  dynamic last;
-  Function get;
-  String exp;
+  final Function fn;
+  final Function get;
+  final String exp;
+  var last;
 
-  _Watch(fn, this.last, getFn, this.exp) {
-    this.fn = relaxFnArgs3(fn);
-    this.get = relaxFnArgs1(getFn);
+  _Watch previous;
+  _Watch next;
+
+  _Watch(fn, this.last, getFn, this.exp)
+      : this.fn  = relaxFnArgs3(fn)
+      , this.get = relaxFnArgs1(getFn);
+}
+
+class _WatchList {
+  int length = 0;
+  _Watch head;
+  _Watch tail;
+
+  void addLast(_Watch watch) {
+    assert(watch.previous == null);
+    assert(watch.next == null);
+    if (tail == null) {
+      tail = head = watch;
+    } else {
+      watch.previous = tail;
+      tail.next = watch;
+      tail = watch;
+    }
+    length++;
+  }
+
+  void remove(_Watch watch) {
+    if (watch == head) {
+      _Watch next = watch.next;
+      if (next == null) tail = next;
+      else next.previous = null;
+      head = next;
+    } else if (watch == tail) {
+      _Watch previous = watch.previous;
+      previous.next = null;
+      tail = previous;
+    } else {
+      _Watch next = watch.next;
+      _Watch previous = watch.previous;
+      previous.next = next;
+      next.previous = previous;
+    }
+    length--;
   }
 }
 
