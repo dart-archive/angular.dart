@@ -2,7 +2,6 @@ library angular.perf.mirror;
 
 import '_perf.dart';
 import 'dart:mirrors';
-import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 
 main() {
@@ -11,11 +10,11 @@ main() {
   Symbol symbol = new Symbol('a');
   Watch head = new Watch();
   Watch current = head;
-  var detector = new DirtyCheckingChangeDetector<String, String>();
+  var detector = new DirtyCheckingChangeDetector<String>();
   for(var i=1; i < 10000; i++) {
     Watch next = new Watch();
     current = (current.next = new Watch());
-    detector.watch(c, 'a', '', '');
+    detector.watch(c, 'a', '');
   }
 
   var dirtyCheck = () {
