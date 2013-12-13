@@ -11,7 +11,7 @@ const String DART_PACKAGE_PREFIX = 'dart:';
 String fileHeader(String library) => '''// GENERATED, DO NOT EDIT!
 library ${library};
 
-import 'package:third_party/dart/angular/lib/angular.dart';
+import 'package:angular/angular.dart';
 
 primeTemplateCache(TemplateCache tc) {
 ''';
@@ -116,43 +116,49 @@ class TemplateCollectingVisitor {
         // TODO(tsander): Add library name as class name could conflict.
         if (blacklistedClasses.contains(clazz.name.name)) return;
 
-        // TODO(pavelj): this is not a safe check for the type of the
-        // annotations, but good enough for now.
-        if ((ann.name.name == 'NgComponent')){
-          ann.arguments.arguments.forEach((Expression arg) {
-            if (arg is NamedExpression) {
-              NamedExpression namedArg = arg;
-              var paramName = namedArg.name.label.name;
-              if (paramName == 'templateUrl' || paramName == 'cssUrl') {
-                cacheUris.add(assertString(namedArg.expression).stringValue);
-              }
-            }
-          });
-          return;
-        }
-
-        if ((ann.name.name == 'NgTemplateCache')){
-          ann.arguments.arguments.forEach((Expression arg) {
-            if (arg is NamedExpression) {
-              NamedExpression namedArg = arg;
-              var paramName = namedArg.name.label.name;
-              if (paramName == 'preCacheUrls') {
-                assertList(namedArg.expression).elements
-                    .forEach((expression) =>
-                        cacheUris.add(assertString(expression).stringValue));
-              }
-              if (paramName == 'cache') {
-                cache = assertBoolean(namedArg.expression).value;
-              }
-            }
-          });
-          return;
+        switch (ann.name.name) {
+          case 'NgComponent':
+              extractNgComponentMetadata(ann, cacheUris); break;
+          case 'NgTemplateCache':
+              cache = extractNgTemplateCache(ann, cacheUris); break;
         }
       });
       if (cache && cacheUris.isNotEmpty) {
         cacheUris.forEach((uri) => storeUriAsset(uri));
       }
     });
+  }
+
+  void extractNgComponentMetadata(Annotation ann, List<String> cacheUris) {
+    ann.arguments.arguments.forEach((Expression arg) {
+      if (arg is NamedExpression) {
+        NamedExpression namedArg = arg;
+        var paramName = namedArg.name.label.name;
+        if (paramName == 'templateUrl' || paramName == 'cssUrl') {
+          cacheUris.add(assertString(namedArg.expression).stringValue);
+        }
+      }
+    });
+  }
+
+  bool extractNgTemplateCache(
+      Annotation ann, List<String> cacheUris) {
+    bool cache = true;
+    ann.arguments.arguments.forEach((Expression arg) {
+      if (arg is NamedExpression) {
+        NamedExpression namedArg = arg;
+        var paramName = namedArg.name.label.name;
+        if (paramName == 'preCacheUrls') {
+          assertList(namedArg.expression).elements
+            .forEach((expression) =>
+                cacheUris.add(assertString(expression).stringValue));
+        }
+        if (paramName == 'cache') {
+          cache = assertBoolean(namedArg.expression).value;
+        }
+      }
+    });
+    return cache;
   }
 
   void storeUriAsset(String uri) {
