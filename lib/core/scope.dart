@@ -404,7 +404,6 @@ class Scope implements Map {
     _Watch lastLoopLastDirtyWatch;
     int _ttlLeft = _ttl;
     List<List<String>> watchLog = [];
-    _WatchList watchers;
     _Watch watch;
     Scope next, current, target = this;
 
@@ -438,28 +437,27 @@ class Scope implements Map {
         digestLoop:
         do { // "traverse the scopes" loop
           scopeCount++;
-          if ((watchers = current._watchers) != null) {
-            // process our watches
-            watcherCount += watchers.length;
-            for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
-              try {
-                if (identical(lastLoopLastDirtyWatch, watch)) {
-                  break digestLoop;
-                }
-                var value = watch.get(current);
-                var last = watch.last;
-                if (!_identical(value, last)) {
-                  lastDirtyWatch = watch;
-                  lastLoopLastDirtyWatch = null;
-                  watch.last = value;
-                  var fireTimer;
-                  assert((fireTimer = _perf.startTimer('ng.fire', watch.exp)) != false);
-                  watch.fn(value, ((last == _initWatchVal) ? value : last), current);
-                  assert(_perf.stopTimer(fireTimer) != false);
-                }
-              } catch (e, s) {
-                _exceptionHandler(e, s);
+          // process our watches
+          _WatchList watchers = current._watchers;
+          watcherCount += watchers.length;
+          for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
+            try {
+              if (identical(lastLoopLastDirtyWatch, watch)) {
+                break digestLoop;
               }
+              var value = watch.get(current);
+              var last = watch.last;
+              if (!_identical(value, last)) {
+                lastDirtyWatch = watch;
+                lastLoopLastDirtyWatch = null;
+                watch.last = value;
+                var fireTimer;
+                assert((fireTimer = _perf.startTimer('ng.fire', watch.exp)) != false);
+                watch.fn(value, ((last == _initWatchVal) ? value : last), current);
+                assert(_perf.stopTimer(fireTimer) != false);
+              }
+            } catch (e, s) {
+              _exceptionHandler(e, s);
             }
           }
 
