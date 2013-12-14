@@ -36,6 +36,7 @@ class SourceMetadataExtractor {
     metadataVisitor.metadata.forEach((DirectiveMetadata meta) {
       DirectiveInfo dirInfo = new DirectiveInfo();
       dirInfo.selector = meta.selector;
+      dirInfo.template = meta.template;
       meta.attributeMappings.forEach((attrName, mappingSpec) {
         var spec = _specs
             .firstWhere((specPrefix) => mappingSpec.startsWith(specPrefix),
@@ -149,6 +150,9 @@ class DirectiveMetadataCollectingVisitor {
             var paramName = namedArg.name.label.name;
             if (paramName == 'selector') {
               meta.selector = assertString(namedArg.expression).stringValue;
+            }
+            if (paramName == 'template') {
+              meta.template = assertString(namedArg.expression).stringValue;
             }
             if (paramName == 'map') {
               MapLiteral map = namedArg.expression;

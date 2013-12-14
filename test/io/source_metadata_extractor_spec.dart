@@ -14,9 +14,9 @@ main() => describe('source_metadata_extarctor', () {
         sourceMetadataExtractor
             .gatherDirectiveInfo('test/io/test_files/main.dart');
 
-    expect(directives, hasLength(1));
+    expect(directives, hasLength(2));
 
-    DirectiveInfo info = directives.first;
+    DirectiveInfo info = directives.elementAt(1);
     expect(info.expressionAttrs, unorderedEquals(['expr', 'another-expression',
         'callback', 'two-way-stuff', 'exported-attr']));
     expect(info.expressions, unorderedEquals(['attr', 'expr',
