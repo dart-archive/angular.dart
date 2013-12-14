@@ -38,7 +38,10 @@ main() => describe('expression_extractor', () {
       'anotherExpression',
       'callback',
       'twoWayStuff',
-      'exported + expression'
+      'exported + expression',
+      'ctrl.inline.template.expression',
+      'ngIfCondition',
+      'ctrl.if'
     ]));
   });
 });

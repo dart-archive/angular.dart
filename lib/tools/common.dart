@@ -2,6 +2,7 @@ library angular.tools.common;
 
 class DirectiveInfo {
   String selector;
+  String template;
   List<String> expressionAttrs = <String>[];
   List<String> expressions = <String>[];
   DirectiveInfo([this.selector, this.expressionAttrs, this.expressions]) {
@@ -21,6 +22,7 @@ class DirectiveMetadata {
   String className;
   String type; // DIRECTIVE/COMPONENT
   String selector;
+  String template;
   Map<String, String> attributeMappings;
   List<String> exportExpressionAttrs;
   List<String> exportExpressions;
