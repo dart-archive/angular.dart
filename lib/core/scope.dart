@@ -433,6 +433,11 @@ class Scope implements Map {
 
         watcherCount = 0;
         scopeCount = 0;
+        var firedExpressions;
+        if (_ttl - _ttlLeft > 2) {
+          firedExpressions = <String>[];
+          watchLog.add(firedExpressions);
+        }
         assert((timerId = _perf.startTimer('ng.dirty_check', _ttl-_ttlLeft)) != false);
         digestLoop:
         do { // "traverse the scopes" loop
@@ -448,6 +453,9 @@ class Scope implements Map {
               var value = watch.get(current);
               var last = watch.last;
               if (!_identical(value, last)) {
+                if (_ttlLeft < 3) {
+                  firedExpressions.add(watch.exp == null ? '[unknown]' : watch.exp);
+                }
                 lastDirtyWatch = watch;
                 lastLoopLastDirtyWatch = null;
                 watch.last = value;
@@ -488,7 +496,7 @@ class Scope implements Map {
         assert(_perf.stopTimer(timerId) != false);
         if(lastDirtyWatch != null && (_ttlLeft--) == 0) {
           throw '$_ttl \$digest() iterations reached. Aborting!\n' +
-              'Watchers fired in the last 5 iterations: ${_toJson(watchLog)}';
+              'Watchers fired in the last ${_ttl - 2} iterations: ${_toJson(watchLog)}';
         }
       } while (lastDirtyWatch != null || innerAsyncQueue.length > 0);
       _perf.counters['ng.scope.watchers'] = watcherCount;
