@@ -40,8 +40,6 @@ class NgForm {
 
   NgForm(Scope this._scope, dom.Element this._element, Injector injector) {
     _parentForm = injector.parent.get(NgForm);
-
-  NgForm(this._scope, this._element) {
     if(!this._element.attributes.containsKey('action')) {
       this._element.onSubmit.listen((event) {
         event.preventDefault();

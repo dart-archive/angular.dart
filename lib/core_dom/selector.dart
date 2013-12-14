@@ -32,7 +32,9 @@ class _Directive {
   final Type type;
   final NgAnnotation annotation;
 
-  _Directive(this.type, this.annotation);
+  _Directive(Type this.type, NgAnnotation this.annotation);
+
+  toString() => annotation.selector;
 }
 
 
@@ -117,8 +119,8 @@ class _ElementSelector {
       } else {
         attrValuePartialMap
             .putIfAbsent(name, () => new Map<String, _ElementSelector>())
-            [selectorPart.attrValue] = new _ElementSelector(name)
-                ..addDirective(selectorParts, directive);
+            .putIfAbsent(selectorPart.attrValue, () => new _ElementSelector(name))
+            .addDirective(selectorParts, directive);
       }
     } else {
       throw "Unknown selector part '$selectorPart'.";

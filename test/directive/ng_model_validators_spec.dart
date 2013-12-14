@@ -9,7 +9,7 @@ describe('ngModel validators', () {
   beforeEach(inject((TestBed tb) => _ = tb));
 
   describe('required', () {
-    iit('should validate the input field if the required attribute is set', inject((Scope scope) {
+    it('should validate the input field if the required attribute is set', inject((Scope scope) {
       _.compile('<input type="text" ng-model="val" probe="i" required="true" />');
       Probe probe = _.rootScope.i;
       var model = probe.directive(NgModel);
@@ -146,7 +146,7 @@ describe('ngModel validators', () {
   });
 
   describe('pattern', () {
-    it('should validate the input field if a ng-pattern attribute is provided', inject((Scope scope) {
+    iit('should validate the input field if a ng-pattern attribute is provided', inject((Scope scope) {
       _.compile('<input type="text" ng-pattern="myPattern" ng-model="val" probe="i" />');
       Probe probe = _.rootScope.i;
       var model = probe.directive(NgModel);

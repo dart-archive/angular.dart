@@ -12,7 +12,6 @@ import '../_specs.dart';
 @NgDirective(selector:':contains(/abc/)')     class _ContainsAbc{}
 @NgDirective(selector:'[*=/xyz/]')            class _AttributeContainsXyz{}
 
-@NgComponent(selector:'[my-model][required]') class _NgModelRequired{}
 @NgComponent(selector:'component')            class _Component{}
 @NgDirective(selector:'[attribute]')          class _Attribute{}
 @NgDirective(selector:'[structural]',
@@ -22,6 +21,11 @@ import '../_specs.dart';
 @NgDirective(selector:'[ignore-children]',
              children: NgAnnotation.IGNORE_CHILDREN)
                                               class _IgnoreChildren{}
+
+@NgDirective(selector: '[my-model][required]')
+@NgDirective(selector: '[my-model][my-required]')
+                                              class _TwoDirectives {}
+
 
 main() {
   describe('Selector', () {
@@ -49,7 +53,7 @@ main() {
         ..type(_Attribute)
         ..type(_Structural)
         ..type(_IgnoreChildren)
-        ..type(_NgModelRequired);
+        ..type(_TwoDirectives);
     }));
     beforeEach(inject((DirectiveMap directives) {
       selector = directiveSelectorFactory(directives);
@@ -155,6 +159,15 @@ main() {
         toEqualsDirectiveInfos([
           { "selector": 'b', "value": null, "element": element}
         ]));
+    });
+
+    it('should match two directives', () {
+      expect(
+          selector(element = e('<input type="text" my-model="val" required my-required />')),
+          toEqualsDirectiveInfos([
+              { "selector": '[my-model][required]',    "value": '', "element": element},
+              { "selector": '[my-model][my-required]', "value": '', "element": element}
+          ]));
     });
   });
 }

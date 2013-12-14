@@ -36,7 +36,6 @@ class NgModelRequiredValidator extends _NgModelValidator {
 
   NgModelRequiredValidator(dom.Element inputElement, NgModel ngModel, Scope scope, NodeAttrs attrs):
     super(inputElement, ngModel, scope) {
-      print("here");
       _required = attrs['required'] != null;
     }
 
@@ -118,8 +117,8 @@ class NgModelNumberValidator extends _NgModelValidator {
   }
 }
 
-@NgDirective(selector: 'input[ng-model][pattern]')
-@NgDirective(selector: 'input[ng-model][ng-pattern]', map: const {'ng-pattern': '=>pattern'})
+@NgDirective(selector: '[ng-model][pattern]')
+@NgDirective(selector: '[ng-model][ng-pattern]', map: const {'ng-pattern': '=>pattern'})
 class NgModelPatternValidator extends _NgModelValidator {
   RegExp _pattern;
 
@@ -142,6 +141,8 @@ class NgModelPatternValidator extends _NgModelValidator {
   }
 
   set pattern(value) {
+    print("value");
+    print(value);
     if(value != null && value.length > 0) {
       _pattern = new RegExp(value);
       listen();
@@ -152,8 +153,8 @@ class NgModelPatternValidator extends _NgModelValidator {
   }
 }
 
-@NgDirective(selector: 'input[ng-model][minlength]')
-@NgDirective(selector: 'input[ng-model][ng-minlength]', map: const {'ng-minlength': '=>minlength'})
+@NgDirective(selector: '[ng-model][minlength]')
+@NgDirective(selector: '[ng-model][ng-minlength]', map: const {'ng-minlength': '=>minlength'})
 class NgModelMinLengthValidator extends _NgModelValidator {
   int _minlength;
 
@@ -179,8 +180,8 @@ class NgModelMinLengthValidator extends _NgModelValidator {
   }
 }
 
-@NgDirective(selector: 'input[ng-model][maxlength]')
-@NgDirective(selector: 'input[ng-model][ng-maxlength]', map: const {'ng-maxlength': '=>maxlength'})
+@NgDirective(selector: '[ng-model][maxlength]')
+@NgDirective(selector: '[ng-model][ng-maxlength]', map: const {'ng-maxlength': '=>maxlength'})
 class NgModelMaxLengthValidator extends _NgModelValidator {
   int _maxlength;
 

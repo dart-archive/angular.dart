@@ -284,7 +284,6 @@ class TextAreaDirective extends _InputTextlikeDirective {
  * element is an invalid number, then the expression specified by the `ng-model`
  * is set to null.,
  */
-<<<<<<< HEAD
 @NgDirective(selector: 'input[type=number][ng-model]')
 class InputNumberDirective extends _InputTextlikeDirective {
   InputNumberDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
