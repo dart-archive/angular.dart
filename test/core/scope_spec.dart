@@ -327,6 +327,20 @@ main() {
       }));
 
 
+      it(r'should prevent infinite digest and should log firing expressions', inject((Scope $rootScope) {
+        $rootScope['a'] = 0;
+        $rootScope['b'] = 0;
+        $rootScope.$watch('a = a + 1');
+        $rootScope.$watch('b = b + 1');
+
+        expect(() {
+          $rootScope.$digest();
+        }).toThrow('Watchers fired in the last 3 iterations: ['
+            '["a = a + 1","b = b + 1"],["a = a + 1","b = b + 1"],'
+            '["a = a + 1","b = b + 1"]]');
+      }));
+
+
       it(r'should always call the watchr with newVal and oldVal equal on the first run',
           inject((Scope $rootScope) {
         var log = [];
