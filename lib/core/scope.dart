@@ -419,7 +419,6 @@ class Scope implements Map {
     assert(_perf.stopTimer(timerId) != false);
 
     if (lastDirtyWatch == null) {
-      _digestUpdatePerfCounters();
       _digestHandleQueue('ng.outerAsync', _outerAsyncQueue);
       return;
     }
@@ -443,7 +442,7 @@ class Scope implements Map {
       assert(_perf.stopTimer(timerId) != false);
 
       if (lastDirtyWatch == null) {
-        _digestUpdatePerfCounters();
+        _digestComputePerfCounters();
         _digestHandleQueue('ng.outerAsync', _outerAsyncQueue);
         return;
       }
@@ -480,9 +479,14 @@ class Scope implements Map {
 
 
   _Watch _digestComputeLastDirty() {
+    int watcherCount = 0;
+    int scopeCount = 0;
     Scope scope = this;
     do {
-      for (_Watch watch = scope._watchers.head; watch != null; watch = watch.next) {
+      _WatchList watchers = scope._watchers;
+      watcherCount += watchers.length;
+      scopeCount++;
+      for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
         var last = watch.last;
         var value = watch.get(scope);
         if (!_identical(value, last)) {
@@ -490,14 +494,20 @@ class Scope implements Map {
         }
       }
     } while ((scope = _digestComputeNextScope(scope)) != null);
+    _digestUpdatePerfCounters(watcherCount, scopeCount);
     return null;
   }
 
 
   _Watch _digestComputeLastDirtyUntil(_Watch stopWatch, List<String> log) {
+    int watcherCount = 0;
+    int scopeCount = 0;
     Scope scope = this;
     do {
-      for (_Watch watch = scope._watchers.head; watch != null; watch = watch.next) {
+      _WatchList watchers = scope._watchers;
+      watcherCount += watchers.length;
+      scopeCount++;
+      for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
         if (identical(stopWatch, watch)) return null;
         var last = watch.last;
         var value = watch.get(scope);
@@ -511,10 +521,10 @@ class Scope implements Map {
 
 
   _Watch _digestHandleDirty(Scope scope, _Watch watch, last, value, List<String> log) {
-    _Watch result;
+    _Watch lastDirtyWatch;
     while (true) {
       if (!_identical(value, last)) {
-        result = watch;
+        lastDirtyWatch = watch;
         if (log != null) log.add(watch.exp == null ? '[unknown]' : watch.exp);
         watch.last = value;
         var fireTimer;
@@ -525,7 +535,7 @@ class Scope implements Map {
       watch = watch.next;
       while (watch == null) {
         scope = _digestComputeNextScope(scope);
-        if (scope == null) return result;
+        if (scope == null) return lastDirtyWatch;
         watch = scope._watchers.head;
       }
       last = watch.last;
@@ -562,13 +572,18 @@ class Scope implements Map {
   }
 
 
-  void _digestUpdatePerfCounters() {
-    int scopeCount = 0, watcherCount = 0;
+  void _digestComputePerfCounters() {
+    int watcherCount = 0, scopeCount = 0;
     Scope scope = this;
     do {
       scopeCount++;
       watcherCount += scope._watchers.length;
     } while ((scope = _digestComputeNextScope(scope)) != null);
+    _digestUpdatePerfCounters(watcherCount, scopeCount);
+  }
+
+
+  void _digestUpdatePerfCounters(int watcherCount, int scopeCount) {
     _perf.counters['ng.scope.watchers'] = watcherCount;
     _perf.counters['ng.scopes'] = scopeCount;
   }
