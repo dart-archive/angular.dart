@@ -426,7 +426,7 @@ class Scope implements Map {
     List<List<String>> watchLog = [];
     for (int iteration = 1, ttl = _ttl; iteration < ttl; iteration++) {
       _Watch stopWatch = _digestHandleQueue('ng.innerAsync', _innerAsyncQueue)
-          ? null
+          ? null  // Evaluating async work requires re-evaluating all watchers.
           : lastDirtyWatch;
       lastDirtyWatch = null;
 
