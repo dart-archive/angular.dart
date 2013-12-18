@@ -171,7 +171,7 @@ class _Handler { // TODO: this needs to be broken down to different SubClasses
 
   _Handler(this.expression, this.scope);
 
-  void addDelegateHandler(_Handler delegateHandler) {
+  void setDelegateHandler(_Handler delegateHandler) {
     delegateHandler.previous = delegateHandlerTail;
     if (delegateHandlerHead == null) delegateHandlerHead = delegateHandler;
     if (delegateHandlerTail != null) delegateHandlerTail.next = delegateHandler;
@@ -215,8 +215,7 @@ class _Handler { // TODO: this needs to be broken down to different SubClasses
       if (previous == null) forwardingHandler.delegateHandlerHead = next;
 
       if (watchRecord is EvalWatchRecord) {
-        (watchRecord as EvalWatchRecord).remove();
-        scope._evalCost--;
+        //(watchRecord as EvalWatchRecord).remove();
       } else {
         scope._digestDetector.remove(watchRecord); // TODO: LOD violation
         scope._watchCost--;
@@ -316,7 +315,7 @@ class FieldReadAST extends AST {
 
     // We set a field forwarding handler on LHS. This will allow the change objects to propagate
     // to the current WatchRecord.
-    lhsWR.handler.addDelegateHandler(handler);
+    lhsWR.handler.setDelegateHandler(handler);
 
     // propagate the value from the LHS to here
     handler.receive(lhsWR.currentValue);
@@ -334,6 +333,7 @@ class EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
   dynamic currentValue;
   dynamic previousValue;
   dynamic object;
+  bool deleted = false;
 
   EvalWatchRecord next;
   EvalWatchRecord previous;
@@ -359,6 +359,9 @@ class EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
   get nextChange => null;
 
   remove() {
+    assert(!deleted);
+    deleted = true;
+    scope._evalCost--;
     var previous = this.previous;
     var next = this.next;
 
@@ -370,13 +373,17 @@ class EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
   }
 }
 
-class _ArgHandler extends _Handler { // TODO(misko): extract base handler???
+class _ArgHandler extends _Handler implements _LinkedListItem0 { // TODO(misko): extract base handler???
   final EvalWatchRecord watchRecord;
   final int index;
 
-  _ArgHandler(this.watchRecord, int index, Scope2 scope):
+  _ArgHandler _previous0, _next0;
+
+  _ArgHandler(_InvokeHandler invokeHandler, this.watchRecord, int index, Scope2 scope):
       super('arg[$index]', scope),
-      index = index;
+      index = index {
+    invokeHandler.addArgumentHandler(this);
+  }
 
   receive(dynamic object) => watchRecord.args[index] = object;
 
@@ -384,7 +391,23 @@ class _ArgHandler extends _Handler { // TODO(misko): extract base handler???
     var watch = null;
     scope._addDirtyWatch(watch);
   }
+}
 
+class _InvokeHandler extends _Handler {
+  final _LinkedList0<_ArgHandler> argHandlers = new _LinkedList0<_ArgHandler>();
+
+  _InvokeHandler(expression, scope): super(expression, scope);
+
+  addArgumentHandler(_ArgHandler handler) => argHandlers.add(handler);
+
+  gc() {
+    watchRecord.remove();
+    _ArgHandler current = argHandlers._head;
+    while(current != null) {
+      current.gc();
+      current = current._next0;
+    }
+  }
 }
 
 
@@ -405,15 +428,14 @@ class FunctionAST extends AST {
         (AST ast) => cache.putIfAbsent(ast.expression, () => ast.setupWatch(scope, cache))
     ).toList();
 
-    _Handler handler = new _Handler(expression, scope); // TODO: move to _addEvalWatch
-    EvalWatchRecord evalWatchRecord = scope._addEvalWatch(fn, name, handler, argsAST.length);
-    handler.watchRecord = evalWatchRecord; // TODO: move to _addEvalWatch
+    _Handler invokeHandler = new _InvokeHandler(expression, scope); // TODO: move to _addEvalWatch
+    EvalWatchRecord evalWatchRecord = scope._addEvalWatch(fn, name, invokeHandler, argsAST.length);
+    invokeHandler.watchRecord = evalWatchRecord; // TODO: move to _addEvalWatch
 
     var i = 0;
     argsWR.forEach((WatchRecord<_Handler> record) {
-      var argHandler = new _ArgHandler(evalWatchRecord, i++, scope);
-      record.handler.addDelegateHandler(argHandler);
-      argHandler.addDelegateHandler(handler);
+      var argHandler = new _ArgHandler(invokeHandler, evalWatchRecord, i++, scope);
+      record.handler.setDelegateHandler(argHandler);
       argHandler.receive(record.currentValue);
     });
 
@@ -426,31 +448,35 @@ class _HandlerEntry extends LinkedListEntry<_HandlerEntry> {
   _HandlerEntry(this.handler);
 }
 
-class _LinkedList<I extends LinkedListItem> {
+class _LinkedList0<I extends _LinkedListItem0> {
   I _head;
   I _tail;
 
   add(I item) {
-    if (tail == null) {
-      head = tail = item;
+    if (_tail == null) {
+      _head = _tail = item;
     } else {
-      item.previous = tail;
-      tail.next = item;
-      tail = item;
+      item._previous0 = _tail;
+      _tail._next0 = item;
+      _tail = item;
     }
   }
 
   remove(I item) {
+    var previous = item.previous0;
+    var next = item.next0;
 
+    if (previous == null) _head = next; else previous.next = next;
+    if (next == null) _tail = previous; else next.previous = previous;
   }
 }
 
-class _LinkedListItem {
-  _LinkedListITem _previous;
-  _LinkedListItem _next;
+class _LinkedListItem0 {
+  _LinkedListItem0 _previous0;
+  _LinkedListItem0 _next0;
 }
 
-class _LLItemRef<I> extends _LinkedListItem {
+class _LLItemRef<I> extends _LinkedListItem0 {
   final I _item;
 
   _LLItemRef(this._item);
