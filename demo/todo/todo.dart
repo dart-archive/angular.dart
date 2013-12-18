@@ -65,6 +65,7 @@ class TodoController {
     if (key == 'newItem') {
       return newItem;
     }
+    return null;
   }
 
   add() {
