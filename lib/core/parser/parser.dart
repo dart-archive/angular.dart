@@ -1,7 +1,7 @@
 part of angular.core.parser;
 
-typedef ParsedGetter(self, [locals]);
-typedef ParsedSetter(self, value, [locals]);
+typedef ParsedGetter(self);
+typedef ParsedSetter(self, value);
 
 typedef Getter([locals]);
 typedef Setter(value, [locals]);
@@ -34,10 +34,10 @@ class Token {
   toString() => "Token($text)";
 }
 
-typedef Operator(dynamic self, Map<String, dynamic>locals, ParserAST a, ParserAST b);
+typedef Operator(dynamic self, ParserAST a, ParserAST b);
 
-Operator NULL_OP = (_, _x, _0, _1) => null;
-Operator NOT_IMPL_OP = (_, _x, _0, _1) { throw "Op not implemented"; };
+Operator NULL_OP = (_, _0, _1) => null;
+Operator NOT_IMPL_OP = (_, _0, _1) { throw "Op not implemented"; };
 
 // FUNCTIONS USED AT RUNTIME.
 
@@ -100,37 +100,37 @@ safeFunctionCall(userFn, fnName, evalError) {
 Map<String, Operator> OPERATORS = {
   'undefined': NULL_OP,
   'null': NULL_OP,
-  'true': (self, locals, a, b) => true,
-  'false': (self, locals, a, b) => false,
-  '+': (self, locals, aFn, bFn) {
-    var a = aFn.eval(self, locals);
-    var b = bFn.eval(self, locals);
+  'true': (self, a, b) => true,
+  'false': (self, a, b) => false,
+  '+': (self, aFn, bFn) {
+    var a = aFn.eval(self);
+    var b = bFn.eval(self);
     return autoConvertAdd(a, b);
   },
-  '-': (self, locals, a, b) {
+  '-': (self, a, b) {
     assert(a != null || b != null);
-    var aResult = a != null ? a.eval(self, locals) : null;
-    var bResult = b != null ? b.eval(self, locals) : null;
+    var aResult = a != null ? a.eval(self) : null;
+    var bResult = b != null ? b.eval(self) : null;
     return (aResult == null ? 0 : aResult) - (bResult == null ? 0 : bResult);
   },
-  '*': (s, l, a, b) => a.eval(s, l) * b.eval(s, l),
-  '/': (s, l, a, b) => a.eval(s, l) / b.eval(s, l),
-  '~/': (s, l, a, b) => a.eval(s, l) ~/ b.eval(s, l),
-  '%': (s, l, a, b) => a.eval(s, l) % b.eval(s, l),
-  '^': (s, l, a, b) => a.eval(s, l) ^ b.eval(s, l),
+  '*': (s, a, b) => a.eval(s) * b.eval(s),
+  '/': (s, a, b) => a.eval(s) / b.eval(s),
+  '~/': (s, a, b) => a.eval(s) ~/ b.eval(s),
+  '%': (s, a, b) => a.eval(s) % b.eval(s),
+  '^': (s, a, b) => a.eval(s) ^ b.eval(s),
   '=': NULL_OP,
-  '==': (s, l, a, b) => a.eval(s, l) == b.eval(s, l),
-  '!=': (s, l, a, b) => a.eval(s, l) != b.eval(s, l),
-  '<': (s, l, a, b) => a.eval(s, l) < b.eval(s, l),
-  '>': (s, l, a, b) => a.eval(s, l) > b.eval(s, l),
-  '<=': (s, l, a, b) => a.eval(s, l) <= b.eval(s, l),
-  '>=': (s, l, a, b) => a.eval(s, l) >= b.eval(s, l),
-  '&&': (s, l, a, b) => toBool(a.eval(s, l)) && toBool(b.eval(s, l)),
-  '||': (s, l, a, b) => toBool(a.eval(s, l)) || toBool(b.eval(s, l)),
-  '&': (s, l, a, b) => a.eval(s, l) & b.eval(s, l),
-  '|': NOT_IMPL_OP, //b(locals)(locals, a(locals))
-  '!': (s, l, a, b) => !toBool(a.eval(s, l)),
-  '?': (s, l, c, t, f) => toBool(c.eval(s, l)) ? t.eval(s, l) : f.eval(s, l),
+  '==': (s, a, b) => a.eval(s) == b.eval(s),
+  '!=': (s, a, b) => a.eval(s) != b.eval(s),
+  '<': (s, a, b) => a.eval(s) < b.eval(s),
+  '>': (s, a, b) => a.eval(s) > b.eval(s),
+  '<=': (s, a, b) => a.eval(s) <= b.eval(s),
+  '>=': (s, a, b) => a.eval(s) >= b.eval(s),
+  '&&': (s, a, b) => toBool(a.eval(s)) && toBool(b.eval(s)),
+  '||': (s, a, b) => toBool(a.eval(s)) || toBool(b.eval(s)),
+  '&': (s, a, b) => a.eval(s) & b.eval(s),
+  '|': NOT_IMPL_OP, //b()(a())
+  '!': (s, a, b) => !toBool(a.eval(s)),
+  '?': (s, c, t, f) => toBool(c.eval(s)) ? t.eval(s) : f.eval(s),
 };
 
 @NgInjectableService()

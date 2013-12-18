@@ -201,7 +201,7 @@ class Compiler {
           break;
         case '&':
           mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
-            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope));
+            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope, ScopeLocals.wrapper));
           };
           break;
       }
@@ -209,3 +209,4 @@ class Compiler {
     });
   }
 }
+

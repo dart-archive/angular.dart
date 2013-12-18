@@ -14,6 +14,6 @@ part 'static_parser.dart';
 // Placeholder for DI.
 // The parser you are looking for is DynamicParser
 abstract class Parser {
-  call(String text) {}
+  Expression call(String text) {}
   primaryFromToken(Token token, parserError);
 }

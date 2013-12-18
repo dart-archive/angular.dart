@@ -1,13 +1,25 @@
 part of angular.core.parser;
 
+typedef dynamic LocalsWrapper(dynamic context, dynamic locals);
+
 class BoundExpression {
   var _context;
+  LocalsWrapper _localsWrapper;
   Expression expression;
 
-  BoundExpression(this._context, Expression this.expression);
+  BoundExpression(this._context, this.expression, this._localsWrapper);
+  _localContext(locals) {
+    if (locals != null) {
+      if (_localsWrapper == null) {
+          throw new StateError("Locals $locals provided, but no LocalsWrapper strategy.");
+      }
+      return _localsWrapper(_context, locals);
+    }
+    return _context;
+  }
 
-  call([locals]) => expression.eval(_context, locals);
-  assign(value, [locals]) => expression.assign(_context, value, locals);
+  call([locals]) => expression.eval(_localContext(locals));
+  assign(value, [locals]) => expression.assign(_localContext(locals), value);
 }
 
 class Expression implements ParserAST {
@@ -27,7 +39,7 @@ class Expression implements ParserAST {
 
   Expression(ParsedGetter this.eval, [ParsedSetter this.assign]);
 
-  bind(context) => new BoundExpression(context, this);
+  bind(context, [localsWrapper]) => new BoundExpression(context, this, localsWrapper);
 
   get assignable => assign != null;
 }
@@ -110,9 +122,9 @@ class ParserBackend {
     List<Function> getters = keys.map(_getterSetter.getter).toList();
 
     if (getters.isEmpty) {
-      return (self, [locals]) => self;
+      return (self) => self;
     } else {
-      return (dynamic self, [Map locals]) {
+      return (dynamic self) {
         if (self == null) {
           return null;
         }
@@ -123,17 +135,6 @@ class ParserBackend {
         var _gettersLength = _getters.length;
 
         num i = 0;
-        if (locals != null) {
-          dynamic selfNext = locals[_keys[0]];
-          if (selfNext == null) {
-            if (locals.containsKey(_keys[0])) {
-              return null;
-            }
-          } else {
-            i++;
-            self = selfNext;
-          }
-        }
         for (; i < _gettersLength; i++) {
           if (self is Map) {
             self = self[_keys[i]];
@@ -153,7 +154,7 @@ class ParserBackend {
     List<String> keys = path.split('.');
     List<Function> getters = keys.map(_getterSetter.getter).toList();
     List<Function> setters = keys.map(_getterSetter.setter).toList();
-    return (dynamic self, dynamic value, [Map locals]) {
+    return (dynamic self, dynamic value) {
       num i = 0;
       List<String> _keys = keys;
       List<Function> _getters = getters;
@@ -161,18 +162,6 @@ class ParserBackend {
       var setterLengthMinusOne = _keys.length - 1;
 
       dynamic selfNext;
-      if (locals != null && i < setterLengthMinusOne) {
-        selfNext = locals[_keys[0]];
-        if (selfNext == null) {
-          if (locals.containsKey(_keys[0])) {
-            return null;
-          }
-        } else {
-          i++;
-          self = selfNext;
-        }
-      }
-
       for (; i < setterLengthMinusOne; i++) {
         if (self is Map) {
           selfNext = self[_keys[i]];
@@ -202,83 +191,83 @@ class ParserBackend {
   _op(opKey) => OPERATORS[opKey];
 
   Expression ternaryFn(Expression cond, Expression _true, Expression _false) =>
-      new Expression((self, [locals]) => _op('?')(
-          self, locals, cond, _true, _false));
+      new Expression((self) => _op('?')(
+          self, cond, _true, _false));
 
   Expression binaryFn(Expression left, String op, Expression right) =>
-      new Expression((self, [locals]) => _op(op)(self, locals, left, right));
+      new Expression((self) => _op(op)(self, left, right));
 
   Expression unaryFn(String op, Expression right) =>
-      new Expression((self, [locals]) => _op(op)(self, locals, right, null));
+      new Expression((self) => _op(op)(self, right, null));
 
   Expression assignment(Expression left, Expression right, evalError) =>
-      new Expression((self, [locals]) {
+      new Expression((self) {
         try {
-          return left.assign(self, right.eval(self, locals), locals);
+          return left.assign(self, right.eval(self));
         } catch (e, s) {
           throw evalError('Caught $e', s);
         }
       });
 
   Expression multipleStatements(statements) =>
-      new Expression((self, [locals]) {
+      new Expression((self) {
         var value;
         for ( var i = 0; i < statements.length; i++) {
           var statement = statements[i];
           if (statement != null)
-            value = statement.eval(self, locals);
+            value = statement.eval(self);
         }
         return value;
       });
 
   Expression functionCall(fn, fnName, argsFn, evalError) =>
-      new Expression((self, [locals]){
+      new Expression((self){
         List args = [];
         for ( var i = 0; i < argsFn.length; i++) {
-          args.add(argsFn[i].eval(self, locals));
+          args.add(argsFn[i].eval(self));
         }
-        var userFn = safeFunctionCall(fn.eval(self, locals), fnName, evalError);
+        var userFn = safeFunctionCall(fn.eval(self), fnName, evalError);
 
         return relaxFnApply(userFn, args);
       });
 
   Expression arrayDeclaration(elementFns) =>
-      new Expression((self, [locals]){
+      new Expression((self){
         var array = [];
         for ( var i = 0; i < elementFns.length; i++) {
-          array.add(elementFns[i].eval(self, locals));
+          array.add(elementFns[i].eval(self));
         }
         return array;
       });
 
   Expression objectIndex(obj, indexFn, evalError) =>
-      new Expression((self, [locals]) {
-        var i = indexFn.eval(self, locals);
-        var o = obj.eval(self, locals),
+      new Expression((self) {
+        var i = indexFn.eval(self);
+        var o = obj.eval(self),
         v, p;
 
         v = objectIndexGetField(o, i, evalError);
 
         return v;
-      }, (self, value, [locals]) =>
-          objectIndexSetField(obj.eval(self, locals),
-              indexFn.eval(self, locals), value, evalError)
+      }, (self, value) =>
+          objectIndexSetField(obj.eval(self),
+              indexFn.eval(self), value, evalError)
       );
 
   Expression fieldAccess(object, field) {
     var setterFn = setter(field);
     var getterFn = getter(field);
     return new Expression(
-        (self, [locals]) => getterFn(object.eval(self, locals)),
-        (self, value, [locals]) => setterFn(object.eval(self, locals), value));
+        (self) => getterFn(object.eval(self)),
+        (self, value) => setterFn(object.eval(self), value));
   }
 
   Expression object(keyValues) =>
-      new Expression((self, [locals]){
+      new Expression((self){
         var object = {};
         for ( var i = 0; i < keyValues.length; i++) {
           var keyValue = keyValues[i];
-          var value = keyValue["value"].eval(self, locals);
+          var value = keyValue["value"].eval(self);
           object[keyValue["key"]] = value;
         }
         return object;
@@ -286,25 +275,25 @@ class ParserBackend {
 
   Expression profiled(value, _perf, text) {
     if (value is FilterExpression) return value;
-    var wrappedGetter = (s, [l]) =>
-    _perf.time('angular.parser.getter', () => value.eval(s, l), text);
+    var wrappedGetter = (s) =>
+    _perf.time('angular.parser.getter', () => value.eval(s), text);
     var wrappedAssignFn = null;
     if (value.assign != null) {
-      wrappedAssignFn = (s, v, [l]) =>
+      wrappedAssignFn = (s, v) =>
       _perf.time('angular.parser.assign',
-          () => value.assign(s, v, l), text);
+          () => value.assign(s, v), text);
     }
     return new Expression(wrappedGetter, wrappedAssignFn);
   }
 
   Expression fromOperator(String op) =>
-      new Expression((s, [l]) => OPERATORS[op](s, l, null, null));
+      new Expression((s) => OPERATORS[op](s, null, null));
 
   Expression getterSetter(key) =>
       new Expression(getter(key), setter(key));
 
   Expression value(v) =>
-      new Expression((self, [locals]) => v);
+      new Expression((self) => v);
 
   zero() => ZERO;
 
@@ -328,10 +317,10 @@ class FilterExpression extends Expression {
 
   get eval => _eval;
 
-  dynamic _eval(self, [locals]) {
-    var args = [leftHandSide.eval(self, locals)];
+  dynamic _eval(self) {
+    var args = [leftHandSide.eval(self)];
     for ( var i = 0; i < parameters.length; i++) {
-      args.add(parameters[i].eval(self, locals));
+      args.add(parameters[i].eval(self));
     }
     return Function.apply(filterFn, args);
   }

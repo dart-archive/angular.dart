@@ -48,7 +48,7 @@ main() {
       parser = injectedParser;
     }));
 
-    eval(String text) => parser(text).eval(scope, null);
+    eval(String text) => parser(text).eval(scope);
     expectEval(String expr) => expect(() => eval(expr));
 
     beforeEach(inject((Scope rootScope) { scope = rootScope; }));
@@ -522,8 +522,8 @@ main() {
 
       it('should evaluate methods on object', () {
         scope['obj'] = ['ABC'];
-        var fn = parser("obj.elementAt(0)").bind(scope);
-        expect(fn()).toEqual('ABC');
+        var fn = parser("obj.elementAt(0)").eval;
+        expect(fn(scope)).toEqual('ABC');
         expect(scope.$eval(fn)).toEqual('ABC');
       });
 
@@ -531,7 +531,7 @@ main() {
       it('should only check locals on first dereference', () {
         scope['a'] = {'b': 1};
         var locals = {'b': 2};
-        var fn = parser("this['a'].b").bind(scope);
+        var fn = parser("this['a'].b").bind(scope, ScopeLocals.wrapper);
         expect(fn(locals)).toEqual(1);
       });
 
@@ -779,28 +779,29 @@ main() {
         var fn = parser('a');
         expect(fn.assign).toBeNotNull();
         var scope = {};
-        fn.assign(scope, 123, null);
+        fn.assign(scope, 123);
         expect(scope).toEqual({'a':123});
       });
     });
 
     describe('locals', () {
       it('should expose local variables', () {
-        expect(parser('a').eval({'a': 6}, {'a': 1})).toEqual(1);
-        expect(parser('add(a,b)').eval({'b': 1, 'add': (a, b) { return a + b; }}, {'a': 2})).toEqual(3);
+        expect(parser('a').bind({'a': 6}, ScopeLocals.wrapper)({'a': 1})).toEqual(1);
+        expect(parser('add(a,b)').
+          bind({'b': 1, 'add': (a, b) { return a + b; }}, ScopeLocals.wrapper)({'a': 2})).toEqual(3);
       });
 
 
       it('should expose traverse locals', () {
-        expect(parser('a.b').eval({'a': {'b': 6}}, {'a': {'b':1}})).toEqual(1);
-        expect(parser('a.b').eval({'a': null}, {'a': {'b':1}})).toEqual(1);
-        expect(parser('a.b').eval({'a': {'b': 5}}, {'a': null})).toEqual(null);
+        expect(parser('a.b').bind({'a': {'b': 6}}, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind({'a': null}, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind({'a': {'b': 5}}, ScopeLocals.wrapper)({'a': null})).toEqual(null);
       });
 
 
       it('should work with scopes', inject((Scope scope) {
         scope.a = {'b': 6};
-        expect(parser('a.b').eval(scope, {'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind(scope, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
       }));
 
       it('should expose assignment function', () {
@@ -808,7 +809,7 @@ main() {
         expect(fn.assign).toBeNotNull();
         var scope = {};
         var locals = {"a": {}};
-        fn.assign(scope, 123, locals);
+        fn.bind(scope, ScopeLocals.wrapper).assign(123, locals);
         expect(scope).toEqual({});
         expect(locals["a"]).toEqual({'b':123});
       });

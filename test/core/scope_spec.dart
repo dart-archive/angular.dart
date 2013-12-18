@@ -560,8 +560,8 @@ main() {
       it(r'should allow passing locals to the expression', inject((Scope $rootScope) {
         expect($rootScope.$eval('a+1', {"a": 2})).toBe(3);
 
-        $rootScope.$eval((scope, locals) {
-          scope.c = locals['b'] + 4;
+        $rootScope.$eval((scope) {
+          scope['c'] = scope['b'] + 4;
         }, {"b": 3});
         expect($rootScope.c).toBe(7);
       }));
@@ -1216,6 +1216,39 @@ main() {
         scope['c']++;
         scope.$digest();
         expect(log.result()).toEqual('a; b; c; fire:c; a; b; fire:b; c; a');
+      });
+    });
+
+    describe('ScopeLocals', () {
+      var scope;
+
+      beforeEach(inject((Scope _scope) => scope = _scope));
+
+      it('should read from locals', () {
+        scope['a'] = 'XXX';
+        scope['c'] = 'C';
+        var scopeLocal = new ScopeLocals(scope, {'a': 'A', 'b': 'B'});
+        expect(scopeLocal['a']).toEqual('A');
+        expect(scopeLocal['b']).toEqual('B');
+        expect(scopeLocal['c']).toEqual('C');
+      });
+
+      it('should write to Scope', () {
+        scope['a'] = 'XXX';
+        scope['c'] = 'C';
+        var scopeLocal = new ScopeLocals(scope, {'a': 'A', 'b': 'B'});
+
+        scopeLocal['a'] = 'aW';
+        scopeLocal['b'] = 'bW';
+        scopeLocal['c'] = 'cW';
+
+        expect(scope['a']).toEqual('aW');
+        expect(scope['b']).toEqual('bW');
+        expect(scope['c']).toEqual('cW');
+
+        expect(scopeLocal['a']).toEqual('A');
+        expect(scopeLocal['b']).toEqual('B');
+        expect(scopeLocal['c']).toEqual('cW');
       });
     });
   });

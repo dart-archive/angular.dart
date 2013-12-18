@@ -175,7 +175,7 @@ class FilterFilter {
   bool _search(var item, var what) {
     if (what is Map) {
       return what.keys.every((key) => _search(
-              (key == r'$') ? item : _parser(key).eval(item, null), what[key]));
+              (key == r'$') ? item : _parser(key).eval(item), what[key]));
     } else if (item is Map) {
       return item.keys.any((k) => !k.startsWith(r'$') && _search(item[k], what));
     } else if (item is List) {

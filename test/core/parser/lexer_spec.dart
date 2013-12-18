@@ -17,7 +17,7 @@ main() {
     Parser parser;
 
     // It would be better if we could call Parser.primary() directly.
-    fn0(Token token) => parser.primaryFromToken(token, (x) => x).eval(null, null);
+    fn0(Token token) => parser.primaryFromToken(token, (x) => x).eval(null);
 
     Lexer lex;
     beforeEach(inject((Lexer lexer, Parser p) {

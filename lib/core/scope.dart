@@ -533,7 +533,7 @@ class Scope implements Map {
 
 
   $eval(expr, [locals]) {
-    return relaxFnArgs(_compileToFn(expr))(this, locals);
+    return relaxFnArgs(_compileToFn(expr))(locals == null ? this : new ScopeLocals(this, locals));
   }
 
 
@@ -705,6 +705,21 @@ class Scope implements Map {
       throw 'Expecting String or Function';
     }
   }
+}
+
+@proxy
+class ScopeLocals implements Scope, Map {
+  static wrapper(dynamic scope, Map<String, Object> locals) => new ScopeLocals(scope, locals);
+
+  dynamic _scope;
+  Map<String, Object> _locals;
+
+  ScopeLocals(this._scope, this._locals);
+
+  operator []=(String name, value) => _scope[name] = value;
+  operator [](String name) => (_locals.containsKey(name) ? _locals : _scope)[name];
+
+  noSuchMethod(Invocation invocation) => mirror.reflect(_scope).delegate(invocation);
 }
 
 class _InitWatchVal { const _InitWatchVal(); }
