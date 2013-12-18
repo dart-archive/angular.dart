@@ -172,7 +172,7 @@ abstract class NgAnnotation {
  * ask for any injectable object in their constructor. Components
  * can also ask for other components or directives declared on the DOM element.
  *
- * Components can implement [NgAttachAware], [NgDetachAware], [NgShadowRoot] and
+ * Components can implement [NgAttachAware], [NgDetachAware], [NgShadowRootAware] and
  * declare these optional methods:
  *
  * * `attach()` - Called on first [Scope.$digest()].
