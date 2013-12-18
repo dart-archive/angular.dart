@@ -22,6 +22,11 @@ import '../_specs.dart';
              children: NgAnnotation.IGNORE_CHILDREN)
                                               class _IgnoreChildren{}
 
+@NgDirective(selector: '[my-model][required]')
+@NgDirective(selector: '[my-model][my-required]')
+                                              class _TwoDirectives {}
+
+
 main() {
   describe('Selector', () {
     //TODO(karma): throwing error here gets ignored
@@ -47,7 +52,8 @@ main() {
         ..type(_Component)
         ..type(_Attribute)
         ..type(_Structural)
-        ..type(_IgnoreChildren);
+        ..type(_IgnoreChildren)
+        ..type(_TwoDirectives);
     }));
     beforeEach(inject((DirectiveMap directives) {
       selector = directiveSelectorFactory(directives);
@@ -145,6 +151,23 @@ main() {
           { "selector": '[directive]', "value": 'd', "element": element},
           { "selector": '[directive=d][foo=f]', "value": 'f', "element": element}
       ]));
+    });
+
+    it('should match ng-model + required on the same element', () {
+      expect(
+        selector(element = e('<input type="text" ng-model="val" probe="i" required="true" />')),
+        toEqualsDirectiveInfos([
+          { "selector": 'b', "value": null, "element": element}
+        ]));
+    });
+
+    it('should match two directives', () {
+      expect(
+          selector(element = e('<input type="text" my-model="val" required my-required />')),
+          toEqualsDirectiveInfos([
+              { "selector": '[my-model][required]',    "value": '', "element": element},
+              { "selector": '[my-model][my-required]', "value": '', "element": element}
+          ]));
     });
   });
 }

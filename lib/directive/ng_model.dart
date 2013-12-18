@@ -11,24 +11,49 @@ part of angular.directive;
  * (to be implemented)
  */
 @NgDirective(
-    selector: '[ng-model]',
-    map: const {'ng-model': '&model'})
+    selector: '[ng-model]')
 class NgModel {
+  final NgForm _form;
+  final dom.Element _element;
   final Scope _scope;
 
   Getter getter = ([_]) => null;
   Setter setter = (_, [__]) => null;
-  String _exp;
 
+  String _exp;
+  String _name;
+
+  bool _dirty;
+  bool _pristine;
+  bool _valid;
+  bool _invalid;
+
+  final List<_NgModelValidator> _validators = new List<_NgModelValidator>();
+  final Map<String, bool> currentErrors = new Map<String, bool>();
 
   Function _removeWatch = () => null;
   bool _watchCollection;
 
   Function render = (value) => null;
 
-  NgModel(this._scope, NodeAttrs attrs) {
+  NgModel(this._scope, NodeAttrs attrs, [dom.Element this._element, NgForm this._form]) {
     _exp = 'ng-model=${attrs["ng-model"]}';
     watchCollection = false;
+
+    if(_form != null) {
+      _form.addControl(this);
+    }
+
+    pristine = true;
+  }
+
+  @NgAttr('name')
+  get name => _name;
+  set name(value) {
+    _name = value;
+    if(_form != null) {
+      _form.addControl(this);
+    }
   }
 
   get watchCollection => _watchCollection;
@@ -43,6 +68,7 @@ class NgModel {
     }
   }
 
+  @NgCallback('ng-model')
   set model(BoundExpression boundExpression) {
     getter = boundExpression;
     setter = boundExpression.assign;
@@ -55,6 +81,85 @@ class NgModel {
 
   get modelValue        => getter();
   set modelValue(value) => setter(value);
+
+  get pristine => _pristine;
+  set pristine(value) {
+    _pristine = true;
+    _dirty = false;
+
+    if(_element != null) {
+      _element.classes.remove(NgForm.NG_DIRTY_CLASS);
+      _element.classes.add(NgForm.NG_PRISTINE_CLASS);
+    }
+  }
+
+  get dirty => _dirty;
+  set dirty(value) {
+    _dirty = true;
+    _pristine = false;
+
+    if(_element != null) {
+      _element.classes.remove(NgForm.NG_PRISTINE_CLASS);
+      _element.classes.add(NgForm.NG_DIRTY_CLASS);
+    }
+  }
+
+  get valid => _valid;
+  set valid(value) {
+    _invalid = false;
+    _valid = true;
+
+    if(_element != null) {
+      _element.classes.remove(NgForm.NG_INVALID_CLASS);
+      _element.classes.add(NgForm.NG_VALID_CLASS);
+    }
+  }
+
+  get invalid => _invalid;
+  set invalid(value) {
+    _valid = false;
+    _invalid = true;
+
+    if(_element != null) {
+      _element.classes.remove(NgForm.NG_VALID_CLASS);
+      _element.classes.add(NgForm.NG_INVALID_CLASS);
+    }
+  }
+
+  get validators => _validators;
+  validate() {
+    if(validators.length > 0) {
+      validators.forEach((validator) {
+        setValidity(validator.name, validator.isValid());
+      });
+    } else {
+      valid = true;
+    }
+  }
+
+  setValidity(String errorType, bool isValid) {
+    if(isValid) {
+      if(currentErrors.containsKey(errorType)) {
+        currentErrors.remove(errorType);
+      }
+      if(valid != true && currentErrors.isEmpty) {
+        valid = true;
+      }
+    } else if(!currentErrors.containsKey(errorType)) {
+      currentErrors[errorType] = true;
+      invalid = true;
+    }
+
+    if(_form != null) {
+      _form.setValidity(this, errorType, isValid);
+    }
+  }
+
+  destroy() {
+    if(_form != null) {
+      _form.removeControl(this);
+    }
+  }
 }
 
 /**
@@ -225,7 +330,6 @@ class InputEmailDirective extends _InputTextlikeDirective {
     }
   }
 }
-
 
 /**
  * Usage:
