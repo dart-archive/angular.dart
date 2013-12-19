@@ -12,7 +12,6 @@ abstract class TextChangeListener{
   call(String text);
 }
 
-
 /**
  * NodeAttrs is a facade for element attributes. The facade is responsible
  * for normalizing attribute names as well as allowing access to the
@@ -55,6 +54,10 @@ class NodeAttrs {
     _observers[attributeName].add(notifyFn);
     notifyFn(this[attributeName]);
   }
+
+  forEach(void f(String k, String v)) {
+    element.attributes.forEach((k, v) => f(_camelCase(k, '-'), v));
+  }
 }
 
 /**
@@ -71,9 +74,16 @@ class TemplateLoader {
 }
 
 var _SNAKE_CASE_REGEXP = new RegExp("[A-Z]");
-String _snakeCase(String name, [separator = '_']) {
+String _snakeCase(String name, [String separator = '_']) {
   _snakeReplace(Match match) =>
     (match.start != 0 ? separator : '') + match.group(0).toLowerCase();
 
   return name.replaceAllMapped(_SNAKE_CASE_REGEXP, _snakeReplace);
+}
+
+String _camelCase(String name, [String separator = '_']) {
+  return name.replaceAllMapped(
+      new RegExp(separator + "([a-z])"),
+      (match) => match.group(1).toUpperCase()
+  );
 }
