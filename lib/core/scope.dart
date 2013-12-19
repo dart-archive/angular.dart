@@ -805,6 +805,7 @@ String _source(obj) {
       try {
         return "FN: ${m.function.source}";
       } on NoSuchMethodError catch (e) {
+      } on UnimplementedError catch (e) {
       }
     }
   }
