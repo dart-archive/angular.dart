@@ -308,7 +308,7 @@ class NgDirective extends NgAnnotation {
 /**
  * Meta-data marker placed on a class which should act as a controller for your application.
  *
- * Controllers are essentially [NgDirectives] with few key differences:
+ * Controllers are essentially [NgDirective]s with few key differences:
  *
  * * Controllers create a new scope at the element.
  * * Controllers should not do any DOM manipulation.
