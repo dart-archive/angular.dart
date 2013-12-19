@@ -65,7 +65,7 @@ class GetterSetter {
    final bool _useInstanceMembers = _computeUseInstanceMembers();
 
   _containsKey(InstanceMirror instanceMirror, Symbol symbol) {
-    var type = instanceMirror.type;
+    dynamic type = (instanceMirror.type as dynamic);
     var members = _useInstanceMembers ? type.instanceMembers : type.members;
     return members.containsKey(symbol);
   }
