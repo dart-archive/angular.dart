@@ -53,8 +53,25 @@ class GetterSetter {
     return l;
   }
 
+  static  _computeUseInstanceMembers() {
+    try {
+      reflect(Object).type.instanceMembers;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+   final bool _useInstanceMembers = _computeUseInstanceMembers();
+
+  _containsKey(InstanceMirror instanceMirror, Symbol symbol) {
+    var type = instanceMirror.type;
+    var members = _useInstanceMembers ? type.instanceMembers : type.members;
+    return members.containsKey(symbol);
+  }
+
   _maybeInvoke(instanceMirror, symbol) {
-    if (instanceMirror.type.members.containsKey(symbol)) {
+    if (_containsKey(instanceMirror, symbol)) {
       MethodMirror methodMirror = instanceMirror.type.members[symbol];
       return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
         var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);

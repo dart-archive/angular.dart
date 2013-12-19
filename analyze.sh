@@ -16,6 +16,8 @@ fi
 OUT=tmp/all.dart
 mkdir -p tmp
 
+$DART_ANALYSER_BIN --version
+
 echo // generated file > $OUT
 
 for FILE in $(ls lib/angular.dart perf/*_perf.dart test/*_spec.dart test/*/*_spec.dart)
