@@ -49,7 +49,7 @@ typedef Response(HttpResponse);
 typedef ResponseError(dynamic);
 
 /**
-* HttpInterceptors are used to modify the Http request.  They can be added to
+* HttpInterceptors are used to modify the Http request. They can be added to
 * [HttpInterceptors] or passed into [Http.call].
 */
 class HttpInterceptor {
@@ -163,30 +163,20 @@ class HttpResponseConfig {
   Map headers;
 
   var data;
-
-
   var _headersObj;
 
   /**
-   * Header accessor.  Given a string, it will return the matching header,
-   * case-insentivitively.  Without a string, returns a header object will
-   * upper-case keys.
+   * Header accessor. Given a string, it will return the matching header,
+   * case-insentivitively. Without a string, returns a header object with
+   * lower-case keys.
    */
   header([String name]) {
     if (_headersObj == null) {
       _headersObj = {};
-      headers.forEach((k,v) {
-        _headersObj[k.toLowerCase()] = v;
-      });
+      headers.forEach((k,v) => _headersObj[k.toLowerCase()] = v);
     }
 
-    if (name != null) {
-      name = name.toLowerCase();
-      if (!_headersObj.containsKey(name)) return null;
-      return _headersObj[name];
-    }
-
-    return _headersObj;
+    return name != null ? _headersObj[name.toLowerCase()] : _headersObj;
   }
 
   /**

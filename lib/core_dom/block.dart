@@ -13,7 +13,7 @@ abstract class ElementWrapper {
 
 /**
  * A Block is a fundamental building block of DOM. It is a chunk of DOM which
- * Can not be structural changed. It can only have its attributes changed.
+ * can not be structural changed. It can only have its attributes changed.
  * A Block can have [BlockHole]s embedded in its DOM.  A [BlockHole] can
  * contain other [Block]s and it is the only way in which DOM can be changed
  * structurally.
@@ -28,8 +28,8 @@ abstract class ElementWrapper {
  */
 class Block implements ElementWrapper {
   List<dom.Node> elements;
-  ElementWrapper previous = null;
-  ElementWrapper next = null;
+  ElementWrapper next;
+  ElementWrapper previous;
 
   Function onInsert;
   Function onRemove;

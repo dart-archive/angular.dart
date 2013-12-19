@@ -41,7 +41,7 @@ class Interpolate {
   Interpolate(this._parse);
 
   /**
-   * Compile markup text into interpolation function.
+   * Compiles markup text into interpolation function.
    *
    * - `text`: The markup text to interpolate in form `foo {{expr}} bar`.
    * - `mustHaveExpression`: if set to true then the interpolation string must
