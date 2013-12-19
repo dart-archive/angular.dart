@@ -24,10 +24,10 @@ class NodeAttrs {
 
   NodeAttrs(this.element);
 
-  operator [](String name) => element.attributes[_snakeCase(name, '-')];
+  operator [](String name) => element.attributes[snakecase(name, '-')];
 
   operator []=(String name, String value) {
-    name = _snakeCase(name, '-');
+    name = snakecase(name, '-');
     if (value == null) {
       element.attributes.remove(name);
     } else {
@@ -44,7 +44,7 @@ class NodeAttrs {
    * synchronise with the current value.
    */
   observe(String attributeName, AttributeChanged notifyFn) {
-    attributeName = _snakeCase(attributeName, '-');
+    attributeName = snakecase(attributeName, '-');
     if (_observers == null) {
       _observers = new Map<String, List<AttributeChanged>>();
     }
@@ -56,7 +56,7 @@ class NodeAttrs {
   }
 
   forEach(void f(String k, String v)) {
-    element.attributes.forEach((k, v) => f(_camelCase(k, '-'), v));
+    element.attributes.forEach((k, v) => f(camelcase(k), v));
   }
 }
 
@@ -71,19 +71,4 @@ class TemplateLoader {
   async.Future<dom.ShadowRoot> get template => _template;
 
   TemplateLoader(this._template);
-}
-
-var _SNAKE_CASE_REGEXP = new RegExp("[A-Z]");
-String _snakeCase(String name, [String separator = '_']) {
-  _snakeReplace(Match match) =>
-    (match.start != 0 ? separator : '') + match.group(0).toLowerCase();
-
-  return name.replaceAllMapped(_SNAKE_CASE_REGEXP, _snakeReplace);
-}
-
-String _camelCase(String name, [String separator = '_']) {
-  return name.replaceAllMapped(
-      new RegExp(separator + "([a-z])"),
-      (match) => match.group(1).toUpperCase()
-  );
 }
