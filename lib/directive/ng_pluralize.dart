@@ -89,8 +89,8 @@ class NgPluralizeDirective {
   final Scope scope;
   final Interpolate interpolate;
   int offset;
-  Map<String, String> whens = new Map();
-  Map<Symbol, String> whensOffset = new Map();
+  Map<String, String> discreteRules = new Map();
+  Map<Symbol, String> categoryRules = new Map();
   static final RegExp IS_WHEN = new RegExp(r'^when-(minus-)?.');
 
   NgPluralizeDirective(this.scope, this.element, this.interpolate, NodeAttrs attributes) {
@@ -98,8 +98,8 @@ class NgPluralizeDirective {
     offset = attributes['offset'] == null ? 0 : int.parse(attributes['offset']);
 
     element.attributes.keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
-      var rule = k.replaceFirst('when-', '').replaceFirst('minus-', '-');
-      whens[rule] = element.attributes[k];
+      var ruleName = k.replaceFirst('when-', '').replaceFirst('minus-', '-');
+      whens[ruleName] = element.attributes[k];
     });
 
     if (whens['other'] == null) {
@@ -108,9 +108,9 @@ class NgPluralizeDirective {
 
     whens.forEach((k, v) {
       if (['zero', 'one', 'two', 'few', 'many', 'other'].contains(k)) {
-        this.whensOffset[new Symbol(k.toString())] = v;
+        this.categoryRules[new Symbol(k.toString())] = v;
       } else {
-        this.whens[k.toString()] = v;
+        this.discreteRules[k.toString()] = v;
       }
     });
   }
@@ -133,11 +133,11 @@ class NgPluralizeDirective {
     String stringValue = value.toString();
     int intValue = value is double ? value.round() : value;
 
-    if (whens[stringValue] != null) {
-      _setAndWatch(whens[stringValue]);
+    if (discreteRules[stringValue] != null) {
+      _setAndWatch(discreteRules[stringValue]);
     } else {
       intValue -= offset;
-      var exp = Function.apply(Intl.plural, [intValue], whensOffset);
+      var exp = Function.apply(Intl.plural, [intValue], categoryRules);
       if (exp != null) {
         exp = exp.replaceAll(r'{}', (value - offset).toString());
         _setAndWatch(exp);
