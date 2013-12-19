@@ -24,17 +24,18 @@ class NodeAttrs {
 
   NodeAttrs(this.element);
 
-  operator [](String name) => element.attributes[snakecase(name, '-')];
+  operator [](String attributeName) =>
+      element.attributes[snakecase(attributeName, '-')];
 
-  operator []=(String name, String value) {
-    name = snakecase(name, '-');
+  operator []=(String attributeName, String value) {
+    var snakeName = snakecase(attributeName, '-');
     if (value == null) {
-      element.attributes.remove(name);
+      element.attributes.remove(snakeName);
     } else {
-      element.attributes[name] = value;
+      element.attributes[snakeName] = value;
     }
-    if (_observers != null && _observers.containsKey(name)) {
-      _observers[name].forEach((fn) => fn(value));
+    if (_observers != null && _observers.containsKey(attributeName)) {
+      _observers[attributeName].forEach((fn) => fn(value));
     }
   }
 
@@ -44,7 +45,6 @@ class NodeAttrs {
    * synchronise with the current value.
    */
   observe(String attributeName, AttributeChanged notifyFn) {
-    attributeName = snakecase(attributeName, '-');
     if (_observers == null) {
       _observers = new Map<String, List<AttributeChanged>>();
     }
