@@ -39,12 +39,10 @@ class _Directive {
 
 
 class _ContainsSelector {
-  NgAnnotation annotation;
-  RegExp regexp;
+  final NgAnnotation annotation;
+  final RegExp regexp;
 
-  _ContainsSelector(this.annotation, String regexp) {
-    this.regexp = new RegExp(regexp);
-  }
+  _ContainsSelector(this.annotation, String regexp) : regexp = new RegExp(regexp);
 }
 
 RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-]+)(?:=([^\]]*))?\]))');
@@ -209,7 +207,6 @@ List<_SelectorPart> _splitCss(String selector) {
 }
 
 /**
- *
  * Factory method for creating a [DirectiveSelector].
  */
 DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
