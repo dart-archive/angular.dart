@@ -23,8 +23,8 @@ main(args) {
   IoService ioService = new IoServiceImpl();
 
   var packageRoots =
-      (args.length < 6) ? [Platform.packageRoot] : args.sublist(2);
-  var sourceCrawler = new SourceCrawlerImpl(args.sublist(2));
+      (args.length < 6) ? [Platform.packageRoot] : args.sublist(5);
+  var sourceCrawler = new SourceCrawlerImpl(packageRoots);
   var sourceMetadataExtractor = new SourceMetadataExtractor(sourceCrawler);
   List<DirectiveInfo> directives =
       sourceMetadataExtractor.gatherDirectiveInfo(args[0]);
