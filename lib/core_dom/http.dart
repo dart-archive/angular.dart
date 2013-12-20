@@ -100,7 +100,6 @@ class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   };
 
   Function requestError, responseError;
-
 }
 
 /**
@@ -232,13 +231,7 @@ class HttpResponse {
    * header.
    */
   headers([String key]) {
-    if (key == null) {
-      return _headers;
-    }
-    if (_headers.containsKey(key)) {
-      return _headers[key];
-    }
-    return null;
+    return key == null ? _headers : _headers[key];
   }
 
   /**
@@ -495,15 +488,10 @@ class Http {
 
       // Strip content-type if data is undefined
       if (config.data == null) {
-        List<String> toRemove = [];
-        headers.forEach((h, _) {
-          if (h.toUpperCase() == 'CONTENT-TYPE') {
-            toRemove.add(h);
-          };
-        });
-        toRemove.forEach((x) => headers.remove(x));
+        new List.from(headers.keys)
+          .where((h) => h.toUpperCase() == 'CONTENT-TYPE')
+          .forEach((h) => headers.remove(h));
       }
-
 
       return request(
           null,
@@ -651,15 +639,15 @@ class Http {
   static Map<String, String> parseHeaders(dom.HttpRequest value) {
     var headers = value.getAllResponseHeaders();
 
-    var parsed = {}, key, val, i;
+    var parsed = {};
 
     if (headers == null) return parsed;
 
     headers.split('\n').forEach((line) {
-      i = line.indexOf(':');
+      var i = line.indexOf(':');
       if (i == -1) return;
-      key = line.substring(0, i).trim().toLowerCase();
-      val = line.substring(i + 1).trim();
+      var key = line.substring(0, i).trim().toLowerCase();
+      var val = line.substring(i + 1).trim();
 
       if (key != '') {
         if (parsed.containsKey(key)) {
