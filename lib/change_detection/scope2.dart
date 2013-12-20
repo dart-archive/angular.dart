@@ -2,7 +2,6 @@ library scope2;
 
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
-import 'dart:collection';
 
 typedef ReactionFn(dynamic value, dynamic previousValue, dynamic object);
 
@@ -55,7 +54,7 @@ class Scope2 {
     int count = 0;
     Watch dirtyWatch = _dirtyWatchHead;
     while(dirtyWatch != null) {
-      count ++;
+      count++;
       dirtyWatch.invoke();
       dirtyWatch = dirtyWatch._nextDirtyWatch;
     }
@@ -100,14 +99,12 @@ class Scope2 {
 /**
  * [Watch] corresponds to an individual [watch] registration on the scope.
  */
-class Watch {
+class Watch extends _LinkedListItem {
   final Record<_Handler> _record;
   final ReactionFn reactionFn;
 
   bool _dirty = false;
   bool _deleted = false;
-  Watch _previousWatch;
-  Watch _nextWatch;
   Watch _nextDirtyWatch;
 
   Watch(this._record, this.reactionFn);
@@ -124,18 +121,9 @@ class Watch {
   remove() {
     if (_deleted) throw new StateError('Already deleted!');
     _deleted = true;
-    var previous = _previousWatch;
-    var next = _nextWatch;
-    if (previous != null) previous._nextWatch = next;
-    if (next != null) next._previousWatch = previous;
-
-    _Handler handler = _record.handler;
-    if (previous == null)  handler.watchHead = next;
-    if (next == null) handler.watchTail = previous;
-
-    // if we are the head of the Handler then update the handler
-    if (handler.watchHead == this) handler.watchHead = next;
-    handler.gc();
+    _record.handler
+        .._remove(this)
+        ..gc();
   }
 }
 
@@ -156,64 +144,44 @@ class Watch {
  * Notice how the [_Handler]s coalesce their watching. Also notice that any changes detected
  * at one handler are propagated to the next handler.
  */
-class _Handler { // TODO: this needs to be broken down to different SubClasses
+class _Handler extends _LinkedList<Watch> implements _LinkedListItem<_Handler> { // TODO: this needs to be broken down to different SubClasses
   final Scope2 scope;
   final String expression;
 
+  // _LinkedListeItem<_Handler>
+  _Handler _next;
+  _Handler _previous;
+
   WatchRecord<_Handler> watchRecord;
-  _Handler delegateHandlerHead;
-  _Handler delegateHandlerTail;
-  _Handler next;
-  _Handler previous;
+  _LinkedList<_Handler> forwardToHandlers = new _LinkedList<_Handler>();
   _Handler forwardingHandler;
-  Watch watchHead;
-  Watch watchTail;
 
   _Handler(this.expression, this.scope);
 
-  void setDelegateHandler(_Handler delegateHandler) {
-    delegateHandler.previous = delegateHandlerTail;
-    if (delegateHandlerHead == null) delegateHandlerHead = delegateHandler;
-    if (delegateHandlerTail != null) delegateHandlerTail.next = delegateHandler;
-    delegateHandlerTail = delegateHandler;
-
-    if (delegateHandler.forwardingHandler != null) throw new StateError('ONLY ONE');
-    delegateHandler.forwardingHandler = this;
+  void addForwardToHandler(_Handler forwardToHandler) {
+    assert(forwardToHandler.forwardingHandler == null);
+    forwardToHandlers._add(forwardToHandler);
+    forwardToHandler.forwardingHandler = this;
   }
 
   Watch addReactionFn(ReactionFn reactionFn) {
-    Watch watch = new Watch(watchRecord, reactionFn);
-    if (watchHead == null) watchHead = watch;
-    watch._previousWatch = watchTail;
-    watchTail = watch;
-    return scope._addDirtyWatch(watch);
+    return scope._addDirtyWatch(_add(new Watch(watchRecord, reactionFn)));
   }
 
-/**
+  /**
    * This function forwards the watched object to the next [_Handler] synchronously.
    */
   void receive(dynamic object) {
     watchRecord.object = object;
     var changeRecord = watchRecord.check();
-    if (changeRecord != null) {
-      this.call(changeRecord);
-    }
+    if (changeRecord != null) call(changeRecord);
   }
 
   void gc() {
     // scope is null in the case of Context handler
-    if (scope != null && watchHead == null && delegateHandlerHead == null) {
+    if (scope != null && _isEmpty && forwardToHandlers._isEmpty) {
       // We can remove ourselves
-
       print(' removing: $expression');
-      var previous = this.previous;
-      var next = this.next;
-      if (next != null) next.previous = previous;
-      if (previous != null) previous.next = next;
-
-      if (next == null) forwardingHandler.delegateHandlerTail = previous;
-      if (previous == null) forwardingHandler.delegateHandlerHead = next;
-
       if (watchRecord is EvalWatchRecord) {
         //(watchRecord as EvalWatchRecord).remove();
       } else {
@@ -221,6 +189,7 @@ class _Handler { // TODO: this needs to be broken down to different SubClasses
         scope._watchCost--;
       }
 
+      forwardingHandler.forwardToHandlers._remove(this);
       forwardingHandler.gc();
     }
   }
@@ -229,16 +198,16 @@ class _Handler { // TODO: this needs to be broken down to different SubClasses
     // A change has been detected.
 
     // If we have reaction functions than queue them up for asynchronous processing.
-    var reaction = watchHead;
-    while(reaction != null) {
-      scope._addDirtyWatch(reaction);
-      reaction = reaction._nextWatch;
+    Watch watch = _head;
+    while(watch != null) {
+      scope._addDirtyWatch(watch);
+      watch = watch._next;
     }
     // If we have a delegateHandler then forward the new object to it.
-    var delegateHandler = delegateHandlerHead;
+    _Handler delegateHandler = forwardToHandlers._head;
     while (delegateHandler != null) {
       delegateHandler.receive(record.currentValue);
-      delegateHandler = delegateHandler.next;
+      delegateHandler = delegateHandler._next;
     }
 
   }
@@ -315,7 +284,7 @@ class FieldReadAST extends AST {
 
     // We set a field forwarding handler on LHS. This will allow the change objects to propagate
     // to the current WatchRecord.
-    lhsWR.handler.setDelegateHandler(handler);
+    lhsWR.handler.addForwardToHandler(handler);
 
     // propagate the value from the LHS to here
     handler.receive(lhsWR.currentValue);
@@ -373,7 +342,7 @@ class EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
   }
 }
 
-class _ArgHandler extends _Handler implements _LinkedListItem0 { // TODO(misko): extract base handler???
+class _ArgHandler extends _Handler implements _LinkedListItem0<_ArgHandler> { // TODO(misko): extract base handler???
   final EvalWatchRecord watchRecord;
   final int index;
 
@@ -398,11 +367,11 @@ class _InvokeHandler extends _Handler {
 
   _InvokeHandler(expression, scope): super(expression, scope);
 
-  addArgumentHandler(_ArgHandler handler) => argHandlers.add(handler);
+  addArgumentHandler(_ArgHandler handler) => argHandlers._add0(handler);
 
   gc() {
     watchRecord.remove();
-    _ArgHandler current = argHandlers._head;
+    _ArgHandler current = argHandlers._head0;
     while(current != null) {
       current.gc();
       current = current._next0;
@@ -428,14 +397,14 @@ class FunctionAST extends AST {
         (AST ast) => cache.putIfAbsent(ast.expression, () => ast.setupWatch(scope, cache))
     ).toList();
 
-    _Handler invokeHandler = new _InvokeHandler(expression, scope); // TODO: move to _addEvalWatch
+    _InvokeHandler invokeHandler = new _InvokeHandler(expression, scope); // TODO: move to _addEvalWatch
     EvalWatchRecord evalWatchRecord = scope._addEvalWatch(fn, name, invokeHandler, argsAST.length);
     invokeHandler.watchRecord = evalWatchRecord; // TODO: move to _addEvalWatch
 
     var i = 0;
     argsWR.forEach((WatchRecord<_Handler> record) {
       var argHandler = new _ArgHandler(invokeHandler, evalWatchRecord, i++, scope);
-      record.handler.setDelegateHandler(argHandler);
+      record.handler.addForwardToHandler(argHandler);
       argHandler.receive(record.currentValue);
     });
 
@@ -443,41 +412,67 @@ class FunctionAST extends AST {
   }
 }
 
-class _HandlerEntry extends LinkedListEntry<_HandlerEntry> {
-  final _Handler handler;
-  _HandlerEntry(this.handler);
-}
-
-class _LinkedList0<I extends _LinkedListItem0> {
+class _LinkedList<I extends _LinkedListItem> {
   I _head;
   I _tail;
 
-  add(I item) {
+  I _add(I item) {
     if (_tail == null) {
       _head = _tail = item;
     } else {
-      item._previous0 = _tail;
-      _tail._next0 = item;
+      item._previous = _tail;
+      _tail._next = item;
       _tail = item;
     }
+    return item;
   }
 
-  remove(I item) {
-    var previous = item.previous0;
-    var next = item.next0;
+  get _isEmpty => _head == null;
 
-    if (previous == null) _head = next; else previous.next = next;
-    if (next == null) _tail = previous; else next.previous = previous;
+  _remove(I item) {
+    var previous = item._previous;
+    var next = item._next;
+
+    if (previous == null) _head = next;     else previous._next = next;
+    if (next == null)     _tail = previous; else next._previous = previous;
   }
 }
 
-class _LinkedListItem0 {
-  _LinkedListItem0 _previous0;
-  _LinkedListItem0 _next0;
+class _LinkedListItem<I extends _LinkedListItem> {
+  I _previous;
+  I _next;
 }
 
-class _LLItemRef<I> extends _LinkedListItem0 {
-  final I _item;
+class _LinkedList0<I extends _LinkedListItem0> {
+  I _head0;
+  I _tail0;
 
-  _LLItemRef(this._item);
+  I _add0(I item) {
+    assert(item._next0     == null);
+    assert(item._previous0 == null);
+    if (_tail0 == null) {
+      _head0 = _tail0 = item;
+    } else {
+      item._previous0 = _tail0;
+      _tail0._next0 = item;
+      _tail0 = item;
+    }
+    return item;
+  }
+
+  get _isEmpty0 => _head0 == null;
+
+  _remove0(I item) {
+    var previous = item._previous0;
+    var next = item._next0;
+
+    if (previous == null) _head0 = next;     else previous._next0 = next;
+    if (next == null)     _tail0 = previous; else next._previous0 = previous;
+  }
 }
+
+class _LinkedListItem0<I extends _LinkedListItem>{
+  I _previous0;
+  I _next0;
+}
+
