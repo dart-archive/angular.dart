@@ -55,9 +55,15 @@ class NodeAttrs {
     notifyFn(this[attributeName]);
   }
 
-  forEach(void f(String k, String v)) {
+  void forEach(void f(String k, String v)) {
     element.attributes.forEach((k, v) => f(camelcase(k), v));
   }
+
+  bool containsKey(String attributeName) =>
+      element.attributes.containsKey(snakecase(attributeName, '-'));
+
+  Iterable<String> get keys =>
+      element.attributes.keys.map((name) => camelcase(name));
 }
 
 /**

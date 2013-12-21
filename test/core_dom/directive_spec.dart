@@ -29,5 +29,16 @@ main() {
       nodeAttrs.forEach((k, v) => attrMap[k] = v);
       expect(attrMap).toEqual({'foo': 'bar', 'fooBar': 'baz', 'fooBarBaz': 'foo'});
     });
+
+    it('should provide a contains method', () {
+      expect(nodeAttrs.containsKey('foo')).toEqual(true);
+      expect(nodeAttrs.containsKey('fooBar')).toEqual(true);
+      expect(nodeAttrs.containsKey('fooBarBaz')).toEqual(true);
+      expect(nodeAttrs.containsKey('barFoo')).toEqual(false);
+    });
+
+    it('should return the attribute names', () {
+      expect(nodeAttrs.keys.toList()..sort()).toEqual(['foo', 'fooBar', 'fooBarBaz']);
+    });
   });
 }
