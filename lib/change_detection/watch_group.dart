@@ -13,7 +13,7 @@ typedef ReactionFn(dynamic value, dynamic previousValue, dynamic object);
 class WatchGroup implements _EvalWatchList {
   final Object context;
   final ChangeDetector<_Handler> _changeDetector;
-  final Map<String, WatchRecord<_Handler>> _expressionCache
+  final Map<String, WatchRecord<_Handler>> _cache
         = new Map<String, WatchRecord<_Handler>>();
 
   int get fieldCost => _fieldCost;
@@ -29,7 +29,7 @@ class WatchGroup implements _EvalWatchList {
 
   Watch watch(AST expression, ReactionFn reactionFn) {
     WatchRecord<_Handler> watchRecord =
-        _expressionCache.putIfAbsent(expression.expression, () => expression.setupWatch(this, _expressionCache));
+        _cache.putIfAbsent(expression.expression, () => expression.setupWatch(this));
     return watchRecord.handler.addReactionFn(reactionFn);
   }
 
@@ -80,14 +80,44 @@ class WatchGroup implements _EvalWatchList {
     return watch;
   }
 
-  WatchRecord<_Handler> addFieldWatch(String name, _Handler handler) {
+  WatchRecord<_Handler> addFieldWatch(AST lhs, String name, String expression) {
+    var fieldHandler = new _FieldHandler(this, expression);
+
+    // Create a ChangeRecord for the current field and assign the change record to the handler.
+    var watchRecord = _changeDetector.watch(null, name, fieldHandler);
     _fieldCost++;
-    return _changeDetector.watch(null, name, handler);
+    fieldHandler.watchRecord = watchRecord;
+
+    WatchRecord<_Handler> lhsWR = _cache.putIfAbsent(lhs.expression, () => lhs.setupWatch(this));
+
+    // We set a field forwarding handler on LHS. This will allow the change objects to propagate
+    // to the current WatchRecord.
+    lhsWR.handler.addForwardHandler(fieldHandler);
+
+    // propagate the value from the LHS to here
+    fieldHandler.forwardValue(lhsWR.currentValue);
+    return watchRecord;
   }
 
-  EvalWatchRecord addEvalWatch(Function fn, String name, _Handler handler, int arity) {
+  EvalWatchRecord addFunctionWatch(Function fn, List<AST> argsAST, String expression) {
+    _InvokeHandler invokeHandler = new _InvokeHandler(this, expression);
+    EvalWatchRecord evalWatchRecord = new EvalWatchRecord(this, fn, expression, invokeHandler, argsAST.length);
+    _EvalWatchList._add(this, evalWatchRecord);
     _evalCost++;
-    return _EvalWatchList._add(this, new EvalWatchRecord(this, fn, name, handler, arity));
+    invokeHandler.watchRecord = evalWatchRecord;
+
+    // Convert the args from AST to WatchRecords
+    var i = 0;
+    argsAST.
+      map((ast) => _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this))).
+      forEach((WatchRecord<_Handler> record) {
+        var argHandler = new _ArgHandler(this, evalWatchRecord, i++);
+        _ArgHandlerList._add(invokeHandler, argHandler);
+        record.handler.addForwardHandler(argHandler);
+        argHandler.forwardValue(record.currentValue);
+      });
+
+    return evalWatchRecord;
   }
 }
 
@@ -152,13 +182,13 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
   WatchRecord<_Handler> watchRecord;
   _Handler forwardingHandler;
 
-  _Handler(this.expression, this.scope);
+  _Handler(this.scope, this.expression);
 
   Watch addReactionFn(ReactionFn reactionFn) {
     return scope._addDirtyWatch(_WatchList._add(this, new Watch(watchRecord, reactionFn)));
   }
 
-  void addForwardToHandler(_Handler forwardToHandler) {
+  void addForwardHandler(_Handler forwardToHandler) {
     assert(forwardToHandler.forwardingHandler == null);
     _LinkedList._add(this, forwardToHandler);
     forwardToHandler.forwardingHandler = this;
@@ -207,7 +237,7 @@ class _NullHandler extends _Handler {
 }
 
 class _FieldHandler extends _Handler {
-  _FieldHandler(expression, scope): super(expression, scope);
+  _FieldHandler(scope, expression): super(scope, expression);
 
   /**
    * This function forwards the watched object to the next [_Handler] synchronously.
@@ -226,7 +256,8 @@ class _ArgHandler extends _Handler {
   final EvalWatchRecord watchRecord;
   final int index;
 
-  _ArgHandler(this.watchRecord, int index, WatchGroup scope): super('arg[$index]', scope), index = index;
+  _ArgHandler(WatchGroup scope, this.watchRecord, int index):
+      super(scope, 'arg[$index]'), index = index;
 
   forwardValue(dynamic object) => watchRecord.args[index] = object;
 }
@@ -234,7 +265,7 @@ class _ArgHandler extends _Handler {
 class _InvokeHandler extends _Handler implements _ArgHandlerList {
   _ArgHandler _argHandlerHead, _argHandlerTail;
 
-  _InvokeHandler(expression, scope): super(expression, scope);
+  _InvokeHandler(scope, expression): super(scope, expression);
 
   release() {
     watchRecord.remove();
