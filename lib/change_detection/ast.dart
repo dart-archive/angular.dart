@@ -57,3 +57,25 @@ class FunctionAST extends AST {
     return scope.addFunctionWatch(fn, argsAST, expression);
   }
 }
+
+/**
+ * The name is a bit oxymoron, but it is essentially the NullObject pattern.
+ *
+ * This allows children to set a handler on this ChangeRecord and then let it write the initial
+ * constant value to the forwarding ChangeRecord.
+ */
+class _ConstantWatchRecord extends WatchRecord<_Handler> {
+  final currentValue;
+  final _Handler handler = new _NullHandler();
+
+  _ConstantWatchRecord(this.currentValue);
+
+  ChangeRecord<_Handler> check() => null;
+  void remove() => null;
+
+  get field => null;
+  get previousValue => null;
+  get object => null;
+  set object(_) => null;
+  get nextChange => null;
+}
