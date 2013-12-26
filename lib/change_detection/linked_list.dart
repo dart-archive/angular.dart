@@ -108,7 +108,7 @@ class _EvalWatchList {
     var previous = item._previousEvalWatch;
     var next = item._nextEvalWatch;
 
-    if (previous == null) list._evalWatchHead = next;     else previous._nextWatch = next;
-    if (next == null)     list._evalWatchTail = previous; else next._previousWatch = previous;
+    if (previous == null) list._evalWatchHead = next;     else previous._nextEvalWatch = next;
+    if (next == null)     list._evalWatchTail = previous; else next._previousEvalWatch = previous;
   }
 }
