@@ -171,7 +171,7 @@ class _Handler {
 
   void gc() {
     // scope is null in the case of Context handler
-    if (scope != null && _Watches._isEmpty(this) && _Handlers._isEmpty(this)) {
+    if (_Watches._isEmpty(this) && _Handlers._isEmpty(this)) {
       // We can remove ourselves
       print(' removing: $expression');
       if (watchRecord is EvalWatchRecord) {
@@ -207,6 +207,11 @@ class _Handler {
       delegateHandler = delegateHandler._nextHandler;
     }
   }
+}
+
+class _NullHandler extends _Handler {
+  _NullHandler(): super(null, null);
+  gc() => null;
 }
 
 class _FieldHandler extends _Handler {
@@ -260,8 +265,6 @@ class _InvokeHandler extends _Handler {
 }
 
 
-
-
 /**
  * The name is a bit oxymoron, but it is essentially the NullObject pattern.
  *
@@ -270,7 +273,7 @@ class _InvokeHandler extends _Handler {
  */
 class ConstantWatchRecord extends WatchRecord<_Handler> {
   final currentValue;
-  final _Handler handler = new _Handler(null, null);
+  final _Handler handler = new _NullHandler();
 
   ConstantWatchRecord(this.currentValue);
 
@@ -283,6 +286,60 @@ class ConstantWatchRecord extends WatchRecord<_Handler> {
   set object(_) => null;
   get nextChange => null;
 }
+
+
+class EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
+  final Function fn;
+  final String name;
+  final _Handler handler;
+  final List args;
+  final Scope2 scope;
+
+  dynamic currentValue;
+  dynamic previousValue;
+  dynamic object;
+  bool deleted = false;
+
+  EvalWatchRecord next;
+  EvalWatchRecord previous;
+
+  EvalWatchRecord(this.scope, this.fn, this.name, this.handler, int arity): args = new List(arity);
+
+  check() {
+    var value = Function.apply(fn, args);
+    print('eval: $name(${args.join(', ')}) => $value');
+    var currentValue = this.currentValue;
+    if (!identical(currentValue, value)) {
+      if (value is String && currentValue is String && value == currentValue) {
+// it is really the same, recover
+        currentValue = value; // same so next time identity is same
+      } else {
+        previousValue = currentValue;
+        this.currentValue = value;
+        print(handler);
+        handler.call(this);
+      }
+    }
+  }
+
+  get field => '()';
+  get nextChange => null;
+
+  remove() {
+    assert(!deleted);
+    deleted = true;
+    scope._evalCost--;
+    var previous = this.previous;
+    var next = this.next;
+
+    if (previous != null) previous.next = next;
+    if (next != null) next.previous = previous;
+
+    if (previous == null) scope._evalWatchHead = next;
+    if (next == null) scope._evalWatchTail = previous;
+  }
+}
+
 
 /**
  * RULES:
@@ -338,59 +395,6 @@ class FieldReadAST extends AST {
     // propagate the value from the LHS to here
     handler.receive(lhsWR.currentValue);
     return watchRecord;
-  }
-}
-
-class EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
-  final Function fn;
-  final String name;
-  final _Handler handler;
-  final List args;
-  final Scope2 scope;
-
-  dynamic currentValue;
-  dynamic previousValue;
-  dynamic object;
-  bool deleted = false;
-
-  EvalWatchRecord next;
-  EvalWatchRecord previous;
-
-  EvalWatchRecord(this.scope, this.fn, this.name, this.handler, int arity): args = new List(arity);
-
-  check() {
-    var value = Function.apply(fn, args);
-    print('eval: $name(${args.join(', ')}) => $value');
-    var currentValue = this.currentValue;
-    if (!identical(currentValue, value)) {
-      if (value is String && currentValue is String && value == currentValue) {
-        // it is really the same, recover
-        currentValue = value; // same so next time identity is same
-      } else {
-        previousValue = currentValue;
-        this.currentValue = value;
-        print(handler);
-        handler.call(this);
-      }
-    }
-  }
-
-  get field => '()';
-  get nextChange => null;
-
-  remove() {
-    // TODO: should forward to _remove()
-    assert(!deleted);
-    deleted = true;
-    scope._evalCost--;
-    var previous = this.previous;
-    var next = this.next;
-
-    if (previous != null) previous.next = next;
-    if (next != null) next.previous = previous;
-
-    if (previous == null) scope._evalWatchHead = next;
-    if (next == null) scope._evalWatchTail = previous;
   }
 }
 
