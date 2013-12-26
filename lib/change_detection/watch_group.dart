@@ -23,7 +23,7 @@ class WatchGroup implements _EvalWatchList {
   int _evalCost = 0;
 
   Watch _dirtyWatchHead, _dirtyWatchTail;
-  EvalWatchRecord _evalWatchHead, _evalWatchTail;
+  _EvalWatchRecord _evalWatchHead, _evalWatchTail;
 
   WatchGroup(this._changeDetector, this.context);
 
@@ -43,7 +43,7 @@ class WatchGroup implements _EvalWatchList {
 
     int count = 0;
     // Process our own function evalutations
-    EvalWatchRecord evalRecord = _evalWatchHead;
+    _EvalWatchRecord evalRecord = _evalWatchHead;
     while (evalRecord != null) {
       if (evalRecord.check() != null) count++;
       evalRecord = evalRecord._nextEvalWatch;
@@ -99,9 +99,9 @@ class WatchGroup implements _EvalWatchList {
     return watchRecord;
   }
 
-  EvalWatchRecord addFunctionWatch(Function fn, List<AST> argsAST, String expression) {
+  _EvalWatchRecord addFunctionWatch(Function fn, List<AST> argsAST, String expression) {
     _InvokeHandler invokeHandler = new _InvokeHandler(this, expression);
-    EvalWatchRecord evalWatchRecord = new EvalWatchRecord(this, fn, expression, invokeHandler, argsAST.length);
+    _EvalWatchRecord evalWatchRecord = new _EvalWatchRecord(this, fn, expression, invokeHandler, argsAST.length);
     _EvalWatchList._add(this, evalWatchRecord);
     _evalCost++;
     invokeHandler.watchRecord = evalWatchRecord;
@@ -253,7 +253,7 @@ class _ArgHandler extends _Handler {
   _ArgHandler _previousArgHandler, _nextArgHandler;
 
   // TODO(misko): Why do we override parent?
-  final EvalWatchRecord watchRecord;
+  final _EvalWatchRecord watchRecord;
   final int index;
 
   _releaseWatch() => null;
@@ -303,7 +303,7 @@ class _ConstantWatchRecord extends WatchRecord<_Handler> {
 }
 
 
-class EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
+class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
   final Function fn;
   final String name;
   final _Handler handler;
@@ -315,9 +315,9 @@ class EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
   dynamic object;
   bool deleted = false;
 
-  EvalWatchRecord _previousEvalWatch, _nextEvalWatch;
+  _EvalWatchRecord _previousEvalWatch, _nextEvalWatch;
 
-  EvalWatchRecord(this.scope, this.fn, this.name, this.handler, int arity): args = new List(arity);
+  _EvalWatchRecord(this.scope, this.fn, this.name, this.handler, int arity): args = new List(arity);
 
   ChangeRecord<_Handler> check() {
     var value = Function.apply(fn, args);

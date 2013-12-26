@@ -87,9 +87,9 @@ class _WatchList {
 }
 
 class _EvalWatchList {
-  EvalWatchRecord _evalWatchHead, _evalWatchTail;
+  _EvalWatchRecord _evalWatchHead, _evalWatchTail;
 
-  static EvalWatchRecord _add(_EvalWatchList list, EvalWatchRecord item) {
+  static _EvalWatchRecord _add(_EvalWatchList list, _EvalWatchRecord item) {
     assert(item._nextEvalWatch     == null);
     assert(item._previousEvalWatch == null);
     if (list._evalWatchTail == null) {
@@ -104,7 +104,7 @@ class _EvalWatchList {
 
   static _isEmpty(_EvalWatchList list) => list._evalWatchHead == null;
 
-  static _remove(_EvalWatchList list, EvalWatchRecord item) {
+  static _remove(_EvalWatchList list, _EvalWatchRecord item) {
     var previous = item._previousEvalWatch;
     var next = item._nextEvalWatch;
 
