@@ -198,12 +198,7 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
     if (_WatchList._isEmpty(this) && _LinkedList._isEmpty(this)) {
       // We can remove ourselves
       print(' removing: $expression');
-      if (watchRecord is EvalWatchRecord) {
-        //(watchRecord as _EvalWatchRecord).remove();
-      } else {
-        scope._changeDetector.remove(watchRecord); // TODO: LOD violation
-        scope._fieldCost--;
-      }
+      _releaseWatch();
 
       if (forwardingHandler != null) {
         // TODO(misko): why do we need this check?
@@ -213,6 +208,10 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
     }
   }
 
+  _releaseWatch() {
+    scope._changeDetector.remove(watchRecord);
+    scope._fieldCost--;
+  }
   forwardValue(dynamic object) => null;
 
   void onChange(ChangeRecord<_Handler> record) {
@@ -253,8 +252,11 @@ class _FieldHandler extends _Handler {
 class _ArgHandler extends _Handler {
   _ArgHandler _previousArgHandler, _nextArgHandler;
 
+  // TODO(misko): Why do we override parent?
   final EvalWatchRecord watchRecord;
   final int index;
+
+  _releaseWatch() => null;
 
   _ArgHandler(WatchGroup scope, this.watchRecord, int index):
       super(scope, 'arg[$index]'), index = index;
