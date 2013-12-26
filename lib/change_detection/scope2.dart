@@ -99,7 +99,9 @@ class Scope2 {
 /**
  * [Watch] corresponds to an individual [watch] registration on the scope.
  */
-class Watch extends _LinkedListItem<Watch> {
+class Watch {
+  Watch _previousWatch, _nextWatch;
+  
   final Record<_Handler> _record;
   final ReactionFn reactionFn;
 
@@ -121,9 +123,9 @@ class Watch extends _LinkedListItem<Watch> {
   remove() {
     if (_deleted) throw new StateError('Already deleted!');
     _deleted = true;
-    _record.handler
-      .._remove(this)
-      ..gc();
+    var handler = _record.handler;
+    _Watches._remove(handler, this);
+    handler.gc();
   }
 }
 
@@ -144,31 +146,32 @@ class Watch extends _LinkedListItem<Watch> {
  * Notice how the [_Handler]s coalesce their watching. Also notice that any changes detected
  * at one handler are propagated to the next handler.
  */
-class _Handler extends _LinkedList<Watch> implements _LinkedListItem {
-  _Handler _next, _previous; // _LinkedList<_Handler>
+class _Handler {
+  _Handler _handlerHead, _handlerTail;
+  _Handler _nextHandler, _previousHandler;
+  Watch _watchHead, _watchTail;
 
   final String expression;
   final Scope2 scope;
 
   WatchRecord<_Handler> watchRecord;
   _Handler forwardingHandler;
-  _LinkedList<_Handler> forwardToHandlers = new _LinkedList<_Handler>();
 
   _Handler(this.expression, this.scope);
 
   Watch addReactionFn(ReactionFn reactionFn) {
-    return scope._addDirtyWatch(_add(new Watch(watchRecord, reactionFn)));
+    return scope._addDirtyWatch(_Watches._add(this, new Watch(watchRecord, reactionFn)));
   }
 
   void addForwardToHandler(_Handler forwardToHandler) {
     assert(forwardToHandler.forwardingHandler == null);
-    forwardToHandlers._add(forwardToHandler);
+    _Handlers._add(this, forwardToHandler);
     forwardToHandler.forwardingHandler = this;
   }
 
   void gc() {
     // scope is null in the case of Context handler
-    if (scope != null && _isEmpty && forwardToHandlers._isEmpty) {
+    if (scope != null && _Watches._isEmpty(this) && _Handlers._isEmpty(this)) {
       // We can remove ourselves
       print(' removing: $expression');
       if (watchRecord is EvalWatchRecord) {
@@ -180,28 +183,28 @@ class _Handler extends _LinkedList<Watch> implements _LinkedListItem {
 
       if (forwardingHandler != null) {
         // TODO(misko): why do we need this check?
-        forwardingHandler.forwardToHandlers._remove(this);
+        _Handlers._remove(forwardingHandler, this);
         forwardingHandler.gc();
       }
     }
   }
 
-  void receive(dynamic object) => asert(false);
+  void receive(dynamic object) { assert(false); }
 
   void call(ChangeRecord<_Handler> record) {
     // A change has been detected.
 
     // If we have reaction functions than queue them up for asynchronous processing.
-    Watch watch = _head;
+    Watch watch = _watchHead;
     while(watch != null) {
       scope._addDirtyWatch(watch);
-      watch = watch._next;
+      watch = watch._nextWatch;
     }
     // If we have a delegateHandler then forward the new object to it.
-    _LinkedListItem<_Handler> delegateHandler = forwardToHandlers._head;
+    _Handler delegateHandler = _handlerHead;
     while (delegateHandler != null) {
       delegateHandler.receive(record.currentValue);
-      delegateHandler = delegateHandler._next;
+      delegateHandler = delegateHandler._nextHandler;
     }
   }
 }
@@ -220,11 +223,11 @@ class _FieldHandler extends _Handler {
 
 }
 
-class _ArgHandler extends _Handler implements _LinkedListItem0 {
+class _ArgHandler extends _Handler {
+  _ArgHandler _previousArgHandler, _nextArgHandler;
+
   final EvalWatchRecord watchRecord;
   final int index;
-
-  _ArgHandler _previous0, _next0;
 
   _ArgHandler(_InvokeHandler invokeHandler, this.watchRecord, int index, Scope2 scope):
       super('arg[$index]', scope),
@@ -233,22 +236,25 @@ class _ArgHandler extends _Handler implements _LinkedListItem0 {
     invokeHandler.addArgumentHandler(this);
   }
 
-  receive(dynamic object) => watchRecord.args[index] = object;
+  void receive(dynamic object) { watchRecord.args[index] = object; }
 }
 
 class _InvokeHandler extends _Handler {
-  final _LinkedList0<_ArgHandler> argHandlers = new _LinkedList0<_ArgHandler>();
+  _ArgHandler _argHandlerHead, _argHandlerTail;
 
   _InvokeHandler(expression, scope): super(expression, scope);
 
-  addArgumentHandler(_ArgHandler handler) => argHandlers._add0(handler);
+  addArgumentHandler(_ArgHandler handler) => _ArgHandlers._add(this, handler);
+
+  // receive is never called by _ArgHandler
+  void receive(dynamic object) { assert(false); }
 
   gc() {
     watchRecord.remove();
-    _ArgHandler current = argHandlers._head0;
+    _ArgHandler current = _argHandlerHead;
     while(current != null) {
       current.gc();
-      current = current._next0;
+      current = current._nextArgHandler;
     }
   }
 }
@@ -420,67 +426,77 @@ class FunctionAST extends AST {
   }
 }
 
-class _LinkedList<I extends _LinkedListItem> {
-  I _head;
-  I _tail;
-
-  I _add(I item) {
-    if (_tail == null) {
-      _head = _tail = item;
+class _Handlers {
+  static _Handler _add(_Handler list, _Handler item) {
+    assert(item._nextHandler     == null);
+    assert(item._previousHandler == null);
+    if (list._handlerTail == null) {
+      list._handlerHead = list._handlerTail = item;
     } else {
-      item._previous = _tail;
-      _tail._next = item;
-      _tail = item;
+      item._previousHandler = list._handlerTail;
+      list._handlerTail._nextHandler = item;
+      list._handlerTail = item;
     }
     return item;
   }
 
-  get _isEmpty => _head == null;
+  static _isEmpty(_Handler list) => list._handlerHead == null;
 
-  _remove(I item) {
-    var previous = item._previous;
-    var next = item._next;
+  static _remove(_Handler list, _Handler item) {
+    var previous = item._previousHandler;
+    var next = item._nextHandler;
 
-    if (previous == null) _head = next;     else previous._next = next;
-    if (next == null)     _tail = previous; else next._previous = previous;
+    if (previous == null) list._handlerHead = next;     else previous._nextHandler = next;
+    if (next == null)     list._handlerTail = previous; else next._previousHandler = previous;
   }
 }
 
-class _LinkedListItem<I extends _LinkedListItem> {
-  I _previous;
-  I _next;
-}
-
-class _LinkedList0<I extends _LinkedListItem0> {
-  I _head0;
-  I _tail0;
-
-  I _add0(I item) {
-    assert(item._next0     == null);
-    assert(item._previous0 == null);
-    if (_tail0 == null) {
-      _head0 = _tail0 = item;
+class _ArgHandlers {
+  static _Handler _add(_InvokeHandler list, _ArgHandler item) {
+    assert(item._nextArgHandler     == null);
+    assert(item._previousArgHandler == null);
+    if (list._argHandlerTail == null) {
+      list._argHandlerHead = list._argHandlerTail = item;
     } else {
-      item._previous0 = _tail0;
-      _tail0._next0 = item;
-      _tail0 = item;
+      item._previousArgHandler = list._argHandlerTail;
+      list._argHandlerTail._nextArgHandler = item;
+      list._argHandlerTail = item;
     }
     return item;
   }
 
-  get _isEmpty0 => _head0 == null;
+  static _isEmpty(_InvokeHandler list) => list._argHandlerHead == null;
 
-  _remove0(I item) {
-    var previous = item._previous0;
-    var next = item._next0;
+  static _remove(_InvokeHandler list, _ArgHandler item) {
+    var previous = item._previousArgHandler;
+    var next = item._nextArgHandler;
 
-    if (previous == null) _head0 = next;     else previous._next0 = next;
-    if (next == null)     _tail0 = previous; else next._previous0 = previous;
+    if (previous == null) list._argHandlerHead = next;     else previous._nextArgHandler = next;
+    if (next == null)     list._argHandlerTail = previous; else next._previousArgHandler = previous;
   }
 }
 
-class _LinkedListItem0<I extends _LinkedListItem0>{
-  I _previous0;
-  I _next0;
-}
+class _Watches {
+  static Watch _add(_Handler list, Watch item) {
+    assert(item._nextWatch     == null);
+    assert(item._previousWatch == null);
+    if (list._watchTail == null) {
+      list._watchHead = list._watchTail = item;
+    } else {
+      item._previousWatch = list._watchTail;
+      list._watchTail._nextWatch = item;
+      list._watchTail = item;
+    }
+    return item;
+  }
 
+  static _isEmpty(_Handler list) => list._watchHead == null;
+
+  static _remove(_Handler list, Watch item) {
+    var previous = item._previousWatch;
+    var next = item._nextWatch;
+
+    if (previous == null) list._watchHead = next;     else previous._nextWatch = next;
+    if (next == null)     list._watchTail = previous; else next._previousWatch = previous;
+  }
+}
