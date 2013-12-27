@@ -34,7 +34,7 @@ class WatchGroup implements _EvalWatchList {
     return watchRecord.handler.addReactionFn(reactionFn);
   }
 
-  detectChanges() {
+  int detectChanges() {
     // Process the ChangeRecords from the change detector
     ChangeRecord<_Handler> changeRecord = _changeDetector.collectChanges();
     while (changeRecord != null) {
@@ -67,7 +67,6 @@ class WatchGroup implements _EvalWatchList {
    * Add Watch into the asynchronous queue for later processing.
    */
   Watch _addDirtyWatch(Watch watch) {
-    print('   Dirty: ${watch.expression} ${watch._dirty}');
     if (!watch._dirty) {
       watch._dirty = true;
       if (_dirtyWatchTail == null) {
@@ -156,7 +155,6 @@ class Watch {
   get expression => _record.handler.expression;
 
   invoke() {
-    print('  invoke: $expression');
     _dirty = false;
     reactionFn(_record.currentValue, _record.previousValue, _record.object);
   }
@@ -214,7 +212,6 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
   void release() {
     if (_WatchList._isEmpty(this) && _LinkedList._isEmpty(this)) {
       // We can remove ourselves
-      print(' removing: $expression');
       _releaseWatch();
 
       if (forwardingHandler != null) {
@@ -341,7 +338,6 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
       } else {
         previousValue = currentValue;
         this.currentValue = value;
-        print(handler);
         handler.onChange(this);
         return this;
       }
