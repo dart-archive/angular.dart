@@ -51,12 +51,32 @@ class FunctionAST extends AST {
   FunctionAST(name, this.fn, argsAST):
       argsAST = argsAST,
       name = name,
-      expression = '$name(${argsAST.map((a) => a.expression).join(', ')})';
+      expression = '$name(${_argList(argsAST)})';
 
   WatchRecord<_Handler> setupWatch(WatchGroup scope) {
     return scope.addFunctionWatch(fn, argsAST, expression);
   }
 }
+
+class MethodAST extends AST {
+  final AST lhsAST;
+  final String name;
+  final List<AST> argsAST;
+  final String expression;
+
+  MethodAST(lhsAST, name, argsAST):
+    lhsAST = lhsAST,
+    name = name,
+    argsAST = argsAST,
+    expression = '${lhsAST.expression}.$name(${_argList(argsAST)})';
+
+  WatchRecord<_Handler> setupWatch(WatchGroup scope) {
+    return scope.addMethodWatch(lhsAST, name, argsAST, expression);
+  }
+
+}
+
+_argList(List<AST> items) => items.map((a) => a.expression).join(', ');
 
 /**
  * The name is a bit oxymoron, but it is essentially the NullObject pattern.

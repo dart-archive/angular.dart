@@ -1,5 +1,6 @@
 library angular.watch_group;
 
+import 'dart:mirrors';
 import 'package:angular/change_detection/change_detection.dart';
 
 part 'linked_list.dart';
@@ -99,25 +100,41 @@ class WatchGroup implements _EvalWatchList {
     return watchRecord;
   }
 
-  _EvalWatchRecord addFunctionWatch(Function fn, List<AST> argsAST, String expression) {
+  _EvalWatchRecord addFunctionWatch(Function fn, List<AST> argsAST, String expression)
+      => _addEvalWatch(null, fn, null, argsAST, expression);
+
+  _EvalWatchRecord addMethodWatch(AST lhsAST, String name, List<AST> argsAST, String expression)
+      => _addEvalWatch(lhsAST, null, new Symbol(name), argsAST, expression);
+
+  _EvalWatchRecord _addEvalWatch(AST lhsAST, Function fn, Symbol symbol, List<AST> argsAST,
+                                 String expression) {
     _InvokeHandler invokeHandler = new _InvokeHandler(this, expression);
-    _EvalWatchRecord evalWatchRecord = new _EvalWatchRecord(this, fn, expression, invokeHandler, argsAST.length);
+    var evalWatchRecord = new _EvalWatchRecord(this, invokeHandler, fn, symbol, argsAST.length);
+    invokeHandler.watchRecord = evalWatchRecord;
+
+    if (lhsAST != null) {
+      var lhsWR = _cache.putIfAbsent(lhsAST.expression, () => lhsAST.setupWatch(this));
+      lhsWR.handler.addForwardHandler(invokeHandler);
+      invokeHandler.forwardValue(lhsWR.currentValue);
+    }
+
+    // Must be done after LHS
     _EvalWatchList._add(this, evalWatchRecord);
     _evalCost++;
-    invokeHandler.watchRecord = evalWatchRecord;
 
     // Convert the args from AST to WatchRecords
     var i = 0;
     argsAST.
-      map((ast) => _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this))).
-      forEach((WatchRecord<_Handler> record) {
-        var argHandler = new _ArgHandler(this, evalWatchRecord, i++);
-        _ArgHandlerList._add(invokeHandler, argHandler);
-        record.handler.addForwardHandler(argHandler);
-        argHandler.forwardValue(record.currentValue);
-      });
+    map((ast) => _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this))).
+    forEach((WatchRecord<_Handler> record) {
+      var argHandler = new _ArgHandler(this, evalWatchRecord, i++);
+      _ArgHandlerList._add(invokeHandler, argHandler);
+      record.handler.addForwardHandler(argHandler);
+      argHandler.forwardValue(record.currentValue);
+    });
 
     return evalWatchRecord;
+
   }
 }
 
@@ -269,8 +286,12 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
 
   _InvokeHandler(scope, expression): super(scope, expression);
 
+  forwardValue(dynamic object) => watchRecord.object = object;
+
+  _releaseWatch() => watchRecord.remove();
+
   release() {
-    watchRecord.remove();
+    super.release();
     _ArgHandler current = _argHandlerHead;
     while(current != null) {
       current.release();
@@ -281,29 +302,42 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
 
 
 class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
-  final Function fn;
-  final String name;
+  final WatchGroup scope;
   final _Handler handler;
   final List args;
-  final WatchGroup scope;
+  final Function fn;
+  final Symbol symbol;
+  InstanceMirror _instanceMirror;
 
-  dynamic currentValue;
-  dynamic previousValue;
-  dynamic object;
-  bool deleted = false;
-
+  dynamic currentValue, previousValue, _object;
   _EvalWatchRecord _previousEvalWatch, _nextEvalWatch;
 
-  _EvalWatchRecord(this.scope, this.fn, this.name, this.handler, int arity): args = new List(arity);
+  _EvalWatchRecord(this.scope, this.handler, this.fn, this.symbol, int arity): args = new List(arity);
+
+  get object => _object;
+  set object(value) {
+    _object = value;
+    _instanceMirror = value == null ? null : reflect(value);
+  }
 
   ChangeRecord<_Handler> check() {
-    var value = Function.apply(fn, args);
-    print('eval: $name(${args.join(', ')}) => $value');
+    var value;
+    var symbol = this.symbol;
+    if (symbol == null) {
+      value = Function.apply(fn, args);
+    } else {
+      var _instanceMirror = this._instanceMirror;
+      if (_instanceMirror == null) {
+        value = null;
+      } else {
+        value = _instanceMirror.invoke(symbol, args).reflectee;
+      }
+    }
     var currentValue = this.currentValue;
     if (!identical(currentValue, value)) {
       if (value is String && currentValue is String && value == currentValue) {
         // it is really the same, recover
-        currentValue = value; // same so next time identity is same
+        currentValue = value; // save so next time identity is same
       } else {
         previousValue = currentValue;
         this.currentValue = value;
@@ -315,12 +349,11 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
     return null;
   }
 
-  get field => '()';
   get nextChange => null;
 
   remove() {
-    assert(!deleted);
-    deleted = true;
+    assert(object != this);
+    object = this; // Mark as deleted.
     scope._evalCost--;
     _EvalWatchList._remove(scope, this);
   }

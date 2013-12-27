@@ -6,7 +6,7 @@ import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 
 main() => ddescribe('WatchGroup', () {
   var context;
-  var scope;
+  var watchGrp;
   Logger logger;
 
   AST parse(String expression) {
@@ -19,7 +19,7 @@ main() => ddescribe('WatchGroup', () {
 
   beforeEach(inject((Logger _logger) {
     context = {};
-    scope = new WatchGroup(new DirtyCheckingChangeDetector<_Handler>(), context);
+    watchGrp = new WatchGroup(new DirtyCheckingChangeDetector<_Handler>(), context);
     logger = _logger;
   }));
 
@@ -28,27 +28,27 @@ main() => ddescribe('WatchGroup', () {
       context['a'] = 'hello';
 
       // should fire on initial adding
-      expect(scope.fieldCost).toEqual(0);
-      var watch = scope.watch(parse('a'), (v, p, o) => logger(v));
+      expect(watchGrp.fieldCost).toEqual(0);
+      var watch = watchGrp.watch(parse('a'), (v, p, o) => logger(v));
       expect(watch.expression).toEqual('a');
-      expect(scope.fieldCost).toEqual(1);
-      scope.detectChanges();
+      expect(watchGrp.fieldCost).toEqual(1);
+      watchGrp.detectChanges();
       expect(logger).toEqual(['hello']);
 
       // make sore no new changes are logged on extra detectChangess
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual(['hello']);
 
       // Should detect value change
       context['a'] = 'bye';
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual(['hello', 'bye']);
 
       // should cleanup after itself
       watch.remove();
-      expect(scope.fieldCost).toEqual(0);
+      expect(watchGrp.fieldCost).toEqual(0);
       context['a'] = 'cant see me';
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual(['hello', 'bye']);
     });
 
@@ -56,37 +56,37 @@ main() => ddescribe('WatchGroup', () {
       context['a'] = {'b': 'hello'};
 
       // should fire on initial adding
-      expect(scope.fieldCost).toEqual(0);
-      var watch = scope.watch(parse('a.b'), (v, p, o) => logger(v));
+      expect(watchGrp.fieldCost).toEqual(0);
+      var watch = watchGrp.watch(parse('a.b'), (v, p, o) => logger(v));
       expect(watch.expression).toEqual('a.b');
-      expect(scope.fieldCost).toEqual(2);
-      scope.detectChanges();
+      expect(watchGrp.fieldCost).toEqual(2);
+      watchGrp.detectChanges();
       expect(logger).toEqual(['hello']);
 
       // make sore no new changes are logged on extra detectChangess
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual(['hello']);
 
       // make sure no changes or logged when intermediary object changes
       context['a'] = {'b': 'hello'};
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual(['hello']);
 
       // Should detect value change
       context['a'] = {'b': 'hello2'};
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual(['hello', 'hello2']);
 
       // Should detect value change
       context['a']['b'] = 'bye';
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual(['hello', 'hello2', 'bye']);
 
       // should cleanup after itself
       watch.remove();
-      expect(scope.fieldCost).toEqual(0);
+      expect(watchGrp.fieldCost).toEqual(0);
       context['a']['b'] = 'cant see me';
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual(['hello', 'hello2', 'bye']);
     });
 
@@ -97,29 +97,29 @@ main() => ddescribe('WatchGroup', () {
       context['user'] = user1;
 
       // should fire on initial adding
-      expect(scope.fieldCost).toEqual(0);
-      var watch = scope.watch(parse('user'), (v, p, o) => logger(v));
-      var watchFirst = scope.watch(parse('user.first'), (v, p, o) => logger(v));
-      var watchLast = scope.watch(parse('user.last'), (v, p, o) => logger(v));
-      expect(scope.fieldCost).toEqual(3);
+      expect(watchGrp.fieldCost).toEqual(0);
+      var watch = watchGrp.watch(parse('user'), (v, p, o) => logger(v));
+      var watchFirst = watchGrp.watch(parse('user.first'), (v, p, o) => logger(v));
+      var watchLast = watchGrp.watch(parse('user.last'), (v, p, o) => logger(v));
+      expect(watchGrp.fieldCost).toEqual(3);
 
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual([user1, 'misko', 'hevery']);
       logger.clear();
 
       context['user'] = user2;
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual([user2, 'Hevery']);
 
 
       watch.remove();
-      expect(scope.fieldCost).toEqual(3);
+      expect(watchGrp.fieldCost).toEqual(3);
 
       watchFirst.remove();
-      expect(scope.fieldCost).toEqual(2);
+      expect(watchGrp.fieldCost).toEqual(2);
 
       watchLast.remove();
-      expect(scope.fieldCost).toEqual(0);
+      expect(watchGrp.fieldCost).toEqual(0);
 
       expect(() => watch.remove()).toThrow('Already deleted!');
     });
@@ -128,45 +128,144 @@ main() => ddescribe('WatchGroup', () {
       context['a'] = {'val': 1};
       context['b'] = {'val': 2};
 
-      var watch = scope.watch(
+      var watch = watchGrp.watch(
           new FunctionAST('add', (a, b) => a+b, [parse('a.val'), parse('b.val')]),
           (v, p, o) => logger(v)
       );
 
       // a; a.val; b; b.val;
-      expect(scope.fieldCost).toEqual(4);
+      expect(watchGrp.fieldCost).toEqual(4);
       // add
-      expect(scope.evalCost).toEqual(1);
+      expect(watchGrp.evalCost).toEqual(1);
 
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual([3]);
 
-      scope.detectChanges();
-      scope.detectChanges();
+      watchGrp.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual([3]);
 
       context['a']['val'] = 3;
       context['b']['val'] = 4;
 
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual([3, 7]);
 
       watch.remove();
-      expect(scope.fieldCost).toEqual(0);
-      expect(scope.evalCost).toEqual(0);
+      expect(watchGrp.fieldCost).toEqual(0);
+      expect(watchGrp.evalCost).toEqual(0);
 
       context['a']['val'] = 0;
       context['b']['val'] = 0;
 
-      scope.detectChanges();
+      watchGrp.detectChanges();
       expect(logger).toEqual([3, 7]);
+    });
+
+    it('should eval method', () {
+      var obj = new MyClass(logger);
+      obj.valA = 'A';
+      context['obj'] = obj;
+      context['arg0'] = 1;
+
+      var watch = watchGrp.watch(
+          new MethodAST(parse('obj'), 'methodA', [parse('arg0')]),
+              (v, p, o) => logger(v)
+      );
+
+      // obj, arg0;
+      expect(watchGrp.fieldCost).toEqual(2);
+      // methodA()
+      expect(watchGrp.evalCost).toEqual(1);
+
+      watchGrp.detectChanges();
+      expect(logger).toEqual(['methodA(1) => A', 'A']);
+      logger.clear();
+
+      watchGrp.detectChanges();
+      watchGrp.detectChanges();
+      expect(logger).toEqual(['methodA(1) => A', 'methodA(1) => A']);
+      logger.clear();
+
+      obj.valA = 'B';
+      context['arg0'] = 2;
+
+      watchGrp.detectChanges();
+      expect(logger).toEqual(['methodA(2) => B', 'B']);
+      logger.clear();
+
+      watch.remove();
+      expect(watchGrp.fieldCost).toEqual(0);
+      expect(watchGrp.evalCost).toEqual(0);
+
+      obj.valA = 'C';
+      context['arg0'] = 3;
+
+      watchGrp.detectChanges();
+      expect(logger).toEqual([]);
     });
   });
 
-  // test gc of evalFunctions
-  // test evalFunction Cost count
-  // test two separate loops
-  // test detectChanges multiloop.
-  // test flush single loop, check no second change.
+  it('should eval method chain', () {
+    var obj1 = new MyClass(logger);
+    var obj2 = new MyClass(logger);
+    obj1.valA = obj2;
+    obj2.valA = 'A';
+    context['obj'] = obj1;
+    context['arg0'] = 0;
+    context['arg1'] = 1;
+
+    // obj.methodA(arg0)
+    var ast = new MethodAST(parse('obj'), 'methodA', [parse('arg0')]);
+    ast = new MethodAST(ast, 'methodA', [parse('arg1')]);
+    var watch = watchGrp.watch(ast, (v, p, o) => logger(v));
+
+    // obj, arg0, arg1;
+    expect(watchGrp.fieldCost).toEqual(3);
+    // methodA(), mothodA()
+    expect(watchGrp.evalCost).toEqual(2);
+
+    watchGrp.detectChanges();
+    expect(logger).toEqual(['methodA(0) => MyClass', 'methodA(1) => A', 'A']);
+    logger.clear();
+
+    watchGrp.detectChanges();
+    watchGrp.detectChanges();
+    expect(logger).toEqual(['methodA(0) => MyClass', 'methodA(1) => A',
+                            'methodA(0) => MyClass', 'methodA(1) => A']);
+    logger.clear();
+
+    obj2.valA = 'B';
+    context['arg0'] = 10;
+    context['arg1'] = 11;
+
+    watchGrp.detectChanges();
+    expect(logger).toEqual(['methodA(10) => MyClass', 'methodA(11) => B', 'B']);
+    logger.clear();
+
+    watch.remove();
+    expect(watchGrp.fieldCost).toEqual(0);
+    expect(watchGrp.evalCost).toEqual(0);
+
+    obj2.valA = 'C';
+    context['arg0'] = 20;
+    context['arg1'] = 21;
+
+    watchGrp.detectChanges();
+    expect(logger).toEqual([]);
+  });
 });
 
+class MyClass {
+  final Logger logger;
+  var valA;
+
+  MyClass(this.logger);
+
+  methodA(arg1) {
+    logger('methodA($arg1) => $valA');
+    return valA;
+  }
+
+  toString() => 'MyClass';
+}
