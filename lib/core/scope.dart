@@ -56,8 +56,8 @@ class Scope implements Map {
   Scope $root;
   num _nextId = 0;
   String _phase;
-  List<Function> _innerAsyncQueue;
-  List<Function> _outerAsyncQueue;
+  List _innerAsyncQueue;
+  List _outerAsyncQueue;
   Scope _nextSibling, _prevSibling, _childHead, _childTail;
   bool _skipAutoDigest = false;
   bool _disabled = false;
@@ -399,124 +399,193 @@ class Scope implements Map {
   }
 
   $digest() {
-    var innerAsyncQueue = _innerAsyncQueue;
-    _Watch lastDirtyWatch = null;
-    _Watch lastLoopLastDirtyWatch;
-    int _ttlLeft = _ttl;
-    List<List<String>> watchLog = [];
-    _Watch watch;
-    Scope next, current, target = this;
-
-    _beginPhase('\$digest');
     try {
-      int watcherCount;
-      int scopeCount;
-      do { // "while dirty" loop
-        lastLoopLastDirtyWatch = lastDirtyWatch;
-        lastDirtyWatch = null;
-        current = target;
-        //asyncQueue = current._asyncQueue;
-        //dump('aQ: ${asyncQueue.length}');
-
-        int timerId;
-        while(innerAsyncQueue.length > 0) {
-          try {
-            var workFn = innerAsyncQueue.removeAt(0);
-            assert((timerId = _perf.startTimer('ng.innerAsync', _source(workFn))) != false);
-            $root.$eval(workFn);
-          } catch (e, s) {
-            _exceptionHandler(e, s);
-          } finally {
-            assert(_perf.stopTimer(timerId) != false);
-          }
-        }
-
-        watcherCount = 0;
-        scopeCount = 0;
-        var firedExpressions;
-        if (_ttl - _ttlLeft > 2) {
-          firedExpressions = <String>[];
-          watchLog.add(firedExpressions);
-        }
-        assert((timerId = _perf.startTimer('ng.dirty_check', _ttl-_ttlLeft)) != false);
-        digestLoop:
-        do { // "traverse the scopes" loop
-          scopeCount++;
-          // process our watches
-          _WatchList watchers = current._watchers;
-          watcherCount += watchers.length;
-          for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
-            try {
-              if (identical(lastLoopLastDirtyWatch, watch)) {
-                break digestLoop;
-              }
-              var value = watch.get(current);
-              var last = watch.last;
-              if (!_identical(value, last)) {
-                if (_ttlLeft < 3) {
-                  firedExpressions.add(watch.exp == null ? '[unknown]' : watch.exp);
-                }
-                lastDirtyWatch = watch;
-                lastLoopLastDirtyWatch = null;
-                watch.last = value;
-                var fireTimer;
-                assert((fireTimer = _perf.startTimer('ng.fire', watch.exp)) != false);
-                watch.fn(value, ((last == _initWatchVal) ? value : last), current);
-                assert(_perf.stopTimer(fireTimer) != false);
-              }
-            } catch (e, s) {
-              _exceptionHandler(e, s);
-            }
-          }
-
-          // Insanity Warning: scope depth-first traversal
-          // yes, this code is a bit crazy, but it works and we have tests to prove it!
-          // this piece should be kept in sync with the traversal in $broadcast
-          Scope childHead = current._childHead;
-          while (childHead != null && childHead._disabled) {
-            childHead = childHead._nextSibling;
-          }
-          if (childHead == null) {
-            if (current == target) {
-              next = null;
-            } else {
-              next = current._nextSibling;
-              if (next == null) {
-                while(current != target && (next = current._nextSibling) == null) {
-                  current = current.$parent;
-                }
-              }
-            }
-          } else {
-            if (childHead._lazy) childHead._disabled = true;
-            next = childHead;
-          }
-        } while ((current = next) != null);
-
-        assert(_perf.stopTimer(timerId) != false);
-        if(lastDirtyWatch != null && (_ttlLeft--) == 0) {
-          throw '$_ttl \$digest() iterations reached. Aborting!\n' +
-              'Watchers fired in the last ${_ttl - 2} iterations: ${_toJson(watchLog)}';
-        }
-      } while (lastDirtyWatch != null || innerAsyncQueue.length > 0);
-      _perf.counters['ng.scope.watchers'] = watcherCount;
-      _perf.counters['ng.scopes'] = scopeCount;
-
-      while(_outerAsyncQueue.length > 0) {
-        var syncTimer;
-        try {
-          var workFn = _outerAsyncQueue.removeAt(0);
-          assert((syncTimer = _perf.startTimer('ng.outerAsync', _source(workFn))) != false);
-          $root.$eval(workFn);
-        } catch (e, s) {
-          _exceptionHandler(e, s);
-        } finally {
-          assert(_perf.stopTimer(syncTimer) != false);
-        }
-      }
+      _beginPhase('\$digest');
+      _digestWhileDirtyLoop();
+    } catch (e, s) {
+      _exceptionHandler(e, s);
     } finally {
       _clearPhase();
     }
+  }
+
+
+  _digestWhileDirtyLoop() {
+    _digestHandleQueue('ng.innerAsync', _innerAsyncQueue);
+
+    int timerId;
+    assert((timerId = _perf.startTimer('ng.dirty_check', 0)) != false);
+    _Watch lastDirtyWatch = _digestComputeLastDirty();
+    assert(_perf.stopTimer(timerId) != false);
+
+    if (lastDirtyWatch == null) {
+      _digestHandleQueue('ng.outerAsync', _outerAsyncQueue);
+      return;
+    }
+
+    List<List<String>> watchLog = [];
+    for (int iteration = 1, ttl = _ttl; iteration < ttl; iteration++) {
+      _Watch stopWatch = _digestHandleQueue('ng.innerAsync', _innerAsyncQueue)
+          ? null  // Evaluating async work requires re-evaluating all watchers.
+          : lastDirtyWatch;
+      lastDirtyWatch = null;
+
+      List<String> expressionLog;
+      if (ttl - iteration <= 3) {
+        expressionLog = <String>[];
+        watchLog.add(expressionLog);
+      }
+
+      int timerId;
+      assert((timerId = _perf.startTimer('ng.dirty_check', iteration)) != false);
+      lastDirtyWatch = _digestComputeLastDirtyUntil(stopWatch, expressionLog);
+      assert(_perf.stopTimer(timerId) != false);
+
+      if (lastDirtyWatch == null) {
+        _digestComputePerfCounters();
+        _digestHandleQueue('ng.outerAsync', _outerAsyncQueue);
+        return;
+      }
+    }
+
+    // I've seen things you people wouldn't believe. Attack ships on fire
+    // off the shoulder of Orion. I've watched C-beams glitter in the dark
+    // near the Tannhauser Gate. All those moments will be lost in time,
+    // like tears in rain. Time to die.
+    throw '$_ttl \$digest() iterations reached. Aborting!\n'
+          'Watchers fired in the last ${watchLog.length} iterations: '
+          '${_toJson(watchLog)}';
+  }
+
+
+  bool _digestHandleQueue(String timerName, List queue) {
+    if (queue.isEmpty) {
+      return false;
+    }
+    do {
+      var timerId;
+      try {
+        var workFn = queue.removeAt(0);
+        assert((timerId = _perf.startTimer(timerName, _source(workFn))) != false);
+        $root.$eval(workFn);
+      } catch (e, s) {
+        _exceptionHandler(e, s);
+      } finally {
+        assert(_perf.stopTimer(timerId) != false);
+      }
+    } while (queue.isNotEmpty);
+    return true;
+  }
+
+
+  _Watch _digestComputeLastDirty() {
+    int watcherCount = 0;
+    int scopeCount = 0;
+    Scope scope = this;
+    do {
+      _WatchList watchers = scope._watchers;
+      watcherCount += watchers.length;
+      scopeCount++;
+      for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
+        var last = watch.last;
+        var value = watch.get(scope);
+        if (!_identical(value, last)) {
+          return _digestHandleDirty(scope, watch, last, value, null);
+        }
+      }
+    } while ((scope = _digestComputeNextScope(scope)) != null);
+    _digestUpdatePerfCounters(watcherCount, scopeCount);
+    return null;
+  }
+
+
+  _Watch _digestComputeLastDirtyUntil(_Watch stopWatch, List<String> log) {
+    int watcherCount = 0;
+    int scopeCount = 0;
+    Scope scope = this;
+    do {
+      _WatchList watchers = scope._watchers;
+      watcherCount += watchers.length;
+      scopeCount++;
+      for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
+        if (identical(stopWatch, watch)) return null;
+        var last = watch.last;
+        var value = watch.get(scope);
+        if (!_identical(value, last)) {
+          return _digestHandleDirty(scope, watch, last, value, log);
+        }
+      }
+    } while ((scope = _digestComputeNextScope(scope)) != null);
+    return null;
+  }
+
+
+  _Watch _digestHandleDirty(Scope scope, _Watch watch, last, value, List<String> log) {
+    _Watch lastDirtyWatch;
+    while (true) {
+      if (!_identical(value, last)) {
+        lastDirtyWatch = watch;
+        if (log != null) log.add(watch.exp == null ? '[unknown]' : watch.exp);
+        watch.last = value;
+        var fireTimer;
+        assert((fireTimer = _perf.startTimer('ng.fire', watch.exp)) != false);
+        watch.fn(value, identical(_initWatchVal, last) ? value : last, scope);
+        assert(_perf.stopTimer(fireTimer) != false);
+      }
+      watch = watch.next;
+      while (watch == null) {
+        scope = _digestComputeNextScope(scope);
+        if (scope == null) return lastDirtyWatch;
+        watch = scope._watchers.head;
+      }
+      last = watch.last;
+      value = watch.get(scope);
+    }
+  }
+
+
+  Scope _digestComputeNextScope(Scope scope) {
+    // Insanity Warning: scope depth-first traversal
+    // yes, this code is a bit crazy, but it works and we have tests to prove it!
+    // this piece should be kept in sync with the traversal in $broadcast
+    Scope target = this;
+    Scope childHead = scope._childHead;
+    while (childHead != null && childHead._disabled) {
+      childHead = childHead._nextSibling;
+    }
+    if (childHead == null) {
+      if (scope == target) {
+        return null;
+      } else {
+        Scope next = scope._nextSibling;
+        if (next == null) {
+          while (scope != target && (next = scope._nextSibling) == null) {
+            scope = scope.$parent;
+          }
+        }
+        return next;
+      }
+    } else {
+      if (childHead._lazy) childHead._disabled = true;
+      return childHead;
+    }
+  }
+
+
+  void _digestComputePerfCounters() {
+    int watcherCount = 0, scopeCount = 0;
+    Scope scope = this;
+    do {
+      scopeCount++;
+      watcherCount += scope._watchers.length;
+    } while ((scope = _digestComputeNextScope(scope)) != null);
+    _digestUpdatePerfCounters(watcherCount, scopeCount);
+  }
+
+
+  void _digestUpdatePerfCounters(int watcherCount, int scopeCount) {
+    _perf.counters['ng.scope.watchers'] = watcherCount;
+    _perf.counters['ng.scopes'] = scopeCount;
   }
 
 
