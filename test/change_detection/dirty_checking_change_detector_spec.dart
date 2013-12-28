@@ -77,6 +77,26 @@ main() => ddescribe('DirtyCheckingChangeDetector', () {
     });
   });
 
+  describe('insertions / removals', () {
+    it('should insert at the end of list', () {
+      var obj = {};
+      var a = detector.watch(obj, 'a', 'a');
+      var b = detector.watch(obj, 'b', 'b');
+
+      obj['a'] = obj['b'] = 1;
+      var changes = detector.collectChanges();
+      expect(changes.handler).toEqual('a');
+      expect(changes.nextChange.handler).toEqual('b');
+      expect(changes.nextChange.nextChange).toEqual(null);
+
+      obj['a'] = obj['b'] = 2;
+      a.remove();
+      changes = detector.collectChanges();
+      expect(changes.handler).toEqual('b');
+      expect(changes.nextChange).toEqual(null);
+    });
+  });
+
   describe('list watching', () {
 
   });

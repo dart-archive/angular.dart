@@ -19,7 +19,7 @@ main() => ddescribe('WatchGroup', () {
 
   beforeEach(inject((Logger _logger) {
     context = {};
-    watchGrp = new WatchGroup(new DirtyCheckingChangeDetector<_Handler>(), context);
+    watchGrp = new WatchGroup(new DirtyCheckingChangeDetector(), context);
     logger = _logger;
   }));
 

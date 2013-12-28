@@ -223,7 +223,7 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
   }
 
   _releaseWatch() {
-    scope._changeDetector.remove(watchRecord);
+    watchRecord.remove();
     scope._fieldCost--;
   }
   forwardValue(dynamic object) => null;
@@ -285,7 +285,7 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
 
   forwardValue(dynamic object) => watchRecord.object = object;
 
-  _releaseWatch() => watchRecord.remove();
+  _releaseWatch() => (watchRecord as _EvalWatchRecord).remove();
 
   release() {
     super.release();
@@ -310,6 +310,8 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
   _EvalWatchRecord _previousEvalWatch, _nextEvalWatch;
 
   _EvalWatchRecord(this.scope, this.handler, this.fn, this.symbol, int arity): args = new List(arity);
+
+  get field => '()';
 
   get object => _object;
   set object(value) {
@@ -349,7 +351,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
 
   remove() {
     assert(object != this);
-    object = this; // Mark as deleted.
+    assert((object = this) == this); // Mark as deleted.
     scope._evalCost--;
     _EvalWatchList._remove(scope, this);
   }

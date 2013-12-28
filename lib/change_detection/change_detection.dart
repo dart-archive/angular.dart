@@ -1,26 +1,11 @@
 library change_detection;
 
 /**
- * Factory method for creating dirty checkers. This method would return a polyfill or
- * native VM implementation depending on the browser.
- *
+ * An interface for [ChangeDetectorGroup] groups related watches together. It guarentees
+ * that within the group all watches will be reported in the order in which they were registered.
+ * It also provides an efficient way of removing the watch group.
  */
-ChangeDetector createChangeDetector() => null;
-
-/**
- * An interface for ChangeDetector. An application can have multiple instance of the
- * [ChangeDetector] to be used for checking different application domains.
- *
- * ChangeDetector works by comparing the identity of the objects not by calling the [.equals()]
- * method. This is because ChangeDetector needs to have predictable performance, and the
- * developer can implement [.equals()] on top of identity checks.
- *
- * - [H] A watch has associated handler object. The handler object is opaque to the [ChangeDetector]
- *   but it is meaningful to the code which registered the watcher. It can be data structure,
- *   object, or function. It is up to the developer to attach meaning to it.
- */
-abstract class ChangeDetector<H> {
-
+abstract class ChangeDetectorGroup<H> {
   /**
    * Watch a specific [field] on an [object].
    *
@@ -35,25 +20,36 @@ abstract class ChangeDetector<H> {
    * - [object] to watch.
    * - [field] to watch on the [object].
    * - [handler] an opaque object passed on to [ChangeRecord].
-   * - [after] the [WatchRecord] is to be inserted [after] a given WatchRecord.
    */
-  WatchRecord<H> watch(Object object, String field, H handler, {WatchRecord<H> after});
+  WatchRecord<H> watch(Object object, String field, H handler);
 
+
+  /** Use to remove all watches in the group in an efficient manner. */
+  void remove();
+
+  /** Create a child [ChangeDetectorGroup] */
+  ChangeDetectorGroup<H> newGroup();
+}
+
+/**
+ * An interface for [ChangeDetector]. An application can have multiple instance of the
+ * [ChangeDetector] to be used for checking different application domains.
+ *
+ * [ChangeDetector] works by comparing the identity of the objects not by calling the [.equals()]
+ * method. This is because ChangeDetector needs to have predictable performance, and the
+ * developer can implement [.equals()] on top of identity checks.
+ *
+ * - [H] A [ChangeRecord] has associated handler object. The handler object is opaque to the
+ *   [ChangeDetector] but it is meaningful to the code which registered the watcher. It can be
+ *   data structure, object, or function. It is up to the developer to attach meaning to it.
+ */
+class ChangeDetector<H> extends ChangeDetectorGroup<H> {
   /**
-   * This method does the work of collecting the changes and returns them as a List of
-   * [ChangeRecord]s. The [ChangeRecord]s are to be sorted by the [ID].
+   * This method does the work of collecting the changes and returns them as a linked list of
+   * [ChangeRecord]s. The [ChangeRecord]s are to be returned in the same order as they were
+   * registered.
    */
   ChangeRecord<H> collectChanges();
-
-
-  /**
-   * Use to remove large blocks of watches efficiently.
-   *
-   * - [from] An [WatcheRecord] from which the removal will start (inclusive).
-   * - [to] An [WatchRecord] where the removal will stop (inclusive). (if omitted only change
-   *   remove the from record.)
-   */
-  void remove(WatchRecord<H> from, [WatchRecord<H> to]);
 }
 
 abstract class Record<H> {
@@ -78,20 +74,36 @@ abstract class Record<H> {
    */
   H get handler;
 
+  /** Current value of the [field] on the [object] */
   dynamic get currentValue;
+  /** Previous value of the [field] on the [object] */
   dynamic get previousValue;
 }
 
+/**
+ * [WatchRecord] API which allows changing what object is being watched and manually triggering the
+ * checking.
+ */
 abstract class WatchRecord<H> extends Record<H> {
+  /** Set a new object for checking */
   set object(dynamic value);
+
+  /**
+   * Check to see if the field on the object has changed. Returns [null] if no change, or a
+   * [ChangeRecord] if the change has been detected.
+   */
   ChangeRecord<H> check();
+
   void remove();
 }
 
 /**
  * A change record provides information about the changes which were detected in objects.
+ *
+ * It exposes a nextChange method for traversing all of the changes.
  */
 abstract class ChangeRecord<H> extends Record<H> {
+  /** Next [ChangeRecord] */
   ChangeRecord<H> get nextChange;
 }
 

@@ -10,7 +10,7 @@ import 'package:angular/change_detection/change_detection.dart';
  * GOALS:
  *   - Plugable implementation, replaceable with other technologies, such as Object.observe().
  *   - SPEED this needs to be as fast as possible.
- *   - No GC pressure. Since change detection runs often it should not generate any garbage.
+ *   - No GC pressure. Since change detection runs often it should perform no memory allocations.
  *   - The changes need to be delivered in a single data-structure at once. There are two reasons
  *     for this. (1) It should be easy to measure the cost of change detection vs processing.
  *     (2) The feature may move to VM for performance reason. The VM should be free to implement
@@ -26,46 +26,93 @@ import 'package:angular/change_detection/change_detection.dart';
  * [ChangeRecord]
  *
  * When the results are delivered they are a linked list of [ChangeRecord]s. For efficiency reasons
- * the [DirtyCheckingRecord] and [ChangeRecord] are two different interfaces for the same underlying object
- * this makes reporting efficient since no additional memory allocation needs to happen.
- * (The same object has next_Record as well as nextChangeRecord.)
+ * the [DirtyCheckingRecord] and [ChangeRecord] are two different interfaces for the same
+ * underlying object this makes reporting efficient since no additional memory allocation needs to
+ * be allocated.
  */
-class DirtyCheckingChangeDetector<H> implements ChangeDetector<H> {
-  DirtyCheckingRecord head;
-  DirtyCheckingRecord tail;
+class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
+  final _DirtyCheckingRecord marker = new _DirtyCheckingRecord.marker();
 
-  DirtyCheckingChangeDetector() {
-    /** The head/tail start with a bogus DirtyCheckingRecord which serves as NullValueObject */
-    head = tail = new DirtyCheckingRecord.head();
+  _DirtyCheckingRecord _recordHead, _recordTail;
+  DirtyCheckingChangeDetectorGroup _groupHead, _groupTail, _parentGroup;
+
+  DirtyCheckingChangeDetectorGroup(this._parentGroup) {
+    _recordTail = _parentGroup == null ? null : _parentGroup._recordTail;
+    _recordHead = _recordTail = _recordAdd(marker);
   }
 
-  WatchRecord<H> watch(Object object, String field, H handler, {WatchRecord<H> after}) {
-    // TODO(misko): implement proper insertion
-    var watch = new DirtyCheckingRecord(object, field, handler);
-    watch._previousWatch = tail;
-    return tail = tail._nextWatch = watch;
+  WatchRecord<H> watch(Object object, String field, H handler) {
+    return _recordAdd(new _DirtyCheckingRecord(this, object, field, handler));
   }
 
-  DirtyCheckingRecord<H> collectChanges() {
-    DirtyCheckingRecord changeTail = head;
-    DirtyCheckingRecord current = head; // current index
+  void remove() {
+    throw 'testRemove';
+  }
 
-    while( (current = current._nextWatch) != null) {
+  _recordAdd(_DirtyCheckingRecord record) {
+    _DirtyCheckingRecord previous = _recordTail;
+    _DirtyCheckingRecord next = previous == null ? null : previous._nextWatch;
+
+    record._nextWatch = next;
+    record._previousWatch = previous;
+
+    if (previous != null) previous._nextWatch = record;
+    if (next != null) next._previousWatch = record;
+
+    _recordTail = record;
+
+    return record;
+  }
+
+  _recordRemove(_DirtyCheckingRecord record) {
+    _DirtyCheckingRecord previous = record._previousWatch;
+    _DirtyCheckingRecord next = record._nextWatch;
+
+    if (record == _recordHead && record == _recordTail) {
+      throw 'testRemove1';
+      // we are the last one, must leave marker behind.
+      _recordHead = _recordTail = marker;
+      marker._nextWatch = next;
+      marker._previousWatch = previous;
+      if (previous != null) previous._nextWatch = marker;
+      if (next != null) next._previousWatch = marker;
+    } else {
+      if (record == _recordTail) _recordTail = previous;
+      if (record == _recordHead) _recordHead = next;
+      if (previous != null) previous._nextWatch = next;
+      if (next != null) next._previousWatch = previous;
+    }
+  }
+
+  ChangeDetector<H> newGroup() {
+    throw 'testNewGroup';
+  }
+}
+
+class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
+  DirtyCheckingChangeDetector(): super(null);
+
+  _DirtyCheckingRecord<H> collectChanges() {
+    _DirtyCheckingRecord changeHead = null;
+    _DirtyCheckingRecord changeTail = null;
+    _DirtyCheckingRecord current = _recordHead; // current index
+
+    while(current != null) {
       if (current.check() != null) {
-        changeTail = changeTail.nextChange = current;
+        if (changeHead == null) {
+          changeHead = changeTail = current;
+        } else {
+          changeTail = changeTail.nextChange = current;
+        }
       }
+      current = current._nextWatch;
     };
-
-    changeTail.nextChange = null;
-
-    return head.nextChange;
+    if (changeTail != null) changeTail.nextChange = null;
+    return changeHead;
   }
-  void remove(WatchRecord<H> from, [WatchRecord<H> to]) {
-    if (to == null) to = from;
-    var previous = (from as DirtyCheckingRecord)._previousWatch;
-    var next = (to as DirtyCheckingRecord)._nextWatch;
-    if (previous != null) previous._nextWatch = next;
-    if (next != null) next._previousWatch = previous;
+
+  remove() {
+    throw new StateError('Root ChangeDetector can not be removed');
   }
 }
 
@@ -77,35 +124,38 @@ class DirtyCheckingChangeDetector<H> implements ChangeDetector<H> {
  * also has [nextChange] field which creates a single linked list of all of the changes for
  * efficient traversal.
  */
-class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
-  static const int _MODE_IDENTITY_ = 0;
-  static const int _MODE_OBJECT_ = 1;
-  static const int _MODE_MAP_ = 2;
-  static const int _MODE_LIST_CHANGE_ = 3;
-  static const int _MODE_MAP_CHANGE_ = 4;
+class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
+  static const int _MODE_MARKER_ = 0;
+  static const int _MODE_IDENTITY_ = 1;
+  static const int _MODE_OBJECT_ = 2;
+  static const int _MODE_MAP_ = 3;
+  static const int _MODE_LIST_CHANGE_ = 4;
+  static const int _MODE_MAP_CHANGE_ = 5;
 
+  final DirtyCheckingChangeDetectorGroup group;
   final String field;
   final Symbol _symbol;
+  final H handler;
 
   int _mode;
 
-  H handler;
   dynamic previousValue;
   dynamic currentValue;
-  DirtyCheckingRecord<H> _nextWatch;
-  DirtyCheckingRecord<H> _previousWatch;
+  _DirtyCheckingRecord<H> _nextWatch;
+  _DirtyCheckingRecord<H> _previousWatch;
   ChangeRecord<H> nextChange;
   dynamic _object;
   InstanceMirror _instanceMirror;
 
-  DirtyCheckingRecord(obj, fieldName, this.handler):
+  _DirtyCheckingRecord(this.group, obj, fieldName, this.handler):
     field = fieldName,
     _symbol = new Symbol(fieldName)
   {
     this.object = obj;
   }
 
-  DirtyCheckingRecord.head(): field = null, _symbol = null, handler = null;
+  _DirtyCheckingRecord.marker():
+      group = null, field = null, _symbol = null, handler = null, _mode = _MODE_MARKER_;
 
   get object => _object;
 
@@ -131,10 +181,11 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
 
     //TODO(misko): check the performance of this.
     switch(_mode) {
+      case _MODE_MARKER_  : return null;
       case _MODE_OBJECT_  : currentValue = _instanceMirror.getField(_symbol).reflectee; break;
       case _MODE_MAP_     : currentValue = object[field];                               break;
       case _MODE_IDENTITY_: currentValue = object;                                      break;
-      defualt: throw new StateError('unknown mode');
+      defualt: assert('unknown mode');
     }
 
     if (!identical(lastValue, currentValue)) {
@@ -151,6 +202,6 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
   }
 
   remove() {
-    throw 'implement removal';
+    group._recordRemove(this);
   }
 }
