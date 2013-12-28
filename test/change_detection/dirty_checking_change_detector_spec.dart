@@ -94,6 +94,55 @@ main() => ddescribe('DirtyCheckingChangeDetector', () {
       changes = detector.collectChanges();
       expect(changes.handler).toEqual('b');
       expect(changes.nextChange).toEqual(null);
+
+      obj['a'] = obj['b'] = 3;
+      b.remove();
+      changes = detector.collectChanges();
+      expect(changes).toEqual(null);
+    });
+
+    it('should remove all watches in group and group\'s children', () {
+      var obj = {};
+      detector.watch(obj, 'a', '0a');
+      var child1a = detector.newGroup();
+      var child1b = detector.newGroup();
+      var child2 = child1a.newGroup();
+      child1a.watch(obj,'a', '1a');
+      child1b.watch(obj,'a', '1b');
+      detector.watch(obj, 'a', '0A');
+      child1a.watch(obj,'a', '1A');
+      child2.watch(obj,'a', '2A');
+
+      obj['a'] = 1;
+      expect(detector.collectChanges(), toEqualsChanges(['0a', '0A', '1a', '1A', '2A', '1b']));
+
+      obj['a'] = 2;
+      child1a.remove(); // should also remove child2
+      expect(detector.collectChanges(), toEqualsChanges(['0a', '0A', '1b']));
+    });
+
+    it('should add watches within its own group', () {
+      var obj = {};
+      var ra = detector.watch(obj, 'a', 'a');
+      var child = detector.newGroup();
+      var cb = child.watch(obj,'b', 'b');
+
+      obj['a'] = obj['b'] = 1;
+      expect(detector.collectChanges(), toEqualsChanges(['a', 'b']));
+
+      obj['a'] = obj['b'] = 2;
+      ra.remove();
+      expect(detector.collectChanges(), toEqualsChanges(['b']));
+
+      obj['a'] = obj['b'] = 3;
+      cb.remove();
+      expect(detector.collectChanges(), toEqualsChanges([]));
+
+      // TODO: add them back in wrong order, assert events in right order
+      cb = child.watch(obj,'b', 'b');
+      ra = detector.watch(obj, 'a', 'a');
+      obj['a'] = obj['b'] = 4;
+      expect(detector.collectChanges(), toEqualsChanges(['a', 'b']));
     });
   });
 
@@ -116,4 +165,32 @@ class _User {
   num age;
 
   _User([this.first, this.last, this.age]);
+}
+
+Matcher toEqualsChanges(List changes) => new ChangeMatcher(changes);
+
+class ChangeMatcher extends Matcher {
+  List expected;
+
+  ChangeMatcher(this.expected);
+
+  Description describe(Description description) => description..add(expected.toString());
+
+  Description describeMismatch(changes, Description mismatchDescription, Map matchState, bool verbose) {
+    List list = [];
+    while(changes != null) {
+      list.add(changes.handler);
+      changes = changes.nextChange;
+    }
+    return mismatchDescription..add(list.toString());
+  }
+
+  bool matches(changes, Map matchState) {
+    int count = 0;
+    while(changes != null) {
+      if (changes.handler != expected[count++]) return false;
+      changes = changes.nextChange;
+    }
+    return count == expected.length;
+  }
 }

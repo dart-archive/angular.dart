@@ -31,22 +31,64 @@ import 'package:angular/change_detection/change_detection.dart';
  * be allocated.
  */
 class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
+  /**
+   * A group must have at least one record so that it can act as a placeholder. This
+   * record has minimal cost and never detects change. Once actual records get
+   * added the marker record gets removed, but it gets reinserted if all other
+   * records are removed.
+   */
   final _DirtyCheckingRecord marker = new _DirtyCheckingRecord.marker();
 
+  /**
+   * All records for group are kept together and are denoted by head/tail.
+   */
   _DirtyCheckingRecord _recordHead, _recordTail;
-  DirtyCheckingChangeDetectorGroup _groupHead, _groupTail, _parentGroup;
+
+  /** Parent group or null if root */
+  DirtyCheckingChangeDetectorGroup _parentGroup, _groupHead, _groupTail, _groupPrevious, _groupNext;
 
   DirtyCheckingChangeDetectorGroup(this._parentGroup) {
-    _recordTail = _parentGroup == null ? null : _parentGroup._recordTail;
-    _recordHead = _recordTail = _recordAdd(marker);
+    // we need to insert the marker record at the begining.
+    if (_parentGroup == null) {
+      _recordHead = _recordTail = marker;
+    } else {
+      DirtyCheckingChangeDetectorGroup groupTail = _parentGroup._groupTail;
+      _recordTail = (groupTail == null ? _parentGroup : groupTail)._recordTail;
+      _recordHead = _recordTail = _recordAdd(marker);
+    }
   }
 
   WatchRecord<H> watch(Object object, String field, H handler) {
     return _recordAdd(new _DirtyCheckingRecord(this, object, field, handler));
   }
 
+
+  ChangeDetector<H> newGroup() {
+    var child = new DirtyCheckingChangeDetectorGroup(this);
+    if (_groupHead == null) {
+      _groupHead = _groupTail = child;
+    } else {
+      child._groupPrevious = _groupTail;
+      _groupTail._groupNext = child;
+      _groupTail = child;
+    }
+    return child;
+  }
+  /**
+   * Bulk remove all records.
+   */
   void remove() {
-    throw 'testRemove';
+    _DirtyCheckingRecord previousRecord = _recordHead._previousWatch;
+    _DirtyCheckingRecord nextRecord = (_groupTail == null ? this : _groupTail)._recordTail._nextWatch;
+
+    if (previousRecord != null) previousRecord._nextWatch = nextRecord;
+    if (nextRecord != null) nextRecord._previousWatch = previousRecord;
+
+    var prevGroup = _groupPrevious;
+    var nextGroup = _groupNext;
+
+    if (prevGroup == null) _parentGroup._groupHead = nextGroup; else prevGroup._groupNext = nextGroup;
+    if (nextGroup == null) _parentGroup._groupTail = prevGroup; else nextGroup._groupPrevious = prevGroup;
   }
 
   _recordAdd(_DirtyCheckingRecord record) {
@@ -61,6 +103,8 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
 
     _recordTail = record;
 
+    if (previous == marker) _recordRemove(marker);
+
     return record;
   }
 
@@ -69,7 +113,6 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
     _DirtyCheckingRecord next = record._nextWatch;
 
     if (record == _recordHead && record == _recordTail) {
-      throw 'testRemove1';
       // we are the last one, must leave marker behind.
       _recordHead = _recordTail = marker;
       marker._nextWatch = next;
@@ -82,10 +125,6 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
       if (previous != null) previous._nextWatch = next;
       if (next != null) next._previousWatch = previous;
     }
-  }
-
-  ChangeDetector<H> newGroup() {
-    throw 'testNewGroup';
   }
 }
 
