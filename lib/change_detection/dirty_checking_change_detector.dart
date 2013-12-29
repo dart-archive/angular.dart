@@ -52,6 +52,9 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
     if (_parentGroup == null) {
       _recordHead = _recordTail = marker;
     } else {
+      // we need to find the tail of previous record
+      // If we are first then it is the tail of the parent group
+      // otherwise it is the tail of the previous group
       DirtyCheckingChangeDetectorGroup groupTail = _parentGroup._groupTail;
       _recordTail = (groupTail == null ? _parentGroup : groupTail)._recordTail;
       _recordHead = _recordTail = _recordAdd(marker);
