@@ -33,7 +33,8 @@ class HttpBackend {
         mimeType: mimeType,
         requestHeaders: requestHeaders,
         sendData: sendData,
-        onProgress: onProgress).then((x) => c.complete(x));
+        onProgress: onProgress).then((x) => c.complete(x), 
+        onError: (e, stackTrace) => c.completeError(e, stackTrace));
     return c.future;
   }
 }
