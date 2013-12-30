@@ -153,10 +153,6 @@ main() => ddescribe('DirtyCheckingChangeDetector', () {
   describe('map watching', () {
 
   });
-
-  describe('remove', () {
-
-  });
 });
 
 class _User {
