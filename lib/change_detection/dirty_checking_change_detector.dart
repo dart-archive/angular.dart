@@ -37,6 +37,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
    * added the marker record gets removed, but it gets reinserted if all other
    * records are removed.
    */
+  //TODO(misko): the marker logic is wrong with respect to children tail.
   final _DirtyCheckingRecord marker = new _DirtyCheckingRecord.marker();
 
   /**

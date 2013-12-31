@@ -17,9 +17,17 @@ main() => ddescribe('WatchGroup', () {
     return currentAST;
   }
 
+  expectOrder(list) {
+    logger.clear();
+    watchGrp.detectChanges(); // Clear the initial queue
+    logger.clear();
+    watchGrp.detectChanges();
+    expect(logger).toEqual(list);
+  }
+
   beforeEach(inject((Logger _logger) {
     context = {};
-    watchGrp = new WatchGroup(new DirtyCheckingChangeDetector(), context);
+    watchGrp = new RootWatchGroup(new DirtyCheckingChangeDetector(), context);
     logger = _logger;
   }));
 
@@ -254,11 +262,99 @@ main() => ddescribe('WatchGroup', () {
     watchGrp.detectChanges();
     expect(logger).toEqual([]);
   });
+
+
+  describe('child group', () {
+    it('should remove all field watches in group and group\'s children', () {
+      watchGrp.watch(parse('a'), (v, p, o) => logger('0a'));
+      var child1a = watchGrp.newGroup(new PrototypeMap(context));
+      var child1b = watchGrp.newGroup(new PrototypeMap(context));
+      var child2 = child1a.newGroup(new PrototypeMap(context));
+      child1a.watch(parse('a'), (v, p, o) => logger('1a'));
+      child1b.watch(parse('a'), (v, p, o) => logger('1b'));
+      watchGrp.watch(parse('a'), (v, p, o) => logger('0A'));
+      child1a.watch(parse('a'), (v, p, o) => logger('1A'));
+      child2.watch(parse('a'), (v, p, o) => logger('2A'));
+
+      // flush initial reaction functions
+      expect(watchGrp.detectChanges()).toEqual(6);
+      // expect(logger).toEqual(['0a', '0A', '1a', '1A', '2A', '1b']);
+      expect(logger).toEqual(['0a', '1a', '1b', '0A', '1A', '2A']); // we go by registration order
+      expect(watchGrp.fieldCost).toEqual(1);
+      expect(watchGrp.totalFieldCost).toEqual(4);
+      logger.clear();
+
+      context['a'] = 1;
+      expect(watchGrp.detectChanges()).toEqual(6);
+      expect(logger).toEqual(['0a', '0A', '1a', '1A', '2A', '1b']); // we go by group order
+      logger.clear();
+
+      context['a'] = 2;
+      child1a.remove(); // should also remove child2
+      expect(watchGrp.detectChanges()).toEqual(3);
+      expect(logger).toEqual(['0a', '0A', '1b']);
+      expect(watchGrp.fieldCost).toEqual(1);
+      expect(watchGrp.totalFieldCost).toEqual(2);
+    });
+
+    it('should remove all method watches in group and group\'s children', () {
+      context['my'] = new MyClass(logger);
+      AST countMethod = new MethodAST(parse('my'), 'count', []);
+      watchGrp.watch(countMethod, (v, p, o) => logger('0a'));
+      expectOrder(['0a']);
+
+      var child1a = watchGrp.newGroup(new PrototypeMap(context));
+      var child1b = watchGrp.newGroup(new PrototypeMap(context));
+      var child2 = child1a.newGroup(new PrototypeMap(context));
+      child1a.watch(countMethod, (v, p, o) => logger('1a'));
+      expectOrder(['0a', '1a']);
+      child1b.watch(countMethod, (v, p, o) => logger('1b'));
+      expectOrder(['0a', '1a', '1b']);
+      watchGrp.watch(countMethod, (v, p, o) => logger('0A'));
+      expectOrder(['0a', '0A', '1a', '1b']);
+      child1a.watch(countMethod, (v, p, o) => logger('1A'));
+      expectOrder(['0a', '0A', '1a', '1A', '1b']);
+      child2.watch(countMethod, (v, p, o) => logger('2A'));
+      expectOrder(['0a', '0A', '1a', '1A', '2A', '1b']);
+
+      // flush initial reaction functions
+      expect(watchGrp.detectChanges());//.toEqual(6); // TODO(Misko): this should be re-enabled.
+      expectOrder(['0a', '0A', '1a', '1A', '2A', '1b']);
+
+      child1a.remove(); // should also remove child2
+      expect(watchGrp.detectChanges()).toEqual(3);
+      expectOrder(['0a', '0A', '1b']);
+    });
+
+    it('should add watches within its own group', () {
+      context['my'] = new MyClass(logger);
+      AST countMethod = new MethodAST(parse('my'), 'count', []);
+      var ra = watchGrp.watch(countMethod, (v, p, o) => logger('a'));
+      var child = watchGrp.newGroup(new PrototypeMap(context));
+      var cb = child.watch(countMethod, (v, p, o) => logger('b'));
+
+      expectOrder(['a', 'b']);
+      expectOrder(['a', 'b']);
+
+      ra.remove();
+      expectOrder(['b']);
+
+      cb.remove();
+      expectOrder([]);
+
+      // TODO: add them back in wrong order, assert events in right order
+      cb = child.watch(countMethod, (v, p, o) => logger('b'));
+      ra = watchGrp.watch(countMethod, (v, p, o) => logger('a'));;
+      expectOrder(['a', 'b']);
+    });
+  });
+
 });
 
 class MyClass {
   final Logger logger;
   var valA;
+  int _count = 0;
 
   MyClass(this.logger);
 
@@ -266,6 +362,8 @@ class MyClass {
     logger('methodA($arg1) => $valA');
     return valA;
   }
+
+  count() => _count++;
 
   toString() => 'MyClass';
 }
