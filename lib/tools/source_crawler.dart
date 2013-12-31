@@ -2,7 +2,7 @@ library source_crawler;
 
 import 'package:analyzer/src/generated/ast.dart';
 
-typedef CompilationUnitVisitor(CompilationUnit cu);
+typedef CompilationUnitVisitor(CompilationUnit cu, String currentSrcPath);
 
 /**
  * Dart source file crawler. As it crawls Dart source, it calls

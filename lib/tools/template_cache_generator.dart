@@ -53,8 +53,8 @@ main(args) {
   var c = new SourceCrawlerImpl(packageRoots);
   var visitor =
       new TemplateCollectingVisitor(templates, blacklistedClasses, c);
-  c.crawl(entryPoint, (CompilationUnit compilationUnit) =>
-      visitor(compilationUnit));
+  c.crawl(entryPoint, (CompilationUnit compilationUnit, String srcPath) =>
+      visitor(compilationUnit, srcPath));
 
   var sink = new File(output).openWrite();
   return printTemplateCache(
@@ -110,7 +110,7 @@ class TemplateCollectingVisitor {
   TemplateCollectingVisitor(this.templates, this.blacklistedClasses,
       this.sourceCrawlerImpl);
 
-  call(CompilationUnit cu) {
+  call(CompilationUnit cu, String srcPath) {
     cu.declarations.forEach((CompilationUnitMember declaration) {
       // We only care about classes.
       if (declaration is! ClassDeclaration) return;

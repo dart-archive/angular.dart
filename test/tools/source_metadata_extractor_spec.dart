@@ -129,14 +129,14 @@ class MockDirectiveMetadataCollectingVisitor
 
   MockDirectiveMetadataCollectingVisitor(List<DirectiveMetadata> this.metadata);
 
-  call(CompilationUnit cu) {
+  call(CompilationUnit cu, String path) {
     // do nothing
   }
 }
 
 class MockSourceCrawler implements SourceCrawler {
 
-  void crawl(String entryPoint, visitor(CompilationUnit cu)) {
+  void crawl(String entryPoint, visitor(CompilationUnit cu, String path)) {
     // do nothing
   }
 }

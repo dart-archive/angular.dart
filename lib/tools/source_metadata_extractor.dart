@@ -123,7 +123,7 @@ String _maybeCamelCase(String s) => (s.indexOf('-') > -1) ? camelcase(s) : s;
 class DirectiveMetadataCollectingVisitor {
   List<DirectiveMetadata> metadata = <DirectiveMetadata>[];
 
-  call(CompilationUnit cu) {
+  call(CompilationUnit cu, String srcPath) {
     cu.declarations.forEach((CompilationUnitMember declaration) {
       // We only care about classes.
       if (declaration is! ClassDeclaration) return;
