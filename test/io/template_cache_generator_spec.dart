@@ -14,7 +14,7 @@ main() => describe('template_cache_generator', () {
     try {
       flush = generator.main(['test/io/test_files/templates/main.dart',
                       '${tmpDir.path}/generated.dart', 'generated', '%SYSTEM_PACKAGE_ROOT%',
-                      'test/io/test_files,rewritten', 'MyComponent3']);
+                      '/test/io/test_files,rewritten', 'MyComponent3']);
     } catch(_) {
       tmpDir.deleteSync(recursive: true);
       rethrow;
@@ -28,6 +28,7 @@ main() => describe('template_cache_generator', () {
          '\n'
          'primeTemplateCache(TemplateCache tc) {\n'
          'tc.put("rewritten/templates/main.html", new HttpResponse(200, r"""Hello World!"""));\n'
+         'tc.put("extra.html", new HttpResponse(200, r"""More Cached Goodness!"""));\n'
          '}');
     }).whenComplete(() {
       tmpDir.deleteSync(recursive: true);

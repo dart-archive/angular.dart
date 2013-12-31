@@ -130,7 +130,9 @@ class TemplateCollectingVisitor {
         }
       });
       if (cache && cacheUris.isNotEmpty) {
-        cacheUris.forEach((uri) => storeUriAsset(uri));
+        var file = new File(srcPath);
+        var currentSrcDir = file.parent.path;
+        cacheUris.forEach((uri) => storeUriAsset(uri, currentSrcDir));
       }
     });
   }
@@ -167,14 +169,22 @@ class TemplateCollectingVisitor {
     return cache;
   }
 
-  void storeUriAsset(String uri) {
-    String assetFileLocation =
-        uri.startsWith('package:') ?
-            sourceCrawlerImpl.resolvePackagePath(uri) : uri;
+  void storeUriAsset(String uri, String srcPath) {
+    String assetFileLocation = findAssetFileLocation(uri, srcPath);
     if (assetFileLocation == null) {
       print("Could not find asset for uri: $uri");
     } else {
       templates[uri] = assetFileLocation;
+    }
+  }
+
+  String findAssetFileLocation(String uri, String srcPath) {
+    if (uri.startsWith('package:')) {
+      return sourceCrawlerImpl.resolvePackagePath(uri);
+    } else if (uri.startsWith('/')) {
+      return '.${uri}';
+    } else {
+      return '${srcPath}/${uri}';
     }
   }
 
