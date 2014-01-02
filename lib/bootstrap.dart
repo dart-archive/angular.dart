@@ -46,7 +46,7 @@ Injector _defaultInjectorFactory(List<Module> modules) =>
  *     the root element is looked up usinge the [selector]. If selector can not
  *     identify a root, the root [HTTML] element is used for bootstraping.
  *   - [selector] Optional CSS selector used to locate the root element for the application.
- *   - [injectorFactor] Optinoal factory responsible for creating the injector.
+ *   - [injectorFactor] Optional factory responsible for creating the injector.
  *
  *
  *
