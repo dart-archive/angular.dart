@@ -123,7 +123,7 @@ class FilterFilter {
                              (a is String && b is String && a == b) ||
                              (a is num && b is num && a.isNaN && b.isNaN);
 
-  FilterFilter(Parser this._parser);
+  FilterFilter(this._parser);
 
   Equals _configureComparator(var comparatorExpression) {
     if (comparatorExpression == null || comparatorExpression == false) {
@@ -147,11 +147,9 @@ class FilterFilter {
       return false;
     } else if (item == null) {
       return what == '';
-    }
-    if (what is String && what.startsWith('!')) {
+    } else if (what is String && what.startsWith('!')) {
       return !_search(item, what.substring(1));
-    }
-    if (item is String) {
+    } else if (item is String) {
       return (what is String) && _stringComparator(item, what);
     } else if (item is bool) {
       if (what is bool) {
@@ -177,15 +175,13 @@ class FilterFilter {
   bool _search(var item, var what) {
     if (what is Map) {
       return what.keys.every((key) => _search(
-              (key == r'$') ? item : _parser(key).eval(item, null), what[key]));
+              (key == r'$') ? item : _parser(key).eval(item), what[key]));
+    } else if (item is Map) {
+      return item.keys.any((k) => !k.startsWith(r'$') && _search(item[k], what));
+    } else if (item is List) {
+      return item.any((i) => _search(i, what));
     } else {
-      if (item is Map) {
-        return item.keys.any((k) => !k.startsWith(r'$') && _search(item[k], what));
-      } else if (item is List) {
-        return item.any((i) => _search(i, what));
-      } else {
-        return _comparator(item, what);
-      }
+      return _comparator(item, what);
     }
   }
 

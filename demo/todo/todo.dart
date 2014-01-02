@@ -65,6 +65,7 @@ class TodoController {
     if (key == 'newItem') {
       return newItem;
     }
+    return null;
   }
 
   add() {
@@ -83,7 +84,7 @@ class TodoController {
   }
 
   String classFor(Item item) {
-    item.done ? 'done' : '';
+    return item.done ? 'done' : '';
   }
 
   int remaining() {

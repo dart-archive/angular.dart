@@ -27,6 +27,17 @@ main() {
     }));
 
 
+    it(r'should set create a list of items from iterable',
+        inject((Scope scope, Compiler compiler, Injector injector) {
+      var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
+      BlockFactory blockFactory = compiler(element);
+      Block block = blockFactory(injector, element);
+      scope.items = ['a', 'b'].map((i) => i); // makes an iterable
+      scope.$apply();
+      expect(element.text()).toEqual('ab');
+    }));
+
+
     it(r'should iterate over an array of objects', () {
       element = $compile(
         '<ul>' +

@@ -5,7 +5,6 @@ part of angular.core.dom;
 * It is not meant to be used directly by applications.  Instead
 * use the Cookies service.
 *
-* NOTE the Cookies service is not yet implemented.
 */
 @NgInjectableService()
 class BrowserCookies {
@@ -102,3 +101,33 @@ class BrowserCookies {
 
   get all => _updateLastCookies();
 }
+
+/**
+ *   Cookies service
+ */
+class Cookies {
+
+  BrowserCookies _browserCookies;
+
+  Cookies(BrowserCookies this._browserCookies);
+
+  /**
+   * Returns the value of given cookie key
+   */
+  operator[](name) => this._browserCookies[name];
+
+  /**
+   * Sets a value for given cookie key
+   */
+  operator[]=(name, value) {
+    this._browserCookies[name] = value;
+  }
+
+  /**
+   * Remove given cookie
+   */
+  remove(name) {
+    this._browserCookies[name] = null;
+  }
+}
+

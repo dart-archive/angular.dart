@@ -18,9 +18,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
    */
   Scope _childScope;
 
-  _NgUnlessIfAttrDirectiveBase(BoundBlockFactory this._boundBlockFactory,
-                               BlockHole this._blockHole,
-                               Scope this._scope);
+  _NgUnlessIfAttrDirectiveBase(this._boundBlockFactory, this._blockHole, this._scope);
 
   // Override in subclass.
   set condition(value);

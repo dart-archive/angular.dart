@@ -38,6 +38,7 @@ main() {
 
   scope['a'] = new ATest();
   scope['e1'] = new EqualsThrows();
+  scope['o'] = new OTest();
 
   compare(expr, idealFn) {
     var nf = new NumberFormat.decimalPattern();
@@ -63,6 +64,7 @@ main() {
 
   compare('a.b.c', (scope) => scope['a'].b.c);
   compare('e1.b', (scope) => scope['e1'].b);
+  compare('o.f()', (scope) => scope['o'].f());
   compare('null', (scope) => null);
   compare('x.b.c', (s, [l]) {
     if (l != null && l.containsKey('x')) s = l['x'];
@@ -81,6 +83,10 @@ class ATest {
 
 class BTest {
   var c = 6;
+}
+
+class OTest {
+  f() => 42;
 }
 
 class EqualsThrows {

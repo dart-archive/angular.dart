@@ -15,7 +15,7 @@ class BoundBlockFactory {
 
   Injector injector;
 
-  BoundBlockFactory(BlockFactory this.blockFactory, Injector this.injector);
+  BoundBlockFactory(this.blockFactory, this.injector);
 
   Block call(Scope scope) {
     return blockFactory(injector.createChild([new Module()..value(Scope, scope)]));
@@ -34,11 +34,10 @@ class BlockFactory {
   final Expando _expando;
 
 
-  BlockFactory(this.templateElements, this.directivePositions, this._perf, Expando this._expando);
+  BlockFactory(this.templateElements, this.directivePositions, this._perf, this._expando);
 
-  BoundBlockFactory bind(Injector injector) {
-    return new BoundBlockFactory(this, injector);
-  }
+  BoundBlockFactory bind(Injector injector) =>
+    new BoundBlockFactory(this, injector);
 
   Block call(Injector injector, [List<dom.Node> elements]) {
     if (elements == null) {
@@ -57,8 +56,7 @@ class BlockFactory {
 
   _link(Block block, List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
     var preRenderedIndexOffset = 0;
-    var directiveDefsByName = {
-    };
+    var directiveDefsByName = {};
 
     for (num i = 0, ii = directivePositions.length; i < ii;) {
       num index = directivePositions[i++];
@@ -259,7 +257,7 @@ class BlockCache {
 
   dom.NodeTreeSanitizer treeSanitizer;
 
-  BlockCache(Http this.$http, TemplateCache this.$templateCache, Compiler this.compiler, dom.NodeTreeSanitizer this.treeSanitizer);
+  BlockCache(this.$http, this.$templateCache, this.compiler, this.treeSanitizer);
 
   BlockFactory fromHtml(String html) {
     BlockFactory blockFactory = _blockFactoryCache.get(html);
@@ -296,7 +294,7 @@ class _ComponentFactory {
   Compiler compiler;
   var controller;
 
-  _ComponentFactory(this.element, Type this.type, NgComponent this.component, this.treeSanitizer);
+  _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer);
 
   dynamic call(Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http $http, TemplateCache $templateCache) {
     this.compiler = compiler;
@@ -310,11 +308,12 @@ class _ComponentFactory {
     // styles all over the page. We shouldn't be doing browsers work,
     // so change back to using @import once Chrome bug is fixed or a
     // better work around is found.
-    async.Future<String> cssFuture;
-    if (component.cssUrl != null) {
-      cssFuture = $http.getString(component.cssUrl, cache: $templateCache);
+    List<async.Future<String>> cssFutures = new List();
+    var cssUrls = component.allCssUrls;
+    if (cssUrls != null) {
+      cssUrls.forEach((css) => cssFutures.add( $http.getString(css, cache: $templateCache) ) );
     } else {
-      cssFuture = new async.Future.value(null);
+      cssFutures.add( new async.Future.value(null) );
     }
     var blockFuture;
     if (component.template != null) {
@@ -322,9 +321,10 @@ class _ComponentFactory {
     } else if (component.templateUrl != null) {
       blockFuture = $blockCache.fromUrl(component.templateUrl);
     }
-    TemplateLoader templateLoader = new TemplateLoader(cssFuture.then((String css) {
-      if (css != null) {
-        shadowDom.setInnerHtml('<style>$css</style>', treeSanitizer: treeSanitizer);
+    TemplateLoader templateLoader = new TemplateLoader( async.Future.wait(cssFutures).then((Iterable<String> cssList) {
+      if (cssList != null) {
+        var filteredCssList = cssList.where((css) => css != null );
+        shadowDom.setInnerHtml('<style>${filteredCssList.join('')}</style>', treeSanitizer: treeSanitizer);
       }
       if (blockFuture != null) {
         return blockFuture.then((BlockFactory blockFactory) => attachBlockToShadowDom(blockFactory));

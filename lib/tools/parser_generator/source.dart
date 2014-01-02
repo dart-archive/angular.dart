@@ -65,13 +65,13 @@ class Source {
 
 
 class ParenthesisSource extends Source {
-  toString([String indent='']) {
+  toString([String indent='', newLine=false, sep='']) {
     return '(' + super.toString(indent + '  ', true, ',') + ')';
   }
 }
 
 class MapSource extends Source {
-  toString([String indent='']) {
+  toString([String indent='', newLine=false, sep='']) {
     return '{' + super.toString(indent + '  ', true, ',') + '}';
   }
 }
@@ -80,13 +80,13 @@ class BodySource extends Source {
   BodySource() {
     //this('');
   }
-  toString([String indent='']) {
+  toString([String indent='', newLine=false, sep='']) {
     return '{${super.toString(indent + '  ', true)}\n$indent}';
   }
 }
 
 class StatementSource extends Source {
-  toString([String indent='']) {
+  toString([String indent='', newLine=false, sep='']) {
     return '${super.toString(indent + '  ')};';
   }
 }

@@ -45,7 +45,7 @@ class Scope implements Map {
   final NgZone _zone;
   final num _ttl;
   final Map<String, Object> _properties = {};
-  final List<_Watch> _watchers = [];
+  final _WatchList _watchers = new _WatchList();
   final Map<String, List<Function>> _listeners = {};
   final bool _isolate;
   final bool _lazy;
@@ -56,14 +56,14 @@ class Scope implements Map {
   Scope $root;
   num _nextId = 0;
   String _phase;
-  List<Function> _innerAsyncQueue;
-  List<Function> _outerAsyncQueue;
+  List _innerAsyncQueue;
+  List _outerAsyncQueue;
   Scope _nextSibling, _prevSibling, _childHead, _childTail;
   bool _skipAutoDigest = false;
   bool _disabled = false;
 
-  Scope(ExceptionHandler this._exceptionHandler, Parser this._parser,
-      ScopeDigestTTL ttl, NgZone this._zone, Profiler this._perf):
+  Scope(this._exceptionHandler, this._parser, ScopeDigestTTL ttl,
+      this._zone, this._perf):
         $parent = null, _isolate = false, _lazy = false, _ttl = ttl.ttl {
     _properties[r'this']= this;
     $root = this;
@@ -155,9 +155,8 @@ class Scope implements Map {
    *   This is usefull if we expect that the bindings in the scope are constant and there is no need
    *   to check them on each digest. The digest can be forced by marking it [$dirty].
    */
-  $new({bool isolate: false, bool lazy: false}) {
-    return new Scope._child(this, isolate, lazy, _perf);
-  }
+  $new({bool isolate: false, bool lazy: false}) =>
+    new Scope._child(this, isolate, lazy, _perf);
 
   /**
    * *EXPERIMENTAL:* This feature is experimental. We reserve the right to change or delete it.
@@ -209,11 +208,7 @@ class Scope implements Map {
     }
     var watcher = new _Watch(_compileToFn(listener), _initWatchVal,
         _compileToFn(watchExpression), watchStr);
-
-    // we use unshift since we use a while loop in $digest for speed.
-    // the while loop reads in reverse order.
-    _watchers.insert(0, watcher);
-
+    _watchers.addLast(watcher);
     return () => _watchers.remove(watcher);
   }
 
@@ -271,18 +266,42 @@ class Scope implements Map {
   $watchCollection(obj, listener, [String expression, bool shallow=false]) {
     var oldValue;
     var newValue;
-    num changeDetected = 0;
+    int changeDetected = 0;
     Function objGetter = _compileToFn(obj);
     List internalArray = [];
     Map internalMap = {};
-    num oldLength = 0;
+    int oldLength = 0;
+    int newLength;
+    var key;
+    List keysToRemove = [];
+    Function detectNewKeys = (key, value) {
+      newLength++;
+      if (oldValue.containsKey(key)) {
+        if (!_identical(oldValue[key], value)) {
+          changeDetected++;
+          oldValue[key] = value;
+        }
+      } else {
+        oldLength++;
+        oldValue[key] = value;
+        changeDetected++;
+      }
+    };
+    Function findMissingKeys = (key, _) {
+      if (!newValue.containsKey(key)) {
+        oldLength--;
+        keysToRemove.add(key);
+      }
+    };
+
+    Function removeMissingKeys = (k) => oldValue.remove(k);
 
     var $watchCollectionWatch;
 
     if (shallow) {
       $watchCollectionWatch = (_) {
         newValue = objGetter(this);
-        var newLength = newValue == null ? 0 : newValue.length;
+        newLength = newValue == null ? 0 : newValue.length;
         if (newLength != oldLength) {
           oldLength = newLength;
           changeDetected++;
@@ -296,14 +315,13 @@ class Scope implements Map {
     } else {
       $watchCollectionWatch = (_) {
         newValue = objGetter(this);
-        var newLength, key;
 
         if (newValue is! Map && newValue is! List) {
           if (!_identical(oldValue, newValue)) {
             oldValue = newValue;
             changeDetected++;
           }
-        } else if (newValue is List) {
+        } else if (newValue is Iterable) {
           if (!_identical(oldValue, internalArray)) {
             // we are transitioning from something which was not an array into array.
             oldValue = internalArray;
@@ -320,9 +338,9 @@ class Scope implements Map {
           }
           // copy the items to oldValue and look for changes.
           for (var i = 0; i < newLength; i++) {
-            if (!_identical(oldValue[i], newValue[i])) {
+            if (!_identical(oldValue[i], newValue.elementAt(i))) {
               changeDetected++;
-              oldValue[i] = newValue[i];
+              oldValue[i] = newValue.elementAt(i);
             }
           }
         } else { // Map
@@ -334,33 +352,13 @@ class Scope implements Map {
           }
           // copy the items to oldValue and look for changes.
           newLength = 0;
-          newValue.forEach((key, value) {
-            newLength++;
-            if (oldValue.containsKey(key)) {
-              if (!_identical(oldValue[key], value)) {
-                changeDetected++;
-                oldValue[key] = value;
-              }
-            } else {
-              oldLength++;
-              oldValue[key] = value;
-              changeDetected++;
-            }
-
-          });
+          newValue.forEach(detectNewKeys);
           if (oldLength > newLength) {
             // we used to have more keys, need to find them and destroy them.
             changeDetected++;
-            var keysToRemove = [];
-            oldValue.forEach((key, _) {
-              if (!newValue.containsKey(key)) {
-                oldLength--;
-                keysToRemove.add(key);
-              }
-            });
-            keysToRemove.forEach((k) {
-              oldValue.remove(k);
-            });
+            oldValue.forEach(findMissingKeys);
+            keysToRemove.forEach(removeMissingKeys);
+            keysToRemove.clear();
           }
         }
         return changeDetected;
@@ -401,121 +399,193 @@ class Scope implements Map {
   }
 
   $digest() {
-    var innerAsyncQueue = _innerAsyncQueue;
-    int length;
-    _Watch lastDirtyWatch = null;
-    _Watch lastLoopLastDirtyWatch;
-    int _ttlLeft = _ttl;
-    List<List<String>> watchLog = [];
-    List<_Watch> watchers;
-    _Watch watch;
-    Scope next, current, target = this;
-
-    _beginPhase('\$digest');
     try {
-      int watcherCount;
-      int scopeCount;
-      do { // "while dirty" loop
-        lastLoopLastDirtyWatch = lastDirtyWatch;
-        lastDirtyWatch = null;
-        current = target;
-        //asyncQueue = current._asyncQueue;
-        //dump('aQ: ${asyncQueue.length}');
-
-        int timerId;
-        while(innerAsyncQueue.length > 0) {
-          try {
-            var workFn = innerAsyncQueue.removeAt(0);
-            assert((timerId = _perf.startTimer('ng.innerAsync', _source(workFn))) != false);
-            $root.$eval(workFn);
-          } catch (e, s) {
-            _exceptionHandler(e, s);
-          } finally {
-            assert(_perf.stopTimer(timerId) != false);
-          }
-        }
-
-        watcherCount = 0;
-        scopeCount = 0;
-        assert((timerId = _perf.startTimer('ng.dirty_check', _ttl-_ttlLeft)) != false);
-        digestLoop:
-        do { // "traverse the scopes" loop
-          scopeCount++;
-          if ((watchers = current._watchers) != null) {
-            // process our watches
-            length = watchers.length;
-            watcherCount += length;
-            while (length-- > 0) {
-              try {
-                watch = watchers[length];
-                if (identical(lastLoopLastDirtyWatch, watch)) {
-                  break digestLoop;
-                }
-                var value = watch.get(current);
-                var last = watch.last;
-                if (!_identical(value, last)) {
-                  lastDirtyWatch = watch;
-                  lastLoopLastDirtyWatch = null;
-                  watch.last = value;
-                  var fireTimer;
-                  assert((fireTimer = _perf.startTimer('ng.fire', watch.exp)) != false);
-                  watch.fn(value, ((last == _initWatchVal) ? value : last), current);
-                  assert(_perf.stopTimer(fireTimer) != false);
-                }
-              } catch (e, s) {
-                _exceptionHandler(e, s);
-              }
-            }
-          }
-
-          // Insanity Warning: scope depth-first traversal
-          // yes, this code is a bit crazy, but it works and we have tests to prove it!
-          // this piece should be kept in sync with the traversal in $broadcast
-          Scope childHead = current._childHead;
-          while (childHead != null && childHead._disabled) {
-            childHead = childHead._nextSibling;
-          }
-          if (childHead == null) {
-            if (current == target) {
-              next = null;
-            } else {
-              next = current._nextSibling;
-              if (next == null) {
-                while(current != target && (next = current._nextSibling) == null) {
-                  current = current.$parent;
-                }
-              }
-            }
-          } else {
-            if (childHead._lazy) childHead._disabled = true;
-            next = childHead;
-          }
-        } while ((current = next) != null);
-
-        assert(_perf.stopTimer(timerId) != false);
-        if(lastDirtyWatch != null && (_ttlLeft--) == 0) {
-          throw '$_ttl \$digest() iterations reached. Aborting!\n' +
-              'Watchers fired in the last 5 iterations: ${_toJson(watchLog)}';
-        }
-      } while (lastDirtyWatch != null || innerAsyncQueue.length > 0);
-      _perf.counters['ng.scope.watchers'] = watcherCount;
-      _perf.counters['ng.scopes'] = scopeCount;
-
-      while(_outerAsyncQueue.length > 0) {
-        var syncTimer;
-        try {
-          var workFn = _outerAsyncQueue.removeAt(0);
-          assert((syncTimer = _perf.startTimer('ng.outerAsync', _source(workFn))) != false);
-          $root.$eval(workFn);
-        } catch (e, s) {
-          _exceptionHandler(e, s);
-        } finally {
-          assert(_perf.stopTimer(syncTimer) != false);
-        }
-      }
+      _beginPhase('\$digest');
+      _digestWhileDirtyLoop();
+    } catch (e, s) {
+      _exceptionHandler(e, s);
     } finally {
       _clearPhase();
     }
+  }
+
+
+  _digestWhileDirtyLoop() {
+    _digestHandleQueue('ng.innerAsync', _innerAsyncQueue);
+
+    int timerId;
+    assert((timerId = _perf.startTimer('ng.dirty_check', 0)) != false);
+    _Watch lastDirtyWatch = _digestComputeLastDirty();
+    assert(_perf.stopTimer(timerId) != false);
+
+    if (lastDirtyWatch == null) {
+      _digestHandleQueue('ng.outerAsync', _outerAsyncQueue);
+      return;
+    }
+
+    List<List<String>> watchLog = [];
+    for (int iteration = 1, ttl = _ttl; iteration < ttl; iteration++) {
+      _Watch stopWatch = _digestHandleQueue('ng.innerAsync', _innerAsyncQueue)
+          ? null  // Evaluating async work requires re-evaluating all watchers.
+          : lastDirtyWatch;
+      lastDirtyWatch = null;
+
+      List<String> expressionLog;
+      if (ttl - iteration <= 3) {
+        expressionLog = <String>[];
+        watchLog.add(expressionLog);
+      }
+
+      int timerId;
+      assert((timerId = _perf.startTimer('ng.dirty_check', iteration)) != false);
+      lastDirtyWatch = _digestComputeLastDirtyUntil(stopWatch, expressionLog);
+      assert(_perf.stopTimer(timerId) != false);
+
+      if (lastDirtyWatch == null) {
+        _digestComputePerfCounters();
+        _digestHandleQueue('ng.outerAsync', _outerAsyncQueue);
+        return;
+      }
+    }
+
+    // I've seen things you people wouldn't believe. Attack ships on fire
+    // off the shoulder of Orion. I've watched C-beams glitter in the dark
+    // near the Tannhauser Gate. All those moments will be lost in time,
+    // like tears in rain. Time to die.
+    throw '$_ttl \$digest() iterations reached. Aborting!\n'
+          'Watchers fired in the last ${watchLog.length} iterations: '
+          '${_toJson(watchLog)}';
+  }
+
+
+  bool _digestHandleQueue(String timerName, List queue) {
+    if (queue.isEmpty) {
+      return false;
+    }
+    do {
+      var timerId;
+      try {
+        var workFn = queue.removeAt(0);
+        assert((timerId = _perf.startTimer(timerName, _source(workFn))) != false);
+        $root.$eval(workFn);
+      } catch (e, s) {
+        _exceptionHandler(e, s);
+      } finally {
+        assert(_perf.stopTimer(timerId) != false);
+      }
+    } while (queue.isNotEmpty);
+    return true;
+  }
+
+
+  _Watch _digestComputeLastDirty() {
+    int watcherCount = 0;
+    int scopeCount = 0;
+    Scope scope = this;
+    do {
+      _WatchList watchers = scope._watchers;
+      watcherCount += watchers.length;
+      scopeCount++;
+      for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
+        var last = watch.last;
+        var value = watch.get(scope);
+        if (!_identical(value, last)) {
+          return _digestHandleDirty(scope, watch, last, value, null);
+        }
+      }
+    } while ((scope = _digestComputeNextScope(scope)) != null);
+    _digestUpdatePerfCounters(watcherCount, scopeCount);
+    return null;
+  }
+
+
+  _Watch _digestComputeLastDirtyUntil(_Watch stopWatch, List<String> log) {
+    int watcherCount = 0;
+    int scopeCount = 0;
+    Scope scope = this;
+    do {
+      _WatchList watchers = scope._watchers;
+      watcherCount += watchers.length;
+      scopeCount++;
+      for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
+        if (identical(stopWatch, watch)) return null;
+        var last = watch.last;
+        var value = watch.get(scope);
+        if (!_identical(value, last)) {
+          return _digestHandleDirty(scope, watch, last, value, log);
+        }
+      }
+    } while ((scope = _digestComputeNextScope(scope)) != null);
+    return null;
+  }
+
+
+  _Watch _digestHandleDirty(Scope scope, _Watch watch, last, value, List<String> log) {
+    _Watch lastDirtyWatch;
+    while (true) {
+      if (!_identical(value, last)) {
+        lastDirtyWatch = watch;
+        if (log != null) log.add(watch.exp == null ? '[unknown]' : watch.exp);
+        watch.last = value;
+        var fireTimer;
+        assert((fireTimer = _perf.startTimer('ng.fire', watch.exp)) != false);
+        watch.fn(value, identical(_initWatchVal, last) ? value : last, scope);
+        assert(_perf.stopTimer(fireTimer) != false);
+      }
+      watch = watch.next;
+      while (watch == null) {
+        scope = _digestComputeNextScope(scope);
+        if (scope == null) return lastDirtyWatch;
+        watch = scope._watchers.head;
+      }
+      last = watch.last;
+      value = watch.get(scope);
+    }
+  }
+
+
+  Scope _digestComputeNextScope(Scope scope) {
+    // Insanity Warning: scope depth-first traversal
+    // yes, this code is a bit crazy, but it works and we have tests to prove it!
+    // this piece should be kept in sync with the traversal in $broadcast
+    Scope target = this;
+    Scope childHead = scope._childHead;
+    while (childHead != null && childHead._disabled) {
+      childHead = childHead._nextSibling;
+    }
+    if (childHead == null) {
+      if (scope == target) {
+        return null;
+      } else {
+        Scope next = scope._nextSibling;
+        if (next == null) {
+          while (scope != target && (next = scope._nextSibling) == null) {
+            scope = scope.$parent;
+          }
+        }
+        return next;
+      }
+    } else {
+      if (childHead._lazy) childHead._disabled = true;
+      return childHead;
+    }
+  }
+
+
+  void _digestComputePerfCounters() {
+    int watcherCount = 0, scopeCount = 0;
+    Scope scope = this;
+    do {
+      scopeCount++;
+      watcherCount += scope._watchers.length;
+    } while ((scope = _digestComputeNextScope(scope)) != null);
+    _digestUpdatePerfCounters(watcherCount, scopeCount);
+  }
+
+
+  void _digestUpdatePerfCounters(int watcherCount, int scopeCount) {
+    _perf.counters['ng.scope.watchers'] = watcherCount;
+    _perf.counters['ng.scopes'] = scopeCount;
   }
 
 
@@ -532,7 +602,7 @@ class Scope implements Map {
 
 
   $eval(expr, [locals]) {
-    return relaxFnArgs(_compileToFn(expr))(this, locals);
+    return relaxFnArgs(_compileToFn(expr))(locals == null ? this : new ScopeLocals(this, locals));
   }
 
 
@@ -706,17 +776,73 @@ class Scope implements Map {
   }
 }
 
-var _initWatchVal = new Object();
+@proxy
+class ScopeLocals implements Scope, Map {
+  static wrapper(dynamic scope, Map<String, Object> locals) => new ScopeLocals(scope, locals);
+
+  dynamic _scope;
+  Map<String, Object> _locals;
+
+  ScopeLocals(this._scope, this._locals);
+
+  operator []=(String name, value) => _scope[name] = value;
+  operator [](String name) => (_locals.containsKey(name) ? _locals : _scope)[name];
+
+  noSuchMethod(Invocation invocation) => mirror.reflect(_scope).delegate(invocation);
+}
+
+class _InitWatchVal { const _InitWatchVal(); }
+const _initWatchVal = const _InitWatchVal();
 
 class _Watch {
-  Function fn;
-  dynamic last;
-  Function get;
-  String exp;
+  final Function fn;
+  final Function get;
+  final String exp;
+  var last;
 
-  _Watch(fn, this.last, getFn, this.exp) {
-    this.fn = relaxFnArgs3(fn);
-    this.get = relaxFnArgs1(getFn);
+  _Watch previous;
+  _Watch next;
+
+  _Watch(fn, this.last, getFn, this.exp)
+      : this.fn  = relaxFnArgs3(fn)
+      , this.get = relaxFnArgs1(getFn);
+}
+
+class _WatchList {
+  int length = 0;
+  _Watch head;
+  _Watch tail;
+
+  void addLast(_Watch watch) {
+    assert(watch.previous == null);
+    assert(watch.next == null);
+    if (tail == null) {
+      tail = head = watch;
+    } else {
+      watch.previous = tail;
+      tail.next = watch;
+      tail = watch;
+    }
+    length++;
+  }
+
+  void remove(_Watch watch) {
+    if (watch == head) {
+      _Watch next = watch.next;
+      if (next == null) tail = null;
+      else next.previous = null;
+      head = next;
+    } else if (watch == tail) {
+      _Watch previous = watch.previous;
+      previous.next = null;
+      tail = previous;
+    } else {
+      _Watch next = watch.next;
+      _Watch previous = watch.previous;
+      previous.next = next;
+      next.previous = previous;
+    }
+    length--;
   }
 }
 
@@ -748,6 +874,7 @@ String _source(obj) {
       try {
         return "FN: ${m.function.source}";
       } on NoSuchMethodError catch (e) {
+      } on UnimplementedError catch (e) {
       }
     }
   }

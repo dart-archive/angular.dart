@@ -15,14 +15,16 @@ import 'package:angular/tools/parser_generator/dart_code_gen.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 
 main(args) {
-  if (args.length < 6) {
+  if (args.length < 5) {
     print('Usage: expression_extractor file_to_scan html_root header_file '
-          'footer_file output package_roots+');
+          'footer_file output [package_roots+]');
     exit(0);
   }
   IoService ioService = new IoServiceImpl();
 
-  var sourceCrawler = new SourceCrawlerImpl(args.sublist(2));
+  var packageRoots =
+      (args.length < 6) ? [Platform.packageRoot] : args.sublist(5);
+  var sourceCrawler = new SourceCrawlerImpl(packageRoots);
   var sourceMetadataExtractor = new SourceMetadataExtractor(sourceCrawler);
   List<DirectiveInfo> directives =
       sourceMetadataExtractor.gatherDirectiveInfo(args[0]);

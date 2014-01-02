@@ -1,4 +1,54 @@
-<a name="0.9.2"></a>
+<a name="0.9.3"></a>
+# v0.9.3 reverse-telekinesis (2013-12-16)
+
+### WARNING
+
+We reserve the right to change the APIs in v.0.9.x versions.
+
+## Bug Fixes
+
+- **expression_extractor:**
+  - support for inline templates
+  ([898ec6d8](https://github.com/angular/angular.dart/commit/898ec6d89acb5ff64991a0c641e8874791d378dc),
+   [#186](https://github.com/angular/angular.dart/issues/186))
+  - do not fail when source file doesn't exist
+  ([887e1bff](https://github.com/angular/angular.dart/commit/887e1bffab6a7f3810e2bb23b556cdc2e0a79ed5))
+- **ng-repeat:** ng-repeat support for Iterable
+  ([080bb0a6](https://github.com/angular/angular.dart/commit/080bb0a6062efe00dc393b3a8d0a19a3968d9ec8),
+   [#292](https://github.com/angular/angular.dart/issues/292))
+- **ng_model:** do not save/restore selection unnecessarily
+  ([3c805483](https://github.com/angular/angular.dart/commit/3c805483e45cc6a344b5a34c3ca4ccac509e2349),
+   [#264](https://github.com/angular/angular.dart/issues/264))
+- **scope:**
+  - log firing expressions in the watchLog
+  ([cfa97d68](https://github.com/angular/angular.dart/commit/cfa97d685c8b12976ef1be407f4610e5641482c1),
+   [#258](https://github.com/angular/angular.dart/issues/258))
+  - remove GC pressure created by watchCollection getter
+  ([a435a8f2](https://github.com/angular/angular.dart/commit/a435a8f2867b5b7440a3769da4ea441fc0198832))
+- **todo demo:** Return the correct CSS class for TODO items in the demo.
+  ([217a57ec](https://github.com/angular/angular.dart/commit/217a57ecfe7a897a1bb79eef686dcfb9a7b6498e))
+
+
+## Features
+
+- **NgComponent:** Support multiple css files
+  ([6c6151cf](https://github.com/angular/angular.dart/commit/6c6151cf2ad45c4891ea14669cbfe942f79655d6))
+- **cookies:** Basic Cookies service/wrapper over BrowserCookies
+  ([6efde83e](https://github.com/angular/angular.dart/commit/6efde83edf5df79f9c7fa6ccf21ae51933c72938))
+- **mocks:** provide support for child scope parameters in compile
+  ([2d2c5219](https://github.com/angular/angular.dart/commit/2d2c521981ed04789f82fd182c0248abd89ebd79))
+- **ng-model:** implemented support for input[type=password]
+  ([058c8ee4](https://github.com/angular/angular.dart/commit/058c8ee4017f45c46017c99d64fc192e6fab0137))
+
+
+## Performance Improvements
+
+- **bracket:** Optimize calling methods on objects.
+  ([525eeadb](https://github.com/angular/angular.dart/commit/525eeadbe00c23a68ce5b616199df40c40ddb492))
+- **digest:** Use linked list for watchers
+  ([7b6b0e5d](https://github.com/angular/angular.dart/commit/7b6b0e5dedb53c73fff668ca02909a2f709d4c29))
+
+
 # v0.9.2 limited-omnipotence (2013-12-02)
 
 ### WARNING

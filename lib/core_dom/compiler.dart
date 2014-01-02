@@ -9,8 +9,7 @@ class Compiler {
 
   DirectiveSelector selector;
 
-  Compiler(DirectiveMap this.directives, Profiler this._perf, Parser this._parser,
-           Expando this._expando) {
+  Compiler(this.directives, this._perf, this._parser, this._expando) {
     selector = directiveSelectorFactory(directives);
   }
 
@@ -202,7 +201,7 @@ class Compiler {
           break;
         case '&':
           mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
-            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope));
+            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope, ScopeLocals.wrapper));
           };
           break;
       }
@@ -210,3 +209,4 @@ class Compiler {
     });
   }
 }
+

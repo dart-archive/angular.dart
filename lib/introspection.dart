@@ -48,10 +48,10 @@ List<dom.Element> ngQuery(dom.Node element, String selector, [String containsTex
   var children = [element];
   while (!children.isEmpty) {
     var child = children.removeAt(0);
-    child.queryAll(selector).forEach((e) {
+    child.querySelectorAll(selector).forEach((e) {
       if (containsText == null || e.text.contains(containsText)) list.add(e);
     });
-    child.queryAll('*').forEach((e) {
+    child.querySelectorAll('*').forEach((e) {
       if (e.shadowRoot != null) children.add(e.shadowRoot);
     });
   }

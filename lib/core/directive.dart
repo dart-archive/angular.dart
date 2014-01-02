@@ -172,7 +172,7 @@ abstract class NgAnnotation {
  * ask for any injectable object in their constructor. Components
  * can also ask for other components or directives declared on the DOM element.
  *
- * Components can implement [NgAttachAware], [NgDetachAware], [NgShadowRoot] and
+ * Components can implement [NgAttachAware], [NgDetachAware], [NgShadowRootAware] and
  * declare these optional methods:
  *
  * * `attach()` - Called on first [Scope.$digest()].
@@ -197,6 +197,18 @@ class NgComponent extends NgAnnotation {
   final String cssUrl;
 
   /**
+   * A list of CSS URLs to load into the shadow DOM.
+   */
+  final List<String> cssUrls;
+
+  List<String> get allCssUrls {
+    if (cssUrls == null && cssUrl == null) return null;
+    if (cssUrls == null && cssUrl != null) return [cssUrl];
+    if (cssUrls != null && cssUrl == null) return cssUrls;
+    if (cssUrls != null && cssUrl != null) return [cssUrl]..addAll(cssUrls);
+  }
+
+/**
    * Set the shadow root applyAuthorStyles property. See shadow-DOM
    * documentation for further details.
    */
@@ -212,6 +224,7 @@ class NgComponent extends NgAnnotation {
     this.template,
     this.templateUrl,
     this.cssUrl,
+    this.cssUrls,
     this.applyAuthorStyles,
     this.resetStyleInheritance,
     publishAs,
@@ -234,7 +247,7 @@ class NgComponent extends NgAnnotation {
       new NgComponent(
           template: this.template,
           templateUrl: this.templateUrl,
-          cssUrl: this.cssUrl,
+          cssUrls: this.cssUrls,
           applyAuthorStyles: this.applyAuthorStyles,
           resetStyleInheritance: this.resetStyleInheritance,
           publishAs: this.publishAs,

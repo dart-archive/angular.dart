@@ -12,6 +12,7 @@ class DartGetterSetterGen implements ParserBackend {
 
   binaryFn(left, String fn, right) => new _AST();
   unaryFn(String fn, right)  => new _AST();
+  ternaryFn(Expression cond, Expression _true, Expression _false) => new _AST();
   assignment(left, right, evalError)  => new _AST();
   multipleStatements(List statements)  => new _AST();
   arrayDeclaration(List elementFns)  => new _AST();
@@ -21,6 +22,13 @@ class DartGetterSetterGen implements ParserBackend {
   value(v) => new _AST();
   zero() => new _AST();
   functionCall(fn, fnName, List argsFn, evalError) => new _AST();
+  filter(String filterName,
+      Expression leftHandSide,
+      List<Expression> parameters,
+      Function evalError) => new _AST();
+
+  setter(String path) => throw new UnimplementedError();
+  getter(String path) => throw new UnimplementedError();
 
 
   fieldAccess(object, String field) {
@@ -39,7 +47,7 @@ class ParserGetterSetter {
   DynamicParser parser;
   DartGetterSetterGen backend;
 
-  ParserGetterSetter(DynamicParser this.parser, ParserBackend this.backend);
+  ParserGetterSetter(this.parser, this.backend);
 
   generateParser(List<String> exprs) {
     exprs.forEach((expr) {

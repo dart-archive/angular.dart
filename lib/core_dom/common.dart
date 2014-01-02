@@ -19,8 +19,7 @@ class DirectiveRef {
 
   BlockFactory blockFactory;
 
-  DirectiveRef(dom.Node this.element, Type this.type, NgAnnotation this.annotation,
-               [ String this.value ]);
+  DirectiveRef(this.element, this.type, this.annotation, [ this.value ]);
 
   String toString() {
     var html = element is dom.Element ? (element as dom.Element).outerHtml : element.nodeValue;

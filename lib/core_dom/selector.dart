@@ -32,7 +32,7 @@ class _Directive {
   final Type type;
   final NgAnnotation annotation;
 
-  _Directive(Type this.type, NgAnnotation this.annotation);
+  _Directive(this.type, this.annotation);
 }
 
 
@@ -40,7 +40,7 @@ class _ContainsSelector {
   NgAnnotation annotation;
   RegExp regexp;
 
-  _ContainsSelector(NgAnnotation this.annotation, String regexp) {
+  _ContainsSelector(this.annotation, String regexp) {
     this.regexp = new RegExp(regexp);
   }
 }
@@ -87,7 +87,7 @@ class _ElementSelector {
   Map<String, Map<String, _Directive>> attrValueMap = new Map<String, Map<String, _Directive>>();
   Map<String, Map<String, _ElementSelector>> attrValuePartialMap = new Map<String, Map<String, _ElementSelector>>();
 
-  _ElementSelector(String this.name);
+  _ElementSelector(this.name);
 
   addDirective(List<_SelectorPart> selectorParts, _Directive directive) {
     var selectorPart = selectorParts.removeAt(0);
@@ -312,6 +312,5 @@ int _directivePriority(NgAnnotation annotation) {
   throw "Unexpected Type: ${annotation}.";
 }
 
-int _priorityComparator(DirectiveRef a, DirectiveRef b) {
-  return _directivePriority(b.annotation) - _directivePriority(a.annotation);
-}
+int _priorityComparator(DirectiveRef a, DirectiveRef b) =>
+  _directivePriority(b.annotation) - _directivePriority(a.annotation);

@@ -123,7 +123,7 @@ abstract class AbstractNgRepeatDirective  {
   Map<Object, _Row> _rows = new Map<dynamic, _Row>();
   Function _trackByIdFn = (key, value, index) => value;
   Function _removeWatch = () => null;
-  List _lastCollection;
+  Iterable _lastCollection;
 
   AbstractNgRepeatDirective(BlockHole this._blockHole,
                             BoundBlockFactory this._boundBlockFactory,
@@ -151,7 +151,7 @@ abstract class AbstractNgRepeatDirective  {
     _removeWatch = _scope.$watchCollection(_listExpr, _onCollectionChange, value, _shalow);
   }
 
-  List<_Row> _computeNewRows(collection, trackById) {
+  List<_Row> _computeNewRows(Iterable collection, trackById) {
     List<_Row> newRowOrder = [];
     // Same as lastBlockMap but it has the current state. It will become the
     // lastBlockMap on the next iteration.
@@ -160,7 +160,7 @@ abstract class AbstractNgRepeatDirective  {
     // locate existing items
     var length = newRowOrder.length = collection.length;
     for (var index = 0; index < length; index++) {
-      var value = collection[index];
+      var value = collection.elementAt(index);
       trackById = _trackByIdFn(index, value, index);
       if (_rows.containsKey(trackById)) {
         var row = _rows[trackById];
@@ -191,7 +191,7 @@ abstract class AbstractNgRepeatDirective  {
     return newRowOrder;
   }
 
-  _onCollectionChange(collection) {
+  _onCollectionChange(Iterable collection) {
     var previousNode = _blockHole.elements[0],     // current position of the node
         nextNode,
         childScope,
@@ -200,7 +200,7 @@ abstract class AbstractNgRepeatDirective  {
         arrayChange = _lastCollection != collection;
 
     if (arrayChange) { _lastCollection = collection; }
-    if (collection is! List) {
+    if (collection is! Iterable) {
       collection = [];
     }
 
@@ -208,7 +208,7 @@ abstract class AbstractNgRepeatDirective  {
 
     for (var index = 0, length = collection.length; index < length; index++) {
       var key = index;
-      var value = collection[index];
+      var value = collection.elementAt(index);
       _Row row = newRowOrder[index];
 
       if (row.startNode != null) {
@@ -250,11 +250,11 @@ abstract class AbstractNgRepeatDirective  {
       if (row.startNode == null) {
         _rows[row.id] = row;
         var block = _boundBlockFactory(childScope);
-        row.block = block;
-        row.scope = childScope;
-        row.elements = block.elements;
-        row.startNode = row.elements[0];
-        row.endNode = row.elements[row.elements.length - 1];
+        row..block = block
+          ..scope = childScope
+          ..elements = block.elements
+          ..startNode = row.elements[0]
+          ..endNode = row.elements[row.elements.length - 1];
         block.insertAfter(cursor);
       }
       cursor = row.block;

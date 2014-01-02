@@ -34,13 +34,10 @@ class InputSelectDirective implements NgAttachAware {
   _SelectMode _mode = new _SelectMode(null, null, null);
   bool _dirty = false;
 
-  InputSelectDirective(dom.Element this._selectElement,
-                       NodeAttrs this._attrs,
-                       NgModel this._model,
-                       Scope this._scope) {
+  InputSelectDirective(dom.Element this._selectElement, this._attrs, this._model, this._scope) {
     _unknownOption.value = '?';
     _unknownOption.text = ''; // Explicit due to dartbug.com/14407
-    _selectElement.queryAll('option').forEach((o) {
+    _selectElement.querySelectorAll('option').forEach((o) {
       if (_nullOption == null && o.value == '') {
         _nullOption = o;
       }
@@ -95,8 +92,7 @@ class OptionValueDirective implements TextChangeListener, NgAttachAware, NgDetac
 
   Getter _ngValue;
 
-  OptionValueDirective(NodeAttrs this._attrs,
-                       InputSelectDirective this._inputSelectDirective) {
+  OptionValueDirective(this._attrs, this._inputSelectDirective) {
     if (_inputSelectDirective != null) {
       _inputSelectDirective.expando[_attrs.element] = this;
     }
@@ -122,9 +118,8 @@ class OptionValueDirective implements TextChangeListener, NgAttachAware, NgDetac
   }
 
   set ngValue(Getter value) => _ngValue = value;
-  get ngValue {
-    return _attrs['ng-value'] is String ? _ngValue() : (_attrs.element as dom.OptionElement).value;
-  }
+  get ngValue =>
+    _attrs['ng-value'] is String ? _ngValue() : (_attrs.element as dom.OptionElement).value;
 }
 
 class _SelectMode {
@@ -132,15 +127,13 @@ class _SelectMode {
   final dom.SelectElement select;
   final NgModel model;
 
-  _SelectMode(Expando<OptionValueDirective> this.expando,
-              dom.SelectElement this.select,
-              NgModel this.model);
+  _SelectMode(this.expando, this.select, this.model);
 
   onViewChange(event) {}
   onModelChange(value) {}
   destroy() {}
 
-  get _options => select.queryAll('option');
+  get _options => select.querySelectorAll('option');
   _forEachOption(fn, [quiteOnReturn = false]) {
     for(var os = _options, i = 0, ii = os.length; i < ii; i++) {
       var retValue = fn(os[i], i);
@@ -161,8 +154,8 @@ class _SingleSelectMode extends _SelectMode {
   _SingleSelectMode(Expando<OptionValueDirective> expando,
                     dom.SelectElement select,
                     NgModel model,
-                    dom.OptionElement this._nullOption,
-                    dom.OptionElement this._unknownOption
+                    this._nullOption,
+                    this._unknownOption
                     ): super(expando, select, model) {
   }
 

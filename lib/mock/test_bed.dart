@@ -17,27 +17,28 @@ class TestBed {
   List<Node> rootElements;
   Block rootBlock;
 
-  TestBed(
-      Injector this.injector,
-      Scope this.rootScope,
-      Compiler this.compiler,
-      Parser this.parser);
+  TestBed(this.injector, this.rootScope, this.compiler, this.parser);
 
 
   /**
-   * Use to compile HTML and activete its directives.
+   * Use to compile HTML and activate its directives.
    *
-   * If [html] parametr is:
+   * If [html] parameter is:
    *
    *   - [String] then treat it as HTML
    *   - [Node] then treat it as the root node
-   *   - [List<Node>] then treat it as a collection of nodse
+   *   - [List<Node>] then treat it as a collection of nods
    *
    * After the compilation the [rootElements] contains an array of compiled root nodes,
    * and [rootElement] contains the first element from the [rootElemets].
    *
+   * An option [scope] parameter can be supplied to link it with non root scope.
    */
-  Element compile(html) {
+  Element compile(html, {Scope scope}) {
+    var injector = this.injector;
+    if(scope != null) {
+      injector = injector.createChild([new Module()..value(Scope, scope)]);
+    }
     if (html is String) {
       rootElements = toNodeList(html);
     } else if (html is Node) {
@@ -78,7 +79,7 @@ class TestBed {
    * appropriate DOM event. Used when testing [SELECT] controlls in forms.
    */
   selectOption(element, text) {
-    element.queryAll('option').forEach((o) => o.selected = o.text == text);
+    element.querySelectorAll('option').forEach((o) => o.selected = o.text == text);
     triggerEvent(element, 'change');
   }
 }

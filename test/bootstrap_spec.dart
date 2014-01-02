@@ -3,7 +3,7 @@ library bootstrap_spec;
 import '_specs.dart';
 
 main() => describe('bootstrap', () {
-  BodyElement body = window.document.query('body');
+  BodyElement body = window.document.querySelector('body');
 
   it('should default to whole page', () {
     body.innerHtml = '<div>{{"works"}}</div>';
@@ -23,7 +23,7 @@ main() => describe('bootstrap', () {
     body.setInnerHtml(
         '<div>{{ignor me}}<div ng-bind="\'works\'"></div></div>',
         treeSanitizer: new NullTreeSanitizer());
-    ngBootstrap(element:body.query('div[ng-bind]'));
+    ngBootstrap(element:body.querySelector('div[ng-bind]'));
     expect(body.text).toEqual('{{ignor me}}works');
   });
 });

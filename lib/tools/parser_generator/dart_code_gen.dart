@@ -7,33 +7,48 @@ import 'source.dart';
 
 Code VALUE_CODE = new Code("value");
 
-class Code implements ParserAST {
+typedef CodeAssign(Code c);
+
+class Code implements ParserAST, Expression {
   String id;
   String _exp;
   String simpleGetter;
-  Function assign;
-  Code(this._exp, [this.assign, this.simpleGetter]) {
+  CodeAssign _assign;
+
+  Code(this._exp, [this._assign, this.simpleGetter]) {
     id = _exp == null ? simpleGetter : _exp;
     if (id == null) {
         throw 'id is null';
     }
   }
 
-  get exp {
+  String get exp {
     if (_exp == null) {
       throw "Can not be used in an expression: $id";
     }
     return _exp;
   }
-  get assignable => assign != null;
+
+  get assignable => _assign != null;
+
+  // methods from Expression
+  Expression fieldHolder;
+  String fieldName;
+  bool get isFieldAccess => null;
+  void set exp(String s) => throw new UnimplementedError();
+  ParsedGetter get eval => throw new UnimplementedError();
+  ParsedSetter get assign => throw new UnimplementedError();
+  List get parts => throw new UnimplementedError();
+  set parts(List p) => throw new UnimplementedError();
+  bind(context, localsWrapper) => throw new UnimplementedError();
 
   Source toSource(SourceBuilder _) {
     return _('new Expression', _.parens(
-      _('(scope, [locals])', _.body(
+      _('(scope)', _.body(
           'return $exp;'
       )),
-      assignable ? _('(scope, value, [locals])', _.body(
-        'return ${assign(VALUE_CODE).exp};'
+      assignable ? _('(scope, value)', _.body(
+        'return ${_assign(VALUE_CODE).exp};'
       )) : 'null'
     ));
   }
@@ -43,8 +58,8 @@ class ThrowCode extends Code {
   ThrowCode(code): super('throw $code');
   Source toSource(SourceBuilder _) {
     return _('new Expression', _.parens(
-        _('(scope, [locals])', _.body()..source.addAll(exp.split('\n'))),
-        assignable ? _('(scope, value, [locals])', _.body()) : 'null'
+        _('(scope)', _.body()..source.addAll(exp.split('\n'))),
+        assignable ? _('(scope, value)', _.body()) : 'null'
     ));
   }
 }
@@ -54,8 +69,8 @@ class MultipleStatementCode extends Code {
 
   Source toSource(SourceBuilder _) {
     return _('new Expression', _.parens(
-        _('(scope, [locals])', _.body()..source.addAll(exp.split('\n'))),
-        assignable ? _('(scope, value, [locals])', _.body()) : 'null'
+        _('(scope)', _.body()..source.addAll(exp.split('\n'))),
+        assignable ? _('(scope, value)', _.body()) : 'null'
     ));
   }
 }
@@ -121,14 +136,13 @@ class GetterSetterGenerator {
 
     var keys = key.split('.');
     var lines = [
-        "$fnName(s, [l]) { // for $key"];
+        "$fnName(s) { // for $key"];
     _(line) => lines.add('  $line');
     for(var i = 0; i < keys.length; i++) {
       var k = keys[i];
       var sk = isReserved(k) ? "null" : "s.$k";
       if (i == 0) {
-        _('if (l != null && l.containsKey("${escape(k)}")) s = l["${escape(k)}"];');
-        _('else if (s != null ) s = s is Map ? s["${escape(k)}"] : $sk;');
+        _('if (s != null ) s = s is Map ? s["${escape(k)}"] : $sk;');
       } else {
         _('if (s != null ) s = s is Map ? s["${escape(k)}"] : $sk;');
       }
@@ -150,7 +164,7 @@ class GetterSetterGenerator {
     var fnName = "_set_${_flatten(key)}";
 
     var lines = [
-        "$fnName(s, v, [l]) { // for $key"];
+        "$fnName(s, v) { // for $key"];
     _(line) => lines.add('  $line');
     var keys = key.split('.');
     _(keys.length == 1 ? 'var n = s;' : 'var n;');
@@ -159,8 +173,7 @@ class GetterSetterGenerator {
     var nk = isReserved(k) ? "null" : "n.$k";
     if (keys.length > 1) {
       // locals
-      _('if (l != null) n = l["${escape(k)}"];');
-      _('if (l == null || (n == null && !l.containsKey("${escape(k)}"))) n = s is Map ? s["${escape(k)}"] : $sk;');
+      _('n = s is Map ? s["${escape(k)}"] : $sk;');
       _('if (n == null) n = s is Map ? (s["${escape(k)}"] = {}) : ($sk = {});');
     }
     for(var i = 1; i < keys.length - 1; i++) {
@@ -192,7 +205,10 @@ class DartCodeGen implements ParserBackend {
 
   GetterSetterGenerator _getterGen;
 
-  DartCodeGen(GetterSetterGenerator this._getterGen);
+  DartCodeGen(this._getterGen);
+
+  setter(String path) => throw new UnimplementedError();
+  getter(String path) => throw new UnimplementedError();
 
   // Returns the Dart code for a particular operator.
   _op(fn) => fn == "undefined" ? "null" : fn;
@@ -222,7 +238,7 @@ class DartCodeGen implements ParserBackend {
   }
 
   Code assignment(Code left, Code right, evalError) =>
-    left.assign(right);
+    left._assign(right);
 
   Code multipleStatements(List<Code >statements) {
     var code = "var ret, last;\n";
@@ -251,7 +267,7 @@ class DartCodeGen implements ParserBackend {
       var setterFnName = _getterGen.setter(field);
       return new Code("$setterFnName(${object.exp}, ${right.exp})");
     };
-    return new Code("$getterFnName/*field:$field*/(${object.exp}, null)", assign);
+    return new Code("$getterFnName/*field:$field*/(${object.exp})", assign);
   }
 
   Code object(List keyValues) =>
@@ -267,10 +283,10 @@ class DartCodeGen implements ParserBackend {
 
     var assign = (Code right) {
       var setterFnName = _getterGen.setter(key);
-      return new Code("${setterFnName}(scope, ${right.exp}, locals)", null, setterFnName);
+      return new Code("${setterFnName}(scope, ${right.exp})", null, setterFnName);
     };
 
-    return new Code("$getterFnName(scope, locals)", assign, getterFnName);
+    return new Code("$getterFnName(scope)", assign, getterFnName);
   }
 
   String _value(v) =>

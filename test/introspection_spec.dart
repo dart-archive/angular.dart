@@ -18,7 +18,7 @@ main() => describe('introspection', () {
 
   it('should select elements using CSS selector', () {
     var div = new Element.html('<div><p><span></span></p></div>');
-    var span = div.query('span');
+    var span = div.querySelector('span');
     var shadowRoot = span.createShadowRoot();
     shadowRoot.innerHtml = '<ul><li>stash</li><li>secret</li><ul>';
 

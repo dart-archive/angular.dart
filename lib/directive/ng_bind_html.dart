@@ -24,7 +24,7 @@ class NgBindHtmlDirective {
 
   dom.Element element;
 
-  NgBindHtmlDirective(dom.Element this.element);
+  NgBindHtmlDirective(this.element);
 
   /**
    * Parsed expression from the `ng-bind-html` attribute.  The result of this

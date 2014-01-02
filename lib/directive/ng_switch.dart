@@ -63,7 +63,7 @@ class NgSwitchDirective {
   Function onChange;
   Scope scope;
 
-  NgSwitchDirective(Scope this.scope) {
+  NgSwitchDirective(this.scope) {
     cases['?'] = <_Case>[];
   }
 
@@ -121,9 +121,7 @@ class NgSwitchWhenDirective {
   final BoundBlockFactory blockFactory;
   final Scope scope;
 
-  NgSwitchWhenDirective(NgSwitchDirective this.ngSwitch,
-      BlockHole this.hole, BoundBlockFactory this.blockFactory,
-      Scope this.scope);
+  NgSwitchWhenDirective(this.ngSwitch, this.hole, this.blockFactory, this.scope);
 
   set value(String value) =>
       ngSwitch.addCase('!$value', hole, blockFactory);
