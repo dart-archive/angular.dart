@@ -1,17 +1,28 @@
 import 'dart:io';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
-import 'package:angular/core/parser/parser_library.dart';
-import 'package:angular/tools/parser_generator/dart_code_gen.dart';
+import 'package:angular/core/module.dart';
+import 'package:angular/core/parser/parser.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
+
+class NullFilterMap implements FilterMap {
+  call(name) => null;
+  Type operator[](annotation) => null;
+  forEach(fn) { }
+  annotationsFor(type) => null;
+}
 
 main(arguments) {
   var isGetter = !arguments.isEmpty;
 
-  Module module = new Module()
-    ..type(ParserBackend, implementedBy: isGetter ? DartGetterSetterGen : DartCodeGen);
-
+  Module module = new Module()..type(Parser, implementedBy: DynamicParser);
+  if (isGetter) {
+    module.type(ParserBackend, implementedBy: DartGetterSetterGen);
+  } else {
+    module.type(ParserBackend, implementedBy: DynamicParserBackend);
+    module.type(FilterMap, implementedBy: NullFilterMap);
+  }
   Injector injector = new DynamicInjector(modules: [module],
       allowImplicitInjection: true);
 
@@ -23,12 +34,21 @@ main(arguments) {
       "const",
       "null",
       "[1, 2].length",
+
       "doesNotExist",
+      "doesNotExist()",
+      "doesNotExist(1)",
+      "doesNotExist(1, 2)",
+      "a.doesNotExist()",
+      "a.doesNotExist(1)",
+      "a.doesNotExist(1, 2)",
+
       "a.b.c",
       "x.b.c",
       "e1.b",
       "o.f()",
       "1", "-1", "+1",
+      "true?1",
       "!true",
       "3*4/2%5", "3+6-2",
       "2<3", "2>3", "2<=2", "2>=2",
@@ -77,7 +97,6 @@ main(arguments) {
       'a[x()]()',
       'boo',
       '[].count(',
-      'doesNotExist()',
       'false',
       'false && run()',
       '!false || true',
@@ -137,6 +156,7 @@ main(arguments) {
       '6[3]=2',
 
       'map.dot = 7',
+      'map.null',
       'exists(doesNotExist())',
       'doesNotExists(exists())',
       'a[0]()',

@@ -152,6 +152,11 @@ $(selector) {
   return new JQuery(selector);
 }
 
+
+class GetterSetter {
+  Getter getter(String key) => null;
+  Setter setter(String key) => null;
+}
 var getterSetter = new GetterSetter();
 
 class JQuery implements List<Node> {

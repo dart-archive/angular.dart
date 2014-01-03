@@ -8,7 +8,7 @@ int _endSymbolLength = _endSymbol.length;
 class Interpolation {
   final String template;
   final List<String> seperators;
-  final List<ParsedGetter> watchExpressions;
+  final List<Getter> watchExpressions;
   Function setter = (_) => _;
 
   Interpolation(this.template, this.seperators, this.watchExpressions);
@@ -58,14 +58,15 @@ class Interpolate {
     bool shouldAddSeparator = true;
     String exp;
     List<String> separators = [];
-    List<ParsedGetter> watchExpressions = [];
+    List<Getter> watchExpressions = [];
 
     while(index < length) {
       if ( ((startIndex = template.indexOf(_startSymbol, index)) != -1) &&
            ((endIndex = template.indexOf(_endSymbol, startIndex + _startSymbolLength)) != -1) ) {
         separators.add(template.substring(index, startIndex));
         exp = template.substring(startIndex + _startSymbolLength, endIndex);
-        watchExpressions.add((_parse(exp)..exp = exp).eval);
+        Expression expression = _parse(exp);
+        watchExpressions.add(expression.eval);
         index = endIndex + _endSymbolLength;
         hasInterpolation = true;
       } else {
