@@ -11,18 +11,33 @@ part 'prototype_map.dart';
 typedef ReactionFn(dynamic value, dynamic previousValue, dynamic object);
 
 /**
- * [WatchGroup] is a logical grouping of a set of watches.
+ * [WatchGroup] is a logical grouping of a set of watches. [WatchGroup]s are organized into
+ * hierarchical tree parent-children configuration. [WatchGroup] builds upon [ChangeDetector]
+ * and adds expression (field chains as in [a.b.c]) support as well as support
+ * function/closure/method (function invocation as in [a.b()]) watching.
  */
 class WatchGroup implements _EvalWatchList, _WatchGroupList {
+  /** A unique ID for the WatchGroup */
   final String id;
+  /**
+   * A marker to be inserted when a group has no watches. We need the marker to hold our position
+   * information in the linked list of all [Watch]es.
+   */
   final _EvalWatchRecord _marker = new _EvalWatchRecord.marker();
+
+  /** All Expressions are evaluated against a context object. */
   final Object context;
+
+  /** [ChangeDetector] used for field watching */
   final ChangeDetector<_Handler> _changeDetector;
+  /** A cache for sharing sub expression watching. Watching [a] and [a.b] will watch [a] once. */
   final Map<String, WatchRecord<_Handler>> _cache;
   final RootWatchGroup _rootGroup;
 
+  /** STATS: Number of field watchers which are in use. */
   int get fieldCost => _fieldCost;
   int _fieldCost = 0;
+  /** STATS: Number of field watchers which are in use including child [WatchGroup]s. */
   int get totalFieldCost {
     var cost = _fieldCost;
     WatchGroup group = _watchGroupHead;
@@ -33,8 +48,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     return cost;
   }
 
+  /** STATS: Number of invocation watchers (closures/methods) which are in use.  */
   int get evalCost => _evalCost;
   int _evalCost = 0;
+  /** STATS: Number of invocation watchers which are in use including child [WatchGroup]s.  */
   int get totalEvalCost {
     var cost = _evalCost;
     WatchGroup group = _watchGroupHead;
@@ -47,6 +64,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
   int _nextChildId = 0;
   _EvalWatchRecord _evalWatchHead, _evalWatchTail;
+  /** Pointer for creating tree of [WatchGroup]s. */
   WatchGroup _watchGroupHead, _watchGroupTail, _previousWatchGroup, _nextWatchGroup;
   final WatchGroup _parentWatchGroup;
 
@@ -56,7 +74,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     id = '${_parentWatchGroup.id}.${_parentWatchGroup._nextChildId++}'
   {
     _marker.watchGrp = this;
-    _EvalWatchList._add(this, _marker);
+    _evalWatchTail = _evalWatchHead = _marker;
   }
 
   WatchGroup._root(this._changeDetector, this.context):
@@ -65,7 +83,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
       _cache = new Map<String, WatchRecord<_Handler>>()
   {
     _marker.watchGrp = this;
-    _EvalWatchList._add(this, _marker);
+    _evalWatchTail = _evalWatchHead = _marker;
   }
 
   Watch watch(AST expression, ReactionFn reactionFn) {
@@ -74,6 +92,13 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     return watchRecord.handler.addReactionFn(reactionFn);
   }
 
+  /**
+   * Watch a [name] field on [lhs] represented by [expression].
+   *
+   * - [name] the field to watch.
+   * - [lhs] left-hand-side of the field.
+   * - [expression] normalized expression used for caching.
+   */
   WatchRecord<_Handler> addFieldWatch(AST lhs, String name, String expression) {
     var fieldHandler = new _FieldHandler(this, expression);
 
@@ -93,11 +118,26 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     return watchRecord;
   }
 
+  /**
+   * Watch a [fn] function represented by [expression].
+   *
+   * - [fn] function to evaluate.
+   * - [argsAST] list of [AST]es which represent arguments passed to function.
+   * - [expression] normalized expression used for caching.
+   */
   _EvalWatchRecord addFunctionWatch(Function fn, List<AST> argsAST, String expression)
       => _addEvalWatch(null, fn, null, argsAST, expression);
 
-  _EvalWatchRecord addMethodWatch(AST lhsAST, String name, List<AST> argsAST, String expression)
-      => _addEvalWatch(lhsAST, null, new Symbol(name), argsAST, expression);
+  /**
+   * Watch a method [name]ed represented by [expression].
+   *
+   * - [lhs] left-hand-side of the method.
+   * - [name] name of the method.
+   * - [argsAST] list of [AST]es which represent arguments passed to method.
+   * - [expression] normalized expression used for caching.
+   */
+  _EvalWatchRecord addMethodWatch(AST lhs, String name, List<AST> argsAST, String expression)
+      => _addEvalWatch(lhs, null, new Symbol(name), argsAST, expression);
 
   _EvalWatchRecord _addEvalWatch(AST lhsAST, Function fn, Symbol symbol, List<AST> argsAST,
                                  String expression) {
@@ -138,9 +178,16 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     return tail;
   }
 
+  /**
+   * Create a new child [WatchGroup].
+   *
+   * - [context] if present the the child [WatchGroup] expressions will evaluate against the new
+   *   [context]. If not present than child expressions will evaluate on same context allowing
+   *   reuse of the expression cache.
+   */
   WatchGroup newGroup([Object context]) {
-    _EvalWatchRecord previous = _childWatchGroupTail._evalWatchTail;
-    _EvalWatchRecord next = previous._nextEvalWatch;
+    _EvalWatchRecord prev = _childWatchGroupTail._evalWatchTail;
+    _EvalWatchRecord next = prev._nextEvalWatch;
     var childGroup = new WatchGroup._child(
         this,
         _changeDetector.newGroup(),
@@ -148,18 +195,24 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
         context == null ? this._cache: new Map<String, WatchRecord<_Handler>>(),
         _rootGroup == null ? this : _rootGroup);
     _WatchGroupList._add(this, childGroup);
-    var newEvalWatch = childGroup._marker;
+    var marker = childGroup._marker;
 
-    print('Inserting $newEvalWatch between $previous - $next');
-    newEvalWatch._previousEvalWatch = previous;
-    newEvalWatch._nextEvalWatch = next;
-    if (previous != null) previous._nextEvalWatch = newEvalWatch;
-    if (next != null)     next._previousEvalWatch = newEvalWatch;
+    marker._previousEvalWatch = prev;
+    marker._nextEvalWatch = next;
+    if (prev != null) prev._nextEvalWatch = marker;
+    if (next != null) next._previousEvalWatch = marker;
 
     return childGroup;
   }
 
+  /**
+   * Remove/destroy [WatchGroup] and all of its [Watches].
+   */
   void remove() {
+    // TODO:(misko) This code is not right.
+    // 1) It fails to release [ChangeDetector] [WatchRecord]s.
+    // 2) it needs to cleanup caches if the cache is being shared.
+
     _WatchGroupList._remove(_parentWatchGroup, this);
     _changeDetector.remove();
 
@@ -178,8 +231,11 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     if (this == _rootGroup) {
       var allWatches = [];
       var watch = _evalWatchHead;
+      var prev = null;
       while (watch != null) {
         allWatches.add(watch.toString());
+        assert(watch._previousEvalWatch == prev);
+        prev = watch;
         watch = watch._nextEvalWatch;
       }
       lines.add('WATCHES: ${allWatches.join(', ')}');
@@ -203,6 +259,9 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   }
 }
 
+/**
+ * [RootWatchGroup]
+ */
 class RootWatchGroup extends WatchGroup {
   Watch _dirtyWatchHead, _dirtyWatchTail;
 
@@ -210,6 +269,17 @@ class RootWatchGroup extends WatchGroup {
 
   get _rootGroup => this;
 
+  /**
+   * Detect changes and process the [ReactionFn]s.
+   *
+   * Algorithm:
+   * 1) process the [ChangeDetector#collectChanges].
+   * 2) process function/closure/method changes
+   * 3) call an [ReactionFn]s
+   *
+   * Each step is called in sequence. ([ReactionFn]s are not called until all previous steps are
+   * completed).
+   */
   int detectChanges() {
     // Process the ChangeRecords from the change detector
     ChangeRecord<_Handler> changeRecord = _changeDetector.collectChanges();
@@ -332,8 +402,6 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
 
   void release() {
     if (_WatchList._isEmpty(this) && _LinkedList._isEmpty(this)) {
-      // We can remove ourselves
-      assert((_next = _previous = this) == this); // mark ourselves as detached
       _releaseWatch();
       // Remove ourselves from cache, or else new registrations will go to us, but we are dead
       watchGrp._cache.remove(expression);
@@ -343,6 +411,9 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
         _LinkedList._remove(forwardingHandler, this);
         forwardingHandler.release();
       }
+
+      // We can remove ourselves
+      assert((_next = _previous = this) == this); // mark ourselves as detached
     }
   }
 

@@ -5,7 +5,7 @@ import 'package:angular/change_detection/change_detection.dart';
 
 /**
  * [DirtyCheckingChangeDetector] determines which object properties have change by comparing them
- * to the previous value.
+ * to the their previous value.
  *
  * GOALS:
  *   - Plugable implementation, replaceable with other technologies, such as Object.observe().
@@ -14,19 +14,19 @@ import 'package:angular/change_detection/change_detection.dart';
  *   - The changes need to be delivered in a single data-structure at once. There are two reasons
  *     for this. (1) It should be easy to measure the cost of change detection vs processing.
  *     (2) The feature may move to VM for performance reason. The VM should be free to implement
- *     it in any way. The only thing we need to know is a list of changes.
+ *     it in any way. The only requirement is that the list of changes need to be deliver.
  *
  *
- * [DirtyCheckingRecord]
+ * [_DirtyCheckingRecord]
  *
- * Each property to be watched is recorded as a [DirtyCheckingRecord] and kept in a linked
- * list. Linked list are faster the Arrays for iteration. They also allow removal of large
+ * Each property to be watched is recorded as a [_DirtyCheckingRecord] and kept in a linked
+ * list. Linked list are faster than Arrays for iteration. They also allow removal of large
  * blocks of watches in efficient manner.
  *
  * [ChangeRecord]
  *
  * When the results are delivered they are a linked list of [ChangeRecord]s. For efficiency reasons
- * the [DirtyCheckingRecord] and [ChangeRecord] are two different interfaces for the same
+ * the [_DirtyCheckingRecord] and [ChangeRecord] are two different interfaces for the same
  * underlying object this makes reporting efficient since no additional memory allocation needs to
  * be allocated.
  */
@@ -37,29 +37,44 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
    * added the marker record gets removed, but it gets reinserted if all other
    * records are removed.
    */
-  //TODO(misko): the marker logic is wrong with respect to children tail.
-  final _DirtyCheckingRecord marker = new _DirtyCheckingRecord.marker();
+  final _DirtyCheckingRecord _marker = new _DirtyCheckingRecord.marker();
 
   /**
    * All records for group are kept together and are denoted by head/tail.
    */
   _DirtyCheckingRecord _recordHead, _recordTail;
 
-  /** Parent group or null if root */
-  DirtyCheckingChangeDetectorGroup _parentGroup, _groupHead, _groupTail, _groupPrevious, _groupNext;
+  /**
+   * ChangeDetectorGroup is organized hierarchically, a root group can have child groups and so on.
+   * We keep track of parent, children and next, previous here.
+   */
+  DirtyCheckingChangeDetectorGroup _parent, _childHead, _childTail, _prev, _next;
 
-  DirtyCheckingChangeDetectorGroup(this._parentGroup) {
-    // we need to insert the marker record at the begining.
-    if (_parentGroup == null) {
-      _recordHead = _recordTail = marker;
+  DirtyCheckingChangeDetectorGroup(this._parent) {
+    // we need to insert the marker record at the beginning.
+    if (_parent == null) {
+      _recordHead = _recordTail = _marker;
     } else {
       // we need to find the tail of previous record
       // If we are first then it is the tail of the parent group
       // otherwise it is the tail of the previous group
-      DirtyCheckingChangeDetectorGroup groupTail = _parentGroup._groupTail;
-      _recordTail = (groupTail == null ? _parentGroup : groupTail)._recordTail;
-      _recordHead = _recordTail = _recordAdd(marker);
+      DirtyCheckingChangeDetectorGroup tail = _parent._childTail;
+      _recordTail = (tail == null ? _parent : tail)._recordTail;
+      _recordHead = _recordTail = _recordAdd(_marker);
     }
+  }
+
+  /**
+   * Returns the number of watches in this group (including child groups).
+   */
+  get count {
+    int count = 0;
+    _DirtyCheckingRecord cursor = _recordHead == _marker ? _recordHead._nextWatch : _recordHead;
+    while (cursor != null) {
+      count++;
+      cursor = cursor._nextWatch;
+    }
+    return count;
   }
 
   WatchRecord<H> watch(Object object, String field, H handler) {
@@ -67,32 +82,36 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
   }
 
 
+  /**
+   * Create a child [ChangeDetector] group.
+   */
   ChangeDetector<H> newGroup() {
     var child = new DirtyCheckingChangeDetectorGroup(this);
-    if (_groupHead == null) {
-      _groupHead = _groupTail = child;
+    if (_childHead == null) {
+      _childHead = _childTail = child;
     } else {
-      child._groupPrevious = _groupTail;
-      _groupTail._groupNext = child;
-      _groupTail = child;
+      child._prev = _childTail;
+      _childTail._next = child;
+      _childTail = child;
     }
     return child;
   }
+
   /**
    * Bulk remove all records.
    */
   void remove() {
-    _DirtyCheckingRecord previousRecord = _recordHead._previousWatch;
-    _DirtyCheckingRecord nextRecord = (_groupTail == null ? this : _groupTail)._recordTail._nextWatch;
+    _DirtyCheckingRecord previousRecord = _recordHead._prevWatch;
+    _DirtyCheckingRecord nextRecord = (_childTail == null ? this : _childTail)._recordTail._nextWatch;
 
     if (previousRecord != null) previousRecord._nextWatch = nextRecord;
-    if (nextRecord != null) nextRecord._previousWatch = previousRecord;
+    if (nextRecord != null) nextRecord._prevWatch = previousRecord;
 
-    var prevGroup = _groupPrevious;
-    var nextGroup = _groupNext;
+    var prevGroup = _prev;
+    var nextGroup = _next;
 
-    if (prevGroup == null) _parentGroup._groupHead = nextGroup; else prevGroup._groupNext = nextGroup;
-    if (nextGroup == null) _parentGroup._groupTail = prevGroup; else nextGroup._groupPrevious = prevGroup;
+    if (prevGroup == null) _parent._childHead = nextGroup; else prevGroup._next = nextGroup;
+    if (nextGroup == null) _parent._childTail = prevGroup; else nextGroup._prev = prevGroup;
   }
 
   _recordAdd(_DirtyCheckingRecord record) {
@@ -100,35 +119,64 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
     _DirtyCheckingRecord next = previous == null ? null : previous._nextWatch;
 
     record._nextWatch = next;
-    record._previousWatch = previous;
+    record._prevWatch = previous;
 
     if (previous != null) previous._nextWatch = record;
-    if (next != null) next._previousWatch = record;
+    if (next != null) next._prevWatch = record;
 
     _recordTail = record;
 
-    if (previous == marker) _recordRemove(marker);
+    if (previous == _marker) _recordRemove(_marker);
 
     return record;
   }
 
   _recordRemove(_DirtyCheckingRecord record) {
-    _DirtyCheckingRecord previous = record._previousWatch;
+    _DirtyCheckingRecord previous = record._prevWatch;
     _DirtyCheckingRecord next = record._nextWatch;
 
     if (record == _recordHead && record == _recordTail) {
       // we are the last one, must leave marker behind.
-      _recordHead = _recordTail = marker;
-      marker._nextWatch = next;
-      marker._previousWatch = previous;
-      if (previous != null) previous._nextWatch = marker;
-      if (next != null) next._previousWatch = marker;
+      _recordHead = _recordTail = _marker;
+      _marker._nextWatch = next;
+      _marker._prevWatch = previous;
+      if (previous != null) previous._nextWatch = _marker;
+      if (next != null) next._prevWatch = _marker;
     } else {
       if (record == _recordTail) _recordTail = previous;
       if (record == _recordHead) _recordHead = next;
       if (previous != null) previous._nextWatch = next;
-      if (next != null) next._previousWatch = previous;
+      if (next != null) next._prevWatch = previous;
     }
+  }
+
+  toString() {
+    var lines = [];
+    if (_parent == null) {
+      var allRecords = [];
+      _DirtyCheckingRecord record = _recordHead;
+      while (record != null) {
+        allRecords.add(record.toString());
+        record = record._nextWatch;
+      }
+      lines.add('FIELDS: ${allRecords.join(', ')}');
+    }
+
+    var records = [];
+    _DirtyCheckingRecord record = _recordHead;
+    while (record != _recordTail) {
+      records.add(record.toString());
+      record = record._nextWatch;
+    }
+    records.add(record.toString());
+
+    lines.add('DirtyCheckingChangeDetectorGroup(fields: ${records.join(', ')})');
+    var childGroup = _childHead;
+    while (childGroup != null) {
+      lines.add('  ' + childGroup.toString().split('\n').join('\n  '));
+      childGroup = childGroup._nextWatchGroup;
+    }
+    return lines.join('\n');
   }
 }
 
@@ -168,6 +216,8 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
  * efficient traversal.
  */
 class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
+  static const List<String> _MODE_NAMES =
+      const ['MARKER', 'IDENT', 'OBJECT', 'MAP', 'LIST_CHANGE', 'MAP_CHANGE'];
   static const int _MODE_MARKER_ = 0;
   static const int _MODE_IDENTITY_ = 1;
   static const int _MODE_OBJECT_ = 2;
@@ -175,7 +225,7 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
   static const int _MODE_LIST_CHANGE_ = 4;
   static const int _MODE_MAP_CHANGE_ = 5;
 
-  final DirtyCheckingChangeDetectorGroup group;
+  final DirtyCheckingChangeDetectorGroup _group;
   final String field;
   final Symbol _symbol;
   final H handler;
@@ -185,12 +235,12 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
   dynamic previousValue;
   dynamic currentValue;
   _DirtyCheckingRecord<H> _nextWatch;
-  _DirtyCheckingRecord<H> _previousWatch;
+  _DirtyCheckingRecord<H> _prevWatch;
   ChangeRecord<H> nextChange;
   dynamic _object;
   InstanceMirror _instanceMirror;
 
-  _DirtyCheckingRecord(this.group, obj, fieldName, this.handler):
+  _DirtyCheckingRecord(this._group, obj, fieldName, this.handler):
     field = fieldName,
     _symbol = new Symbol(fieldName)
   {
@@ -198,7 +248,7 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
   }
 
   _DirtyCheckingRecord.marker():
-      group = null, field = null, _symbol = null, handler = null, _mode = _MODE_MARKER_;
+      _group = null, field = null, _symbol = null, handler = null, _mode = _MODE_MARKER_;
 
   get object => _object;
 
@@ -222,7 +272,6 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
     var lastValue = this.currentValue;
     var currentValue;
 
-    //TODO(misko): check the performance of this.
     switch(_mode) {
       case _MODE_MARKER_  : return null;
       case _MODE_OBJECT_  : currentValue = _instanceMirror.getField(_symbol).reflectee; break;
@@ -245,6 +294,10 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
   }
 
   remove() {
-    group._recordRemove(this);
+    _group._recordRemove(this);
+  }
+
+  toString() {
+    return '${_MODE_NAMES[_mode]}[$field]';
   }
 }

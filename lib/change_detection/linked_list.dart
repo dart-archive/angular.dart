@@ -92,24 +92,20 @@ class _EvalWatchList {
   static _EvalWatchRecord _add(_EvalWatchList list, _EvalWatchRecord item) {
     assert(item._nextEvalWatch     == null);
     assert(item._previousEvalWatch == null);
-    if (list._evalWatchTail == null) {
+    var prev = list._evalWatchTail;
+    var next = prev._nextEvalWatch;
+
+    if (prev == list._marker) {
       list._evalWatchHead = list._evalWatchTail = item;
-    } else {
-      var next = list._evalWatchTail._nextEvalWatch;
-      var prev = list._evalWatchTail;
-
-      if (prev == list._marker) {
-        list._evalWatchHead = item;
-        prev = prev._previousEvalWatch;
-      }
-      item._nextEvalWatch = next;
-      item._previousEvalWatch = prev;
-
-      if (prev != null) prev._nextEvalWatch = item;
-      if (next != null) next._previousEvalWatch = prev;
-
-      list._evalWatchTail = item;
+      prev = prev._previousEvalWatch;
     }
+    item._nextEvalWatch = next;
+    item._previousEvalWatch = prev;
+
+    if (prev != null) prev._nextEvalWatch = item;
+    if (next != null) next._previousEvalWatch = item;
+
+    list._evalWatchTail = item;
     return item;
   }
 

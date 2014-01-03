@@ -7,6 +7,7 @@ import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 main() => ddescribe('WatchGroup', () {
   var context;
   var watchGrp;
+  DirtyCheckingChangeDetector changeDetector;
   Logger logger;
 
   AST parse(String expression) {
@@ -27,7 +28,8 @@ main() => ddescribe('WatchGroup', () {
 
   beforeEach(inject((Logger _logger) {
     context = {};
-    watchGrp = new RootWatchGroup(new DirtyCheckingChangeDetector(), context);
+    changeDetector = new DirtyCheckingChangeDetector();
+    watchGrp = new RootWatchGroup(changeDetector, context);
     logger = _logger;
   }));
 
@@ -43,7 +45,7 @@ main() => ddescribe('WatchGroup', () {
       watchGrp.detectChanges();
       expect(logger).toEqual(['hello']);
 
-      // make sore no new changes are logged on extra detectChangess
+      // make sore no new changes are logged on extra detectChanges
       watchGrp.detectChanges();
       expect(logger).toEqual(['hello']);
 
@@ -65,13 +67,15 @@ main() => ddescribe('WatchGroup', () {
 
       // should fire on initial adding
       expect(watchGrp.fieldCost).toEqual(0);
+      expect(changeDetector.count).toEqual(0);
       var watch = watchGrp.watch(parse('a.b'), (v, p, o) => logger(v));
       expect(watch.expression).toEqual('a.b');
       expect(watchGrp.fieldCost).toEqual(2);
+      expect(changeDetector.count).toEqual(2);
       watchGrp.detectChanges();
       expect(logger).toEqual(['hello']);
 
-      // make sore no new changes are logged on extra detectChangess
+      // make sore no new changes are logged on extra detectChanges
       watchGrp.detectChanges();
       expect(logger).toEqual(['hello']);
 
@@ -318,7 +322,7 @@ main() => ddescribe('WatchGroup', () {
       expectOrder(['0a', '0A', '1a', '1A', '2A', '1b']);
 
       // flush initial reaction functions
-      expect(watchGrp.detectChanges());//.toEqual(6); // TODO(Misko): this should be re-enabled.
+      expect(watchGrp.detectChanges()).toEqual(6);
       expectOrder(['0a', '0A', '1a', '1A', '2A', '1b']);
 
       child1a.remove(); // should also remove child2
