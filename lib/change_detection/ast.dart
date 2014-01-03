@@ -42,13 +42,19 @@ class FieldReadAST extends AST {
   }
 }
 
-class FunctionAST extends AST {
+/**
+ * SYNTAX: fn(arg0, arg1, ...)
+ *
+ * This is invokes a pure function. Pure means that the function has no state, and therefore
+ * it needs to be re-computed only if its args change..
+ */
+class PureFunctionAST extends AST {
   final String name;
   final Function fn;
   final List<AST> argsAST;
   final String expression;
 
-  FunctionAST(name, this.fn, argsAST):
+  PureFunctionAST(name, this.fn, argsAST):
       argsAST = argsAST,
       name = name,
       expression = '$name(${_argList(argsAST)})';
@@ -58,6 +64,11 @@ class FunctionAST extends AST {
   }
 }
 
+/**
+ * SYNTAX: lhs.method(arg0, arg1, ...)
+ *
+ * Invoke a method on [lhs] object.
+ */
 class MethodAST extends AST {
   final AST lhsAST;
   final String name;
@@ -65,15 +76,14 @@ class MethodAST extends AST {
   final String expression;
 
   MethodAST(lhsAST, name, argsAST):
-    lhsAST = lhsAST,
-    name = name,
-    argsAST = argsAST,
-    expression = '${lhsAST.expression}.$name(${_argList(argsAST)})';
+  lhsAST = lhsAST,
+  name = name,
+  argsAST = argsAST,
+  expression = '${lhsAST.expression}.$name(${_argList(argsAST)})';
 
   WatchRecord<_Handler> setupWatch(WatchGroup scope) {
     return scope.addMethodWatch(lhsAST, name, argsAST, expression);
   }
-
 }
 
 _argList(List<AST> items) => items.map((a) => a.expression).join(', ');

@@ -136,12 +136,12 @@ main() => ddescribe('WatchGroup', () {
       expect(() => watch.remove()).toThrow('Already deleted!');
     });
 
-    iit('should eval pure function', () {
+    it('should eval pure function', () {
       context['a'] = {'val': 1};
       context['b'] = {'val': 2};
 
       var watch = watchGrp.watch(
-         new FunctionAST('add',
+         new PureFunctionAST('add',
              (a, b) { logger('+'); return a+b; },
              [parse('a.val'), parse('b.val')]
          ),
@@ -178,6 +178,56 @@ main() => ddescribe('WatchGroup', () {
       watchGrp.detectChanges();
       expect(logger).toEqual(['+', 3, '+', 7]);
     });
+
+    it('should eval closure', () {
+      var obj;
+      obj = {
+          'methodA': (arg1) {
+            logger('methodA($arg1) => ${obj['valA']}');
+            return obj['valA'];
+          },
+          'valA': 'A'
+      };
+      context['obj'] = obj;
+      context['arg0'] = 1;
+
+      var watch = watchGrp.watch(
+          new MethodAST(parse('obj'), 'methodA', [parse('arg0')]),
+              (v, p, o) => logger(v)
+      );
+
+      // obj, arg0;
+      expect(watchGrp.fieldCost).toEqual(2);
+      // methodA()
+      expect(watchGrp.evalCost).toEqual(1);
+
+      watchGrp.detectChanges();
+      expect(logger).toEqual(['methodA(1) => A', 'A']);
+      logger.clear();
+
+      watchGrp.detectChanges();
+      watchGrp.detectChanges();
+      expect(logger).toEqual(['methodA(1) => A', 'methodA(1) => A']);
+      logger.clear();
+
+      obj['valA'] = 'B';
+      context['arg0'] = 2;
+
+      watchGrp.detectChanges();
+      expect(logger).toEqual(['methodA(2) => B', 'B']);
+      logger.clear();
+
+      watch.remove();
+      expect(watchGrp.fieldCost).toEqual(0);
+      expect(watchGrp.evalCost).toEqual(0);
+
+      obj['valA'] = 'C';
+      context['arg0'] = 3;
+
+      watchGrp.detectChanges();
+      expect(logger).toEqual([]);
+    });
+
 
     it('should eval method', () {
       var obj = new MyClass(logger);

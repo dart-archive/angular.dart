@@ -15,7 +15,7 @@ main() {
 }
 
 fieldRead() {
-  var watchGrp = new WatchGroup(new DirtyCheckingChangeDetector<_Handler>(), new Obj());
+  var watchGrp = new RootWatchGroup(new DirtyCheckingChangeDetector<_Handler>(), new Obj());
   watchGrp.watch(parse('a'), reactionFn);
   watchGrp.watch(parse('b'), reactionFn);
   watchGrp.watch(parse('c'), reactionFn);
@@ -50,7 +50,7 @@ mapRead() {
       'f': 0, 'g': 1, 'h': 2, 'i': 3, 'j': 4,
       'k': 0, 'l': 1, 'm': 2, 'n': 3, 'o': 4,
       'p': 0, 'q': 1, 'r': 2, 's': 3, 't': 4};
-  var watchGrp = new WatchGroup(new DirtyCheckingChangeDetector<_Handler>(), map);
+  var watchGrp = new RootWatchGroup(new DirtyCheckingChangeDetector<_Handler>(), map);
   watchGrp.watch(parse('a'), reactionFn);
   watchGrp.watch(parse('b'), reactionFn);
   watchGrp.watch(parse('c'), reactionFn);
@@ -81,7 +81,7 @@ mapRead() {
 methodInvoke0() {
   var context = new Obj();
   context.a = new Obj();
-  var watchGrp = new WatchGroup(new DirtyCheckingChangeDetector<_Handler>(), context);
+  var watchGrp = new RootWatchGroup(new DirtyCheckingChangeDetector<_Handler>(), context);
   watchGrp.watch(method('a', 'methodA'), reactionFn);
   watchGrp.watch(method('a', 'methodB'), reactionFn);
   watchGrp.watch(method('a', 'methodC'), reactionFn);
@@ -109,7 +109,7 @@ methodInvoke0() {
 methodInvoke1() {
   var context = new Obj();
   context.a = new Obj();
-  var watchGrp = new WatchGroup(new DirtyCheckingChangeDetector<_Handler>(), context);
+  var watchGrp = new RootWatchGroup(new DirtyCheckingChangeDetector<_Handler>(), context);
   watchGrp.watch(method('a', 'methodA', [parse('a')]), reactionFn);
   watchGrp.watch(method('a', 'methodB', [parse('a')]), reactionFn);
   watchGrp.watch(method('a', 'methodC', [parse('a')]), reactionFn);
@@ -136,7 +136,7 @@ methodInvoke1() {
 
 function2() {
   var context = new Obj();
-  var watchGrp = new WatchGroup(new DirtyCheckingChangeDetector<_Handler>(), context);
+  var watchGrp = new RootWatchGroup(new DirtyCheckingChangeDetector<_Handler>(), context);
   watchGrp.watch(add(0, parse('a'), parse('a')), reactionFn);
   watchGrp.watch(add(1, parse('a'), parse('a')), reactionFn);
   watchGrp.watch(add(2, parse('a'), parse('a')), reactionFn);
@@ -162,7 +162,7 @@ function2() {
 }
 
 AST add(id, lhs, rhs) {
-  return new FunctionAST('add$id', (a, b) => a + b, [lhs, rhs]);
+  return new PureFunctionAST('add$id', (a, b) => a + b, [lhs, rhs]);
 }
 
 AST method(lhs, methodName, [args]) {

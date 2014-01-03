@@ -189,7 +189,7 @@ function2() {
 }
 
 AST add(id, lhs, rhs) {
-  return new FunctionAST('add$id', (a, b) => a + b, [lhs, rhs]);
+  return new PureFunctionAST('add$id', (a, b) => a + b, [lhs, rhs]);
 }
 
 AST method(lhs, methodName, [args]) {

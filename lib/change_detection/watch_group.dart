@@ -137,14 +137,14 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
    * - [expression] normalized expression used for caching.
    */
   _EvalWatchRecord addMethodWatch(AST lhs, String name, List<AST> argsAST, String expression)
-      => _addEvalWatch(lhs, null, new Symbol(name), argsAST, expression);
+      => _addEvalWatch(lhs, null, name, argsAST, expression);
 
 
 
-  _EvalWatchRecord _addEvalWatch(AST lhsAST, Function fn, Symbol symbol, List<AST> argsAST,
+  _EvalWatchRecord _addEvalWatch(AST lhsAST, Function fn, String name, List<AST> argsAST,
                                  String expression) {
     _InvokeHandler invokeHandler = new _InvokeHandler(this, expression);
-    var evalWatchRecord = new _EvalWatchRecord(this, invokeHandler, fn, symbol, argsAST.length);
+    var evalWatchRecord = new _EvalWatchRecord(this, invokeHandler, fn, name, argsAST.length);
     invokeHandler.watchRecord = evalWatchRecord;
 
     if (lhsAST != null) {
@@ -500,52 +500,79 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
 
 
 class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
+  static const int _MODE_DELETED_ = -1;
+  static const int _MODE_MARKER_ = 0;
+  static const int _MODE_FUNCTION_ = 1;
+  static const int _MODE_NULL_ = 2;
+  static const int _MODE_FIELD_CLOSURE_ = 3;
+  static const int _MODE_MAP_CLOSURE_ = 4;
+  static const int _MODE_METHOD_ = 5;
   WatchGroup watchGrp;
   final _Handler handler;
   final List args;
-  final Function fn;
   final Symbol symbol;
+  final String name;
+  int mode;
+  Function fn;
   InstanceMirror _instanceMirror;
-  bool dirtyArgs = false;
+  bool dirtyArgs = true;
 
   dynamic currentValue, previousValue, _object;
   _EvalWatchRecord _previousEvalWatch, _nextEvalWatch;
 
-  _EvalWatchRecord(this.watchGrp, this.handler, this.fn, this.symbol, int arity):
-      args = new List(arity);
+  _EvalWatchRecord(this.watchGrp, this.handler, this.fn, name, int arity):
+      args = new List(arity),
+      name = name,
+      symbol = new Symbol(name)
+  {
+    mode = fn != null ? _MODE_FUNCTION_ : _MODE_NULL_;
+  }
 
-  _EvalWatchRecord.marker(): watchGrp = null, handler = null, args = null, fn = null, symbol = null;
+  _EvalWatchRecord.marker():
+    mode = _MODE_MARKER_,
+    watchGrp = null, handler = null, args = null, fn = null, symbol = null, name = null;
 
   get field => '()';
 
   get object => _object;
   set object(value) {
     _object = value;
-    _instanceMirror = value == null ? null : reflect(value);
+    assert(mode != _MODE_DELETED_);
+    assert(mode != _MODE_MARKER_);
+    assert(mode != _MODE_FUNCTION_);
+    assert(symbol != null);
+
+    if (value == null) {
+      mode = _MODE_NULL_;
+    } else {
+      _instanceMirror = reflect(value);
+      var type = _instanceMirror.type;
+      if(type.methods[symbol] != null) {
+        mode = _MODE_METHOD_;
+      } else {
+        mode = value is Map ? _MODE_MAP_CLOSURE_: _MODE_FIELD_CLOSURE_;
+      }
+    }
   }
 
   ChangeRecord<_Handler> check() {
-    var args = this.args;
-    if (args == null) return null; // we are a marker, exit
     var value;
-    var symbol = this.symbol;
-    if (symbol == null) {
-      // it is a function
-      if (dirtyArgs) {
-        dirtyArgs = false;
-        var fn = this.fn;
+    var mode = this.mode;
+    if (mode == _MODE_MARKER_ || mode ==  _MODE_NULL_) return null;
+    if (mode == _MODE_FUNCTION_) {
+        if (!dirtyArgs) return null;
         value = Function.apply(fn, args);
-      } else {
-        // don't call function since args did not change.
-        return null;
-      }
-    } else {
-      var _instanceMirror = this._instanceMirror;
-      if (_instanceMirror == null) {
-        value = null;
-      } else {
+        dirtyArgs = false;
+    } else if (mode == _MODE_FIELD_CLOSURE_) {
+        var closure = _instanceMirror.getField(symbol).reflectee;
+        value = closure == null ? null : Function.apply(closure, args);
+    } else if (mode == _MODE_MAP_CLOSURE_) {
+        var closure = object[name];
+        value = closure == null ? null : Function.apply(closure, args);
+    } else if (mode == _MODE_METHOD_) {
         value = _instanceMirror.invoke(symbol, args).reflectee;
-      }
+    } else {
+      assert(false);
     }
     var currentValue = this.currentValue;
     if (!identical(currentValue, value)) {
@@ -565,8 +592,8 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
   get nextChange => null;
 
   remove() {
-    assert(object != this);
-    assert((object = this) == this); // Mark as deleted.
+    assert(mode != _MODE_DELETED_);
+    assert((mode = _MODE_DELETED_) == _MODE_DELETED_); // Mark as deleted.
     watchGrp._evalCost--;
     _EvalWatchList._remove(watchGrp, this);
   }
