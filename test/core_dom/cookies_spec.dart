@@ -198,6 +198,11 @@ main() => describe('cookies', () {
     });
   });
 
+  beforeEach(module((Module module) {
+    var cookies = new BrowserCookies()..cookiePath = '/';
+    module.value(Cookies, new Cookies(cookies));
+  }));
+
   describe('cookies service', () {
     var cookiesService;
     beforeEach(inject((Cookies iCookies) {
