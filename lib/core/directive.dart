@@ -432,11 +432,11 @@ abstract class NgDetachAware {
 }
 
 @NgInjectableService()
-class DirectiveMap extends AnnotationMap<NgAnnotation> {
+class DirectiveMap extends AnnotationsMap<NgAnnotation> {
   DirectiveMap(Injector injector, MetadataExtractor metadataExtractor,
       FieldMetadataExtractor fieldMetadataExtractor)
       : super(injector, metadataExtractor) {
-    Map<NgAnnotation, Type> directives = {};
+    Map<NgAnnotation, List<Type>> directives = {};
     forEach((NgAnnotation annotation, Type type) {
       var match;
       var fieldMetadata = fieldMetadataExtractor(type);
