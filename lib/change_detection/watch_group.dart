@@ -139,6 +139,8 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   _EvalWatchRecord addMethodWatch(AST lhs, String name, List<AST> argsAST, String expression)
       => _addEvalWatch(lhs, null, new Symbol(name), argsAST, expression);
 
+
+
   _EvalWatchRecord _addEvalWatch(AST lhsAST, Function fn, Symbol symbol, List<AST> argsAST,
                                  String expression) {
     _InvokeHandler invokeHandler = new _InvokeHandler(this, expression);
@@ -289,7 +291,7 @@ class RootWatchGroup extends WatchGroup {
     }
 
     int count = 0;
-    // Process our own function evalutations
+    // Process our own function evaluations
     _EvalWatchRecord evalRecord = _evalWatchHead;
     while (evalRecord != null) {
       evalRecord.check();
@@ -471,7 +473,10 @@ class _ArgHandler extends _Handler {
   _ArgHandler(WatchGroup watchGrp, this.watchRecord, int index):
       super(watchGrp, 'arg[$index]'), index = index;
 
-  forwardValue(dynamic object) => watchRecord.args[index] = object;
+  forwardValue(dynamic object) {
+    watchRecord.dirtyArgs = true;
+    watchRecord.args[index] = object;
+  }
 }
 
 class _InvokeHandler extends _Handler implements _ArgHandlerList {
@@ -501,6 +506,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
   final Function fn;
   final Symbol symbol;
   InstanceMirror _instanceMirror;
+  bool dirtyArgs = false;
 
   dynamic currentValue, previousValue, _object;
   _EvalWatchRecord _previousEvalWatch, _nextEvalWatch;
@@ -524,8 +530,15 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
     var value;
     var symbol = this.symbol;
     if (symbol == null) {
-      var fn = this.fn;
-      value = Function.apply(fn, args);
+      // it is a function
+      if (dirtyArgs) {
+        dirtyArgs = false;
+        var fn = this.fn;
+        value = Function.apply(fn, args);
+      } else {
+        // don't call function since args did not change.
+        return null;
+      }
     } else {
       var _instanceMirror = this._instanceMirror;
       if (_instanceMirror == null) {

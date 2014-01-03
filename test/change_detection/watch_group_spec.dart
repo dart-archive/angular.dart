@@ -136,13 +136,16 @@ main() => ddescribe('WatchGroup', () {
       expect(() => watch.remove()).toThrow('Already deleted!');
     });
 
-    it('should eval function', () {
+    iit('should eval pure function', () {
       context['a'] = {'val': 1};
       context['b'] = {'val': 2};
 
       var watch = watchGrp.watch(
-          new FunctionAST('add', (a, b) => a+b, [parse('a.val'), parse('b.val')]),
-          (v, p, o) => logger(v)
+         new FunctionAST('add',
+             (a, b) { logger('+'); return a+b; },
+             [parse('a.val'), parse('b.val')]
+         ),
+         (v, p, o) => logger(v)
       );
 
       // a; a.val; b; b.val;
@@ -151,17 +154,19 @@ main() => ddescribe('WatchGroup', () {
       expect(watchGrp.evalCost).toEqual(1);
 
       watchGrp.detectChanges();
-      expect(logger).toEqual([3]);
+      expect(logger).toEqual(['+', 3]);
 
+      // extra checks should not trigger functions
       watchGrp.detectChanges();
       watchGrp.detectChanges();
-      expect(logger).toEqual([3]);
+      expect(logger).toEqual(['+', 3]);
 
+      // multiple arg changes should only trigger function once.
       context['a']['val'] = 3;
       context['b']['val'] = 4;
 
       watchGrp.detectChanges();
-      expect(logger).toEqual([3, 7]);
+      expect(logger).toEqual(['+', 3, '+', 7]);
 
       watch.remove();
       expect(watchGrp.fieldCost).toEqual(0);
@@ -171,7 +176,7 @@ main() => ddescribe('WatchGroup', () {
       context['b']['val'] = 0;
 
       watchGrp.detectChanges();
-      expect(logger).toEqual([3, 7]);
+      expect(logger).toEqual(['+', 3, '+', 7]);
     });
 
     it('should eval method', () {
