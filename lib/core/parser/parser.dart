@@ -178,7 +178,7 @@ class DynamicParser implements Parser {
       }
 
       if (_tokens.length != 0) {
-        throw "Internal Angular Error: New parser didn't reporterror for [$text]";
+        throw "Internal Angular Error: New parser didn't report error for [$text]";
       }
       return value;
     } finally {
