@@ -65,6 +65,7 @@ class NgDirectiveModule extends Module {
 
     value(NgBooleanAttributeDirective, null);
     value(NgSourceDirective, null);
+    value(NgAttributeDirective, null);
 
     value(NgEventDirective, null);
     value(NgStyleDirective, null);

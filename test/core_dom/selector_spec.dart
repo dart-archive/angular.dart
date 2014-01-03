@@ -5,6 +5,7 @@ import '../_specs.dart';
 @NgDirective(selector:'b')                    class _BElement{}
 @NgDirective(selector:'.b')                   class _BClass{}
 @NgDirective(selector:'[directive]')          class _DirectiveAttr{}
+@NgDirective(selector:'[wildcard-*]')         class _WildcardDirectiveAttr{}
 @NgDirective(selector:'[directive=d][foo=f]') class _DirectiveFooAttr{}
 @NgDirective(selector:'b[directive]')         class _BElementDirectiveAttr{}
 @NgDirective(selector:'[directive=value]')    class _DirectiveValueAttr{}
@@ -43,6 +44,7 @@ main() {
         ..type(_BElement)
         ..type(_BClass)
         ..type(_DirectiveAttr)
+        ..type(_WildcardDirectiveAttr)
         ..type(_DirectiveFooAttr)
         ..type(_BElementDirectiveAttr)
         ..type(_DirectiveValueAttr)
@@ -123,6 +125,14 @@ main() {
         toEqualsDirectiveInfos([
           { "selector": '[*=/xyz/]', "value": 'attr=before-xyz-after',
             "element": element, "name": 'attr'}
+        ]));
+    });
+
+    it('should match attribute names', () {
+      expect(selector(element = e('<div wildcard-match=ignored></div>')),
+        toEqualsDirectiveInfos([
+          { "selector": '[wildcard-*]', "value": 'ignored',
+            "element": element, "name": 'wildcard-match'}
         ]));
     });
 
