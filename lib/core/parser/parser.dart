@@ -137,8 +137,9 @@ Map<String, Operator> OPERATORS = {
 class DynamicParser implements Parser {
   final Lexer _lexer;
   final ParserBackend _b;
+  final new_parser.Parser _newParser;
 
-  DynamicParser(this._lexer, this._b);
+  DynamicParser(this._lexer, this._b, this._newParser);
 
   List<Token> _tokens;
   String _text;
@@ -157,15 +158,27 @@ class DynamicParser implements Parser {
   ParserAST _call(String text) {
     try {
       if (text == null) text = '';
+
+      // Get the new parser tested by letting it deal with the input
+      // text and replace the input with the pretty printed version
+      // of the generated syntax tree.
+      var newExpression = _newParser.parse(text);
+      text = newExpression.toString();
+
       _tokenSavers = [];
       _text = text;
       _tokens = _lexer.call(text);
       _evalError = (String s, [stack]) => parserEvalError(s, text, stack);
 
-      ParserAST value = _statements();
+      ParserAST value;
+      try {
+        value = _statements();
+      } catch (e) {
+        throw "Internal Angular Error: New parser didn't report error for [$text]";
+      }
 
       if (_tokens.length != 0) {
-        throw _parserError("Unconsumed token ${_tokens[0].text}");
+        throw "Internal Angular Error: New parser didn't reporterror for [$text]";
       }
       return value;
     } finally {

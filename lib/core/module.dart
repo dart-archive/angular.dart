@@ -9,6 +9,7 @@ import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
 import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core/parser/new_parser.dart' as new_parser;
 import 'package:angular/utils.dart';
 
 import 'service.dart';
@@ -43,5 +44,9 @@ class NgCoreModule extends Module {
     type(Lexer);
     type(ParserBackend);
     type(GetterSetter);
+
+    type(new_parser.Parser);
+    type(new_parser.ParserBackend, implementedBy:
+        new_parser.ParserBackendWithValidation);
   }
 }

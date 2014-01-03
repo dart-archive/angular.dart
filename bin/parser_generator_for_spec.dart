@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core/parser/new_parser.dart' as new_parser;
 import 'package:angular/tools/parser_generator/dart_code_gen.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
@@ -9,9 +10,12 @@ import 'package:angular/tools/parser_getter_setter/generator.dart';
 main(arguments) {
   var isGetter = !arguments.isEmpty;
 
-  Module module = new Module()
-    ..type(ParserBackend, implementedBy: isGetter ? DartGetterSetterGen : DartCodeGen);
-
+  Module module = new Module();
+  if (isGetter) {
+    module.type(new_parser.ParserBackend, implementedBy: DartGetterSetterGen);
+  } else {
+    module.type(ParserBackend, implementedBy: DartCodeGen);
+  }
   Injector injector = new DynamicInjector(modules: [module],
       allowImplicitInjection: true);
 

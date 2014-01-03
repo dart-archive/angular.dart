@@ -4,7 +4,7 @@ import 'dart:mirrors';
 
 import 'package:angular/utils.dart';
 import 'package:angular/core/module.dart';
-
+import 'package:angular/core/parser/new_parser.dart' as new_parser;
 
 part 'backend.dart';
 part 'lexer.dart';

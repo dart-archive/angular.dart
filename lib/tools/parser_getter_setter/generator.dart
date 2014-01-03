@@ -1,62 +1,28 @@
-import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core/parser/new_parser.dart';
 import 'package:angular/tools/reserved_dart_keywords.dart';
 
-class _AST implements ParserAST {
-  bool get assignable => true;
-}
-
-class DartGetterSetterGen implements ParserBackend {
-  Map<String, bool> identifiers = {};
-
-  profiled(value, perf, text)  => new _AST();
-
-  binaryFn(left, String fn, right) => new _AST();
-  unaryFn(String fn, right)  => new _AST();
-  ternaryFn(Expression cond, Expression _true, Expression _false) => new _AST();
-  assignment(left, right, evalError)  => new _AST();
-  multipleStatements(List statements)  => new _AST();
-  arrayDeclaration(List elementFns)  => new _AST();
-  objectIndex(obj, indexFn, evalError)  => new _AST();
-  object(List keyValues)  => new _AST();
-  fromOperator(String op) => new _AST();
-  value(v) => new _AST();
-  zero() => new _AST();
-  functionCall(fn, fnName, List argsFn, evalError) => new _AST();
-  filter(String filterName,
-      Expression leftHandSide,
-      List<Expression> parameters,
-      Function evalError) => new _AST();
-
-  setter(String path) => throw new UnimplementedError();
-  getter(String path) => throw new UnimplementedError();
-
-
-  fieldAccess(object, String field) {
-    identifiers[field] = true;
-    return new _AST();
-  }
-
-  getterSetter(String key)  {
-    key.split('.').forEach((i) => identifiers[i] = true);
-    return new _AST();
-  }
+class DartGetterSetterGen extends ParserBackend {
+  Set<String> identifiers = new Set<String>();
+  access(String name) => identifiers.add(name);
+  newAccessScope(String name) => access(name);
+  newAccessMember(var object, String name) => access(name);
+  newCallScope(String name, List arguments) => access(name);
+  newCallMember(var object, String name, List arguments) => access(name);
 }
 
 class ParserGetterSetter {
-
-  DynamicParser parser;
-  DartGetterSetterGen backend;
-
-  ParserGetterSetter(this.parser, this.backend);
+  final Parser parser;
+  ParserGetterSetter(this.parser);
 
   generateParser(List<String> exprs) {
     exprs.forEach((expr) {
       try {
-        parser(expr);
+        parser.parse(expr);
       } catch (e) { }
     });
 
-    print(generateCode(backend.identifiers.keys.toList()));
+    DartGetterSetterGen backend = parser.backend;
+    print(generateCode(backend.identifiers));
   }
 
   generateCode(Iterable<String> keys) {
@@ -73,7 +39,6 @@ class StaticGetterSetter extends GetterSetter {
   Function setter(String key) {
     return _setters.containsKey(key) ? _setters[key] : super.setter(key);
   }
-
 }
 ''';
   }
