@@ -17,26 +17,17 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-form]',
     visibility: NgDirective.CHILDREN_VISIBILITY)
-class NgForm implements Map<String, NgModel> {
-  static const NG_VALID_CLASS    = "ng-valid";
-  static const NG_INVALID_CLASS  = "ng-invalid";
-  static const NG_PRISTINE_CLASS = "ng-pristine";
-  static const NG_DIRTY_CLASS    = "ng-dirty";
-
+class NgForm extends NgControl implements Map<String, NgControl> {
   NgForm _parentForm;
   final dom.Element _element;
   final Scope _scope;
 
   String _name;
 
-  final Map currentErrors = new Map();
-  bool _dirty;
-  bool _pristine;
-  bool _valid;
-  bool _invalid;
+  final Map<String, List<NgControl>> currentErrors = new Map<String, List<NgControl>>();
 
-  final List _controls = new List();
-  final Map _controlByName = new Map();
+  final List<NgControl> _controls = new List<NgControl>();
+  final Map<NgControl> _controlByName = new Map<NgControl>();
 
   NgForm(this._scope, dom.Element this._element, Injector injector) {
     _parentForm = injector.parent.get(NgForm);
@@ -62,44 +53,8 @@ class NgForm implements Map<String, NgModel> {
     _scope[name] = this;
   }
 
-  get pristine => _pristine;
-  set pristine(value) {
-    _pristine = true;
-    _dirty = false;
-
-    _element.classes.remove(NG_DIRTY_CLASS);
-    _element.classes.add(NG_PRISTINE_CLASS);
-  }
-
-  get dirty => _dirty;
-  set dirty(value) {
-    _dirty = true;
-    _pristine = false;
-
-    _element.classes.remove(NG_PRISTINE_CLASS);
-    _element.classes.add(NG_DIRTY_CLASS);
-  }
-
-  get valid => _valid;
-  set valid(value) {
-    _invalid = false;
-    _valid = true;
-
-    _element.classes.remove(NG_INVALID_CLASS);
-    _element.classes.add(NG_VALID_CLASS);
-  }
-
-  get invalid => _invalid;
-  set invalid(value) {
-    _valid = false;
-    _invalid = true;
-
-    _element.classes.remove(NG_VALID_CLASS);
-    _element.classes.add(NG_INVALID_CLASS);
-  }
-
-  setValidity(control, String errorType, bool isValid) {
-    List queue = currentErrors[errorType];
+  setValidity(NgControl control, String errorType, bool isValid) {
+    List<NgControl> queue = currentErrors[errorType];
 
     if(isValid) {
       if(queue != null) {
@@ -150,14 +105,14 @@ class NgForm implements Map<String, NgModel> {
     }
   }
 
-  addControl(control) {
+  addControl(NgControl control) {
     _controls.add(control);
     if(control.name != null) {
       _controlByName[control.name] = control;
     }
   }
 
-  removeControl(control) {
+  removeControl(NgControl control) {
     _controls.remove(control);
     if(control.name != null) {
       _controlByName.remove(control.name);

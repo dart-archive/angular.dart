@@ -12,7 +12,7 @@ part of angular.directive;
  */
 @NgDirective(
     selector: '[ng-model]')
-class NgModel {
+class NgModel extends NgControl {
   final NgForm _form;
   final dom.Element _element;
   final Scope _scope;
@@ -22,11 +22,6 @@ class NgModel {
 
   String _exp;
   String _name;
-
-  bool _dirty;
-  bool _pristine;
-  bool _valid = true;
-  bool _invalid = false;
 
   final List<_NgModelValidator> _validators = new List<_NgModelValidator>();
   final Map<String, bool> currentErrors = new Map<String, bool>();
@@ -81,50 +76,6 @@ class NgModel {
 
   get modelValue        => getter();
   set modelValue(value) => setter(value);
-
-  get pristine => _pristine;
-  set pristine(value) {
-    _pristine = true;
-    _dirty = false;
-
-    if(_element != null) {
-      _element.classes.remove(NgForm.NG_DIRTY_CLASS);
-      _element.classes.add(NgForm.NG_PRISTINE_CLASS);
-    }
-  }
-
-  get dirty => _dirty;
-  set dirty(value) {
-    _dirty = true;
-    _pristine = false;
-
-    if(_element != null) {
-      _element.classes.remove(NgForm.NG_PRISTINE_CLASS);
-      _element.classes.add(NgForm.NG_DIRTY_CLASS);
-    }
-  }
-
-  get valid => _valid;
-  set valid(value) {
-    _invalid = false;
-    _valid = true;
-
-    if(_element != null) {
-      _element.classes.remove(NgForm.NG_INVALID_CLASS);
-      _element.classes.add(NgForm.NG_VALID_CLASS);
-    }
-  }
-
-  get invalid => _invalid;
-  set invalid(value) {
-    _valid = false;
-    _invalid = true;
-
-    if(_element != null) {
-      _element.classes.remove(NgForm.NG_VALID_CLASS);
-      _element.classes.add(NgForm.NG_INVALID_CLASS);
-    }
-  }
 
   get validators => _validators;
   validate() {
