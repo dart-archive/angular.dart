@@ -47,7 +47,7 @@ class _ContainsSelector {
   }
 }
 
-RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-]+)(?:=([^\]]*))?\]))');
+RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-\*]+)(?:=([^\]]*))?\]))');
 RegExp _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([\w\-]+)(?:\=(.*))?\]$');
 RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
 RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
@@ -155,8 +155,11 @@ class _ElementSelector {
 
   List<_ElementSelector> selectAttr(List<DirectiveRef> refs, List<_ElementSelector> partialSelection,
          dom.Node node, String attrName, String attrValue) {
-    if (attrValueMap.containsKey(attrName)) {
-      Map<String, _Directive> valuesMap = attrValueMap[attrName];
+
+    String matchingKey = _matchingKey(attrValueMap.keys, attrName);
+
+    if (matchingKey != null) {
+      Map<String, _Directive> valuesMap = attrValueMap[matchingKey];
       if (valuesMap.containsKey('')) {
         _Directive directive = valuesMap[''];
         refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
@@ -178,6 +181,12 @@ class _ElementSelector {
       }
     }
     return partialSelection;
+  }
+
+  String _matchingKey(Iterable<String> keys, String attrName) {
+    return keys.firstWhere(
+        (key) => new RegExp('^${key.replaceAll('*', r'[\w\-]+')}\$').hasMatch(attrName),
+        orElse: () => null);
   }
 
   toString() => 'ElementSelector($name)';
