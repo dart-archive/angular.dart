@@ -98,12 +98,7 @@ const int $TILDE  = 126;
 const int $NBSP   = 160;
 
 bool isWhitespace(int code) {
-  return (code == $SPACE)
-      || (code == $CR)
-      || (code == $LF)
-      || (code == $NBSP)
-      || (code == $TAB)
-      || (code == $VTAB);
+  return (code >= $TAB && code <= $SPACE) || (code == $NBSP);
 }
 
 bool isIdentifierStart(int code) {
@@ -134,6 +129,7 @@ bool isExponentSign(int code) {
 }
 
 int unescape(int code) {
+  if (code & 1 == 1 || code < $f || code > $v) return code;
   Map<int, int> escapes = const {
       $n: $LF,
       $f: $FF,
