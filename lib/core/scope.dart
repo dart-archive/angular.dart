@@ -65,7 +65,10 @@ class Scope implements Map {
   Scope(this._exceptionHandler, this._parser, ScopeDigestTTL ttl,
       this._zone, this._perf):
         $parent = null, _isolate = false, _lazy = false, _ttl = ttl.ttl {
-    _properties[r'this']= this;
+    _properties[r'this'] = this;
+    _properties[r'$id'] = this.$id;
+    _properties[r'$parent'] = this.$parent;
+    _properties[r'$root'] = this.$root;
     $root = this;
     $id = '_${$root._nextId++}';
     _innerAsyncQueue = [];
@@ -80,6 +83,9 @@ class Scope implements Map {
       $parent = parent, _ttl = parent._ttl, _parser = parent._parser,
       _exceptionHandler = parent._exceptionHandler, _zone = parent._zone {
     _properties[r'this'] = this;
+    _properties[r'$id'] = this.$id;
+    _properties[r'$parent'] = this.$parent;
+    _properties[r'$root'] = this.$root;
     $root = $parent.$root;
     $id = '_${$root._nextId++}';
     _innerAsyncQueue = $parent._innerAsyncQueue;
@@ -107,23 +113,27 @@ class Scope implements Map {
     (a is String && b is String && a == b) ||
     (a is num && b is num && a.isNaN && b.isNaN);
 
-  containsKey(String name) => this[name] != null;
+  containsKey(String name) {
+    for (var scope = this; scope != null; scope = scope.$parent) {
+      if (scope._properties.containsKey(name)) {
+        return true;
+      } else if(scope._isolate) {
+        break;
+      }
+    }
+    return false;
+  }
+
   remove(String name) => this._properties.remove(name);
   operator []=(String name, value) => _properties[name] = value;
   operator [](String name) {
-    if (name == r'$id') return this.$id;
-    if (name == r'$parent') return this.$parent;
-    if (name == r'$root') return this.$root;
-    var scope = this;
-    do {
+    for (var scope = this; scope != null; scope = scope.$parent) {
       if (scope._properties.containsKey(name)) {
         return scope._properties[name];
-      } else if (!scope._isolate) {
-        scope = scope.$parent;
-      } else {
-        return null;
+      } else if(scope._isolate) {
+        break;
       }
-    } while(scope != null);
+    }
     return null;
   }
 
