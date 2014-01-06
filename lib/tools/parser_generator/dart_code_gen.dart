@@ -8,82 +8,58 @@ escape(String s) =>
      .replaceAll(r'$', r'\$')
      .replaceAll('\n', '\\n');
 
-class DartCodeGen extends Visitor {
+class DartCodeGen {
+  final HelperMap getters = new HelperMap('_',
+      getterTemplate, getterTemplateForReserved);
+  final HelperMap holders = new HelperMap('_ensure\$',
+      holderTemplate, holderTemplateForReserved);
+  final HelperMap setters = new HelperMap('_set\$',
+      setterTemplate, setterTemplateForReserved);
+
+  String generate(Expression expression, bool assign) {
+    var v = new DartCodeGenVisitor(getters, holders, setters);
+    return assign ? v.assign(expression)('value') : v.evaluate(expression);
+  }
+}
+
+class DartCodeGenVisitor extends Visitor {
   static const int STATE_EVAL = 0;
   static const int STATE_EVAL_HOLDER = 1;
   static const int STATE_ASSIGN = 2;
   int state = STATE_EVAL;
 
-  static Map<String, String> getters = new Map<String, String>();
-  static Map<String, String> getterNames = new Map<String, String>();
+  final HelperMap getters;
+  final HelperMap holders;
+  final HelperMap setters;
 
-  static Map<String, String> holders = new Map<String, String>();
-  static Map<String, String> holderNames = new Map<String, String>();
-
-  static Map<String, String> setters = new Map<String, String>();
-  static Map<String, String> setterNames = new Map<String, String>();
-
-  static String generateForExpression(Expression expression, bool assign) {
-    DartCodeGen visitor = new DartCodeGen();
-    return assign
-        ? visitor.assign(expression)('value')
-        : visitor.evaluate(expression);
-  }
+  DartCodeGenVisitor(this.getters, this.holders, this.setters);
 
   bool get isEvaluating => state == STATE_EVAL;
   bool get isEvaluatingHolder => state == STATE_EVAL_HOLDER;
   bool get isAssigning => state == STATE_ASSIGN;
 
-  String computeGetterName(String key) {
-    String result = getterNames[key];
-    if (result != null) return result;
-    return (getterNames[key] = '_$key');
+  String lookupGetter(String key) => getters.lookup(key);
+  String lookupHolder(String key) => holders.lookup(key);
+  String lookupSetter(String key) => setters.lookup(key);
+
+  String lookupAccessor(String key) {
+    switch (state) {
+      case STATE_EVAL: return lookupGetter(key);
+      case STATE_EVAL_HOLDER: return lookupHolder(key);
+      case STATE_ASSIGN: return lookupSetter(key);
+    }
   }
 
-  String computeHolderName(String key) {
-    String result = holderNames[key];
-    if (result != null) return result;
-    return (holderNames[key] = '_x\$$key');
-  }
+  String toBool(String value)
+      => 'toBool($value)';
+  String safeCallFunction(String function, String name, String arguments)
+      => 'safeFunctionCall($function, "$name", evalError)($arguments)';
 
-  String computeSetterName(String key) {
-    String result = setterNames[key];
-    if (result != null) return result;
-    return (setterNames[key] = '_set\$$key');
-  }
-
-  String lookupGetter(String key) {
-    String getterName = computeGetterName(key);
-    if (getters.containsKey(key)) return getterName;
-    getters[key] = isReserved(key)
-        ? getterTemplateForReserved(getterName, key)
-        : getterTemplate(getterName, key);
-    return getterName;
-  }
-
-  String lookupHolder(String key) {
-    String holderName = computeHolderName(key);
-    if (holders.containsKey(key)) return holderName;
-    holders[key] = isReserved(key)
-        ? holderTemplateForReserved(holderName, key)
-        : holderTemplate(holderName, key);
-    return holderName;
-  }
-
-  String lookupSetter(String key) {
-    String setterName = computeSetterName(key);
-    if (setters.containsKey(key)) return setterName;
-    setters[key] = isReserved(key)
-        ? setterTemplateForReserved(setterName, key)
-        : setterTemplate(setterName, key);
-    return setterName;
-  }
-
-  String evaluate(Expression expression, {bool toBool: false}) {
+  String evaluate(Expression expression, {bool convertToBool: false}) {
     int old = state;
     state = STATE_EVAL;
     String result = visit(expression);
-    if (toBool) result = "toBool($result)";
+    if (convertToBool) result = toBool(result);
     state = old;
     return result;
   }
@@ -129,37 +105,27 @@ class DartCodeGen extends Visitor {
   }
 
   visitConditional(Conditional conditional) {
-    String condition = evaluate(conditional.condition, toBool: true);
+    String condition = evaluate(conditional.condition, convertToBool: true);
     String yes = evaluate(conditional.yes);
     String no = evaluate(conditional.no);
     return "$condition ? $yes : $no";
   }
 
   visitAccessScope(AccessScope access) {
-    if (isAssigning) {
-      String setter = lookupSetter(access.name);
-      return (value) => '$setter(scope, $value)';
-    } else {
-      String getter = isEvaluatingHolder
-          ? lookupHolder(access.name)
-          : lookupGetter(access.name);
-      return '$getter(scope)';
-    }
+    String accessor = lookupAccessor(access.name);
+    return isAssigning
+        ? (value) => '$accessor(scope, $value)'
+        : '$accessor(scope)';
   }
 
   visitAccessMember(AccessMember access) {
     String object = !isEvaluating
         ? evaluateHolder(access.object)
         : evaluate(access.object);
-    if (isAssigning) {
-      String setter = lookupSetter(access.name);
-      return (value) => '$setter($object, $value)';
-    } else {
-      String getter = isEvaluatingHolder
-          ? lookupHolder(access.name)
-          : lookupGetter(access.name);
-      return '$getter($object)';
-    }
+    String accessor = lookupAccessor(access.name);
+    return isAssigning
+        ? (value) => '$accessor($object, $value)'
+        : '$accessor($object)';
   }
 
   visitAccessKeyed(AccessKeyed access) {
@@ -173,27 +139,27 @@ class DartCodeGen extends Visitor {
   visitCallScope(CallScope call) {
     String arguments = call.arguments.map((e) => evaluate(e)).join(', ');
     String getter = lookupGetter(call.name);
-    return 'safeFunctionCall($getter(scope), "${call.name}", evalError)($arguments)';
+    return safeCallFunction('$getter(scope)', call.name, arguments);
   }
 
   visitCallFunction(CallFunction call) {
     String function = evaluate(call.function);
     String arguments = call.arguments.map((e) => evaluate(e)).join(', ');
-    return 'safeFunctionCall($function, "${call.function}", evalError)($arguments)';
+    return safeCallFunction(function, "${call.function}", arguments);
   }
 
   visitCallMember(CallMember call) {
     String object = evaluate(call.object);
     String arguments = call.arguments.map((e) => evaluate(e)).join(', ');
     String getter = lookupGetter(call.name);
-    return 'safeFunctionCall($getter($object), "${call.name}", evalError)($arguments)';
+    return safeCallFunction('$getter($object)', call.name, arguments);
   }
 
   visitBinary(Binary binary) {
     String operation = binary.operation;
     bool logical = (operation == '||') || (operation == '&&');
-    String left = evaluate(binary.left, toBool: logical);
-    String right = evaluate(binary.right, toBool: logical);
+    String left = evaluate(binary.left, convertToBool: logical);
+    String right = evaluate(binary.right, convertToBool: logical);
     if (operation == '+') {
       return 'autoConvertAdd($left, $right)';
     } else {
@@ -204,7 +170,7 @@ class DartCodeGen extends Visitor {
   visitPrefix(Prefix prefix) {
     String operation = prefix.operation;
     bool logical = (operation == '!');
-    String expression = evaluate(prefix.expression, toBool: logical);
+    String expression = evaluate(prefix.expression, convertToBool: logical);
     return '$operation$expression';
   }
 
@@ -236,6 +202,32 @@ class DartCodeGen extends Visitor {
       buffer.write(evaluate(literal.values[i]));
     }
     return "{ $buffer }";
+  }
+}
+
+class HelperMap {
+  final Map<String, String> helpers = new Map<String, String>();
+  final Map<String, String> names = new Map<String, String>();
+
+  final String prefix;
+  final Function template;
+  final Function templateForReserved;
+
+  HelperMap(this.prefix, this.template, this.templateForReserved);
+
+  String lookup(String key) {
+    String name = _computeName(key);
+    if (helpers.containsKey(key)) return name;
+    helpers[key] = isReserved(key)
+        ? templateForReserved(name, key)
+        : template(name, key);
+    return name;
+  }
+
+  String _computeName(String key) {
+    String result = names[key];
+    if (result != null) return result;
+    return names[key] = "$prefix$key";
   }
 }
 

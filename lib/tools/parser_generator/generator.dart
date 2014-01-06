@@ -11,8 +11,9 @@ class SourcePrinter {
 
 class ParserGenerator {
   final Parser _parser;
+  final DartCodeGen _codegen;
   final SourcePrinter _printer;
-  ParserGenerator(this._parser, this._printer);
+  ParserGenerator(this._parser, this._codegen, this._printer);
 
   void print(object) {
     _printer.printSrc('$object');
@@ -35,9 +36,9 @@ class ParserGenerator {
     // Generate the code.
     generateBuildFunction('buildEval', eval);
     generateBuildFunction('buildAssign', assign);
-    DartCodeGen.getters.values.forEach(print);
-    DartCodeGen.holders.values.forEach(print);
-    DartCodeGen.setters.values.forEach(print);
+    _codegen.getters.helpers.values.forEach(print);
+    _codegen.holders.helpers.values.forEach(print);
+    _codegen.setters.helpers.values.forEach(print);
   }
 
   void generateBuildFunction(String name, Map map) {
@@ -52,9 +53,7 @@ class ParserGenerator {
     String escaped = escape(exp);
     try {
       Expression e = _parser.parse(exp);
-      if (e is Assignable) {
-        assign[escaped] = getCode(e, true);
-      }
+      if (e is Assignable) assign[escaped] = getCode(e, true);
       eval[escaped] = getCode(e, false);
     } catch (e) {
       if ("$e".contains('Parser Error') ||
@@ -67,9 +66,9 @@ class ParserGenerator {
     }
   }
 
-  static String getCode(Expression e, bool assign) {
+  String getCode(Expression e, bool assign) {
     String args = assign ? "scope, value" : "scope";
-    String code = DartCodeGen.generateForExpression(e, assign);
+    String code = _codegen.generate(e, assign);
     if (e is Chain) {
       code = code.replaceAll('\n', '\n      ');
       return "($args) {\n      $code\n    }";
