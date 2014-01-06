@@ -1,7 +1,13 @@
 library angular.service.parser.generated_expressions_template;
 
-import 'package:angular/core/parser/parser_library.dart';
-import 'package:angular/utils.dart';
+import 'package:angular/core/parser/parser_library.dart'
+    show safeFunctionCall,
+         autoConvertAdd,
+         objectIndexGetField,
+         objectIndexSetField,
+         StaticParserFunctions;
+import 'package:angular/utils.dart'
+    show toBool;
 
 main(){}
 typedef Function FilterLookup(String filterName);

@@ -37,22 +37,20 @@ main(args) {
   var headerFile = args[2];
   var footerFile = args[3];
   var outputFile = args[4];
-  SourcePrinter _prt;
+  SourcePrinter printer;
   if (outputFile == '--') {
-    _prt = new SourcePrinter();
+    printer = new SourcePrinter();
   } else {
-    _prt = new FileSourcePrinter(outputFile);
+    printer = new FileSourcePrinter(outputFile);
   }
 
   // Output the header file first.
   if (headerFile != '') {
-    _prt.printSrc(_readFile(headerFile));
+    printer.printSrc(_readFile(headerFile));
   }
 
-  _prt.printSrc('// Found ${expressions.length} expressions');
-  Module module = new Module()
-    ..type(ParserBackend, implementedBy: DartCodeGen)
-    ..value(SourcePrinter, _prt);
+  printer.printSrc('// Found ${expressions.length} expressions');
+  Module module = new Module()..value(SourcePrinter, printer);
   Injector injector =
       new DynamicInjector(modules: [module], allowImplicitInjection: true);
 
@@ -61,7 +59,7 @@ main(args) {
 
   // Output footer last.
   if (footerFile != '') {
-    _prt.printSrc(_readFile(footerFile));
+    printer.printSrc(_readFile(footerFile));
   }
 }
 
