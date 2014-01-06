@@ -11,7 +11,7 @@
 library angular;
 
 import 'dart:html' as dom;
-import 'dart:js';
+import 'dart:js' as js;
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 
@@ -21,7 +21,6 @@ import 'package:angular/directive/module.dart';
 import 'package:angular/filter/module.dart';
 import 'package:angular/perf/module.dart';
 import 'package:angular/routing/module.dart';
-import 'package:js/js.dart' as js;
 
 export 'package:di/di.dart';
 export 'package:angular/core/module.dart';
