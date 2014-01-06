@@ -129,13 +129,12 @@ bool isExponentSign(int code) {
 }
 
 int unescape(int code) {
-  if (code & 1 == 1 || code < $f || code > $v) return code;
-  Map<int, int> escapes = const {
-      $n: $LF,
-      $f: $FF,
-      $r: $CR,
-      $t: $TAB,
-      $v: $VTAB };
-  int mapped = escapes[code];
-  return (mapped == null) ? code : mapped;
+  switch(code) {
+    case $n: return $LF;
+    case $f: return $FF;
+    case $r: return $CR;
+    case $t: return $TAB;
+    case $v: return $VTAB;
+    default: return code;
+  }
 }
