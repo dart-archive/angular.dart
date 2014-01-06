@@ -46,6 +46,9 @@ Scope ngScope(dom.Node node) => ngProbe(node).scope;
 List<dom.Element> ngQuery(dom.Node element, String selector, [String containsText]) {
   var list = [];
   var children = [element];
+  if ((element is dom.Element) && element.shadowRoot != null) {
+    children.add(element.shadowRoot);
+  }
   while (!children.isEmpty) {
     var child = children.removeAt(0);
     child.querySelectorAll(selector).forEach((e) {
