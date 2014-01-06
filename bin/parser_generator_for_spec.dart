@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:angular/core/parser/parser_library.dart';

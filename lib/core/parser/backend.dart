@@ -205,6 +205,15 @@ class ParserBackend {
     };
   }
 
+  List evalList(List<Expression> list, self) {
+    int length = list.length;
+    List result = new List(length);
+    for (int i = 0; i < length; i++) {
+      result[i] = list[i].eval(self);
+    }
+    return result;
+  }
+
   _op(opKey) => OPERATORS[opKey];
 
   Expression ternaryFn(Expression cond, Expression _true, Expression _false) =>
@@ -237,16 +246,23 @@ class ParserBackend {
         return value;
       });
 
-  Expression functionCall(fn, fnName, argsFn, evalError) =>
-      new Expression((self){
-        List args = [];
-        for ( var i = 0; i < argsFn.length; i++) {
-          args.add(argsFn[i].eval(self));
-        }
+  Expression functionCall(fn, fnName, argsFn, evalError) {
+    if (fn.isFieldAccess) {
+      Symbol key = new Symbol(fn.fieldName);
+      return new Expression((self) {
+        List args = evalList(argsFn, self);
+        var holder = fn.fieldHolder.eval(self);
+        InstanceMirror instanceMirror = reflect(holder);
+        return instanceMirror.invoke(key, args).reflectee;
+      });
+    } else {
+      return new Expression((self) {
+        List args = evalList(argsFn, self);
         var userFn = safeFunctionCall(fn.eval(self), fnName, evalError);
-
         return relaxFnApply(userFn, args);
       });
+    }
+  }
 
   Expression arrayDeclaration(elementFns) =>
       new Expression((self){
@@ -276,7 +292,9 @@ class ParserBackend {
     var getterFn = getter(field);
     return new Expression(
         (self) => getterFn(object.eval(self)),
-        (self, value) => setterFn(object.eval(self), value));
+        (self, value) => setterFn(object.eval(self), value))
+            ..fieldHolder = object
+            ..fieldName = field;
   }
 
   Expression object(keyValues) =>

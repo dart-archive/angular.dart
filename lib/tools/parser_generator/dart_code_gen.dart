@@ -40,7 +40,7 @@ class Code implements ParserAST, Expression {
   ParsedSetter get assign => throw new UnimplementedError();
   List get parts => throw new UnimplementedError();
   set parts(List p) => throw new UnimplementedError();
-  bind(context, localsWrapper) => throw new UnimplementedError();
+  bind(context, [localsWrapper]) => throw new UnimplementedError();
 
   Source toSource(SourceBuilder _) {
     return _('new Expression', _.parens(
