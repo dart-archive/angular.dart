@@ -7,22 +7,34 @@ import 'source.dart';
 
 class NewDartCodeGen extends np.Visitor {
   bool assigning = false;
+  bool holder = false;
 
   static Map<String, String> getters = new Map<String, String>();
   static Map<String, String> getterNames = new Map<String, String>();
 
+  static Map<String, String> holders = new Map<String, String>();
+  static Map<String, String> holderNames = new Map<String, String>();
+
   static Map<String, String> setters = new Map<String, String>();
   static Map<String, String> setterNames = new Map<String, String>();
 
-  static String generateForExpression(np.Expression expression) {
+  static String generateForExpression(np.Expression expression, bool assign) {
     NewDartCodeGen visitor = new NewDartCodeGen();
-    return visitor.visit(expression);
+    return assign
+        ? visitor.visitForAssign(expression)('value')
+        : visitor.visitForValue(expression);
   }
 
   String computeGetterName(String name) {
     String result = getterNames[name];
     if (result != null) return result;
     return (getterNames[name] = '_$name');
+  }
+
+  String computeHolderName(String name) {
+    String result = holderNames[name];
+    if (result != null) return result;
+    return (holderNames[name] = '_x\$$name');
   }
 
   String computeSetterName(String name) {
@@ -45,11 +57,35 @@ class NewDartCodeGen extends np.Visitor {
     return getterName;
   }
 
+  String lookupHolder(String name) {
+    String holderName = computeHolderName(name);
+    if (holders.containsKey(name)) return holderName;
+    String key = escape(name);
+    StringBuffer buffer = new StringBuffer()
+        ..writeln('$holderName(o) {')
+        ..writeln('  if (o == null) return null;')
+        ..writeln('  if (o is Map) {')
+        ..writeln('    var key = "$key";')
+        ..writeln('    var result = o[key];')
+        ..writeln('    return (result == null) ? result = o[key] = {} : result;')
+        ..writeln('  } else {');
+    if (isReserved(name)) {
+      buffer.writeln('    return {};');
+    } else {
+      buffer.writeln('    var result = o.$name;');
+      buffer.writeln('    return (result == null) ? result = o.$name = {} : result;');
+    }
+    buffer.writeln('  }');
+    buffer.writeln('}');
+    holders[name] = "$buffer";
+    return holderName;
+  }
+
   String lookupSetter(String name) {
     String setterName = computeSetterName(name);
     if (setters.containsKey(name)) return setterName;
     String key = escape(name);
-    String fieldUpdate = isReserved(name) ? "" : " o.$name = v;";
+    String fieldUpdate = isReserved(name) ? "" : " else o.$name = v;";
     StringBuffer buffer = new StringBuffer()
         ..writeln('$setterName(o, v) {')
         ..writeln('  if (o is Map) o["$key"] = v;$fieldUpdate')
@@ -59,7 +95,7 @@ class NewDartCodeGen extends np.Visitor {
     return setterName;
   }
 
-  Function visitForAssign(np.Expression target) {
+  Function visitForAssign(np.Assignable target) {
     bool old = assigning;
     assigning = true;
     Function result = visit(target);
@@ -73,6 +109,14 @@ class NewDartCodeGen extends np.Visitor {
     String result = visit(expression);
     if (toBool) result = "toBool($result)";
     assigning = old;
+    return result;
+  }
+
+  String visitForHolder(np.Expression expression) {
+    bool old = holder;
+    holder = true;
+    String result = visitForValue(expression);
+    holder = old;
     return result;
   }
 
@@ -112,18 +156,24 @@ class NewDartCodeGen extends np.Visitor {
       String setter = lookupSetter(access.name);
       return (value) => '$setter(scope, $value)';
     } else {
-      String getter = lookupGetter(access.name);
+      String getter = holder
+          ? lookupHolder(access.name)
+          : lookupGetter(access.name);
       return '$getter(scope)';
     }
   }
 
   visitAccessMember(np.AccessMember access) {
-    String object = visitForValue(access.object);
+    String object = assigning || holder
+        ? visitForHolder(access.object)
+        : visitForValue(access.object);
     if (assigning) {
       String setter = lookupSetter(access.name);
       return (value) => '$setter($object, $value)';
     } else {
-      String getter = lookupGetter(access.name);
+      String getter = holder
+          ? lookupHolder(access.name)
+          : lookupGetter(access.name);
       return '$getter($object)';
     }
   }
@@ -139,20 +189,20 @@ class NewDartCodeGen extends np.Visitor {
   visitCallScope(np.CallScope call) {
     String arguments = call.arguments.map((e) => visitForValue(e)).join(', ');
     String getter = lookupGetter(call.name);
-    return '$getter(scope)($arguments)';
+    return 'safeFunctionCall($getter(scope), "${call.name}", evalError)($arguments)';
   }
 
   visitCallFunction(np.CallFunction call) {
     String function = visitForValue(call.function);
     String arguments = call.arguments.map((e) => visitForValue(e)).join(', ');
-    return '$function($arguments)';
+    return 'safeFunctionCall($function, "${call.function}", evalError)($arguments)';
   }
 
   visitCallMember(np.CallMember call) {
     String object = visitForValue(call.object);
     String arguments = call.arguments.map((e) => visitForValue(e)).join(', ');
     String getter = lookupGetter(call.name);
-    return '$getter($object)($arguments)';
+    return 'safeFunctionCall($getter($object), "${call.name}", evalError)($arguments)';
   }
 
   visitBinary(np.Binary binary) {

@@ -1,29 +1,34 @@
 part of angular.core.parser;
 
 class StaticParserFunctions {
-  StaticParserFunctions(Map this.functions);
-
-  Map<String, dynamic> functions;
+  Map<String, Function> eval;
+  Map<String, Function> assign;
+  StaticParserFunctions(this.eval, this.assign);
 }
 
 @NgInjectableService()
 class StaticParser implements Parser {
-  Map<String, dynamic> _functions;
+  Map<String, Function> _eval;
+  Map<String, Function> _assign;
   Parser _fallbackParser;
 
   StaticParser(StaticParserFunctions functions,
                DynamicParser this._fallbackParser) {
     assert(functions != null);
-    _functions = functions.functions;
+    _eval = functions.eval;
+    _assign = functions.assign;
   }
 
   call(String exp) {
     if (exp == null) exp = "";
-    if (!_functions.containsKey(exp)) {
+    if (!_eval.containsKey(exp)) {
       //print("Expression [$exp] is not supported in static parser");
       return _fallbackParser.call(exp);
     }
-    return new Expression(_functions[exp]);
+    var eval = _eval[exp];
+    if (eval is !Function) throw eval;
+    Function assign = _assign[exp];
+    return new Expression(eval, assign);
   }
 
   primaryFromToken(Token token, parserError) {

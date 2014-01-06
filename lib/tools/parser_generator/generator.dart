@@ -24,39 +24,54 @@ class ParserGenerator {
   generateParser(Iterable<String> expressions) {
     _prt..printSrc("genEvalError(msg) { throw msg; }")
       ..printSrc("functions(FilterLookup filters) => "
-                 "new StaticParserFunctions(buildExpressions(filters));")
+                 "new StaticParserFunctions(buildEval(filters), buildAssign(filters));")
       ..printSrc('var evalError = (text, [s]) => text;')
       ..printSrc("");
 
-    BodySource body = new BodySource();
-    MapSource map = new MapSource();
 
-    // determine the order.
+    // Compute the function maps.
+    MapSource eval = new MapSource();
+    MapSource assign = new MapSource();
     expressions.forEach((exp) {
-      String code = safeCode(exp);
-      map('${_.str(exp)}: (scope) $code');
+      generateCode(exp, eval, assign);
     });
-    body(_.stmt('return ', map));
-    _prt..printSrc("Map<String, Expression> buildExpressions(FilterLookup filters) ${body}")
-      ..printSrc("\n");
 
-    NewDartCodeGen.getters.values.forEach((e) => _prt.printSrc(e));
-    NewDartCodeGen.setters.values.forEach((e) => _prt.printSrc(e));
+    // Generate the code.
+    generateBuildFunction('buildEval', eval);
+    generateBuildFunction('buildAssign', assign);
+    NewDartCodeGen.getters.values.forEach(_prt.printSrc);
+    NewDartCodeGen.holders.values.forEach(_prt.printSrc);
+    NewDartCodeGen.setters.values.forEach(_prt.printSrc);
   }
 
-  String safeCode(String exp) {
+  void generateBuildFunction(String name, MapSource map) {
+    BodySource src = new BodySource();
+    src(_.stmt('return ', map));
+    _prt.printSrc("Map<String, Function> $name(FilterLookup filters) {$src}\n");
+  }
+
+  void generateCode(String exp, MapSource eval, MapSource assign) {
+    String escaped = _.str(exp);
     try {
       new_parser.Expression e = _newParser.parse(exp);
-      String code = NewDartCodeGen.generateForExpression(e);
-      return (e is new_parser.Chain) ? "{ $code }" : "=> $code";
+      if (e is new_parser.Assignable) {
+        assign('$escaped: ${getCode(e, true)}');
+      }
+      eval('$escaped: ${getCode(e, false)}');
     } catch (e) {
       if ("$e".contains('Parser Error') ||
           "$e".contains('Lexer Error') ||
           "$e".contains('Unexpected end of expression')) {
-        return "=> throw '${escape(e.toString())}'";
+        eval('$escaped: "${escape(e.toString())}"');
       } else {
         rethrow;
       }
     }
+  }
+
+  static String getCode(new_parser.Expression e, bool assign) {
+    String args = assign ? "scope, value" : "scope";
+    String code = NewDartCodeGen.generateForExpression(e, assign);
+    return (e is new_parser.Chain) ? "($args) { $code }" : "($args) => $code";
   }
 }

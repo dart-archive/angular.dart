@@ -2,7 +2,8 @@ library static_parser_spec;
 
 import '../../_specs.dart';
 
-var FUNCTIONS = { '1': 1 };
+var EVAL = { '1': (scope) => 1 };
+var ASSIGN = { };
 
 class AlwaysReturnX implements DynamicParser {
   call(String x) => 'x';
@@ -14,12 +15,13 @@ main() {
     beforeEach(module((Module m) {
       m.type(Parser, implementedBy: StaticParser);
       m.type(DynamicParser, implementedBy: AlwaysReturnX);
-      m.value(StaticParserFunctions, new StaticParserFunctions(FUNCTIONS));
+      m.value(StaticParserFunctions,
+          new StaticParserFunctions(EVAL, ASSIGN));
     }));
 
 
     it('should run a static function', inject((Parser parser) {
-      expect(parser('1')).toEqual(1);
+      expect(parser('1').eval(null)).toEqual(1);
     }));
 
 
