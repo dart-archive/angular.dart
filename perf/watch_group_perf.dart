@@ -7,11 +7,35 @@ import 'package:angular/change_detection/watch_group.dart';
 
 var reactionFn = (_, __, ___) => null;
 main() {
+  // collectionIteration();
   fieldRead();
   mapRead();
   methodInvoke0();
   methodInvoke1();
   function2();
+}
+
+collectionIteration() {
+  List<int> list = [];
+  for(int i = 0, ii = 1000; i < ii; i++) {
+    list.add(i);
+  }
+  time('collection.forEach',() {
+    fn(int i) => i;
+    list.forEach(fn);
+  });
+  time('for item in collection', () {
+    fn(int i) => i;
+    for(var item in list) {
+      fn(item);
+    }
+  });
+  time('for i; i<ii; i++', () {
+    fn(int i) => i;
+    for(var i = 0, ii = list.length; i < ii; i++) {
+      fn(list[i]);
+    }
+  });
 }
 
 fieldRead() {

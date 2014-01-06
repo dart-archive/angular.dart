@@ -107,13 +107,36 @@ abstract class ChangeRecord<H> extends Record<H> {
   ChangeRecord<H> get nextChange;
 }
 
-abstract class CollectionChangeItem {
+abstract class CollectionChangeRecord<K, V> {
+  CollectionItem<K, V> collectionHead;
+  AddedChangeItem<K, V> additionsHead;
+  MovedChangeItem<K, V> movesHead;
+  RemovedChangeItem<K, V> removalsHead;
+}
+
+abstract class CollectionChangeItem<K, V> {
   /** Previous item location in the list or [null] if addition. */
-  dynamic get previousKey;
+  K get previousKey;
 
   /** Current item location in the list or [null] if removal. */
-  dynamic get currentKey;
+  K get currentKey;
 
   /** The item. */
-  dynamic get item;
+  V get item;
+}
+
+abstract class CollectionItem<K, V> extends CollectionChangeItem<K, V> {
+  CollectionItem<K, V> nextCollectionItem;
+}
+
+abstract class AddedItem<K, V> extends CollectionChangeItem<K, V> {
+  AddedItem<K, V> nextAddedItem;
+}
+
+abstract class MovedItem<K, V> extends CollectionChangeItem<K, V> {
+  MovedItem<K, V> nextMovedItem;
+}
+
+abstract class RemovedItem<K, V> extends CollectionChangeItem<K, V> {
+  RemovedItem<K, V> nextRemovedItem;
 }

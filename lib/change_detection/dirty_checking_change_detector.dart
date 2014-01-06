@@ -220,10 +220,10 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
       const ['MARKER', 'IDENT', 'OBJECT', 'MAP', 'LIST_CHANGE', 'MAP_CHANGE'];
   static const int _MODE_MARKER_ = 0;
   static const int _MODE_IDENTITY_ = 1;
-  static const int _MODE_OBJECT_ = 2;
-  static const int _MODE_MAP_ = 3;
-  static const int _MODE_LIST_CHANGE_ = 4;
-  static const int _MODE_MAP_CHANGE_ = 5;
+  static const int _MODE_FIELD_ = 2;
+  static const int _MODE_MAP_FIELD_ = 3;
+  static const int _MODE_ITERABLE_ = 4;
+  static const int _MODE_MAP_ = 5;
 
   final DirtyCheckingChangeDetectorGroup _group;
   final String field;
@@ -242,7 +242,7 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
 
   _DirtyCheckingRecord(this._group, obj, fieldName, this.handler):
     field = fieldName,
-    _symbol = new Symbol(fieldName)
+    _symbol = fieldName == null ? null : new Symbol(fieldName)
   {
     this.object = obj;
   }
@@ -260,26 +260,40 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
     this._object = obj;
     if (obj == null) {
       _mode = _MODE_IDENTITY_;
-    } else if (obj is Map) {
-      _mode = _MODE_MAP_;
+    } else if (field == null) {
+      _instanceMirror = null;
+      if (obj is Map) {
+        _mode =  _MODE_MAP_;
+      } else if (obj is Iterable) {
+        _mode =  _MODE_ITERABLE_;
+        currentValue = new _CollectionRecord();
+      } else {
+        throw new StateError('Non collections must have fields.');
+      }
     } else {
-      _instanceMirror = reflect(obj);
-      _mode = _MODE_OBJECT_;
+      if (obj is Map) {
+        _mode =  _MODE_MAP_FIELD_;
+        _instanceMirror = null;
+      } else {
+        _mode = _MODE_FIELD_;
+        _instanceMirror = reflect(obj);
+      }
     }
   }
 
   ChangeRecord<H> check() {
-    var lastValue = this.currentValue;
     var currentValue;
+    int mode = _mode;
 
-    switch(_mode) {
-      case _MODE_MARKER_  : return null;
-      case _MODE_OBJECT_  : currentValue = _instanceMirror.getField(_symbol).reflectee; break;
-      case _MODE_MAP_     : currentValue = object[field];                               break;
-      case _MODE_IDENTITY_: currentValue = object;                                      break;
-      defualt: assert('unknown mode');
-    }
+    if      (_MODE_MARKER_    == mode) return null;
+    else if (_MODE_FIELD_     == mode) currentValue = _instanceMirror.getField(_symbol).reflectee;
+    else if (_MODE_MAP_FIELD_ == mode) currentValue = object[field];
+    else if (_MODE_IDENTITY_  == mode) currentValue = object;
+    else if (_MODE_MAP_       == mode) return mapCheck(object) ? this : null;
+    else if (_MODE_ITERABLE_  == mode) return iterableCheck(object) ? this : null;
+    else assert('unknown mode');
 
+    var lastValue = this.currentValue;
     if (!identical(lastValue, currentValue)) {
       if (lastValue is String && currentValue is String && lastValue == currentValue) {
         // this is false change in strings we need to recover, and pretend it is the same
@@ -293,6 +307,36 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
     return null;
   }
 
+  mapCheck(Map map) {
+    assert('implement');
+  }
+
+
+  iterableCheck(Iterable collection) {
+    _CollectionRecord cRecord = currentValue as _CollectionRecord;
+    cRecord._reset();
+    _ItemRecord record = cRecord._collectionHead;
+    _ItemRecord prevRecord = null;
+    int index = 0;
+    for(var item in collection) {
+      if (record == null) {
+        record = cRecord._addition(prevRecord, item, index);
+      } else if (!identical(item, record.item)) {
+        if (item is String && record.item is String && record == item) {
+          // this is false change in strings we need to recover, and pretend it is the same
+          record.item = item; // we save the value so that next time identity will pass
+        } else {
+          record = cRecord._mismatch(record, item, index);
+        }
+      }
+      prevRecord = record;
+      record = record._nextCollectionItem;
+      index++;
+    };
+    cRecord._truncate(record);
+    return cRecord.isDirty;
+  }
+
   remove() {
     _group._recordRemove(this);
   }
@@ -300,4 +344,262 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
   toString() {
     return '${_MODE_NAMES[_mode]}[$field]';
   }
+}
+
+final Object _INITIAL_ = new Object();
+
+class _CollectionRecord implements CollectionChangeRecord<K, V> {
+  Map<Object, _ItemRecord> _items = new Map<Object, _ItemRecord>();
+  Map<Object, _ItemRecord> _removedItems = new Map<Object, _ItemRecord>();
+  _ItemRecord<K, V> _collectionHead, _collectionTail;
+  _ItemRecord<K, V> _additionsHead, _additionsTail;
+  _ItemRecord<K, V> _movesHead, _movesTail;
+  _ItemRecord<K, V> _removalsHead, _removalsTail;
+
+  CollectionChangeItem<K, V> get collectionHead => _collectionHead;
+  CollectionChangeItem<K, V> get additionsHead => _additionsHead;
+  CollectionChangeItem<K, V> get movesHead => _movesHead;
+  CollectionChangeItem<K, V> get removalsHead => _removalsHead;
+
+  _reset() {
+    _ItemRecord record;
+
+    record = _additionsHead;
+    while(record != null) {
+      record.lastPosition = record.currentPosition;
+      record = record._nextAddedItem;
+    }
+
+    record = _movesHead;
+    while(record != null) {
+      record.lastPosition = record.currentPosition;
+      record = record._nextMovedItem;
+    }
+
+    record = _removalsHead;
+    while(record != null) {
+      record.lastPosition = record.currentPosition;
+      record = record._nextRemovedItem;
+    }
+
+    assert(() {
+      _ItemRecord record;
+
+      record = _additionsHead;
+      while(record != null) {
+        var prevRecord = record;
+        record = record._nextAddedItem;
+        prevRecord._nextAddedItem = null;
+      }
+
+      record = _movesHead;
+      while(record != null) {
+        var prevRecord = record;
+        record = record._nextMovedItem;
+        prevRecord._nextMovedItem = null;
+      }
+
+      record = _removalsHead;
+      while(record != null) {
+        var prevRecord = record;
+        record = record._nextRemovedItem;
+        prevRecord._nextRemovedItem = null;
+      }
+
+      return true;
+    });
+    _additionsHead = _additionsTail = null;
+    _movesHead     = _movesTail     = null;
+    _removalsHead = _removalsTail = null;
+  }
+
+  get isDirty => _additionsHead != null || _movesHead != null || _removalsHead != null;
+
+  _addition(_ItemRecord prevRecord, dynamic item, int index) {
+    _ItemRecord record = _removedItems.remove(item);
+    if (record == null) {
+      record = new _ItemRecord(item, index);
+      _additionsAdd(record);
+    } else {
+      _removalsRemove(record);
+      record.currentPosition = index;
+      _movesAdd(record);
+    }
+    _collectionInsertAfter(record, prevRecord);
+    _items[item] = record; // TODO(misko): deal with duplicates
+
+    return record;
+  }
+
+  _mismatch(_ItemRecord mismatchRecord, dynamic item, int index) {
+    _ItemRecord prevRecord = mismatchRecord._prevCollectionItem;
+    _evict(mismatchRecord);
+    _ItemRecord existingRecord = _items[item];
+    if (existingRecord == null) {
+      // Never seen it, this is a new item
+      return _addition(prevRecord, item, index);
+    } else {
+      // We have seen this before, we need to move it.
+      _moveRecord(existingRecord, prevRecord);
+      existingRecord.currentPosition = index;
+    }
+    return existingRecord;
+  }
+
+  _moveRecord(_ItemRecord record, _ItemRecord prev) {
+    _collectionRemove(record);
+    _ItemRecord next = prev._nextCollectionItem;
+    record._nextCollectionItem = next;
+    record._prevCollectionItem = prev;
+    if (prev == null) _collectionHead = record; else prev._nextCollectionItem = record;
+    if (next == null) _collectionTail = record; else next._prevCollectionItem = record;
+    _movesAdd(record);
+  }
+
+  _evict(_ItemRecord record) {
+    record.currentPosition = null;
+    _collectionRemove(record);
+    _removalsAdd(record);
+    record.currentPosition = null;
+    _items.remove(record.item);
+    _removedItems[record.item] = record;
+  }
+
+  _truncate(_ItemRecord record) {
+    if (record != null) {
+      // terminate the list
+      var prev = record._prevCollectionItem;
+      if (prev == null) _collectionHead = record; else prev._nextCollectionItem = null;
+      _collectionTail = prev;
+    }
+
+    _removedItems.clear();
+
+    // Anything after that needs to be removed;
+    while(record != null) {
+      record.currentPosition = null;
+      _ItemRecord next = record._nextCollectionItem;
+      assert((record._prevCollectionItem = null) == null);
+      assert((record._nextCollectionItem = null) == null);
+      _removalsAdd(record);
+      assert(_items.containsKey(record.item));
+      _items.remove(record.item);
+      record = next;
+    }
+  }
+
+  _ItemRecord _collectionInsertAfter(_ItemRecord record, _ItemRecord prev) {
+    assert(record._nextCollectionItem == null);
+    assert(record._prevCollectionItem == null);
+
+    _ItemRecord next = prev == null ? null : prev._nextCollectionItem;
+    record._nextCollectionItem = next;
+    record._prevCollectionItem = prev;
+    if (next == null) _collectionTail = record; else next._prevCollectionItem = record;
+    if (prev == null) _collectionHead = record; else prev._nextCollectionItem = record;
+  }
+
+  _additionsAdd(_ItemRecord record) {
+    if (_additionsTail == null) {
+      assert(_additionsHead == null);
+      _additionsTail = _additionsHead = record;
+    } else {
+      assert(_additionsTail._nextAddedItem == null);
+      assert(record._nextAddedItem == null);
+      _additionsTail = _additionsTail._nextAddedItem = record;
+    }
+  }
+
+  _movesAdd(_ItemRecord record) {
+    if (_movesTail == null) {
+      assert(_movesHead == null);
+      _movesTail = _movesHead = record;
+    } else {
+      assert(_movesTail._nextMovedItem == null);
+      assert(record._nextMovedItem == null);
+      _movesTail = _movesTail._nextMovedItem = record;
+    }
+  }
+
+  _removalsAdd(_ItemRecord record) {
+    if (_removalsTail == null) {
+      assert(_removalsHead == null);
+      _removalsTail = _removalsHead = record;
+    } else {
+      assert(_removalsTail._nextRemovedItem == null);
+      assert(record._nextRemovedItem == null);
+      record._prevRemovedItem = _removalsTail;
+      _removalsTail = _removalsTail._nextRemovedItem = record;
+    }
+    _items.remove(record.item);
+  }
+
+  _collectionRemove(_ItemRecord record) {
+    var prev = record._prevCollectionItem;
+    var next = record._nextCollectionItem;
+
+    assert((record._prevCollectionItem = null) == null);
+    assert((record._nextCollectionItem = null) == null);
+
+    if (prev == null) _collectionHead = next; else prev._nextCollectionItem = next;
+    if (next == null) _collectionTail = prev; else next._prevCollectionItem = prev;
+  }
+
+  _removalsRemove(_ItemRecord record) {
+    var prev = record._prevRemovedItem;
+    var next = record._nextRemovedItem;
+
+    assert((record._prevRemovedItem = null) == null);
+    assert((record._nextRemovedItem = null) == null);
+
+    if (prev == null) _removalsHead = next; else prev._nextRemovedItem = next;
+    if (next == null) _removalsTail = prev; else next._prevRemovedItem = prev;
+  }
+
+  toString() {
+    _ItemRecord record;
+
+    var list = [];
+    record = _collectionHead;
+    while(record != null) {list.add(record); record = record._nextCollectionItem;};
+
+    var additions = [];
+    record = _additionsHead;
+    while(record != null) {additions.add(record); record = record._nextAddedItem;};
+
+    var moves = [];
+    record = _movesHead;
+    while(record != null) {moves.add(record); record = record._nextMovedItem;};
+
+    var removals = [];
+    record = _removalsHead;
+    while(record != null) {removals.add(record); record = record._nextRemovedItem;};
+
+    var lines = [];
+    lines.add('collection: ${list.join(", ")}');
+    lines.add('additions: ${additions.join(", ")}');
+    lines.add('moves: ${moves.join(", ")}');
+    lines.add('removals: ${removals.join(", ")}');
+    return lines.join('\n');
+  }
+}
+
+class _ItemRecord<K, V> implements CollectionItem<K, V>, AddedItem<K, V>, MovedItem<K, V>, RemovedItem<K, V> {
+  K lastPosition = null;
+  K currentPosition = null;
+  V item = _INITIAL_;
+
+  _ItemRecord<K, V> _prevCollectionItem, _nextCollectionItem;
+  _ItemRecord<K, V> _prevRemovedItem, _nextRemovedItem;
+  _ItemRecord<K, V> _nextAddedItem, _nextMovedItem;
+
+  CollectionItem<K, V> get nextCollectionItem => _nextCollectionItem;
+  AddedItem<K, V> get nextAddedItem => _nextAddedItem;
+  MovedItem<K, V> get nextMovedItem => _nextMovedItem;
+  RemovedItem<K, V> get nextRemovedItem => _nextRemovedItem;
+
+  _ItemRecord(this.item, this.currentPosition);
+
+  toString() => lastPosition == currentPosition
+      ? '$item' : '$item[$lastPosition -> $currentPosition]';
 }

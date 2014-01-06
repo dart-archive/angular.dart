@@ -1,6 +1,7 @@
 library dirty_chekcing_change_detector_spec;
 
 import '../_specs.dart';
+import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 
 main() => ddescribe('DirtyCheckingChangeDetector', () {
@@ -114,11 +115,11 @@ main() => ddescribe('DirtyCheckingChangeDetector', () {
       child2.watch(obj,'a', '2A');
 
       obj['a'] = 1;
-      expect(detector.collectChanges(), toEqualsChanges(['0a', '0A', '1a', '1A', '2A', '1b']));
+      expect(detector.collectChanges(), toEqualChanges(['0a', '0A', '1a', '1A', '2A', '1b']));
 
       obj['a'] = 2;
       child1a.remove(); // should also remove child2
-      expect(detector.collectChanges(), toEqualsChanges(['0a', '0A', '1b']));
+      expect(detector.collectChanges(), toEqualChanges(['0a', '0A', '1b']));
     });
 
     it('should add watches within its own group', () {
@@ -128,26 +129,80 @@ main() => ddescribe('DirtyCheckingChangeDetector', () {
       var cb = child.watch(obj,'b', 'b');
 
       obj['a'] = obj['b'] = 1;
-      expect(detector.collectChanges(), toEqualsChanges(['a', 'b']));
+      expect(detector.collectChanges(), toEqualChanges(['a', 'b']));
 
       obj['a'] = obj['b'] = 2;
       ra.remove();
-      expect(detector.collectChanges(), toEqualsChanges(['b']));
+      expect(detector.collectChanges(), toEqualChanges(['b']));
 
       obj['a'] = obj['b'] = 3;
       cb.remove();
-      expect(detector.collectChanges(), toEqualsChanges([]));
+      expect(detector.collectChanges(), toEqualChanges([]));
 
       // TODO: add them back in wrong order, assert events in right order
       cb = child.watch(obj,'b', 'b');
       ra = detector.watch(obj, 'a', 'a');
       obj['a'] = obj['b'] = 4;
-      expect(detector.collectChanges(), toEqualsChanges(['a', 'b']));
+      expect(detector.collectChanges(), toEqualChanges(['a', 'b']));
     });
   });
 
   describe('list watching', () {
+    it('should detect changes in list', () {
+      var list = [];
+      var record = detector.watch(list, null, 'handler');
+      expect(detector.collectChanges()).toEqual(null);
 
+      list.add('a');
+      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+          collection: ['a[null -> 0]'],
+          additions: ['a[null -> 0]'],
+          moves: [],
+          removals: []));
+
+      list.add('b');
+      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+          collection: ['a', 'b[null -> 1]'],
+          additions: ['b[null -> 1]'],
+          moves: [],
+          removals: []));
+
+      list.add('c');
+      list.add('d');
+      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+          collection: ['a', 'b', 'c[null -> 2]', 'd[null -> 3]'],
+          additions: ['c[null -> 2]', 'd[null -> 3]'],
+          moves: [],
+          removals: []));
+
+      list.remove('c');
+      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+          collection: ['a', 'b', 'd[3 -> 2]'],
+          additions: [],
+          moves: ['d[3 -> 2]'],
+          removals: ['c[2 -> null]']));
+    });
+
+    it('should remove and add same item', () {
+      var list = ['a', 'b', 'c'];
+      var record = detector.watch(list, null, 'handler');
+      detector.collectChanges();
+
+      list.remove('b');
+      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+          collection: ['a', 'c[2 -> 1]'],
+          additions: [],
+          moves: ['c[2 -> 1]'],
+          removals: ['b[1 -> null]']));
+
+      list.insert(1, 'b');
+      expect(list).toEqual(['a', 'b', 'c']);
+      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+          collection: ['a', 'b[null -> 1]', 'c[1 -> 2]'],
+          additions: ['b[null -> 1]'],
+          moves: ['c[1 -> 2]'],
+          removals: []));
+    });
   });
 
   describe('map watching', () {
@@ -163,7 +218,10 @@ class _User {
   _User([this.first, this.last, this.age]);
 }
 
-Matcher toEqualsChanges(List changes) => new ChangeMatcher(changes);
+Matcher toEqualCollectionRecord({collection, additions, moves, removals}) =>
+    new CollectionRecordMatcher(collection:collection, additions:additions,
+                                moves:moves, removals:removals);
+Matcher toEqualChanges(List changes) => new ChangeMatcher(changes);
 
 class ChangeMatcher extends Matcher {
   List expected;
@@ -188,5 +246,139 @@ class ChangeMatcher extends Matcher {
       changes = changes.nextChange;
     }
     return count == expected.length;
+  }
+}
+
+class CollectionRecordMatcher extends Matcher {
+  List collection;
+  List additions;
+  List moves;
+  List removals;
+
+  CollectionRecordMatcher({this.collection, this.additions, this.moves, this.removals});
+
+  Description describeMismatch(changes, Description mismatchDescription, Map matchState, bool verbose) {
+    List diffs = matchState['diffs'];
+    return mismatchDescription..add(diffs.join('\n'));
+  }
+
+  Description describe(Description description) {
+    add(name, collection) {
+      if (collection != null) {
+        description.add('$name: ${collection.join(', ')}\n   ');
+      }
+    }
+
+    add('collection', collection);
+    add('additions', additions);
+    add('moves', moves);
+    add('removals', removals);
+    return description;
+  }
+
+  bool matches(CollectionChangeRecord<K, V> changeRecord, Map matchState) {
+    List diffs = matchState['diffs'] = [];
+    var equals = true;
+    equals = equals && checkCollection(changeRecord, diffs);
+    equals = equals && checkAdditions(changeRecord, diffs);
+    equals = equals && checkMoves(changeRecord, diffs);
+    equals = equals && checkRemovals(changeRecord, diffs);
+    return equals;
+  }
+
+  checkCollection(CollectionChangeRecord<K, V> changeRecord, List diffs) {
+    var equals = true;
+    if (collection != null) {
+      CollectionItem<K, V> collectionItem = changeRecord.collectionHead;
+      for(var item in collection) {
+        if (collectionItem == null) {
+          equals = false;
+          diffs.add('collection too short: $item');
+        } else {
+          if (collectionItem.toString() != item) {
+            equals = false;
+            diffs.add('collection mismatch: $collectionItem != $item');
+          }
+          collectionItem = collectionItem.nextCollectionItem;
+        }
+      }
+      if (collectionItem != null) {
+        diffs.add('collection too long: $collectionItem');
+        equals = false;
+      }
+    }
+    return equals;
+  }
+
+  checkAdditions(CollectionChangeRecord<K, V> changeRecord, List diffs) {
+    var equals = true;
+    if (additions != null) {
+      CollectionItem<K, V> addedItem = changeRecord.additionsHead;
+      for(var item in additions) {
+        if (addedItem == null) {
+          equals = false;
+          diffs.add('additions too short: $item');
+        } else {
+          if (addedItem.toString() != item) {
+            equals = false;
+            diffs.add('additions mismatch: $addedItem != $item');
+          }
+          addedItem = addedItem.nextAddedItem;
+        }
+      }
+      if (addedItem != null) {
+        equals = false;
+        diffs.add('additions too long: $addedItem');
+      }
+    }
+    return equals;
+  }
+
+  checkMoves(CollectionChangeRecord<K, V> changeRecord, List diffs) {
+    var equals = true;
+    if (moves != null) {
+      CollectionItem<K, V> movedItem = changeRecord.movesHead;
+      for(var item in moves) {
+        if (movedItem == null) {
+          equals = false;
+          diffs.add('moves too short: $item');
+        } else {
+          if (movedItem.toString() != item) {
+            equals = false;
+            diffs.add('moves too mismatch: $movedItem != $item');
+          }
+          movedItem = movedItem.nextMovedItem;
+        }
+      }
+      if (movedItem != null) {
+        equals = false;
+        diffs.add('moves too long: $movedItem');
+      }
+    }
+    return equals;
+  }
+
+  checkRemovals(CollectionChangeRecord<K, V> changeRecord, List diffs) {
+    var equals = true;
+    if (removals != null) {
+      CollectionItem<K, V> removedItem = changeRecord.removalsHead;
+      for(var item in removals) {
+        if (removedItem == null) {
+          equals = false;
+          diffs.add('removes too short: $item');
+        } else {
+          if (removedItem.toString() != item) {
+            equals = false;
+            diffs.add('removes too mismatch: $removedItem != $item');
+          }
+          removedItem = removedItem.nextRemovedItem;
+        }
+      }
+      if (removedItem != null) {
+        equals = false;
+        diffs.add('removes too long: $removedItem');
+      }
+    }
+    return equals;
   }
 }
