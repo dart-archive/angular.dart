@@ -23,7 +23,7 @@ class StaticParser implements Parser {
       //print("Expression [$exp] is not supported in static parser");
       return _fallbackParser.call(exp);
     }
-    return _functions[exp];
+    return new Expression(_functions[exp]);
   }
 
   primaryFromToken(Token token, parserError) {

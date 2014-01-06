@@ -2,6 +2,7 @@ library generator;
 
 import 'dart_code_gen.dart';
 import '../../core/parser/parser_library.dart';
+import '../../core/parser/new_syntax.dart' as new_parser;
 import 'source.dart';
 
 class SourcePrinter {
@@ -16,8 +17,9 @@ class ParserGenerator {
   GetterSetterGenerator _getters;
   SourceBuilder _ = new SourceBuilder();
   SourcePrinter _prt;
+  final new_parser.Parser _newParser;
 
-  ParserGenerator(this._parser, this._getters, this._prt);
+  ParserGenerator(this._parser, this._getters, this._prt, this._newParser);
 
   generateParser(Iterable<String> expressions) {
     _prt..printSrc("genEvalError(msg) { throw msg; }")
@@ -25,36 +27,36 @@ class ParserGenerator {
                  "new StaticParserFunctions(buildExpressions(filters));")
       ..printSrc('var evalError = (text, [s]) => text;')
       ..printSrc("");
+
     BodySource body = new BodySource();
     MapSource map = new MapSource();
 
-    // deterimine the order.
+    // determine the order.
     expressions.forEach((exp) {
-      var code = safeCode(exp);
-      map('${_.str(exp)}: ${_.ref(code)}');
-    });
-    // now do it in actual order
-    _.codeRefs.forEach((code) {
-      body(_.stmt('Expression ${_.ref(code)} = ', code.toSource(_)));
+      String code = safeCode(exp);
+      map('${_.str(exp)}: (scope) $code');
     });
     body(_.stmt('return ', map));
     _prt..printSrc("Map<String, Expression> buildExpressions(FilterLookup filters) ${body}")
-      ..printSrc("\n")
-      ..printSrc(_getters.functions);
+      ..printSrc("\n");
+
+    NewDartCodeGen.getters.values.forEach((e) => _prt.printSrc(e));
+    NewDartCodeGen.setters.values.forEach((e) => _prt.printSrc(e));
   }
 
-  Code safeCode(String exp) {
+  String safeCode(String exp) {
     try {
-      return _parser(exp);
+      new_parser.Expression e = _newParser.parse(exp);
+      String code = NewDartCodeGen.generateForExpression(e);
+      return (e is new_parser.Chain) ? "{ $code }" : "=> $code";
     } catch (e) {
       if ("$e".contains('Parser Error') ||
-      "$e".contains('Lexer Error') ||
-      "$e".contains('Unexpected end of expression')) {
-        return  new ThrowCode("'${escape(e.toString())}';");
+          "$e".contains('Lexer Error') ||
+          "$e".contains('Unexpected end of expression')) {
+        return "=> throw '${escape(e.toString())}'";
       } else {
         rethrow;
       }
     }
   }
-
 }

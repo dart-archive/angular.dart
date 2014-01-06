@@ -1,8 +1,210 @@
 library dart_code_gen;
 
 import 'package:angular/tools/reserved_dart_keywords.dart';
-import 'package:angular/core/parser/parser_library.dart';  // For ParserBackend.
+import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core/parser/new_syntax.dart' as np;
 import 'source.dart';
+
+class NewDartCodeGen extends np.Visitor {
+  bool assigning = false;
+
+  static Map<String, String> getters = new Map<String, String>();
+  static Map<String, String> getterNames = new Map<String, String>();
+
+  static Map<String, String> setters = new Map<String, String>();
+  static Map<String, String> setterNames = new Map<String, String>();
+
+  static String generateForExpression(np.Expression expression) {
+    NewDartCodeGen visitor = new NewDartCodeGen();
+    return visitor.visit(expression);
+  }
+
+  String computeGetterName(String name) {
+    String result = getterNames[name];
+    if (result != null) return result;
+    return (getterNames[name] = '_$name');
+  }
+
+  String computeSetterName(String name) {
+    String result = setterNames[name];
+    if (result != null) return result;
+    return (setterNames[name] = '_set\$$name');
+  }
+
+  String lookupGetter(String name) {
+    String getterName = computeGetterName(name);
+    if (getters.containsKey(name)) return getterName;
+    String key = escape(name);
+    String field = isReserved(name) ? "null" : "o.$name";
+    StringBuffer buffer = new StringBuffer()
+        ..writeln('$getterName(o) {')
+        ..writeln('  if (o == null) return null;')
+        ..writeln('  return (o is Map) ? o["$key"] : $field;')
+        ..writeln('}');
+    getters[name] = "$buffer";
+    return getterName;
+  }
+
+  String lookupSetter(String name) {
+    String setterName = computeSetterName(name);
+    if (setters.containsKey(name)) return setterName;
+    String key = escape(name);
+    String fieldUpdate = isReserved(name) ? "" : " o.$name = v;";
+    StringBuffer buffer = new StringBuffer()
+        ..writeln('$setterName(o, v) {')
+        ..writeln('  if (o is Map) o["$key"] = v;$fieldUpdate')
+        ..writeln('  return v;')
+        ..writeln('}');
+    setters[name] = "$buffer";
+    return setterName;
+  }
+
+  Function visitForAssign(np.Expression target) {
+    bool old = assigning;
+    assigning = true;
+    Function result = visit(target);
+    assigning = old;
+    return result;
+  }
+
+  String visitForValue(np.Expression expression, {bool toBool: false}) {
+    bool old = assigning;
+    assigning = false;
+    String result = visit(expression);
+    if (toBool) result = "toBool($result)";
+    assigning = old;
+    return result;
+  }
+
+  visitChain(np.Chain chain) {
+    StringBuffer buffer = new StringBuffer();
+    buffer.writeln("var result, last;");
+    for (int i = 0; i < chain.expressions.length; i++) {
+      String expression = visitForValue(chain.expressions[i]);
+      buffer.writeln('last = $expression;');
+      buffer.writeln('if (last != null) result = last;');
+    }
+    buffer.writeln('return result;');
+    return "$buffer";
+  }
+
+  visitFilter(np.Filter filter) {
+    List expressions = [ filter.expression ]..addAll(filter.arguments);
+    String arguments = expressions.map((e) => visitForValue(e)).join(', ');
+    String name = escape(filter.name);
+    return 'filters("$name")($arguments)';
+  }
+
+  visitAssign(np.Assign expression) {
+    String value = visitForValue(expression.value);
+    return visitForAssign(expression.target)(value);
+  }
+
+  visitConditional(np.Conditional conditional) {
+    String condition = visitForValue(conditional.condition, toBool: true);
+    String yes = visitForValue(conditional.yes);
+    String no = visitForValue(conditional.no);
+    return "$condition ? $yes : $no";
+  }
+
+  visitAccessScope(np.AccessScope access) {
+    if (assigning) {
+      String setter = lookupSetter(access.name);
+      return (value) => '$setter(scope, $value)';
+    } else {
+      String getter = lookupGetter(access.name);
+      return '$getter(scope)';
+    }
+  }
+
+  visitAccessMember(np.AccessMember access) {
+    String object = visitForValue(access.object);
+    if (assigning) {
+      String setter = lookupSetter(access.name);
+      return (value) => '$setter($object, $value)';
+    } else {
+      String getter = lookupGetter(access.name);
+      return '$getter($object)';
+    }
+  }
+
+  visitAccessKeyed(np.AccessKeyed access) {
+    String object = visitForValue(access.object);
+    String key = visitForValue(access.key);
+    return (assigning)
+        ? (value) => 'objectIndexSetField($object, $key, $value, evalError)'
+        : 'objectIndexGetField($object, $key, evalError)';
+  }
+
+  visitCallScope(np.CallScope call) {
+    String arguments = call.arguments.map((e) => visitForValue(e)).join(', ');
+    String getter = lookupGetter(call.name);
+    return '$getter(scope)($arguments)';
+  }
+
+  visitCallFunction(np.CallFunction call) {
+    String function = visitForValue(call.function);
+    String arguments = call.arguments.map((e) => visitForValue(e)).join(', ');
+    return '$function($arguments)';
+  }
+
+  visitCallMember(np.CallMember call) {
+    String object = visitForValue(call.object);
+    String arguments = call.arguments.map((e) => visitForValue(e)).join(', ');
+    String getter = lookupGetter(call.name);
+    return '$getter($object)($arguments)';
+  }
+
+  visitBinary(np.Binary binary) {
+    String operation = binary.operation;
+    bool logical = (operation == '||') || (operation == '&&');
+    String left = visitForValue(binary.left, toBool: logical);
+    String right = visitForValue(binary.right, toBool: logical);
+    if (operation == '+') {
+      return 'autoConvertAdd($left, $right)';
+    } else {
+      return '($left $operation $right)';
+    }
+  }
+
+  visitPrefix(np.Prefix prefix) {
+    String operation = prefix.operation;
+    bool logical = (operation == '!');
+    String expression = visitForValue(prefix.expression, toBool: logical);
+    return '$operation$expression';
+  }
+
+  visitLiteral(np.Literal literal) {
+    return '$literal';
+  }
+
+  visitLiteralString(np.LiteralString literal) {
+    return 'r$literal';
+  }
+
+  visitLiteralArray(np.LiteralArray literal) {
+    if (literal.elements.isEmpty) return '[]';
+    StringBuffer buffer = new StringBuffer();
+    for (int i = 0; i < literal.elements.length; i++) {
+      if (i != 0) buffer.write(', ');
+      buffer.write(visitForValue(literal.elements[i]));
+    }
+    return "[ $buffer ]";
+  }
+
+  visitLiteralObject(np.LiteralObject literal) {
+    if (literal.keys.isEmpty) return '{}';
+    StringBuffer buffer = new StringBuffer();
+    List<String> keys = literal.keys;
+    for (int i = 0; i < keys.length; i++) {
+      if (i != 0) buffer.write(', ');
+      buffer.write("'${keys[i]}': ");
+      buffer.write(visitForValue(literal.values[i]));
+    }
+    return "{ $buffer }";
+  }
+}
+
 
 
 Code VALUE_CODE = new Code("value");
@@ -199,7 +401,6 @@ class GetterSetterGenerator {
   }
 }
 
-
 class DartCodeGen implements ParserBackend {
   static Code ZERO = new Code("0");
 
@@ -306,3 +507,4 @@ class DartCodeGen implements ParserBackend {
               .map((Code p) => p.exp).join(', ')})');
   }
 }
+
