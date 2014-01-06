@@ -74,15 +74,15 @@ List<Object> ngDirectives(dom.Node node) {
 }
 
 _publishToJavaScript() {
-  js.context.ngProbe = (dom.Node node) => _jsProbe(ngProbe(node));
-  js.context.ngInjector = (dom.Node node) => _jsInjector(ngInjector(node));
-  js.context.ngScope = (dom.Node node) => _jsScope(ngScope(node));
-  js.context.ngQuery = (dom.Node node, String selector, [String containsText]) =>
-    new JsArray.from(ngQuery(node, selector, containsText));
+  js.context['ngProbe'] = (dom.Node node) => _jsProbe(ngProbe(node));
+  js.context['ngInjector'] = (dom.Node node) => _jsInjector(ngInjector(node));
+  js.context['ngScope'] = (dom.Node node) => _jsScope(ngScope(node));
+  js.context['ngQuery'] = (dom.Node node, String selector, [String containsText]) =>
+      new js.JsArray.from(ngQuery(node, selector, containsText));
 }
 
-JsObject _jsProbe(ElementProbe probe) {
-  return new JsObject.jsify({
+js.JsObject _jsProbe(ElementProbe probe) {
+  return new js.JsObject.jsify({
     "element": probe.element,
     "injector": _jsInjector(probe.injector),
     "scope": _jsScope(probe.scope),
@@ -90,14 +90,14 @@ JsObject _jsProbe(ElementProbe probe) {
   })..['_dart_'] = probe;
 }
 
-JsObject _jsInjector(Injector injector) {
-  return new JsObject.jsify({
+js.JsObject _jsInjector(Injector injector) {
+  return new js.JsObject.jsify({
     "get": injector.get
   })..['_dart_'] = injector;
 }
 
-JsObject _jsScope(Scope scope) {
-  return new JsObject.jsify({
+js.JsObject _jsScope(Scope scope) {
+  return new js.JsObject.jsify({
     "\$apply": scope.$apply,
     "\$digest": scope.$digest,
     "get": (name) => scope[name],
