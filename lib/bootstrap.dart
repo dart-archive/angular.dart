@@ -3,12 +3,14 @@ part of angular;
 /**
  * This is the top level module which describes the whole of angular.
  *
- * The Module is made up or
+ * The Module is made up of
  *
  * - [NgCoreModule]
  * - [NgCoreDomModule]
+ * - [NgDirectiveModule]
  * - [NgFilterModule]
  * - [NgPerfModule]
+ * - [NgRoutingModule]
  */
 class AngularModule extends Module {
   AngularModule() {
@@ -41,9 +43,9 @@ Injector _defaultInjectorFactory(List<Module> modules) =>
  * # Parameters:
  *
  *   - [module] Option application module to add to the [Injector].
- *   - [modules] Optional list of [Module]s to add to the [Injector] (if more then one is needed).
+ *   - [modules] Optional list of [Module]s to add to the [Injector] (if more than one is needed).
  *   - [element] Optional root element of the application. If non specified, the
- *     the root element is looked up usinge the [selector]. If selector can not
+ *     the root element is looked up using the [selector]. If selector can not
  *     identify a root, the root [HTTML] element is used for bootstraping.
  *   - [selector] Optional CSS selector used to locate the root element for the application.
  *   - [injectorFactor] Optional factory responsible for creating the injector.

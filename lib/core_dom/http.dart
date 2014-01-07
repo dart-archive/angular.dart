@@ -49,7 +49,7 @@ typedef Response(HttpResponse);
 typedef ResponseError(dynamic);
 
 /**
-* HttpInterceptors are used to modify the Http request.  They can be added to
+* HttpInterceptors are used to modify the Http request. They can be added to
 * [HttpInterceptors] or passed into [Http.call].
 */
 class HttpInterceptor {
@@ -100,7 +100,6 @@ class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   };
 
   Function requestError, responseError;
-
 }
 
 /**
@@ -163,30 +162,20 @@ class HttpResponseConfig {
   Map headers;
 
   var data;
-
-
   var _headersObj;
 
   /**
-   * Header accessor.  Given a string, it will return the matching header,
-   * case-insentivitively.  Without a string, returns a header object will
-   * upper-case keys.
+   * Header accessor. Given a string, it will return the matching header,
+   * case-insentivitively. Without a string, returns a header object with
+   * lower-case keys.
    */
   header([String name]) {
     if (_headersObj == null) {
       _headersObj = {};
-      headers.forEach((k,v) {
-        _headersObj[k.toLowerCase()] = v;
-      });
+      headers.forEach((k,v) => _headersObj[k.toLowerCase()] = v);
     }
 
-    if (name != null) {
-      name = name.toLowerCase();
-      if (!_headersObj.containsKey(name)) return null;
-      return _headersObj[name];
-    }
-
-    return _headersObj;
+    return name != null ? _headersObj[name.toLowerCase()] : _headersObj;
   }
 
   /**
@@ -242,13 +231,7 @@ class HttpResponse {
    * header.
    */
   headers([String key]) {
-    if (key == null) {
-      return _headers;
-    }
-    if (_headers.containsKey(key)) {
-      return _headers[key];
-    }
-    return null;
+    return key == null ? _headers : _headers[key];
   }
 
   /**
@@ -505,15 +488,10 @@ class Http {
 
       // Strip content-type if data is undefined
       if (config.data == null) {
-        List<String> toRemove = [];
-        headers.forEach((h, _) {
-          if (h.toUpperCase() == 'CONTENT-TYPE') {
-            toRemove.add(h);
-          };
-        });
-        toRemove.forEach((x) => headers.remove(x));
+        new List.from(headers.keys)
+          .where((h) => h.toUpperCase() == 'CONTENT-TYPE')
+          .forEach((h) => headers.remove(h));
       }
-
 
       return request(
           null,
@@ -661,15 +639,15 @@ class Http {
   static Map<String, String> parseHeaders(dom.HttpRequest value) {
     var headers = value.getAllResponseHeaders();
 
-    var parsed = {}, key, val, i;
+    var parsed = {};
 
     if (headers == null) return parsed;
 
     headers.split('\n').forEach((line) {
-      i = line.indexOf(':');
+      var i = line.indexOf(':');
       if (i == -1) return;
-      key = line.substring(0, i).trim().toLowerCase();
-      val = line.substring(i + 1).trim();
+      var key = line.substring(0, i).trim().toLowerCase();
+      var val = line.substring(i + 1).trim();
 
       if (key != '') {
         if (parsed.containsKey(key)) {
