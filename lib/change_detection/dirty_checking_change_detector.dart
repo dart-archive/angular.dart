@@ -30,7 +30,7 @@ import 'package:angular/change_detection/change_detection.dart';
  * underlying object this makes reporting efficient since no additional memory allocation needs to
  * be allocated.
  */
-class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
+class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
   /**
    * A group must have at least one record so that it can act as a placeholder. This
    * record has minimal cost and never detects change. Once actual records get
@@ -174,7 +174,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetector<H> {
     var childGroup = _childHead;
     while (childGroup != null) {
       lines.add('  ' + childGroup.toString().split('\n').join('\n  '));
-      childGroup = childGroup._nextWatchGroup;
+      childGroup = childGroup._next;
     }
     return lines.join('\n');
   }
@@ -291,7 +291,7 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
     else if (_MODE_IDENTITY_  == mode) currentValue = object;
     else if (_MODE_MAP_       == mode) return mapCheck(object) ? this : null;
     else if (_MODE_ITERABLE_  == mode) return iterableCheck(object) ? this : null;
-    else assert('unknown mode');
+    else assert('unknown mode' == null);
 
     var lastValue = this.currentValue;
     if (!identical(lastValue, currentValue)) {
@@ -308,10 +308,13 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
   }
 
   mapCheck(Map map) {
-    assert('implement');
+    assert('implement' == null);
   }
 
 
+  /**
+   * Check the [Iterable] [collection] for changes.
+   */
   iterableCheck(Iterable collection) {
     _CollectionRecord cRecord = currentValue as _CollectionRecord;
     cRecord._reset();
@@ -348,9 +351,13 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
 
 final Object _INITIAL_ = new Object();
 
-class _CollectionRecord implements CollectionChangeRecord<K, V> {
+class _CollectionChangeRecord<K, V> implements CollectionChangeRecord<K, V> {
+  /** Used to keep track of items during moves. */
   Map<Object, _ItemRecord> _items = new Map<Object, _ItemRecord>();
+
+  /** Used to keep track of removed items. */
   Map<Object, _ItemRecord> _removedItems = new Map<Object, _ItemRecord>();
+
   _ItemRecord<K, V> _collectionHead, _collectionTail;
   _ItemRecord<K, V> _additionsHead, _additionsTail;
   _ItemRecord<K, V> _movesHead, _movesTail;
@@ -361,24 +368,28 @@ class _CollectionRecord implements CollectionChangeRecord<K, V> {
   CollectionChangeItem<K, V> get movesHead => _movesHead;
   CollectionChangeItem<K, V> get removalsHead => _removalsHead;
 
+  /**
+   * Reset the state of the change objects to show no changes. This means
+   * Set previousKey to currentKey, and clear all of the queues (additions, moves, removals).
+   */
   _reset() {
     _ItemRecord record;
 
     record = _additionsHead;
     while(record != null) {
-      record.lastPosition = record.currentPosition;
+      record.previousKey = record.currentKey;
       record = record._nextAddedItem;
     }
 
     record = _movesHead;
     while(record != null) {
-      record.lastPosition = record.currentPosition;
+      record.previousKey = record.currentKey;
       record = record._nextMovedItem;
     }
 
     record = _removalsHead;
     while(record != null) {
-      record.lastPosition = record.currentPosition;
+      record.previousKey = record.currentKey;
       record = record._nextRemovedItem;
     }
 
@@ -413,6 +424,9 @@ class _CollectionRecord implements CollectionChangeRecord<K, V> {
     _removalsHead = _removalsTail = null;
   }
 
+  /**
+   * A [_CollectionChangeRecord] is considered dirty if it has additions, moves or removals.
+   */
   get isDirty => _additionsHead != null || _movesHead != null || _removalsHead != null;
 
   _addition(_ItemRecord prevRecord, dynamic item, int index) {
@@ -422,7 +436,7 @@ class _CollectionRecord implements CollectionChangeRecord<K, V> {
       _additionsAdd(record);
     } else {
       _removalsRemove(record);
-      record.currentPosition = index;
+      record.currentKey = index;
       _movesAdd(record);
     }
     _collectionInsertAfter(record, prevRecord);
@@ -441,14 +455,14 @@ class _CollectionRecord implements CollectionChangeRecord<K, V> {
     } else {
       // We have seen this before, we need to move it.
       _moveRecord(existingRecord, prevRecord);
-      existingRecord.currentPosition = index;
+      existingRecord.currentKey = index;
     }
     return existingRecord;
   }
 
   _moveRecord(_ItemRecord record, _ItemRecord prev) {
     _collectionRemove(record);
-    _ItemRecord next = prev._nextCollectionItem;
+    _ItemRecord next = prev == null ? _collectionHead : prev._nextCollectionItem;
     record._nextCollectionItem = next;
     record._prevCollectionItem = prev;
     if (prev == null) _collectionHead = record; else prev._nextCollectionItem = record;
@@ -457,10 +471,10 @@ class _CollectionRecord implements CollectionChangeRecord<K, V> {
   }
 
   _evict(_ItemRecord record) {
-    record.currentPosition = null;
+    record.currentKey = null;
     _collectionRemove(record);
     _removalsAdd(record);
-    record.currentPosition = null;
+    record.currentKey = null;
     _items.remove(record.item);
     _removedItems[record.item] = record;
   }
@@ -477,7 +491,7 @@ class _CollectionRecord implements CollectionChangeRecord<K, V> {
 
     // Anything after that needs to be removed;
     while(record != null) {
-      record.currentPosition = null;
+      record.currentKey = null;
       _ItemRecord next = record._nextCollectionItem;
       assert((record._prevCollectionItem = null) == null);
       assert((record._nextCollectionItem = null) == null);
@@ -585,8 +599,8 @@ class _CollectionRecord implements CollectionChangeRecord<K, V> {
 }
 
 class _ItemRecord<K, V> implements CollectionItem<K, V>, AddedItem<K, V>, MovedItem<K, V>, RemovedItem<K, V> {
-  K lastPosition = null;
-  K currentPosition = null;
+  K previousKey = null;
+  K currentKey = null;
   V item = _INITIAL_;
 
   _ItemRecord<K, V> _prevCollectionItem, _nextCollectionItem;
@@ -594,12 +608,12 @@ class _ItemRecord<K, V> implements CollectionItem<K, V>, AddedItem<K, V>, MovedI
   _ItemRecord<K, V> _nextAddedItem, _nextMovedItem;
 
   CollectionItem<K, V> get nextCollectionItem => _nextCollectionItem;
+  RemovedItem<K, V> get nextRemovedItem => _nextRemovedItem;
   AddedItem<K, V> get nextAddedItem => _nextAddedItem;
   MovedItem<K, V> get nextMovedItem => _nextMovedItem;
-  RemovedItem<K, V> get nextRemovedItem => _nextRemovedItem;
 
-  _ItemRecord(this.item, this.currentPosition);
+  _ItemRecord(this.item, this.currentKey);
 
-  toString() => lastPosition == currentPosition
-      ? '$item' : '$item[$lastPosition -> $currentPosition]';
+  toString() => previousKey == currentKey
+      ? '$item' : '$item[$previousKey -> $currentKey]';
 }

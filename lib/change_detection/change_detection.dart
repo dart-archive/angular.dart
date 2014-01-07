@@ -43,7 +43,7 @@ abstract class ChangeDetectorGroup<H> {
  *   [ChangeDetector] but it is meaningful to the code which registered the watcher. It can be
  *   data structure, object, or function. It is up to the developer to attach meaning to it.
  */
-class ChangeDetector<H> extends ChangeDetectorGroup<H> {
+abstract class ChangeDetector<H> extends ChangeDetectorGroup<H> {
   /**
    * This method does the work of collecting the changes and returns them as a linked list of
    * [ChangeRecord]s. The [ChangeRecord]s are to be returned in the same order as they were
@@ -107,13 +107,28 @@ abstract class ChangeRecord<H> extends Record<H> {
   ChangeRecord<H> get nextChange;
 }
 
+/**
+ * If [ChangeDetector] is watching a collection (an [Iterable]) then the [currentValue] of [Record]
+ * will contain this object. The object contains a summary of changes to the collection since
+ * last execution. The changes are reported a list of [CollectionChangeItem]s which contain the
+ * current and previous position in the list as well as the item.
+ */
 abstract class CollectionChangeRecord<K, V> {
-  CollectionItem<K, V> collectionHead;
-  AddedChangeItem<K, V> additionsHead;
-  MovedChangeItem<K, V> movesHead;
-  RemovedChangeItem<K, V> removalsHead;
+
+  /** A list of [CollectionItem]s which are in the iteration order. */
+  CollectionItem<K, V> get collectionHead;
+  /** A list of new [AddedItem]s. */
+  AddedItem<K, V> get additionsHead;
+  /** A list of [MovedItem]s. */
+  MovedItem<K, V> get movesHead;
+  /** A list of [RemovedItem]s. */
+  RemovedItem<K, V> get removalsHead;
 }
 
+/**
+ * Each item in collection is wrapped in [CollectionChangeItem], which can track the
+ * [item]s [currentKey] and [previousKey] location.
+ */
 abstract class CollectionChangeItem<K, V> {
   /** Previous item location in the list or [null] if addition. */
   K get previousKey;
@@ -125,18 +140,34 @@ abstract class CollectionChangeItem<K, V> {
   V get item;
 }
 
+/**
+ * Used to create a linked list of collection items.
+ * These items are always in the iteration order of the collection.
+ */
 abstract class CollectionItem<K, V> extends CollectionChangeItem<K, V> {
-  CollectionItem<K, V> nextCollectionItem;
+  CollectionItem<K, V> get nextCollectionItem;
 }
 
+/**
+ * A linked list of new items added to the collection.
+ * These items are always in the iteration order of the collection.
+ */
 abstract class AddedItem<K, V> extends CollectionChangeItem<K, V> {
-  AddedItem<K, V> nextAddedItem;
+  AddedItem<K, V> get nextAddedItem;
 }
 
+/**
+ * A linked list of moved items in to the collection.
+ * These items are always in the iteration order of the collection.
+ */
 abstract class MovedItem<K, V> extends CollectionChangeItem<K, V> {
-  MovedItem<K, V> nextMovedItem;
+  MovedItem<K, V> get nextMovedItem;
 }
 
+/**
+ * A linked list of removed items in to the collection.
+ * These items are always in the iteration order of the collection.
+ */
 abstract class RemovedItem<K, V> extends CollectionChangeItem<K, V> {
-  RemovedItem<K, V> nextRemovedItem;
+  RemovedItem<K, V> get nextRemovedItem;
 }

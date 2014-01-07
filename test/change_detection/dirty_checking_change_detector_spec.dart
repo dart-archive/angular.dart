@@ -181,6 +181,14 @@ main() => ddescribe('DirtyCheckingChangeDetector', () {
           additions: [],
           moves: ['d[3 -> 2]'],
           removals: ['c[2 -> null]']));
+
+      list.clear();
+      list.addAll(['d', 'c', 'b', 'a']);
+      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+          collection: ['d[2 -> 0]', 'c[null -> 1]', 'b[1 -> 2]', 'a[0 -> 3]'],
+          additions: ['c[null -> 1]'],
+          moves: ['d[2 -> 0]', 'b[1 -> 2]', 'a[0 -> 3]'],
+          removals: []));
     });
 
     it('should remove and add same item', () {
