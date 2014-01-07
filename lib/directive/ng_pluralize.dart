@@ -122,8 +122,7 @@ class NgPluralizeDirective {
       } catch(e) {
         try {
           value = double.parse(value);
-        }
-        catch(e) {
+        } catch(e) {
           element.text = '';
           return;
         }
@@ -131,7 +130,7 @@ class NgPluralizeDirective {
     }
 
     String stringValue = value.toString();
-    int intValue = value is double ? value.round() : value;
+    int intValue = value.toInt();
 
     if (discreteRules[stringValue] != null) {
       _setAndWatch(discreteRules[stringValue]);

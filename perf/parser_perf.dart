@@ -3,6 +3,8 @@ library parser_perf;
 import '_perf.dart';
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
+import 'package:angular/core/parser/new_eval.dart'
+   show ParserBackend, ClosureMap, ParserBackendForEvaluation;
 import 'package:angular/filter/module.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
@@ -14,6 +16,7 @@ import '../gen/generated_getter_setter.dart' as generated_getter_setter;
 main() {
   var module = new Module()
     ..type(Parser, implementedBy: DynamicParser)
+    ..type(ParserBackend, implementedBy: ParserBackendForEvaluation)
     ..type(SubstringFilter)
     ..type(IncrementFilter)
     ..install(new NgFilterModule());
@@ -33,7 +36,8 @@ main() {
   var hybridParser = new DynamicInjector(
       modules: [new Module()
         ..type(Parser, implementedBy: DynamicParser)
-        ..type(GetterSetter, implementedBy: generated_getter_setter.StaticGetterSetter)],
+        ..type(ParserBackend, implementedBy: ParserBackendForEvaluation)
+        ..type(ClosureMap, implementedBy: generated_getter_setter.StaticClosureMap)],
       allowImplicitInjection:true).get(Parser);
 
   scope['a'] = new ATest();

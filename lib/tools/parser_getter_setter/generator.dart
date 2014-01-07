@@ -1,13 +1,29 @@
-import 'package:angular/core/parser/new_parser.dart';
+import 'package:angular/core/parser/new_syntax.dart';
 import 'package:angular/tools/reserved_dart_keywords.dart';
 
 class DartGetterSetterGen extends ParserBackend {
-  Set<String> identifiers = new Set<String>();
-  access(String name) => identifiers.add(name);
-  newAccessScope(String name) => access(name);
-  newAccessMember(var object, String name) => access(name);
-  newCallScope(String name, List arguments) => access(name);
-  newCallMember(var object, String name, List arguments) => access(name);
+  final Set<String> properties = new Set<String>();
+  final Map<String, Set<int>> calls = new Map<String, Set<int>>();
+
+  registerAccess(String name) {
+    if (isReserved(name)) return;
+    properties.add(name);
+  }
+
+  registerCall(String name, List arguments) {
+    if (isReserved(name)) return;
+    Set<int> arities = calls.putIfAbsent(name, () => new Set<int>());
+    arities.add(arguments.length);
+  }
+
+  newAccessScope(String name)
+      => registerAccess(name);
+  newAccessMember(var object, String name)
+      => registerAccess(name);
+  newCallScope(String name, List arguments)
+      => registerCall(name, arguments);
+  newCallMember(var object, String name, List arguments)
+      => registerCall(name, arguments);
 }
 
 class ParserGetterSetter {
@@ -18,26 +34,25 @@ class ParserGetterSetter {
     exprs.forEach((expr) {
       try {
         parser.parse(expr);
-      } catch (e) { }
+      } catch (e) {
+        // Ignore exceptions.
+      }
     });
 
     DartGetterSetterGen backend = parser.backend;
-    print(generateCode(backend.identifiers));
+    print(generateClosureMap(backend.properties, backend.calls));
   }
 
-  generateCode(Iterable<String> keys) {
-    keys = keys.where((key) => !isReserved(key));
+  generateClosureMap(Set<String> properties, Map<String, Set<int>> calls) {
     return '''
-class StaticGetterSetter extends GetterSetter {
-  Map<String, Function> _getters = ${generateGetterMap(keys)};
-  Map<String, Function> _setters = ${generateSetterMap(keys)};
-
-  Function getter(String key) {
-    return _getters.containsKey(key) ? _getters[key] : super.getter(key);
-  }
-
-  Function setter(String key) {
-    return _setters.containsKey(key) ? _setters[key] : super.setter(key);
+class StaticClosureMap extends ClosureMap {
+  Map<String, Function> _getters = ${generateGetterMap(properties)};
+  List<Map<String, Function>> _functions = ${generateFunctionMap(calls)};
+  lookupGetter(String name) => _getters[name];
+  lookupFunction(String name, int arity) {
+    return (arity < _functions.length)
+        ? _functions[arity][name]
+        : null;
   }
 }
 ''';
@@ -48,8 +63,28 @@ class StaticGetterSetter extends GetterSetter {
     return '{\n   ${lines.join(",\n    ")}\n  }';
   }
 
-  generateSetterMap(Iterable<String> keys) {
-    var lines = keys.map((key) => 'r"${key}": (s, v) => s.$key = v');
-    return '{\n   ${lines.join(",\n    ")}\n  }';
+  generateFunctionMap(Map<String, Set<int>> calls) {
+    List<Set> arities = [];
+    for (String name in calls.keys) {
+      for (int arity in calls[name]) {
+        if (arity >= arities.length) arities.length = arity + 1;
+        Set<String> names = arities[arity];
+        if (names == null) arities[arity] = names = new Set();
+        names.add(name);
+      }
+    }
+    var maps = [];
+    for (int i = 0; i < arities.length; i++) {
+      Set<String> names = arities[i];
+      if (names == null) {
+        maps.add('{\n    }');
+      } else {
+        var args = i == 0 ? '' : new List.generate(i, (e) => "a$e").join(',');
+        var p = args.isEmpty ? '' : ',$args';
+        var lines = names.map((name) => 'r"$name": (s$p) => s.$name($args)');
+        maps.add('{\n    ${lines.join(",\n    ")}\n  }');
+      }
+    }
+    return '[${maps.join(",")}]';
   }
 }

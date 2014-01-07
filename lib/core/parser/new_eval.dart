@@ -89,8 +89,8 @@ class ParserBackendForEvaluation extends ParserBackend {
     Function function = _closures.lookupFunction(name, arity);
     if (function != null) {
       switch (arity) {
-        case 0: return new _CallScopeFast0(name, arguments, function);
-        case 1: return new _CallScopeFast1(name, arguments, function);
+        //case 0: return new _CallScopeFast0(name, arguments, function);
+        //case 1: return new _CallScopeFast1(name, arguments, function);
       }
     }
     Getter getter = _closures.lookupGetter(name);
@@ -253,7 +253,9 @@ class _AccessMember extends AccessMember with Evaluatable, _AccessCaching {
 class _AccessMemberFast extends AccessMember with Evaluatable {
   final Getter getter;
   final Symbol symbol;
-  _AccessMemberFast(object, name, this.getter) : super(object, name), symbol = new Symbol(name);
+  _AccessMemberFast(object, name, this.getter)
+      : super(object, name)
+      , symbol = new Symbol(name);
 
   evaluate(scope) {
     Evaluatable object = this.object;
@@ -339,6 +341,9 @@ class _CallScopeFast extends CallScope with Evaluatable {
   evaluate(scope) {
     List arguments = _evaluateArguments(scope, this.arguments);
     var function = (scope is Map) ? scope[name] : getter(scope);
+    if (function is !Function) {
+      throw new EvalError('Undefined function $name');
+    }
     return relaxFnApply(function, arguments);
   }
 }
@@ -347,7 +352,15 @@ class _CallScopeFast0 extends CallScope with Evaluatable {
   final Function function;
   _CallScopeFast0(name, arguments, this.function) : super(name, arguments);
   evaluate(scope) {
-    return (scope is Map) ? scope[name]() : function(scope);
+    if (scope is Map) {
+      var fn = scope[name];
+      if (fn is !Function) {
+        throw new EvalError('Undefined function $name');
+      }
+      return fn();
+    } else {
+      return function(scope);
+    }
   }
 }
 
@@ -357,7 +370,15 @@ class _CallScopeFast1 extends CallScope with Evaluatable {
   evaluate(scope) {
     Evaluatable a0 = arguments[0];
     var e0 = a0.evaluate(scope);
-    return (scope is Map) ? scope[name](e0) : function(scope, e0);
+    if (scope is Map) {
+      var fn = scope[name];
+      if (fn is !Function) {
+        throw new EvalError('Undefined function $name');
+      }
+      return fn(e0);
+    } else {
+      return function(scope, e0);
+    }
   }
 }
 
@@ -484,8 +505,8 @@ class _Binary extends Binary with Evaluatable {
       case '>=' : return l >= r;
       case '^'  : return l ^ r;
       case '&'  : return l & r;
-      default   : throw new EvalError('Internal error: [$operation] not handled');
     }
+    throw new EvalError('Internal error: [$operation] not handled');
   }
 }
 
@@ -588,23 +609,11 @@ abstract class _AccessCaching {
   }
 
   static Function createInvokeClosure(InstanceMirror mirror, Symbol symbol) {
-    var type = mirror.type;
-    var members = useInstanceMembers ? type.instanceMembers : type.members;
-    if (!members.containsKey(symbol)) return null;
+    if (!_hasMember(mirror, symbol)) return null;
     return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
       var arguments = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
       return mirror.invoke(symbol, arguments).reflectee;
     });
-  }
-
-  static final bool useInstanceMembers = computeUseInstanceMembers();
-  static bool computeUseInstanceMembers() {
-    try {
-      reflect(Object).type.instanceMembers;
-      return true;
-    } catch (e) {
-      return false;
-    }
   }
 
   static stripTrailingNulls(List list) {
@@ -653,9 +662,30 @@ abstract class _CallCaching {
       return relaxFnApply(function, arguments);
     } else {
       InstanceMirror mirror = reflect(holder);
+      if (!_hasMember(mirror, symbol)) {
+        _cachedHolder = _uninitialized;
+        throw new EvalError('Undefined function $name');
+      }
       _cachedKind = CACHED_FUNCTION;
       _cachedValue = mirror;
       return mirror.invoke(symbol, arguments).reflectee;
     }
   }
 }
+
+bool _hasMember(InstanceMirror mirror, Symbol symbol) {
+  var type = mirror.type as dynamic;
+  var members = _useInstanceMembers ? type.instanceMembers : type.members;
+  return members.containsKey(symbol);
+}
+
+final bool _useInstanceMembers = _computeUseInstanceMembers();
+bool _computeUseInstanceMembers() {
+  try {
+    reflect(Object).type.instanceMembers;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+

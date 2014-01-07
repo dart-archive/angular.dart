@@ -3,13 +3,16 @@ library scope_perf;
 import '_perf.dart';
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
+import 'package:angular/core/parser/new_eval.dart'
+    show ParserBackend, ParserBackendForEvaluation;
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 
 main() {
   var scope = new DynamicInjector(
       modules: [new Module()
-        ..type(Parser, implementedBy: DynamicParser)],
+        ..type(Parser, implementedBy: DynamicParser)
+        ..type(ParserBackend, implementedBy: ParserBackendForEvaluation)],
       allowImplicitInjection:true).get(Scope);
   var scope2, scope3, scope4, scope5;
   var fill = (scope) {
