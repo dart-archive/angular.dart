@@ -1,6 +1,6 @@
 library angular.service.parser.generated_expressions_template;
 
-import 'package:angular/core/parser/parser_library.dart'
+import 'package:angular/core/parser/parser.dart'
     show safeFunctionCall,
          autoConvertAdd,
          objectIndexGetField,

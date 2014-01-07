@@ -8,8 +8,9 @@ import 'dart:mirrors';
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
-import 'package:angular/core/parser/parser_library.dart';
-import 'package:angular/core/parser/new_parser.dart' as new_parser;
+import 'package:angular/core/parser/parser.dart';
+import 'package:angular/core/parser/lexer.dart';
+import 'package:angular/core/parser/new_eval.dart' as new_parser;
 import 'package:angular/utils.dart';
 
 import 'service.dart';
@@ -42,11 +43,11 @@ class NgCoreModule extends Module {
     type(Parser, implementedBy: DynamicParser);
     type(DynamicParser);
     type(Lexer);
-    type(ParserBackend);
     type(GetterSetter);
 
+    type(new_parser.ClosureMap);
     type(new_parser.Parser);
     type(new_parser.ParserBackend, implementedBy:
-        new_parser.ParserBackendWithValidation);
+        new_parser.ParserBackendForEvaluation);
   }
 }

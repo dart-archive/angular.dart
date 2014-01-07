@@ -1,16 +1,15 @@
 library angular.core.new_parser;
 
-import 'package:angular/core/module.dart' show FilterMap;
-import 'package:angular/core/parser/parser_library.dart' show Lexer;
+import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/core/parser/new_syntax.dart';
 import 'package:angular/core/parser/new_parser_impl.dart' show ParserImpl;
 
-class Parser {
+class Parser<T> {
   final Lexer lexer;
   final ParserBackend backend;
   Parser(this.lexer, this.backend);
 
-  parse(String input) {
+  T parse(String input) {
     ParserImpl parser = new ParserImpl(lexer, backend, input);
     return parser.parseChain();
   }
@@ -100,13 +99,4 @@ class ParserBackend {
       => newLiteralPrimitive(value);
   newLiteralString(String value)
       => new LiteralString(value);
-}
-
-class ParserBackendWithValidation extends ParserBackend {
-  final FilterMap _filters;
-  ParserBackendWithValidation(this._filters);
-  newFilter(var expression, String name, List arguments) {
-    Function filter = _filters(name);
-    return super.newFilter(expression, name, arguments);
-  }
 }

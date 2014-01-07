@@ -7,7 +7,6 @@ var ASSIGN = { };
 
 class AlwaysReturnX implements DynamicParser {
   call(String x) => 'x';
-  primaryFromToken(Token token, parserError) => null;
 }
 
 main() {

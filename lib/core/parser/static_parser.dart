@@ -30,8 +30,4 @@ class StaticParser implements Parser {
     Function assign = _assign[exp];
     return new Expression(eval, assign);
   }
-
-  primaryFromToken(Token token, parserError) {
-    throw 'Not Implemented';
-  }
 }

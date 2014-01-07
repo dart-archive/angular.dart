@@ -1,7 +1,7 @@
 library angular.core.new_parser.new_parser_impl;
 
 import 'package:angular/core/parser/new_parser.dart' show ParserBackend;
-import 'package:angular/core/parser/parser_library.dart' show Lexer, Token;
+import 'package:angular/core/parser/lexer.dart';
 
 class ParserImpl {
   static Token EOF = new Token(-1, null);
