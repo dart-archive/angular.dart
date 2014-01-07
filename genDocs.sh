@@ -1,8 +1,3 @@
 #!/bin/bash
-
-dartdoc \
-    --package-root=packages/ \
-    --out doc \
-    --mode=static \
-    --exclude-lib=js,metadata,meta,mirrors,intl,number_symbols,number_symbol_data,intl_helpers,date_format_internal,date_symbols,angular.util \
-    packages/angular/angular.dart lib/mock/module.dart \
+echo DEPRICATED: use ./scripts/generate-documentation.sh
+$(dirname $0)/scripts/generate-documentation.sh
