@@ -89,8 +89,8 @@ class ParserBackendForEvaluation extends ParserBackend {
     Function function = _closures.lookupFunction(name, arity);
     if (function != null) {
       switch (arity) {
-        //case 0: return new _CallScopeFast0(name, arguments, function);
-        //case 1: return new _CallScopeFast1(name, arguments, function);
+        case 0: return new _CallScopeFast0(name, arguments, function);
+        case 1: return new _CallScopeFast1(name, arguments, function);
       }
     }
     Getter getter = _closures.lookupGetter(name);
