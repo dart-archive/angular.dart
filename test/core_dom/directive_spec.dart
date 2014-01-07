@@ -2,117 +2,43 @@ library directive_spec;
 
 import '../_specs.dart';
 
-main() => describe('DirectiveMap', () {
+main() {
+  describe('NodeAttrs', () {
+    var element;
+    var nodeAttrs;
+    TestBed _;
 
-  beforeEach(module((Module module) {
-    module
-      ..type(AnnotatedIoComponent);
-  }));
+    beforeEach(inject((TestBed tb) {
+      _ = tb;
+      element = _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo"></div>');
+      nodeAttrs = new NodeAttrs(element);
+    }));
 
-  it('should extract attr map from annotated component', inject((DirectiveMap directives) {
-    var annotations = directives.annotationsFor(AnnotatedIoComponent);
-    expect(annotations.length).toEqual(1);
-    expect(annotations[0] is NgComponent).toBeTruthy();
-
-    NgComponent annotation = annotations[0];
-    expect(annotation.map).toEqual({
-      'foo': '=>foo',
-      'attr': '@attr',
-      'expr': '<=>expr',
-      'expr-one-way': '=>exprOneWay',
-      'expr-one-way-one-shot': '=>!exprOneWayOneShot',
-      'callback': '&callback',
-      'expr-one-way2': '=>exprOneWay2',
-      'expr-two-way': '<=>exprTwoWay'
-    });
-  }));
-
-  describe('exceptions', () {
-    it('should throw when annotation is for existing mapping', () {
-      var module = new Module()
-        ..type(DirectiveMap)
-        ..type(Bad1Component)
-        ..type(MetadataExtractor)
-        ..type(FieldMetadataExtractor);
-
-      var injector = new DynamicInjector(modules: [module]);
-      expect(() {
-        injector.get(DirectiveMap);
-      }).toThrow('Mapping for attribute foo is already defined (while '
-                 'processing annottation for field foo of Bad1Component)');
+    it('should transform names to camel case', () {
+      expect(nodeAttrs['foo']).toEqual('bar');
+      expect(nodeAttrs['fooBar']).toEqual('baz');
+      expect(nodeAttrs['fooBarBaz']).toEqual('foo');
     });
 
-    it('should throw when annotated both getter and setter', () {
-        var module = new Module()
-        ..type(DirectiveMap)
-        ..type(Bad2Component)
-        ..type(MetadataExtractor)
-        ..type(FieldMetadataExtractor);
+    it('should return null for unexistent attributes', () {
+      expect(nodeAttrs['baz']).toBeNull();
+    });
 
-      var injector = new DynamicInjector(modules: [module]);
-      expect(() {
-        injector.get(DirectiveMap);
-      }).toThrow('Attribute annotation for foo is defined more than once '
-                 'in Bad2Component');
+    it('should provide a forEach function to iterate over attributes', () {
+      Map<String, String> attrMap = new Map();
+      nodeAttrs.forEach((k, v) => attrMap[k] = v);
+      expect(attrMap).toEqual({'foo': 'bar', 'fooBar': 'baz', 'fooBarBaz': 'foo'});
+    });
+
+    it('should provide a contains method', () {
+      expect(nodeAttrs.containsKey('foo')).toEqual(true);
+      expect(nodeAttrs.containsKey('fooBar')).toEqual(true);
+      expect(nodeAttrs.containsKey('fooBarBaz')).toEqual(true);
+      expect(nodeAttrs.containsKey('barFoo')).toEqual(false);
+    });
+
+    it('should return the attribute names', () {
+      expect(nodeAttrs.keys.toList()..sort()).toEqual(['foo', 'fooBar', 'fooBarBaz']);
     });
   });
-});
-
-@NgComponent(
-    selector: 'annotated-io',
-    template: r'<content></content>',
-    map: const {
-      'foo': '=>foo'
-    }
-)
-class AnnotatedIoComponent {
-  AnnotatedIoComponent(Scope scope) {
-    scope.$root.ioComponent = this;
-  }
-
-  @NgAttr('attr')
-  String attr;
-
-  @NgTwoWay('expr')
-  String expr;
-
-  @NgOneWay('expr-one-way')
-  String exprOneWay;
-
-  @NgOneWayOneTime('expr-one-way-one-shot')
-  String exprOneWayOneShot;
-
-  @NgCallback('callback')
-  Function callback;
-
-  @NgOneWay('expr-one-way2')
-  set exprOneWay2(val) {}
-
-  @NgTwoWay('expr-two-way')
-  get exprTwoWay => null;
-  set exprTwoWay(val) {}
-}
-
-@NgComponent(
-    selector: 'bad1',
-    template: r'<content></content>',
-    map: const {
-      'foo': '=>foo'
-    }
-)
-class Bad1Component {
-  @NgOneWay('foo')
-  String foo;
-}
-
-@NgComponent(
-    selector: 'bad2',
-    template: r'<content></content>'
-)
-class Bad2Component {
-  @NgOneWay('foo')
-  get foo => null;
-
-  @NgOneWay('foo')
-  set foo(val) {}
 }
