@@ -1,11 +1,7 @@
 part of angular.core.dom;
 
 List<dom.Node> cloneElements(elements) {
-  var clones = [];
-  for(var i = 0, ii = elements.length; i < ii; i++) {
-    clones.add(elements[i].clone(true));
-  }
-  return clones;
+  return elements.map((el) => el.clone(true)).toList();
 }
 
 typedef ApplyMapping(NodeAttrs attrs, Scope scope, Object dst);

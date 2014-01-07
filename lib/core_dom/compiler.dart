@@ -14,7 +14,7 @@ class Compiler {
   }
 
   _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,
-               List<DirectiveRef> useExistingDirectiveRefs) {
+                List<DirectiveRef> useExistingDirectiveRefs) {
     if (domCursor.nodeList().length == 0) return null;
 
     var directivePositions = null; // don't pre-create to create sparse tree and prevent GC pressure.
