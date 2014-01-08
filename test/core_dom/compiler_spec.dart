@@ -442,6 +442,24 @@ main() => describe('dte.compiler', () {
           expect(element.textWithShadow()).toEqual('WORKED');
         })));
       });
+
+      describe('invalid components', () {
+        beforeEach(module((Module module) {
+          module
+            ..type(MissingSelector);
+          return (Injector _injector) {
+            injector = _injector;
+            $compile = injector.get(Compiler);
+            $rootScope = injector.get(Scope);
+          };
+        }));
+
+        it('should throw a useful error message', () {
+          expect(() {
+            inject((Compiler c) { });
+          }).toThrow('Missing selector annotation for MissingSelector');
+        });
+      });
     });
 
 
@@ -718,5 +736,12 @@ class MyController {
   MyController(Scope scope) {
     scope.name = 'MyController';
   }
+}
+
+@NgComponent(
+  template: 'boo'
+)
+class MissingSelector {
+
 }
 

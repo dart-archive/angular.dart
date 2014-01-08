@@ -214,11 +214,13 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
   _ElementSelector elementSelector = new _ElementSelector('');
   List<_ContainsSelector> attrSelector = [];
   List<_ContainsSelector> textSelector = [];
-
   directives.forEach((NgAnnotation annotation, Type type) {
     var match;
     var selector = annotation.selector;
     List<_SelectorPart> selectorParts;
+    if (selector == null) {
+      throw new ArgumentError('Missing selector annotation for $type');
+    }
 
     if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
       textSelector.add(new _ContainsSelector(annotation, match.group(1)));
