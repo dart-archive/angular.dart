@@ -207,6 +207,8 @@ main(arguments) {
       "'fOo'|uppercase|lowercase",
       "n = (name|lowercase)",
       "n",
-      "1|nonexistent"
+      "1|nonexistent",
+      "publicField",
+      "_privateField"
   ]);
 }

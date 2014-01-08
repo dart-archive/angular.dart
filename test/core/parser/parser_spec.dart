@@ -35,6 +35,11 @@ class InheritedMapData extends MapData {
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class WithPrivateField {
+  int publicField = 4;
+  int _privateField = 5;
+}
+
 toBool(x) => (x is num) ? x != 0 : x == true;
 
 main() {
@@ -245,6 +250,16 @@ main() {
         expect(() {
           parser('notAProperty').eval(new TestData());
         }).toThrow("notAProperty");
+      });
+
+      it('should fail on private field access', () {
+        expect(parser('publicField').eval(new WithPrivateField())).toEqual(4);
+        // On Dartium, this fails with "NoSuchMethod: no instance getter"
+        // On dart2js with generated functions: NoSuchMethod: method not found
+        // On dart2js with reflection:  ArgumentError: private identifier"
+        expect(() {
+          parser('_privateField').eval(new WithPrivateField());
+        }).toThrow();
       });
     });
 
