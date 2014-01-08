@@ -3,7 +3,7 @@
 == Set Up Instructions
 
 1. Go to https://travis-ci.org/ and 'Sign in with Github'
-2. Visit https://travis-ci.org/profile
+2. Visit https://travis-ci.org/profile to trigger a Github sync (this may take a minute)
 3. Find your project and flip the switch. This would be "<yourname>/angular.dart"
 4. Click the little wrench next to the switch, it will take you to github.
 5. Scroll down to Travis and click it
