@@ -18,9 +18,7 @@ class StaticParser implements Parser<Expression> {
 
   Expression call(String input) {
     if (input == null) input = '';
-    Expression cached = _cache[input];
-    if (cached != null) return cached;
-    return _cache[input] = _construct(input);
+    return _cache.putIfAbsent(input, () => _construct(input));
   }
 
   Expression _construct(String input) {

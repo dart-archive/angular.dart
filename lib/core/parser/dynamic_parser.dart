@@ -23,9 +23,7 @@ class DynamicParser implements Parser<Expression> {
 
   Expression call(String input) {
     if (input == null) input = '';
-    Expression cached = _cache[input];
-    if (cached != null) return cached;
-    return _cache[input] = _parse(input);
+    return _cache.putIfAbsent(input, () => _parse(input));
   }
 
   Expression _parse(String input) {
