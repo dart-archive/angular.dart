@@ -444,20 +444,25 @@ main() => describe('dte.compiler', () {
       });
 
       describe('invalid components', () {
-        beforeEach(module((Module module) {
-          module
-            ..type(MissingSelector);
-          return (Injector _injector) {
-            injector = _injector;
-            $compile = injector.get(Compiler);
-            $rootScope = injector.get(Scope);
-          };
-        }));
-
-        it('should throw a useful error message', () {
+        it('should throw a useful error message for missing selectors', () {
+          module((Module module) {
+            module
+              ..type(MissingSelector);
+          });
           expect(() {
             inject((Compiler c) { });
           }).toThrow('Missing selector annotation for MissingSelector');
+        });
+
+
+        it('should throw a useful error message for invalid selector', () {
+          module((Module module) {
+            module
+              ..type(InvalidSelector);
+          });
+          expect(() {
+            inject((Compiler c) { });
+          }).toThrow('Unknown selector format \'buttonbar button\' for InvalidSelector');
         });
       });
     });
@@ -738,10 +743,9 @@ class MyController {
   }
 }
 
-@NgComponent(
-  template: 'boo'
-)
-class MissingSelector {
+@NgComponent()
+class MissingSelector {}
 
-}
+@NgComponent(selector: 'buttonbar button')
+class InvalidSelector {}
 

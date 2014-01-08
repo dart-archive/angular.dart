@@ -181,7 +181,7 @@ class _ElementSelector {
   toString() => 'ElementSelector($name)';
 }
 
-List<_SelectorPart> _splitCss(String selector) {
+List<_SelectorPart> _splitCss(String selector, Type type) {
   List<_SelectorPart> parts = [];
   var remainder = selector;
   var match;
@@ -199,7 +199,7 @@ List<_SelectorPart> _splitCss(String selector) {
         throw "Missmatched RegExp $_SELECTOR_REGEXP on $remainder";
       }
     } else {
-      throw "Unknown selector format '$remainder'.";
+      throw "Unknown selector format '$selector' for $type.";
     }
     remainder = remainder.substring(match.end);
   }
@@ -226,7 +226,7 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
       textSelector.add(new _ContainsSelector(annotation, match.group(1)));
     } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
       attrSelector.add(new _ContainsSelector(annotation, match[1]));
-    } else if ((selectorParts = _splitCss(selector)) != null){
+    } else if ((selectorParts = _splitCss(selector, type)) != null){
       elementSelector.addDirective(selectorParts, new _Directive(type, annotation));
     } else {
       throw new ArgumentError('Unsupported Selector: $selector');
