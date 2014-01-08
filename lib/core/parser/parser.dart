@@ -1,63 +1,103 @@
 library angular.core.parser;
 
-import 'package:angular/core/module.dart';
-import 'package:angular/core/parser/new_eval.dart' as new_parser;
+export 'package:angular/core/parser/syntax.dart'
+   show Visitor, Expression, BoundExpression;
+export 'package:angular/core/parser/dynamic_parser.dart'
+   show DynamicParser, DynamicParserBackend, ClosureMap;
+export 'package:angular/core/parser/static_parser.dart'
+    show StaticParser, StaticParserFunctions;
 
-part 'dynamic_parser.dart';
-part 'static_parser.dart';
+typedef LocalsWrapper(context, locals);
+typedef Getter(self);
+typedef Setter(self, value);
 
-typedef dynamic LocalsWrapper(dynamic context, dynamic locals);
-
-// Placeholder for DI.
-// The parser you are looking for is DynamicParser
-abstract class Parser {
-  Expression call(String text);
+/// Placeholder for DI. The parser you are looking for is [DynamicParser].
+abstract class Parser<T> {
+  T call(String input);
 }
 
-class BoundExpression {
-  var _context;
-  LocalsWrapper _localsWrapper;
-  Expression expression;
 
-  BoundExpression(this._context, this.expression, this._localsWrapper);
-  _localContext(locals) {
-    if (locals != null) {
-      if (_localsWrapper == null) {
-          throw new StateError("Locals $locals provided, but no LocalsWrapper strategy.");
-      }
-      return _localsWrapper(_context, locals);
-    }
-    return _context;
-  }
+abstract class ParserBackend<T> {
+  bool isAssignable(T expression);
 
-  call([locals]) => expression.eval(_localContext(locals));
-  assign(value, [locals]) => expression.assign(_localContext(locals), value);
-}
+  T newChain(List expressions)
+     => null;
+  T newFilter(T expression, String name, List arguments)
+     => null;
 
-class Expression implements ParserAST {
-  final ParsedGetter eval;
-  final ParsedSetter assign;
+  T newAssign(T target, T value)
+     => null;
+  T newConditional(T condition, T yes, T no)
+     => null;
 
-  String exp;
-  List parts;
+  T newAccessScope(String name)
+      => null;
+  T newAccessMember(T object, String name)
+      => null;
+  T newAccessKeyed(T object, T key)
+      => null;
 
-  // Expressions that represent field accesses have a couple of
-  // extra fields. We use that to generate an optimized closure
-  // for calling fields of objects without having to load the
-  // field separately.
-  Expression fieldHolder;
-  String fieldName;
-  bool get isFieldAccess => fieldHolder != null;
+  T newCallScope(String name, List arguments)
+      => null;
+  T newCallFunction(T function, List arguments)
+      => null;
+  T newCallMember(T object, String name, List arguments)
+      => null;
 
-  Expression(ParsedGetter this.eval, [ParsedSetter this.assign]);
+  T newPrefix(String operation, T expression)
+      => null;
+  T newPrefixPlus(T expression)
+      => expression;
+  T newPrefixMinus(T expression)
+      => newBinaryMinus(newLiteralZero(), expression);
+  T newPrefixNot(T expression)
+      => newPrefix('!', expression);
 
-  bind(context, [localsWrapper]) => new BoundExpression(context, this, localsWrapper);
+  T newBinary(String operation, T left, T right)
+      => null;
+  T newBinaryPlus(T left, T right)
+      => newBinary('+', left, right);
+  T newBinaryMinus(T left, T right)
+      => newBinary('-', left, right);
+  T newBinaryMultiply(T left, T right)
+      => newBinary('*', left, right);
+  T newBinaryDivide(T left, T right)
+      => newBinary('/', left, right);
+  T newBinaryModulo(T left, T right)
+      => newBinary('%', left, right);
+  T newBinaryTruncatingDivide(T left, T right)
+      => newBinary('~/', left, right);
+  T newBinaryLogicalAnd(T left, T right)
+      => newBinary('&&', left, right);
+  T newBinaryLogicalOr(T left, T right)
+      => newBinary('||', left, right);
+  T newBinaryEqual(T left, T right)
+      => newBinary('==', left, right);
+  T newBinaryNotEqual(T left, T right)
+      => newBinary('!=', left, right);
+  T newBinaryLessThan(T left, T right)
+      => newBinary('<', left, right);
+  T newBinaryGreaterThan(T left, T right)
+      => newBinary('>', left, right);
+  T newBinaryLessThanEqual(T left, T right)
+      => newBinary('<=', left, right);
+  T newBinaryGreaterThanEqual(T left, T right)
+      => newBinary('>=', left, right);
 
-  get assignable => assign != null;
-}
-
-@NgInjectableService()
-class GetterSetter {
-  Function getter(String key) => null;
-  Function setter(String key) => null;
+  T newLiteralPrimitive(T value)
+      => null;
+  T newLiteralArray(List elements)
+      => null;
+  T newLiteralObject(List<String> keys, List values)
+      => null;
+  T newLiteralNull()
+      => newLiteralPrimitive(null);
+  T newLiteralZero()
+      => newLiteralNumber(0);
+  T newLiteralBoolean(bool value)
+      => newLiteralPrimitive(value);
+  T newLiteralNumber(num value)
+      => newLiteralPrimitive(value);
+  T newLiteralString(String value)
+      => null;
 }

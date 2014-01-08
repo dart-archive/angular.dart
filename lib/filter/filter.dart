@@ -111,7 +111,7 @@ typedef bool Equals(a, b);
  */
 @NgFilter(name: 'filter')
 class FilterFilter {
-  Parser _parser;
+  Parser<Expression> _parser;
   Equals _comparator;
   Equals _stringComparator;
 

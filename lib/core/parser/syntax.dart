@@ -1,7 +1,8 @@
-library angular.core.new_parser.new_syntax;
+library angular.core.parser.syntax;
 
-import 'package:angular/core/parser/new_unparser.dart' show Unparser;
-export 'package:angular/core/parser/new_parser.dart';
+import 'package:angular/core/parser/parser.dart' show LocalsWrapper;
+import 'package:angular/core/parser/unparser.dart' show Unparser;
+import 'package:angular/core/parser/utils.dart' show EvalError;
 
 abstract class Visitor {
   visit(Expression expression)
@@ -52,16 +53,40 @@ abstract class Visitor {
 }
 
 abstract class Expression {
+  bool get isAssignable => false;
+  bool get isChain => false;
+
+  eval(scope)
+      => throw new EvalError("Cannot evaluate $this");
+  assign(scope, value)
+      => throw new EvalError("Cannot assign to $this");
+  bind(context, [LocalsWrapper wrapper])
+      => new BoundExpression(this, context, wrapper);
+
   accept(Visitor visitor);
   String toString() => Unparser.unparse(this);
 }
 
-abstract class Assignable implements Expression {
+class BoundExpression {
+  final Expression expression;
+  final _context;
+  final LocalsWrapper _wrapper;
+  BoundExpression(this.expression, this._context, this._wrapper);
+
+  call([locals]) => expression.eval(_computeContext(locals));
+  assign(value, [locals]) => expression.assign(_computeContext(locals), value);
+
+  _computeContext(locals) {
+    if (locals == null) return _context;
+    if (_wrapper != null) return _wrapper(_context, locals);
+    throw new StateError("Locals $locals provided, but missing wrapper.");
+  }
 }
 
 class Chain extends Expression {
   final List<Expression> expressions;
   Chain(this.expressions);
+  bool get isChain => true;
   accept(Visitor visitor) => visitor.visitChain(this);
 }
 
@@ -88,23 +113,26 @@ class Conditional extends Expression {
   accept(Visitor visitor) => visitor.visitConditional(this);
 }
 
-class AccessScope extends Expression implements Assignable {
+class AccessScope extends Expression {
   final String name;
   AccessScope(this.name);
+  bool get isAssignable => true;
   accept(Visitor visitor) => visitor.visitAccessScope(this);
 }
 
-class AccessMember extends Expression implements Assignable {
+class AccessMember extends Expression {
   final Expression object;
   final String name;
   AccessMember(this.object, this.name);
+  bool get isAssignable => true;
   accept(Visitor visitor) => visitor.visitAccessMember(this);
 }
 
-class AccessKeyed extends Expression implements Assignable {
+class AccessKeyed extends Expression {
   final Expression object;
   final Expression key;
   AccessKeyed(this.object, this.key);
+  bool get isAssignable => true;
   accept(Visitor visitor) => visitor.visitAccessKeyed(this);
 }
 

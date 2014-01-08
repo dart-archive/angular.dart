@@ -1,33 +1,61 @@
-part of angular.core.parser;
+library angular.core.parser.static_parser;
+
+import 'package:angular/core/parser/parser.dart';
+import 'package:angular/core/parser/utils.dart' show EvalError;
 
 class StaticParserFunctions {
-  Map<String, Function> eval;
-  Map<String, Function> assign;
+  final Map<String, Function> eval;
+  final Map<String, Function> assign;
   StaticParserFunctions(this.eval, this.assign);
 }
 
-@NgInjectableService()
-class StaticParser implements Parser {
-  Map<String, Function> _eval;
-  Map<String, Function> _assign;
-  Parser _fallbackParser;
+//@NgInjectableService()
+class StaticParser implements Parser<Expression> {
+  final StaticParserFunctions _functions;
+  final DynamicParser _fallbackParser;
+  final Map<String, Expression> _cache = {};
+  StaticParser(this._functions, this._fallbackParser);
 
-  StaticParser(StaticParserFunctions functions,
-               DynamicParser this._fallbackParser) {
-    assert(functions != null);
-    _eval = functions.eval;
-    _assign = functions.assign;
+  Expression call(String input) {
+    if (input == null) input = '';
+    Expression cached = _cache[input];
+    if (cached != null) return cached;
+    return _cache[input] = _construct(input);
   }
 
-  call(String exp) {
-    if (exp == null) exp = "";
-    if (!_eval.containsKey(exp)) {
-      //print("Expression [$exp] is not supported in static parser");
-      return _fallbackParser.call(exp);
-    }
-    var eval = _eval[exp];
+  Expression _construct(String input) {
+    var eval = _functions.eval[input];
+    if (eval == null) return _fallbackParser(input);
     if (eval is !Function) throw eval;
-    Function assign = _assign[exp];
-    return new Expression(eval, assign);
+    Function assign = _functions.assign[input];
+    return new StaticExpression(input, eval, assign);
+  }
+}
+
+class StaticExpression extends Expression {
+  final String _input;
+  final Function _eval;
+  final Function _assign;
+  StaticExpression(this._input, this._eval, [this._assign]);
+
+  bool get isAssignable => _assign != null;
+  accept(Visitor visitor) => throw "Cannot visit static expression $this";
+  toString() => _input;
+
+  eval(scope) {
+    try {
+      return _eval(scope);
+    } on EvalError catch (e, s) {
+      throw e.unwrap("$this", s);
+    }
+  }
+
+  assign(scope, value) {
+    try {
+      if (_assign == null) throw new EvalError("Cannot assign to $this");
+      return _assign(scope, value);
+    } on EvalError catch (e, s) {
+      throw e.unwrap("$this", s);
+    }
   }
 }

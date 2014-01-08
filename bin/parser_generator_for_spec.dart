@@ -1,15 +1,26 @@
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
-import 'package:angular/core/parser/new_parser.dart' as new_parser;
+import 'package:angular/core/module.dart';
+import 'package:angular/core/parser/parser.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
+
+class NullFilterMap implements FilterMap {
+  call(name) => null;
+  Type operator[](annotation) => null;
+  forEach(fn) { }
+  annotationsFor(type) => null;
+}
 
 main(arguments) {
   var isGetter = !arguments.isEmpty;
 
-  Module module = new Module();
+  Module module = new Module()..type(Parser, implementedBy: DynamicParser);
   if (isGetter) {
-    module.type(new_parser.ParserBackend, implementedBy: DartGetterSetterGen);
+    module.type(ParserBackend, implementedBy: DartGetterSetterGen);
+  } else {
+    module.type(ParserBackend, implementedBy: DynamicParserBackend);
+    module.type(FilterMap, implementedBy: NullFilterMap);
   }
   Injector injector = new DynamicInjector(modules: [module],
       allowImplicitInjection: true);

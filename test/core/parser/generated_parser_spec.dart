@@ -5,9 +5,8 @@ import 'parser_spec.dart' as parser_spec;
 import 'generated_functions.dart' as generated_functions;
 
 class AlwaysThrowError implements DynamicParser {
-  call(String x) { throw "Fall-thru to DynamicParser disabled [$x]"; }
+  call(String input) => throw "Fall-thru to DynamicParser disabled [$input]";
 }
-
 
 main() {
   describe('generated parser', () {

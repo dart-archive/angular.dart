@@ -1,7 +1,7 @@
 library dart_code_gen;
 
 import 'package:angular/tools/reserved_dart_keywords.dart';
-import 'package:angular/core/parser/new_syntax.dart';
+import 'package:angular/core/parser/syntax.dart';
 
 escape(String s) =>
     s.replaceAll('\"', '\\\"')
@@ -53,7 +53,7 @@ class DartCodeGenVisitor extends Visitor {
   String toBool(String value)
       => 'toBool($value)';
   String safeCallFunction(String function, String name, String arguments)
-      => 'safeFunctionCall($function, "$name", evalError)($arguments)';
+      => 'ensureFunction($function, "$name")($arguments)';
 
   String evaluate(Expression expression, {bool convertToBool: false}) {
     int old = state;
@@ -72,7 +72,7 @@ class DartCodeGenVisitor extends Visitor {
     return result;
   }
 
-  Function assign(Assignable target) {
+  Function assign(Expression target) {
     int old = state;
     state = STATE_ASSIGN;
     Function result = visit(target);
@@ -132,8 +132,8 @@ class DartCodeGenVisitor extends Visitor {
     String object = evaluate(access.object);
     String key = evaluate(access.key);
     return (isAssigning)
-        ? (value) => 'objectIndexSetField($object, $key, $value, evalError)'
-        : 'objectIndexGetField($object, $key, evalError)';
+        ? (value) => 'setKeyed($object, $key, $value)'
+        : 'getKeyed($object, $key)';
   }
 
   visitCallScope(CallScope call) {

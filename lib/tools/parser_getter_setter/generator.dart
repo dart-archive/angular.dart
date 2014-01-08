@@ -1,9 +1,11 @@
-import 'package:angular/core/parser/new_syntax.dart';
+import 'package:angular/core/parser/parser.dart';
 import 'package:angular/tools/reserved_dart_keywords.dart';
 
 class DartGetterSetterGen extends ParserBackend {
   final Set<String> properties = new Set<String>();
   final Map<String, Set<int>> calls = new Map<String, Set<int>>();
+
+  bool isAssignable(expression) => true;
 
   registerAccess(String name) {
     if (isReserved(name)) return;
@@ -28,38 +30,46 @@ class DartGetterSetterGen extends ParserBackend {
 
 class ParserGetterSetter {
   final Parser parser;
-  ParserGetterSetter(this.parser);
+  final ParserBackend backend;
+  ParserGetterSetter(this.parser, this.backend);
 
   generateParser(List<String> exprs) {
     exprs.forEach((expr) {
       try {
-        parser.parse(expr);
+        parser(expr);
       } catch (e) {
         // Ignore exceptions.
       }
     });
 
-    DartGetterSetterGen backend = parser.backend;
+    DartGetterSetterGen backend = this.backend;
     print(generateClosureMap(backend.properties, backend.calls));
   }
 
   generateClosureMap(Set<String> properties, Map<String, Set<int>> calls) {
     return '''
 class StaticClosureMap extends ClosureMap {
-  Map<String, Function> _getters = ${generateGetterMap(properties)};
+  Map<String, Getter> _getters = ${generateGetterMap(properties)};
+  Map<String, Setter> _setters = ${generateSetterMap(properties)};
   List<Map<String, Function>> _functions = ${generateFunctionMap(calls)};
-  lookupGetter(String name) => _getters[name];
-  lookupFunction(String name, int arity) {
-    return (arity < _functions.length)
-        ? _functions[arity][name]
-        : null;
-  }
+
+  Getter lookupGetter(String name)
+      => _getters[name];
+  Setter lookupSetter(String name)
+      => _setters[name];
+  lookupFunction(String name, int arity) 
+      => (arity < _functions.length) ? _functions[arity][name] : null;
 }
 ''';
   }
 
   generateGetterMap(Iterable<String> keys) {
-    var lines = keys.map((key) => 'r"${key}": (s) => s.$key');
+    var lines = keys.map((key) => 'r"${key}": (o) => o.$key');
+    return '{\n   ${lines.join(",\n    ")}\n  }';
+  }
+
+  generateSetterMap(Iterable<String> keys) {
+    var lines = keys.map((key) => 'r"${key}": (o, v) => o.$key = v');
     return '{\n   ${lines.join(",\n    ")}\n  }';
   }
 
@@ -81,7 +91,7 @@ class StaticClosureMap extends ClosureMap {
       } else {
         var args = i == 0 ? '' : new List.generate(i, (e) => "a$e").join(',');
         var p = args.isEmpty ? '' : ',$args';
-        var lines = names.map((name) => 'r"$name": (s$p) => s.$name($args)');
+        var lines = names.map((name) => 'r"$name": (o$p) => o.$name($args)');
         maps.add('{\n    ${lines.join(",\n    ")}\n  }');
       }
     }

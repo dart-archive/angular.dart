@@ -1,104 +1,160 @@
-part of angular.core.parser;
+library angular.core.parser.dynamic_parser;
 
-typedef ParsedGetter(self);
-typedef ParsedSetter(self, value);
+import 'package:angular/core/module.dart' show FilterMap, NgInjectableService;
 
-typedef Getter([locals]);
-typedef Setter(value, [locals]);
+import 'package:angular/core/parser/parser.dart';
+import 'package:angular/core/parser/lexer.dart';
+import 'package:angular/core/parser/dynamic_parser_impl.dart';
 
-abstract class ParserAST {
-  bool get assignable;
+import 'package:angular/core/parser/eval.dart';
+import 'package:angular/core/parser/utils.dart' show EvalError;
+
+class ClosureMap {
+  Getter lookupGetter(String name) => null;
+  Setter lookupSetter(String name) => null;
+  Function lookupFunction(String name, int arity) => null;
 }
 
-// Automatic type conversion.
-autoConvertAdd(a, b) {
-  if (a != null && b != null) {
-    // TODO(deboer): Support others.
-    if (a is String && b is! String) {
-      return a + b.toString();
+class DynamicParser implements Parser<Expression> {
+  final Lexer _lexer;
+  final ParserBackend _backend;
+  final Map<String, Expression> _cache = {};
+  DynamicParser(this._lexer, this._backend);
+
+  Expression call(String input) {
+    if (input == null) input = '';
+    Expression cached = _cache[input];
+    if (cached != null) return cached;
+    return _cache[input] = _parse(input);
+  }
+
+  Expression _parse(String input) {
+    DynamicParserImpl parser = new DynamicParserImpl(_lexer, _backend, input);
+    Expression expression = parser.parseChain();
+    return new DynamicExpression(expression);
+  }
+}
+
+class DynamicExpression extends Expression {
+  final Expression _expression;
+  DynamicExpression(this._expression);
+
+  bool get isAssignable => _expression.isAssignable;
+  bool get isChain => _expression.isChain;
+
+  accept(Visitor visitor) => _expression.accept(visitor);
+  toString() => _expression.toString();
+
+  eval(scope) {
+    try {
+      return _expression.eval(scope);
+    } on EvalError catch (e, s) {
+      throw e.unwrap("$this", s);
     }
-    if (a is! String && b is String) {
-      return a.toString() + b;
+  }
+
+  assign(scope, value) {
+    try {
+      return _expression.assign(scope, value);
+    } on EvalError catch (e, s) {
+      throw e.unwrap("$this", s);
     }
-    return a + b;
   }
-  if (a != null) return a;
-  if (b != null) return b;
-  return null;
 }
 
-objectIndexGetField(o, i, evalError) {
-  if (o == null) throw evalError('Accessing null object');
+class DynamicParserBackend extends ParserBackend {
+  final FilterMap _filters;
+  final ClosureMap _closures;
+  DynamicParserBackend(this._filters, this._closures);
 
-  if (o is List) {
-    return o[i.toInt()];
-  } else if (o is Map) {
-    return o[i.toString()]; // toString dangerous?
+  bool isAssignable(Expression expression)
+      => expression.isAssignable;
+
+  Expression newFilter(expression, name, arguments) {
+    Function filter = _filters(name);
+    List allArguments = new List(arguments.length + 1);
+    allArguments[0] = expression;
+    allArguments.setAll(1, arguments);
+    return new Filter(expression, name, arguments, filter, allArguments);
   }
-  throw evalError("Attempted field access on a non-list, non-map");
-}
 
-objectIndexSetField(o, i, v, evalError) {
-  if (o is List) {
-    int arrayIndex = i.toInt();
-    if (o.length <= arrayIndex) { o.length = arrayIndex + 1; }
-    o[arrayIndex] = v;
-  } else if (o is Map) {
-    o[i.toString()] = v; // toString dangerous?
-  } else {
-    throw evalError("Attempting to set a field on a non-list, non-map");
-  }
-  return v;
-}
+  Expression newChain(expressions)
+      => new Chain(expressions);
+  Expression newAssign(target, value)
+      => new Assign(target, value);
+  Expression newConditional(condition, yes, no)
+      => new Conditional(condition, yes, no);
 
-safeFunctionCall(userFn, fnName, evalError) {
-  if (userFn == null) {
-    throw evalError("Undefined function $fnName");
-  }
-  if (userFn is! Function) {
-    throw evalError("$fnName is not a function");
-  }
-  return userFn;
-}
+  Expression newAccessKeyed(object, key)
+      => new AccessKeyed(object, key);
+  Expression newCallFunction(function, arguments)
+      => new CallFunction(function, arguments);
 
-@NgInjectableService()
-class DynamicParser implements Parser {
-  final new_parser.Parser _newParser;
-  final Map<String, ParserAST> _cache = {};
-  DynamicParser(this._newParser);
+  Expression newPrefixNot(expression)
+      => new PrefixNot(expression);
 
-  ParserAST call(String text) {
-    if (text == null) text = '';
-    var value = _cache[text];
-    if (value != null) {
-      return value;
+  Expression newBinary(operation, left, right)
+      => new Binary(operation, left, right);
+
+  Expression newLiteralPrimitive(value)
+      => new LiteralPrimitive(value);
+  Expression newLiteralArray(elements)
+      => new LiteralArray(elements);
+  Expression newLiteralObject(keys, values)
+      => new LiteralObject(keys, values);
+  Expression newLiteralString(value)
+      => new LiteralString(value);
+
+
+  Expression newAccessScope(name) {
+    Getter getter = _closures.lookupGetter(name);
+    Setter setter = _closures.lookupSetter(name);
+    if (getter != null && setter != null) {
+      return new AccessScopeFast(name, getter, setter);
+    } else {
+      return new AccessScope(name);
     }
-    return _cache[text] = _call(text);
   }
 
-  ParserAST _call(String text) {
-    var newExpression = _newParser.parse(text);
-    evaluate(scope) {
-      try {
-        return newExpression.evaluate(scope);
-      } on new_parser.EvalError catch (e, s) {
-        throw _parserEvalError(e.message, text, s);
-      }
+  Expression newAccessMember(object, name) {
+    Getter getter = _closures.lookupGetter(name);
+    Setter setter = _closures.lookupSetter(name);
+    if (getter != null && setter != null) {
+      return new AccessMemberFast(object, name, getter, setter);
+    } else {
+      return new AccessMember(object, name);
     }
-    assign(scope, value) {
-      try {
-        return newExpression.assign(scope, value);
-      } on new_parser.EvalError catch (e, s) {
-        throw _parserEvalError(e.message, text, s);
-      }
-    }
-    return _newParser.backend.isAssignable(newExpression)
-        ? new Expression(evaluate, assign)
-        : new Expression(evaluate);
   }
 
-  static _parserEvalError(String s, String text, stack) =>
-      ['Eval Error: $s while evaling [$text]' +
-       (stack != null ? '\n\nFROM:\n$stack' : '')];
+  Expression newCallScope(name, arguments) {
+    Function constructor = _computeCallConstructor(
+        _callScopeConstructors, name, arguments.length);
+    return (constructor != null)
+        ? constructor(name, arguments, _closures)
+        : new CallScope(name, arguments);
+  }
 
+  Expression newCallMember(object, name, arguments) {
+    Function constructor = _computeCallConstructor(
+        _callMemberConstructors, name, arguments.length);
+    return (constructor != null)
+        ? constructor(object, name, arguments, _closures)
+        : new CallMember(object, name, arguments);
+  }
+
+  Function _computeCallConstructor(Map constructors, String name, int arity) {
+    Function function = _closures.lookupFunction(name, arity);
+    return (function == null) ? null : constructors[arity];
+  }
+
+  static final Map<int, Function> _callScopeConstructors = {
+      0: (n, a, c) => new CallScopeFast0(n, a, c.lookupFunction(n, 0)),
+      1: (n, a, c) => new CallScopeFast1(n, a, c.lookupFunction(n, 1)),
+  };
+
+  static final Map<int, Function> _callMemberConstructors = {
+      0: (o, n, a, c) => new CallMemberFast0(o, n, a, c.lookupFunction(n, 0)),
+      1: (o, n, a, c) => new CallMemberFast1(o, n, a, c.lookupFunction(n, 1)),
+  };
 }
+

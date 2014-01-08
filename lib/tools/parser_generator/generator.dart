@@ -1,7 +1,7 @@
 library generator;
 
 import 'dart_code_gen.dart';
-import '../../core/parser/new_syntax.dart';
+import '../../core/parser/parser.dart';
 
 class SourcePrinter {
   printSrc(src) {
@@ -20,10 +20,9 @@ class ParserGenerator {
   }
 
   generateParser(Iterable<String> expressions) {
-    print("genEvalError(msg) { throw msg; }");
-    print("functions(FilterLookup filters) => "
-          "new StaticParserFunctions(buildEval(filters), buildAssign(filters));");
-    print('var evalError = (text, [s]) => text;');
+    print("StaticParserFunctions functions(FilterLookup filters)");
+    print("    => new StaticParserFunctions(");
+    print("           buildEval(filters), buildAssign(filters));");
     print("");
 
     // Compute the function maps.
@@ -52,8 +51,8 @@ class ParserGenerator {
   void generateCode(String exp, Map eval, Map assign) {
     String escaped = escape(exp);
     try {
-      Expression e = _parser.parse(exp);
-      if (e is Assignable) assign[escaped] = getCode(e, true);
+      Expression e = _parser(exp);
+      if (e.isAssignable) assign[escaped] = getCode(e, true);
       eval[escaped] = getCode(e, false);
     } catch (e) {
       if ("$e".contains('Parser Error') ||
@@ -69,7 +68,7 @@ class ParserGenerator {
   String getCode(Expression e, bool assign) {
     String args = assign ? "scope, value" : "scope";
     String code = _codegen.generate(e, assign);
-    if (e is Chain) {
+    if (e.isChain) {
       code = code.replaceAll('\n', '\n      ');
       return "($args) {\n      $code\n    }";
     } else {

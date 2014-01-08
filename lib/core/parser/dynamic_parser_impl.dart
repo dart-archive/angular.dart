@@ -1,16 +1,16 @@
-library angular.core.new_parser.new_parser_impl;
+library angular.core.parser.dynamic_parser_impl;
 
-import 'package:angular/core/parser/new_parser.dart' show ParserBackend;
+import 'package:angular/core/parser/parser.dart' show ParserBackend;
 import 'package:angular/core/parser/lexer.dart';
 
-class ParserImpl {
+class DynamicParserImpl {
   static Token EOF = new Token(-1, null);
   final ParserBackend backend;
   final String input;
   final List<Token> tokens;
   int index = 0;
 
-  ParserImpl(Lexer lexer, this.backend, String input)
+  DynamicParserImpl(Lexer lexer, this.backend, String input)
       : this.input = input, tokens = lexer.call(input);
 
   Token get peek {

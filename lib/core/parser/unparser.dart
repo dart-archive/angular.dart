@@ -1,6 +1,6 @@
-library angular.core.new_parser.new_unparser;
+library angular.core.parser.unparser;
 
-import 'package:angular/core/parser/new_syntax.dart';
+import 'package:angular/core/parser/syntax.dart';
 
 class Unparser extends Visitor {
   final StringBuffer buffer;

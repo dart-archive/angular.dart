@@ -39,7 +39,8 @@ toBool(x) => (x is num) ? x != 0 : x == true;
 
 main() {
   describe('parse', () {
-    var scope, parser;
+    var scope;
+    Parser<Expression> parser;
     beforeEach(module((Module module) {
       module.type(IncrementFilter);
       module.type(SubstringFilter);
@@ -136,7 +137,7 @@ main() {
     });
 
     describe('error handling', () {
-      var parser;
+      Parser<Expression> parser;
 
       beforeEach(inject((Parser p) {
         parser = p;

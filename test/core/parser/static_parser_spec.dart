@@ -6,7 +6,7 @@ var EVAL = { '1': (scope) => 1 };
 var ASSIGN = { };
 
 class AlwaysReturnX implements DynamicParser {
-  call(String x) => 'x';
+  call(String input) => throw 'x';
 }
 
 main() {
@@ -14,8 +14,7 @@ main() {
     beforeEach(module((Module m) {
       m.type(Parser, implementedBy: StaticParser);
       m.type(DynamicParser, implementedBy: AlwaysReturnX);
-      m.value(StaticParserFunctions,
-          new StaticParserFunctions(EVAL, ASSIGN));
+      m.value(StaticParserFunctions, new StaticParserFunctions(EVAL, ASSIGN));
     }));
 
 
@@ -25,7 +24,7 @@ main() {
 
 
     it('should call the fallback if there is not function', inject((Parser parser) {
-      expect(parser('not 1')).toEqual('x');
+      expect(() => parser('not 1')).toThrow('x');
     }));
   });
 }

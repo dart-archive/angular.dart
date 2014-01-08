@@ -4,7 +4,7 @@ part of angular.core.dom;
 class Compiler {
   final DirectiveMap directives;
   final Profiler _perf;
-  final Parser _parser;
+  final Parser<Expression> _parser;
   final Expando _expando;
 
   DirectiveSelector selector;
@@ -141,7 +141,7 @@ class Compiler {
       var dstPath = match[2];
 
       Expression dstPathFn = _parser(dstPath.isEmpty ? attrName : dstPath);
-      if (!dstPathFn.assignable) {
+      if (!dstPathFn.isAssignable) {
         throw "Expression '$dstPath' is not assignable in mapping '$mapping' for attribute '$attrName'.";
       }
       ApplyMapping mappingFn;
@@ -160,7 +160,7 @@ class Compiler {
                     () => attrExprFn.eval(scope),
                     (v) => dstPathFn.assign(dst, shadowValue = v),
                 attrs[attrName]);
-            if (attrExprFn.assignable) {
+            if (attrExprFn.isAssignable) {
               scope.$watch(
                       () => dstPathFn.eval(dst),
                       (v) {

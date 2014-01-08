@@ -10,7 +10,6 @@ import 'package:perf_api/perf_api.dart';
 
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
-import 'package:angular/core/parser/new_eval.dart' as new_parser;
 import 'package:angular/utils.dart';
 
 import 'service.dart';
@@ -41,13 +40,10 @@ class NgCoreModule extends Module {
     type(NgZone);
 
     type(Parser, implementedBy: DynamicParser);
+    type(ParserBackend, implementedBy: DynamicParserBackend);
     type(DynamicParser);
+    type(DynamicParserBackend);
     type(Lexer);
-    type(GetterSetter);
-
-    type(new_parser.ClosureMap);
-    type(new_parser.Parser);
-    type(new_parser.ParserBackend, implementedBy:
-        new_parser.ParserBackendForEvaluation);
+    type(ClosureMap);
   }
 }
