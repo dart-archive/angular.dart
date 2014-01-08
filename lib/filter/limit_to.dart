@@ -37,9 +37,8 @@ part of angular.filter;
 @NgFilter(name:'limitTo')
 class LimitToFilter {
   Injector _injector;
-  Parser _parser;
 
-  LimitToFilter(this._injector, this._parser);
+  LimitToFilter(this._injector);
 
   dynamic call(dynamic items, [int limit]) {
     if (items == null) {

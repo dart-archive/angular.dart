@@ -1,308 +1,296 @@
 library dart_code_gen;
 
 import 'package:angular/tools/reserved_dart_keywords.dart';
-import 'package:angular/core/parser/parser_library.dart';  // For ParserBackend.
-import 'source.dart';
+import 'package:angular/core/parser/syntax.dart';
 
+escape(String s) =>
+    s.replaceAll('\"', '\\\"')
+     .replaceAll(r'$', r'\$')
+     .replaceAll('\n', '\\n');
 
-Code VALUE_CODE = new Code("value");
+class DartCodeGen {
+  final HelperMap getters = new HelperMap('_',
+      getterTemplate, getterTemplateForReserved);
+  final HelperMap holders = new HelperMap('_ensure\$',
+      holderTemplate, holderTemplateForReserved);
+  final HelperMap setters = new HelperMap('_set\$',
+      setterTemplate, setterTemplateForReserved);
 
-typedef CodeAssign(Code c);
+  String generate(Expression expression, bool assign) {
+    var v = new DartCodeGenVisitor(getters, holders, setters);
+    return assign ? v.assign(expression)('value') : v.evaluate(expression);
+  }
+}
 
-class Code implements ParserAST, Expression {
-  String id;
-  String _exp;
-  String simpleGetter;
-  CodeAssign _assign;
+class DartCodeGenVisitor extends Visitor {
+  static const int STATE_EVAL = 0;
+  static const int STATE_EVAL_HOLDER = 1;
+  static const int STATE_ASSIGN = 2;
+  int state = STATE_EVAL;
 
-  Code(this._exp, [this._assign, this.simpleGetter]) {
-    id = _exp == null ? simpleGetter : _exp;
-    if (id == null) {
-        throw 'id is null';
+  final HelperMap getters;
+  final HelperMap holders;
+  final HelperMap setters;
+
+  DartCodeGenVisitor(this.getters, this.holders, this.setters);
+
+  bool get isEvaluating => state == STATE_EVAL;
+  bool get isEvaluatingHolder => state == STATE_EVAL_HOLDER;
+  bool get isAssigning => state == STATE_ASSIGN;
+
+  String lookupGetter(String key) => getters.lookup(key);
+  String lookupHolder(String key) => holders.lookup(key);
+  String lookupSetter(String key) => setters.lookup(key);
+
+  String lookupAccessor(String key) {
+    switch (state) {
+      case STATE_EVAL: return lookupGetter(key);
+      case STATE_EVAL_HOLDER: return lookupHolder(key);
+      case STATE_ASSIGN: return lookupSetter(key);
     }
   }
 
-  String get exp {
-    if (_exp == null) {
-      throw "Can not be used in an expression: $id";
+  String toBool(String value)
+      => 'toBool($value)';
+  String safeCallFunction(String function, String name, String arguments)
+      => 'ensureFunction($function, "$name")($arguments)';
+
+  String evaluate(Expression expression, {bool convertToBool: false}) {
+    int old = state;
+    state = STATE_EVAL;
+    String result = visit(expression);
+    if (convertToBool) result = toBool(result);
+    state = old;
+    return result;
+  }
+
+  String evaluateHolder(Expression expression) {
+    int old = state;
+    state = STATE_EVAL_HOLDER;
+    String result = visit(expression);
+    state = old;
+    return result;
+  }
+
+  Function assign(Expression target) {
+    int old = state;
+    state = STATE_ASSIGN;
+    Function result = visit(target);
+    state = old;
+    return result;
+  }
+
+  visitChain(Chain chain) {
+    StringBuffer buffer = new StringBuffer();
+    buffer.writeln("var result, last;");
+    for (int i = 0; i < chain.expressions.length; i++) {
+      String expression = evaluate(chain.expressions[i]);
+      buffer.writeln('last = $expression;');
+      buffer.writeln('if (last != null) result = last;');
     }
-    return _exp;
+    buffer.write('return result;');
+    return "$buffer";
   }
 
-  get assignable => _assign != null;
-
-  // methods from Expression
-  Expression fieldHolder;
-  String fieldName;
-  bool get isFieldAccess => null;
-  void set exp(String s) => throw new UnimplementedError();
-  ParsedGetter get eval => throw new UnimplementedError();
-  ParsedSetter get assign => throw new UnimplementedError();
-  List get parts => throw new UnimplementedError();
-  set parts(List p) => throw new UnimplementedError();
-  bind(context, localsWrapper) => throw new UnimplementedError();
-
-  Source toSource(SourceBuilder _) {
-    return _('new Expression', _.parens(
-      _('(scope)', _.body(
-          'return $exp;'
-      )),
-      assignable ? _('(scope, value)', _.body(
-        'return ${_assign(VALUE_CODE).exp};'
-      )) : 'null'
-    ));
+  visitFilter(Filter filter) {
+    List expressions = [ filter.expression ]..addAll(filter.arguments);
+    String arguments = expressions.map((e) => evaluate(e)).join(', ');
+    String name = escape(filter.name);
+    return 'filters("$name")($arguments)';
   }
-}
 
-class ThrowCode extends Code {
-  ThrowCode(code): super('throw $code');
-  Source toSource(SourceBuilder _) {
-    return _('new Expression', _.parens(
-        _('(scope)', _.body()..source.addAll(exp.split('\n'))),
-        assignable ? _('(scope, value)', _.body()) : 'null'
-    ));
+  visitAssign(Assign expression) {
+    String value = evaluate(expression.value);
+    return assign(expression.target)(value);
   }
-}
 
-class MultipleStatementCode extends Code {
-  MultipleStatementCode(code): super(code);
-
-  Source toSource(SourceBuilder _) {
-    return _('new Expression', _.parens(
-        _('(scope)', _.body()..source.addAll(exp.split('\n'))),
-        assignable ? _('(scope, value)', _.body()) : 'null'
-    ));
+  visitConditional(Conditional conditional) {
+    String condition = evaluate(conditional.condition, convertToBool: true);
+    String yes = evaluate(conditional.yes);
+    String no = evaluate(conditional.no);
+    return "$condition ? $yes : $no";
   }
-}
 
-escape(String s) => s.replaceAll('\'', '\\\'').replaceAll(r'$', r'\$');
+  visitAccessScope(AccessScope access) {
+    String accessor = lookupAccessor(access.name);
+    return isAssigning
+        ? (value) => '$accessor(scope, $value)'
+        : '$accessor(scope)';
+  }
 
-class GetterSetterGenerator {
-  static RegExp LAST_PATH_PART = new RegExp(r'(.*)\.(.*)');
-  static RegExp NON_WORDS = new RegExp(r'\W');
+  visitAccessMember(AccessMember access) {
+    String object = !isEvaluating
+        ? evaluateHolder(access.object)
+        : evaluate(access.object);
+    String accessor = lookupAccessor(access.name);
+    return isAssigning
+        ? (value) => '$accessor($object, $value)'
+        : '$accessor($object)';
+  }
 
+  visitAccessKeyed(AccessKeyed access) {
+    String object = evaluate(access.object);
+    String key = evaluate(access.key);
+    return (isAssigning)
+        ? (value) => 'setKeyed($object, $key, $value)'
+        : 'getKeyed($object, $key)';
+  }
 
-  String functions = "// GETTER AND SETTER FUNCTIONS\n\n";
-  var _keyToGetterFnName = {};
-  var _keyToSetterFnName = {};
-  var nextUid = 0;
+  visitCallScope(CallScope call) {
+    String arguments = call.arguments.map((e) => evaluate(e)).join(', ');
+    String getter = lookupGetter(call.name);
+    return safeCallFunction('$getter(scope)', call.name, arguments);
+  }
 
-  _flatten(key) => key.replaceAll(NON_WORDS, '_');
+  visitCallFunction(CallFunction call) {
+    String function = evaluate(call.function);
+    String arguments = call.arguments.map((e) => evaluate(e)).join(', ');
+    return safeCallFunction(function, "${call.function}", arguments);
+  }
 
-  fieldGetter(String field, String obj) {
-    var eKey = escape(field);
+  visitCallMember(CallMember call) {
+    String object = evaluate(call.object);
+    String arguments = call.arguments.map((e) => evaluate(e)).join(', ');
+    String getter = lookupGetter(call.name);
+    return safeCallFunction('$getter($object)', call.name, arguments);
+  }
 
-    var returnValue = isReserved(field) ? "undefined_ /* $field is reserved */" : "$obj.$field";
-
-    return """
-  if ($obj is Map) {
-    if ($obj.containsKey('$eKey')) {
-      val = $obj['$eKey'];
+  visitBinary(Binary binary) {
+    String operation = binary.operation;
+    bool logical = (operation == '||') || (operation == '&&');
+    String left = evaluate(binary.left, convertToBool: logical);
+    String right = evaluate(binary.right, convertToBool: logical);
+    if (operation == '+') {
+      return 'autoConvertAdd($left, $right)';
     } else {
-      val = undefined_;
+      return '($left $operation $right)';
     }
+  }
+
+  visitPrefix(Prefix prefix) {
+    String operation = prefix.operation;
+    bool logical = (operation == '!');
+    String expression = evaluate(prefix.expression, convertToBool: logical);
+    return '$operation$expression';
+  }
+
+  visitLiteral(Literal literal) {
+    return '$literal';
+  }
+
+  visitLiteralString(LiteralString literal) {
+    return 'r$literal';
+  }
+
+  visitLiteralArray(LiteralArray literal) {
+    if (literal.elements.isEmpty) return '[]';
+    StringBuffer buffer = new StringBuffer();
+    for (int i = 0; i < literal.elements.length; i++) {
+      if (i != 0) buffer.write(', ');
+      buffer.write(evaluate(literal.elements[i]));
+    }
+    return "[ $buffer ]";
+  }
+
+  visitLiteralObject(LiteralObject literal) {
+    if (literal.keys.isEmpty) return '{}';
+    StringBuffer buffer = new StringBuffer();
+    List<String> keys = literal.keys;
+    for (int i = 0; i < keys.length; i++) {
+      if (i != 0) buffer.write(', ');
+      buffer.write("'${keys[i]}': ");
+      buffer.write(evaluate(literal.values[i]));
+    }
+    return "{ $buffer }";
+  }
+}
+
+class HelperMap {
+  final Map<String, String> helpers = new Map<String, String>();
+  final Map<String, String> names = new Map<String, String>();
+
+  final String prefix;
+  final Function template;
+  final Function templateForReserved;
+
+  HelperMap(this.prefix, this.template, this.templateForReserved);
+
+  String lookup(String key) {
+    String name = _computeName(key);
+    if (helpers.containsKey(key)) return name;
+    helpers[key] = isReserved(key)
+        ? templateForReserved(name, key)
+        : template(name, key);
+    return name;
+  }
+
+  String _computeName(String key) {
+    String result = names[key];
+    if (result != null) return result;
+    return names[key] = "$prefix$key";
+  }
+}
+
+
+// ------------------------------------------------------------------
+// Templates for generated getters.
+// ------------------------------------------------------------------
+String getterTemplate(String name, String key) => """
+$name(o) {
+  if (o == null) return null;
+  return (o is Map) ? o["${escape(key)}"] : o.$key;
+}
+""";
+
+String getterTemplateForReserved(String name, String key) => """
+$name(o) {
+  if (o == null) return null;
+  return (o is Map) ? o["${escape(key)}"] : null;
+}
+""";
+
+
+// ------------------------------------------------------------------
+// Templates for generated holders (getters for assignment).
+// ------------------------------------------------------------------
+String holderTemplate(String name, String key) => """
+$name(o) {
+  if (o == null) return null;
+  if (o is Map) {
+    var key = "${escape(key)}";
+    var result = o[key];
+    return (result == null) ? result = o[key] = {} : result;
   } else {
-    val = $returnValue;
+    var result = o.$key;
+    return (result == null) ? result = o.$key = {} : result;
   }
-
+}
 """;
-  }
 
-  fieldSetter(String field, String obj) {
-    var eKey = escape(field);
-
-    var maybeField = isReserved(field) ? "/* $field is reserved */" : """
-  $obj.$field = value;
-  return value;
-    """;
-
-    return """
-  if ($obj is Map) {
-    $obj['$eKey'] = value;
-    return value;
-  }
-  $maybeField
+String holderTemplateForReserved(String name, String key) => """
+$name(o) {
+  if (o == null) return null;
+  if (o is !Map) return {};
+  var key = "${escape(key)}";
+  var result = o[key];
+  return (result == null) ? result = o[key] = {} : result;
 }
-
 """;
-  }
 
-  call(String key) {
-    if (_keyToGetterFnName.containsKey(key)) {
-      return _keyToGetterFnName[key];
-    }
 
-    var fnName = "_${_flatten(key)}";
-
-    var keys = key.split('.');
-    var lines = [
-        "$fnName(s) { // for $key"];
-    _(line) => lines.add('  $line');
-    for(var i = 0; i < keys.length; i++) {
-      var k = keys[i];
-      var sk = isReserved(k) ? "null" : "s.$k";
-      if (i == 0) {
-        _('if (s != null ) s = s is Map ? s["${escape(k)}"] : $sk;');
-      } else {
-        _('if (s != null ) s = s is Map ? s["${escape(k)}"] : $sk;');
-      }
-    }
-    _('return s;');
-    lines.add('}\n\n');
-
-    functions += lines.join('\n');
-
-    _keyToGetterFnName[key] = fnName;
-    return fnName;
-  }
-
-  setter(String key) {
-    if (_keyToSetterFnName.containsKey(key)) {
-      return _keyToSetterFnName[key];
-    }
-
-    var fnName = "_set_${_flatten(key)}";
-
-    var lines = [
-        "$fnName(s, v) { // for $key"];
-    _(line) => lines.add('  $line');
-    var keys = key.split('.');
-    _(keys.length == 1 ? 'var n = s;' : 'var n;');
-    var k = keys[0];
-    var sk = isReserved(k) ? "null" : "s.$k";
-    var nk = isReserved(k) ? "null" : "n.$k";
-    if (keys.length > 1) {
-      // locals
-      _('n = s is Map ? s["${escape(k)}"] : $sk;');
-      _('if (n == null) n = s is Map ? (s["${escape(k)}"] = {}) : ($sk = {});');
-    }
-    for(var i = 1; i < keys.length - 1; i++) {
-      k = keys[i];
-      sk = isReserved(k) ? "null" : "s.$k";
-      nk = isReserved(k) ? "null" : "n.$k";
-      // middle
-      _('s = n; n = n is Map ? n["${escape(k)}"] : $nk;');
-      _('if (n == null) n = s is Map ? (s["${escape(k)}"] = {}) : (${isReserved(k) ? "null" : "$sk = {}"});');
-    }
-    k = keys[keys.length - 1];
-    sk = isReserved(k) ? "null" : "s.$k";
-    nk = isReserved(k) ? "null" : "n.$k";
-    _('if (n is Map) n["${escape(k)}"] = v; else ${isReserved(k) ? "null" : "$nk = v"};');
-    // finish
-    _('return v;');
-    lines.add('}\n\n');
-
-    functions += lines.join('\n');
-
-    _keyToSetterFnName[key] = fnName;
-    return fnName;
-  }
+// ------------------------------------------------------------------
+// Templates for generated setters.
+// ------------------------------------------------------------------
+String setterTemplate(String name, String key) => """
+$name(o, v) {
+  if (o is Map) o["${escape(key)}"] = v; else o.$key = v;
+  return v;
 }
+""";
 
-
-class DartCodeGen implements ParserBackend {
-  static Code ZERO = new Code("0");
-
-  GetterSetterGenerator _getterGen;
-
-  DartCodeGen(this._getterGen);
-
-  setter(String path) => throw new UnimplementedError();
-  getter(String path) => throw new UnimplementedError();
-
-  // Returns the Dart code for a particular operator.
-  _op(fn) => fn == "undefined" ? "null" : fn;
-
-  Code ternaryFn(Code cond, Code trueBranch, Code falseBranch) =>
-    new Code("toBool(${cond.exp}) ? ${trueBranch.exp} : ${falseBranch.exp}");
-
-  Code binaryFn(Code left, String fn, Code right) {
-    if (fn == '+') {
-      return new Code("autoConvertAdd(${left.exp}, ${right.exp})");
-    }
-    var leftExp = left.exp;
-    var rightExp = right.exp;
-    if (fn == '&&' || fn == '||') {
-      leftExp = "toBool($leftExp)";
-      rightExp = "toBool($rightExp)";
-    }
-    return new Code("(${leftExp} ${_op(fn)} ${rightExp})");
-  }
-
-  Code unaryFn(String fn, Code right) {
-    var rightExp = right.exp;
-    if (fn == '!') {
-      rightExp = "toBool($rightExp)";
-    }
-    return new Code("${_op(fn)}${rightExp}");
-  }
-
-  Code assignment(Code left, Code right, evalError) =>
-    left._assign(right);
-
-  Code multipleStatements(List<Code >statements) {
-    var code = "var ret, last;\n";
-    code += statements.map((Code s) =>
-        "last = ${s.exp};\nif (last != null) { ret = last; }\n").join('\n');
-    code += "return ret;\n";
-    return new MultipleStatementCode(code);
-  }
-
-  Code functionCall(Code fn, fnName, List<Code> argsFn, evalError) =>
-      new Code("safeFunctionCall(${fn.exp}, \'${escape(fnName)}\', evalError)(${argsFn.map((a) => a.exp).join(', ')})");
-
-  Code arrayDeclaration(List<Code> elementFns) =>
-    new Code("[${elementFns.map((Code e) => e.exp).join(', ')}]");
-
-  Code objectIndex(Code obj, Code indexFn, evalError) {
-    var assign = (Code right)  =>
-        new Code("objectIndexSetField(${obj.exp}, ${indexFn.exp}, ${right.exp}, evalError)");
-
-    return new Code("objectIndexGetField(${obj.exp}, ${indexFn.exp}, evalError)", assign);
-  }
-
-  Code fieldAccess(Code object, String field) {
-    var getterFnName = _getterGen(field);
-    var assign = (Code right) {
-      var setterFnName = _getterGen.setter(field);
-      return new Code("$setterFnName(${object.exp}, ${right.exp})");
-    };
-    return new Code("$getterFnName/*field:$field*/(${object.exp})", assign);
-  }
-
-  Code object(List keyValues) =>
-      new Code(
-        "{${keyValues.map((k) => "${_value(k["key"])}: ${k["value"].exp}").join(', ')}}");
-
-  profiled(value, perf, text) => value; // no profiling for now
-
-  Code fromOperator(String op) => new Code(_op(op));
-
-  Code getterSetter(String key) {
-    var getterFnName = _getterGen(key);
-
-    var assign = (Code right) {
-      var setterFnName = _getterGen.setter(key);
-      return new Code("${setterFnName}(scope, ${right.exp})", null, setterFnName);
-    };
-
-    return new Code("$getterFnName(scope)", assign, getterFnName);
-  }
-
-  String _value(v) =>
-      v is String ? "r\'${escape(v)}\'" : "$v";
-
-  Code value(v) => new Code(_value(v));
-
-  Code zero() => ZERO;
-
-  Code filter(String filterName,
-              Code leftHandSide,
-              List<Code> parameters,
-              Function evalError) {
-    return new Code(
-        'filters(\'${filterName}\')(${
-            ([leftHandSide]..addAll(parameters))
-              .map((Code p) => p.exp).join(', ')})');
-  }
+String setterTemplateForReserved(String name, String key) => """
+$name(o, v) {
+  if (o is Map) o["${escape(key)}"] = v;
+  return v;
 }
+""";
