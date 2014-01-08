@@ -84,7 +84,7 @@ abstract class ParserBackend<T> {
   T newBinaryGreaterThanEqual(T left, T right)
       => newBinary('>=', left, right);
 
-  T newLiteralPrimitive(T value)
+  T newLiteralPrimitive(value)
       => null;
   T newLiteralArray(List elements)
       => null;
