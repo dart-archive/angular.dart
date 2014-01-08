@@ -8,6 +8,7 @@ part of angular.core.dom;
 */
 @NgInjectableService()
 class BrowserCookies {
+  ExceptionHandler _exceptionHandler;
   dom.Document _document;
 
   var lastCookies = {};
@@ -15,7 +16,7 @@ class BrowserCookies {
   var cookiePath;
   var baseElement;
 
-  BrowserCookies() {
+  BrowserCookies(this._exceptionHandler) {
     // Injecting document produces the error 'Caught Compile-time error during mirrored execution:
     // <'file:///mnt/data/b/build/slave/dartium-lucid32-full-trunk/build/src/out/Release/gen/blink/
     // bindings/dart/dart/html/Document.dart': Error: line 7 pos 3: expression must be a compile-time constant
@@ -82,8 +83,8 @@ class BrowserCookies {
         // - 20 cookies per unique domain
         // - 4096 bytes per cookie
         if (cookieLength > 4096) {
-          print("Cookie '$name' possibly not set or overflowed because it was " +
-                "too large ($cookieLength > 4096 bytes)!");
+          _exceptionHandler("Cookie '$name' possibly not set or overflowed because it was " +
+                "too large ($cookieLength > 4096 bytes)!", null);
         }
       }
     }

@@ -51,7 +51,6 @@ main() {
       ..type(DefaultOptionsComponent);
       return (Injector _injector) {
         injector = _injector;
-        print(injector.get(DirectiveMap));
         $compile = injector.get(Compiler);
         $rootScope = injector.get(Scope);
       };
