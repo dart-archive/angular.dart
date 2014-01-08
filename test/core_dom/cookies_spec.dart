@@ -34,6 +34,7 @@ main() => describe('cookies', () {
       deleteAllCookies();
       expect(document.cookie).toEqual('');
 
+      iCookies.cookiePath = '/';
       cookies = iCookies;
     }));
 
@@ -98,12 +99,12 @@ main() => describe('cookies', () {
         expect(document.cookie).not.toEqual(cookieStr);
         expect(cookies['x']).toEqual(longVal);
         //expect(logs.warn).toEqual([]);
-
-        cookies['x'] = longVal + 'xxxx'; //total size 4097-4099, a warning should be logged
+        var overflow = 'xxxxxxxxxxxxxxxxxxxx';
+        cookies['x'] = longVal + overflow; //total size 4097-4099, a warning should be logged
         //expect(logs.warn).toEqual(
         //    [[ "Cookie 'x' possibly not set or overflowed because it was too large (4097 > 4096 " +
         //    "bytes)!" ]]);
-        expect(document.cookie).not.toContain('xxxx');
+        expect(document.cookie).not.toContain(overflow);
 
         //force browser to dropped a cookie and make sure that the cache is not out of sync
         cookies['x'] = 'shortVal';
@@ -196,7 +197,12 @@ main() => describe('cookies', () {
       expect(cookies.all).toEqual({'existingCookie':'existingValue'});
     });
   });
-  
+
+  beforeEach(module((Module module) {
+    var cookies = new BrowserCookies()..cookiePath = '/';
+    module.value(Cookies, new Cookies(cookies));
+  }));
+
   describe('cookies service', () {
     var cookiesService;
     beforeEach(inject((Cookies iCookies) {
@@ -219,7 +225,7 @@ main() => describe('cookies', () {
         expect(document.cookie).toContain("oatmealCookie=stale");
       });
     });
-        
+
     it('should remove cookie', () {
       cookiesService.remove("oatmealCookie");
       expect(document.cookie).not.toContain("oatmealCookie");
