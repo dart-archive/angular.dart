@@ -65,7 +65,7 @@ class Scanner {
 
     // Skip whitespace.
     while (peek <= $SPACE) {
-      if (index++ >= length) {
+      if (++index >= length) {
         peek = $EOF;
         return null;
       } else {
