@@ -160,6 +160,7 @@ class Scanner {
     assert(isDigit(peek));
     bool simple = (index == start);
     while (true) {
+      advance();
       if (isDigit(peek)) {
         // Do nothing.
       } else if (peek == $PERIOD) {
@@ -172,7 +173,6 @@ class Scanner {
       } else {
         break;
       }
-      advance();
     }
     String string = input.substring(start, index);
     num value = simple ? int.parse(string) : double.parse(string);
