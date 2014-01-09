@@ -7,7 +7,7 @@ part of angular.directive;
  * provide the rendering and listening capabilities. The directive itself
  * knows how to convert the view-value into model-value and vice versa by
  * allowing others to register converters (To be implemented). It also
- * knwos how to (in)validate the model and the form in which it is declared
+ * knows how to (in)validate the model and the form in which it is declared
  * (to be implemented)
  */
 @NgDirective(

@@ -2,13 +2,13 @@ part of angular.core;
 
 String _startSymbol = '{{';
 String _endSymbol = '}}';
-num _startSymbolLength = _startSymbol.length;
-num _endSymbolLength = _endSymbol.length;
+int _startSymbolLength = _startSymbol.length;
+int _endSymbolLength = _endSymbol.length;
 
 class Interpolation {
   final String template;
   final List<String> seperators;
-  final List<ParsedGetter> watchExpressions;
+  final List<Getter> watchExpressions;
   Function setter = (_) => _;
 
   Interpolation(this.template, this.seperators, this.watchExpressions);
@@ -41,7 +41,7 @@ class Interpolate {
   Interpolate(this._parse);
 
   /**
-   * Compile markup text into interpolation function.
+   * Compiles markup text into interpolation function.
    *
    * - `text`: The markup text to interpolate in form `foo {{expr}} bar`.
    * - `mustHaveExpression`: if set to true then the interpolation string must
@@ -55,25 +55,28 @@ class Interpolate {
     int index = 0;
     int length = template.length;
     bool hasInterpolation = false;
+    bool shouldAddSeparator = true;
     String exp;
     List<String> separators = [];
-    List<ParsedGetter> watchExpressions = [];
+    List<Getter> watchExpressions = [];
 
     while(index < length) {
       if ( ((startIndex = template.indexOf(_startSymbol, index)) != -1) &&
            ((endIndex = template.indexOf(_endSymbol, startIndex + _startSymbolLength)) != -1) ) {
         separators.add(template.substring(index, startIndex));
         exp = template.substring(startIndex + _startSymbolLength, endIndex);
-        watchExpressions.add((_parse(exp)..exp = exp).eval);
+        Expression expression = _parse(exp);
+        watchExpressions.add(expression.eval);
         index = endIndex + _endSymbolLength;
         hasInterpolation = true;
       } else {
         // we did not find anything, so we have to add the remainder to the chunks array
         separators.add(template.substring(index));
-        index = length;
+        shouldAddSeparator = false;
+        break;
       }
     }
-    if (separators.length == watchExpressions.length) {
+    if (shouldAddSeparator) {
       separators.add('');
     }
     if (!mustHaveExpression  || hasInterpolation) {

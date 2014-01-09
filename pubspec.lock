@@ -29,10 +29,6 @@ packages:
     description: intl
     source: hosted
     version: "0.9.1"
-  js:
-    description: js
-    source: hosted
-    version: "0.2.1"
   logging:
     description: logging
     source: hosted

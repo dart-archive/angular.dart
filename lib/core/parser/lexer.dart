@@ -1,4 +1,32 @@
-part of angular.core.parser;
+library angular.core.parser.lexer;
+
+import 'package:angular/core/module.dart' show NgInjectableService;
+import 'package:angular/core/parser/characters.dart';
+
+class Token {
+  final int index;
+  final String text;
+
+  var value;
+  // Tokens should have one of these set.
+  String opKey;
+  String key;
+
+  Token(this.index, this.text);
+
+  withOp(op) {
+    this.opKey = op;
+  }
+
+  withGetterSetter(key) {
+    this.key = key;
+  }
+
+  withValue(value) { this.value = value; }
+
+  toString() => "Token($text)";
+}
+
 
 @NgInjectableService()
 class Lexer {
@@ -112,7 +140,7 @@ class Scanner {
 
   Token scanOperator(int start, String string) {
     assert(peek == string.codeUnitAt(0));
-    assert(OPERATORS.containsKey(string));
+    assert(OPERATORS.contains(string));
     advance();
     return new Token(start, string)..withOp(string);
   }
@@ -125,7 +153,7 @@ class Scanner {
       advance();
       string = two;
     }
-    assert(OPERATORS.containsKey(string));
+    assert(OPERATORS.contains(string));
     return new Token(start, string)..withOp(string);
   }
 
@@ -147,7 +175,7 @@ class Scanner {
       Token result = new Token(start, string);
       // TODO(kasperl): Deal with null, undefined, true, and false in
       // a cleaner and faster way.
-      if (OPERATORS.containsKey(string)) {
+      if (OPERATORS.contains(string)) {
         result.withOp(string);
       } else {
         result.withGetterSetter(string);
@@ -249,3 +277,31 @@ class Scanner {
     throw "Lexer Error: $message at column $position in expression [$input]";
   }
 }
+
+Set<String> OPERATORS = new Set<String>.from([
+    'undefined',
+    'null',
+    'true',
+    'false',
+    '+',
+    '-',
+    '*',
+    '/',
+    '~/',
+    '%',
+    '^',
+    '=',
+    '==',
+    '!=',
+    '<',
+    '>',
+    '<=',
+    '>=',
+    '&&',
+    '||',
+    '&',
+    '|',
+    '!',
+    '?',
+]);
+

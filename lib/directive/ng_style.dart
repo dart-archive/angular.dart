@@ -21,7 +21,7 @@ class NgStyleDirective {
   var _lastStyles;
 
 /**
-  * ng-style attribute takes an expression hich evals to an
+  * ng-style attribute takes an expression which evaluates to an
   *      object whose keys are CSS style names and values are corresponding values for those CSS
   *      keys.
   */

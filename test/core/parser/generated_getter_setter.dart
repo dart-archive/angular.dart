@@ -1,7 +1,6 @@
 library angular.service.parser.generated_getter_setter_template;
 
-import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core/parser/parser.dart';
+export'package:angular/core/parser/parser.dart' show ClosureMap;
 
-main() {}
-
-class StaticGetterSetter {StaticGetterSetter() {throw "Should not be called";} } // REMOVE
+class StaticClosureMap extends ClosureMap { } // REMOVE

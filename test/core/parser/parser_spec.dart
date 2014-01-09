@@ -35,11 +35,17 @@ class InheritedMapData extends MapData {
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class WithPrivateField {
+  int publicField = 4;
+  int _privateField = 5;
+}
+
 toBool(x) => (x is num) ? x != 0 : x == true;
 
 main() {
   describe('parse', () {
-    var scope, parser;
+    var scope;
+    Parser<Expression> parser;
     beforeEach(module((Module module) {
       module.type(IncrementFilter);
       module.type(SubstringFilter);
@@ -136,7 +142,7 @@ main() {
     });
 
     describe('error handling', () {
-      var parser;
+      Parser<Expression> parser;
 
       beforeEach(inject((Parser p) {
         parser = p;
@@ -171,35 +177,17 @@ main() {
       });
 
 
-      it('should throw on undefined functions', () {
-        expectEval("notAFn()").toThrow(errStr('Eval Error: Undefined function notAFn while evaling [notAFn()]'));
-      });
-
-
-      it('should throw on not-function function calls', () {
-        expectEval("4()").toThrow(errStr('Eval Error: 4 is not a function while evaling [4()]'));
-      });
-
-
       it('should throw on incorrect ternary operator syntax', () {
-        expectEval("true?1").toThrow(errStr(
-                'Conditional expression true?1 requires all 3 expressions'));
+        expectEval("true?1").toThrow('Parser Error: Conditional expression true?1 requires all 3 expressions');
       });
 
 
-      it('should fail gracefully when missing a function', () {
-        expect(() {
-          parser('doesNotExist()').eval({});
-        }).toThrow('Undefined function doesNotExist');
+      it('should throw on non-function function calls', () {
+        expectEval("4()").toThrow('4 is not a function');
+      });
 
-        expect(() {
-          parser('exists(doesNotExist())').eval({'exists': () => true});
-        }).toThrow('Undefined function doesNotExist');
 
-        expect(() {
-          parser('doesNotExists(exists())').eval({'exists': () => true});
-        }).toThrow('Undefined function doesNotExist');
-
+      it('should fail gracefully when invoking non-function', () {
         expect(() {
           parser('a[0]()').eval({'a': [4]});
         }).toThrow('a[0] is not a function');
@@ -214,11 +202,75 @@ main() {
       });
 
 
+      it('should throw on undefined functions (relaxed message)', () {
+        expectEval("notAFn()").toThrow('notAFn');
+      });
+
+
+      it('should fail gracefully when missing a function (relaxed message)', () {
+        expect(() {
+          parser('doesNotExist()').eval({});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('exists(doesNotExist())').eval({'exists': () => true});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExists(exists())').eval({'exists': () => true});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExist(1)').eval({});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExist(1, 2)').eval({});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExist()').eval(new TestData());
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExist(1)').eval(new TestData());
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExist(1, 2)').eval(new TestData());
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist()').eval({'a': {}});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist(1)').eval({'a': {}});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist(1, 2)').eval({'a': {}});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist()').eval({'a': new TestData()});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist(1)').eval({'a': new TestData()});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist(1, 2)').eval({'a': new TestData()});
+        }).toThrow('doesNotExist');
+      });
+
+
       it('should let null be null', () {
         scope['map'] = {};
 
         expect(eval('null')).toBe(null);
-        //expect(eval('map.null')).toBe(null);
+        expect(eval('map.null')).toBe(null);
       });
 
 
@@ -245,6 +297,16 @@ main() {
         expect(() {
           parser('notAProperty').eval(new TestData());
         }).toThrow("notAProperty");
+      });
+
+      it('should fail on private field access', () {
+        expect(parser('publicField').eval(new WithPrivateField())).toEqual(4);
+        // On Dartium, this fails with "NoSuchMethod: no instance getter"
+        // On dart2js with generated functions: NoSuchMethod: method not found
+        // On dart2js with reflection:  ArgumentError: private identifier"
+        expect(() {
+          parser('_privateField').eval(new WithPrivateField());
+        }).toThrow();
       });
     });
 
