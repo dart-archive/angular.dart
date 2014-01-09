@@ -85,7 +85,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
   /**
    * Create a child [ChangeDetector] group.
    */
-  ChangeDetector<H> newGroup() {
+  DirtyCheckingChangeDetectorGroup<H> newGroup() {
     var child = new DirtyCheckingChangeDetectorGroup(this);
     if (_childHead == null) {
       _childHead = _childTail = child;
@@ -266,7 +266,7 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
         _mode =  _MODE_MAP_;
       } else if (obj is Iterable) {
         _mode =  _MODE_ITERABLE_;
-        currentValue = new _CollectionRecord();
+        currentValue = new _CollectionChangeRecord();
       } else {
         throw new StateError('Non collections must have fields.');
       }
@@ -316,7 +316,7 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
    * Check the [Iterable] [collection] for changes.
    */
   iterableCheck(Iterable collection) {
-    _CollectionRecord cRecord = currentValue as _CollectionRecord;
+    _CollectionChangeRecord cRecord = currentValue as _CollectionChangeRecord;
     cRecord._reset();
     _ItemRecord record = cRecord._collectionHead;
     _ItemRecord prevRecord = null;

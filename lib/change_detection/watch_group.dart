@@ -29,7 +29,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   final Object context;
 
   /** [ChangeDetector] used for field watching */
-  final ChangeDetector<_Handler> _changeDetector;
+  final ChangeDetectorGroup<_Handler> _changeDetector;
   /** A cache for sharing sub expression watching. Watching [a] and [a.b] will watch [a] once. */
   final Map<String, WatchRecord<_Handler>> _cache;
   final RootWatchGroup _rootGroup;
