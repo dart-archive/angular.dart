@@ -4,5 +4,4 @@ dependencies:
   angular:
     path: ../..
   browser: any
-  js: any
   unittest: any

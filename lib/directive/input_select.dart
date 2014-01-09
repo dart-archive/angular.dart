@@ -203,7 +203,6 @@ class _MultipleSelectionMode extends _SelectMode {
 
   onViewChange(event) {
     var selected = [];
-    var fn = (o, i) => o.value;
 
     _forEachOption((o, i) {
       if (o.selected) {
@@ -214,7 +213,6 @@ class _MultipleSelectionMode extends _SelectMode {
   }
 
   onModelChange(List selectedValues) {
-    num index = 0;
     Function fn = (o, i) => o.selected = null;
 
     if (selectedValues is List) {

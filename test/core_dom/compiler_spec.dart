@@ -442,6 +442,29 @@ main() => describe('dte.compiler', () {
           expect(element.textWithShadow()).toEqual('WORKED');
         })));
       });
+
+      describe('invalid components', () {
+        it('should throw a useful error message for missing selectors', () {
+          module((Module module) {
+            module
+              ..type(MissingSelector);
+          });
+          expect(() {
+            inject((Compiler c) { });
+          }).toThrow('Missing selector annotation for MissingSelector');
+        });
+
+
+        it('should throw a useful error message for invalid selector', () {
+          module((Module module) {
+            module
+              ..type(InvalidSelector);
+          });
+          expect(() {
+            inject((Compiler c) { });
+          }).toThrow('Unknown selector format \'buttonbar button\' for InvalidSelector');
+        });
+      });
     });
 
 
@@ -719,4 +742,10 @@ class MyController {
     scope.name = 'MyController';
   }
 }
+
+@NgComponent()
+class MissingSelector {}
+
+@NgComponent(selector: 'buttonbar button')
+class InvalidSelector {}
 

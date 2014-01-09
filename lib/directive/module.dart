@@ -3,8 +3,9 @@ library angular.directive;
 import 'package:di/di.dart';
 import 'dart:html' as dom;
 import 'dart:async' as async;
+import 'package:intl/intl.dart';
 import 'package:angular/core/module.dart';
-import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/module.dart';
 import 'package:angular/utils.dart';
 
@@ -18,6 +19,7 @@ part 'ng_cloak.dart';
 part 'ng_if.dart';
 part 'ng_include.dart';
 part 'ng_model.dart';
+part 'ng_pluralize.dart';
 part 'ng_repeat.dart';
 part 'ng_template.dart';
 part 'ng_show_hide.dart';
@@ -43,6 +45,7 @@ class NgDirectiveModule extends Module {
     value(NgIfDirective, null);
     value(NgUnlessDirective, null);
     value(NgIncludeDirective, null);
+    value(NgPluralizeDirective, null);
     value(NgRepeatDirective, null);
     value(NgShalowRepeatDirective, null);
     value(NgShowDirective, null);
