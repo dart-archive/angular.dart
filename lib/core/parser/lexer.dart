@@ -46,11 +46,6 @@ class Scanner {
   final String input;
   final int length;
 
-  // TODO(kasperl): Get rid of this buffer. It is currently used for
-  // pushing back tokens for method calls found while scanning
-  // identifiers. We should be able to do this in the parser instead.
-  final List<Token> buffer = [];
-
   int peek = 0;
   int index = -1;
 
@@ -59,10 +54,6 @@ class Scanner {
   }
 
   Token scanToken() {
-    // TODO(kasperl): The current handling of method calls is somewhat
-    // complicated. We should simplify it by dealing with it in the parser.
-    if (!buffer.isEmpty) return buffer.removeLast();
-
     // Skip whitespace.
     while (peek <= $SPACE) {
       if (++index >= length) {
@@ -151,38 +142,18 @@ class Scanner {
   Token scanIdentifier() {
     assert(isIdentifierStart(peek));
     int start = index;
-    int dot = -1;
     advance();
-    while (true) {
-      if (peek == $PERIOD) {
-        dot = index;
-      } else if (!isIdentifierPart(peek)) {
-        break;
-      }
-      advance();
+    while (isIdentifierPart(peek)) advance();
+    String string = input.substring(start, index);
+    Token result = new Token(start, string);
+    // TODO(kasperl): Deal with null, undefined, true, and false in
+    // a cleaner and faster way.
+    if (OPERATORS.contains(string)) {
+      result.withOp(string);
+    } else {
+      result.withGetterSetter(string);
     }
-    if (dot == -1) {
-      String string = input.substring(start, index);
-      Token result = new Token(start, string);
-      // TODO(kasperl): Deal with null, undefined, true, and false in
-      // a cleaner and faster way.
-      if (OPERATORS.contains(string)) {
-        result.withOp(string);
-      } else {
-        result.withGetterSetter(string);
-      }
-      return result;
-    }
-
-    int end = index;
-    while (isWhitespace(peek)) advance();
-    if (peek == $LPAREN) {
-      buffer.add(new Token(dot + 1, input.substring(dot + 1, end)));
-      buffer.add(new Token(dot, '.'));
-      end = dot;
-    }
-    String string = input.substring(start, end);
-    return new Token(start, string)..withGetterSetter(string);
+    return result;
   }
 
   Token scanNumber(int start) {

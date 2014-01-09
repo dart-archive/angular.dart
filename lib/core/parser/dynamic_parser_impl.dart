@@ -169,15 +169,16 @@ class DynamicParserImpl {
     } else if (optional('!')) {
       return backend.newPrefixNot(parsePrefix());
     } else {
-      return parseMemberOrCall();
+      return parseAccessOrCallMember();
     }
   }
 
-  parseMemberOrCall() {
+  parseAccessOrCallMember() {
     var result = parsePrimary();
     while (true) {
       if (optional('.')) {
-        String name = peek.text;  // TODO(kasperl): Check that this is an identifier
+        // TODO(kasperl): Check that this is an identifier. Are keywords okay?
+        String name = peek.text;
         advance();
         if (optional('(')) {
           List arguments = parseExpressionList(')');
@@ -218,7 +219,7 @@ class DynamicParserImpl {
     } else if (peek.text == '{') {
       return parseObject();
     } else if (peek.key != null) {
-      return parseQualified();
+      return parseAccessOrCallScope();
     } else if (peek.value != null) {
       var value = peek.value;
       advance();
@@ -232,23 +233,13 @@ class DynamicParserImpl {
     }
   }
 
-  parseQualified() {
-    List<String> components = peek.key.split('.');
+  parseAccessOrCallScope() {
+    String name = peek.key;
     advance();
-    List arguments;
-    if (optional('(')) {
-      arguments = parseExpressionList(')');
-      expect(')');
-    }
-    var result = (arguments != null) && (components.length == 1)
-        ? backend.newCallScope(components.first, arguments)
-        : backend.newAccessScope(components.first);
-    for (int i = 1; i < components.length; i++) {
-      result = (arguments != null) && (components.length == i + 1)
-          ? backend.newCallMember(result, components[i], arguments)
-          : backend.newAccessMember(result, components[i]);
-    }
-    return result;
+    if (!optional('(')) return backend.newAccessScope(name);
+    List arguments = parseExpressionList(')');
+    expect(')');
+    return backend.newCallScope(name, arguments);
   }
 
   parseObject() {
