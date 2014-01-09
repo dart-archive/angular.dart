@@ -23,7 +23,6 @@ part 'ng_pluralize.dart';
 part 'ng_repeat.dart';
 part 'ng_template.dart';
 part 'ng_show_hide.dart';
-part 'ng_attribute.dart';
 part 'ng_src_boolean.dart';
 part 'ng_style.dart';
 part 'ng_switch.dart';
@@ -49,7 +48,6 @@ class NgDirectiveModule extends Module {
     value(NgRepeatDirective, null);
     value(NgShalowRepeatDirective, null);
     value(NgShowDirective, null);
-    value(NgAttributeDirective, null);
     value(InputEmailDirective, null);
     value(InputNumberDirective, null);
     value(InputRadioDirective, null);
@@ -67,6 +65,7 @@ class NgDirectiveModule extends Module {
 
     value(NgBooleanAttributeDirective, null);
     value(NgSourceDirective, null);
+    value(NgAttributeDirective, null);
 
     value(NgEventDirective, null);
     value(NgStyleDirective, null);
