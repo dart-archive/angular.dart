@@ -2,7 +2,7 @@ library input_select_spec;
 
 import '../_specs.dart';
 
-//TODO(misko): re-enabled dissabled tests once we have forms.
+//TODO(misko): re-enabled disabled tests once we have forms.
 
 main() {
   describe('input-select', () {
