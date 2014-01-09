@@ -190,8 +190,6 @@ main() => describe('ngSwitch', () {
 
     _.rootScope.url = 'x';
     _.rootScope.$apply();
-    print(element);
-    print(getChildScope());
     expect(getChildScope()).toBeNull();
     expect(destroyListener).toHaveBeenCalledOnce();
     listenerRemove();

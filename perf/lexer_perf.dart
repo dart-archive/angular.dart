@@ -1,7 +1,7 @@
 library lexer_perf;
 
 import '_perf.dart';
-import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core/parser/lexer.dart';
 
 main() {
   Lexer lexer = new Lexer();

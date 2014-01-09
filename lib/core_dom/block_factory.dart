@@ -9,7 +9,6 @@ part of angular.core.dom;
  *
  * The BoundBlockFactory needs [Scope] to be created.
  */
-
 class BoundBlockFactory {
   BlockFactory blockFactory;
 
@@ -26,13 +25,11 @@ class BoundBlockFactory {
  * BlockFactory is used to create new [Block]s. BlockFactory is created by the
  * [Compiler] as a result of compiling a template.
  */
-
 class BlockFactory {
   final List directivePositions;
   final List<dom.Node> templateElements;
   final Profiler _perf;
   final Expando _expando;
-
 
   BlockFactory(this.templateElements, this.directivePositions, this._perf, this._expando);
 
@@ -58,12 +55,12 @@ class BlockFactory {
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
 
-    for (num i = 0, ii = directivePositions.length; i < ii;) {
-      num index = directivePositions[i++];
+    for (int i = 0, ii = directivePositions.length; i < ii;) {
+      int index = directivePositions[i++];
 
       List<DirectiveRef> directiveRefs = directivePositions[i++];
       List childDirectivePositions = directivePositions[i++];
-      var nodeListIndex = index + preRenderedIndexOffset;
+      int nodeListIndex = index + preRenderedIndexOffset;
       dom.Node node = nodeList[nodeListIndex];
 
       var timerId;
@@ -79,7 +76,7 @@ class BlockFactory {
         }
 
         var childInjector = _instantiateDirectives(block, parentInjector, node,
-                        directiveRefs, parentInjector.get(Parser));
+            directiveRefs, parentInjector.get(Parser));
 
         if (childDirectivePositions != null) {
           _link(block, node.nodes, childDirectivePositions, childInjector);
@@ -280,7 +277,6 @@ class BlockCache {
  * the shadowDom, fetching template, importing styles, setting up attribute
  * mappings, publishing the controller, and compiling and caching the template.
  */
-
 class _ComponentFactory {
 
   final dom.Element element;

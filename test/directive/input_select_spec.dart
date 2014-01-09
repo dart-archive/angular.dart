@@ -2,7 +2,7 @@ library input_select_spec;
 
 import '../_specs.dart';
 
-//TODO(misko): re-enabled dissabled tests once we have forms.
+//TODO(misko): re-enabled disabled tests once we have forms.
 
 main() {
   describe('input-select', () {
@@ -375,6 +375,28 @@ main() {
             });
           });
         });
+      });
+
+      it('issue #392', () {
+        _.compile(
+            '<div>' +
+              '<div ng-if="attached">' +
+                '<select ng-model="model">' +
+                  '<option value="a">foo</option>' +
+                  '<option value="b">bar</option>' +
+                '</select>' +
+              '</div>' +
+            '</div>');
+        _.rootScope.model = 'a';
+        _.rootScope.attached = true;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([['a'], 'b']);
+        _.rootScope.attached = false;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([]);
+        _.rootScope.attached = true;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([['a'], 'b']);
       });
     });
 
