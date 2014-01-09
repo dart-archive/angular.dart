@@ -169,6 +169,7 @@ class Scanner {
         advance();
         if (isExponentSign(peek)) advance();
         if (!isDigit(peek)) error('Invalid exponent', -1);
+        advance();
         simple = false;
       } else {
         break;
