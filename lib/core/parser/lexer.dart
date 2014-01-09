@@ -188,8 +188,8 @@ class Scanner {
   Token scanNumber(int start) {
     assert(isDigit(peek));
     bool simple = (index == start);
+    advance();  // Skip initial digit.
     while (true) {
-      advance();
       if (isDigit(peek)) {
         // Do nothing.
       } else if (peek == $PERIOD) {
@@ -198,11 +198,11 @@ class Scanner {
         advance();
         if (isExponentSign(peek)) advance();
         if (!isDigit(peek)) error('Invalid exponent', -1);
-        advance();
         simple = false;
       } else {
         break;
       }
+      advance();
     }
     String string = input.substring(start, index);
     num value = simple ? int.parse(string) : double.parse(string);
