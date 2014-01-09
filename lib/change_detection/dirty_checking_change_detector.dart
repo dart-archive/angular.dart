@@ -85,7 +85,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
   /**
    * Create a child [ChangeDetector] group.
    */
-  ChangeDetector<H> newGroup() {
+  DirtyCheckingChangeDetectorGroup<H> newGroup() {
     var child = new DirtyCheckingChangeDetectorGroup(this);
     if (_childHead == null) {
       _childHead = _childTail = child;
@@ -266,7 +266,7 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
         _mode =  _MODE_MAP_;
       } else if (obj is Iterable) {
         _mode =  _MODE_ITERABLE_;
-        currentValue = new _CollectionRecord();
+        currentValue = new _CollectionChangeRecord();
       } else {
         throw new StateError('Non collections must have fields.');
       }
@@ -316,28 +316,40 @@ class _DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
    * Check the [Iterable] [collection] for changes.
    */
   iterableCheck(Iterable collection) {
-    _CollectionRecord cRecord = currentValue as _CollectionRecord;
+    _CollectionChangeRecord cRecord = currentValue as _CollectionChangeRecord;
     cRecord._reset();
     _ItemRecord record = cRecord._collectionHead;
     _ItemRecord prevRecord = null;
     int index = 0;
-    for(var item in collection) {
-      if (record == null) {
-        record = cRecord._addition(prevRecord, item, index);
-      } else if (!identical(item, record.item)) {
-        if (item is String && record.item is String && record == item) {
-          // this is false change in strings we need to recover, and pretend it is the same
-          record.item = item; // we save the value so that next time identity will pass
-        } else {
-          record = cRecord._mismatch(record, item, index);
-        }
+    if (collection is List) {
+      for(var i = 0, ii = collection.length; i < ii; i++) {
+        record = _checkItem(cRecord, prevRecord, record, collection[i], i);
+        prevRecord = record;
+        record = record._nextCollectionItem;
       }
-      prevRecord = record;
-      record = record._nextCollectionItem;
-      index++;
-    };
+    } else {
+      for(var item in collection) {
+        record = _checkItem(cRecord, prevRecord, record, item, index++);
+        prevRecord = record;
+        record = record._nextCollectionItem;
+      }
+    }
     cRecord._truncate(record);
     return cRecord.isDirty;
+  }
+
+  _ItemRecord _checkItem(_CollectionChangeRecord cRecord, _ItemRecord prevRecord, _ItemRecord record, dynamic item, int index) {
+    if (record == null) {
+      record = cRecord._addition(prevRecord, item, index);
+    } else if (!identical(item, record.item)) {
+      if (item is String && record.item is String && record == item) {
+        // this is false change in strings we need to recover, and pretend it is the same
+        record.item = item; // we save the value so that next time identity will pass
+      } else {
+        record = cRecord._mismatch(record, item, index);
+      }
+    }
+    return record;
   }
 
   remove() {

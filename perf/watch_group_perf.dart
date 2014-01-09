@@ -4,15 +4,31 @@ import '_perf.dart';
 import 'dart:mirrors';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/change_detection/watch_group.dart';
+import 'package:benchmark_harness/benchmark_harness.dart';
 
 var reactionFn = (_, __, ___) => null;
 main() {
-  // collectionIteration();
+  new CollectionCheck().report();
+  return;
   fieldRead();
   mapRead();
   methodInvoke0();
   methodInvoke1();
   function2();
+}
+
+class CollectionCheck extends BenchmarkBase {
+  List<int> list = new List.generate(1000, (i) => i);
+  var detector = new DirtyCheckingChangeDetector<_Handler>();
+
+  CollectionCheck(): super('change-detect List[1000]') {
+    detector.watch(list, null, 'handler');
+    detector.collectChanges(); // intialize
+  }
+
+  run() {
+    detector.collectChanges();
+  }
 }
 
 collectionIteration() {
