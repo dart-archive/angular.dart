@@ -46,11 +46,6 @@ class Scanner {
   final String input;
   final int length;
 
-  // TODO(kasperl): Get rid of this buffer. It is currently used for
-  // pushing back tokens for method calls found while scanning
-  // identifiers. We should be able to do this in the parser instead.
-  final List<Token> buffer = [];
-
   int peek = 0;
   int index = -1;
 
@@ -59,12 +54,15 @@ class Scanner {
   }
 
   Token scanToken() {
-    // TODO(kasperl): The current handling of method calls is somewhat
-    // complicated. We should simplify it by dealing with it in the parser.
-    if (!buffer.isEmpty) return buffer.removeLast();
-
     // Skip whitespace.
-    while (isWhitespace(peek)) advance();
+    while (peek <= $SPACE) {
+      if (++index >= length) {
+        peek = $EOF;
+        return null;
+      } else {
+        peek = input.codeUnitAt(index);
+      }
+    }
 
     // Handle identifiers and numbers.
     if (isIdentifierStart(peek)) return scanIdentifier();
@@ -72,60 +70,44 @@ class Scanner {
 
     int start = index;
     switch (peek) {
-      case $EOF:
-        return null;
       case $PERIOD:
         advance();
         return isDigit(peek) ? scanNumber(start) : new Token(start, '.');
       case $LPAREN:
-        return scanCharacter(start, '(');
       case $RPAREN:
-        return scanCharacter(start, ')');
       case $LBRACE:
-        return scanCharacter(start, '{');
       case $RBRACE:
-        return scanCharacter(start, '}');
       case $LBRACKET:
-        return scanCharacter(start, '[');
       case $RBRACKET:
-        return scanCharacter(start, ']');
       case $COMMA:
-        return scanCharacter(start, ',');
       case $COLON:
-        return scanCharacter(start, ':');
       case $SEMICOLON:
-        return scanCharacter(start, ';');
+        return scanCharacter(start, new String.fromCharCode(peek));
       case $SQ:
       case $DQ:
         return scanString();
       case $PLUS:
-        return scanOperator(start, '+');
       case $MINUS:
-        return scanOperator(start, '-');
       case $STAR:
-        return scanOperator(start, '*');
       case $SLASH:
-        return scanOperator(start, '/');
       case $PERCENT:
-        return scanOperator(start, '%');
       case $CARET:
-        return scanOperator(start, '^');
       case $QUESTION:
-        return scanOperator(start, '?');
+        return scanOperator(start, new String.fromCharCode(peek));
       case $LT:
-        return scanComplexOperator(start, $EQ, '<', '<=');
       case $GT:
-        return scanComplexOperator(start, $EQ, '>', '>=');
       case $BANG:
-        return scanComplexOperator(start, $EQ, '!', '!=');
       case $EQ:
-        return scanComplexOperator(start, $EQ, '=', '==');
+        return scanComplexOperator(start, $EQ, new String.fromCharCode(peek), '=');
       case $AMPERSAND:
-        return scanComplexOperator(start, $AMPERSAND, '&', '&&');
+        return scanComplexOperator(start, $AMPERSAND, '&', '&');
       case $BAR:
-        return scanComplexOperator(start, $BAR, '|', '||');
+        return scanComplexOperator(start, $BAR, '|', '|');
       case $TILDE:
-        return scanComplexOperator(start, $SLASH, '~', '~/');
+        return scanComplexOperator(start, $SLASH, '~', '/');
+      case $NBSP:
+        while (isWhitespace(peek)) advance();
+        return scanToken();
     }
 
     String character = new String.fromCharCode(peek);
@@ -151,7 +133,7 @@ class Scanner {
     String string = one;
     if (peek == code) {
       advance();
-      string = two;
+      string += two;
     }
     assert(OPERATORS.contains(string));
     return new Token(start, string)..withOp(string);
@@ -160,44 +142,25 @@ class Scanner {
   Token scanIdentifier() {
     assert(isIdentifierStart(peek));
     int start = index;
-    int dot = -1;
     advance();
-    while (true) {
-      if (peek == $PERIOD) {
-        dot = index;
-      } else if (!isIdentifierPart(peek)) {
-        break;
-      }
-      advance();
+    while (isIdentifierPart(peek)) advance();
+    String string = input.substring(start, index);
+    Token result = new Token(start, string);
+    // TODO(kasperl): Deal with null, undefined, true, and false in
+    // a cleaner and faster way.
+    if (OPERATORS.contains(string)) {
+      result.withOp(string);
+    } else {
+      result.withGetterSetter(string);
     }
-    if (dot == -1) {
-      String string = input.substring(start, index);
-      Token result = new Token(start, string);
-      // TODO(kasperl): Deal with null, undefined, true, and false in
-      // a cleaner and faster way.
-      if (OPERATORS.contains(string)) {
-        result.withOp(string);
-      } else {
-        result.withGetterSetter(string);
-      }
-      return result;
-    }
-
-    int end = index;
-    while (isWhitespace(peek)) advance();
-    if (peek == $LPAREN) {
-      buffer.add(new Token(dot + 1, input.substring(dot + 1, end)));
-      buffer.add(new Token(dot, '.'));
-      end = dot;
-    }
-    String string = input.substring(start, end);
-    return new Token(start, string)..withGetterSetter(string);
+    return result;
   }
 
   Token scanNumber(int start) {
     assert(isDigit(peek));
     bool simple = (index == start);
     while (true) {
+      advance();
       if (isDigit(peek)) {
         // Do nothing.
       } else if (peek == $PERIOD) {
@@ -206,11 +169,11 @@ class Scanner {
         advance();
         if (isExponentSign(peek)) advance();
         if (!isDigit(peek)) error('Invalid exponent', -1);
+        advance();
         simple = false;
       } else {
         break;
       }
-      advance();
     }
     String string = input.substring(start, index);
     num value = simple ? int.parse(string) : double.parse(string);
