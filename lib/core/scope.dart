@@ -774,7 +774,9 @@ _toJson(obj) {
         // work-around dartbug.com/14130
         try {
           ret = mirror.function.source;
-        } on NoSuchMethodError catch (e) {}
+        } on NoSuchMethodError catch (e) {
+        } on UnimplementedError catch (e) {
+        }
       }
       return true;
     })());
@@ -790,6 +792,7 @@ String _source(obj) {
       try {
         return "FN: ${m.function.source}";
       } on NoSuchMethodError catch (e) {
+      } on UnimplementedError catch (e) {
       }
     }
   }

@@ -41,15 +41,33 @@ class GetterSetter {
     return l;
   }
 
-  _maybeInvoke(instanceMirror, symbol) {
-    if (instanceMirror.type.members.containsKey(symbol)) {
-      MethodMirror methodMirror = instanceMirror.type.members[symbol];
-      return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
-        var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
-        return instanceMirror.invoke(symbol, args).reflectee;
-      });
+  static bool hasMethod(InstanceMirror mirror, Symbol symbol) {
+    return hasMethodHelper(mirror.type, symbol);
+  }
+
+  static final Function hasMethodHelper = computeHasMethodHelper();
+  static Function computeHasMethodHelper() {
+    var objectType = reflect(Object).type;
+    try {
+      // Use ClassMirror.instanceMembers if available. It contains local
+      // as well as inherited members.
+      objectType.instanceMembers;
+      return (type, symbol) => type.instanceMembers[symbol] is MethodMirror;
+    } on NoSuchMethodError catch (e) {
+      // For SDK 1.0 we fall back to just using the local members.
+      return (type, symbol) => type.members[symbol] is MethodMirror;
+    } on UnimplementedError catch (e) {
+      // For SDK 1.1 we fall back to just using the local declarations.
+      return (type, symbol) => type.declarations[symbol] is MethodMirror;
     }
-    return null;
+  }
+
+  _maybeInvoke(InstanceMirror mirror, Symbol symbol) {
+    if (!hasMethod(mirror, symbol)) return null;
+    return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
+      var args = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
+      return mirror.invoke(symbol, args).reflectee;
+    });
   }
 
   Map<String, Function> _getter_cache = {};
