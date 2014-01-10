@@ -106,7 +106,7 @@ typedef dynamic Mapper(dynamic e);
  */
 @NgFilter(name: 'orderBy')
 class OrderByFilter {
-  Parser<Expression> _parser;
+  Parser _parser;
 
   OrderByFilter(this._parser);
 
