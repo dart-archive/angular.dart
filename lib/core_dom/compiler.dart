@@ -9,7 +9,7 @@ class Compiler {
 
   DirectiveSelector selector;
 
-  Compiler(this.directives, this._perf, this._parser, this._expando) {
+  Compiler(this.directives, this._perf, this._expando, Parser parser) : _parser = parser {
     selector = directiveSelectorFactory(directives);
   }
 
