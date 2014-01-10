@@ -4,7 +4,7 @@ part of angular.core.dom;
 class Compiler {
   final DirectiveMap directives;
   final Profiler _perf;
-  final Parser<Expression> _parser;
+  final Parser _parser;
   final Expando _expando;
 
   DirectiveSelector selector;
