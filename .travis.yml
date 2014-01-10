@@ -5,7 +5,7 @@ node_js:
 env:
   matrix:
     - JOB=unit-stable
-    # - JOB=unit-dev
+    - JOB=unit-dev
   global:
     - CHROME_BIN=/usr/bin/google-chrome
 

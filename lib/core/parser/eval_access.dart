@@ -132,20 +132,25 @@ abstract class AccessReflective {
   }
 
   static bool hasMember(InstanceMirror mirror, Symbol symbol) {
-    var type = mirror.type as dynamic;
-    var members = useInstanceMembers ? type.instanceMembers : type.members;
-    return members.containsKey(symbol);
+    return hasMethodHelper(mirror.type, symbol);
   }
 
-  static final bool useInstanceMembers = computeUseInstanceMembers();
-  static bool computeUseInstanceMembers() {
+  static final Function hasMethodHelper = (() {
+    var objectType = reflect(Object).type;
     try {
-      reflect(Object).type.instanceMembers;
-      return true;
-    } catch (e) {
-      return false;
+      // Use ClassMirror.instanceMembers if available. It contains local
+      // as well as inherited members.
+      objectType.instanceMembers;
+      return (type, symbol) => type.instanceMembers[symbol] is MethodMirror;
+    } on NoSuchMethodError catch (e) {
+      // For SDK 1.0 we fall back to just using the local members.
+      return (type, symbol) => type.members[symbol] is MethodMirror;
+    } on UnimplementedError catch (e) {
+      // For SDK 1.1 we fall back to just using the local declarations.
+      return (type, symbol) => type.declarations[symbol] is MethodMirror;
     }
-  }
+    return null;
+  })();
 }
 
 /**
