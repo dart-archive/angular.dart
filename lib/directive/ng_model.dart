@@ -325,3 +325,23 @@ class InputRadioDirective {
     });
   }
 }
+
+/**
+ * Usage (span could be replaced with any element which supports text content, such as `p`):
+ *
+ *     <span contenteditable= ng-model="name">
+ *
+ * This creates a two way databinding between the expression specified in
+ * ng-model and the html element in the DOM.  If the ng-model value is
+ * `null`, it is treated as equivalent to the empty string for rendering
+ * purposes.
+ */
+@NgDirective(selector: '[contenteditable][ng-model]')
+class ContentEditableDirective extends _InputTextlikeDirective {
+  ContentEditableDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
+      super(inputElement, ngModel, scope);
+
+  // The implementation is identical to _InputTextlikeDirective but use innerHtml instead of value
+  get typedValue => (inputElement as dynamic).innerHtml;
+  set typedValue(String value) => (inputElement as dynamic).innerHtml = (value == null) ? '' : value;
+}
