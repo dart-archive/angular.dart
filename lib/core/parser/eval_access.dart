@@ -133,8 +133,9 @@ abstract class AccessReflective {
 
   static bool hasMember(InstanceMirror mirror, Symbol symbol) {
     var type = mirror.type as dynamic;
-    var members = useInstanceMembers ? type.instanceMembers : type.members;
-    return members.containsKey(symbol);
+    if (useInstanceMembers) return type.instanceMembers.containsKey(symbol);
+    var declaration = type.declarations[symbol];
+    return declaration != null && declaration is MethodMirror && !declaration.isStatic;
   }
 
   static final bool useInstanceMembers = computeUseInstanceMembers();
