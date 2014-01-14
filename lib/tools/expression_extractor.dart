@@ -11,6 +11,7 @@ import 'package:angular/tools/common.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
+import 'package:angular/core/parser/parser.dart';
 
 main(args) {
   if (args.length < 5) {
@@ -48,7 +49,10 @@ main(args) {
   }
 
   printer.printSrc('// Found ${expressions.length} expressions');
-  Module module = new Module()..value(SourcePrinter, printer);
+  Module module = new Module()
+    ..type(Parser, implementedBy: DynamicParser)
+    ..type(ParserBackend, implementedBy: DynamicParserBackend)
+    ..value(SourcePrinter, printer);
   Injector injector =
       new DynamicInjector(modules: [module], allowImplicitInjection: true);
 

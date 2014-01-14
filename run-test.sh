@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 # OS-specific Dartium path defaults
 case $( uname -s ) in
   Darwin)
@@ -29,6 +31,9 @@ dart --version
 
 # run io tests
 dart --checked test/io/all.dart
+
+# run expression extractor tests
+scripts/test-expression-extractor.sh
 
 ./analyze.sh &&
   node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
