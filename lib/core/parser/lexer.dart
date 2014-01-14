@@ -55,7 +55,14 @@ class Scanner {
 
   Token scanToken() {
     // Skip whitespace.
-    while (isWhitespace(peek)) advance();
+    while (peek <= $SPACE) {
+    if (++index >= length) {
+      peek = $EOF;
+      return null;
+    } else {
+      peek = input.codeUnitAt(index);
+    }
+  }
 
     // Handle identifiers and numbers.
     if (isIdentifierStart(peek)) return scanIdentifier();
@@ -63,60 +70,44 @@ class Scanner {
 
     int start = index;
     switch (peek) {
-      case $EOF:
-        return null;
       case $PERIOD:
         advance();
         return isDigit(peek) ? scanNumber(start) : new Token(start, '.');
       case $LPAREN:
-        return scanCharacter(start, '(');
       case $RPAREN:
-        return scanCharacter(start, ')');
       case $LBRACE:
-        return scanCharacter(start, '{');
       case $RBRACE:
-        return scanCharacter(start, '}');
       case $LBRACKET:
-        return scanCharacter(start, '[');
       case $RBRACKET:
-        return scanCharacter(start, ']');
       case $COMMA:
-        return scanCharacter(start, ',');
       case $COLON:
-        return scanCharacter(start, ':');
       case $SEMICOLON:
-        return scanCharacter(start, ';');
+        return scanCharacter(start, new String.fromCharCode(peek));
       case $SQ:
       case $DQ:
         return scanString();
       case $PLUS:
-        return scanOperator(start, '+');
       case $MINUS:
-        return scanOperator(start, '-');
       case $STAR:
-        return scanOperator(start, '*');
       case $SLASH:
-        return scanOperator(start, '/');
       case $PERCENT:
-        return scanOperator(start, '%');
       case $CARET:
-        return scanOperator(start, '^');
       case $QUESTION:
-        return scanOperator(start, '?');
+        return scanOperator(start, new String.fromCharCode(peek));
       case $LT:
-        return scanComplexOperator(start, $EQ, '<', '<=');
       case $GT:
-        return scanComplexOperator(start, $EQ, '>', '>=');
       case $BANG:
-        return scanComplexOperator(start, $EQ, '!', '!=');
       case $EQ:
-        return scanComplexOperator(start, $EQ, '=', '==');
+        return scanComplexOperator(start, $EQ, new String.fromCharCode(peek), '=');
       case $AMPERSAND:
-        return scanComplexOperator(start, $AMPERSAND, '&', '&&');
+        return scanComplexOperator(start, $AMPERSAND, '&', '&');
       case $BAR:
-        return scanComplexOperator(start, $BAR, '|', '||');
+        return scanComplexOperator(start, $BAR, '|', '|');
       case $TILDE:
-        return scanComplexOperator(start, $SLASH, '~', '~/');
+        return scanComplexOperator(start, $SLASH, '~', '/');
+      case $NBSP:
+        while (isWhitespace(peek)) advance();
+        return scanToken();
     }
 
     String character = new String.fromCharCode(peek);
@@ -142,7 +133,7 @@ class Scanner {
     String string = one;
     if (peek == code) {
       advance();
-      string = two;
+      string += two;
     }
     assert(OPERATORS.contains(string));
     return new Token(start, string)..withOp(string);
@@ -168,6 +159,7 @@ class Scanner {
   Token scanNumber(int start) {
     assert(isDigit(peek));
     bool simple = (index == start);
+    advance();  // Skip initial digit.
     while (true) {
       if (isDigit(peek)) {
         // Do nothing.
