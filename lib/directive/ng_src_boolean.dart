@@ -73,3 +73,29 @@ class NgSourceDirective {
   set srcset(value) => attrs['srcset'] = value;
 
 }
+
+/**
+  * The `ngAttr` directive allows you to include attributes you do not want eagerly
+  * processed by the browser
+  *
+  * @example
+        <svg>
+          <circle ng-attr-cx="{{cx}}"></circle>
+        </svg>
+  */
+@NgDirective(selector: '[ng-attr-*]')
+class NgAttributeDirective implements NgAttachAware {
+  NodeAttrs _attrs;
+
+  NgAttributeDirective(NodeAttrs this._attrs);
+
+  void attach() {
+    _attrs.forEach((key, value) {
+      if (key.startsWith('ngAttr')) {
+        String newKey = snakecase(key.substring(6));
+        _attrs[newKey] = value;
+        _attrs.observe(snakecase(key), (newValue) => _attrs[newKey] = newValue );
+      }
+    });
+  }
+}
