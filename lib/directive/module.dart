@@ -58,6 +58,7 @@ class NgDirectiveModule extends Module {
     value(TextAreaDirective, null);
     value(InputSelectDirective, null);
     value(OptionValueDirective, null);
+    value(ContentEditableDirective, null);
     value(NgModel, null);
     value(NgSwitchDirective, null);
     value(NgSwitchWhenDirective, null);
