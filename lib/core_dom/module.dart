@@ -8,7 +8,8 @@ import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
 import 'package:angular/core/module.dart';
-import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core/parser/parser.dart';
+import 'package:angular/utils.dart';
 
 part 'block.dart';
 part 'block_factory.dart';
@@ -42,7 +43,6 @@ class NgCoreDomModule extends Module {
     type(HttpDefaults);
     type(HttpInterceptors);
     type(BlockCache);
-    type(GetterSetter);
     type(BrowserCookies);
     type(Cookies);
     type(LocationWrapper);

@@ -3,8 +3,14 @@
   "dependencies" : {
     "karma" : "0.10.2",
     "karma-dart" : "0.2.6",
+    "karma-script-launcher": "*",
     "karma-chrome-launcher": "*",
+    "karma-phantomjs-launcher": "*",
     "karma-firefox-launcher": "*",
-    "karma-junit-reporter": "0.1.0"
+    "karma-junit-reporter": "0.1.0",
+    "jasmine-node": "*",
+    "qq": "*",
+    "jasmine-node": "*"
   }
 }
+

@@ -7,7 +7,7 @@ part of angular.directive;
  * provide the rendering and listening capabilities. The directive itself
  * knows how to convert the view-value into model-value and vice versa by
  * allowing others to register converters (To be implemented). It also
- * knwos how to (in)validate the model and the form in which it is declared
+ * knows how to (in)validate the model and the form in which it is declared
  * (to be implemented)
  */
 @NgDirective(
@@ -324,4 +324,24 @@ class InputRadioDirective {
       }
     });
   }
+}
+
+/**
+ * Usage (span could be replaced with any element which supports text content, such as `p`):
+ *
+ *     <span contenteditable= ng-model="name">
+ *
+ * This creates a two way databinding between the expression specified in
+ * ng-model and the html element in the DOM.  If the ng-model value is
+ * `null`, it is treated as equivalent to the empty string for rendering
+ * purposes.
+ */
+@NgDirective(selector: '[contenteditable][ng-model]')
+class ContentEditableDirective extends _InputTextlikeDirective {
+  ContentEditableDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
+      super(inputElement, ngModel, scope);
+
+  // The implementation is identical to _InputTextlikeDirective but use innerHtml instead of value
+  get typedValue => (inputElement as dynamic).innerHtml;
+  set typedValue(String value) => (inputElement as dynamic).innerHtml = (value == null) ? '' : value;
 }

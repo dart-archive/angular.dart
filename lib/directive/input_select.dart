@@ -62,7 +62,7 @@ class InputSelectDirective implements NgAttachAware {
   }
 
   /**
-   * This method invalidates the current state of the selector and forces a rerendering of the
+   * This method invalidates the current state of the selector and forces a re-rendering of the
    * options using the [Scope.$evalAsync].
    */
   dirty() {
@@ -175,7 +175,13 @@ class _SingleSelectMode extends _SelectMode {
     var found = false;
     _forEachOption((option, i) {
       if (option == _unknownOption) return;
-      var selected = value == null ? option == _nullOption : expando[option].ngValue == value;
+      var selected;
+      if (value == null) {
+        selected = option == _nullOption;
+      } else {
+        OptionValueDirective optionValueDirective = expando[option];
+        selected = optionValueDirective == null ? false : optionValueDirective.ngValue == value;
+      }
       found = found || selected;
       option.selected = selected;
     });
@@ -203,7 +209,6 @@ class _MultipleSelectionMode extends _SelectMode {
 
   onViewChange(event) {
     var selected = [];
-    var fn = (o, i) => o.value;
 
     _forEachOption((o, i) {
       if (o.selected) {
@@ -214,7 +219,6 @@ class _MultipleSelectionMode extends _SelectMode {
   }
 
   onModelChange(List selectedValues) {
-    num index = 0;
     Function fn = (o, i) => o.selected = null;
 
     if (selectedValues is List) {

@@ -62,10 +62,16 @@ class Scope implements Map {
   bool _skipAutoDigest = false;
   bool _disabled = false;
 
+  _set$Properties() {
+    _properties[r'this'] = this;
+    _properties[r'$id'] = this.$id;
+    _properties[r'$parent'] = this.$parent;
+    _properties[r'$root'] = this.$root;
+  }
+
   Scope(this._exceptionHandler, this._parser, ScopeDigestTTL ttl,
       this._zone, this._perf):
         $parent = null, _isolate = false, _lazy = false, _ttl = ttl.ttl {
-    _properties[r'this']= this;
     $root = this;
     $id = '_${$root._nextId++}';
     _innerAsyncQueue = [];
@@ -74,12 +80,12 @@ class Scope implements Map {
     // Set up the zone to auto digest this scope.
     _zone.onTurnDone = _autoDigestOnTurnDone;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
+    _set$Properties();
   }
 
   Scope._child(Scope parent, bool this._isolate, bool this._lazy, Profiler this._perf):
       $parent = parent, _ttl = parent._ttl, _parser = parent._parser,
       _exceptionHandler = parent._exceptionHandler, _zone = parent._zone {
-    _properties[r'this'] = this;
     $root = $parent.$root;
     $id = '_${$root._nextId++}';
     _innerAsyncQueue = $parent._innerAsyncQueue;
@@ -92,11 +98,12 @@ class Scope implements Map {
     } else {
       $parent._childHead = $parent._childTail = this;
     }
+    _set$Properties();
   }
 
   _autoDigestOnTurnDone() {
-    if (_skipAutoDigest) {
-      _skipAutoDigest = false;
+    if ($root._skipAutoDigest) {
+      $root._skipAutoDigest = false;
     } else {
       $digest();
     }
@@ -107,23 +114,27 @@ class Scope implements Map {
     (a is String && b is String && a == b) ||
     (a is num && b is num && a.isNaN && b.isNaN);
 
-  containsKey(String name) => this[name] != null;
+  containsKey(String name) {
+    for (var scope = this; scope != null; scope = scope.$parent) {
+      if (scope._properties.containsKey(name)) {
+        return true;
+      } else if(scope._isolate) {
+        break;
+      }
+    }
+    return false;
+  }
+
   remove(String name) => this._properties.remove(name);
   operator []=(String name, value) => _properties[name] = value;
   operator [](String name) {
-    if (name == r'$id') return this.$id;
-    if (name == r'$parent') return this.$parent;
-    if (name == r'$root') return this.$root;
-    var scope = this;
-    do {
+    for (var scope = this; scope != null; scope = scope.$parent) {
       if (scope._properties.containsKey(name)) {
         return scope._properties[name];
-      } else if (!scope._isolate) {
-        scope = scope.$parent;
-      } else {
-        return null;
+      } else if(scope._isolate) {
+        break;
       }
-    } while(scope != null);
+    }
     return null;
   }
 
@@ -382,7 +393,7 @@ class Scope implements Map {
    * auto-digesting scope.
    */
   $$verifyDigestWillRun() {
-    assert(!_skipAutoDigest);
+    assert(!$root._skipAutoDigest);
     _zone.assertInTurn();
   }
 
@@ -621,12 +632,12 @@ class Scope implements Map {
    * you just scheduled or are otherwise certain of an impending VM turn and the
    * digest at the end of that turn is sufficient.  You should be able to answer
    * "No" to the question "Is there any other code that is aware that this VM
-   * turn occured and therefore expected a digest?".  If your answer is "Yes",
+   * turn occurred and therefore expected a digest?".  If your answer is "Yes",
    * then you run the risk that the very next VM turn is not for your event and
    * now that other code runs in that turn and sees stale values.
    *
    * You might call this function, for instance, from an event listener where,
-   * though the event occured, you need to wait for another event before you can
+   * though the eventoccurredd, you need to wait for another event before you can
    * perform something meaningful.  You might schedule that other event,
    * set a flag for the handler of the other event to recognize, etc. and then
    * call this method to skip the digest this cycle.  Note that you should call
@@ -636,7 +647,7 @@ class Scope implements Map {
    */
   $skipAutoDigest() {
     _zone.assertInTurn();
-    _skipAutoDigest = true;
+    $root._skipAutoDigest = true;
   }
 
 
@@ -767,7 +778,8 @@ class Scope implements Map {
     if (exp == null) {
       return () => null;
     } else if (exp is String) {
-      return _parser(exp).eval;
+      Expression expression = _parser(exp);
+      return expression.eval;
     } else if (exp is Function) {
       return exp;
     } else {
@@ -858,7 +870,9 @@ _toJson(obj) {
         // work-around dartbug.com/14130
         try {
           ret = mirror.function.source;
-        } on NoSuchMethodError catch (e) {}
+        } on NoSuchMethodError catch (e) {
+        } on UnimplementedError catch (e) {
+        }
       }
       return true;
     })());

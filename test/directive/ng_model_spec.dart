@@ -44,7 +44,6 @@ describe('ng-model', () {
       var input = probe.directive(InputTextDirective);
       input.processValue();
       expect(_.rootScope.model).toEqual('def');
-
     }));
 
     it('should write to input only if value is different', inject(() {
@@ -436,6 +435,32 @@ describe('ng-model', () {
       expect(redBtn.checked).toBe(false);
       expect(greenBtn.checked).toBe(true);
       expect(blueBtn.checked).toBe(false);
+    }));
+  });
+  
+  describe('contenteditable', () {
+    it('should update content from model', inject(() {
+      _.compile('<p contenteditable ng-model="model">');
+      _.rootScope.$digest();
+
+      expect((_.rootElement as dom.Element).text).toEqual('');
+
+      _.rootScope.$apply('model = "misko"');
+      expect((_.rootElement as dom.Element).text).toEqual('misko');
+    }));
+
+    it('should update model from the input value', inject(() {
+      _.compile('<p contenteditable ng-model="model">');
+      Element element = _.rootElement;
+
+      element.innerHtml = 'abc';
+      _.triggerEvent(element, 'change');
+      expect(_.rootScope.model).toEqual('abc');
+
+      element.innerHtml = 'def';
+      var input = ngInjector(element).get(ContentEditableDirective);
+      input.processValue();
+      expect(_.rootScope.model).toEqual('def');
     }));
   });
 

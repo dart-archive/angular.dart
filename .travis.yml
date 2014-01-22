@@ -1,0 +1,27 @@
+language: node_js
+node_js:
+  - 0.10
+
+env:
+  matrix:
+    - JOB=unit-stable
+    - JOB=unit-dev
+  global:
+    - CHROME_BIN=/usr/bin/google-chrome
+
+before_install:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - "sudo apt-get update -qq"
+  - "sudo apt-get install -qq unzip chromium-browser"
+  - "sudo apt-get install libxss1"
+  - "wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+  - "sudo dpkg -i google-chrome*.deb"
+  - "sudo chmod u+s /opt"
+
+
+before_script:
+  - ./scripts/travis/setup.sh
+
+script:
+  - ./scripts/travis/build.sh
