@@ -20,6 +20,7 @@ main() {
     describe(r'$root', () {
       it(r'should point to itself', inject((Scope $rootScope) {
         expect($rootScope.$root).toEqual($rootScope);
+        expect($rootScope.$root).toEqual($rootScope);
         expect($rootScope.$root).toBeTruthy();
       }));
 
@@ -100,6 +101,22 @@ main() {
         expect(digestedValue).toEqual(0);
         zone.run(() {
           $rootScope.$skipAutoDigest();
+        });
+        expect(digestedValue).toEqual(0);
+        zone.run(noop);
+        expect(digestedValue).toEqual(1);
+      }));
+
+      it(r'should skip auto digest if requested on any scope', inject((Scope $rootScope) {
+        var scope = $rootScope.$new();
+        var digestedValue = 0;
+        scope.a = 1;
+        scope.$watch('a', (newValue, oldValue, _this) {
+          digestedValue = newValue;
+        });
+        expect(digestedValue).toEqual(0);
+        zone.run(() {
+          scope.$skipAutoDigest();
         });
         expect(digestedValue).toEqual(0);
         zone.run(noop);

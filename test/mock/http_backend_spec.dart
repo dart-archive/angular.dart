@@ -42,6 +42,23 @@ main() => describe('MockHttpBackend', () {
   });
 
 
+  it('should respond with JSON', inject((Logger logger) {
+    hb.when('GET', '/url1').respond(200, ['abc'], {});
+    hb.when('GET', '/url2').respond(200, {'key': 'value'}, {});
+
+
+    callback.andCallFake((status, response) {
+      expect(status).toBe(200);
+      logger(response);
+    });
+
+    hb('GET', '/url1', null, callback);
+    hb('GET', '/url2', null, callback);
+    hb.flush();
+    expect(logger).toEqual(['["abc"]', '{"key":"value"}']);
+  }));
+
+
   it('should throw error when unexpected request', () {
     hb.when('GET', '/url1').respond(200, 'content');
     expect(() {

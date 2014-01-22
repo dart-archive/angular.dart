@@ -13,7 +13,7 @@ abstract class ElementWrapper {
 
 /**
  * A Block is a fundamental building block of DOM. It is a chunk of DOM which
- * Can not be structural changed. It can only have its attributes changed.
+ * can not be structural changed. It can only have its attributes changed.
  * A Block can have [BlockHole]s embedded in its DOM.  A [BlockHole] can
  * contain other [Block]s and it is the only way in which DOM can be changed
  * structurally.
@@ -28,8 +28,8 @@ abstract class ElementWrapper {
  */
 class Block implements ElementWrapper {
   List<dom.Node> elements;
-  ElementWrapper previous = null;
-  ElementWrapper next = null;
+  ElementWrapper next;
+  ElementWrapper previous;
 
   Function onInsert;
   Function onRemove;
@@ -55,11 +55,8 @@ class Block implements ElementWrapper {
     dom.Node parentElement = previousElement.parentNode;
     bool preventDefault = false;
 
-    Function insertDomElements = () {
-      for(var i = 0, ii = elements.length; i < ii; i++) {
-        parentElement.insertBefore(elements[i], insertBeforeElement);
-      }
-    };
+    Function insertDomElements = () =>
+        elements.forEach((el) => parentElement.insertBefore(el, insertBeforeElement));
 
     if (onInsert != null) {
       onInsert({
@@ -118,12 +115,9 @@ class Block implements ElementWrapper {
     var previousElements = previousBlock.elements,
         previousElement = previousElements[previousElements.length - 1],
         insertBeforeElement = previousElement.nextNode,
-        parentElement = previousElement.parentNode,
-        blockElements = elements;
+        parentElement = previousElement.parentNode;
 
-    for(var i = 0, ii = blockElements.length; i < ii; i++) {
-      parentElement.insertBefore(blockElements[i], insertBeforeElement);
-    }
+    elements.forEach((el) => parentElement.insertBefore(el, insertBeforeElement));
 
     // Remove block from list
     previous.next = next;
@@ -146,12 +140,9 @@ class Block implements ElementWrapper {
  * [Block]s can be added in parent [Block]. BlockHoles wrap a DOM element,
  * and act as references which allows more blocks to be added.
  */
-
 class BlockHole extends ElementWrapper {
   List<dom.Node> elements;
-
   ElementWrapper previous;
-
   ElementWrapper next;
 
   BlockHole(this.elements);

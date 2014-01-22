@@ -73,3 +73,32 @@ class NgSourceDirective {
   set srcset(value) => attrs['srcset'] = value;
 
 }
+
+/**
+ * In SVG some attributes have a specific syntax. Placing `{{interpolation}}` in those
+ * attributes will break the attribute syntax, and browser will clear the attribute.
+ *
+ * The `ng-attr-*` is a generic way to use interpolation without breaking the attribute
+ * syntax validator. The `ng-attr-` part get stripped.
+ *
+ * @example
+       <svg>
+         <circle ng-attr-cx="{{cx}}"></circle>
+       </svg>
+ */
+@NgDirective(selector: '[ng-attr-*]')
+class NgAttributeDirective implements NgAttachAware {
+  NodeAttrs _attrs;
+
+  NgAttributeDirective(NodeAttrs this._attrs);
+
+  void attach() {
+    _attrs.forEach((key, value) {
+      if (key.startsWith('ngAttr')) {
+        String newKey = snakecase(key.substring(6));
+        _attrs[newKey] = value;
+        _attrs.observe(snakecase(key), (newValue) => _attrs[newKey] = newValue );
+      }
+    });
+  }
+}

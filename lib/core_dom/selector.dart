@@ -32,20 +32,20 @@ class _Directive {
   final Type type;
   final NgAnnotation annotation;
 
-  _Directive(this.type, this.annotation);
+  _Directive(Type this.type, NgAnnotation this.annotation);
+
+  toString() => annotation.selector;
 }
 
 
 class _ContainsSelector {
-  NgAnnotation annotation;
-  RegExp regexp;
+  final NgAnnotation annotation;
+  final RegExp regexp;
 
-  _ContainsSelector(this.annotation, String regexp) {
-    this.regexp = new RegExp(regexp);
-  }
+  _ContainsSelector(this.annotation, String regexp) : regexp = new RegExp(regexp);
 }
 
-RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-]+)(?:=([^\]]*))?\]))');
+RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-\*]+)(?:=([^\]]*))?\]))');
 RegExp _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([\w\-]+)(?:\=(.*))?\]$');
 RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
 RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
@@ -117,8 +117,8 @@ class _ElementSelector {
       } else {
         attrValuePartialMap
             .putIfAbsent(name, () => new Map<String, _ElementSelector>())
-            [selectorPart.attrValue] = new _ElementSelector(name)
-                ..addDirective(selectorParts, directive);
+            .putIfAbsent(selectorPart.attrValue, () => new _ElementSelector(name))
+            .addDirective(selectorParts, directive);
       }
     } else {
       throw "Unknown selector part '$selectorPart'.";
@@ -153,8 +153,11 @@ class _ElementSelector {
 
   List<_ElementSelector> selectAttr(List<DirectiveRef> refs, List<_ElementSelector> partialSelection,
          dom.Node node, String attrName, String attrValue) {
-    if (attrValueMap.containsKey(attrName)) {
-      Map<String, _Directive> valuesMap = attrValueMap[attrName];
+
+    String matchingKey = _matchingKey(attrValueMap.keys, attrName);
+
+    if (matchingKey != null) {
+      Map<String, _Directive> valuesMap = attrValueMap[matchingKey];
       if (valuesMap.containsKey('')) {
         _Directive directive = valuesMap[''];
         refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
@@ -178,10 +181,16 @@ class _ElementSelector {
     return partialSelection;
   }
 
+  String _matchingKey(Iterable<String> keys, String attrName) {
+    return keys.firstWhere(
+        (key) => new RegExp('^${key.replaceAll('*', r'[\w\-]+')}\$').hasMatch(attrName),
+        orElse: () => null);
+  }
+
   toString() => 'ElementSelector($name)';
 }
 
-List<_SelectorPart> _splitCss(String selector) {
+List<_SelectorPart> _splitCss(String selector, Type type) {
   List<_SelectorPart> parts = [];
   var remainder = selector;
   var match;
@@ -199,7 +208,7 @@ List<_SelectorPart> _splitCss(String selector) {
         throw "Missmatched RegExp $_SELECTOR_REGEXP on $remainder";
       }
     } else {
-      throw "Unknown selector format '$remainder'.";
+      throw "Unknown selector format '$selector' for $type.";
     }
     remainder = remainder.substring(match.end);
   }
@@ -207,7 +216,6 @@ List<_SelectorPart> _splitCss(String selector) {
 }
 
 /**
- *
  * Factory method for creating a [DirectiveSelector].
  */
 DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
@@ -215,17 +223,19 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
   _ElementSelector elementSelector = new _ElementSelector('');
   List<_ContainsSelector> attrSelector = [];
   List<_ContainsSelector> textSelector = [];
-
   directives.forEach((NgAnnotation annotation, Type type) {
     var match;
     var selector = annotation.selector;
     List<_SelectorPart> selectorParts;
+    if (selector == null) {
+      throw new ArgumentError('Missing selector annotation for $type');
+    }
 
     if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
       textSelector.add(new _ContainsSelector(annotation, match.group(1)));
     } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
       attrSelector.add(new _ContainsSelector(annotation, match[1]));
-    } else if ((selectorParts = _splitCss(selector)) != null){
+    } else if ((selectorParts = _splitCss(selector, type)) != null){
       elementSelector.addDirective(selectorParts, new _Directive(type, annotation));
     } else {
       throw new ArgumentError('Unsupported Selector: $selector');

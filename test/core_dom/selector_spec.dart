@@ -5,6 +5,7 @@ import '../_specs.dart';
 @NgDirective(selector:'b')                    class _BElement{}
 @NgDirective(selector:'.b')                   class _BClass{}
 @NgDirective(selector:'[directive]')          class _DirectiveAttr{}
+@NgDirective(selector:'[wildcard-*]')         class _WildcardDirectiveAttr{}
 @NgDirective(selector:'[directive=d][foo=f]') class _DirectiveFooAttr{}
 @NgDirective(selector:'b[directive]')         class _BElementDirectiveAttr{}
 @NgDirective(selector:'[directive=value]')    class _DirectiveValueAttr{}
@@ -22,6 +23,11 @@ import '../_specs.dart';
              children: NgAnnotation.IGNORE_CHILDREN)
                                               class _IgnoreChildren{}
 
+@NgDirective(selector: '[my-model][required]')
+@NgDirective(selector: '[my-model][my-required]')
+                                              class _TwoDirectives {}
+
+
 main() {
   describe('Selector', () {
     //TODO(karma): throwing error here gets ignored
@@ -38,6 +44,7 @@ main() {
         ..type(_BElement)
         ..type(_BClass)
         ..type(_DirectiveAttr)
+        ..type(_WildcardDirectiveAttr)
         ..type(_DirectiveFooAttr)
         ..type(_BElementDirectiveAttr)
         ..type(_DirectiveValueAttr)
@@ -47,7 +54,8 @@ main() {
         ..type(_Component)
         ..type(_Attribute)
         ..type(_Structural)
-        ..type(_IgnoreChildren);
+        ..type(_IgnoreChildren)
+        ..type(_TwoDirectives);
     }));
     beforeEach(inject((DirectiveMap directives) {
       selector = directiveSelectorFactory(directives);
@@ -120,6 +128,14 @@ main() {
         ]));
     });
 
+    it('should match attribute names', () {
+      expect(selector(element = e('<div wildcard-match=ignored></div>')),
+        toEqualsDirectiveInfos([
+          { "selector": '[wildcard-*]', "value": 'ignored',
+            "element": element, "name": 'wildcard-match'}
+        ]));
+    });
+
     it('should match text', () {
       expect(selector(element = e('before-abc-after')),
         toEqualsDirectiveInfos([
@@ -145,6 +161,25 @@ main() {
           { "selector": '[directive]', "value": 'd', "element": element},
           { "selector": '[directive=d][foo=f]', "value": 'f', "element": element}
       ]));
+    });
+
+    it('should match ng-model + required on the same element', () {
+      expect(
+        selector(element = e('<input type="text" ng-model="val" probe="i" required="true" />')),
+        toEqualsDirectiveInfos([
+          { "selector": '[ng-model]',                 "value": 'val',   "element": element},
+          { "selector": '[probe]',                    "value": 'i',     "element": element},
+          { "selector": 'input[type=text][ng-model]', "value": 'val',   "element": element}
+        ]));
+    });
+
+    it('should match two directives', () {
+      expect(
+          selector(element = e('<input type="text" my-model="val" required my-required />')),
+          toEqualsDirectiveInfos([
+              { "selector": '[my-model][required]',    "value": '', "element": element},
+              { "selector": '[my-model][my-required]', "value": '', "element": element}
+          ]));
     });
   });
 }

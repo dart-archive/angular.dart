@@ -1,3 +1,92 @@
+<a name="0.9.4"></a>
+# v0.9.4 supersonic-turtle (2014-1-13)
+
+### WARNING
+
+We reserve the right to change the APIs in v.0.9.x versions.
+
+
+## Bug Fixes
+
+- **di:** removed type parameters to accommodate di restriction
+  ([7646df6d](https://github.com/angular/angular.dart/commit/7646df6dd00d1b6ea29d8930bd6d5d53d2bc2110))
+- **doc:** NgShadowRoot => NgShadowRootAware
+  ([303c12b8](https://github.com/angular/angular.dart/commit/303c12b8cc0956317a1b8f80846cb071835c228c))
+- **docs:** typo
+  ([06ab9e75](https://github.com/angular/angular.dart/commit/06ab9e75c8ea4746c2d183cbfbde3aea3d843582))
+- **expression extractor:** Fix and test
+  ([ff737732](https://github.com/angular/angular.dart/commit/ff7377321fa52f2c90c6b144ee3a14293a39addf))
+- **expression_extractor:** fixed package roots
+  ([6b2c9921](https://github.com/angular/angular.dart/commit/6b2c9921411c383475099790667431dd2ab2e2ab))
+- **http_backend:** don't swallow http request errors.
+  ([8cc26533](https://github.com/angular/angular.dart/commit/8cc26533c8f681a509633adf02e80d36833b82d0))
+- **input:** corrected NPE when input goes away
+  ([e97b9d07](https://github.com/angular/angular.dart/commit/e97b9d07f66ad4a2639868a0c22aa1b876af0dc4),
+   [#392](https://github.com/angular/angular.dart/issues/392))
+- **introspection:** Search our shadowRoot as well
+  ([6549c982](https://github.com/angular/angular.dart/commit/6549c98211b58edfc4204bb814f5f8983727546c))
+- **ng_model:** Disable a test that did not pass in content_shell
+  ([a3da7310](https://github.com/angular/angular.dart/commit/a3da731082d745ec2b078a0b1f28a8fc9702b4b1))
+- **parser:** pass analyzer v1.1.0
+  ([e61e0375](https://github.com/angular/angular.dart/commit/e61e0375e1f8cc5fea9df2e662fb561d15380c10))
+- **scope:**
+  - fix $properties not visible using []
+  ([4345857b](https://github.com/angular/angular.dart/commit/4345857bb0e2dd82561e7486e974c69ba5fb4976))
+  - Also check for UnimplementedError when reflecting on source
+  ([1d870ba4](https://github.com/angular/angular.dart/commit/1d870ba4c0f8f6d01318b35820a049f16ccbb435))
+- **sdk:** Add support for Dart SDK 1.1
+  ([9d6914ec](https://github.com/angular/angular.dart/commit/9d6914ec72677a4ae5c6ad9cb88c8e5e96c1efb0))
+- **selector:** the required attribute should properly work with ng-required
+  ([472d764e](https://github.com/angular/angular.dart/commit/472d764e83102c523cacebf22a3d366fc4803f9a))
+
+
+## Features
+
+- **NodeAttrs:**
+  - implement the keys getter and containsKey()
+  ([1a7d4a42](https://github.com/angular/angular.dart/commit/1a7d4a429e0cfc8f2e8f1bb559297a0f210babf3))
+  - Implement forEach to iterate over attributes
+  ([5c415135](https://github.com/angular/angular.dart/commit/5c4151359d483032fb2e89f387c3252ab059dd13))
+- **compiler:**
+  - A better error message for invalid selectors
+  ([99eab544](https://github.com/angular/angular.dart/commit/99eab544fe1a026b66b438f0f6df199bdbd2ba83))
+  - Throw a useful error message on a missing NgComponenet selector
+  ([42692a14](https://github.com/angular/angular.dart/commit/42692a143568fdf30e4c8aa6f1b5a73cc2a6d870))
+- **events:** add missing ng-events
+  ([97bd4bc2](https://github.com/angular/angular.dart/commit/97bd4bc29ace2c4262ffaa9e8c655450dc49416b),
+   [#386](https://github.com/angular/angular.dart/issues/386))
+- **ng-pluralize:** Implement the ng-pluralize directive
+  ([51d951e3](https://github.com/angular/angular.dart/commit/51d951e37e7c4ec8690eae860bc682ebf940d511))
+- **scripts:** automatic way of generating changelog.MD
+  ([11af25c8](https://github.com/angular/angular.dart/commit/11af25c8a5c12a5958441df8bdf6eb941a1ed79c))
+- **template_cache_generator:** simple template cache generator
+  ([32e073b7](https://github.com/angular/angular.dart/commit/32e073b74fe62a118d017d62ee378f7f114798a2))
+- **travis:** add travis support
+  ([fa3727f8](https://github.com/angular/angular.dart/commit/fa3727f823af42a0e672dbb2b0ffa5f236efedf4))
+
+
+## Performance Improvements
+
+- **NodeAttrs:** Remove one unnecessary call to snakecase
+  ([ad2a7d54](https://github.com/angular/angular.dart/commit/ad2a7d54e86d681a976737c63a30b91a3fca1de7))
+- **bracket:** Optimize calling methods on objects.
+  ([12f5f672](https://github.com/angular/angular.dart/commit/12f5f672f880cbfae726139cf48b6ba80c408ff0))
+- **parser:**
+  - Add new AST based parser
+  ([f2651d42](https://github.com/angular/angular.dart/commit/f2651d4259ed8f69663bac084240d38e0efd4fcf))
+  - Faster lexer rewrite
+  ([c279fac2](https://github.com/angular/angular.dart/commit/c279fac254e2a4c8396669050cc2770c0c8649cd))
+  - Use a switch statement for unescaping.
+  ([28b68d1f](https://github.com/angular/angular.dart/commit/28b68d1fccad4d7f71d62ccad55f8e78fb1f079a))
+  - Faster character tests.
+  ([ae8be929](https://github.com/angular/angular.dart/commit/ae8be929acd3f8c0682bd6e12c178fc698540a7d))
+- **scope:**
+  - Compute perf counters as part of the fast dirty check if possible.
+  ([1932110c](https://github.com/angular/angular.dart/commit/1932110cd94b92214469d5ea645edbc1bb69702d))
+  - Make the digest loop easier to optimize by splitting it into smaller and simpler methods.
+  ([46123637](https://github.com/angular/angular.dart/commit/4612363746a5f4ffed15370eac3fc79570987f56))
+
+
 <a name="0.9.3"></a>
 # v0.9.3 reverse-telekinesis (2013-12-16)
 
