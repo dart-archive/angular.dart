@@ -75,8 +75,7 @@ class StaticClosureMap extends ClosureMap {
   }
 
   generateFunctionMap(Map<String, Set<int>> calls) {
-    Map<Set> arities = {};
-
+    Map<int, Set<String>> arities = {};
     calls.forEach((name, callArities) {
       callArities.forEach((arity){
         arities.putIfAbsent(arity, () => new Set<String>()).add(name);

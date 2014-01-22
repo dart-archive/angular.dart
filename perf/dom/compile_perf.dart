@@ -14,7 +14,7 @@ main() => describe('compiler', () {
       time('create 100 blocks',
           () => tb.rootScope.$apply(() => tb.rootScope.items = items),
           cleanUp: () => tb.rootScope.$apply(() => tb.rootScope.items = empty),
-          verify: () => expect(tb.rootElement.queryAll('li').length).toEqual(100));
+          verify: () => expect(tb.rootElement.querySelectorAll('li').length).toEqual(100));
     }));
   });
 });
