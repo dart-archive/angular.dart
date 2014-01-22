@@ -102,8 +102,8 @@ class Scope implements Map {
   }
 
   _autoDigestOnTurnDone() {
-    if (_skipAutoDigest) {
-      _skipAutoDigest = false;
+    if ($root._skipAutoDigest) {
+      $root._skipAutoDigest = false;
     } else {
       $digest();
     }
@@ -393,7 +393,7 @@ class Scope implements Map {
    * auto-digesting scope.
    */
   $$verifyDigestWillRun() {
-    assert(!_skipAutoDigest);
+    assert(!$root._skipAutoDigest);
     _zone.assertInTurn();
   }
 
@@ -632,12 +632,12 @@ class Scope implements Map {
    * you just scheduled or are otherwise certain of an impending VM turn and the
    * digest at the end of that turn is sufficient.  You should be able to answer
    * "No" to the question "Is there any other code that is aware that this VM
-   * turn occured and therefore expected a digest?".  If your answer is "Yes",
+   * turn occurred and therefore expected a digest?".  If your answer is "Yes",
    * then you run the risk that the very next VM turn is not for your event and
    * now that other code runs in that turn and sees stale values.
    *
    * You might call this function, for instance, from an event listener where,
-   * though the event occured, you need to wait for another event before you can
+   * though the eventoccurredd, you need to wait for another event before you can
    * perform something meaningful.  You might schedule that other event,
    * set a flag for the handler of the other event to recognize, etc. and then
    * call this method to skip the digest this cycle.  Note that you should call
@@ -647,7 +647,7 @@ class Scope implements Map {
    */
   $skipAutoDigest() {
     _zone.assertInTurn();
-    _skipAutoDigest = true;
+    $root._skipAutoDigest = true;
   }
 
 
