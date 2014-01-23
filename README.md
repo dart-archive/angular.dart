@@ -38,3 +38,8 @@ Please file bugs and feature requests using the [Github Issues Tracker][issues].
 [dart]: http://www.dartlang.org
 [ng]: http://angularjs.org/
 [issues]: https://github.com/angular/angular.dart/issues?state=open
+
+## I want to help
+
+Excellent read up on
+[[contributing][https://github.com/angular/angular.dart/blob/master/CONTRIBUTING.md]].
