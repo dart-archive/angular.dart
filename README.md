@@ -28,6 +28,10 @@ and follow [@angularjs][tw] on Twitter.
 
 Please file bugs and feature requests using the [Github Issues Tracker][issues].
 
+## I want to help
+
+Excellent read up on [contributing][contributing].
+
 [docs]: http://ci.angularjs.org/view/Dart/job/angular.dart-master/javadoc/
 [tw]: https://twitter.com/angularjs
 [plus]: https://plus.google.com/+AngularJS
@@ -38,8 +42,5 @@ Please file bugs and feature requests using the [Github Issues Tracker][issues].
 [dart]: http://www.dartlang.org
 [ng]: http://angularjs.org/
 [issues]: https://github.com/angular/angular.dart/issues?state=open
+[contributing]: https://github.com/angular/angular.dart/blob/master/CONTRIBUTING.md
 
-## I want to help
-
-Excellent read up on
-[[contributing][https://github.com/angular/angular.dart/blob/master/CONTRIBUTING.md]].
