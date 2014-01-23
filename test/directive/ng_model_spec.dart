@@ -172,6 +172,17 @@ describe('ng-model', () {
     }));
 
 
+    it('should update model from the input value', inject((Scope scope) {
+      var element = _.compile('<input type="checkbox" ng-model="model">');
+
+      element.checked = true;
+      _.triggerEvent(element, 'change');
+      expect(scope['model']).toBe(true);
+
+      element.checked = false;
+      _.triggerEvent(element, 'change');
+      expect(scope['model']).toBe(false);
+    }));
   });
 
   describe('type="textarea"', () {
