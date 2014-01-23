@@ -443,10 +443,10 @@ describe('ng-model', () {
       _.compile('<p contenteditable ng-model="model">');
       _.rootScope.$digest();
 
-      expect((_.rootElement as dom.Element).text).toEqual('');
+      expect((_.rootElement).text).toEqual('');
 
       _.rootScope.$apply('model = "misko"');
-      expect((_.rootElement as dom.Element).text).toEqual('misko');
+      expect((_.rootElement).text).toEqual('misko');
     }));
 
     it('should update model from the input value', inject(() {
