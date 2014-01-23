@@ -274,9 +274,10 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
               // this directive is matched on any attribute name, and so
               // we need to pass the name to the directive by prefixing it to the
               // value. Yes it is a bit of a hack.
-              Type type = directives[selectorRegExp.annotation];
-              directiveRefs.add(new DirectiveRef(
-                  node, type, selectorRegExp.annotation, '$attrName=$value'));
+              directives[selectorRegExp.annotation].forEach((type) {
+                directiveRefs.add(new DirectiveRef(
+                    node, type, selectorRegExp.annotation, '$attrName=$value'));
+              });
             }
           }
 
@@ -301,8 +302,9 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
           var selectorRegExp = textSelector[k];
 
           if (selectorRegExp.regexp.hasMatch(value)) {
-            Type type = directives[selectorRegExp.annotation];
-            directiveRefs.add(new DirectiveRef(node, type, selectorRegExp.annotation, value));
+            directives[selectorRegExp.annotation].forEach((type) {
+              directiveRefs.add(new DirectiveRef(node, type, selectorRegExp.annotation, value));
+            });
           }
         }
         break;

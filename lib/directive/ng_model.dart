@@ -148,7 +148,11 @@ class InputCheckboxDirective {
 }
 
 @NgDirective(selector: 'textarea[ng-model]')
-@NgDirective(selector: 'input[ng-model]')
+@NgDirective(selector: 'input[type=text][ng-model]')
+@NgDirective(selector: 'input[type=password][ng-model]')
+@NgDirective(selector: 'input[type=url][ng-model]')
+@NgDirective(selector: 'input[type=email][ng-model]')
+@NgDirective(selector: 'input[type=number][ng-model]')
 class InputTextLikeDirective {
   dom.Element inputElement;
   NgModel ngModel;
