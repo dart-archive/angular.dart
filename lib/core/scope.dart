@@ -637,7 +637,7 @@ class Scope implements Map {
    * now that other code runs in that turn and sees stale values.
    *
    * You might call this function, for instance, from an event listener where,
-   * though the eventoccurredd, you need to wait for another event before you can
+   * though the event occurred, you need to wait for another event before you can
    * perform something meaningful.  You might schedule that other event,
    * set a flag for the handler of the other event to recognize, etc. and then
    * call this method to skip the digest this cycle.  Note that you should call
