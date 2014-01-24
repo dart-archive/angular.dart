@@ -16,19 +16,17 @@ import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 
 /**
-* This @MirrorsUsed annotation is doing two things:
-*   - setting "override: *", which will cause any library that is not tagged
-*     with @MirrorsUsed to be potentially shaken out of the production binary.
-*   - setting targets.  All classes inside of Angular will be preserved, as
-*     well as any class tagged with the annotations listed in metaTargets.
-*
-* If you are writing code accessed from Angular expressions, you must include
-* your own @MirrorsUsed annotation or ensure that everything is tagged with
-* the Ng annotations.
-*
-* This is a short-term fix until we implement a transformer-based solution
-* which does not rely on mirrors.
-*/
+ * If you are writing code accessed from Angular expressions, you must include
+ * your own @MirrorsUsed annotation or ensure that everything is tagged with
+ * the Ng annotations.
+ *
+ * All programs should also include a @MirrorsUsed(override: '*') which
+ * tells the compiler that only the explicitly listed libraries will
+ * be reflected over.
+ *
+ * This is a short-term fix until we implement a transformer-based solution
+ * which does not rely on mirrors.
+ */
 @MirrorsUsed(targets: const[
     'angular',
     'angular.core',
