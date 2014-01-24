@@ -27,6 +27,15 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
   final List<NgControl> _controls = new List<NgControl>();
   final Map<String, NgControl> _controlByName = new Map<String, NgControl>();
 
+  /**
+   * Instantiates a new instance of NgForm. Upon creation, the instance of the class will
+   * be bound to the formName property on the scope (where formName refers to the name
+   * value acquired from the name attribute present on the form DOM element).
+   *
+   * * [scope] - The scope to bind the form instance to.
+   * * [element] - The form DOM element.
+   * * [injector] - An instance of Injector.
+   */
   NgForm(this._scope, dom.Element this._element, Injector injector):
     _parentForm = injector.parent.get(NgForm)
   {
@@ -54,6 +63,17 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
     _scope[name] = this;
   }
 
+  /**
+   * Sets the validity status of the given control/errorType pair within
+   * the list of controls registered on the form. Depending on the validation
+   * state of the existing controls, this will either change valid to true
+   * or invalid to true depending on if all controls are valid or if one
+   * or more of them is invalid.
+   *
+   * * [control] - The registered control object (see [ngControl]).
+   * * [errorType] - The error associated with the control (e.g. required, url, number, etc...).
+   * * [isValid] - Whether or not the given error is valid or not (false would mean the error is real).
+   */
   setValidity(NgControl control, String errorType, bool isValid) {
     List queue = currentErrors[errorType];
 
@@ -102,6 +122,11 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
     }
   }
 
+  /**
+   * Registers a form control into the form for validation.
+   *
+   * * [control] - The form control which will be registered (see [ngControl]).
+   */
   addControl(NgControl control) {
     _controls.add(control);
     if(control.name != null) {
@@ -109,15 +134,37 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
     }
   }
 
+  /**
+   * De-registers a form control from the list of controls associated with the form.
+   *
+   * * [control] - The form control which will be de-registered (see [ngControl]).
+   */
   removeControl(NgControl control) {
     _controls.remove(control);
     if(control.name != null) {
       _controlByName.remove(control.name);
     }
   }
+
+  bool get isEmpty => false;
+  bool get isNotEmpty => !isEmpty;
+  get values => null;
+  get keys => null;
+  get length => null;
+  clear() => null;
+  remove(_) => null;
+  containsKey(_) => false;
+  containsValue(_) => false;
+  addAll(_) => null;
+  forEach(_) => null;
+  putIfAbsent(_, __) => null;
 }
 
 class NgNullForm implements NgForm {
+  var _name, _dirty, _valid, _invalid, _pristine, _element;
+  var _controls, _scope, _parentForm, _controlName;
+  var currentErrors, _controlByName;
+  dom.Element element;
   NgNullForm() {}
   operator[](name) {}
   operator []=(String name, value) {}
@@ -139,4 +186,19 @@ class NgNullForm implements NgForm {
 
   get invalid => null;
   set invalid(value) {}
+
+  bool get isEmpty => false;
+  bool get isNotEmpty => !isEmpty;
+  get values => null;
+  get keys => null;
+  get length => null;
+  clear() => null;
+  remove(_) => null;
+  containsKey(_) => false;
+  containsValue(_) => false;
+  addAll(_) => null;
+  forEach(_) => null;
+  putIfAbsent(_, __) => null;
+
+  detach() => null;
 }
