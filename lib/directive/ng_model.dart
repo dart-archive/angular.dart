@@ -75,6 +75,10 @@ class NgModel extends NgControl {
   set modelValue(value) => setter(value);
 
   get validators => _validators;
+
+  /**
+   * Executes a validation on the form against each of the validation present on the model.
+   */
   validate() {
     if(validators.length > 0) {
       validators.forEach((validator) {
@@ -85,6 +89,15 @@ class NgModel extends NgControl {
     }
   }
 
+  /**
+   * Sets the validity status of the given errorType on the model. Depending on if
+   * valid or invalid, the matching CSS classes will be added/removed on the input
+   * element associated with the model. If any errors exist on the model then invalid
+   * will be set to true otherwise valid will be set to true.
+   *
+   * * [errorType] - The name of the error (e.g. required, url, number, etc...).
+   * * [isValid] - Whether or not the given error is valid or not (false would mean the error is real).
+   */
   setValidity(String errorType, bool isValid) {
     if(isValid) {
       if(currentErrors.containsKey(errorType)) {
@@ -103,16 +116,25 @@ class NgModel extends NgControl {
     }
   }
 
+  /**
+   * Registers a validator into the model to consider when running validate().
+   */
   addValidator(_NgModelValidator v) {
     validators.add(v);
     validate();
   }
 
+  /**
+   * De-registers a validator from the model.
+   */
   removeValidator(_NgModelValidator v) {
     validators.remove(v);
     validate();
   }
 
+  /**
+   * Removes the model from the control/form.
+   */
   destroy() {
     _form.removeControl(this);
   }
@@ -147,6 +169,19 @@ class InputCheckboxDirective {
   }
 }
 
+/**
+ * Usage:
+ *
+ *     <input type="text|number|url|password|email" ng-model="myModel">
+ *     <textarea ng-model="myModel"></textarea>
+ *
+ * This creates a two-way binding between any string-based input element
+ * (both <input> and <textarea>) so long as the ng-model attribute is
+ * present on the input element. Whenever the value of the input element
+ * changes then the matching model property on the scope will be updated
+ * as well as the other way around (when the scope property is updated).
+ *
+ */
 @NgDirective(selector: 'textarea[ng-model]')
 @NgDirective(selector: 'input[type=text][ng-model]')
 @NgDirective(selector: 'input[type=password][ng-model]')

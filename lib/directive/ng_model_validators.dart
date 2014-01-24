@@ -1,5 +1,11 @@
 part of angular.directive;
 
+/**
+ * _NgModelValidator refers to the required super-class which is used when creating
+ * validation services that are used with [ngModel]. It is expected that any child-classes
+ * that inherit from this perform the necessary logic to return a simple true/false response
+ * when validating the contents of the model data.
+ */
 abstract class _NgModelValidator {
   final dom.Element inputElement;
   final NgModel ngModel;
@@ -8,6 +14,9 @@ abstract class _NgModelValidator {
 
   _NgModelValidator(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope);
 
+  /**
+   * Registers the validator with to attached model.
+   */
   bool listen() {
     if(!_listening) {
       _listening = true;
@@ -17,6 +26,9 @@ abstract class _NgModelValidator {
 
   get value => ngModel.viewValue;
 
+  /**
+   * De-registers the validator with to attached model.
+   */
   bool unlisten() {
     if(_listening) {
       _listening = false;
@@ -24,10 +36,15 @@ abstract class _NgModelValidator {
     }
   }
 
-  //override in subclass
+  /**
+   * Returns true/false depending on the status of the validator's validation mechanism
+   */
   bool isValid();
 }
 
+/**
+ * Validates the model depending if required or ng-required is present on the element.
+ */
 @NgDirective(selector: '[ng-model][required]')
 @NgDirective(selector: '[ng-model][ng-required]', map: const {'ng-required': '=>required'})
 class NgModelRequiredValidator extends _NgModelValidator {
@@ -53,6 +70,9 @@ class NgModelRequiredValidator extends _NgModelValidator {
   }
 }
 
+/**
+ * Validates the model to see if its contents match a valid URL pattern.
+ */
 @NgDirective(selector: 'input[type=url][ng-model]')
 class NgModelUrlValidator extends _NgModelValidator {
   static final URL_REGEXP = new RegExp(
@@ -71,6 +91,9 @@ class NgModelUrlValidator extends _NgModelValidator {
   }
 }
 
+/**
+ * Validates the model to see if its contents match a valid email pattern.
+ */
 @NgDirective(selector: 'input[type=email][ng-model]')
 class NgModelEmailValidator extends _NgModelValidator {
   static final EMAIL_REGEXP = new RegExp(
@@ -88,6 +111,9 @@ class NgModelEmailValidator extends _NgModelValidator {
   }
 }
 
+/**
+ * Validates the model to see if its contents match a valid number.
+ */
 @NgDirective(selector: 'input[type=number][ng-model]')
 class NgModelNumberValidator extends _NgModelValidator {
   get name => 'number';
@@ -109,6 +135,10 @@ class NgModelNumberValidator extends _NgModelValidator {
   }
 }
 
+/**
+ * Validates the model to see if its contents match the given pattern present on either the
+ * HTML pattern or ng-pattern attributes present on the input element.
+ */
 @NgDirective(selector: '[ng-model][pattern]')
 @NgDirective(selector: '[ng-model][ng-pattern]', map: const {'ng-pattern': '=>pattern'})
 class NgModelPatternValidator extends _NgModelValidator {
@@ -143,6 +173,10 @@ class NgModelPatternValidator extends _NgModelValidator {
   }
 }
 
+/**
+ * Validates the model to see if the length of its contents are greater than or equal to the minimum length
+ * set in place by the HTML minlength or ng-minlength attributes present on the input element.
+ */
 @NgDirective(selector: '[ng-model][minlength]')
 @NgDirective(selector: '[ng-model][ng-minlength]', map: const {'ng-minlength': '=>minlength'})
 class NgModelMinLengthValidator extends _NgModelValidator {
@@ -170,6 +204,10 @@ class NgModelMinLengthValidator extends _NgModelValidator {
   }
 }
 
+/**
+ * Validates the model to see if the length of its contents are less than or equal to the maximum length
+ * set in place by the HTML maxlength or ng-maxlength attributes present on the input element.
+ */
 @NgDirective(selector: '[ng-model][maxlength]')
 @NgDirective(selector: '[ng-model][ng-maxlength]', map: const {'ng-maxlength': '=>maxlength'})
 class NgModelMaxLengthValidator extends _NgModelValidator {
