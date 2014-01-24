@@ -13,6 +13,7 @@ main() => describe('template_cache_generator', () {
     Future flush;
     try {
       flush = generator.main(['test/io/test_files/templates/main.dart',
+                      '/Users/tsander/Downloads/dart/dart-sdk',
                       '${tmpDir.path}/generated.dart', 'generated', '%SYSTEM_PACKAGE_ROOT%',
                       '/test/io/test_files,rewritten', 'MyComponent3']);
     } catch(_) {
