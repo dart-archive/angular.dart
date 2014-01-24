@@ -432,11 +432,11 @@ abstract class NgDetachAware {
 }
 
 @NgInjectableService()
-class DirectiveMap extends AnnotationMap<NgAnnotation> {
+class DirectiveMap extends AnnotationsMap<NgAnnotation> {
   DirectiveMap(Injector injector, MetadataExtractor metadataExtractor,
       FieldMetadataExtractor fieldMetadataExtractor)
       : super(injector, metadataExtractor) {
-    Map<NgAnnotation, Type> directives = {};
+    Map<NgAnnotation, List<Type>> directives = {};
     forEach((NgAnnotation annotation, Type type) {
       var match;
       var fieldMetadata = fieldMetadataExtractor(type);
@@ -452,7 +452,7 @@ class DirectiveMap extends AnnotationMap<NgAnnotation> {
         });
         annotation = annotation.cloneWithNewMap(newMap);
       }
-      directives[annotation] = type;
+      directives.putIfAbsent(annotation, () => []).add(type);
     });
     _map.clear();
     _map.addAll(directives);

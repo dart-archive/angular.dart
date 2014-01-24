@@ -3,7 +3,7 @@ library registry_spec;
 import '../_specs.dart';
 
 main() => describe('RegistryMap', () {
-  it('should throw error on identical keys', () {
+  it('should allow for multiple registry keys to be added', () {
     var module = new Module()
         ..type(MyMap)
         ..type(MetadataExtractor)
@@ -13,7 +13,7 @@ main() => describe('RegistryMap', () {
     var injector = new DynamicInjector(modules: [module]);
     expect(() {
       injector.get(MyMap);
-    }).toThrow("Duplicate annotation found: MyAnnotation: A. Exisitng:");
+    }).not.toThrow();
   });
 
   it('should iterate over all types', () {
