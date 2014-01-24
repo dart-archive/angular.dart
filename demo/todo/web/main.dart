@@ -5,6 +5,12 @@ import 'todo.dart';
 
 import 'dart:html';
 
+// Everything in this library should be preserved by MirrorsUsed
+@MirrorsUsed(
+    targets: const['todo'],
+    override: '*')
+import 'dart:mirrors';
+
 main() {
 
   print(window.location.search);
