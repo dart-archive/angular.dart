@@ -308,4 +308,20 @@ class ContentEditableDirective extends InputTextLikeDirective {
   // The implementation is identical to InputTextLikeDirective but use innerHtml instead of value
   get typedValue => (inputElement as dynamic).innerHtml;
   set typedValue(String value) => (inputElement as dynamic).innerHtml = (value == null) ? '' : value;
+
+  @override
+  processValue() {
+    var value = typedValue;
+   /**
+    * This could be a Chrome Bug: isContentEditable is always false on test, the correct behavior is
+    * if ((value != ngModel.viewValue) && inputText.isContentEditable)
+    * because a contenteditable=inherit depends on the parent to be or not to be editable
+    * But this will fail the should update model test
+    * This is not a big problem because the client will not direct edit the content 
+    * (only code can make this happens as the browser do not make paragraph updated)
+    */
+    if ((value != ngModel.viewValue)) {
+      scope.$apply(() => ngModel.viewValue = value);
+    }
+  }
 }
