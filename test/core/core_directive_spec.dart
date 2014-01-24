@@ -15,6 +15,17 @@ main() => describe('DirectiveMap', () {
     expect(annotations[0] is NgComponent).toBeTruthy();
 
     NgComponent annotation = annotations[0];
+    expect(annotation.selector).toEqual('annotated-io');
+    expect(annotation.visibility).toEqual(NgDirective.LOCAL_VISIBILITY);
+    expect(annotation.exportExpressions).toEqual(['exportExpressions']);
+    expect(annotation.publishTypes).toEqual([String]);
+    expect(annotation.template).toEqual('template');
+    expect(annotation.templateUrl).toEqual('templateUrl');
+    expect(annotation.cssUrl).toEqual('cssUrl');
+    expect(annotation.cssUrls).toEqual(['cssUrls']);
+    expect(annotation.applyAuthorStyles).toEqual(true);
+    expect(annotation.resetStyleInheritance).toEqual(true);
+    expect(annotation.publishAs).toEqual('ctrl');
     expect(annotation.map).toEqual({
       'foo': '=>foo',
       'attr': '@attr',
@@ -60,7 +71,16 @@ main() => describe('DirectiveMap', () {
 
 @NgComponent(
     selector: 'annotated-io',
-    template: r'<content></content>',
+    template: 'template',
+    templateUrl: 'templateUrl',
+    cssUrl: 'cssUrl',
+    cssUrls: const ['cssUrls'],
+    applyAuthorStyles: true,
+    resetStyleInheritance: true,
+    publishAs: 'ctrl',
+    publishTypes: const [String],
+    visibility: NgDirective.LOCAL_VISIBILITY,
+    exportExpressions: const ['exportExpressions'],
     map: const {
       'foo': '=>foo'
     }
