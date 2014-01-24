@@ -1,4 +1,3 @@
-<a name="0.9.4"></a>
 # v0.9.4 supersonic-turtle (2014-1-13)
 
 ### WARNING
