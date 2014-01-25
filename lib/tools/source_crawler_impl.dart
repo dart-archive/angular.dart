@@ -37,7 +37,7 @@ class SourceCrawlerImpl implements SourceCrawler {
       var currentDir = file.parent.path;
       CompilationUnit cu = parseDartFile(currentFile);
       processImports(cu, currentDir, currentFile, visited, toVisit);
-      visitor(cu);
+      visitor(cu, currentFile);
     }
   }
 
