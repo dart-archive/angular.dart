@@ -1,4 +1,4 @@
-AngularDart
+AngularDart [![Build Status](https://travis-ci.org/angular/angular.dart.png?branch=master)](https://travis-ci.org/angular/angular.dart)
 ============
 
 A port of [Angular][ng] to [Dart][dart].
@@ -22,14 +22,19 @@ in Dart.
 Discuss angular.dart on the [mailing list][list],
 ask questions on [StackOverflow][so],
 follow [+Angular on Google+][plus],
-and follow [@angularjs][tw] on Twitter.
+and follow [@AngularDart][dartTw] and [@AngularJS][ngTw] on Twitter.
 
 ## Filing bugs
 
 Please file bugs and feature requests using the [Github Issues Tracker][issues].
 
+## I want to help
+
+Excellent read up on [contributing][contributing].
+
 [docs]: http://ci.angularjs.org/view/Dart/job/angular.dart-master/javadoc/
-[tw]: https://twitter.com/angularjs
+[ngTw]: https://twitter.com/AngularJS
+[dartTw]: https://twitter.com/AngularDart
 [plus]: https://plus.google.com/+AngularJS
 [so]: http://stackoverflow.com/questions/tagged/angular.dart
 [list]: https://groups.google.com/forum/#!forum/angular-dart
@@ -38,3 +43,5 @@ Please file bugs and feature requests using the [Github Issues Tracker][issues].
 [dart]: http://www.dartlang.org
 [ng]: http://angularjs.org/
 [issues]: https://github.com/angular/angular.dart/issues?state=open
+[contributing]: https://github.com/angular/angular.dart/blob/master/CONTRIBUTING.md
+
