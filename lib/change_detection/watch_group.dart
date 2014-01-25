@@ -7,7 +7,8 @@ part 'linked_list.dart';
 part 'ast.dart';
 part 'prototype_map.dart';
 
-typedef ReactionFn(value, previousValue, object);
+typedef ReactionFn(value, previousValue);
+typedef ChangeLog(expression);
 
 /**
  * Extend this class if you wish to pretend to be a function, but you don't know
@@ -333,11 +334,14 @@ class RootWatchGroup extends WatchGroup {
    * Each step is called in sequence. ([ReactionFn]s are not called until all previous steps are
    * completed).
    */
-  int detectChanges() {
+  int detectChanges({ExceptionHandler exceptionHandler, ChangeLog changeLog}) {
     // Process the ChangeRecords from the change detector
     ChangeRecord<_Handler> changeRecord =
-        (_changeDetector as ChangeDetector<_Handler>).collectChanges();
+        (_changeDetector as ChangeDetector<_Handler>).collectChanges(exceptionHandler);
     while (changeRecord != null) {
+      if (changeLog != null) {
+        changeLog(changeRecord.handler.expression);
+      }
       changeRecord.handler.onChange(changeRecord);
       changeRecord = changeRecord.nextChange;
     }
@@ -346,7 +350,14 @@ class RootWatchGroup extends WatchGroup {
     // Process our own function evaluations
     _EvalWatchRecord evalRecord = _evalWatchHead;
     while (evalRecord != null) {
-      evalRecord.check();
+      try {
+        var change = evalRecord.check();
+        if (change != null && changeLog != null) {
+          changeLog(evalRecord.handler.expression);
+        }
+      } catch (e, s) {
+        if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
+      }
       evalRecord = evalRecord._nextEvalWatch;
     }
 
@@ -356,7 +367,11 @@ class RootWatchGroup extends WatchGroup {
     Watch dirtyWatch = _dirtyWatchHead;
     while(dirtyWatch != null) {
       count++;
-      dirtyWatch.invoke();
+      try {
+        dirtyWatch.invoke();
+      } catch (e, s) {
+        if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
+      }
       dirtyWatch = dirtyWatch._nextDirtyWatch;
     }
     _dirtyWatchHead = _dirtyWatchTail = null;
@@ -400,7 +415,7 @@ class Watch {
 
   invoke() {
     _dirty = false;
-    reactionFn(_record.currentValue, _record.previousValue, _record.object);
+    reactionFn(_record.currentValue, _record.previousValue);
   }
 
   remove() {

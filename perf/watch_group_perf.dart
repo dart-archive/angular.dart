@@ -13,7 +13,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 )
 import 'dart:mirrors' show MirrorsUsed;
 
-var _reactionFn = (_, __, ___) => null;
+var _reactionFn = (_, __) => null;
 var _getterCache = new GetterCache({});
 main() {
   _fieldRead();
