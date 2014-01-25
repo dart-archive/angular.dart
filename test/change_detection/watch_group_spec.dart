@@ -40,7 +40,7 @@ main() => describe('WatchGroup', () {
 
       // should fire on initial adding
       expect(watchGrp.fieldCost).toEqual(0);
-      var watch = watchGrp.watch(parse('a'), (v, p, o) => logger(v));
+      var watch = watchGrp.watch(parse('a'), (v, p) => logger(v));
       expect(watch.expression).toEqual('a');
       expect(watchGrp.fieldCost).toEqual(1);
       watchGrp.detectChanges();
@@ -69,7 +69,7 @@ main() => describe('WatchGroup', () {
       // should fire on initial adding
       expect(watchGrp.fieldCost).toEqual(0);
       expect(changeDetector.count).toEqual(0);
-      var watch = watchGrp.watch(parse('a.b'), (v, p, o) => logger(v));
+      var watch = watchGrp.watch(parse('a.b'), (v, p) => logger(v));
       expect(watch.expression).toEqual('a.b');
       expect(watchGrp.fieldCost).toEqual(2);
       expect(changeDetector.count).toEqual(2);
@@ -111,9 +111,9 @@ main() => describe('WatchGroup', () {
 
       // should fire on initial adding
       expect(watchGrp.fieldCost).toEqual(0);
-      var watch = watchGrp.watch(parse('user'), (v, p, o) => logger(v));
-      var watchFirst = watchGrp.watch(parse('user.first'), (v, p, o) => logger(v));
-      var watchLast = watchGrp.watch(parse('user.last'), (v, p, o) => logger(v));
+      var watch = watchGrp.watch(parse('user'), (v, p) => logger(v));
+      var watchFirst = watchGrp.watch(parse('user.first'), (v, p) => logger(v));
+      var watchLast = watchGrp.watch(parse('user.last'), (v, p) => logger(v));
       expect(watchGrp.fieldCost).toEqual(3);
 
       watchGrp.detectChanges();
@@ -143,7 +143,7 @@ main() => describe('WatchGroup', () {
       FunctionApply fn = new LoggingFunctionApply(logger);
       var watch = watchGrp.watch(
           new PureFunctionAST('add', fn, [parse('a.val')]),
-          (v, p, o) => logger(v)
+          (v, p) => logger(v)
       );
 
       // a; a.val; b; b.val;
@@ -165,7 +165,7 @@ main() => describe('WatchGroup', () {
              (a, b) { logger('+'); return a+b; },
              [parse('a.val'), parse('b.val')]
          ),
-         (v, p, o) => logger(v)
+         (v, p) => logger(v)
       );
 
       // a; a.val; b; b.val;
@@ -213,7 +213,7 @@ main() => describe('WatchGroup', () {
           (b, c) { logger('$b+$c'); return b + c; },
           [a_plus_b, parse('c.val')]);
 
-      var watch = watchGrp.watch(a_plus_b_plus_c, (v, p, o) => logger(v));
+      var watch = watchGrp.watch(a_plus_b_plus_c, (v, p) => logger(v));
 
       // a; a.val; b; b.val; c; c.val;
       expect(watchGrp.fieldCost).toEqual(6);
@@ -275,7 +275,7 @@ main() => describe('WatchGroup', () {
 
       var watch = watchGrp.watch(
           new MethodAST(parse('obj'), 'methodA', [parse('arg0')]),
-              (v, p, o) => logger(v)
+              (v, p) => logger(v)
       );
 
       // obj, arg0;
@@ -319,7 +319,7 @@ main() => describe('WatchGroup', () {
 
       var watch = watchGrp.watch(
           new MethodAST(parse('obj'), 'methodA', [parse('arg0')]),
-              (v, p, o) => logger(v)
+              (v, p) => logger(v)
       );
 
       // obj, arg0;
@@ -366,7 +366,7 @@ main() => describe('WatchGroup', () {
       // obj.methodA(arg0)
       var ast = new MethodAST(parse('obj'), 'methodA', [parse('arg0')]);
       ast = new MethodAST(ast, 'methodA', [parse('arg1')]);
-      var watch = watchGrp.watch(ast, (v, p, o) => logger(v));
+      var watch = watchGrp.watch(ast, (v, p) => logger(v));
 
       // obj, arg0, arg1;
       expect(watchGrp.fieldCost).toEqual(3);
@@ -406,7 +406,7 @@ main() => describe('WatchGroup', () {
     it('should read connstant', () {
       // should fire on initial adding
       expect(watchGrp.fieldCost).toEqual(0);
-      var watch = watchGrp.watch(new ConstantAST(123), (v, p, o) => logger(v));
+      var watch = watchGrp.watch(new ConstantAST(123), (v, p) => logger(v));
       expect(watch.expression).toEqual('123');
       expect(watchGrp.fieldCost).toEqual(0);
       watchGrp.detectChanges();
@@ -419,7 +419,7 @@ main() => describe('WatchGroup', () {
 
     it('should wrap iterable in ObservableList', () {
       context['list'] = [];
-      var watch = watchGrp.watch(new CollectionAST(parse('list')), (v, p, o) => logger(v));
+      var watch = watchGrp.watch(new CollectionAST(parse('list')), (v, p) => logger(v));
 
       expect(watchGrp.fieldCost).toEqual(1);
       expect(watchGrp.collectionCost).toEqual(1);
@@ -453,15 +453,15 @@ main() => describe('WatchGroup', () {
 
   describe('child group', () {
     it('should remove all field watches in group and group\'s children', () {
-      watchGrp.watch(parse('a'), (v, p, o) => logger('0a'));
+      watchGrp.watch(parse('a'), (v, p) => logger('0a'));
       var child1a = watchGrp.newGroup(new PrototypeMap(context));
       var child1b = watchGrp.newGroup(new PrototypeMap(context));
       var child2 = child1a.newGroup(new PrototypeMap(context));
-      child1a.watch(parse('a'), (v, p, o) => logger('1a'));
-      child1b.watch(parse('a'), (v, p, o) => logger('1b'));
-      watchGrp.watch(parse('a'), (v, p, o) => logger('0A'));
-      child1a.watch(parse('a'), (v, p, o) => logger('1A'));
-      child2.watch(parse('a'), (v, p, o) => logger('2A'));
+      child1a.watch(parse('a'), (v, p) => logger('1a'));
+      child1b.watch(parse('a'), (v, p) => logger('1b'));
+      watchGrp.watch(parse('a'), (v, p) => logger('0A'));
+      child1a.watch(parse('a'), (v, p) => logger('1A'));
+      child2.watch(parse('a'), (v, p) => logger('2A'));
 
       // flush initial reaction functions
       expect(watchGrp.detectChanges()).toEqual(6);
@@ -487,21 +487,21 @@ main() => describe('WatchGroup', () {
     it('should remove all method watches in group and group\'s children', () {
       context['my'] = new MyClass(logger);
       AST countMethod = new MethodAST(parse('my'), 'count', []);
-      watchGrp.watch(countMethod, (v, p, o) => logger('0a'));
+      watchGrp.watch(countMethod, (v, p) => logger('0a'));
       expectOrder(['0a']);
 
       var child1a = watchGrp.newGroup(new PrototypeMap(context));
       var child1b = watchGrp.newGroup(new PrototypeMap(context));
       var child2 = child1a.newGroup(new PrototypeMap(context));
-      child1a.watch(countMethod, (v, p, o) => logger('1a'));
+      child1a.watch(countMethod, (v, p) => logger('1a'));
       expectOrder(['0a', '1a']);
-      child1b.watch(countMethod, (v, p, o) => logger('1b'));
+      child1b.watch(countMethod, (v, p) => logger('1b'));
       expectOrder(['0a', '1a', '1b']);
-      watchGrp.watch(countMethod, (v, p, o) => logger('0A'));
+      watchGrp.watch(countMethod, (v, p) => logger('0A'));
       expectOrder(['0a', '0A', '1a', '1b']);
-      child1a.watch(countMethod, (v, p, o) => logger('1A'));
+      child1a.watch(countMethod, (v, p) => logger('1A'));
       expectOrder(['0a', '0A', '1a', '1A', '1b']);
-      child2.watch(countMethod, (v, p, o) => logger('2A'));
+      child2.watch(countMethod, (v, p) => logger('2A'));
       expectOrder(['0a', '0A', '1a', '1A', '2A', '1b']);
 
       // flush initial reaction functions
@@ -516,9 +516,9 @@ main() => describe('WatchGroup', () {
     it('should add watches within its own group', () {
       context['my'] = new MyClass(logger);
       AST countMethod = new MethodAST(parse('my'), 'count', []);
-      var ra = watchGrp.watch(countMethod, (v, p, o) => logger('a'));
+      var ra = watchGrp.watch(countMethod, (v, p) => logger('a'));
       var child = watchGrp.newGroup(new PrototypeMap(context));
-      var cb = child.watch(countMethod, (v, p, o) => logger('b'));
+      var cb = child.watch(countMethod, (v, p) => logger('b'));
 
       expectOrder(['a', 'b']);
       expectOrder(['a', 'b']);
@@ -530,8 +530,8 @@ main() => describe('WatchGroup', () {
       expectOrder([]);
 
       // TODO: add them back in wrong order, assert events in right order
-      cb = child.watch(countMethod, (v, p, o) => logger('b'));
-      ra = watchGrp.watch(countMethod, (v, p, o) => logger('a'));;
+      cb = child.watch(countMethod, (v, p) => logger('b'));
+      ra = watchGrp.watch(countMethod, (v, p) => logger('a'));;
       expectOrder(['a', 'b']);
     });
   });

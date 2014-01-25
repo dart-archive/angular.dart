@@ -1,5 +1,7 @@
 library change_detection;
 
+typedef EvalExceptionHandler(error, stack);
+
 /**
  * An interface for [ChangeDetectorGroup] groups related watches together. It
  * guarentees that within the group all watches will be reported in the order in
@@ -53,7 +55,7 @@ abstract class ChangeDetector<H> extends ChangeDetectorGroup<H> {
    * linked list of [ChangeRecord]s. The [ChangeRecord]s are to be returned in
    * the same order as they were registered.
    */
-  ChangeRecord<H> collectChanges();
+  ChangeRecord<H> collectChanges([EvalExceptionHandler exceptionHandler]);
 }
 
 abstract class Record<H> {

@@ -5,6 +5,7 @@ _SpecInjector _currentSpecInjector = null;
 class _SpecInjector {
   DynamicInjector moduleInjector;
   DynamicInjector injector;
+  dynamic injectiorCreateLocation;
   List<Module> modules = [];
   List<Function> initFns = [];
 
@@ -23,6 +24,9 @@ class _SpecInjector {
   }
 
   module(fnOrModule, [declarationStack]) {
+    if (injectiorCreateLocation != null) {
+      throw "Injector already created at:\n$injectiorCreateLocation";
+    }
     try {
       if (fnOrModule is Function) {
         var initFn = moduleInjector.invoke(fnOrModule);
@@ -42,6 +46,7 @@ class _SpecInjector {
   inject(Function fn, [declarationStack]) {
     try {
       if (injector == null) {
+        injectiorCreateLocation = declarationStack;
         injector = new DynamicInjector(modules: modules); // Implicit injection is disabled.
         initFns.forEach((fn) {
           injector.invoke(fn);
@@ -55,6 +60,7 @@ class _SpecInjector {
 
   reset() {
     injector = null;
+    injectiorCreateLocation = null;
   }
 }
 

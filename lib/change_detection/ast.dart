@@ -9,7 +9,11 @@ part of angular.watch_group;
 abstract class AST {
   static final String _CONTEXT = '#';
   final String expression;
-  AST(this.expression) { assert(expression!=null); }
+  AST(expression)
+      : expression = expression.startsWith('#.') ? expression.substring(2) : expression
+  {
+    assert(expression!=null);
+  }
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup);
   toString() => expression;
 }
@@ -34,7 +38,7 @@ class ConstantAST extends AST {
   final constant;
 
   ConstantAST(dynamic constant):
-      super('$constant'),
+      super(constant is String ? '"$constant"' : '$constant'),
       constant = constant;
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup)
@@ -51,7 +55,7 @@ class FieldReadAST extends AST {
   final String name;
 
   FieldReadAST(lhs, name)
-      : super(lhs.expression == AST._CONTEXT ? name : '$lhs.$name'),
+      : super('$lhs.$name'),
         lhs = lhs,
         name = name;
 

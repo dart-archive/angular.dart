@@ -216,17 +216,25 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     implements ChangeDetector<H> {
   DirtyCheckingChangeDetector(GetterCache getterCache): super(null, getterCache);
 
-  DirtyCheckingRecord<H> collectChanges() {
+  DirtyCheckingRecord<H> collectChanges([EvalExceptionHandler exceptionHandler]) {
     DirtyCheckingRecord changeHead = null;
     DirtyCheckingRecord changeTail = null;
     DirtyCheckingRecord current = _head; // current index
 
     while (current != null) {
-      if (current.check() != null) {
-        if (changeHead == null) {
-          changeHead = changeTail = current;
+      try {
+        if (current.check() != null) {
+          if (changeHead == null) {
+            changeHead = changeTail = current;
+          } else {
+            changeTail = changeTail.nextChange = current;
+          }
+        }
+      } catch (e, s) {
+        if (exceptionHandler == null) {
+          rethrow;
         } else {
-          changeTail = changeTail.nextChange = current;
+          exceptionHandler(e, s);
         }
       }
       current = current._nextWatch;
