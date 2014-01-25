@@ -202,10 +202,8 @@ class NgComponent extends NgAnnotation {
   final List<String> cssUrls;
 
   List<String> get allCssUrls {
-    if (cssUrls == null && cssUrl == null) return null;
-    if (cssUrls == null && cssUrl != null) return [cssUrl];
-    if (cssUrls != null && cssUrl == null) return cssUrls;
-    if (cssUrls != null && cssUrl != null) return [cssUrl]..addAll(cssUrls);
+    List<String> urls = cssUrl == null ? [] : [cssUrl];
+    return cssUrls == null ? urls : urls..addAll(cssUrls);
   }
 
 /**
@@ -245,18 +243,19 @@ class NgComponent extends NgAnnotation {
 
   NgAnnotation cloneWithNewMap(newMap) =>
       new NgComponent(
-          template: this.template,
-          templateUrl: this.templateUrl,
-          cssUrls: this.cssUrls,
-          applyAuthorStyles: this.applyAuthorStyles,
-          resetStyleInheritance: this.resetStyleInheritance,
-          publishAs: this.publishAs,
+          template: template,
+          templateUrl: templateUrl,
+          cssUrl: cssUrl,
+          cssUrls: cssUrls,
+          applyAuthorStyles: applyAuthorStyles,
+          resetStyleInheritance: resetStyleInheritance,
+          publishAs: publishAs,
           map: newMap,
-          selector: this.selector,
-          visibility: this.visibility,
-          publishTypes: this.publishTypes,
-          exportExpressions: this.exportExpressions,
-          exportExpressionAttrs: this.exportExpressionAttrs);
+          selector: selector,
+          visibility: visibility,
+          publishTypes: publishTypes,
+          exportExpressions: exportExpressions,
+          exportExpressionAttrs: exportExpressionAttrs);
 }
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
