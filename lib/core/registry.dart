@@ -8,11 +8,6 @@ abstract class AnnotationMap<K> {
       var meta = extractMetadata(type)
         .where((annotation) => annotation is K)
         .forEach((annotation) {
-          if (_map.containsKey(annotation)) {
-            var annotationType = K;
-            throw "Duplicate annotation found: $annotationType: $annotation. " +
-                  "Exisitng: ${_map[annotation]}; New: $type.";
-          }
           _map[annotation] = type;
         });
     });
@@ -38,6 +33,47 @@ abstract class AnnotationMap<K> {
     return res;
   }
 }
+
+abstract class AnnotationsMap<K> {
+  final Map<K, List<Type>> _map = {};
+
+  AnnotationsMap(Injector injector, MetadataExtractor extractMetadata) {
+    injector.types.forEach((type) {
+      var meta = extractMetadata(type)
+        .where((annotation) => annotation is K)
+        .forEach((annotation) {
+          _map.putIfAbsent(annotation, () => []).add(type);
+        });
+    });
+  }
+
+  List operator[](K annotation) {
+    var value = _map[annotation];
+    if (value == null) {
+      throw 'No $annotation found!';
+    }
+    return value;
+  }
+
+  forEach(fn(K, Type)) {
+    _map.forEach((annotation, types) {
+      types.forEach((type) {
+        fn(annotation, type);
+      });
+    });
+  }
+
+  List<K> annotationsFor(Type type) {
+    var res = <K>[];
+    forEach((ann, annType) {
+      if (annType == type) {
+        res.add(ann);
+      }
+    });
+    return res;
+  }
+}
+
 
 @NgInjectableService()
 class MetadataExtractor {
