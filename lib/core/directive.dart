@@ -245,18 +245,19 @@ class NgComponent extends NgAnnotation {
 
   NgAnnotation cloneWithNewMap(newMap) =>
       new NgComponent(
-          template: this.template,
-          templateUrl: this.templateUrl,
-          cssUrls: this.cssUrls,
-          applyAuthorStyles: this.applyAuthorStyles,
-          resetStyleInheritance: this.resetStyleInheritance,
-          publishAs: this.publishAs,
+          template: template,
+          templateUrl: templateUrl,
+          cssUrl: cssUrl,
+          cssUrls: cssUrls,
+          applyAuthorStyles: applyAuthorStyles,
+          resetStyleInheritance: resetStyleInheritance,
+          publishAs: publishAs,
           map: newMap,
-          selector: this.selector,
-          visibility: this.visibility,
-          publishTypes: this.publishTypes,
-          exportExpressions: this.exportExpressions,
-          exportExpressionAttrs: this.exportExpressionAttrs);
+          selector: selector,
+          visibility: visibility,
+          publishTypes: publishTypes,
+          exportExpressions: exportExpressions,
+          exportExpressionAttrs: exportExpressionAttrs);
 }
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
@@ -295,14 +296,14 @@ class NgDirective extends NgAnnotation {
 
   NgAnnotation cloneWithNewMap(newMap) =>
       new NgDirective(
-          children: this.children,
-          publishAs: this.publishAs,
+          children: children,
+          publishAs: publishAs,
           map: newMap,
-          selector: this.selector,
-          visibility: this.visibility,
-          publishTypes: this.publishTypes,
-          exportExpressions: this.exportExpressions,
-          exportExpressionAttrs: this.exportExpressionAttrs);
+          selector: selector,
+          visibility: visibility,
+          publishTypes: publishTypes,
+          exportExpressions: exportExpressions,
+          exportExpressionAttrs: exportExpressionAttrs);
 }
 
 /**
@@ -342,14 +343,14 @@ class NgController extends NgDirective {
 
   NgAnnotation cloneWithNewMap(newMap) =>
       new NgController(
-          children: this.children,
-          publishAs: this.publishAs,
+          children: children,
+          publishAs: publishAs,
           map: newMap,
-          selector: this.selector,
-          visibility: this.visibility,
-          publishTypes: this.publishTypes,
-          exportExpressions: this.exportExpressions,
-          exportExpressionAttrs: this.exportExpressionAttrs);
+          selector: selector,
+          visibility: visibility,
+          publishTypes: publishTypes,
+          exportExpressions: exportExpressions,
+          exportExpressionAttrs: exportExpressionAttrs);
 }
 
 abstract class AttrFieldAnnotation {
