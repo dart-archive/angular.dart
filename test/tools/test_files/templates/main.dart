@@ -5,7 +5,7 @@ import 'package:angular/tools/template_cache_annotation.dart';
 
 @NgComponent(
     selector: 'my-component',
-    templateUrl: '/test/io/test_files/templates/main.html'
+    templateUrl: '/test/tools/test_files/templates/main.html'
 )
 @NgTemplateCache()
 class MyComponent {
@@ -13,7 +13,7 @@ class MyComponent {
 
 @NgComponent(
     selector: 'my-component2',
-    templateUrl: '/test/io/test_files/templates/dont.html'
+    templateUrl: '/test/tools/test_files/templates/dont.html'
 )
 @NgTemplateCache(cache: false)
 class MyComponent2 {
@@ -22,7 +22,7 @@ class MyComponent2 {
 
 @NgComponent(
     selector: 'my-component3',
-    templateUrl: '/test/io/test_files/templates/dont.html'
+    templateUrl: '/test/tools/test_files/templates/dont.html'
 )
 @NgTemplateCache(cache: true)
 class MyComponent3 {
@@ -39,4 +39,12 @@ class Router {
     cache: false
 )
 class Router2 {
+}
+
+@NgComponent(
+    selector: 'my-componentlib',
+    templateUrl: 'package:test_lib/asset/lib.html'
+)
+@NgTemplateCache()
+class MyLibraryComponent {
 }

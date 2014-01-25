@@ -35,6 +35,9 @@ dart --checked test/io/all.dart
 # run expression extractor tests
 scripts/test-expression-extractor.sh
 
+echo "run template cache generator for tests"
+./test_tc_gen.sh
+
 ./analyze.sh &&
   node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
   node "node_modules/karma/bin/karma" start karma.conf \

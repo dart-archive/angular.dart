@@ -127,7 +127,6 @@ class TemplateCollectingVisitor {
       bool cache = true;
       clazz.metadata.forEach((Annotation ann) {
         if (ann.arguments == null) return; // Ignore non-class annotations.
-        // TODO(tsander): Add library name as class name could conflict.
         if (blacklistedClasses.contains(clazz.name.name)) return;
 
         switch (ann.name.name) {
@@ -138,8 +137,9 @@ class TemplateCollectingVisitor {
         }
       });
       if (cache && cacheUris.isNotEmpty) {
-        var file = new File(srcPath);
-        var currentSrcDir = file.parent.path;
+        var srcDirUri = new Uri.file(srcPath);
+        Source currentSrcDir = sourceCrawler.context.sourceFactory
+            .resolveUri2(null, srcDirUri);
         cacheUris.forEach((uri) => storeUriAsset(uri, currentSrcDir));
       }
     });
@@ -177,7 +177,7 @@ class TemplateCollectingVisitor {
     return cache;
   }
 
-  void storeUriAsset(String uri, String srcPath) {
+  void storeUriAsset(String uri, Source srcPath) {
     String assetFileLocation = findAssetFileLocation(uri, srcPath);
     if (assetFileLocation == null) {
       print("Could not find asset for uri: $uri");
@@ -186,18 +186,14 @@ class TemplateCollectingVisitor {
     }
   }
 
-  String findAssetFileLocation(String uri, String srcPath) {
-    if (uri.startsWith('package:')) {
-      return resolvePackagePath(uri);
-    } else if (uri.startsWith('/')) {
+  String findAssetFileLocation(String uri, Source srcPath) {
+    if (uri.startsWith('/')) {
+      // Absolute Path from working directory.
       return '.${uri}';
-    } else {
-      return '${srcPath}/${uri}';
     }
-  }
-
-  String resolvePackagePath(String uri) {
-    Source source = sourceCrawler.context.sourceFactory.resolveUri(null, uri);
+    // Otherwise let the sourceFactory resolve for packages, and relative paths.
+    Source source = sourceCrawler.context.sourceFactory
+        .resolveUri(srcPath, uri);
     return (source != null) ? source.fullName : null;
   }
 
