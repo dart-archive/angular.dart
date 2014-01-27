@@ -6,6 +6,7 @@ if [ "$DARTSDK" = "/Applications/dart/dart-sdk" ]; then
     # Assume we are a mac machine with standard dart setup
     export DARTIUM="/Applications/dart/chromium/Chromium.app/Contents/MacOS/Chromium"
 else
+    export DARTSDK="`pwd`/dart-sdk"
     case $( uname -s ) in
       Darwin)
         export DARTIUM=${DARTIUM:-./dartium/Chromium.app/Contents/MacOS/Chromium}
