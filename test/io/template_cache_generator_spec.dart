@@ -13,8 +13,10 @@ main() => describe('template_cache_generator', () {
     Future flush;
     try {
       flush = generator.main(['test/io/test_files/templates/main.dart',
-                      '${tmpDir.path}/generated.dart', 'generated', '%SYSTEM_PACKAGE_ROOT%',
-                      'test/io/test_files,rewritten', 'MyComponent3']);
+                      Platform.environment['DART_SDK'],
+                      '${tmpDir.path}/generated.dart', 'generated',
+                      '%SYSTEM_PACKAGE_ROOT%',
+                      '/test/io/test_files,rewritten', 'MyComponent3']);
     } catch(_) {
       tmpDir.deleteSync(recursive: true);
       rethrow;
