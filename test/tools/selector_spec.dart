@@ -57,6 +57,16 @@ main() => describe('selector', () {
     expect(matchesNode(node, '[*=/xyzz/]'), isFalse);
   });
 
+  it('should match whildcard attributes', () {
+    var node = new Element.html('<div attr-foo="blah"></div>');
+    expect(matchesNode(node, '[attr-*]'), isTrue);
+    expect(matchesNode(node, '[attr-*=blah]'), isTrue);
+    expect(matchesNode(node, '[attr-*=halb]'), isFalse);
+    expect(matchesNode(node, '[foo-*]'), isFalse);
+    expect(matchesNode(node, '[foo-*=blah]'), isFalse);
+    expect(matchesNode(node, '[foo-*=halb]'), isFalse);
+  });
+
   it('should match text', () {
     var node = new Text('before-abc-after');
     expect(matchesNode(node, ':contains(/abc/)'), isTrue);
