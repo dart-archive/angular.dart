@@ -1,17 +1,9 @@
-import 'dart:io';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
-
-class NullFilterMap implements FilterMap {
-  call(name) => null;
-  Type operator[](annotation) => null;
-  forEach(fn) { }
-  annotationsFor(type) => null;
-}
 
 main(arguments) {
   var isGetter = !arguments.isEmpty;

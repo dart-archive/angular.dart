@@ -5,7 +5,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:analyzer/src/generated/ast.dart';
-import 'source_crawler_impl.dart';
+import 'package:angular/tools/source_crawler_impl.dart';
 
 const String PACKAGE_PREFIX = 'package:';
 const String DART_PACKAGE_PREFIX = 'dart:';
