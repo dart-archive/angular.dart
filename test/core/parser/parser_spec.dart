@@ -139,6 +139,12 @@ main() {
         expect(eval("4 + 4 + ' str'")).toEqual("8 str");
         expect(eval("'str ' + 4 + 4")).toEqual("str 44");
       });
+
+      it('should allow keyed access on non-maps', () {
+        scope['nonmap'] = new BracketButNotMap();
+        expect(eval("nonmap['hello']")).toEqual('hello');
+        expect(eval("nonmap['hello']=3")).toEqual(3);
+      });
     });
 
     describe('error handling', () {
@@ -168,12 +174,6 @@ main() {
       it('should throw on bad assignment', () {
         expectEval("5=4").toThrow('Parser Error: Expression 5 is not assignable at column 2 in [5=4]');
         expectEval("array[5=4]").toThrow('Parser Error: Expression 5 is not assignable at column 8 in [array[5=4]]');
-      });
-
-
-      it('should throw on non-list, non-map field access', () {
-        expectEval("6[3]").toThrow(errStr('Eval Error: Attempted field access on a non-list, non-map while evaling [6[3]]'));
-        expectEval("6[3]=2").toThrow(errStr('Eval Error: Attempting to set a field on a non-list, non-map while evaling [6[3]=2'));
       });
 
 
@@ -926,6 +926,11 @@ class OverloadObject implements Map {
     overloadValue = value;
   }
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class BracketButNotMap {
+  operator[](String name) => name;
+  operator[]=(String name, value) {}
 }
 
 class ScopeWithErrors {
