@@ -1,7 +1,15 @@
 library generator;
 
-import 'dart_code_gen.dart';
-import '../../core/parser/parser.dart';
+import 'package:angular/core/module.dart';
+import 'package:angular/core/parser/parser.dart';
+import 'package:angular/tools/parser_generator/dart_code_gen.dart';
+
+class NullFilterMap implements FilterMap {
+  call(name) => null;
+  Type operator[](annotation) => null;
+  forEach(fn) { }
+  annotationsFor(type) => null;
+}
 
 class SourcePrinter {
   printSrc(src) {

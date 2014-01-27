@@ -2,7 +2,7 @@ library angular.source_crawler_impl;
 
 import 'dart:io';
 import 'package:analyzer/analyzer.dart';
-import 'source_crawler.dart';
+import 'package:angular/tools/source_crawler.dart';
 
 const String PACKAGE_PREFIX = 'package:';
 

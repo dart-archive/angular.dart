@@ -3,9 +3,9 @@ library angular.html_parser;
 import 'package:html5lib/parser.dart';
 import 'package:html5lib/dom.dart';
 
-import 'selector.dart';
-import 'io.dart';
-import 'common.dart';
+import 'package:angular/tools/selector.dart';
+import 'package:angular/tools/io.dart';
+import 'package:angular/tools/common.dart';
 
 typedef NodeVisitor(Node node);
 
