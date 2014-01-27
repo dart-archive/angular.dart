@@ -59,7 +59,16 @@ class NgModelRequiredValidator extends _NgModelValidator {
     }
 
   bool isValid() {
-    return !required || (value != null && value.length > 0);
+    // Any element which isn't required is always valid.
+    if (!required) return true;
+    // Null is not a value, therefore not valid.
+    if (value == null) return false;
+    // Empty lists and/or strings are not valid.
+    // NOTE: This is an excellent use case for structural typing.
+    //   We really want anything object that has a 'length' parameter.
+    if ((value is List || value is String) && value.length == 0) return false;
+    // Otherwise
+    return true;
   }
 
   @NgAttr('required')
