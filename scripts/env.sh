@@ -16,6 +16,7 @@ else
         ;;
     esac
 fi
+export DART_SDK="$DARTSDK"
 export DART=${DART:-"$DARTSDK/bin/dart"}
 export PUB=${PUB:-"$DARTSDK/bin/pub"}
 export DARTANALYZER=${DARTANALYZER:-"$DARTSDK/bin/dartanalyzer"}

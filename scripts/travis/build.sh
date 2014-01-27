@@ -3,6 +3,9 @@
 set -e
 . ./scripts/env.sh
 
+# run io tests
+dart -c test/io/all.dart
+
 ./scripts/generate-expressions.sh
 ./scripts/analyze.sh
 
