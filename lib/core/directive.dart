@@ -136,18 +136,10 @@ abstract class NgAnnotation {
    */
   final List<String> exportExpressions;
 
-  /**
-   * An expression under which the controller instance will be published into.
-   * This allows the expressions in the template to be referring to controller
-   * instance and its properties.
-   */
-  final String publishAs;
-
   const NgAnnotation({
     this.selector,
     this.children: NgAnnotation.COMPILE_CHILDREN,
     this.visibility: NgDirective.LOCAL_VISIBILITY,
-    this.publishAs,
     this.publishTypes: const [],
     this.map: const {},
     this.exportExpressions: const [],
@@ -208,7 +200,7 @@ class NgComponent extends NgAnnotation {
     if (cssUrls != null && cssUrl != null) return [cssUrl]..addAll(cssUrls);
   }
 
-/**
+  /**
    * Set the shadow root applyAuthorStyles property. See shadow-DOM
    * documentation for further details.
    */
@@ -220,6 +212,13 @@ class NgComponent extends NgAnnotation {
    */
   final bool resetStyleInheritance;
 
+  /**
+   * An expression under which the component's controller instance will be published into.
+   * This allows the expressions in the template to be referring to controller
+   * instance and its properties.
+   */
+  final String publishAs;
+
   const NgComponent({
     this.template,
     this.templateUrl,
@@ -227,7 +226,7 @@ class NgComponent extends NgAnnotation {
     this.cssUrls,
     this.applyAuthorStyles,
     this.resetStyleInheritance,
-    publishAs,
+    this.publishAs,
     map,
     selector,
     visibility,
@@ -238,7 +237,6 @@ class NgComponent extends NgAnnotation {
              children: NgAnnotation.COMPILE_CHILDREN,
              visibility: visibility,
              publishTypes: publishTypes,
-             publishAs: publishAs,
              map: map,
              exportExpressions: exportExpressions,
              exportExpressionAttrs: exportExpressionAttrs);
@@ -282,7 +280,6 @@ class NgDirective extends NgAnnotation {
 
   const NgDirective({
                     children: NgAnnotation.COMPILE_CHILDREN,
-                    publishAs,
                     map,
                     selector,
                     visibility,
@@ -290,14 +287,13 @@ class NgDirective extends NgAnnotation {
                     exportExpressions,
                     exportExpressionAttrs
                     }) : super(selector: selector, children: children, visibility: visibility,
-  publishTypes: publishTypes, publishAs: publishAs, map: map,
+  publishTypes: publishTypes, map: map,
   exportExpressions: exportExpressions,
   exportExpressionAttrs: exportExpressionAttrs);
 
   NgAnnotation cloneWithNewMap(newMap) =>
       new NgDirective(
           children: children,
-          publishAs: publishAs,
           map: newMap,
           selector: selector,
           visibility: visibility,
@@ -327,9 +323,16 @@ class NgController extends NgDirective {
   static const String CHILDREN_VISIBILITY = 'children';
   static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
 
+  /**
+   * An expression under which the controller instance will be published into.
+   * This allows the expressions in the template to be referring to controller
+   * instance and its properties.
+   */
+  final String publishAs;
+
   const NgController({
                     children: NgAnnotation.COMPILE_CHILDREN,
-                    publishAs,
+                    this.publishAs,
                     map,
                     selector,
                     visibility,
@@ -337,7 +340,7 @@ class NgController extends NgDirective {
                     exportExpressions,
                     exportExpressionAttrs
                     }) : super(selector: selector, children: children, visibility: visibility,
-  publishTypes: publishTypes, publishAs: publishAs, map: map,
+  publishTypes: publishTypes, map: map,
   exportExpressions: exportExpressions,
   exportExpressionAttrs: exportExpressionAttrs);
 
