@@ -368,12 +368,7 @@ describe('ng-model', () {
     }));
 
    /**
-    * This could be a Chrome Bug: isContentEditable is always false on test, the correct behavior is
-    * if ((value != ngModel.viewValue) && inputText.isContentEditable)
-    * because a contenteditable=inherit depends on the parent to be or not to be editable
-    * But this will fail the should update model test
-    * This is not a big problem because the client will not direct edit the content 
-    * (only code can make this happens as the browser do not make paragraph updated)
+    * Because a contenteditable=inherit depends on the parent to be or not to be editable
     */
     it("should NOT update paragraph on html edited", inject((){
       _.compile('<div contenteditable="false"><p ng-model="model" contenteditable="inherit" probe="pi"></p></div>');
@@ -399,6 +394,17 @@ describe('ng-model', () {
       expect((_.rootElement as dom.DivElement).query("p").innerHtml).toEqual('');
 
     }));
+
+    /**
+     * If this test do not pass, several contentEditable test will fail
+     */
+    it("should the context contenteditable be truthy", inject((){
+      _.compile("<p contenteditable probe='p'></p>");
+      _.rootScope.$digest();
+      Element element = _.rootScope.p.element;
+      expect(element.isContentEditable).toBeTruthy();
+    }));
+
   });
 
   describe('pristine / dirty', () {
