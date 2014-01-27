@@ -247,6 +247,7 @@ class NgComponent extends NgAnnotation {
       new NgComponent(
           template: this.template,
           templateUrl: this.templateUrl,
+          cssUrl: this.cssUrl,
           cssUrls: this.cssUrls,
           applyAuthorStyles: this.applyAuthorStyles,
           resetStyleInheritance: this.resetStyleInheritance,
