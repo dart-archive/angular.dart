@@ -12,8 +12,8 @@ import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/utils.dart';
 
-import 'service.dart';
-export 'service.dart';
+import 'package:angular/core/service.dart';
+export 'package:angular/core/service.dart';
 
 part "cache.dart";
 part "directive.dart";
