@@ -202,10 +202,8 @@ class NgComponent extends NgAnnotation {
   final List<String> cssUrls;
 
   List<String> get allCssUrls {
-    if (cssUrls == null && cssUrl == null) return null;
-    if (cssUrls == null && cssUrl != null) return [cssUrl];
-    if (cssUrls != null && cssUrl == null) return cssUrls;
-    if (cssUrls != null && cssUrl != null) return [cssUrl]..addAll(cssUrls);
+    List<String> urls = cssUrl == null ? [] : [cssUrl];
+    return cssUrls == null ? urls : urls..addAll(cssUrls);
   }
 
 /**
