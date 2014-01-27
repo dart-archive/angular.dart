@@ -77,8 +77,9 @@ getKeyed(object, key) {
     return object["$key"]; // toString dangerous?
   } else if (object == null) {
     throw new EvalError('Accessing null object');
+  } else {
+    return object[key];
   }
-  throw new EvalError("Attempted field access on a non-list, non-map");
 }
 
 /// Set a keyed element in the given [object].
@@ -90,7 +91,7 @@ setKeyed(object, key, value) {
   } else if (object is Map) {
     object["$key"] = value; // toString dangerous?
   } else {
-    throw new EvalError("Attempting to set a field on a non-list, non-map");
+    object[key] = value;
   }
   return value;
 }
