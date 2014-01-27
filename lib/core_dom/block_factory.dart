@@ -202,8 +202,7 @@ class BlockFactory {
         }
         if (controller is NgAttachAware) {
           var removeWatcher;
-          removeWatcher = scope.$watch(() {
-            removeWatcher();
+          removeWatcher = scope.$evalAsync(() {
             controller.attach();
           });
         }
