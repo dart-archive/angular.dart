@@ -25,6 +25,24 @@ describe('ngModel validators', () {
       expect(model.invalid).toEqual(false);
     }));
 
+
+    it('should validate a number input field if the required attribute is set', inject((Scope scope) {
+      _.compile('<input type="number" ng-model="val" probe="i" required="true" />');
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+
+      model.validate();
+      expect(model.valid).toEqual(false);
+      expect(model.invalid).toEqual(true);
+
+      _.rootScope.val = 5;
+      model.validate();
+
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+    }));
+
+
     it('should validate the input field depending on if ng-required is true', inject((Scope scope) {
       _.compile('<input type="text" ng-model="val" probe="i" ng-required="requireMe" />');
       Probe probe = _.rootScope.i;
