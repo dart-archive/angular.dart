@@ -1,10 +1,70 @@
-<a name="0.9.4"></a>
-# v0.9.4 supersonic-turtle (2014-1-13)
+<a name="v0.9.5"></a>
+# v0.9.5 badger-magic (2014-01-27)
 
 ### WARNING
 
-We reserve the right to change the APIs in v.0.9.x versions.
+We reserve the right to change the APIs in v0.9.x versions.
 
+## Bug Fixes
+
+- **Directive:** remove publishAs from NgDirective to avoid confusion.
+  ([c48433e0](https://github.com/angular/angular.dart/commit/c48433e0350d4b374614eef8a0c9036805535dcb))
+- **directive:** call attach method ofter all bindings execute
+  ([11b38bae](https://github.com/angular/angular.dart/commit/11b38bae4bd45631c178adf4e0b26b1272f7d289))
+- **directives:** cssUrl in NgComponent
+  ([952496b0](https://github.com/angular/angular.dart/commit/952496b00772d1984ebb8ae6c1490333cf6ba2f2))
+- **docs:** correct typo
+  ([4494ce70](https://github.com/angular/angular.dart/commit/4494ce708609c4ceb372d22ffacbe2652e9241b5))
+- **expression_extractor:** implemented support for wildcard attr selector
+  ([1e403447](https://github.com/angular/angular.dart/commit/1e403447d80ac748533075f654b9450f4590019c),
+   [#447](https://github.com/angular/angular.dart/issues/447))
+- **generator:** Avoid compile-time filter map querying when generating static parser.
+  ([522ba49c](https://github.com/angular/angular.dart/commit/522ba49cdb371d2036a749ddef6fc8b07721a581))
+- **ng-model:** Allow ng-required to work on non-strings.
+  ([a7c3a8d8](https://github.com/angular/angular.dart/commit/a7c3a8d8da7daa4a4a46fbc7475ea412c5113c99))
+- **parser:** Workaround dart2js bugs in latest version of Dart SDK 1.2.
+  ([dddc3c83](https://github.com/angular/angular.dart/commit/dddc3c832489199444e068d966a928295a9d2512))
+- **scope:** honor $skipAutoDigest on non-root scopes
+  ([7265ef7a](https://github.com/angular/angular.dart/commit/7265ef7a897be00743db9e04523188969e9f0303))
+- **todo:** Fixing some dart2js compilation issues for todo demo
+  ([b8e97d9e](https://github.com/angular/angular.dart/commit/b8e97d9ec31e64a68d6d3d17687a233872f1e21b),
+   [#453](https://github.com/angular/angular.dart/issues/453))
+
+
+## Features
+
+- **core:** provide support to define the same selector on multiple directives
+  ([dd356539](https://github.com/angular/angular.dart/commit/dd356539eb9749156755c42333df51ee858bf174))
+- **directive:** Add ng-attr-* interpolation support
+  ([aeb5538e](https://github.com/angular/angular.dart/commit/aeb5538e2d4634b966467a4f90f0a5ac8b63dd4e))
+- **directives:** Add support for contenteditable with ng-model
+  ([715d3d1e](https://github.com/angular/angular.dart/commit/715d3d1ee856c961c697217f16c68bca74ef6d92))
+- **expression_extractor:** Add source path to source crawler
+  ([6597f73f](https://github.com/angular/angular.dart/commit/6597f73f6e944f1b2f5b171b911d094ba6600e2c))
+- **forms:**
+  - provide support for parent form communication
+  ([6778b62e](https://github.com/angular/angular.dart/commit/6778b62e0c8c5cafa273f1fca68bf395870c9205))
+  - add support for validation handling for multiple error types
+  ([d3ed15cb](https://github.com/angular/angular.dart/commit/d3ed15cb7af5179962aa6cb9dfe572eb7451545f))
+  - provide support for controls and state flags
+  ([d1d86380](https://github.com/angular/angular.dart/commit/d1d863800c3fadb68750eefe2c9244ad68f6cc7e))
+- **helloworld:** MirrorsUsed
+  ([73b0dca8](https://github.com/angular/angular.dart/commit/73b0dca8dd82012a3396213bf7addf4143bba704))
+- **js size:** Add a default @MirrorsUsed to Angular.
+  ([1fd1bd07](https://github.com/angular/angular.dart/commit/1fd1bd07d5f202c8d96db511d76db0c3ff6d63ed),
+   [#409](https://github.com/angular/angular.dart/issues/409))
+- **mock:** support for JSON in HttpBackend
+  ([9d09a162](https://github.com/angular/angular.dart/commit/9d09a1628b2c01836efe1d41c403d2a9464d3578),
+   [#236](https://github.com/angular/angular.dart/issues/236))
+- **ngModel:** provide support for custom validation handlers
+  ([e01d5fd7](https://github.com/angular/angular.dart/commit/e01d5fd787fa0e62f9fa5c596c4fe63e429fd8dc))
+- **parser:** Allow operator access to non-map, non-list objects
+  ([51e167b8](https://github.com/angular/angular.dart/commit/51e167b84a5669a7268a833ed8328ddf8e1d263f),
+   [#416](https://github.com/angular/angular.dart/issues/416))
+
+
+<a name="0.9.4"></a>
+# v0.9.4 supersonic-turtle (2014-1-13)
 
 ## Bug Fixes
 
