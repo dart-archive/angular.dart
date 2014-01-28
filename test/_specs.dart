@@ -1,11 +1,10 @@
 library ng_specs;
 
-
 import 'dart:html';
-import 'dart:mirrors' as mirror;
 import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
+import 'package:collection/wrappers.dart' show DelegatingList;
 
 import 'jasmine_syntax.dart';
 
@@ -159,24 +158,20 @@ class GetterSetter {
 }
 var getterSetter = new GetterSetter();
 
-class JQuery implements List<Node> {
-  List<Node> _list = [];
-
-  JQuery([selector]) {
+class JQuery extends DelegatingList<Node> {
+  JQuery([selector]) : super([]) {
     if (selector == null) {
       // do nothing;
     } else if (selector is String) {
-      _list.addAll(es(selector));
+      addAll(es(selector));
     } else if (selector is List) {
-      _list.addAll(selector);
+      addAll(selector);
     } else if (selector is Node) {
       add(selector);
     } else {
       throw selector;
     }
   }
-
-  noSuchMethod(Invocation invocation) => mirror.reflect(_list).delegate(invocation);
 
   _toHtml(node, [bool outer = false]) {
     if (node is Comment) {
@@ -190,7 +185,7 @@ class JQuery implements List<Node> {
     // TODO(dart): ?value does not work, since value was passed. :-(
     var setterMode = value != null;
     var result = setterMode ? this : '';
-    _list.forEach((node) {
+    forEach((node) {
       if (setterMode) {
         setter(node, value);
       } else {
@@ -225,9 +220,9 @@ class JQuery implements List<Node> {
       (n is Element ? (n as Element).querySelectorAll(selector) : [])));
   hasClass(String name) => fold(false, (hasClass, node) =>
       hasClass || (node is Element && (node as Element).classes.contains(name)));
-  addClass(String name) => _list.forEach((node) =>
+  addClass(String name) => forEach((node) =>
       (node is Element) ? (node as Element).classes.add(name) : null);
-  removeClass(String name) => _list.forEach((node) =>
+  removeClass(String name) => forEach((node) =>
       (node is Element) ? (node as Element).classes.remove(name) : null);
   css(String name, [String value]) => accessor(
           (Element n) => n.style.getPropertyValue(name),
