@@ -10,6 +10,6 @@ main() {
       module.type(Parser, implementedBy: DynamicParser);
       module.type(ClosureMap, implementedBy: StaticClosureMap);
     }));
-    //parser_spec.main();
+    parser_spec.main();
   });
 }
