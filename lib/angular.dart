@@ -39,7 +39,7 @@ import 'package:di/dynamic_injector.dart';
     'angular.core.parser.lexer',
     'perf_api',
     'List',
-    'NodeTreeSanitizer',
+    'dart.dom.html.NodeTreeSanitizer',
 ],
 metaTargets: const[
   'NgInjectableService',

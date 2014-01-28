@@ -43,8 +43,7 @@ class NoServerController implements ServerController {
 
 
 @NgDirective(
-  selector: '[todo-controller]',
-  publishAs: 'todo'
+  selector: '[todo-controller]'
 )
 class TodoController {
   List<Item> items;
