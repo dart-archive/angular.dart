@@ -77,7 +77,6 @@ abstract class AnnotationsMap<K> {
 
 @NgInjectableService()
 class MetadataExtractor {
-
   Iterable call(Type type) {
     var metadata = reflectClass(type).metadata;
     if (metadata == null) return [];

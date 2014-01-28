@@ -16,7 +16,7 @@ packages:
   collection:
     description: collection
     source: hosted
-    version: "0.9.0"
+    version: "0.9.1"
   di:
     description: di
     source: hosted
