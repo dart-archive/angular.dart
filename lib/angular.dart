@@ -27,7 +27,7 @@ import 'package:di/dynamic_injector.dart';
  * This is a short-term fix until we implement a transformer-based solution
  * which does not rely on mirrors.
  */
-@MirrorsUsed(targets: const[
+@MirrorsUsed(targets: const [
     'angular',
     'angular.core',
     'angular.core.dom',
@@ -38,16 +38,16 @@ import 'package:di/dynamic_injector.dart';
     'angular.core.parser.dynamic_parser',
     'angular.core.parser.lexer',
     'perf_api',
-    'List',
-    'dart.dom.html.NodeTreeSanitizer',
+    List,
+    dom.NodeTreeSanitizer,
 ],
-metaTargets: const[
-  'NgInjectableService',
-  'NgDirective',
-  'NgController',
-  'NgComponent'
+metaTargets: const [
+    NgInjectableService,
+    NgDirective,
+    NgController,
+    NgComponent
 ])
-import 'dart:mirrors';
+import 'dart:mirrors' show MirrorsUsed;
 
 import 'package:angular/core/module.dart';
 import 'package:angular/core_dom/module.dart';

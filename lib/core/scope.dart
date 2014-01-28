@@ -774,8 +774,8 @@ class Scope implements Map {
    * Registers a scope-based event listener to intercept events triggered by
    * [$broadcast] (from any parent scopes) or [$emit] (from child scopes) that
    * match the given event name. $on accepts two arguments:
-   * 
-   * * [name] - Refers to the event name that the scope will listen on. 
+   *
+   * * [name] - Refers to the event name that the scope will listen on.
    * * [listener] - Refers to the callback function which is executed when the event
    *   is intercepted.
    *
@@ -808,7 +808,7 @@ class Scope implements Map {
    *
    * * [name] - The scope event name that will be triggered.
    * * [args] - An optional list of arguments that will be fed into the listener callback function
-   *   for any event listeners that are registered via [$on]. 
+   *   for any event listeners that are registered via [$on].
    */
   $emit(name, [List args]) {
     var empty = [],
@@ -852,7 +852,7 @@ class Scope implements Map {
    *
    * * [name] - The scope event name that will be triggered.
    * * [listenerArgs] - An optional list of arguments that will be fed into the listener callback function
-   *   for any event listeners that are registered via [$on]. 
+   *   for any event listeners that are registered via [$on].
    */
   $broadcast(String name, [List listenerArgs]) {
     var target = this,
@@ -1005,7 +1005,7 @@ _toJson(obj) {
   } catch(e) {
     var ret = "NOT-JSONABLE";
     // Keep prod fast.
-    assert((() {
+    assert(() {
       var mirror = reflect(obj);
       if (mirror is ClosureMirror) {
         // work-around dartbug.com/14130
@@ -1016,7 +1016,7 @@ _toJson(obj) {
         }
       }
       return true;
-    })());
+    });
     return ret;
   }
 }
