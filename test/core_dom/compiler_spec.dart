@@ -423,21 +423,21 @@ main() => describe('dte.compiler', () {
         it('should fire onTemplate method', async(inject((Logger logger, MockHttpBackend backend) {
           backend.whenGET('some/template.url').respond('<div>WORKED</div>');
           var scope = $rootScope.$new();
-          var element = $('<attach-detach></attach-detach>');
+          var element = $('<attach-detach value="{{\'ready\'}}"></attach-detach>');
           $compile(element)(injector.createChild([new Module()..value(Scope, scope)]), element);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
 
           $rootScope.$digest();
-          expect(logger).toEqual(['new', 'attach']);
+          expect(logger).toEqual(['new', 'attach:ready']);
 
           backend.flush();
           microLeap();
-          expect(logger).toEqual(['new', 'attach', 'templateLoaded', scope.shadowRoot]);
+          expect(logger).toEqual(['new', 'attach:ready', 'templateLoaded', scope.shadowRoot]);
 
           scope.$destroy();
-          expect(logger).toEqual(['new', 'attach', 'templateLoaded', scope.shadowRoot, 'detach']);
+          expect(logger).toEqual(['new', 'attach:ready', 'templateLoaded', scope.shadowRoot, 'detach']);
           expect(element.textWithShadow()).toEqual('WORKED');
         })));
       });
@@ -713,18 +713,20 @@ class LogComponent {
 
 @NgComponent(
     selector: 'attach-detach',
-    templateUrl: 'some/template.url'
+    templateUrl: 'some/template.url',
+    map: const { 'value': '@value' }
 )
 class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRootAware {
   Logger logger;
   Scope scope;
+  String value = 'too early';
 
   AttachDetachComponent(Logger this.logger, TemplateLoader templateLoader, Scope this.scope) {
     logger('new');
     templateLoader.template.then((_) => logger('templateLoaded'));
   }
 
-  attach() => logger('attach');
+  attach() => logger('attach:$value');
   detach() => logger('detach');
   onShadowRoot(shadowRoot) {
     scope.$root.shadowRoot = shadowRoot;
