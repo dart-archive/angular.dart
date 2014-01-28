@@ -191,8 +191,10 @@ class BlockFactory {
         probe.directives.add(controller);
         assert((linkMapTimer = _perf.startTimer('ng.block.link.map', ref.type)) != false);
         var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
-        if (ref.annotation.publishAs != null) {
-          (shadowScope == null ? scope : shadowScope)[ref.annotation.publishAs] = controller;
+        if (ref.annotation is NgController) {
+          scope[(ref.annotation as NgController).publishAs] = controller;
+        } else if (ref.annotation is NgComponent) {
+          shadowScope[(ref.annotation as NgComponent).publishAs] = controller;
         }
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
         for(var map in ref.mappings) {

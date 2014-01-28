@@ -691,7 +691,7 @@ class PublishMeComponent {
 }
 
 
-@NgDirective (
+@NgController (
     selector: '[publish-me]',
     publishAs: 'ctrlName'
 )
