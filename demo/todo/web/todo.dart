@@ -42,7 +42,7 @@ class NoServerController implements ServerController {
 }
 
 
-@NgDirective(
+@NgController(
   selector: '[todo-controller]',
   publishAs: 'todo'
 )
