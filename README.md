@@ -5,7 +5,7 @@ A port of [Angular][ng] to [Dart][dart].
 
 ## Installing
 
-Follow the instructions on [angular.dart's page on pub][pub].
+Follow the instructions on [AngularDart's page on pub][pub].
 
 ## API Documentation
 
@@ -14,12 +14,12 @@ Follow the instructions on [angular.dart's page on pub][pub].
 
 ## Learning more
 
-Study the [Angular.dart Tutorial][tut] to learn more about Angular
+Study the [AngularDart Tutorial][tut] to learn more about Angular
 in Dart.
 
 ## Joining the discussion
 
-Discuss angular.dart on the [mailing list][list],
+Discuss AngularDart on the [mailing list][list],
 ask questions on [StackOverflow][so],
 follow [+Angular on Google+][plus],
 and follow [@AngularDart][dartTw] and [@AngularJS][ngTw] on Twitter.
