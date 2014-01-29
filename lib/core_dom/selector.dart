@@ -254,6 +254,11 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
         String nodeName = element.tagName.toLowerCase();
         Map<String, String> attrs = {};
 
+        // Set default attribute
+        if (nodeName == 'input' && !element.attributes.containsKey('type')) {
+          element.attributes['type'] = 'text';
+        }
+
         // Select node
         partialSelection = elementSelector.selectNode(directiveRefs, partialSelection, element, nodeName);
 
