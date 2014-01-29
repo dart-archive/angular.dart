@@ -321,6 +321,89 @@ describe('ng-model', () {
       input.processValue();
       expect(_.rootScope.model).toEqual('def');
     }));
+
+    it("should update model on html with contenteditable=inherited", inject((){
+      _.compile('<div contenteditable><p ng-model="model" contenteditable="inherited" probe="pi"></p></div>');
+      _.rootScope.$digest();
+      Probe probe = _.rootScope.pi;
+      var ngModel = probe.directive(NgModel);
+      Element element = probe.element;
+
+      element.setInnerHtml("Should update model");
+      _.triggerEvent(element, "change");
+      expect(_.rootScope['model']).toEqual("Should update model");
+      element.innerHtml = "def";
+      var editable = probe.directive(ContentEditableDirective);
+      editable.processValue();
+      expect(_.rootScope['model']).toEqual("def");
+
+    }));
+
+    it("should update model on html with contenteditable=true", inject((){
+      _.compile('<div><p ng-model="model" contenteditable="true" probe="pi"></p></div>');
+      _.rootScope.$digest();
+      Probe probe = _.rootScope.pi;
+      var ngModel = probe.directive(NgModel);
+      Element element = probe.element;
+
+      element.setInnerHtml("Should update model");
+      _.triggerEvent(element, "change");
+      expect(_.rootScope['model']).toEqual("Should update model");
+      element.innerHtml = "def";
+      var editable = probe.directive(ContentEditableDirective);
+      editable.processValue();
+      expect(_.rootScope['model']).toEqual("def");
+
+    }));
+
+    it("should update paragraph with contenteditable='inherit' innertHtml on model update", inject((){
+      _.compile('<div contenteditable><p ng-model="model" contenteditable="inherit" probe="pi"></p></div>');
+      _.rootScope.$digest();
+
+      _.rootScope.$apply('model = "Content"');
+
+      expect((_.rootElement as dom.DivElement).query("p").innerHtml).toEqual('Content');
+
+
+    }));
+
+   /**
+    * Because a contenteditable=inherit depends on the parent to be or not to be editable
+    */
+    it("should NOT update paragraph on html edited", inject((){
+      _.compile('<div contenteditable="false"><p ng-model="model" contenteditable="inherit" probe="pi"></p></div>');
+      _.rootScope.$digest();
+
+      Probe probe = _.rootScope.pi;
+      var ngModel = probe.directive(NgModel);
+      Element element = probe.element;
+
+      element.setInnerHtml("Should not update model");
+      var editable = probe.directive(ContentEditableDirective);
+      editable.processValue();
+      expect(_.rootScope['model']).toEqual(null);
+
+    }));
+
+    it("should NOT update paragraph without contenteditable on model update", inject((){
+      _.compile('<div><p ng-model="model" probe="pi"></p></div>');
+      _.rootScope.$digest();
+
+      _.rootScope.$apply('model = "Content"');
+
+      expect((_.rootElement as dom.DivElement).query("p").innerHtml).toEqual('');
+
+    }));
+
+    /**
+     * If this test don't pass, several contentEditable test will fail
+     */
+    it("should the context contenteditable be truthy", inject((){
+      _.compile("<p contenteditable probe='p'></p>");
+      _.rootScope.$digest();
+      Element element = _.rootScope.p.element;
+      expect(element.isContentEditable).toBeTruthy();
+    }));
   });
 
   describe('pristine / dirty', () {

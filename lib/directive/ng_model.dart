@@ -308,4 +308,14 @@ class ContentEditableDirective extends InputTextLikeDirective {
   // The implementation is identical to InputTextLikeDirective but use innerHtml instead of value
   get typedValue => (inputElement as dynamic).innerHtml;
   set typedValue(String value) => (inputElement as dynamic).innerHtml = (value == null) ? '' : value;
+
+  /**
+   * Only update the model if the element isContentEditable
+   */
+  @override
+  processValue() {
+    if(inputElement.isContentEditable){
+      super.processValue();
+    }
+  }
 }
