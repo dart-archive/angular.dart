@@ -3,26 +3,28 @@ part of angular.directive;
 typedef dynamic ItemEval(dynamic item, num index);
 
 /**
- * HTML [SELECT] element with angular data-binding if used with [NgModelDirective].
+ * HTML [SELECT] element with angular data-binding if used with
+ * [NgModelDirective].
  *
- * The [NgModelDirective] will receive the currently selected item. The binding is
- * performed on the [OPTION].[value] property.
- * An empty [OPTION].[value] is treated as null.
+ * The [NgModelDirective] will receive the currently selected item. The binding
+ * is performed on the [OPTION].[value] property. An empty [OPTION].[value] is
+ * treated as null.
  *
  * If you the model contains value which does not map to any [OPTION] then a new
- * unknown [OPTION] is inserted into the list. Once the model points to an existing
- * [OPTION] the unknown [OPTION] is removed.
+ * unknown [OPTION] is inserted into the list. Once the model points to an
+ * existing [OPTION] the unknown [OPTION] is removed.
  *
- * Becouse [OPTION].[value] attribute is a string, the model is bound to a string.
- * If there is need to bind to an object then [OptionValueDirective] should be used.
+ * Becouse [OPTION].[value] attribute is a string, the model is bound to a
+ * string. If there is need to bind to an object then [OptionValueDirective]
+ * should be used.
  *
  */
 @NgDirective(
     selector: 'select[ng-model]',
-    visibility: NgDirective.CHILDREN_VISIBILITY
-)
+    visibility: NgDirective.CHILDREN_VISIBILITY)
 class InputSelectDirective implements NgAttachAware {
-  final Expando<OptionValueDirective> expando = new Expando<OptionValueDirective>();
+  final Expando<OptionValueDirective> expando =
+      new Expando<OptionValueDirective>();
   final dom.SelectElement _selectElement;
   final NodeAttrs _attrs;
   final NgModel _model;
@@ -34,7 +36,8 @@ class InputSelectDirective implements NgAttachAware {
   _SelectMode _mode = new _SelectMode(null, null, null);
   bool _dirty = false;
 
-  InputSelectDirective(dom.Element this._selectElement, this._attrs, this._model, this._scope) {
+  InputSelectDirective(dom.Element this._selectElement, this._attrs, this._model,
+                       this._scope) {
     _unknownOption.value = '?';
     _unknownOption.text = ''; // Explicit due to dartbug.com/14407
     _selectElement.querySelectorAll('option').forEach((o) {
@@ -62,8 +65,8 @@ class InputSelectDirective implements NgAttachAware {
   }
 
   /**
-   * This method invalidates the current state of the selector and forces a re-rendering of the
-   * options using the [Scope.$evalAsync].
+   * This method invalidates the current state of the selector and forces a
+   * re-rendering of the options using the [Scope.$evalAsync].
    */
   dirty() {
     if (!_dirty) {
@@ -77,16 +80,16 @@ class InputSelectDirective implements NgAttachAware {
 }
 
 /**
- * Since the [value] attirbute of the [OPTION] can only be a string, Angular provides
- * [ng-value] which allows binding to any expression.
+ * Since the [value] attirbute of the [OPTION] can only be a string, Angular
+ * provides [ng-value] which allows binding to any expression.
  *
  */
 @NgDirective(
     selector: 'option',
     publishTypes: const [TextChangeListener],
-    map: const {'ng-value': '&ngValue'}
-)
-class OptionValueDirective implements TextChangeListener, NgAttachAware, NgDetachAware {
+    map: const {'ng-value': '&ngValue'})
+class OptionValueDirective implements TextChangeListener, NgAttachAware,
+    NgDetachAware {
   final InputSelectDirective _inputSelectDirective;
   final NodeAttrs _attrs;
 
@@ -118,8 +121,9 @@ class OptionValueDirective implements TextChangeListener, NgAttachAware, NgDetac
   }
 
   set ngValue(Getter value) => _ngValue = value;
-  get ngValue =>
-    _attrs['ng-value'] is String ? _ngValue() : (_attrs.element as dom.OptionElement).value;
+  get ngValue => _attrs['ng-value'] is String ?
+        _ngValue() :
+        (_attrs.element as dom.OptionElement).value;
 }
 
 class _SelectMode {
@@ -137,9 +141,7 @@ class _SelectMode {
   _forEachOption(fn, [quiteOnReturn = false]) {
     for(var os = _options, i = 0, ii = os.length; i < ii; i++) {
       var retValue = fn(os[i], i);
-      if (quiteOnReturn && retValue != null) {
-        return retValue;
-      }
+      if (quiteOnReturn && retValue != null) return retValue;
     }
     return null;
   }
@@ -165,9 +167,7 @@ class _SingleSelectMode extends _SelectMode {
       if (option.selected) {
         return option == _nullOption ? null : expando[option].ngValue;
       }
-      if (option != _unknownOption && option != _nullOption) {
-        i++;
-      }
+      if (option != _unknownOption && option != _nullOption) i++;
     }, true);
   }
 
@@ -211,9 +211,7 @@ class _MultipleSelectionMode extends _SelectMode {
     var selected = [];
 
     _forEachOption((o, i) {
-      if (o.selected) {
-        selected.add(expando[o].ngValue);
-      }
+      if (o.selected) selected.add(expando[o].ngValue);
     });
     model.viewValue = selected;
   }

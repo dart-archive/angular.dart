@@ -164,8 +164,8 @@ abstract class NgAnnotation {
  * ask for any injectable object in their constructor. Components
  * can also ask for other components or directives declared on the DOM element.
  *
- * Components can implement [NgAttachAware], [NgDetachAware], [NgShadowRootAware] and
- * declare these optional methods:
+ * Components can implement [NgAttachAware], [NgDetachAware],
+ * [NgShadowRootAware] and declare these optional methods:
  *
  * * `attach()` - Called on first [Scope.$digest()].
  * * `detach()` - Called on when owning scope is destroyed.
@@ -213,9 +213,9 @@ class NgComponent extends NgAnnotation {
   final bool resetStyleInheritance;
 
   /**
-   * An expression under which the component's controller instance will be published into.
-   * This allows the expressions in the template to be referring to controller
-   * instance and its properties.
+   * An expression under which the component's controller instance will be
+   * published into. This allows the expressions in the template to be referring
+   * to controller instance and its properties.
    */
   final String publishAs;
 

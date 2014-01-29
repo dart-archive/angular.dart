@@ -16,8 +16,9 @@ part of angular.directive;
  * attribute set on it, the `ng-bind` directive and the interpolation for
  * `{{b}}` are not processed because Angular will not process the `span` child
  * element.  However, the `foo` attribute *will* be interpolated because it is
- * not on a child node. 
+ * not on a child node.
  */
-@NgDirective(selector: '[ng-non-bindable]',
-             children: NgAnnotation.IGNORE_CHILDREN)
+@NgDirective(
+    selector: '[ng-non-bindable]',
+    children: NgAnnotation.IGNORE_CHILDREN)
 class NgNonBindableDirective {}
