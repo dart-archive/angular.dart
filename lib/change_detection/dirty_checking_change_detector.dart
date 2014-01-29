@@ -679,7 +679,7 @@ class _CollectionChangeRecord<K, V> implements CollectionChangeRecord<K, V> {
 
     if (prev == null) {
       _collectionHead = next;
-    }  else {
+    } else {
       prev._nextRec = next;
     }
     if (next == null) {

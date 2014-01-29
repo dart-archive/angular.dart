@@ -10,8 +10,7 @@ part of angular.directive;
  * knows how to (in)validate the model and the form in which it is declared
  * (to be implemented)
  */
-@NgDirective(
-    selector: '[ng-model]')
+@NgDirective(selector: '[ng-model]')
 class NgModel extends NgControl {
   final NgForm _form;
   final dom.Element _element;
@@ -31,7 +30,8 @@ class NgModel extends NgControl {
 
   Function render = (value) => null;
 
-  NgModel(this._scope, NodeAttrs attrs, [dom.Element this._element, NgForm this._form]) {
+  NgModel(this._scope, NodeAttrs attrs, [dom.Element this._element,
+      NgForm this._form]) {
     _exp = 'ng-model=${attrs["ng-model"]}';
     watchCollection = false;
 
@@ -80,7 +80,7 @@ class NgModel extends NgControl {
    * Executes a validation on the form against each of the validation present on the model.
    */
   validate() {
-    if(validators.length > 0) {
+    if(validators.isNotEmpty) {
       validators.forEach((validator) {
         setValidity(validator.name, validator.isValid());
       });
@@ -145,21 +145,22 @@ class NgModel extends NgControl {
  *
  *     <input type="checkbox" ng-model="flag">
  *
- * This creates a two way databinding between the boolean expression specified in
- * ng-model and the checkbox input element in the DOM.  If the ng-model value is
- * falsy (i.e. one of `false`, `null`, and `0`), then the checkbox is unchecked.
- * Otherwise, it is checked.  Likewise, when the checkbox is checked, the model
- * value is set to true.  When unchecked, it is set to false.
+ * This creates a two way databinding between the boolean expression specified
+ * in ng-model and the checkbox input element in the DOM.  If the ng-model value
+ * is falsy (i.e. one of `false`, `null`, and `0`), then the checkbox is
+ * unchecked. Otherwise, it is checked.  Likewise, when the checkbox is checked,
+ * the model value is set to true.  When unchecked, it is set to false.
  *
  * The AngularJS style ng-true-value / ng-false-value is not supported.
  */
 @NgDirective(selector: 'input[type=checkbox][ng-model]')
 class InputCheckboxDirective {
-  dom.InputElement inputElement;
-  NgModel ngModel;
-  Scope scope;
+  final dom.InputElement inputElement;
+  final NgModel ngModel;
+  final Scope scope;
 
-  InputCheckboxDirective(dom.Element this.inputElement, this.ngModel, this.scope) {
+  InputCheckboxDirective(dom.Element this.inputElement, this.ngModel,
+                         this.scope) {
     ngModel.render = (value) {
       inputElement.checked = value == null ? false : toBool(value);
     };
@@ -189,28 +190,32 @@ class InputCheckboxDirective {
 @NgDirective(selector: 'input[type=email][ng-model]')
 @NgDirective(selector: 'input[type=number][ng-model]')
 class InputTextLikeDirective {
-  dom.Element inputElement;
-  NgModel ngModel;
-  Scope scope;
+  final dom.Element inputElement;
+  final NgModel ngModel;
+  final Scope scope;
   String _inputType;
 
   get typedValue => (inputElement as dynamic).value;
-  set typedValue(value) => (inputElement as dynamic).value = (value == null) ? '' : value.toString();
+  set typedValue(value) => (inputElement as dynamic).value = (value == null) ?
+      '' :
+      value.toString();
 
-  InputTextLikeDirective(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope) {
+  InputTextLikeDirective(this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
       if (value == null) value = '';
 
       var currentValue = typedValue;
-      if (value != currentValue && !(value is num && currentValue is num && value.isNaN && currentValue.isNaN)) {
+      if (value != currentValue && !(value is num && currentValue is num &&
+          value.isNaN && currentValue.isNaN)) {
         typedValue =  value;
       }
     };
-    inputElement.onChange.listen(relaxFnArgs(processValue));
-    inputElement.onKeyDown.listen((e) {
-      new async.Timer(Duration.ZERO, processValue);
-      scope.$skipAutoDigest();
-    });
+    inputElement
+        ..onChange.listen(relaxFnArgs(processValue))
+        ..onKeyDown.listen((e) {
+          new async.Timer(Duration.ZERO, processValue);
+          scope.$skipAutoDigest();
+        });
   }
 
   processValue() {
@@ -230,7 +235,7 @@ class _UidCounter {
   List charCodes = [CHAR_0, CHAR_0, CHAR_0];
 
   String next() {
-    for (int i = charCodes.length-1; i >= 0; i--) {
+    for (int i = charCodes.length - 1; i >= 0; i--) {
       int code = charCodes[i];
       if (code == CHAR_9) {
         charCodes[i] = CHAR_A;
@@ -268,9 +273,9 @@ final _uidCounter = new _UidCounter();
  */
 @NgDirective(selector: 'input[type=radio][ng-model]')
 class InputRadioDirective {
-  dom.RadioButtonInputElement radioButtonElement;
-  NgModel ngModel;
-  Scope scope;
+  final dom.RadioButtonInputElement radioButtonElement;
+  final NgModel ngModel;
+  final Scope scope;
 
   InputRadioDirective(dom.Element this.radioButtonElement, this.ngModel,
                       this.scope, NodeAttrs attrs) {
@@ -302,10 +307,12 @@ class InputRadioDirective {
  */
 @NgDirective(selector: '[contenteditable][ng-model]')
 class ContentEditableDirective extends InputTextLikeDirective {
-  ContentEditableDirective(dom.Element inputElement, NgModel ngModel, Scope scope):
-      super(inputElement, ngModel, scope);
+  ContentEditableDirective(dom.Element inputElement, NgModel ngModel,
+                           Scope scope)
+      : super(inputElement, ngModel, scope);
 
   // The implementation is identical to InputTextLikeDirective but use innerHtml instead of value
   get typedValue => (inputElement as dynamic).innerHtml;
-  set typedValue(String value) => (inputElement as dynamic).innerHtml = (value == null) ? '' : value;
+  set typedValue(String value) =>
+      (inputElement as dynamic).innerHtml = (value == null) ? '' : value;
 }

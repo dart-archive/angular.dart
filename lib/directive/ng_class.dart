@@ -166,8 +166,7 @@ abstract class _NgClassBase {
 
   _handleChange(index) {
     if (mode == null || (index != null && index % 2 == mode)) {
-      element.classes.removeAll(previousSet);
-      element.classes.addAll(currentSet);
+      element.classes..removeAll(previousSet)..addAll(currentSet);
     }
 
     previousSet = currentSet;
@@ -175,15 +174,11 @@ abstract class _NgClassBase {
 
   static List<String> _flatten(classes) {
     if (classes == null) return [];
-    if (classes is List) {
-      return classes;
-    }
+    if (classes is List) return classes;
     if (classes is Map) {
       return classes.keys.where((key) => toBool(classes[key])).toList();
     }
-    if (classes is String) {
-      return classes.split(' ');
-    }
+    if (classes is String) return classes.split(' ');
     throw 'ng-class expects expression value to be List, Map or String.';
   }
 }

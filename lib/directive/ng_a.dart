@@ -15,9 +15,9 @@ part of angular.directive;
  */
 @NgDirective(selector: 'a[href]')
 class NgADirective {
-  dom.Element element;
+  final dom.Element element;
 
-  NgADirective(dom.Element element) {
+  NgADirective(this.element) {
     if (element.attributes["href"] == "") {
       element.onClick.listen((event) {
         if (element.attributes["href"] == "") {

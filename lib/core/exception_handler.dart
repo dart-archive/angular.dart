@@ -17,7 +17,7 @@ class ExceptionHandler {
   * - [stack] The stacktrace.
   * - [reason] Optional contextual information for the error.
   */
-  call(dynamic error, dynamic stack, [String reason = '']){
+  call(dynamic error, dynamic stack, [String reason = '']) {
     print("$error\n$reason\nSTACKTRACE:\n$stack");
   }
 }
