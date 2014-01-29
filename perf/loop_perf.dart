@@ -1,8 +1,10 @@
+library loop_perf;
+
 import 'package:benchmark_harness/benchmark_harness.dart';
 
 class IterationBenchmark extends BenchmarkBase {
   List<int> list = new List.generate(1000, (i) => i);
-  List<int> map;
+  Map map;
   var r = 0;
   IterationBenchmark(name) : super(name) {
     map = new Map.fromIterable(list, key: (i) => i, value: (i) => i);

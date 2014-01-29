@@ -16,16 +16,16 @@ createInjector() {
 
 var reactionFn = (_, __, ___) => null;
 main() {
-  fieldRead();
-  mapRead();
-  methodInvoke0();
-  methodInvoke1();
-  function2();
+  _fieldRead();
+  _mapRead();
+  _methodInvoke0();
+  _methodInvoke1();
+  _function2();
 }
 
-fieldRead() {
+_fieldRead() {
   var injector = createInjector();
-  var obj = new Obj();
+  var obj = new _Obj();
   var scope = injector.get(Scope);
   var parser = injector.get(Parser);
   var parse = (exp) {
@@ -57,14 +57,14 @@ fieldRead() {
   time('fieldRead', () => scope.$digest());
 }
 
-mapRead() {
+_mapRead() {
   var map = {
       'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4,
       'f': 0, 'g': 1, 'h': 2, 'i': 3, 'j': 4,
       'k': 0, 'l': 1, 'm': 2, 'n': 3, 'o': 4,
       'p': 0, 'q': 1, 'r': 2, 's': 3, 't': 4};
   var injector = createInjector();
-  var obj = new Obj();
+  var obj = new _Obj();
   var scope = injector.get(Scope);
   map.forEach((k, v) => scope[k] = v);
 
@@ -92,10 +92,10 @@ mapRead() {
   time('mapRead', () => scope.$digest());
 }
 
-methodInvoke0() {
-  var context = new Obj();
+_methodInvoke0() {
+  var context = new _Obj();
   var injector = createInjector();
-  var obj = new Obj();
+  var obj = new _Obj();
   var scope = injector.get(Scope);
   scope.a = context;
   scope.$watch('a.methodA()', reactionFn);
@@ -122,10 +122,10 @@ methodInvoke0() {
   time('obj.method?()', () => scope.$digest());
 }
 
-methodInvoke1() {
-  var context = new Obj();
+_methodInvoke1() {
+  var context = new _Obj();
   var injector = createInjector();
-  var obj = new Obj();
+  var obj = new _Obj();
   var scope = injector.get(Scope);
   scope.a = context;
   scope.$watch('a.methodA(a)', reactionFn);
@@ -152,9 +152,9 @@ methodInvoke1() {
   time('obj.method?(obj)', () => scope.$digest());
 }
 
-function2() {
+_function2() {
   var injector = createInjector();
-  var obj = new Obj();
+  var obj = new _Obj();
   obj.a = 1;
   var scope = injector.get(Scope);
   var parser = injector.get(Parser);
@@ -188,25 +188,7 @@ function2() {
   time('add?(a, a)', () => scope.$digest());
 }
 
-AST add(id, lhs, rhs) {
-  return new PureFunctionAST('add$id', (a, b) => a + b, [lhs, rhs]);
-}
-
-AST method(lhs, methodName, [args]) {
-  if (args == null) args = [];
-  return new MethodAST(parse(lhs), methodName, args);
-}
-
-AST parse(String expression) {
-  var currentAST = new ContextReferenceAST();
-  expression.split('.').forEach((name) {
-    currentAST = new FieldReadAST(currentAST, name);
-  });
-  return currentAST;
-}
-
-
-class Obj {
+class _Obj {
   var a = 1;
   var b = 2;
   var c = 3;

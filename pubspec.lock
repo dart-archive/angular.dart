@@ -9,6 +9,10 @@ packages:
     description: args
     source: hosted
     version: "0.9.0"
+  benchmark_harness:
+    description: benchmark_harness
+    source: hosted
+    version: "1.0.3"
   browser:
     description: browser
     source: hosted

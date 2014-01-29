@@ -5,20 +5,21 @@ import 'dart:mirrors';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 
 main() {
-  var c = new Obj(1);
+  var c = new _Obj(1);
   InstanceMirror im = reflect(c);
   Symbol symbol = new Symbol('a');
-  Watch head = new Watch();
-  Watch current = head;
-  var detector = new DirtyCheckingChangeDetector<String>();
+  _Watch head = new _Watch();
+  _Watch current = head;
+  GetterCache getterCache = new GetterCache({});
+  var detector = new DirtyCheckingChangeDetector<String>(getterCache);
   for(var i=1; i < 10000; i++) {
-    Watch next = new Watch();
-    current = (current.next = new Watch());
+    _Watch next = new _Watch();
+    current = (current.next = new _Watch());
     detector.watch(c, 'a', '');
   }
 
   var dirtyCheck = () {
-    Watch current = head;
+    _Watch current = head;
     while(current != null) {
       if (!identical(current.lastValue, current.im.getField(current.symbol).reflectee)) {
         throw "We should not get here";
@@ -28,7 +29,7 @@ main() {
   };
 
   var dirtyCheckFn = () {
-    Watch current = head;
+    _Watch current = head;
     while(current != null) {
       if (!identical(current.lastValue, current.getter(current.object))) {
         throw "We should not get here";
@@ -43,22 +44,22 @@ main() {
   time('ChangeDetection', detector.collectChanges);
 }
 
-class Watch {
+class _Watch {
   dynamic lastValue = 1;
-  Watch next;
+  _Watch next;
   String location;
-  dynamic object = new Obj(1);
+  dynamic object = new _Obj(1);
   InstanceMirror im;
   Symbol symbol = new Symbol('a');
   Function getter = (s) => s.a;
 
-  Watch() {
+  _Watch() {
     im = reflect(object);
   }
 }
 
-class Obj {
+class _Obj {
   var a;
 
-  Obj(this.a);
+  _Obj(this.a);
 }
