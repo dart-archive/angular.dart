@@ -30,8 +30,7 @@ class NumberFilter {
     if (value.isNaN) return '';
     var nf = nfs[fractionSize];
     if (nf == null) {
-      nf = new NumberFormat();
-      nf.maximumIntegerDigits = 9;
+      nf = new NumberFormat()..maximumIntegerDigits = 9;
       if (fractionSize != null) {
         nf.minimumFractionDigits = fractionSize;
         nf.maximumFractionDigits = fractionSize;

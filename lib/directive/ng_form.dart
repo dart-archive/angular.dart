@@ -22,15 +22,17 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
   final dom.Element _element;
   final Scope _scope;
 
-  final Map<String, List<NgControl>> currentErrors = new Map<String, List<NgControl>>();
+  final Map<String, List<NgControl>> currentErrors =
+      new Map<String, List<NgControl>>();
 
   final List<NgControl> _controls = new List<NgControl>();
   final Map<String, NgControl> _controlByName = new Map<String, NgControl>();
 
   /**
-   * Instantiates a new instance of NgForm. Upon creation, the instance of the class will
-   * be bound to the formName property on the scope (where formName refers to the name
-   * value acquired from the name attribute present on the form DOM element).
+   * Instantiates a new instance of NgForm. Upon creation, the instance of the
+   * class will be bound to the formName property on the scope (where formName
+   * refers to the name value acquired from the name attribute present on the
+   * form DOM element).
    *
    * * [scope] - The scope to bind the form instance to.
    * * [element] - The form DOM element.
@@ -39,13 +41,13 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
   NgForm(this._scope, dom.Element this._element, Injector injector):
     _parentForm = injector.parent.get(NgForm)
   {
-    if(!this._element.attributes.containsKey('action')) {
-      this._element.onSubmit.listen((event) {
+    if(!_element.attributes.containsKey('action')) {
+      _element.onSubmit.listen((event) {
         event.preventDefault();
       });
     }
 
-    this.pristine = true;
+    pristine = true;
   }
 
   detach() {
@@ -71,8 +73,10 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
    * or more of them is invalid.
    *
    * * [control] - The registered control object (see [ngControl]).
-   * * [errorType] - The error associated with the control (e.g. required, url, number, etc...).
-   * * [isValid] - Whether or not the given error is valid or not (false would mean the error is real).
+   * * [errorType] - The error associated with the control (e.g. required, url,
+   * number, etc...).
+   * * [isValid] - Whether the given error is valid or not (false would mean the
+   * error is real).
    */
   setValidity(NgControl control, String errorType, bool isValid) {
     List queue = currentErrors[errorType];
@@ -82,9 +86,7 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
         queue.remove(control);
         if(queue.isEmpty) {
           currentErrors.remove(errorType);
-          if(currentErrors.isEmpty) {
-            valid = true;
-          }
+          if(currentErrors.isEmpty) valid = true;
           _parentForm.setValidity(this, errorType, true);
         }
       }
@@ -93,9 +95,7 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
         queue = new List<NgControl>();
         currentErrors[errorType] = queue;
         _parentForm.setValidity(this, errorType, false);
-      } else if(queue.contains(control)) {
-        return;
-      }
+      } else if(queue.contains(control)) return;
 
       queue.add(control);
       invalid = true;
@@ -103,11 +103,11 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
   }
 
   //FIXME: fix this reflection bug that shows up when Map is implemented
-  operator []=(String name, value) {
-    if(name == 'name'){
-      this.name = value;
+  operator []=(String key, value) {
+    if(key == 'name'){
+      name = value;
     } else {
-      _controlByName[name] = value;
+      _controlByName[key] = value;
     }
   }
 
@@ -135,9 +135,11 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
   }
 
   /**
-   * De-registers a form control from the list of controls associated with the form.
+   * De-registers a form control from the list of controls associated with the
+   * form.
    *
-   * * [control] - The form control which will be de-registered (see [ngControl]).
+   * * [control] - The form control which will be de-registered (see
+   * [ngControl]).
    */
   removeControl(NgControl control) {
     _controls.remove(control);
@@ -188,7 +190,7 @@ class NgNullForm implements NgForm {
   set invalid(value) {}
 
   bool get isEmpty => false;
-  bool get isNotEmpty => !isEmpty;
+  bool get isNotEmpty => true;
   get values => null;
   get keys => null;
   get length => null;

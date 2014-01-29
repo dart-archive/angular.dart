@@ -22,7 +22,6 @@ part of angular.filter;
  */
 @NgFilter(name:'date')
 class DateFilter {
-
   static Map<String, String> MAP = {
     'medium':     'MMM d, y h:mm:ss a',
     'short':      'M/d/yy h:mm a',
@@ -52,7 +51,7 @@ class DateFilter {
     if (date == '' || date == null) return date;
     if (date is String) date = DateTime.parse(date);
     if (date is num) date = new DateTime.fromMillisecondsSinceEpoch(date);
-    if (!(date is DateTime)) return date;
+    if (date is! DateTime) return date;
     var nf = nfs[format];
     if (nf == null) {
       if (MAP.containsKey(format)) {

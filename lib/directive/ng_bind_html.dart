@@ -22,7 +22,7 @@ class NgBindHtmlDirective {
   // use an optionally loaded `$sanitize` service.
   static final dom.NodeValidator validator = new dom.NodeValidatorBuilder.common();
 
-  dom.Element element;
+  final dom.Element element;
 
   NgBindHtmlDirective(this.element);
 
@@ -31,6 +31,6 @@ class NgBindHtmlDirective {
    * expression is innerHTML'd according to the rules specified in this class'
    * documention.
    */
-  set value(value) => element.setInnerHtml((value == null ? '' : value.toString()),
+  set value(value) => element.setInnerHtml(value == null ? '' : value.toString(),
                                            validator: validator) ;
 }

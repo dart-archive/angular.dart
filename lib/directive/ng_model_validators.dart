@@ -12,7 +12,7 @@ abstract class _NgModelValidator {
   final Scope scope;
   bool _listening = false;
 
-  _NgModelValidator(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope);
+  _NgModelValidator(this.inputElement, this.ngModel, this.scope);
 
   /**
    * Registers the validator with to attached model.
@@ -46,16 +46,17 @@ abstract class _NgModelValidator {
  * Validates the model depending if required or ng-required is present on the element.
  */
 @NgDirective(selector: '[ng-model][required]')
-@NgDirective(selector: '[ng-model][ng-required]', map: const {'ng-required': '=>required'})
+@NgDirective(
+    selector: '[ng-model][ng-required]',
+    map: const {'ng-required': '=>required'})
 class NgModelRequiredValidator extends _NgModelValidator {
   bool _required;
   get name => 'required';
 
-  NgModelRequiredValidator(dom.Element inputElement, NgModel ngModel, Scope scope, NodeAttrs attrs):
+  NgModelRequiredValidator(dom.Element inputElement, NgModel ngModel,
+                           Scope scope, NodeAttrs attrs):
     super(inputElement, ngModel, scope) {
-      if(attrs['required'] != null) {
-        required = true;
-      }
+      if(attrs['required'] != null) required = true;
     }
 
   bool isValid() {
@@ -65,10 +66,8 @@ class NgModelRequiredValidator extends _NgModelValidator {
     if (value == null) return false;
     // Empty lists and/or strings are not valid.
     // NOTE: This is an excellent use case for structural typing.
-    //   We really want anything object that has a 'length' parameter.
-    if ((value is List || value is String) && value.length == 0) return false;
-    // Otherwise
-    return true;
+    //   We really want anything object that has a 'isEmpty' property.
+    return !((value is List || value is String) && value.isEmpty);
   }
 
   @NgAttr('required')
@@ -95,9 +94,8 @@ class NgModelUrlValidator extends _NgModelValidator {
       listen();
     }
 
-  bool isValid() {
-    return value == null || value.length == 0 || URL_REGEXP.hasMatch(value);
-  }
+  bool isValid() =>
+      value == null || value.isEmpty || URL_REGEXP.hasMatch(value);
 }
 
 /**
@@ -115,9 +113,8 @@ class NgModelEmailValidator extends _NgModelValidator {
       listen();
     }
 
-  bool isValid() {
-    return value == null || value.length == 0 || EMAIL_REGEXP.hasMatch(value);
-  }
+  bool isValid() =>
+      value == null || value.isEmpty || EMAIL_REGEXP.hasMatch(value);
 }
 
 /**
@@ -149,7 +146,9 @@ class NgModelNumberValidator extends _NgModelValidator {
  * HTML pattern or ng-pattern attributes present on the input element.
  */
 @NgDirective(selector: '[ng-model][pattern]')
-@NgDirective(selector: '[ng-model][ng-pattern]', map: const {'ng-pattern': '=>pattern'})
+@NgDirective(
+    selector: '[ng-model][ng-pattern]',
+    map: const {'ng-pattern': '=>pattern'})
 class NgModelPatternValidator extends _NgModelValidator {
   RegExp _pattern;
 
@@ -183,18 +182,21 @@ class NgModelPatternValidator extends _NgModelValidator {
 }
 
 /**
- * Validates the model to see if the length of its contents are greater than or equal to the minimum length
- * set in place by the HTML minlength or ng-minlength attributes present on the input element.
+ * Validates the model to see if the length of its contents are greater than or
+ * equal to the minimum length set in place by the HTML minlength or
+ * ng-minlength attributes present on the input element.
  */
 @NgDirective(selector: '[ng-model][minlength]')
-@NgDirective(selector: '[ng-model][ng-minlength]', map: const {'ng-minlength': '=>minlength'})
+@NgDirective(
+    selector: '[ng-model][ng-minlength]',
+    map: const {'ng-minlength': '=>minlength'})
 class NgModelMinLengthValidator extends _NgModelValidator {
   int _minlength;
 
   get name => 'minlength';
 
-  NgModelMinLengthValidator(dom.Element inputElement, NgModel ngModel, Scope scope):
-    super(inputElement, ngModel, scope) {
+  NgModelMinLengthValidator(dom.Element inputElement, NgModel ngModel,
+                            Scope scope) : super(inputElement, ngModel, scope) {
       listen();
     }
 
@@ -214,31 +216,30 @@ class NgModelMinLengthValidator extends _NgModelValidator {
 }
 
 /**
- * Validates the model to see if the length of its contents are less than or equal to the maximum length
- * set in place by the HTML maxlength or ng-maxlength attributes present on the input element.
+ * Validates the model to see if the length of its contents are less than or
+ * equal to the maximum length set in place by the HTML maxlength or
+ * ng-maxlength attributes present on the input element.
  */
 @NgDirective(selector: '[ng-model][maxlength]')
-@NgDirective(selector: '[ng-model][ng-maxlength]', map: const {'ng-maxlength': '=>maxlength'})
+@NgDirective(
+    selector: '[ng-model][ng-maxlength]',
+    map: const {'ng-maxlength': '=>maxlength'})
 class NgModelMaxLengthValidator extends _NgModelValidator {
   int _maxlength = 0;
 
   get name => 'maxlength';
 
-  NgModelMaxLengthValidator(dom.Element inputElement, NgModel ngModel, Scope scope):
-    super(inputElement, ngModel, scope) {
+  NgModelMaxLengthValidator(dom.Element inputElement, NgModel ngModel,
+                            Scope scope): super(inputElement, ngModel, scope) {
       listen();
     }
 
-  bool isValid() {
-    return _maxlength == 0 || (value == null ? 0 : value.length) <= _maxlength;
-  }
+  bool isValid() =>
+      _maxlength == 0 || (value == null ? 0 : value.length) <= _maxlength;
 
   @NgAttr('maxlength')
   get maxlength => _maxlength;
   set maxlength(value) {
-    int length = value == null ? 0 : int.parse(value.toString());
-    if(length != maxlength) {
-      _maxlength = length;
-    }
+    _maxlength = value == null ? 0 : int.parse(value.toString());
   }
 }

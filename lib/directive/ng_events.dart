@@ -131,6 +131,14 @@ part of angular.directive;
 @NgDirective(selector: '[ng-transitionend]',    map: const {'ng-transitionend':    '&onTransitionEnd'})
 
 class NgEventDirective {
+  // Is it better to use a map of listeners or have 29 properties on this
+  // object?  One would pretty much only assign to one or two of those
+  // properties.  I'm opting for the map since it's less boilerplate code.
+  var listeners = {};
+  final dom.Element element;
+  final Scope scope;
+
+  NgEventDirective(this.element, this.scope);
 
   // NOTE: Do not use the element.on['some_event'].listen(...) syntax.  Doing so
   //     has two downsides:
@@ -144,9 +152,7 @@ class NgEventDirective {
     int key = stream.hashCode;
     if (!listeners.containsKey(key)) {
       listeners[key] = handler;
-      stream.listen((event) => scope.$apply(() {
-        handler({r"$event": event});
-      }));
+      stream.listen((event) => scope.$apply(() {handler({r"$event": event});}));
     }
   }
 
@@ -201,13 +207,4 @@ class NgEventDirective {
   set onTouchMove(value)         => initListener(element.onTouchMove,        value);
   set onTouchStart(value)        => initListener(element.onTouchStart,       value);
   set onTransitionEnd(value)     => initListener(element.onTransitionEnd,    value);
-
-  // Is it better to use a map of listeners or have 29 properties on this
-  // object?  One would pretty much only assign to one or two of those
-  // properties.  I'm opting for the map since it's less boilerplate code.
-  var listeners = {};
-  dom.Element element;
-  Scope scope;
-
-  NgEventDirective(this.element, this.scope);
 }

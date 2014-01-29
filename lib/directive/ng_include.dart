@@ -17,13 +17,13 @@ part of angular.directive;
  */
 @NgDirective(
     selector: '[ng-include]',
-    map: const {'ng-include': '@url'} )
+    map: const {'ng-include': '@url'})
 class NgIncludeDirective {
 
-  dom.Element element;
-  Scope scope;
-  BlockCache blockCache;
-  Injector injector;
+  final dom.Element element;
+  final Scope scope;
+  final BlockCache blockCache;
+  final Injector injector;
 
   Block _previousBlock;
   Scope _previousScope;
@@ -31,9 +31,7 @@ class NgIncludeDirective {
   NgIncludeDirective(this.element, this.scope, this.blockCache, this.injector);
 
   _cleanUp() {
-    if (_previousBlock == null) {
-      return;
-    }
+    if (_previousBlock == null) return;
 
     _previousBlock.remove();
     _previousScope.$destroy();
@@ -46,7 +44,8 @@ class NgIncludeDirective {
   _updateContent(createBlock) {
     // create a new scope
     _previousScope = scope.$new();
-    _previousBlock = createBlock(injector.createChild([new Module()..value(Scope, _previousScope)]));
+    _previousBlock = createBlock(injector.createChild([new Module()
+        ..value(Scope, _previousScope)]));
 
     _previousBlock.elements.forEach((elm) => element.append(elm));
   }
