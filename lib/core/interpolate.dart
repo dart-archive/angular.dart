@@ -79,10 +79,8 @@ class Interpolate {
     if (shouldAddSeparator) {
       separators.add('');
     }
-    if (!mustHaveExpression || hasInterpolation) {
-      return new Interpolation(template, separators, watchExpressions);
-    } else {
-      return null;
-    }
+    return (!mustHaveExpression || hasInterpolation)
+        ? new Interpolation(template, separators, watchExpressions)
+        : null;
   }
 }

@@ -73,8 +73,12 @@ class NgModelRequiredValidator extends _NgModelValidator {
   @NgAttr('required')
   get required => _required;
   set required(value) {
-    if(value is String) return;
-    (_required = value) == true ? listen() : unlisten();
+    if (value is String) return;
+    if ((_required = value) == true) {
+      listen();
+    } else {
+      unlisten();
+    }
   }
 }
 
