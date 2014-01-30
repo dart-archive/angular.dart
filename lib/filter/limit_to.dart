@@ -34,6 +34,7 @@ part of angular.filter;
  *     <li>i</li>
  *     <li>j</li>
  */
+@NgInjectableService()
 @NgFilter(name:'limitTo')
 class LimitToFilter {
   Injector _injector;

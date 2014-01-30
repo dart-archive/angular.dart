@@ -45,6 +45,7 @@ abstract class _NgModelValidator {
 /**
  * Validates the model depending if required or ng-required is present on the element.
  */
+@NgInjectableService()
 @NgDirective(selector: '[ng-model][required]')
 @NgDirective(
     selector: '[ng-model][ng-required]',
@@ -81,6 +82,7 @@ class NgModelRequiredValidator extends _NgModelValidator {
 /**
  * Validates the model to see if its contents match a valid URL pattern.
  */
+@NgInjectableService()
 @NgDirective(selector: 'input[type=url][ng-model]')
 class NgModelUrlValidator extends _NgModelValidator {
   static final URL_REGEXP = new RegExp(
@@ -101,6 +103,7 @@ class NgModelUrlValidator extends _NgModelValidator {
 /**
  * Validates the model to see if its contents match a valid email pattern.
  */
+@NgInjectableService()
 @NgDirective(selector: 'input[type=email][ng-model]')
 class NgModelEmailValidator extends _NgModelValidator {
   static final EMAIL_REGEXP = new RegExp(
@@ -120,6 +123,7 @@ class NgModelEmailValidator extends _NgModelValidator {
 /**
  * Validates the model to see if its contents match a valid number.
  */
+@NgInjectableService()
 @NgDirective(selector: 'input[type=number][ng-model]')
 class NgModelNumberValidator extends _NgModelValidator {
   get name => 'number';
@@ -145,6 +149,7 @@ class NgModelNumberValidator extends _NgModelValidator {
  * Validates the model to see if its contents match the given pattern present on either the
  * HTML pattern or ng-pattern attributes present on the input element.
  */
+@NgInjectableService()
 @NgDirective(selector: '[ng-model][pattern]')
 @NgDirective(
     selector: '[ng-model][ng-pattern]',
@@ -186,6 +191,7 @@ class NgModelPatternValidator extends _NgModelValidator {
  * equal to the minimum length set in place by the HTML minlength or
  * ng-minlength attributes present on the input element.
  */
+@NgInjectableService()
 @NgDirective(selector: '[ng-model][minlength]')
 @NgDirective(
     selector: '[ng-model][ng-minlength]',
@@ -220,6 +226,7 @@ class NgModelMinLengthValidator extends _NgModelValidator {
  * equal to the maximum length set in place by the HTML maxlength or
  * ng-maxlength attributes present on the input element.
  */
+@NgInjectableService()
 @NgDirective(selector: '[ng-model][maxlength]')
 @NgDirective(
     selector: '[ng-model][ng-maxlength]',

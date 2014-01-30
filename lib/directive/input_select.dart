@@ -19,6 +19,7 @@ typedef dynamic ItemEval(dynamic item, num index);
  * should be used.
  *
  */
+@NgInjectableService()
 @NgDirective(
     selector: 'select[ng-model]',
     visibility: NgDirective.CHILDREN_VISIBILITY)

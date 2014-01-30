@@ -56,6 +56,7 @@ part of angular.routing;
  *       <li><a href="/library/23456/overview">Book 23456</a>
  *     </ul>
  */
+@NgInjectableService()
 @NgDirective(
     selector: 'ng-view',
     publishTypes: const [RouteProvider],

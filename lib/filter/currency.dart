@@ -10,6 +10,7 @@ part of angular.filter;
  *     {{ number_expression | number[:fractionSize] }}
  *
  */
+@NgInjectableService()
 @NgFilter(name:'currency')
 class CurrencyFilter {
   NumberFormat nf = new NumberFormat();

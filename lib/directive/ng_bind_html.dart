@@ -14,6 +14,7 @@ part of angular.directive;
  *
  *     <div ng-bind-html="htmlVar"></div>
  */
+@NgInjectableService()
 @NgDirective(
   selector: '[ng-bind-html]',
   map: const {'ngBindHtml': '=>value'})

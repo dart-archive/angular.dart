@@ -109,6 +109,7 @@ typedef bool Equals(a, b);
  *       </body>
  *     </html>
  */
+@NgInjectableService()
 @NgFilter(name: 'filter')
 class FilterFilter {
   Parser _parser;

@@ -18,6 +18,7 @@ part of angular.directive;
  *
  * Refer [TemplateCache] for a **full example** as well as more information.
  */
+@NgInjectableService()
 @NgDirective(
   selector: 'template[type=text/ng-template]',
   map: const {'id': '@templateUrl'})

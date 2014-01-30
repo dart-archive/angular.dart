@@ -22,6 +22,7 @@ part of angular.directive;
  *  - [ng-required]
  *  - [ng-selected]
  */
+@NgInjectableService()
 @NgDirective(selector: '[ng-checked]',  map: const {'ng-checked':  '=>checked'})
 @NgDirective(selector: '[ng-disabled]', map: const {'ng-disabled': '=>disabled'})
 @NgDirective(selector: '[ng-multiple]', map: const {'ng-multiple': '=>multiple'})
@@ -61,6 +62,7 @@ class NgBooleanAttributeDirective {
  * - [ng-src]
  * - [ng-srcset]
  */
+@NgInjectableService()
 @NgDirective(selector: '[ng-href]',   map: const {'ng-href':   '@href'})
 @NgDirective(selector: '[ng-src]',    map: const {'ng-src':    '@src'})
 @NgDirective(selector: '[ng-srcset]', map: const {'ng-srcset': '@srcset'})
@@ -87,6 +89,7 @@ class NgSourceDirective {
  *       <circle ng-attr-cx="{{cx}}"></circle>
  *     </svg>
  */
+@NgInjectableService()
 @NgDirective(selector: '[ng-attr-*]')
 class NgAttributeDirective implements NgAttachAware {
   final NodeAttrs _attrs;

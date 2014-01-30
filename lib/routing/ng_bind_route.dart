@@ -22,6 +22,7 @@ part of angular.routing;
  * ng-bind-route overrides [RouteProvider] instance published by ng-view,
  * however it does not effect view resolution by nested ng-view(s).
  */
+@NgInjectableService()
 @NgDirective(
     visibility: NgDirective.CHILDREN_VISIBILITY,
     publishTypes: const [RouteProvider],

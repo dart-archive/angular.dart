@@ -22,6 +22,7 @@ part of angular.directive;
  * template it deletes the `ngCloak` element attribute, which makes the compiled
  * element visible.
  */
+@NgInjectableService()
 @NgDirective(selector: '[ng-cloak]')
 @NgDirective(selector: '.ng-cloak')
 class NgCloakDirective {

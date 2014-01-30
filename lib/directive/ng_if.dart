@@ -83,6 +83,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
  *        </div>
  *     </div>
  */
+@NgInjectableService()
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-if]',
@@ -144,6 +145,7 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
  *        </div>
  *     </div>
  */
+@NgInjectableService()
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-unless]',

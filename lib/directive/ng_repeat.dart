@@ -75,7 +75,7 @@ class _Row {
  *       <li>{{$item}}</li>
  *     </ul>
  */
-
+@NgInjectableService()
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-repeat]',
@@ -105,6 +105,7 @@ class NgRepeatDirective extends AbstractNgRepeatDirective {
  *  digest cycle and will not update on changes to the model.
  *
  */
+@NgInjectableService()
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-shallow-repeat]',

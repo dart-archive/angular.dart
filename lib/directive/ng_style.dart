@@ -7,6 +7,7 @@ part of angular.directive;
   * @example
   *     <span ng-style="{color:'red'}">Sample Text</span>
   */
+@NgInjectableService()
 @NgDirective(
     selector: '[ng-style]',
     map: const { 'ng-style': '@styleExpression'})
