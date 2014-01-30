@@ -35,6 +35,7 @@ import 'package:di/dynamic_injector.dart';
     'angular.perf',
     'angular.directive',
     'angular.routing',
+    'angular.core.parser.Parser',
     'angular.core.parser.dynamic_parser',
     'angular.core.parser.lexer',
     'perf_api',
@@ -45,7 +46,8 @@ metaTargets: const[
   'NgInjectableService',
   'NgDirective',
   'NgController',
-  'NgComponent'
+  'NgComponent',
+  'NgFilter'
 ])
 import 'dart:mirrors';
 
