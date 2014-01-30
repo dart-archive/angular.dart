@@ -125,7 +125,7 @@ class FilterFilter {
 
   FilterFilter(this._parser);
 
-  Equals _configureComparator(var comparatorExpression) {
+  void _configureComparator(var comparatorExpression) {
     if (comparatorExpression == null || comparatorExpression == false) {
       _stringComparator = _isSubstringCaseInsensitive;
       _comparator = _defaultComparator;

@@ -51,6 +51,10 @@ packages:
     description: route_hierarchical
     source: hosted
     version: "0.4.10"
+  shadow_dom:
+    description: shadow_dom
+    source: hosted
+    version: "0.9.1"
   source_maps:
     description: source_maps
     source: hosted

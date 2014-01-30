@@ -56,13 +56,13 @@ class Scanner {
   Token scanToken() {
     // Skip whitespace.
     while (peek <= $SPACE) {
-    if (++index >= length) {
-      peek = $EOF;
-      return null;
-    } else {
-      peek = input.codeUnitAt(index);
+      if (++index >= length) {
+        peek = $EOF;
+        return null;
+      } else {
+        peek = input.codeUnitAt(index);
+      }
     }
-  }
 
     // Handle identifiers and numbers.
     if (isIdentifierStart(peek)) return scanIdentifier();
@@ -112,6 +112,7 @@ class Scanner {
 
     String character = new String.fromCharCode(peek);
     error('Unexpected character [$character]');
+    return null;
   }
 
   Token scanCharacter(int start, String string) {

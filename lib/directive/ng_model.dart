@@ -16,8 +16,8 @@ class NgModel extends NgControl {
   final dom.Element _element;
   final Scope _scope;
 
-  Getter getter = ([_]) => null;
-  Setter setter = (_, [__]) => null;
+  BoundGetter getter = ([_]) => null;
+  BoundSetter setter = (_, [__]) => null;
 
   String _exp;
   String _name;

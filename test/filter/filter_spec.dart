@@ -1,6 +1,5 @@
 library filter_spec;
 
-import 'dart:collection';
 import '../_specs.dart';
 
 // Helper to simulate some real objects.  Purposefully doesn't implement Map.
