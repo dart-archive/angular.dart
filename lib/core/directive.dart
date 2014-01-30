@@ -197,7 +197,8 @@ class NgComponent extends NgAnnotation {
     if (cssUrls == null && cssUrl == null) return null;
     if (cssUrls == null && cssUrl != null) return [cssUrl];
     if (cssUrls != null && cssUrl == null) return cssUrls;
-    if (cssUrls != null && cssUrl != null) return [cssUrl]..addAll(cssUrls);
+    assert(cssUrls != null && cssUrl != null);
+    return [cssUrl]..addAll(cssUrls);
   }
 
   /**

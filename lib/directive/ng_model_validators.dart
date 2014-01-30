@@ -17,7 +17,7 @@ abstract class _NgModelValidator {
   /**
    * Registers the validator with to attached model.
    */
-  bool listen() {
+  void listen() {
     if(!_listening) {
       _listening = true;
       this.ngModel.addValidator(this);
@@ -29,7 +29,7 @@ abstract class _NgModelValidator {
   /**
    * De-registers the validator with to attached model.
    */
-  bool unlisten() {
+  void unlisten() {
     if(_listening) {
       _listening = false;
       this.ngModel.removeValidator(this);
