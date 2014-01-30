@@ -5,6 +5,12 @@ packages:
     description: analyzer
     source: hosted
     version: "0.10.5"
+  angular:
+    description:
+      path: "/Users/misko/work/angular.dart/perf/.."
+      relative: true
+    source: path
+    version: "0.9.3"
   args:
     description: args
     source: hosted
@@ -12,7 +18,7 @@ packages:
   benchmark_harness:
     description: benchmark_harness
     source: hosted
-    version: "1.0.3"
+    version: "1.0.2"
   browser:
     description: browser
     source: hosted
@@ -20,11 +26,11 @@ packages:
   collection:
     description: collection
     source: hosted
-    version: "0.9.1"
+    version: "0.9.0"
   di:
     description: di
     source: hosted
-    version: "0.0.32"
+    version: "0.0.29"
   html5lib:
     description: html5lib
     source: hosted
@@ -33,6 +39,10 @@ packages:
     description: intl
     source: hosted
     version: "0.9.1"
+  js:
+    description: js
+    source: hosted
+    version: "0.2.1"
   logging:
     description: logging
     source: hosted

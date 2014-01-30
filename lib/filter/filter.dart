@@ -199,7 +199,8 @@ class FilterFilter {
     if (expression == null) {
       return items.toList(growable: false); // Missing expression → passthrough.
     } else if (expression is! Map && expression is! Function &&
-               expression is! String && expression is! bool && expression is! num) {
+               expression is! String && expression is! bool &&
+               expression is! num) {
       return const []; // Bad expression → no items for you!
     }
     _configureComparator(comparator);

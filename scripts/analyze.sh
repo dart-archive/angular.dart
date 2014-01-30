@@ -11,7 +11,14 @@ $DARTANALYZER --version
 
 echo // generated file > $OUT
 
-for FILE in $(ls lib/angular.dart perf/*_perf.dart test/*_spec.dart test/*/*_spec.dart)
+for FILE in $(ls lib/angular.dart \
+                 perf/*_perf.dart \
+                 test/*_spec.dart \
+                 test/*/*_spec.dart \
+                 lib/change_detection/change_detection.dart \
+                 lib/change_detection/dirty_checking_change_detector.dart \
+                 lib/change_detection/watch_group.dart \
+             )
 do
   echo export \'../$FILE\' hide main, NestedRouteInitializer\; >> $OUT
 done

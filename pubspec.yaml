@@ -9,6 +9,8 @@ description: Angular for dart.
 homepage: https://github.com/angular/angular.dart
 environment:
   sdk: '>=0.8.10'
+dev_dependencies:
+  benchmark_harness: ">=1.0.0"
 dependencies:
   analyzer: '>=0.10.0 <0.11.0'
   browser: '>=0.8.7 <0.10.0'

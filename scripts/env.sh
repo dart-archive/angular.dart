@@ -1,21 +1,29 @@
 #!/bin/sh
 set -e
-DART=`which dart|cat` # pipe to cat to ignore the exit code
-export DARTSDK=`which dart | sed -e 's/\/dart\-sdk\/.*$/\/dart-sdk/'`
-if [ "$DARTSDK" = "/Applications/dart/dart-sdk" ]; then
-    # Assume we are a mac machine with standard dart setup
-    export DARTIUM="/Applications/dart/chromium/Chromium.app/Contents/MacOS/Chromium"
+
+if [ -n "$DART_SDK" ]; then
+    DARTSDK=$DART_SDK
 else
-    export DARTSDK="`pwd`/dart-sdk"
-    case $( uname -s ) in
-      Darwin)
-        export DARTIUM=${DARTIUM:-./dartium/Chromium.app/Contents/MacOS/Chromium}
-        ;;
-      Linux)
-        export DARTIUM=${DARTIUM:-./dartium/chrome}
-        ;;
-    esac
+    echo "sdk=== $DARTSDK"
+    DART=`which dart|cat` # pipe to cat to ignore the exit code
+    DARTSDK=`which dart | sed -e 's/\/dart\-sdk\/.*$/\/dart-sdk/'`
+
+    if [ "$DARTSDK" = "/Applications/dart/dart-sdk" ]; then
+        # Assume we are a mac machine with standard dart setup
+        export DARTIUM="/Applications/dart/chromium/Chromium.app/Contents/MacOS/Chromium"
+    else
+        DARTSDK="`pwd`/dart-sdk"
+        case $( uname -s ) in
+          Darwin)
+            export DARTIUM=${DARTIUM:-./dartium/Chromium.app/Contents/MacOS/Chromium}
+            ;;
+          Linux)
+            export DARTIUM=${DARTIUM:-./dartium/chrome}
+            ;;
+        esac
+    fi
 fi
+
 export DART_SDK="$DARTSDK"
 export DART=${DART:-"$DARTSDK/bin/dart"}
 export PUB=${PUB:-"$DARTSDK/bin/pub"}

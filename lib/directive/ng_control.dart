@@ -22,8 +22,7 @@ abstract class NgControl {
     _pristine = true;
     _dirty = false;
 
-    element.classes.remove(NG_DIRTY_CLASS);
-    element.classes.add(NG_PRISTINE_CLASS);
+    element.classes..remove(NG_DIRTY_CLASS)..add(NG_PRISTINE_CLASS);
   }
 
   get dirty => _dirty;
@@ -31,8 +30,7 @@ abstract class NgControl {
     _dirty = true;
     _pristine = false;
 
-    element.classes.remove(NG_PRISTINE_CLASS);
-    element.classes.add(NG_DIRTY_CLASS);
+    element.classes..remove(NG_PRISTINE_CLASS)..add(NG_DIRTY_CLASS);
   }
 
   get valid => _valid;
@@ -40,8 +38,7 @@ abstract class NgControl {
     _invalid = false;
     _valid = true;
 
-    element.classes.remove(NG_INVALID_CLASS);
-    element.classes.add(NG_VALID_CLASS);
+    element.classes..remove(NG_INVALID_CLASS)..add(NG_VALID_CLASS);
   }
 
   get invalid => _invalid;
@@ -49,8 +46,7 @@ abstract class NgControl {
     _valid = false;
     _invalid = true;
 
-    element.classes.remove(NG_VALID_CLASS);
-    element.classes.add(NG_INVALID_CLASS);
+    element.classes..remove(NG_VALID_CLASS)..add(NG_INVALID_CLASS);
   }
 
 }
