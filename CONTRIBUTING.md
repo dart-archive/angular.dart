@@ -1,15 +1,72 @@
 # Contributing to AngularDart
 
-We have set up a [[milestone][communityMilestone]] for issues which we believe are an excellent
+We have set up a [milestone][communityMilestone] for issues which we believe are an excellent
 place to start if you are interested in contributing to AngularDart.
 
-[communityMilestone]: https://github.com/angular/angular.dart/issues?milestone=13&state=open
+We'd love for you to contribute to our source code and to make AngularDart even better than it is
+today! Here are the guidelines we'd like you to follow:
 
+## Got a Question or Problem?
+
+If you have questions about how to use AngularDart, please direct these to the [Google Group][groups]
+discussion list or [StackOverflow][stackoverflow].
+
+## Found an Issue?
+If you find a bug in the source code or a mistake in the documentation, you can help us by
+submitting and issue to our [GitHub Repository][github]. Even better you can submit a Pull Request
+with a fix.
+
+**Please see the Submission Guidelines below**.
+
+## Want a Feature?
+You can request a new feature by submitting an issue to our [GitHub Repository][github].  If you
+would like to implement a new feature then consider what kind of change it is:
+
+<!--
+* **Major Changes** that you wish to contribute to the project should be discussed first on our
+[dev mailing list][angular-dev] or [IRC][irc] so that we can better coordinate our efforts, prevent
+duplication of work, and help you to craft the change so that it is successfully accepted into the
+project.
+-->
+* **Small Changes** can be crafted and submitted to [GitHub Repository][github] as a Pull Request.
+
+
+## Want a Doc Fix?
+If you want to help improve the docs, it's a good idea to let others know what you're working on to
+minimize duplication of effort. Before starting, check out the issue queue.
+
+Comment on an issue to let others know what you're working on, or create a new issue if your work
+doesn't fit within the scope of any of the existing doc fix projects.
+
+For large fixes, please build and test the documentation before submitting the PR to be sure you haven't
+accidentally introduced any layout or formatting issues.You should also make sure that your commit message
+is labeled "docs:" and follows the **Git Commit Guidelines** outlined below.
+
+## Submission Guidelines
+
+### Submitting an Issue
+Before you submit your issue search the archive, maybe your question was already answered.
+
+If your issue appears to be a bug, and hasn't been reported, open a new issue.
+Help us to maximize the effort we can spend fixing issues and adding new
+features, by not reporting duplicate issues.  Providing the following information will increase the
+chances of your issue being dealt with quickly:
+
+* **Overview of the issue** - if an error is being thrown a non-minified stack trace helps
+* **Motivation for or Use Case** - explain why this is a bug for you
+* **Angular Version(s)** - is it a regression?
+* **Browsers and Operating System** - is this a problem with all browsers or only IE8?
+* **Reproduce the error** - provide a live example (using [Runnable][runnable]) or a unambiguous set of steps.
+* **Related issues** - has a similar issue been reported before?
+* **Suggest a Fix** - if you can't fix the bug yourself, perhaps you can point to what might be
+  causing the problem (line of code or commit)
+
+**If you get help, help others. Good karma rulez!**
 
 ### Submitting a Pull Request
 Before you submit your pull request consider the following guidelines:
 
-* Search [GitHub](https://github.com/angular/angular.js/pulls) for an open or closed Pull Request
+* Search [GitHub][github] for an open or closed Pull Request
   that relates to your submission. You don't want to duplicate effort.
 * Please sign our [Contributor License Agreement (CLA)](#signing-the-cla) before sending pull
   requests. We cannot accept code without this.
@@ -79,40 +136,19 @@ from the main (upstream) repository:
     ```shell
     git pull --ff upstream master
     ```
-
-### GitHub Pull Request Helper
-
-We track Pull Requests by attaching labels and assigning to milestones.  For some reason GitHub
-does not provide a good UI for managing labels on Pull Requests (unlike Issues).  We have developed
-a simple Chrome Extension that enables you to view (and manage if you have permission) the labels
-on Pull Requests.  You can get the extension from the Chrome WebStore -
-[GitHub PR Helper][github-pr-helper]
-
 ## Coding Rules
 To ensure consistency throughout the source code, keep these rules in mind as you are working:
 
-* All features or bug fixes **must be tested** by one or more [specs][unit-testing].
-* All public API methods **must be documented** with ngdoc, an extended version of jsdoc (we added
-  support for markdown and templating via @ngdoc tag). To see how we document our APIs, please check
-  out the existing ngdocs and see [this wiki page][ngDocs].
-* With the exceptions listed below, we follow the rules contained in
-  [Google's JavaScript Style Guide][js-style-guide]:
-    * **Do not use namespaces**: Instead,  wrap the entire angular code base in an anonymous closure and
-      export our API explicitly rather than implicitly.
-    * Wrap all code at **100 characters**.
-    * Instead of complex inheritance hierarchies, we **prefer simple objects**. We use prototypical
-      inheritance only when absolutely necessary.
-    * We **love functions and closures** and, whenever possible, prefer them over objects.
-    * To write concise code that can be better minified, we **use aliases internally** that map to the
-      external API. See our existing code to see what we mean.
-    * We **don't go crazy with type annotations** for private internal APIs unless it's an internal API
-      that is used throughout AngularJS. The best guidance is to do what makes the most sense.
+  * All features or bug fixes **must be tested** by one or more [specs][unit-testing].
+  * All public API methods **must be documented** with [doc comments][doc-comments].
+  * With the exceptions listed below, we follow the rules contained in
+  [Google's Dart Style Guide][dart-style-guide].
 
 ## Git Commit Guidelines
 
 We have very precise rules over how our git commit messages can be formatted.  This leads to **more
 readable messages** that are easy to follow when looking through the **project history**.  But also,
-we use the git commit messages to **generate the AngularJS change log**.
+we use the git commit messages to **generate the AngularDart change log**.
 
 ### Commit Message Format
 Each commit message consists of a **header**, a **body** and a **footer**.  The header has a special
@@ -173,3 +209,16 @@ changes to be accepted, the CLA must be signed. It's a quick process, we promise
 * For individuals we have a [simple click-through form][individual-cla].
 * For corporations we'll need you to
   [print, sign and one of scan+email, fax or mail the form][corporate-cla].
+
+
+[groups]: https://groups.google.com/forum/#!forum/angular-dart
+[stackoverflow]: http://stackoverflow.com/questions/tagged/angular.dart
+[github]: https://github.com/angular/angular.dart
+[runnable]: http://runnable.com/
+[unit-testing]: https://www.dartlang.org/articles/dart-unit-tests/
+[doc-comments]: https://www.dartlang.org/articles/doc-comment-guidelines/
+[dart-style-guide]: https://www.dartlang.org/articles/idiomatic-dart/
+[individual-cla]: http://code.google.com/legal/individual-cla-v1.0.html
+[corporate-cla]: http://code.google.com/legal/corporate-cla-v1.0.html
+[commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
+[communityMilestone]: https://github.com/angular/angular.dart/issues?milestone=13&state=open
