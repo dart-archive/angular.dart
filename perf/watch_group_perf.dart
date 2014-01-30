@@ -5,6 +5,14 @@ import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:benchmark_harness/benchmark_harness.dart';
 
+@MirrorsUsed(
+    targets: const [
+      'angular.perf.watch_group'
+    ],
+    override: '*'
+)
+import 'dart:mirrors' show MirrorsUsed;
+
 var _reactionFn = (_, __, ___) => null;
 var _getterCache = new GetterCache({});
 main() {
@@ -164,26 +172,26 @@ _methodInvoke1() {
   context.a = new _Obj();
   var watchGrp = new RootWatchGroup(
       new DirtyCheckingChangeDetector(_getterCache), context)
-      ..watch(_method('a', 'methodA', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodB', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodC', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodD', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodE', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodF', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodG', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodH', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodI', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodJ', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodK', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodL', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodM', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodN', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodO', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodP', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodQ', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodR', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodS', [_parse('a')]), _reactionFn)
-      ..watch(_method('a', 'methodT', [_parse('a')]), _reactionFn);
+      ..watch(_method('a', 'methodA1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodB1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodC1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodD1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodE1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodF1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodG1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodH1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodI1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodJ1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodK1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodL1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodM1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodN1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodO1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodP1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodQ1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodR1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodS1', [_parse('a')]), _reactionFn)
+      ..watch(_method('a', 'methodT1', [_parse('a')]), _reactionFn);
 
   print('Watch: ${watchGrp.fieldCost}; eval: ${watchGrp.evalCost}');
   time('obj.method?(obj)', () => watchGrp.detectChanges());
@@ -260,24 +268,46 @@ class _Obj {
   var s = 19;
   var t = 20;
 
-  methodA([arg0]) => a;
-  methodB([arg0]) => b;
-  methodC([arg0]) => c;
-  methodD([arg0]) => d;
-  methodE([arg0]) => e;
-  methodF([arg0]) => f;
-  methodG([arg0]) => g;
-  methodH([arg0]) => h;
-  methodI([arg0]) => i;
-  methodJ([arg0]) => j;
-  methodK([arg0]) => k;
-  methodL([arg0]) => l;
-  methodM([arg0]) => m;
-  methodN([arg0]) => n;
-  methodO([arg0]) => o;
-  methodP([arg0]) => p;
-  methodQ([arg0]) => q;
-  methodR([arg0]) => r;
-  methodS([arg0]) => s;
-  methodT([arg0]) => t;
+  methodA1(arg0) => a;
+  methodB1(arg0) => b;
+  methodC1(arg0) => c;
+  methodD1(arg0) => d;
+  methodE1(arg0) => e;
+  methodF1(arg0) => f;
+  methodG1(arg0) => g;
+  methodH1(arg0) => h;
+  methodI1(arg0) => i;
+  methodJ1(arg0) => j;
+  methodK1(arg0) => k;
+  methodL1(arg0) => l;
+  methodM1(arg0) => m;
+  methodN1(arg0) => n;
+  methodO1(arg0) => o;
+  methodP1(arg0) => p;
+  methodQ1(arg0) => q;
+  methodR1(arg0) => r;
+  methodS1(arg0) => s;
+  methodT1(arg0) => t;
+
+  methodA() => a;
+  methodB() => b;
+  methodC() => c;
+  methodD() => d;
+  methodE() => e;
+  methodF() => f;
+  methodG() => g;
+  methodH() => h;
+  methodI() => i;
+  methodJ() => j;
+  methodK() => k;
+  methodL() => l;
+  methodM() => m;
+  methodN() => n;
+  methodO() => o;
+  methodP() => p;
+  methodQ() => q;
+  methodR() => r;
+  methodS() => s;
+  methodT() => t;
+
 }
