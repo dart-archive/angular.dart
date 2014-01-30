@@ -7,6 +7,7 @@ part of angular.filter;
  *
  *     {{ uppercase_expression | uppercase }}
  */
+@NgInjectableService()
 @NgFilter(name:'uppercase')
 class UppercaseFilter {
   call(String text) => text == null ? text : text.toUpperCase();

@@ -8,6 +8,7 @@ part of angular.filter;
  *
  *     {{ json_expression | json }}
  */
+@NgInjectableService()
 @NgFilter(name:'json')
 class JsonFilter {
   call(text) => JSON.encode(text);

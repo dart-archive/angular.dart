@@ -45,6 +45,7 @@ part of angular.directive;
  *     }
  *
  */
+@NgInjectableService()
 @NgDirective(
     selector: '[ng-class]',
     map: const {'ng-class': '@valueExpression'},

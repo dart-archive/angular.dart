@@ -5,6 +5,7 @@ part of angular.directive;
  * on if an action is set, the form will automatically either allow
  * or prevent the default browser submission from occurring.
  */
+@NgInjectableService()
 @NgDirective(
     selector: 'form',
     visibility: NgDirective.CHILDREN_VISIBILITY)

@@ -18,6 +18,7 @@ part of angular.directive;
  * element.  However, the `foo` attribute *will* be interpolated because it is
  * not on a child node.
  */
+@NgInjectableService()
 @NgDirective(
     selector: '[ng-non-bindable]',
     children: NgAnnotation.IGNORE_CHILDREN)

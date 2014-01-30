@@ -11,6 +11,7 @@ part of angular.filter;
  *     {{ number_expression | number[:fractionSize] }}
  *
  */
+@NgInjectableService()
 @NgFilter(name:'number')
 class NumberFilter {
 

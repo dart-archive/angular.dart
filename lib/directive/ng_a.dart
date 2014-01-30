@@ -13,6 +13,7 @@ part of angular.directive;
  * without changing the location or causing page reloads, e.g.:
  * `<a href="" ng-click="model.$save()">Save</a>`
  */
+@NgInjectableService()
 @NgDirective(selector: 'a[href]')
 class NgADirective {
   final dom.Element element;

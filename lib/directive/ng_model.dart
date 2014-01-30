@@ -10,6 +10,7 @@ part of angular.directive;
  * knows how to (in)validate the model and the form in which it is declared
  * (to be implemented)
  */
+@NgInjectableService()
 @NgDirective(selector: '[ng-model]')
 class NgModel extends NgControl {
   final NgForm _form;
@@ -153,6 +154,7 @@ class NgModel extends NgControl {
  *
  * The AngularJS style ng-true-value / ng-false-value is not supported.
  */
+@NgInjectableService()
 @NgDirective(selector: 'input[type=checkbox][ng-model]')
 class InputCheckboxDirective {
   final dom.InputElement inputElement;
@@ -183,6 +185,7 @@ class InputCheckboxDirective {
  * as well as the other way around (when the scope property is updated).
  *
  */
+@NgInjectableService()
 @NgDirective(selector: 'textarea[ng-model]')
 @NgDirective(selector: 'input[type=text][ng-model]')
 @NgDirective(selector: 'input[type=password][ng-model]')
@@ -271,6 +274,7 @@ final _uidCounter = new _UidCounter();
  * `009`, `00A`, `00Z`, `010`, … and so on using more than 3 characters for the
  * name when the counter overflows.
  */
+@NgInjectableService()
 @NgDirective(selector: 'input[type=radio][ng-model]')
 class InputRadioDirective {
   final dom.RadioButtonInputElement radioButtonElement;
@@ -305,6 +309,7 @@ class InputRadioDirective {
  * `null`, it is treated as equivalent to the empty string for rendering
  * purposes.
  */
+@NgInjectableService()
 @NgDirective(selector: '[contenteditable][ng-model]')
 class ContentEditableDirective extends InputTextLikeDirective {
   ContentEditableDirective(dom.Element inputElement, NgModel ngModel,

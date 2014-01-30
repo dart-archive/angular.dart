@@ -20,6 +20,7 @@ part of angular.filter;
  *     {{ date_expression | date[:format] }}
  *
  */
+@NgInjectableService()
 @NgFilter(name:'date')
 class DateFilter {
   static Map<String, String> MAP = {

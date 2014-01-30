@@ -5,6 +5,7 @@ part of angular.directive;
  * expression provided to the ngHide attribute. The element is shown or hidden
  * by changing the removing or adding the ng-hide CSS class onto the element.
  */
+@NgInjectableService()
 @NgDirective(
     selector: '[ng-hide]',
     map: const {'ng-hide': '=>hide'})
@@ -29,6 +30,7 @@ class NgHideDirective {
  * expression provided to the ngHide attribute. The element is shown or hidden
  * by changing the removing or adding the ng-hide CSS class onto the element.
  */
+@NgInjectableService()
 @NgDirective(
     selector: '[ng-show]',
     map: const {'ng-show': '=>show'})

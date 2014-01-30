@@ -104,6 +104,7 @@ typedef dynamic Mapper(dynamic e);
  * list itself might be provided as an expression that is looked up on the scope
  * chain.
  */
+@NgInjectableService()
 @NgFilter(name: 'orderBy')
 class OrderByFilter {
   Parser _parser;

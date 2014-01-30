@@ -15,6 +15,7 @@ part of angular.directive;
  *
  * An alternative solution to this problem would be using the ngCloak directive.
  */
+@NgInjectableService()
 @NgDirective(
   selector: '[ng-bind]',
   map: const {'ng-bind': '=>value'})

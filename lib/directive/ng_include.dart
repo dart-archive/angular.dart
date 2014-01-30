@@ -15,6 +15,7 @@ part of angular.directive;
  * [NgIncludeDirective] won't work for cross-domain requests on all browsers and
  * for `file://` access on some browsers.
  */
+@NgInjectableService()
 @NgDirective(
     selector: '[ng-include]',
     map: const {'ng-include': '@url'})

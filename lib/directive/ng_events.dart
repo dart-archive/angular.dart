@@ -78,6 +78,7 @@ part of angular.directive;
  * - [ng-touchstart]
  * - [ng-transitionend]
  */
+@NgInjectableService()
 @NgDirective(selector: '[ng-abort]',            map: const {'ng-abort':            '&onAbort'})
 @NgDirective(selector: '[ng-beforecopy]',       map: const {'ng-beforecopy':       '&onBeforeCopy'})
 @NgDirective(selector: '[ng-beforecut]',        map: const {'ng-beforecut':        '&onBeforeCut'})

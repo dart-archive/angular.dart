@@ -49,6 +49,7 @@ part of angular.directive;
  *       </div>
  *     </div>
  */
+@NgInjectableService()
 @NgDirective(
     selector: '[ng-switch]',
     map: const {
@@ -106,6 +107,7 @@ class _Case {
   _Case(this.anchor, this.blockFactory);
 }
 
+@NgInjectableService()
 @NgDirective(
     selector: '[ng-switch-when]',
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
@@ -121,7 +123,7 @@ class NgSwitchWhenDirective {
   set value(String value) => ngSwitch.addCase('!$value', hole, blockFactory);
 }
 
-
+@NgInjectableService()
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-switch-default]')

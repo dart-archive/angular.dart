@@ -82,6 +82,7 @@ part of angular.directive;
  * for example, you must provide explicit number rules for 0, 1, 2 and 3. You
  * must also provide plural strings for at least the "other" plural category.
  */
+@NgInjectableService()
 @NgDirective(
     selector: 'ng-pluralize',
     map: const { 'count': '=>count' })
