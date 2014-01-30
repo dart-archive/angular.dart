@@ -5,16 +5,16 @@ NOT_IMPLEMENTED() {
 }
 
 typedef EvalFunction0();
-typedef EvalFunction1(dynamic context);
+typedef EvalFunction1(context);
 
 /**
- * Injected into the listener function within [Scope.on] to provide event-specific
- * details to the scope listener.
+ * Injected into the listener function within [Scope.on] to provide
+ * event-specific details to the scope listener.
  */
 class ScopeEvent {
   static final String DESTROY = 'ng-destroy';
 
-  final dynamic data;
+  final data;
 
   /**
    * The name of the intercepted scope event.
@@ -51,14 +51,19 @@ class ScopeEvent {
   ScopeEvent(this.name, this.targetScope, this.data);
 
   /**
-   * Prevents the intercepted event from propagating further to successive scopes.
+   * Prevents the intercepted event from propagating further to successive
+   * scopes.
    */
-  stopPropagation () => _propagationStopped = true;
+  void stopPropagation () {
+    _propagationStopped = true;
+  }
 
   /**
    * Sets the defaultPrevented flag to true.
    */
-  preventDefault() => _defaultPrevented = true;
+  void preventDefault() {
+    _defaultPrevented = true;
+  }
 }
 
 /**
@@ -73,12 +78,13 @@ class ScopeEvent {
 class ScopeDigestTTL {
   final num ttl;
   ScopeDigestTTL(): ttl = 5;
-  ScopeDigestTTL.value(num this.ttl);
+  ScopeDigestTTL.value(this.ttl);
 }
 
 //TODO(misko): I don't think this should be in scope.
 class ScopeLocals implements Map {
-  static wrapper(dynamic scope, Map<String, Object> locals) => new ScopeLocals(scope, locals);
+  static wrapper(scope, Map<String, Object> locals) =>
+      new ScopeLocals(scope, locals);
 
   Map _scope;
   Map<String, Object> _locals;
@@ -104,7 +110,7 @@ class ScopeLocals implements Map {
 }
 
 class Scope {
-  final dynamic context;
+  final context;
   final RootScope rootScope;
   Scope _parentScope;
   Scope get parentScope => _parentScope;
@@ -118,12 +124,11 @@ class Scope {
   _Streams _streams;
   int _nextChildIndex = 0;
 
-  Scope(Object this.context, this.rootScope, this._parentScope,
-         this._depth, this._index,
-         this.watchGroup, this.observeGroup);
+  Scope(Object this.context, this.rootScope, this._parentScope, this._depth,
+        this._index, this.watchGroup, this.observeGroup);
 
   // TODO(misko): this is a hack and should be removed
-  // A better way to do this is to remove the praser from the scope.
+  // A better way to do this is to remove the parser from the scope.
   Watch watchSet(List<String> exprs, Function reactionFn) {
     var expr = '{{${exprs.join('}}?{{')}}}';
     List items = exprs.map(rootScope._parse).toList();
@@ -161,8 +166,8 @@ class Scope {
     }
   }
 
-  dynamic applyInZone([expression, Map locals])
-    => rootScope._zone.run(() => apply(expression, locals));
+  dynamic applyInZone([expression, Map locals]) =>
+      rootScope._zone.run(() => apply(expression, locals));
 
   dynamic apply([expression, Map locals]) {
     rootScope._transitionState(null, RootScope.STATE_APPLY);
@@ -177,17 +182,18 @@ class Scope {
     }
   }
 
-
   ScopeEvent emit(String name, [data]) => _Streams.emit(this, name, data);
-  ScopeEvent broadcast(String name, [data]) => _Streams.broadcast(this, name, data);
-  ScopeStream on(String name) => _Streams.on(this, rootScope._exceptionHandler, name);
+  ScopeEvent broadcast(String name, [data]) =>
+      _Streams.broadcast(this, name, data);
+  ScopeStream on(String name) =>
+      _Streams.on(this, rootScope._exceptionHandler, name);
 
   Scope createChild([Object childContext]) {
     if (childContext == null) childContext = context;
-    Scope child = new Scope(childContext, rootScope, this,
-                              _depth + 1, _nextChildIndex++,
-                              watchGroup.newGroup(childContext),
-                              observeGroup.newGroup(childContext));
+    var child = new Scope(childContext, rootScope, this,
+                          _depth + 1, _nextChildIndex++,
+                          watchGroup.newGroup(childContext),
+                          observeGroup.newGroup(childContext));
     var next = null;
     var prev = _childTail;
     child._next = next;
@@ -232,9 +238,8 @@ class RootScope extends Scope {
 
   String _state;
 
-  RootScope(Object context, Parser this._parser, GetterCache cacheGetter,
-             FilterMap filterMap, ExceptionHandler this._exceptionHandler,
-             ScopeDigestTTL this._ttl, this._zone)
+  RootScope(Object context, this._parser, GetterCache cacheGetter,
+             FilterMap filterMap, this._exceptionHandler, this._ttl, this._zone)
       : super(context, null, null, 0, 0,
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context))
@@ -250,10 +255,10 @@ class RootScope extends Scope {
   void digest() {
     _transitionState(null, STATE_DIGEST);
     try {
-      RootWatchGroup rootWatchGroup = (watchGroup as RootWatchGroup);
+      var rootWatchGroup = (watchGroup as RootWatchGroup);
 
       int digestTTL = _ttl.ttl;
-      const int logCount = 3;
+      const int LOG_COUNT = 3;
       List log;
       List digestLog;
       var count;
@@ -270,10 +275,10 @@ class RootScope extends Scope {
 
         digestTTL--;
         count = rootWatchGroup.detectChanges(
-                                      exceptionHandler: _exceptionHandler,
-                                      changeLog: changeLog);
+            exceptionHandler: _exceptionHandler,
+            changeLog: changeLog);
 
-        if (digestTTL <= logCount) {
+        if (digestTTL <= LOG_COUNT) {
           if (changeLog == null) {
             log = [];
             digestLog = [];
@@ -285,7 +290,7 @@ class RootScope extends Scope {
         }
         if (digestTTL == 0) {
           throw 'Model did not stabilize in ${_ttl.ttl} digests. ' +
-                'Last $logCount iterations:\n${log.join('\n')}';
+                'Last $LOG_COUNT iterations:\n${log.join('\n')}';
         }
       } while (count > 0);
     } finally {
@@ -295,7 +300,7 @@ class RootScope extends Scope {
 
   void flush() {
     _transitionState(null, STATE_FLUSH);
-    RootWatchGroup observeGroup = this.observeGroup as RootWatchGroup;
+    var observeGroup = this.observeGroup as RootWatchGroup;
     bool runObservers = true;
     try {
       do {
@@ -361,13 +366,11 @@ class RootScope extends Scope {
   }
 
 
-  AST _parse(expression) =>  visitor.visit(_parser.call(expression));
+  AST _parse(expression) => visitor.visit(_parser.call(expression));
   void destroy() {}
 
   void _transitionState(String from, String to) {
-    if (_state != from) {
-      throw "$_state already in progress can not enter $to.";
-    }
+    if (_state != from) throw "$_state already in progress can not enter $to.";
     _state = to;
   }
 }
@@ -429,8 +432,7 @@ class _Streams {
     _Streams scopeStreams = scope._streams;
     ScopeEvent event = new ScopeEvent(name, scope, data);
     if (scopeStreams != null && scopeStreams._typeCounts.containsKey(name)) {
-      Queue queue = new Queue();
-      queue.addFirst(scopeStreams._scope);
+      Queue queue = new Queue()..addFirst(scopeStreams._scope);
       while(queue.isNotEmpty) {
         scope = queue.removeFirst();
         scopeStreams = scope._streams;
@@ -453,7 +455,9 @@ class _Streams {
     return event;
   }
 
-  static ScopeStream on(Scope scope, ExceptionHandler _exceptionHandler, String name) {
+  static ScopeStream on(Scope scope,
+                        ExceptionHandler _exceptionHandler,
+                        String name) {
     var scopeStream = scope._streams;
     if (scopeStream == null || scopeStream._scope != scope) {
       // We either don't have [_ScopeStreams] or it is inherited.
@@ -472,8 +476,7 @@ class _Streams {
     var toBeDeletedStreams = scope._streams;
     if (toBeDeletedStreams == null) return;
     scope = scope._parentScope; // skip current state as not to delete listeners
-    while (scope != null &&
-           scope._streams == toBeDeletedStreams) {
+    while (scope != null && scope._streams == toBeDeletedStreams) {
       scope._streams = null;
       scope = scope._parentScope;
     }
@@ -488,7 +491,8 @@ class _Streams {
     assert(scope._streams == this);
     assert(scope._streams._scope == scope);
     assert(_exceptionHandler != null);
-    return _streams.putIfAbsent(name, () => new ScopeStream(this, _exceptionHandler, name));
+    return _streams.putIfAbsent(name, () =>
+        new ScopeStream(this, _exceptionHandler, name));
   }
 
   void _addCount(String name, int amount) {
@@ -525,15 +529,13 @@ class ScopeStream extends async.Stream<ScopeEvent> {
                                  { Function onError,
                                    void onDone(),
                                    bool cancelOnError }) {
-    if (subscriptions.isEmpty) {
-      _streams._addCount(_name, 1);
-    }
-    ScopeStreamSubscription subscription = new ScopeStreamSubscription(this, onData);
+    if (subscriptions.isEmpty) _streams._addCount(_name, 1);
+    var subscription = new ScopeStreamSubscription(this, onData);
     subscriptions.add(subscription);
     return subscription;
   }
 
-  _fire(ScopeEvent event) {
+  void _fire(ScopeEvent event) {
     for(ScopeStreamSubscription subscription in subscriptions) {
       try {
         subscription._onData(event);
@@ -543,16 +545,13 @@ class ScopeStream extends async.Stream<ScopeEvent> {
     }
   }
 
-  _remove(ScopeStreamSubscription subscription) {
+  void _remove(ScopeStreamSubscription subscription) {
     assert(subscription._scopeStream == this);
     if (subscriptions.remove(subscription)) {
-      if (subscriptions.isEmpty) {
-        _streams._addCount(_name, -1);
-      }
+      if (subscriptions.isEmpty) _streams._addCount(_name, -1);
     } else {
       throw new StateError('AlreadyCanceled');
     }
-    return null;
   }
 }
 
@@ -561,7 +560,8 @@ class ScopeStreamSubscription implements async.StreamSubscription<ScopeEvent> {
   final Function _onData;
   ScopeStreamSubscription(this._scopeStream, this._onData);
 
-  async.Future cancel() => _scopeStream._remove(this);
+  // TODO(vbe) should return a Future
+  cancel() => _scopeStream._remove(this);
 
   void onData(void handleData(ScopeEvent data)) => NOT_IMPLEMENTED();
   void onError(Function handleError) => NOT_IMPLEMENTED();
@@ -575,7 +575,7 @@ class ScopeStreamSubscription implements async.StreamSubscription<ScopeEvent> {
 class _FunctionChain {
   final Function fn;
   _FunctionChain _next;
-  
+
   _FunctionChain(fn())
       : fn = fn
   {
@@ -628,58 +628,88 @@ class ExpressionVisitor implements Visitor {
   AST visitCollection(Expression exp) => new CollectionAST(visit(exp));
   AST _mapToAst(Expression expression) => visit(expression);
 
-  List<AST> _toAst(List<Expression> expressions) => expressions.map(_mapToAst).toList();
+  List<AST> _toAst(List<Expression> expressions) =>
+      expressions.map(_mapToAst).toList();
 
-  visitCallScope(CallScope exp)       => ast = new MethodAST(contextRef, exp.name, _toAst(exp.arguments));
-  visitCallMember(CallMember exp)     => ast = new MethodAST(visit(exp.object), exp.name, _toAst(exp.arguments));
-
-  visitAccessScope(AccessScope exp)   => ast = new FieldReadAST(contextRef, exp.name);
-  visitAccessMember(AccessMember exp) => ast = new FieldReadAST(visit(exp.object), exp.name);
-  visitBinary(Binary exp)             => ast = new PureFunctionAST(exp.operation,
-                                                                   _operationToFunction(exp.operation),
-                                                                   [visit(exp.left), visit(exp.right)]);
-  visitPrefix(Prefix exp)             => ast = new PureFunctionAST(exp.operation,
-                                                                   _operationToFunction(exp.operation),
-                                                                   [visit(exp.expression)]);
-  visitConditional(Conditional exp)   => ast = new PureFunctionAST('?:', _operation_ternary,
-                                                                   [visit(exp.condition), visit(exp.yes), visit(exp.no)]);
-  visitAccessKeyed(AccessKeyed exp)   => ast = new PureFunctionAST('[]', _operation_bracket,
-                                                                   [visit(exp.object), visit(exp.key)]);
-
-  visitLiteralPrimitive(LiteralPrimitive exp) => ast = new ConstantAST(exp.value);
-  visitLiteralString(LiteralString exp)       => ast = new ConstantAST(exp.value);
-
-  visitLiteralArray(LiteralArray exp) {
+  void visitCallScope(CallScope exp) {
+    ast = new MethodAST(contextRef, exp.name, _toAst(exp.arguments));
+  }
+  void visitCallMember(CallMember exp) {
+    ast = new MethodAST(visit(exp.object), exp.name, _toAst(exp.arguments));
+  }
+  visitAccessScope(AccessScope exp) {
+    ast = new FieldReadAST(contextRef, exp.name);
+  }
+  visitAccessMember(AccessMember exp) {
+    ast = new FieldReadAST(visit(exp.object), exp.name);
+  }
+  visitBinary(Binary exp) {
+    ast = new PureFunctionAST(exp.operation,
+                              _operationToFunction(exp.operation),
+                              [visit(exp.left), visit(exp.right)]);
+  }
+  void visitPrefix(Prefix exp) {
+    ast = new PureFunctionAST(exp.operation,
+                              _operationToFunction(exp.operation),
+                              [visit(exp.expression)]);
+  }
+  void visitConditional(Conditional exp) {
+    ast = new PureFunctionAST('?:', _operation_ternary,
+                              [visit(exp.condition), visit(exp.yes),
+                              visit(exp.no)]);
+  }
+  void visitAccessKeyed(AccessKeyed exp) {
+    ast = new PureFunctionAST('[]', _operation_bracket,
+                             [visit(exp.object), visit(exp.key)]);
+  }
+  void visitLiteralPrimitive(LiteralPrimitive exp) {
+    ast = new ConstantAST(exp.value);
+  }
+  void visitLiteralString(LiteralString exp) {
+    ast = new ConstantAST(exp.value);
+  }
+  void visitLiteralArray(LiteralArray exp) {
     List<AST> items = _toAst(exp.elements);
     ast = new PureFunctionAST('[${items.join(', ')}]', new ArrayFn(), items);
   }
 
-  visitLiteralObject(LiteralObject exp) {
+  void visitLiteralObject(LiteralObject exp) {
     List<String> keys = exp.keys;
     List<AST> values = _toAst(exp.values);
     assert(keys.length == values.length);
-    List<String> kv = [];
+    var kv = <String>[];
     for(var i = 0; i < keys.length; i++) {
       kv.add('${keys[i]}: ${values[i]}');
     }
     ast = new PureFunctionAST('{${kv.join(', ')}}', new MapFn(keys), values);
   }
 
-  visitFilter(Filter exp) {
+  void visitFilter(Filter exp) {
     Function filterFunction = filters(exp.name);
     List<AST> args = [visitCollection(exp.expression)];
     args.addAll(_toAst(exp.arguments).map((ast) => new CollectionAST(ast)));
-    ast = new PureFunctionAST('|${exp.name}', new _FilterWrapper(filterFunction, args.length), args);
+    ast = new PureFunctionAST('|${exp.name}',
+        new _FilterWrapper(filterFunction, args.length), args);
   }
 
   // TODO(misko): this is a corner case. Choosing not to implement for now.
-  visitCallFunction(CallFunction exp) => _notSupported("function's returing functions");
-  visitAssign(Assign exp) => _notSupported('assignement');
-  visitLiteral(Literal exp) => _notSupported('literal');
-  visitExpression(Expression exp) => _notSupported('?');
-  visitChain(Chain exp) => _notSupported(';');
+  void visitCallFunction(CallFunction exp) {
+    _notSupported("function's returing functions");
+  }
+  void visitAssign(Assign exp) {
+    _notSupported('assignement');
+  }
+  void visitLiteral(Literal exp) {
+    _notSupported('literal');
+  }
+  void visitExpression(Expression exp) {
+    _notSupported('?');
+  }
+  void visitChain(Chain exp) {
+    _notSupported(';');
+  }
 
-  _notSupported(String name) {
+  void  _notSupported(String name) {
     throw new StateError("Can not watch expression containing '$name'.");
   }
 }
@@ -719,7 +749,7 @@ _operation_not_equals(left, right)             => left != right;
 _operation_less_then(left, right)              => left < right;
 _operation_greater_then(left, right)           => left > right;
 _operation_less_or_equals_then(left, right)    => left <= right;
-_operation_greater_or_equals_then(left, right) => left >= right; 
+_operation_greater_or_equals_then(left, right) => left >= right;
 _operation_power(left, right)                  => left ^ right;
 _operation_bitwise_and(left, right)            => left & right;
 // TODO(misko): these should short circuit the evaluation.

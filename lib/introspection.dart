@@ -1,17 +1,18 @@
 part of angular;
 
 /**
- * A global write only variable which keeps track of objects attached to the elements.
- * This is usefull for debugging AngularDart application from the browser's REPL.
+ * A global write only variable which keeps track of objects attached to the
+ * elements. This is useful for debugging AngularDart application from the
+ * browser's REPL.
  */
 var _elementExpando = new Expando('element');
 
 /**
  * Return the closest [ElementProbe] object for a given [Element].
  *
- * NOTE: This global method is here to make it easier to debug Angular application from
- *       the browser's REPL, unit or end-to-end tests. The function is not intended to
- *       be called from Angular application.
+ * NOTE: This global method is here to make it easier to debug Angular
+ *       application from the browser's REPL, unit or end-to-end tests. The
+ *       function is not intended to be called from Angular application.
  */
 ElementProbe ngProbe(dom.Node node) {
   while(node != null) {
@@ -26,9 +27,9 @@ ElementProbe ngProbe(dom.Node node) {
 /**
  * Return the [Injector] associated with a current [Element].
  *
- * **NOTE**: This global method is here to make it easier to debug Angular application from
- * the browser's REPL, unit or end-to-end tests. The function is not intended to be called
- * from Angular application.
+ * **NOTE**: This global method is here to make it easier to debug Angular
+ * application from the browser's REPL, unit or end-to-end tests. The function
+ * is not intended to be called from Angular application.
  */
 Injector ngInjector(dom.Node node) => ngProbe(node).injector;
 
@@ -36,14 +37,15 @@ Injector ngInjector(dom.Node node) => ngProbe(node).injector;
 /**
  * Return the [Scope] associated with a current [Element].
  *
- * **NOTE**: This global method is here to make it easier to debug Angular application from
- * the browser's REPL, unit or end-to-end tests. The function is not intended to be called
- * from Angular application.
+ * **NOTE**: This global method is here to make it easier to debug Angular
+ * application from the browser's REPL, unit or end-to-end tests. The function
+ * is not intended to be called from Angular application.
  */
 Scope ngScope(dom.Node node) => ngProbe(node).scope;
 
 
-List<dom.Element> ngQuery(dom.Node element, String selector, [String containsText]) {
+List<dom.Element> ngQuery(dom.Node element, String selector,
+                          [String containsText]) {
   var list = [];
   var children = [element];
   if ((element is dom.Element) && element.shadowRoot != null) {
@@ -64,9 +66,9 @@ List<dom.Element> ngQuery(dom.Node element, String selector, [String containsTex
 /**
  * Return a List of directive controllers associated with a current [Element].
  *
- * **NOTE**: This global method is here to make it easier to debug Angular application from
- * the browser's REPL, unit or end-to-end tests. The function is not intended to be called
- * from Angular application.
+ * **NOTE**: This global method is here to make it easier to debug Angular
+ * application from the browser's REPL, unit or end-to-end tests. The function
+ * is not intended to be called from Angular application.
  */
 List<Object> ngDirectives(dom.Node node) {
   ElementProbe probe = _elementExpando[node];
@@ -92,7 +94,7 @@ js.JsObject _jsProbe(ElementProbe probe) {
 }
 
 js.JsObject _jsInjector(Injector injector) =>
-    new js.JsObject.jsify({ "get": injector.get})..['_dart_'] = injector;
+         new js.JsObject.jsify({"get": injector.get})..['_dart_'] = injector;
 
 js.JsObject _jsScope(Scope scope) {
   return new js.JsObject.jsify({
