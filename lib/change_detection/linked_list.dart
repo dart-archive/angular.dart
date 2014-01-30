@@ -21,9 +21,9 @@ class _LinkedList<L extends _LinkedList> {
     return item;
   }
 
-  static _isEmpty(_Handler list) => list._head == null;
+  static bool _isEmpty(_Handler list) => list._head == null;
 
-  static _remove(_Handler list, _Handler item) {
+  static void _remove(_Handler list, _Handler item) {
     var previous = item._previous;
     var next = item._next;
 
@@ -48,9 +48,9 @@ class _ArgHandlerList {
     return item;
   }
 
-  static _isEmpty(_InvokeHandler list) => list._argHandlerHead == null;
+  static bool _isEmpty(_InvokeHandler list) => list._argHandlerHead == null;
 
-  static _remove(_InvokeHandler list, _ArgHandler item) {
+  static void _remove(_InvokeHandler list, _ArgHandler item) {
     var previous = item._previousArgHandler;
     var next = item._nextArgHandler;
 
@@ -75,9 +75,9 @@ class _WatchList {
     return item;
   }
 
-  static _isEmpty(_Handler list) => list._watchHead == null;
+  static bool _isEmpty(_Handler list) => list._watchHead == null;
 
-  static _remove(_Handler list, Watch item) {
+  static void _remove(_Handler list, Watch item) {
     var previous = item._previousWatch;
     var next = item._nextWatch;
 
@@ -106,13 +106,12 @@ abstract class _EvalWatchList {
     if (prev != null) prev._nextEvalWatch = item;
     if (next != null) next._previousEvalWatch = item;
 
-    list._evalWatchTail = item;
-    return item;
+    return list._evalWatchTail = item;
   }
 
-  static _isEmpty(_EvalWatchList list) => list._evalWatchHead == null;
+  static bool _isEmpty(_EvalWatchList list) => list._evalWatchHead == null;
 
-  static _remove(_EvalWatchList list, _EvalWatchRecord item) {
+  static void _remove(_EvalWatchList list, _EvalWatchRecord item) {
     assert(item.watchGrp == list);
     var prev = item._previousEvalWatch;
     var next = item._nextEvalWatch;
@@ -149,9 +148,9 @@ class _WatchGroupList {
     return item;
   }
 
-  static _isEmpty(_WatchGroupList list) => list._watchGroupHead == null;
+  static bool _isEmpty(_WatchGroupList list) => list._watchGroupHead == null;
 
-  static _remove(_WatchGroupList list, WatchGroup item) {
+  static void _remove(_WatchGroupList list, WatchGroup item) {
     var previous = item._previousWatchGroup;
     var next = item._nextWatchGroup;
 

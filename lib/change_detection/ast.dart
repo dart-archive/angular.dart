@@ -10,7 +10,9 @@ abstract class AST {
   static final String _CONTEXT = '#';
   final String expression;
   AST(expression)
-      : expression = expression.startsWith('#.') ? expression.substring(2) : expression
+      : expression = expression.startsWith('#.')
+          ? expression.substring(2)
+          : expression
   {
     assert(expression!=null);
   }
@@ -25,8 +27,8 @@ abstract class AST {
  */
 class ContextReferenceAST extends AST {
   ContextReferenceAST(): super(AST._CONTEXT);
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup)
-      => new _ConstantWatchRecord(watchGroup, expression, watchGroup.context);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
+      new _ConstantWatchRecord(watchGroup, expression, watchGroup.context);
 }
 
 /**
@@ -37,14 +39,14 @@ class ContextReferenceAST extends AST {
 class ConstantAST extends AST {
   final constant;
 
-  ConstantAST(dynamic constant, [String expression]):
-      super(expression == null
-            ? (constant is String ? '"$constant"' : '$constant')
-            : expression),
-      constant = constant;
+  ConstantAST(constant, [String expression])
+      : constant = constant,
+        super(expression == null
+            ? constant is String ? '"$constant"' : '$constant'
+            : expression);
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup)
-      => new _ConstantWatchRecord(watchGroup, expression, constant);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
+      new _ConstantWatchRecord(watchGroup, expression, constant);
 }
 
 /**
@@ -62,8 +64,7 @@ class FieldReadAST extends AST {
         name = name;
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-    watchGroup.addFieldWatch(lhs, name, expression);
-
+      watchGroup.addFieldWatch(lhs, name, expression);
 }
 
 /**
@@ -83,7 +84,7 @@ class PureFunctionAST extends AST {
         name = name;
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-    watchGroup.addFunctionWatch(fn, argsAST, expression);
+      watchGroup.addFunctionWatch(fn, argsAST, expression);
 }
 
 /**
@@ -103,7 +104,7 @@ class MethodAST extends AST {
         argsAST = argsAST;
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-    watchGroup.addMethodWatch(lhsAST, name, argsAST, expression);
+      watchGroup.addMethodWatch(lhsAST, name, argsAST, expression);
 }
 
 
@@ -113,9 +114,8 @@ class CollectionAST extends AST {
       : super('#collection($valueAST)'),
         valueAST = valueAST;
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) {
-    return watchGroup.addCollectionWatch(valueAST);
-  }
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
+      watchGroup.addCollectionWatch(valueAST);
 }
 
 _argList(List<AST> items) => items.join(', ');
@@ -130,9 +130,9 @@ class _ConstantWatchRecord extends WatchRecord<_Handler> {
   final currentValue;
   final _Handler handler;
 
-  _ConstantWatchRecord(WatchGroup watchGroup, String expression, dynamic currentValue):
-      currentValue = currentValue,
-      handler = new _ConstantHandler(watchGroup, expression, currentValue);
+  _ConstantWatchRecord(WatchGroup watchGroup, String expression, currentValue)
+      : currentValue = currentValue,
+        handler = new _ConstantHandler(watchGroup, expression, currentValue);
 
   ChangeRecord<_Handler> check() => null;
   void remove() => null;

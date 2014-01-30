@@ -4,7 +4,7 @@ typedef EvalExceptionHandler(error, stack);
 
 /**
  * An interface for [ChangeDetectorGroup] groups related watches together. It
- * guarentees that within the group all watches will be reported in the order in
+ * guarantees that within the group all watches will be reported in the order in
  * which they were registered. It also provides an efficient way of removing the
  * watch group.
  */
@@ -26,7 +26,6 @@ abstract class ChangeDetectorGroup<H> {
    * - [handler] an opaque object passed on to [ChangeRecord].
    */
   WatchRecord<H> watch(Object object, String field, H handler);
-
 
   /** Use to remove all watches in the group in an efficient manner. */
   void remove();
