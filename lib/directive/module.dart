@@ -34,6 +34,14 @@ part 'ng_model_validators.dart';
 
 class NgDirectiveModule extends Module {
   NgDirectiveModule() {
+    value(NgModelRequiredValidator, null);
+    value(NgModelUrlValidator, null);
+    value(NgModelEmailValidator, null);
+    value(NgModelNumberValidator, null);
+    value(NgModelPatternValidator, null);
+    value(NgModelMinLengthValidator, null);
+    value(NgModelMaxLengthValidator, null);
+
     value(NgADirective, null);
     value(NgBindDirective, null);
     value(NgBindTemplateDirective, null);
@@ -70,13 +78,5 @@ class NgDirectiveModule extends Module {
     value(NgNonBindableDirective, null);
     value(NgTemplateDirective, null);
     value(NgForm, new NgNullForm());
-
-    value(NgModelRequiredValidator, null);
-    value(NgModelUrlValidator, null);
-    value(NgModelEmailValidator, null);
-    value(NgModelNumberValidator, null);
-    value(NgModelPatternValidator, null);
-    value(NgModelMinLengthValidator, null);
-    value(NgModelMaxLengthValidator, null);
   }
 }
