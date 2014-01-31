@@ -457,10 +457,10 @@ main() {
         expect(eval('0&&1?0:1')).toEqual(B(0)&&B(1)?0:1);
         expect(eval('1||0?0:0')).toEqual(B(1)||B(0)?0:0);
 
-        expect(eval('0?0&&1:2')).toEqual(B(0)?0&&1:2);
-        expect(eval('0?1&&1:2')).toEqual(B(0)?1&&1:2);
-        expect(eval('0?0||0:1')).toEqual(B(0)?0||0:1);
-        expect(eval('0?0||1:2')).toEqual(B(0)?0||1:2);
+        expect(eval('0?0&&1:2')).toEqual(B(0)?B(0)&&B(1):2);
+        expect(eval('0?1&&1:2')).toEqual(B(0)?B(1)&&B(1):2);
+        expect(eval('0?0||0:1')).toEqual(B(0)?B(0)||B(0):1);
+        expect(eval('0?0||1:2')).toEqual(B(0)?B(0)||B(1):2);
 
         expect(eval('1?0&&1:2')).toEqual(B(1)?B(0)&&B(1):2);
         expect(eval('1?1&&1:2')).toEqual(B(1)?B(1)&&B(1):2);

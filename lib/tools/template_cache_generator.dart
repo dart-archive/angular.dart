@@ -7,7 +7,6 @@ import 'dart:collection';
 import 'package:analyzer/src/generated/ast.dart';
 import 'package:analyzer/src/generated/source.dart';
 import 'package:analyzer/src/generated/element.dart';
-import 'package:analyzer/src/generated/engine.dart';
 import 'package:di/generator.dart';
 
 const String PACKAGE_PREFIX = 'package:';

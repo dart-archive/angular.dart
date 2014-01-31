@@ -44,10 +44,13 @@ class DartCodeGenVisitor extends Visitor {
   String lookupSetter(String key) => setters.lookup(key);
 
   String lookupAccessor(String key) {
-    switch (state) {
-      case STATE_EVAL: return lookupGetter(key);
-      case STATE_EVAL_HOLDER: return lookupHolder(key);
-      case STATE_ASSIGN: return lookupSetter(key);
+    if (state == STATE_EVAL) {
+      return lookupGetter(key);
+    } else if (state == STATE_EVAL_HOLDER) {
+      return lookupHolder(key);
+    } else {
+      assert(state == STATE_ASSIGN);
+      return lookupSetter(key);
     }
   }
 

@@ -10,12 +10,13 @@ export 'package:angular/core/parser/static_parser.dart'
 typedef LocalsWrapper(context, locals);
 typedef Getter(self);
 typedef Setter(self, value);
+typedef BoundGetter([locals]);
+typedef BoundSetter(value, [locals]);
 
 /// Placeholder for DI. The parser you are looking for is [DynamicParser].
 abstract class Parser<T> {
   T call(String input);
 }
-
 
 abstract class ParserBackend<T> {
   bool isAssignable(T expression);
