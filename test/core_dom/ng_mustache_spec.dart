@@ -52,9 +52,9 @@ main() {
     }));
 
 
-    it('should allow newlines in attribute', inject((Compiler $compile, Scope $rootScope, Injector injector) {
+    it('should allow newlines in attribute', inject((Compiler $compile, Scope $rootScope, Injector injector, DirectiveMap directives) {
       var element = $('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
-      var template = $compile(element);
+      var template = $compile(element, directives);
 
       $rootScope.line1 = 'L1';
       $rootScope.line2 = 'L2';
