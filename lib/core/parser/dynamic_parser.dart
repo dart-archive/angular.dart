@@ -9,12 +9,14 @@ import 'package:angular/core/parser/dynamic_parser_impl.dart';
 import 'package:angular/core/parser/eval.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
 
+@NgInjectableService()
 class ClosureMap {
   Getter lookupGetter(String name) => null;
   Setter lookupSetter(String name) => null;
   Function lookupFunction(String name, int arity) => null;
 }
 
+@NgInjectableService()
 class DynamicParser implements Parser<Expression> {
   final Lexer _lexer;
   final ParserBackend _backend;
@@ -60,6 +62,7 @@ class DynamicExpression extends Expression {
   }
 }
 
+@NgInjectableService()
 class DynamicParserBackend extends ParserBackend {
   final FilterMap _filters;
   final ClosureMap _closures;
