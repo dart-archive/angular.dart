@@ -18,8 +18,7 @@ class NgIfDirective {
     },
     template: '<div>{{ctrl.inline.template.expression}}</div>',
     exportExpressionAttrs: const ['exported-attr'],
-    exportExpressions: const ['exported + expression']
-)
+    exportExpressions: const ['exported + expression'])
 class MyComponent {
   @NgOneWay('another-expression')
   String anotherExpression;
@@ -30,4 +29,12 @@ class MyComponent {
   set twoWayStuff(String abc) {}
   @NgTwoWay('two-way-stuff')
   String get twoWayStuff => null;
+}
+
+class CssUrlsString {
+
+}
+
+class CssUrlsList {
+
 }

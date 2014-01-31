@@ -18,7 +18,7 @@ class HtmlAndCssComponent {
 @NgComponent(
     selector: 'html-and-css',
     templateUrl: 'simple.html',
-    cssUrls: const ['simple.css', 'another.css'])
+    cssUrl: const ['simple.css', 'another.css'])
 class HtmlAndMultipleCssComponent {
 }
 

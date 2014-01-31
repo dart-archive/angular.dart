@@ -184,22 +184,9 @@ class NgComponent extends NgAnnotation {
   final String templateUrl;
 
   /**
-   * A CSS URL to load into the shadow DOM.
-   */
-  final String cssUrl;
-
-  /**
    * A list of CSS URLs to load into the shadow DOM.
    */
-  final List<String> cssUrls;
-
-  List<String> get allCssUrls {
-    if (cssUrls == null && cssUrl == null) return null;
-    if (cssUrls == null && cssUrl != null) return [cssUrl];
-    if (cssUrls != null && cssUrl == null) return cssUrls;
-    assert(cssUrls != null && cssUrl != null);
-    return [cssUrl]..addAll(cssUrls);
-  }
+  final _cssUrls;
 
   /**
    * Set the shadow root applyAuthorStyles property. See shadow-DOM
@@ -223,8 +210,7 @@ class NgComponent extends NgAnnotation {
   const NgComponent({
     this.template,
     this.templateUrl,
-    this.cssUrl,
-    this.cssUrls,
+    cssUrl,
     this.applyAuthorStyles,
     this.resetStyleInheritance,
     this.publishAs,
@@ -233,8 +219,9 @@ class NgComponent extends NgAnnotation {
     visibility,
     publishTypes : const <Type>[],
     exportExpressions,
-    exportExpressionAttrs
-  }) : super(selector: selector,
+    exportExpressionAttrs})
+      : _cssUrls = cssUrl,
+        super(selector: selector,
              children: NgAnnotation.COMPILE_CHILDREN,
              visibility: visibility,
              publishTypes: publishTypes,
@@ -242,12 +229,15 @@ class NgComponent extends NgAnnotation {
              exportExpressions: exportExpressions,
              exportExpressionAttrs: exportExpressionAttrs);
 
+  List<String> get cssUrls => _cssUrls == null ?
+      const [] :
+      _cssUrls is List ?  _cssUrls : [_cssUrls];
+
   NgAnnotation cloneWithNewMap(newMap) =>
       new NgComponent(
           template: template,
           templateUrl: templateUrl,
-          cssUrl: cssUrl,
-          cssUrls: cssUrls,
+          cssUrl: cssUrls,
           applyAuthorStyles: applyAuthorStyles,
           resetStyleInheritance: resetStyleInheritance,
           publishAs: publishAs,
@@ -279,15 +269,13 @@ class NgDirective extends NgAnnotation {
   static const String CHILDREN_VISIBILITY = 'children';
   static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
 
-  const NgDirective({
-                    children: NgAnnotation.COMPILE_CHILDREN,
+  const NgDirective({children: NgAnnotation.COMPILE_CHILDREN,
                     map,
                     selector,
                     visibility,
                     publishTypes : const <Type>[],
                     exportExpressions,
-                    exportExpressionAttrs
-                    }) : super(selector: selector, children: children, visibility: visibility,
+                    exportExpressionAttrs}) : super(selector: selector, children: children, visibility: visibility,
   publishTypes: publishTypes, map: map,
   exportExpressions: exportExpressions,
   exportExpressionAttrs: exportExpressionAttrs);
