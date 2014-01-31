@@ -307,8 +307,8 @@ class _ComponentFactory {
     // so change back to using @import once Chrome bug is fixed or a
     // better work around is found.
     List<async.Future<String>> cssFutures = new List();
-    var cssUrls = component.allCssUrls;
-    if (cssUrls != null) {
+    var cssUrls = component.cssUrls;
+    if (cssUrls.isNotEmpty) {
       cssUrls.forEach((css) => cssFutures.add( $http.getString(css, cache: $templateCache) ) );
     } else {
       cssFutures.add( new async.Future.value(null) );

@@ -18,7 +18,7 @@ class HtmlAndCssComponent {
 @NgComponent(
     selector: 'html-and-css',
     templateUrl: 'simple.html',
-    cssUrls: const ['simple.css', 'another.css'])
+    cssUrl: const ['simple.css', 'another.css'])
 class HtmlAndMultipleCssComponent {
 }
 
@@ -47,16 +47,17 @@ main() => describe('template url', () {
   describe('loading with http rewriting', () {
     beforeEach(module((Module module) {
       module
-        ..type(HtmlAndCssComponent)
-        ..type(UrlRewriter, implementedBy: PrefixedUrlRewriter);
+          ..type(HtmlAndCssComponent)
+          ..type(UrlRewriter, implementedBy: PrefixedUrlRewriter);
     }));
 
     it('should use the UrlRewriter for both HTML and CSS URLs', async(inject((Http $http,
           Compiler $compile, Scope $rootScope, Logger log, Injector injector, NgZone zone,
           MockHttpBackend backend) {
 
-      backend.whenGET('PREFIX:simple.html').respond('<div log="SIMPLE">Simple!</div>');
-      backend.whenGET('PREFIX:simple.css').respond('.hello{}');
+      backend
+          ..whenGET('PREFIX:simple.html').respond('<div log="SIMPLE">Simple!</div>')
+          ..whenGET('PREFIX:simple.css').respond('.hello{}');
 
       var element = $('<div><html-and-css log>ignore</html-and-css><div>');
       zone.run(() {
@@ -76,11 +77,12 @@ main() => describe('template url', () {
 
   describe('async template loading', () {
     beforeEach(module((Module module) {
-      module.type(LogAttrDirective);
-      module.type(SimpleUrlComponent);
-      module.type(HtmlAndCssComponent);
-      module.type(OnlyCssComponent);
-      module.type(InlineWithCssComponent);
+      module
+          ..type(LogAttrDirective)
+          ..type(SimpleUrlComponent)
+          ..type(HtmlAndCssComponent)
+          ..type(OnlyCssComponent)
+          ..type(InlineWithCssComponent);
     }));
 
     it('should replace element with template from url', async(inject((Http $http,
@@ -124,8 +126,9 @@ main() => describe('template url', () {
     it('should load a CSS file into a style', async(inject((Http $http,
           Compiler $compile, Scope $rootScope, Logger log, Injector injector,
           MockHttpBackend backend) {
-      backend.expectGET('simple.css').respond('.hello{}');
-      backend.expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
+      backend
+          ..expectGET('simple.css').respond('.hello{}')
+          ..expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
       var element = $('<div><html-and-css log>ignore</html-and-css><div>');
       $compile(element)(injector, element);
@@ -166,8 +169,9 @@ main() => describe('template url', () {
 
     it('should load the CSS before the template is loaded', async(inject((Http $http,
           Compiler $compile, Scope $rootScope, Injector injector, MockHttpBackend backend) {
-      backend.expectGET('simple.css').respond('.hello{}');
-      backend.expectGET('simple.html').respond('<div>Simple!</div>');
+      backend
+          ..expectGET('simple.css').respond('.hello{}')
+          ..expectGET('simple.html').respond('<div>Simple!</div>');
 
       var element = $('<html-and-css>ignore</html-and-css>');
       $compile(element)(injector, element);
@@ -180,16 +184,18 @@ main() => describe('template url', () {
 
   describe('multiple css loading', () {
     beforeEach(module((Module module) {
-      module.type(LogAttrDirective);
-      module.type(HtmlAndMultipleCssComponent);
+      module
+          ..type(LogAttrDirective)
+          ..type(HtmlAndMultipleCssComponent);
     }));
 
     it('should load multiple CSS files into a style', async(inject((Http $http,
         Compiler $compile, Scope $rootScope, Logger log, Injector injector,
         MockHttpBackend backend) {
-      backend.expectGET('simple.css').respond('.hello{}');
-      backend.expectGET('another.css').respond('.world{}');
-      backend.expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
+      backend
+          ..expectGET('simple.css').respond('.hello{}')
+          ..expectGET('another.css').respond('.world{}')
+          ..expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
       var element = $('<div><html-and-css log>ignore</html-and-css><div>');
       $compile(element)(injector, element);
