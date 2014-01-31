@@ -21,7 +21,6 @@ main() => describe('DirectiveMap', () {
     expect(annotation.publishTypes).toEqual([String]);
     expect(annotation.template).toEqual('template');
     expect(annotation.templateUrl).toEqual('templateUrl');
-    expect(annotation.cssUrl).toEqual('cssUrl');
     expect(annotation.cssUrls).toEqual(['cssUrls']);
     expect(annotation.applyAuthorStyles).toEqual(true);
     expect(annotation.resetStyleInheritance).toEqual(true);
@@ -73,8 +72,7 @@ main() => describe('DirectiveMap', () {
     selector: 'annotated-io',
     template: 'template',
     templateUrl: 'templateUrl',
-    cssUrl: 'cssUrl',
-    cssUrls: const ['cssUrls'],
+    cssUrl: const ['cssUrls'],
     applyAuthorStyles: true,
     resetStyleInheritance: true,
     publishAs: 'ctrl',

@@ -150,8 +150,15 @@ class TemplateCollectingVisitor {
       if (arg is NamedExpression) {
         NamedExpression namedArg = arg;
         var paramName = namedArg.name.label.name;
-        if (paramName == 'templateUrl' || paramName == 'cssUrl') {
+        if (paramName == 'templateUrl') {
           cacheUris.add(assertString(namedArg.expression).stringValue);
+        } else if (paramName == 'cssUrl') {
+          if (namedArg.expression is StringLiteral) {
+            cacheUris.add(assertString(namedArg.expression).stringValue);
+          } else {
+            cacheUris.addAll(assertList(namedArg.expression).elements.map((e) =>
+                assertString(e).stringValue));
+          }
         }
       }
     });
