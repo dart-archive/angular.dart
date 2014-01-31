@@ -1,5 +1,6 @@
 import 'package:di/di.dart';
 import 'package:angular/angular.dart';
+import 'package:angular/dart2js_mirrors.dart';
 import 'package:angular/playback/playback_http.dart';
 import 'todo.dart';
 
@@ -7,8 +8,7 @@ import 'dart:html';
 
 // Everything in the 'todo' library should be preserved by MirrorsUsed
 @MirrorsUsed(
-    targets: const['todo'],
-    override: '*')
+    targets: const['todo'])
 import 'dart:mirrors';
 
 main() {
