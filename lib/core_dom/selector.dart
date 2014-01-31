@@ -254,6 +254,12 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
         String nodeName = element.tagName.toLowerCase();
         Map<String, String> attrs = {};
 
+        // The ng-model attribute must be interpreted at last.
+        if (element.attributes.containsKey('ng-model')) {
+          var value = element.attributes.remove('ng-model');
+          element.attributes['ng-model'] = value;
+        }
+
         // Select node
         partialSelection = elementSelector.selectNode(directiveRefs, partialSelection, element, nodeName);
 
