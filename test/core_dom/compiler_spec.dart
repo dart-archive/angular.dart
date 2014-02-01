@@ -423,21 +423,25 @@ main() => describe('dte.compiler', () {
         it('should fire onTemplate method', async(inject((Logger logger, MockHttpBackend backend) {
           backend.whenGET('some/template.url').respond('<div>WORKED</div>');
           var scope = $rootScope.$new();
-          var element = $('<attach-detach value="{{\'ready\'}}"></attach-detach>');
+          scope['isReady'] = 'ready';
+          scope['logger'] = logger;
+          var element = $('<attach-detach attr-value="{{isReady}}" expr-value="isReady">{{logger("inner")}}</attach-detach>');
           $compile(element)(injector.createChild([new Module()..value(Scope, scope)]), element);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
 
           $rootScope.$digest();
-          expect(logger).toEqual(['new', 'attach:ready']);
+          expect(logger).toEqual(['new', 'attach:@ready; =>ready', 'inner']);
+          logger.clear();
 
           backend.flush();
           microLeap();
-          expect(logger).toEqual(['new', 'attach:ready', 'templateLoaded', scope.shadowRoot]);
+          expect(logger).toEqual(['templateLoaded', scope.shadowRoot]);
+          logger.clear();
 
           scope.$destroy();
-          expect(logger).toEqual(['new', 'attach:ready', 'templateLoaded', scope.shadowRoot, 'detach']);
+          expect(logger).toEqual(['detach']);
           expect(element.textWithShadow()).toEqual('WORKED');
         })));
       });
@@ -714,19 +718,23 @@ class LogComponent {
 @NgComponent(
     selector: 'attach-detach',
     templateUrl: 'some/template.url',
-    map: const { 'value': '@value' }
+    map: const {
+        'attr-value': '@attrValue',
+        'expr-value': '<=>exprValue'
+    }
 )
 class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRootAware {
   Logger logger;
   Scope scope;
-  String value = 'too early';
+  String attrValue = 'too early';
+  String exprValue = 'too early';
 
   AttachDetachComponent(Logger this.logger, TemplateLoader templateLoader, Scope this.scope) {
     logger('new');
     templateLoader.template.then((_) => logger('templateLoaded'));
   }
 
-  attach() => logger('attach:$value');
+  attach() => logger('attach:@$attrValue; =>$exprValue');
   detach() => logger('detach');
   onShadowRoot(shadowRoot) {
     scope.$root.shadowRoot = shadowRoot;
