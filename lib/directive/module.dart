@@ -38,6 +38,7 @@ class NgDirectiveModule extends Module {
     value(NgBindDirective, null);
     value(NgBindTemplateDirective, null);
     value(NgBindHtmlDirective, null);
+    value(dom.NodeValidator, new dom.NodeValidatorBuilder.common());
     value(NgClassDirective, null);
     value(NgClassOddDirective, null);
     value(NgClassEvenDirective, null);
