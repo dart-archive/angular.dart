@@ -31,10 +31,11 @@ abstract class RouteInitializer {
 @NgInjectableService()
 class NgRoutingHelper {
   final Router router;
+  final NgApp _ngApp;
   List<NgViewDirective> portals = <NgViewDirective>[];
   Map<String, String> _templates = new Map<String, String>();
 
-  NgRoutingHelper(RouteInitializer initializer, this.router) {
+  NgRoutingHelper(RouteInitializer initializer, this.router, this._ngApp) {
     if (initializer == null) {
       window.console.error('No RouteInitializer implementation provided.');
       return;
@@ -49,7 +50,7 @@ class NgRoutingHelper {
       });
     });
 
-    router.listen();
+    router.listen(appRoot: _ngApp.root);
   }
 
   _reloadViews({Route startingFrom}) {

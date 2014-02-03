@@ -48,7 +48,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.10"
+    version: "0.4.11"
   source_maps:
     description: source_maps
     source: hosted
