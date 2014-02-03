@@ -1,3 +1,34 @@
+<a name="v0.9.6"></a>
+# v0.9.6 fluffy-freezray (2014-02-03)
+
+### WARNING
+
+We reserve the right to change the APIs in v0.9.x versions.
+
+## Bug Fixes
+
+- **Directive:** remove publishAs from NgDirective to avoid confusion."
+  ([7ee587f6](https://github.com/angular/angular.dart/commit/7ee587f6f959d89cfdd87b0f615510405d693db9),
+   [#396](https://github.com/angular/angular.dart/issues/396))
+- **NgAttachAware:** revert to original behavior and define stronger test
+  ([500446d1](https://github.com/angular/angular.dart/commit/500446d1f6d548bbc007957017cf7cae74c7f30c))
+- **NgComponent:** attach method was called earlier rathe then later.
+  ([3c594130](https://github.com/angular/angular.dart/commit/3c594130589f43a6f82374a87bf498f2d5645ab5))
+- **doc:** Using a consistent name for the library
+  ([3f541fa4](https://github.com/angular/angular.dart/commit/3f541fa49a9543e8d3c7a6c416b04934c591bf74))
+- **routing:** correctly scope routing to ng-app
+  ([3ab250a7](https://github.com/angular/angular.dart/commit/3ab250a706c84542c9e618d9e98eea81d99a5d22))
+
+
+## Features
+
+- **change-detection:** Initial implementation of new change-detection algorithm.
+  ([d0b2dd95](https://github.com/angular/angular.dart/commit/d0b2dd957b02215671f9b2b8d8f30c05879ad8c5))
+- **ngModel:** support the input[type="search"] field
+  ([ff736d92](https://github.com/angular/angular.dart/commit/ff736d92a16bc06b848d0be4282dbf8f80b831c5),
+   [#466](https://github.com/angular/angular.dart/issues/466))
+
+
 <a name="v0.9.5"></a>
 # v0.9.5 badger-magic (2014-01-27)
 
