@@ -23,6 +23,7 @@ class AngularModule extends Module {
 
     type(MetadataExtractor);
     value(Expando, _elementExpando);
+    value(NgApp, new NgApp(dom.window.document.documentElement));
   }
 }
 
@@ -79,7 +80,9 @@ Injector ngBootstrap({
   // The injector must be created inside the zone, so we create the
   // zone manually and give it back to the injector as a value.
   NgZone zone = new NgZone();
-  ngModules.add(new Module()..value(NgZone, zone));
+  ngModules.add(new Module()
+      ..value(NgZone, zone)
+      ..value(NgApp, new NgApp(element)));
 
   return zone.run(() {
     var rootElements = [element];
@@ -87,4 +90,10 @@ Injector ngBootstrap({
     injector.get(Compiler)(rootElements)(injector, rootElements);
     return injector;
   });
+}
+
+/// Holds a reference to the root of the application used by ngBootstrap.
+class NgApp {
+  final dom.Element root;
+  NgApp(this.root);
 }
