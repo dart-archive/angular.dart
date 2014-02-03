@@ -71,8 +71,8 @@ class _Row {
  *
  * # Example:
  *
- *     <ul ng-repeat="item in ['foo', 'bar', 'baz']">
- *       <li>{{$item}}</li>
+ *     <ul>
+ *       <li ng-repeat="item in ['foo', 'bar', 'baz']">{{item}}</li>
  *     </ul>
  */
 
