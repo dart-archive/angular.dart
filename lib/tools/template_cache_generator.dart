@@ -48,7 +48,7 @@ main(args) {
   print('output: $output');
   print('outputLibrary: $outputLibrary');
   print('packageRoots: $packageRoots');
-  print('url rewritters: ' + args[4]);
+  print('url rewritters: ' + args[5]);
   print('blacklistedClasses: ' + blacklistedClasses.join(', '));
 
 
