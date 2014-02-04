@@ -47,7 +47,7 @@ Injector _defaultInjectorFactory(List<Module> modules) =>
  *   - [modules] Optional list of [Module]s to add to the [Injector] (if more than one is needed).
  *   - [element] Optional root element of the application. If non specified, the
  *     the root element is looked up using the [selector]. If selector can not
- *     identify a root, the root [HTTML] element is used for bootstraping.
+ *     identify a root, the root [HTML] element is used for bootstraping.
  *   - [selector] Optional CSS selector used to locate the root element for the application.
  *   - [injectorFactor] Optional factory responsible for creating the injector.
  *
