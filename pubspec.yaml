@@ -6,7 +6,7 @@ authors:
 - James deBoer <james@huronbox.com>
 - Chirayu Krishnappa <chirayu@google.com>
 description: Angular for dart.
-homepage: https://github.com/angular/angular.dart
+homepage: https://angulardart.org
 environment:
   sdk: '>=0.8.10'
 dev_dependencies:
