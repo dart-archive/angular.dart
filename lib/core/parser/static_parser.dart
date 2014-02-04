@@ -1,6 +1,6 @@
 library angular.core.parser.static_parser;
 
-import 'package:angular/angular.dart';
+import 'package:angular/core/module.dart' show NgInjectableService;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
 
