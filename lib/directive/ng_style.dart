@@ -13,13 +13,12 @@ part of angular.directive;
 class NgStyleDirective {
   final dom.Element _element;
   final Scope _scope;
+  final AstParser _parser;
 
   String _styleExpression;
+  Watch _watch;
 
-  NgStyleDirective(this._element, this._scope);
-
-  Function _removeWatch = () => null;
-  var _lastStyles;
+  NgStyleDirective(this._element, this._scope, this._parser);
 
 /**
   * ng-style attribute takes an expression which evaluates to an
@@ -28,19 +27,19 @@ class NgStyleDirective {
   */
   set styleExpression(String value) {
     _styleExpression = value;
-    _removeWatch();
-    _removeWatch = _scope.$watchCollection(_styleExpression, _onStyleChange);
+    if (_watch != null) _watch.remove();
+    _watch = _scope.watch(_parser(_styleExpression, collection: true), _onStyleChange);
   }
 
-  _onStyleChange(Map newStyles) {
-    dom.CssStyleDeclaration css = _element.style;
-    if (_lastStyles != null) {
-      _lastStyles.forEach((val, style) { css.setProperty(val, ''); });
-    }
-    _lastStyles = newStyles;
+  _onStyleChange(MapChangeRecord mapChangeRecord, _) {
+    if (mapChangeRecord != null) {
+      dom.CssStyleDeclaration css = _element.style;
+      fn(MapKeyValue kv) => css.setProperty(kv.key, kv.currentValue == null ? '' : kv.currentValue);
 
-    if (newStyles != null) {
-      newStyles.forEach((val, style) { css.setProperty(val, style); });
+      mapChangeRecord
+        ..forEachRemoval(fn)
+        ..forEachChange(fn)
+        ..forEachAddition(fn);
     }
   }
 }

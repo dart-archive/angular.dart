@@ -98,10 +98,12 @@ js.JsObject _jsInjector(Injector injector) {
 
 js.JsObject _jsScope(Scope scope) {
   return new js.JsObject.jsify({
-    "\$apply": scope.$apply,
-    "\$digest": scope.$digest,
-    "get": (name) => scope[name],
-    "set": (name, value) => scope[name] = value
+    "apply": scope.apply,
+    "digest": scope.digest,
+    "flush": scope.flush,
+    "context": scope.context,
+    "get": (name) => scope.context[name],
+    "set": (name, value) => scope.context[name] = value
   })..['_dart_'] = scope;
 }
 

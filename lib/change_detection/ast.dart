@@ -37,8 +37,10 @@ class ContextReferenceAST extends AST {
 class ConstantAST extends AST {
   final constant;
 
-  ConstantAST(dynamic constant):
-      super(constant is String ? '"$constant"' : '$constant'),
+  ConstantAST(dynamic constant, [String expression]):
+      super(expression == null
+            ? (constant is String ? '"$constant"' : '$constant')
+            : expression),
       constant = constant;
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup)
@@ -107,9 +109,9 @@ class MethodAST extends AST {
 
 class CollectionAST extends AST {
   final AST valueAST;
-  CollectionAST(valueAST):
-      super('#collection($valueAST)'),
-      valueAST = valueAST;
+  CollectionAST(valueAST)
+      : super('#collection($valueAST)'),
+        valueAST = valueAST;
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) {
     return watchGroup.addCollectionWatch(valueAST);

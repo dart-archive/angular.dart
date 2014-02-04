@@ -101,7 +101,7 @@ class NgPluralizeDirective {
                        NodeAttrs attributes) {
     Map<String, String> whens = attributes['when'] == null ?
         {} :
-        scope.$eval(attributes['when']);
+        scope.eval(attributes['when']);
     offset = attributes['offset'] == null ? 0 : int.parse(attributes['offset']);
 
     element.attributes.keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
@@ -156,6 +156,6 @@ class NgPluralizeDirective {
     var interpolation = interpolate(expression);
     interpolation.setter = (text) => element.text = text;
     interpolation.setter(expression);
-    scope.$watchSet(interpolation.watchExpressions, interpolation.call);
+    scope.watchSet(interpolation.expressions, interpolation.call);
   }
 }

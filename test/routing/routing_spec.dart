@@ -319,7 +319,7 @@ main() {
 
       router.route('/foo');
       microLeap();
-      _.rootScope.$digest();
+      _.rootScope.apply();
 
       expect(root.text).toEqual('Hello, World!');
     }));
@@ -345,7 +345,7 @@ main() {
 
       router.route('/foo');
       microLeap();
-      _.rootScope.$digest();
+      _.rootScope.apply();
 
       expect(root.text).toEqual('Hello, World!');
     }));

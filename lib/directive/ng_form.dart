@@ -62,7 +62,7 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
   get name => _name;
   set name(name) {
     _name = name;
-    _scope[name] = this;
+    _scope.context[name] = this;
   }
 
   /**

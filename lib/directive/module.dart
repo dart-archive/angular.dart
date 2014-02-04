@@ -8,6 +8,8 @@ import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/module.dart';
 import 'package:angular/utils.dart';
+import 'package:angular/change_detection/watch_group.dart';
+import 'package:angular/change_detection/change_detection.dart';
 
 part 'ng_a.dart';
 part 'ng_bind.dart';

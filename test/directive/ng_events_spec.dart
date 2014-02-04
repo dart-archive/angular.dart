@@ -16,8 +16,8 @@ void addTest(String name, [String eventType='MouseEvent', String eventName]) {
     it('should evaluate the expression on $name', inject(() {
       _.compile('<button ng-$name="abc = true; event = \$event"></button>');
       _.triggerEvent(_.rootElement, eventName, eventType);
-      expect(_.rootScope['abc']).toEqual(true);
-      expect(_.rootScope['event'] is dom.UIEvent).toEqual(true);
+      expect(_.rootScope.context['abc']).toEqual(true);
+      expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
     }));
   });
 }

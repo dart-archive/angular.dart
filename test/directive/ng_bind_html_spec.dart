@@ -10,8 +10,8 @@ main() {
           inject((Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
       var element = $('<div ng-bind-html="htmlVar"></div>');
       compiler(element, directives)(injector, element);
-      scope.htmlVar = '<a href="http://www.google.com"><b>Google!</b></a>';
-      scope.$digest();
+      scope.context['htmlVar'] = '<a href="http://www.google.com"><b>Google!</b></a>';
+      scope.apply();
       // Sanitization removes the href attribute on the <a> tag.
       expect(element.html()).toEqual('<a><b>Google!</b></a>');
     }));
@@ -28,8 +28,8 @@ main() {
       inject((Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
         var element = $('<div ng-bind-html="htmlVar"></div>');
         compiler(element, directives)(injector, element);
-        scope.htmlVar = '<a href="http://www.google.com"><b>Google!</b></a>';
-        scope.$digest();
+        scope.context['htmlVar'] = '<a href="http://www.google.com"><b>Google!</b></a>';
+        scope.apply();
         // Sanitation allows href attributes per injected sanitizer.
         expect(element.html()).toEqual('<a href="http://www.google.com"><b>Google!</b></a>');
       });

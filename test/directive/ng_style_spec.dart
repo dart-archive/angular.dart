@@ -10,14 +10,14 @@ main() => describe('NgStyle', () {
 
   it('should set', () {
     dom.Element element = _.compile('<div ng-style="{height: \'40px\'}"></div>');
-    _.rootScope.$digest();
+    _.rootScope.apply();
     expect(element.style.height).toEqual('40px');
   });
 
 
   it('should silently ignore undefined style', () {
     dom.Element element = _.compile('<div ng-style="myStyle"></div>');
-    _.rootScope.$digest();
+    _.rootScope.apply();
     expect(element.classes.contains('ng-exception')).toBeFalsy();
   });
 
@@ -35,8 +35,8 @@ main() => describe('NgStyle', () {
       document.body.append(element[0]);
       _.compile(element);
       scope = _.rootScope;
-      scope['styleObj'] = {'margin-top': '44px'};
-      scope.$apply();
+      scope.context['styleObj'] = {'margin-top': '44px'};
+      scope.apply();
       element.css(postCompStyle, postCompVal);
     }));
 
@@ -54,7 +54,7 @@ main() => describe('NgStyle', () {
 
     it(r'should not mess up stuff after $apply with no model changes', () {
       element.css('padding-top', '33px');
-      scope.$apply();
+      scope.apply();
       expect(element.css(preCompStyle)).toEqual(preCompVal);
       expect(element.css('margin-top')).toEqual('44px');
       expect(element.css(postCompStyle)).toEqual(postCompVal);
@@ -63,8 +63,8 @@ main() => describe('NgStyle', () {
 
 
     it(r'should not mess up stuff after $apply with non-colliding model changes', () {
-      scope['styleObj'] = {'padding-top': '99px'};
-      scope.$apply();
+      scope.context['styleObj'] = {'padding-top': '99px'};
+      scope.apply();
       expect(element.css(preCompStyle)).toEqual(preCompVal);
       expect(element.css('margin-top')).not.toEqual('44px');
       expect(element.css('padding-top')).toEqual('99px');
@@ -73,12 +73,12 @@ main() => describe('NgStyle', () {
 
 
     it(r'should overwrite original styles after a colliding model change', () {
-      scope['styleObj'] = {'height': '99px', 'width': '88px'};
-      scope.$apply();
+      scope.context['styleObj'] = {'height': '99px', 'width': '88px'};
+      scope.apply();
       expect(element.css(preCompStyle)).toEqual('88px');
       expect(element.css(postCompStyle)).toEqual('99px');
-      scope['styleObj'] = {};
-      scope.$apply();
+      scope.context['styleObj'] = {};
+      scope.apply();
       expect(element.css(preCompStyle)).not.toEqual('88px');
       expect(element.css(postCompStyle)).not.toEqual('99px');
     });

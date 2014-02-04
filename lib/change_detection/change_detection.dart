@@ -112,7 +112,64 @@ abstract class ChangeRecord<H> extends Record<H> {
 }
 
 /**
- * If [ChangeDetector] is watching a collection (an [Iterable]) then the
+ * If [ChangeDetector] is watching a an [Map] then the
+ * [currentValue] of [Record] will contain this object. The object contains a
+ * summary of changes to the map since the last execution. The changes
+ * are reported as a list of [MapKeyValue]s which contain the current
+ * and previous value in the list as well as the key.
+ */
+abstract class MapChangeRecord<K, V> {
+  /// The underlying iterable object
+  Map get map;
+
+  /// A list of [CollectionKeyValue]s which are in the iteration order. */
+  KeyValue<K, V> get mapHead;
+  /// A list of changed items.
+  ChangedKeyValue<K, V> get changesHead;
+  /// A list of new added items.
+  AddedKeyValue<K, V> get additionsHead;
+  /// A list of removed items
+  RemovedKeyValue<K, V> get removalsHead;
+
+  void forEachChange(void f(ChangedKeyValue<K, V> change));
+  void forEachAddition(void f(AddedKeyValue<K, V> addition));
+  void forEachRemoval(void f(RemovedKeyValue<K, V> removal));
+}
+
+/**
+ * Each item in map is wrapped in [MapKeyValue], which can track
+ * the [item]s [currentValue] and [previousValue] location.
+ */
+abstract class MapKeyValue<K, V> {
+  /// The item.
+  K get key;
+
+  /// Previous item location in the list or [null] if addition.
+  V get previousValue;
+
+  /// Current item location in the list or [null] if removal.
+  V get currentValue;
+}
+
+abstract class KeyValue<K, V> extends MapKeyValue<K, V> {
+  KeyValue<K, V> get nextKeyValue;
+}
+
+abstract class AddedKeyValue<K, V> extends MapKeyValue<K, V> {
+  AddedKeyValue<K, V> get nextAddedKeyValue;
+}
+
+abstract class RemovedKeyValue<K, V> extends MapKeyValue<K, V> {
+  RemovedKeyValue<K, V> get nextRemovedKeyValue;
+}
+
+abstract class ChangedKeyValue<K, V> extends MapKeyValue<K, V> {
+  ChangedKeyValue<K, V> get nextChangedKeyValue;
+}
+
+
+/**
+ * If [ChangeDetector] is watching a an [Iterable] then the
  * [currentValue] of [Record] will contain this object. The object contains a
  * summary of changes to the collection since the last execution. The changes
  * are reported as a list of [CollectionChangeItem]s which contain the current
@@ -130,18 +187,22 @@ abstract class CollectionChangeRecord<K, V> {
   MovedItem<K, V> get movesHead;
   /** A list of [RemovedItem]s. */
   RemovedItem<K, V> get removalsHead;
+
+  void forEachAddition(void f(AddedItem<K, V> addition));
+  void forEachMove(void f(MovedItem<K, V> move));
+  void forEachRemoval(void f(RemovedItem<K, V> removal));
 }
 
 /**
  * Each item in collection is wrapped in [CollectionChangeItem], which can track
  * the [item]s [currentKey] and [previousKey] location.
  */
-abstract class CollectionChangeItem<K, V> {
+abstract class CollectionChangeItem<K, V> { // TODO(misko): change <K,V> to <V> since K is int.
   /** Previous item location in the list or [null] if addition. */
-  K get previousKey;
+  K get previousKey; // TODO(misko): rename to previousIndex
 
   /** Current item location in the list or [null] if removal. */
-  K get currentKey;
+  K get currentKey; // TODO(misko): rename to CurrentIndex
 
   /** The item. */
   V get item;

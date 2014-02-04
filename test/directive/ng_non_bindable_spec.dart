@@ -20,9 +20,9 @@ main() {
                       '  <span id="s4" ng-bind="b"></span>' +
                       '</div>');
       compiler(element, directives)(injector, element);
-      scope.a = "one";
-      scope.b = "two";
-      scope.$digest();
+      scope.context['a'] = "one";
+      scope.context['b'] = "two";
+      scope.apply();
       // Bindings not contained by ng-non-bindable should resolve.
       expect(element.find("#s1").text().trim()).toEqual('one');
       expect(element.find("#s2").text().trim()).toEqual('two');

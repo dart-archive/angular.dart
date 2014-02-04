@@ -44,7 +44,7 @@ toBool(x) => (x is num) ? x != 0 : x == true;
 
 main() {
   describe('parse', () {
-    var scope;
+    Map<String, dynamic> context;
     Parser<Expression> parser;
     FilterMap filters;
     beforeEach(module((Module module) {
@@ -56,10 +56,11 @@ main() {
       filters = injectedFilters;
     }));
 
-    eval(String text, [FilterMap f]) => parser(text).eval(scope, f);
+    eval(String text, [FilterMap f])
+        => parser(text).eval(context, f == null ? filters : f);
     expectEval(String expr) => expect(() => eval(expr));
 
-    beforeEach(inject((Scope rootScope) { scope = rootScope; }));
+    beforeEach((){ context = {}; });
 
     describe('expressions', () {
       it('should parse numerical expressions', () {
@@ -125,11 +126,11 @@ main() {
         expect(eval("true||false?10:20")).toEqual(true||false?10:20);
         expect(eval("true&&false?10:20")).toEqual(true&&false?10:20);
         expect(eval("true?a=10:a=20")).toEqual(true?a=10:a=20);
-        expect([scope['a'], a]).toEqual([10, 10]);
-        scope['a'] = a = null;
+        expect([context['a'], a]).toEqual([10, 10]);
+        context['a'] = a = null;
         expect(eval("b=true?a=false?11:c=12:a=13")).toEqual(
                      b=true?a=false?11:c=12:a=13);
-        expect([scope['a'], scope['b'], scope['c']]).toEqual([a, b, c]);
+        expect([context['a'], context['b'], context['c']]).toEqual([a, b, c]);
         expect([a, b, c]).toEqual([12, 12, 12]);
       });
 
@@ -143,7 +144,7 @@ main() {
       });
 
       it('should allow keyed access on non-maps', () {
-        scope['nonmap'] = new BracketButNotMap();
+        context['nonmap'] = new BracketButNotMap();
         expect(eval("nonmap['hello']")).toEqual('hello');
         expect(eval("nonmap['hello']=3")).toEqual(3);
       });
@@ -269,7 +270,7 @@ main() {
 
 
       it('should let null be null', () {
-        scope['map'] = {};
+        context['map'] = {};
 
         expect(eval('null')).toBe(null);
         expect(eval('map.null')).toBe(null);
@@ -321,74 +322,74 @@ main() {
 
     describe('setters', () {
       it('should set a field in a map', () {
-        scope['map'] = {};
+        context['map'] = {};
         eval('map["square"] = 6');
         eval('map.dot = 7');
 
-        expect(scope['map']['square']).toEqual(6);
-        expect(scope['map']['dot']).toEqual(7);
+        expect(context['map']['square']).toEqual(6);
+        expect(context['map']['dot']).toEqual(7);
       });
 
 
       it('should set a field in a list', () {
-        scope['list'] = [];
+        context['list'] = [];
         eval('list[3] = 2');
 
-        expect(scope['list'].length).toEqual(4);
-        expect(scope['list'][3]).toEqual(2);
+        expect(context['list'].length).toEqual(4);
+        expect(context['list'][3]).toEqual(2);
       });
 
 
       it('should set a field on an object', () {
-        scope['obj'] = new SetterObject();
+        context['obj'] = new SetterObject();
         eval('obj.field = 1');
 
-        expect(scope['obj'].field).toEqual(1);
+        expect(context['obj'].field).toEqual(1);
       });
 
 
       it('should set a setter on an object', () {
-        scope['obj'] = new SetterObject();
+        context['obj'] = new SetterObject();
         eval('obj.setter = 2');
 
-        expect(scope['obj'].setterValue).toEqual(2);
+        expect(context['obj'].setterValue).toEqual(2);
       });
 
 
       it('should set a []= on an object', () {
-        scope['obj'] = new OverloadObject();
+        context['obj'] = new OverloadObject();
         eval('obj.overload = 7');
 
-        expect(scope['obj'].overloadValue).toEqual(7);
+        expect(context['obj'].overloadValue).toEqual(7);
       });
 
 
       it('should set a field in a nested map on an object', () {
-        scope['obj'] = new SetterObject();
+        context['obj'] = new SetterObject();
         eval('obj.map.mapKey = 3');
 
-        expect(scope['obj'].map['mapKey']).toEqual(3);
+        expect(context['obj'].map['mapKey']).toEqual(3);
       });
 
 
       it('should set a field in a nested object on an object', () {
-        scope['obj'] = new SetterObject();
+        context['obj'] = new SetterObject();
         eval('obj.nested.field = 1');
 
-        expect(scope['obj'].nested.field).toEqual(1);
+        expect(context['obj'].nested.field).toEqual(1);
       });
 
 
       it('should create a map for dotted acces', () {
-        scope['obj'] = new SetterObject();
+        context['obj'] = new SetterObject();
         eval('obj.field.key = 4');
 
-        expect(scope['obj'].field['key']).toEqual(4);
+        expect(context['obj'].field['key']).toEqual(4);
       });
 
 
       xit('should throw a nice error for type mismatch', () {
-        scope['obj'] = new SetterObject();
+        context['obj'] = new SetterObject();
         expect(() {
           eval('obj.integer = "hello"');
         }).toThrow("Eval Error: Caught type 'String' is not a subtype of type 'int' of 'value'. while evaling [obj.integer = \"hello\"]");
@@ -429,11 +430,11 @@ main() {
 
 
       it('should parse ternary', () {
-        var returnTrue = scope['returnTrue'] = () => true;
-        var returnFalse = scope['returnFalse'] = () => false;
-        var returnString = scope['returnString'] = () => 'asd';
-        var returnInt = scope['returnInt'] = () => 123;
-        var identity = scope['identity'] = (x) => x;
+        var returnTrue = context['returnTrue'] = () => true;
+        var returnFalse = context['returnFalse'] = () => false;
+        var returnString = context['returnString'] = () => 'asd';
+        var returnInt = context['returnInt'] = () => 123;
+        var identity = context['identity'] = (x) => x;
         var B = toBool;
 
         // Simple.
@@ -504,8 +505,8 @@ main() {
 
 
       it('should access scope', () {
-        scope['a'] =  123;
-        scope['b'] = {'c': 456};
+        context['a'] =  123;
+        context['b'] = {'c': 456};
         expect(eval("a")).toEqual(123);
         expect(eval("b.c")).toEqual(456);
         expect(eval("x.y.z")).toEqual(null);
@@ -513,27 +514,27 @@ main() {
 
 
       it('should access classes on scope', () {
-        scope['ident'] = new Ident();
+        context['ident'] = new Ident();
         expect(eval('ident.id(6)')).toEqual(6);
         expect(eval('ident.doubleId(4,5)')).toEqual([4, 5]);
       });
 
 
       it('should resolve deeply nested paths (important for CSP mode)', () {
-        scope['a'] = {'b': {'c': {'d': {'e': {'f': {'g': {'h': {'i': {'j': {'k': {'l': {'m': {'n': 'nooo!'}}}}}}}}}}}}};
+        context['a'] = {'b': {'c': {'d': {'e': {'f': {'g': {'h': {'i': {'j': {'k': {'l': {'m': {'n': 'nooo!'}}}}}}}}}}}}};
         expect(eval("a.b.c.d.e.f.g.h.i.j.k.l.m.n")).toBe('nooo!');
       });
 
 
       it('should be forgiving', () {
-        scope = {'a': {'b': 23}};
+        context = {'a': {'b': 23}};
         expect(eval('b')).toBeNull();
         expect(eval('a.x')).toBeNull();
       });
 
 
       it('should catch NoSuchMethod', () {
-        scope = {'a': {'b': 23}};
+        context = {'a': {'b': 23}};
         expect(() => eval('a.b.c.d')).toThrow('NoSuchMethod');
       });
 
@@ -544,20 +545,20 @@ main() {
 
 
       it('should evaluate assignments', () {
-        scope = {'g': 4, 'arr': [3,4]};
+        context = {'g': 4, 'arr': [3,4]};
 
         expect(eval("a=12")).toEqual(12);
-        expect(scope["a"]).toEqual(12);
+        expect(context["a"]).toEqual(12);
 
         expect(eval("arr[c=1]")).toEqual(4);
-        expect(scope["c"]).toEqual(1);
+        expect(context["c"]).toEqual(1);
 
         expect(eval("x.y.z=123;")).toEqual(123);
-        expect(scope["x"]["y"]["z"]).toEqual(123);
+        expect(context["x"]["y"]["z"]).toEqual(123);
 
         expect(eval("a=123; b=234")).toEqual(234);
-        expect(scope["a"]).toEqual(123);
-        expect(scope["b"]).toEqual(234);
+        expect(context["a"]).toEqual(123);
+        expect(context["b"]).toEqual(234);
       });
 
       // TODO: assignment to an arr[c]
@@ -566,18 +567,18 @@ main() {
 
 
       it('should evaluate function call without arguments', () {
-        scope['constN'] = () => 123;
+        context['constN'] = () => 123;
         expect(eval("constN()")).toEqual(123);
       });
 
       it('should access a protected keyword on scope', () {
-        scope['const'] = 3;
+        context['const'] = 3;
         expect(eval('const')).toEqual(3);
       });
 
 
       it('should evaluate function call with arguments', () {
-        scope["add"] =  (a,b) {
+        context["add"] =  (a,b) {
           return a+b;
         };
         expect(eval("add(1,2)")).toEqual(3);
@@ -585,31 +586,31 @@ main() {
 
 
       it('should evaluate function call from a return value', () {
-        scope["val"] = 33;
-        scope["getter"] = () { return () { return scope["val"]; };};
+        context["val"] = 33;
+        context["getter"] = () { return () { return context["val"]; };};
         expect(eval("getter()()")).toBe(33);
       });
 
 
       it('should evaluate methods on object', () {
-        scope['obj'] = ['ABC'];
+        context['obj'] = ['ABC'];
         var fn = parser("obj.elementAt(0)").eval;
-        expect(fn(scope)).toEqual('ABC');
-        expect(scope.$eval(fn)).toEqual('ABC');
+        expect(fn(context)).toEqual('ABC');
       });
 
 
       it('should only check locals on first dereference', () {
-        scope['a'] = {'b': 1};
+        context['a'] = {'b': 1};
+        context['this'] = context;
         var locals = {'b': 2};
-        var fn = parser("this['a'].b").bind(scope, ScopeLocals.wrapper);
+        var fn = parser("this['a'].b").bind(context, ScopeLocals.wrapper);
         expect(fn(locals)).toEqual(1);
       });
 
 
       it('should evaluate multiplication and division', () {
-        scope["taxRate"] =  8;
-        scope["subTotal"] =  100;
+        context["taxRate"] =  8;
+        context["subTotal"] =  100;
         expect(eval("taxRate / 100 * subTotal")).toEqual(8);
         expect(eval("taxRate ~/ 100 * subTotal")).toEqual(0);
         expect(eval("subTotal * taxRate / 100")).toEqual(8);
@@ -663,20 +664,13 @@ main() {
 
 
       it('should evaluate objects on scope context', () {
-        scope["a"] =  "abc";
+        context["a"] =  "abc";
         expect(eval("{a:a}")["a"]).toEqual("abc");
       });
 
 
-      it('should evalulate objects on Scope', inject((Scope scope) {
-        expect(eval(r'$id')).toEqual(scope.$id);
-        expect(eval(r'$root')).toEqual(scope.$root);
-        expect(eval(r'$parent')).toEqual(scope.$parent);
-      }));
-
-
       it('should evaluate field access on function call result', () {
-        scope["a"] =  () {
+        context["a"] =  () {
           return {'name':'misko'};
         };
         expect(eval("a().name")).toEqual("misko");
@@ -684,13 +678,13 @@ main() {
 
 
       it('should evaluate field access after array access', () {
-        scope["items"] =  [{}, {'name':'misko'}];
+        context["items"] =  [{}, {'name':'misko'}];
         expect(eval('items[1].name')).toEqual("misko");
       });
 
 
       it('should evaluate array assignment', () {
-        scope["items"] =  [];
+        context["items"] =  [];
 
         expect(eval('items[1] = "abc"')).toEqual("abc");
         expect(eval('items[1]')).toEqual("abc");
@@ -746,20 +740,20 @@ main() {
       it('should evaluate undefined', () {
         expect(eval("undefined")).toBeNull();
         expect(eval("a=undefined")).toBeNull();
-        expect(scope["a"]).toBeNull();
+        expect(context["a"]).toBeNull();
       });
 
 
       it('should allow assignment after array dereference', () {
-        scope["obj"] = [{}];
+        context["obj"] = [{}];
         eval('obj[0].name=1');
         // can not be expressed in Dart expect(scope["obj"]["name"]).toBeNull();
-        expect(scope["obj"][0]["name"]).toEqual(1);
+        expect(context["obj"][0]["name"]).toEqual(1);
       });
 
 
       it('should short-circuit AND operator', () {
-        scope["run"] = () {
+        context["run"] = () {
           throw "IT SHOULD NOT HAVE RUN";
         };
         expect(eval('false && run()')).toBe(false);
@@ -767,7 +761,7 @@ main() {
 
 
       it('should short-circuit OR operator', () {
-        scope["run"] = () {
+        context["run"] = () {
           throw "IT SHOULD NOT HAVE RUN";
         };
         expect(eval('true || run()')).toBe(true);
@@ -775,9 +769,9 @@ main() {
 
 
       it('should support method calls on primitive types', () {
-        scope["empty"] = '';
-        scope["zero"] = 0;
-        scope["bool"] = false;
+        context["empty"] = '';
+        context["zero"] = 0;
+        context["bool"] = false;
 
         // DOES NOT WORK. String.substring is not reflected. Or toString
         // expect(eval('empty.substring(0)')).toEqual('');
@@ -871,8 +865,8 @@ main() {
 
 
       it('should work with scopes', inject((Scope scope) {
-        scope.a = {'b': 6};
-        expect(parser('a.b').bind(scope, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
+        scope.context['a'] = {'b': 6};
+        expect(parser('a.b').bind(scope.context, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
       }));
 
       it('should expose assignment function', () {
@@ -899,15 +893,15 @@ main() {
 
       it('should parse filters', () {
         expect(() {
-          scope.$eval("1|nonexistent");
+          eval("1|nonexistent");
         }).toThrow('No NgFilter: nonexistent found!');
         expect(() {
           eval("1|nonexistent", filters);
         }).toThrow('No NgFilter: nonexistent found!');
 
-        scope.offset =  3;
-        expect(scope.$eval("'abcd'|substring:1:offset")).toEqual("bc");
-        expect(scope.$eval("'abcd'|substring:1:3|uppercase")).toEqual("BC");
+        context['offset'] =  3;
+        expect(eval("'abcd'|substring:1:offset")).toEqual("bc");
+        expect(eval("'abcd'|substring:1:3|uppercase")).toEqual("BC");
       });
 
       it('should only use filters that are passed as an argument', inject((Injector injector) {

@@ -119,7 +119,7 @@ class BlockFactory {
         NgAnnotation annotation = ref.annotation;
         var visibility = _elementOnly;
         if (ref.annotation is NgController) {
-          scope = scope.$new();
+          scope = scope.createChild({});
           nodeModule.value(Scope, scope);
         }
         if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
@@ -131,7 +131,8 @@ class BlockFactory {
           nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
             return new NgTextMustacheDirective(
                 node, ref.value, injector.get(Interpolate), injector.get(Scope),
-                injector.get(TextChangeListener));
+                injector.get(TextChangeListener), injector.get(AstParser),
+                injector.get(FilterMap));
           });
         } else if (ref.type == NgAttrMustacheDirective) {
           if (nodesAttrsDirectives == null) {
@@ -140,7 +141,8 @@ class BlockFactory {
               var scope = injector.get(Scope);
               var interpolate = injector.get(Interpolate);
               for(var ref in nodesAttrsDirectives) {
-                new NgAttrMustacheDirective(nodeAttrs, ref.value, interpolate, scope);
+                new NgAttrMustacheDirective(nodeAttrs, ref.value, interpolate,
+                    scope, injector.get(AstParser), injector.get(FilterMap));
               }
             });
           }
@@ -193,23 +195,25 @@ class BlockFactory {
         assert((linkMapTimer = _perf.startTimer('ng.block.link.map', ref.type)) != false);
         var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
         if (ref.annotation is NgController) {
-          scope[(ref.annotation as NgController).publishAs] = controller;
+          scope.context[(ref.annotation as NgController).publishAs] = controller;
         } else if (ref.annotation is NgComponent) {
-          shadowScope[(ref.annotation as NgComponent).publishAs] = controller;
+          shadowScope.context[(ref.annotation as NgComponent).publishAs] = controller;
         }
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
         for(var map in ref.mappings) {
           map(nodeAttrs, scope, controller);
         }
         if (controller is NgAttachAware) {
-          var removeWatcher;
-          removeWatcher = scope.$watch(() {
-            removeWatcher();
-            controller.attach();
-          });
+          Watch watch;
+          watch = scope.watch(
+            '1', // Cheat a bit.
+            (_, __) {
+              watch.remove();
+              controller.attach();
+            });
         }
         if (controller is NgDetachAware) {
-          scope.$on(r'$destroy', controller.detach);
+          scope.on(ScopeEvent.DESTROY).listen((_) => controller.detach());
         }
         assert(_perf.stopTimer(linkMapTimer) != false);
       } finally {
@@ -302,7 +306,7 @@ class _ComponentFactory {
     shadowDom.applyAuthorStyles = component.applyAuthorStyles;
     shadowDom.resetStyleInheritance = component.resetStyleInheritance;
 
-    shadowScope = scope.$new(isolate: true);
+    shadowScope = scope.createChild({}); // Isolate
     // TODO(pavelgj): fetching CSS with Http is mainly an attempt to
     // work around an unfiled Chrome bug when reloading same CSS breaks
     // styles all over the page. We shouldn't be doing browsers work,

@@ -82,7 +82,7 @@ class NgZone {
     _inFinishTurn = true;
     try {
       // Two loops here: the inner one runs all queued microtasks,
-      // the outer runs onTurnDone (e.g. scope.$digest) and then
+      // the outer runs onTurnDone (e.g. scope.digest) and then
       // any microtasks which may have been queued from onTurnDone.
       do {
         while (!_asyncQueue.isEmpty) {
