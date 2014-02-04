@@ -3,12 +3,13 @@ part of angular.core;
 class Interpolation {
   final String template;
   final List<String> seperators;
-  final List<Getter> watchExpressions;
+  final List<String> expressions;
   Function setter = (_) => _;
 
-  Interpolation(this.template, this.seperators, this.watchExpressions);
+  Interpolation(this.template, this.seperators, this.expressions);
 
-  String call(List parts, [_, __]) {
+  String call(List parts, [_]) {
+    if (parts == null) return seperators.join('');
     var str = [];
     for(var i = 0, ii = parts.length; i < ii; i++) {
       str.add(seperators[i]);
@@ -58,15 +59,14 @@ class Interpolate {
     bool shouldAddSeparator = true;
     String exp;
     List<String> separators = [];
-    List<Getter> watchExpressions = [];
+    List<String> expressions = [];
 
     while(index < length) {
       if ( ((startIndex = template.indexOf(startSymbol, index)) != -1) &&
            ((endIndex = template.indexOf(endSymbol, startIndex + startSymbolLength)) != -1) ) {
         separators.add(template.substring(index, startIndex));
         exp = template.substring(startIndex + startSymbolLength, endIndex);
-        Expression expression = _parse(exp);
-        watchExpressions.add(expression.eval);
+        expressions.add(exp);
         index = endIndex + endSymbolLength;
         hasInterpolation = true;
       } else {
@@ -80,7 +80,7 @@ class Interpolate {
       separators.add('');
     }
     return (!mustHaveExpression || hasInterpolation)
-        ? new Interpolation(template, separators, watchExpressions)
+        ? new Interpolation(template, separators, expressions)
         : null;
   }
 }

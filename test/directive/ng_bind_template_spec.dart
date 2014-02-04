@@ -11,14 +11,14 @@ main() {
     it('should bind template',
           inject((Scope scope, Injector injector, Compiler compiler) {
       var element = _.compile('<div ng-bind-template="{{salutation}} {{name}}!"></div>');
-      scope.salutation = 'Hello';
-      scope.name = 'Heisenberg';
-      scope.$digest();
+      scope.context['salutation'] = 'Hello';
+      scope.context['name'] = 'Heisenberg';
+      scope.apply();
 
       expect(element.text).toEqual('Hello Heisenberg!');
 
-      scope.salutation = 'Good-Bye';
-      scope.$digest();
+      scope.context['salutation'] = 'Good-Bye';
+      scope.apply();
 
       expect(element.text).toEqual('Good-Bye Heisenberg!');
     }));

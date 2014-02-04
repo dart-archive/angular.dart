@@ -16,20 +16,20 @@ main() => describe('ngSwitch', () {
         '</div>');
     expect(element.innerHtml).toEqual(
         '<!--ANCHOR: [ng-switch-when]=1--><!--ANCHOR: [ng-switch-when]=2--><!--ANCHOR: [ng-switch-when]=true-->');
-    _.rootScope.select = 1;
-    _.rootScope.$apply();
+    _.rootScope.context['select'] = 1;
+    _.rootScope.apply();
     expect(element.text).toEqual('first:');
-    _.rootScope.name="shyam";
-    _.rootScope.$apply();
+    _.rootScope.context['name'] = "shyam";
+    _.rootScope.apply();
     expect(element.text).toEqual('first:shyam');
-    _.rootScope.select = 2;
-    _.rootScope.$apply();
+    _.rootScope.context['select'] = 2;
+    _.rootScope.apply();
     expect(element.text).toEqual('second:shyam');
-    _.rootScope.name = 'misko';
-    _.rootScope.$apply();
+    _.rootScope.context['name'] = 'misko';
+    _.rootScope.apply();
     expect(element.text).toEqual('second:misko');
-    _.rootScope.select = true;
-    _.rootScope.$apply();
+    _.rootScope.context['select'] = true;
+    _.rootScope.apply();
     expect(element.text).toEqual('true:misko');
   }));
 
@@ -46,20 +46,20 @@ main() => describe('ngSwitch', () {
                                    '<!--ANCHOR: [ng-switch-when]=1-->'
                                    '<!--ANCHOR: [ng-switch-when]=2-->'
                                    '<!--ANCHOR: [ng-switch-when]=true-->');
-    _.rootScope.select = 1;
-    _.rootScope.$apply();
+    _.rootScope.context['select'] = 1;
+    _.rootScope.apply();
     expect(element.text).toEqual('first:, first too:');
-    _.rootScope.name="shyam";
-    _.rootScope.$apply();
+    _.rootScope.context['name'] = "shyam";
+    _.rootScope.apply();
     expect(element.text).toEqual('first:shyam, first too:shyam');
-    _.rootScope.select = 2;
-    _.rootScope.$apply();
+    _.rootScope.context['select'] = 2;
+    _.rootScope.apply();
     expect(element.text).toEqual('second:shyam');
-    _.rootScope.name = 'misko';
-    _.rootScope.$apply();
+    _.rootScope.context['name'] = 'misko';
+    _.rootScope.apply();
     expect(element.text).toEqual('second:misko');
-    _.rootScope.select = true;
-    _.rootScope.$apply();
+    _.rootScope.context['select'] = true;
+    _.rootScope.apply();
     expect(element.text).toEqual('true:misko');
   }));
 
@@ -70,10 +70,10 @@ main() => describe('ngSwitch', () {
         '<div ng-switch-when="1">one</div>' +
         '<div ng-switch-default>other</div>' +
       '</div ng-switch>');
-    _.rootScope.$apply();
+    _.rootScope.apply();
     expect(element.text).toEqual('other');
-    _.rootScope.select = 1;
-    _.rootScope.$apply();
+    _.rootScope.context['select'] = 1;
+    _.rootScope.apply();
     expect(element.text).toEqual('one');
   }));
 
@@ -85,10 +85,10 @@ main() => describe('ngSwitch', () {
         '<li ng-switch-default>other</li>' +
         '<li ng-switch-default>, other too</li>' +
       '</ul>');
-    _.rootScope.$apply();
+    _.rootScope.apply();
     expect(element.text).toEqual('other, other too');
-    _.rootScope.select = 1;
-    _.rootScope.$apply();
+    _.rootScope.context['select'] = 1;
+    _.rootScope.apply();
     expect(element.text).toEqual('one');
   }));
 
@@ -103,10 +103,10 @@ main() => describe('ngSwitch', () {
         '<li ng-switch-default>other, </li>' +
         '<li ng-switch-default>other too </li>' +
       '</ul>');
-    _.rootScope.$apply();
+    _.rootScope.apply();
     expect(element.text).toEqual('always other, other too ');
-    _.rootScope.select = 1;
-    _.rootScope.$apply();
+    _.rootScope.context['select'] = 1;
+    _.rootScope.apply();
     expect(element.text).toEqual('always one ');
   }));
 
@@ -126,10 +126,10 @@ main() => describe('ngSwitch', () {
         '<li ng-switch-default>7</li>' +
         '<li>8</li>' +
       '</ul>');
-    _.rootScope.$apply();
+    _.rootScope.apply();
     expect(element.text).toEqual('135678');
-    _.rootScope.select = 1;
-    _.rootScope.$apply();
+    _.rootScope.context['select'] = 1;
+    _.rootScope.apply();
     expect(element.text).toEqual('12368');
   }));
 
@@ -147,10 +147,10 @@ main() => describe('ngSwitch', () {
         '<li>6</li>' +
         '<li ng-switch-default>7</li>' +
       '</ul>');
-    _.rootScope.$apply();
+    _.rootScope.apply();
     expect(element.text).toEqual('3567');
-    _.rootScope.select = 1;
-    _.rootScope.$apply();
+    _.rootScope.context['select'] = 1;
+    _.rootScope.apply();
     expect(element.text).toEqual('236');
   }));
 
@@ -160,9 +160,9 @@ main() => describe('ngSwitch', () {
       '<div ng-switch="url" change="name=\'works\'">' +
         '<div ng-switch-when="a">{{name}}</div>' +
       '</div ng-switch>');
-    _.rootScope.url = 'a';
-    _.rootScope.$apply();
-    expect(_.rootScope.name).toEqual('works');
+    _.rootScope.context['url'] = 'a';
+    _.rootScope.apply();
+    expect(_.rootScope.context['name']).toEqual('works');
     expect(element.text).toEqual('works');
   }));
 
@@ -172,30 +172,30 @@ main() => describe('ngSwitch', () {
       '<div ng-switch="url">' +
         '<div ng-switch-when="a" probe="probe">{{name}}</div>' +
       '</div ng-switch>');
-    _.rootScope.$apply();
+    _.rootScope.apply();
 
-    var getChildScope = () => _.rootScope.probe == null ?
-        null : _.rootScope.probe.scope;
+    var getChildScope = () => _.rootScope.context['probe'] == null ?
+        null : _.rootScope.context['probe'].scope;
 
     expect(getChildScope()).toBeNull();
 
-    _.rootScope.url = 'a';
-    _.rootScope.name = 'works';
-    _.rootScope.$apply();
+    _.rootScope.context['url'] = 'a';
+    _.rootScope.context['name'] = 'works';
+    _.rootScope.apply();
     var child1 = getChildScope();
     expect(child1).toBeNotNull();
     expect(element.text).toEqual('works');
     var destroyListener = jasmine.createSpy('watch listener');
-    var listenerRemove = child1.$on('\$destroy', destroyListener);
+    var watcher = child1.on(ScopeEvent.DESTROY).listen(destroyListener);
 
-    _.rootScope.url = 'x';
-    _.rootScope.$apply();
+    _.rootScope.context['url'] = 'x';
+    _.rootScope.apply();
     expect(getChildScope()).toBeNull();
     expect(destroyListener).toHaveBeenCalledOnce();
-    listenerRemove();
+    watcher.cancel();
 
-    _.rootScope.url = 'a';
-    _.rootScope.$apply();
+    _.rootScope.context['url'] = 'a';
+    _.rootScope.apply();
     var child2 = getChildScope();
     expect(child2).toBeDefined();
     expect(child2).not.toBe(child1);

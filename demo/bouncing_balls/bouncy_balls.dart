@@ -71,7 +71,7 @@ class BounceController {
 
   timeDigest() {
     var start = window.performance.now();
-    scope.$evalAsync(() {
+    scope.runAsync(() {
       digestTime = (window.performance.now() - start).round();
     }, outsideDigest: true);
   }
@@ -109,7 +109,7 @@ class BallPositionDirective {
 
   set position(BallModel model) {
     element.style.backgroundColor = model.color;
-    scope.$watch(() {
+    scope.watch(() {
       element.style.left = '${model.x + 10}px';
       element.style.top = '${model.y + 10}px';
     });

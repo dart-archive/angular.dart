@@ -12,8 +12,8 @@ main() => describe('compiler', () {
       tb.rootScope.classFor = (item) => 'ng-${item["done"]}';
 
       time('create 100 blocks',
-          () => tb.rootScope.$apply(() => tb.rootScope.items = items),
-          cleanUp: () => tb.rootScope.$apply(() => tb.rootScope.items = empty),
+          () => tb.rootScope.apply(() => tb.rootScope.items = items),
+          cleanUp: () => tb.rootScope.apply(() => tb.rootScope.items = empty),
           verify: () => expect(tb.rootElement.querySelectorAll('li').length).toEqual(100));
     }));
   });

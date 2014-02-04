@@ -54,7 +54,7 @@ main() {
       Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
-      _.rootScope.$digest();
+      _.rootScope.apply();
       microLeap();
       expect(root.text).toEqual('Foo');
     }));

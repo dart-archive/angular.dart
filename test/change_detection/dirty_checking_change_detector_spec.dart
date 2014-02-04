@@ -309,51 +309,75 @@ main() => describe('DirtyCheckingChangeDetector', () {
       hiddenList[0] = 2;
       expect(detector.collectChanges()).toEqual(null);
     });
+
+    it('should bug', () {
+      var list = [1, 2, 3, 4];
+      var record = detector.watch(list, null, 'handler');
+      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+          collection: ['1[null -> 0]', '2[null -> 1]', '3[null -> 2]', '4[null -> 3]'],
+          additions: ['1[null -> 0]', '2[null -> 1]', '3[null -> 2]', '4[null -> 3]'],
+          moves: [],
+          removals: []));
+      detector.collectChanges();
+
+      list.removeRange(0, 1);
+      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+          collection: ['2[1 -> 0]', '3[2 -> 1]', '4[3 -> 2]'],
+          additions: [],
+          moves: ['2[1 -> 0]', '3[2 -> 1]', '4[3 -> 2]'],
+          removals: ['1[0 -> null]']));
+
+      list.insert(0, 1);
+      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+          collection: ['1[null -> 0]', '2[0 -> 1]', '3[1 -> 2]', '4[2 -> 3]'],
+          additions: ['1[null -> 0]'],
+          moves: ['2[0 -> 1]', '3[1 -> 2]', '4[2 -> 3]'],
+          removals: []));
+    });
   });
 
   describe('map watching', () {
-    xit('should do basic map watching', () {
+    it('should do basic map watching', () {
       var map = {};
       var record = detector.watch(map, null, 'handler');
       expect(detector.collectChanges()).toEqual(null);
 
       map['a'] = 'A';
-      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
-          collection: ['a[null -> 0]'],
-          additions: ['a[null -> 0]'],
-          moves: [],
+      expect(detector.collectChanges().currentValue, toEqualMapRecord(
+          map: ['a[null -> A]'],
+          additions: ['a[null -> A]'],
+          changes: [],
           removals: []));
 
       map['b'] = 'B';
-      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
-          collection: ['a', 'b[null -> 1]'],
-          additions: ['b[null -> 1]'],
-          moves: [],
+      expect(detector.collectChanges().currentValue, toEqualMapRecord(
+          map: ['a', 'b[null -> B]'],
+          additions: ['b[null -> B]'],
+          changes: [],
           removals: []));
 
-      map['c'] = 'C';
+      map['b'] = 'BB';
       map['d'] = 'D';
-      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
-          collection: ['a', 'b', 'c[null -> 2]', 'd[null -> 3]'],
-          additions: ['c[null -> 2]', 'd[null -> 3]'],
-          moves: [],
+      expect(detector.collectChanges().currentValue, toEqualMapRecord(
+          map: ['a', 'b[B -> BB]', 'd[null -> D]'],
+          additions: ['d[null -> D]'],
+          changes: ['b[B -> BB]'],
           removals: []));
 
-      map.remove('c');
-      expect(map).toEqual(['a', 'b', 'd']);
-      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
-          collection: ['a', 'b', 'd[3 -> 2]'],
+      map.remove('b');
+      expect(map).toEqual({'a': 'A', 'd':'D'});
+      expect(detector.collectChanges().currentValue, toEqualMapRecord(
+          map: ['a', 'd'],
           additions: [],
-          moves: ['d[3 -> 2]'],
-          removals: ['c[2 -> null]']));
+          changes: [],
+          removals: ['b[BB -> null]']));
 
       map.clear();
-      map.addAll(['d', 'c', 'b', 'a']);
-      expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
-          collection: ['d[2 -> 0]', 'c[null -> 1]', 'b[1 -> 2]', 'a[0 -> 3]'],
-          additions: ['c[null -> 1]'],
-          moves: ['d[2 -> 0]', 'b[1 -> 2]', 'a[0 -> 3]'],
-          removals: []));
+      expect(detector.collectChanges().currentValue, toEqualMapRecord(
+          map: [],
+          additions: [],
+          changes: [],
+          removals: ['a[A -> null]', 'd[D -> null]']));
     });
   });
 
@@ -403,6 +427,9 @@ class _User {
 Matcher toEqualCollectionRecord({collection, additions, moves, removals}) =>
     new CollectionRecordMatcher(collection:collection, additions:additions,
                                 moves:moves, removals:removals);
+Matcher toEqualMapRecord({map, additions, changes, removals}) =>
+    new MapRecordMatcher(map:map, additions:additions,
+                                changes:changes, removals:removals);
 Matcher toEqualChanges(List changes) => new ChangeMatcher(changes);
 
 class ChangeMatcher extends Matcher {
@@ -559,6 +586,140 @@ class CollectionRecordMatcher extends Matcher {
       if (removedItem != null) {
         equals = false;
         diffs.add('removes too long: $removedItem');
+      }
+    }
+    return equals;
+  }
+}
+
+class MapRecordMatcher extends Matcher {
+  List map;
+  List additions;
+  List changes;
+  List removals;
+
+  MapRecordMatcher({this.map, this.additions, this.changes, this.removals});
+
+  Description describeMismatch(changes, Description mismatchDescription, Map matchState, bool verbose) {
+    List diffs = matchState['diffs'];
+    return mismatchDescription..add(diffs.join('\n'));
+  }
+
+  Description describe(Description description) {
+    add(name, map) {
+      if (map != null) {
+        description.add('$name: ${map.join(', ')}\n   ');
+      }
+    }
+
+    add('map', map);
+    add('additions', additions);
+    add('changes', changes);
+    add('removals', removals);
+    return description;
+  }
+
+  bool matches(MapChangeRecord changeRecord, Map matchState) {
+    List diffs = matchState['diffs'] = [];
+    var equals = true;
+    equals = equals && checkMap(changeRecord, diffs);
+    equals = equals && checkAdditions(changeRecord, diffs);
+    equals = equals && checkChanges(changeRecord, diffs);
+    equals = equals && checkRemovals(changeRecord, diffs);
+    return equals;
+  }
+
+  checkMap(MapChangeRecord changeRecord, List diffs) {
+    var equals = true;
+    if (map != null) {
+      KeyValue mapKeyValue = changeRecord.mapHead;
+      for(var item in map) {
+        if (mapKeyValue == null) {
+          equals = false;
+          diffs.add('map too short: $item');
+        } else {
+          if (mapKeyValue.toString() != item) {
+            equals = false;
+            diffs.add('map mismatch: $mapKeyValue != $item');
+          }
+          mapKeyValue = mapKeyValue.nextKeyValue;
+        }
+      }
+      if (mapKeyValue != null) {
+        diffs.add('map too long: $mapKeyValue');
+        equals = false;
+      }
+    }
+    return equals;
+  }
+
+  checkAdditions(MapChangeRecord changeRecord, List diffs) {
+    var equals = true;
+    if (additions != null) {
+      AddedKeyValue addedKeyValue = changeRecord.additionsHead;
+      for(var item in additions) {
+        if (addedKeyValue == null) {
+          equals = false;
+          diffs.add('additions too short: $item');
+        } else {
+          if (addedKeyValue.toString() != item) {
+            equals = false;
+            diffs.add('additions mismatch: $addedKeyValue != $item');
+          }
+          addedKeyValue = addedKeyValue.nextAddedKeyValue;
+        }
+      }
+      if (addedKeyValue != null) {
+        equals = false;
+        diffs.add('additions too long: $addedKeyValue');
+      }
+    }
+    return equals;
+  }
+
+  checkChanges(MapChangeRecord changeRecord, List diffs) {
+    var equals = true;
+    if (changes != null) {
+      ChangedKeyValue movedKeyValue = changeRecord.changesHead;
+      for(var item in changes) {
+        if (movedKeyValue == null) {
+          equals = false;
+          diffs.add('changes too short: $item');
+        } else {
+          if (movedKeyValue.toString() != item) {
+            equals = false;
+            diffs.add('changes too mismatch: $movedKeyValue != $item');
+          }
+          movedKeyValue = movedKeyValue.nextChangedKeyValue;
+        }
+      }
+      if (movedKeyValue != null) {
+        equals = false;
+        diffs.add('changes too long: $movedKeyValue');
+      }
+    }
+    return equals;
+  }
+
+  checkRemovals(MapChangeRecord changeRecord, List diffs) {
+    var equals = true;
+    if (removals != null) {
+      RemovedKeyValue removedKeyValue = changeRecord.removalsHead;
+      for(var item in removals) {
+        if (removedKeyValue == null) {
+          equals = false;
+          diffs.add('rechanges too short: $item');
+        } else {
+          if (removedKeyValue.toString() != item) {
+            equals = false;
+            diffs.add('rechanges too mismatch: $removedKeyValue != $item');
+          }
+          removedKeyValue = removedKeyValue.nextRemovedKeyValue;
+        }
+      }
+      if (removedKeyValue != null) {
+        equals = false;
+        diffs.add('rechanges too long: $removedKeyValue');
       }
     }
     return equals;

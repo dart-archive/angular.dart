@@ -75,6 +75,8 @@ class TestBed {
    */
   triggerEvent(element, name, [type='MouseEvent']) {
     element.dispatchEvent(new Event.eventType(type, name));
+    // Since we are manually triggering event we need to simpulate apply();
+    rootScope.apply();
   }
 
   /**
@@ -84,5 +86,6 @@ class TestBed {
   selectOption(element, text) {
     element.querySelectorAll('option').forEach((o) => o.selected = o.text == text);
     triggerEvent(element, 'change');
+    rootScope.apply();
   }
 }

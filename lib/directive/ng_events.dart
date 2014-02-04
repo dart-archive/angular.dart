@@ -151,7 +151,7 @@ class NgEventDirective {
     int key = stream.hashCode;
     if (!listeners.containsKey(key)) {
       listeners[key] = handler;
-      stream.listen((event) => scope.$apply(() {handler({r"$event": event});}));
+      stream.listen((event) => scope.apply(() {handler({r"$event": event});}));
     }
   }
 

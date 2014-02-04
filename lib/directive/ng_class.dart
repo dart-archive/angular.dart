@@ -67,8 +67,8 @@ part of angular.directive;
     map: const {'ng-class': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class'])
 class NgClassDirective extends _NgClassBase {
-  NgClassDirective(dom.Element element, Scope scope, NodeAttrs attrs)
-      : super(element, scope, null, attrs);
+  NgClassDirective(dom.Element element, Scope scope, NodeAttrs attrs, AstParser parser)
+      : super(element, scope, null, attrs, parser);
 }
 
 /**
@@ -102,8 +102,8 @@ class NgClassDirective extends _NgClassBase {
     map: const {'ng-class-odd': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-odd'])
 class NgClassOddDirective extends _NgClassBase {
-  NgClassOddDirective(dom.Element element, Scope scope, NodeAttrs attrs)
-      : super(element, scope, 0, attrs);
+  NgClassOddDirective(dom.Element element, Scope scope, NodeAttrs attrs, AstParser parser)
+      : super(element, scope, 0, attrs, parser);
 }
 
 /**
@@ -137,8 +137,8 @@ class NgClassOddDirective extends _NgClassBase {
     map: const {'ng-class-even': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-even'])
 class NgClassEvenDirective extends _NgClassBase {
-  NgClassEvenDirective(dom.Element element, Scope scope, NodeAttrs attrs)
-      : super(element, scope, 1, attrs);
+  NgClassEvenDirective(dom.Element element, Scope scope, NodeAttrs attrs, AstParser parser)
+      : super(element, scope, 1, attrs, parser);
 }
 
 abstract class _NgClassBase {
@@ -146,16 +146,17 @@ abstract class _NgClassBase {
   final Scope scope;
   final int mode;
   final NodeAttrs nodeAttrs;
+  final AstParser _parser;
   var previousSet = [];
   var currentSet = [];
 
-  _NgClassBase(this.element, this.scope, this.mode, this.nodeAttrs) {
+  _NgClassBase(this.element, this.scope, this.mode, this.nodeAttrs, this._parser) {
     var prevClass;
 
     nodeAttrs.observe('class', (String newValue) {
       if (prevClass != newValue) {
         prevClass = newValue;
-        _handleChange(scope[r'$index']);
+        _handleChange(scope.context[r'$index']);
       }
     });
   }
@@ -163,12 +164,15 @@ abstract class _NgClassBase {
   set valueExpression(currentExpression) {
     // this should be called only once, so we don't worry about cleaning up
     // watcher registrations.
-    scope.$watchCollection(currentExpression, (current) {
-      currentSet = _flatten(current);
-      _handleChange(scope[r'$index']);
-    });
+    scope.observe(
+        _parser(currentExpression, collection: true),
+        (current, _) {
+          currentSet = _flatten(current);
+          _handleChange(scope.context[r'$index']);
+        }
+    );
     if (mode != null) {
-      scope.$watch(r'$index', (index, oldIndex) {
+      scope.observe(_parser(r'$index'), (index, oldIndex) {
         var mod = index % 2;
         if (oldIndex == null || mod != oldIndex % 2) {
           if (mod == mode) {
@@ -191,14 +195,20 @@ abstract class _NgClassBase {
 
   static List<String> _flatten(classes) {
     if (classes == null) return [];
+    if (classes is CollectionChangeRecord) {
+      classes = (classes as CollectionChangeRecord).iterable.toList();
+    }
     if (classes is List) {
       return classes.where((String e) => e != null && e.isNotEmpty)
                     .toList(growable: false);
+    }
+    if (classes is MapChangeRecord) {
+      classes = (classes as MapChangeRecord).map;
     }
     if (classes is Map) {
       return classes.keys.where((key) => toBool(classes[key])).toList();
     }
     if (classes is String) return classes.split(' ');
-    throw 'ng-class expects expression value to be List, Map or String.';
+    throw 'ng-class expects expression value to be List, Map or String, got $classes';
   }
 }

@@ -12,6 +12,9 @@ part of angular.directive;
  */
 @NgDirective(selector: '[ng-model]')
 class NgModel extends NgControl implements NgAttachAware {
+  final NgForm _form;
+  final AstParser _parser;
+
   BoundGetter getter = ([_]) => null;
   BoundSetter setter = (_, [__]) => null;
 
@@ -19,23 +22,26 @@ class NgModel extends NgControl implements NgAttachAware {
   String _exp;
   final _validators = <NgValidatable>[];
 
+  Watch _removeWatch;
   bool _watchCollection;
-  Function _removeWatch = () => null;
   Function render = (value) => null;
 
-  NgModel(Scope scope, NodeAttrs attrs, dom.Element element, Injector injector) :
-    super(scope, element, injector) {
-    _exp = 'ng-model=${attrs["ng-model"]}';
+  NgModel(Scope _scope, dom.Element _element, Injector injector,
+      NgForm this._form, this._parser, NodeAttrs attrs)
+      : super(_scope, _element, injector)
+  {
+    _exp = attrs["ng-model"];
+    watchCollection = false;
   }
 
-  process(value) {
-    render(value);
+  process(value, [_]) {
     validate();
+    _scope.rootScope.domWrite(() => render(value));
   }
 
   attach() {
     watchCollection = false;
-    _scope.$on('resetNgModel', reset);
+    _scope.on('resetNgModel').listen((e) => reset());
   }
 
   reset() {
@@ -49,24 +55,31 @@ class NgModel extends NgControl implements NgAttachAware {
     _parentControl.addControl(this);
   }
 
+  // TODO(misko): could we get rid of watch collection, and just always watch the collection?
   get watchCollection => _watchCollection;
   set watchCollection(value) {
     if (_watchCollection == value) return;
     _watchCollection = value;
-    _removeWatch();
+    if (_removeWatch!=null) _removeWatch.remove();
     if (_watchCollection) {
-      _removeWatch = _scope.$watchCollection((s) => getter(), (value) => process(value), _exp);
-    } else {
-      _removeWatch = _scope.$watch((s) => getter(), (value) => process(value), _exp);
+      _removeWatch = _scope.watch(
+          _parser(_exp, collection: true),
+          (changeRecord, _) {
+            var value = changeRecord is CollectionChangeRecord ? changeRecord.iterable: changeRecord;
+            process(value);
+          });
+    } else if (_exp != null) {
+      _removeWatch = _scope.watch(_exp, process);
     }
   }
 
+  // TODO(misko): getters/setters need to go. We need AST here.
   @NgCallback('ng-model')
   set model(BoundExpression boundExpression) {
     getter = boundExpression;
     setter = boundExpression.assign;
 
-    _scope.$evalAsync((value) {
+    _scope.rootScope.runAsync(() {
       _lastValue = modelValue;
     });
   }
@@ -140,12 +153,10 @@ class InputCheckboxDirective {
       inputElement.checked = ngTrueValue.isValue(inputElement, value);
     };
     inputElement.onChange.listen((value) {
-      scope.$apply(() {
-        ngModel.dirty = true;
-        ngModel.viewValue = inputElement.checked
-            ? ngTrueValue.readValue(inputElement)
-            : ngFalseValue.readValue(inputElement);
-      });
+      ngModel.dirty = true;
+      ngModel.viewValue = inputElement.checked
+        ? ngTrueValue.readValue(inputElement)
+        : ngFalseValue.readValue(inputElement);
     });
   }
 }
@@ -191,17 +202,15 @@ class InputTextLikeDirective {
       }
     };
     inputElement
-        ..onChange.listen(relaxFnArgs(processValue))
-        ..onInput.listen((e) {
-          processValue();
-        });
+        ..onChange.listen(processValue)
+        ..onInput.listen(processValue);
   }
 
-  processValue() {
+  processValue([_]) {
     var value = typedValue;
     if (value != ngModel.viewValue) {
       ngModel.dirty = true;
-      scope.$apply(() => ngModel.viewValue = value);
+      ngModel.viewValue = value;
     }
     ngModel.validate();
   }
@@ -261,7 +270,7 @@ class InputNumberLikeDirective {
     num value = typedValue;
     if (value != ngModel.viewValue) {
       ngModel.dirty = true;
-      scope.$apply(() => ngModel.viewValue = value);
+      scope.eval(() => ngModel.viewValue = value);
     }
     ngModel.validate();
   }
@@ -391,7 +400,7 @@ class InputRadioDirective {
     radioButtonElement.onClick.listen((_) {
       if (radioButtonElement.checked) {
         ngModel.dirty = true;
-        scope.$apply(() => ngModel.viewValue = ngValue.readValue(radioButtonElement));
+        ngModel.viewValue = ngValue.readValue(radioButtonElement);
       }
     });
   }

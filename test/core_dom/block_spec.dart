@@ -243,7 +243,7 @@ main() {
         Compiler compiler = rootInjector.get(Compiler);
         DirectiveMap directives = rootInjector.get(DirectiveMap);
         compiler(es('<dir-a>{{\'a\' | filterA}}</dir-a><dir-b></dir-b>'), directives)(rootInjector);
-        rootScope.$digest();
+        rootScope.apply();
 
         expect(log.log, equals(['ADirective', 'AFilter']));
 
@@ -257,7 +257,7 @@ main() {
         DirectiveMap newDirectives = childInjector.get(DirectiveMap);
         compiler(es('<dir-a probe="dirA"></dir-a>{{\'a\' | filterA}}'
             '<dir-b probe="dirB"></dir-b>{{\'b\' | filterB}}'), newDirectives)(childInjector);
-        rootScope.$digest();
+        rootScope.apply();
 
         expect(log.log, equals(['ADirective', 'AFilter', 'ADirective', 'BDirective', 'BFilter']));
       });

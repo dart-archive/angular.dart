@@ -38,7 +38,7 @@ class NgForm extends NgControl implements Map<String, NgControl> {
     if (!element.attributes.containsKey('action')) {
       element.onSubmit.listen((event) {
         event.preventDefault();
-        _scope.$broadcast('submitNgControl', [valid == null ? false : valid]);
+        _scope.broadcast('submitNgControl', valid == null ? false : valid);
       });
     }
   }
@@ -47,7 +47,7 @@ class NgForm extends NgControl implements Map<String, NgControl> {
   get name => _name;
   set name(value) {
     super.name = value;
-    _scope[name] = this;
+    _scope.context[name] = this;
   }
 
   //FIXME: fix this reflection bug that shows up when Map is implemented

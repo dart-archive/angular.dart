@@ -334,7 +334,7 @@ class RootWatchGroup extends WatchGroup {
    * Each step is called in sequence. ([ReactionFn]s are not called until all previous steps are
    * completed).
    */
-  int detectChanges({ExceptionHandler exceptionHandler, ChangeLog changeLog}) {
+  int detectChanges({EvalExceptionHandler exceptionHandler, ChangeLog changeLog}) {
     // Process the ChangeRecords from the change detector
     ChangeRecord<_Handler> changeRecord =
         (_changeDetector as ChangeDetector<_Handler>).collectChanges(exceptionHandler);
@@ -369,6 +369,7 @@ class RootWatchGroup extends WatchGroup {
       count++;
       try {
         dirtyWatch.invoke();
+
       } catch (e, s) {
         if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
       }
@@ -576,7 +577,13 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
 
   _InvokeHandler(watchGrp, expression): super(watchGrp, expression);
 
-  acceptValue(dynamic object) => watchRecord.object = object;
+  acceptValue(dynamic object) {
+    return watchRecord.object = object;
+  }
+
+  onChange(ChangeRecord<_Handler> record) {
+    super.onChange(record);
+  }
 
   _releaseWatch() => (watchRecord as _EvalWatchRecord).remove();
 

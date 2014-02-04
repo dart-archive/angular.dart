@@ -2,11 +2,9 @@ library angular.core;
 
 import 'dart:async' as async;
 import 'dart:collection';
-import 'dart:convert' show JSON;
 import 'dart:mirrors';
 
 import 'package:di/di.dart';
-import 'package:perf_api/perf_api.dart';
 
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
@@ -14,6 +12,13 @@ import 'package:angular/utils.dart';
 
 import 'package:angular/core/service.dart';
 export 'package:angular/core/service.dart';
+
+import 'package:angular/change_detection/watch_group.dart';
+export 'package:angular/change_detection/watch_group.dart';
+import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+import 'package:angular/core/parser/utils.dart';
+import 'package:angular/core/parser/syntax.dart';
 
 part "cache.dart";
 part "directive.dart";
@@ -34,7 +39,17 @@ class NgCoreModule extends Module {
     type(ExceptionHandler);
     type(FilterMap);
     type(Interpolate);
-    type(Scope);
+    type(RootScope);
+    value(GetterCache, new GetterCache({}));
+    value(Object, {}); // RootScope context
+    factory(Scope, (injector) {
+//      try { throw null; }
+//      catch (e, s) {
+//        print('DEPRECATED reference to Scope:\n$s');
+//      }
+      return injector.get(RootScope);
+    });
+    type(AstParser);
     type(NgZone);
 
     type(Parser, implementedBy: DynamicParser);

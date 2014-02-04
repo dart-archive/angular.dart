@@ -29,7 +29,7 @@ dump([p1, p2, p3, p4, p5, p6, p7, p8, p9, p10]) {
   if (p8 != null) log.add(STRINGIFY(p8));
   if (p9 != null) log.add(STRINGIFY(p9));
   if (p10 != null) log.add(STRINGIFY(p10));
-  js.context['console'].callMethod('log', log);
+  js.context['console'].callMethod('log', [log.join(', ')]);
 }
 
 STRINGIFY(obj) {

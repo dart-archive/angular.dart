@@ -11,66 +11,66 @@ main() {
 
     it('should properly evaluate 0 as false', inject(() {
       _.compile('<button ng-disabled="isDisabled">Button</button>');
-      _.rootScope.isDisabled = 0;
-      _.rootScope.$digest();
+      _.rootScope.context['isDisabled'] = 0;
+      _.rootScope.apply();
       expect(_.rootElement.attributes['disabled']).toBeFalsy();
-      _.rootScope.isDisabled = 1;
-      _.rootScope.$digest();
+      _.rootScope.context['isDisabled'] = 1;
+      _.rootScope.apply();
       expect(_.rootElement.attributes['disabled']).toBeTruthy();
     }));
 
 
     it('should bind disabled', inject(() {
       _.compile('<button ng-disabled="isDisabled">Button</button>');
-      _.rootScope.isDisabled = false;
-      _.rootScope.$digest();
+      _.rootScope.context['isDisabled'] = false;
+      _.rootScope.apply();
       expect(_.rootElement.attributes['disabled']).toBeFalsy();
-      _.rootScope.isDisabled = true;
-      _.rootScope.$digest();
+      _.rootScope.context['isDisabled'] = true;
+      _.rootScope.apply();
       expect(_.rootElement.attributes['disabled']).toBeTruthy();
     }));
 
 
     it('should bind checked', inject(() {
       _.compile('<input type="checkbox" ng-checked="isChecked" />');
-      _.rootScope.isChecked = false;
-      _.rootScope.$digest();
+      _.rootScope.context['isChecked'] = false;
+      _.rootScope.apply();
       expect(_.rootElement.attributes['checked']).toBeFalsy();
-      _.rootScope.isChecked=true;
-      _.rootScope.$digest();
+      _.rootScope.context['isChecked']=true;
+      _.rootScope.apply();
       expect(_.rootElement.attributes['checked']).toBeTruthy();
     }));
 
 
     it('should bind selected', inject(() {
       _.compile('<select><option value=""></option><option ng-selected="isSelected">Greetings!</option></select>');
-      _.rootScope.isSelected=false;
-      _.rootScope.$digest();
+      _.rootScope.context['isSelected']=false;
+      _.rootScope.apply();
       expect((_.rootElement.childNodes[1] as dom.OptionElement).selected).toBeFalsy();
-      _.rootScope.isSelected=true;
-      _.rootScope.$digest();
+      _.rootScope.context['isSelected']=true;
+      _.rootScope.apply();
       expect((_.rootElement.childNodes[1] as dom.OptionElement).selected).toBeTruthy();
     }));
 
 
     it('should bind readonly', inject(() {
       _.compile('<input type="text" ng-readonly="isReadonly" />');
-      _.rootScope.isReadonly=false;
-      _.rootScope.$digest();
+      _.rootScope.context['isReadonly']=false;
+      _.rootScope.apply();
       expect(_.rootElement.attributes['readOnly']).toBeFalsy();
-      _.rootScope.isReadonly=true;
-      _.rootScope.$digest();
+      _.rootScope.context['isReadonly']=true;
+      _.rootScope.apply();
       expect(_.rootElement.attributes['readOnly']).toBeTruthy();
     }));
 
 
     it('should bind open', inject(() {
       _.compile('<details ng-open="isOpen"></details>');
-      _.rootScope.isOpen=false;
-      _.rootScope.$digest();
+      _.rootScope.context['isOpen']=false;
+      _.rootScope.apply();
       expect(_.rootElement.attributes['open']).toBeFalsy();
-      _.rootScope.isOpen=true;
-      _.rootScope.$digest();
+      _.rootScope.context['isOpen']=true;
+      _.rootScope.apply();
       expect(_.rootElement.attributes['open']).toBeTruthy();
     }));
 
@@ -78,11 +78,11 @@ main() {
     describe('multiple', () {
       it('should NOT bind to multiple via ngMultiple', inject(() {
         _.compile('<select ng-multiple="isMultiple"></select>');
-        _.rootScope.isMultiple=false;
-        _.rootScope.$digest();
+        _.rootScope.context['isMultiple']=false;
+        _.rootScope.apply();
         expect(_.rootElement.attributes['multiple']).toBeFalsy();
-        _.rootScope.isMultiple='multiple';
-        _.rootScope.$digest();
+        _.rootScope.context['isMultiple']='multiple';
+        _.rootScope.apply();
         expect(_.rootElement.attributes['multiple']).toBeFalsy(); // ignore
       }));
     });
@@ -97,11 +97,11 @@ main() {
     inject(() {
       _.compile('<div ng-src="{{id}}"></div>');
 
-      _.rootScope.$digest();
+      _.rootScope.apply();
       expect(_.rootElement.attributes['src']).toEqual('');
 
-      _.rootScope.$apply(() {
-        _.rootScope.id = '/somewhere/here';
+      _.rootScope.apply(() {
+        _.rootScope.context['id'] = '/somewhere/here';
       });
       expect(_.rootElement.attributes['src']).toEqual('/somewhere/here');
     }));
@@ -110,11 +110,11 @@ main() {
     xit('should interpolate the expression and bind to src with a trusted value', inject(($sce) {
       _.compile('<div ng-src="{{id}}"></div>');
 
-      _.rootScope.$digest();
+      _.rootScope.apply();
       expect(_.rootElement.attributes['src']).toEqual(null);
 
-      _.rootScope.$apply(() {
-        _.rootScope.id = $sce.trustAsResourceUrl('http://somewhere');
+      _.rootScope.apply(() {
+        _.rootScope.context['id'] = $sce.trustAsResourceUrl('http://somewhere');
       });
       expect(_.rootElement.attributes['src']).toEqual('http://somewhere');
     }));
@@ -131,10 +131,10 @@ main() {
 
     it('should interpolate a multi-part expression for regular attributes', inject(() {
       _.compile('<div foo="some/{{id}}"></div>');
-      _.rootScope.$digest();
+      _.rootScope.apply();
       expect(_.rootElement.attributes['foo']).toEqual('some/');
-      _.rootScope.$apply(() {
-        _.rootScope.id = 1;
+      _.rootScope.apply(() {
+        _.rootScope.context['id'] = 1;
       });
       expect(_.rootElement.attributes['foo']).toEqual('some/1');
     }));
@@ -143,8 +143,8 @@ main() {
     xit('should NOT interpolate a wrongly typed expression', inject(($sce) {
       expect(() {
         _.compile('<div ng-src="{{id}}"></div>');
-        _.rootScope.$apply(() {
-          _.rootScope.id = $sce.trustAsUrl('http://somewhere');
+        _.rootScope.apply(() {
+          _.rootScope.context['id'] = $sce.trustAsUrl('http://somewhere');
         });
         _.rootElement.attributes['src'];
       }).toThrow("Can't interpolate: {{id}}\nError: [\$sce:insecurl] Blocked " +
@@ -161,11 +161,11 @@ main() {
     it('should interpolate the expression and bind to srcset', inject(() {
       _.compile('<div ng-srcset="some/{{id}} 2x"></div>');
 
-      _.rootScope.$digest();
+      _.rootScope.apply();
       expect(_.rootElement.attributes['srcset']).toEqual('some/ 2x');
 
-      _.rootScope.$apply(() {
-        _.rootScope.id = 1;
+      _.rootScope.apply(() {
+        _.rootScope.context['id'] = 1;
       });
       expect(_.rootElement.attributes['srcset']).toEqual('some/1 2x');
     }));
@@ -178,11 +178,11 @@ main() {
 
     it('should interpolate the expression and bind to href', inject(() {
       _.compile('<div ng-href="some/{{id}}"></div>');
-      _.rootScope.$digest();
+      _.rootScope.apply();
       expect(_.rootElement.attributes['href']).toEqual('some/');
 
-      _.rootScope.$apply(() {
-        _.rootScope.id = 1;
+      _.rootScope.apply(() {
+        _.rootScope.context['id'] = 1;
       });
       expect(_.rootElement.attributes['href']).toEqual('some/1');
     }));
@@ -190,9 +190,9 @@ main() {
 
     it('should bind href and merge with other attrs', inject(() {
       _.compile('<a ng-href="{{url}}" rel="{{rel}}"></a>');
-      _.rootScope.url = 'http://server';
-      _.rootScope.rel = 'REL';
-      _.rootScope.$digest();
+      _.rootScope.context['url'] = 'http://server';
+      _.rootScope.context['rel'] = 'REL';
+      _.rootScope.apply();
       expect(_.rootElement.attributes['href']).toEqual('http://server');
       expect(_.rootElement.attributes['rel']).toEqual('REL');
     }));
@@ -200,7 +200,7 @@ main() {
 
     it('should bind href even if no interpolation', inject(() {
       _.compile('<a ng-href="http://server"></a>');
-      _.rootScope.$digest();
+      _.rootScope.apply();
       expect(_.rootElement.attributes['href']).toEqual('http://server');
     }));
   });
@@ -211,11 +211,11 @@ main() {
 
     it('should interpolate the expression and bind to *', inject(() {
       _.compile('<div ng-attr-foo="some/{{id}}"></div>');
-      _.rootScope.$digest();
+      _.rootScope.apply();
       expect(_.rootElement.attributes['foo']).toEqual('some/');
 
-      _.rootScope.$apply(() {
-        _.rootScope.id = 1;
+      _.rootScope.apply(() {
+        _.rootScope.context['id'] = 1;
       });
       expect(_.rootElement.attributes['foo']).toEqual('some/1');
     }));
@@ -223,17 +223,17 @@ main() {
 
     it('should bind * and merge with other attrs', inject(() {
       _.compile('<div ng-attr-bar="{{bar}}" ng-attr-bar2="{{bar2}}" bam="{{bam}}"></a>');
-      _.rootScope.bar = 'foo';
-      _.rootScope.bar2 = 'foo2';
-      _.rootScope.bam = 'boom';
-      _.rootScope.$digest();
+      _.rootScope.context['bar'] = 'foo';
+      _.rootScope.context['bar2'] = 'foo2';
+      _.rootScope.context['bam'] = 'boom';
+      _.rootScope.apply();
       expect(_.rootElement.attributes['bar']).toEqual('foo');
       expect(_.rootElement.attributes['bar2']).toEqual('foo2');
       expect(_.rootElement.attributes['bam']).toEqual('boom');
-      _.rootScope.bar = 'FOO';
-      _.rootScope.bar2 = 'FOO2';
-      _.rootScope.bam = 'BOOM';
-      _.rootScope.$digest();
+      _.rootScope.context['bar'] = 'FOO';
+      _.rootScope.context['bar2'] = 'FOO2';
+      _.rootScope.context['bam'] = 'BOOM';
+      _.rootScope.apply();
       expect(_.rootElement.attributes['bar']).toEqual('FOO');
       expect(_.rootElement.attributes['bar2']).toEqual('FOO2');
       expect(_.rootElement.attributes['bam']).toEqual('BOOM');
@@ -242,7 +242,7 @@ main() {
 
     it('should bind * even if no interpolation', inject(() {
       _.compile('<a ng-attr-quack="vanilla"></a>');
-      _.rootScope.$digest();
+      _.rootScope.apply();
       expect(_.rootElement.attributes['quack']).toEqual('vanilla');
     }));
   });

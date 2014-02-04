@@ -83,11 +83,10 @@ class _Row {
 class NgRepeatDirective extends AbstractNgRepeatDirective {
   NgRepeatDirective(BlockHole blockHole,
                     BoundBlockFactory boundBlockFactory,
+                    Scope scope,
                     Parser parser,
-                    Scope scope)
-      : super(blockHole, boundBlockFactory, parser, scope);
-
-  get _shallow => false;
+                    AstParser astParser)
+      : super(blockHole, boundBlockFactory, scope, parser, astParser);
 }
 
 /**
@@ -112,13 +111,17 @@ class NgRepeatDirective extends AbstractNgRepeatDirective {
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-shallow-repeat]',
     map: const {'.': '@expression'})
+//TODO(misko): delete me, since we can no longer do shallow digest.
 class NgShallowRepeatDirective extends AbstractNgRepeatDirective {
   NgShallowRepeatDirective(BlockHole blockHole,
-                           BoundBlockFactory boundBlockFactory,
-                           Parser parser,
-                           Scope scope)
-      : super(blockHole, boundBlockFactory, parser, scope);
-  get _shallow => true;
+                          BoundBlockFactory boundBlockFactory,
+                          Scope scope,
+                          Parser parser,
+                          AstParser astParser)
+      : super(blockHole, boundBlockFactory, scope, parser, astParser)
+  {
+    print('DEPRICATED: [ng-shallow-repeat] use [ng-repeat]');
+  }
 }
 
 abstract class AbstractNgRepeatDirective  {
@@ -127,8 +130,9 @@ abstract class AbstractNgRepeatDirective  {
 
   final BlockHole _blockHole;
   final BoundBlockFactory _boundBlockFactory;
-  final Parser _parser;
   final Scope _scope;
+  final Parser _parser;
+  final AstParser _astParser;
 
   String _expression;
   String _valueIdentifier;
@@ -136,23 +140,22 @@ abstract class AbstractNgRepeatDirective  {
   String _listExpr;
   Map<dynamic, _Row> _rows = {};
   Function _trackByIdFn = (key, value, index) => value;
-  Function _removeWatch = () => null;
+  Watch _watch = null;
   Iterable _lastCollection;
 
-  AbstractNgRepeatDirective(this._blockHole, this._boundBlockFactory, this._parser, this._scope);
-
-  get _shallow;
+  AbstractNgRepeatDirective(this._blockHole, this._boundBlockFactory,
+                            this._scope, this._parser, this._astParser);
 
   set expression(value) {
     _expression = value;
-    _removeWatch();
+    if (_watch != null) _watch.remove();
     Match match = _SYNTAX.firstMatch(_expression);
     if (match == null) {
       throw "[NgErr7] ngRepeat error! Expected expression in form of '_item_ "
           "in _collection_[ track by _id_]' but got '$_expression'.";
     }
     _listExpr = match.group(2);
-    var trackByExpr = match.group(3);
+    var trackByExpr = match.group(4);
     if (trackByExpr != null) {
       Expression trackBy = _parser(trackByExpr);
       _trackByIdFn = ((key, value, index) {
@@ -162,7 +165,7 @@ abstract class AbstractNgRepeatDirective  {
             ..[_valueIdentifier] = value
             ..[r'$index'] = index
             ..[r'$id'] = (obj) => obj;
-        return relaxFnArgs(trackBy.eval)(new ScopeLocals(_scope, trackByLocals));
+        return relaxFnArgs(trackBy.eval)(new ScopeLocals(_scope.context, trackByLocals));
       });
     }
     var assignExpr = match.group(1);
@@ -176,8 +179,13 @@ abstract class AbstractNgRepeatDirective  {
     if (_valueIdentifier == null) _valueIdentifier = match.group(1);
     _keyIdentifier = match.group(2);
 
-    _removeWatch = _scope.$watchCollection(_listExpr, _onCollectionChange,
-        value, _shallow);
+    _watch = _scope.watch(
+        _astParser(_listExpr, collection: true),
+        (CollectionChangeRecord collection, _) {
+          //TODO(misko): we should take advantage of the CollectionChangeRecord!
+          _onCollectionChange(collection == null ? [] : collection.iterable);
+        }
+    );
   }
 
   List<_Row> _computeNewRows(Iterable collection, trackById) {
@@ -212,26 +220,23 @@ abstract class AbstractNgRepeatDirective  {
     // remove existing items
     _rows.forEach((key, row){
       row.block.remove();
-      row.scope.$destroy();
+      row.scope.destroy();
     });
     _rows = newRows;
     return newRowOrder;
   }
 
   _onCollectionChange(Iterable collection) {
-    var previousNode = _blockHole.elements[0], // current position of the node
-        nextNode,
-        childScope,
-        trackById,
-        cursor = _blockHole,
-        arrayChange = _lastCollection != collection;
-
-    if (arrayChange) _lastCollection = collection;
-    if (collection is! Iterable) collection = [];
+    dom.Node previousNode = _blockHole.elements[0]; // current position of the node
+    dom.Node nextNode;
+    Scope childScope;
+    Map childContext;
+    Scope trackById;
+    ElementWrapper cursor = _blockHole;
 
     List<_Row> newRowOrder = _computeNewRows(collection, trackById);
 
-    for (var index = 0; index < collection.length; index++) {
+    for (var index = 0, length = collection.length; index < length; index++) {
       var value = collection.elementAt(index);
       _Row row = newRowOrder[index];
 
@@ -239,6 +244,7 @@ abstract class AbstractNgRepeatDirective  {
         // if we have already seen this object, then we need to reuse the
         // associated scope/element
         childScope = row.scope;
+        childContext = childScope.context as Map;
 
         nextNode = previousNode;
         do {
@@ -250,21 +256,21 @@ abstract class AbstractNgRepeatDirective  {
         previousNode = row.endNode;
       } else {
         // new item which we don't know about
-        childScope = _scope.$new(lazy: _shallow);
+        childScope = _scope.createChild(childContext = new PrototypeMap(_scope.context));
       }
 
-      if (!identical(childScope[_valueIdentifier], value)) {
-        childScope[_valueIdentifier] = value;
-        childScope.$dirty();
+      if (!identical(childScope.context[_valueIdentifier], value)) {
+        childContext[_valueIdentifier] = value;
       }
-      childScope
-          ..[r'$index'] = index
-          ..[r'$first'] = (index == 0)
-          ..[r'$last'] = (index == (collection.length - 1))
-          ..[r'$middle'] = !(childScope.$first || childScope.$last)
-          ..[r'$odd'] = index & 1 == 1
-          ..[r'$even'] = index & 1 == 0;
-      if (arrayChange && _shallow) childScope.$dirty();
+      var first = (index == 0);
+      var last = (index == (length - 1));
+      childContext
+        ..[r'$index'] = index
+        ..[r'$first'] = (index == 0)
+        ..[r'$last'] = (index == (length - 1))
+        ..[r'$middle'] = !first && !last
+        ..[r'$odd'] = index & 1 == 1
+        ..[r'$even'] = index & 1 == 0;
 
       if (row.startNode == null) {
         var block = _boundBlockFactory(childScope);

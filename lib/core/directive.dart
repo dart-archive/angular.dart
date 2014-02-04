@@ -132,7 +132,7 @@ abstract class NgAnnotation {
 
   /**
    * Use the list to specify a expressions which are evaluated dynamically
-   * (ex. via [Scope.$eval]) and are otherwise not statically discoverable.
+   * (ex. via [Scope.eval]) and are otherwise not statically discoverable.
    */
   final List<String> exportExpressions;
 
@@ -167,7 +167,7 @@ abstract class NgAnnotation {
  * Components can implement [NgAttachAware], [NgDetachAware],
  * [NgShadowRootAware] and declare these optional methods:
  *
- * * `attach()` - Called on first [Scope.$digest()].
+ * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
  * * `onShadowRoot(ShadowRoot shadowRoot)` - Called when [ShadowRoot] is loaded.
  */
@@ -261,7 +261,7 @@ RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
  * Directives can implement [NgAttachAware], [NgDetachAware] and
  * declare these optional methods:
  *
- * * `attach()` - Called on first [Scope.$digest()].
+ * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
  */
 class NgDirective extends NgAnnotation {
@@ -304,7 +304,7 @@ class NgDirective extends NgAnnotation {
  * Controllers can implement [NgAttachAware], [NgDetachAware] and
  * declare these optional methods:
  *
- * * `attach()` - Called on first [Scope.$digest()].
+ * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
  */
 class NgController extends NgDirective {

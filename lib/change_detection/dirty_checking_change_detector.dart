@@ -313,13 +313,17 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
     } else if (field == null) {
       _instanceMirror = null;
       if (obj is Map) {
-        _mode =  _MODE_MAP_;
-        assert('implement' == false);
-        currentValue = null; //new _MapChangeRecord();
+        if (_mode != _MODE_MAP_) {
+          // Last one was collection as well, don't reset state.
+          _mode =  _MODE_MAP_;
+          currentValue = new _MapChangeRecord();
+        }
       } else if (obj is Iterable) {
-        if (_mode == _MODE_ITERABLE_) return; // Last one was collection as well, don't reset state.
-        _mode =  _MODE_ITERABLE_;
-        currentValue = new _CollectionChangeRecord();
+        if (_mode != _MODE_ITERABLE_) {
+          // Last one was collection as well, don't reset state.
+          _mode =  _MODE_ITERABLE_;
+          currentValue = new _CollectionChangeRecord();
+        }
       } else {
         _mode = _MODE_IDENTITY_;
       }
@@ -356,9 +360,9 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
         current = object;
         break;
       case _MODE_MAP_:
-        return mapCheck(object) ? this : null;
+        return (currentValue as _MapChangeRecord)._check(object) ? this : null;
       case _MODE_ITERABLE_:
-        return iterableCheck(object) ? this : null;
+        return (currentValue as _CollectionChangeRecord)._check(object) ? this : null;
       default:
         assert(false);
     }
@@ -381,64 +385,6 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
     return null;
   }
 
-  mapCheck(Map map) {
-    assert('TODO: implement!' == true);
-    /*
-    _MapChangeRecord mapChangeRecord = currentValue as _MapChangeRecord;
-    ItemRecord record = mapChangeRecord._collectionHead;
-    mapChangeRecord.truncate(record);
-    map.forEach((key, value) {
-      if (record == null || !identical(value, record.item)) { }
-    });
-    return mapChangeRecord.isDirty;
-    */
-  }
-
-
-  /**
-   * Check the [Iterable] [collection] for changes.
-   */
-  iterableCheck(Iterable collection) {
-    _CollectionChangeRecord collectionChangeRecord =
-        currentValue as _CollectionChangeRecord;
-    collectionChangeRecord._reset();
-    ItemRecord record = collectionChangeRecord._collectionHead;
-    bool maybeDirty = false;
-    if ((collection is UnmodifiableListView) &&
-        identical(collectionChangeRecord._iterable, collection)) {
-      // Short circuit and assume that the list has not been modified.
-      return false;
-    } else if (collection is List) {
-      List list = collection;
-      for(int index = 0, length = list.length; index < length; index++) {
-        var item = list[index];
-        if (record == null || !identical(item, record.item)) {
-          record = collectionChangeRecord.mismatch(record, item, index);
-          maybeDirty = true;
-        } else if (maybeDirty) {
-          // TODO(misko): can we limit this to duplicates only?
-          record = collectionChangeRecord.verifyReinsertion(record, item, index);
-        }
-        record = record._nextRec;
-      }
-    } else {
-      int index = 0;
-      for(var item in collection) {
-        if (record == null || !identical(item, record.item)) {
-          record = collectionChangeRecord.mismatch(record, item, index);
-          maybeDirty = true;
-        } else if (maybeDirty) {
-          // TODO(misko): can we limit this to duplicates only?
-          record = collectionChangeRecord.verifyReinsertion(record, item, index);
-        }
-        record = record._nextRec;
-        index++;
-      }
-    }
-    collectionChangeRecord.truncate(record);
-    collectionChangeRecord._iterable = collection;
-    return collectionChangeRecord.isDirty;
-  }
 
   remove() {
     _group._recordRemove(this);
@@ -449,8 +395,261 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
 
 final Object _INITIAL_ = new Object();
 
-//class _MapChangeRecord<K, V> implements CollectionChangeRecord<K, V> {
-//}
+class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
+  final Map<dynamic, KeyValueRecord> _records = new Map<dynamic, KeyValueRecord>();
+  Map _map;
+  KeyValueRecord _mapHead;
+  KeyValueRecord _changesHead, _changesTail;
+  KeyValueRecord _additionsHead, _additionsTail;
+  KeyValueRecord _removalsHead, _removalsTail;
+
+  Map get map => _map;
+  KeyValue<K, V> get mapHead => _mapHead;
+  ChangedKeyValue<K, V> get changesHead => _changesHead;
+  AddedKeyValue<K, V> get additionsHead => _additionsHead;
+  RemovedKeyValue<K, V> get removalsHead => _removalsHead;
+
+  get isDirty => _additionsHead != null ||
+                 _changesHead != null ||
+                 _removalsHead != null;
+
+  void forEachChange(void f(ChangedKeyValue<K, V> change)) {
+    KeyValueRecord record = _changesHead;
+    while(record != null) {
+      f(record);
+      record = record._nextChangedKeyValue;
+    }
+  }
+
+  void forEachAddition(void f(AddedKeyValue<K, V> addition)){
+    KeyValueRecord record = _additionsHead;
+    while(record != null) {
+      f(record);
+      record = record._nextAddedKeyValue;
+    }
+  }
+
+  void forEachRemoval(void f(RemovedKeyValue<K, V> removal)){
+    KeyValueRecord record = _removalsHead;
+    while(record != null) {
+      f(record);
+      record = record._nextRemovedKeyValue;
+    }
+  }
+
+
+  _check(Map map) {
+    _reset();
+    _map = map;
+    Map records = _records;
+    KeyValueRecord oldSeqRecord = _mapHead;
+    KeyValueRecord lastOldSeqRecord;
+    KeyValueRecord lastNewSeqRecord;
+    var seqChanged = false;
+    map.forEach((key, value) {
+      var newSeqRecord;
+      if (oldSeqRecord != null && key == oldSeqRecord.key) {
+        newSeqRecord = oldSeqRecord;
+        if (!identical(value, oldSeqRecord._currentValue)) {
+          oldSeqRecord._previousValue = oldSeqRecord._currentValue;
+          oldSeqRecord._currentValue = value;
+          _addToChanges(oldSeqRecord);
+        }
+      } else {
+        seqChanged = true;
+        if (oldSeqRecord != null) {
+          oldSeqRecord._nextKeyValue = null;
+          _removeFromSeq(lastOldSeqRecord, oldSeqRecord);
+          _addToRemovals(oldSeqRecord);
+        }
+        if (records.containsKey(key)) {
+          newSeqRecord = records[key];
+        } else {
+          newSeqRecord = records[key] = new KeyValueRecord(key);
+          newSeqRecord._currentValue = value;
+          _addToAdditions(newSeqRecord);
+        }
+      }
+
+      if (seqChanged) {
+        if (_isInRemovals(newSeqRecord)) {
+          _removeFromRemovals(newSeqRecord);
+        }
+        if (lastNewSeqRecord == null) {
+          _mapHead = newSeqRecord;
+        } else {
+          lastNewSeqRecord._nextKeyValue = newSeqRecord;
+        }
+      }
+      lastOldSeqRecord = oldSeqRecord;
+      lastNewSeqRecord = newSeqRecord;
+      oldSeqRecord = oldSeqRecord == null ? null : oldSeqRecord._nextKeyValue;
+    });
+    _truncate(lastOldSeqRecord, oldSeqRecord);
+    return isDirty;
+  }
+  
+  void _reset() {
+    var record = _changesHead;
+    while (record != null) {
+      record._previousValue = record._currentValue;
+      record = record._nextChangedKeyValue;
+    }
+
+    record = _additionsHead;
+    while (record != null) {
+      record._previousValue = record._currentValue;
+      record = record._nextAddedKeyValue;
+    }
+
+    assert((() {
+      var record = _changesHead;
+      while (record != null) {
+        var nextRecord = record._nextChangedKeyValue;
+        record._nextChangedKeyValue = null;
+        record = nextRecord;
+      }
+
+      record = _additionsHead;
+      while (record != null) {
+        var nextRecord = record._nextAddedKeyValue;
+        record._nextAddedKeyValue = null;
+        record = nextRecord;
+      }
+
+      record = _removalsHead;
+      while (record != null) {
+        var nextRecord = record._nextRemovedKeyValue;
+        record._nextRemovedKeyValue = null;
+        record = nextRecord;
+      }
+
+      return true;
+    })());
+    _changesHead = _changesTail = null;
+    _additionsHead = _additionsTail = null;
+    _removalsHead = _removalsTail = null;
+  }
+
+  void _truncate(KeyValueRecord lastRecord, KeyValueRecord record) {
+    while(record != null) {
+      if (lastRecord == null) {
+        _mapHead = null;
+      } else {
+        lastRecord._nextKeyValue = null;
+      }
+      var nextRecord = record._nextKeyValue;
+      assert((() {
+        record._nextKeyValue = null;
+        return true;
+      })());
+      _addToRemovals(record);
+      lastRecord = record;
+      record = nextRecord;
+    }
+
+    record = _removalsHead;
+    while (record != null) {
+      record._previousValue = record._currentValue;
+      record._currentValue = null;
+      _records.remove(record.key);
+      record = record._nextRemovedKeyValue;
+    }
+  }
+
+  bool _isInRemovals(KeyValueRecord record) {
+    return record == _removalsHead ||
+           record._nextRemovedKeyValue != null ||
+           record._prevRemovedKeyValue != null;
+  }
+
+  void _addToRemovals(KeyValueRecord record) {
+    assert(record._nextKeyValue == null);
+    assert(record._nextAddedKeyValue == null);
+    assert(record._nextChangedKeyValue == null);
+    assert(record._nextRemovedKeyValue == null);
+    assert(record._prevRemovedKeyValue == null);
+    if (_removalsHead == null) {
+      _removalsHead = _removalsTail = record;
+    } else {
+      _removalsTail._nextRemovedKeyValue = record;
+      record._prevRemovedKeyValue = _removalsTail;
+      _removalsTail = record;
+    }
+  }
+  
+  void _removeFromSeq(KeyValueRecord prev, KeyValueRecord record) {
+    KeyValueRecord next = record._nextKeyValue;
+    if (prev == null) _mapHead = next; else prev._nextKeyValue = next;
+    assert((() {
+      record._nextKeyValue = null;
+      return true;
+    })());
+  }
+
+  void _removeFromRemovals(KeyValueRecord record) {
+    assert(record._nextKeyValue == null);
+    assert(record._nextAddedKeyValue == null);
+    assert(record._nextChangedKeyValue == null);
+
+    var prev = record._prevRemovedKeyValue;
+    var next = record._nextRemovedKeyValue;
+    if (prev == null) _removalsHead = next; else prev._nextRemovedKeyValue = next;
+    if (next == null) _removalsTail = prev; else next._prevRemovedKeyValue = prev;
+    record._prevRemovedKeyValue = record._nextRemovedKeyValue = null;
+  }
+
+  void _addToAdditions(KeyValueRecord record) {
+    assert(record._nextKeyValue == null);
+    assert(record._nextAddedKeyValue == null);
+    assert(record._nextChangedKeyValue == null);
+    assert(record._nextRemovedKeyValue == null);
+    assert(record._prevRemovedKeyValue == null);
+    if (_additionsHead == null) {
+      _additionsHead = _additionsTail = record;
+    } else {
+      _additionsTail._nextAddedKeyValue = record;
+      _additionsTail = record;
+    }
+  }
+
+  void _addToChanges(KeyValueRecord record) {
+    assert(record._nextAddedKeyValue == null);
+    assert(record._nextChangedKeyValue == null);
+    assert(record._nextRemovedKeyValue == null);
+    assert(record._prevRemovedKeyValue == null);
+    if (_changesHead == null) {
+      _changesHead = _changesTail = record;
+    } else {
+      _changesTail._nextChangedKeyValue = record;
+      _changesTail = record;
+    }
+  }
+}
+
+class KeyValueRecord<K, V> implements KeyValue<K, V>, AddedKeyValue<K, V>, RemovedKeyValue<K, V>, ChangedKeyValue<K, V> {
+  final K key;
+  V _previousValue, _currentValue;
+
+  KeyValueRecord<K, V> _nextKeyValue;
+  KeyValueRecord<K, V> _nextAddedKeyValue;
+  KeyValueRecord<K, V> _nextRemovedKeyValue, _prevRemovedKeyValue;
+  KeyValueRecord<K, V> _nextChangedKeyValue;
+
+  KeyValueRecord(this.key);
+
+  V get previousValue => _previousValue;
+  V get currentValue => _currentValue;
+  KeyValue<K, V> get nextKeyValue => _nextKeyValue;
+  AddedKeyValue<K, V> get nextAddedKeyValue => _nextAddedKeyValue;
+  RemovedKeyValue<K, V> get nextRemovedKeyValue => _nextRemovedKeyValue;
+  ChangedKeyValue<K, V> get nextChangedKeyValue => _nextChangedKeyValue;
+
+  toString() {
+    return _previousValue == _currentValue ? key : '$key[$_previousValue -> $_currentValue]';
+  }
+}
+
 
 class _CollectionChangeRecord<K, V> implements CollectionChangeRecord<K, V> {
   Iterable _iterable;
@@ -470,7 +669,72 @@ class _CollectionChangeRecord<K, V> implements CollectionChangeRecord<K, V> {
   CollectionChangeItem<K, V> get movesHead => _movesHead;
   CollectionChangeItem<K, V> get removalsHead => _removalsHead;
 
+  void forEachAddition(void f(AddedItem<K, V> addition)){
+    ItemRecord record = _additionsHead;
+    while(record != null) {
+      f(record);
+      record = record._nextAddedRec;
+    }
+  }
+
+  void forEachMove(void f(MovedItem<K, V> change)) {
+    ItemRecord record = _changesHead;
+    while(record != null) {
+      f(record);
+      record = record._nextMovedRec;
+    }
+  }
+
+  void forEachRemoval(void f(RemovedItem<K, V> removal)){
+    ItemRecord record = _removalsHead;
+    while(record != null) {
+      f(record);
+      record = record._nextRemovedRec;
+    }
+  }
+
+
   Iterable get iterable => _iterable;
+
+  _check(Iterable collection) {
+    _reset();
+    ItemRecord record = _collectionHead;
+    bool maybeDirty = false;
+    if ((collection is UnmodifiableListView) &&
+    identical(_iterable, collection)) {
+      // Short circuit and assume that the list has not been modified.
+      return false;
+    } else if (collection is List) {
+      List list = collection;
+      for(int index = 0, length = list.length; index < length; index++) {
+        var item = list[index];
+        if (record == null || !identical(item, record.item)) {
+          record = mismatch(record, item, index);
+          maybeDirty = true;
+        } else if (maybeDirty) {
+          // TODO(misko): can we limit this to duplicates only?
+          record = verifyReinsertion(record, item, index);
+        }
+        record = record._nextRec;
+      }
+    } else {
+      int index = 0;
+      for(var item in collection) {
+        if (record == null || !identical(item, record.item)) {
+          record = mismatch(record, item, index);
+          maybeDirty = true;
+        } else if (maybeDirty) {
+          // TODO(misko): can we limit this to duplicates only?
+          record = verifyReinsertion(record, item, index);
+        }
+        record = record._nextRec;
+        index++;
+      }
+    }
+    _truncate(record);
+    _iterable = collection;
+    return isDirty;
+  }
 
   /**
    * Reset the state of the change objects to show no changes. This means set
@@ -490,24 +754,22 @@ class _CollectionChangeRecord<K, V> implements CollectionChangeRecord<K, V> {
     record = _movesHead;
     while(record != null) {
       record.previousKey = record.currentKey;
-      record = record._nextMovedRec;
+      var nextRecord = record._nextMovedRec;
+      assert((record._nextMovedRec = null) == null);
+      record = nextRecord;
     }
     _movesHead = _movesTail = null;
-
-    record = _removalsHead;
-    while(record != null) {
-      record.previousKey = record.currentKey;
-      record = record._nextRemovedRec;
-    }
     _removalsHead = _removalsTail = null;
+    assert(isDirty == false);
   }
 
   /**
    * A [_CollectionChangeRecord] is considered dirty if it has additions, moves
    * or removals.
    */
-  get isDirty => _additionsHead != null || _movesHead != null ||
-      _removalsHead != null;
+  get isDirty => _additionsHead != null ||
+                 _movesHead != null ||
+                 _removalsHead != null;
 
   /**
    * This is the core function which handles differences between collections.
@@ -526,7 +788,7 @@ class _CollectionChangeRecord<K, V> implements CollectionChangeRecord<K, V> {
       return record..item = item;
     }
 
-    // find the previous record os that we know where to insert after.
+    // find the previous record so that we know where to insert after.
     ItemRecord prev = record == null ? _collectionTail : record._prevRec;
 
     // Remove the record from the collection since we know it does not match the item.
@@ -592,7 +854,7 @@ class _CollectionChangeRecord<K, V> implements CollectionChangeRecord<K, V> {
    *
    * - [record] The first excess [ItemRecord].
    */
-  void truncate(ItemRecord record) {
+  void _truncate(ItemRecord record) {
     // Anything after that needs to be removed;
     while(record != null) {
       ItemRecord nextRecord = record._nextRec;
@@ -700,12 +962,12 @@ class _CollectionChangeRecord<K, V> implements CollectionChangeRecord<K, V> {
   }
 
   ItemRecord _moves_add(ItemRecord record) {
+    assert(record._nextMovedRec == null);
     if (_movesTail == null) {
       assert(_movesHead == null);
       _movesTail = _movesHead = record;
     } else {
       assert(_movesTail._nextMovedRec == null);
-      assert(record._nextMovedRec == null);
       _movesTail = _movesTail._nextMovedRec = record;
     }
 

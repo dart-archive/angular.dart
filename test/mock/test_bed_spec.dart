@@ -17,15 +17,15 @@ describe('test bed', () {
   it('should allow for a scope-based compile', () {
 
     inject((Scope scope) {
-      Scope childScope = scope.$new();
+      Scope childScope = scope.createChild({});
 
       var element = $('<div my-directive probe="i"></div>');
       _.compile(element, scope: childScope);
 
-      Probe probe = _.rootScope.i;
+      Probe probe = _.rootScope.context['i'];
       var directiveInst = probe.directive(MyTestBedDirective);
 
-      childScope.$destroy();
+      childScope.destroy();
 
       expect(directiveInst.destroyed).toBe(true);
     });
@@ -38,7 +38,7 @@ class MyTestBedDirective {
   bool destroyed = false;
 
   MyTestBedDirective(Scope scope) {
-    scope.$on(r'$destroy', () {
+    scope.on(ScopeEvent.DESTROY).listen((_) {
       destroyed = true;
     });
   }

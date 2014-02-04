@@ -26,7 +26,7 @@ abstract class NgControl implements NgDetachAware {
       : _parentControl = injector.parent.get(NgControl)
   {
     pristine = true;
-    _scope.$on('submitNgControl', (e, data) => _onSubmit(data));
+    _scope.on('submitNgControl').listen((e) => _onSubmit(e.data));
   }
 
   detach() {
@@ -36,7 +36,7 @@ abstract class NgControl implements NgDetachAware {
   }
 
   reset() {
-    _scope.$broadcast('resetNgModel');
+    _scope.broadcast('resetNgModel');
   }
 
   _onSubmit(bool valid) {

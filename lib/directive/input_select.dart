@@ -61,19 +61,31 @@ class InputSelectDirective implements NgAttachAware {
     });
 
     _selectElement.onChange.listen((event) => _mode.onViewChange(event));
-    _model.render = (value) => _mode.onModelChange(value);
+    _model.render = (value) {
+      // TODO(misko): this hack need to delay the rendering until after domRead
+      // becouse the modelChange reads from the DOM. We should be able to render
+      // without DOM changes.
+      _scope.rootScope.domRead(() {
+        _scope.rootScope.domWrite(() => _mode.onModelChange(value));
+      });
+    };
   }
 
   /**
    * This method invalidates the current state of the selector and forces a
-   * re-rendering of the options using the [Scope.$evalAsync].
+   * re-rendering of the options using the [Scope.evalAsync].
    */
   dirty() {
     if (!_dirty) {
       _dirty = true;
-      _scope.$evalAsync(() {
-        _dirty = false;
-        _mode.onModelChange(_model.viewValue);
+      // TODO(misko): this hack need to delay the rendering until after domRead
+      // becouse the modelChange reads from the DOM. We should be able to render
+      // without DOM changes.
+      _scope.rootScope.domRead(() {
+        _scope.rootScope.domWrite(() {
+          _dirty = false;
+          _mode.onModelChange(_model.viewValue);
+        });
       });
     }
   }
@@ -200,8 +212,8 @@ class _SingleSelectMode extends _SelectMode {
 class _MultipleSelectionMode extends _SelectMode {
   _MultipleSelectionMode(Expando<OptionValueDirective> expando,
                          dom.SelectElement select,
-                         NgModel model
-                         ): super(expando, select, model);
+                         NgModel model)
+      : super(expando, select, model);
 
   onViewChange(event) {
     var selected = [];

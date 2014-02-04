@@ -51,7 +51,7 @@ main() => describe('http', () {
   }));
 
   afterEach(inject((ExceptionHandler eh, Scope scope) {
-    scope.$digest();
+    scope.apply();
     backend.verifyNoOutstandingRequest();
     (eh as LoggingExceptionHandler).assertEmpty();
   }));
@@ -826,7 +826,7 @@ main() => describe('http', () {
               callback();
             });
 
-        //$rootScope.$apply(() {
+        //$rootScope.apply(() {
           canceler.resolve();
         //});
 
