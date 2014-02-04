@@ -135,6 +135,70 @@ describe('ng-model', () {
       expect(element.selectionEnd).toEqual(3);
     }));
   });
+  
+  describe('type="search"', () {
+    it('should update input value from model', inject(() {
+      _.compile('<input type="search" ng-model="model">');
+      _.rootScope.$digest();
+
+      expect((_.rootElement as dom.InputElement).value).toEqual('');
+
+      _.rootScope.$apply('model = "misko"');
+      expect((_.rootElement as dom.InputElement).value).toEqual('misko');
+    }));
+
+    it('should render null as the empty string', inject(() {
+      _.compile('<input type="search" ng-model="model">');
+      _.rootScope.$digest();
+
+      expect((_.rootElement as dom.InputElement).value).toEqual('');
+
+      _.rootScope.$apply('model = null');
+      expect((_.rootElement as dom.InputElement).value).toEqual('');
+    }));
+
+    it('should update model from the input value', inject(() {
+      _.compile('<input type="search" ng-model="model" probe="p">');
+      Probe probe = _.rootScope.p;
+      var ngModel = probe.directive(NgModel);
+      InputElement inputElement = probe.element;
+
+      inputElement.value = 'abc';
+      _.triggerEvent(inputElement, 'change');
+      expect(_.rootScope.model).toEqual('abc');
+
+      inputElement.value = 'def';
+      var input = probe.directive(InputTextLikeDirective);
+      input.processValue();
+      expect(_.rootScope.model).toEqual('def');
+    }));
+
+    it('should write to input only if value is different', inject(() {
+      var scope = _.rootScope;
+      var element = new dom.InputElement();
+      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element, new NgNullForm());
+      dom.querySelector('body').append(element);
+      var input = new InputTextLikeDirective(element, model, scope);
+
+      element.value = 'abc';
+      element.selectionStart = 1;
+      element.selectionEnd = 2;
+
+      model.render('abc');
+
+      expect(element.value).toEqual('abc');
+      // No update.  selectionStart/End is unchanged.
+      expect(element.selectionStart).toEqual(1);
+      expect(element.selectionEnd).toEqual(2);
+
+      model.render('xyz');
+
+      // Value updated.  selectionStart/End changed.
+      expect(element.value).toEqual('xyz');
+      expect(element.selectionStart).toEqual(3);
+      expect(element.selectionEnd).toEqual(3);
+    }));
+  });
 
   describe('type="checkbox"', () {
     it('should update input value from model', inject((Scope scope) {
