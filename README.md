@@ -38,7 +38,7 @@ Excellent read up on [contributing][contributing].
 [plus]: https://plus.google.com/+AngularJS
 [so]: http://stackoverflow.com/questions/tagged/angular.dart
 [list]: https://groups.google.com/forum/#!forum/angular-dart
-[tut]: https://github.com/angular/angular.dart.tutorial
+[tut]: https://angulardart.org/tutorial
 [pub]: http://pub.dartlang.org/packages/angular
 [dart]: http://www.dartlang.org
 [ng]: http://angularjs.org/
