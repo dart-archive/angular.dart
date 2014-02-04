@@ -67,13 +67,15 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
   final Scope scope;
   final Injector injector;
   final Element element;
+  final DirectiveMap directives;
   RouteHandle _route;
 
   Block _previousBlock;
   Scope _previousScope;
   Route _viewRoute;
 
-  NgViewDirective(this.element, this.blockCache, this.scope, Injector injector, Router router)
+  NgViewDirective(this.element, this.blockCache, this.scope, Injector injector,
+      Router router, this.directives)
       : injector = injector, locationService = injector.get(NgRoutingHelper) {
     RouteProvider routeProvider = injector.parent.get(NgViewDirective);
     if (routeProvider != null) {
@@ -110,7 +112,7 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
       _cleanUp();
     });
 
-    blockCache.fromUrl(templateUrl).then((blockFactory) {
+    blockCache.fromUrl(templateUrl, directives).then((blockFactory) {
       _cleanUp();
       _previousScope = scope.$new();
       _previousBlock = blockFactory(

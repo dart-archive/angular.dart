@@ -34,7 +34,7 @@ class TestBed {
    *
    * An option [scope] parameter can be supplied to link it with non root scope.
    */
-  Element compile(html, {Scope scope}) {
+  Element compile(html, {Scope scope, DirectiveMap directives}) {
     var injector = this.injector;
     if(scope != null) {
       injector = injector.createChild([new Module()..value(Scope, scope)]);
@@ -49,7 +49,10 @@ class TestBed {
       throw 'Expecting: String, Node, or List<Node> got $html.';
     }
     rootElement = rootElements[0];
-    rootBlock = compiler(rootElements)(injector, rootElements);
+    if (directives == null) {
+      directives = injector.get(DirectiveMap);
+    }
+    rootBlock = compiler(rootElements, directives)(injector, rootElements);
     return rootElement;
   }
 

@@ -2,19 +2,15 @@ part of angular.core.dom;
 
 @NgInjectableService()
 class Compiler {
-  final DirectiveMap directives;
   final Profiler _perf;
   final Parser _parser;
   final Expando _expando;
 
-  DirectiveSelector selector;
-
-  Compiler(this.directives, this._perf, this._parser, this._expando) {
-    selector = directiveSelectorFactory(directives);
-  }
+  Compiler(this._perf, this._parser, this._expando);
 
   _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,
-                List<DirectiveRef> useExistingDirectiveRefs) {
+                List<DirectiveRef> useExistingDirectiveRefs,
+                DirectiveMap directives) {
     if (domCursor.nodeList().length == 0) return null;
 
     var directivePositions = null; // don't pre-create to create sparse tree and prevent GC pressure.
@@ -22,7 +18,7 @@ class Compiler {
 
     do {
       var declaredDirectiveRefs = useExistingDirectiveRefs == null
-          ?  selector(domCursor.nodeList()[0])
+          ?  directives.selector(domCursor.nodeList()[0])
           : useExistingDirectiveRefs;
       var children = NgAnnotation.COMPILE_CHILDREN;
       var childDirectivePositions = null;
@@ -44,7 +40,7 @@ class Compiler {
           var remainingDirectives = declaredDirectiveRefs.sublist(j + 1);
           blockFactory = compileTransclusion(
               domCursor, templateCursor,
-              directiveRef, remainingDirectives);
+              directiveRef, remainingDirectives, directives);
 
           j = jj; // stop processing further directives since they belong to transclusion;
         }
@@ -59,7 +55,8 @@ class Compiler {
       if (children == NgAnnotation.COMPILE_CHILDREN && domCursor.descend()) {
         templateCursor.descend();
 
-        childDirectivePositions = _compileBlock(domCursor, templateCursor, null);
+        childDirectivePositions =
+            _compileBlock(domCursor, templateCursor, null, directives);
 
         domCursor.ascend();
         templateCursor.ascend();
@@ -82,14 +79,16 @@ class Compiler {
   BlockFactory compileTransclusion(
                       NodeCursor domCursor, NodeCursor templateCursor,
                       DirectiveRef directiveRef,
-                      List<DirectiveRef> transcludedDirectiveRefs) {
+                      List<DirectiveRef> transcludedDirectiveRefs,
+                      DirectiveMap directives) {
     var anchorName = directiveRef.annotation.selector + (directiveRef.value != null ? '=' + directiveRef.value : '');
     var blockFactory;
     var blocks;
 
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
     var domCursorIndex = domCursor.index;
-    var directivePositions = _compileBlock(domCursor, transcludeCursor, transcludedDirectiveRefs);
+    var directivePositions =
+        _compileBlock(domCursor, transcludeCursor, transcludedDirectiveRefs, directives);
     if (directivePositions == null) directivePositions = [];
 
     blockFactory = new BlockFactory(transcludeCursor.elements, directivePositions, _perf, _expando);
@@ -112,14 +111,14 @@ class Compiler {
     return blockFactory;
   }
 
-  BlockFactory call(List<dom.Node> elements) {
+  BlockFactory call(List<dom.Node> elements, DirectiveMap directives) {
     var timerId;
     assert((timerId = _perf.startTimer('ng.compile', _html(elements))) != false);
     List<dom.Node> domElements = elements;
     List<dom.Node> templateElements = cloneElements(domElements);
     var directivePositions = _compileBlock(
         new NodeCursor(domElements), new NodeCursor(templateElements),
-        null);
+        null, directives);
 
     var blockFactory = new BlockFactory(templateElements,
         directivePositions == null ? [] : directivePositions, _perf, _expando);
