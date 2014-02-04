@@ -154,11 +154,12 @@ class BlockFactory {
             BlockCache blockCache = injector.get(BlockCache);
             Http http = injector.get(Http);
             TemplateCache templateCache = injector.get(TemplateCache);
+            DirectiveMap directives = injector.get(DirectiveMap);
             // This is a bit of a hack since we are returning different type then we are.
             var componentFactory = new _ComponentFactory(node, ref.type, ref.annotation as NgComponent, injector.get(dom.NodeTreeSanitizer));
             if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
             fctrs[ref.type] = componentFactory;
-            return componentFactory.call(injector, compiler, scope, blockCache, http, templateCache);
+            return componentFactory.call(injector, compiler, scope, blockCache, http, templateCache, directives);
           }, visibility: visibility);
         } else {
           nodeModule.type(ref.type, visibility: visibility);
@@ -258,19 +259,20 @@ class BlockCache {
 
   BlockCache(this.$http, this.$templateCache, this.compiler, this.treeSanitizer);
 
-  BlockFactory fromHtml(String html) {
+  BlockFactory fromHtml(String html, DirectiveMap directives) {
     BlockFactory blockFactory = _blockFactoryCache.get(html);
     if (blockFactory == null) {
       var div = new dom.Element.tag('div');
       div.setInnerHtml(html, treeSanitizer: treeSanitizer);
-      blockFactory = compiler(div.nodes);
+      blockFactory = compiler(div.nodes, directives);
       _blockFactoryCache.put(html, blockFactory);
     }
     return blockFactory;
   }
 
-  async.Future<BlockFactory> fromUrl(String url) {
-    return $http.getString(url, cache: $templateCache).then(fromHtml);
+  async.Future<BlockFactory> fromUrl(String url, DirectiveMap directives) {
+    return $http.getString(url, cache: $templateCache).then(
+        (html) => fromHtml(html, directives));
   }
 }
 
@@ -294,7 +296,7 @@ class _ComponentFactory {
 
   _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer);
 
-  dynamic call(Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http $http, TemplateCache $templateCache) {
+  dynamic call(Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http $http, TemplateCache $templateCache, DirectiveMap directives) {
     this.compiler = compiler;
     shadowDom = element.createShadowRoot();
     shadowDom.applyAuthorStyles = component.applyAuthorStyles;
@@ -315,9 +317,9 @@ class _ComponentFactory {
     }
     var blockFuture;
     if (component.template != null) {
-      blockFuture = new async.Future.value($blockCache.fromHtml(component.template));
+      blockFuture = new async.Future.value($blockCache.fromHtml(component.template, directives));
     } else if (component.templateUrl != null) {
-      blockFuture = $blockCache.fromUrl(component.templateUrl);
+      blockFuture = $blockCache.fromUrl(component.templateUrl, directives);
     }
     TemplateLoader templateLoader = new TemplateLoader( async.Future.wait(cssFutures).then((Iterable<String> cssList) {
       if (cssList != null) {
