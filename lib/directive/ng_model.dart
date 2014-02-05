@@ -213,18 +213,17 @@ class InputTextLikeDirective {
     };
     inputElement
         ..onChange.listen(relaxFnArgs(processValue))
-        ..onKeyDown.listen((e) {
-          new async.Timer(Duration.ZERO, processValue);
-          scope.$skipAutoDigest();
+        ..onInput.listen((e) {
+          processValue();
         });
   }
 
   processValue() {
-    ngModel.validate();
     var value = typedValue;
     if (value != ngModel.viewValue) {
       scope.$apply(() => ngModel.viewValue = value);
     }
+    ngModel.validate();
   }
 }
 

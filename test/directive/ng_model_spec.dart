@@ -605,6 +605,22 @@ describe('ng-model', () {
     }));
   });
 
+  describe('text-like events', () {
+    it('should update the binding on the "input" event', inject(() {
+      _.compile('<input type="text" ng-model="model" probe="p">');
+      Probe probe = _.rootScope.p;
+      InputElement inputElement = probe.element;
+
+      inputElement.value = 'waaaah';
+
+      expect(_.rootScope.model).not.toEqual('waaaah');
+
+      _.triggerEvent(inputElement, 'input');
+
+      expect(_.rootScope.model).toEqual('waaaah');
+    }));
+  });
+
   describe('error messages', () {
     it('should produce a useful error for bad ng-model expressions', () {
       expect(async(() {
