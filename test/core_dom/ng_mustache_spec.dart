@@ -7,6 +7,7 @@ main() {
     TestBed _;
     beforeEach(module((Module module) {
       module.type(_ListenerDirective);
+      module.type(_HelloFilter);
     }));
     beforeEach(inject((TestBed tb) => _ = tb));
 
@@ -66,6 +67,18 @@ main() {
       $rootScope.$digest();
       expect(element.attr('multiline-attr')).toEqual('line1: L1\nline2: L2');
     }));
+
+
+    it('should handle filters', inject((Compiler $compile, Scope $rootScope, Injector injector, DirectiveMap directives) {
+      var element = $('<div>{{"World" | hello}}</div>');
+      var template = $compile(element, directives);
+      var block = template(injector);
+      $rootScope.$digest();
+
+      element = $(block.elements);
+
+      expect(element.html()).toEqual('Hello, World!');
+    }));
   });
 
   describe('NgShow', () {
@@ -121,3 +134,11 @@ class _ListenerDirective implements TextChangeListener {
   _ListenerDirective(Logger this.logger);
   call(String text) => logger(text);
 }
+
+@NgFilter(name:'hello')
+class _HelloFilter {
+  call(String str) {
+    return 'Hello, $str!';
+  }
+}
+
