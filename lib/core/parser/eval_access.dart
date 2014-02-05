@@ -89,16 +89,26 @@ abstract class AccessReflective {
       _cachedValue = mirror;
       return result;
     } on NoSuchMethodError catch (e) {
-      var result = createInvokeClosure(mirror, symbol);
-      if (result == null) rethrow;
-      _cachedKind = CACHED_VALUE;
-      return _cachedValue = result;
+      if (isNoSuchMethodDueToGetField(e)) {
+        var result = createInvokeClosure(mirror, symbol);
+        if (result == null) rethrow;
+        _cachedKind = CACHED_VALUE;
+        return _cachedValue = result;
+      } else {
+        rethrow;
+      }
     } on UnsupportedError catch (e) {
       var result = createInvokeClosure(mirror, symbol);
       if (result == null) rethrow;
       _cachedKind = CACHED_VALUE;
       return _cachedValue = result;
     }
+  }
+
+  bool isNoSuchMethodDueToGetField(NoSuchMethodError e) {
+    var msg = e.toString();
+    return msg.indexOf("has no instance getter '$name'.") != -1 || // Dart VM
+           msg.indexOf('Cannot call "$name\$') != -1; // Dart2JS
   }
 
   _assign(scope, holder, value) {

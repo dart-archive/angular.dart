@@ -286,6 +286,13 @@ main() {
       });
 
 
+      it('should pass noSuchMethExceptions through getters', () {
+        expect(() {
+          parser('getNoSuchMethod').eval(new ScopeWithErrors());
+        }).toThrow("iDontExist");
+      });
+
+
       it('should pass exceptions through methods', () {
         expect(() {
           parser('foo()').eval(new ScopeWithErrors());
@@ -936,6 +943,7 @@ class BracketButNotMap {
 class ScopeWithErrors {
   String get boo { throw "boo to you"; }
   String foo() { throw "foo to you"; }
+  get getNoSuchMethod => null.iDontExist();
 }
 
 @NgFilter(name:'increment')

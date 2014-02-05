@@ -90,6 +90,7 @@ main(arguments) {
       'a().name',
       'a[x()]()',
       'boo',
+      'getNoSuchMethod',
       '[].count(',
       'false',
       'false && run()',
