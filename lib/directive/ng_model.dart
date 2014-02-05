@@ -23,7 +23,7 @@ class NgModel extends NgControl {
   String _name;
 
   final List<_NgModelValidator> _validators = new List<_NgModelValidator>();
-  final Map<String, bool> currentErrors = new Map<String, bool>();
+  final Map<String, bool> errors = new Map<String, bool>();
 
   Function _removeWatch = () => null;
   bool _watchCollection;
@@ -100,14 +100,14 @@ class NgModel extends NgControl {
    */
   setValidity(String errorType, bool isValid) {
     if(isValid) {
-      if(currentErrors.containsKey(errorType)) {
-        currentErrors.remove(errorType);
+      if(errors.containsKey(errorType)) {
+        errors.remove(errorType);
       }
-      if(valid != true && currentErrors.isEmpty) {
+      if(valid != true && errors.isEmpty) {
         valid = true;
       }
-    } else if(!currentErrors.containsKey(errorType)) {
-      currentErrors[errorType] = true;
+    } else if(!errors.containsKey(errorType)) {
+      errors[errorType] = true;
       invalid = true;
     }
 
