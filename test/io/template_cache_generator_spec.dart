@@ -59,8 +59,8 @@ main() => describe('template_cache_generator', () {
       '\n'
       'primeTemplateCache(TemplateCache tc) {\n'
       'tc.put("rewritten/cssUrls/one.css", new HttpResponse(200, r"""body {}"""));\n'
-      'tc.put("rewritten/cssUrls/two.css", new HttpResponse(200, r"""body {}"""));\n'
       'tc.put("rewritten/cssUrls/three.css", new HttpResponse(200, r"""body {}"""));\n'
+      'tc.put("rewritten/cssUrls/two.css", new HttpResponse(200, r"""body {}"""));\n'
       '}');
     }).whenComplete(() {
       //tmpDir.deleteSync(recursive: true);

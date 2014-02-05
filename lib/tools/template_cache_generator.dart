@@ -89,11 +89,13 @@ printTemplateCache(Map<String, String> templateKeyMap,
   outSink.write(fileHeader(outputLibrary));
 
   List<Future> reads = <Future>[];
-  templateKeyMap.forEach((uri, templateFile) {
+  templateKeyMap.keys.toList()..sort()..forEach((uri) {
+    var templateFile = templateKeyMap[uri];
     reads.add(new File(templateFile).readAsString().then((fileStr) {
       fileStr = fileStr.replaceAll('"""', r'\"\"\"');
       String resultUri = uri;
-      urlRewriters.forEach((regexp, replacement) {
+      urlRewriters.keys.toList()..sort()..forEach((regexp) {
+        var replacement = urlRewriters[regexp];
         resultUri = resultUri.replaceFirst(regexp, replacement);
       });
       outSink.write(
@@ -139,7 +141,7 @@ class TemplateCollectingVisitor {
         var srcDirUri = new Uri.file(srcPath);
         Source currentSrcDir = sourceCrawler.context.sourceFactory
             .resolveUri2(null, srcDirUri);
-        cacheUris.forEach((uri) => storeUriAsset(uri, currentSrcDir));
+        cacheUris..sort()..forEach((uri) => storeUriAsset(uri, currentSrcDir));
       }
     });
   }
@@ -172,7 +174,8 @@ class TemplateCollectingVisitor {
         var paramName = namedArg.name.label.name;
         if (paramName == 'preCacheUrls') {
           assertList(namedArg.expression).elements
-            .forEach((expression) =>
+            ..sort()
+            ..forEach((expression) =>
                 cacheUris.add(assertString(expression).stringValue));
         }
         if (paramName == 'cache') {
