@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -evx
 . ./scripts/env.sh
 
 # run io tests
