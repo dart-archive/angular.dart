@@ -452,6 +452,27 @@ main() {
           expect(element).toEqualSelect(['not me', ['me!'], 'nah']);
         });
 
+        it('should fire ng-change event.', () {
+          var log = '';
+          compile(
+              '<select name="select" ng-model="selection" ng-change="change()">' +
+                '<option value=""></option>' +
+                '<option value="c">C</option>' +
+              '</select>');
+
+          scope.change = () {
+            log += 'change:${scope.selection};';
+          };
+
+          scope.$apply(() {
+            scope.selection = 'c';
+          });
+
+          element.value = 'c';
+          _.triggerEvent(element, 'change');
+          expect(log).toEqual('change:c;');
+        });
+
 
         xit('should require', () {
           compile(
