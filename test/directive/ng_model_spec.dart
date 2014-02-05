@@ -9,7 +9,7 @@ describe('ng-model', () {
 
   beforeEach(inject((TestBed tb) => _ = tb));
 
-  describe('type="text"', () {
+  describe('type="text" like', () {
     it('should update input value from model', inject(() {
       _.compile('<input type="text" ng-model="model">');
       _.rootScope.$digest();
@@ -44,6 +44,22 @@ describe('ng-model', () {
       var input = probe.directive(InputTextLikeDirective);
       input.processValue();
       expect(_.rootScope.model).toEqual('def');
+    }));
+
+    it('should update model from the input value for type=number', inject(() {
+      _.compile('<input type="number" ng-model="model" probe="p">');
+      Probe probe = _.rootScope.p;
+      var ngModel = probe.directive(NgModel);
+      InputElement inputElement = probe.element;
+
+      inputElement.value = '12';
+      _.triggerEvent(inputElement, 'change');
+      expect(_.rootScope.model).toEqual('12');
+
+      inputElement.value = '14';
+      var input = probe.directive(InputTextLikeDirective);
+      input.processValue();
+      expect(_.rootScope.model).toEqual('14');
     }));
 
     it('should write to input only if value is different', inject(() {
