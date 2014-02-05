@@ -50,6 +50,22 @@ main() {
       expect(element.attr('some-attr')).toEqual('OK');
       expect(element.attr('other-attr')).toEqual('23');
     }));
+
+
+    it('should allow newlines in attribute', inject((Compiler $compile, Scope $rootScope, Injector injector) {
+      var element = $('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
+      var template = $compile(element);
+
+      $rootScope.line1 = 'L1';
+      $rootScope.line2 = 'L2';
+      var block = template(injector);
+
+      element = $(block.elements);
+
+      expect(element.attr('multiline-attr')).toEqual('');
+      $rootScope.$digest();
+      expect(element.attr('multiline-attr')).toEqual('line1: L1\nline2: L2');
+    }));
   });
 
   describe('NgShow', () {
