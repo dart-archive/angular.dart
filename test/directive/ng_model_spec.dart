@@ -7,6 +7,11 @@ main() =>
 describe('ng-model', () {
   TestBed _;
 
+  beforeEach(module((Module module) {
+    module
+      ..type(ControllerWithNoLove);
+  }));
+
   beforeEach(inject((TestBed tb) => _ = tb));
 
   describe('type="text" like', () {
@@ -600,4 +605,25 @@ describe('ng-model', () {
     }));
   });
 
+  describe('error messages', () {
+    it('should produce a useful error for bad ng-model expressions', () {
+      expect(async(() {
+        _.compile('<div no-love><textarea ng-model=ctrl.love probe="loveProbe"></textarea></div');
+        Probe probe = _.rootScope['loveProbe'];
+        TextAreaElement inputElement = probe.element;
+
+        inputElement.value = 'xzy';
+        _.triggerEvent(inputElement, 'change');
+        _.rootScope.$digest();
+      })).toThrow('love');
+
+    });
+  });
 });
+
+@NgController(
+    selector: '[no-love]',
+    publishAs: 'ctrl')
+class ControllerWithNoLove {
+  var apathy = null;
+}

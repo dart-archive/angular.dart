@@ -70,7 +70,7 @@ abstract class AccessReflective {
     int cachedKind = _cachedKind;
     if (cachedKind == CACHED_MAP) return holder[name];
     var value = _cachedValue;
-    return (cachedKind == CACHED_FIELD)
+    return (cachedKind == CACHED_FIELD && value != null)
         ? value.getField(symbol).reflectee
         : value;
   }
