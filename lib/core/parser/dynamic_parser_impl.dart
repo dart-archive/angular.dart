@@ -2,6 +2,7 @@ library angular.core.parser.dynamic_parser_impl;
 
 import 'package:angular/core/parser/parser.dart' show ParserBackend;
 import 'package:angular/core/parser/lexer.dart';
+import 'package:angular/core/parser/syntax.dart';
 
 class DynamicParserImpl {
   static Token EOF = new Token(-1, null);
@@ -18,14 +19,23 @@ class DynamicParserImpl {
   }
 
   parseChain() {
-    while (optional(';'));
+    bool isChain = false;
+    while (optional(';')) {
+      isChain = true;
+    }
     List expressions = [];
     while (index < tokens.length) {
       if (peek.text == ')' || peek.text == '}' || peek.text == ']') {
         error('Unconsumed token ${peek.text}');
       }
-      expressions.add(parseFilter());
-      while (optional(';'));
+      var expr = parseFilter();
+      expressions.add(expr);
+      while (optional(';')) {
+        isChain = true;
+      }
+      if (isChain && expr is Filter) {
+        error('cannot have a filter in a chain');
+      }
     }
     return (expressions.length == 1)
         ? expressions.first
@@ -203,7 +213,7 @@ class DynamicParserImpl {
 
   parsePrimary() {
     if (optional('(')) {
-      var result = parseFilter();
+      var result = parseExpression();
       expect(')');
       return result;
     } else if (optional('null') || optional('undefined')) {

@@ -897,12 +897,6 @@ main() {
         expect(eval("1|increment:2", filters)).toEqual(3);
       });
 
-      it('should evaluate grouped filters', () {
-        scope.name = 'MISKO';
-        expect(scope.$eval('n = (name|lowercase)')).toEqual('misko');
-        expect(scope.$eval('n')).toEqual('misko');
-      });
-
       it('should parse filters', () {
         expect(() {
           scope.$eval("1|nonexistent");
@@ -930,6 +924,15 @@ main() {
 
         expect(expression.eval({}, newFilters)).toEqual('Hello, World!');
       }));
+
+      it('should not allow filters in a chain', () {
+        expect(() {
+          parser("1;'World'|hello");
+        }).toThrow('cannot have a filter in a chain the end of the expression [1;\'World\'|hello]');
+        expect(() {
+          parser("'World'|hello;1");
+        }).toThrow('cannot have a filter in a chain at column 15 in [\'World\'|hello;1]');
+      });
     });
   });
 }

@@ -225,6 +225,8 @@ main(arguments) {
       "1|nonexistent",
       "publicField",
       "_privateField",
-      "'World'|hello"
+      "'World'|hello",
+      "1;'World'|hello",
+      "'World'|hello;1"
   ]);
 }
