@@ -2,7 +2,7 @@ library static_parser_spec;
 
 import '../../_specs.dart';
 
-var EVAL = { '1': (scope) => 1 };
+var EVAL = { '1': (scope, filters) => 1 };
 var ASSIGN = { };
 
 class AlwaysReturnX implements DynamicParser {

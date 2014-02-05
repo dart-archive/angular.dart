@@ -5,6 +5,7 @@ import 'package:angular/core/module.dart' show FilterMap, NgInjectableService;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/core/parser/dynamic_parser_impl.dart';
+import 'package:angular/core/parser/syntax.dart' show defaultFilterMap;
 
 import 'package:angular/core/parser/eval.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
@@ -45,9 +46,9 @@ class DynamicExpression extends Expression {
   accept(Visitor visitor) => _expression.accept(visitor);
   toString() => _expression.toString();
 
-  eval(scope) {
+  eval(scope, [FilterMap filters = defaultFilterMap]) {
     try {
-      return _expression.eval(scope);
+      return _expression.eval(scope, filters);
     } on EvalError catch (e, s) {
       throw e.unwrap("$this", s);
     }
@@ -64,19 +65,17 @@ class DynamicExpression extends Expression {
 
 @NgInjectableService()
 class DynamicParserBackend extends ParserBackend {
-  final FilterMap _filters;
   final ClosureMap _closures;
-  DynamicParserBackend(this._filters, this._closures);
+  DynamicParserBackend(this._closures);
 
   bool isAssignable(Expression expression)
       => expression.isAssignable;
 
   Expression newFilter(expression, name, arguments) {
-    Function filter = _filters(name);
     List allArguments = new List(arguments.length + 1);
     allArguments[0] = expression;
     allArguments.setAll(1, arguments);
-    return new Filter(expression, name, arguments, filter, allArguments);
+    return new Filter(expression, name, arguments, allArguments);
   }
 
   Expression newChain(expressions)

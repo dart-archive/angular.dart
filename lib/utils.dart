@@ -44,6 +44,12 @@ relaxFnArgs1(Function fn) {
   if (fn is FnWith0Args) return (_1) => fn();
 }
 
+relaxFnArgs2(Function fn) {
+  if (fn is FnWith2Args) return fn;
+  if (fn is FnWith1Args) return (_1, _2) => fn(_1);
+  if (fn is FnWith0Args) return (_1, _2) => fn();
+}
+
 relaxFnArgs3(Function fn) {
   if (fn is FnWith3Args) return fn;
   if (fn is FnWith2Args) return (_1, _2, _3) => fn(_1, null);
