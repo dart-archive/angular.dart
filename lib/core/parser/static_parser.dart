@@ -1,5 +1,6 @@
 library angular.core.parser.static_parser;
 
+import 'package:angular/core/module.dart' show NgInjectableService;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
 
@@ -9,7 +10,7 @@ class StaticParserFunctions {
   StaticParserFunctions(this.eval, this.assign);
 }
 
-//@NgInjectableService()
+@NgInjectableService()
 class StaticParser implements Parser<Expression> {
   final StaticParserFunctions _functions;
   final DynamicParser _fallbackParser;
