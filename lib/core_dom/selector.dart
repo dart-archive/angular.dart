@@ -78,13 +78,13 @@ class _SelectorPart {
 class _ElementSelector {
   String name;
 
-  Map<String, _Directive> elementMap = new Map<String, _Directive>();
+  Map<String, List<_Directive>> elementMap = new Map<String, List<_Directive>>();
   Map<String, _ElementSelector> elementPartialMap = new Map<String, _ElementSelector>();
 
-  Map<String, _Directive> classMap = new Map<String, _Directive>();
+  Map<String, List<_Directive>> classMap = new Map<String, List<_Directive>>();
   Map<String, _ElementSelector> classPartialMap = new Map<String, _ElementSelector>();
 
-  Map<String, Map<String, _Directive>> attrValueMap = new Map<String, Map<String, _Directive>>();
+  Map<String, Map<String, List<_Directive>>> attrValueMap = new Map<String, Map<String, List<_Directive>>>();
   Map<String, Map<String, _ElementSelector>> attrValuePartialMap = new Map<String, Map<String, _ElementSelector>>();
 
   _ElementSelector(this.name);
@@ -95,7 +95,9 @@ class _ElementSelector {
     var name;
     if ((name = selectorPart.element) != null) {
       if (terminal) {
-        elementMap[name] = directive;
+        elementMap
+          .putIfAbsent(name, () => [])
+          .add(directive);
       } else {
         elementPartialMap
             .putIfAbsent(name, () => new _ElementSelector(name))
@@ -103,7 +105,9 @@ class _ElementSelector {
       }
     } else if ((name = selectorPart.className) != null) {
       if (terminal) {
-        classMap[name] = directive;
+        classMap
+          .putIfAbsent(name, () => [])
+          .add(directive);
       } else {
         classPartialMap
             .putIfAbsent(name, () => new _ElementSelector(name))
@@ -112,8 +116,9 @@ class _ElementSelector {
     } else if ((name = selectorPart.attrName) != null) {
       if (terminal) {
         attrValueMap
-            .putIfAbsent(name, () => new Map<String, _Directive>())
-            [selectorPart.attrValue] = directive;
+            .putIfAbsent(name, () => new Map<String, List<_Directive>>())
+            .putIfAbsent(selectorPart.attrValue, () => [])
+            .add(directive);
       } else {
         attrValuePartialMap
             .putIfAbsent(name, () => new Map<String, _ElementSelector>())
@@ -125,11 +130,15 @@ class _ElementSelector {
     }
   }
 
+  _addRefs(List<DirectiveRef> refs, List<_Directive> directives, dom.Node node, [String attrValue]) {
+    directives.forEach((directive) =>
+      refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue)));
+  }
+
   List<_ElementSelector> selectNode(List<DirectiveRef> refs, List<_ElementSelector> partialSelection,
              dom.Node node, String nodeName) {
     if (elementMap.containsKey(nodeName)) {
-      _Directive directive = elementMap[nodeName];
-      refs.add(new DirectiveRef(node, directive.type, directive.annotation));
+      _addRefs(refs, elementMap[nodeName], node);
     }
     if (elementPartialMap.containsKey(nodeName)) {
       if (partialSelection == null) partialSelection = new List<_ElementSelector>();
@@ -141,8 +150,7 @@ class _ElementSelector {
   List<_ElementSelector> selectClass(List<DirectiveRef> refs, List<_ElementSelector> partialSelection,
          dom.Node node, String className) {
     if (classMap.containsKey(className)) {
-      var directive = classMap[className];
-      refs.add(new DirectiveRef(node, directive.type, directive.annotation));
+      _addRefs(refs, classMap[className], node);
     }
     if (classPartialMap.containsKey(className)) {
       if (partialSelection == null) partialSelection = new List<_ElementSelector>();
@@ -157,14 +165,12 @@ class _ElementSelector {
     String matchingKey = _matchingKey(attrValueMap.keys, attrName);
 
     if (matchingKey != null) {
-      Map<String, _Directive> valuesMap = attrValueMap[matchingKey];
+      Map<String, List<_Directive>> valuesMap = attrValueMap[matchingKey];
       if (valuesMap.containsKey('')) {
-        _Directive directive = valuesMap[''];
-        refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
+        _addRefs(refs, valuesMap[''], node, attrValue);
       }
       if (attrValue != '' && valuesMap.containsKey(attrValue)) {
-        _Directive directive = valuesMap[attrValue];
-        refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
+        _addRefs(refs, valuesMap[attrValue], node, attrValue);
       }
     }
     if (attrValuePartialMap.containsKey(attrName)) {

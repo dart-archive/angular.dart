@@ -17,6 +17,8 @@ main() => describe('dte.compiler', () {
         ..type(SimpleTranscludeInAttachAttrDirective)
         ..type(IncludeTranscludeAttrDirective)
         ..type(LocalAttrDirective)
+        ..type(OneOfTwoDirectives)
+        ..type(TwoOfTwoDirectives)
         ..type(MyController);
       return (Injector _injector) {
         injector = _injector;
@@ -124,6 +126,17 @@ main() => describe('dte.compiler', () {
       $rootScope.$digest();
       expect(element.text()).toEqual('Ab');
     }));
+
+    it('should compile two directives with the same selector', inject((Logger log) {
+      var element = $('<div two-directives></div>');
+      var template = $compile(element, directives);
+
+      template(injector, element);
+      $rootScope.$digest();
+
+      expect(log).toEqual(['OneOfTwo', 'TwoOfTwo']);
+    }));
+
 
 
     describe("interpolation", () {
@@ -559,6 +572,20 @@ class SimpleTranscludeInAttachAttrDirective {
 class IncludeTranscludeAttrDirective {
   IncludeTranscludeAttrDirective(SimpleTranscludeInAttachAttrDirective simple, Logger log) {
     log('IncludeTransclude');
+  }
+}
+
+@NgDirective(selector: '[two-directives]')
+class OneOfTwoDirectives {
+  OneOfTwoDirectives(Logger log) {
+    log('OneOfTwo');
+  }
+}
+
+@NgDirective(selector: '[two-directives]')
+class TwoOfTwoDirectives {
+  TwoOfTwoDirectives(Logger log) {
+    log('TwoOfTwo');
   }
 }
 
