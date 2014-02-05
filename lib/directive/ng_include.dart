@@ -24,11 +24,12 @@ class NgIncludeDirective {
   final Scope scope;
   final BlockCache blockCache;
   final Injector injector;
+  final DirectiveMap directives;
 
   Block _previousBlock;
   Scope _previousScope;
 
-  NgIncludeDirective(this.element, this.scope, this.blockCache, this.injector);
+  NgIncludeDirective(this.element, this.scope, this.blockCache, this.injector, this.directives);
 
   _cleanUp() {
     if (_previousBlock == null) return;
@@ -54,7 +55,7 @@ class NgIncludeDirective {
   set url(value) {
     _cleanUp();
     if (value != null && value != '') {
-      blockCache.fromUrl(value).then(_updateContent);
+      blockCache.fromUrl(value, directives).then(_updateContent);
     }
   }
 }

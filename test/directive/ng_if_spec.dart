@@ -15,7 +15,7 @@ class ChildController {
 }
 
 main() {
-  var compile, html, element, rootScope, logger;
+  var compile, html, element, rootScope, logger, directives;
 
   void configInjector() {
     module((Module module) {
@@ -26,14 +26,15 @@ main() {
   }
 
   void configState() {
-    inject((Scope scope, Compiler compiler, Injector injector, Logger _logger) {
+    inject((Scope scope, Compiler compiler, Injector injector, Logger _logger, DirectiveMap _directives) {
       rootScope = scope;
       logger = _logger;
       compile = (html, [applyFn]) {
         element = $(html);
-        compiler(element)(injector, element);
+        compiler(element, _directives)(injector, element);
         scope.$apply(applyFn);
       };
+      directives = _directives;
     });
   }
 

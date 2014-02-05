@@ -31,26 +31,26 @@ abstract class AnnotationMap<K> {
 }
 
 abstract class AnnotationsMap<K> {
-  final Map<K, List<Type>> _map = {};
+  final Map<K, List<Type>> map = {};
 
   AnnotationsMap(Injector injector, MetadataExtractor extractMetadata) {
     injector.types.forEach((type) {
       var meta = extractMetadata(type)
           .where((annotation) => annotation is K)
           .forEach((annotation) {
-            _map.putIfAbsent(annotation, () => []).add(type);
+            map.putIfAbsent(annotation, () => []).add(type);
           });
     });
   }
 
   List operator[](K annotation) {
-    var value = _map[annotation];
+    var value = map[annotation];
     if (value == null) throw 'No $annotation found!';
     return value;
   }
 
   forEach(fn(K, Type)) {
-    _map.forEach((annotation, types) {
+    map.forEach((annotation, types) {
       types.forEach((type) {
         fn(annotation, type);
       });

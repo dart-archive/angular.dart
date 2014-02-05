@@ -53,14 +53,14 @@ main() => describe('template url', () {
 
     it('should use the UrlRewriter for both HTML and CSS URLs', async(inject((Http $http,
           Compiler $compile, Scope $rootScope, Logger log, Injector injector, NgZone zone,
-          MockHttpBackend backend) {
+          MockHttpBackend backend, DirectiveMap directives) {
 
       backend.whenGET('PREFIX:simple.html').respond('<div log="SIMPLE">Simple!</div>');
       backend.whenGET('PREFIX:simple.css').respond('.hello{}');
 
       var element = $('<div><html-and-css log>ignore</html-and-css><div>');
       zone.run(() {
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
       });
 
       backend.flush();
@@ -85,11 +85,11 @@ main() => describe('template url', () {
 
     it('should replace element with template from url', async(inject((Http $http,
             Compiler $compile, Scope $rootScope,  Logger log, Injector injector,
-            MockHttpBackend backend) {
+            MockHttpBackend backend, DirectiveMap directives) {
       backend.expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
       var element = $('<div><simple-url log>ignore</simple-url><div>');
-      $compile(element)(injector, element);
+      $compile(element, directives)(injector, element);
 
       backend.flush();
       microLeap();
@@ -102,7 +102,7 @@ main() => describe('template url', () {
 
     it('should load template from URL once', async(inject((Http $http,
           Compiler $compile, Scope $rootScope,  Logger log, Injector injector,
-          MockHttpBackend backend) {
+          MockHttpBackend backend, DirectiveMap directives) {
       backend.whenGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
       var element = $(
@@ -110,7 +110,7 @@ main() => describe('template url', () {
             '<simple-url log>ignore</simple-url>' +
             '<simple-url log>ignore</simple-url>' +
           '<div>');
-      $compile(element)(injector, element);
+      $compile(element, directives)(injector, element);
 
       backend.flush();
       microLeap();
@@ -123,12 +123,12 @@ main() => describe('template url', () {
 
     it('should load a CSS file into a style', async(inject((Http $http,
           Compiler $compile, Scope $rootScope, Logger log, Injector injector,
-          MockHttpBackend backend) {
+          MockHttpBackend backend, DirectiveMap directives) {
       backend.expectGET('simple.css').respond('.hello{}');
       backend.expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
       var element = $('<div><html-and-css log>ignore</html-and-css><div>');
-      $compile(element)(injector, element);
+      $compile(element, directives)(injector, element);
 
       backend.flush();
       microLeap();
@@ -143,10 +143,11 @@ main() => describe('template url', () {
     })));
 
     it('should load a CSS file with a \$template', async(inject((Http $http,
-           Compiler $compile, Scope $rootScope, Injector injector, MockHttpBackend backend) {
+           Compiler $compile, Scope $rootScope, Injector injector,
+           MockHttpBackend backend, DirectiveMap directives) {
       var element = $('<div><inline-with-css log>ignore</inline-with-css><div>');
       backend.expectGET('simple.css').respond('.hello{}');
-      $compile(element)(injector, element);
+      $compile(element, directives)(injector, element);
 
       backend.flush();
       microLeap();
@@ -154,10 +155,11 @@ main() => describe('template url', () {
     })));
 
     it('should load a CSS with no template', async(inject((Http $http,
-          Compiler $compile, Scope $rootScope, Injector injector, MockHttpBackend backend) {
+          Compiler $compile, Scope $rootScope, Injector injector,
+          MockHttpBackend backend, DirectiveMap directives) {
       var element = $('<div><only-css log>ignore</only-css><div>');
       backend.expectGET('simple.css').respond('.hello{}');
-      $compile(element)(injector, element);
+      $compile(element, directives)(injector, element);
 
       backend.flush();
       microLeap();
@@ -165,12 +167,13 @@ main() => describe('template url', () {
     })));
 
     it('should load the CSS before the template is loaded', async(inject((Http $http,
-          Compiler $compile, Scope $rootScope, Injector injector, MockHttpBackend backend) {
+          Compiler $compile, Scope $rootScope, Injector injector,
+          MockHttpBackend backend, DirectiveMap directives) {
       backend.expectGET('simple.css').respond('.hello{}');
       backend.expectGET('simple.html').respond('<div>Simple!</div>');
 
       var element = $('<html-and-css>ignore</html-and-css>');
-      $compile(element)(injector, element);
+      $compile(element, directives)(injector, element);
 
       backend.flush();
       microLeap();
@@ -186,13 +189,13 @@ main() => describe('template url', () {
 
     it('should load multiple CSS files into a style', async(inject((Http $http,
         Compiler $compile, Scope $rootScope, Logger log, Injector injector,
-        MockHttpBackend backend) {
+        MockHttpBackend backend, DirectiveMap directives) {
       backend.expectGET('simple.css').respond('.hello{}');
       backend.expectGET('another.css').respond('.world{}');
       backend.expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
       var element = $('<div><html-and-css log>ignore</html-and-css><div>');
-      $compile(element)(injector, element);
+      $compile(element, directives)(injector, element);
 
       backend.flush();
       microLeap();

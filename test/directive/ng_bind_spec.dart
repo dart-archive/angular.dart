@@ -8,9 +8,9 @@ main() {
 
     beforeEach(inject((TestBed tb) => _ = tb));
 
-    it('should set.text', inject((Scope scope, Injector injector, Compiler compiler) {
+    it('should set.text', inject((Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
       var element = $('<div ng-bind="a"></div>');
-      compiler(element)(injector, element);
+      compiler(element, directives)(injector, element);
       scope.a = "abc123";
       scope.$digest();
       expect(element.text()).toEqual('abc123');
