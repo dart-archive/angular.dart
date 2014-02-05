@@ -99,6 +99,7 @@ class BlockFactory {
     assert((timerId = _perf.startTimer('ng.block.link.setUp', _html(node))) != false);
     Injector nodeInjector;
     Scope scope = parentInjector.get(Scope);
+    FilterMap filters = parentInjector.get(FilterMap);
     Map<Type, _ComponentFactory> fctrs;
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
     ElementProbe probe;
@@ -199,7 +200,7 @@ class BlockFactory {
         }
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
         for(var map in ref.mappings) {
-          map(nodeAttrs, scope, controller);
+          map(nodeAttrs, scope, controller, filters);
         }
         if (controller is NgAttachAware) {
           var removeWatcher;

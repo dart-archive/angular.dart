@@ -46,15 +46,17 @@ main() {
   describe('parse', () {
     var scope;
     Parser<Expression> parser;
+    FilterMap filters;
     beforeEach(module((Module module) {
       module.type(IncrementFilter);
       module.type(SubstringFilter);
     }));
-    beforeEach(inject((Parser injectedParser) {
+    beforeEach(inject((Parser injectedParser, FilterMap injectedFilters) {
       parser = injectedParser;
+      filters = injectedFilters;
     }));
 
-    eval(String text) => parser(text).eval(scope);
+    eval(String text) => parser(text).eval(scope, filters);
     expectEval(String expr) => expect(() => eval(expr));
 
     beforeEach(inject((Scope rootScope) { scope = rootScope; }));
@@ -189,15 +191,15 @@ main() {
 
       it('should fail gracefully when invoking non-function', () {
         expect(() {
-          parser('a[0]()').eval({'a': [4]});
+          parser('a[0]()').eval({'a': [4]}, filters);
         }).toThrow('a[0] is not a function');
 
         expect(() {
-          parser('a[x()]()').eval({'a': [4], 'x': () => 0});
+          parser('a[x()]()').eval({'a': [4], 'x': () => 0}, filters);
         }).toThrow('a[x()] is not a function');
 
         expect(() {
-          parser('{}()').eval({});
+          parser('{}()').eval({}, filters);
         }).toThrow('{} is not a function');
       });
 
@@ -209,59 +211,59 @@ main() {
 
       it('should fail gracefully when missing a function (relaxed message)', () {
         expect(() {
-          parser('doesNotExist()').eval({});
+          parser('doesNotExist()').eval({}, filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('exists(doesNotExist())').eval({'exists': () => true});
+          parser('exists(doesNotExist())').eval({'exists': () => true}, filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('doesNotExists(exists())').eval({'exists': () => true});
+          parser('doesNotExists(exists())').eval({'exists': () => true}, filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('doesNotExist(1)').eval({});
+          parser('doesNotExist(1)').eval({}, filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('doesNotExist(1, 2)').eval({});
+          parser('doesNotExist(1, 2)').eval({}, filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('doesNotExist()').eval(new TestData());
+          parser('doesNotExist()').eval(new TestData(), filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('doesNotExist(1)').eval(new TestData());
+          parser('doesNotExist(1)').eval(new TestData(), filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('doesNotExist(1, 2)').eval(new TestData());
+          parser('doesNotExist(1, 2)').eval(new TestData(), filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('a.doesNotExist()').eval({'a': {}});
+          parser('a.doesNotExist()').eval({'a': {}}, filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('a.doesNotExist(1)').eval({'a': {}});
+          parser('a.doesNotExist(1)').eval({'a': {}}, filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('a.doesNotExist(1, 2)').eval({'a': {}});
+          parser('a.doesNotExist(1, 2)').eval({'a': {}}, filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('a.doesNotExist()').eval({'a': new TestData()});
+          parser('a.doesNotExist()').eval({'a': new TestData()}, filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('a.doesNotExist(1)').eval({'a': new TestData()});
+          parser('a.doesNotExist(1)').eval({'a': new TestData()}, filters);
         }).toThrow('doesNotExist');
 
         expect(() {
-          parser('a.doesNotExist(1, 2)').eval({'a': new TestData()});
+          parser('a.doesNotExist(1, 2)').eval({'a': new TestData()}, filters);
         }).toThrow('doesNotExist');
       });
 
@@ -275,37 +277,37 @@ main() {
 
 
       it('should behave gracefully with a null scope', () {
-        expect(parser('null').eval(null)).toBe(null);
+        expect(parser('null').eval(null, filters)).toBe(null);
       });
 
 
       it('should pass exceptions through getters', () {
         expect(() {
-          parser('boo').eval(new ScopeWithErrors());
+          parser('boo').eval(new ScopeWithErrors(), filters);
         }).toThrow('boo to you');
       });
 
 
       it('should pass exceptions through methods', () {
         expect(() {
-          parser('foo()').eval(new ScopeWithErrors());
+          parser('foo()').eval(new ScopeWithErrors(), filters);
         }).toThrow('foo to you');
       });
 
 
       it('should fail if reflected object has no property', () {
         expect(() {
-          parser('notAProperty').eval(new TestData());
+          parser('notAProperty').eval(new TestData(), filters);
         }).toThrow("notAProperty");
       });
 
       it('should fail on private field access', () {
-        expect(parser('publicField').eval(new WithPrivateField())).toEqual(4);
+        expect(parser('publicField').eval(new WithPrivateField(), filters)).toEqual(4);
         // On Dartium, this fails with "NoSuchMethod: no instance getter"
         // On dart2js with generated functions: NoSuchMethod: method not found
         // On dart2js with reflection:  ArgumentError: private identifier"
         expect(() {
-          parser('_privateField').eval(new WithPrivateField());
+          parser('_privateField').eval(new WithPrivateField(), filters);
         }).toThrow();
       });
     });
@@ -585,7 +587,7 @@ main() {
       it('should evaluate methods on object', () {
         scope['obj'] = ['ABC'];
         var fn = parser("obj.elementAt(0)").eval;
-        expect(fn(scope)).toEqual('ABC');
+        expect(fn(scope, filters)).toEqual('ABC');
         expect(scope.$eval(fn)).toEqual('ABC');
       });
 
@@ -593,7 +595,7 @@ main() {
       it('should only check locals on first dereference', () {
         scope['a'] = {'b': 1};
         var locals = {'b': 2};
-        var fn = parser("this['a'].b").bind(scope, ScopeLocals.wrapper);
+        var fn = parser("this['a'].b").bind(scope, filters, ScopeLocals.wrapper);
         expect(fn(locals)).toEqual(1);
       });
 
@@ -779,35 +781,35 @@ main() {
 
 
       it('should support map getters', () {
-        expect(parser('a').eval({'a': 4})).toEqual(4);
+        expect(parser('a').eval({'a': 4}, filters)).toEqual(4);
       });
 
 
       it('should support member getters', () {
-        expect(parser('str').eval(new TestData())).toEqual('testString');
+        expect(parser('str').eval(new TestData(), filters)).toEqual('testString');
       });
 
 
       it('should support returning member functions', () {
-        expect(parser('method').eval(new TestData())()).toEqual('testMethod');
+        expect(parser('method').eval(new TestData(), filters)()).toEqual('testMethod');
       });
 
 
       it('should support calling member functions', () {
-        expect(parser('method()').eval(new TestData())).toEqual('testMethod');
+        expect(parser('method()').eval(new TestData(), filters)).toEqual('testMethod');
       });
 
 
       it('should support array setters', () {
         var data = {'a': [1,3]};
-        expect(parser('a[1]=2').eval(data)).toEqual(2);
+        expect(parser('a[1]=2').eval(data, filters)).toEqual(2);
         expect(data['a'][1]).toEqual(2);
       });
 
 
       it('should support member field setters', () {
         TestData data = new TestData();
-        expect(parser('str="bob"').eval(data)).toEqual('bob');
+        expect(parser('str="bob"').eval(data, filters)).toEqual('bob');
         expect(data.str).toEqual("bob");
       });
 
@@ -815,24 +817,24 @@ main() {
       it('should support member field getters from mixins', () {
         MixedTestData data = new MixedTestData();
         data.str = 'dole';
-        expect(parser('str').eval(data)).toEqual('dole');
+        expect(parser('str').eval(data, filters)).toEqual('dole');
       });
 
 
       it('should support map getters from superclass', () {
        InheritedMapData mapData = new InheritedMapData();
-       expect(parser('notmixed').eval(mapData)).toEqual('mapped-notmixed');
+       expect(parser('notmixed').eval(mapData, filters)).toEqual('mapped-notmixed');
       });
 
 
       it('should support map getters from mixins', () {
         MixedMapData data = new MixedMapData();
-        expect(parser('str').eval(data)).toEqual('mapped-str');
+        expect(parser('str').eval(data, filters)).toEqual('mapped-str');
       });
 
 
       it('should parse functions for object indices', () {
-        expect(parser('a[x()]()').eval({'a': [()=>6], 'x': () => 0})).toEqual(6);
+        expect(parser('a[x()]()').eval({'a': [()=>6], 'x': () => 0}, filters)).toEqual(6);
       });
     });
 
@@ -841,29 +843,29 @@ main() {
         var fn = parser('a');
         expect(fn.assign).toBeNotNull();
         var scope = {};
-        fn.assign(scope, 123);
+        fn.assign(scope, 123, filters);
         expect(scope).toEqual({'a':123});
       });
     });
 
     describe('locals', () {
       it('should expose local variables', () {
-        expect(parser('a').bind({'a': 6}, ScopeLocals.wrapper)({'a': 1})).toEqual(1);
+        expect(parser('a').bind({'a': 6}, filters, ScopeLocals.wrapper)({'a': 1})).toEqual(1);
         expect(parser('add(a,b)').
-          bind({'b': 1, 'add': (a, b) { return a + b; }}, ScopeLocals.wrapper)({'a': 2})).toEqual(3);
+          bind({'b': 1, 'add': (a, b) { return a + b; }}, filters, ScopeLocals.wrapper)({'a': 2})).toEqual(3);
       });
 
 
       it('should expose traverse locals', () {
-        expect(parser('a.b').bind({'a': {'b': 6}}, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
-        expect(parser('a.b').bind({'a': null}, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
-        expect(parser('a.b').bind({'a': {'b': 5}}, ScopeLocals.wrapper)({'a': null})).toEqual(null);
+        expect(parser('a.b').bind({'a': {'b': 6}}, filters, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind({'a': null}, filters, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind({'a': {'b': 5}}, filters, ScopeLocals.wrapper)({'a': null})).toEqual(null);
       });
 
 
       it('should work with scopes', inject((Scope scope) {
         scope.a = {'b': 6};
-        expect(parser('a.b').bind(scope, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind(scope, filters, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
       }));
 
       it('should expose assignment function', () {
@@ -871,7 +873,7 @@ main() {
         expect(fn.assign).toBeNotNull();
         var scope = {};
         var locals = {"a": {}};
-        fn.bind(scope, ScopeLocals.wrapper).assign(123, locals);
+        fn.bind(scope, filters, ScopeLocals.wrapper).assign(123, locals);
         expect(scope).toEqual({});
         expect(locals["a"]).toEqual({'b':123});
       });
@@ -903,6 +905,21 @@ main() {
         expect(scope.$eval("'abcd'|substring:1:offset")).toEqual("bc");
         expect(scope.$eval("'abcd'|substring:1:3|uppercase")).toEqual("BC");
       });
+
+      it('should only use filters that are passed as an argument', inject((Injector injector) {
+        var expression = parser("'World'|hello");
+        expect(() {
+          expression.eval({}, filters);
+        }).toThrow('No NgFilter: hello found!');
+
+        var module = new Module()
+            ..type(HelloFilter);
+        var childInjector = injector.createChild([module],
+            forceNewInstances: [FilterMap]);
+        var newFilters = childInjector.get(FilterMap);
+
+        expect(expression.eval({}, newFilters)).toEqual('Hello, World!');
+      }));
     });
   });
 }
@@ -947,5 +964,12 @@ class IncrementFilter {
 class SubstringFilter {
   call(String str, startIndex, [endIndex]) {
     return str.substring(startIndex, endIndex);
+  }
+}
+
+@NgFilter(name:'hello')
+class HelloFilter {
+  call(String str) {
+    return 'Hello, $str!';
   }
 }

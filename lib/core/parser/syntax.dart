@@ -3,6 +3,7 @@ library angular.core.parser.syntax;
 import 'package:angular/core/parser/parser.dart' show LocalsWrapper;
 import 'package:angular/core/parser/unparser.dart' show Unparser;
 import 'package:angular/core/parser/utils.dart' show EvalError;
+import 'package:angular/core/module.dart';
 
 abstract class Visitor {
   visit(Expression expression)
@@ -56,12 +57,12 @@ abstract class Expression {
   bool get isAssignable => false;
   bool get isChain => false;
 
-  eval(scope)
+  eval(scope, FilterMap filters)
       => throw new EvalError("Cannot evaluate $this");
-  assign(scope, value)
+  assign(scope, value, FilterMap filters)
       => throw new EvalError("Cannot assign to $this");
-  bind(context, [LocalsWrapper wrapper])
-      => new BoundExpression(this, context, wrapper);
+  bind(context, FilterMap filters, [LocalsWrapper wrapper])
+      => new BoundExpression(this, context, wrapper, filters);
 
   accept(Visitor visitor);
   String toString() => Unparser.unparse(this);
@@ -71,10 +72,12 @@ class BoundExpression {
   final Expression expression;
   final _context;
   final LocalsWrapper _wrapper;
-  BoundExpression(this.expression, this._context, this._wrapper);
+  final FilterMap _filters;
 
-  call([locals]) => expression.eval(_computeContext(locals));
-  assign(value, [locals]) => expression.assign(_computeContext(locals), value);
+  BoundExpression(this.expression, this._context, this._wrapper, this._filters);
+
+  call([locals]) => expression.eval(_computeContext(locals), _filters);
+  assign(value, [locals]) => expression.assign(_computeContext(locals), value, _filters);
 
   _computeContext(locals) {
     if (locals == null) return _context;

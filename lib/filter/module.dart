@@ -29,3 +29,12 @@ class NgFilterModule extends Module {
     type(UppercaseFilter);
   }
 }
+
+var _nullFilterMap = new _NullFilterMap();
+
+class _NullFilterMap implements FilterMap {
+  call(name) => null;
+  Type operator[](annotation) => null;
+  forEach(fn) { }
+  annotationsFor(type) => null;
+}

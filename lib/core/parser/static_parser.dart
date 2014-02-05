@@ -3,6 +3,7 @@ library angular.core.parser.static_parser;
 import 'package:angular/core/module.dart' show NgInjectableService;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
+import 'package:angular/core/module.dart';
 
 class StaticParserFunctions {
   final Map<String, Function> eval;
@@ -41,18 +42,18 @@ class StaticExpression extends Expression {
   accept(Visitor visitor) => throw "Cannot visit static expression $this";
   toString() => _input;
 
-  eval(scope) {
+  eval(scope, FilterMap filters) {
     try {
-      return _eval(scope);
+      return _eval(scope, filters);
     } on EvalError catch (e, s) {
       throw e.unwrap("$this", s);
     }
   }
 
-  assign(scope, value) {
+  assign(scope, value, FilterMap filters) {
     try {
       if (_assign == null) throw new EvalError("Cannot assign to $this");
-      return _assign(scope, value);
+      return _assign(scope, value, filters);
     } on EvalError catch (e, s) {
       throw e.unwrap("$this", s);
     }

@@ -146,26 +146,26 @@ class Compiler {
       ApplyMapping mappingFn;
       switch (mode) {
         case '@':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
-            attrs.observe(attrName, (value) => dstPathFn.assign(dst, value));
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters) {
+            attrs.observe(attrName, (value) => dstPathFn.assign(dst, value, filters));
           };
           break;
         case '<=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters) {
             if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
             scope.$watch(
-                    () => attrExprFn.eval(scope),
-                    (v) => dstPathFn.assign(dst, shadowValue = v),
+                    () => attrExprFn.eval(scope, filters),
+                    (v) => dstPathFn.assign(dst, shadowValue = v, filters),
                 attrs[attrName]);
             if (attrExprFn.isAssignable) {
               scope.$watch(
-                      () => dstPathFn.eval(dst),
+                      () => dstPathFn.eval(dst, filters),
                       (v) {
                     if (shadowValue != v) {
                       shadowValue = v;
-                      attrExprFn.assign(scope, v);
+                      attrExprFn.assign(scope, v, filters);
                     }
                   },
                   dstPath);
@@ -173,25 +173,25 @@ class Compiler {
           };
           break;
         case '=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters) {
             if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
             scope.$watch(
-                    () => attrExprFn.eval(scope),
-                    (v) => dstPathFn.assign(dst, shadowValue = v),
+                    () => attrExprFn.eval(scope, filters),
+                    (v) => dstPathFn.assign(dst, shadowValue = v, filters),
                     attrs[attrName]);
           };
           break;
         case '=>!':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters) {
             if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var stopWatching;
             stopWatching = scope.$watch(
-                () => attrExprFn.eval(scope),
+                () => attrExprFn.eval(scope, filters),
                 (value) {
-                  if (dstPathFn.assign(dst, value) != null) {
+                  if (dstPathFn.assign(dst, value, filters) != null) {
                     stopWatching();
                   }
                 },
@@ -199,8 +199,8 @@ class Compiler {
           };
           break;
         case '&':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
-            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope, ScopeLocals.wrapper));
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters) {
+            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope, filters, ScopeLocals.wrapper), filters);
           };
           break;
       }
