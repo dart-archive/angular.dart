@@ -19,7 +19,7 @@ class DirectiveRef {
 
   String toString() {
     var html = element is dom.Element ? (element as dom.Element).outerHtml : element.nodeValue;
-    return '{ element: $html, selector: ${annotation.selector}, value: $value }';
+    return '{ element: $html, selector: ${annotation.selector}, value: $value, type: $type }';
   }
 }
 
