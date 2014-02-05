@@ -1,6 +1,7 @@
 library angular.core.parser.utils;
 
 import 'package:angular/core/parser/syntax.dart' show Expression;
+import 'package:angular/core/module.dart';
 export 'package:angular/utils.dart' show relaxFnApply, relaxFnArgs, toBool;
 
 /// Marker for an uninitialized value.
@@ -18,14 +19,14 @@ class EvalError {
 }
 
 /// Evaluate the [list] in context of the [scope].
-List evalList(scope, List<Expression> list) {
+List evalList(scope, List<Expression> list, FilterMap filters) {
   int length = list.length;
   for(int cacheLength = _evalListCache.length; cacheLength <= length; cacheLength++) {
     _evalListCache.add(new List(cacheLength));
   }
   List result = _evalListCache[length];
   for (int i = 0; i < length; i++) {
-    result[i] = list[i].eval(scope);
+    result[i] = list[i].eval(scope, filters);
   }
   return result;
 }

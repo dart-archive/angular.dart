@@ -82,6 +82,7 @@ class Scope implements Map {
   final bool _isolate;
   final bool _lazy;
   final Profiler _perf;
+  final FilterMap _filters;
 
   /**
    * The direct parent scope that created this scope (this can also be the $rootScope)
@@ -113,7 +114,7 @@ class Scope implements Map {
   }
 
   Scope(this._exceptionHandler, this._parser, ScopeDigestTTL ttl,
-      this._zone, this._perf):
+      this._zone, this._perf, this._filters):
         $parent = null, _isolate = false, _lazy = false, _ttl = ttl.ttl {
     $root = this;
     $id = '_${$root._nextId++}';
@@ -126,9 +127,10 @@ class Scope implements Map {
     _set$Properties();
   }
 
-  Scope._child(Scope parent, bool this._isolate, bool this._lazy, Profiler this._perf):
-      $parent = parent, _ttl = parent._ttl, _parser = parent._parser,
-      _exceptionHandler = parent._exceptionHandler, _zone = parent._zone {
+  Scope._child(Scope parent, bool this._isolate, bool this._lazy, this._perf, filters)
+      : $parent = parent, _ttl = parent._ttl, _parser = parent._parser,
+        _exceptionHandler = parent._exceptionHandler, _zone = parent._zone,
+       _filters = filters == null ? parent._filters : filters {
     $root = $parent.$root;
     $id = '_${$root._nextId++}';
     _innerAsyncQueue = $parent._innerAsyncQueue;
@@ -209,8 +211,8 @@ class Scope implements Map {
    *   This is usefull if we expect that the bindings in the scope are constant and there is no need
    *   to check them on each digest. The digest can be forced by marking it [$dirty].
    */
-  $new({bool isolate: false, bool lazy: false}) =>
-    new Scope._child(this, isolate, lazy, _perf);
+  $new({bool isolate: false, bool lazy: false, FilterMap filters}) =>
+    new Scope._child(this, isolate, lazy, _perf, filters);
 
   /**
    * *EXPERIMENTAL:* This feature is experimental. We reserve the right to change or delete it.
@@ -321,7 +323,7 @@ class Scope implements Map {
     var oldValue;
     var newValue;
     int changeDetected = 0;
-    Function objGetter = _compileToFn(obj);
+    Function objGetter = relaxFnArgs2(_compileToFn(obj));
     List internalArray = [];
     Map internalMap = {};
     int oldLength = 0;
@@ -354,7 +356,7 @@ class Scope implements Map {
 
     if (shallow) {
       $watchCollectionWatch = (_) {
-        newValue = objGetter(this);
+        newValue = objGetter(this, _filters);
         newLength = newValue == null ? 0 : newValue.length;
         if (newLength != oldLength) {
           oldLength = newLength;
@@ -368,7 +370,7 @@ class Scope implements Map {
       };
     } else {
       $watchCollectionWatch = (_) {
-        newValue = objGetter(this);
+        newValue = objGetter(this, _filters);
 
         if (newValue is! Map && newValue is! List) {
           if (!_identical(oldValue, newValue)) {
@@ -557,7 +559,7 @@ class Scope implements Map {
       scopeCount++;
       for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
         var last = watch.last;
-        var value = watch.get(scope);
+        var value = watch.get(scope, _filters);
         if (!_identical(value, last)) {
           return _digestHandleDirty(scope, watch, last, value, null);
         }
@@ -579,7 +581,7 @@ class Scope implements Map {
       for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
         if (identical(stopWatch, watch)) return null;
         var last = watch.last;
-        var value = watch.get(scope);
+        var value = watch.get(scope, _filters);
         if (!_identical(value, last)) {
           return _digestHandleDirty(scope, watch, last, value, log);
         }
@@ -608,7 +610,7 @@ class Scope implements Map {
         watch = scope._watchers.head;
       }
       last = watch.last;
-      value = watch.get(scope);
+      value = watch.get(scope, _filters);
     }
   }
 
@@ -696,7 +698,7 @@ class Scope implements Map {
    *   for the purposes of the evaluation.
    */
   $eval(expr, [locals]) {
-    return relaxFnArgs(_compileToFn(expr))(locals == null ? this : new ScopeLocals(this, locals));
+    return relaxFnArgs(_compileToFn(expr))(locals == null ? this : new ScopeLocals(this, locals), _filters);
   }
 
 
@@ -958,7 +960,7 @@ class _Watch {
 
   _Watch(fn, this.last, getFn, this.exp)
       : this.fn  = relaxFnArgs3(fn)
-      , this.get = relaxFnArgs1(getFn);
+      , this.get = relaxFnArgs2(getFn);
 }
 
 class _WatchList {

@@ -4,28 +4,29 @@ import 'dart:mirrors';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/utils.dart';
+import 'package:angular/core/module.dart';
 
 class AccessScope extends syntax.AccessScope with AccessReflective {
   final Symbol symbol;
   AccessScope(String name) : super(name), symbol = new Symbol(name);
-  eval(scope) => _eval(scope);
-  assign(scope, value) => _assign(scope, scope, value);
+  eval(scope, FilterMap filters) => _eval(scope);
+  assign(scope, value, FilterMap filters) => _assign(scope, scope, value, filters);
 }
 
 class AccessScopeFast extends syntax.AccessScope with AccessFast {
   final Getter getter;
   final Setter setter;
   AccessScopeFast(String name, this.getter, this.setter) : super(name);
-  eval(scope) => _eval(scope);
-  assign(scope, value) => _assign(scope, scope, value);
+  eval(scope, FilterMap filters) => _eval(scope, filters);
+  assign(scope, value, FilterMap filters) => _assign(scope, scope, value, filters);
 }
 
 class AccessMember extends syntax.AccessMember with AccessReflective {
   final Symbol symbol;
   AccessMember(object, String name) : super(object, name), symbol = new Symbol(name);
-  eval(scope) => _eval(object.eval(scope));
-  assign(scope, value) => _assign(scope, object.eval(scope), value);
-  _assignToNonExisting(scope, value) => object.assign(scope, { name: value });
+  eval(scope, FilterMap filters) => _eval(object.eval(scope, filters));
+  assign(scope, value, FilterMap filters) => _assign(scope, object.eval(scope, filters), value, filters);
+  _assignToNonExisting(scope, value, FilterMap filters) => object.assign(scope, { name: value }, filters);
 }
 
 class AccessMemberFast extends syntax.AccessMember with AccessFast {
@@ -33,15 +34,15 @@ class AccessMemberFast extends syntax.AccessMember with AccessFast {
   final Setter setter;
   AccessMemberFast(object, String name, this.getter, this.setter)
       : super(object, name);
-  eval(scope) => _eval(object.eval(scope));
-  assign(scope, value) => _assign(scope, object.eval(scope), value);
-  _assignToNonExisting(scope, value) => object.assign(scope, { name: value });
+  eval(scope, FilterMap filters) => _eval(object.eval(scope, filters), filters);
+  assign(scope, value, FilterMap filters) => _assign(scope, object.eval(scope, filters), value, filters);
+  _assignToNonExisting(scope, value, FilterMap filters) => object.assign(scope, { name: value }, filters);
 }
 
 class AccessKeyed extends syntax.AccessKeyed {
   AccessKeyed(object, key) : super(object, key);
-  eval(scope) => getKeyed(object.eval(scope), key.eval(scope));
-  assign(scope, value) => setKeyed(object.eval(scope), key.eval(scope), value);
+  eval(scope, FilterMap filters) => getKeyed(object.eval(scope, filters), key.eval(scope, filters));
+  assign(scope, value, FilterMap filters) => setKeyed(object.eval(scope, filters), key.eval(scope, filters), value);
 }
 
 
@@ -101,11 +102,11 @@ abstract class AccessReflective {
     }
   }
 
-  _assign(scope, holder, value) {
+  _assign(scope, holder, value, FilterMap filters) {
     if (holder is Map) {
       holder[name] = value;
     } else if (holder == null) {
-      _assignToNonExisting(scope, value);
+      _assignToNonExisting(scope, value, filters);
     } else {
       reflect(holder).setField(symbol, value);
     }
@@ -114,7 +115,7 @@ abstract class AccessReflective {
 
   // By default we don't do any assignments to non-existing holders. This
   // is overwritten for access to members.
-  _assignToNonExisting(scope, value) => null;
+  _assignToNonExisting(scope, value, FilterMap filters) => null;
 
   static Function createInvokeClosure(InstanceMirror mirror, Symbol symbol) {
     if (!hasMethod(mirror, symbol)) return null;
@@ -189,14 +190,14 @@ abstract class AccessFast {
   Getter get getter;
   Setter get setter;
 
-  _eval(holder) {
+  _eval(holder, FilterMap filters) {
     if (holder == null) return null;
     return (holder is Map) ? holder[name] : getter(holder);
   }
 
-  _assign(scope, holder, value) {
+  _assign(scope, holder, value, FilterMap filters) {
     if (holder == null) {
-      _assignToNonExisting(scope, value);
+      _assignToNonExisting(scope, value, filters);
       return value;
     } else {
       return (holder is Map) ? (holder[name] = value) : setter(holder, value);
@@ -205,6 +206,6 @@ abstract class AccessFast {
 
   // By default we don't do any assignments to non-existing holders. This
   // is overwritten for access to members.
-  _assignToNonExisting(scope, value) => null;
+  _assignToNonExisting(scope, value, filters) => null;
 }
 

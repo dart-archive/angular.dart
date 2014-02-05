@@ -168,7 +168,9 @@ class OrderByFilter {
           mappers[i] = _nop;
         } else {
           Expression parsed = _parser(strExp);
-          mappers[i] = (e) => parsed.eval(e);
+          // It's OK to use a null filter map here because these expressions
+          // should never contain any filters.
+          mappers[i] = (e) => parsed.eval(e, _nullFilterMap);
         }
       } else if (expression is Mapper) {
         mappers[i] = (expression as Mapper);
