@@ -220,7 +220,14 @@ class _MultipleSelectionMode extends _SelectMode {
     Function fn = (o, i) => o.selected = null;
 
     if (selectedValues is List) {
-      fn = (o, i) => o.selected = selectedValues.contains(expando[o].ngValue);
+      fn = (o, i) {
+        var selected = expando[o];
+        if (selected == null) {
+          return false;
+        } else {
+          return o.selected = selectedValues.contains(selected.ngValue);
+        }
+      };
     }
 
     _forEachOption(fn);

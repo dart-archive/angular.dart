@@ -398,6 +398,29 @@ main() {
         _.rootScope.$apply();
         expect(_.rootElement).toEqualSelect([['a'], 'b']);
       });
+
+
+      it('issue #428', () {
+        _.compile(
+            '<div>' +
+              '<div ng-if="attached">' +
+                '<select ng-model="model" multiple>' +
+                  '<option value="a">foo</option>' +
+                  '<option value="b">bar</option>' +
+                '</select>' +
+              '</div>' +
+            '</div>');
+        _.rootScope.model = ['a'];
+        _.rootScope.attached = true;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([['a'], 'b']);
+        _.rootScope.attached = false;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([]);
+        _.rootScope.attached = true;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([['a'], 'b']);
+      });
     });
 
 
