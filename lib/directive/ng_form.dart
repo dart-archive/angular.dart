@@ -22,7 +22,7 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
   final dom.Element _element;
   final Scope _scope;
 
-  final Map<String, List<NgControl>> currentErrors =
+  final Map<String, List<NgControl>> errors =
       new Map<String, List<NgControl>>();
 
   final List<NgControl> _controls = new List<NgControl>();
@@ -79,21 +79,21 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
    * error is real).
    */
   setValidity(NgControl control, String errorType, bool isValid) {
-    List queue = currentErrors[errorType];
+    List queue = errors[errorType];
 
     if(isValid) {
       if(queue != null) {
         queue.remove(control);
         if(queue.isEmpty) {
-          currentErrors.remove(errorType);
-          if(currentErrors.isEmpty) valid = true;
+          errors.remove(errorType);
+          if(errors.isEmpty) valid = true;
           _parentForm.setValidity(this, errorType, true);
         }
       }
     } else {
       if(queue == null) {
         queue = new List<NgControl>();
-        currentErrors[errorType] = queue;
+        errors[errorType] = queue;
         _parentForm.setValidity(this, errorType, false);
       } else if(queue.contains(control)) return;
 
@@ -165,7 +165,7 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
 class NgNullForm implements NgForm {
   var _name, _dirty, _valid, _invalid, _pristine, _element;
   var _controls, _scope, _parentForm, _controlName;
-  var currentErrors, _controlByName;
+  var errors, _controlByName;
   dom.Element element;
   NgNullForm() {}
   operator[](name) {}
