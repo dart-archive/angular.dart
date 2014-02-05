@@ -46,15 +46,17 @@ main() {
   describe('parse', () {
     var scope;
     Parser<Expression> parser;
+    FilterMap filters;
     beforeEach(module((Module module) {
       module.type(IncrementFilter);
       module.type(SubstringFilter);
     }));
-    beforeEach(inject((Parser injectedParser) {
+    beforeEach(inject((Parser injectedParser, FilterMap injectedFilters) {
       parser = injectedParser;
+      filters = injectedFilters;
     }));
 
-    eval(String text) => parser(text).eval(scope);
+    eval(String text, [FilterMap f]) => parser(text).eval(scope, f);
     expectEval(String expr) => expect(() => eval(expr));
 
     beforeEach(inject((Scope rootScope) { scope = rootScope; }));
@@ -887,12 +889,12 @@ main() {
 
     describe('filters', () {
       it('should call a filter', () {
-        expect(eval("'Foo'|uppercase")).toEqual("FOO");
-        expect(eval("'fOo'|uppercase|lowercase")).toEqual("foo");
+        expect(eval("'Foo'|uppercase", filters)).toEqual("FOO");
+        expect(eval("'fOo'|uppercase|lowercase", filters)).toEqual("foo");
       });
 
       it('should call a filter with arguments', () {
-        expect(eval("1|increment:2")).toEqual(3);
+        expect(eval("1|increment:2", filters)).toEqual(3);
       });
 
       it('should evaluate grouped filters', () {
@@ -905,11 +907,29 @@ main() {
         expect(() {
           scope.$eval("1|nonexistent");
         }).toThrow('No NgFilter: nonexistent found!');
+        expect(() {
+          eval("1|nonexistent", filters);
+        }).toThrow('No NgFilter: nonexistent found!');
 
         scope.offset =  3;
         expect(scope.$eval("'abcd'|substring:1:offset")).toEqual("bc");
         expect(scope.$eval("'abcd'|substring:1:3|uppercase")).toEqual("BC");
       });
+
+      it('should only use filters that are passed as an argument', inject((Injector injector) {
+        var expression = parser("'World'|hello");
+        expect(() {
+          expression.eval({}, filters);
+        }).toThrow('No NgFilter: hello found!');
+
+        var module = new Module()
+            ..type(HelloFilter);
+        var childInjector = injector.createChild([module],
+            forceNewInstances: [FilterMap]);
+        var newFilters = childInjector.get(FilterMap);
+
+        expect(expression.eval({}, newFilters)).toEqual('Hello, World!');
+      }));
     });
   });
 }
@@ -955,5 +975,12 @@ class IncrementFilter {
 class SubstringFilter {
   call(String str, startIndex, [endIndex]) {
     return str.substring(startIndex, endIndex);
+  }
+}
+
+@NgFilter(name:'hello')
+class HelloFilter {
+  call(String str) {
+    return 'Hello, $str!';
   }
 }
