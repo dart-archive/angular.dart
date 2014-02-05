@@ -114,7 +114,7 @@ main() {
       });
 
 
-      xit(r'should iterate over an array of primitives', () {
+      it(r'should iterate over an array of primitives', () {
         element = $compile(
             r'<ul>' +
                 r'<li ng-repeat="item in items track by $index">{{item}};</li>' +

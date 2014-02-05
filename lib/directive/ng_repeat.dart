@@ -83,7 +83,8 @@ class _Row {
 class NgRepeatDirective extends AbstractNgRepeatDirective {
   NgRepeatDirective(BlockHole blockHole,
                     BoundBlockFactory boundBlockFactory,
-                    Scope scope): super(blockHole, boundBlockFactory, scope);
+                    Parser parser,
+                    Scope scope): super(blockHole, boundBlockFactory, parser, scope);
   get _shalow => false;
 }
 
@@ -112,8 +113,9 @@ class NgRepeatDirective extends AbstractNgRepeatDirective {
 class NgShalowRepeatDirective extends AbstractNgRepeatDirective {
   NgShalowRepeatDirective(BlockHole blockHole,
                           BoundBlockFactory boundBlockFactory,
+                          Parser parser,
                           Scope scope)
-      : super(blockHole, boundBlockFactory, scope);
+      : super(blockHole, boundBlockFactory, parser, scope);
   get _shalow => true;
 }
 
@@ -123,6 +125,7 @@ abstract class AbstractNgRepeatDirective  {
 
   final BlockHole _blockHole;
   final BoundBlockFactory _boundBlockFactory;
+  final Parser _parser;
   final Scope _scope;
 
   String _expression;
@@ -134,7 +137,7 @@ abstract class AbstractNgRepeatDirective  {
   Function _removeWatch = () => null;
   Iterable _lastCollection;
 
-  AbstractNgRepeatDirective(this._blockHole, this._boundBlockFactory, this._scope);
+  AbstractNgRepeatDirective(this._blockHole, this._boundBlockFactory, this._parser, this._scope);
 
   get _shalow;
 
@@ -147,6 +150,18 @@ abstract class AbstractNgRepeatDirective  {
           "in _collection_[ track by _id_]' but got '$_expression'.";
     }
     _listExpr = match.group(2);
+    var trackByExpr = match.group(3);
+    if (trackByExpr != null) {
+      Expression trackBy = _parser(trackByExpr);
+      _trackByIdFn = ((key, value, index) {
+        Map<String, Object> trackByLocals = new Map<String, Object>();
+        if (_keyIdentifier != null) trackByLocals[_keyIdentifier] = key;
+        trackByLocals[_valueIdentifier] = value;
+        trackByLocals[r'$index'] = index;
+        trackByLocals[r'$id'] = (obj) => obj;
+        return relaxFnArgs(trackBy.eval)(new ScopeLocals(_scope, trackByLocals));
+      });
+    }
     var assignExpr = match.group(1);
     match = _LHS_SYNTAX.firstMatch(assignExpr);
     if (match == null) {
