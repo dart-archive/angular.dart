@@ -46,15 +46,17 @@ main() {
   describe('parse', () {
     var scope;
     Parser<Expression> parser;
+    FilterMap filters;
     beforeEach(module((Module module) {
       module.type(IncrementFilter);
       module.type(SubstringFilter);
     }));
-    beforeEach(inject((Parser injectedParser) {
+    beforeEach(inject((Parser injectedParser, FilterMap injectedFilters) {
       parser = injectedParser;
+      filters = injectedFilters;
     }));
 
-    eval(String text) => parser(text).eval(scope);
+    eval(String text, [FilterMap f]) => parser(text).eval(scope, f);
     expectEval(String expr) => expect(() => eval(expr));
 
     beforeEach(inject((Scope rootScope) { scope = rootScope; }));
@@ -286,6 +288,13 @@ main() {
       });
 
 
+      it('should pass noSuchMethExceptions through getters', () {
+        expect(() {
+          parser('getNoSuchMethod').eval(new ScopeWithErrors());
+        }).toThrow("iDontExist");
+      });
+
+
       it('should pass exceptions through methods', () {
         expect(() {
           parser('foo()').eval(new ScopeWithErrors());
@@ -457,10 +466,10 @@ main() {
         expect(eval('0&&1?0:1')).toEqual(B(0)&&B(1)?0:1);
         expect(eval('1||0?0:0')).toEqual(B(1)||B(0)?0:0);
 
-        expect(eval('0?0&&1:2')).toEqual(B(0)?0&&1:2);
-        expect(eval('0?1&&1:2')).toEqual(B(0)?1&&1:2);
-        expect(eval('0?0||0:1')).toEqual(B(0)?0||0:1);
-        expect(eval('0?0||1:2')).toEqual(B(0)?0||1:2);
+        expect(eval('0?0&&1:2')).toEqual(B(0)?B(0)&&B(1):2);
+        expect(eval('0?1&&1:2')).toEqual(B(0)?B(1)&&B(1):2);
+        expect(eval('0?0||0:1')).toEqual(B(0)?B(0)||B(0):1);
+        expect(eval('0?0||1:2')).toEqual(B(0)?B(0)||B(1):2);
 
         expect(eval('1?0&&1:2')).toEqual(B(1)?B(0)&&B(1):2);
         expect(eval('1?1&&1:2')).toEqual(B(1)?B(1)&&B(1):2);
@@ -880,28 +889,49 @@ main() {
 
     describe('filters', () {
       it('should call a filter', () {
-        expect(eval("'Foo'|uppercase")).toEqual("FOO");
-        expect(eval("'fOo'|uppercase|lowercase")).toEqual("foo");
+        expect(eval("'Foo'|uppercase", filters)).toEqual("FOO");
+        expect(eval("'fOo'|uppercase|lowercase", filters)).toEqual("foo");
       });
 
       it('should call a filter with arguments', () {
-        expect(eval("1|increment:2")).toEqual(3);
-      });
-
-      it('should evaluate grouped filters', () {
-        scope.name = 'MISKO';
-        expect(scope.$eval('n = (name|lowercase)')).toEqual('misko');
-        expect(scope.$eval('n')).toEqual('misko');
+        expect(eval("1|increment:2", filters)).toEqual(3);
       });
 
       it('should parse filters', () {
         expect(() {
           scope.$eval("1|nonexistent");
         }).toThrow('No NgFilter: nonexistent found!');
+        expect(() {
+          eval("1|nonexistent", filters);
+        }).toThrow('No NgFilter: nonexistent found!');
 
         scope.offset =  3;
         expect(scope.$eval("'abcd'|substring:1:offset")).toEqual("bc");
         expect(scope.$eval("'abcd'|substring:1:3|uppercase")).toEqual("BC");
+      });
+
+      it('should only use filters that are passed as an argument', inject((Injector injector) {
+        var expression = parser("'World'|hello");
+        expect(() {
+          expression.eval({}, filters);
+        }).toThrow('No NgFilter: hello found!');
+
+        var module = new Module()
+            ..type(HelloFilter);
+        var childInjector = injector.createChild([module],
+            forceNewInstances: [FilterMap]);
+        var newFilters = childInjector.get(FilterMap);
+
+        expect(expression.eval({}, newFilters)).toEqual('Hello, World!');
+      }));
+
+      it('should not allow filters in a chain', () {
+        expect(() {
+          parser("1;'World'|hello");
+        }).toThrow('cannot have a filter in a chain the end of the expression [1;\'World\'|hello]');
+        expect(() {
+          parser("'World'|hello;1");
+        }).toThrow('cannot have a filter in a chain at column 15 in [\'World\'|hello;1]');
       });
     });
   });
@@ -936,6 +966,7 @@ class BracketButNotMap {
 class ScopeWithErrors {
   String get boo { throw "boo to you"; }
   String foo() { throw "foo to you"; }
+  get getNoSuchMethod => null.iDontExist();
 }
 
 @NgFilter(name:'increment')
@@ -947,5 +978,12 @@ class IncrementFilter {
 class SubstringFilter {
   call(String str, startIndex, [endIndex]) {
     return str.substring(startIndex, endIndex);
+  }
+}
+
+@NgFilter(name:'hello')
+class HelloFilter {
+  call(String str) {
+    return 'Hello, $str!';
   }
 }

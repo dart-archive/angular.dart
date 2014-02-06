@@ -23,6 +23,7 @@ class AngularModule extends Module {
 
     type(MetadataExtractor);
     value(Expando, _elementExpando);
+    value(NgApp, new NgApp(dom.window.document.documentElement));
   }
 }
 
@@ -46,7 +47,7 @@ Injector _defaultInjectorFactory(List<Module> modules) =>
  *   - [modules] Optional list of [Module]s to add to the [Injector] (if more than one is needed).
  *   - [element] Optional root element of the application. If non specified, the
  *     the root element is looked up using the [selector]. If selector can not
- *     identify a root, the root [HTTML] element is used for bootstraping.
+ *     identify a root, the root [HTML] element is used for bootstraping.
  *   - [selector] Optional CSS selector used to locate the root element for the application.
  *   - [injectorFactor] Optional factory responsible for creating the injector.
  *
@@ -79,12 +80,20 @@ Injector ngBootstrap({
   // The injector must be created inside the zone, so we create the
   // zone manually and give it back to the injector as a value.
   NgZone zone = new NgZone();
-  ngModules.add(new Module()..value(NgZone, zone));
+  ngModules.add(new Module()
+      ..value(NgZone, zone)
+      ..value(NgApp, new NgApp(element)));
 
   return zone.run(() {
     var rootElements = [element];
     Injector injector = injectorFactory(ngModules);
-    injector.get(Compiler)(rootElements)(injector, rootElements);
+    injector.get(Compiler)(rootElements, injector.get(DirectiveMap))(injector, rootElements);
     return injector;
   });
+}
+
+/// Holds a reference to the root of the application used by ngBootstrap.
+class NgApp {
+  final dom.Element root;
+  NgApp(this.root);
 }

@@ -19,14 +19,28 @@ part of angular.directive;
  *
  * index.html:
  *
- *     <p ng-class="{strike: strike, bold: bold, red: red}">Map Syntax Example</p>
+ *     <!--
+ *       The map syntax:
+ *
+ *           ng-class="{key1: value1, key2: value2, ...}"
+ *
+ *       results in only adding CSS classes represented by the map keys when
+ *       the corresponding value expressions are truthy.
+ *
+ *       To use a css class that contains a hyphen (such as line-through in this
+ *       example), you should quote the name to make it a valid map key.  You
+ *       may, of course, quote all the map keys for consistency.
+ *     -->
+ *     <p ng-class="{'line-through': strike, bold: bold, red: red}">Map Syntax Example</p>
  *     <input type="checkbox" ng-model="bold"> bold
  *     <input type="checkbox" ng-model="strike"> strike
  *     <input type="checkbox" ng-model="red"> red
  *     <hr>
+ *
  *     <p ng-class="style">Using String Syntax</p>
  *     <input type="text" ng-model="style" placeholder="Type: bold strike red">
  *     <hr>
+ *
  *     <p ng-class="[style1, style2, style3]">Using Array Syntax</p>
  *     <input ng-model="style1" placeholder="Type: bold"><br>
  *     <input ng-model="style2" placeholder="Type: strike"><br>
@@ -35,6 +49,9 @@ part of angular.directive;
  * style.css:
  *
  *     .strike {
+ *       text-decoration: line-through;
+ *     }
+ *     .line-through {
  *       text-decoration: line-through;
  *     }
  *     .bold {
@@ -174,7 +191,10 @@ abstract class _NgClassBase {
 
   static List<String> _flatten(classes) {
     if (classes == null) return [];
-    if (classes is List) return classes;
+    if (classes is List) {
+      return classes.where((String e) => e != null && e.isNotEmpty)
+                    .toList(growable: false);
+    }
     if (classes is Map) {
       return classes.keys.where((key) => toBool(classes[key])).toList();
     }

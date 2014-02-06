@@ -90,6 +90,7 @@ main(arguments) {
       'a().name',
       'a[x()]()',
       'boo',
+      'getNoSuchMethod',
       '[].count(',
       'false',
       'false && run()',
@@ -223,6 +224,9 @@ main(arguments) {
       "n",
       "1|nonexistent",
       "publicField",
-      "_privateField"
+      "_privateField",
+      "'World'|hello",
+      "1;'World'|hello",
+      "'World'|hello;1"
   ]);
 }

@@ -7,9 +7,9 @@ main() {
   describe('BindHtmlDirective', () {
 
     it('should sanitize and set innerHtml and sanitize and set html',
-          inject((Scope scope, Injector injector, Compiler compiler) {
+          inject((Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
       var element = $('<div ng-bind-html="htmlVar"></div>');
-      compiler(element)(injector, element);
+      compiler(element, directives)(injector, element);
       scope.htmlVar = '<a href="http://www.google.com"><b>Google!</b></a>';
       scope.$digest();
       // Sanitization removes the href attribute on the <a> tag.

@@ -21,13 +21,12 @@ class NgTextMustacheDirective {
 
 @NgDirective(selector: r'[*=/{{.*}}/]')
 class NgAttrMustacheDirective {
-  static RegExp ATTR_NAME_VALUE_REGEXP = new RegExp(r'^([^=]+)=(.*)$');
-
-// This Directive is special and does not go through injection.
+  // This Directive is special and does not go through injection.
   NgAttrMustacheDirective(NodeAttrs attrs, String markup, Interpolate interpolate, Scope scope) {
-    var match = ATTR_NAME_VALUE_REGEXP.firstMatch(markup);
-    var attrName = match[1];
-    Interpolation interpolation = interpolate(match[2]);
+    var eqPos = markup.indexOf('=');
+    var attrName = markup.substring(0, eqPos);
+    var attrValue = markup.substring(eqPos + 1);
+    Interpolation interpolation = interpolate(attrValue);
     interpolation.setter = (text) => attrs[attrName] = text;
     interpolation.setter('');
     scope.$watchSet(interpolation.watchExpressions, interpolation.call, markup.trim());

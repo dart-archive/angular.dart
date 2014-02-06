@@ -7,7 +7,7 @@ part of angular.filter;
  *
  * Usage:
  *
- *     {{ number_expression | number[:fractionSize] }}
+ *     {{ numeric_expression | currency[:symbol[:leading]] }}
  *
  */
 @NgFilter(name:'currency')

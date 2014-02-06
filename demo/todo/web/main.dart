@@ -22,7 +22,7 @@ main() {
   // TodoController.  Otherwise, use the stored-data controller.
   var query = window.location.search;
   if (query.contains('?')) {
-    module.type(ServerController);
+    module.type(ServerController, implementedBy: HttpServerController);
   } else {
     module.type(ServerController, implementedBy: NoServerController);
   }

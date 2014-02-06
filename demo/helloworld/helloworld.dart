@@ -8,6 +8,14 @@ import 'package:angular/angular.dart';
 @MirrorsUsed(override: '*')
 import 'dart:mirrors';
 
+@NgController(
+    selector: '[hello-world-controller]',
+    publishAs: 'ctrl'
+)
+class HelloWorldController {
+  String name = "world";
+}
+
 main() {
-  ngBootstrap();
+  ngBootstrap(module: new Module()..type(HelloWorldController));
 }

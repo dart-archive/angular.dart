@@ -5,8 +5,7 @@ import '../_specs.dart';
 main() => describe('DirectiveMap', () {
 
   beforeEach(module((Module module) {
-    module
-      ..type(AnnotatedIoComponent);
+    module..type(AnnotatedIoComponent);
   }));
 
   it('should extract attr map from annotated component', inject((DirectiveMap directives) {
@@ -21,7 +20,6 @@ main() => describe('DirectiveMap', () {
     expect(annotation.publishTypes).toEqual([String]);
     expect(annotation.template).toEqual('template');
     expect(annotation.templateUrl).toEqual('templateUrl');
-    expect(annotation.cssUrl).toEqual('cssUrl');
     expect(annotation.cssUrls).toEqual(['cssUrls']);
     expect(annotation.applyAuthorStyles).toEqual(true);
     expect(annotation.resetStyleInheritance).toEqual(true);
@@ -41,10 +39,10 @@ main() => describe('DirectiveMap', () {
   describe('exceptions', () {
     it('should throw when annotation is for existing mapping', () {
       var module = new Module()
-        ..type(DirectiveMap)
-        ..type(Bad1Component)
-        ..type(MetadataExtractor)
-        ..type(FieldMetadataExtractor);
+          ..type(DirectiveMap)
+          ..type(Bad1Component)
+          ..type(MetadataExtractor)
+          ..type(FieldMetadataExtractor);
 
       var injector = new DynamicInjector(modules: [module]);
       expect(() {
@@ -55,10 +53,10 @@ main() => describe('DirectiveMap', () {
 
     it('should throw when annotated both getter and setter', () {
         var module = new Module()
-        ..type(DirectiveMap)
-        ..type(Bad2Component)
-        ..type(MetadataExtractor)
-        ..type(FieldMetadataExtractor);
+            ..type(DirectiveMap)
+            ..type(Bad2Component)
+            ..type(MetadataExtractor)
+            ..type(FieldMetadataExtractor);
 
       var injector = new DynamicInjector(modules: [module]);
       expect(() {
@@ -73,8 +71,7 @@ main() => describe('DirectiveMap', () {
     selector: 'annotated-io',
     template: 'template',
     templateUrl: 'templateUrl',
-    cssUrl: 'cssUrl',
-    cssUrls: const ['cssUrls'],
+    cssUrl: const ['cssUrls'],
     applyAuthorStyles: true,
     resetStyleInheritance: true,
     publishAs: 'ctrl',
@@ -83,8 +80,7 @@ main() => describe('DirectiveMap', () {
     exportExpressions: const ['exportExpressions'],
     map: const {
       'foo': '=>foo'
-    }
-)
+    })
 class AnnotatedIoComponent {
   AnnotatedIoComponent(Scope scope) {
     scope.$root.ioComponent = this;
@@ -118,8 +114,7 @@ class AnnotatedIoComponent {
     template: r'<content></content>',
     map: const {
       'foo': '=>foo'
-    }
-)
+    })
 class Bad1Component {
   @NgOneWay('foo')
   String foo;
@@ -127,8 +122,7 @@ class Bad1Component {
 
 @NgComponent(
     selector: 'bad2',
-    template: r'<content></content>'
-)
+    template: r'<content></content>')
 class Bad2Component {
   @NgOneWay('foo')
   get foo => null;

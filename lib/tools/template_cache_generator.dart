@@ -7,7 +7,6 @@ import 'dart:collection';
 import 'package:analyzer/src/generated/ast.dart';
 import 'package:analyzer/src/generated/source.dart';
 import 'package:analyzer/src/generated/element.dart';
-import 'package:analyzer/src/generated/engine.dart';
 import 'package:di/generator.dart';
 
 const String PACKAGE_PREFIX = 'package:';
@@ -49,7 +48,7 @@ main(args) {
   print('output: $output');
   print('outputLibrary: $outputLibrary');
   print('packageRoots: $packageRoots');
-  print('url rewritters: ' + args[4]);
+  print('url rewritters: ' + args[5]);
   print('blacklistedClasses: ' + blacklistedClasses.join(', '));
 
 
@@ -90,11 +89,13 @@ printTemplateCache(Map<String, String> templateKeyMap,
   outSink.write(fileHeader(outputLibrary));
 
   List<Future> reads = <Future>[];
-  templateKeyMap.forEach((uri, templateFile) {
+  templateKeyMap.keys.toList()..sort()..forEach((uri) {
+    var templateFile = templateKeyMap[uri];
     reads.add(new File(templateFile).readAsString().then((fileStr) {
       fileStr = fileStr.replaceAll('"""', r'\"\"\"');
       String resultUri = uri;
-      urlRewriters.forEach((regexp, replacement) {
+      urlRewriters.keys.toList()..sort()..forEach((regexp) {
+        var replacement = urlRewriters[regexp];
         resultUri = resultUri.replaceFirst(regexp, replacement);
       });
       outSink.write(
@@ -140,7 +141,7 @@ class TemplateCollectingVisitor {
         var srcDirUri = new Uri.file(srcPath);
         Source currentSrcDir = sourceCrawler.context.sourceFactory
             .resolveUri2(null, srcDirUri);
-        cacheUris.forEach((uri) => storeUriAsset(uri, currentSrcDir));
+        cacheUris..sort()..forEach((uri) => storeUriAsset(uri, currentSrcDir));
       }
     });
   }
@@ -150,8 +151,15 @@ class TemplateCollectingVisitor {
       if (arg is NamedExpression) {
         NamedExpression namedArg = arg;
         var paramName = namedArg.name.label.name;
-        if (paramName == 'templateUrl' || paramName == 'cssUrl') {
+        if (paramName == 'templateUrl') {
           cacheUris.add(assertString(namedArg.expression).stringValue);
+        } else if (paramName == 'cssUrl') {
+          if (namedArg.expression is StringLiteral) {
+            cacheUris.add(assertString(namedArg.expression).stringValue);
+          } else {
+            cacheUris.addAll(assertList(namedArg.expression).elements.map((e) =>
+                assertString(e).stringValue));
+          }
         }
       }
     });
@@ -166,7 +174,8 @@ class TemplateCollectingVisitor {
         var paramName = namedArg.name.label.name;
         if (paramName == 'preCacheUrls') {
           assertList(namedArg.expression).elements
-            .forEach((expression) =>
+            ..sort()
+            ..forEach((expression) =>
                 cacheUris.add(assertString(expression).stringValue));
         }
         if (paramName == 'cache') {

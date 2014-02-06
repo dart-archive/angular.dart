@@ -17,7 +17,7 @@ abstract class _NgModelValidator {
   /**
    * Registers the validator with to attached model.
    */
-  bool listen() {
+  void listen() {
     if(!_listening) {
       _listening = true;
       this.ngModel.addValidator(this);
@@ -29,7 +29,7 @@ abstract class _NgModelValidator {
   /**
    * De-registers the validator with to attached model.
    */
-  bool unlisten() {
+  void unlisten() {
     if(_listening) {
       _listening = false;
       this.ngModel.removeValidator(this);
@@ -73,8 +73,12 @@ class NgModelRequiredValidator extends _NgModelValidator {
   @NgAttr('required')
   get required => _required;
   set required(value) {
-    if(value is String) return;
-    (_required = value) == true ? listen() : unlisten();
+    if (value is String) return;
+    if ((_required = value) == true) {
+      listen();
+    } else {
+      unlisten();
+    }
   }
 }
 

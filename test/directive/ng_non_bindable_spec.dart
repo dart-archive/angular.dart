@@ -9,7 +9,7 @@ main() {
     beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should set ignore all other markup/directives on the descendent nodes',
-          inject((Scope scope, Injector injector, Compiler compiler) {
+          inject((Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
       var element = $('<div>' +
                       '  <span id="s1">{{a}}</span>' +
                       '  <span id="s2" ng-bind="b"></span>' +
@@ -19,7 +19,7 @@ main() {
                       '  <span id="s3">{{a}}</span>' +
                       '  <span id="s4" ng-bind="b"></span>' +
                       '</div>');
-      compiler(element)(injector, element);
+      compiler(element, directives)(injector, element);
       scope.a = "one";
       scope.b = "two";
       scope.$digest();

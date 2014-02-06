@@ -80,7 +80,7 @@ class InputSelectDirective implements NgAttachAware {
 }
 
 /**
- * Since the [value] attirbute of the [OPTION] can only be a string, Angular
+ * Since the [value] attribute of the [OPTION] can only be a string, Angular
  * provides [ng-value] which allows binding to any expression.
  *
  */
@@ -93,7 +93,7 @@ class OptionValueDirective implements TextChangeListener, NgAttachAware,
   final InputSelectDirective _inputSelectDirective;
   final NodeAttrs _attrs;
 
-  Getter _ngValue;
+  BoundGetter _ngValue;
 
   OptionValueDirective(this._attrs, this._inputSelectDirective) {
     if (_inputSelectDirective != null) {
@@ -120,7 +120,7 @@ class OptionValueDirective implements TextChangeListener, NgAttachAware,
     }
   }
 
-  set ngValue(Getter value) => _ngValue = value;
+  set ngValue(BoundGetter value) => _ngValue = value;
   get ngValue => _attrs['ng-value'] is String ?
         _ngValue() :
         (_attrs.element as dom.OptionElement).value;
@@ -220,7 +220,14 @@ class _MultipleSelectionMode extends _SelectMode {
     Function fn = (o, i) => o.selected = null;
 
     if (selectedValues is List) {
-      fn = (o, i) => o.selected = selectedValues.contains(expando[o].ngValue);
+      fn = (o, i) {
+        var selected = expando[o];
+        if (selected == null) {
+          return false;
+        } else {
+          return o.selected = selectedValues.contains(selected.ngValue);
+        }
+      };
     }
 
     _forEachOption(fn);
