@@ -67,6 +67,21 @@ describe('ng-model', () {
       expect(_.rootScope.model).toEqual('14');
     }));
 
+    it('should update input type=number to blank when model is null', inject(() {
+      _.compile('<input type="number" ng-model="model" probe="p">');
+      Probe probe = _.rootScope.p;
+      var ngModel = probe.directive(NgModel);
+      InputElement inputElement = probe.element;
+
+      inputElement.value = '12';
+      _.triggerEvent(inputElement, 'change');
+      expect(_.rootScope.model).toEqual('12');
+
+      _.rootScope.model = null;
+      _.rootScope.$apply();
+      expect(inputElement.value).toEqual('');
+    }));
+
     it('should write to input only if value is different', inject(() {
       var scope = _.rootScope;
       var element = new dom.InputElement();
