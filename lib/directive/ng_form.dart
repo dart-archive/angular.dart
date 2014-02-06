@@ -148,6 +148,10 @@ class NgForm extends NgControl implements NgDetachAware, Map<String, NgModel> {
     }
   }
 
+  set dirty(value) {
+    super.dirty = _parentForm.dirty = true;
+  }
+
   bool get isEmpty => false;
   bool get isNotEmpty => !isEmpty;
   get values => null;

@@ -132,6 +132,10 @@ class NgModel extends NgControl {
     validate();
   }
 
+  set dirty(value) {
+    super.dirty = _form.dirty = true;
+  }
+
   /**
    * Removes the model from the control/form.
    */
@@ -221,6 +225,7 @@ class InputTextLikeDirective {
   processValue() {
     var value = typedValue;
     if (value != ngModel.viewValue) {
+      ngModel.dirty = true;
       scope.$apply(() => ngModel.viewValue = value);
     }
     ngModel.validate();
