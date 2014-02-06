@@ -25,9 +25,9 @@ main() {
         return validator;
       });
       
-      inject((Scope scope, Injector injector, Compiler compiler) {         
+      inject((Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {         
         var element = $('<div ng-bind-html="htmlVar"></div>');
-        compiler(element)(injector, element);
+        compiler(element, directives)(injector, element);
         scope.htmlVar = '<a href="http://www.google.com"><b>Google!</b></a>';
         scope.$digest();
         // Sanitation allows href attributes per injected sanitizer.
