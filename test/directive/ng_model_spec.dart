@@ -557,6 +557,44 @@ describe('ng-model', () {
       expect(element.classes.contains('ng-pristine')).toBe(true);
       expect(element.classes.contains('ng-dirty')).toBe(false);
     }));
+
+    it('should render the parent form/fieldset as dirty', inject((Scope scope) {
+      _.compile('<form name="myForm">' + 
+                '  <fieldset name="myFieldset">' + 
+                '    <input type="text" ng-model="my_model" probe="i" />' +
+                '   </fieldset>' +
+                '</form>');
+
+      Probe inputProbe = _.rootScope.i;
+      var inputElement = inputProbe.element;
+
+      NgForm form = _.rootScope.myForm;
+      var formElement = form.element;
+
+      NgForm fieldset = _.rootScope.myFieldset;
+      var fieldsetElement = fieldset.element;
+
+      expect(formElement.classes.contains('ng-pristine')).toBe(true);
+      expect(formElement.classes.contains('ng-dirty')).toBe(false);
+
+      expect(fieldsetElement.classes.contains('ng-pristine')).toBe(true);
+      expect(fieldsetElement.classes.contains('ng-dirty')).toBe(false);
+
+      expect(inputElement.classes.contains('ng-pristine')).toBe(true);
+      expect(inputElement.classes.contains('ng-dirty')).toBe(false);
+
+      inputElement.value = '...hi...';
+      _.triggerEvent(inputElement, 'change');
+
+      expect(formElement.classes.contains('ng-pristine')).toBe(false);
+      expect(formElement.classes.contains('ng-dirty')).toBe(true);
+
+      expect(fieldsetElement.classes.contains('ng-pristine')).toBe(false);
+      expect(fieldsetElement.classes.contains('ng-dirty')).toBe(true);
+
+      expect(inputElement.classes.contains('ng-pristine')).toBe(false);
+      expect(inputElement.classes.contains('ng-dirty')).toBe(true);
+    }));
   });
 
   describe('valid / invalid', () {
