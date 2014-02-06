@@ -157,6 +157,22 @@ main() => describe('template url', () {
       expect(renderedText(element)).toEqual('.hello{}inline!');
     })));
 
+    it('should ignore CSS load errors ', async(inject((Http $http,
+           Compiler $compile, Scope $rootScope, Injector injector,
+           MockHttpBackend backend, DirectiveMap directives) {
+      var element = $('<div><inline-with-css log>ignore</inline-with-css><div>');
+      backend.expectGET('simple.css').respond(500, 'some error');
+      $compile(element, directives)(injector, element);
+
+      backend.flush();
+      microLeap();
+      expect(renderedText(element)).toEqual(
+          '/*\n'
+          'HTTP 500: some error\n'
+          '*/\n'
+          'inline!');
+    })));
+
     it('should load a CSS with no template', async(inject((Http $http,
           Compiler $compile, Scope $rootScope, Injector injector,
           MockHttpBackend backend, DirectiveMap directives) {

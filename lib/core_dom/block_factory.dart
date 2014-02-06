@@ -311,7 +311,9 @@ class _ComponentFactory {
     List<async.Future<String>> cssFutures = new List();
     var cssUrls = component.cssUrls;
     if (cssUrls.isNotEmpty) {
-      cssUrls.forEach((css) => cssFutures.add( $http.getString(css, cache: $templateCache) ) );
+      cssUrls.forEach((css) => cssFutures.add(
+          $http.getString(css, cache: $templateCache).catchError((e) => '/*\n$e\n*/\n')
+      ) );
     } else {
       cssFutures.add( new async.Future.value(null) );
     }
