@@ -90,7 +90,7 @@ Before you submit your pull request consider the following guidelines:
 * Build your changes locally to ensure all the tests pass
 
     ```shell
-    grunt test
+    ./run-test.sh
     ```
 
 * Push your branch to Github:
