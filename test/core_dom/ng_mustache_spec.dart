@@ -86,39 +86,39 @@ main() {
 
     beforeEach(inject((TestBed tb) => _ = tb));
 
-    it('should add/remove ng-show class', () {
+    it('should add/remove ng-hide class', () {
       var element = _.compile('<div ng-show="isVisible"></div>');
 
-      expect(element).not.toHaveClass('ng-show');
+      expect(element).not.toHaveClass('ng-hide');
 
       _.rootScope.$apply(() {
         _.rootScope['isVisible'] = true;
       });
-      expect(element).toHaveClass('ng-show');
+      expect(element).not.toHaveClass('ng-hide');
 
       _.rootScope.$apply(() {
         _.rootScope['isVisible'] = false;
       });
-      expect(element).not.toHaveClass('ng-show');
+      expect(element).toHaveClass('ng-hide');
     });
 
     it('should work together with ng-class', () {
       var element = _.compile('<div ng-class="currentCls" ng-show="isVisible"></div>');
 
       expect(element).not.toHaveClass('active');
-      expect(element).not.toHaveClass('ng-show');
+      expect(element).not.toHaveClass('ng-hide');
 
       _.rootScope.$apply(() {
         _.rootScope['currentCls'] = 'active';
       });
       expect(element).toHaveClass('active');
-      expect(element).not.toHaveClass('ng-show');
+      expect(element).toHaveClass('ng-hide');
 
       _.rootScope.$apply(() {
         _.rootScope['isVisible'] = true;
       });
       expect(element).toHaveClass('active');
-      expect(element).toHaveClass('ng-show');
+      expect(element).not.toHaveClass('ng-hide');
     });
   });
 
