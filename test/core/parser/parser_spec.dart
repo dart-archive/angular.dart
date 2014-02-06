@@ -324,6 +324,7 @@ main() {
         }).toThrow("notAProperty");
       });
 
+
       it('should fail on private field access', () {
         expect(parser('publicField').eval(new WithPrivateField())).toEqual(4);
         // On Dartium, this fails with "NoSuchMethod: no instance getter"
@@ -332,6 +333,26 @@ main() {
         expect(() {
           parser('_privateField').eval(new WithPrivateField());
         }).toThrow();
+      });
+
+
+      it('should only allow identifier or keyword as filter names', () {
+        expect(() => parser('"Foo"|(')).toThrow('identifier or keyword');
+        expect(() => parser('"Foo"|1234')).toThrow('identifier or keyword');
+        expect(() => parser('"Foo"|"uppercase"')).toThrow('identifier or keyword');
+      });
+
+
+      it('should only allow identifier or keyword as member names', () {
+        expect(() => parser('x.(')).toThrow('identifier or keyword');
+        expect(() => parser('x. 1234')).toThrow('identifier or keyword');
+        expect(() => parser('x."foo"')).toThrow('identifier or keyword');
+      });
+
+
+      it('should only allow identifier, string, or keyword as object literal key', () {
+        expect(() => parser('{(:0}')).toThrow('expected identifier, keyword, or string');
+        expect(() => parser('{1234:0}')).toThrow('expected identifier, keyword, or string');
       });
     });
 
@@ -997,10 +1018,10 @@ main() {
       it('should not allow filters in a chain', () {
         expect(() {
           parser("1;'World'|hello");
-        }).toThrow('cannot have a filter in a chain the end of the expression [1;\'World\'|hello]');
+        }).toThrow('Cannot have a filter in a chain the end of the expression [1;\'World\'|hello]');
         expect(() {
           parser("'World'|hello;1");
-        }).toThrow('cannot have a filter in a chain at column 15 in [\'World\'|hello;1]');
+        }).toThrow('Cannot have a filter in a chain at column 15 in [\'World\'|hello;1]');
       });
     });
   });

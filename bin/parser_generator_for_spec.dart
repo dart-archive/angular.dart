@@ -434,5 +434,14 @@ main(arguments) {
       "o.void()",
       "o.while()",
       "o.with()",
+
+      '"Foo"|(',
+      '"Foo"|1234',
+      '"Foo"|"uppercase"',
+      'x.(',
+      'x. 1234',
+      'x."foo"',
+      '{(:0}',
+      '{1234:0}',
   ]);
 }
