@@ -191,7 +191,10 @@ abstract class _NgClassBase {
 
   static List<String> _flatten(classes) {
     if (classes == null) return [];
-    if (classes is List) return classes;
+    if (classes is List) {
+      return classes.where((String e) => e != null && e.isNotEmpty)
+                    .toList(growable: false);
+    }
     if (classes is Map) {
       return classes.keys.where((key) => toBool(classes[key])).toList();
     }

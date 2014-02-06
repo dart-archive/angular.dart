@@ -30,11 +30,23 @@ main() {
 
 
     it('should support adding multiple classes via an array', () {
-      var element = _.compile('<div class="existing" ng-class="[\'A\', \'B\']"></div>');
+      _.rootScope.a = 'a';
+      _.rootScope.b = '';
+      _.rootScope.c = null;
+      var element = _.compile('<div class="existing" ng-class="[\'literalA\', a, b, c]"></div>');
       _.rootScope.$digest();
       expect(element.classes.contains('existing')).toBeTruthy();
-      expect(element.classes.contains('A')).toBeTruthy();
-      expect(element.classes.contains('B')).toBeTruthy();
+      expect(element.classes.contains('a')).toBeTruthy();
+      expect(element.classes.contains('b')).toBeFalsy();
+      expect(element.classes.contains('c')).toBeFalsy();
+      expect(element.classes.contains('null')).toBeFalsy();
+      _.rootScope.a = null;
+      _.rootScope.b = 'b';
+      _.rootScope.c = 'c';
+      _.rootScope.$digest();
+      expect(element.classes.contains('a')).toBeFalsy();
+      expect(element.classes.contains('b')).toBeTruthy();
+      expect(element.classes.contains('c')).toBeTruthy();
     });
 
 
