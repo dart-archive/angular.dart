@@ -88,23 +88,24 @@ printTemplateCache(Map<String, String> templateKeyMap,
 
   outSink.write(fileHeader(outputLibrary));
 
-  List<Future> reads = <Future>[];
-  templateKeyMap.keys.toList()..sort()..forEach((uri) {
+  Future future = new Future.value(0);
+  List uris = templateKeyMap.keys.toList()..sort()..forEach((uri) {
     var templateFile = templateKeyMap[uri];
-    reads.add(new File(templateFile).readAsString().then((fileStr) {
-      fileStr = fileStr.replaceAll('"""', r'\"\"\"');
-      String resultUri = uri;
-      urlRewriters.keys.toList()..sort()..forEach((regexp) {
-        var replacement = urlRewriters[regexp];
-        resultUri = resultUri.replaceFirst(regexp, replacement);
+    future = future.then((_) {
+      return new File(templateFile).readAsString().then((fileStr) {
+        fileStr = fileStr.replaceAll('"""', r'\"\"\"');
+        String resultUri = uri;
+        urlRewriters.forEach((regexp, replacement) {
+          resultUri = resultUri.replaceFirst(regexp, replacement);
+        });
+        outSink.write(
+            'tc.put("$resultUri", new HttpResponse(200, r"""$fileStr"""));\n');
       });
-      outSink.write(
-          'tc.put("$resultUri", new HttpResponse(200, r"""$fileStr"""));\n');
-    }));
+    });
   });
 
   // Wait until all templates files are processed.
-  return Future.wait(reads).then((_) {
+  return future.then((_) {
     outSink.write(FILE_FOOTER);
   });
 }
