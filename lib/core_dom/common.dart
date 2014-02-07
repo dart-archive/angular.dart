@@ -23,3 +23,14 @@ class DirectiveRef {
   }
 }
 
+/**
+ * Creates a child injector that allows loading new directives, filters and
+ * services from the provided modules.
+ */
+Injector forceNewDirectivesAndFilters(Injector injector, List<Module> modules) {
+  modules.add(new Module()
+      ..factory(Scope,
+          (i) => i.parent.get(Scope).$new(filters: i.get(FilterMap))));
+  return injector.createChild(modules,
+      forceNewInstances: [DirectiveMap, FilterMap]);
+}
