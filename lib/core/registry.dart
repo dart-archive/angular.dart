@@ -70,6 +70,7 @@ abstract class AnnotationsMap<K> {
 @NgInjectableService()
 class MetadataExtractor {
   Iterable call(Type type) {
+    if (reflectType(type) is TypedefMirror) return [];
     var metadata = reflectClass(type).metadata;
     if (metadata == null) return [];
     return metadata.map((InstanceMirror im) => im.reflectee);
