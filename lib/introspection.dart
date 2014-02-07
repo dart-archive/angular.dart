@@ -4,7 +4,7 @@ part of angular;
  * A global write only variable which keeps track of objects attached to the elements.
  * This is usefull for debugging AngularDart application from the browser's REPL.
  */
-Expando _elementExpando = new Expando('element');
+var _elementExpando = new Expando('element');
 
 /**
  * Return the closest [ElementProbe] object for a given [Element].
@@ -74,11 +74,12 @@ List<Object> ngDirectives(dom.Node node) {
 }
 
 _publishToJavaScript() {
-  js.context['ngProbe'] = (dom.Node node) => _jsProbe(ngProbe(node));
-  js.context['ngInjector'] = (dom.Node node) => _jsInjector(ngInjector(node));
-  js.context['ngScope'] = (dom.Node node) => _jsScope(ngScope(node));
-  js.context['ngQuery'] = (dom.Node node, String selector, [String containsText]) =>
-      new js.JsArray.from(ngQuery(node, selector, containsText));
+  js.context
+      ..['ngProbe'] = (dom.Node node) => _jsProbe(ngProbe(node))
+      ..['ngInjector'] = (dom.Node node) => _jsInjector(ngInjector(node))
+      ..['ngScope'] = (dom.Node node) => _jsScope(ngScope(node))
+      ..['ngQuery'] = (dom.Node node, String selector, [String containsText]) =>
+          new js.JsArray.from(ngQuery(node, selector, containsText));
 }
 
 js.JsObject _jsProbe(ElementProbe probe) {
@@ -90,11 +91,8 @@ js.JsObject _jsProbe(ElementProbe probe) {
   })..['_dart_'] = probe;
 }
 
-js.JsObject _jsInjector(Injector injector) {
-  return new js.JsObject.jsify({
-    "get": injector.get
-  })..['_dart_'] = injector;
-}
+js.JsObject _jsInjector(Injector injector) =>
+    new js.JsObject.jsify({ "get": injector.get})..['_dart_'] = injector;
 
 js.JsObject _jsScope(Scope scope) {
   return new js.JsObject.jsify({

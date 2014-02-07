@@ -32,8 +32,8 @@ abstract class RouteInitializer {
 class NgRoutingHelper {
   final Router router;
   final NgApp _ngApp;
-  List<NgViewDirective> portals = <NgViewDirective>[];
-  Map<String, String> _templates = new Map<String, String>();
+  var portals = <NgViewDirective>[];
+  var _templates = <String, String>{};
 
   NgRoutingHelper(RouteInitializer initializer, this.router, this._ngApp) {
     if (initializer == null) {
