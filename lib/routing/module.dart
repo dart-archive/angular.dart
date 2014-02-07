@@ -175,6 +175,7 @@ class NgRoutingModule extends Module {
     type(NgRoutingHelper);
     value(RouteProvider, null);
     value(RouteInitializer, null);
+    value(RouteInitializerFn, null);
 
     // directives
     value(NgViewDirective, null);

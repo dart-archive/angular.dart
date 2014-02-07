@@ -9,8 +9,76 @@ class ViewFactory {
   ViewFactory(this.locationService);
 
   call(String templateUrl) =>
-      (RouteEvent event) =>
-          locationService._route(event.route, templateUrl, fromEvent: true);
+      (RouteEnterEvent event) => _enterHandler(event, templateUrl);
+
+  _enterHandler(RouteEnterEvent event, String templateUrl, [List<Module> modules]) =>
+      locationService._route(event.route, templateUrl, fromEvent: true, modules: modules);
+
+  configure(Map<String, NgRouteCfg> config) =>
+      _configure(locationService.router.root, config);
+
+  _configure(Route route, Map<String, NgRouteCfg> config) {
+    config.forEach((name, cfg) {
+      var moduledCalled = false;
+      List<Module> newModules;
+      route.addRoute(
+          name: name,
+          path: cfg.path,
+          defaultRoute: cfg.defaultRoute,
+          enter: (RouteEnterEvent e) {
+            if (cfg.view != null) {
+              _enterHandler(e, cfg.view, newModules);
+            }
+            if (cfg.enter != null) {
+              cfg.enter(e);
+            }
+          },
+          preEnter: (RoutePreEnterEvent e) {
+            if (cfg.modules != null && !moduledCalled) {
+              moduledCalled = true;
+              var modules = cfg.modules();
+              if (modules is Future) {
+                e.allowEnter(modules.then((List<Module> m) {
+                  newModules = m;
+                  return true;
+                }));
+              } else {
+                newModules = modules;
+              }
+            }
+            if (cfg.preEnter != null) {
+              cfg.preEnter(e);
+            }
+          },
+          leave: cfg.leave,
+          mount: (Route mountRoute) {
+            if (cfg.mount != null) {
+              _configure(mountRoute, cfg.mount);
+            }
+          });
+    });
+  }
+}
+
+NgRouteCfg ngRoute({String path, String view, Map<String, NgRouteCfg> mount,
+    modules(), bool defaultRoute: false, RoutePreEnterEventHandler preEnter,
+    RouteEnterEventHandler enter, RouteLeaveEventHandler leave}) =>
+        new NgRouteCfg(path: path, view: view, mount: mount, modules: modules,
+            defaultRoute: defaultRoute, preEnter: preEnter, enter: enter,
+            leave: leave);
+
+class NgRouteCfg {
+  final String path;
+  final String view;
+  final Map<String, NgRouteCfg> mount;
+  final Function modules;
+  final bool defaultRoute;
+  final RouteEnterEventHandler enter;
+  final RoutePreEnterEventHandler preEnter;
+  final RouteLeaveEventHandler leave;
+
+  NgRouteCfg({this.view, this.path, this.mount, this.modules, this.defaultRoute,
+      this.enter, this.preEnter, this.leave});
 }
 
 /**
@@ -19,10 +87,22 @@ class ViewFactory {
  *
  * The [init] method will be called by the framework once the router is
  * instantiated but before [NgBindRouteDirective] and [NgViewDirective].
+ *
+ * Deprecated: use RouteInitializerFn instead.
  */
+@deprecated
 abstract class RouteInitializer {
   void init(Router router, ViewFactory viewFactory);
 }
+
+/**
+ * An typedef that must be implemented by the user of routing library and
+ * should include the route initialization.
+ *
+ * The function will be called by the framework once the router is
+ * instantiated but before [NgBindRouteDirective] and [NgViewDirective].
+ */
+typedef void RouteInitializerFn(Router router, ViewFactory viewFactory);
 
 /**
  * A singleton helper service that handles routing initialization, global
@@ -33,15 +113,22 @@ class NgRoutingHelper {
   final Router router;
   final NgApp _ngApp;
   List<NgViewDirective> portals = <NgViewDirective>[];
-  Map<String, String> _templates = new Map<String, String>();
+  Map<String, _View> _templates = new Map<String, _View>();
 
-  NgRoutingHelper(RouteInitializer initializer, this.router, this._ngApp) {
-    if (initializer == null) {
+  NgRoutingHelper(RouteInitializer initializer, Injector injector, this.router, this._ngApp) {
+    // TODO: move this to constructor parameters when di issue is fixed:
+    // https://github.com/angular/di.dart/issues/40
+    RouteInitializerFn initializerFn = injector.get(RouteInitializerFn);
+    if (initializer == null && initializerFn == null) {
       window.console.error('No RouteInitializer implementation provided.');
       return;
     };
 
-    initializer.init(router, new ViewFactory(this));
+    if (initializerFn != null) {
+      initializerFn(router, new ViewFactory(this));
+    } else {
+      initializer.init(router, new ViewFactory(this));
+    }
     router.onRouteStart.listen((RouteStartEvent routeEvent) {
       routeEvent.completed.then((success) {
         if (success) {
@@ -60,23 +147,24 @@ class NgRoutingHelper {
       activePath = activePath.skip(_routeDepth(startingFrom));
     }
     for (Route route in activePath) {
-      var templateUrl = _templates[_routePath(route)];
-      if (templateUrl == null) continue;
+      var viewDef = _templates[_routePath(route)];
+      if (viewDef == null) continue;
+      var templateUrl = viewDef.template;
 
       NgViewDirective view = portals.lastWhere((NgViewDirective v) {
         return _routePath(route) != _routePath(v._route) &&
             _routePath(route).startsWith(_routePath(v._route));
       }, orElse: () => null);
       if (view != null && !alreadyActiveViews.contains(view)) {
-        view._show(templateUrl, route);
+        view._show(templateUrl, route, viewDef.modules);
         alreadyActiveViews.add(view);
         break;
       }
     }
   }
 
-  _route(Route route, String template, {bool fromEvent}) {
-    _templates[_routePath(route)] = template;
+  _route(Route route, String template, {bool fromEvent, List<Module> modules}) {
+    _templates[_routePath(route)] = new _View(template, modules);
   }
 
   _registerPortal(NgViewDirective ngView) {
@@ -86,6 +174,13 @@ class NgRoutingHelper {
   _unregisterPortal(NgViewDirective ngView) {
     portals.remove(ngView);
   }
+}
+
+class _View {
+  final String template;
+  final List<Module> modules;
+
+  _View(this.template, this.modules);
 }
 
 String _routePath(Route route) {

@@ -30,7 +30,19 @@ main() => describe('RegistryMap', () {
     expect(keys).toEqual([new MyAnnotation('A'), new MyAnnotation('B')]);
     expect(types).toEqual([A1, A1]);
   });
+
+  it('should safely ignore typedefs', () {
+    var module = new Module()
+      ..type(MyMap)
+      ..type(MetadataExtractor)
+      ..value(MyTypedef, (String _) => null);
+
+    var injector = new DynamicInjector(modules: [module]);
+    expect(() => injector.get(MyMap), isNot(throws));
+  });
 });
+
+typedef void MyTypedef(String arg);
 
 class MyMap extends AnnotationMap<MyAnnotation> {
   MyMap(Injector injector, MetadataExtractor metadataExtractor)
