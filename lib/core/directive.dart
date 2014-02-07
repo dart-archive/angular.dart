@@ -136,6 +136,15 @@ abstract class NgAnnotation {
    */
   final List<String> exportExpressions;
 
+  /**
+   * Use the value to sort directives. 
+   */
+  final int priority;
+  /**
+   * Compile the child nodes of the element.  This is the default.
+   */
+  static const int DEFAULT_PRIORITY = 0;
+
   const NgAnnotation({
     this.selector,
     this.children: NgAnnotation.COMPILE_CHILDREN,
@@ -143,7 +152,8 @@ abstract class NgAnnotation {
     this.publishTypes: const [],
     this.map: const {},
     this.exportExpressions: const [],
-    this.exportExpressionAttrs: const []
+    this.exportExpressionAttrs: const [],
+    this.priority: NgAnnotation.DEFAULT_PRIORITY
   });
 
   toString() => selector;
@@ -219,7 +229,8 @@ class NgComponent extends NgAnnotation {
     visibility,
     publishTypes : const <Type>[],
     exportExpressions,
-    exportExpressionAttrs})
+    exportExpressionAttrs,
+    priority: NgAnnotation.DEFAULT_PRIORITY})
       : _cssUrls = cssUrl,
         super(selector: selector,
              children: NgAnnotation.COMPILE_CHILDREN,
@@ -227,7 +238,8 @@ class NgComponent extends NgAnnotation {
              publishTypes: publishTypes,
              map: map,
              exportExpressions: exportExpressions,
-             exportExpressionAttrs: exportExpressionAttrs);
+             exportExpressionAttrs: exportExpressionAttrs,
+             priority: priority);
 
   List<String> get cssUrls => _cssUrls == null ?
       const [] :
@@ -246,7 +258,8 @@ class NgComponent extends NgAnnotation {
           visibility: visibility,
           publishTypes: publishTypes,
           exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
+          exportExpressionAttrs: exportExpressionAttrs,
+          priority: priority);
 }
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
@@ -275,10 +288,13 @@ class NgDirective extends NgAnnotation {
                     visibility,
                     publishTypes : const <Type>[],
                     exportExpressions,
-                    exportExpressionAttrs}) : super(selector: selector, children: children, visibility: visibility,
+                    exportExpressionAttrs,
+                    priority: NgAnnotation.DEFAULT_PRIORITY
+                    }) : super(selector: selector, children: children, visibility: visibility,
   publishTypes: publishTypes, map: map,
   exportExpressions: exportExpressions,
-  exportExpressionAttrs: exportExpressionAttrs);
+  exportExpressionAttrs: exportExpressionAttrs,
+  priority: priority);
 
   NgAnnotation cloneWithNewMap(newMap) =>
       new NgDirective(
@@ -288,7 +304,8 @@ class NgDirective extends NgAnnotation {
           visibility: visibility,
           publishTypes: publishTypes,
           exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
+          exportExpressionAttrs: exportExpressionAttrs,
+          priority: priority);
 }
 
 /**
@@ -327,11 +344,13 @@ class NgController extends NgDirective {
                     visibility,
                     publishTypes : const <Type>[],
                     exportExpressions,
-                    exportExpressionAttrs
+                    exportExpressionAttrs,
+                    priority : NgAnnotation.DEFAULT_PRIORITY
                     }) : super(selector: selector, children: children, visibility: visibility,
   publishTypes: publishTypes, map: map,
   exportExpressions: exportExpressions,
-  exportExpressionAttrs: exportExpressionAttrs);
+  exportExpressionAttrs: exportExpressionAttrs,
+  priority: priority);
 
   NgAnnotation cloneWithNewMap(newMap) =>
       new NgController(
@@ -342,7 +361,8 @@ class NgController extends NgDirective {
           visibility: visibility,
           publishTypes: publishTypes,
           exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
+          exportExpressionAttrs: exportExpressionAttrs,
+          priority: priority);
 }
 
 abstract class AttrFieldAnnotation {

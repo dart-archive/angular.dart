@@ -335,5 +335,10 @@ int _directivePriority(NgAnnotation annotation) {
   throw "Unexpected Type: ${annotation}.";
 }
 
-int _priorityComparator(DirectiveRef a, DirectiveRef b) =>
-  _directivePriority(b.annotation) - _directivePriority(a.annotation);
+int _priorityComparator(DirectiveRef a, DirectiveRef b) {
+  if (a.annotation.priority != b.annotation.priority) {
+    return b.annotation.priority - a.annotation.priority;
+  } else {
+    return _directivePriority(b.annotation) - _directivePriority(a.annotation);
+  }
+}

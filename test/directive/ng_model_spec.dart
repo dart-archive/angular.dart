@@ -465,6 +465,24 @@ describe('ng-model', () {
     }));
   });
 
+  describe('type="radio" value="{{value}}"', () {
+    it('should update input value from model', inject(() {
+      _.compile('<input type="radio" name="color" ng-model="color" value="{{val1}}" probe="r">' +
+                '<input type="radio" name="color" ng-model="color" value="{{val2}}" probe="g">' +
+                '<input type="radio" name="color" ng-model="color" value="{{val3}}" probe="b">');
+      _.rootScope.$digest();
+      _.rootScope.$apply('color = "green"; val1 = "red"; val2 = "green"; val3 = "blue";');
+
+      RadioButtonInputElement redBtn = _.rootScope.r.element;
+      RadioButtonInputElement greenBtn = _.rootScope.g.element;
+      RadioButtonInputElement blueBtn = _.rootScope.b.element;
+
+      expect(redBtn.checked).toBe(false);
+      expect(greenBtn.checked).toBe(true);
+      expect(blueBtn.checked).toBe(false);
+    }));
+  });
+
   describe('type="search"', () {
     it('should update input value from model', inject(() {
       _.compile('<input type="search" ng-model="model">');

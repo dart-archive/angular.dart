@@ -19,7 +19,7 @@ class NgTextMustacheDirective {
 
 }
 
-@NgDirective(selector: r'[*=/{{.*}}/]')
+@NgDirective(selector: r'[*=/{{.*}}/]', priority: 1)
 class NgAttrMustacheDirective {
   // This Directive is special and does not go through injection.
   NgAttrMustacheDirective(NodeAttrs attrs, String markup, Interpolate interpolate, Scope scope) {

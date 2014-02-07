@@ -51,7 +51,6 @@ class Compiler {
         createMappings(directiveRef);
         usableDirectiveRefs.add(directiveRef);
       }
-
       if (children == NgAnnotation.COMPILE_CHILDREN && domCursor.descend()) {
         templateCursor.descend();
 
