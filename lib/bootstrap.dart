@@ -61,11 +61,11 @@ Injector _defaultInjectorFactory(List<Module> modules) =>
  *     Injector injector = ngBootstrap(module: myAppModule);
  */
 Injector ngBootstrap({
-        Module module: null,
-        List<Module> modules: null,
-        dom.Element element: null,
-        String selector: '[ng-app]',
-        Injector injectorFactory(List<Module> modules): _defaultInjectorFactory}) {
+    Module module: null,
+    List<Module> modules: null,
+    dom.Element element: null,
+    String selector: '[ng-app]',
+    Injector injectorFactory(List<Module> modules): _defaultInjectorFactory}) {
   _publishToJavaScript();
 
   var ngModules = [new AngularModule()];
@@ -74,7 +74,9 @@ Injector ngBootstrap({
   if (element == null) {
     element = dom.querySelector(selector);
     var document = dom.window.document;
-    if (element == null) element = document.childNodes.firstWhere((e) => e is dom.Element);
+    if (element == null) {
+      element = document.childNodes.firstWhere((e) => e is dom.Element);
+    }
   }
 
   // The injector must be created inside the zone, so we create the
@@ -87,7 +89,8 @@ Injector ngBootstrap({
   return zone.run(() {
     var rootElements = [element];
     Injector injector = injectorFactory(ngModules);
-    injector.get(Compiler)(rootElements, injector.get(DirectiveMap))(injector, rootElements);
+    injector.get(Compiler)(rootElements, injector.get(DirectiveMap))
+        (injector, rootElements);
     return injector;
   });
 }
