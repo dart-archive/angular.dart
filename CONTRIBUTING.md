@@ -6,6 +6,9 @@ place to start if you are interested in contributing to AngularDart.
 We'd love for you to contribute to our source code and to make AngularDart even better than it is
 today! Here are the guidelines we'd like you to follow:
 
+## Code of Conduct
+Help us keep Angular open and inclusive. Please read and follow our [Code of Conduct][coc].
+
 ## Got a Question or Problem?
 
 If you have questions about how to use AngularDart, please direct these to the [Google Group][groups]
@@ -222,3 +225,4 @@ changes to be accepted, the CLA must be signed. It's a quick process, we promise
 [corporate-cla]: http://code.google.com/legal/corporate-cla-v1.0.html
 [commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
 [communityMilestone]: https://github.com/angular/angular.dart/issues?milestone=13&state=open
+[coc]: https://github.com/angular/code-of-conduct/blob/master/CODE_OF_CONDUCT.md
