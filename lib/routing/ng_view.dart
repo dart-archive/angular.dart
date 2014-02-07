@@ -59,8 +59,7 @@ part of angular.routing;
 @NgDirective(
     selector: 'ng-view',
     publishTypes: const [RouteProvider],
-    visibility: NgDirective.CHILDREN_VISIBILITY
-)
+    visibility: NgDirective.CHILDREN_VISIBILITY)
 class NgViewDirective implements NgDetachAware, RouteProvider {
   final NgRoutingHelper locationService;
   final BlockCache blockCache;
@@ -75,19 +74,15 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
   NgViewDirective(this.element, this.blockCache, Injector injector, Router router)
       : injector = injector, locationService = injector.get(NgRoutingHelper) {
     RouteProvider routeProvider = injector.parent.get(NgViewDirective);
-    if (routeProvider != null) {
-      _route = routeProvider.route.newHandle();
-    } else {
-      _route = router.root.newHandle();
-    }
+    _route = routeProvider != null ?
+        routeProvider.route.newHandle() :
+        router.root.newHandle();
     locationService._registerPortal(this);
     _maybeReloadViews();
   }
 
   void _maybeReloadViews() {
-    if (_route.isActive) {
-      locationService._reloadViews(startingFrom: _route);
-    }
+    if (_route.isActive) locationService._reloadViews(startingFrom: _route);
   }
 
   detach() {
@@ -127,9 +122,7 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
   }
 
   _cleanUp() {
-    if (_previousBlock == null) {
-      return;
-    }
+    if (_previousBlock == null) return;
 
     _previousBlock.remove();
     _previousScope.$destroy();
