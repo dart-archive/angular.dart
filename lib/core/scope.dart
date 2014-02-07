@@ -559,7 +559,7 @@ class Scope implements Map {
       scopeCount++;
       for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
         var last = watch.last;
-        var value = watch.get(scope, _filters);
+        var value = watch.get(scope, scope._filters);
         if (!_identical(value, last)) {
           return _digestHandleDirty(scope, watch, last, value, null);
         }
@@ -581,7 +581,7 @@ class Scope implements Map {
       for (_Watch watch = watchers.head; watch != null; watch = watch.next) {
         if (identical(stopWatch, watch)) return null;
         var last = watch.last;
-        var value = watch.get(scope, _filters);
+        var value = watch.get(scope, scope._filters);
         if (!_identical(value, last)) {
           return _digestHandleDirty(scope, watch, last, value, log);
         }
@@ -610,7 +610,7 @@ class Scope implements Map {
         watch = scope._watchers.head;
       }
       last = watch.last;
-      value = watch.get(scope, _filters);
+      value = watch.get(scope, scope._filters);
     }
   }
 

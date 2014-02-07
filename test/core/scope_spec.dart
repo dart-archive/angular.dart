@@ -1268,6 +1268,30 @@ main() {
         expect(scopeLocal['c']).toEqual('cW');
       });
     });
+
+    describe('filters', () {
+
+      it('should use filters from correct scope when digesting scope trees', inject((Scope rootScope, Injector injector) {
+        var withFilterOne = injector.createChild([new Module()..type(FilterOne)],
+            forceNewInstances: [FilterMap]).get(FilterMap);
+        var withFilterTwo = injector.createChild([new Module()..type(FilterTwo)],
+            forceNewInstances: [FilterMap]).get(FilterMap);
+
+        var childScopeOne = rootScope.$new(filters: withFilterOne);
+        var childScopeTwo = rootScope.$new(filters: withFilterTwo);
+
+        var valueOne;
+        var valueTwo;
+        childScopeOne.$watch('"str" | newFilter', (val) => valueOne = val);
+        childScopeTwo.$watch('"str" | newFilter', (val) => valueTwo = val);
+
+        rootScope.$digest();
+
+        expect(valueOne).toEqual('str 1');
+        expect(valueTwo).toEqual('str 2');
+      }));
+
+    });
   });
 }
 
@@ -1336,4 +1360,18 @@ class _JsonableIterableWrapper<T> implements Iterable<T> {
   Iterable<T> where(bool test(T element)) => source.where(test);
 
   toJson() => source.toList();
+}
+
+@NgFilter(name:'newFilter')
+class FilterOne {
+  call(String str) {
+    return '$str 1';
+  }
+}
+
+@NgFilter(name:'newFilter')
+class FilterTwo {
+  call(String str) {
+    return '$str 2';
+  }
 }
