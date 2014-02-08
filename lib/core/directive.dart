@@ -116,7 +116,7 @@ abstract class NgAnnotation {
    *    that mapping is bi-directional. A change either in field or on
    *    parent scope will result in change to the other.
    *
-   *  * `&onChange` maps the expression into tho controllers `onChange`
+   *  * `&onChange` maps the expression into the controller `onChange`
    *    field. The result of mapping is a callable function which can be
    *    invoked at any time by the controller. The invocation of the
    *    callable function will result in the expression `doSomething()` to
