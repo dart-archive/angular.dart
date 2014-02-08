@@ -2,7 +2,7 @@ library input_select_spec;
 
 import '../_specs.dart';
 
-//TODO(misko): re-enabled dissabled tests once we have forms.
+//TODO(misko): re-enabled disabled tests once we have forms.
 
 main() {
   describe('input-select', () {
@@ -95,7 +95,7 @@ main() {
         var select = _.rootScope['p'].directive(InputSelectDirective);
         expect(_.rootElement).toEqualSelect(['c3p0', ['r2d2']]);
 
-        _.rootElement.queryAll('option')[0].selected = true;
+        _.rootElement.querySelectorAll('option')[0].selected = true;
         _.triggerEvent(_.rootElement, 'change');
 
 
@@ -376,6 +376,51 @@ main() {
           });
         });
       });
+
+      it('issue #392', () {
+        _.compile(
+            '<div>' +
+              '<div ng-if="attached">' +
+                '<select ng-model="model">' +
+                  '<option value="a">foo</option>' +
+                  '<option value="b">bar</option>' +
+                '</select>' +
+              '</div>' +
+            '</div>');
+        _.rootScope.model = 'a';
+        _.rootScope.attached = true;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([['a'], 'b']);
+        _.rootScope.attached = false;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([]);
+        _.rootScope.attached = true;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([['a'], 'b']);
+      });
+
+
+      it('issue #428', () {
+        _.compile(
+            '<div>' +
+              '<div ng-if="attached">' +
+                '<select ng-model="model" multiple>' +
+                  '<option value="a">foo</option>' +
+                  '<option value="b">bar</option>' +
+                '</select>' +
+              '</div>' +
+            '</div>');
+        _.rootScope.model = ['a'];
+        _.rootScope.attached = true;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([['a'], 'b']);
+        _.rootScope.attached = false;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([]);
+        _.rootScope.attached = true;
+        _.rootScope.$apply();
+        expect(_.rootElement).toEqualSelect([['a'], 'b']);
+      });
     });
 
 
@@ -387,7 +432,7 @@ main() {
 
       compile(html) {
         _.compile('<form name="form">' + html + '</form>');
-        element = _.rootElement.query('select');
+        element = _.rootElement.querySelector('select');
         scope.$apply();
       }
 
@@ -428,6 +473,27 @@ main() {
                     '<option>nah</option>' +
                   '</select>');
           expect(element).toEqualSelect(['not me', ['me!'], 'nah']);
+        });
+
+        it('should fire ng-change event.', () {
+          var log = '';
+          compile(
+              '<select name="select" ng-model="selection" ng-change="change()">' +
+                '<option value=""></option>' +
+                '<option value="c">C</option>' +
+              '</select>');
+
+          scope.change = () {
+            log += 'change:${scope.selection};';
+          };
+
+          scope.$apply(() {
+            scope.selection = 'c';
+          });
+
+          element.value = 'c';
+          _.triggerEvent(element, 'change');
+          expect(log).toEqual('change:c;');
         });
 
 
@@ -621,7 +687,7 @@ main() {
             scope.selected = scope.values[0];
           });
 
-          var options = element.queryAll('option');
+          var options = element.querySelectorAll('option');
           expect(options.length).toEqual(3);
           expect(element).toEqualSelect([['A'], 'B', 'C']);
         });
@@ -634,7 +700,7 @@ main() {
             scope.selected = scope.values[0];
           });
 
-          var options = element.queryAll('option');
+          var options = element.querySelectorAll('option');
           expect(options.length).toEqual(3);
           expect(element).toEqualSelect([['0'], '1', '2']);
         });
@@ -646,23 +712,23 @@ main() {
             scope.values = [];
           });
 
-          expect(element.queryAll('option').length).toEqual(1); // because we add special empty option
-          expect(element.queryAll('option')[0].text).toEqual('');
-          expect(element.queryAll('option')[0].value).toEqual('?');
+          expect(element.querySelectorAll('option').length).toEqual(1); // because we add special empty option
+          expect(element.querySelectorAll('option')[0].text).toEqual('');
+          expect(element.querySelectorAll('option')[0].value).toEqual('?');
 
           scope.$apply(() {
             scope.values.add({'name':'A'});
             scope.selected = scope.values[0];
           });
 
-          expect(element.queryAll('option').length).toEqual(1);
+          expect(element.querySelectorAll('option').length).toEqual(1);
           expect(element).toEqualSelect([['A']]);
 
           scope.$apply(() {
             scope.values.add({'name':'B'});
           });
 
-          expect(element.queryAll('option').length).toEqual(2);
+          expect(element.querySelectorAll('option').length).toEqual(2);
           expect(element).toEqualSelect([['A'], 'B']);
         });
 
@@ -675,20 +741,20 @@ main() {
             scope.selected = scope.values[0];
           });
 
-          expect(element.queryAll('option').length).toEqual(3);
+          expect(element.querySelectorAll('option').length).toEqual(3);
 
           scope.$apply(() {
             scope.values.removeLast();
           });
 
-          expect(element.queryAll('option').length).toEqual(2);
+          expect(element.querySelectorAll('option').length).toEqual(2);
           expect(element).toEqualSelect([['A'], 'B']);
 
           scope.$apply(() {
             scope.values.removeLast();
           });
 
-          expect(element.queryAll('option').length).toEqual(1);
+          expect(element.querySelectorAll('option').length).toEqual(1);
           expect(element).toEqualSelect([['A']]);
 
           scope.$apply(() {
@@ -696,7 +762,7 @@ main() {
             scope.selected = null;
           });
 
-          expect(element.queryAll('option').length).toEqual(1); // we add back the special empty option
+          expect(element.querySelectorAll('option').length).toEqual(1); // we add back the special empty option
         });
 
 
@@ -708,21 +774,21 @@ main() {
             scope.selected = scope.values[0];
           });
 
-          expect(element.queryAll('option').length).toEqual(3);
+          expect(element.querySelectorAll('option').length).toEqual(3);
 
           scope.$apply(() {
             scope.values = [{'name': '1'}, {'name': '2'}];
             scope.selected = scope.values[0];
           });
 
-          expect(element.queryAll('option').length).toEqual(2);
+          expect(element.querySelectorAll('option').length).toEqual(2);
 
           scope.$apply(() {
             scope.values = [{'name': 'A'}, {'name': 'B'}, {'name': 'C'}];
             scope.selected = scope.values[0];
           });
 
-          expect(element.queryAll('option').length).toEqual(3);
+          expect(element.querySelectorAll('option').length).toEqual(3);
         });
 
 
@@ -739,7 +805,7 @@ main() {
             scope.selected = scope.values[0];
           });
 
-          var options = element.queryAll('option');
+          var options = element.querySelectorAll('option');
           expect(options.length).toEqual(3);
           expect(element).toEqualSelect([['B'], 'C', 'D']);
         });
@@ -752,24 +818,24 @@ main() {
             scope.values = [];
           });
 
-          expect(element.queryAll('option').length).toEqual(1);
+          expect(element.querySelectorAll('option').length).toEqual(1);
 
           scope.$apply(() {
             scope.values = [{'name': 'A'}];
             scope.selected = scope.values[0];
           });
 
-          expect(element.queryAll('option').length).toEqual(2);
-          expect(element.queryAll('option')[0].text).toEqual('blank');
-          expect(element.queryAll('option')[1].text).toEqual('A');
+          expect(element.querySelectorAll('option').length).toEqual(2);
+          expect(element.querySelectorAll('option')[0].text).toEqual('blank');
+          expect(element.querySelectorAll('option')[1].text).toEqual('A');
 
           scope.$apply(() {
             scope.values = [];
             scope.selected = null;
           });
 
-          expect(element.queryAll('option').length).toEqual(1);
-          expect(element.queryAll('option')[0].text).toEqual('blank');
+          expect(element.querySelectorAll('option').length).toEqual(1);
+          expect(element.querySelectorAll('option')[0].text).toEqual('blank');
         });
 
         describe('binding', () {
@@ -810,16 +876,16 @@ main() {
 
             expect(element).toEqualSelect(['A', 'B', ['D'], 'C', 'E']);
 
-            var first = element.queryAll('optgroup')[0];
-            var b = first.queryAll('option')[0];
-            var d = first.queryAll('option')[1];
+            var first = element.querySelectorAll('optgroup')[0];
+            var b = first.querySelectorAll('option')[0];
+            var d = first.querySelectorAll('option')[1];
             expect(first.attr('label')).toEqual('first');
             expect(b.text).toEqual('B');
             expect(d.text).toEqual('D');
 
-            var second = element.queryAll('optgroup')[1];
-            var c = second.queryAll('option')[0];
-            var e = second.queryAll('option')[1];
+            var second = element.querySelectorAll('optgroup')[1];
+            var c = second.querySelectorAll('option')[0];
+            var e = second.querySelectorAll('option')[1];
             expect(second.attr('label')).toEqual('second');
             expect(c.text).toEqual('C');
             expect(e.text).toEqual('E');
@@ -858,16 +924,16 @@ main() {
               scope.selected = null;
             });
 
-            expect(element.queryAll('option').length).toEqual(2);
+            expect(element.querySelectorAll('option').length).toEqual(2);
             expect(element).toEqualSelect([['?'], 'A']);
-            expect(element.queryAll('option')[0].value).toEqual('?');
+            expect(element.querySelectorAll('option')[0].value).toEqual('?');
 
             scope.$apply(() {
               scope.selected = scope.values[0];
             });
 
             expect(element).toEqualSelect([['A']]);
-            expect(element.queryAll('option').length).toEqual(1);
+            expect(element.querySelectorAll('option').length).toEqual(1);
           });
 
 
@@ -879,16 +945,16 @@ main() {
               scope.selected = null;
             });
 
-            expect(element.queryAll('option').length).toEqual(2);
+            expect(element.querySelectorAll('option').length).toEqual(2);
             expect(element.value).toEqual('');
-            expect(element.queryAll('option')[0].value).toEqual('');
+            expect(element.querySelectorAll('option')[0].value).toEqual('');
 
             scope.$apply(() {
               scope.selected = scope.values[0];
             });
 
             expect(element).toEqualSelect(['', ['A']]);
-            expect(element.queryAll('option').length).toEqual(2);
+            expect(element.querySelectorAll('option').length).toEqual(2);
           });
 
 
@@ -900,16 +966,16 @@ main() {
               scope.selected = {};
             });
 
-            expect(element.queryAll('option').length).toEqual(2);
+            expect(element.querySelectorAll('option').length).toEqual(2);
             expect(element.value).toEqual('?');
-            expect(element.queryAll('option')[0].value).toEqual('?');
+            expect(element.querySelectorAll('option')[0].value).toEqual('?');
 
             scope.$apply(() {
               scope.selected = scope.values[0];
             });
 
             expect(element).toEqualSelect([['A']]);
-            expect(element.queryAll('option').length).toEqual(1);
+            expect(element.querySelectorAll('option').length).toEqual(1);
           });
 
 
@@ -921,15 +987,15 @@ main() {
               scope.selected = {};
             });
 
-            expect(element.queryAll('option').length).toEqual(3);
+            expect(element.querySelectorAll('option').length).toEqual(3);
             expect(element.value).toEqual('?');
-            expect(element.queryAll('option')[0].value).toEqual('?');
+            expect(element.querySelectorAll('option')[0].value).toEqual('?');
 
             _.selectOption(element, 'A');
             expect(scope.selected).toBe(scope.values[0]);
-            expect(element.queryAll('option')[0].selected).toEqual(true);
-            expect(element.queryAll('option')[0].selected).toEqual(true);;
-            expect(element.queryAll('option').length).toEqual(2);
+            expect(element.querySelectorAll('option')[0].selected).toEqual(true);
+            expect(element.querySelectorAll('option')[0].selected).toEqual(true);;
+            expect(element.querySelectorAll('option').length).toEqual(2);
           });
         });
 
@@ -946,8 +1012,8 @@ main() {
             });
 
             // check blank option is first and is compiled
-            expect(element.queryAll('option').length).toEqual(2);
-            option = element.queryAll('option')[0];
+            expect(element.querySelectorAll('option').length).toEqual(2);
+            option = element.querySelectorAll('option')[0];
             expect(option.value).toEqual('');
             expect(option.text).toEqual('blank is so blank');
 
@@ -956,8 +1022,8 @@ main() {
             });
 
             // check blank option is first and is compiled
-            expect(element.queryAll('option').length).toEqual(2);
-            option = element.queryAll('option')[0];
+            expect(element.querySelectorAll('option').length).toEqual(2);
+            option = element.querySelectorAll('option')[0];
             expect(option.value).toEqual('');
             expect(option.text).toEqual('blank is not so blank');
           });
@@ -973,8 +1039,8 @@ main() {
             });
 
             // check blank option is first and is compiled
-            expect(element.queryAll('option').length).toEqual(2);
-            option = element.queryAll('option')[0];
+            expect(element.querySelectorAll('option').length).toEqual(2);
+            option = element.querySelectorAll('option')[0];
             expect(option.value).toEqual('');
             expect(option.text).toEqual('blank is so blank');
           });
@@ -990,8 +1056,8 @@ main() {
             });
 
             // check blank option is first and is compiled
-            expect(element.queryAll('option').length).toEqual(2);
-            option = element.queryAll('option')[0];
+            expect(element.querySelectorAll('option').length).toEqual(2);
+            option = element.querySelectorAll('option')[0];
             expect(option.value).toEqual('');
             expect(option.text).toEqual('is blank');
           });
@@ -1007,7 +1073,7 @@ main() {
             });
 
             // check blank option is first and is compiled
-            option = element.queryAll('option')[0];
+            option = element.querySelectorAll('option')[0];
             expect(option.classes.contains('coyote')).toEqual(true);;
             expect(option.attributes['id']).toEqual('road-runner');
             expect(option.attributes['custom-attr']).toEqual('custom-attr');
@@ -1038,9 +1104,9 @@ main() {
               scope.selected = scope.values[0];
             });
 
-            expect(element.queryAll('option')[0].selected).toEqual(true);
+            expect(element.querySelectorAll('option')[0].selected).toEqual(true);
 
-            element.queryAll('option')[1].selected = true;
+            element.querySelectorAll('option')[1].selected = true;
             _.triggerEvent(element, 'change');
             expect(scope.selected).toEqual(scope.values[1]);
           });
@@ -1057,7 +1123,7 @@ main() {
 
             expect(element).toEqualSelect([['A'], 'B']);
 
-            element.queryAll('option')[1].selected = true;
+            element.querySelectorAll('option')[1].selected = true;
             _.triggerEvent(element, 'change');
             expect(scope.selected).toEqual(scope.values[1]['id']);
           });
@@ -1090,25 +1156,25 @@ main() {
               scope.selected = [];
             });
 
-            expect(element.queryAll('option').length).toEqual(2);
-            expect(element.queryAll('option')[0].selected).toEqual(false);;
-            expect(element.queryAll('option')[1].selected).toEqual(false);;
+            expect(element.querySelectorAll('option').length).toEqual(2);
+            expect(element.querySelectorAll('option')[0].selected).toEqual(false);;
+            expect(element.querySelectorAll('option')[1].selected).toEqual(false);;
 
             scope.$apply(() {
               scope.selected.add(scope.values[1]);
             });
 
-            expect(element.queryAll('option').length).toEqual(2);
-            expect(element.queryAll('option')[0].selected).toEqual(false);;
-            expect(element.queryAll('option')[1].selected).toEqual(true);;
+            expect(element.querySelectorAll('option').length).toEqual(2);
+            expect(element.querySelectorAll('option')[0].selected).toEqual(false);;
+            expect(element.querySelectorAll('option')[1].selected).toEqual(true);;
 
             scope.$apply(() {
               scope.selected.add(scope.values[0]);
             });
 
-            expect(element.queryAll('option').length).toEqual(2);
-            expect(element.queryAll('option')[0].selected).toEqual(true);;
-            expect(element.queryAll('option')[1].selected).toEqual(true);;
+            expect(element.querySelectorAll('option').length).toEqual(2);
+            expect(element.querySelectorAll('option')[0].selected).toEqual(true);;
+            expect(element.querySelectorAll('option')[1].selected).toEqual(true);;
           });
 
 
@@ -1120,7 +1186,7 @@ main() {
               scope.selected = [];
             });
 
-            element.queryAll('option')[0].selected = true;
+            element.querySelectorAll('option')[0].selected = true;
 
             _.triggerEvent(element, 'change');
             expect(scope.selected).toEqual([scope.values[0]]);
@@ -1133,13 +1199,13 @@ main() {
               scope.values = [{'name': 'A'}, {'name': 'B'}];
               scope.selected = [scope.values[0]];
             });
-            expect(element.queryAll('option')[0].selected).toEqual(true);
+            expect(element.querySelectorAll('option')[0].selected).toEqual(true);
 
             scope.$apply(() {
               scope.selected.removeLast();
             });
 
-            expect(element.queryAll('option')[0].selected).toEqual(false);
+            expect(element.querySelectorAll('option')[0].selected).toEqual(false);
           });
         });
 
@@ -1213,7 +1279,7 @@ main() {
 
           _.rootScope.foo = 'success';
           _.rootScope.$digest();
-          expect(_.rootElement.query('span').text).toEqual('success');
+          expect(_.rootElement.querySelector('span').text).toEqual('success');
         });
       });
     });

@@ -1,3 +1,5 @@
+library playback_http_spec;
+
 import '../_specs.dart';
 import 'package:angular/playback/playback_http.dart';
 

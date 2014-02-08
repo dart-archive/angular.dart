@@ -1,12 +1,12 @@
 library angular.mock;
 
 import 'dart:async' as dart_async;
+import 'dart:collection' show ListBase;
 import 'dart:convert' show JSON;
 import 'dart:html';
-import 'dart:mirrors' as mirror;
+import 'dart:js' as js;
 import 'package:angular/angular.dart';
 import 'package:angular/utils.dart' as utils;
-import 'package:js/js.dart' as js;
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:unittest/mock.dart';

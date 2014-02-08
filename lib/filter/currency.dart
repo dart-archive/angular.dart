@@ -7,12 +7,11 @@ part of angular.filter;
  *
  * Usage:
  *
- *     {{ number_expression | number[:fractionSize] }}
+ *     {{ numeric_expression | currency[:symbol[:leading]] }}
  *
  */
 @NgFilter(name:'currency')
 class CurrencyFilter {
-
   NumberFormat nf = new NumberFormat();
 
   CurrencyFilter() {
@@ -29,16 +28,14 @@ class CurrencyFilter {
    */
   call(value, [symbol = r'$', leading = true]) {
     if (value is String) value = double.parse(value);
-    if (!(value is num)) return value;
+    if (value is! num) return value;
     if (value.isNaN) return '';
     var neg = value < 0;
     if (neg) value = -value;
     var before = neg ? '(' : '';
     var after = neg ? ')' : '';
-    if (leading) {
-      return '$before$symbol${nf.format(value)}$after';
-    } else {
-      return '$before${nf.format(value)}$symbol$after';
-    }
+    return leading ?
+        '$before$symbol${nf.format(value)}$after' :
+        '$before${nf.format(value)}$symbol$after';
   }
 }

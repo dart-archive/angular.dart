@@ -9,7 +9,8 @@ import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
 import 'package:angular/core/module.dart';
-import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core/parser/parser.dart';
+import 'package:angular/utils.dart';
 
 part 'block.dart';
 part 'block_factory.dart';
@@ -17,6 +18,7 @@ part 'cookies.dart';
 part 'common.dart';
 part 'compiler.dart';
 part 'directive.dart';
+part 'directive_map.dart';
 part 'http.dart';
 part 'ng_mustache.dart';
 part 'node_cursor.dart';
@@ -43,10 +45,11 @@ class NgCoreDomModule extends Module {
     type(HttpDefaults);
     type(HttpInterceptors);
     type(BlockCache);
-    type(GetterSetter);
     type(BrowserCookies);
     type(Cookies);
     type(LocationWrapper);
+    type(FieldMetadataExtractor);
+    type(DirectiveMap);
   }
 }
 

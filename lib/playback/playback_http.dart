@@ -5,10 +5,12 @@ import 'dart:convert' show JSON;
 import 'dart:html';
 
 import 'package:angular/core_dom/module.dart';
+import 'package:angular/core/service.dart';
 import 'package:angular/mock/module.dart' as mock;
 
-import 'playback_data.dart' as playback_data;
+import 'package:angular/playback/playback_data.dart' as playback_data;
 
+@NgInjectableService()
 class PlaybackHttpBackendConfig {
   requestKey(String url,
                  {String method, bool withCredentials, String responseType,
@@ -35,10 +37,8 @@ class RecordingHttpBackend implements HttpBackend {
   HttpBackend _prodBackend;
   PlaybackHttpBackendConfig _config;
 
-  RecordingHttpBackend(HttpBackendWrapper wrapper,
-                       PlaybackHttpBackendConfig this._config) {
+  RecordingHttpBackend(HttpBackendWrapper wrapper, this._config) {
     this._prodBackend = wrapper.backend;
-
   }
 
   Future request(String url,
@@ -80,7 +80,7 @@ class PlaybackHttpBackend implements HttpBackend {
 
   PlaybackHttpBackendConfig _config;
 
-  PlaybackHttpBackend(PlaybackHttpBackendConfig this._config);
+  PlaybackHttpBackend(this._config);
 
   Map data = playback_data.playbackData;
 

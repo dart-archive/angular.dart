@@ -138,14 +138,23 @@ class MockHttpBackend implements HttpBackend {
     return c.future;
   }
 
-  _createResponse(status, data, headers) {
-    if (status is Function) return status;
+  _createResponse(statusOrDataOrFunction, dataOrHeaders, headersOrNone) {
+    if (statusOrDataOrFunction is Function) return statusOrDataOrFunction;
+    var status, data, headers;
+    if (statusOrDataOrFunction is num) {
+      status = statusOrDataOrFunction;
+      data = dataOrHeaders;
+      headers = headersOrNone;
+    } else {
+      status = 200;
+      data = statusOrDataOrFunction;
+      headers = dataOrHeaders;
+    }
+    if (data is Map || data is List) {
+      data = JSON.encode(data);
+    }
 
-    return ([a,b,c,d,e]) {
-      return status is num
-          ? [status, data, headers]
-          : [200, status, data];
-    };
+    return ([a,b,c,d,e]) => [status, data, headers];
   }
 
 
@@ -598,7 +607,7 @@ class MockHttpRequest implements HttpRequest {
   final response;
   final String headers;
 
-  MockHttpRequest(int this.status, String this.response, [this.headers]);
+  MockHttpRequest(this.status, this.response, [this.headers]);
 
   void abort() {}
   bool dispatchEvent(Event event) => false;

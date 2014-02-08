@@ -8,6 +8,9 @@ gen
 tmp
 npm-debug.log
 .DS_Store
+dart-sdk
+dartium
+**/build/**
 **/*.dart.js
 **/*.dart.js.deps
 **/*.dart.js.map

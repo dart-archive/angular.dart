@@ -14,15 +14,9 @@ expect(actual) => new LexerExpect(actual);
 
 main() {
   describe('lexer', () {
-    Parser parser;
-
-    // It would be better if we could call Parser.primary() directly.
-    fn0(Token token) => parser.primaryFromToken(token, (x) => x).eval(null, null);
-
     Lexer lex;
-    beforeEach(inject((Lexer lexer, Parser p) {
+    beforeEach(inject((Lexer lexer) {
       lex = lexer;
-      parser = p;
     }));
 
     // New test case
@@ -35,8 +29,10 @@ main() {
     // New test case
     it('should tokenize a dotted identifier', () {
       var tokens = lex("j.k");
-      expect(tokens.length).toEqual(1);
-      expect(tokens[0]).toBeToken(0, 'j.k');
+      expect(tokens.length).toEqual(3);
+      expect(tokens[0]).toBeToken(0, 'j');
+      expect(tokens[1]).toBeToken(1, '.');
+      expect(tokens[2]).toBeToken(2, 'k');
     });
 
     it('should tokenize an operator', () {
@@ -78,7 +74,13 @@ main() {
       expect(tokens[i]).toBeToken(1, '-');
 
       i++;
-      expect(tokens[i]).toBeToken(2, 'a.bc');
+      expect(tokens[i]).toBeToken(2, 'a');
+
+      i++;
+      expect(tokens[i]).toBeToken(3, '.');
+
+      i++;
+      expect(tokens[i]).toBeToken(4, 'bc');
 
       i++;
       expect(tokens[i]).toBeToken(6, '[');
@@ -118,7 +120,7 @@ main() {
       var tokens = lex("undefined");
       var i = 0;
       expect(tokens[i]).toBeToken(0, 'undefined');
-      expect(fn0(tokens[i])).toEqual(null);
+      expect(tokens[i].value).toEqual(null);
     });
 
     it('should ignore whitespace', () {
@@ -142,13 +144,13 @@ main() {
       var str = '"\\"\\n\\f\\r\\t\\v\\u00A0"';
       var tokens = lex(str);
 
-      expect(fn0(tokens[0])).toEqual('"\n\f\r\t\v\u00A0');
+      expect(tokens[0].value).toEqual('"\n\f\r\t\v\u00A0');
     });
 
     it('should tokenize unicode', () {
       var tokens = lex('"\\u00A0"');
       expect(tokens.length).toEqual(1);
-      expect(fn0(tokens[0])).toEqual('\u00a0');
+      expect(tokens[0].value).toEqual('\u00a0');
     });
 
     it('should tokenize relation', () {
@@ -184,37 +186,39 @@ main() {
 
     it('should tokenize method invocation', () {
       var tokens = lex("a.b.c (d) - e.f()");
-      expect(tokens[0]).toBeToken(0, 'a.b');
-      expect(tokens[1]).toBeToken(3, '.');
-      expect(tokens[2]).toBeToken(4, 'c');
-      expect(tokens[3]).toBeToken(6, '(');
-      expect(tokens[4]).toBeToken(7, 'd');
-      expect(tokens[5]).toBeToken(8, ')');
-      expect(tokens[6]).toBeToken(10, '-');
-      expect(tokens[7]).toBeToken(12, 'e');
-      expect(tokens[8]).toBeToken(13, '.');
-      expect(tokens[9]).toBeToken(14, 'f');
-      expect(tokens[10]).toBeToken(15, '(');
-      expect(tokens[11]).toBeToken(16, ')');
+      expect(tokens[0]).toBeToken(0, 'a');
+      expect(tokens[1]).toBeToken(1, '.');
+      expect(tokens[2]).toBeToken(2, 'b');
+      expect(tokens[3]).toBeToken(3, '.');
+      expect(tokens[4]).toBeToken(4, 'c');
+      expect(tokens[5]).toBeToken(6, '(');
+      expect(tokens[6]).toBeToken(7, 'd');
+      expect(tokens[7]).toBeToken(8, ')');
+      expect(tokens[8]).toBeToken(10, '-');
+      expect(tokens[9]).toBeToken(12, 'e');
+      expect(tokens[10]).toBeToken(13, '.');
+      expect(tokens[11]).toBeToken(14, 'f');
+      expect(tokens[12]).toBeToken(15, '(');
+      expect(tokens[13]).toBeToken(16, ')');
     });
 
     it('should tokenize number', () {
       var tokens = lex("0.5");
-      expect(fn0(tokens[0])).toEqual(0.5);
+      expect(tokens[0].value).toEqual(0.5);
     });
 
     // NOTE(deboer): NOT A LEXER TEST
     //    it('should tokenize negative number', () {
     //      var tokens = lex("-0.5");
-    //      expect(tokens[0].fn0()).toEqual(-0.5);
+    //      expect(tokens[0].value).toEqual(-0.5);
     //    });
 
     it('should tokenize number with exponent', () {
       var tokens = lex("0.5E-10");
       expect(tokens.length).toEqual(1);
-      expect(fn0(tokens[0])).toEqual(0.5E-10);
+      expect(tokens[0].value).toEqual(0.5E-10);
       tokens = lex("0.5E+10");
-      expect(fn0(tokens[0])).toEqual(0.5E+10);
+      expect(tokens[0].value).toEqual(0.5E+10);
     });
 
     it('should throws exception for invalid exponent', () {
@@ -229,7 +233,7 @@ main() {
 
     it('should tokenize number starting with a dot', () {
       var tokens = lex(".5");
-      expect(fn0(tokens[0])).toEqual(0.5);
+      expect(tokens[0].value).toEqual(0.5);
     });
 
     it('should throw error on invalid unicode', () {

@@ -204,4 +204,46 @@ main() {
       expect(_.rootElement.attributes['href']).toEqual('http://server');
     }));
   });
+
+  describe('ngAttr', () {
+    TestBed _;
+    beforeEach(inject((TestBed tb) => _ = tb));
+
+    it('should interpolate the expression and bind to *', inject(() {
+      _.compile('<div ng-attr-foo="some/{{id}}"></div>');
+      _.rootScope.$digest();
+      expect(_.rootElement.attributes['foo']).toEqual('some/');
+
+      _.rootScope.$apply(() {
+        _.rootScope.id = 1;
+      });
+      expect(_.rootElement.attributes['foo']).toEqual('some/1');
+    }));
+
+
+    it('should bind * and merge with other attrs', inject(() {
+      _.compile('<div ng-attr-bar="{{bar}}" ng-attr-bar2="{{bar2}}" bam="{{bam}}"></a>');
+      _.rootScope.bar = 'foo';
+      _.rootScope.bar2 = 'foo2';
+      _.rootScope.bam = 'boom';
+      _.rootScope.$digest();
+      expect(_.rootElement.attributes['bar']).toEqual('foo');
+      expect(_.rootElement.attributes['bar2']).toEqual('foo2');
+      expect(_.rootElement.attributes['bam']).toEqual('boom');
+      _.rootScope.bar = 'FOO';
+      _.rootScope.bar2 = 'FOO2';
+      _.rootScope.bam = 'BOOM';
+      _.rootScope.$digest();
+      expect(_.rootElement.attributes['bar']).toEqual('FOO');
+      expect(_.rootElement.attributes['bar2']).toEqual('FOO2');
+      expect(_.rootElement.attributes['bam']).toEqual('BOOM');
+    }));
+
+
+    it('should bind * even if no interpolation', inject(() {
+      _.compile('<a ng-attr-quack="vanilla"></a>');
+      _.rootScope.$digest();
+      expect(_.rootElement.attributes['quack']).toEqual('vanilla');
+    }));
+  });
 }

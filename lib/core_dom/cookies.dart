@@ -6,7 +6,9 @@ part of angular.core.dom;
 * use the Cookies service.
 *
 */
+@NgInjectableService()
 class BrowserCookies {
+  ExceptionHandler _exceptionHandler;
   dom.Document _document;
 
   var lastCookies = {};
@@ -14,8 +16,7 @@ class BrowserCookies {
   var cookiePath;
   var baseElement;
 
-
-  BrowserCookies() {
+  BrowserCookies(this._exceptionHandler) {
     // Injecting document produces the error 'Caught Compile-time error during mirrored execution:
     // <'file:///mnt/data/b/build/slave/dartium-lucid32-full-trunk/build/src/out/Release/gen/blink/
     // bindings/dart/dart/html/Document.dart': Error: line 7 pos 3: expression must be a compile-time constant
@@ -25,7 +26,7 @@ class BrowserCookies {
 
     var baseElementList = _document.getElementsByName('base');
     if (baseElementList.isEmpty) return;
-    baseElement = _document.getElementsByName('base').first;
+    baseElement = baseElementList.first;
     cookiePath = _baseHref();
   }
 
@@ -42,28 +43,22 @@ class BrowserCookies {
       .replaceAll('=', '%3D')
       .replaceAll(';', '%3B');
 
-
   _updateLastCookies() {
-    var cookieLength, cookieArray, cookie, i, index;
-
     if (_document.cookie != lastCookieString) {
       lastCookieString = _document.cookie;
-      cookieArray = lastCookieString.split("; ");
+      List<String> cookieArray = lastCookieString.split("; ");
       lastCookies = {};
 
-      for (i = 0; i < cookieArray.length; i++) {
-        cookie = cookieArray[i];
-        index = cookie.indexOf('=');
+      // The first value that is seen for a cookie is the most specific one.
+      // Values for the same cookie name that follow are for less specific paths.
+      // Hence we reverse the array.
+      cookieArray.reversed.forEach((cookie) {
+        var index = cookie.indexOf('=');
         if (index > 0) { //ignore nameless cookies
           var name = _unescape(cookie.substring(0, index));
-          // the first value that is seen for a cookie is the most
-          // specific one.  values for the same cookie name that
-          // follow are for less specific paths.
-          if (!lastCookies.containsKey(name)) {
-            lastCookies[name] = _unescape(cookie.substring(index + 1));
-          }
+          lastCookies[name] = _unescape(cookie.substring(index + 1));
         }
-      }
+      });
     }
     return lastCookies;
   }
@@ -77,25 +72,22 @@ class BrowserCookies {
    * Sets a cookie.  Setting a cookie to [null] deletes the cookie.
    */
   operator[]=(name, value) {
-    var cookieLength, cookieArray, cookie, i, index;
-
     if (identical(value, null)) {
       _document.cookie = "${_escape(name)}=;path=$cookiePath;expires=Thu, 01 Jan 1970 00:00:00 GMT";
     } else {
       if (value is String) {
-        cookieLength = (_document.cookie = "${_escape(name)}=${_escape(value)};path=$cookiePath").length + 1;
+        var cookieLength = (_document.cookie = "${_escape(name)}=${_escape(value)};path=$cookiePath").length + 1;
 
         // per http://www.ietf.org/rfc/rfc2109.txt browser must allow at minimum:
         // - 300 cookies
         // - 20 cookies per unique domain
         // - 4096 bytes per cookie
         if (cookieLength > 4096) {
-          print("Cookie '$name' possibly not set or overflowed because it was " +
-                "too large ($cookieLength > 4096 bytes)!");
+          _exceptionHandler("Cookie '$name' possibly not set or overflowed because it was " +
+                "too large ($cookieLength > 4096 bytes)!", null);
         }
       }
     }
-
   }
 
   get all => _updateLastCookies();
@@ -105,10 +97,8 @@ class BrowserCookies {
  *   Cookies service
  */
 class Cookies {
-
   BrowserCookies _browserCookies;
-
-  Cookies(BrowserCookies this._browserCookies);
+  Cookies(this._browserCookies);
 
   /**
    * Returns the value of given cookie key
@@ -118,15 +108,11 @@ class Cookies {
   /**
    * Sets a value for given cookie key
    */
-  operator[]=(name, value) {
-    this._browserCookies[name] = value;
-  }
+  operator[]=(name, value) => this._browserCookies[name] = value;
 
   /**
    * Remove given cookie
    */
-  remove(name) {
-    this._browserCookies[name] = null;
-  }
+  remove(name) => this._browserCookies[name] = null;
 }
 

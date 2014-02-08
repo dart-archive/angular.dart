@@ -1,5 +1,6 @@
 part of angular.core.dom;
 
+@NgInjectableService()
 class UrlRewriter {
   String call(url) => url;
 }
@@ -13,6 +14,7 @@ class UrlRewriter {
  * During testing this implementation is swapped with [MockHttpBackend] which
  * can be trained with responses.
  */
+@NgInjectableService()
 class HttpBackend {
   /**
    * Wrapper around dart:html's [HttpRequest.request]
@@ -31,11 +33,13 @@ class HttpBackend {
         mimeType: mimeType,
         requestHeaders: requestHeaders,
         sendData: sendData,
-        onProgress: onProgress).then((x) => c.complete(x));
+        onProgress: onProgress).then((x) => c.complete(x), 
+        onError: (e, stackTrace) => c.completeError(e, stackTrace));
     return c.future;
   }
 }
 
+@NgInjectableService()
 class LocationWrapper {
   get location => dom.window.location;
 }
@@ -46,7 +50,7 @@ typedef Response(HttpResponse);
 typedef ResponseError(dynamic);
 
 /**
-* HttpInterceptors are used to modify the Http request.  They can be added to
+* HttpInterceptors are used to modify the Http request. They can be added to
 * [HttpInterceptors] or passed into [Http.call].
 */
 class HttpInterceptor {
@@ -97,12 +101,12 @@ class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   };
 
   Function requestError, responseError;
-
 }
 
 /**
  * A list of [HttpInterceptor]s.
  */
+@NgInjectableService()
 class HttpInterceptors {
   List<HttpInterceptor> _interceptors = [new DefaultTransformDataHttpInterceptor()];
 
@@ -159,30 +163,20 @@ class HttpResponseConfig {
   Map headers;
 
   var data;
-
-
   var _headersObj;
 
   /**
-   * Header accessor.  Given a string, it will return the matching header,
-   * case-insentivitively.  Without a string, returns a header object will
-   * upper-case keys.
+   * Header accessor. Given a string, it will return the matching header,
+   * case-insentivitively. Without a string, returns a header object with
+   * lower-case keys.
    */
   header([String name]) {
     if (_headersObj == null) {
       _headersObj = {};
-      headers.forEach((k,v) {
-        _headersObj[k.toLowerCase()] = v;
-      });
+      headers.forEach((k,v) => _headersObj[k.toLowerCase()] = v);
     }
 
-    if (name != null) {
-      name = name.toLowerCase();
-      if (!_headersObj.containsKey(name)) return null;
-      return _headersObj[name];
-    }
-
-    return _headersObj;
+    return name != null ? _headersObj[name.toLowerCase()] : _headersObj;
   }
 
   /**
@@ -238,13 +232,7 @@ class HttpResponse {
    * header.
    */
   headers([String key]) {
-    if (key == null) {
-      return _headers;
-    }
-    if (_headers.containsKey(key)) {
-      return _headers[key];
-    }
-    return null;
+    return key == null ? _headers : _headers[key];
   }
 
   /**
@@ -256,6 +244,7 @@ class HttpResponse {
 /**
  * Default header configuration.
  */
+@NgInjectableService()
 class HttpDefaultHeaders {
   static String _defaultContentType = 'application/json;charset=utf-8';
   Map _headers = {
@@ -311,6 +300,7 @@ class HttpDefaultHeaders {
 * The default implementation provides headers which the
 * Angular team believes to be useful.
 */
+@NgInjectableService()
 class HttpDefaults {
   /**
    * The [HttpDefaultHeaders] object used by [Http] to add default headers
@@ -337,7 +327,7 @@ class HttpDefaults {
   /**
    * Constructor intended for DI.
    */
-  HttpDefaults(HttpDefaultHeaders this.headers);
+  HttpDefaults(this.headers);
 }
 
 /**
@@ -397,6 +387,7 @@ class HttpDefaults {
  *
  * NOTE: < not yet documented >
  */
+@NgInjectableService()
 class Http {
   Map<String, async.Future<HttpResponse>> _pendingRequests = <String, async.Future<HttpResponse>>{};
   BrowserCookies _cookies;
@@ -413,12 +404,7 @@ class Http {
   /**
    * Constructor, useful for DI.
    */
-  Http(BrowserCookies this._cookies,
-       LocationWrapper this._location,
-       UrlRewriter this._rewriter,
-       HttpBackend this._backend,
-       HttpDefaults this.defaults,
-       HttpInterceptors this._interceptors);
+  Http(this._cookies, this._location, this._rewriter, this._backend, this.defaults, this._interceptors);
 
   /**
    * DEPRECATED
@@ -503,15 +489,10 @@ class Http {
 
       // Strip content-type if data is undefined
       if (config.data == null) {
-        List<String> toRemove = [];
-        headers.forEach((h, _) {
-          if (h.toUpperCase() == 'CONTENT-TYPE') {
-            toRemove.add(h);
-          };
-        });
-        toRemove.forEach((x) => headers.remove(x));
+        new List.from(headers.keys)
+          .where((h) => h.toUpperCase() == 'CONTENT-TYPE')
+          .forEach((h) => headers.remove(h));
       }
-
 
       return request(
           null,
@@ -659,15 +640,15 @@ class Http {
   static Map<String, String> parseHeaders(dom.HttpRequest value) {
     var headers = value.getAllResponseHeaders();
 
-    var parsed = {}, key, val, i;
+    var parsed = {};
 
     if (headers == null) return parsed;
 
     headers.split('\n').forEach((line) {
-      i = line.indexOf(':');
+      var i = line.indexOf(':');
       if (i == -1) return;
-      key = line.substring(0, i).trim().toLowerCase();
-      val = line.substring(i + 1).trim();
+      var key = line.substring(0, i).trim().toLowerCase();
+      var val = line.substring(i + 1).trim();
 
       if (key != '') {
         if (parsed.containsKey(key)) {
@@ -684,9 +665,8 @@ class Http {
    * Returns an [Iterable] of [Future] [HttpResponse]s for the requests
    * that the [Http] service is currently waiting for.
    */
-  Iterable<async.Future<HttpResponse> > get pendingRequests {
-    return _pendingRequests.values;
-  }
+  Iterable<async.Future<HttpResponse> > get pendingRequests =>
+    _pendingRequests.values;
 
   /**
    * DEPRECATED

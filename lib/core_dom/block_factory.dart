@@ -9,13 +9,12 @@ part of angular.core.dom;
  *
  * The BoundBlockFactory needs [Scope] to be created.
  */
-
 class BoundBlockFactory {
   BlockFactory blockFactory;
 
   Injector injector;
 
-  BoundBlockFactory(BlockFactory this.blockFactory, Injector this.injector);
+  BoundBlockFactory(this.blockFactory, this.injector);
 
   Block call(Scope scope) {
     return blockFactory(injector.createChild([new Module()..value(Scope, scope)]));
@@ -26,19 +25,16 @@ class BoundBlockFactory {
  * BlockFactory is used to create new [Block]s. BlockFactory is created by the
  * [Compiler] as a result of compiling a template.
  */
-
 class BlockFactory {
   final List directivePositions;
   final List<dom.Node> templateElements;
   final Profiler _perf;
   final Expando _expando;
 
+  BlockFactory(this.templateElements, this.directivePositions, this._perf, this._expando);
 
-  BlockFactory(this.templateElements, this.directivePositions, this._perf, Expando this._expando);
-
-  BoundBlockFactory bind(Injector injector) {
-    return new BoundBlockFactory(this, injector);
-  }
+  BoundBlockFactory bind(Injector injector) =>
+    new BoundBlockFactory(this, injector);
 
   Block call(Injector injector, [List<dom.Node> elements]) {
     if (elements == null) {
@@ -57,15 +53,14 @@ class BlockFactory {
 
   _link(Block block, List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
     var preRenderedIndexOffset = 0;
-    var directiveDefsByName = {
-    };
+    var directiveDefsByName = {};
 
-    for (num i = 0, ii = directivePositions.length; i < ii;) {
-      num index = directivePositions[i++];
+    for (int i = 0, ii = directivePositions.length; i < ii;) {
+      int index = directivePositions[i++];
 
       List<DirectiveRef> directiveRefs = directivePositions[i++];
       List childDirectivePositions = directivePositions[i++];
-      var nodeListIndex = index + preRenderedIndexOffset;
+      int nodeListIndex = index + preRenderedIndexOffset;
       dom.Node node = nodeList[nodeListIndex];
 
       var timerId;
@@ -81,7 +76,7 @@ class BlockFactory {
         }
 
         var childInjector = _instantiateDirectives(block, parentInjector, node,
-                        directiveRefs, parentInjector.get(Parser));
+            directiveRefs, parentInjector.get(Parser));
 
         if (childDirectivePositions != null) {
           _link(block, node.nodes, childDirectivePositions, childInjector);
@@ -159,11 +154,12 @@ class BlockFactory {
             BlockCache blockCache = injector.get(BlockCache);
             Http http = injector.get(Http);
             TemplateCache templateCache = injector.get(TemplateCache);
+            DirectiveMap directives = injector.get(DirectiveMap);
             // This is a bit of a hack since we are returning different type then we are.
             var componentFactory = new _ComponentFactory(node, ref.type, ref.annotation as NgComponent, injector.get(dom.NodeTreeSanitizer));
             if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
             fctrs[ref.type] = componentFactory;
-            return componentFactory.call(injector, compiler, scope, blockCache, http, templateCache);
+            return componentFactory.call(injector, compiler, scope, blockCache, http, templateCache, directives);
           }, visibility: visibility);
         } else {
           nodeModule.type(ref.type, visibility: visibility);
@@ -196,8 +192,10 @@ class BlockFactory {
         probe.directives.add(controller);
         assert((linkMapTimer = _perf.startTimer('ng.block.link.map', ref.type)) != false);
         var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
-        if (ref.annotation.publishAs != null) {
-          (shadowScope == null ? scope : shadowScope)[ref.annotation.publishAs] = controller;
+        if (ref.annotation is NgController) {
+          scope[(ref.annotation as NgController).publishAs] = controller;
+        } else if (ref.annotation is NgComponent) {
+          shadowScope[(ref.annotation as NgComponent).publishAs] = controller;
         }
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
         for(var map in ref.mappings) {
@@ -245,7 +243,7 @@ class BlockFactory {
  * It can be used synchronously if HTML is known or asynchronously if the
  * template HTML needs to be looked up from the URL.
  */
-
+@NgInjectableService()
 class BlockCache {
   // _blockFactoryCache is unbounded
   Cache<String, BlockFactory> _blockFactoryCache =
@@ -259,21 +257,22 @@ class BlockCache {
 
   dom.NodeTreeSanitizer treeSanitizer;
 
-  BlockCache(Http this.$http, TemplateCache this.$templateCache, Compiler this.compiler, dom.NodeTreeSanitizer this.treeSanitizer);
+  BlockCache(this.$http, this.$templateCache, this.compiler, this.treeSanitizer);
 
-  BlockFactory fromHtml(String html) {
+  BlockFactory fromHtml(String html, DirectiveMap directives) {
     BlockFactory blockFactory = _blockFactoryCache.get(html);
     if (blockFactory == null) {
       var div = new dom.Element.tag('div');
       div.setInnerHtml(html, treeSanitizer: treeSanitizer);
-      blockFactory = compiler(div.nodes);
+      blockFactory = compiler(div.nodes, directives);
       _blockFactoryCache.put(html, blockFactory);
     }
     return blockFactory;
   }
 
-  async.Future<BlockFactory> fromUrl(String url) {
-    return $http.getString(url, cache: $templateCache).then(fromHtml);
+  async.Future<BlockFactory> fromUrl(String url, DirectiveMap directives) {
+    return $http.getString(url, cache: $templateCache).then(
+        (html) => fromHtml(html, directives));
   }
 }
 
@@ -282,7 +281,6 @@ class BlockCache {
  * the shadowDom, fetching template, importing styles, setting up attribute
  * mappings, publishing the controller, and compiling and caching the template.
  */
-
 class _ComponentFactory {
 
   final dom.Element element;
@@ -296,9 +294,9 @@ class _ComponentFactory {
   Compiler compiler;
   var controller;
 
-  _ComponentFactory(this.element, Type this.type, NgComponent this.component, this.treeSanitizer);
+  _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer);
 
-  dynamic call(Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http $http, TemplateCache $templateCache) {
+  dynamic call(Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http $http, TemplateCache $templateCache, DirectiveMap directives) {
     this.compiler = compiler;
     shadowDom = element.createShadowRoot();
     shadowDom.applyAuthorStyles = component.applyAuthorStyles;
@@ -310,21 +308,25 @@ class _ComponentFactory {
     // styles all over the page. We shouldn't be doing browsers work,
     // so change back to using @import once Chrome bug is fixed or a
     // better work around is found.
-    async.Future<String> cssFuture;
-    if (component.cssUrl != null) {
-      cssFuture = $http.getString(component.cssUrl, cache: $templateCache);
+    List<async.Future<String>> cssFutures = new List();
+    var cssUrls = component.cssUrls;
+    if (cssUrls.isNotEmpty) {
+      cssUrls.forEach((css) => cssFutures.add(
+          $http.getString(css, cache: $templateCache).catchError((e) => '/*\n$e\n*/\n')
+      ) );
     } else {
-      cssFuture = new async.Future.value(null);
+      cssFutures.add( new async.Future.value(null) );
     }
     var blockFuture;
     if (component.template != null) {
-      blockFuture = new async.Future.value($blockCache.fromHtml(component.template));
+      blockFuture = new async.Future.value($blockCache.fromHtml(component.template, directives));
     } else if (component.templateUrl != null) {
-      blockFuture = $blockCache.fromUrl(component.templateUrl);
+      blockFuture = $blockCache.fromUrl(component.templateUrl, directives);
     }
-    TemplateLoader templateLoader = new TemplateLoader(cssFuture.then((String css) {
-      if (css != null) {
-        shadowDom.setInnerHtml('<style>$css</style>', treeSanitizer: treeSanitizer);
+    TemplateLoader templateLoader = new TemplateLoader( async.Future.wait(cssFutures).then((Iterable<String> cssList) {
+      if (cssList != null) {
+        var filteredCssList = cssList.where((css) => css != null );
+        shadowDom.setInnerHtml('<style>${filteredCssList.join('')}</style>', treeSanitizer: treeSanitizer);
       }
       if (blockFuture != null) {
         return blockFuture.then((BlockFactory blockFactory) => attachBlockToShadowDom(blockFactory));

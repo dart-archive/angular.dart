@@ -35,20 +35,28 @@ class InheritedMapData extends MapData {
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class WithPrivateField {
+  int publicField = 4;
+  int _privateField = 5;
+}
+
 toBool(x) => (x is num) ? x != 0 : x == true;
 
 main() {
   describe('parse', () {
-    var scope, parser;
+    var scope;
+    Parser<Expression> parser;
+    FilterMap filters;
     beforeEach(module((Module module) {
       module.type(IncrementFilter);
       module.type(SubstringFilter);
     }));
-    beforeEach(inject((Parser injectedParser) {
+    beforeEach(inject((Parser injectedParser, FilterMap injectedFilters) {
       parser = injectedParser;
+      filters = injectedFilters;
     }));
 
-    eval(String text) => parser(text).eval(scope, null);
+    eval(String text, [FilterMap f]) => parser(text).eval(scope, f);
     expectEval(String expr) => expect(() => eval(expr));
 
     beforeEach(inject((Scope rootScope) { scope = rootScope; }));
@@ -133,10 +141,16 @@ main() {
         expect(eval("4 + 4 + ' str'")).toEqual("8 str");
         expect(eval("'str ' + 4 + 4")).toEqual("str 44");
       });
+
+      it('should allow keyed access on non-maps', () {
+        scope['nonmap'] = new BracketButNotMap();
+        expect(eval("nonmap['hello']")).toEqual('hello');
+        expect(eval("nonmap['hello']=3")).toEqual(3);
+      });
     });
 
     describe('error handling', () {
-      var parser;
+      Parser<Expression> parser;
 
       beforeEach(inject((Parser p) {
         parser = p;
@@ -165,41 +179,17 @@ main() {
       });
 
 
-      it('should throw on non-list, non-map field access', () {
-        expectEval("6[3]").toThrow(errStr('Eval Error: Attempted field access on a non-list, non-map while evaling [6[3]]'));
-        expectEval("6[3]=2").toThrow(errStr('Eval Error: Attempting to set a field on a non-list, non-map while evaling [6[3]=2'));
-      });
-
-
-      it('should throw on undefined functions', () {
-        expectEval("notAFn()").toThrow(errStr('Eval Error: Undefined function notAFn while evaling [notAFn()]'));
-      });
-
-
-      it('should throw on not-function function calls', () {
-        expectEval("4()").toThrow(errStr('Eval Error: 4 is not a function while evaling [4()]'));
-      });
-
-
       it('should throw on incorrect ternary operator syntax', () {
-        expectEval("true?1").toThrow(errStr(
-                'Conditional expression true?1 requires all 3 expressions'));
+        expectEval("true?1").toThrow('Parser Error: Conditional expression true?1 requires all 3 expressions');
       });
 
 
-      it('should fail gracefully when missing a function', () {
-        expect(() {
-          parser('doesNotExist()').eval({});
-        }).toThrow('Undefined function doesNotExist');
+      it('should throw on non-function function calls', () {
+        expectEval("4()").toThrow('4 is not a function');
+      });
 
-        expect(() {
-          parser('exists(doesNotExist())').eval({'exists': () => true});
-        }).toThrow('Undefined function doesNotExist');
 
-        expect(() {
-          parser('doesNotExists(exists())').eval({'exists': () => true});
-        }).toThrow('Undefined function doesNotExist');
-
+      it('should fail gracefully when invoking non-function', () {
         expect(() {
           parser('a[0]()').eval({'a': [4]});
         }).toThrow('a[0] is not a function');
@@ -214,11 +204,75 @@ main() {
       });
 
 
+      it('should throw on undefined functions (relaxed message)', () {
+        expectEval("notAFn()").toThrow('notAFn');
+      });
+
+
+      it('should fail gracefully when missing a function (relaxed message)', () {
+        expect(() {
+          parser('doesNotExist()').eval({});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('exists(doesNotExist())').eval({'exists': () => true});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExists(exists())').eval({'exists': () => true});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExist(1)').eval({});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExist(1, 2)').eval({});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExist()').eval(new TestData());
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExist(1)').eval(new TestData());
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('doesNotExist(1, 2)').eval(new TestData());
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist()').eval({'a': {}});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist(1)').eval({'a': {}});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist(1, 2)').eval({'a': {}});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist()').eval({'a': new TestData()});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist(1)').eval({'a': new TestData()});
+        }).toThrow('doesNotExist');
+
+        expect(() {
+          parser('a.doesNotExist(1, 2)').eval({'a': new TestData()});
+        }).toThrow('doesNotExist');
+      });
+
+
       it('should let null be null', () {
         scope['map'] = {};
 
         expect(eval('null')).toBe(null);
-        //expect(eval('map.null')).toBe(null);
+        expect(eval('map.null')).toBe(null);
       });
 
 
@@ -234,6 +288,13 @@ main() {
       });
 
 
+      it('should pass noSuchMethExceptions through getters', () {
+        expect(() {
+          parser('getNoSuchMethod').eval(new ScopeWithErrors());
+        }).toThrow("iDontExist");
+      });
+
+
       it('should pass exceptions through methods', () {
         expect(() {
           parser('foo()').eval(new ScopeWithErrors());
@@ -245,6 +306,16 @@ main() {
         expect(() {
           parser('notAProperty').eval(new TestData());
         }).toThrow("notAProperty");
+      });
+
+      it('should fail on private field access', () {
+        expect(parser('publicField').eval(new WithPrivateField())).toEqual(4);
+        // On Dartium, this fails with "NoSuchMethod: no instance getter"
+        // On dart2js with generated functions: NoSuchMethod: method not found
+        // On dart2js with reflection:  ArgumentError: private identifier"
+        expect(() {
+          parser('_privateField').eval(new WithPrivateField());
+        }).toThrow();
       });
     });
 
@@ -395,10 +466,10 @@ main() {
         expect(eval('0&&1?0:1')).toEqual(B(0)&&B(1)?0:1);
         expect(eval('1||0?0:0')).toEqual(B(1)||B(0)?0:0);
 
-        expect(eval('0?0&&1:2')).toEqual(B(0)?0&&1:2);
-        expect(eval('0?1&&1:2')).toEqual(B(0)?1&&1:2);
-        expect(eval('0?0||0:1')).toEqual(B(0)?0||0:1);
-        expect(eval('0?0||1:2')).toEqual(B(0)?0||1:2);
+        expect(eval('0?0&&1:2')).toEqual(B(0)?B(0)&&B(1):2);
+        expect(eval('0?1&&1:2')).toEqual(B(0)?B(1)&&B(1):2);
+        expect(eval('0?0||0:1')).toEqual(B(0)?B(0)||B(0):1);
+        expect(eval('0?0||1:2')).toEqual(B(0)?B(0)||B(1):2);
 
         expect(eval('1?0&&1:2')).toEqual(B(1)?B(0)&&B(1):2);
         expect(eval('1?1&&1:2')).toEqual(B(1)?B(1)&&B(1):2);
@@ -522,8 +593,8 @@ main() {
 
       it('should evaluate methods on object', () {
         scope['obj'] = ['ABC'];
-        var fn = parser("obj.elementAt(0)").bind(scope);
-        expect(fn()).toEqual('ABC');
+        var fn = parser("obj.elementAt(0)").eval;
+        expect(fn(scope)).toEqual('ABC');
         expect(scope.$eval(fn)).toEqual('ABC');
       });
 
@@ -531,7 +602,7 @@ main() {
       it('should only check locals on first dereference', () {
         scope['a'] = {'b': 1};
         var locals = {'b': 2};
-        var fn = parser("this['a'].b").bind(scope);
+        var fn = parser("this['a'].b").bind(scope, ScopeLocals.wrapper);
         expect(fn(locals)).toEqual(1);
       });
 
@@ -779,28 +850,29 @@ main() {
         var fn = parser('a');
         expect(fn.assign).toBeNotNull();
         var scope = {};
-        fn.assign(scope, 123, null);
+        fn.assign(scope, 123);
         expect(scope).toEqual({'a':123});
       });
     });
 
     describe('locals', () {
       it('should expose local variables', () {
-        expect(parser('a').eval({'a': 6}, {'a': 1})).toEqual(1);
-        expect(parser('add(a,b)').eval({'b': 1, 'add': (a, b) { return a + b; }}, {'a': 2})).toEqual(3);
+        expect(parser('a').bind({'a': 6}, ScopeLocals.wrapper)({'a': 1})).toEqual(1);
+        expect(parser('add(a,b)').
+          bind({'b': 1, 'add': (a, b) { return a + b; }}, ScopeLocals.wrapper)({'a': 2})).toEqual(3);
       });
 
 
       it('should expose traverse locals', () {
-        expect(parser('a.b').eval({'a': {'b': 6}}, {'a': {'b':1}})).toEqual(1);
-        expect(parser('a.b').eval({'a': null}, {'a': {'b':1}})).toEqual(1);
-        expect(parser('a.b').eval({'a': {'b': 5}}, {'a': null})).toEqual(null);
+        expect(parser('a.b').bind({'a': {'b': 6}}, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind({'a': null}, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind({'a': {'b': 5}}, ScopeLocals.wrapper)({'a': null})).toEqual(null);
       });
 
 
       it('should work with scopes', inject((Scope scope) {
         scope.a = {'b': 6};
-        expect(parser('a.b').eval(scope, {'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind(scope, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
       }));
 
       it('should expose assignment function', () {
@@ -808,7 +880,7 @@ main() {
         expect(fn.assign).toBeNotNull();
         var scope = {};
         var locals = {"a": {}};
-        fn.assign(scope, 123, locals);
+        fn.bind(scope, ScopeLocals.wrapper).assign(123, locals);
         expect(scope).toEqual({});
         expect(locals["a"]).toEqual({'b':123});
       });
@@ -817,28 +889,49 @@ main() {
 
     describe('filters', () {
       it('should call a filter', () {
-        expect(eval("'Foo'|uppercase")).toEqual("FOO");
-        expect(eval("'fOo'|uppercase|lowercase")).toEqual("foo");
+        expect(eval("'Foo'|uppercase", filters)).toEqual("FOO");
+        expect(eval("'fOo'|uppercase|lowercase", filters)).toEqual("foo");
       });
 
       it('should call a filter with arguments', () {
-        expect(eval("1|increment:2")).toEqual(3);
-      });
-
-      it('should evaluate grouped filters', () {
-        scope.name = 'MISKO';
-        expect(scope.$eval('n = (name|lowercase)')).toEqual('misko');
-        expect(scope.$eval('n')).toEqual('misko');
+        expect(eval("1|increment:2", filters)).toEqual(3);
       });
 
       it('should parse filters', () {
         expect(() {
           scope.$eval("1|nonexistent");
         }).toThrow('No NgFilter: nonexistent found!');
+        expect(() {
+          eval("1|nonexistent", filters);
+        }).toThrow('No NgFilter: nonexistent found!');
 
         scope.offset =  3;
         expect(scope.$eval("'abcd'|substring:1:offset")).toEqual("bc");
         expect(scope.$eval("'abcd'|substring:1:3|uppercase")).toEqual("BC");
+      });
+
+      it('should only use filters that are passed as an argument', inject((Injector injector) {
+        var expression = parser("'World'|hello");
+        expect(() {
+          expression.eval({}, filters);
+        }).toThrow('No NgFilter: hello found!');
+
+        var module = new Module()
+            ..type(HelloFilter);
+        var childInjector = injector.createChild([module],
+            forceNewInstances: [FilterMap]);
+        var newFilters = childInjector.get(FilterMap);
+
+        expect(expression.eval({}, newFilters)).toEqual('Hello, World!');
+      }));
+
+      it('should not allow filters in a chain', () {
+        expect(() {
+          parser("1;'World'|hello");
+        }).toThrow('cannot have a filter in a chain the end of the expression [1;\'World\'|hello]');
+        expect(() {
+          parser("'World'|hello;1");
+        }).toThrow('cannot have a filter in a chain at column 15 in [\'World\'|hello;1]');
       });
     });
   });
@@ -865,9 +958,15 @@ class OverloadObject implements Map {
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class BracketButNotMap {
+  operator[](String name) => name;
+  operator[]=(String name, value) {}
+}
+
 class ScopeWithErrors {
   String get boo { throw "boo to you"; }
   String foo() { throw "foo to you"; }
+  get getNoSuchMethod => null.iDontExist();
 }
 
 @NgFilter(name:'increment')
@@ -879,5 +978,12 @@ class IncrementFilter {
 class SubstringFilter {
   call(String str, startIndex, [endIndex]) {
     return str.substring(startIndex, endIndex);
+  }
+}
+
+@NgFilter(name:'hello')
+class HelloFilter {
+  call(String str) {
+    return 'Hello, $str!';
   }
 }

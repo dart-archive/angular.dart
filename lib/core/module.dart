@@ -8,9 +8,12 @@ import 'dart:mirrors';
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
-import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core/parser/parser.dart';
+import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/utils.dart';
 
+import 'package:angular/core/service.dart';
+export 'package:angular/core/service.dart';
 
 part "cache.dart";
 part "directive.dart";
@@ -27,9 +30,7 @@ class NgCoreModule extends Module {
     type(ScopeDigestTTL);
 
     type(MetadataExtractor);
-    type(FieldMetadataExtractor);
     type(Cache);
-    type(DirectiveMap);
     type(ExceptionHandler);
     type(FilterMap);
     type(Interpolate);
@@ -37,9 +38,10 @@ class NgCoreModule extends Module {
     type(NgZone);
 
     type(Parser, implementedBy: DynamicParser);
+    type(ParserBackend, implementedBy: DynamicParserBackend);
     type(DynamicParser);
+    type(DynamicParserBackend);
     type(Lexer);
-    type(ParserBackend);
-    type(GetterSetter);
+    type(ClosureMap);
   }
 }

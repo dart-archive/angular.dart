@@ -26,12 +26,12 @@ part of angular.directive;
   children: NgAnnotation.IGNORE_CHILDREN,
   map: const {'id': '@templateUrl'})
 class NgTemplateDirective {
-  dom.Element element;
-  TemplateCache templateCache;
+  final dom.Element element;
+  final TemplateCache templateCache;
 
-  NgTemplateDirective(dom.Element this.element, TemplateCache this.templateCache);
+  NgTemplateDirective(this.element, this.templateCache);
   set templateUrl(url) => templateCache.put(url, new HttpResponse(200,
-      (element is dom.TemplateElement
-        ? (element as dom.TemplateElement).content.innerHtml
-        : element.innerHtml)));
+      element is dom.TemplateElement
+          ? (element as dom.TemplateElement).content.innerHtml
+          : element.innerHtml));
 }

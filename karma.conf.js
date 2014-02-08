@@ -14,11 +14,11 @@ module.exports = function(config) {
       'test/config/filter_tests.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js',
-      'packages/browser/interop.js',
+      'packages/browser/interop.js'
     ],
 
     exclude: [
-      'test/io/**',
+      'test/io/**'
     ],
 
     autoWatch: false,
@@ -34,6 +34,11 @@ module.exports = function(config) {
       '../../../karma-parser-generator',
       '../../../karma-parser-getter-setter'
     ],
+
+    customLaunchers: {
+      Dartium: { base: 'ChromeCanary', flags: ['--no-sandbox'] },
+      ChromeNoSandbox: { base: 'Chrome', flags: ['--no-sandbox'] }
+    },
 
     preprocessors: {
       'test/core/parser/generated_functions.dart': ['parser-generator'],

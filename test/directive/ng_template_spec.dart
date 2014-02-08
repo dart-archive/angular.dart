@@ -31,8 +31,8 @@ main() {
           '<script id="/ignore">ignore me</script>' +
           '<script type="text/ng-template" id="/myTemplate.html"><x>{{y}}</x></script>' +
         '</div>'],
-      (Injector injector, Compiler compiler, TemplateCache templateCache) {
-        compiler(element)(injector, element);
+      (Injector injector, Compiler compiler, TemplateCache templateCache, DirectiveMap directives) {
+        compiler(element, directives)(injector, element);
         expect(templateCache.get('/ignore')).toBeNull();
         expect(templateCache.get('/myTemplate.html').responseText).toEqual('<x>{{y}}</x>');
       }
@@ -49,9 +49,9 @@ main() {
           '<script type="text/javascript">some {{binding}} <div></div></script>' +
           '<script type="text/ng-template" id="/some">other {{binding}} <div></div></script>' +
         '</div>'],
-      (Injector injector, Compiler compiler, TemplateCache templateCache, Scope scope) {
+      (Injector injector, Compiler compiler, TemplateCache templateCache, Scope scope, DirectiveMap directives) {
         var templates = element.contents();
-        compiler(element)(injector, element);
+        compiler(element, directives)(injector, element);
 
         microLeap();
         // This binding should have been left alone (i.e. not interpolated).

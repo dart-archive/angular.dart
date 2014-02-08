@@ -19,9 +19,9 @@ part of angular.directive;
   selector: '[ng-bind]',
   map: const {'ng-bind': '=>value'})
 class NgBindDirective {
-  dom.Element element;
+  final dom.Element element;
 
-  NgBindDirective(dom.Element this.element);
+  NgBindDirective(this.element);
 
   set value(value) => element.text = value == null ? '' : value.toString();
 }

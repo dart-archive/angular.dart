@@ -30,8 +30,8 @@ part of angular.directive;
 @NgDirective(selector: '[ng-required]', map: const {'ng-required': '=>required'})
 @NgDirective(selector: '[ng-selected]', map: const {'ng-selected': '=>selected'})
 class NgBooleanAttributeDirective {
-  NodeAttrs attrs;
-  NgBooleanAttributeDirective(NodeAttrs this.attrs);
+  final NodeAttrs attrs;
+  NgBooleanAttributeDirective(this.attrs);
 
   _setBooleanAttribute(name, value) => attrs[name] = (toBool(value) ? '' : null);
 
@@ -65,11 +65,41 @@ class NgBooleanAttributeDirective {
 @NgDirective(selector: '[ng-src]',    map: const {'ng-src':    '@src'})
 @NgDirective(selector: '[ng-srcset]', map: const {'ng-srcset': '@srcset'})
 class NgSourceDirective {
-  NodeAttrs attrs;
-  NgSourceDirective(NodeAttrs this.attrs);
+  final NodeAttrs attrs;
+  NgSourceDirective(this.attrs);
 
   set href(value)   => attrs['href']   = value;
   set src(value)    => attrs['src']    = value;
   set srcset(value) => attrs['srcset'] = value;
 
+}
+
+/**
+ * In SVG some attributes have a specific syntax. Placing `{{interpolation}}` in
+ * those attributes will break the attribute syntax, and browser will clear the
+ * attribute.
+ *
+ * The `ng-attr-*` is a generic way to use interpolation without breaking the
+ * attribute syntax validator. The `ng-attr-` part get stripped.
+ *
+ * @example
+ *     <svg>
+ *       <circle ng-attr-cx="{{cx}}"></circle>
+ *     </svg>
+ */
+@NgDirective(selector: '[ng-attr-*]')
+class NgAttributeDirective implements NgAttachAware {
+  final NodeAttrs _attrs;
+
+  NgAttributeDirective(this._attrs);
+
+  void attach() {
+    _attrs.forEach((key, value) {
+      if (key.startsWith('ngAttr')) {
+        var newKey = key.substring(6);
+        _attrs[newKey] = value;
+        _attrs.observe(snakecase(key), (newValue) => _attrs[newKey] = newValue );
+      }
+    });
+  }
 }

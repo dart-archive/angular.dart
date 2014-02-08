@@ -53,7 +53,9 @@ class _SpecInjector {
     }
   }
 
-  reset() { injector = null; }
+  reset() {
+    injector = null;
+  }
 }
 
 /**

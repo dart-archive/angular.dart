@@ -2,7 +2,7 @@ library parser_perf;
 
 import '_perf.dart';
 import 'package:angular/core/module.dart';
-import 'package:angular/core/parser/parser_library.dart';
+import 'package:angular/core/parser/parser.dart';
 import 'package:angular/filter/module.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
@@ -14,6 +14,7 @@ import '../gen/generated_getter_setter.dart' as generated_getter_setter;
 main() {
   var module = new Module()
     ..type(Parser, implementedBy: DynamicParser)
+    ..type(ParserBackend, implementedBy: DynamicParserBackend)
     ..type(SubstringFilter)
     ..type(IncrementFilter)
     ..install(new NgFilterModule());
@@ -27,23 +28,25 @@ main() {
   var generatedParser = new DynamicInjector(
       modules: [new Module()
         ..type(Parser, implementedBy: StaticParser)
-        ..value(StaticParserFunctions, generated_functions.functions(filterMap))],
+        ..value(StaticParserFunctions, generated_functions.functions())],
       allowImplicitInjection:true).get(Parser);
 
   var hybridParser = new DynamicInjector(
       modules: [new Module()
         ..type(Parser, implementedBy: DynamicParser)
-        ..type(GetterSetter, implementedBy: generated_getter_setter.StaticGetterSetter)],
+        ..type(ParserBackend, implementedBy: DynamicParserBackend)
+        ..type(ClosureMap, implementedBy: generated_getter_setter.StaticClosureMap)],
       allowImplicitInjection:true).get(Parser);
 
   scope['a'] = new ATest();
   scope['e1'] = new EqualsThrows();
+  scope['o'] = new OTest();
 
   compare(expr, idealFn) {
     var nf = new NumberFormat.decimalPattern();
-    var reflectionExpr = reflectiveParser(expr);
-    var generatedExpr = generatedParser(expr);
-    var hybridExpr = hybridParser(expr);
+    Expression reflectionExpr = reflectiveParser(expr);
+    Expression generatedExpr = generatedParser(expr);
+    Expression hybridExpr = hybridParser(expr);
     var measure = (b) => statMeasure(b).mean_ops_sec;
     var gTime = measure(() => generatedExpr.eval(scope));
     var rTime = measure(() => reflectionExpr.eval(scope));
@@ -63,6 +66,7 @@ main() {
 
   compare('a.b.c', (scope) => scope['a'].b.c);
   compare('e1.b', (scope) => scope['e1'].b);
+  compare('o.f()', (scope) => scope['o'].f());
   compare('null', (scope) => null);
   compare('x.b.c', (s, [l]) {
     if (l != null && l.containsKey('x')) s = l['x'];
@@ -81,6 +85,10 @@ class ATest {
 
 class BTest {
   var c = 6;
+}
+
+class OTest {
+  f() => 42;
 }
 
 class EqualsThrows {

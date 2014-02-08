@@ -4,24 +4,36 @@ import '../_specs.dart';
 
 main() {
   describe('NgRepeater', () {
-    var element, $compile, scope, $exceptionHandler;
+    var element, $compile, scope, $exceptionHandler, directives;
 
-    beforeEach(inject((Injector injector, Scope $rootScope, Compiler compiler) {
+    beforeEach(inject((Injector injector, Scope $rootScope, Compiler compiler, DirectiveMap _directives) {
       $exceptionHandler = injector.get(ExceptionHandler);
       scope = $rootScope;
       $compile = (html) {
         element = $(html);
-        var blockFactory = compiler(element);
+        var blockFactory = compiler(element, _directives);
         var block = blockFactory(injector, element);
         return element;
       };
+      directives = _directives;
     }));
 
     it(r'should set create a list of items', inject((Scope scope, Compiler compiler, Injector injector) {
       var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
-      BlockFactory blockFactory = compiler(element);
+      BlockFactory blockFactory = compiler(element, directives);
       Block block = blockFactory(injector, element);
       scope.items = ['a', 'b'];
+      scope.$apply();
+      expect(element.text()).toEqual('ab');
+    }));
+
+
+    it(r'should set create a list of items from iterable',
+        inject((Scope scope, Compiler compiler, Injector injector) {
+      var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
+      BlockFactory blockFactory = compiler(element, directives);
+      Block block = blockFactory(injector, element);
+      scope.items = ['a', 'b'].map((i) => i); // makes an iterable
       scope.$apply();
       expect(element.text()).toEqual('ab');
     }));
@@ -102,7 +114,7 @@ main() {
       });
 
 
-      xit(r'should iterate over an array of primitives', () {
+      it(r'should iterate over an array of primitives', () {
         element = $compile(
             r'<ul>' +
                 r'<li ng-repeat="item in items track by $index">{{item}};</li>' +
@@ -113,7 +125,7 @@ main() {
         scope.$digest();
         expect(element.find('li').length).toEqual(3);
         expect(element.text()).toEqual('true;true;true;');
-        
+
         scope.items = [false, true, true];
         scope.$digest();
         expect(element.find('li').length).toEqual(3);

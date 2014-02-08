@@ -7,13 +7,13 @@ part of angular.directive;
  */
 @NgDirective(
     selector: '[ng-hide]',
-    map: const {'ng-hide': '=>hide'} )
+    map: const {'ng-hide': '=>hide'})
 class NgHideDirective {
   static String NG_HIDE_CLASS = 'ng-hide';
 
-  dom.Element element;
+  final dom.Element element;
 
-  NgHideDirective(dom.Element this.element);
+  NgHideDirective(this.element);
 
   set hide(value) {
     if (toBool(value)) {
@@ -35,9 +35,9 @@ class NgHideDirective {
 class NgShowDirective {
   static String NG_SHOW_CLASS = 'ng-show';
 
-  dom.Element element;
+  final dom.Element element;
 
-  NgShowDirective(dom.Element this.element);
+  NgShowDirective(this.element);
 
   set show(value) {
     if (toBool(value)) {

@@ -1259,6 +1259,24 @@ main() => describe('http', () {
           }));
 
 
+          it('should call onError on a JSON parse error', async(() {
+            backend.expect('GET', '/url').respond('[x]');
+            var callbackCalled = false;
+            var onErrorCalled = false;
+            http.get('/url').then((_) {
+              callbackCalled = true;
+            }, onError: (e,s) {
+              // Dartium throws "Unexpected character"
+              // dart2js throws "Unexpected token"
+              expect('$e').toContain('Unexpected');
+              onErrorCalled = true;
+            });
+            flush();
+            expect(callbackCalled).toBeFalsy();
+            expect(onErrorCalled).toBeTruthy();
+          }));
+
+
           it('should not deserialize tpl beginning with ng expression', async(() {
             backend.expect('GET', '/url').respond('{{some}}');
             http.get('/url').then(callback);

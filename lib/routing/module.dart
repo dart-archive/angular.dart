@@ -1,10 +1,10 @@
 /**
- * Routing library makes it easier to build large single-page application. The
+ * The [routing] library makes it easier to build large single-page applications. The
  * library lets you map the browser address bar to semantic structure of your
  * application and keeps them in sync.
  *
- * Angular uses [route_hierarchical] package to define application routes and
- * provides custom tools that it easier to use routing with Angular templates.
+ * Angular uses the [route_hierarchical] package to define application routes and
+ * to provide custom tools to make it easier to use routing with Angular templates.
  *
  * Lets consider a simple recipe book application. The application might have
  * the following pages:
@@ -72,8 +72,8 @@
  *
  *      <view-recipe></view-recipe>
  *
- *  The template contains a custom `view-recipe` component that handles the
- *  displaying of the recipe. Now, our `view-recipe` can inject [RouteProvider]
+ *  The template contains a custom `view-recipe` component that handles
+ *  displaying the recipe. Now, our `view-recipe` can inject [RouteProvider]
  *  to get hold of the route and its parameters. It might look like this:
  *
  *      @NgComponent(...)
@@ -175,6 +175,7 @@ class NgRoutingModule extends Module {
     type(NgRoutingHelper);
     value(RouteProvider, null);
     value(RouteInitializer, null);
+    value(RouteInitializerFn, null);
 
     // directives
     value(NgViewDirective, null);
@@ -184,15 +185,16 @@ class NgRoutingModule extends Module {
 
 /**
  * Allows configuration of [Router.useFragment]. By default [usePushState] is
- * true, so router will be listen to [Window.onPopState] and route URLs like
- * "http://host:port/foo/bar?baz=qux". Both path and query parts of the URL
+ * true, so the router will listen to [Window.onPopState] and route URLs like
+ * "http://host:port/foo/bar?baz=qux". Both the path and query parts of the URL
  * are used by the router. If [usePushState] is false, router will listen to
  * [Window.onHashChange] and route URLs like
  * "http://host:port/path#/foo/bar?baz=qux". Everything after hash (#) is used
  * by the router.
  */
+@NgInjectableService()
 class NgRoutingUsePushState {
   final bool usePushState;
   NgRoutingUsePushState(): usePushState = true;
-  NgRoutingUsePushState.value(bool this.usePushState);
+  NgRoutingUsePushState.value(this.usePushState);
 }

@@ -1,9 +1,10 @@
 library angular.selector_spec;
 
-import '../_specs.dart' hide Node, Element, Text;
-
 import 'package:angular/tools/selector.dart';
 import 'package:html5lib/dom.dart';
+import 'package:unittest/unittest.dart';
+
+import '../jasmine_syntax.dart';
 
 main() => describe('selector', () {
 
@@ -54,6 +55,16 @@ main() => describe('selector', () {
     var node = new Element.html('<div attr="before-xyz-after"></div>');
     expect(matchesNode(node, '[*=/xyz/]'), isTrue);
     expect(matchesNode(node, '[*=/xyzz/]'), isFalse);
+  });
+
+  it('should match whildcard attributes', () {
+    var node = new Element.html('<div attr-foo="blah"></div>');
+    expect(matchesNode(node, '[attr-*]'), isTrue);
+    expect(matchesNode(node, '[attr-*=blah]'), isTrue);
+    expect(matchesNode(node, '[attr-*=halb]'), isFalse);
+    expect(matchesNode(node, '[foo-*]'), isFalse);
+    expect(matchesNode(node, '[foo-*=blah]'), isFalse);
+    expect(matchesNode(node, '[foo-*=halb]'), isFalse);
   });
 
   it('should match text', () {

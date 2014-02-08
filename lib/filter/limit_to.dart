@@ -37,33 +37,22 @@ part of angular.filter;
 @NgFilter(name:'limitTo')
 class LimitToFilter {
   Injector _injector;
-  Parser _parser;
 
-  LimitToFilter(Injector this._injector, Parser this._parser);
+  LimitToFilter(this._injector);
 
   dynamic call(dynamic items, [int limit]) {
-    if (items == null) {
-      return null;
-    }
-    if (limit == null) {
-      return const[];
-    }
-    if (items is! List && items is! String) {
-      return items;
-    }
+    if (items == null) return null;
+    if (limit == null) return const[];
+    if (items is! List && items is! String) return items;
     int i = 0, j = items.length;
     if (limit > -1) {
       j = (limit > j) ? j : limit;
     } else {
       i = j + limit;
-      if (i < 0) {
-        i = 0;
-      }
+      if (i < 0) i = 0;
     }
-    if (items is String) {
-      return (items as String).substring(i, j);
-    } else {
-      return (items as List).getRange(i, j).toList(growable: false);
-    }
+    return items is String ?
+        (items as String).substring(i, j) :
+        (items as List).getRange(i, j).toList(growable: false);
   }
 }

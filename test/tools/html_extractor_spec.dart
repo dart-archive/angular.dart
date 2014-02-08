@@ -1,9 +1,10 @@
 library html_extractor_spec;
 
-import '../_specs.dart';
-
-import 'package:angular/tools/html_extractor.dart';
 import 'package:angular/tools/common.dart';
+import 'package:angular/tools/html_extractor.dart';
+import 'package:unittest/unittest.dart';
+
+import '../jasmine_syntax.dart';
 import 'mock_io_service.dart';
 
 main() => describe('html_extractor', () {

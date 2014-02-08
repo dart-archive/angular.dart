@@ -2,9 +2,9 @@ library angular.source_metadata_extractor ;
 
 import 'package:analyzer/src/generated/ast.dart';
 
-import 'source_crawler.dart';
-import '../utils.dart';
-import 'common.dart';
+import 'package:angular/tools/source_crawler.dart';
+import 'package:angular/tools/common.dart';
+import 'package:angular/utils.dart';
 
 const String _COMPONENT = '-component';
 const String _DIRECTIVE = '-directive';
@@ -23,8 +23,7 @@ class SourceMetadataExtractor {
   SourceCrawler sourceCrawler;
   DirectiveMetadataCollectingVisitor metadataVisitor;
 
-  SourceMetadataExtractor(this.sourceCrawler,
-      [DirectiveMetadataCollectingVisitor this.metadataVisitor]) {
+  SourceMetadataExtractor(this.sourceCrawler, [ this.metadataVisitor ]) {
     if (metadataVisitor == null) {
       metadataVisitor = new DirectiveMetadataCollectingVisitor();
     }
@@ -37,6 +36,7 @@ class SourceMetadataExtractor {
     metadataVisitor.metadata.forEach((DirectiveMetadata meta) {
       DirectiveInfo dirInfo = new DirectiveInfo();
       dirInfo.selector = meta.selector;
+      dirInfo.template = meta.template;
       meta.attributeMappings.forEach((attrName, mappingSpec) {
         var spec = _specs
             .firstWhere((specPrefix) => mappingSpec.startsWith(specPrefix),
@@ -118,12 +118,7 @@ class SourceMetadataExtractor {
   }
 }
 
-String _maybeCamelCase(String s) {
-  if (s.indexOf('-') > -1) {
-    return camelcase(s);
-  }
-  return s;
-}
+String _maybeCamelCase(String s) => (s.indexOf('-') > -1) ? camelcase(s) : s;
 
 class DirectiveMetadataCollectingVisitor {
   List<DirectiveMetadata> metadata = <DirectiveMetadata>[];
@@ -155,6 +150,9 @@ class DirectiveMetadataCollectingVisitor {
             var paramName = namedArg.name.label.name;
             if (paramName == 'selector') {
               meta.selector = assertString(namedArg.expression).stringValue;
+            }
+            if (paramName == 'template') {
+              meta.template = assertString(namedArg.expression).stringValue;
             }
             if (paramName == 'map') {
               MapLiteral map = namedArg.expression;

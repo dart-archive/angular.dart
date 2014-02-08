@@ -1,7 +1,7 @@
 library angular.io_impl;
 
 import 'dart:io';
-import 'io.dart';
+import 'package:angular/tools/io.dart';
 
 class IoServiceImpl implements IoService {
 

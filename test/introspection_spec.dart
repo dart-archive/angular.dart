@@ -18,7 +18,7 @@ main() => describe('introspection', () {
 
   it('should select elements using CSS selector', () {
     var div = new Element.html('<div><p><span></span></p></div>');
-    var span = div.query('span');
+    var span = div.querySelector('span');
     var shadowRoot = span.createShadowRoot();
     shadowRoot.innerHtml = '<ul><li>stash</li><li>secret</li><ul>';
 
@@ -26,5 +26,12 @@ main() => describe('introspection', () {
     expect(toHtml(ngQuery(div, 'li', 'stash'))).toEqual('<li>stash</li>');
     expect(toHtml(ngQuery(div, 'li', 'secret'))).toEqual('<li>secret</li>');
     expect(toHtml(ngQuery(div, 'li', 'xxx'))).toEqual('');
+  });
+
+  it('should select elements in the root shadow root', () {
+    var div = new Element.html('<div></div>');
+    var shadowRoot = div.createShadowRoot();
+    shadowRoot.innerHtml = '<ul><li>stash</li><li>secret</li><ul>';
+    expect(toHtml(ngQuery(div, 'li'))).toEqual('<li>stash</li><li>secret</li>');
   });
 });

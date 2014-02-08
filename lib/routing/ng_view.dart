@@ -64,7 +64,6 @@ part of angular.routing;
 class NgViewDirective implements NgDetachAware, RouteProvider {
   final NgRoutingHelper locationService;
   final BlockCache blockCache;
-  final Scope scope;
   final Injector injector;
   final Element element;
   RouteHandle _route;
@@ -73,8 +72,7 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
   Scope _previousScope;
   Route _viewRoute;
 
-  NgViewDirective(Element this.element, BlockCache this.blockCache,
-      Scope this.scope, Injector injector, Router router)
+  NgViewDirective(this.element, this.blockCache, Injector injector, Router router)
       : injector = injector, locationService = injector.get(NgRoutingHelper) {
     RouteProvider routeProvider = injector.parent.get(NgViewDirective);
     if (routeProvider != null) {
@@ -97,7 +95,7 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
     locationService._unregisterPortal(this);
   }
 
-  _show(String templateUrl, Route route) {
+  _show(String templateUrl, Route route, List<Module> modules) {
     assert(route.isActive);
 
     if (_viewRoute != null) return;
@@ -111,11 +109,18 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
       _cleanUp();
     });
 
-    blockCache.fromUrl(templateUrl).then((blockFactory) {
+    var viewInjector = injector;
+    if (modules != null) {
+      viewInjector = forceNewDirectivesAndFilters(viewInjector, modules);
+    }
+
+    var newDirectives = viewInjector.get(DirectiveMap);
+    blockCache.fromUrl(templateUrl, newDirectives).then((blockFactory) {
       _cleanUp();
-      _previousScope = scope.$new();
+      _previousScope = viewInjector.get(Scope).$new();
       _previousBlock = blockFactory(
-          injector.createChild([new Module()..value(Scope, _previousScope)]));
+          viewInjector.createChild(
+              [new Module()..value(Scope, _previousScope)]));
 
       _previousBlock.elements.forEach((elm) => element.append(elm));
     });

@@ -2,6 +2,12 @@ library block_spec;
 
 import '../_specs.dart';
 
+class Log {
+  List<String> log = <String>[];
+
+  add(String msg) => log.add(msg);
+}
+
 @NgDirective(children: NgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo')
 class LoggerBlockDirective {
   LoggerBlockDirective(BlockHole hole, BlockFactory blockFactory,
@@ -16,23 +22,42 @@ class LoggerBlockDirective {
   }
 }
 
-class ReplaceBlockDirective {
-  ReplaceBlockDirective(BlockHole hole, BoundBlockFactory boundBlockFactory, Node node, Scope scope) {
-    var block = boundBlockFactory(scope);
-    block.insertAfter(hole);
-    node.remove();
+@NgDirective(selector: 'dir-a')
+class ADirective {
+  ADirective(Log log) {
+    log.add('ADirective');
   }
 }
 
-class ShadowBlockDirective {
-  ShadowBlockDirective(BlockHole hole, BoundBlockFactory boundBlockFactory, Element element, Scope scope) {
-    var block = boundBlockFactory(scope);
-    var shadowRoot = element.createShadowRoot();
-    for (var i = 0, ii = block.elements.length; i < ii; i++) {
-      shadowRoot.append(block.elements[i]);
-    }
+@NgDirective(selector: 'dir-b')
+class BDirective {
+  BDirective(Log log) {
+    log.add('BDirective');
   }
 }
+
+@NgFilter(name:'filterA')
+class AFilter {
+  Log log;
+
+  AFilter(this.log) {
+    log.add('AFilter');
+  }
+
+  call(value) => value;
+}
+
+@NgFilter(name:'filterB')
+class BFilter {
+  Log log;
+
+  BFilter(this.log) {
+    log.add('BFilter');
+  }
+
+  call(value) => value;
+}
+
 
 main() {
   describe('Block', () {
@@ -199,6 +224,44 @@ main() {
           expect(b.previous).toBe(anchor);
         });
       });
+    });
+
+    describe('deferred', () {
+
+      it('should load directives/filters from the child injector', () {
+        Module rootModule = new Module()
+          ..type(Probe)
+          ..type(Log)
+          ..type(AFilter)
+          ..type(ADirective);
+
+        Injector rootInjector =
+            new DynamicInjector(modules: [new AngularModule(), rootModule]);
+        Log log = rootInjector.get(Log);
+        Scope rootScope = rootInjector.get(Scope);
+
+        Compiler compiler = rootInjector.get(Compiler);
+        DirectiveMap directives = rootInjector.get(DirectiveMap);
+        compiler(es('<dir-a>{{\'a\' | filterA}}</dir-a><dir-b></dir-b>'), directives)(rootInjector);
+        rootScope.$digest();
+
+        expect(log.log, equals(['ADirective', 'AFilter']));
+
+
+        Module childModule = new Module()
+          ..type(BFilter)
+          ..type(BDirective);
+
+        var childInjector = forceNewDirectivesAndFilters(rootInjector, [childModule]);
+
+        DirectiveMap newDirectives = childInjector.get(DirectiveMap);
+        compiler(es('<dir-a probe="dirA"></dir-a>{{\'a\' | filterA}}'
+            '<dir-b probe="dirB"></dir-b>{{\'b\' | filterB}}'), newDirectives)(childInjector);
+        rootScope.$digest();
+
+        expect(log.log, equals(['ADirective', 'AFilter', 'ADirective', 'BDirective', 'BFilter']));
+      });
+
     });
 
     //TODO: tests for attach/detach

@@ -7,12 +7,13 @@ main() {
     TestBed _;
     beforeEach(module((Module module) {
       module.type(_ListenerDirective);
+      module.type(_HelloFilter);
     }));
     beforeEach(inject((TestBed tb) => _ = tb));
 
-    it('should replace {{}} in text', inject((Compiler $compile, Scope $rootScope, Injector injector) {
+    it('should replace {{}} in text', inject((Compiler $compile, Scope $rootScope, Injector injector, DirectiveMap directives) {
       var element = $('<div>{{name}}<span>!</span></div>');
-      var template = $compile(element);
+      var template = $compile(element, directives);
 
       $rootScope.name = 'OK';
       var block = template(injector);
@@ -34,9 +35,9 @@ main() {
     }));
 
 
-    it('should replace {{}} in attribute', inject((Compiler $compile, Scope $rootScope, Injector injector) {
+    it('should replace {{}} in attribute', inject((Compiler $compile, Scope $rootScope, Injector injector, DirectiveMap directives) {
       var element = $('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
-      var template = $compile(element);
+      var template = $compile(element, directives);
 
       $rootScope.name = 'OK';
       $rootScope.age = 23;
@@ -49,6 +50,34 @@ main() {
       $rootScope.$digest();
       expect(element.attr('some-attr')).toEqual('OK');
       expect(element.attr('other-attr')).toEqual('23');
+    }));
+
+
+    it('should allow newlines in attribute', inject((Compiler $compile, Scope $rootScope, Injector injector, DirectiveMap directives) {
+      var element = $('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
+      var template = $compile(element, directives);
+
+      $rootScope.line1 = 'L1';
+      $rootScope.line2 = 'L2';
+      var block = template(injector);
+
+      element = $(block.elements);
+
+      expect(element.attr('multiline-attr')).toEqual('');
+      $rootScope.$digest();
+      expect(element.attr('multiline-attr')).toEqual('line1: L1\nline2: L2');
+    }));
+
+
+    it('should handle filters', inject((Compiler $compile, Scope $rootScope, Injector injector, DirectiveMap directives) {
+      var element = $('<div>{{"World" | hello}}</div>');
+      var template = $compile(element, directives);
+      var block = template(injector);
+      $rootScope.$digest();
+
+      element = $(block.elements);
+
+      expect(element.html()).toEqual('Hello, World!');
     }));
   });
 
@@ -105,3 +134,11 @@ class _ListenerDirective implements TextChangeListener {
   _ListenerDirective(Logger this.logger);
   call(String text) => logger(text);
 }
+
+@NgFilter(name:'hello')
+class _HelloFilter {
+  call(String str) {
+    return 'Hello, $str!';
+  }
+}
+

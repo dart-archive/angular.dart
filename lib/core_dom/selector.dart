@@ -33,19 +33,19 @@ class _Directive {
   final NgAnnotation annotation;
 
   _Directive(Type this.type, NgAnnotation this.annotation);
+
+  toString() => annotation.selector;
 }
 
 
 class _ContainsSelector {
-  NgAnnotation annotation;
-  RegExp regexp;
+  final NgAnnotation annotation;
+  final RegExp regexp;
 
-  _ContainsSelector(NgAnnotation this.annotation, String regexp) {
-    this.regexp = new RegExp(regexp);
-  }
+  _ContainsSelector(this.annotation, String regexp) : regexp = new RegExp(regexp);
 }
 
-RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-]+)(?:=([^\]]*))?\]))');
+RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-\*]+)(?:=([^\]]*))?\]))');
 RegExp _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([\w\-]+)(?:\=(.*))?\]$');
 RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
 RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
@@ -78,16 +78,16 @@ class _SelectorPart {
 class _ElementSelector {
   String name;
 
-  Map<String, _Directive> elementMap = new Map<String, _Directive>();
+  Map<String, List<_Directive>> elementMap = new Map<String, List<_Directive>>();
   Map<String, _ElementSelector> elementPartialMap = new Map<String, _ElementSelector>();
 
-  Map<String, _Directive> classMap = new Map<String, _Directive>();
+  Map<String, List<_Directive>> classMap = new Map<String, List<_Directive>>();
   Map<String, _ElementSelector> classPartialMap = new Map<String, _ElementSelector>();
 
-  Map<String, Map<String, _Directive>> attrValueMap = new Map<String, Map<String, _Directive>>();
+  Map<String, Map<String, List<_Directive>>> attrValueMap = new Map<String, Map<String, List<_Directive>>>();
   Map<String, Map<String, _ElementSelector>> attrValuePartialMap = new Map<String, Map<String, _ElementSelector>>();
 
-  _ElementSelector(String this.name);
+  _ElementSelector(this.name);
 
   addDirective(List<_SelectorPart> selectorParts, _Directive directive) {
     var selectorPart = selectorParts.removeAt(0);
@@ -95,7 +95,9 @@ class _ElementSelector {
     var name;
     if ((name = selectorPart.element) != null) {
       if (terminal) {
-        elementMap[name] = directive;
+        elementMap
+          .putIfAbsent(name, () => [])
+          .add(directive);
       } else {
         elementPartialMap
             .putIfAbsent(name, () => new _ElementSelector(name))
@@ -103,7 +105,9 @@ class _ElementSelector {
       }
     } else if ((name = selectorPart.className) != null) {
       if (terminal) {
-        classMap[name] = directive;
+        classMap
+          .putIfAbsent(name, () => [])
+          .add(directive);
       } else {
         classPartialMap
             .putIfAbsent(name, () => new _ElementSelector(name))
@@ -112,24 +116,29 @@ class _ElementSelector {
     } else if ((name = selectorPart.attrName) != null) {
       if (terminal) {
         attrValueMap
-            .putIfAbsent(name, () => new Map<String, _Directive>())
-            [selectorPart.attrValue] = directive;
+            .putIfAbsent(name, () => new Map<String, List<_Directive>>())
+            .putIfAbsent(selectorPart.attrValue, () => [])
+            .add(directive);
       } else {
         attrValuePartialMap
             .putIfAbsent(name, () => new Map<String, _ElementSelector>())
-            [selectorPart.attrValue] = new _ElementSelector(name)
-                ..addDirective(selectorParts, directive);
+            .putIfAbsent(selectorPart.attrValue, () => new _ElementSelector(name))
+            .addDirective(selectorParts, directive);
       }
     } else {
       throw "Unknown selector part '$selectorPart'.";
     }
   }
 
+  _addRefs(List<DirectiveRef> refs, List<_Directive> directives, dom.Node node, [String attrValue]) {
+    directives.forEach((directive) =>
+      refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue)));
+  }
+
   List<_ElementSelector> selectNode(List<DirectiveRef> refs, List<_ElementSelector> partialSelection,
              dom.Node node, String nodeName) {
     if (elementMap.containsKey(nodeName)) {
-      _Directive directive = elementMap[nodeName];
-      refs.add(new DirectiveRef(node, directive.type, directive.annotation));
+      _addRefs(refs, elementMap[nodeName], node);
     }
     if (elementPartialMap.containsKey(nodeName)) {
       if (partialSelection == null) partialSelection = new List<_ElementSelector>();
@@ -141,8 +150,7 @@ class _ElementSelector {
   List<_ElementSelector> selectClass(List<DirectiveRef> refs, List<_ElementSelector> partialSelection,
          dom.Node node, String className) {
     if (classMap.containsKey(className)) {
-      var directive = classMap[className];
-      refs.add(new DirectiveRef(node, directive.type, directive.annotation));
+      _addRefs(refs, classMap[className], node);
     }
     if (classPartialMap.containsKey(className)) {
       if (partialSelection == null) partialSelection = new List<_ElementSelector>();
@@ -153,15 +161,16 @@ class _ElementSelector {
 
   List<_ElementSelector> selectAttr(List<DirectiveRef> refs, List<_ElementSelector> partialSelection,
          dom.Node node, String attrName, String attrValue) {
-    if (attrValueMap.containsKey(attrName)) {
-      Map<String, _Directive> valuesMap = attrValueMap[attrName];
+
+    String matchingKey = _matchingKey(attrValueMap.keys, attrName);
+
+    if (matchingKey != null) {
+      Map<String, List<_Directive>> valuesMap = attrValueMap[matchingKey];
       if (valuesMap.containsKey('')) {
-        _Directive directive = valuesMap[''];
-        refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
+        _addRefs(refs, valuesMap[''], node, attrValue);
       }
       if (attrValue != '' && valuesMap.containsKey(attrValue)) {
-        _Directive directive = valuesMap[attrValue];
-        refs.add(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
+        _addRefs(refs, valuesMap[attrValue], node, attrValue);
       }
     }
     if (attrValuePartialMap.containsKey(attrName)) {
@@ -178,10 +187,16 @@ class _ElementSelector {
     return partialSelection;
   }
 
+  String _matchingKey(Iterable<String> keys, String attrName) {
+    return keys.firstWhere(
+        (key) => new RegExp('^${key.replaceAll('*', r'[\w\-]+')}\$').hasMatch(attrName),
+        orElse: () => null);
+  }
+
   toString() => 'ElementSelector($name)';
 }
 
-List<_SelectorPart> _splitCss(String selector) {
+List<_SelectorPart> _splitCss(String selector, Type type) {
   List<_SelectorPart> parts = [];
   var remainder = selector;
   var match;
@@ -199,7 +214,7 @@ List<_SelectorPart> _splitCss(String selector) {
         throw "Missmatched RegExp $_SELECTOR_REGEXP on $remainder";
       }
     } else {
-      throw "Unknown selector format '$remainder'.";
+      throw "Unknown selector format '$selector' for $type.";
     }
     remainder = remainder.substring(match.end);
   }
@@ -207,7 +222,6 @@ List<_SelectorPart> _splitCss(String selector) {
 }
 
 /**
- *
  * Factory method for creating a [DirectiveSelector].
  */
 DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
@@ -215,17 +229,19 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
   _ElementSelector elementSelector = new _ElementSelector('');
   List<_ContainsSelector> attrSelector = [];
   List<_ContainsSelector> textSelector = [];
-
   directives.forEach((NgAnnotation annotation, Type type) {
     var match;
     var selector = annotation.selector;
     List<_SelectorPart> selectorParts;
+    if (selector == null) {
+      throw new ArgumentError('Missing selector annotation for $type');
+    }
 
     if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
       textSelector.add(new _ContainsSelector(annotation, match.group(1)));
     } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
       attrSelector.add(new _ContainsSelector(annotation, match[1]));
-    } else if ((selectorParts = _splitCss(selector)) != null){
+    } else if ((selectorParts = _splitCss(selector, type)) != null){
       elementSelector.addDirective(selectorParts, new _Directive(type, annotation));
     } else {
       throw new ArgumentError('Unsupported Selector: $selector');
@@ -243,6 +259,11 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
         dom.Element element = node;
         String nodeName = element.tagName.toLowerCase();
         Map<String, String> attrs = {};
+
+        // Set default attribute
+        if (nodeName == 'input' && !element.attributes.containsKey('type')) {
+          element.attributes['type'] = 'text';
+        }
 
         // Select node
         partialSelection = elementSelector.selectNode(directiveRefs, partialSelection, element, nodeName);
@@ -264,9 +285,10 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
               // this directive is matched on any attribute name, and so
               // we need to pass the name to the directive by prefixing it to the
               // value. Yes it is a bit of a hack.
-              Type type = directives[selectorRegExp.annotation];
-              directiveRefs.add(new DirectiveRef(
-                  node, type, selectorRegExp.annotation, '$attrName=$value'));
+              directives[selectorRegExp.annotation].forEach((type) {
+                directiveRefs.add(new DirectiveRef(
+                    node, type, selectorRegExp.annotation, '$attrName=$value'));
+              });
             }
           }
 
@@ -291,8 +313,9 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
           var selectorRegExp = textSelector[k];
 
           if (selectorRegExp.regexp.hasMatch(value)) {
-            Type type = directives[selectorRegExp.annotation];
-            directiveRefs.add(new DirectiveRef(node, type, selectorRegExp.annotation, value));
+            directives[selectorRegExp.annotation].forEach((type) {
+              directiveRefs.add(new DirectiveRef(node, type, selectorRegExp.annotation, value));
+            });
           }
         }
         break;
@@ -312,6 +335,5 @@ int _directivePriority(NgAnnotation annotation) {
   throw "Unexpected Type: ${annotation}.";
 }
 
-int _priorityComparator(DirectiveRef a, DirectiveRef b) {
-  return _directivePriority(b.annotation) - _directivePriority(a.annotation);
-}
+int _priorityComparator(DirectiveRef a, DirectiveRef b) =>
+  _directivePriority(b.annotation) - _directivePriority(a.annotation);

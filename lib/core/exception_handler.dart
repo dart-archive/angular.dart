@@ -7,6 +7,7 @@ part of angular.core;
  * In your application it is expected that this service is overridden with
  * your implementation which can store the exception for later processing.
  */
+@NgInjectableService()
 class ExceptionHandler {
 
  /**
@@ -16,7 +17,7 @@ class ExceptionHandler {
   * - [stack] The stacktrace.
   * - [reason] Optional contextual information for the error.
   */
-  call(dynamic error, dynamic stack, [String reason = '']){
+  call(dynamic error, dynamic stack, [String reason = '']) {
     print("$error\n$reason\nSTACKTRACE:\n$stack");
   }
 }

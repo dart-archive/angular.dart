@@ -1,53 +1,86 @@
 library generator;
 
-import 'dart_code_gen.dart';
-import '../../core/parser/parser_library.dart';
-import 'source.dart';
+import 'package:angular/core/module.dart';
+import 'package:angular/core/parser/parser.dart';
+import 'package:angular/tools/parser_generator/dart_code_gen.dart';
+
+class NullFilterMap implements FilterMap {
+  call(name) => null;
+  Type operator[](annotation) => null;
+  forEach(fn) { }
+  annotationsFor(type) => null;
+}
+
+class SourcePrinter {
+  printSrc(src) {
+    print(src);
+  }
+}
 
 class ParserGenerator {
-  DynamicParser _parser;
-  Map<String, bool> _printedFunctions = {};
-  GetterSetterGenerator _getters;
-  SourceBuilder _ = new SourceBuilder();
+  final Parser _parser;
+  final DartCodeGen _codegen;
+  final SourcePrinter _printer;
+  ParserGenerator(this._parser, this._codegen, this._printer);
 
-  ParserGenerator(DynamicParser this._parser,
-                  GetterSetterGenerator this._getters);
-
-  generateParser(Iterable<String> expressions) {
-    print("genEvalError(msg) { throw msg; }");
-    print("functions(FilterLookup filters) => new StaticParserFunctions(buildExpressions(filters));");
-    print('var evalError = (text, [s]) => text;');
-    print("");
-    BodySource body = new BodySource();
-    MapSource map = new MapSource();
-
-    // deterimine the order.
-    expressions.forEach((exp) {
-      var code = safeCode(exp);
-      map('${_.str(exp)}: ${_.ref(code)}');
-    });
-    // now do it in actual order
-    _.codeRefs.forEach((code) {
-      body(_.stmt('Expression ${_.ref(code)} = ', code.toSource(_)));
-    });
-    body(_.stmt('return ', map));
-    print("Map<String, Expression> buildExpressions(FilterLookup filters) ${body}");
-    print("\n");
-    print(_getters.functions);
+  void print(object) {
+    _printer.printSrc('$object');
   }
 
-  Code safeCode(String exp) {
+  generateParser(Iterable<String> expressions) {
+    print("StaticParserFunctions functions()");
+    print("    => new StaticParserFunctions(");
+    print("           buildEval(), buildAssign());");
+    print("");
+
+    // Compute the function maps.
+    Map eval = {};
+    Map assign = {};
+    expressions.forEach((exp) {
+      generateCode(exp, eval, assign);
+    });
+
+    // Generate the code.
+    generateBuildFunction('buildEval', eval);
+    generateBuildFunction('buildAssign', assign);
+    _codegen.getters.helpers.values.forEach(print);
+    _codegen.holders.helpers.values.forEach(print);
+    _codegen.setters.helpers.values.forEach(print);
+  }
+
+  void generateBuildFunction(String name, Map map) {
+    String mapLiteral = map.keys.map((e) => '    "$e": ${map[e]}').join(',\n');
+    print("Map<String, Function> $name() {");
+    print("  return {\n$mapLiteral\n  };");
+    print("}");
+    print("");
+  }
+
+  void generateCode(String exp, Map eval, Map assign) {
+    String escaped = escape(exp);
     try {
-      return _parser(exp);
+      Expression e = _parser(exp);
+      if (e.isAssignable) assign[escaped] = getCode(e, true);
+      eval[escaped] = getCode(e, false);
     } catch (e) {
       if ("$e".contains('Parser Error') ||
-      "$e".contains('Lexer Error') ||
-      "$e".contains('Unexpected end of expression')) {
-        return  new ThrowCode("'${escape(e.toString())}';");
+          "$e".contains('Lexer Error') ||
+          "$e".contains('Unexpected end of expression')) {
+        eval[escaped] = '"${escape(e.toString())}"';
       } else {
         rethrow;
       }
     }
   }
 
+  String getCode(Expression e, bool assign) {
+    String args = assign ? "scope, value" : "scope, filters";
+    String code = _codegen.generate(e, assign);
+    if (e.isChain) {
+      code = code.replaceAll('\n', '\n      ');
+      return "($args) {\n      $code\n    }";
+    } else {
+      return "($args) => $code";
+    }
+  }
 }

@@ -1,5 +1,9 @@
 #!/bin/sh
 
+set -e
+
+export DART_SDK=`which dart | sed -e 's/\/dart\-sdk\/.*$/\/dart-sdk/'`
+
 # OS-specific Dartium path defaults
 case $( uname -s ) in
   Darwin)
@@ -30,7 +34,10 @@ dart --version
 # run io tests
 dart --checked test/io/all.dart
 
-./analyze.sh &&
+# run expression extractor tests
+scripts/test-expression-extractor.sh
+
+./scripts/analyze.sh &&
   node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
   node "node_modules/karma/bin/karma" start karma.conf \
     --reporters=junit,dots --port=8765 --runner-port=8766 \

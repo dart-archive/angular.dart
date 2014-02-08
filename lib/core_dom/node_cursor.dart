@@ -3,19 +3,13 @@ part of angular.core.dom;
 class NodeCursor {
   List<dynamic> stack = [];
   List<dom.Node> elements;
-  num index;
+  int index;
 
-  NodeCursor(List<dom.Node> this.elements) {
-    index = 0;
-  }
+  NodeCursor(this.elements) : index = 0;
 
-  isValid() {
-    return index < elements.length;
-  }
+  isValid() => index < elements.length;
 
-  cursorSize() {
-    return 1;
-  }
+  cursorSize() => 1;
 
   macroNext() {
     for(var i = 0, ii = cursorSize(); i < ii; i++, index++){}
@@ -36,18 +30,12 @@ class NodeCursor {
   nodeList() {
     if (!isValid()) return [];  // or should we return null?
 
-    var nodes = [];
-
-    for(var i = 0, ii = cursorSize(); i < ii; i++) {
-      nodes.add(elements[index + i]);
-    }
-
-    return nodes;
+    return elements.sublist(index, index + cursorSize());
   }
 
   descend() {
     var childNodes = elements[index].nodes;
-    var hasChildren = !!(childNodes != null && childNodes.length > 0);
+    var hasChildren = childNodes != null && childNodes.length > 0;
 
     if (hasChildren) {
       stack.add(index);
@@ -98,7 +86,5 @@ class NodeCursor {
     return new NodeCursor(nodes);
   }
 
-  isInstance() {
-    return false;
-  }
+  isInstance() => false;
 }

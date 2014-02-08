@@ -5,6 +5,7 @@ import '../_specs.dart';
 
 main() => describe('dte.compiler', () {
     Compiler $compile;
+    DirectiveMap directives;
     Injector injector;
     Scope $rootScope;
 
@@ -16,17 +17,20 @@ main() => describe('dte.compiler', () {
         ..type(SimpleTranscludeInAttachAttrDirective)
         ..type(IncludeTranscludeAttrDirective)
         ..type(LocalAttrDirective)
+        ..type(OneOfTwoDirectives)
+        ..type(TwoOfTwoDirectives)
         ..type(MyController);
       return (Injector _injector) {
         injector = _injector;
         $compile = injector.get(Compiler);
+        directives = injector.get(DirectiveMap);
         $rootScope = injector.get(Scope);
       };
     }));
 
     it('should compile basic hello world', inject(() {
       var element = $('<div ng-bind="name"></div>');
-      var template = $compile(element);
+      var template = $compile(element, directives);
 
       $rootScope['name'] = 'angular';
       template(injector, element);
@@ -37,12 +41,12 @@ main() => describe('dte.compiler', () {
     }));
 
     it('should not throw on an empty list', inject(() {
-      $compile([]);
+      $compile([], directives);
     }));
 
     it('should compile a directive in a child', inject(() {
       var element = $('<div><div ng-bind="name"></div></div>');
-      var template = $compile(element);
+      var template = $compile(element, directives);
 
       $rootScope['name'] = 'angular';
 
@@ -56,7 +60,7 @@ main() => describe('dte.compiler', () {
 
     it('should compile repeater', inject(() {
       var element = $('<div><div ng-repeat="item in items" ng-bind="item"></div></div>');
-      var template = $compile(element);
+      var template = $compile(element, directives);
 
       $rootScope.items = ['A', 'b'];
       template(injector, element);
@@ -74,7 +78,7 @@ main() => describe('dte.compiler', () {
 
     it('should compile repeater with children', inject((Compiler $compile) {
       var element = $('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>');
-      var template = $compile(element);
+      var template = $compile(element, directives);
 
       $rootScope.items = ['A', 'b'];
       template(injector, element);
@@ -93,9 +97,8 @@ main() => describe('dte.compiler', () {
     it('should compile text', inject((Compiler $compile) {
       var element = $('<div>{{name}}<span>!</span></div>').contents();
       element.remove(null);
-      print('test');
 
-      var template = $compile(element);
+      var template = $compile(element, directives);
 
       $rootScope.name = 'OK';
       var block = template(injector, element);
@@ -114,7 +117,7 @@ main() => describe('dte.compiler', () {
                '<li ng-repeat="li in lis">{{li}}</li>' +
             '</ul>' +
           '</div>');
-      var template = $compile(element);
+      var template = $compile(element, directives);
 
       $rootScope.uls = [['A'], ['b']];
       template(injector, element);
@@ -124,11 +127,22 @@ main() => describe('dte.compiler', () {
       expect(element.text()).toEqual('Ab');
     }));
 
+    it('should compile two directives with the same selector', inject((Logger log) {
+      var element = $('<div two-directives></div>');
+      var template = $compile(element, directives);
+
+      template(injector, element);
+      $rootScope.$digest();
+
+      expect(log).toEqual(['OneOfTwo', 'TwoOfTwo']);
+    }));
+
+
 
     describe("interpolation", () {
       it('should interpolate attribute nodes', inject(() {
         var element = $('<div test="{{name}}"></div>');
-        var template = $compile(element);
+        var template = $compile(element, directives);
 
         $rootScope.name = 'angular';
         template(injector, element);
@@ -139,7 +153,7 @@ main() => describe('dte.compiler', () {
 
       it('should interpolate text nodes', inject(() {
         var element = $('<div>{{name}}</div>');
-        var template = $compile(element);
+        var template = $compile(element, directives);
 
         $rootScope.name = 'angular';
         template(injector, element);
@@ -172,7 +186,7 @@ main() => describe('dte.compiler', () {
         var element = $(r'<div><simple></simple></div>');
 
         zone.run(() {
-          BlockFactory blockFactory = $compile(element);
+          BlockFactory blockFactory = $compile(element, directives);
           Block block = blockFactory(injector, element);
         });
 
@@ -186,7 +200,7 @@ main() => describe('dte.compiler', () {
         var element = $(r'<div>{{name}}{{sep}}{{$id}}:<simple>{{name}}{{sep}}{{$id}}</simple></div>');
 
         zone.run(() {
-          BlockFactory blockFactory = $compile(element);
+          BlockFactory blockFactory = $compile(element, directives);
           Block block = blockFactory(injector, element);
         });
 
@@ -200,7 +214,7 @@ main() => describe('dte.compiler', () {
         var element = $('<parent-expression from-parent=val></parent-expression>');
 
         zone.run(() =>
-          $compile(element)(injector, element));
+          $compile(element, directives)(injector, element));
 
         microLeap();
         expect(renderedText(element)).toEqual('inside poof');
@@ -209,7 +223,7 @@ main() => describe('dte.compiler', () {
       it('should behave nicely if a mapped attribute is missing', async(inject((NgZone zone) {
         var element = $('<parent-expression></parent-expression>');
         zone.run(() =>
-          $compile(element)(injector, element));
+          $compile(element, directives)(injector, element));
 
         microLeap();
         expect(renderedText(element)).toEqual('inside ');
@@ -219,7 +233,7 @@ main() => describe('dte.compiler', () {
         $rootScope.val = null;
         var element = $('<parent-expression fromParent=val></parent-expression>');
         zone.run(() =>
-          $compile(element)(injector, element));
+          $compile(element, directives)(injector, element));
 
         microLeap();
         expect(renderedText(element)).toEqual('inside ');
@@ -227,7 +241,7 @@ main() => describe('dte.compiler', () {
 
       it('should create a component with I/O', async(inject(() {
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
         microLeap();
 
         $rootScope.name = 'misko';
@@ -246,7 +260,7 @@ main() => describe('dte.compiler', () {
 
       it('should should not create any watchers if no attributes are specified', async(inject((Profiler perf) {
         var element = $(r'<div><io></io></div>');
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
         microLeap();
         injector.get(Scope).$digest();
         expect(perf.counters['ng.scope.watchers']).toEqual(0);
@@ -255,7 +269,7 @@ main() => describe('dte.compiler', () {
       it('should create a component with I/O and "=" binding value should be available', async(inject(() {
         $rootScope.name = 'misko';
         var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
         microLeap();
 
         var component = $rootScope.ioComponent;
@@ -272,7 +286,7 @@ main() => describe('dte.compiler', () {
 
 
         expect(injector).toBeDefined();
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
         microLeap();
 
         IoControllerComponent component = $rootScope.ioComponent;
@@ -304,9 +318,9 @@ main() => describe('dte.compiler', () {
         component.onOptional();
       })));
 
-      it('should create a map attribute to controller', async(() {
+      it('should create a map attribute to controller', async(inject(() {
         var element = $(r'<div><io-controller attr="{{name}}"></io-controller></div>');
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
         microLeap();
 
         IoControllerComponent component = $rootScope.ioComponent;
@@ -318,13 +332,13 @@ main() => describe('dte.compiler', () {
         $rootScope.name = 'james';
         $rootScope.$apply();
         expect(component.attr).toEqual('james');
-      }));
+      })));
 
-      it('should create a unpublished component with I/O bound to controller and "=" binding value should be available', async(() {
+      it('should create a unpublished component with I/O bound to controller and "=" binding value should be available', async(inject(() {
         $rootScope.name = 'misko';
         $rootScope.done = false;
         var element = $(r'<div><unpublished-io-controller attr="A" expr="name" ondone="done=true"></unpublished-io-controller></div>');
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
         microLeap();
 
         UnpublishedIoControllerComponent component = $rootScope.ioComponent;
@@ -341,25 +355,25 @@ main() => describe('dte.compiler', () {
 
         // Should be noop
         component.onOptional();
-      }));
+      })));
 
       it('should error on incorrect mapping', async(inject(() {
         expect(() {
           var element = $(r'<div><incorrect-mapping></incorrect-mapping</div>');
-          $compile(element)(injector, element);
+          $compile(element, directives)(injector, element);
         }).toThrow("Unknown mapping 'foo\' for attribute 'attr'.");
       })));
 
       it('should error on non-asignable-mapping', async(inject(() {
         expect(() {
           var element = $(r'<div><non-assignable-mapping></non-assignable-mapping</div>');
-          $compile(element)(injector, element);
+          $compile(element, directives)(injector, element);
         }).toThrow("Expression '1+2' is not assignable in mapping '@1+2' for attribute 'attr'.");
       })));
 
       it('should expose mapped attributes as camel case', async(inject(() {
         var element = $('<camel-case-map camel-case=G></camel-case-map>');
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
         microLeap();
         $rootScope.$apply();
         var componentScope = $rootScope.camelCase;
@@ -369,7 +383,7 @@ main() => describe('dte.compiler', () {
       it('should throw an exception if required directive is missing', async(inject((Compiler $compile, Scope $rootScope, Injector injector) {
         try {
           var element = $('<tab local><pane></pane><pane local></pane></tab>');
-          $compile(element)(injector, element);
+          $compile(element, directives)(injector, element);
         } catch (e) {
           var text = '$e';
           expect(text).toContain('No provider found for');
@@ -381,7 +395,7 @@ main() => describe('dte.compiler', () {
       it('should publish component controller into the scope', async(inject((NgZone zone) {
         var element = $(r'<div><publish-me></publish-me></div>');
         zone.run(() =>
-        $compile(element)(injector, element));
+        $compile(element, directives)(injector, element));
 
         microLeap();
         expect(element.textWithShadow()).toEqual('WORKED');
@@ -390,7 +404,7 @@ main() => describe('dte.compiler', () {
       it('should publish directive controller into the scope', async(inject((NgZone zone) {
         var element = $(r'<div><div publish-me>{{ctrlName.value}}</div></div>');
         zone.run(() =>
-        $compile(element)(injector, element));
+        $compile(element, directives)(injector, element));
 
         microLeap();
         expect(element.text()).toEqual('WORKED');
@@ -398,14 +412,14 @@ main() => describe('dte.compiler', () {
 
       it('should "publish" controller to injector under provided publishTypes', inject(() {
         var element = $(r'<div publish-types></div>');
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
         expect(PublishTypesAttrDirective._injector.get(PublishTypesAttrDirective)).
             toBe(PublishTypesAttrDirective._injector.get(PublishTypesDirectiveSuperType));
       }));
 
       it('should allow repeaters over controllers', async(inject((Logger logger) {
         var element = $(r'<log ng-repeat="i in [1, 2]"></log>');
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
         $rootScope.$apply();
         microLeap();
 
@@ -424,23 +438,50 @@ main() => describe('dte.compiler', () {
         it('should fire onTemplate method', async(inject((Logger logger, MockHttpBackend backend) {
           backend.whenGET('some/template.url').respond('<div>WORKED</div>');
           var scope = $rootScope.$new();
-          var element = $('<attach-detach></attach-detach>');
-          $compile(element)(injector.createChild([new Module()..value(Scope, scope)]), element);
+          scope['isReady'] = 'ready';
+          scope['logger'] = logger;
+          var element = $('<attach-detach attr-value="{{isReady}}" expr-value="isReady">{{logger("inner")}}</attach-detach>');
+          $compile(element, directives)(injector.createChild([new Module()..value(Scope, scope)]), element);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
 
           $rootScope.$digest();
-          expect(logger).toEqual(['new', 'attach']);
+          expect(logger).toEqual(['new', 'attach:@ready; =>ready', 'inner']);
+          logger.clear();
 
           backend.flush();
           microLeap();
-          expect(logger).toEqual(['new', 'attach', 'templateLoaded', scope.shadowRoot]);
+          expect(logger).toEqual(['templateLoaded', scope.shadowRoot]);
+          logger.clear();
 
           scope.$destroy();
-          expect(logger).toEqual(['new', 'attach', 'templateLoaded', scope.shadowRoot, 'detach']);
+          expect(logger).toEqual(['detach']);
           expect(element.textWithShadow()).toEqual('WORKED');
         })));
+      });
+
+      describe('invalid components', () {
+        it('should throw a useful error message for missing selectors', () {
+          module((Module module) {
+            module
+              ..type(MissingSelector);
+          });
+          expect(() {
+            inject((Compiler c) { });
+          }).toThrow('Missing selector annotation for MissingSelector');
+        });
+
+
+        it('should throw a useful error message for invalid selector', () {
+          module((Module module) {
+            module
+              ..type(InvalidSelector);
+          });
+          expect(() {
+            inject((Compiler c) { });
+          }).toThrow('Unknown selector format \'buttonbar button\' for InvalidSelector');
+        });
       });
     });
 
@@ -448,7 +489,7 @@ main() => describe('dte.compiler', () {
     describe('controller scoping', () {
       it('should make controllers available to sibling and child controllers', async(inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
         var element = $('<tab local><pane local></pane><pane local></pane></tab>');
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
         microLeap();
 
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
@@ -456,7 +497,7 @@ main() => describe('dte.compiler', () {
 
       it('should reuse controllers for transclusions', async(inject((Compiler $compile, Scope $rootScope, Logger log, Injector injector) {
         var element = $('<div simple-transclude-in-attach include-transclude>block</div>');
-        $compile(element)(injector, element);
+        $compile(element, directives)(injector, element);
         microLeap();
 
         $rootScope.$apply();
@@ -531,6 +572,20 @@ class SimpleTranscludeInAttachAttrDirective {
 class IncludeTranscludeAttrDirective {
   IncludeTranscludeAttrDirective(SimpleTranscludeInAttachAttrDirective simple, Logger log) {
     log('IncludeTransclude');
+  }
+}
+
+@NgDirective(selector: '[two-directives]')
+class OneOfTwoDirectives {
+  OneOfTwoDirectives(Logger log) {
+    log('OneOfTwo');
+  }
+}
+
+@NgDirective(selector: '[two-directives]')
+class TwoOfTwoDirectives {
+  TwoOfTwoDirectives(Logger log) {
+    log('TwoOfTwo');
   }
 }
 
@@ -669,7 +724,7 @@ class PublishMeComponent {
 }
 
 
-@NgDirective (
+@NgController (
     selector: '[publish-me]',
     publishAs: 'ctrlName'
 )
@@ -691,18 +746,24 @@ class LogComponent {
 
 @NgComponent(
     selector: 'attach-detach',
-    templateUrl: 'some/template.url'
+    templateUrl: 'some/template.url',
+    map: const {
+        'attr-value': '@attrValue',
+        'expr-value': '<=>exprValue'
+    }
 )
 class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRootAware {
   Logger logger;
   Scope scope;
+  String attrValue = 'too early';
+  String exprValue = 'too early';
 
   AttachDetachComponent(Logger this.logger, TemplateLoader templateLoader, Scope this.scope) {
     logger('new');
     templateLoader.template.then((_) => logger('templateLoaded'));
   }
 
-  attach() => logger('attach');
+  attach() => logger('attach:@$attrValue; =>$exprValue');
   detach() => logger('detach');
   onShadowRoot(shadowRoot) {
     scope.$root.shadowRoot = shadowRoot;
@@ -719,4 +780,10 @@ class MyController {
     scope.name = 'MyController';
   }
 }
+
+@NgComponent()
+class MissingSelector {}
+
+@NgComponent(selector: 'buttonbar button')
+class InvalidSelector {}
 

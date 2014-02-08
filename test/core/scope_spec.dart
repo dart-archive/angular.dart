@@ -20,6 +20,7 @@ main() {
     describe(r'$root', () {
       it(r'should point to itself', inject((Scope $rootScope) {
         expect($rootScope.$root).toEqual($rootScope);
+        expect($rootScope.$root).toEqual($rootScope);
         expect($rootScope.$root).toBeTruthy();
       }));
 
@@ -100,6 +101,22 @@ main() {
         expect(digestedValue).toEqual(0);
         zone.run(() {
           $rootScope.$skipAutoDigest();
+        });
+        expect(digestedValue).toEqual(0);
+        zone.run(noop);
+        expect(digestedValue).toEqual(1);
+      }));
+
+      it(r'should skip auto digest if requested on any scope', inject((Scope $rootScope) {
+        var scope = $rootScope.$new();
+        var digestedValue = 0;
+        scope.a = 1;
+        scope.$watch('a', (newValue, oldValue, _this) {
+          digestedValue = newValue;
+        });
+        expect(digestedValue).toEqual(0);
+        zone.run(() {
+          scope.$skipAutoDigest();
         });
         expect(digestedValue).toEqual(0);
         zone.run(noop);
@@ -327,6 +344,22 @@ main() {
       }));
 
 
+      it(r'should prevent infinite digest and should log firing expressions', inject((Scope $rootScope) {
+        $rootScope['a'] = 0;
+        $rootScope['b'] = 0;
+        $rootScope.$watch('a = a + 1');
+        $rootScope.$watch('b = b + 1');
+
+        expect(() {
+          $rootScope.$digest();
+        }).toThrow('Watchers fired in the last 3 iterations: ['
+              '["a = a + 1","b = b + 1"],'
+              '["a = a + 1","b = b + 1"],'
+              '["a = a + 1","b = b + 1"]'
+            ']');
+      }));
+
+
       it(r'should always call the watchr with newVal and oldVal equal on the first run',
           inject((Scope $rootScope) {
         var log = [];
@@ -544,8 +577,8 @@ main() {
       it(r'should allow passing locals to the expression', inject((Scope $rootScope) {
         expect($rootScope.$eval('a+1', {"a": 2})).toBe(3);
 
-        $rootScope.$eval((scope, locals) {
-          scope.c = locals['b'] + 4;
+        $rootScope.$eval((scope) {
+          scope['c'] = scope['b'] + 4;
         }, {"b": 3});
         expect($rootScope.c).toBe(7);
       }));
@@ -1027,6 +1060,26 @@ main() {
       });
 
 
+      it('should watch iterable properties', () {
+        $rootScope.obj = _toJsonableIterable([]);
+        $rootScope.$digest();
+        expect(log).toEqual(['[]']);
+
+        $rootScope.obj = _toJsonableIterable(['a']);
+        $rootScope.$digest();
+        expect(log).toEqual(['[]', '["a"]']);
+
+        $rootScope.obj = _toJsonableIterable(['b']);
+        $rootScope.$digest();
+        expect(log).toEqual(['[]', '["a"]', '["b"]']);
+
+        $rootScope.obj = _toJsonableIterable(['b', [], {}]);
+        log = [];
+        $rootScope.$digest();
+        expect(log).toEqual(['["b",[],{}]']);
+      });
+
+
       describe('objects', () {
         it('should trigger when property changes into object', () {
           $rootScope.obj = 'test';
@@ -1182,5 +1235,143 @@ main() {
         expect(log.result()).toEqual('a; b; c; fire:c; a; b; fire:b; c; a');
       });
     });
+
+    describe('ScopeLocals', () {
+      var scope;
+
+      beforeEach(inject((Scope _scope) => scope = _scope));
+
+      it('should read from locals', () {
+        scope['a'] = 'XXX';
+        scope['c'] = 'C';
+        var scopeLocal = new ScopeLocals(scope, {'a': 'A', 'b': 'B'});
+        expect(scopeLocal['a']).toEqual('A');
+        expect(scopeLocal['b']).toEqual('B');
+        expect(scopeLocal['c']).toEqual('C');
+      });
+
+      it('should write to Scope', () {
+        scope['a'] = 'XXX';
+        scope['c'] = 'C';
+        var scopeLocal = new ScopeLocals(scope, {'a': 'A', 'b': 'B'});
+
+        scopeLocal['a'] = 'aW';
+        scopeLocal['b'] = 'bW';
+        scopeLocal['c'] = 'cW';
+
+        expect(scope['a']).toEqual('aW');
+        expect(scope['b']).toEqual('bW');
+        expect(scope['c']).toEqual('cW');
+
+        expect(scopeLocal['a']).toEqual('A');
+        expect(scopeLocal['b']).toEqual('B');
+        expect(scopeLocal['c']).toEqual('cW');
+      });
+    });
+
+    describe('filters', () {
+
+      it('should use filters from correct scope when digesting scope trees', inject((Scope rootScope, Injector injector) {
+        var withFilterOne = injector.createChild([new Module()..type(FilterOne)],
+            forceNewInstances: [FilterMap]).get(FilterMap);
+        var withFilterTwo = injector.createChild([new Module()..type(FilterTwo)],
+            forceNewInstances: [FilterMap]).get(FilterMap);
+
+        var childScopeOne = rootScope.$new(filters: withFilterOne);
+        var childScopeTwo = rootScope.$new(filters: withFilterTwo);
+
+        var valueOne;
+        var valueTwo;
+        childScopeOne.$watch('"str" | newFilter', (val) => valueOne = val);
+        childScopeTwo.$watch('"str" | newFilter', (val) => valueTwo = val);
+
+        rootScope.$digest();
+
+        expect(valueOne).toEqual('str 1');
+        expect(valueTwo).toEqual('str 2');
+      }));
+
+    });
   });
+}
+
+_toJsonableIterable(Iterable source) => new _JsonableIterableWrapper(source);
+
+class _JsonableIterableWrapper<T> implements Iterable<T> {
+  final Iterable<T> source;
+
+  _JsonableIterableWrapper(this.source);
+
+  bool any(bool test(T element)) => source.any(test);
+
+  bool contains(Object element) => source.contains(element);
+
+  T elementAt(int index) => source.elementAt(index);
+
+  bool every(bool test(T element)) => source.every(test);
+
+  Iterable expand(Iterable f(T element)) => source.expand(f);
+
+  T get first => source.first;
+
+  T firstWhere(bool test(T element), {T orElse()}) =>
+      source.firstWhere(test, orElse: orElse);
+
+  fold(initialValue, combine(previousValue, T element)) =>
+      source.fold(initialValue, combine);
+
+  void forEach(void f(T element)) => source.forEach(f);
+
+  bool get isEmpty => source.isEmpty;
+
+  bool get isNotEmpty => source.isNotEmpty;
+
+  Iterator<T> get iterator => source.iterator;
+
+  String join([String separator = ""]) => source.join(separator);
+
+  T get last => source.last;
+
+  T lastWhere(bool test(T element), {T orElse()}) =>
+      source.lastWhere(test, orElse: orElse);
+
+  int get length => source.length;
+
+  Iterable map(f(T element)) => source.map(f);
+
+  T reduce(T combine(T value, T element)) => source.reduce(combine);
+
+  T get single => source.single;
+
+  T singleWhere(bool test(T element)) => source.singleWhere(test);
+
+  Iterable<T> skip(int n) => source.skip(n);
+
+  Iterable<T> skipWhile(bool test(T value)) => source.skipWhile(test);
+
+  Iterable<T> take(int n) => source.take(n);
+
+  Iterable<T> takeWhile(bool test(T value)) => source.takeWhile(test);
+
+  List<T> toList({bool growable: true}) => source.toList(growable: growable);
+
+  Set<T> toSet() => source.toSet();
+
+  Iterable<T> where(bool test(T element)) => source.where(test);
+
+  toJson() => source.toList();
+}
+
+@NgFilter(name:'newFilter')
+class FilterOne {
+  call(String str) {
+    return '$str 1';
+  }
+}
+
+@NgFilter(name:'newFilter')
+class FilterTwo {
+  call(String str) {
+    return '$str 2';
+  }
 }

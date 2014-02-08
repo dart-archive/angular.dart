@@ -2,7 +2,7 @@ library angular.source_crawler_impl;
 
 import 'dart:io';
 import 'package:analyzer/analyzer.dart';
-import 'source_crawler.dart';
+import 'package:angular/tools/source_crawler.dart';
 
 const String PACKAGE_PREFIX = 'package:';
 
@@ -31,7 +31,10 @@ class SourceCrawlerImpl implements SourceCrawler {
     while (toVisit.isNotEmpty) {
       var currentFile = toVisit.removeAt(0);
       visited.add(currentFile);
-      var currentDir = new File(currentFile).parent.path;
+      var file = new File(currentFile);
+      // Possible source file doesn't exist. For example if it is generated.
+      if (!file.existsSync()) continue;
+      var currentDir = file.parent.path;
       CompilationUnit cu = parseDartFile(currentFile);
       processImports(cu, currentDir, currentFile, visited, toVisit);
       visitor(cu);

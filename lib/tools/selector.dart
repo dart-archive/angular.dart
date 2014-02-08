@@ -11,7 +11,7 @@ class ContainsSelector {
   }
 }
 
-RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-]+)(?:=([^\]]*))?\]))');
+RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-\*]+)(?:=([^\]]*))?\]))');
 RegExp _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([\w\-]+)(?:\=(.*))?\]$');
 RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
 RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
@@ -101,24 +101,22 @@ bool matchesNode(Node node, String selector) {
           stillGood = false;
         }
       } else if (part.attrName != null) {
-        if (part.attrValue == '' ?
-              node.attributes[part.attrName] == null :
-              node.attributes[part.attrName] != part.attrValue) {
+        String matchingKey = _matchingKey(node.attributes.keys, part.attrName);
+        if (matchingKey == null || part.attrValue == '' ?
+              node.attributes[matchingKey] == null :
+              node.attributes[matchingKey] != part.attrValue) {
           stillGood = false;
         }
       }
     });
 
     return stillGood;
-  } else {
-    throw new ArgumentError('Unsupported Selector: $selector');
-  }
-
-  switch(node.nodeType) {
-    case 1: // Element
-      break;
-    case 3: // Text Node
-      break;
-  }
-  return false;
+  } 
+    
+  throw new ArgumentError('Unsupported Selector: $selector');
 }
+
+String _matchingKey(Iterable keys, String attrName) =>
+    keys.firstWhere(
+        (key) => new RegExp('^${attrName.replaceAll('*', r'[\w\-]+')}\$').hasMatch(key.toString()),
+        orElse: () => null);

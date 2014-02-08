@@ -26,7 +26,7 @@ part of angular.core;
 class NgFilter {
   final String name;
 
-  const NgFilter({String this.name});
+  const NgFilter({this.name});
 
   int get hashCode => name.hashCode;
   bool operator==(other) => this.name == other.name;
@@ -37,11 +37,12 @@ class NgFilter {
 /**
  * Registry of filters at runtime.
  */
+@NgInjectableService()
 class FilterMap extends AnnotationMap<NgFilter> {
   Injector _injector;
-  FilterMap(Injector injector, MetadataExtractor extractMetadata) : super(injector, extractMetadata) {
-    this._injector = injector;
-  }
+  FilterMap(Injector injector, MetadataExtractor extractMetadata) :
+    this._injector = injector,
+    super(injector, extractMetadata);
 
   call(String name) {
     var filter = new NgFilter(name:name);

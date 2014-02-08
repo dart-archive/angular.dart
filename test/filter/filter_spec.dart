@@ -1,27 +1,27 @@
 library filter_spec;
 
-import 'dart:mirrors';
-import 'dart:collection';
 import '../_specs.dart';
 
 // Helper to simulate some real objects.  Purposefully doesn't implement Map.
 class DynamicObject {
-  Map<String, dynamic> __map__;
-  DynamicObject([Map init]): __map__ = (init == null) ? {} : init;
-  toString() => Maps.mapToString(__map__);
+  final Map<Symbol, dynamic> _map = {};
+  DynamicObject([Map init]) {
+    init.forEach((key, value) => _map[new Symbol(key)] = value);
+  }
+  toString() => "$_map";
   operator ==(DynamicObject other) {
-    return (__map__.length == other.__map__.length &&
-            __map__.keys.toSet().difference(other.__map__.keys.toSet()).length == 0 &&
-            __map__.keys.every((key) => __map__[key] == other.__map__[key]));
+    return (_map.length == other._map.length &&
+            _map.keys.toSet().difference(other._map.keys.toSet()).length == 0 &&
+            _map.keys.every((key) => _map[key] == other._map[key]));
   }
   noSuchMethod(Invocation invocation) {
-    String name = MirrorSystem.getName(invocation.memberName);
+    Symbol name = invocation.memberName;
     if (invocation.isGetter) {
-      return __map__[name];
+      return _map[name];
     } else if (invocation.isSetter) {
-      return __map__[name.substring(0, name.length - 1)] = invocation.positionalArguments[0];
+      return _map[name] = invocation.positionalArguments[0];
     } else if (invocation.isMethod) {
-      return (reflect(__map__[name]) as ClosureMirror).apply(
+      return Function.apply(_map[name],
           invocation.positionalArguments, invocation.namedArguments);
     } else {
       throw "DynamicObject: Unexpected invocation.";
