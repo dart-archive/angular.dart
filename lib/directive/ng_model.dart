@@ -130,7 +130,7 @@ class InputCheckboxDirective {
 /**
  * Usage:
  *
- *     <input type="text|number|url|password|email" ng-model="myModel">
+ *     <input type="text|url|password|email" ng-model="myModel">
  *     <textarea ng-model="myModel"></textarea>
  *
  * This creates a two-way binding between any string-based input element
@@ -145,7 +145,6 @@ class InputCheckboxDirective {
 @NgDirective(selector: 'input[type=password][ng-model]')
 @NgDirective(selector: 'input[type=url][ng-model]')
 @NgDirective(selector: 'input[type=email][ng-model]')
-@NgDirective(selector: 'input[type=number][ng-model]')
 @NgDirective(selector: 'input[type=search][ng-model]')
 class InputTextLikeDirective {
   final dom.Element inputElement;
@@ -177,6 +176,44 @@ class InputTextLikeDirective {
 
   processValue() {
     var value = typedValue;
+    if (value != ngModel.viewValue) {
+      ngModel.dirty = true;
+      scope.$apply(() => ngModel.viewValue = value);
+    }
+    ngModel.validate();
+  }
+}
+
+/**
+ * Usage:
+ *
+ *     <input type="number|range" ng-model="myModel">
+ *
+ * This creates a two-way binding between a number-based input element
+ * so long as the ng-model attribute is present on the input element. Whenever
+ * the value of the input element changes then the matching model property on the
+ * scope will be updated as well as the other way around (when the scope property
+ * is updated).
+ *
+ */
+@NgDirective(selector: 'input[type=number][ng-model]')
+@NgDirective(selector: 'input[type=range][ng-model]')
+class InputNumberLikeDirective {
+  final dom.InputElement inputElement;
+  final NgModel ngModel;
+  final Scope scope;
+
+  InputNumberLikeDirective(dom.Element this.inputElement, this.ngModel, this.scope) {
+    ngModel.render = (value) {
+      inputElement.value = value == null ? '' : value.toString();
+    };
+    inputElement
+        ..onChange.listen(relaxFnArgs(processValue))
+        ..onInput.listen(relaxFnArgs(processValue));
+  }
+
+  processValue() {
+    var value = num.parse(inputElement.value, (_) => null);
     if (value != ngModel.viewValue) {
       ngModel.dirty = true;
       scope.$apply(() => ngModel.viewValue = value);

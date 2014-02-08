@@ -59,12 +59,12 @@ describe('ng-model', () {
 
       inputElement.value = '12';
       _.triggerEvent(inputElement, 'change');
-      expect(_.rootScope.model).toEqual('12');
+      expect(_.rootScope.model).toEqual(12);
 
       inputElement.value = '14';
-      var input = probe.directive(InputTextLikeDirective);
+      var input = probe.directive(InputNumberLikeDirective);
       input.processValue();
-      expect(_.rootScope.model).toEqual('14');
+      expect(_.rootScope.model).toEqual(14);
     }));
 
     it('should update input type=number to blank when model is null', inject(() {
@@ -75,7 +75,7 @@ describe('ng-model', () {
 
       inputElement.value = '12';
       _.triggerEvent(inputElement, 'change');
-      expect(_.rootScope.model).toEqual('12');
+      expect(_.rootScope.model).toEqual(12);
 
       _.rootScope.model = null;
       _.rootScope.$apply();
@@ -107,6 +107,87 @@ describe('ng-model', () {
       expect(element.selectionStart).toEqual(3);
       expect(element.selectionEnd).toEqual(3);
     }));
+  });
+
+  describe('type="number" like', () {
+    it('should update input value from model', inject(() {
+      _.compile('<input type="number" ng-model="model">');
+      _.rootScope.$digest();
+
+      _.rootScope.$apply('model = 42');
+      expect((_.rootElement as dom.InputElement).value).toEqual('42');
+    }));
+
+    it('should update input value from model for range inputs', inject(() {
+      _.compile('<input type="range" ng-model="model">');
+      _.rootScope.$digest();
+
+      _.rootScope.$apply('model = 42');
+      expect((_.rootElement as dom.InputElement).value).toEqual('42');
+    }));
+
+    it('should update model from the input value', inject(() {
+      _.compile('<input type="number" ng-model="model" probe="p">');
+      Probe probe = _.rootScope.p;
+      var ngModel = probe.directive(NgModel);
+      InputElement inputElement = probe.element;
+
+      inputElement.value = '42';
+      _.triggerEvent(inputElement, 'change');
+      expect(_.rootScope.model).toEqual(42);
+
+      inputElement.value = '43';
+      var input = probe.directive(InputNumberLikeDirective);
+      input.processValue();
+      expect(_.rootScope.model).toEqual(43);
+    }));
+
+    it('should update model to null from a blank input value', inject(() {
+      _.compile('<input type="number" ng-model="model" probe="p">');
+      Probe probe = _.rootScope.p;
+      var ngModel = probe.directive(NgModel);
+      InputElement inputElement = probe.element;
+
+      inputElement.value = '';
+      _.triggerEvent(inputElement, 'change');
+      expect(_.rootScope.model).toBeNull();
+    }));
+
+    it('should update model from the input value for range inputs', inject(() {
+      _.compile('<input type="range" ng-model="model" probe="p">');
+      Probe probe = _.rootScope.p;
+      var ngModel = probe.directive(NgModel);
+      InputElement inputElement = probe.element;
+
+      inputElement.value = '42';
+      _.triggerEvent(inputElement, 'change');
+      expect(_.rootScope.model).toEqual(42);
+
+      inputElement.value = '43';
+      var input = probe.directive(InputNumberLikeDirective);
+      input.processValue();
+      expect(_.rootScope.model).toEqual(43);
+    }));
+
+    it('should update model to a native default value from a blank range input value', inject(() {
+      _.compile('<input type="range" ng-model="model" probe="p">');
+      Probe probe = _.rootScope.p;
+      var ngModel = probe.directive(NgModel);
+      InputElement inputElement = probe.element;
+
+      inputElement.value = '';
+      _.triggerEvent(inputElement, 'change');
+      expect(_.rootScope.model).toBeDefined();
+    }));
+
+    it('should render null as blank', inject(() {
+      _.compile('<input type="number" ng-model="model">');
+      _.rootScope.$digest();
+
+      _.rootScope.$apply('model = null');
+      expect((_.rootElement as dom.InputElement).value).toEqual('');
+    }));
+
   });
 
   describe('type="password"', () {
