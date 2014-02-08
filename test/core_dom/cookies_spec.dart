@@ -210,6 +210,7 @@ main() => describe('cookies', () {
       expect(cookies.all).toEqual({'existingCookie':'existingValue'});
     });
   });
+
   describe('cookies service', () {
     var cookiesService;
     beforeEach(inject((Cookies iCookies) {
@@ -232,6 +233,7 @@ main() => describe('cookies', () {
         expect(document.cookie).toContain("oatmealCookie=stale");
       });
     });
+
     it('should remove cookie', () {
       cookiesService.remove("oatmealCookie");
       expect(document.cookie).not.toContain("oatmealCookie");
