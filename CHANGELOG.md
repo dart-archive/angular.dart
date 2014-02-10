@@ -1,3 +1,66 @@
+<a name="v0.9.7"></a>
+# v0.9.7 elephant-hydration (2014-02-10)
+
+
+## Bug Fixes
+
+- **MetadataExtractor:** ignore typedefs
+  ([37f1c321](https://github.com/angular/angular.dart/commit/37f1c32118383b250ba2db6f21adf1737beb2b0a),
+   [#524](https://github.com/angular/angular.dart/issues/524))
+- **NgAttrMustacheDirective:** support parsing of multiline attribute values
+  ([a37e1576](https://github.com/angular/angular.dart/commit/a37e15761b5bbad2f32308ccd0f765bd977fb0ca))
+- **NgComponent:**
+  - Handle errors while loading CSS
+  ([b5aa130f](https://github.com/angular/angular.dart/commit/b5aa130f68c589e2e4a8c6fad1dbd69078608be1),
+   [#411](https://github.com/angular/angular.dart/issues/411))
+  - Drop cssUrls, leaving cssUrl only
+  ([92ed26fb](https://github.com/angular/angular.dart/commit/92ed26fb1a00a239c164428979a2f53226ae4b2c))
+- **eval access:** Do not crash on null cached value
+  ([bbcbd3e7](https://github.com/angular/angular.dart/commit/bbcbd3e70f289c1fcc232a38ac89038f83342d3c),
+   [#424](https://github.com/angular/angular.dart/issues/424))
+- **forms:** ensure fields, fieldsets & forms are marked as dirty when modified
+  ([ad60d55a](https://github.com/angular/angular.dart/commit/ad60d55a2f8cdd6c7f0a246efdc79a5af85a833e))
+- **generator:**
+  - write files in sorted order for predictable tests
+  ([79b7525a](https://github.com/angular/angular.dart/commit/79b7525a790ce73a50c2874e2f43110fbce61d16))
+  - Write URI in sorted order to prevent SHA churn
+  ([217839ef](https://github.com/angular/angular.dart/commit/217839ef3495506313a226681a6c10a52e71df0f))
+- **input:** treat <input> with no type as type="text"
+  ([8f0a8a7f](https://github.com/angular/angular.dart/commit/8f0a8a7fe87517a65b2c5ed2857c90ea87898a0b))
+- **ng-class:** array syntax should not insert nulls
+  ([b982e326](https://github.com/angular/angular.dart/commit/b982e326cd7d3fbd4e53fbe7b65ba9adc0f5cf64),
+   [#513](https://github.com/angular/angular.dart/issues/513))
+- **ngModel:** evaluate user input using onInput instead of onKeyDown
+  ([64442974](https://github.com/angular/angular.dart/commit/64442974157211b49bad6f28182a15aedd652efd))
+- **parser:**
+  - disallow filters in a chain and inside expressions
+  ([5bcea649](https://github.com/angular/angular.dart/commit/5bcea6492f6d0fd39ba316fa3b241c50bb94de8d))
+  - Correctly distinguish NoSuchMethodError
+  ([bde52abe](https://github.com/angular/angular.dart/commit/bde52abebd026d0226b90bd84380a24d7a8eab4e))
+- **scope:** use correct filters when digesting scope tree
+  ([95f6503f](https://github.com/angular/angular.dart/commit/95f6503f1390159eeedfe6d14ea60ec0d70b9381))
+- **select:** Corrected NPE if select multiple nested in ng-if
+  ([6228692b](https://github.com/angular/angular.dart/commit/6228692bbf0cc269999cb3cb77374bb815120a4b),
+   [#428](https://github.com/angular/angular.dart/issues/428))
+- **selector:** Allow two directives with the same selector
+  ([467b935e](https://github.com/angular/angular.dart/commit/467b935ee93a87913cfc8a025973ffd00e31bf2d),
+   [#471](https://github.com/angular/angular.dart/issues/471), [#481](https://github.com/angular/angular.dart/issues/481))
+
+
+## Features
+
+- **forms:** add a test for input type="search"
+  ([87a60d1f](https://github.com/angular/angular.dart/commit/87a60d1f43b8a4f4e7e31ca179e9de8cd2d94ce9))
+- **ngRepeat:** add track by support
+  ([07566457](https://github.com/angular/angular.dart/commit/07566457720c1fc9631808432a2cb39c2edeccb8),
+   [#277](https://github.com/angular/angular.dart/issues/277), [#507](https://github.com/angular/angular.dart/issues/507))
+- **routing:** new DSL and deferred module loading
+  ([3db9ddd3](https://github.com/angular/angular.dart/commit/3db9ddd3d2ab9aa97dfe2d0bdd5631190f6c6a56))
+- **sanitization:** make NodeValidator injectable
+  ([47ab48ad](https://github.com/angular/angular.dart/commit/47ab48adf5cbcba6e7a2c8607b1ce1be29014a83),
+   [#490](https://github.com/angular/angular.dart/issues/490), [#498](https://github.com/angular/angular.dart/issues/498))
+
+
 <a name="v0.9.6"></a>
 # v0.9.6 fluffy-freezray (2014-02-03)
 
