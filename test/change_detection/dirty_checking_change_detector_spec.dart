@@ -242,6 +242,16 @@ main() => describe('DirtyCheckingChangeDetector', () {
           removals: []));
     });
 
+    it('should test string by value rather than by reference', () {
+      var list = ['a', 'boo'];
+      var record = detector.watch(list, null, 'handler');
+      detector.collectChanges();
+
+      list[1] = 'b' + 'oo';
+
+      expect(detector.collectChanges()).toEqual(null);
+    });
+
     it('should remove and add same item', () {
       var list = ['a', 'b', 'c'];
       var record = detector.watch(list, null, 'handler');

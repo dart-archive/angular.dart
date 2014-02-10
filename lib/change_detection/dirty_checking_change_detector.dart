@@ -488,7 +488,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     _truncate(lastOldSeqRecord, oldSeqRecord);
     return isDirty;
   }
-  
+
   void _reset() {
     var record = _changesHead;
     while (record != null) {
@@ -577,7 +577,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
       _removalsTail = record;
     }
   }
-  
+
   void _removeFromSeq(KeyValueRecord prev, KeyValueRecord record) {
     KeyValueRecord next = record._nextKeyValue;
     if (prev == null) _mapHead = next; else prev._nextKeyValue = next;
@@ -678,7 +678,7 @@ class _CollectionChangeRecord<K, V> implements CollectionChangeRecord<K, V> {
   }
 
   void forEachMove(void f(MovedItem<K, V> change)) {
-    ItemRecord record = _changesHead;
+    ItemRecord record = _movesHead;
     while(record != null) {
       f(record);
       record = record._nextMovedRec;
@@ -782,7 +782,7 @@ class _CollectionChangeRecord<K, V> implements CollectionChangeRecord<K, V> {
   mismatch(ItemRecord record, dynamic item, int index) {
     // Guard against bogus String changes
     if (record != null && item is String && record.item is String &&
-        record == item) {
+        record.item == item) {
       // this is false change in strings we need to recover, and pretend it is
       // the same. We save the value so that next time identity will pass
       return record..item = item;
