@@ -12,7 +12,7 @@ class MyComponent
 
 @NgComponent(
     selector: 'my-component2',
-    cssUrl: [
+    cssUrl: const [
         '/test/io/test_files/cssUrls/two.css',
         '/test/io/test_files/cssUrls/three.css'])
 class MyComponent2
