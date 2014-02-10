@@ -119,8 +119,8 @@ flattenList(list, map) => list.map(map).fold([], (prev, exprs) =>
 List<DirectiveInfo> extractDirectiveInfo(List<DirectiveMetadata> metadata) {
   var sourceCrawler = new MockSourceCrawler();
   var metadataCollector = new MockDirectiveMetadataCollectingVisitor(metadata);
-  var extractor = new SourceMetadataExtractor(sourceCrawler, metadataCollector);
-  return extractor.gatherDirectiveInfo('');
+  var extractor = new SourceMetadataExtractor(metadataCollector);
+  return extractor.gatherDirectiveInfo('', sourceCrawler);
 }
 
 class MockDirectiveMetadataCollectingVisitor
