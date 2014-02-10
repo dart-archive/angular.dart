@@ -1,5 +1,5 @@
 <a name="v0.9.7"></a>
-# v0.9.7 elephant-hydration (2014-02-10)
+# v0.9.7 pachyderm-moisturization (2014-02-10)
 
 
 ## Bug Fixes
