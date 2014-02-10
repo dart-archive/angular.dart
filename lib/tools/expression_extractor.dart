@@ -26,11 +26,11 @@ main(args) {
   var packageRoots =
       (args.length < 6) ? [Platform.packageRoot] : args.sublist(5);
   var sourceCrawler = new SourceCrawlerImpl(packageRoots);
-  var sourceMetadataExtractor = new SourceMetadataExtractor(sourceCrawler);
+  var sourceMetadataExtractor = new SourceMetadataExtractor();
   List<DirectiveInfo> directives =
-      sourceMetadataExtractor.gatherDirectiveInfo(args[0]);
-  var htmlExtractor = new HtmlExpressionExtractor(directives, ioService);
-  htmlExtractor.crawl(args[1]);
+      sourceMetadataExtractor.gatherDirectiveInfo(args[0], sourceCrawler);
+  var htmlExtractor = new HtmlExpressionExtractor(directives);
+  htmlExtractor.crawl(args[1], ioService);
 
   var expressions = htmlExtractor.expressions;
   expressions.add('null');

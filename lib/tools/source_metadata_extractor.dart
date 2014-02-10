@@ -20,16 +20,15 @@ const Map<String, String> _attrAnnotationsToSpec = const {
 };
 
 class SourceMetadataExtractor {
-  SourceCrawler sourceCrawler;
   DirectiveMetadataCollectingVisitor metadataVisitor;
 
-  SourceMetadataExtractor(this.sourceCrawler, [ this.metadataVisitor ]) {
+  SourceMetadataExtractor([ this.metadataVisitor ]) {
     if (metadataVisitor == null) {
       metadataVisitor = new DirectiveMetadataCollectingVisitor();
     }
   }
 
-  List<DirectiveInfo> gatherDirectiveInfo(root) {
+  List<DirectiveInfo> gatherDirectiveInfo(root, SourceCrawler sourceCrawler) {
     sourceCrawler.crawl(root, metadataVisitor);
 
     List<DirectiveInfo> directives = <DirectiveInfo>[];
