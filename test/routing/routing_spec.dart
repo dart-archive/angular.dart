@@ -144,6 +144,52 @@ main() {
       expect(router.activePath.first.name).toBe('bar');
     }));
 
+    it('should use longer path first if their prefix are the same', async(() {
+      var counters = {
+        'foo': 0,
+        'fooparam': 0,
+        'bar': 0,
+        'barparam': 0,
+      };
+      initRouter((Router router, ViewFactory views) {
+        views.configure({
+          'fooparam': ngRoute(
+              path: '/foo/:param',
+              enter: (_) => counters['fooparam']++
+          ),
+          'foo': ngRoute(
+              path: '/foo',
+              enter: (_) => counters['foo']++
+          ),
+          'bar': ngRoute(
+              path: '/bar',
+              enter: (_) => counters['bar']++
+          ),
+          'barparam': ngRoute(
+              path: '/bar/:param',
+              enter: (_) => counters['barparam']++
+          )
+        });
+      });
+
+      router.route('/foo/bar');
+      microLeap();
+      expect(counters, equals({
+        'foo': 0,
+        'fooparam': 1,
+        'bar': 0,
+        'barparam': 0,
+      }));
+
+      router.route('/bar/buz');
+      microLeap();
+      expect(counters, equals({
+        'foo': 0,
+        'fooparam': 1,
+        'bar': 0,
+        'barparam': 1,
+      }));
+    }));
 
     it('should call enter callback and show the view when routed', async(() {
       int enterCount = 0;
