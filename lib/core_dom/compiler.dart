@@ -4,10 +4,9 @@ part of angular.core.dom;
 class Compiler {
   final Profiler _perf;
   final Parser _parser;
-  final AstParser _astParser;
   final Expando _expando;
 
-  Compiler(this._perf, this._parser, this._astParser, this._expando);
+  Compiler(this._perf, this._parser, this._expando);
 
   _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,
                 List<DirectiveRef> useExistingDirectiveRefs,
@@ -171,14 +170,15 @@ class Compiler {
             );
             if (expressionFn.isAssignable) {
               scope.watch(
-                  _astParser(dstExpression, context: controller),
+                  dstExpression,
                   (outboundValue, _) {
                     if(!blockOutbound) {
                       blockInbound = true;
                       scope.rootScope.runAsync(() => blockInbound = false);
                       expressionFn.assign(scope.context, outboundValue);
                     }
-                  }
+                  },
+                  context: controller
               );
             }
           };
