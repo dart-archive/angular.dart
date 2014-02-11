@@ -82,10 +82,10 @@ describe('ng-model', () {
       expect(inputElement.value).toEqual('');
     }));
 
-    it('should write to input only if value is different', inject(() {
+    it('should write to input only if value is different', inject((Injector i) {
       var scope = _.rootScope;
       var element = new dom.InputElement();
-      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element, new NgNullForm());
+      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element, i.createChild([new Module()]));
       dom.querySelector('body').append(element);
       var input = new InputTextLikeDirective(element, model, scope);
 
@@ -147,10 +147,10 @@ describe('ng-model', () {
 
     }));
 
-    it('should write to input only if value is different', inject(() {
+    it('should write to input only if value is different', inject((Injector i) {
       var scope = _.rootScope;
       var element = new dom.InputElement();
-      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element, new NgNullForm());
+      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element, i.createChild([new Module()]));
       dom.querySelector('body').append(element);
       var input = new InputTextLikeDirective(element, model, scope);
 
@@ -209,10 +209,10 @@ describe('ng-model', () {
       expect(_.rootScope.model).toEqual('def');
     }));
 
-    it('should write to input only if value is different', inject(() {
+    it('should write to input only if value is different', inject((Injector i) {
       var scope = _.rootScope;
       var element = new dom.InputElement();
-      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element, new NgNullForm());
+      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element, i.createChild([new Module()]));
       dom.querySelector('body').append(element);
       var input = new InputTextLikeDirective(element, model, scope);
 
@@ -279,10 +279,10 @@ describe('ng-model', () {
       expect(_.rootScope.model).toEqual('def');
     }));
 
-    it('should write to input only if value is different', inject(() {
+    it('should write to input only if value is different', inject((Injector i) {
       var scope = _.rootScope;
       var element = new dom.InputElement();
-      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element, new NgNullForm());
+      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element, i.createChild([new Module()]));
       dom.querySelector('body').append(element);
       var input = new InputTextLikeDirective(element, model, scope);
 
@@ -393,10 +393,10 @@ describe('ng-model', () {
 
     // NOTE(deboer): This test passes on Dartium, but fails in the content_shell.
     // The Dart team is looking into this bug.
-    xit('should write to input only if value is different', inject(() {
+    xit('should write to input only if value is different', inject((Injector i) {
       var scope = _.rootScope;
       var element = new dom.TextAreaElement();
-      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element);
+      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element, i.createChild([new Module()]));
       dom.querySelector('body').append(element);
       var input = new InputTextLikeDirective(element, model, scope);
 
@@ -558,21 +558,18 @@ describe('ng-model', () {
       expect(element.classes.contains('ng-dirty')).toBe(false);
     }));
 
-    it('should render the parent form/fieldset as dirty', inject((Scope scope) {
+    it('should render the parent form/fieldset as dirty but not the other models', inject((Scope scope) {
       _.compile('<form name="myForm">' + 
                 '  <fieldset name="myFieldset">' + 
-                '    <input type="text" ng-model="my_model" probe="i" />' +
+                '    <input type="text" ng-model="my_model1" probe="myModel1" />' +
+                '    <input type="text" ng-model="my_model2" probe="myModel2" />' +
                 '   </fieldset>' +
                 '</form>');
 
-      Probe inputProbe = _.rootScope.i;
-      var inputElement = inputProbe.element;
-
-      NgForm form = _.rootScope.myForm;
-      var formElement = form.element;
-
-      NgForm fieldset = _.rootScope.myFieldset;
-      var fieldsetElement = fieldset.element;
+      var inputElement1    = _.rootScope.myModel1.element;
+      var inputElement2    = _.rootScope.myModel2.element;
+      var formElement      = _.rootScope.myForm.element;
+      var fieldsetElement  = _.rootScope.myFieldset.element;
 
       expect(formElement.classes.contains('ng-pristine')).toBe(true);
       expect(formElement.classes.contains('ng-dirty')).toBe(false);
@@ -580,11 +577,14 @@ describe('ng-model', () {
       expect(fieldsetElement.classes.contains('ng-pristine')).toBe(true);
       expect(fieldsetElement.classes.contains('ng-dirty')).toBe(false);
 
-      expect(inputElement.classes.contains('ng-pristine')).toBe(true);
-      expect(inputElement.classes.contains('ng-dirty')).toBe(false);
+      expect(inputElement1.classes.contains('ng-pristine')).toBe(true);
+      expect(inputElement1.classes.contains('ng-dirty')).toBe(false);
 
-      inputElement.value = '...hi...';
-      _.triggerEvent(inputElement, 'change');
+      expect(inputElement2.classes.contains('ng-pristine')).toBe(true);
+      expect(inputElement2.classes.contains('ng-dirty')).toBe(false);
+
+      inputElement1.value = '...hi...';
+      _.triggerEvent(inputElement1, 'change');
 
       expect(formElement.classes.contains('ng-pristine')).toBe(false);
       expect(formElement.classes.contains('ng-dirty')).toBe(true);
@@ -592,8 +592,11 @@ describe('ng-model', () {
       expect(fieldsetElement.classes.contains('ng-pristine')).toBe(false);
       expect(fieldsetElement.classes.contains('ng-dirty')).toBe(true);
 
-      expect(inputElement.classes.contains('ng-pristine')).toBe(false);
-      expect(inputElement.classes.contains('ng-dirty')).toBe(true);
+      expect(inputElement1.classes.contains('ng-pristine')).toBe(false);
+      expect(inputElement1.classes.contains('ng-dirty')).toBe(true);
+
+      expect(inputElement2.classes.contains('ng-pristine')).toBe(true);
+      expect(inputElement2.classes.contains('ng-dirty')).toBe(false);
     }));
   });
 
