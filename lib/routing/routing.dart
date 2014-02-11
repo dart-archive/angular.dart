@@ -18,7 +18,9 @@ class ViewFactory {
       _configure(locationService.router.root, config);
 
   _configure(Route route, Map<String, NgRouteCfg> config) {
-    config.forEach((name, cfg) {
+    (config.keys.toList()..sort((n1, n2) =>
+        (config[n2].path + '/').compareTo(config[n1].path + '/'))).forEach((name) {
+      var cfg = config[name];
       var moduledCalled = false;
       List<Module> newModules;
       route.addRoute(
