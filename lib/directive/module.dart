@@ -70,6 +70,7 @@ class NgDirectiveModule extends Module {
     value(NgStyleDirective, null);
     value(NgNonBindableDirective, null);
     value(NgTemplateDirective, null);
+    value(NgControl, new NgNullControl());
     value(NgForm, new NgNullForm());
 
     value(NgModelRequiredValidator, null);

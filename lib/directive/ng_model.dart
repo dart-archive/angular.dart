@@ -12,40 +12,27 @@ part of angular.directive;
  */
 @NgDirective(selector: '[ng-model]')
 class NgModel extends NgControl {
-  final NgForm _form;
-  final dom.Element _element;
-  final Scope _scope;
-
   BoundGetter getter = ([_]) => null;
   BoundSetter setter = (_, [__]) => null;
 
   String _exp;
-  String _name;
-
   final List<_NgModelValidator> _validators = new List<_NgModelValidator>();
-  final Map<String, bool> errors = new Map<String, bool>();
 
-  Function _removeWatch = () => null;
   bool _watchCollection;
-
+  Function _removeWatch = () => null;
   Function render = (value) => null;
 
-  NgModel(this._scope, NodeAttrs attrs, [dom.Element this._element,
-      NgForm this._form]) {
+  NgModel(Scope scope, NodeAttrs attrs, dom.Element element, Injector injector) :
+    super(scope, element, injector) {
     _exp = 'ng-model=${attrs["ng-model"]}';
     watchCollection = false;
-
-    _form.addControl(this);
-    pristine = true;
   }
-
-  get element => _element;
 
   @NgAttr('name')
   get name => _name;
   set name(value) {
     _name = value;
-    _form.addControl(this);
+    _parentControl.addControl(this);
   }
 
   get watchCollection => _watchCollection;
@@ -80,7 +67,7 @@ class NgModel extends NgControl {
    * Executes a validation on the form against each of the validation present on the model.
    */
   validate() {
-    if(validators.isNotEmpty) {
+    if (validators.isNotEmpty) {
       validators.forEach((validator) {
         setValidity(validator.name, validator.isValid());
       });
@@ -89,31 +76,8 @@ class NgModel extends NgControl {
     }
   }
 
-  /**
-   * Sets the validity status of the given errorType on the model. Depending on if
-   * valid or invalid, the matching CSS classes will be added/removed on the input
-   * element associated with the model. If any errors exist on the model then invalid
-   * will be set to true otherwise valid will be set to true.
-   *
-   * * [errorType] - The name of the error (e.g. required, url, number, etc...).
-   * * [isValid] - Whether or not the given error is valid or not (false would mean the error is real).
-   */
-  setValidity(String errorType, bool isValid) {
-    if(isValid) {
-      if(errors.containsKey(errorType)) {
-        errors.remove(errorType);
-      }
-      if(valid != true && errors.isEmpty) {
-        valid = true;
-      }
-    } else if(!errors.containsKey(errorType)) {
-      errors[errorType] = true;
-      invalid = true;
-    }
-
-    if(_form != null) {
-      _form.setValidity(this, errorType, isValid);
-    }
+  setValidity(String name, bool isValid) {
+    this.updateControlValidity(this, name, isValid);
   }
 
   /**
@@ -130,17 +94,6 @@ class NgModel extends NgControl {
   removeValidator(_NgModelValidator v) {
     validators.remove(v);
     validate();
-  }
-
-  set dirty(value) {
-    super.dirty = _form.dirty = true;
-  }
-
-  /**
-   * Removes the model from the control/form.
-   */
-  destroy() {
-    _form.removeControl(this);
   }
 }
 

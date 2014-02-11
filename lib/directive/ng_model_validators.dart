@@ -18,7 +18,7 @@ abstract class _NgModelValidator {
    * Registers the validator with to attached model.
    */
   void listen() {
-    if(!_listening) {
+    if (!_listening) {
       _listening = true;
       this.ngModel.addValidator(this);
     }
@@ -30,7 +30,7 @@ abstract class _NgModelValidator {
    * De-registers the validator with to attached model.
    */
   void unlisten() {
-    if(_listening) {
+    if (_listening) {
       _listening = false;
       this.ngModel.removeValidator(this);
     }
@@ -56,7 +56,7 @@ class NgModelRequiredValidator extends _NgModelValidator {
   NgModelRequiredValidator(dom.Element inputElement, NgModel ngModel,
                            Scope scope, NodeAttrs attrs):
     super(inputElement, ngModel, scope) {
-      if(attrs['required'] != null) required = true;
+      if (attrs['required'] != null) required = true;
     }
 
   bool isValid() {
@@ -134,7 +134,7 @@ class NgModelNumberValidator extends _NgModelValidator {
     }
 
   bool isValid() {
-    if(value != null) {
+    if (value != null) {
       try {
         num val = double.parse(value.toString());
       } catch(exception, stackTrace) {
@@ -164,7 +164,7 @@ class NgModelPatternValidator extends _NgModelValidator {
     }
 
   bool isValid() {
-    if(_pattern != null && value != null && value.length > 0) {
+    if (_pattern != null && value != null && value.length > 0) {
       return _pattern.hasMatch(ngModel.viewValue);
     }
 
@@ -175,7 +175,7 @@ class NgModelPatternValidator extends _NgModelValidator {
   @NgAttr('pattern')
   get pattern => _pattern;
   set pattern(val) {
-    if(val != null && val.length > 0) {
+    if (val != null && val.length > 0) {
       _pattern = new RegExp(val);
       listen();
     } else {
@@ -206,7 +206,7 @@ class NgModelMinLengthValidator extends _NgModelValidator {
 
   bool isValid() {
     //remember, only required validates for the input being empty
-    if(_minlength == 0 || value == null || value.length == 0) {
+    if (_minlength == 0 || value == null || value.length == 0) {
       return true;
     }
     return value.length >= _minlength;

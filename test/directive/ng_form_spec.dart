@@ -93,19 +93,19 @@ describe('form', () {
       NgModel two = form['two'];
       NgModel three = form['three'];
 
-      form.setValidity(one, "some error", false);
+      form.updateControlValidity(one, "some error", false);
       expect(form.valid).toBe(false);
       expect(form.invalid).toBe(true);
 
-      form.setValidity(two, "some error", false);
+      form.updateControlValidity(two, "some error", false);
       expect(form.valid).toBe(false);
       expect(form.invalid).toBe(true);
 
-      form.setValidity(one, "some error", true);
+      form.updateControlValidity(one, "some error", true);
       expect(form.valid).toBe(false);
       expect(form.invalid).toBe(true);
 
-      form.setValidity(two, "some error", true);
+      form.updateControlValidity(two, "some error", true);
       expect(form.valid).toBe(true);
       expect(form.invalid).toBe(false);
     }));
@@ -121,15 +121,15 @@ describe('form', () {
       var form = scope['myForm'];
       NgModel one = form['one'];
 
-      form.setValidity(one, "validation error", false);
+      form.updateControlValidity(one, "validation error", false);
       expect(form.valid).toBe(false);
       expect(form.invalid).toBe(true);
 
-      form.setValidity(one, "validation error", false);
+      form.updateControlValidity(one, "validation error", false);
       expect(form.valid).toBe(false);
       expect(form.invalid).toBe(true);
 
-      form.setValidity(one, "validation error", true);
+      form.updateControlValidity(one, "validation error", true);
       expect(form.valid).toBe(true);
       expect(form.invalid).toBe(false);
     }));
@@ -190,12 +190,12 @@ describe('form', () {
       expect(fieldset.valid).toBe(true);
       expect(form.valid).toBe(true);
 
-      form.setValidity(fieldset, "error", false);
+      form.updateControlValidity(fieldset, "error", false);
       expect(model.valid).toBe(true);
       expect(fieldset.valid).toBe(true);
       expect(form.valid).toBe(false);
 
-      fieldset.setValidity(model, "error", false);
+      fieldset.updateControlValidity(model, "error", false);
       expect(model.valid).toBe(true);
       expect(fieldset.valid).toBe(false);
       expect(form.valid).toBe(false);
