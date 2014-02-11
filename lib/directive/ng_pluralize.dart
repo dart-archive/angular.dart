@@ -92,13 +92,14 @@ class NgPluralizeDirective {
   final dom.Element element;
   final Scope scope;
   final Interpolate interpolate;
+  final AstParser parser;
   int offset;
   Map<String, String> discreteRules = new Map();
   Map<Symbol, String> categoryRules = new Map();
   static final RegExp IS_WHEN = new RegExp(r'^when-(minus-)?.');
 
   NgPluralizeDirective(this.scope, this.element, this.interpolate,
-                       NodeAttrs attributes) {
+                       NodeAttrs attributes, this.parser) {
     Map<String, String> whens = attributes['when'] == null ?
         {} :
         scope.eval(attributes['when']);
@@ -156,6 +157,8 @@ class NgPluralizeDirective {
     var interpolation = interpolate(expression, false, '\${', '}');
     interpolation.setter = (text) => element.text = text;
     interpolation.setter(expression);
-    scope.watchSet(interpolation.expressions, interpolation.call);
+    List items = interpolation.expressions.map((exp) => parser(exp)).toList();
+    AST ast = new PureFunctionAST(expression, new ArrayFn(), items);
+    scope.watch(ast, interpolation.call);
   }
 }
