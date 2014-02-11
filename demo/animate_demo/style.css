@@ -1,0 +1,105 @@
+.some-div {
+  height: 100px;
+  opacity: 1;
+}
+
+.some-div.ng-enter {
+  opacity: 0;
+  height: 0;
+  transition: all 1000ms ease;
+}
+
+.some-div.ng-enter.ng-enter-active {
+  opacity: 1;
+  height: 100px;
+}
+
+.some-div.ng-leave {
+  opacity: 1;
+  height: 100px;
+  transition: all 1000ms ease;
+}
+
+.some-div.ng-leave.ng-leave-active {
+  opacity: 0;
+  height: 0px;
+}
+
+
+
+
+.animated-box {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  width: 100px;
+  height: 100px;
+  background-color: #1080F0;
+}
+
+.animated-box.magic-add {
+  transition: margin-left 1000ms ease;
+}
+
+.animated-box.magic-remove {
+  transition: margin-left 3000ms ease;
+}
+
+.animated-box.magic-add.magic-add-active {
+  margin-left: 200px;
+}
+
+.animated-box.magic-remove.magic-remove-active {
+  margin-left: 0px;
+}
+
+.animated-box.magic {
+  margin-left: 200px;
+}
+
+.animated-host {
+  margin-top: 10px;
+  // Space for 1000 elements.
+  height: 1000px;
+  width: 625px;
+  line-height: 25px;
+}
+
+.magic-box {
+  display: block;
+  margin-right: 5px;
+  margin-top: 5px;
+  opacity: 1;
+  width: 20px;
+  height: 20px;
+  background-color: #1080F0;
+  line-height: 20px;
+  float: left;
+
+  transform: scale(1.0,1.0);
+  -webkit-transform: scale(1.0,1.0);
+}
+
+.magic-box.ng-enter {
+  transform: scale(0.0, 0.0);
+  -webkit-transform: scale(0.0,0.0);
+
+  opacity: 0;
+  transition: all 1000ms;
+}
+
+.magic-box.ng-enter-active {
+  transform: scale(1.0, 1.0);
+  -webkit-transform: scale(1.0, 1.0);
+  opacity: 1;
+}
+
+.magic-box.ng-leave {
+  transform: scale(1.0, 1.0);
+  -webkit-transform: scale(1.0, 1.0);
+  transition: all 500ms;
+}
+.magic-box.ng-leave-active {
+  transform: scale(1.1, 1.1);
+  -webkit-transform: scale(1.1, 1.1);
+  opacity: 0;
+}
