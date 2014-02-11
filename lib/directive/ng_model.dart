@@ -16,7 +16,7 @@ class NgModel extends NgControl {
   BoundSetter setter = (_, [__]) => null;
 
   String _exp;
-  final List<_NgModelValidator> _validators = new List<_NgModelValidator>();
+  final _validators = <NgValidatable>[];
 
   bool _watchCollection;
   Function _removeWatch = () => null;
@@ -69,21 +69,21 @@ class NgModel extends NgControl {
   validate() {
     if (validators.isNotEmpty) {
       validators.forEach((validator) {
-        setValidity(validator.name, validator.isValid());
+        setValidity(validator.name, validator.isValid(viewValue));
       });
     } else {
       valid = true;
     }
   }
 
-  setValidity(String name, bool isValid) {
-    this.updateControlValidity(this, name, isValid);
+  setValidity(String name, bool valid) {
+    this.updateControlValidity(this, name, valid);
   }
 
   /**
    * Registers a validator into the model to consider when running validate().
    */
-  addValidator(_NgModelValidator v) {
+  addValidator(NgValidatable v) {
     validators.add(v);
     validate();
   }
@@ -91,7 +91,7 @@ class NgModel extends NgControl {
   /**
    * De-registers a validator from the model.
    */
-  removeValidator(_NgModelValidator v) {
+  removeValidator(NgValidatable v) {
     validators.remove(v);
     validate();
   }
