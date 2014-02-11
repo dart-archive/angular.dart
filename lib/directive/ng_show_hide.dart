@@ -33,17 +33,15 @@ class NgHideDirective {
     selector: '[ng-show]',
     map: const {'ng-show': '=>show'})
 class NgShowDirective {
-  static String NG_SHOW_CLASS = 'ng-show';
-
   final dom.Element element;
 
   NgShowDirective(this.element);
 
   set show(value) {
     if (toBool(value)) {
-      element.classes.add(NG_SHOW_CLASS);
+      element.classes.remove(NgHideDirective.NG_HIDE_CLASS);
     } else {
-      element.classes.remove(NG_SHOW_CLASS);
+      element.classes.add(NgHideDirective.NG_HIDE_CLASS);
     }
   }
 }
