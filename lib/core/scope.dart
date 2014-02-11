@@ -127,15 +127,6 @@ class Scope {
   Scope(Object this.context, this.rootScope, this._parentScope, this._depth,
         this._index, this.watchGroup, this.observeGroup);
 
-  // TODO(misko): this is a hack and should be removed
-  // A better way to do this is to remove the parser from the scope.
-  Watch watchSet(List<String> exprs, Function reactionFn) {
-    var expr = '{{${exprs.join('}}?{{')}}}';
-    List items = exprs.map(rootScope._parse).toList();
-    AST ast = new PureFunctionAST(expr, new ArrayFn(), items);
-    return watchGroup.watch(ast, reactionFn);
-  }
-
   Watch watch(expression, ReactionFn reactionFn) {
     // Todo(misko): remove the parser from here. It should only take AST.
     assert(expression != null);
