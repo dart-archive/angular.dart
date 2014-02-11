@@ -68,14 +68,6 @@ class TodoController {
     serverController.init(this);
   }
 
-  // workaround for https://github.com/angular/angular.dart/issues/37
-  dynamic operator [](String key) {
-    if (key == 'newItem') {
-      return newItem;
-    }
-    return null;
-  }
-
   add() {
     if (newItem.isEmpty) return;
 
