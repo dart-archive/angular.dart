@@ -1,6 +1,12 @@
 {
   "name": "angular.dart",
-  "dependencies" : {
+  "branchVersion": "0.9.*",
+  "cdnVersion": "0.9.7",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/angular/angular.dart.git"
+  },
+  "devDependencies": {
     "karma" : "0.10.2",
     "karma-dart" : "0.2.6",
     "karma-script-launcher": "*",
@@ -9,6 +15,12 @@
     "karma-junit-reporter": "0.1.0",
     "jasmine-node": "*",
     "qq": "*"
-  }
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/angular/angular.dart/blob/master/LICENSE"
+    }
+  ],
+  "dependencies": {}
 }
-
