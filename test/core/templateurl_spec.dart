@@ -97,7 +97,7 @@ main() => describe('template url', () {
       microLeap();
 
       expect(renderedText(element)).toEqual('Simple!');
-      $rootScope.$digest();
+      $rootScope.apply();
       // Note: There is no ordering.  It is who ever comes off the wire first!
       expect(log.result()).toEqual('LOG; SIMPLE');
     })));
@@ -118,7 +118,7 @@ main() => describe('template url', () {
       microLeap();
 
       expect(renderedText(element)).toEqual('Simple!Simple!');
-      $rootScope.$digest();
+      $rootScope.apply();
       // Note: There is no ordering.  It is who ever comes off the wire first!
       expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
     })));
@@ -140,7 +140,7 @@ main() => describe('template url', () {
       expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
         '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
       );
-      $rootScope.$digest();
+      $rootScope.apply();
       // Note: There is no ordering.  It is who ever comes off the wire first!
       expect(log.result()).toEqual('LOG; SIMPLE');
     })));
@@ -226,7 +226,7 @@ main() => describe('template url', () {
       expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
         '<style>.hello{}.world{}</style><div log="SIMPLE">Simple!</div>'
       );
-      $rootScope.$digest();
+      $rootScope.apply();
       // Note: There is no ordering.  It is who ever comes off the wire first!
       expect(log.result()).toEqual('LOG; SIMPLE');
     })));

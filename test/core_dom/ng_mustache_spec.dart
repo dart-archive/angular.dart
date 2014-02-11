@@ -11,69 +11,65 @@ main() {
     }));
     beforeEach(inject((TestBed tb) => _ = tb));
 
-    it('should replace {{}} in text', inject((Compiler $compile, Scope $rootScope, Injector injector, DirectiveMap directives) {
+    it('should replace {{}} in text', inject((Compiler $compile, Scope rootScope, Injector injector, DirectiveMap directives) {
       var element = $('<div>{{name}}<span>!</span></div>');
       var template = $compile(element, directives);
 
-      $rootScope.name = 'OK';
+      rootScope.context['name'] = 'OK';
       var block = template(injector);
 
       element = $(block.elements);
 
-      expect(element.text()).toEqual('!');
-      $rootScope.$digest();
+      rootScope.apply();
       expect(element.text()).toEqual('OK!');
     }));
 
 
     it('should allow listening on text change events', inject((Logger logger) {
       _.compile('<div listener>{{text}}</div>');
-      _.rootScope.text = 'works';
-      _.rootScope.$apply();
+      _.rootScope.context['text'] = 'works';
+      _.rootScope.apply();
       expect(_.rootElement.text).toEqual('works');
-      expect(logger).toEqual(['', 'works']);
+      expect(logger).toEqual(['works']);
     }));
 
 
-    it('should replace {{}} in attribute', inject((Compiler $compile, Scope $rootScope, Injector injector, DirectiveMap directives) {
+    it('should replace {{}} in attribute', inject((Compiler $compile, Scope rootScope, Injector injector, DirectiveMap directives) {
       var element = $('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
       var template = $compile(element, directives);
 
-      $rootScope.name = 'OK';
-      $rootScope.age = 23;
+      rootScope.context['name'] = 'OK';
+      rootScope.context['age'] = 23;
       var block = template(injector);
 
       element = $(block.elements);
 
-      expect(element.attr('some-attr')).toEqual('');
-      expect(element.attr('other-attr')).toEqual('');
-      $rootScope.$digest();
+      rootScope.apply();
       expect(element.attr('some-attr')).toEqual('OK');
       expect(element.attr('other-attr')).toEqual('23');
     }));
 
 
-    it('should allow newlines in attribute', inject((Compiler $compile, Scope $rootScope, Injector injector, DirectiveMap directives) {
+    it('should allow newlines in attribute', inject((Compiler $compile, RootScope rootScope, Injector injector, DirectiveMap directives) {
       var element = $('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
       var template = $compile(element, directives);
 
-      $rootScope.line1 = 'L1';
-      $rootScope.line2 = 'L2';
+      rootScope.context['line1'] = 'L1';
+      rootScope.context['line2'] = 'L2';
       var block = template(injector);
 
       element = $(block.elements);
 
-      expect(element.attr('multiline-attr')).toEqual('');
-      $rootScope.$digest();
+      rootScope.apply();
       expect(element.attr('multiline-attr')).toEqual('line1: L1\nline2: L2');
     }));
 
 
-    it('should handle filters', inject((Compiler $compile, Scope $rootScope, Injector injector, DirectiveMap directives) {
+    it('should handle filters', inject((Compiler $compile, RootScope rootScope, Injector injector, DirectiveMap directives) {
       var element = $('<div>{{"World" | hello}}</div>');
       var template = $compile(element, directives);
       var block = template(injector);
-      $rootScope.$digest();
+      rootScope.apply();
 
       element = $(block.elements);
 
@@ -91,13 +87,13 @@ main() {
 
       expect(element).not.toHaveClass('ng-show');
 
-      _.rootScope.$apply(() {
-        _.rootScope['isVisible'] = true;
+      _.rootScope.apply(() {
+        _.rootScope.context['isVisible'] = true;
       });
       expect(element).toHaveClass('ng-show');
 
-      _.rootScope.$apply(() {
-        _.rootScope['isVisible'] = false;
+      _.rootScope.apply(() {
+        _.rootScope.context['isVisible'] = false;
       });
       expect(element).not.toHaveClass('ng-show');
     });
@@ -108,14 +104,14 @@ main() {
       expect(element).not.toHaveClass('active');
       expect(element).not.toHaveClass('ng-show');
 
-      _.rootScope.$apply(() {
-        _.rootScope['currentCls'] = 'active';
+      _.rootScope.apply(() {
+        _.rootScope.context['currentCls'] = 'active';
       });
       expect(element).toHaveClass('active');
       expect(element).not.toHaveClass('ng-show');
 
-      _.rootScope.$apply(() {
-        _.rootScope['isVisible'] = true;
+      _.rootScope.apply(() {
+        _.rootScope.context['isVisible'] = true;
       });
       expect(element).toHaveClass('active');
       expect(element).toHaveClass('ng-show');

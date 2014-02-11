@@ -4,9 +4,10 @@ part of angular.core.dom;
 class Compiler {
   final Profiler _perf;
   final Parser _parser;
+  final AstParser _astParser;
   final Expando _expando;
 
-  Compiler(this._perf, this._parser, this._expando);
+  Compiler(this._perf, this._parser, this._astParser, this._expando);
 
   _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,
                 List<DirectiveRef> useExistingDirectiveRefs,
@@ -139,68 +140,75 @@ class Compiler {
       var mode = match[1];
       var dstPath = match[2];
 
-      Expression dstPathFn = _parser(dstPath.isEmpty ? attrName : dstPath);
+      String dstExpression = dstPath.isEmpty ? attrName : dstPath;
+      Expression dstPathFn = _parser(dstExpression);
       if (!dstPathFn.isAssignable) {
         throw "Expression '$dstPath' is not assignable in mapping '$mapping' for attribute '$attrName'.";
       }
       ApplyMapping mappingFn;
       switch (mode) {
         case '@':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
-            attrs.observe(attrName, (value) => dstPathFn.assign(dst, value));
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller) {
+            attrs.observe(attrName, (value) => dstPathFn.assign(controller, value));
           };
           break;
         case '<=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller) {
             if (attrs[attrName] == null) return;
-            Expression attrExprFn = _parser(attrs[attrName]);
-            var shadowValue = null;
-            scope.$watch(
-                    () => attrExprFn.eval(scope),
-                    (v) => dstPathFn.assign(dst, shadowValue = v),
-                attrs[attrName]);
-            if (attrExprFn.isAssignable) {
-              scope.$watch(
-                      () => dstPathFn.eval(dst),
-                      (v) {
-                    if (shadowValue != v) {
-                      shadowValue = v;
-                      attrExprFn.assign(scope, v);
+            String expression = attrs[attrName];
+            Expression expressionFn = _parser(expression);
+            var blockOutbound = false;
+            var blockInbound = false;
+            scope.watch(
+                expression,
+                (inboundValue, _) {
+                  if (!blockInbound) {
+                    blockOutbound = true;
+                    scope.rootScope.runAsync(() => blockOutbound = false);
+                    return dstPathFn.assign(controller, inboundValue);
+                  }
+                }
+            );
+            if (expressionFn.isAssignable) {
+              scope.watch(
+                  _astParser(dstExpression, context: controller),
+                  (outboundValue, _) {
+                    if(!blockOutbound) {
+                      blockInbound = true;
+                      scope.rootScope.runAsync(() => blockInbound = false);
+                      expressionFn.assign(scope.context, outboundValue);
                     }
-                  },
-                  dstPath);
+                  }
+              );
             }
           };
           break;
         case '=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller) {
             if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
-            scope.$watch(
-                    () => attrExprFn.eval(scope),
-                    (v) => dstPathFn.assign(dst, shadowValue = v),
-                    attrs[attrName]);
+            scope.watch(attrs[attrName],
+                    (v, _) => dstPathFn.assign(controller, shadowValue = v));
           };
           break;
         case '=>!':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller) {
             if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
-            var stopWatching;
-            stopWatching = scope.$watch(
-                () => attrExprFn.eval(scope),
-                (value) {
-                  if (dstPathFn.assign(dst, value) != null) {
-                    stopWatching();
+            var watch;
+            watch = scope.watch(
+                attrs[attrName],
+                (value, _) {
+                  if (dstPathFn.assign(controller, value) != null) {
+                    watch.remove();
                   }
-                },
-                attrs[attrName]);
+                });
           };
           break;
         case '&':
           mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
-            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope, ScopeLocals.wrapper));
+            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope.context, ScopeLocals.wrapper));
           };
           break;
       }

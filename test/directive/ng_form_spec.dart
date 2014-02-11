@@ -11,14 +11,14 @@ describe('form', () {
   it('should set the name of the form and attach it to the scope', inject((Scope scope) {
     var element = $('<form name="myForm"></form>');
 
-    expect(scope['myForm']).toBeNull();
+    expect(scope.context['myForm']).toBeNull();
 
     _.compile(element);
-    scope.$apply();
+    scope.apply();
 
-    expect(scope['myForm']).toBeDefined();
+    expect(scope.context['myForm']).toBeDefined();
 
-    var form = scope['myForm'];
+    var form = scope.context['myForm'];
     expect(form.name).toEqual('myForm');
   }));
 
@@ -27,9 +27,9 @@ describe('form', () {
       var element = $('<form name="myForm"></form>');
 
       _.compile(element);
-      scope.$apply();
+      scope.apply();
 
-      var form = scope['myForm'];
+      var form = scope.context['myForm'];
       expect(form.pristine).toEqual(true);
       expect(form.dirty).toEqual(false);
     }));
@@ -38,9 +38,9 @@ describe('form', () {
       var element = $('<form name="myForm"></form>');
 
       _.compile(element);
-      scope.$apply();
+      scope.apply();
 
-      var form = scope['myForm'];
+      var form = scope.context['myForm'];
 
       form.dirty = true;
       expect(form.pristine).toEqual(false);
@@ -61,9 +61,9 @@ describe('form', () {
       var element = $('<form name="myForm"></form>');
 
       _.compile(element);
-      scope.$apply();
+      scope.apply();
 
-      var form = scope['myForm'];
+      var form = scope.context['myForm'];
 
       form.invalid = true;
       expect(form.valid).toEqual(false);
@@ -86,9 +86,9 @@ describe('form', () {
                       '</form>');
 
       _.compile(element);
-      scope.$apply();
+      scope.apply();
 
-      var form = scope['myForm'];
+      var form = scope.context['myForm'];
       NgModel one = form['one'];
       NgModel two = form['two'];
       NgModel three = form['three'];
@@ -116,9 +116,9 @@ describe('form', () {
                       '</form>');
 
       _.compile(element);
-      scope.$apply();
+      scope.apply();
 
-      var form = scope['myForm'];
+      var form = scope.context['myForm'];
       NgModel one = form['one'];
 
       form.setValidity(one, "validation error", false);
@@ -141,9 +141,9 @@ describe('form', () {
                       '</form>');
 
       _.compile(element);
-      scope.$apply();
+      scope.apply();
 
-      var form = scope['myForm'];
+      var form = scope.context['myForm'];
       NgModel one = form['one'];
       NgModel two = form['two'];
 
@@ -172,11 +172,11 @@ describe('form', () {
                       '</form>');
 
       _.compile(element);
-      scope.$apply();
+      scope.apply();
 
-      var form = scope['myForm'];
-      var fieldset = _.rootScope.f.directive(NgForm);
-      var model = _.rootScope.m.directive(NgModel);
+      var form = scope.context['myForm'];
+      var fieldset = _.rootScope.context['f'].directive(NgForm);
+      var model = _.rootScope.context['m'].directive(NgModel);
 
       model.setValidity("error", false);
 
@@ -213,11 +213,11 @@ describe('form', () {
 
       _.compile(element);
 
-      scope.mega_model = 'mega';
-      scope.fire_model = 'fire';
-      scope.$apply();
+      scope.context['mega_model'] = 'mega';
+      scope.context['fire_model'] = 'fire';
+      scope.apply();
 
-      var form = scope['myForm'];
+      var form = scope.context['myForm'];
       expect(form['mega_name'].modelValue).toBe('mega');
       expect(form['fire_name'].modelValue).toBe('fire');
     }));
@@ -228,16 +228,16 @@ describe('form', () {
                       '</form>');
 
       _.compile(element);
-      scope.$apply();
+      scope.apply();
 
-      var form = scope['myForm'];
+      var form = scope.context['myForm'];
       var control = form['mega_control'];
       form.removeControl(control);
       expect(form['mega_control']).toBeNull();
     }));
 
     it('should remove all controls when the scope is destroyed', inject((Scope scope) {
-      Scope childScope = scope.$new();
+      Scope childScope = scope.createChild({});
       var element = $('<form name="myForm">' + 
                       '  <input type="text" ng-model="one" name="one" />' +
                       '  <input type="text" ng-model="two" name="two" />' +
@@ -245,14 +245,14 @@ describe('form', () {
                       '</form>');
 
       _.compile(element, scope: childScope);
-      childScope.$apply();
+      childScope.apply();
 
-      var form = childScope['myForm'];
+      var form = childScope.context['myForm'];
       expect(form['one']).toBeDefined();
       expect(form['two']).toBeDefined();
       expect(form['three']).toBeDefined();
 
-      childScope.$destroy();
+      childScope.destroy();
 
       expect(form['one']).toBeNull();
       expect(form['two']).toBeNull();
@@ -265,7 +265,7 @@ describe('form', () {
       var element = $('<form name="myForm"></form>');
 
       _.compile(element);
-      scope.$apply();
+      scope.apply();
 
       Event submissionEvent = new Event.eventType('CustomEvent', 'submit');
 
@@ -284,7 +284,7 @@ describe('form', () {
       var element = $('<form name="myForm" action="..."></form>');
 
       _.compile(element);
-      scope.$apply();
+      scope.apply();
 
       Event submissionEvent = new Event.eventType('CustomEvent', 'submit');
 
@@ -297,14 +297,14 @@ describe('form', () {
       var element = $('<form name="myForm" ng-submit="submitted = true"></form>');
 
       _.compile(element);
-      scope.$apply();
+      scope.apply();
 
-      _.rootScope.submitted = false;
+      _.rootScope.context['submitted'] = false;
 
       Event submissionEvent = new Event.eventType('CustomEvent', 'submit');
       element[0].dispatchEvent(submissionEvent);
 
-      expect(_.rootScope.submitted).toBe(true);
+      expect(_.rootScope.context['submitted']).toBe(true);
     }));
   });
 });

@@ -1,6 +1,6 @@
 library angular.util;
 
-toBool(x) {
+bool toBool(x) {
   if (x is bool) return x;
   if (x is num) return x != 0;
   return false;

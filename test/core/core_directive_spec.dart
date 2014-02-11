@@ -83,7 +83,7 @@ main() => describe('DirectiveMap', () {
     })
 class AnnotatedIoComponent {
   AnnotatedIoComponent(Scope scope) {
-    scope.$root.ioComponent = this;
+    scope.rootScope.context['ioComponent'] = this;
   }
 
   @NgAttr('attr')

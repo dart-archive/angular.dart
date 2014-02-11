@@ -84,5 +84,6 @@ class TestBed {
   selectOption(element, text) {
     element.querySelectorAll('option').forEach((o) => o.selected = o.text == text);
     triggerEvent(element, 'change');
+    rootScope.apply();
   }
 }

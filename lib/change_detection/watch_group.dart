@@ -7,7 +7,8 @@ part 'linked_list.dart';
 part 'ast.dart';
 part 'prototype_map.dart';
 
-typedef ReactionFn(value, previousValue, object);
+typedef ReactionFn(value, previousValue);
+typedef ChangeLog(expression);
 
 /**
  * Extend this class if you wish to pretend to be a function, but you don't know
@@ -48,6 +49,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   /// STATS: Number of field watchers which are in use.
   int _fieldCost = 0;
   int _collectionCost = 0;
+  int _evalCost = 0;
 
   /// STATS: Number of field watchers which are in use including child [WatchGroup]s.
   int get fieldCost => _fieldCost;
@@ -75,7 +77,6 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
   /// STATS: Number of invocation watchers (closures/methods) which are in use.
   int get evalCost => _evalCost;
-  int _evalCost = 0;
 
   /// STATS: Number of invocation watchers which are in use including child [WatchGroup]s.
   int get totalEvalCost {
@@ -153,10 +154,11 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     var watchRecord = _changeDetector.watch(null, null, collectionHandler);
     _collectionCost++;
     collectionHandler.watchRecord = watchRecord;
-    WatchRecord<_Handler> astWR = _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this));
+    WatchRecord<_Handler> astWR = _cache.putIfAbsent(ast.expression,
+        () => ast.setupWatch(this));
 
-    // We set a field forwarding handler on LHS. This will allow the change objects to propagate
-    // to the current WatchRecord.
+    // We set a field forwarding handler on LHS. This will allow the change
+    // objects to propagate to the current WatchRecord.
     astWR.handler.addForwardHandler(collectionHandler);
 
     // propagate the value from the LHS to here
@@ -222,8 +224,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   }
 
   WatchGroup get _childWatchGroupTail {
-    WatchGroup tail = this;
-    WatchGroup nextTail;
+    WatchGroup tail = this, nextTail;
     while ((nextTail = tail._watchGroupTail) != null) {
       tail = nextTail;
     }
@@ -320,7 +321,7 @@ class RootWatchGroup extends WatchGroup {
   RootWatchGroup(ChangeDetector changeDetector, Object context):
       super._root(changeDetector, context);
 
-  get _rootGroup => this;
+  WatchGroup get _rootGroup => this;
 
   /**
    * Detect changes and process the [ReactionFn]s.
@@ -330,14 +331,17 @@ class RootWatchGroup extends WatchGroup {
    * 2) process function/closure/method changes
    * 3) call an [ReactionFn]s
    *
-   * Each step is called in sequence. ([ReactionFn]s are not called until all previous steps are
-   * completed).
+   * Each step is called in sequence. ([ReactionFn]s are not called until all
+   * previous steps are completed).
    */
-  int detectChanges() {
+  int detectChanges({EvalExceptionHandler exceptionHandler, ChangeLog changeLog}) {
     // Process the ChangeRecords from the change detector
     ChangeRecord<_Handler> changeRecord =
-        (_changeDetector as ChangeDetector<_Handler>).collectChanges();
+        (_changeDetector as ChangeDetector<_Handler>).collectChanges(exceptionHandler);
     while (changeRecord != null) {
+      if (changeLog != null) {
+        changeLog(changeRecord.handler.expression);
+      }
       changeRecord.handler.onChange(changeRecord);
       changeRecord = changeRecord.nextChange;
     }
@@ -346,7 +350,14 @@ class RootWatchGroup extends WatchGroup {
     // Process our own function evaluations
     _EvalWatchRecord evalRecord = _evalWatchHead;
     while (evalRecord != null) {
-      evalRecord.check();
+      try {
+        var change = evalRecord.check();
+        if (change != null && changeLog != null) {
+          changeLog(evalRecord.handler.expression);
+        }
+      } catch (e, s) {
+        if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
+      }
       evalRecord = evalRecord._nextEvalWatch;
     }
 
@@ -356,7 +367,12 @@ class RootWatchGroup extends WatchGroup {
     Watch dirtyWatch = _dirtyWatchHead;
     while(dirtyWatch != null) {
       count++;
-      dirtyWatch.invoke();
+      try {
+        dirtyWatch.invoke();
+
+      } catch (e, s) {
+        if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
+      }
       dirtyWatch = dirtyWatch._nextDirtyWatch;
     }
     _dirtyWatchHead = _dirtyWatchTail = null;
@@ -398,12 +414,12 @@ class Watch {
 
   get expression => _record.handler.expression;
 
-  invoke() {
+  void invoke() {
     _dirty = false;
-    reactionFn(_record.currentValue, _record.previousValue, _record.object);
+    reactionFn(_record.currentValue, _record.previousValue);
   }
 
-  remove() {
+  void remove() {
     if (_deleted) throw new StateError('Already deleted!');
     _deleted = true;
     var handler = _record.handler;
@@ -475,11 +491,11 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
     }
   }
 
-  _releaseWatch() {
+  void _releaseWatch() {
     watchRecord.remove();
     watchGrp._fieldCost--;
   }
-  acceptValue(dynamic object) => null;
+  acceptValue(object) => null;
 
   void onChange(ChangeRecord<_Handler> record) {
     assert(_next != this); // verify we are not detached
@@ -515,7 +531,7 @@ class _FieldHandler extends _Handler {
    * This function forwards the watched object to the next [_Handler]
    * synchronously.
    */
-  acceptValue(dynamic object) {
+  void acceptValue(object) {
     watchRecord.object = object;
     var changeRecord = watchRecord.check();
     if (changeRecord != null) onChange(changeRecord);
@@ -523,16 +539,18 @@ class _FieldHandler extends _Handler {
 }
 
 class _CollectionHandler extends _Handler {
-  _CollectionHandler(watchGrp, expression): super(watchGrp, expression);
+  _CollectionHandler(WatchGroup watchGrp, String expression)
+      : super(watchGrp, expression);
   /**
    * This function forwards the watched object to the next [_Handler] synchronously.
    */
-  acceptValue(dynamic object) {
+  void acceptValue(object) {
     watchRecord.object = object;
     var changeRecord = watchRecord.check();
     if (changeRecord != null) onChange(changeRecord);
   }
-  _releaseWatch() {
+
+  void _releaseWatch() {
     watchRecord.remove();
     watchGrp._collectionCost--;
   }
@@ -550,7 +568,7 @@ class _ArgHandler extends _Handler {
   _ArgHandler(WatchGroup watchGrp, this.watchRecord, int index)
       : super(watchGrp, 'arg[$index]'), index = index;
 
-  acceptValue(dynamic object) {
+  void acceptValue(object) {
     watchRecord.dirtyArgs = true;
     watchRecord.args[index] = object;
   }
@@ -559,13 +577,22 @@ class _ArgHandler extends _Handler {
 class _InvokeHandler extends _Handler implements _ArgHandlerList {
   _ArgHandler _argHandlerHead, _argHandlerTail;
 
-  _InvokeHandler(watchGrp, expression): super(watchGrp, expression);
+  _InvokeHandler(WatchGroup watchGrp, String expression)
+      : super(watchGrp, expression);
 
-  acceptValue(dynamic object) => watchRecord.object = object;
+  void acceptValue(object) {
+    watchRecord.object = object;
+  }
 
-  _releaseWatch() => (watchRecord as _EvalWatchRecord).remove();
+  void onChange(ChangeRecord<_Handler> record) {
+    super.onChange(record);
+  }
 
-  release() {
+  void _releaseWatch() {
+    (watchRecord as _EvalWatchRecord).remove();
+  }
+
+  void release() {
     super.release();
     _ArgHandler current = _argHandlerHead;
     while(current != null) {
@@ -703,7 +730,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
 
   get nextChange => null;
 
-  remove() {
+  void remove() {
     assert(mode != _MODE_DELETED_);
     assert((mode = _MODE_DELETED_) == _MODE_DELETED_); // Mark as deleted.
     watchGrp._evalCost--;

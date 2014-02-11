@@ -15,6 +15,7 @@ class NgModel extends NgControl {
   final NgForm _form;
   final dom.Element _element;
   final Scope _scope;
+  final AstParser _parser;
 
   BoundGetter getter = ([_]) => null;
   BoundSetter setter = (_, [__]) => null;
@@ -25,14 +26,14 @@ class NgModel extends NgControl {
   final List<_NgModelValidator> _validators = new List<_NgModelValidator>();
   final Map<String, bool> errors = new Map<String, bool>();
 
-  Function _removeWatch = () => null;
+  Watch _removeWatch;
   bool _watchCollection;
 
   Function render = (value) => null;
 
-  NgModel(this._scope, NodeAttrs attrs, [dom.Element this._element,
-      NgForm this._form]) {
-    _exp = 'ng-model=${attrs["ng-model"]}';
+  NgModel(this._scope, NodeAttrs attrs, dom.Element this._element,
+      NgForm this._form, this._parser) {
+    _exp = attrs["ng-model"];
     watchCollection = false;
 
     _form.addControl(this);
@@ -48,18 +49,27 @@ class NgModel extends NgControl {
     _form.addControl(this);
   }
 
+  // TODO(misko): could we get rid of watch collection, and just always watch the collection?
   get watchCollection => _watchCollection;
   set watchCollection(value) {
     if (_watchCollection == value) return;
     _watchCollection = value;
-    _removeWatch();
+    if (_removeWatch!=null) _removeWatch.remove();
     if (_watchCollection) {
-      _removeWatch = _scope.$watchCollection((s) => getter(), (value) => render(value), _exp);
-    } else {
-      _removeWatch = _scope.$watch((s) => getter(), (value) => render(value), _exp);
+      _removeWatch = _scope.watch(
+          _parser(_exp, collection: true),
+          (changeRecord, _) {
+            var value = changeRecord is CollectionChangeRecord ? changeRecord.iterable: changeRecord;
+            _scope.rootScope.domWrite(() => render(value));
+          });
+    } else if (_exp != null) {
+      _removeWatch = _scope.watch(_exp, (value, _) {
+        _scope.rootScope.domWrite(() => render(value));
+      });
     }
   }
 
+  // TODO(misko): getters/setters need to go. We need AST here.
   @NgCallback('ng-model')
   set model(BoundExpression boundExpression) {
     getter = boundExpression;
@@ -169,7 +179,7 @@ class InputCheckboxDirective {
       inputElement.checked = value == null ? false : toBool(value);
     };
     inputElement.onChange.listen((value) {
-      scope.$apply(() => ngModel.viewValue = inputElement.checked);
+      scope.apply(() => ngModel.viewValue = inputElement.checked);
     });
   }
 }
@@ -226,7 +236,7 @@ class InputTextLikeDirective {
     var value = typedValue;
     if (value != ngModel.viewValue) {
       ngModel.dirty = true;
-      scope.$apply(() => ngModel.viewValue = value);
+      scope.apply(() => ngModel.viewValue = value);
     }
     ngModel.validate();
   }
@@ -294,7 +304,7 @@ class InputRadioDirective {
     };
     radioButtonElement.onClick.listen((_) {
       if (radioButtonElement.checked) {
-        scope.$apply(() => ngModel.viewValue = radioButtonElement.value);
+        scope.apply(() => ngModel.viewValue = radioButtonElement.value);
       }
     });
   }
