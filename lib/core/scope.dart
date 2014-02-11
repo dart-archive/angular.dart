@@ -127,17 +127,19 @@ class Scope {
   Scope(Object this.context, this.rootScope, this._parentScope, this._depth,
         this._index, this.watchGroup, this.observeGroup);
 
-  Watch watch(expression, ReactionFn reactionFn) {
-    // Todo(misko): remove the parser from here. It should only take AST.
+  Watch watch(expression, ReactionFn reactionFn, {context, FilterMap filters}) {
     assert(expression != null);
-    AST ast = expression is AST ? expression : rootScope._parse(expression);
+    AST ast = expression is AST
+        ? expression
+        : rootScope._astParser(expression, context: context, filters: filters);
     return watchGroup.watch(ast, reactionFn);
   }
 
-  Watch observe(expression, ReactionFn reactionFn) {
-    // Todo(misko): remove the parser from here. It should only take AST.
+  Watch observe(expression, ReactionFn reactionFn, {context, FilterMap filters}) {
     assert(expression != null);
-    AST ast = expression is AST ? expression : rootScope._parse(expression);
+    AST ast = expression is AST
+        ? expression
+        : rootScope._astParser(expression, context: context, filters: filters);
     return observeGroup.watch(ast, reactionFn);
   }
 
@@ -218,6 +220,7 @@ class RootScope extends Scope {
   static final STATE_FLUSH = 'digest';
 
   final ExceptionHandler _exceptionHandler;
+  final AstParser _astParser;
   final Parser _parser;
   final ScopeDigestTTL _ttl;
   final ExpressionVisitor visitor = new ExpressionVisitor(); // TODO(misko): delete me
@@ -229,8 +232,9 @@ class RootScope extends Scope {
 
   String _state;
 
-  RootScope(Object context, this._parser, GetterCache cacheGetter,
-             FilterMap filterMap, this._exceptionHandler, this._ttl, this._zone)
+  RootScope(Object context, this._astParser, this._parser,
+            GetterCache cacheGetter, FilterMap filterMap,
+            this._exceptionHandler, this._ttl, this._zone)
       : super(context, null, null, 0, 0,
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context))
@@ -357,7 +361,6 @@ class RootScope extends Scope {
   }
 
 
-  AST _parse(expression) => visitor.visit(_parser.call(expression));
   void destroy() {}
 
   void _transitionState(String from, String to) {

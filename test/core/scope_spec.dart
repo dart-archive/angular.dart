@@ -755,6 +755,16 @@ main() => describe('scope', () {
     }));
 
 
+    it('should watch/observe on objects other then contex', inject((RootScope rootScope) {
+      var log = '';
+      var map = {'a': 'A', 'b': 'B'};
+      rootScope.watch('a', (a, b) => log += a, context: map);
+      rootScope.watch('b', (a, b) => log += a, context: map);
+      rootScope.apply();
+      expect(log).toEqual('AB');
+    }));
+
+
     it(r'should watch and fire on expression change', inject((RootScope rootScope) {
       var log;
 

@@ -63,7 +63,7 @@ class InputSelectDirective implements NgAttachAware {
     _selectElement.onChange.listen((event) => _mode.onViewChange(event));
     _model.render = (value) {
       // TODO(misko): this hack need to delay the rendering until after domRead
-      // becouse the modelChange reads from the DOM. We should be able to render
+      // because the modelChange reads from the DOM. We should be able to render
       // without DOM changes.
       _scope.rootScope.domRead(() {
         _scope.rootScope.domWrite(() => _mode.onModelChange(value));

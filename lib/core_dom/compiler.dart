@@ -4,10 +4,9 @@ part of angular.core.dom;
 class Compiler {
   final Profiler _perf;
   final Parser _parser;
-  final AstParser _astParser;
   final Expando _expando;
 
-  Compiler(this._perf, this._parser, this._astParser, this._expando);
+  Compiler(this._perf, this._parser, this._expando);
 
   _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,
                 List<DirectiveRef> useExistingDirectiveRefs,
@@ -160,25 +159,28 @@ class Compiler {
             var blockOutbound = false;
             var blockInbound = false;
             scope.watch(
-                _astParser(expression, filters: filters),
+                expression,
                 (inboundValue, _) {
                   if (!blockInbound) {
                     blockOutbound = true;
                     scope.rootScope.runAsync(() => blockOutbound = false);
                     return dstPathFn.assign(controller, inboundValue);
                   }
-                }
+                },
+                filters: filters
             );
             if (expressionFn.isAssignable) {
               scope.watch(
-                  _astParser(dstExpression, context: controller, filters: filters),
+                  dstExpression,
                   (outboundValue, _) {
                     if(!blockOutbound) {
                       blockInbound = true;
                       scope.rootScope.runAsync(() => blockInbound = false);
                       expressionFn.assign(scope.context, outboundValue);
                     }
-                  }
+                  },
+                  context: controller,
+                  filters: filters
               );
             }
           };
@@ -188,8 +190,9 @@ class Compiler {
             if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
-            scope.watch(_astParser(attrs[attrName], filters: filters),
-                    (v, _) => dstPathFn.assign(controller, shadowValue = v));
+            scope.watch(attrs[attrName],
+                    (v, _) => dstPathFn.assign(controller, shadowValue = v),
+                    filters: filters);
           };
           break;
         case '=>!':
@@ -198,12 +201,13 @@ class Compiler {
             Expression attrExprFn = _parser(attrs[attrName]);
             var watch;
             watch = scope.watch(
-                _astParser(attrs[attrName], filters: filters),
+                attrs[attrName],
                 (value, _) {
                   if (dstPathFn.assign(controller, value) != null) {
                     watch.remove();
                   }
-                });
+                },
+                filters: filters);
           };
           break;
         case '&':
