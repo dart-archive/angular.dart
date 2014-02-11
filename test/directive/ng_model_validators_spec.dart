@@ -10,7 +10,7 @@ describe('ngModel validators', () {
 
   describe('required', () {
     it('should validate the input field if the required attribute is set', inject((Scope scope) {
-      _.compile('<input type="text" ng-model="val" probe="i" required="true" />');
+      _.compile('<input type="text" ng-model="val" probe="i" required />');
       Probe probe = _.rootScope.i;
       var model = probe.directive(NgModel);
 
@@ -47,6 +47,8 @@ describe('ngModel validators', () {
       _.compile('<input type="text" ng-model="val" probe="i" ng-required="requireMe" />');
       Probe probe = _.rootScope.i;
       var model = probe.directive(NgModel);
+
+      _.rootScope.$apply();
 
       model.validate();
       expect(model.valid).toEqual(true);
