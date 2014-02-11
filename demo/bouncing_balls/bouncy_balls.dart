@@ -34,6 +34,7 @@ class BounceController {
   var run = true;
   var fps = 0;
   var digestTime = 0;
+  var currentDigestTime = 0;
   var balls = [];
   var zone;
   var scope;
@@ -71,9 +72,10 @@ class BounceController {
 
   timeDigest() {
     var start = window.performance.now();
-    scope.runAsync(() {
-      digestTime = (window.performance.now() - start).round();
-    }, outsideDigest: true);
+    digestTime = currentDigestTime;
+    scope.rootScope.domRead(() {
+      currentDigestTime = (window.performance.now() - start).round();
+    });
   }
 
   tick() {
@@ -109,10 +111,8 @@ class BallPositionDirective {
 
   set position(BallModel model) {
     element.style.backgroundColor = model.color;
-    scope.watch(() {
-      element.style.left = '${model.x + 10}px';
-      element.style.top = '${model.y + 10}px';
-    });
+    scope.observe('x', (x, _) => element.style.left = '${x + 10}px', context:model);
+    scope.observe('y', (y, _) => element.style.top = '${y + 10}px', context:model);
   }
 }
 
