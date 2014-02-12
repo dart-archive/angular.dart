@@ -15,8 +15,8 @@ main() {
 
   print(window.location.search);
   var module = new Module()
-    ..type(TodoController)
-    ..type(PlaybackHttpBackendConfig);
+      ..type(TodoController)
+      ..type(PlaybackHttpBackendConfig);
 
   // If these is a query in the URL, use the server-backed
   // TodoController.  Otherwise, use the stored-data controller.
@@ -39,5 +39,5 @@ main() {
     module.type(HttpBackend, implementedBy: PlaybackHttpBackend);
   }
 
-  ngBootstrap(module:module);
+  ngBootstrap(module: module);
 }

@@ -17,7 +17,7 @@ class BallModel {
 
   static _color() {
     var color = '#';
-    for(var i=0; i < 6; i++) {
+    for(var i = 0; i < 6; i++) {
       color += (16 * random.nextDouble()).floor().toRadixString(16);
     }
     return color;
@@ -27,8 +27,7 @@ class BallModel {
 
 @NgController(
   selector: '[bounce-controller]',
-  publishAs: 'bounce'
-)
+  publishAs: 'bounce')
 class BounceController {
   var lastTime = window.performance.now();
   var run = true;
@@ -36,29 +35,29 @@ class BounceController {
   var digestTime = 0;
   var currentDigestTime = 0;
   var balls = [];
-  var zone;
-  var scope;
+  final NgZone zone;
+  final Scope scope;
   var ballClassName = 'ball';
 
-  BounceController(NgZone this.zone, Scope this.scope) {
+  BounceController(this.zone, this.scope) {
     changeCount(100);
     tick();
   }
 
-  toggleCSS() {
+  void toggleCSS() {
     ballClassName = ballClassName == '' ? 'ball' : '';
   }
 
-  playPause() {
+  void playPause() {
     run = !run;
     if (run) requestAnimationFrame(tick);
   }
 
-  requestAnimationFrame(fn) {
+  void requestAnimationFrame(fn) {
     window.requestAnimationFrame((_) => zone.run(fn));
   }
 
-  changeCount(count) {
+  void changeCount(count) {
     while(count > 0) {
       balls.add(new BallModel());
       count--;
@@ -70,7 +69,7 @@ class BounceController {
     tick();
   }
 
-  timeDigest() {
+  void timeDigest() {
     var start = window.performance.now();
     digestTime = currentDigestTime;
     scope.rootScope.domRead(() {
@@ -78,9 +77,9 @@ class BounceController {
     });
   }
 
-  tick() {
-    var now = window.performance.now(),
-        delay = now - lastTime;
+  void tick() {
+    var now = window.performance.now();
+    var delay = now - lastTime;
 
     fps = (1000/delay).round();
     for(var i=0, ii=balls.length; i<ii; i++) {
@@ -101,18 +100,17 @@ class BounceController {
 @NgDirective(
   selector: '[ball-position]',
   map: const {
-    "ballPosition": '=>position'
-  }
-)
+    "ballPosition": '=>position'})
 class BallPositionDirective {
-  Element element;
-  Scope scope;
-  BallPositionDirective(Element this.element, Scope this.scope);
+  final Element element;
+  final Scope scope;
+  BallPositionDirective(this.element, this.scope);
 
   set position(BallModel model) {
     element.style.backgroundColor = model.color;
-    scope.observe('x', (x, _) => element.style.left = '${x + 10}px', context:model);
-    scope.observe('y', (y, _) => element.style.top = '${y + 10}px', context:model);
+    scope
+        ..observe('x', (x, _) => element.style.left = '${x + 10}px', context: model)
+        ..observe('y', (y, _) => element.style.top = '${y + 10}px', context: model);
   }
 }
 

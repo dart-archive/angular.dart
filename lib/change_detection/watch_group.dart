@@ -96,8 +96,8 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
       _nextWatchGroup;
   final WatchGroup _parentWatchGroup;
 
-  WatchGroup._child(_parentWatchGroup, this._changeDetector,
-                    this.context, this._cache, this._rootGroup)
+  WatchGroup._child(_parentWatchGroup, this._changeDetector, this.context,
+                    this._cache, this._rootGroup)
       : _parentWatchGroup = _parentWatchGroup,
         id = '${_parentWatchGroup.id}.${_parentWatchGroup._nextChildId++}'
   {
@@ -224,7 +224,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   }
 
   WatchGroup get _childWatchGroupTail {
-    WatchGroup tail = this, nextTail;
+    var tail = this, nextTail;
     while ((nextTail = tail._watchGroupTail) != null) {
       tail = nextTail;
     }
@@ -245,7 +245,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
         this,
         _changeDetector.newGroup(),
         context == null ? this.context : context,
-        context == null ? this._cache: new Map<String, WatchRecord<_Handler>>(),
+        context == null ? this._cache: <String, WatchRecord<_Handler>>{},
         _rootGroup == null ? this : _rootGroup);
     _WatchGroupList._add(this, childGroup);
     var marker = childGroup._marker;
@@ -321,7 +321,7 @@ class RootWatchGroup extends WatchGroup {
   RootWatchGroup(ChangeDetector changeDetector, Object context):
       super._root(changeDetector, context);
 
-  WatchGroup get _rootGroup => this;
+  RootWatchGroup get _rootGroup => this;
 
   /**
    * Detect changes and process the [ReactionFn]s.
@@ -334,14 +334,14 @@ class RootWatchGroup extends WatchGroup {
    * Each step is called in sequence. ([ReactionFn]s are not called until all
    * previous steps are completed).
    */
-  int detectChanges({EvalExceptionHandler exceptionHandler, ChangeLog changeLog}) {
+  int detectChanges({EvalExceptionHandler exceptionHandler,
+                    ChangeLog changeLog}) {
     // Process the ChangeRecords from the change detector
     ChangeRecord<_Handler> changeRecord =
-        (_changeDetector as ChangeDetector<_Handler>).collectChanges(exceptionHandler);
+        (_changeDetector as ChangeDetector<_Handler>)
+            .collectChanges(exceptionHandler);
     while (changeRecord != null) {
-      if (changeLog != null) {
-        changeLog(changeRecord.handler.expression);
-      }
+      if (changeLog != null) changeLog(changeRecord.handler.expression);
       changeRecord.handler.onChange(changeRecord);
       changeRecord = changeRecord.nextChange;
     }
@@ -369,7 +369,6 @@ class RootWatchGroup extends WatchGroup {
       count++;
       try {
         dirtyWatch.invoke();
-
       } catch (e, s) {
         if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
       }
@@ -566,7 +565,8 @@ class _ArgHandler extends _Handler {
   _releaseWatch() => null;
 
   _ArgHandler(WatchGroup watchGrp, this.watchRecord, int index)
-      : super(watchGrp, 'arg[$index]'), index = index;
+      : index = index,
+        super(watchGrp, 'arg[$index]');
 
   void acceptValue(object) {
     watchRecord.dirtyArgs = true;
@@ -628,11 +628,14 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
   _EvalWatchRecord(this.watchGrp, this.handler, this.fn, name, int arity)
       : args = new List(arity),
         name = name,
-        symbol = name == null ? null : new Symbol(name)
-  {
-    if      (fn is FunctionApply) mode = _MODE_FUNCTION_APPLY_;
-    else if (fn is Function)      mode = _MODE_FUNCTION_;
-    else                          mode = _MODE_NULL_;
+        symbol = name == null ? null : new Symbol(name) {
+    if (fn is FunctionApply) {
+      mode = _MODE_FUNCTION_APPLY_;
+    } else if (fn is Function) {
+      mode = _MODE_FUNCTION_;
+    } else {
+      mode = _MODE_NULL_;
+    }
   }
 
   _EvalWatchRecord.marker()
@@ -673,11 +676,9 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
         mode =  _MODE_MAP_CLOSURE_;
       } else {
         _instanceMirror = reflect(value);
-        if(_hasMethod(_instanceMirror.type, symbol)) {
-          mode = _MODE_METHOD_;
-        } else {
-          mode = _MODE_FIELD_CLOSURE_;
-        }
+        mode = _hasMethod(_instanceMirror.type, symbol)
+            ? _MODE_METHOD_
+            : _MODE_FIELD_CLOSURE_;
       }
     }
   }
@@ -737,7 +738,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
     _EvalWatchList._remove(watchGrp, this);
   }
 
-  toString() {
+  String toString() {
     if (mode == _MODE_MARKER_) return 'MARKER[$currentValue]';
     return '${watchGrp.id}:${handler.expression}';
   }

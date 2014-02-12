@@ -17,7 +17,7 @@ abstract class AST {
     assert(expression!=null);
   }
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup);
-  toString() => expression;
+  String toString() => expression;
 }
 
 /**
@@ -59,9 +59,9 @@ class FieldReadAST extends AST {
   final String name;
 
   FieldReadAST(lhs, name)
-      : super('$lhs.$name'),
-        lhs = lhs,
-        name = name;
+      : lhs = lhs,
+        name = name,
+        super('$lhs.$name');
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
       watchGroup.addFieldWatch(lhs, name, expression);
@@ -111,14 +111,14 @@ class MethodAST extends AST {
 class CollectionAST extends AST {
   final AST valueAST;
   CollectionAST(valueAST)
-      : super('#collection($valueAST)'),
-        valueAST = valueAST;
+      : valueAST = valueAST,
+        super('#collection($valueAST)');
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
       watchGroup.addCollectionWatch(valueAST);
 }
 
-_argList(List<AST> items) => items.join(', ');
+String _argList(List<AST> items) => items.join(', ');
 
 /**
  * The name is a bit oxymoron, but it is essentially the NullObject pattern.

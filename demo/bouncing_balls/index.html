@@ -45,7 +45,9 @@
     </div>
 
     <div>
-        <div class="fps-bar"><div class="fps" ng-style-width="bounce.fps*4 + 'px'"></div></div>
+        <div class="fps-bar">
+            <div class="fps" ng-style-width="bounce.fps*4 + 'px'"></div>
+        </div>
     </div>
 
     {{bounce.fps}} fps. ({{bounce.balls.length}} balls) [{{(1000/bounce.fps).round()}} ms] <br>
