@@ -216,6 +216,12 @@ main() => describe('scope', () {
   describe(r'events', () {
 
     describe('on', () {
+      it('should allow emit/broadcast when no listeners', inject((RootScope scope) {
+        scope.emit('foo');
+        scope.broadcast('foo');
+      }));
+
+
       it(r'should add listener for both emit and broadcast events', inject((RootScope rootScope) {
         var log = '',
         child = rootScope.createChild();

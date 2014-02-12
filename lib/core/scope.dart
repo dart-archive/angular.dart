@@ -409,7 +409,8 @@ class _Streams {
     ScopeEvent event = new ScopeEvent(name, scope, data);
     Scope scopeCursor = scope;
     while(scopeCursor != null) {
-      if (scopeCursor._streams._scope == scopeCursor) {
+      if (scopeCursor._streams !=null &&
+          scopeCursor._streams._scope == scopeCursor) {
         ScopeStream stream = scopeCursor._streams._streams[name];
         if (stream != null) {
           event._currentScope = scopeCursor;
