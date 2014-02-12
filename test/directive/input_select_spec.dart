@@ -14,9 +14,9 @@ main() {
       it('should retrieve using ng-value', () {
         _.compile(
             '<select ng-model="robot" probe="p">'
-            '<option ng-repeat="r in robots" ng-value="r">{{r.name}}</option>'
+              '<option ng-repeat="r in robots" ng-value="r">{{r.name}}</option>'
             '</select>');
-        var r2d2 = { "name":"r2d2"};
+        var r2d2 = {"name":"r2d2"};
         var c3p0 = {"name":"c3p0"};
         _.rootScope.robots = [ r2d2, c3p0 ];
         _.rootScope.$digest();
