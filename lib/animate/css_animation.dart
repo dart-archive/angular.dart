@@ -19,10 +19,9 @@ class CssAnimation extends LoopedAnimation {
   final String eventClass;
   final String activeClass;
 
-  final Completer<AnimationResult> _completer
-      = new Completer<AnimationResult>.sync();
-  
-  static const num extraDuration = 16.0; // Just a little extra time
+  final _completer = new Completer<AnimationResult>.sync();
+
+  static const EXTRA_DURATION = 16.0; // Just a little extra time
 
   bool _active = true;
   bool _started = false;
@@ -46,19 +45,11 @@ class CssAnimation extends LoopedAnimation {
       : _animationMap = animationMap,
         _optimizer = optimizer
   {
-    if (_optimizer != null) {
-      _optimizer.track(this, element);
-    }
-    if (_animationMap != null) {
-      _animationMap.track(this);
-    }
+    if (_optimizer != null) _optimizer.track(this, element);
+    if (_animationMap != null) _animationMap.track(this);
     element.classes.add(eventClass);
-    if (addAtStart != null) {
-      element.classes.add(addAtStart);
-    }
-    if (removeAtStart != null) {
-      element.classes.remove(removeAtStart);
-    }
+    if (addAtStart != null) element.classes.add(addAtStart);
+    if (removeAtStart != null) element.classes.remove(removeAtStart);
   }
 
   void read(num timeInMs) {
@@ -71,18 +62,17 @@ class CssAnimation extends LoopedAnimation {
         // Add a little extra time just to make sure transitions
         // fully complete and that we don't remove the animation classes
         // before it's completed.
-        _duration = _duration + extraDuration;
+        _duration = _duration + EXTRA_DURATION;
       }
     }
   }
 
   bool update(num timeInMs) {
-    if (!_active) {
-      return false;
-    }
-    
+    if (!_active) return false;
+
     if (timeInMs >= _startTime + _duration) {
       _complete(AnimationResult.COMPLETED);
+
       // TODO(codelogic): If the initial frame takes a significant amount of
       //   time, the computed duration + startTime might not actually represent
       //   the end of the animation
@@ -93,7 +83,7 @@ class CssAnimation extends LoopedAnimation {
       // inserted elements have the base event class applied before adding the
       // active class to the element. If this is not done, inserted dom nodes
       // will not run their enter animation.
-      
+
       if (_isDisplayNone && removeAtEnd != null) {
         element.classes.remove(removeAtEnd);
       }
@@ -109,17 +99,9 @@ class CssAnimation extends LoopedAnimation {
   void cancel() {
     if (_active) {
       _detach();
-      if (addAtStart != null) {
-  
-        element.classes.remove(addAtStart);
-      } 
-      if (removeAtStart != null) {
-        element.classes.add(removeAtStart);
-      }
-      
-      if (_completer != null) {
-        _completer.complete(AnimationResult.CANCELED);
-      }
+      if (addAtStart != null) element.classes.remove(addAtStart);
+      if (removeAtStart != null) element.classes.add(removeAtStart);
+      if (_completer != null) _completer.complete(AnimationResult.CANCELED);
     }
   }
 
@@ -132,12 +114,8 @@ class CssAnimation extends LoopedAnimation {
   void _complete(AnimationResult result) {
     if (_active) {
       _detach();
-      if (addAtEnd != null) {
-        element.classes.add(addAtEnd);
-      } 
-      if (removeAtEnd != null) {
-        element.classes.remove(removeAtEnd);
-      }
+      if (addAtEnd != null) element.classes.add(addAtEnd);
+      if (removeAtEnd != null) element.classes.remove(removeAtEnd);
       _completer.complete(result);
     }
   }
@@ -146,14 +124,9 @@ class CssAnimation extends LoopedAnimation {
   void _detach() {
     _active = false;
 
-    if (_animationMap != null) {
-      _animationMap.forget(this);
-    }
-    if (_optimizer != null) {
-      _optimizer.forget(this);
-    }
+    if (_animationMap != null) _animationMap.forget(this);
+    if (_optimizer != null) _optimizer.forget(this);
 
-    element.classes.remove(eventClass);
-    element.classes.remove(activeClass);
+    element.classes..remove(eventClass)..remove(activeClass);
   }
 }

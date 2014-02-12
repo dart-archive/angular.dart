@@ -17,8 +17,7 @@ part of animate_demo;
       </div>
     ''',
     publishAs: 'ctrl',
-    applyAuthorStyles: true
-)
+    applyAuthorStyles: true)
 class RepeatDemoComponent {
   var thing = 0;
   final items = [];
