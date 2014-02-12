@@ -3,7 +3,7 @@ library form_spec;
 import '../_specs.dart';
 
 main() =>
-ddescribe('form', () {
+describe('form', () {
   TestBed _;
 
   it('should set the name of the form and attach it to the scope', inject((Scope scope, TestBed _) {
