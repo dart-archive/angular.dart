@@ -61,8 +61,9 @@ class NgSwitchDirective {
   List<_BlockScopePair> currentBlocks = <_BlockScopePair>[];
   Function onChange;
   final Scope scope;
+  final Animate animate;
 
-  NgSwitchDirective(this.scope) {
+  NgSwitchDirective(this.scope, this.animate) {
     cases['?'] = <_Case>[];
   }
 
@@ -74,7 +75,12 @@ class NgSwitchDirective {
   set value(val) {
     currentBlocks
         ..forEach((_BlockScopePair pair) {
-          pair.block.remove();
+          animate.removeAll(pair.block.elements).onCompleted.then((result) {
+            if(result == AnimationResult.COMPLETED
+                || result == AnimationResult.COMPLETED_IGNORED) {
+              pair.block.remove();
+            }
+          });
           pair.scope.destroy();
         })
         ..clear();
@@ -85,6 +91,7 @@ class NgSwitchDirective {
           Scope childScope = scope.createChild(new PrototypeMap(scope.context));
           var block = caze.blockFactory(childScope)..insertAfter(caze.anchor);
           currentBlocks.add(new _BlockScopePair(block, childScope));
+          animate.addAll(block.elements);
         });
     if (onChange != null) {
       onChange();

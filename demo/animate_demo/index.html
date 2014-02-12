@@ -6,6 +6,12 @@
 </head>
 <body ng-app animation-demo ng-cloak>
 
+<button ng-click="adc.addThing()">Add Thing {{adc.thingNumber}}</button>
+<button ng-click="adc.removeThing()">Remove Thing</button>
+<ul>
+  <li class="thingy" ng-repeat="thing in adc.listOfThings">{{thing}}</li>
+</ul>
+
 <button ng-click="adc.ifToggle = !adc.ifToggle">Toggle</button>
 <div class="some-div" ng-if="adc.ifToggle">
   I am a div with content. Just your standared <code>ng-if</code>.
@@ -13,10 +19,10 @@
 <hr />
 
 <button ng-click="adc.animateABox()"><h3>Animate a box</h3></button>
-<div class="animated-box" element="adc.setBoxElement(x)"></div>
+<div class="animated-box"></div>
 
-<button ng-click="adc.toggleABunchOfThings()"><h3>Animate 100000 boxes</h3></button>
-<div class="animated-host" element="adc.setHostElement(x)"></div>
+<button ng-click="adc.toggleABunchOfThings()"><h3>Animate 1,000 boxes</h3></button>
+<div class="animated-host"></div>
 
 <script type="application/dart" src="animate_demo.dart"></script>
 <script src="packages/browser/dart.js"></script>

@@ -143,7 +143,6 @@ class AnimationRunner {
 
   _clearElement(element) {
     if(_activeAnimations.containsKey(element)) {
-      print("Clearing an existing animation for $element");
       var animation = _activeAnimations[element];
       _activeAnimations.remove(element);
       _updating.remove(animation);

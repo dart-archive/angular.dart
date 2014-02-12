@@ -16,17 +16,22 @@ import 'dart:mirrors';
     publishAs: 'adc'
 )
 class AnimationDemoController {
-  
+  final dom.Element rootElement;
   final Animate animate;
   bool areThingsVisible = false;
   bool boxToggle = false;
   bool ifToggle = false;
+  int thingNumber = 1;
 
   dom.Element _boxElement;
   dom.Element _hostElement;
   List<dom.Element> _animatedBoxes = [];
+  List<String> listOfThings = [];
   
-  AnimationDemoController(this.animate);
+  AnimationDemoController(this.animate, this.rootElement) {
+    _boxElement = rootElement.querySelector(".animated-box");
+    _hostElement = rootElement.querySelector(".animated-host");
+  }
   
   animateABox() {
     if(_boxElement != null) {
@@ -39,16 +44,6 @@ class AnimationDemoController {
     }
   }
 
-  setBoxElement(element) {
-    boxToggle = false;
-    _boxElement = element;
-  }
-  
-  setHostElement(element) {
-    areThingsVisible = false;
-    _hostElement = element;
-  }
-  
   toggleABunchOfThings() {
     if(_hostElement != null) {
       if(!areThingsVisible && _animatedBoxes.length == 0) {
@@ -75,28 +70,20 @@ class AnimationDemoController {
       areThingsVisible = !areThingsVisible;
     }
   }
-}
-
-/**
- * Hacky directive to get access to an element in the controller.
- */
-@NgDirective(
-    selector: "[element]",
-    map: const {
-      'element': '&onElement',
-    })
-class GetElementDirective {
-  final dom.Element element;
-
-  set onElement(BoundExpression value) {
-    value({'x': element});
+  
+  addThing() {
+    listOfThings.add("Thing: $thingNumber");
+    thingNumber++;
   }
-
-  GetElementDirective(dom.Element this.element);
+  
+  removeThing() {
+    if(listOfThings.length > 0) {
+      listOfThings.removeLast();
+    }
+  }
 }
 
 main() {
   ngBootstrap(module: new Module()
-    ..type(AnimationDemoController)
-    ..type(GetElementDirective));
+    ..type(AnimationDemoController));
 }

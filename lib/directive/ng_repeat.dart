@@ -85,8 +85,10 @@ class NgRepeatDirective extends AbstractNgRepeatDirective {
                     BoundBlockFactory boundBlockFactory,
                     Scope scope,
                     Parser parser,
-                    AstParser astParser)
-      : super(blockHole, boundBlockFactory, scope, parser, astParser);
+                    AstParser astParser,
+                    Animate animate)
+      : super(blockHole, boundBlockFactory, scope, parser, astParser, animate);
+  get _shalow => false;
 }
 
 /**
@@ -117,8 +119,9 @@ class NgShallowRepeatDirective extends AbstractNgRepeatDirective {
                           BoundBlockFactory boundBlockFactory,
                           Scope scope,
                           Parser parser,
-                          AstParser astParser)
-      : super(blockHole, boundBlockFactory, scope, parser, astParser)
+                          AstParser astParser,
+                          Animate animate)
+      : super(blockHole, boundBlockFactory, scope, parser, astParser, animate)
   {
     print('DEPRICATED: [ng-shallow-repeat] use [ng-repeat]');
   }
@@ -133,6 +136,7 @@ abstract class AbstractNgRepeatDirective  {
   final Scope _scope;
   final Parser _parser;
   final AstParser _astParser;
+  final Animate _animate;
 
   String _expression;
   String _valueIdentifier;
@@ -144,7 +148,8 @@ abstract class AbstractNgRepeatDirective  {
   Iterable _lastCollection;
 
   AbstractNgRepeatDirective(this._blockHole, this._boundBlockFactory,
-                            this._scope, this._parser, this._astParser);
+                            this._scope, this._parser, this._astParser,
+                            this._animate);
 
   set expression(value) {
     _expression = value;
@@ -219,7 +224,11 @@ abstract class AbstractNgRepeatDirective  {
     }
     // remove existing items
     _rows.forEach((key, row){
-      row.block.remove();
+      var removeBlock = row.block;
+      _animate.removeAll(row.block.elements).onCompleted.then((result) {
+        removeBlock.remove();
+      });
+
       row.scope.destroy();
     });
     _rows = newRows;
@@ -251,8 +260,17 @@ abstract class AbstractNgRepeatDirective  {
           nextNode = nextNode.nextNode;
         } while(nextNode != null);
 
-        // existing item which got moved
-        if (row.startNode != nextNode) row.block.moveAfter(cursor);
+        if (row.startNode != nextNode) {
+          // existing item which got moved
+          row.block.moveAfter(cursor);
+          
+         // TODO(codelogic): This will only do a new enter animation,
+         // but we might also want an exit animation and THEN an enter
+         // animation, but that mucks with the dom manipulation order.
+//          if(row.elements != null && row.elements.length > 0) {
+//            _animate.moveAll(row.elements);
+//          }
+        }
         previousNode = row.endNode;
       } else {
         // new item which we don't know about
@@ -281,6 +299,11 @@ abstract class AbstractNgRepeatDirective  {
             ..startNode = row.elements[0]
             ..endNode = row.elements[row.elements.length - 1];
         block.insertAfter(cursor);
+
+        // add animations.
+        if(block.elements != null && block.elements.length > 0) {
+          _animate.addAll(block.elements);
+        }
       }
       cursor = row.block;
     }

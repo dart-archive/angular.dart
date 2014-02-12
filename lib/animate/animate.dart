@@ -64,9 +64,9 @@ abstract class Animate {
    * Any existing animations running on any element in [elements] will be
    * canceled.
    */
-  AnimationHandle addClassToAll(List<dom.Element> elements, String cssClass) {
-    return new MultiAnimationHandle(
-        elements.map((e) => addClass(e, cssClass)).toList());
+  AnimationHandle addClassToAll(List<dom.Node> elements, String cssClass) {
+    return new MultiAnimationHandle(elements.where((e) => e.nodeType == dom.Node.ELEMENT_NODE)
+        .map((e) => addClass(e, cssClass)).toList());
   }
 
   /**
@@ -78,9 +78,9 @@ abstract class Animate {
    * Any existing animations running on any element in [elements] will be
    * canceled.
    */
-  AnimationHandle removeClassFromAll(List<dom.Element> elements, String cssClass) {
-    return new MultiAnimationHandle(
-        elements.map((e) => removeClass(e, cssClass)).toList());
+  AnimationHandle removeClassFromAll(List<dom.Node> elements, String cssClass) {
+    return new MultiAnimationHandle(elements.where((e) => e.nodeType == dom.Node.ELEMENT_NODE)
+        .map((e) => removeClass(e, cssClass)).toList());
   }
 
   /**
@@ -92,8 +92,9 @@ abstract class Animate {
    * Any existing animations running on any element in [elements] will be
    * canceled.
    */
-  AnimationHandle addAll(List<dom.Element> elements) {
-    return new MultiAnimationHandle(elements.map((e) => add(e)).toList());
+  AnimationHandle addAll(List<dom.Node> elements) {
+    return new MultiAnimationHandle(elements.where((e) => e.nodeType == dom.Node.ELEMENT_NODE)
+        .map((e) => add(e)).toList());
   }
 
   /**
@@ -109,8 +110,9 @@ abstract class Animate {
    * Any existing animations running on any element in [elements] will be
    * canceled.
    */
-  AnimationHandle removeAll(List<dom.Element> elements) {
-    return new MultiAnimationHandle(elements.map((e) => remove(e)).toList());
+  AnimationHandle removeAll(List<dom.Node> elements) {
+    return new MultiAnimationHandle(elements.where((e) => e.nodeType == dom.Node.ELEMENT_NODE)
+        .map((e) => remove(e)).toList());
   }
 
   /**
@@ -122,8 +124,9 @@ abstract class Animate {
    * Any existing animations running on any element in [elements] will be
    * canceled.
    */
-  AnimationHandle moveAll(List<dom.Element> elements) {
-    return new MultiAnimationHandle(elements.map((e) => move(e)).toList());
+  AnimationHandle moveAll(List<dom.Node> elements) {
+    return new MultiAnimationHandle(elements.where((e) => e.nodeType == dom.Node.ELEMENT_NODE)
+        .map((e) => move(e)).toList());
   }
 
   /**
@@ -135,7 +138,7 @@ abstract class Animate {
    * canceled.
    */
   AnimationHandle playAll(List<Animation> animations) {
-    return new MultiAnimationHandle(animations.map((a) => play(a)).toList());
+    return new MultiAnimationHandle(animations.map((e) => play(e)).toList());
   }
 }
 
