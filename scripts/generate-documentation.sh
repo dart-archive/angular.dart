@@ -1,25 +1,24 @@
 #!/bin/bash
 . $(dirname $0)/env.sh
 
-echo DART_DOCGEN=$DART_DOCGEN
-ls -l "$DART_DOCGEN" || true
-echo DARTDOC=$DARTDOC
-ls -l "$DARTDOC" || true
-
 # Temporary during transition period from use of dartdoc to docgen.
 if [ -x "$DART_DOCGEN" ]; then
-    DOC_CMD="$DART_DOCGEN"
-    MODE_OPTION=
+    # docgen seems to freeze when it processes the angular.dart files
+    # https://code.google.com/p/dart/issues/detail?id=16752
+    # so disable it for now
+    # DOC_CMD="$DART_DOCGEN"
+    # MODE_OPTION=
+    echo "DISABLING DOCUMENT GENERATION due to isses with docgen."
+    echo "https://code.google.com/p/dart/issues/detail?id=16752"
+    echo "----"
+    echo "Reporting success none-the-less during this docgen beta period."
+    exit 0;
 elif [ -x "$DARTDOC" ]; then
     DOC_CMD="$DARTDOC"
     MODE_OPTION="--mode=static"
-else
-    echo "There is no tool to generate the documentation!"
-    echo "Report success during this transition period from dartdoc to docgen."
-    exit 0;
 fi
 
-echo Generating documentation using $DOC_CMD using mode option '$MODE_OPTION'
+echo "Generating documentation using $DOC_CMD"
 "$DOC_CMD" $MODE_OPTION \
     --package-root=packages/ \
     --out doc \
