@@ -32,6 +32,10 @@ abstract class NgControl implements NgDetachAware {
     }
   }
 
+  reset() {
+    _scope.$broadcast('resetNgModel');
+  }
+
   get name => _name;
   set name(value) {
     _name = value;
@@ -168,5 +172,6 @@ class NgNullControl implements NgControl {
   get invalid => null;
   set invalid(value) {}
 
+  reset() => null;
   detach() => null;
 }

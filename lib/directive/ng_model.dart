@@ -15,6 +15,7 @@ class NgModel extends NgControl {
   BoundGetter getter = ([_]) => null;
   BoundSetter setter = (_, [__]) => null;
 
+  var _lastValue; 
   String _exp;
   final _validators = <NgValidatable>[];
 
@@ -26,6 +27,11 @@ class NgModel extends NgControl {
     super(scope, element, injector) {
     _exp = 'ng-model=${attrs["ng-model"]}';
     watchCollection = false;
+    scope.$on('resetNgModel', reset);
+  }
+
+  reset() {
+    modelValue = _lastValue;
   }
 
   @NgAttr('name')
@@ -51,6 +57,10 @@ class NgModel extends NgControl {
   set model(BoundExpression boundExpression) {
     getter = boundExpression;
     setter = boundExpression.assign;
+
+    _scope.$evalAsync((value) {
+      _lastValue = modelValue;
+    });
   }
 
   // TODO(misko): right now viewValue and modelValue are the same,
