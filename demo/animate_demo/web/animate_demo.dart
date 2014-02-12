@@ -18,8 +18,7 @@ part 'css_demo.dart';
 
 @NgController(
     selector: '[animation-demo]',
-    publishAs: 'demo'
-)
+    publishAs: 'demo')
 class AnimationDemoController {
   var pages = ["About", "ng-repeat", "Visibility", "Css", "Stress Test"];
   var currentPage = "About";
@@ -27,10 +26,10 @@ class AnimationDemoController {
 
 main() {
   ngBootstrap(module: new Module()
-    ..install(new NgAnimateModule())
-    ..type(RepeatDemoComponent)
-    ..type(VisibilityDemoComponent)
-    ..type(StressDemoComponent)
-    ..type(CssDemoComponent)
-    ..type(AnimationDemoController));
+      ..install(new NgAnimateModule())
+      ..type(RepeatDemoComponent)
+      ..type(VisibilityDemoComponent)
+      ..type(StressDemoComponent)
+      ..type(CssDemoComponent)
+      ..type(AnimationDemoController));
 }
