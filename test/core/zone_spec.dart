@@ -46,6 +46,23 @@ main() => describe('zone', () {
     })));
 
 
+    it('should allow executing code outside the zone', inject(() {
+      var zone = new NgZone();
+      var outerZone = Zone.current;
+      var ngZone;
+      var outsideZone;
+      zone.run(() {
+        ngZone = Zone.current;
+        zone.runOutsideAngular(() {
+          outsideZone = Zone.current;
+        });
+      });
+
+      expect(outsideZone).toEqual(outerZone);
+      expect(ngZone.parent).toEqual((outerZone));
+    }));
+
+
     it('should rethrow exceptions from the onTurnDone and call onError when the zone is sync', () {
       zone.onTurnDone = () {
         throw ["fromOnTurnDone"];
