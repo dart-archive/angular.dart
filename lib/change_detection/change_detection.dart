@@ -174,34 +174,34 @@ abstract class ChangedKeyValue<K, V> extends MapKeyValue<K, V> {
  * as a list of [CollectionChangeItem]s which contain the item as well as its
  * current and previous position in the list.
  */
-abstract class CollectionChangeRecord<K, V> {
+abstract class CollectionChangeRecord<V> {
   /** The underlying iterable object */
   Iterable get iterable;
 
   /** A list of [CollectionItem]s which are in the iteration order. */
-  CollectionItem<K, V> get collectionHead;
+  CollectionItem<V> get collectionHead;
   /** A list of new [AddedItem]s. */
-  AddedItem<K, V> get additionsHead;
+  AddedItem<V> get additionsHead;
   /** A list of [MovedItem]s. */
-  MovedItem<K, V> get movesHead;
+  MovedItem<V> get movesHead;
   /** A list of [RemovedItem]s. */
-  RemovedItem<K, V> get removalsHead;
+  RemovedItem<V> get removalsHead;
 
-  void forEachAddition(void f(AddedItem<K, V> addition));
-  void forEachMove(void f(MovedItem<K, V> move));
-  void forEachRemoval(void f(RemovedItem<K, V> removal));
+  void forEachAddition(void f(AddedItem<V> addition));
+  void forEachMove(void f(MovedItem<V> move));
+  void forEachRemoval(void f(RemovedItem<V> removal));
 }
 
 /**
  * Each changed item in the collection is wrapped in a [CollectionChangeItem],
  * which tracks the [item]s [currentKey] and [previousKey] location.
  */
-abstract class CollectionChangeItem<K, V> { // TODO(misko): change <K,V> to <V> since K is int.
+abstract class CollectionChangeItem<V> {
   /** Previous item location in the list or [null] if addition. */
-  K get previousKey; // TODO(misko): rename to previousIndex
+  int get previousIndex;
 
   /** Current item location in the list or [null] if removal. */
-  K get currentKey; // TODO(misko): rename to CurrentIndex
+  int get currentIndex;
 
   /** The item. */
   V get item;
@@ -211,30 +211,30 @@ abstract class CollectionChangeItem<K, V> { // TODO(misko): change <K,V> to <V> 
  * Used to create a linked list of collection items. These items are always in
  * the iteration order of the collection.
  */
-abstract class CollectionItem<K, V> extends CollectionChangeItem<K, V> {
-  CollectionItem<K, V> get nextCollectionItem;
+abstract class CollectionItem<V> extends CollectionChangeItem<V> {
+  CollectionItem<V> get nextCollectionItem;
 }
 
 /**
  * A linked list of new items added to the collection. These items are always in
  * the iteration order of the collection.
  */
-abstract class AddedItem<K, V> extends CollectionChangeItem<K, V> {
-  AddedItem<K, V> get nextAddedItem;
+abstract class AddedItem<V> extends CollectionChangeItem<V> {
+  AddedItem<V> get nextAddedItem;
 }
 
 /**
  * A linked list of items  moved in the collection. These items are always in
  * the iteration order of the collection.
  */
-abstract class MovedItem<K, V> extends CollectionChangeItem<K, V> {
-  MovedItem<K, V> get nextMovedItem;
+abstract class MovedItem<V> extends CollectionChangeItem<V> {
+  MovedItem<V> get nextMovedItem;
 }
 
 /**
  * A linked list of items removed  from the collection. These items are always
  * in the iteration order of the collection.
  */
-abstract class RemovedItem<K, V> extends CollectionChangeItem<K, V> {
-  RemovedItem<K, V> get nextRemovedItem;
+abstract class RemovedItem<V> extends CollectionChangeItem<V> {
+  RemovedItem<V> get nextRemovedItem;
 }

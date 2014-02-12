@@ -398,7 +398,7 @@ main() => describe('DirtyCheckingChangeDetector', () {
 
     it('should do basic operations', () {
       var k1 = 'a';
-      var r1 = new ItemRecord(k1)..currentKey = 1;
+      var r1 = new ItemRecord(k1)..currentIndex = 1;
       map.put(r1);
       expect(map.get(k1, 2)).toEqual(null);
       expect(map.get(k1, 1)).toEqual(null);
@@ -409,8 +409,8 @@ main() => describe('DirtyCheckingChangeDetector', () {
 
     it('should do basic operations on duplicate keys', () {
       var k1 = 'a';
-      var r1 = new ItemRecord(k1)..currentKey = 1;
-      var r2 = new ItemRecord(k1)..currentKey = 2;
+      var r1 = new ItemRecord(k1)..currentIndex = 1;
+      var r2 = new ItemRecord(k1)..currentIndex = 2;
       map..put(r1)..put(r2);
       expect(map.get(k1, 0)).toEqual(r1);
       expect(map.get(k1, 1)).toEqual(r2);
