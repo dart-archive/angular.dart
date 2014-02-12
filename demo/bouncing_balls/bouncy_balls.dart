@@ -62,7 +62,7 @@ class BounceController {
       balls.add(new BallModel());
       count--;
     }
-    while(count < 0) {
+    while(count < 0 && balls.isNotEmpty) {
       balls.removeAt(0);
       count++;
     }
