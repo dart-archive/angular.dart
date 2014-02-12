@@ -772,6 +772,32 @@ describe('ng-model', () {
 
     });
   });
+
+  describe('reset()', () {
+    it('should reset the model value to its original state', () {
+      _.compile('<input type="text" ng-model="myModel" probe="i" />');
+      _.rootScope.$apply('myModel = "animal"');
+
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+
+      expect(_.rootScope.myModel).toEqual('animal');
+      expect(model.modelValue).toEqual('animal');
+      expect(model.viewValue).toEqual('animal');
+
+      _.rootScope.$apply('myModel = "man"');
+
+      expect(_.rootScope.myModel).toEqual('man');
+      expect(model.modelValue).toEqual('man');
+      expect(model.viewValue).toEqual('man');
+
+      model.reset();
+
+      expect(_.rootScope.myModel).toEqual('animal');
+      expect(model.modelValue).toEqual('animal');
+      expect(model.viewValue).toEqual('animal');
+    });
+  });
 });
 
 @NgController(

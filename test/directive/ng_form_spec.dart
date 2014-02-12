@@ -306,6 +306,37 @@ describe('form', () {
     }));
   });
 
+  describe('reset()', () {
+    it('should reset the model value to its original state', inject((TestBed _) {
+      _.compile('<form name="superForm">' + 
+                ' <input type="text" ng-model="myModel" probe="i" />' +
+                '</form>');
+      _.rootScope.$apply('myModel = "animal"');
+
+      NgForm form = _.rootScope['superForm'];
+
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+
+      expect(_.rootScope.myModel).toEqual('animal');
+      expect(model.modelValue).toEqual('animal');
+      expect(model.viewValue).toEqual('animal');
+
+      _.rootScope.$apply('myModel = "man"');
+
+      expect(_.rootScope.myModel).toEqual('man');
+      expect(model.modelValue).toEqual('man');
+      expect(model.viewValue).toEqual('man');
+
+      form.reset();
+      _.rootScope.$apply();
+
+      expect(_.rootScope.myModel).toEqual('animal');
+      expect(model.modelValue).toEqual('animal');
+      expect(model.viewValue).toEqual('animal');
+    }));
+  });
+
   describe('regression tests: form', () {
     it('should be resolvable by injector if configured by user.', () {
       module((Module module) {
