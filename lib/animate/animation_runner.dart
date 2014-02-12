@@ -31,8 +31,8 @@ class AnimationRunner {
    * for animation. The [profiler] is optional and will report timing
    * information for the animation loop.
    */
-  AnimationRunner(this._wnd, this._clock, [Profiler _profiler])
-      : this._profiler = _getProfiler(_profiler);
+  AnimationRunner(this._wnd, this._clock, [Profiler profiler])
+      : _profiler = _getProfiler(profiler);
 
   // For some reason the turnary operator doesn't want to work with profiler.
   static Profiler _getProfiler(Profiler value) {
@@ -143,6 +143,7 @@ class AnimationRunner {
 
   _clearElement(element) {
     if(_activeAnimations.containsKey(element)) {
+      print("Clearing an existing animation for $element");
       var animation = _activeAnimations[element];
       _activeAnimations.remove(element);
       _updating.remove(animation);
