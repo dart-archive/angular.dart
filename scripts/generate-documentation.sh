@@ -1,6 +1,14 @@
 #!/bin/bash
 . $(dirname $0)/env.sh
-$DARTDOC \
+
+# Temporary during transition period from dartdoc to docgen.
+
+if [ ! -x "$DART_DOCGEN" ]; then
+    # Fall back on old dartdoc
+    DART_DOCGEN=$DARTDOC
+fi
+
+$DART_DOCGEN \
     --package-root=packages/ \
     --out doc \
     --mode=static \
