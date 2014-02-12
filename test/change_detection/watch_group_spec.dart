@@ -620,7 +620,7 @@ class MyClass {
 
   count() => _count++;
 
-  toString() => 'MyClass';
+  String toString() => 'MyClass';
 }
 
 class LoggingFunctionApply extends FunctionApply {

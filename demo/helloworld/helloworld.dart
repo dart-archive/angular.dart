@@ -10,8 +10,7 @@ import 'dart:mirrors';
 
 @NgController(
     selector: '[hello-world-controller]',
-    publishAs: 'ctrl'
-)
+    publishAs: 'ctrl')
 class HelloWorldController {
   String name = "world";
 }
