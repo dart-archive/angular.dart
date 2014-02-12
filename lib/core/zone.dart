@@ -29,8 +29,13 @@ class LongStackTrace {
  * A better zone API which implements onTurnDone.
  */
 class NgZone {
-  NgZone() {
-    _zone = async.Zone.current.fork(specification: new async.ZoneSpecification(
+  final async.Zone _outerZone;
+  async.Zone _zone;
+
+  NgZone()
+      : _outerZone = async.Zone.current
+  {
+    _zone = _outerZone.fork(specification: new async.ZoneSpecification(
         run: _onRun,
         runUnary: _onRunUnary,
         scheduleMicrotask: _onScheduleMicrotask,
@@ -38,7 +43,6 @@ class NgZone {
     ));
   }
 
-  async.Zone _zone;
 
   List _asyncQueue = [];
   bool _errorThrownFromOnRun = false;
@@ -141,6 +145,22 @@ class NgZone {
    * Returns the return value of body.
    */
   run(body()) => _zone.run(body);
+
+  /**
+   * Allows one to escape the auto-digest mechanism of Angular.
+   *
+   *     myFunction(NgZone zone, Element element) {
+   *       element.onClick.listen(() {
+   *         // auto-digest will run after element click.
+   *       });
+   *       zone.runOutsideAngular(() {
+   *         element.onMouseMove.listen(() {
+   *           // auto-digest will NOT run after mouse move
+   *         });
+   *       });
+   *     }
+   */
+  runOutsideAngular(body()) => _outerZone.run(body);
 
   assertInTurn() {
     assert(_runningInTurn > 0 || _inFinishTurn);
