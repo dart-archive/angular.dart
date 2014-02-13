@@ -184,6 +184,7 @@ main() => describe('scope', () {
     }));
   });
 
+
   describe('properties', () {
     describe('root', () {
       it('should point to itself', inject((RootScope rootScope) {
@@ -212,6 +213,7 @@ main() => describe('scope', () {
       }));
     });
   });
+
 
   describe(r'events', () {
 
@@ -482,7 +484,8 @@ main() => describe('scope', () {
     });
   });
 
-  describe(r'$destroy', () {
+
+  describe(r'destroy', () {
     var first = null, middle = null, last = null, log = null;
 
     beforeEach(inject((RootScope rootScope) {
@@ -531,7 +534,7 @@ main() => describe('scope', () {
     }));
 
 
-    it(r'should broadcast the $destroy event', inject((RootScope rootScope) {
+    it(r'should broadcast the destroy event', inject((RootScope rootScope) {
       var log = [];
       first.on(ScopeEvent.DESTROY).listen((s) => log.add('first'));
       first.createChild({}).on(ScopeEvent.DESTROY).listen((s) => log.add('first-child'));
@@ -540,7 +543,8 @@ main() => describe('scope', () {
       expect(log).toEqual(['first', 'first-child']);
     }));
   });
-  
+
+
   describe('digest lifecycle', () {
     it(r'should apply expression with full lifecycle', inject((RootScope rootScope) {
       var log = '';
@@ -554,16 +558,16 @@ main() => describe('scope', () {
     it(r'should catch exceptions', () {
       module((Module module) => module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler));
       inject((RootScope rootScope, ExceptionHandler e) {
-        LoggingExceptionHandler $exceptionHandler = e;
+        LoggingExceptionHandler exceptionHandler = e;
         var log = [];
         var child = rootScope.createChild({});
         rootScope.watch('a', (a, _) => log.add('1'));
         rootScope.context['a'] = 0;
         child.apply(() { throw 'MyError'; });
         expect(log.join(',')).toEqual('1');
-        expect($exceptionHandler.errors[0].error).toEqual('MyError');
-        $exceptionHandler.errors.removeAt(0);
-        $exceptionHandler.assertEmpty();
+        expect(exceptionHandler.errors[0].error).toEqual('MyError');
+        exceptionHandler.errors.removeAt(0);
+        exceptionHandler.assertEmpty();
       });
     });
 
@@ -584,11 +588,11 @@ main() => describe('scope', () {
 
       it(r'should execute and return value and update', inject(
               (RootScope rootScope, ExceptionHandler e) {
-        LoggingExceptionHandler $exceptionHandler = e;
+        LoggingExceptionHandler exceptionHandler = e;
         rootScope.context['name'] = 'abc';
         expect(rootScope.apply((context) => context['name'])).toEqual('abc');
         expect(log).toEqual('digest;digest;');
-        $exceptionHandler.assertEmpty();
+        exceptionHandler.assertEmpty();
       }));
 
 
@@ -599,11 +603,11 @@ main() => describe('scope', () {
 
 
       it(r'should catch exception and update', inject((RootScope rootScope, ExceptionHandler e) {
-        LoggingExceptionHandler $exceptionHandler = e;
+        LoggingExceptionHandler exceptionHandler = e;
         var error = 'MyError';
         rootScope.apply(() { throw error; });
         expect(log).toEqual('digest;digest;');
-        expect($exceptionHandler.errors[0].error).toEqual(error);
+        expect(exceptionHandler.errors[0].error).toEqual(error);
       }));
     });
 
@@ -613,8 +617,8 @@ main() => describe('scope', () {
       expect(() => rootScope.apply(() { throw error; })).toThrow(error);
     }));
   });
-  
-  
+
+
   describe('flush lifecycle', () {
     it(r'should apply expression with full lifecycle', inject((RootScope rootScope) {
       var log = '';
@@ -637,16 +641,16 @@ main() => describe('scope', () {
     it(r'should catch exceptions', () {
       module((Module module) => module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler));
       inject((RootScope rootScope, ExceptionHandler e) {
-        LoggingExceptionHandler $exceptionHandler = e;
+        LoggingExceptionHandler exceptionHandler = e;
         var log = [];
         var child = rootScope.createChild({});
         rootScope.observe('a', (a, _) => log.add('1'));
         rootScope.context['a'] = 0;
         child.apply(() { throw 'MyError'; });
         expect(log.join(',')).toEqual('1');
-        expect($exceptionHandler.errors[0].error).toEqual('MyError');
-        $exceptionHandler.errors.removeAt(0);
-        $exceptionHandler.assertEmpty();
+        expect(exceptionHandler.errors[0].error).toEqual('MyError');
+        exceptionHandler.errors.removeAt(0);
+        exceptionHandler.assertEmpty();
       });
     });
 
@@ -667,11 +671,11 @@ main() => describe('scope', () {
 
       it(r'should execute and return value and update', inject(
               (RootScope rootScope, ExceptionHandler e) {
-        LoggingExceptionHandler $exceptionHandler = e;
+        LoggingExceptionHandler exceptionHandler = e;
         rootScope.context['name'] = 'abc';
         expect(rootScope.apply((context) => context['name'])).toEqual('abc');
         expect(log).toEqual('digest;digest;');
-        $exceptionHandler.assertEmpty();
+        exceptionHandler.assertEmpty();
       }));
 
       it(r'should execute and return value and update', inject((RootScope rootScope) {
@@ -680,11 +684,11 @@ main() => describe('scope', () {
       }));
 
       it(r'should catch exception and update', inject((RootScope rootScope, ExceptionHandler e) {
-        LoggingExceptionHandler $exceptionHandler = e;
+        LoggingExceptionHandler exceptionHandler = e;
         var error = 'MyError';
         rootScope.apply(() { throw error; });
         expect(log).toEqual('digest;digest;');
-        expect($exceptionHandler.errors[0].error).toEqual(error);
+        expect(exceptionHandler.errors[0].error).toEqual(error);
       }));
 
       it(r'should throw assertion when model changes in flush', inject((RootScope rootScope, Logger log) {
@@ -793,12 +797,12 @@ main() => describe('scope', () {
         module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
       });
       inject((RootScope rootScope, ExceptionHandler e) {
-        LoggingExceptionHandler $exceptionHandler = e;
+        LoggingExceptionHandler exceptionHandler = e;
         rootScope.watch('a', (n, o) {throw 'abc';});
         rootScope.context['a'] = 1;
         rootScope.digest();
-        expect($exceptionHandler.errors.length).toEqual(1);
-        expect($exceptionHandler.errors[0].error).toEqual('abc');
+        expect(exceptionHandler.errors.length).toEqual(1);
+        expect(exceptionHandler.errors[0].error).toEqual('abc');
       });
     });
 
@@ -990,7 +994,7 @@ main() => describe('scope', () {
       expect(log).toEqual('parent.async;parent.digest;');
     }));
 
-    it(r'should cause a $digest rerun', inject((RootScope rootScope) {
+    it(r'should cause a digest rerun', inject((RootScope rootScope) {
       rootScope.context['log'] = '';
       rootScope.context['value'] = 0;
       // NOTE(deboer): watch listener string functions not yet supported
