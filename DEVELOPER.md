@@ -74,6 +74,7 @@ export CHROME_BIN="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 # CHROME_CANARY_BIN: path to a Dartium browser executable; e.g.,
 export CHROME_CANARY_BIN="$DART_EDITOR_DIR/chromium/Chromium.app/Contents/MacOS/Chromium"
 ```
+**Note**: the `$CHROME_CANARY_BIN` environment variable is used by karma run your tests in headless mode.
 
 You should also add the Dart SDK `bin` directory to your path and/or define `DART_SDK`; e.g.
 
@@ -92,6 +93,9 @@ Next, install the modules and packages needed to run AngularDart tests:
 # Install node.js dependencies:
 npm install
 
+# Install karma onto your command line (optional)
+npm install karma -g
+
 # Install Dart packages
 pub install
 ```
@@ -107,7 +111,7 @@ To run base tests:
 . ./scripts/env.sh
 
 # Run io tests:
-$DART --checked test/io/all.dart
+dart --checked test/io/all.dart
 
 # Run expression extractor tests:
 scripts/test-expression-extractor.sh
@@ -133,6 +137,25 @@ tests proper by executing:
 . ./scripts/env.sh
 karma_run.sh
 ```
+
+**Note:**: If the dart analyzer fails with warnings, the tests will not run.
+You can manually run the tests if this happens: 
+
+```shell
+karma run --port=8765
+```
+
+# Debuging
+
+In the dart editor you can configure a dartium launch target for the karma test runner debug page:
+
+```
+http://localhost:8765/debug.html
+```
+
+If you want to only run a single test you can alter the test you wish to run by changing `it` to `iit`
+or `describe` to `ddescribe`. This will only run that individual test and make it much easier to debug.
+
 
 ## Continuous Integration using Travis
 
