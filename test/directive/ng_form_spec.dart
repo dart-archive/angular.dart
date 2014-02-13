@@ -304,6 +304,33 @@ describe('form', () {
 
       expect(_.rootScope.submitted).toBe(true);
     }));
+
+    it('should apply the valid and invalid prefixed submit CSS classes to the element', inject((TestBed _) {
+      _.compile('<form name="superForm">' + 
+                ' <input type="text" ng-model="myModel" probe="i" required />' +
+                '</form>');
+
+      NgForm form = _.rootScope['superForm'];
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+
+      expect(form.element.classes.contains('ng-submit-invalid')).toBe(false);
+      expect(form.element.classes.contains('ng-submit-valid')).toBe(false);
+
+      Event submissionEvent = new Event.eventType('CustomEvent', 'submit');
+
+      form.element.dispatchEvent(submissionEvent);
+      _.rootScope.$apply();
+
+      expect(form.element.classes.contains('ng-submit-invalid')).toBe(true);
+      expect(form.element.classes.contains('ng-submit-valid')).toBe(false);
+
+      _.rootScope.$apply('myModel = "man"');
+      form.element.dispatchEvent(submissionEvent);
+
+      expect(form.element.classes.contains('ng-submit-invalid')).toBe(false);
+      expect(form.element.classes.contains('ng-submit-valid')).toBe(true);
+    }));
   });
 
   describe('reset()', () {
