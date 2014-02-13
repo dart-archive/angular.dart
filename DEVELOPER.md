@@ -74,7 +74,9 @@ export CHROME_BIN="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 # CHROME_CANARY_BIN: path to a Dartium browser executable; e.g.,
 export CHROME_CANARY_BIN="$DART_EDITOR_DIR/chromium/Chromium.app/Contents/MacOS/Chromium"
 ```
-**Note**: the `$CHROME_CANARY_BIN` environment variable is used by karma run your tests in headless mode.
+**Note**: the `$CHROME_CANARY_BIN` environment variable is used by karma to run your tests
+in dartium instead of chromium. If you don't do this, the dart2js compile will make the tests
+run extreamly slow since it has to wait for a full js compile each time.
 
 You should also add the Dart SDK `bin` directory to your path and/or define `DART_SDK`; e.g.
 
@@ -145,7 +147,7 @@ You can manually run the tests if this happens:
 karma run --port=8765
 ```
 
-# Debuging
+## Debuging
 
 In the dart editor you can configure a dartium launch target for the karma test runner debug page:
 
