@@ -13,6 +13,12 @@ import '../_specs.dart';
 @NgDirective(selector:':contains(/abc/)')     class _ContainsAbc{}
 @NgDirective(selector:'[*=/xyz/]')            class _AttributeContainsXyz{}
 
+@NgDirective(selector:'[ng-directive]')          class _NgDirectiveAttr{}
+@NgDirective(selector:'[ng-directive=d][foo=f]') class _NgDirectiveFooAttr{}
+@NgDirective(selector:'b[ng-directive]')         class _NgBElementDirectiveAttr{}
+@NgDirective(selector:'[ng-directive=value]')    class _NgDirectiveValueAttr{}
+@NgDirective(selector:'b[ng-directive=value]')   class _NgBElementDirectiveValue{}
+
 @NgComponent(selector:'component')            class _Component{}
 @NgDirective(selector:'[attribute]')          class _Attribute{}
 @NgDirective(selector:'[structural]',
@@ -54,6 +60,11 @@ main() {
         ..type(_BElementDirectiveValue)
         ..type(_ContainsAbc)
         ..type(_AttributeContainsXyz)
+        ..type(_NgDirectiveAttr)
+        ..type(_NgDirectiveFooAttr)
+        ..type(_NgBElementDirectiveAttr)
+        ..type(_NgDirectiveValueAttr)
+        ..type(_NgBElementDirectiveValue)
         ..type(_Component)
         ..type(_Attribute)
         ..type(_Structural)
@@ -124,6 +135,51 @@ main() {
           { "selector": 'b[directive=value]', "value": 'value', "element": element}
         ]));
     });
+
+
+    it('should match ng-directive on [attribute] with data- prefix', () {
+      expect(selector(element = e('<div data-ng-directive=abc></div>')),
+        toEqualsDirectiveInfos([
+          { "selector": '[ng-directive]', "value": 'abc', "element": element,
+            "name": 'directive' }]));
+
+      expect(selector(element = e('<div data-ng-directive></div>')),
+        toEqualsDirectiveInfos([
+          { "selector": '[ng-directive]', "value": '', "element": element,
+            "name": 'directive' }]));
+    });
+
+
+    it('should match ng-directive on element[attribute] with data- prefix', () {
+      expect(selector(element = e('<b data-ng-directive=abc></b>')),
+        toEqualsDirectiveInfos([
+          { "selector": 'b', "value": null, "element": element},
+          { "selector": '[ng-directive]', "value": 'abc', "element": element},
+          { "selector": 'b[ng-directive]', "value": 'abc', "element": element}
+        ]));
+    });
+
+
+    it('should match ng-directive on [attribute=value] with data- prefix', () {
+      expect(selector(element = e('<div data-ng-directive=value></div>')),
+        toEqualsDirectiveInfos([
+          { "selector": '[ng-directive]', "value": 'value', "element": element},
+          { "selector": '[ng-directive=value]', "value": 'value', "element": element}
+        ]));
+    });
+
+
+    it('should match ng-directive on element[attribute=value] with data- prefix', () {
+      expect(selector(element = e('<b data-ng-directive=value></div>')),
+        toEqualsDirectiveInfos([
+          { "selector": 'b', "value": null, "element": element, "name": null},
+          { "selector": '[ng-directive]', "value": 'value', "element": element},
+          { "selector": '[ng-directive=value]', "value": 'value', "element": element},
+          { "selector": 'b[ng-directive]', "value": 'value', "element": element},
+          { "selector": 'b[ng-directive=value]', "value": 'value', "element": element}
+        ]));
+    });
+
 
     it('should match attributes', () {
       expect(selector(element = e('<div attr="before-xyz-after"></div>')),

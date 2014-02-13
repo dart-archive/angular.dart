@@ -283,6 +283,9 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
           element.attributes['type'] = 'text';
         }
 
+        // Normalize ng-* attributes
+        normalizeNgAttributes(element);
+
         // Select node
         partialSelection = elementSelector.selectNode(directiveRefs,
             partialSelection, element, nodeName);
