@@ -14,6 +14,10 @@ typedef EvalFunction1(context);
 class ScopeEvent {
   static final String DESTROY = 'ng-destroy';
 
+  /**
+   * Data attached to the event. This would be the optional parameter
+   * from [Scope.emit] and [Scope.broadcast].
+   */
   final data;
 
   /**
@@ -27,7 +31,10 @@ class ScopeEvent {
   final Scope targetScope;
 
   /**
-   * The destination scope that intercepted the event.
+   * The destination scope that intercepted the event. As
+   * the event traverses the scope hierarchy the the event instance
+   * stays the same, but the [currentScope] reflects the scope
+   * of the current listener which is firing.
    */
   Scope get currentScope => _currentScope;
   Scope _currentScope;
@@ -118,12 +125,35 @@ class ScopeLocals implements Map {
   dynamic putIfAbsent(key, fn) => _scope.putIfAbsent(key, fn);
 }
 
+/**
+ * [Scope] is represents a collection of [watch]es [observe]ers, and [context]
+ * for the watchers, observers and [eval]uations. Scopes structure loosely
+ * mimics the DOM structure. Scopes and [Block]s are bound to each other.
+ * As scopes are created and destroyed by [BlockFactory] they are responsible
+ * for change detection, change processing and memory management.
+ */
 class Scope {
+
+  /**
+   * The default execution context for [watch]es [observe]ers, and [eval]uation.
+   */
   final context;
+
+  /**
+   * The [RootScope] of the application.
+   */
   final RootScope rootScope;
+
   Scope _parentScope;
+
+  /**
+   * The parent [Scope].
+   */
   Scope get parentScope => _parentScope;
 
+  // TODO(misko): WatchGroup should be private.
+  // Instead we should expose performance stats about the watches
+  // such as # of watches, checks/1ms, field checks, function checks, etc
   final WatchGroup watchGroup;
   final WatchGroup observeGroup;
   final int _depth;
@@ -136,6 +166,12 @@ class Scope {
   Scope(Object this.context, this.rootScope, this._parentScope, this._depth,
         this._index, this.watchGroup, this.observeGroup);
 
+  /**
+   * A [watch] sets up a watch in the [digest] phase of the [apply] cycle.
+   *
+   * Use [watch] if the reaction function can cause updates to model. In your
+   * controller code you will most likely use [watch].
+   */
   Watch watch(expression, ReactionFn reactionFn, {context, FilterMap filters}) {
     assert(expression != null);
     AST ast = expression is AST
