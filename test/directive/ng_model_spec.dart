@@ -758,6 +758,41 @@ describe('ng-model', () {
     }));
   });
 
+  describe('validation', () {
+    it('should happen automatically when the scope changes', inject((Scope scope) {
+      _.compile('<input type="text" ng-model="model" probe="i" required>');
+      _.rootScope.$digest();
+
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+
+      expect(model.invalid).toBe(true);
+      expect(model.valid).toBe(false);
+
+      _.rootScope.$apply('model = "viljami"');
+
+      expect(model.invalid).toBe(false);
+      expect(model.valid).toBe(true);
+    }));
+
+    it('should happen automatically upon user input via the onInput event', inject(() {
+      _.compile('<input type="text" ng-model="model" probe="i" required>');
+
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+      InputElement inputElement = model.element;
+
+      expect(model.invalid).toBe(true);
+      expect(model.valid).toBe(false);
+
+      inputElement.value = 'some value';
+      _.triggerEvent(inputElement, 'input');
+
+      expect(model.invalid).toBe(false);
+      expect(model.valid).toBe(true);
+    }));
+  });
+
   describe('valid / invalid', () {
     it('should add and remove the correct flags when set to valid and to invalid', inject((Scope scope) {
       _.compile('<input type="text" ng-model="my_model" probe="i" />');

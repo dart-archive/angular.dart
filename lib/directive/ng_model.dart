@@ -28,6 +28,10 @@ class NgModel extends NgControl implements NgAttachAware {
     _exp = 'ng-model=${attrs["ng-model"]}';
   }
 
+  process(value) {
+    render(value);
+    validate();
+  }
 
   attach() {
     watchCollection = false;
@@ -51,9 +55,9 @@ class NgModel extends NgControl implements NgAttachAware {
     _watchCollection = value;
     _removeWatch();
     if (_watchCollection) {
-      _removeWatch = _scope.$watchCollection((s) => getter(), (value) => render(value), _exp);
+      _removeWatch = _scope.$watchCollection((s) => getter(), (value) => process(value), _exp);
     } else {
-      _removeWatch = _scope.$watch((s) => getter(), (value) => render(value), _exp);
+      _removeWatch = _scope.$watch((s) => getter(), (value) => process(value), _exp);
     }
   }
 
