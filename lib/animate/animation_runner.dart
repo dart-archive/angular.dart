@@ -25,6 +25,7 @@ class AnimationRunner {
 
   final Profiler _profiler;
   final Scope _scope;
+  final NgZone _zone;
 
   /**
    * The animation runner which requires the dom [Window] for
@@ -32,7 +33,7 @@ class AnimationRunner {
    * for animation. The [profiler] is optional and will report timing
    * information for the animation loop.
    */
-  AnimationRunner(this._wnd, this._clock, Scope this._scope, [Profiler profiler])
+  AnimationRunner(this._wnd, this._clock, Scope this._scope, this._zone, [Profiler profiler])
       : _profiler = _getProfiler(profiler);
 
   // For some reason the turnary operator doesn't want to work with profiler.
@@ -63,12 +64,13 @@ class AnimationRunner {
       _animationFrameQueued = true;
 
       _wnd.animationFrame.then((offsetMs)
-          => _animationFrame(offsetMs));
+          => _zone.runOutsideAngular(_animationFrame(offsetMs)));
     }
   }
 
   /**
-   * On the browsers animation frame event, update animations.
+   * On the browsers animation frame event, update animations. This runs outside
+   * of the normal angular digest loop for performance reasons.
    *
    * TODO(codelogic) It might be good to move this into a seperate class that
    *   ONLY handles animation frames so other systems can hook into it an use it
