@@ -46,7 +46,6 @@ class NoAnimate extends Animate {
   }
 }
 
-
 Iterable<dom.Element> _elements(Iterable<dom.Node> nodes) {
   return nodes.where((el) => el.nodeType == dom.Node.ELEMENT_NODE);
 }
