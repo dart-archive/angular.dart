@@ -154,11 +154,10 @@ class AnimationRunner {
   }
   
   bool hasRunningParentAnimation(dom.Element element) {
-    String txt =  element.text;
     while(element != null) {
-      element = element.parent;
       if(_activeAnimations.containsKey(element))
         return true;
+      element = element.parent;
     }
     
     return false;

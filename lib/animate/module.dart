@@ -12,6 +12,7 @@ import 'package:di/di.dart';
 
 part 'animate.dart';
 part 'animation.dart';
+part 'animation_handle.dart';
 part 'animation_runner.dart';
 part 'css_animation.dart';
 part 'css_animate.dart';

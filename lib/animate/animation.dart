@@ -12,6 +12,10 @@ class AnimationResult {
 
   /// A [CANCELED] animation should not procced with it's final effects.
   static const CANCELED = const AnimationResult._('CANCELED');
+  
+  /// Convienence method if you don't care exactly how an animation completed
+  /// only that it did.
+  bool get isCompleted => this == COMPLETED || this == COMPLETED_IGNORED;
 
   final String value;
   const AnimationResult._(this.value);

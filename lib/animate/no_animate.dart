@@ -5,52 +5,49 @@ part of angular.animate;
  * complete on the next digest loop.
  */
 class NoAnimate extends Animate {
-  AnimationHandle addClass(dom.Element element, String cssClass) {
-    element.classes.add(cssClass);
-    return _completedAnimationHandle();
-  }
+  final RootScope _scope;
+  NoAnimate(this._scope);
 
-  AnimationHandle removeClass(dom.Element element, String cssClass) {
-    element.classes.remove(cssClass);
-    return _completedAnimationHandle();
-  }
-
-  AnimationHandle add(dom.Element element) {
-    return _completedAnimationHandle();
-  }
-
-  AnimationHandle remove(dom.Element element) {
-    return _completedAnimationHandle();
-  }
-
-  AnimationHandle move(dom.Element element) {
-    return _completedAnimationHandle();
-  }
-
-  AnimationHandle play(Animation animation) {
-    var handle = new _CompletedAnimationHandle(future: animation.onCompleted);
-    animation.interruptAndComplete();
-    return handle;
-  }
-
-  AnimationHandle _completedAnimationHandle() {
+  AnimationHandle addClass(Iterable<dom.Node> nodes, String cssClass) {
+    _elements(nodes).forEach((el) => el.classes.add(cssClass));
     return new _CompletedAnimationHandle();
+  }
+  
+  AnimationHandle removeClass(Iterable<dom.Node> nodes, String cssClass) {
+    _elements(nodes).forEach((el) => el.classes.remove(cssClass));
+    return new _CompletedAnimationHandle();
+  }
+  
+  AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore } ) {
+    parent.insertAllBefore(nodes, insertBefore);
+    return new _CompletedAnimationHandle();
+  }
+
+  AnimationHandle remove(Iterable<dom.Node> nodes) {
+    nodes.forEach((n) => n.remove());
+    return new _CompletedAnimationHandle();
+  }
+
+  AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
+    nodes.forEach((n) {
+      if(n.parentNode == null) n.remove();
+      parent.insertBefore(n, insertBefore);
+    });
+    return new _CompletedAnimationHandle();
+  }
+
+  AnimationHandle play(Iterable<Animation> animations) {
+
+    var handle = new _MultiAnimationHandle(
+        animations.map((a) => new _CompletedAnimationHandle(future: a.onCompleted)));
+    
+    animations.forEach((a) => a.interruptAndComplete());
+    
+    return handle;
   }
 }
 
-class _CompletedAnimationHandle extends AnimationHandle {
-  Future<AnimationResult> _future;
-  get onCompleted => _future;
 
-  _CompletedAnimationHandle({Future<AnimationResult> future})
-      : _future = future {
-    if(_future == null) {
-      var completer = new Completer<AnimationResult>();
-      _future = completer.future;
-      completer.complete(AnimationResult.COMPLETED_IGNORED);
-    }
-  }
-
-  complete() { }
-  cancel() { }
+Iterable<dom.Element> _elements(Iterable<dom.Node> nodes) {
+  return nodes.where((el) => el.nodeType == dom.Node.ELEMENT_NODE);
 }

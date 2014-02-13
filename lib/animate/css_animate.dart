@@ -14,7 +14,7 @@ part of angular.animate;
 class CssAnimate extends Animate {
   static const String ngAnimateCssClass = "ng-animate";
   static const String ngMoveCssClass = "ng-move";
-  static const String ngAddCssClass = "ng-enter";
+  static const String ngInsertCssClass = "ng-enter";
   static const String ngRemoveCssClass = "ng-leave";
 
   static const String ngAddPostfix = "add";
@@ -24,50 +24,79 @@ class CssAnimate extends Animate {
   AnimationRunner _animationRunner;
   NoAnimate _noAnimate;
   Profiler profiler;
+  RootScope _scope;
 
-  CssAnimate(AnimationRunner this._animationRunner, this._noAnimate,
+  CssAnimate(AnimationRunner this._animationRunner, this._noAnimate, this._scope,
       [ this.profiler ]);
 
-  AnimationHandle addClass(dom.Element element, String cssClass) {
-    if(_animationRunner.hasRunningParentAnimation(element))
-      return _noAnimate.addClass(element, cssClass);
-
-    return _cssAnimation(element, "$cssClass-$ngAddPostfix",
-        cssClassToAdd: cssClass);
-  }
-
-  AnimationHandle removeClass(dom.Element element, String cssClass) {
-    if(_animationRunner.hasRunningParentAnimation(element))
-      return _noAnimate.removeClass(element, cssClass);
-
-    return _cssAnimation(element, "$cssClass-$ngRemovePostfix",
-        cssClassToRemove: cssClass);
-  }
-
-  AnimationHandle add(dom.Element element) {
-    if(_animationRunner.hasRunningParentAnimation(element))
-      return _noAnimate.add(element);
+  AnimationHandle addClass(Iterable<dom.Node> nodes, String cssClass) {
+    var elements = _partition(_elements(nodes));
     
-    return _cssAnimation(element, ngAddCssClass);
+    var animateHandles = elements.animate.map((el) {
+      return _cssAnimation(el, "$cssClass-$ngAddPostfix",
+              cssClassToAdd: cssClass);
+    });
+    
+    if(elements.noAnimate.length > 0)
+      return _pickAnimationHandle(animateHandles,
+          _noAnimate.addClass(elements.noAnimate, cssClass));
+    return _pickAnimationHandle(animateHandles);
   }
 
-  AnimationHandle remove(dom.Element element) {
-    if(_animationRunner.hasRunningParentAnimation(element))
-      return _noAnimate.remove(element);
-
-    return _cssAnimation(element, ngRemoveCssClass);
+  AnimationHandle removeClass(Iterable<dom.Node> nodes, String cssClass) {
+    var elements = _partition(_elements(nodes));
+    
+    var animateHandles = elements.animate.map((el) {
+      return _cssAnimation(el, "$cssClass-$ngRemovePostfix",
+          cssClassToRemove: cssClass);
+    });
+    
+    if(elements.noAnimate.length > 0)
+      return _pickAnimationHandle(animateHandles,
+          _noAnimate.removeClass(elements.noAnimate, cssClass));
+    return _pickAnimationHandle(animateHandles);
   }
 
-  AnimationHandle move(dom.Element element) {
-    if(_animationRunner.hasRunningParentAnimation(element))
-      return _noAnimate.move(element);
+  AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
+    domInsert(nodes, parent, insertBefore: insertBefore);
+    
+    var animateHandles = _elements(nodes).where((el) {
+      return !_animationRunner.hasRunningParentAnimation(el.parent);
+    }).map((el) {
+      return _cssAnimation(el, ngInsertCssClass);
+    });
 
-    return _cssAnimation(element, ngMoveCssClass);
+    return _pickAnimationHandle(animateHandles);
   }
 
-  AnimationHandle play(Animation animation) {
-    // TODO codelogic, should we ignore play animations?
-    return _animationRunner.play(animation);
+  AnimationHandle remove(Iterable<dom.Node> nodes) {
+    var elements = _partition(_elements(nodes));
+    var animateHandles = elements.animate.map((el) {
+      return _cssAnimation(el, ngRemoveCssClass)..onCompleted.then((result) {
+        if(result.isCompleted) {
+          el.remove();
+        }
+      });
+    });
+    elements.noAnimate.forEach((el) => el.remove());
+    return _pickAnimationHandle(animateHandles);
+  }
+
+  AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
+    domMove(nodes, parent, insertBefore: insertBefore);
+    
+    var animateHandles = _elements(nodes).where((el) {
+      return !_animationRunner.hasRunningParentAnimation(el.parent);
+    }).map((el) {
+      return _cssAnimation(el, ngMoveCssClass);
+    });
+
+    return _pickAnimationHandle(animateHandles);
+  }
+
+  AnimationHandle play(Iterable<Animation> animations) {
+    // TODO(codelogic): Should we skip the running parent animation check for custom animations?
+    return _pickAnimationHandle(animations.map((a) => _animationRunner.play(a)));
   }
 
   AnimationHandle _cssAnimation(dom.Element element,
@@ -85,4 +114,57 @@ class CssAnimate extends Animate {
 
     return _animationRunner.play(animation);
   }
+  
+  
+  static AnimationHandle _pickAnimationHandle(Iterable<AnimationHandle> animated, [AnimationHandle noAnimate]) {
+    List<AnimationHandle> handles;
+ 
+    if(animated != null)
+      handles = animated.toList();
+    else if (noAnimate == null)
+      return new _CompletedAnimationHandle();
+    else
+      return noAnimate;
+    
+    if(noAnimate != null)
+      handles.add(noAnimate);
+
+    if(handles.length == 1)
+      return handles.first;
+
+    return new _MultiAnimationHandle(handles);
+  }
+  
+  _RunnableAnimations _partition(Iterable nodes) {
+    var runnable = new _RunnableAnimations();
+    nodes.forEach((el) {
+      if(_animationRunner.hasRunningParentAnimation(el.parentNode)) {
+        runnable.noAnimate.add(el);
+      } else {
+        runnable.animate.add(el);
+      }
+    });
+    return runnable;
+  }
 }
+
+class _RunnableAnimations {
+  final animate = [];
+  final noAnimate = [];
+}
+
+void domRemove(Iterable<dom.Node> nodes) {
+  nodes.forEach((el) => el.remove());
+}
+
+void domInsert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
+  parent.insertAllBefore(nodes, insertBefore);
+}
+
+void domMove(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
+  nodes.forEach((n) {
+    if(n.parentNode == null) n.remove();
+      parent.insertBefore(n, insertBefore);
+  });
+}
+

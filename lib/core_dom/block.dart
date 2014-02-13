@@ -57,8 +57,7 @@ class Block implements ElementWrapper {
     bool preventDefault = false;
 
     Function insertDomElements = () {
-      elements.forEach((el) => parentElement.insertBefore(el, insertBeforeElement));
-      _animate.addAll(elements);
+      _animate.insert(elements, parentElement, insertBefore: insertBeforeElement);
     };
 
     if (onInsert != null) {
@@ -81,27 +80,15 @@ class Block implements ElementWrapper {
     bool preventDefault = false;
 
     Function removeDomElements = () {
-      _animate.removeAll(elements).onCompleted.then((result) {
-        if(result == AnimationResult.COMPLETED
-            || result == AnimationResult.COMPLETED_IGNORED) {    
-          for(var j = 0, jj = elements.length; j < jj; j++) {
-            dom.Node current = elements[j];
-            dom.Node next = j+1 < jj ? elements[j+1] : null;
-  
-            while(next != null && current.nextNode != next) {
-              current.nextNode.remove();
-            }
-            elements[j].remove();
-          }
-        }
-      });
+      _animate.remove(elements);
     };
 
     if (onRemove != null) {
       onRemove({
         "preventDefault": () {
           preventDefault = true;
-          return removeDomElements();
+          removeDomElements();
+          return this;
         },
         "element": elements[0]
       });
@@ -125,8 +112,6 @@ class Block implements ElementWrapper {
         insertBeforeElement = previousElement.nextNode,
         parentElement = previousElement.parentNode;
     
-    //print("moving");
-
     elements.forEach((el) => parentElement.insertBefore(el, insertBeforeElement));
 
     // Remove block from list

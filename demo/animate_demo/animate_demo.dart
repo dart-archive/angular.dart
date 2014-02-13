@@ -37,9 +37,9 @@ class AnimationDemoController {
   animateABox() {
     if(_boxElement != null) {
       if(boxToggle) {
-        animate.removeClass(_boxElement, "magic");
+        animate.removeClass([_boxElement], "magic");
       } else {
-        animate.addClass(_boxElement, "magic");
+        animate.addClass([_boxElement], "magic");
       }
       boxToggle = !boxToggle;
     }
@@ -53,18 +53,16 @@ class AnimationDemoController {
           var element = new dom.Element.div();
           element.classes.add("magic-box");
           _animatedBoxes.add(element);
-          _hostElement.children.add(element);
         }
-        animate.addAll(_animatedBoxes);
+        animate.insert(_animatedBoxes, _hostElement);
       } else if (!areThingsVisible) {
-        animate.addAll(_animatedBoxes);
+        // I'm not sure what to do about this
+        animate.insert(_animatedBoxes, _hostElement);
       } else if (_animatedBoxes.length > 0) {
-        animate.removeAll(_animatedBoxes).onCompleted.then((result) {
-         if((result == AnimationResult.COMPLETED)
-             || (result == AnimationResult.COMPLETED_IGNORED)) {
-           _animatedBoxes.forEach((box) => box.remove());
-           _animatedBoxes.clear();
-          }
+        animate.remove(_animatedBoxes).onCompleted.then((result) {
+//          if(result.isCompleted) {
+//            _animatedBoxes.clear();
+//          }
         });
       }
 
