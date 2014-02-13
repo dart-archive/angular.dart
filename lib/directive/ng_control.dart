@@ -1,10 +1,12 @@
 part of angular.directive;
 
 abstract class NgControl implements NgDetachAware {
-  static const NG_VALID_CLASS    = "ng-valid";
-  static const NG_INVALID_CLASS  = "ng-invalid";
-  static const NG_PRISTINE_CLASS = "ng-pristine";
-  static const NG_DIRTY_CLASS    = "ng-dirty";
+  static const NG_VALID_CLASS          = "ng-valid";
+  static const NG_INVALID_CLASS        = "ng-invalid";
+  static const NG_PRISTINE_CLASS       = "ng-pristine";
+  static const NG_DIRTY_CLASS          = "ng-dirty";
+  static const NG_SUBMIT_VALID_CLASS   = "ng-submit-valid";
+  static const NG_SUBMIT_INVALID_CLASS = "ng-submit-invalid";
 
   String _name;
   bool _dirty;
@@ -24,6 +26,7 @@ abstract class NgControl implements NgDetachAware {
       : _parentControl = injector.parent.get(NgControl)
   {
     pristine = true;
+    _scope.$on('submitNgControl', (e, data) => _onSubmit(data));
   }
 
   detach() {
@@ -34,6 +37,14 @@ abstract class NgControl implements NgDetachAware {
 
   reset() {
     _scope.$broadcast('resetNgModel');
+  }
+
+  _onSubmit(bool valid) {
+    if (valid) {
+      element.classes..add(NG_SUBMIT_VALID_CLASS)..remove(NG_SUBMIT_INVALID_CLASS);
+    } else {
+      element.classes..add(NG_SUBMIT_INVALID_CLASS)..remove(NG_SUBMIT_VALID_CLASS);
+    }
   }
 
   get name => _name;
@@ -151,7 +162,9 @@ class NgNullControl implements NgControl {
   var _controls, _scope, _parentControl, _controlName;
   var errors, _controlByName;
   dom.Element element;
+
   NgNullControl() {}
+  _onSubmit(bool valid) {}
 
   addControl(control) {}
   removeControl(control) {}
@@ -174,4 +187,5 @@ class NgNullControl implements NgControl {
 
   reset() => null;
   detach() => null;
+
 }
