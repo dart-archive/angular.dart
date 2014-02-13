@@ -59,6 +59,9 @@ class NgDirectiveModule extends Module {
     value(OptionValueDirective, null);
     value(ContentEditableDirective, null);
     value(NgModel, null);
+    value(NgValue, new NgValue(null));
+    value(NgTrueValue, new NgTrueValue(null));
+    value(NgFalseValue, new NgFalseValue(null));
     value(NgSwitchDirective, null);
     value(NgSwitchWhenDirective, null);
     value(NgSwitchDefaultDirective, null);

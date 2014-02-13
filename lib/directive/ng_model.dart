@@ -11,7 +11,7 @@ part of angular.directive;
  * (to be implemented)
  */
 @NgDirective(selector: '[ng-model]')
-class NgModel extends NgControl {
+class NgModel extends NgControl implements NgAttachAware {
   BoundGetter getter = ([_]) => null;
   BoundSetter setter = (_, [__]) => null;
 
@@ -26,8 +26,12 @@ class NgModel extends NgControl {
   NgModel(Scope scope, NodeAttrs attrs, dom.Element element, Injector injector) :
     super(scope, element, injector) {
     _exp = 'ng-model=${attrs["ng-model"]}';
+  }
+
+
+  attach() {
     watchCollection = false;
-    scope.$on('resetNgModel', reset);
+    _scope.$on('resetNgModel', reset);
   }
 
   reset() {
@@ -117,22 +121,26 @@ class NgModel extends NgControl {
  * is falsy (i.e. one of `false`, `null`, and `0`), then the checkbox is
  * unchecked. Otherwise, it is checked.  Likewise, when the checkbox is checked,
  * the model value is set to true.  When unchecked, it is set to false.
- *
- * The AngularJS style ng-true-value / ng-false-value is not supported.
  */
 @NgDirective(selector: 'input[type=checkbox][ng-model]')
 class InputCheckboxDirective {
   final dom.InputElement inputElement;
   final NgModel ngModel;
+  final NgTrueValue ngTrueValue;
+  final NgFalseValue ngFalseValue;
   final Scope scope;
 
   InputCheckboxDirective(dom.Element this.inputElement, this.ngModel,
-                         this.scope) {
+                         this.scope, this.ngTrueValue, this.ngFalseValue) {
     ngModel.render = (value) {
-      inputElement.checked = value == null ? false : toBool(value);
+      inputElement.checked = ngTrueValue.isValue(inputElement, value);
     };
     inputElement.onChange.listen((value) {
-      scope.$apply(() => ngModel.viewValue = inputElement.checked);
+      scope.$apply(() {
+        ngModel.viewValue = inputElement.checked
+            ? ngTrueValue.readValue(inputElement)
+            : ngFalseValue.readValue(inputElement);
+      });
     });
   }
 }
@@ -259,6 +267,66 @@ class _UidCounter {
 
 final _uidCounter = new _UidCounter();
 
+/**
+ * Use `ng-value` directive with `<input type="radio">` or `<option>` to
+ * allow binding to values other then strings. This is needed since the
+ * `value` attribute on DOM element `<input type="radio" value="foo">` can
+ * only be a string. With `ng-value` one can bind to any object.
+ */
+@NgDirective(selector: '[ng-value]')
+class NgValue {
+  final dom.Element element;
+  @NgOneWay('ng-value')
+  var value;
+
+  NgValue(this.element);
+
+  readValue(dom.Element element) {
+    assert(this.element == null || element == this.element);
+    return this.element == null ? (element as dynamic).value : value;
+  }
+}
+
+/**
+ * `ng-true-value` allows you to select any expression to be set to
+ * `ng-model` when checkbox is selected on `<input type="checkbox">`.
+ */
+@NgDirective(selector: '[ng-true-value]')
+class NgTrueValue {
+  final dom.Element element;
+  @NgOneWay('ng-true-value')
+  var value;
+
+  NgTrueValue(this.element);
+
+  readValue(dom.Element element) {
+    assert(this.element == null || element == this.element);
+    return this.element == null ? true : value;
+  }
+
+  isValue(dom.Element element, value) {
+    assert(this.element == null || element == this.element);
+    return this.element == null ? toBool(value) : value == this.value;
+  }
+}
+
+/**
+ * `ng-false-value` allows you to select any expression to be set to
+ * `ng-model` when checkbox is deselected<input type="checkbox">`.
+ */
+@NgDirective(selector: '[ng-false-value]')
+class NgFalseValue {
+  final dom.Element element;
+  @NgOneWay('ng-false-value')
+  var value;
+
+  NgFalseValue(this.element);
+
+  readValue(dom.Element element) {
+    assert(this.element == null || element == this.element);
+    return this.element == null ? false : value;
+  }
+}
 
 /**
  * Usage:
@@ -280,21 +348,22 @@ final _uidCounter = new _UidCounter();
 class InputRadioDirective {
   final dom.RadioButtonInputElement radioButtonElement;
   final NgModel ngModel;
+  final NgValue ngValue;
   final Scope scope;
 
   InputRadioDirective(dom.Element this.radioButtonElement, this.ngModel,
-                      this.scope, NodeAttrs attrs) {
+                      this.scope, this.ngValue, NodeAttrs attrs) {
     // If there's no "name" set, we'll set a unique name.  This ensures
     // less surprising behavior about which radio buttons are grouped together.
     if (attrs['name'] == '' || attrs['name'] == null) {
       attrs["name"] = _uidCounter.next();
     }
-    ngModel.render = (String value) {
-      radioButtonElement.checked = (value == radioButtonElement.value);
+    ngModel.render = (value) {
+      radioButtonElement.checked = (value == ngValue.readValue(radioButtonElement));
     };
     radioButtonElement.onClick.listen((_) {
       if (radioButtonElement.checked) {
-        scope.$apply(() => ngModel.viewValue = radioButtonElement.value);
+        scope.$apply(() => ngModel.viewValue = ngValue.readValue(radioButtonElement));
       }
     });
   }

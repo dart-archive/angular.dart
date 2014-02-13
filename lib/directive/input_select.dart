@@ -86,24 +86,23 @@ class InputSelectDirective implements NgAttachAware {
  */
 @NgDirective(
     selector: 'option',
-    publishTypes: const [TextChangeListener],
-    map: const {'ng-value': '&ngValue'})
+    publishTypes: const [TextChangeListener])
 class OptionValueDirective implements TextChangeListener, NgAttachAware,
     NgDetachAware {
   final InputSelectDirective _inputSelectDirective;
-  final NodeAttrs _attrs;
+  final dom.Element _element;
 
-  BoundGetter _ngValue;
+  NgValue _ngValue;
 
-  OptionValueDirective(this._attrs, this._inputSelectDirective) {
+  OptionValueDirective(this._element, this._inputSelectDirective, this._ngValue) {
     if (_inputSelectDirective != null) {
-      _inputSelectDirective.expando[_attrs.element] = this;
+      _inputSelectDirective.expando[_element] = this;
     }
   }
 
   attach() {
     if (_inputSelectDirective != null) {
-      this._attrs.observe('value', (_) => _inputSelectDirective.dirty());
+      _inputSelectDirective.dirty();
     }
   }
 
@@ -116,14 +115,11 @@ class OptionValueDirective implements TextChangeListener, NgAttachAware,
   detach() {
     if (_inputSelectDirective != null) {
       _inputSelectDirective.dirty();
-      _inputSelectDirective.expando[_attrs.element] = null;
+      _inputSelectDirective.expando[_element] = null;
     }
   }
 
-  set ngValue(BoundGetter value) => _ngValue = value;
-  get ngValue => _attrs['ng-value'] is String ?
-        _ngValue() :
-        (_attrs.element as dom.OptionElement).value;
+  get ngValue => _ngValue.readValue(_element);
 }
 
 class _SelectMode {

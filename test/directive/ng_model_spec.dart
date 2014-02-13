@@ -401,6 +401,29 @@ describe('ng-model', () {
     }));
 
 
+    it('should update input value from model using ng-true-value/false', inject((Scope scope) {
+      var element = _.compile('<input type="checkbox" ng-model="model" ng-true-value="1" ng-false-value="0">');
+
+      scope.$apply(() {
+        scope['model'] = 1;
+      });
+      expect(element.checked).toBe(true);
+
+      scope.$apply(() {
+        scope['model'] = 0;
+      });
+      expect(element.checked).toBe(false);
+
+      element.checked = true;
+      _.triggerEvent(element, 'change');
+      expect(scope['model']).toBe(1);
+
+      element.checked = false;
+      _.triggerEvent(element, 'change');
+      expect(scope['model']).toBe(0);
+    }));
+
+
     it('should allow non boolean values like null, 0, 1', inject((Scope scope) {
       var element = _.compile('<input type="checkbox" ng-model="model">');
 
@@ -544,6 +567,60 @@ describe('ng-model', () {
       expect(greenBtn.checked).toBe(true);
       expect(blueBtn.checked).toBe(false);
     }));
+
+    it('should support ng-value', () {
+      _.compile('<input type="radio" name="color" ng-value="red" ng-model="color" probe="r">' +
+                '<input type="radio" name="color" ng-value="green" ng-model="color" probe="g">' +
+                '<input type="radio" name="color" ng-value="blue" ng-model="color" probe="b">');
+
+      var red = {'name': 'RED'};
+      var green = {'name': 'GREEN'};
+      var blue = {'name': 'BLUE'};
+      _.rootScope
+        ..['red'] = red
+        ..['green'] = green
+        ..['blue'] = blue;
+
+      _.rootScope.$digest();
+
+      RadioButtonInputElement redBtn = _.rootScope.r.element;
+      RadioButtonInputElement greenBtn = _.rootScope.g.element;
+      RadioButtonInputElement blueBtn = _.rootScope.b.element;
+
+      expect(redBtn.checked).toBe(false);
+      expect(greenBtn.checked).toBe(false);
+      expect(blueBtn.checked).toBe(false);
+
+      // Should change correct element to checked.
+      _.rootScope['color'] = green;
+      _.rootScope.$apply();
+
+      expect(redBtn.checked).toBe(false);
+      expect(greenBtn.checked).toBe(true);
+      expect(blueBtn.checked).toBe(false);
+
+      // Non-existing element.
+      _.rootScope['color'] = {};
+      _.rootScope.$apply();
+
+      expect(redBtn.checked).toBe(false);
+      expect(greenBtn.checked).toBe(false);
+      expect(blueBtn.checked).toBe(false);
+
+      // Should update model with value of checked element.
+      _.triggerEvent(redBtn, 'click');
+
+      expect(_.rootScope['color']).toEqual(red);
+      expect(redBtn.checked).toBe(true);
+      expect(greenBtn.checked).toBe(false);
+      expect(blueBtn.checked).toBe(false);
+
+      _.triggerEvent(greenBtn, 'click');
+      expect(_.rootScope['color']).toEqual(green);
+      expect(redBtn.checked).toBe(false);
+      expect(greenBtn.checked).toBe(true);
+      expect(blueBtn.checked).toBe(false);
+    });
   });
 
   describe('type="search"', () {
