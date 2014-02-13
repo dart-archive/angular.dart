@@ -3,7 +3,7 @@ library angular.animate;
 import 'dart:async';
 import 'dart:html' as dom;
 
-import 'package:angular/perf/module.dart';
+import 'package:angular/core/module.dart';
 import 'package:logging/logging.dart';
 import 'package:perf_api/perf_api.dart';
 import 'package:quiver/collection.dart';
@@ -21,7 +21,6 @@ final Logger _logger = new Logger('ng.animate');
 
 class NgAnimateModule extends Module {
   NgAnimateModule.css() {
-    type(DevToolsTimelineProfiler);
     value(Clock, new Clock());
     value(dom.Window, dom.window);
     type(AnimationRunner);

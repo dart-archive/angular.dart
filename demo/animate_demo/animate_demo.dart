@@ -22,6 +22,7 @@ class AnimationDemoController {
   bool boxToggle = false;
   bool ifToggle = false;
   int thingNumber = 1;
+  String currentThing;
 
   dom.Element _boxElement;
   dom.Element _hostElement;

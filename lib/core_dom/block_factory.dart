@@ -43,7 +43,7 @@ class BlockFactory {
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.block')) != false);
-      var block = new Block(elements);
+      var block = new Block(elements, injector.get(Animate));
       _link(block, elements, directivePositions, injector);
       return block;
     } finally {

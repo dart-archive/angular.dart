@@ -7,7 +7,6 @@ abstract class _NgUnlessIfAttrDirectiveBase {
   final BoundBlockFactory _boundBlockFactory;
   final BlockHole _blockHole;
   final Scope _scope;
-  final Animate _animate;
 
   Block _block;
 
@@ -20,7 +19,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
   Scope _childScope;
 
   _NgUnlessIfAttrDirectiveBase(this._boundBlockFactory, this._blockHole,
-                               this._scope, this._animate);
+                               this._scope);
 
   // Override in subclass.
   set condition(value);
@@ -30,34 +29,22 @@ abstract class _NgUnlessIfAttrDirectiveBase {
       _childScope = _scope.createChild(new PrototypeMap(_scope.context));
       _block = _boundBlockFactory(_childScope);
       var insertBlock = _block;
+
       _scope.rootScope.domWrite(() {
         insertBlock.insertAfter(_blockHole);
-        
-        // It's possible that an 'exit' animation got interrupted
-        // and we still want to play the enter animation even if the
-        // block already exists.
-        if(insertBlock != null) {
-          _animate.addAll(insertBlock.elements);
-        }
       });
-      
     }
-
   }
 
   void _ensureBlockDestroyed() {
     if (_block != null) {
       var removeBlock = _block;
-      _scope.rootScope.domWrite(() {
-      _animate.removeAll(removeBlock.elements).onCompleted
-          .then((result) {
-            if((result == AnimationResult.COMPLETED)
-                || result == AnimationResult.COMPLETED_IGNORED) {
-              removeBlock.remove();
-            }
-         });
-      });
       _childScope.destroy();
+      _block = null;
+      
+      _scope.rootScope.domWrite(() {
+        removeBlock.remove();
+      });
     }
   }
 }
@@ -110,8 +97,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
 class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
   NgIfDirective(BoundBlockFactory boundBlockFactory,
                 BlockHole blockHole,
-                Scope scope,
-                Animate animate): super(boundBlockFactory, blockHole, scope, animate);
+                Scope scope): super(boundBlockFactory, blockHole, scope);
 
   set condition(value) {
     if (toBool(value)) {
@@ -173,8 +159,7 @@ class NgUnlessDirective extends _NgUnlessIfAttrDirectiveBase {
 
   NgUnlessDirective(BoundBlockFactory boundBlockFactory,
                     BlockHole blockHole,
-                    Scope scope,
-                    Animate animate): super(boundBlockFactory, blockHole, scope, animate);
+                    Scope scope): super(boundBlockFactory, blockHole, scope);
 
   set condition(value) {
     if (!toBool(value)) {

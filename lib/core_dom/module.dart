@@ -8,6 +8,7 @@ import 'dart:mirrors';
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
+import 'package:angular/animate/module.dart';
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/utils.dart';

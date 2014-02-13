@@ -24,6 +24,7 @@ class AnimationRunner {
   final List<Animation> _completed = [];
 
   final Profiler _profiler;
+  final Scope _scope;
 
   /**
    * The animation runner which requires the dom [Window] for
@@ -31,7 +32,7 @@ class AnimationRunner {
    * for animation. The [profiler] is optional and will report timing
    * information for the animation loop.
    */
-  AnimationRunner(this._wnd, this._clock, [Profiler profiler])
+  AnimationRunner(this._wnd, this._clock, Scope this._scope, [Profiler profiler])
       : _profiler = _getProfiler(profiler);
 
   // For some reason the turnary operator doesn't want to work with profiler.
