@@ -225,10 +225,10 @@ abstract class AbstractNgRepeatDirective  {
     // remove existing items
     _rows.forEach((key, row){
       var removeBlock = row.block;
-      _animate.removeAll(row.block.elements).onCompleted.then((result) {
+      _scope.rootScope.domWrite(() {
         removeBlock.remove();
       });
-
+      
       row.scope.destroy();
     });
     _rows = newRows;
@@ -263,13 +263,6 @@ abstract class AbstractNgRepeatDirective  {
         if (row.startNode != nextNode) {
           // existing item which got moved
           row.block.moveAfter(cursor);
-          
-         // TODO(codelogic): This will only do a new enter animation,
-         // but we might also want an exit animation and THEN an enter
-         // animation, but that mucks with the dom manipulation order.
-//          if(row.elements != null && row.elements.length > 0) {
-//            _animate.moveAll(row.elements);
-//          }
         }
         previousNode = row.endNode;
       } else {
@@ -298,12 +291,10 @@ abstract class AbstractNgRepeatDirective  {
             ..elements = block.elements
             ..startNode = row.elements[0]
             ..endNode = row.elements[row.elements.length - 1];
-        block.insertAfter(cursor);
-
-        // add animations.
-        if(block.elements != null && block.elements.length > 0) {
-          _animate.addAll(block.elements);
-        }
+        var position = cursor;
+        _scope.rootScope.domWrite(() {
+          block.insertAfter(position);
+        });
       }
       cursor = row.block;
     }
