@@ -10,7 +10,13 @@
 <button ng-click="adc.addThing()">Add Thing {{adc.thingNumber}}</button>
 <button ng-click="adc.removeThing()">Remove Thing</button>
 <ul>
-  <li class="thingy" ng-repeat="thing in adc.listOfThings">{{thing}}</li>
+  <li class="thingy" ng-repeat="thing in adc.listOfThings">
+    <ul>
+      <li class="thingy" ng-repeat="thing2 in adc.listOfThings">
+         {{thing2}}
+      </li>
+    </ul>
+  </li>
 </ul>
 
 

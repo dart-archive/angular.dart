@@ -46,7 +46,7 @@ class AnimationRunner {
    * Start and play an animation through the state transitions defined in
    * [Animation].
    */
-  AnimationHandle play(Animation animation) {
+  AnimationHandle play(Animation animation) {    
     _clearElement(animation.element);
     _activeAnimations[animation.element] = animation;
 
@@ -151,6 +151,17 @@ class AnimationRunner {
       _updating.remove(animation);
       animation.interruptAndCancel();
     }
+  }
+  
+  bool hasRunningParentAnimation(dom.Element element) {
+    String txt =  element.text;
+    while(element != null) {
+      element = element.parent;
+      if(_activeAnimations.containsKey(element))
+        return true;
+    }
+    
+    return false;
   }
 
   /**

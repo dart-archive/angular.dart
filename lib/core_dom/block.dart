@@ -125,7 +125,7 @@ class Block implements ElementWrapper {
         insertBeforeElement = previousElement.nextNode,
         parentElement = previousElement.parentNode;
     
-    print("moving");
+    //print("moving");
 
     elements.forEach((el) => parentElement.insertBefore(el, insertBeforeElement));
 

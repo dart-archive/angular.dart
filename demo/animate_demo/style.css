@@ -7,6 +7,11 @@
   font-size: 12px;
 }
 
+.thingy .thingy {
+  display: inline-block;
+  min-width: 50px;
+}
+
 .thingy.ng-enter {
   transform: scale(1.1, 1.1);
   -webkit-transform: scale(1.1,1.1);
@@ -20,6 +25,17 @@
   -webkit-transform: scale(1.0,1.0);
 
   opacity: 1;
+}
+
+.thingy .thingy.ng-enter,
+.thingy .thingy.ng-leave {
+  color: #000;
+}
+
+
+.thingy .thingy.ng-enter.ng-enter-active,
+.thingy .thingy.ng-leave.ng-leave-active {
+  color: #F00;
 }
 
 

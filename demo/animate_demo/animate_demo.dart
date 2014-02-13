@@ -73,7 +73,7 @@ class AnimationDemoController {
   }
   
   addThing() {
-    listOfThings.add("Thing: $thingNumber");
+    listOfThings.add("Thing-$thingNumber");
     thingNumber++;
   }
   

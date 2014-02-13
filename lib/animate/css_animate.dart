@@ -22,34 +22,51 @@ class CssAnimate extends Animate {
   static const String ngActivePostfix = "active";
 
   AnimationRunner _animationRunner;
+  NoAnimate _noAnimate;
   Profiler profiler;
 
-  CssAnimate(AnimationRunner this._animationRunner,
+  CssAnimate(AnimationRunner this._animationRunner, this._noAnimate,
       [ this.profiler ]);
 
   AnimationHandle addClass(dom.Element element, String cssClass) {
+    if(_animationRunner.hasRunningParentAnimation(element))
+      return _noAnimate.addClass(element, cssClass);
+
     return _cssAnimation(element, "$cssClass-$ngAddPostfix",
         cssClassToAdd: cssClass);
   }
 
   AnimationHandle removeClass(dom.Element element, String cssClass) {
+    if(_animationRunner.hasRunningParentAnimation(element))
+      return _noAnimate.removeClass(element, cssClass);
+
     return _cssAnimation(element, "$cssClass-$ngRemovePostfix",
         cssClassToRemove: cssClass);
   }
 
   AnimationHandle add(dom.Element element) {
+    if(_animationRunner.hasRunningParentAnimation(element))
+      return _noAnimate.add(element);
+    
     return _cssAnimation(element, ngAddCssClass);
   }
 
   AnimationHandle remove(dom.Element element) {
+    if(_animationRunner.hasRunningParentAnimation(element))
+      return _noAnimate.remove(element);
+
     return _cssAnimation(element, ngRemoveCssClass);
   }
 
   AnimationHandle move(dom.Element element) {
+    if(_animationRunner.hasRunningParentAnimation(element))
+      return _noAnimate.move(element);
+
     return _cssAnimation(element, ngMoveCssClass);
   }
 
   AnimationHandle play(Animation animation) {
+    // TODO codelogic, should we ignore play animations?
     return _animationRunner.play(animation);
   }
 

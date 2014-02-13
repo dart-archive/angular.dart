@@ -24,6 +24,7 @@ class NgAnimateModule extends Module {
     value(Clock, new Clock());
     value(dom.Window, dom.window);
     type(AnimationRunner);
+    type(NoAnimate);
     type(Animate, implementedBy: CssAnimate);
   }
 
