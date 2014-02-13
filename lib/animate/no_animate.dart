@@ -37,7 +37,6 @@ class NoAnimate extends Animate {
   }
 
   AnimationHandle play(Iterable<Animation> animations) {
-
     var handle = new _MultiAnimationHandle(
         animations.map((a) => new _CompletedAnimationHandle(future: a.onCompleted)));
     
