@@ -16,7 +16,7 @@ part of angular.directive;
  */
 @NgDirective(
   selector: '[ng-bind-html]',
-  map: const {'ngBindHtml': '=>value'})
+  map: const {'ng-bind-html': '=>value'})
 class NgBindHtmlDirective {
   final dom.Element element;
   final dom.NodeValidator validator;

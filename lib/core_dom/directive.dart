@@ -25,14 +25,13 @@ class NodeAttrs {
   NodeAttrs(this.element);
 
   operator [](String attributeName) =>
-      element.attributes[snakecase(attributeName, '-')];
+      element.attributes[attributeName];
 
   operator []=(String attributeName, String value) {
-    var snakeName = snakecase(attributeName, '-');
     if (value == null) {
-      element.attributes.remove(snakeName);
+      element.attributes.remove(attributeName);
     } else {
-      element.attributes[snakeName] = value;
+      element.attributes[attributeName] = value;
     }
     if (_observers != null && _observers.containsKey(attributeName)) {
       _observers[attributeName].forEach((fn) => fn(value));
@@ -56,14 +55,14 @@ class NodeAttrs {
   }
 
   void forEach(void f(String k, String v)) {
-    element.attributes.forEach((k, v) => f(camelcase(k), v));
+    element.attributes.forEach(f);
   }
 
   bool containsKey(String attributeName) =>
-      element.attributes.containsKey(snakecase(attributeName, '-'));
+      element.attributes.containsKey(attributeName);
 
   Iterable<String> get keys =>
-      element.attributes.keys.map((name) => camelcase(name));
+      element.attributes.keys;
 }
 
 /**
