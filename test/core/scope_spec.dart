@@ -984,6 +984,34 @@ main() => describe('scope', () {
     }));
   });
 
+
+  describe('special binding modes', () {
+    it('should bind one time', inject((RootScope rootScope, Logger log) {
+      rootScope.watch('foo', (v, _) => log('foo:$v'));
+      rootScope.watch(':foo', (v, _) => log(':foo:$v'));
+      rootScope.watch('::foo', (v, _) => log('::foo:$v'));
+
+      rootScope.apply();
+      expect(log).toEqual(['foo:null']);
+      log.clear();
+
+      rootScope.context['foo'] = true;
+      rootScope.apply();
+      expect(log).toEqual(['foo:true', ':foo:true', '::foo:true']);
+      log.clear();
+
+      rootScope.context['foo'] = 123;
+      rootScope.apply();
+      expect(log).toEqual(['foo:123', ':foo:123']);
+      log.clear();
+
+      rootScope.context['foo'] = null;
+      rootScope.apply();
+      expect(log).toEqual(['foo:null']);
+      log.clear();
+    }));
+  });
+
   
   describe('runAsync', () {
     it(r'should run callback before watch', inject((RootScope rootScope) {
