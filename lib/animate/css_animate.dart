@@ -24,9 +24,8 @@ class CssAnimate extends Animate {
   AnimationRunner _animationRunner;
   NoAnimate _noAnimate;
   Profiler profiler;
-  RootScope _scope;
 
-  CssAnimate(AnimationRunner this._animationRunner, this._noAnimate, this._scope,
+  CssAnimate(AnimationRunner this._animationRunner, this._noAnimate,
       [ this.profiler ]);
 
   AnimationHandle addClass(Iterable<dom.Node> nodes, String cssClass) {

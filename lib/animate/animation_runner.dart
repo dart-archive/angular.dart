@@ -189,27 +189,3 @@ class AnimationRunner {
     }
   }
 }
-
-/**
- * Animation handle that works with the [AnimationRunner] so that calling code
- * can manage and listen to the lifecycle of an animation.
- */
-class _AnimationRunnerHandle extends AnimationHandle {
-  final AnimationRunner _runner;
-  final Animation _animation;
-
-  get onCompleted => _animation.onCompleted;
-
-  _AnimationRunnerHandle(this._runner, this._animation) {
-    assert(_runner != null);
-    assert(_animation != null);
-  }
-
-  complete() {
-    _runner.interruptAndComplete(_animation);
-  }
-
-  cancel() {
-    _runner.interruptAndComplete(_animation);
-  }
-}

@@ -5,9 +5,6 @@ part of angular.animate;
  * complete on the next digest loop.
  */
 class NoAnimate extends Animate {
-  final RootScope _scope;
-  NoAnimate(this._scope);
-
   AnimationHandle addClass(Iterable<dom.Node> nodes, String cssClass) {
     _elements(nodes).forEach((el) => el.classes.add(cssClass));
     return new _CompletedAnimationHandle();
