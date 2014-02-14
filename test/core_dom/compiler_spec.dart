@@ -436,7 +436,7 @@ main() => describe('dte.compiler', () {
             ..value(MockHttpBackend, backend);
         }));
 
-        it('should fire onTemplate method', async(inject((Logger logger, MockHttpBackend backend) {
+        iit('should fire onTemplate method', async(inject((Logger logger, MockHttpBackend backend) {
           backend.whenGET('some/template.url').respond('<div>WORKED</div>');
           var scope = rootScope.createChild({});
           scope.context['isReady'] = 'ready';
@@ -774,7 +774,10 @@ class LogComponent {
     map: const {
         'attr-value': '@attrValue',
         'expr-value': '<=>exprValue',
-        'once-value': '=>!onceValue'
+        'once-value': '=>!onceValue',
+        'optional-one': '=>optional',
+        'optional-two': '<=>optional',
+        'optional-once': '=>!optional',
     }
 )
 class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRootAware {
@@ -783,6 +786,7 @@ class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRoo
   String attrValue = 'too early';
   String exprValue = 'too early';
   String onceValue = 'too early';
+  String optional;
 
   AttachDetachComponent(Logger this.logger, TemplateLoader templateLoader, Scope this.scope) {
     logger('new');

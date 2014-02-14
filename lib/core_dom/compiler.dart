@@ -156,7 +156,7 @@ class Compiler {
           break;
         case '<=>':
           mappingFn = (NodeAttrs attrs, Scope scope, Object controller, Function notify) {
-            if (attrs[attrName] == null) return;
+            if (attrs[attrName] == null) return notify();
             String expression = attrs[attrName];
             Expression expressionFn = _parser(expression);
             var blockOutbound = false;
@@ -191,7 +191,7 @@ class Compiler {
           break;
         case '=>':
           mappingFn = (NodeAttrs attrs, Scope scope, Object controller, Function notify) {
-            if (attrs[attrName] == null) return;
+            if (attrs[attrName] == null) return notify();
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
             scope.watch(attrs[attrName], (v, _) {
@@ -202,7 +202,7 @@ class Compiler {
           break;
         case '=>!':
           mappingFn = (NodeAttrs attrs, Scope scope, Object controller, Function notify) {
-            if (attrs[attrName] == null) return;
+            if (attrs[attrName] == null) return notify();
             Expression attrExprFn = _parser(attrs[attrName]);
             var watch;
             watch = scope.watch(
