@@ -164,15 +164,16 @@ abstract class _NgClassBase {
   set valueExpression(currentExpression) {
     // this should be called only once, so we don't worry about cleaning up
     // watcher registrations.
-    scope.observe(
+    scope.watch(
         _parser(currentExpression, collection: true),
         (current, _) {
           currentSet = _flatten(current);
           _handleChange(scope.context[r'$index']);
-        }
+        },
+        readOnly: true
     );
     if (mode != null) {
-      scope.observe(_parser(r'$index'), (index, oldIndex) {
+      scope.watch(_parser(r'$index'), (index, oldIndex) {
         var mod = index % 2;
         if (oldIndex == null || mod != oldIndex % 2) {
           if (mod == mode) {
@@ -181,7 +182,7 @@ abstract class _NgClassBase {
             element.classes.removeAll(previousSet);
           }
         }
-      });
+      }, readOnly: true);
     }
   }
 
