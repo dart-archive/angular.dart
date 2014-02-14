@@ -10,6 +10,9 @@ class NoAnimate extends Animate {
 
   AnimationHandle addClass(Iterable<dom.Node> nodes, String cssClass) {
     _elements(nodes).forEach((el) => el.classes.add(cssClass));
+    
+    print("${_elements(nodes)}");
+    
     return new _CompletedAnimationHandle();
   }
   

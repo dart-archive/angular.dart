@@ -93,16 +93,17 @@ class _MultiAnimationHandle extends AnimationHandle {
 
 class _CompletedAnimationHandle extends AnimationHandle {
   Future<AnimationResult> _future;
-  get onCompleted => _future;
-
-  _CompletedAnimationHandle({Future<AnimationResult> future})
-      : _future = future {
+  get onCompleted {
     if(_future == null) {
       var completer = new Completer<AnimationResult>();
-      _future = completer.future;
       completer.complete(AnimationResult.COMPLETED_IGNORED);
+      _future = completer.future;
     }
+    return _future;
   }
+
+  _CompletedAnimationHandle({Future<AnimationResult> future})
+      : _future = future;
 
   complete() { }
   cancel() { }
