@@ -59,12 +59,8 @@ class NgAttrMustacheDirective {
       component is attached we need to run on the flush cycle rather
       then digest cycle.
      */
-    Watch watch;
-    watch = scope.watch(ast, (value, _) {
-      watch.remove();
-      interpolation.call(value);
-      scope.observe(ast, interpolation.call);
-    });
+    // TODO(misko): figure out how to get most of these on observe rather then watch.
+    scope.watch(ast, interpolation.call);
   }
 }
 
