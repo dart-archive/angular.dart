@@ -8,7 +8,7 @@ part 'ast.dart';
 part 'prototype_map.dart';
 
 typedef ReactionFn(value, previousValue);
-typedef ChangeLog(expression);
+typedef ChangeLog(String expression, current, previous);
 
 /**
  * Extend this class if you wish to pretend to be a function, but you don't know
@@ -341,7 +341,9 @@ class RootWatchGroup extends WatchGroup {
         (_changeDetector as ChangeDetector<_Handler>)
             .collectChanges(exceptionHandler);
     while (changeRecord != null) {
-      if (changeLog != null) changeLog(changeRecord.handler.expression);
+      if (changeLog != null) changeLog(changeRecord.handler.expression,
+                                       changeRecord.currentValue,
+                                       changeRecord.previousValue);
       changeRecord.handler.onChange(changeRecord);
       changeRecord = changeRecord.nextChange;
     }
@@ -353,7 +355,9 @@ class RootWatchGroup extends WatchGroup {
       try {
         var change = evalRecord.check();
         if (change != null && changeLog != null) {
-          changeLog(evalRecord.handler.expression);
+          changeLog(evalRecord.handler.expression,
+                    evalRecord.currentValue,
+                    evalRecord.previousValue);
         }
       } catch (e, s) {
         if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);

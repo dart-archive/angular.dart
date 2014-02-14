@@ -19,7 +19,7 @@ class NgTextMustacheDirective {
     List items = interpolation.expressions.map((exp) {
       return parser(exp, filters:filters);
     }).toList();
-    AST ast = new PureFunctionAST(markup, new ArrayFn(), items);
+    AST ast = new PureFunctionAST('[[$markup]]', new ArrayFn(), items);
     scope.observe(ast, interpolation.call);
   }
 
@@ -51,7 +51,7 @@ class NgAttrMustacheDirective {
     List items = interpolation.expressions.map((exp) {
       return parser(exp, filters:filters);
     }).toList();
-    AST ast = new PureFunctionAST(markup, new ArrayFn(), items);
+    AST ast = new PureFunctionAST('[[$markup]]', new ArrayFn(), items);
     /*
       Attribute bindings are tricky. They need to be resolved on digest
       inline with components so that any bindings to component can

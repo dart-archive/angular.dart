@@ -708,7 +708,7 @@ main() => describe('scope', () {
         retValue = 2;
         expect(rootScope.flush).
           toThrow('Observer reaction functions should not change model. \n'
-                  'These watch changes were detected: logger("watch")\n'
+                  'These watch changes were detected: logger("watch"): 2 <= 1\n'
                   'These observe changes were detected: ');
       }));
     });
@@ -949,9 +949,9 @@ main() => describe('scope', () {
         rootScope.digest();
       }).toThrow('Model did not stabilize in 5 digests. '
                  'Last 3 iterations:\n'
-                      'a, b\n'
-                      'a, b\n'
-                      'a, b');
+                 'a: 2 <= 1, b: 2 <= 1\n'
+                 'a: 3 <= 2, b: 3 <= 2\n'
+                 'a: 4 <= 3, b: 4 <= 3');
     }));
 
 
