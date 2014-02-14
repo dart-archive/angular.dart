@@ -29,8 +29,10 @@ class DirectiveRef {
  * services from the provided modules.
  */
 Injector forceNewDirectivesAndFilters(Injector injector, List<Module> modules) {
-  modules.add(new Module()
-      ..factory(Scope, (i) => i.parent.get(Scope).createChild()));
+  modules.add(new Module()..factory(Scope, (i) {
+    var scope = i.parent.get(Scope);
+    return scope.createChild(new PrototypeMap(scope.context));
+  }));
   return injector.createChild(modules,
       forceNewInstances: [DirectiveMap, FilterMap]);
 }
