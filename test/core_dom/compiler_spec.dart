@@ -786,7 +786,10 @@ class LogComponent {
     map: const {
         'attr-value': '@attrValue',
         'expr-value': '<=>exprValue',
-        'once-value': '=>!onceValue'
+        'once-value': '=>!onceValue',
+        'optional-one': '=>optional',
+        'optional-two': '<=>optional',
+        'optional-once': '=>!optional',
     }
 )
 class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRootAware {
@@ -795,6 +798,7 @@ class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRoo
   String attrValue = 'too early';
   String exprValue = 'too early';
   String onceValue = 'too early';
+  String optional;
 
   AttachDetachComponent(Logger this.logger, TemplateLoader templateLoader, Scope this.scope) {
     logger('new');
