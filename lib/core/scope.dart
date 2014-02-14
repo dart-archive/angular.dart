@@ -513,15 +513,19 @@ class _Streams {
         scope = queue.removeFirst();
         scopeStreams = scope._streams;
         assert(scopeStreams._scope == scope);
-        assert(scopeStreams._streams.containsKey(name));
-        var stream = scopeStreams._streams[name];
-        event._currentScope = scope;
-        stream._fire(event);
+        if(scopeStreams._streams.containsKey(name)) {
+          var stream = scopeStreams._streams[name];
+          event._currentScope = scope;
+          stream._fire(event);
+        }
         // Reverse traversal so that when the queue is read it is correct order.
         var childScope = scope._childTail;
         while(childScope != null) {
           scopeStreams = childScope._streams;
-          if (scopeStreams != null) queue.addFirst(scopeStreams._scope);
+          if (scopeStreams != null &&
+              scopeStreams._typeCounts.containsKey(name)) {
+            queue.addFirst(scopeStreams._scope);
+          }
           childScope = childScope._prev;
         }
       }
