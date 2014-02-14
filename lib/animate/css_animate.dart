@@ -71,10 +71,6 @@ class CssAnimate extends Animate {
   AnimationHandle remove(Iterable<dom.Node> nodes) {
     var elements = _partition(allNodesBetween(nodes));
     
-    print('Elements: $elements');
-    print('animate: ${elements.animate}');
-    print('no-animate: ${elements.noAnimate}');
-    
     var animateHandles = elements.animate.map((el) {
       return _cssAnimation(el, ngRemoveCssClass)..onCompleted.then((result) {
         if(result.isCompleted) {

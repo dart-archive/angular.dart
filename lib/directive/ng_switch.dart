@@ -55,16 +55,14 @@ part of angular.directive;
       'ng-switch': '=>value',
       'change': '&onChange'
     },
-    visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY
-)
+    visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY)
 class NgSwitchDirective {
   Map<String, List<_Case>> cases = new Map<String, List<_Case>>();
   List<_BlockScopePair> currentBlocks = <_BlockScopePair>[];
   Function onChange;
   final Scope scope;
-  final Animate animate;
 
-  NgSwitchDirective(this.scope, this.animate) {
+  NgSwitchDirective(this.scope) {
     cases['?'] = <_Case>[];
   }
 
@@ -75,23 +73,18 @@ class NgSwitchDirective {
 
   set value(val) {
     currentBlocks
-      ..forEach((_BlockScopePair pair) {
-        scope.rootScope.domWrite(() {
+        ..forEach((_BlockScopePair pair) {
           pair.block.remove();
-        });
-        pair.scope.destroy();
-      })
-      ..clear();
+          pair.scope.destroy();
+        })
+        ..clear();
 
     val = '!$val';
     (cases.containsKey(val) ? cases[val] : cases['?'])
         .forEach((_Case caze) {
-          Scope childScope = scope.createChild();
-          var block = caze.blockFactory(childScope);
+          Scope childScope = scope.createChild(new PrototypeMap(scope.context));
+          var block = caze.blockFactory(childScope)..insertAfter(caze.anchor);
           currentBlocks.add(new _BlockScopePair(block, childScope));
-          scope.rootScope.domWrite(() {
-            block.insertAfter(caze.anchor);
-          });
         });
     if (onChange != null) {
       onChange();
@@ -116,10 +109,7 @@ class _Case {
 @NgDirective(
     selector: '[ng-switch-when]',
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
-    map: const {
-      '.': '@value'
-    }
-)
+    map: const {'.': '@value'})
 class NgSwitchWhenDirective {
   final NgSwitchDirective ngSwitch;
   final BlockHole hole;
@@ -128,19 +118,17 @@ class NgSwitchWhenDirective {
 
   NgSwitchWhenDirective(this.ngSwitch, this.hole, this.blockFactory, this.scope);
 
-  set value(String value) =>
-      ngSwitch.addCase('!$value', hole, blockFactory);
+  set value(String value) => ngSwitch.addCase('!$value', hole, blockFactory);
 }
 
 
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
-    selector: '[ng-switch-default]'
-)
+    selector: '[ng-switch-default]')
 class NgSwitchDefaultDirective {
 
   NgSwitchDefaultDirective(NgSwitchDirective ngSwitch, BlockHole hole,
-                        BoundBlockFactory blockFactory, Scope scope) {
+                           BoundBlockFactory blockFactory, Scope scope) {
     ngSwitch.addCase('?', hole, blockFactory);
   }
 }

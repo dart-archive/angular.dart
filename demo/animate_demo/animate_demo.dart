@@ -59,11 +59,7 @@ class AnimationDemoController {
         // I'm not sure what to do about this
         animate.insert(_animatedBoxes, _hostElement);
       } else if (_animatedBoxes.length > 0) {
-        animate.remove(_animatedBoxes).onCompleted.then((result) {
-//          if(result.isCompleted) {
-//            _animatedBoxes.clear();
-//          }
-        });
+        animate.remove(_animatedBoxes);
       }
 
       areThingsVisible = !areThingsVisible;
