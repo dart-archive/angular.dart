@@ -12,12 +12,12 @@ main() => describe('SourceMetadataExtractor', () {
 
   it('should extract expressions and attribute names with expressions', () {
     var info = extractDirectiveInfo([
-      new DirectiveMetadata('FooComponent', COMPONENT, null, {
+      new DirectiveMetadata('FooComponent', COMPONENT, 'foo-component', {
         'barVal': '@bar',
-        'bazExpr1': '<=>baz1',
-        'bazExpr2': '=>baz2',
-        'bazExpr3': '=>!baz3',
-        'bazCallback': '&aux',
+        'baz-expr1': '<=>baz1',
+        'baz-expr2': '=>baz2',
+        'baz-expr3': '=>!baz3',
+        'baz-callback': '&aux',
       })
     ]);
 
@@ -36,7 +36,7 @@ main() => describe('SourceMetadataExtractor', () {
 
   it('should build a component selector if one is not explicitly specified', () {
     var info = extractDirectiveInfo([
-      new DirectiveMetadata('MyFooComponent', COMPONENT, null, {
+      new DirectiveMetadata('MyFooComponent', COMPONENT, 'my-foo', {
         'foo-expr': '=>fooExpr'
       })
     ]);
@@ -47,7 +47,7 @@ main() => describe('SourceMetadataExtractor', () {
 
   it('should build an element directive selector if one is not explicitly specified', () {
     var info = extractDirectiveInfo([
-      new DirectiveMetadata('MyFooDirective', DIRECTIVE, null, {
+      new DirectiveMetadata('MyFooDirective', DIRECTIVE, 'my-foo', {
         'foo-expr': '=>fooExpr'
       })
     ]);
@@ -58,7 +58,7 @@ main() => describe('SourceMetadataExtractor', () {
 
   it('should build an attr directive selector if one is not explicitly specified', () {
     var info = extractDirectiveInfo([
-      new DirectiveMetadata('MyFooAttrDirective', DIRECTIVE, null, {
+      new DirectiveMetadata('MyFooAttrDirective', '[my-foo]', '[my-foo]', {
         'foo-expr': '=>fooExpr'
       })
     ]);
@@ -69,7 +69,7 @@ main() => describe('SourceMetadataExtractor', () {
 
   it('should figure out attribute name if dot(.) is used', () {
     var info = extractDirectiveInfo([
-      new DirectiveMetadata('MyFooAttrDirective', DIRECTIVE, null, {
+      new DirectiveMetadata('MyFooAttrDirective', DIRECTIVE, '[my-foo]', {
         '.': '=>fooExpr'
       })
     ]);

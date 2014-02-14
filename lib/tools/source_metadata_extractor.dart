@@ -42,13 +42,13 @@ class SourceMetadataExtractor {
             .firstWhere((specPrefix) => mappingSpec.startsWith(specPrefix),
                 orElse: () => throw '$mappingSpec no matching spec');
         if (spec != '@') {
-          dirInfo.expressionAttrs.add(snakecase(attrName));
+          dirInfo.expressionAttrs.add(attrName);
         }
         if (mappingSpec.length == 1) { // Shorthand. Remove.
           // TODO(pavelgj): Figure out if short-hand LHS should be expanded
           // and added to the expressions list.
           if (attrName != '.') {
-            dirInfo.expressions.add(_maybeCamelCase(attrName));
+            dirInfo.expressions.add(attrName);
           }
         } else {
           mappingSpec = mappingSpec.substring(spec.length);
@@ -60,7 +60,6 @@ class SourceMetadataExtractor {
       });
 
       meta.exportExpressionAttrs.forEach((attr) {
-        attr = snakecase(attr);
         if (!dirInfo.expressionAttrs.contains(attr)) {
           dirInfo.expressionAttrs.add(attr);
         }
@@ -74,7 +73,7 @@ class SourceMetadataExtractor {
 
 
       // No explicit selector specified on the directive, compute one.
-      var className = snakecase(meta.className);
+      var className = meta.className;
       if (dirInfo.selector == null) {
         if (meta.type == COMPONENT) {
           if (className.endsWith(_COMPONENT)) {
@@ -93,8 +92,7 @@ class SourceMetadataExtractor {
             dirInfo.selector = className.
                 substring(0, className.length - _DIRECTIVE.length);
           } else {
-            throw "Directive name '$className' must end with $_DIRECTIVE, "
-            "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
+            throw "Directive name '$className' must have a \$selector field.";
           }
         }
       }
@@ -117,8 +115,6 @@ class SourceMetadataExtractor {
     return directives;
   }
 }
-
-String _maybeCamelCase(String s) => (s.indexOf('-') > -1) ? camelcase(s) : s;
 
 class DirectiveMetadataCollectingVisitor {
   List<DirectiveMetadata> metadata = <DirectiveMetadata>[];
