@@ -6,7 +6,6 @@ main() {
   describe('ng-mustache', () {
     TestBed _;
     beforeEach(module((Module module) {
-      module.type(_ListenerDirective);
       module.type(_HelloFilter);
     }));
     beforeEach(inject((TestBed tb) => _ = tb));
@@ -22,15 +21,6 @@ main() {
 
       rootScope.apply();
       expect(element.text()).toEqual('OK!');
-    }));
-
-
-    it('should allow listening on text change events', inject((Logger logger) {
-      _.compile('<div listener>{{text}}</div>');
-      _.rootScope.context['text'] = 'works';
-      _.rootScope.apply();
-      expect(_.rootElement.text).toEqual('works');
-      expect(logger).toEqual(['works']);
     }));
 
 
@@ -118,17 +108,6 @@ main() {
     });
   });
 
-}
-
-@NgDirective(
-    selector: '[listener]',
-    publishTypes: const [TextChangeListener],
-    visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY
-)
-class _ListenerDirective implements TextChangeListener {
-  Logger logger;
-  _ListenerDirective(Logger this.logger);
-  call(String text) => logger(text);
 }
 
 @NgFilter(name:'hello')
