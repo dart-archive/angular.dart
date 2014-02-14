@@ -200,16 +200,37 @@ class BlockFactory {
           shadowScope.context[(ref.annotation as NgComponent).publishAs] = controller;
         }
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-        for(var map in ref.mappings) {
-          map(nodeAttrs, scope, controller);
+        var attachDelayStatus = controller is NgAttachAware ? [false] : null;
+        checkAttachReady() {
+          if (attachDelayStatus.reduce((a, b) => a && b)) {
+            attachDelayStatus = null;
+            controller.attach();
+          }
         }
-        if (controller is NgAttachAware) {
+        for(var map in ref.mappings) {
+          var notify;
+          if (attachDelayStatus != null) {
+            var index = attachDelayStatus.length;
+            attachDelayStatus.add(false);
+            notify = () {
+              if (attachDelayStatus != null) {
+                attachDelayStatus[index] = true;
+                checkAttachReady();
+              }
+            };
+          } else {
+            notify = () => null;
+          }
+          map(nodeAttrs, scope, controller, notify);
+        }
+        if (attachDelayStatus != null) {
           Watch watch;
           watch = scope.watch(
             '1', // Cheat a bit.
             (_, __) {
               watch.remove();
-              controller.attach();
+              attachDelayStatus[0] = true;
+              checkAttachReady();
             });
         }
         if (controller is NgDetachAware) {

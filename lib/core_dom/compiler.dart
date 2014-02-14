@@ -147,12 +147,15 @@ class Compiler {
       ApplyMapping mappingFn;
       switch (mode) {
         case '@':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller) {
-            attrs.observe(attrName, (value) => dstPathFn.assign(controller, value));
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, Function notify) {
+            attrs.observe(attrName, (value) {
+              dstPathFn.assign(controller, value);
+              notify();
+            });
           };
           break;
         case '<=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, Function notify) {
             if (attrs[attrName] == null) return;
             String expression = attrs[attrName];
             Expression expressionFn = _parser(expression);
@@ -164,7 +167,9 @@ class Compiler {
                   if (!blockInbound) {
                     blockOutbound = true;
                     scope.rootScope.runAsync(() => blockOutbound = false);
-                    return dstPathFn.assign(controller, inboundValue);
+                    var value = dstPathFn.assign(controller, inboundValue);
+                    notify();
+                    return value;
                   }
                 }
             );
@@ -176,6 +181,7 @@ class Compiler {
                       blockInbound = true;
                       scope.rootScope.runAsync(() => blockInbound = false);
                       expressionFn.assign(scope.context, outboundValue);
+                      notify();
                     }
                   },
                   context: controller
@@ -184,16 +190,18 @@ class Compiler {
           };
           break;
         case '=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, Function notify) {
             if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
-            scope.watch(attrs[attrName],
-                    (v, _) => dstPathFn.assign(controller, shadowValue = v));
+            scope.watch(attrs[attrName], (v, _) {
+              dstPathFn.assign(controller, shadowValue = v);
+              notify();
+            });
           };
           break;
         case '=>!':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, Function notify) {
             if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var watch;
@@ -202,13 +210,15 @@ class Compiler {
                 (value, _) {
                   if (dstPathFn.assign(controller, value) != null) {
                     watch.remove();
+                    notify();
                   }
                 });
           };
           break;
         case '&':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, Function notify) {
             dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope.context, ScopeLocals.wrapper));
+            notify();
           };
           break;
       }
