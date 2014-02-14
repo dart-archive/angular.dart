@@ -25,7 +25,6 @@ part of angular.directive;
  *
  * The full list of supported handlers are:
  *
- * - [ng-blur]
  * - [ng-abort]
  * - [ng-beforecopy]
  * - [ng-beforecut]
