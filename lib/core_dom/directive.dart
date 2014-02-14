@@ -6,13 +6,6 @@ part of angular.core.dom;
 typedef AttributeChanged(String newValue);
 
 /**
- * Callback function used to notify of text changes.
- */
-abstract class TextChangeListener{
-  call(String text);
-}
-
-/**
  * NodeAttrs is a facade for element attributes. The facade is responsible
  * for normalizing attribute names as well as allowing access to the
  * value of the directive.

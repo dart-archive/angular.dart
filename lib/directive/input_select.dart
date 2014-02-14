@@ -98,9 +98,8 @@ class InputSelectDirective implements NgAttachAware {
  */
 @NgDirective(
     selector: 'option',
-    publishTypes: const [TextChangeListener],
     map: const {'ng-value': '&ngValue'})
-class OptionValueDirective implements TextChangeListener, NgAttachAware,
+class OptionValueDirective implements NgAttachAware,
     NgDetachAware {
   final InputSelectDirective _inputSelectDirective;
   final NodeAttrs _attrs;
@@ -116,12 +115,6 @@ class OptionValueDirective implements TextChangeListener, NgAttachAware,
   attach() {
     if (_inputSelectDirective != null) {
       this._attrs.observe('value', (_) => _inputSelectDirective.dirty());
-    }
-  }
-
-  call(String text) {
-    if (_inputSelectDirective != null) {
-      _inputSelectDirective.dirty();
     }
   }
 

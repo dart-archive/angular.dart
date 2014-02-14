@@ -7,20 +7,16 @@ class NgTextMustacheDirective {
                           String markup,
                           Interpolate interpolate,
                           Scope scope,
-                          TextChangeListener listener,
                           AstParser parser,
                           FilterMap filters) {
     Interpolation interpolation = interpolate(markup);
-    interpolation.setter = (text) {
-      element.text = text;
-      if (listener != null) listener.call(text);
-    };
+    interpolation.setter = (text) => element.text = text;
 
     List items = interpolation.expressions.map((exp) {
       return parser(exp, filters:filters);
     }).toList();
     AST ast = new PureFunctionAST('[[$markup]]', new ArrayFn(), items);
-    scope.watch(ast, interpolation.call, readOnly: listener == null);
+    scope.watch(ast, interpolation.call, readOnly: true);
   }
 
 }
