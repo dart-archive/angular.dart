@@ -436,7 +436,7 @@ main() => describe('dte.compiler', () {
             ..value(MockHttpBackend, backend);
         }));
 
-        iit('should fire onTemplate method', async(inject((Logger logger, MockHttpBackend backend) {
+        it('should fire onTemplate method', async(inject((Logger logger, MockHttpBackend backend) {
           backend.whenGET('some/template.url').respond('<div>WORKED</div>');
           var scope = rootScope.createChild({});
           scope.context['isReady'] = 'ready';
