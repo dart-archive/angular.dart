@@ -21,7 +21,7 @@ part 'no_animate.dart';
 final Logger _logger = new Logger('ng.animate');
 
 class NgAnimateModule extends Module {
-  NgAnimateModule.css() {
+  NgAnimateModule() {
     value(Clock, new Clock());
     value(dom.Window, dom.window);
     type(AnimationRunner);
@@ -29,7 +29,7 @@ class NgAnimateModule extends Module {
     type(Animate, implementedBy: CssAnimate);
   }
 
-  NgAnimateModule.none() {
+  NgAnimateModule.noAnimation() {
     type(Animate, implementedBy: NoAnimate);
   }
 }

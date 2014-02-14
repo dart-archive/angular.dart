@@ -84,5 +84,6 @@ class AnimationDemoController {
 
 main() {
   ngBootstrap(module: new Module()
+    ..install(new NgAnimateModule())
     ..type(AnimationDemoController));
 }
