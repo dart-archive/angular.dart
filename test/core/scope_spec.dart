@@ -1077,6 +1077,15 @@ main() {
         log = [];
         $rootScope.$digest();
         expect(log).toEqual(['["b",[],{}]']);
+
+        $rootScope.obj = _toJsonableIterable(['a']);
+        log = [];
+        $rootScope.$digest();
+        expect(log).toEqual(['["a"]']);
+
+        $rootScope.obj = _toJsonableIterable(['a']);
+        $rootScope.$digest();
+        expect(log).toEqual(['["a"]']);
       });
 
 
