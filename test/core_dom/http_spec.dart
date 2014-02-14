@@ -1321,10 +1321,11 @@ main() => describe('http', () {
 });
 
 class FakeFile implements File {
-  final DateTime lastModifiedDate = null;
-  final String name = null;
-  final String relativePath = null;
-  final int size = 0;
-  final String type = null;
+  DateTime get lastModifiedDate => null;
+  int get lastModified => 0;
+  String get name => null;
+  String get relativePath => null;
+  int get size => 0;
+  String get type => null;
   Blob slice([int start, int end, String contentType]) => null;
 }
