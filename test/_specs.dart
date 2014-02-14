@@ -3,7 +3,6 @@ library ng_specs;
 import 'dart:html';
 import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/angular.dart';
-import 'package:angular/animate/module.dart';
 import 'package:angular/mock/module.dart';
 import 'package:collection/wrappers.dart' show DelegatingList;
 
@@ -17,6 +16,7 @@ export 'package:di/dynamic_injector.dart';
 export 'package:angular/angular.dart';
 export 'package:angular/animate/module.dart';
 export 'package:angular/mock/module.dart';
+export 'package:quiver/time.dart';
 export 'package:perf_api/perf_api.dart';
 
 es(String html) {

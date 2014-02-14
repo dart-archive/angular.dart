@@ -3,7 +3,7 @@ library animation_handle_spec;
 import '../_specs.dart';
 
 main() {
-  ddescribe('NoAniamte', () {
+  describe('NoAniamte', () {
     TestBed _;
     beforeEach(inject((TestBed tb) => _ = tb));
     
@@ -12,7 +12,7 @@ main() {
       expect(aniamte).toBeDefined();
     }));
 
-    it('should add css classes to elements.', () {
+    it('should add a css classes to nodes.', () {
       var animate = new NoAnimate();
       _.compile('<div></div>');
       expect(_.rootElement).not.toHaveClass('foo');
@@ -20,7 +20,7 @@ main() {
       expect(_.rootElement).toHaveClass('foo');
     });
     
-    it('should remove css classes to elements.', () {
+    it('should remove css classes from nodes.', () {
       var animate = new NoAnimate();
       _.compile('<div class="foo"></div>');
       expect(_.rootElement).toHaveClass('foo');
@@ -44,8 +44,24 @@ main() {
       expect(_.rootElement.childNodes.length).toBe(0);
     });
     
-    xit('should move nodes and elements', () {
-      // FIXME detect move
+    it('should move nodes and elements', () {
+      var animate = new NoAnimate();
+      _.compile('<div></div>');
+      List<Node> a = $('<span>A</span>a').toList();
+      List<Node> b = $('<span>B</span>b').toList();
+      a.forEach((n) => _.rootElement.append(n));
+      b.forEach((n) => _.rootElement.append(n));
+      
+      expect(_.rootElement.text).toEqual("AaBb");
+
+      animate.move(b, _.rootElement, insertBefore: a.first);
+      expect(_.rootElement.text).toEqual("BbAa");
+      
+      animate.move(a, _.rootElement, insertBefore: b.first);
+      expect(_.rootElement.text).toEqual("AaBb");
+      
+      animate.move(a, _.rootElement);
+      expect(_.rootElement.text).toEqual("BbAa");
     });
   });
 }

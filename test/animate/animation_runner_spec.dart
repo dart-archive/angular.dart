@@ -3,7 +3,7 @@ library animation_runner_spec;
 import '../_specs.dart';
 
 main() {
-  ddescribe('AnimationRunner', () {
+  describe('AnimationRunner', () {
     TestBed _;
     beforeEach(inject((TestBed tb) => _ = tb));
     

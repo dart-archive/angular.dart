@@ -30,7 +30,7 @@ class CssAnimate extends Animate {
 
   AnimationHandle addClass(Iterable<dom.Node> nodes, String cssClass) {
     var elements = _partition(_elements(nodes));
-    
+ 
     var animateHandles = elements.animate.map((el) {
       return _cssAnimation(el, "$cssClass-$ngAddPostfix",
               cssClassToAdd: cssClass);
@@ -69,7 +69,12 @@ class CssAnimate extends Animate {
   }
 
   AnimationHandle remove(Iterable<dom.Node> nodes) {
-    var elements = _partition(_elements(nodes));
+    var elements = _partition(allNodesBetween(nodes));
+    
+    print('Elements: $elements');
+    print('animate: ${elements.animate}');
+    print('no-animate: ${elements.noAnimate}');
+    
     var animateHandles = elements.animate.map((el) {
       return _cssAnimation(el, ngRemoveCssClass)..onCompleted.then((result) {
         if(result.isCompleted) {
@@ -137,7 +142,8 @@ class CssAnimate extends Animate {
   _RunnableAnimations _partition(Iterable nodes) {
     var runnable = new _RunnableAnimations();
     nodes.forEach((el) {
-      if(_animationRunner.hasRunningParentAnimation(el.parentNode)) {
+      if(el.nodeType != dom.Node.ELEMENT_NODE
+          || _animationRunner.hasRunningParentAnimation(el.parentNode)) {
         runnable.noAnimate.add(el);
       } else {
         runnable.animate.add(el);
@@ -165,6 +171,23 @@ void domRemove(List<dom.Node> nodes) {
     }
     nodes[j].remove();
   }
+}
+
+List<dom.Node> allNodesBetween(List<dom.Node> nodes) {
+  var result = [];
+  // Not every element is sequential if the list of nodes only
+  // includes the elements. Removing a block also includes
+  // removing non-element nodes inbetween.
+  for(var j = 0, jj = nodes.length; j < jj; j++) {
+    dom.Node current = nodes[j];
+    dom.Node next = j+1 < jj ? nodes[j+1] : null;
+
+    while(next != null && current.nextNode != next) {
+      result.add(current.nextNode);
+    }
+    result.add(nodes[j]);
+  }
+  return result;
 }
 
 void domInsert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {

@@ -3,18 +3,7 @@ library css_animation_spec;
 import '../_specs.dart';
 
 main() {
-  ddescribe('CssAnimation', () {
-    TestBed _;
-    beforeEach(inject((TestBed tb) => _ = tb));
-    
-    xit('should add classes when completed', () {
-      // FIXME: Implement
-    });
-    
-    xit('should remove classes when completed', () {
-      // FIXME: Implement
-    });
-    
+  describe('CssAnimation', () {
     xit('should apply event class', () {
       // FIXME: Implement
     });
@@ -36,3 +25,4 @@ main() {
     });
   });
 }
+
