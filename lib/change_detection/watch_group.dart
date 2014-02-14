@@ -418,6 +418,7 @@ class Watch {
   get expression => _record.handler.expression;
 
   void invoke() {
+    if (_deleted || !_dirty) return;
     _dirty = false;
     reactionFn(_record.currentValue, _record.previousValue);
   }

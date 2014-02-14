@@ -34,6 +34,20 @@ main() => describe('WatchGroup', () {
     logger = _logger;
   }));
 
+  describe('watch lifecycle', () {
+    it('should prevent reaction fn on removed', () {
+      context['a'] = 'hello';
+      var watch ;
+      watchGrp.watch(parse('a'), (v, p) {
+        logger('removed');
+        watch.remove();
+      });
+      watch = watchGrp.watch(parse('a'), (v, p) => logger(v));
+      watchGrp.detectChanges();
+      expect(logger).toEqual(['removed']);
+    });
+  });
+
   describe('property chaining', () {
     it('should read property', () {
       context['a'] = 'hello';
