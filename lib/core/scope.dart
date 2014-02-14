@@ -173,19 +173,43 @@ class Scope {
    * controller code you will most likely use [watch].
    */
   Watch watch(expression, ReactionFn reactionFn, {context, FilterMap filters}) {
-    assert(expression != null);
-    AST ast = expression is AST
-        ? expression
-        : rootScope._astParser(expression, context: context, filters: filters);
-    return watchGroup.watch(ast, reactionFn);
+    return _watch(watchGroup, expression, reactionFn, context, filters);
   }
 
   Watch observe(expression, ReactionFn reactionFn, {context, FilterMap filters}) {
+    return _watch(observeGroup, expression, reactionFn, context, filters);
+  }
+
+  Watch _watch(WatchGroup group, expression, ReactionFn reactionFn,
+               context, FilterMap filters) {
     assert(expression != null);
-    AST ast = expression is AST
-        ? expression
-        : rootScope._astParser(expression, context: context, filters: filters);
-    return observeGroup.watch(ast, reactionFn);
+    AST ast;
+    Watch watch;
+    ReactionFn fn = reactionFn;
+    if (expression is AST) {
+      ast = expression;
+    } else if (expression is String) {
+      if (expression.startsWith('::')) {
+        expression = expression.substring(2);
+        fn = (value, last) {
+          if (value != null) {
+            watch.remove();
+            return reactionFn(value, last);
+          }
+        };
+      } else if (expression.startsWith(':')) {
+        expression = expression.substring(1);
+        fn = (value, last) {
+          if (value != null) {
+            return reactionFn(value, last);
+          }
+        };
+      }
+      ast = rootScope._astParser(expression, context: context, filters: filters);
+    } else {
+      throw 'expressions must be String or AST got $expression.';
+    }
+    return watch = group.watch(ast, fn);
   }
 
   dynamic eval(expression, [Map locals]) {
