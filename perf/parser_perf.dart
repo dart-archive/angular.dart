@@ -28,6 +28,7 @@ main() {
   var generatedParser = new DynamicInjector(
       modules: [new Module()
         ..type(Parser, implementedBy: StaticParser)
+        ..type(ParserBackend, implementedBy: DynamicParserBackend)
         ..value(StaticParserFunctions, generated_functions.functions())],
       allowImplicitInjection:true).get(Parser);
 

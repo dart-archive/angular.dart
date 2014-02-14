@@ -9,6 +9,7 @@ module.exports = function(config) {
     // optionally 'watched' only.
     files: [
       'perf/dom/*.dart',
+      'perf/*_perf.dart',
       'test/config/filter_tests.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js',
