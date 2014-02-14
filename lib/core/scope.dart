@@ -352,7 +352,7 @@ class RootScope extends Scope {
           if (changeLog == null) {
             log = [];
             digestLog = [];
-            changeLog = (value) => digestLog.add(value);
+            changeLog = (e, c, p) => digestLog.add('$e: $c <= $p');
           } else {
             log.add(digestLog.join(', '));
             digestLog.clear();
@@ -398,8 +398,10 @@ class RootScope extends Scope {
       assert((() {
         var watchLog = [];
         var observeLog = [];
-        (watchGroup as RootWatchGroup).detectChanges(changeLog: watchLog.add);
-        (observeGroup as RootWatchGroup).detectChanges(changeLog: observeLog.add);
+        (watchGroup as RootWatchGroup).detectChanges(
+            changeLog: (s, c, p) => watchLog.add('$s: $c <= $p'));
+        (observeGroup as RootWatchGroup).detectChanges(
+            changeLog: (s, c, p) => watchLog.add('$s: $c <= $p'));
         if (watchLog.isNotEmpty || observeLog.isNotEmpty) {
           throw 'Observer reaction functions should not change model. \n'
                 'These watch changes were detected: ${watchLog.join('; ')}\n'
