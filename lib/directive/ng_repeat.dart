@@ -85,10 +85,8 @@ class NgRepeatDirective extends AbstractNgRepeatDirective {
                     BoundBlockFactory boundBlockFactory,
                     Scope scope,
                     Parser parser,
-                    AstParser astParser,
-                    Animate animate)
-      : super(blockHole, boundBlockFactory, scope, parser, astParser, animate);
-  get _shalow => false;
+                    AstParser astParser)
+      : super(blockHole, boundBlockFactory, scope, parser, astParser);
 }
 
 /**
@@ -119,9 +117,8 @@ class NgShallowRepeatDirective extends AbstractNgRepeatDirective {
                           BoundBlockFactory boundBlockFactory,
                           Scope scope,
                           Parser parser,
-                          AstParser astParser,
-                          Animate animate)
-      : super(blockHole, boundBlockFactory, scope, parser, astParser, animate)
+                          AstParser astParser)
+      : super(blockHole, boundBlockFactory, scope, parser, astParser)
   {
     print('DEPRICATED: [ng-shallow-repeat] use [ng-repeat]');
   }
@@ -136,7 +133,6 @@ abstract class AbstractNgRepeatDirective  {
   final Scope _scope;
   final Parser _parser;
   final AstParser _astParser;
-  final Animate _animate;
 
   String _expression;
   String _valueIdentifier;
@@ -148,8 +144,7 @@ abstract class AbstractNgRepeatDirective  {
   Iterable _lastCollection;
 
   AbstractNgRepeatDirective(this._blockHole, this._boundBlockFactory,
-                            this._scope, this._parser, this._astParser,
-                            this._animate);
+                            this._scope, this._parser, this._astParser);
 
   set expression(value) {
     _expression = value;
@@ -224,11 +219,7 @@ abstract class AbstractNgRepeatDirective  {
     }
     // remove existing items
     _rows.forEach((key, row){
-      var removeBlock = row.block;
-      _scope.rootScope.domWrite(() {
-        removeBlock.remove();
-      });
-      
+      row.block.remove();
       row.scope.destroy();
     });
     _rows = newRows;
@@ -291,10 +282,7 @@ abstract class AbstractNgRepeatDirective  {
             ..elements = block.elements
             ..startNode = row.elements[0]
             ..endNode = row.elements[row.elements.length - 1];
-        var position = cursor;
-        _scope.rootScope.domWrite(() {
-          block.insertAfter(position);
-        });
+        block.insertAfter(cursor);
       }
       cursor = row.block;
     }

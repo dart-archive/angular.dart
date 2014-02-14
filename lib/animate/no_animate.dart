@@ -10,9 +10,6 @@ class NoAnimate extends Animate {
 
   AnimationHandle addClass(Iterable<dom.Node> nodes, String cssClass) {
     _elements(nodes).forEach((el) => el.classes.add(cssClass));
-    
-    print("${_elements(nodes)}");
-    
     return new _CompletedAnimationHandle();
   }
   
@@ -22,20 +19,17 @@ class NoAnimate extends Animate {
   }
   
   AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore } ) {
-    parent.insertAllBefore(nodes, insertBefore);
+    domInsert(nodes, parent, insertBefore: insertBefore);
     return new _CompletedAnimationHandle();
   }
 
   AnimationHandle remove(Iterable<dom.Node> nodes) {
-    nodes.forEach((n) => n.remove());
+    domRemove(nodes.toList(growable: false));
     return new _CompletedAnimationHandle();
   }
 
   AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
-    nodes.forEach((n) {
-      if(n.parentNode == null) n.remove();
-      parent.insertBefore(n, insertBefore);
-    });
+    domMove(nodes, parent, insertBefore: insertBefore);
     return new _CompletedAnimationHandle();
   }
 
