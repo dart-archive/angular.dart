@@ -453,14 +453,28 @@ main() => describe('dte.compiler', () {
           var scope = rootScope.createChild({});
           scope.context['isReady'] = 'ready';
           scope.context['logger'] = logger;
-          var element = $('<attach-detach attr-value="{{isReady}}" expr-value="isReady">{{logger("inner")}}</attach-detach>');
+          scope.context['once'] = null;
+          var element = $('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
           $compile(element, directives)(injector.createChild([new Module()..value(Scope, scope)]), element);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
 
           rootScope.apply();
-          var expected = ['new', 'attach:@ready; =>ready', 'inner'];
+          var expected = ['new', 'inner'];
+          assert((() {
+            // there is an assertion in flush which double checks that
+            // flushes do not change model. This assertion creates one
+            // more 'inner';
+            expected.add('inner');
+            return true;
+          })());
+          expect(logger).toEqual(expected);
+          logger.clear();
+
+          scope.context['once'] = '123';
+          rootScope.apply();
+          expected = ['attach:@ready; =>ready; =>!123', 'inner'];
           assert((() {
             // there is an assertion in flush which double checks that
             // flushes do not change model. This assertion creates one
@@ -771,7 +785,8 @@ class LogComponent {
     templateUrl: 'some/template.url',
     map: const {
         'attr-value': '@attrValue',
-        'expr-value': '<=>exprValue'
+        'expr-value': '<=>exprValue',
+        'once-value': '=>!onceValue'
     }
 )
 class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRootAware {
@@ -779,13 +794,14 @@ class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRoo
   Scope scope;
   String attrValue = 'too early';
   String exprValue = 'too early';
+  String onceValue = 'too early';
 
   AttachDetachComponent(Logger this.logger, TemplateLoader templateLoader, Scope this.scope) {
     logger('new');
     templateLoader.template.then((_) => logger('templateLoaded'));
   }
 
-  attach() => logger('attach:@$attrValue; =>$exprValue');
+  attach() => logger('attach:@$attrValue; =>$exprValue; =>!$onceValue');
   detach() => logger('detach');
   onShadowRoot(shadowRoot) {
     scope.rootScope.context['shadowRoot'] = shadowRoot;

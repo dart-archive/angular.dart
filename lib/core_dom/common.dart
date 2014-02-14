@@ -4,7 +4,8 @@ List<dom.Node> cloneElements(elements) {
   return elements.map((el) => el.clone(true)).toList();
 }
 
-typedef ApplyMapping(NodeAttrs attrs, Scope scope, Object dst, FilterMap filters);
+typedef ApplyMapping(NodeAttrs attrs, Scope scope, Object dst,
+                     FilterMap filters, notify());
 
 class DirectiveRef {
   final dom.Node element;

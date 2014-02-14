@@ -577,12 +577,12 @@ describe('ng-model', () {
 
     // NOTE(deboer): This test passes on Dartium, but fails in the content_shell.
     // The Dart team is looking into this bug.
-    xit('should write to input only if value is different', inject((Injector i) {
+    xit('should write to input only if value is different', inject((Injector i, AstParser parser) {
       var scope = _.rootScope;
       var element = new dom.TextAreaElement();
       NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
       nodeAttrs['ng-model'] = 'model';
-      var model = new NgModel(scope, new NodeAttrs(new DivElement()), element, null, null);
+      var model = new NgModel(scope, element, i.createChild([new Module()]), new NgNullForm(), parser, nodeAttrs);
       dom.querySelector('body').append(element);
       var input = new InputTextLikeDirective(element, model, scope);
 
