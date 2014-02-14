@@ -1046,7 +1046,6 @@ main() => describe('scope', () {
   });
 
 
-
   describe('domRead/domWrite', () {
     it(r'should run writes before reads', () {
       module((Module module) {
