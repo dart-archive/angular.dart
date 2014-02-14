@@ -636,7 +636,7 @@ main() => describe('scope', () {
     it(r'should apply expression with full lifecycle', inject((RootScope rootScope) {
       var log = '';
       var child = rootScope.createChild({"parent": rootScope.context});
-      rootScope.observe('a', (a, _) { log += '1'; });
+      rootScope.watch('a', (a, _) { log += '1'; }, readOnly: true);
       child.apply('parent.a = 0');
       expect(log).toEqual('1');
     }));
@@ -645,7 +645,7 @@ main() => describe('scope', () {
     it(r'should schedule domWrites and domReads', inject((RootScope rootScope) {
       var log = '';
       var child = rootScope.createChild({"parent": rootScope.context});
-      rootScope.observe('a', (a, _) { log += '1'; });
+      rootScope.watch('a', (a, _) { log += '1'; }, readOnly: true);
       child.apply('parent.a = 0');
       expect(log).toEqual('1');
     }));
@@ -657,7 +657,7 @@ main() => describe('scope', () {
         LoggingExceptionHandler exceptionHandler = e;
         var log = [];
         var child = rootScope.createChild({});
-        rootScope.observe('a', (a, _) => log.add('1'));
+        rootScope.watch('a', (a, _) => log.add('1'), readOnly: true);
         rootScope.context['a'] = 0;
         child.apply(() { throw 'MyError'; });
         expect(log.join(',')).toEqual('1');
@@ -676,7 +676,7 @@ main() => describe('scope', () {
       beforeEach(inject((RootScope rootScope) {
         rootScope.context['log'] = () { log += 'digest;'; return null; };
         log = '';
-        rootScope.observe('log()', (v, o) => null);
+        rootScope.watch('log()', (v, o) => null, readOnly: true);
         rootScope.digest();
         log = '';
       }));
@@ -709,7 +709,7 @@ main() => describe('scope', () {
         rootScope.context['logger'] = (name) { log(name); return retValue; };
 
         rootScope.watch('logger("watch")', (n, v) => null);
-        rootScope.observe('logger("flush")', (n, v) => null);
+        rootScope.watch('logger("flush")', (n, v) => null, readOnly: true);
 
         // clear watches
         rootScope.digest();
@@ -1077,7 +1077,7 @@ main() => describe('scope', () {
           rootScope.domWrite(() => logger('write3'));
           throw 'read1';
         });
-        rootScope.observe('value', (_, __) => logger('observe'));
+        rootScope.watch('value', (_, __) => logger('observe'), readOnly: true);
         rootScope.flush();
         expect(logger).toEqual(['write1', 'write2', 'observe', 'read1', 'read2', 'write3']);
         expect(exceptionHandler.errors.length).toEqual(2);

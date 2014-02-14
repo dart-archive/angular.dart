@@ -154,8 +154,8 @@ class Scope {
   // TODO(misko): WatchGroup should be private.
   // Instead we should expose performance stats about the watches
   // such as # of watches, checks/1ms, field checks, function checks, etc
-  final WatchGroup watchGroup;
-  final WatchGroup observeGroup;
+  final WatchGroup _readWriteGroup;
+  final WatchGroup _readOnlyGroup;
   final int _depth;
   final int _index;
 
@@ -164,7 +164,7 @@ class Scope {
   int _nextChildIndex = 0;
 
   Scope(Object this.context, this.rootScope, this._parentScope, this._depth,
-        this._index, this.watchGroup, this.observeGroup);
+        this._index, this._readWriteGroup, this._readOnlyGroup);
 
   /**
    * A [watch] sets up a watch in the [digest] phase of the [apply] cycle.
@@ -172,16 +172,8 @@ class Scope {
    * Use [watch] if the reaction function can cause updates to model. In your
    * controller code you will most likely use [watch].
    */
-  Watch watch(expression, ReactionFn reactionFn, {context, FilterMap filters}) {
-    return _watch(watchGroup, expression, reactionFn, context, filters);
-  }
-
-  Watch observe(expression, ReactionFn reactionFn, {context, FilterMap filters}) {
-    return _watch(observeGroup, expression, reactionFn, context, filters);
-  }
-
-  Watch _watch(WatchGroup group, expression, ReactionFn reactionFn,
-               context, FilterMap filters) {
+  Watch watch(expression, ReactionFn reactionFn,
+              {context, FilterMap filters, bool readOnly: false}) {
     assert(expression != null);
     AST ast;
     Watch watch;
@@ -209,7 +201,7 @@ class Scope {
     } else {
       throw 'expressions must be String or AST got $expression.';
     }
-    return watch = group.watch(ast, fn);
+    return watch = (readOnly ? _readOnlyGroup : _readWriteGroup).watch(ast, fn);
   }
 
   dynamic eval(expression, [Map locals]) {
@@ -252,8 +244,8 @@ class Scope {
   Scope createChild(Object childContext) {
     var child = new Scope(childContext, rootScope, this,
                           _depth + 1, _nextChildIndex++,
-                          watchGroup.newGroup(childContext),
-                          observeGroup.newGroup(childContext));
+                          _readWriteGroup.newGroup(childContext),
+                          _readOnlyGroup.newGroup(childContext));
     var next = null;
     var prev = _childTail;
     child._next = next;
@@ -279,8 +271,8 @@ class Scope {
 
     this._next = this._prev = null;
 
-    watchGroup.remove();
-    observeGroup.remove();
+    _readWriteGroup.remove();
+    _readOnlyGroup.remove();
     _Streams.destroy(this);
 
     _parentScope = null;
@@ -325,7 +317,7 @@ class RootScope extends Scope {
   void digest() {
     _transitionState(null, STATE_DIGEST);
     try {
-      var rootWatchGroup = (watchGroup as RootWatchGroup);
+      var rootWatchGroup = (_readWriteGroup as RootWatchGroup);
 
       int digestTTL = _ttl.ttl;
       const int LOG_COUNT = 3;
@@ -369,7 +361,7 @@ class RootScope extends Scope {
 
   void flush() {
     _transitionState(null, STATE_FLUSH);
-    var observeGroup = this.observeGroup as RootWatchGroup;
+    var observeGroup = this._readOnlyGroup as RootWatchGroup;
     bool runObservers = true;
     try {
       do {
@@ -397,7 +389,7 @@ class RootScope extends Scope {
       assert((() {
         var watchLog = [];
         var observeLog = [];
-        (watchGroup as RootWatchGroup).detectChanges(
+        (_readWriteGroup as RootWatchGroup).detectChanges(
             changeLog: (s, c, p) => watchLog.add('$s: $c <= $p'));
         (observeGroup as RootWatchGroup).detectChanges(
             changeLog: (s, c, p) => watchLog.add('$s: $c <= $p'));

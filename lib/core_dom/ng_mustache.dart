@@ -20,7 +20,7 @@ class NgTextMustacheDirective {
       return parser(exp, filters:filters);
     }).toList();
     AST ast = new PureFunctionAST('[[$markup]]', new ArrayFn(), items);
-    scope.observe(ast, interpolation.call);
+    scope.watch(ast, interpolation.call, readOnly: listener == null);
   }
 
 }
