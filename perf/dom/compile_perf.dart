@@ -2,7 +2,7 @@ import '_perf.dart';
 
 main() => describe('compiler', () {
   describe('block instantiation', () {
-    iit('time ', inject((TestBed tb) {
+    it('time ', inject((TestBed tb) {
       tb.compile(UL_REPEATER);
       var items = [];
       for(var i = 0; i < 100; i++) {
