@@ -249,8 +249,7 @@ class Scope {
   ScopeStream on(String name) =>
       _Streams.on(this, rootScope._exceptionHandler, name);
 
-  Scope createChild([Object childContext]) {
-    if (childContext == null) childContext = context;
+  Scope createChild(Object childContext) {
     var child = new Scope(childContext, rootScope, this,
                           _depth + 1, _nextChildIndex++,
                           watchGroup.newGroup(childContext),

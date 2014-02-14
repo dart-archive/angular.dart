@@ -192,9 +192,9 @@ main() => describe('scope', () {
       }));
 
       it('children should point to root', inject((RootScope rootScope) {
-        var child = rootScope.createChild();
+        var child = rootScope.createChild(new PrototypeMap(rootScope.context));
         expect(child.rootScope).toEqual(rootScope);
-        expect(child.createChild().rootScope).toEqual(rootScope);
+        expect(child.createChild(new PrototypeMap(rootScope.context)).rootScope).toEqual(rootScope);
       }));
     });
 
@@ -206,10 +206,10 @@ main() => describe('scope', () {
 
 
       it('should point to parent', inject((RootScope rootScope) {
-        var child = rootScope.createChild();
+        var child = rootScope.createChild(new PrototypeMap(rootScope.context));
         expect(rootScope.parentScope).toEqual(null);
         expect(child.parentScope).toEqual(rootScope);
-        expect(child.createChild().parentScope).toEqual(child);
+        expect(child.createChild(new PrototypeMap(rootScope.context)).parentScope).toEqual(child);
       }));
     });
   });
@@ -226,7 +226,7 @@ main() => describe('scope', () {
 
       it(r'should add listener for both emit and broadcast events', inject((RootScope rootScope) {
         var log = '',
-        child = rootScope.createChild();
+        child = rootScope.createChild(new PrototypeMap(rootScope.context));
 
         eventFn(event) {
           expect(event).not.toEqual(null);
@@ -246,7 +246,7 @@ main() => describe('scope', () {
 
       it(r'should return a function that deregisters the listener', inject((RootScope rootScope) {
         var log = '';
-        var child = rootScope.createChild();
+        var child = rootScope.createChild(new PrototypeMap(rootScope.context));
         var subscription;
 
         eventFn(e) {
