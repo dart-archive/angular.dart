@@ -448,6 +448,19 @@ main() => describe('scope', () {
           expect(result.name).toBe('some');
           expect(result.targetScope).toBe(child1);
         }));
+
+
+        it('should skip scopes which dont have given event',
+            inject((RootScope rootScope, Logger log) {
+          var child1 = rootScope.createChild('A');
+          rootScope.createChild('A1');
+          rootScope.createChild('A2');
+          rootScope.createChild('A3');
+          var child2 = rootScope.createChild('B');
+          child2.on('event').listen((e) => log(e.data));
+          rootScope.broadcast('event', 'OK');
+          expect(log).toEqual(['OK']);
+        }));
       });
 
 
