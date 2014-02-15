@@ -147,18 +147,18 @@ main() {
         var element = _.compile(
             "<ng-pluralize count='viewCount'  offset='2' " +
                 "when=\"{'0': 'Nobody is viewing.'," +
-                "'1': '{{p1}} is viewing.'," +
-                "'2': '{{p1}} and {{p2}} are viewing.'," +
-                "'one': '{{p1}}, {{p2}} and one other person are viewing.'," +
-                "'other': '{{p1}}, {{p2}} and {} other people are viewing.'}\">" +
+                "'1': '\${p1} is viewing.'," +
+                "'2': '\${p1} and \${p2} are viewing.'," +
+                "'one': '\${p1}, \${p2} and one other person are viewing.'," +
+                "'other': '\${p1}, \${p2} and {} other people are viewing.'}\">" +
             "</ng-pluralize>");
         var elementAlt = _.compile(
             "<ng-pluralize count='viewCount'  offset='2' " +
                 "when-0='Nobody is viewing.'" +
-                "when-1='{{p1}} is viewing.'" +
-                "when-2='{{p1}} and {{p2}} are viewing.'" +
-                "when-one='{{p1}}, {{p2}} and one other person are viewing.'" +
-                "when-other='{{p1}}, {{p2}} and {} other people are viewing.'>" +
+                "when-1='\${p1} is viewing.'" +
+                "when-2='\${p1} and \${p2} are viewing.'" +
+                "when-one='\${p1}, \${p2} and one other person are viewing.'" +
+                "when-other='\${p1}, \${p2} and {} other people are viewing.'>" +
             "</ng-pluralize>");
         _.rootScope.p1 = 'Igor';
         _.rootScope.p2 = 'Misko';
