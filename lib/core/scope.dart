@@ -372,7 +372,7 @@ class Scope implements Map {
       $watchCollectionWatch = (_) {
         newValue = objGetter(this, _filters);
 
-        if (newValue is! Map && newValue is! List) {
+        if (newValue is! Map && newValue is! Iterable) {
           if (!_identical(oldValue, newValue)) {
             oldValue = newValue;
             changeDetected++;
