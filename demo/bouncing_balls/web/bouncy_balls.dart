@@ -66,14 +66,14 @@ class BounceController {
       balls.removeAt(0);
       count++;
     }
-    tick();
+    //tick();
   }
 
   void timeDigest() {
     var start = window.performance.now();
     digestTime = currentDigestTime;
     scope.rootScope.domRead(() {
-      currentDigestTime = (window.performance.now() - start).round();
+      currentDigestTime = window.performance.now() - start;
     });
   }
 
@@ -100,7 +100,7 @@ class BounceController {
 @NgDirective(
   selector: '[ball-position]',
   map: const {
-    "ballPosition": '=>position'})
+    "ball-position": '=>position'})
 class BallPositionDirective {
   final Element element;
   final Scope scope;
@@ -118,6 +118,17 @@ class MyModule extends Module {
   MyModule() {
     type(BounceController);
     type(BallPositionDirective);
+    value(GetterCache, new GetterCache({
+      'x': (o) => o.x,
+      'y': (o) => o.y,
+      'bounce': (o) => o.bounce,
+      'fps': (o) => o.fps,
+      'balls': (o) => o.balls,
+      'length': (o) => o.length,
+      'digestTime': (o) => o.digestTime,
+      'ballClassName': (o) => o.ballClassName
+    }));
+    value(ScopeStats, new ScopeStats(report: true));
   }
 }
 
