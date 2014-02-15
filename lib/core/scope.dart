@@ -281,6 +281,58 @@ class Scope {
 }
 
 
+class ScopeStats {
+  bool report = true;
+  NumberFormat nf = new NumberFormat.decimalPattern();
+  RootScope _rootScope;
+
+  AvgStopwatch digestFieldStopwatch = new AvgStopwatch();
+  AvgStopwatch digestEvalStopwatch = new AvgStopwatch();
+  AvgStopwatch digestProcessStopwatch = new AvgStopwatch();
+  int _digestLoopNo = 0;
+
+  AvgStopwatch flushFieldStopwatch = new AvgStopwatch();
+  AvgStopwatch flushEvalStopwatch = new AvgStopwatch();
+  AvgStopwatch flushProcessStopwatch = new AvgStopwatch();
+
+  ScopeStats() {
+    nf.maximumFractionDigits = 0;
+  }
+
+  void digestStart() {
+    _digestStopwatchReset();
+    _digestLoopNo = 0;
+  }
+
+  _digestStopwatchReset() {
+    digestFieldStopwatch.reset();
+    digestEvalStopwatch.reset();
+    digestProcessStopwatch.reset();
+  }
+
+  void digestLoop(int changeCount) {
+    _digestLoopNo++;
+    if (report) {
+      print('digest #$_digestLoopNo:'
+            'Field: ${_stat(digestFieldStopwatch)} '
+            'Eval: ${_stat(digestEvalStopwatch)} '
+            'Process: ${_stat(digestProcessStopwatch)}');
+    }
+    _digestStopwatchReset();
+  }
+
+  String _stat(AvgStopwatch s) {
+    return '${nf.format(s.count)}'
+           ' / ${nf.format(s.elapsedMicroseconds)} us'
+           ' = ${nf.format(s.ratePerMs)} #/ms';
+  }
+
+  void digestEnd() {
+
+  }
+}
+
+
 class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
   static final STATE_DIGEST = 'digest';
@@ -297,6 +349,8 @@ class RootScope extends Scope {
   _FunctionChain _domWriteHead, _domWriteTail;
   _FunctionChain _domReadHead, _domReadTail;
 
+  ScopeStats _stats = new ScopeStats();
+
   String _state;
 
   RootScope(Object context, this._astParser, this._parser,
@@ -310,6 +364,7 @@ class RootScope extends Scope {
       digest();
       flush();
     };
+    _stats._rootScope = this;
   }
 
   RootScope get rootScope => this;
@@ -325,6 +380,7 @@ class RootScope extends Scope {
       List digestLog;
       var count;
       ChangeLog changeLog;
+      _stats.digestStart();
       do {
         while(_runAsyncHead != null) {
           try {
@@ -337,7 +393,11 @@ class RootScope extends Scope {
 
         digestTTL--;
         count = rootWatchGroup.detectChanges(
-            exceptionHandler: _exceptionHandler, changeLog: changeLog);
+            exceptionHandler: _exceptionHandler,
+            changeLog: changeLog,
+            fieldStopwatch: _stats.digestFieldStopwatch,
+            evalStopwatch: _stats.digestEvalStopwatch,
+            processStopwatch: _stats.digestProcessStopwatch);
 
         if (digestTTL <= LOG_COUNT) {
           if (changeLog == null) {
@@ -353,8 +413,10 @@ class RootScope extends Scope {
           throw 'Model did not stabilize in ${_ttl.ttl} digests. '
                 'Last $LOG_COUNT iterations:\n${log.join('\n')}';
         }
+        _stats.digestLoop(count);
       } while (count > 0);
     } finally {
+      _stats.digestEnd();
       _transitionState(STATE_DIGEST, null);
     }
   }

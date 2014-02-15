@@ -216,11 +216,14 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     implements ChangeDetector<H> {
   DirtyCheckingChangeDetector(GetterCache getterCache): super(null, getterCache);
 
-  DirtyCheckingRecord<H> collectChanges([EvalExceptionHandler exceptionHandler]) {
+  DirtyCheckingRecord<H> collectChanges({ EvalExceptionHandler exceptionHandler,
+                                          AvgStopwatch stopwatch}) {
+    if (stopwatch != null) stopwatch.start();
     DirtyCheckingRecord changeHead = null;
     DirtyCheckingRecord changeTail = null;
     DirtyCheckingRecord current = _head; // current index
 
+    int count = 0;
     while (current != null) {
       try {
         if (current.check() != null) {
@@ -230,6 +233,7 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
             changeTail = changeTail.nextChange = current;
           }
         }
+        if (stopwatch != null) count++;
       } catch (e, s) {
         if (exceptionHandler == null) {
           rethrow;
@@ -240,6 +244,7 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
       current = current._nextWatch;
     }
     if (changeTail != null) changeTail.nextChange = null;
+    if (stopwatch != null) stopwatch..stop()..increment(count);
     return changeHead;
   }
 

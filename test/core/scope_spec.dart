@@ -4,7 +4,7 @@ import '../_specs.dart';
 import 'package:angular/change_detection/change_detection.dart' hide ExceptionHandler;
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 
-main() => describe('scope', () {
+main() => ddescribe('scope', () {
   beforeEach(module((Module module) {
     Map context = {};
     module.value(GetterCache, new GetterCache({}));
@@ -847,7 +847,7 @@ main() => describe('scope', () {
     }));
 
 
-    it(r'should run digest multiple times', inject(
+    iit(r'should run digest multiple times', inject(
             (RootScope rootScope) {
           // tests a traversal edge case which we originally missed
           var log = [];

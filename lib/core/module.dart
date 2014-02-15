@@ -3,6 +3,7 @@ library angular.core;
 import 'dart:async' as async;
 import 'dart:collection';
 import 'dart:mirrors';
+import 'package:intl/intl.dart';
 
 import 'package:di/di.dart';
 
@@ -17,6 +18,7 @@ import 'package:angular/change_detection/watch_group.dart';
 export 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+export 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/core/parser/utils.dart';
 import 'package:angular/core/parser/syntax.dart';
 
