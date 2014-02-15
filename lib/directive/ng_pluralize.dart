@@ -153,7 +153,7 @@ class NgPluralizeDirective {
   }
 
   _setAndWatch(expression) {
-    var interpolation = interpolate(expression);
+    var interpolation = interpolate(expression, false, '\${', '}');
     interpolation.setter = (text) => element.text = text;
     interpolation.setter(expression);
     scope.$watchSet(interpolation.watchExpressions, interpolation.call);
