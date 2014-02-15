@@ -344,6 +344,59 @@ class Scope {
 _mapEqual(Map a, Map b) => a.length == b.length &&
     a.keys.every((k) => b.containsKey(k) && a[k] == b[k]);
 
+class ScopeStats {
+  bool report = true;
+  final nf = new NumberFormat.decimalPattern();
+
+  final digestFieldStopwatch = new AvgStopwatch();
+  final digestEvalStopwatch = new AvgStopwatch();
+  final digestProcessStopwatch = new AvgStopwatch();
+  int _digestLoopNo = 0;
+
+  final flushFieldStopwatch = new AvgStopwatch();
+  final flushEvalStopwatch = new AvgStopwatch();
+  final flushProcessStopwatch = new AvgStopwatch();
+
+  ScopeStats({this.report: false}) {
+    nf.maximumFractionDigits = 0;
+  }
+
+  void digestStart() {
+    _digestStopwatchReset();
+    _digestLoopNo = 0;
+  }
+
+  _digestStopwatchReset() {
+    digestFieldStopwatch.reset();
+    digestEvalStopwatch.reset();
+    digestProcessStopwatch.reset();
+  }
+
+  void digestLoop(int changeCount) {
+    _digestLoopNo++;
+    if (report) {
+      print(this);
+    }
+    _digestStopwatchReset();
+  }
+
+  String _stat(AvgStopwatch s) {
+    return '${nf.format(s.count)}'
+           ' / ${nf.format(s.elapsedMicroseconds)} us'
+           ' = ${nf.format(s.ratePerMs)} #/ms';
+  }
+
+  void digestEnd() {
+  }
+
+  toString() =>
+    'digest #$_digestLoopNo:'
+    'Field: ${_stat(digestFieldStopwatch)} '
+    'Eval: ${_stat(digestEvalStopwatch)} '
+    'Process: ${_stat(digestProcessStopwatch)}';
+}
+
+
 class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
   static final STATE_DIGEST = 'digest';
@@ -360,11 +413,14 @@ class RootScope extends Scope {
   _FunctionChain _domWriteHead, _domWriteTail;
   _FunctionChain _domReadHead, _domReadTail;
 
+  final ScopeStats _scopeStats;
+
   String _state;
 
   RootScope(Object context, this._astParser, this._parser,
             GetterCache cacheGetter, FilterMap filterMap,
-            this._exceptionHandler, this._ttl, this._zone)
+            this._exceptionHandler, this._ttl, this._zone, 
+            this._scopeStats)
       : super(context, null, null,
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context))
@@ -387,6 +443,7 @@ class RootScope extends Scope {
       List digestLog;
       var count;
       ChangeLog changeLog;
+      _scopeStats.digestStart();
       do {
         while(_runAsyncHead != null) {
           try {
@@ -399,7 +456,11 @@ class RootScope extends Scope {
 
         digestTTL--;
         count = rootWatchGroup.detectChanges(
-            exceptionHandler: _exceptionHandler, changeLog: changeLog);
+            exceptionHandler: _exceptionHandler,
+            changeLog: changeLog,
+            fieldStopwatch: _scopeStats.digestFieldStopwatch,
+            evalStopwatch: _scopeStats.digestEvalStopwatch,
+            processStopwatch: _scopeStats.digestProcessStopwatch);
 
         if (digestTTL <= LOG_COUNT) {
           if (changeLog == null) {
@@ -415,8 +476,10 @@ class RootScope extends Scope {
           throw 'Model did not stabilize in ${_ttl.ttl} digests. '
                 'Last $LOG_COUNT iterations:\n${log.join('\n')}';
         }
+        _scopeStats.digestLoop(count);
       } while (count > 0);
     } finally {
+      _scopeStats.digestEnd();
       _transitionState(STATE_DIGEST, null);
     }
   }

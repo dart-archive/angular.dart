@@ -3,6 +3,7 @@ library angular.core;
 import 'dart:async' as async;
 import 'dart:collection';
 import 'dart:mirrors';
+import 'package:intl/intl.dart';
 
 import 'package:di/di.dart';
 
@@ -40,15 +41,10 @@ class NgCoreModule extends Module {
     type(FilterMap);
     type(Interpolate);
     type(RootScope);
+    factory(Scope, (injector) => injector.get(RootScope));
+    value(ScopeStats, new ScopeStats());
     value(GetterCache, new GetterCache({}));
     value(Object, {}); // RootScope context
-    factory(Scope, (injector) {
-//      try { throw null; }
-//      catch (e, s) {
-//        print('DEPRECATED reference to Scope:\n$s');
-//      }
-      return injector.get(RootScope);
-    });
     type(AstParser);
     type(NgZone);
 
