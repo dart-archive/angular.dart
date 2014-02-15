@@ -63,10 +63,10 @@ part of angular.directive;
  *
  *    <ng-pluralize count="personCount" offset=2
  *                  when="{'0': 'Nobody is viewing.',
- *                         '1': '{{person1}} is viewing.',
- *                         '2': '{{person1}} and {{person2}} are viewing.',
- *                         'one': '{{person1}}, {{person2}} and one other person are viewing.',
- *                         'other': '{{person1}}, {{person2}} and {} other people are viewing.'}">
+ *                         '1': '${person1} is viewing.',
+ *                         '2': '${person1} and ${person2} are viewing.',
+ *                         'one': '${person1}, ${person2} and one other person are viewing.',
+ *                         'other': '${person1}, ${person2} and {} other people are viewing.'}">
  *    </ng-pluralize>
  *
  * Notice that we are still using two plural categories(one, other), but we added
@@ -153,7 +153,7 @@ class NgPluralizeDirective {
   }
 
   _setAndWatch(expression) {
-    var interpolation = interpolate(expression);
+    var interpolation = interpolate(expression, false, '\${', '}');
     interpolation.setter = (text) => element.text = text;
     interpolation.setter(expression);
     scope.$watchSet(interpolation.watchExpressions, interpolation.call);
