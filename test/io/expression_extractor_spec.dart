@@ -20,12 +20,12 @@ main() => describe('expression_extractor', () {
 
     IoService ioService = new IoServiceImpl();
     var sourceCrawler = new SourceCrawlerImpl(['packages/']);
-    var sourceMetadataExtractor = new SourceMetadataExtractor(sourceCrawler);
+    var sourceMetadataExtractor = new SourceMetadataExtractor();
     List<DirectiveInfo> directives =
         sourceMetadataExtractor
-            .gatherDirectiveInfo('test/io/test_files/main.dart');
-    var htmlExtractor = new HtmlExpressionExtractor(directives, ioService);
-    htmlExtractor.crawl('test/io/test_files/');
+            .gatherDirectiveInfo('test/io/test_files/main.dart', sourceCrawler);
+    var htmlExtractor = new HtmlExpressionExtractor(directives);
+    htmlExtractor.crawl('test/io/test_files/', ioService);
 
     var expressions = htmlExtractor.expressions;
     expect(expressions, unorderedEquals([
