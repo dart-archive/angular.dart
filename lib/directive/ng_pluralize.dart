@@ -84,9 +84,11 @@ part of angular.directive;
  */
 @NgDirective(
     selector: 'ng-pluralize',
+    priority: 2,
     map: const { 'count': '=>count' })
 @NgDirective(
     selector: '[ng-pluralize]',
+    priority: 2,
     map: const { 'count': '=>count' })
 class NgPluralizeDirective {
   final dom.Element element;
