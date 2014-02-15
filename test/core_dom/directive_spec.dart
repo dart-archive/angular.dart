@@ -10,7 +10,7 @@ main() {
 
     beforeEach(inject((TestBed tb) {
       _ = tb;
-      element = _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo"></div>');
+      element = _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo" data-ng-foo="ngfoo"></div>');
       nodeAttrs = new NodeAttrs(element);
     }));
 
@@ -18,6 +18,7 @@ main() {
       expect(nodeAttrs['foo']).toEqual('bar');
       expect(nodeAttrs['foo-bar']).toEqual('baz');
       expect(nodeAttrs['foo-bar-baz']).toEqual('foo');
+      expect(nodeAttrs['ng-foo']).toEqual('ngfoo');
     });
 
     it('should return null for unexistent attributes', () {
@@ -27,7 +28,7 @@ main() {
     it('should provide a forEach function to iterate over attributes', () {
       Map<String, String> attrMap = new Map();
       nodeAttrs.forEach((k, v) => attrMap[k] = v);
-      expect(attrMap).toEqual({'foo': 'bar', 'foo-bar': 'baz', 'foo-bar-baz': 'foo'});
+      expect(attrMap).toEqual({'foo': 'bar', 'foo-bar': 'baz', 'foo-bar-baz': 'foo', 'ng-foo': 'ngfoo'});
     });
 
     it('should provide a contains method', () {
@@ -38,7 +39,7 @@ main() {
     });
 
     it('should return the attribute names', () {
-      expect(nodeAttrs.keys.toList()..sort()).toEqual(['foo', 'foo-bar', 'foo-bar-baz']);
+      expect(nodeAttrs.keys.toList()..sort()).toEqual(['foo', 'foo-bar', 'foo-bar-baz', 'ng-foo']);
     });
   });
 }

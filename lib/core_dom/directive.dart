@@ -22,7 +22,11 @@ class NodeAttrs {
 
   Map<String, List<AttributeChanged>> _observers;
 
-  NodeAttrs(this.element);
+  NodeAttrs(this.element) {
+    if (element != null) {
+      normalizeNgAttributes(element);
+    }
+  }
 
   operator [](String attributeName) =>
       element.attributes[attributeName];

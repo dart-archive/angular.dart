@@ -4,6 +4,17 @@ List<dom.Node> cloneElements(elements) {
   return elements.map((el) => el.clone(true)).toList();
 }
 
+void normalizeNgAttributes(dom.Element element) {
+  Map<String, String> normalizedAttrs = {};
+  element.attributes.forEach((attrName, value) {
+    if (attrName.startsWith('data-ng-')) {
+      normalizedAttrs[attrName.replaceFirst('data-', '')] = value;
+      element.attributes.remove(attrName);
+    }
+  });
+  element.attributes.addAll(normalizedAttrs);
+}
+
 typedef ApplyMapping(NodeAttrs attrs, Scope scope, Object dst);
 
 class DirectiveRef {
