@@ -76,7 +76,7 @@ export CHROME_CANARY_BIN="$DART_EDITOR_DIR/chromium/Chromium.app/Contents/MacOS/
 ```
 **Note**: the `$CHROME_CANARY_BIN` environment variable is used by karma to run your tests
 in dartium instead of chromium. If you don't do this, the dart2js compile will make the tests
-run extreamly slow since it has to wait for a full js compile each time.
+run extremely slow since it has to wait for a full js compile each time.
 
 You should also add the Dart SDK `bin` directory to your path and/or define `DART_SDK`; e.g.
 
@@ -147,9 +147,10 @@ You can manually run the tests if this happens:
 karma run --port=8765
 ```
 
-## Debuging
+## Debugging
 
-In the dart editor you can configure a dartium launch target for the karma test runner debug page:
+In the dart editor you can configure a dartium launch target for the karma test runner debug page.
+The menu option is under Run > Manage Launches > Create new Dartium Launch.
 
 ```
 http://localhost:8765/debug.html
