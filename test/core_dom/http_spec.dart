@@ -1322,10 +1322,10 @@ main() => describe('http', () {
 
 class FakeFile implements File {
   DateTime get lastModifiedDate => null;
-  int get lastModified => 0;
   String get name => null;
   String get relativePath => null;
   int get size => 0;
   String get type => null;
   Blob slice([int start, int end, String contentType]) => null;
+  int get lastModified => new DateTime.now().millisecondsSinceEpoch;
 }
