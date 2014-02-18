@@ -180,6 +180,8 @@ main() => describe('dte.compiler', () {
         module.type(LogComponent);
         module.type(AttachDetachComponent);
         module.type(SimpleComponent);
+        module.type(ExprAttrComponent);
+        module.type(SayHelloFilter);
       }));
 
       it('should select on element', async(inject((NgZone zone) {
@@ -362,6 +364,16 @@ main() => describe('dte.compiler', () {
           var element = $(r'<div><incorrect-mapping></incorrect-mapping</div>');
           $compile(element, directives)(injector, element);
         }).toThrow("Unknown mapping 'foo\' for attribute 'attr'.");
+      })));
+
+      it('should support filters in attribute expressions', async(inject(() {
+        var element = $(r'''<expr-attr-component expr="'Misko' | hello" one-way="'James' | hello" once="'Chirayu' | hello"></expr-attr-component>''');
+        $compile(element, directives)(injector, element);
+        ExprAttrComponent component = $rootScope['exprAttrComponent'];
+        $rootScope.$digest();
+        expect(component.expr).toEqual('Hello, Misko!');
+        expect(component.oneWay).toEqual('Hello, James!');
+        expect(component.exprOnce).toEqual('Hello, Chirayu!');
       })));
 
       it('should error on non-asignable-mapping', async(inject(() {
@@ -786,4 +798,31 @@ class MissingSelector {}
 
 @NgComponent(selector: 'buttonbar button')
 class InvalidSelector {}
+
+@NgFilter(name:'hello')
+class SayHelloFilter {
+  call(String str) {
+    return 'Hello, $str!';
+  }
+}
+
+@NgComponent(
+    selector: 'expr-attr-component',
+    template: r'<content></content>',
+    publishAs: 'ctrl',
+    map: const {
+        'expr': '<=>expr',
+        'one-way': '=>oneWay',
+        'once': '=>!exprOnce'
+    }
+)
+class ExprAttrComponent {
+  var expr;
+  var oneWay;
+  var exprOnce;
+
+  ExprAttrComponent(Scope scope) {
+    scope.$root.exprAttrComponent = this;
+  }
+}
 
