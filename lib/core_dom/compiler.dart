@@ -146,17 +146,17 @@ class Compiler {
       ApplyMapping mappingFn;
       switch (mode) {
         case '@':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters) {
             attrs.observe(attrName, (value) => dstPathFn.assign(dst, value));
           };
           break;
         case '<=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters) {
             if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
             scope.$watch(
-                    () => attrExprFn.eval(scope),
+                    () => attrExprFn.eval(scope, filters),
                     (v) => dstPathFn.assign(dst, shadowValue = v),
                 attrs[attrName]);
             if (attrExprFn.isAssignable) {
@@ -173,22 +173,22 @@ class Compiler {
           };
           break;
         case '=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters) {
             if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             scope.$watch(
-                    () => attrExprFn.eval(scope),
+                    () => attrExprFn.eval(scope, filters),
                     (v) => dstPathFn.assign(dst, v),
                     attrs[attrName]);
           };
           break;
         case '=>!':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters) {
             if (attrs[attrName] == null) return;
             Expression attrExprFn = _parser(attrs[attrName]);
             var stopWatching;
             stopWatching = scope.$watch(
-                () => attrExprFn.eval(scope),
+                () => attrExprFn.eval(scope, filters),
                 (value) {
                   if (dstPathFn.assign(dst, value) != null) {
                     stopWatching();
@@ -198,7 +198,7 @@ class Compiler {
           };
           break;
         case '&':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters) {
             dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope, ScopeLocals.wrapper));
           };
           break;
