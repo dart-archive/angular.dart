@@ -3,48 +3,180 @@ library css_animation_spec;
 import '../_specs.dart';
 
 main() {
-  describe('CssAnimation', () {
-    xit('should apply event class', () {
-      // FIXME: Implement
-    });
+  ddescribe('CssAnimation', () {
+    TestBed _;
+    beforeEach(inject((TestBed tb) => _ = tb));
     
-    xit('should apply event active class', () {
-      // FIXME: Implement
-    });
+    it('should correctly respond to an animation lifecycle', async(() {
+      _.compile("<div></div>");
+
+      var animation = new CssAnimation(_.rootElement, "event", "event-active");
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+      
+      animation.attach();
+      expect(_.rootElement).toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+      
+      animation.start(new DateTime.now(), 0.0);
+      expect(_.rootElement).toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+      
+      animation.update(new DateTime.now(), 0.0);
+      expect(_.rootElement).toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+      
+      animation.detach(new DateTime.now(), 0.0);
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+    }));
     
-    it('should compute duration based on event style', () {  
-//      _.compile('<div></div>');
-//      
-//      Node div = $('<div></div>').first;
-//      
-//      _.rootElement.appendHtml('<style>div .test-add { transition: all 200ms }</style>');
-//      _.rootElement.append(div);
-//
-//      animate.addClass([div], 'test');
-//      runner.start(runner.now);
-//      expect(div).not.toHaveClass('test');
-//      
-//      microLeap();
-//      expect(div).not.toHaveClass('test');
-//      
-//      runner.update(runner.now);
-//      microLeap();
-//      expect(div).not.toHaveClass('test');
-//
-//      runner.update(runner.now);
-    });
+    it('should add the cssClassToAdd', async(() {
+      _.compile("<div></div>");
+
+      var animation = new CssAnimation(_.rootElement, "event", "event-active",
+          cssClassToAdd: 'magic');
+      animation.attach();
+      expect(_.rootElement).not.toHaveClass('magic');
+
+      animation.start(new DateTime.now(), 0.0);
+      expect(_.rootElement).not.toHaveClass('magic');
+
+      animation.update(new DateTime.now(), 0.0);
+      expect(_.rootElement).not.toHaveClass('magic');
+
+      animation.detach(new DateTime.now(), 0.0);
+      expect(_.rootElement).toHaveClass('magic');
+
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+    }));
     
-    xit('should clean up event classes when completed', () {
-      // FIXME: Implement
-    });
     
-    xit('should clean up event classes when canceled', () {
-      // FIXME: Implement
-    });
+    it('should remove the cssClassToRemove', async(() {
+      _.compile("<div class=\"magic\"></div>");
+
+      var animation = new CssAnimation(_.rootElement, "event", "event-active",
+          cssClassToRemove: 'magic');
+
+      expect(_.rootElement).toHaveClass('magic');
+
+      animation.attach();
+      expect(_.rootElement).toHaveClass('magic');
+
+      animation.start(new DateTime.now(), 0.0);
+      expect(_.rootElement).toHaveClass('magic');
+
+      animation.update(new DateTime.now(), 0.0);
+      expect(_.rootElement).toHaveClass('magic');
+
+      animation.detach(new DateTime.now(), 0.0);
+      expect(_.rootElement).not.toHaveClass('magic');
+
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+    }));
     
-    xit('should clean up event classes when interrupted', () {
-      // FIXME: Implement
-    });
+    it('should clean up event classes when canceled after attach', async(() {
+      _.compile("<div></div>");
+
+      var animation = new CssAnimation(_.rootElement, "event", "event-active",
+          cssClassToAdd: 'magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+      
+      animation.attach();
+      animation.interruptAndCancel();
+      expect(_.rootElement).not.toHaveClass('magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+    }));
+    
+    it('should clean up event classes when canceled after start', async(() {
+      _.compile("<div></div>");
+
+      var animation = new CssAnimation(_.rootElement, "event", "event-active",
+          cssClassToAdd: 'magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+      
+      animation.attach();
+      animation.start(new DateTime.now(), 0.0);
+
+      animation.interruptAndCancel();
+      expect(_.rootElement).not.toHaveClass('magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+    }));
+    
+    it('should clean up event classes when canceled after update', async(() {
+      _.compile("<div></div>");
+
+      var animation = new CssAnimation(_.rootElement, "event", "event-active",
+          cssClassToAdd: 'magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+      
+      animation.attach();
+      animation.start(new DateTime.now(), 0.0);
+      animation.update(new DateTime.now(), 0.0);
+
+      animation.interruptAndCancel();
+      expect(_.rootElement).not.toHaveClass('magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+    }));
+    
+    
+    it('should clean up event classes when forcibly completed after attach', async(() {
+      _.compile("<div></div>");
+
+      var animation = new CssAnimation(_.rootElement, "event", "event-active",
+          cssClassToAdd: 'magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+      
+      animation.attach();
+      animation.interruptAndComplete();
+      expect(_.rootElement).toHaveClass('magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+    }));
+    
+    it('should clean up event classes when forcibly completed after start', async(() {
+      _.compile("<div></div>");
+
+      var animation = new CssAnimation(_.rootElement, "event", "event-active",
+          cssClassToAdd: 'magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+      
+      animation.attach();
+      animation.start(new DateTime.now(), 0.0);
+
+      animation.interruptAndComplete();
+      expect(_.rootElement).toHaveClass('magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+    }));
+    
+    it('should clean up event classes when forcibly completed after update', async(() {
+      _.compile("<div></div>");
+
+      var animation = new CssAnimation(_.rootElement, "event", "event-active",
+          cssClassToAdd: 'magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+      
+      animation.attach();
+      animation.start(new DateTime.now(), 0.0);
+      animation.update(new DateTime.now(), 0.0);
+
+      animation.interruptAndComplete();
+      expect(_.rootElement).toHaveClass('magic');
+      expect(_.rootElement).not.toHaveClass('event');
+      expect(_.rootElement).not.toHaveClass('event-active');
+    }));
   });
 }
 

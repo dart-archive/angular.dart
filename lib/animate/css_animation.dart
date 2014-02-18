@@ -52,10 +52,11 @@ class CssAnimation extends Animation {
     // inserted elements have the base event class applied before adding the
     // active class to the element. If this is not done, inserted dom nodes
     // will not run their enter animation.
-    if(!_isActive) {
+    if(!_isActive && duration != Duration.ZERO) {
       element.classes.add(cssEventActiveClass);
       _isActive = true;
-    } else if (time.isAfter(startTime.add(duration))) {
+    } else if (time.isAfter(startTime.add(duration))
+        || duration == null || duration == Duration.ZERO) {
       // TODO(codelogic): If the initial frame takes a significant amount of
       //   time, the computed duration + startTime might not actually represent
       //   the end of the animation
