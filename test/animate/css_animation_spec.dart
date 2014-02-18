@@ -3,7 +3,7 @@ library css_animation_spec;
 import '../_specs.dart';
 
 main() {
-  ddescribe('CssAnimation', () {
+  describe('CssAnimation', () {
     TestBed _;
     beforeEach(inject((TestBed tb) => _ = tb));
     

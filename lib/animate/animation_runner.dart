@@ -63,7 +63,7 @@ class AnimationRunner {
       _animationFrameQueued = true;
 
       _wnd.animationFrame.then((offsetMs)
-          => _zone.runOutsideAngular(_animationFrame(offsetMs)));
+          => _animationFrame(offsetMs));
     }
   }
 
@@ -146,10 +146,18 @@ class AnimationRunner {
   _clearElement(element) {
     if(_activeAnimations.containsKey(element)) {
       var animation = _activeAnimations[element];
-      _activeAnimations.remove(element);
-      _updating.remove(animation);
+      _forget(animation);
       animation.interruptAndCancel();
     }
+  }
+  
+  _forget(Animation animation) {
+    assert(animation != null);
+
+    _attached.remove(animation);
+    _completed.remove(animation);
+    _updating.remove(animation);
+    _activeAnimations.remove(animation.element);
   }
   
   bool hasRunningParentAnimation(dom.Element element) {
@@ -169,8 +177,7 @@ class AnimationRunner {
    */
   interruptAndCancel(Animation animation) {
     if(_activeAnimations.containsValue(animation)) {
-      _activeAnimations.remove(animation.element);
-      _updating.remove(animation);
+      _forget(animation);
       animation.interruptAndCancel();
     }
   }
@@ -182,8 +189,7 @@ class AnimationRunner {
    */
   interruptAndComplete(Animation animation) {
     if(_activeAnimations.containsValue(animation)) {
-      _activeAnimations.remove(animation.element);
-      _updating.remove(animation);
+      _forget(animation);
       animation.interruptAndComplete();
     }
   }
