@@ -395,6 +395,31 @@ main() => describe('DirtyCheckingChangeDetector', () {
           changes: [],
           removals: ['a[A -> null]', 'd[D -> null]']));
     });
+
+    it('should test string keys by value rather than by reference', () {
+      var map = {'foo': 0};
+      detector..watch(map, null, null)..collectChanges();
+
+      map['f' + 'oo'] = 0;
+
+      expect(detector.collectChanges()).toEqual(null);
+    });
+
+    it('should test string values by value rather than by reference', () {
+      var map = {'foo': 'bar'};
+      detector..watch(map, null, null)..collectChanges();
+
+      map['foo'] = 'b' + 'ar';
+
+      expect(detector.collectChanges()).toEqual(null);
+    });
+
+    it('should not see a NaN value as a change', () {
+      var map = {'foo': double.NAN};
+      var record = detector..watch(map, null, null)..collectChanges();
+
+      expect(detector.collectChanges()).toEqual(null);
+    });
   });
 
   describe('DuplicateMap', () {

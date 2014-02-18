@@ -451,9 +451,13 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
       if (oldSeqRecord != null && key == oldSeqRecord.key) {
         newSeqRecord = oldSeqRecord;
         if (!identical(value, oldSeqRecord._currentValue)) {
-          oldSeqRecord._previousValue = oldSeqRecord._currentValue;
+          var prev = oldSeqRecord._previousValue = oldSeqRecord._currentValue;
           oldSeqRecord._currentValue = value;
-          _addToChanges(oldSeqRecord);
+          if (!((value is String && prev is String && value == prev) ||
+                (value is num && value.isNaN && prev is num && prev.isNaN))) {
+            // Check string by value rather than reference
+            _addToChanges(oldSeqRecord);
+          }
         }
       } else {
         seqChanged = true;
