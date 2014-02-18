@@ -8,26 +8,29 @@ main() {
   describe('CssAnimate', () {
     TestBed _;
     Animate animate;
+    MockAnimationRunner runner;
 
     beforeEach(inject((TestBed tb) {
       _ = tb;
-      animate = new CssAnimate(
-          new MockAnimationRunner(), new NoAnimate());
+      runner = new MockAnimationRunner();
+      animate = new CssAnimate(runner, new NoAnimate());
     }));
 
-    it('should add a css class to nodes', async(() {
+    it('should add a css class to an element node', async(() {
       _.compile('<div></div>');
       expect(_.rootElement).not.toHaveClass('foo');
       
       animate.addClass(_.rootElements, 'foo');
+      runner.doEverything();
       expect(_.rootElement).toHaveClass('foo');
     }));
     
-    it('should remove a css class from nodes', async(() {
+    it('should remove a css class from an element node', async(() {
       _.compile('<div class="baz foo bar"></div>');
       expect(_.rootElement).toHaveClass('foo');
 
       animate.removeClass(_.rootElements, 'foo');
+      runner.doEverything();
       expect(_.rootElement).not.toHaveClass('foo');
     }));
     
@@ -44,6 +47,7 @@ main() {
       expect(_.rootElement.childNodes.length).toBe(2);
 
       animate.remove(_.rootElement.childNodes);
+      runner.doEverything();
       // This might lead to a flash of unstyled content before
       // removal. It would be nice if this was un-needed.
       microLeap();
@@ -59,49 +63,82 @@ main() {
       expect(_.rootElement.text).toEqual("AaBb");
 
       animate.move(b, _.rootElement, insertBefore: a.first);
+      runner.doEverything();
       expect(_.rootElement.text).toEqual("BbAa");
             
       animate.move(a, _.rootElement, insertBefore: b.first);
+      runner.doEverything();
       expect(_.rootElement.text).toEqual("AaBb");
             
       animate.move(a, _.rootElement);
+      runner.doEverything();
       expect(_.rootElement.text).toEqual("BbAa");
     }));
+
     
-    xit('should compute duration based on event style', () {      
-    });
+    it('should animate multiple elements', async(() {
+      _.compile('<div></div>');
+      List<Node> nodes = $('<span>A</span>a<span>B</span>b').toList();
+
+      animate.insert(nodes, _.rootElement);
+      runner.doEverything();
+      expect(_.rootElement.text).toEqual("AaBb");
+    }));
     
-    xit('should animate multiple elements', () {
-      // FIXME: Implement
-    });
+    it('should prevent child animations', async(() {
+      _.compile('<div></div>');
+      animate.addClass(_.rootElements, 'test');
+      runner.start();
+      expect(_.rootElement).toHaveClass('test-add');
+      var spans = $('<span>A</span><span>B</span>');
+      animate.insert(spans, _.rootElement);
+      runner.start();
+      expect(spans.first).not.toHaveClass('ng-add');
+    }));
     
-    xit('should prevent child animations', () {
-      // FIXME: Implement
-    });
-    
-    xit('should interrupt existing animations', () {
-      // FIXME: Implement
-    });
-    
-    xit('should play any Animation', () {
-      // FIXME: Implement
-    });
-    
-    xit('should interrupt arbetrary animations', () {
-      // FIXME: Implement
-    });
+    it('should play any Animation', async(() {
+      var mockAnimation = new MockAnimation();
+      animate.play([mockAnimation, mockAnimation]);
+      expect(runner.animation).toBe(mockAnimation);
+    }));
   });
+}
+
+class MockAnimation extends Mock implements Animation {
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class MockAnimationRunner extends Mock implements AnimationRunner {
   bool hasRunningParentAnimationValue = false;
+  DateTime now = new DateTime.now();
+  Animation animation;
   
   AnimationHandle play(Animation animation) {
+    this.animation = animation;
     animation.attach();
-    animation.start(new DateTime.now(), 0.0);
-    animation.update(new DateTime.now(), 0.0);
-    animation.detach(new DateTime.now(), 0.0);
     return new MockAnimationHandle();
+  }
+  
+  doEverything() {
+    start();
+    update();
+    detach();
+  }
+  
+  start([DateTime now, num offset = 0]) {
+    animation.start(now == null ? this.now : now, offset);
+  }
+  
+  update([DateTime now, num offset = 0]) {
+    animation.update(now == null ? this.now : now, offset);
+  }
+  
+  read([DateTime now, num offset = 0]) {
+    animation.read(now == null ? this.now : now, offset);
+  }
+  
+  detach([DateTime now, num offset = 0]) {
+    animation.detach(now == null ? this.now : now, offset);
   }
   
   bool hasRunningParentAnimation(Element element) {

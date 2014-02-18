@@ -14,8 +14,8 @@ part of angular.animate;
 class CssAnimate extends Animate {
   static const String ngAnimateCssClass = "ng-animate";
   static const String ngMoveCssClass = "ng-move";
-  static const String ngInsertCssClass = "ng-enter";
-  static const String ngRemoveCssClass = "ng-leave";
+  static const String ngInsertCssClass = "ng-insert";
+  static const String ngRemoveCssClass = "ng-remove";
 
   static const String ngAddPostfix = "add";
   static const String ngRemovePostfix = "remove";
