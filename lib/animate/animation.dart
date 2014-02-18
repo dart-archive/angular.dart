@@ -46,6 +46,10 @@ class AnimationResult {
  *         should physically detach from the dom and execute onCompleted futures
  *         so that external code that depends on your animation can do dom
  *         mutates as well.
+ *         
+ * Additionally, interruptAndCancel() and interruptAndComplete are used to
+ * forcibly interupt an animation, and the implementation should immediatly
+ * detach from [element].
  */
 abstract class Animation {
   /// The element this animation is tied too.

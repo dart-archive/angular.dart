@@ -7,14 +7,10 @@ part of angular.animate;
  * can be controled and so custom dom manipulations can occur when animations
  * complete.
  *
- * Note: The goal is that this will eventually be integrated with AngularDart.
+ * TODO: Implement a staggered animation implementation similar to the
+ *   AngularJS version.
  */
 abstract class Animate {
-  // TODO(codelogic): Should this have a factory constructor that defaults too
-  //     The NoAnimate implementation?
-
-  // TODO(codelogic): Look at staggered animation implementation in AngularJS.
-
   /**
    * Add the [cssClass] to the classes on each element in [nodes] after
    * running any defined animations. This is equivalent to running addClass on
