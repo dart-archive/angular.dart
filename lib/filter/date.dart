@@ -58,6 +58,7 @@ class DateFilter {
         format = MAP[format];
       }
       df = new DateFormat(format);
+      dfs[format] = df;
     }
     return df.format(date);
   }

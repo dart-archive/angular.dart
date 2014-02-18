@@ -3,9 +3,9 @@ library date_spec;
 import '../_specs.dart';
 
 main() => describe('date', () {
-  var morning  = DateTime.parse('2010-09-03T07:05:08.008Z'); //7am
-  var noon =     DateTime.parse('2010-09-03T12:05:08.012Z'); //12pm
-  var midnight = DateTime.parse('2010-09-03T12:05:08.123Z'); //12am
+  var morning   = DateTime.parse('2010-09-03T07:05:08.008Z'); //7am
+  var noon      = DateTime.parse('2010-09-03T12:05:08.012Z'); //12pm
+  var midnight  = DateTime.parse('2010-09-03T12:05:08.123Z'); //12am
   var earlyDate = DateTime.parse('0001-09-03T05:05:08.000Z');
 
   var date;
@@ -56,5 +56,14 @@ main() => describe('date', () {
 
     expect(date(noon, "shortTime")).
     toEqual('12:05 PM');
+  });
+
+  it('should use cache', () {
+
+    date(noon, "shortTime");
+    expect(date.dfs.keys.length).toEqual(1);
+
+    date(noon, "shortTime");
+    expect(date.dfs.keys.length).toEqual(1);
   });
 });
