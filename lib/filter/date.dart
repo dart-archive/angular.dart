@@ -33,7 +33,7 @@ class DateFilter {
     'shortTime':  'h:mm a',
   };
 
-  Map<num, NumberFormat> nfs = new Map<num, NumberFormat>();
+  var dfs = <String, DateFormat>{};
 
   /**
    *  [date]: Date to format either as Date object, milliseconds
@@ -52,13 +52,13 @@ class DateFilter {
     if (date is String) date = DateTime.parse(date);
     if (date is num) date = new DateTime.fromMillisecondsSinceEpoch(date);
     if (date is! DateTime) return date;
-    var nf = nfs[format];
-    if (nf == null) {
+    var df = dfs[format];
+    if (df == null) {
       if (MAP.containsKey(format)) {
         format = MAP[format];
       }
-      nf = new DateFormat(format);
+      df = new DateFormat(format);
     }
-    return nf.format(date);
+    return df.format(date);
   }
 }
