@@ -58,12 +58,9 @@ main() => describe('date', () {
     toEqual('12:05 PM');
   });
 
-  it('should use cache', () {
+  it('should use cache without any error', () {
 
     date(noon, "shortTime");
-    expect(date.dfs.keys.length).toEqual(1);
-
     date(noon, "shortTime");
-    expect(date.dfs.keys.length).toEqual(1);
   });
 });
