@@ -3,10 +3,10 @@ part of angular.animate;
 /**
  * Window.animationFrame update loop and state machine for animations.
  *
- * TODO(codelogic): Find a way to stop child animations from running.
  * TODO(codelogic): Find a way to detect and rate-limit the number of concurrent
  *    animations that are run at the same time.
- * TODO(codelogic): Figure out if shadow dom prevents parent walks from
+ * 
+ * TODO(codelogic): Shadow dom may prevents parent walks from
  *    detecting parent animations.
  */
 class AnimationRunner {
@@ -30,7 +30,7 @@ class AnimationRunner {
    * The animation runner which requires the dom [Window] for
    * requestAnimationFrame and a [Clock] instance for providing absolute time
    * for animation. The [profiler] is optional and will report timing
-   * information for the animation loop.
+   * information for the animation loop if provided.
    */
   AnimationRunner(this._wnd, this._clock, this._zone, [Profiler profiler])
       : _profiler = _getProfiler(profiler);
@@ -67,13 +67,21 @@ class AnimationRunner {
     }
   }
 
-  /**
-   * On the browsers animation frame event, update animations. This runs outside
-   * of the normal angular digest loop for performance reasons.
-   *
-   * TODO(codelogic) It might be good to move this into a seperate class that
-   *   ONLY handles animation frames so other systems can hook into it an use it
-   *   without the full "Animation" interface and state model.
+  /* On the browsers animation frame event, update animations and progress
+   * through the animation state model:
+   * 
+   *  1. attach() - pre-animation frame.
+   *  2. start(...) - frame 1
+   *  3. update(...) - frame 1+n
+   *  4. read(...) - frame 1+n
+   *  5. _repeat until update(...) returns false on frame m_
+   *  6. update(...) - frame m
+   *  7. detach(...) - frame m
+   *  
+   *  At any point any animation may be updated by calling interrupt and cancel
+   *  with a reference to the [Animation] to cancel. The [AnimationRunner] will
+   *  then forget about the [Animation] and will not call any further methods on
+   *  the [Animation].
    */
   _animationFrame(num offsetMs) {
     _profiler.startTimer("AnimationRunner.AnimationFrame");
@@ -107,10 +115,6 @@ class AnimationRunner {
   }
 
   _update(DateTime now, num offset) {
-    // FUTURE OPTIMIZATION: If there is some way for an animation to specify
-    // how long, or when it completes, we could avoid processing it and queue
-    // a timer instead of an animation frame callback. That being said,
-    // animation frames are reasonably efficient, so it may not be a problem.
     for(int i=0; i<_updating.length; i++) {
       var animation = _updating[i];
       if(!animation.update(now, offset)) {
@@ -160,6 +164,10 @@ class AnimationRunner {
     _activeAnimations.remove(animation.element);
   }
   
+  /**
+   * This will return true if this [element] or any of the parent elements have
+   * active animations applied to them and false if there is not.
+   */
   bool hasRunningParentAnimation(dom.Element element) {
     while(element != null) {
       if(_activeAnimations.containsKey(element))

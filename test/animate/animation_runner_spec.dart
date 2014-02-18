@@ -4,7 +4,7 @@ import 'dart:async';
 import '../_specs.dart';
 
 main() {
-  ddescribe('AnimationRunner', () {
+  describe('AnimationRunner', () {
     TestBed _;
     MockWindow wnd;
     AnimationRunner runner;

@@ -8,7 +8,7 @@ main() {
     beforeEach(inject((TestBed tb) => _ = tb));
     
     it('should exist',
-        inject((Animate aniamte) {
+        inject((NgAnimate aniamte) {
       expect(aniamte).toBeDefined();
     }));
 

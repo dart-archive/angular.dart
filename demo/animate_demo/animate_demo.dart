@@ -17,7 +17,7 @@ import 'dart:mirrors';
 )
 class AnimationDemoController {
   final dom.Element rootElement;
-  final Animate animate;
+  final NgAnimate animate;
   bool areThingsVisible = false;
   bool boxToggle = false;
   bool ifToggle = false;

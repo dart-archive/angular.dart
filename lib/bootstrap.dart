@@ -17,7 +17,7 @@ class AngularModule extends Module {
     install(new NgCoreModule());
     install(new NgCoreDomModule());
     install(new NgDirectiveModule());
-    install(new NgAnimateModule.noAnimation());
+    install(new NgAnimateModule.noOp());
     install(new NgFilterModule());
     install(new NgPerfModule());
     install(new NgRoutingModule());

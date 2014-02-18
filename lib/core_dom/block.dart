@@ -36,7 +36,7 @@ class Block implements ElementWrapper {
   Function onMove;
 
   List<dynamic> _directives = [];
-  final Animate _animate;
+  final NgAnimate _animate;
 
   Block(this.elements, this._animate);
 

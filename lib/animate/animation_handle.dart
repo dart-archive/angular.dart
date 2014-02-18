@@ -90,7 +90,10 @@ class _MultiAnimationHandle extends AnimationHandle {
   }
 }
 
-
+/**
+ * Completed animation handle that is used when an animation is ignored and the
+ * final effect of the animation is immediatly completed.
+ */
 class _CompletedAnimationHandle extends AnimationHandle {
   Future<AnimationResult> _future;
   get onCompleted {

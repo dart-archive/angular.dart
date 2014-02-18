@@ -4,7 +4,7 @@ part of angular.animate;
  * Instantly complete animations and return a AnimationHandle that will
  * complete on the next digest loop.
  */
-class NoAnimate extends Animate {
+class NoAnimate extends NgAnimate {
   AnimationHandle addClass(Iterable<dom.Node> nodes, String cssClass) {
     _elements(nodes).forEach((el) => el.classes.add(cssClass));
     return new _CompletedAnimationHandle();
@@ -16,17 +16,17 @@ class NoAnimate extends Animate {
   }
   
   AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore } ) {
-    domInsert(nodes, parent, insertBefore: insertBefore);
+    _domInsert(nodes, parent, insertBefore: insertBefore);
     return new _CompletedAnimationHandle();
   }
 
   AnimationHandle remove(Iterable<dom.Node> nodes) {
-    domRemove(nodes.toList(growable: false));
+    _domRemove(nodes.toList(growable: false));
     return new _CompletedAnimationHandle();
   }
 
   AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
-    domMove(nodes, parent, insertBefore: insertBefore);
+    _domMove(nodes, parent, insertBefore: insertBefore);
     return new _CompletedAnimationHandle();
   }
 

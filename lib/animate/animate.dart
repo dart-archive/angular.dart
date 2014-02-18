@@ -1,7 +1,7 @@
 part of angular.animate;
 
 /**
- * The [Animate] service provides dom lifecycle mangement, detection and
+ * The [NgAnimate] service provides dom lifecycle mangement, detection and
  * analysis of css animations, and hooks for custom animations. When any of
  * these animations are run, [AnimationHandle]s are provided so that animations
  * can be controled and so custom dom manipulations can occur when animations
@@ -10,7 +10,7 @@ part of angular.animate;
  * TODO: Implement a staggered animation implementation similar to the
  *   AngularJS version.
  */
-abstract class Animate {
+abstract class NgAnimate {
   /**
    * Add the [cssClass] to the classes on each element in [nodes] after
    * running any defined animations. This is equivalent to running addClass on

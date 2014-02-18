@@ -11,7 +11,7 @@ part of angular.animate;
  *   sections of DOM so that they don't ever get animation classes added
  *   in these cases.
  */
-class CssAnimate extends Animate {
+class CssAnimate extends NgAnimate {
   static const String ngAnimateCssClass = "ng-animate";
   static const String ngMoveCssClass = "ng-move";
   static const String ngInsertCssClass = "ng-insert";
@@ -57,7 +57,7 @@ class CssAnimate extends Animate {
   }
 
   AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
-    domInsert(nodes, parent, insertBefore: insertBefore);
+    _domInsert(nodes, parent, insertBefore: insertBefore);
     
     var animateHandles = _elements(nodes).where((el) {
       return !_animationRunner.hasRunningParentAnimation(el.parent);
@@ -69,7 +69,7 @@ class CssAnimate extends Animate {
   }
 
   AnimationHandle remove(Iterable<dom.Node> nodes) {
-    var elements = _partition(allNodesBetween(nodes));
+    var elements = _partition(_allNodesBetween(nodes));
     
     var animateHandles = elements.animate.map((el) {
       return _cssAnimation(el, ngRemoveCssClass)..onCompleted.then((result) {
@@ -83,7 +83,7 @@ class CssAnimate extends Animate {
   }
 
   AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
-    domMove(nodes, parent, insertBefore: insertBefore);
+    _domMove(nodes, parent, insertBefore: insertBefore);
     
     var animateHandles = _elements(nodes).where((el) {
       return !_animationRunner.hasRunningParentAnimation(el.parent);
@@ -114,7 +114,6 @@ class CssAnimate extends Animate {
 
     return _animationRunner.play(animation);
   }
-  
   
   static AnimationHandle _pickAnimationHandle(Iterable<AnimationHandle> animated, [AnimationHandle noAnimate]) {
     List<AnimationHandle> handles;
@@ -153,47 +152,3 @@ class _RunnableAnimations {
   final animate = [];
   final noAnimate = [];
 }
-
-void domRemove(List<dom.Node> nodes) {
-  // Not every element is sequential if the list of nodes only
-  // includes the elements. Removing a block also includes
-  // removing non-element nodes inbetween.
-  for(var j = 0, jj = nodes.length; j < jj; j++) {
-    dom.Node current = nodes[j];
-    dom.Node next = j+1 < jj ? nodes[j+1] : null;
-
-    while(next != null && current.nextNode != next) {
-      current.nextNode.remove();
-    }
-    nodes[j].remove();
-  }
-}
-
-List<dom.Node> allNodesBetween(List<dom.Node> nodes) {
-  var result = [];
-  // Not every element is sequential if the list of nodes only
-  // includes the elements. Removing a block also includes
-  // removing non-element nodes inbetween.
-  for(var j = 0, jj = nodes.length; j < jj; j++) {
-    dom.Node current = nodes[j];
-    dom.Node next = j+1 < jj ? nodes[j+1] : null;
-
-    while(next != null && current.nextNode != next) {
-      result.add(current.nextNode);
-    }
-    result.add(nodes[j]);
-  }
-  return result;
-}
-
-void domInsert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
-  parent.insertAllBefore(nodes, insertBefore);
-}
-
-void domMove(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
-  nodes.forEach((n) {
-    if(n.parentNode == null) n.remove();
-      parent.insertBefore(n, insertBefore);
-  });
-}
-

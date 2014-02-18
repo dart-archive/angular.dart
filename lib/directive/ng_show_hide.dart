@@ -12,7 +12,7 @@ class NgHideDirective {
   static String NG_HIDE_CLASS = 'ng-hide';
 
   final dom.Element element;
-  final Animate animate;
+  final NgAnimate animate;
 
   NgHideDirective(this.element, this.animate);
 
@@ -35,7 +35,7 @@ class NgHideDirective {
     map: const {'ng-show': '=>show'})
 class NgShowDirective {
   final dom.Element element;
-  final Animate animate;
+  final NgAnimate animate;
 
   NgShowDirective(this.element, this.animate);
 
