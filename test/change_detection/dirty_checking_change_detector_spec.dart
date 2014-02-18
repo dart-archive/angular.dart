@@ -245,10 +245,16 @@ main() => describe('DirtyCheckingChangeDetector', () {
 
     it('should test string by value rather than by reference', () {
       var list = ['a', 'boo'];
-      var record = detector.watch(list, null, 'handler');
-      detector.collectChanges();
+      detector..watch(list, null, null)..collectChanges();
 
       list[1] = 'b' + 'oo';
+
+      expect(detector.collectChanges()).toEqual(null);
+    });
+
+    it('should ignore [NaN] != [NaN]', () {
+      var list = [double.NAN];
+      var record = detector..watch(list, null, null)..collectChanges();
 
       expect(detector.collectChanges()).toEqual(null);
     });
