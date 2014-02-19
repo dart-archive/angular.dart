@@ -210,8 +210,8 @@ class Compiler {
                 (value, _) {
                   if (dstPathFn.assign(controller, value) != null) {
                     watch.remove();
-                    notify();
                   }
+                  notify();
                 });
           };
           break;
