@@ -141,6 +141,7 @@ class InputCheckboxDirective {
     };
     inputElement.onChange.listen((value) {
       scope.$apply(() {
+        ngModel.dirty = true;
         ngModel.viewValue = inputElement.checked
             ? ngTrueValue.readValue(inputElement)
             : ngFalseValue.readValue(inputElement);
@@ -389,6 +390,7 @@ class InputRadioDirective {
     };
     radioButtonElement.onClick.listen((_) {
       if (radioButtonElement.checked) {
+        ngModel.dirty = true;
         scope.$apply(() => ngModel.viewValue = ngValue.readValue(radioButtonElement));
       }
     });
