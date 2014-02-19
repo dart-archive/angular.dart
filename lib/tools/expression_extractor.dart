@@ -1,5 +1,6 @@
 library angular.tools.html_expression_extractor;
 
+import 'dart:async';
 import 'dart:io';
 import 'package:angular/tools/html_extractor.dart';
 import 'package:angular/tools/source_metadata_extractor.dart';
@@ -13,6 +14,7 @@ import 'package:di/dynamic_injector.dart';
 
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
+import 'package:angular/tools/parser_getter_setter/generator.dart';
 import 'package:angular/tools/parser_generator/generator.dart';
 
 main(args) {
@@ -53,14 +55,19 @@ main(args) {
   printer.printSrc('// Found ${expressions.length} expressions');
   Module module = new Module()
       ..type(Parser, implementedBy: DynamicParser)
-      ..type(ParserBackend, implementedBy: DynamicParserBackend)
+      ..type(ParserBackend, implementedBy: DartGetterSetterGen)
       ..type(FilterMap, implementedBy: NullFilterMap)
       ..value(SourcePrinter, printer);
   Injector injector =
       new DynamicInjector(modules: [module], allowImplicitInjection: true);
 
-  // Run the generator.
-  injector.get(ParserGenerator).generateParser(htmlExtractor.expressions);
+  runZoned(() {
+    // Run the generator.
+    injector.get(ParserGetterSetter).generateParser(htmlExtractor.expressions);
+  }, zoneSpecification: new ZoneSpecification(print: (_, __, ___, String line) {
+    printer.printSrc(line);
+  }));
+
 
   // Output footer last.
   if (footerFile != '') {
