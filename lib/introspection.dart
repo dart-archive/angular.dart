@@ -100,8 +100,8 @@ js.JsObject _jsInjector(Injector injector) {
 js.JsObject _jsScope(Scope scope) {
   return new js.JsObject.jsify({
     "apply": scope.apply,
-    "digest": scope.digest,
-    "flush": scope.flush,
+    "digest": scope.rootScope.digest,
+    "flush": scope.rootScope.flush,
     "context": scope.context,
     "get": (name) => scope.context[name],
     "set": (name, value) => scope.context[name] = value
