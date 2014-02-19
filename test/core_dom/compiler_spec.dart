@@ -462,20 +462,7 @@ main() => describe('dte.compiler', () {
           expect(logger).toEqual(['new']);
 
           rootScope.apply();
-          var expected = ['new', 'inner'];
-          assert((() {
-            // there is an assertion in flush which double checks that
-            // flushes do not change model. This assertion creates one
-            // more 'inner';
-            expected.add('inner');
-            return true;
-          })());
-          expect(logger).toEqual(expected);
-          logger.clear();
-
-          scope.context['once'] = '123';
-          rootScope.apply();
-          expected = ['attach:@ready; =>ready; =>!123', 'inner'];
+          var expected = ['new', 'attach:@ready; =>ready; =>!null', 'inner'];
           assert((() {
             // there is an assertion in flush which double checks that
             // flushes do not change model. This assertion creates one
