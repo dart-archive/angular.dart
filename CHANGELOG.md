@@ -1,3 +1,91 @@
+<a name="v0.9.8"></a>
+# v0.9.8 cozy-porcupine (2014-02-19)
+
+
+## Bug Fixes
+
+- **DateFilter:** fix a wrong type
+  ([cec3edad](https://github.com/angular/angular.dart/commit/cec3edad1944a8411882b0a87ea6193c25513392),
+   [#579](https://github.com/angular/angular.dart/issues/579))
+- **compiler:** support filters in attribute expressions
+  ([8f020f99](https://github.com/angular/angular.dart/commit/8f020f998e8a4b7d5b595e5c44086fa2628fe8b3),
+   [#571](https://github.com/angular/angular.dart/issues/571), [#580](https://github.com/angular/angular.dart/issues/580))
+- **di:** Upgrade dependency of package di preventing problems with dart sdk 1.1 resolves #408
+  ([1f85a8ce](https://github.com/angular/angular.dart/commit/1f85a8cee164d85d6eed43e7604a0190d1542d84),
+   [#408](https://github.com/angular/angular.dart/issues/408), [#583](https://github.com/angular/angular.dart/issues/583))
+- **doc-gen:** dartbug.com/16752
+  ([9a1ef31d](https://github.com/angular/angular.dart/commit/9a1ef31d66f151f22b79893e11251a6780605257))
+- **generator:** remove invalid sort on elements
+  ([e2a00abe](https://github.com/angular/angular.dart/commit/e2a00abe371bb2d9d3c1d3c19849e075a32e92e4),
+   [#554](https://github.com/angular/angular.dart/issues/554))
+- **ng-attr:** remove camel-cased dom attributes
+  ([b5e45117](https://github.com/angular/angular.dart/commit/b5e45117c17fdd07d5db659815eb49c2dca17b84),
+   [#567](https://github.com/angular/angular.dart/issues/567))
+- **ng-pluralize:** use ${..} to interpolate
+  ([a630487d](https://github.com/angular/angular.dart/commit/a630487d302e396a920e02c8db5d256a81d3dd1a),
+   [#572](https://github.com/angular/angular.dart/issues/572))
+- **ng-value:** Add ng-value support for checked/radio/option
+  ([8fc2c0f4](https://github.com/angular/angular.dart/commit/8fc2c0f49aabc53ee6240ad8063ecf6c9c8b8a1f))
+- **ngModel:**
+  - ensure checkboxes and radio buttons are flagged as dirty when changed
+  ([5766a6a1](https://github.com/angular/angular.dart/commit/5766a6a173dc1d65b9293fd5bd0bcbc21b0791ec),
+   [#569](https://github.com/angular/angular.dart/issues/569), [#585](https://github.com/angular/angular.dart/issues/585))
+  - process input type=number according to convention, using valueAsNumber
+  ([cf0160b8](https://github.com/angular/angular.dart/commit/cf0160b8c316a39ac9d0fcce843c6f764429a1d4),
+   [#574](https://github.com/angular/angular.dart/issues/574), [#577](https://github.com/angular/angular.dart/issues/577))
+  - ensure validation occurs when the model value changes upon digest
+  ([f34e0b31](https://github.com/angular/angular.dart/commit/f34e0b31a6f2f42457a6d1a1b5b5aaa7e2ef86fe))
+- **ngShow:** Add/remove ng-hide class instead of ng-show class
+  ([0b88d2e8](https://github.com/angular/angular.dart/commit/0b88d2e8102db8b89f38b00c277b9023b260285e),
+   [#521](https://github.com/angular/angular.dart/issues/521))
+- **package.json:** add repo, licenses and switch to devDependencies
+  ([d099db59](https://github.com/angular/angular.dart/commit/d099db5944e2287fbf97a13b1aa73f8082652e09),
+   [#544](https://github.com/angular/angular.dart/issues/544), [#545](https://github.com/angular/angular.dart/issues/545))
+- **scope:** Use Iterable instead of List
+  ([951fa178](https://github.com/angular/angular.dart/commit/951fa1783afa65f410a2b82249850eed458ed294),
+   [#565](https://github.com/angular/angular.dart/issues/565))
+
+
+## Features
+
+- **forms:**
+  - generate ng-submit-valid / ng-submit-invalid CSS classes upon form submission
+  ([4bf9447c](https://github.com/angular/angular.dart/commit/4bf9447cc64650d6c73b66c844fb5396b4a2ae27))
+  - provide support for reseting forms, fieldsets and models
+  ([c75202d5](https://github.com/angular/angular.dart/commit/c75202d5d7ecabd01366f2198e0c0c3b5c087e59))
+- **ngModel:** Treat the values of number and range inputs as numbers
+  ([e703bd1b](https://github.com/angular/angular.dart/commit/e703bd1bc75f4d6420afad0bbb975b3e23672ff8),
+   [#527](https://github.com/angular/angular.dart/issues/527))
+
+
+## Breaking Changes
+- **ng-attr**
+  - Due to ([b5e45117](https://github.com/angular/angular.dart/commit/b5e45117c17fdd07d5db659815eb49c2dca17b84),
+    mappings in annotations must use snake-case-names instead of
+    camelCaseNames.   To migrate your code, follow the example below:
+
+	Before:
+
+        @NgComponent(
+            // …
+            map: const {
+              'domAttributeName': '=>fieldSetter'
+            }
+        )
+        class MyComponent { …
+
+	After:
+
+        @NgComponent(
+            // …
+            map: const {
+              'dom-attribute-name': '=>fieldSetter'
+            }
+        )
+        class MyComponent { …
+
+
+
 <a name="v0.9.7"></a>
 # v0.9.7 pachyderm-moisturization (2014-02-10)
 
