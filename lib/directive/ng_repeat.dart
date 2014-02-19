@@ -86,6 +86,8 @@ class NgRepeatDirective extends AbstractNgRepeatDirective {
                     Parser parser,
                     Scope scope): super(blockHole, boundBlockFactory, parser, scope);
   get _shalow => false;
+
+  get _shallow => false;
 }
 
 /**
@@ -110,13 +112,13 @@ class NgRepeatDirective extends AbstractNgRepeatDirective {
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-shallow-repeat]',
     map: const {'.': '@expression'})
-class NgShalowRepeatDirective extends AbstractNgRepeatDirective {
-  NgShalowRepeatDirective(BlockHole blockHole,
-                          BoundBlockFactory boundBlockFactory,
-                          Parser parser,
-                          Scope scope)
+class NgShallowRepeatDirective extends AbstractNgRepeatDirective {
+  NgShallowRepeatDirective(BlockHole blockHole,
+                           BoundBlockFactory boundBlockFactory,
+                           Parser parser,
+                           Scope scope)
       : super(blockHole, boundBlockFactory, parser, scope);
-  get _shalow => true;
+  get _shallow => true;
 }
 
 abstract class AbstractNgRepeatDirective  {
@@ -139,7 +141,7 @@ abstract class AbstractNgRepeatDirective  {
 
   AbstractNgRepeatDirective(this._blockHole, this._boundBlockFactory, this._parser, this._scope);
 
-  get _shalow;
+  get _shallow;
 
   set expression(value) {
     _expression = value;
@@ -174,7 +176,7 @@ abstract class AbstractNgRepeatDirective  {
     _keyIdentifier = match.group(2);
 
     _removeWatch = _scope.$watchCollection(_listExpr, _onCollectionChange,
-        value, _shalow);
+        value, _shallow);
   }
 
   List<_Row> _computeNewRows(Iterable collection, trackById) {
@@ -255,7 +257,7 @@ abstract class AbstractNgRepeatDirective  {
         previousNode = row.endNode;
       } else {
         // new item which we don't know about
-        childScope = _scope.$new(lazy:_shalow);
+        childScope = _scope.$new(lazy: _shallow);
       }
 
       if (!identical(childScope[_valueIdentifier], value)) {
