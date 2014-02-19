@@ -875,7 +875,7 @@ _operation_remainder(left, right)              => left % right;
 _operation_equals(left, right)                 => left == right;
 _operation_not_equals(left, right)             => left != right;
 _operation_less_then(left, right)              => left < right;
-_operation_greater_then(left, right)           => left > right;
+_operation_greater_then(left, right)           => (left == null || right == null) ? false : left > right;
 _operation_less_or_equals_then(left, right)    => left <= right;
 _operation_greater_or_equals_then(left, right) => left >= right;
 _operation_power(left, right)                  => left ^ right;
