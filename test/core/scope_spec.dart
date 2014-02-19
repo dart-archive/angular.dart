@@ -4,7 +4,7 @@ import '../_specs.dart';
 import 'package:angular/change_detection/change_detection.dart' hide ExceptionHandler;
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 
-main() => ddescribe('scope', () {
+main() => describe('scope', () {
   beforeEach(module((Module module) {
     Map context = {};
     module.value(GetterCache, new GetterCache({}));
