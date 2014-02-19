@@ -394,7 +394,7 @@ main() {
       });
     });
 
-    describe('shalow', () {
+    describe('shallow', () {
       TestBed _;
       beforeEach(inject((TestBed tb) => _ = tb));
 
