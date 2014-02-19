@@ -21,8 +21,8 @@ part of angular.filter;
  *
  */
 @NgFilter(name:'date')
-class DateFilter {
-  static Map<String, String> MAP = {
+class DateFilter implements Function {
+  static final _MAP = const <String, String> {
     'medium':     'MMM d, y h:mm:ss a',
     'short':      'M/d/yy h:mm a',
     'fullDate':   'EEEE, MMMM d, y',
@@ -33,7 +33,7 @@ class DateFilter {
     'shortTime':  'h:mm a',
   };
 
-  Map<num, NumberFormat> nfs = new Map<num, NumberFormat>();
+  var _dfs = <String, DateFormat>{};
 
   /**
    *  [date]: Date to format either as Date object, milliseconds
@@ -47,18 +47,19 @@ class DateFilter {
    *    mediumDate is used
    *
    */
-  call(date, [format = r'mediumDate']) {
+  dynamic call(Object date, [String format = 'mediumDate']) {
     if (date == '' || date == null) return date;
     if (date is String) date = DateTime.parse(date);
     if (date is num) date = new DateTime.fromMillisecondsSinceEpoch(date);
     if (date is! DateTime) return date;
-    var nf = nfs[format];
-    if (nf == null) {
-      if (MAP.containsKey(format)) {
-        format = MAP[format];
+    var df = _dfs[format];
+    if (df == null) {
+      if (_MAP.containsKey(format)) {
+        format = _MAP[format];
       }
-      nf = new DateFormat(format);
+      df = new DateFormat(format);
+      _dfs[format] = df;
     }
-    return nf.format(date);
+    return df.format(date);
   }
 }
