@@ -109,7 +109,65 @@ describe('ng-model', () {
     }));
   });
 
+  /* An input of type number can only have assigned to its [value] field
+   * a string that represents a valid number. Any attempts to assign
+   * any other string will have no effect on the [value] field.
+   * 
+   * This function simulates typing the given string value into the input
+   * field regardless of whether it represents a valid number or not. It
+   * has the side-effect of setting the window focus to the input.
+   */
+  void setNumberInputValue(InputElement input, String value) {
+    input..focus()
+      ..dispatchEvent(new TextEvent('textInput', data: value));
+  }
+  
   describe('type="number" like', () {
+
+    it('should leave input unchanged when text does not represent a valid number', inject((Injector i) {
+      var modelFieldName = 'modelForNumFromInvalid1';
+      var element = _.compile('<input type="number" ng-model="$modelFieldName">');
+      dom.querySelector('body').append(element);
+
+      // Subcase: text not representing a valid number.
+      var piX = '3.141x';
+      setNumberInputValue(element, piX);
+      // Because the text is not a valid number, the element value is empty.
+      expect(element.value).toEqual('');
+      // But the selection can confirm that the text is there:
+      element.selectionStart = 0;
+      element.selectionEnd = piX.length;
+      expect(dom.window.getSelection().toString()).toEqual(piX);
+      // When the input is invalid, the model is [double.NAN]:
+      _.triggerEvent(element, 'change');
+      expect(_.rootScope[modelFieldName].isNaN).toBeTruthy();
+
+      // Subcase: text representing a valid number (as if the user had erased
+      // the trailing 'x').
+      num pi = 3.14159;
+      setNumberInputValue(element, pi.toString());
+      _.triggerEvent(element, 'change');
+      expect(element.value).toEqual(pi.toString());
+      expect(_.rootScope[modelFieldName]).toEqual(pi);
+    }));
+
+    it('should not reformat user input to equivalent numeric representation', inject((Injector i) {
+      var modelFieldName = 'modelForNumFromInvalid2';
+      var element = _.compile('<input type="number" ng-model="$modelFieldName">');
+      dom.querySelector('body').append(element);
+
+      var ten = '1e1';
+      setNumberInputValue(element, ten);      
+      _.triggerEvent(element, 'change');
+      expect(_.rootScope[modelFieldName]).toEqual(10);
+      // Ensure that the input text is literally the same
+      element.selectionStart = 0;
+      // Set the selectionEnd to one beyond ten.length in
+      // case angular added some extra text.
+      element.selectionEnd = ten.length + 1;
+      expect(dom.window.getSelection().toString()).toEqual(ten);
+    }));
+
     it('should update input value from model', inject(() {
       _.compile('<input type="number" ng-model="model">');
       _.rootScope.$digest();
@@ -142,7 +200,7 @@ describe('ng-model', () {
       expect(_.rootScope.model).toEqual(43);
     }));
 
-    it('should update model to null from a blank input value', inject(() {
+    it('should update model to NaN from a blank input value', inject(() {
       _.compile('<input type="number" ng-model="model" probe="p">');
       Probe probe = _.rootScope.p;
       var ngModel = probe.directive(NgModel);
@@ -150,7 +208,7 @@ describe('ng-model', () {
 
       inputElement.value = '';
       _.triggerEvent(inputElement, 'change');
-      expect(_.rootScope.model).toBeNull();
+      expect(_.rootScope.model.isNaN).toBeTruthy();
     }));
 
     it('should update model from the input value for range inputs', inject(() {

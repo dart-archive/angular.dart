@@ -211,12 +211,17 @@ class InputTextLikeDirective {
  *
  *     <input type="number|range" ng-model="myModel">
  *
- * This creates a two-way binding between a number-based input element
- * so long as the ng-model attribute is present on the input element. Whenever
- * the value of the input element changes then the matching model property on the
- * scope will be updated as well as the other way around (when the scope property
- * is updated).
- *
+ * Model:
+ * 
+ *     num myModel;
+ * 
+ * This creates a two-way binding between the input and the named model property
+ * (e.g., myModel in the example above). When processing the input, its value is
+ * read as a [num], via the [dom.InputElement.valueAsNumber] field. If the input
+ * text does not represent a number, then the model is appropriately set to
+ * [double.NAN]. Setting the model property to [null] will clear the input.
+ * Setting the model to [double.NAN] will have no effect (input will be left
+ * unchanged).
  */
 @NgDirective(selector: 'input[type=number][ng-model]')
 @NgDirective(selector: 'input[type=range][ng-model]')
@@ -225,9 +230,26 @@ class InputNumberLikeDirective {
   final NgModel ngModel;
   final Scope scope;
 
+  num get typedValue => inputElement.valueAsNumber;
+  void set typedValue(num value) {
+    // [chalin, 2014-02-16] This post 
+    // http://lists.whatwg.org/pipermail/whatwg-whatwg.org/2010-January/024829.html
+    // suggests that setting `valueAsNumber` to null should clear the field, but
+    // it does not. [TODO: put BUG/ISSUE number here].  We implement a
+    // workaround by setting `value`. Clean-up once the bug is fixed.
+    if (value == null) {
+      inputElement.value = null;
+    } else { 
+      inputElement.valueAsNumber = value;
+    }
+  }
+
   InputNumberLikeDirective(dom.Element this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
-      inputElement.value = value == null ? '' : value.toString();
+      if (value != typedValue 
+          && (value == null || value is num && !value.isNaN)) {
+        typedValue = value;
+      }
     };
     inputElement
         ..onChange.listen(relaxFnArgs(processValue))
@@ -235,7 +257,7 @@ class InputNumberLikeDirective {
   }
 
   processValue() {
-    var value = num.parse(inputElement.value, (_) => null);
+    num value = typedValue;
     if (value != ngModel.viewValue) {
       ngModel.dirty = true;
       scope.$apply(() => ngModel.viewValue = value);
