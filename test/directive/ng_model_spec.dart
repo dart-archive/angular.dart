@@ -400,6 +400,20 @@ describe('ng-model', () {
       expect(element.checked).toBe(false);
     }));
 
+    it('should render as dirty when checked', inject((Scope scope) {
+      var element = _.compile('<input type="text" ng-model="my_model" probe="i" />');
+      Probe probe = _.rootScope.i;
+      var model = probe.directive(NgModel);
+
+      expect(model.pristine).toEqual(true);
+      expect(model.dirty).toEqual(false);
+
+      _.triggerEvent(element, 'change');
+
+      expect(model.pristine).toEqual(false);
+      expect(model.dirty).toEqual(true);
+    }));
+
 
     it('should update input value from model using ng-true-value/false', inject((Scope scope) {
       var element = _.compile('<input type="checkbox" ng-model="model" ng-true-value="1" ng-false-value="0">');
@@ -621,6 +635,44 @@ describe('ng-model', () {
       expect(greenBtn.checked).toBe(true);
       expect(blueBtn.checked).toBe(false);
     });
+
+    it('should render as dirty when checked', inject((Scope scope) {
+      var element = _.compile(
+        '<div>' + 
+        '  <input type="radio" id="on" ng-model="my_model" probe="i" value="on" />' +
+        '  <input type="radio" id="off" ng-model="my_model" probe="j" value="off" />' +
+        '</div>'
+      );
+      Probe probe = _.rootScope.i;
+
+      var model = probe.directive(NgModel);
+
+      var input1 = element.query("#on");
+      var input2 = element.query("#off");
+
+      expect(model.pristine).toEqual(true);
+      expect(model.dirty).toEqual(false);
+
+      expect(input1.classes.contains("ng-dirty")).toBe(false);
+      expect(input2.classes.contains("ng-dirty")).toBe(false);
+      expect(input1.classes.contains("ng-pristine")).toBe(true);
+      expect(input1.classes.contains("ng-pristine")).toBe(true);
+
+      input1.checked = true;
+      _.triggerEvent(input1, 'click');
+
+      expect(model.pristine).toEqual(false);
+      expect(model.dirty).toEqual(true);
+
+      input1.checked = false;
+      input2.checked = true;
+      _.triggerEvent(input2, 'click');
+
+      expect(input1.classes.contains("ng-dirty")).toBe(true);
+      expect(input2.classes.contains("ng-dirty")).toBe(true);
+      expect(input1.classes.contains("ng-pristine")).toBe(false);
+      expect(input1.classes.contains("ng-pristine")).toBe(false);
+    }));
   });
 
   describe('type="search"', () {
