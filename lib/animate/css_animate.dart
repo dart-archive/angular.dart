@@ -23,7 +23,7 @@ class CssAnimate extends NgAnimate {
 
   AnimationRunner _animationRunner;
   NoAnimate _noAnimate;
-  Profiler profiler;
+  final Profiler profiler;
 
   CssAnimate(AnimationRunner this._animationRunner, this._noAnimate,
       [ this.profiler ]);
@@ -58,7 +58,7 @@ class CssAnimate extends NgAnimate {
 
   AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
     _domInsert(nodes, parent, insertBefore: insertBefore);
-    
+
     var animateHandles = _elements(nodes).where((el) {
       return !_animationRunner.hasRunningParentAnimation(el.parent);
     }).map((el) {

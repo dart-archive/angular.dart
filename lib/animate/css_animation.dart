@@ -137,7 +137,6 @@ class CssAnimation extends Animation {
       return new Duration(microseconds: microseconds.round());
     }
 
-    _logger.warning("UNABLE TO PARSE DURATION STRING: $duration");
     return Duration.ZERO;
   }
 }

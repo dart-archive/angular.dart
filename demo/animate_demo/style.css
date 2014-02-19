@@ -112,48 +112,69 @@ body {
 
 .animated-host {
   margin-top: 10px;
-  // Space for 1000 elements.
   height: 1000px;
   width: 625px;
   line-height: 25px;
 }
 
+ 
 .magic-box {
   display: block;
   margin-right: 5px;
   margin-top: 5px;
-  opacity: 1;
+
   width: 20px;
   height: 20px;
   background-color: #1080F0;
   line-height: 20px;
   float: left;
-
+  opacity: 1;
+/*
+  opacity: 1;
   transform: scale(1.0,1.0);
-  -webkit-transform: scale(1.0,1.0);
+  -webkit-transform: scale(1.0,1.0); */
 }
+
+.magic-box.ng-insert {
+  opacity: 0;
+  transition: all 1000ms ease;
+}
+
+.magic-box.ng-insert.ng-insert-active {
+  opacity: 1;
+}
+
+.magic-box.ng-remove {
+  opacity: 1;
+  transition: all 1000ms ease;
+}
+
+.magic-box.ng-remove.ng-remove-active {
+  opacity: 0;
+}
+/*
 
 .magic-box.ng-insert {
   transform: scale(0.0, 0.0);
   -webkit-transform: scale(0.0,0.0);
 
   opacity: 0;
-  transition: all 1000ms;
+  transition: all 10000ms ease;
 }
 
-.magic-box.ng-insert-active {
+.magic-box.ng-insert.ng-insert-active {
   transform: scale(1.0, 1.0);
   -webkit-transform: scale(1.0, 1.0);
-  opacity: 1;
+  opacity: 0.5;
 }
 
 .magic-box.ng-remove {
   transform: scale(1.0, 1.0);
   -webkit-transform: scale(1.0, 1.0);
-  transition: all 500ms;
+  transition: all 500ms ease;
 }
-.magic-box.ng-remove-active {
+.magic-box.ng-remove.ng-remove-active {
   transform: scale(1.1, 1.1);
   -webkit-transform: scale(1.1, 1.1);
   opacity: 0;
-}
+} */
