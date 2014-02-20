@@ -11,7 +11,7 @@ main() {
 
     beforeEach(module((Module m) => m
       ..install(new AngularMockModule())
-      ..type(RouteInitializer, implementedBy: NestedRouteInitializer)));
+      ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer)));
 
     beforeEach(inject((TestBed tb) {
       _ = tb;
@@ -46,8 +46,8 @@ main() {
   });
 }
 
-class NestedRouteInitializer implements RouteInitializer {
-  void init(Router router, ViewFactory view) {
+class NestedRouteInitializer implements Function {
+  void call(Router router, ViewFactory view) {
     router.root
       ..addRoute(
           name: 'library',
@@ -71,9 +71,9 @@ class NestedRouteInitializer implements RouteInitializer {
                       name: 'read',
                       path: '/read',
                       enter: view('book_read.html'))))
-      ..addRoute(
-          name: 'admin',
-          path: '/admin',
-          enter: view('admin.html'));
+                  ..addRoute(
+                      name: 'admin',
+                      path: '/admin',
+                      enter: view('admin.html'));
   }
 }
