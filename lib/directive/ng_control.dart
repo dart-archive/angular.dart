@@ -5,6 +5,8 @@ abstract class NgControl implements NgDetachAware {
   static const NG_INVALID_CLASS        = "ng-invalid";
   static const NG_PRISTINE_CLASS       = "ng-pristine";
   static const NG_DIRTY_CLASS          = "ng-dirty";
+  static const NG_TOUCHED_CLASS        = "ng-touched";
+  static const NG_UNTOUCHED_CLASS      = "ng-untouched";
   static const NG_SUBMIT_VALID_CLASS   = "ng-submit-valid";
   static const NG_SUBMIT_INVALID_CLASS = "ng-submit-invalid";
 
@@ -13,6 +15,8 @@ abstract class NgControl implements NgDetachAware {
   bool _pristine;
   bool _valid;
   bool _invalid;
+  bool _touched;
+  bool _untouched;
 
   final Scope _scope;
   final NgControl _parentControl;
@@ -26,6 +30,8 @@ abstract class NgControl implements NgDetachAware {
       : _parentControl = injector.parent.get(NgControl)
   {
     pristine = true;
+    untouched = true;
+
     _scope.on('submitNgControl').listen((e) => _onSubmit(e.data));
   }
 
@@ -37,6 +43,7 @@ abstract class NgControl implements NgDetachAware {
 
   reset() {
     _scope.broadcast('resetNgModel');
+    untouched = true;
   }
 
   _onSubmit(bool valid) {
@@ -89,6 +96,25 @@ abstract class NgControl implements NgDetachAware {
     _invalid = true;
 
     element.classes..remove(NG_VALID_CLASS)..add(NG_INVALID_CLASS);
+  }
+
+  get touched => _touched;
+  set touched(value) {
+    _touched = true;
+    _untouched = false;
+
+    element.classes..remove(NG_UNTOUCHED_CLASS)..add(NG_TOUCHED_CLASS);
+
+    //as soon as one of the controls/models is touched
+    //then all of the parent controls are touched as well
+    _parentControl.touched = true;
+  }
+
+  get untouched => _untouched;
+  set untouched(value) {
+    _touched = false;
+    _untouched = true;
+    element.classes..remove(NG_TOUCHED_CLASS)..add(NG_UNTOUCHED_CLASS);
   }
 
   /**
@@ -158,7 +184,7 @@ abstract class NgControl implements NgDetachAware {
 }
 
 class NgNullControl implements NgControl {
-  var _name, _dirty, _valid, _invalid, _pristine, _element;
+  var _name, _dirty, _valid, _invalid, _pristine, _element, _touched, _untouched;
   var _controls, _scope, _parentControl, _controlName;
   var errors, _controlByName;
   dom.Element element;
@@ -184,6 +210,12 @@ class NgNullControl implements NgControl {
 
   get invalid => null;
   set invalid(value) {}
+
+  get touched => null;
+  set touched(value) {}
+
+  get untouched => null;
+  set untouched(value) {}
 
   reset() => null;
   detach() => null;
