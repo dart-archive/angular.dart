@@ -10,11 +10,13 @@ elif [ -x "$DARTDOC" ]; then
     MODE_OPTION="--mode=static"
 fi
 
-echo "Generating documentation using $DOC_CMD"
+echo "Generating documentation using $DOC_CMD $MODE_OPTION"
 "$DOC_CMD" $MODE_OPTION \
     --package-root=packages/ \
-    --out doc \
-    --exclude-lib=js,metadata,meta,mirrors,intl,number_symbols,number_symbol_data,intl_helpers,date_format_internal,date_symbols,angular.util \
-    packages/angular/angular.dart lib/mock/module.dart
+    --out docs \
+    --start-page=angular \
+    --exclude-lib=js,metadata,mdn,meta,mirrors,intl,number_symbols,number_symbol_data,intl_helpers,date_format_internal,date_symbols,angular.util \
+    --no-include-sdk \
+    ./ lib/mock/module.dart
 
 
