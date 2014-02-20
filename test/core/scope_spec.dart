@@ -550,7 +550,8 @@ main() => describe('scope', () {
     it(r'should broadcast the destroy event', inject((RootScope rootScope) {
       var log = [];
       first.on(ScopeEvent.DESTROY).listen((s) => log.add('first'));
-      first.createChild({}).on(ScopeEvent.DESTROY).listen((s) => log.add('first-child'));
+      var child = first.createChild({});
+      child.on(ScopeEvent.DESTROY).listen((s) => log.add('first-child'));
 
       first.destroy();
       expect(log).toEqual(['first', 'first-child']);

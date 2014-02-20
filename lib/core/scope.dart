@@ -157,15 +157,12 @@ class Scope {
   // such as # of watches, checks/1ms, field checks, function checks, etc
   final WatchGroup _readWriteGroup;
   final WatchGroup _readOnlyGroup;
-  final int _depth;
-  final int _index;
 
   Scope _childHead, _childTail, _next, _prev;
   _Streams _streams;
-  int _nextChildIndex = 0;
 
-  Scope(Object this.context, this.rootScope, this._parentScope, this._depth,
-        this._index, this._readWriteGroup, this._readOnlyGroup);
+  Scope(Object this.context, this.rootScope, this._parentScope,
+        this._readWriteGroup, this._readOnlyGroup);
 
   /**
    * A [watch] sets up a watch in the [digest] phase of the [apply] cycle.
@@ -175,7 +172,7 @@ class Scope {
    */
   Watch watch(expression, ReactionFn reactionFn,
               {context, FilterMap filters, bool readOnly: false}) {
-    assert(isAttached);
+    _assertInternalStateConsistency();
     assert(expression != null);
     AST ast;
     Watch watch;
@@ -207,7 +204,7 @@ class Scope {
   }
 
   dynamic eval(expression, [Map locals]) {
-    assert(isAttached);
+    _assertInternalStateConsistency();
     assert(expression == null ||
            expression is String ||
            expression is Function);
@@ -239,22 +236,21 @@ class Scope {
   }
 
   ScopeEvent emit(String name, [data]) {
-    assert(isAttached);
+    _assertInternalStateConsistency();
     return _Streams.emit(this, name, data);
   }
   ScopeEvent broadcast(String name, [data]) {
-    assert(isAttached);
+    _assertInternalStateConsistency();
     return _Streams.broadcast(this, name, data);
   }
   ScopeStream on(String name) {
-    assert(isAttached);
+    _assertInternalStateConsistency();
     return _Streams.on(this, rootScope._exceptionHandler, name);
   }
 
   Scope createChild(Object childContext) {
-    assert(isAttached);
+    _assertInternalStateConsistency();
     var child = new Scope(childContext, rootScope, this,
-                          _depth + 1, _nextChildIndex++,
                           _readWriteGroup.newGroup(childContext),
                           _readOnlyGroup.newGroup(childContext));
     var next = null;
@@ -267,7 +263,7 @@ class Scope {
   }
 
   void destroy() {
-    assert(isAttached);
+    _assertInternalStateConsistency();
     broadcast(ScopeEvent.DESTROY);
     _Streams.destroy(this);
 
@@ -289,9 +285,54 @@ class Scope {
     _readWriteGroup.remove();
     _readOnlyGroup.remove();
     _parentScope = null;
+    _assertInternalStateConsistency();
+  }
+
+  _assertInternalStateConsistency() {
+    assert((() {
+      rootScope._verifyStreams(null, '', []);
+      return true;
+    })());
+  }
+
+  Map<bool,int> _verifyStreams(parentScope, prefix, log) {
+    assert(_parentScope == parentScope);
+    var counts = {};
+    var typeCounts = _streams == null ? {} : _streams._typeCounts;
+    log..add(prefix)..add(hashCode)..add(' ')..add(typeCounts)..add('\n');
+    if (_streams == null) {
+    } else if (_streams._scope == this) {
+      _streams._streams.keys.forEach((k){
+        counts[k] = 1 + (counts.containsKey(k) ? counts[k] : 0);
+      });
+    }
+    var childScope = _childHead;
+    while(childScope != null) {
+      childScope._verifyStreams(this, '  $prefix', log).forEach((k, v) {
+        counts[k] = v + (counts.containsKey(k) ? counts[k] : 0);
+      });
+      childScope = childScope._next;
+    }
+    if(!_mapEqual(counts, typeCounts)) {
+      throw 'Streams actual: $counts != bookkeeping: $typeCounts\n'
+            'Offending scope: [scope: ${this.hashCode}]\n'
+            '${log.join('')}';
+    }
+    return counts;
   }
 }
 
+_mapEqual(Map a, Map b) {
+  if (a.length == b.length) {
+    var equal = true;
+    a.forEach((k, v) {
+      equal = equal && b.containsKey(k) && v == b[k];
+    });
+    return equal;
+  } else {
+    return false;
+  }
+}
 
 class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
@@ -314,7 +355,7 @@ class RootScope extends Scope {
   RootScope(Object context, this._astParser, this._parser,
             GetterCache cacheGetter, FilterMap filterMap,
             this._exceptionHandler, this._ttl, this._zone)
-      : super(context, null, null, 0, 0,
+      : super(context, null, null,
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context))
   {
@@ -558,15 +599,19 @@ class _Streams {
 
   static void destroy(Scope scope) {
     var toBeDeletedStreams = scope._streams;
-    if (toBeDeletedStreams == null) return;
-    scope = scope._parentScope; // skip current state as not to delete listeners
-    while (scope != null && scope._streams == toBeDeletedStreams) {
-      scope._streams = null;
-      scope = scope._parentScope;
+    if (toBeDeletedStreams == null) return; // no streams to clean up
+    var parentScope = scope._parentScope; // skip current scope as not to delete listeners
+    // find the parent-most scope which still has our stream to be deleted.
+    while (parentScope != null && parentScope._streams == toBeDeletedStreams) {
+      parentScope._streams = null;
+      parentScope = parentScope._parentScope;
     }
-    if (scope == null) return;
-    var parentStreams = scope._streams;
+    // At this point scope is the parent-most scope which has its own typeCounts
+    if (parentScope == null) return;
+    var parentStreams = parentScope._streams;
     assert(parentStreams != toBeDeletedStreams);
+    // remove typeCounts from the scope to be destroyed from the parent
+    // typeCounts
     toBeDeletedStreams._typeCounts.forEach(
         (name, count) => parentStreams._addCount(name, -count));
   }
@@ -592,6 +637,7 @@ class _Streams {
         assert(count >= 0);
         if (count == 0) {
           lastStreams._typeCounts.remove(name);
+          if (_scope == scope) _streams.remove(name);
         } else {
           lastStreams._typeCounts[name] = count;
         }
