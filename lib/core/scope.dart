@@ -150,6 +150,7 @@ class Scope {
    * The parent [Scope].
    */
   Scope get parentScope => _parentScope;
+  bool get isAttached => _parentScope == null ? false : _parentScope.isAttached;
 
   // TODO(misko): WatchGroup should be private.
   // Instead we should expose performance stats about the watches
@@ -174,6 +175,7 @@ class Scope {
    */
   Watch watch(expression, ReactionFn reactionFn,
               {context, FilterMap filters, bool readOnly: false}) {
+    assert(isAttached);
     assert(expression != null);
     AST ast;
     Watch watch;
@@ -205,6 +207,7 @@ class Scope {
   }
 
   dynamic eval(expression, [Map locals]) {
+    assert(isAttached);
     assert(expression == null ||
            expression is String ||
            expression is Function);
@@ -235,13 +238,21 @@ class Scope {
     }
   }
 
-  ScopeEvent emit(String name, [data]) => _Streams.emit(this, name, data);
-  ScopeEvent broadcast(String name, [data]) =>
-      _Streams.broadcast(this, name, data);
-  ScopeStream on(String name) =>
-      _Streams.on(this, rootScope._exceptionHandler, name);
+  ScopeEvent emit(String name, [data]) {
+    assert(isAttached);
+    return _Streams.emit(this, name, data);
+  }
+  ScopeEvent broadcast(String name, [data]) {
+    assert(isAttached);
+    return _Streams.broadcast(this, name, data);
+  }
+  ScopeStream on(String name) {
+    assert(isAttached);
+    return _Streams.on(this, rootScope._exceptionHandler, name);
+  }
 
   Scope createChild(Object childContext) {
+    assert(isAttached);
     var child = new Scope(childContext, rootScope, this,
                           _depth + 1, _nextChildIndex++,
                           _readWriteGroup.newGroup(childContext),
@@ -256,6 +267,10 @@ class Scope {
   }
 
   void destroy() {
+    assert(isAttached);
+    broadcast(ScopeEvent.DESTROY);
+    _Streams.destroy(this);
+
     var prev = _prev;
     var next = _next;
     if (prev == null) {
@@ -273,10 +288,7 @@ class Scope {
 
     _readWriteGroup.remove();
     _readOnlyGroup.remove();
-    _Streams.destroy(this);
-
     _parentScope = null;
-    broadcast(ScopeEvent.DESTROY);
   }
 }
 
@@ -313,6 +325,7 @@ class RootScope extends Scope {
   }
 
   RootScope get rootScope => this;
+  bool get isAttached => true;
 
   void digest() {
     _transitionState(null, STATE_DIGEST);
@@ -437,6 +450,7 @@ class RootScope extends Scope {
   void destroy() {}
 
   void _transitionState(String from, String to) {
+    assert(isAttached);
     if (_state != from) throw "$_state already in progress can not enter $to.";
     _state = to;
   }
