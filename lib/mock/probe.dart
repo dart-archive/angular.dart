@@ -20,7 +20,9 @@ class Probe implements NgDetachAware {
     scope.rootScope.context[_attrs['probe']] = this;
   }
 
-  detach() => scope.rootScope.context[_attrs['probe']] = null;
+  void detach() {
+    scope.rootScope.context[_attrs['probe']] = null;
+  }
 
   /**
    * Retrieve a Directive at the current element.
