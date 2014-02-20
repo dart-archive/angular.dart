@@ -111,17 +111,15 @@ describe('ng-model', () {
     }));
   });
 
-  /* An input of type number can only have assigned to its [value] field
-   * a string that represents a valid number. Any attempts to assign
-   * any other string will have no effect on the [value] field.
-   * 
-   * This function simulates typing the given string value into the input
-   * field regardless of whether it represents a valid number or not. It
-   * has the side-effect of setting the window focus to the input.
+  /* This function simulates typing the given text into the input
+   * field. The text will be added wherever the insertion point
+   * happens to be. This method has as side-effect to set the
+   * focus on the input (without setting the focus the text 
+   * dispatch may not work).
    */
-  void setNumberInputValue(InputElement input, String value) {
+  void simulateTypingText(InputElement input, String text) {
     input..focus()
-      ..dispatchEvent(new TextEvent('textInput', data: value));
+      ..dispatchEvent(new TextEvent('textInput', data: text));
   }
   
   describe('type="number" like', () {
@@ -131,26 +129,27 @@ describe('ng-model', () {
       var element = _.compile('<input type="number" ng-model="$modelFieldName">');
       dom.querySelector('body').append(element);
 
-      // Subcase: text not representing a valid number.
-      var piX = '3.141x';
-      setNumberInputValue(element, piX);
+      // This test will progressively enter the text '1e1'
+      // '1' is a valid number.
+      // '1e' is not a valid number.
+      // '1e1' is again a valid number (with an exponent)
+      
+      simulateTypingText(element, '1');
+      _.triggerEvent(element, 'change');
+      expect(element.value).toEqual('1');
+      expect(_.rootScope.context[modelFieldName]).toEqual(1);
+
+      simulateTypingText(element, 'e');
       // Because the text is not a valid number, the element value is empty.
       expect(element.value).toEqual('');
-      // But the selection can confirm that the text is there:
-      element.selectionStart = 0;
-      element.selectionEnd = piX.length;
-      expect(dom.window.getSelection().toString()).toEqual(piX);
       // When the input is invalid, the model is [double.NAN]:
       _.triggerEvent(element, 'change');
       expect(_.rootScope.context[modelFieldName].isNaN).toBeTruthy();
-
-      // Subcase: text representing a valid number (as if the user had erased
-      // the trailing 'x').
-      num pi = 3.14159;
-      setNumberInputValue(element, pi.toString());
+      
+      simulateTypingText(element, '1');
       _.triggerEvent(element, 'change');
-      expect(element.value).toEqual(pi.toString());
-      expect(_.rootScope.context[modelFieldName]).toEqual(pi);
+      expect(element.value).toEqual('1e1');
+      expect(_.rootScope.context[modelFieldName]).toEqual(10);
     }));
 
     it('should not reformat user input to equivalent numeric representation', inject((Injector i) {
@@ -158,16 +157,9 @@ describe('ng-model', () {
       var element = _.compile('<input type="number" ng-model="$modelFieldName">');
       dom.querySelector('body').append(element);
 
-      var ten = '1e1';
-      setNumberInputValue(element, ten);      
-      _.triggerEvent(element, 'change');
-      expect(_.rootScope.context[modelFieldName]).toEqual(10);
-      // Ensure that the input text is literally the same
-      element.selectionStart = 0;
-      // Set the selectionEnd to one beyond ten.length in
-      // case angular added some extra text.
-      element.selectionEnd = ten.length + 1;
-      expect(dom.window.getSelection().toString()).toEqual(ten);
+      simulateTypingText(element, '1e-1');
+      expect(element.value).toEqual('1e-1');
+      expect(_.rootScope.context[modelFieldName]).toEqual(0.1);
     }));
 
     it('should update input value from model', inject(() {
