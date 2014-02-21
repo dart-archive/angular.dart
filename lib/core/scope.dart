@@ -181,6 +181,9 @@ class Scope {
   Scope _childHead, _childTail, _next, _prev;
   _Streams _streams;
 
+  /// Do not use. Exposes internal state for testing.
+  bool get hasOwnStreams => _streams != null  && _streams._scope == this;
+
   Scope(Object this.context, this.rootScope, this._parentScope,
         this._readWriteGroup, this._readOnlyGroup);
 
@@ -192,7 +195,7 @@ class Scope {
    */
   Watch watch(expression, ReactionFn reactionFn,
               {context, FilterMap filters, bool readOnly: false}) {
-    _assertInternalStateConsistency();
+    assert(isAttached);
     assert(expression != null);
     AST ast;
     Watch watch;
@@ -606,18 +609,29 @@ class _Streams {
   static ScopeStream on(Scope scope,
                         ExceptionHandler _exceptionHandler,
                         String name) {
-    var scopeStream = scope._streams;
-    if (scopeStream == null || scopeStream._scope != scope) {
-      // We either don't have [_ScopeStreams] or it is inherited.
-      var newStreams = new _Streams(scope, _exceptionHandler, scopeStream);
-      var scopeCursor = scope;
-      while (scopeCursor != null && scopeCursor._streams == scopeStream) {
-        scopeCursor._streams = newStreams;
-        scopeCursor = scopeCursor._parentScope;
+    _forceNewScopeStream(scope, _exceptionHandler);
+    return scope._streams._get(scope, name);
+  }
+
+  static void _forceNewScopeStream(scope, _exceptionHandler) {
+    _Streams streams = scope._streams;
+    Scope scopeCursor = scope;
+    bool splitMode = false;
+    while(scopeCursor != null) {
+      _Streams cursorStreams = scopeCursor._streams;
+      var hasStream = cursorStreams != null;
+      var hasOwnStream = hasStream && cursorStreams._scope == scopeCursor;
+      if (hasOwnStream) return;
+
+      if (!splitMode && (streams == null || (hasStream && !hasOwnStream))) {
+        if (hasStream && !hasOwnStream) {
+          splitMode = true;
+        }
+        streams = new _Streams(scopeCursor, _exceptionHandler, cursorStreams);
       }
-      scopeStream = newStreams;
+      scopeCursor._streams = streams;
+      scopeCursor = scopeCursor._parentScope;
     }
-    return scopeStream._get(scope, name);
   }
 
   static void destroy(Scope scope) {

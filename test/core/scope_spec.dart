@@ -267,6 +267,59 @@ main() => describe('scope', () {
         child.broadcast('abc');
         expect(log).toEqual('');
       }));
+
+      it('should not trigger assertions on scope fork', inject((RootScope root) {
+        var d1 = root.createChild({});
+        var d2 = root.createChild({});
+        var d3 = d2.createChild({});
+        expect(root.apply).not.toThrow();
+        d1.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(root.apply).not.toThrow();
+        d3.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(root.apply).not.toThrow();
+        d2.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(root.apply).not.toThrow();
+      }));
+
+      it('should not too eagerly create own streams', inject((RootScope root) {
+        var a = root.createChild({});
+        var a2 = root.createChild({});
+        var b = a.createChild({});
+        var c = b.createChild({});
+        var d = c.createChild({});
+        var e = d.createChild({});
+
+        getStreamState() => [root.hasOwnStreams, a.hasOwnStreams, a2.hasOwnStreams,
+                             b.hasOwnStreams, c.hasOwnStreams, d.hasOwnStreams,
+                             e.hasOwnStreams];
+
+        expect(getStreamState()).toEqual([false, false, false, false, false, false, false]);
+        expect(root.apply).not.toThrow();
+
+        e.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([false, false, false, false, false, false, true]);
+        expect(root.apply).not.toThrow();
+
+        d.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([false, false, false, false, false, true, true]);
+        expect(root.apply).not.toThrow();
+
+        b.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([false, false, false, true, false, true, true]);
+        expect(root.apply).not.toThrow();
+
+        c.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([false, false, false, true, true, true, true]);
+        expect(root.apply).not.toThrow();
+
+        a.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([false, true, false, true, true, true, true]);
+        expect(root.apply).not.toThrow();
+
+        a2.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([true, true, true, true, true, true, true]);
+        expect(root.apply).not.toThrow();
+      }));
     });
 
 
@@ -1047,7 +1100,7 @@ main() => describe('scope', () {
     }));
   });
 
-  
+
   describe('runAsync', () {
     it(r'should run callback before watch', inject((RootScope rootScope) {
       var log = '';
