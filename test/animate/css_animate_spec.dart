@@ -125,20 +125,20 @@ class MockAnimationRunner extends Mock implements AnimationRunner {
     detach();
   }
   
-  start([DateTime now, num offset = 0]) {
-    animation.start(now == null ? this.now : now, offset);
+  start([num offset = 0]) {
+    animation.start(offset);
   }
   
-  update([DateTime now, num offset = 0]) {
-    animation.update(now == null ? this.now : now, offset);
+  update([num offset = 0]) {
+    animation.update(offset);
   }
   
-  read([DateTime now, num offset = 0]) {
-    animation.read(now == null ? this.now : now, offset);
+  read([num offset = 0]) {
+    animation.read(offset);
   }
   
-  detach([DateTime now, num offset = 0]) {
-    animation.detach(now == null ? this.now : now, offset);
+  detach([num offset = 0]) {
+    animation.detach(offset);
   }
   
   bool hasRunningParentAnimation(Element element) {

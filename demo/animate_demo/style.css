@@ -117,7 +117,6 @@ body {
   line-height: 25px;
 }
 
- 
 .magic-box {
   display: block;
   margin-right: 5px;
@@ -129,52 +128,33 @@ body {
   line-height: 20px;
   float: left;
   opacity: 1;
-/*
-  opacity: 1;
-  transform: scale(1.0,1.0);
-  -webkit-transform: scale(1.0,1.0); */
 }
-
-.magic-box.ng-insert {
-  opacity: 0;
-  transition: all 800ms ease;
-}
-
-.magic-box.ng-insert.ng-insert-active {
-  opacity: 1;
-}
-
-.magic-box.ng-remove {
-  opacity: 1;
-  transition: all 800ms ease;
-}
-
-.magic-box.ng-remove.ng-remove-active {
-  opacity: 0;
-}
-/*
 
 .magic-box.ng-insert {
   transform: scale(0.0, 0.0);
   -webkit-transform: scale(0.0,0.0);
-
-  opacity: 0;
-  transition: all 10000ms ease;
+  opacity: 0.0000001; /* Zero doesn't work???!!!! */
+  /* Chrome bug filed: 
+    https://code.google.com/p/chromium/issues/detail?id=345894
+  */
+  transition: all 800ms linear;
 }
 
 .magic-box.ng-insert.ng-insert-active {
   transform: scale(1.0, 1.0);
   -webkit-transform: scale(1.0, 1.0);
-  opacity: 0.5;
+  opacity: 1;
 }
 
 .magic-box.ng-remove {
   transform: scale(1.0, 1.0);
   -webkit-transform: scale(1.0, 1.0);
-  transition: all 500ms ease;
+  opacity: 1;
+  transition: all 800ms linear;
 }
+
 .magic-box.ng-remove.ng-remove-active {
   transform: scale(1.1, 1.1);
   -webkit-transform: scale(1.1, 1.1);
   opacity: 0;
-} */
+}

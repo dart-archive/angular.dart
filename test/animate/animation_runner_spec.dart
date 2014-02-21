@@ -11,78 +11,77 @@ main() {
     beforeEach(inject((TestBed tb, NgZone zone) {
       _ = tb;
       wnd = new MockWindow();
-      Clock clock = new Clock.fixed(new DateTime.now());
-      runner = new AnimationRunner(wnd, clock, zone);
+      runner = new AnimationRunner(wnd, zone);
     }));
     
     it('should play animations with window animation frames', async(() {
       _.compile('<div></div>');
       var animation = new MockAnimation(_.rootElement);
       animation.when(callsTo('attach')).alwaysReturn(null);
-      animation.when(callsTo('start', anything, anything)).alwaysReturn(null);
-      animation.when(callsTo('read', anything, anything)).alwaysReturn(null);
-      animation.when(callsTo('update', anything, anything))
+      animation.when(callsTo('start', anything)).alwaysReturn(null);
+      animation.when(callsTo('read', anything)).alwaysReturn(null);
+      animation.when(callsTo('update', anything))
         .thenReturn(true, 2)
         .thenReturn(false);
-      animation.when(callsTo('detach', anything, anything)).alwaysReturn(null);
+      animation.when(callsTo('detach', anything)).alwaysReturn(null);
       
       runner.play(animation);
 
       animation.getLogs(callsTo('attach')).verify(happenedExactly(1));
-      animation.getLogs(callsTo('start', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('read', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('update', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('detach', anything, anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('start', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('read', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('update', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('detach', anything)).verify(happenedExactly(0));
       animation.clearLogs();
 
       wnd.executeAnimationFrame();
       microLeap();
 
       animation.getLogs(callsTo('attach')).verify(happenedExactly(0));
-      animation.getLogs(callsTo('start', anything, anything)).verify(happenedExactly(1));
-      animation.getLogs(callsTo('read', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('update', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('detach', anything, anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('start', anything)).verify(happenedExactly(1));
+      animation.getLogs(callsTo('read', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('update', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('detach', anything)).verify(happenedExactly(0));
       animation.clearLogs();
       
       wnd.executeAnimationFrame();
       microLeap();
       
       animation.getLogs(callsTo('attach')).verify(happenedExactly(0));
-      animation.getLogs(callsTo('start', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('read', anything, anything)).verify(happenedExactly(1));
-      animation.getLogs(callsTo('update', anything, anything)).verify(happenedExactly(1));
-      animation.getLogs(callsTo('detach', anything, anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('start', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('read', anything)).verify(happenedExactly(1));
+      animation.getLogs(callsTo('update', anything)).verify(happenedExactly(1));
+      animation.getLogs(callsTo('detach', anything)).verify(happenedExactly(0));
       animation.clearLogs();
       
       wnd.executeAnimationFrame();
       microLeap();      
 
       animation.getLogs(callsTo('attach')).verify(happenedExactly(0));
-      animation.getLogs(callsTo('start', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('read', anything, anything)).verify(happenedExactly(1));
-      animation.getLogs(callsTo('update', anything, anything)).verify(happenedExactly(1));
-      animation.getLogs(callsTo('detach', anything, anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('start', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('read', anything)).verify(happenedExactly(1));
+      animation.getLogs(callsTo('update', anything)).verify(happenedExactly(1));
+      animation.getLogs(callsTo('detach', anything)).verify(happenedExactly(0));
       animation.clearLogs();
 
       wnd.executeAnimationFrame();
       microLeap();
 
       animation.getLogs(callsTo('attach')).verify(happenedExactly(0));
-      animation.getLogs(callsTo('start', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('read', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('update', anything, anything)).verify(happenedExactly(1));
-      animation.getLogs(callsTo('detach', anything, anything)).verify(happenedExactly(1));
+      animation.getLogs(callsTo('start', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('read', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('update', anything)).verify(happenedExactly(1));
+      animation.getLogs(callsTo('detach', anything)).verify(happenedExactly(1));
       animation.clearLogs();
       
       wnd.executeAnimationFrame();
       microLeap();
 
       animation.getLogs(callsTo('attach')).verify(happenedExactly(0));
-      animation.getLogs(callsTo('start', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('read', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('update', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('detach', anything, anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('start', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('read', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('update', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('detach', anything)).verify(happenedExactly(0));
       animation.clearLogs();
       
       expect(true).toBe(true);
@@ -108,15 +107,15 @@ main() {
       _.compile('<div></div>');
       var animation = new MockAnimation(_.rootElement);
       animation.when(callsTo('attach')).alwaysReturn(null);
-      animation.when(callsTo('start', anything, anything)).alwaysReturn(null);
-      animation.when(callsTo('update', anything, anything)).alwaysReturn(true);
+      animation.when(callsTo('start', anything)).alwaysReturn(null);
+      animation.when(callsTo('update', anything)).alwaysReturn(true);
       
       runner.play(animation);
 
       var a2 = new MockAnimation(_.rootElement);
       a2.when(callsTo('attach')).alwaysReturn(null);
-      a2.when(callsTo('start', anything, anything)).alwaysReturn(null);
-      a2.when(callsTo('update', anything, anything)).alwaysReturn(true);
+      a2.when(callsTo('start', anything)).alwaysReturn(null);
+      a2.when(callsTo('update', anything)).alwaysReturn(true);
       
       runner.play(a2);
 
@@ -127,10 +126,10 @@ main() {
       microLeap();
       
       animation.getLogs(callsTo('attach')).verify(happenedExactly(1));
-      animation.getLogs(callsTo('start', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('read', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('update', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('detach', anything, anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('start', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('read', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('update', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('detach', anything)).verify(happenedExactly(0));
       animation.getLogs(callsTo('interruptAndCancel')).verify(happenedExactly(1));
       animation.getLogs(callsTo('interruptAndComplete')).verify(happenedExactly(0));
       animation.clearLogs();
@@ -140,8 +139,8 @@ main() {
       _.compile('<div></div>');
       var animation = new MockAnimation(_.rootElement);
       animation.when(callsTo('attach')).alwaysReturn(null);
-      animation.when(callsTo('start', anything, anything)).alwaysReturn(null);
-      animation.when(callsTo('update', anything, anything)).alwaysReturn(true);
+      animation.when(callsTo('start', anything)).alwaysReturn(null);
+      animation.when(callsTo('update', anything)).alwaysReturn(true);
       
       runner.play(animation);
 
@@ -150,8 +149,8 @@ main() {
 
       var a2 = new MockAnimation(_.rootElement);
       a2.when(callsTo('attach')).alwaysReturn(null);
-      a2.when(callsTo('start', anything, anything)).alwaysReturn(null);
-      a2.when(callsTo('update', anything, anything)).alwaysReturn(true);
+      a2.when(callsTo('start', anything)).alwaysReturn(null);
+      a2.when(callsTo('update', anything)).alwaysReturn(true);
       
       runner.play(a2);
 
@@ -162,10 +161,10 @@ main() {
       microLeap();
       
       animation.getLogs(callsTo('attach')).verify(happenedExactly(1));
-      animation.getLogs(callsTo('start', anything, anything)).verify(happenedExactly(1));
-      animation.getLogs(callsTo('read', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('update', anything, anything)).verify(happenedExactly(0));
-      animation.getLogs(callsTo('detach', anything, anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('start', anything)).verify(happenedExactly(1));
+      animation.getLogs(callsTo('read', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('update', anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('detach', anything)).verify(happenedExactly(0));
       animation.getLogs(callsTo('interruptAndCancel')).verify(happenedExactly(1));
       animation.getLogs(callsTo('interruptAndComplete')).verify(happenedExactly(0));
       animation.clearLogs();
@@ -176,8 +175,8 @@ main() {
       _.compile('<div></div>');
       var animation = new MockAnimation(_.rootElement);
       animation.when(callsTo('attach')).alwaysReturn(null);
-      animation.when(callsTo('start', anything, anything)).alwaysReturn(null);
-      animation.when(callsTo('update', anything, anything)).alwaysReturn(true);
+      animation.when(callsTo('start', anything)).alwaysReturn(null);
+      animation.when(callsTo('update', anything)).alwaysReturn(true);
       
       runner.play(animation);
 
@@ -189,8 +188,8 @@ main() {
 
       var a2 = new MockAnimation(_.rootElement);
       a2.when(callsTo('attach')).alwaysReturn(null);
-      a2.when(callsTo('start', anything, anything)).alwaysReturn(null);
-      a2.when(callsTo('update', anything, anything)).alwaysReturn(true);
+      a2.when(callsTo('start', anything)).alwaysReturn(null);
+      a2.when(callsTo('update', anything)).alwaysReturn(true);
       
       runner.play(a2);
 
@@ -201,10 +200,10 @@ main() {
       microLeap();
 
       animation.getLogs(callsTo('attach')).verify(happenedExactly(1));
-      animation.getLogs(callsTo('start', anything, anything)).verify(happenedExactly(1));
-      animation.getLogs(callsTo('read', anything, anything)).verify(happenedExactly(1));
-      animation.getLogs(callsTo('update', anything, anything)).verify(happenedExactly(1));
-      animation.getLogs(callsTo('detach', anything, anything)).verify(happenedExactly(0));
+      animation.getLogs(callsTo('start', anything)).verify(happenedExactly(1));
+      animation.getLogs(callsTo('read', anything)).verify(happenedExactly(1));
+      animation.getLogs(callsTo('update', anything)).verify(happenedExactly(1));
+      animation.getLogs(callsTo('detach', anything)).verify(happenedExactly(0));
       animation.getLogs(callsTo('interruptAndCancel')).verify(happenedExactly(1));
       animation.getLogs(callsTo('interruptAndComplete')).verify(happenedExactly(0));
       animation.clearLogs();

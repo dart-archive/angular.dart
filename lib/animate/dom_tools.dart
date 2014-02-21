@@ -46,7 +46,7 @@ void _domMove(Iterable<dom.Node> nodes, dom.Node parent,
   });
 }
 
-Duration computeLongestTransition(dynamic style) {
+num computeLongestTransition(dynamic style) {
   double longestTransition = 0.0;
     
   if(style.transitionDuration.length > 0) {
@@ -87,10 +87,7 @@ Duration computeLongestTransition(dynamic style) {
     }
   }
  
-  if(longestTransition == 0.0)
-    return Duration.ZERO;
-  var ms = Duration.MICROSECONDS_PER_SECOND * longestTransition;
-  return new Duration(microseconds: ms.round());
+  return longestTransition;
 }
   
 Iterable<num> _parseIterationCounts(String iterationCounts) {
@@ -109,7 +106,7 @@ Iterable<num> _parseDurationList(String durations) {
 /// This expects a string in the form of '0.234s' or '4s' and will return
 /// a parsed double.
 num _parseCssDuration(String cssDuration) {
-  return num.parse(cssDuration.substring(0, cssDuration.length - 1));
+  return double.parse(cssDuration.substring(0, cssDuration.length - 1));
 }
 
 num _computeTotalDurationSeconds(num delay, num duration,

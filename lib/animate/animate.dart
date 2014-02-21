@@ -42,7 +42,8 @@ abstract class NgAnimate {
    * Any existing animations running on any element in [nodes] will be
    * canceled.
    */
-  AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore });
+  AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent,
+                         { dom.Node insertBefore });
 
   /**
    * Perform a 'remove' animation for each element in [nodes]. The elements
@@ -68,7 +69,8 @@ abstract class NgAnimate {
    * Any existing animations running on any element in [nodes] will be
    * canceled.
    */
-  AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore });
+  AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent,
+                       { dom.Node insertBefore });
 
   /**
    * Play a set of animations. This is equivalent to running play on each

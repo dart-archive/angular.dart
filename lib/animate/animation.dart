@@ -71,7 +71,7 @@ abstract class Animation {
    * will occur after attach. [time] is a date time representation of the
    * current time, and [offsetMs] is the time since the last animation frame.
    */
-  start(DateTime time, num offsetMs) { }
+  start(num time) { }
 
   /**
    * Occurs every animation frame. Return false to stop receiving animation
@@ -80,7 +80,7 @@ abstract class Animation {
    * [time] is a [DateTime] representation of the current time
    * [offsetMs] is the time since the last animation frame.
    */
-  bool update(DateTime time, num offsetMs) { return false; }
+  bool update(num time) { return false; }
 
   /**
    * Occurs every animation frame after [update] is called and should be used
@@ -89,14 +89,14 @@ abstract class Animation {
    * [time] is a [DateTime] representation of the current time
    * [offsetMs] is the time since the last animation frame.
    */
-  read(DateTime time, num offsetMs) { }
+  read(num time) { }
 
   /**
    * When [update] returns false, this will be called on the same animation
    * frame. Any temporary classes or element modifications should be removed
    * from the element and the onCompleted future should be executed.
    */
-  detach(DateTime time, num offsetMs) { }
+  detach(num time) { }
 
   /**
    * This occurs when another animation interupts this animation or the cancel()

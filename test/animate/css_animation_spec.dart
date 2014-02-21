@@ -18,15 +18,15 @@ main() {
       expect(_.rootElement).toHaveClass('event');
       expect(_.rootElement).not.toHaveClass('event-active');
       
-      animation.start(new DateTime.now(), 0.0);
+      animation.start(0.0);
       expect(_.rootElement).toHaveClass('event');
       expect(_.rootElement).not.toHaveClass('event-active');
       
-      animation.update(new DateTime.now(), 0.0);
+      animation.update(1000.0);
       expect(_.rootElement).toHaveClass('event');
-      expect(_.rootElement).not.toHaveClass('event-active');
+      expect(_.rootElement).toHaveClass('event-active');
       
-      animation.detach(new DateTime.now(), 0.0);
+      animation.detach(1000.0);
       expect(_.rootElement).not.toHaveClass('event');
       expect(_.rootElement).not.toHaveClass('event-active');
     }));
@@ -39,13 +39,13 @@ main() {
       animation.attach();
       expect(_.rootElement).not.toHaveClass('magic');
 
-      animation.start(new DateTime.now(), 0.0);
+      animation.start(0.0);
       expect(_.rootElement).not.toHaveClass('magic');
 
-      animation.update(new DateTime.now(), 0.0);
+      animation.update(0.0);
       expect(_.rootElement).not.toHaveClass('magic');
 
-      animation.detach(new DateTime.now(), 0.0);
+      animation.detach(0.0);
       expect(_.rootElement).toHaveClass('magic');
 
       expect(_.rootElement).not.toHaveClass('event');
@@ -64,13 +64,13 @@ main() {
       animation.attach();
       expect(_.rootElement).toHaveClass('magic');
 
-      animation.start(new DateTime.now(), 0.0);
+      animation.start(0.0);
       expect(_.rootElement).toHaveClass('magic');
 
-      animation.update(new DateTime.now(), 0.0);
+      animation.update(0.0);
       expect(_.rootElement).toHaveClass('magic');
 
-      animation.detach(new DateTime.now(), 0.0);
+      animation.detach(0.0);
       expect(_.rootElement).not.toHaveClass('magic');
 
       expect(_.rootElement).not.toHaveClass('event');
@@ -101,7 +101,7 @@ main() {
       expect(_.rootElement).not.toHaveClass('event-active');
       
       animation.attach();
-      animation.start(new DateTime.now(), 0.0);
+      animation.start(0.0);
 
       animation.interruptAndCancel();
       expect(_.rootElement).not.toHaveClass('magic');
@@ -118,8 +118,8 @@ main() {
       expect(_.rootElement).not.toHaveClass('event-active');
       
       animation.attach();
-      animation.start(new DateTime.now(), 0.0);
-      animation.update(new DateTime.now(), 0.0);
+      animation.start(0.0);
+      animation.update(0.0);
 
       animation.interruptAndCancel();
       expect(_.rootElement).not.toHaveClass('magic');
@@ -152,7 +152,7 @@ main() {
       expect(_.rootElement).not.toHaveClass('event-active');
       
       animation.attach();
-      animation.start(new DateTime.now(), 0.0);
+      animation.start(0.0);
 
       animation.interruptAndComplete();
       expect(_.rootElement).toHaveClass('magic');
@@ -169,8 +169,8 @@ main() {
       expect(_.rootElement).not.toHaveClass('event-active');
       
       animation.attach();
-      animation.start(new DateTime.now(), 0.0);
-      animation.update(new DateTime.now(), 0.0);
+      animation.start(0.0);
+      animation.update(0.0);
 
       animation.interruptAndComplete();
       expect(_.rootElement).toHaveClass('magic');

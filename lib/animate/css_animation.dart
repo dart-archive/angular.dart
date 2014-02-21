@@ -15,17 +15,17 @@ class CssAnimation extends Animation {
   final String cssEventClass;
   final String cssEventActiveClass;
 
-  final Completer<AnimationResult> _completer
-      = new Completer<AnimationResult>();
+  final Completer<AnimationResult> _completer= new Completer<AnimationResult>();
+  
+  static const num extraDuration = 16.0; // Two extra 60fps frames of duration.
 
   AnimationResult _result;
   bool _isActive = false;
 
   Future<AnimationResult> get onCompleted => _completer.future;
 
-  DateTime startTime;
-  Duration duration;
-
+  num startTime;
+  num duration;
   final Profiler profiler;
 
   CssAnimation(dom.Element targetElement,
@@ -44,32 +44,32 @@ class CssAnimation extends Animation {
     element.classes.add(cssEventClass);
   }
 
-  start(DateTime time, num offsetMs) {
+  start(num timeMs) {
     // This occurs on the first animation frame.
     // TODO(codelogic): It might be good to find some way of defering this to
     //     the next digest loop instead of the first animation frame.
-    this.startTime = time;
+    startTime = timeMs;
     try {
-      duration = _computeTotalDuration();
+      // Duration needs to be in milliseconds
+      duration = _computeTotalDuration() * 1000 + extraDuration;
     } catch (e) { }
   }
 
-  bool update(DateTime time, num offsetMs) {
-    
+  bool update(num timeMs) {
     // This will always run after the first animationFrame is queued so that
     // inserted elements have the base event class applied before adding the
     // active class to the element. If this is not done, inserted dom nodes
     // will not run their enter animation.
-    if(!_isActive && duration != Duration.ZERO) {
+    if(!_isActive && duration > 0.0 && timeMs >= startTime) {
       element.classes.add(cssEventActiveClass);
       if(addAtStart != null) {
         element.classes.add(addAtStart);
-      } else if(removeAtStart != null) {
+      } 
+      if(removeAtStart != null) {
         element.classes.remove(removeAtStart);
       }
       _isActive = true;
-    } else if (time.isAfter(startTime.add(duration))
-        || duration == null || duration == Duration.ZERO) {
+    } else if (timeMs >= startTime + duration) {
       // TODO(codelogic): If the initial frame takes a significant amount of
       //   time, the computed duration + startTime might not actually represent
       //   the end of the animation
@@ -81,7 +81,7 @@ class CssAnimation extends Animation {
     return true;
   }
 
-  detach(DateTime time, num offsetMs) {
+  detach(num timeMs) {
     if (!_completer.isCompleted) {
       _onComplete(AnimationResult.COMPLETED);
     }
@@ -92,7 +92,8 @@ class CssAnimation extends Animation {
       _removeEventAnimationClasses();
       if(addAtStart != null) {
         element.classes.remove(addAtStart);
-      } else if(removeAtStart != null) {
+      } 
+      if(removeAtStart != null) {
         element.classes.add(removeAtStart);
       }
       _result = AnimationResult.CANCELED;
@@ -112,7 +113,8 @@ class CssAnimation extends Animation {
     _result = result;
     if(addAtEnd != null) {
       element.classes.add(addAtEnd);
-    } else if(removeAtEnd != null) {
+    } 
+    if(removeAtEnd != null) {
       element.classes.remove(removeAtEnd);
     }
     _completer.complete(_result);
@@ -124,7 +126,7 @@ class CssAnimation extends Animation {
     element.classes.remove(cssEventActiveClass);
   }
 
-  Duration _computeTotalDuration() {
+  num _computeTotalDuration() {
     // TODO(codelogic) this needs to take into account animation, repetition
     //   count and see if delay affects the computed duration.
 

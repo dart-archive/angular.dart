@@ -10,7 +10,6 @@ part of angular.animate;
  *    detecting parent animations.
  */
 class AnimationRunner {
-  final Clock _clock;
   final dom.Window _wnd;
 
   bool _animationFrameQueued = false;
@@ -32,7 +31,7 @@ class AnimationRunner {
    * for animation. The [profiler] is optional and will report timing
    * information for the animation loop if provided.
    */
-  AnimationRunner(this._wnd, this._clock, this._zone, [Profiler profiler])
+  AnimationRunner(this._wnd, this._zone, [Profiler profiler])
       : _profiler = _getProfiler(profiler);
 
   // For some reason the turnary operator doesn't want to work with profiler.
@@ -64,8 +63,9 @@ class AnimationRunner {
 
       // TODO(codleogic): This should run outside of an angular scope digest.
       _wnd.animationFrame.then((offsetMs)
-          => _animationFrame(offsetMs));
-      // => _zone.runOutsideAngular(() => _animationFrame(offsetMs))));
+          => _animationFrame(offsetMs))
+          .catchError((error) => print(error));
+      //    => _zone.runOutsideAngular(() => _animationFrame(offsetMs)));
     }
   }
 
@@ -85,25 +85,21 @@ class AnimationRunner {
    *  then forget about the [Animation] and will not call any further methods on
    *  the [Animation].
    */
-  _animationFrame(num offsetMs) {
+  _animationFrame(num time) {
     _profiler.startTimer("AnimationRunner.AnimationFrame");
     _animationFrameQueued = false;
 
-    // It's easier and more consistent to reason about time if we freeze it for
-    // the duration of this function.
-    var now = _clock.now(); //
-
     _profiler.startTimer("AnimationRunner.AnimationFrame.DomMutates");
     // Dom mutates
-    _update(now, offsetMs);
-    _detachCompleted(now, offsetMs);
+    _update(time);
+    _detachCompleted(time);
 
     _profiler.stopTimer("AnimationRunner.AnimationFrame.DomMutates");
     _profiler.startTimer("AnimationRunner.AnimationFrame.DomReads");
 
     // Dom reads
-    _reads(now, offsetMs);
-    _startAttached(now, offsetMs);
+    _reads(time);
+    _startAttached(time);
 
     _profiler.stopTimer("AnimationRunner.AnimationFrame.DomReads");
 
@@ -116,10 +112,10 @@ class AnimationRunner {
     _profiler.stopTimer("AnimationRunner.AnimationFrame");
   }
 
-  _update(DateTime now, num offset) {
+  _update(num timeMilliseconds) {
     for(int i=0; i<_updating.length; i++) {
       var animation = _updating[i];
-      if(!animation.update(now, offset)) {
+      if(!animation.update(timeMilliseconds)) {
         _completed.add(animation);
         _updating.removeAt(i);
         i--;
@@ -127,23 +123,23 @@ class AnimationRunner {
     }
   }
 
-  _reads(DateTime now, num offsetMs) {
+  _reads(num timeMilliseconds) {
     for(var animation in _updating) {
-      animation.read(now, offsetMs);
+      animation.read(timeMilliseconds);
     }
   }
 
-  _detachCompleted(DateTime now, num offsetMs) {
+  _detachCompleted(num timeMilliseconds) {
     for(var animation in _completed) {
       _activeAnimations.remove(animation.element);
-      animation.detach(now, offsetMs);
+      animation.detach(timeMilliseconds);
     }
     _completed.clear();
   }
 
-  _startAttached(DateTime now, num offsetMs) {
+  _startAttached(num timeMilliseconds) {
     for(var animation in _attached) {
-      animation.start(now, offsetMs);
+      animation.start(timeMilliseconds);
       _updating.add(animation);
     }
     _attached.clear();
