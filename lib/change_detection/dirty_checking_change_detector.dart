@@ -58,8 +58,32 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
 
   /**
    * All records for group are kept together and are denoted by head/tail.
+   * The [_recordHead]-[_recordTail] only include our own records. If you want
+   * to see our childGroup records as well use
+   * [_head]-[_childInclRecordTail].
    */
-  DirtyCheckingRecord _head, _tail;
+  DirtyCheckingRecord _recordHead, _recordTail;
+
+  /**
+   * Same as [_tail] but includes child-group records as well.
+   */
+  DirtyCheckingRecord get _childInclRecordTail {
+    DirtyCheckingChangeDetectorGroup tail = this, nextTail;
+    while ((nextTail = tail._childTail) != null) {
+      tail = nextTail;
+    }
+    return tail._recordTail;
+  }
+
+
+  DirtyCheckingChangeDetector get _root {
+    var root = this;
+    var next;
+    while((next = root._parent) != null) {
+      root = next;
+    }
+    return root is DirtyCheckingChangeDetector ? root : null;
+  }
 
   /**
    * ChangeDetectorGroup is organized hierarchically, a root group can have
@@ -71,16 +95,12 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
   DirtyCheckingChangeDetectorGroup(this._parent, this._getterCache) {
     // we need to insert the marker record at the beginning.
     if (_parent == null) {
-      _head = _marker;
-      _tail = _marker;
+      _recordHead = _marker;
+      _recordTail = _marker;
     } else {
-      // we need to find the tail of previous record
-      // If we are first then it is the tail of the parent group
-      // otherwise it is the tail of the previous group
-      DirtyCheckingChangeDetectorGroup tail = _parent._childTail;
-      _tail = (tail == null ? _parent : tail)._tail;
-      // _recordAdd uses _tail from above.
-      _head = _tail = _recordAdd(_marker);
+      _recordTail = _parent._childInclRecordTail;
+      // _recordAdd uses _recordTail from above.
+      _recordHead = _recordTail = _recordAdd(_marker);
     }
   }
 
@@ -89,17 +109,20 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
    */
   get count {
     int count = 0;
-    DirtyCheckingRecord cursor = _head == _marker ?
-        _head._nextWatch :
-        _head;
-    while (cursor != null) {
-      count++;
-      cursor = cursor._nextWatch;
+    DirtyCheckingRecord cursor = _recordHead;
+    DirtyCheckingRecord end = _childInclRecordTail;
+    while(cursor != null) {
+      if (cursor._mode != DirtyCheckingRecord._MODE_MARKER_) {
+        count++;
+      }
+      if (cursor == end) break;
+      cursor = cursor._nextRecord;
     }
     return count;
   }
 
   WatchRecord<H> watch(Object object, String field, H handler) {
+    assert(_root != null); // prove that we are not deleted connected;
     var getter = field == null ? null : _getterCache(field);
     return _recordAdd(new DirtyCheckingRecord(this, object, field, getter,
         handler));
@@ -109,6 +132,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
    * Create a child [ChangeDetector] group.
    */
   DirtyCheckingChangeDetectorGroup<H> newGroup() {
+    assert(_root._assertRecordsOk());
     var child = new DirtyCheckingChangeDetectorGroup(this, _getterCache);
     if (_childHead == null) {
       _childHead = _childTail = child;
@@ -117,6 +141,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
       _childTail._next = child;
       _childTail = child;
     }
+    assert(_root._assertRecordsOk());
     return child;
   }
 
@@ -124,12 +149,19 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
    * Bulk remove all records.
    */
   void remove() {
-    DirtyCheckingRecord previousRecord = _head._prevWatch;
-    var childTail = _childTail == null ? this : _childTail;
-    DirtyCheckingRecord nextRecord = childTail._tail._nextWatch;
+    var root;
+    assert((root = _root) != null);
+    assert(root._assertRecordsOk());
+    DirtyCheckingRecord prevRecord = _recordHead._prevRecord;
+    DirtyCheckingRecord nextRecord = _childInclRecordTail._nextRecord;
 
-    if (previousRecord != null) previousRecord._nextWatch = nextRecord;
-    if (nextRecord != null) nextRecord._prevWatch = previousRecord;
+    if (prevRecord != null) prevRecord._nextRecord = nextRecord;
+    if (nextRecord != null) nextRecord._prevRecord = prevRecord;
+
+    var cursor = _recordHead;
+    while(cursor != nextRecord) {
+      cursor = cursor._nextRecord;
+    }
 
     var prevGroup = _prev;
     var nextGroup = _next;
@@ -144,19 +176,21 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     } else {
       nextGroup._prev = prevGroup;
     }
+    _parent = null;
+    assert(root._assertRecordsOk());
   }
 
   DirtyCheckingRecord _recordAdd(DirtyCheckingRecord record) {
-    DirtyCheckingRecord previous = _tail;
-    DirtyCheckingRecord next = previous == null ? null : previous._nextWatch;
+    DirtyCheckingRecord previous = _recordTail;
+    DirtyCheckingRecord next = previous == null ? null : previous._nextRecord;
 
-    record._nextWatch = next;
-    record._prevWatch = previous;
+    record._nextRecord = next;
+    record._prevRecord = previous;
 
-    if (previous != null) previous._nextWatch = record;
-    if (next != null) next._prevWatch = record;
+    if (previous != null) previous._nextRecord = record;
+    if (next != null) next._prevRecord = record;
 
-    _tail = record;
+    _recordTail = record;
 
     if (previous == _marker) _recordRemove(_marker);
 
@@ -164,21 +198,21 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
   }
 
   void _recordRemove(DirtyCheckingRecord record) {
-    DirtyCheckingRecord previous = record._prevWatch;
-    DirtyCheckingRecord next = record._nextWatch;
+    DirtyCheckingRecord previous = record._prevRecord;
+    DirtyCheckingRecord next = record._nextRecord;
 
-    if (record == _head && record == _tail) {
+    if (record == _recordHead && record == _recordTail) {
       // we are the last one, must leave marker behind.
-      _head = _tail = _marker;
-      _marker._nextWatch = next;
-      _marker._prevWatch = previous;
-      if (previous != null) previous._nextWatch = _marker;
-      if (next != null) next._prevWatch = _marker;
+      _recordHead = _recordTail = _marker;
+      _marker._nextRecord = next;
+      _marker._prevRecord = previous;
+      if (previous != null) previous._nextRecord = _marker;
+      if (next != null) next._prevRecord = _marker;
     } else {
-      if (record == _tail) _tail = previous;
-      if (record == _head) _head = next;
-      if (previous != null) previous._nextWatch = next;
-      if (next != null) next._prevWatch = previous;
+      if (record == _recordTail) _recordTail = previous;
+      if (record == _recordHead) _recordHead = next;
+      if (previous != null) previous._nextRecord = next;
+      if (next != null) next._prevRecord = previous;
     }
   }
 
@@ -186,19 +220,21 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     var lines = [];
     if (_parent == null) {
       var allRecords = [];
-      DirtyCheckingRecord record = _head;
-      while (record != null) {
+      DirtyCheckingRecord record = _recordHead;
+      var includeChildrenTail = _childInclRecordTail;
+      do {
         allRecords.add(record.toString());
-        record = record._nextWatch;
+        record = record._nextRecord;
       }
+      while (record != includeChildrenTail);
       lines.add('FIELDS: ${allRecords.join(', ')}');
     }
 
     var records = [];
-    DirtyCheckingRecord record = _head;
-    while (record != _tail) {
+    DirtyCheckingRecord record = _recordHead;
+    while (record != _recordTail) {
       records.add(record.toString());
-      record = record._nextWatch;
+      record = record._nextRecord;
     }
     records.add(record.toString());
 
@@ -216,10 +252,39 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     implements ChangeDetector<H> {
   DirtyCheckingChangeDetector(GetterCache getterCache): super(null, getterCache);
 
+  DirtyCheckingChangeDetector get _root => this;
+
+  _assertRecordsOk() {
+    var record = this._recordHead;
+    var groups = [this];
+    DirtyCheckingChangeDetectorGroup group;
+    while(groups.isNotEmpty) {
+      group = groups.removeAt(0);
+      DirtyCheckingChangeDetectorGroup childGroup = group._childTail;
+      while(childGroup != null) {
+        groups.insert(0, childGroup);
+        childGroup = childGroup._prev;
+      }
+      var groupRecord = group._recordHead;
+      var groupLast = group._recordTail;
+      while(true) {
+        if (groupRecord == record) {
+          record = record._nextRecord;
+        } else {
+          throw 'lost: $record found $groupRecord\n$this';
+        }
+
+        if (groupRecord == groupLast) break;
+        groupRecord = groupRecord._nextRecord;
+      }
+    }
+    return true;
+  }
+
   DirtyCheckingRecord<H> collectChanges([EvalExceptionHandler exceptionHandler]) {
     DirtyCheckingRecord changeHead = null;
     DirtyCheckingRecord changeTail = null;
-    DirtyCheckingRecord current = _head; // current index
+    DirtyCheckingRecord current = _recordHead; // current index
 
     while (current != null) {
       try {
@@ -237,7 +302,7 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
           exceptionHandler(e, s);
         }
       }
-      current = current._nextWatch;
+      current = current._nextRecord;
     }
     if (changeTail != null) changeTail.nextChange = null;
     return changeHead;
@@ -278,8 +343,8 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
 
   var previousValue;
   var currentValue;
-  DirtyCheckingRecord<H> _nextWatch;
-  DirtyCheckingRecord<H> _prevWatch;
+  DirtyCheckingRecord<H> _nextRecord;
+  DirtyCheckingRecord<H> _prevRecord;
   ChangeRecord<H> nextChange;
   var _object;
   InstanceMirror _instanceMirror;
@@ -395,7 +460,7 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
     _group._recordRemove(this);
   }
 
-  String toString() => '${_MODE_NAMES[_mode]}[$field]';
+  String toString() => '${_MODE_NAMES[_mode]}[$field]{$hashCode}';
 }
 
 final Object _INITIAL_ = new Object();
