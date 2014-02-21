@@ -267,6 +267,14 @@ main() => describe('scope', () {
         child.broadcast('abc');
         expect(log).toEqual('');
       }));
+
+      it('should not trigger assertions on scope fork', inject((RootScope root) {
+        var d1 = root.createChild(new PrototypeMap(root.context));
+        var d2 = root.createChild(new PrototypeMap(root.context));
+        d1.on(ScopeEvent.DESTROY).listen((_) => null);
+        d2.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(root.apply).not.toThrow();
+      }));
     });
 
 
@@ -1026,7 +1034,7 @@ main() => describe('scope', () {
     }));
   });
 
-  
+
   describe('runAsync', () {
     it(r'should run callback before watch', inject((RootScope rootScope) {
       var log = '';
