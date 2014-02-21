@@ -56,7 +56,8 @@ class CssAnimate extends NgAnimate {
     return _pickAnimationHandle(animateHandles);
   }
 
-  AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
+  AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent,
+                         { dom.Node insertBefore }) {
     _domInsert(nodes, parent, insertBefore: insertBefore);
 
     var animateHandles = _elements(nodes).where((el) {
@@ -82,7 +83,8 @@ class CssAnimate extends NgAnimate {
     return _pickAnimationHandle(animateHandles);
   }
 
-  AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
+  AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent,
+                       { dom.Node insertBefore }) {
     _domMove(nodes, parent, insertBefore: insertBefore);
     
     var animateHandles = _elements(nodes).where((el) {
@@ -95,8 +97,10 @@ class CssAnimate extends NgAnimate {
   }
 
   AnimationHandle play(Iterable<Animation> animations) {
-    // TODO(codelogic): Should we skip the running parent animation check for custom animations?
-    return _pickAnimationHandle(animations.map((a) => _animationRunner.play(a)));
+    // TODO(codelogic): Should we skip the running parent animation check for
+    // custom animations?
+    return _pickAnimationHandle(animations.map((a)
+        => _animationRunner.play(a)));
   }
 
   AnimationHandle _cssAnimation(dom.Element element,
@@ -115,7 +119,9 @@ class CssAnimate extends NgAnimate {
     return _animationRunner.play(animation);
   }
   
-  static AnimationHandle _pickAnimationHandle(Iterable<AnimationHandle> animated, [AnimationHandle noAnimate]) {
+  static AnimationHandle _pickAnimationHandle(
+      Iterable<AnimationHandle> animated,
+      [AnimationHandle noAnimate]) {
     List<AnimationHandle> handles;
  
     if(animated != null)

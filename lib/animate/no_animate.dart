@@ -15,7 +15,8 @@ class NoAnimate extends NgAnimate {
     return new _CompletedAnimationHandle();
   }
   
-  AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore } ) {
+  AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent,
+                         { dom.Node insertBefore } ) {
     _domInsert(nodes, parent, insertBefore: insertBefore);
     return new _CompletedAnimationHandle();
   }
@@ -25,14 +26,16 @@ class NoAnimate extends NgAnimate {
     return new _CompletedAnimationHandle();
   }
 
-  AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent, { dom.Node insertBefore }) {
+  AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent,
+                       { dom.Node insertBefore }) {
     _domMove(nodes, parent, insertBefore: insertBefore);
     return new _CompletedAnimationHandle();
   }
 
   AnimationHandle play(Iterable<Animation> animations) {
     var handle = new _MultiAnimationHandle(
-        animations.map((a) => new _CompletedAnimationHandle(future: a.onCompleted)));
+        animations.map((a)
+            => new _CompletedAnimationHandle(future: a.onCompleted)));
     
     animations.forEach((a) => a.interruptAndComplete());
     

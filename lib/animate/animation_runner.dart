@@ -62,8 +62,10 @@ class AnimationRunner {
     if(!_animationFrameQueued) {
       _animationFrameQueued = true;
 
+      // TODO(codleogic): This should run outside of an angular scope digest.
       _wnd.animationFrame.then((offsetMs)
           => _animationFrame(offsetMs));
+      // => _zone.runOutsideAngular(() => _animationFrame(offsetMs))));
     }
   }
 

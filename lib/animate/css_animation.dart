@@ -15,7 +15,8 @@ class CssAnimation extends Animation {
   final String cssEventClass;
   final String cssEventActiveClass;
 
-  final Completer<AnimationResult> _completer = new Completer<AnimationResult>();
+  final Completer<AnimationResult> _completer
+      = new Completer<AnimationResult>();
 
   AnimationResult _result;
   bool _isActive = false;
@@ -50,9 +51,7 @@ class CssAnimation extends Animation {
     this.startTime = time;
     try {
       duration = _computeTotalDuration();
-    } catch (e) {
-      print("NOOOOOOO RANGE DURATION FAILED: $e");
-    }
+    } catch (e) { }
   }
 
   bool update(DateTime time, num offsetMs) {
@@ -92,9 +91,9 @@ class CssAnimation extends Animation {
     if (!_completer.isCompleted) {
       _removeEventAnimationClasses();
       if(addAtStart != null) {
-        element.classes.add(addAtStart);
+        element.classes.remove(addAtStart);
       } else if(removeAtStart != null) {
-        element.classes.remove(removeAtStart);
+        element.classes.add(removeAtStart);
       }
       _result = AnimationResult.CANCELED;
       _completer.complete(_result);
@@ -132,78 +131,6 @@ class CssAnimation extends Animation {
     // TODO(codelogic): It might be possible to cache durations and avoid the
     //   getComputedStyle() hit for elements and transitions we've already seen.
     var style = element.getComputedStyle();
-    var transitions = _parseTransitions(style);
-    if(transitions.length == 0)
-      return Duration.ZERO;
-    
-    var longestTransition = transitions.reduce((value, transition) 
-        => (value == -1 || value.totalDuration < transition.totalDuration)
-        ? transition : value);
-    return longestTransition.totalDuration;
-  }
-  
-  List<_CssTransition> _parseTransitions(dynamic style) {
-    List<_CssTransition> transitions = [];
-    
-    if(style.transitionDuration.length > 0) {
-      // Parse transitions
-      List<double> durations = style.transitionDuration
-          .split(", ")
-          .map((x) => double.parse(x.substring(0,  x.length - 1)))
-          .toList();
-      List<double> delays = style.transitionDelay
-          .split(", ")
-          .map((x) => double.parse(x.substring(0,  x.length - 1)))
-          .toList();
-      List<String> properties = style.transitionProperty
-          .split(", ");
-      
-      assert(durations.length == delays.length);
-      assert(delays.length == properties.length);
-      
-      
-      for(int i = 0; i < durations.length; i++) {
-        transitions.add(new _CssTransition(properties[i], delays[i], durations[i]));
-      }
-    }
-    
-    if(style.animationDuration.length > 0) {
-      // Parse and add animation duration properties.
-      List<double> animationDurations = style.animationDuration
-              .split(", ")
-              .map((x) => double.parse(x.substring(0,  x.length - 1)))
-              .toList();
-      List<double> animationDelays = style.animationDelay
-              .split(", ")
-              .map((x) => double.parse(x.substring(0,  x.length - 1)))
-              .toList();
-      
-      assert(animationDurations.length == animationDelays.length);
-      
-      for(int i = 0; i < animationDurations.length; i++) {
-        transitions.add(new _CssTransition('animation',
-            animationDelays[i], animationDurations[i]));
-      }
-    }
-
-    return transitions;
-  }
-}
-
-class _CssTransition {
-  final String property;
-  final num durationSeconds;
-  final num delaySeconds;
-  final Duration totalDuration;
-  
-  _CssTransition(this.property, num delay, num duration)
-      : totalDuration = _computeDuration(delay, duration),
-        delaySeconds = delay,
-        durationSeconds = duration;
-  
-  static _computeDuration(num delaySeconds, num durationSeconds) {
-    var duration = Duration.MICROSECONDS_PER_SECOND * durationSeconds;
-    var delay = Duration.MICROSECONDS_PER_SECOND * delaySeconds;
-    return new Duration(microseconds: (duration + delay).round());
+    return computeLongestTransition(style);
   }
 }
