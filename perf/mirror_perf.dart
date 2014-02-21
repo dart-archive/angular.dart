@@ -7,7 +7,7 @@ import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 main() {
   var c = new _Obj(1);
   InstanceMirror im = reflect(c);
-  Symbol symbol = new Symbol('a');
+  Symbol symbol = const Symbol('a');
   _Watch head = new _Watch();
   _Watch current = head;
   GetterCache getterCache = new GetterCache({});
@@ -50,7 +50,7 @@ class _Watch {
   String location;
   dynamic object = new _Obj(1);
   InstanceMirror im;
-  Symbol symbol = new Symbol('a');
+  Symbol symbol = const Symbol('a');
   Function getter = (s) => s.a;
 
   _Watch() {
