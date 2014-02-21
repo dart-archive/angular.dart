@@ -587,14 +587,27 @@ class _Streams {
     if (scopeStream == null || scopeStream._scope != scope) {
       // We either don't have [_ScopeStreams] or it is inherited.
       var newStreams = new _Streams(scope, _exceptionHandler, scopeStream);
-      var scopeCursor = scope;
-      while (scopeCursor != null && scopeCursor._streams == scopeStream) {
-        scopeCursor._streams = newStreams;
-        scopeCursor = scopeCursor._parentScope;
-      }
+      _propagateNewStreams(scope, scopeStream, newStreams, _exceptionHandler);
       scopeStream = newStreams;
     }
     return scopeStream._get(scope, name);
+  }
+
+  static void _propagateNewStreams(Scope scope, scopeStream,
+                                   _Streams newStreams,
+                                   ExceptionHandler _exceptionHandler) {
+    var scopeCursor = scope;
+    while (scopeCursor != null && scopeCursor._streams == scopeStream) {
+      scopeCursor._streams = newStreams;
+      scopeCursor = scopeCursor._parentScope;
+    }
+    if (scopeCursor != null && scopeCursor._streams._scope != scopeCursor) {
+      var splitStreams = new _Streams(scopeCursor, _exceptionHandler,
+          scopeCursor._streams);
+      var originalStreams = scopeCursor._streams;
+      scopeCursor._streams = splitStreams;
+      _propagateNewStreams(scopeCursor, originalStreams, splitStreams, _exceptionHandler);
+    }
   }
 
   static void destroy(Scope scope) {
