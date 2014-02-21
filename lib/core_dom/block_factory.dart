@@ -204,7 +204,9 @@ class BlockFactory {
         checkAttachReady() {
           if (attachDelayStatus.reduce((a, b) => a && b)) {
             attachDelayStatus = null;
-            controller.attach();
+            if (scope.isAttached) {
+              controller.attach();
+            }
           }
         }
         for(var map in ref.mappings) {
