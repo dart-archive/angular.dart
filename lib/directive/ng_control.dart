@@ -17,6 +17,7 @@ abstract class NgControl implements NgDetachAware {
   bool _invalid;
   bool _touched;
   bool _untouched;
+  bool _submit_valid;
 
   final Scope _scope;
   final NgControl _parentControl;
@@ -48,11 +49,17 @@ abstract class NgControl implements NgDetachAware {
 
   _onSubmit(bool valid) {
     if (valid) {
+      _submit_valid = true;
       element.classes..add(NG_SUBMIT_VALID_CLASS)..remove(NG_SUBMIT_INVALID_CLASS);
     } else {
+      _submit_valid = false;
       element.classes..add(NG_SUBMIT_INVALID_CLASS)..remove(NG_SUBMIT_VALID_CLASS);
     }
   }
+
+  get submitted => _submit_valid != null;
+  get valid_submit => _submit_valid == true;
+  get invalid_submit => _submit_valid == false;
 
   get name => _name;
   set name(value) {
@@ -184,7 +191,8 @@ abstract class NgControl implements NgDetachAware {
 }
 
 class NgNullControl implements NgControl {
-  var _name, _dirty, _valid, _invalid, _pristine, _element, _touched, _untouched;
+  var _name, _dirty, _valid, _invalid, _submit_valid, _pristine, _element;
+  var _touched, _untouched;
   var _controls, _scope, _parentControl, _controlName;
   var errors, _controlByName;
   dom.Element element;
@@ -198,6 +206,10 @@ class NgNullControl implements NgControl {
 
   get name => null;
   set name(name) {}
+
+  get submitted => null;
+  get valid_submit => null;
+  get invalid_submit => null;
 
   get pristine => null;
   set pristine(value) {}
