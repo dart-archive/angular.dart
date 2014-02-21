@@ -35,7 +35,7 @@ main() {
       _.compile("<div></div>");
 
       var animation = new CssAnimation(_.rootElement, "event", "event-active",
-          cssClassToAdd: 'magic');
+          addAtEnd: 'magic');
       animation.attach();
       expect(_.rootElement).not.toHaveClass('magic');
 
@@ -57,7 +57,7 @@ main() {
       _.compile("<div class=\"magic\"></div>");
 
       var animation = new CssAnimation(_.rootElement, "event", "event-active",
-          cssClassToRemove: 'magic');
+          removeAtEnd: 'magic');
 
       expect(_.rootElement).toHaveClass('magic');
 
@@ -81,7 +81,7 @@ main() {
       _.compile("<div></div>");
 
       var animation = new CssAnimation(_.rootElement, "event", "event-active",
-          cssClassToAdd: 'magic');
+          addAtEnd: 'magic');
       expect(_.rootElement).not.toHaveClass('event');
       expect(_.rootElement).not.toHaveClass('event-active');
       
@@ -96,7 +96,7 @@ main() {
       _.compile("<div></div>");
 
       var animation = new CssAnimation(_.rootElement, "event", "event-active",
-          cssClassToAdd: 'magic');
+          addAtEnd: 'magic');
       expect(_.rootElement).not.toHaveClass('event');
       expect(_.rootElement).not.toHaveClass('event-active');
       
@@ -113,7 +113,7 @@ main() {
       _.compile("<div></div>");
 
       var animation = new CssAnimation(_.rootElement, "event", "event-active",
-          cssClassToAdd: 'magic');
+          addAtEnd: 'magic');
       expect(_.rootElement).not.toHaveClass('event');
       expect(_.rootElement).not.toHaveClass('event-active');
       
@@ -132,7 +132,7 @@ main() {
       _.compile("<div></div>");
 
       var animation = new CssAnimation(_.rootElement, "event", "event-active",
-          cssClassToAdd: 'magic');
+          addAtEnd: 'magic');
       expect(_.rootElement).not.toHaveClass('event');
       expect(_.rootElement).not.toHaveClass('event-active');
       
@@ -147,7 +147,7 @@ main() {
       _.compile("<div></div>");
 
       var animation = new CssAnimation(_.rootElement, "event", "event-active",
-          cssClassToAdd: 'magic');
+          addAtEnd: 'magic');
       expect(_.rootElement).not.toHaveClass('event');
       expect(_.rootElement).not.toHaveClass('event-active');
       
@@ -164,7 +164,7 @@ main() {
       _.compile("<div></div>");
 
       var animation = new CssAnimation(_.rootElement, "event", "event-active",
-          cssClassToAdd: 'magic');
+          addAtEnd: 'magic');
       expect(_.rootElement).not.toHaveClass('event');
       expect(_.rootElement).not.toHaveClass('event-active');
       

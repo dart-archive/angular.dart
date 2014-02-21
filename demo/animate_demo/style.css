@@ -18,7 +18,7 @@ body {
   -webkit-transform: scale(1.1,1.1);
 
   opacity: 0;
-  transition: all 1000ms;
+  transition: opacity 100ms linear, -webkit-transform 432ms linear;
 }
 
 .thingy.ng-insert.ng-insert-active {
@@ -45,7 +45,7 @@ body {
   -webkit-transform: scale(1.0,1.0);
 
   opacity: 1;
-  transition: all 1000ms;
+  transition: all 900ms;
 }
 
 .thingy.ng-remove.ng-remove-active {
@@ -63,7 +63,7 @@ body {
 .some-div.ng-insert {
   opacity: 0;
   height: 0;
-  transition: all 1000ms ease;
+  transition: all 900ms ease;
 }
 
 .some-div.ng-insert.ng-insert-active {
@@ -74,7 +74,7 @@ body {
 .some-div.ng-remove {
   opacity: 1;
   height: 100px;
-  transition: all 1000ms ease;
+  transition: all 900ms ease;
 }
 
 .some-div.ng-remove.ng-remove-active {
@@ -91,11 +91,11 @@ body {
 }
 
 .animated-box.magic-add {
-  transition: margin-left 1000ms ease;
+  transition: margin-left 900ms ease;
 }
 
 .animated-box.magic-remove {
-  transition: margin-left 3000ms ease;
+  transition: margin-left 3500ms ease;
 }
 
 .animated-box.magic-add.magic-add-active {
@@ -137,7 +137,7 @@ body {
 
 .magic-box.ng-insert {
   opacity: 0;
-  transition: all 1000ms ease;
+  transition: all 800ms ease;
 }
 
 .magic-box.ng-insert.ng-insert-active {
@@ -146,7 +146,7 @@ body {
 
 .magic-box.ng-remove {
   opacity: 1;
-  transition: all 1000ms ease;
+  transition: all 800ms ease;
 }
 
 .magic-box.ng-remove.ng-remove-active {

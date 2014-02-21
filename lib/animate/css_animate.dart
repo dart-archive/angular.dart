@@ -108,8 +108,8 @@ class CssAnimate extends NgAnimate {
         element,
         cssEventClass,
         "$cssEventClass-$ngActivePostfix",
-        cssClassToAdd: cssClassToAdd,
-        cssClassToRemove: cssClassToRemove,
+        addAtEnd: cssClassToAdd,
+        removeAtEnd: cssClassToRemove,
         profiler: profiler);
 
     return _animationRunner.play(animation);
