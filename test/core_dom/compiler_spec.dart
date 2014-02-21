@@ -484,7 +484,8 @@ main() => describe('dte.compiler', () {
           expect(element.textWithShadow()).toEqual('WORKED');
         })));
 
-        it('should should not call attach after scope is destroyed', async(inject((Logger logger) {
+        it('should should not call attach after scope is destroyed', async(inject((Logger logger, MockHttpBackend backend) {
+          backend.whenGET('foo.html').respond('<div>WORKED</div>');
           var element = $('<simple-attach></simple-attach>');
           var scope = rootScope.createChild({});
           $compile(element, directives)(injector.createChild([new Module()..value(Scope, scope)]), element);
@@ -492,6 +493,7 @@ main() => describe('dte.compiler', () {
           scope.destroy();
 
           rootScope.apply();
+          microLeap();
 
           expect(logger).toEqual(['SimpleAttachComponent']);
         })));
@@ -857,11 +859,14 @@ class ExprAttrComponent {
   }
 }
 
-@NgComponent(selector: 'simple-attach')
-class SimpleAttachComponent implements NgAttachAware {
+@NgComponent(
+    selector: 'simple-attach',
+    templateUrl: 'foo.html')
+class SimpleAttachComponent implements NgAttachAware, NgShadowRootAware {
   Logger logger;
   SimpleAttachComponent(this.logger) {
     logger('SimpleAttachComponent');
   }
   attach() => logger('attach');
+  onShadowRoot(_) => logger('onShadowRoot');
 }

@@ -356,13 +356,19 @@ class _ComponentFactory {
         shadowDom.setInnerHtml('<style>${filteredCssList.join('')}</style>', treeSanitizer: treeSanitizer);
       }
       if (blockFuture != null) {
-        return blockFuture.then((BlockFactory blockFactory) => attachBlockToShadowDom(blockFactory));
+        return blockFuture.then((BlockFactory blockFactory) {
+          if (!shadowScope.isAttached) return shadowDom;
+          return attachBlockToShadowDom(blockFactory);
+        });
       }
       return shadowDom;
     }));
     controller = createShadowInjector(injector, templateLoader).get(type);
     if (controller is NgShadowRootAware) {
-      templateLoader.template.then((controller as NgShadowRootAware).onShadowRoot);
+      templateLoader.template.then((_) {
+        if (!shadowScope.isAttached) return;
+        (controller as NgShadowRootAware).onShadowRoot(shadowDom);
+      });
     }
     return controller;
   }
