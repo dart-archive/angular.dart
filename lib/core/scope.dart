@@ -150,7 +150,27 @@ class Scope {
    * The parent [Scope].
    */
   Scope get parentScope => _parentScope;
-  bool get isAttached => _parentScope == null ? false : _parentScope.isAttached;
+
+  /**
+   * Return `true` if the scope has been destroyed. Once scope is destroyed
+   * No operations are allowed on it.
+   */
+  bool get isDestroyed {
+    var scope = this;
+    var root = rootScope;
+    while(scope != null) {
+      if (scope == root) {
+        return false;
+      }
+      scope = scope._parentScope;
+    }
+    return true;
+  }
+
+  /**
+   * Returns true if the scope is still attached to the [RootScope].
+   */
+  bool get isAttached => !isDestroyed;
 
   // TODO(misko): WatchGroup should be private.
   // Instead we should expose performance stats about the watches
@@ -204,6 +224,7 @@ class Scope {
   }
 
   dynamic eval(expression, [Map locals]) {
+    assert(isAttached);
     _assertInternalStateConsistency();
     assert(expression == null ||
            expression is String ||
@@ -236,19 +257,23 @@ class Scope {
   }
 
   ScopeEvent emit(String name, [data]) {
+    assert(isAttached);
     _assertInternalStateConsistency();
     return _Streams.emit(this, name, data);
   }
   ScopeEvent broadcast(String name, [data]) {
+    assert(isAttached);
     _assertInternalStateConsistency();
     return _Streams.broadcast(this, name, data);
   }
   ScopeStream on(String name) {
+    assert(isAttached);
     _assertInternalStateConsistency();
     return _Streams.on(this, rootScope._exceptionHandler, name);
   }
 
   Scope createChild(Object childContext) {
+    assert(isAttached);
     _assertInternalStateConsistency();
     var child = new Scope(childContext, rootScope, this,
                           _readWriteGroup.newGroup(childContext),
@@ -263,6 +288,7 @@ class Scope {
   }
 
   void destroy() {
+    assert(isAttached);
     _assertInternalStateConsistency();
     broadcast(ScopeEvent.DESTROY);
     _Streams.destroy(this);
@@ -359,10 +385,7 @@ class RootScope extends Scope {
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context))
   {
-    _zone.onTurnDone = () {
-      digest();
-      flush();
-    };
+    _zone.onTurnDone = apply;
   }
 
   RootScope get rootScope => this;

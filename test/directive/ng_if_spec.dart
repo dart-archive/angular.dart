@@ -195,4 +195,31 @@ main() {
       expect(logger.result()).toEqual('ALWAYS; JAMES');
     }
   );
+
+  they('should prevent other directives from running when disabled',
+  [
+    '<div><div ng-if="a"><div ng-if="b">content</div></div></div>',
+    '<div><div ng-unless="!a"><div ng-unless="!b">content</div></div></div>'],
+    (html) {
+      compile(html);
+      expect(element.find('span').html()).toEqual('');
+
+      expect(() {
+        rootScope.apply(() {
+          rootScope.context['a'] = true;
+          rootScope.context['b'] = false;
+        });
+      }).not.toThrow();
+      expect(element.find('span').html()).toEqual('');
+
+
+      expect(() {
+        rootScope.apply(() {
+          rootScope.context['a'] = false;
+          rootScope.context['b'] = true;
+        });
+      }).not.toThrow();
+      expect(element.find('span').html()).toEqual('');
+    }
+  );
 }

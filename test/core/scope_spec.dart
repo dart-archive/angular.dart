@@ -556,6 +556,27 @@ main() => describe('scope', () {
       first.destroy();
       expect(log).toEqual(['first', 'first-child']);
     }));
+
+
+    it('should not call reaction function on destroyed scope', inject((RootScope rootScope, Logger log) {
+      rootScope.context['name'] = 'misko';
+      var child = rootScope.createChild(rootScope.context);
+      rootScope.watch('name', (v, _) {
+        log('root $v');
+        if (v == 'destroy') {
+          child.destroy();
+        }
+      });
+      rootScope.watch('name', (v, _) => log('root2 $v'));
+      child.watch('name', (v, _) => log('child $v'));
+      rootScope.apply();
+      expect(log).toEqual(['root misko', 'root2 misko', 'child misko']);
+      log.clear();
+
+      rootScope.context['name'] = 'destroy';
+      rootScope.apply();
+      expect(log).toEqual(['root destroy', 'root2 destroy']);
+    }));
   });
 
 

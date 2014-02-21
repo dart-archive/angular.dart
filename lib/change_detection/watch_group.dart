@@ -94,7 +94,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   /// Pointer for creating tree of [WatchGroup]s.
   WatchGroup _watchGroupHead, _watchGroupTail, _previousWatchGroup,
       _nextWatchGroup;
-  final WatchGroup _parentWatchGroup;
+  WatchGroup _parentWatchGroup;
 
   WatchGroup._child(_parentWatchGroup, this._changeDetector, this.context,
                     this._cache, this._rootGroup)
@@ -113,6 +113,18 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   {
     _marker.watchGrp = this;
     _evalWatchTail = _evalWatchHead = _marker;
+  }
+
+  get isAttached {
+    var group = this;
+    var root = _rootGroup;
+    while(group != null) {
+      if (group == root){
+        return true;
+      }
+      group = group._parentWatchGroup;
+    }
+    return false;
   }
 
   Watch watch(AST expression, ReactionFn reactionFn) {
@@ -268,6 +280,8 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
     _WatchGroupList._remove(_parentWatchGroup, this);
     _changeDetector.remove();
+    _rootGroup._removeCount++;
+    _parentWatchGroup = null;
 
     // Unlink the _watchRecord
     _EvalWatchRecord firstEvalWatch = _evalWatchHead;
@@ -317,6 +331,16 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
  */
 class RootWatchGroup extends WatchGroup {
   Watch _dirtyWatchHead, _dirtyWatchTail;
+
+  /**
+   * Every time a [WatchGroup] is destroyed we increment the counter. During
+   * [detectChanges] we reset the count. Before calling the reaction function,
+   * we check [_removeCount] and if it is unchanged we can safely call the
+   * reaction function. If it is changed we only call the reaction function
+   * if the [WatchGroup] is still attached.
+   */
+  int _removeCount = 0;
+
 
   RootWatchGroup(ChangeDetector changeDetector, Object context):
       super._root(changeDetector, context);
@@ -369,10 +393,14 @@ class RootWatchGroup extends WatchGroup {
     // We need to call reaction functions asynchronously. This processes the
     // asynchronous reaction function queue.
     Watch dirtyWatch = _dirtyWatchHead;
+    RootWatchGroup root = _rootGroup;
+    root._removeCount = 0;
     while(dirtyWatch != null) {
       count++;
       try {
-        dirtyWatch.invoke();
+        if (root._removeCount == 0 || dirtyWatch._watchGroup.isAttached) {
+          dirtyWatch.invoke();
+        }
       } catch (e, s) {
         if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
       }
@@ -408,15 +436,15 @@ class Watch {
 
   final Record<_Handler> _record;
   final ReactionFn reactionFn;
+  final WatchGroup _watchGroup;
 
   bool _dirty = false;
   bool _deleted = false;
   Watch _nextDirtyWatch;
 
-  Watch(this._record, this.reactionFn);
+  Watch(this._watchGroup, this._record, this.reactionFn);
 
   get expression => _record.handler.expression;
-
   void invoke() {
     if (_deleted || !_dirty) return;
     _dirty = false;
@@ -468,7 +496,7 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
   Watch addReactionFn(ReactionFn reactionFn) {
     assert(_next != this); // verify we are not detached
     return watchGrp._rootGroup._addDirtyWatch(_WatchList._add(this,
-        new Watch(watchRecord, reactionFn)));
+        new Watch(watchGrp, watchRecord, reactionFn)));
   }
 
   void addForwardHandler(_Handler forwardToHandler) {
