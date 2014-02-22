@@ -228,7 +228,6 @@ class Scope {
 
   dynamic eval(expression, [Map locals]) {
     assert(isAttached);
-    _assertInternalStateConsistency();
     assert(expression == null ||
            expression is String ||
            expression is Function);
@@ -246,6 +245,7 @@ class Scope {
       rootScope._zone.run(() => apply(expression, locals));
 
   dynamic apply([expression, Map locals]) {
+    _assertInternalStateConsistency();
     rootScope._transitionState(null, RootScope.STATE_APPLY);
     try {
       return eval(expression, locals);
@@ -261,23 +261,19 @@ class Scope {
 
   ScopeEvent emit(String name, [data]) {
     assert(isAttached);
-    _assertInternalStateConsistency();
     return _Streams.emit(this, name, data);
   }
   ScopeEvent broadcast(String name, [data]) {
     assert(isAttached);
-    _assertInternalStateConsistency();
     return _Streams.broadcast(this, name, data);
   }
   ScopeStream on(String name) {
     assert(isAttached);
-    _assertInternalStateConsistency();
     return _Streams.on(this, rootScope._exceptionHandler, name);
   }
 
   Scope createChild(Object childContext) {
     assert(isAttached);
-    _assertInternalStateConsistency();
     var child = new Scope(childContext, rootScope, this,
                           _readWriteGroup.newGroup(childContext),
                           _readOnlyGroup.newGroup(childContext));
@@ -292,7 +288,6 @@ class Scope {
 
   void destroy() {
     assert(isAttached);
-    _assertInternalStateConsistency();
     broadcast(ScopeEvent.DESTROY);
     _Streams.destroy(this);
 
@@ -328,11 +323,14 @@ class Scope {
     assert(_parentScope == parentScope);
     var counts = {};
     var typeCounts = _streams == null ? {} : _streams._typeCounts;
-    log..add(prefix)..add(hashCode)..add(' ')..add(typeCounts)..add('\n');
+    var connection = _streams != null && _streams._scope == this ? '=' : '-';
+    log..add(prefix)..add(hashCode)..add(connection)..add(typeCounts)..add('\n');
     if (_streams == null) {
     } else if (_streams._scope == this) {
-      _streams._streams.keys.forEach((k){
-        counts[k] = 1 + (counts.containsKey(k) ? counts[k] : 0);
+      _streams._streams.forEach((k, ScopeStream stream){
+        if (stream.subscriptions.isNotEmpty) {
+          counts[k] = 1 + (counts.containsKey(k) ? counts[k] : 0);
+        }
       });
     }
     var childScope = _childHead;
