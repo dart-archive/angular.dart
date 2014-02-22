@@ -17,10 +17,18 @@ class NodeAttrs {
 
   NodeAttrs(this.element);
 
-  operator [](String attributeName) =>
-      element.attributes[attributeName];
+  operator [](String attributeName) {
+    var value = element.attributes[attributeName];
+    if (value == null && attributeName.startsWith('ng-')) {
+      value = element.attributes['data-$attributeName'];
+    }
+    return value;
+  }
 
   operator []=(String attributeName, String value) {
+    if (attributeName.startsWith('ng-')) {
+      element.attributes.remove('data-$attributeName');
+    }
     if (value == null) {
       element.attributes.remove(attributeName);
     } else {

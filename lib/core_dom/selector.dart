@@ -28,6 +28,31 @@ part of angular.core.dom;
  */
 typedef List<DirectiveRef> DirectiveSelector(dom.Node node);
 
+String _normalizeKey(String key) =>
+    key.startsWith('data-ng-') ? key.substring('data-'.length) : key;
+
+class _AttrValueMap<V> implements Map<String, V> {
+  var _map = <String, V>{};
+
+  void addAll(Map<String, V> other) { _map.addAll(other); }
+  bool containsKey(String key) => _map.containsKey(_normalizeKey(key));
+  bool containsValue(Object value) => _map.containsValue(value);
+  void clear() { _map.clear(); }
+  void forEach(Function f) { _map.forEach(f); }
+  V putIfAbsent(String key, Function ifAbsent) =>
+      _map.putIfAbsent(_normalizeKey(key), ifAbsent);
+  V remove(String key) => _map.remove(_normalizeKey(key));
+
+  V operator[](String key) => _map[_normalizeKey(key)];
+  void operator[]=(String key, V value) { _map[_normalizeKey(key)] = value; }
+
+  bool get isEmpty => _map.isEmpty;
+  bool get isNotEmpty => _map.isNotEmpty;
+  int get length => _map.length;
+  Iterable<String> get keys => _map.keys;
+  Iterable<V> get values => _map.values;
+}
+
 class _Directive {
   final Type type;
   final NgAnnotation annotation;
@@ -76,7 +101,6 @@ class _SelectorPart {
       : element;
 }
 
-
 class _ElementSelector {
   final String name;
 
@@ -86,8 +110,8 @@ class _ElementSelector {
   var classMap = <String, List<_Directive>>{};
   var classPartialMap = <String, _ElementSelector>{};
 
-  var attrValueMap = <String, Map<String, List<_Directive>>>{};
-  var attrValuePartialMap = <String, Map<String, _ElementSelector>>{};
+  var attrValueMap = new _AttrValueMap<Map<String, List<_Directive>>>();
+  var attrValuePartialMap = new _AttrValueMap<Map<String, _ElementSelector>>();
 
   _ElementSelector(this.name);
 
@@ -175,7 +199,7 @@ class _ElementSelector {
                                     dom.Node node, String attrName,
                                     String attrValue) {
 
-    String matchingKey = _matchingKey(attrValueMap.keys, attrName);
+    String matchingKey = _matchingKey(attrValueMap.keys, _normalizeKey(attrName));
 
     if (matchingKey != null) {
       Map<String, List<_Directive>> valuesMap = attrValueMap[matchingKey];
@@ -306,6 +330,8 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
               // we need to pass the name to the directive by prefixing it to
               // the value. Yes it is a bit of a hack.
               directives[selectorRegExp.annotation].forEach((type) {
+                if (attrName.startsWith('data-ng-'))
+                  attrName = attrName.substring('data-'.length);
                 directiveRefs.add(new DirectiveRef(
                     node, type, selectorRegExp.annotation, '$attrName=$value'));
               });

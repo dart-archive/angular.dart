@@ -35,5 +35,13 @@ main() {
       });
       expect(element.text).toEqual('1');
     }));
+
+    it('should set.text with data attribute', inject((Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
+      var element = $('<div data-ng-bind="a"></div>');
+      compiler(element, directives)(injector, element);
+      scope.context['a'] = "abc123";
+      scope.apply();
+      expect(element.text()).toEqual('abc123');
+    }));
   });
 }

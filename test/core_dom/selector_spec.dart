@@ -30,6 +30,7 @@ import '../_specs.dart';
 @NgDirective(selector: '[two-directives]') class _OneOfTwoDirectives {}
 @NgDirective(selector: '[two-directives]') class _TwoOfTwoDirectives {}
 
+@NgDirective(selector:'[ng-directive]')  class _NgDirectiveAttr{}
 
 main() {
   describe('Selector', () {
@@ -60,7 +61,8 @@ main() {
         ..type(_IgnoreChildren)
         ..type(_TwoDirectives)
         ..type(_OneOfTwoDirectives)
-        ..type(_TwoOfTwoDirectives);
+        ..type(_TwoOfTwoDirectives)
+        ..type(_NgDirectiveAttr);
     }));
     beforeEach(inject((DirectiveMap directives) {
       selector = directiveSelectorFactory(directives);
@@ -194,6 +196,18 @@ main() {
           { "selector": '[two-directives]', "value": '', "element": element},
           { "selector": '[two-directives]', "value": '', "element": element}
       ]));
+    });
+
+    it('should match directive on [data-ng-attribute] ignoring data prefix', () {
+      expect(selector(element = e('<div data-ng-directive=abc></div>')),
+        toEqualsDirectiveInfos([
+          { "selector": '[ng-directive]', "value": 'abc', "element": element,
+            "name": 'ng-directive' }]));
+
+      expect(selector(element = e('<div data-ng-directive></div>')),
+        toEqualsDirectiveInfos([
+          { "selector": '[ng-directive]', "value": '', "element": element,
+            "name": 'ng-directive' }]));
     });
   });
 }

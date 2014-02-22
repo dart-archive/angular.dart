@@ -14,6 +14,12 @@ main() => describe('NgStyle', () {
     expect(element.style.height).toEqual('40px');
   });
 
+  it('should set with data attribute', () {
+    dom.Element element = _.compile('<div data-ng-style="{height: \'40px\'}"></div>');
+    _.rootScope.apply();
+    expect(element.style.height).toEqual('40px');
+  });
+
 
   it('should silently ignore undefined style', () {
     dom.Element element = _.compile('<div ng-style="myStyle"></div>');

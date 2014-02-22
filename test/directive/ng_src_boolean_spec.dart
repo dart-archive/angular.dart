@@ -245,5 +245,11 @@ main() {
       _.rootScope.apply();
       expect(_.rootElement.attributes['quack']).toEqual('vanilla');
     }));
+
+    it('should bind * even if no interpolation with data attribute', inject(() {
+      _.compile('<a data-ng-attr-quack="vanilla"></a>');
+      _.rootScope.apply();
+      expect(_.rootElement.attributes['quack']).toEqual('vanilla');
+    }));
   });
 }

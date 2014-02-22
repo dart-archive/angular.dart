@@ -200,4 +200,30 @@ main() => describe('ngSwitch', () {
     expect(child2).toBeDefined();
     expect(child2).not.toBe(child1);
   }));
+
+  it('should switch on value change with data attribute', inject(() {
+    var element = _.compile(
+        '<div data-ng-switch="select">' +
+        '<div data-ng-switch-when="1">first:{{name}}</div>' +
+        '<div data-ng-switch-when="2">second:{{name}}</div>' +
+        '<div data-ng-switch-when="true">true:{{name}}</div>' +
+        '</div>');
+    expect(element.innerHtml).toEqual(
+        '<!--ANCHOR: [ng-switch-when]=1--><!--ANCHOR: [ng-switch-when]=2--><!--ANCHOR: [ng-switch-when]=true-->');
+    _.rootScope.context['select'] = 1;
+    _.rootScope.apply();
+    expect(element.text).toEqual('first:');
+    _.rootScope.context['name'] = "shyam";
+    _.rootScope.apply();
+    expect(element.text).toEqual('first:shyam');
+    _.rootScope.context['select'] = 2;
+    _.rootScope.apply();
+    expect(element.text).toEqual('second:shyam');
+    _.rootScope.context['name'] = 'misko';
+    _.rootScope.apply();
+    expect(element.text).toEqual('second:misko');
+    _.rootScope.context['select'] = true;
+    _.rootScope.apply();
+    expect(element.text).toEqual('true:misko');
+  }));
 });

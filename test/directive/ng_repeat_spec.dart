@@ -394,5 +394,14 @@ main() {
       });
     });
 
+    it(r'should set create a list of items with data attribute', inject((Scope scope, Compiler compiler, Injector injector) {
+      var element = $('<div><div data-ng-repeat="item in items">{{item}}</div></div>');
+      BlockFactory blockFactory = compiler(element, directives);
+      Block block = blockFactory(injector, element);
+      scope.context['items'] = ['a', 'b'];
+      scope.apply();
+      expect(element.text()).toEqual('ab');
+    }));
+
   });
 }
