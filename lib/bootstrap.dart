@@ -91,9 +91,11 @@ Injector ngBootstrap({
   return zone.run(() {
     var rootElements = [element];
     Injector injector = injectorFactory(ngModules);
-    var compiler = injector.get(Compiler);
-    var blockFactory = compiler(rootElements, injector.get(DirectiveMap));
-    blockFactory(injector, rootElements);
+    initializeDateFormatting(null, null).then((_) {
+      var compiler = injector.get(Compiler);
+      var blockFactory = compiler(rootElements, injector.get(DirectiveMap));
+      blockFactory(injector, rootElements);
+    });
     return injector;
   });
 }
