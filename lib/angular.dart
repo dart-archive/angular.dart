@@ -14,6 +14,7 @@ import 'dart:html' as dom;
 import 'dart:js' as js;
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 /**
  * If you are writing code accessed from Angular expressions, you must include
