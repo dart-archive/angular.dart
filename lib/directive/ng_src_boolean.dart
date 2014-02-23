@@ -95,9 +95,15 @@ class NgAttributeDirective implements NgAttachAware {
 
   void attach() {
     String ngAttrPrefix = 'ng-attr-';
+    String dataNgAttrPrefix = 'data-ng-attr-';
     _attrs.forEach((key, value) {
+      var newKey;
       if (key.startsWith(ngAttrPrefix)) {
-        var newKey = key.substring(ngAttrPrefix.length);
+        newKey = key.substring(ngAttrPrefix.length);
+      } else if (key.startsWith(dataNgAttrPrefix)) {
+        newKey = key.substring(dataNgAttrPrefix.length);
+      }
+      if (newKey != null) {
         _attrs[newKey] = value;
         _attrs.observe(key, (newValue) => _attrs[newKey] = newValue );
       }

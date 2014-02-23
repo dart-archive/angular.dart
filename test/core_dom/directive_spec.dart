@@ -10,14 +10,19 @@ main() {
 
     beforeEach(inject((TestBed tb) {
       _ = tb;
-      element = _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo"></div>');
+      element = _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo" data-ng-qux="qux"></div>');
       nodeAttrs = new NodeAttrs(element);
     }));
 
-    it('should transform names to camel case', () {
+    it('should return attribute value', () {
       expect(nodeAttrs['foo']).toEqual('bar');
       expect(nodeAttrs['foo-bar']).toEqual('baz');
       expect(nodeAttrs['foo-bar-baz']).toEqual('foo');
+    });
+
+    it('should ignore data prefix', () {
+      expect(nodeAttrs['data-ng-qux']).toEqual('qux');
+      expect(nodeAttrs['ng-qux']).toEqual('qux');
     });
 
     it('should return null for unexistent attributes', () {
@@ -27,7 +32,7 @@ main() {
     it('should provide a forEach function to iterate over attributes', () {
       Map<String, String> attrMap = new Map();
       nodeAttrs.forEach((k, v) => attrMap[k] = v);
-      expect(attrMap).toEqual({'foo': 'bar', 'foo-bar': 'baz', 'foo-bar-baz': 'foo'});
+      expect(attrMap).toEqual({'foo': 'bar', 'foo-bar': 'baz', 'foo-bar-baz': 'foo', 'data-ng-qux': 'qux'});
     });
 
     it('should provide a contains method', () {
@@ -38,7 +43,7 @@ main() {
     });
 
     it('should return the attribute names', () {
-      expect(nodeAttrs.keys.toList()..sort()).toEqual(['foo', 'foo-bar', 'foo-bar-baz']);
+      expect(nodeAttrs.keys.toList()..sort()).toEqual(['data-ng-qux', 'foo', 'foo-bar', 'foo-bar-baz']);
     });
   });
 }

@@ -109,6 +109,16 @@ describe('ng-model', () {
       expect(element.selectionStart).toEqual(3);
       expect(element.selectionEnd).toEqual(3);
     }));
+
+    it('should update input value from model with data attribute', inject(() {
+      _.compile('<input type="text" data-ng-model="model">');
+      _.rootScope.apply();
+
+      expect((_.rootElement as dom.InputElement).value).toEqual('');
+
+      _.rootScope.apply('model = "misko"');
+      expect((_.rootElement as dom.InputElement).value).toEqual('misko');
+    }));
   });
 
   /* This function simulates typing the given text into the input

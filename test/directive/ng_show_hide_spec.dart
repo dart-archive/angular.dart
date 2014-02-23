@@ -23,6 +23,22 @@ main() {
       });
       expect(_.rootElement).not.toHaveClass('ng-hide');
     });
+
+    it('should add/remove ng-hide class with data attribute', () {
+      _.compile('<div data-ng-hide="isHidden"></div>');
+
+      expect(_.rootElement).not.toHaveClass('ng-hide');
+
+      _.rootScope.apply(() {
+        _.rootScope.context['isHidden'] = true;
+      });
+      expect(_.rootElement).toHaveClass('ng-hide');
+
+      _.rootScope.apply(() {
+        _.rootScope.context['isHidden'] = false;
+      });
+      expect(_.rootElement).not.toHaveClass('ng-hide');
+    });
   });
   
   describe('NgShow', () {
@@ -31,6 +47,22 @@ main() {
 
     it('should add/remove ng-hide class', () {
       _.compile('<div ng-show="isShown"></div>');
+
+      expect(_.rootElement).not.toHaveClass('ng-hide');
+
+      _.rootScope.apply(() {
+        _.rootScope.context['isShown'] = true;
+      });
+      expect(_.rootElement).not.toHaveClass('ng-hide');
+
+      _.rootScope.apply(() {
+        _.rootScope.context['isShown'] = false;
+      });
+      expect(_.rootElement).toHaveClass('ng-hide');
+    });
+
+    it('should add/remove ng-hide class with data attribute', () {
+      _.compile('<div data-ng-show="isShown"></div>');
 
       expect(_.rootElement).not.toHaveClass('ng-hide');
 

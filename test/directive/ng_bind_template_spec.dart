@@ -22,5 +22,20 @@ main() {
 
       expect(element.text).toEqual('Good-Bye Heisenberg!');
     }));
+
+    it('should bind template with data attribute',
+          inject((Scope scope, Injector injector, Compiler compiler) {
+      var element = _.compile('<div data-ng-bind-template="{{salutation}} {{name}}!"></div>');
+      scope.context['salutation'] = 'Hello';
+      scope.context['name'] = 'Heisenberg';
+      scope.apply();
+
+      expect(element.text).toEqual('Hello Heisenberg!');
+
+      scope.context['salutation'] = 'Good-Bye';
+      scope.apply();
+
+      expect(element.text).toEqual('Good-Bye Heisenberg!');
+    }));
   });
 }

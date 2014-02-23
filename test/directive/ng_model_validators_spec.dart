@@ -70,6 +70,34 @@ describe('ngModel validators', () {
       expect(model.valid).toEqual(true);
       expect(model.invalid).toEqual(false);
     }));
+
+    it('should validate the input field depending on if data-ng-required is true', inject((RootScope scope) {
+      _.compile('<input type="text" ng-model="val" probe="i" data-ng-required="requireMe" />');
+      Probe probe = _.rootScope.context['i'];
+      var model = probe.directive(NgModel);
+
+      _.rootScope.apply();
+
+      model.validate();
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+
+      _.rootScope.apply(() {
+        _.rootScope.context['requireMe'] = true;
+      });
+
+      model.validate();
+      expect(model.valid).toEqual(false);
+      expect(model.invalid).toEqual(true);
+
+      _.rootScope.apply(() {
+        _.rootScope.context['requireMe'] = false;
+      });
+
+      model.validate();
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+    }));
   });
 
   describe('[type="url"]', () {
@@ -203,6 +231,43 @@ describe('ngModel validators', () {
       expect(model.invalid).toEqual(false);
     }));
 
+    it('should validate the input field if a data-ng-pattern attribute is provided', inject((RootScope scope) {
+      _.compile('<input type="text" data-ng-pattern="myPattern" ng-model="val" probe="i" />');
+      Probe probe = _.rootScope.context['i'];
+      var model = probe.directive(NgModel);
+
+      model.validate();
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+
+      _.rootScope.apply(() {
+        _.rootScope.context['val'] = "abc";
+        _.rootScope.context['myPattern'] = "[a-z]+";
+      });
+
+      model.validate();
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+
+      _.rootScope.apply(() {
+        _.rootScope.context['val'] = "abc";
+        _.rootScope.context['myPattern'] = "[0-9]+";
+      });
+
+      model.validate();
+      expect(model.valid).toEqual(false);
+      expect(model.invalid).toEqual(true);
+
+      _.rootScope.apply(() {
+        _.rootScope.context['val'] = "123";
+        _.rootScope.context['myPattern'] = "123";
+      });
+
+      model.validate();
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+    }));
+
     it('should validate the input field if a pattern attribute is provided', inject((RootScope scope) {
       _.compile('<input type="text" pattern="[0-5]+" ng-model="val" probe="i" />');
       Probe probe = _.rootScope.context['i'];
@@ -292,6 +357,34 @@ describe('ngModel validators', () {
       expect(model.valid).toEqual(false);
       expect(model.invalid).toEqual(true);
     }));
+
+    it('should validate the input field if a data-ng-minlength attribute is provided', inject((RootScope scope) {
+      _.compile('<input type="text" data-ng-minlength="len" ng-model="val" probe="i" />');
+      Probe probe = _.rootScope.context['i'];
+      var model = probe.directive(NgModel);
+
+      model.validate();
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+
+      _.rootScope.apply(() {
+        _.rootScope.context['val'] = "abcdef";
+        _.rootScope.context['len'] = 3;
+      });
+
+      model.validate();
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+
+      _.rootScope.apply(() {
+        _.rootScope.context['val'] = "abc";
+        _.rootScope.context['len'] = 5;
+      });
+
+      model.validate();
+      expect(model.valid).toEqual(false);
+      expect(model.invalid).toEqual(true);
+    }));
   });
 
   describe('maxlength', () {
@@ -323,6 +416,34 @@ describe('ngModel validators', () {
 
     it('should validate the input field if a ng-maxlength attribute is provided', inject((RootScope scope) {
       _.compile('<input type="text" ng-maxlength="len" ng-model="val" probe="i" />');
+      Probe probe = _.rootScope.context['i'];
+      var model = probe.directive(NgModel);
+
+      model.validate();
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+
+      _.rootScope.apply(() {
+        _.rootScope.context['val'] = "abcdef";
+        _.rootScope.context['len'] = 6;
+      });
+
+      model.validate();
+      expect(model.valid).toEqual(true);
+      expect(model.invalid).toEqual(false);
+
+      _.rootScope.apply(() {
+        _.rootScope.context['val'] = "abc";
+        _.rootScope.context['len'] = 1;
+      });
+
+      model.validate();
+      expect(model.valid).toEqual(false);
+      expect(model.invalid).toEqual(true);
+    }));
+
+    it('should validate the input field if a data-ng-maxlength attribute is provided', inject((RootScope scope) {
+      _.compile('<input type="text" data-ng-maxlength="len" ng-model="val" probe="i" />');
       Probe probe = _.rootScope.context['i'];
       var model = probe.directive(NgModel);
 

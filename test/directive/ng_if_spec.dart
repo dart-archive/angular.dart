@@ -222,4 +222,29 @@ main() {
       expect(element.find('span').html()).toEqual('');
     }
   );
+
+  they('should add/remove the element with data attribute',
+    [ '<div><span data-ng-if="isVisible">content</span></div>',
+      '<div><span data-ng-unless="!isVisible">content</span></div>'],
+    (html) {
+      compile(html);
+      // The span node should NOT exist in the DOM.
+      expect(element.contents().length).toEqual(1);
+      expect(element.find('span').html()).toEqual('');
+
+      rootScope.apply(() {
+        rootScope.context['isVisible'] = true;
+      });
+
+      // The span node SHOULD exist in the DOM.
+      expect(element.contents().length).toEqual(2);
+      expect(element.find('span').html()).toEqual('content');
+
+      rootScope.apply(() {
+        rootScope.context['isVisible'] = false;
+      });
+
+      expect(element.find('span').html()).toEqual('');
+    }
+  );
 }

@@ -8,6 +8,7 @@ main() {
     describe('deal with pluralized strings without offset', () {
       var element;
       var elementAlt;
+      var elementData;
       var elt;
       TestBed _;
 
@@ -31,6 +32,15 @@ main() {
                 "when-other='You have {} new emails'>" +
             '</p>'
         );
+
+        elementData = _.compile(
+            '<p data-ng-pluralize count="email" ' +
+                "when-minus-1='You have negative email. Whohoo!' " +
+                "when-0='You have no new email' " +
+                "when-one='You have one new email' " +
+                "when-other='You have {} new emails'>" +
+            '</p>'
+        );
       }));
 
       it('should show single/plural strings', () {
@@ -38,51 +48,61 @@ main() {
         _.rootScope.apply();
         expect(element.text).toEqual('You have no new email');
         expect(elementAlt.text).toEqual('You have no new email');
+        expect(elementData.text).toEqual('You have no new email');
 
         _.rootScope.context['email'] = '0';
         _.rootScope.apply();
         expect(element.text).toEqual('You have no new email');
         expect(elementAlt.text).toEqual('You have no new email');
+        expect(elementData.text).toEqual('You have no new email');
 
         _.rootScope.context['email'] = 1;
         _.rootScope.apply();
         expect(element.text).toEqual('You have one new email');
         expect(elementAlt.text).toEqual('You have one new email');
+        expect(elementData.text).toEqual('You have one new email');
 
         _.rootScope.context['email'] = 0.01;
         _.rootScope.apply();
         expect(element.text).toEqual('You have 0.01 new emails');
         expect(elementAlt.text).toEqual('You have 0.01 new emails');
+        expect(elementData.text).toEqual('You have 0.01 new emails');
 
         _.rootScope.context['email'] = '0.1';
         _.rootScope.apply();
         expect(element.text).toEqual('You have 0.1 new emails');
         expect(elementAlt.text).toEqual('You have 0.1 new emails');
+        expect(elementData.text).toEqual('You have 0.1 new emails');
 
         _.rootScope.context['email'] = 2;
         _.rootScope.apply();
         expect(element.text).toEqual('You have 2 new emails');
         expect(elementAlt.text).toEqual('You have 2 new emails');
+        expect(elementData.text).toEqual('You have 2 new emails');
 
         _.rootScope.context['email'] = -0.1;
         _.rootScope.apply();
         expect(element.text).toEqual('You have -0.1 new emails');
         expect(elementAlt.text).toEqual('You have -0.1 new emails');
+        expect(elementData.text).toEqual('You have -0.1 new emails');
 
         _.rootScope.context['email'] = '-0.01';
         _.rootScope.apply();
         expect(element.text).toEqual('You have -0.01 new emails');
         expect(elementAlt.text).toEqual('You have -0.01 new emails');
+        expect(elementData.text).toEqual('You have -0.01 new emails');
 
         _.rootScope.context['email'] = -2;
         _.rootScope.apply();
         expect(element.text).toEqual('You have -2 new emails');
         expect(elementAlt.text).toEqual('You have -2 new emails');
+        expect(elementData.text).toEqual('You have -2 new emails');
 
         _.rootScope.context['email'] = -1;
         _.rootScope.apply();
         expect(element.text).toEqual('You have negative email. Whohoo!');
         expect(elementAlt.text).toEqual('You have negative email. Whohoo!');
+        expect(elementData.text).toEqual('You have negative email. Whohoo!');
       });
 
       it('should show single/plural strings with mal-formed inputs', () {
@@ -90,41 +110,49 @@ main() {
         _.rootScope.apply();
         expect(element.text).toEqual('');
         expect(elementAlt.text).toEqual('');
+        expect(elementData.text).toEqual('');
 
         _.rootScope.context['email'] = null;
         _.rootScope.apply();
         expect(element.text).toEqual('');
         expect(elementAlt.text).toEqual('');
+        expect(elementData.text).toEqual('');
 
         _.rootScope.context['email'] = 'a3';
         _.rootScope.apply();
         expect(element.text).toEqual('');
         expect(elementAlt.text).toEqual('');
+        expect(elementData.text).toEqual('');
 
         _.rootScope.context['email'] = '011';
         _.rootScope.apply();
         expect(element.text).toEqual('You have 11 new emails');
         expect(elementAlt.text).toEqual('You have 11 new emails');
+        expect(elementData.text).toEqual('You have 11 new emails');
 
         _.rootScope.context['email'] = '-011';
         _.rootScope.apply();
         expect(element.text).toEqual('You have -11 new emails');
         expect(elementAlt.text).toEqual('You have -11 new emails');
+        expect(elementData.text).toEqual('You have -11 new emails');
 
         _.rootScope.context['email'] = '1fff';
         _.rootScope.apply();
         expect(element.text).toEqual('');
         expect(elementAlt.text).toEqual('');
+        expect(elementData.text).toEqual('');
 
         _.rootScope.context['email'] = '0aa22';
         _.rootScope.apply();
         expect(element.text).toEqual('');
         expect(elementAlt.text).toEqual('');
+        expect(elementData.text).toEqual('');
 
         _.rootScope.context['email'] = '000001';
         _.rootScope.apply();
         expect(element.text).toEqual('You have one new email');
         expect(elementAlt.text).toEqual('You have one new email');
+        expect(elementData.text).toEqual('You have one new email');
       });
     });
 

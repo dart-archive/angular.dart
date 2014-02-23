@@ -34,6 +34,16 @@ main() {
         expect(element.html()).toEqual('<a href="http://www.google.com"><b>Google!</b></a>');
       });
     }));
+
+    it('should sanitize and set innerHtml and sanitize and set html with data attribute',
+          inject((Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
+      var element = $('<div data-ng-bind-html="htmlVar"></div>');
+      compiler(element, directives)(injector, element);
+      scope.context['htmlVar'] = '<a href="http://www.google.com"><b>Google!</b></a>';
+      scope.apply();
+      // Sanitization removes the href attribute on the <a> tag.
+      expect(element.html()).toEqual('<a><b>Google!</b></a>');
+    }));
   });
 }
 

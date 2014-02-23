@@ -27,6 +27,7 @@ part of angular.directive;
 class NgCloakDirective {
   NgCloakDirective(dom.Element element) {
     element.attributes.remove('ng-cloak');
+    element.attributes.remove('data-ng-cloak');
     element.classes.remove('ng-cloak');
   }
 }

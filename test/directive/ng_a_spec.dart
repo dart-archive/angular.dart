@@ -42,5 +42,12 @@ main() {
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
       expect(window.location.href.endsWith("#url")).toEqual(true);
     }));
+
+    it('should bind click listener with data attribute', inject((Scope scope) {
+      _.compile('<a href="" data-ng-click="abc = true; event = \$event"></a>');
+      _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
+      expect(_.rootScope.context['abc']).toEqual(true);
+      expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
+    }));
   });
 }

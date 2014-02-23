@@ -42,5 +42,19 @@ main() {
       expect(element.text).toEqual('I am Vojta');
     })));
 
+    it('should fetch template from literal url with data attribute', async(inject((Scope scope, TemplateCache cache) {
+      cache.put('tpl.html', new HttpResponse(200, 'my name is {{name}}'));
+
+      var element = _.compile('<div data-ng-include="tpl.html"></div>');
+
+      expect(element.innerHtml).toEqual('');
+
+      microLeap();  // load the template from cache.
+      scope.applyInZone(() {
+        scope.context['name'] = 'Vojta';
+      });
+      expect(element.text).toEqual('my name is Vojta');
+    })));
+
   });
 }

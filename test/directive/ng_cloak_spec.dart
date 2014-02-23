@@ -45,5 +45,12 @@ main() {
       expect(element.hasClass('ng-cloak')).toBe(false);
       expect(element.hasClass('bar')).toBe(true);
     });
+
+    it('should get removed when an element is compiled with data attribute', () {
+      var element = $('<div data-ng-cloak></div>');
+      expect(element.attr('data-ng-cloak')).toEqual('');
+      _.compile(element);
+      expect(element.attr('data-ng-cloak')).toBeNull();
+    });
   });
 }

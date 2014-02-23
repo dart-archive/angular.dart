@@ -308,5 +308,25 @@ main() {
       expect(e2.classes.contains('even')).toBeTruthy();
       expect(e2.classes.contains('odd')).toBeFalsy();
     });
+
+    it('should add new and remove old classes dynamically with data attribute', () {
+      var element = _.compile('<div class="existing" data-ng-class="dynClass"></div>');
+      _.rootScope.context['dynClass'] = 'A';
+      _.rootScope.apply();
+      expect(element.classes.contains('existing')).toBe(true);
+      expect(element.classes.contains('A')).toBe(true);
+
+      _.rootScope.context['dynClass'] = 'B';
+      _.rootScope.apply();
+      expect(element.classes.contains('existing')).toBe(true);
+      expect(element.classes.contains('A')).toBe(false);
+      expect(element.classes.contains('B')).toBe(true);
+
+      _.rootScope.context['dynClass'] = null;
+      _.rootScope.apply();
+      expect(element.classes.contains('existing')).toBe(true);
+      expect(element.classes.contains('A')).toBe(false);
+      expect(element.classes.contains('B')).toBe(false);
+    });
   });
 }
