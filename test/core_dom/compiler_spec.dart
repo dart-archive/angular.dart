@@ -176,6 +176,7 @@ main() => describe('dte.compiler', () {
         module.type(PublishMeDirective);
         module.type(LogComponent);
         module.type(AttachDetachComponent);
+        module.type(SimpleAttachComponent);
         module.type(SimpleComponent);
         module.type(ExprAttrComponent);
         module.type(SayHelloFilter);
@@ -481,6 +482,20 @@ main() => describe('dte.compiler', () {
           scope.destroy();
           expect(logger).toEqual(['detach']);
           expect(element.textWithShadow()).toEqual('WORKED');
+        })));
+
+        it('should should not call attach after scope is destroyed', async(inject((Logger logger, MockHttpBackend backend) {
+          backend.whenGET('foo.html').respond('<div>WORKED</div>');
+          var element = $('<simple-attach></simple-attach>');
+          var scope = rootScope.createChild({});
+          $compile(element, directives)(injector.createChild([new Module()..value(Scope, scope)]), element);
+          expect(logger).toEqual(['SimpleAttachComponent']);
+          scope.destroy();
+
+          rootScope.apply();
+          microLeap();
+
+          expect(logger).toEqual(['SimpleAttachComponent']);
         })));
       });
 
@@ -844,3 +859,14 @@ class ExprAttrComponent {
   }
 }
 
+@NgComponent(
+    selector: 'simple-attach',
+    templateUrl: 'foo.html')
+class SimpleAttachComponent implements NgAttachAware, NgShadowRootAware {
+  Logger logger;
+  SimpleAttachComponent(this.logger) {
+    logger('SimpleAttachComponent');
+  }
+  attach() => logger('attach');
+  onShadowRoot(_) => logger('onShadowRoot');
+}

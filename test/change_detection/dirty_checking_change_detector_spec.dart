@@ -152,6 +152,13 @@ main() => describe('DirtyCheckingChangeDetector', () {
       obj['a'] = obj['b'] = 4;
       expect(detector.collectChanges(), toEqualChanges(['a', 'b']));
     });
+
+    it('should properly add children', () {
+      var a = detector.newGroup();
+      var aChild = a.newGroup();
+      var b = detector.newGroup();
+      expect(detector.collectChanges).not.toThrow();
+    });
   });
 
   describe('list watching', () {

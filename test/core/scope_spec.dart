@@ -3,6 +3,7 @@ library scope2_spec;
 import '../_specs.dart';
 import 'package:angular/change_detection/change_detection.dart' hide ExceptionHandler;
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+import 'dart:math';
 
 main() => describe('scope', () {
   beforeEach(module((Module module) {
@@ -266,6 +267,145 @@ main() => describe('scope', () {
         child.emit(r'abc');
         child.broadcast('abc');
         expect(log).toEqual('');
+      }));
+
+      it('should not trigger assertions on scope fork', inject((RootScope root) {
+        var d1 = root.createChild({});
+        var d2 = root.createChild({});
+        var d3 = d2.createChild({});
+        expect(root.apply).not.toThrow();
+        d1.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(root.apply).not.toThrow();
+        d3.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(root.apply).not.toThrow();
+        d2.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(root.apply).not.toThrow();
+      }));
+
+      it('should not too eagerly create own streams', inject((RootScope root) {
+        var a = root.createChild({});
+        var a2 = root.createChild({});
+        var b = a.createChild({});
+        var c = b.createChild({});
+        var d = c.createChild({});
+        var e = d.createChild({});
+
+        getStreamState() => [root.hasOwnStreams, a.hasOwnStreams, a2.hasOwnStreams,
+                             b.hasOwnStreams, c.hasOwnStreams, d.hasOwnStreams,
+                             e.hasOwnStreams];
+
+        expect(getStreamState()).toEqual([false, false, false, false, false, false, false]);
+        expect(root.apply).not.toThrow();
+
+        e.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([false, false, false, false, false, false, true]);
+        expect(root.apply).not.toThrow();
+
+        d.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([false, false, false, false, false, true, true]);
+        expect(root.apply).not.toThrow();
+
+        b.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([false, false, false, true, false, true, true]);
+        expect(root.apply).not.toThrow();
+
+        c.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([false, false, false, true, true, true, true]);
+        expect(root.apply).not.toThrow();
+
+        a.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([false, true, false, true, true, true, true]);
+        expect(root.apply).not.toThrow();
+
+        a2.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([true, true, true, true, true, true, true]);
+        expect(root.apply).not.toThrow();
+      }));
+
+
+      it('should not properly merge streams', inject((RootScope root) {
+        var a = root.createChild({});
+        var a2 = root.createChild({});
+        var b = a.createChild({});
+        var c = b.createChild({});
+        var d = c.createChild({});
+        var e = d.createChild({});
+
+        getStreamState() => [root.hasOwnStreams, a.hasOwnStreams, a2.hasOwnStreams,
+        b.hasOwnStreams, c.hasOwnStreams, d.hasOwnStreams,
+        e.hasOwnStreams];
+
+        expect(getStreamState()).toEqual([false, false, false, false, false, false, false]);
+        expect(root.apply).not.toThrow();
+
+        a2.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([false, false, true, false, false, false, false]);
+        expect(root.apply).not.toThrow();
+
+        e.on(ScopeEvent.DESTROY).listen((_) => null);
+        expect(getStreamState()).toEqual([true, false, true, false, false, false, true]);
+        expect(root.apply).not.toThrow();
+      }));
+
+
+      it('should clean up on cancel', inject((RootScope root) {
+        var child = root.createChild(null);
+        var cl = child.on("E").listen((e) => null);
+        var rl = root.on("E").listen((e) => null);
+        rl.cancel();
+        expect(root.apply).not.toThrow();
+      }));
+
+
+      it('should find random bugs', inject((RootScope root) {
+        List scopes;
+        List listeners;
+        List steps;
+        var random = new Random();
+        for(var i = 0; i < 1000; i++) {
+          if (i % 10 == 0) {
+            scopes = [root.createChild(null)];
+            listeners = [];
+            steps = [];
+          }
+          switch(random.nextInt(4)) {
+            case 0:
+              if (scopes.length > 10) break;
+              var index = random.nextInt(scopes.length);
+              Scope scope = scopes[index];
+              var child = scope.createChild(null);
+              scopes.add(child);
+              steps.add('scopes[$index].createChild(null)');
+              break;
+            case 1:
+              var index = random.nextInt(scopes.length);
+              Scope scope = scopes[index];
+              listeners.add(scope.on('E').listen((e) => null));
+              steps.add('scopes[$index].on("E").listen((e)=>null)');
+              break;
+            case 2:
+              if (scopes.length < 3) break;
+              var index = random.nextInt(scopes.length - 1) + 1;
+              Scope scope = scopes[index];
+              scope.destroy();
+              scopes = scopes.where((Scope s) => s.isAttached).toList();
+              steps.add('scopes[$index].destroy()');
+              break;
+            case 3:
+              if (listeners.length == 0) break;
+              var index = random.nextInt(listeners.length);
+              var l = listeners[index];
+              l.cancel();
+              listeners.remove(l);
+              steps.add('listeners[$index].cancel()');
+              break;
+          }
+          try {
+            root.apply();
+          } catch (e) {
+            expect('').toEqual(steps.join(';\n'));
+          }
+        }
       }));
     });
 
@@ -550,10 +690,32 @@ main() => describe('scope', () {
     it(r'should broadcast the destroy event', inject((RootScope rootScope) {
       var log = [];
       first.on(ScopeEvent.DESTROY).listen((s) => log.add('first'));
-      first.createChild({}).on(ScopeEvent.DESTROY).listen((s) => log.add('first-child'));
+      var child = first.createChild({});
+      child.on(ScopeEvent.DESTROY).listen((s) => log.add('first-child'));
 
       first.destroy();
       expect(log).toEqual(['first', 'first-child']);
+    }));
+
+
+    it('should not call reaction function on destroyed scope', inject((RootScope rootScope, Logger log) {
+      rootScope.context['name'] = 'misko';
+      var child = rootScope.createChild(rootScope.context);
+      rootScope.watch('name', (v, _) {
+        log('root $v');
+        if (v == 'destroy') {
+          child.destroy();
+        }
+      });
+      rootScope.watch('name', (v, _) => log('root2 $v'));
+      child.watch('name', (v, _) => log('child $v'));
+      rootScope.apply();
+      expect(log).toEqual(['root misko', 'root2 misko', 'child misko']);
+      log.clear();
+
+      rootScope.context['name'] = 'destroy';
+      rootScope.apply();
+      expect(log).toEqual(['root destroy', 'root2 destroy']);
     }));
   });
 
@@ -1025,7 +1187,7 @@ main() => describe('scope', () {
     }));
   });
 
-  
+
   describe('runAsync', () {
     it(r'should run callback before watch', inject((RootScope rootScope) {
       var log = '';

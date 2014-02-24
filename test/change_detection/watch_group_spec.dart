@@ -597,6 +597,28 @@ main() => describe('WatchGroup', () {
     });
 
 
+    it('should not call reaction function on removed group', () {
+      var log = [];
+      context['name'] = 'misko';
+      var child = watchGrp.newGroup(context);
+      watchGrp.watch(parse('name'), (v, _) {
+        log.add('root $v');
+        if (v == 'destroy') {
+          child.remove();
+        }
+      });
+      child.watch(parse('name'), (v, _) => log.add('child $v'));
+      watchGrp.detectChanges();
+      expect(log).toEqual(['root misko', 'child misko']);
+      log.clear();
+
+      context['name'] = 'destroy';
+      watchGrp.detectChanges();
+      expect(log).toEqual(['root destroy']);
+    });
+
+
+
     it('should watch children', () {
       var childContext = new PrototypeMap(context);
       context['a'] = 'OK';
