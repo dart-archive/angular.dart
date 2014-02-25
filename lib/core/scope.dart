@@ -343,9 +343,8 @@ class Scope {
   }
 }
 
-_mapEqual(Map a, Map b) => a.length == b.length
-    ? a.keys.every((k) => b.containsKey(k) && a[k] == b[k])
-    : false;
+_mapEqual(Map a, Map b) => a.length == b.length &&
+    a.keys.every((k) => b.containsKey(k) && a[k] == b[k]);
 
 class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
