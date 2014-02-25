@@ -1,6 +1,7 @@
 library date_spec;
 
 import '../_specs.dart';
+import 'package:intl/intl.dart';
 
 main() => describe('date', () {
   var morning   = DateTime.parse('2010-09-03T07:05:08.008Z'); //7am
@@ -62,5 +63,20 @@ main() => describe('date', () {
 
     date(noon, "shortTime");
     date(noon, "shortTime");
+  });
+
+  it('should accept various locales', () {
+
+    try {
+      Intl.defaultLocale = 'de';
+      expect(date(noon, "medium")).
+      toEqual('Sep 3, 2010 12:05:08 nachm.');
+
+      Intl.defaultLocale = 'fr';
+      expect(date(noon, "medium")).
+      toEqual('sept. 3, 2010 12:05:08 PM');
+    } finally {
+      Intl.defaultLocale = 'en';
+    }
   });
 });
