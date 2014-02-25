@@ -2,7 +2,7 @@
 
 set -e
 
-# export DART_SDK=`which dart | sed -e 's/\/dart\-sdk\/.*$/\/dart-sdk/'`
+export DART_SDK=`which dart | sed -e 's/\/dart\-sdk\/.*$/\/dart-sdk/'`
 
 # OS-specific Dartium path defaults
 case $( uname -s ) in
