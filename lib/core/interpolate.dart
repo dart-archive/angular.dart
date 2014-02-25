@@ -11,7 +11,7 @@ class Interpolation {
   String call(List parts, [_]) {
     if (parts == null) return seperators.join('');
     var str = [];
-    for (var i = 0, ii = parts.length; i < ii; i++) {
+    for (var i = 0; i < parts.length; i++) {
       str.add(seperators[i]);
       var value = parts[i];
       str.add(value == null ? '' : '$value');
