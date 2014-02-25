@@ -120,7 +120,7 @@ class BlockFactory {
         NgAnnotation annotation = ref.annotation;
         var visibility = _elementOnly;
         if (ref.annotation is NgController) {
-          scope = scope.createChild({});
+          scope = scope.createChild(new PrototypeMap(scope.context));
           nodeModule.value(Scope, scope);
         }
         if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
