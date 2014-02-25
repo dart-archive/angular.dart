@@ -238,6 +238,7 @@ class Scope {
       assert(locals == null);
       if (expression is EvalFunction1) return expression(context);
       if (expression is EvalFunction0) return expression();
+      return null;
     }
   }
 

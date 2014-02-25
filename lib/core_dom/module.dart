@@ -10,7 +10,6 @@ import 'package:perf_api/perf_api.dart';
 
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
-import 'package:angular/utils.dart';
 
 part 'block.dart';
 part 'block_factory.dart';
