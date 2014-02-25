@@ -707,8 +707,8 @@ describe('ng-model', () {
 
       var model = probe.directive(NgModel);
 
-      var input1 = element.query("#on");
-      var input2 = element.query("#off");
+      var input1 = element.querySelector("#on");
+      var input2 = element.querySelector("#off");
 
       expect(model.pristine).toEqual(true);
       expect(model.dirty).toEqual(false);
@@ -1020,6 +1020,24 @@ describe('ng-model', () {
       expect(_.rootScope.context['myModel']).toEqual('animal');
       expect(model.modelValue).toEqual('animal');
       expect(model.viewValue).toEqual('animal');
+    });
+
+    it('should set the model to be untouched when the model is reset', () {
+      var input = _.compile('<input type="text" ng-model="myModel" probe="i" />');
+      var model = _.rootScope.context['i'].directive(NgModel);
+
+      expect(model.touched).toBe(false);
+      expect(model.untouched).toBe(true);
+
+      _.triggerEvent(input, 'blur');
+
+      expect(model.touched).toBe(true);
+      expect(model.untouched).toBe(false);
+
+      model.reset();
+
+      expect(model.touched).toBe(false);
+      expect(model.untouched).toBe(true);
     });
   });
 });
