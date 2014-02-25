@@ -18,7 +18,7 @@ class NgModel extends NgControl implements NgAttachAware {
   BoundGetter getter = ([_]) => null;
   BoundSetter setter = (_, [__]) => null;
 
-  var _lastValue; 
+  var _lastValue;
   String _exp;
   final _validators = <NgValidatable>[];
 
@@ -206,7 +206,7 @@ class InputTextLikeDirective {
         ..onChange.listen(processValue)
         ..onInput.listen(processValue)
         ..onBlur.listen((e) {
-          if(ngModel.touched == null || ngModel.touched == false) {
+          if (ngModel.touched == null || ngModel.touched == false) {
             ngModel.touched = true;
           }
         });
@@ -228,9 +228,9 @@ class InputTextLikeDirective {
  *     <input type="number|range" ng-model="myModel">
  *
  * Model:
- * 
+ *
  *     num myModel;
- * 
+ *
  * This creates a two-way binding between the input and the named model property
  * (e.g., myModel in the example above). When processing the input, its value is
  * read as a [num], via the [dom.InputElement.valueAsNumber] field. If the input
@@ -248,21 +248,21 @@ class InputNumberLikeDirective {
 
   num get typedValue => inputElement.valueAsNumber;
   void set typedValue(num value) {
-    // [chalin, 2014-02-16] This post 
+    // [chalin, 2014-02-16] This post
     // http://lists.whatwg.org/pipermail/whatwg-whatwg.org/2010-January/024829.html
     // suggests that setting `valueAsNumber` to null should clear the field, but
     // it does not. [TODO: put BUG/ISSUE number here].  We implement a
     // workaround by setting `value`. Clean-up once the bug is fixed.
     if (value == null) {
       inputElement.value = null;
-    } else { 
+    } else {
       inputElement.valueAsNumber = value;
     }
   }
 
   InputNumberLikeDirective(dom.Element this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
-      if (value != typedValue 
+      if (value != typedValue
           && (value == null || value is num && !value.isNaN)) {
         typedValue = value;
       }

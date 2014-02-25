@@ -96,7 +96,7 @@ main() => describe('cookies', () {
           inject((ExceptionHandler exceptionHandler) {
         var i, longVal = '', cookieStr;
 
-        for(i=0; i<4083; i++) {
+        for (i=0; i<4083; i++) {
           longVal += 'r';  // Can't do + due to dartbug.com/14281
         }
 

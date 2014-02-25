@@ -363,7 +363,7 @@ main() => describe('scope', () {
         List listeners;
         List steps;
         var random = new Random();
-        for(var i = 0; i < 1000; i++) {
+        for (var i = 0; i < 1000; i++) {
           if (i % 10 == 0) {
             scopes = [root.createChild(null)];
             listeners = [];

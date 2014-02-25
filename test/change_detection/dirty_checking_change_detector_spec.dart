@@ -545,7 +545,7 @@ class CollectionRecordMatcher extends Matcher {
     var equals = true;
     if (collection != null) {
       CollectionItem collectionItem = changeRecord.collectionHead;
-      for(var item in collection) {
+      for (var item in collection) {
         if (collectionItem == null) {
           equals = false;
           diffs.add('collection too short: $item');
@@ -569,7 +569,7 @@ class CollectionRecordMatcher extends Matcher {
     var equals = true;
     if (additions != null) {
       AddedItem addedItem = changeRecord.additionsHead;
-      for(var item in additions) {
+      for (var item in additions) {
         if (addedItem == null) {
           equals = false;
           diffs.add('additions too short: $item');
@@ -593,7 +593,7 @@ class CollectionRecordMatcher extends Matcher {
     var equals = true;
     if (moves != null) {
       MovedItem movedItem = changeRecord.movesHead;
-      for(var item in moves) {
+      for (var item in moves) {
         if (movedItem == null) {
           equals = false;
           diffs.add('moves too short: $item');
@@ -617,7 +617,7 @@ class CollectionRecordMatcher extends Matcher {
     var equals = true;
     if (removals != null) {
       RemovedItem removedItem = changeRecord.removalsHead;
-      for(var item in removals) {
+      for (var item in removals) {
         if (removedItem == null) {
           equals = false;
           diffs.add('removes too short: $item');
@@ -678,7 +678,7 @@ class MapRecordMatcher extends Matcher {
     var equals = true;
     if (map != null) {
       KeyValue mapKeyValue = changeRecord.mapHead;
-      for(var item in map) {
+      for (var item in map) {
         if (mapKeyValue == null) {
           equals = false;
           diffs.add('map too short: $item');
@@ -702,7 +702,7 @@ class MapRecordMatcher extends Matcher {
     var equals = true;
     if (additions != null) {
       AddedKeyValue addedKeyValue = changeRecord.additionsHead;
-      for(var item in additions) {
+      for (var item in additions) {
         if (addedKeyValue == null) {
           equals = false;
           diffs.add('additions too short: $item');
@@ -726,7 +726,7 @@ class MapRecordMatcher extends Matcher {
     var equals = true;
     if (changes != null) {
       ChangedKeyValue movedKeyValue = changeRecord.changesHead;
-      for(var item in changes) {
+      for (var item in changes) {
         if (movedKeyValue == null) {
           equals = false;
           diffs.add('changes too short: $item');
@@ -750,7 +750,7 @@ class MapRecordMatcher extends Matcher {
     var equals = true;
     if (removals != null) {
       RemovedKeyValue removedKeyValue = changeRecord.removalsHead;
-      for(var item in removals) {
+      for (var item in removals) {
         if (removedKeyValue == null) {
           equals = false;
           diffs.add('rechanges too short: $item');

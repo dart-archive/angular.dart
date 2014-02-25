@@ -140,7 +140,7 @@ class BlockFactory {
             nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
               var scope = injector.get(Scope);
               var interpolate = injector.get(Interpolate);
-              for(var ref in nodesAttrsDirectives) {
+              for (var ref in nodesAttrsDirectives) {
                 new NgAttrMustacheDirective(nodeAttrs, ref.value, interpolate,
                     scope, injector.get(AstParser), injector.get(FilterMap));
               }
@@ -209,7 +209,7 @@ class BlockFactory {
             }
           }
         }
-        for(var map in ref.mappings) {
+        for (var map in ref.mappings) {
           var notify;
           if (attachDelayStatus != null) {
             var index = attachDelayStatus.length;

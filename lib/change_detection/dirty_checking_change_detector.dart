@@ -793,7 +793,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
     if (collection is List) {
       List list = collection;
-      for(int index = 0; index < list.length; index++) {
+      for (int index = 0; index < list.length; index++) {
         var item = list[index];
         if (record == null || !identical(item, record.item)) {
           record = mismatch(record, item, index);
@@ -806,7 +806,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       }
     } else {
       int index = 0;
-      for(var item in collection) {
+      for (var item in collection) {
         if (record == null || !identical(item, record.item)) {
           record = mismatch(record, item, index);
           maybeDirty = true;
