@@ -140,8 +140,8 @@ class _SelectMode {
 
   get _options => select.querySelectorAll('option');
   _forEachOption(fn, [quiteOnReturn = false]) {
-    for (var os = _options, i = 0, ii = os.length; i < ii; i++) {
-      var retValue = fn(os[i], i);
+    for (var i = 0; i < _options.length; i++) {
+      var retValue = fn(_options[i], i);
       if (quiteOnReturn && retValue != null) return retValue;
     }
     return null;
