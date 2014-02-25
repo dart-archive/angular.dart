@@ -2,9 +2,9 @@ library angular.mock_zone;
 
 import 'dart:async' as dart_async;
 
-List<Function> _asyncQueue = [];
-List<_TimerSpec> _timerQueue = [];
-List _asyncErrors = [];
+final _asyncQueue = <Function>[];
+final _timerQueue = <_TimerSpec>[];
+final _asyncErrors = [];
 bool _noMoreAsync = false;
 
 /**
@@ -34,12 +34,12 @@ microLeap() {
   while (!_asyncQueue.isEmpty) {
     // copy the queue as it may change.
     var toRun = new List.from(_asyncQueue);
-    _asyncQueue = [];
+    _asyncQueue.clear();
     // TODO: Support the case where multiple exceptions are thrown.
     // e.g. with a throwNextException() method.
     assert(_asyncErrors.isEmpty);
     toRun.forEach((fn) => fn());
-    if (!_asyncErrors.isEmpty) {
+    if (_asyncErrors.isNotEmpty) {
       var e = _asyncErrors.removeAt(0);
       throw ['Async error', e[0], e[1]];
     }
@@ -77,54 +77,55 @@ microLeap() {
  *       expect(timerRan).toBe(4);
  *     }));
  */
-clockTick({int days: 0,
-    int hours: 0,
-    int minutes: 0,
-    int seconds: 0,
-    int milliseconds: 0,
-    int microseconds: 0}) {
+void clockTick({int days: 0,
+          int hours: 0,
+          int minutes: 0,
+          int seconds: 0,
+          int milliseconds: 0,
+          int microseconds: 0}) {
   var tickDuration = new Duration(days: days, hours: hours, minutes: minutes,
       seconds: seconds, milliseconds: milliseconds, microseconds: microseconds);
 
-  var queue = _timerQueue;
   var remainingTimers = [];
-  _timerQueue = [];
-  queue.forEach((_TimerSpec spec) {
-    if (!spec.isActive) return; // Skip over inactive timers.
-    if (spec.periodic) {
-      // We always add back the periodic timer unless it's cancelled.
-      remainingTimers.add(spec);
-
-      // Ignore ZERO duration ticks for periodic timers.
-      if (tickDuration == Duration.ZERO) return;
-
-      spec.elapsed += tickDuration;
-      // Run the timer as many times as the timer priod fits into the tick.
-      while (spec.elapsed >= spec.duration) {
-        spec.elapsed -= spec.duration;
-        microLeap();
-        spec.fn(spec);
-      }
-    } else {
-      spec.duration -= tickDuration;
-      if (spec.duration <= Duration.ZERO) {
-        microLeap();
-        spec.fn();
-      } else {
+  var queue = new List.from(_timerQueue);
+  _timerQueue.clear();
+  queue
+    .where((_TimerSpec spec) => spec.isActive)
+    .forEach((_TimerSpec spec) {
+      if (spec.periodic) {
+        // We always add back the periodic timer unless it's cancelled.
         remainingTimers.add(spec);
+
+        // Ignore ZERO duration ticks for periodic timers.
+        if (tickDuration == Duration.ZERO) return;
+
+        spec.elapsed += tickDuration;
+        // Run the timer as many times as the timer priod fits into the tick.
+        while (spec.elapsed >= spec.duration) {
+          spec.elapsed -= spec.duration;
+          microLeap();
+          spec.fn(spec);
+        }
+      } else {
+        spec.duration -= tickDuration;
+        if (spec.duration <= Duration.ZERO) {
+          microLeap();
+          spec.fn();
+        } else {
+          remainingTimers.add(spec);
+        }
       }
-    }
-  });
+    });
   // Remaining timers should come before anything else scheduled after them.
   _timerQueue.insertAll(0, remainingTimers);
 }
 
 /**
-* Causes scheduleMicrotask calls to throw exceptions.
-*
-* This function is useful while debugging async tests: the exception
-* is thrown from the scheduleMicrotask call-site instead later in the test.
-*/
+ * Causes scheduleMicrotask calls to throw exceptions.
+ *
+ * This function is useful while debugging async tests: the exception
+ * is thrown from the scheduleMicrotask call-site instead later in the test.
+ */
 noMoreAsync() {
   _noMoreAsync = true;
 }
@@ -138,11 +139,10 @@ noMoreAsync() {
  *       ...
  *     }));
  */
-async(Function fn) =>
-    () {
+async(Function fn) => () {
   _noMoreAsync = false;
-  _asyncErrors = [];
-  _timerQueue = [];
+  _asyncErrors.clear();
+  _timerQueue.clear();
   var zoneSpec = new dart_async.ZoneSpecification(
       scheduleMicrotask: (_, __, ___, asyncFn) {
         if (_noMoreAsync) {
@@ -167,9 +167,12 @@ async(Function fn) =>
     throw "During runZoned: ${e[0]}.  Stack:\n${e[1]}";
   });
 
-  if (!_timerQueue.isEmpty && _timerQueue.any((_TimerSpec spec) => spec.isActive)) {
-    throw ["${_timerQueue.where((_TimerSpec spec) => spec.isActive).length} "
-           "active timer(s) are still in the queue."];
+  var activeTimers = _timerQueue.fold(0, (nb, _TimerSpec spec) {
+    return spec.isActive ? nb + 1 : nb;
+  });
+
+  if (activeTimers > 0) {
+    throw ["$activeTimers active timer(s) are still in the queue."];
   }
 };
 

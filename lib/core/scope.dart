@@ -234,12 +234,12 @@ class Scope {
     if (expression is String && expression.isNotEmpty) {
       var obj = locals == null ? context : new ScopeLocals(context, locals);
       return rootScope._parser(expression).eval(obj);
-    } else {
-      assert(locals == null);
-      if (expression is EvalFunction1) return expression(context);
-      if (expression is EvalFunction0) return expression();
-      return null;
     }
+
+    assert(locals == null);
+    if (expression is EvalFunction1) return expression(context);
+    if (expression is EvalFunction0) return expression();
+    return null;
   }
 
   dynamic applyInZone([expression, Map locals]) =>

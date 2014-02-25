@@ -24,7 +24,7 @@ class LoggingExceptionHandler implements ExceptionHandler {
   /**
    * All exceptions are stored here for later examining.
    */
-  final List<ExceptionWithStack> errors = [];
+  final errors = <ExceptionWithStack>[];
 
   call(error, stack, [reason]) {
     errors.add(new ExceptionWithStack(error, stack));
@@ -36,7 +36,7 @@ class LoggingExceptionHandler implements ExceptionHandler {
    * to verify that all exceptions have been processed.
    */
   assertEmpty() {
-    if (errors.length > 0) {
+    if (errors.isNotEmpty) {
       throw new ArgumentError('Exception Logger not empty:\n$errors');
     }
   }

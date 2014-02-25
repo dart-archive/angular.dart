@@ -37,7 +37,6 @@ main() {
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
       window.location.href = '#';
       _.rootScope.context['url'] = '#url';
-      print(_.rootElement.outerHtml);
       _.rootScope.apply();
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
       expect(window.location.href.endsWith("#url")).toEqual(true);

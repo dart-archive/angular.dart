@@ -9,33 +9,32 @@ part of angular.routing;
  * [NgViewDirective] can work with [NgViewDirective] to define nested views
  * for hierarchical routes. For example:
  *
- *     class MyRouteInitializer implements RouteInitializer {
- *       void init(Router router, ViewFactory view) {
- *         router.root
- *           ..addRoute(
- *               name: 'library',
- *               path: '/library',
- *               enter: view('library.html'),
- *               mount: (Route route) => route
- *                 ..addRoute(
- *                     name: 'all',
- *                     path: '/all',
- *                     enter: view('book_list.html'))
- *                 ..addRoute(
- *                     name: 'book',
- *                     path: '/:bookId',
- *                     mount: (Route route) => route
- *                       ..addRoute(
- *                           name: 'overview',
- *                           path: '/overview',
- *                           defaultRoute: true,
- *                           enter: view('book_overview.html'))
- *                       ..addRoute(
- *                           name: 'read',
- *                           path: '/read',
- *                           enter: view('book_read.html'))));
- *       }
+ *     void initRoutes(Router router, ViewFactory view) {
+ *       router.root
+ *         ..addRoute(
+ *             name: 'library',
+ *             path: '/library',
+ *             enter: view('library.html'),
+ *             mount: (Route route) => route
+ *               ..addRoute(
+ *                   name: 'all',
+ *                   path: '/all',
+ *                   enter: view('book_list.html'))
+ *               ..addRoute(
+ *                   name: 'book',
+ *                   path: '/:bookId',
+ *                   mount: (Route route) => route
+ *                     ..addRoute(
+ *                         name: 'overview',
+ *                         path: '/overview',
+ *                         defaultRoute: true,
+ *                         enter: view('book_overview.html'))
+ *                     ..addRoute(
+ *                         name: 'read',
+ *                         path: '/read',
+ *                         enter: view('book_read.html'))));
  *     }
+ *   }
  *
  * index.html:
  *

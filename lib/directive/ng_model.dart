@@ -45,6 +45,7 @@ class NgModel extends NgControl implements NgAttachAware {
   }
 
   reset() {
+    untouched = true;
     modelValue = _lastValue;
   }
 
@@ -203,7 +204,12 @@ class InputTextLikeDirective {
     };
     inputElement
         ..onChange.listen(processValue)
-        ..onInput.listen(processValue);
+        ..onInput.listen(processValue)
+        ..onBlur.listen((e) {
+          if(ngModel.touched == null || ngModel.touched == false) {
+            ngModel.touched = true;
+          }
+        });
   }
 
   processValue([_]) {

@@ -1157,6 +1157,43 @@ main() => describe('scope', () {
       rootScope.digest();
       expect(log).toEqual([]);
     }));
+
+
+    it('should properly watch canstants', inject((RootScope rootScope, Logger log) {
+      rootScope.watch('[1, 2]', (v, o) => log([v, o]));
+      expect(log).toEqual([]);
+      rootScope.apply();
+      expect(log).toEqual([[[1, 2], null]]);
+    }));
+
+
+    it('should properly watch array of fields', inject((RootScope rootScope, Logger log) {
+      rootScope.context['foo'] = 12;
+      rootScope.context['bar'] = 34;
+      rootScope.watch('[foo, bar]', (v, o) => log([v, o]));
+      expect(log).toEqual([]);
+      rootScope.apply();
+      expect(log).toEqual([[[12, 34], null]]);
+      log.clear();
+
+      rootScope.context['foo'] = 56;
+      rootScope.context['bar'] = 78;
+      rootScope.apply();
+      expect(log).toEqual([[[56, 78], [12, 34]]]);
+    }));
+
+
+    it('should properly watch array of fields2', inject((RootScope rootScope, Logger log) {
+      rootScope.watch('[ctrl.foo, ctrl.bar]', (v, o) => log([v, o]));
+      expect(log).toEqual([]);
+      rootScope.apply();
+      expect(log).toEqual([[[null, null], null]]);
+      log.clear();
+
+      rootScope.context['ctrl'] = {'foo': 56, 'bar': 78};
+      rootScope.apply();
+      expect(log).toEqual([[[56, 78], [null, null]]]);
+    }));
   });
 
 

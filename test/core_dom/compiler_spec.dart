@@ -19,7 +19,9 @@ main() => describe('dte.compiler', () {
         ..type(LocalAttrDirective)
         ..type(OneOfTwoDirectives)
         ..type(TwoOfTwoDirectives)
-        ..type(MyController);
+        ..type(MyController)
+        ..type(MyParentController)
+        ..type(MyChildController);
       return (Injector _injector) {
         injector = _injector;
         $compile = injector.get(Compiler);
@@ -541,6 +543,17 @@ main() => describe('dte.compiler', () {
         rootScope.apply();
         expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
       })));
+
+      it('should expose a parent controller to the scope of its children', inject((TestBed _) {
+
+        var element = _.compile('<div my-parent-controller>' +
+                                '  <div my-child-controller>{{ my_parent.data() }}</div>' +
+                                '</div>');
+
+        rootScope.apply();
+
+        expect(element.text).toContain('my data');
+      }));
     });
 
 
@@ -556,6 +569,22 @@ main() => describe('dte.compiler', () {
 
   });
 
+
+@NgController(
+  selector: '[my-parent-controller]',
+  publishAs: 'my_parent'
+)
+class MyParentController {
+  data() {
+    return "my data";
+  }
+}
+
+@NgController(
+  selector: '[my-child-controller]',
+  publishAs: 'my_child'
+)
+class MyChildController {}
 
 @NgComponent(
     selector: 'tab',
