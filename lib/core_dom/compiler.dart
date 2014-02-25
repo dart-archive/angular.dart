@@ -178,7 +178,7 @@ class Compiler {
               scope.watch(
                   dstExpression,
                   (outboundValue, _) {
-                    if(!blockOutbound) {
+                    if (!blockOutbound) {
                       blockInbound = true;
                       scope.rootScope.runAsync(() => blockInbound = false);
                       expressionFn.assign(scope.context, outboundValue);

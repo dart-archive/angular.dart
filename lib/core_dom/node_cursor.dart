@@ -12,7 +12,7 @@ class NodeCursor {
   cursorSize() => 1;
 
   macroNext() {
-    for(var i = 0, ii = cursorSize(); i < ii; i++, index++){}
+    for (var i = 0, ii = cursorSize(); i < ii; i++, index++){}
 
     return this.isValid();
   }
