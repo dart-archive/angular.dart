@@ -40,20 +40,20 @@ class ScopeEvent {
   Scope _currentScope;
 
   /**
-   * true or false depending on if stopPropagation() was executed.
+   * true or false depending on if [stopPropagation] was executed.
    */
   bool get propagationStopped => _propagationStopped;
   bool _propagationStopped = false;
 
   /**
-   * true or false depending on if preventDefault() was executed.
+   * true or false depending on if [preventDefault] was executed.
    */
   bool get defaultPrevented => _defaultPrevented;
   bool _defaultPrevented = false;
 
   /**
-   ** [name] - The name of the scope event.
-   ** [targetScope] - The destination scope that is listening on the event.
+   * [name] - The name of the scope event.
+   * [targetScope] - The destination scope that is listening on the event.
    */
   ScopeEvent(this.name, this.targetScope, this.data);
 
@@ -157,11 +157,8 @@ class Scope {
    */
   bool get isDestroyed {
     var scope = this;
-    var root = rootScope;
     while(scope != null) {
-      if (scope == root) {
-        return false;
-      }
+      if (scope == rootScope) return false;
       scope = scope._parentScope;
     }
     return true;
@@ -213,11 +210,7 @@ class Scope {
         };
       } else if (expression.startsWith(':')) {
         expression = expression.substring(1);
-        fn = (value, last) {
-          if (value != null) {
-            return reactionFn(value, last);
-          }
-        };
+        fn = (value, last) => value == null ? null : reactionFn(value, last);
       }
       ast = rootScope._astParser(expression, context: context, filters: filters);
     } else {
@@ -278,12 +271,14 @@ class Scope {
     var child = new Scope(childContext, rootScope, this,
                           _readWriteGroup.newGroup(childContext),
                           _readOnlyGroup.newGroup(childContext));
-    var next = null;
     var prev = _childTail;
-    child._next = next;
     child._prev = prev;
-    if (prev == null) _childHead = child; else prev._next = child;
-    if (next == null) _childTail = child; else next._prev = child;
+    if (prev == null) {
+      _childHead = child;
+    } else {
+      prev._next = child;
+    }
+    _childTail = child;
     return child;
   }
 
@@ -292,20 +287,18 @@ class Scope {
     broadcast(ScopeEvent.DESTROY);
     _Streams.destroy(this);
 
-    var prev = _prev;
-    var next = _next;
-    if (prev == null) {
-      _parentScope._childHead = next;
+    if (_prev == null) {
+      _parentScope._childHead = _next;
     } else {
-      prev._next = next;
+      _prev._next = _next;
     }
-    if (next == null) {
-      _parentScope._childTail = prev;
+    if (_next == null) {
+      _parentScope._childTail = _prev;
     } else {
-      next._prev = prev;
+      _next._prev = _prev;
     }
 
-    this._next = this._prev = null;
+    _next = _prev = null;
 
     _readWriteGroup.remove();
     _readOnlyGroup.remove();
@@ -350,17 +343,9 @@ class Scope {
   }
 }
 
-_mapEqual(Map a, Map b) {
-  if (a.length == b.length) {
-    var equal = true;
-    a.forEach((k, v) {
-      equal = equal && b.containsKey(k) && v == b[k];
-    });
-    return equal;
-  } else {
-    return false;
-  }
-}
+_mapEqual(Map a, Map b) => a.length == b.length
+    ? a.keys.every((k) => b.containsKey(k) && a[k] == b[k])
+    : false;
 
 class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
