@@ -341,7 +341,7 @@ class Scope {
       });
       childScope = childScope._next;
     }
-    if(!_mapEqual(counts, typeCounts)) {
+    if (!_mapEqual(counts, typeCounts)) {
       throw 'Streams actual: $counts != bookkeeping: $typeCounts\n'
             'Offending scope: [scope: ${this.hashCode}]\n'
             '${log.join('')}';
@@ -586,7 +586,7 @@ class _Streams {
         scope = queue.removeFirst();
         scopeStreams = scope._streams;
         assert(scopeStreams._scope == scope);
-        if(scopeStreams._streams.containsKey(name)) {
+        if (scopeStreams._streams.containsKey(name)) {
           var stream = scopeStreams._streams[name];
           event._currentScope = scope;
           stream._fire(event);
@@ -703,7 +703,7 @@ class ScopeStream extends async.Stream<ScopeEvent> {
   }
 
   void _fire(ScopeEvent event) {
-    for(ScopeStreamSubscription subscription in subscriptions) {
+    for (ScopeStreamSubscription subscription in subscriptions) {
       try {
         subscription._onData(event);
       } catch (e, s) {
@@ -845,7 +845,7 @@ class ExpressionVisitor implements Visitor {
     List<AST> values = _toAst(exp.values);
     assert(keys.length == values.length);
     var kv = <String>[];
-    for(var i = 0; i < keys.length; i++) {
+    for (var i = 0; i < keys.length; i++) {
       kv.add('${keys[i]}: ${values[i]}');
     }
     ast = new PureFunctionAST('{${kv.join(', ')}}', new MapFn(keys), values);
@@ -952,7 +952,7 @@ class _FilterWrapper extends FunctionApply {
       argsWatches = new List(length);
 
   apply(List values) {
-    for(var i=0; i < values.length; i++) {
+    for (var i=0; i < values.length; i++) {
       var value = values[i];
       var lastValue = args[i];
       if (!identical(value, lastValue)) {

@@ -1,4 +1,4 @@
-library jamine;
+library jasmine;
 
 import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/utils.dart' as utils;

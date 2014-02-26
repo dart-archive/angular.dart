@@ -289,7 +289,7 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
 
         // Select .name
         if ((element.classes) != null) {
-          for(var name in element.classes) {
+          for (var name in element.classes) {
             classes[name] = true;
             partialSelection = elementSelector.selectClass(directiveRefs,
                 partialSelection, element, name);
@@ -299,7 +299,7 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
         // Select [attributes]
         element.attributes.forEach((attrName, value) {
           attrs[attrName] = value;
-          for(var k = 0; k < attrSelector.length; k++) {
+          for (var k = 0; k < attrSelector.length; k++) {
             _ContainsSelector selectorRegExp = attrSelector[k];
             if (selectorRegExp.regexp.hasMatch(value)) {
               // this directive is matched on any attribute name, and so
@@ -333,7 +333,7 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
         break;
       case 3: // Text Node
         var value = node.nodeValue;
-        for(var k = 0; k < textSelector.length; k++) {
+        for (var k = 0; k < textSelector.length; k++) {
         var selectorRegExp = textSelector[k];
 
           if (selectorRegExp.regexp.hasMatch(value)) {

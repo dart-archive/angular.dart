@@ -21,7 +21,7 @@ class EvalError {
 /// Evaluate the [list] in context of the [scope].
 List evalList(scope, List<Expression> list, [FilterMap filters]) {
   int length = list.length;
-  for(int cacheLength = _evalListCache.length; cacheLength <= length; cacheLength++) {
+  for (int cacheLength = _evalListCache.length; cacheLength <= length; cacheLength++) {
     _evalListCache.add(new List(cacheLength));
   }
   List result = _evalListCache[length];

@@ -78,9 +78,9 @@ class Block implements ElementWrapper {
     bool preventDefault = false;
 
     Function removeDomElements = () {
-      for(var j = 0, jj = elements.length; j < jj; j++) {
+      for (var j = 0; j < elements.length; j++) {
         dom.Node current = elements[j];
-        dom.Node next = j+1 < jj ? elements[j+1] : null;
+        dom.Node next = j+1 < elements.length ? elements[j+1] : null;
 
         while(next != null && current.nextNode != next) {
           current.nextNode.remove();

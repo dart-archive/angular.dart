@@ -26,7 +26,7 @@ class Compiler {
 
       cursorAlreadyAdvanced = false;
 
-      for (var j = 0, jj = declaredDirectiveRefs.length; j < jj; j++) {
+      for (var j = 0; j < declaredDirectiveRefs.length; j++) {
         DirectiveRef directiveRef = declaredDirectiveRefs[j];
         NgAnnotation annotation = directiveRef.annotation;
         var blockFactory = null;
@@ -42,11 +42,11 @@ class Compiler {
               domCursor, templateCursor,
               directiveRef, remainingDirectives, directives);
 
-          j = jj; // stop processing further directives since they belong to transclusion;
+          // stop processing further directives since they belong to
+          // transclusion
+          j = declaredDirectiveRefs.length;
         }
-        if (usableDirectiveRefs == null) {
-          usableDirectiveRefs = [];
-        }
+        if (usableDirectiveRefs == null) usableDirectiveRefs = [];
         directiveRef.blockFactory = blockFactory;
         createMappings(directiveRef);
         usableDirectiveRefs.add(directiveRef);
@@ -178,7 +178,7 @@ class Compiler {
               scope.watch(
                   dstExpression,
                   (outboundValue, _) {
-                    if(!blockOutbound) {
+                    if (!blockOutbound) {
                       blockInbound = true;
                       scope.rootScope.runAsync(() => blockInbound = false);
                       expressionFn.assign(scope.context, outboundValue);

@@ -12,7 +12,7 @@ class NodeCursor {
   cursorSize() => 1;
 
   macroNext() {
-    for(var i = 0, ii = cursorSize(); i < ii; i++, index++){}
+    for (var i = 0, ii = cursorSize(); i < ii; i++, index++){}
 
     return this.isValid();
   }
@@ -75,7 +75,7 @@ class NodeCursor {
   remove() {
     var nodes = nodeList();
 
-    for (var i = 0, ii = nodes.length; i < ii; i++) {
+    for (var i = 0; i <  nodes.length; i++) {
       // NOTE(deboer): If elements is a list of child nodes on a node, then
       // calling Node.remove() may also remove it from the list.  Thus, we
       // call elements.removeAt first so only one node is removed.
