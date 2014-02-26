@@ -1,4 +1,4 @@
-library css_animation_spec;
+library css_animate_spec;
 
 import 'dart:async';
 
@@ -8,20 +8,21 @@ main() {
   describe('CssAnimate', () {
     TestBed _;
     NgAnimate animate;
-    MockAnimationRunner runner;
+    MockAnimationLoop runner;
 
     beforeEach(inject((TestBed tb) {
       _ = tb;
-      runner = new MockAnimationRunner();
-      animate = new CssAnimate(runner, new NoAnimate());
+      runner = new MockAnimationLoop();
+      animate = new CssAnimate(runner,
+          new CssAnimationMap(), new AnimationOptimizer());
     }));
 
     it('should add a css class to an element node', async(() {
       _.compile('<div></div>');
       expect(_.rootElement).not.toHaveClass('foo');
       
-      animate.addClass(_.rootElements, 'foo');
-      runner.doEverything();
+      animate.addClass(_.rootElement, 'foo');
+      runner.frame();
       expect(_.rootElement).toHaveClass('foo');
     }));
     
@@ -29,8 +30,8 @@ main() {
       _.compile('<div class="baz foo bar"></div>');
       expect(_.rootElement).toHaveClass('foo');
 
-      animate.removeClass(_.rootElements, 'foo');
-      runner.doEverything();
+      animate.removeClass(_.rootElement, 'foo');
+      runner.frame();
       expect(_.rootElement).not.toHaveClass('foo');
     }));
     
@@ -47,7 +48,7 @@ main() {
       expect(_.rootElement.childNodes.length).toBe(2);
 
       animate.remove(_.rootElement.childNodes);
-      runner.doEverything();
+      runner.frame();
       // This might lead to a flash of unstyled content before
       // removal. It would be nice if this was un-needed.
       microLeap();
@@ -63,15 +64,15 @@ main() {
       expect(_.rootElement.text).toEqual("AaBb");
 
       animate.move(b, _.rootElement, insertBefore: a.first);
-      runner.doEverything();
+      runner.frame();
       expect(_.rootElement.text).toEqual("BbAa");
             
       animate.move(a, _.rootElement, insertBefore: b.first);
-      runner.doEverything();
+      runner.frame();
       expect(_.rootElement.text).toEqual("AaBb");
             
       animate.move(a, _.rootElement);
-      runner.doEverything();
+      runner.frame();
       expect(_.rootElement.text).toEqual("BbAa");
     }));
 
@@ -81,13 +82,13 @@ main() {
       List<Node> nodes = $('<span>A</span>a<span>B</span>b').toList();
 
       animate.insert(nodes, _.rootElement);
-      runner.doEverything();
+      runner.frame();
       expect(_.rootElement.text).toEqual("AaBb");
     }));
     
     it('should prevent child animations', async(() {
       _.compile('<div></div>');
-      animate.addClass(_.rootElements, 'test');
+      animate.addClass(_.rootElement, 'test');
       runner.start();
       expect(_.rootElement).toHaveClass('test-add');
       var spans = $('<span>A</span><span>B</span>');
@@ -95,65 +96,35 @@ main() {
       runner.start();
       expect(spans.first).not.toHaveClass('ng-add');
     }));
-    
-    it('should play any Animation', async(() {
-      var mockAnimation = new MockAnimation();
-      animate.play([mockAnimation, mockAnimation]);
-      expect(runner.animation).toBe(mockAnimation);
-    }));
   });
 }
 
-class MockAnimation extends Mock implements Animation {
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class MockAnimationRunner extends Mock implements AnimationRunner {
-  bool hasRunningParentAnimationValue = false;
-  DateTime now = new DateTime.now();
-  Animation animation;
+class MockAnimationLoop extends Mock implements AnimationLoop {
+  num time = 0.0;
   
-  AnimationHandle play(Animation animation) {
-    this.animation = animation;
-    animation.attach();
-    return new MockAnimationHandle();
-  }
-  
-  doEverything() {
-    start();
-    update();
-    detach();
-  }
-  
-  start([num offset = 0]) {
-    animation.start(offset);
-  }
-  
-  update([num offset = 0]) {
-    animation.update(offset);
-  }
-  
-  read([num offset = 0]) {
-    animation.read(offset);
-  }
-  
-  detach([num offset = 0]) {
-    animation.detach(offset);
-  }
-  
-  bool hasRunningParentAnimation(Element element) {
-    return hasRunningParentAnimationValue;
-  }
-
-  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class MockAnimationHandle extends Mock implements AnimationHandle {
   Future<AnimationResult> get onCompleted {
     var cmp = new Completer<AnimationResult>();
     cmp.complete(AnimationResult.COMPLETED);
     return cmp.future;
   }
+
+  List<LoopedAnimation> animations = [];
   
+  play(Animation animation) {
+    animations.add(animation);
+  }
+  
+  frame() {
+    for(var animation in animations) {
+      animation.read(time);
+    }
+    
+    for(var animation in animations) {
+      animation.update(time);
+    }
+    
+    time += 16.0;
+  }
+
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

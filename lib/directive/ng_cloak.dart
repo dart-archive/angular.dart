@@ -25,8 +25,8 @@ part of angular.directive;
 @NgDirective(selector: '[ng-cloak]')
 @NgDirective(selector: '.ng-cloak')
 class NgCloakDirective {
-  NgCloakDirective(dom.Element element) {
+  NgCloakDirective(dom.Element element, NgAnimate aniamte) {
     element.attributes.remove('ng-cloak');
-    element.classes.remove('ng-cloak');
+    aniamte.show(element, 'ng-cloak');
   }
 }

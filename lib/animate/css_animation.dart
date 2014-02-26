@@ -6,133 +6,153 @@ part of angular.animate;
  * animation duration from the css classes and use it to complete futures when
  * the css animations complete.
  */
-class CssAnimation extends Animation {
+class CssAnimation extends LoopedAnimation {
+  final CssAnimationMap _animationMap;
+  final AnimationOptimizer _optimizer;
+
+  final dom.Element element;
   final String addAtStart;
   final String addAtEnd;
   final String removeAtStart;
   final String removeAtEnd;
 
-  final String cssEventClass;
-  final String cssEventActiveClass;
+  final String eventClass;
+  final String activeClass;
 
-  final Completer<AnimationResult> _completer= new Completer<AnimationResult>();
+  final Completer<AnimationResult> _completer
+      = new Completer<AnimationResult>.sync();
   
-  static const num extraDuration = 16.0; // Two extra 60fps frames of duration.
+  static const num extraDuration = 20.0; // Just a little extra
 
-  AnimationResult _result;
-  bool _isActive = false;
+  bool _active = true;
+  bool _started = false;
 
   Future<AnimationResult> get onCompleted => _completer.future;
 
-  num startTime;
-  num duration;
-  final Profiler profiler;
+  num _startTime;
+  num _duration;
 
-  CssAnimation(dom.Element targetElement,
-      this.cssEventClass,
-      this.cssEventActiveClass,
-      { this.profiler,
-        this.addAtStart,
+  CssAnimation(
+      this.element,
+      this.eventClass,
+      this.activeClass,
+      { this.addAtStart,
         this.removeAtStart,
         this.addAtEnd,
-        this.removeAtEnd })
-        : super(targetElement);
-
-  attach() {
-    // this happens right after creation time but before the first window
-    // animation frame is called.
-    element.classes.add(cssEventClass);
+        this.removeAtEnd,
+        CssAnimationMap animationMap,
+        AnimationOptimizer optimizer })
+      : _animationMap = animationMap,
+        _optimizer = optimizer {
+    _initialize();
+  }
+  
+  void _initialize() {
+    if (_optimizer != null) {
+      _optimizer.track(this, element);
+    }
+    if(_animationMap != null) {
+      _animationMap.track(this);
+    }
+    element.classes.add(eventClass);
+    if (addAtStart != null) {
+      element.classes.add(addAtStart);
+    }
+    if (removeAtStart != null) {
+      element.classes.remove(removeAtStart);
+    }
   }
 
-  start(num timeMs) {
-    // This occurs on the first animation frame.
-    // TODO(codelogic): It might be good to find some way of defering this to
-    //     the next digest loop instead of the first animation frame.
-    startTime = timeMs;
-    try {
-      // Duration needs to be in milliseconds
-      duration = _computeTotalDuration() * 1000 + extraDuration;
-    } catch (e) { }
+  void read(num timeInMs) {
+    if (_active && _startTime == null) {
+      _startTime = timeInMs;
+      try {
+        var style = element.getComputedStyle();
+        _duration = util.computeLongestTransition(style);
+        if(_duration > 0.0) {
+          // Add a little extra time just to make sure transitions
+          // fully complete and that we don't remove the animation classes
+          // before it's completed.
+          _duration = _duration + extraDuration;
+        }
+      } catch (e) { }
+    }
   }
 
-  bool update(num timeMs) {
-    // This will always run after the first animationFrame is queued so that
-    // inserted elements have the base event class applied before adding the
-    // active class to the element. If this is not done, inserted dom nodes
-    // will not run their enter animation.
-    if(!_isActive && duration > 0.0 && timeMs >= startTime) {
-      element.classes.add(cssEventActiveClass);
-      if(addAtStart != null) {
-        element.classes.add(addAtStart);
-      } 
-      if(removeAtStart != null) {
-        element.classes.remove(removeAtStart);
-      }
-      _isActive = true;
-    } else if (timeMs >= startTime + duration) {
+  bool update(num timeInMs) {
+    if (!_active) {
+      return false;
+    }
+    
+    if (timeInMs >= _startTime + _duration) {
+      _complete(AnimationResult.COMPLETED);
       // TODO(codelogic): If the initial frame takes a significant amount of
       //   time, the computed duration + startTime might not actually represent
       //   the end of the animation
       // Done with the animation
       return false;
+    } else if (!_started) {
+      // This will always run after the first animationFrame is queued so that
+      // inserted elements have the base event class applied before adding the
+      // active class to the element. If this is not done, inserted dom nodes
+      // will not run their enter animation.
+
+      element.classes.add(activeClass);
+      _started = true;
     }
 
     // Continue updating
     return true;
   }
 
-  detach(num timeMs) {
-    if (!_completer.isCompleted) {
-      _onComplete(AnimationResult.COMPLETED);
-    }
-  }
-
-  interruptAndCancel() {
-    if (!_completer.isCompleted) {
-      _removeEventAnimationClasses();
-      if(addAtStart != null) {
+  void cancel() {
+    if (_active) {
+      _detach();
+      if (addAtStart != null) {
+  
         element.classes.remove(addAtStart);
       } 
-      if(removeAtStart != null) {
+      if (removeAtStart != null) {
         element.classes.add(removeAtStart);
       }
-      _result = AnimationResult.CANCELED;
-      _completer.complete(_result);
+      
+      if (_completer != null) {
+        _completer.complete(AnimationResult.CANCELED);
+      }
     }
   }
 
-  interruptAndComplete() {
-    if (!_completer.isCompleted) {
-      _onComplete(AnimationResult.COMPLETED_IGNORED);
-    }
+  void complete() {
+    _complete(AnimationResult.COMPLETED_IGNORED);
   }
 
-  // Since there are two different ways to 'complete' an animation:
-  void _onComplete(AnimationResult result) {
-    _removeEventAnimationClasses();
-    _result = result;
-    if(addAtEnd != null) {
-      element.classes.add(addAtEnd);
-    } 
-    if(removeAtEnd != null) {
-      element.classes.remove(removeAtEnd);
+  // Since there are two different ways to 'complete' an animation, this lets us
+  // configure the final result.
+  void _complete(AnimationResult result) {
+    if (_active) {
+      _detach();
+      if (addAtEnd != null) {
+        element.classes.add(addAtEnd);
+      } 
+      if (removeAtEnd != null) {
+        element.classes.remove(removeAtEnd);
+      }
+      _completer.complete(result);
     }
-    _completer.complete(_result);
   }
 
   // Cleanup css event classes.
-  _removeEventAnimationClasses() {
-    element.classes.remove(cssEventClass);
-    element.classes.remove(cssEventActiveClass);
-  }
+  void _detach() {
+    _active = false;
 
-  num _computeTotalDuration() {
-    // TODO(codelogic) this needs to take into account animation, repetition
-    //   count and see if delay affects the computed duration.
+    if(_animationMap != null) {
+      _animationMap.forget(this);
+    }
+    if(_optimizer != null) {
+      _optimizer.forget(this);
+    }
 
-    // TODO(codelogic): It might be possible to cache durations and avoid the
-    //   getComputedStyle() hit for elements and transitions we've already seen.
-    var style = element.getComputedStyle();
-    return computeLongestTransition(style);
+    element.classes.remove(eventClass);
+    element.classes.remove(activeClass);
   }
 }

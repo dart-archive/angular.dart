@@ -62,13 +62,13 @@ part of angular.directive;
  *     }
  *
  */
-@NgDirective(
-    selector: '[ng-class]',
-    map: const {'ng-class': '@valueExpression'},
-    exportExpressionAttrs: const ['ng-class'])
+@NgDirective(selector: '[ng-class]', map: const {
+  'ng-class': '@valueExpression'
+}, exportExpressionAttrs: const ['ng-class'])
 class NgClassDirective extends _NgClassBase {
-  NgClassDirective(dom.Element element, Scope scope, NodeAttrs attrs, AstParser parser)
-      : super(element, scope, null, attrs, parser);
+  NgClassDirective(dom.Element element, Scope scope, NodeAttrs attrs, AstParser
+      parser, NgAnimate animate)
+      : super(element, scope, null, attrs, parser, animate);
 }
 
 /**
@@ -97,13 +97,13 @@ class NgClassDirective extends _NgClassBase {
  *       color: blue;
  *     }
  */
-@NgDirective(
-    selector: '[ng-class-odd]',
-    map: const {'ng-class-odd': '@valueExpression'},
-    exportExpressionAttrs: const ['ng-class-odd'])
+@NgDirective(selector: '[ng-class-odd]', map: const {
+  'ng-class-odd': '@valueExpression'
+}, exportExpressionAttrs: const ['ng-class-odd'])
 class NgClassOddDirective extends _NgClassBase {
-  NgClassOddDirective(dom.Element element, Scope scope, NodeAttrs attrs, AstParser parser)
-      : super(element, scope, 0, attrs, parser);
+  NgClassOddDirective(dom.Element element, Scope scope, NodeAttrs
+      attrs, AstParser parser, NgAnimate animate)
+      : super(element, scope, 0, attrs, parser, animate);
 }
 
 /**
@@ -132,13 +132,13 @@ class NgClassOddDirective extends _NgClassBase {
  *       color: blue;
  *     }
  */
-@NgDirective(
-    selector: '[ng-class-even]',
-    map: const {'ng-class-even': '@valueExpression'},
-    exportExpressionAttrs: const ['ng-class-even'])
+@NgDirective(selector: '[ng-class-even]', map: const {
+  'ng-class-even': '@valueExpression'
+}, exportExpressionAttrs: const ['ng-class-even'])
 class NgClassEvenDirective extends _NgClassBase {
-  NgClassEvenDirective(dom.Element element, Scope scope, NodeAttrs attrs, AstParser parser)
-      : super(element, scope, 1, attrs, parser);
+  NgClassEvenDirective(dom.Element element, Scope scope, NodeAttrs
+      attrs, AstParser parser, NgAnimate animate)
+      : super(element, scope, 1, attrs, parser, animate);
 }
 
 abstract class _NgClassBase {
@@ -147,10 +147,13 @@ abstract class _NgClassBase {
   final int mode;
   final NodeAttrs nodeAttrs;
   final AstParser _parser;
+  final NgAnimate _animate;
   var previousSet = [];
   var currentSet = [];
 
-  _NgClassBase(this.element, this.scope, this.mode, this.nodeAttrs, this._parser) {
+  
+      _NgClassBase(this.element, this.scope, this.mode, this.nodeAttrs, this._parser, this._animate)
+      {
     var prevClass;
 
     nodeAttrs.observe('class', (String newValue) {
@@ -164,22 +167,20 @@ abstract class _NgClassBase {
   set valueExpression(currentExpression) {
     // this should be called only once, so we don't worry about cleaning up
     // watcher registrations.
-    scope.watch(
-        _parser(currentExpression, collection: true),
-        (current, _) {
-          currentSet = _flatten(current);
-          _handleChange(scope.context[r'$index']);
-        },
-        readOnly: true
-    );
+    scope.watch(_parser(currentExpression, collection: true), (current, _) {
+      currentSet = _flatten(current);
+      _handleChange(scope.context[r'$index']);
+    }, readOnly: true);
     if (mode != null) {
       scope.watch(_parser(r'$index'), (index, oldIndex) {
         var mod = index % 2;
         if (oldIndex == null || mod != oldIndex % 2) {
           if (mod == mode) {
-            element.classes.addAll(currentSet);
+            currentSet.forEach((css) => _animate.addClass(element, css));
+            //element.classes.addAll(currentSet);
           } else {
-            element.classes.removeAll(previousSet);
+            previousSet.forEach((css) => _animate.removeClass(element, css));
+            //element.classes.removeAll(previousSet);
           }
         }
       }, readOnly: true);
@@ -188,7 +189,21 @@ abstract class _NgClassBase {
 
   _handleChange(index) {
     if (mode == null || (index != null && index % 2 == mode)) {
-      element.classes..removeAll(previousSet)..addAll(currentSet);
+      previousSet.forEach((css) {
+        if (!currentSet.contains(css)) {
+          _animate.removeClass(element, css); 
+        } else {
+          element.classes.remove(css);
+        }
+      });
+
+      currentSet.forEach((css) {
+        if (!previousSet.contains(css)) {
+          _animate.addClass(element, css); 
+        } else {
+          element.classes.add(css);
+        }  
+      });
     }
 
     previousSet = currentSet;
@@ -200,8 +215,8 @@ abstract class _NgClassBase {
       classes = (classes as CollectionChangeRecord).iterable.toList();
     }
     if (classes is List) {
-      return classes.where((String e) => e != null && e.isNotEmpty)
-                    .toList(growable: false);
+      return classes.where((String e) => e != null && e.isNotEmpty).toList(
+          growable: false);
     }
     if (classes is MapChangeRecord) {
       classes = (classes as MapChangeRecord).map;
@@ -210,6 +225,7 @@ abstract class _NgClassBase {
       return classes.keys.where((key) => toBool(classes[key])).toList();
     }
     if (classes is String) return classes.split(' ');
-    throw 'ng-class expects expression value to be List, Map or String, got $classes';
+    throw
+        'ng-class expects expression value to be List, Map or String, got $classes';
   }
 }

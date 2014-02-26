@@ -3,61 +3,56 @@ library angular.animate;
 import 'dart:async';
 import 'dart:html' as dom;
 
-import 'package:angular/core/module.dart';
+import 'package:angular/core_dom/module.dart';
+import 'package:angular/core_dom/dom_util.dart' as util;
 import 'package:logging/logging.dart';
 import 'package:perf_api/perf_api.dart';
-import 'package:quiver/collection.dart';
 import 'package:di/di.dart';
 
-part 'animate.dart';
-part 'animation.dart';
-part 'animation_handle.dart';
-part 'animation_runner.dart';
-part 'css_animation.dart';
+part 'animations.dart';
+part 'animation_loop.dart';
+part 'animation_optimizer.dart';
 part 'css_animate.dart';
-part 'dom_tools.dart';
-part 'no_animate.dart';
+part 'css_animation.dart';
 
 final Logger _logger = new Logger('ng.animate');
 
 /**
- * Installing the NgAnimateModule will enable the [CssAnimate] animation
- * implementation in your application. This will change the behavior of block
- * construction and allow you to add and define css keyframe animations and
- * transitions in the styles of your elements.
+ * Installing the NgAnimateModule will install a [CssAnimate] implementation of
+ * the [NgAnimate] interface in your application. This will change the behavior
+ * of block construction, and some of the native directives to allow you to add
+ * and define css transition and keyframe animations for the styles of your
+ * elements.
  * 
  *   Example html:
  *
- *     <div ng-if="ctrl.myBoolean" class="magic">...</div>
+ *     <div ng-if="ctrl.myBoolean" class="my-div">...</div>
  *   
  *   Example css defining an opacity transition over .5 seconds using the
- *   `.ng-insert` and `.ng-remove` css classes:
+ *   `.ng-enter` and `.ng-leave` css classes:
  *
- *     magic.ng-insert {
+ *     .my-div.ng-enter {
  *       transition: all 500ms;
  *       opacity: 0;
  *     }
- *     magic.ng-insert-active {
+ *     .my-div.ng-enter-active {
  *       opacity: 1;
  *     }
  *     
- *     magic.ng-remove {
+ *     .my-div.ng-leave {
  *       transition: all 500ms;
  *       opacity: 1;
  *     }
- *     magic.ng-insert-active {
+ *     .my-div.ng-leave-active {
  *       opacity: 0;
  *     }
  */
 class NgAnimateModule extends Module {
   NgAnimateModule() {
-    value(dom.Window, dom.window);
-    type(AnimationRunner);
-    type(NoAnimate);
+    type(AnimationFrame);
+    type(AnimationLoop);
+    type(CssAnimationMap);
+    type(AnimationOptimizer);
     type(NgAnimate, implementedBy: CssAnimate);
-  }
-
-  NgAnimateModule.noOp() {
-    type(NgAnimate, implementedBy: NoAnimate);
   }
 }

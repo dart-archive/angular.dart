@@ -1,4 +1,4 @@
-library animation_handle_spec;
+library no_animate_spec;
 
 import '../_specs.dart';
 
@@ -16,7 +16,7 @@ main() {
       var animate = new NoAnimate();
       _.compile('<div></div>');
       expect(_.rootElement).not.toHaveClass('foo');
-      animate.addClass(_.rootElements, 'foo');
+      animate.addClass(_.rootElement, 'foo');
       expect(_.rootElement).toHaveClass('foo');
     });
     
@@ -24,7 +24,7 @@ main() {
       var animate = new NoAnimate();
       _.compile('<div class="foo"></div>');
       expect(_.rootElement).toHaveClass('foo');
-      animate.removeClass(_.rootElements, 'foo');
+      animate.removeClass(_.rootElement, 'foo');
       expect(_.rootElement).not.toHaveClass('foo');
     });
     

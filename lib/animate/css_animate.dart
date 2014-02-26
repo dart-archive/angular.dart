@@ -3,158 +3,186 @@ part of angular.animate;
 /**
  * This defines the standard set of CSS animation classes, transitions, and
  * nomeanclature that will eventually be the foundation of the AngularDart
- * animation framework. This implementation uses the [AnimationRunner] class to
- * queue and run CSS based transition and keyframe animations, and provides a
- * [play(animation)] hook for running arbetrary animations.
- *
- * TODO(codelogic): There needs to be a way to turn animations on / off for
- *   sections of DOM so that they don't ever get animation classes added
- *   in these cases.
+ * animation framework. This implementation uses the [AnimationLoop] class to
+ * queue and run CSS based transition and keyframe animations.
  */
-class CssAnimate extends NgAnimate {
-  static const String ngAnimateCssClass = "ng-animate";
-  static const String ngMoveCssClass = "ng-move";
-  static const String ngInsertCssClass = "ng-insert";
-  static const String ngRemoveCssClass = "ng-remove";
+class CssAnimate implements NgAnimate {
+  static const String NG_ANIMATE = "ng-animate";
+  static const String NG_MOVE = "ng-move";
+  static const String NG_INSERT = "ng-enter";
+  static const String NG_REMOVE = "ng-leave";
 
-  static const String ngAddPostfix = "add";
-  static const String ngRemovePostfix = "remove";
-  static const String ngActivePostfix = "active";
+  static const String NG_ADD_POSTFIX = "-add";
+  static const String NG_REMOVE_POSTFIX = "-remove";
+  static const String NG_ACTIVE_POSTFIX = "-active";
 
-  AnimationRunner _animationRunner;
-  NoAnimate _noAnimate;
-  final Profiler profiler;
+  final AnimationLoop _runner;
+  final AnimationOptimizer _optimizer;
+  final CssAnimationMap _animationMap;
 
-  CssAnimate(AnimationRunner this._animationRunner, this._noAnimate,
-      [ this.profiler ]);
+  CssAnimate(this._runner, this._animationMap, this._optimizer);
 
-  AnimationHandle addClass(Iterable<dom.Node> nodes, String cssClass) {
-    var elements = _partition(_elements(nodes));
- 
-    var animateHandles = elements.animate.map((el) {
-      return _cssAnimation(el, "$cssClass-$ngAddPostfix",
-              cssClassToAdd: cssClass);
-    });
-    
-    if(elements.noAnimate.length > 0)
-      return _pickAnimationHandle(animateHandles,
-          _noAnimate.addClass(elements.noAnimate, cssClass));
-    return _pickAnimationHandle(animateHandles);
+  Animation addClass(dom.Element element, String cssClass) {
+    if (!_optimizer.shouldAnimate(element)) {
+      element.classes.add(cssClass);
+      return new NoOpAnimation();
+    }
+
+    cancelAnimation(element, "$cssClass$NG_REMOVE_POSTFIX");
+    var event = "$cssClass$NG_ADD_POSTFIX";
+    return animate(element, event, addAtEnd: cssClass);
   }
 
-  AnimationHandle removeClass(Iterable<dom.Node> nodes, String cssClass) {
-    var elements = _partition(_elements(nodes));
-    
-    var animateHandles = elements.animate.map((el) {
-      return _cssAnimation(el, "$cssClass-$ngRemovePostfix",
-          cssClassToRemove: cssClass);
-    });
-    
-    if(elements.noAnimate.length > 0)
-      return _pickAnimationHandle(animateHandles,
-          _noAnimate.removeClass(elements.noAnimate, cssClass));
-    return _pickAnimationHandle(animateHandles);
+  Animation removeClass(dom.Element element, String cssClass) {
+    if (!_optimizer.shouldAnimate(element)) {
+      element.classes.remove(cssClass);
+      return new NoOpAnimation();
+    }
+
+    cancelAnimation(element, "$cssClass$NG_ADD_POSTFIX");
+
+    var event = "$cssClass$NG_REMOVE_POSTFIX";
+    return animate(element, event, removeAtEnd: cssClass);
   }
 
-  AnimationHandle insert(Iterable<dom.Node> nodes, dom.Node parent,
+  Animation show(dom.Element element, String cssClass) {
+    if (!_optimizer.shouldAnimate(element)) {
+      element.classes.remove(cssClass);
+      return new NoOpAnimation();
+    }
+
+    cancelAnimation(element, "$cssClass$NG_ADD_POSTFIX");
+
+    var event = "$cssClass$NG_REMOVE_POSTFIX";
+    return animate(element, event, removeAtStart: cssClass);
+  }
+
+  Animation hide(dom.Element element, String cssClass) {
+    if (!_optimizer.shouldAnimate(element)) {
+      element.classes.add(cssClass);
+      return new NoOpAnimation();
+    }
+
+    cancelAnimation(element, "$cssClass$NG_REMOVE_POSTFIX");
+
+    var event = "$cssClass$NG_ADD_POSTFIX";
+    return animate(element, event, addAtEnd: cssClass);
+  }
+
+  Animation insert(Iterable<dom.Node> nodes, dom.Node parent,
                          { dom.Node insertBefore }) {
-    _domInsert(nodes, parent, insertBefore: insertBefore);
+    util.domInsert(nodes, parent, insertBefore: insertBefore);
 
-    var animateHandles = _elements(nodes).where((el) {
-      return !_animationRunner.hasRunningParentAnimation(el.parent);
+    var animations = util.getElements(nodes).where((el) {
+      return _optimizer.shouldAnimate(el);
     }).map((el) {
-      return _cssAnimation(el, ngInsertCssClass);
+      return animate(el, NG_INSERT);
     });
 
-    return _pickAnimationHandle(animateHandles);
+    return _animationFromList(animations);
   }
 
-  AnimationHandle remove(Iterable<dom.Node> nodes) {
-    var elements = _partition(_allNodesBetween(nodes));
+  Animation remove(Iterable<dom.Node> nodes) {
+    var animations = nodes.map((node) {
+      if (node.nodeType == dom.Node.ELEMENT_NODE
+          && _optimizer.shouldAnimate(node)) {
+        return animate(node, NG_REMOVE);
+      }
+      return new NoOpAnimation();
+    });
+
+    var result = _animationFromList(animations)..onCompleted.then((result) {
+      if (result.isCompleted) {
+        nodes.toList().forEach((n) => n.remove());
+      }
+    });
     
-    var animateHandles = elements.animate.map((el) {
-      return _cssAnimation(el, ngRemoveCssClass)..onCompleted.then((result) {
-        if(result.isCompleted) {
-          el.remove();
-        }
-      });
-    });
-    elements.noAnimate.forEach((el) => el.remove());
-    return _pickAnimationHandle(animateHandles);
+    return result;
   }
 
-  AnimationHandle move(Iterable<dom.Node> nodes, dom.Node parent,
+  Animation move(Iterable<dom.Node> nodes, dom.Node parent,
                        { dom.Node insertBefore }) {
-    _domMove(nodes, parent, insertBefore: insertBefore);
+    util.domMove(nodes, parent, insertBefore: insertBefore);
     
-    var animateHandles = _elements(nodes).where((el) {
-      return !_animationRunner.hasRunningParentAnimation(el.parent);
+    var animations = util.getElements(nodes).where((el) {
+      return _optimizer.shouldAnimate(el);
     }).map((el) {
-      return _cssAnimation(el, ngMoveCssClass);
+      return animate(el, NG_MOVE);
     });
 
-    return _pickAnimationHandle(animateHandles);
+    return _animationFromList(animations);
   }
 
-  AnimationHandle play(Iterable<Animation> animations) {
-    // TODO(codelogic): Should we skip the running parent animation check for
-    // custom animations?
-    return _pickAnimationHandle(animations.map((a)
-        => _animationRunner.play(a)));
-  }
-
-  AnimationHandle _cssAnimation(dom.Element element,
-      String cssEventClass,
-        { String cssClassToAdd,
-          String cssClassToRemove}) {
+  /**
+   * Run a css animation on a element for a given css class. If the css
+   * animation already exists, the method will attempt to return the existing
+   * instance.
+   */
+  CssAnimation animate(
+      dom.Element element, 
+      String event,
+      { String addAtStart,
+        String addAtEnd,
+        String removeAtStart,
+        String removeAtEnd }) {
+    
+    var _existing = _animationMap.findExisting(element, event);
+    if (_existing != null) {
+      return _existing;
+    }
 
     var animation = new CssAnimation(
         element,
-        cssEventClass,
-        "$cssEventClass-$ngActivePostfix",
-        addAtEnd: cssClassToAdd,
-        removeAtEnd: cssClassToRemove,
-        profiler: profiler);
+        event,
+        "$event$NG_ACTIVE_POSTFIX",
+        addAtStart: addAtStart,
+        addAtEnd: addAtEnd,
+        removeAtStart: removeAtStart,
+        removeAtEnd: removeAtEnd,
+        animationMap: _animationMap,
+        optimizer: _optimizer);
 
-    return _animationRunner.play(animation);
+    _runner.play(animation);
+    return animation;
   }
   
-  static AnimationHandle _pickAnimationHandle(
-      Iterable<AnimationHandle> animated,
-      [AnimationHandle noAnimate]) {
-    List<AnimationHandle> handles;
- 
-    if(animated != null)
-      handles = animated.toList();
-    else if (noAnimate == null)
-      return new _CompletedAnimationHandle();
-    else
-      return noAnimate;
-    
-    if(noAnimate != null)
-      handles.add(noAnimate);
-
-    if(handles.length == 1)
-      return handles.first;
-
-    return new _MultiAnimationHandle(handles);
-  }
-  
-  _RunnableAnimations _partition(Iterable nodes) {
-    var runnable = new _RunnableAnimations();
-    nodes.forEach((el) {
-      if(el.nodeType != dom.Node.ELEMENT_NODE
-          || _animationRunner.hasRunningParentAnimation(el.parentNode)) {
-        runnable.noAnimate.add(el);
-      } else {
-        runnable.animate.add(el);
-      }
-    });
-    return runnable;
+  /**
+   * For a given element and css event, attempt to find an existing instance
+   * of the given animation and cancel it.
+   */
+  void cancelAnimation(dom.Element element, String event) {
+    var existing = _animationMap.findExisting(element, event);
+                
+    if (existing != null) {
+      existing.cancel();
+    }
   }
 }
 
-class _RunnableAnimations {
-  final animate = [];
-  final noAnimate = [];
+/**
+ * Tracked set of currently running css animations grouped by element.
+ */
+class CssAnimationMap {
+  final Map<dom.Element, Map<String, CssAnimation>> cssAnimations
+      = new Map<dom.Element, Map<String, CssAnimation>>();
+  
+  void track(CssAnimation animation) {
+    var animations = cssAnimations.putIfAbsent(animation.element, ()
+        => new Map<String, CssAnimation>());
+    animations[animation.eventClass] = animation;
+  }
+  
+  void forget(CssAnimation animation) {
+    var animations = cssAnimations[animation.element];
+    animations.remove(animation.eventClass);
+    if (animations.length == 0) {
+      cssAnimations.remove(animation.element);
+    }
+  }
+  
+  CssAnimation findExisting(dom.Element element, String event) {
+    var animations = cssAnimations[element];
+    if (animations == null) return null;
+    return animations[event];
+  }
 }

@@ -32,8 +32,9 @@ class NgForm extends NgControl implements Map<String, NgControl> {
    * * [element] - The form DOM element.
    * * [injector] - An instance of Injector.
    */
-  NgForm(Scope scope, dom.Element element, Injector injector) :
-    super(scope, element, injector) {
+  NgForm(Scope scope, dom.Element element, Injector injector,
+      NgAnimate animate) :
+    super(scope, element, injector, animate) {
 
     if (!element.attributes.containsKey('action')) {
       element.onSubmit.listen((event) {
