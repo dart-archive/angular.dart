@@ -388,6 +388,7 @@ class RootScope extends Scope {
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context))
   {
     _zone.onTurnDone = apply;
+    _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
   }
 
   RootScope get rootScope => this;
