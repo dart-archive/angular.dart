@@ -85,8 +85,9 @@ class NgRepeatDirective extends AbstractNgRepeatDirective {
                     BoundBlockFactory boundBlockFactory,
                     Scope scope,
                     Parser parser,
-                    AstParser astParser)
-      : super(blockHole, boundBlockFactory, scope, parser, astParser);
+                    AstParser astParser,
+                    FilterMap filters)
+      : super(blockHole, boundBlockFactory, scope, parser, astParser, filters);
 }
 
 /**
@@ -118,8 +119,9 @@ class NgShallowRepeatDirective extends AbstractNgRepeatDirective {
                           BoundBlockFactory boundBlockFactory,
                           Scope scope,
                           Parser parser,
-                          AstParser astParser)
-      : super(blockHole, boundBlockFactory, scope, parser, astParser)
+                          AstParser astParser,
+                          FilterMap filters)
+      : super(blockHole, boundBlockFactory, scope, parser, astParser, filters)
   {
     print('DEPRECATED: [ng-shallow-repeat] use [ng-repeat]');
   }
@@ -134,6 +136,7 @@ abstract class AbstractNgRepeatDirective  {
   final Scope _scope;
   final Parser _parser;
   final AstParser _astParser;
+  final FilterMap filters;
 
   String _expression;
   String _valueIdentifier;
@@ -145,7 +148,8 @@ abstract class AbstractNgRepeatDirective  {
   Iterable _lastCollection;
 
   AbstractNgRepeatDirective(this._blockHole, this._boundBlockFactory,
-                            this._scope, this._parser, this._astParser);
+                            this._scope, this._parser, this._astParser,
+                            this.filters);
 
   set expression(value) {
     _expression = value;
@@ -181,7 +185,7 @@ abstract class AbstractNgRepeatDirective  {
     _keyIdentifier = match.group(2);
 
     _watch = _scope.watch(
-        _astParser(_listExpr, collection: true),
+        _astParser(_listExpr, collection: true, filters: filters),
         (CollectionChangeRecord collection, _) {
           //TODO(misko): we should take advantage of the CollectionChangeRecord!
           _onCollectionChange(collection == null ? [] : collection.iterable);
