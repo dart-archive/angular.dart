@@ -79,6 +79,16 @@ main() {
     });
 
 
+    it('should support filters', () {
+      element = $compile(
+          '<div><span ng-repeat="item in items | filter:myFilter">{{item}}</span></div>');
+      scope.context['items'] = ['foo', 'bar', 'baz'];
+      scope.context['myFilter'] = (String item) => item.startsWith('b');
+      scope.apply();
+      expect(element.find('span').length).toEqual(2);
+    });
+
+
     describe('track by', () {
       it(r'should track using expression function', () {
         element = $compile(
