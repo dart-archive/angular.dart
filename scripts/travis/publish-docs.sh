@@ -16,10 +16,10 @@ if [ "$CHANNEL" = "stable" ]; then
             git clone https://github.com/angular/docs.angulardart.org.git
         
             echo "Removing old stable docs..."
-            rm -rf docs.angulardart.org/stable/*.*
+            rm -rf docs.angulardart.org/docs
         
             echo "Copying new docs into stable folder..."
-            rsync -av doc/*.* docs.angulardart.org/stable/
+            rsync -a dartdoc-viewer/client/build/web/* docs.angulardart.org/
             cd docs.angulardart.org/
             
             #.git folder needs to be in the *project* root
@@ -28,7 +28,7 @@ if [ "$CHANNEL" = "stable" ]; then
             git config user.name "travis@travis-ci.org"
                 
             echo "Adding files..."
-            git add stable/*.*
+            git add .
             git commit -m "Automated push of generated docs from SHA: $SHA"
             git push
     fi
