@@ -358,12 +358,17 @@ class RootWatchGroup extends WatchGroup {
    * Each step is called in sequence. ([ReactionFn]s are not called until all
    * previous steps are completed).
    */
-  int detectChanges({EvalExceptionHandler exceptionHandler,
-                    ChangeLog changeLog}) {
+  int detectChanges({ EvalExceptionHandler exceptionHandler,
+                      ChangeLog changeLog, 
+                      AvgStopwatch fieldStopwatch,
+                      AvgStopwatch evalStopwatch,
+                      AvgStopwatch processStopwatch}) {
     // Process the ChangeRecords from the change detector
     ChangeRecord<_Handler> changeRecord =
-        (_changeDetector as ChangeDetector<_Handler>)
-            .collectChanges(exceptionHandler);
+        (_changeDetector as ChangeDetector<_Handler>).collectChanges(
+            exceptionHandler:exceptionHandler, 
+            stopwatch: fieldStopwatch);
+    if (processStopwatch != null) processStopwatch.start();
     while (changeRecord != null) {
       if (changeLog != null) changeLog(changeRecord.handler.expression,
                                        changeRecord.currentValue,
@@ -371,12 +376,15 @@ class RootWatchGroup extends WatchGroup {
       changeRecord.handler.onChange(changeRecord);
       changeRecord = changeRecord.nextChange;
     }
+    if (processStopwatch != null) processStopwatch.stop();
 
-    int count = 0;
+    if (evalStopwatch != null) evalStopwatch.start();
     // Process our own function evaluations
     _EvalWatchRecord evalRecord = _evalWatchHead;
+    int evalCount = 0;
     while (evalRecord != null) {
       try {
+        if (evalStopwatch != null) evalCount++;
         var change = evalRecord.check();
         if (change != null && changeLog != null) {
           changeLog(evalRecord.handler.expression,
@@ -388,10 +396,13 @@ class RootWatchGroup extends WatchGroup {
       }
       evalRecord = evalRecord._nextEvalWatch;
     }
+    if (evalStopwatch != null) evalStopwatch..stop()..increment(evalCount);
 
     // Because the handler can forward changes between each other synchronously
     // We need to call reaction functions asynchronously. This processes the
     // asynchronous reaction function queue.
+    int count = 0;
+    if (processStopwatch != null) processStopwatch.stop();
     Watch dirtyWatch = _dirtyWatchHead;
     RootWatchGroup root = _rootGroup;
     root._removeCount = 0;
@@ -407,6 +418,7 @@ class RootWatchGroup extends WatchGroup {
       dirtyWatch = dirtyWatch._nextDirtyWatch;
     }
     _dirtyWatchHead = _dirtyWatchTail = null;
+    if (processStopwatch != null) processStopwatch..stop()..increment(count);
     return count;
   }
 
