@@ -118,8 +118,8 @@ abstract class NgControl implements NgDetachAware {
     _touched = true;
     _untouched = false;
 
-    element.classes..remove(NG_UNTOUCHED_CLASS)..add(NG_TOUCHED_CLASS);
-
+    _animate.addClass(element, NG_TOUCHED_CLASS);
+    _animate.removeClass(element, NG_UNTOUCHED_CLASS);
     //as soon as one of the controls/models is touched
     //then all of the parent controls are touched as well
     _parentControl.touched = true;
@@ -129,26 +129,9 @@ abstract class NgControl implements NgDetachAware {
   set untouched(value) {
     _touched = false;
     _untouched = true;
-    element.classes..remove(NG_TOUCHED_CLASS)..add(NG_UNTOUCHED_CLASS);
-  }
 
-  get touched => _touched;
-  set touched(value) {
-    _touched = true;
-    _untouched = false;
-
-    element.classes..remove(NG_UNTOUCHED_CLASS)..add(NG_TOUCHED_CLASS);
-
-    //as soon as one of the controls/models is touched
-    //then all of the parent controls are touched as well
-    _parentControl.touched = true;
-  }
-
-  get untouched => _untouched;
-  set untouched(value) {
-    _touched = false;
-    _untouched = true;
-    element.classes..remove(NG_TOUCHED_CLASS)..add(NG_UNTOUCHED_CLASS);
+    _animate.addClass(element, NG_UNTOUCHED_CLASS);
+    _animate.removeClass(element, NG_TOUCHED_CLASS);
   }
 
   /**
@@ -220,11 +203,7 @@ abstract class NgControl implements NgDetachAware {
 class NgNullControl implements NgControl {
   var _name, _dirty, _valid, _invalid, _submit_valid, _pristine, _element;
   var _touched, _untouched;
-<<<<<<< HEAD
   var _controls, _scope, _parentControl, _controlName, _animate;
-=======
-  var _controls, _scope, _parentControl, _controlName;
->>>>>>> angular/master
   var errors, _controlByName;
   dom.Element element;
 
