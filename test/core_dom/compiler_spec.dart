@@ -196,6 +196,21 @@ main() => describe('dte.compiler', () {
         expect(element.textWithShadow()).toEqual('INNER()');
       })));
 
+      it('should store ElementProbe with Elements', async(inject((TestBed tb) {
+        tb.compile('<div><simple>innerText</simple></div>');
+        microLeap();
+        var simpleElement = tb.rootElement.querySelector('simple');
+        expect(simpleElement.text).toEqual('innerText');
+        var simpleProbe = ngProbe(simpleElement);
+        var simpleComponent = simpleProbe.injector.get(SimpleComponent);
+        expect(simpleComponent.scope.context['name']).toEqual('INNER');
+        var shadowRoot = simpleElement.shadowRoot;
+        var shadowProbe = ngProbe(shadowRoot);
+        expect(shadowProbe).toBeNotNull();
+        expect(shadowProbe.element).toEqual(shadowRoot);
+        expect(shadowProbe.parent.element).toEqual(simpleElement);
+      })));
+
       it('should create a simple component', async(inject((NgZone zone) {
         rootScope.context['name'] = 'OUTTER';
         var element = $(r'<div>{{name}}:<simple>{{name}}</simple></div>');
@@ -674,7 +689,8 @@ class PublishTypesAttrDirective implements PublishTypesDirectiveSuperType {
     template: r'{{name}}(<content>SHADOW-CONTENT</content>)'
 )
 class SimpleComponent {
-  SimpleComponent(Scope scope) {
+  Scope scope;
+  SimpleComponent(Scope this.scope) {
     scope.context['name'] = 'INNER';
   }
 }
