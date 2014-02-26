@@ -12,9 +12,7 @@ import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
 
-part 'animate/animate.dart';
-part 'animate/animation.dart';
-part 'animate/no_animate.dart';
+part 'animation.dart';
 part 'block.dart';
 part 'block_factory.dart';
 part 'cookies.dart';
@@ -46,7 +44,7 @@ class NgCoreDomModule extends Module {
     type(HttpDefaultHeaders);
     type(HttpDefaults);
     type(HttpInterceptors);
-    type(NgAnimate, implementedBy: NoAnimate);
+    type(NgAnimate);
     type(BlockCache);
     type(BrowserCookies);
     type(Cookies);

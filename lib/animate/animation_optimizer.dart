@@ -12,6 +12,10 @@ class AnimationOptimizer {
   final Map<Animation, dom.Element> _animations
     = new Map<Animation, dom.Element>();
   
+  Expando _expando;
+  
+  AnimationOptimizer(this._expando);
+  
   /**
    * Track an animation that is running against a dom element. Usually, this
    * should occur when an animation starts.
@@ -59,12 +63,22 @@ class AnimationOptimizer {
    * and [false] if the optimizer thinks that it should not execute.
    */
   bool shouldAnimate(dom.Element element) {
-    if (element.parent == null) {
-      return true;
+    var current = element;
+    while(current.parent != null) {
+      if (isAnimating(current.parent)) {
+        return false;
+      }
+//      if (element.parent == null) {
+//        ElementProbe parentProbe = _expando[element.parent];
+//        if(parentProbe.parent != null) {
+//          current = parentProbe.parent;
+//        } else {
+//          return true;
+//        }      
+//      }
+      current = current.parent;
     }
-    if (isAnimating(element.parent)) {
-      return false;
-    }
-    return shouldAnimate(element.parent);
+    
+    return true;
   }
 }

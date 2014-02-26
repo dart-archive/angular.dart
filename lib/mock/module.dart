@@ -40,7 +40,6 @@ class AngularMockModule extends Module {
     type(TestBed);
     type(Probe);
     type(Logger);
-    type(NgAnimate, implementedBy: NoAnimate);
     type(MockHttpBackend);
     factory(HttpBackend, (Injector i) => i.get(MockHttpBackend));
     factory(NgZone, (_) {

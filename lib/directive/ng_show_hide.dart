@@ -18,9 +18,9 @@ class NgHideDirective {
 
   set hide(value) {
     if (toBool(value)) {
-      animate.hide(element, NG_HIDE_CLASS);
+      animate.addClass(element, NG_HIDE_CLASS);
     } else {
-      animate.show(element, NG_HIDE_CLASS);
+      animate.removeClass(element, NG_HIDE_CLASS);
     }
   }
 }
@@ -41,9 +41,9 @@ class NgShowDirective {
 
   set show(value) {
     if (toBool(value)) {
-      animate.show(element, NgHideDirective.NG_HIDE_CLASS);
+      animate.removeClass(element, NgHideDirective.NG_HIDE_CLASS);
     } else {
-      animate.hide(element, NgHideDirective.NG_HIDE_CLASS);
+      animate.addClass(element, NgHideDirective.NG_HIDE_CLASS);
     }
   }
 }

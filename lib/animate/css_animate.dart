@@ -45,30 +45,6 @@ class CssAnimate implements NgAnimate {
     return animate(element, event, removeAtEnd: cssClass);
   }
 
-  Animation show(dom.Element element, String cssClass) {
-    if (!_optimizer.shouldAnimate(element)) {
-      element.classes.remove(cssClass);
-      return new NoOpAnimation();
-    }
-
-    cancelAnimation(element, "$cssClass$NG_ADD_POSTFIX");
-
-    var event = "$cssClass$NG_REMOVE_POSTFIX";
-    return animate(element, event, removeAtStart: cssClass);
-  }
-
-  Animation hide(dom.Element element, String cssClass) {
-    if (!_optimizer.shouldAnimate(element)) {
-      element.classes.add(cssClass);
-      return new NoOpAnimation();
-    }
-
-    cancelAnimation(element, "$cssClass$NG_REMOVE_POSTFIX");
-
-    var event = "$cssClass$NG_ADD_POSTFIX";
-    return animate(element, event, addAtEnd: cssClass);
-  }
-
   Animation insert(Iterable<dom.Node> nodes, dom.Node parent,
                          { dom.Node insertBefore }) {
     util.domInsert(nodes, parent, insertBefore: insertBefore);
