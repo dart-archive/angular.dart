@@ -55,7 +55,7 @@ class BlockFactory {
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
 
-    for (int i = 0, ii = directivePositions.length; i < ii;) {
+    for (int i = 0; i < directivePositions.length;) {
       int index = directivePositions[i++];
 
       List<DirectiveRef> directiveRefs = directivePositions[i++];
@@ -120,7 +120,7 @@ class BlockFactory {
         NgAnnotation annotation = ref.annotation;
         var visibility = _elementOnly;
         if (ref.annotation is NgController) {
-          scope = scope.createChild({});
+          scope = scope.createChild(new PrototypeMap(scope.context));
           nodeModule.value(Scope, scope);
         }
         if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
@@ -140,7 +140,7 @@ class BlockFactory {
             nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
               var scope = injector.get(Scope);
               var interpolate = injector.get(Interpolate);
-              for(var ref in nodesAttrsDirectives) {
+              for (var ref in nodesAttrsDirectives) {
                 new NgAttrMustacheDirective(nodeAttrs, ref.value, interpolate,
                     scope, injector.get(AstParser), injector.get(FilterMap));
               }
@@ -209,7 +209,7 @@ class BlockFactory {
             }
           }
         }
-        for(var map in ref.mappings) {
+        for (var map in ref.mappings) {
           var notify;
           if (attachDelayStatus != null) {
             var index = attachDelayStatus.length;

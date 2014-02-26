@@ -99,7 +99,7 @@ class MockHttpExpectation {
 
 
 class _Chain {
-  final _respondFn;
+  final Function _respondFn;
   _Chain({respond}): _respondFn = respond;
   respond([x,y,z]) => _respondFn(x,y,z);
 }

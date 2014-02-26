@@ -3,6 +3,7 @@ library scope2_spec;
 import '../_specs.dart';
 import 'package:angular/change_detection/change_detection.dart' hide ExceptionHandler;
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+import 'dart:async';
 import 'dart:math';
 
 main() => describe('scope', () {
@@ -362,7 +363,7 @@ main() => describe('scope', () {
         List listeners;
         List steps;
         var random = new Random();
-        for(var i = 0; i < 1000; i++) {
+        for (var i = 0; i < 1000; i++) {
           if (i % 10 == 0) {
             scopes = [root.createChild(null)];
             listeners = [];
@@ -1157,6 +1158,43 @@ main() => describe('scope', () {
       rootScope.digest();
       expect(log).toEqual([]);
     }));
+
+
+    it('should properly watch canstants', inject((RootScope rootScope, Logger log) {
+      rootScope.watch('[1, 2]', (v, o) => log([v, o]));
+      expect(log).toEqual([]);
+      rootScope.apply();
+      expect(log).toEqual([[[1, 2], null]]);
+    }));
+
+
+    it('should properly watch array of fields', inject((RootScope rootScope, Logger log) {
+      rootScope.context['foo'] = 12;
+      rootScope.context['bar'] = 34;
+      rootScope.watch('[foo, bar]', (v, o) => log([v, o]));
+      expect(log).toEqual([]);
+      rootScope.apply();
+      expect(log).toEqual([[[12, 34], null]]);
+      log.clear();
+
+      rootScope.context['foo'] = 56;
+      rootScope.context['bar'] = 78;
+      rootScope.apply();
+      expect(log).toEqual([[[56, 78], [12, 34]]]);
+    }));
+
+
+    it('should properly watch array of fields2', inject((RootScope rootScope, Logger log) {
+      rootScope.watch('[ctrl.foo, ctrl.bar]', (v, o) => log([v, o]));
+      expect(log).toEqual([]);
+      rootScope.apply();
+      expect(log).toEqual([[[null, null], null]]);
+      log.clear();
+
+      rootScope.context['ctrl'] = {'foo': 56, 'bar': 78};
+      rootScope.apply();
+      expect(log).toEqual([[[56, 78], [null, null]]]);
+    }));
   });
 
 
@@ -1246,6 +1284,40 @@ main() => describe('scope', () {
         expect(exceptionHandler.errors[0].error).toEqual('write1');
         expect(exceptionHandler.errors[1].error).toEqual('read1');
       });
+    });
+  });
+
+  describe('exceptionHander', () {
+    it('should call ExceptionHandler on zone errors', () {
+      module((Module module) {
+        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+      });
+      async((inject((RootScope rootScope, NgZone zone, ExceptionHandler e) {
+        zone.run(() {
+          scheduleMicrotask(() => throw 'my error');
+        });
+        var errors = (e as LoggingExceptionHandler).errors;
+        expect(errors.length).toEqual(1);
+        expect(errors.first.error).toEqual('my error');
+      })));
+    });
+
+    it('should call ExceptionHandler on digest errors', () {
+      module((Module module) {
+        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+      });
+      async((inject((RootScope rootScope, NgZone zone, ExceptionHandler e) {
+        rootScope.context['badOne'] = () => new Map();
+        rootScope.watch('badOne()', (_, __) => null);
+
+        try {
+          zone.run(() => null);
+        } catch(_) {}
+
+        var errors = (e as LoggingExceptionHandler).errors;
+        expect(errors.length).toEqual(1);
+        expect(errors.first.error, startsWith('Model did not stabilize'));
+      })));
     });
   });
 });

@@ -10,11 +10,11 @@ void domRemove(List<dom.Node> nodes) {
   // Not every element is sequential if the list of nodes only
   // includes the elements. Removing a block also includes
   // removing non-element nodes inbetween.
-  for (var j = 0, jj = nodes.length; j < jj; j++) {
+  for (var j = 0; j < nodes.length; j++) {
     dom.Node current = nodes[j];
-    dom.Node next = j+1 < jj ? nodes[j+1] : null;
+    dom.Node next = j+1 < nodes.length ? nodes[j+1] : null;
 
-    while (next != null && current.nextNode != next) {
+    while(next != null && current.nextNode != next) {
       current.nextNode.remove();
     }
     nodes[j].remove();

@@ -6,8 +6,8 @@ class _SpecInjector {
   DynamicInjector moduleInjector;
   DynamicInjector injector;
   dynamic injectiorCreateLocation;
-  List<Module> modules = [];
-  List<Function> initFns = [];
+  final modules = <Module>[];
+  final initFns = <Function>[];
 
   _SpecInjector() {
     var moduleModule = new Module()
@@ -30,9 +30,7 @@ class _SpecInjector {
     try {
       if (fnOrModule is Function) {
         var initFn = moduleInjector.invoke(fnOrModule);
-        if (initFn is Function) {
-          initFns.add(initFn);
-        }
+        if (initFn is Function) initFns.add(initFn);
       } else if (fnOrModule is Module) {
         addModule(fnOrModule);
       } else {
@@ -87,12 +85,12 @@ class _SpecInjector {
  *
  */
 inject(Function fn) {
-  try { throw ''; } catch (e, stack) {
-    if (_currentSpecInjector == null ) {
-      return () => _currentSpecInjector.inject(fn, stack);
-    } else {
-      return _currentSpecInjector.inject(fn, stack);
-    }
+  try {
+    throw '';
+  } catch (e, stack) {
+    return _currentSpecInjector == null
+        ? () => _currentSpecInjector.inject(fn, stack)
+        : _currentSpecInjector.inject(fn, stack);
   }
 }
 
@@ -114,27 +112,28 @@ inject(Function fn) {
  *     });
  */
 module(fnOrModule) {
-  try { throw ''; } catch(e, stack) {
-    if (_currentSpecInjector == null ) {
-      return () => _currentSpecInjector.module(fnOrModule, stack);
-    } else {
-      return _currentSpecInjector.module(fnOrModule, stack);
-    }
+  try {
+    throw '';
+  } catch(e, stack) {
+    return _currentSpecInjector == null
+        ? () => _currentSpecInjector.module(fnOrModule, stack)
+        : _currentSpecInjector.module(fnOrModule, stack);
   }
 }
 
 /**
  * Call this method in your test harness [setUp] method to setup the injector.
  */
-setUpInjector() {
+void setUpInjector() {
   _currentSpecInjector = new _SpecInjector();
   _currentSpecInjector.module((Module m) {
-    m.install(new AngularModule());
-    m.install(new AngularMockModule());
+    m..install(new AngularModule())..install(new AngularMockModule());
   });
 }
 
 /**
  * Call this method in your test harness [tearDown] method to cleanup the injector.
  */
-tearDownInjector() => _currentSpecInjector = null;
+void tearDownInjector() {
+  _currentSpecInjector = null;
+}

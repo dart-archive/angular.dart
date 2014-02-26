@@ -11,7 +11,7 @@ class Chain extends syntax.Chain {
   Chain(List<syntax.Expression> expressions) : super(expressions);
   eval(scope, [FilterMap filters]) {
     var result;
-    for (int i = 0, length = expressions.length; i < length; i++) {
+    for (int i = 0; i < expressions.length; i++) {
       var last = expressions[i].eval(scope, filters);
       if (last != null) result = last;
     }

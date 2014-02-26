@@ -2,19 +2,13 @@ part of angular.mock;
 
 @proxy
 class MockWindow extends Mock implements Window {
-  MockHistory history = new MockHistory();
-  MockLocation location = new MockLocation();
-  MockDocument document = new MockDocument();
+  final history = new MockHistory();
+  final location = new MockLocation();
+  final document = new MockDocument();
 
-  dart_async.StreamController<PopStateEvent> onPopStateController =
-      new dart_async.StreamController<PopStateEvent>();
-  dart_async.StreamController<Event> onHashChangeController =
-      new dart_async.StreamController<Event>();
-  dart_async.StreamController<MouseEvent> onClickController =
-      new dart_async.StreamController<MouseEvent>();
-  dart_async.Completer<num> animationFrameCompleter =
-        new dart_async.Completer<num>.sync();
-
+  final onPopStateController = new dart_async.StreamController<PopStateEvent>();
+  final onHashChangeController = new dart_async.StreamController<Event>();
+  final onClickController = new dart_async.StreamController<MouseEvent>();
 
   dart_async.Stream<PopStateEvent> get onPopState => onPopStateController.stream;
   dart_async.Stream<Event> get onHashChange => onHashChangeController.stream;

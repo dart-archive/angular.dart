@@ -212,7 +212,7 @@ class DirectiveInfosMatcher extends Matcher {
   bool matches(directiveRefs, matchState) {
     var pass = expected.length == directiveRefs.length;
     if (pass) {
-      for(var i = 0, ii = expected.length; i < ii; i++) {
+      for (var i = 0, ii = expected.length; i < ii; i++) {
         DirectiveRef directiveRef = directiveRefs[i];
         var expectedMap = expected[i];
 

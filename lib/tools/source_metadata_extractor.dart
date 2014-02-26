@@ -4,7 +4,6 @@ import 'package:analyzer/src/generated/ast.dart';
 
 import 'package:angular/tools/source_crawler.dart';
 import 'package:angular/tools/common.dart';
-import 'package:angular/utils.dart';
 
 const String _COMPONENT = '-component';
 const String _DIRECTIVE = '-directive';

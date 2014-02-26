@@ -85,7 +85,7 @@ class Expect {
   toEqualSelect(options) {
     var actualOptions = [];
 
-    for(var option in actual.querySelectorAll('option')) {
+    for (var option in actual.querySelectorAll('option')) {
       if (option.selected) {
         actualOptions.add([option.value]);
       } else {

@@ -96,7 +96,16 @@ class NgPluralizeDirective {
   int offset;
   var discreteRules = <String, String>{};
   var categoryRules = <Symbol, String>{};
+
   static final RegExp IS_WHEN = new RegExp(r'^when-(minus-)?.');
+  static const Map<String, Symbol> SYMBOLS = const {
+    'zero'  : #zero,
+    'one'   : #one,
+    'two'   : #two,
+    'few'   : #few,
+    'many'  : #many,
+    'other' : #other,
+  };
 
   NgPluralizeDirective(this.scope, this.element, this.interpolate,
                        NodeAttrs attributes, this.parser) {
@@ -116,10 +125,11 @@ class NgPluralizeDirective {
     }
 
     whens.forEach((k, v) {
-      if (['zero', 'one', 'two', 'few', 'many', 'other'].contains(k)) {
-        this.categoryRules[new Symbol(k.toString())] = v;
+      Symbol symbol = SYMBOLS[k];
+      if (symbol != null) {
+        this.categoryRules[symbol] = v;
       } else {
-        this.discreteRules[k.toString()] = v;
+        this.discreteRules[k] = v;
       }
     });
   }

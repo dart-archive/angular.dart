@@ -314,6 +314,9 @@ describe('form', () {
       Probe probe = _.rootScope.context['i'];
       var model = probe.directive(NgModel);
 
+      expect(form.submitted).toBe(false);
+      expect(form.valid_submit).toBe(false);
+      expect(form.invalid_submit).toBe(false);
       expect(form.element.classes.contains('ng-submit-invalid')).toBe(false);
       expect(form.element.classes.contains('ng-submit-valid')).toBe(false);
 
@@ -322,12 +325,18 @@ describe('form', () {
       form.element.dispatchEvent(submissionEvent);
       _.rootScope.apply();
 
+      expect(form.submitted).toBe(true);
+      expect(form.valid_submit).toBe(false);
+      expect(form.invalid_submit).toBe(true);
       expect(form.element.classes.contains('ng-submit-invalid')).toBe(true);
       expect(form.element.classes.contains('ng-submit-valid')).toBe(false);
 
       _.rootScope.apply('myModel = "man"');
       form.element.dispatchEvent(submissionEvent);
 
+      expect(form.submitted).toBe(true);
+      expect(form.valid_submit).toBe(true);
+      expect(form.invalid_submit).toBe(false);
       expect(form.element.classes.contains('ng-submit-invalid')).toBe(false);
       expect(form.element.classes.contains('ng-submit-valid')).toBe(true);
     }));
@@ -361,6 +370,46 @@ describe('form', () {
       expect(_.rootScope.context['myModel']).toEqual('animal');
       expect(model.modelValue).toEqual('animal');
       expect(model.viewValue).toEqual('animal');
+    }));
+
+    it('should set the form control to be untouched when the model is reset or submitted', inject((TestBed _) {
+      var form = _.compile('<form name="duperForm">' + 
+                           ' <input type="text" ng-model="myModel" probe="i" />' +
+                           '</form>');
+      var model = _.rootScope.context['i'].directive(NgModel);
+      var input = model.element;
+
+      NgForm formModel = _.rootScope.context['duperForm'];
+
+      expect(formModel.touched).toBe(false);
+      expect(formModel.untouched).toBe(true);
+      expect(form.classes.contains('ng-touched')).toBe(false);
+      expect(form.classes.contains('ng-untouched')).toBe(true);
+
+      _.triggerEvent(input, 'blur');
+
+      expect(formModel.touched).toBe(true);
+      expect(formModel.untouched).toBe(false);
+      expect(form.classes.contains('ng-touched')).toBe(true);
+      expect(form.classes.contains('ng-untouched')).toBe(false);
+
+      formModel.reset();
+
+      expect(formModel.touched).toBe(false);
+      expect(formModel.untouched).toBe(true);
+      expect(form.classes.contains('ng-touched')).toBe(false);
+      expect(form.classes.contains('ng-untouched')).toBe(true);
+
+      _.triggerEvent(input, 'blur');
+
+      expect(formModel.touched).toBe(true);
+
+      _.triggerEvent(form, 'submit');
+
+      expect(formModel.touched).toBe(false);
+      expect(formModel.untouched).toBe(true);
+      expect(form.classes.contains('ng-touched')).toBe(false);
+      expect(form.classes.contains('ng-untouched')).toBe(true);
     }));
   });
 

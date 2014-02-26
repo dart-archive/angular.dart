@@ -8,7 +8,7 @@ import 'package:angular/core/module.dart';
 
 class AccessScope extends syntax.AccessScope with AccessReflective {
   final Symbol symbol;
-  AccessScope(String name) : super(name), symbol = new Symbol(name);
+  AccessScope(String name) : super(name), symbol = newSymbol(name);
   eval(scope, [FilterMap filters]) => _eval(scope);
   assign(scope, value) => _assign(scope, scope, value);
 }
@@ -24,7 +24,7 @@ class AccessScopeFast extends syntax.AccessScope with AccessFast {
 class AccessMember extends syntax.AccessMember with AccessReflective {
   final Symbol symbol;
   AccessMember(object, String name)
-      : super(object, name), symbol = new Symbol(name);
+      : super(object, name), symbol = newSymbol(name);
   eval(scope, [FilterMap filters]) => _eval(object.eval(scope, filters));
   assign(scope, value) => _assign(scope, object.eval(scope), value);
   _assignToNonExisting(scope, value) => object.assign(scope, { name: value });
@@ -84,6 +84,9 @@ abstract class AccessReflective {
       _cachedKind = CACHED_MAP;
       _cachedValue = null;
       return holder[name];
+    } else if (symbol == null) {
+      _cachedHolder = UNINITIALIZED;
+      return null;
     }
     InstanceMirror mirror = reflect(holder);
     try {
@@ -119,7 +122,7 @@ abstract class AccessReflective {
       holder[name] = value;
     } else if (holder == null) {
       _assignToNonExisting(scope, value);
-    } else {
+    } else if (symbol != null) {
       reflect(holder).setField(symbol, value);
     }
     return value;

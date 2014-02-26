@@ -107,6 +107,7 @@ class NgRepeatDirective extends AbstractNgRepeatDirective {
  *  digest cycle and will not update on changes to the model.
  *
  */
+@deprecated
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-shallow-repeat]',
@@ -120,7 +121,7 @@ class NgShallowRepeatDirective extends AbstractNgRepeatDirective {
                           AstParser astParser)
       : super(blockHole, boundBlockFactory, scope, parser, astParser)
   {
-    print('DEPRICATED: [ng-shallow-repeat] use [ng-repeat]');
+    print('DEPRECATED: [ng-shallow-repeat] use [ng-repeat]');
   }
 }
 
@@ -218,7 +219,7 @@ abstract class AbstractNgRepeatDirective  {
       }
     }
     // remove existing items
-    _rows.forEach((key, row){
+    _rows.forEach((key, row) {
       row.block.remove();
       row.scope.destroy();
     });
@@ -236,7 +237,7 @@ abstract class AbstractNgRepeatDirective  {
 
     List<_Row> newRowOrder = _computeNewRows(collection, trackById);
 
-    for (var index = 0, length = collection.length; index < length; index++) {
+    for (var index = 0; index < collection.length; index++) {
       var value = collection.elementAt(index);
       _Row row = newRowOrder[index];
 
@@ -265,14 +266,14 @@ abstract class AbstractNgRepeatDirective  {
         childContext[_valueIdentifier] = value;
       }
       var first = (index == 0);
-      var last = (index == (length - 1));
+      var last = (index == collection.length - 1);
       childContext
-        ..[r'$index'] = index
-        ..[r'$first'] = (index == 0)
-        ..[r'$last'] = (index == (length - 1))
-        ..[r'$middle'] = !first && !last
-        ..[r'$odd'] = index & 1 == 1
-        ..[r'$even'] = index & 1 == 0;
+          ..[r'$index'] = index
+          ..[r'$first'] = first
+          ..[r'$last'] = last
+          ..[r'$middle'] = !first && !last
+          ..[r'$odd'] = index & 1 == 1
+          ..[r'$even'] = index & 1 == 0;
 
       if (row.startNode == null) {
         var block = _boundBlockFactory(childScope);

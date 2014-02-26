@@ -11,7 +11,7 @@ class Interpolation {
   String call(List parts, [_]) {
     if (parts == null) return seperators.join('');
     var str = [];
-    for(var i = 0, ii = parts.length; i < ii; i++) {
+    for (var i = 0; i < parts.length; i++) {
       str.add(seperators[i]);
       var value = parts[i];
       str.add(value == null ? '' : '$value');
@@ -47,7 +47,7 @@ class Interpolate {
    * - `startSymbol`: The symbol to start interpolation. '{{' by default.
    * - `endSymbol`: The symbol to end interpolation. '}}' by default.
    */
-  Interpolation call(String template, [bool mustHaveExpression = false, 
+  Interpolation call(String template, [bool mustHaveExpression = false,
       String startSymbol = '{{', String endSymbol = '}}']) {
     int startSymbolLength = startSymbol.length;
     int endSymbolLength = endSymbol.length;

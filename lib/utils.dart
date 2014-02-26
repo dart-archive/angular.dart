@@ -78,3 +78,43 @@ relaxFnArgs(Function fn) {
 }
 
 capitalize(String s) => s.substring(0, 1).toUpperCase() + s.substring(1);
+
+
+/// Returns whether or not the given identifier is a reserved word in Dart.
+bool isReservedWord(String identifier) => RESERVED_WORDS.contains(identifier);
+
+final Set<String> RESERVED_WORDS = new Set<String>.from(const [
+  "assert",
+  "break",
+  "case",
+  "catch",
+  "class",
+  "const",
+  "continue",
+  "default",
+  "do",
+  "else",
+  "enum",
+  "extends",
+  "false",
+  "final",
+  "finally",
+  "for",
+  "if",
+  "in",
+  "is",
+  "new",
+  "null",
+  "rethrow",
+  "return",
+  "super",
+  "switch",
+  "this",
+  "throw",
+  "true",
+  "try",
+  "var",
+  "void",
+  "while",
+  "with"
+]);

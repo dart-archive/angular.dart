@@ -44,9 +44,8 @@ class AngularMockModule extends Module {
     type(MockHttpBackend);
     factory(HttpBackend, (Injector i) => i.get(MockHttpBackend));
     factory(NgZone, (_) {
-      NgZone zone = new NgZone();
-      zone.onError = (dynamic e, dynamic s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
-      return zone;
+      return new NgZone()
+        ..onError = (e, s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
     });
     type(Window, implementedBy: MockWindow);
   }

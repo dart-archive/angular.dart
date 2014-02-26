@@ -281,11 +281,14 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     return true;
   }
 
-  DirtyCheckingRecord<H> collectChanges([EvalExceptionHandler exceptionHandler]) {
+  DirtyCheckingRecord<H> collectChanges({ EvalExceptionHandler exceptionHandler,
+                                          AvgStopwatch stopwatch}) {
+    if (stopwatch != null) stopwatch.start();
     DirtyCheckingRecord changeHead = null;
     DirtyCheckingRecord changeTail = null;
     DirtyCheckingRecord current = _recordHead; // current index
 
+    int count = 0;
     while (current != null) {
       try {
         if (current.check() != null) {
@@ -295,6 +298,7 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
             changeTail = changeTail.nextChange = current;
           }
         }
+        if (stopwatch != null) count++;
       } catch (e, s) {
         if (exceptionHandler == null) {
           rethrow;
@@ -305,6 +309,7 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
       current = current._nextRecord;
     }
     if (changeTail != null) changeTail.nextChange = null;
+    if (stopwatch != null) stopwatch..stop()..increment(count);
     return changeHead;
   }
 
@@ -793,7 +798,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
     if (collection is List) {
       List list = collection;
-      for(int index = 0; index < list.length; index++) {
+      for (int index = 0; index < list.length; index++) {
         var item = list[index];
         if (record == null || !identical(item, record.item)) {
           record = mismatch(record, item, index);
@@ -806,7 +811,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       }
     } else {
       int index = 0;
-      for(var item in collection) {
+      for (var item in collection) {
         if (record == null || !identical(item, record.item)) {
           record = mismatch(record, item, index);
           maybeDirty = true;

@@ -40,20 +40,20 @@ class ScopeEvent {
   Scope _currentScope;
 
   /**
-   * true or false depending on if stopPropagation() was executed.
+   * true or false depending on if [stopPropagation] was executed.
    */
   bool get propagationStopped => _propagationStopped;
   bool _propagationStopped = false;
 
   /**
-   * true or false depending on if preventDefault() was executed.
+   * true or false depending on if [preventDefault] was executed.
    */
   bool get defaultPrevented => _defaultPrevented;
   bool _defaultPrevented = false;
 
   /**
-   ** [name] - The name of the scope event.
-   ** [targetScope] - The destination scope that is listening on the event.
+   * [name] - The name of the scope event.
+   * [targetScope] - The destination scope that is listening on the event.
    */
   ScopeEvent(this.name, this.targetScope, this.data);
 
@@ -157,11 +157,8 @@ class Scope {
    */
   bool get isDestroyed {
     var scope = this;
-    var root = rootScope;
     while(scope != null) {
-      if (scope == root) {
-        return false;
-      }
+      if (scope == rootScope) return false;
       scope = scope._parentScope;
     }
     return true;
@@ -213,11 +210,7 @@ class Scope {
         };
       } else if (expression.startsWith(':')) {
         expression = expression.substring(1);
-        fn = (value, last) {
-          if (value != null) {
-            return reactionFn(value, last);
-          }
-        };
+        fn = (value, last) => value == null ? null : reactionFn(value, last);
       }
       ast = rootScope._astParser(expression, context: context, filters: filters);
     } else {
@@ -234,11 +227,12 @@ class Scope {
     if (expression is String && expression.isNotEmpty) {
       var obj = locals == null ? context : new ScopeLocals(context, locals);
       return rootScope._parser(expression).eval(obj);
-    } else {
-      assert(locals == null);
-      if (expression is EvalFunction1) return expression(context);
-      if (expression is EvalFunction0) return expression();
     }
+
+    assert(locals == null);
+    if (expression is EvalFunction1) return expression(context);
+    if (expression is EvalFunction0) return expression();
+    return null;
   }
 
   dynamic applyInZone([expression, Map locals]) =>
@@ -291,20 +285,18 @@ class Scope {
     broadcast(ScopeEvent.DESTROY);
     _Streams.destroy(this);
 
-    var prev = _prev;
-    var next = _next;
-    if (prev == null) {
-      _parentScope._childHead = next;
+    if (_prev == null) {
+      _parentScope._childHead = _next;
     } else {
-      prev._next = next;
+      _prev._next = _next;
     }
-    if (next == null) {
-      _parentScope._childTail = prev;
+    if (_next == null) {
+      _parentScope._childTail = _prev;
     } else {
-      next._prev = prev;
+      _next._prev = _prev;
     }
 
-    this._next = this._prev = null;
+    _next = _prev = null;
 
     _readWriteGroup.remove();
     _readOnlyGroup.remove();
@@ -340,7 +332,7 @@ class Scope {
       });
       childScope = childScope._next;
     }
-    if(!_mapEqual(counts, typeCounts)) {
+    if (!_mapEqual(counts, typeCounts)) {
       throw 'Streams actual: $counts != bookkeeping: $typeCounts\n'
             'Offending scope: [scope: ${this.hashCode}]\n'
             '${log.join('')}';
@@ -349,17 +341,61 @@ class Scope {
   }
 }
 
-_mapEqual(Map a, Map b) {
-  if (a.length == b.length) {
-    var equal = true;
-    a.forEach((k, v) {
-      equal = equal && b.containsKey(k) && v == b[k];
-    });
-    return equal;
-  } else {
-    return false;
+_mapEqual(Map a, Map b) => a.length == b.length &&
+    a.keys.every((k) => b.containsKey(k) && a[k] == b[k]);
+
+class ScopeStats {
+  bool report = true;
+  final nf = new NumberFormat.decimalPattern();
+
+  final digestFieldStopwatch = new AvgStopwatch();
+  final digestEvalStopwatch = new AvgStopwatch();
+  final digestProcessStopwatch = new AvgStopwatch();
+  int _digestLoopNo = 0;
+
+  final flushFieldStopwatch = new AvgStopwatch();
+  final flushEvalStopwatch = new AvgStopwatch();
+  final flushProcessStopwatch = new AvgStopwatch();
+
+  ScopeStats({this.report: false}) {
+    nf.maximumFractionDigits = 0;
   }
+
+  void digestStart() {
+    _digestStopwatchReset();
+    _digestLoopNo = 0;
+  }
+
+  _digestStopwatchReset() {
+    digestFieldStopwatch.reset();
+    digestEvalStopwatch.reset();
+    digestProcessStopwatch.reset();
+  }
+
+  void digestLoop(int changeCount) {
+    _digestLoopNo++;
+    if (report) {
+      print(this);
+    }
+    _digestStopwatchReset();
+  }
+
+  String _stat(AvgStopwatch s) {
+    return '${nf.format(s.count)}'
+           ' / ${nf.format(s.elapsedMicroseconds)} us'
+           ' = ${nf.format(s.ratePerMs)} #/ms';
+  }
+
+  void digestEnd() {
+  }
+
+  toString() =>
+    'digest #$_digestLoopNo:'
+    'Field: ${_stat(digestFieldStopwatch)} '
+    'Eval: ${_stat(digestEvalStopwatch)} '
+    'Process: ${_stat(digestProcessStopwatch)}';
 }
+
 
 class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
@@ -377,16 +413,20 @@ class RootScope extends Scope {
   _FunctionChain _domWriteHead, _domWriteTail;
   _FunctionChain _domReadHead, _domReadTail;
 
+  final ScopeStats _scopeStats;
+
   String _state;
 
   RootScope(Object context, this._astParser, this._parser,
             GetterCache cacheGetter, FilterMap filterMap,
-            this._exceptionHandler, this._ttl, this._zone)
+            this._exceptionHandler, this._ttl, this._zone, 
+            this._scopeStats)
       : super(context, null, null,
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context))
   {
     _zone.onTurnDone = apply;
+    _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
   }
 
   RootScope get rootScope => this;
@@ -403,6 +443,7 @@ class RootScope extends Scope {
       List digestLog;
       var count;
       ChangeLog changeLog;
+      _scopeStats.digestStart();
       do {
         while(_runAsyncHead != null) {
           try {
@@ -415,7 +456,11 @@ class RootScope extends Scope {
 
         digestTTL--;
         count = rootWatchGroup.detectChanges(
-            exceptionHandler: _exceptionHandler, changeLog: changeLog);
+            exceptionHandler: _exceptionHandler,
+            changeLog: changeLog,
+            fieldStopwatch: _scopeStats.digestFieldStopwatch,
+            evalStopwatch: _scopeStats.digestEvalStopwatch,
+            processStopwatch: _scopeStats.digestProcessStopwatch);
 
         if (digestTTL <= LOG_COUNT) {
           if (changeLog == null) {
@@ -431,8 +476,10 @@ class RootScope extends Scope {
           throw 'Model did not stabilize in ${_ttl.ttl} digests. '
                 'Last $LOG_COUNT iterations:\n${log.join('\n')}';
         }
+        _scopeStats.digestLoop(count);
       } while (count > 0);
     } finally {
+      _scopeStats.digestEnd();
       _transitionState(STATE_DIGEST, null);
     }
   }
@@ -584,7 +631,7 @@ class _Streams {
         scope = queue.removeFirst();
         scopeStreams = scope._streams;
         assert(scopeStreams._scope == scope);
-        if(scopeStreams._streams.containsKey(name)) {
+        if (scopeStreams._streams.containsKey(name)) {
           var stream = scopeStreams._streams[name];
           event._currentScope = scope;
           stream._fire(event);
@@ -701,7 +748,7 @@ class ScopeStream extends async.Stream<ScopeEvent> {
   }
 
   void _fire(ScopeEvent event) {
-    for(ScopeStreamSubscription subscription in subscriptions) {
+    for (ScopeStreamSubscription subscription in subscriptions) {
       try {
         subscription._onData(event);
       } catch (e, s) {
@@ -843,7 +890,7 @@ class ExpressionVisitor implements Visitor {
     List<AST> values = _toAst(exp.values);
     assert(keys.length == values.length);
     var kv = <String>[];
-    for(var i = 0; i < keys.length; i++) {
+    for (var i = 0; i < keys.length; i++) {
       kv.add('${keys[i]}: ${values[i]}');
     }
     ast = new PureFunctionAST('{${kv.join(', ')}}', new MapFn(keys), values);
@@ -950,7 +997,7 @@ class _FilterWrapper extends FunctionApply {
       argsWatches = new List(length);
 
   apply(List values) {
-    for(var i=0; i < values.length; i++) {
+    for (var i=0; i < values.length; i++) {
       var value = values[i];
       var lastValue = args[i];
       if (!identical(value, lastValue)) {
