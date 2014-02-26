@@ -44,6 +44,12 @@ class NgForm extends NgControl implements Map<String, NgControl> {
     }
   }
 
+  /**
+   * Returns the name of the given form element. The name is acquired from the name attribute value
+   * that is present on the form element upon first being rendered. Keep in mind that the name attribute
+   * is optional, however, it is recommended since it allows for exposing form messages and control
+   * states within the template where the form exists.
+   */
   @NgAttr('name')
   get name => _name;
   set name(value) {
@@ -61,6 +67,9 @@ class NgForm extends NgControl implements Map<String, NgControl> {
   }
 
   //FIXME: fix this reflection bug that shows up when Map is implemented
+  /**
+   * Any registered child control can be fetched by accessing the NgForm instance as a map
+   */
   operator[](name) {
     if (name == 'valid') {
       return valid;
