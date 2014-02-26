@@ -3,6 +3,7 @@ library scope2_spec;
 import '../_specs.dart';
 import 'package:angular/change_detection/change_detection.dart' hide ExceptionHandler;
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+import 'dart:async';
 import 'dart:math';
 
 main() => describe('scope', () {
@@ -1283,6 +1284,40 @@ main() => describe('scope', () {
         expect(exceptionHandler.errors[0].error).toEqual('write1');
         expect(exceptionHandler.errors[1].error).toEqual('read1');
       });
+    });
+  });
+
+  describe('exceptionHander', () {
+    it('should call ExceptionHandler on zone errors', () {
+      module((Module module) {
+        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+      });
+      async((inject((RootScope rootScope, NgZone zone, ExceptionHandler e) {
+        zone.run(() {
+          scheduleMicrotask(() => throw 'my error');
+        });
+        var errors = (e as LoggingExceptionHandler).errors;
+        expect(errors.length).toEqual(1);
+        expect(errors.first.error).toEqual('my error');
+      })));
+    });
+
+    it('should call ExceptionHandler on digest errors', () {
+      module((Module module) {
+        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+      });
+      async((inject((RootScope rootScope, NgZone zone, ExceptionHandler e) {
+        rootScope.context['badOne'] = () => new Map();
+        rootScope.watch('badOne()', (_, __) => null);
+
+        try {
+          zone.run(() => null);
+        } catch(_) {}
+
+        var errors = (e as LoggingExceptionHandler).errors;
+        expect(errors.length).toEqual(1);
+        expect(errors.first.error, startsWith('Model did not stabilize'));
+      })));
     });
   });
 });
