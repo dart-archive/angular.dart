@@ -36,12 +36,20 @@ abstract class NgControl implements NgDetachAware {
     _scope.on('submitNgControl').listen((e) => _onSubmit(e.data));
   }
 
+  /**
+   * Removes all child controls. This method is called just before the scope is destroyed
+   * for the ngControl instance.
+   */
   detach() {
     for (int i = _controls.length - 1; i >= 0; --i) {
       removeControl(_controls[i]);
     }
   }
 
+  /**
+   * Resets the form/fieldset and its associated models to their default state (which
+   * is the state that they were in when the form was first rendered).
+   */
   reset() {
     _scope.broadcast('resetNgModel');
     untouched = true;
@@ -57,10 +65,25 @@ abstract class NgControl implements NgDetachAware {
     }
   }
 
+  /**
+   * true or false depending on if the form has been submitted or not.
+   */
   get submitted => _submit_valid != null;
+
+  /**
+   * true or false depending on if the control was valid when the form was last submitted.
+   */
   get valid_submit => _submit_valid == true;
+
+  /**
+   * true or false depending on if the control was invalid when the form was last submitted.
+   */
   get invalid_submit => _submit_valid == false;
 
+  /**
+   * Forms and form elements are considered pristine when they are unaltered and
+   * the model + view data is the same as it was when the form was rendered (see [dirty]).
+   */
   get name => _name;
   set name(value) {
     _name = value;
@@ -69,6 +92,10 @@ abstract class NgControl implements NgDetachAware {
 
   get element => _element;
 
+  /**
+   * Forms and form elements are considered pristine when they are unaltered and
+   * the model + view data is the same as it was when the form was rendered (see [dirty]).
+   */
   get pristine => _pristine;
   set pristine(value) {
     _pristine = true;
@@ -77,6 +104,10 @@ abstract class NgControl implements NgDetachAware {
     element.classes..remove(NG_DIRTY_CLASS)..add(NG_PRISTINE_CLASS);
   }
 
+  /**
+   * Forms and form elements are considered dirty when the model changes or
+   * when the data has been inputted by the user (see [pristine]).
+   */
   get dirty => _dirty;
   set dirty(value) {
     _dirty = true;
@@ -89,6 +120,10 @@ abstract class NgControl implements NgDetachAware {
     _parentControl.dirty = true;
   }
 
+  /**
+   * true or false depending on the overall validity state of the control
+   * and its associated children is valid or not.
+   */
   get valid => _valid;
   set valid(value) {
     _invalid = false;
@@ -97,6 +132,10 @@ abstract class NgControl implements NgDetachAware {
     element.classes..remove(NG_INVALID_CLASS)..add(NG_VALID_CLASS);
   }
 
+  /**
+   * true or false depending on the overall validity state of the control
+   * and its associated children is invalid or not.
+   */
   get invalid => _invalid;
   set invalid(value) {
     _valid = false;
@@ -105,6 +144,11 @@ abstract class NgControl implements NgDetachAware {
     element.classes..remove(NG_VALID_CLASS)..add(NG_INVALID_CLASS);
   }
 
+  /**
+   * true or false if the user has interacted with the element. A control or model
+   * is considered be to be "touched" if the user has visited the element and changed focus
+   * from the element causing a "blur" event to trigger.
+   */
   get touched => _touched;
   set touched(value) {
     _touched = true;
@@ -117,6 +161,11 @@ abstract class NgControl implements NgDetachAware {
     _parentControl.touched = true;
   }
 
+  /**
+   * true or false if the user has not interacted with the element. A control or model
+   * is considered be to be "untouched" if the user has never placed focus on the element or
+   * changed its contents.
+   */
   get untouched => _untouched;
   set untouched(value) {
     _touched = false;

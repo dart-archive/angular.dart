@@ -33,6 +33,9 @@ class NgModelRequiredValidator implements NgValidatable {
     return !((value is List || value is String) && value.isEmpty);
   }
 
+  /**
+   * Marks the validator to not check for a required value. This essentially disables the validator.
+   */
   set required(value) {
     _required = value == null ? false : value;
   }
@@ -121,6 +124,10 @@ class NgModelPatternValidator implements NgValidatable {
            _pattern.hasMatch(value);
   }
 
+  /**
+   * Assigns the [RegExp] patten that will be used during validation. If set to a falsy value
+   * (null, false or an empty string) then the validator will be disabled.
+   */
   @NgAttr('pattern')
   set pattern(val) =>
       _pattern = val != null && val.length > 0 ? new RegExp(val) : null;
@@ -150,6 +157,10 @@ class NgModelMinLengthValidator implements NgValidatable {
            value.length >= _minlength;
   }
 
+  /**
+   * Assigns the minimum length value which is used during validation. If set to null
+   * or zero then the validator will be disabled.
+   */
   @NgAttr('minlength')
   set minlength(value) =>
       _minlength = value == null ? 0 : int.parse(value.toString());
@@ -176,6 +187,10 @@ class NgModelMaxLengthValidator implements NgValidatable {
   bool isValid(value) =>
       _maxlength == 0 || (value == null ? 0 : value.length) <= _maxlength;
 
+  /**
+   * Assigns the maximum length value which is used during validation. If set to null
+   * or zero then the validator will be disabled.
+   */
   @NgAttr('maxlength')
   set maxlength(value) =>
       _maxlength = value == null ? 0 : int.parse(value.toString());

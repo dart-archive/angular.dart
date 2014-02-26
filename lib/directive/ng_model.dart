@@ -7,8 +7,7 @@ part of angular.directive;
  * provide the rendering and listening capabilities. The directive itself
  * knows how to convert the view-value into model-value and vice versa by
  * allowing others to register converters (To be implemented). It also
- * knows how to (in)validate the model and the form in which it is declared
- * (to be implemented)
+ * knows how to (in)validate the model and the form in which it is declared.
  */
 @NgDirective(selector: '[ng-model]')
 class NgModel extends NgControl implements NgAttachAware {
@@ -27,14 +26,14 @@ class NgModel extends NgControl implements NgAttachAware {
   Function render = (value) => null;
 
   NgModel(Scope _scope, dom.Element _element, Injector injector,
-      NgForm this._form, this._parser, NodeAttrs attrs)
+      NgForm this._form, AstParser this._parser, NodeAttrs attrs)
       : super(_scope, _element, injector)
   {
     _exp = attrs["ng-model"];
     watchCollection = false;
   }
 
-  process(value, [_]) {
+  _process(value, [_]) {
     validate();
     _scope.rootScope.domWrite(() => render(value));
   }
@@ -44,11 +43,18 @@ class NgModel extends NgControl implements NgAttachAware {
     _scope.on('resetNgModel').listen((e) => reset());
   }
 
+  /**
+   * Resets the value of the model to the value that was present when the model was created.
+   */
   reset() {
     untouched = true;
     modelValue = _lastValue;
   }
 
+  /**
+   * Returns the name value acquired from the name attribute that was present on the element
+   * that the model is attached to.
+   */
   @NgAttr('name')
   get name => _name;
   set name(value) {
@@ -67,10 +73,10 @@ class NgModel extends NgControl implements NgAttachAware {
           _parser(_exp, collection: true),
           (changeRecord, _) {
             var value = changeRecord is CollectionChangeRecord ? changeRecord.iterable: changeRecord;
-            process(value);
+            _process(value);
           });
     } else if (_exp != null) {
-      _removeWatch = _scope.watch(_exp, process);
+      _removeWatch = _scope.watch(_exp, _process);
     }
   }
 
@@ -85,14 +91,23 @@ class NgModel extends NgControl implements NgAttachAware {
     });
   }
 
-  // TODO(misko): right now viewValue and modelValue are the same,
-  // but this needs to be changed to support converters and form validation
+  /**
+   * Returns the current DOM value of the input element associated with the model. (Note that this
+   * may not always be the exact same value as the model value when validations are applied on the
+   * input element.)
+   */
   get viewValue        => modelValue;
   set viewValue(value) => modelValue = value;
 
+  /**
+   * Returns the current value of the model that is associated with the ng-model attribute.
+   */
   get modelValue        => getter();
   set modelValue(value) => setter(value);
 
+  /**
+   * Returns a list of validators that are associated with the input element.
+   */
   get validators => _validators;
 
   /**
@@ -108,23 +123,33 @@ class NgModel extends NgControl implements NgAttachAware {
     }
   }
 
+  /**
+   * Sets the true/false validity status represented by the name.
+   *
+   * * [name] - The status identifier. This is usually refers to a validation state like required, min-length, pattern, etc...
+   * * [valid] - A true or false value depending on if the validation is correct or incorrect.
+   */
   setValidity(String name, bool valid) {
     this.updateControlValidity(this, name, valid);
   }
 
   /**
    * Registers a validator into the model to consider when running validate().
+   *
+   * * [validator] - Any functioning validator that implements the [NgValidatable] interface.
    */
-  addValidator(NgValidatable v) {
-    validators.add(v);
+  addValidator(NgValidatable validator) {
+    validators.add(validator);
     validate();
   }
 
   /**
    * De-registers a validator from the model.
+   * 
+   * * [validator] - The validator to be removed.
    */
-  removeValidator(NgValidatable v) {
-    validators.remove(v);
+  removeValidator(NgValidatable validator) {
+    validators.remove(validator);
     validate();
   }
 }
@@ -148,8 +173,9 @@ class InputCheckboxDirective {
   final NgFalseValue ngFalseValue;
   final Scope scope;
 
-  InputCheckboxDirective(dom.Element this.inputElement, this.ngModel,
-                         this.scope, this.ngTrueValue, this.ngFalseValue) {
+  InputCheckboxDirective(dom.Element this.inputElement, NgModel this.ngModel,
+                         Scope this.scope, NgTrueValue this.ngTrueValue,
+                         NgFalseValue this.ngFalseValue) {
     ngModel.render = (value) {
       inputElement.checked = ngTrueValue.isValue(inputElement, value);
     };
@@ -192,7 +218,7 @@ class InputTextLikeDirective {
       '' :
       value.toString();
 
-  InputTextLikeDirective(this.inputElement, this.ngModel, this.scope) {
+  InputTextLikeDirective(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope) {
     ngModel.render = (value) {
       if (value == null) value = '';
 
@@ -212,6 +238,10 @@ class InputTextLikeDirective {
         });
   }
 
+  /**
+   * Dirty checks the typed value against the model value and then performs any required validations
+   * on the new value.
+   */
   processValue([_]) {
     var value = typedValue;
     if (value != ngModel.viewValue) {
@@ -260,7 +290,7 @@ class InputNumberLikeDirective {
     }
   }
 
-  InputNumberLikeDirective(dom.Element this.inputElement, this.ngModel, this.scope) {
+  InputNumberLikeDirective(dom.Element this.inputElement, NgModel this.ngModel, Scope this.scope) {
     ngModel.render = (value) {
       if (value != typedValue
           && (value == null || value is num && !value.isNaN)) {
@@ -272,6 +302,10 @@ class InputNumberLikeDirective {
         ..onInput.listen(relaxFnArgs(processValue));
   }
 
+  /**
+   * Dirty checks the typed value against the model value and then performs any required validations
+   * on the new value.
+   */
   processValue() {
     num value = typedValue;
     if (value != ngModel.viewValue) {
@@ -321,7 +355,7 @@ class NgValue {
   @NgOneWay('ng-value')
   var value;
 
-  NgValue(this.element);
+  NgValue(dom.Element this.element);
 
   readValue(dom.Element element) {
     assert(this.element == null || element == this.element);
@@ -339,7 +373,7 @@ class NgTrueValue {
   @NgOneWay('ng-true-value')
   var value;
 
-  NgTrueValue(this.element);
+  NgTrueValue(dom.Element this.element);
 
   readValue(dom.Element element) {
     assert(this.element == null || element == this.element);
@@ -362,7 +396,7 @@ class NgFalseValue {
   @NgOneWay('ng-false-value')
   var value;
 
-  NgFalseValue(this.element);
+  NgFalseValue(dom.Element this.element);
 
   readValue(dom.Element element) {
     assert(this.element == null || element == this.element);
@@ -393,8 +427,8 @@ class InputRadioDirective {
   final NgValue ngValue;
   final Scope scope;
 
-  InputRadioDirective(dom.Element this.radioButtonElement, this.ngModel,
-                      this.scope, this.ngValue, NodeAttrs attrs) {
+  InputRadioDirective(dom.Element this.radioButtonElement, NgModel this.ngModel,
+                      Scope this.scope, NgValue this.ngValue, NodeAttrs attrs) {
     // If there's no "name" set, we'll set a unique name.  This ensures
     // less surprising behavior about which radio buttons are grouped together.
     if (attrs['name'] == '' || attrs['name'] == null) {
