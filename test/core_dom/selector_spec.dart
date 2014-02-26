@@ -152,12 +152,14 @@ main() {
     it('should sort by priority', () {
       expect(selector(element = e(
           '<component attribute ignore-children structural></component>')),
-      toEqualsDirectiveInfos([
-          { "selector": "[structural]", "value": "", "element": element },
+      toEqualsDirectiveInfos(
+        [
           { "selector": "[attribute]", "value": "", "element": element },
-          { "selector": "[ignore-children]", "value": "", "element": element },
-          { "selector": "component", "value": null, "element": element }
-      ]));
+          { "selector": "[ignore-children]", "value": "", "element": element }
+
+        ],
+        component: { "selector": "component", "value": null, "element": element },
+        template: {"selector": "[structural]", "value": "", "element": element}));
     });
 
     it('should match on multiple directives', () {
@@ -201,29 +203,39 @@ main() {
 
 class DirectiveInfosMatcher extends Matcher {
   final List<Map> expected;
+  Map expectedTemplate;
+  Map expectedComponent;
 
-  DirectiveInfosMatcher(this.expected);
+  DirectiveInfosMatcher(this.expected, {this.expectedTemplate, this.expectedComponent});
 
   Description describe(Description description) =>
       description..add(expected.toString());
 
-  bool matches(directiveRefs, matchState) {
-    var pass = expected.length == directiveRefs.length;
+  bool _refMatches(directiveRef, expectedMap) =>
+    directiveRef.element == expectedMap['element'] &&
+    directiveRef.annotation.selector == expectedMap['selector'] &&
+    directiveRef.value == expectedMap['value'];
+
+
+  bool matches(ElementBinder binder, matchState) {
+    var pass = expected.length == binder.decorators.length;
     if (pass) {
       for (var i = 0, ii = expected.length; i < ii; i++) {
-        DirectiveRef directiveRef = directiveRefs[i];
+        DirectiveRef directiveRef = binder.decorators[i];
         var expectedMap = expected[i];
 
-        pass = pass &&
-          directiveRef.element == expectedMap['element'] &&
-          directiveRef.annotation.selector == expectedMap['selector'] &&
-          directiveRef.value == expectedMap['value'];
+        pass = pass && _refMatches(directiveRef, expectedMap);
       }
+    }
+    if (pass && expectedTemplate != null) {
+      pass = pass && _refMatches(binder.template, expectedTemplate);
+    }
+    if (pass && expectedComponent != null) {
+      pass = pass && _refMatches(binder.component, expectedComponent);
     }
     return pass;
   }
 }
 
-Matcher toEqualsDirectiveInfos(List<Map> directives) =>
-    new DirectiveInfosMatcher(directives);
-
+Matcher toEqualsDirectiveInfos(List<Map> directives, {Map template, Map component}) =>
+  new DirectiveInfosMatcher(directives, expectedTemplate: template, expectedComponent: component);

@@ -27,7 +27,7 @@ part of angular.core.dom;
  *
  *
  */
-typedef List<DirectiveRef> DirectiveSelector(dom.Node node);
+typedef ElementBinder DirectiveSelector(dom.Node node);
 
 class _Directive {
   final Type type;
@@ -77,6 +77,11 @@ class _SelectorPart {
       : element;
 }
 
+_addRefs(ElementBinder binder, List<_Directive> directives, dom.Node node, [String attrValue]) {
+  directives.forEach((directive) {
+    binder.addDirective(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
+  });
+}
 
 class _ElementSelector {
   final String name;
@@ -134,18 +139,13 @@ class _ElementSelector {
     }
   }
 
-  _addRefs(List<DirectiveRef> refs, List<_Directive> directives, dom.Node node,
-      [String attrValue]) {
-    directives.forEach((directive) =>
-      refs.add(new DirectiveRef(node, directive.type, directive.annotation,
-          attrValue)));
-  }
 
-  List<_ElementSelector> selectNode(List<DirectiveRef> refs,
+
+  List<_ElementSelector> selectNode(ElementBinder binder,
                                     List<_ElementSelector> partialSelection,
                                     dom.Node node, String nodeName) {
     if (elementMap.containsKey(nodeName)) {
-      _addRefs(refs, elementMap[nodeName], node);
+      _addRefs(binder, elementMap[nodeName], node);
     }
     if (elementPartialMap.containsKey(nodeName)) {
       if (partialSelection == null) {
@@ -156,11 +156,11 @@ class _ElementSelector {
     return partialSelection;
   }
 
-  List<_ElementSelector> selectClass(List<DirectiveRef> refs,
+  List<_ElementSelector> selectClass(ElementBinder binder,
                                      List<_ElementSelector> partialSelection,
                                      dom.Node node, String className) {
     if (classMap.containsKey(className)) {
-      _addRefs(refs, classMap[className], node);
+      _addRefs(binder, classMap[className], node);
     }
     if (classPartialMap.containsKey(className)) {
       if (partialSelection == null) {
@@ -171,7 +171,7 @@ class _ElementSelector {
     return partialSelection;
   }
 
-  List<_ElementSelector> selectAttr(List<DirectiveRef> refs,
+  List<_ElementSelector> selectAttr(ElementBinder binder,
                                     List<_ElementSelector> partialSelection,
                                     dom.Node node, String attrName,
                                     String attrValue) {
@@ -181,10 +181,10 @@ class _ElementSelector {
     if (matchingKey != null) {
       Map<String, List<_Directive>> valuesMap = attrValueMap[matchingKey];
       if (valuesMap.containsKey('')) {
-        _addRefs(refs, valuesMap[''], node, attrValue);
+        _addRefs(binder, valuesMap[''], node, attrValue);
       }
       if (attrValue != '' && valuesMap.containsKey(attrValue)) {
-        _addRefs(refs, valuesMap[attrValue], node, attrValue);
+        _addRefs(binder, valuesMap[attrValue], node, attrValue);
       }
     }
     if (attrValuePartialMap.containsKey(attrName)) {
@@ -244,7 +244,12 @@ List<_SelectorPart> _splitCss(String selector, Type type) {
  */
 @NgInjectableService()
 class DirectiveSelectorFactory {
+  ElementBinderFactory _binderFactory;
+
+  DirectiveSelectorFactory(this._binderFactory);
+
   DirectiveSelector selector(DirectiveMap directives) {
+
     var elementSelector = new _ElementSelector('');
     var attrSelector = <_ContainsSelector>[];
     var textSelector = <_ContainsSelector>[];
@@ -269,7 +274,8 @@ class DirectiveSelectorFactory {
     });
 
     return (dom.Node node) {
-      var directiveRefs = <DirectiveRef>[];
+      //var directiveRefs = <DirectiveRef>[];
+      ElementBinder binder = _binderFactory.binder();
       List<_ElementSelector> partialSelection;
       var classes = <String, bool>{};
       var attrs = <String, String>{};
@@ -286,14 +292,14 @@ class DirectiveSelectorFactory {
           }
 
           // Select node
-          partialSelection = elementSelector.selectNode(directiveRefs,
+          partialSelection = elementSelector.selectNode(binder,
               partialSelection, element, nodeName);
 
           // Select .name
           if ((element.classes) != null) {
             for (var name in element.classes) {
               classes[name] = true;
-              partialSelection = elementSelector.selectClass(directiveRefs,
+              partialSelection = elementSelector.selectClass(binder,
                   partialSelection, element, name);
             }
           }
@@ -308,13 +314,13 @@ class DirectiveSelectorFactory {
                 // we need to pass the name to the directive by prefixing it to
                 // the value. Yes it is a bit of a hack.
                 directives[selectorRegExp.annotation].forEach((type) {
-                  directiveRefs.add(new DirectiveRef(
+                  binder.addDirective(new DirectiveRef(
                       node, type, selectorRegExp.annotation, '$attrName=$value'));
                 });
               }
             }
 
-            partialSelection = elementSelector.selectAttr(directiveRefs,
+            partialSelection = elementSelector.selectAttr(binder,
                 partialSelection, node, attrName, value);
           });
 
@@ -323,11 +329,11 @@ class DirectiveSelectorFactory {
             partialSelection = null;
             elementSelectors.forEach((_ElementSelector elementSelector) {
               classes.forEach((className, _) {
-                partialSelection = elementSelector.selectClass(directiveRefs,
+                partialSelection = elementSelector.selectClass(binder,
                     partialSelection, node, className);
               });
               attrs.forEach((attrName, value) {
-                partialSelection = elementSelector.selectAttr(directiveRefs,
+                partialSelection = elementSelector.selectAttr(binder,
                     partialSelection, node, attrName, value);
               });
             });
@@ -336,32 +342,18 @@ class DirectiveSelectorFactory {
         case 3: // Text Node
           var value = node.nodeValue;
           for (var k = 0; k < textSelector.length; k++) {
-          var selectorRegExp = textSelector[k];
-
+            var selectorRegExp = textSelector[k];
             if (selectorRegExp.regexp.hasMatch(value)) {
               directives[selectorRegExp.annotation].forEach((type) {
-                directiveRefs.add(new DirectiveRef(node, type,
+                binder.addDirective(new DirectiveRef(node, type,
                     selectorRegExp.annotation, value));
               });
             }
           }
           break;
-        }
+      }
 
-        directiveRefs.sort(_priorityComparator);
-        return directiveRefs;
-      };
+      return binder;
+    };
   }
-
-  int _directivePriority(NgAnnotation annotation) {
-    if (annotation is NgDirective) {
-      return (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) ? 2 : 1;
-    } else if (annotation is NgComponent) {
-      return 0;
-    }
-    throw "Unexpected Type: ${annotation}.";
-  }
-
-  int _priorityComparator(DirectiveRef a, DirectiveRef b) =>
-  _directivePriority(b.annotation) - _directivePriority(a.annotation);
 }
