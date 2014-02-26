@@ -73,12 +73,12 @@ abstract class NgControl implements NgDetachAware {
   /**
    * true or false depending on if the control was valid when the form was last submitted.
    */
-  get valid_submit => _submit_valid == true;
+  get validSubmit => _submit_valid == true;
 
   /**
    * true or false depending on if the control was invalid when the form was last submitted.
    */
-  get invalid_submit => _submit_valid == false;
+  get invalidSubmit => _submit_valid == false;
 
   /**
    * Forms and form elements are considered pristine when they are unaltered and
@@ -257,8 +257,8 @@ class NgNullControl implements NgControl {
   set name(name) {}
 
   get submitted => null;
-  get valid_submit => null;
-  get invalid_submit => null;
+  get validSubmit => null;
+  get invalidSubmit => null;
 
   get pristine => null;
   set pristine(value) {}
