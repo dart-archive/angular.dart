@@ -43,6 +43,8 @@ void main() {
         baseModule = new Module()
           ..type(DirectiveMap)
           ..type(DirectiveSelectorFactory)
+          ..type(Parser, implementedBy: NullParser)
+          ..type(ElementBinderFactory)
           ..type(MetadataExtractor)
           ..type(FieldMetadataExtractor);
       });
@@ -70,6 +72,12 @@ void main() {
       });
     });
   });
+}
+
+class NullParser implements Parser {
+  call(x) {
+    throw "NullParser";
+  }
 }
 
 @NgComponent(

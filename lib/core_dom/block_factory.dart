@@ -24,7 +24,7 @@ class BoundBlockFactory implements Function {
  * [Compiler] as a result of compiling a template.
  */
 class BlockFactory implements Function {
-  final List directivePositions;
+  final List<List<DirectiveRef>> directivePositions;
   final List<dom.Node> templateElements;
   final Profiler _perf;
   final Expando _expando;
