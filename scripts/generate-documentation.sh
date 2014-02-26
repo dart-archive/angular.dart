@@ -21,10 +21,6 @@ while getopts ":d:" opt ; do
   esac
 done
 
-# Temporary change to delete the Build Status image markdown from the README (image md not supported by dartdoc-viewer)
- cp README.md README-orig.md
- cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
-
 # Temporary during transition period from use of dartdoc to docgen.
 if [ -x "$DART_DOCGEN" ]; then
     DOC_CMD="$DART_DOCGEN"
@@ -48,6 +44,4 @@ if [ -x "$DART_DOCGEN" ]; then
     mv VERSION $DOCVIEWER_DIR/web/docs
     (cd $DOCVIEWER_DIR; pub build)
 
-# Revert the temp copy of the README.md file
- mv README-orig.md README.md
 fi

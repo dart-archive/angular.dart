@@ -1,4 +1,4 @@
-AngularDart [![Build Status](https://travis-ci.org/angular/angular.dart.png?branch=master)](https://travis-ci.org/angular/angular.dart)
+AngularDart
 ============
 
 A port of [Angular][ng] to [Dart][dart].
