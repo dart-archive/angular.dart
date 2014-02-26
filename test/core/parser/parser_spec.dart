@@ -1,6 +1,7 @@
 library parser_spec;
 
 import '../../_specs.dart';
+import 'package:angular/utils.dart' show RESERVED_WORDS;
 
 // Used to test getter / setter logic.
 class TestData {
@@ -393,6 +394,66 @@ main() {
         expect(() {
           eval('obj.integer = "hello"');
         }).toThrow("Eval Error: Caught type 'String' is not a subtype of type 'int' of 'value'. while evaling [obj.integer = \"hello\"]");
+      });
+    });
+
+    describe('reserved words', () {
+      it('should support reserved words in member get access', () {
+        for (String reserved in RESERVED_WORDS) {
+          expect(parser("o.$reserved").eval({ 'o': new Object() })).toEqual(null);
+          expect(parser("o.$reserved").eval({ 'o': { reserved: reserved }})).toEqual(reserved);
+        }
+      });
+
+
+      it('should support reserved words in member set access', () {
+        for (String reserved in RESERVED_WORDS) {
+          expect(parser("o.$reserved = 42").eval({ 'o': new Object() })).toEqual(42);
+          var map = { reserved: 0 };
+          expect(parser("o.$reserved = 42").eval({ 'o': map })).toEqual(42);
+          expect(map[reserved]).toEqual(42);
+        }
+      });
+
+
+      it('should support reserved words in member calls', () {
+        for (String reserved in RESERVED_WORDS) {
+          expect(() {
+            parser("o.$reserved()").eval({ 'o': new Object() });
+          }).toThrow('Undefined function $reserved');
+          expect(parser("o.$reserved()").eval({ 'o': { reserved: () => reserved }})).toEqual(reserved);
+        }
+      });
+
+
+      it('should support reserved words in scope get access', () {
+        for (String reserved in RESERVED_WORDS) {
+          if ([ "true", "false", "null"].contains(reserved)) continue;
+          expect(parser("$reserved").eval(new Object())).toEqual(null);
+          expect(parser("$reserved").eval({ reserved: reserved })).toEqual(reserved);
+        }
+      });
+
+
+      it('should support reserved words in scope set access', () {
+        for (String reserved in RESERVED_WORDS) {
+          if ([ "true", "false", "null"].contains(reserved)) continue;
+          expect(parser("$reserved = 42").eval(new Object())).toEqual(42);
+          var map = { reserved: 0 };
+          expect(parser("$reserved = 42").eval(map)).toEqual(42);
+          expect(map[reserved]).toEqual(42);
+        }
+      });
+
+
+      it('should support reserved words in scope calls', () {
+        for (String reserved in RESERVED_WORDS) {
+          if ([ "true", "false", "null"].contains(reserved)) continue;
+          expect(() {
+            parser("$reserved()").eval(new Object());
+          }).toThrow('Undefined function $reserved');
+          expect(parser("$reserved()").eval({ reserved: () => reserved })).toEqual(reserved);
+        }
       });
     });
 

@@ -9,11 +9,11 @@ main() => describe('compiler', () {
         items.add({"text":'text_$i', "done": i & 1 == 1});
       }
       var empty = [];
-      tb.rootScope.classFor = (item) => 'ng-${item["done"]}';
+      tb.rootScope.context['classFor'] = (item) => 'ng-${item["done"]}';
 
       time('create 100 blocks',
-          () => tb.rootScope.apply(() => tb.rootScope.items = items),
-          cleanUp: () => tb.rootScope.apply(() => tb.rootScope.items = empty),
+          () => tb.rootScope.apply(() => tb.rootScope.context['items'] = items),
+          cleanUp: () => tb.rootScope.apply(() => tb.rootScope.context['items'] = empty),
           verify: () => expect(tb.rootElement.querySelectorAll('li').length).toEqual(100));
     }));
   });

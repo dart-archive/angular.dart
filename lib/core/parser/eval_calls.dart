@@ -9,7 +9,7 @@ class CallScope extends syntax.CallScope with CallReflective {
   final Symbol symbol;
   CallScope(name, arguments)
       : super(name, arguments)
-      , symbol = new Symbol(name);
+      , symbol = newSymbol(name);
   eval(scope, [FilterMap filters]) => _eval(scope, scope);
 }
 
@@ -17,7 +17,7 @@ class CallMember extends syntax.CallMember with CallReflective {
   final Symbol symbol;
   CallMember(object, name, arguments)
       : super(object, name, arguments)
-      , symbol = new Symbol(name);
+      , symbol = newSymbol(name);
   eval(scope, [FilterMap filters]) => _eval(scope, object.eval(scope, filters));
 }
 
@@ -94,6 +94,9 @@ abstract class CallReflective {
       _cachedKind = CACHED_MAP;
       _cachedValue = null;
       return relaxFnApply(ensureFunctionFromMap(holder, name), arguments);
+    } else if (symbol == null) {
+      _cachedHolder = UNINITIALIZED;
+      throw new EvalError("Undefined function $name");
     } else {
       InstanceMirror mirror = reflect(holder);
       _cachedKind = CACHED_FUNCTION;
