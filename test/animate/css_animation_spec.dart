@@ -65,6 +65,29 @@ main() {
       _.rootElements.forEach((e) => e.remove());
     }));
     
+    
+    it('should swap removeAtEnd class if initial style is display none', async(() {
+      _.compile("<style>.event { transition: all 500ms; display: none; }</style>"
+          "<div class='remove-at-end'></div>");
+      _.rootElements.forEach((e) => document.body.append(e));
+      var element = _.rootElements[1];
+
+      var animation = new CssAnimation(element, "event", "event-active",
+          removeAtEnd: 'remove-at-end', addAtEnd: 'add-at-end');
+      
+      expect(element).toHaveClass('remove-at-end');
+
+      animation.read(0.0);
+      animation.update(0.0);
+      expect(element).not.toHaveClass('remove-at-end');
+      expect(element).not.toHaveClass('add-at-end');
+
+      animation.read(1000.0);
+      animation.update(1000.0);
+      expect(element).toHaveClass('add-at-end');
+      expect(element).not.toHaveClass('remove-at-end');
+    }));
+    
     it('should add classes at end', async(() {
       _.compile("<style>.event { transition: all 500ms; }</style><div></div>");
       _.rootElements.forEach((e) => document.body.append(e));

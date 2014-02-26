@@ -64,17 +64,15 @@ class CssAnimation extends LoopedAnimation {
   void read(num timeInMs) {
     if (_active && _startTime == null) {
       _startTime = timeInMs;
-      try {
-        var style = element.getComputedStyle();
-        _isInitiallyDisplayNone = style.display == "none";
-        _duration = util.computeLongestTransition(style);
-        if(_duration > 0.0) {
-          // Add a little extra time just to make sure transitions
-          // fully complete and that we don't remove the animation classes
-          // before it's completed.
-          _duration = _duration + extraDuration;
-        }
-      } catch (e) { }
+      var style = element.getComputedStyle();
+      _isInitiallyDisplayNone = style.display == "none";
+      _duration = util.computeLongestTransition(style);
+      if(_duration > 0.0) {
+        // Add a little extra time just to make sure transitions
+        // fully complete and that we don't remove the animation classes
+        // before it's completed.
+        _duration = _duration + extraDuration;
+      }
     }
   }
 

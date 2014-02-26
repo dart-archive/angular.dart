@@ -8,6 +8,7 @@ class AnimationLoop {
   final AnimationFrame _frames;
   final Profiler _profiler;
   final List<LoopedAnimation> _animations = [];
+  final NgZone _zone;
 
   bool _animationFrameQueued = false;
 
@@ -16,7 +17,7 @@ class AnimationLoop {
    * frames, and profiler will report timing information for each of the
    * animation frames.
    */
-  AnimationLoop(this._frames, this._profiler);
+  AnimationLoop(this._frames, this._profiler, this._zone);
 
   /**
    * Start and play an animation through the state transitions defined in
@@ -32,9 +33,10 @@ class AnimationLoop {
       _animationFrameQueued = true;
 
       // TODO(codleogic): This should run outside of an angular scope digest.
-      _frames.animationFrame.then((timeInMs)
-          => _animationFrame(timeInMs))
-          .catchError((error) => print(error));
+      _zone.runOutsideAngular(() {
+        _frames.animationFrame.then((timeInMs) => _animationFrame(timeInMs))
+            .catchError((error) => print(error));
+      });
     }
   }
 

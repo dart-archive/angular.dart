@@ -11,7 +11,7 @@ main() {
     beforeEach(inject((TestBed tb, NgZone zone) {
       _ = tb;
       frame = new MockAnimationFrame();
-      runner = new AnimationLoop(frame, new Profiler());
+      runner = new AnimationLoop(frame, new Profiler(), zone);
     }));
     
     it('should play animations with window animation frames', async(() {
@@ -33,15 +33,14 @@ main() {
       animation.getLogs(callsTo('read', anything)).verify(happenedExactly(1));
       animation.getLogs(callsTo('update', anything)).verify(happenedExactly(1));
       animation.clearLogs();
-      
+
       frame.frame(0.0);
       microLeap();
-      
+
       animation.getLogs(callsTo('read', anything)).verify(happenedExactly(1));
       animation.getLogs(callsTo('update', anything)).verify(happenedExactly(1));
       animation.clearLogs();
-      
-      
+
       frame.frame(0.0);
       microLeap();
       

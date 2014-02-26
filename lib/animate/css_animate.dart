@@ -2,7 +2,7 @@ part of angular.animate;
 
 /**
  * This defines the standard set of CSS animation classes, transitions, and
- * nomeanclature that will eventually be the foundation of the AngularDart
+ * nomenclature that will eventually be the foundation of the AngularDart
  * animation framework. This implementation uses the [AnimationLoop] class to
  * queue and run CSS based transition and keyframe animations.
  */
