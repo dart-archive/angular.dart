@@ -271,12 +271,11 @@ class Scope {
     var child = new Scope(childContext, rootScope, this,
                           _readWriteGroup.newGroup(childContext),
                           _readOnlyGroup.newGroup(childContext));
-    var next = null;
+
     var prev = _childTail;
-    child._next = next;
     child._prev = prev;
     if (prev == null) _childHead = child; else prev._next = child;
-    if (next == null) _childTail = child; else next._prev = child;
+    _childTail = child;
     return child;
   }
 
@@ -419,7 +418,7 @@ class RootScope extends Scope {
 
   RootScope(Object context, this._astParser, this._parser,
             GetterCache cacheGetter, FilterMap filterMap,
-            this._exceptionHandler, this._ttl, this._zone, 
+            this._exceptionHandler, this._ttl, this._zone,
             this._scopeStats)
       : super(context, null, null,
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),

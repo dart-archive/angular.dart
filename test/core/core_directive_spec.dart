@@ -2,70 +2,72 @@ library core_directive_spec;
 
 import '../_specs.dart';
 
-main() => describe('DirectiveMap', () {
+void main() {
+  describe('DirectiveMap', () {
 
-  beforeEach(module((Module module) {
-    module..type(AnnotatedIoComponent);
-  }));
+    beforeEach(module((Module module) {
+      module..type(AnnotatedIoComponent);
+    }));
 
-  it('should extract attr map from annotated component', inject((DirectiveMap directives) {
-    var annotations = directives.annotationsFor(AnnotatedIoComponent);
-    expect(annotations.length).toEqual(1);
-    expect(annotations[0] is NgComponent).toBeTruthy();
+    it('should extract attr map from annotated component', inject((DirectiveMap directives) {
+      var annotations = directives.annotationsFor(AnnotatedIoComponent);
+      expect(annotations.length).toEqual(1);
+      expect(annotations[0] is NgComponent).toBeTruthy();
 
-    NgComponent annotation = annotations[0];
-    expect(annotation.selector).toEqual('annotated-io');
-    expect(annotation.visibility).toEqual(NgDirective.LOCAL_VISIBILITY);
-    expect(annotation.exportExpressions).toEqual(['exportExpressions']);
-    expect(annotation.publishTypes).toEqual([String]);
-    expect(annotation.template).toEqual('template');
-    expect(annotation.templateUrl).toEqual('templateUrl');
-    expect(annotation.cssUrls).toEqual(['cssUrls']);
-    expect(annotation.applyAuthorStyles).toEqual(true);
-    expect(annotation.resetStyleInheritance).toEqual(true);
-    expect(annotation.publishAs).toEqual('ctrl');
-    expect(annotation.map).toEqual({
-      'foo': '=>foo',
-      'attr': '@attr',
-      'expr': '<=>expr',
-      'expr-one-way': '=>exprOneWay',
-      'expr-one-way-one-shot': '=>!exprOneWayOneShot',
-      'callback': '&callback',
-      'expr-one-way2': '=>exprOneWay2',
-      'expr-two-way': '<=>exprTwoWay'
-    });
-  }));
+      NgComponent annotation = annotations[0];
+      expect(annotation.selector).toEqual('annotated-io');
+      expect(annotation.visibility).toEqual(NgDirective.LOCAL_VISIBILITY);
+      expect(annotation.exportExpressions).toEqual(['exportExpressions']);
+      expect(annotation.publishTypes).toEqual([String]);
+      expect(annotation.template).toEqual('template');
+      expect(annotation.templateUrl).toEqual('templateUrl');
+      expect(annotation.cssUrls).toEqual(['cssUrls']);
+      expect(annotation.applyAuthorStyles).toEqual(true);
+      expect(annotation.resetStyleInheritance).toEqual(true);
+      expect(annotation.publishAs).toEqual('ctrl');
+      expect(annotation.map).toEqual({
+          'foo': '=>foo',
+          'attr': '@attr',
+          'expr': '<=>expr',
+          'expr-one-way': '=>exprOneWay',
+          'expr-one-way-one-shot': '=>!exprOneWayOneShot',
+          'callback': '&callback',
+          'expr-one-way2': '=>exprOneWay2',
+          'expr-two-way': '<=>exprTwoWay'
+      });
+    }));
 
-  describe('exceptions', () {
-    it('should throw when annotation is for existing mapping', () {
-      var module = new Module()
-          ..type(DirectiveMap)
-          ..type(Bad1Component)
-          ..type(MetadataExtractor)
-          ..type(FieldMetadataExtractor);
+    describe('exceptions', () {
+      it('should throw when annotation is for existing mapping', () {
+        var module = new Module()
+            ..type(DirectiveMap)
+            ..type(Bad1Component)
+            ..type(MetadataExtractor)
+            ..type(FieldMetadataExtractor);
 
-      var injector = new DynamicInjector(modules: [module]);
-      expect(() {
-        injector.get(DirectiveMap);
-      }).toThrow('Mapping for attribute foo is already defined (while '
-                 'processing annottation for field foo of Bad1Component)');
-    });
+        var injector = new DynamicInjector(modules: [module]);
+        expect(() {
+          injector.get(DirectiveMap);
+        }).toThrow('Mapping for attribute foo is already defined (while '
+        'processing annottation for field foo of Bad1Component)');
+      });
 
-    it('should throw when annotated both getter and setter', () {
+      it('should throw when annotated both getter and setter', () {
         var module = new Module()
             ..type(DirectiveMap)
             ..type(Bad2Component)
             ..type(MetadataExtractor)
             ..type(FieldMetadataExtractor);
 
-      var injector = new DynamicInjector(modules: [module]);
-      expect(() {
-        injector.get(DirectiveMap);
-      }).toThrow('Attribute annotation for foo is defined more than once '
-                 'in Bad2Component');
+        var injector = new DynamicInjector(modules: [module]);
+        expect(() {
+          injector.get(DirectiveMap);
+        }).toThrow('Attribute annotation for foo is defined more than once '
+        'in Bad2Component');
+      });
     });
   });
-});
+}
 
 @NgComponent(
     selector: 'annotated-io',
