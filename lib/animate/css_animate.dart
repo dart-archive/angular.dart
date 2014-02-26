@@ -15,6 +15,8 @@ class CssAnimate implements NgAnimate {
   static const String NG_ADD_POSTFIX = "-add";
   static const String NG_REMOVE_POSTFIX = "-remove";
   static const String NG_ACTIVE_POSTFIX = "-active";
+  
+  final NoOpAnimation _noOp = new NoOpAnimation();
 
   final AnimationLoop _runner;
   final AnimationOptimizer _optimizer;
@@ -25,7 +27,7 @@ class CssAnimate implements NgAnimate {
   Animation addClass(dom.Element element, String cssClass) {
     if (!_optimizer.shouldAnimate(element)) {
       element.classes.add(cssClass);
-      return new NoOpAnimation();
+      return _noOp;
     }
 
     cancelAnimation(element, "$cssClass$NG_REMOVE_POSTFIX");
@@ -36,7 +38,7 @@ class CssAnimate implements NgAnimate {
   Animation removeClass(dom.Element element, String cssClass) {
     if (!_optimizer.shouldAnimate(element)) {
       element.classes.remove(cssClass);
-      return new NoOpAnimation();
+      return _noOp;
     }
 
     cancelAnimation(element, "$cssClass$NG_ADD_POSTFIX");
@@ -64,7 +66,7 @@ class CssAnimate implements NgAnimate {
           && _optimizer.shouldAnimate(node)) {
         return animate(node, NG_REMOVE);
       }
-      return new NoOpAnimation();
+      return _noOp;
     });
 
     var result = _animationFromList(animations)..onCompleted.then((result) {

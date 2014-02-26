@@ -112,9 +112,6 @@ class NoOpAnimation extends Animation {
     return _future;
   }
 
-  NoOpAnimation({async.Future<AnimationResult> future})
-      : _future = future;
-
   complete() { }
   cancel() { }
 }

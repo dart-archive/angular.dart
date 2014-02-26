@@ -10,11 +10,11 @@ main() {
     NgAnimate animate;
     MockAnimationLoop runner;
 
-    beforeEach(inject((TestBed tb) {
+    beforeEach(inject((TestBed tb, Expando expand) {
       _ = tb;
       runner = new MockAnimationLoop();
       animate = new CssAnimate(runner,
-          new CssAnimationMap(), new AnimationOptimizer());
+          new CssAnimationMap(), new AnimationOptimizer(expand));
     }));
 
     it('should add a css class to an element node', async(() {

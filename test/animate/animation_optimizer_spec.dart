@@ -5,10 +5,13 @@ import '../_specs.dart';
 main() {
   describe('AnimationLoop', () {
     TestBed _;
-    beforeEach(inject((TestBed tb) => _ = tb));
+    AnimationOptimizer optimizer;
+    beforeEach(inject((TestBed tb, Expando expand) {
+      _ = tb;
+      optimizer = new AnimationOptimizer(expand);
+    }));
     
     it('should track and forget animations on elements', () {
-      var optimizer = new AnimationOptimizer();
       var animation = new NoOpAnimation();
       _.compile('<div></div>');
       
@@ -20,7 +23,6 @@ main() {
     });
     
     it('should prevent animations on child elements', () {
-      var optimizer = new AnimationOptimizer();
       var animation = new NoOpAnimation();
       _.compile('<div><div></div></div>');
       
@@ -33,7 +35,6 @@ main() {
     });
     
     it('should allow multiple animations on the same element', () {
-      var optimizer = new AnimationOptimizer();
       var animation1 = new NoOpAnimation();
       var animation2 = new NoOpAnimation();
       _.compile('<div><div></div></div>');
