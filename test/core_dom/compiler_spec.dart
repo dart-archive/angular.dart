@@ -3,7 +3,8 @@ library compiler_spec;
 import '../_specs.dart';
 
 
-main() => describe('dte.compiler', () {
+void main() {
+  describe('dte.compiler', () {
     Compiler $compile;
     DirectiveMap directives;
     Injector injector;
@@ -11,17 +12,17 @@ main() => describe('dte.compiler', () {
 
     beforeEach(module((Module module) {
       module
-        ..type(TabComponent)
-        ..type(PublishTypesAttrDirective)
-        ..type(PaneComponent)
-        ..type(SimpleTranscludeInAttachAttrDirective)
-        ..type(IncludeTranscludeAttrDirective)
-        ..type(LocalAttrDirective)
-        ..type(OneOfTwoDirectives)
-        ..type(TwoOfTwoDirectives)
-        ..type(MyController)
-        ..type(MyParentController)
-        ..type(MyChildController);
+          ..type(TabComponent)
+          ..type(PublishTypesAttrDirective)
+          ..type(PaneComponent)
+          ..type(SimpleTranscludeInAttachAttrDirective)
+          ..type(IncludeTranscludeAttrDirective)
+          ..type(LocalAttrDirective)
+          ..type(OneOfTwoDirectives)
+          ..type(TwoOfTwoDirectives)
+          ..type(MyController)
+          ..type(MyParentController)
+          ..type(MyChildController);
       return (Injector _injector) {
         injector = _injector;
         $compile = injector.get(Compiler);
@@ -114,9 +115,9 @@ main() => describe('dte.compiler', () {
     it('should compile nested repeater', inject((Compiler $compile) {
       var element = $(
           '<div>' +
-            '<ul ng-repeat="lis in uls">' +
-               '<li ng-repeat="li in lis">{{li}}</li>' +
-            '</ul>' +
+          '<ul ng-repeat="lis in uls">' +
+          '<li ng-repeat="li in lis">{{li}}</li>' +
+          '</ul>' +
           '</div>');
       var template = $compile(element, directives);
 
@@ -136,8 +137,6 @@ main() => describe('dte.compiler', () {
 
       expect(log).toEqual(['OneOfTwo', 'TwoOfTwo']);
     }));
-
-
 
     describe("interpolation", () {
       it('should interpolate attribute nodes', inject(() {
@@ -166,22 +165,23 @@ main() => describe('dte.compiler', () {
 
     describe('components', () {
       beforeEach(module((Module module) {
-        module.type(SimpleComponent);
-        module.type(CamelCaseMapComponent);
-        module.type(IoComponent);
-        module.type(IoControllerComponent);
-        module.type(UnpublishedIoControllerComponent);
-        module.type(IncorrectMappingComponent);
-        module.type(NonAssignableMappingComponent);
-        module.type(ParentExpressionComponent);
-        module.type(PublishMeComponent);
-        module.type(PublishMeDirective);
-        module.type(LogComponent);
-        module.type(AttachDetachComponent);
-        module.type(SimpleAttachComponent);
-        module.type(SimpleComponent);
-        module.type(ExprAttrComponent);
-        module.type(SayHelloFilter);
+        module
+            ..type(SimpleComponent)
+            ..type(CamelCaseMapComponent)
+            ..type(IoComponent)
+            ..type(IoControllerComponent)
+            ..type(UnpublishedIoControllerComponent)
+            ..type(IncorrectMappingComponent)
+            ..type(NonAssignableMappingComponent)
+            ..type(ParentExpressionComponent)
+            ..type(PublishMeComponent)
+            ..type(PublishMeDirective)
+            ..type(LogComponent)
+            ..type(AttachDetachComponent)
+            ..type(SimpleAttachComponent)
+            ..type(SimpleComponent)
+            ..type(ExprAttrComponent)
+            ..type(SayHelloFilter);
       }));
 
       it('should select on element', async(inject((NgZone zone) {
@@ -230,7 +230,7 @@ main() => describe('dte.compiler', () {
         var element = $('<parent-expression from-parent=val></parent-expression>');
 
         zone.run(() =>
-          $compile(element, directives)(injector, element));
+        $compile(element, directives)(injector, element));
 
         microLeap();
         expect(renderedText(element)).toEqual('inside poof');
@@ -239,7 +239,7 @@ main() => describe('dte.compiler', () {
       it('should behave nicely if a mapped attribute is missing', async(inject((NgZone zone) {
         var element = $('<parent-expression></parent-expression>');
         zone.run(() =>
-          $compile(element, directives)(injector, element));
+        $compile(element, directives)(injector, element));
 
         microLeap();
         expect(renderedText(element)).toEqual('inside ');
@@ -249,7 +249,7 @@ main() => describe('dte.compiler', () {
         rootScope.context['val'] = null;
         var element = $('<parent-expression fromParent=val></parent-expression>');
         zone.run(() =>
-          $compile(element, directives)(injector, element));
+        $compile(element, directives)(injector, element));
 
         microLeap();
         expect(renderedText(element)).toEqual('inside ');
@@ -446,7 +446,7 @@ main() => describe('dte.compiler', () {
         var element = $(r'<div publish-types></div>');
         $compile(element, directives)(injector, element);
         expect(PublishTypesAttrDirective._injector.get(PublishTypesAttrDirective)).
-            toBe(PublishTypesAttrDirective._injector.get(PublishTypesDirectiveSuperType));
+        toBe(PublishTypesAttrDirective._injector.get(PublishTypesDirectiveSuperType));
       }));
 
       it('should allow repeaters over controllers', async(inject((Logger logger) {
@@ -561,9 +561,9 @@ main() => describe('dte.compiler', () {
 
       it('should expose a parent controller to the scope of its children', inject((TestBed _) {
 
-        var element = _.compile('<div my-parent-controller>' +
-                                '  <div my-child-controller>{{ my_parent.data() }}</div>' +
-                                '</div>');
+        var element = _.compile('<div my-parent-controller>'
+            '  <div my-child-controller>{{ my_parent.data() }}</div>'
+            '</div>');
 
         rootScope.apply();
 
@@ -583,12 +583,12 @@ main() => describe('dte.compiler', () {
     });
 
   });
+}
 
 
 @NgController(
   selector: '[my-parent-controller]',
-  publishAs: 'my_parent'
-)
+  publishAs: 'my_parent')
 class MyParentController {
   data() {
     return "my data";
@@ -597,8 +597,7 @@ class MyParentController {
 
 @NgController(
   selector: '[my-child-controller]',
-  publishAs: 'my_child'
-)
+  publishAs: 'my_child')
 class MyChildController {}
 
 @NgComponent(
@@ -686,8 +685,7 @@ class PublishTypesAttrDirective implements PublishTypesDirectiveSuperType {
 
 @NgComponent(
     selector: 'simple',
-    template: r'{{name}}(<content>SHADOW-CONTENT</content>)'
-)
+    template: r'{{name}}(<content>SHADOW-CONTENT</content>)')
 class SimpleComponent {
   Scope scope;
   SimpleComponent(Scope this.scope) {
@@ -702,8 +700,7 @@ class SimpleComponent {
         'attr': '@scope.context.attr',
         'expr': '<=>scope.context.expr',
         'ondone': '&scope.context.ondone',
-    }
-)
+    })
 class IoComponent {
   Scope scope;
   IoComponent(Scope scope) {
@@ -723,8 +720,7 @@ class IoComponent {
         'once': '=>!exprOnce',
         'ondone': '&onDone',
         'on-optional': '&onOptional'
-    }
-)
+    })
 class IoControllerComponent {
   Scope scope;
   var attr;
@@ -746,8 +742,7 @@ class IoControllerComponent {
         'expr': '<=>expr',
         'ondone': '&onDone',
         'onOptional': '&onOptional'
-    }
-)
+    })
 class UnpublishedIoControllerComponent {
   Scope scope;
   var attr;
@@ -777,8 +772,7 @@ class NonAssignableMappingComponent { }
     selector: 'camel-case-map',
     map: const {
       'camel-case': '@scope.context.camelCase',
-    }
-)
+    })
 class CamelCaseMapComponent {
   Scope scope;
   CamelCaseMapComponent(Scope this.scope) {
@@ -791,8 +785,7 @@ class CamelCaseMapComponent {
     template: '<div>inside {{fromParent()}}</div>',
     map: const {
       'from-parent': '&scope.context.fromParent',
-    }
-)
+    })
 class ParentExpressionComponent {
   Scope scope;
   ParentExpressionComponent(Scope this.scope);
@@ -801,17 +794,14 @@ class ParentExpressionComponent {
 @NgComponent(
     selector: 'publish-me',
     template: r'<content>{{ctrlName.value}}</content>',
-    publishAs: 'ctrlName'
-)
+    publishAs: 'ctrlName')
 class PublishMeComponent {
   String value = 'WORKED';
 }
 
-
 @NgController (
     selector: '[publish-me]',
-    publishAs: 'ctrlName'
-)
+    publishAs: 'ctrlName')
 class PublishMeDirective {
   String value = 'WORKED';
 }
@@ -820,8 +810,7 @@ class PublishMeDirective {
 @NgComponent(
     selector: 'log',
     template: r'<content></content>',
-    publishAs: 'ctrlName'
-)
+    publishAs: 'ctrlName')
 class LogComponent {
   LogComponent(Scope scope, Logger logger) {
     logger(scope);
@@ -838,8 +827,7 @@ class LogComponent {
         'optional-one': '=>optional',
         'optional-two': '<=>optional',
         'optional-once': '=>!optional',
-    }
-)
+    })
 class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRootAware {
   Logger logger;
   Scope scope;
@@ -863,8 +851,7 @@ class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRoo
 
 @NgController(
     selector: '[my-controller]',
-    publishAs: 'myCtrl'
-)
+    publishAs: 'myCtrl')
 class MyController {
   MyController(Scope scope) {
     scope.context['name'] = 'MyController';
@@ -892,8 +879,7 @@ class SayHelloFilter {
         'expr': '<=>expr',
         'one-way': '=>oneWay',
         'once': '=>!exprOnce'
-    }
-)
+    })
 class ExprAttrComponent {
   var expr;
   var oneWay;
