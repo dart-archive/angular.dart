@@ -86,7 +86,7 @@ void main() {
         var element = new dom.InputElement();
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
-        var model = new NgModel(scope, element, i.createChild([new Module()]), new NgNullForm(), parser, nodeAttrs);
+        var model = new NgModel(scope, element, i.createChild([new Module()]), new NgNullForm(), parser, nodeAttrs, new NgAnimate());
         dom.querySelector('body').append(element);
         var input = new InputTextLikeDirective(element, model, scope);
 
@@ -284,7 +284,7 @@ void main() {
         var element = new dom.InputElement();
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
-        var model = new NgModel(scope, element, i.createChild([new Module()]), new NgNullForm(), parser, nodeAttrs);
+        var model = new NgModel(scope, element, i.createChild([new Module()]), new NgNullForm(), parser, nodeAttrs, new NgAnimate());
         dom.querySelector('body').append(element);
         var input = new InputTextLikeDirective(element, model, scope);
 
@@ -349,7 +349,7 @@ void main() {
         var element = new dom.InputElement();
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
-        var model = new NgModel(scope, element, i.createChild([new Module()]), new NgNullForm(), parser, nodeAttrs);
+        var model = new NgModel(scope, element, i.createChild([new Module()]), new NgNullForm(), parser, nodeAttrs, new NgAnimate());
         dom.querySelector('body').append(element);
         var input = new InputTextLikeDirective(element, model, scope);
 
@@ -422,7 +422,7 @@ void main() {
         var element = new dom.InputElement();
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
-        var model = new NgModel(scope, element, i.createChild([new Module()]), new NgNullForm(), parser, nodeAttrs);
+        var model = new NgModel(scope, element, i.createChild([new Module()]), new NgNullForm(), parser, nodeAttrs, new NgAnimate());
         dom.querySelector('body').append(element);
         var input = new InputTextLikeDirective(element, model, scope);
 
@@ -576,7 +576,7 @@ void main() {
         var element = new dom.TextAreaElement();
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
-        var model = new NgModel(scope, element, i.createChild([new Module()]), new NgNullForm(), parser, nodeAttrs);
+        var model = new NgModel(scope, element, i.createChild([new Module()]), new NgNullForm(), parser, nodeAttrs, new NgAnimate());
         dom.querySelector('body').append(element);
         var input = new InputTextLikeDirective(element, model, scope);
 

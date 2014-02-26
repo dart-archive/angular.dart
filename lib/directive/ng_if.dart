@@ -31,7 +31,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
       var insertBlock = _block;
       _scope.rootScope.domWrite(() {
         insertBlock.insertAfter(_blockHole);
-      });
+     });
     }
   }
 

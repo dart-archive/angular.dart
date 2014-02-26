@@ -3,6 +3,7 @@ library angular.directive;
 import 'package:di/di.dart';
 import 'dart:html' as dom;
 import 'package:intl/intl.dart';
+import 'package:angular/animate/module.dart';
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/module.dart';

@@ -47,6 +47,10 @@ packages:
     description: perf_api
     source: hosted
     version: "0.0.8"
+  quiver:
+    description: quiver
+    source: hosted
+    version: "0.17.0"
   route_hierarchical:
     description: route_hierarchical
     source: hosted
