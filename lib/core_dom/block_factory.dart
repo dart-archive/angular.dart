@@ -158,7 +158,9 @@ class BlockFactory {
             TemplateCache templateCache = injector.get(TemplateCache);
             DirectiveMap directives = injector.get(DirectiveMap);
             // This is a bit of a hack since we are returning different type then we are.
-            var componentFactory = new _ComponentFactory(node, ref.type, ref.annotation as NgComponent, injector.get(dom.NodeTreeSanitizer));
+            var componentFactory = new _ComponentFactory(node, ref.type,
+                ref.annotation as NgComponent,
+                injector.get(dom.NodeTreeSanitizer), _expando);
             if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
             fctrs[ref.type] = componentFactory;
             return componentFactory.call(injector, compiler, scope, blockCache, http, templateCache, directives);
@@ -177,11 +179,14 @@ class BlockFactory {
           boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
         }
       });
-      nodeModule.factory(BlockHole, blockHoleFactory);
-      nodeModule.factory(BlockFactory, blockFactory);
-      nodeModule.factory(BoundBlockFactory, boundBlockFactory);
+      nodeModule
+          ..factory(BlockHole, blockHoleFactory)
+          ..factory(BlockFactory, blockFactory)
+          ..factory(BoundBlockFactory, boundBlockFactory)
+          ..factory(ElementProbe, (_) => probe);
       nodeInjector = parentInjector.createChild([nodeModule]);
-      probe = _expando[node] = new ElementProbe(node, nodeInjector, scope);
+      probe = _expando[node] = new ElementProbe(
+          parentInjector.get(ElementProbe), node, nodeInjector, scope);
     } finally {
       assert(_perf.stopTimer(timerId) != false);
     }
@@ -314,6 +319,7 @@ class _ComponentFactory {
   final Type type;
   final NgComponent component;
   final dom.NodeTreeSanitizer treeSanitizer;
+  final Expando _expando;
 
   dom.ShadowRoot shadowDom;
   Scope shadowScope;
@@ -321,7 +327,8 @@ class _ComponentFactory {
   Compiler compiler;
   var controller;
 
-  _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer);
+  _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer,
+                    this._expando);
 
   dynamic call(Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http $http, TemplateCache $templateCache, DirectiveMap directives) {
     this.compiler = compiler;
@@ -380,12 +387,16 @@ class _ComponentFactory {
   }
 
   createShadowInjector(injector, TemplateLoader templateLoader) {
+    var probe;
     var shadowModule = new Module()
         ..type(type)
         ..value(Scope, shadowScope)
         ..value(TemplateLoader, templateLoader)
-        ..value(dom.ShadowRoot, shadowDom);
+        ..value(dom.ShadowRoot, shadowDom)
+        ..factory(ElementProbe, (_) => probe);
     shadowInjector = injector.createChild([shadowModule], name: _SHADOW);
+    probe = _expando[shadowDom] = new ElementProbe(
+        injector.get(ElementProbe), shadowDom, shadowInjector, shadowScope);
     return shadowInjector;
   }
 }
@@ -429,10 +440,11 @@ String _html(obj) {
  * SEE: [ngInjector], [ngScope], [ngDirectives]
  */
 class ElementProbe {
+  final ElementProbe parent;
   final dom.Node element;
   final Injector injector;
   final Scope scope;
   final directives = [];
 
-  ElementProbe(this.element, this.injector, this.scope);
+  ElementProbe(this.parent, this.element, this.injector, this.scope);
 }
