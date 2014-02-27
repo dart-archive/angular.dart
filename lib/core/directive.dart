@@ -9,6 +9,7 @@ abstract class NgAnnotation {
    * * `.class` limit to an element with a given class.
    * * `[attribute]` limit to an element with a given attribute name.
    * * `[attribute=value]` limit to an element with a given attribute and value.
+   * * `:contains(/abc/)` limit to an element which contains the given text.
    *
    *
    * Example: `input[type=checkbox][ng-model]`

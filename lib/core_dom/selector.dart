@@ -22,6 +22,7 @@ part of angular.core.dom;
  *   [attribute]
  *   [attribute=value]
  *   element[attribute1][attribute2=value]
+ *   :contains(/abc/)
  * </pre>
  *
  *
