@@ -25,7 +25,6 @@ ElementProbe ngProbe(dom.Node node) {
     node = node.parent;
   }
   throw "Could not find a probe for [$origNode]";
-  return null;
 }
 
 
