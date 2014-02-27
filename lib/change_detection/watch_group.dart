@@ -721,7 +721,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
         mode =  _MODE_MAP_CLOSURE_;
       } else {
         _instanceMirror = reflect(value);
-        mode = _hasMethod(_instanceMirror, symbol)
+        mode = _instanceMirror.type.instanceMembers[symbol] is MethodMirror
             ? _MODE_METHOD_
             : _MODE_FIELD_CLOSURE_;
       }
@@ -786,9 +786,5 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
   String toString() {
     if (mode == _MODE_MARKER_) return 'MARKER[$currentValue]';
     return '${watchGrp.id}:${handler.expression}';
-  }
-
-  static bool _hasMethod(InstanceMirror mirror, Symbol symbol) {
-    return mirror.type.instanceMembers[symbol] is MethodMirror;
   }
 }
