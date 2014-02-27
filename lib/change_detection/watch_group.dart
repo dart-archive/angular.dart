@@ -359,14 +359,14 @@ class RootWatchGroup extends WatchGroup {
    * previous steps are completed).
    */
   int detectChanges({ EvalExceptionHandler exceptionHandler,
-                      ChangeLog changeLog, 
+                      ChangeLog changeLog,
                       AvgStopwatch fieldStopwatch,
                       AvgStopwatch evalStopwatch,
                       AvgStopwatch processStopwatch}) {
     // Process the ChangeRecords from the change detector
     ChangeRecord<_Handler> changeRecord =
         (_changeDetector as ChangeDetector<_Handler>).collectChanges(
-            exceptionHandler:exceptionHandler, 
+            exceptionHandler:exceptionHandler,
             stopwatch: fieldStopwatch);
     if (processStopwatch != null) processStopwatch.start();
     while (changeRecord != null) {
@@ -721,7 +721,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
         mode =  _MODE_MAP_CLOSURE_;
       } else {
         _instanceMirror = reflect(value);
-        mode = _hasMethod(_instanceMirror.type, symbol)
+        mode = _hasMethod(_instanceMirror, symbol)
             ? _MODE_METHOD_
             : _MODE_FIELD_CLOSURE_;
       }
@@ -788,44 +788,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
     return '${watchGrp.id}:${handler.expression}';
   }
 
-  static final Function _hasMethod = (() {
-    var objectClassMirror = reflectClass(Object);
-    Set<Symbol> objectClassInstanceMethods =
-        new Set<Symbol>.from([#toString, #noSuchMethod]);
-    try {
-      // Use ClassMirror.instanceMembers if available. It contains local
-      // as well as inherited members.
-      objectClassMirror.instanceMembers;
-      // For SDK 1.2 we have to use a somewhat complicated helper for this
-      // to work around bugs in the dart2js implementation.
-      return (type, symbol) {
-        // Always allow instance methods found in the Object class. This makes
-        // it easier to work around a few bugs in the dart2js implementation.
-        if (objectClassInstanceMethods.contains(symbol)) return true;
-        // Work around http://dartbug.com/16309 which causes access to the
-        // instance members of certain builtin types to throw exceptions
-        // while traversing the superclass chain.
-        var mirror;
-        try {
-          mirror = type.instanceMembers[symbol];
-        } on UnsupportedError catch (e) {
-          mirror = type.declarations[symbol];
-        }
-        // Work around http://dartbug.com/15760 which causes noSuchMethod
-        // forwarding stubs to be treated as members of all classes. We have
-        // already checked for the real instance methods in Object, so if the
-        // owner of this method is Object we simply filter it out.
-        if (mirror is !MethodMirror) return false;
-        return mirror.owner != objectClassMirror;
-      };
-    } on NoSuchMethodError catch (e) {
-      // For SDK 1.0 we fall back to just using the local members.
-      return (type, symbol) => type.members[symbol] is MethodMirror;
-    } on UnimplementedError catch (e) {
-      // For SDK 1.1 we fall back to just using the local declarations.
-      return (type, symbol) => type.declarations[symbol] is MethodMirror;
-    }
-    return null;
-  })();
-
+  static bool _hasMethod(InstanceMirror mirror, Symbol symbol) {
+    return mirror.type.instanceMembers[symbol] is MethodMirror;
+  }
 }
