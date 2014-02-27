@@ -256,8 +256,10 @@ abstract class AbstractNgRepeatDirective  {
           nextNode = nextNode.nextNode;
         } while(nextNode != null);
 
-        // existing item which got moved
-        if (row.startNode != nextNode) row.block.moveAfter(cursor);
+        if (row.startNode != nextNode) {
+          // existing item which got moved
+          row.block.moveAfter(cursor);
+        }
         previousNode = row.endNode;
       } else {
         // new item which we don't know about

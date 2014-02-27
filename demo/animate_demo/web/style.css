@@ -1,0 +1,292 @@
+[ng-cloak], .ng-cloak, .ng-hide {
+  display: none !important;
+}
+
+html, body {
+  font-family: "Open Sans" sans-serif;
+  font-size: 14px;
+  color: #fafafa;
+  background-color: #303030;
+  margin: 0px;
+  padding: 0px;
+  box-shadow: inset 0 10px 10px rgba(0, 0, 0, .1);
+  width: 100%;
+  height: 100%;
+}
+
+p {
+  max-width: 540px;
+}
+
+button {
+  color: #303030;
+  background-color: #fafafa;
+  border: none;
+  border-radius: 2px;
+  margin: 5px 5px 5px 0;
+  height: 30px;
+  line-height: 30px;
+  padding: 0 20px;
+}
+
+nav {
+  padding-left: 20px;
+}
+
+nav button {
+  margin: 0 5px 5px;
+}
+
+nav .current {
+  border-top: 5px solid #fafafa;
+  border-radius: 0 0 2px 2px;
+  height: 35px;
+}
+
+.content {
+  margin: 0 30px;
+}
+
+.demo {
+  position: absolute;
+  width: 100%;
+}
+
+.demo.ng-enter {
+  transform: scale(.8, .8);
+  -webkit-transform: scale(.8, .8);
+  /* Chrome bug prevents putting opacity at 0 right now */
+  opacity: 0.000001;
+  transition: all 218ms;
+}
+
+.demo.ng-enter.ng-enter-active {
+  transform: scale(1.0, 1.0);
+  -webkit-transform: scale(1.0, 1.0);
+  /* Chrome bug prevents putting opacity at 0 right now */
+  opacity: 1.0;
+  transition: all 218ms;
+}
+
+.demo.ng-leave {
+  transform: scale(1.0, 1.0);
+  -webkit-transform: scale(1.0, 1.0);
+  /* Chrome bug prevents putting opacity at 0 right now */
+  opacity: 1;
+  transition: all 218ms;
+}
+
+.demo.ng-leave.ng-leave-active {
+  transform: scale(1.3, 1.3);
+  -webkit-transform: scale(1.3, 1.3);
+  /* Chrome bug prevents putting opacity at 0 right now */
+  opacity: 0.0;
+  transition: all 218ms;
+}
+
+.repeat-demo ul, .repeat-demo li {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.repeat-demo li li {
+  display: inline-block;
+  min-width: 30px;
+  margin: 0 5px 0 0;
+  padding: 0 5px;
+  font-size: 10px;
+  line-height: 15px;
+  border-radius: 2px;
+  background: #fafafa;
+  color: #303030;
+}
+
+.repeat-demo li.ng-enter {
+  transform: scale(1.1, 1.1);
+  -webkit-transform: scale(1.1,1.1);
+
+  opacity: 0;
+  transition: opacity 100ms linear, -webkit-transform 432ms linear;
+}
+
+.repeat-demo li.ng-enter.ng-enter-active {
+  transform: scale(1.0, 1.0);
+  -webkit-transform: scale(1.0,1.0);
+
+  opacity: 1;
+}
+
+/* This will show you if one of the sub elements is
+   animating */
+.repeat-demo li li.ng-enter.ng-enter-active,
+.repeat-demo li li.ng-leave.ng-leave-active {
+  background-color: #1080F0;
+}
+
+
+.repeat-demo li.ng-leave {
+  transform: scale(1.0, 1.0);
+  -webkit-transform: scale(1.0,1.0);
+
+  opacity: 1;
+  transition: all 900ms;
+}
+
+.repeat-demo li.ng-leave.ng-leave-active {
+  transform: scale(1.1, 1.1);
+  -webkit-transform: scale(1.1,1.1);
+
+  opacity: 0;
+}
+
+.visibility-demo div,
+.visibility-demo p {
+  height: 50px;
+  margin: 0;
+  padding: 0;
+}
+
+.visibility-demo div {
+  border-left: 5px solid #fbfbfb;
+  padding-left: 10px;
+}
+
+.visibility-demo .ng-enter,
+.visibility-demo .ng-hide-remove {
+  opacity: 0.0001;
+  height: 0;
+  transition: all 900ms ease;
+}
+
+.visibility-demo .ng-enter.ng-enter-active,
+.visibility-demo .ng-hide-remove.ng-hide-remove-active {
+  opacity: 1;
+  height: 50px;
+}
+
+.visibility-demo .ng-leave,
+.visibility-demo .ng-hide-add {
+  opacity: 1;
+  height: 50px;
+  transition: all 900ms ease;
+}
+
+.visibility-demo .ng-leave.ng-leave-active,
+.visibility-demo .ng-hide-add.ng-hide-add-active {
+  opacity: 0;
+  height: 0;
+}
+
+.css-demo .active {
+  background-color: #1080F0;
+}
+
+.css-demo .css-box {
+  width: 100px;
+  height: 100px;
+  background-color: #fbfbfb;
+  color: #303030;
+  margin: 100px auto;
+  text-align: center;
+  line-height: 100px;
+  font-weight: bold;
+}
+
+
+.css-demo .css-box.a {
+  width: 200px;
+}
+.css-demo .css-box.a-add {
+  transition: width 1200ms;
+}
+.css-demo .css-box.a-add.a-add-active {
+  width: 200px;
+}
+.css-demo .css-box.a-remove {
+  transition: width 1200ms;
+}
+.css-demo .css-box.a-remove.a-remove-active {
+  width: 100px;
+}
+
+.css-demo .css-box.b {
+  background-color: #1080F0;
+}
+.css-demo .css-box.b-add {
+  background-color: #fbfbfb;
+  transition: all 500ms;
+}
+.css-demo .css-box.b-add.b-add-active {
+  background-color: #1080F0;
+}
+.css-demo .css-box.b-remove {
+  background-color: #1080F0;
+  transition: all 500ms;
+}
+.css-demo .css-box.b-remove.b-remove-active {
+  background-color: #fbfbfb;
+}
+
+.css-demo .css-box.c {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+.css-demo .css-box.c-add {  
+  transform: rotate(0deg);
+  -webkit-transform: rotate(0deg);
+
+  transition: all 200ms;
+}
+.css-demo .css-box.c-add.c-add-active {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+}
+.css-demo .css-box.c-remove {
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+
+  transition: all 200ms;
+}
+.css-demo .css-box.c-remove.c-remove-active {
+  transform: rotate(0deg);
+  -webkit-transform: rotate(0deg);
+}
+
+.stress-box {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin: 5px 5px 0 0;
+  padding: 0;
+  background-color: #fbfbfb;
+  border-radius: 2px;
+}
+
+.stress-box.ng-enter {
+  transform: scale(0, 0);
+  -webkit-transform: scale(0,0);
+  opacity: 0.000001;
+
+  transition: all 500ms;
+}
+
+.stress-box.ng-enter.ng-enter-active {
+  transform: scale(1, 1);
+  -webkit-transform: scale(1,1);
+  opacity: 1.0;
+}
+
+.stress-box.ng-leave {
+  transform: scale(1, 1);
+  -webkit-transform: scale(1,1);
+  opacity: 1.0;
+
+  transition: all 500ms;
+}
+
+.stress-box.ng-leave.ng-leave-active {
+  transform: scale(0, 0);
+  -webkit-transform: scale(0,0);
+  opacity: 0.000001;
+}
