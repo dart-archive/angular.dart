@@ -24,17 +24,17 @@ done
 # Temporary during transition period from use of dartdoc to docgen.
 if [ -x "$DART_DOCGEN" ]; then
     DOC_CMD="$DART_DOCGEN"
-    MODE_OPTION="--start-page=angular \
+    DOC_OPTION="--start-page=angular \
                      --exclude-lib=js,metadata,meta,mirrors,intl,number_symbols,number_symbol_data,intl_helpers,date_format_internal,date_symbols,angular.util \
                      --no-include-sdk"
 
 elif [ -x "$DARTDOC" ]; then
     DOC_CMD="$DARTDOC"
-    MODE_OPTION="--mode=static"
+    DOC_OPTION="--mode=static"
 fi
 
-echo "Generating documentation using $DOC_CMD $MODE_OPTION $DOCDIR_OPTION"
-"$DOC_CMD" $MODE_OPTION $DOCDIR_OPTION \
+echo "Generating documentation using $DOC_CMD $DOC_OPTION $DOCDIR_OPTION"
+"$DOC_CMD" $DOC_OPTION $DOCDIR_OPTION \
     --package-root=packages/ \
     lib/angular.dart lib/utils.dart lib/change_detection/watch_group.dart lib/core/module.dart lib/core_dom/module.dart lib/filter/module.dart lib/directive/module.dart lib/mock/module.dart lib/perf/module.dart lib/playback/playback_data.dart lib/playback/playback_http.dart lib/routing/module.dart lib/tools/common.dart lib/tools/expression_extractor.dart lib/tools/io.dart lib/tools/io_impl.dart lib/tools/source_crawler_impl.dart lib/tools/source_metadata_extractor.dart lib/tools/template_cache_annotation.dart lib/tools/template_cache_generator.dart
 
