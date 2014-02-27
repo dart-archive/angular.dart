@@ -16,6 +16,7 @@ void main() {
           ..type(PublishTypesAttrDirective)
           ..type(PaneComponent)
           ..type(SimpleTranscludeInAttachAttrDirective)
+          ..type(IgnoreChildrenDirective)
           ..type(IncludeTranscludeAttrDirective)
           ..type(LocalAttrDirective)
           ..type(OneOfTwoDirectives)
@@ -137,6 +138,18 @@ void main() {
 
       expect(log).toEqual(['OneOfTwo', 'TwoOfTwo']);
     }));
+
+    it('should compile a directive that ignores children', inject((Logger log) {
+      // The ng-repeat comes first, so it is not ignored, but the children *are*
+      var element = $('<div ng-repeat="i in [1,2]" ignore-children><div two-directives></div></div>');
+      var template = $compile(element, directives);
+
+      template(injector, element);
+      rootScope.apply();
+
+      expect(log).toEqual(['Ignore', 'Ignore']);
+    }));
+
 
     describe("interpolation", () {
       it('should interpolate attribute nodes', inject(() {
@@ -667,6 +680,16 @@ class OneOfTwoDirectives {
 class TwoOfTwoDirectives {
   TwoOfTwoDirectives(Logger log) {
     log('TwoOfTwo');
+  }
+}
+
+@NgDirective(
+    selector: '[ignore-children]',
+    children: NgAnnotation.IGNORE_CHILDREN
+)
+class IgnoreChildrenDirective {
+  IgnoreChildrenDirective(Logger log) {
+    log('Ignore');
   }
 }
 

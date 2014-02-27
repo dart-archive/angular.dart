@@ -31,6 +31,8 @@ class Compiler {
         NgAnnotation annotation = directiveRef.annotation;
         var blockFactory = null;
 
+        // The first non-"compile_children" directive wins. Since directives are
+        // sorted, TRANSCLUDE_CHILDREN wins if any directive has TRANSCLUDE_CHILDREN
         if (annotation.children != children &&
             children == NgAnnotation.COMPILE_CHILDREN) {
           children = annotation.children;
