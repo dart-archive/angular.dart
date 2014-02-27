@@ -76,11 +76,11 @@ List<Object> ngDirectives(dom.Node node) {
 }
 
 _publishToJavaScript() {
-  js.context
-      ..['ngProbe'] = (dom.Node node) => _jsProbe(ngProbe(node))
-      ..['ngInjector'] = (dom.Node node) => _jsInjector(ngInjector(node))
-      ..['ngScope'] = (dom.Node node) => _jsScope(ngScope(node))
-      ..['ngQuery'] = (dom.Node node, String selector, [String containsText]) =>
+  // Point of style here: cascades require too many ()s, reducing readability.
+  js.context['ngProbe'] = (dom.Node node) => _jsProbe(ngProbe(node));
+  js.context['ngInjector'] = (dom.Node node) => _jsInjector(ngInjector(node));
+  js.context['ngScope'] = (dom.Node node) => _jsScope(ngScope(node));
+  js.context['ngQuery'] = (dom.Node node, String selector, [String containsText]) =>
           new js.JsArray.from(ngQuery(node, selector, containsText));
 }
 
