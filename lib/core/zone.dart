@@ -144,7 +144,7 @@ class NgZone {
    *
    * Returns the return value of body.
    */
-  run(body()) => _zone.run(body);
+  dynamic run(body()) => _zone.run(body);
 
   /**
    * Allows one to escape the auto-digest mechanism of Angular.
@@ -160,13 +160,13 @@ class NgZone {
    *       });
    *     }
    */
-  runOutsideAngular(body()) => _outerZone.run(body);
+  dynamic runOutsideAngular(body()) => _outerZone.run(body);
 
-  assertInTurn() {
+  void assertInTurn() {
     assert(_runningInTurn > 0 || _inFinishTurn);
   }
 
-  assertInZone() {
+  void assertInZone() {
     assertInTurn();
   }
 }
