@@ -15,11 +15,16 @@ var _elementExpando = new Expando('element');
  *       function is not intended to be called from Angular application.
  */
 ElementProbe ngProbe(dom.Node node) {
+  if (node == null) {
+    throw "ngProbe called without node";
+  }
+  var origNode = node;
   while(node != null) {
     var probe = _elementExpando[node];
     if (probe != null) return probe;
     node = node.parent;
   }
+  throw "Could not find a probe for [$origNode]";
   return null;
 }
 
@@ -76,12 +81,12 @@ List<Object> ngDirectives(dom.Node node) {
 }
 
 _publishToJavaScript() {
-  // Point of style here: cascades require too many ()s, reducing readability.
-  js.context['ngProbe'] = (dom.Node node) => _jsProbe(ngProbe(node));
-  js.context['ngInjector'] = (dom.Node node) => _jsInjector(ngInjector(node));
-  js.context['ngScope'] = (dom.Node node) => _jsScope(ngScope(node));
-  js.context['ngQuery'] = (dom.Node node, String selector, [String containsText]) =>
-          new js.JsArray.from(ngQuery(node, selector, containsText));
+  js.context
+      ..['ngProbe'] = new js.JsFunction.withThis((_, dom.Node node) => _jsProbe(ngProbe(node)))
+      ..['ngInjector'] = new js.JsFunction.withThis((_, dom.Node node) => _jsInjector(ngInjector(node)))
+      ..['ngScope'] = new js.JsFunction.withThis((_, dom.Node node) => _jsScope(ngScope(node)))
+      ..['ngQuery'] = new js.JsFunction.withThis((_, dom.Node node, String selector, [String containsText]) =>
+          new js.JsArray.from(ngQuery(node, selector, containsText)));
 }
 
 js.JsObject _jsProbe(ElementProbe probe) {

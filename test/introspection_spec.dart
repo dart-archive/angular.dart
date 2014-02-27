@@ -38,12 +38,19 @@ void main() {
     });
 
     // Does not work in dart2js.  deboer is investigating.
-    xit('should be available from Javascript', () {
-      ngBootstrap(element: new Element.html('<div></div>'));
+    it('should be available from Javascript', () {
+      // The probe only works if there is a directive.
+      var elt = $('<div ng-app id=ngtop ng-bind="\'introspection FTW\'"></div>')[0];
+      // Make it possible to find the element from JS
+      document.body.append(elt);
+      ngBootstrap(element: elt);
+
       expect(js.context['ngProbe']).toBeDefined();
       expect(js.context['ngScope']).toBeDefined();
       expect(js.context['ngInjector']).toBeDefined();
       expect(js.context['ngQuery']).toBeDefined();
+
+      expect(js.context['ngProbe'].apply([js.context['ngtop']])).toBeDefined();
     });
   });
 }
