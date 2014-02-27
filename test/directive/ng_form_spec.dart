@@ -342,6 +342,32 @@ void main() {
       }));
     });
 
+    describe('error handling', () {
+      it('should return true or false depending on if an error exists on a form',
+        inject((Scope scope, TestBed _) {
+
+        var element = $('<form name="myForm">'
+                        '  <input type="text" ng-model="input" name="input" />' +
+                        '</form>');
+
+        _.compile(element);
+        scope.apply();
+
+        var form = scope.context['myForm'];
+        NgModel input = form['input'];
+
+        expect(form.hasError('big-failure')).toBe(false);
+
+        form.updateControlValidity(input, "big-failure", false);
+
+        expect(form.hasError('big-failure')).toBe(true);
+
+        form.updateControlValidity(input, "big-failure", true);
+
+        expect(form.hasError('big-failure')).toBe(false);
+      }));
+    });
+
     describe('reset()', () {
       it('should reset the model value to its original state', inject((TestBed _) {
         _.compile('<form name="superForm">' +

@@ -49,6 +49,8 @@ abstract class NgControl implements NgDetachAware {
     untouched = true;
   }
 
+  bool hasError(String key) => errors.containsKey(key);
+
   _onSubmit(bool valid) {
     if (valid) {
       _submit_valid = true;
@@ -241,5 +243,6 @@ class NgNullControl implements NgControl {
 
   reset() => null;
   detach() => null;
+  bool hasError(String key) => false;
 
 }

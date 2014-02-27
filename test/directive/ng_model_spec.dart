@@ -969,6 +969,30 @@ void main() {
       }));
     });
 
+    describe('error handling', () {
+      it('should return true or false depending on if an error exists on a form',
+        inject((Scope scope, TestBed _) {
+
+        var element = $('<input type="text" ng-model="input" name="input" probe="i" />');
+
+        _.compile(element);
+        scope.apply();
+
+        Probe p = scope.context['i'];
+        NgModel model = p.directive(NgModel);
+
+        expect(model.hasError('big-failure')).toBe(false);
+
+        model.setValidity("big-failure", false);
+
+        expect(model.hasError('big-failure')).toBe(true);
+
+        model.setValidity("big-failure", true);
+
+        expect(model.hasError('big-failure')).toBe(false);
+      }));
+    });
+
     describe('text-like events', () {
       it('should update the binding on the "input" event', inject(() {
         _.compile('<input type="text" ng-model="model" probe="p">');
