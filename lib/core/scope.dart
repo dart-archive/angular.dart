@@ -399,7 +399,7 @@ class ScopeStats {
 class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
   static final STATE_DIGEST = 'digest';
-  static final STATE_FLUSH = 'digest';
+  static final STATE_FLUSH = 'flush';
 
   final ExceptionHandler _exceptionHandler;
   final AstParser _astParser;
