@@ -10,9 +10,9 @@ var _elementExpando = new Expando('element');
 /**
  * Return the closest [ElementProbe] object for a given [Element].
  *
- * NOTE: This global method is here to make it easier to debug Angular
- *       application from the browser's REPL, unit or end-to-end tests. The
- *       function is not intended to be called from Angular application.
+ * **NOTE:** This global method is here to make it easier to debug Angular
+ * application from the browser's REPL, unit or end-to-end tests. The
+ * function is not intended to be called from Angular application.
  */
 ElementProbe ngProbe(dom.Node node) {
   if (node == null) {
