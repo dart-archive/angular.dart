@@ -21,7 +21,7 @@ part of angular.directive;
     selector: '[ng-form]',
     publishTypes : const <Type>[NgControl],
     visibility: NgDirective.CHILDREN_VISIBILITY)
-class NgForm extends NgControl implements Map<String, NgControl> {
+class NgForm extends NgControl {
   /**
    * Instantiates a new instance of NgForm. Upon creation, the instance of the
    * class will be bound to the formName property on the scope (where formName
@@ -54,56 +54,10 @@ class NgForm extends NgControl implements Map<String, NgControl> {
     _scope.context[name] = this;
   }
 
-  //FIXME: fix this reflection bug that shows up when Map is implemented
-  operator []=(String key, value) {
-    if (key == 'name') {
-      name = value;
-    } else {
-      _controlByName[key] = value;
-    }
-  }
-
-  //FIXME: fix this reflection bug that shows up when Map is implemented
-  operator[](name) {
-    if (name == 'valid') {
-      return valid;
-    } else if (name == 'invalid') {
-      return invalid;
-    } else {
-      return _controlByName[name];
-    }
-  }
-
-  bool get isEmpty => false;
-  bool get isNotEmpty => !isEmpty;
-  get values => null;
-  get keys => null;
-  get length => null;
-  clear() => null;
-  remove(_) => null;
-  containsKey(_) => false;
-  containsValue(_) => false;
-  addAll(_) => null;
-  forEach(_) => null;
-  putIfAbsent(_, __) => null;
+  NgControl operator[](name) => _controlByName[name];
 }
 
 class NgNullForm extends NgNullControl implements NgForm {
   NgNullForm() {}
-
   operator[](name) {}
-  operator []=(String name, value) {}
-
-  bool get isEmpty => false;
-  bool get isNotEmpty => true;
-  get values => null;
-  get keys => null;
-  get length => null;
-  clear() => null;
-  remove(_) => null;
-  containsKey(_) => false;
-  containsValue(_) => false;
-  addAll(_) => null;
-  forEach(_) => null;
-  putIfAbsent(_, __) => null;
 }
