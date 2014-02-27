@@ -27,8 +27,8 @@ class NgModel extends NgControl implements NgAttachAware {
   Function render = (value) => null;
 
   NgModel(Scope _scope, dom.Element _element, Injector injector,
-      NgForm this._form, this._parser, NodeAttrs attrs)
-      : super(_scope, _element, injector)
+      NgForm this._form, this._parser, NodeAttrs attrs, NgAnimate animate)
+      : super(_scope, _element, injector, animate)
   {
     _exp = attrs["ng-model"];
     watchCollection = false;
