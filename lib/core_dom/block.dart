@@ -18,10 +18,7 @@ abstract class ElementWrapper {
  * contain other [Block]s and it is the only way in which DOM can be changed
  * structurally.
  *
- * A [Block] is a collection of DOM nodes and [Directive]s for those nodes.
- *
- * A [Block] is responsible for instantiating the [Directive]s and for
- * inserting / removing itself to/from DOM.
+ * A [Block] is a collection of DOM nodes
  *
  * A [Block] can be created from [BlockFactory].
  *
@@ -31,11 +28,6 @@ class Block implements ElementWrapper {
   ElementWrapper next;
   ElementWrapper previous;
 
-  Function onInsert;
-  Function onRemove;
-  Function onMove;
-
-  List<dynamic> _directives = [];
   final NgAnimate _animate;
 
   Block(this.elements, this._animate);
@@ -54,49 +46,16 @@ class Block implements ElementWrapper {
     dom.Node previousElement = previousElements[previousElements.length - 1];
     dom.Node insertBeforeElement = previousElement.nextNode;
     dom.Node parentElement = previousElement.parentNode;
-    bool preventDefault = false;
 
-    Function insertDomElements = () {
-      _animate.insert(elements, parentElement, insertBefore: insertBeforeElement);
-    };
+    _animate.insert(elements, parentElement, insertBefore: insertBeforeElement);
 
-    if (onInsert != null) {
-      onInsert({
-        "preventDefault": () {
-          preventDefault = true;
-          return insertDomElements;
-        },
-        "element": elements[0]
-      });
-    }
-
-    if (!preventDefault) {
-      insertDomElements();
-    }
     return this;
   }
 
   Block remove() {
     bool preventDefault = false;
 
-    Function removeDomElements = () {
-      _animate.remove(elements);
-    };
-
-    if (onRemove != null) {
-      onRemove({
-        "preventDefault": () {
-          preventDefault = true;
-          removeDomElements();
-          return this;
-        },
-        "element": elements[0]
-      });
-    }
-
-    if (!preventDefault) {
-      removeDomElements();
-    }
+    _animate.remove(elements);
 
     // Remove block from list
     if (previous != null && (previous.next = next) != null) {
