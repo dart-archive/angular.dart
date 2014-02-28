@@ -216,7 +216,8 @@ class Scope {
     } else {
       throw 'expressions must be String or AST got $expression.';
     }
-    return watch = (readOnly ? _readOnlyGroup : _readWriteGroup).watch(ast, fn);
+    WatchGroup group = readOnly ? _readOnlyGroup : _readWriteGroup;
+    return watch = group.watch(ast, fn);
   }
 
   dynamic eval(expression, [Map locals]) {
@@ -399,7 +400,7 @@ class ScopeStats {
 class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
   static final STATE_DIGEST = 'digest';
-  static final STATE_FLUSH = 'digest';
+  static final STATE_FLUSH = 'flush';
 
   final ExceptionHandler _exceptionHandler;
   final AstParser _astParser;
