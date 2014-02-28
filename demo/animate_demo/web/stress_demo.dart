@@ -15,10 +15,10 @@ part of animate_demo;
     publishAs: 'ctrl', applyAuthorStyles: true)
 class StressDemoComponent {
   bool _visible = true;
-  
+
   // When visibility changes add or remove a large
   // chunk of elements.
-  set visible(bool value) {
+  void set visible(bool value) {
     if (value) {
       for (int i = 0; i < 200; i++) {
         numbers.add(i);
@@ -28,7 +28,8 @@ class StressDemoComponent {
     }
     _visible = value;
   }
-  get visible => _visible;
+
+  bool get visible => _visible;
 
   List<int> numbers = [1, 2];
 }

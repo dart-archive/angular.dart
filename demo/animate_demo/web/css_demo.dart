@@ -23,8 +23,7 @@ part of animate_demo;
       </div>
     ''',
     publishAs: 'ctrl',
-    applyAuthorStyles: true
-)
+    applyAuthorStyles: true)
 class CssDemoComponent {
   bool stateA = false;
   bool stateB = false;

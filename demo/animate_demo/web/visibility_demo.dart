@@ -18,8 +18,7 @@ part of animate_demo;
       </div>
     ''',
     publishAs: 'ctrl',
-    applyAuthorStyles: true
-)
+    applyAuthorStyles: true)
 class VisibilityDemoComponent {
   // TODO(codelogic): split and add ng-switch.
   bool visible = false;
