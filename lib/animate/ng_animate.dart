@@ -5,7 +5,8 @@ part of angular.animate;
  * dom elements. Valid options are [always] [never] and [auto]. If this
  * directive is not applied the default value is [auto] for animation.
  */
-@NgDirective(selector: '[ng-animate]', map: const {'ng-animate': '@option'})
+@NgDirective(selector: '[ng-animate]',
+    map: const {'ng-animate': '@option'})
 class NgAnimateDirective  extends NgAnimateDirectiveBase {
   set option(value) {
     _option = value;
@@ -15,7 +16,7 @@ class NgAnimateDirective  extends NgAnimateDirectiveBase {
   }
 
   NgAnimateDirective(dom.Element element, AnimationOptimizer optimizer)
-  : super(element, optimizer);
+      : super(element, optimizer);
 }
 
 /**
@@ -27,7 +28,7 @@ class NgAnimateDirective  extends NgAnimateDirectiveBase {
  * more specific.
  */
 @NgDirective(selector: '[ng-animate-children]',
-map: const {'ng-animate-children': '@option'})
+    map: const {'ng-animate-children': '@option'})
 class NgAnimateChildrenDirective extends NgAnimateDirectiveBase {
   set option(value) {
     _option = value;
@@ -45,8 +46,8 @@ class NgAnimateChildrenDirective extends NgAnimateDirectiveBase {
  * [AnimationOptimizer].
  */
 abstract class NgAnimateDirectiveBase implements NgDetachAware {
-  AnimationOptimizer _optimizer;
-  dom.Element _element;
+  final AnimationOptimizer _optimizer;
+  final dom.Element _element;
 
   String _option = "auto";
   String get option => _option;
