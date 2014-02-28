@@ -15,6 +15,7 @@ part 'animation_loop.dart';
 part 'animation_optimizer.dart';
 part 'css_animate.dart';
 part 'css_animation.dart';
+part 'ng_animate.dart';
 
 final Logger _logger = new Logger('ng.animate');
 
@@ -54,6 +55,8 @@ class NgAnimateModule extends Module {
     type(AnimationLoop);
     type(CssAnimationMap);
     type(AnimationOptimizer);
+    type(NgAnimateDirective);
+    type(NgAnimateChildrenDirective);
     type(NgAnimate, implementedBy: CssAnimate);
   }
 }
