@@ -43,7 +43,7 @@ class BlockFactory {
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.block')) != false);
-      var block = new Block(elements);
+      var block = new Block(elements, injector.get(EventService) );
       _link(block, elements, directivePositions, injector);
       return block;
     } finally {
@@ -198,6 +198,12 @@ class BlockFactory {
           scope.context[(ref.annotation as NgController).publishAs] = controller;
         } else if (ref.annotation is NgComponent) {
           shadowScope.context[(ref.annotation as NgComponent).publishAs] = controller;
+        }
+        if(ref.annotation.selector.contains("on-")) {
+          String eventName = ref.annotation.selector.replaceAll("[on-", "").replaceAll("]", "");
+          block.registerEvent(eventName, (event) {
+            scope.eval(ref.value);
+          });
         }
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
         var attachDelayStatus = controller is NgAttachAware ? [false] : null;

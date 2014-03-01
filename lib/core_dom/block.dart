@@ -30,6 +30,8 @@ class Block implements ElementWrapper {
   List<dom.Node> elements;
   ElementWrapper next;
   ElementWrapper previous;
+  List<_EventHandle> eventRegistrations = [];
+  EventService eventService;
 
   Function onInsert;
   Function onRemove;
@@ -37,7 +39,11 @@ class Block implements ElementWrapper {
 
   List<dynamic> _directives = [];
 
-  Block(this.elements);
+  Block(this.elements, this.eventService);
+
+  void registerEvent(String eventName, EventFunction fn) {
+    eventRegistrations.add(eventService.register(eventName, fn, elements));
+  }
 
   Block insertAfter(ElementWrapper previousBlock) {
     // Update Link List.
@@ -75,6 +81,7 @@ class Block implements ElementWrapper {
   }
 
   Block remove() {
+    eventRegistrations.forEach((e) => eventService.unregister(e));
     bool preventDefault = false;
 
     Function removeDomElements = () {

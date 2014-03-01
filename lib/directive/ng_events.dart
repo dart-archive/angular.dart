@@ -84,6 +84,7 @@ part of angular.directive;
 @NgDirective(selector: '[ng-blur]',             map: const {'ng-blur':             '&onBlur'})
 @NgDirective(selector: '[ng-change]',           map: const {'ng-change':           '&onChange'})
 @NgDirective(selector: '[ng-click]',            map: const {'ng-click':            '&onClick'})
+@NgDirective(selector: '[on-click]')
 @NgDirective(selector: '[ng-contextmenu]',      map: const {'ng-contextmenu':      '&onContextMenu'})
 @NgDirective(selector: '[ng-copy]',             map: const {'ng-copy':             '&onCopy'})
 @NgDirective(selector: '[ng-cut]',              map: const {'ng-cut':              '&onCut'})
