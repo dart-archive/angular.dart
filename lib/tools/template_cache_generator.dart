@@ -118,7 +118,15 @@ class TemplateCollectingVisitor {
   TemplateCollectingVisitor(this.templates, this.blacklistedClasses,
       this.sourceCrawler);
 
-  call(CompilationUnitElement cue, String srcPath) {
+  void call(CompilationUnitElement cue, String srcPath) {
+    processDeclarations(cue, srcPath);
+
+    cue.enclosingElement.parts.forEach((CompilationUnitElement part) {
+      processDeclarations(part, srcPath);
+    });
+  }
+
+  void processDeclarations(CompilationUnitElement cue, String srcPath) {
     CompilationUnit cu = sourceCrawler.context
         .resolveCompilationUnit(cue.source, cue.library);
     cu.declarations.forEach((CompilationUnitMember declaration) {
@@ -166,8 +174,7 @@ class TemplateCollectingVisitor {
     });
   }
 
-  bool extractNgTemplateCache(
-      Annotation ann, List<String> cacheUris) {
+  bool extractNgTemplateCache(Annotation ann, List<String> cacheUris) {
     bool cache = true;
     ann.arguments.arguments.forEach((Expression arg) {
       if (arg is NamedExpression) {
