@@ -11,18 +11,19 @@ class EventService {
   EventService(NgApp ngApp) : rootElement = ngApp.root;
 
   _EventHandle register(String eventName, EventFunction fn, List<dom.Node> elements) {
-    var name = eventName.replaceAll("on-", "");
-    var eventHandle = new _EventHandle(name, elements);
-    var eventListener = (event) {
-      _eventRegistry[name][elements](event);
+    var eventHandle = new _EventHandle(eventName, elements);
+    var eventListener = (dom.Event event) {
+      if(elements.any((e) => e.contains(event.target))) {
+        _eventRegistry[eventName][elements](event);
+      }
     };
 
-    _eventRegistry.putIfAbsent(name, () {
-      rootElement.addEventListener(name, eventListener);
-      _eventToListener[name] = eventListener;
+    _eventRegistry.putIfAbsent(eventName, () {
+      rootElement.addEventListener(eventName, eventListener);
+      _eventToListener[eventName] = eventListener;
       return {};
     });
-    _eventRegistry[name].putIfAbsent(elements, () => fn);
+    _eventRegistry[eventName].putIfAbsent(elements, () => fn);
     return eventHandle;
   }
 

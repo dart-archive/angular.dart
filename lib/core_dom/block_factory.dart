@@ -200,10 +200,7 @@ class BlockFactory {
           shadowScope.context[(ref.annotation as NgComponent).publishAs] = controller;
         }
         if(ref.annotation.selector.contains("on-")) {
-          String eventName = ref.annotation.selector.replaceAll("[on-", "").replaceAll("]", "");
-          block.registerEvent(eventName, (event) {
-            scope.eval(ref.value);
-          });
+          _findEventAttrsAndRegister(block, ref, nodeAttrs, scope);
         }
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
         var attachDelayStatus = controller is NgAttachAware ? [false] : null;
@@ -250,6 +247,17 @@ class BlockFactory {
       }
     });
     return nodeInjector;
+  }
+
+  void _findEventAttrsAndRegister(Block block, DirectiveRef ref,
+                                  NodeAttrs nodeAttrs, Scope scope) {
+    Map<String, String> eventAttrs = nodeAttrs.where((k, _) => new RegExp("on-*").hasMatch(k));
+    eventAttrs.forEach((k, v) {
+      var eventName = k.replaceAll("on-", "");
+      block.registerEvent(eventName, (event) {
+          scope.eval(ref.value);
+        });
+    });
   }
 
   // DI visibility callback allowing node-local visibility.
