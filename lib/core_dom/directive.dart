@@ -54,7 +54,7 @@ class NodeAttrs {
   Map<String, String> where(bool f(String k, String v)) {
     var filteredMap = {};
     element.attributes.forEach((k, v) {
-      if (f(k,v)) filteredMap.putIfAbsent(k, () => v);
+      if (f(k,v)) filteredMap[k]=v;
     });
     return filteredMap;
   }

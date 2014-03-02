@@ -11,10 +11,8 @@ class EventHandler {
   EventHandler(NgApp ngApp) : rootElement = ngApp.root;
 
   _RegistrationHandle register(String eventName, EventFunction fn, List<dom.Node> elements) {
-    print('Registering ${eventName}');
     var eventHandle = new _RegistrationHandle(eventName, elements);
     var eventListener = (dom.Event event) {
-      print(event.type);
       if(elements.any((e) => e == event.target || e.contains(event.target))) {
         _eventRegistry[eventName][elements](event);
       }

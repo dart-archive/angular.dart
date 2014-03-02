@@ -199,7 +199,7 @@ class BlockFactory {
         } else if (ref.annotation is NgComponent) {
           shadowScope.context[(ref.annotation as NgComponent).publishAs] = controller;
         }
-        if(ref.annotation.selector.startsWith("on-")) {
+        if(ref.annotation.selector.startsWith("[on-")) {
           _findEventAttrsAndRegister(block, ref, nodeAttrs, scope);
         }
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
