@@ -1189,6 +1189,39 @@ void main() {
       }));
 
 
+      it('should properly watch array of fields', inject((RootScope rootScope, Logger log) {
+        rootScope.context['foo'] = () => 12;
+        rootScope.watch('foo()', (v, o) => log(v));
+        expect(log).toEqual([]);
+        rootScope.apply();
+        expect(log).toEqual([12]);
+      }));
+
+
+      it('should properly watch array of fields', inject((RootScope rootScope, Logger log) {
+        rootScope.context['foo'] = 'abc';
+        rootScope.watch('foo.contains("b")', (v, o) => log([v, o]));
+        expect(log).toEqual([]);
+        rootScope.apply();
+        expect(log).toEqual([[true, null]]);
+        log.clear();
+      }));
+
+
+      it('should not trigger new watcher in the flush where it was added', inject((Scope scope) {
+        var log = [] ;
+        scope.context['foo'] = () => 'foo';
+        scope.watch('1', (value, __) {
+          expect(value).toEqual(1);
+          scope.watch('foo()', (value, __) {
+            log.add(value);
+          });
+        });
+        scope.apply();
+        expect(log).toEqual(['foo']);
+      }));
+
+
       it('should properly watch array of fields2', inject((RootScope rootScope, Logger log) {
         rootScope.watch('[ctrl.foo, ctrl.bar]', (v, o) => log([v, o]));
         expect(log).toEqual([]);

@@ -390,7 +390,7 @@ void main() {
 
         // obj, arg0, arg1;
         expect(watchGrp.fieldCost).toEqual(3);
-        // methodA(), mothodA()
+        // methodA(), methodA()
         expect(watchGrp.evalCost).toEqual(2);
 
         watchGrp.detectChanges();
@@ -421,6 +421,30 @@ void main() {
 
         watchGrp.detectChanges();
         expect(logger).toEqual([]);
+      });
+
+      it('should not return null when evaling method first time', () {
+        context['text'] ='abc';
+        var ast = new MethodAST(parse('text'), 'toUpperCase', []);
+        var watch = watchGrp.watch(ast, (v, p) => logger(v));
+
+        watchGrp.detectChanges();
+        expect(logger).toEqual(['ABC']);
+      });
+
+      it('should not eval a function if registered during reaction', () {
+        context['text'] ='abc';
+        var ast = new MethodAST(parse('text'), 'toLowerCase', []);
+        var watch = watchGrp.watch(ast, (v, p) {
+          var ast = new MethodAST(parse('text'), 'toUpperCase', []);
+          watchGrp.watch(ast, (v, p) {
+            logger(v);
+          });
+        });
+
+        watchGrp.detectChanges();
+        watchGrp.detectChanges();
+        expect(logger).toEqual(['ABC']);
       });
 
       it('should read connstant', () {

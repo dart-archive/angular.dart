@@ -406,6 +406,7 @@ class RootWatchGroup extends WatchGroup {
     int count = 0;
     if (processStopwatch != null) processStopwatch.stop();
     Watch dirtyWatch = _dirtyWatchHead;
+    _dirtyWatchHead = _dirtyWatchTail = null;
     RootWatchGroup root = _rootGroup;
     root._removeCount = 0;
     while(dirtyWatch != null) {
@@ -421,7 +422,6 @@ class RootWatchGroup extends WatchGroup {
       dirtyWatch._nextDirtyWatch = null;
       dirtyWatch = nextDirtyWatch;
     }
-    _dirtyWatchHead = _dirtyWatchTail = null;
     if (processStopwatch != null) processStopwatch..stop()..increment(count);
     return count;
   }
