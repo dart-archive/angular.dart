@@ -35,7 +35,8 @@ main() {
       Element el = document.createElement('p');
       var counter = 0;
       root.append(el);
-      var registration = eventHandler.register('xyz', (event) => ++counter, [el]);
+      var registration = eventHandler.register('xyz',
+          (event) => ++counter, [el]);
       Event e = new Event('xyz');
       el.dispatchEvent(e);
       eventHandler.unregister(registration);
@@ -50,7 +51,8 @@ main() {
       el.append(child);
       var invoked = false;
       root.append(el);
-      var registration = eventHandler.register('xyz', (event) => invoked = true, [el]);
+      var registration = eventHandler.register('xyz',
+          (event) => invoked = true, [el]);
       child.dispatchEvent(new Event('xyz'));
       expect(invoked).toBe(true);
     });
@@ -60,7 +62,8 @@ main() {
       Element el = document.createElement('p');
       var invoked = false;
       root.append(el);
-      var registration = eventHandler.register('xyz', (event) => invoked = true, [el]);
+      var registration = eventHandler.register('xyz',
+          (event) => invoked = true, [el]);
       Event e = new Event('xyz');
       root.dispatchEvent(e);
       expect(invoked).toBe(false);
