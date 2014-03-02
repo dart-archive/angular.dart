@@ -13,7 +13,7 @@ class EventService {
   _EventHandle register(String eventName, EventFunction fn, List<dom.Node> elements) {
     var eventHandle = new _EventHandle(eventName, elements);
     var eventListener = (dom.Event event) {
-      if(elements.any((e) => e.contains(event.target))) {
+      if(elements.any((e) => e == event.target || e.contains(event.target))) {
         _eventRegistry[eventName][elements](event);
       }
     };
