@@ -68,5 +68,8 @@ main() {
       root.dispatchEvent(e);
       expect(invoked).toBe(false);
     });
+
+    // TODO(@marko) add more test to cover scenario where there are multiple
+    // event and/or multiple nodes.
   });
 }
