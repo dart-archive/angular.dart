@@ -20,13 +20,13 @@ part 'compiler.dart';
 part 'directive.dart';
 part 'directive_map.dart';
 part 'http.dart';
-part "ng_app.dart";
+part 'ng_app.dart';
 part 'ng_mustache.dart';
 part 'node_cursor.dart';
 part 'selector.dart';
 part 'template_cache.dart';
 part 'tree_sanitizer.dart';
-part 'event_service.dart';
+part 'event_handler.dart';
 
 class NgCoreDomModule extends Module {
   NgCoreDomModule() {
@@ -51,7 +51,7 @@ class NgCoreDomModule extends Module {
     type(LocationWrapper);
     type(FieldMetadataExtractor);
     type(DirectiveMap);
-    type(EventService);
+    type(EventHandler);
   }
 }
 

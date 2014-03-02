@@ -43,7 +43,7 @@ class BlockFactory {
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.block')) != false);
-      var block = new Block(elements, injector.get(EventService) );
+      var block = new Block(elements, injector.get(EventHandler) );
       _link(block, elements, directivePositions, injector);
       return block;
     } finally {
@@ -199,7 +199,7 @@ class BlockFactory {
         } else if (ref.annotation is NgComponent) {
           shadowScope.context[(ref.annotation as NgComponent).publishAs] = controller;
         }
-        if(ref.annotation.selector.contains("on-")) {
+        if(ref.annotation.selector.startsWith("on-")) {
           _findEventAttrsAndRegister(block, ref, nodeAttrs, scope);
         }
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
@@ -251,7 +251,7 @@ class BlockFactory {
 
   void _findEventAttrsAndRegister(Block block, DirectiveRef ref,
                                   NodeAttrs nodeAttrs, Scope scope) {
-    Map<String, String> eventAttrs = nodeAttrs.where((k, _) => new RegExp("on-*").hasMatch(k));
+    Map<String, String> eventAttrs = nodeAttrs.where((k, _) => k.startsWith("on-"));
     eventAttrs.forEach((k, v) {
       var eventName = k.replaceAll("on-", "");
       block.registerEvent(eventName, (event) {
