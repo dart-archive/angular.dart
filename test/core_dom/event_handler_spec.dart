@@ -42,5 +42,28 @@ main() {
       el.dispatchEvent(e);
       expect(counter).toBe(1);
     });
+
+    it('should call function when registered event is triggered on child'
+        ' node', () {
+      Element el = document.createElement('p');
+      Element child = document.createElement('p');
+      el.append(child);
+      var invoked = false;
+      root.append(el);
+      var registration = eventHandler.register('xyz', (event) => invoked = true, [el]);
+      child.dispatchEvent(new Event('xyz'));
+      expect(invoked).toBe(true);
+    });
+
+    it('should not call function when registered event is triggered on ancestor'
+        ' node', () {
+      Element el = document.createElement('p');
+      var invoked = false;
+      root.append(el);
+      var registration = eventHandler.register('xyz', (event) => invoked = true, [el]);
+      Event e = new Event('xyz');
+      root.dispatchEvent(e);
+      expect(invoked).toBe(false);
+    });
   });
 }
