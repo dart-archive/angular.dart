@@ -12,7 +12,7 @@ echo Test result is: $TRAVIS_TEST_RESULT
 
 if [ "$CHANNEL" = "stable" ]; then
 
-    if [ [ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$TRAVIS_BRANCH"="presubmit" ] ]; then
+    if [ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$TRAVIS_BRANCH"="presubmit" ]; then
 
         git config credential.helper "store --file=.git/credentials"
         echo "https://${GITHUB_TOKEN_ANGULARDART}:@github.com" > .git/credentials
