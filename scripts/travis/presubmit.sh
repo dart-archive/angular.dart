@@ -22,7 +22,7 @@ if [ "$CHANNEL" = "stable" ]; then
 		git merge presubmit
 		
 		#  If the exit status of the merge command is success, then delete the presubmit branch and push master
-		if[$? -eq 0]; then
+		if [$? -eq 0]; then
 		
 		    git branch -d presubmit
 		    git push origin master
