@@ -69,6 +69,24 @@ main() {
       expect(invoked).toBe(false);
     });
 
+    it('should call only function associated with event name and elements list',
+        () {
+      Element foo = document.createElement('p');
+      Element bar = document.createElement('p');
+      var fooInvoked = false;
+      var barInvoked = false;
+      root..append(foo)..append(bar);
+      var fooRegistration = eventHandler.register('xyz',
+          (event) => fooInvoked = true, [foo]);
+      var barRegistration = eventHandler.register('xyz',
+                (event) => barInvoked = true, [bar]);
+      Event e = new Event('xyz');
+      foo.dispatchEvent(e);
+      expect(fooInvoked).toBe(true);
+      expect(barInvoked).toBe(false);
+    });
+
+
     // TODO(@marko) add more test to cover scenario where there are multiple
     // event and/or multiple nodes.
   });
