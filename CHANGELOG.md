@@ -113,7 +113,7 @@
   ([79b7525a](https://github.com/angular/angular.dart/commit/79b7525a790ce73a50c2874e2f43110fbce61d16))
   - Write URI in sorted order to prevent SHA churn
   ([217839ef](https://github.com/angular/angular.dart/commit/217839ef3495506313a226681a6c10a52e71df0f))
-- **input:** treat <input> with no type as type="text"
+- **input:** treat `<input>` with no type as type="text"
   ([8f0a8a7f](https://github.com/angular/angular.dart/commit/8f0a8a7fe87517a65b2c5ed2857c90ea87898a0b))
 - **ng-class:** array syntax should not insert nulls
   ([b982e326](https://github.com/angular/angular.dart/commit/b982e326cd7d3fbd4e53fbe7b65ba9adc0f5cf64),

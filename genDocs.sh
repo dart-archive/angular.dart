@@ -1,3 +1,3 @@
 #!/bin/bash
-echo DEPRICATED: use ./scripts/generate-documentation.sh
+echo DEPRECATED: use ./scripts/generate-documentation.sh
 $(dirname $0)/scripts/generate-documentation.sh
