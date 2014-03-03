@@ -4,8 +4,7 @@ part of animate_demo;
     selector: 'visibility-demo',
     template: '''
       <div class="visibility-demo">
-      <button ng-click="ctrl.visible = !ctrl.visible">
-        Toggle Visibility</button>
+      <button ng-click="ctrl.visible = !ctrl.visible">Toggle Visibility</button>
       <div class="visible-if" ng-if="ctrl.visible">
         <p>Hello World. ng-if will create and destroy
           dom elements each time you toggle me.</p>
@@ -18,9 +17,7 @@ part of animate_demo;
       </div>
     ''',
     publishAs: 'ctrl',
-    applyAuthorStyles: true
-)
+    applyAuthorStyles: true)
 class VisibilityDemoComponent {
-  // TODO(codelogic): split and add ng-switch.
   bool visible = false;
 }

@@ -1,24 +1,24 @@
 part of animate_demo;
 
-@NgComponent(selector: 'stress-demo', template:
-    '''
+@NgComponent(
+    selector: 'stress-demo',
+    template: '''
       <div class="stress-demo">
         <button ng-click="ctrl.visible = !ctrl.visible">
           Toggle Visibility</button>
         <div>
-          <div class="stress-box"
-            ng-repeat="number in ctrl.numbers">
-        </div>
+          <div class="stress-box" ng-repeat="number in ctrl.numbers"></div>
         </div>
       </div>
     ''',
-    publishAs: 'ctrl', applyAuthorStyles: true)
+    publishAs: 'ctrl',
+    applyAuthorStyles: true)
 class StressDemoComponent {
   bool _visible = true;
-  
-  // When visibility changes add or remove a large
-  // chunk of elements.
-  set visible(bool value) {
+  final numbers = <int>[1, 2];
+
+  // When visibility changes add or remove a large chunk of elements.
+  void set visible(bool value) {
     if (value) {
       for (int i = 0; i < 200; i++) {
         numbers.add(i);
@@ -28,7 +28,6 @@ class StressDemoComponent {
     }
     _visible = value;
   }
-  get visible => _visible;
 
-  List<int> numbers = [1, 2];
+  bool get visible => _visible;
 }
