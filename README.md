@@ -1,7 +1,7 @@
 AngularDart
 ============
 
-A port of [Angular][ng] to [Dart][dart].
+A port of [Angular][ngJs] to [Dart][dart].
 
 ## Installing
 
@@ -9,7 +9,7 @@ Follow the instructions on [AngularDart's page on pub][pub].
 
 ## API Documentation
 
-[API documentation][docs].
+[API documentation][APIdocs].
 
 
 ## Learning more
@@ -21,8 +21,8 @@ in Dart.
 
 Discuss AngularDart on the [mailing list][list],
 ask questions on [StackOverflow][so],
-follow [+Angular on Google+][plus],
-and follow [@AngularDart][dartTw] and [@AngularJS][ngTw] on Twitter.
+follow [+AngularDart on Google+][plus],
+and follow [@AngularDart][ngDartTw] and [@AngularJS][ngJsTw] on Twitter.
 
 ## Filing bugs
 
@@ -32,16 +32,16 @@ Please file bugs and feature requests using the [Github Issues Tracker][issues].
 
 Excellent read up on [contributing][contributing].
 
-[docs]: http://ci.angularjs.org/view/Dart/job/angular.dart-master/javadoc/
-[ngTw]: https://twitter.com/AngularJS
-[dartTw]: https://twitter.com/AngularDart
-[plus]: https://plus.google.com/+AngularJS
+[APIdocs]: https://docs.angulardart.org
+[ngJsTw]: https://twitter.com/AngularJS
+[ngDartTw]: https://twitter.com/AngularDart
+[plus]: https://plus.google.com/117340875933142003564/posts
 [so]: http://stackoverflow.com/questions/tagged/angular.dart
 [list]: https://groups.google.com/forum/#!forum/angular-dart
 [tut]: https://angulardart.org/tutorial
 [pub]: http://pub.dartlang.org/packages/angular#installing
 [dart]: http://www.dartlang.org
-[ng]: http://angularjs.org/
+[ngJs]: http://angularjs.org/
 [issues]: https://github.com/angular/angular.dart/issues?state=open
 [contributing]: https://github.com/angular/angular.dart/blob/master/CONTRIBUTING.md
 
