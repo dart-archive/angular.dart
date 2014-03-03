@@ -7,39 +7,36 @@ part of angular.core.dom;
  * BoundBlockFactory can only be used from within a specific Directive such
  * as [NgRepeat], but it can not be stored in a cache.
  *
- * The BoundBlockFactory needs [Scope] to be created.
+ * The BoundBlockFactory needs a [Scope] to be created.
  */
-class BoundBlockFactory {
-  BlockFactory blockFactory;
-
-  Injector injector;
+class BoundBlockFactory implements Function {
+  final BlockFactory blockFactory;
+  final Injector injector;
 
   BoundBlockFactory(this.blockFactory, this.injector);
 
-  Block call(Scope scope) {
-    return blockFactory(injector.createChild([new Module()..value(Scope, scope)]));
-  }
+  Block call(Scope scope) =>
+      blockFactory(injector.createChild([new Module()..value(Scope, scope)]));
 }
 
 /**
  * BlockFactory is used to create new [Block]s. BlockFactory is created by the
  * [Compiler] as a result of compiling a template.
  */
-class BlockFactory {
+class BlockFactory implements Function {
   final List directivePositions;
   final List<dom.Node> templateElements;
   final Profiler _perf;
   final Expando _expando;
 
-  BlockFactory(this.templateElements, this.directivePositions, this._perf, this._expando);
+  BlockFactory(this.templateElements, this.directivePositions, this._perf,
+               this._expando);
 
   BoundBlockFactory bind(Injector injector) =>
-    new BoundBlockFactory(this, injector);
+      new BoundBlockFactory(this, injector);
 
   Block call(Injector injector, [List<dom.Node> elements]) {
-    if (elements == null) {
-      elements = cloneElements(templateElements);
-    }
+    if (elements == null) elements = cloneElements(templateElements);
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.block')) != false);
@@ -51,7 +48,8 @@ class BlockFactory {
     }
   }
 
-  _link(Block block, List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
+  _link(Block block, List<dom.Node> nodeList, List directivePositions,
+        Injector parentInjector) {
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
 
@@ -93,8 +91,7 @@ class BlockFactory {
   }
 
   Injector _instantiateDirectives(Block block, Injector parentInjector,
-                                  dom.Node node, List<DirectiveRef> directiveRefs,
-                                  Parser parser) {
+      dom.Node node, List<DirectiveRef> directiveRefs, Parser parser) {
     var timerId;
     assert((timerId = _perf.startTimer('ng.block.link.setUp', _html(node))) != false);
     Injector nodeInjector;
@@ -105,17 +102,20 @@ class BlockFactory {
     ElementProbe probe;
 
     try {
-      if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
-      var nodeModule = new Module();
+      if (directiveRefs == null || directiveRefs.length == 0) {
+        return parentInjector;
+      }
       var blockHoleFactory = (_) => null;
       var blockFactory = (_) => null;
       var boundBlockFactory = (_) => null;
       var nodesAttrsDirectives = null;
 
-      nodeModule.value(Block, block);
-      nodeModule.value(dom.Element, node);
-      nodeModule.value(dom.Node, node);
-      nodeModule.value(NodeAttrs, nodeAttrs);
+      var nodeModule = new Module()
+          ..value(Block, block)
+          ..value(dom.Element, node)
+          ..value(dom.Node, node)
+          ..value(NodeAttrs, nodeAttrs);
+
       directiveRefs.forEach((DirectiveRef ref) {
         NgAnnotation annotation = ref.annotation;
         var visibility = _elementOnly;
@@ -163,20 +163,23 @@ class BlockFactory {
                 injector.get(dom.NodeTreeSanitizer), _expando);
             if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
             fctrs[ref.type] = componentFactory;
-            return componentFactory.call(injector, compiler, scope, blockCache, http, templateCache, directives);
+            return componentFactory.call(injector, compiler, scope, blockCache,
+                http, templateCache, directives);
           }, visibility: visibility);
         } else {
           nodeModule.type(ref.type, visibility: visibility);
         }
         for (var publishType in ref.annotation.publishTypes) {
-          nodeModule.factory(publishType, (Injector injector) => injector.get(ref.type), visibility: visibility);
+          nodeModule.factory(publishType, (Injector injector) =>
+              injector.get(ref.type), visibility: visibility);
         }
         if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
           // Currently, transclude is only supported for NgDirective.
           assert(annotation is NgDirective);
           blockHoleFactory = (_) => new BlockHole([node]);
           blockFactory = (_) => ref.blockFactory;
-          boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
+          boundBlockFactory = (Injector injector) =>
+              ref.blockFactory.bind(injector);
         }
       });
       nodeModule
@@ -198,7 +201,9 @@ class BlockFactory {
         var controller = nodeInjector.get(ref.type);
         probe.directives.add(controller);
         assert((linkMapTimer = _perf.startTimer('ng.block.link.map', ref.type)) != false);
-        var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
+        var shadowScope = (fctrs != null && fctrs.containsKey(ref.type))
+            ? fctrs[ref.type].shadowScope
+            : null;
         if (ref.annotation is NgController) {
           scope.context[(ref.annotation as NgController).publishAs] = controller;
         } else if (ref.annotation is NgComponent) {
@@ -252,21 +257,17 @@ class BlockFactory {
   }
 
   // DI visibility callback allowing node-local visibility.
-
   static final Function _elementOnly = (Injector requesting, Injector defining) {
-    if (requesting.name == _SHADOW) {
-      requesting = requesting.parent;
-    }
+    if (requesting.name == _SHADOW) requesting = requesting.parent;
     return identical(requesting, defining);
   };
 
   // DI visibility callback allowing visibility from direct child into parent.
-
-  static final Function _elementDirectChildren = (Injector requesting, Injector defining) {
-    if (requesting.name == _SHADOW) {
-      requesting = requesting.parent;
-    }
-    return _elementOnly(requesting, defining) || identical(requesting.parent, defining);
+  static final Function _elementDirectChildren = (Injector requesting,
+                                                  Injector defining) {
+    if (requesting.name == _SHADOW) requesting = requesting.parent;
+    return _elementOnly(requesting, defining) ||
+           identical(requesting.parent, defining);
   };
 }
 
@@ -278,16 +279,11 @@ class BlockFactory {
 @NgInjectableService()
 class BlockCache {
   // _blockFactoryCache is unbounded
-  Cache<String, BlockFactory> _blockFactoryCache =
-      new LruCache<String, BlockFactory>(capacity: 0);
-
-  Http $http;
-
-  TemplateCache $templateCache;
-
-  Compiler compiler;
-
-  dom.NodeTreeSanitizer treeSanitizer;
+  final _blockFactoryCache = new LruCache<String, BlockFactory>(capacity: 0);
+  final Http $http;
+  final TemplateCache $templateCache;
+  final Compiler compiler;
+  final dom.NodeTreeSanitizer treeSanitizer;
 
   BlockCache(this.$http, this.$templateCache, this.compiler, this.treeSanitizer);
 
@@ -313,7 +309,7 @@ class BlockCache {
  * the shadowDom, fetching template, importing styles, setting up attribute
  * mappings, publishing the controller, and compiling and caching the template.
  */
-class _ComponentFactory {
+class _ComponentFactory implements Function {
 
   final dom.Element element;
   final Type type;
@@ -330,7 +326,9 @@ class _ComponentFactory {
   _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer,
                     this._expando);
 
-  dynamic call(Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http $http, TemplateCache $templateCache, DirectiveMap directives) {
+  dynamic call(Injector injector, Compiler compiler, Scope scope,
+               BlockCache $blockCache, Http $http, TemplateCache $templateCache,
+               DirectiveMap directives) {
     this.compiler = compiler;
     shadowDom = element.createShadowRoot();
     shadowDom.applyAuthorStyles = component.applyAuthorStyles;
@@ -346,30 +344,34 @@ class _ComponentFactory {
     var cssUrls = component.cssUrls;
     if (cssUrls.isNotEmpty) {
       cssUrls.forEach((css) => cssFutures.add(
-          $http.getString(css, cache: $templateCache).catchError((e) => '/*\n$e\n*/\n')
-      ) );
+          $http.getString(css, cache: $templateCache).catchError((e) =>
+              '/*\n$e\n*/\n')
+      ));
     } else {
       cssFutures.add( new async.Future.value(null) );
     }
     var blockFuture;
     if (component.template != null) {
-      blockFuture = new async.Future.value($blockCache.fromHtml(component.template, directives));
+      blockFuture = new async.Future.value($blockCache.fromHtml(
+          component.template, directives));
     } else if (component.templateUrl != null) {
       blockFuture = $blockCache.fromUrl(component.templateUrl, directives);
     }
-    TemplateLoader templateLoader = new TemplateLoader( async.Future.wait(cssFutures).then((Iterable<String> cssList) {
-      if (cssList != null) {
-        var filteredCssList = cssList.where((css) => css != null );
-        shadowDom.setInnerHtml('<style>${filteredCssList.join('')}</style>', treeSanitizer: treeSanitizer);
-      }
-      if (blockFuture != null) {
-        return blockFuture.then((BlockFactory blockFactory) {
-          if (!shadowScope.isAttached) return shadowDom;
-          return attachBlockToShadowDom(blockFactory);
-        });
-      }
-      return shadowDom;
-    }));
+    TemplateLoader templateLoader = new TemplateLoader(
+        async.Future.wait(cssFutures).then((Iterable<String> cssList) {
+          if (cssList != null) {
+            var filteredCssList = cssList.where((css) => css != null );
+            shadowDom.setInnerHtml('<style>${filteredCssList.join('')}</style>',
+            treeSanitizer: treeSanitizer);
+          }
+          if (blockFuture != null) {
+            return blockFuture.then((BlockFactory blockFactory) {
+              if (!shadowScope.isAttached) return shadowDom;
+              return attachBlockToShadowDom(blockFactory);
+            });
+          }
+          return shadowDom;
+        }));
     controller = createShadowInjector(injector, templateLoader).get(type);
     if (controller is NgShadowRootAware) {
       templateLoader.template.then((_) {
@@ -423,21 +425,21 @@ String _html(obj) {
   if (obj is String) {
     return obj;
   } else if (obj is List) {
-    return (obj as List).fold('', (v, e) => v + _html(e));
+    return (obj as List).map((e) => _html(e)).join();
   } else if (obj is dom.Element) {
     var text = (obj as dom.Element).outerHtml;
     return text.substring(0, text.indexOf('>') + 1);
-  } else {
-    return obj.nodeName;
   }
+  return obj.nodeName;
 }
 
 /**
- * [ElementProbe] is attached to each [Element] in the DOM. Its sole purpose is to
- * allow access to the [Injector], [Scope], and Directives for debugging and automated
- * test purposes. The information here is not used by Angular in any way.
+ * [ElementProbe] is attached to each [Element] in the DOM. Its sole purpose is
+ * to allow access to the [Injector], [Scope], and Directives for debugging and
+ * automated test purposes. The information here is not used by Angular in any
+ * way.
  *
- * SEE: [ngInjector], [ngScope], [ngDirectives]
+ * see: [ngInjector], [ngScope], [ngDirectives]
  */
 class ElementProbe {
   final ElementProbe parent;

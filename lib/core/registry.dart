@@ -5,7 +5,7 @@ abstract class AnnotationMap<K> {
 
   AnnotationMap(Injector injector, MetadataExtractor extractMetadata) {
     injector.types.forEach((type) {
-      var meta = extractMetadata(type)
+      extractMetadata(type)
           .where((annotation) => annotation is K)
           .forEach((annotation) {
             _map[annotation] = type;
@@ -19,10 +19,12 @@ abstract class AnnotationMap<K> {
     return value;
   }
 
-  forEach(fn(K, Type)) => _map.forEach(fn);
+  void forEach(fn(K, Type)) {
+    _map.forEach(fn);
+  }
 
   List<K> annotationsFor(Type type) {
-    var res = <K>[];
+    final res = <K>[];
     forEach((ann, annType) {
       if (annType == type) res.add(ann);
     });
@@ -35,7 +37,7 @@ abstract class AnnotationsMap<K> {
 
   AnnotationsMap(Injector injector, MetadataExtractor extractMetadata) {
     injector.types.forEach((type) {
-      var meta = extractMetadata(type)
+      extractMetadata(type)
           .where((annotation) => annotation is K)
           .forEach((annotation) {
             map.putIfAbsent(annotation, () => []).add(type);
@@ -49,7 +51,7 @@ abstract class AnnotationsMap<K> {
     return value;
   }
 
-  forEach(fn(K, Type)) {
+  void forEach(fn(K, Type)) {
     map.forEach((annotation, types) {
       types.forEach((type) {
         fn(annotation, type);
@@ -72,7 +74,8 @@ class MetadataExtractor {
   Iterable call(Type type) {
     if (reflectType(type) is TypedefMirror) return [];
     var metadata = reflectClass(type).metadata;
-    if (metadata == null) return [];
-    return metadata.map((InstanceMirror im) => im.reflectee);
+    return metadata == null
+        ? []
+        : metadata.map((InstanceMirror im) => im.reflectee);
   }
 }
