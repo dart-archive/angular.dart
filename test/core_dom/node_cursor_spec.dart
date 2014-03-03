@@ -19,10 +19,10 @@ main() {
     it('should allow single level traversal', () {
       var cursor = new NodeCursor([a, b]);
 
-      expect(cursor.nodeList(), equals([a]));
-      expect(cursor.microNext(), equals(true));
-      expect(cursor.nodeList(), equals([b]));
-      expect(cursor.microNext(), equals(false));
+      expect(cursor.current, equals(a));
+      expect(cursor.moveNext(), equals(true));
+      expect(cursor.current, equals(b));
+      expect(cursor.moveNext(), equals(false));
     });
 
 
@@ -30,14 +30,14 @@ main() {
       var cursor = new NodeCursor([d, c]);
 
       expect(cursor.descend(), equals(true));
-      expect(cursor.nodeList(), equals([a]));
-      expect(cursor.microNext(), equals(true));
-      expect(cursor.nodeList(), equals([b]));
-      expect(cursor.microNext(), equals(false));
+      expect(cursor.current, equals(a));
+      expect(cursor.moveNext(), equals(true));
+      expect(cursor.current, equals(b));
+      expect(cursor.moveNext(), equals(false));
       cursor.ascend();
-      expect(cursor.microNext(), equals(true));
-      expect(cursor.nodeList(), equals([c]));
-      expect(cursor.microNext(), equals(false));
+      expect(cursor.moveNext(), equals(true));
+      expect(cursor.current, equals(c));
+      expect(cursor.moveNext(), equals(false));
     });
 
     it('should descend and ascend two levels', () {
@@ -51,17 +51,17 @@ main() {
       var cursor = new NodeCursor([l1, c]);
 
       expect(cursor.descend(), equals(true));
-      expect(cursor.nodeList(), equals([l2]));
+      expect(cursor.current, equals(l2));
       expect(cursor.descend(), equals(true));
-      expect(cursor.nodeList(), equals([e]));
+      expect(cursor.current, equals(e));
       cursor.ascend();
-      expect(cursor.microNext(), equals(true));
-      expect(cursor.nodeList(), equals([f]));
-      expect(cursor.microNext(), equals(false));
+      expect(cursor.moveNext(), equals(true));
+      expect(cursor.current, equals(f));
+      expect(cursor.moveNext(), equals(false));
       cursor.ascend();
-      expect(cursor.microNext(), equals(true));
-      expect(cursor.nodeList(), equals([c]));
-      expect(cursor.microNext(), equals(false));
+      expect(cursor.moveNext(), equals(true));
+      expect(cursor.current, equals(c));
+      expect(cursor.moveNext(), equals(false));
     });
 
 

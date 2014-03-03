@@ -9,17 +9,17 @@ class Compiler {
   Compiler(this._perf, this._parser, this._expando);
 
   _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,
-                List<DirectiveRef> useExistingDirectiveRefs,
+                List<DirectiveRef> existingDirectiveRefs,
                 DirectiveMap directives) {
-    if (domCursor.nodeList().length == 0) return null;
+    if (domCursor.current == null) return null;
 
     var directivePositions = null; // don't pre-create to create sparse tree and prevent GC pressure.
     var cursorAlreadyAdvanced;
 
     do {
-      var declaredDirectiveRefs = useExistingDirectiveRefs == null
-          ?  directives.selector(domCursor.nodeList()[0])
-          : useExistingDirectiveRefs;
+      var declaredDirectiveRefs = existingDirectiveRefs == null
+          ? directives.selector(domCursor.current)
+          : existingDirectiveRefs;
       var children = NgAnnotation.COMPILE_CHILDREN;
       var childDirectivePositions = null;
       List<DirectiveRef> usableDirectiveRefs = null;
@@ -73,7 +73,7 @@ class Compiler {
             ..add(usableDirectiveRefs)
             ..add(childDirectivePositions);
       }
-    } while (templateCursor.microNext() && domCursor.microNext());
+    } while (templateCursor.moveNext() && domCursor.moveNext());
 
     return directivePositions;
   }
@@ -83,27 +83,28 @@ class Compiler {
                       DirectiveRef directiveRef,
                       List<DirectiveRef> transcludedDirectiveRefs,
                       DirectiveMap directives) {
-    var anchorName = directiveRef.annotation.selector + (directiveRef.value != null ? '=' + directiveRef.value : '');
+    var anchorName = directiveRef.annotation.selector +
+        (directiveRef.value != null ? '=' + directiveRef.value : '');
     var blockFactory;
     var blocks;
 
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
     var domCursorIndex = domCursor.index;
     var directivePositions =
-        _compileBlock(domCursor, transcludeCursor, transcludedDirectiveRefs, directives);
+        _compileBlock(domCursor, transcludeCursor, transcludedDirectiveRefs,
+            directives);
     if (directivePositions == null) directivePositions = [];
 
-    blockFactory = new BlockFactory(transcludeCursor.elements, directivePositions, _perf, _expando);
+    blockFactory = new BlockFactory(transcludeCursor.elements,
+        directivePositions, _perf, _expando);
     domCursor.index = domCursorIndex;
 
-    if (domCursor.isInstance()) {
+    if (domCursor.isInstance) {
       domCursor.insertAnchorBefore(anchorName);
-      blocks = [blockFactory(domCursor.nodeList())];
-      domCursor.macroNext();
-      templateCursor.macroNext();
-      while (domCursor.isValid() && domCursor.isInstance()) {
-        blocks.add(blockFactory(domCursor.nodeList()));
-        domCursor.macroNext();
+      blocks = [blockFactory([domCursor.current])];
+      templateCursor.moveNext();
+      while (domCursor.moveNext() && domCursor.isInstance) {
+        blocks.add(blockFactory([domCursor.current]));
         templateCursor.remove();
       }
     } else {
@@ -116,8 +117,8 @@ class Compiler {
   BlockFactory call(List<dom.Node> elements, DirectiveMap directives) {
     var timerId;
     assert((timerId = _perf.startTimer('ng.compile', _html(elements))) != false);
-    List<dom.Node> domElements = elements;
-    List<dom.Node> templateElements = cloneElements(domElements);
+    final domElements = elements;
+    final templateElements = cloneElements(domElements);
     var directivePositions = _compileBlock(
         new NodeCursor(domElements), new NodeCursor(templateElements),
         null, directives);
@@ -144,12 +145,14 @@ class Compiler {
       String dstExpression = dstPath.isEmpty ? attrName : dstPath;
       Expression dstPathFn = _parser(dstExpression);
       if (!dstPathFn.isAssignable) {
-        throw "Expression '$dstPath' is not assignable in mapping '$mapping' for attribute '$attrName'.";
+        throw "Expression '$dstPath' is not assignable in mapping '$mapping' "
+              "for attribute '$attrName'.";
       }
       ApplyMapping mappingFn;
       switch (mode) {
         case '@':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
+                       FilterMap filters, notify()) {
             attrs.observe(attrName, (value) {
               dstPathFn.assign(controller, value);
               notify();
@@ -157,7 +160,8 @@ class Compiler {
           };
           break;
         case '<=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
+                       FilterMap filters, notify()) {
             if (attrs[attrName] == null) return notify();
             String expression = attrs[attrName];
             Expression expressionFn = _parser(expression);
@@ -194,7 +198,8 @@ class Compiler {
           };
           break;
         case '=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
+                       FilterMap filters, notify()) {
             if (attrs[attrName] == null) return notify();
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
@@ -207,7 +212,8 @@ class Compiler {
           };
           break;
         case '=>!':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
+                       FilterMap filters, notify()) {
             if (attrs[attrName] == null) return notify();
             Expression attrExprFn = _parser(attrs[attrName]);
             var watch;
@@ -223,8 +229,10 @@ class Compiler {
           };
           break;
         case '&':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters, notify()) {
-            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope.context, ScopeLocals.wrapper));
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst,
+                       FilterMap filters, notify()) {
+            dstPathFn.assign(dst, _parser(attrs[attrName])
+                .bind(scope.context, ScopeLocals.wrapper));
             notify();
           };
           break;
