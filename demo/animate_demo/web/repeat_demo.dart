@@ -7,10 +7,13 @@ part of animate_demo;
       <button ng-click="ctrl.addItem()">Add Thing</button>
       <button ng-click="ctrl.removeItem()">Remove Thing
       </button>
-      <ul><li ng-repeat="outer in ctrl.items">
-        <ul><li ng-repeat="inner in ctrl.items">
-          {{inner}}</li></ul>
-      </li></ul>
+      <ul>
+        <li ng-repeat="outer in ctrl.items">
+          <ul>
+            <li ng-repeat="inner in ctrl.items">{{inner}}</li>
+          </ul>
+        </li>
+      </ul>
       </div>
     ''',
     publishAs: 'ctrl',
@@ -18,15 +21,13 @@ part of animate_demo;
 )
 class RepeatDemoComponent {
   var thing = 0;
-  var items = [];
-  
-  addItem() {
+  final items = [];
+
+  void addItem() {
     items.add("Thing ${thing++}");
   }
-  
-  removeItem() {
-    if (items.length > 0) {
-      items.removeLast();
-    }
+
+  void removeItem() {
+    if (items.isNotEmpty) items.removeLast();
   }
 }
