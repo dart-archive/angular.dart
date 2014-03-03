@@ -200,14 +200,12 @@ main() {
 
 
 class DirectiveInfosMatcher extends Matcher {
-  List<Map> expected;
+  final List<Map> expected;
 
   DirectiveInfosMatcher(this.expected);
 
-  Description describe(Description description) {
-    description.add(expected.toString());
-    return description;
-  }
+  Description describe(Description description) =>
+      description..add(expected.toString());
 
   bool matches(directiveRefs, matchState) {
     var pass = expected.length == directiveRefs.length;
@@ -226,7 +224,6 @@ class DirectiveInfosMatcher extends Matcher {
   }
 }
 
-Matcher toEqualsDirectiveInfos(List<Map> directives) {
-  return new DirectiveInfosMatcher(directives);
-}
+Matcher toEqualsDirectiveInfos(List<Map> directives) =>
+    new DirectiveInfosMatcher(directives);
 

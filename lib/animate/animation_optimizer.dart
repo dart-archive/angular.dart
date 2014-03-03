@@ -104,7 +104,6 @@ class AnimationOptimizer {
   bool shouldAnimate(dom.Node node) {
     bool alwaysAnimate = _alwaysAnimate[node];
     if (alwaysAnimate != null) {
-      print("alwaysAnimate: $alwaysAnimate");
       return alwaysAnimate;
     }
 

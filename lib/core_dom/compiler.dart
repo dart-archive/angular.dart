@@ -1,7 +1,7 @@
 part of angular.core.dom;
 
 @NgInjectableService()
-class Compiler {
+class Compiler implements Function {
   final Profiler _perf;
   final Parser _parser;
   final Expando _expando;
@@ -32,7 +32,8 @@ class Compiler {
         var blockFactory = null;
 
         // The first non-"compile_children" directive wins. Since directives are
-        // sorted, TRANSCLUDE_CHILDREN wins if any directive has TRANSCLUDE_CHILDREN
+        // sorted, TRANSCLUDE_CHILDREN wins if any directive has
+        // TRANSCLUDE_CHILDREN
         if (annotation.children != children &&
             children == NgAnnotation.COMPILE_CHILDREN) {
           children = annotation.children;
@@ -79,10 +80,9 @@ class Compiler {
   }
 
   BlockFactory compileTransclusion(
-                      NodeCursor domCursor, NodeCursor templateCursor,
-                      DirectiveRef directiveRef,
-                      List<DirectiveRef> transcludedDirectiveRefs,
-                      DirectiveMap directives) {
+      NodeCursor domCursor, NodeCursor templateCursor,
+      DirectiveRef directiveRef, List<DirectiveRef> transcludedDirectiveRefs,
+      DirectiveMap directives) {
     var anchorName = directiveRef.annotation.selector +
         (directiveRef.value != null ? '=' + directiveRef.value : '');
     var blockFactory;

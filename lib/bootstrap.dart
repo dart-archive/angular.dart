@@ -43,19 +43,21 @@ Injector _defaultInjectorFactory(List<Module> modules) =>
  *
  * # Parameters:
  *
- *   - [module] Option application module to add to the [Injector].
- *   - [modules] Optional list of [Module]s to add to the [Injector] (if more than one is needed).
+ *   - [module] Optional application module to add to the [Injector].
+ *   - [modules] Optional list of [Module]s to add to the [Injector] (when more
+ *     than one is needed).
  *   - [element] Optional root element of the application. If non specified, the
- *     the root element is looked up using the [selector]. If selector can not
- *     identify a root, the root [HTML] element is used for bootstraping.
- *   - [selector] Optional CSS selector used to locate the root element for the application.
- *   - [injectorFactor] Optional factory responsible for creating the injector.
+ *     the root element is looked up using the [selector]. If the selector can
+ *     not identify a root, the root [HTML] element is used.
+ *   - [selector] Optional CSS selector used to locate the root element for the
+ *     application.
+ *   - [injectorFactory] Optional factory responsible for creating the injector.
  *
  *
  *
  * # A typical way to boostrap an Angular application:
  *
- *     Module myAppModule = new Module();
+ *     var myAppModule = new Module();
  *     myAppModule.type(MyType);
  *     ....
  *     Injector injector = ngBootstrap(module: myAppModule);
@@ -73,9 +75,9 @@ Injector ngBootstrap({
   if (modules != null) ngModules.addAll(modules);
   if (element == null) {
     element = dom.querySelector(selector);
-    var document = dom.window.document;
     if (element == null) {
-      element = document.childNodes.firstWhere((e) => e is dom.Element);
+      element = dom.window.document.childNodes
+          .firstWhere((e) => e is dom.Element);
     }
   }
 
@@ -89,8 +91,9 @@ Injector ngBootstrap({
   return zone.run(() {
     var rootElements = [element];
     Injector injector = injectorFactory(ngModules);
-    injector.get(Compiler)(rootElements, injector.get(DirectiveMap))
-        (injector, rootElements);
+    var compiler = injector.get(Compiler);
+    var blockFactory = compiler(rootElements, injector.get(DirectiveMap));
+    blockFactory(injector, rootElements);
     return injector;
   });
 }

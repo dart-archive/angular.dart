@@ -39,7 +39,7 @@ class NodeCursor {
   NodeCursor replaceWithAnchor(String name) {
     insertAnchorBefore(name);
     var childCursor = remove();
-    this.index--;
+    index--;
     return childCursor;
   }
 
