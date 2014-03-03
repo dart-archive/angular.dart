@@ -8,6 +8,7 @@ env:
   global:
   - CHROME_BIN=/usr/bin/google-chrome
   - secure: NJt0LRmY2HoMw4QuTc+8MhDfSCTTuXe0kE7pC1flbhQOi/g6sdVX57b/4OZzBXRKG1oq/URX4FMeVgSuFQvTaEad0qsTPoGji/Mmk61LRtE/Mbo/H7v5P2tyGPPJ5S25C/xFo42cKDyzFU8Uv+5W2Htijsa3xt4VfAWcDmZJjuA=
+  - secure: v35NJPTeJN9LRIDYUApr8CqoWN8Y2cNsRtDrdgsrFBjZMldtJ1XWn/TyUpPpannvPY3OJuiKbIEw/vzofopTCApB6QzZtfDTay7TFa39huEtauQX41Sftj0WK6PgT8FC8E/L5IY9zVDnyyscx6naUMLnOem2Lgtka9ILXqiPoa8=
 before_install:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
@@ -22,4 +23,5 @@ before_script:
 script:
 - ./scripts/travis/build.sh
 after_script:
+- ./scripts/travis/presubmit.sh
 - ./scripts/travis/publish-docs.sh

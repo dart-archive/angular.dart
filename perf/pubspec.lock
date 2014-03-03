@@ -7,10 +7,10 @@ packages:
     version: "0.10.5"
   angular:
     description:
-      path: "/Users/misko/work/angular.dart/perf/.."
+      path: ".."
       relative: true
     source: path
-    version: "0.9.3"
+    version: "0.9.8"
   args:
     description: args
     source: hosted
@@ -26,11 +26,11 @@ packages:
   collection:
     description: collection
     source: hosted
-    version: "0.9.0"
+    version: "0.9.1"
   di:
     description: di
     source: hosted
-    version: "0.0.29"
+    version: "0.0.32"
   html5lib:
     description: html5lib
     source: hosted
@@ -59,6 +59,10 @@ packages:
     description: route_hierarchical
     source: hosted
     version: "0.4.10"
+  shadow_dom:
+    description: shadow_dom
+    source: hosted
+    version: "0.9.2"
   source_maps:
     description: source_maps
     source: hosted
