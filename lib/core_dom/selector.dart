@@ -46,9 +46,9 @@ class _ContainsSelector {
       : regexp = new RegExp(regexp);
 }
 
-var _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|'
-    r'(?:\[([\w\-\*]+)(?:=([^\]]*))?\]))');
-var _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([\w\-]+)(?:\=(.*))?\]$');
+var _SELECTOR_REGEXP = new RegExp(r'^(?:([-\w]+)|(?:\.([-\w]+))|'
+    r'(?:\[([-\w*]+)(?:=([^\]]*))?\]))');
+var _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([-\w]+)(?:\=(.*))?\]$');
 var _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
 var _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
 
@@ -276,11 +276,11 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
       case 1: // Element
         dom.Element element = node;
         String nodeName = element.tagName.toLowerCase();
-        Map<String, String> attrs = {};
+        final attrs = <String, String>{};
 
         // Set default attribute
-        if (nodeName == 'input' && !element.attributes.containsKey('type')) {
-          element.attributes['type'] = 'text';
+        if (nodeName == 'input') {
+          element.attributes.putIfAbsent('type', () => 'text');
         }
 
         // Select node
@@ -354,11 +354,10 @@ DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
 int _directivePriority(NgAnnotation annotation) {
   if (annotation is NgDirective) {
     return (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) ? 2 : 1;
-  } else if (annotation is NgComponent) {
-    return 0;
   }
+  if (annotation is NgComponent) return 0;
   throw "Unexpected Type: ${annotation}.";
 }
 
 int _priorityComparator(DirectiveRef a, DirectiveRef b) =>
-  _directivePriority(b.annotation) - _directivePriority(a.annotation);
+    _directivePriority(b.annotation) - _directivePriority(a.annotation);

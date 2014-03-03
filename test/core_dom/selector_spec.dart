@@ -44,23 +44,23 @@ main() {
     beforeEach(() => log = []);
     beforeEach(module((Module module) {
       module
-        ..type(_BElement)
-        ..type(_BClass)
-        ..type(_DirectiveAttr)
-        ..type(_WildcardDirectiveAttr)
-        ..type(_DirectiveFooAttr)
-        ..type(_BElementDirectiveAttr)
-        ..type(_DirectiveValueAttr)
-        ..type(_BElementDirectiveValue)
-        ..type(_ContainsAbc)
-        ..type(_AttributeContainsXyz)
-        ..type(_Component)
-        ..type(_Attribute)
-        ..type(_Structural)
-        ..type(_IgnoreChildren)
-        ..type(_TwoDirectives)
-        ..type(_OneOfTwoDirectives)
-        ..type(_TwoOfTwoDirectives);
+          ..type(_BElement)
+          ..type(_BClass)
+          ..type(_DirectiveAttr)
+          ..type(_WildcardDirectiveAttr)
+          ..type(_DirectiveFooAttr)
+          ..type(_BElementDirectiveAttr)
+          ..type(_DirectiveValueAttr)
+          ..type(_BElementDirectiveValue)
+          ..type(_ContainsAbc)
+          ..type(_AttributeContainsXyz)
+          ..type(_Component)
+          ..type(_Attribute)
+          ..type(_Structural)
+          ..type(_IgnoreChildren)
+          ..type(_TwoDirectives)
+          ..type(_OneOfTwoDirectives)
+          ..type(_TwoOfTwoDirectives);
     }));
     beforeEach(inject((DirectiveMap directives) {
       selector = directiveSelectorFactory(directives);
@@ -200,14 +200,12 @@ main() {
 
 
 class DirectiveInfosMatcher extends Matcher {
-  List<Map> expected;
+  final List<Map> expected;
 
   DirectiveInfosMatcher(this.expected);
 
-  Description describe(Description description) {
-    description.add(expected.toString());
-    return description;
-  }
+  Description describe(Description description) =>
+      description..add(expected.toString());
 
   bool matches(directiveRefs, matchState) {
     var pass = expected.length == directiveRefs.length;
@@ -226,7 +224,6 @@ class DirectiveInfosMatcher extends Matcher {
   }
 }
 
-Matcher toEqualsDirectiveInfos(List<Map> directives) {
-  return new DirectiveInfosMatcher(directives);
-}
+Matcher toEqualsDirectiveInfos(List<Map> directives) =>
+    new DirectiveInfosMatcher(directives);
 
