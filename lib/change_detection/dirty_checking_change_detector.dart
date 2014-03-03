@@ -1131,8 +1131,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 collection: ${list.join(", ")}
 additions: ${additions.join(", ")}
 moves: ${moves.join(", ")}
-removals: ${removals.join(", ")}'
-    """;
+removals: ${removals.join(", ")}
+""";
   }
 }
 
