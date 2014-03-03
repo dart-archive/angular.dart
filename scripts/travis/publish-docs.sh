@@ -9,7 +9,7 @@ echo Test result is: $TRAVIS_TEST_RESULT
 
 if [ "$CHANNEL" = "stable" ]; then
 
-    if [ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$TRAVIS_BRANCH"="master" ]; then
+    if [ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$TRAVIS_BRANCH" = "master" ]; then
             
             echo "Gettting current docs from docs.angulardart.org repo on Github"
             rm -Rf docs.angulardart.org
