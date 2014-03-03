@@ -12,7 +12,7 @@ echo Test result is: $TRAVIS_TEST_RESULT
 
 if [ "$CHANNEL" = "stable" ]; then
 
-    if [ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$TRAVIS_BRANCH"="presubmit" ]; then
+    if [[ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$TRAVIS_BRANCH"="presubmit" ]]; then
 
         git config credential.helper "store --file=.git/credentials"
         echo "https://${GITHUB_TOKEN_ANGULARDART}:@github.com" > .git/credentials
@@ -21,12 +21,10 @@ if [ "$CHANNEL" = "stable" ]; then
 		git checkout master
 		git merge presubmit
 		
-		#  If the exit status of the merge command is success, then delete the presubmit branch and push master
-		if [$? -eq 0]; then
-		
+		if [ $? -eq 0 ]; then
 		    git branch -d presubmit
 		    git push origin master
-		    
 		fi
+		
 	fi
 fi
