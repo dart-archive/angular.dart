@@ -7,6 +7,19 @@ List<dom.Node> cloneElements(elements) {
 typedef ApplyMapping(NodeAttrs attrs, Scope scope, Object dst,
                      FilterMap filters, notify());
 
+class ElementBinder {
+  final dom.Node element;
+  final _Directive directive;
+  final events = <String, String>{};
+  final String value;
+  final List<ApplyMapping> mappings = new List<ApplyMapping>();
+  final childElementBinders = <ElementBinder>[];
+
+  ElementBinder(this.element, this.directive, events, [ this.value ]) {
+      this.events.putAll(events);
+  }
+}
+
 class DirectiveRef {
   final dom.Node element;
   final Type type;
