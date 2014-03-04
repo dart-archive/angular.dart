@@ -38,14 +38,19 @@ void main() {
     }));
 
     describe('exceptions', () {
+      var baseModule;
+      beforeEach(() {
+        baseModule = new Module()
+          ..type(DirectiveMap)
+          ..type(MetadataExtractor)
+          ..type(FieldMetadataExtractor);
+      });
+
       it('should throw when annotation is for existing mapping', () {
         var module = new Module()
-            ..type(DirectiveMap)
-            ..type(Bad1Component)
-            ..type(MetadataExtractor)
-            ..type(FieldMetadataExtractor);
+            ..type(Bad1Component);
 
-        var injector = new DynamicInjector(modules: [module]);
+        var injector = new DynamicInjector(modules: [baseModule, module]);
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Mapping for attribute foo is already defined (while '
@@ -54,12 +59,9 @@ void main() {
 
       it('should throw when annotated both getter and setter', () {
         var module = new Module()
-            ..type(DirectiveMap)
-            ..type(Bad2Component)
-            ..type(MetadataExtractor)
-            ..type(FieldMetadataExtractor);
+            ..type(Bad2Component);
 
-        var injector = new DynamicInjector(modules: [module]);
+        var injector = new DynamicInjector(modules: [baseModule, module]);
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Attribute annotation for foo is defined more than once '
