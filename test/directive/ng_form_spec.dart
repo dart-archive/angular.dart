@@ -20,6 +20,26 @@ void main() {
       expect(form.name).toEqual('myForm');
     }));
 
+    it('should return the first control with the given name when accessed using map notation',
+      inject((Scope scope, TestBed _) {
+
+      var element = $('<form name="myForm">' +
+                      '  <input type="text" name="model" ng-model="modelOne" probe="a" />' +
+                      '  <input type="text" name="model" ng-model="modelTwo" probe="b" />' +
+                      '</form>');
+
+      _.compile(element);
+      scope.apply();
+
+      NgForm form = _.rootScope.context['myForm'];
+      NgModel one = _.rootScope.context['a'].directive(NgModel);
+      NgModel two = _.rootScope.context['b'].directive(NgModel);
+
+      expect(one).not.toBe(two);
+      expect(form['model']).toBe(one);
+      expect(scope.eval("myForm['model']")).toBe(one);
+    }));
+
     describe('pristine / dirty', () {
       it('should be set to pristine by default', inject((Scope scope, TestBed _) {
         var element = $('<form name="myForm"></form>');

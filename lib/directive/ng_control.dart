@@ -26,7 +26,7 @@ abstract class NgControl implements NgDetachAware {
 
   final Map<String, List<NgControl>> errors   = new Map<String, List<NgControl>>();
   final List<NgControl> _controls             = new List<NgControl>();
-  final Map<String, NgControl> _controlByName = new Map<String, NgControl>();
+  final Map<String, List<NgControl>> _controlByName = new Map<String, List<NgControl>>();
 
   NgControl(Scope this._scope, dom.Element this._element, Injector injector,
       NgAnimate this._animate)
@@ -144,7 +144,7 @@ abstract class NgControl implements NgDetachAware {
   addControl(NgControl control) {
     _controls.add(control);
     if (control.name != null) {
-      _controlByName[control.name] = control;
+      _controlByName.putIfAbsent(control.name, () => new List<NgControl>()).add(control);
     }
   }
 
@@ -157,8 +157,12 @@ abstract class NgControl implements NgDetachAware {
    */
   removeControl(NgControl control) {
     _controls.remove(control);
-    if (control.name != null) {
-      _controlByName.remove(control.name);
+    String key = control.name;
+    if (key != null && _controlByName.containsKey(key)) {
+      _controlByName[key].remove(control);
+      if (_controlByName[key].isEmpty) {
+        _controlByName.remove(key);
+      }
     }
   }
 

@@ -54,7 +54,11 @@ class NgForm extends NgControl {
     _scope.context[name] = this;
   }
 
-  NgControl operator[](name) => _controlByName[name];
+  NgControl operator[](name) {
+    if (_controlByName.containsKey(name)) {
+      return _controlByName[name][0];
+    }
+  }
 }
 
 class NgNullForm extends NgNullControl implements NgForm {
