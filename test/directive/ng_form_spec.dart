@@ -40,6 +40,30 @@ void main() {
       expect(scope.eval("myForm['model']")).toBe(one);
     }));
 
+    it('should return the all the controls with the given name', inject((Scope scope, TestBed _) {
+      var element = $('<form name="myForm">' +
+                      '  <input type="text" name="model" ng-model="modelOne" probe="a" />' +
+                      '  <input type="text" name="model" ng-model="modelTwo" probe="b" />' +
+                      '</form>');
+
+      _.compile(element);
+      scope.apply();
+
+      NgForm form = _.rootScope.context['myForm'];
+      NgModel one = _.rootScope.context['a'].directive(NgModel);
+      NgModel two = _.rootScope.context['b'].directive(NgModel);
+
+      expect(one).not.toBe(two);
+
+      var controls = form.controls['model'];
+      expect(controls[0]).toBe(one);
+      expect(controls[1]).toBe(two);
+
+      expect(scope.eval("myForm.controls['model'][0]")).toBe(one);
+      expect(scope.eval("myForm.controls['model'][1]")).toBe(two);
+    }));
+
+
     describe('pristine / dirty', () {
       it('should be set to pristine by default', inject((Scope scope, TestBed _) {
         var element = $('<form name="myForm"></form>');
