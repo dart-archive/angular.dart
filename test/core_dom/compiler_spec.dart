@@ -100,9 +100,9 @@ void main() {
       var template = $compile(element, directives);
 
       rootScope.context['name'] = 'OK';
-      var block = template(injector, element);
+      var view = template(injector, element);
 
-      element = $(block.nodes);
+      element = $(view.nodes);
 
       rootScope.apply();
       expect(element.text()).toEqual('OK!');
@@ -196,8 +196,8 @@ void main() {
         var element = $(r'<div><simple></simple></div>');
 
         zone.run(() {
-          BlockFactory blockFactory = $compile(element, directives);
-          Block block = blockFactory(injector, element);
+          ViewFactory viewFactory = $compile(element, directives);
+          View view = viewFactory(injector, element);
         });
 
         microLeap();
@@ -224,8 +224,8 @@ void main() {
         var element = $(r'<div>{{name}}:<simple>{{name}}</simple></div>');
 
         zone.run(() {
-          BlockFactory blockFactory = $compile(element, directives);
-          Block block = blockFactory(injector, element);
+          ViewFactory viewFactory = $compile(element, directives);
+          View view = viewFactory(injector, element);
         });
 
         microLeap();
@@ -563,7 +563,7 @@ void main() {
       })));
 
       it('should reuse controllers for transclusions', async(inject((Compiler $compile, Scope rootScope, Logger log, Injector injector) {
-        var element = $('<div simple-transclude-in-attach include-transclude>block</div>');
+        var element = $('<div simple-transclude-in-attach include-transclude>view</div>');
         $compile(element, directives)(injector, element);
         microLeap();
 
@@ -652,10 +652,10 @@ class LocalAttrDirective {
     selector: '[simple-transclude-in-attach]',
     visibility: NgDirective.CHILDREN_VISIBILITY, children: NgAnnotation.TRANSCLUDE_CHILDREN)
 class SimpleTranscludeInAttachAttrDirective {
-  SimpleTranscludeInAttachAttrDirective(BlockHole blockHole, BoundBlockFactory boundBlockFactory, Logger log, RootScope scope) {
+  SimpleTranscludeInAttachAttrDirective(ViewPort viewPort, BoundViewFactory boundViewFactory, Logger log, RootScope scope) {
     scope.runAsync(() {
-      var block = boundBlockFactory(scope);
-      blockHole.insert(block);
+      var view = boundViewFactory(scope);
+      viewPort.insert(view);
       log('SimpleTransclude');
     });
   }

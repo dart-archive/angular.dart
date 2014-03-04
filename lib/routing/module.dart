@@ -26,7 +26,7 @@
  * Lets try to define those routes in Angular. To get started we need to
  * provide an implementation of [RouteInitializerFn] function.
  *
- *    void initRoutes(Router router, ViewFactory view) {
+ *    void initRoutes(Router router, RouteViewFactory view) {
  *       // define routes here.
  *    }
  *
@@ -35,7 +35,7 @@
  *
  *  Lets see how we could define our routes using the routing framework:
  *
- *     void initRoutes(Router router, ViewFactory view) {
+ *     void initRoutes(Router router, RouteViewFactory view) {
  *       router
  *         ..addRoute(
  *            name: 'recipes',
@@ -121,7 +121,7 @@
  *  The routing framework allows us to define trees of routes. In our recipes
  *  example we could have defined our routes like this:
  *
- *     void initRoutes(Router router, ViewFactory view) {
+ *     void initRoutes(Router router, RouteViewFactory view) {
  *       router
  *         ..addRoute(
  *            name: 'recipes',

@@ -9,7 +9,7 @@ part of angular.routing;
  * [NgViewDirective] can work with [NgViewDirective] to define nested views
  * for hierarchical routes. For example:
  *
- *     void initRoutes(Router router, ViewFactory view) {
+ *     void initRoutes(Router router, RouteViewFactory view) {
  *       router.root
  *         ..addRoute(
  *             name: 'library',
@@ -61,17 +61,17 @@ part of angular.routing;
     visibility: NgDirective.CHILDREN_VISIBILITY)
 class NgViewDirective implements NgDetachAware, RouteProvider {
   final NgRoutingHelper locationService;
-  final BlockCache blockCache;
+  final ViewCache viewCache;
   final Injector injector;
   final Element element;
   final Scope scope;
   RouteHandle _route;
 
-  Block _block;
+  View _view;
   Scope _scope;
   Route _viewRoute;
 
-  NgViewDirective(this.element, this.blockCache,
+  NgViewDirective(this.element, this.viewCache,
                   Injector injector, Router router,
                   this.scope)
       : injector = injector,
@@ -114,24 +114,24 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
     }
 
     var newDirectives = viewInjector.get(DirectiveMap);
-    blockCache.fromUrl(templateUrl, newDirectives).then((blockFactory) {
+    viewCache.fromUrl(templateUrl, newDirectives).then((viewFactory) {
       _cleanUp();
       _scope = scope.createChild(new PrototypeMap(scope.context));
-      _block = blockFactory(
+      _view = viewFactory(
           viewInjector.createChild(
               [new Module()..value(Scope, _scope)]));
 
-      _block.nodes.forEach((elm) => element.append(elm));
+      _view.nodes.forEach((elm) => element.append(elm));
     });
   }
 
   _cleanUp() {
-    if (_block == null) return;
+    if (_view == null) return;
 
-    _block.nodes.forEach((node) => node.remove());
+    _view.nodes.forEach((node) => node.remove());
     _scope.destroy();
 
-    _block = null;
+    _view = null;
     _scope = null;
   }
 

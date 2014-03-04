@@ -60,7 +60,7 @@ main() {
         'baz': 0,
         'aux': 0,
       };
-      initRouter((Router router, ViewFactory views) {
+      initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
               path: '/foo',
@@ -128,7 +128,7 @@ main() {
 
     it('should set the default route', async(() {
       int enterCount = 0;
-      initRouter((Router router, ViewFactory views) {
+      initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(path: '/foo'),
           'bar': ngRoute(path: '/bar', defaultRoute: true),
@@ -146,7 +146,7 @@ main() {
 
     it('should call enter callback and show the view when routed', async(() {
       int enterCount = 0;
-      initRouter((Router router, ViewFactory views) {
+      initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
               path: '/foo',
@@ -172,7 +172,7 @@ main() {
     it('should call preEnter callback and load modules', async(() {
       int preEnterCount = 0;
       int modulesCount = 0;
-      initRouter((Router router, ViewFactory views) {
+      initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
               path: '/foo',
@@ -216,7 +216,7 @@ main() {
 
     it('should clear view on leave an call leave callback', async(() {
       int leaveCount = 0;
-      initRouter((Router router, ViewFactory views) {
+      initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
               path: '/foo',
@@ -249,7 +249,7 @@ main() {
 
 
     it('should synchronously load new directives from modules ', async(() {
-      initRouter((Router router, ViewFactory views) {
+      initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
               path: '/foo',
@@ -274,7 +274,7 @@ main() {
 
 
     it('should asynchronously load new directives from modules ', async(() {
-      initRouter((Router router, ViewFactory views) {
+      initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
               path: '/foo',
@@ -299,7 +299,7 @@ main() {
 
 
     it('should synchronously load new filters from modules ', async(() {
-      initRouter((Router router, ViewFactory views) {
+      initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
               path: '/foo',
@@ -325,7 +325,7 @@ main() {
 
 
     it('should asynchronously load new filters from modules ', async(() {
-      initRouter((Router router, ViewFactory views) {
+      initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
               path: '/foo',
@@ -355,7 +355,7 @@ main() {
 var _router;
 var _initRoutesCalls = 0;
 
-void initRoutes(Router router, ViewFactory view) {
+void initRoutes(Router router, RouteViewFactory view) {
   _initRoutesCalls++;
   _router = router;
 }

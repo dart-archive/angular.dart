@@ -121,14 +121,14 @@ class ElementBinder {
             if (attrs[attrName] == null) return notify();
             String expression = attrs[attrName];
             Expression expressionFn = _parser(expression);
-            var blockOutbound = false;
-            var blockInbound = false;
+            var viewOutbound = false;
+            var viewInbound = false;
             scope.watch(
                 expression,
                     (inboundValue, _) {
-                  if (!blockInbound) {
-                    blockOutbound = true;
-                    scope.rootScope.runAsync(() => blockOutbound = false);
+                  if (!viewInbound) {
+                    viewOutbound = true;
+                    scope.rootScope.runAsync(() => viewOutbound = false);
                     var value = dstPathFn.assign(controller, inboundValue);
                     notify();
                     return value;
@@ -140,9 +140,9 @@ class ElementBinder {
               scope.watch(
                   dstExpression,
                       (outboundValue, _) {
-                    if (!blockOutbound) {
-                      blockInbound = true;
-                      scope.rootScope.runAsync(() => blockInbound = false);
+                    if (!viewOutbound) {
+                      viewInbound = true;
+                      scope.rootScope.runAsync(() => viewInbound = false);
                       expressionFn.assign(scope.context, outboundValue);
                       notify();
                     }

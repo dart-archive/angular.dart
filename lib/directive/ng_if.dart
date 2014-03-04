@@ -4,11 +4,11 @@ part of angular.directive;
  * Base class for NgIfAttrDirective and NgUnlessAttrDirective.
  */
 abstract class _NgUnlessIfAttrDirectiveBase {
-  final BoundBlockFactory _boundBlockFactory;
-  final BlockHole _blockHole;
+  final BoundViewFactory _boundViewFactory;
+  final ViewPort _viewPort;
   final Scope _scope;
 
-  Block _block;
+  View _view;
 
   /**
    * The new child scope.  This child scope is recreated whenever the `ng-if`
@@ -18,31 +18,31 @@ abstract class _NgUnlessIfAttrDirectiveBase {
    */
   Scope _childScope;
 
-  _NgUnlessIfAttrDirectiveBase(this._boundBlockFactory, this._blockHole,
+  _NgUnlessIfAttrDirectiveBase(this._boundViewFactory, this._viewPort,
                                this._scope);
 
   // Override in subclass.
   set condition(value);
 
-  void _ensureBlockExists() {
-    if (_block == null) {
+  void _ensureViewExists() {
+    if (_view == null) {
       _childScope = _scope.createChild(new PrototypeMap(_scope.context));
-      _block = _boundBlockFactory(_childScope);
-      var block = _block;
+      _view = _boundViewFactory(_childScope);
+      var view = _view;
       _scope.rootScope.domWrite(() {
-        _blockHole.insert(block);
+        _viewPort.insert(view);
      });
     }
   }
 
-  void _ensureBlockDestroyed() {
-    if (_block != null) {
-      var block = _block;
+  void _ensureViewDestroyed() {
+    if (_view != null) {
+      var view = _view;
       _scope.rootScope.domWrite(() {
-        _blockHole.remove(block);
+        _viewPort.remove(view);
       });
       _childScope.destroy();
-      _block = null;
+      _view = null;
       _childScope = null;
     }
   }
@@ -94,15 +94,15 @@ abstract class _NgUnlessIfAttrDirectiveBase {
     selector:'[ng-if]',
     map: const {'.': '=>condition'})
 class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
-  NgIfDirective(BoundBlockFactory boundBlockFactory,
-                BlockHole blockHole,
-                Scope scope): super(boundBlockFactory, blockHole, scope);
+  NgIfDirective(BoundViewFactory boundViewFactory,
+                ViewPort viewPort,
+                Scope scope): super(boundViewFactory, viewPort, scope);
 
   set condition(value) {
     if (toBool(value)) {
-      _ensureBlockExists();
+      _ensureViewExists();
     } else {
-      _ensureBlockDestroyed();
+      _ensureViewDestroyed();
     }
   }
 }
@@ -156,15 +156,15 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
     map: const {'.': '=>condition'})
 class NgUnlessDirective extends _NgUnlessIfAttrDirectiveBase {
 
-  NgUnlessDirective(BoundBlockFactory boundBlockFactory,
-                    BlockHole blockHole,
-                    Scope scope): super(boundBlockFactory, blockHole, scope);
+  NgUnlessDirective(BoundViewFactory boundViewFactory,
+                    ViewPort viewPort,
+                    Scope scope): super(boundViewFactory, viewPort, scope);
 
   set condition(value) {
     if (!toBool(value)) {
-      _ensureBlockExists();
+      _ensureViewExists();
     } else {
-      _ensureBlockDestroyed();
+      _ensureViewDestroyed();
     }
   }
 }

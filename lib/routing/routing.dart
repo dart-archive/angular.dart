@@ -3,10 +3,10 @@ part of angular.routing;
 /**
  * A factory of route to template bindings.
  */
-class ViewFactory {
+class RouteViewFactory {
   NgRoutingHelper locationService;
 
-  ViewFactory(this.locationService);
+  RouteViewFactory(this.locationService);
 
   call(String templateUrl) =>
       (RouteEnterEvent event) => _enterHandler(event, templateUrl);
@@ -92,7 +92,7 @@ class NgRouteCfg {
  */
 @deprecated
 abstract class RouteInitializer {
-  void init(Router router, ViewFactory viewFactory);
+  void init(Router router, RouteViewFactory viewFactory);
 }
 
 /**
@@ -102,7 +102,7 @@ abstract class RouteInitializer {
  * The function will be called by the framework once the router is
  * instantiated but before [NgBindRouteDirective] and [NgViewDirective].
  */
-typedef void RouteInitializerFn(Router router, ViewFactory viewFactory);
+typedef void RouteInitializerFn(Router router, RouteViewFactory viewFactory);
 
 /**
  * A singleton helper service that handles routing initialization, global
@@ -125,9 +125,9 @@ class NgRoutingHelper {
     };
 
     if (initializerFn != null) {
-      initializerFn(router, new ViewFactory(this));
+      initializerFn(router, new RouteViewFactory(this));
     } else {
-      initializer.init(router, new ViewFactory(this));
+      initializer.init(router, new RouteViewFactory(this));
     }
     router.onRouteStart.listen((RouteStartEvent routeEvent) {
       routeEvent.completed.then((success) {

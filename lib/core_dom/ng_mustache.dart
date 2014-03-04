@@ -41,7 +41,7 @@ class NgAttrMustacheDirective {
       }
     };
     // TODO(misko): figure out how to remove call to setter. It slows down
-    // Block instantiation
+    // View instantiation
     interpolation.setter('');
 
     List items = interpolation.expressions.map((exp) {

@@ -2,7 +2,7 @@ import '_perf.dart';
 
 void main() {
   describe('compiler', () {
-    describe('block instantiation', () {
+    describe('view instantiation', () {
       it('time ', inject((TestBed tb) {
         tb.compile(UL_REPEATER);
         var items = [];
@@ -12,7 +12,7 @@ void main() {
         var empty = [];
         tb.rootScope.context['classFor'] = (item) => 'ng-${item["done"]}';
 
-        time('create 100 blocks',
+        time('create 100 views',
             () => tb.rootScope.apply(() => tb.rootScope.context['items'] = items),
             cleanUp: () => tb.rootScope.apply(() => tb.rootScope.context['items'] = empty),
             verify: () => expect(tb.rootElement.querySelectorAll('li').length).toEqual(100));

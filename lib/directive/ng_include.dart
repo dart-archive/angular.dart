@@ -22,40 +22,40 @@ class NgIncludeDirective {
 
   final dom.Element element;
   final Scope scope;
-  final BlockCache blockCache;
+  final ViewCache viewCache;
   final Injector injector;
   final DirectiveMap directives;
 
-  Block _block;
+  View _view;
   Scope _scope;
 
-  NgIncludeDirective(this.element, this.scope, this.blockCache, this.injector, this.directives);
+  NgIncludeDirective(this.element, this.scope, this.viewCache, this.injector, this.directives);
 
   _cleanUp() {
-    if (_block == null) return;
+    if (_view == null) return;
 
-    _block.nodes.forEach((node) => node.remove);
+    _view.nodes.forEach((node) => node.remove);
     _scope.destroy();
     element.innerHtml = '';
 
-    _block = null;
+    _view = null;
     _scope = null;
   }
 
-  _updateContent(createBlock) {
+  _updateContent(createView) {
     // create a new scope
     _scope = scope.createChild(new PrototypeMap(scope.context));
-    _block = createBlock(injector.createChild([new Module()
+    _view = createView(injector.createChild([new Module()
         ..value(Scope, _scope)]));
 
-    _block.nodes.forEach((node) => element.append(node));
+    _view.nodes.forEach((node) => element.append(node));
   }
 
 
   set url(value) {
     _cleanUp();
     if (value != null && value != '') {
-      blockCache.fromUrl(value, directives).then(_updateContent);
+      viewCache.fromUrl(value, directives).then(_updateContent);
     }
   }
 }

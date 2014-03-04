@@ -15,9 +15,9 @@ main() {
       var template = $compile(element, directives);
 
       rootScope.context['name'] = 'OK';
-      var block = template(injector);
+      var view = template(injector);
 
-      element = $(block.nodes);
+      element = $(view.nodes);
 
       rootScope.apply();
       expect(element.text()).toEqual('OK!');
@@ -30,9 +30,9 @@ main() {
 
       rootScope.context['name'] = 'OK';
       rootScope.context['age'] = 23;
-      var block = template(injector);
+      var view = template(injector);
 
-      element = $(block.nodes);
+      element = $(view.nodes);
 
       rootScope.apply();
       expect(element.attr('some-attr')).toEqual('OK');
@@ -46,9 +46,9 @@ main() {
 
       rootScope.context['line1'] = 'L1';
       rootScope.context['line2'] = 'L2';
-      var block = template(injector);
+      var view = template(injector);
 
-      element = $(block.nodes);
+      element = $(view.nodes);
 
       rootScope.apply();
       expect(element.attr('multiline-attr')).toEqual('line1: L1\nline2: L2');
@@ -58,10 +58,10 @@ main() {
     it('should handle filters', inject((Compiler $compile, RootScope rootScope, Injector injector, DirectiveMap directives) {
       var element = $('<div>{{"World" | hello}}</div>');
       var template = $compile(element, directives);
-      var block = template(injector);
+      var view = template(injector);
       rootScope.apply();
 
-      element = $(block.nodes);
+      element = $(view.nodes);
 
       expect(element.html()).toEqual('Hello, World!');
     }));
