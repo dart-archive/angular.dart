@@ -63,7 +63,7 @@ main() {
         ..type(_TwoOfTwoDirectives);
     }));
     beforeEach(inject((DirectiveMap directives) {
-      selector = directiveSelectorFactory(directives);
+      selector = directives.selector;
     }));
 
     it('should match directive on element', () {

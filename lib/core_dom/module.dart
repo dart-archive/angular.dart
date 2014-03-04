@@ -52,6 +52,7 @@ class NgCoreDomModule extends Module {
     type(LocationWrapper);
     type(FieldMetadataExtractor);
     type(DirectiveMap);
+    type(DirectiveSelectorFactory);
   }
 }
 
