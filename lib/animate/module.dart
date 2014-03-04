@@ -22,7 +22,7 @@ final Logger _logger = new Logger('ng.animate');
 /**
  * Installing the NgAnimateModule will install a [CssAnimate] implementation of
  * the [NgAnimate] interface in your application. This will change the behavior
- * of block construction, and some of the native directives to allow you to add
+ * of view construction, and some of the native directives to allow you to add
  * and define css transition and keyframe animations for the styles of your
  * elements.
  * 

@@ -7,7 +7,7 @@ Iterable<dom.Element> getElements(Iterable<dom.Node> nodes) =>
 
 void domRemove(List<dom.Node> nodes) {
   // Not every element is sequential if the list of nodes only
-  // includes the elements. Removing a block also includes
+  // includes the elements. Removing a view also includes
   // removing non-element nodes in-between.
   for (var j = 0; j < nodes.length; j++) {
     dom.Node current = nodes[j];
@@ -36,9 +36,9 @@ void domMove(Iterable<dom.Node> nodes, dom.Node parent,
 List<dom.Node> allNodesBetween(List<dom.Node> nodes) {
   var result = [];
   // Not every element is sequential if the list of nodes only
-  // includes the elements. Removing a block also includes
+  // includes the elements. Removing a view also includes
   // removing non-element nodes in-between.
-  for (var j = 0; j < nodes.length; j++) {
+  for (var j = 0, jj = nodes.length; j < jj; j++) {
     dom.Node current = nodes[j];
     dom.Node next = j + 1 < nodes.length ? nodes[j + 1] : null;
 

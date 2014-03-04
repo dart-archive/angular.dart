@@ -47,7 +47,7 @@ main() {
 }
 
 class NestedRouteInitializer implements Function {
-  void call(Router router, ViewFactory view) {
+  void call(Router router, RouteViewFactory view) {
     router.root
       ..addRoute(
           name: 'library',

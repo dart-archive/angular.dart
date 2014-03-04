@@ -11,8 +11,8 @@ main() {
       scope = $rootScope;
       $compile = (html) {
         element = $(html);
-        var blockFactory = compiler(element, _directives);
-        var block = blockFactory(injector, element);
+        var viewFactory = compiler(element, _directives);
+        var view = viewFactory(injector, element);
         return element;
       };
       directives = _directives;
@@ -20,8 +20,8 @@ main() {
 
     it(r'should set create a list of items', inject((Scope scope, Compiler compiler, Injector injector) {
       var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
-      BlockFactory blockFactory = compiler(element, directives);
-      Block block = blockFactory(injector, element);
+      ViewFactory viewFactory = compiler(element, directives);
+      View view = viewFactory(injector, element);
       scope.context['items'] = ['a', 'b'];
       scope.apply();
       expect(element.text()).toEqual('ab');
@@ -31,8 +31,8 @@ main() {
     it(r'should set create a list of items from iterable',
         inject((Scope scope, Compiler compiler, Injector injector) {
       var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
-      BlockFactory blockFactory = compiler(element, directives);
-      Block block = blockFactory(injector, element);
+      ViewFactory viewFactory = compiler(element, directives);
+      View view = viewFactory(injector, element);
       scope.context['items'] = ['a', 'b'].map((i) => i); // makes an iterable
       scope.apply();
       expect(element.text()).toEqual('ab');

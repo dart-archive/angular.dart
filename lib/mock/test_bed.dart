@@ -15,7 +15,7 @@ class TestBed {
 
   Element rootElement;
   List<Node> rootElements;
-  Block rootBlock;
+  View rootView;
 
   TestBed(this.injector, this.rootScope, this.compiler, this.parser);
 
@@ -52,7 +52,7 @@ class TestBed {
     if (directives == null) {
       directives = injector.get(DirectiveMap);
     }
-    rootBlock = compiler(rootElements, directives)(injector, rootElements);
+    rootView = compiler(rootElements, directives)(injector, rootElements);
     return rootElement;
   }
 

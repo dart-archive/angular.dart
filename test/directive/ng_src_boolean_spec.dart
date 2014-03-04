@@ -147,7 +147,7 @@ main() {
           _.rootScope.context['id'] = $sce.trustAsUrl('http://somewhere');
         });
         _.rootElement.attributes['src'];
-      }).toThrow("Can't interpolate: {{id}}\nError: [\$sce:insecurl] Blocked " +
+      }).toThrow("Can't interpolate: {{id}}\nError: [\$sce:insecurl] Viewed " +
           "loading resource from url not allowed by \$sceDelegate policy.  URL: http://somewhere");
     }));
 

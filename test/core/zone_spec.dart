@@ -135,7 +135,7 @@ void main() {
       })));
     });
 
-    it('should call onTurnDone after a synchronous block', inject((Logger log) {
+    it('should call onTurnDone after a synchronous view', inject((Logger log) {
       zone.run(() {
         log('run');
       });

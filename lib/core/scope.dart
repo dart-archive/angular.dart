@@ -128,8 +128,8 @@ class ScopeLocals implements Map {
 /**
  * [Scope] is represents a collection of [watch]es [observe]ers, and [context]
  * for the watchers, observers and [eval]uations. Scopes structure loosely
- * mimics the DOM structure. Scopes and [Block]s are bound to each other.
- * As scopes are created and destroyed by [BlockFactory] they are responsible
+ * mimics the DOM structure. Scopes and [View]s are bound to each other.
+ * As scopes are created and destroyed by [ViewFactory] they are responsible
  * for change detection, change processing and memory management.
  */
 class Scope {

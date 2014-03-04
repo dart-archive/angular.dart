@@ -1,4 +1,4 @@
-library block_spec;
+library view_spec;
 
 import '../_specs.dart';
 
@@ -9,16 +9,16 @@ class Log {
 }
 
 @NgDirective(children: NgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo')
-class LoggerBlockDirective {
-  LoggerBlockDirective(BlockHole hole, BlockFactory blockFactory,
-      BoundBlockFactory boundBlockFactory, Logger logger) {
-    assert(hole != null);
-    assert(blockFactory != null);
-    assert(boundBlockFactory != null);
+class LoggerViewDirective {
+  LoggerViewDirective(ViewPort port, ViewFactory viewFactory,
+      BoundViewFactory boundViewFactory, Logger logger) {
+    assert(port != null);
+    assert(viewFactory != null);
+    assert(boundViewFactory != null);
 
-    logger.add(hole);
-    logger.add(boundBlockFactory);
-    logger.add(blockFactory);
+    logger.add(port);
+    logger.add(boundViewFactory);
+    logger.add(viewFactory);
   }
 }
 
@@ -60,10 +60,10 @@ class BFilter {
 
 
 main() {
-  describe('Block', () {
+  describe('View', () {
     var anchor;
     var $rootElement;
-    var blockCache;
+    var viewCache;
 
     beforeEach(() {
       $rootElement = $('<div></div>');
@@ -75,22 +75,22 @@ main() {
 
       beforeEach(inject((Injector injector, Profiler perf) {
         $rootElement.html('<!-- anchor -->');
-        anchor = new BlockHole($rootElement.contents().eq(0)[0],
+        anchor = new ViewPort($rootElement.contents().eq(0)[0],
           injector.get(NgAnimate));
-        a = (new BlockFactory($('<span>A</span>a'), [], perf, expando))(injector);
-        b = (new BlockFactory($('<span>B</span>b'), [], perf, expando))(injector);
+        a = (new ViewFactory($('<span>A</span>a'), [], perf, expando))(injector);
+        b = (new ViewFactory($('<span>B</span>b'), [], perf, expando))(injector);
       }));
 
 
       describe('insertAfter', () {
-        it('should insert block after anchor block', () {
+        it('should insert block after anchor view', () {
           anchor.insert(a);
 
           expect($rootElement.html()).toEqual('<!-- anchor --><span>A</span>a');
         });
 
 
-        it('should insert multi element block after another multi element block', () {
+        it('should insert multi element view after another multi element view', () {
           anchor.insert(a);
           anchor.insert(b, insertAfter: a);
 
@@ -98,7 +98,7 @@ main() {
         });
 
 
-        it('should insert multi element block before another multi element block', () {
+        it('should insert multi element view before another multi element view', () {
           anchor.insert(b);
           anchor.insert(a);
 
@@ -115,12 +115,12 @@ main() {
           expect($rootElement.text()).toEqual('AaBb');
         });
 
-        it('should remove the last block', () {
+        it('should remove the last view', () {
           anchor.remove(b);
           expect($rootElement.html()).toEqual('<!-- anchor --><span>A</span>a');
         });
 
-        it('should remove child blocks from parent pseudo black', () {
+        it('should remove child views from parent pseudo black', () {
           anchor.remove(a);
           expect($rootElement.html()).toEqual('<!-- anchor --><span>B</span>b');
         });
@@ -131,37 +131,37 @@ main() {
 
           // TODO(dart): I really want to do this:
           // class Directive {
-          //   Directive(BlockHole $anchor, Logger logger) {
+          //   Directive(ViewPort $anchor, Logger logger) {
           //     logger.add($anchor);
           //   }
           // }
 
           var directiveRef = new DirectiveRef(null,
-                                              LoggerBlockDirective,
+                                              LoggerViewDirective,
                                               new NgDirective(children: NgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo'),
                                               '');
-          directiveRef.blockFactory = new BlockFactory($('<b>text</b>'), [], perf, new Expando());
-          var outerBlockType = new BlockFactory(
+          directiveRef.viewFactory = new ViewFactory($('<b>text</b>'), [], perf, new Expando());
+          var outerViewType = new ViewFactory(
               $('<!--start--><!--end-->'),
               [ 0, [ directiveRef ], null],
               perf,
               new Expando());
 
-          var outerBlock = outerBlockType(injector);
-          // The LoggerBlockDirective caused a BlockHole for innerBlockType to
+          var outerView = outerViewType(injector);
+          // The LoggerViewDirective caused a ViewPort for innerViewType to
           // be created at logger[0];
-          BlockHole outerAnchor = logger[0];
-          BoundBlockFactory outterBoundBlockFactory = logger[1];
+          ViewPort outerAnchor = logger[0];
+          BoundViewFactory outterBoundViewFactory = logger[1];
 
-          anchor.insert(outerBlock);
-          // outterAnchor is a BlockHole, but it has "elements" set to the 0th element
-          // of outerBlockType.  So, calling insertAfter() will insert the new
-          // block after the <!--start--> element.
-          outerAnchor.insert(outterBoundBlockFactory(null));
+          anchor.insert(outerView);
+          // outterAnchor is a ViewPort, but it has "elements" set to the 0th element
+          // of outerViewType.  So, calling insertAfter() will insert the new
+          // view after the <!--start--> element.
+          outerAnchor.insert(outterBoundViewFactory(null));
 
           expect($rootElement.text()).toEqual('text');
 
-          anchor.remove(outerBlock);
+          anchor.remove(outerView);
 
           expect($rootElement.text()).toEqual('');
         }));
@@ -224,7 +224,7 @@ main() {
 
     //TODO: tests for attach/detach
     //TODO: animation/transitions
-    //TODO: tests for re-usability of blocks
+    //TODO: tests for re-usability of views
 
   });
 }

@@ -8,7 +8,7 @@ class Compiler implements Function {
 
   Compiler(this._perf, this._parser, this._expando);
 
-  _compileBlock(NodeCursor domCursor, NodeCursor templateCursor,
+  _compileView(NodeCursor domCursor, NodeCursor templateCursor,
                 ElementBinder existingElementBinder,
                 DirectiveMap directives) {
     if (domCursor.current == null) return null;
@@ -29,7 +29,7 @@ class Compiler implements Function {
       // TODO: move to ElementBinder
       var compileTransclusionCallback = () {
         DirectiveRef directiveRef = declaredElementSelector.template;
-        directiveRef.blockFactory = compileTransclusion(
+        directiveRef.viewFactory = compileTransclusion(
             domCursor, templateCursor,
             directiveRef, declaredElementSelector, directives);
       };
@@ -39,7 +39,7 @@ class Compiler implements Function {
           templateCursor.descend();
 
           childDirectivePositions =
-          _compileBlock(domCursor, templateCursor, null, directives);
+          _compileView(domCursor, templateCursor, null, directives);
 
           domCursor.ascend();
           templateCursor.ascend();
@@ -62,55 +62,55 @@ class Compiler implements Function {
     return directivePositions;
   }
 
-  BlockFactory compileTransclusion(
+  ViewFactory compileTransclusion(
                       NodeCursor domCursor, NodeCursor templateCursor,
                       DirectiveRef directiveRef,
                       ElementBinder transcludedElementBinder,
                       DirectiveMap directives) {
     var anchorName = directiveRef.annotation.selector +
         (directiveRef.value != null ? '=' + directiveRef.value : '');
-    var blockFactory;
-    var blocks;
+    var viewFactory;
+    var views;
 
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
     var domCursorIndex = domCursor.index;
     var directivePositions =
-        _compileBlock(domCursor, transcludeCursor, transcludedElementBinder, directives);
+        _compileView(domCursor, transcludeCursor, transcludedElementBinder, directives);
     if (directivePositions == null) directivePositions = [];
 
-    blockFactory = new BlockFactory(transcludeCursor.elements,
+    viewFactory = new ViewFactory(transcludeCursor.elements,
         directivePositions, _perf, _expando);
     domCursor.index = domCursorIndex;
 
     if (domCursor.isInstance) {
       domCursor.insertAnchorBefore(anchorName);
-      blocks = [blockFactory([domCursor.current])];
+      views = [viewFactory([domCursor.current])];
       templateCursor.moveNext();
       while (domCursor.moveNext() && domCursor.isInstance) {
-        blocks.add(blockFactory([domCursor.current]));
+        views.add(viewFactory([domCursor.current]));
         templateCursor.remove();
       }
     } else {
       domCursor.replaceWithAnchor(anchorName);
     }
 
-    return blockFactory;
+    return viewFactory;
   }
 
-  BlockFactory call(List<dom.Node> elements, DirectiveMap directives) {
+  ViewFactory call(List<dom.Node> elements, DirectiveMap directives) {
     var timerId;
     assert((timerId = _perf.startTimer('ng.compile', _html(elements))) != false);
     final domElements = elements;
     final templateElements = cloneElements(domElements);
-    var directivePositions = _compileBlock(
+    var directivePositions = _compileView(
         new NodeCursor(domElements), new NodeCursor(templateElements),
         null, directives);
 
-    var blockFactory = new BlockFactory(templateElements,
+    var viewFactory = new ViewFactory(templateElements,
         directivePositions == null ? [] : directivePositions, _perf, _expando);
 
     assert(_perf.stopTimer(timerId) != false);
-    return blockFactory;
+    return viewFactory;
   }
 
 

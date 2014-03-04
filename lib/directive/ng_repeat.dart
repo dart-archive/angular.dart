@@ -3,7 +3,7 @@ part of angular.directive;
 class _Row {
   var id;
   Scope scope;
-  Block block;
+  View view;
   dom.Element startNode;
   dom.Element endNode;
   List<dom.Element> nodes;
@@ -84,8 +84,8 @@ class NgRepeatDirective {
   static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
   static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$');
 
-  final BlockHole _blockHole;
-  final BoundBlockFactory _boundBlockFactory;
+  final ViewPort _viewPort;
+  final BoundViewFactory _boundViewFactory;
   final Scope _scope;
   final Parser _parser;
   final AstParser _astParser;
@@ -100,9 +100,9 @@ class NgRepeatDirective {
   Watch _watch = null;
   Iterable _lastCollection;
 
-  NgRepeatDirective(this._blockHole, this._boundBlockFactory,
-                            this._scope, this._parser, this._astParser,
-                            this.filters);
+  NgRepeatDirective(this._viewPort, this._boundViewFactory,
+                    this._scope, this._parser, this._astParser,
+                    this.filters);
 
   set expression(value) {
     _expression = value;
@@ -148,8 +148,8 @@ class NgRepeatDirective {
 
   List<_Row> _computeNewRows(Iterable collection, trackById) {
     final newRowOrder = new List<_Row>(collection.length);
-    // Same as lastBlockMap but it has the current state. It will become the
-    // lastBlockMap on the next iteration.
+    // Same as lastViewMap but it has the current state. It will become the
+    // lastViewMap on the next iteration.
     final newRows = <dynamic, _Row>{};
     // locate existing items
     for (var index = 0; index < newRowOrder.length; index++) {
@@ -161,7 +161,7 @@ class NgRepeatDirective {
         newRows[trackById] = row;
         newRowOrder[index] = row;
       } else if (newRows.containsKey(trackById)) {
-        // restore lastBlockMap
+        // restore lastViewMap
         newRowOrder.forEach((row) {
           if (row != null && row.startNode != null) _rows[row.id] = row;
         });
@@ -177,7 +177,7 @@ class NgRepeatDirective {
     }
     // remove existing items
     _rows.forEach((key, row) {
-      _blockHole.remove(row.block);
+      _viewPort.remove(row.view);
       row.scope.destroy();
     });
     _rows = newRows;
@@ -185,13 +185,13 @@ class NgRepeatDirective {
   }
 
   _onCollectionChange(Iterable collection) {
-    dom.Node previousNode = _blockHole.placeholder; // current position of the
+    dom.Node previousNode = _viewPort.placeholder; // current position of the
     // node
     dom.Node nextNode;
     Scope childScope;
     Map childContext;
     Scope trackById;
-    Block cursor;
+    View cursor;
 
     List<_Row> newRowOrder = _computeNewRows(collection, trackById);
 
@@ -212,7 +212,7 @@ class NgRepeatDirective {
 
         if (row.startNode != nextNode) {
           // existing item which got moved
-          _blockHole.move(row.block, moveAfter: cursor);
+          _viewPort.move(row.view, moveAfter: cursor);
         }
         previousNode = row.endNode;
       } else {
@@ -234,16 +234,16 @@ class NgRepeatDirective {
           ..[r'$even'] = index & 1 == 0;
 
       if (row.startNode == null) {
-        var block = _boundBlockFactory(childScope);
+        var view = _boundViewFactory(childScope);
         _rows[row.id] = row
-            ..block = block
+            ..view = view
             ..scope = childScope
-            ..nodes = block.nodes
+            ..nodes = view.nodes
             ..startNode = row.nodes[0]
             ..endNode = row.nodes[row.nodes.length - 1];
-        _blockHole.insert(block, insertAfter: cursor);
+        _viewPort.insert(view, insertAfter: cursor);
       }
-      cursor = row.block;
+      cursor = row.view;
     }
   }
 }

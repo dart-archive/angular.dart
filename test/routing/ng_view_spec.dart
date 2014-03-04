@@ -129,7 +129,7 @@ main() {
 }
 
 class FlatRouteInitializer implements Function {
-  void call(Router router, ViewFactory view) {
+  void call(Router router, RouteViewFactory view) {
     router.root
       ..addRoute(
           name: 'foo',
@@ -146,7 +146,7 @@ class FlatRouteInitializer implements Function {
 }
 
 class NestedRouteInitializer implements Function {
-  void call(Router router, ViewFactory view) {
+  void call(Router router, RouteViewFactory view) {
     router.root
       ..addRoute(
           name: 'library',
