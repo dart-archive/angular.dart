@@ -2,10 +2,16 @@ part of angular.core.dom;
 
 @NgInjectableService()
 class DirectiveMap extends AnnotationsMap<NgAnnotation> {
-  DirectiveSelector selector;
+  DirectiveSelectorFactory _directiveSelectorFactory;
+  DirectiveSelector _selector;
+  DirectiveSelector get selector {
+    if (_selector != null) return _selector;
+    return _selector = _directiveSelectorFactory.selector(this);
+  }
 
   DirectiveMap(Injector injector, MetadataExtractor metadataExtractor,
-      FieldMetadataExtractor fieldMetadataExtractor)
+      FieldMetadataExtractor fieldMetadataExtractor,
+      this._directiveSelectorFactory)
       : super(injector, metadataExtractor) {
     Map<NgAnnotation, List<Type>> directives = {};
     forEach((NgAnnotation annotation, Type type) {
@@ -27,8 +33,6 @@ class DirectiveMap extends AnnotationsMap<NgAnnotation> {
     });
     map.clear();
     map.addAll(directives);
-
-    selector = directiveSelectorFactory(this);
   }
 }
 

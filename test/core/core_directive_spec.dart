@@ -42,6 +42,7 @@ void main() {
       beforeEach(() {
         baseModule = new Module()
           ..type(DirectiveMap)
+          ..type(DirectiveSelectorFactory)
           ..type(MetadataExtractor)
           ..type(FieldMetadataExtractor);
       });

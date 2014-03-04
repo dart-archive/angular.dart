@@ -239,126 +239,128 @@ List<_SelectorPart> _splitCss(String selector, Type type) {
 }
 
 /**
- * Factory method for creating a [DirectiveSelector].
+ * Factory for creating a [DirectiveSelector].
  */
-DirectiveSelector directiveSelectorFactory(DirectiveMap directives) {
+@NgInjectableService()
+class DirectiveSelectorFactory {
+  DirectiveSelector selector(DirectiveMap directives) {
+    var elementSelector = new _ElementSelector('');
+    var attrSelector = <_ContainsSelector>[];
+    var textSelector = <_ContainsSelector>[];
+    directives.forEach((NgAnnotation annotation, Type type) {
+      var match;
+      var selector = annotation.selector;
+      List<_SelectorPart> selectorParts;
+      if (selector == null) {
+        throw new ArgumentError('Missing selector annotation for $type');
+      }
 
-  var elementSelector = new _ElementSelector('');
-  var attrSelector = <_ContainsSelector>[];
-  var textSelector = <_ContainsSelector>[];
-  directives.forEach((NgAnnotation annotation, Type type) {
-    var match;
-    var selector = annotation.selector;
-    List<_SelectorPart> selectorParts;
-    if (selector == null) {
-      throw new ArgumentError('Missing selector annotation for $type');
-    }
+      if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
+        textSelector.add(new _ContainsSelector(annotation, match.group(1)));
+      } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
+        attrSelector.add(new _ContainsSelector(annotation, match[1]));
+      } else if ((selectorParts = _splitCss(selector, type)) != null){
+        elementSelector.addDirective(selectorParts,
+            new _Directive(type, annotation));
+      } else {
+        throw new ArgumentError('Unsupported Selector: $selector');
+      }
+    });
 
-    if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
-      textSelector.add(new _ContainsSelector(annotation, match.group(1)));
-    } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
-      attrSelector.add(new _ContainsSelector(annotation, match[1]));
-    } else if ((selectorParts = _splitCss(selector, type)) != null){
-      elementSelector.addDirective(selectorParts,
-          new _Directive(type, annotation));
-    } else {
-      throw new ArgumentError('Unsupported Selector: $selector');
-    }
-  });
+    return (dom.Node node) {
+      var directiveRefs = <DirectiveRef>[];
+      List<_ElementSelector> partialSelection;
+      var classes = <String, bool>{};
+      var attrs = <String, String>{};
 
-  return (dom.Node node) {
-    var directiveRefs = <DirectiveRef>[];
-    List<_ElementSelector> partialSelection;
-    var classes = <String, bool>{};
-    var attrs = <String, String>{};
+      switch(node.nodeType) {
+        case 1: // Element
+          dom.Element element = node;
+          String nodeName = element.tagName.toLowerCase();
+          Map<String, String> attrs = {};
 
-    switch(node.nodeType) {
-      case 1: // Element
-        dom.Element element = node;
-        String nodeName = element.tagName.toLowerCase();
-        Map<String, String> attrs = {};
-
-        // Set default attribute
-        if (nodeName == 'input' && !element.attributes.containsKey('type')) {
-          element.attributes['type'] = 'text';
-        }
-
-        // Select node
-        partialSelection = elementSelector.selectNode(directiveRefs,
-            partialSelection, element, nodeName);
-
-        // Select .name
-        if ((element.classes) != null) {
-          for (var name in element.classes) {
-            classes[name] = true;
-            partialSelection = elementSelector.selectClass(directiveRefs,
-                partialSelection, element, name);
+          // Set default attribute
+          if (nodeName == 'input' && !element.attributes.containsKey('type')) {
+            element.attributes['type'] = 'text';
           }
-        }
 
-        // Select [attributes]
-        element.attributes.forEach((attrName, value) {
-          attrs[attrName] = value;
-          for (var k = 0; k < attrSelector.length; k++) {
-            _ContainsSelector selectorRegExp = attrSelector[k];
-            if (selectorRegExp.regexp.hasMatch(value)) {
-              // this directive is matched on any attribute name, and so
-              // we need to pass the name to the directive by prefixing it to
-              // the value. Yes it is a bit of a hack.
-              directives[selectorRegExp.annotation].forEach((type) {
-                directiveRefs.add(new DirectiveRef(
-                    node, type, selectorRegExp.annotation, '$attrName=$value'));
-              });
+          // Select node
+          partialSelection = elementSelector.selectNode(directiveRefs,
+              partialSelection, element, nodeName);
+
+          // Select .name
+          if ((element.classes) != null) {
+            for (var name in element.classes) {
+              classes[name] = true;
+              partialSelection = elementSelector.selectClass(directiveRefs,
+                  partialSelection, element, name);
             }
           }
 
-          partialSelection = elementSelector.selectAttr(directiveRefs,
-              partialSelection, node, attrName, value);
-        });
+          // Select [attributes]
+          element.attributes.forEach((attrName, value) {
+            attrs[attrName] = value;
+            for (var k = 0; k < attrSelector.length; k++) {
+              _ContainsSelector selectorRegExp = attrSelector[k];
+              if (selectorRegExp.regexp.hasMatch(value)) {
+                // this directive is matched on any attribute name, and so
+                // we need to pass the name to the directive by prefixing it to
+                // the value. Yes it is a bit of a hack.
+                directives[selectorRegExp.annotation].forEach((type) {
+                  directiveRefs.add(new DirectiveRef(
+                      node, type, selectorRegExp.annotation, '$attrName=$value'));
+                });
+              }
+            }
 
-        while(partialSelection != null) {
-          List<_ElementSelector> elementSelectors = partialSelection;
-          partialSelection = null;
-          elementSelectors.forEach((_ElementSelector elementSelector) {
-            classes.forEach((className, _) {
-              partialSelection = elementSelector.selectClass(directiveRefs,
-                  partialSelection, node, className);
-            });
-            attrs.forEach((attrName, value) {
-              partialSelection = elementSelector.selectAttr(directiveRefs,
-                  partialSelection, node, attrName, value);
-            });
+            partialSelection = elementSelector.selectAttr(directiveRefs,
+                partialSelection, node, attrName, value);
           });
-        }
-        break;
-      case 3: // Text Node
-        var value = node.nodeValue;
-        for (var k = 0; k < textSelector.length; k++) {
-        var selectorRegExp = textSelector[k];
 
-          if (selectorRegExp.regexp.hasMatch(value)) {
-            directives[selectorRegExp.annotation].forEach((type) {
-              directiveRefs.add(new DirectiveRef(node, type,
-                  selectorRegExp.annotation, value));
+          while(partialSelection != null) {
+            List<_ElementSelector> elementSelectors = partialSelection;
+            partialSelection = null;
+            elementSelectors.forEach((_ElementSelector elementSelector) {
+              classes.forEach((className, _) {
+                partialSelection = elementSelector.selectClass(directiveRefs,
+                    partialSelection, node, className);
+              });
+              attrs.forEach((attrName, value) {
+                partialSelection = elementSelector.selectAttr(directiveRefs,
+                    partialSelection, node, attrName, value);
+              });
             });
           }
+          break;
+        case 3: // Text Node
+          var value = node.nodeValue;
+          for (var k = 0; k < textSelector.length; k++) {
+          var selectorRegExp = textSelector[k];
+
+            if (selectorRegExp.regexp.hasMatch(value)) {
+              directives[selectorRegExp.annotation].forEach((type) {
+                directiveRefs.add(new DirectiveRef(node, type,
+                    selectorRegExp.annotation, value));
+              });
+            }
+          }
+          break;
         }
-        break;
-      }
 
-      directiveRefs.sort(_priorityComparator);
-      return directiveRefs;
-    };
-}
-
-int _directivePriority(NgAnnotation annotation) {
-  if (annotation is NgDirective) {
-    return (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) ? 2 : 1;
-  } else if (annotation is NgComponent) {
-    return 0;
+        directiveRefs.sort(_priorityComparator);
+        return directiveRefs;
+      };
   }
-  throw "Unexpected Type: ${annotation}.";
-}
 
-int _priorityComparator(DirectiveRef a, DirectiveRef b) =>
+  int _directivePriority(NgAnnotation annotation) {
+    if (annotation is NgDirective) {
+      return (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) ? 2 : 1;
+    } else if (annotation is NgComponent) {
+      return 0;
+    }
+    throw "Unexpected Type: ${annotation}.";
+  }
+
+  int _priorityComparator(DirectiveRef a, DirectiveRef b) =>
   _directivePriority(b.annotation) - _directivePriority(a.annotation);
+}

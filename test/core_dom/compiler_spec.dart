@@ -536,7 +536,9 @@ void main() {
               ..type(MissingSelector);
           });
           expect(() {
-            inject((Compiler c) { });
+            inject((Compiler c) {
+              c($('<div></div>'), directives);
+            });
           }).toThrow('Missing selector annotation for MissingSelector');
         });
 
@@ -547,7 +549,9 @@ void main() {
               ..type(InvalidSelector);
           });
           expect(() {
-            inject((Compiler c) { });
+            inject((Compiler c) {
+              c($('<div></div>'), directives);
+            });
           }).toThrow('Unknown selector format \'buttonbar button\' for InvalidSelector');
         });
       });
