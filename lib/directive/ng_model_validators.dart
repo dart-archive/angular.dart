@@ -90,6 +90,9 @@ class NgModelNumberValidator implements NgValidatable {
     if (value != null) {
       try {
         num val = double.parse(value.toString());
+        if (val.isNaN) {
+          return false;
+        }
       } catch(exception, stackTrace) {
         return false;
       }
