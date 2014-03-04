@@ -29,7 +29,7 @@ export DART=${DART:-"$DARTSDK/bin/dart"}
 export PUB=${PUB:-"$DARTSDK/bin/pub"}
 export DARTANALYZER=${DARTANALYZER:-"$DARTSDK/bin/dartanalyzer"}
 export DARTDOC=${DARTDOC:-"$DARTSDK/bin/dartdoc"}
-
+export DART_DOCGEN=${DART_DOCGEN:-"$DARTSDK/bin/docgen"}
 
 export CHROME_CANARY_BIN=${CHROME_CANARY_BIN:-"$DARTIUM"}
 export CHROME_BIN=${CHROME_BIN:-"google-chrome"}

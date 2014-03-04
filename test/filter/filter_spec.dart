@@ -14,6 +14,7 @@ class DynamicObject {
             _map.keys.toSet().difference(other._map.keys.toSet()).length == 0 &&
             _map.keys.every((key) => _map[key] == other._map[key]));
   }
+  int get hashCode => 0;
   noSuchMethod(Invocation invocation) {
     Symbol name = invocation.memberName;
     if (invocation.isGetter) {

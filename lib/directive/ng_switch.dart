@@ -75,14 +75,14 @@ class NgSwitchDirective {
     currentBlocks
         ..forEach((_BlockScopePair pair) {
           pair.block.remove();
-          pair.scope.$destroy();
+          pair.scope.destroy();
         })
         ..clear();
 
     val = '!$val';
     (cases.containsKey(val) ? cases[val] : cases['?'])
         .forEach((_Case caze) {
-          Scope childScope = scope.$new();
+          Scope childScope = scope.createChild(new PrototypeMap(scope.context));
           var block = caze.blockFactory(childScope)..insertAfter(caze.anchor);
           currentBlocks.add(new _BlockScopePair(block, childScope));
         });

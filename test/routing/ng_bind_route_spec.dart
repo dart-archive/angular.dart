@@ -11,7 +11,7 @@ main() {
 
     beforeEach(module((Module m) => m
       ..install(new AngularMockModule())
-      ..type(RouteInitializer, implementedBy: NestedRouteInitializer)));
+      ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer)));
 
     beforeEach(inject((TestBed tb) {
       _ = tb;
@@ -20,14 +20,14 @@ main() {
 
     it('should inject null RouteProvider when no ng-bind-route', async(() {
       Element root = _.compile('<div probe="routeProbe"></div>');
-      expect(_.rootScope['routeProbe'].injector.get(RouteProvider)).toBeNull();
+      expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider)).toBeNull();
     }));
 
 
     it('should inject RouteProvider with correct flat route', async(() {
       Element root = _.compile(
           '<div ng-bind-route="library"><div probe="routeProbe"></div></div>');
-      expect(_.rootScope['routeProbe'].injector.get(RouteProvider).routeName)
+      expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider).routeName)
           .toEqual('library');
     }));
 
@@ -39,15 +39,15 @@ main() {
           '    <div probe="routeProbe"></div>'
           '  </div>'
           '</div>');
-      expect(_.rootScope['routeProbe'].injector.get(RouteProvider).route.name)
+      expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider).route.name)
           .toEqual('all');
     }));
 
   });
 }
 
-class NestedRouteInitializer implements RouteInitializer {
-  void init(Router router, ViewFactory view) {
+class NestedRouteInitializer implements Function {
+  void call(Router router, ViewFactory view) {
     router.root
       ..addRoute(
           name: 'library',
@@ -71,9 +71,9 @@ class NestedRouteInitializer implements RouteInitializer {
                       name: 'read',
                       path: '/read',
                       enter: view('book_read.html'))))
-      ..addRoute(
-          name: 'admin',
-          path: '/admin',
-          enter: view('admin.html'));
+                  ..addRoute(
+                      name: 'admin',
+                      path: '/admin',
+                      enter: view('admin.html'));
   }
 }

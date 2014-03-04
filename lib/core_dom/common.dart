@@ -4,7 +4,8 @@ List<dom.Node> cloneElements(elements) {
   return elements.map((el) => el.clone(true)).toList();
 }
 
-typedef ApplyMapping(NodeAttrs attrs, Scope scope, Object dst);
+typedef ApplyMapping(NodeAttrs attrs, Scope scope, Object dst,
+                     FilterMap filters, notify());
 
 class DirectiveRef {
   final dom.Node element;
@@ -28,9 +29,10 @@ class DirectiveRef {
  * services from the provided modules.
  */
 Injector forceNewDirectivesAndFilters(Injector injector, List<Module> modules) {
-  modules.add(new Module()
-      ..factory(Scope,
-          (i) => i.parent.get(Scope).$new(filters: i.get(FilterMap))));
+  modules.add(new Module()..factory(Scope, (i) {
+    var scope = i.parent.get(Scope);
+    return scope.createChild(new PrototypeMap(scope.context));
+  }));
   return injector.createChild(modules,
       forceNewInstances: [DirectiveMap, FilterMap]);
 }

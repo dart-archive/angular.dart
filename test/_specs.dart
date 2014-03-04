@@ -14,6 +14,7 @@ export 'package:unittest/unittest.dart';
 export 'package:unittest/mock.dart';
 export 'package:di/dynamic_injector.dart';
 export 'package:angular/angular.dart';
+export 'package:angular/animate/module.dart';
 export 'package:angular/mock/module.dart';
 export 'package:perf_api/perf_api.dart';
 
@@ -83,7 +84,7 @@ class Expect {
   toEqualSelect(options) {
     var actualOptions = [];
 
-    for(var option in actual.querySelectorAll('option')) {
+    for (var option in actual.querySelectorAll('option')) {
       if (option.selected) {
         actualOptions.add([option.value]);
       } else {

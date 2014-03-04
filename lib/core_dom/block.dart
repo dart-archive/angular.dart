@@ -36,8 +36,9 @@ class Block implements ElementWrapper {
   Function onMove;
 
   List<dynamic> _directives = [];
+  final NgAnimate _animate;
 
-  Block(this.elements);
+  Block(this.elements, this._animate);
 
   Block insertAfter(ElementWrapper previousBlock) {
     // Update Link List.
@@ -55,8 +56,9 @@ class Block implements ElementWrapper {
     dom.Node parentElement = previousElement.parentNode;
     bool preventDefault = false;
 
-    Function insertDomElements = () =>
-        elements.forEach((el) => parentElement.insertBefore(el, insertBeforeElement));
+    Function insertDomElements = () {
+      _animate.insert(elements, parentElement, insertBefore: insertBeforeElement);
+    };
 
     if (onInsert != null) {
       onInsert({
@@ -78,22 +80,15 @@ class Block implements ElementWrapper {
     bool preventDefault = false;
 
     Function removeDomElements = () {
-      for(var j = 0, jj = elements.length; j < jj; j++) {
-        dom.Node current = elements[j];
-        dom.Node next = j+1 < jj ? elements[j+1] : null;
-
-        while(next != null && current.nextNode != next) {
-          current.nextNode.remove();
-        }
-        elements[j].remove();
-      }
+      _animate.remove(elements);
     };
 
     if (onRemove != null) {
       onRemove({
         "preventDefault": () {
           preventDefault = true;
-          return removeDomElements();
+          removeDomElements();
+          return this;
         },
         "element": elements[0]
       });
@@ -116,7 +111,7 @@ class Block implements ElementWrapper {
         previousElement = previousElements[previousElements.length - 1],
         insertBeforeElement = previousElement.nextNode,
         parentElement = previousElement.parentNode;
-
+    
     elements.forEach((el) => parentElement.insertBefore(el, insertBeforeElement));
 
     // Remove block from list

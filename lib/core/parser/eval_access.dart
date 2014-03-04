@@ -8,7 +8,7 @@ import 'package:angular/core/module.dart';
 
 class AccessScope extends syntax.AccessScope with AccessReflective {
   final Symbol symbol;
-  AccessScope(String name) : super(name), symbol = new Symbol(name);
+  AccessScope(String name) : super(name), symbol = newSymbol(name);
   eval(scope, [FilterMap filters]) => _eval(scope);
   assign(scope, value) => _assign(scope, scope, value);
 }
@@ -24,7 +24,7 @@ class AccessScopeFast extends syntax.AccessScope with AccessFast {
 class AccessMember extends syntax.AccessMember with AccessReflective {
   final Symbol symbol;
   AccessMember(object, String name)
-      : super(object, name), symbol = new Symbol(name);
+      : super(object, name), symbol = newSymbol(name);
   eval(scope, [FilterMap filters]) => _eval(object.eval(scope, filters));
   assign(scope, value) => _assign(scope, object.eval(scope), value);
   _assignToNonExisting(scope, value) => object.assign(scope, { name: value });
@@ -84,6 +84,9 @@ abstract class AccessReflective {
       _cachedKind = CACHED_MAP;
       _cachedValue = null;
       return holder[name];
+    } else if (symbol == null) {
+      _cachedHolder = UNINITIALIZED;
+      return null;
     }
     InstanceMirror mirror = reflect(holder);
     try {
@@ -119,7 +122,7 @@ abstract class AccessReflective {
       holder[name] = value;
     } else if (holder == null) {
       _assignToNonExisting(scope, value);
-    } else {
+    } else if (symbol != null) {
       reflect(holder).setField(symbol, value);
     }
     return value;
@@ -145,50 +148,7 @@ abstract class AccessReflective {
   }
 
   static bool hasMethod(InstanceMirror mirror, Symbol symbol) {
-    return hasMethodHelper(mirror.type, symbol);
-  }
-
-  static final objectClassMirror = reflectClass(Object);
-  static final Set<Symbol> objectClassInstanceMethods =
-      new Set<Symbol>.from([#toString, #noSuchMethod]);
-
-  static final Function hasMethodHelper = (() {
-    try {
-      // Use ClassMirror.instanceMembers if available. It contains local
-      // as well as inherited members.
-      objectClassMirror.instanceMembers;
-      // For SDK 1.2 we have to use a somewhat complicated helper for this
-      // to work around bugs in the dart2js implementation.
-      return hasInstanceMethod;
-    } on NoSuchMethodError catch (e) {
-      // For SDK 1.0 we fall back to just using the local members.
-      return (type, symbol) => type.members[symbol] is MethodMirror;
-    } on UnimplementedError catch (e) {
-      // For SDK 1.1 we fall back to just using the local declarations.
-      return (type, symbol) => type.declarations[symbol] is MethodMirror;
-    }
-    return null;
-  })();
-
-  static bool hasInstanceMethod(type, symbol) {
-    // Always allow instance methods found in the Object class. This makes
-    // it easier to work around a few bugs in the dart2js implementation.
-    if (objectClassInstanceMethods.contains(symbol)) return true;
-    // Work around http://dartbug.com/16309 which causes access to the
-    // instance members of certain builtin types to throw exceptions
-    // while traversing the superclass chain.
-    var mirror;
-    try {
-      mirror = type.instanceMembers[symbol];
-    } on UnsupportedError catch (e) {
-      mirror = type.declarations[symbol];
-    }
-    // Work around http://dartbug.com/15760 which causes noSuchMethod
-    // forwarding stubs to be treated as members of all classes. We have
-    // already checked for the real instance methods in Object, so if the
-    // owner of this method is Object we simply filter it out.
-    if (mirror is !MethodMirror) return false;
-    return mirror.owner != objectClassMirror;
+    return mirror.type.instanceMembers[symbol] is MethodMirror;
   }
 }
 

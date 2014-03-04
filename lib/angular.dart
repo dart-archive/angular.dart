@@ -29,6 +29,7 @@ import 'package:di/dynamic_injector.dart';
  */
 @MirrorsUsed(targets: const [
     'angular',
+    'angular.animate',
     'angular.core',
     'angular.core.dom',
     'angular.filter',
@@ -51,6 +52,7 @@ metaTargets: const [
 ])
 import 'dart:mirrors' show MirrorsUsed;
 
+import 'package:angular/animate/module.dart';
 import 'package:angular/core/module.dart';
 import 'package:angular/core_dom/module.dart';
 import 'package:angular/directive/module.dart';

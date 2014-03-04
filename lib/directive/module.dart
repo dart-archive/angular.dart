@@ -2,12 +2,13 @@ library angular.directive;
 
 import 'package:di/di.dart';
 import 'dart:html' as dom;
-import 'dart:async' as async;
 import 'package:intl/intl.dart';
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/module.dart';
 import 'package:angular/utils.dart';
+import 'package:angular/change_detection/watch_group.dart';
+import 'package:angular/change_detection/change_detection.dart';
 
 part 'ng_a.dart';
 part 'ng_bind.dart';
@@ -49,15 +50,19 @@ class NgDirectiveModule extends Module {
     value(NgIncludeDirective, null);
     value(NgPluralizeDirective, null);
     value(NgRepeatDirective, null);
-    value(NgShalowRepeatDirective, null);
+    value(NgShallowRepeatDirective, null);
     value(NgShowDirective, null);
     value(InputTextLikeDirective, null);
+    value(InputNumberLikeDirective, null);
     value(InputRadioDirective, null);
     value(InputCheckboxDirective, null);
     value(InputSelectDirective, null);
     value(OptionValueDirective, null);
     value(ContentEditableDirective, null);
     value(NgModel, null);
+    value(NgValue, new NgValue(null));
+    value(NgTrueValue, new NgTrueValue(null));
+    value(NgFalseValue, new NgFalseValue(null));
     value(NgSwitchDirective, null);
     value(NgSwitchWhenDirective, null);
     value(NgSwitchDefaultDirective, null);
@@ -70,6 +75,7 @@ class NgDirectiveModule extends Module {
     value(NgStyleDirective, null);
     value(NgNonBindableDirective, null);
     value(NgTemplateDirective, null);
+    value(NgControl, new NgNullControl());
     value(NgForm, new NgNullForm());
 
     value(NgModelRequiredValidator, null);

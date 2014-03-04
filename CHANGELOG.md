@@ -1,3 +1,154 @@
+<a name="v0.9.8"></a>
+# v0.9.8 cozy-porcupine (2014-02-19)
+
+
+## Bug Fixes
+
+- **DateFilter:** fix a wrong type
+  ([cec3edad](https://github.com/angular/angular.dart/commit/cec3edad1944a8411882b0a87ea6193c25513392),
+   [#579](https://github.com/angular/angular.dart/issues/579))
+- **compiler:** support filters in attribute expressions
+  ([8f020f99](https://github.com/angular/angular.dart/commit/8f020f998e8a4b7d5b595e5c44086fa2628fe8b3),
+   [#571](https://github.com/angular/angular.dart/issues/571), [#580](https://github.com/angular/angular.dart/issues/580))
+- **di:** Upgrade dependency of package di preventing problems with dart sdk 1.1 resolves #408
+  ([1f85a8ce](https://github.com/angular/angular.dart/commit/1f85a8cee164d85d6eed43e7604a0190d1542d84),
+   [#408](https://github.com/angular/angular.dart/issues/408), [#583](https://github.com/angular/angular.dart/issues/583))
+- **doc-gen:** dartbug.com/16752
+  ([9a1ef31d](https://github.com/angular/angular.dart/commit/9a1ef31d66f151f22b79893e11251a6780605257))
+- **generator:** remove invalid sort on elements
+  ([e2a00abe](https://github.com/angular/angular.dart/commit/e2a00abe371bb2d9d3c1d3c19849e075a32e92e4),
+   [#554](https://github.com/angular/angular.dart/issues/554))
+- **ng-attr:** remove camel-cased dom attributes
+  ([b5e45117](https://github.com/angular/angular.dart/commit/b5e45117c17fdd07d5db659815eb49c2dca17b84),
+   [#567](https://github.com/angular/angular.dart/issues/567))
+- **ng-pluralize:** use ${..} to interpolate
+  ([a630487d](https://github.com/angular/angular.dart/commit/a630487d302e396a920e02c8db5d256a81d3dd1a),
+   [#572](https://github.com/angular/angular.dart/issues/572))
+- **ng-value:** Add ng-value support for checked/radio/option
+  ([8fc2c0f4](https://github.com/angular/angular.dart/commit/8fc2c0f49aabc53ee6240ad8063ecf6c9c8b8a1f))
+- **ngModel:**
+  - ensure checkboxes and radio buttons are flagged as dirty when changed
+  ([5766a6a1](https://github.com/angular/angular.dart/commit/5766a6a173dc1d65b9293fd5bd0bcbc21b0791ec),
+   [#569](https://github.com/angular/angular.dart/issues/569), [#585](https://github.com/angular/angular.dart/issues/585))
+  - process input type=number according to convention, using valueAsNumber
+  ([cf0160b8](https://github.com/angular/angular.dart/commit/cf0160b8c316a39ac9d0fcce843c6f764429a1d4),
+   [#574](https://github.com/angular/angular.dart/issues/574), [#577](https://github.com/angular/angular.dart/issues/577))
+  - ensure validation occurs when the model value changes upon digest
+  ([f34e0b31](https://github.com/angular/angular.dart/commit/f34e0b31a6f2f42457a6d1a1b5b5aaa7e2ef86fe))
+- **ngShow:** Add/remove ng-hide class instead of ng-show class
+  ([0b88d2e8](https://github.com/angular/angular.dart/commit/0b88d2e8102db8b89f38b00c277b9023b260285e),
+   [#521](https://github.com/angular/angular.dart/issues/521))
+- **package.json:** add repo, licenses and switch to devDependencies
+  ([d099db59](https://github.com/angular/angular.dart/commit/d099db5944e2287fbf97a13b1aa73f8082652e09),
+   [#544](https://github.com/angular/angular.dart/issues/544), [#545](https://github.com/angular/angular.dart/issues/545))
+- **scope:** Use Iterable instead of List
+  ([951fa178](https://github.com/angular/angular.dart/commit/951fa1783afa65f410a2b82249850eed458ed294),
+   [#565](https://github.com/angular/angular.dart/issues/565))
+
+
+## Features
+
+- **forms:**
+  - generate ng-submit-valid / ng-submit-invalid CSS classes upon form submission
+  ([4bf9447c](https://github.com/angular/angular.dart/commit/4bf9447cc64650d6c73b66c844fb5396b4a2ae27))
+  - provide support for reseting forms, fieldsets and models
+  ([c75202d5](https://github.com/angular/angular.dart/commit/c75202d5d7ecabd01366f2198e0c0c3b5c087e59))
+- **ngModel:** Treat the values of number and range inputs as numbers
+  ([e703bd1b](https://github.com/angular/angular.dart/commit/e703bd1bc75f4d6420afad0bbb975b3e23672ff8),
+   [#527](https://github.com/angular/angular.dart/issues/527))
+
+
+## Breaking Changes
+- **ng-attr**
+  - Due to ([b5e45117](https://github.com/angular/angular.dart/commit/b5e45117c17fdd07d5db659815eb49c2dca17b84),
+    mappings in annotations must use snake-case-names instead of
+    camelCaseNames.   To migrate your code, follow the example below:
+
+	Before:
+
+        @NgComponent(
+            // …
+            map: const {
+              'domAttributeName': '=>fieldSetter'
+            }
+        )
+        class MyComponent { …
+
+	After:
+
+        @NgComponent(
+            // …
+            map: const {
+              'dom-attribute-name': '=>fieldSetter'
+            }
+        )
+        class MyComponent { …
+
+
+
+<a name="v0.9.7"></a>
+# v0.9.7 pachyderm-moisturization (2014-02-10)
+
+
+## Bug Fixes
+
+- **MetadataExtractor:** ignore typedefs
+  ([37f1c321](https://github.com/angular/angular.dart/commit/37f1c32118383b250ba2db6f21adf1737beb2b0a),
+   [#524](https://github.com/angular/angular.dart/issues/524))
+- **NgAttrMustacheDirective:** support parsing of multiline attribute values
+  ([a37e1576](https://github.com/angular/angular.dart/commit/a37e15761b5bbad2f32308ccd0f765bd977fb0ca))
+- **NgComponent:**
+  - Handle errors while loading CSS
+  ([b5aa130f](https://github.com/angular/angular.dart/commit/b5aa130f68c589e2e4a8c6fad1dbd69078608be1),
+   [#411](https://github.com/angular/angular.dart/issues/411))
+  - Drop cssUrls, leaving cssUrl only
+  ([92ed26fb](https://github.com/angular/angular.dart/commit/92ed26fb1a00a239c164428979a2f53226ae4b2c))
+- **eval access:** Do not crash on null cached value
+  ([bbcbd3e7](https://github.com/angular/angular.dart/commit/bbcbd3e70f289c1fcc232a38ac89038f83342d3c),
+   [#424](https://github.com/angular/angular.dart/issues/424))
+- **forms:** ensure fields, fieldsets & forms are marked as dirty when modified
+  ([ad60d55a](https://github.com/angular/angular.dart/commit/ad60d55a2f8cdd6c7f0a246efdc79a5af85a833e))
+- **generator:**
+  - write files in sorted order for predictable tests
+  ([79b7525a](https://github.com/angular/angular.dart/commit/79b7525a790ce73a50c2874e2f43110fbce61d16))
+  - Write URI in sorted order to prevent SHA churn
+  ([217839ef](https://github.com/angular/angular.dart/commit/217839ef3495506313a226681a6c10a52e71df0f))
+- **input:** treat <input> with no type as type="text"
+  ([8f0a8a7f](https://github.com/angular/angular.dart/commit/8f0a8a7fe87517a65b2c5ed2857c90ea87898a0b))
+- **ng-class:** array syntax should not insert nulls
+  ([b982e326](https://github.com/angular/angular.dart/commit/b982e326cd7d3fbd4e53fbe7b65ba9adc0f5cf64),
+   [#513](https://github.com/angular/angular.dart/issues/513))
+- **ngModel:** evaluate user input using onInput instead of onKeyDown
+  ([64442974](https://github.com/angular/angular.dart/commit/64442974157211b49bad6f28182a15aedd652efd))
+- **parser:**
+  - disallow filters in a chain and inside expressions
+  ([5bcea649](https://github.com/angular/angular.dart/commit/5bcea6492f6d0fd39ba316fa3b241c50bb94de8d))
+  - Correctly distinguish NoSuchMethodError
+  ([bde52abe](https://github.com/angular/angular.dart/commit/bde52abebd026d0226b90bd84380a24d7a8eab4e))
+- **scope:** use correct filters when digesting scope tree
+  ([95f6503f](https://github.com/angular/angular.dart/commit/95f6503f1390159eeedfe6d14ea60ec0d70b9381))
+- **select:** Corrected NPE if select multiple nested in ng-if
+  ([6228692b](https://github.com/angular/angular.dart/commit/6228692bbf0cc269999cb3cb77374bb815120a4b),
+   [#428](https://github.com/angular/angular.dart/issues/428))
+- **selector:** Allow two directives with the same selector
+  ([467b935e](https://github.com/angular/angular.dart/commit/467b935ee93a87913cfc8a025973ffd00e31bf2d),
+   [#471](https://github.com/angular/angular.dart/issues/471), [#481](https://github.com/angular/angular.dart/issues/481))
+
+
+## Features
+
+- **forms:** add a test for input type="search"
+  ([87a60d1f](https://github.com/angular/angular.dart/commit/87a60d1f43b8a4f4e7e31ca179e9de8cd2d94ce9))
+- **ngRepeat:** add track by support
+  ([07566457](https://github.com/angular/angular.dart/commit/07566457720c1fc9631808432a2cb39c2edeccb8),
+   [#277](https://github.com/angular/angular.dart/issues/277), [#507](https://github.com/angular/angular.dart/issues/507))
+- **routing:** new DSL and deferred module loading
+  ([3db9ddd3](https://github.com/angular/angular.dart/commit/3db9ddd3d2ab9aa97dfe2d0bdd5631190f6c6a56))
+- **sanitization:** make NodeValidator injectable
+  ([47ab48ad](https://github.com/angular/angular.dart/commit/47ab48adf5cbcba6e7a2c8607b1ce1be29014a83),
+   [#490](https://github.com/angular/angular.dart/issues/490), [#498](https://github.com/angular/angular.dart/issues/498))
+
+
 <a name="v0.9.6"></a>
 # v0.9.6 fluffy-freezray (2014-02-03)
 

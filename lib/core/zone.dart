@@ -29,8 +29,13 @@ class LongStackTrace {
  * A better zone API which implements onTurnDone.
  */
 class NgZone {
-  NgZone() {
-    _zone = async.Zone.current.fork(specification: new async.ZoneSpecification(
+  final async.Zone _outerZone;
+  async.Zone _zone;
+
+  NgZone()
+      : _outerZone = async.Zone.current
+  {
+    _zone = _outerZone.fork(specification: new async.ZoneSpecification(
         run: _onRun,
         runUnary: _onRunUnary,
         scheduleMicrotask: _onScheduleMicrotask,
@@ -38,7 +43,6 @@ class NgZone {
     ));
   }
 
-  async.Zone _zone;
 
   List _asyncQueue = [];
   bool _errorThrownFromOnRun = false;
@@ -82,7 +86,7 @@ class NgZone {
     _inFinishTurn = true;
     try {
       // Two loops here: the inner one runs all queued microtasks,
-      // the outer runs onTurnDone (e.g. scope.$digest) and then
+      // the outer runs onTurnDone (e.g. scope.digest) and then
       // any microtasks which may have been queued from onTurnDone.
       do {
         while (!_asyncQueue.isEmpty) {
@@ -140,13 +144,29 @@ class NgZone {
    *
    * Returns the return value of body.
    */
-  run(body()) => _zone.run(body);
+  dynamic run(body()) => _zone.run(body);
 
-  assertInTurn() {
+  /**
+   * Allows one to escape the auto-digest mechanism of Angular.
+   *
+   *     myFunction(NgZone zone, Element element) {
+   *       element.onClick.listen(() {
+   *         // auto-digest will run after element click.
+   *       });
+   *       zone.runOutsideAngular(() {
+   *         element.onMouseMove.listen(() {
+   *           // auto-digest will NOT run after mouse move
+   *         });
+   *       });
+   *     }
+   */
+  dynamic runOutsideAngular(body()) => _outerZone.run(body);
+
+  void assertInTurn() {
     assert(_runningInTurn > 0 || _inFinishTurn);
   }
 
-  assertInZone() {
+  void assertInZone() {
     assertInTurn();
   }
 }

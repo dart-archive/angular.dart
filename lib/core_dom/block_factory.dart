@@ -43,7 +43,7 @@ class BlockFactory {
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.block')) != false);
-      var block = new Block(elements);
+      var block = new Block(elements, injector.get(NgAnimate));
       _link(block, elements, directivePositions, injector);
       return block;
     } finally {
@@ -55,7 +55,7 @@ class BlockFactory {
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
 
-    for (int i = 0, ii = directivePositions.length; i < ii;) {
+    for (int i = 0; i < directivePositions.length;) {
       int index = directivePositions[i++];
 
       List<DirectiveRef> directiveRefs = directivePositions[i++];
@@ -99,6 +99,7 @@ class BlockFactory {
     assert((timerId = _perf.startTimer('ng.block.link.setUp', _html(node))) != false);
     Injector nodeInjector;
     Scope scope = parentInjector.get(Scope);
+    FilterMap filters = parentInjector.get(FilterMap);
     Map<Type, _ComponentFactory> fctrs;
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
     ElementProbe probe;
@@ -119,7 +120,7 @@ class BlockFactory {
         NgAnnotation annotation = ref.annotation;
         var visibility = _elementOnly;
         if (ref.annotation is NgController) {
-          scope = scope.$new();
+          scope = scope.createChild(new PrototypeMap(scope.context));
           nodeModule.value(Scope, scope);
         }
         if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
@@ -131,7 +132,7 @@ class BlockFactory {
           nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
             return new NgTextMustacheDirective(
                 node, ref.value, injector.get(Interpolate), injector.get(Scope),
-                injector.get(TextChangeListener));
+                injector.get(AstParser), injector.get(FilterMap));
           });
         } else if (ref.type == NgAttrMustacheDirective) {
           if (nodesAttrsDirectives == null) {
@@ -139,8 +140,9 @@ class BlockFactory {
             nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
               var scope = injector.get(Scope);
               var interpolate = injector.get(Interpolate);
-              for(var ref in nodesAttrsDirectives) {
-                new NgAttrMustacheDirective(nodeAttrs, ref.value, interpolate, scope);
+              for (var ref in nodesAttrsDirectives) {
+                new NgAttrMustacheDirective(nodeAttrs, ref.value, interpolate,
+                    scope, injector.get(AstParser), injector.get(FilterMap));
               }
             });
           }
@@ -156,7 +158,9 @@ class BlockFactory {
             TemplateCache templateCache = injector.get(TemplateCache);
             DirectiveMap directives = injector.get(DirectiveMap);
             // This is a bit of a hack since we are returning different type then we are.
-            var componentFactory = new _ComponentFactory(node, ref.type, ref.annotation as NgComponent, injector.get(dom.NodeTreeSanitizer));
+            var componentFactory = new _ComponentFactory(node, ref.type,
+                ref.annotation as NgComponent,
+                injector.get(dom.NodeTreeSanitizer), _expando);
             if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
             fctrs[ref.type] = componentFactory;
             return componentFactory.call(injector, compiler, scope, blockCache, http, templateCache, directives);
@@ -175,11 +179,14 @@ class BlockFactory {
           boundBlockFactory = (Injector injector) => ref.blockFactory.bind(injector);
         }
       });
-      nodeModule.factory(BlockHole, blockHoleFactory);
-      nodeModule.factory(BlockFactory, blockFactory);
-      nodeModule.factory(BoundBlockFactory, boundBlockFactory);
+      nodeModule
+          ..factory(BlockHole, blockHoleFactory)
+          ..factory(BlockFactory, blockFactory)
+          ..factory(BoundBlockFactory, boundBlockFactory)
+          ..factory(ElementProbe, (_) => probe);
       nodeInjector = parentInjector.createChild([nodeModule]);
-      probe = _expando[node] = new ElementProbe(node, nodeInjector, scope);
+      probe = _expando[node] = new ElementProbe(
+          parentInjector.get(ElementProbe), node, nodeInjector, scope);
     } finally {
       assert(_perf.stopTimer(timerId) != false);
     }
@@ -193,23 +200,48 @@ class BlockFactory {
         assert((linkMapTimer = _perf.startTimer('ng.block.link.map', ref.type)) != false);
         var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
         if (ref.annotation is NgController) {
-          scope[(ref.annotation as NgController).publishAs] = controller;
+          scope.context[(ref.annotation as NgController).publishAs] = controller;
         } else if (ref.annotation is NgComponent) {
-          shadowScope[(ref.annotation as NgComponent).publishAs] = controller;
+          shadowScope.context[(ref.annotation as NgComponent).publishAs] = controller;
         }
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-        for(var map in ref.mappings) {
-          map(nodeAttrs, scope, controller);
+        var attachDelayStatus = controller is NgAttachAware ? [false] : null;
+        checkAttachReady() {
+          if (attachDelayStatus.reduce((a, b) => a && b)) {
+            attachDelayStatus = null;
+            if (scope.isAttached) {
+              controller.attach();
+            }
+          }
         }
-        if (controller is NgAttachAware) {
-          var removeWatcher;
-          removeWatcher = scope.$watch(() {
-            removeWatcher();
-            controller.attach();
-          });
+        for (var map in ref.mappings) {
+          var notify;
+          if (attachDelayStatus != null) {
+            var index = attachDelayStatus.length;
+            attachDelayStatus.add(false);
+            notify = () {
+              if (attachDelayStatus != null) {
+                attachDelayStatus[index] = true;
+                checkAttachReady();
+              }
+            };
+          } else {
+            notify = () => null;
+          }
+          map(nodeAttrs, scope, controller, filters, notify);
+        }
+        if (attachDelayStatus != null) {
+          Watch watch;
+          watch = scope.watch(
+            '1', // Cheat a bit.
+            (_, __) {
+              watch.remove();
+              attachDelayStatus[0] = true;
+              checkAttachReady();
+            });
         }
         if (controller is NgDetachAware) {
-          scope.$on(r'$destroy', controller.detach);
+          scope.on(ScopeEvent.DESTROY).listen((_) => controller.detach());
         }
         assert(_perf.stopTimer(linkMapTimer) != false);
       } finally {
@@ -287,6 +319,7 @@ class _ComponentFactory {
   final Type type;
   final NgComponent component;
   final dom.NodeTreeSanitizer treeSanitizer;
+  final Expando _expando;
 
   dom.ShadowRoot shadowDom;
   Scope shadowScope;
@@ -294,7 +327,8 @@ class _ComponentFactory {
   Compiler compiler;
   var controller;
 
-  _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer);
+  _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer,
+                    this._expando);
 
   dynamic call(Injector injector, Compiler compiler, Scope scope, BlockCache $blockCache, Http $http, TemplateCache $templateCache, DirectiveMap directives) {
     this.compiler = compiler;
@@ -302,7 +336,7 @@ class _ComponentFactory {
     shadowDom.applyAuthorStyles = component.applyAuthorStyles;
     shadowDom.resetStyleInheritance = component.resetStyleInheritance;
 
-    shadowScope = scope.$new(isolate: true);
+    shadowScope = scope.createChild({}); // Isolate
     // TODO(pavelgj): fetching CSS with Http is mainly an attempt to
     // work around an unfiled Chrome bug when reloading same CSS breaks
     // styles all over the page. We shouldn't be doing browsers work,
@@ -329,13 +363,19 @@ class _ComponentFactory {
         shadowDom.setInnerHtml('<style>${filteredCssList.join('')}</style>', treeSanitizer: treeSanitizer);
       }
       if (blockFuture != null) {
-        return blockFuture.then((BlockFactory blockFactory) => attachBlockToShadowDom(blockFactory));
+        return blockFuture.then((BlockFactory blockFactory) {
+          if (!shadowScope.isAttached) return shadowDom;
+          return attachBlockToShadowDom(blockFactory);
+        });
       }
       return shadowDom;
     }));
     controller = createShadowInjector(injector, templateLoader).get(type);
     if (controller is NgShadowRootAware) {
-      templateLoader.template.then((controller as NgShadowRootAware).onShadowRoot);
+      templateLoader.template.then((_) {
+        if (!shadowScope.isAttached) return;
+        (controller as NgShadowRootAware).onShadowRoot(shadowDom);
+      });
     }
     return controller;
   }
@@ -347,12 +387,16 @@ class _ComponentFactory {
   }
 
   createShadowInjector(injector, TemplateLoader templateLoader) {
+    var probe;
     var shadowModule = new Module()
         ..type(type)
         ..value(Scope, shadowScope)
         ..value(TemplateLoader, templateLoader)
-        ..value(dom.ShadowRoot, shadowDom);
+        ..value(dom.ShadowRoot, shadowDom)
+        ..factory(ElementProbe, (_) => probe);
     shadowInjector = injector.createChild([shadowModule], name: _SHADOW);
+    probe = _expando[shadowDom] = new ElementProbe(
+        injector.get(ElementProbe), shadowDom, shadowInjector, shadowScope);
     return shadowInjector;
   }
 }
@@ -396,10 +440,11 @@ String _html(obj) {
  * SEE: [ngInjector], [ngScope], [ngDirectives]
  */
 class ElementProbe {
+  final ElementProbe parent;
   final dom.Node element;
   final Injector injector;
   final Scope scope;
   final directives = [];
 
-  ElementProbe(this.element, this.injector, this.scope);
+  ElementProbe(this.parent, this.element, this.injector, this.scope);
 }

@@ -35,7 +35,7 @@ class NgIncludeDirective {
     if (_previousBlock == null) return;
 
     _previousBlock.remove();
-    _previousScope.$destroy();
+    _previousScope.destroy();
     element.innerHtml = '';
 
     _previousBlock = null;
@@ -44,7 +44,7 @@ class NgIncludeDirective {
 
   _updateContent(createBlock) {
     // create a new scope
-    _previousScope = scope.$new();
+    _previousScope = scope.createChild(new PrototypeMap(scope.context));
     _previousBlock = createBlock(injector.createChild([new Module()
         ..value(Scope, _previousScope)]));
 

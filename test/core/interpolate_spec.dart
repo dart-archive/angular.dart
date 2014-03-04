@@ -28,8 +28,8 @@ main() {
     }));
 
 
-    it('should return interpolation function', inject((Interpolate $interpolate, Scope $rootScope) {
-      $rootScope.name = 'Misko';
+    it('should return interpolation function', inject((Interpolate $interpolate, Scope rootScope) {
+      rootScope.context['name'] = 'Misko';
       var fn = $interpolate('Hello {{name}}!');
       expect(fn(['Misko'])).toEqual('Hello Misko!');
     }));
@@ -40,7 +40,7 @@ main() {
     }));
 
 
-    it('should use toString to conver objects to string', inject((Interpolate $interpolate, Scope $rootScope) {
+    it('should use toString to conver objects to string', inject((Interpolate $interpolate, Scope rootScope) {
       expect($interpolate("Hello, {{obj}}!")([new ToStringableObject()])).toEqual('Hello, World!');
     }));
 

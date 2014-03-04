@@ -61,19 +61,31 @@ class InputSelectDirective implements NgAttachAware {
     });
 
     _selectElement.onChange.listen((event) => _mode.onViewChange(event));
-    _model.render = (value) => _mode.onModelChange(value);
+    _model.render = (value) {
+      // TODO(misko): this hack need to delay the rendering until after domRead
+      // because the modelChange reads from the DOM. We should be able to render
+      // without DOM changes.
+      _scope.rootScope.domRead(() {
+        _scope.rootScope.domWrite(() => _mode.onModelChange(value));
+      });
+    };
   }
 
   /**
    * This method invalidates the current state of the selector and forces a
-   * re-rendering of the options using the [Scope.$evalAsync].
+   * re-rendering of the options using the [Scope.evalAsync].
    */
   dirty() {
     if (!_dirty) {
       _dirty = true;
-      _scope.$evalAsync(() {
-        _dirty = false;
-        _mode.onModelChange(_model.viewValue);
+      // TODO(misko): this hack need to delay the rendering until after domRead
+      // becouse the modelChange reads from the DOM. We should be able to render
+      // without DOM changes.
+      _scope.rootScope.domRead(() {
+        _scope.rootScope.domWrite(() {
+          _dirty = false;
+          _mode.onModelChange(_model.viewValue);
+        });
       });
     }
   }
@@ -85,29 +97,21 @@ class InputSelectDirective implements NgAttachAware {
  *
  */
 @NgDirective(
-    selector: 'option',
-    publishTypes: const [TextChangeListener],
-    map: const {'ng-value': '&ngValue'})
-class OptionValueDirective implements TextChangeListener, NgAttachAware,
+    selector: 'option')
+class OptionValueDirective implements NgAttachAware,
     NgDetachAware {
   final InputSelectDirective _inputSelectDirective;
-  final NodeAttrs _attrs;
+  final dom.Element _element;
 
-  BoundGetter _ngValue;
+  NgValue _ngValue;
 
-  OptionValueDirective(this._attrs, this._inputSelectDirective) {
+  OptionValueDirective(this._element, this._inputSelectDirective, this._ngValue) {
     if (_inputSelectDirective != null) {
-      _inputSelectDirective.expando[_attrs.element] = this;
+      _inputSelectDirective.expando[_element] = this;
     }
   }
 
   attach() {
-    if (_inputSelectDirective != null) {
-      this._attrs.observe('value', (_) => _inputSelectDirective.dirty());
-    }
-  }
-
-  call(String text) {
     if (_inputSelectDirective != null) {
       _inputSelectDirective.dirty();
     }
@@ -116,14 +120,11 @@ class OptionValueDirective implements TextChangeListener, NgAttachAware,
   detach() {
     if (_inputSelectDirective != null) {
       _inputSelectDirective.dirty();
-      _inputSelectDirective.expando[_attrs.element] = null;
+      _inputSelectDirective.expando[_element] = null;
     }
   }
 
-  set ngValue(BoundGetter value) => _ngValue = value;
-  get ngValue => _attrs['ng-value'] is String ?
-        _ngValue() :
-        (_attrs.element as dom.OptionElement).value;
+  get ngValue => _ngValue.readValue(_element);
 }
 
 class _SelectMode {
@@ -139,8 +140,8 @@ class _SelectMode {
 
   get _options => select.querySelectorAll('option');
   _forEachOption(fn, [quiteOnReturn = false]) {
-    for(var os = _options, i = 0, ii = os.length; i < ii; i++) {
-      var retValue = fn(os[i], i);
+    for (var i = 0; i < _options.length; i++) {
+      var retValue = fn(_options[i], i);
       if (quiteOnReturn && retValue != null) return retValue;
     }
     return null;
@@ -204,8 +205,8 @@ class _SingleSelectMode extends _SelectMode {
 class _MultipleSelectionMode extends _SelectMode {
   _MultipleSelectionMode(Expando<OptionValueDirective> expando,
                          dom.SelectElement select,
-                         NgModel model
-                         ): super(expando, select, model);
+                         NgModel model)
+      : super(expando, select, model);
 
   onViewChange(event) {
     var selected = [];

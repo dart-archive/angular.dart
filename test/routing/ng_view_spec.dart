@@ -13,7 +13,7 @@ main() {
     beforeEach(module((Module m) {
       m
         ..install(new AngularMockModule())
-        ..type(RouteInitializer, implementedBy: FlatRouteInitializer);
+        ..type(RouteInitializerFn, implementedBy: FlatRouteInitializer);
     }));
 
     beforeEach(inject((TestBed tb, Router _router, TemplateCache templates) {
@@ -54,7 +54,7 @@ main() {
       Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
-      _.rootScope.$digest();
+      _.rootScope.apply();
       microLeap();
       expect(root.text).toEqual('Foo');
     }));
@@ -83,7 +83,7 @@ main() {
     beforeEach(module((Module m) {
       m
         ..install(new AngularMockModule())
-        ..type(RouteInitializer, implementedBy: NestedRouteInitializer);
+        ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer);
     }));
 
     beforeEach(inject((TestBed tb, Router _router, TemplateCache templates) {
@@ -128,8 +128,8 @@ main() {
   });
 }
 
-class FlatRouteInitializer implements RouteInitializer {
-  void init(Router router, ViewFactory view) {
+class FlatRouteInitializer implements Function {
+  void call(Router router, ViewFactory view) {
     router.root
       ..addRoute(
           name: 'foo',
@@ -145,8 +145,8 @@ class FlatRouteInitializer implements RouteInitializer {
   }
 }
 
-class NestedRouteInitializer implements RouteInitializer {
-  void init(Router router, ViewFactory view) {
+class NestedRouteInitializer implements Function {
+  void call(Router router, ViewFactory view) {
     router.root
       ..addRoute(
           name: 'library',
@@ -170,9 +170,9 @@ class NestedRouteInitializer implements RouteInitializer {
                       name: 'read',
                       path: '/read',
                       enter: view('book_read.html'))))
-      ..addRoute(
-          name: 'admin',
-          path: '/admin',
-          enter: view('admin.html'));
+                  ..addRoute(
+                      name: 'admin',
+                      path: '/admin',
+                      enter: view('admin.html'));
   }
 }

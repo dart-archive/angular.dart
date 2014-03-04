@@ -7,31 +7,30 @@ import 'dart:async';
 main() {
   describe('routing', () {
     TestBed _;
-    TestRouteInitializer initer;
     Router router;
 
     beforeEach(module((Module m) {
+      _initRoutesCalls = 0;
+      _router = null;
       router = new Router(useFragment: false, windowImpl: new MockWindow());
       m
         ..install(new AngularMockModule())
-        ..type(RouteInitializer, implementedBy: TestRouteInitializer)
+        ..factory(RouteInitializerFn, (_) => initRoutes)
         ..value(Router, router);
     }));
 
-    beforeEach(inject((TestBed tb, RouteInitializer _initer) {
+    beforeEach(inject((TestBed tb) {
       _ = tb;
-      initer = _initer;
     }));
 
-
     it('should call init of the RouteInitializer once', async(() {
-      expect(initer.calledInit).toEqual(0);
+      expect(_initRoutesCalls).toEqual(0);
 
       // Force the routing system to initialize.
       _.compile('<ng-view></ng-view>');
 
-      expect(initer.calledInit).toEqual(1);
-      expect(initer.router).toBe(router);
+      expect(_initRoutesCalls).toEqual(1);
+      expect(_router).toBe(router);
     }));
 
   });
@@ -319,7 +318,7 @@ main() {
 
       router.route('/foo');
       microLeap();
-      _.rootScope.$digest();
+      _.rootScope.apply();
 
       expect(root.text).toEqual('Hello, World!');
     }));
@@ -345,7 +344,7 @@ main() {
 
       router.route('/foo');
       microLeap();
-      _.rootScope.$digest();
+      _.rootScope.apply();
 
       expect(root.text).toEqual('Hello, World!');
     }));
@@ -353,16 +352,13 @@ main() {
   });
 }
 
-class TestRouteInitializer implements RouteInitializer {
-  int calledInit = 0;
-  Router router;
+var _router;
+var _initRoutesCalls = 0;
 
-  void init(Router router, ViewFactory view) {
-    calledInit++;
-    this.router = router;
-  }
+void initRoutes(Router router, ViewFactory view) {
+  _initRoutesCalls++;
+  _router = router;
 }
-
 
 @NgDirective(selector: '[make-it-new]')
 class NewDirective {

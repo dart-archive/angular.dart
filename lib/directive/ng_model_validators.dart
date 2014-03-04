@@ -1,67 +1,30 @@
 part of angular.directive;
 
-/**
- * _NgModelValidator refers to the required super-class which is used when creating
- * validation services that are used with [ngModel]. It is expected that any child-classes
- * that inherit from this perform the necessary logic to return a simple true/false response
- * when validating the contents of the model data.
- */
-abstract class _NgModelValidator {
-  final dom.Element inputElement;
-  final NgModel ngModel;
-  final Scope scope;
-  bool _listening = false;
-
-  _NgModelValidator(this.inputElement, this.ngModel, this.scope);
-
-  /**
-   * Registers the validator with to attached model.
-   */
-  void listen() {
-    if(!_listening) {
-      _listening = true;
-      this.ngModel.addValidator(this);
-    }
-  }
-
-  get value => ngModel.viewValue;
-
-  /**
-   * De-registers the validator with to attached model.
-   */
-  void unlisten() {
-    if(_listening) {
-      _listening = false;
-      this.ngModel.removeValidator(this);
-    }
-  }
-
-  /**
-   * Returns true/false depending on the status of the validator's validation mechanism
-   */
-  bool isValid();
+abstract class NgValidatable {
+  String get name;
+  bool isValid(value); 
 }
 
 /**
  * Validates the model depending if required or ng-required is present on the element.
  */
-@NgDirective(selector: '[ng-model][required]')
+@NgDirective(
+    selector: '[ng-model][required]')
 @NgDirective(
     selector: '[ng-model][ng-required]',
     map: const {'ng-required': '=>required'})
-class NgModelRequiredValidator extends _NgModelValidator {
-  bool _required;
-  get name => 'required';
+class NgModelRequiredValidator implements NgValidatable {
+  bool _required = true;
 
-  NgModelRequiredValidator(dom.Element inputElement, NgModel ngModel,
-                           Scope scope, NodeAttrs attrs):
-    super(inputElement, ngModel, scope) {
-      if(attrs['required'] != null) required = true;
-    }
+  String get name => 'required';
 
-  bool isValid() {
+  NgModelRequiredValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
+
+  bool isValid(value) {
     // Any element which isn't required is always valid.
-    if (!required) return true;
+    if (!_required) return true;
     // Null is not a value, therefore not valid.
     if (value == null) return false;
     // Empty lists and/or strings are not valid.
@@ -70,15 +33,8 @@ class NgModelRequiredValidator extends _NgModelValidator {
     return !((value is List || value is String) && value.isEmpty);
   }
 
-  @NgAttr('required')
-  get required => _required;
   set required(value) {
-    if (value is String) return;
-    if ((_required = value) == true) {
-      listen();
-    } else {
-      unlisten();
-    }
+    _required = value == null ? false : value;
   }
 }
 
@@ -86,19 +42,18 @@ class NgModelRequiredValidator extends _NgModelValidator {
  * Validates the model to see if its contents match a valid URL pattern.
  */
 @NgDirective(selector: 'input[type=url][ng-model]')
-class NgModelUrlValidator extends _NgModelValidator {
+class NgModelUrlValidator implements NgValidatable {
   static final URL_REGEXP = new RegExp(
       r'^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?' +
       r'(\/|\/([\w#!:.?+=&%@!\-\/]))?$');
 
-  get name => 'url';
+  String get name => 'url';
 
-  NgModelUrlValidator(dom.Element inputElement, NgModel ngModel, Scope scope):
-    super(inputElement, ngModel, scope) {
-      listen();
-    }
+  NgModelUrlValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
 
-  bool isValid() =>
+  bool isValid(value) =>
       value == null || value.isEmpty || URL_REGEXP.hasMatch(value);
 }
 
@@ -106,18 +61,17 @@ class NgModelUrlValidator extends _NgModelValidator {
  * Validates the model to see if its contents match a valid email pattern.
  */
 @NgDirective(selector: 'input[type=email][ng-model]')
-class NgModelEmailValidator extends _NgModelValidator {
+class NgModelEmailValidator implements NgValidatable {
   static final EMAIL_REGEXP = new RegExp(
       r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$');
 
-  get name => 'email';
+  String get name => 'email';
 
-  NgModelEmailValidator(dom.Element inputElement, NgModel ngModel, Scope scope):
-    super(inputElement, ngModel, scope) {
-      listen();
-    }
+  NgModelEmailValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
 
-  bool isValid() =>
+  bool isValid(value) =>
       value == null || value.isEmpty || EMAIL_REGEXP.hasMatch(value);
 }
 
@@ -125,16 +79,15 @@ class NgModelEmailValidator extends _NgModelValidator {
  * Validates the model to see if its contents match a valid number.
  */
 @NgDirective(selector: 'input[type=number][ng-model]')
-class NgModelNumberValidator extends _NgModelValidator {
-  get name => 'number';
+class NgModelNumberValidator implements NgValidatable {
+  String get name => 'number';
 
-  NgModelNumberValidator(dom.Element inputElement, NgModel ngModel, Scope scope):
-    super(inputElement, ngModel, scope) {
-      listen();
-    }
+  NgModelNumberValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
 
-  bool isValid() {
-    if(value != null) {
+  bool isValid(value) {
+    if (value != null) {
       try {
         num val = double.parse(value.toString());
       } catch(exception, stackTrace) {
@@ -153,36 +106,24 @@ class NgModelNumberValidator extends _NgModelValidator {
 @NgDirective(
     selector: '[ng-model][ng-pattern]',
     map: const {'ng-pattern': '=>pattern'})
-class NgModelPatternValidator extends _NgModelValidator {
+class NgModelPatternValidator implements NgValidatable {
   RegExp _pattern;
 
-  get name => 'pattern';
+  String get name => 'pattern';
 
-  NgModelPatternValidator(dom.Element inputElement, NgModel ngModel, Scope scope):
-    super(inputElement, ngModel, scope) {
-      listen();
-    }
+  NgModelPatternValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
 
-  bool isValid() {
-    if(_pattern != null && value != null && value.length > 0) {
-      return _pattern.hasMatch(ngModel.viewValue);
-    }
-
+  bool isValid(value) {
     //remember, only required validates for the input being empty
-    return true;
+    return _pattern == null || value == null || value.length == 0 ||
+           _pattern.hasMatch(value);
   }
 
   @NgAttr('pattern')
-  get pattern => _pattern;
-  set pattern(val) {
-    if(val != null && val.length > 0) {
-      _pattern = new RegExp(val);
-      listen();
-    } else {
-      _pattern = null;
-      unlisten();
-    }
-  }
+  set pattern(val) =>
+      _pattern = val != null && val.length > 0 ? new RegExp(val) : null;
 }
 
 /**
@@ -194,29 +135,24 @@ class NgModelPatternValidator extends _NgModelValidator {
 @NgDirective(
     selector: '[ng-model][ng-minlength]',
     map: const {'ng-minlength': '=>minlength'})
-class NgModelMinLengthValidator extends _NgModelValidator {
+class NgModelMinLengthValidator implements NgValidatable {
   int _minlength;
 
-  get name => 'minlength';
+  String get name => 'minlength';
 
-  NgModelMinLengthValidator(dom.Element inputElement, NgModel ngModel,
-                            Scope scope) : super(inputElement, ngModel, scope) {
-      listen();
-    }
+  NgModelMinLengthValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
 
-  bool isValid() {
+  bool isValid(value) {
     //remember, only required validates for the input being empty
-    if(_minlength == 0 || value == null || value.length == 0) {
-      return true;
-    }
-    return value.length >= _minlength;
+    return _minlength == 0 || value == null || value.length == 0 ||
+           value.length >= _minlength;
   }
 
   @NgAttr('minlength')
-  get minlength => _minlength;
-  set minlength(value) {
-    _minlength = value == null ? 0 : int.parse(value.toString());
-  }
+  set minlength(value) =>
+      _minlength = value == null ? 0 : int.parse(value.toString());
 }
 
 /**
@@ -228,22 +164,19 @@ class NgModelMinLengthValidator extends _NgModelValidator {
 @NgDirective(
     selector: '[ng-model][ng-maxlength]',
     map: const {'ng-maxlength': '=>maxlength'})
-class NgModelMaxLengthValidator extends _NgModelValidator {
+class NgModelMaxLengthValidator implements NgValidatable {
   int _maxlength = 0;
 
-  get name => 'maxlength';
+  String get name => 'maxlength';
 
-  NgModelMaxLengthValidator(dom.Element inputElement, NgModel ngModel,
-                            Scope scope): super(inputElement, ngModel, scope) {
-      listen();
-    }
+  NgModelMaxLengthValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
 
-  bool isValid() =>
+  bool isValid(value) =>
       _maxlength == 0 || (value == null ? 0 : value.length) <= _maxlength;
 
   @NgAttr('maxlength')
-  get maxlength => _maxlength;
-  set maxlength(value) {
-    _maxlength = value == null ? 0 : int.parse(value.toString());
-  }
+  set maxlength(value) =>
+      _maxlength = value == null ? 0 : int.parse(value.toString());
 }

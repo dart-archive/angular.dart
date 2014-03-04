@@ -12,14 +12,15 @@ class NgHideDirective {
   static String NG_HIDE_CLASS = 'ng-hide';
 
   final dom.Element element;
+  final NgAnimate animate;
 
-  NgHideDirective(this.element);
+  NgHideDirective(this.element, this.animate);
 
   set hide(value) {
     if (toBool(value)) {
-      element.classes.add(NG_HIDE_CLASS);
+      animate.addClass(element, NG_HIDE_CLASS);
     } else {
-      element.classes.remove(NG_HIDE_CLASS);
+      animate.removeClass(element, NG_HIDE_CLASS);
     }
   }
 }
@@ -33,17 +34,16 @@ class NgHideDirective {
     selector: '[ng-show]',
     map: const {'ng-show': '=>show'})
 class NgShowDirective {
-  static String NG_SHOW_CLASS = 'ng-show';
-
   final dom.Element element;
+  final NgAnimate animate;
 
-  NgShowDirective(this.element);
+  NgShowDirective(this.element, this.animate);
 
   set show(value) {
     if (toBool(value)) {
-      element.classes.add(NG_SHOW_CLASS);
+      animate.removeClass(element, NgHideDirective.NG_HIDE_CLASS);
     } else {
-      element.classes.remove(NG_SHOW_CLASS);
+      animate.addClass(element, NgHideDirective.NG_HIDE_CLASS);
     }
   }
 }

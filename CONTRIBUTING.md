@@ -90,11 +90,7 @@ Before you submit your pull request consider the following guidelines:
      git commit -a
      ```
 
-* Build your changes locally to ensure all the tests pass
-
-    ```shell
-    ./run-test.sh
-    ```
+* Build your changes locally to ensure all the tests pass: see the [developer documentation][dev-doc].
 
 * Push your branch to Github:
 
@@ -226,3 +222,4 @@ changes to be accepted, the CLA must be signed. It's a quick process, we promise
 [commit-message-format]: https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit#
 [communityMilestone]: https://github.com/angular/angular.dart/issues?milestone=13&state=open
 [coc]: https://github.com/angular/code-of-conduct/blob/master/CODE_OF_CONDUCT.md
+[dev-doc]: https://github.com/angular/angular.dart/blob/master/DEVELOPER.md

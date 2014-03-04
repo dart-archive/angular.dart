@@ -7,13 +7,13 @@ class Item {
   String text;
   bool done;
 
-  Item([String this.text = '', bool this.done = false]);
+  Item([this.text = '', this.done = false]);
 
   bool get isEmpty => text.isEmpty;
 
-  clone() => new Item(text, done);
+  Item clone() => new Item(text, done);
 
-  clear() {
+  void clear() {
     text = '';
     done = false;
   }
@@ -50,11 +50,10 @@ class HttpServerController implements ServerController {
 
 
 @NgController(
-  selector: '[todo-controller]',
-  publishAs: 'todo'
-)
+    selector: '[todo-controller]',
+    publishAs: 'todo')
 class TodoController {
-  List<Item> items;
+  var items = <Item>[];
   Item newItem;
 
   TodoController(ServerController serverController) {
@@ -69,33 +68,24 @@ class TodoController {
   }
 
   // workaround for https://github.com/angular/angular.dart/issues/37
-  dynamic operator [](String key) {
-    if (key == 'newItem') {
-      return newItem;
-    }
-    return null;
-  }
+  dynamic operator [](String key) => key == 'newItem' ? newItem : null;
 
-  add() {
+  void add() {
     if (newItem.isEmpty) return;
 
     items.add(newItem.clone());
     newItem.clear();
   }
 
-  markAllDone() {
+  void markAllDone() {
     items.forEach((item) => item.done = true);
   }
 
-  archiveDone() {
+  void archiveDone() {
     items.removeWhere((item) => item.done);
   }
 
-  String classFor(Item item) {
-    return item.done ? 'done' : '';
-  }
+  String classFor(Item item) => item.done ? 'done' : '';
 
-  int remaining() {
-    return items.where((item) => !item.done).length;
-  }
+  int remaining() => items.fold(0, (count, item) => count += item.done ? 0 : 1);
 }

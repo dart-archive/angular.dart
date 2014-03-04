@@ -175,7 +175,6 @@ class TemplateCollectingVisitor {
         var paramName = namedArg.name.label.name;
         if (paramName == 'preCacheUrls') {
           assertList(namedArg.expression).elements
-            ..sort()
             ..forEach((expression) =>
                 cacheUris.add(assertString(expression).stringValue));
         }

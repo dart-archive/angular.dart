@@ -1,5 +1,5 @@
 import 'package:angular/core/parser/parser.dart';
-import 'package:angular/tools/reserved_dart_keywords.dart';
+import 'package:angular/utils.dart' show isReservedWord;
 import 'dart:math';
 
 class DartGetterSetterGen extends ParserBackend {
@@ -9,12 +9,12 @@ class DartGetterSetterGen extends ParserBackend {
   bool isAssignable(expression) => true;
 
   registerAccess(String name) {
-    if (isReserved(name)) return;
+    if (isReservedWord(name)) return;
     properties.add(name);
   }
 
   registerCall(String name, List arguments) {
-    if (isReserved(name)) return;
+    if (isReservedWord(name)) return;
     Set<int> arities = calls.putIfAbsent(name, () => new Set<int>());
     arities.add(arguments.length);
   }

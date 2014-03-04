@@ -63,10 +63,10 @@ part of angular.directive;
  *
  *    <ng-pluralize count="personCount" offset=2
  *                  when="{'0': 'Nobody is viewing.',
- *                         '1': '{{person1}} is viewing.',
- *                         '2': '{{person1}} and {{person2}} are viewing.',
- *                         'one': '{{person1}}, {{person2}} and one other person are viewing.',
- *                         'other': '{{person1}}, {{person2}} and {} other people are viewing.'}">
+ *                         '1': '${person1} is viewing.',
+ *                         '2': '${person1} and ${person2} are viewing.',
+ *                         'one': '${person1}, ${person2} and one other person are viewing.',
+ *                         'other': '${person1}, ${person2} and {} other people are viewing.'}">
  *    </ng-pluralize>
  *
  * Notice that we are still using two plural categories(one, other), but we added
@@ -92,16 +92,26 @@ class NgPluralizeDirective {
   final dom.Element element;
   final Scope scope;
   final Interpolate interpolate;
+  final AstParser parser;
   int offset;
-  Map<String, String> discreteRules = new Map();
-  Map<Symbol, String> categoryRules = new Map();
+  var discreteRules = <String, String>{};
+  var categoryRules = <Symbol, String>{};
+
   static final RegExp IS_WHEN = new RegExp(r'^when-(minus-)?.');
+  static const Map<String, Symbol> SYMBOLS = const {
+    'zero'  : #zero,
+    'one'   : #one,
+    'two'   : #two,
+    'few'   : #few,
+    'many'  : #many,
+    'other' : #other,
+  };
 
   NgPluralizeDirective(this.scope, this.element, this.interpolate,
-                       NodeAttrs attributes) {
-    Map<String, String> whens = attributes['when'] == null ?
-        {} :
-        scope.$eval(attributes['when']);
+                       NodeAttrs attributes, this.parser) {
+    Map<String, String> whens = attributes['when'] == null
+        ? {}
+        : scope.eval(attributes['when']);
     offset = attributes['offset'] == null ? 0 : int.parse(attributes['offset']);
 
     element.attributes.keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
@@ -115,10 +125,11 @@ class NgPluralizeDirective {
     }
 
     whens.forEach((k, v) {
-      if (['zero', 'one', 'two', 'few', 'many', 'other'].contains(k)) {
-        this.categoryRules[new Symbol(k.toString())] = v;
+      Symbol symbol = SYMBOLS[k];
+      if (symbol != null) {
+        this.categoryRules[symbol] = v;
       } else {
-        this.discreteRules[k.toString()] = v;
+        this.discreteRules[k] = v;
       }
     });
   }
@@ -153,9 +164,11 @@ class NgPluralizeDirective {
   }
 
   _setAndWatch(expression) {
-    var interpolation = interpolate(expression);
+    var interpolation = interpolate(expression, false, '\${', '}');
     interpolation.setter = (text) => element.text = text;
     interpolation.setter(expression);
-    scope.$watchSet(interpolation.watchExpressions, interpolation.call);
+    var items = interpolation.expressions.map((exp) => parser(exp)).toList();
+    AST ast = new PureFunctionAST(expression, new ArrayFn(), items);
+    scope.watch(ast, interpolation.call);
   }
 }

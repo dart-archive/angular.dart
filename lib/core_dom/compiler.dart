@@ -26,11 +26,13 @@ class Compiler {
 
       cursorAlreadyAdvanced = false;
 
-      for (var j = 0, jj = declaredDirectiveRefs.length; j < jj; j++) {
+      for (var j = 0; j < declaredDirectiveRefs.length; j++) {
         DirectiveRef directiveRef = declaredDirectiveRefs[j];
         NgAnnotation annotation = directiveRef.annotation;
         var blockFactory = null;
 
+        // The first non-"compile_children" directive wins. Since directives are
+        // sorted, TRANSCLUDE_CHILDREN wins if any directive has TRANSCLUDE_CHILDREN
         if (annotation.children != children &&
             children == NgAnnotation.COMPILE_CHILDREN) {
           children = annotation.children;
@@ -42,11 +44,11 @@ class Compiler {
               domCursor, templateCursor,
               directiveRef, remainingDirectives, directives);
 
-          j = jj; // stop processing further directives since they belong to transclusion;
+          // stop processing further directives since they belong to
+          // transclusion
+          j = declaredDirectiveRefs.length;
         }
-        if (usableDirectiveRefs == null) {
-          usableDirectiveRefs = [];
-        }
+        if (usableDirectiveRefs == null) usableDirectiveRefs = [];
         directiveRef.blockFactory = blockFactory;
         createMappings(directiveRef);
         usableDirectiveRefs.add(directiveRef);
@@ -139,68 +141,91 @@ class Compiler {
       var mode = match[1];
       var dstPath = match[2];
 
-      Expression dstPathFn = _parser(dstPath.isEmpty ? attrName : dstPath);
+      String dstExpression = dstPath.isEmpty ? attrName : dstPath;
+      Expression dstPathFn = _parser(dstExpression);
       if (!dstPathFn.isAssignable) {
         throw "Expression '$dstPath' is not assignable in mapping '$mapping' for attribute '$attrName'.";
       }
       ApplyMapping mappingFn;
       switch (mode) {
         case '@':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
-            attrs.observe(attrName, (value) => dstPathFn.assign(dst, value));
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+            attrs.observe(attrName, (value) {
+              dstPathFn.assign(controller, value);
+              notify();
+            });
           };
           break;
         case '<=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
-            if (attrs[attrName] == null) return;
-            Expression attrExprFn = _parser(attrs[attrName]);
-            var shadowValue = null;
-            scope.$watch(
-                    () => attrExprFn.eval(scope),
-                    (v) => dstPathFn.assign(dst, shadowValue = v),
-                attrs[attrName]);
-            if (attrExprFn.isAssignable) {
-              scope.$watch(
-                      () => dstPathFn.eval(dst),
-                      (v) {
-                    if (shadowValue != v) {
-                      shadowValue = v;
-                      attrExprFn.assign(scope, v);
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+            if (attrs[attrName] == null) return notify();
+            String expression = attrs[attrName];
+            Expression expressionFn = _parser(expression);
+            var blockOutbound = false;
+            var blockInbound = false;
+            scope.watch(
+                expression,
+                (inboundValue, _) {
+                  if (!blockInbound) {
+                    blockOutbound = true;
+                    scope.rootScope.runAsync(() => blockOutbound = false);
+                    var value = dstPathFn.assign(controller, inboundValue);
+                    notify();
+                    return value;
+                  }
+                },
+                filters: filters
+            );
+            if (expressionFn.isAssignable) {
+              scope.watch(
+                  dstExpression,
+                  (outboundValue, _) {
+                    if (!blockOutbound) {
+                      blockInbound = true;
+                      scope.rootScope.runAsync(() => blockInbound = false);
+                      expressionFn.assign(scope.context, outboundValue);
+                      notify();
                     }
                   },
-                  dstPath);
+                  context: controller,
+                  filters: filters
+              );
             }
           };
           break;
         case '=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
-            if (attrs[attrName] == null) return;
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+            if (attrs[attrName] == null) return notify();
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
-            scope.$watch(
-                    () => attrExprFn.eval(scope),
-                    (v) => dstPathFn.assign(dst, shadowValue = v),
-                    attrs[attrName]);
+            scope.watch(attrs[attrName],
+                    (v, _) {
+                      dstPathFn.assign(controller, shadowValue = v);
+                      notify();
+                    },
+                    filters: filters);
           };
           break;
         case '=>!':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
-            if (attrs[attrName] == null) return;
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+            if (attrs[attrName] == null) return notify();
             Expression attrExprFn = _parser(attrs[attrName]);
-            var stopWatching;
-            stopWatching = scope.$watch(
-                () => attrExprFn.eval(scope),
-                (value) {
-                  if (dstPathFn.assign(dst, value) != null) {
-                    stopWatching();
+            var watch;
+            watch = scope.watch(
+                attrs[attrName],
+                (value, _) {
+                  if (dstPathFn.assign(controller, value) != null) {
+                    watch.remove();
                   }
                 },
-                attrs[attrName]);
+                filters: filters);
+            notify();
           };
           break;
         case '&':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst) {
-            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope, ScopeLocals.wrapper));
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters, notify()) {
+            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope.context, ScopeLocals.wrapper));
+            notify();
           };
           break;
       }

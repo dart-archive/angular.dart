@@ -13,15 +13,36 @@ main() {
 
       expect(_.rootElement).not.toHaveClass('ng-hide');
 
-      _.rootScope.$apply(() {
-        _.rootScope['isHidden'] = true;
+      _.rootScope.apply(() {
+        _.rootScope.context['isHidden'] = true;
       });
       expect(_.rootElement).toHaveClass('ng-hide');
 
-      _.rootScope.$apply(() {
-        _.rootScope['isHidden'] = false;
+      _.rootScope.apply(() {
+        _.rootScope.context['isHidden'] = false;
       });
       expect(_.rootElement).not.toHaveClass('ng-hide');
+    });
+  });
+  
+  describe('NgShow', () {
+    TestBed _;
+    beforeEach(inject((TestBed tb) => _ = tb));
+
+    it('should add/remove ng-hide class', () {
+      _.compile('<div ng-show="isShown"></div>');
+
+      expect(_.rootElement).not.toHaveClass('ng-hide');
+
+      _.rootScope.apply(() {
+        _.rootScope.context['isShown'] = true;
+      });
+      expect(_.rootElement).not.toHaveClass('ng-hide');
+
+      _.rootScope.apply(() {
+        _.rootScope.context['isShown'] = false;
+      });
+      expect(_.rootElement).toHaveClass('ng-hide');
     });
   });
 }

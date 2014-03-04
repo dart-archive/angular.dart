@@ -1,6 +1,6 @@
 library angular.util;
 
-toBool(x) {
+bool toBool(x) {
   if (x is bool) return x;
   if (x is num) return x != 0;
   return false;
@@ -77,18 +77,44 @@ relaxFnArgs(Function fn) {
   }
 }
 
-camelcase(String s) {
-  var part = s.split('-').map((s) => s.toLowerCase());
-  if (part.length <= 1) {
-    return part.join();
-  }
-  return part.first + part.skip(1).map(capitalize).join();
-}
-
 capitalize(String s) => s.substring(0, 1).toUpperCase() + s.substring(1);
 
-var SNAKE_CASE_REGEXP = new RegExp("[A-Z]");
 
-snakecase(String name, [separator = '-']) =>
-    name.replaceAllMapped(SNAKE_CASE_REGEXP, (Match match) =>
-        (match.start != 0 ? separator : '') + match.group(0).toLowerCase());
+/// Returns whether or not the given identifier is a reserved word in Dart.
+bool isReservedWord(String identifier) => RESERVED_WORDS.contains(identifier);
+
+final Set<String> RESERVED_WORDS = new Set<String>.from(const [
+  "assert",
+  "break",
+  "case",
+  "catch",
+  "class",
+  "const",
+  "continue",
+  "default",
+  "do",
+  "else",
+  "enum",
+  "extends",
+  "false",
+  "final",
+  "finally",
+  "for",
+  "if",
+  "in",
+  "is",
+  "new",
+  "null",
+  "rethrow",
+  "return",
+  "super",
+  "switch",
+  "this",
+  "throw",
+  "true",
+  "try",
+  "var",
+  "void",
+  "while",
+  "with"
+]);

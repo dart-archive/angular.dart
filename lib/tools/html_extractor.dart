@@ -14,27 +14,26 @@ RegExp _NG_REPEAT_SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s
 
 class HtmlExpressionExtractor {
   List<DirectiveInfo> directiveInfos;
-  IoService ioService;
 
-  HtmlExpressionExtractor(this.directiveInfos, this.ioService);
-
-  Set<String> expressions = new Set<String>();
-
-  void crawl(root) {
-    ioService.visitFs(root, (String file) {
-      if (!file.endsWith('.html')) return;
-
-      _parseHtml(ioService.readAsStringSync(file));
-    });
+  HtmlExpressionExtractor(this.directiveInfos) {
     for (DirectiveInfo directiveInfo in directiveInfos) {
       expressions.addAll(directiveInfo.expressions);
       if (directiveInfo.template != null) {
-        _parseHtml(directiveInfo.template);
+        parseHtml(directiveInfo.template);
       }
     }
   }
 
-  void _parseHtml(String html) {
+  Set<String> expressions = new Set<String>();
+
+  void crawl(String root, IoService ioService) {
+    ioService.visitFs(root, (String file) {
+      if (!file.endsWith('.html')) return;
+      parseHtml(ioService.readAsStringSync(file));
+    });
+  }
+
+  void parseHtml(String html) {
     var document = parse(html);
     visitNodes([document], (Node node) {
       if (matchesNode(node, r'[*=/{{.*}}/]')) {

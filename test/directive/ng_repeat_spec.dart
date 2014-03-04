@@ -22,8 +22,8 @@ main() {
       var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
       BlockFactory blockFactory = compiler(element, directives);
       Block block = blockFactory(injector, element);
-      scope.items = ['a', 'b'];
-      scope.$apply();
+      scope.context['items'] = ['a', 'b'];
+      scope.apply();
       expect(element.text()).toEqual('ab');
     }));
 
@@ -33,8 +33,8 @@ main() {
       var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
       BlockFactory blockFactory = compiler(element, directives);
       Block block = blockFactory(injector, element);
-      scope.items = ['a', 'b'].map((i) => i); // makes an iterable
-      scope.$apply();
+      scope.context['items'] = ['a', 'b'].map((i) => i); // makes an iterable
+      scope.apply();
       expect(element.text()).toEqual('ab');
     }));
 
@@ -46,21 +46,21 @@ main() {
         '</ul>');
 
       // INIT
-      scope.items = [{"name": 'misko'}, {"name":'shyam'}];
-      scope.$digest();
+      scope.context['items'] = [{"name": 'misko'}, {"name":'shyam'}];
+      scope.apply();
       expect(element.find('li').length).toEqual(2);
       expect(element.text()).toEqual('misko;shyam;');
 
       // GROW
-      scope.items.add({"name": 'adam'});
-      scope.$digest();
+      scope.context['items'].add({"name": 'adam'});
+      scope.apply();
       expect(element.find('li').length).toEqual(3);
       expect(element.text()).toEqual('misko;shyam;adam;');
 
       // SHRINK
-      scope.items.removeLast();
-      scope.items.removeAt(0);
-      scope.$digest();
+      scope.context['items'].removeLast();
+      scope.context['items'].removeAt(0);
+      scope.apply();
       expect(element.find('li').length).toEqual(1);
       expect(element.text()).toEqual('shyam;');
     });
@@ -73,9 +73,19 @@ main() {
             '<li ng-repeat="item in null">{{item.name}};</li>' +
           '</ul>' +
         '</div>');
-      scope.$digest();
+      scope.apply();
       expect(element.find('ul').length).toEqual(1);
       expect(element.find('li').length).toEqual(0);
+    });
+
+
+    it('should support filters', () {
+      element = $compile(
+          '<div><span ng-repeat="item in items | filter:myFilter">{{item}}</span></div>');
+      scope.context['items'] = ['foo', 'bar', 'baz'];
+      scope.context['myFilter'] = (String item) => item.startsWith('b');
+      scope.apply();
+      expect(element.find('span').length).toEqual(2);
     });
 
 
@@ -85,13 +95,13 @@ main() {
             '<ul>' +
                 '<li ng-repeat="item in items track by item.id">{{item.name}};</li>' +
             '</ul>');
-        scope.items = [{"id": 'misko'}, {"id": 'igor'}];
-        scope.$digest();
+        scope.context['items'] = [{"id": 'misko'}, {"id": 'igor'}];
+        scope.apply();
         var li0 = element.find('li')[0];
         var li1 = element.find('li')[1];
 
-        scope.items.add(scope.items.removeAt(0));
-        scope.$digest();
+        scope.context['items'].add(scope.context['items'].removeAt(0));
+        scope.apply();
         expect(element.find('li')[0]).toBe(li1);
         expect(element.find('li')[1]).toBe(li0);
       });
@@ -102,13 +112,13 @@ main() {
             '<ul>' +
                 r'<li ng-repeat="item in items track by $id(item)">{{item.name}};</li>' +
             '</ul>');
-        scope.items = [{"name": 'misko'}, {"name": 'igor'}];
-        scope.$digest();
+        scope.context['items'] = [{"name": 'misko'}, {"name": 'igor'}];
+        scope.apply();
         var li0 = element.find('li')[0];
         var li1 = element.find('li')[1];
 
-        scope.items.add(scope.items.removeAt(0));
-        scope.$digest();
+        scope.context['items'].add(scope.context['items'].removeAt(0));
+        scope.apply();
         expect(element.find('li')[0]).toBe(li1);
         expect(element.find('li')[1]).toBe(li0);
       });
@@ -121,75 +131,75 @@ main() {
             r'</ul>');
 
         // INIT
-        scope.items = [true, true, true];
-        scope.$digest();
+        scope.context['items'] = [true, true, true];
+        scope.apply();
         expect(element.find('li').length).toEqual(3);
         expect(element.text()).toEqual('true;true;true;');
 
-        scope.items = [false, true, true];
-        scope.$digest();
+        scope.context['items'] = [false, true, true];
+        scope.apply();
         expect(element.find('li').length).toEqual(3);
         expect(element.text()).toEqual('false;true;true;');
 
-        scope.items = [false, true, false];
-        scope.$digest();
+        scope.context['items'] = [false, true, false];
+        scope.apply();
         expect(element.find('li').length).toEqual(3);
         expect(element.text()).toEqual('false;true;false;');
 
-        scope.items = [true];
-        scope.$digest();
+        scope.context['items'] = [true];
+        scope.apply();
         expect(element.find('li').length).toEqual(1);
         expect(element.text()).toEqual('true;');
 
-        scope.items = [true, true, false];
-        scope.$digest();
+        scope.context['items'] = [true, true, false];
+        scope.apply();
         expect(element.find('li').length).toEqual(3);
         expect(element.text()).toEqual('true;true;false;');
 
-        scope.items = [true, false, false];
-        scope.$digest();
+        scope.context['items'] = [true, false, false];
+        scope.apply();
         expect(element.find('li').length).toEqual(3);
         expect(element.text()).toEqual('true;false;false;');
 
         // string
-        scope.items = ['a', 'a', 'a'];
-        scope.$digest();
+        scope.context['items'] = ['a', 'a', 'a'];
+        scope.apply();
         expect(element.find('li').length).toEqual(3);
         expect(element.text()).toEqual('a;a;a;');
 
-        scope.items = ['ab', 'a', 'a'];
-        scope.$digest();
+        scope.context['items'] = ['ab', 'a', 'a'];
+        scope.apply();
         expect(element.find('li').length).toEqual(3);
         expect(element.text()).toEqual('ab;a;a;');
 
-        scope.items = ['test'];
-        scope.$digest();
+        scope.context['items'] = ['test'];
+        scope.apply();
         expect(element.find('li').length).toEqual(1);
         expect(element.text()).toEqual('test;');
 
-        scope.items = ['same', 'value'];
-        scope.$digest();
+        scope.context['items'] = ['same', 'value'];
+        scope.apply();
         expect(element.find('li').length).toEqual(2);
         expect(element.text()).toEqual('same;value;');
 
         // number
-        scope.items = [12, 12, 12];
-        scope.$digest();
+        scope.context['items'] = [12, 12, 12];
+        scope.apply();
         expect(element.find('li').length).toEqual(3);
         expect(element.text()).toEqual('12;12;12;');
 
-        scope.items = [53, 12, 27];
-        scope.$digest();
+        scope.context['items'] = [53, 12, 27];
+        scope.apply();
         expect(element.find('li').length).toEqual(3);
         expect(element.text()).toEqual('53;12;27;');
 
-        scope.items = [89];
-        scope.$digest();
+        scope.context['items'] = [89];
+        scope.apply();
         expect(element.find('li').length).toEqual(1);
         expect(element.text()).toEqual('89;');
 
-        scope.items = [89, 23];
-        scope.$digest();
+        scope.context['items'] = [89, 23];
+        scope.apply();
         expect(element.find('li').length).toEqual(2);
         expect(element.text()).toEqual('89;23;');
       });
@@ -219,8 +229,8 @@ main() {
         '<ul>' +
           '<li ng-repeat="item in items">{{item}}:{{\$index}}|</li>' +
         '</ul>');
-      scope.items = ['misko', 'shyam', 'frodo'];
-      scope.$digest();
+      scope.context['items'] = ['misko', 'shyam', 'frodo'];
+      scope.apply();
       expect(element.text()).toEqual('misko:0|shyam:1|frodo:2|');
     });
 
@@ -231,26 +241,26 @@ main() {
         '<ul>' +
           '<li ng-repeat="item in items">{{item}}:{{\$first}}-{{\$middle}}-{{\$last}}|</li>' +
         '</ul>');
-      scope.items = ['misko', 'shyam', 'doug'];
-      scope.$digest();
+      scope.context['items'] = ['misko', 'shyam', 'doug'];
+      scope.apply();
       expect(element.text()).
           toEqual('misko:true-false-false|shyam:false-true-false|doug:false-false-true|');
 
-      scope.items.add('frodo');
-      scope.$digest();
+      scope.context['items'].add('frodo');
+      scope.apply();
       expect(element.text()).
           toEqual('misko:true-false-false|' +
                   'shyam:false-true-false|' +
                   'doug:false-true-false|' +
                   'frodo:false-false-true|');
 
-      scope.items.removeLast();
-      scope.items.removeLast();
-      scope.$digest();
+      scope.context['items'].removeLast();
+      scope.context['items'].removeLast();
+      scope.apply();
       expect(element.text()).toEqual('misko:true-false-false|shyam:false-false-true|');
 
-      scope.items.removeLast();
-      scope.$digest();
+      scope.context['items'].removeLast();
+      scope.apply();
       expect(element.text()).toEqual('misko:true-false-true|');
     });
 
@@ -259,21 +269,21 @@ main() {
         '<ul>' +
           '<li ng-repeat="item in items">{{item}}:{{\$odd}}-{{\$even}}|</li>' +
         '</ul>');
-      scope.items = ['misko', 'shyam', 'doug'];
-      scope.$digest();
+      scope.context['items'] = ['misko', 'shyam', 'doug'];
+      scope.apply();
       expect(element.text()).toEqual('misko:false-true|shyam:true-false|doug:false-true|');
 
-      scope.items.add('frodo');
-      scope.$digest();
+      scope.context['items'].add('frodo');
+      scope.apply();
       expect(element.text()).toEqual('misko:false-true|shyam:true-false|doug:false-true|frodo:true-false|');
 
-      scope.items.removeLast();
-      scope.items.removeLast();
-      scope.$digest();
+      scope.context['items'].removeLast();
+      scope.context['items'].removeLast();
+      scope.apply();
       expect(element.text()).toEqual('misko:false-true|shyam:true-false|');
 
-      scope.items.removeLast();
-      scope.$digest();
+      scope.context['items'].removeLast();
+      scope.apply();
       expect(element.text()).toEqual('misko:false-true|');
     });
 
@@ -284,8 +294,8 @@ main() {
             '<div ng-repeat="group in subgroup">{{group}}|</div>X' +
           '</li>' +
         '</ul>');
-      scope.groups = [['a', 'b'], ['c','d']];
-      scope.$digest();
+      scope.context['groups'] = [['a', 'b'], ['c','d']];
+      scope.apply();
 
       expect(element.text()).toEqual('a|b|Xc|d|X');
     });
@@ -304,15 +314,15 @@ main() {
         c = {};
         d = {};
 
-        scope.items = [a, b, c];
-        scope.$digest();
+        scope.context['items'] = [a, b, c];
+        scope.apply();
         lis = element.find('li');
       });
 
 
       it(r'should preserve the order of elements', () {
-        scope.items = [a, c, d];
-        scope.$digest();
+        scope.context['items'] = [a, c, d];
+        scope.apply();
         var newElements = element.find('li');
         expect(newElements[0]).toEqual(lis[0]);
         expect(newElements[1]).toEqual(lis[2]);
@@ -321,52 +331,52 @@ main() {
 
 
       it(r'should throw error on adding existing duplicates and recover', () {
-        scope.items = [a, a, a];
+        scope.context['items'] = [a, a, a];
         expect(() {
-          scope.$digest();
+          scope.apply();
         }).toThrow("[NgErr50] ngRepeat error! Duplicates in a repeater are not allowed. Use 'track by' expression to specify unique keys. Repeater: item in items, Duplicate key: {}");
 
         // recover
-        scope.items = [a];
-        scope.$digest();
+        scope.context['items'] = [a];
+        scope.apply();
         var newElements = element.find('li');
         expect(newElements.length).toEqual(1);
         expect(newElements[0]).toEqual(lis[0]);
 
-        scope.items = [];
-        scope.$digest();
+        scope.context['items'] = [];
+        scope.apply();
         newElements = element.find('li');
         expect(newElements.length).toEqual(0);
       });
 
 
       it(r'should throw error on new duplicates and recover', () {
-        scope.items = [d, d, d];
+        scope.context['items'] = [d, d, d];
         expect(() {
-          scope.$digest();
+          scope.apply();
         }).toThrow("[NgErr50] ngRepeat error! Duplicates in a repeater are not allowed. Use 'track by' expression to specify unique keys. Repeater: item in items, Duplicate key: {}");
 
         // recover
-        scope.items = [a];
-        scope.$digest();
+        scope.context['items'] = [a];
+        scope.apply();
         var newElements = element.find('li');
         expect(newElements.length).toEqual(1);
         expect(newElements[0]).toEqual(lis[0]);
 
-        scope.items = [];
-        scope.$digest();
+        scope.context['items'] = [];
+        scope.apply();
         newElements = element.find('li');
         expect(newElements.length).toEqual(0);
       });
 
 
       it(r'should reverse items when the collection is reversed', () {
-        scope.items = [a, b, c];
-        scope.$digest();
+        scope.context['items'] = [a, b, c];
+        scope.apply();
         lis = element.find('li');
 
-        scope.items = [c, b, a];
-        scope.$digest();
+        scope.context['items'] = [c, b, a];
+        scope.apply();
         var newElements = element.find('li');
         expect(newElements.length).toEqual(3);
         expect(newElements[0]).toEqual(lis[2]);
@@ -379,13 +389,13 @@ main() {
         // rebuilding repeater from scratch can be expensive, we should try to avoid it even for
         // model that is composed of primitives.
 
-        scope.items = ['hello', 'cau', 'ahoj'];
-        scope.$digest();
+        scope.context['items'] = ['hello', 'cau', 'ahoj'];
+        scope.apply();
         lis = element.find('li');
         lis[2].id = 'yes';
 
-        scope.items = ['ahoj', 'hello', 'cau'];
-        scope.$digest();
+        scope.context['items'] = ['ahoj', 'hello', 'cau'];
+        scope.apply();
         var newLis = element.find('li');
         expect(newLis.length).toEqual(3);
         expect(newLis[0]).toEqual(lis[2]);
@@ -394,32 +404,5 @@ main() {
       });
     });
 
-    describe('shalow', () {
-      TestBed _;
-      beforeEach(inject((TestBed tb) => _ = tb));
-
-      it('should x', () {
-        _.compile('<ul><li ng-shallow-repeat="i in items">{{i.name}}</li></ul>');
-        _.rootScope.items = [{'name': 'a'}, {'name':'b'}];
-        _.rootScope.$digest();
-        expect(_.rootElement.text).toEqual('ab');
-
-        // Should not see this.
-        _.rootScope.items[0]['name'] = 'x';
-        _.rootScope.$digest();
-        expect(_.rootElement.text).toEqual('ab');
-
-        // We see additions but not changse
-        _.rootScope.items.add({'name': 'C'});
-        _.rootScope.$digest();
-        expect(_.rootElement.text).toEqual('abC');
-
-
-        // Cloning list does a full update
-        _.rootScope.items = new List.from(_.rootScope.items);
-        _.rootScope.$digest();
-        expect(_.rootElement.text).toEqual('xbC');
-      });
-    });
   });
 }

@@ -7,7 +7,8 @@ part 'linked_list.dart';
 part 'ast.dart';
 part 'prototype_map.dart';
 
-typedef ReactionFn(value, previousValue, object);
+typedef ReactionFn(value, previousValue);
+typedef ChangeLog(String expression, current, previous);
 
 /**
  * Extend this class if you wish to pretend to be a function, but you don't know
@@ -48,6 +49,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   /// STATS: Number of field watchers which are in use.
   int _fieldCost = 0;
   int _collectionCost = 0;
+  int _evalCost = 0;
 
   /// STATS: Number of field watchers which are in use including child [WatchGroup]s.
   int get fieldCost => _fieldCost;
@@ -75,7 +77,6 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
   /// STATS: Number of invocation watchers (closures/methods) which are in use.
   int get evalCost => _evalCost;
-  int _evalCost = 0;
 
   /// STATS: Number of invocation watchers which are in use including child [WatchGroup]s.
   int get totalEvalCost {
@@ -93,10 +94,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   /// Pointer for creating tree of [WatchGroup]s.
   WatchGroup _watchGroupHead, _watchGroupTail, _previousWatchGroup,
       _nextWatchGroup;
-  final WatchGroup _parentWatchGroup;
+  WatchGroup _parentWatchGroup;
 
-  WatchGroup._child(_parentWatchGroup, this._changeDetector,
-                    this.context, this._cache, this._rootGroup)
+  WatchGroup._child(_parentWatchGroup, this._changeDetector, this.context,
+                    this._cache, this._rootGroup)
       : _parentWatchGroup = _parentWatchGroup,
         id = '${_parentWatchGroup.id}.${_parentWatchGroup._nextChildId++}'
   {
@@ -112,6 +113,18 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   {
     _marker.watchGrp = this;
     _evalWatchTail = _evalWatchHead = _marker;
+  }
+
+  get isAttached {
+    var group = this;
+    var root = _rootGroup;
+    while(group != null) {
+      if (group == root){
+        return true;
+      }
+      group = group._parentWatchGroup;
+    }
+    return false;
   }
 
   Watch watch(AST expression, ReactionFn reactionFn) {
@@ -153,10 +166,11 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     var watchRecord = _changeDetector.watch(null, null, collectionHandler);
     _collectionCost++;
     collectionHandler.watchRecord = watchRecord;
-    WatchRecord<_Handler> astWR = _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this));
+    WatchRecord<_Handler> astWR = _cache.putIfAbsent(ast.expression,
+        () => ast.setupWatch(this));
 
-    // We set a field forwarding handler on LHS. This will allow the change objects to propagate
-    // to the current WatchRecord.
+    // We set a field forwarding handler on LHS. This will allow the change
+    // objects to propagate to the current WatchRecord.
     astWR.handler.addForwardHandler(collectionHandler);
 
     // propagate the value from the LHS to here
@@ -222,8 +236,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   }
 
   WatchGroup get _childWatchGroupTail {
-    WatchGroup tail = this;
-    WatchGroup nextTail;
+    var tail = this, nextTail;
     while ((nextTail = tail._watchGroupTail) != null) {
       tail = nextTail;
     }
@@ -244,7 +257,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
         this,
         _changeDetector.newGroup(),
         context == null ? this.context : context,
-        context == null ? this._cache: new Map<String, WatchRecord<_Handler>>(),
+        context == null ? this._cache: <String, WatchRecord<_Handler>>{},
         _rootGroup == null ? this : _rootGroup);
     _WatchGroupList._add(this, childGroup);
     var marker = childGroup._marker;
@@ -267,6 +280,8 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
     _WatchGroupList._remove(_parentWatchGroup, this);
     _changeDetector.remove();
+    _rootGroup._removeCount++;
+    _parentWatchGroup = null;
 
     // Unlink the _watchRecord
     _EvalWatchRecord firstEvalWatch = _evalWatchHead;
@@ -317,10 +332,20 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 class RootWatchGroup extends WatchGroup {
   Watch _dirtyWatchHead, _dirtyWatchTail;
 
+  /**
+   * Every time a [WatchGroup] is destroyed we increment the counter. During
+   * [detectChanges] we reset the count. Before calling the reaction function,
+   * we check [_removeCount] and if it is unchanged we can safely call the
+   * reaction function. If it is changed we only call the reaction function
+   * if the [WatchGroup] is still attached.
+   */
+  int _removeCount = 0;
+
+
   RootWatchGroup(ChangeDetector changeDetector, Object context):
       super._root(changeDetector, context);
 
-  get _rootGroup => this;
+  RootWatchGroup get _rootGroup => this;
 
   /**
    * Detect changes and process the [ReactionFn]s.
@@ -330,36 +355,70 @@ class RootWatchGroup extends WatchGroup {
    * 2) process function/closure/method changes
    * 3) call an [ReactionFn]s
    *
-   * Each step is called in sequence. ([ReactionFn]s are not called until all previous steps are
-   * completed).
+   * Each step is called in sequence. ([ReactionFn]s are not called until all
+   * previous steps are completed).
    */
-  int detectChanges() {
+  int detectChanges({ EvalExceptionHandler exceptionHandler,
+                      ChangeLog changeLog,
+                      AvgStopwatch fieldStopwatch,
+                      AvgStopwatch evalStopwatch,
+                      AvgStopwatch processStopwatch}) {
     // Process the ChangeRecords from the change detector
     ChangeRecord<_Handler> changeRecord =
-        (_changeDetector as ChangeDetector<_Handler>).collectChanges();
+        (_changeDetector as ChangeDetector<_Handler>).collectChanges(
+            exceptionHandler:exceptionHandler,
+            stopwatch: fieldStopwatch);
+    if (processStopwatch != null) processStopwatch.start();
     while (changeRecord != null) {
+      if (changeLog != null) changeLog(changeRecord.handler.expression,
+                                       changeRecord.currentValue,
+                                       changeRecord.previousValue);
       changeRecord.handler.onChange(changeRecord);
       changeRecord = changeRecord.nextChange;
     }
+    if (processStopwatch != null) processStopwatch.stop();
 
-    int count = 0;
+    if (evalStopwatch != null) evalStopwatch.start();
     // Process our own function evaluations
     _EvalWatchRecord evalRecord = _evalWatchHead;
+    int evalCount = 0;
     while (evalRecord != null) {
-      evalRecord.check();
+      try {
+        if (evalStopwatch != null) evalCount++;
+        var change = evalRecord.check();
+        if (change != null && changeLog != null) {
+          changeLog(evalRecord.handler.expression,
+                    evalRecord.currentValue,
+                    evalRecord.previousValue);
+        }
+      } catch (e, s) {
+        if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
+      }
       evalRecord = evalRecord._nextEvalWatch;
     }
+    if (evalStopwatch != null) evalStopwatch..stop()..increment(evalCount);
 
     // Because the handler can forward changes between each other synchronously
     // We need to call reaction functions asynchronously. This processes the
     // asynchronous reaction function queue.
+    int count = 0;
+    if (processStopwatch != null) processStopwatch.stop();
     Watch dirtyWatch = _dirtyWatchHead;
+    RootWatchGroup root = _rootGroup;
+    root._removeCount = 0;
     while(dirtyWatch != null) {
       count++;
-      dirtyWatch.invoke();
+      try {
+        if (root._removeCount == 0 || dirtyWatch._watchGroup.isAttached) {
+          dirtyWatch.invoke();
+        }
+      } catch (e, s) {
+        if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
+      }
       dirtyWatch = dirtyWatch._nextDirtyWatch;
     }
     _dirtyWatchHead = _dirtyWatchTail = null;
+    if (processStopwatch != null) processStopwatch..stop()..increment(count);
     return count;
   }
 
@@ -389,21 +448,22 @@ class Watch {
 
   final Record<_Handler> _record;
   final ReactionFn reactionFn;
+  final WatchGroup _watchGroup;
 
   bool _dirty = false;
   bool _deleted = false;
   Watch _nextDirtyWatch;
 
-  Watch(this._record, this.reactionFn);
+  Watch(this._watchGroup, this._record, this.reactionFn);
 
   get expression => _record.handler.expression;
-
-  invoke() {
+  void invoke() {
+    if (_deleted || !_dirty) return;
     _dirty = false;
-    reactionFn(_record.currentValue, _record.previousValue, _record.object);
+    reactionFn(_record.currentValue, _record.previousValue);
   }
 
-  remove() {
+  void remove() {
     if (_deleted) throw new StateError('Already deleted!');
     _deleted = true;
     var handler = _record.handler;
@@ -448,7 +508,7 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
   Watch addReactionFn(ReactionFn reactionFn) {
     assert(_next != this); // verify we are not detached
     return watchGrp._rootGroup._addDirtyWatch(_WatchList._add(this,
-        new Watch(watchRecord, reactionFn)));
+        new Watch(watchGrp, watchRecord, reactionFn)));
   }
 
   void addForwardHandler(_Handler forwardToHandler) {
@@ -475,11 +535,11 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
     }
   }
 
-  _releaseWatch() {
+  void _releaseWatch() {
     watchRecord.remove();
     watchGrp._fieldCost--;
   }
-  acceptValue(dynamic object) => null;
+  acceptValue(object) => null;
 
   void onChange(ChangeRecord<_Handler> record) {
     assert(_next != this); // verify we are not detached
@@ -515,7 +575,7 @@ class _FieldHandler extends _Handler {
    * This function forwards the watched object to the next [_Handler]
    * synchronously.
    */
-  acceptValue(dynamic object) {
+  void acceptValue(object) {
     watchRecord.object = object;
     var changeRecord = watchRecord.check();
     if (changeRecord != null) onChange(changeRecord);
@@ -523,16 +583,18 @@ class _FieldHandler extends _Handler {
 }
 
 class _CollectionHandler extends _Handler {
-  _CollectionHandler(watchGrp, expression): super(watchGrp, expression);
+  _CollectionHandler(WatchGroup watchGrp, String expression)
+      : super(watchGrp, expression);
   /**
    * This function forwards the watched object to the next [_Handler] synchronously.
    */
-  acceptValue(dynamic object) {
+  void acceptValue(object) {
     watchRecord.object = object;
     var changeRecord = watchRecord.check();
     if (changeRecord != null) onChange(changeRecord);
   }
-  _releaseWatch() {
+
+  void _releaseWatch() {
     watchRecord.remove();
     watchGrp._collectionCost--;
   }
@@ -548,9 +610,10 @@ class _ArgHandler extends _Handler {
   _releaseWatch() => null;
 
   _ArgHandler(WatchGroup watchGrp, this.watchRecord, int index)
-      : super(watchGrp, 'arg[$index]'), index = index;
+      : index = index,
+        super(watchGrp, 'arg[$index]');
 
-  acceptValue(dynamic object) {
+  void acceptValue(object) {
     watchRecord.dirtyArgs = true;
     watchRecord.args[index] = object;
   }
@@ -559,13 +622,22 @@ class _ArgHandler extends _Handler {
 class _InvokeHandler extends _Handler implements _ArgHandlerList {
   _ArgHandler _argHandlerHead, _argHandlerTail;
 
-  _InvokeHandler(watchGrp, expression): super(watchGrp, expression);
+  _InvokeHandler(WatchGroup watchGrp, String expression)
+      : super(watchGrp, expression);
 
-  acceptValue(dynamic object) => watchRecord.object = object;
+  void acceptValue(object) {
+    watchRecord.object = object;
+  }
 
-  _releaseWatch() => (watchRecord as _EvalWatchRecord).remove();
+  void onChange(ChangeRecord<_Handler> record) {
+    super.onChange(record);
+  }
 
-  release() {
+  void _releaseWatch() {
+    (watchRecord as _EvalWatchRecord).remove();
+  }
+
+  void release() {
     super.release();
     _ArgHandler current = _argHandlerHead;
     while(current != null) {
@@ -601,11 +673,14 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
   _EvalWatchRecord(this.watchGrp, this.handler, this.fn, name, int arity)
       : args = new List(arity),
         name = name,
-        symbol = name == null ? null : new Symbol(name)
-  {
-    if      (fn is FunctionApply) mode = _MODE_FUNCTION_APPLY_;
-    else if (fn is Function)      mode = _MODE_FUNCTION_;
-    else                          mode = _MODE_NULL_;
+        symbol = name == null ? null : new Symbol(name) {
+    if (fn is FunctionApply) {
+      mode = _MODE_FUNCTION_APPLY_;
+    } else if (fn is Function) {
+      mode = _MODE_FUNCTION_;
+    } else {
+      mode = _MODE_NULL_;
+    }
   }
 
   _EvalWatchRecord.marker()
@@ -646,11 +721,9 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
         mode =  _MODE_MAP_CLOSURE_;
       } else {
         _instanceMirror = reflect(value);
-        if(_hasMethod(_instanceMirror.type, symbol)) {
-          mode = _MODE_METHOD_;
-        } else {
-          mode = _MODE_FIELD_CLOSURE_;
-        }
+        mode = _hasMethod(_instanceMirror, symbol)
+            ? _MODE_METHOD_
+            : _MODE_FIELD_CLOSURE_;
       }
     }
   }
@@ -703,56 +776,19 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
 
   get nextChange => null;
 
-  remove() {
+  void remove() {
     assert(mode != _MODE_DELETED_);
     assert((mode = _MODE_DELETED_) == _MODE_DELETED_); // Mark as deleted.
     watchGrp._evalCost--;
     _EvalWatchList._remove(watchGrp, this);
   }
 
-  toString() {
+  String toString() {
     if (mode == _MODE_MARKER_) return 'MARKER[$currentValue]';
     return '${watchGrp.id}:${handler.expression}';
   }
 
-  static final Function _hasMethod = (() {
-    var objectClassMirror = reflectClass(Object);
-    Set<Symbol> objectClassInstanceMethods =
-        new Set<Symbol>.from([#toString, #noSuchMethod]);
-    try {
-      // Use ClassMirror.instanceMembers if available. It contains local
-      // as well as inherited members.
-      objectClassMirror.instanceMembers;
-      // For SDK 1.2 we have to use a somewhat complicated helper for this
-      // to work around bugs in the dart2js implementation.
-      return (type, symbol) {
-        // Always allow instance methods found in the Object class. This makes
-        // it easier to work around a few bugs in the dart2js implementation.
-        if (objectClassInstanceMethods.contains(symbol)) return true;
-        // Work around http://dartbug.com/16309 which causes access to the
-        // instance members of certain builtin types to throw exceptions
-        // while traversing the superclass chain.
-        var mirror;
-        try {
-          mirror = type.instanceMembers[symbol];
-        } on UnsupportedError catch (e) {
-          mirror = type.declarations[symbol];
-        }
-        // Work around http://dartbug.com/15760 which causes noSuchMethod
-        // forwarding stubs to be treated as members of all classes. We have
-        // already checked for the real instance methods in Object, so if the
-        // owner of this method is Object we simply filter it out.
-        if (mirror is !MethodMirror) return false;
-        return mirror.owner != objectClassMirror;
-      };
-    } on NoSuchMethodError catch (e) {
-      // For SDK 1.0 we fall back to just using the local members.
-      return (type, symbol) => type.members[symbol] is MethodMirror;
-    } on UnimplementedError catch (e) {
-      // For SDK 1.1 we fall back to just using the local declarations.
-      return (type, symbol) => type.declarations[symbol] is MethodMirror;
-    }
-    return null;
-  })();
-
+  static bool _hasMethod(InstanceMirror mirror, Symbol symbol) {
+    return mirror.type.instanceMembers[symbol] is MethodMirror;
+  }
 }

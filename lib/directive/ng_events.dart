@@ -25,7 +25,6 @@ part of angular.directive;
  *
  * The full list of supported handlers are:
  *
- * - [ng-blur]
  * - [ng-abort]
  * - [ng-beforecopy]
  * - [ng-beforecut]
@@ -152,7 +151,7 @@ class NgEventDirective {
     int key = stream.hashCode;
     if (!listeners.containsKey(key)) {
       listeners[key] = handler;
-      stream.listen((event) => scope.$apply(() {handler({r"$event": event});}));
+      stream.listen((event) => handler({r"$event": event}));
     }
   }
 

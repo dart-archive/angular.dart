@@ -1,6 +1,6 @@
 library dart_code_gen;
 
-import 'package:angular/tools/reserved_dart_keywords.dart';
+import 'package:angular/utils.dart' show isReservedWord;
 import 'package:angular/core/parser/syntax.dart';
 
 escape(String s) => s.replaceAllMapped(new RegExp(r'(\"|\$|\n)'), (m) {
@@ -229,7 +229,7 @@ class HelperMap {
   String lookup(String key) {
     String name = _computeName(key);
     if (helpers.containsKey(key)) return name;
-    helpers[key] = isReserved(key)
+    helpers[key] = isReservedWord(key)
         ? templateForReserved(name, key)
         : template(name, key);
     return name;

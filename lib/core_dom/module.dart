@@ -10,8 +10,9 @@ import 'package:perf_api/perf_api.dart';
 
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
-import 'package:angular/utils.dart';
+import 'package:angular/core_dom/dom_util.dart' as util;
 
+part 'animation.dart';
 part 'block.dart';
 part 'block_factory.dart';
 part 'cookies.dart';
@@ -29,8 +30,8 @@ part 'tree_sanitizer.dart';
 class NgCoreDomModule extends Module {
   NgCoreDomModule() {
     value(dom.Window, dom.window);
+    value(ElementProbe, null);
 
-    value(TextChangeListener, null);
     factory(TemplateCache, (_) => new TemplateCache(capacity: 0));
     type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
 
@@ -44,6 +45,7 @@ class NgCoreDomModule extends Module {
     type(HttpDefaultHeaders);
     type(HttpDefaults);
     type(HttpInterceptors);
+    type(NgAnimate);
     type(BlockCache);
     type(BrowserCookies);
     type(Cookies);
