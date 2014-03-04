@@ -10,8 +10,6 @@ part of angular.animate;
 class NgAnimateDirective  extends NgAnimateDirectiveBase {
   set option(value) {
     _option = value;
-
-    print("Setting animate option: $value");
     _optimizer.alwaysAnimate(_element, _option);
   }
 
@@ -32,8 +30,6 @@ class NgAnimateDirective  extends NgAnimateDirectiveBase {
 class NgAnimateChildrenDirective extends NgAnimateDirectiveBase {
   set option(value) {
     _option = value;
-
-    print("Setting Child option: $value");
     _optimizer.alwaysAnimateChildren(_element, _option);
   }
 
@@ -53,11 +49,9 @@ abstract class NgAnimateDirectiveBase implements NgDetachAware {
   String get option => _option;
   set option(value);
 
-  NgAnimateDirectiveBase(this._element, this._optimizer) {
-    print("CONSTRUCTING STUFF!!!");
-  }
+  NgAnimateDirectiveBase(this._element, this._optimizer);
 
   detach() {
-    _optimizer.detachAlwaysAnimateOptions(element);
+    _optimizer.detachAlwaysAnimateOptions(_element);
   }
 }
