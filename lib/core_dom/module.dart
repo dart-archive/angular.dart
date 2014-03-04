@@ -19,6 +19,8 @@ part 'common.dart';
 part 'compiler.dart';
 part 'directive.dart';
 part 'directive_map.dart';
+part 'element_binder.dart';
+part 'event_handler.dart';
 part 'http.dart';
 part 'ng_app.dart';
 part 'ng_mustache.dart';
@@ -26,7 +28,6 @@ part 'node_cursor.dart';
 part 'selector.dart';
 part 'template_cache.dart';
 part 'tree_sanitizer.dart';
-part 'event_handler.dart';
 
 class NgCoreDomModule extends Module {
   NgCoreDomModule() {
@@ -52,6 +53,7 @@ class NgCoreDomModule extends Module {
     type(FieldMetadataExtractor);
     type(DirectiveMap);
     type(EventHandler);
+    type(ElementBinder);
   }
 }
 
