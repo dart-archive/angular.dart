@@ -81,6 +81,18 @@ void main() {
         expect(inputElement.value).toEqual('');
       }));
 
+      it('should be invalid when the input value results in a NaN value', inject(() {
+        _.compile('<input type="number" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        inputElement.value = 'aa';
+        _.triggerEvent(inputElement, 'change');
+        expect(_.rootScope.context['model'].isNaN).toBe(true);
+        expect(ngModel.valid).toBe(false);
+      }));
+
       it('should write to input only if value is different', inject((Injector i, AstParser parser) {
         var scope = _.rootScope;
         var element = new dom.InputElement();
