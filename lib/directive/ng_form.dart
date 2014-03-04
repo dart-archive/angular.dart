@@ -39,8 +39,10 @@ class NgForm extends NgControl implements Map<String, NgControl> {
     if (!element.attributes.containsKey('action')) {
       element.onSubmit.listen((event) {
         event.preventDefault();
-        _scope.broadcast('submitNgControl', valid == null ? false : valid);
-        reset();
+        _scope.broadcast('submitNgControl', valid == true);
+        if (valid == true) {
+          reset();
+        }
       });
     }
   }
