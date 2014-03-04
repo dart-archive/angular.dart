@@ -372,7 +372,7 @@ void main() {
         expect(model.viewValue).toEqual('animal');
       }));
 
-      it('should set the form control to be untouched when the model is reset or submitted', inject((TestBed _) {
+      it('should set the form control to be untouched when the model is reset', inject((TestBed _) {
         var form = _.compile('<form name="duperForm">' +
                              ' <input type="text" ng-model="myModel" probe="i" />' +
                              '</form>');
@@ -403,13 +403,36 @@ void main() {
         _.triggerEvent(input, 'blur');
 
         expect(formModel.touched).toBe(true);
+      }));
+
+      it('should reset each of the controls to be untouched only when the form has a valid submission', inject((Scope scope, TestBed _) {
+        var form = _.compile('<form name="duperForm">' +
+                             ' <input type="text" ng-model="myModel" probe="i" required />' +
+                             '</form>');
+
+        NgForm formModel = _.rootScope.context['duperForm'];
+        var model = _.rootScope.context['i'].directive(NgModel);
+        var input = model.element;
+        _.triggerEvent(input, 'blur');
+
+        expect(formModel.touched).toBe(true);
+        expect(model.touched).toBe(true);
+        expect(formModel.invalid).toBe(true);
 
         _.triggerEvent(form, 'submit');
 
+        expect(formModel.touched).toBe(true);
+        expect(model.touched).toBe(true);
+        expect(formModel.invalid).toBe(true);
+
+        scope.apply(() {
+          scope.context['myModel'] = 'value';
+        });
+        _.triggerEvent(form, 'submit');
+
+        expect(formModel.valid).toBe(true);
         expect(formModel.touched).toBe(false);
-        expect(formModel.untouched).toBe(true);
-        expect(form.classes.contains('ng-touched')).toBe(false);
-        expect(form.classes.contains('ng-untouched')).toBe(true);
+        expect(model.touched).toBe(false);
       }));
     });
 

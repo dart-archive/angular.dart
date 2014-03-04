@@ -49,6 +49,13 @@ class NgModel extends NgControl implements NgAttachAware {
     modelValue = _lastValue;
   }
 
+  _onSubmit(bool valid) {
+    super._onSubmit(valid);
+    if (valid) {
+      _lastValue = modelValue;
+    }
+  }
+
   @NgAttr('name')
   get name => _name;
   set name(value) {
