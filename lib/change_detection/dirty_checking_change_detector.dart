@@ -37,13 +37,6 @@ class GetterCache {
  * Each property to be watched is recorded as a [DirtyCheckingRecord] and kept
  * in a linked list. Linked list are faster than Arrays for iteration. They also
  * allow removal of large blocks of watches in an efficient manner.
- *
- * [ChangeRecord]
- *
- * When the results are delivered they are a linked list of [ChangeRecord]s. For
- * efficiency reasons the [DirtyCheckingRecord] and [ChangeRecord] are two
- * different interfaces for the same underlying object this makes reporting
- * efficient since no additional memory allocation is performed.
  */
 class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
   /**
@@ -177,6 +170,10 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
       nextGroup._prev = prevGroup;
     }
     _parent = null;
+    _prev = _next = null;
+    _recordHead._prevRecord = null;
+    _recordTail._nextRecord = null;
+    _recordHead = _recordTail = null;
     assert(root._assertRecordsOk());
   }
 
@@ -281,7 +278,7 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     return true;
   }
 
-  DirtyCheckingRecord<H> collectChanges({ EvalExceptionHandler exceptionHandler,
+  Iterator<Record<H>> collectChanges({ EvalExceptionHandler exceptionHandler,
                                           AvgStopwatch stopwatch}) {
     if (stopwatch != null) stopwatch.start();
     DirtyCheckingRecord changeHead = null;
@@ -291,11 +288,11 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     int count = 0;
     while (current != null) {
       try {
-        if (current.check() != null) {
+        if (current.check()) {
           if (changeHead == null) {
             changeHead = changeTail = current;
           } else {
-            changeTail = changeTail.nextChange = current;
+            changeTail = changeTail._nextChange = current;
           }
         }
         if (stopwatch != null) count++;
@@ -308,13 +305,36 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
       }
       current = current._nextRecord;
     }
-    if (changeTail != null) changeTail.nextChange = null;
+    if (changeTail != null) changeTail._nextChange = null;
     if (stopwatch != null) stopwatch..stop()..increment(count);
-    return changeHead;
+    return new _ChangeIterator(changeHead);
   }
 
   void remove() {
     throw new StateError('Root ChangeDetector can not be removed');
+  }
+}
+
+class _ChangeIterator<H> implements Iterator<Record<H>>{
+  DirtyCheckingRecord _current;
+  DirtyCheckingRecord _next;
+  DirtyCheckingRecord get current => _current;
+
+  _ChangeIterator(this._next);
+
+  bool moveNext() {
+    _current = _next;
+    if (_next != null) {
+      _next = _current._nextChange;
+      /*
+       * This is important to prevent memory leaks. If we don't reset then
+       * a record maybe pointing to a deleted change detector group and it
+       * will not release the reference until it fires again. So we have
+       * to be eager about releasing references.
+       */
+      _current._nextChange = null;
+    }
+    return _current != null;
   }
 }
 
@@ -327,7 +347,7 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
  * removing efficient. [DirtyCheckingRecord] also has a [nextChange] field which
  * creates a single linked list of all of the changes for efficient traversal.
  */
-class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
+class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
   static const List<String> _MODE_NAMES =
       const ['MARKER', 'IDENT', 'REFLECT', 'GETTER', 'MAP[]', 'ITERABLE', 'MAP'];
   static const int _MODE_MARKER_ = 0;
@@ -350,7 +370,7 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
   var currentValue;
   DirtyCheckingRecord<H> _nextRecord;
   DirtyCheckingRecord<H> _prevRecord;
-  ChangeRecord<H> nextChange;
+  Record<H> _nextChange;
   var _object;
   InstanceMirror _instanceMirror;
 
@@ -416,12 +436,12 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
     }
   }
 
-  ChangeRecord<H> check() {
+  bool check() {
     assert(_mode != null);
     var current;
     switch (_mode) {
       case _MODE_MARKER_:
-        return null;
+        return false;
       case _MODE_REFLECT_:
         current = _instanceMirror.getField(_symbol).reflectee;
         break;
@@ -435,9 +455,9 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
         current = object;
         break;
       case _MODE_MAP_:
-        return (currentValue as _MapChangeRecord)._check(object) ? this : null;
+        return (currentValue as _MapChangeRecord)._check(object);
       case _MODE_ITERABLE_:
-        return (currentValue as _CollectionChangeRecord)._check(object) ? this : null;
+        return (currentValue as _CollectionChangeRecord)._check(object);
       default:
         assert(false);
     }
@@ -454,10 +474,10 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
       } else {
         previousValue = last;
         currentValue = current;
-        return this;
+        return true;
       }
     }
-    return null;
+    return false;
   }
 
 

@@ -23,7 +23,7 @@ abstract class ChangeDetectorGroup<H> {
    * Parameters:
    * - [object] to watch.
    * - [field] to watch on the [object].
-   * - [handler] an opaque object passed on to [ChangeRecord].
+   * - [handler] an opaque object passed on to [Record].
    */
   WatchRecord<H> watch(Object object, String field, H handler);
 
@@ -43,7 +43,7 @@ abstract class ChangeDetectorGroup<H> {
  * predictable performance, and the developer can implement `.equals()` on top
  * of identity checks.
  *
- * - [H] A [ChangeRecord] has associated handler object. The handler object is
+ * - [H] A [Record] has associated handler object. The handler object is
  * opaque to the [ChangeDetector] but it is meaningful to the code which
  * registered the watcher. It can be a data structure, an object, or a function.
  * It is up to the developer to attach meaning to it.
@@ -51,10 +51,10 @@ abstract class ChangeDetectorGroup<H> {
 abstract class ChangeDetector<H> extends ChangeDetectorGroup<H> {
   /**
    * This method does the work of collecting the changes and returns them as a
-   * linked list of [ChangeRecord]s. The [ChangeRecord]s are returned in the
+   * linked list of [Record]s. The [Record]s are returned in the
    * same order as they were registered.
    */
-  ChangeRecord<H> collectChanges({ EvalExceptionHandler exceptionHandler,
+  Iterator<Record<H>> collectChanges({ EvalExceptionHandler exceptionHandler,
                                    AvgStopwatch stopwatch });
 }
 
@@ -93,22 +93,12 @@ abstract class WatchRecord<H> extends Record<H> {
   set object(value);
 
   /**
-   * Check to see if the field on the object has changed. Returns [null] if no
-   * change, or a [ChangeRecord] if a change has been detected.
+   * Check to see if the field on the object has changed. Returns [true] if
+   * change has been detected.
    */
-  ChangeRecord<H> check();
+  bool check();
 
   void remove();
-}
-
-/**
- * Provides information about the changes which were detected in objects.
- *
- * It exposes a `nextChange` method for traversing all of the changes.
- */
-abstract class ChangeRecord<H> extends Record<H> {
-  /** Next [ChangeRecord] */
-  ChangeRecord<H> get nextChange;
 }
 
 /**

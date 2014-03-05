@@ -92,19 +92,19 @@ abstract class _EvalWatchList {
 
   static _EvalWatchRecord _add(_EvalWatchList list, _EvalWatchRecord item) {
     assert(item._nextEvalWatch     == null);
-    assert(item._previousEvalWatch == null);
+    assert(item._prevEvalWatch == null);
     var prev = list._evalWatchTail;
     var next = prev._nextEvalWatch;
 
     if (prev == list._marker) {
       list._evalWatchHead = list._evalWatchTail = item;
-      prev = prev._previousEvalWatch;
+      prev = prev._prevEvalWatch;
     }
     item._nextEvalWatch = next;
-    item._previousEvalWatch = prev;
+    item._prevEvalWatch = prev;
 
     if (prev != null) prev._nextEvalWatch = item;
-    if (next != null) next._previousEvalWatch = item;
+    if (next != null) next._prevEvalWatch = item;
 
     return list._evalWatchTail = item;
   }
@@ -113,21 +113,21 @@ abstract class _EvalWatchList {
 
   static void _remove(_EvalWatchList list, _EvalWatchRecord item) {
     assert(item.watchGrp == list);
-    var prev = item._previousEvalWatch;
+    var prev = item._prevEvalWatch;
     var next = item._nextEvalWatch;
 
     if (list._evalWatchHead == list._evalWatchTail) {
       list._evalWatchHead = list._evalWatchTail = list._marker;
       list._marker
           .._nextEvalWatch = next
-          .._previousEvalWatch = prev;
+          .._prevEvalWatch = prev;
       if (prev != null) prev._nextEvalWatch = list._marker;
-      if (next != null) next._previousEvalWatch = list._marker;
+      if (next != null) next._prevEvalWatch = list._marker;
     } else {
       if (item == list._evalWatchHead) list._evalWatchHead = next;
       if (item == list._evalWatchTail) list._evalWatchTail = prev;
       if (prev != null) prev._nextEvalWatch = next;
-      if (next != null) next._previousEvalWatch = prev;
+      if (next != null) next._prevEvalWatch = prev;
     }
   }
 }
@@ -137,11 +137,11 @@ class _WatchGroupList {
 
   static WatchGroup _add(_WatchGroupList list, WatchGroup item) {
     assert(item._nextWatchGroup     == null);
-    assert(item._previousWatchGroup == null);
+    assert(item._prevWatchGroup == null);
     if (list._watchGroupTail == null) {
       list._watchGroupHead = list._watchGroupTail = item;
     } else {
-      item._previousWatchGroup = list._watchGroupTail;
+      item._prevWatchGroup = list._watchGroupTail;
       list._watchGroupTail._nextWatchGroup = item;
       list._watchGroupTail = item;
     }
@@ -151,10 +151,10 @@ class _WatchGroupList {
   static bool _isEmpty(_WatchGroupList list) => list._watchGroupHead == null;
 
   static void _remove(_WatchGroupList list, WatchGroup item) {
-    var previous = item._previousWatchGroup;
+    var previous = item._prevWatchGroup;
     var next = item._nextWatchGroup;
 
     if (previous == null) list._watchGroupHead = next;     else previous._nextWatchGroup = next;
-    if (next == null)     list._watchGroupTail = previous; else next._previousWatchGroup = previous;
+    if (next == null)     list._watchGroupTail = previous; else next._prevWatchGroup = previous;
   }
 }

@@ -123,8 +123,8 @@ String _argList(List<AST> items) => items.join(', ');
 /**
  * The name is a bit oxymoron, but it is essentially the NullObject pattern.
  *
- * This allows children to set a handler on this ChangeRecord and then let it write the initial
- * constant value to the forwarding ChangeRecord.
+ * This allows children to set a handler on this Record and then let it write the initial
+ * constant value to the forwarding Record.
  */
 class _ConstantWatchRecord extends WatchRecord<_Handler> {
   final currentValue;
@@ -134,7 +134,7 @@ class _ConstantWatchRecord extends WatchRecord<_Handler> {
       : currentValue = currentValue,
         handler = new _ConstantHandler(watchGroup, expression, currentValue);
 
-  ChangeRecord<_Handler> check() => null;
+  bool check() => false;
   void remove() => null;
 
   get field => null;

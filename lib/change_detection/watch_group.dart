@@ -92,9 +92,9 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   int _nextChildId = 0;
   _EvalWatchRecord _evalWatchHead, _evalWatchTail;
   /// Pointer for creating tree of [WatchGroup]s.
-  WatchGroup _watchGroupHead, _watchGroupTail, _previousWatchGroup,
-      _nextWatchGroup;
   WatchGroup _parentWatchGroup;
+  WatchGroup _watchGroupHead, _watchGroupTail;
+  WatchGroup _prevWatchGroup, _nextWatchGroup;
 
   WatchGroup._child(_parentWatchGroup, this._changeDetector, this.context,
                     this._cache, this._rootGroup)
@@ -143,7 +143,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   WatchRecord<_Handler> addFieldWatch(AST lhs, String name, String expression) {
     var fieldHandler = new _FieldHandler(this, expression);
 
-    // Create a ChangeRecord for the current field and assign the change record
+    // Create a Record for the current field and assign the change record
     // to the handler.
     var watchRecord = _changeDetector.watch(null, name, fieldHandler);
     _fieldCost++;
@@ -257,15 +257,15 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
         this,
         _changeDetector.newGroup(),
         context == null ? this.context : context,
-        context == null ? this._cache: <String, WatchRecord<_Handler>>{},
+        <String, WatchRecord<_Handler>>{},
         _rootGroup == null ? this : _rootGroup);
     _WatchGroupList._add(this, childGroup);
     var marker = childGroup._marker;
 
-    marker._previousEvalWatch = prev;
+    marker._prevEvalWatch = prev;
     marker._nextEvalWatch = next;
     prev._nextEvalWatch = marker;
-    if (next != null) next._previousEvalWatch = marker;
+    if (next != null) next._prevEvalWatch = marker;
 
     return childGroup;
   }
@@ -276,9 +276,9 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   void remove() {
     // TODO:(misko) This code is not right.
     // 1) It fails to release [ChangeDetector] [WatchRecord]s.
-    // 2) it needs to cleanup caches if the cache is being shared.
 
     _WatchGroupList._remove(_parentWatchGroup, this);
+    _nextWatchGroup = _prevWatchGroup = null;
     _changeDetector.remove();
     _rootGroup._removeCount++;
     _parentWatchGroup = null;
@@ -287,10 +287,13 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     _EvalWatchRecord firstEvalWatch = _evalWatchHead;
     _EvalWatchRecord lastEvalWatch =
         (_watchGroupTail == null ? this : _watchGroupTail)._evalWatchTail;
-    _EvalWatchRecord previous = firstEvalWatch._previousEvalWatch;
+    _EvalWatchRecord previous = firstEvalWatch._prevEvalWatch;
     _EvalWatchRecord next = lastEvalWatch._nextEvalWatch;
     if (previous != null) previous._nextEvalWatch = next;
-    if (next != null) next._previousEvalWatch = previous;
+    if (next != null) next._prevEvalWatch = previous;
+    _evalWatchHead._prevEvalWatch = null;
+    _evalWatchTail._nextEvalWatch = null;
+    _evalWatchHead = _evalWatchTail = null;
   }
 
   toString() {
@@ -301,7 +304,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
       var prev = null;
       while (watch != null) {
         allWatches.add(watch.toString());
-        assert(watch._previousEvalWatch == prev);
+        assert(watch._prevEvalWatch == prev);
         prev = watch;
         watch = watch._nextEvalWatch;
       }
@@ -363,18 +366,18 @@ class RootWatchGroup extends WatchGroup {
                       AvgStopwatch fieldStopwatch,
                       AvgStopwatch evalStopwatch,
                       AvgStopwatch processStopwatch}) {
-    // Process the ChangeRecords from the change detector
-    ChangeRecord<_Handler> changeRecord =
+    // Process the Records from the change detector
+    Iterator<Record<_Handler>> changedRecordIterator =
         (_changeDetector as ChangeDetector<_Handler>).collectChanges(
             exceptionHandler:exceptionHandler,
             stopwatch: fieldStopwatch);
     if (processStopwatch != null) processStopwatch.start();
-    while (changeRecord != null) {
-      if (changeLog != null) changeLog(changeRecord.handler.expression,
-                                       changeRecord.currentValue,
-                                       changeRecord.previousValue);
-      changeRecord.handler.onChange(changeRecord);
-      changeRecord = changeRecord.nextChange;
+    while (changedRecordIterator.moveNext()) {
+      var record = changedRecordIterator.current;
+      if (changeLog != null) changeLog(record.handler.expression,
+                                       record.currentValue,
+                                       record.previousValue);
+      record.handler.onChange(record);
     }
     if (processStopwatch != null) processStopwatch.stop();
 
@@ -385,8 +388,7 @@ class RootWatchGroup extends WatchGroup {
     while (evalRecord != null) {
       try {
         if (evalStopwatch != null) evalCount++;
-        var change = evalRecord.check();
-        if (change != null && changeLog != null) {
+        if (evalRecord.check() && changeLog != null) {
           changeLog(evalRecord.handler.expression,
                     evalRecord.currentValue,
                     evalRecord.previousValue);
@@ -492,6 +494,7 @@ class Watch {
  * changes detected at one handler are propagated to the next handler.
  */
 abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
+  // Used for forwarding changes to delegates
   _Handler _head, _tail;
   _Handler _next, _previous;
   Watch _watchHead, _watchTail;
@@ -543,7 +546,7 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
   }
   acceptValue(object) => null;
 
-  void onChange(ChangeRecord<_Handler> record) {
+  void onChange(Record<_Handler> record) {
     assert(_next != this); // verify we are not detached
     // If we have reaction functions than queue them up for asynchronous
     // processing.
@@ -579,8 +582,7 @@ class _FieldHandler extends _Handler {
    */
   void acceptValue(object) {
     watchRecord.object = object;
-    var changeRecord = watchRecord.check();
-    if (changeRecord != null) onChange(changeRecord);
+    if (watchRecord.check()) onChange(watchRecord);
   }
 }
 
@@ -592,8 +594,7 @@ class _CollectionHandler extends _Handler {
    */
   void acceptValue(object) {
     watchRecord.object = object;
-    var changeRecord = watchRecord.check();
-    if (changeRecord != null) onChange(changeRecord);
+    if (watchRecord.check()) onChange(watchRecord);
   }
 
   void _releaseWatch() {
@@ -631,7 +632,7 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
     watchRecord.object = object;
   }
 
-  void onChange(ChangeRecord<_Handler> record) {
+  void onChange(Record<_Handler> record) {
     super.onChange(record);
   }
 
@@ -650,7 +651,7 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
 }
 
 
-class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> {
+class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
   static const int _MODE_DELETED_        = -1;
   static const int _MODE_MARKER_         = 0;
   static const int _MODE_FUNCTION_       = 1;
@@ -670,7 +671,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
   bool dirtyArgs = true;
 
   dynamic currentValue, previousValue, _object;
-  _EvalWatchRecord _previousEvalWatch, _nextEvalWatch;
+  _EvalWatchRecord _prevEvalWatch, _nextEvalWatch;
 
   _EvalWatchRecord(this.watchGrp, this.handler, this.fn, name, int arity)
       : args = new List(arity),
@@ -730,19 +731,19 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
     }
   }
 
-  ChangeRecord<_Handler> check() {
+  bool check() {
     var value;
     switch (mode) {
       case _MODE_MARKER_:
       case _MODE_NULL_:
-        return null;
+        return false;
       case _MODE_FUNCTION_:
-        if (!dirtyArgs) return null;
+        if (!dirtyArgs) return false;
         value = Function.apply(fn, args);
         dirtyArgs = false;
         break;
       case _MODE_FUNCTION_APPLY_:
-        if (!dirtyArgs) return null;
+        if (!dirtyArgs) return false;
         value = (fn as FunctionApply).apply(args);
         dirtyArgs = false;
         break;
@@ -770,10 +771,10 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, ChangeRecord<_Handler> 
         previousValue = current;
         currentValue = value;
         handler.onChange(this);
-        return this;
+        return true;
       }
     }
-    return null;
+    return false;
   }
 
   get nextChange => null;

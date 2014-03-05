@@ -20,42 +20,45 @@ void main() {
     describe('object field', () {
       it('should detect nothing', () {
         var changes = detector.collectChanges();
-        expect(changes).toEqual(null);
+        expect(changes.moveNext()).toEqual(false);
       });
 
       it('should detect field changes', () {
         var user = new _User('', '');
-        var change;
+        Iterator changeIterator;
 
         detector
             ..watch(user, 'first', null)
             ..watch(user, 'last', null)
             ..collectChanges(); // throw away first set
 
-        change = detector.collectChanges();
-        expect(change).toEqual(null);
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(false);
         user..first = 'misko'
             ..last = 'hevery';
 
-        change = detector.collectChanges();
-        expect(change.currentValue).toEqual('misko');
-        expect(change.previousValue).toEqual('');
-        expect(change.nextChange.currentValue).toEqual('hevery');
-        expect(change.nextChange.previousValue).toEqual('');
-        expect(change.nextChange.nextChange).toEqual(null);
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.currentValue).toEqual('misko');
+        expect(changeIterator.current.previousValue).toEqual('');
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.currentValue).toEqual('hevery');
+        expect(changeIterator.current.previousValue).toEqual('');
+        expect(changeIterator.moveNext()).toEqual(false);
 
         // force different instance
         user.first = 'mis';
         user.first += 'ko';
 
-        change = detector.collectChanges();
-        expect(change).toEqual(null);
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(false);
 
         user.last = 'Hevery';
-        change = detector.collectChanges();
-        expect(change.currentValue).toEqual('Hevery');
-        expect(change.previousValue).toEqual('hevery');
-        expect(change.nextChange).toEqual(null);
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.currentValue).toEqual('Hevery');
+        expect(changeIterator.current.previousValue).toEqual('hevery');
+        expect(changeIterator.moveNext()).toEqual(false);
       });
 
       it('should ignore NaN != NaN', () {
@@ -63,14 +66,15 @@ void main() {
         user.age = double.NAN;
         detector..watch(user, 'age', null)..collectChanges(); // throw away first set
 
-        var changes = detector.collectChanges();
-        expect(changes).toEqual(null);
+        var changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(false);
 
         user.age = 123;
-        changes = detector.collectChanges();
-        expect(changes.currentValue).toEqual(123);
-        expect(changes.previousValue.isNaN).toEqual(true);
-        expect(changes.nextChange).toEqual(null);
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.currentValue).toEqual(123);
+        expect(changeIterator.current.previousValue.isNaN).toEqual(true);
+        expect(changeIterator.moveNext()).toEqual(false);
       });
 
       it('should treat map field dereference as []', () {
@@ -79,9 +83,10 @@ void main() {
         detector.collectChanges(); // throw away first set
 
         obj['name'] = 'Misko';
-        var changes = detector.collectChanges();
-        expect(changes.currentValue).toEqual('Misko');
-        expect(changes.previousValue).toEqual('misko');
+        var changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.currentValue).toEqual('Misko');
+        expect(changeIterator.current.previousValue).toEqual('misko');
       });
     });
 
@@ -92,21 +97,24 @@ void main() {
         var b = detector.watch(obj, 'b', 'b');
 
         obj['a'] = obj['b'] = 1;
-        var changes = detector.collectChanges();
-        expect(changes.handler).toEqual('a');
-        expect(changes.nextChange.handler).toEqual('b');
-        expect(changes.nextChange.nextChange).toEqual(null);
+        var changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.handler).toEqual('a');
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.handler).toEqual('b');
+        expect(changeIterator.moveNext()).toEqual(false);
 
         obj['a'] = obj['b'] = 2;
         a.remove();
-        changes = detector.collectChanges();
-        expect(changes.handler).toEqual('b');
-        expect(changes.nextChange).toEqual(null);
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.handler).toEqual('b');
+        expect(changeIterator.moveNext()).toEqual(false);
 
         obj['a'] = obj['b'] = 3;
         b.remove();
-        changes = detector.collectChanges();
-        expect(changes).toEqual(null);
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(false);
       });
 
       it('should remove all watches in group and group\'s children', () {
@@ -121,6 +129,7 @@ void main() {
         child1a.watch(obj,'a', '1A');
         child2.watch(obj,'a', '2A');
 
+        var iterator;
         obj['a'] = 1;
         expect(detector.collectChanges(),
             toEqualChanges(['0a', '0A', '1a', '1A', '2A', '1b']));
@@ -135,6 +144,7 @@ void main() {
         var ra = detector.watch(obj, 'a', 'a');
         var child = detector.newGroup();
         var cb = child.watch(obj,'b', 'b');
+        var iterotar;
 
         obj['a'] = obj['b'] = 1;
         expect(detector.collectChanges(), toEqualChanges(['a', 'b']));
@@ -166,17 +176,22 @@ void main() {
       it('should detect changes in list', () {
         var list = [];
         var record = detector.watch(list, null, 'handler');
-        expect(detector.collectChanges()).toEqual(null);
+        expect(detector.collectChanges().moveNext()).toEqual(false);
+        var iterator;
 
         list.add('a');
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges();
+        expect(iterator.moveNext()).toEqual(true);
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['a[null -> 0]'],
             additions: ['a[null -> 0]'],
             moves: [],
             removals: []));
 
         list.add('b');
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges();
+        expect(iterator.moveNext()).toEqual(true);
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['a', 'b[null -> 1]'],
             additions: ['b[null -> 1]'],
             moves: [],
@@ -184,7 +199,9 @@ void main() {
 
         list.add('c');
         list.add('d');
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges();
+        expect(iterator.moveNext()).toEqual(true);
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['a', 'b', 'c[null -> 2]', 'd[null -> 3]'],
             additions: ['c[null -> 2]', 'd[null -> 3]'],
             moves: [],
@@ -192,7 +209,9 @@ void main() {
 
         list.remove('c');
         expect(list).toEqual(['a', 'b', 'd']);
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges();
+        expect(iterator.moveNext()).toEqual(true);
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['a', 'b', 'd[3 -> 2]'],
             additions: [],
             moves: ['d[3 -> 2]'],
@@ -200,7 +219,9 @@ void main() {
 
         list.clear();
         list.addAll(['d', 'c', 'b', 'a']);
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges();
+        expect(iterator.moveNext()).toEqual(true);
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['d[2 -> 0]', 'c[null -> 1]', 'b[1 -> 2]', 'a[0 -> 3]'],
             additions: ['c[null -> 1]'],
             moves: ['d[2 -> 0]', 'b[1 -> 2]', 'a[0 -> 3]'],
@@ -210,17 +231,20 @@ void main() {
       it('should detect changes in list', () {
         var list = [];
         var record = detector.watch(list.map((i) => i), null, 'handler');
-        expect(detector.collectChanges()).toEqual(null);
+        expect(detector.collectChanges().moveNext()).toEqual(false);
+        var iterator;
 
         list.add('a');
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['a[null -> 0]'],
             additions: ['a[null -> 0]'],
             moves: [],
             removals: []));
 
         list.add('b');
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['a', 'b[null -> 1]'],
             additions: ['b[null -> 1]'],
             moves: [],
@@ -228,7 +252,8 @@ void main() {
 
         list.add('c');
         list.add('d');
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['a', 'b', 'c[null -> 2]', 'd[null -> 3]'],
             additions: ['c[null -> 2]', 'd[null -> 3]'],
             moves: [],
@@ -236,7 +261,8 @@ void main() {
 
         list.remove('c');
         expect(list).toEqual(['a', 'b', 'd']);
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['a', 'b', 'd[3 -> 2]'],
             additions: [],
             moves: ['d[3 -> 2]'],
@@ -244,7 +270,8 @@ void main() {
 
         list.clear();
         list.addAll(['d', 'c', 'b', 'a']);
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['d[2 -> 0]', 'c[null -> 1]', 'b[1 -> 2]', 'a[0 -> 3]'],
             additions: ['c[null -> 1]'],
             moves: ['d[2 -> 0]', 'b[1 -> 2]', 'a[0 -> 3]'],
@@ -257,23 +284,25 @@ void main() {
 
         list[1] = 'b' + 'oo';
 
-        expect(detector.collectChanges()).toEqual(null);
+        expect(detector.collectChanges().moveNext()).toEqual(false);
       });
 
       it('should ignore [NaN] != [NaN]', () {
         var list = [double.NAN];
         var record = detector..watch(list, null, null)..collectChanges();
 
-        expect(detector.collectChanges()).toEqual(null);
+        expect(detector.collectChanges().moveNext()).toEqual(false);
       });
 
       it('should remove and add same item', () {
         var list = ['a', 'b', 'c'];
         var record = detector.watch(list, null, 'handler');
+        var iterator;
         detector.collectChanges();
 
         list.remove('b');
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['a', 'c[2 -> 1]'],
             additions: [],
             moves: ['c[2 -> 1]'],
@@ -281,7 +310,8 @@ void main() {
 
         list.insert(1, 'b');
         expect(list).toEqual(['a', 'b', 'c']);
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['a', 'b[null -> 1]', 'c[1 -> 2]'],
             additions: ['b[null -> 1]'],
             moves: ['c[1 -> 2]'],
@@ -294,7 +324,8 @@ void main() {
         detector.collectChanges();
 
         list.removeAt(0);
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        var iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['a', 'a', 'b[3 -> 2]', 'b[4 -> 3]'],
             additions: [],
             moves: ['b[3 -> 2]', 'b[4 -> 3]'],
@@ -305,10 +336,12 @@ void main() {
       it('should support insertions/moves', () {
         var list = ['a', 'a', 'b', 'b'];
         var record = detector.watch(list, null, 'handler');
+        var iterator;
         detector.collectChanges();
         list.insert(0, 'b');
         expect(list).toEqual(['b', 'a', 'a', 'b', 'b']);
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['b[2 -> 0]', 'a[0 -> 1]', 'a[1 -> 2]', 'b', 'b[null -> 4]'],
             additions: ['b[null -> 4]'],
             moves: ['b[2 -> 0]', 'a[0 -> 1]', 'a[1 -> 2]'],
@@ -319,25 +352,29 @@ void main() {
         var hiddenList = [1];
         var list = new UnmodifiableListView(hiddenList);
         var record = detector.watch(list, null, 'handler');
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        var iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['1[null -> 0]'],
             additions: ['1[null -> 0]'],
             moves: [],
             removals: []));
 
         // assert no changes detected
-        expect(detector.collectChanges()).toEqual(null);
+        expect(detector.collectChanges().moveNext()).toEqual(false);
 
         // change the hiddenList normally this should trigger change detection
         // but because we are wrapped in UnmodifiableListView we see nothing.
         hiddenList[0] = 2;
-        expect(detector.collectChanges()).toEqual(null);
+        expect(detector.collectChanges().moveNext()).toEqual(false);
       });
 
       it('should bug', () {
         var list = [1, 2, 3, 4];
         var record = detector.watch(list, null, 'handler');
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        var iterator;
+
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['1[null -> 0]', '2[null -> 1]', '3[null -> 2]', '4[null -> 3]'],
             additions: ['1[null -> 0]', '2[null -> 1]', '3[null -> 2]', '4[null -> 3]'],
             moves: [],
@@ -345,14 +382,16 @@ void main() {
         detector.collectChanges();
 
         list.removeRange(0, 1);
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['2[1 -> 0]', '3[2 -> 1]', '4[3 -> 2]'],
             additions: [],
             moves: ['2[1 -> 0]', '3[2 -> 1]', '4[3 -> 2]'],
             removals: ['1[0 -> null]']));
 
         list.insert(0, 1);
-        expect(detector.collectChanges().currentValue, toEqualCollectionRecord(
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['1[null -> 0]', '2[0 -> 1]', '3[1 -> 2]', '4[2 -> 3]'],
             additions: ['1[null -> 0]'],
             moves: ['2[0 -> 1]', '3[1 -> 2]', '4[2 -> 3]'],
@@ -364,17 +403,22 @@ void main() {
       it('should do basic map watching', () {
         var map = {};
         var record = detector.watch(map, null, 'handler');
-        expect(detector.collectChanges()).toEqual(null);
+        expect(detector.collectChanges().moveNext()).toEqual(false);
 
+        var changeIterator;
         map['a'] = 'A';
-        expect(detector.collectChanges().currentValue, toEqualMapRecord(
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.currentValue, toEqualMapRecord(
             map: ['a[null -> A]'],
             additions: ['a[null -> A]'],
             changes: [],
             removals: []));
 
         map['b'] = 'B';
-        expect(detector.collectChanges().currentValue, toEqualMapRecord(
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.currentValue, toEqualMapRecord(
             map: ['a', 'b[null -> B]'],
             additions: ['b[null -> B]'],
             changes: [],
@@ -382,7 +426,9 @@ void main() {
 
         map['b'] = 'BB';
         map['d'] = 'D';
-        expect(detector.collectChanges().currentValue, toEqualMapRecord(
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.currentValue, toEqualMapRecord(
             map: ['a', 'b[B -> BB]', 'd[null -> D]'],
             additions: ['d[null -> D]'],
             changes: ['b[B -> BB]'],
@@ -390,14 +436,18 @@ void main() {
 
         map.remove('b');
         expect(map).toEqual({'a': 'A', 'd':'D'});
-        expect(detector.collectChanges().currentValue, toEqualMapRecord(
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.currentValue, toEqualMapRecord(
             map: ['a', 'd'],
             additions: [],
             changes: [],
             removals: ['b[BB -> null]']));
 
         map.clear();
-        expect(detector.collectChanges().currentValue, toEqualMapRecord(
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.current.currentValue, toEqualMapRecord(
             map: [],
             additions: [],
             changes: [],
@@ -410,7 +460,7 @@ void main() {
 
         map['f' + 'oo'] = 0;
 
-        expect(detector.collectChanges()).toEqual(null);
+        expect(detector.collectChanges().moveNext()).toEqual(false);
       });
 
       it('should test string values by value rather than by reference', () {
@@ -419,14 +469,14 @@ void main() {
 
         map['foo'] = 'b' + 'ar';
 
-        expect(detector.collectChanges()).toEqual(null);
+        expect(detector.collectChanges().moveNext()).toEqual(false);
       });
 
       it('should not see a NaN value as a change', () {
         var map = {'foo': double.NAN};
         var record = detector..watch(map, null, null)..collectChanges();
 
-        expect(detector.collectChanges()).toEqual(null);
+        expect(detector.collectChanges().moveNext()).toEqual(false);
       });
     });
 
@@ -486,21 +536,20 @@ class ChangeMatcher extends Matcher {
   Description describe(Description description) =>
       description..add(expected.toString());
 
-  Description describeMismatch(changes, Description mismatchDescription,
+  Description describeMismatch(Iterator<Record> changes,
+                               Description mismatchDescription,
                                Map matchState, bool verbose) {
     List list = [];
-    while(changes != null) {
-      list.add(changes.handler);
-      changes = changes.nextChange;
+    while(changes.moveNext()) {
+      list.add(changes.current.handler);
     }
     return mismatchDescription..add(list.toString());
   }
 
-  bool matches(changes, Map matchState) {
+  bool matches(Iterator<Record> changes, Map matchState) {
     int count = 0;
-    while(changes != null) {
-      if (changes.handler != expected[count++]) return false;
-      changes = changes.nextChange;
+    while(changes.moveNext()) {
+      if (changes.current.handler != expected[count++]) return false;
     }
     return count == expected.length;
   }
@@ -518,6 +567,7 @@ class CollectionRecordMatcher extends Matcher {
   Description describeMismatch(changes, Description mismatchDescription,
                                Map matchState, bool verbose) {
     List diffs = matchState['diffs'];
+    if (diffs == null) return mismatchDescription;
     return mismatchDescription..add(diffs.join('\n'));
   }
 
@@ -651,6 +701,7 @@ class MapRecordMatcher extends Matcher {
   Description describeMismatch(changes, Description mismatchDescription,
                                Map matchState, bool verbose) {
     List diffs = matchState['diffs'];
+    if (diffs == null) return mismatchDescription;
     return mismatchDescription..add(diffs.join('\n'));
   }
 
