@@ -264,7 +264,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
     marker._previousEvalWatch = prev;
     marker._nextEvalWatch = next;
-    if (prev != null) prev._nextEvalWatch = marker;
+    prev._nextEvalWatch = marker;
     if (next != null) next._previousEvalWatch = marker;
 
     return childGroup;
