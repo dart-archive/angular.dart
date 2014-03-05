@@ -256,6 +256,23 @@ void main() {
         expect(form['two']).toBeNull();
         expect(form['three']).toBeNull();
       }));
+
+      it('should remove from parent when child is removed', inject((Scope scope, TestBed _) {
+        var element = $('<form name=myForm">' +
+                        '  <input type="text name="mega_name" ng-if="mega_visible" />' +
+                        '</form>');
+        _.compile(element);
+
+        scope.context['mega_visible'] = true;
+        scope.apply();
+
+        var form = scope.context['myForm'];
+        expect(form['mega_name']).toBeDefined();
+
+        scope.context['mega_visible'] = false;
+        scope.apply();
+        expect(form['mega_name']).toBeNull();
+      }));
     });
 
     describe('onSubmit', () {
