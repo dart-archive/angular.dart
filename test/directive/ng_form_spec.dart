@@ -162,6 +162,27 @@ void main() {
         expect(form.invalid).toBe(false);
       }));
 
+      it('should register the name of inner forms that contain the ng-form attribute',
+        inject((Scope scope, TestBed _) {
+
+        var element = $('<form name="myForm">'
+                        '  <div ng-form="myInnerForm" probe="f">' +
+                        '    <input type="text" ng-model="one" name="one" probe="m" />' +
+                        '  </div>' +
+                        '</form>');
+
+        _.compile(element);
+        scope.apply(() {
+          scope.context['one'] = 'it works!';
+        });
+
+        var form = scope.context['myForm'];
+        var inner = _.rootScope.context['f'].directive(NgForm);
+
+        expect(inner.name).toEqual('myInnerForm');
+        expect(scope.eval('myForm["myInnerForm"]["one"].viewValue')).toEqual('it works!');
+      }));
+
       it('should set the validity for the parent form when fieldsets are used', inject((Scope scope, TestBed _) {
         var element = $('<form name="myForm">'
                         '  <fieldset probe="f">' +
