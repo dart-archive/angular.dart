@@ -80,54 +80,7 @@ class _Row {
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-repeat]',
     map: const {'.': '@expression'})
-class NgRepeatDirective extends AbstractNgRepeatDirective {
-  NgRepeatDirective(BlockHole blockHole,
-                    BoundBlockFactory boundBlockFactory,
-                    Scope scope,
-                    Parser parser,
-                    AstParser astParser,
-                    FilterMap filters)
-      : super(blockHole, boundBlockFactory, scope, parser, astParser, filters);
-}
-
-/**
- * *EXPERIMENTAL:* This feature is experimental. We reserve the right to change
- * or delete it.
- *
- * [ng-shallow-repeat] is same as [ng-repeat] with some tradeoffs designed for
- * speed. Use [ng-shallow-repeat] when you expect that your items you are
- * repeating over do not change during the repeater lifetime.
- *
- * The shallow repeater introduces these changes:
- *
- *  * The repeater only fires if the identity of the list changes or if the list
- *  [length] property changes. This means that the repeater will still see
- *  additions and deletions but not changes to the array.
- *  * The child scopes for each item are created in the lazy mode
- *  (see [Scope.$new]). This means the scopes are effectively taken out of the
- *  digest cycle and will not update on changes to the model.
- *
- */
-@deprecated
-@NgDirective(
-    children: NgAnnotation.TRANSCLUDE_CHILDREN,
-    selector: '[ng-shallow-repeat]',
-    map: const {'.': '@expression'})
-//TODO(misko): delete me, since we can no longer do shallow digest.
-class NgShallowRepeatDirective extends AbstractNgRepeatDirective {
-  NgShallowRepeatDirective(BlockHole blockHole,
-                          BoundBlockFactory boundBlockFactory,
-                          Scope scope,
-                          Parser parser,
-                          AstParser astParser,
-                          FilterMap filters)
-      : super(blockHole, boundBlockFactory, scope, parser, astParser, filters)
-  {
-    print('DEPRECATED: [ng-shallow-repeat] use [ng-repeat]');
-  }
-}
-
-abstract class AbstractNgRepeatDirective  {
+class NgRepeatDirective {
   static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
   static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$');
 
@@ -147,7 +100,7 @@ abstract class AbstractNgRepeatDirective  {
   Watch _watch = null;
   Iterable _lastCollection;
 
-  AbstractNgRepeatDirective(this._blockHole, this._boundBlockFactory,
+  NgRepeatDirective(this._blockHole, this._boundBlockFactory,
                             this._scope, this._parser, this._astParser,
                             this.filters);
 
