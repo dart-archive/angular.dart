@@ -57,6 +57,15 @@ class NgForm extends NgControl {
     }
   }
 
+  //FIXME: fix this reflection bug that shows up when Map is implemented
+  operator []=(String key, value) {
+    if (key == 'name') {
+      name = value;
+    } else {
+      _controlByName[key] = value;
+    }
+  }
+
   get controls => _controlByName;
 
   NgControl operator[](name) {
@@ -68,6 +77,7 @@ class NgForm extends NgControl {
 
 class NgNullForm extends NgNullControl implements NgForm {
   NgNullForm() {}
+  operator []=(String key, value) {}
   operator[](name) {}
 
   get controls => null;
