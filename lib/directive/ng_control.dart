@@ -1,6 +1,6 @@
 part of angular.directive;
 
-abstract class NgControl implements NgDetachAware {
+abstract class NgControl implements NgAttachAware, NgDetachAware {
   static const NG_VALID_CLASS          = "ng-valid";
   static const NG_INVALID_CLASS        = "ng-invalid";
   static const NG_PRISTINE_CLASS       = "ng-pristine";
@@ -38,10 +38,17 @@ abstract class NgControl implements NgDetachAware {
     _scope.on('submitNgControl').listen((e) => _onSubmit(e.data));
   }
 
+  @override
+  attach() {
+    _parentControl.addControl(this);
+  }
+
+  @override
   detach() {
     for (int i = _controls.length - 1; i >= 0; --i) {
       removeControl(_controls[i]);
     }
+    _parentControl.removeControl(this);
   }
 
   reset() {
@@ -70,7 +77,6 @@ abstract class NgControl implements NgDetachAware {
   get name => _name;
   set name(value) {
     _name = value;
-    _parentControl.addControl(this);
   }
 
   get element => _element;
@@ -246,6 +252,7 @@ class NgNullControl implements NgControl {
   set untouched(value) {}
 
   reset() => null;
+  attach() => null;
   detach() => null;
   bool hasError(String key) => false;
 
