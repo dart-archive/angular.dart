@@ -26,12 +26,12 @@ class BoundBlockFactory {
  * [Compiler] as a result of compiling a template.
  */
 class BlockFactory {
-  final List directivePositions;
+  final List<ElementBinder> elementBinders;
   final List<dom.Node> templateElements;
   final Profiler _perf;
   final Expando _expando;
 
-  BlockFactory(this.templateElements, this.directivePositions, this._perf, this._expando);
+  BlockFactory(this.templateElements, this.elementBinders, this._perf, this._expando);
 
   BoundBlockFactory bind(Injector injector) =>
     new BoundBlockFactory(this, injector);
@@ -44,24 +44,20 @@ class BlockFactory {
     try {
       assert((timerId = _perf.startTimer('ng.block')) != false);
       var block = new Block(elements, injector.get(EventHandler) );
-      _link(block, elements, directivePositions, injector);
+      _link(block, elements, elementBinders, injector);
       return block;
     } finally {
       assert(_perf.stopTimer(timerId) != false);
     }
   }
 
-  _link(Block block, List<dom.Node> nodeList, List directivePositions, Injector parentInjector) {
+  _link(Block block, List<dom.Node> nodeList, List<ElementBinder> elementBinders, Injector parentInjector) {
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
 
-    for (int i = 0, ii = directivePositions.length; i < ii;) {
-      int index = directivePositions[i++];
-
-      List<DirectiveRef> directiveRefs = directivePositions[i++];
-      List childDirectivePositions = directivePositions[i++];
-      int nodeListIndex = index + preRenderedIndexOffset;
-      dom.Node node = nodeList[nodeListIndex];
+    elementBinders.forEach((elementBinder) {
+      List<DirectiveRef> directiveRefs = elementBinder.decoratorsMap; // TODO rename to decorators
+      dom.Node node = elementBinder.element;
 
       var timerId;
       try {
@@ -78,18 +74,19 @@ class BlockFactory {
         var childInjector = _instantiateDirectives(block, parentInjector, node,
             directiveRefs, parentInjector.get(Parser));
 
-        if (childDirectivePositions != null) {
-          _link(block, node.nodes, childDirectivePositions, childInjector);
+        if (elementBinder.childElementBinders.isNotEmpty) {
+          _link(block, node.nodes, elementBinder.childElementBinders, childInjector);
         }
 
         if (fakeParent) {
           // extract the node from the parentNode.
-          nodeList[nodeListIndex] = parentNode.nodes[0];
+          // nodeList[nodeListIndex] = parentNode.nodes[0];
+          node = parentNode.nodes[0];
         }
       } finally {
         assert(_perf.stopTimer(timerId) != false);
       }
-    }
+    });
   }
 
   Injector _instantiateDirectives(Block block, Injector parentInjector,

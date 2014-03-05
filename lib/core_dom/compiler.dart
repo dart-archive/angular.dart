@@ -12,8 +12,7 @@ class Compiler {
                 List<DirectiveRef> useExistingDirectiveRefs,
                 DirectiveMap directives) {
     if (domCursor.nodeList().length == 0) return null;
-
-    var directivePositions = null; // don't pre-create to create sparse tree and prevent GC pressure.
+    List<ElementBinder> elementBinders = <ElementBinder>[];
     var cursorAlreadyAdvanced;
 
     do {
@@ -22,6 +21,7 @@ class Compiler {
           : useExistingDirectiveRefs;
       var children = NgAnnotation.COMPILE_CHILDREN;
       var childDirectivePositions = null;
+      var childElementBinders = <ElementBinder>[];
       List<DirectiveRef> usableDirectiveRefs = null;
 
       cursorAlreadyAdvanced = false;
@@ -55,25 +55,28 @@ class Compiler {
       if (children == NgAnnotation.COMPILE_CHILDREN && domCursor.descend()) {
         templateCursor.descend();
 
-        childDirectivePositions =
+        childElementBinders =
             _compileBlock(domCursor, templateCursor, null, directives);
 
         domCursor.ascend();
         templateCursor.ascend();
       }
 
-      if (childDirectivePositions != null || usableDirectiveRefs != null) {
-        if (directivePositions == null) directivePositions = [];
-        var directiveOffsetIndex = templateCursor.index;
-
-        directivePositions
-            ..add(directiveOffsetIndex)
-            ..add(usableDirectiveRefs)
-            ..add(childDirectivePositions);
+      if (childElementBinders.isNotEmpty || usableDirectiveRefs != null) {
+        var onEvents = <String, String>{};
+        if( domCursor.nodeList()[0].nodeType == 1 ) {
+          dom.Element element = domCursor.nodeList()[0];
+          element.attributes.keys.where((key) => key.startsWith("on-")).forEach(
+              (key) {
+            onEvents[key] = element.attributes[key];
+          });
+          elementBinders.add(new ElementBinder(element, usableDirectiveRefs,
+              onEvents, childElementBinders));
+        }
       }
     } while (templateCursor.microNext() && domCursor.microNext());
 
-    return directivePositions;
+    return elementBinders;
   }
 
   BlockFactory compileTransclusion(
@@ -116,12 +119,12 @@ class Compiler {
     assert((timerId = _perf.startTimer('ng.compile', _html(elements))) != false);
     List<dom.Node> domElements = elements;
     List<dom.Node> templateElements = cloneElements(domElements);
-    var directivePositions = _compileBlock(
+    var elementBinders = _compileBlock(
         new NodeCursor(domElements), new NodeCursor(templateElements),
         null, directives);
 
-    var blockFactory = new BlockFactory(templateElements,
-        directivePositions == null ? [] : directivePositions, _perf, _expando);
+    var blockFactory = new BlockFactory(templateElements, elementBinders,
+        _perf, _expando);
 
     assert(_perf.stopTimer(timerId) != false);
     return blockFactory;
