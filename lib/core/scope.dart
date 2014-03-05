@@ -453,6 +453,7 @@ class RootScope extends Scope {
           }
           _runAsyncHead = _runAsyncHead._next;
         }
+        _runAsyncTail = null;
 
         digestTTL--;
         count = rootWatchGroup.detectChanges(
@@ -498,6 +499,7 @@ class RootScope extends Scope {
           }
           _domWriteHead = _domWriteHead._next;
         }
+        _domWriteTail = null;
         if (runObservers) {
           runObservers = false;
           observeGroup.detectChanges(exceptionHandler:_exceptionHandler);
@@ -510,6 +512,7 @@ class RootScope extends Scope {
           }
           _domReadHead = _domReadHead._next;
         }
+        _domReadTail = null;
       } while (_domWriteHead != null || _domReadHead != null);
       assert((() {
         var watchLog = [];

@@ -415,7 +415,9 @@ class RootWatchGroup extends WatchGroup {
       } catch (e, s) {
         if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
       }
-      dirtyWatch = dirtyWatch._nextDirtyWatch;
+      var nextDirtyWatch = dirtyWatch._nextDirtyWatch;
+      dirtyWatch._nextDirtyWatch = null;
+      dirtyWatch = nextDirtyWatch;
     }
     _dirtyWatchHead = _dirtyWatchTail = null;
     if (processStopwatch != null) processStopwatch..stop()..increment(count);
