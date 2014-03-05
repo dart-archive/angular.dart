@@ -3,6 +3,17 @@ library ng_model_validators;
 import '../_specs.dart';
 
 void main() {
+  they(should, tokens, callback, [exclusive=false]) {
+    tokens.forEach((token) {
+      describe(token, () {
+        (exclusive ? iit : it)(should, () => callback(token));
+      });
+    });
+  }
+
+  tthey(should, tokens, callback) =>
+    they(should, tokens, callback, true);
+
   describe('ngModel validators', () {
     TestBed _;
 
@@ -128,9 +139,12 @@ void main() {
       }));
     });
 
-    describe('[type="number"]', () {
-      it('should validate the input field given a valid or invalid number', inject((RootScope scope) {
-        _.compile('<input type="number" ng-model="val" probe="i" />');
+    describe('[type="number|range"]', () {
+      they('should validate the input field given a valid or invalid number',
+        ['range', 'number'],
+        (type) {
+
+        _.compile('<input type="$type" ng-model="val" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -162,12 +176,13 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
-      }));
+      });
 
-      it('should perform a max number validation if a max attribute value is present',
-        inject((RootScope scope) {
+      they('should perform a max number validation if a max attribute value is present',
+        ['range', 'number'],
+        (type) {
 
-        _.compile('<input type="number" ng-model="val" max="10" probe="i" />');
+        _.compile('<input type="$type" ng-model="val" max="10" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -198,12 +213,13 @@ void main() {
         expect(model.invalid).toEqual(true);
         expect(model.hasError('max')).toBe(false);
         expect(model.hasError('number')).toBe(true);
-      }));
+      });
 
-      it('should perform a max number validation if a ng-max attribute value is present and/or changed',
-        inject((RootScope scope) {
+      they('should perform a max number validation if a ng-max attribute value is present and/or changed',
+        ['range', 'number'],
+        (type) {
 
-        _.compile('<input type="number" ng-model="val" ng-max="maxVal" probe="i" />');
+        _.compile('<input type="$type" ng-model="val" ng-max="maxVal" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -239,12 +255,13 @@ void main() {
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
         expect(model.hasError('max')).toBe(false);
-      }));
+      });
 
-      it('should perform a min number validation if a min attribute value is present',
-        inject((RootScope scope) {
+      they('should perform a min number validation if a min attribute value is present',
+        ['range', 'number'],
+        (type) {
 
-        _.compile('<input type="number" ng-model="val" min="-10" probe="i" />');
+        _.compile('<input type="$type" ng-model="val" min="-10" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -275,12 +292,13 @@ void main() {
         expect(model.invalid).toEqual(true);
         expect(model.hasError('min')).toBe(false);
         expect(model.hasError('number')).toBe(true);
-      }));
+      });
 
-      it('should perform a min number validation if a ng-min attribute value is present and/or changed',
-        inject((RootScope scope) {
+      they('should perform a min number validation if a ng-min attribute value is present and/or changed',
+        ['range', 'number'],
+        (type) {
 
-        _.compile('<input type="number" ng-model="val" ng-min="minVal" probe="i" />');
+        _.compile('<input type="$type" ng-model="val" ng-min="minVal" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
@@ -316,7 +334,7 @@ void main() {
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
         expect(model.hasError('min')).toBe(false);
-      }));
+      });
     });
 
     describe('pattern', () {
