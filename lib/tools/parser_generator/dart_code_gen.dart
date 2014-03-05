@@ -173,9 +173,12 @@ class DartCodeGenVisitor extends Visitor {
     String right = evaluate(binary.right, convertToBool: logical);
     if (operation == '+') {
       return 'autoConvertAdd($left, $right)';
-    } else {
-      return '($left $operation $right)';
+    } else if (operation == '-') {
+      return '(($left != null && $right != null) ? $left - $right : ($left != null ? $left : ($right != null ? 0 - $right : 0)))';
+    } else if (!logical) {
+      return '($left == null || $right == null ? null : $left $operation $right)';
     }
+    return '($left $operation $right)';
   }
 
   visitPrefix(Prefix prefix) {

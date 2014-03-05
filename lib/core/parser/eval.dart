@@ -58,6 +58,22 @@ class Binary extends syntax.Binary {
       case '||': return toBool(left) || toBool(this.right.eval(scope));
     }
     var right = this.right.eval(scope);
+
+    // Null check for the operations.
+    if (left == null || right == null) {
+      switch (operation) {
+        case '+':
+          if (left != null) return left;
+          if (right != null) return right;
+          return 0;
+        case '-':
+          if (left != null) return left;
+          if (right != null) return 0 - right;
+          return 0;
+      }
+      return null;
+    }
+
     switch (operation) {
       case '+'  : return autoConvertAdd(left, right);
       case '-'  : return left - right;
