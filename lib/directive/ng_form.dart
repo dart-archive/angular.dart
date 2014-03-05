@@ -20,6 +20,7 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-form]',
     publishTypes : const <Type>[NgControl],
+    map: const { 'ng-form': '@name' },
     visibility: NgDirective.CHILDREN_VISIBILITY)
 class NgForm extends NgControl implements Map<String, NgControl> {
   /**
@@ -50,8 +51,10 @@ class NgForm extends NgControl implements Map<String, NgControl> {
   @NgAttr('name')
   get name => _name;
   set name(value) {
-    super.name = value;
-    _scope.context[name] = this;
+    if(value != null) {
+      super.name = value;
+      _scope.context[name] = this;
+    }
   }
 
   //FIXME: fix this reflection bug that shows up when Map is implemented
