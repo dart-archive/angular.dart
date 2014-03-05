@@ -25,7 +25,7 @@ if [ "$CHANNEL" = "stable" ] && [ "$TRAVIS_REPO_SLUG" = "angular/angular.dart" ]
         
         git fetch https://github.com/angular/angular.dart.git presubmit
         git checkout master
-        git merge --ff-only origin/presubmit 
+        git merge -q origin/presubmit 
         
         if [ $? -eq 0 ]; then
             git push
