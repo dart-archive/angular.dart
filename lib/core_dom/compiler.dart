@@ -3,63 +3,53 @@ part of angular.core.dom;
 @NgInjectableService()
 class Compiler implements Function {
   final Profiler _perf;
-  final Parser _parser;
   final Expando _expando;
 
-  Compiler(this._perf, this._parser, this._expando);
+  Compiler(this._perf, this._expando);
 
-  _compileView(NodeCursor domCursor, NodeCursor templateCursor,
+  List<ElementBinder> _compileView(NodeCursor domCursor, NodeCursor templateCursor,
                 ElementBinder existingElementBinder,
                 DirectiveMap directives) {
     if (domCursor.current == null) return null;
 
-    var directivePositions = null; // don't pre-create to create sparse tree and prevent GC pressure.
-    var cursorAlreadyAdvanced;
+    List<ElementBinder> elementBinders = null; // don't pre-create to create sparse tree and prevent GC pressure.
 
     do {
       ElementBinder declaredElementSelector = existingElementBinder == null
           ?  directives.selector(domCursor.current)
           : existingElementBinder;
 
-      var childDirectivePositions = null;
-      List<DirectiveRef> usableDirectiveRefs = null;
+      declaredElementSelector.offsetIndex = templateCursor.index;
 
-      cursorAlreadyAdvanced = false;
-
-      // TODO: move to ElementBinder
-      var compileTransclusionCallback = () {
-        DirectiveRef directiveRef = declaredElementSelector.template;
-        directiveRef.viewFactory = compileTransclusion(
+      var compileTransclusionCallback = (ElementBinder transclusionBinder) {
+        return compileTransclusion(
             domCursor, templateCursor,
-            directiveRef, declaredElementSelector, directives);
+            declaredElementSelector.template, transclusionBinder, directives);
       };
 
       var compileChildrenCallback = () {
-        if (declaredElementSelector.childMode == NgAnnotation.COMPILE_CHILDREN && domCursor.descend()) {
+        var childDirectivePositions = null;
+        if (domCursor.descend()) {
           templateCursor.descend();
 
           childDirectivePositions =
-          _compileView(domCursor, templateCursor, null, directives);
+            _compileView(domCursor, templateCursor, null, directives);
 
           domCursor.ascend();
           templateCursor.ascend();
         }
+        return childDirectivePositions;
       };
 
-      usableDirectiveRefs = declaredElementSelector.bind(null, null, compileTransclusionCallback, compileChildrenCallback);
+      declaredElementSelector.walkDOM(compileTransclusionCallback, compileChildrenCallback);
 
-      if (childDirectivePositions != null || usableDirectiveRefs != null) {
-        if (directivePositions == null) directivePositions = [];
-        var directiveOffsetIndex = templateCursor.index;
-
-        directivePositions
-            ..add(directiveOffsetIndex)
-            ..add(usableDirectiveRefs)
-            ..add(childDirectivePositions);
+      if (declaredElementSelector.isUseful()) {
+        if (elementBinders == null) elementBinders = [];
+        elementBinders.add(declaredElementSelector);
       }
     } while (templateCursor.moveNext() && domCursor.moveNext());
 
-    return directivePositions;
+    return elementBinders;
   }
 
   ViewFactory compileTransclusion(
@@ -100,20 +90,16 @@ class Compiler implements Function {
   ViewFactory call(List<dom.Node> elements, DirectiveMap directives) {
     var timerId;
     assert((timerId = _perf.startTimer('ng.compile', _html(elements))) != false);
-    final domElements = elements;
-    final templateElements = cloneElements(domElements);
-    var directivePositions = _compileView(
+    final List<dom.Node> domElements = elements;
+    final List<dom.Node> templateElements = cloneElements(domElements);
+    var elementBinders = _compileView(
         new NodeCursor(domElements), new NodeCursor(templateElements),
         null, directives);
 
     var viewFactory = new ViewFactory(templateElements,
-        directivePositions == null ? [] : directivePositions, _perf, _expando);
+        elementBinders == null ? [] : elementBinders, _perf, _expando);
 
     assert(_perf.stopTimer(timerId) != false);
     return viewFactory;
   }
-
-
-
 }
-

@@ -6,7 +6,7 @@ class ElementBinderFactory {
 
   ElementBinderFactory(Parser this._parser);
 
-  binder() {
+  binder([int templateIndex]) {
     return new ElementBinder(_parser);
   }
 }
@@ -21,27 +21,26 @@ class ElementBinder {
 
   ElementBinder(this._parser);
 
-  List<DirectiveRef> decorators = [];
+  ElementBinder.forTransclusion(ElementBinder other) {
+    _parser = other._parser;
+    decorators = other.decorators;
+    component = other.component;
+    childMode = other.childMode;
+    childElementBinders = other.childElementBinders;
+  }
 
-  /**
-   * TODO: Make this member private.
-   */
-  bool skipTemplate = false;
+  List<DirectiveRef> decorators = [];
 
   DirectiveRef template;
 
   DirectiveRef component;
 
+  var childElementBinders;
+
+  var offsetIndex;
+
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   String childMode = NgAnnotation.COMPILE_CHILDREN;
-
-  // TODO: This won't be part of the public API.
-  List<DirectiveRef> get decoratorsAndComponents {
-    if (component != null) {
-      return new List.from(decorators)..add(component);
-    }
-    return decorators;
-  }
 
   addDirective(DirectiveRef ref) {
     var annotation = ref.annotation;
@@ -58,39 +57,36 @@ class ElementBinder {
     if (annotation.children == NgAnnotation.IGNORE_CHILDREN) {
       childMode = annotation.children;
     }
+
+    createMappings(ref);
   }
 
-  List<DirectiveRef> bind(Injector injector, dom.Node node, compileTransclusionCallback, compileChildrenCallback) {
-    List<DirectiveRef> usableDirectiveRefs;
-
-    if (template != null && !skipTemplate) {
-      DirectiveRef directiveRef = template;
-
-      createMappings(directiveRef);
-      if (usableDirectiveRefs == null) usableDirectiveRefs = [];
-      usableDirectiveRefs.add(directiveRef);
-
-      skipTemplate = true;
-      compileTransclusionCallback();
-    } else {
-      var declaredDirectiveRefs = decoratorsAndComponents;
-      for (var j = 0; j < declaredDirectiveRefs.length; j++) {
-        DirectiveRef directiveRef = declaredDirectiveRefs[j];
-        NgAnnotation annotation = directiveRef.annotation;
-
-        createMappings(directiveRef);
-        if (usableDirectiveRefs == null) usableDirectiveRefs = [];
-        usableDirectiveRefs.add(directiveRef);
-      }
-
-      compileChildrenCallback();
+  List<DirectiveRef> walkDOM(compileTransclusionCallback, compileChildrenCallback) {
+    if (template != null) {
+      template.viewFactory = compileTransclusionCallback(new ElementBinder.forTransclusion(this));
+    } else if (childMode == NgAnnotation.COMPILE_CHILDREN) {
+        childElementBinders = compileChildrenCallback();
     }
+  }
 
-    return usableDirectiveRefs;
+  List<DirectiveRef> get usableDirectiveRefs {
+    if (template != null) {
+      return [template];
+    }
+    if (component != null) {
+      return new List.from(decorators)..add(component);
+    }
+    return decorators;
+  }
+
+
+  bool isUseful() {
+    return (usableDirectiveRefs != null && usableDirectiveRefs.length != 0) || childElementBinders != null;
   }
 
   static RegExp _MAPPING = new RegExp(r'^(\@|=\>\!|\=\>|\<\=\>|\&)\s*(.*)$');
 
+  // TODO: Move this into the Selector
   createMappings(DirectiveRef ref) {
     NgAnnotation annotation = ref.annotation;
     if (annotation.map != null) annotation.map.forEach((attrName, mapping) {

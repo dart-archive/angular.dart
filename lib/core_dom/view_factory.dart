@@ -24,13 +24,14 @@ class BoundViewFactory {
  * [Compiler] as a result of compiling a template.
  */
 class ViewFactory implements Function {
-  final List<List<DirectiveRef>> directivePositions;
+  final List<ElementBinder> elementBinders;
   final List<dom.Node> templateElements;
   final Profiler _perf;
   final Expando _expando;
 
-  ViewFactory(this.templateElements, this.directivePositions, this._perf,
-               this._expando);
+  ViewFactory(this.templateElements, this.elementBinders, this._perf, this._expando) {
+    assert(elementBinders.forEach((ElementBinder eb) { assert(eb is ElementBinder); }) != true);
+  }
 
   BoundViewFactory bind(Injector injector) =>
       new BoundViewFactory(this, injector);
@@ -41,23 +42,22 @@ class ViewFactory implements Function {
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
       var view = new View(nodes);
-      _link(view, nodes, directivePositions, injector);
+      _link(view, nodes, elementBinders, injector);
       return view;
     } finally {
       assert(_perf.stopTimer(timerId) != false);
     }
   }
 
-  _link(View view, List<dom.Node> nodeList, List directivePositions,
-        Injector parentInjector) {
+  _link(View view, List<dom.Node> nodeList, List elementBinders, Injector parentInjector) {
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
 
-    for (int i = 0; i < directivePositions.length;) {
-      int index = directivePositions[i++];
+    for (int i = 0; i < elementBinders.length; i++) {
+      var eb = elementBinders[i];
+      int index = eb.offsetIndex;
 
-      List<DirectiveRef> directiveRefs = directivePositions[i++];
-      List childDirectivePositions = directivePositions[i++];
+      List childElementBinders = eb.childElementBinders;
       int nodeListIndex = index + preRenderedIndexOffset;
       dom.Node node = nodeList[nodeListIndex];
 
@@ -74,10 +74,10 @@ class ViewFactory implements Function {
         }
 
         var childInjector = _instantiateDirectives(view, parentInjector, node,
-            directiveRefs, parentInjector.get(Parser));
+            eb, parentInjector.get(Parser));
 
-        if (childDirectivePositions != null) {
-          _link(view, node.nodes, childDirectivePositions, childInjector);
+        if (childElementBinders != null) {
+          _link(view, node.nodes, childElementBinders, childInjector);
         }
 
         if (fakeParent) {
@@ -90,8 +90,10 @@ class ViewFactory implements Function {
     }
   }
 
+  // TODO: This is actually ElementBinder.bind
   Injector _instantiateDirectives(View view, Injector parentInjector,
-      dom.Node node, List<DirectiveRef> directiveRefs, Parser parser) {
+                                  dom.Node node, ElementBinder elementBinder,
+                                  Parser parser) {
     var timerId;
     assert((timerId = _perf.startTimer('ng.view.link.setUp', _html(node))) != false);
     Injector nodeInjector;
@@ -101,6 +103,7 @@ class ViewFactory implements Function {
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
     ElementProbe probe;
 
+    var directiveRefs = elementBinder.usableDirectiveRefs;
     try {
       if (directiveRefs == null || directiveRefs.length == 0) {
         return parentInjector;
