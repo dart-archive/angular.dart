@@ -67,6 +67,8 @@ export 'package:angular/core/parser/lexer.dart';
 export 'package:angular/directive/module.dart';
 export 'package:angular/filter/module.dart';
 export 'package:angular/routing/module.dart';
+export 'package:angular/change_detection/dirty_checking_change_detector.dart'
+    show FieldGetter, GetterCache;
 
 part 'bootstrap.dart';
 part 'introspection.dart';
