@@ -283,6 +283,20 @@ main() {
       });
 
 
+      it('should eval binary operators with null as null', () {
+        expect(eval("null < 0")).toEqual(null);
+        expect(eval("null * 3")).toEqual(null);
+
+        // But + and - are special cases.
+        expect(eval("null + 6")).toEqual(6);
+        expect(eval("5 + null")).toEqual(5);
+        expect(eval("null - 4")).toEqual(-4);
+        expect(eval("3 - null")).toEqual(3);
+        expect(eval("null + null")).toEqual(0);
+        expect(eval("null - null")).toEqual(0);
+      });
+
+
       it('should pass exceptions through getters', () {
         expect(() {
           parser('boo').eval(new ScopeWithErrors());

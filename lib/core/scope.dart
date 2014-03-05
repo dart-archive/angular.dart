@@ -954,19 +954,19 @@ Function _operationToFunction(String operation) {
 
 _operation_negate(value)                       => !toBool(value);
 _operation_add(left, right)                    => autoConvertAdd(left, right);
-_operation_subtract(left, right)               => left - right;
-_operation_multiply(left, right)               => left * right;
-_operation_divide(left, right)                 => left / right;
-_operation_divide_int(left, right)             => left ~/ right;
-_operation_remainder(left, right)              => left % right;
-_operation_equals(left, right)                 => left == right;
-_operation_not_equals(left, right)             => left != right;
-_operation_less_then(left, right)              => left < right;
-_operation_greater_then(left, right)           => (left == null || right == null) ? false : left > right;
-_operation_less_or_equals_then(left, right)    => left <= right;
-_operation_greater_or_equals_then(left, right) => left >= right;
-_operation_power(left, right)                  => left ^ right;
-_operation_bitwise_and(left, right)            => left & right;
+_operation_subtract(left, right)               => (left != null && right != null) ? left - right : (left != null ? left : (right != null ? 0 - right : 0));
+_operation_multiply(left, right)               => (left == null || right == null) ? null : left * right;
+_operation_divide(left, right)                 => (left == null || right == null) ? null : left / right;
+_operation_divide_int(left, right)             => (left == null || right == null) ? null : left ~/ right;
+_operation_remainder(left, right)              => (left == null || right == null) ? null : left % right;
+_operation_equals(left, right)                 => (left == null || right == null) ? null : left == right;
+_operation_not_equals(left, right)             => (left == null || right == null) ? null : left != right;
+_operation_less_then(left, right)              => (left == null || right == null) ? null : left < right;
+_operation_greater_then(left, right)           => (left == null || right == null) ? null : left > right;
+_operation_less_or_equals_then(left, right)    => (left == null || right == null) ? null : left <= right;
+_operation_greater_or_equals_then(left, right) => (left == null || right == null) ? null : left >= right;
+_operation_power(left, right)                  => (left == null || right == null) ? null : left ^ right;
+_operation_bitwise_and(left, right)            => (left == null || right == null) ? null : left & right;
 // TODO(misko): these should short circuit the evaluation.
 _operation_logical_and(left, right)            => toBool(left) && toBool(right);
 _operation_logical_or(left, right)             => toBool(left) || toBool(right);

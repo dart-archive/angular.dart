@@ -47,7 +47,7 @@ autoConvertAdd(a, b) {
   }
   if (a != null) return a;
   if (b != null) return b;
-  return null;
+  return 0;
 }
 
 /**
