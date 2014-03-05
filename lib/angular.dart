@@ -52,7 +52,6 @@ metaTargets: const [
 ])
 import 'dart:mirrors' show MirrorsUsed;
 
-import 'package:angular/animate/module.dart';
 import 'package:angular/core/module.dart';
 import 'package:angular/core_dom/module.dart';
 import 'package:angular/directive/module.dart';
