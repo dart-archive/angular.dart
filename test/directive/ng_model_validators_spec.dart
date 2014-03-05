@@ -163,6 +163,160 @@ void main() {
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
       }));
+
+      it('should perform a max number validation if a max attribute value is present',
+        inject((RootScope scope) {
+
+        _.compile('<input type="number" ng-model="val" max="10" probe="i" />');
+        Probe probe = _.rootScope.context['i'];
+        var model = probe.directive(NgModel);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = "8";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(true);
+        expect(model.invalid).toEqual(false);
+        expect(model.hasError('max')).toBe(false);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = "99";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(false);
+        expect(model.invalid).toEqual(true);
+        expect(model.hasError('max')).toBe(true);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = "a";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(false);
+        expect(model.invalid).toEqual(true);
+        expect(model.hasError('max')).toBe(false);
+        expect(model.hasError('number')).toBe(true);
+      }));
+
+      it('should perform a max number validation if a ng-max attribute value is present and/or changed',
+        inject((RootScope scope) {
+
+        _.compile('<input type="number" ng-model="val" ng-max="maxVal" probe="i" />');
+        Probe probe = _.rootScope.context['i'];
+        var model = probe.directive(NgModel);
+
+        //should be valid even when no number is present
+        model.validate();
+        expect(model.valid).toEqual(true);
+        expect(model.invalid).toEqual(false);
+        expect(model.hasError('max')).toBe(false);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = "20";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(true);
+        expect(model.invalid).toEqual(false);
+        expect(model.hasError('max')).toBe(false);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['maxVal'] = "19";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(false);
+        expect(model.invalid).toEqual(true);
+        expect(model.hasError('max')).toBe(true);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['maxVal'] = "22";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(true);
+        expect(model.invalid).toEqual(false);
+        expect(model.hasError('max')).toBe(false);
+      }));
+
+      it('should perform a min number validation if a min attribute value is present',
+        inject((RootScope scope) {
+
+        _.compile('<input type="number" ng-model="val" min="-10" probe="i" />');
+        Probe probe = _.rootScope.context['i'];
+        var model = probe.directive(NgModel);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = "8";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(true);
+        expect(model.invalid).toEqual(false);
+        expect(model.hasError('min')).toBe(false);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = "-20";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(false);
+        expect(model.invalid).toEqual(true);
+        expect(model.hasError('min')).toBe(true);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = "x";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(false);
+        expect(model.invalid).toEqual(true);
+        expect(model.hasError('min')).toBe(false);
+        expect(model.hasError('number')).toBe(true);
+      }));
+
+      it('should perform a min number validation if a ng-min attribute value is present and/or changed',
+        inject((RootScope scope) {
+
+        _.compile('<input type="number" ng-model="val" ng-min="minVal" probe="i" />');
+        Probe probe = _.rootScope.context['i'];
+        var model = probe.directive(NgModel);
+
+        //should be valid even when no number is present
+        model.validate();
+        expect(model.valid).toEqual(true);
+        expect(model.invalid).toEqual(false);
+        expect(model.hasError('min')).toBe(false);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = "5";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(true);
+        expect(model.invalid).toEqual(false);
+        expect(model.hasError('min')).toBe(false);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['minVal'] = "5.5";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(false);
+        expect(model.invalid).toEqual(true);
+        expect(model.hasError('min')).toBe(true);
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = "5.6";
+        });
+
+        model.validate();
+        expect(model.valid).toEqual(true);
+        expect(model.invalid).toEqual(false);
+        expect(model.hasError('min')).toBe(false);
+      }));
     });
 
     describe('pattern', () {

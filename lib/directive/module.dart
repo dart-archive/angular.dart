@@ -82,6 +82,8 @@ class NgDirectiveModule extends Module {
     value(NgModelUrlValidator, null);
     value(NgModelEmailValidator, null);
     value(NgModelNumberValidator, null);
+    value(NgModelMaxNumberValidator, null);
+    value(NgModelMinNumberValidator, null);
     value(NgModelPatternValidator, null);
     value(NgModelMinLengthValidator, null);
     value(NgModelMaxLengthValidator, null);
