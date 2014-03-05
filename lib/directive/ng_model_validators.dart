@@ -79,6 +79,7 @@ class NgModelEmailValidator implements NgValidatable {
  * Validates the model to see if its contents match a valid number.
  */
 @NgDirective(selector: 'input[type=number][ng-model]')
+@NgDirective(selector: 'input[type=range][ng-model]')
 class NgModelNumberValidator implements NgValidatable {
   String get name => 'number';
 
@@ -105,8 +106,12 @@ class NgModelNumberValidator implements NgValidatable {
  * Validates the model to see if the numeric value than or equal to the max value.
  */
 @NgDirective(selector: 'input[type=number][ng-model][max]')
+@NgDirective(selector: 'input[type=range][ng-model][max]')
 @NgDirective(
     selector: 'input[type=number][ng-model][ng-max]',
+    map: const {'ng-max': '=>max'})
+@NgDirective(
+    selector: 'input[type=range][ng-model][ng-max]',
     map: const {'ng-max': '=>max'})
 class NgModelMaxNumberValidator implements NgValidatable {
 
@@ -147,8 +152,12 @@ class NgModelMaxNumberValidator implements NgValidatable {
  * Validates the model to see if the numeric value is greater than or equal to the min value.
  */
 @NgDirective(selector: 'input[type=number][ng-model][min]')
+@NgDirective(selector: 'input[type=range][ng-model][min]')
 @NgDirective(
     selector: 'input[type=number][ng-model][ng-min]',
+    map: const {'ng-min': '=>min'})
+@NgDirective(
+    selector: 'input[type=range][ng-model][ng-min]',
     map: const {'ng-min': '=>min'})
 class NgModelMinNumberValidator implements NgValidatable {
 
