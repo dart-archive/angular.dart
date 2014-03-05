@@ -11,7 +11,7 @@ echo Current channel is: $CHANNEL
 echo Current branch is: $TRAVIS_BRANCH
 echo Test result is: $TRAVIS_TEST_RESULT
 
-if [ "$CHANNEL" = "stable" ]; then
+if [ "$CHANNEL" = "stable" ] && [ "$TRAVIS_REPO_SLUG" = "angular/angular.dart" ]; then
     
     if [ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$TRAVIS_BRANCH" = "presubmit" ]; then
     
@@ -25,7 +25,7 @@ if [ "$CHANNEL" = "stable" ]; then
         
         git fetch https://github.com/angular/angular.dart.git presubmit
         git checkout master
-        git merge origin/presubmit
+        git merge --ff-only origin/presubmit 
         
         if [ $? -eq 0 ]; then
             git push
