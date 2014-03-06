@@ -99,6 +99,8 @@ abstract class _EvalWatchList {
     if (prev == list._marker) {
       list._evalWatchHead = list._evalWatchTail = item;
       prev = prev._prevEvalWatch;
+      list._marker._prevEvalWatch = null;
+      list._marker._nextEvalWatch = null;
     }
     item._nextEvalWatch = next;
     item._prevEvalWatch = prev;
