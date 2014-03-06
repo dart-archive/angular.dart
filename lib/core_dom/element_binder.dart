@@ -30,8 +30,6 @@ class ElementBinder {
   ViewFactory templateViewFactory;
 
   DirectiveRef component;
-  var childElementBinders;
-  var offsetIndex;
 
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   String childMode = NgAnnotation.COMPILE_CHILDREN;
@@ -46,8 +44,6 @@ class ElementBinder {
 
     decorators = other.decorators;
     component = other.component;
-    childElementBinders = other.childElementBinders;
-    offsetIndex = other.offsetIndex;
     childMode = other.childMode;
   }
 
@@ -92,8 +88,8 @@ class ElementBinder {
     return decorators;
   }
 
-  bool get isUseful {
-    return (_usableDirectiveRefs != null && _usableDirectiveRefs.length != 0) || childElementBinders != null;
+  bool get hasDirectives {
+    return (_usableDirectiveRefs != null && _usableDirectiveRefs.length != 0);
   }
 
   // DI visibility callback allowing node-local visibility.
@@ -377,4 +373,19 @@ class ElementBinder {
       ref.mappings.add(mappingFn);
     });
   }
+}
+
+
+// Used for walking the DOM
+class ElementBinderTreeRef {
+  final int offsetIndex;
+  final ElementBinderTree subtree;
+
+  ElementBinderTreeRef(this.offsetIndex, this.subtree);
+}
+class ElementBinderTree {
+  ElementBinder binder;
+  List<ElementBinderTreeRef> subtrees;
+
+  ElementBinderTree(this.binder, this.subtrees);
 }

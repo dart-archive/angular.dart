@@ -7,19 +7,19 @@ class Compiler implements Function {
 
   Compiler(this._perf, this._expando);
 
-  List<ElementBinder> _compileView(NodeCursor domCursor, NodeCursor templateCursor,
+  List<ElementBinderTreeRef> _compileView(NodeCursor domCursor, NodeCursor templateCursor,
                 ElementBinder existingElementBinder,
                 DirectiveMap directives) {
     if (domCursor.current == null) return null;
 
-    List<ElementBinder> elementBinders = null; // don't pre-create to create sparse tree and prevent GC pressure.
+    List<ElementBinderTreeRef> elementBinders = null; // don't pre-create to create sparse tree and prevent GC pressure.
 
     do {
+      var subtrees, binder;
+
       ElementBinder elementBinder = existingElementBinder == null
           ?  directives.selector(domCursor.current)
           : existingElementBinder;
-
-      elementBinder.offsetIndex = templateCursor.index;
 
       if (elementBinder.hasTemplate) {
         elementBinder.templateViewFactory = compileTransclusion(
@@ -31,7 +31,7 @@ class Compiler implements Function {
         if (domCursor.descend()) {
           templateCursor.descend();
 
-          elementBinder.childElementBinders =
+          subtrees =
               _compileView(domCursor, templateCursor, null, directives);
 
           domCursor.ascend();
@@ -39,10 +39,12 @@ class Compiler implements Function {
         }
       }
 
-      if (elementBinder.isUseful) {
-        if (elementBinders == null) elementBinders = [];
-        elementBinders.add(elementBinder);
+      if (elementBinder.hasDirectives) {
+        binder = elementBinder;
       }
+
+      if (elementBinders == null) elementBinders = [];
+      elementBinders.add(new ElementBinderTreeRef(templateCursor.index, new ElementBinderTree(binder, subtrees)));
     } while (templateCursor.moveNext() && domCursor.moveNext());
 
     return elementBinders;

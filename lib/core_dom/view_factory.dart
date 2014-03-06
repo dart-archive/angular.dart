@@ -24,13 +24,13 @@ class BoundViewFactory {
  * [Compiler] as a result of compiling a template.
  */
 class ViewFactory implements Function {
-  final List<ElementBinder> elementBinders;
+  final List<ElementBinderTreeRef> elementBinders;
   final List<dom.Node> templateElements;
   final Profiler _perf;
   final Expando _expando;
 
   ViewFactory(this.templateElements, this.elementBinders, this._perf, this._expando) {
-    assert(elementBinders.forEach((ElementBinder eb) { assert(eb is ElementBinder); }) != true);
+    assert(elementBinders.forEach((ElementBinderTreeRef eb) { assert(eb is ElementBinderTreeRef); }) != true);
   }
 
   BoundViewFactory bind(Injector injector) =>
@@ -57,7 +57,9 @@ class ViewFactory implements Function {
       var eb = elementBinders[i];
       int index = eb.offsetIndex;
 
-      List childElementBinders = eb.childElementBinders;
+      ElementBinderTree tree = eb.subtree;
+
+      //List childElementBinders = eb.childElementBinders;
       int nodeListIndex = index + preRenderedIndexOffset;
       dom.Node node = nodeList[nodeListIndex];
 
@@ -73,10 +75,10 @@ class ViewFactory implements Function {
           parentNode.append(node);
         }
 
-        var childInjector = eb.bind(view, parentInjector, node);
+        var childInjector = tree.binder != null ? tree.binder.bind(view, parentInjector, node) : parentInjector;
 
-        if (childElementBinders != null) {
-          _link(view, node.nodes, childElementBinders, childInjector);
+        if (tree.subtrees != null) {
+          _link(view, node.nodes, tree.subtrees, childInjector);
         }
 
         if (fakeParent) {
