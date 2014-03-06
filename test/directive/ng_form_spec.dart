@@ -20,6 +20,50 @@ void main() {
       expect(form.name).toEqual('myForm');
     }));
 
+    it('should return the first control with the given name when accessed using map notation',
+      inject((Scope scope, TestBed _) {
+
+      var element = $('<form name="myForm">' +
+                      '  <input type="text" name="model" ng-model="modelOne" probe="a" />' +
+                      '  <input type="text" name="model" ng-model="modelTwo" probe="b" />' +
+                      '</form>');
+
+      _.compile(element);
+      scope.apply();
+
+      NgForm form = _.rootScope.context['myForm'];
+      NgModel one = _.rootScope.context['a'].directive(NgModel);
+      NgModel two = _.rootScope.context['b'].directive(NgModel);
+
+      expect(one).not.toBe(two);
+      expect(form['model']).toBe(one);
+      expect(scope.eval("myForm['model']")).toBe(one);
+    }));
+
+    it('should return the all the controls with the given name', inject((Scope scope, TestBed _) {
+      var element = $('<form name="myForm">' +
+                      '  <input type="text" name="model" ng-model="modelOne" probe="a" />' +
+                      '  <input type="text" name="model" ng-model="modelTwo" probe="b" />' +
+                      '</form>');
+
+      _.compile(element);
+      scope.apply();
+
+      NgForm form = _.rootScope.context['myForm'];
+      NgModel one = _.rootScope.context['a'].directive(NgModel);
+      NgModel two = _.rootScope.context['b'].directive(NgModel);
+
+      expect(one).not.toBe(two);
+
+      var controls = form.controls['model'];
+      expect(controls[0]).toBe(one);
+      expect(controls[1]).toBe(two);
+
+      expect(scope.eval("myForm.controls['model'][0]")).toBe(one);
+      expect(scope.eval("myForm.controls['model'][1]")).toBe(two);
+    }));
+
+
     describe('pristine / dirty', () {
       it('should be set to pristine by default', inject((Scope scope, TestBed _) {
         var element = $('<form name="myForm"></form>');
@@ -482,6 +526,24 @@ void main() {
         expect(model.touched).toBe(false);
       }));
     });
+
+    it("should use map notation to fetch controls", inject((TestBed _) {
+        Scope s = _.rootScope;
+        s.context['name'] = 'cool';
+
+        var form = _.compile('<form name="myForm">' +
+                             ' <input type="text" ng-model="someModel" probe="i" name="name" />' +
+                             '</form>');
+
+        NgForm formModel = s.context['myForm'];
+        Probe probe = s.context['i'];
+        var model = probe.directive(NgModel);
+
+        expect(s.eval('name')).toEqual('cool');
+        expect(s.eval('myForm.name')).toEqual('myForm');
+        expect(s.eval('myForm["name"]')).toBe(model);
+        expect(s.eval('myForm["name"].name')).toEqual("name");
+    }));
 
     describe('regression tests: form', () {
       it('should be resolvable by injector if configured by user.', () {
