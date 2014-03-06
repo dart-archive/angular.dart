@@ -79,6 +79,7 @@ class NgModelEmailValidator implements NgValidatable {
  * Validates the model to see if its contents match a valid number.
  */
 @NgDirective(selector: 'input[type=number][ng-model]')
+@NgDirective(selector: 'input[type=range][ng-model]')
 class NgModelNumberValidator implements NgValidatable {
   String get name => 'number';
 
@@ -97,6 +98,98 @@ class NgModelNumberValidator implements NgValidatable {
         return false;
       }
     }
+    return true;
+  }
+}
+
+/**
+ * Validates the model to see if the numeric value than or equal to the max value.
+ */
+@NgDirective(selector: 'input[type=number][ng-model][max]')
+@NgDirective(selector: 'input[type=range][ng-model][max]')
+@NgDirective(
+    selector: 'input[type=number][ng-model][ng-max]',
+    map: const {'ng-max': '=>max'})
+@NgDirective(
+    selector: 'input[type=range][ng-model][ng-max]',
+    map: const {'ng-max': '=>max'})
+class NgModelMaxNumberValidator implements NgValidatable {
+
+  double _max;
+  String get name => 'max';
+
+  NgModelMaxNumberValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
+
+  @NgAttr('max')
+  get max => _max;
+  set max(value) {
+    try {
+      num parsedValue = double.parse(value);
+      _max = parsedValue.isNaN ? _max : parsedValue;
+    } catch(e) {};
+  }
+
+  bool isValid(value) {
+    if (value == null || max == null) return true;
+
+    try {
+      num parsedValue = double.parse(value.toString());
+      if (!parsedValue.isNaN) {
+        return parsedValue <= max;
+      }
+    } catch(exception, stackTrace) {}
+
+    //this validator doesn't care if the type conversation fails or the value
+    //is not a number (NaN) because NgModelNumberValidator will handle the
+    //number-based validation either way.
+    return true;
+  }
+}
+
+/**
+ * Validates the model to see if the numeric value is greater than or equal to the min value.
+ */
+@NgDirective(selector: 'input[type=number][ng-model][min]')
+@NgDirective(selector: 'input[type=range][ng-model][min]')
+@NgDirective(
+    selector: 'input[type=number][ng-model][ng-min]',
+    map: const {'ng-min': '=>min'})
+@NgDirective(
+    selector: 'input[type=range][ng-model][ng-min]',
+    map: const {'ng-min': '=>min'})
+class NgModelMinNumberValidator implements NgValidatable {
+
+  double _min;
+  String get name => 'min';
+
+  NgModelMinNumberValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
+
+  @NgAttr('min')
+  get min => _min;
+  set min(value) {
+    try {
+      num parsedValue = double.parse(value);
+      _min = parsedValue.isNaN ? _min : parsedValue;
+    } catch(e) {};
+  }
+
+  bool isValid(value) {
+    if (value == null || min == null) return true;
+
+    try {
+      num parsedValue = double.parse(value.toString());
+      if (!parsedValue.isNaN) {
+        return parsedValue >= min;
+      }
+    } catch(exception, stackTrace) {}
+
+    //this validator doesn't care if the type conversation fails or the value
+    //is not a number (NaN) because NgModelNumberValidator will handle the
+    //number-based validation either way.
     return true;
   }
 }
