@@ -49,7 +49,7 @@ class ViewFactory implements Function {
     }
   }
 
-  _link(View view, List<dom.Node> nodeList, List elementBinders, Injector parentInjector) {
+  View _link(View view, List<dom.Node> nodeList, List elementBinders, Injector parentInjector) {
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
 
@@ -73,8 +73,7 @@ class ViewFactory implements Function {
           parentNode.append(node);
         }
 
-        var childInjector = _instantiateDirectives(view, parentInjector, node,
-            eb, parentInjector.get(Parser));
+        var childInjector = eb.bind(view, parentInjector, node);
 
         if (childElementBinders != null) {
           _link(view, node.nodes, childElementBinders, childInjector);
@@ -88,191 +87,8 @@ class ViewFactory implements Function {
         assert(_perf.stopTimer(timerId) != false);
       }
     }
+    return view;
   }
-
-  // TODO: This is actually ElementBinder.bind
-  Injector _instantiateDirectives(View view, Injector parentInjector,
-                                  dom.Node node, ElementBinder elementBinder,
-                                  Parser parser) {
-    var timerId;
-    assert((timerId = _perf.startTimer('ng.view.link.setUp', _html(node))) != false);
-    Injector nodeInjector;
-    Scope scope = parentInjector.get(Scope);
-    FilterMap filters = parentInjector.get(FilterMap);
-    Map<Type, _ComponentFactory> fctrs;
-    var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
-    ElementProbe probe;
-
-    var directiveRefs = elementBinder.usableDirectiveRefs;
-    try {
-      if (directiveRefs == null || directiveRefs.length == 0) {
-        return parentInjector;
-      }
-      var viewPortFactory = (_) => null;
-      var viewFactory = (_) => null;
-      var boundViewFactory = (_) => null;
-      var nodesAttrsDirectives = null;
-
-      var nodeModule = new Module()
-          ..value(View, view)
-          ..value(dom.Element, node)
-          ..value(dom.Node, node)
-          ..value(NodeAttrs, nodeAttrs);
-
-      directiveRefs.forEach((DirectiveRef ref) {
-        NgAnnotation annotation = ref.annotation;
-        var visibility = _elementOnly;
-        if (ref.annotation is NgController) {
-          scope = scope.createChild(new PrototypeMap(scope.context));
-          nodeModule.value(Scope, scope);
-        }
-        if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
-          visibility = null;
-        } else if (ref.annotation.visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
-          visibility = _elementDirectChildren;
-        }
-        if (ref.type == NgTextMustacheDirective) {
-          nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
-            return new NgTextMustacheDirective(
-                node, ref.value, injector.get(Interpolate), injector.get(Scope),
-                injector.get(AstParser), injector.get(FilterMap));
-          });
-        } else if (ref.type == NgAttrMustacheDirective) {
-          if (nodesAttrsDirectives == null) {
-            nodesAttrsDirectives = [];
-            nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
-              var scope = injector.get(Scope);
-              var interpolate = injector.get(Interpolate);
-              for (var ref in nodesAttrsDirectives) {
-                new NgAttrMustacheDirective(nodeAttrs, ref.value, interpolate,
-                    scope, injector.get(AstParser), injector.get(FilterMap));
-              }
-            });
-          }
-          nodesAttrsDirectives.add(ref);
-        } else if (ref.annotation is NgComponent) {
-          //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
-          // TODO(misko): there should be no need to wrap function like this.
-          nodeModule.factory(ref.type, (Injector injector) {
-            Compiler compiler = injector.get(Compiler);
-            Scope scope = injector.get(Scope);
-            ViewCache viewCache = injector.get(ViewCache);
-            Http http = injector.get(Http);
-            TemplateCache templateCache = injector.get(TemplateCache);
-            DirectiveMap directives = injector.get(DirectiveMap);
-            // This is a bit of a hack since we are returning different type then we are.
-            var componentFactory = new _ComponentFactory(node, ref.type,
-                ref.annotation as NgComponent,
-                injector.get(dom.NodeTreeSanitizer), _expando);
-            if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
-            fctrs[ref.type] = componentFactory;
-            return componentFactory.call(injector, compiler, scope, viewCache,
-                http, templateCache, directives);
-          }, visibility: visibility);
-        } else {
-          nodeModule.type(ref.type, visibility: visibility);
-        }
-        for (var publishType in ref.annotation.publishTypes) {
-          nodeModule.factory(publishType, (Injector injector) =>
-              injector.get(ref.type), visibility: visibility);
-        }
-        if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
-          // Currently, transclude is only supported for NgDirective.
-          assert(annotation is NgDirective);
-          viewPortFactory = (_) => new ViewPort(node,
-            parentInjector.get(NgAnimate));
-          viewFactory = (_) => ref.viewFactory;
-          boundViewFactory = (Injector injector) =>
-              ref.viewFactory.bind(injector);
-        }
-      });
-      nodeModule
-          ..factory(ViewPort, viewPortFactory)
-          ..factory(ViewFactory, viewFactory)
-          ..factory(BoundViewFactory, boundViewFactory)
-          ..factory(ElementProbe, (_) => probe);
-      nodeInjector = parentInjector.createChild([nodeModule]);
-      probe = _expando[node] = new ElementProbe(
-          parentInjector.get(ElementProbe), node, nodeInjector, scope);
-    } finally {
-      assert(_perf.stopTimer(timerId) != false);
-    }
-    directiveRefs.forEach((DirectiveRef ref) {
-      var linkTimer;
-      try {
-        var linkMapTimer;
-        assert((linkTimer = _perf.startTimer('ng.view.link', ref.type)) != false);
-        var controller = nodeInjector.get(ref.type);
-        probe.directives.add(controller);
-        assert((linkMapTimer = _perf.startTimer('ng.view.link.map', ref.type)) != false);
-        var shadowScope = (fctrs != null && fctrs.containsKey(ref.type))
-            ? fctrs[ref.type].shadowScope
-            : null;
-        if (ref.annotation is NgController) {
-          scope.context[(ref.annotation as NgController).publishAs] = controller;
-        } else if (ref.annotation is NgComponent) {
-          shadowScope.context[(ref.annotation as NgComponent).publishAs] = controller;
-        }
-        if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-        var attachDelayStatus = controller is NgAttachAware ? [false] : null;
-        checkAttachReady() {
-          if (attachDelayStatus.reduce((a, b) => a && b)) {
-            attachDelayStatus = null;
-            if (scope.isAttached) {
-              controller.attach();
-            }
-          }
-        }
-        for (var map in ref.mappings) {
-          var notify;
-          if (attachDelayStatus != null) {
-            var index = attachDelayStatus.length;
-            attachDelayStatus.add(false);
-            notify = () {
-              if (attachDelayStatus != null) {
-                attachDelayStatus[index] = true;
-                checkAttachReady();
-              }
-            };
-          } else {
-            notify = () => null;
-          }
-          map(nodeAttrs, scope, controller, filters, notify);
-        }
-        if (attachDelayStatus != null) {
-          Watch watch;
-          watch = scope.watch(
-            '1', // Cheat a bit.
-            (_, __) {
-              watch.remove();
-              attachDelayStatus[0] = true;
-              checkAttachReady();
-            });
-        }
-        if (controller is NgDetachAware) {
-          scope.on(ScopeEvent.DESTROY).listen((_) => controller.detach());
-        }
-        assert(_perf.stopTimer(linkMapTimer) != false);
-      } finally {
-        assert(_perf.stopTimer(linkTimer) != false);
-      }
-    });
-    return nodeInjector;
-  }
-
-  // DI visibility callback allowing node-local visibility.
-  static final Function _elementOnly = (Injector requesting, Injector defining) {
-    if (requesting.name == _SHADOW) requesting = requesting.parent;
-    return identical(requesting, defining);
-  };
-
-  // DI visibility callback allowing visibility from direct child into parent.
-  static final Function _elementDirectChildren = (Injector requesting,
-                                                  Injector defining) {
-    if (requesting.name == _SHADOW) requesting = requesting.parent;
-    return _elementOnly(requesting, defining) ||
-           identical(requesting.parent, defining);
-  };
 }
 
 /**
