@@ -389,3 +389,12 @@ class ElementBinderTree {
 
   ElementBinderTree(this.binder, this.subtrees);
 }
+
+
+// Used for the tagging compiler
+class TaggedElementBinder {
+  ElementBinder binder;
+  int parentBinderOffset;
+
+  TaggedElementBinder(this.binder, this.parentBinderOffset);
+}
