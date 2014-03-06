@@ -14,8 +14,6 @@ class DirectiveRef {
   final String value;
   final List<ApplyMapping> mappings = new List<ApplyMapping>();
 
-  ViewFactory viewFactory;
-
   DirectiveRef(this.element, this.type, this.annotation, [ this.value ]);
 
   String toString() {

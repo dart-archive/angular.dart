@@ -44,6 +44,8 @@ void main() {
           ..type(DirectiveMap)
           ..type(DirectiveSelectorFactory)
           ..type(Parser, implementedBy: NullParser)
+          ..type(Profiler)
+          ..value(Expando, new Expando())
           ..type(ElementBinderFactory)
           ..type(MetadataExtractor)
           ..type(FieldMetadataExtractor);
