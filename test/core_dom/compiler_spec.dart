@@ -54,7 +54,6 @@ void main() {
 
       rootScope.context['name'] = 'angular';
 
-
       template(injector, element);
 
       expect(element.text()).toEqual('');
@@ -68,10 +67,8 @@ void main() {
 
       rootScope.context['items'] = ['A', 'b'];
       template(injector, element);
-
       expect(element.text()).toEqual('');
-      // TODO(deboer): Digest twice until we have dirty checking in the scope.
-      rootScope.apply();
+
       rootScope.apply();
       expect(element.text()).toEqual('Ab');
 
@@ -88,8 +85,6 @@ void main() {
       template(injector, element);
 
       expect(element.text()).toEqual('');
-      // TODO(deboer): Digest twice until we have dirty checking in the scope.
-      rootScope.apply();
       rootScope.apply();
       expect(element.text()).toEqual('Ab');
 
