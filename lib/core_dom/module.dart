@@ -39,7 +39,7 @@ class NgCoreDomModule extends Module {
     type(NgTextMustacheDirective);
     type(NgAttrMustacheDirective);
 
-    type(Compiler);
+    type(Compiler, implementedBy: WalkingCompiler);
     type(Http);
     type(UrlRewriter);
     type(HttpBackend);
