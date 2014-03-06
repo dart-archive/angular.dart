@@ -1,7 +1,18 @@
 library todo;
 
 import 'package:angular/angular.dart';
+import 'package:angular/playback/playback_http.dart';
+import 'todo.dart';
 
+import 'dart:html';
+
+// This annotation allows Dart to shake away any classes
+// not used from Dart code nor listed in another @MirrorsUsed.
+//
+// If you create classes that are referenced from the Angular
+// expressions, you must include a library target in @MirrorsUsed.
+@MirrorsUsed(override: '*')
+import 'dart:mirrors';
 
 class Item {
   String text;
@@ -59,9 +70,9 @@ class TodoController {
   TodoController(ServerController serverController) {
     newItem = new Item();
     items = [
-      new Item('Write Angular in Dart', true),
-      new Item('Write Dart in Angular'),
-      new Item('Do something useful')
+        new Item('Write Angular in Dart', true),
+        new Item('Write Dart in Angular'),
+        new Item('Do something useful')
     ];
 
     serverController.init(this);
@@ -88,4 +99,34 @@ class TodoController {
   String classFor(Item item) => item.done ? 'done' : '';
 
   int remaining() => items.fold(0, (count, item) => count += item.done ? 0 : 1);
+}
+
+main() {
+  print(window.location.search);
+  var module = new Module()
+      ..type(TodoController)
+      ..type(PlaybackHttpBackendConfig);
+
+  // If these is a query in the URL, use the server-backed
+  // TodoController.  Otherwise, use the stored-data controller.
+  var query = window.location.search;
+  if (query.contains('?')) {
+    module.type(ServerController, implementedBy: HttpServerController);
+  } else {
+    module.type(ServerController, implementedBy: NoServerController);
+  }
+
+  if (query == '?record') {
+    print('Using recording HttpBackend');
+    var wrapper = new HttpBackendWrapper(new HttpBackend());
+    module.value(HttpBackendWrapper, new HttpBackendWrapper(new HttpBackend()));
+    module.type(HttpBackend, implementedBy: RecordingHttpBackend);
+  }
+
+  if (query == '?playback') {
+    print('Using playback HttpBackend');
+    module.type(HttpBackend, implementedBy: PlaybackHttpBackend);
+  }
+
+  ngBootstrap(module: module);
 }
