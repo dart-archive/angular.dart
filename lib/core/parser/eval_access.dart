@@ -133,7 +133,7 @@ abstract class AccessReflective {
   _assignToNonExisting(scope, value) => null;
 
   static Function createInvokeClosure(InstanceMirror mirror, Symbol symbol) {
-    if (!hasMethod(mirror, symbol)) return null;
+    if (mirror.type.instanceMembers[symbol] is! MethodMirror) return null;
     return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
       var arguments = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
       return mirror.invoke(symbol, arguments).reflectee;
@@ -145,10 +145,6 @@ abstract class AccessReflective {
       list.removeLast();
     }
     return list;
-  }
-
-  static bool hasMethod(InstanceMirror mirror, Symbol symbol) {
-    return mirror.type.instanceMembers[symbol] is MethodMirror;
   }
 }
 
