@@ -56,10 +56,16 @@ class WalkingViewFactory implements ViewFactory {
   }
 
   View _link(View view, List<dom.Node> nodeList, List elementBinders, Injector parentInjector) {
+
+
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
 
     for (int i = 0; i < elementBinders.length; i++) {
+      // querySelectorAll('.ng-binding') should return a list of nodes in the same order as the elementBinders list.
+
+      // keep a injector array --
+
       var eb = elementBinders[i];
       int index = eb.offsetIndex;
 
@@ -99,6 +105,9 @@ class WalkingViewFactory implements ViewFactory {
     return view;
   }
 }
+
+
+
 
 /**
  * ViewCache is used to cache the compilation of templates into [View]s.

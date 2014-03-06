@@ -25,8 +25,11 @@ part 'http.dart';
 part 'ng_mustache.dart';
 part 'node_cursor.dart';
 part 'selector.dart';
+part 'tagging_compiler.dart';
+part 'tagging_view_factory.dart';
 part 'template_cache.dart';
 part 'tree_sanitizer.dart';
+part 'walking_compiler.dart';
 
 class NgCoreDomModule extends Module {
   NgCoreDomModule() {

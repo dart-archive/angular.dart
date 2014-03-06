@@ -3,7 +3,26 @@ library compiler_spec;
 import '../_specs.dart';
 
 
+forBothCompilers(fn) {
+  describe('walking compiler', () {
+    beforeEach(module((Module m) {
+      m.type(Compiler, implementedBy: WalkingCompiler);
+      return m;
+    }));
+    fn();
+  });
+
+  xdescribe('tagging compiler', () {
+    beforeEach(module((Module m) {
+      m.type(Compiler, implementedBy: TaggingCompiler);
+      return m;
+    }));
+    fn();
+  });
+}
+
 void main() {
+  forBothCompilers(() =>
   describe('dte.compiler', () {
     Compiler $compile;
     DirectiveMap directives;
@@ -594,7 +613,7 @@ void main() {
       }));
     });
 
-  });
+  }));
 }
 
 
