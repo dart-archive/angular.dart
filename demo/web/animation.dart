@@ -1,4 +1,4 @@
-library animate_demo;
+library animation;
 
 import 'package:angular/angular.dart';
 import 'package:angular/animate/module.dart';
@@ -11,10 +11,10 @@ import 'package:angular/animate/module.dart';
 @MirrorsUsed(override: '*')
 import 'dart:mirrors';
 
-part 'repeat_demo.dart';
-part 'visibility_demo.dart';
-part 'stress_demo.dart';
-part 'css_demo.dart';
+part 'animation/repeat_demo.dart';
+part 'animation/visibility_demo.dart';
+part 'animation/stress_demo.dart';
+part 'animation/css_demo.dart';
 
 @NgController(
     selector: '[animation-demo]',

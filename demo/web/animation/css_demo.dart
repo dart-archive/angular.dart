@@ -1,4 +1,4 @@
-part of animate_demo;
+part of animation;
 
 @NgComponent(
     selector: 'css-demo',

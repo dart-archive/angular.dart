@@ -1,7 +1,7 @@
-name: angular_animate_demo
+name: angular_dart_demos
 version: 0.0.1
 dependencies:
   angular:
-    path: ../..
+    path: ../
   browser: any
   unittest: any
