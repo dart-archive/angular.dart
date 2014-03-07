@@ -25,7 +25,7 @@ class TaggingCompiler implements Compiler {
 
       // TODO: selector will return null for non-useful bindings.
       ElementBinder elementBinder = useExistingElementBinder == null
-      ?  directives.selector(node)
+      ?  directives.selector.match(node)
       : useExistingElementBinder;
 
       if (elementBinder.hasTemplate) {
