@@ -1226,14 +1226,57 @@ void main() {
       it('should not trigger new watcher in the flush where it was added', inject((Scope scope) {
         var log = [] ;
         scope.context['foo'] = () => 'foo';
+        scope.context['name'] = 'misko';
+        scope.context['list'] = [2, 3];
+        scope.context['map'] = {'bar': 'chocolate'};
         scope.watch('1', (value, __) {
           expect(value).toEqual(1);
-          scope.watch('foo()', (value, __) {
-            log.add(value);
-          });
+          scope.watch('foo()', (value, __) => log.add(value));
+          scope.watch('name', (value, __) => log.add(value));
+          scope.watch('(foo() + "-" + name).toUpperCase()', (value, __) => log.add(value));
+          scope.watch('list', (value, __) => log.add(value));
+          scope.watch('map', (value, __) => log.add(value));
         });
         scope.apply();
-        expect(log).toEqual(['foo']);
+        expect(log).toEqual(['foo', 'misko', 'FOO-MISKO', [2, 3], {'bar': 'chocolate'}]);
+      }));
+
+
+      it('should allow multiple nested watches', inject((RootScope scope) {
+        scope.watch('1', (_, __) {
+          scope.watch('1', (_, __) {
+            scope.watch('1', (_, __) {
+              scope.watch('1', (_, __) {
+                scope.watch('1', (_, __) {
+                  scope.watch('1', (_, __) {
+                    scope.watch('1', (_, __) {
+                      scope.watch('1', (_, __) {
+                        scope.watch('1', (_, __) {
+                          scope.watch('1', (_, __) {
+                            scope.watch('1', (_, __) {
+                              scope.watch('1', (_, __) {
+                                scope.watch('1', (_, __) {
+                                  scope.watch('1', (_, __) {
+                                    scope.watch('1', (_, __) {
+                                      scope.watch('1', (_, __) {
+                                        // make this deeper then ScopeTTL;
+                                      });
+                                    });
+                                  });
+                                });
+                              });
+                            });
+                          });
+                        });
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
+        });
+        expect(scope.apply).not.toThrow();
       }));
 
 

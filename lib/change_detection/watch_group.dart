@@ -231,7 +231,13 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     // Must be done last
     _EvalWatchList._add(this, evalWatchRecord);
     _evalCost++;
-
+    if (_rootGroup.isInsideInvokeDirty) {
+      // This check means that we are inside invoke reaction function.
+      // Registering a new EvalWatch at this point will not run the
+      // .check() on it which means it will not be processed, but its
+      // reaction function will be run with null. So we process it manually.
+      evalWatchRecord.check();
+    }
     return evalWatchRecord;
   }
 
@@ -406,25 +412,32 @@ class RootWatchGroup extends WatchGroup {
     int count = 0;
     if (processStopwatch != null) processStopwatch.stop();
     Watch dirtyWatch = _dirtyWatchHead;
-    _dirtyWatchHead = _dirtyWatchTail = null;
+    _dirtyWatchHead = null;
     RootWatchGroup root = _rootGroup;
     root._removeCount = 0;
-    while(dirtyWatch != null) {
-      count++;
-      try {
-        if (root._removeCount == 0 || dirtyWatch._watchGroup.isAttached) {
-          dirtyWatch.invoke();
+    try {
+      while(dirtyWatch != null) {
+        count++;
+        try {
+          if (root._removeCount == 0 || dirtyWatch._watchGroup.isAttached) {
+            dirtyWatch.invoke();
+          }
+        } catch (e, s) {
+          if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
         }
-      } catch (e, s) {
-        if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
+        var nextDirtyWatch = dirtyWatch._nextDirtyWatch;
+        dirtyWatch._nextDirtyWatch = null;
+        dirtyWatch = nextDirtyWatch;
       }
-      var nextDirtyWatch = dirtyWatch._nextDirtyWatch;
-      dirtyWatch._nextDirtyWatch = null;
-      dirtyWatch = nextDirtyWatch;
+    } finally {
+      _dirtyWatchTail = null;
     }
     if (processStopwatch != null) processStopwatch..stop()..increment(count);
     return count;
   }
+
+  bool get isInsideInvokeDirty =>
+      _dirtyWatchHead == null && _dirtyWatchTail != null;
 
   /**
    * Add Watch into the asynchronous queue for later processing.

@@ -447,6 +447,29 @@ void main() {
         expect(logger).toEqual(['ABC']);
       });
 
+
+      it('should eval function eagerly when registered during reaction', () {
+        var fn = (arg) { logger('fn($arg)'); return arg; };
+        context['obj'] = {'fn': fn};
+        context['arg1'] = 'OUT';
+        context['arg2'] = 'IN';
+        var ast = new MethodAST(parse('obj'), 'fn', [parse('arg1')]);
+        var watch = watchGrp.watch(ast, (v, p) {
+          var ast = new MethodAST(parse('obj'), 'fn', [parse('arg2')]);
+          watchGrp.watch(ast, (v, p) {
+            logger('reaction: $v');
+          });
+        });
+
+        expect(logger).toEqual([]);
+        watchGrp.detectChanges();
+        expect(logger).toEqual(['fn(OUT)', 'fn(IN)', 'reaction: IN']);
+        logger.clear();
+        watchGrp.detectChanges();
+        expect(logger).toEqual(['fn(OUT)', 'fn(IN)']);
+      });
+
+
       it('should read connstant', () {
         // should fire on initial adding
         expect(watchGrp.fieldCost).toEqual(0);
