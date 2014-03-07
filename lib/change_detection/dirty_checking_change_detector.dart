@@ -984,6 +984,19 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       record = nextRecord;
     }
     _removedItems.clear();
+
+    if (_additionsTail != null) {
+      _additionsTail._nextAddedRec = null;
+    }
+    if (_movesTail != null) {
+      _movesTail._nextMovedRec = null;
+    }
+    if (_collectionTail != null) {
+      _collectionTail._nextRec = null;
+    }
+    if (_removalsTail != null) {
+      _removalsTail._nextRemovedRec = null;
+    }
   }
 
   ItemRecord _collection_reinsertAfter(ItemRecord record, ItemRecord insertPrev,
