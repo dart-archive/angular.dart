@@ -959,8 +959,8 @@ _operation_multiply(left, right)               => (left == null || right == null
 _operation_divide(left, right)                 => (left == null || right == null) ? null : left / right;
 _operation_divide_int(left, right)             => (left == null || right == null) ? null : left ~/ right;
 _operation_remainder(left, right)              => (left == null || right == null) ? null : left % right;
-_operation_equals(left, right)                 => (left == null || right == null) ? null : left == right;
-_operation_not_equals(left, right)             => (left == null || right == null) ? null : left != right;
+_operation_equals(left, right)                 => left == right;
+_operation_not_equals(left, right)             => left != right;
 _operation_less_then(left, right)              => (left == null || right == null) ? null : left < right;
 _operation_greater_then(left, right)           => (left == null || right == null) ? null : left > right;
 _operation_less_or_equals_then(left, right)    => (left == null || right == null) ? null : left <= right;

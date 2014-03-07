@@ -87,8 +87,10 @@ void main() {
             ..watch('3 - null', r)
             ..watch('null + null', r)
             ..watch('null - null', r)
+            ..watch('null == null', r)
+            ..watch('null != null', r)
             ..digest();
-        expect(logger).toEqual([null, null, 6, 5, -4, 3, 0, 0]);
+        expect(logger).toEqual([null, null, 6, 5, -4, 3, 0, 0, true, false]);
       }));
 
       it('should invoke closures', inject((Logger logger, Map context, RootScope rootScope) {
