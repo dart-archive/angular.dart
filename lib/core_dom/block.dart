@@ -1,17 +1,6 @@
 part of angular.core.dom;
 
 /**
-* ElementWrapper is an interface for [Block]s and [BlockHole]s. Its purpose is
-* to allow treating [Block] and [BlockHole] under same interface so that
-* [Block]s can be added after [BlockHole].
-*/
-abstract class ElementWrapper {
-  List<dom.Node> elements;
-  ElementWrapper next;
-  ElementWrapper previous;
-}
-
-/**
  * A Block is a fundamental building block of DOM. It is a chunk of DOM which
  * can not be structural changed. It can only have its attributes changed.
  * A Block can have [BlockHole]s embedded in its DOM.  A [BlockHole] can
@@ -23,70 +12,9 @@ abstract class ElementWrapper {
  * A [Block] can be created from [BlockFactory].
  *
  */
-class Block implements ElementWrapper {
-  List<dom.Node> elements;
-  ElementWrapper next;
-  ElementWrapper previous;
-
-  final NgAnimate _animate;
-
-  Block(this.elements, this._animate);
-
-  Block insertAfter(ElementWrapper previousBlock) {
-    // Update Link List.
-    next = previousBlock.next;
-    if (next != null) {
-      next.previous = this;
-    }
-    previous = previousBlock;
-    previousBlock.next = this;
-
-    // Update DOM
-    List<dom.Node> previousElements = previousBlock.elements;
-    dom.Node previousElement = previousElements[previousElements.length - 1];
-    dom.Node insertBeforeElement = previousElement.nextNode;
-    dom.Node parentElement = previousElement.parentNode;
-
-    _animate.insert(elements, parentElement, insertBefore: insertBeforeElement);
-
-    return this;
-  }
-
-  Block remove() {
-    bool preventDefault = false;
-
-    _animate.remove(elements);
-
-    // Remove block from list
-    if (previous != null && (previous.next = next) != null) {
-      next.previous = previous;
-    }
-    next = previous = null;
-    return this;
-  }
-
-  Block moveAfter(ElementWrapper previousBlock) {
-    var previousElements = previousBlock.elements,
-        previousElement = previousElements[previousElements.length - 1],
-        insertBeforeElement = previousElement.nextNode,
-        parentElement = previousElement.parentNode;
-    
-    elements.forEach((el) => parentElement.insertBefore(el, insertBeforeElement));
-
-    // Remove block from list
-    previous.next = next;
-    if (next != null) {
-      next.previous = previous;
-    }
-    // Add block to list
-    next = previousBlock.next;
-    if (next != null) {
-      next.previous = this;
-    }
-    previous = previousBlock;
-    previousBlock.next = this;
-    return this;
-  }
+class Block {
+  final List<dom.Node> nodes;
+  Block(this.nodes);
 }
 
 /**
@@ -94,11 +22,45 @@ class Block implements ElementWrapper {
  * [Block]s can be added in parent [Block]. BlockHoles wrap a DOM element,
  * and act as references which allows more blocks to be added.
  */
-class BlockHole extends ElementWrapper {
-  List<dom.Node> elements;
-  ElementWrapper previous;
-  ElementWrapper next;
+class BlockHole {
+  final dom.Node placeholder;
+  final NgAnimate _animate;
+  final List<Block> _blocks = <Block>[];
 
-  BlockHole(this.elements);
+  BlockHole(this.placeholder, this._animate);
+
+  void insert(Block block, { Block insertAfter }) {
+    dom.Node previousNode = _lastNode(insertAfter);
+    _blocksInsertAfter(block, insertAfter);
+
+    _animate.insert(block.nodes, placeholder.parentNode,
+      insertBefore: previousNode.nextNode);
+  }
+
+  void remove(Block block) {
+    _blocks.remove(block);
+    _animate.remove(block.nodes);
+  }
+
+  void move(Block block, { Block moveAfter }) {
+    dom.Node previousNode = _lastNode(moveAfter);
+    _blocks.remove(block);
+    _blocksInsertAfter(block, moveAfter);
+
+    _animate.move(block.nodes, placeholder.parentNode,
+      insertBefore: previousNode.nextNode);
+  }
+
+  void _blocksInsertAfter(Block block, Block insertAfter) {
+    int index = -1;
+    if(insertAfter != null) {
+      index = _blocks.indexOf(insertAfter);
+    }
+    _blocks.insert(index + 1, block);
+  }
+
+  dom.Node _lastNode(Block insertAfter) {
+    return insertAfter == null ? placeholder
+    : insertAfter.nodes[insertAfter.nodes.length - 1];
+  }
 }
-

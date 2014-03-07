@@ -75,7 +75,8 @@ main() {
 
       beforeEach(inject((Injector injector, Profiler perf) {
         $rootElement.html('<!-- anchor -->');
-        anchor = new BlockHole($rootElement.contents().eq(0));
+        anchor = new BlockHole($rootElement.contents().eq(0)[0],
+          injector.get(NgAnimate));
         a = (new BlockFactory($('<span>A</span>a'), [], perf, expando))(injector);
         b = (new BlockFactory($('<span>B</span>b'), [], perf, expando))(injector);
       }));
@@ -83,76 +84,50 @@ main() {
 
       describe('insertAfter', () {
         it('should insert block after anchor block', () {
-          a.insertAfter(anchor);
+          anchor.insert(a);
 
           expect($rootElement.html()).toEqual('<!-- anchor --><span>A</span>a');
-          expect(anchor.next).toBe(a);
-          expect(anchor.previous).toBe(null);
-          expect(a.next).toBe(null);
-          expect(a.previous).toBe(anchor);
         });
 
 
         it('should insert multi element block after another multi element block', () {
-          b.insertAfter(a.insertAfter(anchor));
+          anchor.insert(a);
+          anchor.insert(b, insertAfter: a);
 
           expect($rootElement.html()).toEqual('<!-- anchor --><span>A</span>a<span>B</span>b');
-          expect(anchor.next).toBe(a);
-          expect(anchor.previous).toBe(null);
-          expect(a.next).toBe(b);
-          expect(a.previous).toBe(anchor);
-          expect(b.next).toBe(null);
-          expect(b.previous).toBe(a);
         });
 
 
         it('should insert multi element block before another multi element block', () {
-          b.insertAfter(anchor);
-          a.insertAfter(anchor);
+          anchor.insert(b);
+          anchor.insert(a);
 
           expect($rootElement.html()).toEqual('<!-- anchor --><span>A</span>a<span>B</span>b');
-          expect(anchor.next).toBe(a);
-          expect(anchor.previous).toBe(null);
-          expect(a.next).toBe(b);
-          expect(a.previous).toBe(anchor);
-          expect(b.next).toBe(null);
-          expect(b.previous).toBe(a);
         });
       });
 
 
       describe('remove', () {
         beforeEach(() {
-          b.insertAfter(a.insertAfter(anchor));
+          anchor.insert(a);
+          anchor.insert(b, insertAfter: a);
 
           expect($rootElement.text()).toEqual('AaBb');
         });
 
         it('should remove the last block', () {
-          b.remove();
+          anchor.remove(b);
           expect($rootElement.html()).toEqual('<!-- anchor --><span>A</span>a');
-          expect(anchor.next).toBe(a);
-          expect(anchor.previous).toBe(null);
-          expect(a.next).toBe(null);
-          expect(a.previous).toBe(anchor);
-          expect(b.next).toBe(null);
-          expect(b.previous).toBe(null);
         });
 
         it('should remove child blocks from parent pseudo black', () {
-          a.remove();
+          anchor.remove(a);
           expect($rootElement.html()).toEqual('<!-- anchor --><span>B</span>b');
-          expect(anchor.next).toBe(b);
-          expect(anchor.previous).toBe(null);
-          expect(a.next).toBe(null);
-          expect(a.previous).toBe(null);
-          expect(b.next).toBe(null);
-          expect(b.previous).toBe(anchor);
         });
 
         it('should remove', inject((Logger logger, Injector injector, Profiler perf) {
-          a.remove();
-          b.remove();
+          anchor.remove(a);
+          anchor.remove(b);
 
           // TODO(dart): I really want to do this:
           // class Directive {
@@ -172,21 +147,21 @@ main() {
               perf,
               new Expando());
 
-          var outterBlock = outerBlockType(injector);
+          var outerBlock = outerBlockType(injector);
           // The LoggerBlockDirective caused a BlockHole for innerBlockType to
           // be created at logger[0];
-          BlockHole outterAnchor = logger[0];
+          BlockHole outerAnchor = logger[0];
           BoundBlockFactory outterBoundBlockFactory = logger[1];
 
-          outterBlock.insertAfter(anchor);
+          anchor.insert(outerBlock);
           // outterAnchor is a BlockHole, but it has "elements" set to the 0th element
           // of outerBlockType.  So, calling insertAfter() will insert the new
           // block after the <!--start--> element.
-          outterBoundBlockFactory(null).insertAfter(outterAnchor);
+          outerAnchor.insert(outterBoundBlockFactory(null));
 
           expect($rootElement.text()).toEqual('text');
 
-          outterBlock.remove();
+          anchor.remove(outerBlock);
 
           expect($rootElement.text()).toEqual('');
         }));
@@ -195,33 +170,16 @@ main() {
 
       describe('moveAfter', () {
         beforeEach(() {
-          b.insertAfter(a.insertAfter(anchor));
+          anchor.insert(a);
+          anchor.insert(b, insertAfter: a);
 
           expect($rootElement.text()).toEqual('AaBb');
         });
 
 
         it('should move last to middle', () {
-          b.moveAfter(anchor);
+          anchor.move(a, moveAfter: b);
           expect($rootElement.html()).toEqual('<!-- anchor --><span>B</span>b<span>A</span>a');
-          expect(anchor.next).toBe(b);
-          expect(anchor.previous).toBe(null);
-          expect(a.next).toBe(null);
-          expect(a.previous).toBe(b);
-          expect(b.next).toBe(a);
-          expect(b.previous).toBe(anchor);
-        });
-
-
-        it('should move middle to last', () {
-          a.moveAfter(b);
-          expect($rootElement.html()).toEqual('<!-- anchor --><span>B</span>b<span>A</span>a');
-          expect(anchor.next).toBe(b);
-          expect(anchor.previous).toBe(null);
-          expect(a.next).toBe(null);
-          expect(a.previous).toBe(b);
-          expect(b.next).toBe(a);
-          expect(b.previous).toBe(anchor);
         });
       });
     });

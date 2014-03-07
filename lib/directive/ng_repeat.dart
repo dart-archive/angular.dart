@@ -6,7 +6,7 @@ class _Row {
   Block block;
   dom.Element startNode;
   dom.Element endNode;
-  List<dom.Element> elements;
+  List<dom.Element> nodes;
 
   _Row(this.id);
 }
@@ -177,7 +177,7 @@ class NgRepeatDirective {
     }
     // remove existing items
     _rows.forEach((key, row) {
-      row.block.remove();
+      _blockHole.remove(row.block);
       row.scope.destroy();
     });
     _rows = newRows;
@@ -185,12 +185,13 @@ class NgRepeatDirective {
   }
 
   _onCollectionChange(Iterable collection) {
-    dom.Node previousNode = _blockHole.elements[0]; // current position of the node
+    dom.Node previousNode = _blockHole.placeholder; // current position of the
+    // node
     dom.Node nextNode;
     Scope childScope;
     Map childContext;
     Scope trackById;
-    ElementWrapper cursor = _blockHole;
+    Block cursor;
 
     List<_Row> newRowOrder = _computeNewRows(collection, trackById);
 
@@ -211,7 +212,7 @@ class NgRepeatDirective {
 
         if (row.startNode != nextNode) {
           // existing item which got moved
-          row.block.moveAfter(cursor);
+          _blockHole.move(row.block, moveAfter: cursor);
         }
         previousNode = row.endNode;
       } else {
@@ -237,10 +238,10 @@ class NgRepeatDirective {
         _rows[row.id] = row
             ..block = block
             ..scope = childScope
-            ..elements = block.elements
-            ..startNode = row.elements[0]
-            ..endNode = row.elements[row.elements.length - 1];
-        block.insertAfter(cursor);
+            ..nodes = block.nodes
+            ..startNode = row.nodes[0]
+            ..endNode = row.nodes[row.nodes.length - 1];
+        _blockHole.insert(block, insertAfter: cursor);
       }
       cursor = row.block;
     }
