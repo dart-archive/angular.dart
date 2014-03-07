@@ -28,18 +28,18 @@ abstract class _NgUnlessIfAttrDirectiveBase {
     if (_block == null) {
       _childScope = _scope.createChild(new PrototypeMap(_scope.context));
       _block = _boundBlockFactory(_childScope);
-      var insertBlock = _block;
+      var block = _block;
       _scope.rootScope.domWrite(() {
-        insertBlock.insertAfter(_blockHole);
+        _blockHole.insert(block);
      });
     }
   }
 
   void _ensureBlockDestroyed() {
     if (_block != null) {
-      var removeBlock = _block;
+      var block = _block;
       _scope.rootScope.domWrite(() {
-        removeBlock.remove();
+        _blockHole.remove(block);
       });
       _childScope.destroy();
       _block = null;

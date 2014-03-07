@@ -102,7 +102,7 @@ void main() {
       rootScope.context['name'] = 'OK';
       var block = template(injector, element);
 
-      element = $(block.elements);
+      element = $(block.nodes);
 
       rootScope.apply();
       expect(element.text()).toEqual('OK!');
@@ -655,7 +655,7 @@ class SimpleTranscludeInAttachAttrDirective {
   SimpleTranscludeInAttachAttrDirective(BlockHole blockHole, BoundBlockFactory boundBlockFactory, Logger log, RootScope scope) {
     scope.runAsync(() {
       var block = boundBlockFactory(scope);
-      block.insertAfter(blockHole);
+      blockHole.insert(block);
       log('SimpleTransclude');
     });
   }

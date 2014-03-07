@@ -17,7 +17,7 @@ main() {
       rootScope.context['name'] = 'OK';
       var block = template(injector);
 
-      element = $(block.elements);
+      element = $(block.nodes);
 
       rootScope.apply();
       expect(element.text()).toEqual('OK!');
@@ -32,7 +32,7 @@ main() {
       rootScope.context['age'] = 23;
       var block = template(injector);
 
-      element = $(block.elements);
+      element = $(block.nodes);
 
       rootScope.apply();
       expect(element.attr('some-attr')).toEqual('OK');
@@ -48,7 +48,7 @@ main() {
       rootScope.context['line2'] = 'L2';
       var block = template(injector);
 
-      element = $(block.elements);
+      element = $(block.nodes);
 
       rootScope.apply();
       expect(element.attr('multiline-attr')).toEqual('line1: L1\nline2: L2');
@@ -61,7 +61,7 @@ main() {
       var block = template(injector);
       rootScope.apply();
 
-      element = $(block.elements);
+      element = $(block.nodes);
 
       expect(element.html()).toEqual('Hello, World!');
     }));

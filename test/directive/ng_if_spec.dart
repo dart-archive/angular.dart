@@ -10,7 +10,7 @@ class ChildController {
                   BlockHole blockHole,
                   Scope scope) {
     scope.context['setBy'] = 'childController';
-    boundBlockFactory(scope).insertAfter(blockHole);
+    blockHole.insert(boundBlockFactory(scope));
   }
 }
 
