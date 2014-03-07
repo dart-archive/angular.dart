@@ -2,25 +2,17 @@ import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
-import 'package:angular/tools/parser_generator/generator.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
 
 main(arguments) {
-  var isGetter = !arguments.isEmpty;
-
   Module module = new Module()..type(Parser, implementedBy: DynamicParser);
-  if (isGetter) {
-    module.type(ParserBackend, implementedBy: DartGetterSetterGen);
-  } else {
-    module.type(ParserBackend, implementedBy: DynamicParserBackend);
-    module.type(FilterMap, implementedBy: NullFilterMap);
-  }
+  module.type(ParserBackend, implementedBy: DartGetterSetterGen);
   Injector injector = new DynamicInjector(modules: [module],
       allowImplicitInjection: true);
 
   // List generated using:
   // node node_modules/karma/bin/karma run | grep -Eo ":XNAY:.*:XNAY:" | sed -e 's/:XNAY://g' | sed -e "s/^/'/" | sed -e "s/$/',/" | sort | uniq > missing_expressions
-  injector.get(isGetter ? ParserGetterSetter : ParserGenerator).generateParser([
+  injector.get(ParserGetterSetter).generateParser([
       "foo == 'bar' ||\nbaz",
       "nonmap['hello']",
       "nonmap['hello']=3",

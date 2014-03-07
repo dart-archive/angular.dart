@@ -3,20 +3,21 @@ library dirty_chekcing_change_detector_spec;
 import '../_specs.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
 import 'dart:collection';
 import 'dart:math';
 
 void main() {
   describe('DirtyCheckingChangeDetector', () {
     DirtyCheckingChangeDetector<String> detector;
-    GetterCache getterCache;
+    FieldGetterFactory getterFactory = new StaticFieldGetterFactory({
+        "first": (o) => o.first,
+        "age": (o) => o.age,
+        "last": (o) => o.last
+    });
 
     beforeEach(() {
-      getterCache = new GetterCache({
-        "first": (o) => o.first,
-        "age": (o) => o.age
-      });
-      detector = new DirtyCheckingChangeDetector<String>(getterCache);
+      detector = new DirtyCheckingChangeDetector<String>(getterFactory);
     });
 
     describe('object field', () {
@@ -174,7 +175,7 @@ void main() {
 
       it('should properly disconnect group in case watch is removed in disconected group', () {
         var map = {};
-        var detector0 = new DirtyCheckingChangeDetector<String>(getterCache);
+        var detector0 = new DirtyCheckingChangeDetector<String>(getterFactory);
           var detector1 = detector0.newGroup();
             var detector2 = detector1.newGroup();
             var watch2 = detector2.watch(map, 'f1', null);
@@ -202,7 +203,7 @@ void main() {
               //print('===================================');
               records = [];
               steps = [];
-              detectors = [new DirtyCheckingChangeDetector<String>(getterCache)];
+              detectors = [new DirtyCheckingChangeDetector<String>(getterFactory)];
             }
             switch (random.nextInt(4)) {
               case 0: // new child detector

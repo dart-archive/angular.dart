@@ -3,6 +3,7 @@ library watch_group_spec;
 import '../_specs.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'dirty_checking_change_detector_spec.dart' hide main;
 
 class TestData {
@@ -20,8 +21,9 @@ void main() {
 
     beforeEach(inject((Logger _logger, AstParser _parser) {
       context = {};
-      changeDetector = new DirtyCheckingChangeDetector(new GetterCache({}));
-      watchGrp = new RootWatchGroup(changeDetector, context);
+      var getterFactory = new DynamicFieldGetterFactory();
+      changeDetector = new DirtyCheckingChangeDetector(getterFactory);
+      watchGrp = new RootWatchGroup(getterFactory, changeDetector, context);
       logger = _logger;
       parser = _parser;
     }));
@@ -56,6 +58,14 @@ void main() {
       watchGrp.detectChanges();
       expect(logger).toEqual(list);
     }
+
+    beforeEach(inject((Logger _logger) {
+      context = {};
+      var getterFactory = new DynamicFieldGetterFactory();
+      changeDetector = new DirtyCheckingChangeDetector(getterFactory);
+      watchGrp = new RootWatchGroup(getterFactory, changeDetector, context);
+      logger = _logger;
+    }));
 
     describe('watch lifecycle', () {
       it('should prevent reaction fn on removed', () {

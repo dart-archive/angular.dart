@@ -1,6 +1,7 @@
 library core_directive_spec;
 
 import '../_specs.dart';
+import 'package:angular/angular_dynamic.dart';
 
 void main() {
   describe('DirectiveMap', () {
@@ -43,19 +44,14 @@ void main() {
         baseModule = new Module()
           ..type(DirectiveMap)
           ..type(DirectiveSelectorFactory)
-          ..type(Parser, implementedBy: NullParser)
-          ..type(Profiler)
-          ..value(Expando, new Expando())
-          ..type(ElementBinderFactory)
-          ..type(MetadataExtractor)
-          ..type(FieldMetadataExtractor);
+          ..type(MetadataExtractor);
       });
 
       it('should throw when annotation is for existing mapping', () {
         var module = new Module()
             ..type(Bad1Component);
 
-        var injector = new DynamicInjector(modules: [baseModule, module]);
+        var injector = ngDynamicApp().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Mapping for attribute foo is already defined (while '
@@ -66,7 +62,7 @@ void main() {
         var module = new Module()
             ..type(Bad2Component);
 
-        var injector = new DynamicInjector(modules: [baseModule, module]);
+        var injector = ngDynamicApp().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Attribute annotation for foo is defined more than once '

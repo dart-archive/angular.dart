@@ -11,7 +11,6 @@ void main() {
     beforeEachModule((Module module) {
       Map context = {};
       module
-          ..value(GetterCache, new GetterCache({}))
           ..type(ChangeDetector, implementedBy: DirtyCheckingChangeDetector)
           ..value(Object, context)
           ..value(Map, context)

@@ -109,7 +109,7 @@ class NgZone {
   /**
    * A function called with any errors from the zone.
    */
-  var onError = (e, s, ls) => null;
+  var onError = (e, s, ls) => print('$e\n$s\n$ls');
 
   /**
    * A function that is called at the end of each VM turn in which the

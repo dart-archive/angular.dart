@@ -1,4 +1,7 @@
+import 'package:perf_api/perf_api.dart';
 import 'package:angular/angular.dart';
+import 'package:angular/angular_static.dart';
+import 'package:angular/change_detection/change_detection.dart';
 import 'dart:html';
 import 'dart:math';
 import 'dart:core';
@@ -30,18 +33,17 @@ class BallModel {
   publishAs: 'bounce')
 class BounceController {
   var lastTime = window.performance.now();
-  var run = true;
+  var run = false;
   var fps = 0;
   var digestTime = 0;
   var currentDigestTime = 0;
   var balls = [];
-  final NgZone zone;
   final Scope scope;
   var ballClassName = 'ball';
 
-  BounceController(this.zone, this.scope) {
+  BounceController(this.scope) {
     changeCount(100);
-    tick();
+    if (run) tick();
   }
 
   void toggleCSS() {
@@ -54,7 +56,7 @@ class BounceController {
   }
 
   void requestAnimationFrame(fn) {
-    window.requestAnimationFrame((_) => zone.run(fn));
+    window.requestAnimationFrame((_) => fn());
   }
 
   void changeCount(count) {
@@ -118,20 +120,84 @@ class MyModule extends Module {
   MyModule() {
     type(BounceController);
     type(BallPositionDirective);
-    value(GetterCache, new GetterCache({
-      'x': (o) => o.x,
-      'y': (o) => o.y,
-      'bounce': (o) => o.bounce,
-      'fps': (o) => o.fps,
-      'balls': (o) => o.balls,
-      'length': (o) => o.length,
-      'digestTime': (o) => o.digestTime,
-      'ballClassName': (o) => o.ballClassName
-    }));
     value(ScopeStats, new ScopeStats(report: true));
   }
 }
 
 main() {
-  ngBootstrap(module: new MyModule());
+  var getters = {
+    'x': (o) => o.x,
+    'y': (o) => o.y,
+    'bounce': (o) => o.bounce,
+    'fps': (o) => o.fps,
+    'balls': (o) => o.balls,
+    'length': (o) => o.length,
+    'digestTime': (o) => o.digestTime,
+    'ballClassName': (o) => o.ballClassName,
+    'position': (o) => o.position,
+    'onClick': (o) => o.onClick,
+    'ball': (o) => o.ball,
+    'color': (o) => o.color,
+    'changeCount': (o) => o.changeCount,
+    'playPause': (o) => o.playPause,
+    'toggleCSS': (o) => o.toggleCSS,
+    'timeDigest': (o) => o.timeDigest,
+    'expression': (o) => o.expression,
+  };
+  var setters = {
+    'position': (o, v) => o.position = v,
+    'onClick': (o, v) => o.onClick = v,
+    'ball': (o, v) => o.ball = v,
+    'x': (o, v) => o.x = v,
+    'y': (o, v) => o.y = v,
+    'balls': (o, v) => o.balls = v,
+    'bounce': (o, v) => o.bounce = v,
+    'expression': (o, v) => o.expression = v,
+    'fps': (o, v) => o.fps = v,
+    'length': (o, v) => o.length = v,
+    'digestTime': (o, v) => o.digestTime = v,
+    'ballClassName': (o, v) => o.ballClassName = v,
+  };
+  var metadata = {
+    BounceController: [new NgController(selector: '[bounce-controller]', publishAs: 'bounce')],
+    BallPositionDirective: [new NgDirective(selector: '[ball-position]', map: const { "ball-position": '=>position'})],
+    NgEventDirective: [new NgDirective(selector: '[ng-click]', map: const {'ng-click': '&onClick'})],
+    NgADirective: [new NgDirective(selector: 'a[href]')],
+    NgRepeatDirective: [new NgDirective(children: NgAnnotation.TRANSCLUDE_CHILDREN, selector: '[ng-repeat]', map: const {'.': '@expression'})],
+    NgTextMustacheDirective: [new NgDirective(selector: r':contains(/{{.*}}/)')],
+    NgAttrMustacheDirective: [new NgDirective(selector: r'[*=/{{.*}}/]')],
+  };
+  var types = {
+    Profiler: (t) => new Profiler(),
+    DirectiveSelectorFactory: (t) => new DirectiveSelectorFactory(),
+    DirectiveMap: (t) => new DirectiveMap(t(Injector), t(MetadataExtractor), t(DirectiveSelectorFactory)),
+    Lexer: (t) => new Lexer(),
+    ClosureMap: (t) => new StaticClosureMap(getters, setters), // TODO: types don't match
+    DynamicParserBackend: (t) => new DynamicParserBackend(t(ClosureMap)),
+    DynamicParser: (t) => new DynamicParser(t(Lexer), t(ParserBackend)),
+    Compiler: (t) => new Compiler(t(Profiler), t(Parser), t(Expando)),
+    WalkingCompiler: (t) => new WalkingCompiler(t(Profiler), t(Expando)),
+    DirectiveSelectorFactory: (t) => new DirectiveSelectorFactory(t(ElementBinderFactory)),
+    ElementBinderFactory: (t) => new ElementBinderFactory(t(Parser), t(Profiler), t(Expando)),
+    EventHandler: (t) => new EventHandler(t(Node), t(Expando), t(ExceptionHandler)),
+    AstParser: (t) => new AstParser(t(Parser)),
+    FilterMap: (t) => new FilterMap(t(Injector), t(MetadataExtractor)),
+    ExceptionHandler: (t) => new ExceptionHandler(),
+    FieldGetterFactory: (t) => new StaticFieldGetterFactory(getters),
+    ScopeDigestTTL: (t) => new ScopeDigestTTL(),
+    ScopeStats: (t) => new ScopeStats(),
+    RootScope: (t) => new RootScope(t(Object), t(AstParser), t(Parser), t(FieldGetterFactory), t(FilterMap), t(ExceptionHandler), t(ScopeDigestTTL), t(NgZone), t(ScopeStats)),
+    NgAnimate: (t) => new NgAnimate(),
+    Interpolate: (t) => new Interpolate(t(Parser)),
+
+    NgEventDirective: (t) => new NgEventDirective(t(Element), t(Scope)),
+    NgADirective: (t) => new NgADirective(t(Element)),
+    NgRepeatDirective: (t) => new NgRepeatDirective(t(ViewPort), t(BoundViewFactory), t(Scope), t(Parser), t(AstParser), t(FilterMap)),
+
+    BounceController: (t) => new BounceController(t(Scope)),
+    BallPositionDirective: (t) => new BallPositionDirective(t(Element), t(Scope)),
+  };
+  ngStaticApp(types, metadata, getters, setters)
+    .addModule(new MyModule())
+    .run();
 }

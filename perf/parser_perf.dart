@@ -8,7 +8,6 @@ import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:intl/intl.dart';
 
-import '../gen/generated_functions.dart' as generated_functions;
 import '../gen/generated_getter_setter.dart' as generated_getter_setter;
 
 main() {
@@ -25,19 +24,11 @@ main() {
   var reflectiveParser = injector.get(Parser);
   var filterMap = injector.get(FilterMap);
 
-  var generatedParser = new DynamicInjector(
-      modules: [new Module()
-          ..type(Parser, implementedBy: StaticParser)
-          ..type(ParserBackend, implementedBy: DynamicParserBackend)
-          ..value(StaticParserFunctions, generated_functions.functions())],
-      allowImplicitInjection:true).get(Parser);
-
   var hybridParser = new DynamicInjector(
       modules: [new Module()
           ..type(Parser, implementedBy: DynamicParser)
           ..type(ParserBackend, implementedBy: DynamicParserBackend)
-          ..type(ClosureMap,
-                 implementedBy: generated_getter_setter.StaticClosureMap)],
+          ..value(ClosureMap, generated_getter_setter.closureMap)],
       allowImplicitInjection:true).get(Parser);
 
   scope['a'] = new ATest();
@@ -47,23 +38,18 @@ main() {
   compare(expr, idealFn) {
     var nf = new NumberFormat.decimalPattern();
     Expression reflectionExpr = reflectiveParser(expr);
-    Expression generatedExpr = generatedParser(expr);
     Expression hybridExpr = hybridParser(expr);
     var measure = (b) => statMeasure(b).mean_ops_sec;
-    var gTime = measure(() => generatedExpr.eval(scope));
     var rTime = measure(() => reflectionExpr.eval(scope));
     var hTime = measure(() => hybridExpr.eval(scope));
     var iTime = measure(() => idealFn(scope));
-    print('$expr => g: ${nf.format(gTime)} ops/sec   '
-          'r: ${nf.format(rTime)} ops/sec   '
-          'h: ${nf.format(hTime)} ops/sec   '
-          'i: ${nf.format(iTime)} ops/sec = '
-          'i/g: ${nf.format(iTime / gTime)} x  '
-          'i/r: ${nf.format(iTime / rTime)} x  '
-          'i/h: ${nf.format(iTime / hTime)} x  '
-          'g/h: ${nf.format(gTime / hTime)} x  '
-          'h/r: ${nf.format(hTime / rTime)} x  '
-          'g/r: ${nf.format(gTime / rTime)} x');
+    print('$expr => ' +
+          'r: ${nf.format(rTime)} ops/sec   ' +
+          'h: ${nf.format(hTime)} ops/sec   ' +
+          'i: ${nf.format(iTime)} ops/sec = ' +
+          'i/r: ${nf.format(iTime / rTime)} x  ' +
+          'i/h: ${nf.format(iTime / hTime)} x  ' +
+          'h/r: ${nf.format(hTime / rTime)} x  ');
   }
 
   compare('a.b.c', (scope) => scope['a'].b.c);

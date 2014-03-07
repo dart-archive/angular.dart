@@ -1,33 +1,19 @@
 library angular.core.parser.eval_access;
 
-import 'dart:mirrors';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/utils.dart';
 import 'package:angular/core/module.dart';
 
-class AccessScope extends syntax.AccessScope with AccessReflective {
-  final Symbol symbol;
-  AccessScope(String name) : super(name), symbol = newSymbol(name);
-  eval(scope, [FilterMap filters]) => _eval(scope);
-  assign(scope, value) => _assign(scope, scope, value);
-}
-
 class AccessScopeFast extends syntax.AccessScope with AccessFast {
   final Getter getter;
   final Setter setter;
-  AccessScopeFast(String name, this.getter, this.setter) : super(name);
-  eval(scope, [FilterMap filters]) => _eval(scope);
+  final bool isThis;
+  AccessScopeFast(String name, this.getter, this.setter)
+      : super(name),
+        isThis = name == 'this';
+  eval(scope, [FilterMap filters]) => isThis ? scope : _eval(scope);
   assign(scope, value) => _assign(scope, scope, value);
-}
-
-class AccessMember extends syntax.AccessMember with AccessReflective {
-  final Symbol symbol;
-  AccessMember(object, String name)
-      : super(object, name), symbol = newSymbol(name);
-  eval(scope, [FilterMap filters]) => _eval(object.eval(scope, filters));
-  assign(scope, value) => _assign(scope, object.eval(scope), value);
-  _assignToNonExisting(scope, value) => object.assign(scope, { name: value });
 }
 
 class AccessMemberFast extends syntax.AccessMember with AccessFast {
@@ -45,110 +31,6 @@ class AccessKeyed extends syntax.AccessKeyed {
   eval(scope, [FilterMap filters]) =>
       getKeyed(object.eval(scope, filters), key.eval(scope, filters));
   assign(scope, value) => setKeyed(object.eval(scope), key.eval(scope), value);
-}
-
-
-/**
- * The [AccessReflective] mixin is used to share code between access expressions
- * where we need to use reflection to get or set a field. We optimize for the
- * case where we access the same holder repeatedly through caching.
- */
-abstract class AccessReflective {
-  static const int CACHED_FIELD = 0;
-  static const int CACHED_MAP = 1;
-  static const int CACHED_VALUE = 2;
-
-  int _cachedKind = 0;
-  var _cachedHolder = UNINITIALIZED;
-  var _cachedValue;
-
-  String get name;
-  Symbol get symbol;
-
-  _eval(holder) {
-    if (!identical(holder, _cachedHolder)) return _evalUncached(holder);
-    int cachedKind = _cachedKind;
-    if (cachedKind == CACHED_MAP) return holder[name];
-    var value = _cachedValue;
-    return (cachedKind == CACHED_FIELD && value != null)
-        ? value.getField(symbol).reflectee
-        : value;
-  }
-
-  _evalUncached(holder) {
-    _cachedHolder = holder;
-    if (holder == null) {
-      _cachedKind = CACHED_VALUE;
-      return _cachedValue = null;
-    } else if (holder is Map) {
-      _cachedKind = CACHED_MAP;
-      _cachedValue = null;
-      return holder[name];
-    } else if (symbol == null) {
-      _cachedHolder = UNINITIALIZED;
-      return null;
-    }
-    InstanceMirror mirror = reflect(holder);
-    try {
-      var result = mirror.getField(symbol).reflectee;
-      _cachedKind = CACHED_FIELD;
-      _cachedValue = mirror;
-      return result;
-    } on NoSuchMethodError catch (e) {
-      if (isNoSuchMethodDueToGetField(e)) {
-        var result = createInvokeClosure(mirror, symbol);
-        if (result == null) rethrow;
-        _cachedKind = CACHED_VALUE;
-        return _cachedValue = result;
-      } else {
-        rethrow;
-      }
-    } on UnsupportedError catch (e) {
-      var result = createInvokeClosure(mirror, symbol);
-      if (result == null) rethrow;
-      _cachedKind = CACHED_VALUE;
-      return _cachedValue = result;
-    }
-  }
-
-  bool isNoSuchMethodDueToGetField(NoSuchMethodError e) {
-    var msg = e.toString();
-    return msg.indexOf("has no instance getter '$name'.") != -1 || // Dart VM
-           msg.indexOf('Cannot call "$name\$') != -1; // Dart2JS
-  }
-
-  _assign(scope, holder, value) {
-    if (holder is Map) {
-      holder[name] = value;
-    } else if (holder == null) {
-      _assignToNonExisting(scope, value);
-    } else if (symbol != null) {
-      reflect(holder).setField(symbol, value);
-    }
-    return value;
-  }
-
-  // By default we don't do any assignments to non-existing holders. This
-  // is overwritten for access to members.
-  _assignToNonExisting(scope, value) => null;
-
-  static Function createInvokeClosure(InstanceMirror mirror, Symbol symbol) {
-    if (!hasMethod(mirror, symbol)) return null;
-    return relaxFnArgs(([a0, a1, a2, a3, a4, a5]) {
-      var arguments = stripTrailingNulls([a0, a1, a2, a3, a4, a5]);
-      return mirror.invoke(symbol, arguments).reflectee;
-    });
-  }
-
-  static stripTrailingNulls(List list) {
-    while (list.isNotEmpty && (list.last == null)) {
-      list.removeLast();
-    }
-    return list;
-  }
-
-  static bool hasMethod(InstanceMirror mirror, Symbol symbol) =>
-      mirror.type.instanceMembers[symbol] is MethodMirror;
 }
 
 /**

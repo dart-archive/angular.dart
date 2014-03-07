@@ -2,6 +2,7 @@ library introspection_spec;
 
 import '_specs.dart';
 import 'dart:js' as js;
+import 'package:angular/angular_dynamic.dart';
 
 void main() {
   describe('introspection', () {
@@ -43,7 +44,7 @@ void main() {
       var elt = $('<div ng-app id=ngtop ng-bind="\'introspection FTW\'"></div>')[0];
       // Make it possible to find the element from JS
       document.body.append(elt);
-      ngBootstrap(element: elt);
+      (ngDynamicApp()..element = elt).run();
 
       expect(js.context['ngProbe']).toBeDefined();
       expect(js.context['ngScope']).toBeDefined();

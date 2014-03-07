@@ -2,7 +2,6 @@ library angular.core;
 
 import 'dart:async' as async;
 import 'dart:collection';
-import 'dart:mirrors';
 import 'package:intl/intl.dart';
 
 import 'package:di/di.dart';
@@ -42,8 +41,8 @@ class NgCoreModule extends Module {
     type(Interpolate);
     type(RootScope);
     factory(Scope, (injector) => injector.get(RootScope));
+    factory(ClosureMap, (_) => throw "Must provide dynamic/static ClosureMap.");
     value(ScopeStats, new ScopeStats());
-    value(GetterCache, new GetterCache({}));
     value(Object, {}); // RootScope context
     type(AstParser);
     type(NgZone);
@@ -53,6 +52,5 @@ class NgCoreModule extends Module {
     type(DynamicParser);
     type(DynamicParserBackend);
     type(Lexer);
-    type(ClosureMap);
   }
 }

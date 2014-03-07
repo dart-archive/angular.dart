@@ -1,17 +1,17 @@
 library registry_spec;
 
 import '../_specs.dart';
+import 'package:angular/angular_dynamic.dart';
 
 main() {
   describe('RegistryMap', () {
     it('should allow for multiple registry keys to be added', () {
       var module = new Module()
           ..type(MyMap)
-          ..type(MetadataExtractor)
           ..type(A1)
           ..type(A2);
 
-      var injector = new DynamicInjector(modules: [module]);
+      var injector = ngDynamicApp().addModule(module).createInjector();
       expect(() {
         injector.get(MyMap);
       }).not.toThrow();
@@ -20,10 +20,9 @@ main() {
     it('should iterate over all types', () {
       var module = new Module()
           ..type(MyMap)
-          ..type(MetadataExtractor)
           ..type(A1);
 
-      var injector = new DynamicInjector(modules: [module]);
+      var injector = ngDynamicApp().addModule(module).createInjector();
       var keys = [];
       var types = [];
       var map = injector.get(MyMap);
@@ -35,10 +34,9 @@ main() {
     it('should safely ignore typedefs', () {
       var module = new Module()
           ..type(MyMap)
-          ..type(MetadataExtractor)
           ..value(MyTypedef, (String _) => null);
 
-      var injector = new DynamicInjector(modules: [module]);
+      var injector = ngDynamicApp().addModule(module).createInjector();
       expect(() => injector.get(MyMap), isNot(throws));
     });
   });

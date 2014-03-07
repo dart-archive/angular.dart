@@ -1,4 +1,5 @@
 import 'package:angular/angular.dart';
+import 'package:angular/angular_dynamic.dart';
 
 // This annotation allows Dart to shake away any classes
 // not used from Dart code nor listed in another @MirrorsUsed.
@@ -16,5 +17,7 @@ class HelloWorldController {
 }
 
 main() {
-  ngBootstrap(module: new Module()..type(HelloWorldController));
+  ngDynamicApp()
+      .addModule(new Module()..type(HelloWorldController))
+      .run();
 }

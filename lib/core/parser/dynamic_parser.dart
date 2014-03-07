@@ -9,12 +9,13 @@ import 'package:angular/core/parser/syntax.dart' show defaultFilterMap;
 
 import 'package:angular/core/parser/eval.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
+import 'package:angular/utils.dart';
 
 @NgInjectableService()
-class ClosureMap {
-  Getter lookupGetter(String name) => null;
-  Setter lookupSetter(String name) => null;
-  Function lookupFunction(String name, CallArguments arguments) => null;
+abstract class ClosureMap {
+  Getter lookupGetter(String name);
+  Setter lookupSetter(String name);
+  MethodClosure lookupFunction(String name, CallArguments arguments);
 }
 
 @NgInjectableService()
@@ -78,73 +79,70 @@ class DynamicParserBackend extends ParserBackend {
     return new Filter(expression, name, arguments, allArguments);
   }
 
-  Expression newChain(expressions) => new Chain(expressions);
-  Expression newAssign(target, value) => new Assign(target, value);
+  Expression newChain(expressions)
+      => new Chain(expressions);
+  Expression newAssign(target, value)
+      => new Assign(target, value);
   Expression newConditional(condition, yes, no)
       => new Conditional(condition, yes, no);
 
-  Expression newAccessKeyed(object, key) => new AccessKeyed(object, key);
+  Expression newAccessKeyed(object, key)
+      => new AccessKeyed(object, key);
   Expression newCallFunction(function, arguments)
       => new CallFunction(function, arguments);
 
-  Expression newPrefixNot(expression) => new PrefixNot(expression);
+  Expression newPrefixNot(expression)
+      => new PrefixNot(expression);
 
   Expression newBinary(operation, left, right)
       => new Binary(operation, left, right);
 
-  Expression newLiteralPrimitive(value) => new LiteralPrimitive(value);
-  Expression newLiteralArray(elements) => new LiteralArray(elements);
-  Expression newLiteralObject(keys, values) => new LiteralObject(keys, values);
-  Expression newLiteralString(value) => new LiteralString(value);
+  Expression newLiteralPrimitive(value)
+      => new LiteralPrimitive(value);
+  Expression newLiteralArray(elements)
+      => new LiteralArray(elements);
+  Expression newLiteralObject(keys, values)
+      => new LiteralObject(keys, values);
+  Expression newLiteralString(value)
+      => new LiteralString(value);
 
 
   Expression newAccessScope(name) {
-    Getter getter = _closures.lookupGetter(name);
-    Setter setter = _closures.lookupSetter(name);
-    return (getter != null && setter != null)
-        ? new AccessScopeFast(name, getter, setter)
-        : new AccessScope(name);
+    Getter getter;
+    Setter setter;
+    if (name == 'this') {
+      getter = (o) => o;
+    } else {
+      _assertNotReserved(name);
+      getter = _closures.lookupGetter(name);
+      setter = _closures.lookupSetter(name);
+    }
+    return new AccessScopeFast(name, getter, setter);
   }
 
   Expression newAccessMember(object, name) {
+    _assertNotReserved(name);
     Getter getter = _closures.lookupGetter(name);
     Setter setter = _closures.lookupSetter(name);
-    return (getter != null && setter != null)
-        ? new AccessMemberFast(object, name, getter, setter)
-        : new AccessMember(object, name);
+    return new AccessMemberFast(object, name, getter, setter);
   }
 
   Expression newCallScope(name, arguments) {
-    Function constructor = _computeCallConstructor(
-        _callScopeConstructors, name, arguments);
-    return (constructor != null)
-        ? constructor(name, arguments, _closures)
-        : new CallScope(name, arguments);
+    _assertNotReserved(name);
+    MethodClosure function = _closures.lookupFunction(name, arguments);
+    return new CallScope(name, function, arguments);
   }
 
   Expression newCallMember(object, name, arguments) {
-    Function constructor = _computeCallConstructor(
-        _callMemberConstructors, name, arguments);
-    return constructor != null
-        ? constructor(object, name, arguments, _closures)
-        : new CallMember(object, name, arguments);
+    _assertNotReserved(name);
+    MethodClosure function = _closures.lookupFunction(name, arguments);
+    return new CallMember(object, function, name, arguments);
   }
 
-  Function _computeCallConstructor(Map constructors,
-                                   String name,
-                                   CallArguments arguments) {
-    Function function = _closures.lookupFunction(name, arguments);
-    return (function == null) ? null : constructors[arguments.arity];
+  _assertNotReserved(name) {
+    if (isReservedWord(name)) {
+      throw "Identifier '$name' is a reserved word.";
+    }
   }
-
-  static final Map<int, Function> _callScopeConstructors = {
-      0: (n, a, c) => new CallScopeFast0(n, a, c.lookupFunction),
-      1: (n, a, c) => new CallScopeFast1(n, a, c.lookupFunction),
-  };
-
-  static final Map<int, Function> _callMemberConstructors = {
-      0: (o, n, a, c) => new CallMemberFast0(o, n, a, c.lookupFunction),
-      1: (o, n, a, c) => new CallMemberFast1(o, n, a, c.lookupFunction),
-  };
 }
 

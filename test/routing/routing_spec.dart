@@ -2,6 +2,7 @@ library routing_spec;
 
 import '../_specs.dart';
 import 'package:angular/mock/module.dart';
+import 'package:angular/angular_dynamic.dart';
 import 'dart:async';
 
 main() {
@@ -45,10 +46,10 @@ main() {
     });
 
     initRouter(initializer) {
-      var module = new Module()
-          ..value(RouteInitializerFn, initializer);
-      var injector = new DynamicInjector(
-          modules: [new AngularModule(), new AngularMockModule(), module]);
+      var injector = ngDynamicApp()
+        .addModule(new AngularMockModule())
+        .addModule(new Module()..value(RouteInitializerFn, initializer))
+        .createInjector();
       injector.get(NgRoutingHelper); // force routing initialization
       router = injector.get(Router);
       _ = injector.get(TestBed);

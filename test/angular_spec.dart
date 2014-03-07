@@ -238,6 +238,7 @@ main() {
         "angular.core.parser.BoundGetter",  // internal?
         "angular.core.parser.LocalsWrapper",  // internal?
         "angular.core.parser.Getter",  // common name
+        "angular.core.parser.MethodClosure",
         "angular.core.parser.Parser",
         "angular.core.parser.ParserBackend",
         "angular.core.parser.BoundSetter",

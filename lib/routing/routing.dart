@@ -140,7 +140,7 @@ class NgRoutingHelper {
       });
     });
 
-    router.listen(appRoot: _ngApp.root);
+    router.listen(appRoot: _ngApp.element);
   }
 
   _reloadViews({Route startingFrom}) {

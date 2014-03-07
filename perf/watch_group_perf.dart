@@ -2,6 +2,8 @@ library angular.perf.watch_group;
 
 import '_perf.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
+import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:benchmark_harness/benchmark_harness.dart';
 
@@ -14,7 +16,14 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 import 'dart:mirrors' show MirrorsUsed;
 
 var _reactionFn = (_, __) => null;
-var _getterCache = new GetterCache({});
+var _staticFieldGetterFactory = new StaticFieldGetterFactory({
+    "a": (o) => o.a, "b": (o) => o.b, "c": (o) => o.c, "d": (o) => o.d, "e": (o) => o.e,
+    "f": (o) => o.f, "g": (o) => o.g, "h": (o) => o.h, "i": (o) => o.i, "j": (o) => o.j,
+    "k": (o) => o.k, "l": (o) => o.l, "m": (o) => o.m, "n": (o) => o.n, "o": (o) => o.o,
+    "p": (o) => o.p, "q": (o) => o.q, "r": (o) => o.r, "s": (o) => o.s, "t": (o) => o.t,
+});
+var _dynamicFieldGetterFactory = new DynamicFieldGetterFactory();
+
 main() {
   _fieldRead();
   _fieldReadGetter();
@@ -27,7 +36,7 @@ main() {
 
 class _CollectionCheck extends BenchmarkBase {
   List<int> list = new List.generate(1000, (i) => i);
-  var detector = new DirtyCheckingChangeDetector(_getterCache);
+  var detector = new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory);
 
   _CollectionCheck(): super('change-detect List[1000]') {
     detector
@@ -41,8 +50,8 @@ class _CollectionCheck extends BenchmarkBase {
 }
 
 _fieldRead() {
-  var watchGrp = new RootWatchGroup(
-      new DirtyCheckingChangeDetector(_getterCache), new _Obj())
+  var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
+      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), new _Obj())
           ..watch(_parse('a'), _reactionFn)
           ..watch(_parse('b'), _reactionFn)
           ..watch(_parse('c'), _reactionFn)
@@ -70,14 +79,8 @@ _fieldRead() {
 }
 
 _fieldReadGetter() {
-  var getterCache = new GetterCache({
-    "a": (o) => o.a, "b": (o) => o.b, "c": (o) => o.c, "d": (o) => o.d, "e": (o) => o.e,
-    "f": (o) => o.f, "g": (o) => o.g, "h": (o) => o.h, "i": (o) => o.i, "j": (o) => o.j,
-    "k": (o) => o.k, "l": (o) => o.l, "m": (o) => o.m, "n": (o) => o.n, "o": (o) => o.o,
-    "p": (o) => o.p, "q": (o) => o.q, "r": (o) => o.r, "s": (o) => o.s, "t": (o) => o.t,
-  });
-  var  watchGrp= new RootWatchGroup(
-      new DirtyCheckingChangeDetector(getterCache), new _Obj())
+  var  watchGrp= new RootWatchGroup(_staticFieldGetterFactory,
+      new DirtyCheckingChangeDetector(_staticFieldGetterFactory), new _Obj())
           ..watch(_parse('a'), _reactionFn)
           ..watch(_parse('b'), _reactionFn)
           ..watch(_parse('c'), _reactionFn)
@@ -110,8 +113,8 @@ _mapRead() {
       'f': 0, 'g': 1, 'h': 2, 'i': 3, 'j': 4,
       'k': 0, 'l': 1, 'm': 2, 'n': 3, 'o': 4,
       'p': 0, 'q': 1, 'r': 2, 's': 3, 't': 4};
-  var watchGrp = new RootWatchGroup(
-      new DirtyCheckingChangeDetector(_getterCache), map)
+  var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
+      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), map)
           ..watch(_parse('a'), _reactionFn)
           ..watch(_parse('b'), _reactionFn)
           ..watch(_parse('c'), _reactionFn)
@@ -140,8 +143,8 @@ _mapRead() {
 _methodInvoke0() {
   var context = new _Obj();
   context.a = new _Obj();
-  var watchGrp = new RootWatchGroup(
-      new DirtyCheckingChangeDetector(_getterCache), context)
+  var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
+      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), context)
           ..watch(_method('a', 'methodA'), _reactionFn)
           ..watch(_method('a', 'methodB'), _reactionFn)
           ..watch(_method('a', 'methodC'), _reactionFn)
@@ -170,8 +173,8 @@ _methodInvoke0() {
 _methodInvoke1() {
   var context = new _Obj();
   context.a = new _Obj();
-  var watchGrp = new RootWatchGroup(
-      new DirtyCheckingChangeDetector(_getterCache), context)
+  var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
+      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), context)
           ..watch(_method('a', 'methodA1', [_parse('a')]), _reactionFn)
           ..watch(_method('a', 'methodB1', [_parse('a')]), _reactionFn)
           ..watch(_method('a', 'methodC1', [_parse('a')]), _reactionFn)
@@ -199,8 +202,8 @@ _methodInvoke1() {
 
 _function2() {
   var context = new _Obj();
-  var watchGrp = new RootWatchGroup(
-      new DirtyCheckingChangeDetector(_getterCache), context)
+  var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
+      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), context)
           ..watch(_add(0, _parse('a'), _parse('a')), _reactionFn)
           ..watch(_add(1, _parse('a'), _parse('a')), _reactionFn)
           ..watch(_add(2, _parse('a'), _parse('a')), _reactionFn)

@@ -3,7 +3,6 @@ library angular.core.dom;
 import 'dart:async' as async;
 import 'dart:convert' show JSON;
 import 'dart:html' as dom;
-import 'dart:mirrors';
 
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
@@ -56,7 +55,6 @@ class NgCoreDomModule extends Module {
     type(BrowserCookies);
     type(Cookies);
     type(LocationWrapper);
-    type(FieldMetadataExtractor);
     type(DirectiveMap);
     type(DirectiveSelectorFactory);
     type(ElementBinderFactory);

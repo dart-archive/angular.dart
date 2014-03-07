@@ -15,7 +15,6 @@ import 'package:di/dynamic_injector.dart';
 import 'package:angular/core/module.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
-import 'package:angular/tools/parser_generator/generator.dart';
 
 main(args) {
   if (args.length < 5) {

@@ -127,7 +127,9 @@ module(fnOrModule) {
 void setUpInjector() {
   _currentSpecInjector = new _SpecInjector();
   _currentSpecInjector.module((Module m) {
-    m..install(new AngularModule())..install(new AngularMockModule());
+    m
+      ..install(ngDynamicApp().ngModule)
+      ..install(new AngularMockModule());
   });
 }
 

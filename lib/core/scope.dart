@@ -434,15 +434,17 @@ class RootScope extends Scope {
 
   String _state;
 
-  RootScope(Object context, Parser parser, GetterCache cacheGetter,
+  RootScope(Object context, Parser parser, FieldGetterFactory fieldGetterFactory,
             FilterMap filterMap, this._exceptionHandler, this._ttl, this._zone,
             ScopeStats _scopeStats)
       : _scopeStats = _scopeStats,
         _parser = parser,
         _astParser = new AstParser(parser),
         super(context, null, null,
-            new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
-            new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
+            new RootWatchGroup(fieldGetterFactory,
+                new DirtyCheckingChangeDetector(fieldGetterFactory), context),
+            new RootWatchGroup(fieldGetterFactory,
+                new DirtyCheckingChangeDetector(fieldGetterFactory), context),
             '',
             _scopeStats)
   {
