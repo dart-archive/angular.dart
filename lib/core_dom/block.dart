@@ -2,13 +2,12 @@ part of angular.core.dom;
 
 /**
  * A Block is a fundamental building block of DOM. It is a chunk of DOM which
- * can not be structural changed. It can only have its attributes changed.
- * A Block can have [BlockHole]s embedded in its DOM.  A [BlockHole] can
- * contain other [Block]s and it is the only way in which DOM can be changed
- * structurally.
+ * can not be structurally changed. A Block can have [BlockHole] placeholders
+ * embedded in its DOM.  A [BlockHole] can contain other [Block]s and it is the
+ * only way in which DOM structure can be modified.
  *
  * A [Block] is a collection of DOM nodes
- *
+
  * A [Block] can be created from [BlockFactory].
  *
  */
@@ -18,9 +17,8 @@ class Block {
 }
 
 /**
- * A BlockHole is an instance of a hole. BlockHoles designate where child
- * [Block]s can be added in parent [Block]. BlockHoles wrap a DOM element,
- * and act as references which allows more blocks to be added.
+ * A BlockHole maintains an ordered list of [Block]'s. It contains a
+ * [placeholder] node that is used as the insertion point for block nodes.
  */
 class BlockHole {
   final dom.Node placeholder;
@@ -52,15 +50,12 @@ class BlockHole {
   }
 
   void _blocksInsertAfter(Block block, Block insertAfter) {
-    int index = -1;
-    if(insertAfter != null) {
-      index = _blocks.indexOf(insertAfter);
-    }
+    int index = (insertAfter != null) ? _blocks.indexOf(insertAfter) : -1;
     _blocks.insert(index + 1, block);
   }
 
-  dom.Node _lastNode(Block insertAfter) {
-    return insertAfter == null ? placeholder
-    : insertAfter.nodes[insertAfter.nodes.length - 1];
-  }
+  dom.Node _lastNode(Block insertAfter) =>
+    insertAfter == null
+      ? placeholder
+      : insertAfter.nodes[insertAfter.nodes.length - 1];
 }
