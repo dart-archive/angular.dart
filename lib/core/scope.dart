@@ -301,7 +301,6 @@ class Scope {
     _readWriteGroup.remove();
     _readOnlyGroup.remove();
     _parentScope = null;
-    _assertInternalStateConsistency();
   }
 
   _assertInternalStateConsistency() {
