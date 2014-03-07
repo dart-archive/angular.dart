@@ -12,7 +12,7 @@ forBothCompilers(fn) {
     fn();
   });
 
-  xdescribe('tagging compiler', () {
+  describe('tagging compiler', () {
     beforeEach(module((Module m) {
       m.type(Compiler, implementedBy: TaggingCompiler);
       return m;
@@ -591,7 +591,6 @@ void main() {
       })));
 
       it('should expose a parent controller to the scope of its children', inject((TestBed _) {
-
         var element = _.compile('<div my-parent-controller>'
             '  <div my-child-controller>{{ my_parent.data() }}</div>'
             '</div>');

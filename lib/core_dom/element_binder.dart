@@ -391,10 +391,27 @@ class ElementBinderTree {
 }
 
 
+class TaggedTextBinder {
+  ElementBinder binder;
+  final int offsetIndex;
+
+  TaggedTextBinder(this.binder, this.offsetIndex);
+}
+
 // Used for the tagging compiler
 class TaggedElementBinder {
   ElementBinder binder;
   int parentBinderOffset;
+  var injector;
+
+  List<TaggedTextBinder> textBinders;
 
   TaggedElementBinder(this.binder, this.parentBinderOffset);
+
+  void addText(TaggedTextBinder tagged) {
+    if (textBinders == null) {
+      textBinders = [];
+    }
+    textBinders.add(tagged);
+  }
 }
