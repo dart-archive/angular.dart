@@ -22,4 +22,6 @@ before_script:
 script:
 - ./scripts/travis/build.sh
 after_script:
+- ./scripts/travis/presubmit.sh
 - ./scripts/travis/publish-docs.sh
+
