@@ -247,6 +247,9 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
 
 class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     implements ChangeDetector<H> {
+
+  final DirtyCheckingRecord _fakeHead = new DirtyCheckingRecord.marker();
+
   DirtyCheckingChangeDetector(GetterCache getterCache): super(null, getterCache);
 
   DirtyCheckingChangeDetector get _root => this;
@@ -278,24 +281,17 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     return true;
   }
 
-  Iterator<Record<H>> collectChanges({ EvalExceptionHandler exceptionHandler,
-                                          AvgStopwatch stopwatch}) {
+  Iterator<Record<H>> collectChanges({EvalExceptionHandler exceptionHandler,
+                                      AvgStopwatch stopwatch}) {
     if (stopwatch != null) stopwatch.start();
-    DirtyCheckingRecord changeHead = null;
-    DirtyCheckingRecord changeTail = null;
+    DirtyCheckingRecord changeTail = _fakeHead;
     DirtyCheckingRecord current = _recordHead; // current index
 
     int count = 0;
     while (current != null) {
       try {
-        if (current.check()) {
-          if (changeHead == null) {
-            changeHead = changeTail = current;
-          } else {
-            changeTail = changeTail._nextChange = current;
-          }
-        }
-        if (stopwatch != null) count++;
+        if (current.check()) changeTail = changeTail._nextChange = current;
+        count++;
       } catch (e, s) {
         if (exceptionHandler == null) {
           rethrow;
@@ -305,8 +301,12 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
       }
       current = current._nextRecord;
     }
-    if (changeTail != null) changeTail._nextChange = null;
+
+    changeTail._nextChange = null;
     if (stopwatch != null) stopwatch..stop()..increment(count);
+    DirtyCheckingRecord changeHead = _fakeHead._nextChange;
+    _fakeHead._nextChange = null;
+
     return new _ChangeIterator(changeHead);
   }
 
