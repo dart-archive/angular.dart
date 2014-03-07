@@ -13,7 +13,7 @@ echo Test result is: $TRAVIS_TEST_RESULT
 
 if [ "$CHANNEL" = "stable" ] && [ "$TRAVIS_REPO_SLUG" = "angular/angular.dart" ]; then
     
-    if [ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$TRAVIS_BRANCH" = "presubmit" ]; then
+    if [ $TRAVIS_TEST_RESULT -eq 0 ] && [ $TRAVIS_BRANCH = presubmit-* ]; then
     
         rm -Rf angular.dart       
         git clone https://github.com/angular/angular.dart.git
