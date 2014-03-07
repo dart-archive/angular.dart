@@ -74,7 +74,7 @@ class NgSwitchDirective {
   set value(val) {
     currentBlocks
         ..forEach((_BlockScopePair pair) {
-          pair.block.remove();
+          pair.hole.remove(pair.block);
           pair.scope.destroy();
         })
         ..clear();
@@ -83,8 +83,10 @@ class NgSwitchDirective {
     (cases.containsKey(val) ? cases[val] : cases['?'])
         .forEach((_Case caze) {
           Scope childScope = scope.createChild(new PrototypeMap(scope.context));
-          var block = caze.blockFactory(childScope)..insertAfter(caze.anchor);
-          currentBlocks.add(new _BlockScopePair(block, childScope));
+          var block = caze.blockFactory(childScope);
+          caze.anchor.insert(block);
+          currentBlocks.add(new _BlockScopePair(block, caze.anchor,
+            childScope));
         });
     if (onChange != null) {
       onChange();
@@ -94,9 +96,10 @@ class NgSwitchDirective {
 
 class _BlockScopePair {
   final Block block;
+  final BlockHole hole;
   final Scope scope;
 
-  _BlockScopePair(this.block, this.scope);
+  _BlockScopePair(this.block, this.hole, this.scope);
 }
 
 class _Case {
@@ -120,7 +123,6 @@ class NgSwitchWhenDirective {
 
   set value(String value) => ngSwitch.addCase('!$value', hole, blockFactory);
 }
-
 
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,

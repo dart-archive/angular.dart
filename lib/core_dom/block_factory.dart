@@ -35,13 +35,13 @@ class BlockFactory implements Function {
   BoundBlockFactory bind(Injector injector) =>
       new BoundBlockFactory(this, injector);
 
-  Block call(Injector injector, [List<dom.Node> elements]) {
-    if (elements == null) elements = cloneElements(templateElements);
+  Block call(Injector injector, [List<dom.Node> nodes]) {
+    if (nodes == null) nodes = cloneElements(templateElements);
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.block')) != false);
-      var block = new Block(elements, injector.get(NgAnimate));
-      _link(block, elements, directivePositions, injector);
+      var block = new Block(nodes);
+      _link(block, nodes, directivePositions, injector);
       return block;
     } finally {
       assert(_perf.stopTimer(timerId) != false);
@@ -176,7 +176,8 @@ class BlockFactory implements Function {
         if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
           // Currently, transclude is only supported for NgDirective.
           assert(annotation is NgDirective);
-          blockHoleFactory = (_) => new BlockHole([node]);
+          blockHoleFactory = (_) => new BlockHole(node,
+            parentInjector.get(NgAnimate));
           blockFactory = (_) => ref.blockFactory;
           boundBlockFactory = (Injector injector) =>
               ref.blockFactory.bind(injector);
@@ -384,7 +385,7 @@ class _ComponentFactory implements Function {
 
   attachBlockToShadowDom(BlockFactory blockFactory) {
     var block = blockFactory(shadowInjector);
-    shadowDom.nodes.addAll(block.elements);
+    shadowDom.nodes.addAll(block.nodes);
     return shadowDom;
   }
 
