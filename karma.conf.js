@@ -13,8 +13,7 @@ module.exports = function(config) {
       'test/**/*_spec.dart',
       'test/config/filter_tests.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
-      'packages/browser/dart.js',
-      'packages/browser/interop.js'
+      'packages/browser/dart.js'
     ],
 
     exclude: [
