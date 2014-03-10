@@ -133,6 +133,8 @@ class ScopeLocals implements Map {
  * for change detection, change processing and memory management.
  */
 class Scope {
+  final String id;
+  int _childScopeNextId = 0;
 
   /**
    * The default execution context for [watch]es [observe]ers, and [eval]uation.
@@ -182,7 +184,7 @@ class Scope {
   bool get hasOwnStreams => _streams != null  && _streams._scope == this;
 
   Scope(Object this.context, this.rootScope, this._parentScope,
-        this._readWriteGroup, this._readOnlyGroup);
+        this._readWriteGroup, this._readOnlyGroup, this.id);
 
   /**
    * A [watch] sets up a watch in the [digest] phase of the [apply] cycle.
@@ -271,7 +273,8 @@ class Scope {
     assert(isAttached);
     var child = new Scope(childContext, rootScope, this,
                           _readWriteGroup.newGroup(childContext),
-                          _readOnlyGroup.newGroup(childContext));
+                          _readOnlyGroup.newGroup(childContext),
+                         '$id:${_childScopeNextId++}');
 
     var prev = _childTail;
     child._prev = prev;
@@ -422,7 +425,8 @@ class RootScope extends Scope {
             this._scopeStats)
       : super(context, null, null,
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
-            new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context))
+            new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
+            '')
   {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
