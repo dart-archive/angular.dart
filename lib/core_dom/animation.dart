@@ -7,6 +7,7 @@ part of angular.core.dom;
  * controlled and so that custom dom manipulations can occur when animations
  * complete.
  */
+@NgInjectableService()
 class NgAnimate {
   /**
    * Add the [cssClass] to the classes on [element] after running any

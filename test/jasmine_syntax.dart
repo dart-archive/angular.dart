@@ -10,7 +10,7 @@ _withSetup(fn) => () {
   _beforeEachFnsForCurrentTest.sort((a, b) => Comparable.compare(b[1], a[1]));
   _beforeEachFnsForCurrentTest.forEach((fn) => fn[0]());
   try {
-    fn();
+    return fn();
   } finally {
     _beforeEachFnsForCurrentTest = [];
     var _aeFns = _afterEachFnsForCurrentTest;

@@ -1,4 +1,12 @@
-part of angular.mock;
+library angular.mock.http_backend;
+
+import 'dart:async' as dart_async;
+import 'dart:convert' show JSON;
+import 'dart:html';
+
+import 'package:angular/angular.dart';
+import 'package:angular/utils.dart' as utils;
+
 
 class _MockXhr {
   var $$method, $$url, $$async, $$reqHeaders, $$respHeaders;

@@ -3,7 +3,6 @@ library angular.core_dynamic;
 import 'dart:mirrors';
 import 'package:angular/core/module.dart';
 
-@NgInjectableService()
 class DynamicMetadataExtractor implements MetadataExtractor {
   final _fieldAnnotations = [
         reflectType(NgAttr),

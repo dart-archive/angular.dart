@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.12.2"
+    version: "0.13.2"
   args:
     description: args
     source: hosted
@@ -24,14 +24,17 @@ packages:
   code_transformers:
     description: code_transformers
     source: hosted
-    version: "0.0.1-dev.2"
+    version: "0.1.0"
   collection:
     description: collection
     source: hosted
     version: "0.9.1"
   di:
-    description: di
-    source: hosted
+    description:
+      ref: null
+      resolved-ref: a2de00d84934f4610d1f9e108c39614e66a773f5
+      url: "git://github.com/angular/di.dart.git"
+    source: git
     version: "0.0.34"
   html5lib:
     description: html5lib

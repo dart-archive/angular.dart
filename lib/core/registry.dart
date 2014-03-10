@@ -68,8 +68,6 @@ abstract class AnnotationsMap<K> {
   }
 }
 
-
-@NgInjectableService()
 abstract class MetadataExtractor {
   Iterable call(Type type);
 }

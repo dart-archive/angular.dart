@@ -1,5 +1,6 @@
 part of angular.core.dom;
 
+@NgInjectableService()
 class NgElement {
 
   final dom.Element node;

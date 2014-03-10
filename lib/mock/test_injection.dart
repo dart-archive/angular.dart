@@ -1,4 +1,9 @@
-part of angular.mock;
+library angular.mock.test_injection;
+
+import 'package:angular/angular_dynamic.dart';
+import 'package:angular/mock/module.dart';
+import 'package:di/di.dart';
+import 'package:di/dynamic_injector.dart';
 
 _SpecInjector _currentSpecInjector = null;
 

@@ -5,3 +5,6 @@ dependencies:
     path: ../
   browser: any
   unittest: any
+
+transformers:
+- angular

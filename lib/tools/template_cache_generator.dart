@@ -147,9 +147,8 @@ class TemplateCollectingVisitor {
         }
       });
       if (cache && cacheUris.isNotEmpty) {
-        var srcDirUri = new Uri.file(srcPath);
         Source currentSrcDir = sourceCrawler.context.sourceFactory
-            .resolveUri2(null, srcDirUri);
+            .resolveUri(null, 'file://$srcPath');
         cacheUris..sort()..forEach((uri) => storeUriAsset(uri, currentSrcDir));
       }
     });

@@ -34,6 +34,9 @@ dart --version
 # run io tests
 dart --checked test/io/all.dart
 
+# run transformer tests
+dart --checked test/tools/transformer/all.dart
+
 # run expression extractor tests
 scripts/test-expression-extractor.sh
 

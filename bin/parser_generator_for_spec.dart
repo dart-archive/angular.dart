@@ -1,3 +1,5 @@
+import 'dart:io' as io;
+
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
 import 'package:angular/core/module.dart';
@@ -489,5 +491,5 @@ main(arguments) {
       '(foo)(0, a: 0)',
       '(foo)(0, a: 0, b: 1)',
       '(foo)(0, b: 1, a: 0)',
-  ]);
+  ], io.stdout);
 }

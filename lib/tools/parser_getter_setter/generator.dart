@@ -35,7 +35,7 @@ class ParserGetterSetter {
   final ParserBackend backend;
   ParserGetterSetter(this.parser, this.backend);
 
-  generateParser(List<String> exprs) {
+  generateParser(List<String> exprs, StringSink sink) {
     exprs.forEach((expr) {
       try {
         parser(expr);
@@ -45,7 +45,7 @@ class ParserGetterSetter {
     });
 
     DartGetterSetterGen backend = this.backend;
-    print(generateClosureMap(backend.properties, backend.calls, backend.symbols));
+    sink.write(generateClosureMap(backend.properties, backend.calls, backend.symbols));
   }
 
   generateClosureMap(Set<String> properties,
@@ -61,17 +61,17 @@ StaticClosureMap closureMap = new StaticClosureMap(
   }
 
   generateGetterMap(Iterable<String> keys) {
-    var lines = keys.map((key) => 'r"${key}": (o) => o.$key');
-    return '{\n  ${lines.join(",\n  ")}\n}';
+    var lines = keys.map((key) => '    r"${key}": (o) => o.$key');
+    return '{\n${lines.join(",\n")}\n  }';
   }
 
   generateSetterMap(Iterable<String> keys) {
-    var lines = keys.map((key) => 'r"${key}": (o,v) => o.$key = v');
-    return '{\n   ${lines.join(",\n    ")}\n  }';
+    var lines = keys.map((key) => '    r"${key}": (o,v) => o.$key = v');
+    return '{\n${lines.join(",\n")}\n  }';
   }
 
   generateSymbolMap(Set<Strings> symbols) {
-    var lines = symbols.map((key) => 'r"${key}": #$key');
-    return '{\n   ${lines.join(",\n    ")}\n  }';
+    var lines = symbols.map((key) => '    r"${key}": #$key');
+    return '{\n${lines.join(",\n")}\n  }';
   }
 }
