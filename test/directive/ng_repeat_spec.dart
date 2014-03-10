@@ -9,10 +9,15 @@ main() {
     beforeEach(inject((Injector injector, Scope $rootScope, Compiler compiler, DirectiveMap _directives) {
       $exceptionHandler = injector.get(ExceptionHandler);
       scope = $rootScope;
-      $compile = (html) {
+      $compile = (html, [scope]) {
         element = $(html);
         var viewFactory = compiler(element, _directives);
-        var view = viewFactory(injector, element);
+        var blockInjector = injector;
+        if (scope != null) {
+          viewFactory.bind(injector)(scope);
+        } else {
+          viewFactory(injector, element);
+        }
         return element;
       };
       directives = _directives;
@@ -402,6 +407,20 @@ main() {
         expect(newLis[1]).toEqual(lis[0]);
         expect(newLis[2]).toEqual(lis[1]);
       });
+    });
+
+
+    it('should correctly handle detached state', () {
+      scope.context['items'] = [1];
+
+      var parentScope = scope.createChild(new PrototypeMap(scope.context));
+      element = $compile(
+        '<ul>' +
+          '<li ng-repeat="item in items">{{item}}</li>' +
+        '</ul>', parentScope);
+
+      parentScope.destroy();
+      expect(scope.apply).not.toThrow();
     });
 
   });
