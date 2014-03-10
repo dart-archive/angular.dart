@@ -6,6 +6,7 @@ authors:
 - James deBoer <james@huronbox.com>
 - Chirayu Krishnappa <chirayu@google.com>
 - Matias Niemela <matias@yearofmoo.com>
+- Paul Rohde <paul@paulrohde.com>
 description: Angular for dart.
 homepage: https://angulardart.org
 environment:
