@@ -291,8 +291,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
     // Unlink the _watchRecord
     _EvalWatchRecord firstEvalWatch = _evalWatchHead;
-    _EvalWatchRecord lastEvalWatch =
-        (_watchGroupTail == null ? this : _watchGroupTail)._evalWatchTail;
+    _EvalWatchRecord lastEvalWatch = _childWatchGroupTail._evalWatchTail;
     _EvalWatchRecord previous = firstEvalWatch._prevEvalWatch;
     _EvalWatchRecord next = lastEvalWatch._nextEvalWatch;
     if (previous != null) previous._nextEvalWatch = next;

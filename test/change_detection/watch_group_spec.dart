@@ -602,6 +602,7 @@ void main() {
         var child1a = watchGrp.newGroup(new PrototypeMap(context));
         var child1b = watchGrp.newGroup(new PrototypeMap(context));
         var child2 = child1a.newGroup(new PrototypeMap(context));
+        var child3 = child2.newGroup(new PrototypeMap(context));
         child1a.watch(countMethod, (v, p) => logger('1a'));
         expectOrder(['0a', '1a']);
         child1b.watch(countMethod, (v, p) => logger('1b'));
@@ -612,12 +613,14 @@ void main() {
         expectOrder(['0a', '0A', '1a', '1A', '1b']);
         child2.watch(countMethod, (v, p) => logger('2A'));
         expectOrder(['0a', '0A', '1a', '1A', '2A', '1b']);
+        child3.watch(countMethod, (v, p) => logger('3'));
+        expectOrder(['0a', '0A', '1a', '1A', '2A', '3', '1b']);
 
         // flush initial reaction functions
-        expect(watchGrp.detectChanges()).toEqual(6);
-        expectOrder(['0a', '0A', '1a', '1A', '2A', '1b']);
+        expect(watchGrp.detectChanges()).toEqual(7);
+        expectOrder(['0a', '0A', '1a', '1A', '2A', '3', '1b']);
 
-        child1a.remove(); // should also remove child2
+        child1a.remove(); // should also remove child2 and child 3
         expect(watchGrp.detectChanges()).toEqual(3);
         expectOrder(['0a', '0A', '1b']);
       });
