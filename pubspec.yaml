@@ -5,6 +5,7 @@ authors:
 - Pavel Jbanov <pavelgj@gmail.com>
 - James deBoer <james@huronbox.com>
 - Chirayu Krishnappa <chirayu@google.com>
+- Matias Niemela <matias@yearofmoo.com>
 description: Angular for dart.
 homepage: https://angulardart.org
 environment:
