@@ -14,6 +14,7 @@ echo "Generating documentation"
     --no-include-sdk \
     --package-root=../packages/ \
     ../lib/angular.dart \
+    ../lib/animate/module.dart \
     ../lib/utils.dart \
     ../lib/change_detection/watch_group.dart \
     ../lib/core/module.dart \
