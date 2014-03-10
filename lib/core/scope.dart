@@ -736,6 +736,9 @@ class ScopeStream extends async.Stream<ScopeEvent> {
   final _Streams _streams;
   final String _name;
   final subscriptions = <ScopeStreamSubscription>[];
+  bool _firing = false;
+  List<ScopeStreamSubscription> _toRemove;
+
 
   ScopeStream(this._streams, this._exceptionHandler, this._name);
 
@@ -750,16 +753,36 @@ class ScopeStream extends async.Stream<ScopeEvent> {
   }
 
   void _fire(ScopeEvent event) {
-    for (ScopeStreamSubscription subscription in subscriptions) {
-      try {
-        subscription._onData(event);
-      } catch (e, s) {
-        _exceptionHandler(e, s);
+    _firing = true;
+    try {
+      for (ScopeStreamSubscription subscription in subscriptions) {
+        try {
+          subscription._onData(event);
+        } catch (e, s) {
+          _exceptionHandler(e, s);
+        }
+      }
+    } finally {
+      _firing = false;
+      if (_toRemove != null) {
+        _toRemove.forEach(_actuallyRemove);
+        _toRemove = null;
       }
     }
   }
 
   void _remove(ScopeStreamSubscription subscription) {
+    if (_firing) {
+      if (_toRemove == null) {
+        _toRemove = [];
+      }
+      _toRemove.add(subscription);
+    } else {
+      _actuallyRemove(subscription);
+    }
+  }
+
+  void _actuallyRemove(ScopeStreamSubscription subscription) {
     assert(subscription._scopeStream == this);
     if (subscriptions.remove(subscription)) {
       if (subscriptions.isEmpty) _streams._addCount(_name, -1);

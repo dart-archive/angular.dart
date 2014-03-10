@@ -654,6 +654,16 @@ void main() {
             expect(args.length).toBe(4);
             expect(args).toEqual(['do', 're', 'me', 'fa']);
           }));
+
+          it('should allow removing listener during an event', inject((RootScope rootScope) {
+            StreamSubscription subscription;
+            subscription = rootScope.on('foo').listen((_) {
+              subscription.cancel();
+            });
+            expect(() {
+              rootScope.broadcast('foo');
+            }).not.toThrow();
+          }));
         });
       });
     });
