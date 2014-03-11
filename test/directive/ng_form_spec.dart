@@ -96,6 +96,46 @@ void main() {
         expect(element.hasClass('ng-pristine')).toBe(true);
         expect(element.hasClass('ng-dirty')).toBe(false);
       }));
+
+      it('should revert back to pristine on the form if the value is reset on the model',
+        inject((Scope scope, TestBed _) {
+
+        var element = $('<form name="myForm">' + 
+                        '  <input type="text" ng-model="myModel1" probe="m" />' +
+                        '  <input type="text" ng-model="myModel2" probe="n" />' +
+                        '</form>');
+
+        _.compile(element);
+        scope.apply();
+
+        var form = scope.context['myForm'];
+        var model1 = scope.context['m'].directive(NgModel);
+        var model2 = scope.context['n'].directive(NgModel);
+
+        expect(model1.pristine).toBe(true);
+        expect(model2.pristine).toBe(true);
+        expect(form.dirty).toBe(false);
+
+        var m1value = model1.viewValue;
+        var m2value = model2.viewValue;
+
+        model1.viewValue = 'some value';
+        expect(model1.dirty).toBe(true);
+        expect(model1.pristine).toBe(false);
+        expect(form.dirty).toBe(true);
+
+        model2.viewValue = 'some value 123';
+
+        model1.viewValue = m1value;
+        expect(model1.dirty).toBe(false);
+        expect(model1.pristine).toBe(true);
+        expect(form.pristine).toBe(false);
+
+        model2.viewValue = m2value;
+        expect(model2.dirty).toBe(false);
+        expect(model2.pristine).toBe(true);
+        expect(form.pristine).toBe(true);
+      }));
     });
 
     describe('valid / invalid', () {

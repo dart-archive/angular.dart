@@ -82,9 +82,13 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
 
   get pristine => !_dirty;
   set pristine(value) {
+    //only mark as pristine if all the child controls are pristine
+    if (_controls.any((control) => control.dirty)) return;
+
     _dirty = false;
     _animate.addClass(element, NG_PRISTINE_CLASS);
     _animate.removeClass(element, NG_DIRTY_CLASS);
+    _parentControl.pristine = true;
   }
 
   get dirty => _dirty;
