@@ -740,6 +740,18 @@ void main() {
         rootScope.apply();
         expect(log).toEqual(['root destroy', 'root2 destroy']);
       }));
+
+
+      it('should not call reaction fn when destroyed', inject((RootScope scope) {
+        var testScope = scope.createChild({});
+        bool called = false;
+        testScope.watch('items', (_, __) {
+          called = true;
+        });
+        testScope.destroy();
+        scope.apply();
+        expect(called).toBeFalsy();
+      }));
     });
 
 
