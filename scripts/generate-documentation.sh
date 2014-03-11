@@ -13,27 +13,27 @@ echo "Generating documentation"
     --exclude-lib=js,metadata,meta,mirrors,intl,number_symbols,number_symbol_data,intl_helpers,date_format_internal,date_symbols,angular.util \
     --no-include-sdk \
     --package-root=../packages/ \
-    ../lib/angular.dart \
-    ../lib/animate/module.dart \
-    ../lib/utils.dart \
-    ../lib/change_detection/watch_group.dart \
-    ../lib/core/module.dart \
-    ../lib/core_dom/module.dart \
-    ../lib/filter/module.dart \
-    ../lib/directive/module.dart \
-    ../lib/mock/module.dart \
-    ../lib/perf/module.dart \
-    ../lib/playback/playback_data.dart \
-    ../lib/playback/playback_http.dart \
-    ../lib/routing/module.dart \
-    ../lib/tools/common.dart \
-    ../lib/tools/expression_extractor.dart \
-    ../lib/tools/io.dart \
-    ../lib/tools/io_impl.dart \
-    ../lib/tools/source_crawler_impl.dart \
-    ../lib/tools/source_metadata_extractor.dart \
-    ../lib/tools/template_cache_annotation.dart \
-    ../lib/tools/template_cache_generator.dart
+    angular.dart \
+    animate/module.dart \
+    utils.dart \
+    change_detection/watch_group.dart \
+    core/module.dart \
+    core_dom/module.dart \
+    filter/module.dart \
+    directive/module.dart \
+    mock/module.dart \
+    perf/module.dart \
+    playback/playback_data.dart \
+    playback/playback_http.dart \
+    routing/module.dart \
+    tools/common.dart \
+    tools/expression_extractor.dart \
+    tools/io.dart \
+    tools/io_impl.dart \
+    tools/source_crawler_impl.dart \
+    tools/source_metadata_extractor.dart \
+    tools/template_cache_annotation.dart \
+    tools/template_cache_generator.dart
 
 cd ..
 
