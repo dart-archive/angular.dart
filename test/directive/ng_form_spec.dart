@@ -152,6 +152,31 @@ void main() {
         expect(form.invalid).toBe(false);
       }));
 
+      it('should collect the invalid models upon failed validation', inject((Scope scope, TestBed _) {
+        var element = $('<form name="myForm">'
+                        '  <input type="text" ng-model="one" name="one" />' +
+                        '  <input type="text" ng-model="two" name="two" />' +
+                        '  <input type="text" ng-model="three" name="three" />' +
+                        '</form>');
+
+        _.compile(element);
+        scope.apply();
+
+        var form = scope.context['myForm'];
+        NgModel one = form['one'];
+        NgModel two = form['two'];
+        NgModel three = form['three'];
+
+        one.setValidity("email", false);
+        two.setValidity("number", true);
+        three.setValidity("format", false);
+
+        expect(form.errors.keys.length).toBe(2);
+        expect(form.errors['email'].elementAt(0)).toBe(one);
+        expect(form.errors['format'].elementAt(0)).toBe(three);
+      }));
+
+
       it('should not handle the control errorType pair more than once', inject((Scope scope, TestBed _) {
         var element = $('<form name="myForm">'
                         '  <input type="text" ng-model="one" name="one" />' +
