@@ -12,7 +12,6 @@ part of angular.directive;
  */
 @NgDirective(selector: '[ng-model]')
 class NgModel extends NgControl implements NgAttachAware {
-  final NgForm _form;
   final AstParser _parser;
   final Scope _scope;
 
@@ -28,7 +27,7 @@ class NgModel extends NgControl implements NgAttachAware {
   Function render = (value) => null;
 
   NgModel(this._scope, NgElement element, Injector injector,
-      NgForm this._form, this._parser, NodeAttrs attrs, NgAnimate animate)
+          this._parser, NodeAttrs attrs, NgAnimate animate)
       : super(element, injector, animate)
   {
     _exp = attrs["ng-model"];
