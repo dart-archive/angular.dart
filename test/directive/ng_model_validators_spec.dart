@@ -193,7 +193,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
-        expect(model.hasError('max')).toBe(false);
+        expect(model.hasError('ng-max')).toBe(false);
 
         _.rootScope.apply(() {
           _.rootScope.context['val'] = "99";
@@ -202,7 +202,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
-        expect(model.hasError('max')).toBe(true);
+        expect(model.hasError('ng-max')).toBe(true);
 
         _.rootScope.apply(() {
           _.rootScope.context['val'] = "a";
@@ -211,8 +211,8 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
-        expect(model.hasError('max')).toBe(false);
-        expect(model.hasError('number')).toBe(true);
+        expect(model.hasError('ng-max')).toBe(false);
+        expect(model.hasError('ng-number')).toBe(true);
       });
 
       they('should perform a max number validation if a ng-max attribute value is present and/or changed',
@@ -227,7 +227,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
-        expect(model.hasError('max')).toBe(false);
+        expect(model.hasError('ng-max')).toBe(false);
 
         _.rootScope.apply(() {
           _.rootScope.context['val'] = "20";
@@ -236,7 +236,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
-        expect(model.hasError('max')).toBe(false);
+        expect(model.hasError('ng-max')).toBe(false);
 
         _.rootScope.apply(() {
           _.rootScope.context['maxVal'] = "19";
@@ -245,7 +245,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
-        expect(model.hasError('max')).toBe(true);
+        expect(model.hasError('ng-max')).toBe(true);
 
         _.rootScope.apply(() {
           _.rootScope.context['maxVal'] = "22";
@@ -254,7 +254,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
-        expect(model.hasError('max')).toBe(false);
+        expect(model.hasError('ng-max')).toBe(false);
       });
 
       they('should perform a min number validation if a min attribute value is present',
@@ -272,7 +272,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
-        expect(model.hasError('min')).toBe(false);
+        expect(model.hasError('ng-min')).toBe(false);
 
         _.rootScope.apply(() {
           _.rootScope.context['val'] = "-20";
@@ -281,7 +281,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
-        expect(model.hasError('min')).toBe(true);
+        expect(model.hasError('ng-min')).toBe(true);
 
         _.rootScope.apply(() {
           _.rootScope.context['val'] = "x";
@@ -290,8 +290,8 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
-        expect(model.hasError('min')).toBe(false);
-        expect(model.hasError('number')).toBe(true);
+        expect(model.hasError('ng-min')).toBe(false);
+        expect(model.hasError('ng-number')).toBe(true);
       });
 
       they('should perform a min number validation if a ng-min attribute value is present and/or changed',
@@ -306,7 +306,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
-        expect(model.hasError('min')).toBe(false);
+        expect(model.hasError('ng-min')).toBe(false);
 
         _.rootScope.apply(() {
           _.rootScope.context['val'] = "5";
@@ -315,7 +315,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
-        expect(model.hasError('min')).toBe(false);
+        expect(model.hasError('ng-min')).toBe(false);
 
         _.rootScope.apply(() {
           _.rootScope.context['minVal'] = "5.5";
@@ -324,7 +324,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
-        expect(model.hasError('min')).toBe(true);
+        expect(model.hasError('ng-min')).toBe(true);
 
         _.rootScope.apply(() {
           _.rootScope.context['val'] = "5.6";
@@ -333,7 +333,7 @@ void main() {
         model.validate();
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
-        expect(model.hasError('min')).toBe(false);
+        expect(model.hasError('ng-min')).toBe(false);
       });
     });
 
