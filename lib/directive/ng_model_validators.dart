@@ -1,7 +1,7 @@
 part of angular.directive;
 
 abstract class NgValidator {
-  final String name;
+  String get name;
   bool isValid(modelValue);
 }
 

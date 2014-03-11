@@ -1,5 +1,15 @@
 part of angular.directive;
 
+abstract class NgModelConverter {
+  String get name;
+  parse(value) => value;
+  format(value) => value;
+}
+
+class _NoopModelConverter extends NgModelConverter {
+  final name = 'ng-noop';
+}
+
 /**
  * Ng-model directive is responsible for reading/writing to the model.
  * The directive itself is headless. (It does not know how to render or what
@@ -15,13 +25,14 @@ class NgModel extends NgControl implements NgAttachAware {
   final AstParser _parser;
   final Scope _scope;
 
-  BoundGetter getter = ([_]) => null;
   BoundSetter setter = (_, [__]) => null;
 
-  var _lastValue;
+  var _originalValue, _viewValue, _modelValue;
   String _exp;
   final _validators = <NgValidator>[];
+  bool _alwaysProcessViewValue;
 
+  NgModelConverter _converter;
   Watch _removeWatch;
   bool _watchCollection;
   Function render = (value) => null;
@@ -32,11 +43,17 @@ class NgModel extends NgControl implements NgAttachAware {
   {
     _exp = attrs["ng-model"];
     watchCollection = false;
+
+    //Since the user will never be editing the value of a select element then
+    //there is no reason to guard the formatter from changing the DOM value.
+    _alwaysProcessViewValue = element.node.tagName == 'SELECT';
+    converter = new _NoopModelConverter();
   }
 
-  void process(value, [_]) {
+  void processViewValue(value) {
     validate();
-    _scope.rootScope.domWrite(() => render(value));
+    _viewValue = converter.format(value);
+    _scope.rootScope.domWrite(() => render(_viewValue));
   }
 
   void attach() {
@@ -45,14 +62,21 @@ class NgModel extends NgControl implements NgAttachAware {
 
   void reset() {
     untouched = true;
-    modelValue = _lastValue;
+    processViewValue(_originalValue);
+    modelValue = _originalValue;
   }
 
   void onSubmit(bool valid) {
     super.onSubmit(valid);
     if (valid) {
-      _lastValue = modelValue;
+      _originalValue = modelValue;
     }
+  }
+
+  get converter => _converter;
+  set converter(NgModelConverter c) {
+    _converter = c;
+    processViewValue(modelValue);
   }
 
   @NgAttr('name')
@@ -66,41 +90,57 @@ class NgModel extends NgControl implements NgAttachAware {
   get watchCollection => _watchCollection;
   set watchCollection(value) {
     if (_watchCollection == value) return;
+
+    var onChange = (value, [_]) {
+      if (_alwaysProcessViewValue || _modelValue != value) {
+        _modelValue = value;
+        processViewValue(value);
+      }
+    };
+
     _watchCollection = value;
     if (_removeWatch!=null) _removeWatch.remove();
     if (_watchCollection) {
       _removeWatch = _scope.watch(
           _parser(_exp, collection: true),
           (changeRecord, _) {
-            var value = changeRecord is CollectionChangeRecord ? changeRecord.iterable: changeRecord;
-            process(value);
+            onChange(changeRecord is CollectionChangeRecord
+                        ? changeRecord.iterable
+                        : changeRecord);
           });
     } else if (_exp != null) {
-      _removeWatch = _scope.watch(_exp, process);
+      _removeWatch = _scope.watch(_exp, onChange);
     }
   }
 
   // TODO(misko): getters/setters need to go. We need AST here.
   @NgCallback('ng-model')
   set model(BoundExpression boundExpression) {
-    getter = boundExpression;
     setter = boundExpression.assign;
-
     _scope.rootScope.runAsync(() {
-      _lastValue = modelValue;
+      _modelValue = boundExpression();
+      _originalValue = modelValue;
+      processViewValue(_modelValue);
     });
   }
 
-  // TODO(misko): right now viewValue and modelValue are the same,
-  // but this needs to be changed to support converters and form validation
-  get viewValue        => modelValue;
+  get viewValue => _viewValue;
   set viewValue(value) {
+    _viewValue = value;
     modelValue = value;
-    value == _lastValue ? (pristine = true) : (dirty = true);
   }
 
-  get modelValue        => getter();
-  set modelValue(value) => setter(value);
+  get modelValue => _modelValue;
+  set modelValue(value) {
+    try {
+      value = converter.parse(value);
+    } catch(e) {
+      value = null;
+    }
+    _modelValue = value;
+    setter(value);
+    modelValue == _originalValue ? (pristine = true) : (dirty = true);
+  }
 
   get validators => _validators;
 
@@ -110,7 +150,7 @@ class NgModel extends NgControl implements NgAttachAware {
   void validate() {
     if (validators.isNotEmpty) {
       validators.forEach((validator) {
-        setValidity(validator.name, validator.isValid(viewValue));
+        setValidity(validator.name, validator.isValid(modelValue));
       });
     } else {
       valid = true;
