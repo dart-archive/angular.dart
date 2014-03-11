@@ -20,9 +20,9 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   final NgAnimate _animate;
   dom.Element _element;
 
-  final Map<String, List<NgControl>> errors   = new Map<String, List<NgControl>>();
-  final List<NgControl> _controls             = new List<NgControl>();
-  final Map<String, List<NgControl>> _controlByName = new Map<String, List<NgControl>>();
+  final errors = new Map<String, Set<NgModel>>();
+  final _controls = new List<NgControl>();
+  final _controlByName = new Map<String, List<NgControl>>();
 
   NgControl(dom.Element this._element, Injector injector,
       NgAnimate this._animate)
@@ -172,30 +172,23 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
    * * [isValid] - Whether the given error is valid or not (false would mean the
    * error is real).
    */
-  updateControlValidity(NgControl control, String errorType, bool isValid) {
-    List queue = errors[errorType];
-
+  updateControlValidity(NgControl ngModel, String errorType, bool isValid) {
     if (isValid) {
-      if (queue != null) {
-        queue.remove(control);
-        if (queue.isEmpty) {
+      if (errors.containsKey(errorType)) {
+        Set errorsByName = errors[errorType];
+        errorsByName.remove(ngModel);
+        if (errorsByName.isEmpty) {
           errors.remove(errorType);
-          _parentControl.updateControlValidity(this, errorType, true);
         }
       }
       if (errors.isEmpty) {
         valid = true;
       }
     } else {
-      if (queue == null) {
-        queue = new List<NgControl>();
-        errors[errorType] = queue;
-        _parentControl.updateControlValidity(this, errorType, false);
-      } else if (queue.contains(control)) return;
-
-      queue.add(control);
+      errors.putIfAbsent(errorType, () => new Set()).add(ngModel);
       invalid = true;
     }
+    _parentControl.updateControlValidity(ngModel, errorType, valid);
   }
 }
 
