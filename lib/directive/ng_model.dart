@@ -35,21 +35,21 @@ class NgModel extends NgControl implements NgAttachAware {
     watchCollection = false;
   }
 
-  process(value, [_]) {
+  void process(value, [_]) {
     validate();
     _scope.rootScope.domWrite(() => render(value));
   }
 
-  attach() {
+  void attach() {
     watchCollection = false;
   }
 
-  reset() {
+  void reset() {
     untouched = true;
     modelValue = _lastValue;
   }
 
-  onSubmit(bool valid) {
+  void onSubmit(bool valid) {
     super.onSubmit(valid);
     if (valid) {
       _lastValue = modelValue;
@@ -108,7 +108,7 @@ class NgModel extends NgControl implements NgAttachAware {
   /**
    * Executes a validation on the form against each of the validation present on the model.
    */
-  validate() {
+  void validate() {
     if (validators.isNotEmpty) {
       validators.forEach((validator) {
         setValidity(validator.name, validator.isValid(viewValue));
@@ -118,14 +118,14 @@ class NgModel extends NgControl implements NgAttachAware {
     }
   }
 
-  setValidity(String name, bool valid) {
+  void setValidity(String name, bool valid) {
     this.updateControlValidity(this, name, valid);
   }
 
   /**
    * Registers a validator into the model to consider when running validate().
    */
-  addValidator(NgValidatable v) {
+  void addValidator(NgValidatable v) {
     validators.add(v);
     validate();
   }
@@ -133,7 +133,7 @@ class NgModel extends NgControl implements NgAttachAware {
   /**
    * De-registers a validator from the model.
    */
-  removeValidator(NgValidatable v) {
+  void removeValidator(NgValidatable v) {
     validators.remove(v);
     validate();
   }
