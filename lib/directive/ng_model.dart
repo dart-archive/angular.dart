@@ -95,7 +95,10 @@ class NgModel extends NgControl implements NgAttachAware {
   // TODO(misko): right now viewValue and modelValue are the same,
   // but this needs to be changed to support converters and form validation
   get viewValue        => modelValue;
-  set viewValue(value) => modelValue = value;
+  set viewValue(value) {
+    modelValue = value;
+    value == _lastValue ? (pristine = true) : (dirty = true);
+  }
 
   get modelValue        => getter();
   set modelValue(value) => setter(value);
@@ -161,7 +164,6 @@ class InputCheckboxDirective {
       inputElement.checked = ngTrueValue.isValue(inputElement, value);
     };
     inputElement.onChange.listen((value) {
-      ngModel.dirty = true;
       ngModel.viewValue = inputElement.checked
         ? ngTrueValue.readValue(inputElement)
         : ngFalseValue.readValue(inputElement);
@@ -222,7 +224,6 @@ class InputTextLikeDirective {
   processValue([_]) {
     var value = typedValue;
     if (value != ngModel.viewValue) {
-      ngModel.dirty = true;
       ngModel.viewValue = value;
     }
     ngModel.validate();
@@ -282,7 +283,6 @@ class InputNumberLikeDirective {
   processValue() {
     num value = typedValue;
     if (value != ngModel.viewValue) {
-      ngModel.dirty = true;
       scope.eval(() => ngModel.viewValue = value);
     }
     ngModel.validate();
@@ -412,7 +412,6 @@ class InputRadioDirective {
     };
     radioButtonElement.onClick.listen((_) {
       if (radioButtonElement.checked) {
-        ngModel.dirty = true;
         ngModel.viewValue = ngValue.readValue(radioButtonElement);
       }
     });
