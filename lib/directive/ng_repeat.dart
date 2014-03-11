@@ -185,6 +185,7 @@ class NgRepeatDirective {
   }
 
   _onCollectionChange(Iterable collection) {
+    if (!_scope.isAttached) return;
     dom.Node previousNode = _blockHole.placeholder; // current position of the
     // node
     dom.Node nextNode;
