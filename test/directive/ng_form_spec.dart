@@ -85,12 +85,16 @@ void main() {
         var form = scope.context['myForm'];
 
         form.dirty = true;
+        scope.apply();
+
         expect(form.pristine).toEqual(false);
         expect(form.dirty).toEqual(true);
         expect(element.hasClass('ng-pristine')).toBe(false);
         expect(element.hasClass('ng-dirty')).toBe(true);
 
         form.pristine = true;
+        scope.apply();
+
         expect(form.pristine).toEqual(true);
         expect(form.dirty).toEqual(false);
         expect(element.hasClass('ng-pristine')).toBe(true);
@@ -139,7 +143,9 @@ void main() {
     });
 
     describe('valid / invalid', () {
-      it('should add and remove the correct flags when set to valid and to invalid', inject((Scope scope, TestBed _) {
+      it('should add and remove the correct flags when set to valid and to invalid',
+        inject((Scope scope, TestBed _) {
+
         var element = $('<form name="myForm"></form>');
 
         _.compile(element);
@@ -148,12 +154,16 @@ void main() {
         var form = scope.context['myForm'];
 
         form.invalid = true;
+        scope.apply();
+
         expect(form.valid).toEqual(false);
         expect(form.invalid).toEqual(true);
         expect(element.hasClass('ng-valid')).toBe(false);
         expect(element.hasClass('ng-invalid')).toBe(true);
 
         form.valid = true;
+        scope.apply();
+
         expect(form.valid).toEqual(true);
         expect(form.invalid).toEqual(false);
         expect(element.hasClass('ng-invalid')).toBe(false);
@@ -452,7 +462,9 @@ void main() {
         expect(_.rootScope.context['submitted']).toBe(true);
       }));
 
-      it('should apply the valid and invalid prefixed submit CSS classes to the element', inject((TestBed _) {
+      it('should apply the valid and invalid prefixed submit CSS classes to the element',
+        inject((TestBed _, Scope scope) {
+
         _.compile('<form name="superForm">' +
                   ' <input type="text" ng-model="myModel" probe="i" required />' +
                   '</form>');
@@ -460,32 +472,34 @@ void main() {
         NgForm form = _.rootScope.context['superForm'];
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
+        var formElement = form.element.node;
 
         expect(form.submitted).toBe(false);
         expect(form.valid_submit).toBe(false);
         expect(form.invalid_submit).toBe(false);
-        expect(form.element.classes.contains('ng-submit-invalid')).toBe(false);
-        expect(form.element.classes.contains('ng-submit-valid')).toBe(false);
+        expect(formElement.classes.contains('ng-submit-invalid')).toBe(false);
+        expect(formElement.classes.contains('ng-submit-valid')).toBe(false);
 
         Event submissionEvent = new Event.eventType('CustomEvent', 'submit');
 
-        form.element.dispatchEvent(submissionEvent);
-        _.rootScope.apply();
+        formElement.dispatchEvent(submissionEvent);
+        scope.apply();
 
         expect(form.submitted).toBe(true);
         expect(form.valid_submit).toBe(false);
         expect(form.invalid_submit).toBe(true);
-        expect(form.element.classes.contains('ng-submit-invalid')).toBe(true);
-        expect(form.element.classes.contains('ng-submit-valid')).toBe(false);
+        expect(formElement.classes.contains('ng-submit-invalid')).toBe(true);
+        expect(formElement.classes.contains('ng-submit-valid')).toBe(false);
 
         _.rootScope.apply('myModel = "man"');
-        form.element.dispatchEvent(submissionEvent);
+        formElement.dispatchEvent(submissionEvent);
+        scope.apply();
 
         expect(form.submitted).toBe(true);
         expect(form.valid_submit).toBe(true);
         expect(form.invalid_submit).toBe(false);
-        expect(form.element.classes.contains('ng-submit-invalid')).toBe(false);
-        expect(form.element.classes.contains('ng-submit-valid')).toBe(true);
+        expect(formElement.classes.contains('ng-submit-invalid')).toBe(false);
+        expect(formElement.classes.contains('ng-submit-valid')).toBe(true);
       }));
     });
 
@@ -545,14 +559,17 @@ void main() {
         expect(model.viewValue).toEqual('animal');
       }));
 
-      it('should set the form control to be untouched when the model is reset', inject((TestBed _) {
+      it('should set the form control to be untouched when the model is reset',
+        inject((TestBed _, Scope scope) {
+
         var form = _.compile('<form name="duperForm">' +
                              ' <input type="text" ng-model="myModel" probe="i" />' +
                              '</form>');
         var model = _.rootScope.context['i'].directive(NgModel);
-        var input = model.element;
+        var input = model.element.node;
 
         NgForm formModel = _.rootScope.context['duperForm'];
+        scope.apply();
 
         expect(formModel.touched).toBe(false);
         expect(formModel.untouched).toBe(true);
@@ -560,6 +577,7 @@ void main() {
         expect(form.classes.contains('ng-untouched')).toBe(true);
 
         _.triggerEvent(input, 'blur');
+        scope.apply();
 
         expect(formModel.touched).toBe(true);
         expect(formModel.untouched).toBe(false);
@@ -567,6 +585,7 @@ void main() {
         expect(form.classes.contains('ng-untouched')).toBe(false);
 
         formModel.reset();
+        scope.apply();
 
         expect(formModel.touched).toBe(false);
         expect(formModel.untouched).toBe(true);
@@ -585,7 +604,7 @@ void main() {
 
         NgForm formModel = _.rootScope.context['duperForm'];
         var model = _.rootScope.context['i'].directive(NgModel);
-        var input = model.element;
+        var input = model.element.node;
         _.triggerEvent(input, 'blur');
 
         expect(formModel.touched).toBe(true);

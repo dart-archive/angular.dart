@@ -228,6 +228,7 @@ class _ComponentFactory implements Function {
     var probe;
     var shadowModule = new Module()
         ..type(type)
+        ..type(NgElement)
         ..value(Scope, shadowScope)
         ..value(TemplateLoader, templateLoader)
         ..value(dom.ShadowRoot, shadowDom)
