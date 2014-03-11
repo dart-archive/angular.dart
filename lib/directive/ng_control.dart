@@ -16,7 +16,6 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   bool _valid;
   bool _submit_valid;
 
-  final Scope _scope;
   final NgControl _parentControl;
   final NgAnimate _animate;
   dom.Element _element;
@@ -25,14 +24,12 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   final List<NgControl> _controls             = new List<NgControl>();
   final Map<String, List<NgControl>> _controlByName = new Map<String, List<NgControl>>();
 
-  NgControl(Scope this._scope, dom.Element this._element, Injector injector,
+  NgControl(dom.Element this._element, Injector injector,
       NgAnimate this._animate)
       : _parentControl = injector.parent.get(NgControl)
   {
     pristine = true;
     untouched = true;
-
-    _scope.on('submitNgControl').listen((e) => _onSubmit(e.data));
   }
 
   @override
@@ -49,13 +46,15 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   }
 
   reset() {
-    _scope.broadcast('resetNgModel');
     untouched = true;
+    _controls.forEach((control) {
+      control.reset();
+    });
   }
 
   bool hasError(String key) => errors.containsKey(key);
 
-  _onSubmit(bool valid) {
+  onSubmit(bool valid) {
     if (valid) {
       _submit_valid = true;
       _animate.addClass(element, NG_SUBMIT_VALID_CLASS);
@@ -65,6 +64,9 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
       _animate.addClass(element, NG_SUBMIT_INVALID_CLASS);
       _animate.removeClass(element, NG_SUBMIT_VALID_CLASS);
     }
+    _controls.forEach((control) {
+      control.onSubmit(valid);
+    });
   }
 
   get submitted => _submit_valid != null;
@@ -198,14 +200,13 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
 }
 
 class NgNullControl implements NgControl {
-  var _name, _dirty, _valid, _invalid, _submit_valid, _pristine, _element;
-  var _touched, _untouched;
-  var _controls, _scope, _parentControl, _controlName, _animate;
+  var _name, _dirty, _valid, _submit_valid, _pristine, _element, _touched;
+  var _controls, _parentControl, _controlName, _animate;
   var errors, _controlByName;
   dom.Element element;
 
   NgNullControl() {}
-  _onSubmit(bool valid) {}
+  onSubmit(bool valid) {}
 
   addControl(control) {}
   removeControl(control) {}

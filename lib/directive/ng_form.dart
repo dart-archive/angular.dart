@@ -23,6 +23,8 @@ part of angular.directive;
     map: const { 'ng-form': '@name' },
     visibility: NgDirective.CHILDREN_VISIBILITY)
 class NgForm extends NgControl {
+  final Scope _scope;
+
   /**
    * Instantiates a new instance of NgForm. Upon creation, the instance of the
    * class will be bound to the formName property on the scope (where formName
@@ -33,14 +35,14 @@ class NgForm extends NgControl {
    * * [element] - The form DOM element.
    * * [injector] - An instance of Injector.
    */
-  NgForm(Scope scope, dom.Element element, Injector injector,
+  NgForm(this._scope, dom.Element element, Injector injector,
       NgAnimate animate) :
-    super(scope, element, injector, animate) {
+    super(element, injector, animate) {
 
     if (!element.attributes.containsKey('action')) {
       element.onSubmit.listen((event) {
         event.preventDefault();
-        _scope.broadcast('submitNgControl', valid == true);
+        onSubmit(valid == true);
         if (valid == true) {
           reset();
         }
@@ -76,6 +78,8 @@ class NgForm extends NgControl {
 }
 
 class NgNullForm extends NgNullControl implements NgForm {
+  var _scope;
+
   NgNullForm() {}
   operator []=(String key, value) {}
   operator[](name) {}

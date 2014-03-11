@@ -14,6 +14,7 @@ part of angular.directive;
 class NgModel extends NgControl implements NgAttachAware {
   final NgForm _form;
   final AstParser _parser;
+  final Scope _scope;
 
   BoundGetter getter = ([_]) => null;
   BoundSetter setter = (_, [__]) => null;
@@ -26,9 +27,9 @@ class NgModel extends NgControl implements NgAttachAware {
   bool _watchCollection;
   Function render = (value) => null;
 
-  NgModel(Scope _scope, dom.Element _element, Injector injector,
+  NgModel(this._scope, dom.Element _element, Injector injector,
       NgForm this._form, this._parser, NodeAttrs attrs, NgAnimate animate)
-      : super(_scope, _element, injector, animate)
+      : super(_element, injector, animate)
   {
     _exp = attrs["ng-model"];
     watchCollection = false;
@@ -41,7 +42,6 @@ class NgModel extends NgControl implements NgAttachAware {
 
   attach() {
     watchCollection = false;
-    _scope.on('resetNgModel').listen((e) => reset());
   }
 
   reset() {
@@ -49,8 +49,8 @@ class NgModel extends NgControl implements NgAttachAware {
     modelValue = _lastValue;
   }
 
-  _onSubmit(bool valid) {
-    super._onSubmit(valid);
+  onSubmit(bool valid) {
+    super.onSubmit(valid);
     if (valid) {
       _lastValue = modelValue;
     }
