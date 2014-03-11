@@ -224,11 +224,13 @@ void main() {
       describe('parent', () {
         it('should not have parent', inject((RootScope rootScope) {
           expect(rootScope.parentScope).toEqual(null);
+          expect(rootScope.id).toEqual('');
         }));
 
 
         it('should point to parent', inject((RootScope rootScope) {
           var child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          expect(child.id).toEqual(':0');
           expect(rootScope.parentScope).toEqual(null);
           expect(child.parentScope).toEqual(rootScope);
           expect(child.createChild(new PrototypeMap(rootScope.context)).parentScope).toEqual(child);
