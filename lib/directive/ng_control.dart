@@ -12,11 +12,8 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
 
   String _name;
   bool _dirty;
-  bool _pristine;
-  bool _valid;
-  bool _invalid;
   bool _touched;
-  bool _untouched;
+  bool _valid;
   bool _submit_valid;
 
   final Scope _scope;
@@ -81,11 +78,9 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
 
   get element => _element;
 
-  get pristine => _pristine;
+  get pristine => !_dirty;
   set pristine(value) {
-    _pristine = true;
     _dirty = false;
-
     _animate.addClass(element, NG_PRISTINE_CLASS);
     _animate.removeClass(element, NG_DIRTY_CLASS);
   }
@@ -93,8 +88,6 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   get dirty => _dirty;
   set dirty(value) {
     _dirty = true;
-    _pristine = false;
-
     _animate.addClass(element, NG_DIRTY_CLASS);
     _animate.removeClass(element, NG_PRISTINE_CLASS);
 
@@ -105,18 +98,14 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
 
   get valid => _valid;
   set valid(value) {
-    _invalid = false;
     _valid = true;
-
     _animate.addClass(element, NG_VALID_CLASS);
     _animate.removeClass(element, NG_INVALID_CLASS);
   }
 
-  get invalid => _invalid;
+  get invalid => !_valid;
   set invalid(value) {
     _valid = false;
-    _invalid = true;
-
     _animate.addClass(element, NG_INVALID_CLASS);
     _animate.removeClass(element, NG_VALID_CLASS);
   }
@@ -124,8 +113,6 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   get touched => _touched;
   set touched(value) {
     _touched = true;
-    _untouched = false;
-
     _animate.addClass(element, NG_TOUCHED_CLASS);
     _animate.removeClass(element, NG_UNTOUCHED_CLASS);
     //as soon as one of the controls/models is touched
@@ -133,11 +120,9 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
     _parentControl.touched = true;
   }
 
-  get untouched => _untouched;
+  get untouched => !_touched;
   set untouched(value) {
     _touched = false;
-    _untouched = true;
-
     _animate.addClass(element, NG_UNTOUCHED_CLASS);
     _animate.removeClass(element, NG_TOUCHED_CLASS);
   }
