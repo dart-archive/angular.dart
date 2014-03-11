@@ -129,6 +129,7 @@ class ElementBinder {
       var boundViewFactory = (_) => null;
       var nodesAttrsDirectives = null;
 
+      nodeModule.type(NgElement);
       nodeModule.value(View, view);
       nodeModule.value(dom.Element, node);
       nodeModule.value(dom.Node, node);
