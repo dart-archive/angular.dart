@@ -93,7 +93,7 @@ void main() {
         expect(ngModel.valid).toBe(false);
       }));
 
-      it('should write to input only if value is different',
+      it('should write to input only if the value is different',
         inject((Injector i, AstParser parser, NgAnimate animate) {
 
         var scope = _.rootScope;
@@ -111,19 +111,39 @@ void main() {
             ..selectionStart = 1
             ..selectionEnd = 2;
 
-        model.render('abc');
+        scope.apply(() {
+          scope.context['model'] = 'abc';
+        });
 
         expect(element.value).toEqual('abc');
         // No update.  selectionStart/End is unchanged.
         expect(element.selectionStart).toEqual(1);
         expect(element.selectionEnd).toEqual(2);
 
-        model.render('xyz');
+        scope.apply(() {
+          scope.context['model'] = 'xyz';
+        });
 
         // Value updated.  selectionStart/End changed.
         expect(element.value).toEqual('xyz');
         expect(element.selectionStart).toEqual(3);
         expect(element.selectionEnd).toEqual(3);
+      }));
+
+      it('should only render the input value upon the next digest', inject((Scope scope) {
+        _.compile('<input type="text" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        ngModel.render('xyz');
+        scope.context['model'] = 'xyz';
+
+        expect(inputElement.value).not.toEqual('xyz');
+        
+        scope.apply();
+
+        expect(inputElement.value).toEqual('xyz');
       }));
     });
 
@@ -254,6 +274,22 @@ void main() {
         _.rootScope.apply('model = null');
         expect((_.rootElement as dom.InputElement).value).toEqual('');
       }));
+      
+      it('should only render the input value upon the next digest', inject((Scope scope) {
+        _.compile('<input type="number" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        ngModel.render(123);
+        scope.context['model'] = 123;
+
+        expect(inputElement.value).not.toEqual('123');
+        
+        scope.apply();
+
+        expect(inputElement.value).toEqual('123');
+      }));
 
     });
 
@@ -313,17 +349,37 @@ void main() {
           ..selectionStart = 1
           ..selectionEnd = 2;
 
-        model.render('abc');
+        scope.apply(() {
+          scope.context['model'] = 'abc';
+        });
 
         expect(element.value).toEqual('abc');
         expect(element.selectionStart).toEqual(1);
         expect(element.selectionEnd).toEqual(2);
 
-        model.render('xyz');
+        scope.apply(() {
+          scope.context['model'] = 'xyz';
+        });
 
         expect(element.value).toEqual('xyz');
         expect(element.selectionStart).toEqual(3);
         expect(element.selectionEnd).toEqual(3);
+      }));
+
+      it('should only render the input value upon the next digest', inject((Scope scope) {
+        _.compile('<input type="password" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        ngModel.render('xyz');
+        scope.context['model'] = 'xyz';
+
+        expect(inputElement.value).not.toEqual('xyz');
+        
+        scope.apply();
+
+        expect(inputElement.value).toEqual('xyz');
       }));
     });
 
@@ -382,19 +438,39 @@ void main() {
           ..selectionStart = 1
           ..selectionEnd = 2;
 
-        model.render('abc');
+        scope.apply(() {
+          scope.context['model'] = 'abc';
+        });
 
         expect(element.value).toEqual('abc');
         // No update.  selectionStart/End is unchanged.
         expect(element.selectionStart).toEqual(1);
         expect(element.selectionEnd).toEqual(2);
 
-        model.render('xyz');
+        scope.apply(() {
+          scope.context['model'] = 'xyz';
+        });
 
         // Value updated.  selectionStart/End changed.
         expect(element.value).toEqual('xyz');
         expect(element.selectionStart).toEqual(3);
         expect(element.selectionEnd).toEqual(3);
+      }));
+
+      it('should only render the input value upon the next digest', inject((Scope scope) {
+        _.compile('<input type="search" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        ngModel.render('xyz');
+        scope.context['model'] = 'xyz';
+
+        expect(inputElement.value).not.toEqual('xyz');
+        
+        scope.apply();
+
+        expect(inputElement.value).toEqual('xyz');
       }));
     });
 
@@ -459,17 +535,37 @@ void main() {
           ..selectionStart = 1
           ..selectionEnd = 2;
 
-        model.render('abc');
+        scope.apply(() {
+          scope.context['model'] = 'abc';
+        });
 
         expect(element.value).toEqual('abc');
         expect(element.selectionStart).toEqual(1);
         expect(element.selectionEnd).toEqual(2);
 
-        model.render('xyz');
+        scope.apply(() {
+          scope.context['model'] = 'xyz';
+        });
 
         expect(element.value).toEqual('xyz');
         expect(element.selectionStart).toEqual(3);
         expect(element.selectionEnd).toEqual(3);
+      }));
+
+      it('should only render the input value upon the next digest', inject((Scope scope) {
+        _.compile('<input ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        ngModel.render('xyz');
+        scope.context['model'] = 'xyz';
+
+        expect(inputElement.value).not.toEqual('xyz');
+        
+        scope.apply();
+
+        expect(inputElement.value).toEqual('xyz');
       }));
     });
 
@@ -557,6 +653,22 @@ void main() {
         _.triggerEvent(element, 'change');
         expect(scope.context['model']).toBe(false);
       }));
+
+      it('should only render the input value upon the next digest', inject((Scope scope) {
+        _.compile('<input type="checkbox" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        ngModel.render('xyz');
+        scope.context['model'] = true;
+
+        expect(inputElement.checked).toBe(false);
+        
+        scope.apply();
+
+        expect(inputElement.checked).toBe(true);
+      }));
     });
 
     describe('textarea', () {
@@ -630,6 +742,22 @@ void main() {
         expect(element.value).toEqual('xyz');
         expect(element.selectionStart).toEqual(0);
         expect(element.selectionEnd).toEqual(0);
+      }));
+
+      it('should only render the input value upon the next digest', inject((Scope scope) {
+        _.compile('<textarea ng-model="model" probe="p"></textarea>');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        TextAreaElement inputElement = probe.element;
+
+        ngModel.render('xyz');
+        scope.context['model'] = 'xyz';
+
+        expect(inputElement.value).not.toEqual('xyz');
+        
+        scope.apply();
+
+        expect(inputElement.value).toEqual('xyz');
       }));
     });
 
@@ -772,6 +900,34 @@ void main() {
         expect(input1.classes.contains("ng-pristine")).toBe(false);
         expect(input1.classes.contains("ng-pristine")).toBe(false);
       }));
+
+      it('should only render the input value upon the next digest', inject((Scope scope) {
+        var element = _.compile(
+          '<div>' +
+          '  <input type="radio" id="on" ng-model="model" probe="i" value="on" />' +
+          '  <input type="radio" id="off" ng-model="model" probe="j" value="off" />' +
+          '</div>'
+        );
+
+        Probe probe1 = _.rootScope.context['i'];
+        var ngModel1 = probe1.directive(NgModel);
+        InputElement inputElement1 = probe1.element;
+
+        Probe probe2 = _.rootScope.context['j'];
+        var ngModel2 = probe2.directive(NgModel);
+        InputElement inputElement2 = probe2.element;
+
+        ngModel1.render('on');
+        scope.context['model'] = 'on';
+
+        expect(inputElement1.checked).toBe(false);
+        expect(inputElement2.checked).toBe(false);
+        
+        scope.apply();
+
+        expect(inputElement1.checked).toBe(true);
+        expect(inputElement2.checked).toBe(false);
+      }));
     });
 
     describe('type="search"', () {
@@ -810,6 +966,22 @@ void main() {
         input.processValue();
         expect(_.rootScope.context['model']).toEqual('123');
       }));
+
+      it('should only render the input value upon the next digest', inject((Scope scope) {
+        _.compile('<input type="search" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        ngModel.render('xyz');
+        scope.context['model'] = 'xyz';
+
+        expect(inputElement.value).not.toEqual('xyz');
+        
+        scope.apply();
+
+        expect(inputElement.value).toEqual('xyz');
+      }));
     });
 
     describe('contenteditable', () {
@@ -835,6 +1007,22 @@ void main() {
         var input = ngInjector(element).get(ContentEditableDirective);
         input.processValue();
         expect(_.rootScope.context['model']).toEqual('def');
+      }));
+
+      it('should only render the input value upon the next digest', inject((Scope scope) {
+        _.compile('<div contenteditable ng-model="model" probe="p"></div>');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        Element element = probe.element;
+
+        ngModel.render('xyz');
+        scope.context['model'] = 'xyz';
+
+        expect(element.innerHtml).not.toEqual('xyz');
+        
+        scope.apply();
+
+        expect(element.innerHtml).toEqual('xyz');
       }));
     });
 

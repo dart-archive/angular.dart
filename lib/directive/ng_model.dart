@@ -196,7 +196,9 @@ class InputCheckboxDirective {
   InputCheckboxDirective(dom.Element this.inputElement, this.ngModel,
                          this.scope, this.ngTrueValue, this.ngFalseValue) {
     ngModel.render = (value) {
-      inputElement.checked = ngTrueValue.isValue(inputElement, value);
+      scope.rootScope.domWrite(() {
+        inputElement.checked = ngTrueValue.isValue(inputElement, value);
+      });
     };
     inputElement.onChange.listen((value) {
       ngModel.viewValue = inputElement.checked
@@ -238,13 +240,15 @@ class InputTextLikeDirective {
 
   InputTextLikeDirective(this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
-      if (value == null) value = '';
+      scope.rootScope.domWrite(() {
+        if (value == null) value = '';
 
-      var currentValue = typedValue;
-      if (value != currentValue && !(value is num && currentValue is num &&
-          value.isNaN && currentValue.isNaN)) {
-        typedValue =  value;
-      }
+        var currentValue = typedValue;
+        if (value != currentValue && !(value is num && currentValue is num &&
+            value.isNaN && currentValue.isNaN)) {
+          typedValue =  value;
+        }
+      });
     };
     inputElement
         ..onChange.listen(processValue)
@@ -305,10 +309,12 @@ class InputNumberLikeDirective {
 
   InputNumberLikeDirective(dom.Element this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
-      if (value != typedValue
-          && (value == null || value is num && !value.isNaN)) {
-        typedValue = value;
-      }
+      scope.rootScope.domWrite(() {
+        if (value != typedValue
+            && (value == null || value is num && !value.isNaN)) {
+          typedValue = value;
+        }
+      });
     };
     inputElement
         ..onChange.listen(relaxFnArgs(processValue))
@@ -443,7 +449,9 @@ class InputRadioDirective {
       attrs["name"] = _uidCounter.next();
     }
     ngModel.render = (value) {
-      radioButtonElement.checked = (value == ngValue.readValue(radioButtonElement));
+      scope.rootScope.domWrite(() {
+        radioButtonElement.checked = (value == ngValue.readValue(radioButtonElement));
+      });
     };
     radioButtonElement.onClick.listen((_) {
       if (radioButtonElement.checked) {
