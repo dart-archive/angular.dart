@@ -16,7 +16,7 @@ abstract class NgValidator {
 class NgModelRequiredValidator implements NgValidator {
   bool _required = true;
 
-  final String name = 'required';
+  final String name = 'ng-required';
 
   NgModelRequiredValidator(NgModel ngModel) {
     ngModel.addValidator(this);
@@ -47,7 +47,7 @@ class NgModelUrlValidator implements NgValidator {
       r'^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?' +
       r'(\/|\/([\w#!:.?+=&%@!\-\/]))?$');
 
-  final String name = 'url';
+  final String name = 'ng-url';
 
   NgModelUrlValidator(NgModel ngModel) {
     ngModel.addValidator(this);
@@ -65,7 +65,7 @@ class NgModelEmailValidator implements NgValidator {
   static final EMAIL_REGEXP = new RegExp(
       r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$');
 
-  final String name = 'email';
+  final String name = 'ng-email';
 
   NgModelEmailValidator(NgModel ngModel) {
     ngModel.addValidator(this);
@@ -81,7 +81,7 @@ class NgModelEmailValidator implements NgValidator {
 @NgDirective(selector: 'input[type=number][ng-model]')
 @NgDirective(selector: 'input[type=range][ng-model]')
 class NgModelNumberValidator implements NgValidator {
-  final String name = 'number';
+  final String name = 'ng-number';
 
   NgModelNumberValidator(NgModel ngModel) {
     ngModel.addValidator(this);
@@ -116,7 +116,7 @@ class NgModelNumberValidator implements NgValidator {
 class NgModelMaxNumberValidator implements NgValidator {
 
   double _max;
-  final String name = 'max';
+  final String name = 'ng-max';
 
   NgModelMaxNumberValidator(NgModel ngModel) {
     ngModel.addValidator(this);
@@ -162,7 +162,7 @@ class NgModelMaxNumberValidator implements NgValidator {
 class NgModelMinNumberValidator implements NgValidator {
 
   double _min;
-  final String name = 'min';
+  final String name = 'ng-min';
 
   NgModelMinNumberValidator(NgModel ngModel) {
     ngModel.addValidator(this);
@@ -205,7 +205,7 @@ class NgModelMinNumberValidator implements NgValidator {
 class NgModelPatternValidator implements NgValidator {
   RegExp _pattern;
 
-  final String name = 'pattern';
+  final String name = 'ng-pattern';
 
   NgModelPatternValidator(NgModel ngModel) {
     ngModel.addValidator(this);
@@ -234,7 +234,7 @@ class NgModelPatternValidator implements NgValidator {
 class NgModelMinLengthValidator implements NgValidator {
   int _minlength;
 
-  final String name = 'minlength';
+  final String name = 'ng-minlength';
 
   NgModelMinLengthValidator(NgModel ngModel) {
     ngModel.addValidator(this);
@@ -263,7 +263,7 @@ class NgModelMinLengthValidator implements NgValidator {
 class NgModelMaxLengthValidator implements NgValidator {
   int _maxlength = 0;
 
-  final String name = 'maxlength';
+  final String name = 'ng-maxlength';
 
   NgModelMaxLengthValidator(NgModel ngModel) {
     ngModel.addValidator(this);
