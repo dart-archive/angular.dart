@@ -904,6 +904,7 @@ void main() {
 
       it('should happen automatically upon user input via the onInput event', inject(() {
         _.compile('<input type="text" ng-model="model" probe="i" required>');
+        _.rootScope.apply();
 
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
