@@ -21,7 +21,7 @@ class NgModel extends NgControl implements NgAttachAware {
 
   var _lastValue;
   String _exp;
-  final _validators = <NgValidatable>[];
+  final _validators = <NgValidator>[];
 
   Watch _removeWatch;
   bool _watchCollection;
@@ -125,7 +125,7 @@ class NgModel extends NgControl implements NgAttachAware {
   /**
    * Registers a validator into the model to consider when running validate().
    */
-  void addValidator(NgValidatable v) {
+  void addValidator(NgValidator v) {
     validators.add(v);
     validate();
   }
@@ -133,7 +133,7 @@ class NgModel extends NgControl implements NgAttachAware {
   /**
    * De-registers a validator from the model.
    */
-  void removeValidator(NgValidatable v) {
+  void removeValidator(NgValidator v) {
     validators.remove(v);
     validate();
   }
