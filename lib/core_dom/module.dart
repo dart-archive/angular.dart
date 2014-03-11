@@ -30,6 +30,7 @@ part 'tagging_view_factory.dart';
 part 'template_cache.dart';
 part 'tree_sanitizer.dart';
 part 'walking_compiler.dart';
+part 'ng_element.dart';
 
 class NgCoreDomModule extends Module {
   NgCoreDomModule() {
@@ -58,6 +59,7 @@ class NgCoreDomModule extends Module {
     type(DirectiveMap);
     type(DirectiveSelectorFactory);
     type(ElementBinderFactory);
+    type(NgElement);
   }
 }
 
