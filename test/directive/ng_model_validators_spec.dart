@@ -29,8 +29,9 @@ void main() {
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
 
-        _.rootScope.context['val'] = 'value';
-        model.validate();
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = 'value';
+        });
 
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
@@ -42,12 +43,12 @@ void main() {
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
-        model.validate();
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
 
-        _.rootScope.context['val'] = 5;
-        model.validate();
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = 5;
+        });
 
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
@@ -89,7 +90,6 @@ void main() {
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
-        model.validate();
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
 
@@ -97,7 +97,6 @@ void main() {
           _.rootScope.context['val'] = 'googledotcom';
         });
 
-        model.validate();
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
 
@@ -105,7 +104,6 @@ void main() {
           _.rootScope.context['val'] = 'http://www.google.com';
         });
 
-        model.validate();
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
       }));

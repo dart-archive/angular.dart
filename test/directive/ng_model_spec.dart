@@ -1118,6 +1118,94 @@ void main() {
       expect(model.touched).toBe(false);
       expect(model.untouched).toBe(true);
     });
+
+    describe('converters', () {
+      it('should parse the model value according to the given parser', inject((Scope scope) {
+        _.compile('<input type="text" ng-model="model" probe="i">');
+        scope.apply();
+
+        var probe = scope.context['i'];
+        var input = probe.element;
+        var model = probe.directive(NgModel);
+        model.converter = new LowercaseValueParser();
+
+        input.value = 'HELLO';
+        _.triggerEvent(input, 'change');
+        _.rootScope.apply();
+
+        expect(model.viewValue).toEqual('HELLO');
+        expect(model.modelValue).toEqual('hello');
+      }));
+
+      it('should format the model value according to the given formatter', inject((Scope scope) {
+        _.compile('<input type="text" ng-model="model" probe="i">');
+        scope.apply();
+
+        var probe = scope.context['i'];
+        var input = probe.element;
+        var model = probe.directive(NgModel);
+        model.converter = new UppercaseValueFormatter();
+
+        scope.apply(() {
+          scope.context['model'] = 'greetings';
+        });
+
+        expect(model.viewValue).toEqual('GREETINGS');
+        expect(model.modelValue).toEqual('greetings');
+      }));
+
+      it('should retain the current input value if the parser fails', inject((Scope scope) {
+        _.compile('<form name="myForm">' +
+                  ' <input type="text" ng-model="model1" name="myModel1" probe="i">' +
+                  ' <input type="text" ng-model="model2" name="myModel2" probe="j">' +
+                  '</form>');
+        scope.apply();
+
+        var probe1 = scope.context['i'];
+        var input1 = probe1.element;
+        var model1 = probe1.directive(NgModel);
+
+        var probe2 = scope.context['j'];
+        var input2 = probe2.element;
+        var model2 = probe2.directive(NgModel);
+
+        model1.converter = new FailedValueParser();
+
+        input1.value = '123';
+        _.triggerEvent(input1, 'change');
+        _.rootScope.apply();
+
+        expect(model1.viewValue).toEqual('123');
+        expect(input1.value).toEqual('123');
+        expect(model1.modelValue).toEqual(null);
+
+        expect(model2.viewValue).toEqual(null);
+        expect(input2.value).toEqual('');
+        expect(model2.modelValue).toEqual(null);
+      }));
+
+      it('should reformat the viewValue when the formatter is changed', inject((Scope scope) {
+        _.compile('<input type="text" ng-model="model" probe="i">');
+        scope.apply();
+
+        var probe = scope.context['i'];
+        var input = probe.element;
+        var model = probe.directive(NgModel);
+        model.converter = new LowercaseValueParser();
+
+        input.value = 'HI THERE';
+        _.triggerEvent(input, 'change');
+        _.rootScope.apply();
+
+        expect(model.viewValue).toEqual('HI THERE');
+        expect(model.modelValue).toEqual('hi there');
+
+        model.converter = new VowelValueParser();
+
+        expect(model.viewValue).toEqual('iee');
+        expect(model.modelValue).toEqual('hi there');
+      }));
+    });
   });
 }
 
@@ -1126,4 +1214,32 @@ void main() {
     publishAs: 'ctrl')
 class ControllerWithNoLove {
   var apathy = null;
+}
+
+class LowercaseValueParser extends NgModelConverter {
+  parse(value) {
+    return value != null ? value.toLowerCase() : null;
+  }
+}
+
+class UppercaseValueFormatter extends NgModelConverter {
+  format(value) {
+    return value != null ? value.toUpperCase() : null;
+  }
+}
+
+class FailedValueParser extends NgModelConverter {
+  parse(value) {
+    throw new Exception();
+  }
+}
+
+class VowelValueParser extends NgModelConverter {
+  format(value) {
+    if(value != null) {
+      var exp = new RegExp("[^aeiouAEIOU]");
+      value = value.replaceAll(exp, "");
+    }
+    return value;
+  }
 }
