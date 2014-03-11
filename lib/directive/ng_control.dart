@@ -80,7 +80,7 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
 
   get element => _element;
 
-  get pristine => !_dirty;
+  bool get pristine => !_dirty;
   set pristine(value) {
     //only mark as pristine if all the child controls are pristine
     if (_controls.any((control) => control.dirty)) return;
@@ -91,7 +91,7 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
     _parentControl.pristine = true;
   }
 
-  get dirty => _dirty;
+  bool get dirty => _dirty;
   set dirty(value) {
     _dirty = true;
     _animate.addClass(element, NG_DIRTY_CLASS);
@@ -102,21 +102,21 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
     _parentControl.dirty = true;
   }
 
-  get valid => _valid;
+  bool get valid => _valid;
   set valid(value) {
     _valid = true;
     _animate.addClass(element, NG_VALID_CLASS);
     _animate.removeClass(element, NG_INVALID_CLASS);
   }
 
-  get invalid => !_valid;
+  bool get invalid => !_valid;
   set invalid(value) {
     _valid = false;
     _animate.addClass(element, NG_INVALID_CLASS);
     _animate.removeClass(element, NG_VALID_CLASS);
   }
 
-  get touched => _touched;
+  bool get touched => _touched;
   set touched(value) {
     _touched = true;
     _animate.addClass(element, NG_TOUCHED_CLASS);
@@ -126,7 +126,7 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
     _parentControl.touched = true;
   }
 
-  get untouched => !_touched;
+  bool get untouched => !_touched;
   set untouched(value) {
     _touched = false;
     _animate.addClass(element, NG_UNTOUCHED_CLASS);
@@ -212,26 +212,26 @@ class NgNullControl implements NgControl {
   get name => null;
   set name(name) {}
 
-  get submitted => null;
-  get valid_submit => null;
-  get invalid_submit => null;
+  bool get submitted => false;
+  bool get valid_submit => true;
+  bool get invalid_submit => false;
 
-  get pristine => null;
+  bool get pristine => true;
   set pristine(value) {}
 
-  get dirty => null;
+  bool get dirty => false;
   set dirty(value) {}
 
-  get valid => null;
+  bool get valid => true;
   set valid(value) {}
 
-  get invalid => null;
+  bool get invalid => false;
   set invalid(value) {}
 
-  get touched => null;
+  bool get touched => false;
   set touched(value) {}
 
-  get untouched => null;
+  bool get untouched => true;
   set untouched(value) {}
 
   reset() => null;
