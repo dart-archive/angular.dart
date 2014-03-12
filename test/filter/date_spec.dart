@@ -69,6 +69,7 @@ void main() {
 
     it('should accept various locales', () {
 
+      String defaultLocale = Intl.defaultLocale;
       try {
         Intl.defaultLocale = 'de';
         expect(date(noon, "medium")).
@@ -78,7 +79,7 @@ void main() {
         expect(date(noon, "medium")).
         toEqual('sept. 3, 2010 12:05:08 PM');
       } finally {
-        Intl.defaultLocale = 'en';
+        Intl.defaultLocale = defaultLocale;
       }
     });
   });
