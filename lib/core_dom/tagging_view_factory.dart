@@ -18,7 +18,7 @@ class TaggingViewFactory implements ViewFactory {
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
-      var view = new View(nodes);
+      var view = new View(nodes, injector.get(EventHandler));
       _link(view, nodes, elementBinders, injector);
       return view;
     } finally {
@@ -30,6 +30,12 @@ class TaggingViewFactory implements ViewFactory {
     var binder = tagged.binder;
     var parentInjector = tagged.parentBinderOffset == -1 ? rootInjector : elementBinders[tagged.parentBinderOffset].injector;
     assert(parentInjector != null);
+
+    if (binder != null) {
+      binder.onEvents.forEach((event, value) {
+        view.registerEvent(EventHandler.attrNameToEventName(event));
+      });
+    }
 
     tagged.injector = binder != null ? binder.bind(view, parentInjector, boundNode) : parentInjector;
 

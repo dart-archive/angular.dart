@@ -195,7 +195,8 @@ main() {
           ..type(Probe)
           ..type(Log)
           ..type(AFilter)
-          ..type(ADirective);
+          ..type(ADirective)
+          ..factory(Element, (injector) => document.body);
 
         Injector rootInjector =
             new DynamicInjector(modules: [new AngularModule(), rootModule]);

@@ -86,7 +86,8 @@ Injector ngBootstrap({
   NgZone zone = new NgZone();
   ngModules.add(new Module()
       ..value(NgZone, zone)
-      ..value(NgApp, new NgApp(element)));
+      ..value(NgApp, new NgApp(element))
+      ..factory(dom.Element, (i) => i.get(NgApp).root));
 
   return zone.run(() {
     var rootElements = [element];
