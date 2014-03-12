@@ -29,7 +29,7 @@ if [ "$CHANNEL" = "stable" ] && [ "$TRAVIS_REPO_SLUG" = "angular/angular.dart" ]
 
             echo "Adding files..."
             git add .
-            git commit -m "Automated push of generated docs from SHA: $SHA"
+            git commit -m "Automated push of generated docs from SHA: https://github.com/angular/angular.dart/commit/$SHA"
             git push
     fi
 fi
