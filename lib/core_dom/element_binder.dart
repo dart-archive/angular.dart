@@ -176,11 +176,11 @@ class ElementBinder {
             DirectiveMap directives = injector.get(DirectiveMap);
             // This is a bit of a hack since we are returning different type then we are.
             var componentFactory = new _ComponentFactory(node, ref.type,
-            ref.annotation as NgComponent,
-            injector.get(dom.NodeTreeSanitizer), _expando);
+                            ref.annotation as NgComponent,
+                            injector.get(dom.NodeTreeSanitizer), _expando);
             if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
             fctrs[ref.type] = componentFactory;
-            return componentFactory.call(injector, compiler, scope, viewCache, http, templateCache, directives);
+            return componentFactory.call(injector, scope, viewCache, http, templateCache, directives);
           }, visibility: visibility);
         } else {
           nodeModule.type(ref.type, visibility: visibility);

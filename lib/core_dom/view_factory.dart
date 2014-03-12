@@ -158,16 +158,14 @@ class _ComponentFactory implements Function {
   dom.ShadowRoot shadowDom;
   Scope shadowScope;
   Injector shadowInjector;
-  Compiler compiler;
   var controller;
 
   _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer,
                     this._expando);
 
-  dynamic call(Injector injector, Compiler compiler, Scope scope,
+  dynamic call(Injector injector, Scope scope,
                ViewCache $viewCache, Http $http, TemplateCache $templateCache,
                DirectiveMap directives) {
-    this.compiler = compiler;
     shadowDom = element.createShadowRoot();
     shadowDom.applyAuthorStyles = component.applyAuthorStyles;
     shadowDom.resetStyleInheritance = component.resetStyleInheritance;
