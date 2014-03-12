@@ -6,9 +6,9 @@ part of angular.filter;
  *
  * Usage:
  *
- *     {{ json_expression | json }}
+ *     {{ json_object_expression | json }}
  */
 @NgFilter(name:'json')
-class JsonFilter {
-  call(text) => JSON.encode(text);
+class JsonFilter implements Function {
+  String call(jsonObj) => JSON.encode(jsonObj);
 }
