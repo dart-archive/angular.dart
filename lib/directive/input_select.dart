@@ -166,7 +166,9 @@ class _SingleSelectMode extends _SelectMode {
     var i = 0;
     model.viewValue = _forEachOption((option, _) {
       if (option.selected) {
-        return option == _nullOption ? null : expando[option].ngValue;
+        if (option == _nullOption) return null;
+        assert(expando[option] != null);
+        return expando[option].ngValue;
       }
       if (option != _unknownOption && option != _nullOption) i++;
     }, true);
