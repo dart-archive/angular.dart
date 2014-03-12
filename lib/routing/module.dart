@@ -31,7 +31,7 @@
  *    }
  *
  *     var module = new Module()
- *       ..factory(RouteInitializerFn, (_) => initRoutes);
+ *       ..value(RouteInitializerFn, initRoutes);
  *
  *  Lets see how we could define our routes using the routing framework:
  *

@@ -14,7 +14,7 @@ typedef dynamic ItemEval(dynamic item, num index);
  * unknown [OPTION] is inserted into the list. Once the model points to an
  * existing [OPTION] the unknown [OPTION] is removed.
  *
- * Becouse [OPTION].[value] attribute is a string, the model is bound to a
+ * Because [OPTION].[value] attribute is a string, the model is bound to a
  * string. If there is need to bind to an object then [OptionValueDirective]
  * should be used.
  *
@@ -23,8 +23,7 @@ typedef dynamic ItemEval(dynamic item, num index);
     selector: 'select[ng-model]',
     visibility: NgDirective.CHILDREN_VISIBILITY)
 class InputSelectDirective implements NgAttachAware {
-  final Expando<OptionValueDirective> expando =
-      new Expando<OptionValueDirective>();
+  final expando = new Expando<OptionValueDirective>();
   final dom.SelectElement _selectElement;
   final NodeAttrs _attrs;
   final NgModel _model;
@@ -39,12 +38,8 @@ class InputSelectDirective implements NgAttachAware {
   InputSelectDirective(dom.Element this._selectElement, this._attrs, this._model,
                        this._scope) {
     _unknownOption.value = '?';
-    _unknownOption.text = ''; // Explicit due to dartbug.com/14407
-    _selectElement.querySelectorAll('option').forEach((o) {
-      if (_nullOption == null && o.value == '') {
-        _nullOption = o;
-      }
-    });
+    _nullOption = _selectElement.querySelectorAll('option')
+        .firstWhere((o) => o.value == '', orElse: () => null);
   }
 
   attach() {
@@ -52,7 +47,8 @@ class InputSelectDirective implements NgAttachAware {
       _mode.destroy();
       if (value == null) {
         _model.watchCollection = false;
-        _mode = new _SingleSelectMode(expando, _selectElement, _model, _nullOption, _unknownOption);
+        _mode = new _SingleSelectMode(expando, _selectElement, _model,
+            _nullOption, _unknownOption);
       } else {
         _model.watchCollection = true;
         _mode = new _MultipleSelectionMode(expando, _selectElement, _model);
@@ -79,7 +75,7 @@ class InputSelectDirective implements NgAttachAware {
     if (!_dirty) {
       _dirty = true;
       // TODO(misko): this hack need to delay the rendering until after domRead
-      // becouse the modelChange reads from the DOM. We should be able to render
+      // because the modelChange reads from the DOM. We should be able to render
       // without DOM changes.
       _scope.rootScope.domRead(() {
         _scope.rootScope.domWrite(() {
@@ -96,8 +92,7 @@ class InputSelectDirective implements NgAttachAware {
  * provides [ng-value] which allows binding to any expression.
  *
  */
-@NgDirective(
-    selector: 'option')
+@NgDirective(selector: 'option')
 class OptionValueDirective implements NgAttachAware,
     NgDetachAware {
   final InputSelectDirective _inputSelectDirective;
@@ -183,7 +178,9 @@ class _SingleSelectMode extends _SelectMode {
         selected = option == _nullOption;
       } else {
         OptionValueDirective optionValueDirective = expando[option];
-        selected = optionValueDirective == null ? false : optionValueDirective.ngValue == value;
+        selected = optionValueDirective == null ?
+            false :
+            optionValueDirective.ngValue == value;
       }
       found = found || selected;
       option.selected = selected;
@@ -225,11 +222,9 @@ class _MultipleSelectionMode extends _SelectMode {
     if (selectedValues is List) {
       fn = (o, i) {
         var selected = expando[o];
-        if (selected == null) {
-          return false;
-        } else {
-          return o.selected = selectedValues.contains(selected.ngValue);
-        }
+        return selected == null ?
+            false :
+            o.selected = selectedValues.contains(selected.ngValue);
       };
     }
 

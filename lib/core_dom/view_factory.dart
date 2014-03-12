@@ -16,7 +16,7 @@ class BoundViewFactory {
   BoundViewFactory(this.viewFactory, this.injector);
 
   View call(Scope scope) =>
-    viewFactory(injector.createChild([new Module()..value(Scope, scope)]));
+      viewFactory(injector.createChild([new Module()..value(Scope, scope)]));
 }
 
 abstract class ViewFactory implements Function {
@@ -26,8 +26,8 @@ abstract class ViewFactory implements Function {
 }
 
 /**
- * ViewFactory is used to create new [View]s. ViewFactory is created by the
- * [Compiler] as a result of compiling a template.
+ * [WalkingViewFactory] is used to create new [View]s. WalkingViewFactory is
+ * created by the [Compiler] as a result of compiling a template.
  */
 class WalkingViewFactory implements ViewFactory {
   final List<ElementBinderTreeRef> elementBinders;
@@ -35,8 +35,10 @@ class WalkingViewFactory implements ViewFactory {
   final Profiler _perf;
   final Expando _expando;
 
-  WalkingViewFactory(this.templateElements, this.elementBinders, this._perf, this._expando) {
-    assert(elementBinders.forEach((ElementBinderTreeRef eb) { assert(eb is ElementBinderTreeRef); }) != true);
+  WalkingViewFactory(this.templateElements, this.elementBinders, this._perf,
+                     this._expando) {
+    assert(elementBinders.every((ElementBinderTreeRef eb) =>
+        eb is ElementBinderTreeRef));
   }
 
   BoundViewFactory bind(Injector injector) =>
@@ -55,14 +57,15 @@ class WalkingViewFactory implements ViewFactory {
     }
   }
 
-  View _link(View view, List<dom.Node> nodeList, List elementBinders, Injector parentInjector) {
-
+  View _link(View view, List<dom.Node> nodeList, List elementBinders,
+             Injector parentInjector) {
 
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
 
     for (int i = 0; i < elementBinders.length; i++) {
-      // querySelectorAll('.ng-binding') should return a list of nodes in the same order as the elementBinders list.
+      // querySelectorAll('.ng-binding') should return a list of nodes in the
+      // same order as the elementBinders list.
 
       // keep a injector array --
 
@@ -84,11 +87,12 @@ class WalkingViewFactory implements ViewFactory {
         var fakeParent = false;
         if (parentNode == null) {
           fakeParent = true;
-          parentNode = new dom.DivElement();
-          parentNode.append(node);
+          parentNode = new dom.DivElement()..append(node);
         }
 
-        var childInjector = binder != null ? binder.bind(view, parentInjector, node) : parentInjector;
+        var childInjector = binder != null ?
+            binder.bind(view, parentInjector, node) :
+            parentInjector;
 
         if (fakeParent) {
           // extract the node from the parentNode.
@@ -105,9 +109,6 @@ class WalkingViewFactory implements ViewFactory {
     return view;
   }
 }
-
-
-
 
 /**
  * ViewCache is used to cache the compilation of templates into [View]s.
@@ -166,9 +167,9 @@ class _ComponentFactory implements Function {
   dynamic call(Injector injector, Scope scope,
                ViewCache $viewCache, Http $http, TemplateCache $templateCache,
                DirectiveMap directives) {
-    shadowDom = element.createShadowRoot();
-    shadowDom.applyAuthorStyles = component.applyAuthorStyles;
-    shadowDom.resetStyleInheritance = component.resetStyleInheritance;
+    shadowDom = element.createShadowRoot()
+        ..applyAuthorStyles = component.applyAuthorStyles
+        ..resetStyleInheritance = component.resetStyleInheritance;
 
     shadowScope = scope.createChild({}); // Isolate
     // TODO(pavelgj): fetching CSS with Http is mainly an attempt to
@@ -179,12 +180,12 @@ class _ComponentFactory implements Function {
     List<async.Future<String>> cssFutures = new List();
     var cssUrls = component.cssUrls;
     if (cssUrls.isNotEmpty) {
-      cssUrls.forEach((css) => cssFutures.add(
-          $http.getString(css, cache: $templateCache).catchError((e) =>
-              '/*\n$e\n*/\n')
+      cssUrls.forEach((css) => cssFutures.add($http
+          .getString(css, cache: $templateCache)
+          .catchError((e) => '/*\n$e\n*/\n')
       ));
     } else {
-      cssFutures.add( new async.Future.value(null) );
+      cssFutures.add(new async.Future.value(null));
     }
     var viewFuture;
     if (component.template != null) {
@@ -202,8 +203,9 @@ class _ComponentFactory implements Function {
           }
           if (viewFuture != null) {
             return viewFuture.then((ViewFactory viewFactory) {
-              if (!shadowScope.isAttached) return shadowDom;
-              return attachViewToShadowDom(viewFactory);
+              return (!shadowScope.isAttached) ?
+                  shadowDom :
+                  attachViewToShadowDom(viewFactory);
             });
           }
           return shadowDom;
@@ -218,13 +220,13 @@ class _ComponentFactory implements Function {
     return controller;
   }
 
-  attachViewToShadowDom(ViewFactory viewFactory) {
+  dom.ShadowRoot attachViewToShadowDom(ViewFactory viewFactory) {
     var view = viewFactory(shadowInjector);
     shadowDom.nodes.addAll(view.nodes);
     return shadowDom;
   }
 
-  createShadowInjector(injector, TemplateLoader templateLoader) {
+  Injector createShadowInjector(injector, TemplateLoader templateLoader) {
     var probe;
     var shadowModule = new Module()
         ..type(type)
@@ -243,16 +245,12 @@ class _ComponentFactory implements Function {
 class _AnchorAttrs extends NodeAttrs {
   DirectiveRef _directiveRef;
 
-  _AnchorAttrs(DirectiveRef this._directiveRef):super(null);
+  _AnchorAttrs(DirectiveRef this._directiveRef): super(null);
 
   operator [](name) => name == '.' ? _directiveRef.value : null;
 
-  observe(String attributeName, AttributeChanged notifyFn) {
-    if (attributeName == '.') {
-      notifyFn(_directiveRef.value);
-    } else {
-      notifyFn(null);
-    }
+  void observe(String attributeName, AttributeChanged notifyFn) {
+    notifyFn(attributeName == '.' ? _directiveRef.value : null);
   }
 }
 
@@ -261,9 +259,11 @@ String _SHADOW = 'SHADOW_INJECTOR';
 String _html(obj) {
   if (obj is String) {
     return obj;
-  } else if (obj is List) {
+  }
+  if (obj is List) {
     return (obj as List).map((e) => _html(e)).join();
-  } else if (obj is dom.Element) {
+  }
+  if (obj is dom.Element) {
     var text = (obj as dom.Element).outerHtml;
     return text.substring(0, text.indexOf('>') + 1);
   }

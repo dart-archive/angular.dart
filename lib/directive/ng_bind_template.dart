@@ -7,14 +7,14 @@ part of angular.directive;
  * expressions.
  */
 @NgDirective(
-  selector: '[ng-bind-template]',
-  map: const {'ng-bind-template': '@bind'})
+    selector: '[ng-bind-template]',
+    map: const {'ng-bind-template': '@bind'})
 class NgBindTemplateDirective {
   final dom.Element element;
 
   NgBindTemplateDirective(this.element);
 
-  set bind(value) {
+  void set bind(value) {
     element.text = value;
   }
 }

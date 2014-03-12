@@ -53,7 +53,7 @@ class ElementBinder {
 
     if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
       template = ref;
-    } else if(annotation is NgComponent) {
+    } else if (annotation is NgComponent) {
       component = ref;
     } else {
       decorators.add(ref);
@@ -217,7 +217,9 @@ class ElementBinder {
         var controller = nodeInjector.get(ref.type);
         probe.directives.add(controller);
         assert((linkMapTimer = _perf.startTimer('ng.view.link.map', ref.type)) != false);
-        var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ? fctrs[ref.type].shadowScope : null;
+        var shadowScope = (fctrs != null && fctrs.containsKey(ref.type)) ?
+            fctrs[ref.type].shadowScope :
+            null;
         if (ref.annotation is NgController) {
           scope.context[(ref.annotation as NgController).publishAs] = controller;
         } else if (ref.annotation is NgComponent) {
@@ -254,10 +256,10 @@ class ElementBinder {
           watch = scope.watch(
               '1', // Cheat a bit.
                   (_, __) {
-                watch.remove();
-                attachDelayStatus[0] = true;
-                checkAttachReady();
-              });
+                    watch.remove();
+                    attachDelayStatus[0] = true;
+                    checkAttachReady();
+                  });
         }
         if (controller is NgDetachAware) {
           scope.on(ScopeEvent.DESTROY).listen((_) => controller.detach());
@@ -286,12 +288,14 @@ class ElementBinder {
       String dstExpression = dstPath.isEmpty ? attrName : dstPath;
       Expression dstPathFn = _parser(dstExpression);
       if (!dstPathFn.isAssignable) {
-        throw "Expression '$dstPath' is not assignable in mapping '$mapping' for attribute '$attrName'.";
+        throw "Expression '$dstPath' is not assignable in mapping '$mapping' "
+              "for attribute '$attrName'.";
       }
       ApplyMapping mappingFn;
       switch (mode) {
         case '@':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
+                       FilterMap filters, notify()) {
             attrs.observe(attrName, (value) {
               dstPathFn.assign(controller, value);
               notify();
@@ -299,7 +303,8 @@ class ElementBinder {
           };
           break;
         case '<=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
+                       FilterMap filters, notify()) {
             if (attrs[attrName] == null) return notify();
             String expression = attrs[attrName];
             Expression expressionFn = _parser(expression);
@@ -336,7 +341,8 @@ class ElementBinder {
           };
           break;
         case '=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
+                       FilterMap filters, notify()) {
             if (attrs[attrName] == null) return notify();
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
@@ -349,7 +355,8 @@ class ElementBinder {
           };
           break;
         case '=>!':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller, FilterMap filters, notify()) {
+          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
+                       FilterMap filters, notify()) {
             if (attrs[attrName] == null) return notify();
             Expression attrExprFn = _parser(attrs[attrName]);
             var watch;
@@ -365,8 +372,11 @@ class ElementBinder {
           };
           break;
         case '&':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst, FilterMap filters, notify()) {
-            dstPathFn.assign(dst, _parser(attrs[attrName]).bind(scope.context, ScopeLocals.wrapper));
+          mappingFn = (NodeAttrs attrs, Scope scope, Object dst,
+                       FilterMap filters, notify()) {
+            dstPathFn
+                .assign(dst, _parser(attrs[attrName])
+                .bind(scope.context, ScopeLocals.wrapper));
             notify();
           };
           break;
@@ -410,9 +420,7 @@ class TaggedElementBinder {
   TaggedElementBinder(this.binder, this.parentBinderOffset);
 
   void addText(TaggedTextBinder tagged) {
-    if (textBinders == null) {
-      textBinders = [];
-    }
+    if (textBinders == null) textBinders = [];
     textBinders.add(tagged);
   }
 

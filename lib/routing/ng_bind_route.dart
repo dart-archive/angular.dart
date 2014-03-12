@@ -26,9 +26,7 @@ part of angular.routing;
     visibility: NgDirective.CHILDREN_VISIBILITY,
     publishTypes: const [RouteProvider],
     selector: '[ng-bind-route]',
-    map: const {
-        'ng-bind-route': '@routeName'
-    })
+    map: const {'ng-bind-route': '@routeName'})
 class NgBindRouteDirective implements RouteProvider {
   Router _router;
   String routeName;

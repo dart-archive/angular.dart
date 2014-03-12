@@ -97,9 +97,7 @@ abstract class NgAnnotation {
    *       map: const {
    *         'title': '@title',
    *         'selection': '<=>currentItem',
-   *         'on-selection-change': '&onChange'
-   *       }
-   *     )
+   *         'on-selection-change': '&onChange'})
    *     class MyComponent {
    *       String title;
    *       var currentItem;
@@ -126,13 +124,13 @@ abstract class NgAnnotation {
   final Map<String, String> map;
 
   /**
-   * Use the list to specify expression containing attributes which are not
+   * Use the list to specify expressions containing attributes which are not
    * included under [map] with '=' or '@' specification.
    */
   final List<String> exportExpressionAttrs;
 
   /**
-   * Use the list to specify a expressions which are evaluated dynamically
+   * Use the list to specify expressions which are evaluated dynamically
    * (ex. via [Scope.eval]) and are otherwise not statically discoverable.
    */
   final List<String> exportExpressions;
@@ -150,7 +148,7 @@ abstract class NgAnnotation {
   toString() => selector;
   get hashCode => selector.hashCode;
   operator==(other) =>
-      other is NgAnnotation && this.selector == other.selector;
+      other is NgAnnotation && selector == other.selector;
 
   NgAnnotation cloneWithNewMap(newMap);
 }
@@ -276,10 +274,14 @@ class NgDirective extends NgAnnotation {
                     visibility,
                     publishTypes : const <Type>[],
                     exportExpressions,
-                    exportExpressionAttrs}) : super(selector: selector, children: children, visibility: visibility,
-  publishTypes: publishTypes, map: map,
-  exportExpressions: exportExpressions,
-  exportExpressionAttrs: exportExpressionAttrs);
+                    exportExpressionAttrs})
+      : super(selector: selector,
+              children: children,
+              visibility: visibility,
+              publishTypes: publishTypes,
+              map: map,
+              exportExpressions: exportExpressions,
+              exportExpressionAttrs: exportExpressionAttrs);
 
   NgAnnotation cloneWithNewMap(newMap) =>
       new NgDirective(
@@ -293,7 +295,8 @@ class NgDirective extends NgAnnotation {
 }
 
 /**
- * Meta-data marker placed on a class which should act as a controller for your application.
+ * Meta-data marker placed on a class which should act as a controller for your
+ * application.
  *
  * Controllers are essentially [NgDirective]s with few key differences:
  *
@@ -329,10 +332,14 @@ class NgController extends NgDirective {
                     publishTypes : const <Type>[],
                     exportExpressions,
                     exportExpressionAttrs
-                    }) : super(selector: selector, children: children, visibility: visibility,
-  publishTypes: publishTypes, map: map,
-  exportExpressions: exportExpressions,
-  exportExpressionAttrs: exportExpressionAttrs);
+                    })
+      : super(selector: selector,
+              children: children,
+              visibility: visibility,
+              publishTypes: publishTypes,
+              map: map,
+              exportExpressions: exportExpressions,
+              exportExpressionAttrs: exportExpressionAttrs);
 
   NgAnnotation cloneWithNewMap(newMap) =>
       new NgController(
@@ -366,7 +373,7 @@ class NgAttr extends AttrFieldAnnotation {
 /**
  * When applied as an annotation on a directive field specifies that
  * the field is to be mapped to DOM attribute with the provided [attrName].
- * The value of the attribute to be treated as a one-way expession, equivalent
+ * The value of the attribute to be treated as a one-way expression, equivalent
  * to `=>` specification.
  */
 class NgOneWay extends AttrFieldAnnotation {
@@ -377,7 +384,7 @@ class NgOneWay extends AttrFieldAnnotation {
 /**
  * When applied as an annotation on a directive field specifies that
  * the field is to be mapped to DOM attribute with the provided [attrName].
- * The value of the attribute to be treated as a one time one-way expession,
+ * The value of the attribute to be treated as a one time one-way expression,
  * equivalent to `=>!` specification.
  */
 class NgOneWayOneTime extends AttrFieldAnnotation {
@@ -388,7 +395,7 @@ class NgOneWayOneTime extends AttrFieldAnnotation {
 /**
  * When applied as an annotation on a directive field specifies that
  * the field is to be mapped to DOM attribute with the provided [attrName].
- * The value of the attribute to be treated as a two-way expession,
+ * The value of the attribute to be treated as a two-way expression,
  * equivalent to `<=>` specification.
  */
 class NgTwoWay extends AttrFieldAnnotation {
@@ -399,7 +406,7 @@ class NgTwoWay extends AttrFieldAnnotation {
 /**
  * When applied as an annotation on a directive field specifies that
  * the field is to be mapped to DOM attribute with the provided [attrName].
- * The value of the attribute to be treated as a callback expession,
+ * The value of the attribute to be treated as a callback expression,
  * equivalent to `&` specification.
  */
 class NgCallback extends AttrFieldAnnotation {

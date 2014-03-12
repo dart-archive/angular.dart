@@ -79,9 +79,9 @@ class PureFunctionAST extends AST {
   final List<AST> argsAST;
 
   PureFunctionAST(name, this.fn, argsAST)
-      : super('$name(${_argList(argsAST)})'),
-        argsAST = argsAST,
-        name = name;
+      : argsAST = argsAST,
+        name = name,
+        super('$name(${_argList(argsAST)})');
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
       watchGroup.addFunctionWatch(fn, argsAST, expression);
@@ -98,10 +98,10 @@ class MethodAST extends AST {
   final List<AST> argsAST;
 
   MethodAST(lhsAST, name, argsAST)
-      : super('$lhsAST.$name(${_argList(argsAST)})'),
-        lhsAST = lhsAST,
+      : lhsAST = lhsAST,
         name = name,
-        argsAST = argsAST;
+        argsAST = argsAST,
+        super('$lhsAST.$name(${_argList(argsAST)})');
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
       watchGroup.addMethodWatch(lhsAST, name, argsAST, expression);

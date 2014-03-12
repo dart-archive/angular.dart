@@ -19,7 +19,7 @@ ElementProbe ngProbe(dom.Node node) {
     throw "ngProbe called without node";
   }
   var origNode = node;
-  while(node != null) {
+  while (node != null) {
     var probe = _elementExpando[node];
     if (probe != null) return probe;
     node = node.parent;

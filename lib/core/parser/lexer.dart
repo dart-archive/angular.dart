@@ -171,7 +171,9 @@ class Scanner {
           String hex = input.substring(index + 1, index + 5);
           unescaped = int.parse(hex, radix: 16, onError: (ignore) {
             error('Invalid unicode escape [\\u$hex]'); });
-          for (int i = 0; i < 5; i++) advance();
+          for (int i = 0; i < 5; i++) {
+            advance();
+          }
         } else {
           unescaped = unescape(peek);
           advance();
@@ -199,8 +201,7 @@ class Scanner {
   }
 
   void advance() {
-    if (++index >= length) peek = $EOF;
-    else peek = input.codeUnitAt(index);
+    peek = ++index >= length ? $EOF : input.codeUnitAt(index);
   }
 
   void error(String message, [int offset = 0]) {

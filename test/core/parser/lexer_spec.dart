@@ -105,59 +105,27 @@ main() {
 
     it('should tokenize a string', () {
       List<Token> tokens = lex("j-a.bc[22]+1.3|f:'a\\\'c':\"d\\\"e\"");
-      var i = 0;
-      expect(tokens[i]).toBeIdentifierToken(0, 'j');
-
-      i++;
-      expect(tokens[i]).toBeOperatorToken(1, '-');
-
-      i++;
-      expect(tokens[i]).toBeIdentifierToken(2, 'a');
-
-      i++;
-      expect(tokens[i]).toBeCharacterToken(3, '.');
-
-      i++;
-      expect(tokens[i]).toBeIdentifierToken(4, 'bc');
-
-      i++;
-      expect(tokens[i]).toBeCharacterToken(6, '[');
-
-      i++;
-      expect(tokens[i]).toBeNumberToken(7, 22);
-
-      i++;
-      expect(tokens[i]).toBeCharacterToken(9, ']');
-
-      i++;
-      expect(tokens[i]).toBeOperatorToken(10, '+');
-
-      i++;
-      expect(tokens[i]).toBeNumberToken(11, 1.3);
-
-      i++;
-      expect(tokens[i]).toBeOperatorToken(14, '|');
-
-      i++;
-      expect(tokens[i]).toBeIdentifierToken(15, 'f');
-
-      i++;
-      expect(tokens[i]).toBeCharacterToken(16, ':');
-
-      i++;
-      expect(tokens[i]).toBeStringToken(17, "'a\\'c'", "a'c");
-
-      i++;
-      expect(tokens[i]).toBeCharacterToken(23, ':');
-
-      i++;
-      expect(tokens[i]).toBeStringToken(24, '"d\\"e"', 'd"e');
+      expect(tokens[0]).toBeIdentifierToken(0, 'j');
+      expect(tokens[1]).toBeOperatorToken(1, '-');
+      expect(tokens[2]).toBeIdentifierToken(2, 'a');
+      expect(tokens[3]).toBeCharacterToken(3, '.');
+      expect(tokens[4]).toBeIdentifierToken(4, 'bc');
+      expect(tokens[5]).toBeCharacterToken(6, '[');
+      expect(tokens[6]).toBeNumberToken(7, 22);
+      expect(tokens[7]).toBeCharacterToken(9, ']');
+      expect(tokens[8]).toBeOperatorToken(10, '+');
+      expect(tokens[9]).toBeNumberToken(11, 1.3);
+      expect(tokens[10]).toBeOperatorToken(14, '|');
+      expect(tokens[11]).toBeIdentifierToken(15, 'f');
+      expect(tokens[12]).toBeCharacterToken(16, ':');
+      expect(tokens[13]).toBeStringToken(17, "'a\\'c'", "a'c");
+      expect(tokens[14]).toBeCharacterToken(23, ':');
+      expect(tokens[15]).toBeStringToken(24, '"d\\"e"', 'd"e');
     });
 
     it('should tokenize undefined', () {
       List<Token> tokens = lex("undefined");
-      var i = 0;
-      expect(tokens[i]).toBeKeywordUndefinedToken(0);
+      expect(tokens[0]).toBeKeywordUndefinedToken(0);
     });
 
     it('should ignore whitespace', () {

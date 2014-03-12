@@ -29,7 +29,7 @@ class NgFilter {
   const NgFilter({this.name});
 
   int get hashCode => name.hashCode;
-  bool operator==(other) => this.name == other.name;
+  bool operator==(other) => name == other.name;
 
   toString() => 'NgFilter: $name';
 }
@@ -45,7 +45,7 @@ class FilterMap extends AnnotationMap<NgFilter> {
     super(injector, extractMetadata);
 
   call(String name) {
-    var filter = new NgFilter(name:name);
+    var filter = new NgFilter(name: name);
     var filterType = this[filter];
     return _injector.get(filterType);
   }

@@ -76,7 +76,7 @@ class UnboundedCache<K, V> implements Cache<K, V> {
  * - should stringify keys?
  */
 class LruCache<K, V> extends Cache<K, V> {
-  Map<K, V> _entries = new LinkedHashMap<K, V>();
+  final _entries = new LinkedHashMap<K, V>();
   int _capacity;
   int _hits = 0;
   int _misses = 0;

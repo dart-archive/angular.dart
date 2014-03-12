@@ -14,9 +14,7 @@ class DynamicParserImpl {
   DynamicParserImpl(Lexer lexer, this.backend, String input)
       : this.input = input, tokens = lexer.call(input);
 
-  Token get peek {
-    return (index < tokens.length) ? tokens[index] : Token.EOF;
-  }
+  Token get peek => index < tokens.length ? tokens[index] : Token.EOF;
 
   parseChain() {
     bool isChain = false;

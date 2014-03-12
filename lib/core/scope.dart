@@ -159,7 +159,7 @@ class Scope {
    */
   bool get isDestroyed {
     var scope = this;
-    while(scope != null) {
+    while (scope != null) {
       if (scope == rootScope) return false;
       scope = scope._parentScope;
     }
@@ -260,10 +260,12 @@ class Scope {
     assert(isAttached);
     return _Streams.emit(this, name, data);
   }
+
   ScopeEvent broadcast(String name, [data]) {
     assert(isAttached);
     return _Streams.broadcast(this, name, data);
   }
+
   ScopeStream on(String name) {
     assert(isAttached);
     return _Streams.on(this, rootScope._exceptionHandler, name);
@@ -328,7 +330,7 @@ class Scope {
       });
     }
     var childScope = _childHead;
-    while(childScope != null) {
+    while (childScope != null) {
       childScope._verifyStreams(this, '  $prefix', log).forEach((k, v) {
         counts[k] = v + (counts.containsKey(k) ? counts[k] : 0);
       });
@@ -347,7 +349,7 @@ _mapEqual(Map a, Map b) => a.length == b.length &&
     a.keys.every((k) => b.containsKey(k) && a[k] == b[k]);
 
 class ScopeStats {
-  bool report = true;
+  bool report;
   final nf = new NumberFormat.decimalPattern();
 
   final digestFieldStopwatch = new AvgStopwatch();
@@ -376,9 +378,7 @@ class ScopeStats {
 
   void digestLoop(int changeCount) {
     _digestLoopNo++;
-    if (report) {
-      print(this);
-    }
+    if (report) print(this);
     _digestStopwatchReset();
   }
 
@@ -408,7 +408,6 @@ class RootScope extends Scope {
   final AstParser _astParser;
   final Parser _parser;
   final ScopeDigestTTL _ttl;
-  final ExpressionVisitor visitor = new ExpressionVisitor(); // TODO(misko): delete me
   final NgZone _zone;
 
   _FunctionChain _runAsyncHead, _runAsyncTail;
@@ -438,7 +437,7 @@ class RootScope extends Scope {
   void digest() {
     _transitionState(null, STATE_DIGEST);
     try {
-      var rootWatchGroup = (_readWriteGroup as RootWatchGroup);
+      var rootWatchGroup = _readWriteGroup as RootWatchGroup;
 
       int digestTTL = _ttl.ttl;
       const int LOG_COUNT = 3;
@@ -448,7 +447,7 @@ class RootScope extends Scope {
       ChangeLog changeLog;
       _scopeStats.digestStart();
       do {
-        while(_runAsyncHead != null) {
+        while (_runAsyncHead != null) {
           try {
             _runAsyncHead.fn();
           } catch (e, s) {
@@ -494,7 +493,7 @@ class RootScope extends Scope {
     bool runObservers = true;
     try {
       do {
-        while(_domWriteHead != null) {
+        while (_domWriteHead != null) {
           try {
             _domWriteHead.fn();
           } catch (e, s) {
@@ -507,7 +506,7 @@ class RootScope extends Scope {
           runObservers = false;
           observeGroup.detectChanges(exceptionHandler:_exceptionHandler);
         }
-        while(_domReadHead != null) {
+        while (_domReadHead != null) {
           try {
             _domReadHead.fn();
           } catch (e, s) {
@@ -613,7 +612,7 @@ class _Streams {
   static ScopeEvent emit(Scope scope, String name, data) {
     var event = new ScopeEvent(name, scope, data);
     var scopeCursor = scope;
-    while(scopeCursor != null) {
+    while (scopeCursor != null) {
       if (scopeCursor._streams != null &&
           scopeCursor._streams._scope == scopeCursor) {
         ScopeStream stream = scopeCursor._streams._streams[name];
@@ -644,7 +643,7 @@ class _Streams {
         }
         // Reverse traversal so that when the queue is read it is correct order.
         var childScope = scope._childTail;
-        while(childScope != null) {
+        while (childScope != null) {
           scopeStreams = childScope._streams;
           if (scopeStreams != null &&
               scopeStreams._typeCounts.containsKey(name)) {
@@ -668,7 +667,7 @@ class _Streams {
     _Streams streams = scope._streams;
     Scope scopeCursor = scope;
     bool splitMode = false;
-    while(scopeCursor != null) {
+    while (scopeCursor != null) {
       _Streams cursorStreams = scopeCursor._streams;
       var hasStream = cursorStreams != null;
       var hasOwnStream = hasStream && cursorStreams._scope == scopeCursor;
@@ -801,8 +800,10 @@ class ScopeStreamSubscription implements async.StreamSubscription<ScopeEvent> {
   final Function _onData;
   ScopeStreamSubscription(this._scopeStream, this._onData);
 
-  // TODO(vbe) should return a Future
-  cancel() => _scopeStream._remove(this);
+  async.Future cancel() {
+    _scopeStream._remove(this);
+    return null;
+  }
 
   void onData(void handleData(ScopeEvent data)) => NOT_IMPLEMENTED();
   void onError(Function handleError) => NOT_IMPLEMENTED();
@@ -817,9 +818,7 @@ class _FunctionChain {
   final Function fn;
   _FunctionChain _next;
 
-  _FunctionChain(fn())
-      : fn = fn
-  {
+  _FunctionChain(fn()): fn = fn {
     assert(fn != null);
   }
 }
@@ -858,7 +857,7 @@ class ExpressionVisitor implements Visitor {
 
   AST visit(Expression exp) {
     exp.accept(this);
-    assert(this.ast != null);
+    assert(ast != null);
     try {
       return ast;
     } finally {
