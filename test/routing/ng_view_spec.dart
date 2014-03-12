@@ -101,34 +101,33 @@ main() {
          '<h2>Read Book 1234</h2>'));
     }));
 
+    // This test is disable on dart2js because it is flaky
+    // on dart v1.2. Kasper is looking into it. In the
+    // meantime we are disabling it.
+    if (!identical(1, 1.0)) {
+      it('should switch nested templates', async(() {
+        Element root = _.compile('<ng-view></ng-view>');
+        expect(root.text).toEqual('');
 
-    it('should switch nested templates', async(() {
-      // This test is disable on dart2js because it is flaky
-      // on dart v1.2. Kasper is looking into it. In the
-      // meantime we are disabling it.
-      if (identical(1, 1.0)) return;
-      Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+        router.route('/library/all');
+        microLeap();
+        expect(root.text).toEqual('LibraryBooks');
 
-      router.route('/library/all');
-      microLeap();
-      expect(root.text).toEqual('LibraryBooks');
+        router.route('/library/1234');
+        microLeap();
+        expect(root.text).toEqual('LibraryBook 1234');
 
-      router.route('/library/1234');
-      microLeap();
-      expect(root.text).toEqual('LibraryBook 1234');
+        // nothing should change here
+        router.route('/library/1234/overview');
+        microLeap();
+        expect(root.text).toEqual('LibraryBook 1234');
 
-      // nothing should change here
-      router.route('/library/1234/overview');
-      microLeap();
-      expect(root.text).toEqual('LibraryBook 1234');
-
-      // nothing should change here
-      router.route('/library/1234/read');
-      microLeap();
-      expect(root.text).toEqual('LibraryRead Book 1234');
-    }));
-
+        // nothing should change here
+        router.route('/library/1234/read');
+        microLeap();
+        expect(root.text).toEqual('LibraryRead Book 1234');
+      }));
+    }
   });
 }
 
