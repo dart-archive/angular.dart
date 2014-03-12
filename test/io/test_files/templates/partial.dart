@@ -1,4 +1,4 @@
-part of 'main.dart';
+part of test_files.main;
 
 @NgComponent(
     selector: 'my-component',
