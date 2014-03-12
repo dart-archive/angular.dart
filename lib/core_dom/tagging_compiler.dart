@@ -43,7 +43,7 @@ class TaggingCompiler implements Compiler {
       if (node.nodeType == 1) {
 
         var taggedElementBinder = null;
-        if (elementBinder.hasDirectives || elementBinder.hasTemplate) {
+        if (elementBinder.hasDirectivesOrEvents || elementBinder.hasTemplate) {
           taggedElementBinder = new TaggedElementBinder(elementBinder, parentElementBinderOffset);
           elementBinders.add(taggedElementBinder);
           parentElementBinderOffset = elementBinders.length - 1;
@@ -68,7 +68,7 @@ class TaggingCompiler implements Compiler {
       } else if (node.nodeType == 3 || node.nodeType == 8) {
         elementBinder = node.nodeType == 3 ? directives.selector.matchText(node) : elementBinder;
 
-        if (elementBinder.hasDirectives && (node.parentNode != null && templateCursor.current.parentNode != null)) {
+        if (elementBinder.hasDirectivesOrEvents && (node.parentNode != null && templateCursor.current.parentNode != null)) {
           if (directParentElementBinder == null) {
 
             directParentElementBinder = new TaggedElementBinder(null, parentElementBinderOffset);

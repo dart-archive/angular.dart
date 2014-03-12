@@ -21,6 +21,7 @@ part 'compiler.dart';
 part 'directive.dart';
 part 'directive_map.dart';
 part 'element_binder.dart';
+part 'event_handler.dart';
 part 'http.dart';
 part 'ng_mustache.dart';
 part 'node_cursor.dart';
@@ -58,6 +59,7 @@ class NgCoreDomModule extends Module {
     type(DirectiveMap);
     type(DirectiveSelectorFactory);
     type(ElementBinderFactory);
+    type(EventHandler);
   }
 }
 

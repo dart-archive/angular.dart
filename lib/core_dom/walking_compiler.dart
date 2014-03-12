@@ -39,7 +39,7 @@ class WalkingCompiler implements Compiler {
         }
       }
 
-      if (elementBinder.hasDirectives) {
+      if (elementBinder.hasDirectivesOrEvents) {
         binder = elementBinder;
       }
 

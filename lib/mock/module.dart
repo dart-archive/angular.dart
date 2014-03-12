@@ -41,6 +41,7 @@ class AngularMockModule extends Module {
     type(Probe);
     type(Logger);
     type(MockHttpBackend);
+    value(Element, document.body);
     factory(HttpBackend, (Injector i) => i.get(MockHttpBackend));
     factory(NgZone, (_) {
       return new NgZone()
