@@ -288,15 +288,3 @@ class ElementProbe {
 
   ElementProbe(this.parent, this.element, this.injector, this.scope);
 }
-
-// TODO remove once everybody is using the new names
-
-class BlockFactory extends WalkingViewFactory {
-  BlockFactory(templateElements, elementBinders, perf, expando)
-      :super(templateElements, elementBinders, perf, expando);
-}
-
-class BoundBlockFactory extends BoundViewFactory {
-  BoundBlockFactory(ViewFactory viewFactory, Injector injector)
-      : super(viewFactory, injector);
-}
