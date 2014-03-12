@@ -4,7 +4,13 @@ node_js:
 env:
   matrix:
   - JOB=unit-stable
+    TESTS=vm
   - JOB=unit-dev
+    TESTS=vm
+  - JOB=unit-stable
+    TESTS=dart2js
+  - JOB=unit-dev
+    TESTS=dart2js
   global:
   - CHROME_BIN=/usr/bin/google-chrome
   - secure: NJt0LRmY2HoMw4QuTc+8MhDfSCTTuXe0kE7pC1flbhQOi/g6sdVX57b/4OZzBXRKG1oq/URX4FMeVgSuFQvTaEad0qsTPoGji/Mmk61LRtE/Mbo/H7v5P2tyGPPJ5S25C/xFo42cKDyzFU8Uv+5W2Htijsa3xt4VfAWcDmZJjuA=

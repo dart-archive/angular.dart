@@ -23,12 +23,14 @@ rm -rf dart-sdk
 unzip $DART_SDK_ZIP > /dev/null
 rm $DART_SDK_ZIP
 
-echo http://storage.googleapis.com/dart-archive/channels/$CHANNEL/raw/latest/dartium/$DARTIUM_ZIP
-curl http://storage.googleapis.com/dart-archive/channels/$CHANNEL/raw/latest/dartium/$DARTIUM_ZIP > $DARTIUM_ZIP
-unzip $DARTIUM_ZIP > /dev/null
-rm -rf dartium
-rm $DARTIUM_ZIP
-mv dartium-* dartium
+if [[ $TESTS != "dart2js" ]]; then
+  echo http://storage.googleapis.com/dart-archive/channels/$CHANNEL/raw/latest/dartium/$DARTIUM_ZIP
+  curl http://storage.googleapis.com/dart-archive/channels/$CHANNEL/raw/latest/dartium/$DARTIUM_ZIP > $DARTIUM_ZIP
+  unzip $DARTIUM_ZIP > /dev/null
+  rm -rf dartium
+  rm $DARTIUM_ZIP
+  mv dartium-* dartium;
+fi
 
 echo =============================================================================
 . ./scripts/env.sh
