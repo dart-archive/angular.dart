@@ -103,6 +103,10 @@ main() {
 
 
     it('should switch nested templates', async(() {
+      // This test is disable on dart2js because it is flaky
+      // on dart v1.2. Kasper is looking into it. In the
+      // meantime we are disabling it.
+      if (identical(1, 1.0)) return;
       Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
