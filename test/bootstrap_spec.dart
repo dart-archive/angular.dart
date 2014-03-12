@@ -4,28 +4,30 @@ import '_specs.dart';
 
 void main() {
   describe('bootstrap', () {
-    BodyElement body = window.document.querySelector('body');
+    setBody(String html) {
+      var body = window.document.querySelector('body');
+      body.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
+      return $(body);
+    }
 
     it('should default to whole page', () {
-      body.innerHtml = '<div>{{"works"}}</div>';
+      var body = setBody('<div>{{"works"}}</div>');
       ngBootstrap();
-      expect(body.innerHtml).toEqual('<div>works</div>');
+      expect($(body).html()).toEqual('<div>works</div>');
     });
 
     it('should compile starting at ng-app node', () {
-      body.setInnerHtml(
-          '<div>{{ignor me}}<div ng-app ng-bind="\'works\'"></div></div>',
-          treeSanitizer: new NullTreeSanitizer());
+      var body = setBody(
+          '<div>{{ignor me}}<div ng-app ng-bind="\'works\'"></div></div>');
       ngBootstrap();
-      expect(body.text).toEqual('{{ignor me}}works');
+      expect(body.text()).toEqual('{{ignor me}}works');
     });
 
     it('should compile starting at ng-app node', () {
-      body.setInnerHtml(
-          '<div>{{ignor me}}<div ng-bind="\'works\'"></div></div>',
-          treeSanitizer: new NullTreeSanitizer());
-      ngBootstrap(element:body.querySelector('div[ng-bind]'));
-      expect(body.text).toEqual('{{ignor me}}works');
+      var body = setBody(
+          '<div>{{ignor me}}<div ng-bind="\'works\'"></div></div>');
+      ngBootstrap(element:body.find('div[ng-bind]').first);
+      expect(body.text()).toEqual('{{ignor me}}works');
     });
   });
 }
