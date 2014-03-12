@@ -316,6 +316,149 @@
    [#610](https://github.com/angular/angular.dart/issues/610))
 
 
+## BREAKING CHANGES
+
+0.9.9 contains a major overhaul to the change-detection algorithm which is used behind the scenes
+during scope digests. As a result, much of the scope API has changed to facilitate this new feature.
+
+The biggest change is how scope properties are assigned on the scope. With earlier versions of
+AngularDart, the scope object itself was treated like a map and any property accessed using square
+brackets would either set or get the associated value. With 0.9.9 this will not produce the same
+effect. Instead all scope property getter and setter operations are to be facilitated within the
+scope.context member. So in other words, all the scope property reading and writing that was done
+in earlier versions is now done the same way, but on the `scope.context` member.
+
+```dart
+// < 0.9.9
+scope['prop'] = 'value'; //set
+scope['prop']; //get
+
+// >= 0.9.9
+scope.context['prop'] = 'value'; //set
+scope.context['prop']; //get
+```
+
+### Breaking Changes to the Scope API
+
+#### 1. scope.$watch() is now scope.watch()
+```dart
+//old code
+scope.$watch('a.b.c', () {});
+
+//new code (no more $ prefixing)
+scope.watch('a.b.c', (value, previous) {});
+```
+
+#### 2. scope context changes
+```dart
+//old code
+scope.$watch(() => o.foo; () {});
+
+//new code (notice the context property)
+scope.watch('foo', (value, _) {}, context: o);
+```
+
+#### 3. watch de-registration
+```dart
+//old code
+var stopWatch = scope.$watch(...);
+stopWatch();
+
+//new code
+Watch watch = scope.watch(...);
+watch.remove();
+```
+
+#### 4. Replace scope-level digests 
+```dart
+//old code
+scope.$digest();
+
+//new code
+scope.rootScope.apply();
+
+//Digest is now split between digest/flush so we need apply to call them both.
+```
+
+#### 5. Changes to scope event listeners
+```dart
+//old code
+scope.$on('foo', (e, data) {});
+
+//new code
+scope.on('foo').listen((e) {var data = e.data;});
+
+
+//old code
+scope.$on('foo', (e, a, b, c) {});
+
+//new code
+scope.on('foo').listen((e) {MyEvent data = e.data;});
+
+
+//old code
+scope.$emit('foo', [a]);
+
+//new code
+scope.emit('foo', a);
+
+
+//old code
+scope.$emit('foo', [a, b ,c]);
+
+//new code
+scope.emit('foo', new MyEvent(a, b, c));
+```
+
+#### 6. Creating new scopes 
+```dart
+//old code
+scope.$new();
+
+//new code
+scope.createChild(new PrototypeMap(scope.context)));
+
+//We have plans to allow any object to be the context.
+//The PrototypeMap is a way to maintain consistent behavior.
+```
+
+#### 7. EvalAsync
+```dart
+//old code
+scope.$evalAsync(() => null);
+
+//new code
+scope.runAsync(() => null);
+
+
+//old code
+scope.$evalAsync(
+    () => null, 
+    outsideDigest: true);
+
+//new code
+scope.domRead(() => null);
+```
+
+#### 8. scope.$$verifyDigestWillRun() has been removed
+There is currently no replacement. We feel that we have the zone under control and there is no need for this method any more.
+
+#### 9. scope.$disabled has been removed
+There is currently no replacement.
+
+#### 10. Watching collections
+```dart
+//old code
+scope.$watchSet(['ctrl.foo', 'ctrl.bar'], (values) {...});
+
+//new code
+scope.watch('[ctrl.foo, ctrl.bar]', (vars, _) {
+  var ctrlFoo = vars[0];
+  var ctrlBar = vars[1];
+});
+```
+
+
 
 <a name="v0.9.8"></a>
 # v0.9.8 cozy-porcupine (2014-02-19)
