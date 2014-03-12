@@ -177,8 +177,17 @@ class JQuery extends DelegatingList<Node> {
   _toHtml(node, [bool outer = false]) {
     if (node is Comment) {
       return '<!--${node.text}-->';
+    } else if (node is Element) {
+      // Remove all the "ng-binding" internal classes
+      node = node.clone(true) as Element;
+      node.queryAll(".ng-binding").forEach((Element e) {
+        e.classes.remove('ng-binding');
+      });
+      var htmlString = outer ? node.outerHtml : node.innerHtml;
+      // Strip out empty class attributes.  This seems like a Dart bug...
+      return htmlString.replaceAll(' class=""', '');
     } else {
-      return outer ? node.outerHtml : node.innerHtml;
+      throw "JQuery._toHtml not implemented for node type [${node.nodeType}]";
     }
   }
 

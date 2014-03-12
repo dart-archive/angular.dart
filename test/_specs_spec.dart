@@ -30,6 +30,11 @@ main() {
         expect(div.html()).toEqual('');
       });
 
+      it('should strip ng-binding', () {
+        var div = $('<div><span class="ng-binding"></span></div>');
+        expect(div.html()).toEqual('<span></span>');
+      });
+
       it('set', (){
         var div = $('<div>');
         expect(div.html('text')).toBe(div);
