@@ -41,5 +41,23 @@ main() {
         expect(div.html()).toEqual('text');
       });
     });
+
+    describe('shadowRoot', () {
+      it('should return the shadowRoot if one exists', () {
+        var elts = $('<div></div>');
+        elts[0].createShadowRoot().innerHtml = "Hello shadow";
+        expect(elts.shadowRoot().text()).toEqual("Hello shadow");
+      });
+
+      it('should return empty list if there is no shadowRoot', () {
+        expect($('<div></div>').shadowRoot()).toEqual([]);
+      });
+
+      it('should print the html for the shadowRoot', () {
+        var elts = $('<div></div>');
+        elts[0].createShadowRoot().innerHtml = '<div class="ng-binding">Hello shadow</div>';
+        expect(elts.shadowRoot().html()).toEqual('<div>Hello shadow</div>');
+      });
+    });
   });
 }

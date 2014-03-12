@@ -69,8 +69,8 @@ void main() {
         backend.flush();
         microLeap();
 
-        expect(renderedText(element)).toEqual('.hello{}Simple!');
-        expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
+        expect(element.textWithShadow()).toEqual('.hello{}Simple!');
+        expect(element.children().shadowRoot().html()).toEqual(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
       })));
@@ -98,7 +98,7 @@ void main() {
         backend.flush();
         microLeap();
 
-        expect(renderedText(element)).toEqual('Simple!');
+        expect(element.textWithShadow()).toEqual('Simple!');
         $rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
@@ -119,7 +119,7 @@ void main() {
         backend.flush();
         microLeap();
 
-        expect(renderedText(element)).toEqual('Simple!Simple!');
+        expect(element.textWithShadow()).toEqual('Simple!Simple!');
         $rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
@@ -138,8 +138,8 @@ void main() {
         backend.flush();
         microLeap();
 
-        expect(renderedText(element)).toEqual('.hello{}Simple!');
-        expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
+        expect(element.textWithShadow()).toEqual('.hello{}Simple!');
+        expect(element.children().shadowRoot().html()).toEqual(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
         $rootScope.apply();
@@ -156,7 +156,7 @@ void main() {
 
         backend.flush();
         microLeap();
-        expect(renderedText(element)).toEqual('.hello{}inline!');
+        expect(element.textWithShadow()).toEqual('.hello{}inline!');
       })));
 
       it('should ignore CSS load errors ', async(inject(
@@ -168,7 +168,7 @@ void main() {
 
         backend.flush();
         microLeap();
-        expect(renderedText(element)).toEqual(
+        expect(element.textWithShadow()).toEqual(
             '/*\n'
             'HTTP 500: some error\n'
             '*/\n'
@@ -184,7 +184,7 @@ void main() {
 
         backend.flush();
         microLeap();
-        expect(renderedText(element)).toEqual('.hello{}');
+        expect(element.textWithShadow()).toEqual('.hello{}');
       })));
 
       it('should load the CSS before the template is loaded', async(inject(
@@ -199,7 +199,7 @@ void main() {
 
         backend.flush();
         microLeap();
-        expect(renderedText(element)).toEqual('.hello{}Simple!');
+        expect(element.textWithShadow()).toEqual('.hello{}Simple!');
       })));
     });
 
@@ -224,8 +224,8 @@ void main() {
         backend.flush();
         microLeap();
 
-        expect(renderedText(element)).toEqual('.hello{}.world{}Simple!');
-        expect(element[0].nodes[0].shadowRoot.innerHtml).toEqual(
+        expect(element.textWithShadow()).toEqual('.hello{}.world{}Simple!');
+        expect(element.children().shadowRoot().html()).toEqual(
             '<style>.hello{}.world{}</style><div log="SIMPLE">Simple!</div>'
         );
         $rootScope.apply();

@@ -177,9 +177,14 @@ class JQuery extends DelegatingList<Node> {
   _toHtml(node, [bool outer = false]) {
     if (node is Comment) {
       return '<!--${node.text}-->';
+    } else if (node is DocumentFragment) {
+      var acc = '';
+      node.childNodes.forEach((n) { acc += _toHtml(n, true); });
+      return acc;
     } else if (node is Element) {
       // Remove all the "ng-binding" internal classes
       node = node.clone(true) as Element;
+      node.classes.remove('ng-binding');
       node.queryAll(".ng-binding").forEach((Element e) {
         e.classes.remove('ng-binding');
       });
@@ -238,6 +243,7 @@ class JQuery extends DelegatingList<Node> {
           (Element n) => n.style.getPropertyValue(name),
           (Element n, v) => n.style.setProperty(name, value), value);
   children() => new JQuery(this[0].childNodes);
+  shadowRoot() => new JQuery((this[0] as Element).shadowRoot);
 }
 
 
