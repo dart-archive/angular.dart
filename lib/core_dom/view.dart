@@ -62,5 +62,10 @@ class ViewPort {
 
 // TODO remove once everybody is using the new names
 
-class Block extends View {}
-class BlockHole extends ViewPort {}
+class Block extends View {
+  Block(List<dom.Node> nodes) : super(nodes);
+}
+
+class BlockHole extends ViewPort {
+  BlockHole(dom.Node placeholder, NgAnimate animate) : super(placeholder, animate);
+}

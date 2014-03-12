@@ -291,5 +291,9 @@ class ElementProbe {
 
 // TODO remove once everybody is using the new names
 
-class BlockFactory extends ViewFactory {}
-class BoundBlockFactory extends BoundViewFactory {}
+abstract class BlockFactory extends ViewFactory {
+}
+
+class BoundBlockFactory extends BoundViewFactory {
+  BoundBlockFactory(ViewFactory viewFactory, Injector injector) : super(viewFactory, injector);
+}
