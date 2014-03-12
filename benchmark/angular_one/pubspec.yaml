@@ -1,0 +1,6 @@
+name: angular_one
+description: This is a benchmark used to continuosly test AngularDart performance.
+dependencies:
+  angular:
+      path: ../../
+  browser: any
