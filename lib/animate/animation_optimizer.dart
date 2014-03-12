@@ -64,7 +64,7 @@ class AnimationOptimizer {
    *   [mode] "auto" will detect if a parent animation is running or has child animations set.
    */
   void alwaysAnimate(dom.Element element, String mode) {
-    if(mode == "always") {
+    if (mode == "always") {
       _alwaysAnimate[element] = true;
     } else if (mode == "never") {
       _alwaysAnimate[element] = false;
@@ -80,7 +80,7 @@ class AnimationOptimizer {
    *   [mode] "auto" will detect if a parent animation is running or has child animations set.
    */
   void alwaysAnimateChildren(dom.Element element, String mode) {
-    if(mode == "always") {
+    if (mode == "always") {
       _alwaysAnimateChildren[element] = true;
     } else if (mode == "never") {
       _alwaysAnimateChildren[element] = false;
@@ -116,7 +116,7 @@ class AnimationOptimizer {
     while (node != null) {
       // Does this node give us animation information about our children?
       alwaysAnimate = _alwaysAnimateChildren[node];
-      if(alwaysAnimate != null) {
+      if (alwaysAnimate != null) {
         return alwaysAnimate;
       }
 
@@ -129,9 +129,9 @@ class AnimationOptimizer {
         // If there is an already running animation, don't animate.
         autoDecision = false;
       }
-      
+
       // If we hit a null parent, try to break out of shadow dom.
-      if(node.parentNode == null) {
+      if (node.parentNode == null) {
         var probe = _findElementProbe(node);
         if (probe != null && probe.parent != null) {
           // Escape shadow dom!
@@ -148,7 +148,7 @@ class AnimationOptimizer {
 
     return autoDecision;
   }
-  
+
   // Search and find the element probe for a given node.
   ElementProbe _findElementProbe(dom.Node node) {
     while (node != null) {

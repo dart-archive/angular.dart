@@ -17,10 +17,9 @@ class NodeAttrs {
 
   NodeAttrs(this.element);
 
-  operator [](String attributeName) =>
-      element.attributes[attributeName];
+  operator [](String attributeName) => element.attributes[attributeName];
 
-  operator []=(String attributeName, String value) {
+  void operator []=(String attributeName, String value) {
     if (value == null) {
       element.attributes.remove(attributeName);
     } else {
@@ -37,13 +36,10 @@ class NodeAttrs {
    * synchronise with the current value.
    */
   observe(String attributeName, AttributeChanged notifyFn) {
-    if (_observers == null) {
-      _observers = new Map<String, List<AttributeChanged>>();
-    }
-    if (!_observers.containsKey(attributeName)) {
-      _observers[attributeName] = new List<AttributeChanged>();
-    }
-    _observers[attributeName].add(notifyFn);
+    if (_observers == null) _observers = <String, List<AttributeChanged>>{};
+    _observers.putIfAbsent(attributeName, () => <AttributeChanged>[])
+              .add(notifyFn);
+
     notifyFn(this[attributeName]);
   }
 
@@ -54,8 +50,7 @@ class NodeAttrs {
   bool containsKey(String attributeName) =>
       element.attributes.containsKey(attributeName);
 
-  Iterable<String> get keys =>
-      element.attributes.keys;
+  Iterable<String> get keys => element.attributes.keys;
 }
 
 /**
@@ -64,9 +59,7 @@ class NodeAttrs {
  * ShadowRoot is ready.
  */
 class TemplateLoader {
-  final async.Future<dom.ShadowRoot> _template;
+  final async.Future<dom.ShadowRoot> template;
 
-  async.Future<dom.ShadowRoot> get template => _template;
-
-  TemplateLoader(this._template);
+  TemplateLoader(this.template);
 }

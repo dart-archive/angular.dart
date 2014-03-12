@@ -22,7 +22,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
                                this._scope);
 
   // Override in subclass.
-  set condition(value);
+  void set condition(value);
 
   void _ensureViewExists() {
     if (_view == null) {
@@ -98,7 +98,7 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
                 ViewPort viewPort,
                 Scope scope): super(boundViewFactory, viewPort, scope);
 
-  set condition(value) {
+  void set condition(value) {
     if (toBool(value)) {
       _ensureViewExists();
     } else {
@@ -109,7 +109,7 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
 
 
 /**
- * The `ng-unless` directive compliments the `ng-if` (provided by
+ * The `ng-unless` directive complements the `ng-if` (provided by
  * [NgIfAttrDirective]) directive.
  *
  * The `ng-unless` directive recreates/destroys the DOM subtree containing the
@@ -141,8 +141,8 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
  *
  * Example:
  *
- *     <!-- By using ng-unless instead of ng-show, we avoid the cost of the showdown
- *          filter, the repeater, etc. -->
+ *     <!-- By using ng-unless instead of ng-show, we avoid the cost of the
+ *          showdown filter, the repeater, etc. -->
  *     <div ng-unless="terseView">
  *        {{obj.details.markdownText | showdown}}
  *        <div ng-repeat="item in obj.details.items">
@@ -160,7 +160,7 @@ class NgUnlessDirective extends _NgUnlessIfAttrDirectiveBase {
                     ViewPort viewPort,
                     Scope scope): super(boundViewFactory, viewPort, scope);
 
-  set condition(value) {
+  void set condition(value) {
     if (!toBool(value)) {
       _ensureViewExists();
     } else {

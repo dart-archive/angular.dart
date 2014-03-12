@@ -41,7 +41,7 @@ bool _noMoreAsync = false;
  *
  */
 microLeap() {
-  while (!_asyncQueue.isEmpty) {
+  while (_asyncQueue.isNotEmpty) {
     // copy the queue as it may change.
     var toRun = new List.from(_asyncQueue);
     _asyncQueue.clear();

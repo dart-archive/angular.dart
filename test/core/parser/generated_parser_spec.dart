@@ -11,12 +11,11 @@ class AlwaysThrowError implements DynamicParser {
 main() {
   describe('generated parser', () {
     beforeEachModule((Module module) {
-      module.type(Parser, implementedBy: StaticParser);
-      module.type(DynamicParser, implementedBy: AlwaysThrowError);
-
-      module.factory(StaticParserFunctions, (Injector injector) {
-        return generated_functions.functions();
-      });
+      module..type(Parser, implementedBy: StaticParser)
+            ..type(DynamicParser, implementedBy: AlwaysThrowError)
+            ..factory(StaticParserFunctions, (Injector injector) {
+              return generated_functions.functions();
+            });
     });
     parser_spec.main();
   });

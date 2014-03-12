@@ -63,7 +63,6 @@ class _SelectorPart {
   const _SelectorPart.fromClass(this.className)
       : element = null, attrName = null, attrValue = null;
 
-
   const _SelectorPart.fromAttribute(this.attrName, this.attrValue)
       : element = null, className = null;
 
@@ -101,9 +100,7 @@ class _ElementSelector {
     var name;
     if ((name = selectorPart.element) != null) {
       if (terminal) {
-        elementMap
-            .putIfAbsent(name, () => [])
-            .add(directive);
+        elementMap.putIfAbsent(name, () => []).add(directive);
       } else {
         elementPartialMap
             .putIfAbsent(name, () => new _ElementSelector(name))
@@ -319,7 +316,7 @@ class DirectiveSelector {
       partialSelection, node, attrName, value);
     });
 
-    while(partialSelection != null) {
+    while (partialSelection != null) {
       List<_ElementSelector> elementSelectors = partialSelection;
       partialSelection = null;
       elementSelectors.forEach((_ElementSelector elementSelector) {

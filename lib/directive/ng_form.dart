@@ -52,7 +52,7 @@ class NgForm extends NgControl {
   @NgAttr('name')
   get name => _name;
   set name(value) {
-    if(value != null) {
+    if (value != null) {
       super.name = value;
       _scope.context[name] = this;
     }

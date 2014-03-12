@@ -8,16 +8,16 @@ import 'package:angular/core/module.dart';
 class CallScope extends syntax.CallScope with CallReflective {
   final Symbol symbol;
   CallScope(name, arguments)
-      : super(name, arguments)
-      , symbol = newSymbol(name);
+      : super(name, arguments),
+        symbol = newSymbol(name);
   eval(scope, [FilterMap filters]) => _eval(scope, scope);
 }
 
 class CallMember extends syntax.CallMember with CallReflective {
   final Symbol symbol;
   CallMember(object, name, arguments)
-      : super(object, name, arguments)
-      , symbol = newSymbol(name);
+      : super(object, name, arguments),
+        symbol = newSymbol(name);
   eval(scope, [FilterMap filters]) => _eval(scope, object.eval(scope, filters));
 }
 
@@ -30,7 +30,8 @@ class CallScopeFast0 extends syntax.CallScope with CallFast {
 class CallScopeFast1 extends syntax.CallScope with CallFast {
   final Function function;
   CallScopeFast1(name, arguments, this.function) : super(name, arguments);
-  eval(scope, [FilterMap filters]) => _evaluate1(scope, arguments[0].eval(scope, filters));
+  eval(scope, [FilterMap filters]) =>
+       _evaluate1(scope, arguments[0].eval(scope, filters));
 }
 
 class CallMemberFast0 extends syntax.CallMember with CallFast {
@@ -52,7 +53,7 @@ class CallFunction extends syntax.CallFunction {
   CallFunction(function, arguments) : super(function, arguments);
   eval(scope, [FilterMap filters]) {
     var function  = this.function.eval(scope, filters);
-    if (function is !Function) {
+    if (function is! Function) {
       throw new EvalError('${this.function} is not a function');
     } else {
       return relaxFnApply(function, evalList(scope, arguments, filters));

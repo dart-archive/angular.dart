@@ -11,8 +11,10 @@ class RouteViewFactory {
   call(String templateUrl) =>
       (RouteEnterEvent event) => _enterHandler(event, templateUrl);
 
-  _enterHandler(RouteEnterEvent event, String templateUrl, [List<Module> modules]) =>
-      locationService._route(event.route, templateUrl, fromEvent: true, modules: modules);
+  _enterHandler(RouteEnterEvent event, String templateUrl,
+                [List<Module> modules]) =>
+      locationService._route(event.route, templateUrl, fromEvent: true,
+          modules: modules);
 
   configure(Map<String, NgRouteCfg> config) =>
       _configure(locationService.router.root, config);
@@ -115,7 +117,8 @@ class NgRoutingHelper {
   List<NgViewDirective> portals = <NgViewDirective>[];
   Map<String, _View> _templates = new Map<String, _View>();
 
-  NgRoutingHelper(RouteInitializer initializer, Injector injector, this.router, this._ngApp) {
+  NgRoutingHelper(RouteInitializer initializer, Injector injector, this.router,
+                  this._ngApp) {
     // TODO: move this to constructor parameters when di issue is fixed:
     // https://github.com/angular/di.dart/issues/40
     RouteInitializerFn initializerFn = injector.get(RouteInitializerFn);

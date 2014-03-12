@@ -147,9 +147,8 @@ abstract class AccessReflective {
     return list;
   }
 
-  static bool hasMethod(InstanceMirror mirror, Symbol symbol) {
-    return mirror.type.instanceMembers[symbol] is MethodMirror;
-  }
+  static bool hasMethod(InstanceMirror mirror, Symbol symbol) =>
+      mirror.type.instanceMembers[symbol] is MethodMirror;
 }
 
 /**

@@ -18,13 +18,13 @@ main() {
   var compile, html, element, rootScope, logger, directives;
 
   void configInjector(Module module) {
-    module
-      ..type(ChildController)
-      ..type(LogAttrDirective);
+    module..type(ChildController)
+          ..type(LogAttrDirective);
   }
 
   void configState() {
-    inject((Scope scope, Compiler compiler, Injector injector, Logger _logger, DirectiveMap _directives) {
+    inject((Scope scope, Compiler compiler, Injector injector, Logger _logger,
+            DirectiveMap _directives) {
       rootScope = scope;
       logger = _logger;
       compile = (html, [applyFn]) {

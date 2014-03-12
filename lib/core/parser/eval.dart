@@ -20,9 +20,9 @@ class Chain extends syntax.Chain {
 }
 
 class Filter extends syntax.Filter {
-  final List allArguments;
+  final List<syntax.Expression> allArguments;
   Filter(syntax.Expression expression, String name, List<syntax.Expression> arguments,
-         List<syntax.Expression> this.allArguments)
+         this.allArguments)
       : super(expression, name, arguments);
 
   eval(scope, [FilterMap filters]) =>
@@ -37,7 +37,8 @@ class Assign extends syntax.Assign {
 
 class Conditional extends syntax.Conditional {
   Conditional(syntax.Expression condition,
-              syntax.Expression yes, syntax.Expression no): super(condition, yes, no);
+              syntax.Expression yes, syntax.Expression no)
+      : super(condition, yes, no);
   eval(scope, [FilterMap filters]) => toBool(condition.eval(scope))
       ? yes.eval(scope)
       : no.eval(scope);

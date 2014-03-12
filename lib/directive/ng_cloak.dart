@@ -12,7 +12,7 @@ part of angular.directive;
  *
  * `ngCloak` works in cooperation with a css. Following is the css rule:
  *
- *     [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+ *     [ng-cloak], [data-ng-cloak], .ng-cloak {
  *        display: none !important;
  *     }
  *

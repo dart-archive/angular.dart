@@ -68,9 +68,7 @@ class NgModel extends NgControl implements NgAttachAware {
 
   void onSubmit(bool valid) {
     super.onSubmit(valid);
-    if (valid) {
-      _originalValue = modelValue;
-    }
+    if (valid) _originalValue = modelValue;
   }
 
   get converter => _converter;
@@ -80,15 +78,15 @@ class NgModel extends NgControl implements NgAttachAware {
   }
 
   @NgAttr('name')
-  get name => _name;
-  set name(value) {
+  String get name => _name;
+  void set name(value) {
     _name = value;
     _parentControl.addControl(this);
   }
 
   // TODO(misko): could we get rid of watch collection, and just always watch the collection?
-  get watchCollection => _watchCollection;
-  set watchCollection(value) {
+  bool get watchCollection => _watchCollection;
+  void set watchCollection(value) {
     if (_watchCollection == value) return;
 
     var onChange = (value, [_]) {
@@ -115,7 +113,7 @@ class NgModel extends NgControl implements NgAttachAware {
 
   // TODO(misko): getters/setters need to go. We need AST here.
   @NgCallback('ng-model')
-  set model(BoundExpression boundExpression) {
+  void set model(BoundExpression boundExpression) {
     setter = boundExpression.assign;
     _scope.rootScope.runAsync(() {
       _modelValue = boundExpression();
@@ -125,13 +123,13 @@ class NgModel extends NgControl implements NgAttachAware {
   }
 
   get viewValue => _viewValue;
-  set viewValue(value) {
+  void set viewValue(value) {
     _viewValue = value;
     modelValue = value;
   }
 
   get modelValue => _modelValue;
-  set modelValue(value) {
+  void set modelValue(value) {
     try {
       value = converter.parse(value);
     } catch(e) {
@@ -142,7 +140,7 @@ class NgModel extends NgControl implements NgAttachAware {
     modelValue == _originalValue ? (pristine = true) : (dirty = true);
   }
 
-  get validators => _validators;
+  List<NgValidator> get validators => _validators;
 
   /**
    * Executes a validation on the form against each of the validation present on the model.
@@ -158,7 +156,7 @@ class NgModel extends NgControl implements NgAttachAware {
   }
 
   void setValidity(String name, bool valid) {
-    this.updateControlValidity(this, name, valid);
+    updateControlValidity(this, name, valid);
   }
 
   /**
@@ -206,8 +204,8 @@ class InputCheckboxDirective {
     };
     inputElement.onChange.listen((value) {
       ngModel.viewValue = inputElement.checked
-        ? ngTrueValue.readValue(inputElement)
-        : ngFalseValue.readValue(inputElement);
+          ? ngTrueValue.readValue(inputElement)
+          : ngFalseValue.readValue(inputElement);
     });
   }
 }
@@ -238,9 +236,9 @@ class InputTextLikeDirective {
   String _inputType;
 
   get typedValue => (inputElement as dynamic).value;
-  set typedValue(value) => (inputElement as dynamic).value = (value == null) ?
-      '' :
-      value.toString();
+  void set typedValue(value) {
+    (inputElement as dynamic).value = (value == null) ? '' : value.toString();
+  }
 
   InputTextLikeDirective(this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
@@ -264,11 +262,9 @@ class InputTextLikeDirective {
         });
   }
 
-  processValue([_]) {
+  void processValue([_]) {
     var value = typedValue;
-    if (value != ngModel.viewValue) {
-      ngModel.viewValue = value;
-    }
+    if (value != ngModel.viewValue) ngModel.viewValue = value;
     ngModel.validate();
   }
 }
@@ -325,7 +321,7 @@ class InputNumberLikeDirective {
         ..onInput.listen(relaxFnArgs(processValue));
   }
 
-  processValue() {
+  void processValue() {
     num value = typedValue;
     if (value != ngModel.viewValue) {
       scope.eval(() => ngModel.viewValue = value);
@@ -398,7 +394,7 @@ class NgTrueValue {
     return this.element == null ? true : value;
   }
 
-  isValue(dom.Element element, value) {
+  bool isValue(dom.Element element, value) {
     assert(this.element == null || element == this.element);
     return this.element == null ? toBool(value) : value == this.value;
   }
@@ -406,7 +402,7 @@ class NgTrueValue {
 
 /**
  * `ng-false-value` allows you to select any expression to be set to
- * `ng-model` when checkbox is deselected<input type="checkbox">`.
+ * `ng-model` when checkbox is deselected <input type="checkbox">`.
  */
 @NgDirective(selector: '[ng-false-value]')
 class NgFalseValue {
@@ -482,7 +478,8 @@ class ContentEditableDirective extends InputTextLikeDirective {
       : super(inputElement, ngModel, scope);
 
   // The implementation is identical to InputTextLikeDirective but use innerHtml instead of value
-  get typedValue => (inputElement as dynamic).innerHtml;
-  set typedValue(String value) =>
-      (inputElement as dynamic).innerHtml = (value == null) ? '' : value;
+  String get typedValue => (inputElement as dynamic).innerHtml;
+  void set typedValue(String value) {
+    (inputElement as dynamic).innerHtml = (value == null) ? '' : value;
+  }
 }
