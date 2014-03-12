@@ -67,6 +67,18 @@ void main() {
       $compile([], directives);
     }));
 
+    it('should compile a comment with no directives around', inject(() {
+      var element = $('<div><!-- comment --></div>');
+      $compile(element, directives);
+      expect(element.html()).toEqual('<!-- comment -->');
+    }));
+
+    it('should compile a comment when the parent has a directive', inject(() {
+      var element = $('<div ng-show="true"><!-- comment --></div>');
+      $compile(element, directives);
+      expect(element.html()).toEqual('<!-- comment -->');
+    }));
+
     it('should compile a directive in a child', inject(() {
       var element = $('<div><div ng-bind="name"></div></div>');
       var template = $compile(element, directives);

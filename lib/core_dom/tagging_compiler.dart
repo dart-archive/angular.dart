@@ -68,7 +68,9 @@ class TaggingCompiler implements Compiler {
       } else if (node.nodeType == 3 || node.nodeType == 8) {
         elementBinder = node.nodeType == 3 ? directives.selector.matchText(node) : elementBinder;
 
-        if (elementBinder.hasDirectives && (node.parentNode != null && templateCursor.current.parentNode != null)) {
+        if (elementBinder != null &&
+            elementBinder.hasDirectives &&
+            (node.parentNode != null && templateCursor.current.parentNode != null)) {
           if (directParentElementBinder == null) {
 
             directParentElementBinder = new TaggedElementBinder(null, parentElementBinderOffset);
@@ -84,10 +86,8 @@ class TaggingCompiler implements Compiler {
         } else if(!(node.parentNode != null && templateCursor.current.parentNode != null)) {  // Always add an elementBinder for top-level text.
           elementBinders.add(new TaggedElementBinder(elementBinder, parentElementBinderOffset));
         }
-    //  } else if (node.nodeType == 8) { // comment
-
       } else {
-        throw "wtf";
+        throw "Unsupported node type for $node: [${node.nodeType}]";
       }
     } while (templateCursor.moveNext() && domCursor.moveNext());
 
