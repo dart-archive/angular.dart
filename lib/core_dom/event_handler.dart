@@ -14,6 +14,7 @@ class EventHandler {
   void register(String eventName) {
     listeners.putIfAbsent(eventName, () {
       print('register $rootNode -> $eventName');
+      print('register ${rootNode.firstChild} -> $eventName');
       dom.EventListener eventListener = this.eventListener;
       rootNode.on[eventName].listen(eventListener);
       return eventListener;
@@ -23,7 +24,6 @@ class EventHandler {
   eventListener(dom.Event event) {
     print('event $event $rootNode $target');
     dom.Node element = event.target;
-    print('event $event $rootNode $target');
     while (element != null && element != rootNode) {
       var expression;
       if (element is dom.Element)
