@@ -29,18 +29,19 @@ class LongStackTrace {
  * A better zone API which implements onTurnDone.
  */
 class NgZone {
-  final async.Zone _outerZone;
+  final async.Zone _outerZone = async.Zone.current;
   async.Zone _zone;
 
-  NgZone()
-      : _outerZone = async.Zone.current
-  {
+  NgZone() {
     _zone = _outerZone.fork(specification: new async.ZoneSpecification(
         run: _onRun,
         runUnary: _onRunUnary,
         scheduleMicrotask: _onScheduleMicrotask,
         handleUncaughtError: _uncaughtError
     ));
+    // Prevent silently ignoring uncaught exceptions by forwarding such
+    // exceptions to the outer zone by default.
+    onError = (e, s, ls) => _outerZone.handleUncaughtError(e, s);
   }
 
 
@@ -99,7 +100,7 @@ class NgZone {
       _errorThrownFromOnRun = true;
       rethrow;
     } finally {
-    _inFinishTurn = false;
+      _inFinishTurn = false;
     }
   }
 
