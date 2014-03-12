@@ -47,6 +47,11 @@ microLeap() {
 }
 
 /**
+ * Returns whether the async queue is empty.
+ */
+isAsyncQueueEmpty() => _asyncQueue.isEmpty;
+
+/**
  * Simulates a clock tick by running any scheduled timers. Can only be used
  * in [async] tests.Clock tick will call [microLeap] to process the microtask
  * queue before each timer callback.
