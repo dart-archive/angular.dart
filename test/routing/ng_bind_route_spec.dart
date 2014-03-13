@@ -9,9 +9,9 @@ main() {
   describe('ngBindRoute', () {
     TestBed _;
 
-    beforeEach(module((Module m) => m
+    beforeEachModule((Module m) => m
       ..install(new AngularMockModule())
-      ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer)));
+      ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer));
 
     beforeEach(inject((TestBed tb) {
       _ = tb;

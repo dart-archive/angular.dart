@@ -11,7 +11,7 @@ main() {
     TestBed _;
     Router router;
 
-    beforeEach(async(module((Module m) {
+    beforeEachModule((Module m) {
       _initRoutesCalls = 0;
       _router = null;
       router = new Router(useFragment: false, windowImpl: new MockWindow());
@@ -19,7 +19,7 @@ main() {
         ..install(new AngularMockModule())
         ..factory(RouteInitializerFn, (_) => initRoutes)
         ..value(Router, router);
-    })));
+    });
 
     beforeEach(inject((TestBed tb) {
       _ = tb;

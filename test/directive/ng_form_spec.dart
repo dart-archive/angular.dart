@@ -552,14 +552,15 @@ void main() {
         expect(form.classes.contains('ng-required-invalid')).toBe(false);
       }));
 
-      it('should display the valid and invalid CSS classes on the element for custom validations', () {
-        module((Module module) {
+      describe('custom validators', () {
+        beforeEachModule((Module module) {
           module.type(MyCustomFormValidator);
         });
-        inject((TestBed _, Scope scope) {
+
+        it('should display the valid and invalid CSS classes on the element for custom validations', (TestBed _, Scope scope) {
           var form = _.compile('<form name="myForm">' +
-                               ' <input type="text" ng-model="myModel" custom-form-validation />' +
-                               '</form>');
+          ' <input type="text" ng-model="myModel" custom-form-validation />' +
+          '</form>');
 
           scope.apply();
 
@@ -567,7 +568,7 @@ void main() {
           expect(form.classes.contains('custom-valid')).toBe(false);
 
           scope.apply(() {
-            scope.context['myModel'] = 'yes'; 
+            scope.context['myModel'] = 'yes';
           });
 
           expect(form.classes.contains('custom-valid')).toBe(true);
@@ -694,16 +695,14 @@ void main() {
     }));
 
     describe('regression tests: form', () {
-      it('should be resolvable by injector if configured by user.', () {
-        module((Module module) {
-          module.type(NgForm);
-        });
+      beforeEachModule((Module module) {
+        module.type(NgForm);
+      });
 
-        inject((Injector injector, Compiler compiler, DirectiveMap directives) {
-          var element = $('<form></form>');
-          compiler(element, directives)(injector, element);
-          // The only expectation is that this doesn't throw
-        });
+      it('should be resolvable by injector if configured by user.', (Injector injector, Compiler compiler, DirectiveMap directives) {
+        var element = $('<form></form>');
+        compiler(element, directives)(injector, element);
+        // The only expectation is that this doesn't throw
       });
     });
   });

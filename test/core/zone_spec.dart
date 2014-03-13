@@ -8,10 +8,10 @@ void main() {
   describe('zone', () {
     var zone;
     var exceptionHandler;
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       exceptionHandler = new LoggingExceptionHandler();
       module.value(ExceptionHandler, exceptionHandler);
-    }));
+    });
 
     beforeEach(inject((Logger log, ExceptionHandler eh) {
       zone = new NgZone();

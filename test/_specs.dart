@@ -6,10 +6,9 @@ import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
 import 'package:collection/wrappers.dart' show DelegatingList;
 
-import 'jasmine_syntax.dart';
+import 'jasmine_syntax.dart' as jasmine_syntax;
 
 export 'dart:html';
-export 'jasmine_syntax.dart' hide main;
 export 'package:unittest/unittest.dart';
 export 'package:unittest/mock.dart';
 export 'package:di/dynamic_injector.dart';
@@ -246,9 +245,24 @@ class JQuery extends DelegatingList<Node> {
   shadowRoot() => new JQuery((this[0] as Element).shadowRoot);
 }
 
+// Jasmine syntax
+_injectify(fn) => fn is FunctionComposition ? fn.outer(inject(fn.inner)) : inject(fn);
+beforeEachModule(fn) => jasmine_syntax.beforeEach(module(fn), priority:1);
+
+beforeEach(fn) => jasmine_syntax.beforeEach(_injectify(fn));
+afterEach(fn) => jasmine_syntax.afterEach(_injectify(fn));
+it(name, fn) => jasmine_syntax.it(name, _injectify(fn));
+iit(name, fn) => jasmine_syntax.iit(name, _injectify(fn));
+xit(name, fn) => jasmine_syntax.xit(name, fn);
+xdescribe(name, fn) => jasmine_syntax.xdescribe(name, fn);
+ddescribe(name, fn) => jasmine_syntax.ddescribe(name, fn);
+describe(name, fn) => jasmine_syntax.describe(name, fn);
+
+var jasmine = jasmine_syntax.jasmine;
+
 
 main() {
-  beforeEach(setUpInjector);
-  beforeEach(() => wrapFn(sync));
-  afterEach(tearDownInjector);
+  jasmine_syntax.wrapFn(sync);
+  jasmine_syntax.beforeEach(setUpInjector, priority:3);
+  jasmine_syntax.afterEach(tearDownInjector);
 }
