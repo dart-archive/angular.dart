@@ -414,4 +414,6 @@ class TaggedElementBinder {
     }
     textBinders.add(tagged);
   }
+
+  toString() => "[TaggedElementBinder binder:$binder parentBinderOffset:$parentBinderOffset textBinders:$textBinders injector:$injector]";
 }

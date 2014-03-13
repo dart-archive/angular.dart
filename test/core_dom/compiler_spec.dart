@@ -593,6 +593,17 @@ void main() {
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
       })));
 
+      it('should use the correct parent injector', async(inject((Compiler $compile, Scope rootScope, Logger log, Injector injector) {
+        // Getting the parent offsets correct while descending the template is tricky.  If we get it wrong, this
+        // test case will create too many TabCompoenents.
+
+        var element = $('<div ng-bind="true"><div ignore-children></div><tab local><pane local></pane></tab>');
+        $compile(element, directives)(injector, element);
+        microLeap();
+
+        expect(log.result()).toEqual('Ignore; TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0');
+      })));
+
       it('should reuse controllers for transclusions', async(inject((Compiler $compile, Scope rootScope, Logger log, Injector injector) {
         var element = $('<div simple-transclude-in-attach include-transclude>view</div>');
         $compile(element, directives)(injector, element);
