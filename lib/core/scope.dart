@@ -1009,6 +1009,8 @@ class _FilterWrapper extends FunctionApply {
       if (!identical(value, lastValue)) {
        if (value is CollectionChangeRecord) {
          args[i] = (value as CollectionChangeRecord).iterable;
+       } else if (value is MapChangeRecord) {
+         args[i] = (value as MapChangeRecord).map;
        } else {
          args[i] = value;
        }

@@ -19,7 +19,9 @@ void main() {
           ..type(_MultiplyFilter)
           ..type(_ListHeadFilter)
           ..type(_ListTailFilter)
-          ..type(_SortFilter);
+          ..type(_SortFilter)
+          ..type(_IdentityFilter)
+          ..type(_MapKeys);
     }));
 
     describe('AST Bridge', () {
@@ -204,6 +206,29 @@ void main() {
         expect(logger).toEqual(['sort']);
         logger.clear();
       }));
+
+      iit('should support maps in filters', inject((Logger logger, Map context,
+                                                    RootScope rootScope,
+                                                    AstParser parser,
+                                                    FilterMap filters) {
+        context['a'] = {'foo': 'bar'};
+        rootScope.watch(
+            parser('a | identity | keys', filters: filters),
+            (value, previous) => logger(value));
+        rootScope.digest();
+        expect(logger).toEqual(['identity', 'keys', ['foo']]);
+        logger.clear();
+
+        rootScope.digest();
+        expect(logger).toEqual([]);
+        logger.clear();
+
+        context['a']['bar'] = 'baz';
+        rootScope.digest();
+        expect(logger).toEqual(['identity', 'keys', ['foo', 'bar']]);
+        logger.clear();
+      }));
+
     });
 
 
@@ -1435,6 +1460,26 @@ void main() {
   });
 }
 
+@NgFilter(name: 'identity')
+class _IdentityFilter {
+  Logger logger;
+  _IdentityFilter(this.logger);
+  call(v) {
+    logger('identity');
+    return v;
+  }
+}
+
+@NgFilter(name: 'keys')
+class _MapKeys {
+  Logger logger;
+  _MapKeys(this.logger);
+  call(Map m) {
+    logger('keys');
+    return m.keys;
+  }
+}
+
 @NgFilter(name: 'multiply')
 class _MultiplyFilter {
   call(a, b) => a * b;
@@ -1443,18 +1488,17 @@ class _MultiplyFilter {
 @NgFilter(name: 'listHead')
 class _ListHeadFilter {
   Logger logger;
-  _ListHeadFilter(Logger this.logger);
+  _ListHeadFilter(this.logger);
   call(list, head) {
     logger('listHead');
     return [head]..addAll(list);
   }
 }
 
-
 @NgFilter(name: 'listTail')
 class _ListTailFilter {
   Logger logger;
-  _ListTailFilter(Logger this.logger);
+  _ListTailFilter(this.logger);
   call(list, tail) {
     logger('listTail');
     return new List.from(list)..add(tail);
@@ -1464,7 +1508,7 @@ class _ListTailFilter {
 @NgFilter(name: 'sort')
 class _SortFilter {
   Logger logger;
-  _SortFilter(Logger this.logger);
+  _SortFilter(this.logger);
   call(list) {
     logger('sort');
     return new List.from(list)..sort();
