@@ -5,6 +5,8 @@ import 'package:angular/mock/module.dart';
 import 'dart:async';
 
 main() {
+  // Do not run in dart2js until the exception is fixed
+  if (identical(1.0, 1)) return;
   describe('routing', () {
     TestBed _;
     Router router;
@@ -23,17 +25,15 @@ main() {
       _ = tb;
     }));
 
-    if (!identical(1.0, 1)) { // Do not run in dart2js until the exception is fixed
-      it('should call init of the RouteInitializer once', async(() {
-        expect(_initRoutesCalls).toEqual(0);
+    it('should call init of the RouteInitializer once', async(() {
+      expect(_initRoutesCalls).toEqual(0);
 
-        // Force the routing system to initialize.
-        _.compile('<ng-view></ng-view>');
+      // Force the routing system to initialize.
+      _.compile('<ng-view></ng-view>');
 
-        expect(_initRoutesCalls).toEqual(1);
-        expect(_router).toBe(router);
-      }));
-    }
+      expect(_initRoutesCalls).toEqual(1);
+      expect(_router).toBe(router);
+    }));
   });
 
   describe('routing DSL', () {
