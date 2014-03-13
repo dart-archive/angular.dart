@@ -16,16 +16,17 @@ main() {
       expect(element.html()).toEqual('<a><b>Google!</b></a>');
     }));
 
-    it('should use injected NodeValidator and override default sanitize behavior',
-          module((Module module) {
-      module.factory(dom.NodeValidator, (_) {
-        final validator = new NodeValidatorBuilder();
-        validator.allowNavigation(new AnyUriPolicy());
-        validator.allowTextElements();
-        return validator;
+    describe('injected NodeValidator', () {
+      beforeEachModule((Module module) {
+        module.factory(dom.NodeValidator, (_) {
+          final validator = new NodeValidatorBuilder();
+          validator.allowNavigation(new AnyUriPolicy());
+          validator.allowTextElements();
+          return validator;
+        });
       });
 
-      inject((Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
+      it('should use injected NodeValidator and override default sanitize behavior', (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
         var element = $('<div ng-bind-html="htmlVar"></div>');
         compiler(element, directives)(injector, element);
         scope.context['htmlVar'] = '<a href="http://www.google.com"><b>Google!</b></a>';
@@ -33,7 +34,7 @@ main() {
         // Sanitation allows href attributes per injected sanitizer.
         expect(element.html()).toEqual('<a href="http://www.google.com"><b>Google!</b></a>');
       });
-    }));
+    });
   });
 }
 

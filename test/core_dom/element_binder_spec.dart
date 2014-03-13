@@ -22,13 +22,13 @@ main() => describe('ElementBinder', () {
   var directives;
   var node = null;
 
-  beforeEach(module((Module module) {
+  beforeEachModule((Module module) {
     module
       ..type(_DirectiveAttr)
       ..type(_Component)
       ..type(_IgnoreChildren)
       ..type(_Structural);
-  }));
+  });
 
   beforeEach(inject((DirectiveMap d, ElementBinderFactory f) {
     directives = d;

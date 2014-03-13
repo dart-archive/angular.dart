@@ -2,6 +2,16 @@ library angular.mock_zone;
 
 import 'dart:async' as dart_async;
 
+// async and sync are function compositions.
+class FunctionComposition {
+  Function outer;
+  Function inner;
+
+  FunctionComposition(this.outer, this.inner);
+
+  call() => outer(inner)();
+}
+
 final _asyncQueue = <Function>[];
 final _timerQueue = <_TimerSpec>[];
 final _asyncErrors = [];
@@ -144,7 +154,9 @@ noMoreAsync() {
  *       ...
  *     }));
  */
-async(Function fn) => () {
+async(Function fn) => new FunctionComposition(_asyncOuter, fn);
+
+_asyncOuter(Function fn) => () {
   _noMoreAsync = false;
   _asyncErrors.clear();
   _timerQueue.clear();
@@ -191,7 +203,9 @@ _createTimer(Function fn, Duration duration, bool periodic) {
  * Enforces synchronous code.  Any calls to scheduleMicrotask inside of 'sync'
  * will throw an exception.
  */
-sync(Function fn) => () {
+sync(Function fn) => new FunctionComposition(_syncOuter, fn);
+
+_syncOuter(Function fn) => () {
   _asyncErrors.clear();
 
   dart_async.runZoned(fn, zoneSpecification: new dart_async.ZoneSpecification(

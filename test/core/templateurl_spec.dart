@@ -46,11 +46,11 @@ void main() {
     }));
 
     describe('loading with http rewriting', () {
-      beforeEach(module((Module module) {
+      beforeEachModule((Module module) {
         module
             ..type(HtmlAndCssComponent)
             ..type(UrlRewriter, implementedBy: PrefixedUrlRewriter);
-      }));
+      });
 
       it('should use the UrlRewriter for both HTML and CSS URLs', async(inject(
           (Http $http, Compiler $compile, Scope $rootScope, Logger log,
@@ -78,14 +78,14 @@ void main() {
 
 
     describe('async template loading', () {
-      beforeEach(module((Module module) {
+      beforeEachModule((Module module) {
         module
             ..type(LogAttrDirective)
             ..type(SimpleUrlComponent)
             ..type(HtmlAndCssComponent)
             ..type(OnlyCssComponent)
             ..type(InlineWithCssComponent);
-      }));
+      });
 
       it('should replace element with template from url', async(inject(
           (Http $http, Compiler $compile, Scope $rootScope,  Logger log,
@@ -204,11 +204,11 @@ void main() {
     });
 
     describe('multiple css loading', () {
-      beforeEach(module((Module module) {
+      beforeEachModule((Module module) {
         module
             ..type(LogAttrDirective)
             ..type(HtmlAndMultipleCssComponent);
-      }));
+      });
 
       it('should load multiple CSS files into a style', async(inject(
           (Http $http, Compiler $compile, Scope $rootScope, Logger log,

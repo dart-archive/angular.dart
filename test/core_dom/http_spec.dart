@@ -41,7 +41,7 @@ void main() {
       microLeap();
     }
 
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       backend = new MockHttpBackend();
       locationWrapper = new MockLocationWrapper();
       cache = new FakeCache();
@@ -49,7 +49,7 @@ void main() {
         ..value(HttpBackend, backend)
         ..value(LocationWrapper, locationWrapper)
         ..type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
-    }));
+    });
 
     afterEach(inject((ExceptionHandler eh, Scope scope) {
       scope.apply();
@@ -906,9 +906,9 @@ void main() {
     });
 
     describe('url rewriting', () {
-      beforeEach(module((Module module) {
+      beforeEachModule((Module module) {
         module.type(UrlRewriter, implementedBy: SubstringRewriter);
-      }));
+      });
 
 
       it('should rewrite URLs before calling the backend', async(inject((Http http, NgZone zone) {

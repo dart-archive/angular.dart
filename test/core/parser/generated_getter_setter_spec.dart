@@ -6,10 +6,10 @@ import 'generated_getter_setter.dart';
 
 main() {
   describe('hybrid getter-setter', () {
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       module.type(Parser, implementedBy: DynamicParser);
       module.type(ClosureMap, implementedBy: StaticClosureMap);
-    }));
+    });
     parser_spec.main();
   });
 }

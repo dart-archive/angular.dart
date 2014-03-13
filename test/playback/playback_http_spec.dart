@@ -6,11 +6,11 @@ import 'package:angular/playback/playback_http.dart';
 void main() {
   describe('Playback HTTP', () {
     MockHttpBackend backend;
-    beforeEach(module((Module m) {
+    beforeEachModule((Module m) {
       backend = new MockHttpBackend();
       var wrapper = new HttpBackendWrapper(backend);
       m..value(HttpBackendWrapper, wrapper)..type(PlaybackHttpBackendConfig);
-    }));
+    });
 
     afterEach(() {
       backend.verifyNoOutstandingRequest();
@@ -18,9 +18,9 @@ void main() {
     });
 
     describe('RecordingHttpBackend', () {
-      beforeEach(module((Module m) {
+      beforeEachModule((Module m) {
         m.type(HttpBackend, implementedBy: RecordingHttpBackend);
-      }));
+      });
 
 
       it('should record a request', async(inject((Http http) {
@@ -51,9 +51,9 @@ void main() {
 
 
     describe('PlaybackHttpBackend', () {
-      beforeEach(module((Module m) {
+      beforeEachModule((Module m) {
         m.type(HttpBackend, implementedBy: PlaybackHttpBackend);
-      }));
+      });
 
       it('should replay a request', async(inject((Http http, HttpBackend hb) {
         (hb as PlaybackHttpBackend).data = {

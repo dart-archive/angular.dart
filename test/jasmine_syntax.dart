@@ -13,18 +13,28 @@ _maybeWrapFn(fn) => () {
   }
 };
 
-it(name, fn) => unit.test(name, _maybeWrapFn(fn));
-iit(name, fn) => unit.solo_test(name, _maybeWrapFn(fn));
+var _beforeEachFnsForCurrentTest = [];
+_withSetup(fn) => () {
+  _beforeEachFnsForCurrentTest.sort((a, b) => Comparable.compare(b[1], a[1]));
+  _beforeEachFnsForCurrentTest.forEach((fn) => fn[0]());
+  try {
+    fn();
+  } finally {
+    _beforeEachFnsForCurrentTest = [];
+  }
+};
+
+it(name, fn) => unit.test(name, _withSetup(_maybeWrapFn(fn)));
+iit(name, fn) => unit.solo_test(name, _withSetup(_maybeWrapFn(fn)));
 xit(name, fn) {}
 xdescribe(name, fn) {}
 ddescribe(name, fn) => describe(name, fn, true);
-
 
 class Describe {
   Describe parent;
   String name;
   bool exclusive;
-  List<Function> beforeEachFns = [];
+  List<List> beforeEachFns = [];
   List<Function> afterEachFns = [];
 
   Describe(this.name, this.parent, [bool this.exclusive=false]) {
@@ -34,7 +44,7 @@ class Describe {
   }
 
   setUp() {
-    beforeEachFns.forEach((fn) => fn());
+    _beforeEachFnsForCurrentTest.addAll(beforeEachFns);
   }
 
   tearDown() {
@@ -56,6 +66,7 @@ describe(name, fn, [bool exclusive=false]) {
     unit.group(name, () {
       unit.setUp(currentDescribe.setUp);
       fn();
+
       unit.tearDown(currentDescribe.tearDown);
     });
   } finally {
@@ -63,7 +74,7 @@ describe(name, fn, [bool exclusive=false]) {
   }
 }
 
-beforeEach(fn) => currentDescribe.beforeEachFns.add(fn);
+beforeEach(fn, {priority: 0}) => currentDescribe.beforeEachFns.add([fn, priority]);
 afterEach(fn) => currentDescribe.afterEachFns.insert(0, fn);
 
 wrapFn(fn) => _wrapFn = fn;

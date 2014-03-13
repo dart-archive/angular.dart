@@ -48,10 +48,10 @@ main() {
     Map<String, dynamic> context;
     Parser<Expression> parser;
     FilterMap filters;
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       module.type(IncrementFilter);
       module.type(SubstringFilter);
-    }));
+    });
     beforeEach(inject((Parser injectedParser, FilterMap injectedFilters) {
       parser = injectedParser;
       filters = injectedFilters;
