@@ -8,7 +8,7 @@ sudo apt-get install -qq unzip chromium-browser
 sudo apt-get install libxss1
 
 if [[ $TESTS != "vm" ]]; then
-  wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb;
+  wget https://dl.google.com/linux/direct/google-chrome-beta_current_amd64.deb;
   sudo dpkg -i google-chrome*.deb;
   sudo chmod u+s /opt;
 fi
