@@ -299,6 +299,22 @@ void main() {
         expect(form['mega_control']).toBeNull();
       }));
 
+      it('should properly update errors when control is removed', inject((Scope scope, TestBed _) {
+        var element = $('<form name="myForm">' +
+                        '  <input type="text" ng-model="mega_model" name="mega_control" />' +
+                        '</form>');
+        _.compile(element);
+        scope.apply();
+
+        var form = scope.context['myForm'];
+        var control = form['mega_control'];
+        control.setValidity("error", false);
+        expect(control.valid).toBe(false);
+        expect(form.valid).toBe(false);
+        form.removeControl(control);
+        expect(form.valid).toBe(true);
+      }));
+
       it('should remove all controls when the scope is destroyed', inject((Scope scope, TestBed _) {
         Scope childScope = scope.createChild({});
         var element = $('<form name="myForm">' +

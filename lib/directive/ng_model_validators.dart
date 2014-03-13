@@ -1,8 +1,22 @@
 part of angular.directive;
 
-abstract class NgValidatable {
+abstract class NgValidatable implements NgAttachAware, NgDetachAware {
+  NgModel _ngModel;
+
+  NgValidatable(this._ngModel);
+
   String get name;
-  bool isValid(value); 
+  bool isValid(value);
+
+  @override
+  attach() {
+    _ngModel.addValidator(this);
+  }
+
+  @override
+  detach() {
+    _ngModel.removeValidator(this);
+  }
 }
 
 /**
@@ -13,14 +27,12 @@ abstract class NgValidatable {
 @NgDirective(
     selector: '[ng-model][ng-required]',
     map: const {'ng-required': '=>required'})
-class NgModelRequiredValidator implements NgValidatable {
+class NgModelRequiredValidator extends NgValidatable {
   bool _required = true;
 
   String get name => 'required';
 
-  NgModelRequiredValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelRequiredValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(value) {
     // Any element which isn't required is always valid.
@@ -42,16 +54,14 @@ class NgModelRequiredValidator implements NgValidatable {
  * Validates the model to see if its contents match a valid URL pattern.
  */
 @NgDirective(selector: 'input[type=url][ng-model]')
-class NgModelUrlValidator implements NgValidatable {
+class NgModelUrlValidator extends NgValidatable {
   static final URL_REGEXP = new RegExp(
       r'^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?' +
       r'(\/|\/([\w#!:.?+=&%@!\-\/]))?$');
 
   String get name => 'url';
 
-  NgModelUrlValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelUrlValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(value) =>
       value == null || value.isEmpty || URL_REGEXP.hasMatch(value);
@@ -61,15 +71,13 @@ class NgModelUrlValidator implements NgValidatable {
  * Validates the model to see if its contents match a valid email pattern.
  */
 @NgDirective(selector: 'input[type=email][ng-model]')
-class NgModelEmailValidator implements NgValidatable {
+class NgModelEmailValidator extends NgValidatable {
   static final EMAIL_REGEXP = new RegExp(
       r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$');
 
   String get name => 'email';
 
-  NgModelEmailValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelEmailValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(value) =>
       value == null || value.isEmpty || EMAIL_REGEXP.hasMatch(value);
@@ -80,12 +88,10 @@ class NgModelEmailValidator implements NgValidatable {
  */
 @NgDirective(selector: 'input[type=number][ng-model]')
 @NgDirective(selector: 'input[type=range][ng-model]')
-class NgModelNumberValidator implements NgValidatable {
+class NgModelNumberValidator extends NgValidatable {
   String get name => 'number';
 
-  NgModelNumberValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelNumberValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(value) {
     if (value != null) {
@@ -113,14 +119,12 @@ class NgModelNumberValidator implements NgValidatable {
 @NgDirective(
     selector: 'input[type=range][ng-model][ng-max]',
     map: const {'ng-max': '=>max'})
-class NgModelMaxNumberValidator implements NgValidatable {
+class NgModelMaxNumberValidator extends NgValidatable {
 
   double _max;
   String get name => 'max';
 
-  NgModelMaxNumberValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelMaxNumberValidator(NgModel ngModel) : super(ngModel);
 
   @NgAttr('max')
   get max => _max;
@@ -159,14 +163,12 @@ class NgModelMaxNumberValidator implements NgValidatable {
 @NgDirective(
     selector: 'input[type=range][ng-model][ng-min]',
     map: const {'ng-min': '=>min'})
-class NgModelMinNumberValidator implements NgValidatable {
+class NgModelMinNumberValidator extends NgValidatable {
 
   double _min;
   String get name => 'min';
 
-  NgModelMinNumberValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelMinNumberValidator(NgModel ngModel) : super(ngModel);
 
   @NgAttr('min')
   get min => _min;
@@ -202,14 +204,12 @@ class NgModelMinNumberValidator implements NgValidatable {
 @NgDirective(
     selector: '[ng-model][ng-pattern]',
     map: const {'ng-pattern': '=>pattern'})
-class NgModelPatternValidator implements NgValidatable {
+class NgModelPatternValidator extends NgValidatable {
   RegExp _pattern;
 
   String get name => 'pattern';
 
-  NgModelPatternValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelPatternValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(value) {
     //remember, only required validates for the input being empty
@@ -231,14 +231,12 @@ class NgModelPatternValidator implements NgValidatable {
 @NgDirective(
     selector: '[ng-model][ng-minlength]',
     map: const {'ng-minlength': '=>minlength'})
-class NgModelMinLengthValidator implements NgValidatable {
+class NgModelMinLengthValidator extends NgValidatable {
   int _minlength;
 
   String get name => 'minlength';
 
-  NgModelMinLengthValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelMinLengthValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(value) {
     //remember, only required validates for the input being empty
@@ -260,14 +258,12 @@ class NgModelMinLengthValidator implements NgValidatable {
 @NgDirective(
     selector: '[ng-model][ng-maxlength]',
     map: const {'ng-maxlength': '=>maxlength'})
-class NgModelMaxLengthValidator implements NgValidatable {
+class NgModelMaxLengthValidator extends NgValidatable {
   int _maxlength = 0;
 
   String get name => 'maxlength';
 
-  NgModelMaxLengthValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelMaxLengthValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(value) =>
       _maxlength == 0 || (value == null ? 0 : value.length) <= _maxlength;

@@ -170,6 +170,11 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
         _controlByName.remove(key);
       }
     }
+
+    // Since the control no longer exists, we can mark it as valid,
+    // which will remove it from the list of errors and also propagate
+    // validity up to parents.
+    errors.keys.forEach((error) => updateControlValidity(control, error, true));
   }
 
   /**

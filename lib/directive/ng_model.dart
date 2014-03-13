@@ -39,7 +39,9 @@ class NgModel extends NgControl implements NgAttachAware {
     _scope.rootScope.domWrite(() => render(value));
   }
 
-  attach() {
+  @override
+  void attach() {
+    super.attach();
     watchCollection = false;
     _scope.on('resetNgModel').listen((e) => reset());
   }
@@ -60,7 +62,6 @@ class NgModel extends NgControl implements NgAttachAware {
   get name => _name;
   set name(value) {
     _name = value;
-    _parentControl.addControl(this);
   }
 
   // TODO(misko): could we get rid of watch collection, and just always watch the collection?
