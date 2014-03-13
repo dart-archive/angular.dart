@@ -9,7 +9,7 @@ part of angular.directive;
   */
 @NgDirective(
     selector: '[ng-style]',
-    map: const { 'ng-style': '@styleExpression'})
+    map: const {'ng-style': '@styleExpression'})
 class NgStyleDirective {
   final dom.Element _element;
   final Scope _scope;
@@ -28,18 +28,19 @@ class NgStyleDirective {
   set styleExpression(String value) {
     _styleExpression = value;
     if (_watch != null) _watch.remove();
-    _watch = _scope.watch(_parser(_styleExpression, collection: true), _onStyleChange);
+    _watch = _scope.watch(_parser(_styleExpression, collection: true),
+        _onStyleChange, readOnly: true);
   }
 
   _onStyleChange(MapChangeRecord mapChangeRecord, _) {
     if (mapChangeRecord != null) {
       dom.CssStyleDeclaration css = _element.style;
-      fn(MapKeyValue kv) => css.setProperty(kv.key, kv.currentValue == null ? '' : kv.currentValue);
+      fn(MapKeyValue m) =>
+          css.setProperty(m.key, m.currentValue == null ? '' : m.currentValue);
 
-      mapChangeRecord
-        ..forEachRemoval(fn)
-        ..forEachChange(fn)
-        ..forEachAddition(fn);
+      mapChangeRecord..forEachRemoval(fn)
+                     ..forEachChange(fn)
+                     ..forEachAddition(fn);
     }
   }
 }
