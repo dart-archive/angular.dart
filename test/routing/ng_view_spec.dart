@@ -105,7 +105,7 @@ main() {
     // on dart v1.2. Kasper is looking into it. In the
     // meantime we are disabling it.
     //if (!identical(1, 1.0)) {
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 200; i++)
       it('should switch nested templates $i / 100', async(() {
         Element root = _.compile('<ng-view></ng-view>');
         expect(root.text).toEqual('');
