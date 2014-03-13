@@ -4,3 +4,4 @@ dependencies:
   angular:
       path: ../../
   browser: any
+  benchmark_harness: any

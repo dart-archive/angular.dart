@@ -1,18 +1,8 @@
 import 'dart:html';
 import 'package:angular/angular.dart';
 import 'package:benchmark_harness/benchmark_harness.dart';
-import 'package:angular_one/person.dart';
-import 'package:angular_one/controller.dart';
 
-class CreteModuleBenchmark extends BenchmarkBase {
-  var m;
-
-  CreteModuleBenchmark(): super('CreteModuleBenchmark');
-
-  void run() => m = new BenchmarkModule();
-
-  void teardown() => m.hashCode;
-}
+import 'module.dart';
 
 class InstantiateDomBenchmark extends BenchmarkBase {
   InstantiateDomBenchmark(): super('InstantiateDomBenchmark');
@@ -34,17 +24,11 @@ class InstantiateDomBenchmark extends BenchmarkBase {
     directiveMap = injector.get(DirectiveMap);
   }
 
-  void teardown() => view.hashCode;
+  void teardown() {
+    view.hashCode;
+  }
 }
 
 void main() {
-  new CreteModuleBenchmark()..report();
   new InstantiateDomBenchmark()..report();
-}
-
-class BenchmarkModule extends Module {
-  BenchmarkModule() {
-    install(new PersonModule());
-    install(new ControllerModule());
-  }
 }

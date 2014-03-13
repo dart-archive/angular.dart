@@ -3,12 +3,12 @@
 <head>
     <title>Contact - AngularDart benchmark</title>
 </head>
-<body main>
-    <div ng-repeat="person in ctrl.people">
+<body>
+    <div ng-repeat="person in people">
         <person-component person="person"></person-component>
     </div>
     <script src="packages/shadow_dom/shadow_dom.min.js"></script>
-    <script type="application/dart" src="main.dart"></script>
+    <script type="application/dart" src="instantiate_module_benchmark.dart"></script>
     <script type="text/javascript" src="packages/browser/dart.js"></script>
 </body>
 </html>

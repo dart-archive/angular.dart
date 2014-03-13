@@ -8,7 +8,7 @@ import 'package:angular/angular.dart';
   publishAs: 'ctrl'
 )
 class PersonComponent {
-  @NgTwoWay('person')
+  @NgOneWay('person')
   Person person;
 }
 
