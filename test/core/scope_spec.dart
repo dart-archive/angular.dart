@@ -207,7 +207,7 @@ void main() {
         logger.clear();
       }));
 
-      iit('should support maps in filters', inject((Logger logger, Map context,
+      it('should support maps in filters', inject((Logger logger, Map context,
                                                     RootScope rootScope,
                                                     AstParser parser,
                                                     FilterMap filters) {
