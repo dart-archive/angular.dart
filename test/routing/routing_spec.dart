@@ -23,8 +23,9 @@ main() {
       _ = tb;
     }));
 
-    if (!identical(1.0, 1)) { // Do not run in dart2js until the exception is fixed
-      it('should call init of the RouteInitializer once', async(() {
+    //if (!identical(1.0, 1)) { // Do not run in dart2js until the exception is fixed
+    for (int i = 0; i < 200; i++)
+      it('should call init of the RouteInitializer once $i / 100', async(() {
         expect(_initRoutesCalls).toEqual(0);
 
         // Force the routing system to initialize.
@@ -33,7 +34,7 @@ main() {
         expect(_initRoutesCalls).toEqual(1);
         expect(_router).toBe(router);
       }));
-    }
+    //}
   });
 
   describe('routing DSL', () {
