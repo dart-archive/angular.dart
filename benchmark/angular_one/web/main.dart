@@ -11,7 +11,7 @@ class CreteModuleBenchmark extends BenchmarkBase {
 
   void run() => m = new BenchmarkModule();
 
-  void tearDown() => m.hashCode;
+  void teardown() => m.hashCode;
 }
 
 class InstantiateDomBenchmark extends BenchmarkBase {
@@ -21,9 +21,10 @@ class InstantiateDomBenchmark extends BenchmarkBase {
   Injector injector;
   var rootElements;
   var directiveMap;
+  var view;
 
   void run() {
-    compiler(rootElements, directiveMap)(injector, rootElements);
+    view = compiler(rootElements, directiveMap)(injector, rootElements);
   }
 
   void setup() {
@@ -32,6 +33,8 @@ class InstantiateDomBenchmark extends BenchmarkBase {
     compiler = injector.get(Compiler);
     directiveMap = injector.get(DirectiveMap);
   }
+
+  void teardown() => view.hashCode;
 }
 
 void main() {
