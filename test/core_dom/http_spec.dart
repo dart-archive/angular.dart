@@ -869,7 +869,7 @@ void main() {
           expect(http.pendingRequests.length).toEqual(0);
 
           http(method: 'get', url: '/cached', cache: true);
-          jasmine.spyOn(http.pendingRequests, 'add').andCallThrough();
+          j.spyOn(http.pendingRequests, 'add').andCallThrough();
           //expect(http.pendingRequests.add).toHaveBeenCalledOnce();
 
           expect(http.pendingRequests.length).toEqual(0);
