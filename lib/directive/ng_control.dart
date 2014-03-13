@@ -170,18 +170,23 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
    * error is real).
    */
   updateControlValidity(NgControl ngModel, String errorType, bool isValid) {
+    String validClassName = errorType + '-valid';
+    String invalidClassName = errorType + '-invalid';
+
     if (isValid) {
       if (errors.containsKey(errorType)) {
         Set errorsByName = errors[errorType];
         errorsByName.remove(ngModel);
         if (errorsByName.isEmpty) {
           errors.remove(errorType);
+          element..removeClass(invalidClassName)..addClass(validClassName);
         }
       }
       if (errors.isEmpty) {
         valid = true;
       }
     } else {
+      element..removeClass(validClassName)..addClass(invalidClassName);
       errors.putIfAbsent(errorType, () => new Set()).add(ngModel);
       invalid = true;
     }

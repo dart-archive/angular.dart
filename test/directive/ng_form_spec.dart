@@ -529,6 +529,53 @@ void main() {
       }));
     });
 
+    describe('validators', () {
+      it('should display the valid and invalid CSS classes on the element for each validation',     
+        inject((TestBed _, Scope scope) {
+
+        var form = _.compile(
+          '<form name="myForm">' +
+          ' <input type="text" ng-model="myModel" required />' +
+          '</form>'
+        );
+
+        scope.apply();
+
+        expect(form.classes.contains('ng-required-invalid')).toBe(true);
+        expect(form.classes.contains('ng-required-valid')).toBe(false);
+
+        scope.apply(() {
+          scope.context['myModel'] = 'value'; 
+        });
+
+        expect(form.classes.contains('ng-required-valid')).toBe(true);
+        expect(form.classes.contains('ng-required-invalid')).toBe(false);
+      }));
+
+      it('should display the valid and invalid CSS classes on the element for custom validations', () {
+        module((Module module) {
+          module.type(MyCustomFormValidator);
+        });
+        inject((TestBed _, Scope scope) {
+          var form = _.compile('<form name="myForm">' +
+                               ' <input type="text" ng-model="myModel" custom-form-validation />' +
+                               '</form>');
+
+          scope.apply();
+
+          expect(form.classes.contains('custom-invalid')).toBe(true);
+          expect(form.classes.contains('custom-valid')).toBe(false);
+
+          scope.apply(() {
+            scope.context['myModel'] = 'yes'; 
+          });
+
+          expect(form.classes.contains('custom-valid')).toBe(true);
+          expect(form.classes.contains('custom-invalid')).toBe(false);
+        });
+      });
+    });
+
     describe('reset()', () {
       it('should reset the model value to its original state', inject((TestBed _) {
         _.compile('<form name="superForm">' +
@@ -660,4 +707,18 @@ void main() {
       });
     });
   });
+}
+
+@NgDirective(
+    selector: '[custom-form-validation]')
+class MyCustomFormValidator extends NgValidator {
+  MyCustomFormValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
+
+  final String name = 'custom';
+
+  bool isValid(name) {
+    return name != null && name == 'yes';
+  }
 }
