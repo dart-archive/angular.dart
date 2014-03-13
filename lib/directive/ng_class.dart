@@ -150,10 +150,11 @@ abstract class _NgClassBase {
   final NgAnimate _animate;
   var previousSet = [];
   var currentSet = [];
+  Watch _watch;
 
-  
-      _NgClassBase(this.element, this.scope, this.mode, this.nodeAttrs, this._parser, this._animate)
-      {
+  _NgClassBase(this.element, this.scope, this.mode, this.nodeAttrs,
+               this._parser, this._animate)
+  {
     var prevClass;
 
     nodeAttrs.observe('class', (String newValue) {
@@ -165,9 +166,8 @@ abstract class _NgClassBase {
   }
 
   set valueExpression(currentExpression) {
-    // this should be called only once, so we don't worry about cleaning up
-    // watcher registrations.
-    scope.watch(_parser(currentExpression, collection: true), (current, _) {
+    if (_watch != null) _watch.remove();
+    _watch = scope.watch(_parser(currentExpression, collection: true), (current, _) {
       currentSet = _flatten(current);
       _handleChange(scope.context[r'$index']);
     }, readOnly: true);
@@ -177,10 +177,8 @@ abstract class _NgClassBase {
         if (oldIndex == null || mod != oldIndex % 2) {
           if (mod == mode) {
             currentSet.forEach((css) => _animate.addClass(element, css));
-            //element.classes.addAll(currentSet);
           } else {
             previousSet.forEach((css) => _animate.removeClass(element, css));
-            //element.classes.removeAll(previousSet);
           }
         }
       }, readOnly: true);
@@ -191,7 +189,7 @@ abstract class _NgClassBase {
     if (mode == null || (index != null && index % 2 == mode)) {
       previousSet.forEach((css) {
         if (!currentSet.contains(css)) {
-          _animate.removeClass(element, css); 
+          _animate.removeClass(element, css);
         } else {
           element.classes.remove(css);
         }
@@ -199,10 +197,10 @@ abstract class _NgClassBase {
 
       currentSet.forEach((css) {
         if (!previousSet.contains(css)) {
-          _animate.addClass(element, css); 
+          _animate.addClass(element, css);
         } else {
           element.classes.add(css);
-        }  
+        }
       });
     }
 
@@ -225,7 +223,7 @@ abstract class _NgClassBase {
       return classes.keys.where((key) => toBool(classes[key])).toList();
     }
     if (classes is String) return classes.split(' ');
-    throw
-        'ng-class expects expression value to be List, Map or String, got $classes';
+    throw 'ng-class expects expression value to be List, Map or String, '
+          'got $classes';
   }
 }
