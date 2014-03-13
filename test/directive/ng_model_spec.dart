@@ -8,7 +8,8 @@ void main() {
     TestBed _;
 
     beforeEach(module((Module module) {
-      module..type(ControllerWithNoLove);
+      module.type(ControllerWithNoLove);
+      module.type(MyCustomInputValidator);
     }));
 
     beforeEach(inject((TestBed tb) => _ = tb));
@@ -1307,6 +1308,46 @@ void main() {
       expect(model.untouched).toBe(true);
     });
 
+    describe('validators', () {
+      it('should display the valid and invalid CSS classes on the element for each validation',     
+        inject((TestBed _, Scope scope) {
+
+        var input = _.compile('<input type="email" ng-model="myModel" />');
+
+        scope.apply(() {
+          scope.context['myModel'] = 'value'; 
+        });
+
+        expect(input.classes.contains('ng-email-invalid')).toBe(true);
+        expect(input.classes.contains('ng-email-valid')).toBe(false);
+
+        scope.apply(() {
+          scope.context['myModel'] = 'value@email.com'; 
+        });
+
+        expect(input.classes.contains('ng-email-valid')).toBe(true);
+        expect(input.classes.contains('ng-email-invalid')).toBe(false);
+      }));
+
+      it('should display the valid and invalid CSS classes on the element for custom validations',
+        inject((TestBed _, Scope scope) {
+
+        var input = _.compile('<input type="text" ng-model="myModel" custom-input-validation />');
+
+        scope.apply();
+
+        expect(input.classes.contains('custom-invalid')).toBe(true);
+        expect(input.classes.contains('custom-valid')).toBe(false);
+
+        scope.apply(() {
+          scope.context['myModel'] = 'yes'; 
+        });
+
+        expect(input.classes.contains('custom-valid')).toBe(true);
+        expect(input.classes.contains('custom-invalid')).toBe(false);
+      }));
+    });
+
     describe('converters', () {
       it('should parse the model value according to the given parser', inject((Scope scope) {
         _.compile('<input type="text" ng-model="model" probe="i">');
@@ -1437,5 +1478,19 @@ class VowelValueParser implements NgModelConverter {
       value = value.replaceAll(exp, "");
     }
     return value;
+  }
+}
+
+@NgDirective(
+    selector: '[custom-input-validation]')
+class MyCustomInputValidator extends NgValidator {
+  MyCustomInputValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
+
+  final String name = 'custom';
+
+  bool isValid(name) {
+    return name != null && name == 'yes';
   }
 }
