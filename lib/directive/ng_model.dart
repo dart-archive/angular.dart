@@ -39,7 +39,9 @@ class NgModel extends NgControl implements NgAttachAware {
     _scope.rootScope.domWrite(() => render(value));
   }
 
-  attach() {
+  @override
+  void attach() {
+    super.attach();
     watchCollection = false;
     _scope.on('resetNgModel').listen((e) => reset());
   }
