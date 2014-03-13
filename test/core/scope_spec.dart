@@ -8,7 +8,7 @@ import 'dart:math';
 
 void main() {
   describe('scope', () {
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       Map context = {};
       module
           ..value(GetterCache, new GetterCache({}))
@@ -22,7 +22,7 @@ void main() {
           ..type(_SortFilter)
           ..type(_IdentityFilter)
           ..type(_MapKeys);
-    }));
+    });
 
     describe('AST Bridge', () {
       it('should watch field', inject((Logger logger, Map context, RootScope rootScope) {
@@ -465,7 +465,7 @@ void main() {
           log.add(event.currentScope.context['id']);
         }
 
-        beforeEach(module(() {
+        beforeEachModule(() {
           return (RootScope rootScope) {
             log = [];
             child = rootScope.createChild({'id': 1});
@@ -479,7 +479,7 @@ void main() {
             grandChild.on('myEvent').listen(logger);
             greatGrandChild.on('myEvent').listen(logger);
           };
-        }));
+        });
 
         it(r'should bubble event up to the root scope', inject((RootScope rootScope) {
           grandChild.emit(r'myEvent');
@@ -487,11 +487,11 @@ void main() {
         }));
 
 
-        it(r'should dispatch exceptions to the exceptionHandler', () {
-          module((Module module) {
+        describe('exceptions', () {
+          beforeEachModule((Module module) {
             module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
           });
-          inject((ExceptionHandler e) {
+          it(r'should dispatch exceptions to the exceptionHandler', (ExceptionHandler e) {
             LoggingExceptionHandler exceptionHandler = e;
             child.on('myEvent').listen((e) { throw 'bubbleException'; });
             grandChild.emit(r'myEvent');
@@ -499,7 +499,6 @@ void main() {
             expect(exceptionHandler.errors[0].error).toEqual('bubbleException');
           });
         });
-
 
         it(r'should allow stopping event propagation', inject((RootScope rootScope) {
           child.on('myEvent').listen((event) { event.stopPropagation(); });
@@ -799,10 +798,21 @@ void main() {
         expect(log).toEqual('1');
       }));
 
+      describe(r'exceptions', () {
+        var log;
+        beforeEachModule((Module module) {
+          return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+        });
 
-      it(r'should catch exceptions', () {
-        module((Module module) => module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler));
-        inject((RootScope rootScope, ExceptionHandler e) {
+        beforeEach(inject((RootScope rootScope) {
+          rootScope.context['log'] = () { log += 'digest;'; return null; };
+          log = '';
+          rootScope.watch('log()', (v, o) => null);
+          rootScope.digest();
+          log = '';
+        }));
+
+        it(r'should catch exceptions', (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
           var log = [];
           var child = rootScope.createChild({});
@@ -814,21 +824,6 @@ void main() {
           exceptionHandler.errors.removeAt(0);
           exceptionHandler.assertEmpty();
         });
-      });
-
-
-      describe(r'exceptions', () {
-        var log;
-        beforeEach(module((Module module) {
-          return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
-        }));
-        beforeEach(inject((RootScope rootScope) {
-          rootScope.context['log'] = () { log += 'digest;'; return null; };
-          log = '';
-          rootScope.watch('log()', (v, o) => null);
-          rootScope.digest();
-          log = '';
-        }));
 
 
         it(r'should execute and return value and update', inject(
@@ -882,10 +877,20 @@ void main() {
         expect(log).toEqual('1');
       }));
 
+      describe(r'exceptions', () {
+        var log;
+        beforeEachModule((Module module) {
+          return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+        });
+        beforeEach(inject((RootScope rootScope) {
+          rootScope.context['log'] = () { log += 'digest;'; return null; };
+          log = '';
+          rootScope.watch('log()', (v, o) => null, readOnly: true);
+          rootScope.digest();
+          log = '';
+        }));
 
-      it(r'should catch exceptions', () {
-        module((Module module) => module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler));
-        inject((RootScope rootScope, ExceptionHandler e) {
+        it(r'should catch exceptions', (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
           var log = [];
           var child = rootScope.createChild({});
@@ -897,22 +902,6 @@ void main() {
           exceptionHandler.errors.removeAt(0);
           exceptionHandler.assertEmpty();
         });
-      });
-
-
-      describe(r'exceptions', () {
-        var log;
-        beforeEach(module((Module module) {
-          return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
-        }));
-        beforeEach(inject((RootScope rootScope) {
-          rootScope.context['log'] = () { log += 'digest;'; return null; };
-          log = '';
-          rootScope.watch('log()', (v, o) => null, readOnly: true);
-          rootScope.digest();
-          log = '';
-        }));
-
 
         it(r'should execute and return value and update', inject(
                 (RootScope rootScope, ExceptionHandler e) {
@@ -1037,11 +1026,11 @@ void main() {
       }));
 
 
-      it(r'should delegate exceptions', () {
-        module((Module module) {
+      describe('exceptions', () {
+        beforeEachModule((Module module) {
           module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
         });
-        inject((RootScope rootScope, ExceptionHandler e) {
+        it(r'should delegate exceptions', (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
           rootScope.watch('a', (n, o) {throw 'abc';});
           rootScope.context['a'] = 1;
@@ -1050,6 +1039,7 @@ void main() {
           expect(exceptionHandler.errors[0].error).toEqual('abc');
         });
       });
+
 
 
       it(r'should fire watches in order of addition', inject((RootScope rootScope) {
@@ -1407,65 +1397,60 @@ void main() {
 
 
     describe('domRead/domWrite', () {
-      it(r'should run writes before reads', () {
-        module((Module module) {
-          module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+      beforeEachModule((Module module) {
+        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+      });
+
+      it(r'should run writes before reads', (RootScope rootScope, Logger logger, ExceptionHandler e) {
+        LoggingExceptionHandler exceptionHandler = e as LoggingExceptionHandler;
+        rootScope.domWrite(() {
+          logger('write1');
+          rootScope.domWrite(() => logger('write2'));
+          throw 'write1';
         });
-        inject((RootScope rootScope, Logger logger, ExceptionHandler e) {
-          LoggingExceptionHandler exceptionHandler = e as LoggingExceptionHandler;
-          rootScope.domWrite(() {
-            logger('write1');
-            rootScope.domWrite(() => logger('write2'));
-            throw 'write1';
-          });
-          rootScope.domRead(() {
-            logger('read1');
-            rootScope.domRead(() => logger('read2'));
-            rootScope.domWrite(() => logger('write3'));
-            throw 'read1';
-          });
-          rootScope.watch('value', (_, __) => logger('observe'), readOnly: true);
-          rootScope.flush();
-          expect(logger).toEqual(['write1', 'write2', 'observe', 'read1', 'read2', 'write3']);
-          expect(exceptionHandler.errors.length).toEqual(2);
-          expect(exceptionHandler.errors[0].error).toEqual('write1');
-          expect(exceptionHandler.errors[1].error).toEqual('read1');
+        rootScope.domRead(() {
+          logger('read1');
+          rootScope.domRead(() => logger('read2'));
+          rootScope.domWrite(() => logger('write3'));
+          throw 'read1';
         });
+        rootScope.watch('value', (_, __) => logger('observe'), readOnly: true);
+        rootScope.flush();
+        expect(logger).toEqual(['write1', 'write2', 'observe', 'read1', 'read2', 'write3']);
+        expect(exceptionHandler.errors.length).toEqual(2);
+        expect(exceptionHandler.errors[0].error).toEqual('write1');
+        expect(exceptionHandler.errors[1].error).toEqual('read1');
       });
     });
 
     describe('exceptionHander', () {
-      it('should call ExceptionHandler on zone errors', () {
-        module((Module module) {
-          module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
-        });
-        async((inject((RootScope rootScope, NgZone zone, ExceptionHandler e) {
-          zone.run(() {
-            scheduleMicrotask(() => throw 'my error');
-          });
-          var errors = (e as LoggingExceptionHandler).errors;
-          expect(errors.length).toEqual(1);
-          expect(errors.first.error).toEqual('my error');
-        })));
+      beforeEachModule((Module module) {
+        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
       });
 
-      it('should call ExceptionHandler on digest errors', () {
-        module((Module module) {
-          module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+      it('should call ExceptionHandler on zone errors',
+          async((RootScope rootScope, NgZone zone, ExceptionHandler e) {
+        zone.run(() {
+          scheduleMicrotask(() => throw 'my error');
         });
-        async((inject((RootScope rootScope, NgZone zone, ExceptionHandler e) {
-          rootScope.context['badOne'] = () => new Map();
-          rootScope.watch('badOne()', (_, __) => null);
+        var errors = (e as LoggingExceptionHandler).errors;
+        expect(errors.length).toEqual(1);
+        expect(errors.first.error).toEqual('my error');
+      }));
 
-          try {
-            zone.run(() => null);
-          } catch(_) {}
+      it('should call ExceptionHandler on digest errors',
+        async((RootScope rootScope, NgZone zone, ExceptionHandler e) {
+        rootScope.context['badOne'] = () => new Map();
+        rootScope.watch('badOne()', (_, __) => null);
 
-          var errors = (e as LoggingExceptionHandler).errors;
-          expect(errors.length).toEqual(1);
-          expect(errors.first.error, startsWith('Model did not stabilize'));
-        })));
-      });
+        try {
+          zone.run(() => null);
+        } catch(_) {}
+
+        var errors = (e as LoggingExceptionHandler).errors;
+        expect(errors.length).toEqual(1);
+        expect(errors.first.error, startsWith('Model did not stabilize'));
+      }));
     });
   });
 }

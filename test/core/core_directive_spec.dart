@@ -5,9 +5,9 @@ import '../_specs.dart';
 void main() {
   describe('DirectiveMap', () {
 
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       module..type(AnnotatedIoComponent);
-    }));
+    });
 
     it('should extract attr map from annotated component', inject((DirectiveMap directives) {
       var annotations = directives.annotationsFor(AnnotatedIoComponent);

@@ -5,18 +5,18 @@ import '../_specs.dart';
 
 forBothCompilers(fn) {
   describe('walking compiler', () {
-    beforeEach(module((Module m) {
+    beforeEachModule((Module m) {
       m.type(Compiler, implementedBy: WalkingCompiler);
       return m;
-    }));
+    });
     fn();
   });
 
   describe('tagging compiler', () {
-    beforeEach(module((Module m) {
+    beforeEachModule((Module m) {
       m.type(Compiler, implementedBy: TaggingCompiler);
       return m;
-    }));
+    });
     fn();
   });
 }
@@ -25,10 +25,8 @@ void main() {
   forBothCompilers(() =>
   describe('dte.compiler', () {
     TestBed _;
-    HttpBackend httpBackend;
 
-    beforeEach(module((Module module) {
-      httpBackend = new MockHttpBackend();
+    beforeEachModule((Module module) {
 
       module
           ..type(TabComponent)
@@ -58,10 +56,8 @@ void main() {
           ..type(SimpleAttachComponent)
           ..type(SimpleComponent)
           ..type(ExprAttrComponent)
-          ..type(SayHelloFilter)
-          ..value(HttpBackend, httpBackend)
-          ..value(MockHttpBackend, httpBackend);
-    }));
+          ..type(SayHelloFilter);
+    });
 
     beforeEach(inject((TestBed tb) => _ = tb));
 
@@ -437,6 +433,14 @@ void main() {
       })));
 
       describe('lifecycle', () {
+        beforeEachModule((Module module) {
+          var httpBackend = new MockHttpBackend();
+
+          module
+            ..value(HttpBackend, httpBackend)
+            ..value(MockHttpBackend, httpBackend);
+        });
+
         it('should fire onTemplate method', async(inject((Compiler $compile, Logger logger, MockHttpBackend backend) {
           backend.whenGET('some/template.url').respond('<div>WORKED</div>');
           var scope = _.rootScope.createChild({});

@@ -31,9 +31,9 @@ void main() {
     describe('browser cookies', () {
       var cookies;
 
-      beforeEach(module((Module module) {
+      beforeEachModule((Module module) {
         module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
-      }));
+      });
 
       beforeEach(inject((BrowserCookies iCookies) {
         iCookies.cookiePath = '/';

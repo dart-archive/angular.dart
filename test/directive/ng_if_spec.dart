@@ -17,12 +17,10 @@ class ChildController {
 main() {
   var compile, html, element, rootScope, logger, directives;
 
-  void configInjector() {
-    module((Module module) {
-        module
-          ..type(ChildController)
-          ..type(LogAttrDirective);
-      });
+  void configInjector(Module module) {
+    module
+      ..type(ChildController)
+      ..type(LogAttrDirective);
   }
 
   void configState() {
@@ -42,7 +40,7 @@ main() {
     htmlForElements.forEach((html) {
       var directiveName = html.contains('ng-if') ? 'ng-if' : 'ng-unless';
       describe(directiveName, () {
-        beforeEach(configInjector);
+        beforeEachModule(configInjector);
         beforeEach(configState);
         (exclusive ? iit : it)(should, () {
           callback(html);

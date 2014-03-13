@@ -42,7 +42,7 @@ main() {
     var directives;
 
     beforeEach(() => log = []);
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       module
           ..type(_BElement)
           ..type(_BClass)
@@ -61,7 +61,7 @@ main() {
           ..type(_TwoDirectives)
           ..type(_OneOfTwoDirectives)
           ..type(_TwoOfTwoDirectives);
-    }));
+    });
     beforeEach(inject((DirectiveMap directives) {
       selector = (node) => directives.selector.match(node);
     }));

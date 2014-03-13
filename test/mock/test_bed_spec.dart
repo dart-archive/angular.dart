@@ -9,10 +9,10 @@ void main() {
     Injector injector;
     Scope $rootScope;
 
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       module..type(MyTestBedDirective);
       return (TestBed tb) => _ = tb;
-    }));
+    });
 
     it('should allow for a scope-based compile', () {
 
