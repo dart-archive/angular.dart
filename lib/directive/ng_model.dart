@@ -1,5 +1,11 @@
 part of angular.directive;
 
+class NgModelConverter {
+  final String name;
+  parse(value) => value;
+  format(value) => value;
+}
+
 /**
  * Ng-model directive is responsible for reading/writing to the model.
  * The directive itself is headless. (It does not know how to render or what
@@ -12,48 +18,61 @@ part of angular.directive;
  */
 @NgDirective(selector: '[ng-model]')
 class NgModel extends NgControl implements NgAttachAware {
-  final NgForm _form;
   final AstParser _parser;
+  final Scope _scope;
 
-  BoundGetter getter = ([_]) => null;
   BoundSetter setter = (_, [__]) => null;
 
-  var _lastValue;
+  var _originalValue, _viewValue, _modelValue;
   String _exp;
-  final _validators = <NgValidatable>[];
+  final _validators = <NgValidator>[];
+  bool _alwaysProcessViewValue;
 
+  NgModelConverter _converter;
   Watch _removeWatch;
   bool _watchCollection;
   Function render = (value) => null;
 
-  NgModel(Scope _scope, dom.Element _element, Injector injector,
-      NgForm this._form, this._parser, NodeAttrs attrs, NgAnimate animate)
-      : super(_scope, _element, injector, animate)
+  NgModel(this._scope, NgElement element, Injector injector,
+          this._parser, NodeAttrs attrs, NgAnimate animate)
+      : super(element, injector, animate)
   {
     _exp = attrs["ng-model"];
     watchCollection = false;
+
+    //Since the user will never be editing the value of a select element then
+    //there is no reason to guard the formatter from changing the DOM value.
+    _alwaysProcessViewValue = element.node.tagName == 'SELECT';
+    converter = new NgModelConverter();
   }
 
-  process(value, [_]) {
+  void processViewValue(value) {
     validate();
-    _scope.rootScope.domWrite(() => render(value));
+    _viewValue = converter.format(value);
+    _scope.rootScope.domWrite(() => render(_viewValue));
   }
 
-  attach() {
+  void attach() {
     watchCollection = false;
-    _scope.on('resetNgModel').listen((e) => reset());
   }
 
-  reset() {
+  void reset() {
     untouched = true;
-    modelValue = _lastValue;
+    processViewValue(_originalValue);
+    modelValue = _originalValue;
   }
 
-  _onSubmit(bool valid) {
-    super._onSubmit(valid);
+  void onSubmit(bool valid) {
+    super.onSubmit(valid);
     if (valid) {
-      _lastValue = modelValue;
+      _originalValue = modelValue;
     }
+  }
+
+  get converter => _converter;
+  set converter(NgModelConverter c) {
+    _converter = c;
+    processViewValue(modelValue);
   }
 
   @NgAttr('name')
@@ -67,62 +86,81 @@ class NgModel extends NgControl implements NgAttachAware {
   get watchCollection => _watchCollection;
   set watchCollection(value) {
     if (_watchCollection == value) return;
+
+    var onChange = (value, [_]) {
+      if (_alwaysProcessViewValue || _modelValue != value) {
+        _modelValue = value;
+        processViewValue(value);
+      }
+    };
+
     _watchCollection = value;
     if (_removeWatch!=null) _removeWatch.remove();
     if (_watchCollection) {
       _removeWatch = _scope.watch(
           _parser(_exp, collection: true),
           (changeRecord, _) {
-            var value = changeRecord is CollectionChangeRecord ? changeRecord.iterable: changeRecord;
-            process(value);
+            onChange(changeRecord is CollectionChangeRecord
+                        ? changeRecord.iterable
+                        : changeRecord);
           });
     } else if (_exp != null) {
-      _removeWatch = _scope.watch(_exp, process);
+      _removeWatch = _scope.watch(_exp, onChange);
     }
   }
 
   // TODO(misko): getters/setters need to go. We need AST here.
   @NgCallback('ng-model')
   set model(BoundExpression boundExpression) {
-    getter = boundExpression;
     setter = boundExpression.assign;
-
     _scope.rootScope.runAsync(() {
-      _lastValue = modelValue;
+      _modelValue = boundExpression();
+      _originalValue = modelValue;
+      processViewValue(_modelValue);
     });
   }
 
-  // TODO(misko): right now viewValue and modelValue are the same,
-  // but this needs to be changed to support converters and form validation
-  get viewValue        => modelValue;
-  set viewValue(value) => modelValue = value;
+  get viewValue => _viewValue;
+  set viewValue(value) {
+    _viewValue = value;
+    modelValue = value;
+  }
 
-  get modelValue        => getter();
-  set modelValue(value) => setter(value);
+  get modelValue => _modelValue;
+  set modelValue(value) {
+    try {
+      value = converter.parse(value);
+    } catch(e) {
+      value = null;
+    }
+    _modelValue = value;
+    setter(value);
+    modelValue == _originalValue ? (pristine = true) : (dirty = true);
+  }
 
   get validators => _validators;
 
   /**
    * Executes a validation on the form against each of the validation present on the model.
    */
-  validate() {
+  void validate() {
     if (validators.isNotEmpty) {
       validators.forEach((validator) {
-        setValidity(validator.name, validator.isValid(viewValue));
+        setValidity(validator.name, validator.isValid(modelValue));
       });
     } else {
       valid = true;
     }
   }
 
-  setValidity(String name, bool valid) {
+  void setValidity(String name, bool valid) {
     this.updateControlValidity(this, name, valid);
   }
 
   /**
    * Registers a validator into the model to consider when running validate().
    */
-  addValidator(NgValidatable v) {
+  void addValidator(NgValidator v) {
     validators.add(v);
     validate();
   }
@@ -130,7 +168,7 @@ class NgModel extends NgControl implements NgAttachAware {
   /**
    * De-registers a validator from the model.
    */
-  removeValidator(NgValidatable v) {
+  void removeValidator(NgValidator v) {
     validators.remove(v);
     validate();
   }
@@ -158,10 +196,11 @@ class InputCheckboxDirective {
   InputCheckboxDirective(dom.Element this.inputElement, this.ngModel,
                          this.scope, this.ngTrueValue, this.ngFalseValue) {
     ngModel.render = (value) {
-      inputElement.checked = ngTrueValue.isValue(inputElement, value);
+      scope.rootScope.domWrite(() {
+        inputElement.checked = ngTrueValue.isValue(inputElement, value);
+      });
     };
     inputElement.onChange.listen((value) {
-      ngModel.dirty = true;
       ngModel.viewValue = inputElement.checked
         ? ngTrueValue.readValue(inputElement)
         : ngFalseValue.readValue(inputElement);
@@ -201,13 +240,15 @@ class InputTextLikeDirective {
 
   InputTextLikeDirective(this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
-      if (value == null) value = '';
+      scope.rootScope.domWrite(() {
+        if (value == null) value = '';
 
-      var currentValue = typedValue;
-      if (value != currentValue && !(value is num && currentValue is num &&
-          value.isNaN && currentValue.isNaN)) {
-        typedValue =  value;
-      }
+        var currentValue = typedValue;
+        if (value != currentValue && !(value is num && currentValue is num &&
+            value.isNaN && currentValue.isNaN)) {
+          typedValue =  value;
+        }
+      });
     };
     inputElement
         ..onChange.listen(processValue)
@@ -222,7 +263,6 @@ class InputTextLikeDirective {
   processValue([_]) {
     var value = typedValue;
     if (value != ngModel.viewValue) {
-      ngModel.dirty = true;
       ngModel.viewValue = value;
     }
     ngModel.validate();
@@ -269,10 +309,12 @@ class InputNumberLikeDirective {
 
   InputNumberLikeDirective(dom.Element this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
-      if (value != typedValue
-          && (value == null || value is num && !value.isNaN)) {
-        typedValue = value;
-      }
+      scope.rootScope.domWrite(() {
+        if (value != typedValue
+            && (value == null || value is num && !value.isNaN)) {
+          typedValue = value;
+        }
+      });
     };
     inputElement
         ..onChange.listen(relaxFnArgs(processValue))
@@ -282,7 +324,6 @@ class InputNumberLikeDirective {
   processValue() {
     num value = typedValue;
     if (value != ngModel.viewValue) {
-      ngModel.dirty = true;
       scope.eval(() => ngModel.viewValue = value);
     }
     ngModel.validate();
@@ -408,11 +449,12 @@ class InputRadioDirective {
       attrs["name"] = _uidCounter.next();
     }
     ngModel.render = (value) {
-      radioButtonElement.checked = (value == ngValue.readValue(radioButtonElement));
+      scope.rootScope.domWrite(() {
+        radioButtonElement.checked = (value == ngValue.readValue(radioButtonElement));
+      });
     };
     radioButtonElement.onClick.listen((_) {
       if (radioButtonElement.checked) {
-        ngModel.dirty = true;
         ngModel.viewValue = ngValue.readValue(radioButtonElement);
       }
     });

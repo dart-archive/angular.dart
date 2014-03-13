@@ -12,30 +12,24 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
 
   String _name;
   bool _dirty;
-  bool _pristine;
-  bool _valid;
-  bool _invalid;
   bool _touched;
-  bool _untouched;
+  bool _valid;
   bool _submit_valid;
 
-  final Scope _scope;
   final NgControl _parentControl;
   final NgAnimate _animate;
-  dom.Element _element;
+  NgElement _element;
 
-  final Map<String, List<NgControl>> errors   = new Map<String, List<NgControl>>();
-  final List<NgControl> _controls             = new List<NgControl>();
-  final Map<String, List<NgControl>> _controlByName = new Map<String, List<NgControl>>();
+  final errors = new Map<String, Set<NgModel>>();
+  final _controls = new List<NgControl>();
+  final _controlByName = new Map<String, List<NgControl>>();
 
-  NgControl(Scope this._scope, dom.Element this._element, Injector injector,
+  NgControl(NgElement this._element, Injector injector,
       NgAnimate this._animate)
       : _parentControl = injector.parent.get(NgControl)
   {
     pristine = true;
     untouched = true;
-
-    _scope.on('submitNgControl').listen((e) => _onSubmit(e.data));
   }
 
   @override
@@ -52,22 +46,25 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   }
 
   reset() {
-    _scope.broadcast('resetNgModel');
     untouched = true;
+    _controls.forEach((control) {
+      control.reset();
+    });
   }
 
   bool hasError(String key) => errors.containsKey(key);
 
-  _onSubmit(bool valid) {
+  onSubmit(bool valid) {
     if (valid) {
       _submit_valid = true;
-      _animate.addClass(element, NG_SUBMIT_VALID_CLASS);
-      _animate.removeClass(element, NG_SUBMIT_INVALID_CLASS);
+      element..addClass(NG_SUBMIT_VALID_CLASS)..removeClass(NG_SUBMIT_INVALID_CLASS);
     } else {
       _submit_valid = false;
-      _animate.addClass(element, NG_SUBMIT_INVALID_CLASS);
-      _animate.removeClass(element, NG_SUBMIT_VALID_CLASS);
+      element..addClass(NG_SUBMIT_INVALID_CLASS)..removeClass(NG_SUBMIT_VALID_CLASS);
     }
+    _controls.forEach((control) {
+      control.onSubmit(valid);
+    });
   }
 
   get submitted => _submit_valid != null;
@@ -81,65 +78,52 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
 
   get element => _element;
 
-  get pristine => _pristine;
+  bool get pristine => !_dirty;
   set pristine(value) {
-    _pristine = true;
-    _dirty = false;
+    //only mark as pristine if all the child controls are pristine
+    if (_controls.any((control) => control.dirty)) return;
 
-    _animate.addClass(element, NG_PRISTINE_CLASS);
-    _animate.removeClass(element, NG_DIRTY_CLASS);
+    _dirty = false;
+    element..addClass(NG_PRISTINE_CLASS)..removeClass(NG_DIRTY_CLASS);
+    _parentControl.pristine = true;
   }
 
-  get dirty => _dirty;
+  bool get dirty => _dirty;
   set dirty(value) {
     _dirty = true;
-    _pristine = false;
-
-    _animate.addClass(element, NG_DIRTY_CLASS);
-    _animate.removeClass(element, NG_PRISTINE_CLASS);
+    element..addClass(NG_DIRTY_CLASS)..removeClass(NG_PRISTINE_CLASS);
 
     //as soon as one of the controls/models is modified
     //then all of the parent controls are dirty as well
     _parentControl.dirty = true;
   }
 
-  get valid => _valid;
+  bool get valid => _valid;
   set valid(value) {
-    _invalid = false;
     _valid = true;
-
-    _animate.addClass(element, NG_VALID_CLASS);
-    _animate.removeClass(element, NG_INVALID_CLASS);
+    element..addClass(NG_VALID_CLASS)..removeClass(NG_INVALID_CLASS);
   }
 
-  get invalid => _invalid;
+  bool get invalid => !_valid;
   set invalid(value) {
     _valid = false;
-    _invalid = true;
-
-    _animate.addClass(element, NG_INVALID_CLASS);
-    _animate.removeClass(element, NG_VALID_CLASS);
+    element..addClass(NG_INVALID_CLASS)..removeClass(NG_VALID_CLASS);
   }
 
-  get touched => _touched;
+  bool get touched => _touched;
   set touched(value) {
     _touched = true;
-    _untouched = false;
+    element..addClass(NG_TOUCHED_CLASS)..removeClass(NG_UNTOUCHED_CLASS);
 
-    _animate.addClass(element, NG_TOUCHED_CLASS);
-    _animate.removeClass(element, NG_UNTOUCHED_CLASS);
     //as soon as one of the controls/models is touched
     //then all of the parent controls are touched as well
     _parentControl.touched = true;
   }
 
-  get untouched => _untouched;
+  bool get untouched => !_touched;
   set untouched(value) {
     _touched = false;
-    _untouched = true;
-
-    _animate.addClass(element, NG_UNTOUCHED_CLASS);
-    _animate.removeClass(element, NG_TOUCHED_CLASS);
+    element..addClass(NG_UNTOUCHED_CLASS)..removeClass(NG_TOUCHED_CLASS);
   }
 
   /**
@@ -185,42 +169,39 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
    * * [isValid] - Whether the given error is valid or not (false would mean the
    * error is real).
    */
-  updateControlValidity(NgControl control, String errorType, bool isValid) {
-    List queue = errors[errorType];
+  updateControlValidity(NgControl ngModel, String errorType, bool isValid) {
+    String validClassName = errorType + '-valid';
+    String invalidClassName = errorType + '-invalid';
 
     if (isValid) {
-      if (queue != null) {
-        queue.remove(control);
-        if (queue.isEmpty) {
+      if (errors.containsKey(errorType)) {
+        Set errorsByName = errors[errorType];
+        errorsByName.remove(ngModel);
+        if (errorsByName.isEmpty) {
           errors.remove(errorType);
-          _parentControl.updateControlValidity(this, errorType, true);
+          element..removeClass(invalidClassName)..addClass(validClassName);
         }
       }
       if (errors.isEmpty) {
         valid = true;
       }
     } else {
-      if (queue == null) {
-        queue = new List<NgControl>();
-        errors[errorType] = queue;
-        _parentControl.updateControlValidity(this, errorType, false);
-      } else if (queue.contains(control)) return;
-
-      queue.add(control);
+      element..removeClass(validClassName)..addClass(invalidClassName);
+      errors.putIfAbsent(errorType, () => new Set()).add(ngModel);
       invalid = true;
     }
+    _parentControl.updateControlValidity(ngModel, errorType, valid);
   }
 }
 
 class NgNullControl implements NgControl {
-  var _name, _dirty, _valid, _invalid, _submit_valid, _pristine, _element;
-  var _touched, _untouched;
-  var _controls, _scope, _parentControl, _controlName, _animate;
+  var _name, _dirty, _valid, _submit_valid, _pristine, _element, _touched;
+  var _controls, _parentControl, _controlName, _animate;
   var errors, _controlByName;
-  dom.Element element;
+  NgElement element;
 
   NgNullControl() {}
-  _onSubmit(bool valid) {}
+  onSubmit(bool valid) {}
 
   addControl(control) {}
   removeControl(control) {}
@@ -229,26 +210,26 @@ class NgNullControl implements NgControl {
   get name => null;
   set name(name) {}
 
-  get submitted => null;
-  get valid_submit => null;
-  get invalid_submit => null;
+  bool get submitted => false;
+  bool get valid_submit => true;
+  bool get invalid_submit => false;
 
-  get pristine => null;
+  bool get pristine => true;
   set pristine(value) {}
 
-  get dirty => null;
+  bool get dirty => false;
   set dirty(value) {}
 
-  get valid => null;
+  bool get valid => true;
   set valid(value) {}
 
-  get invalid => null;
+  bool get invalid => false;
   set invalid(value) {}
 
-  get touched => null;
+  bool get touched => false;
   set touched(value) {}
 
-  get untouched => null;
+  bool get untouched => true;
   set untouched(value) {}
 
   reset() => null;
