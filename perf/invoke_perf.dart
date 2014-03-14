@@ -11,21 +11,21 @@ main() {
   var streamC = new StreamController(sync:true);
   var stream = streamC.stream..listen(handleIndirect);
 
-  time('direct', () => handleDirect(1, 2, 3) );
-  time('.call', () => wrap(1, 2, 3) );
-  time('directNamed', () => handleDirectNamed(a:1, b:2, c:3) );
-  time('indirect', () => handleIndirect(new Container(1, 2, 3)) );
+  time('direct', () => handleDirect(1, 2, 3));
+  time('.call', () => wrap(1, 2, 3));
+  time('directNamed', () => handleDirectNamed(a:1, b:2, c:3));
+  time('indirect', () => handleIndirect(new Container(1, 2, 3)));
   time('stream', () => streamC.add(new Container(1, 2, 3)));
 }
 
 class Container {
-  var a;
-  var b;
-  var c;
+  final a;
+  final b;
+  final c;
 
   Container(this.a, this.b, this.c);
 }
 
-class Wrap {
-  call(a, b, c) => a + b + c;
+class Wrap implements Function {
+  call(a, b, c) => a;
 }
