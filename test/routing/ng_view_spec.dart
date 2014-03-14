@@ -10,11 +10,11 @@ main() {
     TestBed _;
     Router router;
 
-    beforeEach(module((Module m) {
+    beforeEachModule((Module m) {
       m
         ..install(new AngularMockModule())
         ..type(RouteInitializerFn, implementedBy: FlatRouteInitializer);
-    }));
+    });
 
     beforeEach(inject((TestBed tb, Router _router, TemplateCache templates) {
       _ = tb;
@@ -80,11 +80,11 @@ main() {
     TestBed _;
     Router router;
 
-    beforeEach(module((Module m) {
+    beforeEachModule((Module m) {
       m
         ..install(new AngularMockModule())
         ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer);
-    }));
+    });
 
     beforeEach(inject((TestBed tb, Router _router, TemplateCache templates) {
       _ = tb;

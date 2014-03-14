@@ -5,9 +5,9 @@ import '../_specs.dart';
 main() {
   describe('ng-mustache', () {
     TestBed _;
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       module.type(_HelloFilter);
-    }));
+    });
     beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should replace {{}} in text', inject((Compiler $compile, Scope rootScope, Injector injector, DirectiveMap directives) {

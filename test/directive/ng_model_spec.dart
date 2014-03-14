@@ -7,10 +7,11 @@ void main() {
   describe('ng-model', () {
     TestBed _;
 
-    beforeEach(module((Module module) {
-      module.type(ControllerWithNoLove);
-      module.type(MyCustomInputValidator);
-    }));
+    beforeEachModule((Module module) {
+      module
+        ..type(ControllerWithNoLove)
+        ..type(MyCustomInputValidator);
+    });
 
     beforeEach(inject((TestBed tb) => _ = tb));
 

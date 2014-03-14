@@ -45,7 +45,7 @@ main() {
     Injector injector;
     Scope $rootScope;
 
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       module
       ..type(ApplyAuthorStyleComponent)
       ..type(ResetStyleInheritanceComponent)
@@ -56,7 +56,7 @@ main() {
         $rootScope = injector.get(Scope);
         directives = injector.get(DirectiveMap);
       };
-    }));
+    });
 
     it('should respect the apply-author-style option', async(inject(() {
       var element = $(
