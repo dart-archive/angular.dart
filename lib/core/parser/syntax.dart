@@ -137,16 +137,22 @@ class AccessKeyed extends Expression {
   accept(Visitor visitor) => visitor.visitAccessKeyed(this);
 }
 
+class CallArguments {
+  final List<Expression> positionals;
+  final Map<String, Expression> named;
+  const CallArguments(this.positionals, this.named);
+}
+
 class CallScope extends Expression {
   final String name;
-  final List<Expression> arguments;
+  final CallArguments arguments;
   CallScope(this.name, this.arguments);
   accept(Visitor visitor) => visitor.visitCallScope(this);
 }
 
 class CallFunction extends Expression {
   final Expression function;
-  final List<Expression> arguments;
+  final CallArguments arguments;
   CallFunction(this.function, this.arguments);
   accept(Visitor visitor) => visitor.visitCallFunction(this);
 }
@@ -154,7 +160,7 @@ class CallFunction extends Expression {
 class CallMember extends Expression {
   final Expression object;
   final String name;
-  final List<Expression> arguments;
+  final CallArguments arguments;
   CallMember(this.object, this.name, this.arguments);
   accept(Visitor visitor) => visitor.visitCallMember(this);
 }

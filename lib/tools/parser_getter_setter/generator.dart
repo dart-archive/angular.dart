@@ -13,19 +13,19 @@ class DartGetterSetterGen extends ParserBackend {
     properties.add(name);
   }
 
-  registerCall(String name, List arguments) {
+  registerCall(String name, CallArguments arguments) {
     if (isReservedWord(name)) return;
     Set<int> arities = calls.putIfAbsent(name, () => new Set<int>());
-    arities.add(arguments.length);
+    arities.add(arguments.positionals.length);
   }
 
   newAccessScope(String name)
       => registerAccess(name);
   newAccessMember(var object, String name)
       => registerAccess(name);
-  newCallScope(String name, List arguments)
+  newCallScope(String name, CallArguments arguments)
       => registerCall(name, arguments);
-  newCallMember(var object, String name, List arguments)
+  newCallMember(var object, String name, CallArguments arguments)
       => registerCall(name, arguments);
 }
 
@@ -77,7 +77,7 @@ class StaticClosureMap extends ClosureMap {
   generateFunctionMap(Map<String, Set<int>> calls) {
     Map<int, Set<String>> arities = {};
     calls.forEach((name, callArities) {
-      callArities.forEach((arity){
+      callArities.forEach((arity) {
         arities.putIfAbsent(arity, () => new Set<String>()).add(name);
       });
     });

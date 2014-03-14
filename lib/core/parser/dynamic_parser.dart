@@ -127,16 +127,24 @@ class DynamicParserBackend extends ParserBackend {
   }
 
   Expression newCallScope(name, arguments) {
+    if (arguments.named.isNotEmpty) {
+      return new CallScope(name, arguments);
+    }
+    int arity = arguments.positionals.length;
     Function constructor = _computeCallConstructor(
-        _callScopeConstructors, name, arguments.length);
+        _callScopeConstructors, name, arity);
     return (constructor != null)
         ? constructor(name, arguments, _closures)
         : new CallScope(name, arguments);
   }
 
   Expression newCallMember(object, name, arguments) {
+    if (arguments.named.isNotEmpty) {
+      return new CallMember(object, name, arguments);
+    }
+    int arity = arguments.positionals.length;
     Function constructor = _computeCallConstructor(
-        _callMemberConstructors, name, arguments.length);
+        _callMemberConstructors, name, arity);
     return (constructor != null)
         ? constructor(object, name, arguments, _closures)
         : new CallMember(object, name, arguments);

@@ -873,10 +873,10 @@ class ExpressionVisitor implements Visitor {
       expressions.map(_mapToAst).toList();
 
   void visitCallScope(CallScope exp) {
-    ast = new MethodAST(contextRef, exp.name, _toAst(exp.arguments));
+    ast = new MethodAST(contextRef, exp.name, _toAst(exp.arguments.positionals));
   }
   void visitCallMember(CallMember exp) {
-    ast = new MethodAST(visit(exp.object), exp.name, _toAst(exp.arguments));
+    ast = new MethodAST(visit(exp.object), exp.name, _toAst(exp.arguments.positionals));
   }
   visitAccessScope(AccessScope exp) {
     ast = new FieldReadAST(contextRef, exp.name);
