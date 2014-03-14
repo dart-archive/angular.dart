@@ -24,63 +24,56 @@ class BarComponent {
 }
 
 main() {
-  ddescribe('EventHandler', () {
+  describe('EventHandler', () {
     beforeEachModule((Module module) {
       module..type(FooController);
       module..type(BarComponent);
+      module..value(Element, document.body);
     });
 
-    it('shoud register and handle event', inject(() {
-      var template = '''
-        <div foo>
+    // Not sure why this doesn't work.
+    afterEach(() {
+      document.body.children.clear();
+    });
+
+    it('shoud register and handle event', inject((TestBed _) {
+      document.body.append(_.compile(
+        '''<div foo>
           <div on-abc="ctrl.invoked=true;"></div>
-        </div>
-      ''';
-      // We need to attach to document.body to have events actually travel
-      // through DOM.
-      $(rootElement).html(template);
-      compiler([rootElement], directives)(injector, [rootElement]);
+        </div>'''));
 
       document.querySelector('[on-abc]').dispatchEvent(new Event('abc'));
-      var fooScope = expando[document.querySelector('[foo]')].scope;
+      var fooScope = _.expando[document.querySelector('[foo]')].scope;
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
+      document.body.children.clear();
     }));
 
-    it('shoud register and handle event with long name', inject(() {
-      var template = '''
-        <div foo>
+    it('shoud register and handle event with long name', inject((TestBed _) {
+      document.body.append(_.compile(
+        '''<div foo>
           <div on-my-new-event="ctrl.invoked=true;"></div>
-        </div>
-      ''';
-      // We need to attach to document.body to have events actually travel
-      // through DOM.
-      $(rootElement).html(template);
-      compiler([rootElement], directives)(injector, [rootElement]);
+        </div>'''));
 
       document.querySelector('[on-my-new-event]').dispatchEvent(new Event('myNewEvent'));
-      var fooScope = expando[document.querySelector('[foo]')].scope;
+      var fooScope = _.expando[document.querySelector('[foo]')].scope;
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
+      document.body.children.clear();
     }));
 
-    it('shoud have model updates applied correctly', inject(() {
-      var template = '''
-        <div foo>
+    it('shoud have model updates applied correctly', inject((TestBed _) {
+      document.body.append(_.compile(
+        '''<div foo>
           <div on-abc='ctrl.description="new description";'>{{ctrl.description}}</div>
-        </div>
-      ''';
-      // We need to attach to document.body to have events actually travel
-      // through DOM.
-      $(rootElement).html(template);
-      compiler([rootElement], directives)(injector, [rootElement]);
-
+        </div>'''));
       var el = document.querySelector('[on-abc]');
       el.dispatchEvent(new Event('abc'));
-      rootScope.apply();
+      _.rootScope.apply();
       expect(el.text).toEqual("new description");
+      document.body.children.clear();
     }));
 
-    iit('shoud register event when shadow dom is used', async((TestBed _) {
-      _.compile('<bar></bar>');
+    it('shoud register event when shadow dom is used', async((TestBed _) {
+      document.body.append(_.compile('<bar></bar>'));
 
       microLeap();
 
@@ -90,28 +83,27 @@ main() {
       span.dispatchEvent(new CustomEvent('abc'));
       var ctrl = _.rootScope.context['ctrl'];
       expect(ctrl.invoked).toEqual(true);
+      document.body.children.clear();
     }));
 
-    it('shoud handle event within content only once', async(inject(() {
-      var template = '''
-                     <div foo>
-                       <bar>
-                         <div on-abc="ctrl.invoked=true;"></div>
-                       </bar>
-                     </div>
-                     ''';
-      $(rootElement).html(template);
-      compiler([rootElement], directives)(injector, [rootElement]);
+    it('shoud handle event within content only once', async(inject((TestBed _) {
+      document.body.append(_.compile(
+        '''<div foo>
+             <bar>
+               <div on-abc="ctrl.invoked=true;"></div>
+             </bar>
+           </div>'''));
 
       microLeap();
 
       document.querySelector('[on-abc]').dispatchEvent(new Event('abc'));
       var shadowRoot = document.querySelector('bar').shadowRoot;
-      var shadowRootScope = expando[shadowRoot].scope;
+      var shadowRootScope = _.expando[shadowRoot].scope;
       expect(shadowRootScope.context['ctrl'].invoked).toEqual(false);
 
-      var fooScope = expando[document.querySelector('[foo]')].scope;
+      var fooScope = _.expando[document.querySelector('[foo]')].scope;
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
+      document.body.children.clear();
     })));
   });
 }

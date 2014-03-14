@@ -22,7 +22,7 @@ class EventHandler {
   }
 
   eventListener(dom.Event event) {
-    print('event $event $rootNode $target');
+    print('event $event $rootNode');
     dom.Node element = event.target;
     while (element != null && element != rootNode) {
       var expression;
@@ -42,7 +42,8 @@ class EventHandler {
   }
 
   Scope getScope(dom.Node element) {
-    while (element != null && element != rootNode) {
+    // var topElement = (rootNode is dom.ShadowRoot) ? rootNode.parentNode : rootNode;
+    while (element != rootNode.parentNode) {
       ElementProbe probe = expando[element];
       if (probe != null) {
         return probe.scope;

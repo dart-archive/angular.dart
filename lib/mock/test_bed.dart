@@ -11,13 +11,13 @@ class TestBed {
   final Scope rootScope;
   final Compiler compiler;
   final Parser parser;
-
+  final Expando expando;
 
   Element rootElement;
   List<Node> rootElements;
   View rootView;
 
-  TestBed(this.injector, this.rootScope, this.compiler, this.parser);
+  TestBed(this.injector, this.rootScope, this.compiler, this.parser, this.expando);
 
 
   /**
