@@ -27,7 +27,6 @@ void main() {
     TestBed _;
 
     beforeEachModule((Module module) {
-
       module
           ..type(TabComponent)
           ..type(PublishTypesAttrDirective)
@@ -40,23 +39,7 @@ void main() {
           ..type(TwoOfTwoDirectives)
           ..type(MyController)
           ..type(MyParentController)
-          ..type(MyChildController)
-          ..type(SimpleComponent)
-          ..type(CamelCaseMapComponent)
-          ..type(IoComponent)
-          ..type(IoControllerComponent)
-          ..type(UnpublishedIoControllerComponent)
-          ..type(IncorrectMappingComponent)
-          ..type(NonAssignableMappingComponent)
-          ..type(ParentExpressionComponent)
-          ..type(PublishMeComponent)
-          ..type(PublishMeDirective)
-          ..type(LogComponent)
-          ..type(AttachDetachComponent)
-          ..type(SimpleAttachComponent)
-          ..type(SimpleComponent)
-          ..type(ExprAttrComponent)
-          ..type(SayHelloFilter);
+          ..type(MyChildController);
     });
 
     beforeEach(inject((TestBed tb) => _ = tb));
@@ -186,6 +169,25 @@ void main() {
 
 
     describe('components', () {
+      beforeEachModule((Module module) {
+        module
+          ..type(SimpleComponent)
+          ..type(CamelCaseMapComponent)
+          ..type(IoComponent)
+          ..type(IoControllerComponent)
+          ..type(UnpublishedIoControllerComponent)
+          ..type(IncorrectMappingComponent)
+          ..type(NonAssignableMappingComponent)
+          ..type(ParentExpressionComponent)
+          ..type(PublishMeComponent)
+          ..type(PublishMeDirective)
+          ..type(LogComponent)
+          ..type(AttachDetachComponent)
+          ..type(SimpleAttachComponent)
+          ..type(SimpleComponent)
+          ..type(ExprAttrComponent)
+          ..type(SayHelloFilter);
+      });
 
       it('should select on element', async(inject((NgZone zone) {
         var element = $(_.compile(r'<div><simple></simple></div>'));
