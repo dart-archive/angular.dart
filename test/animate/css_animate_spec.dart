@@ -20,7 +20,7 @@ main() {
     it('should add a css class to an element node', async(() {
       _.compile('<div></div>');
       expect(_.rootElement).not.toHaveClass('foo');
-      
+
       animate.addClass(_.rootElement, 'foo');
       runner.frame();
 
@@ -102,7 +102,7 @@ main() {
 
 class MockAnimationLoop extends Mock implements AnimationLoop {
   num time = 0.0;
-  
+
   Future<AnimationResult> get onCompleted {
     var cmp = new Completer<AnimationResult>();
     cmp.complete(AnimationResult.COMPLETED);
@@ -110,20 +110,20 @@ class MockAnimationLoop extends Mock implements AnimationLoop {
   }
 
   List<LoopedAnimation> animations = [];
-  
+
   play(LoopedAnimation animation) {
     animations.add(animation);
   }
-  
+
   frame() {
     for(var animation in animations) {
       animation.read(time);
     }
-    
+
     for(var animation in animations) {
       animation.update(time);
     }
-    
+
     time += 16.0;
   }
 

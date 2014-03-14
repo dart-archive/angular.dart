@@ -10,6 +10,8 @@ class TestData {
   set str(x) => _str = x;
 
   method() => "testMethod";
+  sub1(a, {b: 0}) => a - b;
+  sub2({a: 0, b: 0}) => a - b;
 }
 
 class Ident {
@@ -48,10 +50,12 @@ main() {
     Map<String, dynamic> context;
     Parser<Expression> parser;
     FilterMap filters;
+
     beforeEachModule((Module module) {
       module.type(IncrementFilter);
       module.type(SubstringFilter);
     });
+
     beforeEach((Parser injectedParser, FilterMap injectedFilters) {
       parser = injectedParser;
       filters = injectedFilters;
@@ -667,16 +671,15 @@ main() {
         expect(eval("constN()")).toEqual(123);
       });
 
+
       it('should access a protected keyword on scope', () {
         context['const'] = 3;
         expect(eval('const')).toEqual(3);
       });
 
 
-      it('should evaluate function call with arguments', () {
-        context["add"] =  (a,b) {
-          return a+b;
-        };
+      it('should evaluate scope call with arguments', () {
+        context["add"] = (a,b) => a + b;
         expect(eval("add(1,2)")).toEqual(3);
       });
 
@@ -935,6 +938,7 @@ main() {
       });
     });
 
+
     describe('assignable', () {
       it('should expose assignment function', () {
         var fn = parser('a');
@@ -944,6 +948,7 @@ main() {
         expect(scope).toEqual({'a':123});
       });
     });
+
 
     describe('locals', () {
       it('should expose local variables', () {
@@ -973,6 +978,123 @@ main() {
         fn.bind(scope, ScopeLocals.wrapper).assign(123, locals);
         expect(scope).toEqual({});
         expect(locals["a"]).toEqual({'b':123});
+      });
+    });
+
+
+    describe('named arguments', () {
+      it('should be supported for scope calls', () {
+        var data = new TestData();
+        expect(parser("sub1(1)").eval(data)).toEqual(1);
+        expect(parser("sub1(3, b: 2)").eval(data)).toEqual(1);
+
+        expect(parser("sub2()").eval(data)).toEqual(0);
+        expect(parser("sub2(a: 3)").eval(data)).toEqual(3);
+        expect(parser("sub2(a: 3, b: 2)").eval(data)).toEqual(1);
+        expect(parser("sub2(b: 4)").eval(data)).toEqual(-4);
+      });
+
+
+      it('should be supported for scope calls (map)', () {
+        context["sub1"] = (a, {b: 0}) => a - b;
+        expect(eval("sub1(1)")).toEqual(1);
+        expect(eval("sub1(3, b: 2)")).toEqual(1);
+
+        context["sub2"] = ({a: 0, b: 0}) => a - b;
+        expect(eval("sub2()")).toEqual(0);
+        expect(eval("sub2(a: 3)")).toEqual(3);
+        expect(eval("sub2(a: 3, b: 2)")).toEqual(1);
+        expect(eval("sub2(b: 4)")).toEqual(-4);
+      });
+
+
+      it('should be supported for member calls', () {
+        context['o'] = new TestData();
+        expect(eval("o.sub1(1)")).toEqual(1);
+        expect(eval("o.sub1(3, b: 2)")).toEqual(1);
+
+        expect(eval("o.sub2()")).toEqual(0);
+        expect(eval("o.sub2(a: 3)")).toEqual(3);
+        expect(eval("o.sub2(a: 3, b: 2)")).toEqual(1);
+        expect(eval("o.sub2(b: 4)")).toEqual(-4);
+      });
+
+
+      it('should be supported for member calls (map)', () {
+        context['o'] = {
+          'sub1': (a, {b: 0}) => a - b,
+          'sub2': ({a: 0, b: 0}) => a - b
+        };
+        expect(eval("o.sub1(1)")).toEqual(1);
+        expect(eval("o.sub1(3, b: 2)")).toEqual(1);
+
+        expect(eval("o.sub2()")).toEqual(0);
+        expect(eval("o.sub2(a: 3)")).toEqual(3);
+        expect(eval("o.sub2(a: 3, b: 2)")).toEqual(1);
+        expect(eval("o.sub2(b: 4)")).toEqual(-4);
+      });
+
+
+      it('should be supported for function calls', () {
+        context["sub1"] = (a, {b: 0}) => a - b;
+        expect(eval("(sub1)(1)")).toEqual(1);
+        expect(eval("(sub1)(3, b: 2)")).toEqual(1);
+
+        context["sub2"] = ({a: 0, b: 0}) => a - b;
+        expect(eval("(sub2)()")).toEqual(0);
+        expect(eval("(sub2)(a: 3)")).toEqual(3);
+        expect(eval("(sub2)(a: 3, b: 2)")).toEqual(1);
+        expect(eval("(sub2)(b: 4)")).toEqual(-4);
+      });
+
+
+      it('should be an error to use the same name twice', () {
+        expect(() => parser('foo(a: 0, a: 1)')).toThrow("Duplicate argument named 'a' at column 11");
+        expect(() => parser('foo(a: 0, b: 1, a: 2)')).toThrow("Duplicate argument named 'a' at column 17");
+        expect(() => parser('foo(0, a: 1, a: 2)')).toThrow("Duplicate argument named 'a' at column 14");
+        expect(() => parser('foo(0, a: 1, b: 2, a: 3)')).toThrow("Duplicate argument named 'a' at column 20");
+      });
+
+
+      it('should be an error to use Dart reserved words as names', () {
+        expect(() => parser('foo(if: 0)')).toThrow("Cannot use Dart reserved word 'if' as named argument at column 5");
+        expect(() => parser('foo(a: 0, class: 0)')).toThrow("Cannot use Dart reserved word 'class' as named argument at column 11");
+      });
+
+
+      it('should pretty print scope calls correctly', () {
+        expect(parser('foo(a: 0)').toString()).toEqual('foo(a: 0)');
+        expect(parser('foo(a: 0, b: 1)').toString()).toEqual('foo(a: 0, b: 1)');
+        expect(parser('foo(b: 1, a: 0)').toString()).toEqual('foo(b: 1, a: 0)');
+
+        expect(parser('foo(0)').toString()).toEqual('foo(0)');
+        expect(parser('foo(0, a: 0)').toString()).toEqual('foo(0, a: 0)');
+        expect(parser('foo(0, a: 0, b: 1)').toString()).toEqual('foo(0, a: 0, b: 1)');
+        expect(parser('foo(0, b: 1, a: 0)').toString()).toEqual('foo(0, b: 1, a: 0)');
+      });
+
+
+      it('should pretty print member calls correctly', () {
+        expect(parser('o.foo(a: 0)').toString()).toEqual('o.foo(a: 0)');
+        expect(parser('o.foo(a: 0, b: 1)').toString()).toEqual('o.foo(a: 0, b: 1)');
+        expect(parser('o.foo(b: 1, a: 0)').toString()).toEqual('o.foo(b: 1, a: 0)');
+
+        expect(parser('o.foo(0)').toString()).toEqual('o.foo(0)');
+        expect(parser('o.foo(0, a: 0)').toString()).toEqual('o.foo(0, a: 0)');
+        expect(parser('o.foo(0, a: 0, b: 1)').toString()).toEqual('o.foo(0, a: 0, b: 1)');
+        expect(parser('o.foo(0, b: 1, a: 0)').toString()).toEqual('o.foo(0, b: 1, a: 0)');
+      });
+
+
+      it('should pretty print function calls correctly', () {
+        expect(parser('(foo)(a: 0)').toString()).toEqual('(foo)(a: 0)');
+        expect(parser('(foo)(a: 0, b: 1)').toString()).toEqual('(foo)(a: 0, b: 1)');
+        expect(parser('(foo)(b: 1, a: 0)').toString()).toEqual('(foo)(b: 1, a: 0)');
+
+        expect(parser('(foo)(0)').toString()).toEqual('(foo)(0)');
+        expect(parser('(foo)(0, a: 0)').toString()).toEqual('(foo)(0, a: 0)');
+        expect(parser('(foo)(0, a: 0, b: 1)').toString()).toEqual('(foo)(0, a: 0, b: 1)');
+        expect(parser('(foo)(0, b: 1, a: 0)').toString()).toEqual('(foo)(0, b: 1, a: 0)');
       });
     });
 

@@ -17,12 +17,20 @@ class Unparser extends Visitor {
     buffer.write(string);
   }
 
-  void writeArguments(List<Expression> arguments) {
+  void writeArguments(CallArguments arguments) {
+    bool first = true;
     write('(');
-    for (int i = 0; i < arguments.length; i++) {
-      if (i != 0) write(',');
-      visit(arguments[i]);
+    for (int i = 0; i < arguments.positionals.length; i++) {
+      if (!first) write(', ');
+      first = false;
+      visit(arguments.positionals[i]);
     }
+    arguments.named.forEach((String name, value) {
+      if (!first) write(', ');
+      first = false;
+      write('$name: ');
+      visit(value);
+    });
     write(')');
   }
 
@@ -80,7 +88,9 @@ class Unparser extends Visitor {
   }
 
   void visitCallFunction(CallFunction call) {
+    write('(');
     visit(call.function);
+    write(')');
     writeArguments(call.arguments);
   }
 

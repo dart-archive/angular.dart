@@ -896,11 +896,24 @@ class ExpressionVisitor implements Visitor {
   List<AST> _toAst(List<Expression> expressions) =>
       expressions.map(_mapToAst).toList();
 
+  Map<Symbol, AST> _toAstMap(Map<String, Expression> expressions) {
+    if (expressions.isEmpty) return const {};
+    Map<Symbol, AST> result = new Map<Symbol, AST>();
+    expressions.forEach((String name, Expression expression) {
+      result[new Symbol(name)] = _mapToAst(expression);
+    });
+    return result;
+  }
+
   void visitCallScope(CallScope exp) {
-    ast = new MethodAST(contextRef, exp.name, _toAst(exp.arguments));
+    List<AST> positionals = _toAst(exp.arguments.positionals);
+    Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
+    ast = new MethodAST(contextRef, exp.name, positionals, named);
   }
   void visitCallMember(CallMember exp) {
-    ast = new MethodAST(visit(exp.object), exp.name, _toAst(exp.arguments));
+    List<AST> positionals = _toAst(exp.arguments.positionals);
+    Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
+    ast = new MethodAST(visit(exp.object), exp.name, positionals, named);
   }
   visitAccessScope(AccessScope exp) {
     ast = new FieldReadAST(contextRef, exp.name);
