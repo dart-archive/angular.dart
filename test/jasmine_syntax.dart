@@ -3,16 +3,6 @@ library jasmine;
 import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/utils.dart' as utils;
 
-Function _wrapFn;
-
-_maybeWrapFn(fn) => () {
-  if (_wrapFn != null) {
-    _wrapFn(fn)();
-  } else {
-    fn();
-  }
-};
-
 var _beforeEachFnsForCurrentTest = [];
 _withSetup(fn) => () {
   _beforeEachFnsForCurrentTest.sort((a, b) => Comparable.compare(b[1], a[1]));
@@ -24,8 +14,8 @@ _withSetup(fn) => () {
   }
 };
 
-it(name, fn) => unit.test(name, _withSetup(_maybeWrapFn(fn)));
-iit(name, fn) => unit.solo_test(name, _withSetup(_maybeWrapFn(fn)));
+it(name, fn) => unit.test(name, _withSetup(fn));
+iit(name, fn) => unit.solo_test(name, _withSetup(fn));
 xit(name, fn) {}
 xdescribe(name, fn) {}
 ddescribe(name, fn) => describe(name, fn, true);
@@ -76,8 +66,6 @@ describe(name, fn, [bool exclusive=false]) {
 
 beforeEach(fn, {priority: 0}) => currentDescribe.beforeEachFns.add([fn, priority]);
 afterEach(fn) => currentDescribe.afterEachFns.insert(0, fn);
-
-wrapFn(fn) => _wrapFn = fn;
 
 var jasmine = new Jasmine();
 

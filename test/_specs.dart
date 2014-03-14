@@ -245,10 +245,21 @@ class JQuery extends DelegatingList<Node> {
   shadowRoot() => new JQuery((this[0] as Element).shadowRoot);
 }
 
-// Jasmine syntax
-_injectify(fn) => fn is FunctionComposition ? fn.outer(inject(fn.inner)) : inject(fn);
-beforeEachModule(fn) => jasmine_syntax.beforeEach(module(fn), priority:1);
+_injectify(fn) {
+  // The function does two things:
+  // First: if the it() passed a function, we wrap it in
+  //        the "sync" FunctionComposition.
+  // Second: when we are calling the FuncitonComposition,
+  //         we inject "inject" into the middle of the
+  //         composition.
+  if (fn is! FunctionComposition) {
+    fn = sync(fn);
+  }
+  return fn.outer(inject(fn.inner));
+}
 
+// Jasmine syntax
+beforeEachModule(fn) => jasmine_syntax.beforeEach(module(fn), priority:1);
 beforeEach(fn) => jasmine_syntax.beforeEach(_injectify(fn));
 afterEach(fn) => jasmine_syntax.afterEach(_injectify(fn));
 it(name, fn) => jasmine_syntax.it(name, _injectify(fn));
@@ -262,7 +273,6 @@ var jasmine = jasmine_syntax.jasmine;
 
 
 main() {
-  jasmine_syntax.wrapFn(sync);
   jasmine_syntax.beforeEach(setUpInjector, priority:3);
   jasmine_syntax.afterEach(tearDownInjector);
 }
