@@ -21,6 +21,7 @@ class TaggingCompiler implements Compiler {
       TaggedElementBinder directParentElementBinder,
       List<TaggedElementBinder> elementBinders) {
     assert(parentElementBinderOffset != null);
+    assert(parentElementBinderOffset < elementBinders.length);
     if (domCursor.current == null) return null;
 
     do {
@@ -41,8 +42,7 @@ class TaggingCompiler implements Compiler {
         if (elementBinder.hasTemplate) {
           elementBinder.templateViewFactory = _compileTransclusion(
               elementBinders, domCursor, templateCursor, elementBinder.template,
-              elementBinder.templateBinder, directives,
-              parentElementBinderOffset);
+              elementBinder.templateBinder, directives);
         }
       }
 
@@ -110,8 +110,7 @@ class TaggingCompiler implements Compiler {
       NodeCursor domCursor, NodeCursor templateCursor,
       DirectiveRef directiveRef,
       ElementBinder transcludedElementBinder,
-      DirectiveMap directives,
-      int parentElementBinderOffset) {
+      DirectiveMap directives) {
     var anchorName = directiveRef.annotation.selector +
         (directiveRef.value != null ? '=' + directiveRef.value : '');
     var viewFactory;
@@ -121,7 +120,7 @@ class TaggingCompiler implements Compiler {
     var domCursorIndex = domCursor.index;
     var elementBinders = [];
     _compileView(domCursor, transcludeCursor, transcludedElementBinder,
-        directives, parentElementBinderOffset, null, elementBinders);
+        directives, -1, null, elementBinders);
 
     viewFactory = new TaggingViewFactory(transcludeCursor.elements,
         elementBinders, _perf, _expando);

@@ -92,13 +92,20 @@ void main() {
       expect(element.html()).toEqual('<!--ANCHOR: [ng-repeat]=item in items-->');
     }));
 
-    it('should compile a repeater as a child', () {
+    it('should compile a text child of a basic repeater', () {
       var element = $(_.compile(
                 '<div ng-show="true">' +
                   '<span ng-repeat="r in [1, 2]">{{r}}</span>' +
                 '</div>'));
       _.rootScope.apply();
       expect(element.text()).toEqual('12');
+    });
+
+    it('should compile a text child of a repeat with a directive', () {
+      _.compile(
+            '<div ng-show="true">'
+              '<span ng-show=true" ng-repeat="r in robots">{{r}}</span>'
+            '</div>');
     });
 
     it('should compile repeater with children', inject((Compiler $compile) {
