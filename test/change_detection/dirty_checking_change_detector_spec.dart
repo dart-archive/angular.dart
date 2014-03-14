@@ -397,6 +397,37 @@ void main() {
             moves: ['2[0 -> 1]', '3[1 -> 2]', '4[2 -> 3]'],
             removals: []));
       });
+
+      it('should properly support objects with equality', () {
+        FooBar.fooIds = 0;
+        var list = [new FooBar('a', 'a'), new FooBar('a', 'a')];
+        var record = detector.watch(list, null, 'handler');
+        var iterator;
+
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
+            collection: ['(0)a-a[null -> 0]', '(1)a-a[null -> 1]'],
+            additions: ['(0)a-a[null -> 0]', '(1)a-a[null -> 1]'],
+            moves: [],
+            removals: []));
+        detector.collectChanges();
+
+        list.removeRange(0, 1);
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
+            collection: ['(1)a-a[1 -> 0]'],
+            additions: [],
+            moves: ['(1)a-a[1 -> 0]'],
+            removals: ['(0)a-a[0 -> null]']));
+
+        list.insert(0, new FooBar('a', 'a'));
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
+            collection: ['(2)a-a[null -> 0]', '(1)a-a[0 -> 1]'],
+            additions: ['(2)a-a[null -> 0]'],
+            moves: ['(1)a-a[0 -> 1]'],
+            removals: []));
+      });
     });
 
     describe('map watching', () {
@@ -822,4 +853,24 @@ class MapRecordMatcher extends Matcher {
     }
     return equals;
   }
+}
+
+
+class FooBar {
+  static int fooIds = 0;
+
+  int id;
+  String foo, bar;
+
+  FooBar(this.foo, this.bar) {
+    id = fooIds++;
+  }
+
+  bool operator==(other) =>
+      other is FooBar && foo == other.foo && bar == other.bar;
+
+  int get hashCode =>
+      foo.hashCode ^ bar.hashCode;
+
+  toString() => '($id)$foo-$bar';
 }
