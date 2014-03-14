@@ -187,10 +187,14 @@ class Scope {
         this._readWriteGroup, this._readOnlyGroup, this.id);
 
   /**
-   * A [watch] sets up a watch in the [digest] phase of the [apply] cycle.
+   * Use [watch] to set up a watch in the [apply] cycle.
    *
-   * Use [watch] if the reaction function can cause updates to model. In your
-   * controller code you will most likely use [watch].
+   * When [readOnly] is [:true:], the watch will be executed in the [flush]
+   * cycle. It should be used when the [reactionFn] does not change the model
+   * and allows the [digest] phase to converge faster.
+   *
+   * On the opposite, [readOnly] should be set to [:false:] if the [reactionFn]
+   * could change the model so that the watch is observed in the [digest] cycle.
    */
   Watch watch(expression, ReactionFn reactionFn,
               {context, FilterMap filters, bool readOnly: false}) {
@@ -831,8 +835,8 @@ class AstParser {
   AstParser(this._parser);
 
   AST call(String exp, { FilterMap filters,
-                         bool collection:false,
-                         Object context:null }) {
+                         bool collection: false,
+                         Object context: null }) {
     _visitor.filters = filters;
     AST contextRef = _visitor.contextRef;
     try {
@@ -1009,7 +1013,7 @@ class MapFn extends FunctionApply {
 
   MapFn(this.keys);
 
-  apply(List values) {
+  Map apply(List values) {
     // TODO(misko): figure out why do we need to make a copy instead of reusing instance?
     assert(values.length == keys.length);
     return new Map.fromIterables(keys, values);
