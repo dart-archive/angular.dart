@@ -8,25 +8,22 @@ class ElementBinderFactory {
 
   ElementBinderFactory(this._parser, this._perf, this._expando);
 
-  binder() {
-    return new ElementBinder(_parser, _perf, _expando);
-  }
+  ElementBinder binder() => new ElementBinder(_parser, _perf, _expando);
 }
 
 /**
- * ElementBinder is created by the Selector and is responsible for instantiating individual directives
- * and binding element properties.
+ * ElementBinder is created by the Selector and is responsible for instantiating
+ * individual directives and binding element properties.
  */
-
 class ElementBinder {
   // DI Services
-  Parser _parser;
-  Profiler _perf;
-  Expando _expando;
-  Map<String, String> onEvents = <String, String>{};
+  final Parser _parser;
+  final Profiler _perf;
+  final Expando _expando;
+  final Map<String, String> onEvents = <String, String>{};
 
   // Member fields
-  List<DirectiveRef> decorators = [];
+  var decorators = <DirectiveRef>[];
   DirectiveRef template;
   ViewFactory templateViewFactory;
 
@@ -35,18 +32,15 @@ class ElementBinder {
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   String childMode = NgAnnotation.COMPILE_CHILDREN;
 
-
   ElementBinder(this._parser, this._perf, this._expando);
 
-  ElementBinder.forTransclusion(ElementBinder other) {
-    _parser = other._parser;
-    _perf = other._perf;
-    _expando = other._expando;
-
-    decorators = other.decorators;
-    component = other.component;
-    childMode = other.childMode;
-  }
+  ElementBinder.forTransclusion(ElementBinder other)
+      : _parser = other._parser,
+        _perf = other._perf,
+        _expando = other._expando,
+        decorators = other.decorators,
+        component = other.component,
+        childMode = other.childMode;
 
   addDirective(DirectiveRef ref) {
     var annotation = ref.annotation;
@@ -67,46 +61,35 @@ class ElementBinder {
     createMappings(ref);
   }
 
-  bool get hasTemplate {
-    return template != null;
-  }
+  bool get hasTemplate => template != null;
 
-  bool get shouldCompileChildren {
-    return childMode == NgAnnotation.COMPILE_CHILDREN;
-  }
+  bool get shouldCompileChildren =>
+      childMode == NgAnnotation.COMPILE_CHILDREN;
 
   ElementBinder get templateBinder => new ElementBinder.forTransclusion(this);
 
   List<DirectiveRef> get _usableDirectiveRefs {
-    if (template != null) {
-      return [template];
-    }
-    if (component != null) {
-      return new List.from(decorators)..add(component);
-    }
+    if (template != null) return [template];
+    if (component != null) return new List.from(decorators)..add(component);
     return decorators;
   }
 
   bool get hasDirectivesOrEvents
       => _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
-  // DI visibility callback allowing node-local visibility.
-
+  // DI visibility strategy allowing node-local visibility.
   static final Function _elementOnly = (Injector requesting, Injector defining) {
-    if (requesting.name == _SHADOW) {
-      requesting = requesting.parent;
-    }
+    if (requesting.name == _SHADOW) requesting = requesting.parent;
     return identical(requesting, defining);
   };
 
-  // DI visibility callback allowing visibility from direct child into parent.
-
-  static final Function _elementDirectChildren = (Injector requesting, Injector defining) {
-    if (requesting.name == _SHADOW) {
-      requesting = requesting.parent;
-    }
-    return _elementOnly(requesting, defining) || identical(requesting.parent, defining);
-  };
+  // DI visibility strategy allowing visibility from direct child into parent.
+  static final Function _elementDirectChildren =
+      (Injector requesting, Injector defining) {
+        if (requesting.name == _SHADOW) requesting = requesting.parent;
+        return _elementOnly(requesting, defining) ||
+               identical(requesting.parent, defining);
+      };
 
   Injector bind(View view, Injector parentInjector, dom.Node node) {
     var timerId;
@@ -121,17 +104,16 @@ class ElementBinder {
     var directiveRefs = _usableDirectiveRefs;
     try {
       if (!hasDirectivesOrEvents) return parentInjector;
-      var nodeModule = new Module();
       var viewPortFactory = (_) => null;
       var viewFactory = (_) => null;
       var boundViewFactory = (_) => null;
       var nodesAttrsDirectives = null;
+      var nodeModule = new Module()..type(NgElement)
+          ..value(View, view)
+          ..value(dom.Element, node)
+          ..value(dom.Node, node)
+          ..value(NodeAttrs, nodeAttrs);
 
-      nodeModule.type(NgElement);
-      nodeModule.value(View, view);
-      nodeModule.value(dom.Element, node);
-      nodeModule.value(dom.Node, node);
-      nodeModule.value(NodeAttrs, nodeAttrs);
       directiveRefs.forEach((DirectiveRef ref) {
         NgAnnotation annotation = ref.annotation;
         var visibility = _elementOnly;
@@ -139,11 +121,16 @@ class ElementBinder {
           scope = scope.createChild(new PrototypeMap(scope.context));
           nodeModule.value(Scope, scope);
         }
-        if (ref.annotation.visibility == NgDirective.CHILDREN_VISIBILITY) {
-          visibility = null;
-        } else if (ref.annotation.visibility == NgDirective.DIRECT_CHILDREN_VISIBILITY) {
-          visibility = _elementDirectChildren;
+
+        switch (ref.annotation.visibility) {
+          case NgDirective.CHILDREN_VISIBILITY:
+            visibility = null;
+            break;
+          case NgDirective.DIRECT_CHILDREN_VISIBILITY:
+            visibility = _elementDirectChildren;
+            break;
         }
+
         if (ref.type == NgTextMustacheDirective) {
           nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
             return new NgTextMustacheDirective(
@@ -185,28 +172,30 @@ class ElementBinder {
           nodeModule.type(ref.type, visibility: visibility);
         }
         for (var publishType in ref.annotation.publishTypes) {
-          nodeModule.factory(publishType, (Injector injector) => injector.get(ref.type), visibility: visibility);
+          nodeModule.factory(publishType, (Injector injector) =>
+              injector.get(ref.type), visibility: visibility);
         }
         if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
           // Currently, transclude is only supported for NgDirective.
           assert(annotation is NgDirective);
           viewPortFactory = (_) => new ViewPort(node,
-            parentInjector.get(NgAnimate));
+              parentInjector.get(NgAnimate));
           viewFactory = (_) => templateViewFactory;
-          boundViewFactory = (Injector injector) => templateViewFactory.bind(injector);
+          boundViewFactory = (Injector injector) =>
+              templateViewFactory.bind(injector);
         }
       });
-      nodeModule
-        ..factory(ViewPort, viewPortFactory)
-        ..factory(ViewFactory, viewFactory)
-        ..factory(BoundViewFactory, boundViewFactory)
-        ..factory(ElementProbe, (_) => probe);
+      nodeModule..factory(ViewPort, viewPortFactory)
+                ..factory(ViewFactory, viewFactory)
+                ..factory(BoundViewFactory, boundViewFactory)
+                ..factory(ElementProbe, (_) => probe);
       nodeInjector = parentInjector.createChild([nodeModule]);
       probe = _expando[node] = new ElementProbe(
           parentInjector.get(ElementProbe), node, nodeInjector, scope);
     } finally {
       assert(_perf.stopTimer(timerId) != false);
     }
+
     directiveRefs.forEach((DirectiveRef ref) {
       var linkTimer;
       try {
@@ -313,8 +302,7 @@ class ElementBinder {
             var viewOutbound = false;
             var viewInbound = false;
             scope.watch(
-                expression,
-                    (inboundValue, _) {
+                expression, (inboundValue, _) {
                   if (!viewInbound) {
                     viewOutbound = true;
                     scope.rootScope.runAsync(() => viewOutbound = false);
@@ -327,8 +315,7 @@ class ElementBinder {
             );
             if (expressionFn.isAssignable) {
               scope.watch(
-                  dstExpression,
-                      (outboundValue, _) {
+                  dstExpression, (outboundValue, _) {
                     if (!viewOutbound) {
                       viewInbound = true;
                       scope.rootScope.runAsync(() => viewInbound = false);
@@ -348,8 +335,7 @@ class ElementBinder {
             if (attrs[attrName] == null) return notify();
             Expression attrExprFn = _parser(attrs[attrName]);
             var shadowValue = null;
-            scope.watch(attrs[attrName],
-                (v, _) {
+            scope.watch(attrs[attrName], (v, _) {
               dstPathFn.assign(controller, shadowValue = v);
               notify();
             },
@@ -362,23 +348,20 @@ class ElementBinder {
             if (attrs[attrName] == null) return notify();
             Expression attrExprFn = _parser(attrs[attrName]);
             var watch;
-            watch = scope.watch(
-                attrs[attrName],
-                    (value, _) {
-                  if (dstPathFn.assign(controller, value) != null) {
-                    watch.remove();
-                  }
-                },
-                filters: filters);
+            watch = scope.watch(attrs[attrName], (value, _) {
+              if (dstPathFn.assign(controller, value) != null) {
+                watch.remove();
+              }
+            },
+            filters: filters);
             notify();
           };
           break;
         case '&':
           mappingFn = (NodeAttrs attrs, Scope scope, Object dst,
                        FilterMap filters, notify()) {
-            dstPathFn
-                .assign(dst, _parser(attrs[attrName])
-                .bind(scope.context, ScopeLocals.wrapper));
+            dstPathFn.assign(dst, _parser(attrs[attrName])
+                     .bind(scope.context, ScopeLocals.wrapper));
             notify();
           };
           break;
@@ -387,7 +370,6 @@ class ElementBinder {
     });
   }
 }
-
 
 // Used for walking the DOM
 class ElementBinderTreeRef {
@@ -403,7 +385,6 @@ class ElementBinderTree {
   ElementBinderTree(this.binder, this.subtrees);
 }
 
-
 class TaggedTextBinder {
   ElementBinder binder;
   final int offsetIndex;
@@ -413,8 +394,8 @@ class TaggedTextBinder {
 
 // Used for the tagging compiler
 class TaggedElementBinder {
-  ElementBinder binder;
-  int parentBinderOffset;
+  final ElementBinder binder;
+  final int parentBinderOffset;
   var injector;
 
   List<TaggedTextBinder> textBinders;
@@ -426,5 +407,7 @@ class TaggedElementBinder {
     textBinders.add(tagged);
   }
 
-  toString() => "[TaggedElementBinder binder:$binder parentBinderOffset:$parentBinderOffset textBinders:$textBinders injector:$injector]";
+  String toString() => "[TaggedElementBinder binder:$binder parentBinderOffset:"
+                       "$parentBinderOffset textBinders:$textBinders "
+                       "injector:$injector]";
 }
