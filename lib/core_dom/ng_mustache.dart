@@ -45,6 +45,7 @@ class NgAttrMustacheDirective {
     List items = interpolation.expressions
         .map((exp) => parser(exp, filters: filters))
         .toList();
+
     AST ast = new PureFunctionAST('[[$markup]]', new ArrayFn(), items);
     /*
       Attribute bindings are tricky. They need to be resolved on digest
