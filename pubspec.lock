@@ -20,7 +20,7 @@ packages:
   browser:
     description: browser
     source: hosted
-    version: "0.10.0"
+    version: "0.9.1"
   code_transformers:
     description: code_transformers
     source: hosted
@@ -40,7 +40,7 @@ packages:
   intl:
     description: intl
     source: hosted
-    version: "0.9.7"
+    version: "0.8.10+4"
   logging:
     description: logging
     source: hosted

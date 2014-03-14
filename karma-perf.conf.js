@@ -12,7 +12,8 @@ module.exports = function(config) {
       'perf/*_perf.dart',
       'test/config/filter_tests.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
-      'packages/browser/dart.js'
+      'packages/browser/dart.js',
+      'packages/browser/interop.js'
     ],
 
     autoWatch: false,
