@@ -23,6 +23,7 @@ class ElementBinder {
   Parser _parser;
   Profiler _perf;
   Expando _expando;
+  Map<String, String> onEvents = <String, String>{};
 
   // Member fields
   List<DirectiveRef> decorators = [];
@@ -88,8 +89,8 @@ class ElementBinder {
     return decorators;
   }
 
-  bool get hasDirectives {
-    return (_usableDirectiveRefs != null && _usableDirectiveRefs.length != 0);
+  bool get hasDirectivesOrEvents {
+    return _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
   }
 
   // DI visibility callback allowing node-local visibility.

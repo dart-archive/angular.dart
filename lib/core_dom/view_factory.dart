@@ -47,7 +47,7 @@ class WalkingViewFactory implements ViewFactory {
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
-      var view = new View(nodes);
+      var view = new View(nodes, injector.get(EventHandler));
       _link(view, nodes, elementBinders, injector);
       return view;
     } finally {
@@ -86,6 +86,12 @@ class WalkingViewFactory implements ViewFactory {
           fakeParent = true;
           parentNode = new dom.DivElement();
           parentNode.append(node);
+        }
+
+        if (binder != null) {
+          binder.onEvents.forEach((event, value) {
+            view.registerEvent(EventHandler.attrNameToEventName(event));
+          });
         }
 
         var childInjector = binder != null ? binder.bind(view, parentInjector, node) : parentInjector;
@@ -229,9 +235,12 @@ class _ComponentFactory implements Function {
     var shadowModule = new Module()
         ..type(type)
         ..type(NgElement)
+        ..type(EventHandler)
         ..value(Scope, shadowScope)
         ..value(TemplateLoader, templateLoader)
         ..value(dom.ShadowRoot, shadowDom)
+        ..value(dom.Element, null)
+        ..value(dom.Node, shadowDom)
         ..factory(ElementProbe, (_) => probe);
     shadowInjector = injector.createChild([shadowModule], name: _SHADOW);
     probe = _expando[shadowDom] = new ElementProbe(
