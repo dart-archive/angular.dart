@@ -13,8 +13,6 @@ class EventHandler {
 
   void register(String eventName) {
     listeners.putIfAbsent(eventName, () {
-      print('register $rootNode -> $eventName');
-      print('register ${rootNode.firstChild} -> $eventName');
       dom.EventListener eventListener = this.eventListener;
       rootNode.on[eventName].listen(eventListener);
       return eventListener;
@@ -22,13 +20,11 @@ class EventHandler {
   }
 
   eventListener(dom.Event event) {
-    print('event $event $rootNode');
     dom.Node element = event.target;
     while (element != null && element != rootNode) {
       var expression;
       if (element is dom.Element)
         expression = (element as dom.Element).attributes[eventNameToAttrName(event.type)];
-      print(expression);
       if (expression != null) {
         try {
           var scope = getScope(element);
