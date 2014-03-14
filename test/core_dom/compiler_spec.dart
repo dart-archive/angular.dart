@@ -92,6 +92,15 @@ void main() {
       expect(element.html()).toEqual('<!--ANCHOR: [ng-repeat]=item in items-->');
     }));
 
+    it('should compile a repeater as a child', () {
+      var element = $(_.compile(
+                '<div ng-show="true">' +
+                  '<span ng-repeat="r in [1, 2]">{{r}}</span>' +
+                '</div>'));
+      _.rootScope.apply();
+      expect(element.text()).toEqual('12');
+    });
+
     it('should compile repeater with children', inject((Compiler $compile) {
       var element = $(_.compile('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>'));
 
