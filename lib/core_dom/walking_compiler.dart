@@ -38,7 +38,9 @@ class WalkingCompiler implements Compiler {
         }
       }
 
-      if (elementBinder.hasDirectives) binder = elementBinder;
+      if (elementBinder.hasDirectivesOrEvents) {
+        binder = elementBinder;
+      }
 
       if (elementBinders == null) elementBinders = [];
       elementBinders.add(new ElementBinderTreeRef(templateCursor.index,

@@ -18,7 +18,7 @@ class TaggingViewFactory implements ViewFactory {
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
-      var view = new View(nodes);
+      var view = new View(nodes, injector.get(EventHandler));
       _link(view, nodes, elementBinders, injector);
       return view;
     } finally {

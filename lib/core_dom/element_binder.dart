@@ -23,6 +23,7 @@ class ElementBinder {
   Parser _parser;
   Profiler _perf;
   Expando _expando;
+  Map<String, String> onEvents = <String, String>{};
 
   // Member fields
   List<DirectiveRef> decorators = [];
@@ -74,9 +75,7 @@ class ElementBinder {
     return childMode == NgAnnotation.COMPILE_CHILDREN;
   }
 
-  ElementBinder get templateBinder {
-    return new ElementBinder.forTransclusion(this);
-  }
+  ElementBinder get templateBinder => new ElementBinder.forTransclusion(this);
 
   List<DirectiveRef> get _usableDirectiveRefs {
     if (template != null) {
@@ -88,9 +87,8 @@ class ElementBinder {
     return decorators;
   }
 
-  bool get hasDirectives {
-    return (_usableDirectiveRefs != null && _usableDirectiveRefs.length != 0);
-  }
+  bool get hasDirectivesOrEvents
+      => _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
   // DI visibility callback allowing node-local visibility.
 
@@ -122,7 +120,7 @@ class ElementBinder {
 
     var directiveRefs = _usableDirectiveRefs;
     try {
-      if (directiveRefs == null || directiveRefs.length == 0) return parentInjector;
+      if (!hasDirectivesOrEvents) return parentInjector;
       var nodeModule = new Module();
       var viewPortFactory = (_) => null;
       var viewFactory = (_) => null;
@@ -268,6 +266,10 @@ class ElementBinder {
       } finally {
         assert(_perf.stopTimer(linkTimer) != false);
       }
+    });
+
+    onEvents.forEach((event, value) {
+      view.registerEvent(EventHandler.attrNameToEventName(event));
     });
     return nodeInjector;
   }
