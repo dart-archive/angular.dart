@@ -110,7 +110,7 @@ main() {
 
 }
 
-@NgFilter(name:'hello')
+@NgFilter(name: 'hello')
 class _HelloFilter {
   call(String str) {
     return 'Hello, $str!';
