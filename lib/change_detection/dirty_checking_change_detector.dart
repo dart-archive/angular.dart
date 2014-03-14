@@ -1226,8 +1226,8 @@ class _DuplicateItemRecordList {
   ItemRecord get(key, int hideIndex) {
     ItemRecord record = head;
     while (record != null) {
-      if (hideIndex == null ||
-          hideIndex < record.currentIndex && identical(record.item, key)) {
+      if ((hideIndex == null || hideIndex < record.currentIndex) &&
+          identical(record.item, key)) {
         return record;
       }
       record = record._nextDupRec;
