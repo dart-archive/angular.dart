@@ -51,20 +51,20 @@ void main() {
         ..type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
     });
 
-    afterEach(inject((ExceptionHandler eh, Scope scope) {
+    afterEach((ExceptionHandler eh, Scope scope) {
       scope.apply();
       backend.verifyNoOutstandingRequest();
       (eh as LoggingExceptionHandler).assertEmpty();
-    }));
+    });
 
     describe('the instance', () {
       Http http;
       var callback;
 
-      beforeEach(inject((Http h) {
+      beforeEach((Http h) {
         http = h;
         callback = jasmine.createSpy('callback');
-      }));
+      });
 
 
       it('should do basic request', async(() {
@@ -421,7 +421,7 @@ void main() {
           flush();
         }));
 
-        it('should not set XSRF cookie for cross-domain requests', async(inject((BrowserCookies cookies) {
+        it('should not set XSRF cookie for cross-domain requests', async((BrowserCookies cookies) {
           cookies['XSRF-TOKEN'] = 'secret';
           locationWrapper.url = 'http://host.com/base';
           backend.expect('GET', 'http://www.test.com/url', null, (headers) {
@@ -430,7 +430,7 @@ void main() {
 
           http(url: 'http://www.test.com/url', method: 'GET', headers: {});
           flush();
-        })));
+        }));
 
 
         it('should not send Content-Type header if request data/body is null', async(() {
@@ -448,7 +448,7 @@ void main() {
         }));
 
 
-        it('should set the XSRF cookie into a XSRF header', async(inject((BrowserCookies cookies) {
+        it('should set the XSRF cookie into a XSRF header', async((BrowserCookies cookies) {
           checkXSRF(secret, [header]) {
             return (headers) {
               return headers[header != null ? header : 'X-XSRF-TOKEN'] == secret;
@@ -472,7 +472,7 @@ void main() {
           http(url: '/url', method: 'GET', xsrfCookieName: 'aCookie');
 
           flush();
-        })));
+        }));
 
         it('should send execute result if header value is function', async(() {
           var headerConfig = {'Accept': () { return 'Rewritten'; }};
@@ -813,7 +813,7 @@ void main() {
       // Dart futures fully.
       xdescribe('timeout', () {
 
-        it('should abort requests when timeout promise resolves', inject(($q) {
+        it('should abort requests when timeout promise resolves', ($q) {
           var canceler = $q.defer();
 
           backend.expect('GET', '/some').respond(200);
@@ -834,7 +834,7 @@ void main() {
           expect(callback).toHaveBeenCalled();
           backend.verifyNoOutstandingExpectation();
           backend.verifyNoOutstandingRequest();
-        }));
+        });
       });
 
 
@@ -911,7 +911,7 @@ void main() {
       });
 
 
-      it('should rewrite URLs before calling the backend', async(inject((Http http, NgZone zone) {
+      it('should rewrite URLs before calling the backend', async((Http http, NgZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
@@ -927,10 +927,10 @@ void main() {
         flush();
 
         expect(called).toEqual(1);
-      })));
+      }));
 
 
-      it('should support pending requests for different raw URLs', async(inject((Http http, NgZone zone) {
+      it('should support pending requests for different raw URLs', async((Http http, NgZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
@@ -949,10 +949,10 @@ void main() {
         flush();
 
         expect(called).toEqual(11);
-      })));
+      }));
 
 
-      it('should support caching', async(inject((Http http, NgZone zone) {
+      it('should support caching', async((Http http, NgZone zone) {
         var called = 0;
         zone.run(() {
           http.getString('fromCache', cache: cache).then((v) {
@@ -962,11 +962,11 @@ void main() {
         });
 
         expect(called).toEqual(1);
-      })));
+      }));
     });
 
     describe('caching', () {
-      it('should not cache if no cache is present', async(inject((Http http, NgZone zone) {
+      it('should not cache if no cache is present', async((Http http, NgZone zone) {
         backend.when('GET', 'a').respond(200, VALUE, null);
 
         var called = 0;
@@ -986,10 +986,10 @@ void main() {
         flush();
 
         expect(called).toEqual(11);
-      })));
+      }));
 
 
-      it('should return a pending request', async(inject((Http http, NgZone zone) {
+      it('should return a pending request', async((Http http, NgZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
@@ -1008,10 +1008,10 @@ void main() {
         flush();
 
         expect(called).toEqual(11);
-      })));
+      }));
 
 
-      it('should not return a pending request after the request is complete', async(inject((Http http, NgZone zone) {
+      it('should not return a pending request after the request is complete', async((Http http, NgZone zone) {
         backend.when('GET', 'a').respond(200, VALUE, null);
 
         var called = 0;
@@ -1036,10 +1036,10 @@ void main() {
         flush();
 
         expect(called).toEqual(11);
-      })));
+      }));
 
 
-      it('should return a cached value if present', async(inject((Http http, NgZone zone) {
+      it('should return a cached value if present', async((Http http, NgZone zone) {
         var called = 0;
         // The URL string 'f' is primed in the FakeCache
         zone.run(() {
@@ -1051,12 +1051,12 @@ void main() {
         });
 
         expect(called).toEqual(1);
-      })));
+      }));
     });
 
 
     describe('error handling', () {
-      it('should reject 404 status codes', async(inject((Http http, NgZone zone) {
+      it('should reject 404 status codes', async((Http http, NgZone zone) {
         backend.when('GET', '404.html').respond(404, VALUE);
 
         var response = null;
@@ -1070,13 +1070,13 @@ void main() {
         flush();
         expect(response.status).toEqual(404);
         expect(response.toString()).toEqual('HTTP 404: val');
-      })));
+      }));
     });
 
 
     describe('interceptors', () {
       it('should chain request, requestReject, response and responseReject interceptors', async(() {
-        inject((HttpInterceptors interceptors) {
+        (HttpInterceptors interceptors, Http http) {
           var savedConfig, savedResponse;
           interceptors.add(new HttpInterceptor(
               request: (config) {
@@ -1100,8 +1100,6 @@ void main() {
                     response, data: response.data + ':1');
                 return new Future.error(':2');
               }));
-        });
-        inject((Http http) {
           var response;
           backend.expect('GET', '/url/1/2').respond('response');
           http(method: 'GET', url: '/url').then((r) {
@@ -1109,12 +1107,12 @@ void main() {
           });
           flush();
           expect(response.data).toEqual('response:1:2');
-        });
+        };
       }));
 
 
       it('should verify order of execution', async(
-          inject((HttpInterceptors interceptors, Http http) {
+          (HttpInterceptors interceptors, Http http) {
             interceptors.add(new HttpInterceptor(
                 request: (config) {
                   config.url += '/outer';
@@ -1141,16 +1139,16 @@ void main() {
             });
             flush();
             expect(response.data).toEqual('{{response} inner} outer');
-          })));
+          }));
 
       describe('transformData', () {
         Http http;
         var callback;
 
-        beforeEach(inject((Http h) {
+        beforeEach((Http h) {
           http = h;
           callback = jasmine.createSpy('callback');
-        }));
+        });
 
         describe('request', () {
 

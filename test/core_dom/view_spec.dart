@@ -74,13 +74,13 @@ main() {
       var a, b;
       var expando = new Expando();
 
-      beforeEach(inject((Injector injector, Profiler perf) {
+      beforeEach((Injector injector, Profiler perf) {
         $rootElement.html('<!-- anchor -->');
         anchor = new ViewPort($rootElement.contents().eq(0)[0],
           injector.get(NgAnimate));
         a = (viewFactoryFactory($('<span>A</span>a'), [], perf, expando))(injector);
         b = (viewFactoryFactory($('<span>B</span>b'), [], perf, expando))(injector);
-      }));
+      });
 
 
       describe('insertAfter', () {
@@ -127,7 +127,7 @@ main() {
         });
 
         // TODO(deboer): Make this work again.
-        xit('should remove', inject((Logger logger, Injector injector, Profiler perf, ElementBinderFactory ebf) {
+        xit('should remove', (Logger logger, Injector injector, Profiler perf, ElementBinderFactory ebf) {
           anchor.remove(a);
           anchor.remove(b);
 
@@ -168,7 +168,7 @@ main() {
           anchor.remove(outerView);
 
           expect($rootElement.text()).toEqual('');
-        }));
+        });
       });
 
 

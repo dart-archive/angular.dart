@@ -6,7 +6,7 @@ main() {
   describe('NgCloak', () {
     TestBed _;
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
 
     it('should get removed when an element is compiled', () {

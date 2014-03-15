@@ -30,10 +30,10 @@ main() => describe('ElementBinder', () {
       ..type(_Structural);
   });
 
-  beforeEach(inject((DirectiveMap d, ElementBinderFactory f) {
+  beforeEach((DirectiveMap d, ElementBinderFactory f) {
     directives = d;
     b = f.binder();
-  }));
+  });
 
   addDirective(selector) {
     directives.forEach((NgAnnotation annotation, Type type) {

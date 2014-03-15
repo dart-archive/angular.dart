@@ -13,9 +13,9 @@ main() {
       ..install(new AngularMockModule())
       ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer));
 
-    beforeEach(inject((TestBed tb) {
+    beforeEach((TestBed tb) {
       _ = tb;
-    }));
+    });
 
 
     it('should inject null RouteProvider when no ng-bind-route', async(() {

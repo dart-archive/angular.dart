@@ -36,9 +36,9 @@ main() {
   describe('filter filter', () {
     var filter;
 
-    beforeEach(() => inject((Injector injector, FilterMap filterMap) {
+    beforeEach((Injector injector, FilterMap filterMap) {
       filter = injector.get(filterMap[new NgFilter(name: 'filter')]);
-    }));
+    });
 
     it('should filter by string', () {
       List items = ['MIsKO',

@@ -11,14 +11,14 @@ void addTest(String name, [String eventType='MouseEvent', String eventName]) {
   describe('ng-$name', () {
     TestBed _;
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
-    it('should evaluate the expression on $name', inject(() {
+    it('should evaluate the expression on $name', () {
       _.compile('<button ng-$name="abc = true; event = \$event"></button>');
       _.triggerEvent(_.rootElement, eventName, eventType);
       expect(_.rootScope.context['abc']).toEqual(true);
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
-    }));
+    });
   });
 }
 

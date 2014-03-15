@@ -9,7 +9,7 @@ main() {
 
     describe('ng-value', () {
       TestBed _;
-      beforeEach(inject((TestBed tb) => _ = tb));
+      beforeEach((TestBed tb) => _ = tb);
 
       it('should retrieve using ng-value', () {
         _.compile(
@@ -50,7 +50,7 @@ main() {
     
     TestBed _;
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     describe('select-one', () {
       it('should compile children of a select without a ngModel, but not create a model for it',
@@ -426,7 +426,7 @@ main() {
 
     describe('select from angular.js', () {
       TestBed _;
-      beforeEach(inject((TestBed tb) => _ = tb));
+      beforeEach((TestBed tb) => _ = tb);
 
       var scope, formElement, element;
 
@@ -436,10 +436,10 @@ main() {
         scope.apply();
       }
 
-      beforeEach(inject((Scope rootScope) {
+      beforeEach((Scope rootScope) {
         scope = rootScope;
         formElement = element = null;
-      }));
+      });
 
 
       afterEach(() {

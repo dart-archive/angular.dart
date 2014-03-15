@@ -21,9 +21,9 @@ main() {
         ..value(Router, router);
     });
 
-    beforeEach(inject((TestBed tb) {
+    beforeEach((TestBed tb) {
       _ = tb;
-    }));
+    });
 
     it('should call init of the RouteInitializer once', async(() {
       expect(_initRoutesCalls).toEqual(0);

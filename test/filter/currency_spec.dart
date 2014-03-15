@@ -6,9 +6,9 @@ void main() {
   describe('number', () {
     var currency;
 
-    beforeEach(inject((FilterMap map, Injector injector) {
+    beforeEach((FilterMap map, Injector injector) {
       currency = injector.get(map[new NgFilter(name: 'currency')]);
-    }));
+    });
 
 
     it('should do basic currency filtering', () {
