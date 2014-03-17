@@ -91,7 +91,7 @@ class TaggingCompiler implements Compiler {
             (templateCursor.current.parentNode as dom.Element).classes.add('ng-binding');
           }
           directParentElementBinder.addText(
-              new TaggedTextBinder(elementBinder, 0 /* TODO */));
+              new TaggedTextBinder(elementBinder, domCursor.index));
         } else if(!(node.parentNode != null &&
                     templateCursor.current.parentNode != null)) {
           // Always add an elementBinder for top-level text.

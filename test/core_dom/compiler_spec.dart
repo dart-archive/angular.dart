@@ -108,6 +108,17 @@ void main() {
             '</div>');
     });
 
+    it('should compile a sibling template directive', () {
+      var element = $(_.compile(
+        '<div ng-model="selected">'
+          '<option value="">blank</option>'
+          '<div ng-repeat="value in [1,2]" ng-value="value">{{value}}</div>'
+      '</div>'));
+
+      _.rootScope.apply();
+      expect(element.text()).toEqual('blank12');
+    });
+
     it('should compile repeater with children', inject((Compiler $compile) {
       var element = $(_.compile('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>'));
 

@@ -105,6 +105,7 @@ class NgRepeatDirective {
                     this.filters);
 
   set expression(value) {
+    assert(value != null);
     _expression = value;
     if (_watch != null) _watch.remove();
     Match match = _SYNTAX.firstMatch(_expression);
