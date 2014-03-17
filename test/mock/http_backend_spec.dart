@@ -14,17 +14,17 @@ class _Chain {
 void main() {
   describe('MockHttpBackend', () {
     TestBed _;
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     var hb, callback, realBackendSpy;
 
     var noop = (_, __) {};
     var undefined = null;
 
-    beforeEach(inject((HttpBackend httpBackend) {
+    beforeEach((HttpBackend httpBackend) {
       callback = jasmine.createSpy('callback');
       hb = httpBackend;
-    }));
+    });
 
 
     it('should respond with first matched definition', () {
@@ -43,7 +43,7 @@ void main() {
     });
 
 
-    it('should respond with JSON', inject((Logger logger) {
+    it('should respond with JSON', (Logger logger) {
       hb.when('GET', '/url1').respond(200, ['abc'], {});
       hb.when('GET', '/url2').respond(200, {'key': 'value'}, {});
 
@@ -57,7 +57,7 @@ void main() {
       hb('GET', '/url2', null, callback);
       hb.flush();
       expect(logger).toEqual(['["abc"]', '{"key":"value"}']);
-    }));
+    });
 
 
     it('should throw error when unexpected request', () {

@@ -11,7 +11,7 @@ main() {
       var elt;
       TestBed _;
 
-      beforeEach(inject((TestBed tb) {
+      beforeEach((TestBed tb) {
         _ = tb;
 
         element = _.compile(
@@ -31,7 +31,7 @@ main() {
                 "when-other='You have {} new emails'>" +
             '</p>'
         );
-      }));
+      });
 
       it('should show single/plural strings', () {
         _.rootScope.context['email'] = '0';
@@ -129,7 +129,7 @@ main() {
     });
 
     describe('edge cases', () {
-      it('should be able to handle empty strings as possible values', (inject((TestBed _) {
+      it('should be able to handle empty strings as possible values', ((TestBed _) {
         var element = _.compile(
             '<ng-pluralize count="email"' +
                 "when=\"{'0': ''," +
@@ -139,11 +139,11 @@ main() {
         _.rootScope.context['email'] = '0';
         _.rootScope.apply();
         expect(element.text).toEqual('');
-      })));
+      }));
     });
 
     describe('deal with pluralized strings with offset', () {
-      it('should show single/plural strings with offset', (inject((TestBed _) {
+      it('should show single/plural strings with offset', ((TestBed _) {
         var element = _.compile(
             "<ng-pluralize count='viewCount'  offset='2' " +
                 "when=\"{'0': 'Nobody is viewing.'," +
@@ -187,7 +187,7 @@ main() {
         _.rootScope.apply();
         expect(element.text).toEqual('Igor, Misko and 2 other people are viewing.');
         expect(elementAlt.text).toEqual('Igor, Misko and 2 other people are viewing.');
-      })));
+      }));
     });
   });
 }

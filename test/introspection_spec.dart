@@ -5,7 +5,7 @@ import 'dart:js' as js;
 
 void main() {
   describe('introspection', () {
-    it('should retrieve ElementProbe', inject((TestBed _) {
+    it('should retrieve ElementProbe', (TestBed _) {
       _.compile('<div ng-bind="true"></div>');
       ElementProbe probe = ngProbe(_.rootElement);
       expect(probe.injector.parent).toBe(_.injector);
@@ -14,7 +14,7 @@ void main() {
       expect(ngDirectives(_.rootElement)[0] is NgBindDirective).toBe(true);
       expect(probe.scope).toBe(_.rootScope);
       expect(ngScope(_.rootElement)).toBe(_.rootScope);
-    }));
+    });
 
     toHtml(List list) => list.map((e) => e.outerHtml).join('');
 

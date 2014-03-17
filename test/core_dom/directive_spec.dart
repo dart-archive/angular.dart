@@ -8,11 +8,11 @@ main() {
     var nodeAttrs;
     TestBed _;
 
-    beforeEach(inject((TestBed tb) {
+    beforeEach((TestBed tb) {
       _ = tb;
       element = _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo"></div>');
       nodeAttrs = new NodeAttrs(element);
-    }));
+    });
 
     it('should transform names to camel case', () {
       expect(nodeAttrs['foo']).toEqual('bar');

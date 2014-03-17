@@ -53,9 +53,9 @@ expect(actual) => new LexerExpect(actual);
 main() {
   describe('lexer', () {
     Lexer lex;
-    beforeEach(inject((Lexer lexer) {
+    beforeEach((Lexer lexer) {
       lex = lexer;
-    }));
+    });
 
     // New test case
     it('should tokenize a simple identifier', () {

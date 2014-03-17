@@ -41,9 +41,9 @@ class PrefixedUrlRewriter extends UrlRewriter {
 
 void main() {
   describe('template url', () {
-    afterEach(inject((MockHttpBackend backend) {
+    afterEach((MockHttpBackend backend) {
       backend.verifyNoOutstandingRequest();
-    }));
+    });
 
     describe('loading with http rewriting', () {
       beforeEachModule((Module module) {

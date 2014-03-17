@@ -7,7 +7,7 @@ void main() {
   describe('ngElement', () {
 
     it('should add classes on domWrite to the element',
-      inject((TestBed _, NgAnimate animate) {
+      (TestBed _, NgAnimate animate) {
 
       var scope = _.rootScope;
       var element = _.compile('<div></div>');
@@ -25,10 +25,10 @@ void main() {
       ['one','two','three'].forEach((className) {
         expect(element.classes.contains(className)).toBe(true);
       });
-    }));
+    });
 
     it('should remove classes on domWrite to the element',
-      inject((TestBed _, NgAnimate animate) {
+      (TestBed _, NgAnimate animate) {
 
       var scope = _.rootScope;
       var element = _.compile('<div class="one two three four"></div>');
@@ -49,10 +49,10 @@ void main() {
         expect(element.classes.contains(className)).toBe(false);
       });
       expect(element.classes.contains('four')).toBe(true);
-    }));
+    });
 
     it('should always apply the last dom operation on the given className',
-      inject((TestBed _, NgAnimate animate) {
+      (TestBed _, NgAnimate animate) {
 
       var scope = _.rootScope;
       var element = _.compile('<div></div>');
@@ -75,6 +75,6 @@ void main() {
       ngElement.addClass('one');
 
       expect(element.classes.contains('one')).toBe(true);
-    }));
+    });
   });
 }

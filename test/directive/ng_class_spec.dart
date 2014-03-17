@@ -6,7 +6,7 @@ main() {
   describe('ngClass', () {
     TestBed _;
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should add new and remove old classes dynamically', () {
       var element = _.compile('<div class="existing" ng-class="dynClass"></div>');

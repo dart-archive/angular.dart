@@ -62,9 +62,9 @@ main() {
           ..type(_OneOfTwoDirectives)
           ..type(_TwoOfTwoDirectives);
     });
-    beforeEach(inject((DirectiveMap directives) {
+    beforeEach((DirectiveMap directives) {
       selector = (node) => directives.selector.match(node);
-    }));
+    });
 
     it('should match directive on element', () {
       expect(

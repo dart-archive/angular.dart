@@ -18,13 +18,13 @@ main() {
     });
 
 
-    it('should run a static function', inject((Parser parser) {
+    it('should run a static function', (Parser parser) {
       expect(parser('1').eval(null)).toEqual(1);
-    }));
+    });
 
 
-    it('should call the fallback if there is not function', inject((Parser parser) {
+    it('should call the fallback if there is not function', (Parser parser) {
       expect(() => parser('not 1')).toThrow('x');
-    }));
+    });
   });
 }

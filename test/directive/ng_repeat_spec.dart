@@ -6,7 +6,7 @@ main() {
   describe('NgRepeater', () {
     var element, $compile, scope, $exceptionHandler, directives;
 
-    beforeEach(inject((Injector injector, Scope $rootScope, Compiler compiler, DirectiveMap _directives) {
+    beforeEach((Injector injector, Scope $rootScope, Compiler compiler, DirectiveMap _directives) {
       $exceptionHandler = injector.get(ExceptionHandler);
       scope = $rootScope;
       $compile = (html, [scope]) {
@@ -21,27 +21,27 @@ main() {
         return element;
       };
       directives = _directives;
-    }));
+    });
 
-    it(r'should set create a list of items', inject((Scope scope, Compiler compiler, Injector injector) {
+    it(r'should set create a list of items', (Scope scope, Compiler compiler, Injector injector) {
       var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
       View view = viewFactory(injector, element);
       scope.context['items'] = ['a', 'b'];
       scope.apply();
       expect(element.text()).toEqual('ab');
-    }));
+    });
 
 
     it(r'should set create a list of items from iterable',
-        inject((Scope scope, Compiler compiler, Injector injector) {
+        (Scope scope, Compiler compiler, Injector injector) {
       var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
       View view = viewFactory(injector, element);
       scope.context['items'] = ['a', 'b'].map((i) => i); // makes an iterable
       scope.apply();
       expect(element.text()).toEqual('ab');
-    }));
+    });
 
 
     it(r'should iterate over an array of objects', () {
