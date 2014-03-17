@@ -29,10 +29,9 @@ void main() {
         var user = new _User('', '');
         Iterator changeIterator;
 
-        detector
-            ..watch(user, 'first', null)
-            ..watch(user, 'last', null)
-            ..collectChanges(); // throw away first set
+        detector..watch(user, 'first', null)
+                ..watch(user, 'last', null)
+                ..collectChanges(); // throw away first set
 
         changeIterator = detector.collectChanges();
         expect(changeIterator.moveNext()).toEqual(false);

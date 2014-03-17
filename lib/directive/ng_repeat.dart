@@ -1,16 +1,5 @@
 part of angular.directive;
 
-class _Row {
-  final id;
-  Scope scope;
-  View view;
-  dom.Element startNode;
-  dom.Element endNode;
-  List<dom.Element> nodes;
-
-  _Row(this.id);
-}
-
 /**
  * The `ngRepeat` directive instantiates a template once per item from a
  * collection. Each template instance gets its own scope, where the given loop
@@ -20,15 +9,15 @@ class _Row {
  * Special properties are exposed on the local scope of each template instance,
  * including:
  *
- * <table>
- * <tr><th> Variable  </th><th> Type </th><th> Details                                                                     <th></tr>
- * <tr><td> `$index`  </td><td>[num] </td><td> iterator offset of the repeated element (0..length-1)                       <td></tr>
- * <tr><td> `$first`  </td><td>[bool]</td><td> true if the repeated element is first in the iterator.                      <td></tr>
- * <tr><td> `$middle` </td><td>[bool]</td><td> true if the repeated element is between the first and last in the iterator. <td></tr>
- * <tr><td> `$last`   </td><td>[bool]</td><td> true if the repeated element is last in the iterator.                       <td></tr>
- * <tr><td> `$even`   </td><td>[bool]</td><td> true if the iterator position `$index` is even (otherwise false).           <td></tr>
- * <tr><td> `$odd`    </td><td>[bool]</td><td> true if the iterator position `$index` is odd (otherwise false).            <td></tr>
- * </table>
+ *   * `$index` ([:num:]) the iterator offset of the repeated element
+ *      (0..length-1)
+ *   * `$first`  ([:bool:]) whether the repeated element is first in the
+ *      iterator.
+ *   * `$middle` ([:bool:]) whether the repeated element is between the first
+ *      and last in the iterator.
+ *   * `$last` ([:bool:]) whether the repeated element is last in the iterator.
+ *   * `$even` ([:bool:]) whether the iterator position `$index` is even.
+ *   * `$odd` ([:bool:]) whether the iterator position `$index` is odd.
  *
  *
  * [repeat_expression] ngRepeat The expression indicating how to enumerate a
@@ -57,7 +46,7 @@ class _Row {
  *     function can be used to assign a unique `$$hashKey` property to each item
  *     in the array. This property is then used as a key to associated DOM
  *     elements with the corresponding item in the array by identity. Moving the
- *     same object in array would move the DOM element in the same way ian the
+ *     same object in array would move the DOM element in the same way in the
  *     DOM.
  *
  *     For example: `item in items track by item.id` is a typical pattern when
@@ -81,8 +70,8 @@ class _Row {
     selector: '[ng-repeat]',
     map: const {'.': '@expression'})
 class NgRepeatDirective {
-  static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
-  static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$');
+  static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(?:track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
+  static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([$\w]+)|\(([$\w]+)\s*,\s*([$\w]+)\))$');
 
   final ViewPort _viewPort;
   final BoundViewFactory _boundViewFactory;
@@ -96,35 +85,38 @@ class NgRepeatDirective {
   String _listExpr;
   Map<dynamic, _Row> _rows = {};
   Function _trackByIdFn = (key, value, index) => value;
-  Watch _watch = null;
-  Iterable _lastCollection;
+  Watch _watch;
 
   NgRepeatDirective(this._viewPort, this._boundViewFactory, this._scope,
-                    this._parser, this.filters);
+                    this._parser, this._astParser, this.filters);
 
   set expression(value) {
     assert(value != null);
     _expression = value;
     if (_watch != null) _watch.remove();
+
     Match match = _SYNTAX.firstMatch(_expression);
     if (match == null) {
       throw "[NgErr7] ngRepeat error! Expected expression in form of '_item_ "
           "in _collection_[ track by _id_]' but got '$_expression'.";
     }
+
     _listExpr = match.group(2);
-    var trackByExpr = match.group(4);
+
+    var trackByExpr = match.group(3);
     if (trackByExpr != null) {
       Expression trackBy = _parser(trackByExpr);
       _trackByIdFn = ((key, value, index) {
         final trackByLocals = <String, Object>{};
         if (_keyIdentifier != null) trackByLocals[_keyIdentifier] = key;
-        trackByLocals
-            ..[_valueIdentifier] = value
-            ..[r'$index'] = index
-            ..[r'$id'] = (obj) => obj;
-        return relaxFnArgs(trackBy.eval)(new ScopeLocals(_scope.context, trackByLocals));
+        trackByLocals..[_valueIdentifier] = value
+                     ..[r'$index'] = index
+                     ..[r'$id'] = (obj) => obj;
+        return relaxFnArgs(trackBy.eval)(new ScopeLocals(_scope.context,
+            trackByLocals));
       });
     }
+
     var assignExpr = match.group(1);
     match = _LHS_SYNTAX.firstMatch(assignExpr);
     if (match == null) {
@@ -132,19 +124,24 @@ class NgRepeatDirective {
           "should be an identifier or '(_key_, _value_)' expression, but got "
           "'$assignExpr'.";
     }
+
     _valueIdentifier = match.group(3);
     if (_valueIdentifier == null) _valueIdentifier = match.group(1);
     _keyIdentifier = match.group(2);
 
+    _watch = _scope.watch(
+        _astParser(_listExpr, collection: true, filters: filters),
+        (CollectionChangeRecord changeRecord, _) {
+          //TODO(misko): we should take advantage of the CollectionChangeRecord!
+          if (changeRecord == null) return;
+          _onCollectionChange(changeRecord.iterable);
 
-    _watch = _scope.watch(_listExpr, (CollectionChangeRecord collection, _) {
-        //TODO(misko): we should take advantage of the CollectionChangeRecord!
-        _onCollectionChange(collection == null ? [] : collection.iterable);
-      },
-      collection: true,
-      filters: filters);
+        }
+    );
   }
 
+
+  // todo -> collection
   List<_Row> _computeNewRows(Iterable collection, trackById) {
     final newRowOrder = new List<_Row>(collection.length);
     // Same as lastViewMap but it has the current state. It will become the
@@ -155,8 +152,7 @@ class NgRepeatDirective {
       var value = collection.elementAt(index);
       trackById = _trackByIdFn(index, value, index);
       if (_rows.containsKey(trackById)) {
-        var row = _rows[trackById];
-        _rows.remove(trackById);
+        var row = _rows.remove(trackById);
         newRows[trackById] = row;
         newRowOrder[index] = row;
       } else if (newRows.containsKey(trackById)) {
@@ -183,9 +179,9 @@ class NgRepeatDirective {
     return newRowOrder;
   }
 
-  _onCollectionChange(Iterable collection) {
-    dom.Node previousNode = _viewPort.placeholder; // current position of the
-    // node
+  void _onCollectionChange(Iterable collection) {
+    // current position of the node
+    dom.Node previousNode = _viewPort.placeholder;
     dom.Node nextNode;
     Scope childScope;
     Map childContext;
@@ -216,7 +212,8 @@ class NgRepeatDirective {
         previousNode = row.endNode;
       } else {
         // new item which we don't know about
-        childScope = _scope.createChild(childContext = new PrototypeMap(_scope.context));
+        childScope = _scope.createChild(childContext =
+            new PrototypeMap(_scope.context));
       }
 
       if (!identical(childScope.context[_valueIdentifier], value)) {
@@ -224,13 +221,12 @@ class NgRepeatDirective {
       }
       var first = (index == 0);
       var last = (index == collection.length - 1);
-      childContext
-          ..[r'$index'] = index
-          ..[r'$first'] = first
-          ..[r'$last'] = last
-          ..[r'$middle'] = !first && !last
-          ..[r'$odd'] = index & 1 == 1
-          ..[r'$even'] = index & 1 == 0;
+      childContext..[r'$index'] = index
+                  ..[r'$first'] = first
+                  ..[r'$last'] = last
+                  ..[r'$middle'] = !first && !last
+                  ..[r'$odd'] = index & 1 == 1
+                  ..[r'$even'] = index & 1 == 0;
 
       if (row.startNode == null) {
         var view = _boundViewFactory(childScope);
@@ -238,11 +234,22 @@ class NgRepeatDirective {
             ..view = view
             ..scope = childScope
             ..nodes = view.nodes
-            ..startNode = row.nodes[0]
-            ..endNode = row.nodes[row.nodes.length - 1];
+            ..startNode = row.nodes.first
+            ..endNode = row.nodes.last;
         _viewPort.insert(view, insertAfter: cursor);
       }
       cursor = row.view;
     }
   }
+}
+
+class _Row {
+  final id;
+  Scope scope;
+  View view;
+  dom.Element startNode;
+  dom.Element endNode;
+  List<dom.Element> nodes;
+
+  _Row(this.id);
 }

@@ -29,7 +29,7 @@ class View {
 class ViewPort {
   final dom.Node placeholder;
   final NgAnimate _animate;
-  final List<View> _views = <View>[];
+  final _views = <View>[];
 
   ViewPort(this.placeholder, this._animate);
 
@@ -56,12 +56,12 @@ class ViewPort {
   }
 
   void _viewsInsertAfter(View view, View insertAfter) {
-    int index = (insertAfter != null) ? _views.indexOf(insertAfter) : -1;
-    _views.insert(index + 1, view);
+    int index = insertAfter == null ? 0 : _views.indexOf(insertAfter) + 1;
+    _views.insert(index, view);
   }
 
   dom.Node _lastNode(View insertAfter) =>
     insertAfter == null
       ? placeholder
-      : insertAfter.nodes[insertAfter.nodes.length - 1];
+      : insertAfter.nodes.last;
 }
