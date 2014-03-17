@@ -371,6 +371,8 @@ class ElementBinder {
       ref.mappings.add(mappingFn);
     });
   }
+
+  toString() => "[ElementBinder decorators:$decorators template:$template]";
 }
 
 // Used for walking the DOM
@@ -392,6 +394,7 @@ class TaggedTextBinder {
   final int offsetIndex;
 
   TaggedTextBinder(this.binder, this.offsetIndex);
+  toString() => "[TaggedTextBinder binder:$binder offset:$offsetIndex]";
 }
 
 // Used for the tagging compiler
