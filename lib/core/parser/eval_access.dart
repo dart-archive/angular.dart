@@ -80,7 +80,7 @@ abstract class AccessReflective {
     if (holder == null) {
       _cachedKind = CACHED_VALUE;
       return _cachedValue = null;
-    } else if (holder is Map) {
+    } else if (holder is Map && !isMapProperty(name)) {
       _cachedKind = CACHED_MAP;
       _cachedValue = null;
       return holder[name];
@@ -163,7 +163,7 @@ abstract class AccessFast {
 
   _eval(holder) {
     if (holder == null) return null;
-    return (holder is Map) ? holder[name] : getter(holder);
+    return (holder is Map && !isMapProperty(name)) ? holder[name] : getter(holder);
   }
 
   _assign(scope, holder, value) {

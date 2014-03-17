@@ -3,6 +3,7 @@ library dirty_checking_change_detector;
 import 'dart:mirrors';
 import 'dart:collection';
 import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/core/parser/utils.dart' show isMapProperty;
 
 typedef FieldGetter(object);
 
@@ -424,7 +425,7 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
       return;
     }
 
-    if (obj is Map) {
+    if (obj is Map && !isMapProperty(field)) {
       _mode =  _MODE_MAP_FIELD_;
       _instanceMirror = null;
     } else if (_getter != null) {

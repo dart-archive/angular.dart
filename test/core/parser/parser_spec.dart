@@ -743,6 +743,14 @@ main() {
       });
 
 
+      it('should evaluate map item and field access', () {
+        context['map'] = { 'a': 1.1, 'b': 'B' };
+        expect(eval("map.isEmpty")).toEqual(false);
+        expect(eval("map.isNotEmpty")).toEqual(true);
+        expect(eval("map.length")).toEqual(2);
+      });
+
+
       it('should evaluate JSON', () {
         expect(eval("[{}]")).toEqual([{}]);
         expect(eval("[{a:[]}, {b:1}]")).toEqual([{"a":[]},{"b":1}]);

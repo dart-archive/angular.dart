@@ -48,6 +48,24 @@ void main() {
         expect(logger).toEqual(['AB', '123', 'XYZ']);
       });
 
+      it('should watch map property of a primitive type', (Logger logger, Map context, RootScope rootScope) {
+        context['a'] =  {'b': 'AB', 'length' : 99};
+        rootScope.watch('a.isEmpty', (value, previous) => logger(value));
+        rootScope.watch('a.isNotEmpty', (value, previous) => logger(value));
+        rootScope.watch('a.length', (value, previous) => logger(value));
+        rootScope.watch('a["length"]', (value, previous) => logger(value));
+        rootScope.digest();
+        expect(logger).toEqual([false, true, 2, 99]);
+        context['a']['c'] = '123';
+        logger.clear();
+        rootScope.digest();
+        expect(logger).toEqual([3]);
+        context['a'] = {};
+        logger.clear();
+        rootScope.digest();
+        expect(logger).toEqual([true, false, 0, null]);
+      });
+
       it('should watch math operations', (Logger logger, Map context, RootScope rootScope) {
         context['a'] = 1;
         context['b'] = 2;
