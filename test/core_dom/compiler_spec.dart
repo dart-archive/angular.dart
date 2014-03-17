@@ -582,6 +582,19 @@ void main() {
 
         expect(element.text).toContain('my data');
       });
+
+      it('should expose a ancestor controller to the scope of its children thru a undecorated element', (TestBed _) {
+        var element = _.compile(
+            '<div my-parent-controller>'
+              '<div>'
+                '<div my-child-controller>{{ my_parent.data() }}</div>'
+              '</div>'
+            '</div>');
+
+        _.rootScope.apply();
+
+        expect(element.text).toContain('my data');
+      });
     });
 
 

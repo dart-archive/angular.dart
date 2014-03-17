@@ -50,7 +50,7 @@ class TaggingCompiler implements Compiler {
       if (node.nodeType == 1) {
 
         var taggedElementBinder = null;
-        int taggedElementBinderIndex = -1;
+        int taggedElementBinderIndex = parentElementBinderOffset;
         if (elementBinder.hasDirectivesOrEvents || elementBinder.hasTemplate) {
           taggedElementBinder = _addBinder(elementBinders,
               new TaggedElementBinder(elementBinder, parentElementBinderOffset));
