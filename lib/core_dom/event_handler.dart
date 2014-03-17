@@ -7,7 +7,7 @@ class EventHandler {
   dom.Node rootNode;
   final Expando expando;
   final ExceptionHandler exceptionHandler;
-  final Map<String, Function> listeners = <String, Function>{};
+  final listeners = <String, Function>{};
 
   EventHandler(this.rootNode, this.expando, this.exceptionHandler);
 
@@ -19,7 +19,7 @@ class EventHandler {
     });
   }
 
-  eventListener(dom.Event event) {
+  void eventListener(dom.Event event) {
     dom.Node element = event.target;
     while (element != null && element != rootNode) {
       var expression;
@@ -65,7 +65,7 @@ class EventHandler {
   * corresponds to event named 'someCustomEvent'.
   */
   static String attrNameToEventName(String attrName) {
-    var part = attrName.replaceAll("on-", "");
+    var part = attrName.startsWith("on-") ? attrName.substring(3) : attrName;
     part = part.replaceAllMapped(new RegExp(r'\-(\w)'), (Match match) {
       return match.group(0).toUpperCase();
     });

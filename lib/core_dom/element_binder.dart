@@ -20,7 +20,7 @@ class ElementBinder {
   final Parser _parser;
   final Profiler _perf;
   final Expando _expando;
-  final Map<String, String> onEvents = <String, String>{};
+  final onEvents = <String, String>{};
 
   // Member fields
   var decorators = <DirectiveRef>[];
@@ -74,8 +74,8 @@ class ElementBinder {
     return decorators;
   }
 
-  bool get hasDirectivesOrEvents
-      => _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
+  bool get hasDirectivesOrEvents =>
+      _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
   // DI visibility strategy allowing node-local visibility.
   static final Function _elementOnly = (Injector requesting, Injector defining) {
@@ -108,7 +108,8 @@ class ElementBinder {
       var viewFactory = (_) => null;
       var boundViewFactory = (_) => null;
       var nodesAttrsDirectives = null;
-      var nodeModule = new Module()..type(NgElement)
+      var nodeModule = new Module()
+          ..type(NgElement)
           ..value(View, view)
           ..value(dom.Element, node)
           ..value(dom.Node, node)
@@ -166,7 +167,8 @@ class ElementBinder {
                             injector.get(dom.NodeTreeSanitizer), _expando);
             if (fctrs == null) fctrs = new Map<Type, _ComponentFactory>();
             fctrs[ref.type] = componentFactory;
-            return componentFactory.call(injector, scope, viewCache, http, templateCache, directives);
+            return componentFactory.call(injector, scope, viewCache, http,
+                templateCache, directives);
           }, visibility: visibility);
         } else {
           nodeModule.type(ref.type, visibility: visibility);
