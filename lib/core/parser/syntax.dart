@@ -123,6 +123,13 @@ class CallArguments {
   final List<Expression> positionals;
   final Map<String, Expression> named;
   const CallArguments(this.positionals, this.named);
+
+  int get arity => positionals.length + named.length;
+
+  Expression operator[](int index) {
+    int split = positionals.length;
+    return index < split ? positionals[index] : named.values.elementAt(index - split);
+  }
 }
 
 class CallScope extends Expression {

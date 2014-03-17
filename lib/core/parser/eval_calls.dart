@@ -5,6 +5,8 @@ import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/utils.dart';
 import 'package:angular/core/module.dart';
 
+typedef Function LookupFunction(String name, syntax.CallArguments arguments);
+
 class CallScope extends syntax.CallScope with CallReflective {
   final Symbol symbol;
   CallScope(name, arguments)
@@ -22,31 +24,45 @@ class CallMember extends syntax.CallMember with CallReflective {
 }
 
 class CallScopeFast0 extends syntax.CallScope with CallFast {
-  final Function function;
-  CallScopeFast0(name, arguments, this.function) : super(name, arguments);
+  final Function callProperty;
+  final Function callMap;
+  CallScopeFast0(name, arguments, LookupFunction lookup)
+      : this.callProperty = lookup(name, arguments)
+      , this.callMap = lookup("", arguments)
+      , super(name, arguments);
   eval(scope, [FilterMap filters]) => _evaluate0(scope);
 }
 
 class CallScopeFast1 extends syntax.CallScope with CallFast {
-  final Function function;
-  CallScopeFast1(name, arguments, this.function) : super(name, arguments);
+  final Function callProperty;
+  final Function callMap;
+  CallScopeFast1(name, arguments, LookupFunction lookup)
+      : this.callProperty = lookup(name, arguments)
+      , this.callMap = lookup("", arguments)
+      , super(name, arguments);
   eval(scope, [FilterMap filters]) =>
-       _evaluate1(scope, arguments.positionals[0].eval(scope, filters));
+       _evaluate1(scope, arguments[0].eval(scope, filters));
 }
 
 class CallMemberFast0 extends syntax.CallMember with CallFast {
-  final Function function;
-  CallMemberFast0(object, name, arguments, this.function)
-      : super(object, name, arguments);
+  final Function callProperty;
+  final Function callMap;
+  CallMemberFast0(object, name, arguments, LookupFunction lookup)
+      : this.callProperty = lookup(name, arguments)
+      , this.callMap = lookup("", arguments)
+      , super(object, name, arguments);
   eval(scope, [FilterMap filters]) => _evaluate0(object.eval(scope, filters));
 }
 
 class CallMemberFast1 extends syntax.CallMember with CallFast {
-  final Function function;
-  CallMemberFast1(object, name, arguments, this.function)
-      : super(object, name, arguments);
+  final Function callProperty;
+  final Function callMap;
+  CallMemberFast1(object, name, arguments, LookupFunction lookup)
+      : this.callProperty = lookup(name, arguments)
+      , this.callMap = lookup("", arguments)
+      , super(object, name, arguments);
   eval(scope, [FilterMap filters]) => _evaluate1(object.eval(scope, filters),
-      arguments.positionals[0].eval(scope, filters));
+      arguments[0].eval(scope, filters));
 }
 
 class CallFunction extends syntax.CallFunction {
@@ -138,12 +154,14 @@ abstract class CallReflective {
  */
 abstract class CallFast {
   String get name;
-  Function get function;
+
+  Function get callMap;
+  Function get callProperty;
 
   _evaluate0(holder) => (holder is Map)
-      ? ensureFunctionFromMap(holder, name)()
-      : function(holder);
+      ? callMap(ensureFunctionFromMap(holder, name))
+      : callProperty(holder);
   _evaluate1(holder, a0) => (holder is Map)
-      ? ensureFunctionFromMap(holder, name)(a0)
-      : function(holder, a0);
+      ? callMap(ensureFunctionFromMap(holder, name), a0)
+      : callProperty(holder, a0);
 }
