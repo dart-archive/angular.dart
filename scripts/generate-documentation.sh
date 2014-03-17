@@ -17,26 +17,12 @@ echo "Generating documentation"
     --no-include-sdk \
     --package-root=../packages/ \
     angular.dart \
-    animate/module.dart \
-    utils.dart \
-    change_detection/watch_group.dart \
-    core/module.dart \
-    core_dom/module.dart \
     filter/module.dart \
     directive/module.dart \
+    animate/module.dart \
+    utils.dart \
     mock/module.dart \
     perf/module.dart \
-    playback/playback_data.dart \
-    playback/playback_http.dart \
-    routing/module.dart \
-    tools/common.dart \
-    tools/expression_extractor.dart \
-    tools/io.dart \
-    tools/io_impl.dart \
-    tools/source_crawler_impl.dart \
-    tools/source_metadata_extractor.dart \
-    tools/template_cache_annotation.dart \
-    tools/template_cache_generator.dart
 
 cd ..
 
