@@ -208,7 +208,7 @@ class NgRepeatDirective {
         nextNode = previousNode;
         do {
           nextNode = nextNode.nextNode;
-        } while(nextNode != null);
+        } while (nextNode != null);
 
         if (row.startNode != nextNode) {
           // existing item which got moved

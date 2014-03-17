@@ -72,7 +72,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
   DirtyCheckingChangeDetector get _root {
     var root = this;
     var next;
-    while((next = root._parent) != null) {
+    while ((next = root._parent) != null) {
       root = next;
     }
     return root is DirtyCheckingChangeDetector ? root : null;
@@ -104,7 +104,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     int count = 0;
     DirtyCheckingRecord cursor = _recordHead;
     DirtyCheckingRecord end = _childInclRecordTail;
-    while(cursor != null) {
+    while (cursor != null) {
       if (cursor._mode != DirtyCheckingRecord._MODE_MARKER_) {
         count++;
       }
@@ -152,7 +152,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     if (nextRecord != null) nextRecord._prevRecord = prevRecord;
 
     var cursor = _recordHead;
-    while(cursor != nextRecord) {
+    while (cursor != nextRecord) {
       cursor = cursor._nextRecord;
     }
 
@@ -258,16 +258,16 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     var record = this._recordHead;
     var groups = [this];
     DirtyCheckingChangeDetectorGroup group;
-    while(groups.isNotEmpty) {
+    while (groups.isNotEmpty) {
       group = groups.removeAt(0);
       DirtyCheckingChangeDetectorGroup childGroup = group._childTail;
-      while(childGroup != null) {
+      while (childGroup != null) {
         groups.insert(0, childGroup);
         childGroup = childGroup._prev;
       }
       var groupRecord = group._recordHead;
       var groupLast = group._recordTail;
-      while(true) {
+      while (true) {
         if (groupRecord == record) {
           record = record._nextRecord;
         } else {
@@ -510,7 +510,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
 
   void forEachChange(void f(ChangedKeyValue<K, V> change)) {
     KeyValueRecord record = _changesHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextChangedKeyValue;
     }
@@ -518,7 +518,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
 
   void forEachAddition(void f(AddedKeyValue<K, V> addition)){
     KeyValueRecord record = _additionsHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextAddedKeyValue;
     }
@@ -526,7 +526,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
 
   void forEachRemoval(void f(RemovedKeyValue<K, V> removal)){
     KeyValueRecord record = _removalsHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextRemovedKeyValue;
     }
@@ -631,7 +631,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   }
 
   void _truncate(KeyValueRecord lastRecord, KeyValueRecord record) {
-    while(record != null) {
+    while (record != null) {
       if (lastRecord == null) {
         _mapHead = null;
       } else {
@@ -782,7 +782,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
   void forEachAddition(void f(AddedItem<V> addition)){
     ItemRecord record = _additionsHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextAddedRec;
     }
@@ -790,7 +790,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
   void forEachMove(void f(MovedItem<V> change)) {
     ItemRecord record = _movesHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextMovedRec;
     }
@@ -798,7 +798,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
   void forEachRemoval(void f(RemovedItem<V> removal)){
     ItemRecord record = _removalsHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextRemovedRec;
     }
@@ -858,14 +858,14 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     ItemRecord record;
 
     record = _additionsHead;
-    while(record != null) {
+    while (record != null) {
       record.previousIndex = record.currentIndex;
       record = record._nextAddedRec;
     }
     _additionsHead = _additionsTail = null;
 
     record = _movesHead;
-    while(record != null) {
+    while (record != null) {
       record.previousIndex = record.currentIndex;
       var nextRecord = record._nextMovedRec;
       assert((record._nextMovedRec = null) == null);
@@ -978,7 +978,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
    */
   void _truncate(ItemRecord record) {
     // Anything after that needs to be removed;
-    while(record != null) {
+    while (record != null) {
       ItemRecord nextRecord = record._nextRec;
       _removals_add(_collection_unlink(record));
       record = nextRecord;
@@ -1134,28 +1134,28 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
     var list = [];
     record = _collectionHead;
-    while(record != null) {
+    while (record != null) {
       list.add(record);
       record = record._nextRec;
     }
 
     var additions = [];
     record = _additionsHead;
-    while(record != null) {
+    while (record != null) {
       additions.add(record);
       record = record._nextAddedRec;
     }
 
     var moves = [];
     record = _movesHead;
-    while(record != null) {
+    while (record != null) {
       moves.add(record);
       record = record._nextMovedRec;
     }
 
     var removals = [];
     record = _removalsHead;
-    while(record != null) {
+    while (record != null) {
       removals.add(record);
       record = record._nextRemovedRec;
     }
@@ -1225,9 +1225,9 @@ class _DuplicateItemRecordList {
 
   ItemRecord get(key, int hideIndex) {
     ItemRecord record = head;
-    while(record != null) {
-      if (hideIndex == null ||
-          hideIndex < record.currentIndex && identical(record.item, key)) {
+    while (record != null) {
+      if ((hideIndex == null || hideIndex < record.currentIndex) &&
+          identical(record.item, key)) {
         return record;
       }
       record = record._nextDupRec;
@@ -1239,7 +1239,7 @@ class _DuplicateItemRecordList {
     assert(() {
       // verify that the record being removed is someplace in the list.
       ItemRecord cursor = head;
-      while(cursor != null) {
+      while (cursor != null) {
         if (identical(cursor, record)) return true;
         cursor = cursor._nextDupRec;
       }

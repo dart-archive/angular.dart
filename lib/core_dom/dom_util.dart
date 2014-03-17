@@ -13,7 +13,7 @@ void domRemove(List<dom.Node> nodes) {
     dom.Node current = nodes[j];
     dom.Node next = j + 1 < nodes.length ? nodes[j + 1] : null;
 
-    while(next != null && current.nextNode != next) {
+    while (next != null && current.nextNode != next) {
       current.nextNode.remove();
     }
     nodes[j].remove();
@@ -55,14 +55,14 @@ List<dom.Node> allNodesBetween(List<dom.Node> nodes) {
  * Computes and returns the longest css transition or keyframe animation from
  * a computed style in milliseconds.
  */
-num computeLongestTransition(dynamic style) {
+num computeLongestTransition(style) {
   double longestTransitionSeconds = 0.0;
 
   if (style.transitionDuration.length > 0) {
     // Parse transitions
-    List<double> durations = _parseDurationList(style.transitionDuration)
+    List<num> durations = _parseDurationList(style.transitionDuration)
         .toList(growable: false);
-    List<double> delays = _parseDurationList(style.transitionDelay)
+    List<num> delays = _parseDurationList(style.transitionDelay)
         .toList(growable: false);
 
     assert(durations.length == delays.length);
@@ -98,15 +98,15 @@ num computeLongestTransition(dynamic style) {
   return longestTransitionSeconds * 1000;
 }
 
-Iterable<num> _parseIterationCounts(String iterationCounts) {
-  return iterationCounts.split(", ")
-      .map((x) => x == "infinite" ? -1 : num.parse(x));
-}
+Iterable<num> _parseIterationCounts(String iterationCounts) => iterationCounts
+    .split(", ")
+    .map((x) => x == "infinite" ? -1 : double.parse(x));
 
 /// This expects a string in the form "0s, 3.234s, 10s" and will return a list
 /// of doubles of (0, 3.234, 10).
-Iterable<num> _parseDurationList(String durations) =>
-    durations.split(", ").map((x) => _parseCssDuration(x));
+Iterable<num> _parseDurationList(String durations) => durations
+    .split(", ")
+    .map((x) => _parseCssDuration(x));
 
 /// This expects a string in the form of '0.234s' or '4s' and will return
 /// a parsed double.
@@ -114,7 +114,7 @@ num _parseCssDuration(String cssDuration) =>
     double.parse(cssDuration.substring(0, cssDuration.length - 1));
 
 num _computeTotalDurationSeconds(num delay, num duration,
-    { int iterations: 1}) {
+                                 {num iterations: 1}) {
   if (iterations == 0) return 0.0;
   if (iterations < 0) iterations = 1; // infinite
 

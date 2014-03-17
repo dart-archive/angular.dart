@@ -1060,6 +1060,20 @@ main() {
       });
 
 
+      it('should be an error to mix positional and named arguments', () {
+        expect(() => parser('foo(a: 0, 1)')).toThrow("Cannot pass positional arguments after named arguments at column 11");
+        expect(() => parser('foo(a: 0, b: 1, 2)')).toThrow("Cannot pass positional arguments after named arguments at column 17");
+        expect(() => parser('foo(a: 0, 1, b: 2)')).toThrow("Cannot pass positional arguments after named arguments at column 11");
+        expect(() => parser('foo(a: 0, b: 1, 2, c: 3)')).toThrow("Cannot pass positional arguments after named arguments at column 17");
+      });
+
+
+      it('should be an error to use a non-identifier as a named argument', () {
+        expect(() => parser('foo(0: 1)')).toThrow("Unexpected token 0, expected identifier or keyword at column 5");
+        expect(() => parser('foo("0": 1)')).toThrow("Unexpected token 0, expected identifier or keyword at column 5");
+      });
+
+
       it('should pretty print scope calls correctly', () {
         expect(parser('foo(a: 0)').toString()).toEqual('foo(a: 0)');
         expect(parser('foo(a: 0, b: 1)').toString()).toEqual('foo(a: 0, b: 1)');

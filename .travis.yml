@@ -13,7 +13,7 @@ env:
     TESTS=dart2js
   global:
   - CHROME_BIN=/usr/bin/google-chrome
-  - secure: NJt0LRmY2HoMw4QuTc+8MhDfSCTTuXe0kE7pC1flbhQOi/g6sdVX57b/4OZzBXRKG1oq/URX4FMeVgSuFQvTaEad0qsTPoGji/Mmk61LRtE/Mbo/H7v5P2tyGPPJ5S25C/xFo42cKDyzFU8Uv+5W2Htijsa3xt4VfAWcDmZJjuA=
+  - secure: "ZSUCLuDjvKEFmgjAd3GpUNCNkdjE66dEIiBfW+EfN0dv2+QHx/MHL4hRyKk2qbGjCr/suR9JWgmNE+Yu1A4fwzcYN52ehgyoLUCTL9YDk+XkFdFWpnjJ8364TDcDuJA0oxwcqJ9E3XUPv6sq1mbcX6DlkPKco7ZT8TLtGmd0nGA="
 before_install:
 - export DISPLAY=:99.0
 - ./scripts/travis/install.sh

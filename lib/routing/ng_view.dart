@@ -160,11 +160,11 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
  *       MyComponent(RouteProvider routeProvider) {
  *         _loadFoo(routeProvider.parameters['fooId']);
  *         route = routeProvider.route.newHandle();
- *         route.onRoute.listen((RouteEvent e) {
+ *         route.onEnter.listen((RouteEvent e) {
  *           // Do something when the route is activated.
  *         });
  *         route.onLeave.listen((RouteEvent e) {
- *           // Do something when the route is diactivated.
+ *           // Do something when the route is de-activated.
  *           e.allowLeave(allDataSaved());
  *         });
  *       }

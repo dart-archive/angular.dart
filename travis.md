@@ -18,7 +18,7 @@
 
 == How does it work.
 
-All scripts can be found it `.travis.yml' and `./scripts/travis` folder.
+All scripts can be found it `.travis.yml` and `./scripts/travis` folder.
 
 1. Install latest google-chrome
 2. Install Dart stable or dev channel (currently only running on stable, see `.travis.yml` `matrix`)

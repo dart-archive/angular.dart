@@ -56,7 +56,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   int get totalFieldCost {
     var cost = _fieldCost;
     WatchGroup group = _watchGroupHead;
-    while(group != null) {
+    while (group != null) {
       cost += group.totalFieldCost;
       group = group._nextWatchGroup;
     }
@@ -68,7 +68,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   int get totalCollectionCost {
     var cost = _collectionCost;
     WatchGroup group = _watchGroupHead;
-    while(group != null) {
+    while (group != null) {
       cost += group.totalCollectionCost;
       group = group._nextWatchGroup;
     }
@@ -82,7 +82,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   int get totalEvalCost {
     var cost = _evalCost;
     WatchGroup group = _watchGroupHead;
-    while(group != null) {
+    while (group != null) {
       cost += group.evalCost;
       group = group._nextWatchGroup;
     }
@@ -118,7 +118,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   get isAttached {
     var group = this;
     var root = _rootGroup;
-    while(group != null) {
+    while (group != null) {
       if (group == root){
         return true;
       }
@@ -219,14 +219,14 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
     // Convert the args from AST to WatchRecords
     var i = 0;
-    argsAST.
-    map((ast) => _cache.putIfAbsent(ast.expression,
-        () => ast.setupWatch(this))).forEach((WatchRecord<_Handler> record) {
-      var argHandler = new _ArgHandler(this, evalWatchRecord, i++);
-      _ArgHandlerList._add(invokeHandler, argHandler);
-      record.handler.addForwardHandler(argHandler);
-      argHandler.acceptValue(record.currentValue);
-    });
+    argsAST.map((ast) =>
+        _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this)))
+            .forEach((WatchRecord<_Handler> record) {
+              var argHandler = new _ArgHandler(this, evalWatchRecord, i++);
+              _ArgHandlerList._add(invokeHandler, argHandler);
+              record.handler.addForwardHandler(argHandler);
+              argHandler.acceptValue(record.currentValue);
+            });
 
     // Must be done last
     _EvalWatchList._add(this, evalWatchRecord);
@@ -414,7 +414,7 @@ class RootWatchGroup extends WatchGroup {
     _dirtyWatchHead = null;
     RootWatchGroup root = _rootGroup;
     try {
-      while(dirtyWatch != null) {
+      while (dirtyWatch != null) {
         count++;
         try {
           if (root._removeCount == 0 || dirtyWatch._watchGroup.isAttached) {
@@ -563,7 +563,7 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
     // If we have reaction functions than queue them up for asynchronous
     // processing.
     Watch watch = _watchHead;
-    while(watch != null) {
+    while (watch != null) {
       watchGrp._rootGroup._addDirtyWatch(watch);
       watch = watch._nextWatch;
     }
@@ -655,7 +655,7 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
   void release() {
     super.release();
     _ArgHandler current = _argHandlerHead;
-    while(current != null) {
+    while (current != null) {
       current.release();
       current = current._nextArgHandler;
     }

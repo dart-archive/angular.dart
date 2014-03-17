@@ -18,8 +18,8 @@ class WalkingCompiler implements Compiler {
       var subtrees, binder;
 
       ElementBinder elementBinder = existingElementBinder == null
-      ?  directives.selector.match(domCursor.current)
-      : existingElementBinder;
+          ?  directives.selector.match(domCursor.current)
+          : existingElementBinder;
 
       if (elementBinder.hasTemplate) {
         elementBinder.templateViewFactory = _compileTransclusion(
@@ -31,20 +31,20 @@ class WalkingCompiler implements Compiler {
         if (domCursor.descend()) {
           templateCursor.descend();
 
-          subtrees =
-          _compileView(domCursor, templateCursor, null, directives);
+          subtrees = _compileView(domCursor, templateCursor, null, directives);
 
           domCursor.ascend();
           templateCursor.ascend();
         }
       }
 
-      if (elementBinder.hasDirectives) {
+      if (elementBinder.hasDirectivesOrEvents) {
         binder = elementBinder;
       }
 
       if (elementBinders == null) elementBinders = [];
-      elementBinders.add(new ElementBinderTreeRef(templateCursor.index, new ElementBinderTree(binder, subtrees)));
+      elementBinders.add(new ElementBinderTreeRef(templateCursor.index,
+          new ElementBinderTree(binder, subtrees)));
     } while (templateCursor.moveNext() && domCursor.moveNext());
 
     return elementBinders;
@@ -56,17 +56,18 @@ class WalkingCompiler implements Compiler {
       ElementBinder transcludedElementBinder,
       DirectiveMap directives) {
     var anchorName = directiveRef.annotation.selector +
-    (directiveRef.value != null ? '=' + directiveRef.value : '');
+        (directiveRef.value != null ? '=' + directiveRef.value : '');
     var viewFactory;
     var views;
 
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
     var domCursorIndex = domCursor.index;
-    var elementBinders =
-    _compileView(domCursor, transcludeCursor, transcludedElementBinder, directives);
+    var elementBinders = _compileView(domCursor, transcludeCursor,
+        transcludedElementBinder, directives);
     if (elementBinders == null) elementBinders = [];
 
-    viewFactory = new WalkingViewFactory(transcludeCursor.elements, elementBinders, _perf, _expando);
+    viewFactory = new WalkingViewFactory(transcludeCursor.elements,
+        elementBinders, _perf, _expando);
     domCursor.index = domCursorIndex;
 
     if (domCursor.isInstance) {

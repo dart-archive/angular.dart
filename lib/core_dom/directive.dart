@@ -1,9 +1,10 @@
 part of angular.core.dom;
 
-/**
- * Callback function used to notify of attribute changes.
- */
+/// Callback function used to notify of attribute changes.
 typedef AttributeChanged(String newValue);
+
+/// Callback function used to notify of observer changes.
+typedef void ObserverChanged(bool hasListeners);
 
 /**
  * NodeAttrs is a facade for element attributes. The facade is responsible
@@ -15,12 +16,13 @@ class NodeAttrs {
 
   Map<String, List<AttributeChanged>> _observers;
 
+  Map<String, List<ObserverChanged>> _observerListeners = {};
+
   NodeAttrs(this.element);
 
-  operator [](String attributeName) =>
-      element.attributes[attributeName];
+  operator [](String attributeName) => element.attributes[attributeName];
 
-  operator []=(String attributeName, String value) {
+  void operator []=(String attributeName, String value) {
     if (value == null) {
       element.attributes.remove(attributeName);
     } else {
@@ -37,14 +39,15 @@ class NodeAttrs {
    * synchronise with the current value.
    */
   observe(String attributeName, AttributeChanged notifyFn) {
-    if (_observers == null) {
-      _observers = new Map<String, List<AttributeChanged>>();
-    }
-    if (!_observers.containsKey(attributeName)) {
-      _observers[attributeName] = new List<AttributeChanged>();
-    }
-    _observers[attributeName].add(notifyFn);
+    if (_observers == null) _observers = <String, List<AttributeChanged>>{};
+    _observers.putIfAbsent(attributeName, () => <AttributeChanged>[])
+              .add(notifyFn);
+
     notifyFn(this[attributeName]);
+
+    if (_observerListeners.containsKey(attributeName)) {
+      _observerListeners[attributeName].forEach((cb) => cb(true));
+    }
   }
 
   void forEach(void f(String k, String v)) {
@@ -54,8 +57,16 @@ class NodeAttrs {
   bool containsKey(String attributeName) =>
       element.attributes.containsKey(attributeName);
 
-  Iterable<String> get keys =>
-      element.attributes.keys;
+  Iterable<String> get keys => element.attributes.keys;
+
+  void listenObserverChanges(String attributeName, ObserverChanged fn) {
+    if (_observerListeners == null) {
+      _observerListeners = <String, List<ObserverChanged>>{};
+    }
+    _observerListeners.putIfAbsent(attributeName, () => <ObserverChanged>[])
+                      .add(fn);
+    fn(false);
+  }
 }
 
 /**
@@ -64,9 +75,7 @@ class NodeAttrs {
  * ShadowRoot is ready.
  */
 class TemplateLoader {
-  final async.Future<dom.ShadowRoot> _template;
+  final async.Future<dom.ShadowRoot> template;
 
-  async.Future<dom.ShadowRoot> get template => _template;
-
-  TemplateLoader(this._template);
+  TemplateLoader(this.template);
 }

@@ -1,23 +1,23 @@
 part of angular.core;
 
-class Interpolation {
+class Interpolation implements Function {
   final String template;
-  final List<String> seperators;
+  final List<String> separators;
   final List<String> expressions;
   Function setter = (_) => _;
 
-  Interpolation(this.template, this.seperators, this.expressions);
+  Interpolation(this.template, this.separators, this.expressions);
 
   String call(List parts, [_]) {
-    if (parts == null) return seperators.join('');
-    var str = [];
+    if (parts == null) return separators.join('');
+    var sb = new StringBuffer();
     for (var i = 0; i < parts.length; i++) {
-      str.add(seperators[i]);
+      sb.write(separators[i]);
       var value = parts[i];
-      str.add(value == null ? '' : '$value');
+      sb.write(value == null ? '' : '$value');
     }
-    str.add(seperators.last);
-    return setter(str.join(''));
+    sb.write(separators.last);
+    return setter(sb.toString());
   }
 }
 
@@ -31,7 +31,7 @@ class Interpolation {
  *     expect(exp({name:'Angular'}).toEqual('Hello Angular!');
  */
 @NgInjectableService()
-class Interpolate {
+class Interpolate implements Function {
   final Parser _parse;
 
   Interpolate(this._parse);
@@ -58,27 +58,26 @@ class Interpolate {
     bool hasInterpolation = false;
     bool shouldAddSeparator = true;
     String exp;
-    List<String> separators = [];
-    List<String> expressions = [];
+    final separators = <String>[];
+    final expressions = <String>[];
 
-    while(index < length) {
-      if ( ((startIndex = template.indexOf(startSymbol, index)) != -1) &&
-           ((endIndex = template.indexOf(endSymbol, startIndex + startSymbolLength)) != -1) ) {
+    while (index < length) {
+      if (((startIndex = template.indexOf(startSymbol, index)) != -1) &&
+          ((endIndex = template.indexOf(endSymbol, startIndex + startSymbolLength)) != -1) ) {
         separators.add(template.substring(index, startIndex));
         exp = template.substring(startIndex + startSymbolLength, endIndex);
         expressions.add(exp);
         index = endIndex + endSymbolLength;
         hasInterpolation = true;
       } else {
-        // we did not find anything, so we have to add the remainder to the chunks array
+        // we did not find anything, so we have to add the remainder to the
+        // chunks array
         separators.add(template.substring(index));
         shouldAddSeparator = false;
         break;
       }
     }
-    if (shouldAddSeparator) {
-      separators.add('');
-    }
+    if (shouldAddSeparator) separators.add('');
     return (!mustHaveExpression || hasInterpolation)
         ? new Interpolation(template, separators, expressions)
         : null;

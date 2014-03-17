@@ -12,15 +12,14 @@ echo Current branch is: $TRAVIS_BRANCH
 echo Test result is: $TRAVIS_TEST_RESULT
  
 if [ "$CHANNEL" = "stable" ] && [ "$TRAVIS_REPO_SLUG" = "angular/angular.dart" ]; then
-     
-    if [ $TRAVIS_TEST_RESULT -eq 0 ] && [[ $TRAVIS_BRANCH == "presubmit-"* ]]; then
-     
-        git config credential.helper "store --file=.git/credentials"
-        echo "https://${GITHUB_TOKEN_ANGULARDART}:@github.com" > .git/credentials
-        git config user.name "travis@travis-ci.org"
- 
-        echo "Pushing HEAD to master..."
-        git remote add upstream https://github.com/angular/angular.dart.git
-        git push upstream HEAD:master
-    fi
+  if [ $TRAVIS_TEST_RESULT -eq 0 ] && [[ $TRAVIS_BRANCH == "presubmit-"* ]]; then
+    git config credential.helper "store --file=.git/credentials"
+    # travis encrypt GITHUB_TOKEN_ANGULAR_ORG=??? --repo=angular/angular.dart
+    echo "https://${GITHUB_TOKEN_ANGULAR_ORG}:@github.com" > .git/credentials
+    git config user.name "travis@travis-ci.org"
+
+    echo "Pushing HEAD to master..."
+    git remote add upstream https://github.com/angular/angular.dart.git
+    git push upstream HEAD:master
+  fi
 fi

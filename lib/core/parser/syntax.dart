@@ -6,51 +6,33 @@ import 'package:angular/core/parser/utils.dart' show EvalError;
 import 'package:angular/core/module.dart';
 
 abstract class Visitor {
-  visit(Expression expression)
-      => expression.accept(this);
+  visit(Expression expression) => expression.accept(this);
 
-  visitExpression(Expression expression)
-      => null;
-  visitChain(Chain expression)
-      => visitExpression(expression);
-  visitFilter(Filter expression)
-      => visitExpression(expression);
+  visitExpression(Expression expression) => null;
+  visitChain(Chain expression) => visitExpression(expression);
+  visitFilter(Filter expression) => visitExpression(expression);
 
-  visitAssign(Assign expression)
-      => visitExpression(expression);
-  visitConditional(Conditional expression)
-      => visitExpression(expression);
+  visitAssign(Assign expression) => visitExpression(expression);
+  visitConditional(Conditional expression) => visitExpression(expression);
 
-  visitAccessScope(AccessScope expression)
-      => visitExpression(expression);
-  visitAccessMember(AccessMember expression)
-      => visitExpression(expression);
-  visitAccessKeyed(AccessKeyed expression)
-      => visitExpression(expression);
+  visitAccessScope(AccessScope expression) => visitExpression(expression);
+  visitAccessMember(AccessMember expression) => visitExpression(expression);
+  visitAccessKeyed(AccessKeyed expression) => visitExpression(expression);
 
-  visitCallScope(CallScope expression)
-      => visitExpression(expression);
-  visitCallFunction(CallFunction expression)
-      => visitExpression(expression);
-  visitCallMember(CallMember expression)
-      => visitExpression(expression);
+  visitCallScope(CallScope expression) => visitExpression(expression);
+  visitCallFunction(CallFunction expression) => visitExpression(expression);
+  visitCallMember(CallMember expression) => visitExpression(expression);
 
-  visitBinary(Binary expression)
-      => visitExpression(expression);
+  visitBinary(Binary expression) => visitExpression(expression);
 
-  visitPrefix(Prefix expression)
-      => visitExpression(expression);
+  visitPrefix(Prefix expression) => visitExpression(expression);
 
-  visitLiteral(Literal expression)
-      => visitExpression(expression);
+  visitLiteral(Literal expression) => visitExpression(expression);
   visitLiteralPrimitive(LiteralPrimitive expression)
       => visitLiteral(expression);
-  visitLiteralString(LiteralString expression)
-      => visitLiteral(expression);
-  visitLiteralArray(LiteralArray expression)
-      => visitLiteral(expression);
-  visitLiteralObject(LiteralObject expression)
-      => visitLiteral(expression);
+  visitLiteralString(LiteralString expression) => visitLiteral(expression);
+  visitLiteralArray(LiteralArray expression) => visitLiteral(expression);
+  visitLiteralObject(LiteralObject expression) => visitLiteral(expression);
 }
 
 abstract class Expression {

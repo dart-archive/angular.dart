@@ -299,6 +299,9 @@ class DynamicParserImpl {
     // Parse the named arguments.
     Map named = {};
     do {
+      if (!peek(1).isCharacter($COLON)) {
+        error("Cannot pass positional arguments after named arguments");
+      }
       int marker = index;
       String name = expectIdentifierOrKeyword();
       if (isReservedWord(name)) {
