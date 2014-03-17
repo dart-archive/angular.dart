@@ -1,6 +1,6 @@
 # Contributing to AngularDart
 
-We have set up a [milestone][communityMilestone] for issues which we believe are an excellent
+We have set up a [milestone][communityMilestone] for issues that we believe are an excellent
 place to start if you are interested in contributing to AngularDart.
 
 We'd love for you to contribute to our source code and to make AngularDart even better than it is
@@ -42,7 +42,7 @@ Comment on an issue to let others know what you're working on, or create a new i
 doesn't fit within the scope of any of the existing doc fix projects.
 
 For large fixes, please build and test the documentation before submitting the PR to be sure you haven't
-accidentally introduced any layout or formatting issues.You should also make sure that your commit message
+accidentally introduced any layout or formatting issues. You should also make sure that your commit message
 is labeled "docs:" and follows the **Git Commit Guidelines** outlined below.
 
 ## Submission Guidelines
@@ -79,28 +79,30 @@ Before you submit your pull request consider the following guidelines:
      git checkout -b my-fix-branch master
      ```
 
-* Create your patch, including appropriate test cases.
-* Follow our [Coding Rules](#coding-rules)
-* Commit your changes and create a descriptive commit message (the
-  commit message is used to generate release notes, please check out our
-  [commit message conventions](#commit-message-format) and our commit message presubmit hook
-  `validate-commit-msg.js`):
+* Create your patch, **including appropriate test cases**.
+* Follow our [Coding Rules](#coding-rules).
+* Run the full AngularDart test suite, as described in the [developer documentation][dev-doc],
+  and ensure that all tests pass.
+* Commit your changes using a descriptive commit message that follows our
+  [commit message conventions](#commit-message-format) and passes our commit message presubmit hook
+  `validate-commit-msg.js`. Adherence to the [commit message conventions](#commit-message-format)
+  is required because release notes are automatically generated from these messages.
 
      ```shell
      git commit -a
      ```
-
-* Build your changes locally to ensure all the tests pass: see the [developer documentation][dev-doc].
-
-* Push your branch to Github:
+  Note: the optional commit `-a` command line option will automatically "add" and "rm" edited files.
+* Push your branch to GitHub:
 
     ```shell
     git push origin my-fix-branch
     ```
 
-* In Github, send a pull request to `angular:master`.
-* If we suggest changes then you can modify your branch, rebase and force a new push to your GitHub
-  repository to update the Pull Request:
+* In GitHub, send a pull request to `angular:master`.
+* If we suggest changes then 
+  * Make the required updates.
+  * Re-run the AngularDart test suite to ensure tests are still passing.
+  * Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
 
     ```shell
     git rebase master -i
@@ -109,10 +111,12 @@ Before you submit your pull request consider the following guidelines:
 
 That's it! Thank you for your contribution!
 
-When the patch is reviewed and merged, you can safely delete your branch and pull the changes
+#### After your pull request is merged
+
+After your pull request is merged, you can safely delete your branch and pull the changes
 from the main (upstream) repository:
 
-* Delete the remote branch on Github:
+* Delete the remote branch on GitHub either through the GitHub web UI or your local shell as follows:
 
     ```shell
     git push origin --delete my-fix-branch
@@ -135,6 +139,7 @@ from the main (upstream) repository:
     ```shell
     git pull --ff upstream master
     ```
+
 ## Coding Rules
 To ensure consistency throughout the source code, keep these rules in mind as you are working:
 
