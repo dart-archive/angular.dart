@@ -84,8 +84,8 @@ class NgRepeatDirective {
   String _valueIdentifier;
   String _keyIdentifier;
   String _listExpr;
-  Map<dynamic, _Row> _rows = {};
-  Function _trackByIdFn = (key, value, index) => value;
+  List<_Row> _rows;
+  Function _generateId = (key, value, index) => value;
   Watch _watch;
 
   NgRepeatDirective(this._viewPort, this._boundViewFactory, this._scope,
@@ -107,14 +107,14 @@ class NgRepeatDirective {
     var trackByExpr = match.group(3);
     if (trackByExpr != null) {
       Expression trackBy = _parser(trackByExpr);
-      _trackByIdFn = ((key, value, index) {
-        final trackByLocals = <String, Object>{};
-        if (_keyIdentifier != null) trackByLocals[_keyIdentifier] = key;
-        trackByLocals..[_valueIdentifier] = value
-                     ..[r'$index'] = index
-                     ..[r'$id'] = (obj) => obj;
+      _generateId = ((key, value, index) {
+        final context = <String, Object>{}
+            ..[_valueIdentifier] = value
+            ..[r'$index'] = index
+            ..[r'$id'] = (obj) => obj;
+        if (_keyIdentifier != null) context[_keyIdentifier] = key;
         return relaxFnArgs(trackBy.eval)(new ScopeLocals(_scope.context,
-            trackByLocals));
+            context));
       });
     }
 
@@ -132,115 +132,110 @@ class NgRepeatDirective {
 
     _watch = _scope.watch(
         _astParser(_listExpr, collection: true, filters: filters),
-        (CollectionChangeRecord changeRecord, _) {
-          //TODO(misko): we should take advantage of the CollectionChangeRecord!
-          if (changeRecord == null) return;
-          _onCollectionChange(changeRecord.iterable);
-
+        (CollectionChangeRecord changes, _) {
+          if (changes is! CollectionChangeRecord) return;
+          _onChange(changes);
         }
     );
   }
 
+  // Computes and executes DOM changes when the item list changes
+  void _onChange(CollectionChangeRecord changes) {
+    final int length = changes.iterable.length;
+    final rows = new List<_Row>(length);
+    final changeFunctions = new List<Function>(length);
+    final removedIndexes = <int>[];
+    final int domLength = _rows == null ? 0 : _rows.length;
+    final leftInDom = new List.generate(domLength, (i) => domLength - 1 - i);
+    var domIndex;
 
-  // todo -> collection
-  List<_Row> _computeNewRows(Iterable collection, trackById) {
-    final newRowOrder = new List<_Row>(collection.length);
-    // Same as lastViewMap but it has the current state. It will become the
-    // lastViewMap on the next iteration.
-    final newRows = <dynamic, _Row>{};
-    // locate existing items
-    for (var index = 0; index < newRowOrder.length; index++) {
-      var value = collection.elementAt(index);
-      trackById = _trackByIdFn(index, value, index);
-      if (_rows.containsKey(trackById)) {
-        var row = _rows.remove(trackById);
-        newRows[trackById] = row;
-        newRowOrder[index] = row;
-      } else if (newRows.containsKey(trackById)) {
-        // restore lastViewMap
-        newRowOrder.forEach((row) {
-          if (row != null && row.startNode != null) _rows[row.id] = row;
-        });
-        // This is a duplicate and we need to throw an error
-        throw "[NgErr50] ngRepeat error! Duplicates in a repeater are not "
-            "allowed. Use 'track by' expression to specify unique keys. "
-            "Repeater: $_expression, Duplicate key: $trackById";
-      } else {
-        // new never before seen row
-        newRowOrder[index] = new _Row(trackById);
-        newRows[trackById] = null;
+    var addRow = (int index, value, View previousView) {
+      var childContext = _updateContext(new PrototypeMap(_scope.context), index,
+          length)..[_valueIdentifier] = value;
+      var childScope = _scope.createChild(childContext);
+      var view = _boundViewFactory(childScope);
+      var nodes = view.nodes;
+      rows[index] = new _Row(_generateId(index, value, index))
+          ..view = view
+          ..scope = childScope
+          ..nodes = nodes
+          ..startNode = nodes.first
+          ..endNode = nodes.last;
+      _viewPort.insert(view, insertAfter: previousView);
+    };
+
+    if (_rows == null) {
+      _rows = new List<_Row>(length);
+      for (var i = 0; i < length; i++) {
+        changeFunctions[i] = (index, previousView) {
+          addRow(index, changes.iterable.elementAt(i), previousView);
+        };
       }
+    } else {
+      changes.forEachRemoval((removal) {
+        var index = removal.previousIndex;
+        var row = _rows[index];
+        row.scope.destroy();
+        _viewPort.remove(row.view);
+        leftInDom.removeAt(domLength - 1 - index);
+      });
+
+      changes.forEachAddition((addition) {
+        changeFunctions[addition.currentIndex] = (index, previousView) {
+          addRow(index, addition.item, previousView);
+        };
+      });
+
+      changes.forEachMove((move) {
+        var previousIndex = move.previousIndex;
+        var value = move.item;
+        changeFunctions[move.currentIndex] = (index, previousView) {
+          var previousRow = _rows[previousIndex];
+          var childScope = previousRow.scope;
+          var childContext = _updateContext(childScope.context, index, length);
+          if (!identical(childScope.context[_valueIdentifier], value)) {
+            childContext[_valueIdentifier] = value;
+          }
+          rows[index] = _rows[previousIndex];
+          // Only move the DOM node when required
+          if (domIndex < 0 || leftInDom[domIndex] != previousIndex) {
+            _viewPort.move(previousRow.view, moveAfter: previousView);
+            leftInDom.remove(previousIndex);
+          }
+          domIndex--;
+        };
+      });
     }
-    // remove existing items
-    _rows.forEach((key, row) {
-      _viewPort.remove(row.view);
-      row.scope.destroy();
-    });
-    _rows = newRows;
-    return newRowOrder;
+
+    var previousView = null;
+    domIndex = leftInDom.length - 1;
+    for(var targetIndex = 0; targetIndex < length; targetIndex++) {
+      var changeFn = changeFunctions[targetIndex];
+      if (changeFn == null) {
+        rows[targetIndex] = _rows[targetIndex];
+        domIndex--;
+        // The element has not moved but `$last` and `$middle` might still need
+        // to be updated
+        _updateContext(rows[targetIndex].scope.context, targetIndex, length);
+      } else {
+        changeFn(targetIndex, previousView);
+      }
+      previousView = rows[targetIndex].view;
+    }
+
+    _rows = rows;
   }
 
-  void _onCollectionChange(Iterable collection) {
-    // current position of the node
-    dom.Node previousNode = _viewPort.placeholder;
-    dom.Node nextNode;
-    Scope childScope;
-    Map childContext;
-    Scope trackById;
-    View cursor;
-
-    List<_Row> newRowOrder = _computeNewRows(collection, trackById);
-
-    for (var index = 0; index < collection.length; index++) {
-      var value = collection.elementAt(index);
-      _Row row = newRowOrder[index];
-
-      if (row.startNode != null) {
-        // if we have already seen this object, then we need to reuse the
-        // associated scope/element
-        childScope = row.scope;
-        childContext = childScope.context as Map;
-
-        nextNode = previousNode;
-        do {
-          nextNode = nextNode.nextNode;
-        } while (nextNode != null);
-
-        if (row.startNode != nextNode) {
-          // existing item which got moved
-          _viewPort.move(row.view, moveAfter: cursor);
-        }
-        previousNode = row.endNode;
-      } else {
-        // new item which we don't know about
-        childScope = _scope.createChild(childContext =
-            new PrototypeMap(_scope.context));
-      }
-
-      if (!identical(childScope.context[_valueIdentifier], value)) {
-        childContext[_valueIdentifier] = value;
-      }
-      var first = (index == 0);
-      var last = (index == collection.length - 1);
-      childContext..[r'$index'] = index
-                  ..[r'$first'] = first
-                  ..[r'$last'] = last
-                  ..[r'$middle'] = !first && !last
-                  ..[r'$odd'] = index & 1 == 1
-                  ..[r'$even'] = index & 1 == 0;
-
-      if (row.startNode == null) {
-        var view = _boundViewFactory(childScope);
-        _rows[row.id] = row
-            ..view = view
-            ..scope = childScope
-            ..nodes = view.nodes
-            ..startNode = row.nodes.first
-            ..endNode = row.nodes.last;
-        _viewPort.insert(view, insertAfter: cursor);
-      }
-      cursor = row.view;
-    }
+  PrototypeMap _updateContext(PrototypeMap context, int index, int length) {
+    var first = (index == 0);
+    var last = (index == length - 1);
+    return context
+        ..[r'$index'] = index
+        ..[r'$first'] = first
+        ..[r'$last'] = last
+        ..[r'$middle'] = !(first || last)
+        ..[r'$odd'] = index.isOdd
+        ..[r'$even'] = index.isEven;
   }
 }
 
