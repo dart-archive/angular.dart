@@ -1,34 +1,12 @@
 part of angular.core;
 
-class Interpolation implements Function {
-  final String template;
-  final List<String> separators;
-  final List<String> expressions;
-  Function setter = (_) => _;
-
-  Interpolation(this.template, this.separators, this.expressions);
-
-  String call(List parts, [_]) {
-    if (parts == null) return separators.join('');
-    var sb = new StringBuffer();
-    for (var i = 0; i < parts.length; i++) {
-      sb.write(separators[i]);
-      var value = parts[i];
-      sb.write(value == null ? '' : '$value');
-    }
-    sb.write(separators.last);
-    return setter(sb.toString());
-  }
-}
-
 /**
- * Compiles a string with markup into an interpolation function. This service
- * is used by the HTML [Compiler] service for data binding.
- *
+ * Compiles a string with markup into an expression. This service is used by the
+ * HTML [Compiler] service for data binding.
  *
  *     var $interpolate = ...; // injected
  *     var exp = $interpolate('Hello {{name}}!');
- *     expect(exp({name:'Angular'}).toEqual('Hello Angular!');
+ *     expect(exp).toEqual('"Hello "+(name)+"!"');
  */
 @NgInjectableService()
 class Interpolate implements Function {
@@ -37,49 +15,49 @@ class Interpolate implements Function {
   Interpolate(this._parse);
 
   /**
-   * Compiles markup text into interpolation function.
+   * Compiles markup text into expression.
    *
-   * - `text`: The markup text to interpolate in form `foo {{expr}} bar`.
+   * - `template`: The markup text to interpolate in form `foo {{expr}} bar`.
    * - `mustHaveExpression`: if set to true then the interpolation string must
-   *      have embedded expression in order to return an interpolation function.
-   *      Strings with no embedded expression will return null for the
-   *      interpolation function.
+   *   have embedded expression in order to return an expression. Strings with
+   *   no embedded expression will return null.
    * - `startSymbol`: The symbol to start interpolation. '{{' by default.
    * - `endSymbol`: The symbol to end interpolation. '}}' by default.
    */
-  Interpolation call(String template, [bool mustHaveExpression = false,
+
+  String call(String template, [bool mustHaveExpression = false,
       String startSymbol = '{{', String endSymbol = '}}']) {
-    int startSymbolLength = startSymbol.length;
-    int endSymbolLength = endSymbol.length;
-    int startIndex;
-    int endIndex;
-    int index = 0;
+
+    int startLen = startSymbol.length;
+    int endLen = endSymbol.length;
     int length = template.length;
+
+    int startIdx;
+    int endIdx;
+    int index = 0;
+
     bool hasInterpolation = false;
-    bool shouldAddSeparator = true;
+
     String exp;
-    final separators = <String>[];
-    final expressions = <String>[];
+    final expParts = <String>[];
 
     while (index < length) {
-      if (((startIndex = template.indexOf(startSymbol, index)) != -1) &&
-          ((endIndex = template.indexOf(endSymbol, startIndex + startSymbolLength)) != -1) ) {
-        separators.add(template.substring(index, startIndex));
-        exp = template.substring(startIndex + startSymbolLength, endIndex);
-        expressions.add(exp);
-        index = endIndex + endSymbolLength;
+      startIdx = template.indexOf(startSymbol, index);
+      endIdx = template.indexOf(endSymbol, startIdx + startLen);
+      if (startIdx != -1 && endIdx != -1) {
+        if (index < startIdx) {
+          expParts.add('"${template.substring(index, startIdx)}"');
+        }
+        expParts.add('(${template.substring(startIdx + startLen, endIdx)})');
+        index = endIdx + endLen;
         hasInterpolation = true;
       } else {
-        // we did not find anything, so we have to add the remainder to the
-        // chunks array
-        separators.add(template.substring(index));
-        shouldAddSeparator = false;
+        // we did not find any interpolation, so add the remainder
+        expParts.add('"${template.substring(index)}"');
         break;
       }
     }
-    if (shouldAddSeparator) separators.add('');
-    return (!mustHaveExpression || hasInterpolation)
-        ? new Interpolation(template, separators, expressions)
-        : null;
+
+    return !mustHaveExpression || hasInterpolation ? expParts.join('+') : null;
   }
 }
