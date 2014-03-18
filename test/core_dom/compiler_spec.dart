@@ -253,7 +253,7 @@ void main() {
 
         microLeap();
         _.rootScope.apply();
-        expect(renderedText(element)).toEqual('inside poof');
+        expect(element.textWithShadow()).toEqual('inside poof');
       }));
 
       it('should behave nicely if a mapped attribute is missing', async((NgZone zone) {
@@ -261,7 +261,7 @@ void main() {
 
         microLeap();
         _.rootScope.apply();
-        expect(renderedText(element)).toEqual('inside ');
+        expect(element.textWithShadow()).toEqual('inside ');
       }));
 
       it('should behave nicely if a mapped attribute evals to null', async((NgZone zone) {
@@ -270,7 +270,7 @@ void main() {
 
         microLeap();
         _.rootScope.apply();
-        expect(renderedText(element)).toEqual('inside ');
+        expect(element.textWithShadow()).toEqual('inside ');
       }));
 
       it('should create a component with I/O', async(() {

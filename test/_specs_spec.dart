@@ -3,24 +3,7 @@ library _specs_spec;
 import '_specs.dart';
 
 main() {
-  describe('renderedText', () {
-    it('should work on regular DOM nodes', () {
-      expect(renderedText($('<span>A<span>C</span></span><span>B</span>'))).toEqual('ACB');
-    });
 
-    it('should work with shadow DOM', () {
-      var elt = $('<div>DOM content</div>');
-      var shadow = elt[0].createShadowRoot();
-      shadow.setInnerHtml(
-          '<div>Shadow content</div><content>SHADOW-CONTENT</content>',
-          treeSanitizer: new NullTreeSanitizer());
-      expect(renderedText(elt)).toEqual('Shadow contentDOM content');
-    });
-
-    it('should ignore comments', () {
-      expect(renderedText($('<!--e--><span>A<span>C</span></span><span>B</span>'))).toEqual('ACB');
-    });
-  });
 
 
   describe('jquery', () {
@@ -57,6 +40,25 @@ main() {
         var elts = $('<div></div>');
         elts[0].createShadowRoot().innerHtml = '<div class="ng-binding">Hello shadow</div>';
         expect(elts.shadowRoot().html()).toEqual('<div>Hello shadow</div>');
+      });
+    });
+
+    describe('textWithShadow', () {
+      it('should work on regular DOM nodes', () {
+        expect($('<span>A<span>C</span></span><span>B</span>').textWithShadow()).toEqual('ACB');
+      });
+
+      it('should work with shadow DOM', () {
+        var elt = $('<div>DOM content</div>');
+        var shadow = elt[0].createShadowRoot();
+        shadow.setInnerHtml(
+            '<div>Shadow content</div><content>SHADOW-CONTENT</content>',
+            treeSanitizer: new NullTreeSanitizer());
+        expect(elt.textWithShadow()).toEqual('Shadow contentDOM content');
+      });
+
+      it('should ignore comments', () {
+        expect($('<!--e--><span>A<span>C</span></span><span>B</span>').textWithShadow()).toEqual('ACB');
       });
     });
   });
