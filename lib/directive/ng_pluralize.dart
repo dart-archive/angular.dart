@@ -93,8 +93,8 @@ class NgPluralizeDirective {
   final Scope scope;
   final Interpolate interpolate;
   int offset;
-  var discreteRules = <String, String>{};
-  var categoryRules = <Symbol, String>{};
+  final discreteRules = <String, String>{};
+  final categoryRules = <Symbol, String>{};
 
   static final RegExp IS_WHEN = new RegExp(r'^when-(minus-)?.');
   static const Map<String, Symbol> SYMBOLS = const {
@@ -108,32 +108,34 @@ class NgPluralizeDirective {
 
   NgPluralizeDirective(this.scope, this.element, this.interpolate,
                        NodeAttrs attributes) {
-    var whens = attributes['when'] == null
+    final whens = attributes['when'] == null
         ? <String, String>{}
         : scope.eval(attributes['when']);
     offset = attributes['offset'] == null ? 0 : int.parse(attributes['offset']);
 
     element.attributes.keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
-      var ruleName = k.replaceFirst('when-', '').replaceFirst('minus-', '-');
+      var ruleName = k
+          .replace(new RegExp('^when-'), '')
+          .replace(new RegExp('^minus-'), '-');
       whens[ruleName] = element.attributes[k];
     });
 
     if (whens['other'] == null) {
       throw "ngPluralize error! The 'other' plural category must always be "
-          "specified";
+            "specified";
     }
 
     whens.forEach((k, v) {
       Symbol symbol = SYMBOLS[k];
       if (symbol != null) {
-        this.categoryRules[symbol] = v;
+        categoryRules[symbol] = v;
       } else {
-        this.discreteRules[k] = v;
+        discreteRules[k] = v;
       }
     });
   }
 
-  set count(value) {
+  void set count(value) {
     if (value is! num) {
       try {
         value = int.parse(value);
