@@ -10,7 +10,8 @@ void main() {
     beforeEachModule((Module module) {
       module
         ..type(ControllerWithNoLove)
-        ..type(MyCustomInputValidator);
+        ..type(MyCustomInputValidator)
+        ..type(CountingValidator);
     });
 
     beforeEach((TestBed tb) => _ = tb);
@@ -1128,6 +1129,7 @@ void main() {
 
       it('should happen automatically upon user input via the onInput event', () {
         _.compile('<input type="text" ng-model="model" probe="i" required>');
+        _.rootScope.apply();
 
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
@@ -1348,6 +1350,36 @@ void main() {
         expect(input.classes.contains('custom-valid')).toBe(true);
         expect(input.classes.contains('custom-invalid')).toBe(false);
       });
+
+      it('should only validate twice during compilation and once upon scope digest',
+        (TestBed _, Scope scope) {
+
+        scope.context['required'] = true;
+        _.compile('<input type="text" '
+                         'ng-model="model" '
+                         'ng-required="required" '
+                         'ng-pattern="pattern" '
+                         'counting-validator '
+                         'probe="i">');
+
+        scope.context['pattern'] = '^[aeiou]+\$';
+        scope.context['required'] = true;
+
+        scope.apply();
+
+        var model = scope.context['i'].directive(NgModel);
+        var counter = model.validators.firstWhere((validator) => validator.name == 'counting');
+
+        expect(counter.count).toBe(2); //one for ngModel and one for all the other ones
+        expect(model.invalid).toBe(true);
+
+        counter.count = 0;
+        scope.context['pattern'] = '';
+        scope.context['required'] = false;
+        scope.apply();
+
+        expect(counter.count).toBe(1);
+      });
     });
 
     describe('converters', () {
@@ -1494,5 +1526,22 @@ class MyCustomInputValidator extends NgValidator {
 
   bool isValid(name) {
     return name != null && name == 'yes';
+  }
+}
+
+@NgDirective(
+    selector: '[counting-validator]')
+class CountingValidator extends NgValidator {
+
+  final String name = 'counting';
+  int count = 0;
+
+  CountingValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
+
+  bool isValid(String modelValue) {
+    count++;
+    return true;
   }
 }
