@@ -126,4 +126,7 @@ class JQuery extends DelegatingList<Node> {
           (Element n, v) => n.style.setProperty(name, value), value);
   children() => new JQuery(this[0].childNodes);
   shadowRoot() => new JQuery((this[0] as Element).shadowRoot);
+
+  get classes => first.classes;
+  get className => first.className;
 }

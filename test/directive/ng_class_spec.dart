@@ -169,8 +169,8 @@ main() {
     it('should ngClass odd/even', () {
       var element = _.compile('<ul><li ng-repeat="i in [0,1]" class="existing" ng-class-odd="\'odd\'" ng-class-even="\'even\'"></li><ul>');
       _.rootScope.apply();
-      var e1 = element.nodes[1];
-      var e2 = element.nodes[2];
+      var e1 = element.children()[1];
+      var e2 = element.children()[2];
       expect(e1.classes.contains('existing')).toBeTruthy();
       expect(e1.classes.contains('odd')).toBeTruthy();
       expect(e2.classes.contains('existing')).toBeTruthy();
@@ -184,8 +184,8 @@ main() {
           'ng-class-odd="\'odd\'" ng-class-even="\'even\'">{{\$index}}</li>' +
       '<ul>');
       _.rootScope.apply();
-      var e1 = element.nodes[1];
-      var e2 = element.nodes[2];
+      var e1 = element.children()[1];
+      var e2 = element.children()[2];
 
       expect(e1.classes.contains('plainClass')).toBeTruthy();
       expect(e1.classes.contains('odd')).toBeTruthy();
@@ -201,8 +201,8 @@ main() {
         'ng-class-odd="[\'C\', \'D\']" ng-class-even="[\'E\', \'F\']"></li>' +
         '<ul>');
       _.rootScope.apply();
-      var e1 = element.nodes[1];
-      var e2 = element.nodes[2];
+      var e1 = element.children()[1];
+      var e2 = element.children()[2];
 
       expect(e1.classes.contains('A')).toBeTruthy();
       expect(e1.classes.contains('B')).toBeTruthy();
@@ -277,8 +277,8 @@ main() {
       _.rootScope.context['items'] = ['a','b'];
       _.rootScope.apply();
 
-      var e1 = element.nodes[1];
-      var e2 = element.nodes[2];
+      var e1 = element.children()[1];
+      var e2 = element.children()[2];
 
       expect(e1.classes.contains('odd')).toBeTruthy();
       expect(e1.classes.contains('even')).toBeFalsy();
@@ -299,8 +299,8 @@ main() {
       _.rootScope.context['items'] = ['b','a'];
       _.rootScope.apply();
 
-      var e1 = element.nodes[1];
-      var e2 = element.nodes[2];
+      var e1 = element.children()[1];
+      var e2 = element.children()[2];
 
       expect(e1.classes.contains('odd')).toBeTruthy();
       expect(e1.classes.contains('even')).toBeFalsy();

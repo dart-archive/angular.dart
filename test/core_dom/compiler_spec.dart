@@ -580,7 +580,7 @@ void main() {
 
         _.rootScope.apply();
 
-        expect(element.text).toContain('my data');
+        expect(element.text()).toContain('my data');
       });
 
       it('should expose a ancestor controller to the scope of its children thru a undecorated element', (TestBed _) {
@@ -593,7 +593,7 @@ void main() {
 
         _.rootScope.apply();
 
-        expect(element.text).toContain('my data');
+        expect(element.text()).toContain('my data');
       });
     });
 

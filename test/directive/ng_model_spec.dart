@@ -163,39 +163,39 @@ void main() {
 
       it('should leave input unchanged when text does not represent a valid number', (Injector i) {
         var modelFieldName = 'modelForNumFromInvalid1';
-        var element = _.compile('<input type="number" ng-model="$modelFieldName">');
-        dom.querySelector('body').append(element);
+        _.compile('<input type="number" ng-model="$modelFieldName">');
+        dom.querySelector('body').append(_.rootElement);
 
         // This test will progressively enter the text '1e1'
         // '1' is a valid number.
         // '1e' is not a valid number.
         // '1e1' is again a valid number (with an exponent)
 
-        simulateTypingText(element, '1');
-        _.triggerEvent(element, 'change');
-        expect(element.value).toEqual('1');
+        simulateTypingText(_.rootElement, '1');
+        _.triggerEvent(_.rootElement, 'change');
+        expect(_.rootElement.value).toEqual('1');
         expect(_.rootScope.context[modelFieldName]).toEqual(1);
 
-        simulateTypingText(element, 'e');
-        // Because the text is not a valid number, the element value is empty.
-        expect(element.value).toEqual('');
+        simulateTypingText(_.rootElement, 'e');
+        // Because the text is not a valid number, the _.rootElement value is empty.
+        expect(_.rootElement.value).toEqual('');
         // When the input is invalid, the model is [double.NAN]:
-        _.triggerEvent(element, 'change');
+        _.triggerEvent(_.rootElement, 'change');
         expect(_.rootScope.context[modelFieldName].isNaN).toBeTruthy();
 
-        simulateTypingText(element, '1');
-        _.triggerEvent(element, 'change');
-        expect(element.value).toEqual('1e1');
+        simulateTypingText(_.rootElement, '1');
+        _.triggerEvent(_.rootElement, 'change');
+        expect(_.rootElement.value).toEqual('1e1');
         expect(_.rootScope.context[modelFieldName]).toEqual(10);
       });
 
       it('should not reformat user input to equivalent numeric representation', (Injector i) {
         var modelFieldName = 'modelForNumFromInvalid2';
-        var element = _.compile('<input type="number" ng-model="$modelFieldName">');
-        dom.querySelector('body').append(element);
+        _.compile('<input type="number" ng-model="$modelFieldName">');
+        dom.querySelector('body').append(_.rootElement);
 
-        simulateTypingText(element, '1e-1');
-        expect(element.value).toEqual('1e-1');
+        simulateTypingText(_.rootElement, '1e-1');
+        expect(_.rootElement.value).toEqual('1e-1');
         expect(_.rootScope.context[modelFieldName]).toEqual(0.1);
       });
 
@@ -573,28 +573,28 @@ void main() {
 
     describe('type="checkbox"', () {
       it('should update input value from model', (Scope scope) {
-        var element = _.compile('<input type="checkbox" ng-model="model">');
+        _.compile('<input type="checkbox" ng-model="model">');
 
         scope.apply(() {
           scope.context['model'] = true;
         });
-        expect(element.checked).toBe(true);
+        expect(_.rootElement.checked).toBe(true);
 
         scope.apply(() {
           scope.context['model'] = false;
         });
-        expect(element.checked).toBe(false);
+        expect(_.rootElement.checked).toBe(false);
       });
 
       it('should render as dirty when checked', (Scope scope) {
-        var element = _.compile('<input type="text" ng-model="my_model" probe="i" />');
+        _.compile('<input type="text" ng-model="my_model" probe="i" />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
         expect(model.pristine).toEqual(true);
         expect(model.dirty).toEqual(false);
 
-        _.triggerEvent(element, 'change');
+        _.triggerEvent(_.rootElement, 'change');
 
         expect(model.pristine).toEqual(false);
         expect(model.dirty).toEqual(true);
@@ -602,57 +602,57 @@ void main() {
 
 
       it('should update input value from model using ng-true-value/false', (Scope scope) {
-        var element = _.compile('<input type="checkbox" ng-model="model" ng-true-value="1" ng-false-value="0">');
+        _.compile('<input type="checkbox" ng-model="model" ng-true-value="1" ng-false-value="0">');
 
         scope.apply(() {
           scope.context['model'] = 1;
         });
-        expect(element.checked).toBe(true);
+        expect(_.rootElement.checked).toBe(true);
 
         scope.apply(() {
           scope.context['model'] = 0;
         });
-        expect(element.checked).toBe(false);
+        expect(_.rootElement.checked).toBe(false);
 
-        element.checked = true;
-        _.triggerEvent(element, 'change');
+        _.rootElement.checked = true;
+        _.triggerEvent(_.rootElement, 'change');
         expect(scope.context['model']).toBe(1);
 
-        element.checked = false;
-        _.triggerEvent(element, 'change');
+        _.rootElement.checked = false;
+        _.triggerEvent(_.rootElement, 'change');
         expect(scope.context['model']).toBe(0);
       });
 
 
       it('should allow non boolean values like null, 0, 1', (Scope scope) {
-        var element = _.compile('<input type="checkbox" ng-model="model">');
+        _.compile('<input type="checkbox" ng-model="model">');
 
         scope.apply(() {
           scope.context['model'] = 0;
         });
-        expect(element.checked).toBe(false);
+        expect(_.rootElement.checked).toBe(false);
 
         scope.apply(() {
           scope.context['model'] = 1;
         });
-        expect(element.checked).toBe(true);
+        expect(_.rootElement.checked).toBe(true);
 
         scope.apply(() {
           scope.context['model'] = null;
         });
-        expect(element.checked).toBe(false);
+        expect(_.rootElement.checked).toBe(false);
       });
 
 
       it('should update model from the input value', (Scope scope) {
-        var element = _.compile('<input type="checkbox" ng-model="model">');
+        _.compile('<input type="checkbox" ng-model="model">');
 
-        element.checked = true;
-        _.triggerEvent(element, 'change');
+        _.rootElement.checked = true;
+        _.triggerEvent(_.rootElement, 'change');
         expect(scope.context['model']).toBe(true);
 
-        element.checked = false;
-        _.triggerEvent(element, 'change');
+        _.rootElement.checked = false;
+        _.triggerEvent(_.rootElement, 'change');
         expect(scope.context['model']).toBe(false);
       });
 
@@ -862,7 +862,7 @@ void main() {
       });
 
       it('should render as dirty when checked', (Scope scope) {
-        var element = _.compile(
+        _.compile(
           '<div>' +
           '  <input type="radio" id="on" ng-model="my_model" probe="i" value="on" />' +
           '  <input type="radio" id="off" ng-model="my_model" probe="j" value="off" />' +
@@ -872,8 +872,8 @@ void main() {
 
         var model = probe.directive(NgModel);
 
-        var input1 = element.querySelector("#on");
-        var input2 = element.querySelector("#off");
+        var input1 = _.rootElement.querySelector("#on");
+        var input2 = _.rootElement.querySelector("#off");
 
         scope.apply();
 
@@ -904,7 +904,7 @@ void main() {
       });
 
       it('should only render the input value upon the next digest', (Scope scope) {
-        var element = _.compile(
+        _.compile(
           '<div>' +
           '  <input type="radio" id="on" ng-model="model" probe="i" value="on" />' +
           '  <input type="radio" id="off" ng-model="model" probe="j" value="off" />' +
@@ -1293,13 +1293,13 @@ void main() {
     });
 
     it('should set the model to be untouched when the model is reset', () {
-      var input = _.compile('<input type="text" ng-model="myModel" probe="i" />');
+      _.compile('<input type="text" ng-model="myModel" probe="i" />');
       var model = _.rootScope.context['i'].directive(NgModel);
 
       expect(model.touched).toBe(false);
       expect(model.untouched).toBe(true);
 
-      _.triggerEvent(input, 'blur');
+      _.triggerEvent(_.rootElement, 'blur');
 
       expect(model.touched).toBe(true);
       expect(model.untouched).toBe(false);

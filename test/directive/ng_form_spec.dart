@@ -695,9 +695,9 @@ void main() {
       });
 
       it('should reset each of the controls to be untouched only when the form has a valid submission', (Scope scope, TestBed _) {
-        var form = _.compile('<form name="duperForm">' +
-                             ' <input type="text" ng-model="myModel" probe="i" required />' +
-                             '</form>');
+        _.compile('<form name="duperForm">' +
+                  ' <input type="text" ng-model="myModel" probe="i" required />' +
+                  '</form>');
 
         NgForm formModel = _.rootScope.context['duperForm'];
         var model = _.rootScope.context['i'].directive(NgModel);
@@ -708,7 +708,7 @@ void main() {
         expect(model.touched).toBe(true);
         expect(formModel.invalid).toBe(true);
 
-        _.triggerEvent(form, 'submit');
+        _.triggerEvent(_.rootElement, 'submit');
 
         expect(formModel.touched).toBe(true);
         expect(model.touched).toBe(true);
@@ -717,7 +717,7 @@ void main() {
         scope.apply(() {
           scope.context['myModel'] = 'value';
         });
-        _.triggerEvent(form, 'submit');
+        _.triggerEvent(_.rootElement, 'submit');
 
         expect(formModel.valid).toBe(true);
         expect(formModel.touched).toBe(false);
@@ -729,9 +729,9 @@ void main() {
         Scope s = _.rootScope;
         s.context['name'] = 'cool';
 
-        var form = _.compile('<form name="myForm">' +
-                             ' <input type="text" ng-model="someModel" probe="i" name="name" />' +
-                             '</form>');
+        _.compile('<form name="myForm">' +
+                  ' <input type="text" ng-model="someModel" probe="i" name="name" />' +
+                  '</form>');
 
         NgForm formModel = s.context['myForm'];
         Probe probe = s.context['i'];

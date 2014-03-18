@@ -5,13 +5,23 @@ import 'dart:html' as dom;
 
 void main() {
   describe('ngElement', () {
+    TestBed _;
+    NgAnimate animate;
+    NgElement ngElement;
+    JQuery element;
 
-    it('should add classes on domWrite to the element',
-      (TestBed _, NgAnimate animate) {
+    beforeEach((TestBed testBed, NgAnimate ngAnimate) {
+      _ = testBed;
+      animate = ngAnimate;
+    });
 
-      var scope = _.rootScope;
-      var element = _.compile('<div></div>');
-      var ngElement = new NgElement(element, scope, animate);
+    compile(str) {
+      element = _.compile(str);
+      ngElement = new NgElement(_.rootElement, _.rootScope, animate);
+    }
+
+    it('should add classes on domWrite to the element', () {
+      compile('<div></div>');
 
       ngElement.addClass('one');
       ngElement.addClass('two three');
@@ -20,19 +30,15 @@ void main() {
         expect(element.classes.contains(className)).toBe(false);
       });
 
-      scope.apply();
+      _.rootScope.apply();
 
       ['one','two','three'].forEach((className) {
         expect(element.classes.contains(className)).toBe(true);
       });
     });
 
-    it('should remove classes on domWrite to the element',
-      (TestBed _, NgAnimate animate) {
-
-      var scope = _.rootScope;
-      var element = _.compile('<div class="one two three four"></div>');
-      var ngElement = new NgElement(element, scope, animate);
+    it('should remove classes on domWrite to the element', () {
+      compile('<div class="one two three four"></div>');
 
       ngElement.removeClass('one');
       ngElement.removeClass('two');
@@ -43,7 +49,7 @@ void main() {
       });
       expect(element.classes.contains('four')).toBe(true);
 
-      scope.apply();
+      _.rootScope.apply();
 
       ['one','two','three'].forEach((className) {
         expect(element.classes.contains(className)).toBe(false);
@@ -51,12 +57,8 @@ void main() {
       expect(element.classes.contains('four')).toBe(true);
     });
 
-    it('should always apply the last dom operation on the given className',
-      (TestBed _, NgAnimate animate) {
-
-      var scope = _.rootScope;
-      var element = _.compile('<div></div>');
-      var ngElement = new NgElement(element, scope, animate);
+    it('should always apply the last dom operation on the given className', () {
+      compile('<div></div>');
 
       ngElement.addClass('one');
       ngElement.addClass('one');
@@ -64,7 +66,7 @@ void main() {
 
       expect(element.classes.contains('one')).toBe(false);
 
-      scope.apply();
+      _.rootScope.apply();
 
       expect(element.classes.contains('one')).toBe(false);
 

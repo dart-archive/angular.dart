@@ -34,7 +34,7 @@ class TestBed {
    *
    * An option [scope] parameter can be supplied to link it with non root scope.
    */
-  Element compile(html, {Scope scope, DirectiveMap directives}) {
+  JQuery compile(html, {Scope scope, DirectiveMap directives}) {
     var injector = this.injector;
     if (scope != null) {
       injector = injector.createChild([new Module()..value(Scope, scope)]);
@@ -53,7 +53,7 @@ class TestBed {
       directives = injector.get(DirectiveMap);
     }
     rootView = compiler(rootElements, directives)(injector, rootElements);
-    return rootElement;
+    return $(rootElement);
   }
 
   /**

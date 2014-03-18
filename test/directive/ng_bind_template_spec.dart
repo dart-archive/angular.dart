@@ -15,12 +15,12 @@ main() {
       scope.context['name'] = 'Heisenberg';
       scope.apply();
 
-      expect(element.text).toEqual('Hello Heisenberg!');
+      expect(element.text()).toEqual('Hello Heisenberg!');
 
       scope.context['salutation'] = 'Good-Bye';
       scope.apply();
 
-      expect(element.text).toEqual('Good-Bye Heisenberg!');
+      expect(element.text()).toEqual('Good-Bye Heisenberg!');
     });
   });
 }

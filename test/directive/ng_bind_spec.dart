@@ -23,17 +23,17 @@ main() {
       scope.apply(() {
         scope.context['value'] = null;
       });
-      expect(element.text).toEqual('');
+      expect(element.text()).toEqual('');
 
       scope.apply(() {
         scope.context['value'] = true;
       });
-      expect(element.text).toEqual('true');
+      expect(element.text()).toEqual('true');
 
       scope.apply(() {
         scope.context['value'] = 1;
       });
-      expect(element.text).toEqual('1');
+      expect(element.text()).toEqual('1');
     });
   });
 }
