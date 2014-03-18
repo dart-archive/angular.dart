@@ -22,7 +22,6 @@ class _NoopModelConverter extends NgModelConverter {
  */
 @NgDirective(selector: '[ng-model]')
 class NgModel extends NgControl implements NgAttachAware {
-  final AstParser _parser;
   final Scope _scope;
 
   BoundSetter setter = (_, [__]) => null;
@@ -38,8 +37,8 @@ class NgModel extends NgControl implements NgAttachAware {
   bool _watchCollection;
   Function render = (value) => null;
 
-  NgModel(this._scope, NgElement element, Injector injector,
-          this._parser, NodeAttrs attrs, NgAnimate animate)
+  NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs,
+          NgAnimate animate)
       : super(element, injector, animate)
   {
     _exp = attrs["ng-model"];
@@ -128,13 +127,12 @@ class NgModel extends NgControl implements NgAttachAware {
     _watchCollection = value;
     if (_removeWatch!=null) _removeWatch.remove();
     if (_watchCollection) {
-      _removeWatch = _scope.watch(
-          _parser(_exp, collection: true),
-          (changeRecord, _) {
-            onChange(changeRecord is CollectionChangeRecord
-                        ? changeRecord.iterable
-                        : changeRecord);
-          });
+      _removeWatch = _scope.watch(_exp, (changeRecord, _) {
+          onChange(changeRecord is CollectionChangeRecord
+              ? changeRecord.iterable
+              : changeRecord);
+          },
+          collection: true);
     } else if (_exp != null) {
       _removeWatch = _scope.watch(_exp, onChange);
     }
