@@ -1,11 +1,8 @@
-library _specs_spec;
+library angular.mock.jquery_spec;
 
-import '_specs.dart';
+import '../_specs.dart';
 
 main() {
-
-
-
   describe('jquery', () {
     describe('html', () {
       it('get', (){
