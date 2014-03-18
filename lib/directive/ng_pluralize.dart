@@ -95,6 +95,8 @@ class NgPluralizeDirective {
   int offset;
   final discreteRules = <String, String>{};
   final categoryRules = <Symbol, String>{};
+  final expressionCache = <String, String>{};
+  Watch _watch;
 
   static final RegExp IS_WHEN = new RegExp(r'^when-(minus-)?.');
   static const Map<String, Symbol> SYMBOLS = const {
@@ -164,10 +166,14 @@ class NgPluralizeDirective {
     }
   }
 
-  _setAndWatch(expression) {
-    var interpolation = interpolate(expression, false, r'${', '}');
-    interpolation.setter = (text) => element.text = text;
-    interpolation.setter(expression);
-    scope.watch(interpolation.expressions, interpolation.call);
+  void _setAndWatch(template) {
+    if (_watch !=  null) _watch.remove();
+    var expression = expressionCache.putIfAbsent(template, () =>
+        interpolate(template, false, r'${', '}'));
+    _watch = scope.watch(expression, _updateMarkup);
+  }
+
+  void _updateMarkup(text, previousText) {
+    if (text != previousText) element.text = text.toString();
   }
 }
