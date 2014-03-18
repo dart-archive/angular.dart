@@ -136,7 +136,7 @@ class ElementBinder {
           nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
             return new NgTextMustacheDirective(
                 node, ref.value, injector.get(Interpolate), injector.get(Scope),
-                injector.get(AstParser), injector.get(FilterMap));
+                injector.get(FilterMap));
           });
         } else if (ref.type == NgAttrMustacheDirective) {
           if (nodesAttrsDirectives == null) {
@@ -146,7 +146,7 @@ class ElementBinder {
               var interpolate = injector.get(Interpolate);
               for (var ref in nodesAttrsDirectives) {
                 new NgAttrMustacheDirective(nodeAttrs, ref.value, interpolate,
-                scope, injector.get(AstParser), injector.get(FilterMap));
+                    scope, injector.get(FilterMap));
               }
             });
           }
