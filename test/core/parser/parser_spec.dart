@@ -980,6 +980,7 @@ main() {
     describe('filters', () {
       it('should call a filter', () {
         expect(eval("'Foo'|uppercase", filters)).toEqual("FOO");
+        expect(eval("'f' + ('o'|uppercase) + 'o'", filters)).toEqual("fOo");
         expect(eval("'fOo'|uppercase|lowercase", filters)).toEqual("foo");
       });
 
