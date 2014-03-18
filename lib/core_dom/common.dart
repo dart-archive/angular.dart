@@ -12,7 +12,7 @@ class DirectiveRef {
   final Type type;
   final NgAnnotation annotation;
   final String value;
-  final List<ApplyMapping> mappings = new List<ApplyMapping>();
+  final mappings = new List<ApplyMapping>();
 
   DirectiveRef(this.element, this.type, this.annotation, [ this.value ]);
 

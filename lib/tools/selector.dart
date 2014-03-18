@@ -71,7 +71,7 @@ bool matchesNode(Node node, String selector) {
     if (node is! Text) {
       return false;
     }
-    return new RegExp(match.group(1)).hasMatch((node as Text).value);
+    return new RegExp(match.group(1)).hasMatch((node as Text).text);
   } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
     if (node is! Element) {
       return false;
@@ -84,10 +84,8 @@ bool matchesNode(Node node, String selector) {
     }
     return false;
   } else if ((selectorParts = _splitCss(selector)) != null) {
-    if (node is! Element) {
-      return false;
-    }
-    String nodeName = node.tagName.toLowerCase();
+    if (node is! Element) return false;
+    String nodeName = (node as Element).localName.toLowerCase();
 
     bool stillGood = true;
     selectorParts.forEach((_SelectorPart part) {
@@ -111,8 +109,8 @@ bool matchesNode(Node node, String selector) {
     });
 
     return stillGood;
-  } 
-    
+  }
+
   throw new ArgumentError('Unsupported Selector: $selector');
 }
 

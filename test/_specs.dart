@@ -184,7 +184,7 @@ class JQuery extends DelegatingList<Node> {
       // Remove all the "ng-binding" internal classes
       node = node.clone(true) as Element;
       node.classes.remove('ng-binding');
-      node.queryAll(".ng-binding").forEach((Element e) {
+      node.querySelectorAll(".ng-binding").forEach((Element e) {
         e.classes.remove('ng-binding');
       });
       var htmlString = outer ? node.outerHtml : node.innerHtml;
