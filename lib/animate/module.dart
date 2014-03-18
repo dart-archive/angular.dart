@@ -49,7 +49,7 @@
  * * `.ng-leave`
  * * `.ng-move`
  * * `.{cssclass}-add`
- * * `.{cssclasss}-remove`
+ * * `.{cssclass}-remove`
  *
  * When writing the css for animating a component you should avoid putting
  * css transitions on elements that might be animated or there may be
