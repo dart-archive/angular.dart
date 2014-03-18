@@ -13,7 +13,7 @@ void main() {
     it('should default to whole page', () {
       var body = setBody('<div>{{"works"}}</div>');
       ngBootstrap();
-      expect($(body).html()).toEqual('<div>works</div>');
+      expect(body.html()).toEqual('<div>works</div>');
     });
 
     it('should compile starting at ng-app node', () {
