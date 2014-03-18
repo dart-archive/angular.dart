@@ -1,4 +1,6 @@
 /**
+ * Css animation and dom lifecycle management for Angular.
+ *
  * The [animate] library makes it easier to build animations that affect the
  * lifecycle of dom elements. A useful example of this is animating the
  * removal of an element from the dom. In order to do this ideally the
@@ -56,16 +58,16 @@
  * Fade out example:
  *
  * HTML:
- *     <div class="goodby" ng-if="ctrl.visible">
- *       Goodby world!
+ *     <div class="goodbye" ng-if="ctrl.visible">
+ *       Goodbye world!
  *     </div>
  *
  * CSS:
- *     .goodby.ng-leave {
+ *     .goodbye.ng-leave {
  *       opacity: 1;
  *       transition: opacity 1s;
  *     }
- *     .goodby.ng-leave.ng-leave-active {
+ *     .goodbye.ng-leave.ng-leave-active {
  *       opacity: 0;
  *     }
  *
