@@ -31,6 +31,7 @@ class NgModel extends NgControl implements NgAttachAware {
   String _exp;
   final _validators = <NgValidator>[];
   bool _alwaysProcessViewValue;
+  bool _toBeValidated = false;
 
   NgModelConverter _converter;
   Watch _removeWatch;
@@ -89,6 +90,16 @@ class NgModel extends NgControl implements NgAttachAware {
     addInfoState(this, NgControl.NG_DIRTY);
   }
 
+  void validateLater() {
+    if (_toBeValidated) return;
+    _toBeValidated = true;
+    _scope.rootScope.runAsync(() {
+      if (_toBeValidated) {
+        validate();
+      }
+    });
+  }
+
   get converter => _converter;
   set converter(NgModelConverter c) {
     _converter = c;
@@ -136,7 +147,6 @@ class NgModel extends NgControl implements NgAttachAware {
     _scope.rootScope.runAsync(() {
       _modelValue = boundExpression();
       _originalValue = modelValue;
-      validate();
       processViewValue(_modelValue);
     });
   }
@@ -184,6 +194,7 @@ class NgModel extends NgControl implements NgAttachAware {
    * Executes a validation on the form against each of the validation present on the model.
    */
   void validate() {
+    _toBeValidated = false;
     if (validators.isNotEmpty) {
       validators.forEach((validator) {
         validator.isValid(modelValue) == false
@@ -191,6 +202,7 @@ class NgModel extends NgControl implements NgAttachAware {
           : this.removeError(validator.name);
       });
     }
+
     invalid
       ? addInfo(NgControl.NG_INVALID)
       : removeInfo(NgControl.NG_INVALID);
@@ -201,7 +213,7 @@ class NgModel extends NgControl implements NgAttachAware {
    */
   void addValidator(NgValidator v) {
     validators.add(v);
-    validate();
+    validateLater();
   }
 
   /**
@@ -209,7 +221,7 @@ class NgModel extends NgControl implements NgAttachAware {
    */
   void removeValidator(NgValidator v) {
     validators.remove(v);
-    validate();
+    validateLater();
   }
 }
 
