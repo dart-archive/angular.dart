@@ -400,7 +400,7 @@ class TaggedTextBinder {
 // Used for the tagging compiler
 class TaggedElementBinder {
   final ElementBinder binder;
-  final int parentBinderOffset;
+  int parentBinderOffset;
   var injector;
 
   List<TaggedTextBinder> textBinders;

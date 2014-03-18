@@ -173,6 +173,10 @@ void main() {
       expect(log).toEqual(['Ignore', 'Ignore']);
     });
 
+    it('should compile a text child after a directive child', () {
+      _.compile('<div><span ng-show="true">hi</span>{{hello}}</div>');
+    });
+
 
     describe("interpolation", () {
       it('should interpolate attribute nodes', () {
