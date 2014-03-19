@@ -229,9 +229,10 @@ _function2() {
 AST _add(id, lhs, rhs) =>
     new PureFunctionAST('add$id', (a, b) => a + b, [lhs, rhs]);
 
-AST _method(lhs, methodName, [args]) {
-  if (args == null) args = [];
-  return new MethodAST(_parse(lhs), methodName, args);
+AST _method(lhs, methodName, [args, namedArgs]) {
+  if (args == null) args = const [];
+  if (namedArgs == null) namedArgs = const {};
+  return new MethodAST(_parse(lhs), methodName, args, namedArgs);
 }
 
 AST _parse(String expression) {

@@ -50,10 +50,12 @@ main() {
     Map<String, dynamic> context;
     Parser<Expression> parser;
     FilterMap filters;
+
     beforeEachModule((Module module) {
       module.type(IncrementFilter);
       module.type(SubstringFilter);
     });
+
     beforeEach(inject((Parser injectedParser, FilterMap injectedFilters) {
       parser = injectedParser;
       filters = injectedFilters;

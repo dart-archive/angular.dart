@@ -84,7 +84,7 @@ class PureFunctionAST extends AST {
         super('$name(${_argList(argsAST)})');
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addFunctionWatch(fn, argsAST, expression);
+      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression);
 }
 
 /**
@@ -96,15 +96,16 @@ class MethodAST extends AST {
   final AST lhsAST;
   final String name;
   final List<AST> argsAST;
+  final Map<Symbol, AST> namedArgsAST;
 
-  MethodAST(lhsAST, name, argsAST)
+  MethodAST(lhsAST, name, argsAST, [this.namedArgsAST = const {}])
       : lhsAST = lhsAST,
         name = name,
         argsAST = argsAST,
         super('$lhsAST.$name(${_argList(argsAST)})');
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addMethodWatch(lhsAST, name, argsAST, expression);
+      watchGroup.addMethodWatch(lhsAST, name, argsAST, namedArgsAST, expression);
 }
 
 
