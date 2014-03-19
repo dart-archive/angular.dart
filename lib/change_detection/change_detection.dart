@@ -55,7 +55,8 @@ abstract class ChangeDetector<H> extends ChangeDetectorGroup<H> {
    * same order as they were registered.
    */
   Iterator<Record<H>> collectChanges({ EvalExceptionHandler exceptionHandler,
-                                   AvgStopwatch stopwatch });
+                                       AvgStopwatch stopwatch,
+                                       bool reMemoizeForPureFunc });
 }
 
 abstract class Record<H> {

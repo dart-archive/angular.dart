@@ -483,7 +483,8 @@ class RootScope extends Scope {
             changeLog: changeLog,
             fieldStopwatch: _scopeStats.digestFieldStopwatch,
             evalStopwatch: _scopeStats.digestEvalStopwatch,
-            processStopwatch: _scopeStats.digestProcessStopwatch);
+            processStopwatch: _scopeStats.digestProcessStopwatch,
+            reMemoizeForPureFunc: count == null);
 
         if (digestTTL <= LOG_COUNT) {
           if (changeLog == null) {

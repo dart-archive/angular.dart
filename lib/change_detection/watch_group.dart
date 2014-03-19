@@ -370,12 +370,13 @@ class RootWatchGroup extends WatchGroup {
                       ChangeLog changeLog,
                       AvgStopwatch fieldStopwatch,
                       AvgStopwatch evalStopwatch,
-                      AvgStopwatch processStopwatch}) {
+                      AvgStopwatch processStopwatch, bool reMemoizeForPureFunc : true}) {
     // Process the Records from the change detector
     Iterator<Record<_Handler>> changedRecordIterator =
         (_changeDetector as ChangeDetector<_Handler>).collectChanges(
             exceptionHandler:exceptionHandler,
-            stopwatch: fieldStopwatch);
+            stopwatch: fieldStopwatch,
+            reMemoizeForPureFunc: reMemoizeForPureFunc);
     if (processStopwatch != null) processStopwatch.start();
     while (changedRecordIterator.moveNext()) {
       var record = changedRecordIterator.current;

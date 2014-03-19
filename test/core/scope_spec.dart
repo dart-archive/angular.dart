@@ -161,6 +161,19 @@ void main() {
         rootScope.digest();
         expect(logger).toEqual([true]);
       });
+      
+      it('should watch list property as pure', (Logger logger, Map context, RootScope rootScope) {
+        var list = [true, 2, 'abc'];
+        final logVal = (value, _) => logger(value);
+        context['list'] = list;
+        rootScope.watch('list.reversed', logVal);
+        rootScope.digest();
+        expect(logger).toEqual([['abc', 2, true]]);
+        logger.clear();
+        context['list'][2] = 'def';
+        rootScope.digest();
+        expect(logger).toEqual([['def', 2, true]]);
+      });
 
       it('should support filters', (Logger logger, Map context,
                                            RootScope rootScope, AstParser parser,
