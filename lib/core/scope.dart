@@ -743,8 +743,8 @@ class ScopeStream extends async.Stream<ScopeEvent> {
   final _Streams _streams;
   final String _name;
   final subscriptions = <ScopeStreamSubscription>[];
+  final List<Function> _work = <Function>[];
   bool _firing = false;
-  List<ScopeStreamSubscription> _toRemove;
 
 
   ScopeStream(this._streams, this._exceptionHandler, this._name);
@@ -753,10 +753,19 @@ class ScopeStream extends async.Stream<ScopeEvent> {
                                  { Function onError,
                                    void onDone(),
                                    bool cancelOnError }) {
-    if (subscriptions.isEmpty) _streams._addCount(_name, 1);
     var subscription = new ScopeStreamSubscription(this, onData);
-    subscriptions.add(subscription);
+    _concurrentSafeWork(() {
+      if (subscriptions.isEmpty) _streams._addCount(_name, 1);
+      subscriptions.add(subscription);
+    });
     return subscription;
+  }
+
+  void _concurrentSafeWork([fn]) {
+    if (fn != null) _work.add(fn);
+    while(!_firing && _work.isNotEmpty) {
+      _work.removeLast()();
+    }
   }
 
   void _fire(ScopeEvent event) {
@@ -771,31 +780,19 @@ class ScopeStream extends async.Stream<ScopeEvent> {
       }
     } finally {
       _firing = false;
-      if (_toRemove != null) {
-        _toRemove.forEach(_actuallyRemove);
-        _toRemove = null;
-      }
+      _concurrentSafeWork();
     }
   }
 
   void _remove(ScopeStreamSubscription subscription) {
-    if (_firing) {
-      if (_toRemove == null) {
-        _toRemove = [];
+    _concurrentSafeWork(() {
+      assert(subscription._scopeStream == this);
+      if (subscriptions.remove(subscription)) {
+        if (subscriptions.isEmpty) _streams._addCount(_name, -1);
+      } else {
+        throw new StateError('AlreadyCanceled');
       }
-      _toRemove.add(subscription);
-    } else {
-      _actuallyRemove(subscription);
-    }
-  }
-
-  void _actuallyRemove(ScopeStreamSubscription subscription) {
-    assert(subscription._scopeStream == this);
-    if (subscriptions.remove(subscription)) {
-      if (subscriptions.isEmpty) _streams._addCount(_name, -1);
-    } else {
-      throw new StateError('AlreadyCanceled');
-    }
+    });
   }
 }
 

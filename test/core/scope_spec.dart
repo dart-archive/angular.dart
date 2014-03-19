@@ -681,14 +681,19 @@ void main() {
             expect(args).toEqual(['do', 're', 'me', 'fa']);
           });
 
-          it('should allow removing listener during an event', (RootScope rootScope) {
+          it('should allow removing/adding listener during an event', (RootScope rootScope, Logger log) {
             StreamSubscription subscription;
             subscription = rootScope.on('foo').listen((_) {
               subscription.cancel();
+              rootScope.on('foo').listen((_) => log(3));
+              log(2);
             });
             expect(() {
+              log(1);
               rootScope.broadcast('foo');
             }).not.toThrow();
+            rootScope.broadcast('foo');
+            expect(log).toEqual([1, 2, 3]);
           });
         });
       });
