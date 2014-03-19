@@ -81,6 +81,18 @@ class DartCodeGenVisitor extends Visitor {
     }
   }
 
+  String evaluateArguments(CallArguments arguments) {
+    String positionals = arguments.positionals.map((e) => evaluate(e)).join(', ');
+    if (arguments.named.isEmpty) return positionals;
+    String named = arguments.named.keys.map((String name) {
+      String value = evaluate(arguments.named[name]);
+      return '$name: $value';
+    }).join(', ');
+    return arguments.positionals.isEmpty
+        ? named
+        : "$positionals, $named";
+  }
+
   Function assign(Expression target) {
     int old = state;
     try {
@@ -148,20 +160,20 @@ class DartCodeGenVisitor extends Visitor {
   }
 
   visitCallScope(CallScope call) {
-    String arguments = call.arguments.map((e) => evaluate(e)).join(', ');
+    String arguments = evaluateArguments(call.arguments);
     String getter = lookupGetter(call.name);
     return safeCallFunction('$getter(scope)', call.name, arguments);
   }
 
   visitCallFunction(CallFunction call) {
     String function = evaluate(call.function);
-    String arguments = call.arguments.map((e) => evaluate(e)).join(', ');
+    String arguments = evaluateArguments(call.arguments);
     return safeCallFunction(function, "${call.function}", arguments);
   }
 
   visitCallMember(CallMember call) {
     String object = evaluate(call.object);
-    String arguments = call.arguments.map((e) => evaluate(e)).join(', ');
+    String arguments = evaluateArguments(call.arguments);
     String getter = lookupGetter(call.name);
     return safeCallFunction('$getter($object)', call.name, arguments);
   }

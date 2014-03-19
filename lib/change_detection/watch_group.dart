@@ -186,8 +186,9 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
    * - [expression] normalized expression used for caching.
    */
   _EvalWatchRecord addFunctionWatch(/* dartbug.com/16401 Function */ fn, List<AST> argsAST,
+                                    Map<Symbol, AST> namedArgsAST,
                                     String expression) =>
-      _addEvalWatch(null, fn, null, argsAST, expression);
+      _addEvalWatch(null, fn, null, argsAST, namedArgsAST, expression);
 
   /**
    * Watch a method [name]ed represented by an [expression].
@@ -198,13 +199,16 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
    * - [expression] normalized expression used for caching.
    */
   _EvalWatchRecord addMethodWatch(AST lhs, String name, List<AST> argsAST,
+                                  Map<Symbol, AST> namedArgsAST,
                                   String expression) =>
-      _addEvalWatch(lhs, null, name, argsAST, expression);
+      _addEvalWatch(lhs, null, name, argsAST, namedArgsAST, expression);
 
 
 
   _EvalWatchRecord _addEvalWatch(AST lhsAST, /* dartbug.com/16401 Function */ fn, String name,
-                                 List<AST> argsAST, String expression) {
+                                 List<AST> argsAST,
+                                 Map<Symbol, AST> namedArgsAST,
+                                 String expression) {
     _InvokeHandler invokeHandler = new _InvokeHandler(this, expression);
     var evalWatchRecord = new _EvalWatchRecord(this, invokeHandler, fn, name,
         argsAST.length);
@@ -218,15 +222,24 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     }
 
     // Convert the args from AST to WatchRecords
-    var i = 0;
-    argsAST.map((ast) =>
-        _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this)))
-            .forEach((WatchRecord<_Handler> record) {
-              var argHandler = new _ArgHandler(this, evalWatchRecord, i++);
-              _ArgHandlerList._add(invokeHandler, argHandler);
-              record.handler.addForwardHandler(argHandler);
-              argHandler.acceptValue(record.currentValue);
-            });
+    Iterable<WatchRecord<_Handler>> records = argsAST.map((ast) =>
+        _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this)));
+    int i = 0;
+    records.forEach((WatchRecord<_Handler> record) {
+      _ArgHandler handler = new _PositionalArgHandler(this, evalWatchRecord, i++);
+      _ArgHandlerList._add(invokeHandler, handler);
+      record.handler.addForwardHandler(handler);
+      handler.acceptValue(record.currentValue);
+    });
+
+    namedArgsAST.forEach((Symbol name, AST ast) {
+      WatchRecord<_Handler> record = _cache.putIfAbsent(ast.expression,
+          () => ast.setupWatch(this));
+      _ArgHandler handler = new _NamedArgHandler(this, evalWatchRecord, name);
+      _ArgHandlerList._add(invokeHandler, handler);
+      record.handler.addForwardHandler(handler);
+      handler.acceptValue(record.currentValue);
+    });
 
     // Must be done last
     _EvalWatchList._add(this, evalWatchRecord);
@@ -615,22 +628,39 @@ class _CollectionHandler extends _Handler {
   }
 }
 
-class _ArgHandler extends _Handler {
+abstract class _ArgHandler extends _Handler {
   _ArgHandler _previousArgHandler, _nextArgHandler;
 
   // TODO(misko): Why do we override parent?
   final _EvalWatchRecord watchRecord;
-  final int index;
+  _ArgHandler(WatchGroup watchGrp, String expression, this.watchRecord)
+      : super(watchGrp, expression);
 
   _releaseWatch() => null;
+}
 
-  _ArgHandler(WatchGroup watchGrp, this.watchRecord, int index)
-      : index = index,
-        super(watchGrp, 'arg[$index]');
+class _PositionalArgHandler extends _ArgHandler {
+  final int index;
+  _PositionalArgHandler(WatchGroup watchGrp, _EvalWatchRecord record, int index)
+      : this.index = index,
+        super(watchGrp, 'arg[$index]', record);
 
   void acceptValue(object) {
     watchRecord.dirtyArgs = true;
     watchRecord.args[index] = object;
+  }
+}
+
+class _NamedArgHandler extends _ArgHandler {
+  final Symbol name;
+
+  _NamedArgHandler(WatchGroup watchGrp, _EvalWatchRecord record, Symbol name)
+      : this.name = name,
+        super(watchGrp, 'namedArg[$name]', record);
+
+  void acceptValue(object) {
+    watchRecord.dirtyArgs = true;
+    watchRecord.namedArgs[name] = object;
   }
 }
 
@@ -675,6 +705,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
   WatchGroup watchGrp;
   final _Handler handler;
   final List args;
+  final Map<Symbol, dynamic> namedArgs =  new Map<Symbol, dynamic>();
   final Symbol symbol;
   final String name;
   int mode;
@@ -751,7 +782,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
         return false;
       case _MODE_FUNCTION_:
         if (!dirtyArgs) return false;
-        value = Function.apply(fn, args);
+        value = Function.apply(fn, args, namedArgs);
         dirtyArgs = false;
         break;
       case _MODE_FUNCTION_APPLY_:
@@ -761,14 +792,14 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
         break;
       case _MODE_FIELD_CLOSURE_:
         var closure = _instanceMirror.getField(symbol).reflectee;
-        value = closure == null ? null : Function.apply(closure, args);
+        value = closure == null ? null : Function.apply(closure, args, namedArgs);
         break;
       case _MODE_MAP_CLOSURE_:
         var closure = object[name];
-        value = closure == null ? null : Function.apply(closure, args);
+        value = closure == null ? null : Function.apply(closure, args, namedArgs);
         break;
       case _MODE_METHOD_:
-        value = _instanceMirror.invoke(symbol, args).reflectee;
+        value = _instanceMirror.invoke(symbol, args, namedArgs).reflectee;
         break;
       default:
         assert(false);

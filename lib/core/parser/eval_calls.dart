@@ -5,6 +5,8 @@ import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/utils.dart';
 import 'package:angular/core/module.dart';
 
+typedef Function LookupFunction(String name, syntax.CallArguments arguments);
+
 class CallScope extends syntax.CallScope with CallReflective {
   final Symbol symbol;
   CallScope(name, arguments)
@@ -22,29 +24,43 @@ class CallMember extends syntax.CallMember with CallReflective {
 }
 
 class CallScopeFast0 extends syntax.CallScope with CallFast {
-  final Function function;
-  CallScopeFast0(name, arguments, this.function) : super(name, arguments);
+  final Function callProperty;
+  final Function callMap;
+  CallScopeFast0(name, arguments, LookupFunction lookup)
+      : this.callProperty = lookup(name, arguments)
+      , this.callMap = lookup("", arguments)
+      , super(name, arguments);
   eval(scope, [FilterMap filters]) => _evaluate0(scope);
 }
 
 class CallScopeFast1 extends syntax.CallScope with CallFast {
-  final Function function;
-  CallScopeFast1(name, arguments, this.function) : super(name, arguments);
+  final Function callProperty;
+  final Function callMap;
+  CallScopeFast1(name, arguments, LookupFunction lookup)
+      : this.callProperty = lookup(name, arguments)
+      , this.callMap = lookup("", arguments)
+      , super(name, arguments);
   eval(scope, [FilterMap filters]) =>
        _evaluate1(scope, arguments[0].eval(scope, filters));
 }
 
 class CallMemberFast0 extends syntax.CallMember with CallFast {
-  final Function function;
-  CallMemberFast0(object, name, arguments, this.function)
-      : super(object, name, arguments);
+  final Function callProperty;
+  final Function callMap;
+  CallMemberFast0(object, name, arguments, LookupFunction lookup)
+      : this.callProperty = lookup(name, arguments)
+      , this.callMap = lookup("", arguments)
+      , super(object, name, arguments);
   eval(scope, [FilterMap filters]) => _evaluate0(object.eval(scope, filters));
 }
 
 class CallMemberFast1 extends syntax.CallMember with CallFast {
-  final Function function;
-  CallMemberFast1(object, name, arguments, this.function)
-      : super(object, name, arguments);
+  final Function callProperty;
+  final Function callMap;
+  CallMemberFast1(object, name, arguments, LookupFunction lookup)
+      : this.callProperty = lookup(name, arguments)
+      , this.callMap = lookup("", arguments)
+      , super(object, name, arguments);
   eval(scope, [FilterMap filters]) => _evaluate1(object.eval(scope, filters),
       arguments[0].eval(scope, filters));
 }
@@ -56,7 +72,16 @@ class CallFunction extends syntax.CallFunction {
     if (function is! Function) {
       throw new EvalError('${this.function} is not a function');
     } else {
-      return relaxFnApply(function, evalList(scope, arguments, filters));
+      List positionals = evalList(scope, arguments.positionals, filters);
+      if (arguments.named.isNotEmpty) {
+        var named = new Map<Symbol, dynamic>();
+        arguments.named.forEach((String name, value) {
+          named[new Symbol(name)] = value.eval(scope, filters);
+        });
+        return Function.apply(function, positionals, named);
+      } else {
+        return relaxFnApply(function, positionals);
+      }
     }
   }
 }
@@ -77,24 +102,38 @@ abstract class CallReflective {
 
   String get name;
   Symbol get symbol;
-  List get arguments;
+  syntax.CallArguments get arguments;
 
+  // TODO(kasperl): This seems broken -- it needs filters.
   _eval(scope, holder) {
-    List arguments = evalList(scope, this.arguments);
+    List positionals = evalList(scope, arguments.positionals);
+    if (arguments.named.isNotEmpty) {
+      var named = new Map<Symbol, dynamic>();
+      arguments.named.forEach((String name, value) {
+        named[new Symbol(name)] = value.eval(scope);
+      });
+      if (holder is Map) {
+        var fn = ensureFunctionFromMap(holder, name);
+        return Function.apply(fn, positionals, named);
+      } else {
+        return reflect(holder).invoke(symbol, positionals, named).reflectee;
+      }
+    }
+
     if (!identical(holder, _cachedHolder)) {
-      return _evaluteUncached(holder, arguments);
+      return _evaluteUncached(holder, positionals);
     }
     return (_cachedKind == CACHED_MAP)
-        ? relaxFnApply(ensureFunctionFromMap(holder, name), arguments)
-        : _cachedValue.invoke(symbol, arguments).reflectee;
+        ? relaxFnApply(ensureFunctionFromMap(holder, name), positionals)
+        : _cachedValue.invoke(symbol, positionals).reflectee;
   }
 
-  _evaluteUncached(holder, arguments) {
+  _evaluteUncached(holder, positionals) {
     _cachedHolder = holder;
     if (holder is Map) {
       _cachedKind = CACHED_MAP;
       _cachedValue = null;
-      return relaxFnApply(ensureFunctionFromMap(holder, name), arguments);
+      return relaxFnApply(ensureFunctionFromMap(holder, name), positionals);
     } else if (symbol == null) {
       _cachedHolder = UNINITIALIZED;
       throw new EvalError("Undefined function $name");
@@ -102,7 +141,7 @@ abstract class CallReflective {
       InstanceMirror mirror = reflect(holder);
       _cachedKind = CACHED_FUNCTION;
       _cachedValue = mirror;
-      return mirror.invoke(symbol, arguments).reflectee;
+      return mirror.invoke(symbol, positionals).reflectee;
     }
   }
 }
@@ -115,12 +154,14 @@ abstract class CallReflective {
  */
 abstract class CallFast {
   String get name;
-  Function get function;
+
+  Function get callMap;
+  Function get callProperty;
 
   _evaluate0(holder) => (holder is Map)
-      ? ensureFunctionFromMap(holder, name)()
-      : function(holder);
+      ? callMap(ensureFunctionFromMap(holder, name))
+      : callProperty(holder);
   _evaluate1(holder, a0) => (holder is Map)
-      ? ensureFunctionFromMap(holder, name)(a0)
-      : function(holder, a0);
+      ? callMap(ensureFunctionFromMap(holder, name), a0)
+      : callProperty(holder, a0);
 }

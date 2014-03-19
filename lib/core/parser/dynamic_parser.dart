@@ -14,7 +14,7 @@ import 'package:angular/core/parser/utils.dart' show EvalError;
 class ClosureMap {
   Getter lookupGetter(String name) => null;
   Setter lookupSetter(String name) => null;
-  Function lookupFunction(String name, int arity) => null;
+  Function lookupFunction(String name, CallArguments arguments) => null;
 }
 
 @NgInjectableService()
@@ -128,7 +128,7 @@ class DynamicParserBackend extends ParserBackend {
 
   Expression newCallScope(name, arguments) {
     Function constructor = _computeCallConstructor(
-        _callScopeConstructors, name, arguments.length);
+        _callScopeConstructors, name, arguments);
     return (constructor != null)
         ? constructor(name, arguments, _closures)
         : new CallScope(name, arguments);
@@ -136,25 +136,27 @@ class DynamicParserBackend extends ParserBackend {
 
   Expression newCallMember(object, name, arguments) {
     Function constructor = _computeCallConstructor(
-        _callMemberConstructors, name, arguments.length);
+        _callMemberConstructors, name, arguments);
     return (constructor != null)
         ? constructor(object, name, arguments, _closures)
         : new CallMember(object, name, arguments);
   }
 
-  Function _computeCallConstructor(Map constructors, String name, int arity) {
-    Function function = _closures.lookupFunction(name, arity);
-    return (function == null) ? null : constructors[arity];
+  Function _computeCallConstructor(Map constructors,
+                                   String name,
+                                   CallArguments arguments) {
+    Function function = _closures.lookupFunction(name, arguments);
+    return (function == null) ? null : constructors[arguments.arity];
   }
 
   static final Map<int, Function> _callScopeConstructors = {
-      0: (n, a, c) => new CallScopeFast0(n, a, c.lookupFunction(n, 0)),
-      1: (n, a, c) => new CallScopeFast1(n, a, c.lookupFunction(n, 1)),
+      0: (n, a, c) => new CallScopeFast0(n, a, c.lookupFunction),
+      1: (n, a, c) => new CallScopeFast1(n, a, c.lookupFunction),
   };
 
   static final Map<int, Function> _callMemberConstructors = {
-      0: (o, n, a, c) => new CallMemberFast0(o, n, a, c.lookupFunction(n, 0)),
-      1: (o, n, a, c) => new CallMemberFast1(o, n, a, c.lookupFunction(n, 1)),
+      0: (o, n, a, c) => new CallMemberFast0(o, n, a, c.lookupFunction),
+      1: (o, n, a, c) => new CallMemberFast1(o, n, a, c.lookupFunction),
   };
 }
 

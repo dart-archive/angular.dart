@@ -5,19 +5,48 @@ import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'dirty_checking_change_detector_spec.dart' hide main;
 
+class TestData {
+  sub1(a, {b: 0}) => a - b;
+  sub2({a: 0, b: 0}) => a - b;
+}
+
 void main() {
   describe('WatchGroup', () {
     var context;
     var watchGrp;
     DirtyCheckingChangeDetector changeDetector;
     Logger logger;
+    AstParser parser;
 
-    AST parse(String expression) {
-      var currentAST = new ContextReferenceAST();
-      expression.split('.').forEach((name) {
-        currentAST = new FieldReadAST(currentAST, name);
-      });
-      return currentAST;
+    beforeEach((Logger _logger, AstParser _parser) {
+      context = {};
+      changeDetector = new DirtyCheckingChangeDetector(new GetterCache({}));
+      watchGrp = new RootWatchGroup(changeDetector, context);
+      logger = _logger;
+      parser = _parser;
+    });
+
+    AST parse(String expression) => parser(expression);
+
+    eval(String expression, [evalContext]) {
+      AST ast = parse(expression);
+
+      if (evalContext == null) evalContext = context;
+      WatchGroup group = watchGrp.newGroup(evalContext);
+
+      List log = [];
+      Watch watch = group.watch(ast, (v, p) => log.add(v));
+
+      watchGrp.detectChanges();
+      group.remove();
+
+      if (log.isEmpty) {
+        throw new StateError('Expression <$expression> was not evaluated');
+      } else if (log.length > 1) {
+        throw new StateError('Expression <$expression> produced too many values: $log');
+      } else {
+        return log.first;
+      }
     }
 
     expectOrder(list) {
@@ -27,13 +56,6 @@ void main() {
       watchGrp.detectChanges();
       expect(logger).toEqual(list);
     }
-
-    beforeEach(inject((Logger _logger) {
-      context = {};
-      changeDetector = new DirtyCheckingChangeDetector(new GetterCache({}));
-      watchGrp = new RootWatchGroup(changeDetector, context);
-      logger = _logger;
-    }));
 
     describe('watch lifecycle', () {
       it('should prevent reaction fn on removed', () {
@@ -557,6 +579,73 @@ void main() {
         context['a'] = 2;
         expect(watchGrp.detectChanges()).not.toBe(null);
         expect(logger).toEqual([-3]);
+      });
+    });
+
+    describe('evaluation', () {
+      it('should support simple literals', () {
+        expect(eval('42')).toBe(42);
+        expect(eval('87')).toBe(87);
+      });
+
+      it('should support context access', () {
+        context['x'] = 42;
+        expect(eval('x')).toBe(42);
+        context['y'] = 87;
+        expect(eval('y')).toBe(87);
+      });
+
+      it('should support custom context', () {
+        expect(eval('x', {'x': 42})).toBe(42);
+        expect(eval('x', {'x': 87})).toBe(87);
+      });
+
+      it('should support named arguments for scope calls', () {
+        var data = new TestData();
+        expect(eval("sub1(1)", data)).toEqual(1);
+        expect(eval("sub1(3, b: 2)", data)).toEqual(1);
+
+        expect(eval("sub2()", data)).toEqual(0);
+        expect(eval("sub2(a: 3)", data)).toEqual(3);
+        expect(eval("sub2(a: 3, b: 2)", data)).toEqual(1);
+        expect(eval("sub2(b: 4)", data)).toEqual(-4);
+      });
+
+      it('should support named arguments for scope calls (map)', () {
+        context["sub1"] = (a, {b: 0}) => a - b;
+        expect(eval("sub1(1)")).toEqual(1);
+        expect(eval("sub1(3, b: 2)")).toEqual(1);
+
+        context["sub2"] = ({a: 0, b: 0}) => a - b;
+        expect(eval("sub2()")).toEqual(0);
+        expect(eval("sub2(a: 3)")).toEqual(3);
+        expect(eval("sub2(a: 3, b: 2)")).toEqual(1);
+        expect(eval("sub2(b: 4)")).toEqual(-4);
+      });
+
+      it('should support named arguments for member calls', () {
+        context['o'] = new TestData();
+        expect(eval("o.sub1(1)")).toEqual(1);
+        expect(eval("o.sub1(3, b: 2)")).toEqual(1);
+
+        expect(eval("o.sub2()")).toEqual(0);
+        expect(eval("o.sub2(a: 3)")).toEqual(3);
+        expect(eval("o.sub2(a: 3, b: 2)")).toEqual(1);
+        expect(eval("o.sub2(b: 4)")).toEqual(-4);
+      });
+
+      it('should support named arguments for member calls (map)', () {
+        context['o'] = {
+          'sub1': (a, {b: 0}) => a - b,
+          'sub2': ({a: 0, b: 0}) => a - b
+        };
+        expect(eval("o.sub1(1)")).toEqual(1);
+        expect(eval("o.sub1(3, b: 2)")).toEqual(1);
+
+        expect(eval("o.sub2()")).toEqual(0);
+        expect(eval("o.sub2(a: 3)")).toEqual(3);
+        expect(eval("o.sub2(a: 3, b: 2)")).toEqual(1);
+        expect(eval("o.sub2(b: 4)")).toEqual(-4);
       });
     });
 

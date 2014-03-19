@@ -4,6 +4,7 @@ import 'package:angular/core/parser/parser.dart' show ParserBackend;
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/core/parser/syntax.dart';
 import 'package:angular/core/parser/characters.dart';
+import 'package:angular/utils.dart' show isReservedWord;
 
 class DynamicParserImpl {
   final ParserBackend backend;
@@ -14,7 +15,10 @@ class DynamicParserImpl {
   DynamicParserImpl(Lexer lexer, this.backend, String input)
       : this.input = input, tokens = lexer.call(input);
 
-  Token get peek => index < tokens.length ? tokens[index] : Token.EOF;
+  Token get next
+      => peek(0);
+  Token peek(int offset)
+      => (index + offset < tokens.length) ? tokens[index + offset] : Token.EOF;
 
   parseChain() {
     bool isChain = false;
@@ -23,10 +27,10 @@ class DynamicParserImpl {
     }
     List expressions = [];
     while (index < tokens.length) {
-      if (peek.isCharacter($RPAREN) ||
-          peek.isCharacter($RBRACE) ||
-          peek.isCharacter($RBRACKET)) {
-        error('Unconsumed token $peek');
+      if (next.isCharacter($RPAREN) ||
+          next.isCharacter($RBRACE) ||
+          next.isCharacter($RBRACKET)) {
+        error('Unconsumed token $next');
       }
       var expr = parseFilter();
       expressions.add(expr);
@@ -57,11 +61,11 @@ class DynamicParserImpl {
   }
 
   parseExpression() {
-    int start = peek.index;
+    int start = next.index;
     var result = parseConditional();
-    while (peek.isOperator('=')) {
+    while (next.isOperator('=')) {
       if (!backend.isAssignable(result)) {
-        int end = (index < tokens.length) ? peek.index : input.length;
+        int end = (index < tokens.length) ? next.index : input.length;
         String expression = input.substring(start, end);
         error('Expression $expression is not assignable');
       }
@@ -72,12 +76,12 @@ class DynamicParserImpl {
   }
 
   parseConditional() {
-    int start = peek.index;
+    int start = next.index;
     var result = parseLogicalOr();
     if (optionalOperator('?')) {
       var yes = parseExpression();
       if (!optionalCharacter($COLON)) {
-        int end = (index < tokens.length) ? peek.index : input.length;
+        int end = (index < tokens.length) ? next.index : input.length;
         String expression = input.substring(start, end);
         error('Conditional expression $expression requires all 3 expressions');
       }
@@ -188,7 +192,7 @@ class DynamicParserImpl {
       if (optionalCharacter($PERIOD)) {
         String name = expectIdentifierOrKeyword();
         if (optionalCharacter($LPAREN)) {
-          List arguments = parseExpressionList($RPAREN);
+          CallArguments arguments = parseCallArguments();
           expectCharacter($RPAREN);
           result = backend.newCallMember(result, name, arguments);
         } else {
@@ -199,7 +203,7 @@ class DynamicParserImpl {
         expectCharacter($RBRACKET);
         result = backend.newAccessKeyed(result, key);
       } else if (optionalCharacter($LPAREN)) {
-        List arguments = parseExpressionList($RPAREN);
+        CallArguments arguments = parseCallArguments();
         expectCharacter($RPAREN);
         result = backend.newCallFunction(result, arguments);
       } else {
@@ -213,42 +217,42 @@ class DynamicParserImpl {
       var result = parseExpression();
       expectCharacter($RPAREN);
       return result;
-    } else if (peek.isKeywordNull || peek.isKeywordUndefined) {
+    } else if (next.isKeywordNull || next.isKeywordUndefined) {
       advance();
       return backend.newLiteralNull();
-    } else if (peek.isKeywordTrue) {
+    } else if (next.isKeywordTrue) {
       advance();
       return backend.newLiteralBoolean(true);
-    } else if (peek.isKeywordFalse) {
+    } else if (next.isKeywordFalse) {
       advance();
       return backend.newLiteralBoolean(false);
     } else if (optionalCharacter($LBRACKET)) {
       List elements = parseExpressionList($RBRACKET);
       expectCharacter($RBRACKET);
       return backend.newLiteralArray(elements);
-    } else if (peek.isCharacter($LBRACE)) {
+    } else if (next.isCharacter($LBRACE)) {
       return parseObject();
-    } else if (peek.isIdentifier) {
+    } else if (next.isIdentifier) {
       return parseAccessOrCallScope();
-    } else if (peek.isNumber) {
-      num value = peek.toNumber();
+    } else if (next.isNumber) {
+      num value = next.toNumber();
       advance();
       return backend.newLiteralNumber(value);
-    } else if (peek.isString) {
-      String value = peek.toString();
+    } else if (next.isString) {
+      String value = next.toString();
       advance();
       return backend.newLiteralString(value);
     } else if (index >= tokens.length) {
       throw 'Unexpected end of expression: $input';
     } else {
-      error('Unexpected token $peek');
+      error('Unexpected token $next');
     }
   }
 
   parseAccessOrCallScope() {
     String name = expectIdentifierOrKeyword();
     if (!optionalCharacter($LPAREN)) return backend.newAccessScope(name);
-    List arguments = parseExpressionList($RPAREN);
+    CallArguments arguments = parseCallArguments();
     expectCharacter($RPAREN);
     return backend.newCallScope(name, arguments);
   }
@@ -271,7 +275,7 @@ class DynamicParserImpl {
 
   List parseExpressionList(int terminator) {
     List result = [];
-    if (!peek.isCharacter(terminator)) {
+    if (!next.isCharacter(terminator)) {
       do {
         result.add(parseExpression());
        } while (optionalCharacter($COMMA));
@@ -279,8 +283,40 @@ class DynamicParserImpl {
     return result;
   }
 
+  CallArguments parseCallArguments() {
+    if (next.isCharacter($RPAREN)) {
+      return const CallArguments(const [], const {});
+    }
+    // Parse the positional arguments.
+    List positionals = [];
+    while (true) {
+      if (peek(1).isCharacter($COLON)) break;
+      positionals.add(parseExpression());
+      if (!optionalCharacter($COMMA)) {
+        return new CallArguments(positionals, const {});
+      }
+    }
+    // Parse the named arguments.
+    Map named = {};
+    do {
+      if (!peek(1).isCharacter($COLON)) {
+        error("Cannot pass positional arguments after named arguments");
+      }
+      int marker = index;
+      String name = expectIdentifierOrKeyword();
+      if (isReservedWord(name)) {
+        error("Cannot use Dart reserved word '$name' as named argument", marker);
+      } else if (named.containsKey(name)) {
+        error("Duplicate argument named '$name'", marker);
+      }
+      expectCharacter($COLON);
+      named[name] = parseExpression();
+    } while (optionalCharacter($COMMA));
+    return new CallArguments(positionals, named);
+  }
+
   bool optionalCharacter(int code) {
-    if (peek.isCharacter(code)) {
+    if (next.isCharacter(code)) {
       advance();
       return true;
     } else {
@@ -289,7 +325,7 @@ class DynamicParserImpl {
   }
 
   bool optionalOperator(String operator) {
-    if (peek.isOperator(operator)) {
+    if (next.isOperator(operator)) {
       advance();
       return true;
     } else {
@@ -308,19 +344,19 @@ class DynamicParserImpl {
   }
 
   String expectIdentifierOrKeyword() {
-    if (!peek.isIdentifier && !peek.isKeyword) {
-      error('Unexpected token $peek, expected identifier or keyword');
+    if (!next.isIdentifier && !next.isKeyword) {
+      error('Unexpected token $next, expected identifier or keyword');
     }
-    String result = peek.toString();
+    String result = next.toString();
     advance();
     return result;
   }
 
   String expectIdentifierOrKeywordOrString() {
-    if (!peek.isIdentifier && !peek.isKeyword && !peek.isString) {
-      error('Unexpected token $peek, expected identifier, keyword, or string');
+    if (!next.isIdentifier && !next.isKeyword && !next.isString) {
+      error('Unexpected token $next, expected identifier, keyword, or string');
     }
-    String result = peek.toString();
+    String result = next.toString();
     advance();
     return result;
   }
@@ -329,7 +365,8 @@ class DynamicParserImpl {
     index++;
   }
 
-  void error(message) {
+  void error(message, [int index]) {
+    if (index == null) index = this.index;
     String location = (index < tokens.length)
         ? 'at column ${tokens[index].index + 1} in'
         : 'the end of the expression';
