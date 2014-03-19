@@ -19,13 +19,13 @@ main() {
 
 
     it('should inject null RouteProvider when no ng-bind-route', async(() {
-      Element root = _.compile('<div probe="routeProbe"></div>');
+      _.compile('<div probe="routeProbe"></div>');
       expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider)).toBeNull();
     }));
 
 
     it('should inject RouteProvider with correct flat route', async(() {
-      Element root = _.compile(
+      _.compile(
           '<div ng-bind-route="library"><div probe="routeProbe"></div></div>');
       expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider).routeName)
           .toEqual('library');
@@ -33,7 +33,7 @@ main() {
 
 
     it('should inject RouteProvider with correct nested route', async(() {
-      Element root = _.compile(
+      _.compile(
           '<div ng-bind-route="library">'
           '  <div ng-bind-route=".all">'
           '    <div probe="routeProbe"></div>'

@@ -28,20 +28,20 @@ main() {
 
 
     it('should switch template', async(() {
-      Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      var root = _.compile('<ng-view></ng-view>');
+      expect(root.text()).toEqual('');
 
       router.route('/foo');
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root.text()).toEqual('Foo');
 
       router.route('/bar');
       microLeap();
-      expect(root.text).toEqual('Bar');
+      expect(root.text()).toEqual('Bar');
 
       router.route('/foo');
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root.text()).toEqual('Foo');
     }));
 
 
@@ -51,26 +51,26 @@ main() {
 
       router.route('/foo');
       microLeap();
-      Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      var root = _.compile('<ng-view></ng-view>');
+      expect(root.text()).toEqual('');
 
       _.rootScope.apply();
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root.text()).toEqual('Foo');
     }));
 
 
     it('should clear template when route is deactivated', async(() {
-      Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      var root = _.compile('<ng-view></ng-view>');
+      expect(root.text()).toEqual('');
 
       router.route('/foo');
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root.text()).toEqual('Foo');
 
       router.route('/baz'); // route without a template
       microLeap();
-      expect(root.text).toEqual('');
+      expect(root.text()).toEqual('');
     }));
 
   });
@@ -106,26 +106,26 @@ main() {
     // meantime we are disabling it.
     if (!identical(1, 1.0)) {
       it('should switch nested templates', async(() {
-        Element root = _.compile('<ng-view></ng-view>');
-        expect(root.text).toEqual('');
+        var root = _.compile('<ng-view></ng-view>');
+        expect(root.text()).toEqual('');
 
         router.route('/library/all');
         microLeap();
-        expect(root.text).toEqual('LibraryBooks');
+        expect(root.text()).toEqual('LibraryBooks');
 
         router.route('/library/1234');
         microLeap();
-        expect(root.text).toEqual('LibraryBook 1234');
+        expect(root.text()).toEqual('LibraryBook 1234');
 
         // nothing should change here
         router.route('/library/1234/overview');
         microLeap();
-        expect(root.text).toEqual('LibraryBook 1234');
+        expect(root.text()).toEqual('LibraryBook 1234');
 
         // nothing should change here
         router.route('/library/1234/read');
         microLeap();
-        expect(root.text).toEqual('LibraryRead Book 1234');
+        expect(root.text()).toEqual('LibraryRead Book 1234');
       }));
     }
   });

@@ -25,10 +25,16 @@ class BarComponent {
 
 main() {
   describe('EventHandler', () {
+    TestBed _;
+
     beforeEachModule((Module module) {
       module..type(FooController);
       module..type(BarComponent);
       module..value(Element, document.body);
+    });
+
+    beforeEach((TestBed tb) {
+      _ = tb;
     });
 
     // Not sure why this doesn't work.
@@ -36,11 +42,16 @@ main() {
       document.body.children.clear();
     });
 
-    it('shoud register and handle event', inject((TestBed _) {
-      document.body.append(_.compile(
+    appendToBody(str) {
+      _.compile(str);
+      document.body.append(_.rootElement);
+    }
+
+    it('shoud register and handle event', inject(() {
+      appendToBody(
         '''<div foo>
           <div on-abc="ctrl.invoked=true;"></div>
-        </div>'''));
+        </div>''');
 
       document.querySelector('[on-abc]').dispatchEvent(new Event('abc'));
       var fooScope = _.getScope(document.querySelector('[foo]'));
@@ -48,11 +59,11 @@ main() {
       document.body.children.clear();
     }));
 
-    it('shoud register and handle event with long name', inject((TestBed _) {
-      document.body.append(_.compile(
+    it('shoud register and handle event with long name', inject(() {
+      appendToBody(
         '''<div foo>
           <div on-my-new-event="ctrl.invoked=true;"></div>
-        </div>'''));
+        </div>''');
 
       document.querySelector('[on-my-new-event]').dispatchEvent(new Event('myNewEvent'));
       var fooScope = _.getScope(document.querySelector('[foo]'));
@@ -60,11 +71,11 @@ main() {
       document.body.children.clear();
     }));
 
-    it('shoud have model updates applied correctly', inject((TestBed _) {
-      document.body.append(_.compile(
+    it('shoud have model updates applied correctly', inject(() {
+      appendToBody(
         '''<div foo>
           <div on-abc='ctrl.description="new description";'>{{ctrl.description}}</div>
-        </div>'''));
+        </div>''');
       var el = document.querySelector('[on-abc]');
       el.dispatchEvent(new Event('abc'));
       _.rootScope.apply();
@@ -72,8 +83,8 @@ main() {
       document.body.children.clear();
     }));
 
-    it('shoud register event when shadow dom is used', async((TestBed _) {
-      document.body.append(_.compile('<bar></bar>'));
+    it('shoud register event when shadow dom is used', async(() {
+      appendToBody('<bar></bar>');
 
       microLeap();
 
@@ -85,13 +96,13 @@ main() {
       document.body.children.clear();
     }));
 
-    it('shoud handle event within content only once', async(inject((TestBed _) {
-      document.body.append(_.compile(
+    it('shoud handle event within content only once', async(inject(() {
+      appendToBody(
         '''<div foo>
              <bar>
                <div on-abc="ctrl.invoked=true;"></div>
              </bar>
-           </div>'''));
+           </div>''');
 
       microLeap();
 

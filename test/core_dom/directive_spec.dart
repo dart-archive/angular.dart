@@ -4,14 +4,13 @@ import '../_specs.dart';
 
 main() {
   describe('NodeAttrs', () {
-    var element;
     var nodeAttrs;
     TestBed _;
 
     beforeEach((TestBed tb) {
       _ = tb;
-      element = _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo"></div>');
-      nodeAttrs = new NodeAttrs(element);
+      _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo"></div>');
+      nodeAttrs = new NodeAttrs(_.rootElement);
     });
 
     it('should transform names to camel case', () {

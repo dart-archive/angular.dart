@@ -4,7 +4,6 @@ import 'dart:html';
 import 'package:unittest/unittest.dart' as unit;
 import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
-import 'package:collection/wrappers.dart' show DelegatingList;
 
 import 'jasmine_syntax.dart' as jasmine_syntax;
 
@@ -16,14 +15,6 @@ export 'package:angular/angular.dart';
 export 'package:angular/animate/module.dart';
 export 'package:angular/mock/module.dart';
 export 'package:perf_api/perf_api.dart';
-
-es(String html) {
-  var div = new DivElement();
-  div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
-  return div.nodes;
-}
-
-e(String html) => es(html).first;
 
 Expect expect(actual, [unit.Matcher matcher = null]) {
   if (matcher != null) {
@@ -127,122 +118,6 @@ class ExceptionContains extends unit.Matcher {
       return super.describeMismatch('$item', mismatchDescription, matchState,
           verbose);
   }
-}
-
-$(selector) {
-  return new JQuery(selector);
-}
-
-
-class GetterSetter {
-  Getter getter(String key) => null;
-  Setter setter(String key) => null;
-}
-var getterSetter = new GetterSetter();
-
-class JQuery extends DelegatingList<Node> {
-  JQuery([selector]) : super([]) {
-    if (selector == null) {
-      // do nothing;
-    } else if (selector is String) {
-      addAll(es(selector));
-    } else if (selector is List) {
-      addAll(selector);
-    } else if (selector is Node) {
-      add(selector);
-    } else {
-      throw selector;
-    }
-  }
-
-  _toHtml(node, [bool outer = false]) {
-    if (node is Comment) {
-      return '<!--${node.text}-->';
-    } else if (node is DocumentFragment) {
-      var acc = '';
-      node.childNodes.forEach((n) { acc += _toHtml(n, true); });
-      return acc;
-    } else if (node is Element) {
-      // Remove all the "ng-binding" internal classes
-      node = node.clone(true) as Element;
-      node.classes.remove('ng-binding');
-      node.querySelectorAll(".ng-binding").forEach((Element e) {
-        e.classes.remove('ng-binding');
-      });
-      var htmlString = outer ? node.outerHtml : node.innerHtml;
-      // Strip out empty class attributes.  This seems like a Dart bug...
-      return htmlString.replaceAll(' class=""', '');
-    } else {
-      throw "JQuery._toHtml not implemented for node type [${node.nodeType}]";
-    }
-  }
-
-  _renderedText(n, [bool notShadow = false]) {
-    if (n is List) {
-      return n.map((nn) => _renderedText(nn)).join("");
-    }
-
-    if (n is Comment) return '';
-
-    if (!notShadow && n is Element && n.shadowRoot != null) {
-      var shadowText = n.shadowRoot.text;
-      var domText = _renderedText(n, true);
-      return shadowText.replaceFirst("SHADOW-CONTENT", domText);
-    }
-
-    if (n.nodes == null || n.nodes.length == 0) return n.text;
-
-    return n.nodes.map((cn) => _renderedText(cn)).join("");
-  }
-
-  accessor(Function getter, Function setter, [value, single=false]) {
-    // TODO(dart): ?value does not work, since value was passed. :-(
-    var setterMode = value != null;
-    var result = setterMode ? this : '';
-    forEach((node) {
-      if (setterMode) {
-        setter(node, value);
-      } else {
-        result = single ? getter(node) : '$result${getter(node)}';
-      }
-    });
-    return result;
-  }
-
-  html([String html]) => accessor(
-          (n) => _toHtml(n),
-          (n, v) => n.setInnerHtml(v, treeSanitizer: new NullTreeSanitizer()),
-          html);
-  val([String text]) => accessor((n) => n.value, (n, v) => n.value = v);
-  text([String text]) => accessor((n) => n.text, (n, v) => n.text = v, text);
-  contents() => fold(new JQuery(), (jq, node) => jq..addAll(node.nodes));
-  toString() => fold('', (html, node) => '$html${_toHtml(node, true)}');
-  eq(num childIndex) => $(this[childIndex]);
-  remove(_) => forEach((n) => n.remove());
-  attr([String name, String value]) => accessor(
-          (n) => n.attributes[name],
-          (n, v) => n.attributes[name] = v,
-          value,
-          true);
-  prop([String name]) => accessor(
-          (n) => getterSetter.getter(name)(n),
-          (n, v) => getterSetter.setter(name)(n, v),
-          null,
-          true);
-  textWithShadow() => fold('', (t, n) => '${t}${_renderedText(n)}');
-  find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(
-      (n is Element ? (n as Element).querySelectorAll(selector) : [])));
-  hasClass(String name) => fold(false, (hasClass, node) =>
-      hasClass || (node is Element && (node as Element).classes.contains(name)));
-  addClass(String name) => forEach((node) =>
-      (node is Element) ? (node as Element).classes.add(name) : null);
-  removeClass(String name) => forEach((node) =>
-      (node is Element) ? (node as Element).classes.remove(name) : null);
-  css(String name, [String value]) => accessor(
-          (Element n) => n.style.getPropertyValue(name),
-          (Element n, v) => n.style.setProperty(name, value), value);
-  children() => new JQuery(this[0].childNodes);
-  shadowRoot() => new JQuery((this[0] as Element).shadowRoot);
 }
 
 _injectify(fn) {
