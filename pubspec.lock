@@ -52,7 +52,7 @@ packages:
   path:
     description: path
     source: hosted
-    version: "1.0.0"
+    version: "1.1.0"
   perf_api:
     description: perf_api
     source: hosted
@@ -60,7 +60,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.14"
+    version: "0.4.15"
   shadow_dom:
     description: shadow_dom
     source: hosted
