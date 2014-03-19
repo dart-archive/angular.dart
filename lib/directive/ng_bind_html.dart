@@ -28,6 +28,6 @@ class NgBindHtml {
    * expression is innerHTML'd according to the rules specified in this class'
    * documentation.
    */
-  set value(value) => element.setInnerHtml(value == null ? '' : value.toString(),
-                                           validator: validator);
+  void set value(value) => element.setInnerHtml(
+      value == null ? '' : value.toString(), validator: validator);
 }

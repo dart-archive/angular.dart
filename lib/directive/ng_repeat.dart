@@ -165,6 +165,7 @@ class NgRepeat {
       _viewPort.insert(view, insertAfter: previousView);
     };
 
+    // todo(vicb) refactor once GH-774 gets fixed
     if (_rows == null) {
       _rows = new List<_Row>(length);
       for (var i = 0; i < length; i++) {
