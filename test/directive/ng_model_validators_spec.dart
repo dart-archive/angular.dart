@@ -595,6 +595,38 @@ void main() {
 
         expect(model.valid).toBe(true);
       });
+
+      it('ng-min', () {
+        var input = build('ng-min', 'number');
+        scope.apply(() {
+          scope.context['attr'] = '5.0';
+          scope.context['value'] = 3;
+        });
+
+        expect(model.valid).toBe(false);
+
+        scope.apply(() {
+          scope.context['attr'] = null;
+        });
+
+        expect(model.valid).toBe(true);
+      });
+
+      it('ng-max', () {
+        var input = build('ng-max', 'number');
+        scope.apply(() {
+          scope.context['attr'] = '5.0';
+          scope.context['value'] = 8;
+        });
+
+        expect(model.valid).toBe(false);
+
+        scope.apply(() {
+          scope.context['attr'] = null;
+        });
+
+        expect(model.valid).toBe(true);
+      });
     }); 
   });
 }

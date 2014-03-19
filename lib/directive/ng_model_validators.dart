@@ -132,8 +132,11 @@ class NgModelMaxNumberValidator implements NgValidator {
     try {
       num parsedValue = double.parse(value);
       _max = parsedValue.isNaN ? _max : parsedValue;
+    } catch(e) {
+      _max = null;
+    } finally {
       _ngModel.validateLater();
-    } catch(e) {};
+    }
   }
 
   bool isValid(modelValue) {
@@ -180,8 +183,11 @@ class NgModelMinNumberValidator implements NgValidator {
     try {
       num parsedValue = double.parse(value);
       _min = parsedValue.isNaN ? _min : parsedValue;
+    } catch(e) {
+      _min = null;
+    } finally {
       _ngModel.validateLater();
-    } catch(e) {};
+    }
   }
 
   bool isValid(modelValue) {
