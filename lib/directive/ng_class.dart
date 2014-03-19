@@ -68,8 +68,8 @@ part of angular.directive;
     exportExpressionAttrs: const ['ng-class'])
 class NgClassDirective extends _NgClassBase {
   NgClassDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                   AstParser parser, NgAnimate animate)
-      : super(element, scope, null, attrs, parser, animate);
+                   NgAnimate animate)
+      : super(element, scope, null, attrs, animate);
 }
 
 /**
@@ -104,8 +104,8 @@ class NgClassDirective extends _NgClassBase {
     exportExpressionAttrs: const ['ng-class-odd'])
 class NgClassOddDirective extends _NgClassBase {
   NgClassOddDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                      AstParser parser, NgAnimate animate)
-      : super(element, scope, 0, attrs, parser, animate);
+                      NgAnimate animate)
+      : super(element, scope, 0, attrs, animate);
 }
 
 /**
@@ -140,8 +140,8 @@ class NgClassOddDirective extends _NgClassBase {
     exportExpressionAttrs: const ['ng-class-even'])
 class NgClassEvenDirective extends _NgClassBase {
   NgClassEvenDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                       AstParser parser, NgAnimate animate)
-      : super(element, scope, 1, attrs, parser, animate);
+                       NgAnimate animate)
+      : super(element, scope, 1, attrs, animate);
 }
 
 abstract class _NgClassBase {
@@ -149,14 +149,13 @@ abstract class _NgClassBase {
   final Scope scope;
   final int mode;
   final NodeAttrs nodeAttrs;
-  final AstParser _parser;
   final NgAnimate _animate;
   var previousSet = [];
   var currentSet = [];
   Watch _watch;
 
   _NgClassBase(this.element, this.scope, this.mode, this.nodeAttrs,
-               this._parser, this._animate)
+               this._animate)
   {
     var prevClass;
 
@@ -170,12 +169,16 @@ abstract class _NgClassBase {
 
   set valueExpression(currentExpression) {
     if (_watch != null) _watch.remove();
-    _watch = scope.watch(_parser(currentExpression, collection: true), (current, _) {
-      currentSet = _flatten(current);
-      _handleChange(scope.context[r'$index']);
-    }, readOnly: true);
+
+    _watch = scope.watch(currentExpression, (current, _) {
+          currentSet = _flatten(current);
+          _handleChange(scope.context[r'$index']);
+        },
+        readOnly: true,
+        collection: true);
+
     if (mode != null) {
-      scope.watch(_parser(r'$index'), (index, oldIndex) {
+      scope.watch(r'$index', (index, oldIndex) {
         var mod = index % 2;
         if (oldIndex == null || mod != oldIndex % 2) {
           if (mod == mode) {

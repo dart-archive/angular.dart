@@ -45,7 +45,6 @@ class NgCoreModule extends Module {
     value(ScopeStats, new ScopeStats());
     value(GetterCache, new GetterCache({}));
     value(Object, {}); // RootScope context
-    type(AstParser);
     type(NgZone);
 
     type(Parser, implementedBy: DynamicParser);

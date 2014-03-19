@@ -163,13 +163,11 @@ void main() {
       });
 
       it('should support filters', (Logger logger, Map context,
-                                           RootScope rootScope, AstParser parser,
-                                           FilterMap filters) {
+                                    RootScope rootScope, FilterMap filters) {
         context['a'] = 123;
         context['b'] = 2;
-        rootScope.watch(
-            parser('a | multiply:b', filters: filters),
-                (value, previous) => logger(value));
+        rootScope.watch('a | multiply:b', (value, previous) => logger(value),
+            filters: filters);
         rootScope.digest();
         expect(logger).toEqual([246]);
         logger.clear();
@@ -180,12 +178,10 @@ void main() {
 
       it('should support arrays in filters', (Logger logger, Map context,
                                                      RootScope rootScope,
-                                                     AstParser parser,
                                                      FilterMap filters) {
         context['a'] = [1];
-        rootScope.watch(
-            parser('a | sort | listHead:"A" | listTail:"B"', filters: filters),
-                (value, previous) => logger(value));
+        rootScope.watch('a | sort | listHead:"A" | listTail:"B"',
+            (value, previous) => logger(value), filters: filters);
         rootScope.digest();
         expect(logger).toEqual(['sort', 'listHead', 'listTail', ['A', 1, 'B']]);
         logger.clear();
@@ -209,12 +205,10 @@ void main() {
 
       it('should support maps in filters', (Logger logger, Map context,
                                                     RootScope rootScope,
-                                                    AstParser parser,
                                                     FilterMap filters) {
         context['a'] = {'foo': 'bar'};
-        rootScope.watch(
-            parser('a | identity | keys', filters: filters),
-            (value, previous) => logger(value));
+        rootScope.watch('a | identity | keys',
+            (value, previous) => logger(value), filters: filters);
         rootScope.digest();
         expect(logger).toEqual(['identity', 'keys', ['foo']]);
         logger.clear();

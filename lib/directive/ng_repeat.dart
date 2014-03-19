@@ -88,7 +88,6 @@ class NgRepeatDirective {
   final BoundViewFactory _boundViewFactory;
   final Scope _scope;
   final Parser _parser;
-  final AstParser _astParser;
   final FilterMap filters;
 
   String _expression;
@@ -100,9 +99,8 @@ class NgRepeatDirective {
   Watch _watch = null;
   Iterable _lastCollection;
 
-  NgRepeatDirective(this._viewPort, this._boundViewFactory,
-                    this._scope, this._parser, this._astParser,
-                    this.filters);
+  NgRepeatDirective(this._viewPort, this._boundViewFactory, this._scope,
+                    this._parser, this.filters);
 
   set expression(value) {
     assert(value != null);
@@ -138,12 +136,12 @@ class NgRepeatDirective {
     if (_valueIdentifier == null) _valueIdentifier = match.group(1);
     _keyIdentifier = match.group(2);
 
-    _watch = _scope.watch(
-        _astParser(_listExpr, collection: true, filters: filters),
-        (CollectionChangeRecord collection, _) {
+    _watch = _scope.watch(_listExpr, (CollectionChangeRecord collection, _) {
           //TODO(misko): we should take advantage of the CollectionChangeRecord!
           _onCollectionChange(collection == null ? [] : collection.iterable);
-        }
+        },
+        collection: true,
+        filters: filters
     );
   }
 
