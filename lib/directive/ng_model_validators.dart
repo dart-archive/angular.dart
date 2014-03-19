@@ -14,12 +14,13 @@ abstract class NgValidator {
     selector: '[ng-model][ng-required]',
     map: const {'ng-required': '=>required'})
 class NgModelRequiredValidator implements NgValidator {
-  bool _required = true;
 
   final String name = 'ng-required';
+  bool _required = true;
+  final NgModel _ngModel;
 
-  NgModelRequiredValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
+  NgModelRequiredValidator(NgModel this._ngModel) {
+    _ngModel.addValidator(this);
   }
 
   bool isValid(modelValue) {
@@ -35,6 +36,7 @@ class NgModelRequiredValidator implements NgValidator {
 
   set required(value) {
     _required = value == null ? false : value;
+    _ngModel.validateLater();
   }
 }
 
@@ -81,6 +83,7 @@ class NgModelEmailValidator implements NgValidator {
 @NgDirective(selector: 'input[type=number][ng-model]')
 @NgDirective(selector: 'input[type=range][ng-model]')
 class NgModelNumberValidator implements NgValidator {
+
   final String name = 'ng-number';
 
   NgModelNumberValidator(NgModel ngModel) {
@@ -115,11 +118,12 @@ class NgModelNumberValidator implements NgValidator {
     map: const {'ng-max': '=>max'})
 class NgModelMaxNumberValidator implements NgValidator {
 
-  double _max;
   final String name = 'ng-max';
+  double _max;
+  final NgModel _ngModel;
 
-  NgModelMaxNumberValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
+  NgModelMaxNumberValidator(NgModel this._ngModel) {
+    _ngModel.addValidator(this);
   }
 
   @NgAttr('max')
@@ -128,7 +132,11 @@ class NgModelMaxNumberValidator implements NgValidator {
     try {
       num parsedValue = double.parse(value);
       _max = parsedValue.isNaN ? _max : parsedValue;
-    } catch(e) {};
+    } catch(e) {
+      _max = null;
+    } finally {
+      _ngModel.validateLater();
+    }
   }
 
   bool isValid(modelValue) {
@@ -161,11 +169,12 @@ class NgModelMaxNumberValidator implements NgValidator {
     map: const {'ng-min': '=>min'})
 class NgModelMinNumberValidator implements NgValidator {
 
-  double _min;
   final String name = 'ng-min';
+  double _min;
+  final NgModel _ngModel;
 
-  NgModelMinNumberValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
+  NgModelMinNumberValidator(NgModel this._ngModel) {
+    _ngModel.addValidator(this);
   }
 
   @NgAttr('min')
@@ -174,7 +183,11 @@ class NgModelMinNumberValidator implements NgValidator {
     try {
       num parsedValue = double.parse(value);
       _min = parsedValue.isNaN ? _min : parsedValue;
-    } catch(e) {};
+    } catch(e) {
+      _min = null;
+    } finally {
+      _ngModel.validateLater();
+    }
   }
 
   bool isValid(modelValue) {
@@ -203,12 +216,13 @@ class NgModelMinNumberValidator implements NgValidator {
     selector: '[ng-model][ng-pattern]',
     map: const {'ng-pattern': '=>pattern'})
 class NgModelPatternValidator implements NgValidator {
-  RegExp _pattern;
 
   final String name = 'ng-pattern';
+  RegExp _pattern;
+  final NgModel _ngModel;
 
-  NgModelPatternValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
+  NgModelPatternValidator(NgModel this._ngModel) {
+    _ngModel.addValidator(this);
   }
 
   bool isValid(modelValue) {
@@ -218,8 +232,10 @@ class NgModelPatternValidator implements NgValidator {
   }
 
   @NgAttr('pattern')
-  set pattern(val) =>
-      _pattern = val != null && val.length > 0 ? new RegExp(val) : null;
+  void set pattern(val) {
+    _pattern = val != null && val.length > 0 ? new RegExp(val) : null;
+    _ngModel.validateLater();
+  }
 }
 
 /**
@@ -232,12 +248,13 @@ class NgModelPatternValidator implements NgValidator {
     selector: '[ng-model][ng-minlength]',
     map: const {'ng-minlength': '=>minlength'})
 class NgModelMinLengthValidator implements NgValidator {
-  int _minlength;
 
   final String name = 'ng-minlength';
+  int _minlength;
+  final NgModel _ngModel;
 
-  NgModelMinLengthValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
+  NgModelMinLengthValidator(NgModel this._ngModel) {
+    _ngModel.addValidator(this);
   }
 
   bool isValid(modelValue) {
@@ -247,8 +264,10 @@ class NgModelMinLengthValidator implements NgValidator {
   }
 
   @NgAttr('minlength')
-  set minlength(value) =>
-      _minlength = value == null ? 0 : int.parse(value.toString());
+  void set minlength(value) {
+    _minlength = value == null ? 0 : int.parse(value.toString());
+    _ngModel.validateLater();
+  }
 }
 
 /**
@@ -261,18 +280,21 @@ class NgModelMinLengthValidator implements NgValidator {
     selector: '[ng-model][ng-maxlength]',
     map: const {'ng-maxlength': '=>maxlength'})
 class NgModelMaxLengthValidator implements NgValidator {
-  int _maxlength = 0;
 
   final String name = 'ng-maxlength';
+  int _maxlength = 0;
+  final NgModel _ngModel;
 
-  NgModelMaxLengthValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
+  NgModelMaxLengthValidator(NgModel this._ngModel) {
+    _ngModel.addValidator(this);
   }
 
   bool isValid(modelValue) =>
       _maxlength == 0 || (modelValue == null ? 0 : modelValue.length) <= _maxlength;
 
   @NgAttr('maxlength')
-  set maxlength(value) =>
-      _maxlength = value == null ? 0 : int.parse(value.toString());
+  void set maxlength(value) {
+    _maxlength = value == null ? 0 : int.parse(value.toString());
+    _ngModel.validateLater();
+  }
 }

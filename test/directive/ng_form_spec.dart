@@ -514,6 +514,7 @@ void main() {
         _.compile('<form name="superForm">' +
                   ' <input type="text" ng-model="myModel" probe="i" required />' +
                   '</form>');
+        scope.apply();
 
         NgForm form = _.rootScope.context['superForm'];
         Probe probe = _.rootScope.context['i'];
@@ -599,6 +600,29 @@ void main() {
         expect(form.classes.contains('ng-required-valid')).toBe(true);
         expect(form.classes.contains('ng-required-invalid')).toBe(false);
       });
+
+      it('should re-validate itself when validators are toggled on and off',
+        (TestBed _, Scope scope) {
+
+        scope.context['required'] = true;
+        _.compile('<form name="myForm">' +
+                  '<input type="text" ng-model="model" ng-required="required" probe="i">' +
+                  '</form>');
+        scope.apply();
+
+        var form = scope.context['myForm'];
+        var model = scope.context['i'].directive(NgModel);
+
+        expect(form.invalid).toBe(true);
+        expect(model.invalid).toBe(true);
+
+        scope.context['required'] = false;
+        scope.apply();
+
+        expect(form.valid).toBe(true);
+        expect(model.valid).toBe(true);
+      });
+
 
       describe('custom validators', () {
         beforeEachModule((Module module) {

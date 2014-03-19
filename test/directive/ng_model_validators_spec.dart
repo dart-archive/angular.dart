@@ -43,6 +43,8 @@ void main() {
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
 
+        _.rootScope.apply();
+
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
 
@@ -519,5 +521,112 @@ void main() {
         expect(model.invalid).toEqual(true);
       });
     });
+
+    describe('when toggled it should properly validate', () {
+      var build, input, scope, model;
+      beforeEach(() {
+        scope = _.rootScope;
+        build = (attr, type) {
+          input = _.compile('<input type="$type" probe="p" ng-model="value" $attr="attr" />');
+          model = scope.context['p'].directive(NgModel);
+        };
+      });
+
+      it('ng-required', () {
+        var input = build('ng-required', 'text');
+        scope.apply(() {
+          scope.context['attr'] = true;
+          scope.context['value'] = '';
+        });
+
+        expect(model.valid).toBe(false);
+
+        scope.apply(() {
+          scope.context['attr'] = false;
+        });
+
+        expect(model.valid).toBe(true);
+      });
+
+      it('ng-pattern', () {
+        var input = build('ng-pattern', 'text');
+        scope.apply(() {
+          scope.context['attr'] = '^\d+\$';
+          scope.context['value'] = 'abc';
+        });
+
+        expect(model.valid).toBe(false);
+
+        scope.apply(() {
+          scope.context['attr'] = null;
+        });
+
+        expect(model.valid).toBe(true);
+      });
+
+      it('ng-minlength', () {
+        var input = build('ng-minlength', 'text');
+        scope.apply(() {
+          scope.context['attr'] = '10';
+          scope.context['value'] = 'abc';
+        });
+
+        expect(model.valid).toBe(false);
+
+        scope.apply(() {
+          scope.context['attr'] = null;
+        });
+
+        expect(model.valid).toBe(true);
+      });
+
+      it('ng-minlength', () {
+        var input = build('ng-maxlength', 'text');
+        scope.apply(() {
+          scope.context['attr'] = '3';
+          scope.context['value'] = 'abcd';
+        });
+
+        expect(model.valid).toBe(false);
+
+        scope.apply(() {
+          scope.context['attr'] = null;
+        });
+
+        expect(model.valid).toBe(true);
+      });
+
+      it('ng-min', () {
+        var input = build('ng-min', 'number');
+        scope.apply(() {
+          scope.context['attr'] = '5.0';
+          scope.context['value'] = 3;
+        });
+
+        expect(model.valid).toBe(false);
+
+        scope.apply(() {
+          scope.context['attr'] = null;
+        });
+
+        expect(model.valid).toBe(true);
+      });
+
+      it('ng-max', () {
+        var input = build('ng-max', 'number');
+        scope.apply(() {
+          scope.context['attr'] = '5.0';
+          scope.context['value'] = 8;
+        });
+
+        expect(model.valid).toBe(false);
+
+        scope.apply(() {
+          scope.context['attr'] = null;
+        });
+
+        expect(model.valid).toBe(true);
+      });
+    }); 
   });
 }

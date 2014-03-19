@@ -11,9 +11,6 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   static const NG_SUBMIT_INVALID = "ng-submit-invalid";
 
   String _name;
-  bool _dirty;
-  bool _touched;
-  bool _valid;
   bool _submit_valid;
 
   final NgControl _parentControl;
