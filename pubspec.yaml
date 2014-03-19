@@ -23,4 +23,5 @@ dependencies:
   shadow_dom: '>=0.9.1 <1.0.0'
 dev_dependencies:
   benchmark_harness: '>=1.0.0'
+  hop: any
   unittest: '>=0.8.7 <0.10.0'

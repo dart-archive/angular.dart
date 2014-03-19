@@ -13,6 +13,14 @@ packages:
     description: benchmark_harness
     source: hosted
     version: "1.0.4"
+  bot:
+    description: bot
+    source: hosted
+    version: "0.26.0+1"
+  bot_io:
+    description: bot_io
+    source: hosted
+    version: "0.26.0"
   browser:
     description: browser
     source: hosted
@@ -21,10 +29,26 @@ packages:
     description: collection
     source: hosted
     version: "0.9.1"
+  completion:
+    description: completion
+    source: hosted
+    version: "0.1.1"
+  crypto:
+    description: crypto
+    source: hosted
+    version: "0.9.0"
   di:
     description: di
     source: hosted
     version: "0.0.33"
+  git:
+    description: git
+    source: hosted
+    version: "0.2.0"
+  hop:
+    description: hop
+    source: hosted
+    version: "0.30.2"
   html5lib:
     description: html5lib
     source: hosted
