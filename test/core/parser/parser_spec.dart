@@ -56,10 +56,10 @@ main() {
       module.type(SubstringFilter);
     });
 
-    beforeEach(inject((Parser injectedParser, FilterMap injectedFilters) {
+    beforeEach((Parser injectedParser, FilterMap injectedFilters) {
       parser = injectedParser;
       filters = injectedFilters;
-    }));
+    });
 
     eval(String text, [FilterMap f])
         => parser(text).eval(context, f == null ? filters : f);
@@ -158,9 +158,9 @@ main() {
     describe('error handling', () {
       Parser<Expression> parser;
 
-      beforeEach(inject((Parser p) {
+      beforeEach((Parser p) {
         parser = p;
-      }));
+      });
 
       // We only care about the error strings in the DynamicParser.
       var errStr = (x) {
@@ -965,10 +965,10 @@ main() {
       });
 
 
-      it('should work with scopes', inject((Scope scope) {
+      it('should work with scopes', (Scope scope) {
         scope.context['a'] = {'b': 6};
         expect(parser('a.b').bind(scope.context, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
-      }));
+      });
 
       it('should expose assignment function', () {
         var fn = parser('a.b');
@@ -1136,7 +1136,7 @@ main() {
         expect(eval("'abcd'|substring:1:3|uppercase")).toEqual("BC");
       });
 
-      it('should only use filters that are passed as an argument', inject((Injector injector) {
+      it('should only use filters that are passed as an argument', (Injector injector) {
         var expression = parser("'World'|hello");
         expect(() {
           expression.eval({}, filters);
@@ -1149,7 +1149,7 @@ main() {
         var newFilters = childInjector.get(FilterMap);
 
         expect(expression.eval({}, newFilters)).toEqual('Hello, World!');
-      }));
+      });
 
       it('should not allow filters in a chain', () {
         expect(() {

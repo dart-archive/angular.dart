@@ -6,7 +6,7 @@ main() {
   describe('ngClass', () {
     TestBed _;
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should add new and remove old classes dynamically', () {
       var element = _.compile('<div class="existing" ng-class="dynClass"></div>');
@@ -134,7 +134,8 @@ main() {
       _.rootScope.apply();
       _.rootScope.context['dynCls'] = 'foo';
       _.rootScope.apply();
-      expect(element.className).toEqual('ui-panel ui-selected foo');
+      // TODO(deboer): Abstract ng-binding
+      expect(element.className.replaceAll(' ng-binding', '')).toEqual('ui-panel ui-selected foo');
     });
 
 
@@ -142,7 +143,8 @@ main() {
       var element = _.compile('<div class="panel bar" ng-class="dynCls"></div>');
       _.rootScope.context['dynCls'] = 'panel';
       _.rootScope.apply();
-      expect(element.className).toEqual('panel bar');
+      // TODO(deboer): Abstract ng-binding
+      expect(element.className.replaceAll(' ng-binding', '')).toEqual('panel bar');
     });
 
 
@@ -152,7 +154,8 @@ main() {
       _.rootScope.apply();
       _.rootScope.context['dynCls'] = 'window';
       _.rootScope.apply();
-      expect(element.className).toEqual('bar window');
+      // TODO(deboer): Abstract ng-binding
+      expect(element.className.replaceAll(' ng-binding', '')).toEqual('bar window');
     });
 
 

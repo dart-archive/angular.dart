@@ -12,9 +12,9 @@ void main() {
 
     var date;
 
-    beforeEach(inject((FilterMap map, Injector injector) {
+    beforeEach((FilterMap map, Injector injector) {
       date = injector.get(map[new NgFilter(name: 'date')]);
-    }));
+    });
 
     it('should ignore falsy inputs', () {
       expect(date(null)).toBeNull();

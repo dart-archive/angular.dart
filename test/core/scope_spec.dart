@@ -25,7 +25,7 @@ void main() {
     });
 
     describe('AST Bridge', () {
-      it('should watch field', inject((Logger logger, Map context, RootScope rootScope) {
+      it('should watch field', (Logger logger, Map context, RootScope rootScope) {
         context['field'] = 'Worked!';
         rootScope.watch('field', (value, previous) => logger([value, previous]));
         expect(logger).toEqual([]);
@@ -33,9 +33,9 @@ void main() {
         expect(logger).toEqual([['Worked!', null]]);
         rootScope.digest();
         expect(logger).toEqual([['Worked!', null]]);
-      }));
+      });
 
-      it('should watch field path', inject((Logger logger, Map context, RootScope rootScope) {
+      it('should watch field path', (Logger logger, Map context, RootScope rootScope) {
         context['a'] = {'b': 'AB'};
         rootScope.watch('a.b', (value, previous) => logger(value));
         rootScope.digest();
@@ -46,9 +46,9 @@ void main() {
         context['a'] = {'b': 'XYZ'};
         rootScope.digest();
         expect(logger).toEqual(['AB', '123', 'XYZ']);
-      }));
+      });
 
-      it('should watch math operations', inject((Logger logger, Map context, RootScope rootScope) {
+      it('should watch math operations', (Logger logger, Map context, RootScope rootScope) {
         context['a'] = 1;
         context['b'] = 2;
         rootScope.watch('a + b + 1', (value, previous) => logger(value));
@@ -60,10 +60,10 @@ void main() {
         context['b'] = 5;
         rootScope.digest();
         expect(logger).toEqual([4, 6, 9]);
-      }));
+      });
 
 
-      it('should watch literals', inject((Logger logger, Map context, RootScope rootScope) {
+      it('should watch literals', (Logger logger, Map context, RootScope rootScope) {
         context['a'] = 1;
         rootScope
             ..watch('1', (value, previous) => logger(value))
@@ -76,9 +76,9 @@ void main() {
         context['a'] = 3;
         rootScope.digest();
         expect(logger).toEqual([[3, 2, 3], {'a': 3, 'b': 2}]);
-      }));
+      });
 
-      it('should watch nulls', inject((Logger logger, Map context, RootScope rootScope) {
+      it('should watch nulls', (Logger logger, Map context, RootScope rootScope) {
         var r = (value, _) => logger(value);
         rootScope
             ..watch('null < 0',r)
@@ -93,9 +93,9 @@ void main() {
             ..watch('null != null', r)
             ..digest();
         expect(logger).toEqual([null, null, 6, 5, -4, 3, 0, 0, true, false]);
-      }));
+      });
 
-      it('should invoke closures', inject((Logger logger, Map context, RootScope rootScope) {
+      it('should invoke closures', (Logger logger, Map context, RootScope rootScope) {
         context['fn'] = () {
           logger('fn');
           return 1;
@@ -112,9 +112,9 @@ void main() {
         logger.clear();
         rootScope.digest();
         expect(logger).toEqual(['fn', 'a.fn']);
-      }));
+      });
 
-      it('should perform conditionals', inject((Logger logger, Map context, RootScope rootScope) {
+      it('should perform conditionals', (Logger logger, Map context, RootScope rootScope) {
         context['a'] = 1;
         context['b'] = 2;
         context['c'] = 3;
@@ -125,10 +125,10 @@ void main() {
         context['a'] = 0;
         rootScope.digest();
         expect(logger).toEqual([3]);
-      }));
+      });
 
 
-      xit('should call function', inject((Logger logger, Map context, RootScope rootScope) {
+      xit('should call function', (Logger logger, Map context, RootScope rootScope) {
         context['a'] = () {
           return () { return 123; };
         };
@@ -138,9 +138,9 @@ void main() {
         logger.clear();
         rootScope.digest();
         expect(logger).toEqual([]);
-      }));
+      });
 
-      it('should access bracket', inject((Logger logger, Map context, RootScope rootScope) {
+      it('should access bracket', (Logger logger, Map context, RootScope rootScope) {
         context['a'] = {'b': 123};
         rootScope.watch('a["b"]', (value, previous) => logger(value));
         rootScope.digest();
@@ -148,10 +148,10 @@ void main() {
         logger.clear();
         rootScope.digest();
         expect(logger).toEqual([]);
-      }));
+      });
 
 
-      it('should prefix', inject((Logger logger, Map context, RootScope rootScope) {
+      it('should prefix', (Logger logger, Map context, RootScope rootScope) {
         context['a'] = true;
         rootScope.watch('!a', (value, previous) => logger(value));
         rootScope.digest();
@@ -160,9 +160,9 @@ void main() {
         context['a'] = false;
         rootScope.digest();
         expect(logger).toEqual([true]);
-      }));
+      });
 
-      it('should support filters', inject((Logger logger, Map context,
+      it('should support filters', (Logger logger, Map context,
                                            RootScope rootScope, AstParser parser,
                                            FilterMap filters) {
         context['a'] = 123;
@@ -176,9 +176,9 @@ void main() {
         rootScope.digest();
         expect(logger).toEqual([]);
         logger.clear();
-      }));
+      });
 
-      it('should support arrays in filters', inject((Logger logger, Map context,
+      it('should support arrays in filters', (Logger logger, Map context,
                                                      RootScope rootScope,
                                                      AstParser parser,
                                                      FilterMap filters) {
@@ -205,9 +205,9 @@ void main() {
         rootScope.digest();
         expect(logger).toEqual(['sort']);
         logger.clear();
-      }));
+      });
 
-      it('should support maps in filters', inject((Logger logger, Map context,
+      it('should support maps in filters', (Logger logger, Map context,
                                                     RootScope rootScope,
                                                     AstParser parser,
                                                     FilterMap filters) {
@@ -227,39 +227,39 @@ void main() {
         rootScope.digest();
         expect(logger).toEqual(['identity', 'keys', ['foo', 'bar']]);
         logger.clear();
-      }));
+      });
 
     });
 
 
     describe('properties', () {
       describe('root', () {
-        it('should point to itself', inject((RootScope rootScope) {
+        it('should point to itself', (RootScope rootScope) {
           expect(rootScope.rootScope).toEqual(rootScope);
-        }));
+        });
 
-        it('children should point to root', inject((RootScope rootScope) {
+        it('children should point to root', (RootScope rootScope) {
           var child = rootScope.createChild(new PrototypeMap(rootScope.context));
           expect(child.rootScope).toEqual(rootScope);
           expect(child.createChild(new PrototypeMap(rootScope.context)).rootScope).toEqual(rootScope);
-        }));
+        });
       });
 
 
       describe('parent', () {
-        it('should not have parent', inject((RootScope rootScope) {
+        it('should not have parent', (RootScope rootScope) {
           expect(rootScope.parentScope).toEqual(null);
           expect(rootScope.id).toEqual('');
-        }));
+        });
 
 
-        it('should point to parent', inject((RootScope rootScope) {
+        it('should point to parent', (RootScope rootScope) {
           var child = rootScope.createChild(new PrototypeMap(rootScope.context));
           expect(child.id).toEqual(':0');
           expect(rootScope.parentScope).toEqual(null);
           expect(child.parentScope).toEqual(rootScope);
           expect(child.createChild(new PrototypeMap(rootScope.context)).parentScope).toEqual(child);
-        }));
+        });
       });
     });
 
@@ -267,13 +267,13 @@ void main() {
     describe(r'events', () {
 
       describe('on', () {
-        it('should allow emit/broadcast when no listeners', inject((RootScope scope) {
+        it('should allow emit/broadcast when no listeners', (RootScope scope) {
           scope.emit('foo');
           scope.broadcast('foo');
-        }));
+        });
 
 
-        it(r'should add listener for both emit and broadcast events', inject((RootScope rootScope) {
+        it(r'should add listener for both emit and broadcast events', (RootScope rootScope) {
           var log = '',
           child = rootScope.createChild(new PrototypeMap(rootScope.context));
 
@@ -290,10 +290,10 @@ void main() {
 
           child.broadcast('abc');
           expect(log).toEqual('XX');
-        }));
+        });
 
 
-        it(r'should return a function that deregisters the listener', inject((RootScope rootScope) {
+        it(r'should return a function that deregisters the listener', (RootScope rootScope) {
           var log = '';
           var child = rootScope.createChild(new PrototypeMap(rootScope.context));
           var subscription;
@@ -315,9 +315,9 @@ void main() {
           child.emit(r'abc');
           child.broadcast('abc');
           expect(log).toEqual('');
-        }));
+        });
 
-        it('should not trigger assertions on scope fork', inject((RootScope root) {
+        it('should not trigger assertions on scope fork', (RootScope root) {
           var d1 = root.createChild({});
           var d2 = root.createChild({});
           var d3 = d2.createChild({});
@@ -328,9 +328,9 @@ void main() {
           expect(root.apply).not.toThrow();
           d2.on(ScopeEvent.DESTROY).listen((_) => null);
           expect(root.apply).not.toThrow();
-        }));
+        });
 
-        it('should not too eagerly create own streams', inject((RootScope root) {
+        it('should not too eagerly create own streams', (RootScope root) {
           var a = root.createChild({});
           var a2 = root.createChild({});
           var b = a.createChild({});
@@ -368,10 +368,10 @@ void main() {
           a2.on(ScopeEvent.DESTROY).listen((_) => null);
           expect(getStreamState()).toEqual([true, true, true, true, true, true, true]);
           expect(root.apply).not.toThrow();
-        }));
+        });
 
 
-        it('should not properly merge streams', inject((RootScope root) {
+        it('should not properly merge streams', (RootScope root) {
           var a = root.createChild({});
           var a2 = root.createChild({});
           var b = a.createChild({});
@@ -393,19 +393,19 @@ void main() {
           e.on(ScopeEvent.DESTROY).listen((_) => null);
           expect(getStreamState()).toEqual([true, false, true, false, false, false, true]);
           expect(root.apply).not.toThrow();
-        }));
+        });
 
 
-        it('should clean up on cancel', inject((RootScope root) {
+        it('should clean up on cancel', (RootScope root) {
           var child = root.createChild(null);
           var cl = child.on("E").listen((e) => null);
           var rl = root.on("E").listen((e) => null);
           rl.cancel();
           expect(root.apply).not.toThrow();
-        }));
+        });
 
 
-        it('should find random bugs', inject((RootScope root) {
+        it('should find random bugs', (RootScope root) {
           List scopes;
           List listeners;
           List steps;
@@ -454,7 +454,7 @@ void main() {
               expect('').toEqual(steps.join(';\n'));
             }
           }
-        }));
+        });
       });
 
 
@@ -481,10 +481,10 @@ void main() {
           };
         });
 
-        it(r'should bubble event up to the root scope', inject((RootScope rootScope) {
+        it(r'should bubble event up to the root scope', (RootScope rootScope) {
           grandChild.emit(r'myEvent');
           expect(log.join('>')).toEqual('2>1>0');
-        }));
+        });
 
 
         describe('exceptions', () {
@@ -500,14 +500,14 @@ void main() {
           });
         });
 
-        it(r'should allow stopping event propagation', inject((RootScope rootScope) {
+        it(r'should allow stopping event propagation', (RootScope rootScope) {
           child.on('myEvent').listen((event) { event.stopPropagation(); });
           grandChild.emit(r'myEvent');
           expect(log.join('>')).toEqual('2>1');
-        }));
+        });
 
 
-        it(r'should forward method arguments', inject((RootScope rootScope) {
+        it(r'should forward method arguments', (RootScope rootScope) {
           var eventName;
           var eventData;
           child.on('abc').listen((event) {
@@ -517,11 +517,11 @@ void main() {
           child.emit('abc', ['arg1', 'arg2']);
           expect(eventName).toEqual('abc');
           expect(eventData).toEqual(['arg1', 'arg2']);
-        }));
+        });
 
 
         describe(r'event object', () {
-          it(r'should have methods/properties', inject((RootScope rootScope) {
+          it(r'should have methods/properties', (RootScope rootScope) {
             var event;
             child.on('myEvent').listen((e) {
               expect(e.targetScope).toBe(grandChild);
@@ -531,10 +531,10 @@ void main() {
             });
             grandChild.emit(r'myEvent');
             expect(event).toBeDefined();
-          }));
+          });
 
 
-          it(r'should have preventDefault method and defaultPrevented property', inject((RootScope rootScope) {
+          it(r'should have preventDefault method and defaultPrevented property', (RootScope rootScope) {
             var event = grandChild.emit(r'myEvent');
             expect(event.defaultPrevented).toBe(false);
 
@@ -543,7 +543,7 @@ void main() {
             });
             event = grandChild.emit(r'myEvent');
             expect(event.defaultPrevented).toBe(true);
-          }));
+          });
         });
       });
 
@@ -557,7 +557,7 @@ void main() {
             log.add(event.currentScope.context['id']);
           }
 
-          beforeEach(inject((RootScope rootScope) {
+          beforeEach((RootScope rootScope) {
             log = [];
             child1 = rootScope.createChild({});
             child2 = rootScope.createChild({});
@@ -595,46 +595,46 @@ void main() {
             //   11  21 22 23
             //       |
             //      211
-          }));
+          });
 
 
-          it(r'should broadcast an event from the root scope', inject((RootScope rootScope) {
+          it(r'should broadcast an event from the root scope', (RootScope rootScope) {
             rootScope.broadcast('myEvent');
             expect(log.join('>')).toEqual('0>1>11>2>21>211>22>23>3');
-          }));
+          });
 
 
-          it(r'should broadcast an event from a child scope', inject((RootScope rootScope) {
+          it(r'should broadcast an event from a child scope', (RootScope rootScope) {
             child2.broadcast('myEvent');
             expect(log.join('>')).toEqual('2>21>211>22>23');
-          }));
+          });
 
 
-          it(r'should broadcast an event from a leaf scope with a sibling', inject((RootScope rootScope) {
+          it(r'should broadcast an event from a leaf scope with a sibling', (RootScope rootScope) {
             grandChild22.broadcast('myEvent');
             expect(log.join('>')).toEqual('22');
-          }));
+          });
 
 
-          it(r'should broadcast an event from a leaf scope without a sibling', inject((RootScope rootScope) {
+          it(r'should broadcast an event from a leaf scope without a sibling', (RootScope rootScope) {
             grandChild23.broadcast('myEvent');
             expect(log.join('>')).toEqual('23');
-          }));
+          });
 
 
-          it(r'should not not fire any listeners for other events', inject((RootScope rootScope) {
+          it(r'should not not fire any listeners for other events', (RootScope rootScope) {
             rootScope.broadcast('fooEvent');
             expect(log.join('>')).toEqual('');
-          }));
+          });
 
 
-          it(r'should return event object', inject((RootScope rootScope) {
+          it(r'should return event object', (RootScope rootScope) {
             var result = child1.broadcast('some');
 
             expect(result).toBeDefined();
             expect(result.name).toBe('some');
             expect(result.targetScope).toBe(child1);
-          }));
+          });
 
 
           it('should skip scopes which dont have given event',
@@ -652,7 +652,7 @@ void main() {
 
 
         describe(r'listener', () {
-          it(r'should receive event object', inject((RootScope rootScope) {
+          it(r'should receive event object', (RootScope rootScope) {
             var scope = rootScope,
             child = scope.createChild({}),
             event;
@@ -665,9 +665,9 @@ void main() {
             expect(event.name).toBe('fooEvent');
             expect(event.targetScope).toBe(scope);
             expect(event.currentScope).toBe(child);
-          }));
+          });
 
-          it(r'should support passing messages as varargs', inject((RootScope rootScope) {
+          it(r'should support passing messages as varargs', (RootScope rootScope) {
             var scope = rootScope,
             child = scope.createChild({}),
             args;
@@ -679,9 +679,9 @@ void main() {
 
             expect(args.length).toBe(4);
             expect(args).toEqual(['do', 're', 'me', 'fa']);
-          }));
+          });
 
-          it('should allow removing listener during an event', inject((RootScope rootScope) {
+          it('should allow removing listener during an event', (RootScope rootScope) {
             StreamSubscription subscription;
             subscription = rootScope.on('foo').listen((_) {
               subscription.cancel();
@@ -689,7 +689,7 @@ void main() {
             expect(() {
               rootScope.broadcast('foo');
             }).not.toThrow();
-          }));
+          });
         });
       });
     });
@@ -698,7 +698,7 @@ void main() {
     describe(r'destroy', () {
       var first = null, middle = null, last = null, log = null;
 
-      beforeEach(inject((RootScope rootScope) {
+      beforeEach((RootScope rootScope) {
         log = '';
 
         first  = rootScope.createChild({"check": (n) { log+= '$n'; return n;}});
@@ -713,38 +713,38 @@ void main() {
 
         rootScope.digest();
         log = '';
-      }));
+      });
 
 
-      it(r'should ignore remove on root', inject((RootScope rootScope) {
+      it(r'should ignore remove on root', (RootScope rootScope) {
         rootScope.destroy();
         rootScope.digest();
         expect(log).toEqual('123');
-      }));
+      });
 
 
-      it(r'should remove first', inject((RootScope rootScope) {
+      it(r'should remove first', (RootScope rootScope) {
         first.destroy();
         rootScope.digest();
         expect(log).toEqual('destroy:first;23');
-      }));
+      });
 
 
-      it(r'should remove middle', inject((RootScope rootScope) {
+      it(r'should remove middle', (RootScope rootScope) {
         middle.destroy();
         rootScope.digest();
         expect(log).toEqual('13');
-      }));
+      });
 
 
-      it(r'should remove last', inject((RootScope rootScope) {
+      it(r'should remove last', (RootScope rootScope) {
         last.destroy();
         rootScope.digest();
         expect(log).toEqual('12');
-      }));
+      });
 
 
-      it(r'should broadcast the destroy event', inject((RootScope rootScope) {
+      it(r'should broadcast the destroy event', (RootScope rootScope) {
         var log = [];
         first.on(ScopeEvent.DESTROY).listen((s) => log.add('first'));
         var child = first.createChild({});
@@ -752,10 +752,10 @@ void main() {
 
         first.destroy();
         expect(log).toEqual(['first', 'first-child']);
-      }));
+      });
 
 
-      it('should not call reaction function on destroyed scope', inject((RootScope rootScope, Logger log) {
+      it('should not call reaction function on destroyed scope', (RootScope rootScope, Logger log) {
         rootScope.context['name'] = 'misko';
         var child = rootScope.createChild(rootScope.context);
         rootScope.watch('name', (v, _) {
@@ -773,10 +773,10 @@ void main() {
         rootScope.context['name'] = 'destroy';
         rootScope.apply();
         expect(log).toEqual(['root destroy', 'root2 destroy']);
-      }));
+      });
 
 
-      it('should not call reaction fn when destroyed', inject((RootScope scope) {
+      it('should not call reaction fn when destroyed', (RootScope scope) {
         var testScope = scope.createChild({});
         bool called = false;
         testScope.watch('items', (_, __) {
@@ -785,18 +785,18 @@ void main() {
         testScope.destroy();
         scope.apply();
         expect(called).toBeFalsy();
-      }));
+      });
     });
 
 
     describe('digest lifecycle', () {
-      it(r'should apply expression with full lifecycle', inject((RootScope rootScope) {
+      it(r'should apply expression with full lifecycle', (RootScope rootScope) {
         var log = '';
         var child = rootScope.createChild({"parent": rootScope.context});
         rootScope.watch('a', (a, _) { log += '1'; });
         child.apply('parent.a = 0');
         expect(log).toEqual('1');
-      }));
+      });
 
       describe(r'exceptions', () {
         var log;
@@ -804,13 +804,13 @@ void main() {
           return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
         });
 
-        beforeEach(inject((RootScope rootScope) {
+        beforeEach((RootScope rootScope) {
           rootScope.context['log'] = () { log += 'digest;'; return null; };
           log = '';
           rootScope.watch('log()', (v, o) => null);
           rootScope.digest();
           log = '';
-        }));
+        });
 
         it(r'should catch exceptions', (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
@@ -836,59 +836,59 @@ void main() {
             }));
 
 
-        it(r'should execute and return value and update', inject((RootScope rootScope) {
+        it(r'should execute and return value and update', (RootScope rootScope) {
           rootScope.context['name'] = 'abc';
           expect(rootScope.apply('name', {'name': 123})).toEqual(123);
-        }));
+        });
 
 
-        it(r'should catch exception and update', inject((RootScope rootScope, ExceptionHandler e) {
+        it(r'should catch exception and update', (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
           var error = 'MyError';
           rootScope.apply(() { throw error; });
           expect(log).toEqual('digest;digest;');
           expect(exceptionHandler.errors[0].error).toEqual(error);
-        }));
+        });
       });
 
-      it(r'should proprely reset phase on exception', inject((RootScope rootScope) {
+      it(r'should proprely reset phase on exception', (RootScope rootScope) {
         var error = 'MyError';
         expect(() => rootScope.apply(() { throw error; })).toThrow(error);
         expect(() => rootScope.apply(() { throw error; })).toThrow(error);
-      }));
+      });
     });
 
 
     describe('flush lifecycle', () {
-      it(r'should apply expression with full lifecycle', inject((RootScope rootScope) {
+      it(r'should apply expression with full lifecycle', (RootScope rootScope) {
         var log = '';
         var child = rootScope.createChild({"parent": rootScope.context});
         rootScope.watch('a', (a, _) { log += '1'; }, readOnly: true);
         child.apply('parent.a = 0');
         expect(log).toEqual('1');
-      }));
+      });
 
 
-      it(r'should schedule domWrites and domReads', inject((RootScope rootScope) {
+      it(r'should schedule domWrites and domReads', (RootScope rootScope) {
         var log = '';
         var child = rootScope.createChild({"parent": rootScope.context});
         rootScope.watch('a', (a, _) { log += '1'; }, readOnly: true);
         child.apply('parent.a = 0');
         expect(log).toEqual('1');
-      }));
+      });
 
       describe(r'exceptions', () {
         var log;
         beforeEachModule((Module module) {
           return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
         });
-        beforeEach(inject((RootScope rootScope) {
+        beforeEach((RootScope rootScope) {
           rootScope.context['log'] = () { log += 'digest;'; return null; };
           log = '';
           rootScope.watch('log()', (v, o) => null, readOnly: true);
           rootScope.digest();
           log = '';
-        }));
+        });
 
         it(r'should catch exceptions', (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
@@ -912,20 +912,20 @@ void main() {
               exceptionHandler.assertEmpty();
             }));
 
-        it(r'should execute and return value and update', inject((RootScope rootScope) {
+        it(r'should execute and return value and update', (RootScope rootScope) {
           rootScope.context['name'] = 'abc';
           expect(rootScope.apply('name', {'name': 123})).toEqual(123);
-        }));
+        });
 
-        it(r'should catch exception and update', inject((RootScope rootScope, ExceptionHandler e) {
+        it(r'should catch exception and update', (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
           var error = 'MyError';
           rootScope.apply(() { throw error; });
           expect(log).toEqual('digest;digest;');
           expect(exceptionHandler.errors[0].error).toEqual(error);
-        }));
+        });
 
-        it(r'should throw assertion when model changes in flush', inject((RootScope rootScope, Logger log) {
+        it(r'should throw assertion when model changes in flush', (RootScope rootScope, Logger log) {
           var retValue = 1;
           rootScope.context['logger'] = (name) { log(name); return retValue; };
 
@@ -944,23 +944,23 @@ void main() {
           toThrow('Observer reaction functions should not change model. \n'
           'These watch changes were detected: logger("watch"): 2 <= 1\n'
           'These observe changes were detected: ');
-        }));
+        });
       });
 
     });
 
 
     describe('ScopeLocals', () {
-      it('should read from locals', inject((RootScope scope) {
+      it('should read from locals', (RootScope scope) {
         scope.context['a'] = 'XXX';
         scope.context['c'] = 'C';
         var scopeLocal = new ScopeLocals(scope.context, {'a': 'A', 'b': 'B'});
         expect(scopeLocal['a']).toEqual('A');
         expect(scopeLocal['b']).toEqual('B');
         expect(scopeLocal['c']).toEqual('C');
-      }));
+      });
 
-      it('should write to Scope', inject((RootScope scope) {
+      it('should write to Scope', (RootScope scope) {
         scope.context['a'] = 'XXX';
         scope.context['c'] = 'C';
         var scopeLocal = new ScopeLocals(scope.context, {'a': 'A', 'b': 'B'});
@@ -976,12 +976,12 @@ void main() {
         expect(scopeLocal['a']).toEqual('A');
         expect(scopeLocal['b']).toEqual('B');
         expect(scopeLocal['c']).toEqual('cW');
-      }));
+      });
     });
 
 
     describe(r'watch/digest', () {
-      it(r'should watch and fire on simple property change', inject((RootScope rootScope) {
+      it(r'should watch and fire on simple property change', (RootScope rootScope) {
         var log;
 
         rootScope.watch('name', (a, b) {
@@ -996,20 +996,20 @@ void main() {
         rootScope.context['name'] = 'misko';
         rootScope.digest();
         expect(log).toEqual(['misko', null]);
-      }));
+      });
 
 
-      it('should watch/observe on objects other then contex', inject((RootScope rootScope) {
+      it('should watch/observe on objects other then contex', (RootScope rootScope) {
         var log = '';
         var map = {'a': 'A', 'b': 'B'};
         rootScope.watch('a', (a, b) => log += a, context: map);
         rootScope.watch('b', (a, b) => log += a, context: map);
         rootScope.apply();
         expect(log).toEqual('AB');
-      }));
+      });
 
 
-      it(r'should watch and fire on expression change', inject((RootScope rootScope) {
+      it(r'should watch and fire on expression change', (RootScope rootScope) {
         var log;
 
         rootScope.watch('name.first', (a, b) => log = [a, b]);
@@ -1023,7 +1023,7 @@ void main() {
         rootScope.context['name']['first'] = 'misko';
         rootScope.digest();
         expect(log).toEqual(['misko', null]);
-      }));
+      });
 
 
       describe('exceptions', () {
@@ -1042,7 +1042,7 @@ void main() {
 
 
 
-      it(r'should fire watches in order of addition', inject((RootScope rootScope) {
+      it(r'should fire watches in order of addition', (RootScope rootScope) {
         // this is not an external guarantee, just our own sanity
         var log = '';
         rootScope
@@ -1052,10 +1052,10 @@ void main() {
             ..context['a'] = rootScope.context['b'] = rootScope.context['c'] = 1
             ..digest();
         expect(log).toEqual('abc');
-      }));
+      });
 
 
-      it(r'should call child watchers in addition order', inject((RootScope rootScope) {
+      it(r'should call child watchers in addition order', (RootScope rootScope) {
         // this is not an external guarantee, just our own sanity
         var log = '';
         var childA = rootScope.createChild({});
@@ -1067,7 +1067,7 @@ void main() {
         childA.context['a'] = childB.context['b'] = childC.context['c'] = 1;
         rootScope.digest();
         expect(log).toEqual('abc');
-      }));
+      });
 
 
       it(r'should run digest multiple times', inject(
@@ -1089,7 +1089,7 @@ void main() {
           }));
 
 
-      it(r'should repeat watch cycle while model changes are identified', inject((RootScope rootScope) {
+      it(r'should repeat watch cycle while model changes are identified', (RootScope rootScope) {
         var log = '';
         rootScope
             ..watch('c', (v, b) {rootScope.context['d'] = v; log+='c'; })
@@ -1103,10 +1103,10 @@ void main() {
         expect(rootScope.context['c']).toEqual(1);
         expect(rootScope.context['d']).toEqual(1);
         expect(log).toEqual('abc');
-      }));
+      });
 
 
-      it(r'should repeat watch cycle from the root element', inject((RootScope rootScope) {
+      it(r'should repeat watch cycle from the root element', (RootScope rootScope) {
         var log = [];
         rootScope.context['log'] = log;
         var child = rootScope.createChild({'log':log});
@@ -1114,10 +1114,10 @@ void main() {
         child.watch("log.add('b')", (_, __) => null);
         rootScope.digest();
         expect(log.join('')).toEqual('abab');
-      }));
+      });
 
 
-      it(r'should not fire upon watch registration on initial digest', inject((RootScope rootScope) {
+      it(r'should not fire upon watch registration on initial digest', (RootScope rootScope) {
         var log = '';
         rootScope.context['a'] = 1;
         rootScope.watch('a', (a, b) { log += 'a'; });
@@ -1126,10 +1126,10 @@ void main() {
         log = '';
         rootScope.digest();
         expect(log).toEqual('');
-      }));
+      });
 
 
-      it(r'should prevent digest recursion', inject((RootScope rootScope) {
+      it(r'should prevent digest recursion', (RootScope rootScope) {
         var callCount = 0;
         rootScope.watch('name', (a, b) {
           expect(() {
@@ -1140,7 +1140,7 @@ void main() {
         rootScope.context['name'] = 'a';
         rootScope.digest();
         expect(callCount).toEqual(1);
-      }));
+      });
 
 
       it(r'should return a function that allows listeners to be unregistered', inject(
@@ -1166,17 +1166,17 @@ void main() {
           }));
 
 
-      it(r'should not infinitely digest when current value is NaN', inject((RootScope rootScope) {
+      it(r'should not infinitely digest when current value is NaN', (RootScope rootScope) {
         rootScope.context['nan'] = double.NAN;
         rootScope.watch('nan', (_, __) => null);
 
         expect(() {
           rootScope.digest();
         }).not.toThrow();
-      }));
+      });
 
 
-      it(r'should prevent infinite digest and should log firing expressions', inject((RootScope rootScope) {
+      it(r'should prevent infinite digest and should log firing expressions', (RootScope rootScope) {
         rootScope.context['a'] = 0;
         rootScope.context['b'] = 0;
         rootScope.watch('a', (a, __) => rootScope.context['a'] = a + 1);
@@ -1189,7 +1189,7 @@ void main() {
         'a: 2 <= 1, b: 2 <= 1\n'
         'a: 3 <= 2, b: 3 <= 2\n'
         'a: 4 <= 3, b: 4 <= 3');
-      }));
+      });
 
 
       it(r'should always call the watchr with newVal and oldVal equal on the first run',
@@ -1221,15 +1221,15 @@ void main() {
       }));
 
 
-      it('should properly watch canstants', inject((RootScope rootScope, Logger log) {
+      it('should properly watch canstants', (RootScope rootScope, Logger log) {
         rootScope.watch('[1, 2]', (v, o) => log([v, o]));
         expect(log).toEqual([]);
         rootScope.apply();
         expect(log).toEqual([[[1, 2], null]]);
-      }));
+      });
 
 
-      it('should properly watch array of fields', inject((RootScope rootScope, Logger log) {
+      it('should properly watch array of fields', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = 12;
         rootScope.context['bar'] = 34;
         rootScope.watch('[foo, bar]', (v, o) => log([v, o]));
@@ -1242,29 +1242,29 @@ void main() {
         rootScope.context['bar'] = 78;
         rootScope.apply();
         expect(log).toEqual([[[56, 78], [12, 34]]]);
-      }));
+      });
 
 
-      it('should properly watch array of fields', inject((RootScope rootScope, Logger log) {
+      it('should properly watch array of fields', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = () => 12;
         rootScope.watch('foo()', (v, o) => log(v));
         expect(log).toEqual([]);
         rootScope.apply();
         expect(log).toEqual([12]);
-      }));
+      });
 
 
-      it('should properly watch array of fields', inject((RootScope rootScope, Logger log) {
+      it('should properly watch array of fields', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = 'abc';
         rootScope.watch('foo.contains("b")', (v, o) => log([v, o]));
         expect(log).toEqual([]);
         rootScope.apply();
         expect(log).toEqual([[true, null]]);
         log.clear();
-      }));
+      });
 
 
-      it('should not trigger new watcher in the flush where it was added', inject((Scope scope) {
+      it('should not trigger new watcher in the flush where it was added', (Scope scope) {
         var log = [] ;
         scope.context['foo'] = () => 'foo';
         scope.context['name'] = 'misko';
@@ -1280,10 +1280,10 @@ void main() {
         });
         scope.apply();
         expect(log).toEqual(['foo', 'misko', 'FOO-MISKO', [2, 3], {'bar': 'chocolate'}]);
-      }));
+      });
 
 
-      it('should allow multiple nested watches', inject((RootScope scope) {
+      it('should allow multiple nested watches', (RootScope scope) {
         scope.watch('1', (_, __) {
           scope.watch('1', (_, __) {
             scope.watch('1', (_, __) {
@@ -1318,10 +1318,10 @@ void main() {
           });
         });
         expect(scope.apply).not.toThrow();
-      }));
+      });
 
 
-      it('should properly watch array of fields2', inject((RootScope rootScope, Logger log) {
+      it('should properly watch array of fields2', (RootScope rootScope, Logger log) {
         rootScope.watch('[ctrl.foo, ctrl.bar]', (v, o) => log([v, o]));
         expect(log).toEqual([]);
         rootScope.apply();
@@ -1331,12 +1331,12 @@ void main() {
         rootScope.context['ctrl'] = {'foo': 56, 'bar': 78};
         rootScope.apply();
         expect(log).toEqual([[[56, 78], [null, null]]]);
-      }));
+      });
     });
 
 
     describe('special binding modes', () {
-      it('should bind one time', inject((RootScope rootScope, Logger log) {
+      it('should bind one time', (RootScope rootScope, Logger log) {
         rootScope.watch('foo', (v, _) => log('foo:$v'));
         rootScope.watch(':foo', (v, _) => log(':foo:$v'));
         rootScope.watch('::foo', (v, _) => log('::foo:$v'));
@@ -1359,20 +1359,20 @@ void main() {
         rootScope.apply();
         expect(log).toEqual(['foo:null']);
         log.clear();
-      }));
+      });
     });
 
 
     describe('runAsync', () {
-      it(r'should run callback before watch', inject((RootScope rootScope) {
+      it(r'should run callback before watch', (RootScope rootScope) {
         var log = '';
         rootScope.runAsync(() { log += 'parent.async;'; });
         rootScope.watch('value', (_, __) { log += 'parent.digest;'; });
         rootScope.digest();
         expect(log).toEqual('parent.async;parent.digest;');
-      }));
+      });
 
-      it(r'should cause a digest rerun', inject((RootScope rootScope) {
+      it(r'should cause a digest rerun', (RootScope rootScope) {
         rootScope.context['log'] = '';
         rootScope.context['value'] = 0;
         // NOTE(deboer): watch listener string functions not yet supported
@@ -1384,15 +1384,15 @@ void main() {
         });
         rootScope.digest();
         expect(rootScope.context['log']).toEqual('.=.');
-      }));
+      });
 
-      it(r'should run async in the same order as added', inject((RootScope rootScope) {
+      it(r'should run async in the same order as added', (RootScope rootScope) {
         rootScope.context['log'] = '';
         rootScope.runAsync(() => rootScope.eval("log = log + 1"));
         rootScope.runAsync(() => rootScope.eval("log = log + 2"));
         rootScope.digest();
         expect(rootScope.context['log']).toEqual('12');
-      }));
+      });
     });
 
 

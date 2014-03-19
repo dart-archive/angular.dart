@@ -6,10 +6,10 @@ main() {
   describe('NonBindableDirective', () {
     TestBed _;
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should set ignore all other markup/directives on the descendent nodes',
-          inject((Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
+          (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
       var element = $('<div>' +
                       '  <span id="s1">{{a}}</span>' +
                       '  <span id="s2" ng-bind="b"></span>' +
@@ -34,6 +34,6 @@ main() {
       expect(nonBindableDiv.text().trim()).toEqual('{{b}}');
       // Bindings on the same node are processed.
       expect(nonBindableDiv.attr('foo')).toEqual('one');
-    }));
+    });
   });
 }

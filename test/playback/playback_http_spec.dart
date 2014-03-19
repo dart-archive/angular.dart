@@ -23,7 +23,7 @@ void main() {
       });
 
 
-      it('should record a request', async(inject((Http http) {
+      it('should record a request', async((Http http) {
         backend.expectGET('request').respond(200, 'response');
 
         var responseData;
@@ -46,7 +46,7 @@ void main() {
         microLeap();
 
         expect(responseData).toEqual('response');
-      })));
+      }));
     });
 
 
@@ -55,7 +55,7 @@ void main() {
         m.type(HttpBackend, implementedBy: PlaybackHttpBackend);
       });
 
-      it('should replay a request', async(inject((Http http, HttpBackend hb) {
+      it('should replay a request', async((Http http, HttpBackend hb) {
         (hb as PlaybackHttpBackend).data = {
             r'{"url":"request","method":"GET","requestHeaders":{"Accept":"application/json, text/plain, */*","X-XSRF-TOKEN":"secret"},"data":null}':
             {'status': 200, 'headers': '', 'data': 'playback data'}
@@ -70,7 +70,7 @@ void main() {
         microLeap();
 
         expect(responseData).toEqual('playback data');
-      })));
+      }));
 
     });
   });

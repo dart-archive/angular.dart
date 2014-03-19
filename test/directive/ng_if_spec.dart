@@ -22,18 +22,16 @@ main() {
           ..type(LogAttrDirective);
   }
 
-  void configState() {
-    inject((Scope scope, Compiler compiler, Injector injector, Logger _logger,
-            DirectiveMap _directives) {
-      rootScope = scope;
-      logger = _logger;
-      compile = (html, [applyFn]) {
-        element = $(html);
-        compiler(element, _directives)(injector, element);
-        scope.apply(applyFn);
-      };
-      directives = _directives;
-    });
+  void configState(Scope scope, Compiler compiler, Injector injector,
+                   Logger _logger, DirectiveMap _directives) {
+    rootScope = scope;
+    logger = _logger;
+    compile = (html, [applyFn]) {
+      element = $(html);
+      compiler(element, _directives)(injector, element);
+      scope.apply(applyFn);
+    };
+    directives = _directives;
   }
 
   they(should, htmlForElements, callback, [exclusive=false]) {

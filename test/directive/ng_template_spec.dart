@@ -11,11 +11,9 @@ main() {
       htmlForElements.forEach((html) {
         var tagName = html.contains('<template') ? 'template' : 'script';
         describe('$tagName[type="text/ng-template"]', () {
-          beforeEach(inject((TestBed tb) => _ = tb));
-          it(should, () {
-             element = $(html);
-             inject(callback);
-           });
+          beforeEach((TestBed tb) => _ = tb);
+          beforeEach(() => element = $(html));
+          it(should, callback);
         });
       });
     }

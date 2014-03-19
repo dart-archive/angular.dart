@@ -7,7 +7,7 @@ void main() {
   describe('NgStyle', () {
     TestBed _;
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should set', () {
       dom.Element element = _.compile('<div ng-style="{height: \'40px\'}"></div>');
@@ -26,7 +26,7 @@ void main() {
     describe('preserving styles set before and after compilation', () {
       var scope, preCompStyle, preCompVal, postCompStyle, postCompVal, element;
 
-      beforeEach(inject(() {
+      beforeEach(() {
         preCompStyle = 'width';
         preCompVal = '300px';
         postCompStyle = 'height';
@@ -39,7 +39,7 @@ void main() {
         scope.context['styleObj'] = {'margin-top': '44px'};
         scope.apply();
         element.css(postCompStyle, postCompVal);
-      }));
+      });
 
       afterEach(() {
         element.remove(null);

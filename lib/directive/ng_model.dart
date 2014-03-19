@@ -48,6 +48,8 @@ class NgModel extends NgControl implements NgAttachAware {
     //there is no reason to guard the formatter from changing the DOM value.
     _alwaysProcessViewValue = element.node.tagName == 'SELECT';
     converter = new _NoopModelConverter();
+    markAsUntouched();
+    markAsPristine();
   }
 
   void processViewValue(value) {
@@ -61,7 +63,7 @@ class NgModel extends NgControl implements NgAttachAware {
   }
 
   void reset() {
-    untouched = true;
+    markAsUntouched();
     processViewValue(_originalValue);
     modelValue = _originalValue;
   }
@@ -69,6 +71,22 @@ class NgModel extends NgControl implements NgAttachAware {
   void onSubmit(bool valid) {
     super.onSubmit(valid);
     if (valid) _originalValue = modelValue;
+  }
+
+  void markAsUntouched() {
+    removeInfoState(this, NgControl.NG_TOUCHED);
+  }
+
+  void markAsTouched() {
+    addInfoState(this, NgControl.NG_TOUCHED);
+  }
+
+  void markAsPristine() {
+    removeInfoState(this, NgControl.NG_DIRTY);
+  }
+
+  void markAsDirty() {
+    addInfoState(this, NgControl.NG_DIRTY);
   }
 
   get converter => _converter;
@@ -118,8 +136,25 @@ class NgModel extends NgControl implements NgAttachAware {
     _scope.rootScope.runAsync(() {
       _modelValue = boundExpression();
       _originalValue = modelValue;
+      validate();
       processViewValue(_modelValue);
     });
+  }
+
+  void addError(String error) {
+    this.addErrorState(this, error);
+  }
+
+  void removeError(String error) {
+    this.removeErrorState(this, error);
+  }
+
+  void addInfo(String info) {
+    this.addInfoState(this, info);
+  }
+
+  void removeInfo(String info) {
+    this.removeInfoState(this, info);
   }
 
   get viewValue => _viewValue;
@@ -137,7 +172,10 @@ class NgModel extends NgControl implements NgAttachAware {
     }
     _modelValue = value;
     setter(value);
-    modelValue == _originalValue ? (pristine = true) : (dirty = true);
+
+    modelValue == _originalValue
+      ? markAsPristine()
+      : markAsDirty();
   }
 
   List<NgValidator> get validators => _validators;
@@ -148,15 +186,14 @@ class NgModel extends NgControl implements NgAttachAware {
   void validate() {
     if (validators.isNotEmpty) {
       validators.forEach((validator) {
-        setValidity(validator.name, validator.isValid(modelValue));
+        validator.isValid(modelValue) == false
+          ? this.addError(validator.name)
+          : this.removeError(validator.name);
       });
-    } else {
-      valid = true;
     }
-  }
-
-  void setValidity(String name, bool valid) {
-    updateControlValidity(this, name, valid);
+    invalid
+      ? addInfo(NgControl.NG_INVALID)
+      : removeInfo(NgControl.NG_INVALID);
   }
 
   /**
@@ -202,11 +239,15 @@ class InputCheckboxDirective {
         inputElement.checked = ngTrueValue.isValue(inputElement, value);
       });
     };
-    inputElement.onChange.listen((value) {
-      ngModel.viewValue = inputElement.checked
-          ? ngTrueValue.readValue(inputElement)
-          : ngFalseValue.readValue(inputElement);
-    });
+    inputElement
+        ..onChange.listen((value) {
+          ngModel.viewValue = inputElement.checked
+              ? ngTrueValue.readValue(inputElement)
+              : ngFalseValue.readValue(inputElement);
+        })
+        ..onBlur.listen((e) {
+          ngModel.markAsTouched();
+        });
   }
 }
 
@@ -256,9 +297,7 @@ class InputTextLikeDirective {
         ..onChange.listen(processValue)
         ..onInput.listen(processValue)
         ..onBlur.listen((e) {
-          if (ngModel.touched == null || ngModel.touched == false) {
-            ngModel.touched = true;
-          }
+          ngModel.markAsTouched();
         });
   }
 
@@ -318,7 +357,10 @@ class InputNumberLikeDirective {
     };
     inputElement
         ..onChange.listen(relaxFnArgs(processValue))
-        ..onInput.listen(relaxFnArgs(processValue));
+        ..onInput.listen(relaxFnArgs(processValue))
+        ..onBlur.listen((e) {
+          ngModel.markAsTouched();
+        });
   }
 
   void processValue() {
@@ -453,11 +495,15 @@ class InputRadioDirective {
         radioButtonElement.checked = (value == ngValue.readValue(radioButtonElement));
       });
     };
-    radioButtonElement.onClick.listen((_) {
-      if (radioButtonElement.checked) {
-        ngModel.viewValue = ngValue.readValue(radioButtonElement);
-      }
-    });
+    radioButtonElement
+        ..onClick.listen((_) {
+          if (radioButtonElement.checked) {
+            ngModel.viewValue = ngValue.readValue(radioButtonElement);
+          }
+        })
+        ..onBlur.listen((e) {
+          ngModel.markAsTouched();
+        });
   }
 }
 

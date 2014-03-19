@@ -6,9 +6,9 @@ void main() {
   describe('number', () {
     var number;
 
-    beforeEach(inject((FilterMap map, Injector injector) {
+    beforeEach((FilterMap map, Injector injector) {
       number = injector.get(map[new NgFilter(name: 'number')]);
-    }));
+    });
 
 
     it('should do basic filter', () {

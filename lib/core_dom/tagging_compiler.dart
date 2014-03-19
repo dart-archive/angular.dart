@@ -21,6 +21,7 @@ class TaggingCompiler implements Compiler {
       TaggedElementBinder directParentElementBinder,
       List<TaggedElementBinder> elementBinders) {
     assert(parentElementBinderOffset != null);
+    assert(parentElementBinderOffset < elementBinders.length);
     if (domCursor.current == null) return null;
 
     do {
@@ -41,13 +42,14 @@ class TaggingCompiler implements Compiler {
         if (elementBinder.hasTemplate) {
           elementBinder.templateViewFactory = _compileTransclusion(
               elementBinders, domCursor, templateCursor, elementBinder.template,
-              elementBinder.templateBinder, directives,
-              parentElementBinderOffset);
+              elementBinder.templateBinder, directives);
         }
       }
 
       node = domCursor.current;
+
       if (node.nodeType == 1) {
+        var templateNode = templateCursor.current as dom.Element;
 
         var taggedElementBinder = null;
         int taggedElementBinderIndex = parentElementBinderOffset;
@@ -57,7 +59,7 @@ class TaggingCompiler implements Compiler {
           taggedElementBinderIndex = elementBinders.length - 1;
 
           // TODO(deboer): Hack, this sucks.
-          (templateCursor.current as dom.Element).classes.add('ng-binding');
+          templateNode.classes.add('ng-binding');
           node.classes.add('ng-binding');
         }
 
@@ -65,8 +67,26 @@ class TaggingCompiler implements Compiler {
           if (domCursor.descend()) {
             templateCursor.descend();
 
+            var addedDummy = false;
+            if (taggedElementBinder == null) {
+              addedDummy = true;
+              // add a dummy to the list which may be removed later.
+              taggedElementBinder = _addBinder(elementBinders,
+                new TaggedElementBinder(null, parentElementBinderOffset));
+            }
+
             _compileView(domCursor, templateCursor, null, directives,
                 taggedElementBinderIndex, taggedElementBinder, elementBinders);
+
+            if (addedDummy && !_isDummyBinder(taggedElementBinder)) {
+              // We are keeping the element binder, so add the class
+              // to the DOM node as well.
+              //
+              // To avoid array chrun, we remove all dummy binders at the
+              // end of the compilation process.
+              templateNode.classes.add('ng-binding');
+              node.classes.add('ng-binding');
+            }
 
             domCursor.ascend();
             templateCursor.ascend();
@@ -80,19 +100,8 @@ class TaggingCompiler implements Compiler {
         if (elementBinder != null &&
             elementBinder.hasDirectivesOrEvents &&
             (node.parentNode != null && templateCursor.current.parentNode != null)) {
-          if (directParentElementBinder == null) {
-
-            directParentElementBinder = _addBinder(elementBinders,
-                new TaggedElementBinder(null, parentElementBinderOffset));
-
-            assert(templateCursor.current.parentNode is dom.Element);
-            assert(node.parentNode is dom.Element);
-
-            (node.parentNode as dom.Element).classes.add('ng-binding');
-            (templateCursor.current.parentNode as dom.Element).classes.add('ng-binding');
-          }
           directParentElementBinder.addText(
-              new TaggedTextBinder(elementBinder, 0 /* TODO */));
+              new TaggedTextBinder(elementBinder, domCursor.index));
         } else if(!(node.parentNode != null &&
                     templateCursor.current.parentNode != null)) {
           // Always add an elementBinder for top-level text.
@@ -111,8 +120,7 @@ class TaggingCompiler implements Compiler {
       NodeCursor domCursor, NodeCursor templateCursor,
       DirectiveRef directiveRef,
       ElementBinder transcludedElementBinder,
-      DirectiveMap directives,
-      int parentElementBinderOffset) {
+      DirectiveMap directives) {
     var anchorName = directiveRef.annotation.selector +
         (directiveRef.value != null ? '=' + directiveRef.value : '');
     var viewFactory;
@@ -122,10 +130,10 @@ class TaggingCompiler implements Compiler {
     var domCursorIndex = domCursor.index;
     var elementBinders = [];
     _compileView(domCursor, transcludeCursor, transcludedElementBinder,
-        directives, parentElementBinderOffset, null, elementBinders);
+        directives, -1, null, elementBinders);
 
     viewFactory = new TaggingViewFactory(transcludeCursor.elements,
-        elementBinders, _perf, _expando);
+        _removeUnusedBinders(elementBinders), _perf, _expando);
     domCursor.index = domCursorIndex;
 
     if (domCursor.isInstance) {
@@ -155,9 +163,36 @@ class TaggingCompiler implements Compiler {
         null, directives, -1, null, elementBinders);
 
     var viewFactory = new TaggingViewFactory(
-        templateElements, elementBinders, _perf, _expando);
+        templateElements, _removeUnusedBinders(elementBinders), _perf, _expando);
 
     assert(_perf.stopTimer(timerId) != false);
     return viewFactory;
+  }
+
+  _isDummyBinder(TaggedElementBinder binder) =>
+    binder.binder == null && binder.textBinders == null;
+
+  _removeUnusedBinders(List<TaggedElementBinder> binders) {
+    // In order to support text nodes with directiveless parents, we
+    // add dummy ElementBinders to the list.  After the entire template
+    // has been compiled, we remove the dummies and update the offset indices
+    final output = [];
+    final List<int> offsetMap = [];
+    int outputIndex = 0;
+
+    for (var i = 0, ii = binders.length; i < ii; i++) {
+      TaggedElementBinder binder = binders[i];
+      if (_isDummyBinder(binder)) {
+        offsetMap.add(-2);
+      } else {
+        if (binder.parentBinderOffset != -1) {
+          binder.parentBinderOffset = offsetMap[binder.parentBinderOffset];
+        }
+        assert(binder.parentBinderOffset != -2);
+        output.add(binder);
+        offsetMap.add(outputIndex++);
+      }
+    }
+    return output;
   }
 }

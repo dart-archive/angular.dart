@@ -9,7 +9,7 @@ void main() {
       module..type(AnnotatedIoComponent);
     });
 
-    it('should extract attr map from annotated component', inject((DirectiveMap directives) {
+    it('should extract attr map from annotated component', (DirectiveMap directives) {
       var annotations = directives.annotationsFor(AnnotatedIoComponent);
       expect(annotations.length).toEqual(1);
       expect(annotations[0] is NgComponent).toBeTruthy();
@@ -35,7 +35,7 @@ void main() {
           'expr-one-way2': '=>exprOneWay2',
           'expr-two-way': '<=>exprTwoWay'
       });
-    }));
+    });
 
     describe('exceptions', () {
       var baseModule;

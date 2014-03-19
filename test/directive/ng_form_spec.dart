@@ -6,7 +6,7 @@ void main() {
   describe('form', () {
    TestBed _;
 
-    it('should set the name of the form and attach it to the scope', inject((Scope scope, TestBed _) {
+    it('should set the name of the form and attach it to the scope', (Scope scope, TestBed _) {
       var element = $('<form name="myForm"></form>');
 
       expect(scope.context['myForm']).toBeNull();
@@ -18,10 +18,10 @@ void main() {
 
       var form = scope.context['myForm'];
       expect(form.name).toEqual('myForm');
-    }));
+    });
 
     it('should return the first control with the given name when accessed using map notation',
-      inject((Scope scope, TestBed _) {
+      (Scope scope, TestBed _) {
 
       var element = $('<form name="myForm">' +
                       '  <input type="text" name="model" ng-model="modelOne" probe="a" />' +
@@ -38,9 +38,9 @@ void main() {
       expect(one).not.toBe(two);
       expect(form['model']).toBe(one);
       expect(scope.eval("myForm['model']")).toBe(one);
-    }));
+    });
 
-    it('should return the all the controls with the given name', inject((Scope scope, TestBed _) {
+    it('should return the all the controls with the given name', (Scope scope, TestBed _) {
       var element = $('<form name="myForm">' +
                       '  <input type="text" name="model" ng-model="modelOne" probe="a" />' +
                       '  <input type="text" name="model" ng-model="modelTwo" probe="b" />' +
@@ -61,11 +61,11 @@ void main() {
 
       expect(scope.eval("myForm.controls['model'][0]")).toBe(one);
       expect(scope.eval("myForm.controls['model'][1]")).toBe(two);
-    }));
+    });
 
 
     describe('pristine / dirty', () {
-      it('should be set to pristine by default', inject((Scope scope, TestBed _) {
+      it('should be set to pristine by default', (Scope scope, TestBed _) {
         var element = $('<form name="myForm"></form>');
 
         _.compile(element);
@@ -74,17 +74,20 @@ void main() {
         var form = scope.context['myForm'];
         expect(form.pristine).toEqual(true);
         expect(form.dirty).toEqual(false);
-      }));
+      });
 
-      it('should add and remove the correct CSS classes when set to dirty and to pristine', inject((Scope scope, TestBed _) {
-        var element = $('<form name="myForm"></form>');
+      it('should add and remove the correct CSS classes when set to dirty and to pristine', (Scope scope, TestBed _) {
+        var element = $('<form name="myForm"><input ng-model="m" probe="m" /></form>');
 
         _.compile(element);
         scope.apply();
 
+        Probe probe = _.rootScope.context['m'];
+        var input = probe.directive(NgModel);
         var form = scope.context['myForm'];
 
-        form.dirty = true;
+        input.addInfo('ng-dirty');
+        input.validate();
         scope.apply();
 
         expect(form.pristine).toEqual(false);
@@ -92,17 +95,18 @@ void main() {
         expect(element.hasClass('ng-pristine')).toBe(false);
         expect(element.hasClass('ng-dirty')).toBe(true);
 
-        form.pristine = true;
+        input.removeInfo('ng-dirty');
+        input.validate();
         scope.apply();
 
         expect(form.pristine).toEqual(true);
         expect(form.dirty).toEqual(false);
         expect(element.hasClass('ng-pristine')).toBe(true);
         expect(element.hasClass('ng-dirty')).toBe(false);
-      }));
+      });
 
       it('should revert back to pristine on the form if the value is reset on the model',
-        inject((Scope scope, TestBed _) {
+        (Scope scope, TestBed _) {
 
         var element = $('<form name="myForm">' + 
                         '  <input type="text" ng-model="myModel1" probe="m" />' +
@@ -139,38 +143,62 @@ void main() {
         expect(model2.dirty).toBe(false);
         expect(model2.pristine).toBe(true);
         expect(form.pristine).toBe(true);
-      }));
+      });
     });
 
     describe('valid / invalid', () {
-      it('should add and remove the correct flags when set to valid and to invalid',
-        inject((Scope scope, TestBed _) {
-
+      it('should be valid when empty', (Scope scope, TestBed _) {
         var element = $('<form name="myForm"></form>');
 
         _.compile(element);
         scope.apply();
 
         var form = scope.context['myForm'];
+        expect(form.valid).toBe(true);
+      });
 
-        form.invalid = true;
+      it('should be valid by default', (Scope scope, TestBed _) {
+        var element = $('<form name="myForm"><input type="text" /></form>');
+
+        _.compile(element);
+        scope.apply();
+
+        var form = scope.context['myForm'];
+        expect(form.valid).toBe(true);
+      });
+
+      it('should add and remove the correct flags when set to valid and to invalid',
+        (Scope scope, TestBed _) {
+
+        var element = $('<form name="myForm"><input ng-model="m" probe="m" /></form>');
+        _.compile(element);
+        scope.apply();
+
+        Probe probe = _.rootScope.context['m'];
+        var model = probe.directive(NgModel);
+        var form = scope.context['myForm'];
+
+        model.addError('some-error');
+        model.validate();
         scope.apply();
 
         expect(form.valid).toEqual(false);
         expect(form.invalid).toEqual(true);
-        expect(element.hasClass('ng-valid')).toBe(false);
+
+        //expect(element.hasClass('ng-valid')).toBe(false);
         expect(element.hasClass('ng-invalid')).toBe(true);
 
-        form.valid = true;
+        model.removeError('some-error');
+        model.validate();
         scope.apply();
 
         expect(form.valid).toEqual(true);
         expect(form.invalid).toEqual(false);
         expect(element.hasClass('ng-invalid')).toBe(false);
-        expect(element.hasClass('ng-valid')).toBe(true);
-      }));
+        // expect(element.hasClass('ng-valid')).toBe(true);
+      });
 
-      it('should set the validity with respect to all existing validations when setValidity() is used', inject((Scope scope, TestBed _) {
+      it('should set the validity with respect to all existing validations when error states are set is used', (Scope scope, TestBed _) {
         var element = $('<form name="myForm">'
                         '  <input type="text" ng-model="one" name="one" />' +
                         '  <input type="text" ng-model="two" name="two" />' +
@@ -185,24 +213,28 @@ void main() {
         NgModel two = form['two'];
         NgModel three = form['three'];
 
-        form.updateControlValidity(one, "some error", false);
+        one.addError("some error");
+        one.validate();
         expect(form.valid).toBe(false);
         expect(form.invalid).toBe(true);
 
-        form.updateControlValidity(two, "some error", false);
+        two.addError("some error");
+        two.validate();
         expect(form.valid).toBe(false);
         expect(form.invalid).toBe(true);
 
-        form.updateControlValidity(one, "some error", true);
+        one.removeError("some error");
+        one.validate();
         expect(form.valid).toBe(false);
         expect(form.invalid).toBe(true);
 
-        form.updateControlValidity(two, "some error", true);
+        two.removeError("some error");
+        two.validate();
         expect(form.valid).toBe(true);
         expect(form.invalid).toBe(false);
-      }));
+      });
 
-      it('should collect the invalid models upon failed validation', inject((Scope scope, TestBed _) {
+      it('should collect the invalid models upon failed validation', (Scope scope, TestBed _) {
         var element = $('<form name="myForm">'
                         '  <input type="text" ng-model="one" name="one" />' +
                         '  <input type="text" ng-model="two" name="two" />' +
@@ -217,17 +249,17 @@ void main() {
         NgModel two = form['two'];
         NgModel three = form['three'];
 
-        one.setValidity("email", false);
-        two.setValidity("number", true);
-        three.setValidity("format", false);
+        one.addError("email");
+        two.removeError("number");
+        three.addError("format");
 
-        expect(form.errors.keys.length).toBe(2);
-        expect(form.errors['email'].elementAt(0)).toBe(one);
-        expect(form.errors['format'].elementAt(0)).toBe(three);
-      }));
+        expect(form.errorStates.keys.length).toBe(2);
+        expect(form.errorStates['email'].elementAt(0)).toBe(one);
+        expect(form.errorStates['format'].elementAt(0)).toBe(three);
+      });
 
 
-      it('should not handle the control errorType pair more than once', inject((Scope scope, TestBed _) {
+      it('should not handle the control errorType pair more than once', (Scope scope, TestBed _) {
         var element = $('<form name="myForm">'
                         '  <input type="text" ng-model="one" name="one" />' +
                         '</form>');
@@ -238,20 +270,23 @@ void main() {
         var form = scope.context['myForm'];
         NgModel one = form['one'];
 
-        form.updateControlValidity(one, "validation error", false);
+        one.addError('validation error');
+        one.validate();
         expect(form.valid).toBe(false);
         expect(form.invalid).toBe(true);
 
-        form.updateControlValidity(one, "validation error", false);
+        one.addError('validation error');
+        one.validate();
         expect(form.valid).toBe(false);
         expect(form.invalid).toBe(true);
 
-        form.updateControlValidity(one, "validation error", true);
+        one.removeError('validation error');
+        one.validate();
         expect(form.valid).toBe(true);
         expect(form.invalid).toBe(false);
-      }));
+      });
 
-      it('should update the validity of the parent form when the inner model changes', inject((Scope scope, TestBed _) {
+      it('should update the validity of the parent form when the inner model changes', (Scope scope, TestBed _) {
         var element = $('<form name="myForm">'
                         '  <input type="text" ng-model="one" name="one" />' +
                         '  <input type="text" ng-model="two" name="two" />' +
@@ -264,25 +299,25 @@ void main() {
         NgModel one = form['one'];
         NgModel two = form['two'];
 
-        one.setValidity("required", false);
+        one.addError("required");
         expect(form.valid).toBe(false);
         expect(form.invalid).toBe(true);
 
-        two.setValidity("required", false);
+        two.addError("required");
         expect(form.valid).toBe(false);
         expect(form.invalid).toBe(true);
 
-        one.setValidity("required", true);
+        one.removeError("required");
         expect(form.valid).toBe(false);
         expect(form.invalid).toBe(true);
 
-        two.setValidity("required", true);
+        two.removeError("required");
         expect(form.valid).toBe(true);
         expect(form.invalid).toBe(false);
-      }));
+      });
 
       it('should register the name of inner forms that contain the ng-form attribute',
-        inject((Scope scope, TestBed _) {
+        (Scope scope, TestBed _) {
 
         var element = $('<form name="myForm">'
                         '  <div ng-form="myInnerForm" probe="f">' +
@@ -300,9 +335,9 @@ void main() {
 
         expect(inner.name).toEqual('myInnerForm');
         expect(scope.eval('myForm["myInnerForm"]["one"].viewValue')).toEqual('it works!');
-      }));
+      });
 
-      it('should set the validity for the parent form when fieldsets are used', inject((Scope scope, TestBed _) {
+      it('should set the validity for the parent form when fieldsets are used', (Scope scope, TestBed _) {
         var element = $('<form name="myForm">'
                         '  <fieldset probe="f">' +
                         '    <input type="text" ng-model="one" name="one" probe="m" />' +
@@ -316,32 +351,43 @@ void main() {
         var fieldset = _.rootScope.context['f'].directive(NgForm);
         var model = _.rootScope.context['m'].directive(NgModel);
 
-        model.setValidity("error", false);
+        model.addError("error");
 
         expect(model.valid).toBe(false);
         expect(fieldset.valid).toBe(false);
         expect(form.valid).toBe(false);
 
-        model.setValidity("error", true);
+        model.removeError("error");
 
         expect(model.valid).toBe(true);
         expect(fieldset.valid).toBe(true);
         expect(form.valid).toBe(true);
+      });
 
-        form.updateControlValidity(fieldset, "error", false);
-        expect(model.valid).toBe(true);
-        expect(fieldset.valid).toBe(true);
-        expect(form.valid).toBe(false);
+      it('should revalidate itself when an inner model is removed', (Scope scope, TestBed _) {
+        var element = $('<form name="myForm"><input ng-model="m" ng-if="on" required /></form>');
+        _.compile(element);
+        scope.context['on'] = true;
+        scope.apply();
 
-        fieldset.updateControlValidity(model, "error", false);
-        expect(model.valid).toBe(true);
-        expect(fieldset.valid).toBe(false);
-        expect(form.valid).toBe(false);
-      }));
+        var form = scope.context['myForm'];
+
+        expect(form.invalid).toBe(true);
+
+        scope.context['on'] = false;
+        scope.apply();
+
+        expect(form.invalid).toBe(false);
+
+        scope.context['on'] = true;
+        scope.apply();
+
+        expect(form.invalid).toBe(true);
+      });
     });
 
     describe('controls', () {
-      it('should add each contained ng-model as a control upon compile', inject((Scope scope, TestBed _) {
+      it('should add each contained ng-model as a control upon compile', (Scope scope, TestBed _) {
         var element = $('<form name="myForm">'
                         '  <input type="text" ng-model="mega_model" name="mega_name" />' +
                         '  <select ng-model="fire_model" name="fire_name">' +
@@ -358,9 +404,9 @@ void main() {
         var form = scope.context['myForm'];
         expect(form['mega_name'].modelValue).toBe('mega');
         expect(form['fire_name'].modelValue).toBe('fire');
-      }));
+      });
 
-      it('should properly remove controls directly from the ngForm instance', inject((Scope scope, TestBed _) {
+      it('should properly remove controls directly from the ngForm instance', (Scope scope, TestBed _) {
         var element = $('<form name="myForm">'
                         '  <input type="text" ng-model="mega_model" name="mega_control" />' +
                         '</form>');
@@ -372,9 +418,9 @@ void main() {
         var control = form['mega_control'];
         form.removeControl(control);
         expect(form['mega_control']).toBeNull();
-      }));
+      });
 
-      it('should remove all controls when the scope is destroyed', inject((Scope scope, TestBed _) {
+      it('should remove all controls when the scope is destroyed', (Scope scope, TestBed _) {
         Scope childScope = scope.createChild({});
         var element = $('<form name="myForm">' +
                         '  <input type="text" ng-model="one" name="one" />' +
@@ -395,9 +441,9 @@ void main() {
         expect(form['one']).toBeNull();
         expect(form['two']).toBeNull();
         expect(form['three']).toBeNull();
-      }));
+      });
 
-      it('should remove from parent when child is removed', inject((Scope scope, TestBed _) {
+      it('should remove from parent when child is removed', (Scope scope, TestBed _) {
         var element = $('<form name="myForm">' +
                         '  <input type="text" name="mega_name" ng-if="mega_visible" ng-model="value"/>' +
                         '</form>');
@@ -412,11 +458,11 @@ void main() {
         scope.context['mega_visible'] = false;
         scope.apply();
         expect(form['mega_name']).toBeNull();
-      }));
+      });
     });
 
     describe('onSubmit', () {
-      it('should suppress the submission event if no action is provided within the form', inject((Scope scope, TestBed _) {
+      it('should suppress the submission event if no action is provided within the form', (Scope scope, TestBed _) {
         var element = $('<form name="myForm"></form>');
 
         _.compile(element);
@@ -433,9 +479,9 @@ void main() {
         expect(fakeEvent.defaultPrevented).toBe(false);
         element[0].dispatchEvent(submissionEvent);
         expect(fakeEvent.defaultPrevented).toBe(false);
-      }));
+      });
 
-      it('should not prevent the submission event if an action is defined', inject((Scope scope, TestBed _) {
+      it('should not prevent the submission event if an action is defined', (Scope scope, TestBed _) {
         var element = $('<form name="myForm" action="..."></form>');
 
         _.compile(element);
@@ -446,9 +492,9 @@ void main() {
         expect(submissionEvent.defaultPrevented).toBe(false);
         element[0].dispatchEvent(submissionEvent);
         expect(submissionEvent.defaultPrevented).toBe(false);
-      }));
+      });
 
-      it('should execute the ng-submit expression if provided upon form submission', inject((Scope scope, TestBed _) {
+      it('should execute the ng-submit expression if provided upon form submission', (Scope scope, TestBed _) {
         var element = $('<form name="myForm" ng-submit="submitted = true"></form>');
 
         _.compile(element);
@@ -460,10 +506,10 @@ void main() {
         element[0].dispatchEvent(submissionEvent);
 
         expect(_.rootScope.context['submitted']).toBe(true);
-      }));
+      });
 
       it('should apply the valid and invalid prefixed submit CSS classes to the element',
-        inject((TestBed _, Scope scope) {
+        (TestBed _, Scope scope) {
 
         _.compile('<form name="superForm">' +
                   ' <input type="text" ng-model="myModel" probe="i" required />' +
@@ -500,12 +546,12 @@ void main() {
         expect(form.invalid_submit).toBe(false);
         expect(formElement.classes.contains('ng-submit-invalid')).toBe(false);
         expect(formElement.classes.contains('ng-submit-valid')).toBe(true);
-      }));
+      });
     });
 
     describe('error handling', () {
       it('should return true or false depending on if an error exists on a form',
-        inject((Scope scope, TestBed _) {
+        (Scope scope, TestBed _) {
 
         var element = $('<form name="myForm">'
                         '  <input type="text" ng-model="input" name="input" />' +
@@ -517,21 +563,23 @@ void main() {
         var form = scope.context['myForm'];
         NgModel input = form['input'];
 
-        expect(form.hasError('big-failure')).toBe(false);
+        expect(form.hasErrorState('big-failure')).toBe(false);
 
-        form.updateControlValidity(input, "big-failure", false);
+        input.addError('big-failure');
+        input.validate();
 
-        expect(form.hasError('big-failure')).toBe(true);
+        expect(form.hasErrorState('big-failure')).toBe(true);
 
-        form.updateControlValidity(input, "big-failure", true);
+        input.removeError('big-failure');
+        input.validate();
 
-        expect(form.hasError('big-failure')).toBe(false);
-      }));
+        expect(form.hasErrorState('big-failure')).toBe(false);
+      });
     });
 
     describe('validators', () {
       it('should display the valid and invalid CSS classes on the element for each validation',     
-        inject((TestBed _, Scope scope) {
+        (TestBed _, Scope scope) {
 
         var form = _.compile(
           '<form name="myForm">' +
@@ -550,7 +598,7 @@ void main() {
 
         expect(form.classes.contains('ng-required-valid')).toBe(true);
         expect(form.classes.contains('ng-required-invalid')).toBe(false);
-      }));
+      });
 
       describe('custom validators', () {
         beforeEachModule((Module module) {
@@ -578,7 +626,7 @@ void main() {
     });
 
     describe('reset()', () {
-      it('should reset the model value to its original state', inject((TestBed _) {
+      it('should reset the model value to its original state', (TestBed _) {
         _.compile('<form name="superForm">' +
                   ' <input type="text" ng-model="myModel" probe="i" />' +
                   '</form>');
@@ -605,10 +653,11 @@ void main() {
         expect(_.rootScope.context['myModel']).toEqual('animal');
         expect(model.modelValue).toEqual('animal');
         expect(model.viewValue).toEqual('animal');
-      }));
+      });
 
+      // TODO(matias): special-base form_valid
       it('should set the form control to be untouched when the model is reset',
-        inject((TestBed _, Scope scope) {
+        (TestBed _, Scope scope) {
 
         var form = _.compile('<form name="duperForm">' +
                              ' <input type="text" ng-model="myModel" probe="i" />' +
@@ -643,9 +692,9 @@ void main() {
         _.triggerEvent(input, 'blur');
 
         expect(formModel.touched).toBe(true);
-      }));
+      });
 
-      it('should reset each of the controls to be untouched only when the form has a valid submission', inject((Scope scope, TestBed _) {
+      it('should reset each of the controls to be untouched only when the form has a valid submission', (Scope scope, TestBed _) {
         var form = _.compile('<form name="duperForm">' +
                              ' <input type="text" ng-model="myModel" probe="i" required />' +
                              '</form>');
@@ -673,10 +722,10 @@ void main() {
         expect(formModel.valid).toBe(true);
         expect(formModel.touched).toBe(false);
         expect(model.touched).toBe(false);
-      }));
+      });
     });
 
-    it("should use map notation to fetch controls", inject((TestBed _) {
+    it("should use map notation to fetch controls", (TestBed _) {
         Scope s = _.rootScope;
         s.context['name'] = 'cool';
 
@@ -692,7 +741,7 @@ void main() {
         expect(s.eval('myForm.name')).toEqual('myForm');
         expect(s.eval('myForm["name"]')).toBe(model);
         expect(s.eval('myForm["name"].name')).toEqual("name");
-    }));
+    });
 
     describe('regression tests: form', () {
       beforeEachModule((Module module) {

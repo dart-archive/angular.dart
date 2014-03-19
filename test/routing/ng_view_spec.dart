@@ -16,7 +16,7 @@ main() {
         ..type(RouteInitializerFn, implementedBy: FlatRouteInitializer);
     });
 
-    beforeEach(inject((TestBed tb, Router _router, TemplateCache templates) {
+    beforeEach((TestBed tb, Router _router, TemplateCache templates) {
       _ = tb;
       router = _router;
 
@@ -24,7 +24,7 @@ main() {
           '<h1>Foo</h1>'));
       templates.put('bar.html', new HttpResponse(200,
           '<h1>Bar</h1>'));
-    }));
+    });
 
 
     it('should switch template', async(() {
@@ -86,7 +86,7 @@ main() {
         ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer);
     });
 
-    beforeEach(inject((TestBed tb, Router _router, TemplateCache templates) {
+    beforeEach((TestBed tb, Router _router, TemplateCache templates) {
       _ = tb;
       router = _router;
 
@@ -99,7 +99,7 @@ main() {
           '<h2>Book 1234</h2>'));
       templates.put('book_read.html', new HttpResponse(200,
          '<h2>Read Book 1234</h2>'));
-    }));
+    });
 
     // This test is disable on dart2js because it is flaky
     // on dart v1.2. Kasper is looking into it. In the

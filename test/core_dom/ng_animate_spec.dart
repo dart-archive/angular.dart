@@ -5,12 +5,12 @@ import '../_specs.dart';
 main() {
   describe('NgAniamte', () {
     TestBed _;
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should exist',
-        inject((NgAnimate aniamte) {
+        (NgAnimate aniamte) {
       expect(aniamte).toBeDefined();
-    }));
+    });
 
     it('should add a css classes to nodes.', () {
       var animate = new NgAnimate();

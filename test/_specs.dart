@@ -25,24 +25,6 @@ es(String html) {
 
 e(String html) => es(html).first;
 
-renderedText(n, [bool notShadow = false]) {
-  if (n is List) {
-    return n.map((nn) => renderedText(nn)).join("");
-  }
-
-  if (n is Comment) return '';
-
-  if (!notShadow && n is Element && n.shadowRoot != null) {
-    var shadowText = n.shadowRoot.text;
-    var domText = renderedText(n, true);
-    return shadowText.replaceFirst("SHADOW-CONTENT", domText);
-  }
-
-  if (n.nodes == null || n.nodes.length == 0) return n.text;
-
-  return n.nodes.map((cn) => renderedText(cn)).join("");
-}
-
 Expect expect(actual, [unit.Matcher matcher = null]) {
   if (matcher != null) {
     unit.expect(actual, matcher);
@@ -184,7 +166,7 @@ class JQuery extends DelegatingList<Node> {
       // Remove all the "ng-binding" internal classes
       node = node.clone(true) as Element;
       node.classes.remove('ng-binding');
-      node.queryAll(".ng-binding").forEach((Element e) {
+      node.querySelectorAll(".ng-binding").forEach((Element e) {
         e.classes.remove('ng-binding');
       });
       var htmlString = outer ? node.outerHtml : node.innerHtml;
@@ -193,6 +175,24 @@ class JQuery extends DelegatingList<Node> {
     } else {
       throw "JQuery._toHtml not implemented for node type [${node.nodeType}]";
     }
+  }
+
+  _renderedText(n, [bool notShadow = false]) {
+    if (n is List) {
+      return n.map((nn) => _renderedText(nn)).join("");
+    }
+
+    if (n is Comment) return '';
+
+    if (!notShadow && n is Element && n.shadowRoot != null) {
+      var shadowText = n.shadowRoot.text;
+      var domText = _renderedText(n, true);
+      return shadowText.replaceFirst("SHADOW-CONTENT", domText);
+    }
+
+    if (n.nodes == null || n.nodes.length == 0) return n.text;
+
+    return n.nodes.map((cn) => _renderedText(cn)).join("");
   }
 
   accessor(Function getter, Function setter, [value, single=false]) {
@@ -229,7 +229,7 @@ class JQuery extends DelegatingList<Node> {
           (n, v) => getterSetter.setter(name)(n, v),
           null,
           true);
-  textWithShadow() => fold('', (t, n) => '${t}${renderedText(n)}');
+  textWithShadow() => fold('', (t, n) => '${t}${_renderedText(n)}');
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(
       (n is Element ? (n as Element).querySelectorAll(selector) : [])));
   hasClass(String name) => fold(false, (hasClass, node) =>

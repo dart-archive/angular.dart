@@ -18,13 +18,13 @@ void main() {
     Logger logger;
     AstParser parser;
 
-    beforeEach(inject((Logger _logger, AstParser _parser) {
+    beforeEach((Logger _logger, AstParser _parser) {
       context = {};
       changeDetector = new DirtyCheckingChangeDetector(new GetterCache({}));
       watchGrp = new RootWatchGroup(changeDetector, context);
       logger = _logger;
       parser = _parser;
-    }));
+    });
 
     AST parse(String expression) => parser(expression);
 

@@ -69,11 +69,8 @@ class NgForm extends NgControl {
 
   get controls => _controlByName;
 
-  NgControl operator[](name) {
-    if (controls.containsKey(name)) {
-      return controls[name][0];
-    }
-  }
+  NgControl operator[](name) =>
+      controls.containsKey(name) ? controls[name][0] : null;
 }
 
 class NgNullForm extends NgNullControl implements NgForm {

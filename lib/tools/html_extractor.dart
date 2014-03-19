@@ -44,7 +44,7 @@ class HtmlExpressionExtractor {
         });
       }
       if (matchesNode(node, r':contains(/{{.*}}/)')) {
-        _MUSTACHE_REGEXP.allMatches(node.value).forEach((match) {
+        _MUSTACHE_REGEXP.allMatches(node.text).forEach((match) {
           expressions.add(match.group(1));
         });
       }

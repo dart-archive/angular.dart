@@ -16,7 +16,7 @@ class NodeAttrs {
 
   Map<String, List<AttributeChanged>> _observers;
 
-  Map<String, List<ObserverChanged>> _observerListeners = {};
+  Map<String, List<ObserverChanged>> _observerListeners;
 
   NodeAttrs(this.element);
 
@@ -45,7 +45,8 @@ class NodeAttrs {
 
     notifyFn(this[attributeName]);
 
-    if (_observerListeners.containsKey(attributeName)) {
+    if (_observerListeners != null &&
+        _observerListeners.containsKey(attributeName)) {
       _observerListeners[attributeName].forEach((cb) => cb(true));
     }
   }
