@@ -88,6 +88,15 @@ class Expect {
   toHaveClass(cls) => unit.expect(actual.classes.contains(cls), true,
       reason: ' Expected ${actual} to have css class ${cls}');
 
+  toHaveAttribute(name, [value = null]) {
+    unit.expect(actual.attributes.containsKey(name), true,
+        reason: 'Epxected $actual to have attribute $name');
+    if (value != null) {
+      unit.expect(actual.attributes[name], value,
+          reason: 'Epxected $actual attribute "$name" to be "$value"');
+    }
+  }
+
   toEqualSelect(options) {
     var actualOptions = [];
 
@@ -164,6 +173,8 @@ class NotExpect {
 
   toHaveClass(cls) => unit.expect(actual.classes.contains(cls), false,
       reason: ' Expected ${actual} to not have css class ${cls}');
+  toHaveAttribute(name) => unit.expect(actual.attributes.containsKey(name),
+      false, reason: ' Expected $actual to not have attribute "$name"');
   toBe(expected) => unit.expect(actual,
       unit.predicate((actual) => !identical(expected, actual), 'not $expected'));
   toEqual(expected) => unit.expect(actual,
