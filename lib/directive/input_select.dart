@@ -105,9 +105,7 @@ class OptionValueDirective implements NgAttachAware,
   }
 
   attach() {
-    if (_inputSelectDirective != null) {
-      _inputSelectDirective.dirty();
-    }
+    if (_inputSelectDirective != null) _inputSelectDirective.dirty();
   }
 
   detach() {
@@ -151,8 +149,8 @@ class _SingleSelectMode extends _SelectMode {
                     dom.SelectElement select,
                     NgModel model,
                     this._nullOption,
-                    this._unknownOption
-                    ): super(expando, select, model) {
+                    this._unknownOption)
+      : super(expando, select, model) {
   }
 
   onViewChange(event) {
