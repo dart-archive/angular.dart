@@ -100,3 +100,11 @@ class EventHandler {
     return part.replaceAll("-", "");
   }
 }
+
+@NgInjectableService()
+class _ShadowRootEventHandler extends EventHandler {
+  _ShadowRootEventHandler(dom.ShadowRoot shadowRoot,
+                         Expando expando,
+                         ExceptionHandler exceptionHandler)
+      : super(shadowRoot, expando, exceptionHandler);
+}

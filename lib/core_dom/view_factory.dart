@@ -231,12 +231,10 @@ class _ComponentFactory implements Function {
     var shadowModule = new Module()
         ..type(type)
         ..type(NgElement)
-        ..type(EventHandler)
+        ..type(EventHandler, implementedBy: _ShadowRootEventHandler)
         ..value(Scope, shadowScope)
         ..value(TemplateLoader, templateLoader)
         ..value(dom.ShadowRoot, shadowDom)
-        ..value(dom.Element, null)
-        ..value(dom.Node, shadowDom)
         ..factory(ElementProbe, (_) => probe);
     shadowInjector = injector.createChild([shadowModule], name: _SHADOW);
     probe = _expando[shadowDom] = new ElementProbe(

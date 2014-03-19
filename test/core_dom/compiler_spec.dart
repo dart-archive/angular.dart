@@ -217,6 +217,7 @@ void main() {
           ..type(SimpleAttachComponent)
           ..type(SimpleComponent)
           ..type(ExprAttrComponent)
+          ..type(LogElementComponent)
           ..type(SayHelloFilter);
       });
 
@@ -520,6 +521,13 @@ void main() {
           microLeap();
 
           expect(logger).toEqual(['SimpleAttachComponent']);
+        }));
+
+        it('should inject compenent element as the dom.Element', async((Logger log, TestBed _, MockHttpBackend backend) {
+          backend.whenGET('foo.html').respond('<div>WORKED</div>');
+          _.compile('<log-element></log-element>');
+          Element element = _.rootElement;
+          expect(log).toEqual([element, element, element.shadowRoot]);
         }));
       });
 
@@ -940,4 +948,16 @@ class SimpleAttachComponent implements NgAttachAware, NgShadowRootAware {
   }
   attach() => logger('attach');
   onShadowRoot(_) => logger('onShadowRoot');
+}
+
+@NgComponent(
+    selector: 'log-element',
+    templateUrl: 'foo.html')
+class LogElementComponent{
+  LogElementComponent(Logger logger, Element element, Node node,
+                        ShadowRoot shadowRoot) {
+    logger(element);
+    logger(node);
+    logger(shadowRoot);
+  }
 }
