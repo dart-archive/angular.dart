@@ -101,3 +101,11 @@ setKeyed(object, key, value) {
 /// Returns a new symbol with the given name if the name is a legal
 /// symbol name. Otherwise, returns null.
 Symbol newSymbol(String name) => isReservedWord(name) ? null : new Symbol(name);
+
+final Set<String> _MAP_PROPERTIES = new Set<String>.from([
+  "hashCode",
+  "isEmpty",
+  "isNotEmpty",
+  "length",
+  "runtimeType"]);
+bool isMapProperty(String key) => _MAP_PROPERTIES.contains(key);

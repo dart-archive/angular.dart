@@ -2,6 +2,7 @@ library dart_code_gen;
 
 import 'package:angular/utils.dart' show isReservedWord;
 import 'package:angular/core/parser/syntax.dart';
+import 'package:angular/core/parser/utils.dart';
 
 escape(String s) => s.replaceAllMapped(new RegExp(r'(\"|\$|\n)'), (m) {
   var char = m[1];
@@ -11,7 +12,7 @@ escape(String s) => s.replaceAllMapped(new RegExp(r'(\"|\$|\n)'), (m) {
 
 class DartCodeGen {
   final HelperMap getters = new HelperMap('_',
-      getterTemplate, getterTemplateForReserved);
+      getterTemplate, getterTemplateForReserved, getterTemplateWithoutMapTest);
   final HelperMap holders = new HelperMap('_ensure\$',
       holderTemplate, holderTemplateForReserved);
   final HelperMap setters = new HelperMap('_set\$',
@@ -226,15 +227,16 @@ class HelperMap {
   final String prefix;
   final Function template;
   final Function templateForReserved;
+  final Function templateWithoutMapTest;
 
-  HelperMap(this.prefix, this.template, this.templateForReserved);
+  HelperMap(this.prefix, this.template, this.templateForReserved, [this.templateWithoutMapTest]);
 
   String lookup(String key) {
     String name = _computeName(key);
     if (helpers.containsKey(key)) return name;
-    helpers[key] = isReservedWord(key)
-        ? templateForReserved(name, key)
-        : template(name, key);
+    helpers[key] = isReservedWord(key) ? templateForReserved(name, key)
+        : isMapProperty(key) && templateWithoutMapTest != null 
+        ? templateWithoutMapTest(name, key) : template(name, key);
     return name;
   }
 
@@ -264,6 +266,9 @@ $name(o) {
 }
 """;
 
+String getterTemplateWithoutMapTest(String name, String key) => """
+$name(o) => o == null ? null : o.$key;
+""";
 
 // ------------------------------------------------------------------
 // Templates for generated holders (getters for assignment).
