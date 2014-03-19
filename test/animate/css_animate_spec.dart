@@ -111,7 +111,7 @@ class MockAnimationLoop extends Mock implements AnimationLoop {
 
   List<LoopedAnimation> animations = [];
   
-  play(Animation animation) {
+  play(LoopedAnimation animation) {
     animations.add(animation);
   }
   
