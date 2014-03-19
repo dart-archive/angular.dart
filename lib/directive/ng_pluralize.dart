@@ -101,6 +101,7 @@ class NgPluralize {
   Watch _watch;
 
   static final RegExp IS_WHEN = new RegExp(r'^when-(minus-)?.');
+
   static const Map<String, Symbol> SYMBOLS = const {
       'zero'  : #zero,
       'one'   : #one,
@@ -110,12 +111,12 @@ class NgPluralize {
       'other' : #other,
   };
 
-  NgPluralize(this._scope, this._element, this._interpolate,
-              this._filters, NodeAttrs attributes) {
-    final whens = attributes['when'] == null
+  NgPluralize(this._scope, this._element, this._interpolate, this._filters) {
+    var attrs = _element.attributes;
+    final whens = attrs['when'] == null
         ? <String, String>{}
-        : _scope.eval(attributes['when']);
-    _offset = attributes['offset'] == null ? 0 : int.parse(attributes['offset']);
+        : _scope.eval(attrs['when']);
+    _offset = attrs['offset'] == null ? 0 : int.parse(attrs['offset']);
 
     _element.attributes.keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
       var ruleName = k
@@ -163,7 +164,6 @@ class NgPluralize {
       }
     }
   }
-
 
   void _setAndWatch(template) {
     if (_watch != null) _watch.remove();
