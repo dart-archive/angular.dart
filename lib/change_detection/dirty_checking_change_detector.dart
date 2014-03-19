@@ -282,13 +282,14 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
   }
 
   Iterator<Record<H>> collectChanges({EvalExceptionHandler exceptionHandler,
-                                      AvgStopwatch stopwatch}) {
+                                      AvgStopwatch stopwatch, bool reMemoizeForPureFunc}) {
     if (stopwatch != null) stopwatch.start();
     DirtyCheckingRecord changeTail = _fakeHead;
     DirtyCheckingRecord current = _recordHead; // current index
 
     int count = 0;
     while (current != null) {
+      if (reMemoizeForPureFunc == null || reMemoizeForPureFunc) current.dirtyArgs = true;
       try {
         if (current.check()) changeTail = changeTail._nextChange = current;
         count++;
@@ -373,6 +374,7 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
   Record<H> _nextChange;
   var _object;
   InstanceMirror _instanceMirror;
+  bool dirtyArgs = true;
 
   DirtyCheckingRecord(this._group, object, fieldName, this._getter, this.handler)
       : field = fieldName,
@@ -443,7 +445,9 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
       case _MODE_MARKER_:
         return false;
       case _MODE_REFLECT_:
+        if (!dirtyArgs) return false;
         current = _instanceMirror.getField(_symbol).reflectee;
+        if (object is List) dirtyArgs = false;
         break;
       case _MODE_GETTER_:
         current = _getter(object);
