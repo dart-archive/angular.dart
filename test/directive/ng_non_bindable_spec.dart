@@ -10,7 +10,7 @@ main() {
 
     it('should set ignore all other markup/directives on the descendent nodes',
           (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
-      var element = $('<div>' +
+      Element element = e('<div>' +
                       '  <span id="s1">{{a}}</span>' +
                       '  <span id="s2" ng-bind="b"></span>' +
                       '  <div foo="{{a}}" ng-non-bindable>' +
@@ -19,21 +19,21 @@ main() {
                       '  <span id="s3">{{a}}</span>' +
                       '  <span id="s4" ng-bind="b"></span>' +
                       '</div>');
-      compiler(element, directives)(injector, element);
+      compiler([element], directives)(injector, [element]);
       scope.context['a'] = "one";
       scope.context['b'] = "two";
       scope.apply();
       // Bindings not contained by ng-non-bindable should resolve.
-      expect(element.find("#s1").text().trim()).toEqual('one');
-      expect(element.find("#s2").text().trim()).toEqual('two');
-      expect(element.find("#s3").text().trim()).toEqual('one');
-      expect(element.find("#s4").text().trim()).toEqual('two');
+      expect(element.querySelector("#s1").text.trim()).toEqual('one');
+      expect(element.querySelector("#s2").text.trim()).toEqual('two');
+      expect(element.querySelector("#s3").text.trim()).toEqual('one');
+      expect(element.querySelector("#s4").text.trim()).toEqual('two');
       // Bindings contained by ng-non-bindable should be left alone.
-      var nonBindableDiv = element.find("div");
-      expect(nonBindableDiv[0]).toHaveHtml('<span ng-bind="a"></span>{{b}}');
-      expect(nonBindableDiv.text().trim()).toEqual('{{b}}');
+      var nonBindableDiv = element.querySelector("div");
+      expect(nonBindableDiv).toHaveHtml('<span ng-bind="a"></span>{{b}}');
+      expect(nonBindableDiv.text.trim()).toEqual('{{b}}');
       // Bindings on the same node are processed.
-      expect(nonBindableDiv.attr('foo')).toEqual('one');
+      expect(nonBindableDiv.attributes['foo']).toEqual('one');
     });
   });
 }

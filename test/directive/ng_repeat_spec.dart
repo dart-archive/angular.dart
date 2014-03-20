@@ -4,19 +4,20 @@ import '../_specs.dart';
 
 main() {
   describe('NgRepeater', () {
-    var element, $compile, scope, $exceptionHandler, directives;
+    Element element;
+    var $compile, scope, $exceptionHandler, directives;
 
     beforeEach((Injector injector, Scope $rootScope, Compiler compiler, DirectiveMap _directives) {
       $exceptionHandler = injector.get(ExceptionHandler);
       scope = $rootScope;
       $compile = (html, [scope]) {
-        element = $(html);
-        var viewFactory = compiler(element, _directives);
+        element = e(html);
+        var viewFactory = compiler([element], _directives);
         var blockInjector = injector;
         if (scope != null) {
           viewFactory.bind(injector)(scope);
         } else {
-          viewFactory(injector, element);
+          viewFactory(injector, [element]);
         }
         return element;
       };
@@ -24,23 +25,23 @@ main() {
     });
 
     it(r'should set create a list of items', (Scope scope, Compiler compiler, Injector injector) {
-      var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
+      var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
       View view = viewFactory(injector, element);
       scope.context['items'] = ['a', 'b'];
       scope.apply();
-      expect(element.text()).toEqual('ab');
+      expect(element).toHaveText('ab');
     });
 
 
     it(r'should set create a list of items from iterable',
         (Scope scope, Compiler compiler, Injector injector) {
-      var element = $('<div><div ng-repeat="item in items">{{item}}</div></div>');
+      var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
       View view = viewFactory(injector, element);
       scope.context['items'] = ['a', 'b'].map((i) => i); // makes an iterable
       scope.apply();
-      expect(element.text()).toEqual('ab');
+      expect(element).toHaveText('ab');
     });
 
 
@@ -53,21 +54,21 @@ main() {
       // INIT
       scope.context['items'] = [{"name": 'misko'}, {"name":'shyam'}];
       scope.apply();
-      expect(element.find('li').length).toEqual(2);
-      expect(element.text()).toEqual('misko;shyam;');
+      expect(element.querySelectorAll('li').length).toEqual(2);
+      expect(element.text).toEqual('misko;shyam;');
 
       // GROW
       scope.context['items'].add({"name": 'adam'});
       scope.apply();
-      expect(element.find('li').length).toEqual(3);
-      expect(element.text()).toEqual('misko;shyam;adam;');
+      expect(element.querySelectorAll('li').length).toEqual(3);
+      expect(element.text).toEqual('misko;shyam;adam;');
 
       // SHRINK
       scope.context['items'].removeLast();
       scope.context['items'].removeAt(0);
       scope.apply();
-      expect(element.find('li').length).toEqual(1);
-      expect(element.text()).toEqual('shyam;');
+      expect(element.querySelectorAll('li').length).toEqual(1);
+      expect(element.text).toEqual('shyam;');
     });
 
 
@@ -79,8 +80,8 @@ main() {
           '</ul>' +
         '</div>');
       scope.apply();
-      expect(element.find('ul').length).toEqual(1);
-      expect(element.find('li').length).toEqual(0);
+      expect(element.querySelectorAll('ul').length).toEqual(1);
+      expect(element.querySelectorAll('li').length).toEqual(0);
     });
 
 
@@ -90,7 +91,7 @@ main() {
       scope.context['items'] = ['foo', 'bar', 'baz'];
       scope.context['myFilter'] = (String item) => item.startsWith('b');
       scope.apply();
-      expect(element.find('span').length).toEqual(2);
+      expect(element.querySelectorAll('span').length).toEqual(2);
     });
 
 
@@ -102,13 +103,13 @@ main() {
             '</ul>');
         scope.context['items'] = [{"id": 'misko'}, {"id": 'igor'}];
         scope.apply();
-        var li0 = element.find('li')[0];
-        var li1 = element.find('li')[1];
+        var li0 = element.querySelectorAll('li')[0];
+        var li1 = element.querySelectorAll('li')[1];
 
         scope.context['items'].add(scope.context['items'].removeAt(0));
         scope.apply();
-        expect(element.find('li')[0]).toBe(li1);
-        expect(element.find('li')[1]).toBe(li0);
+        expect(element.querySelectorAll('li')[0]).toBe(li1);
+        expect(element.querySelectorAll('li')[1]).toBe(li0);
       });
 
 
@@ -119,13 +120,13 @@ main() {
             '</ul>');
         scope.context['items'] = [{"name": 'misko'}, {"name": 'igor'}];
         scope.apply();
-        var li0 = element.find('li')[0];
-        var li1 = element.find('li')[1];
+        var li0 = element.querySelectorAll('li')[0];
+        var li1 = element.querySelectorAll('li')[1];
 
         scope.context['items'].add(scope.context['items'].removeAt(0));
         scope.apply();
-        expect(element.find('li')[0]).toBe(li1);
-        expect(element.find('li')[1]).toBe(li0);
+        expect(element.querySelectorAll('li')[0]).toBe(li1);
+        expect(element.querySelectorAll('li')[1]).toBe(li0);
       });
 
 
@@ -138,92 +139,90 @@ main() {
         // INIT
         scope.context['items'] = [true, true, true];
         scope.apply();
-        expect(element.find('li').length).toEqual(3);
-        expect(element.text()).toEqual('true;true;true;');
+        expect(element.querySelectorAll('li').length).toEqual(3);
+        expect(element.text).toEqual('true;true;true;');
 
         scope.context['items'] = [false, true, true];
         scope.apply();
-        expect(element.find('li').length).toEqual(3);
-        expect(element.text()).toEqual('false;true;true;');
+        expect(element.querySelectorAll('li').length).toEqual(3);
+        expect(element.text).toEqual('false;true;true;');
 
         scope.context['items'] = [false, true, false];
         scope.apply();
-        expect(element.find('li').length).toEqual(3);
-        expect(element.text()).toEqual('false;true;false;');
+        expect(element.querySelectorAll('li').length).toEqual(3);
+        expect(element.text).toEqual('false;true;false;');
 
         scope.context['items'] = [true];
         scope.apply();
-        expect(element.find('li').length).toEqual(1);
-        expect(element.text()).toEqual('true;');
+        expect(element.querySelectorAll('li').length).toEqual(1);
+        expect(element.text).toEqual('true;');
 
         scope.context['items'] = [true, true, false];
         scope.apply();
-        expect(element.find('li').length).toEqual(3);
-        expect(element.text()).toEqual('true;true;false;');
+        expect(element.querySelectorAll('li').length).toEqual(3);
+        expect(element.text).toEqual('true;true;false;');
 
         scope.context['items'] = [true, false, false];
         scope.apply();
-        expect(element.find('li').length).toEqual(3);
-        expect(element.text()).toEqual('true;false;false;');
+        expect(element.querySelectorAll('li').length).toEqual(3);
+        expect(element.text).toEqual('true;false;false;');
 
         // string
         scope.context['items'] = ['a', 'a', 'a'];
         scope.apply();
-        expect(element.find('li').length).toEqual(3);
-        expect(element.text()).toEqual('a;a;a;');
+        expect(element.querySelectorAll('li').length).toEqual(3);
+        expect(element.text).toEqual('a;a;a;');
 
         scope.context['items'] = ['ab', 'a', 'a'];
         scope.apply();
-        expect(element.find('li').length).toEqual(3);
-        expect(element.text()).toEqual('ab;a;a;');
+        expect(element.querySelectorAll('li').length).toEqual(3);
+        expect(element.text).toEqual('ab;a;a;');
 
         scope.context['items'] = ['test'];
         scope.apply();
-        expect(element.find('li').length).toEqual(1);
-        expect(element.text()).toEqual('test;');
+        expect(element.querySelectorAll('li').length).toEqual(1);
+        expect(element.text).toEqual('test;');
 
         scope.context['items'] = ['same', 'value'];
         scope.apply();
-        expect(element.find('li').length).toEqual(2);
-        expect(element.text()).toEqual('same;value;');
+        expect(element.querySelectorAll('li').length).toEqual(2);
+        expect(element.text).toEqual('same;value;');
 
         // number
         scope.context['items'] = [12, 12, 12];
         scope.apply();
-        expect(element.find('li').length).toEqual(3);
-        expect(element.text()).toEqual('12;12;12;');
+        expect(element.querySelectorAll('li').length).toEqual(3);
+        expect(element.text).toEqual('12;12;12;');
 
         scope.context['items'] = [53, 12, 27];
         scope.apply();
-        expect(element.find('li').length).toEqual(3);
-        expect(element.text()).toEqual('53;12;27;');
+        expect(element.querySelectorAll('li').length).toEqual(3);
+        expect(element.text).toEqual('53;12;27;');
 
         scope.context['items'] = [89];
         scope.apply();
-        expect(element.find('li').length).toEqual(1);
-        expect(element.text()).toEqual('89;');
+        expect(element.querySelectorAll('li').length).toEqual(1);
+        expect(element.text).toEqual('89;');
 
         scope.context['items'] = [89, 23];
         scope.apply();
-        expect(element.find('li').length).toEqual(2);
-        expect(element.text()).toEqual('89;23;');
+        expect(element.querySelectorAll('li').length).toEqual(2);
+        expect(element.text).toEqual('89;23;');
       });
 
     });
 
 
     it(r'should error on wrong parsing of ngRepeat', () {
-      element = $('<ul><li ng-repeat="i dont parse"></li></ul>');
       expect(() {
-        $compile(element);
+        $compile('<ul><li ng-repeat="i dont parse"></li></ul>');
       }).toThrow("[NgErr7] ngRepeat error! Expected expression in form of '_item_ in _collection_[ track by _id_]' but got 'i dont parse'.");
     });
 
 
     it("should throw error when left-hand-side of ngRepeat can't be parsed", () {
-        element = $('<ul><li ng-repeat="i dont parse in foo"></li></ul>');
         expect(() {
-          $compile(element);
+          $compile('<ul><li ng-repeat="i dont parse in foo"></li></ul>');
         }).toThrow("[NgErr8] ngRepeat error! '_item_' in '_item_ in _collection_' should be an identifier or '(_key_, _value_)' expression, but got 'i dont parse'.");
     });
 
@@ -236,7 +235,7 @@ main() {
         '</ul>');
       scope.context['items'] = ['misko', 'shyam', 'frodo'];
       scope.apply();
-      expect(element.text()).toEqual('misko:0|shyam:1|frodo:2|');
+      expect(element.text).toEqual('misko:0|shyam:1|frodo:2|');
     });
 
 
@@ -248,12 +247,12 @@ main() {
         '</ul>');
       scope.context['items'] = ['misko', 'shyam', 'doug'];
       scope.apply();
-      expect(element.text()).
+      expect(element.text).
           toEqual('misko:true-false-false|shyam:false-true-false|doug:false-false-true|');
 
       scope.context['items'].add('frodo');
       scope.apply();
-      expect(element.text()).
+      expect(element.text).
           toEqual('misko:true-false-false|' +
                   'shyam:false-true-false|' +
                   'doug:false-true-false|' +
@@ -262,11 +261,11 @@ main() {
       scope.context['items'].removeLast();
       scope.context['items'].removeLast();
       scope.apply();
-      expect(element.text()).toEqual('misko:true-false-false|shyam:false-false-true|');
+      expect(element.text).toEqual('misko:true-false-false|shyam:false-false-true|');
 
       scope.context['items'].removeLast();
       scope.apply();
-      expect(element.text()).toEqual('misko:true-false-true|');
+      expect(element.text).toEqual('misko:true-false-true|');
     });
 
     it(r'should report odd', () {
@@ -276,20 +275,20 @@ main() {
         '</ul>');
       scope.context['items'] = ['misko', 'shyam', 'doug'];
       scope.apply();
-      expect(element.text()).toEqual('misko:false-true|shyam:true-false|doug:false-true|');
+      expect(element.text).toEqual('misko:false-true|shyam:true-false|doug:false-true|');
 
       scope.context['items'].add('frodo');
       scope.apply();
-      expect(element.text()).toEqual('misko:false-true|shyam:true-false|doug:false-true|frodo:true-false|');
+      expect(element.text).toEqual('misko:false-true|shyam:true-false|doug:false-true|frodo:true-false|');
 
       scope.context['items'].removeLast();
       scope.context['items'].removeLast();
       scope.apply();
-      expect(element.text()).toEqual('misko:false-true|shyam:true-false|');
+      expect(element.text).toEqual('misko:false-true|shyam:true-false|');
 
       scope.context['items'].removeLast();
       scope.apply();
-      expect(element.text()).toEqual('misko:false-true|');
+      expect(element.text).toEqual('misko:false-true|');
     });
 
     it(r'should repeat over nested arrays', () {
@@ -302,7 +301,7 @@ main() {
       scope.context['groups'] = [['a', 'b'], ['c','d']];
       scope.apply();
 
-      expect(element.text()).toEqual('a|b|Xc|d|X');
+      expect(element.text).toEqual('a|b|Xc|d|X');
     });
 
 
@@ -321,14 +320,14 @@ main() {
 
         scope.context['items'] = [a, b, c];
         scope.apply();
-        lis = element.find('li');
+        lis = element.querySelectorAll('li');
       });
 
 
       it(r'should preserve the order of elements', () {
         scope.context['items'] = [a, c, d];
         scope.apply();
-        var newElements = element.find('li');
+        var newElements = element.querySelectorAll('li');
         expect(newElements[0]).toEqual(lis[0]);
         expect(newElements[1]).toEqual(lis[2]);
         expect(newElements[2] == lis[1]).toEqual(false);
@@ -344,13 +343,13 @@ main() {
         // recover
         scope.context['items'] = [a];
         scope.apply();
-        var newElements = element.find('li');
+        var newElements = element.querySelectorAll('li');
         expect(newElements.length).toEqual(1);
         expect(newElements[0]).toEqual(lis[0]);
 
         scope.context['items'] = [];
         scope.apply();
-        newElements = element.find('li');
+        newElements = element.querySelectorAll('li');
         expect(newElements.length).toEqual(0);
       });
 
@@ -364,13 +363,13 @@ main() {
         // recover
         scope.context['items'] = [a];
         scope.apply();
-        var newElements = element.find('li');
+        var newElements = element.querySelectorAll('li');
         expect(newElements.length).toEqual(1);
         expect(newElements[0]).toEqual(lis[0]);
 
         scope.context['items'] = [];
         scope.apply();
-        newElements = element.find('li');
+        newElements = element.querySelectorAll('li');
         expect(newElements.length).toEqual(0);
       });
 
@@ -378,11 +377,11 @@ main() {
       it(r'should reverse items when the collection is reversed', () {
         scope.context['items'] = [a, b, c];
         scope.apply();
-        lis = element.find('li');
+        lis = element.querySelectorAll('li');
 
         scope.context['items'] = [c, b, a];
         scope.apply();
-        var newElements = element.find('li');
+        var newElements = element.querySelectorAll('li');
         expect(newElements.length).toEqual(3);
         expect(newElements[0]).toEqual(lis[2]);
         expect(newElements[1]).toEqual(lis[1]);
@@ -396,12 +395,12 @@ main() {
 
         scope.context['items'] = ['hello', 'cau', 'ahoj'];
         scope.apply();
-        lis = element.find('li');
+        lis = element.querySelectorAll('li');
         lis[2].id = 'yes';
 
         scope.context['items'] = ['ahoj', 'hello', 'cau'];
         scope.apply();
-        var newLis = element.find('li');
+        var newLis = element.querySelectorAll('li');
         expect(newLis.length).toEqual(3);
         expect(newLis[0]).toEqual(lis[2]);
         expect(newLis[1]).toEqual(lis[0]);

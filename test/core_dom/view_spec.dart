@@ -113,7 +113,7 @@ main() {
           anchor.insert(a);
           anchor.insert(b, insertAfter: a);
 
-          expect($rootElement.text()).toEqual('AaBb');
+          expect($rootElement[0].text).toEqual('AaBb');
         });
 
         it('should remove the last view', () {
@@ -163,11 +163,11 @@ main() {
           // view after the <!--start--> element.
           outerAnchor.insert(outterBoundViewFactory(null));
 
-          expect($rootElement.text()).toEqual('text');
+          expect($rootElement[0].text).toEqual('text');
 
           anchor.remove(outerView);
 
-          expect($rootElement.text()).toEqual('');
+          expect($rootElement[0].text).toEqual('');
         });
       });
 
@@ -177,7 +177,7 @@ main() {
           anchor.insert(a);
           anchor.insert(b, insertAfter: a);
 
-          expect($rootElement.text()).toEqual('AaBb');
+          expect($rootElement[0].text).toEqual('AaBb');
         });
 
 

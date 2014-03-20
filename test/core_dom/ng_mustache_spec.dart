@@ -12,16 +12,16 @@ main() {
     beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should replace {{}} in text', inject((Compiler $compile, Scope rootScope, Injector injector, DirectiveMap directives) {
-      var element = $('<div>{{name}}<span>!</span></div>');
+      var element = es('<div>{{name}}<span>!</span></div>');
       var template = $compile(element, directives);
 
       rootScope.context['name'] = 'OK';
       var view = template(injector);
 
-      element = $(view.nodes);
+      element = view.nodes;
 
       rootScope.apply();
-      expect(element.text()).toEqual('OK!');
+      expect(element).toHaveText('OK!');
     }));
 
     describe('observe/flush phase', () {

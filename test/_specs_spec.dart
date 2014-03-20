@@ -22,7 +22,7 @@ main() {
       it('should return the shadowRoot if one exists', () {
         var elts = $('<div></div>');
         elts[0].createShadowRoot().innerHtml = "Hello shadow";
-        expect(elts.shadowRoot().text()).toEqual("Hello shadow");
+        expect(elts.shadowRoot()[0].text).toEqual("Hello shadow");
       });
 
       it('should return empty list if there is no shadowRoot', () {
