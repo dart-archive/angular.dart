@@ -862,7 +862,7 @@ void main() {
       it(r'should apply expression with full lifecycle', (RootScope rootScope) {
         var log = '';
         var child = rootScope.createChild({"parent": rootScope.context});
-        rootScope.watch('a', (a, _) { log += '1'; }, readOnly: true);
+        rootScope.watch('a', (a, _) { log += '1'; }, canChangeModel: false);
         child.apply('parent.a = 0');
         expect(log).toEqual('1');
       });
@@ -871,7 +871,7 @@ void main() {
       it(r'should schedule domWrites and domReads', (RootScope rootScope) {
         var log = '';
         var child = rootScope.createChild({"parent": rootScope.context});
-        rootScope.watch('a', (a, _) { log += '1'; }, readOnly: true);
+        rootScope.watch('a', (a, _) { log += '1'; }, canChangeModel: false);
         child.apply('parent.a = 0');
         expect(log).toEqual('1');
       });
@@ -884,7 +884,7 @@ void main() {
         beforeEach((RootScope rootScope) {
           rootScope.context['log'] = () { log += 'digest;'; return null; };
           log = '';
-          rootScope.watch('log()', (v, o) => null, readOnly: true);
+          rootScope.watch('log()', (v, o) => null, canChangeModel: false);
           rootScope.digest();
           log = '';
         });
@@ -893,7 +893,7 @@ void main() {
           LoggingExceptionHandler exceptionHandler = e;
           var log = [];
           var child = rootScope.createChild({});
-          rootScope.watch('a', (a, _) => log.add('1'), readOnly: true);
+          rootScope.watch('a', (a, _) => log.add('1'), canChangeModel: false);
           rootScope.context['a'] = 0;
           child.apply(() { throw 'MyError'; });
           expect(log.join(',')).toEqual('1');
@@ -929,7 +929,8 @@ void main() {
           rootScope.context['logger'] = (name) { log(name); return retValue; };
 
           rootScope.watch('logger("watch")', (n, v) => null);
-          rootScope.watch('logger("flush")', (n, v) => null, readOnly: true);
+          rootScope.watch('logger("flush")', (n, v) => null,
+              canChangeModel: false);
 
           // clear watches
           rootScope.digest();
@@ -1413,7 +1414,8 @@ void main() {
           rootScope.domWrite(() => logger('write3'));
           throw 'read1';
         });
-        rootScope.watch('value', (_, __) => logger('observe'), readOnly: true);
+        rootScope.watch('value', (_, __) => logger('observe'),
+            canChangeModel: false);
         rootScope.flush();
         expect(logger).toEqual(['write1', 'write2', 'observe', 'read1', 'read2', 'write3']);
         expect(exceptionHandler.errors.length).toEqual(2);

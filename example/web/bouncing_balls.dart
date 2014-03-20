@@ -109,8 +109,10 @@ class BallPositionDirective {
   set position(BallModel model) {
     element.style.backgroundColor = model.color;
     scope
-        ..watch('x', (x, _) => element.style.left = '${x + 10}px', context: model, readOnly: true)
-        ..watch('y', (y, _) => element.style.top = '${y + 10}px', context: model, readOnly: true);
+        ..watch('x', (x, _) => element.style.left = '${x + 10}px',
+            context: model, canChangeModel: false)
+        ..watch('y', (y, _) => element.style.top = '${y + 10}px',
+            context: model, canChangeModel: false);
   }
 }
 
