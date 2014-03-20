@@ -7,6 +7,7 @@ main() {
     TestBed _;
     beforeEachModule((Module module) {
       module.type(_HelloFilter);
+      module.type(_FooDirective);
     });
     beforeEach(inject((TestBed tb) => _ = tb));
 
@@ -23,6 +24,23 @@ main() {
       expect(element.text()).toEqual('OK!');
     }));
 
+    describe('observe/flush phase', () {
+      it('should first only when then value has settled', async((Logger log) {
+        _.compile('<div dir-foo="{{val}}"></div>');
+
+        _.rootScope.apply();
+        // _FooDirective should NOT have observed any changes.
+        expect(log).toEqual([]);
+        expect(_.rootElement.attributes['dir-foo']).toEqual('');
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = 'value';
+        });
+        // _FooDirective should have observed exactly one change.
+        expect(_.rootElement.attributes['dir-foo']).toEqual('value');
+        expect(log).toEqual(['value']);
+      }));
+    });
 
     it('should replace {{}} in attribute', inject((Compiler $compile, Scope rootScope, Injector injector, DirectiveMap directives) {
       var element = $('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
@@ -117,3 +135,15 @@ class _HelloFilter {
   }
 }
 
+@NgComponent(selector: '[dir-foo]')
+class _FooDirective implements NgAttachAware {
+  NodeAttrs attrs;
+  Logger log;
+
+  _FooDirective(this.attrs, this.log);
+
+  @override
+  void attach() {
+    attrs.observe('dir-foo', (val) => log(val));
+  }
+}

@@ -1,10 +1,10 @@
 part of angular.core.dom;
 
 /// Callback function used to notify of attribute changes.
-typedef AttributeChanged(String newValue);
+typedef void AttributeChanged(String newValue);
 
 /// Callback function used to notify of observer changes.
-typedef void ObserverChanged(bool hasListeners);
+typedef void Mustache(bool hasObservers);
 
 /**
  * NodeAttrs is a facade for element attributes. The facade is responsible
@@ -16,13 +16,17 @@ class NodeAttrs {
 
   Map<String, List<AttributeChanged>> _observers;
 
-  Map<String, List<ObserverChanged>> _observerListeners;
+  Map<String, Mustache> _mustacheObservers = {};
+  Set<String> _mustacheComputedAttrs = new Set<String>();
 
   NodeAttrs(this.element);
 
   operator [](String attributeName) => element.attributes[attributeName];
 
   void operator []=(String attributeName, String value) {
+    if (_mustacheObservers.containsKey(attributeName)) {
+      _mustacheComputedAttrs.add(attributeName);
+    }
     if (value == null) {
       element.attributes.remove(attributeName);
     } else {
@@ -43,11 +47,15 @@ class NodeAttrs {
     _observers.putIfAbsent(attributeName, () => <AttributeChanged>[])
               .add(notifyFn);
 
-    notifyFn(this[attributeName]);
+    bool hasMustache = _mustacheObservers.containsKey(attributeName);
+    bool hasMustacheAndIsComputed = _mustacheComputedAttrs.contains(attributeName);
 
-    if (_observerListeners != null &&
-        _observerListeners.containsKey(attributeName)) {
-      _observerListeners[attributeName].forEach((cb) => cb(true));
+    if (!hasMustache || hasMustacheAndIsComputed) {
+      notifyFn(this[attributeName]);
+    }
+
+    if (_mustacheObservers.containsKey(attributeName)) {
+      _mustacheObservers[attributeName](true);
     }
   }
 
@@ -60,12 +68,8 @@ class NodeAttrs {
 
   Iterable<String> get keys => element.attributes.keys;
 
-  void listenObserverChanges(String attributeName, ObserverChanged fn) {
-    if (_observerListeners == null) {
-      _observerListeners = <String, List<ObserverChanged>>{};
-    }
-    _observerListeners.putIfAbsent(attributeName, () => <ObserverChanged>[])
-                      .add(fn);
+  void listenObserverChanges(String attributeName, Mustache fn) {
+    _mustacheObservers[attributeName] = fn;
     fn(false);
   }
 }

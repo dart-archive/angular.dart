@@ -93,18 +93,17 @@ main() {
     TestBed _;
     beforeEach((TestBed tb) => _ = tb);
 
-    it('should interpolate the expression and bind to src with raw same-domain value',
-    inject(() {
+    it('should interpolate the expression and bind to src with raw same-domain value', () {
       _.compile('<div ng-src="{{id}}"></div>');
 
       _.rootScope.apply();
-      expect(_.rootElement.attributes['src']).toEqual('');
+      expect(_.rootElement.attributes['src']).toEqual(null);
 
       _.rootScope.apply(() {
         _.rootScope.context['id'] = '/somewhere/here';
       });
       expect(_.rootElement.attributes['src']).toEqual('/somewhere/here');
-    }));
+    });
 
 
     xit('should interpolate the expression and bind to src with a trusted value', ($sce) {
