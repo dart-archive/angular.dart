@@ -210,7 +210,7 @@ class DynamicParserImpl {
 
   parsePrimary() {
     if (optionalCharacter($LPAREN)) {
-      var result = parseExpression();
+      var result = parseFilter();
       expectCharacter($RPAREN);
       return result;
     } else if (peek.isKeywordNull || peek.isKeywordUndefined) {

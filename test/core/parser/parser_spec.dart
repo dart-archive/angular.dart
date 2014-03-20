@@ -987,6 +987,12 @@ main() {
         expect(eval("1|increment:2", filters)).toEqual(3);
       });
 
+      it('should evaluate grouped filters', () {
+        context = {'name': 'MISKO'};
+        expect(eval('n = (name|lowercase)', filters)).toEqual('misko');
+        expect(eval('n')).toEqual('misko');
+      });
+
       it('should parse filters', () {
         expect(() {
           eval("1|nonexistent");
