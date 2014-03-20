@@ -27,8 +27,8 @@ class NgStyleDirective {
   set styleExpression(String value) {
     _styleExpression = value;
     if (_watch != null) _watch.remove();
-    _watch = _scope.watch(_styleExpression, _onStyleChange, readOnly: true,
-        collection: true);
+    _watch = _scope.watch(_styleExpression, _onStyleChange, collection: true,
+        canChangeModel: false);
   }
 
   _onStyleChange(MapChangeRecord mapChangeRecord, _) {

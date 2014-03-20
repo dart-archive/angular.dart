@@ -192,17 +192,20 @@ class Scope {
   /**
    * Use [watch] to set up a watch in the [apply] cycle.
    *
-   * When [readOnly] is [:true:], the watch will be executed in the [flush]
-   * cycle. It should be used when the [reactionFn] does not change the model
-   * and allows the [digest] phase to converge faster.
+   * When [canChangeModel] is [:false:], the watch will be executed in the
+   * [flush] cycle. It should be used when the [reactionFn] does not change the
+   * model and allows speeding up the [digest] phase.
    *
-   * On the opposite, [readOnly] should be set to [:false:] if the [reactionFn]
-   * could change the model so that the watch is observed in the [digest] cycle.
+   * On the opposite, [canChangeModel] should be set to [:true:] if the
+   * [reactionFn] could change the model so that the watch is evaluated in the
+   * [digest] cycle.
    */
-  Watch watch(String expression, ReactionFn reactionFn, {context,
-      FilterMap filters, bool readOnly: false, bool collection: false}) {
+  Watch watch(String expression, ReactionFn reactionFn,  {context,
+      FilterMap filters, bool canChangeModel: true, bool collection: false}) {
     assert(isAttached);
     assert(expression is String);
+    assert(canChangeModel is bool);
+
     Watch watch;
     ReactionFn fn = reactionFn;
     if (expression.isEmpty) {
@@ -224,7 +227,8 @@ class Scope {
 
     AST ast = rootScope._astParser(expression, context: context,
         filters: filters, collection: collection);
-    WatchGroup group = readOnly ? _readOnlyGroup : _readWriteGroup;
+
+    WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
     return watch = group.watch(ast, fn);
   }
 
