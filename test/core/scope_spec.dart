@@ -150,7 +150,6 @@ void main() {
         expect(logger).toEqual([]);
       });
 
-
       it('should prefix', (Logger logger, Map context, RootScope rootScope) {
         context['a'] = true;
         rootScope.watch('!a', (value, previous) => logger(value));
@@ -228,7 +227,21 @@ void main() {
         expect(logger).toEqual(['identity', 'keys', ['foo', 'bar']]);
         logger.clear();
       });
-
+      
+      it('should watch list value (vs. identity) changes when "observe" filter is used', 
+          (Logger logger, Map context, RootScope rootScope, AstParser parser,
+              FilterMap filters) {
+        final list = [true, 2, 'abc'];
+        final logVal = (value, _) => logger(value);
+        context['list'] = list;
+        rootScope.watch( parser('list | observe', filters: filters), logVal);
+        rootScope.digest();
+        expect(logger).toEqual([list]);
+        logger.clear();
+        context['list'][2] = 'def';
+        rootScope.digest();
+        expect(logger).toEqual([[true, 2, 'def']]);
+      });
     });
 
 

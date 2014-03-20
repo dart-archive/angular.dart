@@ -1,6 +1,7 @@
 library angular.filter;
 
 import 'dart:convert' show JSON;
+import 'dart:mirrors';
 import 'package:intl/intl.dart';
 import 'package:di/di.dart';
 import 'package:angular/core/module.dart';
@@ -15,6 +16,7 @@ part 'lowercase.dart';
 part 'number.dart';
 part 'order_by.dart';
 part 'uppercase.dart';
+part 'pure.dart';
 
 class NgFilterModule extends Module {
   NgFilterModule() {
@@ -27,5 +29,8 @@ class NgFilterModule extends Module {
     type(NumberFilter);
     type(OrderByFilter);
     type(UppercaseFilter);
+    type(ObserveFilter);
+    type(GetPureFieldFilter);
+    type(ApplyPureMethodFilter);
   }
 }
