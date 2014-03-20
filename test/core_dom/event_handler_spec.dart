@@ -31,7 +31,6 @@ main() {
       module..value(Element, document.body);
     });
 
-    // Not sure why this doesn't work.
     afterEach(() {
       document.body.children.clear();
     });
@@ -45,7 +44,6 @@ main() {
       document.querySelector('[on-abc]').dispatchEvent(new Event('abc'));
       var fooScope = _.getScope(document.querySelector('[foo]'));
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
-      document.body.children.clear();
     }));
 
     it('shoud register and handle event with long name', inject((TestBed _) {
@@ -57,7 +55,6 @@ main() {
       document.querySelector('[on-my-new-event]').dispatchEvent(new Event('myNewEvent'));
       var fooScope = _.getScope(document.querySelector('[foo]'));
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
-      document.body.children.clear();
     }));
 
     it('shoud have model updates applied correctly', inject((TestBed _) {
@@ -69,7 +66,6 @@ main() {
       el.dispatchEvent(new Event('abc'));
       _.rootScope.apply();
       expect(el.text).toEqual("new description");
-      document.body.children.clear();
     }));
 
     it('shoud register event when shadow dom is used', async((TestBed _) {
@@ -82,7 +78,6 @@ main() {
       span.dispatchEvent(new CustomEvent('abc'));
       var ctrl = _.rootScope.context['ctrl'];
       expect(ctrl.invoked).toEqual(true);
-      document.body.children.clear();
     }));
 
     it('shoud handle event within content only once', async(inject((TestBed _) {
@@ -102,7 +97,6 @@ main() {
 
       var fooScope = _.getScope(document.querySelector('[foo]'));
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
-      document.body.children.clear();
     })));
   });
 }
