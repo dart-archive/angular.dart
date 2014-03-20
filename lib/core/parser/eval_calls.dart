@@ -10,7 +10,7 @@ class CallScope extends syntax.CallScope with CallReflective {
   CallScope(name, arguments)
       : super(name, arguments),
         symbol = newSymbol(name);
-  eval(scope, [FilterMap filters]) => _eval(scope, scope);
+  eval(scope, FilterMap filters) => _eval(scope, scope);
 }
 
 class CallMember extends syntax.CallMember with CallReflective {
@@ -18,19 +18,19 @@ class CallMember extends syntax.CallMember with CallReflective {
   CallMember(object, name, arguments)
       : super(object, name, arguments),
         symbol = newSymbol(name);
-  eval(scope, [FilterMap filters]) => _eval(scope, object.eval(scope, filters));
+  eval(scope, FilterMap filters) => _eval(scope, object.eval(scope, filters));
 }
 
 class CallScopeFast0 extends syntax.CallScope with CallFast {
   final Function function;
   CallScopeFast0(name, arguments, this.function) : super(name, arguments);
-  eval(scope, [FilterMap filters]) => _evaluate0(scope);
+  eval(scope, FilterMap filters) => _evaluate0(scope);
 }
 
 class CallScopeFast1 extends syntax.CallScope with CallFast {
   final Function function;
   CallScopeFast1(name, arguments, this.function) : super(name, arguments);
-  eval(scope, [FilterMap filters]) =>
+  eval(scope, FilterMap filters) =>
        _evaluate1(scope, arguments[0].eval(scope, filters));
 }
 
@@ -38,20 +38,20 @@ class CallMemberFast0 extends syntax.CallMember with CallFast {
   final Function function;
   CallMemberFast0(object, name, arguments, this.function)
       : super(object, name, arguments);
-  eval(scope, [FilterMap filters]) => _evaluate0(object.eval(scope, filters));
+  eval(scope, FilterMap filters) => _evaluate0(object.eval(scope, filters));
 }
 
 class CallMemberFast1 extends syntax.CallMember with CallFast {
   final Function function;
   CallMemberFast1(object, name, arguments, this.function)
       : super(object, name, arguments);
-  eval(scope, [FilterMap filters]) => _evaluate1(object.eval(scope, filters),
+  eval(scope, FilterMap filters) => _evaluate1(object.eval(scope, filters),
       arguments[0].eval(scope, filters));
 }
 
 class CallFunction extends syntax.CallFunction {
   CallFunction(function, arguments) : super(function, arguments);
-  eval(scope, [FilterMap filters]) {
+  eval(scope, FilterMap filters) {
     var function  = this.function.eval(scope, filters);
     if (function is! Function) {
       throw new EvalError('${this.function} is not a function');
@@ -80,7 +80,7 @@ abstract class CallReflective {
   List get arguments;
 
   _eval(scope, holder) {
-    List arguments = evalList(scope, this.arguments);
+    List arguments = evalList(scope, this.arguments, null);
     if (!identical(holder, _cachedHolder)) {
       return _evaluteUncached(holder, arguments);
     }

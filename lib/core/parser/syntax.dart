@@ -39,12 +39,12 @@ abstract class Expression {
   bool get isAssignable => false;
   bool get isChain => false;
 
-  eval(scope, [FilterMap filters = defaultFilterMap]) =>
-      throw new EvalError("Cannot evaluate $this");
-  assign(scope, value) =>
-      throw new EvalError("Cannot assign to $this");
-  bind(context, [LocalsWrapper wrapper]) =>
-      new BoundExpression(this, context, wrapper);
+  eval(scope, FilterMap filters)
+      => throw new EvalError("Cannot evaluate $this");
+  assign(scope, value)
+      => throw new EvalError("Cannot assign to $this");
+  bind(context, [LocalsWrapper wrapper])
+      => new BoundExpression(this, context, wrapper);
 
   accept(Visitor visitor);
   String toString() => Unparser.unparse(this);
@@ -56,7 +56,7 @@ class BoundExpression {
   final LocalsWrapper _wrapper;
   BoundExpression(this.expression, this._context, this._wrapper);
 
-  call([locals]) => expression.eval(_computeContext(locals));
+  call([locals]) => expression.eval(_computeContext(locals), null);
   assign(value, [locals]) => expression.assign(_computeContext(locals), value);
 
   _computeContext(locals) {
@@ -182,15 +182,4 @@ class LiteralObject extends Literal {
   final List<Expression> values;
   LiteralObject(this.keys, this.values);
   accept(Visitor visitor) => visitor.visitLiteralObject(this);
-}
-
-const defaultFilterMap = const _DefaultFilterMap();
-
-class _DefaultFilterMap implements FilterMap {
-  const _DefaultFilterMap();
-
-  call(name) => throw 'No NgFilter: $name found!';
-  Type operator[](annotation) => null;
-  forEach(fn) { }
-  annotationsFor(type) => null;
 }

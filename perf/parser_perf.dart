@@ -49,9 +49,9 @@ main() {
     Expression generatedExpr = generatedParser(expr);
     Expression hybridExpr = hybridParser(expr);
     var measure = (b) => statMeasure(b).mean_ops_sec;
-    var gTime = measure(() => generatedExpr.eval(scope));
-    var rTime = measure(() => reflectionExpr.eval(scope));
-    var hTime = measure(() => hybridExpr.eval(scope));
+    var gTime = measure(() => generatedExpr.eval(scope, null));
+    var rTime = measure(() => reflectionExpr.eval(scope, null));
+    var hTime = measure(() => hybridExpr.eval(scope, null));
     var iTime = measure(() => idealFn(scope));
     print('$expr => g: ${nf.format(gTime)} ops/sec   ' +
           'r: ${nf.format(rTime)} ops/sec   ' +

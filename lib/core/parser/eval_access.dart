@@ -9,7 +9,7 @@ import 'package:angular/core/module.dart';
 class AccessScope extends syntax.AccessScope with AccessReflective {
   final Symbol symbol;
   AccessScope(String name) : super(name), symbol = newSymbol(name);
-  eval(scope, [FilterMap filters]) => _eval(scope);
+  eval(scope, FilterMap filters) => _eval(scope);
   assign(scope, value) => _assign(scope, scope, value);
 }
 
@@ -17,7 +17,7 @@ class AccessScopeFast extends syntax.AccessScope with AccessFast {
   final Getter getter;
   final Setter setter;
   AccessScopeFast(String name, this.getter, this.setter) : super(name);
-  eval(scope, [FilterMap filters]) => _eval(scope);
+  eval(scope, FilterMap filters) => _eval(scope);
   assign(scope, value) => _assign(scope, scope, value);
 }
 
@@ -25,8 +25,8 @@ class AccessMember extends syntax.AccessMember with AccessReflective {
   final Symbol symbol;
   AccessMember(object, String name)
       : super(object, name), symbol = newSymbol(name);
-  eval(scope, [FilterMap filters]) => _eval(object.eval(scope, filters));
-  assign(scope, value) => _assign(scope, object.eval(scope), value);
+  eval(scope, FilterMap filters) => _eval(object.eval(scope, filters));
+  assign(scope, value) => _assign(scope, object.eval(scope, null), value);
   _assignToNonExisting(scope, value) => object.assign(scope, { name: value });
 }
 
@@ -35,16 +35,16 @@ class AccessMemberFast extends syntax.AccessMember with AccessFast {
   final Setter setter;
   AccessMemberFast(object, String name, this.getter, this.setter)
       : super(object, name);
-  eval(scope, [FilterMap filters]) => _eval(object.eval(scope, filters));
-  assign(scope, value) => _assign(scope, object.eval(scope), value);
+  eval(scope, FilterMap filters) => _eval(object.eval(scope, filters));
+  assign(scope, value) => _assign(scope, object.eval(scope, null), value);
   _assignToNonExisting(scope, value) => object.assign(scope, { name: value });
 }
 
 class AccessKeyed extends syntax.AccessKeyed {
   AccessKeyed(object, key) : super(object, key);
-  eval(scope, [FilterMap filters]) =>
+  eval(scope, FilterMap filters) =>
       getKeyed(object.eval(scope, filters), key.eval(scope, filters));
-  assign(scope, value) => setKeyed(object.eval(scope), key.eval(scope), value);
+  assign(scope, value) => setKeyed(object.eval(scope, null), key.eval(scope, null), value);
 }
 
 

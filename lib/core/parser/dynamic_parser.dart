@@ -5,7 +5,6 @@ import 'package:angular/core/module.dart' show FilterMap, NgInjectableService;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/core/parser/dynamic_parser_impl.dart';
-import 'package:angular/core/parser/syntax.dart' show defaultFilterMap;
 
 import 'package:angular/core/parser/eval.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
@@ -46,7 +45,7 @@ class DynamicExpression extends Expression {
   accept(Visitor visitor) => _expression.accept(visitor);
   toString() => _expression.toString();
 
-  eval(scope, [FilterMap filters = defaultFilterMap]) {
+  eval(scope, FilterMap filters) {
     try {
       return _expression.eval(scope, filters);
     } on EvalError catch (e, s) {

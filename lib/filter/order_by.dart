@@ -168,7 +168,7 @@ class OrderByFilter {
           mappers[i] = _nop;
         } else {
           Expression parsed = _parser(strExp);
-          mappers[i] = (e) => parsed.eval(e);
+          mappers[i] = (e) => parsed.eval(e, null);
         }
       } else if (expression is Mapper) {
         mappers[i] = (expression as Mapper);

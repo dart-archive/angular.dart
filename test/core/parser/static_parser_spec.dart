@@ -19,7 +19,7 @@ main() {
 
 
     it('should run a static function', (Parser parser) {
-      expect(parser('1').eval(null)).toEqual(1);
+      expect(parser('1').eval(null, null)).toEqual(1);
     });
 
 

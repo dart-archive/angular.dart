@@ -42,7 +42,7 @@ class StaticExpression extends Expression {
   accept(Visitor visitor) => throw "Cannot visit static expression $this";
   toString() => _input;
 
-  eval(scope, [FilterMap filters = defaultFilterMap]) {
+  eval(scope, FilterMap filters) {
     try {
       return _eval(scope, filters);
     } on EvalError catch (e, s) {

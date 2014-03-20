@@ -234,7 +234,7 @@ class Scope {
            expression is Function);
     if (expression is String && expression.isNotEmpty) {
       var obj = locals == null ? context : new ScopeLocals(context, locals);
-      return rootScope._parser(expression).eval(obj);
+      return rootScope._parser(expression).eval(obj, null);
     }
 
     assert(locals == null);
