@@ -497,15 +497,18 @@ main() {
         });
 
 
-        xit('should require', () {
+        it('should require', () {
           compile(
-            '<select name="select" ng-model="selection" required ng-change="change()">' +
+            '<select name="select" ng-model="selection" probe="i" required ng-change="change()">' +
               '<option value=""></option>' +
               '<option value="c">C</option>' +
             '</select>');
 
+          var element = scope.context['i'].element;
+
+          scope.context['log'] = '';
           scope.context['change'] = () {
-            scope.log += 'change;';
+            scope.context['log'] += 'change;';
           };
 
           scope.apply(() {
@@ -513,36 +516,38 @@ main() {
             scope.context['selection'] = 'c';
           });
 
-          expect(scope.context['form'].select.$error.required).toEqual(false);;
-          expect(element).toEqualValid();
-          expect(element).toEqualPristine();
+          expect(scope.context['form']['select'].hasErrorState('ng-required')).toEqual(false);
+          expect(scope.context['form']['select'].valid).toEqual(true);
+          expect(scope.context['form']['select'].pristine).toEqual(true);
 
           scope.apply(() {
             scope.context['selection'] = '';
           });
 
-          expect(scope.context['form'].select.$error.required).toEqual(true);;
-          expect(element).toEqualInvalid();
-          expect(element).toEqualPristine();
+          expect(scope.context['form']['select'].hasErrorState('ng-required')).toEqual(true);
+          expect(scope.context['form']['select'].invalid).toEqual(true);
+          expect(scope.context['form']['select'].pristine).toEqual(true);
           expect(scope.context['log']).toEqual('');
 
-          element[0].value = 'c';
+          element.value = 'c';
           _.triggerEvent(element, 'change');
-          expect(element).toEqualValid();
-          expect(element).toEqualDirty();
+          scope.apply();
+
+          expect(scope.context['form']['select'].valid).toEqual(true);
+          expect(scope.context['form']['select'].dirty).toEqual(true);
           expect(scope.context['log']).toEqual('change;');
         });
 
 
-        xit('should not be invalid if no require', () {
+        it('should not be invalid if no require', () {
           compile(
             '<select name="select" ng-model="selection">' +
               '<option value=""></option>' +
               '<option value="c">C</option>' +
             '</select>');
 
-          expect(element).toEqualValid();
-          expect(element).toEqualPristine();
+          expect(scope.context['form']['select'].valid).toEqual(true);
+          expect(scope.context['form']['select'].pristine).toEqual(true);
         });
 
 
@@ -616,32 +621,34 @@ main() {
           expect(element).toEqualSelect([['A'], ['B']]);
         });
 
-        xit('should require', () {
+        it('should require', () {
           compile(
-            '<select name="select"  ng-model="selection" multiple required>' +
+            '<select name="select" probe="i" ng-model="selection" multiple required>' +
               '<option>A</option>' +
               '<option>B</option>' +
             '</select>');
 
+          var element = scope.context['i'].element;
           scope.apply(() {
             scope.context['selection'] = [];
           });
 
-          expect(scope.context['form'].select.$error.required).toEqual(true);;
-          expect(element).toEqualInvalid();
-          expect(element).toEqualPristine();
+          expect(scope.context['form']['select'].hasErrorState('ng-required')).toEqual(true);
+          expect(scope.context['form']['select'].invalid).toEqual(true);
+          expect(scope.context['form']['select'].pristine).toEqual(true);
 
           scope.apply(() {
             scope.context['selection'] = ['A'];
           });
 
-          expect(element).toEqualValid();
-          expect(element).toEqualPristine();
+          expect(scope.context['form']['select'].valid).toEqual(true);
+          expect(scope.context['form']['select'].pristine).toEqual(true);
 
-          element[0].value = 'B';
+          element.value = 'B';
           _.triggerEvent(element, 'change');
-          expect(element).toEqualValid();
-          expect(element).toEqualDirty();
+
+          expect(scope.context['form']['select'].valid).toEqual(true);
+          expect(scope.context['form']['select'].dirty).toEqual(true);
         });
       });
 
