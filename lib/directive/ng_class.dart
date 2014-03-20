@@ -173,7 +173,7 @@ abstract class _NgClassBase {
       currentSet = _flatten(current);
       _handleChange(scope.context[r'$index']);
     },
-    readOnly: true,
+    canChangeModel: false,
     collection: true);
 
     if (mode != null) {
@@ -186,7 +186,7 @@ abstract class _NgClassBase {
             previousSet.forEach((css) => _animate.removeClass(element, css));
           }
         }
-      }, readOnly: true);
+      }, canChangeModel: false);
     }
   }
 

@@ -12,7 +12,10 @@ class NgTextMustacheDirective {
                           FilterMap filters) {
     String expression = interpolate(template);
 
-    scope.watch(expression, _updateMarkup, readOnly: true, filters: filters);
+    scope.watch(expression,
+                _updateMarkup,
+                canChangeModel: false,
+                filters: filters);
   }
 
   void _updateMarkup(text, previousText) {
@@ -45,7 +48,7 @@ class NgAttrMustacheDirective {
       _hasObservers = hasObservers;
       if (_watch != null) _watch.remove();
         _watch = scope.watch(expression, _updateMarkup, filters: filters,
-            readOnly: !_hasObservers);
+            canChangeModel: _hasObservers);
       }
     });
   }
