@@ -54,7 +54,7 @@ main() {
       compile(html);
       // The span node should NOT exist in the DOM.
       expect(element.contents().length).toEqual(1);
-      expect(element.find('span').html()).toEqual('');
+      expect(element.find('span').length).toEqual(0);
 
       rootScope.apply(() {
         rootScope.context['isVisible'] = true;
@@ -62,13 +62,13 @@ main() {
 
       // The span node SHOULD exist in the DOM.
       expect(element.contents().length).toEqual(2);
-      expect(element.find('span').html()).toEqual('content');
+      expect(element.find('span')[0]).toHaveHtml('content');
 
       rootScope.apply(() {
         rootScope.context['isVisible'] = false;
       });
 
-      expect(element.find('span').html()).toEqual('');
+      expect(element.find('span').length).toEqual(0);
     }
   );
 
@@ -99,9 +99,9 @@ main() {
       expect(element.contents().length).toEqual(3);
       // The value on the parent scope.context['should'] be unchanged.
       expect(rootScope.context['setBy']).toEqual('topLevel');
-      expect(element.find('#outside').html()).toEqual('topLevel');
+      expect(element.find('#outside')[0]).toHaveHtml('topLevel');
       // A child scope.context['must'] have been created and hold a different value.
-      expect(element.find('#inside').html()).toEqual('childController');
+      expect(element.find('#inside')[0]).toHaveHtml('childController');
     }
   );
 
@@ -165,7 +165,7 @@ main() {
       rootScope.apply(() {
         rootScope.context['isVisible'] = false;
       });
-      expect(element.find('span').html()).toEqual('');
+      expect(element.find('span').length).toEqual(0);
     }
   );
 
@@ -175,19 +175,19 @@ main() {
       '<div><li log="ALWAYS"></li><span log="JAMES" ng-unless="!isVisible">content</span></div>'],
     (html) {
       compile(html);
-      expect(element.find('span').html()).toEqual('');
+      expect(element.find('span').length).toEqual(0);
 
       rootScope.apply(() {
         rootScope.context['isVisible'] = false;
       });
-      expect(element.find('span').html()).toEqual('');
+      expect(element.find('span').length).toEqual(0);
       expect(logger.result()).toEqual('ALWAYS');
 
 
       rootScope.apply(() {
         rootScope.context['isVisible'] = true;
       });
-      expect(element.find('span').html()).toEqual('content');
+      expect(element.find('span')[0]).toHaveHtml('content');
       expect(logger.result()).toEqual('ALWAYS; JAMES');
     }
   );
@@ -198,7 +198,7 @@ main() {
     '<div><div ng-unless="!a"><div ng-unless="!b">content</div></div></div>'],
     (html) {
       compile(html);
-      expect(element.find('span').html()).toEqual('');
+      expect(element.find('span').length).toEqual(0);
 
       expect(() {
         rootScope.apply(() {
@@ -206,7 +206,7 @@ main() {
           rootScope.context['b'] = false;
         });
       }).not.toThrow();
-      expect(element.find('span').html()).toEqual('');
+      expect(element.find('span').length).toEqual(0);
 
 
       expect(() {
@@ -215,7 +215,7 @@ main() {
           rootScope.context['b'] = true;
         });
       }).not.toThrow();
-      expect(element.find('span').html()).toEqual('');
+      expect(element.find('span').length).toEqual(0);
     }
   );
 }

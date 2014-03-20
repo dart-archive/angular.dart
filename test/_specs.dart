@@ -50,6 +50,8 @@ class Expect {
   toBeNull() => unit.expect(actual, unit.isNull);
   toBeNotNull() => unit.expect(actual, unit.isNotNull);
 
+  toHaveHtml(expected) => unit.expect(_toHtml(actual), unit.equals(expected));
+
   toHaveBeenCalled() => unit.expect(actual.called, true, reason: 'method not called');
   toHaveBeenCalledOnce() => unit.expect(actual.count, 1, reason: 'method invoked ${actual.count} expected once');
   toHaveBeenCalledWith([a,b,c,d,e,f]) =>
@@ -87,6 +89,34 @@ class Expect {
   toEqualDirty() {
     // TODO: implement onece we have forms
   }
+
+
+  _toHtml(node, [bool outer = false]) {
+    if (node is Comment) {
+      return '<!--${node.text}-->';
+    } else if (node is DocumentFragment) {
+      var acc = '';
+      node.childNodes.forEach((n) { acc += _toHtml(n, true); });
+      return acc;
+    } else if (node is List) {
+      var acc = '';
+      node.forEach((n) { acc += _toHtml(n); });
+      return acc;
+    } else if (node is Element) {
+      // Remove all the "ng-binding" internal classes
+      node = node.clone(true) as Element;
+      node.classes.remove('ng-binding');
+      node.querySelectorAll(".ng-binding").forEach((Element e) {
+        e.classes.remove('ng-binding');
+      });
+      var htmlString = outer ? node.outerHtml : node.innerHtml;
+      // Strip out empty class attributes.  This seems like a Dart bug...
+      return htmlString.replaceAll(' class=""', '').trim();
+    } else {
+      throw "JQuery._toHtml not implemented for node type [${node.nodeType}]";
+    }
+  }
+
 }
 
 class NotExpect {
@@ -155,28 +185,6 @@ class JQuery extends DelegatingList<Node> {
     }
   }
 
-  _toHtml(node, [bool outer = false]) {
-    if (node is Comment) {
-      return '<!--${node.text}-->';
-    } else if (node is DocumentFragment) {
-      var acc = '';
-      node.childNodes.forEach((n) { acc += _toHtml(n, true); });
-      return acc;
-    } else if (node is Element) {
-      // Remove all the "ng-binding" internal classes
-      node = node.clone(true) as Element;
-      node.classes.remove('ng-binding');
-      node.querySelectorAll(".ng-binding").forEach((Element e) {
-        e.classes.remove('ng-binding');
-      });
-      var htmlString = outer ? node.outerHtml : node.innerHtml;
-      // Strip out empty class attributes.  This seems like a Dart bug...
-      return htmlString.replaceAll(' class=""', '');
-    } else {
-      throw "JQuery._toHtml not implemented for node type [${node.nodeType}]";
-    }
-  }
-
   _renderedText(n, [bool notShadow = false]) {
     if (n is List) {
       return n.map((nn) => _renderedText(nn)).join("");
@@ -210,13 +218,12 @@ class JQuery extends DelegatingList<Node> {
   }
 
   html([String html]) => accessor(
-          (n) => _toHtml(n),
+          (n) { throw "Not implemented"; },
           (n, v) => n.setInnerHtml(v, treeSanitizer: new NullTreeSanitizer()),
           html);
   val([String text]) => accessor((n) => n.value, (n, v) => n.value = v);
   text([String text]) => accessor((n) => n.text, (n, v) => n.text = v, text);
   contents() => fold(new JQuery(), (jq, node) => jq..addAll(node.nodes));
-  toString() => fold('', (html, node) => '$html${_toHtml(node, true)}');
   eq(num childIndex) => $(this[childIndex]);
   remove(_) => forEach((n) => n.remove());
   attr([String name, String value]) => accessor(

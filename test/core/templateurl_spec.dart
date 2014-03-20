@@ -70,7 +70,7 @@ void main() {
         microLeap();
 
         expect(element.textWithShadow()).toEqual('.hello{}Simple!');
-        expect(element.children().shadowRoot().html()).toEqual(
+        expect(element.children().shadowRoot()[0]).toHaveHtml(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
       })));
@@ -139,7 +139,7 @@ void main() {
         microLeap();
 
         expect(element.textWithShadow()).toEqual('.hello{}Simple!');
-        expect(element.children().shadowRoot().html()).toEqual(
+        expect(element.children().shadowRoot()[0]).toHaveHtml(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
         $rootScope.apply();
@@ -225,7 +225,7 @@ void main() {
         microLeap();
 
         expect(element.textWithShadow()).toEqual('.hello{}.world{}Simple!');
-        expect(element.children().shadowRoot().html()).toEqual(
+        expect(element.children().shadowRoot()[0]).toHaveHtml(
             '<style>.hello{}.world{}</style><div log="SIMPLE">Simple!</div>'
         );
         $rootScope.apply();
