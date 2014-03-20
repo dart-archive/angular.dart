@@ -54,7 +54,7 @@ class NgAttrMustacheDirective {
 
     attrs.listenObserverChanges(attrName, (hasObservers) {
       if (_hasObservers != hasObservers) {
-        hasObservers = hasObservers;
+        _hasObservers = hasObservers;
         if (_watch != null) _watch.remove();
         _watch = scope.watch(ast, interpolation.call, readOnly: !hasObservers);
       }
