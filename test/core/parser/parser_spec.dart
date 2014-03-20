@@ -43,19 +43,29 @@ class WithPrivateField {
 
 toBool(x) => (x is num) ? x != 0 : x == true;
 
+class RelaxedFilterExp {
+  final exp;
+  RelaxedFilterExp(this.exp);
+  eval(o, [FilterMap f = null]) => exp.eval(o, f);
+  assign(o, v) => exp.assign(o, v);
+  bind(o, [l]) => exp.bind(o, l);
+}
+
 main() {
   describe('parse', () {
     Map<String, dynamic> context;
-    Parser<Expression> parser;
+    Parser<Expression> _parser;
     FilterMap filters;
     beforeEachModule((Module module) {
       module.type(IncrementFilter);
       module.type(SubstringFilter);
     });
     beforeEach((Parser injectedParser, FilterMap injectedFilters) {
-      parser = injectedParser;
+      _parser = injectedParser;
       filters = injectedFilters;
     });
+
+    parser(String exp) => new RelaxedFilterExp(_parser(exp));
 
     eval(String text, [FilterMap f])
         => parser(text).eval(context, f == null ? filters : f);
@@ -152,11 +162,6 @@ main() {
     });
 
     describe('error handling', () {
-      Parser<Expression> parser;
-
-      beforeEach((Parser p) {
-        parser = p;
-      });
 
       // We only care about the error strings in the DynamicParser.
       var errStr = (x) {
@@ -980,6 +985,7 @@ main() {
     describe('filters', () {
       it('should call a filter', () {
         expect(eval("'Foo'|uppercase", filters)).toEqual("FOO");
+        expect(eval("'f' + ('o'|uppercase) + 'o'", filters)).toEqual("fOo");
         expect(eval("'fOo'|uppercase|lowercase", filters)).toEqual("foo");
       });
 

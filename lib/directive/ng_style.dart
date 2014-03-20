@@ -13,12 +13,11 @@ part of angular.directive;
 class NgStyleDirective {
   final dom.Element _element;
   final Scope _scope;
-  final AstParser _parser;
 
   String _styleExpression;
   Watch _watch;
 
-  NgStyleDirective(this._element, this._scope, this._parser);
+  NgStyleDirective(this._element, this._scope);
 
 /**
   * ng-style attribute takes an expression which evaluates to an
@@ -28,8 +27,8 @@ class NgStyleDirective {
   set styleExpression(String value) {
     _styleExpression = value;
     if (_watch != null) _watch.remove();
-    _watch = _scope.watch(_parser(_styleExpression, collection: true),
-        _onStyleChange, readOnly: true);
+    _watch = _scope.watch(_styleExpression, _onStyleChange, collection: true,
+        canChangeModel: false);
   }
 
   _onStyleChange(MapChangeRecord mapChangeRecord, _) {

@@ -15,7 +15,7 @@ class StaticParserFunctions {
 class StaticParser implements Parser<Expression> {
   final StaticParserFunctions _functions;
   final DynamicParser _fallbackParser;
-  final Map<String, Expression> _cache = {};
+  final _cache = <String, Expression>{};
   StaticParser(this._functions, this._fallbackParser);
 
   Expression call(String input) {
@@ -42,7 +42,7 @@ class StaticExpression extends Expression {
   accept(Visitor visitor) => throw "Cannot visit static expression $this";
   toString() => _input;
 
-  eval(scope, [FilterMap filters = defaultFilterMap]) {
+  eval(scope, FilterMap filters) {
     try {
       return _eval(scope, filters);
     } on EvalError catch (e, s) {

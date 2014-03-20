@@ -5,7 +5,6 @@ import 'package:angular/core/module.dart' show FilterMap, NgInjectableService;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/core/parser/dynamic_parser_impl.dart';
-import 'package:angular/core/parser/syntax.dart' show defaultFilterMap;
 
 import 'package:angular/core/parser/eval.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
@@ -46,7 +45,7 @@ class DynamicExpression extends Expression {
   accept(Visitor visitor) => _expression.accept(visitor);
   toString() => _expression.toString();
 
-  eval(scope, [FilterMap filters = defaultFilterMap]) {
+  eval(scope, FilterMap filters) {
     try {
       return _expression.eval(scope, filters);
     } on EvalError catch (e, s) {
@@ -68,8 +67,7 @@ class DynamicParserBackend extends ParserBackend {
   final ClosureMap _closures;
   DynamicParserBackend(this._closures);
 
-  bool isAssignable(Expression expression)
-      => expression.isAssignable;
+  bool isAssignable(Expression expression) => expression.isAssignable;
 
   Expression newFilter(expression, name, arguments) {
     List allArguments = new List(arguments.length + 1);
@@ -78,58 +76,46 @@ class DynamicParserBackend extends ParserBackend {
     return new Filter(expression, name, arguments, allArguments);
   }
 
-  Expression newChain(expressions)
-      => new Chain(expressions);
-  Expression newAssign(target, value)
-      => new Assign(target, value);
+  Expression newChain(expressions) => new Chain(expressions);
+  Expression newAssign(target, value) => new Assign(target, value);
   Expression newConditional(condition, yes, no)
       => new Conditional(condition, yes, no);
 
-  Expression newAccessKeyed(object, key)
-      => new AccessKeyed(object, key);
+  Expression newAccessKeyed(object, key) => new AccessKeyed(object, key);
   Expression newCallFunction(function, arguments)
       => new CallFunction(function, arguments);
 
-  Expression newPrefixNot(expression)
-      => new PrefixNot(expression);
+  Expression newPrefixNot(expression) => new PrefixNot(expression);
 
   Expression newBinary(operation, left, right)
       => new Binary(operation, left, right);
 
-  Expression newLiteralPrimitive(value)
-      => new LiteralPrimitive(value);
-  Expression newLiteralArray(elements)
-      => new LiteralArray(elements);
-  Expression newLiteralObject(keys, values)
-      => new LiteralObject(keys, values);
-  Expression newLiteralString(value)
-      => new LiteralString(value);
+  Expression newLiteralPrimitive(value) => new LiteralPrimitive(value);
+  Expression newLiteralArray(elements) => new LiteralArray(elements);
+  Expression newLiteralObject(keys, values) => new LiteralObject(keys, values);
+  Expression newLiteralString(value) => new LiteralString(value);
 
 
   Expression newAccessScope(name) {
     Getter getter = _closures.lookupGetter(name);
     Setter setter = _closures.lookupSetter(name);
-    if (getter != null && setter != null) {
-      return new AccessScopeFast(name, getter, setter);
-    } else {
-      return new AccessScope(name);
-    }
+    return (getter != null && setter != null)
+        ? new AccessScopeFast(name, getter, setter)
+        : new AccessScope(name);
   }
 
   Expression newAccessMember(object, name) {
     Getter getter = _closures.lookupGetter(name);
     Setter setter = _closures.lookupSetter(name);
-    if (getter != null && setter != null) {
-      return new AccessMemberFast(object, name, getter, setter);
-    } else {
-      return new AccessMember(object, name);
-    }
+    return (getter != null && setter != null)
+        ? new AccessMemberFast(object, name, getter, setter)
+        : new AccessMember(object, name);
   }
 
   Expression newCallScope(name, arguments) {
     Function constructor = _computeCallConstructor(
         _callScopeConstructors, name, arguments.length);
-    return (constructor != null)
+    return constructor != null
         ? constructor(name, arguments, _closures)
         : new CallScope(name, arguments);
   }

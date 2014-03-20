@@ -192,40 +192,40 @@ class Scope {
   /**
    * Use [watch] to set up a watch in the [apply] cycle.
    *
-   * When [readOnly] is [:true:], the watch will be executed in the [flush]
-   * cycle. It should be used when the [reactionFn] does not change the model
-   * and allows the [digest] phase to converge faster.
+   * When [canChangeModel] is [:false:], the watch will be executed in the
+   * [flush] cycle. It should be used when the [reactionFn] does not change the
+   * model and allows speeding up the [digest] phase.
    *
-   * On the opposite, [readOnly] should be set to [:false:] if the [reactionFn]
-   * could change the model so that the watch is observed in the [digest] cycle.
+   * On the opposite, [canChangeModel] should be set to [:true:] if the
+   * [reactionFn] could change the model so that the watch is evaluated in the
+   * [digest] cycle.
    */
-  Watch watch(expression, ReactionFn reactionFn,
-              {context, FilterMap filters, bool readOnly: false}) {
+  Watch watch(String expression, ReactionFn reactionFn,  {Object context,
+      FilterMap filters, bool canChangeModel: true, bool collection: false}) {
     assert(isAttached);
-    assert(expression != null);
-    AST ast;
+    assert(expression is String);
+    assert(canChangeModel is bool);
+
     Watch watch;
     ReactionFn fn = reactionFn;
-    if (expression is AST) {
-      ast = expression;
-    } else if (expression is String) {
-      if (expression.startsWith('::')) {
-        expression = expression.substring(2);
-        fn = (value, last) {
-          if (value != null) {
-            watch.remove();
-            return reactionFn(value, last);
-          }
-        };
-      } else if (expression.startsWith(':')) {
-        expression = expression.substring(1);
-        fn = (value, last) => value == null ? null : reactionFn(value, last);
-      }
-      ast = rootScope._astParser(expression, context: context, filters: filters);
-    } else {
-      throw 'expressions must be String or AST got $expression.';
+
+    if (expression.startsWith('::')) {
+      expression = expression.substring(2);
+      fn = (value, last) {
+        if (value != null) {
+          watch.remove();
+          return reactionFn(value, last);
+        }
+      };
+    } else if (expression.startsWith(':')) {
+      expression = expression.substring(1);
+      fn = (value, last) => value == null ? null : reactionFn(value, last);
     }
-    WatchGroup group = readOnly ? _readOnlyGroup : _readWriteGroup;
+
+    AST ast = rootScope._astParser(expression, context: context,
+        filters: filters, collection: collection);
+
+    WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
     return watch = group.watch(ast, fn);
   }
 
@@ -236,7 +236,7 @@ class Scope {
            expression is Function);
     if (expression is String && expression.isNotEmpty) {
       var obj = locals == null ? context : new ScopeLocals(context, locals);
-      return rootScope._parser(expression).eval(obj);
+      return rootScope._parser(expression).eval(obj, null);
     }
 
     assert(locals == null);
@@ -256,10 +256,9 @@ class Scope {
     } catch (e, s) {
       rootScope._exceptionHandler(e, s);
     } finally {
-      rootScope
-          .._transitionState(RootScope.STATE_APPLY, null)
-          ..digest()
-          ..flush();
+      rootScope.._transitionState(RootScope.STATE_APPLY, null)
+               ..digest()
+               ..flush();
     }
   }
 
@@ -423,7 +422,7 @@ class RootScope extends Scope {
   static final STATE_FLUSH = 'flush';
 
   final ExceptionHandler _exceptionHandler;
-  final AstParser _astParser;
+  final _AstParser _astParser;
   final Parser _parser;
   final ScopeDigestTTL _ttl;
   final NgZone _zone;
@@ -436,16 +435,17 @@ class RootScope extends Scope {
 
   String _state;
 
-  RootScope(Object context, this._astParser, this._parser,
-            GetterCache cacheGetter, FilterMap filterMap,
-            this._exceptionHandler, this._ttl, this._zone,
-            ScopeStats _scopeStats)
-      : _scopeStats = _scopeStats,
+  RootScope(Object context, Parser parser, GetterCache cacheGetter,
+            FilterMap filterMap, this._exceptionHandler, this._ttl, this._zone,
+            ScopeStats scopeStats)
+      : _parser = parser,
+        _astParser = new _AstParser(parser),
+        _scopeStats = scopeStats,
         super(context, null, null,
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
             '',
-            _scopeStats)
+            scopeStats)
   {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
@@ -529,7 +529,7 @@ class RootScope extends Scope {
           runObservers = false;
           readOnlyGroup.detectChanges(exceptionHandler:_exceptionHandler);
         }
-        if (_domReadHead != null) _stats.domWriteStart();
+        if (_domReadHead != null) _stats.domReadStart();
         while (_domReadHead != null) {
           try {
             _domReadHead.fn();
@@ -848,12 +848,12 @@ class _FunctionChain {
   }
 }
 
-class AstParser {
+class _AstParser {
   final Parser _parser;
   int _id = 0;
   ExpressionVisitor _visitor = new ExpressionVisitor();
 
-  AstParser(this._parser);
+  _AstParser(this._parser);
 
   AST call(String exp, { FilterMap filters,
                          bool collection: false,

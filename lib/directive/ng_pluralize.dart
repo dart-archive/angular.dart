@@ -92,10 +92,11 @@ class NgPluralizeDirective {
   final dom.Element element;
   final Scope scope;
   final Interpolate interpolate;
-  final AstParser parser;
   int offset;
-  var discreteRules = <String, String>{};
-  var categoryRules = <Symbol, String>{};
+  final discreteRules = <String, String>{};
+  final categoryRules = <Symbol, String>{};
+  final expressionCache = <String, String>{};
+  Watch _watch;
 
   static final RegExp IS_WHEN = new RegExp(r'^when-(minus-)?.');
   static const Map<String, Symbol> SYMBOLS = const {
@@ -108,33 +109,35 @@ class NgPluralizeDirective {
   };
 
   NgPluralizeDirective(this.scope, this.element, this.interpolate,
-                       NodeAttrs attributes, this.parser) {
-    Map<String, String> whens = attributes['when'] == null
-        ? {}
+                       NodeAttrs attributes) {
+    final whens = attributes['when'] == null
+        ? <String, String>{}
         : scope.eval(attributes['when']);
     offset = attributes['offset'] == null ? 0 : int.parse(attributes['offset']);
 
     element.attributes.keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
-      var ruleName = k.replaceFirst('when-', '').replaceFirst('minus-', '-');
+      var ruleName = k
+          .replaceFirst(new RegExp('^when-'), '')
+          .replaceFirst(new RegExp('^minus-'), '-');
       whens[ruleName] = element.attributes[k];
     });
 
     if (whens['other'] == null) {
       throw "ngPluralize error! The 'other' plural category must always be "
-          "specified";
+            "specified";
     }
 
     whens.forEach((k, v) {
       Symbol symbol = SYMBOLS[k];
       if (symbol != null) {
-        this.categoryRules[symbol] = v;
+        categoryRules[symbol] = v;
       } else {
-        this.discreteRules[k] = v;
+        discreteRules[k] = v;
       }
     });
   }
 
-  set count(value) {
+  void set count(value) {
     if (value is! num) {
       try {
         value = int.parse(value);
@@ -163,12 +166,14 @@ class NgPluralizeDirective {
     }
   }
 
-  _setAndWatch(expression) {
-    var interpolation = interpolate(expression, false, '\${', '}');
-    interpolation.setter = (text) => element.text = text;
-    interpolation.setter(expression);
-    var items = interpolation.expressions.map((exp) => parser(exp)).toList();
-    AST ast = new PureFunctionAST(expression, new ArrayFn(), items);
-    scope.watch(ast, interpolation.call);
+  void _setAndWatch(template) {
+    if (_watch !=  null) _watch.remove();
+    var expression = expressionCache.putIfAbsent(template, () =>
+        interpolate(template, false, r'${', '}'));
+    _watch = scope.watch(expression, _updateMarkup);
+  }
+
+  void _updateMarkup(text, previousText) {
+    if (text != previousText) element.text = text;
   }
 }
