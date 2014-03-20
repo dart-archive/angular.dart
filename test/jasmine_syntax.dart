@@ -55,9 +55,8 @@ describe(name, fn, [bool exclusive=false]) {
   try {
     unit.group(name, () {
       unit.setUp(currentDescribe.setUp);
-      fn();
-
       unit.tearDown(currentDescribe.tearDown);
+      fn();
     });
   } finally {
     currentDescribe = lastDescribe;
