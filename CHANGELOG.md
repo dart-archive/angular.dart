@@ -1,3 +1,144 @@
+<a name="v0.10.0"></a>
+# v0.10.0 pachyderm-humidification (2014-03-20)
+
+## Bug Fixes
+
+- **Filter:** Add support for maps
+  ([b32beecf](https://github.com/angular/angular.dart/commit/b32beecfeeecf40a05320b29e19b1572442542cf))
+- **Jasmine:** Execute AfterEach methods
+  ([71b2855c](https://github.com/angular/angular.dart/commit/71b2855ceab53ec1afa6b1b8950f3d12b58c4b2c))
+- **NgModel:** ensure DOM value changes are only applied during scope.domWrite
+  ([419e9189](https://github.com/angular/angular.dart/commit/419e9189b482fc054146b51a44613ff543efb485))
+- **NgModelValidators:** ensure all validators can properly toggle attribute values
+  ([98143034](https://github.com/angular/angular.dart/commit/98143034287f4a6adfd08f4064e4a751c569b108))
+- **NodeAttrs:** lazy init of observer listeners
+  ([144eb4c7](https://github.com/angular/angular.dart/commit/144eb4c76598a73a251477efc91c1460f5052937))
+- **animation:** correct broken build http://dartbug.com/17634
+  ([9891f333](https://github.com/angular/angular.dart/commit/9891f3339207e921a0a50cac3d855eb4606b41bb))
+- **change_detection:**
+  - should properly support objects with equality
+   ([9b480dad](https://github.com/angular/angular.dart/commit/9b480dad5f9eaf86099c6c1760a837d1eb6d6442),
+   [#735](https://github.com/angular/angular.dart/issues/735), [#670](https://github.com/angular/angular.dart/issues/670))
+  - leaking watch records when removing deeply nested watch_groups
+  ([1ba5befb](https://github.com/angular/angular.dart/commit/1ba5befba3392769752c1d163de7c691234fca15),
+   [#700](https://github.com/angular/angular.dart/issues/700))
+  - don't call reactionFn on deleted scope
+  ([0aacdc4f](https://github.com/angular/angular.dart/commit/0aacdc4f73b79f874a78783308feea471279db0d))
+- **compiler:** Remove the Block/BlockFactory typedefs
+  ([9b790f49](https://github.com/angular/angular.dart/commit/9b790f490b16c2834177df75f235da8d3347aa64))
+- **component:** revert regression of injecting Element/Node into Component
+  ([d9fc724e](https://github.com/angular/angular.dart/commit/d9fc724e56e99b26192e41eaef46607760f4ac2a))
+- **forms:**
+  - ensure models are validated when validator attributes change
+  ([0622f3a9](https://github.com/angular/angular.dart/commit/0622f3a969b99b06c5f07da10ceb756b720a3331))
+  - consider forms as pristine only when all the inner models are non-dirty
+  ([4458ce8e](https://github.com/angular/angular.dart/commit/4458ce8e0035f8250cc35ec02906f63ba33c8974))
+  - store models instead of controls within the collection of errors
+  ([2928ae71](https://github.com/angular/angular.dart/commit/2928ae71b694be5e2a47eaa2cdd1d602f8ae26e9))
+- **i18n:** properly restore locale after test WARNING
+  ([f16536ee](https://github.com/angular/angular.dart/commit/f16536eed937bcdb5421ac61059ad40fe58ed2ef))
+- **jasmine syntax:** Drop the wrapFn concept and let `_specs.dart` handle the sync wrapper
+  ([1e971e6b](https://github.com/angular/angular.dart/commit/1e971e6b7c65958bbf9a4779fbac944afaebb278))
+- **jquery:** Deprecate renderedText() in favour of JQuery.textWithShadow()
+  ([364d9ff7](https://github.com/angular/angular.dart/commit/364d9ff712a635cd3b0d86bff9e663105ffce86b))
+- **ng-class:** remove previously registered watch
+  ([8b54f5e6](https://github.com/angular/angular.dart/commit/8b54f5e6c8d99a4b9531edb78ec10e8177e53407),
+   [#725](https://github.com/angular/angular.dart/issues/725))
+- **ng-repeat:** should correctly handle detached state
+  ([775bbce4](https://github.com/angular/angular.dart/commit/775bbce4060c3828c1cbaeffcb8fc4092f46868b),
+   [#697](https://github.com/angular/angular.dart/issues/697))
+- **ng-style:** watch in RO mode
+  ([51ee3298](https://github.com/angular/angular.dart/commit/51ee32987464832ddca113528d899ea27f0b6f40),
+   [#721](https://github.com/angular/angular.dart/issues/721))
+- **presubmit:**
+  - Set new token; correct env variable name
+  ([53aeb4aa](https://github.com/angular/angular.dart/commit/53aeb4aaea69bcd0ca21e6430b02a50de997f991))
+  - use https protocol for push
+  ([a2845a50](https://github.com/angular/angular.dart/commit/a2845a50e680555f4ef129247d1d2045233a5f0f))
+  - correct presubmit authentication
+  ([8b430d10](https://github.com/angular/angular.dart/commit/8b430d100c6c99267c3459310a762e6e831b4727))
+- **scope:**
+  - allow concurrent fire/add/remove on listeners
+  ([e6689e37](https://github.com/angular/angular.dart/commit/e6689e37c800682a81d7690c3b05baf732c307c6))
+  - should allow removing listener during an event
+  ([4662d494](https://github.com/angular/angular.dart/commit/4662d49477fdf0b5ef01f8d4f8aed8b87d77ea66),
+   [#695](https://github.com/angular/angular.dart/issues/695))
+  - add scope id for easier debugging.
+  ([5a368087](https://github.com/angular/angular.dart/commit/5a36808736efae4760c8f9fdc5b291353ca9ec02))
+- **tagging compiler:**
+  - a text child after a directive child
+  ([81030dde](https://github.com/angular/angular.dart/commit/81030dde483bf0b4bb943f31408733f3238286ee))
+  - ancestor injectables
+  ([81ad184d](https://github.com/angular/angular.dart/commit/81ad184d928625a97e15fd8baf3e6df21cf1efae))
+  - Sibling templates
+  ([167b4909](https://github.com/angular/angular.dart/commit/167b4909fca4c72a903ccc695043f6a13d1a4b98))
+  - Transclusions with an existing ElementBinder
+  ([0e4cb8ed](https://github.com/angular/angular.dart/commit/0e4cb8ed82f98e6a3e9dc2d131394a4d769cb0cc))
+  - Empty transclusions
+  ([b71a5009](https://github.com/angular/angular.dart/commit/b71a50092d6a529e21e06f4080bbe50873eac997))
+- **zone:** Avoid silently ignoring uncaught exceptions by default.
+  ([7bb1944e](https://github.com/angular/angular.dart/commit/7bb1944e3726dea221e6ab33d4bc6f1de6a364c8),
+   [#710](https://github.com/angular/angular.dart/issues/710))
+
+## Features
+
+- **NgModel:** introduce parsers and formatters
+  ([bed9fe15](https://github.com/angular/angular.dart/commit/bed9fe15f8b89b296a9b519268bd3e3c326b6265))
+- **Scope:** Improve ScopeStats reporting
+  ([1954e9e2](https://github.com/angular/angular.dart/commit/1954e9e293203466a50f3931126ebde0335b885d),
+   [#744](https://github.com/angular/angular.dart/issues/744))
+- **compiler:**
+  - Make the TaggingCompiler the default compiler
+  ([3ed50b5e](https://github.com/angular/angular.dart/commit/3ed50b5ebdf8013a3f9d354846770c1e9f75497a))
+  - Tagging compiler
+  ([59516afb](https://github.com/angular/angular.dart/commit/59516afb37d1dd33dbdca9e705646dad1afafd1d))
+  - Initial TagggingCompiler implementation
+  ([80163401](https://github.com/angular/angular.dart/commit/80163401e1524c2b5c90a8c0d66b263370a6c402))
+  - ViewFactory now takes a list of ElementBinders
+  ([eb559ad0](https://github.com/angular/angular.dart/commit/eb559ad05ca33e6c985ceed492f20c9b2a88c5b9))
+  - Add an ElementBinder class and return it from Selector
+  ([41bc9a40](https://github.com/angular/angular.dart/commit/41bc9a40a17521285eb7d342a5590c2a7b09be93))
+- **core_dom:** introduce NgElement
+  ([1afa0b61](https://github.com/angular/angular.dart/commit/1afa0b61da45038ea192f34208ffb9e2a6081fd9))
+- **doc:**
+  - Animation library documentation updates and fixes.
+  ([613030a0](https://github.com/angular/angular.dart/commit/613030a04c584040a09cade196945fde9fa830cc),
+   [#760](https://github.com/angular/angular.dart/issues/760))
+  - Library description for angular.animate
+  ([0576f278](https://github.com/angular/angular.dart/commit/0576f27841c8842b0d84bfae8c4b202c39833beb))
+- **element binder:**
+  - Make ElementBinder non-recursive and create an external tree
+  ([811b4607](https://github.com/angular/angular.dart/commit/811b46073af9fe2f7e353ce1b811898c1557bad8))
+  - ElementBinder.bind
+  ([b1a518bd](https://github.com/angular/angular.dart/commit/b1a518bd678ab4a4d53f8915a9e3c34c87c5d3c1))
+- **filters:** revert filter being restricted to top level
+  ([66cda204](https://github.com/angular/angular.dart/commit/66cda2046ea84d29edd7a478509565989834e391))
+- **forms:** append valid/invalid CSS classes for each validator on all controls
+  ([574065f5](https://github.com/angular/angular.dart/commit/574065f5b8183f4b6d9ac7b66a2ae501a21ee2ac))
+- **jasmine:** beforeEachModule syntax and injectifying its
+  ([4019046f](https://github.com/angular/angular.dart/commit/4019046f4b56a629f6db71a6e1caff82b728940a),
+   [#727](https://github.com/angular/angular.dart/issues/727))
+- **jquery:** Add shadowRoot() and use it in templateurl_spec
+  ([e1745c60](https://github.com/angular/angular.dart/commit/e1745c601a22030b4241a93589cb13a4935049d1))
+- **mock zone:** isAsyncQueueEmpty
+  ([c834837d](https://github.com/angular/angular.dart/commit/c834837dcb5b9220b1570c7f96785d763a7b0968))
+- **mustache:** Move unobserved mustache attributes to the flush phase
+  ([56647a36](https://github.com/angular/angular.dart/commit/56647a36d67fe3b4b28967a78b193e90e0a65152),
+   [#734](https://github.com/angular/angular.dart/issues/734))
+- **selector:** DirectiveSelector is real now: matchElement, matchText
+  ([eb4422a9](https://github.com/angular/angular.dart/commit/eb4422a9a2d0d0dbdb2fb9d04fdcbcae99b65757))
+- **spec:** Ignore ng-binding classes in html()
+  ([441daf79](https://github.com/angular/angular.dart/commit/441daf79a4e3fca8f42379022f078327d4e69e59))
+- **tagging compiler:**
+  - Create fewer ElementBinder lists
+  ([7e185219](https://github.com/angular/angular.dart/commit/7e185219a9a477330ea8d2074bd9dad385bedd4b))
+  - Support comments
+  ([6fe02a07](https://github.com/angular/angular.dart/commit/6fe02a07431231a39c6e174327b36533b91f0073))
+- **travis:** Seperate Chrome and Dartium into two different jobs.
+  ([7c5bdb01](https://github.com/angular/angular.dart/commit/7c5bdb01dae7933540679e070ace5dc9fe223cd2))
+- **EventHandler** Add support for on-* style events
+  ([c28e6a02](https://github.com/angular/angular.dart/commit/c28e6a02d7ec3386c856bd6aa79f8ddee2ff09b9))
+
 <a name="v0.9.9"></a>
 # v0.9.9 glutinous-waterfall (2014-03-10)
 
@@ -369,7 +510,7 @@ Watch watch = scope.watch(...);
 watch.remove();
 ```
 
-#### 4. Replace scope-level digests 
+#### 4. Replace scope-level digests
 ```dart
 //old code
 scope.$digest();
@@ -410,7 +551,7 @@ scope.$emit('foo', [a, b ,c]);
 scope.emit('foo', new MyEvent(a, b, c));
 ```
 
-#### 6. Creating new scopes 
+#### 6. Creating new scopes
 ```dart
 //old code
 scope.$new();
@@ -433,7 +574,7 @@ scope.runAsync(() => null);
 
 //old code
 scope.$evalAsync(
-    () => null, 
+    () => null,
     outsideDigest: true);
 
 //new code
