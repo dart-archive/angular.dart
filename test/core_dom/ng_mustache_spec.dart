@@ -56,14 +56,14 @@ main() {
 
 
     it('should handle filters', inject((Compiler $compile, RootScope rootScope, Injector injector, DirectiveMap directives) {
-      var element = $('<div>{{"World" | hello}}</div>');
+      var element = es('<div>{{"World" | hello}}</div>');
       var template = $compile(element, directives);
       var view = template(injector);
       rootScope.apply();
 
-      element = $(view.nodes);
+      element = view.nodes;
 
-      expect(element.html()).toEqual('Hello, World!');
+      expect(element).toHaveHtml('Hello, World!');
     }));
   });
 

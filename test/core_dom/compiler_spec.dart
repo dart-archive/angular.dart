@@ -59,13 +59,13 @@ void main() {
     });
 
     it('should compile a comment with no directives around', () {
-      var element = $(_.compile('<div><!-- comment --></div>'));
-      expect(element.html()).toEqual('<!-- comment -->');
+      var element = _.compile('<div><!-- comment --></div>');
+      expect(element).toHaveHtml('<!-- comment -->');
     });
 
     it('should compile a comment when the parent has a directive', () {
-      var element = $(_.compile('<div ng-show="true"><!-- comment --></div>'));
-      expect(element.html()).toEqual('<!-- comment -->');
+      var element = _.compile('<div ng-show="true"><!-- comment --></div>');
+      expect(element).toHaveHtml('<!-- comment -->');
     });
 
     it('should compile a directive in a child', () {
@@ -79,17 +79,17 @@ void main() {
     });
 
     it('should compile repeater', () {
-      var element = $(_.compile('<div><div ng-repeat="item in items" ng-bind="item"></div></div>'));
+      var element = _.compile('<div><div ng-repeat="item in items" ng-bind="item"></div></div>');
 
       _.rootScope.context['items'] = ['A', 'b'];
-      expect(element.text()).toEqual('');
+      expect(element.text).toEqual('');
 
       _.rootScope.apply();
-      expect(element.text()).toEqual('Ab');
+      expect(element.text).toEqual('Ab');
 
       _.rootScope.context['items'] = [];
       _.rootScope.apply();
-      expect(element.html()).toEqual('<!--ANCHOR: [ng-repeat]=item in items-->');
+      expect(element).toHaveHtml('<!--ANCHOR: [ng-repeat]=item in items-->');
     });
 
     it('should compile a text child of a basic repeater', () {
@@ -120,17 +120,17 @@ void main() {
     });
 
     it('should compile repeater with children', (Compiler $compile) {
-      var element = $(_.compile('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>'));
+      var element = _.compile('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>');
 
       _.rootScope.context['items'] = ['A', 'b'];
 
-      expect(element.text()).toEqual('');
+      expect(element.text).toEqual('');
       _.rootScope.apply();
-      expect(element.text()).toEqual('Ab');
+      expect(element.text).toEqual('Ab');
 
       _.rootScope.context['items'] = [];
       _.rootScope.apply();
-      expect(element.html()).toEqual('<!--ANCHOR: [ng-repeat]=item in items-->');
+      expect(element).toHaveHtml('<!--ANCHOR: [ng-repeat]=item in items-->');
     });
 
     it('should compile text', (Compiler $compile) {

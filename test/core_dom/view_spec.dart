@@ -87,7 +87,7 @@ main() {
         it('should insert block after anchor view', () {
           anchor.insert(a);
 
-          expect($rootElement.html()).toEqual('<!-- anchor --><span>A</span>a');
+          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>A</span>a');
         });
 
 
@@ -95,7 +95,7 @@ main() {
           anchor.insert(a);
           anchor.insert(b, insertAfter: a);
 
-          expect($rootElement.html()).toEqual('<!-- anchor --><span>A</span>a<span>B</span>b');
+          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
         });
 
 
@@ -103,7 +103,7 @@ main() {
           anchor.insert(b);
           anchor.insert(a);
 
-          expect($rootElement.html()).toEqual('<!-- anchor --><span>A</span>a<span>B</span>b');
+          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
         });
       });
 
@@ -118,12 +118,12 @@ main() {
 
         it('should remove the last view', () {
           anchor.remove(b);
-          expect($rootElement.html()).toEqual('<!-- anchor --><span>A</span>a');
+          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>A</span>a');
         });
 
         it('should remove child views from parent pseudo black', () {
           anchor.remove(a);
-          expect($rootElement.html()).toEqual('<!-- anchor --><span>B</span>b');
+          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>B</span>b');
         });
 
         // TODO(deboer): Make this work again.
@@ -183,7 +183,7 @@ main() {
 
         it('should move last to middle', () {
           anchor.move(a, moveAfter: b);
-          expect($rootElement.html()).toEqual('<!-- anchor --><span>B</span>b<span>A</span>a');
+          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>B</span>b<span>A</span>a');
         });
       });
     });

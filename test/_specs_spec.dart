@@ -3,28 +3,21 @@ library _specs_spec;
 import '_specs.dart';
 
 main() {
-
-
-
-  describe('jquery', () {
-    describe('html', () {
-      it('get', (){
-        var div = $('<div>');
-        expect(div.html()).toEqual('');
+  describe('expect', () {
+    describe('toHaveHtml', () {
+      it('should return html', (){
+        var div = es('<div>');
+        expect(es('<div>')).toHaveHtml('');
       });
 
       it('should strip ng-binding', () {
-        var div = $('<div><span class="ng-binding"></span></div>');
-        expect(div.html()).toEqual('<span></span>');
-      });
-
-      it('set', (){
-        var div = $('<div>');
-        expect(div.html('text')).toBe(div);
-        expect(div.html()).toEqual('text');
+        var div = es('<div><span class="ng-binding"></span></div>');
+        expect(div).toHaveHtml('<span></span>');
       });
     });
+  });
 
+  describe('jquery', () {
     describe('shadowRoot', () {
       it('should return the shadowRoot if one exists', () {
         var elts = $('<div></div>');
@@ -39,7 +32,7 @@ main() {
       it('should print the html for the shadowRoot', () {
         var elts = $('<div></div>');
         elts[0].createShadowRoot().innerHtml = '<div class="ng-binding">Hello shadow</div>';
-        expect(elts.shadowRoot().html()).toEqual('<div>Hello shadow</div>');
+        expect(elts.shadowRoot()[0]).toHaveHtml('<div>Hello shadow</div>');
       });
     });
 
