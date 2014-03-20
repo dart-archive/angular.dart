@@ -27,10 +27,11 @@ class Interpolate implements Function {
 
   String call(String template, [bool mustHaveExpression = false,
       String startSymbol = '{{', String endSymbol = '}}']) {
+    if (template == null || template.isEmpty) return "";
 
-    int startLen = startSymbol.length;
-    int endLen = endSymbol.length;
-    int length = template.length;
+    final startLen = startSymbol.length;
+    final endLen = endSymbol.length;
+    final length = template.length;
 
     int startIdx;
     int endIdx;
@@ -45,9 +46,7 @@ class Interpolate implements Function {
       startIdx = template.indexOf(startSymbol, index);
       endIdx = template.indexOf(endSymbol, startIdx + startLen);
       if (startIdx != -1 && endIdx != -1) {
-        if (index < startIdx) {
-          expParts.add('"${template.substring(index, startIdx)}"');
-        }
+        expParts.add('"${template.substring(index, startIdx)}"');
         expParts.add('(${template.substring(startIdx + startLen, endIdx)})');
         index = endIdx + endLen;
         hasInterpolation = true;

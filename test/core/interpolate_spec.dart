@@ -18,10 +18,11 @@ main() {
       expect($interpolate('Hello {{name}}!')).toEqual('"Hello "+(name)+"!"');
       expect($interpolate('a{{b}}C')).toEqual('"a"+(b)+"C"');
       expect($interpolate('a{{b}}')).toEqual('"a"+(b)');
-      expect($interpolate('{{a}}b')).toEqual('(a)+"b"');
-      expect($interpolate('{{b}}')).toEqual('(b)');
-      expect($interpolate('{{b}}+{{c}}')).toEqual('(b)+"+"+(c)');
-      expect($interpolate('{{b}}x{{c}}')).toEqual('(b)+"x"+(c)');
+      expect($interpolate('{{a}}b')).toEqual('""+(a)+"b"');
+      expect($interpolate('{{a}}{{b}}')).toEqual('""+(a)+""+(b)');
+      expect($interpolate('{{b}}')).toEqual('""+(b)');
+      expect($interpolate('{{b}}+{{c}}')).toEqual('""+(b)+"+"+(c)');
+      expect($interpolate('{{b}}x{{c}}')).toEqual('""+(b)+"x"+(c)');
     });
 
     it('should Parse Multiline', (Interpolate $interpolate) {

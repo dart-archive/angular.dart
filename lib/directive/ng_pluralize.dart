@@ -174,6 +174,6 @@ class NgPluralizeDirective {
   }
 
   void _updateMarkup(text, previousText) {
-    if (text != previousText) element.text = text.toString();
+    if (text != previousText) element.text = text;
   }
 }

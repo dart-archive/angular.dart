@@ -16,7 +16,7 @@ class NgTextMustacheDirective {
   }
 
   void _updateMarkup(text, previousText) {
-    if (text != previousText) _element.text = text.toString();
+    if (text != previousText) _element.text = text;
   }
 }
 
@@ -48,7 +48,7 @@ class NgAttrMustacheDirective {
   }
 
   void _updateMarkup(text, previousText) {
-    if (previousText != text) _attrs[_attrName] = text.toString();
+    if (previousText != text) _attrs[_attrName] = text;
   }
 }
 
