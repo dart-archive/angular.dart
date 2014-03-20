@@ -12,8 +12,6 @@ class NgTextMustacheDirective {
                           FilterMap filters) {
     String expression = interpolate(template);
 
-    _updateMarkup('', null);
-
     scope.watch(expression,
                 _updateMarkup,
                 canChangeModel: false,
@@ -21,7 +19,7 @@ class NgTextMustacheDirective {
   }
 
   void _updateMarkup(text, previousText) {
-    if (text != previousText) _element.text = text;
+    _element.text = text;
   }
 }
 
@@ -54,8 +52,8 @@ class NgAttrMustacheDirective {
     });
   }
 
-  void _updateMarkup(text, previousText) {
-    if (text != previousText) _attrs[_attrName] = text;
+  void _updateMarkup(text, _) {
+    _attrs[_attrName] = text;
   }
 }
 

@@ -117,8 +117,8 @@ class NgPluralizeDirective {
 
     element.attributes.keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
       var ruleName = k
-          .replace(new RegExp('^when-'), '')
-          .replace(new RegExp('^minus-'), '-');
+          .replaceFirst(new RegExp('^when-'), '')
+          .replaceFirst(new RegExp('^minus-'), '-');
       whens[ruleName] = element.attributes[k];
     });
 
