@@ -51,6 +51,7 @@ class Expect {
   toBeNotNull() => unit.expect(actual, unit.isNotNull);
 
   toHaveHtml(expected) => unit.expect(_toHtml(actual), unit.equals(expected));
+  toHaveText(expected) => unit.expect(_elementText(actual), unit.equals(expected));
 
   toHaveBeenCalled() => unit.expect(actual.called, true, reason: 'method not called');
   toHaveBeenCalledOnce() => unit.expect(actual.count, 1, reason: 'method invoked ${actual.count} expected once');
@@ -117,6 +118,14 @@ class Expect {
     }
   }
 
+  _elementText(node) {
+    if (node is List) {
+      var acc = '';
+      node.forEach((n) { acc += _elementText(n); });
+      return acc;
+    }
+    return node.text;
+  }
 }
 
 class NotExpect {
@@ -222,7 +231,6 @@ class JQuery extends DelegatingList<Node> {
           (n, v) => n.setInnerHtml(v, treeSanitizer: new NullTreeSanitizer()),
           html);
   val([String text]) => accessor((n) => n.value, (n, v) => n.value = v);
-  text([String text]) => accessor((n) => n.text, (n, v) => n.text = v, text);
   contents() => fold(new JQuery(), (jq, node) => jq..addAll(node.nodes));
   eq(num childIndex) => $(this[childIndex]);
   remove(_) => forEach((n) => n.remove());

@@ -45,13 +45,13 @@ void main() {
     beforeEach(inject((TestBed tb) => _ = tb));
 
     it('should compile basic hello world', () {
-      var element = $(_.compile('<div ng-bind="name"></div>'));
+      var element = _.compile('<div ng-bind="name"></div>');
 
       _.rootScope.context['name'] = 'angular';
 
-      expect(element.text()).toEqual('');
+      expect(element.text).toEqual('');
       _.rootScope.apply();
-      expect(element.text()).toEqual('angular');
+      expect(element.text).toEqual('angular');
     });
 
     it('should not throw on an empty list', () {
@@ -69,13 +69,13 @@ void main() {
     });
 
     it('should compile a directive in a child', () {
-      var element = $(_.compile('<div><div ng-bind="name"></div></div>'));
+      var element = _.compile('<div><div ng-bind="name"></div></div>');
 
       _.rootScope.context['name'] = 'angular';
 
-      expect(element.text()).toEqual('');
+      expect(element.text).toEqual('');
       _.rootScope.apply();
-      expect(element.text()).toEqual('angular');
+      expect(element.text).toEqual('angular');
     });
 
     it('should compile repeater', () {
@@ -93,12 +93,12 @@ void main() {
     });
 
     it('should compile a text child of a basic repeater', () {
-      var element = $(_.compile(
+      var element = _.compile(
                 '<div ng-show="true">' +
                   '<span ng-repeat="r in [1, 2]">{{r}}</span>' +
-                '</div>'));
+                '</div>');
       _.rootScope.apply();
-      expect(element.text()).toEqual('12');
+      expect(element.text).toEqual('12');
     });
 
     it('should compile a text child of a repeat with a directive', () {
@@ -109,14 +109,14 @@ void main() {
     });
 
     it('should compile a sibling template directive', () {
-      var element = $(_.compile(
+      var element = _.compile(
         '<div ng-model="selected">'
           '<option value="">blank</option>'
           '<div ng-repeat="value in [1,2]" ng-value="value">{{value}}</div>'
-      '</div>'));
+      '</div>');
 
       _.rootScope.apply();
-      expect(element.text()).toEqual('blank12');
+      expect(element.text).toEqual('blank12');
     });
 
     it('should compile repeater with children', (Compiler $compile) {
@@ -134,26 +134,26 @@ void main() {
     });
 
     it('should compile text', (Compiler $compile) {
-      var element = $(_.compile('<div>{{name}}<span>!</span></div>'));
+      var element = _.compile('<div>{{name}}<span>!</span></div>');
       _.rootScope.context['name'] = 'OK';
 
       microLeap();
       _.rootScope.apply();
-      expect(element.text()).toEqual('OK!');
+      expect(element.text).toEqual('OK!');
     });
 
     it('should compile nested repeater', (Compiler $compile) {
-      var element = $(_.compile(
+      var element = _.compile(
           '<div>' +
           '<ul ng-repeat="lis in uls">' +
           '<li ng-repeat="li in lis">{{li}}</li>' +
           '</ul>' +
-          '</div>'));
+          '</div>');
 
       _.rootScope.context['uls'] = [['A'], ['b']];
 
       _.rootScope.apply();
-      expect(element.text()).toEqual('Ab');
+      expect(element.text).toEqual('Ab');
     });
 
     it('should compile two directives with the same selector', (Logger log) {
@@ -189,12 +189,12 @@ void main() {
       });
 
       it('should interpolate text nodes', () {
-        var element = $(_.compile('<div>{{name}}</div>'));
+        var element = _.compile('<div>{{name}}</div>');
 
         _.rootScope.context['name'] = 'angular';
 
         _.rootScope.apply();
-        expect(element.text()).toEqual('angular');
+        expect(element.text).toEqual('angular');
       });
     });
 
@@ -445,11 +445,11 @@ void main() {
       }));
 
       it('should publish directive controller into the scope', async((NgZone zone) {
-        var element = $(_.compile(r'<div><div publish-me>{{ctrlName.value}}</div></div>'));
+        var element = _.compile(r'<div><div publish-me>{{ctrlName.value}}</div></div>');
 
         microLeap();
         _.rootScope.apply();
-        expect(element.text()).toEqual('WORKED');
+        expect(element.text).toEqual('WORKED');
       }));
 
       it('should "publish" controller to injector under provided publishTypes', () {
