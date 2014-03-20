@@ -46,8 +46,14 @@ class Interpolate implements Function {
       startIdx = template.indexOf(startSymbol, index);
       endIdx = template.indexOf(endSymbol, startIdx + startLen);
       if (startIdx != -1 && endIdx != -1) {
-        expParts.add('"${template.substring(index, startIdx)}"');
-        expParts.add('(${template.substring(startIdx + startLen, endIdx)})');
+        if (index < startIdx) {
+          // Empty strings could be stripped thanks to the stringify
+          // filter
+          expParts.add('"${template.substring(index, startIdx)}"');
+        }
+        expParts.add('(' + template.substring(startIdx + startLen, endIdx) +
+            '|stringify)');
+
         index = endIdx + endLen;
         hasInterpolation = true;
       } else {
