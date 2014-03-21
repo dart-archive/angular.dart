@@ -15,6 +15,7 @@ part 'lowercase.dart';
 part 'number.dart';
 part 'order_by.dart';
 part 'uppercase.dart';
+part 'stringify.dart';
 
 class NgFilterModule extends Module {
   NgFilterModule() {
@@ -27,5 +28,6 @@ class NgFilterModule extends Module {
     type(NumberFilter);
     type(OrderByFilter);
     type(UppercaseFilter);
+    type(StringifyFilter);
   }
 }

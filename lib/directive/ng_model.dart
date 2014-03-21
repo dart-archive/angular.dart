@@ -22,27 +22,26 @@ class _NoopModelConverter extends NgModelConverter {
  */
 @NgDirective(selector: '[ng-model]')
 class NgModel extends NgControl implements NgAttachAware {
-  final AstParser _parser;
   final Scope _scope;
 
   BoundSetter setter = (_, [__]) => null;
 
   var _originalValue, _viewValue, _modelValue;
-  String _exp;
+  String _expression;
   final _validators = <NgValidator>[];
   bool _alwaysProcessViewValue;
   bool _toBeValidated = false;
 
   NgModelConverter _converter;
-  Watch _removeWatch;
+  Watch _watch;
   bool _watchCollection;
   Function render = (value) => null;
 
-  NgModel(this._scope, NgElement element, Injector injector,
-          this._parser, NodeAttrs attrs, NgAnimate animate)
+  NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs,
+          NgAnimate animate)
       : super(element, injector, animate)
   {
-    _exp = attrs["ng-model"];
+    _expression = attrs["ng-model"];
     watchCollection = false;
 
     //Since the user will never be editing the value of a select element then
@@ -126,17 +125,16 @@ class NgModel extends NgControl implements NgAttachAware {
     };
 
     _watchCollection = value;
-    if (_removeWatch!=null) _removeWatch.remove();
+    if (_watch!=null) _watch.remove();
     if (_watchCollection) {
-      _removeWatch = _scope.watch(
-          _parser(_exp, collection: true),
-          (changeRecord, _) {
+      _watch = _scope.watch(_expression, (changeRecord, _) {
             onChange(changeRecord is CollectionChangeRecord
                         ? changeRecord.iterable
                         : changeRecord);
-          });
-    } else if (_exp != null) {
-      _removeWatch = _scope.watch(_exp, onChange);
+          },
+          collection: true);
+    } else if (_expression != null) {
+      _watch = _scope.watch(_expression, onChange);
     }
   }
 
