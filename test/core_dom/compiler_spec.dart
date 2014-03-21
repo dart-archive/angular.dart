@@ -157,7 +157,7 @@ void main() {
     });
 
     it('should compile two directives with the same selector', (Logger log) {
-      var element = $(_.compile('<div two-directives></div>'));
+      var element = _.compile('<div two-directives></div>');
 
       _.rootScope.apply();
 
@@ -166,7 +166,7 @@ void main() {
 
     it('should compile a directive that ignores children', (Logger log) {
       // The ng-repeat comes first, so it is not ignored, but the children *are*
-      var element = $(_.compile('<div ng-repeat="i in [1,2]" ignore-children><div two-directives></div></div>'));
+      var element = _.compile('<div ng-repeat="i in [1,2]" ignore-children><div two-directives></div></div>');
 
       _.rootScope.apply();
 
@@ -279,7 +279,7 @@ void main() {
       }));
 
       it('should create a component with I/O', async(() {
-        var element = $(_.compile(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>'));
+         _.compile(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         microLeap();
 
         _.rootScope.context['name'] = 'misko';
@@ -297,7 +297,7 @@ void main() {
       }));
 
       xit('should should not create any watchers if no attributes are specified', async((Profiler perf) {
-        var element = $(_.compile(r'<div><io></io></div>'));
+        _.compile(r'<div><io></io></div>');
         microLeap();
         _.injector.get(Scope).apply();
         // Re-enable once we can publish these numbers
@@ -311,7 +311,7 @@ void main() {
 
       it('should create a component with I/O and "=" binding value should be available', async(() {
         _.rootScope.context['name'] = 'misko';
-        var element = $(_.compile(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>'));
+        _.compile(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         microLeap();
 
         var component = _.rootScope.context['ioComponent'];
@@ -324,8 +324,7 @@ void main() {
 
       it('should create a component with I/O bound to controller and "=" binding value should be available', async(() {
         _.rootScope.context['done'] = false;
-        var element = $(_.compile(r'<div><io-controller attr="A" expr="name" once="name" ondone="done=true"></io-controller></div>'));
-
+        _.compile(r'<div><io-controller attr="A" expr="name" once="name" ondone="done=true"></io-controller></div>');
 
         expect(_.injector).toBeDefined();
         microLeap();
@@ -360,7 +359,7 @@ void main() {
       }));
 
       it('should create a map attribute to controller', async(() {
-        var element = $(_.compile(r'<div><io-controller attr="{{name}}"></io-controller></div>'));
+        _.compile(r'<div><io-controller attr="{{name}}"></io-controller></div>');
         microLeap();
 
         IoControllerComponent component = _.rootScope.context['ioComponent'];
@@ -377,7 +376,7 @@ void main() {
       it('should create a unpublished component with I/O bound to controller and "=" binding value should be available', async(() {
         _.rootScope.context['name'] = 'misko';
         _.rootScope.context['done'] = false;
-        var element = $(_.compile(r'<div><unpublished-io-controller attr="A" expr="name" ondone="done=true"></unpublished-io-controller></div>'));
+        _.compile(r'<div><unpublished-io-controller attr="A" expr="name" ondone="done=true"></unpublished-io-controller></div>');
         microLeap();
 
         UnpublishedIoControllerComponent component = _.rootScope.context['ioComponent'];
@@ -398,12 +397,12 @@ void main() {
 
       it('should error on incorrect mapping', async(() {
         expect(() {
-          var element = $(_.compile(r'<div><incorrect-mapping></incorrect-mapping</div>'));
+          _.compile(r'<div><incorrect-mapping></incorrect-mapping</div>');
         }).toThrow("Unknown mapping 'foo\' for attribute 'attr'.");
       }));
 
       it('should support filters in attribute expressions', async(() {
-        var element = $(_.compile(r'''<expr-attr-component expr="'Misko' | hello" one-way="'James' | hello" once="'Chirayu' | hello"></expr-attr-component>'''));
+        _.compile(r'''<expr-attr-component expr="'Misko' | hello" one-way="'James' | hello" once="'Chirayu' | hello"></expr-attr-component>''');
         ExprAttrComponent component = _.rootScope.context['exprAttrComponent'];
         _.rootScope.apply();
         expect(component.expr).toEqual('Hello, Misko!');
@@ -413,12 +412,12 @@ void main() {
 
       it('should error on non-asignable-mapping', async(() {
         expect(() {
-          var element = $(_.compile(r'<div><non-assignable-mapping></non-assignable-mapping</div>'));
+          _.compile(r'<div><non-assignable-mapping></non-assignable-mapping</div>');
         }).toThrow("Expression '1+2' is not assignable in mapping '@1+2' for attribute 'attr'.");
       }));
 
       it('should expose mapped attributes as camel case', async(() {
-        var element = $(_.compile('<camel-case-map camel-case=G></camel-case-map>'));
+        _.compile('<camel-case-map camel-case=G></camel-case-map>');
         microLeap();
         _.rootScope.apply();
         var componentScope = _.rootScope.context['camelCase'];
@@ -428,7 +427,7 @@ void main() {
       // TODO: This is a terrible test
       it('should throw an exception if required directive is missing', async(() {
         try {
-          var element = $(_.compile('<tab local><pane></pane><pane local></pane></tab>'));
+          _.compile('<tab local><pane></pane><pane local></pane></tab>');
         } catch (e) {
           var text = '$e';
           expect(text).toContain('No provider found for');
@@ -438,7 +437,7 @@ void main() {
       }));
 
       it('should publish component controller into the scope', async((NgZone zone) {
-        var element = $(_.compile(r'<div><publish-me></publish-me></div>'));
+        var element = _.compile(r'<div><publish-me></publish-me></div>');
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('WORKED');
@@ -453,13 +452,13 @@ void main() {
       }));
 
       it('should "publish" controller to injector under provided publishTypes', () {
-        var element = $(_.compile(r'<div publish-types></div>'));
+        _.compile(r'<div publish-types></div>');
         expect(PublishTypesAttrDirective._injector.get(PublishTypesAttrDirective)).
         toBe(PublishTypesAttrDirective._injector.get(PublishTypesDirectiveSuperType));
       });
 
       it('should allow repeaters over controllers', async((Logger logger) {
-        var element = $(_.compile(r'<log ng-repeat="i in [1, 2]"></log>'));
+        _.compile(r'<log ng-repeat="i in [1, 2]"></log>');
         _.rootScope.apply();
         microLeap();
 
@@ -481,8 +480,8 @@ void main() {
           scope.context['isReady'] = 'ready';
           scope.context['logger'] = logger;
           scope.context['once'] = null;
-          var element = $('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
-          $compile(element, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), element);
+          var elts = es('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
+          $compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
@@ -506,14 +505,14 @@ void main() {
 
           scope.destroy();
           expect(logger).toEqual(['detach']);
-          expect(element).toHaveText('WORKED');
+          expect(elts).toHaveText('WORKED');
         }));
 
         it('should should not call attach after scope is destroyed', async((Compiler $compile, Logger logger, MockHttpBackend backend) {
           backend.whenGET('foo.html').respond('<div>WORKED</div>');
-          var element = $('<simple-attach></simple-attach>');
+          var elts = es('<simple-attach></simple-attach>');
           var scope = _.rootScope.createChild({});
-          $compile(element, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), element);
+          $compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
           expect(logger).toEqual(['SimpleAttachComponent']);
           scope.destroy();
 
@@ -539,7 +538,7 @@ void main() {
           var c = injector.get(Compiler);
           var directives = injector.get(DirectiveMap);
           expect(() {
-              c($('<div></div>'), injector.get(DirectiveMap));
+              c(es('<div></div>'), injector.get(DirectiveMap));
           }).toThrow('Missing selector annotation for MissingSelector');
         });
 
@@ -552,7 +551,7 @@ void main() {
           var directives = injector.get(DirectiveMap);
 
           expect(() {
-            c($('<div></div>'), directives);
+            c(es('<div></div>'), directives);
           }).toThrow('Unknown selector format \'buttonbar button\' for InvalidSelector');
         });
       });
@@ -561,7 +560,7 @@ void main() {
 
     describe('controller scoping', () {
       it('should make controllers available to sibling and child controllers', async((Logger log) {
-        var element = $(_.compile('<tab local><pane local></pane><pane local></pane></tab>'));
+        _.compile('<tab local><pane local></pane><pane local></pane></tab>');
         microLeap();
 
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
@@ -571,14 +570,14 @@ void main() {
         // Getting the parent offsets correct while descending the template is tricky.  If we get it wrong, this
         // test case will create too many TabCompoenents.
 
-        var element = $(_.compile('<div ng-bind="true"><div ignore-children></div><tab local><pane local></pane></tab>'));
+        _.compile('<div ng-bind="true"><div ignore-children></div><tab local><pane local></pane></tab>');
         microLeap();
 
         expect(log.result()).toEqual('Ignore; TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0');
       }));
 
       it('should reuse controllers for transclusions', async((Logger log) {
-        var element = $(_.compile('<div simple-transclude-in-attach include-transclude>view</div>'));
+        _.compile('<div simple-transclude-in-attach include-transclude>view</div>');
         microLeap();
 
         _.rootScope.apply();
@@ -613,7 +612,7 @@ void main() {
     describe('NgDirective', () {
       it('should allow creation of a new scope', () {
         _.rootScope.context['name'] = 'cover me';
-        $(_.compile('<div><div my-controller>{{name}}</div></div>'));
+        _.compile('<div><div my-controller>{{name}}</div></div>');
         _.rootScope.apply();
         expect(_.rootScope.context['name']).toEqual('cover me');
         expect(_.rootElement.text).toEqual('MyController');

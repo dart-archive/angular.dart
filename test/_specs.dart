@@ -20,7 +20,7 @@ export 'package:perf_api/perf_api.dart';
 es(String html) {
   var div = new DivElement();
   div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
-  return div.nodes;
+  return new List.from(div.nodes);
 }
 
 e(String html) => es(html).first;
@@ -177,32 +177,15 @@ class ExceptionContains extends unit.Matcher {
   }
 }
 
-$(selector) {
-  return new JQuery(selector);
-}
-
+// TODO: Decide if we want this function to be called 'es' or '$'
+$(String selector) =>
+  es(selector);
 
 class GetterSetter {
   Getter getter(String key) => null;
   Setter setter(String key) => null;
 }
 var getterSetter = new GetterSetter();
-
-class JQuery extends DelegatingList<Node> {
-  JQuery([selector]) : super([]) {
-    if (selector == null) {
-      // do nothing;
-    } else if (selector is String) {
-      addAll(es(selector));
-    } else if (selector is List) {
-      addAll(selector);
-    } else if (selector is Node) {
-      add(selector);
-    } else {
-      throw selector;
-    }
-  }
-}
 
 _injectify(fn) {
   // The function does two things:
