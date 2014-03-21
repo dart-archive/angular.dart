@@ -246,8 +246,6 @@ class JQuery extends DelegatingList<Node> {
   css(String name, [String value]) => accessor(
           (Element n) => n.style.getPropertyValue(name),
           (Element n, v) => n.style.setProperty(name, value), value);
-  children() => new JQuery(this[0].childNodes);
-  shadowRoot() => new JQuery((this[0] as Element).shadowRoot);
 }
 
 _injectify(fn) {

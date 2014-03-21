@@ -61,16 +61,16 @@ void main() {
             ..whenGET('PREFIX:simple.html').respond('<div log="SIMPLE">Simple!</div>')
             ..whenGET('PREFIX:simple.css').respond('.hello{}');
 
-        var element = $('<div><html-and-css log>ignore</html-and-css><div>');
+        var element = e('<div><html-and-css log>ignore</html-and-css><div>');
         zone.run(() {
-          $compile(element, directives)(injector, element);
+          $compile([element], directives)(injector, [element]);
         });
 
         backend.flush();
         microLeap();
 
-        expect(element[0]).toHaveText('.hello{}Simple!');
-        expect(element.children().shadowRoot()[0]).toHaveHtml(
+        expect(element).toHaveText('.hello{}Simple!');
+        expect(element.children[0].shadowRoot).toHaveHtml(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
       })));
@@ -132,14 +132,14 @@ void main() {
             ..expectGET('simple.css').respond('.hello{}')
             ..expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
-        var element = $('<div><html-and-css log>ignore</html-and-css><div>');
-        $compile(element, directives)(injector, element);
+        var element = e('<div><html-and-css log>ignore</html-and-css><div>');
+        $compile([element], directives)(injector, [element]);
 
         backend.flush();
         microLeap();
 
-        expect(element[0]).toHaveText('.hello{}Simple!');
-        expect(element.children().shadowRoot()[0]).toHaveHtml(
+        expect(element).toHaveText('.hello{}Simple!');
+        expect(element.children[0].shadowRoot).toHaveHtml(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
         $rootScope.apply();
@@ -218,14 +218,14 @@ void main() {
             ..expectGET('another.css').respond('.world{}')
             ..expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
-        var element = $('<div><html-and-css log>ignore</html-and-css><div>');
-        $compile(element, directives)(injector, element);
+        var element = e('<div><html-and-css log>ignore</html-and-css><div>');
+        $compile([element], directives)(injector, [element]);
 
         backend.flush();
         microLeap();
 
-        expect(element[0]).toHaveText('.hello{}.world{}Simple!');
-        expect(element.children().shadowRoot()[0]).toHaveHtml(
+        expect(element).toHaveText('.hello{}.world{}Simple!');
+        expect(element.children[0].shadowRoot).toHaveHtml(
             '<style>.hello{}.world{}</style><div log="SIMPLE">Simple!</div>'
         );
         $rootScope.apply();
