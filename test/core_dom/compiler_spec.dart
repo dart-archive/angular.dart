@@ -727,8 +727,12 @@ class PublishTypesDirectiveSuperType {
 
 @NgDirective(
     selector: '[publish-types]',
-    publishTypes: const [PublishTypesDirectiveSuperType])
+    module: PublishTypesAttrDirective.module)
 class PublishTypesAttrDirective implements PublishTypesDirectiveSuperType {
+  static Module _module = new Module()
+      ..factory(PublishTypesDirectiveSuperType, (i) => i.get(PublishTypesAttrDirective));
+  static module() => _module;
+
   static Injector _injector;
   PublishTypesAttrDirective(Injector injector) {
     _injector = injector;

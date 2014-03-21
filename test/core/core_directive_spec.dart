@@ -19,7 +19,7 @@ void main() {
       expect(annotation.selector).toEqual('annotated-io');
       expect(annotation.visibility).toEqual(NgDirective.LOCAL_VISIBILITY);
       expect(annotation.exportExpressions).toEqual(['exportExpressions']);
-      expect(annotation.publishTypes).toEqual([String]);
+      expect(annotation.module).toEqual(AnnotatedIoComponent.module);
       expect(annotation.template).toEqual('template');
       expect(annotation.templateUrl).toEqual('templateUrl');
       expect(annotation.cssUrls).toEqual(['cssUrls']);
@@ -86,13 +86,17 @@ class NullParser implements Parser {
     applyAuthorStyles: true,
     resetStyleInheritance: true,
     publishAs: 'ctrl',
-    publishTypes: const [String],
+    module: AnnotatedIoComponent.module,
     visibility: NgDirective.LOCAL_VISIBILITY,
     exportExpressions: const ['exportExpressions'],
     map: const {
       'foo': '=>foo'
     })
 class AnnotatedIoComponent {
+  static module() => new Module()..factory(String,
+      (i) => i.get(AnnotatedIoComponent),
+      visibility: NgDirective.LOCAL_VISIBILITY);
+
   AnnotatedIoComponent(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
   }

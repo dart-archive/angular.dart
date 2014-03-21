@@ -77,20 +77,6 @@ class ElementBinder {
   bool get hasDirectivesOrEvents =>
       _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
-  // DI visibility strategy allowing node-local visibility.
-  static final Function _elementOnly = (Injector requesting, Injector defining) {
-    if (requesting.name == _SHADOW) requesting = requesting.parent;
-    return identical(requesting, defining);
-  };
-
-  // DI visibility strategy allowing visibility from direct child into parent.
-  static final Function _elementDirectChildren =
-      (Injector requesting, Injector defining) {
-        if (requesting.name == _SHADOW) requesting = requesting.parent;
-        return _elementOnly(requesting, defining) ||
-               identical(requesting.parent, defining);
-      };
-
   Injector bind(View view, Injector parentInjector, dom.Node node) {
     var timerId;
     assert((timerId = _perf.startTimer('ng.view.link.setUp', _html(node))) != false);
@@ -117,19 +103,10 @@ class ElementBinder {
 
       directiveRefs.forEach((DirectiveRef ref) {
         NgAnnotation annotation = ref.annotation;
-        var visibility = _elementOnly;
+        var visibility = ref.annotation.visibility;
         if (ref.annotation is NgController) {
           scope = scope.createChild(new PrototypeMap(scope.context));
           nodeModule.value(Scope, scope);
-        }
-
-        switch (ref.annotation.visibility) {
-          case NgDirective.CHILDREN_VISIBILITY:
-            visibility = null;
-            break;
-          case NgDirective.DIRECT_CHILDREN_VISIBILITY:
-            visibility = _elementDirectChildren;
-            break;
         }
 
         if (ref.type == NgTextMustacheDirective) {
@@ -173,9 +150,9 @@ class ElementBinder {
         } else {
           nodeModule.type(ref.type, visibility: visibility);
         }
-        for (var publishType in ref.annotation.publishTypes) {
-          nodeModule.factory(publishType, (Injector injector) =>
-              injector.get(ref.type), visibility: visibility);
+
+        if (ref.annotation.module != null) {
+          nodeModule.install(ref.annotation.module());
         }
         if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
           // Currently, transclude is only supported for NgDirective.

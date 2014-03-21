@@ -7,22 +7,26 @@ part of angular.directive;
  */
 @NgDirective(
     selector: 'form',
-    publishTypes : const <Type>[NgControl],
+    module: NgForm.module,
     visibility: NgDirective.CHILDREN_VISIBILITY)
 @NgDirective(
     selector: 'fieldset',
-    publishTypes : const <Type>[NgControl],
+    module: NgForm.module,
     visibility: NgDirective.CHILDREN_VISIBILITY)
 @NgDirective(
     selector: '.ng-form',
-    publishTypes : const <Type>[NgControl],
+    module: NgForm.module,
     visibility: NgDirective.CHILDREN_VISIBILITY)
 @NgDirective(
     selector: '[ng-form]',
-    publishTypes : const <Type>[NgControl],
+    module: NgForm.module,
     map: const { 'ng-form': '@name' },
     visibility: NgDirective.CHILDREN_VISIBILITY)
 class NgForm extends NgControl {
+  static final Module _module = new Module()
+    ..factory(NgControl, (i) => i.get(NgForm), visibility: NgDirective.CHILDREN_VISIBILITY);
+  static module() => _module;
+
   final Scope _scope;
 
   /**

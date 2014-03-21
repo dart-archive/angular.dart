@@ -236,7 +236,7 @@ class _ComponentFactory implements Function {
         ..value(TemplateLoader, templateLoader)
         ..value(dom.ShadowRoot, shadowDom)
         ..factory(ElementProbe, (_) => probe);
-    shadowInjector = injector.createChild([shadowModule], name: _SHADOW);
+    shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
     probe = _expando[shadowDom] = new ElementProbe(
         injector.get(ElementProbe), shadowDom, shadowInjector, shadowScope);
     return shadowInjector;
@@ -254,8 +254,6 @@ class _AnchorAttrs extends NodeAttrs {
     notifyFn(attributeName == '.' ? _directiveRef.value : null);
   }
 }
-
-String _SHADOW = 'SHADOW_INJECTOR';
 
 String _html(obj) {
   if (obj is String) {

@@ -55,8 +55,32 @@ abstract class NgAnnotation {
    *   controller can be injected into other directives / components on the
    *   direct children of the current DOM element.
    */
-  final String visibility;
-  final List<Type> publishTypes;
+  final Visibility visibility;
+
+  /**
+   * A directive/component class can publish types by using a factory
+   * function to generate a module. The module is then installed into
+   * the injector at that element. Any types declared in the module than
+   * become available for injection.
+   *
+   * Example:
+   *
+   *     @NgDirective(
+   *       selector: '[foo]',
+   *       module: FooDirective.moduleFactory)
+   *     FooDirective {
+   *       // We can be static since Module definition does not change.
+   *       static moduleFactory() => new Module()
+   *         ..type(SomeTypeA, visibility: NgDirective.LOCAL_VISIBILITY);
+   *     }
+   *
+   * When specifying types, factories or values in the module, notice that
+   * `Visibility` maps to:
+   *  * [NgDirective.LOCAL_VISIBILITY]
+   *  * [NgDirective.CHILDREN_VISIBILITY]
+   *  * [NgDirective.DIRECT_CHILDREN_VISIBILITY]
+   */
+  final Function module;
 
   /**
    * Use map to define the mapping of  DOM attributes to fields.
@@ -139,7 +163,7 @@ abstract class NgAnnotation {
     this.selector,
     this.children: NgAnnotation.COMPILE_CHILDREN,
     this.visibility: NgDirective.LOCAL_VISIBILITY,
-    this.publishTypes: const [],
+    this.module,
     this.map: const {},
     this.exportExpressions: const [],
     this.exportExpressionAttrs: const []
@@ -213,18 +237,18 @@ class NgComponent extends NgAnnotation {
     this.applyAuthorStyles,
     this.resetStyleInheritance,
     this.publishAs,
+    module,
     map,
     selector,
     visibility,
-    publishTypes : const <Type>[],
     exportExpressions,
     exportExpressionAttrs})
       : _cssUrls = cssUrl,
         super(selector: selector,
              children: NgAnnotation.COMPILE_CHILDREN,
              visibility: visibility,
-             publishTypes: publishTypes,
              map: map,
+             module: module,
              exportExpressions: exportExpressions,
              exportExpressionAttrs: exportExpressionAttrs);
 
@@ -241,14 +265,27 @@ class NgComponent extends NgAnnotation {
           resetStyleInheritance: resetStyleInheritance,
           publishAs: publishAs,
           map: newMap,
+          module: module,
           selector: selector,
           visibility: visibility,
-          publishTypes: publishTypes,
           exportExpressions: exportExpressions,
           exportExpressionAttrs: exportExpressionAttrs);
 }
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
+
+const String SHADOW_DOM_INJECTOR_NAME = 'SHADOW_INJECTOR';
+
+_skipShadow(Injector injector)
+    => injector.name == SHADOW_DOM_INJECTOR_NAME ? injector.parent : injector;
+
+_localVisibility (Injector requesting, Injector defining)
+    => identical(_skipShadow(requesting), defining);
+
+_directChildrenVisibility(Injector requesting, Injector defining) {
+  requesting = _skipShadow(requesting);
+  return identical(requesting.parent, defining) || _localVisibility(requesting, defining);
+}
 
 /**
  * Meta-data marker placed on a class which should act as a directive.
@@ -264,22 +301,22 @@ RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
  * * `detach()` - Called on when owning scope is destroyed.
  */
 class NgDirective extends NgAnnotation {
-  static const String LOCAL_VISIBILITY = 'local';
-  static const String CHILDREN_VISIBILITY = 'children';
-  static const String DIRECT_CHILDREN_VISIBILITY = 'direct_children';
+  static const Visibility LOCAL_VISIBILITY = _localVisibility;
+  static const Visibility CHILDREN_VISIBILITY = null;
+  static const Visibility DIRECT_CHILDREN_VISIBILITY = _directChildrenVisibility;
 
   const NgDirective({children: NgAnnotation.COMPILE_CHILDREN,
                     map,
                     selector,
+                    module,
                     visibility,
-                    publishTypes : const <Type>[],
                     exportExpressions,
                     exportExpressionAttrs})
       : super(selector: selector,
               children: children,
               visibility: visibility,
-              publishTypes: publishTypes,
               map: map,
+              module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
@@ -287,9 +324,9 @@ class NgDirective extends NgAnnotation {
       new NgDirective(
           children: children,
           map: newMap,
+          module: module,
           selector: selector,
           visibility: visibility,
-          publishTypes: publishTypes,
           exportExpressions: exportExpressions,
           exportExpressionAttrs: exportExpressionAttrs);
 }
@@ -327,17 +364,17 @@ class NgController extends NgDirective {
                     children: NgAnnotation.COMPILE_CHILDREN,
                     this.publishAs,
                     map,
+                    module,
                     selector,
                     visibility,
-                    publishTypes : const <Type>[],
                     exportExpressions,
                     exportExpressionAttrs
                     })
       : super(selector: selector,
               children: children,
               visibility: visibility,
-              publishTypes: publishTypes,
               map: map,
+              module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
@@ -345,10 +382,10 @@ class NgController extends NgDirective {
       new NgController(
           children: children,
           publishAs: publishAs,
+          module: module,
           map: newMap,
           selector: selector,
           visibility: visibility,
-          publishTypes: publishTypes,
           exportExpressions: exportExpressions,
           exportExpressionAttrs: exportExpressionAttrs);
 }
