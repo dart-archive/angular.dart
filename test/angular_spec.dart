@@ -112,7 +112,6 @@ main() {
         "angular.core.LruCache",  // internal?
         "angular.core.ScopeStats",
         "angular.core.ArrayFn",  // internal?
-        "angular.core.Interpolation",
         "angular.core.LongStackTrace",  // internal?
         "angular.core.Cache",  // internal?
         "angular.core.ExpressionVisitor",  // internal?
@@ -272,6 +271,7 @@ main() {
         "angular.filter.CurrencyFilter",
         "angular.filter.LimitToFilter",
         "angular.filter.Predicate",
+        "angular.filter.StringifyFilter",
         "angular.routing.RouteInitializerFn",
         "angular.routing.RouteProvider",
         "angular.routing.RouteInitializer",
