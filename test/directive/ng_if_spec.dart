@@ -27,8 +27,8 @@ main() {
     rootScope = scope;
     logger = _logger;
     compile = (html, [applyFn]) {
-      element = $(html);
-      compiler(element, _directives)(injector, element);
+      element = e(html);
+      compiler([element], _directives)(injector, [element]);
       scope.apply(applyFn);
     };
     directives = _directives;
@@ -53,22 +53,20 @@ main() {
     (html) {
       compile(html);
       // The span node should NOT exist in the DOM.
-      expect(element.contents().length).toEqual(1);
-      expect(element.find('span').length).toEqual(0);
+      expect(element.querySelectorAll('span').length).toEqual(0);
 
       rootScope.apply(() {
         rootScope.context['isVisible'] = true;
       });
 
       // The span node SHOULD exist in the DOM.
-      expect(element.contents().length).toEqual(2);
-      expect(element.find('span')[0]).toHaveHtml('content');
+      expect(element.querySelector('span')).toHaveHtml('content');
 
       rootScope.apply(() {
         rootScope.context['isVisible'] = false;
       });
 
-      expect(element.find('span').length).toEqual(0);
+      expect(element.querySelectorAll('span').length).toEqual(0);
     }
   );
 
@@ -77,31 +75,31 @@ main() {
       // ng-if
       '<div>' +
       '  <div ng-if="isVisible">'.trim() +
-      '    <span child-controller id="inside">{{setBy}}</span>'.trim() +
+      '    <span child-controller id="inside">inside {{setBy}};</span>'.trim() +
       '  </div>'.trim() +
-      '  <span id="outside">{{setBy}}</span>'.trim() +
+      '  <span id="outside">outside {{setBy}}</span>'.trim() +
       '</div>',
       // ng-unless
       '<div>' +
       '  <div ng-unless="!isVisible">'.trim() +
-      '    <span child-controller id="inside">{{setBy}}</span>'.trim() +
+      '    <span child-controller id="inside">inside {{setBy}};</span>'.trim() +
       '  </div>'.trim() +
-      '  <span id="outside">{{setBy}}</span>'.trim() +
+      '  <span id="outside">outside {{setBy}}</span>'.trim() +
       '</div>'],
     (html) {
       rootScope.context['setBy'] = 'topLevel';
       compile(html);
-      expect(element.contents().length).toEqual(2);
+      expect(element).toHaveText('outside topLevel');
 
       rootScope.apply(() {
         rootScope.context['isVisible'] = true;
       });
-      expect(element.contents().length).toEqual(3);
+      expect(element).toHaveText('inside childController;outside topLevel');
       // The value on the parent scope.context['should'] be unchanged.
       expect(rootScope.context['setBy']).toEqual('topLevel');
-      expect(element.find('#outside')[0]).toHaveHtml('topLevel');
+      expect(element.querySelector('#outside')).toHaveHtml('outside topLevel');
       // A child scope.context['must'] have been created and hold a different value.
-      expect(element.find('#inside')[0]).toHaveHtml('childController');
+      expect(element.querySelector('#inside')).toHaveHtml('inside childController;');
     }
   );
 
@@ -109,28 +107,28 @@ main() {
     [
       // ng-if
       '<div>' +
-      '  <div ng-repeat="i in values"></div>'.trim() +
-      '  <div ng-if="values.length==4"></div>'.trim() +
-      '  <div ng-repeat="i in values"></div>'.trim() +
+      '  <div ng-repeat="i in values">repeat;</div>'.trim() +
+      '  <div ng-if="values.length==4">if;</div>'.trim() +
+      '  <div ng-repeat="i in values">repeat2;</div>'.trim() +
       '</div>',
       // ng-unless
       '<div>' +
-      '  <div ng-repeat="i in values"></div>'.trim() +
-      '  <div ng-unless="values.length!=4"></div>'.trim() +
-      '  <div ng-repeat="i in values"></div>'.trim() +
+      '  <div ng-repeat="i in values">repeat;</div>'.trim() +
+      '  <div ng-unless="values.length!=4">if;</div>'.trim() +
+      '  <div ng-repeat="i in values">repeat2;</div>'.trim() +
       '</div>'],
     (html) {
       var values = rootScope.context['values'] = [1, 2, 3, 4];
       compile(html);
-      expect(element.contents().length).toBe(12);
+      expect(element).toHaveText('repeat;repeat;repeat;repeat;if;repeat2;repeat2;repeat2;repeat2;');
       rootScope.apply(() {
         values.removeRange(0, 1);
       });
-      expect(element.contents().length).toBe(9);
+      expect(element).toHaveText('repeat;repeat;repeat;repeat2;repeat2;repeat2;');
       rootScope.apply(() {
         values.insert(0, 1);
       });
-      expect(element.contents().length).toBe(12);
+      expect(element).toHaveText('repeat;repeat;repeat;repeat;if;repeat2;repeat2;repeat2;repeat2;');
     }
   );
 
@@ -141,18 +139,18 @@ main() {
     (html) {
       rootScope.context['isVisible'] = true;
       compile(html);
-      expect(element.contents().length).toEqual(2);
-      element.find('span').removeClass('my-class');
-      expect(element.find('span').hasClass('my-class')).not.toBe(true);
+      expect(element).toHaveText('content');
+      element.querySelector('span').classes.remove('my-class');
+      expect(element.querySelector('span').classes.contains('my-class')).not.toBe(true);
       rootScope.apply(() {
         rootScope.context['isVisible'] = false;
       });
-      expect(element.contents().length).toEqual(1);
+      expect(element).toHaveText('');
       rootScope.apply(() {
         rootScope.context['isVisible'] = true;
       });
       // The newly inserted node should be a copy of the compiled state.
-      expect(element.find('span').hasClass('my-class')).toBe(true);
+      expect(element.querySelector('span').classes.contains('my-class')).toBe(true);
     }
   );
 
@@ -165,7 +163,7 @@ main() {
       rootScope.apply(() {
         rootScope.context['isVisible'] = false;
       });
-      expect(element.find('span').length).toEqual(0);
+      expect(element.querySelectorAll('span').length).toEqual(0);
     }
   );
 
@@ -175,19 +173,19 @@ main() {
       '<div><li log="ALWAYS"></li><span log="JAMES" ng-unless="!isVisible">content</span></div>'],
     (html) {
       compile(html);
-      expect(element.find('span').length).toEqual(0);
+      expect(element.querySelectorAll('span').length).toEqual(0);
 
       rootScope.apply(() {
         rootScope.context['isVisible'] = false;
       });
-      expect(element.find('span').length).toEqual(0);
+      expect(element.querySelectorAll('span').length).toEqual(0);
       expect(logger.result()).toEqual('ALWAYS');
 
 
       rootScope.apply(() {
         rootScope.context['isVisible'] = true;
       });
-      expect(element.find('span')[0]).toHaveHtml('content');
+      expect(element.querySelector('span')).toHaveHtml('content');
       expect(logger.result()).toEqual('ALWAYS; JAMES');
     }
   );
@@ -198,7 +196,7 @@ main() {
     '<div><div ng-unless="!a"><div ng-unless="!b">content</div></div></div>'],
     (html) {
       compile(html);
-      expect(element.find('span').length).toEqual(0);
+      expect(element.querySelectorAll('span').length).toEqual(0);
 
       expect(() {
         rootScope.apply(() {
@@ -206,7 +204,7 @@ main() {
           rootScope.context['b'] = false;
         });
       }).not.toThrow();
-      expect(element.find('span').length).toEqual(0);
+      expect(element.querySelectorAll('span').length).toEqual(0);
 
 
       expect(() {
@@ -215,7 +213,7 @@ main() {
           rootScope.context['b'] = true;
         });
       }).not.toThrow();
-      expect(element.find('span').length).toEqual(0);
+      expect(element.querySelectorAll('span').length).toEqual(0);
     }
   );
 }

@@ -237,12 +237,6 @@ class JQuery extends DelegatingList<Node> {
           true);
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(
       (n is Element ? (n as Element).querySelectorAll(selector) : [])));
-  hasClass(String name) => fold(false, (hasClass, node) =>
-      hasClass || (node is Element && (node as Element).classes.contains(name)));
-  addClass(String name) => forEach((node) =>
-      (node is Element) ? (node as Element).classes.add(name) : null);
-  removeClass(String name) => forEach((node) =>
-      (node is Element) ? (node as Element).classes.remove(name) : null);
   css(String name, [String value]) => accessor(
           (Element n) => n.style.getPropertyValue(name),
           (Element n, v) => n.style.setProperty(name, value), value);

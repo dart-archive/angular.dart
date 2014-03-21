@@ -77,7 +77,7 @@ void main() {
       });
 
       it('should add and remove the correct CSS classes when set to dirty and to pristine', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm"><input ng-model="m" probe="m" /></form>');
+        var element = e('<form name="myForm"><input ng-model="m" probe="m" /></form>');
 
         _.compile(element);
         scope.apply();
@@ -92,8 +92,8 @@ void main() {
 
         expect(form.pristine).toEqual(false);
         expect(form.dirty).toEqual(true);
-        expect(element.hasClass('ng-pristine')).toBe(false);
-        expect(element.hasClass('ng-dirty')).toBe(true);
+        expect(element.classes.contains('ng-pristine')).toBe(false);
+        expect(element.classes.contains('ng-dirty')).toBe(true);
 
         input.removeInfo('ng-dirty');
         input.validate();
@@ -101,8 +101,8 @@ void main() {
 
         expect(form.pristine).toEqual(true);
         expect(form.dirty).toEqual(false);
-        expect(element.hasClass('ng-pristine')).toBe(true);
-        expect(element.hasClass('ng-dirty')).toBe(false);
+        expect(element.classes.contains('ng-pristine')).toBe(true);
+        expect(element.classes.contains('ng-dirty')).toBe(false);
       });
 
       it('should revert back to pristine on the form if the value is reset on the model',
@@ -170,7 +170,7 @@ void main() {
       it('should add and remove the correct flags when set to valid and to invalid',
         (Scope scope, TestBed _) {
 
-        var element = $('<form name="myForm"><input ng-model="m" probe="m" /></form>');
+        var element = e('<form name="myForm"><input ng-model="m" probe="m" /></form>');
         _.compile(element);
         scope.apply();
 
@@ -185,8 +185,8 @@ void main() {
         expect(form.valid).toEqual(false);
         expect(form.invalid).toEqual(true);
 
-        //expect(element.hasClass('ng-valid')).toBe(false);
-        expect(element.hasClass('ng-invalid')).toBe(true);
+        //expect(element.classes.contains('ng-valid')).toBe(false);
+        expect(element.classes.contains('ng-invalid')).toBe(true);
 
         model.removeError('some-error');
         model.validate();
@@ -194,8 +194,8 @@ void main() {
 
         expect(form.valid).toEqual(true);
         expect(form.invalid).toEqual(false);
-        expect(element.hasClass('ng-invalid')).toBe(false);
-        // expect(element.hasClass('ng-valid')).toBe(true);
+        expect(element.classes.contains('ng-invalid')).toBe(false);
+        // expect(element.classes.contains('ng-valid')).toBe(true);
       });
 
       it('should set the validity with respect to all existing validations when error states are set is used', (Scope scope, TestBed _) {
