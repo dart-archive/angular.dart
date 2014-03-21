@@ -222,10 +222,10 @@ void main() {
       });
 
       it('should select on element', async((NgZone zone) {
-        var element = $(_.compile(r'<div><simple></simple></div>'));
+        var element = _.compile(r'<div><simple></simple></div>');
         microLeap();
         _.rootScope.apply();
-        expect(element.textWithShadow()).toEqual('INNER()');
+        expect(element).toHaveText('INNER()');
       }));
 
       it('should store ElementProbe with Elements', async(() {
@@ -245,37 +245,37 @@ void main() {
 
       it('should create a simple component', async((NgZone zone) {
         _.rootScope.context['name'] = 'OUTTER';
-        var element = $(_.compile(r'<div>{{name}}:<simple>{{name}}</simple></div>'));
+        var element = _.compile(r'<div>{{name}}:<simple>{{name}}</simple></div>');
         microLeap();
         _.rootScope.apply();
-        expect(element.textWithShadow()).toEqual('OUTTER:INNER(OUTTER)');
+        expect(element).toHaveText('OUTTER:INNER(OUTTER)');
       }));
 
       it('should create a component that can access parent scope', async((NgZone zone) {
         _.rootScope.context['fromParent'] = "should not be used";
         _.rootScope.context['val'] = "poof";
-        var element = $(_.compile('<parent-expression from-parent=val></parent-expression>'));
+        var element = _.compile('<parent-expression from-parent=val></parent-expression>');
 
         microLeap();
         _.rootScope.apply();
-        expect(element.textWithShadow()).toEqual('inside poof');
+        expect(element).toHaveText('inside poof');
       }));
 
       it('should behave nicely if a mapped attribute is missing', async((NgZone zone) {
-        var element = $(_.compile('<parent-expression></parent-expression>'));
+        var element = _.compile('<parent-expression></parent-expression>');
 
         microLeap();
         _.rootScope.apply();
-        expect(element.textWithShadow()).toEqual('inside ');
+        expect(element).toHaveText('inside ');
       }));
 
       it('should behave nicely if a mapped attribute evals to null', async((NgZone zone) {
         _.rootScope.context['val'] = null;
-        var element = $(_.compile('<parent-expression fromParent=val></parent-expression>'));
+        var element = _.compile('<parent-expression fromParent=val></parent-expression>');
 
         microLeap();
         _.rootScope.apply();
-        expect(element.textWithShadow()).toEqual('inside ');
+        expect(element).toHaveText('inside ');
       }));
 
       it('should create a component with I/O', async(() {
@@ -441,7 +441,7 @@ void main() {
         var element = $(_.compile(r'<div><publish-me></publish-me></div>'));
         microLeap();
         _.rootScope.apply();
-        expect(element.textWithShadow()).toEqual('WORKED');
+        expect(element).toHaveText('WORKED');
       }));
 
       it('should publish directive controller into the scope', async((NgZone zone) {
@@ -506,7 +506,7 @@ void main() {
 
           scope.destroy();
           expect(logger).toEqual(['detach']);
-          expect(element.textWithShadow()).toEqual('WORKED');
+          expect(element).toHaveText('WORKED');
         }));
 
         it('should should not call attach after scope is destroyed', async((Compiler $compile, Logger logger, MockHttpBackend backend) {

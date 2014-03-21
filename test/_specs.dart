@@ -118,13 +118,22 @@ class Expect {
     }
   }
 
-  _elementText(node) {
-    if (node is List) {
-      var acc = '';
-      node.forEach((n) { acc += _elementText(n); });
-      return acc;
+  _elementText(n, [bool notShadow = false]) {
+    if (n is List) {
+      return n.map((nn) => _elementText(nn)).join("");
     }
-    return node.text;
+
+    if (n is Comment) return '';
+
+    if (!notShadow && n is Element && n.shadowRoot != null) {
+      var shadowText = n.shadowRoot.text;
+      var domText = _elementText(n, true);
+      return shadowText.replaceFirst("SHADOW-CONTENT", domText);
+    }
+
+    if (n.nodes == null || n.nodes.length == 0) return n.text;
+
+    return n.nodes.map((cn) => _elementText(cn)).join("");
   }
 }
 
@@ -194,24 +203,6 @@ class JQuery extends DelegatingList<Node> {
     }
   }
 
-  _renderedText(n, [bool notShadow = false]) {
-    if (n is List) {
-      return n.map((nn) => _renderedText(nn)).join("");
-    }
-
-    if (n is Comment) return '';
-
-    if (!notShadow && n is Element && n.shadowRoot != null) {
-      var shadowText = n.shadowRoot.text;
-      var domText = _renderedText(n, true);
-      return shadowText.replaceFirst("SHADOW-CONTENT", domText);
-    }
-
-    if (n.nodes == null || n.nodes.length == 0) return n.text;
-
-    return n.nodes.map((cn) => _renderedText(cn)).join("");
-  }
-
   accessor(Function getter, Function setter, [value, single=false]) {
     // TODO(dart): ?value does not work, since value was passed. :-(
     var setterMode = value != null;
@@ -244,7 +235,6 @@ class JQuery extends DelegatingList<Node> {
           (n, v) => getterSetter.setter(name)(n, v),
           null,
           true);
-  textWithShadow() => fold('', (t, n) => '${t}${_renderedText(n)}');
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(
       (n is Element ? (n as Element).querySelectorAll(selector) : [])));
   hasClass(String name) => fold(false, (hasClass, node) =>

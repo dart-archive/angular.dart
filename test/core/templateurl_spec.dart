@@ -69,7 +69,7 @@ void main() {
         backend.flush();
         microLeap();
 
-        expect(element.textWithShadow()).toEqual('.hello{}Simple!');
+        expect(element[0]).toHaveText('.hello{}Simple!');
         expect(element.children().shadowRoot()[0]).toHaveHtml(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
@@ -98,7 +98,7 @@ void main() {
         backend.flush();
         microLeap();
 
-        expect(element.textWithShadow()).toEqual('Simple!');
+        expect(element[0]).toHaveText('Simple!');
         $rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
@@ -119,7 +119,7 @@ void main() {
         backend.flush();
         microLeap();
 
-        expect(element.textWithShadow()).toEqual('Simple!Simple!');
+        expect(element[0]).toHaveText('Simple!Simple!');
         $rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
@@ -138,7 +138,7 @@ void main() {
         backend.flush();
         microLeap();
 
-        expect(element.textWithShadow()).toEqual('.hello{}Simple!');
+        expect(element[0]).toHaveText('.hello{}Simple!');
         expect(element.children().shadowRoot()[0]).toHaveHtml(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
@@ -156,7 +156,7 @@ void main() {
 
         backend.flush();
         microLeap();
-        expect(element.textWithShadow()).toEqual('.hello{}inline!');
+        expect(element[0]).toHaveText('.hello{}inline!');
       })));
 
       it('should ignore CSS load errors ', async(inject(
@@ -168,7 +168,7 @@ void main() {
 
         backend.flush();
         microLeap();
-        expect(element.textWithShadow()).toEqual(
+        expect(element[0]).toHaveText(
             '/*\n'
             'HTTP 500: some error\n'
             '*/\n'
@@ -184,7 +184,7 @@ void main() {
 
         backend.flush();
         microLeap();
-        expect(element.textWithShadow()).toEqual('.hello{}');
+        expect(element[0]).toHaveText('.hello{}');
       })));
 
       it('should load the CSS before the template is loaded', async(inject(
@@ -199,7 +199,7 @@ void main() {
 
         backend.flush();
         microLeap();
-        expect(element.textWithShadow()).toEqual('.hello{}Simple!');
+        expect(element[0]).toHaveText('.hello{}Simple!');
       })));
     });
 
@@ -224,7 +224,7 @@ void main() {
         backend.flush();
         microLeap();
 
-        expect(element.textWithShadow()).toEqual('.hello{}.world{}Simple!');
+        expect(element[0]).toHaveText('.hello{}.world{}Simple!');
         expect(element.children().shadowRoot()[0]).toHaveHtml(
             '<style>.hello{}.world{}</style><div log="SIMPLE">Simple!</div>'
         );
