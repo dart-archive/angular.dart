@@ -39,7 +39,7 @@ class Interpolate implements Function {
   /**
    * Compiles markup text into interpolation function.
    *
-   * - `text`: The markup text to interpolate in form `foo {{expr}} bar`.
+   * - `template`: The markup text to interpolate in form `foo {{expr}} bar`.
    * - `mustHaveExpression`: if set to true then the interpolation string must
    *      have embedded expression in order to return an interpolation function.
    *      Strings with no embedded expression will return null for the
