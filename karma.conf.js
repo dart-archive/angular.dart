@@ -42,6 +42,8 @@ module.exports = function(config) {
       ChromeNoSandbox: { base: 'Chrome', flags: ['--no-sandbox'] }
     },
 
+    browsers: ['Dartium'],
+
     preprocessors: {
       'test/core/parser/generated_functions.dart': ['parser-generator'],
       'test/core/parser/generated_getter_setter.dart': ['parser-getter-setter']
