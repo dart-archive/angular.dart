@@ -23,86 +23,92 @@ class AngularModule extends Module {
 
     type(MetadataExtractor);
     value(Expando, _elementExpando);
-    value(NgApp, new NgApp(dom.window.document.documentElement));
   }
 }
 
-Injector _defaultInjectorFactory(List<Module> modules) =>
-    new DynamicInjector(modules: modules);
-
 /**
- * This method is the main entry point to an angular application.
+ * Bootstraps AngularDart and defines which application module(s) are available to the app.
  *
- * # The [ngBootstrap] is responsible for:
+ * NgApp is how you configure and run an Angular application. NgApp is abstract. There are two
+ * implementations: one is dynamic, using Mirrors; the other is static, using code generation.
+ *
+ * To create an NgApp, import angular_dynamic.dart and call ngDynamicApp like so:
+ *
+ *     import 'package:angular/angular.dart';
+ *     import 'package:angular/angular_dynamic.dart';
+ *
+ *     class HelloWorldController {
+ *       ...
+ *       }
+ *
+ *     main() {
+ *      ngDynamicApp()
+ *        .addModule(new Module()..type(HelloWorldController))
+ *        .run();
+ *     }
+ *
+ * On `pub build`, ngDynamicApp becomes ngStaticApp, as pub generates the getters,
+ * setters, annotations, and factories for the root Injector that [ngApp] creates. This
+ *
+ *
+ * Here, the ngBootstrap method performs the following actions:
  *
  *   1. Locating the root element of the application,
  *   2. Creating Angular [NgZone]
  *   3. Inside the [NgZone] create an injector
- *   4. Retrieve the [Compiler] and compile the root eleement
+ *   4. Retrieve the [Compiler] and compile the root element
  *
  *
- * # Parameters:
- *
- *   - [module] Optional application module to add to the [Injector].
- *   - [modules] Optional list of [Module]s to add to the [Injector] (when more
- *     than one is needed).
- *   - [element] Optional root element of the application. If non specified, the
- *     the root element is looked up using the [selector]. If the selector can
- *     not identify a root, the root [HTML] element is used.
- *   - [selector] Optional CSS selector used to locate the root element for the
- *     application.
- *   - [injectorFactory] Optional factory responsible for creating the injector.
- *
- *
- *
- * # A typical way to boostrap an Angular application:
- *
- *     var myAppModule = new Module();
- *     myAppModule.type(MyType);
- *     ....
- *     Injector injector = ngBootstrap(module: myAppModule);
  */
-Injector ngBootstrap({
-    Module module: null,
-    List<Module> modules: null,
-    dom.Element element: null,
-    String selector: '[ng-app]',
-    Injector injectorFactory(List<Module> modules): _defaultInjectorFactory}) {
-  _publishToJavaScript();
 
-  var ngModules = [new AngularModule()];
-  if (module != null) ngModules.add(module);
-  if (modules != null) ngModules.addAll(modules);
-  if (element == null) {
-    element = dom.querySelector(selector);
-    if (element == null) {
-      element = dom.window.document.childNodes
-          .firstWhere((e) => e is dom.Element);
-    }
+abstract class NgApp {
+  static _find(String selector, [dom.Element defaultElement]) {
+    var element = dom.window.document.querySelector(selector);
+    if (element == null) element = defaultElement;
+    if (element == null)throw "Could not find application element '$selector'.";
+    return element;
   }
 
-  // The injector must be created inside the zone, so we create the
-  // zone manually and give it back to the injector as a value.
-  NgZone zone = new NgZone();
-  ngModules.add(new Module()
+  final NgZone zone = new NgZone();
+  final AngularModule ngModule = new AngularModule();
+  final List<Module> modules = <Module>[];
+  dom.Element element;
+
+  dom.Element selector(String selector) => element = _find(selector);
+
+  NgApp(): element = _find('[ng-app]', dom.window.document.documentElement) {
+    modules.add(ngModule);
+    ngModule
       ..value(NgZone, zone)
-      ..value(NgApp, new NgApp(element))
-      ..factory(dom.Node, (i) => i.get(NgApp).root));
+      ..value(NgApp, this)
+      ..factory(dom.Node, (i) => i.get(NgApp).element);
+  }
 
-  return zone.run(() {
-    var rootElements = [element];
-    Injector injector = injectorFactory(ngModules);
-    initializeDateFormatting(null, null).then((_) {
-      var compiler = injector.get(Compiler);
-      var blockFactory = compiler(rootElements, injector.get(DirectiveMap));
-      blockFactory(injector, rootElements);
+  Injector injector;
+
+  NgApp addModule(Module module) {
+    modules.add(module);
+    return this;
+  }
+
+  Injector run() {
+    _publishToJavaScript();
+    return zone.run(() {
+      var rootElements = [element];
+      Injector injector = createInjector();
+      ExceptionHandler exceptionHandler = injector.get(ExceptionHandler);
+      initializeDateFormatting(null, null).then((_) {
+        try {
+          var compiler = injector.get(Compiler);
+          var blockFactory = compiler(rootElements, injector.get(DirectiveMap));
+          blockFactory(injector, rootElements);
+        } catch (e, s) {
+          exceptionHandler(e, s);
+        }
+      });
+      return injector;
     });
-    return injector;
-  });
-}
+  }
 
-/// Holds a reference to the root of the application used by ngBootstrap.
-class NgApp {
-  final dom.Element root;
-  NgApp(this.root);
+  Injector createInjector();
 }

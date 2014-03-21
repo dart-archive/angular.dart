@@ -1,3 +1,16 @@
+/**
+*
+* Classes and utilities for analyzing performance in AngularDart.
+*
+* This is an optional library. You must import it in addition to the [angular.dart]
+* (#angular/angular) library,
+* like so:
+*
+*      import 'package:angular/angular.dart';
+*      import 'package:angular/perf/module.dart';
+*
+*
+*/
 library angular.perf;
 
 import 'dart:html' as dom;
