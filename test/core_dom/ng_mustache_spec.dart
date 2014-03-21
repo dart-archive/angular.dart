@@ -11,7 +11,9 @@ main() {
     });
     beforeEach(inject((TestBed tb) => _ = tb));
 
-    it('should replace {{}} in text', inject((Compiler $compile, Scope rootScope, Injector injector, DirectiveMap directives) {
+    it('should replace {{}} in text', inject((Compiler $compile,
+        Scope rootScope, Injector injector, DirectiveMap directives)
+    {
       var element = es('<div>{{name}}<span>!</span></div>');
       var template = $compile(element, directives);
 
@@ -42,8 +44,11 @@ main() {
       }));
     });
 
-    it('should replace {{}} in attribute', inject((Compiler $compile, Scope rootScope, Injector injector, DirectiveMap directives) {
-      Element element = e('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
+    it('should replace {{}} in attribute', inject((Compiler $compile,
+        Scope rootScope, Injector injector, DirectiveMap directives)
+    {
+      Element element =
+          e('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
       var template = $compile([element], directives);
 
       rootScope.context['name'] = 'OK';
@@ -58,8 +63,11 @@ main() {
     }));
 
 
-    it('should allow newlines in attribute', inject((Compiler $compile, RootScope rootScope, Injector injector, DirectiveMap directives) {
-      Element element = e('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
+    it('should allow newlines in attribute', inject((Compiler $compile,
+       RootScope rootScope, Injector injector, DirectiveMap directives)
+    {
+      Element element =
+          e('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
       var template = $compile([element], directives);
 
       rootScope.context['line1'] = 'L1';
@@ -69,11 +77,14 @@ main() {
       element = view.nodes[0];
 
       rootScope.apply();
-      expect(element.attributes['multiline-attr']).toEqual('line1: L1\nline2: L2');
+      expect(element.attributes['multiline-attr'])
+          .toEqual('line1: L1\nline2: L2');
     }));
 
 
-    it('should handle filters', inject((Compiler $compile, RootScope rootScope, Injector injector, DirectiveMap directives) {
+    it('should handle filters', inject((Compiler $compile, RootScope rootScope,
+        Injector injector, DirectiveMap directives)
+    {
       var element = es('<div>{{"World" | hello}}</div>');
       var template = $compile(element, directives);
       var view = template(injector);
@@ -107,7 +118,8 @@ main() {
     });
 
     it('should work together with ng-class', () {
-      var element = _.compile('<div ng-class="currentCls" ng-show="isVisible"></div>');
+      var element =
+          _.compile('<div ng-class="currentCls" ng-show="isVisible"></div>');
 
       expect(element).not.toHaveClass('active');
       expect(element).not.toHaveClass('ng-hide');

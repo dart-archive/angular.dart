@@ -15,47 +15,41 @@ class NodeAttrs {
   final dom.Element element;
 
   Map<String, List<AttributeChanged>> _observers;
-
-  Map<String, Mustache> _mustacheObservers = {};
-  Set<String> _mustacheComputedAttrs = new Set<String>();
+  final _mustacheAttrs = <String, _MustacheAttr>{};
 
   NodeAttrs(this.element);
 
-  operator [](String attributeName) => element.attributes[attributeName];
+  operator [](String attrName) => element.attributes[attrName];
 
-  void operator []=(String attributeName, String value) {
-    if (_mustacheObservers.containsKey(attributeName)) {
-      _mustacheComputedAttrs.add(attributeName);
+  void operator []=(String attrName, String value) {
+    if (_mustacheAttrs.containsKey(attrName)) {
+      _mustacheAttrs[attrName].isComputed = true;
     }
     if (value == null) {
-      element.attributes.remove(attributeName);
+      element.attributes.remove(attrName);
     } else {
-      element.attributes[attributeName] = value;
+      element.attributes[attrName] = value;
     }
-    if (_observers != null && _observers.containsKey(attributeName)) {
-      _observers[attributeName].forEach((fn) => fn(value));
+    if (_observers != null && _observers.containsKey(attrName)) {
+      _observers[attrName].forEach((notifyFn) => notifyFn(value));
     }
   }
 
   /**
-   * Observe changes to the attribute by invoking the [AttributeChanged]
-   * function. On registration the [AttributeChanged] function gets invoked
-   * synchronise with the current value.
+   * Observe changes to the attribute by invoking the [notifyFn] function. On
+   * registration the [notifyFn] function gets invoked synchronize with the
+   * current value.
    */
-  observe(String attributeName, AttributeChanged notifyFn) {
+  observe(String attrName, AttributeChanged notifyFn) {
     if (_observers == null) _observers = <String, List<AttributeChanged>>{};
-    _observers.putIfAbsent(attributeName, () => <AttributeChanged>[])
+    _observers.putIfAbsent(attrName, () => <AttributeChanged>[])
               .add(notifyFn);
 
-    bool hasMustache = _mustacheObservers.containsKey(attributeName);
-    bool hasMustacheAndIsComputed = _mustacheComputedAttrs.contains(attributeName);
-
-    if (!hasMustache || hasMustacheAndIsComputed) {
-      notifyFn(this[attributeName]);
-    }
-
-    if (_mustacheObservers.containsKey(attributeName)) {
-      _mustacheObservers[attributeName](true);
+    if (_mustacheAttrs.containsKey(attrName)) {
+      if (_mustacheAttrs[attrName].isComputed) notifyFn(this[attrName]);
+      _mustacheAttrs[attrName].notifyFn(true);
+    } else {
+      notifyFn(this[attrName]);
     }
   }
 
@@ -63,14 +57,13 @@ class NodeAttrs {
     element.attributes.forEach(f);
   }
 
-  bool containsKey(String attributeName) =>
-      element.attributes.containsKey(attributeName);
+  bool containsKey(String attrName) => element.attributes.containsKey(attrName);
 
   Iterable<String> get keys => element.attributes.keys;
 
-  void listenObserverChanges(String attributeName, Mustache fn) {
-    _mustacheObservers[attributeName] = fn;
-    fn(false);
+  void listenObserverChanges(String attrName, Mustache notifyFn) {
+    _mustacheAttrs[attrName] = new _MustacheAttr(notifyFn);
+    notifyFn(false);
   }
 }
 
@@ -83,4 +76,13 @@ class TemplateLoader {
   final async.Future<dom.ShadowRoot> template;
 
   TemplateLoader(this.template);
+}
+
+class _MustacheAttr {
+  // Listener trigger when the attribute becomes observed
+  final Mustache notifyFn;
+  // Whether the value has first been computed
+  bool isComputed = false;
+
+  _MustacheAttr(this.notifyFn);
 }

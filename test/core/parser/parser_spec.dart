@@ -61,8 +61,8 @@ main() {
       filters = injectedFilters;
     });
 
-    eval(String text, [FilterMap f])
-        => parser(text).eval(context, f == null ? filters : f);
+    eval(String text, [FilterMap f]) =>
+        parser(text).eval(context, f == null ? filters : f);
     expectEval(String expr) => expect(() => eval(expr));
 
     beforeEach((){ context = {}; });

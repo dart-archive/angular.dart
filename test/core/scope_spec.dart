@@ -1149,26 +1149,26 @@ void main() {
 
 
       it(r'should return a function that allows listeners to be unregistered', inject(
-              (RootScope rootScope) {
-            var listener = jasmine.createSpy('watch listener');
-            var watch;
+          (RootScope rootScope) {
+        var listener = jasmine.createSpy('watch listener');
+        var watch;
 
-            watch = rootScope.watch('foo', listener);
-            rootScope.digest(); //init
-            expect(listener).toHaveBeenCalled();
-            expect(watch).toBeDefined();
+        watch = rootScope.watch('foo', listener);
+        rootScope.digest(); //init
+        expect(listener).toHaveBeenCalled();
+        expect(watch).toBeDefined();
 
-            listener.reset();
-            rootScope.context['foo'] = 'bar';
-            rootScope.digest(); //triger
-            expect(listener).toHaveBeenCalledOnce();
+        listener.reset();
+        rootScope.context['foo'] = 'bar';
+        rootScope.digest(); //triger
+        expect(listener).toHaveBeenCalledOnce();
 
-            listener.reset();
-            rootScope.context['foo'] = 'baz';
-            watch.remove();
-            rootScope.digest(); //trigger
-            expect(listener).not.toHaveBeenCalled();
-          }));
+        listener.reset();
+        rootScope.context['foo'] = 'baz';
+        watch.remove();
+        rootScope.digest(); //trigger
+        expect(listener).not.toHaveBeenCalled();
+      }));
 
 
       it(r'should not infinitely digest when current value is NaN', (RootScope rootScope) {
