@@ -12,7 +12,7 @@ main() {
         var tagName = html.contains('<template') ? 'template' : 'script';
         describe('$tagName[type="text/ng-template"]', () {
           beforeEach((TestBed tb) => _ = tb);
-          beforeEach(() => element = $(html));
+          beforeEach(() => element = e(html));
           it(should, callback);
         });
       });
@@ -29,8 +29,8 @@ main() {
           '<script id="/ignore">ignore me</script>' +
           '<script type="text/ng-template" id="/myTemplate.html"><x>{{y}}</x></script>' +
         '</div>'],
-      (Injector injector, Compiler compiler, TemplateCache templateCache, DirectiveMap directives) {
-        compiler(element, directives)(injector, element);
+      (TemplateCache templateCache) {
+        _.compile(element);
         expect(templateCache.get('/ignore')).toBeNull();
         expect(templateCache.get('/myTemplate.html').responseText).toEqual('<x>{{y}}</x>');
       }
@@ -47,13 +47,12 @@ main() {
           '<script type="text/javascript">some {{binding}} <div></div></script>' +
           '<script type="text/ng-template" id="/some">other {{binding}} <div></div></script>' +
         '</div>'],
-      (Injector injector, Compiler compiler, TemplateCache templateCache, Scope scope, DirectiveMap directives) {
-        var templates = element.contents();
-        compiler(element, directives)(injector, element);
+      () {
+        _.compile(element);
 
         microLeap();
         // This binding should have been left alone (i.e. not interpolated).
-        expect(templates[2].innerHtml).toEqual('other {{binding}} <div></div>');
+        expect(element.children[1]).toHaveHtml('other {{binding}} <div></div>');
       }
     );
   });

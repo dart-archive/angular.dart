@@ -63,11 +63,11 @@ main() {
   var viewFactoryFactory = (a,b,c,d) => new WalkingViewFactory(a,b,c,d);
   describe('View', () {
     var anchor;
-    var $rootElement;
+    Element rootElement;
     var viewCache;
 
     beforeEach(() {
-      $rootElement = $('<div></div>');
+      rootElement = e('<div></div>');
     });
 
     describe('mutation', () {
@@ -75,8 +75,8 @@ main() {
       var expando = new Expando();
 
       beforeEach((Injector injector, Profiler perf) {
-        $rootElement.html('<!-- anchor -->');
-        anchor = new ViewPort($rootElement.contents().eq(0)[0],
+        rootElement.innerHtml = '<!-- anchor -->';
+        anchor = new ViewPort(rootElement.childNodes[0],
           injector.get(NgAnimate));
         a = (viewFactoryFactory($('<span>A</span>a'), [], perf, expando))(injector);
         b = (viewFactoryFactory($('<span>B</span>b'), [], perf, expando))(injector);
@@ -87,7 +87,7 @@ main() {
         it('should insert block after anchor view', () {
           anchor.insert(a);
 
-          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>A</span>a');
+          expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a');
         });
 
 
@@ -95,7 +95,7 @@ main() {
           anchor.insert(a);
           anchor.insert(b, insertAfter: a);
 
-          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
+          expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
         });
 
 
@@ -103,7 +103,7 @@ main() {
           anchor.insert(b);
           anchor.insert(a);
 
-          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
+          expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
         });
       });
 
@@ -113,17 +113,17 @@ main() {
           anchor.insert(a);
           anchor.insert(b, insertAfter: a);
 
-          expect($rootElement[0].text).toEqual('AaBb');
+          expect(rootElement.text).toEqual('AaBb');
         });
 
         it('should remove the last view', () {
           anchor.remove(b);
-          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>A</span>a');
+          expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a');
         });
 
         it('should remove child views from parent pseudo black', () {
           anchor.remove(a);
-          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>B</span>b');
+          expect(rootElement).toHaveHtml('<!-- anchor --><span>B</span>b');
         });
 
         // TODO(deboer): Make this work again.
@@ -163,11 +163,11 @@ main() {
           // view after the <!--start--> element.
           outerAnchor.insert(outterBoundViewFactory(null));
 
-          expect($rootElement[0].text).toEqual('text');
+          expect(rootElement.text).toEqual('text');
 
           anchor.remove(outerView);
 
-          expect($rootElement[0].text).toEqual('');
+          expect(rootElement.text).toEqual('');
         });
       });
 
@@ -177,13 +177,13 @@ main() {
           anchor.insert(a);
           anchor.insert(b, insertAfter: a);
 
-          expect($rootElement[0].text).toEqual('AaBb');
+          expect(rootElement.text).toEqual('AaBb');
         });
 
 
         it('should move last to middle', () {
           anchor.move(a, moveAfter: b);
-          expect($rootElement[0]).toHaveHtml('<!-- anchor --><span>B</span>b<span>A</span>a');
+          expect(rootElement).toHaveHtml('<!-- anchor --><span>B</span>b<span>A</span>a');
         });
       });
     });

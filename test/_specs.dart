@@ -222,8 +222,6 @@ class JQuery extends DelegatingList<Node> {
           (n, v) => n.setInnerHtml(v, treeSanitizer: new NullTreeSanitizer()),
           html);
   val([String text]) => accessor((n) => n.value, (n, v) => n.value = v);
-  contents() => fold(new JQuery(), (jq, node) => jq..addAll(node.nodes));
-  eq(num childIndex) => $(this[childIndex]);
   remove(_) => forEach((n) => n.remove());
   prop([String name]) => accessor(
           (n) => getterSetter.getter(name)(n),
