@@ -13,11 +13,11 @@ import '../gen/generated_getter_setter.dart' as generated_getter_setter;
 
 main() {
   var module = new Module()
-    ..type(Parser, implementedBy: DynamicParser)
-    ..type(ParserBackend, implementedBy: DynamicParserBackend)
-    ..type(SubstringFilter)
-    ..type(IncrementFilter)
-    ..install(new NgFilterModule());
+      ..type(Parser, implementedBy: DynamicParser)
+      ..type(ParserBackend, implementedBy: DynamicParserBackend)
+      ..type(SubstringFilter)
+      ..type(IncrementFilter)
+      ..install(new NgFilterModule());
   var injector = new DynamicInjector(
       modules: [module],
       allowImplicitInjection:true);
@@ -27,16 +27,17 @@ main() {
 
   var generatedParser = new DynamicInjector(
       modules: [new Module()
-        ..type(Parser, implementedBy: StaticParser)
-        ..type(ParserBackend, implementedBy: DynamicParserBackend)
-        ..value(StaticParserFunctions, generated_functions.functions())],
+          ..type(Parser, implementedBy: StaticParser)
+          ..type(ParserBackend, implementedBy: DynamicParserBackend)
+          ..value(StaticParserFunctions, generated_functions.functions())],
       allowImplicitInjection:true).get(Parser);
 
   var hybridParser = new DynamicInjector(
       modules: [new Module()
-        ..type(Parser, implementedBy: DynamicParser)
-        ..type(ParserBackend, implementedBy: DynamicParserBackend)
-        ..type(ClosureMap, implementedBy: generated_getter_setter.StaticClosureMap)],
+          ..type(Parser, implementedBy: DynamicParser)
+          ..type(ParserBackend, implementedBy: DynamicParserBackend)
+          ..type(ClosureMap,
+                 implementedBy: generated_getter_setter.StaticClosureMap)],
       allowImplicitInjection:true).get(Parser);
 
   scope['a'] = new ATest();
@@ -53,15 +54,15 @@ main() {
     var rTime = measure(() => reflectionExpr.eval(scope));
     var hTime = measure(() => hybridExpr.eval(scope));
     var iTime = measure(() => idealFn(scope));
-    print('$expr => g: ${nf.format(gTime)} ops/sec   ' +
-          'r: ${nf.format(rTime)} ops/sec   ' +
-          'h: ${nf.format(hTime)} ops/sec   ' +
-          'i: ${nf.format(iTime)} ops/sec = ' +
-          'i/g: ${nf.format(iTime / gTime)} x  ' +
-          'i/r: ${nf.format(iTime / rTime)} x  ' +
-          'i/h: ${nf.format(iTime / hTime)} x  ' +
-          'g/h: ${nf.format(gTime / hTime)} x  ' +
-          'h/r: ${nf.format(hTime / rTime)} x  ' +
+    print('$expr => g: ${nf.format(gTime)} ops/sec   '
+          'r: ${nf.format(rTime)} ops/sec   '
+          'h: ${nf.format(hTime)} ops/sec   '
+          'i: ${nf.format(iTime)} ops/sec = '
+          'i/g: ${nf.format(iTime / gTime)} x  '
+          'i/r: ${nf.format(iTime / rTime)} x  '
+          'i/h: ${nf.format(iTime / hTime)} x  '
+          'g/h: ${nf.format(gTime / hTime)} x  '
+          'h/r: ${nf.format(hTime / rTime)} x  '
           'g/r: ${nf.format(gTime / rTime)} x');
   }
 
