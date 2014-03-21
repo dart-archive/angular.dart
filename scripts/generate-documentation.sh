@@ -20,7 +20,6 @@ echo "Generating documentation"
     filter/module.dart \
     directive/module.dart \
     animate/module.dart \
-    utils.dart \
     mock/module.dart \
     perf/module.dart \
 

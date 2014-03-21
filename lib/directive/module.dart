@@ -1,3 +1,12 @@
+/**
+*
+* Directives available in the main [angular.dart](#angular/angular) library.
+*
+* This package is imported for you as part of [angular.dart](#angular/angular),
+* and lists all of the basic directives that are part of Angular.
+*
+*
+*/
 library angular.directive;
 
 import 'package:di/di.dart';

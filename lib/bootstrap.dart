@@ -27,36 +27,38 @@ class AngularModule extends Module {
 }
 
 /**
- * This method is the main entry point to an angular application.
+ * Bootstraps AngularDart and defines which application module(s) are available to the app.
  *
- * # The [ngBootstrap] is responsible for:
+ * NgApp is how you configure and run an Angular application. NgApp is abstract. There are two
+ * implementations: one is dynamic, using Mirrors; the other is static, using code generation.
+ *
+ * To create an NgApp, import angular_dynamic.dart and call ngDynamicApp like so:
+ *
+ *     import 'package:angular/angular.dart';
+ *     import 'package:angular/angular_dynamic.dart';
+ *
+ *     class HelloWorldController {
+ *       ...
+ *       }
+ *
+ *     main() {
+ *      ngDynamicApp()
+ *        .addModule(new Module()..type(HelloWorldController))
+ *        .run();
+ *     }
+ *
+ * On `pub build`, ngDynamicApp becomes ngStaticApp, as pub generates the getters,
+ * setters, annotations, and factories for the root Injector that [ngApp] creates. This
+ *
+ *
+ * Here, the ngBootstrap method performs the following actions:
  *
  *   1. Locating the root element of the application,
  *   2. Creating Angular [NgZone]
  *   3. Inside the [NgZone] create an injector
- *   4. Retrieve the [Compiler] and compile the root eleement
+ *   4. Retrieve the [Compiler] and compile the root element
  *
  *
- * # Parameters:
- *
- *   - [module] Optional application module to add to the [Injector].
- *   - [modules] Optional list of [Module]s to add to the [Injector] (when more
- *     than one is needed).
- *   - [element] Optional root element of the application. If non specified, the
- *     the root element is looked up using the [selector]. If the selector can
- *     not identify a root, the root [HTML] element is used.
- *   - [selector] Optional CSS selector used to locate the root element for the
- *     application.
- *   - [injectorFactory] Optional factory responsible for creating the injector.
- *
- *
- *
- * # A typical way to boostrap an Angular application:
- *
- *     var myAppModule = new Module();
- *     myAppModule.type(MyType);
- *     ....
- *     Injector injector = ngBootstrap(module: myAppModule);
  */
 
 abstract class NgApp {
