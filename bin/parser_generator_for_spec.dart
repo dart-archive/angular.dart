@@ -175,6 +175,7 @@ main(arguments) {
       'add(a,b)',
       'notAProperty',
       "'Foo'|uppercase",
+      "'f' + ('o'|uppercase) + 'o'",
       "1|increment:2",
       "'abcd'|substring:1:offset",
       "'abcd'|substring:1:3|uppercase",
