@@ -202,34 +202,6 @@ class JQuery extends DelegatingList<Node> {
       throw selector;
     }
   }
-
-  accessor(Function getter, Function setter, [value, single=false]) {
-    // TODO(dart): ?value does not work, since value was passed. :-(
-    var setterMode = value != null;
-    var result = setterMode ? this : '';
-    forEach((node) {
-      if (setterMode) {
-        setter(node, value);
-      } else {
-        result = single ? getter(node) : '$result${getter(node)}';
-      }
-    });
-    return result;
-  }
-
-  html([String html]) => accessor(
-          (n) { throw "Not implemented"; },
-          (n, v) => n.setInnerHtml(v, treeSanitizer: new NullTreeSanitizer()),
-          html);
-  val([String text]) => accessor((n) => n.value, (n, v) => n.value = v);
-  remove(_) => forEach((n) => n.remove());
-  prop([String name]) => accessor(
-          (n) => getterSetter.getter(name)(n),
-          (n, v) => getterSetter.setter(name)(n, v),
-          null,
-          true);
-  find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(
-      (n is Element ? (n as Element).querySelectorAll(selector) : [])));
 }
 
 _injectify(fn) {
