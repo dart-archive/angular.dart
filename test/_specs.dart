@@ -237,9 +237,6 @@ class JQuery extends DelegatingList<Node> {
           true);
   find(selector) => fold(new JQuery(), (jq, n) => jq..addAll(
       (n is Element ? (n as Element).querySelectorAll(selector) : [])));
-  css(String name, [String value]) => accessor(
-          (Element n) => n.style.getPropertyValue(name),
-          (Element n, v) => n.style.setProperty(name, value), value);
 }
 
 _injectify(fn) {
