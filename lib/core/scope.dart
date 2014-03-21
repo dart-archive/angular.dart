@@ -529,7 +529,7 @@ class RootScope extends Scope {
           runObservers = false;
           readOnlyGroup.detectChanges(exceptionHandler:_exceptionHandler);
         }
-        if (_domReadHead != null) _stats.domWriteStart();
+        if (_domReadHead != null) _stats.domReadStart();
         while (_domReadHead != null) {
           try {
             _domReadHead.fn();
