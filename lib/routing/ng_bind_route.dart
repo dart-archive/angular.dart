@@ -24,13 +24,16 @@ part of angular.routing;
  */
 @NgDirective(
     visibility: NgDirective.CHILDREN_VISIBILITY,
-    publishTypes: const [RouteProvider],
     selector: '[ng-bind-route]',
+    module: NgBindRouteDirective.initModule,
     map: const {'ng-bind-route': '@routeName'})
 class NgBindRouteDirective implements RouteProvider {
   Router _router;
   String routeName;
   Injector _injector;
+
+  static initModule() => new Module()..factory(RouteProvider,
+      (i) => i.get(NgBindRouteDirective));
 
   // We inject NgRoutingHelper to force initialization of routing.
   NgBindRouteDirective(this._router, this._injector, NgRoutingHelper _);
