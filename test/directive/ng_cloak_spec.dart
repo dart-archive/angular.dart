@@ -10,10 +10,10 @@ main() {
 
 
     it('should get removed when an element is compiled', () {
-      var element = $('<div ng-cloak></div>');
-      expect(element.attr('ng-cloak')).toEqual('');
-      _.compile(element);
-      expect(element.attr('ng-cloak')).toBeNull();
+      var element = e('<div ng-cloak></div>');
+      expect(element.attributes['ng-cloak']).toEqual('');
+      _.compile([element]);
+      expect(element.attributes['ng-cloak']).toBeNull();
     });
 
 

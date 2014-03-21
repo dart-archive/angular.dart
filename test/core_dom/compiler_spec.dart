@@ -180,12 +180,12 @@ void main() {
 
     describe("interpolation", () {
       it('should interpolate attribute nodes', () {
-        var element = $(_.compile('<div test="{{name}}"></div>'));
+        var element = _.compile('<div test="{{name}}"></div>');
 
         _.rootScope.context['name'] = 'angular';
 
         _.rootScope.apply();
-        expect(element.attr('test')).toEqual('angular');
+        expect(element.attributes['test']).toEqual('angular');
       });
 
       it('should interpolate text nodes', () {

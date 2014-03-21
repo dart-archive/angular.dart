@@ -225,11 +225,6 @@ class JQuery extends DelegatingList<Node> {
   contents() => fold(new JQuery(), (jq, node) => jq..addAll(node.nodes));
   eq(num childIndex) => $(this[childIndex]);
   remove(_) => forEach((n) => n.remove());
-  attr([String name, String value]) => accessor(
-          (n) => n.attributes[name],
-          (n, v) => n.attributes[name] = v,
-          value,
-          true);
   prop([String name]) => accessor(
           (n) => getterSetter.getter(name)(n),
           (n, v) => getterSetter.setter(name)(n, v),

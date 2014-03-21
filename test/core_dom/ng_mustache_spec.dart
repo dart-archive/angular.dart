@@ -43,33 +43,33 @@ main() {
     });
 
     it('should replace {{}} in attribute', inject((Compiler $compile, Scope rootScope, Injector injector, DirectiveMap directives) {
-      var element = $('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
-      var template = $compile(element, directives);
+      Element element = e('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
+      var template = $compile([element], directives);
 
       rootScope.context['name'] = 'OK';
       rootScope.context['age'] = 23;
       var view = template(injector);
 
-      element = $(view.nodes);
+      element = view.nodes[0];
 
       rootScope.apply();
-      expect(element.attr('some-attr')).toEqual('OK');
-      expect(element.attr('other-attr')).toEqual('23');
+      expect(element.attributes['some-attr']).toEqual('OK');
+      expect(element.attributes['other-attr']).toEqual('23');
     }));
 
 
     it('should allow newlines in attribute', inject((Compiler $compile, RootScope rootScope, Injector injector, DirectiveMap directives) {
-      var element = $('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
-      var template = $compile(element, directives);
+      Element element = e('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
+      var template = $compile([element], directives);
 
       rootScope.context['line1'] = 'L1';
       rootScope.context['line2'] = 'L2';
       var view = template(injector);
 
-      element = $(view.nodes);
+      element = view.nodes[0];
 
       rootScope.apply();
-      expect(element.attr('multiline-attr')).toEqual('line1: L1\nline2: L2');
+      expect(element.attributes['multiline-attr']).toEqual('line1: L1\nline2: L2');
     }));
 
 
