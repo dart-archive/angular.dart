@@ -195,7 +195,7 @@ main() {
         "angular.core.dom.HttpInterceptors",
         "angular.core.dom.forceNewDirectivesAndFilters",  // internal?
         "angular.core.dom.DirectiveSelectorFactory",  // internal?
-        "angular.core.dom.ObserverChanged",
+        "angular.core.dom.Mustache",
         "angular.core.dom.TaggingViewFactory",  // internal?
         "angular.core.dom.NodeCursor",  // internal?
         "angular.core.dom.TemplateCache",  // internal?
@@ -223,6 +223,7 @@ main() {
         "angular.core.parser.syntax.AccessScope",
         "angular.core.parser.syntax.Assign",
         "angular.core.parser.syntax.AccessKeyed",
+        "angular.core.parser.syntax.CallArguments",
         "angular.core.parser.syntax.CallScope",
         "angular.core.parser.syntax.CallFunction",
         "angular.core.parser.syntax.Conditional",
