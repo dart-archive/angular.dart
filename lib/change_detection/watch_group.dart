@@ -547,7 +547,8 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
     forwardToHandler.forwardingHandler = this;
   }
 
-  void release() {
+  /// Return true if release has happened
+  bool release() {
     if (_WatchList._isEmpty(this) && _LinkedList._isEmpty(this)) {
       _releaseWatch();
       // Remove ourselves from cache, or else new registrations will go to us,
@@ -562,6 +563,9 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
 
       // We can remove ourselves
       assert((_next = _previous = this) == this); // mark ourselves as detached
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -682,12 +686,16 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
     (watchRecord as _EvalWatchRecord).remove();
   }
 
-  void release() {
-    super.release();
-    _ArgHandler current = _argHandlerHead;
-    while (current != null) {
-      current.release();
-      current = current._nextArgHandler;
+  bool release() {
+    if (super.release()) {
+      _ArgHandler current = _argHandlerHead;
+      while (current != null) {
+        current.release();
+        current = current._nextArgHandler;
+      }
+      return true;
+    } else {
+      return false;
     }
   }
 }

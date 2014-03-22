@@ -1154,7 +1154,7 @@ void main() {
 
         listener.reset();
         rootScope.context['foo'] = 'bar';
-        rootScope.digest(); //triger
+        rootScope.digest(); //trigger
         expect(listener).toHaveBeenCalledOnce();
 
         listener.reset();
@@ -1163,6 +1163,19 @@ void main() {
         rootScope.digest(); //trigger
         expect(listener).not.toHaveBeenCalled();
       }));
+
+
+      it(r'should be possible to remove every watch',
+          (RootScope rootScope, FilterMap filters) {
+        rootScope.context['foo'] = 'bar';
+        var watch1 = rootScope.watch('(foo|json)+"bar"', (v, p) => null,
+        filters: filters);
+        var watch2 = rootScope.watch('(foo|json)+"bar"', (v, p) => null,
+        filters: filters);
+
+        expect(() => watch1.remove()).not.toThrow();
+        expect(() => watch2.remove()).not.toThrow();
+      });
 
 
       it(r'should not infinitely digest when current value is NaN', (RootScope rootScope) {
