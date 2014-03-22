@@ -143,7 +143,8 @@ main() {
     });
 
     describe('deal with pluralized strings with offset', () {
-      it('should show single/plural strings with offset', ((TestBed _) {
+      // see https://github.com/angular/angular.dart/issues/787
+      xit('should show single/plural strings with offset', ((TestBed _) {
         var element = _.compile(
             "<ng-pluralize count='viewCount'  offset='2' " +
                 "when=\"{'0': 'Nobody is viewing.'," +
