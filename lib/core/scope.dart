@@ -205,17 +205,21 @@ class Scope {
     assert(expression is String);
     Watch watch;
     ReactionFn fn = reactionFn;
-    if (expression.startsWith('::')) {
-      expression = expression.substring(2);
-      fn = (value, last) {
-        if (value != null) {
-          watch.remove();
-          return reactionFn(value, last);
-        }
-      };
-    } else if (expression.startsWith(':')) {
-      expression = expression.substring(1);
-      fn = (value, last) => value == null ? null : reactionFn(value, last);
+    if (expression.isEmpty) {
+      expression = '""';
+    } else {
+      if (expression.startsWith('::')) {
+        expression = expression.substring(2);
+        fn = (value, last) {
+          if (value != null) {
+            watch.remove();
+            return reactionFn(value, last);
+          }
+        };
+      } else if (expression.startsWith(':')) {
+        expression = expression.substring(1);
+        fn = (value, last) => value == null ? null : reactionFn(value, last);
+      }
     }
 
     AST ast = rootScope._astParser(expression, context: context,

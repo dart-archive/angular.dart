@@ -66,12 +66,14 @@ void main() {
       it('should watch literals', (Logger logger, Map context, RootScope rootScope) {
         context['a'] = 1;
         rootScope
+            ..watch('', (value, previous) => logger(value))
+            ..watch('""', (value, previous) => logger(value))
             ..watch('1', (value, previous) => logger(value))
             ..watch('"str"', (value, previous) => logger(value))
             ..watch('[a, 2, 3]', (value, previous) => logger(value))
             ..watch('{a:a, b:2}', (value, previous) => logger(value))
             ..digest();
-        expect(logger).toEqual([1, 'str', [1, 2, 3], {'a': 1, 'b': 2}]);
+        expect(logger).toEqual(['', '', 1, 'str', [1, 2, 3], {'a': 1, 'b': 2}]);
         logger.clear();
         context['a'] = 3;
         rootScope.digest();
