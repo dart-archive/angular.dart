@@ -53,49 +53,6 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('def');
       });
 
-      it('should update model from the input value for type=number', () {
-        _.compile('<input type="number" ng-model="model" probe="p">');
-        Probe probe = _.rootScope.context['p'];
-        var ngModel = probe.directive(NgModel);
-        InputElement inputElement = probe.element;
-
-        inputElement.value = '12';
-        _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(12);
-
-        inputElement.value = '14';
-        var input = probe.directive(InputNumberLikeDirective);
-        input.processValue();
-        expect(_.rootScope.context['model']).toEqual(14);
-      });
-
-      it('should update input type=number to blank when model is null', () {
-        _.compile('<input type="number" ng-model="model" probe="p">');
-        Probe probe = _.rootScope.context['p'];
-        var ngModel = probe.directive(NgModel);
-        InputElement inputElement = probe.element;
-
-        inputElement.value = '12';
-        _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(12);
-
-        _.rootScope.context['model'] = null;
-        _.rootScope.apply();
-        expect(inputElement.value).toEqual('');
-      });
-
-      it('should be invalid when the input value results in a NaN value', () {
-        _.compile('<input type="number" ng-model="model" probe="p">');
-        Probe probe = _.rootScope.context['p'];
-        var ngModel = probe.directive(NgModel);
-        InputElement inputElement = probe.element;
-
-        inputElement.value = 'aa';
-        _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model'].isNaN).toBe(true);
-        expect(ngModel.valid).toBe(false);
-      });
-
       it('should write to input only if the value is different',
         (Injector i, NgAnimate animate) {
 
@@ -154,14 +111,57 @@ void main() {
     /* This function simulates typing the given text into the input
      * field. The text will be added wherever the insertion point
      * happens to be. This method has as side-effect to set the
-     * focus on the input (without setting the focus the text
+     * focus on the input (without setting the focus, the text
      * dispatch may not work).
      */
     void simulateTypingText(InputElement input, String text) {
       input..focus()..dispatchEvent(new TextEvent('textInput', data: text));
     }
 
-    describe('type="number" like', () {
+    describe('type="number" or type="range"', () {
+
+      it('should update model from the input value for type=number', () {
+        _.compile('<input type="number" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        inputElement.value = '12';
+        _.triggerEvent(inputElement, 'change');
+        expect(_.rootScope.context['model']).toEqual(12);
+
+        inputElement.value = '14';
+        var input = probe.directive(InputNumberLikeDirective);
+        input.processValue();
+        expect(_.rootScope.context['model']).toEqual(14);
+      });
+
+      it('should update input type=number to blank when model is null', () {
+        _.compile('<input type="number" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        inputElement.value = '12';
+        _.triggerEvent(inputElement, 'change');
+        expect(_.rootScope.context['model']).toEqual(12);
+
+        _.rootScope.context['model'] = null;
+        _.rootScope.apply();
+        expect(inputElement.value).toEqual('');
+      });
+
+      it('should be invalid when the input value results in a NaN value', () {
+        _.compile('<input type="number" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        inputElement.value = 'aa';
+        _.triggerEvent(inputElement, 'change');
+        expect(_.rootScope.context['model'].isNaN).toBe(true);
+        expect(ngModel.valid).toBe(false);
+      });
 
       it('should leave input unchanged when text does not represent a valid number', (Injector i) {
         var modelFieldName = 'modelForNumFromInvalid1';
