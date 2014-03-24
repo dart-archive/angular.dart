@@ -48,33 +48,62 @@ main() {
       // But make sure that you intend to export the symbol!
       // Questions?  Talk to @jbdeboer
 
-      _getSymbolsFromLibrary(String libraryName) {
-        var names = [];
-        var SYMBOL_NAME = new RegExp('"(.*)"');
-        _unwrapSymbol(sym) => SYMBOL_NAME.firstMatch(sym.toString()).group(1);
+      var _SYMBOL_NAME = new RegExp('"(.*)"');
+      _unwrapSymbol(sym) => _SYMBOL_NAME.firstMatch(sym.toString()).group(1);
 
-        var seen = {};
+      _getSymbolsFromLibrary(String libraryName) {
+        // Set this to true to see how symbols are exported from angular.
+        var SHOULD_PRINT_SYMBOL_TREE = false;
 
         // TODO(deboer): Add types once Dart VM 1.2 is deprecated.
-        extractSymbols(/* LibraryMirror */ lib) {
+        List extractSymbols(/* LibraryMirror */ lib, [String printPrefix = ""]) {
+          var names = [];
+
+          if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + _unwrapSymbol(lib.qualifiedName));
+          printPrefix += "  ";
           lib.declarations.forEach((symbol, _) {
-            names.add([_unwrapSymbol(symbol), _unwrapSymbol(lib.qualifiedName)]);
+            if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + _unwrapSymbol(symbol));
+            names.add([symbol, lib.qualifiedName]);
           });
 
           lib.libraryDependencies.forEach((/* LibraryDependencyMirror */ libDep) {
             LibraryMirror target = libDep.targetLibrary;
             if (!libDep.isExport) return;
-            if (!seen.containsKey(target)) {
-              seen[target] = true;
-              extractSymbols(target);
+
+            var childNames = extractSymbols(target, printPrefix);
+
+            // If there was a "show" or "hide" on the exported library, filter the results.
+            // This API needs love :-(
+            var showSymbols = [], hideSymbols = [];
+            libDep.combinators.forEach((/* CombinatorMirror */ c) {
+              if (c.isShow) {
+                showSymbols.addAll(c.identifiers);
+              }
+              if (c.isHide) {
+                hideSymbols.addAll(c.identifiers);
+              }
+            });
+
+            // I don't think you can show and hide from the same library
+            assert(showSymbols.isEmpty || hideSymbols.isEmpty);
+            if (!showSymbols.isEmpty) {
+              childNames = childNames.where((List symAndLib) {
+                return showSymbols.contains(symAndLib[0]);
+              });
             }
+            if (!hideSymbols.isEmpty) {
+              childNames = childNames.where((List symAndLib) {
+                return !hideSymbols.contains(symAndLib[0]);
+              });
+            }
+
+            names.addAll(childNames);
           });
+          return names;
         };
 
         var lib = currentMirrorSystem().findLibrary(new Symbol(libraryName));
-
-        extractSymbols(lib);
-        return names;
+        return extractSymbols(lib);;
       }
 
       var names;
@@ -213,34 +242,14 @@ main() {
         "angular.core.parser.ParserBackend",
         "angular.core.parser.BoundSetter",
         "angular.core.parser.Setter",  // common name
-        "angular.core.parser.syntax.LiteralObject",  // evenything in syntax should be private
-        "angular.core.parser.syntax.CallMember",
-        "angular.core.parser.syntax.Filter",
-        "angular.core.parser.syntax.defaultFilterMap",
-        "angular.core.parser.syntax.BoundExpression",
-        "angular.core.parser.syntax.AccessMember",
+        "angular.core.parser.syntax.BoundExpression", // evenything in syntax should be private
         "angular.core.parser.syntax.Expression",
-        "angular.core.parser.syntax.AccessScope",
-        "angular.core.parser.syntax.Assign",
-        "angular.core.parser.syntax.AccessKeyed",
         "angular.core.parser.syntax.CallArguments",
-        "angular.core.parser.syntax.CallScope",
-        "angular.core.parser.syntax.CallFunction",
-        "angular.core.parser.syntax.Conditional",
-        "angular.core.parser.syntax.Binary",
-        "angular.core.parser.syntax.Chain",
-        "angular.core.parser.syntax.Prefix",
-        "angular.core.parser.syntax.Literal",
-        "angular.core.parser.syntax.LiteralString",
-        "angular.core.parser.syntax.LiteralArray",
-        "angular.core.parser.syntax.LiteralPrimitive",
         "angular.core.parser.syntax.Visitor",
-        "angular.core.parser.dynamic_parser.DynamicExpression",
         "angular.core.parser.dynamic_parser.ClosureMap",
         "angular.core.parser.dynamic_parser.DynamicParser",
         "angular.core.parser.dynamic_parser.DynamicParserBackend",
         "angular.core.parser.static_parser.StaticParserFunctions",
-        "angular.core.parser.static_parser.StaticExpression",
         "angular.core.parser.static_parser.StaticParser",
         "angular.core.parser.lexer.Scanner",  // everything in lexer should be private
         "angular.core.parser.lexer.OPERATORS",
@@ -292,21 +301,15 @@ main() {
         "url_matcher.UrlMatcher",
         "url_matcher.UrlMatch",
         "dirty_checking_change_detector.FieldGetter",  // everything in change detector should be private
-        "dirty_checking_change_detector.DirtyCheckingChangeDetector",
-        "dirty_checking_change_detector.DirtyCheckingRecord",
-        "dirty_checking_change_detector.ItemRecord",
-        "dirty_checking_change_detector.KeyValueRecord",
-        "dirty_checking_change_detector.DuplicateMap",
         "dirty_checking_change_detector.GetterCache",
-        "dirty_checking_change_detector.DirtyCheckingChangeDetectorGroup"
       ];
 
       var _nameMap = {};
       ALLOWED_NAMES.forEach((x) => _nameMap[x] = true);
 
       assertSymbolNameIsOk(List nameInfo) {
-        String name = nameInfo[0];
-        String libName = nameInfo[1];
+        String name = _unwrapSymbol(nameInfo[0]);
+        String libName = _unwrapSymbol(nameInfo[1]);
 
         if (ALLOWED_PREFIXS.any((prefix) => name.startsWith(prefix))) return;
 
