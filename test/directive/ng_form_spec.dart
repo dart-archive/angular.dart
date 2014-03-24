@@ -522,8 +522,8 @@ void main() {
         var formElement = form.element.node;
 
         expect(form.submitted).toBe(false);
-        expect(form.valid_submit).toBe(false);
-        expect(form.invalid_submit).toBe(false);
+        expect(form.validSubmit).toBe(false);
+        expect(form.invalidSubmit).toBe(false);
         expect(formElement.classes.contains('ng-submit-invalid')).toBe(false);
         expect(formElement.classes.contains('ng-submit-valid')).toBe(false);
 
@@ -533,8 +533,8 @@ void main() {
         scope.apply();
 
         expect(form.submitted).toBe(true);
-        expect(form.valid_submit).toBe(false);
-        expect(form.invalid_submit).toBe(true);
+        expect(form.validSubmit).toBe(false);
+        expect(form.invalidSubmit).toBe(true);
         expect(formElement.classes.contains('ng-submit-invalid')).toBe(true);
         expect(formElement.classes.contains('ng-submit-valid')).toBe(false);
 
@@ -543,8 +543,8 @@ void main() {
         scope.apply();
 
         expect(form.submitted).toBe(true);
-        expect(form.valid_submit).toBe(true);
-        expect(form.invalid_submit).toBe(false);
+        expect(form.validSubmit).toBe(true);
+        expect(form.invalidSubmit).toBe(false);
         expect(formElement.classes.contains('ng-submit-invalid')).toBe(false);
         expect(formElement.classes.contains('ng-submit-valid')).toBe(true);
       });
