@@ -19,7 +19,8 @@ class TaggingCompiler implements Compiler {
       DirectiveMap directives,
       int parentElementBinderOffset,
       TaggedElementBinder directParentElementBinder,
-      List<TaggedElementBinder> elementBinders) {
+      List<TaggedElementBinder> elementBinders,
+      bool isTopLevel) {
     assert(parentElementBinderOffset != null);
     assert(parentElementBinderOffset < elementBinders.length);
     if (domCursor.current == null) return null;
@@ -55,7 +56,7 @@ class TaggingCompiler implements Compiler {
         int taggedElementBinderIndex = parentElementBinderOffset;
         if (elementBinder.hasDirectivesOrEvents || elementBinder.hasTemplate) {
           taggedElementBinder = _addBinder(elementBinders,
-              new TaggedElementBinder(elementBinder, parentElementBinderOffset));
+              new TaggedElementBinder(elementBinder, parentElementBinderOffset, isTopLevel));
           taggedElementBinderIndex = elementBinders.length - 1;
 
           // TODO(deboer): Hack, this sucks.
@@ -72,11 +73,11 @@ class TaggingCompiler implements Compiler {
               addedDummy = true;
               // add a dummy to the list which may be removed later.
               taggedElementBinder = _addBinder(elementBinders,
-                new TaggedElementBinder(null, parentElementBinderOffset));
+                new TaggedElementBinder(null, parentElementBinderOffset, isTopLevel));
             }
 
             _compileView(domCursor, templateCursor, null, directives,
-                taggedElementBinderIndex, taggedElementBinder, elementBinders);
+                taggedElementBinderIndex, taggedElementBinder, elementBinders, false);
 
             if (addedDummy && !_isDummyBinder(taggedElementBinder)) {
               // We are keeping the element binder, so add the class
@@ -106,7 +107,7 @@ class TaggingCompiler implements Compiler {
                     templateCursor.current.parentNode != null)) {
           // Always add an elementBinder for top-level text.
           _addBinder(elementBinders, new TaggedElementBinder(elementBinder,
-              parentElementBinderOffset));
+              parentElementBinderOffset, isTopLevel));
         }
       } else {
         throw "Unsupported node type for $node: [${node.nodeType}]";
@@ -130,7 +131,7 @@ class TaggingCompiler implements Compiler {
     var domCursorIndex = domCursor.index;
     var elementBinders = [];
     _compileView(domCursor, transcludeCursor, transcludedElementBinder,
-        directives, -1, null, elementBinders);
+        directives, -1, null, elementBinders, true);
 
     viewFactory = new TaggingViewFactory(transcludeCursor.elements,
         _removeUnusedBinders(elementBinders), _perf, _expando);
@@ -160,7 +161,7 @@ class TaggingCompiler implements Compiler {
     final elementBinders = <TaggedElementBinder>[];
     _compileView(
         new NodeCursor(domElements), new NodeCursor(templateElements),
-        null, directives, -1, null, elementBinders);
+        null, directives, -1, null, elementBinders, true);
 
     var viewFactory = new TaggingViewFactory(
         templateElements, _removeUnusedBinders(elementBinders), _perf, _expando);
@@ -170,7 +171,7 @@ class TaggingCompiler implements Compiler {
   }
 
   _isDummyBinder(TaggedElementBinder binder) =>
-    binder.binder == null && binder.textBinders == null;
+    binder.binder == null && binder.textBinders == null && !binder.isTopLevel;
 
   _removeUnusedBinders(List<TaggedElementBinder> binders) {
     // In order to support text nodes with directiveless parents, we

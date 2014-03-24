@@ -71,10 +71,10 @@ class TaggingViewFactory implements ViewFactory {
         }
       } else if (node.nodeType == 3 || node.nodeType == 8) {
         TaggedElementBinder tagged = elementBinders[elementBinderIndex];
-        assert(tagged.binder != null);
-
-        _bindTagged(tagged, rootInjector, elementBinders, view, node);
-
+        assert(tagged.binder != null || tagged.isTopLevel);
+        if (tagged.binder != null) {
+          _bindTagged(tagged, rootInjector, elementBinders, view, node);
+        }
         elementBinderIndex++;
       } else {
         throw "nodeType sadness ${node.nodeType}}";

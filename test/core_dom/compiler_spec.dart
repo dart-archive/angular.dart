@@ -58,6 +58,11 @@ void main() {
       _.compile([]);
     });
 
+    it('should compile a comment on the top level', () {
+      _.compile('<!-- comment -->');
+      expect(_.rootElements[0]).toHaveHtml('<!-- comment -->');
+    });
+
     it('should compile a comment with no directives around', () {
       var element = _.compile('<div><!-- comment --></div>');
       expect(element).toHaveHtml('<!-- comment -->');

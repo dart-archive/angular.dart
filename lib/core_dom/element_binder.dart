@@ -402,10 +402,11 @@ class TaggedElementBinder {
   final ElementBinder binder;
   int parentBinderOffset;
   var injector;
+  bool isTopLevel;
 
   List<TaggedTextBinder> textBinders;
 
-  TaggedElementBinder(this.binder, this.parentBinderOffset);
+  TaggedElementBinder(this.binder, this.parentBinderOffset, this.isTopLevel);
 
   void addText(TaggedTextBinder tagged) {
     if (textBinders == null) textBinders = [];
