@@ -99,6 +99,8 @@ class BounceController {
   }
 }
 
+List<String> _CACHE = new List.generate(500, (i) => '${i}px');
+
 @NgDirective(
   selector: '[ball-position]',
   map: const {
@@ -109,11 +111,14 @@ class BallPositionDirective {
   final Scope scope;
   BallPositionDirective(this.element, this.scope);
 
+  px(x) => _CACHE[max(0, x.round())];
+
   set position(BallModel model) {
-    element.style.backgroundColor = model.color;
+    var style = element.style;
+    style.backgroundColor = model.color;
     scope
-        ..watch('x', (x, _) => element.style.left = '${x + 10}px', context: model, readOnly: true)
-        ..watch('y', (y, _) => element.style.top = '${y + 10}px', context: model, readOnly: true);
+        ..watch('x', (x, _) => style.left = px(x), context: model, readOnly: true)
+        ..watch('y', (y, _) => style.top = px(y), context: model, readOnly: true);
   }
 }
 
@@ -121,7 +126,7 @@ class MyModule extends Module {
   MyModule() {
     type(BounceController);
     type(BallPositionDirective);
-    value(ScopeStats, new ScopeStats(report: true));
+    factory(ScopeStatsConfig, (i) => new ScopeStatsConfig(emit: false));
   }
 }
 

@@ -2,6 +2,7 @@ library angular.core;
 
 import 'dart:async' as async;
 import 'dart:collection';
+import 'dart:math';
 import 'package:intl/intl.dart';
 
 import 'package:di/di.dart';
@@ -42,7 +43,9 @@ class NgCoreModule extends Module {
     type(RootScope);
     factory(Scope, (injector) => injector.get(RootScope));
     factory(ClosureMap, (_) => throw "Must provide dynamic/static ClosureMap.");
-    value(ScopeStats, new ScopeStats());
+    type(ScopeStats);
+    type(ScopeStatsEmitter);
+    factory(ScopeStatsConfig, (i) => new ScopeStatsConfig());
     value(Object, {}); // RootScope context
     type(AstParser);
     type(NgZone);
