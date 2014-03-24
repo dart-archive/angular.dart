@@ -1,5 +1,12 @@
 part of angular.directive;
 
+/**
+ * The NgControl class is a super-class for handling info and error states between
+ * inner controls and models. NgControl will automatically apply the associated CSS
+ * classes for the error and info states that are applied as well as status flags.
+ * NgControl is used with the form and fieldset as well as all other directives that
+ * are used for user input with NgModel.
+ */
 abstract class NgControl implements NgAttachAware, NgDetachAware {
   static const NG_VALID          = "ng-valid";
   static const NG_INVALID        = "ng-invalid";
@@ -15,12 +22,21 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
 
   final NgControl _parentControl;
   final NgAnimate _animate;
-  NgElement _element;
+  final NgElement _element;
 
   final _controls = new List<NgControl>();
   final _controlByName = new Map<String, List<NgControl>>();
 
+  /**
+    * The list of errors present on the control represented by an error name and
+    * an inner control instance.
+    */
   final errorStates = new Map<String, Set<NgControl>>();
+
+  /**
+    * The list of info messages present on the control represented by an state name and
+    * an inner control instance.
+    */
   final infoStates = new Map<String, Set<NgControl>>();
 
   NgControl(NgElement this._element, Injector injector,
@@ -36,13 +52,16 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
     _parentControl.removeControl(this);
   }
 
-  reset() {
+  /**
+    * Resets the form and inner models to their pristine state.
+    */
+  void reset() {
     _controls.forEach((control) {
       control.reset();
     });
   }
 
-  onSubmit(bool valid) {
+  void onSubmit(bool valid) {
     if (valid) {
       _submit_valid = true;
       element..addClass(NG_SUBMIT_VALID)..removeClass(NG_SUBMIT_INVALID);
@@ -55,34 +74,69 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
     });
   }
 
-  get parentControl => _parentControl;
+  NgControl get parentControl => _parentControl;
 
-  get submitted => _submit_valid != null;
-  get valid_submit => _submit_valid == true;
-  get invalid_submit => _submit_valid == false;
+  /**
+    * Whether or not the form has been submitted yet.
+    */
+  bool get submitted => _submit_valid != null;
 
-  get name => _name;
+  /**
+    * Whether or not the form was valid when last submitted.
+    */
+  bool get valid_submit => _submit_valid == true;
+
+  /**
+    * Whether or not the form was invalid when last submitted.
+    */
+  bool get invalid_submit => _submit_valid == false;
+
+  String get name => _name;
   set name(value) {
     _name = value;
   }
 
-  get element => _element;
+  /**
+    * Whether or not the form was invalid when last submitted.
+    */
+  NgElement get element => _element;
 
-  get valid              => !invalid;
-  get invalid            => errorStates.isNotEmpty;
+  /**
+    * A control is considered valid if all inner models are valid.
+    */
+  bool get valid              => !invalid;
 
-  get pristine           => !dirty;
-  get dirty              => infoStates.containsKey(NG_DIRTY);
+  /**
+    * A control is considered invalid if any inner models are invalid.
+    */
+  bool get invalid            => errorStates.isNotEmpty;
 
-  get untouched          => !touched;
-  get touched            => infoStates.containsKey(NG_TOUCHED);
+  /**
+    * Whether or not the control's or model's data has not been changed.
+    */
+  bool get pristine           => !dirty;
+
+  /**
+    * Whether or not the control's or model's data has been changed.
+    */
+  bool get dirty              => infoStates.containsKey(NG_DIRTY);
+
+  /**
+    * Whether or not the control/model has not been interacted with by the user.
+    */
+  bool get untouched          => !touched;
+
+  /**
+    * Whether or not the control/model has been interacted with by the user.
+    */
+  bool get touched            => infoStates.containsKey(NG_TOUCHED);
 
   /**
    * Registers a form control into the form for validation.
    *
-   * * [control] - The form control which will be registered (see [ngControl]).
+   * * [control] - The form control which will be registered (see [NgControl]).
    */
-  addControl(NgControl control) {
+  void addControl(NgControl control) {
     _controls.add(control);
     if (control.name != null) {
       _controlByName.putIfAbsent(control.name, () => new List<NgControl>()).add(control);
@@ -93,10 +147,9 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
    * De-registers a form control from the list of controls associated with the
    * form.
    *
-   * * [control] - The form control which will be de-registered (see
-   * [ngControl]).
+   * * [control] - The form control which will be de-registered (see [NgControl]).
    */
-  removeControl(NgControl control) {
+  void removeControl(NgControl control) {
     _controls.remove(control);
     String key = control.name;
     if (key != null && _controlByName.containsKey(key)) {
@@ -107,7 +160,12 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
     }
   }
 
-  removeStates(NgControl control) {
+  /**
+   * Clears all the info and error states that are associated with the control.
+   *
+   * * [control] - The form control which will be cleared of all state (see [NgControl]).
+   */
+  void removeStates(NgControl control) {
     bool hasRemovals = false;
     errorStates.keys.toList().forEach((state) {
       Set matchingControls = errorStates[state];
@@ -133,41 +191,48 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   }
 
   /**
-   * Sets the validity status of the given control/errorType pair within
-   * the list of controls registered on the form. Depending on the validation
-   * state of the existing controls, this will either change valid to true
-   * or invalid to true depending on if all controls are valid or if one
-   * or more of them is invalid.
+   * Whether or not the control contains the given error.
    *
-   * * [control] - The registered control object (see [ngControl]).
-   * * [errorType] - The error associated with the control (e.g. required, url,
-   * number, etc...).
-   * * [isValid] - Whether the given error is valid or not (false would mean the
-   * error is real).
+   * * [errorName] - The name of the error (e.g. ng-required, ng-pattern, etc...)
    */
-  bool hasErrorState(String key) => errorStates.containsKey(key);
+  bool hasErrorState(String errorName) => errorStates.containsKey(errorName);
 
-  addErrorState(NgControl control, String state) {
-    element..addClass(state + '-invalid')..removeClass(state + '-valid');
-    errorStates.putIfAbsent(state, () => new Set()).add(control);
-    _parentControl.addErrorState(this, state);
+  /**
+   * Adds the given childControl/errorName to the list of errors present on the control. Once
+   * added all associated parent controls will be registered with the error as well.
+   *
+   * * [childControl] - The child control that contains the error.
+   * * [errorName] - The name of the given error (e.g. ng-required, ng-pattern, etc...).
+   */
+  void addErrorState(NgControl childControl, String errorName) {
+    element..addClass(errorName + '-invalid')..removeClass(errorName + '-valid');
+    errorStates.putIfAbsent(errorName, () => new Set()).add(childControl);
+    _parentControl.addErrorState(this, errorName);
   }
 
-  removeErrorState(NgControl control, String state) {
-    if (!errorStates.containsKey(state)) return;
+  /**
+   * Removes the given childControl/errorName from the list of errors present on the control. Once
+   * removed the control will update any parent controls depending if error is not present on
+   * any other inner controls and or models. 
+   *
+   * * [childControl] - The child control that contains the error.
+   * * [errorName] - The name of the given error (e.g. ng-required, ng-pattern, etc...).
+   */
+  void removeErrorState(NgControl childControl, String errorName) {
+    if (!errorStates.containsKey(errorName)) return;
 
-    bool hasState = _controls.isEmpty ||
-                    _controls.every((control) {
-                      return !control.hasErrorState(state);
+    bool hasError = _controls.isEmpty ||
+                    _controls.every((childControl) {
+                      return !childControl.hasErrorState(errorName);
                     });
-    if (hasState) {
-      errorStates.remove(state);
-      _parentControl.removeErrorState(this, state);
-      element..removeClass(state + '-invalid')..addClass(state + '-valid');
+    if (hasError) {
+      errorStates.remove(errorName);
+      _parentControl.removeErrorState(this, errorName);
+      element..removeClass(errorName + '-invalid')..addClass(errorName + '-valid');
     }
   }
 
-  _getOppositeInfoState(String state) {
+  String _getOppositeInfoState(String state) {
     switch(state) {
       case NG_DIRTY:
         return NG_PRISTINE;
@@ -179,35 +244,51 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
     }
   }
 
-  addInfoState(NgControl control, String state) {
-    String oppositeState = _getOppositeInfoState(state);
+  /**
+   * Registers a non-error state on the control with the given childControl/stateName data. Once
+   * added the control will also add the same data to any associated parent controls.
+   *
+   * * [childControl] - The child control that contains the error.
+   * * [stateName] - The name of the given error (e.g. ng-required, ng-pattern, etc...).
+   */
+  void addInfoState(NgControl childControl, String stateName) {
+    String oppositeState = _getOppositeInfoState(stateName);
     if (oppositeState != null) {
       element.removeClass(oppositeState);
     }
-    element.addClass(state);
-    infoStates.putIfAbsent(state, () => new Set()).add(control);
-    _parentControl.addInfoState(this, state);
+    element.addClass(stateName);
+    infoStates.putIfAbsent(stateName, () => new Set()).add(childControl);
+    _parentControl.addInfoState(this, stateName);
   }
 
-  removeInfoState(NgControl control, String state) {
-    String oppositeState = _getOppositeInfoState(state);
-    if (infoStates.containsKey(state)) {
+  /**
+   * De-registers the provided state on the control with the given childControl. The state
+   * will be fully removed from the control if all of the inner controls/models also do not
+   * contain the state. If so then the state will also be attempted to be removed from the
+   * associated parent controls.
+   *
+   * * [childControl] - The child control that contains the error.
+   * * [stateName] - The name of the given error (e.g. ng-required, ng-pattern, etc...).
+   */
+  void removeInfoState(NgControl childControl, String stateName) {
+    String oppositeState = _getOppositeInfoState(stateName);
+    if (infoStates.containsKey(stateName)) {
       bool hasState = _controls.isEmpty ||
-                      _controls.every((control) {
-                        return !control.infoStates.containsKey(state);
+                      _controls.every((childControl) {
+                        return !childControl.infoStates.containsKey(stateName);
                       });
       if (hasState) {
         if (oppositeState != null) {
           element.addClass(oppositeState);
         }
-        element.removeClass(state);
-        infoStates.remove(state);
-        _parentControl.removeInfoState(this, state);
+        element.removeClass(stateName);
+        infoStates.remove(stateName);
+        _parentControl.removeInfoState(this, stateName);
       }
     } else if (oppositeState != null) {
       NgControl parent = this;
       do {
-        parent.element..addClass(oppositeState)..removeClass(state);
+        parent.element..addClass(oppositeState)..removeClass(stateName);
         parent = parent.parentControl;
       }
       while(parent != null && !(parent is NgNullControl));

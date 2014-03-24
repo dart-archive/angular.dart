@@ -49,18 +49,29 @@ class NgForm extends NgControl {
     }
   }
 
+  /**
+    * The name of the control. This is usually fetched via the name attribute that is
+    * present on the element that the control is bound to.
+    */
   @NgAttr('name')
   get name => _name;
-  set name(value) {
+  set name(String value) {
     if (value != null) {
       super.name = value;
       _scope.context[name] = this;
     }
   }
 
+  /**
+    * The list of associated child controls.
+    */
   get controls => _controlByName;
 
-  NgControl operator[](name) =>
+  /**
+    * Returns the child control that is associated with the given name. If multiple
+    * child controls contain the same name then the first instance will be returned.
+    */
+  NgControl operator[](String name) =>
       controls.containsKey(name) ? controls[name][0] : null;
 }
 
