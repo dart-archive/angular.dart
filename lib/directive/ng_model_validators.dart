@@ -1,6 +1,15 @@
 part of angular.directive;
 
+/**
+ * NgValidator is the class interface for performing validations for an NgModel instance.
+ */
 abstract class NgValidator {
+  /**
+   * The name of the validator. This name will be used as the key value within the
+   * model.errorStates map and it will also be applied as a CSS class on the associated
+   * DOM element. Therefore, as a best practice, please do not include spaces for the validator
+   * name since it may cause issues with the CSS naming.
+   */
   String get name;
   bool isValid(modelValue);
 }
