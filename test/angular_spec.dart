@@ -55,18 +55,38 @@ main() {
 
         var seen = {};
 
+        // Set this to true to see how symbols are exported from angular.
+        var SHOULD_PRINT_SYMBOL_TREE = false;
+
         // TODO(deboer): Add types once Dart VM 1.2 is deprecated.
-        extractSymbols(/* LibraryMirror */ lib) {
+        extractSymbols(/* LibraryMirror */ lib, [List showSymbols = const[], List hideSymbols = const[], String printPrefix = ""]) {
+          if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + _unwrapSymbol(lib.qualifiedName));
+          printPrefix += "  ";
           lib.declarations.forEach((symbol, _) {
+            if (!showSymbols.isEmpty && !showSymbols.contains(symbol)) return;
+            if (!hideSymbols.isEmpty && hideSymbols.contains(symbol)) return;
+            if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + _unwrapSymbol(symbol));
             names.add([_unwrapSymbol(symbol), _unwrapSymbol(lib.qualifiedName)]);
           });
 
           lib.libraryDependencies.forEach((/* LibraryDependencyMirror */ libDep) {
             LibraryMirror target = libDep.targetLibrary;
             if (!libDep.isExport) return;
+
+            List showSymbols = [];
+            List hideSymbols = [];
+            libDep.combinators.forEach((/* CombinatorMirror */ c) {
+              if (c.isShow) {
+                showSymbols.addAll(c.identifiers);
+              }
+              if (c.isHide) {
+                hideSymbols.addAll(c.identifiers);
+              }
+            });
+
             if (!seen.containsKey(target)) {
               seen[target] = true;
-              extractSymbols(target);
+              extractSymbols(target, showSymbols, hideSymbols, printPrefix);
             }
           });
         };
@@ -213,34 +233,14 @@ main() {
         "angular.core.parser.ParserBackend",
         "angular.core.parser.BoundSetter",
         "angular.core.parser.Setter",  // common name
-        "angular.core.parser.syntax.LiteralObject",  // evenything in syntax should be private
-        "angular.core.parser.syntax.CallMember",
-        "angular.core.parser.syntax.Filter",
-        "angular.core.parser.syntax.defaultFilterMap",
-        "angular.core.parser.syntax.BoundExpression",
-        "angular.core.parser.syntax.AccessMember",
+        "angular.core.parser.syntax.BoundExpression", // evenything in syntax should be private
         "angular.core.parser.syntax.Expression",
-        "angular.core.parser.syntax.AccessScope",
-        "angular.core.parser.syntax.Assign",
-        "angular.core.parser.syntax.AccessKeyed",
         "angular.core.parser.syntax.CallArguments",
-        "angular.core.parser.syntax.CallScope",
-        "angular.core.parser.syntax.CallFunction",
-        "angular.core.parser.syntax.Conditional",
-        "angular.core.parser.syntax.Binary",
-        "angular.core.parser.syntax.Chain",
-        "angular.core.parser.syntax.Prefix",
-        "angular.core.parser.syntax.Literal",
-        "angular.core.parser.syntax.LiteralString",
-        "angular.core.parser.syntax.LiteralArray",
-        "angular.core.parser.syntax.LiteralPrimitive",
         "angular.core.parser.syntax.Visitor",
-        "angular.core.parser.dynamic_parser.DynamicExpression",
         "angular.core.parser.dynamic_parser.ClosureMap",
         "angular.core.parser.dynamic_parser.DynamicParser",
         "angular.core.parser.dynamic_parser.DynamicParserBackend",
         "angular.core.parser.static_parser.StaticParserFunctions",
-        "angular.core.parser.static_parser.StaticExpression",
         "angular.core.parser.static_parser.StaticParser",
         "angular.core.parser.lexer.Scanner",  // everything in lexer should be private
         "angular.core.parser.lexer.OPERATORS",
@@ -292,13 +292,7 @@ main() {
         "url_matcher.UrlMatcher",
         "url_matcher.UrlMatch",
         "dirty_checking_change_detector.FieldGetter",  // everything in change detector should be private
-        "dirty_checking_change_detector.DirtyCheckingChangeDetector",
-        "dirty_checking_change_detector.DirtyCheckingRecord",
-        "dirty_checking_change_detector.ItemRecord",
-        "dirty_checking_change_detector.KeyValueRecord",
-        "dirty_checking_change_detector.DuplicateMap",
         "dirty_checking_change_detector.GetterCache",
-        "dirty_checking_change_detector.DirtyCheckingChangeDetectorGroup"
       ];
 
       var _nameMap = {};
