@@ -1,5 +1,11 @@
 part of angular.directive;
 
+/**
+ * NgModelConverter is the class interface for performing transformations on
+ * the viewValue and modelValue properties on a model. A new converter can be created
+ * by implementing the NgModelConverter class and then attaching to a model via the
+ * provided setter.
+ */
 abstract class NgModelConverter {
   String get name;
   parse(value) => value;
@@ -27,16 +33,17 @@ class NgModel extends NgControl implements NgAttachAware {
 
   BoundSetter setter = (_, [__]) => null;
 
-  var _originalValue, _viewValue, _modelValue;
   String _exp;
-  final _validators = <NgValidator>[];
+  var _originalValue, _viewValue, _modelValue;
   bool _alwaysProcessViewValue;
   bool _toBeValidated = false;
+  Function render = (value) => null;
 
+  final _validators = <NgValidator>[];
   NgModelConverter _converter;
+
   Watch _removeWatch;
   bool _watchCollection;
-  Function render = (value) => null;
 
   NgModel(this._scope, NgElement element, Injector injector,
           this._parser, NodeAttrs attrs, NgAnimate animate)
@@ -53,7 +60,7 @@ class NgModel extends NgControl implements NgAttachAware {
     markAsPristine();
   }
 
-  void processViewValue(value) {
+  void _processViewValue(value) {
     validate();
     _viewValue = converter.format(value);
     _scope.rootScope.domWrite(() => render(_viewValue));
@@ -63,9 +70,13 @@ class NgModel extends NgControl implements NgAttachAware {
     watchCollection = false;
   }
 
+  /**
+    * Resets the model value to it's original (pristine) value. If the model has been interacted
+    * with by the user at all then the model will be also reset to an "untouched" state.
+    */
   void reset() {
     markAsUntouched();
-    processViewValue(_originalValue);
+    _processViewValue(_originalValue);
     modelValue = _originalValue;
   }
 
@@ -90,6 +101,10 @@ class NgModel extends NgControl implements NgAttachAware {
     addInfoState(this, NgControl.NG_DIRTY);
   }
 
+  /**
+    * Flags the model to be set for validation upon the next digest. This operation is useful
+    * to optimize validations incase multiple validations are triggered one after the other.
+    */
   void validateLater() {
     if (_toBeValidated) return;
     _toBeValidated = true;
@@ -100,10 +115,13 @@ class NgModel extends NgControl implements NgAttachAware {
     });
   }
 
-  get converter => _converter;
+  /**
+    * Returns the associated converter that is used with the model.
+    */
+  NgModelConverter get converter => _converter;
   set converter(NgModelConverter c) {
     _converter = c;
-    processViewValue(modelValue);
+    _processViewValue(modelValue);
   }
 
   @NgAttr('name')
@@ -121,7 +139,7 @@ class NgModel extends NgControl implements NgAttachAware {
     var onChange = (value, [_]) {
       if (_alwaysProcessViewValue || _modelValue != value) {
         _modelValue = value;
-        processViewValue(value);
+        _processViewValue(value);
       }
     };
 
@@ -147,22 +165,34 @@ class NgModel extends NgControl implements NgAttachAware {
     _scope.rootScope.runAsync(() {
       _modelValue = boundExpression();
       _originalValue = modelValue;
-      processViewValue(_modelValue);
+      _processViewValue(_modelValue);
     });
   }
 
+  /**
+    * Applies the given [error] to the model.
+    */
   void addError(String error) {
     this.addErrorState(this, error);
   }
 
+  /**
+    * Removes the given [error] from the model.
+    */
   void removeError(String error) {
     this.removeErrorState(this, error);
   }
 
+  /**
+    * Adds the given [info] state to the model.
+    */
   void addInfo(String info) {
     this.addInfoState(this, info);
   }
 
+  /**
+    * Removes the given [info] state from the model.
+    */
   void removeInfo(String info) {
     this.removeInfoState(this, info);
   }
@@ -188,10 +218,14 @@ class NgModel extends NgControl implements NgAttachAware {
       : markAsDirty();
   }
 
+  /**
+    * Returns the list of validators that are registered on the model.
+    */
   List<NgValidator> get validators => _validators;
 
   /**
-   * Executes a validation on the form against each of the validation present on the model.
+   * Executes a validation on the model against each of the validators present on the model.
+   * Once complete, the model will either be set as valid or invalid.
    */
   void validate() {
     _toBeValidated = false;
