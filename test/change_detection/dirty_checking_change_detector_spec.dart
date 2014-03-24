@@ -4,13 +4,15 @@ import '../_specs.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'dart:collection';
+import 'dart:math';
 
 void main() {
   describe('DirtyCheckingChangeDetector', () {
     DirtyCheckingChangeDetector<String> detector;
+    GetterCache getterCache;
 
     beforeEach(() {
-      GetterCache getterCache = new GetterCache({
+      getterCache = new GetterCache({
         "first": (o) => o.first,
         "age": (o) => o.age
       });
@@ -170,6 +172,80 @@ void main() {
         var b = detector.newGroup();
         expect(detector.collectChanges).not.toThrow();
       });
+
+      it('should properly disconnect group in case watch is removed in disconected group', () {
+        var map = {};
+        var detector0 = new DirtyCheckingChangeDetector<String>(getterCache);
+          var detector1 = detector0.newGroup();
+            var detector2 = detector1.newGroup();
+            var watch2 = detector2.watch(map, 'f1', null);
+          var detector3 = detector0.newGroup();
+          detector1.remove();
+            watch2.remove(); // removing a dead record
+          detector3.watch(map, 'f2', null);
+      });
+
+      it('should find random bugs', () {
+        List detectors;
+        List records;
+        List steps;
+        var field = 'someField';
+        step(text) {
+          //print(text);
+          steps.add(text);
+        }
+        Map map = {};
+        var random = new Random();
+        try {
+          for (var i = 0; i < 100000; i++) {
+            if (i % 50 == 0) {
+              //print(steps);
+              //print('===================================');
+              records = [];
+              steps = [];
+              detectors = [new DirtyCheckingChangeDetector<String>(getterCache)];
+            }
+            switch (random.nextInt(4)) {
+              case 0: // new child detector
+                if (detectors.length > 10) break;
+                var index = random.nextInt(detectors.length);
+                ChangeDetectorGroup detector = detectors[index];
+                step('detectors[$index].newGroup()');
+                var child = detector.newGroup();
+                detectors.add(child);
+                break;
+              case 1: // add watch
+                var index = random.nextInt(detectors.length);
+                ChangeDetectorGroup detector = detectors[index];
+                step('detectors[$index].watch(map, field, null)');
+                WatchRecord record = detector.watch(map, field, null);
+                records.add(record);
+                break;
+              case 2: // destroy watch group
+                if (detectors.length == 1) break;
+                var index = random.nextInt(detectors.length - 1) + 1;
+                ChangeDetectorGroup detector = detectors[index];
+                step('detectors[$index].remove()');
+                detector.remove();
+                detectors = detectors
+                    .where((s) => s.isAttached)
+                    .toList();
+                break;
+              case 3: // remove watch on watch group
+                if (records.length == 0) break;
+                var index = random.nextInt(records.length);
+                WatchRecord record = records.removeAt(index);
+                step('records.removeAt($index).remove()');
+                record.remove();
+                break;
+            }
+          }
+        } catch(e) {
+          print(steps);
+          rethrow;
+        }
+      });
+
     });
 
     describe('list watching', () {

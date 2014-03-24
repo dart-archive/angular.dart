@@ -68,12 +68,23 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     return tail._recordTail;
   }
 
+  bool get isAttached {
+    DirtyCheckingChangeDetectorGroup current = this;
+    DirtyCheckingChangeDetectorGroup parent;
+    while ((parent = current._parent) != null) {
+      current = parent;
+    }
+    return current is DirtyCheckingChangeDetector
+      ? true
+      : current._prev != null && current._next != null;
+  }
+
 
   DirtyCheckingChangeDetector get _root {
     var root = this;
-    var next;
-    while ((next = root._parent) != null) {
-      root = next;
+    var parent;
+    while ((parent = root._parent) != null) {
+      root = parent;
     }
     return root is DirtyCheckingChangeDetector ? root : null;
   }
@@ -146,15 +157,11 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     assert((root = _root) != null);
     assert(root._assertRecordsOk());
     DirtyCheckingRecord prevRecord = _recordHead._prevRecord;
-    DirtyCheckingRecord nextRecord = _childInclRecordTail._nextRecord;
+    var childInclRecordTail = _childInclRecordTail;
+    DirtyCheckingRecord nextRecord = childInclRecordTail._nextRecord;
 
     if (prevRecord != null) prevRecord._nextRecord = nextRecord;
     if (nextRecord != null) nextRecord._prevRecord = prevRecord;
-
-    var cursor = _recordHead;
-    while (cursor != nextRecord) {
-      cursor = cursor._nextRecord;
-    }
 
     var prevGroup = _prev;
     var nextGroup = _next;
@@ -172,8 +179,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     _parent = null;
     _prev = _next = null;
     _recordHead._prevRecord = null;
-    _recordTail._nextRecord = null;
-    _recordHead = _recordTail = null;
+    childInclRecordTail._nextRecord = null;
     assert(root._assertRecordsOk());
   }
 
@@ -222,8 +228,8 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
       do {
         allRecords.add(record.toString());
         record = record._nextRecord;
-      }
-      while (record != includeChildrenTail);
+      } while (record != includeChildrenTail);
+      allRecords.add(includeChildrenTail);
       lines.add('FIELDS: ${allRecords.join(', ')}');
     }
 
@@ -267,16 +273,41 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
       }
       var groupRecord = group._recordHead;
       var groupLast = group._recordTail;
-      while (true) {
+      if (record != groupRecord) {
+        throw "Next record is $record expecting $groupRecord";
+      }
+      var done = false;
+      while (!done && groupRecord != null) {
         if (groupRecord == record) {
+          if (record._group != null && record._group != group) {
+            throw "Wrong group: $record "
+                  "Got ${record._group} Expecting: $group";
+          }
           record = record._nextRecord;
         } else {
           throw 'lost: $record found $groupRecord\n$this';
         }
 
-        if (groupRecord == groupLast) break;
+        if (groupRecord._nextRecord != null &&
+            groupRecord._nextRecord._prevRecord != groupRecord) {
+          throw "prev/next pointer missmatch on "
+                "$groupRecord -> ${groupRecord._nextRecord} "
+                "<= ${groupRecord._nextRecord._prevRecord} in $this";
+        }
+        if (groupRecord._prevRecord != null &&
+            groupRecord._prevRecord._nextRecord != groupRecord) {
+              throw "prev/next pointer missmatch on "
+                    "$groupRecord -> ${groupRecord._prevRecord} "
+                    "<= ${groupRecord._prevRecord._nextChange} in $this";
+        }
+        if (groupRecord == groupLast) {
+          done = true;
+        }
         groupRecord = groupRecord._nextRecord;
       }
+    }
+    if(record != null) {
+      throw "Extra records at tail: $record on $this";
     }
     return true;
   }
