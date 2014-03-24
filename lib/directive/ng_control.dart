@@ -18,7 +18,7 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   static const NG_SUBMIT_INVALID = "ng-submit-invalid";
 
   String _name;
-  bool _submit_valid;
+  bool _submitValid;
 
   final NgControl _parentControl;
   final NgAnimate _animate;
@@ -63,10 +63,10 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
 
   void onSubmit(bool valid) {
     if (valid) {
-      _submit_valid = true;
+      _submitValid = true;
       element..addClass(NG_SUBMIT_VALID)..removeClass(NG_SUBMIT_INVALID);
     } else {
-      _submit_valid = false;
+      _submitValid = false;
       element..addClass(NG_SUBMIT_INVALID)..removeClass(NG_SUBMIT_VALID);
     }
     _controls.forEach((control) {
@@ -79,17 +79,17 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   /**
     * Whether or not the form has been submitted yet.
     */
-  bool get submitted => _submit_valid != null;
+  bool get submitted => _submitValid != null;
 
   /**
     * Whether or not the form was valid when last submitted.
     */
-  bool get valid_submit => _submit_valid == true;
+  bool get validSubmit => _submitValid == true;
 
   /**
     * Whether or not the form was invalid when last submitted.
     */
-  bool get invalid_submit => _submit_valid == false;
+  bool get invalidSubmit => _submitValid == false;
 
   String get name => _name;
   set name(value) {
@@ -297,7 +297,7 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
 }
 
 class NgNullControl implements NgControl {
-  var _name, _dirty, _valid, _submit_valid, _pristine, _element, _touched;
+  var _name, _dirty, _valid, _submitValid, _pristine, _element, _touched;
   var _controls, _parentControl, _controlName, _animate, infoStates, errorStates;
   var errors, _controlByName;
   NgElement element;
@@ -313,8 +313,8 @@ class NgNullControl implements NgControl {
   set name(name) {}
 
   bool get submitted => false;
-  bool get valid_submit => true;
-  bool get invalid_submit => false;
+  bool get validSubmit => true;
+  bool get invalidSubmit => false;
   bool get pristine => true;
   bool get dirty => false;
   bool get valid => true;
