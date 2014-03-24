@@ -42,7 +42,9 @@ class NgCoreModule extends Module {
     type(Interpolate);
     type(RootScope);
     factory(Scope, (injector) => injector.get(RootScope));
-    value(ScopeStats, new ScopeStats());
+    type(ScopeStats);
+    type(ScopeStatsEmitter);
+    factory(ScopeStatsConfig, (i) => new ScopeStatsConfig());
     value(GetterCache, new GetterCache({}));
     value(Object, {}); // RootScope context
     type(AstParser);

@@ -140,6 +140,8 @@ main() {
         "angular.core.AnnotationMap",
         "angular.core.LruCache",  // internal?
         "angular.core.ScopeStats",
+        "angular.core.ScopeStatsConfig",
+        "angular.core.ScopeStatsEmitter",
         "angular.core.ArrayFn",  // internal?
         "angular.core.LongStackTrace",  // internal?
         "angular.core.Cache",  // internal?

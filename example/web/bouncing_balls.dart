@@ -128,7 +128,7 @@ class MyModule extends Module {
       'digestTime': (o) => o.digestTime,
       'ballClassName': (o) => o.ballClassName
     }));
-    value(ScopeStats, new ScopeStats(report: true));
+    factory(ScopeStatsConfig, (i) => new ScopeStatsConfig(emit: true));
   }
 }
 

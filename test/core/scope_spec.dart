@@ -21,7 +21,8 @@ void main() {
           ..type(_ListTailFilter)
           ..type(_SortFilter)
           ..type(_IdentityFilter)
-          ..type(_MapKeys);
+          ..type(_MapKeys)
+          ..type(ScopeStatsEmitter, implementedBy: MockScopeStatsEmitter);
     });
 
     describe('AST Bridge', () {
@@ -1464,6 +1465,51 @@ void main() {
         expect(errors.first.error, startsWith('Model did not stabilize'));
       }));
     });
+
+    describe('logging', () {
+      it('should log a message on digest if reporting is enabled', (RootScope rootScope,
+          Injector injector) {
+        ScopeStatsConfig config = injector.get(ScopeStatsConfig);
+        config.emit = true;
+        rootScope.digest();
+        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+          .toEqual(true);
+      });
+
+      it('should log a message on flush if reporting is enabled', (RootScope rootScope,
+          Injector injector) {
+        ScopeStatsConfig config = injector.get(ScopeStatsConfig);
+        config.emit = true;
+        rootScope.flush();
+        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+          .toEqual(true);
+      });
+
+      it('should not log a message on digest if reporting is disabled', (RootScope rootScope,
+          Injector injector) {
+        rootScope.digest();
+        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+          .toEqual(false);
+      });
+
+      it('should not log a message on flush if reporting is disabled', (RootScope rootScope,
+          Injector injector) {
+        rootScope.flush();
+        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+          .toEqual(false);
+      });
+
+      it('can be turned on at runtime', (RootScope rootScope, Injector injector) {
+        rootScope.digest();
+        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+          .toEqual(false);
+        ScopeStatsConfig config = injector.get(ScopeStatsConfig);
+        config.emit = true;
+        rootScope.digest();
+        expect((injector.get(ScopeStatsEmitter) as MockScopeStatsEmitter).invoked)
+          .toEqual(true);
+      });
+    });
   });
 }
 
@@ -1533,5 +1579,19 @@ class FilterOne {
 class FilterTwo {
   call(String str) {
     return '$str 2';
+  }
+}
+
+class MockScopeStatsEmitter implements ScopeStatsEmitter {
+  bool invoked = false;
+
+  void emitMessage(String message) {}
+
+  void emitSummary(List<int> digestTimes, int flushPhaseDuration,
+                   int assertFlushPhaseDuration) {}
+
+  void emit(String phaseOrLoopNo, AvgStopwatch fieldStopwatch,
+            AvgStopwatch evalStopwatch, AvgStopwatch processStopwatch) {
+    invoked = true;
   }
 }

@@ -354,45 +354,58 @@ class Scope {
 _mapEqual(Map a, Map b) => a.length == b.length &&
     a.keys.every((k) => b.containsKey(k) && a[k] == b[k]);
 
+/**
+ * ScopeStats collects and emits statistics about a [Scope].
+ *
+ * ScopeStats supports emitting the results. Result emission can be started or
+ * stopped at runtime. The result emission can is configured by supplying a
+ * [ScopeStatsEmitter].
+ */
 class ScopeStats {
-  bool report;
-  final nf = new NumberFormat.decimalPattern();
+  final fieldStopwatch = new AvgStopwatch();
+  final evalStopwatch = new AvgStopwatch();
+  final processStopwatch = new AvgStopwatch();
 
-  final digestFieldStopwatch = new AvgStopwatch();
-  final digestEvalStopwatch = new AvgStopwatch();
-  final digestProcessStopwatch = new AvgStopwatch();
-  int _digestLoopNo = 0;
+  List<int> _digestLoopTimes = [];
+  int _flushPhaseDuration = 0 ;
+  int _assertFlushPhaseDuration = 0;
 
-  final flushFieldStopwatch = new AvgStopwatch();
-  final flushEvalStopwatch = new AvgStopwatch();
-  final flushProcessStopwatch = new AvgStopwatch();
+  int _loopNo = 0;
+  ScopeStatsEmitter _emitter;
+  ScopeStatsConfig _config;
 
-  ScopeStats({this.report: false}) {
-    nf.maximumFractionDigits = 0;
-  }
+  /**
+   * Construct a new instance of ScopeStats.
+   */
+  ScopeStats(this._emitter, this._config);
 
   void digestStart() {
-    if (report) print('digest');
-    _digestStopwatchReset();
-    _digestLoopNo = 0;
+    if (_config.emit && _emitter != null) _emitter.emitMessage(RootScope.STATE_DIGEST);
+    _digestLoopTimes = [];
+    _stopwatchReset();
+    _loopNo = 0;
   }
 
-  _digestStopwatchReset() {
-    digestFieldStopwatch.reset();
-    digestEvalStopwatch.reset();
-    digestProcessStopwatch.reset();
+  int _allStagesDuration() {
+    return fieldStopwatch.elapsedMicroseconds +
+      evalStopwatch.elapsedMicroseconds +
+      processStopwatch.elapsedMicroseconds;
+  }
+
+  _stopwatchReset() {
+    fieldStopwatch.reset();
+    evalStopwatch.reset();
+    processStopwatch.reset();
   }
 
   void digestLoop(int changeCount) {
-    _digestLoopNo++;
-    if (report) print(this);
-    _digestStopwatchReset();
-  }
-
-  String _stat(AvgStopwatch s) {
-    return '${nf.format(s.count)}'
-           ' / ${nf.format(s.elapsedMicroseconds)} us'
-           ' = ${nf.format(s.ratePerMs)} #/ms';
+    _loopNo++;
+    if (_config.emit && _emitter != null) {
+      _emitter.emit(_loopNo.toString(), fieldStopwatch, evalStopwatch,
+        processStopwatch);
+    }
+    _digestLoopTimes.add( _allStagesDuration() );
+    _stopwatchReset();
   }
 
   void digestEnd() {
@@ -402,16 +415,97 @@ class ScopeStats {
   void domWriteEnd() {}
   void domReadStart() {}
   void domReadEnd() {}
-  void flushStart() {}
-  void flushEnd() {}
-  void flushAssertStart() {}
-  void flushAssertEnd() {}
+  void flushStart() {
+    _stopwatchReset();
+  }
+  void flushEnd() {
+    if (_config.emit && _emitter != null) {
+      _emitter.emit(RootScope.STATE_FLUSH, fieldStopwatch, evalStopwatch,
+        processStopwatch);
+    }
+    _flushPhaseDuration = _allStagesDuration();
+  }
+  void flushAssertStart() {
+    _stopwatchReset();
+  }
+  void flushAssertEnd() {
+    if (_config.emit && _emitter != null) {
+      _emitter.emit(RootScope.STATE_FLUSH_ASSERT, fieldStopwatch, evalStopwatch,
+        processStopwatch);
+    }
+    _assertFlushPhaseDuration = _allStagesDuration();
+  }
 
-  toString() =>
-      '    #$_digestLoopNo:'
-      'Field: ${_stat(digestFieldStopwatch)} '
-      'Eval: ${_stat(digestEvalStopwatch)} '
-      'Process: ${_stat(digestProcessStopwatch)}';
+  void cycleEnd() {
+    if (_config.emit && _emitter != null) {
+      _emitter.emitSummary(_digestLoopTimes, _flushPhaseDuration, _assertFlushPhaseDuration);
+    }
+  }
+}
+
+/**
+ * ScopeStatsEmitter is in charge of formatting the [ScopeStats] and outputting
+ * a message.
+ */
+class ScopeStatsEmitter {
+  final _nf = new NumberFormat.decimalPattern();
+
+  ScopeStatsEmitter() {
+    _nf.maximumFractionDigits = 0;
+  }
+
+  /**
+   * Emit a message based on the phase and state of stopwatches.
+   */
+  void emit(String phaseOrLoopNo, AvgStopwatch fieldStopwatch,
+            AvgStopwatch evalStopwatch, AvgStopwatch processStopwatch) {
+    print(_formatPrefix(phaseOrLoopNo) +
+          'Field: ${_stat(fieldStopwatch)} '
+          'Eval: ${_stat(evalStopwatch)} '
+          'Process: ${_stat(processStopwatch)}');
+  }
+
+  /**
+   * Emit a simple message.
+   */
+  void emitMessage(String message) {
+    print(message);
+  }
+
+  void emitSummary(List<int> digestTimes, int flushPhaseDuration,
+                   int assertFlushPhaseDuration) {
+    StringBuffer buffer = new StringBuffer();
+    buffer.write('  TOTAL:');
+    buffer.write((digestTimes.fold(0, (prev, element) => prev + element) +
+      flushPhaseDuration + assertFlushPhaseDuration).toString() + 'us = ');
+    var i = 1;
+    buffer.write(digestTimes.map((int item) => '#${i++}: ${item} us ').join(" + "));
+    buffer.write(' + ${RootScope.STATE_FLUSH}: ${flushPhaseDuration} us');
+    buffer.write(' + ${RootScope.STATE_FLUSH_ASSERT}: ${assertFlushPhaseDuration} us');
+    print(buffer);
+  }
+
+  String _formatPrefix(String prefix) {
+    if (prefix == RootScope.STATE_FLUSH) return '  flush:';
+    else if (prefix == RootScope.STATE_FLUSH_ASSERT) return ' assert:';
+    else return '     #$prefix:';
+  }
+
+  String _stat(AvgStopwatch s) {
+    return '${_nf.format(s.count)}'
+    ' / ${_nf.format(s.elapsedMicroseconds)} us'
+    ' = ${_nf.format(s.ratePerMs)} #/ms';
+  }
+}
+
+/**
+ * ScopeStatsConfig is used to modify behavior of [ScopeStats]. You can use this
+ * object to modify behavior at runtime too.
+ */
+class ScopeStatsConfig {
+  var emit;
+
+  ScopeStatsConfig({this.emit: false});
 }
 
 
@@ -419,6 +513,7 @@ class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
   static final STATE_DIGEST = 'digest';
   static final STATE_FLUSH = 'flush';
+  static final STATE_FLUSH_ASSERT = 'assert';
 
   final ExceptionHandler _exceptionHandler;
   final AstParser _astParser;
@@ -480,9 +575,9 @@ class RootScope extends Scope {
         count = rootWatchGroup.detectChanges(
             exceptionHandler: _exceptionHandler,
             changeLog: changeLog,
-            fieldStopwatch: _scopeStats.digestFieldStopwatch,
-            evalStopwatch: _scopeStats.digestEvalStopwatch,
-            processStopwatch: _scopeStats.digestProcessStopwatch);
+            fieldStopwatch: _scopeStats.fieldStopwatch,
+            evalStopwatch: _scopeStats.evalStopwatch,
+            processStopwatch: _scopeStats.processStopwatch);
 
         if (digestTTL <= LOG_COUNT) {
           if (changeLog == null) {
@@ -526,7 +621,10 @@ class RootScope extends Scope {
         _domWriteTail = null;
         if (runObservers) {
           runObservers = false;
-          readOnlyGroup.detectChanges(exceptionHandler:_exceptionHandler);
+          readOnlyGroup.detectChanges(exceptionHandler:_exceptionHandler,
+              fieldStopwatch: _scopeStats.fieldStopwatch,
+              evalStopwatch: _scopeStats.evalStopwatch,
+              processStopwatch: _scopeStats.processStopwatch);
         }
         if (_domReadHead != null) _stats.domReadStart();
         while (_domReadHead != null) {
@@ -543,24 +641,30 @@ class RootScope extends Scope {
       _stats.flushEnd();
       assert((() {
         _stats.flushAssertStart();
-        var watchLog = [];
-        var observeLog = [];
+        var digestLog = [];
+        var flushLog = [];
         (_readWriteGroup as RootWatchGroup).detectChanges(
-            changeLog: (s, c, p) => watchLog.add('$s: $c <= $p'));
+            changeLog: (s, c, p) => digestLog.add('$s: $c <= $p'),
+            fieldStopwatch: _scopeStats.fieldStopwatch,
+            evalStopwatch: _scopeStats.evalStopwatch,
+            processStopwatch: _scopeStats.processStopwatch);
         (_readOnlyGroup as RootWatchGroup).detectChanges(
-            changeLog: (s, c, p) => watchLog.add('$s: $c <= $p'));
-        if (watchLog.isNotEmpty || observeLog.isNotEmpty) {
+            changeLog: (s, c, p) => flushLog.add('$s: $c <= $p'),
+            fieldStopwatch: _scopeStats.fieldStopwatch,
+            evalStopwatch: _scopeStats.evalStopwatch,
+            processStopwatch: _scopeStats.processStopwatch);
+        if (digestLog.isNotEmpty || flushLog.isNotEmpty) {
           throw 'Observer reaction functions should not change model. \n'
-                'These watch changes were detected: ${watchLog.join('; ')}\n'
-                'These observe changes were detected: ${observeLog.join('; ')}';
+                'These watch changes were detected: ${digestLog.join('; ')}\n'
+                'These observe changes were detected: ${flushLog.join('; ')}';
         }
         _stats.flushAssertEnd();
         return true;
       })());
     } finally {
+      _stats.cycleEnd();
       _transitionState(STATE_FLUSH, null);
     }
-
   }
 
   // QUEUES
