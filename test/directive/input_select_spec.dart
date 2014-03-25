@@ -865,43 +865,46 @@ main() {
           });
 
 
-          // TODO(misko): re-enable once we support group by
-          xit('should bind to scope value and group', () {
-            createSelect({
-              'ng-model': 'selected',
-              'ng-options': 'item.name group by item.group for item in values'
-            });
+          it('should bind to scope value and group', () {
+            var element = _.compile(
+                '<select ng-model="selected" probe="p">'
+                  '<optgroup label=\'{{ group["title"] }}\' ng-repeat="group in values">'
+                    '<option value=\'{{ item["val"] }}\' '
+                            'ng-repeat=\'item in group["items"]\'>{{ item["name"] }}</option>'
+                  '</optgroup>'
+                '</select>');
 
             scope.apply(() {
-              scope.context['values'] = [{'name': 'A'},
-                              {'name': 'B', group: 'first'},
-                              {'name': 'C', group: 'second'},
-                              {'name': 'D', group: 'first'},
-                              {'name': 'E', group: 'second'}];
-              scope.context['selected'] = scope.context['values'][3];
+              scope.context['values'] = [
+                { 'title': 'first',  'items':
+                  [{ 'val':'a', 'name' : 'A' }, { 'val':'c', 'name' : 'C' } ]},
+                { 'title': 'second', 'items':
+                  [{ 'val':'b', 'name' : 'B' }, { 'val':'d', 'name' : 'D' } ]}
+              ];
+              scope.context['selected'] = scope.context['values'][1]['items'][0]['val'];
             });
 
-            expect(element).toEqualSelect(['A', 'B', ['D'], 'C', 'E']);
+            expect(element).toEqualSelect(['a', 'c', ['b'], 'd']);
 
             var first = element.querySelectorAll('optgroup')[0];
             var b = first.querySelectorAll('option')[0];
             var d = first.querySelectorAll('option')[1];
-            expect(first.attr('label')).toEqual('first');
-            expect(b.text).toEqual('B');
-            expect(d.text).toEqual('D');
+            expect(first.getAttribute('label')).toEqual('first');
+            expect(b.text).toEqual('A');
+            expect(d.text).toEqual('C');
 
             var second = element.querySelectorAll('optgroup')[1];
             var c = second.querySelectorAll('option')[0];
             var e = second.querySelectorAll('option')[1];
-            expect(second.attr('label')).toEqual('second');
-            expect(c.text).toEqual('C');
-            expect(e.text).toEqual('E');
+            expect(second.getAttribute('label')).toEqual('second');
+            expect(c.text).toEqual('B');
+            expect(e.text).toEqual('D');
 
             scope.apply(() {
-              scope.context['selected'] = scope.context['values'][0];
+              scope.context['selected'] = scope.context['values'][0]['items'][1]['val'];
             });
 
-            expect(element.value).toEqual('0');
+            expect(element.value).toEqual('c');
           });
 
 
