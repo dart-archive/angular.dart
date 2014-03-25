@@ -70,17 +70,7 @@ class WalkingCompiler implements Compiler {
         elementBinders, _perf, _expando);
     domCursor.index = domCursorIndex;
 
-    if (domCursor.isInstance) {
-      domCursor.insertAnchorBefore(anchorName);
-      views = [viewFactory([domCursor.current])];
-      templateCursor.moveNext();
-      while (domCursor.moveNext() && domCursor.isInstance) {
-        views.add(viewFactory([domCursor.current]));
-        templateCursor.remove();
-      }
-    } else {
-      domCursor.replaceWithAnchor(anchorName);
-    }
+    domCursor.replaceWithAnchor(anchorName);
 
     return viewFactory;
   }

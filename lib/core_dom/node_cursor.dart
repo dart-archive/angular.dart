@@ -45,7 +45,5 @@ class NodeCursor {
 
   NodeCursor remove() => new NodeCursor([elements.removeAt(index)..remove()]);
 
-  bool get isInstance => false;
-
   toString() => "[NodeCursor: $elements $index]";
 }

@@ -137,18 +137,7 @@ class TaggingCompiler implements Compiler {
         _removeUnusedBinders(elementBinders), _perf);
     domCursor.index = domCursorIndex;
 
-    if (domCursor.isInstance) {
-      domCursor.insertAnchorBefore(anchorName);
-      views = [viewFactory([domCursor.current])];
-      domCursor.moveNext();
-      templateCursor.moveNext();
-      while (domCursor.moveNext() && domCursor.isInstance) {
-        views.add(viewFactory([domCursor.current]));
-        templateCursor.remove();
-      }
-    } else {
-      domCursor.replaceWithAnchor(anchorName);
-    }
+    domCursor.replaceWithAnchor(anchorName);
 
     return viewFactory;
   }
