@@ -4,9 +4,8 @@ class TaggingViewFactory implements ViewFactory {
   final List<TaggedElementBinder> elementBinders;
   final List<dom.Node> templateNodes;
   final Profiler _perf;
-  final Expando _expando;
 
-  TaggingViewFactory(this.templateNodes, this.elementBinders, this._perf, this._expando);
+  TaggingViewFactory(this.templateNodes, this.elementBinders, this._perf);
 
   BoundViewFactory bind(Injector injector) =>
   new BoundViewFactory(this, injector);

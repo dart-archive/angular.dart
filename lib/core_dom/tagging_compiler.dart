@@ -134,7 +134,7 @@ class TaggingCompiler implements Compiler {
         directives, -1, null, elementBinders, true);
 
     viewFactory = new TaggingViewFactory(transcludeCursor.elements,
-        _removeUnusedBinders(elementBinders), _perf, _expando);
+        _removeUnusedBinders(elementBinders), _perf);
     domCursor.index = domCursorIndex;
 
     if (domCursor.isInstance) {
@@ -164,7 +164,7 @@ class TaggingCompiler implements Compiler {
         null, directives, -1, null, elementBinders, true);
 
     var viewFactory = new TaggingViewFactory(
-        templateElements, _removeUnusedBinders(elementBinders), _perf, _expando);
+        templateElements, _removeUnusedBinders(elementBinders), _perf);
 
     assert(_perf.stopTimer(timerId) != false);
     return viewFactory;
