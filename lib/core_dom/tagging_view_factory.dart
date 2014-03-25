@@ -41,8 +41,6 @@ class TaggingViewFactory implements ViewFactory {
   }
 
   View _link(View view, List<dom.Node> nodeList, List elementBinders, Injector rootInjector) {
-
-
     var directiveDefsByName = {};
 
     var elementBinderIndex = 0;

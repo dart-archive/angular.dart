@@ -14,7 +14,7 @@ class TaggingCompiler implements Compiler {
   TaggingCompiler(this._perf, this._expando);
 
    List _compileView(
-      NodeCursor domCursor, NodeCursor templateCursor,
+      NodeCursor domCursor,
       ElementBinder useExistingElementBinder,
       DirectiveMap directives,
       int parentElementBinderOffset,
@@ -27,11 +27,9 @@ class TaggingCompiler implements Compiler {
 
     do {
       var node = domCursor.current;
-
       ElementBinder elementBinder;
 
       if (node.nodeType == 1) {
-
         // If nodetype is a element, call selector matchElement.
         // If text, call selector.matchText
 
@@ -42,16 +40,13 @@ class TaggingCompiler implements Compiler {
 
         if (elementBinder.hasTemplate) {
           elementBinder.templateViewFactory = _compileTransclusion(
-              elementBinders, domCursor, templateCursor, elementBinder.template,
+              elementBinders, domCursor, elementBinder.template,
               elementBinder.templateBinder, directives);
         }
       }
 
       node = domCursor.current;
-
       if (node.nodeType == 1) {
-        var templateNode = templateCursor.current as dom.Element;
-
         var taggedElementBinder = null;
         int taggedElementBinderIndex = parentElementBinderOffset;
         if (elementBinder.hasDirectivesOrEvents || elementBinder.hasTemplate) {
@@ -59,15 +54,11 @@ class TaggingCompiler implements Compiler {
               new TaggedElementBinder(elementBinder, parentElementBinderOffset, isTopLevel));
           taggedElementBinderIndex = elementBinders.length - 1;
 
-          // TODO(deboer): Hack, this sucks.
-          templateNode.classes.add('ng-binding');
           node.classes.add('ng-binding');
         }
 
         if (elementBinder.shouldCompileChildren) {
           if (domCursor.descend()) {
-            templateCursor.descend();
-
             var addedDummy = false;
             if (taggedElementBinder == null) {
               addedDummy = true;
@@ -76,7 +67,7 @@ class TaggingCompiler implements Compiler {
                 new TaggedElementBinder(null, parentElementBinderOffset, isTopLevel));
             }
 
-            _compileView(domCursor, templateCursor, null, directives,
+            _compileView(domCursor, null, directives,
                 taggedElementBinderIndex, taggedElementBinder, elementBinders, false);
 
             if (addedDummy && !_isDummyBinder(taggedElementBinder)) {
@@ -85,12 +76,9 @@ class TaggingCompiler implements Compiler {
               //
               // To avoid array chrun, we remove all dummy binders at the
               // end of the compilation process.
-              templateNode.classes.add('ng-binding');
               node.classes.add('ng-binding');
             }
-
             domCursor.ascend();
-            templateCursor.ascend();
           }
         }
       } else if (node.nodeType == 3 || node.nodeType == 8) {
@@ -100,11 +88,10 @@ class TaggingCompiler implements Compiler {
 
         if (elementBinder != null &&
             elementBinder.hasDirectivesOrEvents &&
-            (node.parentNode != null && templateCursor.current.parentNode != null)) {
+            directParentElementBinder != null) {
           directParentElementBinder.addText(
               new TaggedTextBinder(elementBinder, domCursor.index));
-        } else if(!(node.parentNode != null &&
-                    templateCursor.current.parentNode != null)) {
+        } else if(isTopLevel) {
           // Always add an elementBinder for top-level text.
           _addBinder(elementBinders, new TaggedElementBinder(elementBinder,
               parentElementBinderOffset, isTopLevel));
@@ -112,32 +99,26 @@ class TaggingCompiler implements Compiler {
       } else {
         throw "Unsupported node type for $node: [${node.nodeType}]";
       }
-    } while (templateCursor.moveNext() && domCursor.moveNext());
+    } while (domCursor.moveNext());
 
      return elementBinders;
   }
 
   TaggingViewFactory _compileTransclusion(List<TaggedElementBinder> tElementBinders,
-      NodeCursor domCursor, NodeCursor templateCursor,
+      NodeCursor templateCursor,
       DirectiveRef directiveRef,
       ElementBinder transcludedElementBinder,
       DirectiveMap directives) {
     var anchorName = directiveRef.annotation.selector +
         (directiveRef.value != null ? '=' + directiveRef.value : '');
-    var viewFactory;
-    var views;
 
     var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
-    var domCursorIndex = domCursor.index;
     var elementBinders = [];
-    _compileView(domCursor, transcludeCursor, transcludedElementBinder,
+    _compileView(transcludeCursor, transcludedElementBinder,
         directives, -1, null, elementBinders, true);
 
-    viewFactory = new TaggingViewFactory(transcludeCursor.elements,
+    var viewFactory = new TaggingViewFactory(transcludeCursor.elements,
         _removeUnusedBinders(elementBinders), _perf);
-    domCursor.index = domCursorIndex;
-
-    domCursor.replaceWithAnchor(anchorName);
 
     return viewFactory;
   }
@@ -145,15 +126,13 @@ class TaggingCompiler implements Compiler {
   TaggingViewFactory call(List<dom.Node> elements, DirectiveMap directives) {
     var timerId;
     assert((timerId = _perf.startTimer('ng.compile', _html(elements))) != false);
-    List<dom.Node> domElements = elements;
-    List<dom.Node> templateElements = cloneElements(domElements);
     final elementBinders = <TaggedElementBinder>[];
     _compileView(
-        new NodeCursor(domElements), new NodeCursor(templateElements),
+        new NodeCursor(elements),
         null, directives, -1, null, elementBinders, true);
 
     var viewFactory = new TaggingViewFactory(
-        templateElements, _removeUnusedBinders(elementBinders), _perf);
+        elements, _removeUnusedBinders(elementBinders), _perf);
 
     assert(_perf.stopTimer(timerId) != false);
     return viewFactory;
