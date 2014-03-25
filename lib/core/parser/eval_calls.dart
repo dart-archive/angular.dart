@@ -12,7 +12,7 @@ class CallScope extends syntax.CallScope with CallReflective {
   CallScope(name, arguments)
       : super(name, arguments),
         symbol = newSymbol(name);
-  eval(scope, [FilterMap filters]) => _eval(scope, scope);
+  eval(scope, [FilterMap filters]) => _eval(scope, scope, filters);
 }
 
 class CallMember extends syntax.CallMember with CallReflective {
@@ -20,7 +20,8 @@ class CallMember extends syntax.CallMember with CallReflective {
   CallMember(object, name, arguments)
       : super(object, name, arguments),
         symbol = newSymbol(name);
-  eval(scope, [FilterMap filters]) => _eval(scope, object.eval(scope, filters));
+  eval(scope, [FilterMap filters]) => _eval(scope, object.eval(scope, filters),
+                                            filters);
 }
 
 class CallScopeFast0 extends syntax.CallScope with CallFast {
@@ -106,13 +107,12 @@ abstract class CallReflective {
   Symbol get symbol;
   syntax.CallArguments get arguments;
 
-  // TODO(kasperl): This seems broken -- it needs filters.
-  _eval(scope, holder) {
-    List positionals = evalList(scope, arguments.positionals);
+  _eval(scope, holder, FilterMap filters) {
+    List positionals = evalList(scope, arguments.positionals, filters);
     if (arguments.named.isNotEmpty) {
       var named = new Map<Symbol, dynamic>();
       arguments.named.forEach((String name, value) {
-        named[new Symbol(name)] = value.eval(scope);
+        named[new Symbol(name)] = value.eval(scope, filters);
       });
       if (holder is Map) {
         var fn = ensureFunctionFromMap(holder, name);

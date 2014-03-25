@@ -61,8 +61,8 @@ main() {
       filters = injectedFilters;
     });
 
-    eval(String text, [FilterMap f])
-        => parser(text).eval(context, f == null ? filters : f);
+    eval(String text, [FilterMap f]) =>
+        parser(text).eval(context, f == null ? filters : f);
     expectEval(String expr) => expect(() => eval(expr));
 
     beforeEach((){ context = {}; });
@@ -1102,6 +1102,7 @@ main() {
     describe('filters', () {
       it('should call a filter', () {
         expect(eval("'Foo'|uppercase", filters)).toEqual("FOO");
+        expect(eval("'f' + ('o'|uppercase) + 'o'", filters)).toEqual("fOo");
         expect(eval("'fOo'|uppercase|lowercase", filters)).toEqual("foo");
       });
 

@@ -40,9 +40,9 @@ class NgFilter {
 @NgInjectableService()
 class FilterMap extends AnnotationMap<NgFilter> {
   Injector _injector;
-  FilterMap(Injector injector, MetadataExtractor extractMetadata) :
-    this._injector = injector,
-    super(injector, extractMetadata);
+  FilterMap(Injector injector, MetadataExtractor extractMetadata)
+      : this._injector = injector,
+        super(injector, extractMetadata);
 
   call(String name) {
     var filter = new NgFilter(name: name);

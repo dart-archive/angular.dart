@@ -199,16 +199,15 @@ class Scope {
    * On the opposite, [readOnly] should be set to [:false:] if the [reactionFn]
    * could change the model so that the watch is observed in the [digest] cycle.
    */
-  Watch watch(expression, ReactionFn reactionFn,
-              {context, FilterMap filters, bool readOnly: false}) {
+  Watch watch(String expression, ReactionFn reactionFn, {context,
+      FilterMap filters, bool readOnly: false, bool collection: false}) {
     assert(isAttached);
-    assert(expression != null);
-    AST ast;
+    assert(expression is String);
     Watch watch;
     ReactionFn fn = reactionFn;
-    if (expression is AST) {
-      ast = expression;
-    } else if (expression is String) {
+    if (expression.isEmpty) {
+      expression = '""';
+    } else {
       if (expression.startsWith('::')) {
         expression = expression.substring(2);
         fn = (value, last) {
@@ -221,10 +220,10 @@ class Scope {
         expression = expression.substring(1);
         fn = (value, last) => value == null ? null : reactionFn(value, last);
       }
-      ast = rootScope._astParser(expression, context: context, filters: filters);
-    } else {
-      throw 'expressions must be String or AST got $expression.';
     }
+
+    AST ast = rootScope._astParser(expression, context: context,
+        filters: filters, collection: collection);
     WatchGroup group = readOnly ? _readOnlyGroup : _readWriteGroup;
     return watch = group.watch(ast, fn);
   }
@@ -256,10 +255,9 @@ class Scope {
     } catch (e, s) {
       rootScope._exceptionHandler(e, s);
     } finally {
-      rootScope
-          .._transitionState(RootScope.STATE_APPLY, null)
-          ..digest()
-          ..flush();
+      rootScope.._transitionState(RootScope.STATE_APPLY, null)
+               ..digest()
+               ..flush();
     }
   }
 
@@ -436,11 +434,12 @@ class RootScope extends Scope {
 
   String _state;
 
-  RootScope(Object context, this._astParser, this._parser,
-            GetterCache cacheGetter, FilterMap filterMap,
-            this._exceptionHandler, this._ttl, this._zone,
+  RootScope(Object context, Parser parser, GetterCache cacheGetter,
+            FilterMap filterMap, this._exceptionHandler, this._ttl, this._zone,
             ScopeStats _scopeStats)
       : _scopeStats = _scopeStats,
+        _parser = parser,
+        _astParser = new AstParser(parser),
         super(context, null, null,
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
             new RootWatchGroup(new DirtyCheckingChangeDetector(cacheGetter), context),
@@ -529,7 +528,7 @@ class RootScope extends Scope {
           runObservers = false;
           readOnlyGroup.detectChanges(exceptionHandler:_exceptionHandler);
         }
-        if (_domReadHead != null) _stats.domWriteStart();
+        if (_domReadHead != null) _stats.domReadStart();
         while (_domReadHead != null) {
           try {
             _domReadHead.fn();
@@ -963,6 +962,9 @@ class ExpressionVisitor implements Visitor {
   }
 
   void visitFilter(Filter exp) {
+    if (filters == null) {
+      throw new Exception("No filters have been registered");
+    }
     Function filterFunction = filters(exp.name);
     List<AST> args = [visitCollection(exp.expression)];
     args.addAll(_toAst(exp.arguments).map((ast) => new CollectionAST(ast)));

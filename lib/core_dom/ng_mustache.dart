@@ -3,20 +3,20 @@ part of angular.core.dom;
 // This Directive is special and does not go through injection.
 @NgDirective(selector: r':contains(/{{.*}}/)')
 class NgTextMustacheDirective {
-  NgTextMustacheDirective(dom.Node element,
-                          String markup,
+  final dom.Node _element;
+
+  NgTextMustacheDirective(this._element,
+                          String template,
                           Interpolate interpolate,
                           Scope scope,
-                          AstParser parser,
                           FilterMap filters) {
-    Interpolation interpolation = interpolate(markup);
-    interpolation.setter = (text) => element.text = text;
+    String expression = interpolate(template);
 
-    List items = interpolation.expressions
-        .map((exp) => parser(exp, filters: filters))
-        .toList();
-    AST ast = new PureFunctionAST('[[$markup]]', new ArrayFn(), items);
-    scope.watch(ast, interpolation.call, readOnly: true);
+    scope.watch(expression, _updateMarkup, readOnly: true, filters: filters);
+  }
+
+  void _updateMarkup(text, previousText) {
+    _element.text = text;
   }
 }
 
@@ -25,40 +25,35 @@ class NgTextMustacheDirective {
 class NgAttrMustacheDirective {
   bool _hasObservers;
   Watch _watch;
+  NodeAttrs _attrs;
+  String _attrName;
 
   // This Directive is special and does not go through injection.
-  NgAttrMustacheDirective(NodeAttrs attrs,
-                          String markup,
+  NgAttrMustacheDirective(this._attrs,
+                          String template,
                           Interpolate interpolate,
                           Scope scope,
-                          AstParser parser,
                           FilterMap filters) {
+    var eqPos = template.indexOf('=');
+    _attrName = template.substring(0, eqPos);
+    String expression = interpolate(template.substring(eqPos + 1));
 
-    var eqPos = markup.indexOf('=');
-    var attrName = markup.substring(0, eqPos);
-    var attrValue = markup.substring(eqPos + 1);
-    var lastValue = markup;
-    Interpolation interpolation = interpolate(attrValue)..setter = (text) {
-      if (lastValue != text) lastValue = attrs[attrName] = text;
-    };
+    _updateMarkup('', template);
 
-    // TODO(misko): figure out how to remove call to setter. It slows down
-    // View instantiation
-    interpolation.setter('');
-
-    List items = interpolation.expressions
-        .map((exp) => parser(exp, filters: filters))
-        .toList();
-
-    AST ast = new PureFunctionAST('[[$markup]]', new ArrayFn(), items);
-
-    attrs.listenObserverChanges(attrName, (hasObservers) {
-      if (_hasObservers != hasObservers) {
-        _hasObservers = hasObservers;
-        if (_watch != null) _watch.remove();
-        _watch = scope.watch(ast, interpolation.call, readOnly: !hasObservers);
+    _attrs.listenObserverChanges(_attrName, (hasObservers) {
+    if (_hasObservers != hasObservers) {
+      _hasObservers = hasObservers;
+      if (_watch != null) _watch.remove();
+        _watch = scope.watch(expression, _updateMarkup, filters: filters,
+            readOnly: !_hasObservers);
       }
     });
+  }
+
+  void _updateMarkup(text, previousText) {
+    if (text != previousText && !(previousText == null && text == '')) {
+        _attrs[_attrName] = text;
+    }
   }
 }
 
