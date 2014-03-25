@@ -28,8 +28,8 @@ abstract class Visitor {
   visitPrefix(Prefix expression) => visitExpression(expression);
 
   visitLiteral(Literal expression) => visitExpression(expression);
-  visitLiteralPrimitive(LiteralPrimitive expression)
-      => visitLiteral(expression);
+  visitLiteralPrimitive(LiteralPrimitive expression) =>
+      visitLiteral(expression);
   visitLiteralString(LiteralString expression) => visitLiteral(expression);
   visitLiteralArray(LiteralArray expression) => visitLiteral(expression);
   visitLiteralObject(LiteralObject expression) => visitLiteral(expression);
@@ -39,12 +39,12 @@ abstract class Expression {
   bool get isAssignable => false;
   bool get isChain => false;
 
-  eval(scope, [FilterMap filters = defaultFilterMap])
-      => throw new EvalError("Cannot evaluate $this");
-  assign(scope, value)
-      => throw new EvalError("Cannot assign to $this");
-  bind(context, [LocalsWrapper wrapper])
-      => new BoundExpression(this, context, wrapper);
+  eval(scope, [FilterMap filters = defaultFilterMap]) =>
+      throw new EvalError("Cannot evaluate $this");
+  assign(scope, value) =>
+      throw new EvalError("Cannot assign to $this");
+  bind(context, [LocalsWrapper wrapper]) =>
+      new BoundExpression(this, context, wrapper);
 
   accept(Visitor visitor);
   String toString() => Unparser.unparse(this);
