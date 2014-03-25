@@ -191,7 +191,7 @@ _injectify(fn) {
   // The function does two things:
   // First: if the it() passed a function, we wrap it in
   //        the "sync" FunctionComposition.
-  // Second: when we are calling the FuncitonComposition,
+  // Second: when we are calling the FunctionComposition,
   //         we inject "inject" into the middle of the
   //         composition.
   if (fn is! FunctionComposition) {
