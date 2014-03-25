@@ -13,98 +13,114 @@ class TaggingCompiler implements Compiler {
 
   TaggingCompiler(this._perf, this._expando);
 
-   List _compileView(
-      NodeCursor domCursor,
-      ElementBinder useExistingElementBinder,
-      DirectiveMap directives,
-      int parentElementBinderOffset,
-      TaggedElementBinder directParentElementBinder,
-      List<TaggedElementBinder> elementBinders,
-      bool isTopLevel) {
+  ElementBinder _elementBinderForNode(NodeCursor domCursor,
+                                      ElementBinder useExistingElementBinder,
+                                      DirectiveMap directives,
+                                      List elementBinders) {
+    var node = domCursor.current;
+
+    if (node.nodeType == 1) {
+      // If nodetype is a element, call selector matchElement.
+      // If text, call selector.matchText
+
+      ElementBinder elementBinder = useExistingElementBinder == null ?
+          directives.selector.matchElement(node) : useExistingElementBinder;
+
+      if (elementBinder.hasTemplate) {
+        elementBinder.templateViewFactory = _compileTransclusion(
+            domCursor, elementBinder.template,
+            elementBinder.templateBinder, directives);
+      }
+      return elementBinder;
+    } else if (node.nodeType == 3) {
+      return directives.selector.matchText(node);
+    }
+    return null;
+  }
+
+  _compileNode(NodeCursor domCursor,
+               ElementBinder elementBinder,
+               DirectiveMap directives,
+               List elementBinders,
+               int parentElementBinderOffset,
+               bool isTopLevel,
+               TaggedElementBinder directParentElementBinder) {
+    var node = domCursor.current;
+    if (node.nodeType == 1) {
+      TaggedElementBinder taggedElementBinder;
+      int taggedElementBinderIndex;
+      if (elementBinder.hasDirectivesOrEvents || elementBinder.hasTemplate) {
+        taggedElementBinder = _addBinder(elementBinders,
+            new TaggedElementBinder(elementBinder, parentElementBinderOffset, isTopLevel));
+        taggedElementBinderIndex = elementBinders.length - 1;
+        node.classes.add('ng-binding');
+      } else {
+        taggedElementBinder = null;
+        taggedElementBinderIndex = parentElementBinderOffset;
+      }
+
+      if (elementBinder.shouldCompileChildren) {
+        if (domCursor.descend()) {
+          var addedDummy = false;
+          if (taggedElementBinder == null) {
+            addedDummy = true;
+            // add a dummy to the list which may be removed later.
+            taggedElementBinder = _addBinder(elementBinders,
+                new TaggedElementBinder(null, parentElementBinderOffset, isTopLevel));
+          }
+
+          _compileView(domCursor, null, directives, taggedElementBinderIndex,
+              taggedElementBinder, elementBinders, false);
+
+          if (addedDummy && !_isDummyBinder(taggedElementBinder)) {
+            // We are keeping the element binder, so add the class
+            // to the DOM node as well.
+            //
+            // To avoid array chrun, we remove all dummy binders at the
+            // end of the compilation process.
+            node.classes.add('ng-binding');
+          }
+          domCursor.ascend();
+        }
+      }
+    } else if (node.nodeType == 3 || node.nodeType == 8) {
+      if (elementBinder != null &&
+          elementBinder.hasDirectivesOrEvents &&
+          directParentElementBinder != null) {
+        directParentElementBinder.addText(
+            new TaggedTextBinder(elementBinder, domCursor.index));
+      } else if (isTopLevel) {
+        // Always add an elementBinder for top-level text.
+        _addBinder(elementBinders,
+            new TaggedElementBinder(elementBinder, parentElementBinderOffset, isTopLevel));
+      }
+    } else {
+      throw "Unsupported node type for $node: [${node.nodeType}]";
+    }
+  }
+
+  List _compileView(NodeCursor domCursor,
+                    ElementBinder useExistingElementBinder,
+                    DirectiveMap directives,
+                    int parentElementBinderOffset,
+                    TaggedElementBinder directParentElementBinder,
+                    List<TaggedElementBinder> elementBinders,
+                    bool isTopLevel) {
     assert(parentElementBinderOffset != null);
     assert(parentElementBinderOffset < elementBinders.length);
     if (domCursor.current == null) return null;
 
     do {
-      var node = domCursor.current;
-      ElementBinder elementBinder;
-
-      if (node.nodeType == 1) {
-        // If nodetype is a element, call selector matchElement.
-        // If text, call selector.matchText
-
-        // TODO: selector will return null for non-useful bindings.
-        elementBinder = useExistingElementBinder == null
-            ?  directives.selector.matchElement(node)
-            : useExistingElementBinder;
-
-        if (elementBinder.hasTemplate) {
-          elementBinder.templateViewFactory = _compileTransclusion(
-              elementBinders, domCursor, elementBinder.template,
-              elementBinder.templateBinder, directives);
-        }
-      }
-
-      node = domCursor.current;
-      if (node.nodeType == 1) {
-        var taggedElementBinder = null;
-        int taggedElementBinderIndex = parentElementBinderOffset;
-        if (elementBinder.hasDirectivesOrEvents || elementBinder.hasTemplate) {
-          taggedElementBinder = _addBinder(elementBinders,
-              new TaggedElementBinder(elementBinder, parentElementBinderOffset, isTopLevel));
-          taggedElementBinderIndex = elementBinders.length - 1;
-
-          node.classes.add('ng-binding');
-        }
-
-        if (elementBinder.shouldCompileChildren) {
-          if (domCursor.descend()) {
-            var addedDummy = false;
-            if (taggedElementBinder == null) {
-              addedDummy = true;
-              // add a dummy to the list which may be removed later.
-              taggedElementBinder = _addBinder(elementBinders,
-                new TaggedElementBinder(null, parentElementBinderOffset, isTopLevel));
-            }
-
-            _compileView(domCursor, null, directives,
-                taggedElementBinderIndex, taggedElementBinder, elementBinders, false);
-
-            if (addedDummy && !_isDummyBinder(taggedElementBinder)) {
-              // We are keeping the element binder, so add the class
-              // to the DOM node as well.
-              //
-              // To avoid array chrun, we remove all dummy binders at the
-              // end of the compilation process.
-              node.classes.add('ng-binding');
-            }
-            domCursor.ascend();
-          }
-        }
-      } else if (node.nodeType == 3 || node.nodeType == 8) {
-        elementBinder = node.nodeType == 3 ?
-            directives.selector.matchText(node) :
-            elementBinder;
-
-        if (elementBinder != null &&
-            elementBinder.hasDirectivesOrEvents &&
-            directParentElementBinder != null) {
-          directParentElementBinder.addText(
-              new TaggedTextBinder(elementBinder, domCursor.index));
-        } else if(isTopLevel) {
-          // Always add an elementBinder for top-level text.
-          _addBinder(elementBinders, new TaggedElementBinder(elementBinder,
-              parentElementBinderOffset, isTopLevel));
-        }
-      } else {
-        throw "Unsupported node type for $node: [${node.nodeType}]";
-      }
+      _compileNode(domCursor,
+          _elementBinderForNode(domCursor, useExistingElementBinder, directives, elementBinders),
+          directives, elementBinders, parentElementBinderOffset,
+          isTopLevel, directParentElementBinder);
     } while (domCursor.moveNext());
 
      return elementBinders;
   }
 
-  TaggingViewFactory _compileTransclusion(List<TaggedElementBinder> tElementBinders,
+  TaggingViewFactory _compileTransclusion(
       NodeCursor templateCursor,
       DirectiveRef directiveRef,
       ElementBinder transcludedElementBinder,
