@@ -11,7 +11,9 @@ import 'dart:html';
 //
 // If you create classes that are referenced from the Angular
 // expressions, you must include a library target in @MirrorsUsed.
-@MirrorsUsed(override: '*')
+@MirrorsUsed(
+    targets: const [ 'Item' ],
+    override: '*')
 import 'dart:mirrors';
 
 class Item {
@@ -39,6 +41,7 @@ abstract class ServerController {
 
 
 // An implementation of ServerController that does nothing.
+@NgInjectableService()
 class NoServerController implements ServerController {
   init(TodoController todo) { }
 }
@@ -46,6 +49,7 @@ class NoServerController implements ServerController {
 
 // An implementation of ServerController that fetches items from
 // the server over HTTP.
+@NgInjectableService()
 class HttpServerController implements ServerController {
   final Http _http;
   HttpServerController(this._http);
