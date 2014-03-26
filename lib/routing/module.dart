@@ -154,7 +154,7 @@ import 'dart:html';
 import 'package:di/di.dart';
 import 'package:angular/angular.dart';
 import 'package:route_hierarchical/client.dart';
-export 'package:route_hierarchical/client.dart';
+export 'package:route_hierarchical/client.dart' hide childRoute;
 
 part 'routing.dart';
 part 'ng_view.dart';
