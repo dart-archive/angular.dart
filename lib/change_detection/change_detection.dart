@@ -168,6 +168,7 @@ abstract class ChangedKeyValue<K, V> extends MapKeyValue<K, V> {
 abstract class CollectionChangeRecord<V> {
   /** The underlying iterable object */
   Iterable get iterable;
+  int get length;
 
   /** A list of [CollectionItem]s which are in the iteration order. */
   CollectionItem<V> get collectionHead;

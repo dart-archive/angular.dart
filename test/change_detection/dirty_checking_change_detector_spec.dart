@@ -701,9 +701,11 @@ class CollectionRecordMatcher extends Matcher {
 
   bool checkCollection(CollectionChangeRecord changeRecord, List diffs) {
     var equals = true;
+    int count = 0;
     if (collection != null) {
       CollectionItem collectionItem = changeRecord.collectionHead;
       for (var item in collection) {
+        count++;
         if (collectionItem == null) {
           equals = false;
           diffs.add('collection too short: $item');
@@ -719,6 +721,11 @@ class CollectionRecordMatcher extends Matcher {
         diffs.add('collection too long: $collectionItem');
         equals = false;
       }
+    }
+    var iterableLength = changeRecord.iterable.toList().length;
+    if (iterableLength != count) {
+      diffs.add('collection length mismatched: $iterableLength != $count');
+      equals = false;
     }
     return equals;
   }

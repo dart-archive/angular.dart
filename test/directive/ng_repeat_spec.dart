@@ -42,6 +42,20 @@ main() {
     });
 
 
+    it(r'should set create a list of items', (Scope scope, Compiler compiler, Injector injector) {
+      scope.context['items'] = [];
+      scope.watch('1', (_, __) {
+        scope.context['items'].add('a');
+        scope.context['items'].add('b');
+      });
+      var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
+      ViewFactory viewFactory = compiler(element, directives);
+      View view = viewFactory(injector, element);
+      scope.apply();
+      expect(element).toHaveText('ab');
+    });
+
+
     it(r'should set create a list of items from iterable',
         (Scope scope, Compiler compiler, Injector injector) {
       var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');

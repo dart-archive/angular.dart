@@ -142,7 +142,7 @@ class NgRepeatDirective {
 
   // Computes and executes DOM changes when the item list changes
   void _onChange(CollectionChangeRecord changes) {
-    final int length = changes.iterable.length;
+    final int length = changes.length;
     final rows = new List<_Row>(length);
     final changeFunctions = new List<Function>(length);
     final removedIndexes = <int>[];

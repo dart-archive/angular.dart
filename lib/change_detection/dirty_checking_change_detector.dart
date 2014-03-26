@@ -795,6 +795,8 @@ class KeyValueRecord<K, V> implements KeyValue<K, V>, AddedKeyValue<K, V>,
 
 class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   Iterable _iterable;
+  int _length;
+
   /** Used to keep track of items during moves. */
   DuplicateMap _items = new DuplicateMap();
 
@@ -836,6 +838,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   }
 
   Iterable get iterable => _iterable;
+  int get length => _length;
 
   bool _check(Iterable collection) {
     _reset();
@@ -849,6 +852,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
     if (collection is List) {
       List list = collection;
+      _length = list.length;
       for (int index = 0; index < list.length; index++) {
         var item = list[index];
         if (record == null || !identical(item, record.item)) {
@@ -873,6 +877,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
         record = record._nextRec;
         index++;
       }
+      _length = index;
     }
 
     _truncate(record);
