@@ -54,6 +54,7 @@ void main() {
     afterEach((ExceptionHandler eh, Scope scope) {
       scope.apply();
       backend.verifyNoOutstandingRequest();
+      backend.verifyNoOutstandingExpectation();
       (eh as LoggingExceptionHandler).assertEmpty();
     });
 
@@ -91,6 +92,10 @@ void main() {
         expect(() {
           flush();
         }).toThrow('with different data');
+
+        // satisfy the expectation for our afterEach's assert.
+        http(url: '/url', method: 'POST', data: 'null');
+        flush();
       }));
 
 
