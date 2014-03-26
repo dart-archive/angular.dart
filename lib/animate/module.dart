@@ -108,6 +108,11 @@ import 'package:logging/logging.dart';
 import 'package:perf_api/perf_api.dart';
 import 'package:di/di.dart';
 
+@MirrorsUsed(targets: const [
+    'angular.animate'
+])
+import 'dart:mirrors' show MirrorsUsed;
+
 part 'animations.dart';
 part 'animation_loop.dart';
 part 'animation_optimizer.dart';

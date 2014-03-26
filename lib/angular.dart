@@ -30,7 +30,6 @@ import 'package:intl/date_symbol_data_local.dart';
  */
 @MirrorsUsed(targets: const [
     'angular',
-    'angular.animate',
     'angular.core',
     'angular.core.dom',
     'angular.filter',
