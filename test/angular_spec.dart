@@ -194,6 +194,7 @@ main() {
         "angular.core.dom.Cookies",
         "angular.core.dom.ElementBinderTreeRef",  // internal?
         "angular.core.dom.EventHandler",
+        "angular.core.dom.ShadowRootEventHandler", // internal
         "angular.core.dom.Response",
         "angular.core.dom.HttpDefaultHeaders",
         "angular.core.dom.Animation",

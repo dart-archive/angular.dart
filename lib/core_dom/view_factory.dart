@@ -231,7 +231,7 @@ class _ComponentFactory implements Function {
     var shadowModule = new Module()
         ..type(type)
         ..type(NgElement)
-        ..type(EventHandler, implementedBy: _ShadowRootEventHandler)
+        ..type(EventHandler, implementedBy: ShadowRootEventHandler)
         ..value(Scope, shadowScope)
         ..value(TemplateLoader, templateLoader)
         ..value(dom.ShadowRoot, shadowDom)

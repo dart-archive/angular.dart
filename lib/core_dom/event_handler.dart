@@ -102,8 +102,8 @@ class EventHandler {
 }
 
 @NgInjectableService()
-class _ShadowRootEventHandler extends EventHandler {
-  _ShadowRootEventHandler(dom.ShadowRoot shadowRoot,
+class ShadowRootEventHandler extends EventHandler {
+  ShadowRootEventHandler(dom.ShadowRoot shadowRoot,
                          Expando expando,
                          ExceptionHandler exceptionHandler)
       : super(shadowRoot, expando, exceptionHandler);
