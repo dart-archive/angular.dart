@@ -14,7 +14,8 @@ module.exports = function(config) {
       'test/config/filter_tests.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js',
-      'packages/browser/interop.js'
+      'packages/browser/interop.js',
+      'packages/shadow_dom/shadow_dom.debug.js'
     ],
 
     exclude: [
