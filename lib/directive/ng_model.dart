@@ -181,9 +181,11 @@ class NgModel extends NgControl implements NgAttachAware {
     _modelValue = value;
     setter(value);
 
-    modelValue == _originalValue
-      ? markAsPristine()
-      : markAsDirty();
+    if (modelValue == _originalValue) {
+      markAsPristine();
+    } else {
+      markAsDirty();
+    }
   }
 
   List<NgValidator> get validators => _validators;
@@ -195,15 +197,19 @@ class NgModel extends NgControl implements NgAttachAware {
     _toBeValidated = false;
     if (validators.isNotEmpty) {
       validators.forEach((validator) {
-        validator.isValid(modelValue) == false
-          ? this.addError(validator.name)
-          : this.removeError(validator.name);
+        if (validator.isValid(modelValue)) {
+          removeError(validator.name);
+        } else {
+          addError(validator.name);
+        }
       });
     }
 
-    invalid
-      ? addInfo(NgControl.NG_INVALID)
-      : removeInfo(NgControl.NG_INVALID);
+    if (invalid) {
+      addInfo(NgControl.NG_INVALID);
+    } else {
+      removeInfo(NgControl.NG_INVALID);
+    }
   }
 
   /**
