@@ -171,10 +171,8 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
     switch(state) {
       case NG_DIRTY:
         return NG_PRISTINE;
-        break;
       case NG_TOUCHED:
         return NG_UNTOUCHED;
-        break;
       default:
         //not all info states have an opposite value
         return null;
