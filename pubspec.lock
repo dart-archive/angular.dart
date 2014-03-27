@@ -20,11 +20,11 @@ packages:
   browser:
     description: browser
     source: hosted
-    version: "0.9.1"
+    version: "0.10.0+2"
   code_transformers:
     description: code_transformers
     source: hosted
-    version: "0.1.0"
+    version: "0.1.0+1"
   collection:
     description: collection
     source: hosted
