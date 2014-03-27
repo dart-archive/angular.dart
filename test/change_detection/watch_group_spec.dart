@@ -1,6 +1,7 @@
 library watch_group_spec;
 
 import '../_specs.dart';
+import 'dart:collection';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
@@ -110,6 +111,103 @@ void main() {
         context['a'] = 'cant see me';
         watchGrp.detectChanges();
         expect(logger).toEqual(['hello', 'bye']);
+      });
+
+      describe('sequence mutations and ref changes', () {
+        it('should handle a simultaneous map mutation and reference change', () {
+          context['a'] = context['b'] = {1: 10, 2: 20};
+          var watchA = watchGrp.watch(new CollectionAST(parse('a')), (v, p) => logger(v));
+          var watchB = watchGrp.watch(new CollectionAST(parse('b')), (v, p) => logger(v));
+
+          watchGrp.detectChanges();
+          expect(logger.length).toEqual(2);
+          expect(logger[0], toEqualMapRecord(
+                  map: ['1', '2'],
+                  previous: ['1', '2']));
+          expect(logger[1], toEqualMapRecord(
+                  map: ['1', '2'],
+                  previous: ['1', '2']));
+          logger.clear();
+
+          // context['a'] is set to a copy with an addition.
+          context['a'] = new Map.from(context['a'])..[3] = 30;
+          // context['b'] still has the original collection.  We'll mutate it.
+          context['b'].remove(1);
+
+          watchGrp.detectChanges();
+          expect(logger.length).toEqual(2);
+          expect(logger[0], toEqualMapRecord(
+                  map: ['1', '2', '3[null -> 30]'],
+                  previous: ['1', '2'],
+                  additions: ['3[null -> 30]']));
+          expect(logger[1], toEqualMapRecord(
+                  map: ['2'],
+                  previous: ['1[10 -> null]', '2'],
+                  removals: ['1[10 -> null]']));
+          logger.clear();
+        });
+
+        it('should handle a simultaneous list mutation and reference change', () {
+          context['a'] = context['b'] = [0, 1];
+          var watchA = watchGrp.watch(new CollectionAST(parse('a')), (v, p) => logger(v));
+          var watchB = watchGrp.watch(new CollectionAST(parse('b')), (v, p) => logger(v));
+
+          watchGrp.detectChanges();
+          expect(logger.length).toEqual(2);
+          expect(logger[0], toEqualCollectionRecord(
+              collection: ['0', '1'],
+              previous: ['0', '1'],
+              additions: [], moves: [], removals: []));
+          expect(logger[1], toEqualCollectionRecord(
+              collection: ['0', '1'],
+              previous: ['0', '1'],
+              additions: [], moves: [], removals: []));
+          logger.clear();
+
+          // context['a'] is set to a copy with an addition.
+          context['a'] = context['a'].toList()..add(2);
+          // context['b'] still has the original collection.  We'll mutate it.
+          context['b'].remove(0);
+
+          watchGrp.detectChanges();
+          expect(logger.length).toEqual(2);
+          expect(logger[0], toEqualCollectionRecord(
+              collection: ['0', '1', '2[null -> 2]'],
+              previous: ['0', '1'],
+              additions: ['2[null -> 2]'],
+              moves: [],
+              removals: []));
+          expect(logger[1], toEqualCollectionRecord(
+              collection: ['1[1 -> 0]'],
+              previous: ['0[0 -> null]', '1[1 -> 0]'],
+              additions: [],
+              moves: ['1[1 -> 0]'],
+              removals: ['0[0 -> null]']));
+          logger.clear();
+        });
+
+        it('should work correctly with UnmodifiableListView', () {
+          context['a'] = new UnmodifiableListView([0, 1]);
+          var watch = watchGrp.watch(new CollectionAST(parse('a')), (v, p) => logger(v));
+
+          watchGrp.detectChanges();
+          expect(logger.length).toEqual(1);
+          expect(logger[0], toEqualCollectionRecord(
+              collection: ['0', '1'],
+              previous: ['0', '1']));
+          logger.clear();
+
+          context['a'] = new UnmodifiableListView([1, 0]);
+
+          watchGrp.detectChanges();
+          expect(logger.length).toEqual(1);
+          expect(logger[0], toEqualCollectionRecord(
+              collection: ['1[1 -> 0]', '0[0 -> 1]'],
+              previous: ['0[0 -> 1]', '1[1 -> 0]'],
+              moves: ['1[1 -> 0]', '0[0 -> 1]']));
+          logger.clear();
+        });
+
       });
 
       it('should read property chain', () {
@@ -569,6 +667,7 @@ void main() {
         watchGrp.detectChanges();
         expect(logger[0], toEqualCollectionRecord(
             collection: ['2[null -> 0]'],
+            previous: ['1[0 -> null]'],
             additions: ['2[null -> 0]'],
             moves: [],
             removals: ['1[0 -> null]']));

@@ -426,15 +426,28 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
       _getter = null;
       if (obj is Map) {
         if (_mode != _MODE_MAP_) {
-          // Last one was collection as well, don't reset state.
           _mode =  _MODE_MAP_;
           currentValue = new _MapChangeRecord();
         }
+        if (currentValue.isDirty) {
+          // We're dirty because the mapping we tracked by reference mutated.
+          // In addition, our reference has now changed.  We should compare the
+          // previous reported value of that mapping with the one from the
+          // new reference.
+          currentValue._revertToPreviousState();
+        }
+
       } else if (obj is Iterable) {
         if (_mode != _MODE_ITERABLE_) {
-          // Last one was collection as well, don't reset state.
-          _mode =  _MODE_ITERABLE_;
+          _mode = _MODE_ITERABLE_;
           currentValue = new _CollectionChangeRecord();
+        }
+        if (currentValue.isDirty) {
+          // We're dirty because the collection we tracked by reference mutated.
+          // In addition, our reference has now changed.  We should compare the
+          // previous reported value of that collection with the one from the
+          // new reference.
+          currentValue._revertToPreviousState();
         }
       } else {
         _mode = _MODE_IDENTITY_;
@@ -507,12 +520,14 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   final Map<dynamic, KeyValueRecord> _records = new Map<dynamic, KeyValueRecord>();
   Map _map;
   KeyValueRecord _mapHead;
+  KeyValueRecord _previousMapHead;
   KeyValueRecord _changesHead, _changesTail;
   KeyValueRecord _additionsHead, _additionsTail;
   KeyValueRecord _removalsHead, _removalsTail;
 
   Map get map => _map;
   KeyValue<K, V> get mapHead => _mapHead;
+  PreviousKeyValue<K, V> get previousMapHead => _previousMapHead;
   ChangedKeyValue<K, V> get changesHead => _changesHead;
   AddedKeyValue<K, V> get additionsHead => _additionsHead;
   RemovedKeyValue<K, V> get removalsHead => _removalsHead;
@@ -520,6 +535,24 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   get isDirty => _additionsHead != null ||
                  _changesHead != null ||
                  _removalsHead != null;
+
+  _revertToPreviousState() {
+    if (!isDirty) {
+      return;
+    }
+    KeyValueRecord record, prev;
+    int i = 0;
+    for (record = _mapHead = _previousMapHead;
+         record != null;
+         prev = record, record = record._previousNextKeyValue, ++i) {
+      record._currentValue = record._previousValue;
+      if (prev != null) {
+        prev._nextKeyValue = prev._previousNextKeyValue = record;
+      }
+    }
+    prev._nextKeyValue = null;
+    _undoDeltas();
+  }
 
   void forEachChange(void f(ChangedKeyValue<K, V> change)) {
     KeyValueRecord record = _changesHead;
@@ -602,6 +635,18 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   }
 
   void _reset() {
+    if (isDirty) {
+      // Record the state of the mapping for a possible _revertToPreviousState()
+      for (KeyValueRecord record = _previousMapHead = _mapHead;
+           record != null;
+           record = record._nextKeyValue) {
+        record._previousNextKeyValue = record._nextKeyValue;
+      }
+      _undoDeltas();
+    }
+  }
+
+  void _undoDeltas() {
     var record = _changesHead;
     while (record != null) {
       record._previousValue = record._currentValue;
@@ -748,14 +793,42 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
       _changesTail = record;
     }
   }
+
+  String toString() {
+    List itemsList = [], previousList = [], changesList = [], additionsList = [], removalsList = [];
+    KeyValueRecord record;
+    for (record = _mapHead; record != null; record = record._nextKeyValue) {
+      itemsList.add("$record");
+    }
+    for (record = _previousMapHead; record != null; record = record._previousNextKeyValue) {
+      previousList.add("$record");
+    }
+    for (record = _changesHead; record != null; record = record._nextChangedKeyValue) {
+      changesList.add("$record");
+    }
+    for (record = _additionsHead; record != null; record = record._nextAddedKeyValue) {
+      additionsList.add("$record");
+    }
+    for (record = _removalsHead; record != null; record = record._nextRemovedKeyValue) {
+      removalsList.add("$record");
+    }
+    return """
+map: ${itemsList.join(", ")}
+previous: ${previousList.join(", ")}
+changes: ${changesList.join(", ")}
+additions: ${additionsList.join(", ")}
+removals: ${removalsList.join(", ")}
+""";
+  }
 }
 
-class KeyValueRecord<K, V> implements KeyValue<K, V>, AddedKeyValue<K, V>,
-    RemovedKeyValue<K, V>, ChangedKeyValue<K, V> {
+class KeyValueRecord<K, V> implements KeyValue<K, V>, PreviousKeyValue<K, V>,
+      AddedKeyValue<K, V>, RemovedKeyValue<K, V>, ChangedKeyValue<K, V> {
   final K key;
   V _previousValue, _currentValue;
 
   KeyValueRecord<K, V> _nextKeyValue;
+  KeyValueRecord<K, V> _previousNextKeyValue;
   KeyValueRecord<K, V> _nextAddedKeyValue;
   KeyValueRecord<K, V> _nextRemovedKeyValue, _prevRemovedKeyValue;
   KeyValueRecord<K, V> _nextChangedKeyValue;
@@ -765,12 +838,13 @@ class KeyValueRecord<K, V> implements KeyValue<K, V>, AddedKeyValue<K, V>,
   V get previousValue => _previousValue;
   V get currentValue => _currentValue;
   KeyValue<K, V> get nextKeyValue => _nextKeyValue;
+  PreviousKeyValue<K, V> get previousNextKeyValue => _previousNextKeyValue;
   AddedKeyValue<K, V> get nextAddedKeyValue => _nextAddedKeyValue;
   RemovedKeyValue<K, V> get nextRemovedKeyValue => _nextRemovedKeyValue;
   ChangedKeyValue<K, V> get nextChangedKeyValue => _nextChangedKeyValue;
 
   String toString() => _previousValue == _currentValue
-        ? key
+        ? "$key"
         : '$key[$_previousValue -> $_currentValue]';
 }
 
@@ -785,15 +859,39 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   /** Used to keep track of removed items. */
   DuplicateMap _removedItems = new DuplicateMap();
 
+  ItemRecord<V> _previousCollectionHead;
   ItemRecord<V> _collectionHead, _collectionTail;
   ItemRecord<V> _additionsHead, _additionsTail;
   ItemRecord<V> _movesHead, _movesTail;
   ItemRecord<V> _removalsHead, _removalsTail;
 
+  CollectionChangeItem<V> get previousCollectionHead => _previousCollectionHead;
   CollectionChangeItem<V> get collectionHead => _collectionHead;
   CollectionChangeItem<V> get additionsHead => _additionsHead;
   CollectionChangeItem<V> get movesHead => _movesHead;
   CollectionChangeItem<V> get removalsHead => _removalsHead;
+
+  _revertToPreviousState() {
+    if (!isDirty) {
+      return;
+    }
+    _items.clear();
+    ItemRecord<V> record, prev;
+    int i = 0;
+    for (record = _collectionHead = _previousCollectionHead;
+         record != null;
+         prev = record, record = record._previousNextRec, ++i) {
+      record.currentIndex = record.previousIndex = i;
+      record._prevRec = prev;
+      if (prev != null) {
+        prev._nextRec = prev._previousNextRec = record;
+      }
+      _items.put(record);
+    }
+    prev._nextRec = null;
+    _collectionTail = prev;
+    _undoDeltas();
+  }
 
   void forEachAddition(void f(AddedItem<V> addition)){
     ItemRecord record = _additionsHead;
@@ -824,13 +922,14 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
   bool _check(Iterable collection) {
     _reset();
-    ItemRecord record = _collectionHead;
-    bool maybeDirty = false;
     if ((collection is UnmodifiableListView) &&
-    identical(_iterable, collection)) {
+        identical(_iterable, collection)) {
       // Short circuit and assume that the list has not been modified.
       return false;
     }
+
+    ItemRecord record = _collectionHead;
+    bool maybeDirty = false;
 
     if (collection is List) {
       List list = collection;
@@ -873,6 +972,18 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
    * removals).
    */
   void _reset() {
+    if (isDirty) {
+      // Record the state of the collection for a possible _revertToPreviousState()
+      for (ItemRecord record = _previousCollectionHead = _collectionHead;
+           record != null;
+           record = record._nextRec) {
+        record._previousNextRec = record._nextRec;
+      }
+      _undoDeltas();
+    }
+  }
+
+  void _undoDeltas() {
     ItemRecord record;
 
     record = _additionsHead;
@@ -1157,6 +1268,13 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       record = record._nextRec;
     }
 
+    var previous = [];
+    record = _previousCollectionHead;
+    while (record != null) {
+      previous.add(record);
+      record = record._previousNextRec;
+    }
+
     var additions = [];
     record = _additionsHead;
     while (record != null) {
@@ -1180,6 +1298,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
     return """
 collection: ${list.join(", ")}
+previous: ${previous.join(", ")}
 additions: ${additions.join(", ")}
 moves: ${moves.join(", ")}
 removals: ${removals.join(", ")}
@@ -1187,17 +1306,20 @@ removals: ${removals.join(", ")}
   }
 }
 
-class ItemRecord<V> implements CollectionItem<V>, AddedItem<V>, MovedItem<V>,
+class ItemRecord<V> implements PreviousCollectionItem<V>, CollectionItem<V>, AddedItem<V>, MovedItem<V>,
     RemovedItem<V> {
   int previousIndex = null;
   int currentIndex = null;
   V item = _INITIAL_;
 
+
+  ItemRecord<V> _previousNextRec;
   ItemRecord<V> _prevRec, _nextRec;
   ItemRecord<V> _prevDupRec, _nextDupRec;
   ItemRecord<V> _prevRemovedRec, _nextRemovedRec;
   ItemRecord<V> _nextAddedRec, _nextMovedRec;
 
+  PreviousCollectionItem<V> get previousNextItem => _previousNextRec;
   CollectionItem<V> get nextCollectionItem => _nextRec;
   RemovedItem<V> get nextRemovedItem => _nextRemovedRec;
   AddedItem<V> get nextAddedItem => _nextAddedRec;
@@ -1314,7 +1436,11 @@ class DuplicateMap {
     return record;
   }
 
+  bool get isEmpty => map.isEmpty;
+
   void clear() {
     map.clear();
   }
+
+  String toString() => "$runtimeType($map)";
 }
