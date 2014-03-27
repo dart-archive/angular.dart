@@ -4,7 +4,7 @@ import '../_specs.dart';
 
 // Mock animate instance that throws on move
 class MockAnimate extends NgAnimate {
-  Animation move(Iterable<Node> nodes, Node parent,
+  NgAnimation move(Iterable<Node> nodes, Node parent,
                  {Node insertBefore}) {
     throw "Move should not be called";
   }

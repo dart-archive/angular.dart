@@ -13,7 +13,7 @@ class NgAnimate {
    * Add the [cssClass] to the classes on [element] after running any
    * defined animations.
    */
-  Animation addClass(dom.Element element, String cssClass) {
+  NgAnimation addClass(dom.Element element, String cssClass) {
     element.classes.add(cssClass);
     return new NoOpAnimation();
   }
@@ -22,7 +22,7 @@ class NgAnimate {
     * Remove the [cssClass] from the classes on [element] after running any
     * defined animations.
     */
-  Animation removeClass(dom.Element element, String cssClass) {
+  NgAnimation removeClass(dom.Element element, String cssClass) {
     element.classes.remove(cssClass);
     return new NoOpAnimation();
   }
@@ -33,7 +33,7 @@ class NgAnimate {
    * in [nodes] and returning Future.wait(handles); for the onCompleted
    * property on [Animation].
    */
-  Animation insert(Iterable<dom.Node> nodes, dom.Node parent,
+  NgAnimation insert(Iterable<dom.Node> nodes, dom.Node parent,
                          { dom.Node insertBefore }) {
     util.domInsert(nodes, parent, insertBefore: insertBefore);
     return new NoOpAnimation();
@@ -49,7 +49,7 @@ class NgAnimate {
    * returning Future.wait(handles); for the onCompleted property on
    * [Animation].
    */
-  Animation remove(Iterable<dom.Node> nodes) {
+  NgAnimation remove(Iterable<dom.Node> nodes) {
     util.domRemove(nodes.toList(growable: false));
     return new NoOpAnimation();
   }
@@ -60,7 +60,7 @@ class NgAnimate {
    * in [nodes] and returning Future.wait(handles); for the onCompleted
    * property on [Animation].
    */
-  Animation move(Iterable<dom.Node> nodes, dom.Node parent,
+  NgAnimation move(Iterable<dom.Node> nodes, dom.Node parent,
                        { dom.Node insertBefore }) {
     util.domMove(nodes, parent, insertBefore: insertBefore);
     return new NoOpAnimation();
@@ -71,7 +71,7 @@ class NgAnimate {
 /**
  * Animation handle for controlling and listening to animation completion.
  */
-abstract class Animation {
+abstract class NgAnimation {
   /**
    * Executed once when the animation is completed with the type of completion
    * result.
@@ -104,7 +104,7 @@ abstract class Animation {
  * TODO(codelogic): consider making a singleton instance. Depends on how future
  * behaves.
  */
-class NoOpAnimation extends Animation {
+class NoOpAnimation extends NgAnimation {
   async.Future<AnimationResult> _future;
   get onCompleted {
     if (_future == null) {

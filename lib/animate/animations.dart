@@ -6,7 +6,7 @@ part of angular.animate;
  * that they can be batched together to prevent excessive dom recalculations
  * when running multiple animations.
  */
-abstract class LoopedAnimation implements Animation {
+abstract class LoopedAnimation implements NgAnimation {
 
   /**
    * This is used to batch dom read operations to prevent excessive
@@ -30,8 +30,8 @@ abstract class LoopedAnimation implements Animation {
  * or similar animations are being run on them and it's more convenient to have
  * a merged animation to control and listen to a set of animations.
  */
-class AnimationList extends Animation {
-  final List<Animation> _animations;
+class AnimationList extends NgAnimation {
+  final List<NgAnimation> _animations;
   Future<AnimationResult> _onCompleted;
 
   /**
@@ -83,12 +83,12 @@ class AnimationList extends Animation {
   }
 }
 
-Animation _animationFromList(Iterable<Animation> animations) {
+NgAnimation _animationFromList(Iterable<NgAnimation> animations) {
   if (animations == null) {
     return new NoOpAnimation();
   }
 
-  List<Animation> list = animations.toList();
+  List<NgAnimation> list = animations.toList();
  
   if (list.length == 0) {
     return new NoOpAnimation();
