@@ -492,7 +492,7 @@ void main() {
       });
 
 
-      it('should read connstant', () {
+      it('should read constant', () {
         // should fire on initial adding
         expect(watchGrp.fieldCost).toEqual(0);
         var watch = watchGrp.watch(new ConstantAST(123), (v, p) => logger(v));
