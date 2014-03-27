@@ -303,56 +303,6 @@ void main() {
             removals: []));
       });
 
-      it('should detect changes in list', () {
-        var list = [];
-        var record = detector.watch(list.map((i) => i), null, 'handler');
-        expect(detector.collectChanges().moveNext()).toEqual(false);
-        var iterator;
-
-        list.add('a');
-        iterator = detector.collectChanges()..moveNext();
-        expect(iterator.current.currentValue, toEqualCollectionRecord(
-            collection: ['a[null -> 0]'],
-            additions: ['a[null -> 0]'],
-            moves: [],
-            removals: []));
-
-        list.add('b');
-        iterator = detector.collectChanges()..moveNext();
-        expect(iterator.current.currentValue, toEqualCollectionRecord(
-            collection: ['a', 'b[null -> 1]'],
-            additions: ['b[null -> 1]'],
-            moves: [],
-            removals: []));
-
-        list.add('c');
-        list.add('d');
-        iterator = detector.collectChanges()..moveNext();
-        expect(iterator.current.currentValue, toEqualCollectionRecord(
-            collection: ['a', 'b', 'c[null -> 2]', 'd[null -> 3]'],
-            additions: ['c[null -> 2]', 'd[null -> 3]'],
-            moves: [],
-            removals: []));
-
-        list.remove('c');
-        expect(list).toEqual(['a', 'b', 'd']);
-        iterator = detector.collectChanges()..moveNext();
-        expect(iterator.current.currentValue, toEqualCollectionRecord(
-            collection: ['a', 'b', 'd[3 -> 2]'],
-            additions: [],
-            moves: ['d[3 -> 2]'],
-            removals: ['c[2 -> null]']));
-
-        list.clear();
-        list.addAll(['d', 'c', 'b', 'a']);
-        iterator = detector.collectChanges()..moveNext();
-        expect(iterator.current.currentValue, toEqualCollectionRecord(
-            collection: ['d[2 -> 0]', 'c[null -> 1]', 'b[1 -> 2]', 'a[0 -> 3]'],
-            additions: ['c[null -> 1]'],
-            moves: ['d[2 -> 0]', 'b[1 -> 2]', 'a[0 -> 3]'],
-            removals: []));
-      });
-
       it('should test string by value rather than by reference', () {
         var list = ['a', 'boo'];
         detector..watch(list, null, null)..collectChanges();
