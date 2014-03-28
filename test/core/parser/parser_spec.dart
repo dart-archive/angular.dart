@@ -309,10 +309,13 @@ main() {
       });
 
 
-      it('should pass noSuchMethExceptions through getters', () {
+      it('should pass noSuchMethodExceptions through getters', () {
         expect(() {
           parser('getNoSuchMethod').eval(new ScopeWithErrors());
-        }).toThrow("iDontExist");
+        }).toThrow("null");
+        // Dartium throws: The null object does not have a method 'iDontExist'
+        // Chrome throws: NullError: Cannot call "iDontExist$0" on null
+        // Firefox throws: NullError: null has no properties
       });
 
 
