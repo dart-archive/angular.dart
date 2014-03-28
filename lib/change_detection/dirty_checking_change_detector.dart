@@ -1295,8 +1295,8 @@ class _DuplicateItemRecordList {
       next._prevDupRec = prev;
     }
 
-    assert((record._prevDupRec = null) == null);
-    assert((record._nextDupRec = null) == null);
+    record._prevDupRec = null;
+    record._nextDupRec = null;
 
     return head == null;
   }
