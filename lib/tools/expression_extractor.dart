@@ -51,7 +51,7 @@ main(args) {
     printer.write(_readFile(headerFile));
   }
 
-  printer.write('// Found ${expressions.length} expressions');
+  printer.write('// Found ${expressions.length} expressions\n');
   Module module = new Module()
       ..type(Parser, implementedBy: DynamicParser)
       ..type(ParserBackend, implementedBy: DartGetterSetterGen);
