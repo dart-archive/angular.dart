@@ -1,10 +1,10 @@
 library todo;
 
+import 'dart:html';
+
 import 'package:angular/angular.dart';
 import 'package:angular/angular_dynamic.dart';
 import 'package:angular/playback/playback_http.dart';
-
-import 'dart:html';
 
 class Item {
   String text;

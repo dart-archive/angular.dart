@@ -17,9 +17,10 @@ import 'dart:async' as dart_async;
 import 'dart:collection' show ListBase;
 import 'dart:html';
 import 'dart:js' as js;
+
 import 'package:angular/angular.dart';
 import 'package:di/di.dart';
-import 'package:unittest/mock.dart';
+import 'package:mock/mock.dart';
 
 import 'http_backend.dart';
 

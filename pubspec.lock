@@ -48,10 +48,18 @@ packages:
     description: logging
     source: hosted
     version: "0.9.1+1"
+  matcher:
+    description: matcher
+    source: hosted
+    version: "0.10.0"
   meta:
     description: meta
     source: hosted
     version: "0.8.8"
+  mock:
+    description: mock
+    source: hosted
+    version: "0.10.0"
   path:
     description: path
     source: hosted
@@ -79,7 +87,7 @@ packages:
   unittest:
     description: unittest
     source: hosted
-    version: "0.9.3"
+    version: "0.10.1+1"
   utf:
     description: utf
     source: hosted
