@@ -422,7 +422,7 @@ class RootWatchGroup extends WatchGroup {
     // We need to call reaction functions asynchronously. This processes the
     // asynchronous reaction function queue.
     int count = 0;
-    if (processStopwatch != null) processStopwatch.stop();
+    if (processStopwatch != null) processStopwatch.start();
     Watch dirtyWatch = _dirtyWatchHead;
     _dirtyWatchHead = null;
     RootWatchGroup root = _rootGroup;
