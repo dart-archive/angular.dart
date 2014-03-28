@@ -17,12 +17,14 @@ part of angular.directive;
 class NgADirective {
   final dom.Element element;
 
-  NgADirective(this.element) {
+  NgADirective(this.element, NgZone zone) {
     if (element.attributes["href"] == "") {
-      element.onClick.listen((event) {
-        if (element.attributes["href"] == "") {
-          event.preventDefault();
-        }
+      zone.runOutsideAngular(() {
+        element.onClick.listen((event) {
+          if (element.attributes["href"] == "") {
+            event.preventDefault();
+          }
+        });
       });
     }
   }
