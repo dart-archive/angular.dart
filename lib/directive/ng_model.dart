@@ -381,7 +381,10 @@ class InputNumberLikeDirective {
   final NgModel ngModel;
   final Scope scope;
 
-  num get typedValue => inputElement.valueAsNumber;
+
+  // We can't use inputElement.valueAsNumber due to http://dartbug.com/15788
+  num get typedValue => num.parse(inputElement.value, (v) => double.NAN);
+
   void set typedValue(num value) {
     // [chalin, 2014-02-16] This post
     // http://lists.whatwg.org/pipermail/whatwg-whatwg.org/2010-January/024829.html
@@ -391,7 +394,8 @@ class InputNumberLikeDirective {
     if (value == null) {
       inputElement.value = null;
     } else {
-      inputElement.valueAsNumber = value;
+      // We can't use inputElement.valueAsNumber due to http://dartbug.com/15788
+      inputElement.value = "$value";
     }
   }
 
