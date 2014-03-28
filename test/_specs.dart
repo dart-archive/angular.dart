@@ -1,17 +1,17 @@
 library ng_specs;
 
 import 'dart:html' hide Animation;
-import 'package:unittest/unittest.dart' as unit;
+
 import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
 import 'package:angular/mock/test_injection.dart';
-import 'package:collection/wrappers.dart' show DelegatingList;
+import 'package:unittest/unittest.dart' as unit;
 
 import 'jasmine_syntax.dart' as jasmine_syntax;
 
 export 'dart:html' hide Animation;
 export 'package:unittest/unittest.dart';
-export 'package:unittest/mock.dart';
+export 'package:mock/mock.dart';
 export 'package:di/dynamic_injector.dart';
 export 'package:angular/angular.dart';
 export 'package:angular/animate/module.dart';
