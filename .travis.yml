@@ -15,6 +15,11 @@ env:
   - CHROME_BIN=/usr/bin/google-chrome
   - secure: "ZSUCLuDjvKEFmgjAd3GpUNCNkdjE66dEIiBfW+EfN0dv2+QHx/MHL4hRyKk2qbGjCr/suR9JWgmNE+Yu1A4fwzcYN52ehgyoLUCTL9YDk+XkFdFWpnjJ8364TDcDuJA0oxwcqJ9E3XUPv6sq1mbcX6DlkPKco7ZT8TLtGmd0nGA="
 
+# Don't test these branches.
+branches:
+  except:
+    - g3v1x
+
 before_install:
 - export DISPLAY=:99.0
 - ./scripts/travis/install.sh
