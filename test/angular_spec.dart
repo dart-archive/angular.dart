@@ -218,7 +218,6 @@ main() {
         "angular.core.dom.ElementProbe",
         "angular.core.dom.ApplyMapping",  // internal?
         "angular.core.dom.ViewCache",  // internal?
-        "angular.core.dom.FieldMetadataExtractor",  // internal?
         "angular.core.dom.Compiler",
         "angular.core.dom.HttpResponse",
         "angular.core.dom.UrlRewriter",
