@@ -124,7 +124,8 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
    * Create a child [ChangeDetector] group.
    */
   DirtyCheckingChangeDetectorGroup<H> newGroup() {
-    assert(_root._assertRecordsOk());
+    // Disabled due to issue https://github.com/angular/angular.dart/issues/812
+    // assert(_root._assertRecordsOk());
     var child = new DirtyCheckingChangeDetectorGroup(this, _fieldGetterFactory);
     if (_childHead == null) {
       _childHead = _childTail = child;
@@ -133,7 +134,8 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
       _childTail._next = child;
       _childTail = child;
     }
-    assert(_root._assertRecordsOk());
+    // Disabled due to issue https://github.com/angular/angular.dart/issues/812
+    // assert(_root._assertRecordsOk());
     return child;
   }
 
