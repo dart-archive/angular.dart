@@ -32,6 +32,7 @@ module.exports = function(config) {
     plugins: [
       'karma-dart',
       'karma-chrome-launcher',
+      'karma-firefox-launcher',
       'karma-script-launcher',
       'karma-junit-reporter',
       '../../../karma-parser-getter-setter'
@@ -42,7 +43,7 @@ module.exports = function(config) {
       ChromeNoSandbox: { base: 'Chrome', flags: ['--no-sandbox'] }
     },
 
-    browsers: ['Dartium'],
+    browsers: ['Chrome', 'Dartium', 'Firefox'],
 
     preprocessors: {
       'test/core/parser/generated_getter_setter.dart': ['parser-getter-setter']
