@@ -1,3 +1,12 @@
+/**
+*
+* Filters available in the main [angular.dart](#angular/angular) library.
+*
+* This package is imported for you as part of [angular.dart](#angular/angular),
+* and lists all of the basic filters that are part of Angular.
+*
+*
+*/
 library angular.filter;
 
 import 'dart:convert' show JSON;

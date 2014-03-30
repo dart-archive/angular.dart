@@ -1,3 +1,16 @@
+/**
+*
+* Classes and utilities for testing and prototyping in AngularDart.
+*
+* This is an optional library. You must import it in addition to the [angular.dart]
+* (#angular/angular) library,
+* like so:
+*
+*      import 'package:angular/angular.dart';
+*      import 'package:angular/mock/module.dart';
+*
+*
+*/
 library angular.mock;
 
 import 'dart:async' as dart_async;

@@ -1,10 +1,31 @@
 /**
- * Angular is a framework for building single page web applications.
+ * Core functionality for angular.dart, a web framework for Dart.
+ *
+ *
+ * You must import the angular library to use it with Dart, like so:
+ *
+ *      import 'package:angular/angular.dart';
+ *
+ * The angular.dart library includes Angular's Directive and Filter classes:
+ *
+ *  - [angular.directive](#angular/angular-directive) lists all the basic directives
+ *  - [angular.filter] (#angular/angular-filter) lists all the basic filters
+ *
+ * You might also want to optionally import the following Angular libraries:
+ *
+ *   - [angular.animate](#angular/angular-animate) supports CSS animations that modify the
+ *   lifecycle of a DOM
+ *   element
+ *   - [angular.mock](#angular/angular-mock) provides classes and utilities for testing and
+ *   prototyping
+ *   - [angular.perf](#angular/angular-perf) provides classes to help evaluate performance in your
+ *   app
+ *
  *
  * Further reading:
  *
- *   - AngularJS [Overview](http://www.angularjs.org)
- *   - [Tutorial](https://github.com/angular/angular.dart.tutorial/wiki)
+ *   - AngularDart [Overview](http://www.angulardart.org)
+ *   - [Tutorial](https://angulardart.org/tutorial/)
  *   - [Mailing List](http://groups.google.com/d/forum/angular-dart?hl=en)
  *
  */
