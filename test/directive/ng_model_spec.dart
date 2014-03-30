@@ -3,6 +3,36 @@ library ng_model_spec;
 import '../_specs.dart';
 import 'dart:html' as dom;
 
+//-----------------------------------------------------------------------------
+// Utility functions
+
+/* This function simulates typing the given text into the input field. The
+ * text will be added wherever the insertion point happens to be. This method
+ * has as side-effect to set the focus on the input (without setting the
+ * focus, the text dispatch may not work).
+ */
+void simulateTypingText(InputElement input, String text) {
+  input..focus()..dispatchEvent(new TextEvent('textInput', data: text));
+}
+
+bool simulateTypingTextWithConfirmation(InputElement input, String text, 
+                                        { bool shouldWorkForChrome : true }) {
+  bool result;
+  String val = input.value;
+  try {
+    simulateTypingText(input, text);
+    result = input.value == val + text;
+  } catch (e) {
+    result = false;
+  }
+  if (!result && shouldWorkForChrome) expect(isBrowser('Chrome')).toBeFalsy();
+  return result;
+}
+
+bool isBrowser(String pattern) => dom.window.navigator.userAgent.indexOf(pattern) > 0;
+
+//-----------------------------------------------------------------------------
+
 void main() {
   describe('ng-model', () {
     TestBed _;
@@ -108,16 +138,6 @@ void main() {
       });
     });
 
-    /* This function simulates typing the given text into the input
-     * field. The text will be added wherever the insertion point
-     * happens to be. This method has as side-effect to set the
-     * focus on the input (without setting the focus, the text
-     * dispatch may not work).
-     */
-    void simulateTypingText(InputElement input, String text) {
-      input..focus()..dispatchEvent(new TextEvent('textInput', data: text));
-    }
-
     describe('type="number" or type="range"', () {
 
       it('should update model from the input value for type=number', () {
@@ -168,6 +188,9 @@ void main() {
         var element = _.compile('<input type="number" ng-model="$modelFieldName">');
         dom.querySelector('body').append(element);
 
+        if (!simulateTypingTextWithConfirmation(element, '1')) return; // skip test.
+        element.value = ''; // reset input
+
         // This test will progressively enter the text '1e1'
         // '1' is a valid number.
         // '1e' is not a valid number.
@@ -195,6 +218,9 @@ void main() {
         var modelFieldName = 'modelForNumFromInvalid2';
         var element = _.compile('<input type="number" ng-model="$modelFieldName">');
         dom.querySelector('body').append(element);
+
+        if (!simulateTypingTextWithConfirmation(element, '1')) return; // skip test.
+        element.value = ''; // reset input
 
         simulateTypingText(element, '1e-1');
         expect(element.value).toEqual('1e-1');
