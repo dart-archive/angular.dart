@@ -507,7 +507,7 @@ class RootScope extends Scope {
   static final STATE_FLUSH_ASSERT = 'assert';
 
   final ExceptionHandler _exceptionHandler;
-  final AstParser _astParser;
+  final _AstParser _astParser;
   final Parser _parser;
   final ScopeDigestTTL _ttl;
   final NgZone _zone;
@@ -525,7 +525,7 @@ class RootScope extends Scope {
             ScopeStats _scopeStats)
       : _scopeStats = _scopeStats,
         _parser = parser,
-        _astParser = new AstParser(parser),
+        _astParser = new _AstParser(parser),
         super(context, null, null,
             new RootWatchGroup(fieldGetterFactory,
                 new DirtyCheckingChangeDetector(fieldGetterFactory), context),
@@ -944,25 +944,24 @@ class _FunctionChain {
   }
 }
 
-@NgInjectableService()
-class AstParser {
+class _AstParser {
   final Parser _parser;
   int _id = 0;
   ExpressionVisitor _visitor = new ExpressionVisitor();
 
-  AstParser(this._parser);
+  _AstParser(this._parser);
 
-  AST call(String exp, { FilterMap filters,
-                         bool collection: false,
-                         Object context: null }) {
+  AST call(String input, {FilterMap filters,
+                          bool collection: false,
+                          Object context: null }) {
     _visitor.filters = filters;
     AST contextRef = _visitor.contextRef;
     try {
       if (context != null) {
         _visitor.contextRef = new ConstantAST(context, '#${_id++}');
       }
-      var ast = _parser(exp);
-      return collection ? _visitor.visitCollection(ast) : _visitor.visit(ast);
+      var exp = _parser(input);
+      return collection ? _visitor.visitCollection(exp) : _visitor.visit(exp);
     } finally {
       _visitor.contextRef = contextRef;
       _visitor.filters = null;
