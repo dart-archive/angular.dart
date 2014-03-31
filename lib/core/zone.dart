@@ -1,4 +1,4 @@
-part of angular.core;
+part of angular.core_internal;
 
 typedef void ZoneOnTurn();
 typedef void ZoneOnError(dynamic error, dynamic stacktrace,

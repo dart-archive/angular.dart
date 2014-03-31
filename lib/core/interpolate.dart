@@ -1,4 +1,4 @@
-part of angular.core;
+part of angular.core_internal;
 
 /**
  * Compiles a string with markup into an expression. This service is used by the

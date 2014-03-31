@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 /**
  * A View is a fundamental building block of DOM. It is a chunk of DOM which

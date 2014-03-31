@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 TaggedElementBinder _addBinder(List list, TaggedElementBinder binder) {
   assert(binder.parentBinderOffset != list.length); // Do not point to yourself!

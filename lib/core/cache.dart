@@ -1,4 +1,4 @@
-part of angular.core;
+part of angular.core_internal;
 
 class CacheStats {
   final int capacity;

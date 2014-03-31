@@ -152,9 +152,10 @@ import 'dart:async';
 import 'dart:html';
 
 import 'package:di/di.dart';
-import 'package:angular/angular.dart';
+import 'package:angular/bootstrap.dart';
+import 'package:angular/core/module_internal.dart';
+import 'package:angular/core_dom/module_internal.dart';
 import 'package:route_hierarchical/client.dart';
-export 'package:route_hierarchical/client.dart' hide childRoute;
 
 part 'routing.dart';
 part 'ng_view.dart';

@@ -1,4 +1,4 @@
-part of angular.core;
+part of angular.core_internal;
 
 /**
  * Use @[NgFilter] annotation to register a new filter. A filter is a class

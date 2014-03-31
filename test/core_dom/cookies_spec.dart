@@ -1,7 +1,7 @@
 library cookies_spec;
 
 import '../_specs.dart';
-import 'package:angular/core_dom/module.dart';
+import 'package:angular/core/module.dart';
 
 void main() {
   describe('cookies', () {

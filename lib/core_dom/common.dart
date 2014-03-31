@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 List<dom.Node> cloneElements(elements) {
   return elements.map((el) => el.clone(true)).toList();

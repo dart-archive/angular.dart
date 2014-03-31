@@ -1,7 +1,6 @@
 library angular.core_static;
 
-import 'package:angular/angular.dart';
-import 'package:angular/core/module.dart';
+import 'package:angular/core/module_internal.dart';
 
 @NgInjectableService()
 class StaticMetadataExtractor extends MetadataExtractor {

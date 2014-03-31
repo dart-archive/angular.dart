@@ -3,7 +3,7 @@ library angular.core.parser.syntax;
 import 'package:angular/core/parser/parser.dart' show LocalsWrapper;
 import 'package:angular/core/parser/unparser.dart' show Unparser;
 import 'package:angular/core/parser/utils.dart' show EvalError;
-import 'package:angular/core/module.dart';
+import 'package:angular/core/module_internal.dart';
 
 abstract class Visitor {
   visit(Expression expression) => expression.accept(this);

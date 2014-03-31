@@ -101,8 +101,8 @@ library angular.animate;
 import 'dart:async';
 import 'dart:html' as dom;
 
-import 'package:angular/core/module.dart';
-import 'package:angular/core_dom/module.dart';
+import 'package:angular/core/module_internal.dart';
+import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
 import 'package:logging/logging.dart';
 import 'package:perf_api/perf_api.dart';

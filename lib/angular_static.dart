@@ -1,7 +1,11 @@
-library angular.static;
+library angular.bootstrap.static;
 
 import 'package:di/static_injector.dart';
-import 'package:angular/angular.dart';
+import 'package:di/di.dart' show TypeFactory, Injector;
+import 'package:angular/bootstrap.dart';
+import 'package:angular/core/module_internal.dart';
+import 'package:angular/core/parser/parser.dart';
+import 'package:angular/core/parser/dynamic_parser.dart';
 import 'package:angular/core/registry_static.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';

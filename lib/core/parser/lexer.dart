@@ -1,6 +1,6 @@
 library angular.core.parser.lexer;
 
-import 'package:angular/core/module.dart' show NgInjectableService;
+import 'package:angular/core/module_internal.dart' show NgInjectableService;
 import 'package:angular/core/parser/characters.dart';
 
 part 'tokens.dart';

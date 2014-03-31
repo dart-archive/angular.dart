@@ -31,26 +31,13 @@
  */
 library angular;
 
-import 'dart:html' as dom;
-import 'dart:js' as js;
-import 'package:di/di.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
-import 'package:angular/core/module.dart';
-import 'package:angular/core_dom/module.dart';
-import 'package:angular/directive/module.dart';
-import 'package:angular/filter/module.dart';
-import 'package:angular/perf/module.dart';
-import 'package:angular/routing/module.dart';
-
-export 'package:di/di.dart';
+export 'package:angular/bootstrap.dart';
 export 'package:angular/core/module.dart';
-export 'package:angular/core_dom/module.dart';
-export 'package:angular/core/parser/parser.dart';
-export 'package:angular/core/parser/lexer.dart';
 export 'package:angular/directive/module.dart';
+export 'package:angular/introspection.dart';
 export 'package:angular/filter/module.dart';
 export 'package:angular/routing/module.dart';
+export 'package:di/di.dart';
+export 'package:route_hierarchical/client.dart' hide childRoute;
 
-part 'bootstrap.dart';
-part 'introspection.dart';

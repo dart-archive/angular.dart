@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 /**
  * The [NgAnimate] service provides dom lifecycle management, detection and

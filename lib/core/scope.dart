@@ -1,8 +1,4 @@
-part of angular.core;
-
-NOT_IMPLEMENTED() {
-  throw new StateError('Not Implemented');
-}
+part of angular.core_internal;
 
 typedef EvalFunction0();
 typedef EvalFunction1(context);
@@ -930,14 +926,19 @@ class ScopeStreamSubscription implements async.StreamSubscription<ScopeEvent> {
     return null;
   }
 
-  void onData(void handleData(ScopeEvent data)) => NOT_IMPLEMENTED();
-  void onError(Function handleError) => NOT_IMPLEMENTED();
-  void onDone(void handleDone()) => NOT_IMPLEMENTED();
-  void pause([async.Future resumeSignal]) => NOT_IMPLEMENTED();
-  void resume() => NOT_IMPLEMENTED();
-  bool get isPaused => NOT_IMPLEMENTED();
-  async.Future asFuture([var futureValue]) => NOT_IMPLEMENTED();
+  void onData(void handleData(ScopeEvent data)) => _NOT_IMPLEMENTED();
+  void onError(Function handleError) => _NOT_IMPLEMENTED();
+  void onDone(void handleDone()) => _NOT_IMPLEMENTED();
+  void pause([async.Future resumeSignal]) => _NOT_IMPLEMENTED();
+  void resume() => _NOT_IMPLEMENTED();
+  bool get isPaused => _NOT_IMPLEMENTED();
+  async.Future asFuture([var futureValue]) => _NOT_IMPLEMENTED();
 }
+
+_NOT_IMPLEMENTED() {
+  throw new StateError('Not Implemented');
+}
+
 
 class _FunctionChain {
   final Function fn;

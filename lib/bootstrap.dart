@@ -1,4 +1,17 @@
-part of angular;
+library angular.bootstrap;
+
+import 'dart:html' as dom;
+
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:di/di.dart';
+import 'package:angular/angular.dart';
+import 'package:angular/perf/module.dart';
+import 'package:angular/core/module_internal.dart';
+import 'package:angular/core_dom/module_internal.dart';
+import 'package:angular/directive/module.dart';
+import 'package:angular/filter/module.dart';
+import 'package:angular/routing/module.dart';
+import 'package:angular/introspection_js.dart';
 
 /**
  * This is the top level module which describes the whole of angular.
@@ -22,7 +35,7 @@ class AngularModule extends Module {
     install(new NgRoutingModule());
 
     type(MetadataExtractor);
-    value(Expando, _elementExpando);
+    value(Expando, elementExpando);
   }
 }
 
@@ -93,7 +106,7 @@ abstract class NgApp {
   }
 
   Injector run() {
-    _publishToJavaScript();
+    publishToJavaScript();
     return zone.run(() {
       var rootElements = [element];
       Injector injector = createInjector();

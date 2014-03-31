@@ -1,7 +1,5 @@
 part of angular.directive;
 
-typedef dynamic ItemEval(dynamic item, num index);
-
 /**
  * HTML [SELECT] element with angular data-binding if used with
  * [NgModelDirective].

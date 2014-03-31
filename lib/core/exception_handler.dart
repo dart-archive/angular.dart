@@ -1,4 +1,4 @@
-part of angular.core;
+part of angular.core_internal;
 
 /**
  * Any uncaught exception in angular expressions is delegated to this service.

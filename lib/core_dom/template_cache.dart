@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 /**
  * Infinite cache service for templates loaded from URLs.

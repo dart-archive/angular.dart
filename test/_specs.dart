@@ -12,8 +12,19 @@ import 'jasmine_syntax.dart' as jasmine_syntax;
 export 'dart:html' hide Animation;
 export 'package:unittest/unittest.dart';
 export 'package:mock/mock.dart';
+export 'package:unittest/mock.dart';
+export 'package:di/di.dart';
 export 'package:di/dynamic_injector.dart';
 export 'package:angular/angular.dart';
+export 'package:angular/bootstrap.dart';
+export 'package:angular/introspection.dart';
+export 'package:angular/core/module_internal.dart';
+export 'package:angular/core_dom/module_internal.dart';
+export 'package:angular/core/parser/parser.dart';
+export 'package:angular/core/parser/lexer.dart';
+export 'package:angular/directive/module.dart';
+export 'package:angular/filter/module.dart';
+export 'package:angular/routing/module.dart';
 export 'package:angular/animate/module.dart';
 export 'package:angular/mock/module.dart';
 export 'package:angular/mock/test_injection.dart';
@@ -183,11 +194,6 @@ class ExceptionContains extends unit.Matcher {
 $(String selector) =>
   es(selector);
 
-class GetterSetter {
-  Getter getter(String key) => null;
-  Setter setter(String key) => null;
-}
-var getterSetter = new GetterSetter();
 
 _injectify(fn) {
   // The function does two things:

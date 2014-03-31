@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 // This Directive is special and does not go through injection.
 @NgDirective(selector: r':contains(/{{.*}}/)')

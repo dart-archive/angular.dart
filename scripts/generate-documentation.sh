@@ -7,7 +7,7 @@ cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
 
 # Dart doc can not be run from the same directory as dartdoc-viewer
 # see: https://code.google.com/p/dart/issues/detail?id=17231
-cd lib
+cd packages
 
 echo "Generating documentation"
 "$DART_DOCGEN" $DOC_OPTION $DOCDIR_OPTION \
@@ -15,13 +15,20 @@ echo "Generating documentation"
     --start-page=angular \
     --exclude-lib=js,metadata,meta,mirrors,intl,number_symbols,number_symbol_data,intl_helpers,date_format_internal,date_symbols,angular.util \
     --no-include-sdk \
-    --package-root=../packages/ \
-    angular.dart \
-    filter/module.dart \
-    directive/module.dart \
-    animate/module.dart \
-    mock/module.dart \
-    perf/module.dart \
+    --package-root=../packages \
+    angular/animate/module.dart \
+    angular/core/module.dart \
+    angular/directive/module.dart \
+    angular/filter/module.dart \
+    angular/routing/module.dart \
+    angular/mock/module.dart \
+    angular/perf/module.dart \
+    angular/angular_dynamic.dart \
+    angular/angular_static.dart \
+    angular/bootstrap.dart \
+    angular/introspection.dart \
+    di/di.dart \
+    route_hierarchical/client.dart \
 
 cd ..
 

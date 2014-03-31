@@ -127,183 +127,89 @@ main() {
       // exported in the list.  We are working on un-export the symbols.
       // Comments on each symbols below.
       var ALLOWED_NAMES = [
+        "angular.core_internal.CacheStats",
+        "angular.core_internal.ExceptionHandler",
+        "angular.core_internal.Interpolate",
+        "angular.core_internal.RootScope",
+        "angular.core_internal.Scope",
+        "angular.core_internal.ScopeDigestTTL",
+        "angular.core_internal.ScopeEvent",
+        "angular.core_internal.ScopeStats",
+        "angular.core_internal.ScopeStatsConfig",
+        "angular.core_internal.ScopeStatsEmitter",
+        "angular.core.dom_internal.Animation",
+        "angular.core.dom_internal.AnimationResult",
+        "angular.core.dom_internal.BrowserCookies",
+        "angular.core.dom_internal.Compiler",
+        "angular.core.dom_internal.Cookies",
+        "angular.core.dom_internal.ElementProbe",
+        "angular.core.dom_internal.EventHandler",
+        "angular.core.dom_internal.Http",
+        "angular.core.dom_internal.HttpBackend",
+        "angular.core.dom_internal.HttpDefaultHeaders",
+        "angular.core.dom_internal.HttpDefaults",
+        "angular.core.dom_internal.HttpInterceptor",
+        "angular.core.dom_internal.HttpInterceptors",
+        "angular.core.dom_internal.HttpResponse",
+        "angular.core.dom_internal.HttpResponseConfig",
+        "angular.core.dom_internal.NoOpAnimation",
+        "angular.core.dom_internal.NullTreeSanitizer",
+        "angular.core.dom_internal.RequestErrorInterceptor",
+        "angular.core.dom_internal.RequestInterceptor",
+        "angular.core.dom_internal.Response",
+        "angular.core.dom_internal.ResponseError",
+        "angular.core.dom_internal.TemplateCache",
+        "angular.core.dom_internal.View",
+        "angular.core.dom_internal.ViewFactory",
+        "angular.core.dom_internal.ViewPort",
+        "angular.directive.ContentEditableDirective",
+        "angular.directive.InputCheckboxDirective",
+        "angular.directive.InputNumberLikeDirective",
+        "angular.directive.InputRadioDirective",
+        "angular.directive.InputSelectDirective",
+        "angular.directive.InputTextLikeDirective",
+        "angular.directive.OptionValueDirective",
+        "angular.filter.CurrencyFilter",
+        "angular.filter.DateFilter",
+        "angular.filter.FilterFilter",
+        "angular.filter.JsonFilter",
+        "angular.filter.LimitToFilter",
+        "angular.filter.LowercaseFilter",
+        "angular.filter.NumberFilter",
+        "angular.filter.OrderByFilter",
+        "angular.filter.StringifyFilter",
+        "angular.filter.UppercaseFilter",
+        "angular.routing.RouteInitializer",
+        "angular.routing.RouteInitializerFn",
+        "angular.routing.RouteProvider",
+        "angular.routing.RouteViewFactory",
+        "angular.watch_group.PrototypeMap",
+        "angular.watch_group.Watch",
+        "di.CircularDependencyError",
         "di.FactoryFn",
         "di.Injector",
         "di.InvalidBindingError",
         "di.Key",  // common name, should be removed.
+        "di.Module",
+        "di.NoProviderError",
+        "di.ObjectFactory",
         "di.TypeFactory",
         "di.Visibility",
-        "di.NoProviderError",
-        "di.CircularDependencyError",
-        "di.ObjectFactory",
-        "di.Module",
-        "angular.core.AnnotationMap",
-        "angular.core.LruCache",  // internal?
-        "angular.core.ScopeStats",
-        "angular.core.ScopeStatsConfig",
-        "angular.core.ScopeStatsEmitter",
-        "angular.core.ArrayFn",  // internal?
-        "angular.core.LongStackTrace",  // internal?
-        "angular.core.Cache",  // internal?
-        "angular.core.ExpressionVisitor",  // internal?
-        "angular.core.ScopeEvent",
-        "angular.core.MapFn",  // internal?
-        "angular.core.EvalFunction1",  // internal?
-        "angular.core.MetadataExtractor",  // internal?
-        "angular.core.ExceptionHandler",
-        "angular.core.ZoneOnTurn",  // internal?
-        "angular.core.ZoneOnError",  // internal?
-        "angular.core.ScopeDigestTTL",
-        "angular.core.EvalFunction0",  // internal?
-        "angular.core.AnnotationsMap",  // internal?
-        "angular.core.RootScope",
-        "angular.core.CacheStats",
-        "angular.core.ScopeLocals",
-        "angular.core.ScopeStreamSubscription",
-        "angular.core.Interpolate",
-        "angular.core.NOT_IMPLEMENTED",  // internal?
-        "angular.core.Scope",
-        "angular.core.AttrFieldAnnotation",
-        "angular.core.UnboundedCache",  // internal?
-        "angular.core.ScopeStream",  // internal?
-        "angular.core.FilterMap",  // internal?
-        "angular.watch_group.FunctionApply",  // internal?
-        "angular.watch_group.WatchGroup",  // internal?
-        "angular.watch_group.ContextReferenceAST",  // internal?
-        "angular.watch_group.ConstantAST",  // internal?
-        "angular.watch_group.Watch",
-        "angular.watch_group.ReactionFn",  // internal?
-        "angular.watch_group.ChangeLog",
-        "angular.watch_group.FieldReadAST",  // internal?
-        "angular.watch_group.PureFunctionAST",  // internal?
-        "angular.watch_group.PrototypeMap",  // internal?
-        "angular.watch_group.CollectionAST",  // internal?
-        "angular.watch_group.MethodAST",  // internal?
-        "angular.watch_group.AST",  // internal?
-        "angular.watch_group.RootWatchGroup",
-        "angular.core.dom.AnimationResult",
-        "angular.core.dom.WalkingViewFactory",  // internal?
-        "angular.core.dom.ResponseError",
-        "angular.core.dom.View",
-        "angular.core.dom.ElementBinder",  // internal?
-        "angular.core.dom.NoOpAnimation",
-        "angular.core.dom.AttributeChanged",
-        "angular.core.dom.HttpBackend",
-        "angular.core.dom.HttpDefaults",
-        "angular.core.dom.TaggedElementBinder",  // internal?
-        "angular.core.dom.LocationWrapper",
-        "angular.core.dom.Cookies",
-        "angular.core.dom.ElementBinderTreeRef",  // internal?
-        "angular.core.dom.EventHandler",
-        "angular.core.dom.ShadowRootEventHandler", // internal
-        "angular.core.dom.Response",
-        "angular.core.dom.HttpDefaultHeaders",
-        "angular.core.dom.Animation",
-        "angular.core.dom.ViewPort",
-        "angular.core.dom.TemplateLoader",
-        "angular.core.dom.RequestErrorInterceptor",
-        "angular.core.dom.TaggedTextBinder",  // internal?
-        "angular.core.dom.Http",
-        "angular.core.dom.BoundViewFactory",  // internal?
-        "angular.core.dom.ElementBinderFactory",  // internal?
-        "angular.core.dom.DirectiveMap",  // internal?
-        "angular.core.dom.BrowserCookies",
-        "angular.core.dom.HttpInterceptor",
-        "angular.core.dom.cloneElements",  // internal?
-        "angular.core.dom.EventFunction",  // internal?
-        "angular.core.dom.RequestInterceptor",
-        "angular.core.dom.DefaultTransformDataHttpInterceptor",
-        "angular.core.dom.HttpResponseConfig",
-        "angular.core.dom.ElementProbe",
-        "angular.core.dom.ApplyMapping",  // internal?
-        "angular.core.dom.ViewCache",  // internal?
-        "angular.core.dom.Compiler",
-        "angular.core.dom.HttpResponse",
-        "angular.core.dom.UrlRewriter",
-        "angular.core.dom.DirectiveRef",
-        "angular.core.dom.HttpInterceptors",
-        "angular.core.dom.forceNewDirectivesAndFilters",  // internal?
-        "angular.core.dom.DirectiveSelectorFactory",  // internal?
-        "angular.core.dom.Mustache",
-        "angular.core.dom.TaggingViewFactory",  // internal?
-        "angular.core.dom.NodeCursor",  // internal?
-        "angular.core.dom.TemplateCache",  // internal?
-        "angular.core.dom.ViewFactory",
-        "angular.core.dom.NullTreeSanitizer",
-        "angular.core.dom.NodeAttrs",
-        "angular.core.dom.ElementBinderTree",  // internal?
-        "angular.core.dom.WalkingCompiler",  // internal?
-        "angular.core.dom.TaggingCompiler",  // internal?
-        "angular.core.dom.DirectiveSelector",  // internal?
-        "angular.core.parser.BoundGetter",  // internal?
-        "angular.core.parser.LocalsWrapper",  // internal?
-        "angular.core.parser.Getter",  // common name
-        "angular.core.parser.MethodClosure",
-        "angular.core.parser.Parser",
-        "angular.core.parser.ParserBackend",
-        "angular.core.parser.BoundSetter",
-        "angular.core.parser.Setter",  // common name
-        "angular.core.parser.syntax.BoundExpression", // evenything in syntax should be private
-        "angular.core.parser.syntax.Expression",
-        "angular.core.parser.syntax.CallArguments",
-        "angular.core.parser.syntax.Visitor",
-        "angular.core.parser.dynamic_parser.ClosureMap",
-        "angular.core.parser.dynamic_parser.DynamicParser",
-        "angular.core.parser.dynamic_parser.DynamicParserBackend",
-        "angular.core.parser.static_parser.StaticParserFunctions",
-        "angular.core.parser.static_parser.StaticParser",
-        "angular.core.parser.lexer.Scanner",  // everything in lexer should be private
-        "angular.core.parser.lexer.OPERATORS",
-        "angular.core.parser.lexer.NumberToken",
-        "angular.core.parser.lexer.Token",
-        "angular.core.parser.lexer.IdentifierToken",
-        "angular.core.parser.lexer.StringToken",
-        "angular.core.parser.lexer.CharacterToken",
-        "angular.core.parser.lexer.Lexer",
-        "angular.core.parser.lexer.KEYWORDS",
-        "angular.core.parser.lexer.OperatorToken",
-        "angular.directive.ItemEval",
-        "angular.directive.OptionValueDirective",
-        "angular.directive.InputSelectDirective",
-        "angular.directive.InputTextLikeDirective",
-        "angular.directive.InputNumberLikeDirective",
-        "angular.directive.ContentEditableDirective",
-        "angular.directive.InputCheckboxDirective",
-        "angular.directive.InputRadioDirective",
-        "angular.filter.JsonFilter",
-        "angular.filter.Equals",
-        "angular.filter.Mapper",
-        "angular.filter.FilterFilter",
-        "angular.filter.NumberFilter",
-        "angular.filter.DateFilter",
-        "angular.filter.LowercaseFilter",
-        "angular.filter.UppercaseFilter",
-        "angular.filter.OrderByFilter",
-        "angular.filter.CurrencyFilter",
-        "angular.filter.LimitToFilter",
-        "angular.filter.Predicate",
-        "angular.filter.StringifyFilter",
-        "angular.routing.RouteInitializerFn",
-        "angular.routing.RouteProvider",
-        "angular.routing.RouteInitializer",
-        "angular.routing.RouteViewFactory",
-        "route.client.RouteHandle",
-        "route.client.RouteEnterEvent",
-        "route.client.RouteStartEvent",
-        "route.client.Router",
-        "route.client.RouteEvent",
-        "route.client.RouteLeaveEventHandler",
+        "route.client.Routable",
         "route.client.Route",
+        "route.client.RouteEnterEvent",
+        "route.client.RouteEnterEventHandler",
+        "route.client.RouteEvent",
+        "route.client.RouteHandle",
         "route.client.RouteImpl",
         "route.client.RouteLeaveEvent",
-        "route.client.RoutePreEnterEventHandler",
+        "route.client.RouteLeaveEventHandler",
         "route.client.RoutePreEnterEvent",
-        "route.client.Routable",
-        "route.client.RouteEnterEventHandler",
-        "url_matcher.UrlMatcher",
+        "route.client.RoutePreEnterEventHandler",
+        "route.client.RouteStartEvent",
+        "route.client.Router",
         "url_matcher.UrlMatch",
-        "dirty_checking_change_detector.FieldGetter",  // everything in change detector should be private
-        "dirty_checking_change_detector.GetterCache",
+        "url_matcher.UrlMatcher",
       ];
 
       var _nameMap = {};

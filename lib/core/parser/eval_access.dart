@@ -3,7 +3,7 @@ library angular.core.parser.eval_access;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/utils.dart';
-import 'package:angular/core/module.dart';
+import 'package:angular/core/module_internal.dart';
 
 class AccessScopeFast extends syntax.AccessScope with AccessFast {
   final Getter getter;

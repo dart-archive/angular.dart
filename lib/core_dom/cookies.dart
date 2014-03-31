@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 /**
 * This class provides low-level acces to the browser's cookies.

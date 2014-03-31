@@ -19,6 +19,9 @@ import 'dart:html';
 import 'dart:js' as js;
 
 import 'package:angular/angular.dart';
+import 'package:angular/core/module_internal.dart';
+import 'package:angular/core_dom/module_internal.dart';
+import 'package:angular/core/parser/parser.dart';
 import 'package:di/di.dart';
 import 'package:mock/mock.dart';
 

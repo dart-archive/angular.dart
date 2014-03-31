@@ -1,4 +1,4 @@
-library angular.core.dom;
+library angular.core.dom_internal;
 
 import 'dart:async' as async;
 import 'dart:convert' show JSON;
@@ -7,9 +7,11 @@ import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
-import 'package:angular/core/module.dart';
+import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
+
+import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
 
 part 'animation.dart';
 part 'view.dart';

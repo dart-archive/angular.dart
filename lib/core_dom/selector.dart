@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 /**
  * DirectiveSelector is a function which given a node it will return a

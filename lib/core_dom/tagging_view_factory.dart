@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 class TaggingViewFactory implements ViewFactory {
   final List<TaggedElementBinder> elementBinders;

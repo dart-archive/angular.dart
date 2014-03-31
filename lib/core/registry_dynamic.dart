@@ -1,7 +1,7 @@
 library angular.core_dynamic;
 
 import 'dart:mirrors';
-import 'package:angular/core/module.dart';
+import 'package:angular/core/module_internal.dart';
 
 class DynamicMetadataExtractor implements MetadataExtractor {
   final _fieldAnnotations = [

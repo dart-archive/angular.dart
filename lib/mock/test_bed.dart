@@ -10,14 +10,14 @@ class TestBed {
   final Injector injector;
   final Scope rootScope;
   final Compiler compiler;
-  final Parser parser;
+  final Parser _parser;
   final Expando expando;
 
   Element rootElement;
   List<Node> rootElements;
   View rootView;
 
-  TestBed(this.injector, this.rootScope, this.compiler, this.parser, this.expando);
+  TestBed(this.injector, this.rootScope, this.compiler, this._parser, this.expando);
 
 
   /**

@@ -1,7 +1,7 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 /// Callback function used to notify of attribute changes.
-typedef void AttributeChanged(String newValue);
+typedef void _AttributeChanged(String newValue);
 
 /// Callback function used to notify of observer changes.
 typedef void Mustache(bool hasObservers);
@@ -14,7 +14,7 @@ typedef void Mustache(bool hasObservers);
 class NodeAttrs {
   final dom.Element element;
 
-  Map<String, List<AttributeChanged>> _observers;
+  Map<String, List<_AttributeChanged>> _observers;
   final _mustacheAttrs = <String, _MustacheAttr>{};
 
   NodeAttrs(this.element);
@@ -40,9 +40,9 @@ class NodeAttrs {
    * registration the [notifyFn] function gets invoked synchronize with the
    * current value.
    */
-  observe(String attrName, AttributeChanged notifyFn) {
-    if (_observers == null) _observers = <String, List<AttributeChanged>>{};
-    _observers.putIfAbsent(attrName, () => <AttributeChanged>[])
+  observe(String attrName, notifyFn(String value)) {
+    if (_observers == null) _observers = <String, List<_AttributeChanged>>{};
+    _observers.putIfAbsent(attrName, () => <_AttributeChanged>[])
               .add(notifyFn);
 
     if (_mustacheAttrs.containsKey(attrName)) {

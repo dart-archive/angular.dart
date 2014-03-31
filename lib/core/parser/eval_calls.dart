@@ -3,7 +3,7 @@ library angular.core.parser.eval_calls;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/utils.dart';
-import 'package:angular/core/module.dart';
+import 'package:angular/core/module_internal.dart';
 
 
 class CallScope extends syntax.CallScope {

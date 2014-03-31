@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 
 /**
@@ -250,7 +250,7 @@ class _AnchorAttrs extends NodeAttrs {
 
   operator [](name) => name == '.' ? _directiveRef.value : null;
 
-  void observe(String attributeName, AttributeChanged notifyFn) {
+  void observe(String attributeName, _AttributeChanged notifyFn) {
     notifyFn(attributeName == '.' ? _directiveRef.value : null);
   }
 }
