@@ -3,6 +3,8 @@ library angular.core_dynamic;
 import 'dart:mirrors';
 import 'package:angular/core/module_internal.dart';
 
+var _fieldMetadataCache = new Map<Type, Map<String, AttrFieldAnnotation>>();
+
 class DynamicMetadataExtractor implements MetadataExtractor {
   final _fieldAnnotations = [
         reflectType(NgAttr),
@@ -51,6 +53,10 @@ class DynamicMetadataExtractor implements MetadataExtractor {
 
 
   Map<String, AttrFieldAnnotation> fieldMetadataExtractor(Type type) {
+    return _fieldMetadataCache.putIfAbsent(type, () => _fieldMetadataExtractor(type));
+  }
+
+  Map<String, AttrFieldAnnotation> _fieldMetadataExtractor(Type type) {
     ClassMirror cm = reflectType(type);
     final fields = <String, AttrFieldAnnotation>{};
     cm.declarations.forEach((Symbol name, DeclarationMirror decl) {
