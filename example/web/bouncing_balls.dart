@@ -131,7 +131,5 @@ class MyModule extends Module {
 }
 
 main() {
-  ngDynamicApp()
-    .addModule(new MyModule())
-    .run();
+  ngDynamicApp().addModule(new MyModule()).run();
 }

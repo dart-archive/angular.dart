@@ -19,12 +19,12 @@ class AnimationDemoController {
 
 main() {
   ngDynamicApp()
-    .addModule(new Module()
-      ..type(RepeatDemoComponent)
-      ..type(VisibilityDemoComponent)
-      ..type(StressDemoComponent)
-      ..type(CssDemoComponent)
-      ..type(AnimationDemoController))
-    .addModule(new NgAnimateModule())
-    .run();
+      .addModule(new Module()
+          ..type(RepeatDemoComponent)
+          ..type(VisibilityDemoComponent)
+          ..type(StressDemoComponent)
+          ..type(CssDemoComponent)
+          ..type(AnimationDemoController))
+      .addModule(new NgAnimateModule())
+      .run();
 }

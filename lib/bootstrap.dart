@@ -63,23 +63,24 @@ abstract class NgApp {
   static _find(String selector, [dom.Element defaultElement]) {
     var element = dom.window.document.querySelector(selector);
     if (element == null) element = defaultElement;
-    if (element == null)throw "Could not find application element '$selector'.";
+    if (element == null) {
+      throw "Could not find application element '$selector'.";
+    }
     return element;
   }
 
-  final NgZone zone = new NgZone();
-  final AngularModule ngModule = new AngularModule();
-  final List<Module> modules = <Module>[];
+  final zone = new NgZone();
+  final ngModule = new AngularModule();
+  final modules = <Module>[];
   dom.Element element;
 
   dom.Element selector(String selector) => element = _find(selector);
 
   NgApp(): element = _find('[ng-app]', dom.window.document.documentElement) {
     modules.add(ngModule);
-    ngModule
-      ..value(NgZone, zone)
-      ..value(NgApp, this)
-      ..factory(dom.Node, (i) => i.get(NgApp).element);
+    ngModule..value(NgZone, zone)
+            ..value(NgApp, this)
+            ..factory(dom.Node, (i) => i.get(NgApp).element);
   }
 
   Injector injector;
