@@ -47,7 +47,6 @@ class NgCoreModule extends Module {
     type(ScopeStatsEmitter);
     factory(ScopeStatsConfig, (i) => new ScopeStatsConfig());
     value(Object, {}); // RootScope context
-    type(AstParser);
     type(NgZone);
 
     type(Parser, implementedBy: DynamicParser);

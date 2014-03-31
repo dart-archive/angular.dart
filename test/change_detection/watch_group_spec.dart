@@ -17,18 +17,20 @@ void main() {
     var watchGrp;
     DirtyCheckingChangeDetector changeDetector;
     Logger logger;
-    AstParser parser;
+    Parser parser;
+    ExpressionVisitor visitor;
 
-    beforeEach(inject((Logger _logger, AstParser _parser) {
+    beforeEach(inject((Logger _logger, Parser _parser) {
       context = {};
       var getterFactory = new DynamicFieldGetterFactory();
       changeDetector = new DirtyCheckingChangeDetector(getterFactory);
       watchGrp = new RootWatchGroup(getterFactory, changeDetector, context);
+      visitor = new ExpressionVisitor();
       logger = _logger;
       parser = _parser;
     }));
 
-    AST parse(String expression) => parser(expression);
+    AST parse(String expression) => visitor.visit(parser(expression));
 
     eval(String expression, [evalContext]) {
       AST ast = parse(expression);

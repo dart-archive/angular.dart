@@ -167,7 +167,6 @@ main() {
         "angular.core.UnboundedCache",  // internal?
         "angular.core.ScopeStream",  // internal?
         "angular.core.FilterMap",  // internal?
-        "angular.core.AstParser",  // internal?
         "angular.watch_group.FunctionApply",  // internal?
         "angular.watch_group.WatchGroup",  // internal?
         "angular.watch_group.ContextReferenceAST",  // internal?
