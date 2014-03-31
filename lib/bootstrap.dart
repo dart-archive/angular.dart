@@ -1,4 +1,4 @@
-library angular.bootstrap;
+library angular.app;
 
 import 'dart:html' as dom;
 
@@ -42,10 +42,10 @@ class AngularModule extends Module {
 /**
  * Bootstraps AngularDart and defines which application module(s) are available to the app.
  *
- * NgApp is how you configure and run an Angular application. NgApp is abstract. There are two
+ * Application is how you configure and run an Angular application. Application is abstract. There are two
  * implementations: one is dynamic, using Mirrors; the other is static, using code generation.
  *
- * To create an NgApp, import angular_dynamic.dart and call ngDynamicApp like so:
+ * To create an Application, import angular_dynamic.dart and call dynamicApplication like so:
  *
  *     import 'package:angular/angular.dart';
  *     import 'package:angular/angular_dynamic.dart';
@@ -55,12 +55,12 @@ class AngularModule extends Module {
  *       }
  *
  *     main() {
- *      ngDynamicApp()
+ *      dynamicApplication()
  *        .addModule(new Module()..type(HelloWorldController))
  *        .run();
  *     }
  *
- * On `pub build`, ngDynamicApp becomes ngStaticApp, as pub generates the getters,
+ * On `pub build`, dynamicApplication becomes staticApplication, as pub generates the getters,
  * setters, annotations, and factories for the root Injector that [ngApp] creates. This
  *
  *
@@ -74,7 +74,7 @@ class AngularModule extends Module {
  *
  */
 
-abstract class NgApp {
+abstract class Application {
   static _find(String selector, [dom.Element defaultElement]) {
     var element = dom.window.document.querySelector(selector);
     if (element == null) element = defaultElement;
@@ -91,16 +91,16 @@ abstract class NgApp {
 
   dom.Element selector(String selector) => element = _find(selector);
 
-  NgApp(): element = _find('[ng-app]', dom.window.document.documentElement) {
+  Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
     modules.add(ngModule);
     ngModule..value(NgZone, zone)
-            ..value(NgApp, this)
-            ..factory(dom.Node, (i) => i.get(NgApp).element);
+            ..value(Application, this)
+            ..factory(dom.Node, (i) => i.get(Application).element);
   }
 
   Injector injector;
 
-  NgApp addModule(Module module) {
+  Application addModule(Module module) {
     modules.add(module);
     return this;
   }

@@ -51,7 +51,7 @@ void main() {
         var module = new Module()
             ..type(Bad1Component);
 
-        var injector = ngDynamicApp().addModule(module).createInjector();
+        var injector = dynamicApplication().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Mapping for attribute foo is already defined (while '
@@ -62,7 +62,7 @@ void main() {
         var module = new Module()
             ..type(Bad2Component);
 
-        var injector = ngDynamicApp().addModule(module).createInjector();
+        var injector = dynamicApplication().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Attribute annotation for foo is defined more than once '

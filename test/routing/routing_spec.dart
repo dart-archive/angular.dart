@@ -46,7 +46,7 @@ main() {
     });
 
     initRouter(initializer) {
-      var injector = ngDynamicApp()
+      var injector = dynamicApplication()
         .addModule(new AngularMockModule())
         .addModule(new Module()..value(RouteInitializerFn, initializer))
         .createInjector();

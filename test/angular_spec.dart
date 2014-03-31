@@ -116,7 +116,7 @@ main() {
         return; // On VMes <1.2, quietly skip.
       }
 
-      var ALLOWED_PREFIXS = [
+      var ALLOWED_PREFIXES = [
         "Ng",
         "ng",
         "Angular",
@@ -127,6 +127,7 @@ main() {
       // exported in the list.  We are working on un-export the symbols.
       // Comments on each symbols below.
       var ALLOWED_NAMES = [
+        "angular.app.Application",
         "angular.core_internal.CacheStats",
         "angular.core_internal.ExceptionHandler",
         "angular.core_internal.Interpolate",
@@ -219,7 +220,7 @@ main() {
         String name = _unwrapSymbol(nameInfo[0]);
         String libName = _unwrapSymbol(nameInfo[1]);
 
-        if (ALLOWED_PREFIXS.any((prefix) => name.startsWith(prefix))) return;
+        if (ALLOWED_PREFIXES.any((prefix) => name.startsWith(prefix))) return;
 
         var key = "$libName.$name";
         if (_nameMap.containsKey(key)) {

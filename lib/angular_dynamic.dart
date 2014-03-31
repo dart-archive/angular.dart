@@ -1,4 +1,4 @@
-library angular.bootstrap.dynamic;
+library angular.app.dynamic;
 
 
 import 'package:di/dynamic_injector.dart';
@@ -47,8 +47,8 @@ metaTargets: const [
 ])
 import 'dart:mirrors' show MirrorsUsed;
 
-class _NgDynamicApp extends NgApp {
-  _NgDynamicApp() {
+class _DynamicApplication extends Application {
+  _DynamicApplication() {
     ngModule
         ..type(MetadataExtractor, implementedBy: DynamicMetadataExtractor)
         ..type(FieldGetterFactory, implementedBy: DynamicFieldGetterFactory)
@@ -58,4 +58,4 @@ class _NgDynamicApp extends NgApp {
   Injector createInjector() => new DynamicInjector(modules: modules);
 }
 
-NgApp ngDynamicApp() => new _NgDynamicApp();
+Application dynamicApplication() => new _DynamicApplication();

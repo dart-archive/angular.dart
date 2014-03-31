@@ -9,7 +9,7 @@ typedef void EventFunction(event);
  *
  * Events bound within [NgComponent] are handled by EventHandler attached to
  * their [ShadowRoot]. All other events are handled by EventHandler attached
- * to the application root ([NgApp]).
+ * to the application root ([Application]).
  *
  * **Note**: The expressions are executed within the closest context.
  *

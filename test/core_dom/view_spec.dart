@@ -199,7 +199,7 @@ main() {
           ..type(ADirective)
           ..factory(Node, (injector) => document.body);
 
-        Injector rootInjector = ngDynamicApp()
+        Injector rootInjector = dynamicApplication()
             .addModule(rootModule)
             .createInjector();
         Log log = rootInjector.get(Log);

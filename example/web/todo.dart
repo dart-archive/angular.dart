@@ -122,5 +122,5 @@ main() {
     module.type(HttpBackend, implementedBy: PlaybackHttpBackend);
   }
 
-  ngDynamicApp().addModule(module).run();
+  dynamicApplication().addModule(module).run();
 }

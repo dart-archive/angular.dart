@@ -18,7 +18,7 @@ main() {
       [new StaticAngularGenerator(options, resolvers)]
     ];
 
-    it('should modify ngDynamicApp', () {
+    it('should modify dynamicApplication', () {
       return tests.applyTransformers(phases,
           inputs: {
             'angular|lib/angular_dynamic.dart': libAngularDynamic,
@@ -30,7 +30,7 @@ import 'package:di/di.dart' show Module;
 class MyModule extends Module {}
 
 main() {
-  var app = ngDynamicApp()
+  var app = dynamicApplication()
     .addModule(new MyModule())
     .run();
 }
@@ -47,7 +47,7 @@ import 'main_static_injector.dart' as generated_static_injector;
 class MyModule extends Module {}
 
 main() {
-  var app = ngStaticApp(generated_static_injector.factories, generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols)
+  var app = staticApplication(generated_static_injector.factories, generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols)
     .addModule(new MyModule())
     .run();
 }
@@ -67,7 +67,7 @@ import 'package:di/di.dart' show Module;
 class MyModule extends Module {}
 
 main() {
-  var app = ng.ngDynamicApp()
+  var app = ng.dynamicApplication()
     .addModule(new MyModule())
     .run();
 }
@@ -84,7 +84,7 @@ import 'main_static_injector.dart' as generated_static_injector;
 class MyModule extends Module {}
 
 main() {
-  var app = ng.ngStaticApp(generated_static_injector.factories, generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols)
+  var app = ng.staticApplication(generated_static_injector.factories, generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols)
     .addModule(new MyModule())
     .run();
 }
@@ -100,7 +100,7 @@ const String libAngularDynamic = '''
 library angular.dynamic;
 class _NgDynamicApp {}
 
-ngDynamicApp() => new _NgDynamicApp();
+dynamicApplication() => new _NgDynamicApp();
 ''';
 
 const String libDI = '''

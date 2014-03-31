@@ -9,7 +9,7 @@ class HelloWorldController {
 }
 
 main() {
-  ngDynamicApp()
+  dynamicApplication()
       .addModule(new Module()..type(HelloWorldController))
       .run();
 }

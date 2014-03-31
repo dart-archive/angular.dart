@@ -44,7 +44,7 @@ void main() {
       var elt = $('<div ng-app id=ngtop ng-bind="\'introspection FTW\'"></div>')[0];
       // Make it possible to find the element from JS
       document.body.append(elt);
-      (ngDynamicApp()..element = elt).run();
+      (dynamicApplication()..element = elt).run();
 
       expect(js.context['ngProbe']).toBeDefined();
       expect(js.context['ngScope']).toBeDefined();

@@ -11,7 +11,7 @@ main() {
           ..type(A1)
           ..type(A2);
 
-      var injector = ngDynamicApp().addModule(module).createInjector();
+      var injector = dynamicApplication().addModule(module).createInjector();
       expect(() {
         injector.get(MyMap);
       }).not.toThrow();
@@ -22,7 +22,7 @@ main() {
           ..type(MyMap)
           ..type(A1);
 
-      var injector = ngDynamicApp().addModule(module).createInjector();
+      var injector = dynamicApplication().addModule(module).createInjector();
       var keys = [];
       var types = [];
       var map = injector.get(MyMap);
@@ -36,7 +36,7 @@ main() {
           ..type(MyMap)
           ..value(MyTypedef, (String _) => null);
 
-      var injector = ngDynamicApp().addModule(module).createInjector();
+      var injector = dynamicApplication().addModule(module).createInjector();
       expect(() => injector.get(MyMap), isNot(throws));
     });
   });

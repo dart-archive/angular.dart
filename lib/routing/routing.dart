@@ -113,7 +113,7 @@ typedef void RouteInitializerFn(Router router, RouteViewFactory viewFactory);
 @NgInjectableService()
 class NgRoutingHelper {
   final Router router;
-  final NgApp _ngApp;
+  final Application _ngApp;
   List<NgViewDirective> portals = <NgViewDirective>[];
   Map<String, _View> _templates = new Map<String, _View>();
 

@@ -1,4 +1,4 @@
-library angular.bootstrap.static;
+library angular.app.static;
 
 import 'package:di/static_injector.dart';
 import 'package:di/di.dart' show TypeFactory, Injector;
@@ -10,10 +10,10 @@ import 'package:angular/core/registry_static.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
 
-class _NgStaticApp extends NgApp {
+class _StaticApplication extends Application {
   final Map<Type, TypeFactory> typeFactories;
 
-  _NgStaticApp(Map<Type, TypeFactory> this.typeFactories,
+  _StaticApplication(Map<Type, TypeFactory> this.typeFactories,
                Map<Type, Object> metadata,
                Map<String, FieldGetter> fieldGetters,
                Map<String, FieldSetter> fieldSetters,
@@ -67,12 +67,12 @@ class StaticClosureMap extends ClosureMap {
   }
 }
 
-NgApp ngStaticApp(
+Application staticApplication(
     Map<Type, TypeFactory> typeFactories,
     Map<Type, Object> metadata,
     Map<String, FieldGetter> fieldGetters,
     Map<String, FieldSetter> fieldSetters,
     Map<String, Symbol> symbols) {
-  return new _NgStaticApp(typeFactories, metadata, fieldGetters, fieldSetters,
+  return new _StaticApplication(typeFactories, metadata, fieldGetters, fieldSetters,
       symbols);
 }

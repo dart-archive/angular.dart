@@ -18,7 +18,7 @@ class AnimationDemoController {
 }
 
 main() {
-  ngDynamicApp()
+  dynamicApplication()
       .addModule(new Module()
           ..type(RepeatDemoComponent)
           ..type(VisibilityDemoComponent)
