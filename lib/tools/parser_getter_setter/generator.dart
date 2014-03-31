@@ -20,14 +20,12 @@ class DartGetterSetterGen extends ParserBackend {
     symbols.addAll(arguments.named.keys);
   }
 
-  newAccessScope(String name)
-      => registerAccess(name);
-  newAccessMember(var object, String name)
-      => registerAccess(name);
-  newCallScope(String name, CallArguments arguments)
-      => registerCall(name, arguments);
-  newCallMember(var object, String name, CallArguments arguments)
-      => registerCall(name, arguments);
+  newAccessScope(String name) => registerAccess(name);
+  newAccessMember(var object, String name) => registerAccess(name);
+  newCallScope(String name, CallArguments arguments) =>
+      registerCall(name, arguments);
+  newCallMember(var object, String name, CallArguments arguments) =>
+      registerCall(name, arguments);
 }
 
 class ParserGetterSetter {

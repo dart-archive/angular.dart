@@ -15,13 +15,14 @@ class _NgStaticApp extends NgApp {
                Map<String, FieldSetter> fieldSetters,
                Map<String, Symbol> symbols) {
     ngModule
-      ..value(MetadataExtractor, new StaticMetadataExtractor(metadata))
-      ..value(FieldGetterFactory, new StaticFieldGetterFactory(fieldGetters))
-      ..value(ClosureMap, new StaticClosureMap(fieldGetters, fieldSetters, symbols));
+        ..value(MetadataExtractor, new StaticMetadataExtractor(metadata))
+        ..value(FieldGetterFactory, new StaticFieldGetterFactory(fieldGetters))
+        ..value(ClosureMap, new StaticClosureMap(fieldGetters, fieldSetters,
+            symbols));
   }
 
-  Injector createInjector()
-      => new StaticInjector(modules: modules, typeFactories: typeFactories);
+  Injector createInjector() =>
+      new StaticInjector(modules: modules, typeFactories: typeFactories);
 }
 
 class StaticClosureMap extends ClosureMap {
@@ -68,5 +69,6 @@ NgApp ngStaticApp(
     Map<String, FieldGetter> fieldGetters,
     Map<String, FieldSetter> fieldSetters,
     Map<String, Symbol> symbols) {
-  return new _NgStaticApp(typeFactories, metadata, fieldGetters, fieldSetters, symbols);
+  return new _NgStaticApp(typeFactories, metadata, fieldGetters, fieldSetters,
+      symbols);
 }

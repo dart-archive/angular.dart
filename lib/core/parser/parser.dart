@@ -38,8 +38,8 @@ abstract class ParserBackend<T> {
 
   T newPrefix(String operation, T expression) => null;
   T newPrefixPlus(T expression) => expression;
-  T newPrefixMinus(T expression)
-      => newBinaryMinus(newLiteralZero(), expression);
+  T newPrefixMinus(T expression) =>
+      newBinaryMinus(newLiteralZero(), expression);
   T newPrefixNot(T expression) => newPrefix('!', expression);
 
   T newBinary(String operation, T left, T right) => null;

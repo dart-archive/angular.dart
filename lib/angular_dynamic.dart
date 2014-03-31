@@ -52,8 +52,7 @@ class _NgDynamicApp extends NgApp {
         ..type(ClosureMap, implementedBy: DynamicClosureMap);
   }
 
-  Injector createInjector()
-      => new DynamicInjector(modules: modules);
+  Injector createInjector() => new DynamicInjector(modules: modules);
 }
 
 NgApp ngDynamicApp() => new _NgDynamicApp();

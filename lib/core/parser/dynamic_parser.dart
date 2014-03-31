@@ -68,8 +68,7 @@ class DynamicParserBackend extends ParserBackend {
   final ClosureMap _closures;
   DynamicParserBackend(this._closures);
 
-  bool isAssignable(Expression expression)
-      => expression.isAssignable;
+  bool isAssignable(Expression expression) => expression.isAssignable;
 
   Expression newFilter(expression, name, arguments) {
     List allArguments = new List(arguments.length + 1);
@@ -78,33 +77,24 @@ class DynamicParserBackend extends ParserBackend {
     return new Filter(expression, name, arguments, allArguments);
   }
 
-  Expression newChain(expressions)
-      => new Chain(expressions);
-  Expression newAssign(target, value)
-      => new Assign(target, value);
-  Expression newConditional(condition, yes, no)
-      => new Conditional(condition, yes, no);
+  Expression newChain(expressions) => new Chain(expressions);
+  Expression newAssign(target, value) => new Assign(target, value);
+  Expression newConditional(condition, yes, no) =>
+      new Conditional(condition, yes, no);
 
-  Expression newAccessKeyed(object, key)
-      => new AccessKeyed(object, key);
-  Expression newCallFunction(function, arguments)
-      => new CallFunction(function, arguments);
+  Expression newAccessKeyed(object, key) => new AccessKeyed(object, key);
+  Expression newCallFunction(function, arguments) =>
+      new CallFunction(function, arguments);
 
-  Expression newPrefixNot(expression)
-      => new PrefixNot(expression);
+  Expression newPrefixNot(expression) => new PrefixNot(expression);
 
-  Expression newBinary(operation, left, right)
-      => new Binary(operation, left, right);
+  Expression newBinary(operation, left, right) =>
+      new Binary(operation, left, right);
 
-  Expression newLiteralPrimitive(value)
-      => new LiteralPrimitive(value);
-  Expression newLiteralArray(elements)
-      => new LiteralArray(elements);
-  Expression newLiteralObject(keys, values)
-      => new LiteralObject(keys, values);
-  Expression newLiteralString(value)
-      => new LiteralString(value);
-
+  Expression newLiteralPrimitive(value) => new LiteralPrimitive(value);
+  Expression newLiteralArray(elements) => new LiteralArray(elements);
+  Expression newLiteralObject(keys, values) => new LiteralObject(keys, values);
+  Expression newLiteralString(value) => new LiteralString(value);
 
   Expression newAccessScope(name) {
     Getter getter;
