@@ -32,7 +32,7 @@ class TaggingCompiler implements Compiler {
             elementBinder.templateBinder, directives);
       }
       return elementBinder;
-    } else if (node.nodeType == 3) {
+    } else if (node.nodeType == dom.Node.TEXT_NODE) {
       return directives.selector.matchText(node);
     }
     return null;
@@ -83,7 +83,8 @@ class TaggingCompiler implements Compiler {
           domCursor.ascend();
         }
       }
-    } else if (node.nodeType == 3 || node.nodeType == 8) {
+    } else if (node.nodeType == dom.Node.TEXT_NODE ||
+               node.nodeType == dom.Node.COMMENT_NODE) {
       if (elementBinder != null &&
           elementBinder.hasDirectivesOrEvents &&
           directParentElementBinder != null) {

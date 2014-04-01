@@ -23,13 +23,13 @@ class WalkingCompiler implements Compiler {
       } else {
         var node = domCursor.current;
         switch(node.nodeType) {
-          case 1:
+          case dom.Node.ELEMENT_NODE:
             elementBinder = directives.selector.matchElement(node);
             break;
-          case 3:
+          case dom.Node.TEXT_NODE:
             elementBinder = directives.selector.matchText(node);
             break;
-          case 8:
+          case dom.Node.COMMENT_NODE:
             elementBinder = directives.selector.matchComment(node);
             break;
           default:
