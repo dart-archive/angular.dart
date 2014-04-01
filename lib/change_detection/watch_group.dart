@@ -805,7 +805,6 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
         break;
       case _MODE_FIELD_CLOSURE_:
         var closure = fn(_object);
-      print(closure);
         value = closure == null ? null : Function.apply(closure, args, namedArgs);
         break;
       case _MODE_MAP_CLOSURE_:
