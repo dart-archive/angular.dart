@@ -850,7 +850,7 @@ void main() {
         });
       });
 
-      it(r'should proprely reset phase on exception', (RootScope rootScope) {
+      it(r'should properly reset phase on exception', (RootScope rootScope) {
         var error = 'MyError';
         expect(() => rootScope.apply(() { throw error; })).toThrow(error);
         expect(() => rootScope.apply(() { throw error; })).toThrow(error);
@@ -1242,7 +1242,7 @@ void main() {
       });
 
 
-      it('should properly watch array of fields', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 1', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = 12;
         rootScope.context['bar'] = 34;
         rootScope.watch('[foo, bar]', (v, o) => log([v, o]));
@@ -1258,7 +1258,7 @@ void main() {
       });
 
 
-      it('should properly watch array of fields', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 2', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = () => 12;
         rootScope.watch('foo()', (v, o) => log(v));
         expect(log).toEqual([]);
@@ -1267,7 +1267,7 @@ void main() {
       });
 
 
-      it('should properly watch array of fields', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 3', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = 'abc';
         rootScope.watch('foo.contains("b")', (v, o) => log([v, o]));
         expect(log).toEqual([]);
@@ -1334,7 +1334,7 @@ void main() {
       });
 
 
-      it('should properly watch array of fields2', (RootScope rootScope, Logger log) {
+      it('should properly watch array of fields 4', (RootScope rootScope, Logger log) {
         rootScope.watch('[ctrl.foo, ctrl.bar]', (v, o) => log([v, o]));
         expect(log).toEqual([]);
         rootScope.apply();
