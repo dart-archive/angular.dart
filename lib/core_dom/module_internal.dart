@@ -22,6 +22,7 @@ part 'compiler.dart';
 part 'directive.dart';
 part 'directive_map.dart';
 part 'element_binder.dart';
+part 'element_binder_builder.dart';
 part 'event_handler.dart';
 part 'http.dart';
 part 'ng_mustache.dart';
