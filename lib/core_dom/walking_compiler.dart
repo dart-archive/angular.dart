@@ -12,7 +12,8 @@ class WalkingCompiler implements Compiler {
                                           DirectiveMap directives) {
     if (domCursor.current == null) return null;
 
-    List<ElementBinderTreeRef> elementBinders = null; // don't pre-create to create sparse tree and prevent GC pressure.
+    // don't pre-create to create sparse tree and prevent GC pressure.
+    List<ElementBinderTreeRef> elementBinders = null;
 
     do {
       var subtrees, binder;
@@ -23,13 +24,13 @@ class WalkingCompiler implements Compiler {
       } else {
         var node = domCursor.current;
         switch(node.nodeType) {
-          case 1:
+          case dom.Node.ELEMENT_NODE:
             elementBinder = directives.selector.matchElement(node);
             break;
-          case 3:
+          case dom.Node.TEXT_NODE:
             elementBinder = directives.selector.matchText(node);
             break;
-          case 8:
+          case dom.Node.COMMENT_NODE:
             elementBinder = directives.selector.matchComment(node);
             break;
           default:
@@ -38,9 +39,10 @@ class WalkingCompiler implements Compiler {
       }
 
       if (elementBinder.hasTemplate) {
-        elementBinder.templateViewFactory = _compileTransclusion(
+        var templateBinder = elementBinder as TemplateElementBinder;
+        templateBinder.templateViewFactory = _compileTransclusion(
             domCursor, templateCursor,
-            elementBinder.template, elementBinder.templateBinder, directives);
+            templateBinder.template, templateBinder.templateBinder, directives);
       }
 
       if (elementBinder.shouldCompileChildren) {

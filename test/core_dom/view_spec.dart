@@ -128,6 +128,7 @@ main() {
         });
 
         // TODO(deboer): Make this work again.
+        /*
         xit('should remove', (Logger logger, Injector injector, Profiler perf, ElementBinderFactory ebf) {
           anchor.remove(a);
           anchor.remove(b);
@@ -170,6 +171,7 @@ main() {
 
           expect(rootElement.text).toEqual('');
         });
+        */
       });
 
 

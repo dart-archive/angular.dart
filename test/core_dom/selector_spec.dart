@@ -143,16 +143,21 @@ main() {
 
 
       it('should sort by priority', () {
-        expect(selector(element = e(
-            '<component attribute ignore-children structural></component>')),
+        TemplateElementBinder eb = selector(element = e(
+            '<component attribute ignore-children structural></component>'));
+        expect(eb,
+          toEqualsDirectiveInfos(
+            null,
+            template: {"selector": "[structural]", "value": "", "element": element}));
+
+        expect(eb.templateBinder,
         toEqualsDirectiveInfos(
             [
                 { "selector": "[attribute]", "value": "", "element": element },
                 { "selector": "[ignore-children]", "value": "", "element": element }
 
             ],
-            component: { "selector": "component", "value": null, "element": element },
-            template: {"selector": "[structural]", "value": "", "element": element}));
+            component: { "selector": "component", "value": null, "element": element }));
       });
 
       it('should match on multiple directives', () {
@@ -237,8 +242,9 @@ class DirectiveInfosMatcher extends Matcher {
 
 
   bool matches(ElementBinder binder, matchState) {
-    var pass = expected.length == binder.decorators.length;
-    if (pass) {
+    var pass = true;
+    if (expected != null) {
+      pass = expected.length == binder.decorators.length;
       for (var i = 0, ii = expected.length; i < ii; i++) {
         DirectiveRef directiveRef = binder.decorators[i];
         var expectedMap = expected[i];
@@ -247,7 +253,7 @@ class DirectiveInfosMatcher extends Matcher {
       }
     }
     if (pass && expectedTemplate != null) {
-      pass = pass && _refMatches(binder.template, expectedTemplate);
+      pass = pass && _refMatches((binder as TemplateElementBinder).template, expectedTemplate);
     }
     if (pass && expectedComponent != null) {
       pass = pass && _refMatches(binder.component, expectedComponent);
