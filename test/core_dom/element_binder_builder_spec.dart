@@ -17,7 +17,7 @@ directiveFor(i) {
   ClassMirror cm = reflectType(i);
 
 }
-main() => describe('ElementBinder', () {
+main() => describe('ElementBinderBuilder', () {
   var b;
   var directives;
   var node = null;
@@ -32,7 +32,7 @@ main() => describe('ElementBinder', () {
 
   beforeEach((DirectiveMap d, ElementBinderFactory f) {
     directives = d;
-    b = f.binder();
+    b = f.builder();
   });
 
   addDirective(selector) {
@@ -40,6 +40,7 @@ main() => describe('ElementBinder', () {
       if (annotation.selector == selector)
         b.addDirective(new DirectiveRef(node, type, annotation, null));
     });
+    b = b.binder;
   }
 
   it('should add a decorator', () {
