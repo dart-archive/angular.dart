@@ -25,7 +25,7 @@ class CssAnimate implements NgAnimate {
 
   CssAnimate(this._runner, this._animationMap, this._optimizer);
 
-  Animation addClass(dom.Element element, String cssClass) {
+  NgAnimation addClass(dom.Element element, String cssClass) {
     if (!_optimizer.shouldAnimate(element)) {
       element.classes.add(cssClass);
       return _noOp;
@@ -36,7 +36,7 @@ class CssAnimate implements NgAnimate {
     return animate(element, event, addAtEnd: cssClass);
   }
 
-  Animation removeClass(dom.Element element, String cssClass) {
+  NgAnimation removeClass(dom.Element element, String cssClass) {
     if (!_optimizer.shouldAnimate(element)) {
       element.classes.remove(cssClass);
       return _noOp;
@@ -48,7 +48,7 @@ class CssAnimate implements NgAnimate {
     return animate(element, event, removeAtEnd: cssClass);
   }
 
-  Animation insert(Iterable<dom.Node> nodes, dom.Node parent,
+  NgAnimation insert(Iterable<dom.Node> nodes, dom.Node parent,
                          { dom.Node insertBefore }) {
     util.domInsert(nodes, parent, insertBefore: insertBefore);
 
@@ -59,7 +59,7 @@ class CssAnimate implements NgAnimate {
     return _animationFromList(animations);
   }
 
-  Animation remove(Iterable<dom.Node> nodes) {
+  NgAnimation remove(Iterable<dom.Node> nodes) {
     var animations = nodes.map((node) {
       if (node.nodeType == dom.Node.ELEMENT_NODE &&
           _optimizer.shouldAnimate(node)) {
@@ -75,7 +75,7 @@ class CssAnimate implements NgAnimate {
     return result;
   }
 
-  Animation move(Iterable<dom.Node> nodes, dom.Node parent,
+  NgAnimation move(Iterable<dom.Node> nodes, dom.Node parent,
                        { dom.Node insertBefore }) {
     util.domMove(nodes, parent, insertBefore: insertBefore);
 

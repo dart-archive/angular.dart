@@ -22,7 +22,7 @@ class AnimationLoop {
 
   /**
    * Start and play an animation through the state transitions defined in
-   * [Animation].
+   * [NgAnimation].
    */
   void play(LoopedAnimation animation) {
     _animations.add(animation);
@@ -45,9 +45,9 @@ class AnimationLoop {
    * animations. Group dom reads first, and and writes second.
    *
    *  At any point any animation may be updated by calling interrupt and cancel
-   *  with a reference to the [Animation] to cancel. The [AnimationRunner] will
-   *  then forget about the [Animation] and will not call any further methods on
-   *  the [Animation].
+   *  with a reference to the [NgAnimation] to cancel. The [AnimationRunner] will
+   *  then forget about the [NgAnimation] and will not call any further methods on
+   *  the [NgAnimation].
    */
   void _animationFrame(num timeInMs) {
     _profiler.startTimer("AnimationRunner.AnimationFrame");

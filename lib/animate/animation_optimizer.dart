@@ -8,9 +8,9 @@ part of angular.animate;
  */
 @NgInjectableService()
 class AnimationOptimizer {
-  final Map<dom.Element, Set<Animation>> _elements = new Map<dom.Element,
-      Set<Animation>>();
-  final Map<Animation, dom.Element> _animations = new Map<Animation,
+  final Map<dom.Element, Set<NgAnimation>> _elements = new Map<dom.Element,
+      Set<NgAnimation>>();
+  final Map<NgAnimation, dom.Element> _animations = new Map<NgAnimation,
       dom.Element>();
 
   final Map<dom.Node, bool> _alwaysAnimate = new Map<dom.Node, bool>();
@@ -24,10 +24,10 @@ class AnimationOptimizer {
    * Track an animation that is running against a dom element. Usually, this
    * should occur when an animation starts.
    */
-  void track(Animation animation, dom.Element forElement) {
+  void track(NgAnimation animation, dom.Element forElement) {
     if (forElement != null) {
       var animations = _elements.putIfAbsent(forElement, () =>
-          new Set<Animation>());
+          new Set<NgAnimation>());
       animations.add(animation);
       _animations[animation] = forElement;
     }
@@ -37,7 +37,7 @@ class AnimationOptimizer {
    * Stop tracking an animation. If it's the last tracked animation on an
    * element forget about that element as well.
    */
-  void forget(Animation animation) {
+  void forget(NgAnimation animation) {
     var element = _animations.remove(animation);
     if (element != null) {
       var animationsOnElement = _elements[element];
