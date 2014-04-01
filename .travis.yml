@@ -28,6 +28,7 @@ before_script:
 script:
 - ./scripts/travis/build.sh
 after_success:
+- ./scripts/travis/publish-docs.sh
 - curl -o travis_after_all.py https://raw.github.com/jbdeboer/travis_after_all/master/travis_after_all.py
 - python travis_after_all.py
 - export $(cat .to_export_back)
@@ -36,7 +37,6 @@ after_success:
         if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
           echo "All Succeded! Submitting..."
           ./scripts/travis/presubmit.sh
-          ./scripts/travis/publish-docs.sh
         else
           echo "Some Failed, not submitting"
         fi
