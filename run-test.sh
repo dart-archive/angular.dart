@@ -7,15 +7,14 @@ export DART_SDK=`which dart | sed -e 's/\/dart\-sdk\/.*$/\/dart-sdk/'`
 # OS-specific Dartium path defaults
 case $( uname -s ) in
   Darwin)
-    CHROME_CANARY_BIN=${CHROME_CANARY_BIN:-"/Applications/dart/chromium/Chromium.app/Contents/MacOS/Chromium"};;
+    DARTIUM_BIN=${DARTIUM_BIN:-"/Applications/dart/chromium/Chromium.app/Contents/MacOS/Chromium"};;
 esac
-if [ ! -x "$CHROME_CANARY_BIN" ]; then
+if [ ! -x "$DARTIUM_BIN" ]; then
   echo "Unable to determine path to Dartium browser. To correct:"
-  echo "export CHROME_CANARY_BIN=path/to/dartium"
+  echo "export DARTIUM_BIN=path/to/dartium"
   exit 1;
 fi
-export CHROME_CANARY_BIN
-export DART_FLAGS="--enable-type-checks --enable-asserts"
+export DARTIUM_BIN
 
 # Check for node
 if [ -z "$(which node)" ]; then
@@ -44,5 +43,5 @@ scripts/test-expression-extractor.sh
   node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
   node "node_modules/karma/bin/karma" start karma.conf \
     --reporters=junit,dots --port=8765 --runner-port=8766 \
-    --browsers=ChromeCanary,Chrome --single-run --no-colors
+    --browsers=Dartium,Chrome --single-run --no-colors
 

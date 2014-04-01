@@ -31,7 +31,6 @@ export DARTANALYZER=${DARTANALYZER:-"$DARTSDK/bin/dartanalyzer"}
 export DARTDOC=${DARTDOC:-"$DARTSDK/bin/dartdoc"}
 export DART_DOCGEN=${DART_DOCGEN:-"$DARTSDK/bin/docgen"}
 
-export CHROME_CANARY_BIN=${CHROME_CANARY_BIN:-"$DARTIUM"}
+export DARTIUM_BIN=${DARTIUM_BIN:-"$DARTIUM"}
 export CHROME_BIN=${CHROME_BIN:-"google-chrome"}
-export DART_FLAGS='--enable_type_checks --enable_asserts'
 export PATH=$PATH:$DARTSDK/bin

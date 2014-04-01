@@ -3,7 +3,7 @@
 # OS-specific Dartium path defaults
 case $( uname -s ) in
   Darwin)
-    CHROME_CANARY_BIN=${CHROME_CANARY_BIN:-"/Applications/dart/chromium/Chromium.app/Contents/MacOS/Chromium"};;
+    DARTIUM_BIN=${DARTIUM_BIN:-"/Applications/dart/chromium/Chromium.app/Contents/MacOS/Chromium"};;
 esac
 
 # Check for node
