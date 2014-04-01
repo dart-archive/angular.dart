@@ -67,6 +67,29 @@ void main() {
         'in Bad2Component');
       });
     });
+
+    describe("Inheritance", () {
+      var element;
+      var nodeAttrs;
+
+      beforeEachModule((Module module) {
+        module..type(Sub)..type(Base);
+      });
+
+      it("should extract attr map from annotated component which inherits other component", (DirectiveMap directives) {
+        var annotations = directives.annotationsFor(Sub);
+        expect(annotations.length).toEqual(1);
+        expect(annotations[0] is Directive).toBeTruthy();
+
+        Directive annotation = annotations[0];
+        expect(annotation.selector).toEqual('[sub]');
+        expect(annotation.map).toEqual({
+          "foo": "=>foo",
+          "bar": "=>bar",
+          "baz": "=>baz"
+        });
+      });
+    });
   });
 }
 
@@ -141,3 +164,18 @@ class Bad2Component {
   @NgOneWay('foo')
   set foo(val) {}
 }
+
+@Decorator(selector: '[sub]')
+class Sub extends Base {
+  @NgOneWay('bar')
+  String bar;
+}
+
+class Base {
+  @NgOneWay('baz')
+  String baz;
+
+  @NgOneWay('foo')
+  String foo;
+}
+

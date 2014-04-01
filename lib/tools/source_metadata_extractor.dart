@@ -1,6 +1,7 @@
 library angular.source_metadata_extractor ;
 
 import 'package:analyzer/src/generated/ast.dart';
+import 'package:analyzer/src/generated/element.dart';
 
 import 'package:angular/tools/source_crawler.dart';
 import 'package:angular/tools/common.dart';
@@ -181,33 +182,50 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
         }
       });
 
-      // Check fields/getters/setter for presense of attr mapping annotations.
-      clazz.members.forEach((ClassMember member) {
-        if (member is FieldDeclaration ||
-            (member is MethodDeclaration &&
-                (member.isSetter || member.isGetter))) {
-          member.metadata.forEach((Annotation ann) {
-            if (_attrAnnotationsToSpec.containsKey(ann.name.name)) {
-              String fieldName;
-              if (member is FieldDeclaration) {
-                fieldName = member.fields.variables.first.name.name;
-              } else { // MethodDeclaration
-                fieldName = (member as MethodDeclaration).name.name;
-              }
-              StringLiteral attNameLiteral = ann.arguments.arguments.first;
-              if (meta.attributeMappings
-                      .containsKey(attNameLiteral.stringValue)) {
-                throw 'Attribute mapping already defined for '
-                    '${clazz.name}.$fieldName';
-              }
-              meta.attributeMappings[attNameLiteral.stringValue] =
-                  _attrAnnotationsToSpec[ann.name.name] + fieldName;
-            }
-          });
-        }
-      });
+      if (meta != null) _walkSuperclassChain(clazz, meta, _extractMappingsFromClass);
     });
+
     return super.visitClassDeclaration(clazz);
+  }
+
+  _walkSuperclassChain(ClassDeclaration clazz, DirectiveMetadata meta,
+                       metadataExtractor(ClassDeclaration clazz, DirectiveMetadata meta)) {
+    while (clazz != null) {
+      metadataExtractor(clazz, meta);
+      if (clazz.element != null && clazz.element.supertype != null) {
+        clazz = clazz.element.supertype.element.node;
+      } else {
+        clazz = null;
+      }
+    }
+  }
+
+  _extractMappingsFromClass(ClassDeclaration clazz, DirectiveMetadata meta) {
+    // Check fields/getters/setter for presence of attr mapping annotations.
+    clazz.members.forEach((ClassMember member) {
+      if (member is FieldDeclaration ||
+      (member is MethodDeclaration &&
+      (member.isSetter || member.isGetter))) {
+        member.metadata.forEach((Annotation ann) {
+          if (_attrAnnotationsToSpec.containsKey(ann.name.name)) {
+            String fieldName;
+            if (member is FieldDeclaration) {
+              fieldName = member.fields.variables.first.name.name;
+            } else { // MethodDeclaration
+              fieldName = (member as MethodDeclaration).name.name;
+            }
+            StringLiteral attNameLiteral = ann.arguments.arguments.first;
+            if (meta.attributeMappings
+            .containsKey(attNameLiteral.stringValue)) {
+              throw 'Attribute mapping already defined for '
+              '${clazz.name}.$fieldName';
+            }
+            meta.attributeMappings[attNameLiteral.stringValue] =
+            _attrAnnotationsToSpec[ann.name.name] + fieldName;
+          }
+        });
+      }
+    });
   }
 }
 
