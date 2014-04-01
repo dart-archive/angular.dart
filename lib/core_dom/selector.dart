@@ -351,15 +351,8 @@ class DirectiveSelector {
     }
     return binder;
   }
-  ElementBinder match(dom.Node node) {
-    switch(node.nodeType) {
-      case 1: // Element
-        return matchElement(node);
 
-      case 3: // Text Node
-        return matchText(node);
-    }
-    // TODO: This is wrong.
+  ElementBinder matchComment(dom.Node node) {
     return _binderFactory.binder();
   }
 }
