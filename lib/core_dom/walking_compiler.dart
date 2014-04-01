@@ -17,9 +17,25 @@ class WalkingCompiler implements Compiler {
     do {
       var subtrees, binder;
 
-      ElementBinder elementBinder = existingElementBinder == null
-          ?  directives.selector.match(domCursor.current)
-          : existingElementBinder;
+      ElementBinder elementBinder;
+      if (existingElementBinder != null) {
+        elementBinder = existingElementBinder;
+      } else {
+        var node = domCursor.current;
+        switch(node.nodeType) {
+          case 1:
+            elementBinder = directives.selector.matchElement(node);
+            break;
+          case 3:
+            elementBinder = directives.selector.matchText(node);
+            break;
+          case 8:
+            elementBinder = directives.selector.matchComment(node);
+            break;
+          default:
+            throw "Unknown node type ${node.nodeType}";
+        }
+      }
 
       if (elementBinder.hasTemplate) {
         elementBinder.templateViewFactory = _compileTransclusion(
