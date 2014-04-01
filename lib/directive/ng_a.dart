@@ -14,10 +14,10 @@ part of angular.directive;
  * `<a href="" ng-click="model.$save()">Save</a>`
  */
 @NgDirective(selector: 'a[href]')
-class NgADirective {
+class NgA {
   final dom.Element element;
 
-  NgADirective(this.element, NgZone zone) {
+  NgA(this.element, NgZone zone) {
     if (element.attributes["href"] == "") {
       zone.runOutsideAngular(() {
         element.onClick.listen((event) {

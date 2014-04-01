@@ -1,7 +1,7 @@
 part of angular.directive;
 
 /**
- * Base class for NgIfAttrDirective and NgUnlessAttrDirective.
+ * Base class for NgIf and NgUnless.
  */
 abstract class _NgUnlessIfAttrDirectiveBase {
   final BoundViewFactory _boundViewFactory;
@@ -51,7 +51,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
 
 /**
  * The `ng-if` directive compliments the `ng-unless` (provided by
- * [NgUnlessAttrDirective]) directive.
+ * [NgUnless]) directive.
  *
  * directive based on the **truthy/falsy** value of the provided expression.
  * Specifically, if the expression assigned to `ng-if` evaluates to a `false`
@@ -93,10 +93,10 @@ abstract class _NgUnlessIfAttrDirectiveBase {
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-if]',
     map: const {'.': '=>condition'})
-class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
-  NgIfDirective(BoundViewFactory boundViewFactory,
-                ViewPort viewPort,
-                Scope scope): super(boundViewFactory, viewPort, scope);
+class NgIf extends _NgUnlessIfAttrDirectiveBase {
+  NgIf(BoundViewFactory boundViewFactory,
+       ViewPort viewPort,
+       Scope scope): super(boundViewFactory, viewPort, scope);
 
   void set condition(value) {
     if (toBool(value)) {
@@ -110,7 +110,7 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
 
 /**
  * The `ng-unless` directive complements the `ng-if` (provided by
- * [NgIfAttrDirective]) directive.
+ * [NgIf]) directive.
  *
  * The `ng-unless` directive recreates/destroys the DOM subtree containing the
  * directive based on the **falsy/truthy** value of the provided expression.
@@ -154,11 +154,11 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-unless]',
     map: const {'.': '=>condition'})
-class NgUnlessDirective extends _NgUnlessIfAttrDirectiveBase {
+class NgUnless extends _NgUnlessIfAttrDirectiveBase {
 
-  NgUnlessDirective(BoundViewFactory boundViewFactory,
-                    ViewPort viewPort,
-                    Scope scope): super(boundViewFactory, viewPort, scope);
+  NgUnless(BoundViewFactory boundViewFactory,
+           ViewPort viewPort,
+           Scope scope): super(boundViewFactory, viewPort, scope);
 
   void set condition(value) {
     if (!toBool(value)) {

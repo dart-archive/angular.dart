@@ -29,9 +29,9 @@ part of angular.directive;
 @NgDirective(selector: '[ng-readonly]', map: const {'ng-readonly': '=>readonly'})
 @NgDirective(selector: '[ng-required]', map: const {'ng-required': '=>required'})
 @NgDirective(selector: '[ng-selected]', map: const {'ng-selected': '=>selected'})
-class NgBooleanAttributeDirective {
+class NgBooleanAttribute {
   final NodeAttrs attrs;
-  NgBooleanAttributeDirective(this.attrs);
+  NgBooleanAttribute(this.attrs);
 
   _setBooleanAttribute(name, value) => attrs[name] = (toBool(value) ? '' : null);
 
@@ -64,9 +64,9 @@ class NgBooleanAttributeDirective {
 @NgDirective(selector: '[ng-href]',   map: const {'ng-href':   '@href'})
 @NgDirective(selector: '[ng-src]',    map: const {'ng-src':    '@src'})
 @NgDirective(selector: '[ng-srcset]', map: const {'ng-srcset': '@srcset'})
-class NgSourceDirective {
+class NgSource{
   final NodeAttrs attrs;
-  NgSourceDirective(this.attrs);
+  NgSource(this.attrs);
 
   set href(value)   => attrs['href']   = value;
   set src(value)    => attrs['src']    = value;
@@ -88,10 +88,10 @@ class NgSourceDirective {
  *     </svg>
  */
 @NgDirective(selector: '[ng-attr-*]')
-class NgAttributeDirective implements NgAttachAware {
+class NgAttribute implements NgAttachAware {
   final NodeAttrs _attrs;
 
-  NgAttributeDirective(this._attrs);
+  NgAttribute(this._attrs);
 
   void attach() {
     String ngAttrPrefix = 'ng-attr-';

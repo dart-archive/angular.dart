@@ -56,13 +56,13 @@ part of angular.directive;
       'change': '&onChange'
     },
     visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY)
-class NgSwitchDirective {
+class NgSwitch {
   Map<String, List<_Case>> cases = new Map<String, List<_Case>>();
   List<_ViewScopePair> currentViews = <_ViewScopePair>[];
   Function onChange;
   final Scope scope;
 
-  NgSwitchDirective(this.scope) {
+  NgSwitch(this.scope) {
     cases['?'] = <_Case>[];
   }
 
@@ -113,13 +113,13 @@ class _Case {
     selector: '[ng-switch-when]',
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     map: const {'.': '@value'})
-class NgSwitchWhenDirective {
-  final NgSwitchDirective ngSwitch;
+class NgSwitchWhen {
+  final NgSwitch ngSwitch;
   final ViewPort port;
   final BoundViewFactory viewFactory;
   final Scope scope;
 
-  NgSwitchWhenDirective(this.ngSwitch, this.port, this.viewFactory, this.scope);
+  NgSwitchWhen(this.ngSwitch, this.port, this.viewFactory, this.scope);
 
   set value(String value) => ngSwitch.addCase('!$value', port, viewFactory);
 }
@@ -127,10 +127,10 @@ class NgSwitchWhenDirective {
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-switch-default]')
-class NgSwitchDefaultDirective {
+class NgSwitchDefault {
 
-  NgSwitchDefaultDirective(NgSwitchDirective ngSwitch, ViewPort port,
-                           BoundViewFactory viewFactory, Scope scope) {
+  NgSwitchDefault(NgSwitch ngSwitch, ViewPort port,
+                  BoundViewFactory viewFactory, Scope scope) {
     ngSwitch.addCase('?', port, viewFactory);
   }
 }

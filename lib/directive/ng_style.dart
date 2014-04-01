@@ -10,14 +10,14 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-style]',
     map: const {'ng-style': '@styleExpression'})
-class NgStyleDirective {
+class NgStyle {
   final dom.Element _element;
   final Scope _scope;
 
   String _styleExpression;
   Watch _watch;
 
-  NgStyleDirective(this._element, this._scope);
+  NgStyle(this._element, this._scope);
 
 /**
   * ng-style attribute takes an expression which evaluates to an

@@ -129,7 +129,7 @@ part of angular.directive;
 @NgDirective(selector: '[ng-touchstart]',       map: const {'ng-touchstart':       '&onTouchStart'})
 @NgDirective(selector: '[ng-transitionend]',    map: const {'ng-transitionend':    '&onTransitionEnd'})
 
-class NgEventDirective {
+class NgEvent {
   // Is it better to use a map of listeners or have 29 properties on this
   // object?  One would pretty much only assign to one or two of those
   // properties.  I'm opting for the map since it's less boilerplate code.
@@ -137,7 +137,7 @@ class NgEventDirective {
   final dom.Element element;
   final Scope scope;
 
-  NgEventDirective(this.element, this.scope);
+  NgEvent(this.element, this.scope);
 
   // NOTE: Do not use the element.on['some_event'].listen(...) syntax.  Doing so
   //     has two downsides:

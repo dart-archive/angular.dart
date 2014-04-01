@@ -92,7 +92,7 @@ main() {
         _.rootScope.context['robot'] = 'r2d2';
         _.rootScope.apply();
 
-        var select = _.rootScope.context['p'].directive(InputSelectDirective);
+        var select = _.rootScope.context['p'].directive(InputSelect);
         expect(_.rootElement).toEqualSelect(['c3p0', ['r2d2']]);
 
         _.rootElement.querySelectorAll('option')[0].selected = true;
@@ -152,7 +152,7 @@ main() {
               '</select>');
           _.rootScope.apply();
 
-          var select = _.rootScope.context['p'].directive(InputSelectDirective);
+          var select = _.rootScope.context['p'].directive(InputSelect);
 
           expect(_.rootElement).toEqualSelect(['', ['x'], 'y']);
 
@@ -182,7 +182,7 @@ main() {
                   '<option ng-repeat="r in robots">{{r}}</option>' +
                 '</select>');
             _.rootScope.apply();
-            var select = _.rootScope.context['p'].directive(InputSelectDirective);
+            var select = _.rootScope.context['p'].directive(InputSelect);
 
             _.selectOption(_.rootElement, 'c3p0');
             expect(_.rootElement).toEqualSelect(['', ['c3p0'], 'r2d2']);

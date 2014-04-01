@@ -17,11 +17,11 @@ part of angular.directive;
 @NgDirective(
   selector: '[ng-bind-html]',
   map: const {'ng-bind-html': '=>value'})
-class NgBindHtmlDirective {
+class NgBindHtml {
   final dom.Element element;
   final dom.NodeValidator validator;
 
-  NgBindHtmlDirective(this.element, dom.NodeValidator this.validator);
+  NgBindHtml(this.element, dom.NodeValidator this.validator);
 
   /**
    * Parsed expression from the `ng-bind-html` attribute.  The result of this
