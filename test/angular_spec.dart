@@ -117,21 +117,22 @@ main() {
       }
 
       var ALLOWED_PREFIXES = [
-        "Ng",
-        "ng",
-        "Angular",
         "_"
       ];
 
-      // NOTE(deboer): There are a number of symbols that should not be
-      // exported in the list.  We are working on un-export the symbols.
-      // Comments on each symbols below.
       var ALLOWED_NAMES = [
         "angular.app.Application",
+        "angular.app.AngularModule",
         "angular.core_internal.CacheStats",
         "angular.core_internal.ExceptionHandler",
         "angular.core_internal.Interpolate",
         "angular.core_internal.RootScope",
+        "angular.core_internal.NgAttachAware",
+        "angular.core_internal.NgComponent",
+        "angular.core_internal.NgController",
+        "angular.core_internal.NgDetachAware",
+        "angular.core_internal.NgDirective",
+        "angular.core_internal.NgZone",
         "angular.core_internal.Scope",
         "angular.core_internal.ScopeDigestTTL",
         "angular.core_internal.ScopeEvent",
@@ -155,6 +156,7 @@ main() {
         "angular.core.dom_internal.HttpResponseConfig",
         "angular.core.dom_internal.NoOpAnimation",
         "angular.core.dom_internal.NullTreeSanitizer",
+        "angular.core.dom_internal.NgAnimate",
         "angular.core.dom_internal.RequestErrorInterceptor",
         "angular.core.dom_internal.RequestInterceptor",
         "angular.core.dom_internal.Response",
@@ -216,6 +218,7 @@ main() {
       var _nameMap = {};
       ALLOWED_NAMES.forEach((x) => _nameMap[x] = true);
 
+      var exported = [];
       assertSymbolNameIsOk(List nameInfo) {
         String name = _unwrapSymbol(nameInfo[0]);
         String libName = _unwrapSymbol(nameInfo[1]);
@@ -228,15 +231,23 @@ main() {
           return;
         }
 
-        throw "Symbol $key is exported thru the angular library, but it shouldn't be";
+        exported.add(key);
       };
+      if (exported.isNotEmpty) {
+        throw "These symbols are exported thru the angular library, but it shouldn't be:\n"
+              "${exported.join('\n')}";
+      }
 
       names.forEach(assertSymbolNameIsOk);
 
       // If there are keys that no longer need to be in the ALLOWED_NAMES list, complain.
+      var keys = [];
       _nameMap.forEach((k,v) {
-        if (v) print("angular_spec.dart: Unused ALLOWED_NAMES key $k");
+        if (v) keys.add(k);
       });
+      if (keys.isNotEmpty) {
+        throw "Missing symbols:\n${keys.join('\n')}";
+      }
     });
   });
 }
