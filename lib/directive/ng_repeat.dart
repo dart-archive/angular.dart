@@ -69,7 +69,7 @@ part of angular.directive;
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-repeat]',
     map: const {'.': '@expression'})
-class NgRepeatDirective {
+class NgRepeat {
   static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(?:track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
   static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([$\w]+)|\(([$\w]+)\s*,\s*([$\w]+)\))$');
 
@@ -87,8 +87,8 @@ class NgRepeatDirective {
   Function _generateId = (key, value, index) => value;
   Watch _watch;
 
-  NgRepeatDirective(this._viewPort, this._boundViewFactory, this._scope,
-                    this._parser, this.filters);
+  NgRepeat(this._viewPort, this._boundViewFactory, this._scope,
+           this._parser, this.filters);
 
   set expression(value) {
     assert(value != null);

@@ -78,7 +78,7 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('abc');
 
         inputElement.value = 'def';
-        var input = probe.directive(InputTextLikeDirective);
+        var input = probe.directive(InputTextLike);
         input.processValue();
         expect(_.rootScope.context['model']).toEqual('def');
       });
@@ -95,7 +95,7 @@ void main() {
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
             nodeAttrs, new NgAnimate());
         dom.querySelector('body').append(element);
-        var input = new InputTextLikeDirective(element, model, scope);
+        var input = new InputTextLike(element, model, scope);
 
         element
             ..value = 'abc'
@@ -151,7 +151,7 @@ void main() {
         expect(_.rootScope.context['model']).toEqual(12);
 
         inputElement.value = '14';
-        var input = probe.directive(InputNumberLikeDirective);
+        var input = probe.directive(InputNumberLike);
         input.processValue();
         expect(_.rootScope.context['model']).toEqual(14);
       });
@@ -254,7 +254,7 @@ void main() {
         expect(_.rootScope.context['model']).toEqual(42);
 
         inputElement.value = '43';
-        var input = probe.directive(InputNumberLikeDirective);
+        var input = probe.directive(InputNumberLike);
         input.processValue();
         expect(_.rootScope.context['model']).toEqual(43);
       });
@@ -281,7 +281,7 @@ void main() {
         expect(_.rootScope.context['model']).toEqual(42);
 
         inputElement.value = '43';
-        var input = probe.directive(InputNumberLikeDirective);
+        var input = probe.directive(InputNumberLike);
         input.processValue();
         expect(_.rootScope.context['model']).toEqual(43);
       });
@@ -355,7 +355,7 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('abc');
 
         inputElement.value = 'def';
-        var input = probe.directive(InputTextLikeDirective);
+        var input = probe.directive(InputTextLike);
         input.processValue();
         expect(_.rootScope.context['model']).toEqual('def');
 
@@ -373,7 +373,7 @@ void main() {
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
             nodeAttrs, new NgAnimate());
         dom.querySelector('body').append(element);
-        var input = new InputTextLikeDirective(element, model, scope);
+        var input = new InputTextLike(element, model, scope);
 
         element
           ..value = 'abc'
@@ -446,7 +446,7 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('abc');
 
         inputElement.value = 'def';
-        var input = probe.directive(InputTextLikeDirective);
+        var input = probe.directive(InputTextLike);
         input.processValue();
         expect(_.rootScope.context['model']).toEqual('def');
       });
@@ -463,7 +463,7 @@ void main() {
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
             nodeAttrs, new NgAnimate());
         dom.querySelector('body').append(element);
-        var input = new InputTextLikeDirective(element, model, scope);
+        var input = new InputTextLike(element, model, scope);
 
         element
           ..value = 'abc'
@@ -544,7 +544,7 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('abc');
 
         inputElement.value = 'def';
-        var input = probe.directive(InputTextLikeDirective);
+        var input = probe.directive(InputTextLike);
         input.processValue();
         expect(_.rootScope.context['model']).toEqual('def');
       });
@@ -561,7 +561,7 @@ void main() {
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
             nodeAttrs, new NgAnimate());
         dom.querySelector('body').append(element);
-        var input = new InputTextLikeDirective(element, model, scope);
+        var input = new InputTextLike(element, model, scope);
 
         element
           ..value = 'abc'
@@ -736,7 +736,7 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('abc');
 
         element.value = 'def';
-        var textarea = probe.directive(InputTextLikeDirective);
+        var textarea = probe.directive(InputTextLike);
         textarea.processValue();
         expect(_.rootScope.context['model']).toEqual('def');
 
@@ -756,7 +756,7 @@ void main() {
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
             nodeAttrs, new NgAnimate());
         dom.querySelector('body').append(element);
-        var input = new InputTextLikeDirective(element, model, scope);
+        var input = new InputTextLike(element, model, scope);
 
         element
           ..value = 'abc'
@@ -996,7 +996,7 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('xzy');
 
         inputElement.value = '123';
-        var input = probe.directive(InputTextLikeDirective);
+        var input = probe.directive(InputTextLike);
         input.processValue();
         expect(_.rootScope.context['model']).toEqual('123');
       });
@@ -1038,7 +1038,7 @@ void main() {
         expect(_.rootScope.context['model']).toEqual('abc');
 
         element.innerHtml = 'def';
-        var input = ngInjector(element).get(ContentEditableDirective);
+        var input = ngInjector(element).get(ContentEditable);
         input.processValue();
         expect(_.rootScope.context['model']).toEqual('def');
       });

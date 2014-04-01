@@ -274,15 +274,15 @@ class NgModel extends NgControl implements NgAttachAware {
  * the model value is set to true.  When unchecked, it is set to false.
  */
 @NgDirective(selector: 'input[type=checkbox][ng-model]')
-class InputCheckboxDirective {
+class InputCheckbox {
   final dom.InputElement inputElement;
   final NgModel ngModel;
   final NgTrueValue ngTrueValue;
   final NgFalseValue ngFalseValue;
   final Scope scope;
 
-  InputCheckboxDirective(dom.Element this.inputElement, this.ngModel,
-                         this.scope, this.ngTrueValue, this.ngFalseValue) {
+  InputCheckbox(dom.Element this.inputElement, this.ngModel,
+                this.scope, this.ngTrueValue, this.ngFalseValue) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         inputElement.checked = ngTrueValue.isValue(inputElement, value);
@@ -319,7 +319,7 @@ class InputCheckboxDirective {
 @NgDirective(selector: 'input[type=url][ng-model]')
 @NgDirective(selector: 'input[type=email][ng-model]')
 @NgDirective(selector: 'input[type=search][ng-model]')
-class InputTextLikeDirective {
+class InputTextLike {
   final dom.Element inputElement;
   final NgModel ngModel;
   final Scope scope;
@@ -330,7 +330,7 @@ class InputTextLikeDirective {
     (inputElement as dynamic).value = (value == null) ? '' : value.toString();
   }
 
-  InputTextLikeDirective(this.inputElement, this.ngModel, this.scope) {
+  InputTextLike(this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         if (value == null) value = '';
@@ -376,7 +376,7 @@ class InputTextLikeDirective {
  */
 @NgDirective(selector: 'input[type=number][ng-model]')
 @NgDirective(selector: 'input[type=range][ng-model]')
-class InputNumberLikeDirective {
+class InputNumberLike {
   final dom.InputElement inputElement;
   final NgModel ngModel;
   final Scope scope;
@@ -399,7 +399,7 @@ class InputNumberLikeDirective {
     }
   }
 
-  InputNumberLikeDirective(dom.Element this.inputElement, this.ngModel, this.scope) {
+  InputNumberLike(dom.Element this.inputElement, this.ngModel, this.scope) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         if (value != typedValue
@@ -530,14 +530,14 @@ class NgFalseValue {
  * name when the counter overflows.
  */
 @NgDirective(selector: 'input[type=radio][ng-model]')
-class InputRadioDirective {
+class InputRadio {
   final dom.RadioButtonInputElement radioButtonElement;
   final NgModel ngModel;
   final NgValue ngValue;
   final Scope scope;
 
-  InputRadioDirective(dom.Element this.radioButtonElement, this.ngModel,
-                      this.scope, this.ngValue, NodeAttrs attrs) {
+  InputRadio(dom.Element this.radioButtonElement, this.ngModel,
+             this.scope, this.ngValue, NodeAttrs attrs) {
     // If there's no "name" set, we'll set a unique name.  This ensures
     // less surprising behavior about which radio buttons are grouped together.
     if (attrs['name'] == '' || attrs['name'] == null) {
@@ -571,12 +571,11 @@ class InputRadioDirective {
  * purposes.
  */
 @NgDirective(selector: '[contenteditable][ng-model]')
-class ContentEditableDirective extends InputTextLikeDirective {
-  ContentEditableDirective(dom.Element inputElement, NgModel ngModel,
-                           Scope scope)
+class ContentEditable extends InputTextLike {
+  ContentEditable(dom.Element inputElement, NgModel ngModel, Scope scope)
       : super(inputElement, ngModel, scope);
 
-  // The implementation is identical to InputTextLikeDirective but use innerHtml instead of value
+  // The implementation is identical to InputTextLike but use innerHtml instead of value
   String get typedValue => (inputElement as dynamic).innerHtml;
   void set typedValue(String value) {
     (inputElement as dynamic).innerHtml = (value == null) ? '' : value;

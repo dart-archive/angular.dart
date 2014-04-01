@@ -88,7 +88,7 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-pluralize]',
     map: const { 'count': '=>count' })
-class NgPluralizeDirective {
+class NgPluralize {
   final dom.Element _element;
   final Scope _scope;
   final Interpolate _interpolate;
@@ -110,8 +110,8 @@ class NgPluralizeDirective {
       'other' : #other,
   };
 
-  NgPluralizeDirective(this._scope, this._element, this._interpolate,
-                       this._filters, NodeAttrs attributes) {
+  NgPluralize(this._scope, this._element, this._interpolate,
+              this._filters, NodeAttrs attributes) {
     final whens = attributes['when'] == null
         ? <String, String>{}
         : _scope.eval(attributes['when']);

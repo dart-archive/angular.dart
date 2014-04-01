@@ -66,9 +66,9 @@ part of angular.directive;
     selector: '[ng-class]',
     map: const {'ng-class': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class'])
-class NgClassDirective extends _NgClassBase {
-  NgClassDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                   NgAnimate animate)
+class NgClass extends _NgClassBase {
+  NgClass(dom.Element element, Scope scope, NodeAttrs attrs,
+          NgAnimate animate)
       : super(element, scope, null, attrs, animate);
 }
 
@@ -102,9 +102,9 @@ class NgClassDirective extends _NgClassBase {
     selector: '[ng-class-odd]',
     map: const {'ng-class-odd': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-odd'])
-class NgClassOddDirective extends _NgClassBase {
-  NgClassOddDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                      NgAnimate animate)
+class NgClassOdd extends _NgClassBase {
+  NgClassOdd(dom.Element element, Scope scope, NodeAttrs attrs,
+             NgAnimate animate)
       : super(element, scope, 0, attrs, animate);
 }
 
@@ -138,9 +138,9 @@ class NgClassOddDirective extends _NgClassBase {
     selector: '[ng-class-even]',
     map: const {'ng-class-even': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-even'])
-class NgClassEvenDirective extends _NgClassBase {
-  NgClassEvenDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                       NgAnimate animate)
+class NgClassEven extends _NgClassBase {
+  NgClassEven(dom.Element element, Scope scope, NodeAttrs attrs,
+              NgAnimate animate)
       : super(element, scope, 1, attrs, animate);
 }
 

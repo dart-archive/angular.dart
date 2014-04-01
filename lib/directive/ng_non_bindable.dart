@@ -21,4 +21,4 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-non-bindable]',
     children: NgAnnotation.IGNORE_CHILDREN)
-class NgNonBindableDirective {}
+class NgNonBindable {}
