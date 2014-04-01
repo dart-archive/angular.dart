@@ -242,20 +242,31 @@ class AnnotationExtractor {
 
   /// Extracts all of the annotations for the specified class.
   AnnotatedType extractAnnotations(ClassElement cls) {
-    if (resolver.getImportUri(cls.library, from: outputId) == null) {
-      warn('Dropping annotations for ${cls.name} because the '
-          'containing file cannot be imported (must be in a lib folder).', cls);
-      return null;
-    }
-
+    var classElement = cls;
     var visitor = new _AnnotationVisitor(_annotationElements);
-    cls.node.accept(visitor);
+    while (classElement != null) {
+      if (resolver.getImportUri(classElement.library, from: outputId) == null) {
+        warn('Dropping annotations for ${classElement.name} because the '
+            'containing file cannot be imported (must be in a lib folder).', classElement);
+        return null;
+      }
+      if (classElement.node != null) {
+        classElement.node.accept(visitor);
+      }
+
+      if (classElement.supertype != null) {
+        visitor.visitingSupertype = true;
+        classElement = classElement.supertype.element;
+      } else {
+        classElement = null;
+      }
+    }
 
     if (!visitor.hasAnnotations) return null;
 
     var type = new AnnotatedType(cls);
     type.annotations = visitor.classAnnotations
-        .where((annotation) {
+        .where((Annotation annotation) {
           var element = annotation.element;
           if (element != null && !element.isPublic) {
             warn('Annotation $annotation is not public.',
@@ -277,6 +288,7 @@ class AnnotationExtractor {
                  element.enclosingElement.type.isAssignableTo(formatterType.type);
         }).toList();
 
+    if (type.annotations.isEmpty) return null;
 
     var memberAnnotations = {};
     visitor.memberAnnotations.forEach((memberName, annotations) {
@@ -293,8 +305,6 @@ class AnnotationExtractor {
       _foldMemberAnnotations(memberAnnotations, type);
     }
 
-    if (type.annotations.isEmpty) return null;
-
     return type;
   }
 
@@ -309,10 +319,6 @@ class AnnotationExtractor {
       return element.enclosingElement.type.isAssignableTo(
           directiveType.type);
     });
-    if (ngAnnotations.isEmpty) {
-      warn('Found field annotation but no class directives.', type.type);
-      return;
-    }
 
     var mapType = resolver.getType('dart.core.Map').type;
     // Find acceptable constructors- ones which take a param named 'map'
@@ -410,6 +416,7 @@ class _AnnotationVisitor extends GeneralizingAstVisitor {
   final List<Element> allowedMemberAnnotations;
   final List<Annotation> classAnnotations = [];
   final Map<String, List<Annotation>> memberAnnotations = {};
+  var visitingSupertype = false;
 
   _AnnotationVisitor(this.allowedMemberAnnotations);
 
@@ -417,8 +424,9 @@ class _AnnotationVisitor extends GeneralizingAstVisitor {
     var parent = annotation.parent;
     if (parent is! Declaration) return;
 
-    if (parent.element is ClassElement) {
+    if (parent.element is ClassElement && !visitingSupertype) {
       classAnnotations.add(annotation);
+
     } else if (allowedMemberAnnotations.contains(annotation.element)) {
       if (parent is MethodDeclaration) {
         memberAnnotations.putIfAbsent(parent.name.name, () => [])

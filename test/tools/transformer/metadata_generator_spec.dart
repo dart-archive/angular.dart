@@ -58,6 +58,50 @@ main() {
           });
     });
 
+    it('should extract member metadata from superclass', () {
+      return generates(phases,
+          inputs: {
+            'angular|lib/angular.dart': libAngular,
+            'a|web/main.dart': '''
+                import 'package:angular/angular.dart';
+
+                class Engine {
+                  @NgOneWay('another-expression')
+                  String anotherExpression;
+
+                  @NgCallback('callback')
+                  set callback(Function) {}
+
+                  set twoWayStuff(String abc) {}
+                  @NgTwoWay('two-way-stuff')
+                  String get twoWayStuff => null;
+                }
+
+                @NgDirective(selector: r'[*=/{{.*}}/]')
+                class InternalCombustionEngine extends Engine {
+                  @NgOneWay('ice-expression')
+                  String iceExpression;
+                }
+                main() {}
+                '''
+          },
+          imports: [
+            'import \'main.dart\' as import_0;',
+            'import \'package:angular/angular.dart\' as import_1;',
+          ],
+          classes: {
+            'import_0.InternalCombustionEngine': [
+              'const import_1.NgDirective(selector: r\'[*=/{{.*}}/]\', '
+                'map: const {'
+                '\'ice-expression\': \'=>iceExpression\', '
+                '\'another-expression\': \'=>anotherExpression\', '
+                '\'callback\': \'&callback\', '
+                '\'two-way-stuff\': \'<=>twoWayStuff\''
+                '})',
+            ]
+          });
+    });
+
     it('should warn on multiple annotations', () {
       return generates(phases,
           inputs: {

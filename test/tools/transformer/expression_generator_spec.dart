@@ -91,6 +91,39 @@ main() {
           symbols: []);
     });
 
+    it('should generate expressions for variables found in superclass', () {
+      return generates(phases,
+      inputs: {
+          'a|web/main.dart': '''
+                import 'package:angular/angular.dart';
+
+                @NgComponent(
+                    templateUrl: 'lib/foo.html',
+                    selector: 'my-component')
+                class FooComponent extends BarComponent {
+                  @NgAttr('foo')
+                  var foo;
+                }
+
+                class BarComponent {
+                  @NgAttr('bar')
+                  var bar;
+                }
+
+                main() {}
+                ''',
+          'a|lib/foo.html': '''
+                <div>{{template.foo}}</div>
+                <div>{{template.bar}}</div>''',
+          'a|web/index.html': '''
+                <script src='main.dart' type='application/dart'></script>''',
+          'angular|lib/angular.dart': libAngular,
+      },
+      getters: ['foo', 'bar', 'template'],
+      setters: ['foo', 'bar', 'template'],
+      symbols: []);
+    });
+
     it('should apply additional HTML files', () {
       htmlFiles.add('web/dummy.html');
       htmlFiles.add('/packages/b/bar.html');
@@ -185,5 +218,10 @@ library angular.core.annotation_src;
 
 class Component {
   const Component({String templateUrl, String selector});
+}
+
+class NgAttr {
+  final _mappingSpec = '@';
+  const NgAttr(String attrName);
 }
 ''';
