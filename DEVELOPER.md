@@ -78,10 +78,10 @@ illustrative purposes.)
 # CHROME_BIN: path to a Chrome browser executable; e.g.,
 export CHROME_BIN="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 
-# CHROME_CANARY_BIN: path to a Dartium browser executable; e.g.,
-export CHROME_CANARY_BIN="$DART_EDITOR_DIR/chromium/Chromium.app/Contents/MacOS/Chromium"
+# DARTIUM_BIN: path to a Dartium browser executable; e.g.,
+export DARTIUM_BIN="$DART_EDITOR_DIR/chromium/Chromium.app/Contents/MacOS/Chromium"
 ```
-**Note**: the `$CHROME_CANARY_BIN` environment variable is used by karma to run
+**Note**: the `$DARTIUM_BIN` environment variable is used by karma to run
 your tests in dartium instead of chromium. If you don't do this, the dart2js
 compile will make the tests run extremely slow since it has to wait for a full
 js compile each time.
@@ -183,7 +183,7 @@ Set the parameters as follow:
 - **JavaScript file**: `node_modules/karma/bin/karma`
 - **Application parameters**: `start karma.conf --reporters dots --port 8765 --browsers=Dartium`
 - **Environment variables**:
-    - **CHROME_CANARY_BIN**: `/path/to/dartium`
+    - **DARTIUM_BIN**: `/path/to/dartium`
     - **PATH**: `/path/to/dart-sdk/bin`
     - **DART_FLAGS**: `--enable_type_checks --enable_asserts`
 

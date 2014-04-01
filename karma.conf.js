@@ -39,7 +39,6 @@ module.exports = function(config) {
     ],
 
     customLaunchers: {
-      Dartium: { base: 'ChromeCanary', flags: ['--no-sandbox'] },
       ChromeNoSandbox: { base: 'Chrome', flags: ['--no-sandbox'] }
     },
 
