@@ -50,7 +50,6 @@ main() => describe('ElementBinderBuilder', () {
 
     expect(b.decorators.length).toEqual(1);
     expect(b.component).toBeNull();
-    expect(b.template).toBeNull();
     expect(b.childMode).toEqual(NgAnnotation.COMPILE_CHILDREN);
 
   });
@@ -60,14 +59,11 @@ main() => describe('ElementBinderBuilder', () {
 
     expect(b.decorators.length).toEqual(0);
     expect(b.component).toBeNotNull();
-    expect(b.template).toBeNull();
   });
 
   it('should add a template', () {
     addDirective('[structural]');
 
-    expect(b.decorators.length).toEqual(0);
-    expect(b.component).toBeNull();
     expect(b.template).toBeNotNull();
   });
 
@@ -76,7 +72,6 @@ main() => describe('ElementBinderBuilder', () {
 
     expect(b.decorators.length).toEqual(1);
     expect(b.component).toBeNull();
-    expect(b.template).toBeNull();
     expect(b.childMode).toEqual(NgAnnotation.IGNORE_CHILDREN);
   });
 });

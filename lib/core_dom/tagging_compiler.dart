@@ -27,9 +27,10 @@ class TaggingCompiler implements Compiler {
           directives.selector.matchElement(node) : useExistingElementBinder;
 
       if (elementBinder.hasTemplate) {
-        elementBinder.templateViewFactory = _compileTransclusion(
-            domCursor, elementBinder.template,
-            elementBinder.templateBinder, directives);
+        var templateBinder = elementBinder as TemplateElementBinder;
+        templateBinder.templateViewFactory = _compileTransclusion(
+            domCursor, templateBinder.template,
+            templateBinder.templateBinder, directives);
       }
       return elementBinder;
     } else if (node.nodeType == dom.Node.TEXT_NODE) {
@@ -46,7 +47,7 @@ class TaggingCompiler implements Compiler {
                bool isTopLevel,
                TaggedElementBinder directParentElementBinder) {
     var node = domCursor.current;
-    if (node.nodeType == 1) {
+    if (node.nodeType == dom.Node.ELEMENT_NODE) {
       TaggedElementBinder taggedElementBinder;
       int taggedElementBinderIndex;
       if (elementBinder.hasDirectivesOrEvents || elementBinder.hasTemplate) {

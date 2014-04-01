@@ -11,7 +11,9 @@ class ElementBinderFactory {
 // Optimize this to re-use a builder.
   ElementBinderBuilder builder() => new ElementBinderBuilder(this, _parser);
 
-  ElementBinder binder(template, component, decorators, onEvents, childMode) => new ElementBinder(_perf, _expando, template, component, decorators, onEvents, childMode);
+  ElementBinder binder(component, decorators, onEvents, childMode) => new ElementBinder(_perf, _expando, component, decorators, onEvents, childMode);
+  TemplateElementBinder templateBinder(template, transclude, onEvents, childMode) =>
+      new TemplateElementBinder(_perf, _expando, template, transclude, onEvents, childMode);
 }
 
 /**
@@ -162,5 +164,14 @@ class ElementBinderBuilder {
   }
 
 
-  ElementBinder get binder => _factory.binder(template, component, decorators, onEvents, childMode);
+  ElementBinder get binder {
+    if (template != null) {
+      var transclude = _factory.binder(component, decorators, onEvents, childMode);
+      return _factory.templateBinder(template, transclude, onEvents, childMode);
+
+    } else {
+      return _factory.binder(component, decorators, onEvents, childMode);
+    }
+
+  }
 }
