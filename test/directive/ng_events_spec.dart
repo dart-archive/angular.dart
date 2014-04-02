@@ -87,5 +87,6 @@ main() {
     addTest('touchend'/*, 'TouchEvent'*/);
     addTest('touchmove'/*, 'TouchEvent'*/);
     addTest('touchstart'/*, 'TouchEvent'*/);
-    addTest('transitionend');
+    // Disabled due to http://dartbug.com/17990
+    //addTest('transitionend');
 }
