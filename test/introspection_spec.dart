@@ -51,7 +51,10 @@ void main() {
       expect(js.context['ngInjector']).toBeDefined();
       expect(js.context['ngQuery']).toBeDefined();
 
-      expect(js.context['ngProbe'].apply([js.context['ngtop']])).toBeDefined();
+
+      // Polymer does not support accessing named elements directly (e.g. window.ngtop)
+      // so we need to use getElementById to support Polymer's shadow DOM polyfill.
+      expect(js.context['ngProbe'].apply([document.getElementById('ngtop')])).toBeDefined();
     });
   });
 }
