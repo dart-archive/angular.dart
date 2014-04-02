@@ -123,7 +123,7 @@ Future generates(List<List<Transformer>> phases,
   buffer.write('final Map<String, FieldSetter> setters = {\n');
   buffer.write(setters.map((s) => '  r"$s": (o, v) => o.$s = v').join(',\n'));
   buffer.write('\n};\n');
-  buffer.write('final Map<String, FieldSetter> symbols = {\n');
+  buffer.write('final Map<String, Symbol> symbols = {\n');
   buffer.write(symbols.map((s) => '  r"$s": #$s').join(',\n'));
   buffer.write('\n};\n');
 
@@ -143,7 +143,7 @@ import 'package:angular/change_detection/change_detection.dart';
 ''';
 
 const String libAngular = '''
-library angular.core;
+library angular.core_internal;
 
 class NgComponent {
   const NgComponent({String templateUrl, String selector});

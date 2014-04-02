@@ -1,5 +1,6 @@
 library angular.core.parser.dynamic_parser;
 
+import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart' show FilterMap, NgInjectableService;
 
 import 'package:angular/core/parser/parser.dart';
@@ -14,6 +15,7 @@ import 'package:angular/utils.dart';
 abstract class ClosureMap {
   Getter lookupGetter(String name);
   Setter lookupSetter(String name);
+  Symbol lookupSymbol(String name);
   MethodClosure lookupFunction(String name, CallArguments arguments);
 }
 
@@ -84,7 +86,7 @@ class DynamicParserBackend extends ParserBackend {
 
   Expression newAccessKeyed(object, key) => new AccessKeyed(object, key);
   Expression newCallFunction(function, arguments) =>
-      new CallFunction(function, arguments);
+      new CallFunction(function, _closures, arguments);
 
   Expression newPrefixNot(expression) => new PrefixNot(expression);
 

@@ -163,7 +163,7 @@ class _ParserGetterSetter {
     return '''
 final Map<String, FieldGetter> getters = ${generateGetterMap(getters)};
 final Map<String, FieldSetter> setters = ${generateSetterMap(properties)};
-final Map<String, FieldSetter> symbols = ${generateSymbolMap(symbols)};
+final Map<String, Symbol> symbols = ${generateSymbolMap(symbols)};
 ''';
   }
 

@@ -7,11 +7,13 @@ import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
+import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
 
 import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
+import 'package:angular/core/registry.dart';
 
 part 'animation.dart';
 part 'view.dart';

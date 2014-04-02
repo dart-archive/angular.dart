@@ -1,7 +1,8 @@
 library angular.core_dynamic;
 
 import 'dart:mirrors';
-import 'package:angular/core/module_internal.dart';
+import 'package:angular/core/annotation.dart';
+import 'package:angular/core/registry.dart';
 
 var _fieldMetadataCache = new Map<Type, Map<String, AttrFieldAnnotation>>();
 

@@ -1,38 +1,5 @@
 part of angular.core_internal;
 
-/**
- * Use @[NgFilter] annotation to register a new filter. A filter is a class
- * with a [call] method (a callable function).
- *
- * Usage:
- *
- *     // Declaration
- *     @NgFilter(name:'myFilter')
- *     class MyFilter {
- *       call(valueToFilter, optArg1, optArg2) {
- *          return ...;
- *       }
- *     }
- *
- *
- *     // Registration
- *     var module = ...;
- *     module.type(MyFilter);
- *
- *
- *     <!-- Usage -->
- *     <span>{{something | myFilter:arg1:arg2}}</span>
- */
-class NgFilter {
-  final String name;
-
-  const NgFilter({this.name});
-
-  int get hashCode => name.hashCode;
-  bool operator==(other) => name == other.name;
-
-  toString() => 'NgFilter: $name';
-}
 
 /**
  * Registry of filters at runtime.

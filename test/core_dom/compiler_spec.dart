@@ -29,7 +29,7 @@ void main() {
     beforeEachModule((Module module) {
       module
           ..type(TabComponent)
-          ..type(PublishTypesAttrDirective)
+          ..type(PublishModuleAttrDirective)
           ..type(PaneComponent)
           ..type(SimpleTranscludeInAttachAttrDirective)
           ..type(IgnoreChildrenDirective)
@@ -456,10 +456,10 @@ void main() {
         expect(element.text).toEqual('WORKED');
       }));
 
-      it('should "publish" controller to injector under provided publishTypes', () {
+      it('should "publish" controller to injector under provided module', () {
         _.compile(r'<div publish-types></div>');
-        expect(PublishTypesAttrDirective._injector.get(PublishTypesAttrDirective)).
-        toBe(PublishTypesAttrDirective._injector.get(PublishTypesDirectiveSuperType));
+        expect(PublishModuleAttrDirective._injector.get(PublishModuleAttrDirective)).
+        toBe(PublishModuleAttrDirective._injector.get(PublishModuleDirectiveSuperType));
       });
 
       it('should allow repeaters over controllers', async((Logger logger) {
@@ -722,19 +722,19 @@ class IgnoreChildrenDirective {
   }
 }
 
-class PublishTypesDirectiveSuperType {
+class PublishModuleDirectiveSuperType {
 }
 
 @NgDirective(
     selector: '[publish-types]',
-    module: PublishTypesAttrDirective.module)
-class PublishTypesAttrDirective implements PublishTypesDirectiveSuperType {
+    module: PublishModuleAttrDirective.module)
+class PublishModuleAttrDirective implements PublishModuleDirectiveSuperType {
   static Module _module = new Module()
-      ..factory(PublishTypesDirectiveSuperType, (i) => i.get(PublishTypesAttrDirective));
+      ..factory(PublishModuleDirectiveSuperType, (i) => i.get(PublishModuleAttrDirective));
   static module() => _module;
 
   static Injector _injector;
-  PublishTypesAttrDirective(Injector injector) {
+  PublishModuleAttrDirective(Injector injector) {
     _injector = injector;
   }
 }

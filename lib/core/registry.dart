@@ -1,4 +1,6 @@
-part of angular.core_internal;
+library angular.core.registry;
+
+import 'package:di/di.dart' show Injector;
 
 abstract class AnnotationMap<K> {
   final Map<K, Type> _map = {};

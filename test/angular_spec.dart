@@ -43,7 +43,7 @@ main() {
   });
 
   describe('angular symbols', () {
-    iit('should not export symbols that we do not know about', () {
+    it('should not export symbols that we do not know about', () {
       // Test is failing? Add new symbols to the "ALLOWED_NAMES" list below.
       // But make sure that you intend to export the symbol!
       // Questions?  Talk to @jbdeboer
@@ -123,16 +123,16 @@ main() {
       var ALLOWED_NAMES = [
         "angular.app.Application",
         "angular.app.AngularModule",
-        "angular.core.service.NgInjectableService",
+        "angular.core.annotation.NgAttachAware",
+        "angular.core.annotation.NgComponent",
+        "angular.core.annotation.NgController",
+        "angular.core.annotation.NgDetachAware",
+        "angular.core.annotation.NgDirective",
+        "angular.core.annotation.NgInjectableService",
         "angular.core_internal.CacheStats",
         "angular.core_internal.ExceptionHandler",
         "angular.core_internal.Interpolate",
         "angular.core_internal.RootScope",
-        "angular.core_internal.NgAttachAware",
-        "angular.core_internal.NgComponent",
-        "angular.core_internal.NgController",
-        "angular.core_internal.NgDetachAware",
-        "angular.core_internal.NgDirective",
         "angular.core_internal.NgZone",
         "angular.core_internal.Scope",
         "angular.core_internal.ScopeDigestTTL",

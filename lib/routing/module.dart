@@ -153,6 +153,7 @@ import 'dart:html';
 
 import 'package:di/di.dart';
 import 'package:angular/bootstrap.dart';
+import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:route_hierarchical/client.dart';

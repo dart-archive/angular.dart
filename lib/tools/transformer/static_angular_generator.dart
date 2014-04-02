@@ -23,7 +23,7 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
     var asset = transform.primaryInput;
 
     var dynamicApp =
-        resolver.getLibraryFunction('angular.dynamic.dynamicApplication');
+        resolver.getLibraryFunction('angular.app.dynamic.dynamicApplication');
     if (dynamicApp == null) {
       // No dynamic app imports, exit.
       transform.addOutput(transform.primaryInput);

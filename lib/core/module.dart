@@ -1,6 +1,19 @@
 library angular.core;
 
-export "package:angular/core/service.dart";
+
+export "package:angular/core/annotation.dart" show
+    NgAttachAware,
+    NgAttr,
+    NgComponent,
+    NgController,
+    NgDetachAware,
+    NgDirective,
+    NgFilter,
+    NgInjectableService,
+    NgOneWay,
+    NgOneWayOneTime,
+    NgTwoWay;
+
 export "package:angular/core_dom/module_internal.dart" show
     Animation,
     AnimationResult,
@@ -32,18 +45,7 @@ export "package:angular/core/module_internal.dart" show
     CacheStats,
     ExceptionHandler,
     Interpolate,
-    NgAttachAware,
-    NgAttr,
     NgCallback,
-    NgComponent,
-    NgController,
-    NgDetachAware,
-    NgDirective,
-    NgFilter,
-    NgInjectableService,
-    NgOneWay,
-    NgOneWayOneTime,
-    NgTwoWay,
     NgZone,
     PrototypeMap,
     RootScope,

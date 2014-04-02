@@ -3,16 +3,50 @@ library angular.core.parser_static;
 import 'package:angular/core/parser/parser.dart';
 
 
-class DynamicClosureMap implements ClosureMap {
+class StaticClosureMap extends ClosureMap {
+  final Map<String, Getter> getters;
+  final Map<String, Setter> setters;
+  final Map<String, Symbol> symbols;
+
+  StaticClosureMap(this.getters, this.setters, this.symbols);
+
   Getter lookupGetter(String name) {
+    Getter getter = getters[name];
+    if (getter == null) throw "No getter for '$name'.";
+    return getter;
   }
 
   Setter lookupSetter(String name) {
+    Setter setter = setters[name];
+    if (setter == null) throw "No setter for '$name'.";
+    return setter;
   }
 
   MethodClosure lookupFunction(String name, CallArguments arguments) {
+    var fn = lookupGetter(name);
+    return (o, posArgs, namedArgs) {
+      var sNamedArgs = {};
+      namedArgs.forEach((name, value) => sNamedArgs[symbols[name]] = value);
+      if (o is Map) {
+        var fn = o[name];
+        if (fn is Function) {
+          return Function.apply(fn, posArgs, sNamedArgs);
+        } else {
+          throw "Property '$name' is not of type function.";
+        }
+      } else {
+        return Function.apply(fn(o), posArgs, sNamedArgs);
+      }
+    };
+  }
+
+  Symbol lookupSymbol(String name) {
+    Symbol symbol = symbols[name];
+    if (symbol == null) throw "No symbol for '$name'.";
+    return symbol;
   }
 }
+
 
 /**
  * The [AccessFast] mixin is used to share code between access expressions

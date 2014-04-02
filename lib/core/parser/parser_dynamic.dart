@@ -52,4 +52,6 @@ class DynamicClosureMap implements ClosureMap {
       }
     };
   }
+
+  Symbol lookupSymbol(String name) => new Symbol(name);
 }

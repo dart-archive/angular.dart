@@ -3,7 +3,7 @@ library angular.app.dynamic;
 
 import 'package:di/dynamic_injector.dart';
 import "package:angular/angular.dart";
-import "package:angular/core/module_internal.dart";
+import 'package:angular/core/registry.dart';
 import "package:angular/core/parser/parser.dart" show ClosureMap;
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';

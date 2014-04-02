@@ -1,6 +1,7 @@
 library parser_perf;
 
 import '_perf.dart';
+import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/filter/module.dart';

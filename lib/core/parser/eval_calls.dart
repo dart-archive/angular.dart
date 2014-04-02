@@ -7,8 +7,8 @@ import 'package:angular/core/module_internal.dart';
 
 
 class CallScope extends syntax.CallScope {
-  final MethodClosure function;
-  CallScope(name, this.function, arguments)
+  final MethodClosure methodClosure;
+  CallScope(name, this.methodClosure, arguments)
       : super(name, arguments);
 
   eval(scope, [FilterMap filters]) {
@@ -21,19 +21,19 @@ class CallScope extends syntax.CallScope {
     arguments.named.forEach((name, Expression exp) {
       namedArgs[name] = exp.eval(scope, filters);
     });
-    if (function == null) {
+    if (methodClosure == null) {
       _throwUndefinedFunction(name);
     }
-    return function(scope, posArgs, namedArgs);
+    return methodClosure(scope, posArgs, namedArgs);
   }
 }
 
 class CallMember extends syntax.CallMember {
-  final MethodClosure function;
-  CallMember(object, this.function, name, arguments)
+  final MethodClosure methodClosure;
+  CallMember(object, this.methodClosure, name, arguments)
       : super(object, name, arguments)
   {
-    if (function == null) {
+    if (methodClosure == null) {
       _throwUndefinedFunction(name);
     }
   }
@@ -48,12 +48,13 @@ class CallMember extends syntax.CallMember {
     arguments.named.forEach((name, Expression exp) {
       namedArgs[name] = exp.eval(scope, filters);
     });
-    return function(object.eval(scope, filters), posArgs, namedArgs);
+    return methodClosure(object.eval(scope, filters), posArgs, namedArgs);
   }
 }
 
 class CallFunction extends syntax.CallFunction {
-  CallFunction(function, arguments) : super(function, arguments);
+  final ClosureMap closureMap;
+  CallFunction(function, this.closureMap, arguments) : super(function, arguments);
   eval(scope, [FilterMap filters]) {
     var function  = this.function.eval(scope, filters);
     if (function is! Function) {
@@ -63,7 +64,7 @@ class CallFunction extends syntax.CallFunction {
       if (arguments.named.isNotEmpty) {
         var named = new Map<Symbol, dynamic>();
         arguments.named.forEach((String name, value) {
-          named[new Symbol(name)] = value.eval(scope, filters);
+          named[closureMap.lookupSymbol(name)] = value.eval(scope, filters);
         });
         return Function.apply(function, positionals, named);
       } else {

@@ -192,8 +192,10 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgDirective(publishTypes: const [TextChangeListener])
-                class Engine {}
+                @NgDirective(module: Enigne.module)
+                class Engine {
+                  static Engine.module => null;
+                }
 
                 main() {}
                 '''
@@ -204,8 +206,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(publishTypes: const '
-              '[import_1.TextChangeListener,])',
+              'const import_1.NgDirective(module: Engine.module)',
             ]
           });
     });
@@ -250,8 +251,10 @@ main() {
                 @NgFoo()
                 class Engine {}
 
-                @NgDirective(publishTypes: const [NgFoo])
-                class Car {}
+                @NgDirective(module: Car.module)
+                class Car {
+                  static module() => null;
+                }
 
                 main() {}
                 '''
@@ -269,7 +272,7 @@ main() {
             // 'warning: Unable to serialize annotation @NgFoo. '
             //     '(web/main.dart 2 16)',
             'warning: Unable to serialize annotation '
-                '@NgDirective(publishTypes: const [NgFoo]). '
+                '@NgDirective(module: Car.module). '
                 '(web/main.dart 5 16)',
           ]);
     });
@@ -282,8 +285,10 @@ main() {
                 import 'package:angular/angular.dart';
                 import 'package:a/b.dart';
 
-                @NgDirective(publishTypes: const [Car])
-                class Engine {}
+                @NgDirective(module: Engine.module)
+                class Engine {
+                  static module() => null;
+                }
 
                 main() {}
                 ''',
@@ -298,7 +303,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(publishTypes: const [import_2.Car,])',
+              'const import_1.NgDirective(module: Engine.module)',
             ]
           });
     });
@@ -398,6 +403,32 @@ main() {
               'const import_1.NgDirective(visibility: '
                   'import_1.NgDirective.CHILDREN_VISIBILITY)',
               'const import_1.NgDirective(visibility: import_0.CONST_VALUE)',
+            ]
+          });
+    });
+
+    it('should reference static methods', () {
+      return generates(phases,
+          inputs: {
+            'angular|lib/angular.dart': libAngular,
+            'a|web/main.dart': '''
+                import 'package:angular/angular.dart';
+
+                @NgDirective(module: Engine.module)
+                class Engine {
+                  static module() => null;
+                }
+
+                main() {}
+                ''',
+          },
+          imports: [
+            'import \'main.dart\' as import_0;',
+            'import \'package:angular/angular.dart\' as import_1;',
+          ],
+          classes: {
+            'import_0.Engine': [
+              'const import_1.NgDirective(module: import_0.Engine.module)'
             ]
           });
     });
@@ -516,7 +547,7 @@ Future generates(List<List<Transformer>> phases,
 const String header = '''
 library a.web.main.generated_metadata;
 
-import 'package:angular/angular.dart' show MetadataExtractor;
+import 'package:angular/core/registry.dart' show MetadataExtractor;
 import 'package:di/di.dart' show Module;
 ''';
 
@@ -541,14 +572,14 @@ const String footer = '''
 
 
 const String libAngular = '''
-library angular.core;
+library angular.core_internal;
 
 class NgAnnotation {
   NgAnnotation({map: const {}});
 }
 
 class NgDirective extends NgAnnotation {
-  const NgDirective({selector, publishTypes, map, visibility}) : super(map: map);
+  const NgDirective({selector, module, map, visibility}) : super(map: map);
 
   static const int CHILDREN_VISIBILITY = 1;
 }

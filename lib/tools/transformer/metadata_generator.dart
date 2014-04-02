@@ -77,7 +77,7 @@ void _writeHeader(AssetId id, StringSink sink) {
   sink.write('''
 library ${id.package}.$libPath.generated_metadata;
 
-import 'package:angular/angular.dart' show MetadataExtractor;
+import 'package:angular/core/registry.dart' show MetadataExtractor;
 import 'package:di/di.dart' show Module;
 
 ''');

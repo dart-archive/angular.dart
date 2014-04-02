@@ -97,8 +97,9 @@ class ScopeLocals implements Map {
   void operator []=(String name, value) {
     _scope[name] = value;
   }
-  dynamic operator [](String name) =>
-      (_locals.containsKey(name) ? _locals : _scope)[name];
+  dynamic operator [](String name)
+      // as Map needed to clear Dart2js warning
+      => ((_locals.containsKey(name) ? _locals : _scope) as Map)[name];
 
   bool get isEmpty => _scope.isEmpty && _locals.isEmpty;
   bool get isNotEmpty => _scope.isNotEmpty || _locals.isNotEmpty;
@@ -492,11 +493,13 @@ class ScopeStatsEmitter {
  * ScopeStatsConfig is used to modify behavior of [ScopeStats]. You can use this
  * object to modify behavior at runtime too.
  */
-@NgInjectableService()
 class ScopeStatsConfig {
-  var emit;
+  var emit = false;
 
-  ScopeStatsConfig({this.emit: false});
+  ScopeStatsConfig();
+  ScopeStatsConfig.enabled() {
+    emit = true;
+  }
 }
 
 @NgInjectableService()
@@ -522,10 +525,10 @@ class RootScope extends Scope {
 
   RootScope(Object context, Parser parser, FieldGetterFactory fieldGetterFactory,
             FilterMap filterMap, this._exceptionHandler, this._ttl, this._zone,
-            ScopeStats _scopeStats)
+            ScopeStats _scopeStats, ClosureMap closureMap)
       : _scopeStats = _scopeStats,
         _parser = parser,
-        _astParser = new _AstParser(parser),
+        _astParser = new _AstParser(parser, closureMap),
         super(context, null, null,
             new RootWatchGroup(fieldGetterFactory,
                 new DirtyCheckingChangeDetector(fieldGetterFactory), context),
@@ -952,9 +955,10 @@ class _FunctionChain {
 class _AstParser {
   final Parser _parser;
   int _id = 0;
-  ExpressionVisitor _visitor = new ExpressionVisitor();
+  final ExpressionVisitor _visitor;
 
-  _AstParser(this._parser);
+  _AstParser(this._parser, ClosureMap closureMap)
+      : _visitor = new ExpressionVisitor(closureMap);
 
   AST call(String input, {FilterMap filters,
                           bool collection: false,
@@ -976,7 +980,11 @@ class _AstParser {
 
 class ExpressionVisitor implements Visitor {
   static final ContextReferenceAST scopeContextRef = new ContextReferenceAST();
+  final ClosureMap _closureMap;
   AST contextRef = scopeContextRef;
+
+
+  ExpressionVisitor(this._closureMap);
 
   AST ast;
   FilterMap filters;
@@ -1001,7 +1009,7 @@ class ExpressionVisitor implements Visitor {
     if (expressions.isEmpty) return const {};
     Map<Symbol, AST> result = new Map<Symbol, AST>();
     expressions.forEach((String name, Expression expression) {
-      result[new Symbol(name)] = _mapToAst(expression);
+      result[_closureMap.lookupSymbol(name)] = _mapToAst(expression);
     });
     return result;
   }

@@ -128,7 +128,7 @@ class MyModule extends Module {
   MyModule() {
     type(BounceController);
     type(BallPositionDirective);
-    factory(ScopeStatsConfig, (i) => new ScopeStatsConfig(emit: false));
+    factory(ScopeStatsConfig, (i) => new ScopeStatsConfig());
   }
 }
 

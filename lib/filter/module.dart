@@ -12,6 +12,7 @@ library angular.filter;
 import 'dart:convert' show JSON;
 import 'package:intl/intl.dart';
 import 'package:di/di.dart';
+import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 

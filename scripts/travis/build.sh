@@ -1,12 +1,38 @@
 #!/bin/bash
 
-set -evx
+set -e
 . ./scripts/env.sh
+
+SIZE_TOO_BIG_COUNT=0
+
+function checkSize() {
+  file=$1
+  if [[ ! -e $file ]]; then
+    echo Could not find file: $file
+    SIZE_TOO_BIG_COUNT=$((SIZE_TOO_BIG_COUNT + 1));
+  else
+    expected=$2
+    actual=`cat $file | gzip | wc -c`
+    if (( 100 * $actual >= 101 * $expected )); then
+      echo ${file} is too large expecting ${expected} was ${actual}.
+      SIZE_TOO_BIG_COUNT=$((SIZE_TOO_BIG_COUNT + 1));
+    fi
+  fi
+}
 
 # skip auxiliary tests if we are only running dart2js
 if [[ $TESTS == "dart2js" ]]; then
   cd example
   pub build
+  checkSize build/web/animation.dart.js 205753
+  checkSize build/web/bouncing_balls.dart.js 200130
+  checkSize build/web/hello_world.dart.js 197883
+  checkSize build/web/todo.dart.js 200783
+  if ((SIZE_TOO_BIG_COUNT > 0)); then
+    exit 1
+  else
+    echo Generated JavaScript file size check OK.
+  fi
   cd ..
 else
   # run io tests

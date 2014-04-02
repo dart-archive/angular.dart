@@ -100,7 +100,7 @@ const String libAngularDynamic = '''
 library angular.dynamic;
 class _NgDynamicApp {}
 
-dynamicApplication() => new _NgDynamicApp();
+dynamicApplication() => new _DynamicApplication();
 ''';
 
 const String libDI = '''

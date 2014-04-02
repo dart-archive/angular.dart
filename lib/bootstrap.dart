@@ -7,6 +7,7 @@ import 'package:di/di.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/perf/module.dart';
 import 'package:angular/core/module_internal.dart';
+import 'package:angular/core/registry.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/directive/module.dart';
 import 'package:angular/filter/module.dart';

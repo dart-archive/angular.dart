@@ -6,6 +6,7 @@ import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'dirty_checking_change_detector_spec.dart' hide main;
+import 'package:angular/core/parser/parser_dynamic.dart' show DynamicClosureMap;
 
 class TestData {
   sub1(a, {b: 0}) => a - b;
@@ -26,7 +27,7 @@ void main() {
       var getterFactory = new DynamicFieldGetterFactory();
       changeDetector = new DirtyCheckingChangeDetector(getterFactory);
       watchGrp = new RootWatchGroup(getterFactory, changeDetector, context);
-      visitor = new ExpressionVisitor();
+      visitor = new ExpressionVisitor(new DynamicClosureMap());
       logger = _logger;
       parser = _parser;
     }));
