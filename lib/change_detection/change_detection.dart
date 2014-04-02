@@ -114,6 +114,7 @@ abstract class MapChangeRecord<K, V> {
 
   /// A list of [CollectionKeyValue]s which are in the iteration order. */
   KeyValue<K, V> get mapHead;
+  PreviousKeyValue<K, V> get previousMapHead;
   /// A list of changed items.
   ChangedKeyValue<K, V> get changesHead;
   /// A list of new added items.
@@ -145,6 +146,10 @@ abstract class KeyValue<K, V> extends MapKeyValue<K, V> {
   KeyValue<K, V> get nextKeyValue;
 }
 
+abstract class PreviousKeyValue<K, V> extends MapKeyValue<K, V> {
+  PreviousKeyValue<K, V> get previousNextKeyValue;
+}
+
 abstract class AddedKeyValue<K, V> extends MapKeyValue<K, V> {
   AddedKeyValue<K, V> get nextAddedKeyValue;
 }
@@ -172,6 +177,7 @@ abstract class CollectionChangeRecord<V> {
 
   /** A list of [CollectionItem]s which are in the iteration order. */
   CollectionItem<V> get collectionHead;
+  PreviousCollectionItem<V> get previousCollectionHead;
   /** A list of new [AddedItem]s. */
   AddedItem<V> get additionsHead;
   /** A list of [MovedItem]s. */
@@ -211,6 +217,10 @@ abstract class CollectionItem<V> extends CollectionChangeItem<V> {
  * A linked list of new items added to the collection. These items are always in
  * the iteration order of the collection.
  */
+abstract class PreviousCollectionItem<V> extends CollectionChangeItem<V> {
+  PreviousCollectionItem<V> get previousNextItem;
+}
+
 abstract class AddedItem<V> extends CollectionChangeItem<V> {
   AddedItem<V> get nextAddedItem;
 }
