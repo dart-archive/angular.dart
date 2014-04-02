@@ -128,6 +128,8 @@ class Expect {
       var htmlString = outer ? node.outerHtml : node.innerHtml;
       // Strip out empty class attributes.  This seems like a Dart bug...
       return htmlString.replaceAll(' class=""', '').trim();
+    } else if (node is Text) {
+      return node.text;
     } else {
       throw "JQuery._toHtml not implemented for node type [${node.nodeType}]";
     }
