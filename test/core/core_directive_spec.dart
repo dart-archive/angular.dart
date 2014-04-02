@@ -23,8 +23,6 @@ void main() {
       expect(annotation.template).toEqual('template');
       expect(annotation.templateUrl).toEqual('templateUrl');
       expect(annotation.cssUrls).toEqual(['cssUrls']);
-      expect(annotation.applyAuthorStyles).toEqual(true);
-      expect(annotation.resetStyleInheritance).toEqual(true);
       expect(annotation.publishAs).toEqual('ctrl');
       expect(annotation.map).toEqual({
           'foo': '=>foo',
@@ -83,8 +81,6 @@ class NullParser implements Parser {
     template: 'template',
     templateUrl: 'templateUrl',
     cssUrl: const ['cssUrls'],
-    applyAuthorStyles: true,
-    resetStyleInheritance: true,
     publishAs: 'ctrl',
     module: AnnotatedIoComponent.module,
     visibility: NgDirective.LOCAL_VISIBILITY,
