@@ -41,15 +41,14 @@ es(String html) {
 e(String html) => es(html).first;
 
 Expect expect(actual, [unit.Matcher matcher = null]) {
-  if (matcher != null) {
-    unit.expect(actual, matcher);
-  }
+  if (matcher != null) unit.expect(actual, matcher);
   return new Expect(actual);
 }
 
 class Expect {
   var actual;
-  var not;
+  NotExpect not;
+
   Expect(this.actual) {
     not = new NotExpect(this);
   }
@@ -58,54 +57,53 @@ class Expect {
   toContain(expected) => unit.expect(actual, unit.contains(expected));
   toBe(expected) => unit.expect(actual,
       unit.predicate((actual) => identical(expected, actual), '$expected'));
-  toThrow([exception]) => unit.expect(actual, exception == null ? unit.throws : unit.throwsA(new ExceptionContains(exception)));
-  toBeFalsy() => unit.expect(actual, (v) => v == null ? true : v is bool ? v == false : false);
-  toBeTruthy() => unit.expect(actual, (v) => v is bool ? v == true : true);
-  toBeDefined() => unit.expect(actual, (v) => v != null);
+  toThrow([exception]) => unit.expect(actual, exception == null ?
+      unit.throws:
+      unit.throwsA(new ExceptionContains(exception)));
+  toBeFalsy() => unit.expect(actual, _isFalsy,
+      reason: '"$actual" is not Falsy');
+  toBeTruthy() => unit.expect(actual, (v) => !_isFalsy(v),
+      reason: '"$actual" is not Truthy');
+  toBeDefined() => unit.expect(actual, unit.isNotNull);
   toBeNull() => unit.expect(actual, unit.isNull);
   toBeNotNull() => unit.expect(actual, unit.isNotNull);
 
   toHaveHtml(expected) => unit.expect(_toHtml(actual), unit.equals(expected));
-  toHaveText(expected) => unit.expect(_elementText(actual), unit.equals(expected));
+  toHaveText(expected) =>
+      unit.expect(_elementText(actual), unit.equals(expected));
 
-  toHaveBeenCalled() => unit.expect(actual.called, true, reason: 'method not called');
-  toHaveBeenCalledOnce() => unit.expect(actual.count, 1, reason: 'method invoked ${actual.count} expected once');
+  toHaveBeenCalled() =>
+      unit.expect(actual.called, true, reason: 'method not called');
+  toHaveBeenCalledOnce() => unit.expect(actual.count, 1,
+      reason: 'method invoked ${actual.count} expected once');
   toHaveBeenCalledWith([a,b,c,d,e,f]) =>
       unit.expect(actual.firstArgsMatch(a,b,c,d,e,f), true,
-      reason: 'method invoked with correct arguments');
+          reason: 'method invoked with correct arguments');
   toHaveBeenCalledOnceWith([a,b,c,d,e,f]) =>
       unit.expect(actual.count == 1 && actual.firstArgsMatch(a,b,c,d,e,f),
-                 true,
-                 reason: 'method invoked once with correct arguments. (Called ${actual.count} times)');
+         true,
+         reason: 'method invoked once with correct arguments. '
+                 '(Called ${actual.count} times)');
 
-  toHaveClass(cls) => unit.expect(actual.classes.contains(cls), true, reason: ' Expected ${actual} to have css class ${cls}');
+  toHaveClass(cls) => unit.expect(actual.classes.contains(cls), true,
+      reason: ' Expected ${actual} to have css class ${cls}');
 
   toEqualSelect(options) {
     var actualOptions = [];
 
     for (var option in actual.querySelectorAll('option')) {
-      if (option.selected) {
-        actualOptions.add([option.value]);
-      } else {
-        actualOptions.add(option.value);
-      }
+      actualOptions.add(option.selected ? [option.value] : option.value);
     }
     return unit.expect(actualOptions, options);
   }
 
-  toEqualValid() {
-    // TODO: implement onece we have forms
-  }
-  toEqualInvalid() {
-    // TODO: implement onece we have forms
-  }
-  toEqualPristine() {
-    // TODO: implement onece we have forms
-  }
-  toEqualDirty() {
-    // TODO: implement onece we have forms
-  }
+  toBeValid() => unit.expect(actual.valid && !actual.invalid, true,
+      reason: 'Form is not valid');
+  toBePristine() =>
+    unit.expect(actual.pristine && !actual.dirty, true,
+        reason: 'Form is dirty');
 
+  _isFalsy(v) => v == null ? true: v is bool ? v == false : false;
 
   _toHtml(node, [bool outer = false]) {
     if (node is Comment) {
@@ -155,20 +153,27 @@ class Expect {
 }
 
 class NotExpect {
-  Expect expect;
-  get actual => expect.actual;
-  NotExpect(this.expect);
+  Expect _expect;
+  get actual => _expect.actual;
 
-  toHaveBeenCalled() => unit.expect(actual.called, false, reason: 'method called');
+  NotExpect(this._expect);
+
+  toHaveBeenCalled() =>
+      unit.expect(actual.called, false, reason: 'method called');
   toThrow() => actual();
 
-  toHaveClass(cls) => unit.expect(actual.classes.contains(cls), false, reason: ' Expected ${actual} to not have css class ${cls}');
+  toHaveClass(cls) => unit.expect(actual.classes.contains(cls), false,
+      reason: ' Expected ${actual} to not have css class ${cls}');
   toBe(expected) => unit.expect(actual,
       unit.predicate((actual) => !identical(expected, actual), 'not $expected'));
   toEqual(expected) => unit.expect(actual,
       unit.predicate((actual) => expected != actual, 'not $expected'));
   toContain(expected) => unit.expect(actual,
       unit.predicate((actual) => !actual.contains(expected), 'not $expected'));
+  toBePristine() => unit.expect(actual.pristine && !actual.dirty, false,
+      reason: 'Form is pristine');
+  toBeValid() => unit.expect(actual.valid && !actual.invalid, false,
+      reason: 'Form is valid');
 }
 
 class ExceptionContains extends unit.Matcher {
@@ -195,8 +200,7 @@ class ExceptionContains extends unit.Matcher {
 }
 
 // TODO: Decide if we want this function to be called 'es' or '$'
-$(String selector) =>
-  es(selector);
+$(String selector) => es(selector);
 
 
 _injectify(fn) {
@@ -206,9 +210,7 @@ _injectify(fn) {
   // Second: when we are calling the FunctionComposition,
   //         we inject "inject" into the middle of the
   //         composition.
-  if (fn is! FunctionComposition) {
-    fn = sync(fn);
-  }
+  if (fn is! FunctionComposition) fn = sync(fn);
   return fn.outer(inject(fn.inner));
 }
 
@@ -224,7 +226,6 @@ ddescribe(name, fn) => jasmine_syntax.ddescribe(name, fn);
 describe(name, fn) => jasmine_syntax.describe(name, fn);
 
 var jasmine = jasmine_syntax.jasmine;
-
 
 main() {
   jasmine_syntax.beforeEach(setUpInjector, priority:3);
