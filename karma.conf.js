@@ -39,11 +39,8 @@ module.exports = function(config) {
     ],
 
     customLaunchers: {
-      Dartium: { base: 'ChromeCanary', flags: ['--no-sandbox'] },
       ChromeNoSandbox: { base: 'Chrome', flags: ['--no-sandbox'] }
     },
-
-    browsers: ['Dartium'],
 
     preprocessors: {
       'test/core/parser/generated_getter_setter.dart': ['parser-getter-setter']
