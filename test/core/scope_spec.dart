@@ -1234,7 +1234,7 @@ void main() {
       }));
 
 
-      it('should properly watch canstants', (RootScope rootScope, Logger log) {
+      it('should properly watch constants', (RootScope rootScope, Logger log) {
         rootScope.watch('[1, 2]', (v, o) => log([v, o]));
         expect(log).toEqual([]);
         rootScope.apply();
