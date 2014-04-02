@@ -17,6 +17,7 @@ echo "Generating documentation"
     --no-include-sdk \
     --package-root=../packages \
     angular/animate/module.dart \
+    angular/core/annotation.dart \
     angular/core/module.dart \
     angular/directive/module.dart \
     angular/filter/module.dart \
