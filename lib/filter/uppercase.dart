@@ -8,6 +8,6 @@ part of angular.filter;
  *     {{ uppercase_expression | uppercase }}
  */
 @NgFilter(name:'uppercase')
-class UppercaseFilter {
+class Uppercase implements Function {
   call(String text) => text == null ? text : text.toUpperCase();
 }

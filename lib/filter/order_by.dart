@@ -105,10 +105,10 @@ typedef dynamic _Mapper(dynamic e);
  * chain.
  */
 @NgFilter(name: 'orderBy')
-class OrderByFilter {
+class OrderBy implements Function {
   Parser _parser;
 
-  OrderByFilter(this._parser);
+  OrderBy(this._parser);
 
   static _nop(e) => e;
   static bool _isNonZero(int n) => (n != 0);

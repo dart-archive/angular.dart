@@ -110,7 +110,7 @@ typedef bool _Equals(a, b);
  *     </html>
  */
 @NgFilter(name: 'filter')
-class FilterFilter {
+class Filter implements Function {
   Parser _parser;
   _Equals _comparator;
   _Equals _stringComparator;
@@ -123,7 +123,7 @@ class FilterFilter {
                              (a is String && b is String && a == b) ||
                              (a is num && b is num && a.isNaN && b.isNaN);
 
-  FilterFilter(this._parser);
+  Filter(this._parser);
 
   void _configureComparator(var comparatorExpression) {
     if (comparatorExpression == null || comparatorExpression == false) {

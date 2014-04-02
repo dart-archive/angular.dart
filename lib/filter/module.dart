@@ -28,15 +28,15 @@ part 'stringify.dart';
 
 class NgFilterModule extends Module {
   NgFilterModule() {
-    type(CurrencyFilter);
-    type(DateFilter);
-    type(FilterFilter);
-    type(JsonFilter);
-    type(LimitToFilter);
-    type(LowercaseFilter);
-    type(NumberFilter);
-    type(OrderByFilter);
-    type(UppercaseFilter);
-    type(StringifyFilter);
+    type(Currency);
+    type(Date);
+    type(Filter);
+    type(Json);
+    type(LimitTo);
+    type(Lowercase);
+    type(Number);
+    type(OrderBy);
+    type(Uppercase);
+    type(Stringify);
   }
 }
