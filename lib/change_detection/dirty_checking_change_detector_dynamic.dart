@@ -17,7 +17,6 @@ class DynamicFieldGetterFactory implements FieldGetterFactory {
     try {
       return method(object, name) != null;
     } catch (e, s) {
-      print('isMethod($object, $name) => false\n$s');
       return false;
     }
   }
@@ -25,16 +24,13 @@ class DynamicFieldGetterFactory implements FieldGetterFactory {
   Function method(Object object, String name) {
     Symbol symbol = new Symbol(name);
     InstanceMirror instanceMirror = reflect(object);
-    return (List args, Map namedArgs) {
-      return instanceMirror.invoke(symbol, args, namedArgs).reflectee;
-    };
+    return (List args, Map namedArgs) =>
+        instanceMirror.invoke(symbol, args, namedArgs).reflectee;
   }
 
   FieldGetter getter(Object object, String name) {
     Symbol symbol = new Symbol(name);
     InstanceMirror instanceMirror = reflect(object);
-    return (Object object) {
-      return instanceMirror.getField(symbol).reflectee;
-    };
+    return (Object object) =>  instanceMirror.getField(symbol).reflectee;
   }
 }
