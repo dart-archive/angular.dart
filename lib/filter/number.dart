@@ -12,7 +12,7 @@ part of angular.filter;
  *
  */
 @NgFilter(name:'number')
-class NumberFilter {
+class Number {
 
   Map<num, NumberFormat> nfs = new Map<num, NumberFormat>();
 

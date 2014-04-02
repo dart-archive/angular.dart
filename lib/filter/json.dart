@@ -9,6 +9,6 @@ part of angular.filter;
  *     {{ json_expression | json }}
  */
 @NgFilter(name:'json')
-class JsonFilter implements Function {
+class Json implements Function {
   String call(jsonObj) => JSON.encode(jsonObj);
 }

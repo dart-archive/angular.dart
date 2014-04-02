@@ -21,7 +21,7 @@ part of angular.filter;
  *
  */
 @NgFilter(name:'date')
-class DateFilter implements Function {
+class Date implements Function {
   static final _MAP = const <String, String> {
     'medium':     'MMM d, y h:mm:ss a',
     'short':      'M/d/yy h:mm a',

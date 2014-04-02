@@ -11,6 +11,6 @@ part of angular.filter;
  *     {{ expression | stringify }}
  */
 @NgFilter(name:'stringify')
-class StringifyFilter implements Function {
+class Stringify implements Function {
   String call(obj) => obj == null ? "" : obj.toString();
 }

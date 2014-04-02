@@ -35,10 +35,10 @@ part of angular.filter;
  *     <li>j</li>
  */
 @NgFilter(name:'limitTo')
-class LimitToFilter {
+class LimitTo implements Function {
   Injector _injector;
 
-  LimitToFilter(this._injector);
+  LimitTo(this._injector);
 
   dynamic call(dynamic items, [int limit]) {
     if (items == null) return null;
