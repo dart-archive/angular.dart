@@ -1,5 +1,6 @@
 library angular.core;
 
+export "package:angular/core/service.dart";
 export "package:angular/core_dom/module_internal.dart" show
     Animation,
     AnimationResult,

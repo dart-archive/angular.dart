@@ -9,7 +9,7 @@ import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'package:angular/core/registry_dynamic.dart';
 import 'package:angular/core/parser/parser_dynamic.dart';
-import 'dart:html' as dom;
+import 'dart:html';
 
 /**
  * If you are writing code accessed from Angular expressions, you must include
@@ -25,8 +25,8 @@ import 'dart:html' as dom;
  */
 @MirrorsUsed(targets: const [
     'angular',
-    'angular.core',
-    'angular.core.dom',
+    'angular.core_internal',
+    'angular.core.dom_internal',
     'angular.filter',
     'angular.perf',
     'angular.directive',
@@ -36,7 +36,7 @@ import 'dart:html' as dom;
     'angular.core.parser.lexer',
     'perf_api',
     List,
-    dom.NodeTreeSanitizer,
+    NodeTreeSanitizer,
 ],
 metaTargets: const [
     NgInjectableService,

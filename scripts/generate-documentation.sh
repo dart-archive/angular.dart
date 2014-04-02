@@ -51,5 +51,6 @@ mv docs/ $DOCVIEWER_DIR/client/web/docs/
 (cd $DOCVIEWER_DIR/client; pub build)
 
 # Revert the temp copy of the README.md file
- mv README-orig.md README.md
+rm README.md
+mv README-orig.md README.md
 

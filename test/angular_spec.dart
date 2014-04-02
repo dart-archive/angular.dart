@@ -43,7 +43,7 @@ main() {
   });
 
   describe('angular symbols', () {
-    it('should not export symbols that we do not know about', () {
+    iit('should not export symbols that we do not know about', () {
       // Test is failing? Add new symbols to the "ALLOWED_NAMES" list below.
       // But make sure that you intend to export the symbol!
       // Questions?  Talk to @jbdeboer
@@ -123,6 +123,7 @@ main() {
       var ALLOWED_NAMES = [
         "angular.app.Application",
         "angular.app.AngularModule",
+        "angular.core.service.NgInjectableService",
         "angular.core_internal.CacheStats",
         "angular.core_internal.ExceptionHandler",
         "angular.core_internal.Interpolate",

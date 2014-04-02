@@ -4,7 +4,11 @@ set -evx
 . ./scripts/env.sh
 
 # skip auxiliary tests if we are only running dart2js
-if [[ $TESTS != "dart2js" ]]; then
+if [[ $TESTS == "dart2js" ]]; then
+  cd example
+  pub build
+  cd ..
+else
   # run io tests
   dart -c test/io/all.dart
 
