@@ -3,12 +3,12 @@ library ng_events_spec;
 import '../_specs.dart';
 import 'dart:html' as dom;
 
-void addTest(String name, [String eventType='MouseEvent', String eventName]) {
+void addTest(String name, [String eventType='MouseEvent', String eventName, exclusive=false]) {
   if (eventName == null) {
     eventName = name;
   }
 
-  describe('ng-$name', () {
+  var describeBody = () {
     TestBed _;
 
     beforeEach((TestBed tb) => _ = tb);
@@ -19,7 +19,17 @@ void addTest(String name, [String eventType='MouseEvent', String eventName]) {
       expect(_.rootScope.context['abc']).toEqual(true);
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
     });
-  });
+  };
+
+  if (exclusive) {
+    ddescribe('ng-$name', describeBody);
+  } else {
+    describe('ng-$name', describeBody);
+  }
+}
+
+void aaddTest(String name, [String eventType='MouseEvent', String eventName]) {
+  addTest(name, eventType, eventName, true);
 }
 
 main() {
