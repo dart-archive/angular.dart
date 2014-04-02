@@ -5,7 +5,6 @@
 * This package is imported for you as part of [angular.dart](#angular/angular),
 * and lists all of the basic directives that are part of Angular.
 *
-*
 */
 library angular.directive;
 
@@ -69,8 +68,8 @@ class NgDirectiveModule extends Module {
     value(ContentEditableDirective, null);
     value(NgModel, null);
     value(NgValue, new NgValue(null));
-    value(NgTrueValue, new NgTrueValue(null));
-    value(NgFalseValue, new NgFalseValue(null));
+    value(NgTrueValue, new NgTrueValue());
+    value(NgFalseValue, new NgFalseValue());
     value(NgSwitchDirective, null);
     value(NgSwitchWhenDirective, null);
     value(NgSwitchDefaultDirective, null);
