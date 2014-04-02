@@ -22,8 +22,8 @@ class StaticFieldGetterFactory implements FieldGetterFactory {
   }
 
   Function method(Object object, String name) {
-    var getter = getters[name];
-    if (getter == null) throw "Missing getter: (o) => o.$name";
-    return getter;
+    var method = getters[name];
+    if (method == null) throw "Missing method: $name";
+    return method;
   }
 }

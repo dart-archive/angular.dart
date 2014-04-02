@@ -9,17 +9,17 @@ import 'package:angular/change_detection/change_detection.dart';
  *
  * GOALS:
  *   - Plugable implementation, replaceable with other technologies, such as
- *   Object.observe().
+ *     Object.observe().
  *   - SPEED this needs to be as fast as possible.
  *   - No GC pressure. Since change detection runs often it should perform no
- *   memory allocations.
+ *     memory allocations.
  *   - The changes need to be delivered in a single data-structure at once.
- *   There are two reasons for this:
- *     1. It should be easy to measure the cost of change detection vs
- *     processing.
- *     2. The feature may move to VM for performance reason. The VM should be
- *     free to implement it in any way. The only requirement is that the list of
- *     changes need to be delivered.
+ *     There are two reasons for this:
+ *       1. It should be easy to measure the cost of change detection vs
+ *          processing.
+ *       2. The feature may move to VM for performance reason. The VM should be
+ *          free to implement it in any way. The only requirement is that the
+ *          list of changes need to be delivered.
  *
  * [DirtyCheckingRecord]
  *
@@ -395,8 +395,8 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
   FieldGetter _getter;
 
   DirtyCheckingRecord(this._group, this._fieldGetterFactory, this.handler,
-                      this.field, object) {
-    this.object = object;
+                      this.field, _object) {
+    object = _object;
   }
 
   DirtyCheckingRecord.marker()
@@ -407,14 +407,14 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
         _getter = null,
         _mode = _MODE_MARKER_;
 
-  get object => _object;
+  dynamic get object => _object;
 
   /**
    * Setting an [object] will cause the setter to introspect it and place
    * [DirtyCheckingRecord] into different access modes. If Object it sets up
    * reflection. If [Map] then it sets up map accessor.
    */
-  set object(obj) {
+  void set object(obj) {
     _object = obj;
     if (obj == null) {
       _mode = _MODE_IDENTITY_;

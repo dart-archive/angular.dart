@@ -6,8 +6,8 @@ part 'linked_list.dart';
 part 'ast.dart';
 part 'prototype_map.dart';
 
-typedef ReactionFn(value, previousValue);
-typedef ChangeLog(String expression, current, previous);
+typedef void ReactionFn(value, previousValue);
+typedef void ChangeLog(String expression, current, previous);
 
 /**
  * Extend this class if you wish to pretend to be a function, but you don't know
@@ -77,7 +77,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   /// STATS: Number of invocation watchers (closures/methods) which are in use.
   int get evalCost => _evalCost;
 
-  /// STATS: Number of invocation watchers which are in use including child [WatchGroup]s.
+  /**
+   *  STATS: Number of invocation watchers which are in use including child
+   *  [WatchGroup]s.
+   */
   int get totalEvalCost {
     var cost = _evalCost;
     WatchGroup group = _watchGroupHead;
@@ -340,7 +343,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     lines.add('WatchGroup[$id](watches: ${watches.join(', ')})');
     var childGroup = _watchGroupHead;
     while (childGroup != null) {
-      lines.add('  ' + childGroup.toString().split('\n').join('\n  '));
+      lines.add('  ' + childGroup.toString().replace('\n', '\n  '));
       childGroup = childGroup._nextWatchGroup;
     }
     return lines.join('\n');
@@ -364,10 +367,10 @@ class RootWatchGroup extends WatchGroup {
   int _removeCount = 0;
 
 
-  RootWatchGroup(FieldGetterFactory this._fieldGetterFactory,
+  RootWatchGroup(this._fieldGetterFactory,
                  ChangeDetector changeDetector,
-                 Object context):
-      super._root(changeDetector, context);
+                 Object context)
+      : super._root(changeDetector, context);
 
   RootWatchGroup get _rootGroup => this;
 
@@ -597,7 +600,7 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
 }
 
 class _ConstantHandler extends _Handler {
-  _ConstantHandler(WatchGroup watchGroup, String expression, dynamic constantValue)
+  _ConstantHandler(WatchGroup watchGroup, String expression, constantValue)
       : super(watchGroup, expression)
   {
     watchRecord = new _EvalWatchRecord.constant(this, constantValue);
@@ -622,7 +625,8 @@ class _CollectionHandler extends _Handler {
   _CollectionHandler(WatchGroup watchGrp, String expression)
       : super(watchGrp, expression);
   /**
-   * This function forwards the watched object to the next [_Handler] synchronously.
+   * This function forwards the watched object to the next [_Handler]
+   * synchronously.
    */
   void acceptValue(object) {
     watchRecord.object = object;
@@ -679,10 +683,6 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
 
   void acceptValue(object) {
     watchRecord.object = object;
-  }
-
-  void onChange(Record<_Handler> record) {
-    super.onChange(record);
   }
 
   void _releaseWatch() {
@@ -777,7 +777,9 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
         mode =  _MODE_MAP_CLOSURE_;
       } else {
         if (_fieldGetterFactory.isMethod(value, name)) {
-          mode = _fieldGetterFactory.isMethodInvoke ? _MODE_METHOD_INVOKE_ : _MODE_METHOD_;
+          mode = _fieldGetterFactory.isMethodInvoke ?
+              _MODE_METHOD_INVOKE_:
+              _MODE_METHOD_;
           fn = _fieldGetterFactory.method(value, name);
         } else {
           mode = _MODE_FIELD_CLOSURE_;
@@ -805,11 +807,15 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
         break;
       case _MODE_FIELD_CLOSURE_:
         var closure = fn(_object);
-        value = closure == null ? null : Function.apply(closure, args, namedArgs);
+        value = closure == null ?
+            null:
+            Function.apply(closure, args, namedArgs);
         break;
       case _MODE_MAP_CLOSURE_:
         var closure = object[name];
-        value = closure == null ? null : Function.apply(closure, args, namedArgs);
+        value = closure == null ?
+            null:
+            Function.apply(closure, args, namedArgs);
         break;
       case _MODE_METHOD_:
         value = Function.apply(fn, args, namedArgs);
