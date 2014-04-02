@@ -4,6 +4,9 @@ import 'dart:mirrors';
 import 'package:angular/core/annotation.dart';
 import 'package:angular/core/registry.dart';
 
+export 'package:angular/core/registry.dart' show
+    MetadataExtractor;
+
 var _fieldMetadataCache = new Map<Type, Map<String, AttrFieldAnnotation>>();
 
 class DynamicMetadataExtractor implements MetadataExtractor {

@@ -22,18 +22,19 @@ function checkSize() {
 
 # skip auxiliary tests if we are only running dart2js
 if [[ $TESTS == "dart2js" ]]; then
-  cd example
-  pub build
-  checkSize build/web/animation.dart.js 205753
-  checkSize build/web/bouncing_balls.dart.js 200130
-  checkSize build/web/hello_world.dart.js 197883
-  checkSize build/web/todo.dart.js 200783
-  if ((SIZE_TOO_BIG_COUNT > 0)); then
-    exit 1
-  else
-    echo Generated JavaScript file size check OK.
-  fi
-  cd ..
+  (
+    cd example
+    pub build
+    checkSize build/web/animation.dart.js 205753
+    checkSize build/web/bouncing_balls.dart.js 200130
+    checkSize build/web/hello_world.dart.js 197883
+    checkSize build/web/todo.dart.js 200783
+    if ((SIZE_TOO_BIG_COUNT > 0)); then
+      exit 1
+    else
+      echo Generated JavaScript file size check OK.
+    fi
+  )
 else
   # run io tests
   dart -c test/io/all.dart
@@ -42,6 +43,15 @@ else
   ./scripts/analyze.sh
 
   ./node_modules/jasmine-node/bin/jasmine-node ./scripts/changelog/;
+
+  (
+    cd perf
+    pub install
+    for file in *_perf.dart; do
+      echo ======= $file ========
+      $DART $file
+    done
+  )
 fi
 
 BROWSERS=Dartium,ChromeNoSandbox
