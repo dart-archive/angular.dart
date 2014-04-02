@@ -24,8 +24,7 @@ if [ -z "$(which node)" ]; then
 fi
 
 # Run npm install so we are up-to-date
-npm install karma karma-dart karma-chrome-launcher \
-  karma-script-launcher karma-junit-reporter jasmine-node;
+npm install
 
 # Print the dart VM version to the logs
 dart --version
