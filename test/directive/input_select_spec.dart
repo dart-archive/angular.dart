@@ -47,7 +47,7 @@ main() {
         expect(_.rootElement).toEqualSelect([['r2d2'], 'c3p0']);
       });
     });
-    
+
     TestBed _;
 
     beforeEach((TestBed tb) => _ = tb);
@@ -1237,26 +1237,26 @@ main() {
 
             element.value = '';
             _.triggerEvent(element, 'change');
-            expect(element).toEqualValid();
+            expect(element).toBeValid();
 
             scope.apply(() {
               scope.context['required'] = true;
             });
-            expect(element).toEqualInvalid();
+            expect(element).not.toBeValid();
 
             scope.apply(() {
               scope.context['value'] = scope.context['values'][0];
             });
-            expect(element).toEqualValid();
+            expect(element).toBeValid();
 
             element.value = '';
             _.triggerEvent(element, 'change');
-            expect(element).toEqualInvalid();
+            expect(element).not.toBeValid();
 
             scope.apply(() {
               scope.context['required'] = false;
             });
-            expect(element).toEqualValid();
+            expect(element).toBeValid();
           });
         });
       });
@@ -1282,9 +1282,9 @@ main() {
 
         it('should not blow up when option directive is found inside of a datalist',
             () {
-          _.compile('<div>' +
-                      '<datalist><option>some val</option></datalist>' +
-                      '<span>{{foo}}</span>' +
+          _.compile('<div>'
+                      '<datalist><option>some val</option></datalist>'
+                      '<span>{{foo}}</span>'
                     '</div>');
 
           _.rootScope.context['foo'] = 'success';

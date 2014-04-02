@@ -18,7 +18,8 @@ main() {
 
     describe('toHaveText', () {
       it('should work on regular DOM nodes', () {
-        expect(es('<span>A<span>C</span></span><span>B</span>')).toHaveText('ACB');
+        expect(es('<span>A<span>C</span></span><span>B</span>'))
+            .toHaveText('ACB');
       });
 
       it('should work with shadow DOM', () {
@@ -31,7 +32,8 @@ main() {
       });
 
       it('should ignore comments', () {
-        expect(es('<!--e--><span>A<span>C</span></span><span>B</span>')).toHaveText('ACB');
+        expect(es('<!--e--><span>A<span>C</span></span><span>B</span>'))
+            .toHaveText('ACB');
       });
     });
   });
