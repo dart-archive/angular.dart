@@ -188,6 +188,9 @@ abstract class NgAnnotation {
 }
 
 
+bool _applyAuthorStylesDeprecationWarningPrinted = false;
+bool _resetStyleInheritanceDeprecationWarningPrinted = false;
+
 /**
  * Meta-data marker placed on a class which should act as a controller for the
  * component. Angular components are a light-weight version of web-components.
@@ -224,14 +227,34 @@ class NgComponent extends NgAnnotation {
   /**
    * Set the shadow root applyAuthorStyles property. See shadow-DOM
    * documentation for further details.
+   *
+   * This feature will be removed in Chrome 35.
    */
-  final bool applyAuthorStyles;
+  @deprecated
+  bool get applyAuthorStyles {
+    if (!_applyAuthorStylesDeprecationWarningPrinted && _applyAuthorStyles == true) {
+      print("WARNING applyAuthorStyles is deprecated in component $selector");
+      _applyAuthorStylesDeprecationWarningPrinted = true;
+    }
+    return _applyAuthorStyles;
+  }
+  final bool _applyAuthorStyles;
 
   /**
    * Set the shadow root resetStyleInheritance property. See shadow-DOM
    * documentation for further details.
+   *
+   * This feature will be removed in Chrome 35.
    */
-  final bool resetStyleInheritance;
+  @deprecated
+  bool get resetStyleInheritance {
+    if (!_resetStyleInheritanceDeprecationWarningPrinted && _resetStyleInheritance == true) {
+      print("WARNING resetStyleInheritance is deprecated in component $selector");
+      _resetStyleInheritanceDeprecationWarningPrinted = true;
+    }
+    return _resetStyleInheritance;
+  }
+  final bool _resetStyleInheritance;
 
   /**
    * An expression under which the component's controller instance will be
@@ -244,8 +267,8 @@ class NgComponent extends NgAnnotation {
     this.template,
     this.templateUrl,
     cssUrl,
-    this.applyAuthorStyles,
-    this.resetStyleInheritance,
+    applyAuthorStyles,
+    resetStyleInheritance,
     this.publishAs,
     module,
     map,
@@ -254,6 +277,8 @@ class NgComponent extends NgAnnotation {
     exportExpressions,
     exportExpressionAttrs})
       : _cssUrls = cssUrl,
+        _applyAuthorStyles = applyAuthorStyles,
+        _resetStyleInheritance = resetStyleInheritance,
         super(selector: selector,
              children: NgAnnotation.COMPILE_CHILDREN,
              visibility: visibility,
