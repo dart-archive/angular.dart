@@ -631,7 +631,6 @@ void main() {
         expect(model.dirty).toEqual(true);
       });
 
-
       it('should update input value from model using ng-true-value/false', (Scope scope) {
         var element = _.compile('<input type="checkbox" ng-model="model" ng-true-value="1" ng-false-value="0">');
 
@@ -654,7 +653,6 @@ void main() {
         expect(scope.context['model']).toBe(0);
       });
 
-
       it('should allow non boolean values like null, 0, 1', (Scope scope) {
         var element = _.compile('<input type="checkbox" ng-model="model">');
 
@@ -674,7 +672,6 @@ void main() {
         expect(element.checked).toBe(false);
       });
 
-
       it('should update model from the input value', (Scope scope) {
         var element = _.compile('<input type="checkbox" ng-model="model">');
 
@@ -685,6 +682,23 @@ void main() {
         element.checked = false;
         _.triggerEvent(element, 'change');
         expect(scope.context['model']).toBe(false);
+      });
+
+      it('should update model from the input using ng-true-value/false', (Scope scope) {
+        var element = _.compile('<input type="checkbox" ng-model="model" '
+                                'ng-true-value="yes" ng-false-value="no">');
+        scope.apply(() {
+          scope.context['yes'] = 'yes sir!';
+          scope.context['no'] = 'no, sorry';
+        });
+
+        element.checked = true;
+        _.triggerEvent(element, 'change');
+        expect(scope.context['model']).toEqual('yes sir!');
+
+        element.checked = false;
+        _.triggerEvent(element, 'change');
+        expect(scope.context['model']).toEqual('no, sorry');
       });
 
       it('should only render the input value upon the next digest', (Scope scope) {
