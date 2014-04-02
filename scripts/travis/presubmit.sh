@@ -20,7 +20,8 @@ if [ "$CHANNEL" = "stable" ] && [ "$TRAVIS_REPO_SLUG" = "angular/angular.dart" ]
 
     echo "Pushing HEAD to master..."
     git remote add upstream https://github.com/angular/angular.dart.git
-    git fetch upstream
+    git stash
+    git fetch upstream master
     git rebase upstream/master
     git push upstream HEAD:master
   fi
