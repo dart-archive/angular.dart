@@ -22,9 +22,14 @@ function checkSize() {
 
 # skip auxiliary tests if we are only running dart2js
 if [[ $TESTS == "dart2js" ]]; then
+  if [[ $CHANNEL == "DEV" ]]; then
+    dart "bin/pub_build.dart" -p example -e "example/expected_warnings.json"
+  else
+    ( cd example; pub build )
+  fi
+
   (
     cd example
-    pub build
     checkSize build/web/animation.dart.js 205753
     checkSize build/web/bouncing_balls.dart.js 200130
     checkSize build/web/hello_world.dart.js 197883

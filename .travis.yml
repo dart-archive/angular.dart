@@ -4,12 +4,16 @@ node_js:
 env:
   matrix:
   - JOB=unit-stable
+    CHANNEL=stable
     TESTS=vm
   - JOB=unit-dev
+    CHANNEL=dev
     TESTS=vm
   - JOB=unit-stable
+    CHANNEL=stable
     TESTS=dart2js
   - JOB=unit-dev
+    CHANNEL=DEV
     TESTS=dart2js
   global:
   - CHROME_BIN=/usr/bin/google-chrome
