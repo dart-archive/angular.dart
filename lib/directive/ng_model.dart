@@ -265,17 +265,32 @@ class NgModel extends NgControl implements NgAttachAware {
 /**
  * Usage:
  *
- *     <input type="checkbox" ng-model="flag">
+ *     <input type="checkbox" 
+ *            ng-model="expr"
+ *            [ng-true-value="t_expr"]
+ *            [ng-false-value="f_expr"]
+ *            >
  *
- * This creates a two way databinding between the boolean expression specified
- * in ng-model and the checkbox input element in the DOM.  If the ng-model value
- * is falsy (i.e. one of `false`, `null`, and `0`), then the checkbox is
- * unchecked. Otherwise, it is checked.  Likewise, when the checkbox is checked,
- * the model value is set to true.  When unchecked, it is set to false.
+ * This creates a two way databinding between the `ng-model` expression
+ * and the checkbox input element state.
+ * 
+ * If the optional `ng-true-value` is absent then: if the model expression
+ * evaluates to true or to a nonzero [num], then the checkbox is checked; 
+ * otherwise, it is unchecked.
+ * 
+ * If `ng-true-value="t_expr"` is present, then: if the model expression
+ * evaluates to the same value as `t_expr` then the checkbox is checked; 
+ * otherwise, it is unchecked.
+ * 
+ * When the checkbox is checked, the model is set to the value of `t_expr` if
+ * present, true otherwise. When unchecked, it is set to the value of
+ * `f_expr` if present, false otherwise.
+ * 
+ * Also see [NgTrueValue] and [NgFalseValue].
  */
 @NgDirective(selector: 'input[type=checkbox][ng-model]')
 class InputCheckboxDirective {
-  final dom.InputElement inputElement;
+  final dom.CheckboxInputElement inputElement;
   final NgModel ngModel;
   final NgTrueValue ngTrueValue;
   final NgFalseValue ngFalseValue;
@@ -285,14 +300,13 @@ class InputCheckboxDirective {
                          this.scope, this.ngTrueValue, this.ngFalseValue) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
-        inputElement.checked = ngTrueValue.isValue(inputElement, value);
+        inputElement.checked = ngTrueValue.isValue(value);
       });
     };
     inputElement
-        ..onChange.listen((value) {
+        ..onChange.listen((_) {
           ngModel.viewValue = inputElement.checked
-              ? ngTrueValue.readValue(inputElement)
-              : ngFalseValue.readValue(inputElement);
+              ? ngTrueValue.value : ngFalseValue.value;
         })
         ..onBlur.listen((e) {
           ngModel.markAsTouched();
@@ -473,44 +487,45 @@ class NgValue {
 }
 
 /**
- * `ng-true-value` allows you to select any expression to be set to
- * `ng-model` when checkbox is selected on `<input type="checkbox">`.
+ * Usage:
+ * 
+ *     <input type=checkbox
+ *            ng-model=model
+ *            [ng-true-value=expr]>
+ * 
+ * The initial value of the expression bound to this directive is assigned to
+ * the model when the input is checked. Note that the expression can be of any
+ * type, not just [String]. Also see [InputCheckboxDirective], [NgFalseValue].
  */
-@NgDirective(selector: '[ng-true-value]')
+@NgDirective(selector: 'input[type=checkbox][ng-model][ng-true-value]')
 class NgTrueValue {
   final dom.Element element;
   @NgOneWay('ng-true-value')
-  var value;
+  var value = true;
 
-  NgTrueValue(this.element);
+  NgTrueValue([this.element]);
 
-  readValue(dom.Element element) {
-    assert(this.element == null || element == this.element);
-    return this.element == null ? true : value;
-  }
-
-  bool isValue(dom.Element element, value) {
-    assert(this.element == null || element == this.element);
-    return this.element == null ? toBool(value) : value == this.value;
-  }
+  bool isValue(val) => element == null ? toBool(val) : val == value;
 }
 
 /**
- * `ng-false-value` allows you to select any expression to be set to
- * `ng-model` when checkbox is deselected <input type="checkbox">`.
+ * Usage:
+ * 
+ *     <input type=checkbox 
+ *            ng-model=model
+ *            [ng-false-value=expr]>
+ * 
+ * The initial value of the expression bound to this directive is assigned to
+ * the model when the input is unchecked. Note that the expression can be of any
+ * type, not just [String]. Also see [InputCheckboxDirective], [NgTrueValue].
  */
-@NgDirective(selector: '[ng-false-value]')
+@NgDirective(selector: 'input[type=checkbox][ng-model][ng-false-value]')
 class NgFalseValue {
   final dom.Element element;
   @NgOneWay('ng-false-value')
-  var value;
+  var value = false;
 
-  NgFalseValue(this.element);
-
-  readValue(dom.Element element) {
-    assert(this.element == null || element == this.element);
-    return this.element == null ? false : value;
-  }
+  NgFalseValue([this.element]);
 }
 
 /**
