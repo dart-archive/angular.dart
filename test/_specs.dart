@@ -194,10 +194,6 @@ class ExceptionContains extends unit.Matcher {
   }
 }
 
-// TODO: Decide if we want this function to be called 'es' or '$'
-$(String selector) =>
-  es(selector);
-
 
 _injectify(fn) {
   // The function does two things:

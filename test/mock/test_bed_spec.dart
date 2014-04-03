@@ -19,8 +19,7 @@ void main() {
       inject((Scope scope) {
         Scope childScope = scope.createChild({});
 
-        var element = $('<div my-directive probe="i"></div>');
-        _.compile(element, scope: childScope);
+        _.compile('<div my-directive probe="i"></div>', scope: childScope);
 
         Probe probe = _.rootScope.context['i'];
         var directiveInst = probe.directive(MyTestBedDirective);

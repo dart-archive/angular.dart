@@ -92,7 +92,7 @@ void main() {
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend.expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
-        var element = $('<div><simple-url log>ignore</simple-url><div>');
+        var element = es('<div><simple-url log>ignore</simple-url><div>');
         $compile(element, directives)(injector, element);
 
         backend.flush();
@@ -109,17 +109,17 @@ void main() {
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend.whenGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
-        var element = $(
-            '<div>' +
-            '<simple-url log>ignore</simple-url>' +
-            '<simple-url log>ignore</simple-url>' +
+        var element = es(
+            '<div>'
+            '<simple-url log>ignore</simple-url>'
+            '<simple-url log>ignore</simple-url>'
             '<div>');
         $compile(element, directives)(injector, element);
 
         backend.flush();
         microLeap();
 
-        expect(element[0]).toHaveText('Simple!Simple!');
+        expect(element.first).toHaveText('Simple!Simple!');
         $rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
@@ -150,7 +150,7 @@ void main() {
       it('should load a CSS file with a \$template', async(inject(
           (Http $http, Compiler $compile, Scope $rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
-        var element = $('<div><inline-with-css log>ignore</inline-with-css><div>');
+        var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
         backend.expectGET('simple.css').respond('.hello{}');
         $compile(element, directives)(injector, element);
 
@@ -162,13 +162,13 @@ void main() {
       it('should ignore CSS load errors ', async(inject(
           (Http $http, Compiler $compile, Scope $rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
-        var element = $('<div><inline-with-css log>ignore</inline-with-css><div>');
+        var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
         backend.expectGET('simple.css').respond(500, 'some error');
         $compile(element, directives)(injector, element);
 
         backend.flush();
         microLeap();
-        expect(element[0]).toHaveText(
+        expect(element.first).toHaveText(
             '/*\n'
             'HTTP 500: some error\n'
             '*/\n'
@@ -178,7 +178,7 @@ void main() {
       it('should load a CSS with no template', async(inject(
           (Http $http, Compiler $compile, Scope $rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
-        var element = $('<div><only-css log>ignore</only-css><div>');
+        var element = es('<div><only-css log>ignore</only-css><div>');
         backend.expectGET('simple.css').respond('.hello{}');
         $compile(element, directives)(injector, element);
 
@@ -194,12 +194,12 @@ void main() {
             ..expectGET('simple.css').respond('.hello{}')
             ..expectGET('simple.html').respond('<div>Simple!</div>');
 
-        var element = $('<html-and-css>ignore</html-and-css>');
+        var element = es('<html-and-css>ignore</html-and-css>');
         $compile(element, directives)(injector, element);
 
         backend.flush();
         microLeap();
-        expect(element[0]).toHaveText('.hello{}Simple!');
+        expect(element.first).toHaveText('.hello{}Simple!');
       })));
     });
 

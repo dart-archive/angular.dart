@@ -79,8 +79,8 @@ main() {
         rootElement.innerHtml = '<!-- anchor -->';
         anchor = new ViewPort(rootElement.childNodes[0],
           injector.get(NgAnimate));
-        a = (viewFactoryFactory($('<span>A</span>a'), [], perf, expando))(injector);
-        b = (viewFactoryFactory($('<span>B</span>b'), [], perf, expando))(injector);
+        a = (viewFactoryFactory(es('<span>A</span>a'), [], perf, expando))(injector);
+        b = (viewFactoryFactory(es('<span>B</span>b'), [], perf, expando))(injector);
       });
 
 

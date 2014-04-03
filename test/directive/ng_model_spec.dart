@@ -1248,9 +1248,7 @@ void main() {
       it('should return true or false depending on if an error exists on a form',
         (Scope scope, TestBed _) {
 
-        var element = $('<input type="text" ng-model="input" name="input" probe="i" />');
-
-        _.compile(element);
+        _.compile('<input type="text" ng-model="input" name="input" probe="i" />');
         scope.apply();
 
         Probe p = scope.context['i'];
