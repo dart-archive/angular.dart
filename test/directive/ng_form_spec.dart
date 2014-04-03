@@ -7,11 +7,9 @@ void main() {
    TestBed _;
 
     it('should set the name of the form and attach it to the scope', (Scope scope, TestBed _) {
-      var element = $('<form name="myForm"></form>');
-
       expect(scope.context['myForm']).toBeNull();
 
-      _.compile(element);
+      _.compile('<form name="myForm"></form>');
       scope.apply();
 
       expect(scope.context['myForm']).toBeDefined();
@@ -22,13 +20,10 @@ void main() {
 
     it('should return the first control with the given name when accessed using map notation',
       (Scope scope, TestBed _) {
-
-      var element = $('<form name="myForm">' +
-                      '  <input type="text" name="model" ng-model="modelOne" probe="a" />' +
-                      '  <input type="text" name="model" ng-model="modelTwo" probe="b" />' +
-                      '</form>');
-
-      _.compile(element);
+      _.compile('<form name="myForm">'
+                '  <input type="text" name="model" ng-model="modelOne" probe="a" />'
+                '  <input type="text" name="model" ng-model="modelTwo" probe="b" />'
+                '</form>');
       scope.apply();
 
       NgForm form = _.rootScope.context['myForm'];
@@ -41,12 +36,10 @@ void main() {
     });
 
     it('should return the all the controls with the given name', (Scope scope, TestBed _) {
-      var element = $('<form name="myForm">' +
-                      '  <input type="text" name="model" ng-model="modelOne" probe="a" />' +
-                      '  <input type="text" name="model" ng-model="modelTwo" probe="b" />' +
-                      '</form>');
-
-      _.compile(element);
+      _.compile('<form name="myForm">'
+                '  <input type="text" name="model" ng-model="modelOne" probe="a" />'
+                '  <input type="text" name="model" ng-model="modelTwo" probe="b" />'
+                '</form>');
       scope.apply();
 
       NgForm form = _.rootScope.context['myForm'];
@@ -66,9 +59,7 @@ void main() {
 
     describe('pristine / dirty', () {
       it('should be set to pristine by default', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm"></form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm"></form>');
         scope.apply();
 
         var form = scope.context['myForm'];
@@ -107,13 +98,10 @@ void main() {
 
       it('should revert back to pristine on the form if the value is reset on the model',
         (Scope scope, TestBed _) {
-
-        var element = $('<form name="myForm">' + 
-                        '  <input type="text" ng-model="myModel1" probe="m" />' +
-                        '  <input type="text" ng-model="myModel2" probe="n" />' +
-                        '</form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm">' +
+                  '  <input type="text" ng-model="myModel1" probe="m" />' +
+                  '  <input type="text" ng-model="myModel2" probe="n" />' +
+                  '</form>');
         scope.apply();
 
         var form = scope.context['myForm'];
@@ -148,9 +136,7 @@ void main() {
 
     describe('valid / invalid', () {
       it('should be valid when empty', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm"></form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm"></form>');
         scope.apply();
 
         var form = scope.context['myForm'];
@@ -158,9 +144,7 @@ void main() {
       });
 
       it('should be valid by default', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm"><input type="text" /></form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm"><input type="text" /></form>');
         scope.apply();
 
         var form = scope.context['myForm'];
@@ -199,13 +183,11 @@ void main() {
       });
 
       it('should set the validity with respect to all existing validations when error states are set is used', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm">'
-                        '  <input type="text" ng-model="one" name="one" />' +
-                        '  <input type="text" ng-model="two" name="two" />' +
-                        '  <input type="text" ng-model="three" name="three" />' +
-                        '</form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm">'
+                  '  <input type="text" ng-model="one" name="one" />'
+                  '  <input type="text" ng-model="two" name="two" />'
+                  '  <input type="text" ng-model="three" name="three" />'
+                  '</form>');
         scope.apply();
 
         var form = scope.context['myForm'];
@@ -235,13 +217,11 @@ void main() {
       });
 
       it('should collect the invalid models upon failed validation', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm">'
-                        '  <input type="text" ng-model="one" name="one" />' +
-                        '  <input type="text" ng-model="two" name="two" />' +
-                        '  <input type="text" ng-model="three" name="three" />' +
-                        '</form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm">'
+                  '  <input type="text" ng-model="one" name="one" />' +
+                  '  <input type="text" ng-model="two" name="two" />' +
+                  '  <input type="text" ng-model="three" name="three" />' +
+                  '</form>');
         scope.apply();
 
         var form = scope.context['myForm'];
@@ -260,11 +240,9 @@ void main() {
 
 
       it('should not handle the control errorType pair more than once', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm">'
-                        '  <input type="text" ng-model="one" name="one" />' +
-                        '</form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm">'
+                  '  <input type="text" ng-model="one" name="one" />'
+                  '</form>');
         scope.apply();
 
         var form = scope.context['myForm'];
@@ -287,12 +265,10 @@ void main() {
       });
 
       it('should update the validity of the parent form when the inner model changes', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm">'
-                        '  <input type="text" ng-model="one" name="one" />' +
-                        '  <input type="text" ng-model="two" name="two" />' +
-                        '</form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm">'
+                  '  <input type="text" ng-model="one" name="one" />'
+                  '  <input type="text" ng-model="two" name="two" />'
+                  '</form>');
         scope.apply();
 
         var form = scope.context['myForm'];
@@ -318,14 +294,11 @@ void main() {
 
       it('should register the name of inner forms that contain the ng-form attribute',
         (Scope scope, TestBed _) {
-
-        var element = $('<form name="myForm">'
-                        '  <div ng-form="myInnerForm" probe="f">' +
-                        '    <input type="text" ng-model="one" name="one" probe="m" />' +
-                        '  </div>' +
-                        '</form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm">'
+                  '  <div ng-form="myInnerForm" probe="f">'
+                  '    <input type="text" ng-model="one" name="one" probe="m" />'
+                  '  </div>'
+                  '</form>');
         scope.apply(() {
           scope.context['one'] = 'it works!';
         });
@@ -338,13 +311,11 @@ void main() {
       });
 
       it('should set the validity for the parent form when fieldsets are used', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm">'
-                        '  <fieldset probe="f">' +
-                        '    <input type="text" ng-model="one" name="one" probe="m" />' +
-                        '  </fieldset>' +
-                        '</form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm">'
+                  '  <fieldset probe="f">'
+                  '    <input type="text" ng-model="one" name="one" probe="m" />'
+                  '  </fieldset>'
+                  '</form>');
         scope.apply();
 
         var form = scope.context['myForm'];
@@ -365,8 +336,9 @@ void main() {
       });
 
       it('should revalidate itself when an inner model is removed', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm"><input ng-model="m" ng-if="on" required /></form>');
-        _.compile(element);
+        _.compile('<form name="myForm">'
+                  '  <input ng-model="m" ng-if="on" required />'
+                  '</form>');
         scope.context['on'] = true;
         scope.apply();
 
@@ -388,14 +360,12 @@ void main() {
 
     describe('controls', () {
       it('should add each contained ng-model as a control upon compile', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm">'
-                        '  <input type="text" ng-model="mega_model" name="mega_name" />' +
-                        '  <select ng-model="fire_model" name="fire_name">' +
-                        '    <option>value</option>'
-                        '  </select>' +
-                        '</form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm">'
+                  '  <input type="text" ng-model="mega_model" name="mega_name" />'
+                  '  <select ng-model="fire_model" name="fire_name">'
+                  '    <option>value</option>'
+                  '  </select>'
+                  '</form>');
 
         scope.context['mega_model'] = 'mega';
         scope.context['fire_model'] = 'fire';
@@ -407,11 +377,9 @@ void main() {
       });
 
       it('should properly remove controls directly from the ngForm instance', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm">'
-                        '  <input type="text" ng-model="mega_model" name="mega_control" />' +
-                        '</form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm">'
+                  '  <input type="text" ng-model="mega_model" name="mega_control" />' +
+                  '</form>');
         scope.apply();
 
         var form = scope.context['myForm'];
@@ -422,13 +390,11 @@ void main() {
 
       it('should remove all controls when the scope is destroyed', (Scope scope, TestBed _) {
         Scope childScope = scope.createChild({});
-        var element = $('<form name="myForm">' +
-                        '  <input type="text" ng-model="one" name="one" />' +
-                        '  <input type="text" ng-model="two" name="two" />' +
-                        '  <input type="text" ng-model="three" name="three" />' +
-                        '</form>');
-
-        _.compile(element, scope: childScope);
+        _.compile('<form name="myForm">'
+                  '  <input type="text" ng-model="one" name="one" />'
+                  '  <input type="text" ng-model="two" name="two" />'
+                  '  <input type="text" ng-model="three" name="three" />'
+                  '</form>', scope: childScope);
         childScope.apply();
 
         var form = childScope.context['myForm'];
@@ -444,10 +410,9 @@ void main() {
       });
 
       it('should remove from parent when child is removed', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm">' +
-                        '  <input type="text" name="mega_name" ng-if="mega_visible" ng-model="value"/>' +
-                        '</form>');
-        _.compile(element);
+        _.compile('<form name="myForm">'
+                  '  <input type="text" name="mega_name" ng-if="mega_visible" ng-model="value"/>'
+                  '</form>');
 
         scope.context['mega_visible'] = true;
         scope.apply();
@@ -463,7 +428,7 @@ void main() {
 
     describe('onSubmit', () {
       it('should suppress the submission event if no action is provided within the form', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm"></form>');
+        var element = e('<form name="myForm"></form>');
 
         _.compile(element);
         scope.apply();
@@ -471,18 +436,18 @@ void main() {
         Event submissionEvent = new Event.eventType('CustomEvent', 'submit');
 
         expect(submissionEvent.defaultPrevented).toBe(false);
-        element[0].dispatchEvent(submissionEvent);
+        element.dispatchEvent(submissionEvent);
         expect(submissionEvent.defaultPrevented).toBe(true);
 
         Event fakeEvent = new Event.eventType('CustomEvent', 'running');
 
         expect(fakeEvent.defaultPrevented).toBe(false);
-        element[0].dispatchEvent(submissionEvent);
+        element.dispatchEvent(submissionEvent);
         expect(fakeEvent.defaultPrevented).toBe(false);
       });
 
       it('should not prevent the submission event if an action is defined', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm" action="..."></form>');
+        var element = e('<form name="myForm" action="..."></form>');
 
         _.compile(element);
         scope.apply();
@@ -490,12 +455,12 @@ void main() {
         Event submissionEvent = new Event.eventType('CustomEvent', 'submit');
 
         expect(submissionEvent.defaultPrevented).toBe(false);
-        element[0].dispatchEvent(submissionEvent);
+        element.dispatchEvent(submissionEvent);
         expect(submissionEvent.defaultPrevented).toBe(false);
       });
 
       it('should execute the ng-submit expression if provided upon form submission', (Scope scope, TestBed _) {
-        var element = $('<form name="myForm" ng-submit="submitted = true"></form>');
+        var element = e('<form name="myForm" ng-submit="submitted = true"></form>');
 
         _.compile(element);
         scope.apply();
@@ -503,7 +468,7 @@ void main() {
         _.rootScope.context['submitted'] = false;
 
         Event submissionEvent = new Event.eventType('CustomEvent', 'submit');
-        element[0].dispatchEvent(submissionEvent);
+        element.dispatchEvent(submissionEvent);
 
         expect(_.rootScope.context['submitted']).toBe(true);
       });
@@ -553,12 +518,9 @@ void main() {
     describe('error handling', () {
       it('should return true or false depending on if an error exists on a form',
         (Scope scope, TestBed _) {
-
-        var element = $('<form name="myForm">'
-                        '  <input type="text" ng-model="input" name="input" />' +
-                        '</form>');
-
-        _.compile(element);
+        _.compile('<form name="myForm">'
+                  '  <input type="text" ng-model="input" name="input" />'
+                  '</form>');
         scope.apply();
 
         var form = scope.context['myForm'];
@@ -773,7 +735,7 @@ void main() {
       });
 
       it('should be resolvable by injector if configured by user.', (Injector injector, Compiler compiler, DirectiveMap directives) {
-        var element = $('<form></form>');
+        var element = es('<form></form>');
         compiler(element, directives)(injector, element);
         // The only expectation is that this doesn't throw
       });

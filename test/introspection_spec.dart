@@ -41,7 +41,7 @@ void main() {
     // Does not work in dart2js.  deboer is investigating.
     it('should be available from Javascript', () {
       // The probe only works if there is a directive.
-      var elt = $('<div ng-app id=ngtop ng-bind="\'introspection FTW\'"></div>')[0];
+      var elt = e('<div ng-app id=ngtop ng-bind="\'introspection FTW\'"></div>');
       // Make it possible to find the element from JS
       document.body.append(elt);
       (dynamicApplication()..element = elt).run();
