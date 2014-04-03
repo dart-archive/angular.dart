@@ -45,3 +45,4 @@ scripts/test-expression-extractor.sh
     --reporters=junit,dots --port=8765 --runner-port=8766 \
     --browsers=Dartium,Chrome --single-run --no-colors
 
+dart "bin/pub_build.dart" -p example -e "example/expected_warnings.json"
