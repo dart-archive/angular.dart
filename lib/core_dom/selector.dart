@@ -202,9 +202,14 @@ class _ElementSelector {
     return partialSelection;
   }
 
+  // A global cache for the _matchingKey RegExps.  The size is bounded by
+  // the number of attribute directive selectors used in the application.
+  static var _matchingKeyCache = <String, RegExp>{};
+
   String _matchingKey(Iterable<String> keys, String attrName) =>
       keys.firstWhere((key) =>
-          new RegExp('^${key.replaceAll('*', r'[\w\-]+')}\$')
+          _matchingKeyCache.putIfAbsent(key,
+                  () => new RegExp('^${key.replaceAll('*', r'[\w\-]+')}\$'))
               .hasMatch(attrName), orElse: () => null);
 
   toString() => 'ElementSelector($name)';
