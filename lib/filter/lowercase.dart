@@ -8,6 +8,6 @@ part of angular.filter;
  *     {{ lowercase_expression | lowercase }}
  */
 @NgFilter(name:'lowercase')
-class LowercaseFilter {
+class Lowercase implements Function {
   call(String text) => text == null ? text : text.toLowerCase();
 }
