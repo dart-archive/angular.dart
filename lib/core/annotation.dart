@@ -70,16 +70,16 @@ abstract class NgAnnotation {
   /**
    * A directive/component class can publish types by using a factory
    * function to generate a module. The module is then installed into
-   * the injector at that element. Any types declared in the module than
+   * the injector at that element. Any types declared in the module then
    * become available for injection.
    *
    * Example:
    *
    *     @NgDirective(
    *       selector: '[foo]',
-   *       module: FooDirective.moduleFactory)
-   *     FooDirective {
-   *       // We can be static since Module definition does not change.
+   *       module: Foo.moduleFactory)
+   *     class Foo {
+   *       // Static factory since Module definitions are read only once.
    *       static moduleFactory() => new Module()
    *         ..type(SomeTypeA, visibility: NgDirective.LOCAL_VISIBILITY);
    *     }
