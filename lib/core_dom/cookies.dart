@@ -96,6 +96,7 @@ class BrowserCookies {
 /**
  *   Cookies service
  */
+@NgInjectableService()
 class Cookies {
   BrowserCookies _browserCookies;
   Cookies(this._browserCookies);
