@@ -79,7 +79,6 @@ abstract class NgAnnotation {
    *       selector: '[foo]',
    *       module: Foo.moduleFactory)
    *     class Foo {
-   *       // Static factory since Module definitions are read only once.
    *       static moduleFactory() => new Module()
    *         ..type(SomeTypeA, visibility: NgDirective.LOCAL_VISIBILITY);
    *     }
