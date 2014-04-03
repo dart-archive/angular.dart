@@ -1,11 +1,10 @@
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/utils.dart' show isReservedWord;
-import 'dart:math';
 
 class DartGetterSetterGen extends ParserBackend {
-  final Set<String> properties = new Set<String>();
-  final Set<String> calls = new Set<String>();
-  final Set<String> symbols = new Set<String>();
+  final properties = new Set<String>();
+  final calls = new Set<String>();
+  final symbols = new Set<String>();
 
   bool isAssignable(expression) => true;
 
@@ -43,7 +42,8 @@ class ParserGetterSetter {
     });
 
     DartGetterSetterGen backend = this.backend;
-    sink.write(generateClosureMap(backend.properties, backend.calls, backend.symbols));
+    sink.write(generateClosureMap(backend.properties, backend.calls,
+                                  backend.symbols));
   }
 
   generateClosureMap(Set<String> properties,
@@ -68,7 +68,7 @@ StaticClosureMap closureMap = new StaticClosureMap(
     return '{\n${lines.join(",\n")}\n  }';
   }
 
-  generateSymbolMap(Set<Strings> symbols) {
+  generateSymbolMap(Set<String> symbols) {
     var lines = symbols.map((key) => '    r"${key}": #$key');
     return '{\n${lines.join(",\n")}\n  }';
   }
