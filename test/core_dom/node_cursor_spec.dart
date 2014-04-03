@@ -7,10 +7,10 @@ main() {
     var a, b, c, d;
 
     beforeEach(() {
-      a = $('<a>A</a>')[0];
-      b = $('<b>B</b>')[0];
-      c = $('<i>C</i>')[0];
-      d = $('<span></span>')[0];
+      a = e('<a>A</a>');
+      b = e('<b>B</b>');
+      c = e('<i>C</i>');
+      d = e('<span></span>');
       d.append(a);
       d.append(b);
     });
@@ -41,19 +41,19 @@ main() {
     });
 
     it('should descend and ascend two levels', () {
-      var l1 = $('<span></span>')[0];
-      var l2 = $('<span></span>')[0];
-      var e = $('<e>E</e>')[0];
-      var f = $('<f>F</f>')[0];
+      var l1 = e('<span></span>');
+      var l2 = e('<span></span>');
+      var g = e('<g>G</g>');
+      var f = e('<f>F</f>');
       l1.append(l2);
       l1.append(f);
-      l2.append(e);
+      l2.append(g);
       var cursor = new NodeCursor([l1, c]);
 
       expect(cursor.descend(), equals(true));
       expect(cursor.current, equals(l2));
       expect(cursor.descend(), equals(true));
-      expect(cursor.current, equals(e));
+      expect(cursor.current, equals(g));
       cursor.ascend();
       expect(cursor.moveNext(), equals(true));
       expect(cursor.current, equals(f));
@@ -82,26 +82,27 @@ main() {
 
 
     it('should create child cursor upon replace of mid level', () {
-      var dom = $('<div><span>text</span></div>');
+      var dom = es('<div><span>text</span></div>');
       var parentCursor = new NodeCursor(dom);
       parentCursor.descend(); // <span>
 
       var childCursor = parentCursor.replaceWithAnchor('child');
       expect(STRINGIFY(dom), equals('[<div><!--ANCHOR: child--></div>]'));
 
-      expect(STRINGIFY(childCursor.elements[0]), equals('<span>text</span>'));
+      expect(STRINGIFY(childCursor.elements.first), equals('<span>text</span>'));
     });
 
     it('should preserve the top-level elements', () {
-      var dom = $('<span>text</span>MoreText<div>other</div>');
+      var dom = es('<span>text</span>MoreText<div>other</div>');
       var parentCursor = new NodeCursor(dom);
 
       var childCursor = parentCursor.replaceWithAnchor('child');
       expect(STRINGIFY(dom), equals('[<!--ANCHOR: child-->, MoreText, <div>other</div>]'));
 
-      expect(STRINGIFY(childCursor.elements[0]), equals('<span>text</span>'));
+      expect(STRINGIFY(childCursor.elements.first), equals('<span>text</span>'));
     });
   });
 }
+
 
 
