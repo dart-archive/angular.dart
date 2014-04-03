@@ -1,4 +1,6 @@
 /**
+ * Route configuration for single-page applications.
+ *
  * The [routing] library makes it easier to build large single-page
  * applications. The library lets you map the browser address bar to semantic
  * structure of your application and keeps them in sync.
@@ -116,7 +118,7 @@
  *  [RouteHandle.discard] unsubscribes all listeneters created for the handle.
  *
  *
- *  # Hierarchical Routes
+ * ## Hierarchical Routes
  *
  *  The routing framework allows us to define trees of routes. In our recipes
  *  example we could have defined our routes like this:
@@ -144,7 +146,7 @@
  *                  path: '/edit',
  *                  enter: view('editRecipe.html')));
  *     }
- *   }
+ *
  */
 library angular.routing;
 

@@ -1,3 +1,9 @@
+/**
+ * Bootstrapping for Angular applications via [app:dynamic](#angular-app-dynamic) for development,
+ * or
+ * [app:static](#angular-app-static) for production.
+ *
+ */
 library angular.app;
 
 import 'dart:html' as dom;
@@ -41,8 +47,6 @@ class AngularModule extends Module {
 }
 
 /**
- * Bootstraps AngularDart and defines which application module(s) are available to the app.
- *
  * Application is how you configure and run an Angular application. Application is abstract. There are two
  * implementations: one is dynamic, using Mirrors; the other is static, using code generation.
  *
@@ -63,14 +67,6 @@ class AngularModule extends Module {
  *
  * On `pub build`, dynamicApplication becomes staticApplication, as pub generates the getters,
  * setters, annotations, and factories for the root Injector that [ngApp] creates. This
- *
- *
- * Here, the ngBootstrap method performs the following actions:
- *
- *   1. Locating the root element of the application,
- *   2. Creating Angular [NgZone]
- *   3. Inside the [NgZone] create an injector
- *   4. Retrieve the [Compiler] and compile the root element
  *
  *
  */

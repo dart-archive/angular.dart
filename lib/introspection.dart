@@ -1,3 +1,6 @@
+/**
+* Introspection of Elements for debugging and tests.
+*/
 library angular.introspection;
 
 import 'dart:html' as dom;

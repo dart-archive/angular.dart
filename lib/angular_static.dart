@@ -1,3 +1,7 @@
+/**
+ * Bootstrapping for Angular applications via code generation, for production.
+ *
+ */
 library angular.app.static;
 
 import 'package:di/static_injector.dart';

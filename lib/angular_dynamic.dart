@@ -1,3 +1,8 @@
+/**
+ * Bootstrapping for Angular applications via [dart:mirrors](https://api.dartlang
+ * .org/apidocs/channels/stable/dartdoc-viewer/dart-mirrors) for development.
+ *
+ */
 library angular.app.dynamic;
 
 
