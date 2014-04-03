@@ -5,7 +5,6 @@
  */
 library angular.app.dynamic;
 
-
 import 'package:di/dynamic_injector.dart';
 import "package:angular/angular.dart";
 import 'package:angular/core/registry.dart';
