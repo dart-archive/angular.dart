@@ -67,9 +67,8 @@ part of angular.directive;
     map: const {'ng-class': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class'])
 class NgClassDirective extends _NgClassBase {
-  NgClassDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                   NgAnimate animate)
-      : super(element, scope, null, attrs, animate);
+  NgClassDirective(NgElement ngElement, Scope scope, NodeAttrs nodeAttrs)
+      : super(ngElement, scope, nodeAttrs);
 }
 
 /**
@@ -103,9 +102,8 @@ class NgClassDirective extends _NgClassBase {
     map: const {'ng-class-odd': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-odd'])
 class NgClassOddDirective extends _NgClassBase {
-  NgClassOddDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                      NgAnimate animate)
-      : super(element, scope, 0, attrs, animate);
+  NgClassOddDirective(NgElement ngElement, Scope scope, NodeAttrs nodeAttrs)
+      : super(ngElement, scope, nodeAttrs, 0);
 }
 
 /**
@@ -139,95 +137,130 @@ class NgClassOddDirective extends _NgClassBase {
     map: const {'ng-class-even': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-even'])
 class NgClassEvenDirective extends _NgClassBase {
-  NgClassEvenDirective(dom.Element element, Scope scope, NodeAttrs attrs,
-                       NgAnimate animate)
-      : super(element, scope, 1, attrs, animate);
+  NgClassEvenDirective(NgElement ngElement, Scope scope, NodeAttrs nodeAttrs)
+      : super(ngElement, scope, nodeAttrs, 1);
 }
 
 abstract class _NgClassBase {
-  final dom.Element element;
-  final Scope scope;
-  final int mode;
-  final NodeAttrs nodeAttrs;
-  final NgAnimate _animate;
-  var previousSet = [];
-  var currentSet = [];
-  Watch _watch;
+  final NgElement _ngElement;
+  final Scope _scope;
+  final int _mode;
+  Watch _watchExpression;
+  Watch _watchPosition;
+  var _previousSet = new Set<String>();
+  var _currentSet = new Set<String>();
+  bool _first = true;
 
-  _NgClassBase(this.element, this.scope, this.mode, this.nodeAttrs,
-               this._animate)
+  _NgClassBase(this._ngElement, this._scope, NodeAttrs nodeAttrs,
+               [this._mode = null])
   {
-    var prevClass;
+    var prevCls;
 
-    nodeAttrs.observe('class', (String newValue) {
-      if (prevClass != newValue) {
-        prevClass = newValue;
-        _handleChange(scope.context[r'$index']);
+    nodeAttrs.observe('class', (String cls) {
+      if (prevCls != cls) {
+        prevCls = cls;
+        _applyChanges(_scope.context[r'$index']);
       }
     });
   }
 
   set valueExpression(expression) {
-    if (_watch != null) _watch.remove();
-    _watch = scope.watch(expression, (current, _) {
-      currentSet = _flatten(current);
-      _handleChange(scope.context[r'$index']);
-    },
-    canChangeModel: false,
-    collection: true);
+    if (_watchExpression != null) _watchExpression.remove();
+    _watchExpression = _scope.watch(expression, (v, _) {
+        _computeChanges(v);
+        _applyChanges(_scope.context[r'$index']);
+      },
+      canChangeModel: false,
+      collection: true);
 
-    if (mode != null) {
-      scope.watch(r'$index', (index, oldIndex) {
-        var mod = index % 2;
-        if (oldIndex == null || mod != oldIndex % 2) {
-          if (mod == mode) {
-            currentSet.forEach((css) => _animate.addClass(element, css));
+    if (_mode != null) {
+      if (_watchPosition != null) _watchPosition.remove();
+      _watchPosition = _scope.watch(r'$index', (idx, previousIdx) {
+        var mod = idx % 2;
+        if (previousIdx == null || mod != previousIdx % 2) {
+          if (mod == _mode) {
+            _currentSet.forEach((cls) => _ngElement.addClass(cls));
           } else {
-            previousSet.forEach((css) => _animate.removeClass(element, css));
+            _previousSet.forEach((cls) => _ngElement.removeClass(cls));
           }
         }
       }, canChangeModel: false);
     }
   }
 
-  _handleChange(index) {
-    if (mode == null || (index != null && index % 2 == mode)) {
-      previousSet.forEach((css) {
-        if (!currentSet.contains(css)) {
-          _animate.removeClass(element, css);
-        } else {
-          element.classes.remove(css);
-        }
-      });
-
-      currentSet.forEach((css) {
-        if (!previousSet.contains(css)) {
-          _animate.addClass(element, css);
-        } else {
-          element.classes.add(css);
-        }
-      });
+  void _computeChanges(value) {
+    if (value is CollectionChangeRecord) {
+      _computeCollectionChanges(value, _first);
+    } else if (value is MapChangeRecord) {
+      _computeMapChanges(value, _first);
+    } else {
+      if (value is String) {
+        _currentSet..clear()..addAll(value.split(' '));
+      } else if (value == null) {
+        _currentSet.clear();
+      } else {
+        throw 'ng-class expects expression value to be List, Map or String, '
+              'got $value';
+      }
     }
 
-    previousSet = currentSet;
+    _first = false;
   }
 
-  static List<String> _flatten(classes) {
-    if (classes == null) return [];
-    if (classes is CollectionChangeRecord) {
-      classes = (classes as CollectionChangeRecord).iterable.toList();
+  // todo(vicb) refactor once GH-774 gets fixed
+  void _computeCollectionChanges(CollectionChangeRecord changes, bool first) {
+    if (first) {
+      changes.iterable.forEach((cls) {
+        _currentSet.add(cls);
+      });
+    } else {
+      changes.forEachAddition((AddedItem a) {
+        _currentSet.add(a.item);
+      });
+      changes.forEachRemoval((RemovedItem r) {
+        _currentSet.remove(r.item);
+      });
     }
-    if (classes is List) {
-      return classes
-          .where((String e) => e != null && e.isNotEmpty)
-          .toList(growable: false);
+  }
+
+  // todo(vicb) refactor once GH-774 gets fixed
+  _computeMapChanges(MapChangeRecord changes, first) {
+    if (first) {
+      changes.map.forEach((cls, active) {
+        if (toBool(active)) _currentSet.add(cls);
+      });
+    } else {
+      changes.forEachChange((ChangedKeyValue kv) {
+        var cls = kv.key;
+        var active = toBool(kv.currentValue);
+        var wasActive = toBool(kv.previousValue);
+        if (active != wasActive) {
+          if (active) {
+            _currentSet.add(cls);
+          } else {
+            _currentSet.remove(cls);
+          }
+        }
+      });
+      changes.forEachAddition((AddedKeyValue kv) {
+        if (toBool(kv.currentValue)) _currentSet.add(kv.key);
+      });
+      changes.forEachRemoval((RemovedKeyValue kv) {
+        if (toBool(kv.previousValue)) _currentSet.remove(kv.key);
+      });
     }
-    if (classes is MapChangeRecord) classes = (classes as MapChangeRecord).map;
-    if (classes is Map) {
-      return classes.keys.where((key) => toBool(classes[key])).toList();
+  }
+
+  _applyChanges(index) {
+    if (_mode == null || (index != null && index % 2 == _mode)) {
+      _previousSet
+          .where((cls) => cls != null)
+          .forEach((cls) => _ngElement.removeClass(cls));
+      _currentSet
+          .where((cls) => cls != null)
+          .forEach((cls) => _ngElement.addClass(cls));
     }
-    if (classes is String) return classes.split(' ');
-    throw 'ng-class expects expression value to be List, Map or String, '
-          'got $classes';
+
+    _previousSet = _currentSet.toSet();
   }
 }
