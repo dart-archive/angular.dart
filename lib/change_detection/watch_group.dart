@@ -77,7 +77,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   /// STATS: Number of invocation watchers (closures/methods) which are in use.
   int get evalCost => _evalCost;
 
-  /// STATS: Number of invocation watchers which are in use including child [WatchGroup]s.
+  /**
+   *  STATS: Number of invocation watchers which are in use including child
+   *  [WatchGroup]s.
+   */
   int get totalEvalCost {
     var cost = _evalCost;
     WatchGroup group = _watchGroupHead;
@@ -622,7 +625,8 @@ class _CollectionHandler extends _Handler {
   _CollectionHandler(WatchGroup watchGrp, String expression)
       : super(watchGrp, expression);
   /**
-   * This function forwards the watched object to the next [_Handler] synchronously.
+   * This function forwards the watched object to the next [_Handler]
+   * synchronously.
    */
   void acceptValue(object) {
     watchRecord.object = object;
@@ -773,7 +777,9 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
         mode =  _MODE_MAP_CLOSURE_;
       } else {
         if (_fieldGetterFactory.isMethod(value, name)) {
-          mode = _fieldGetterFactory.isMethodInvoke ? _MODE_METHOD_INVOKE_ : _MODE_METHOD_;
+          mode = _fieldGetterFactory.isMethodInvoke ?
+              _MODE_METHOD_INVOKE_:
+              _MODE_METHOD_;
           fn = _fieldGetterFactory.method(value, name);
         } else {
           mode = _MODE_FIELD_CLOSURE_;
@@ -801,11 +807,15 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
         break;
       case _MODE_FIELD_CLOSURE_:
         var closure = fn(_object);
-        value = closure == null ? null : Function.apply(closure, args, namedArgs);
+        value = closure == null ?
+            null:
+            Function.apply(closure, args, namedArgs);
         break;
       case _MODE_MAP_CLOSURE_:
         var closure = object[name];
-        value = closure == null ? null : Function.apply(closure, args, namedArgs);
+        value = closure == null ?
+            null:
+            Function.apply(closure, args, namedArgs);
         break;
       case _MODE_METHOD_:
         value = Function.apply(fn, args, namedArgs);
