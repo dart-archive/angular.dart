@@ -1,7 +1,7 @@
 part of angular.directive;
 
 /**
- * The [NgBindTemplateDirective] specifies that the element text content should
+ * The [NgBindTemplate] specifies that the element text content should
  * be replaced with the interpolation of the template in the ngBindTemplate
  * attribute. Unlike ngBind, the ngBindTemplate can contain multiple {{ }}
  * expressions.
@@ -9,10 +9,10 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-bind-template]',
     map: const {'ng-bind-template': '@bind'})
-class NgBindTemplateDirective {
+class NgBindTemplate {
   final dom.Element element;
 
-  NgBindTemplateDirective(this.element);
+  NgBindTemplate(this.element);
 
   void set bind(value) {
     element.text = value;

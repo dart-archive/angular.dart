@@ -8,13 +8,13 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-hide]',
     map: const {'ng-hide': '=>hide'})
-class NgHideDirective {
+class NgHide {
   static String NG_HIDE_CLASS = 'ng-hide';
 
   final dom.Element element;
   final NgAnimate animate;
 
-  NgHideDirective(this.element, this.animate);
+  NgHide(this.element, this.animate);
 
   set hide(value) {
     if (toBool(value)) {
@@ -33,17 +33,17 @@ class NgHideDirective {
 @NgDirective(
     selector: '[ng-show]',
     map: const {'ng-show': '=>show'})
-class NgShowDirective {
+class NgShow {
   final dom.Element element;
   final NgAnimate animate;
 
-  NgShowDirective(this.element, this.animate);
+  NgShow(this.element, this.animate);
 
   set show(value) {
     if (toBool(value)) {
-      animate.removeClass(element, NgHideDirective.NG_HIDE_CLASS);
+      animate.removeClass(element, NgHide.NG_HIDE_CLASS);
     } else {
-      animate.addClass(element, NgHideDirective.NG_HIDE_CLASS);
+      animate.addClass(element, NgHide.NG_HIDE_CLASS);
     }
   }
 }
