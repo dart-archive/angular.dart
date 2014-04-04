@@ -73,7 +73,7 @@ void main() {
 
         scope.apply();
 
-        expect(element.classes.contains('one')).toBe(true);
+        expect(element).toHaveClass('one');
       });
     });
   });

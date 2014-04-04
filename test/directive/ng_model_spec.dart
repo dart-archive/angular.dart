@@ -15,7 +15,7 @@ void simulateTypingText(InputElement input, String text) {
   input..focus()..dispatchEvent(new TextEvent('textInput', data: text));
 }
 
-bool simulateTypingTextWithConfirmation(InputElement input, String text, 
+bool simulateTypingTextWithConfirmation(InputElement input, String text,
                                         { bool shouldWorkForChrome : true }) {
   bool result;
   String val = input.value;
@@ -1095,16 +1095,16 @@ void main() {
 
         expect(model.pristine).toEqual(false);
         expect(model.dirty).toEqual(true);
-        expect(element.classes.contains('ng-pristine')).toBe(false);
-        expect(element.classes.contains('ng-dirty')).toBe(true);
+        expect(element).not.toHaveClass('ng-pristine');
+        expect(element).toHaveClass('ng-dirty');
 
         model.removeInfo('ng-dirty');
         scope.apply();
 
         expect(model.pristine).toEqual(true);
         expect(model.dirty).toEqual(false);
-        expect(element.classes.contains('ng-pristine')).toBe(true);
-        expect(element.classes.contains('ng-dirty')).toBe(false);
+        expect(element).toHaveClass('ng-pristine');
+        expect(element).not.toHaveClass('ng-dirty');
       });
 
       // TODO(matias): figure out why the 2nd apply is optional
@@ -1125,33 +1125,33 @@ void main() {
 
         scope.apply();
 
-        expect(formElement.classes.contains('ng-pristine')).toBe(true);
-        expect(formElement.classes.contains('ng-dirty')).toBe(false);
+        expect(formElement).toHaveClass('ng-pristine');
+        expect(formElement).not.toHaveClass('ng-dirty');
 
-        expect(fieldsetElement.classes.contains('ng-pristine')).toBe(true);
-        expect(fieldsetElement.classes.contains('ng-dirty')).toBe(false);
+        expect(fieldsetElement).toHaveClass('ng-pristine');
+        expect(fieldsetElement).not.toHaveClass('ng-dirty');
 
-        expect(inputElement1.classes.contains('ng-pristine')).toBe(true);
-        expect(inputElement1.classes.contains('ng-dirty')).toBe(false);
+        expect(inputElement1).toHaveClass('ng-pristine');
+        expect(inputElement1).not.toHaveClass('ng-dirty');
 
-        expect(inputElement2.classes.contains('ng-pristine')).toBe(true);
-        expect(inputElement2.classes.contains('ng-dirty')).toBe(false);
+        expect(inputElement2).toHaveClass('ng-pristine');
+        expect(inputElement2).not.toHaveClass('ng-dirty');
 
         inputElement1.value = '...hi...';
         _.triggerEvent(inputElement1, 'change');
         scope.apply();
 
-        expect(formElement.classes.contains('ng-pristine')).toBe(false);
-        expect(formElement.classes.contains('ng-dirty')).toBe(true);
+        expect(formElement).not.toHaveClass('ng-pristine');
+        expect(formElement).toHaveClass('ng-dirty');
 
-        expect(fieldsetElement.classes.contains('ng-pristine')).toBe(false);
-        expect(fieldsetElement.classes.contains('ng-dirty')).toBe(true);
+        expect(fieldsetElement).not.toHaveClass('ng-pristine');
+        expect(fieldsetElement).toHaveClass('ng-dirty');
 
-        expect(inputElement1.classes.contains('ng-pristine')).toBe(false);
-        expect(inputElement1.classes.contains('ng-dirty')).toBe(true);
+        expect(inputElement1).not.toHaveClass('ng-pristine');
+        expect(inputElement1).toHaveClass('ng-dirty');
 
-        expect(inputElement2.classes.contains('ng-pristine')).toBe(true);
-        expect(inputElement2.classes.contains('ng-dirty')).toBe(false);
+        expect(inputElement2).toHaveClass('ng-pristine');
+        expect(inputElement2).not.toHaveClass('ng-dirty');
       });
     });
 
@@ -1204,8 +1204,8 @@ void main() {
 
         expect(model.valid).toEqual(false);
         expect(model.invalid).toEqual(true);
-        //expect(element.classes.contains('ng-valid')).toBe(false);
-        expect(element.classes.contains('ng-invalid')).toBe(true);
+        //expect(element).not.toHaveClass('ng-valid');
+        expect(element).toHaveClass('ng-invalid');
 
         model.removeError('ng-required');
         model.validate();
@@ -1213,8 +1213,8 @@ void main() {
 
         expect(model.valid).toEqual(true);
         expect(model.invalid).toEqual(false);
-        expect(element.classes.contains('ng-invalid')).toBe(false);
-        // expect(element.classes.contains('ng-valid')).toBe(true);
+        expect(element).not.toHaveClass('ng-invalid');
+        // expect(element).toHaveClass('ng-valid');
       });
 
       it('should set the validity with respect to all existing validations when setValidity() is used', (Scope scope) {
@@ -1365,15 +1365,15 @@ void main() {
           scope.context['myModel'] = 'value';
         });
 
-        expect(input.classes.contains('ng-email-invalid')).toBe(true);
-        expect(input.classes.contains('ng-email-valid')).toBe(false);
+        expect(input).toHaveClass('ng-email-invalid');
+        expect(input).not.toHaveClass('ng-email-valid');
 
         scope.apply(() {
           scope.context['myModel'] = 'value@email.com';
         });
 
-        expect(input.classes.contains('ng-email-valid')).toBe(true);
-        expect(input.classes.contains('ng-email-invalid')).toBe(false);
+        expect(input).toHaveClass('ng-email-valid');
+        expect(input).not.toHaveClass('ng-email-invalid');
       });
 
       it('should display the valid and invalid CSS classes on the element for custom validations',
@@ -1383,15 +1383,15 @@ void main() {
 
         scope.apply();
 
-        expect(input.classes.contains('custom-invalid')).toBe(true);
-        expect(input.classes.contains('custom-valid')).toBe(false);
+        expect(input).toHaveClass('custom-invalid');
+        expect(input).not.toHaveClass('custom-valid');
 
         scope.apply(() {
           scope.context['myModel'] = 'yes';
         });
 
-        expect(input.classes.contains('custom-valid')).toBe(true);
-        expect(input.classes.contains('custom-invalid')).toBe(false);
+        expect(input).toHaveClass('custom-valid');
+        expect(input).not.toHaveClass('custom-invalid');
       });
 
       it('should only validate twice during compilation and once upon scope digest',

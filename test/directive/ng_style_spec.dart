@@ -19,7 +19,7 @@ void main() {
     it('should silently ignore undefined style', () {
       dom.Element element = _.compile('<div ng-style="myStyle"></div>');
       _.rootScope.apply();
-      expect(element.classes.contains('ng-exception')).toBeFalsy();
+      expect(element).not.toHaveClass('ng-exception');
     });
 
 
