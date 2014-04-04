@@ -53,7 +53,7 @@ void main() {
       });
 
       it('should use the UrlRewriter for both HTML and CSS URLs', async(inject(
-          (Http $http, Compiler $compile, Scope $rootScope, Logger log,
+          (Http http, Compiler compile, Scope rootScope, Logger log,
            Injector injector, NgZone zone, MockHttpBackend backend,
            DirectiveMap directives) {
 
@@ -63,7 +63,7 @@ void main() {
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
         zone.run(() {
-          $compile([element], directives)(injector, [element]);
+          compile([element], directives)(injector, [element]);
         });
 
         backend.flush();
@@ -88,24 +88,24 @@ void main() {
       });
 
       it('should replace element with template from url', async(inject(
-          (Http $http, Compiler $compile, Scope $rootScope,  Logger log,
+          (Http http, Compiler compile, Scope rootScope,  Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend.expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
         var element = es('<div><simple-url log>ignore</simple-url><div>');
-        $compile(element, directives)(injector, element);
+        compile(element, directives)(injector, element);
 
         backend.flush();
         microLeap();
 
         expect(element[0]).toHaveText('Simple!');
-        $rootScope.apply();
+        rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
       })));
 
       it('should load template from URL once', async(inject(
-          (Http $http, Compiler $compile, Scope $rootScope,  Logger log,
+          (Http http, Compiler compile, Scope rootScope,  Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend.whenGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
@@ -114,26 +114,27 @@ void main() {
             '<simple-url log>ignore</simple-url>'
             '<simple-url log>ignore</simple-url>'
             '<div>');
-        $compile(element, directives)(injector, element);
+        compile(element, directives)(injector, element);
 
         backend.flush();
         microLeap();
 
         expect(element.first).toHaveText('Simple!Simple!');
-        $rootScope.apply();
+        rootScope.apply();
+
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
       })));
 
       it('should load a CSS file into a style', async(inject(
-          (Http $http, Compiler $compile, Scope $rootScope, Logger log,
+          (Http http, Compiler compile, Scope rootScope, Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend
             ..expectGET('simple.css').respond('.hello{}')
             ..expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
-        $compile([element], directives)(injector, [element]);
+        compile([element], directives)(injector, [element]);
 
         backend.flush();
         microLeap();
@@ -142,17 +143,17 @@ void main() {
         expect(element.children[0].shadowRoot).toHaveHtml(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
-        $rootScope.apply();
+        rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
       })));
 
       it('should load a CSS file with a \$template', async(inject(
-          (Http $http, Compiler $compile, Scope $rootScope, Injector injector,
+          (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
         backend.expectGET('simple.css').respond('.hello{}');
-        $compile(element, directives)(injector, element);
+        compile(element, directives)(injector, element);
 
         backend.flush();
         microLeap();
@@ -160,11 +161,11 @@ void main() {
       })));
 
       it('should ignore CSS load errors ', async(inject(
-          (Http $http, Compiler $compile, Scope $rootScope, Injector injector,
+          (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
         backend.expectGET('simple.css').respond(500, 'some error');
-        $compile(element, directives)(injector, element);
+        compile(element, directives)(injector, element);
 
         backend.flush();
         microLeap();
@@ -176,11 +177,11 @@ void main() {
       })));
 
       it('should load a CSS with no template', async(inject(
-          (Http $http, Compiler $compile, Scope $rootScope, Injector injector,
+          (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><only-css log>ignore</only-css><div>');
         backend.expectGET('simple.css').respond('.hello{}');
-        $compile(element, directives)(injector, element);
+        compile(element, directives)(injector, element);
 
         backend.flush();
         microLeap();
@@ -188,14 +189,14 @@ void main() {
       })));
 
       it('should load the CSS before the template is loaded', async(inject(
-          (Http $http, Compiler $compile, Scope $rootScope, Injector injector,
+          (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         backend
             ..expectGET('simple.css').respond('.hello{}')
             ..expectGET('simple.html').respond('<div>Simple!</div>');
 
         var element = es('<html-and-css>ignore</html-and-css>');
-        $compile(element, directives)(injector, element);
+        compile(element, directives)(injector, element);
 
         backend.flush();
         microLeap();
@@ -211,7 +212,7 @@ void main() {
       });
 
       it('should load multiple CSS files into a style', async(inject(
-          (Http $http, Compiler $compile, Scope $rootScope, Logger log,
+          (Http http, Compiler compile, Scope rootScope, Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend
             ..expectGET('simple.css').respond('.hello{}')
@@ -219,7 +220,7 @@ void main() {
             ..expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
-        $compile([element], directives)(injector, [element]);
+        compile([element], directives)(injector, [element]);
 
         backend.flush();
         microLeap();
@@ -228,7 +229,7 @@ void main() {
         expect(element.children[0].shadowRoot).toHaveHtml(
             '<style>.hello{}.world{}</style><div log="SIMPLE">Simple!</div>'
         );
-        $rootScope.apply();
+        rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
       })));

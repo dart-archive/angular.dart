@@ -4,8 +4,8 @@ part of angular.core_internal;
  * Compiles a string with markup into an expression. This service is used by the
  * HTML [Compiler] service for data binding.
  *
- *     var $interpolate = ...; // injected
- *     var exp = $interpolate('Hello {{name}}!');
+ *     var interpolate = ...; // injected
+ *     var exp = interpolate('Hello {{name}}!');
  *     expect(exp).toEqual('"Hello "+(name)+"!"');
  */
 @NgInjectableService()
