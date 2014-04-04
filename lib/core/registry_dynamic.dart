@@ -56,9 +56,8 @@ class DynamicMetadataExtractor implements MetadataExtractor {
   }
 
 
-  Map<String, AttrFieldAnnotation> fieldMetadataExtractor(Type type) {
-    return _fieldMetadataCache.putIfAbsent(type, () => _fieldMetadataExtractor(type));
-  }
+  Map<String, AttrFieldAnnotation> fieldMetadataExtractor(Type type) =>
+      _fieldMetadataCache.putIfAbsent(type, () => _fieldMetadataExtractor(type));
 
   Map<String, AttrFieldAnnotation> _fieldMetadataExtractor(Type type) {
     ClassMirror cm = reflectType(type);

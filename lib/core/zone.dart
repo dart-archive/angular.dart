@@ -63,11 +63,11 @@ class NgZone {
   }
   // Called from the parent zone.
   _onRun(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) =>
-    _onRunBase(self, delegate, zone, () => delegate.run(zone, fn));
+      _onRunBase(self, delegate, zone, () => delegate.run(zone, fn));
 
   _onRunUnary(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
               fn(args), args) =>
-    _onRunBase(self, delegate, zone, () => delegate.runUnary(zone, fn, args));
+      _onRunBase(self, delegate, zone, () => delegate.runUnary(zone, fn, args));
 
   _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate,
                        async.Zone zone, fn()) {
@@ -131,7 +131,7 @@ class NgZone {
     return new LongStackTrace(name, shortStacktrace, _longStacktrace);
   }
 
-  _getStacktrace() {
+  StackTrace _getStacktrace() {
     try {
       throw [];
     } catch (e, s) {

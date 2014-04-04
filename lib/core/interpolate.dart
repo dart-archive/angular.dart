@@ -26,7 +26,7 @@ class Interpolate implements Function {
    */
 
   String call(String template, [bool mustHaveExpression = false,
-  String startSymbol = '{{', String endSymbol = '}}']) {
+              String startSymbol = '{{', String endSymbol = '}}']) {
     if (template == null || template.isEmpty) return "";
 
     final startLen = startSymbol.length;

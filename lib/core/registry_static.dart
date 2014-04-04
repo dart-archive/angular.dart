@@ -5,7 +5,7 @@ import 'package:angular/core/registry.dart';
 
 @NgInjectableService()
 class StaticMetadataExtractor extends MetadataExtractor {
-  Map<Type, Iterable> metadataMap;
+  final Map<Type, Iterable> metadataMap;
   final List empty = const [];
 
   StaticMetadataExtractor(this.metadataMap);
