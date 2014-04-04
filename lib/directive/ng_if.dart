@@ -89,10 +89,9 @@ abstract class _NgUnlessIfAttrDirectiveBase {
  *        </div>
  *     </div>
  */
-@NgDirective(
-    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
+@NgTemplate(
     selector:'[ng-if]',
-    map: const {'.': '=>condition'})
+    mapping: '=>condition')
 class NgIf extends _NgUnlessIfAttrDirectiveBase {
   NgIf(BoundViewFactory boundViewFactory,
        ViewPort viewPort,
@@ -150,10 +149,9 @@ class NgIf extends _NgUnlessIfAttrDirectiveBase {
  *        </div>
  *     </div>
  */
-@NgDirective(
-    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
+@NgTemplate(
     selector:'[ng-unless]',
-    map: const {'.': '=>condition'})
+    mapping: '=>condition')
 class NgUnless extends _NgUnlessIfAttrDirectiveBase {
 
   NgUnless(BoundViewFactory boundViewFactory,

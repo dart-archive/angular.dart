@@ -46,7 +46,7 @@ class DynamicMetadataExtractor implements MetadataExtractor {
         var attrName = ann.attrName;
         if (newMap.containsKey(attrName)) {
           throw 'Mapping for attribute $attrName is already defined (while '
-          'processing annottation for field $fieldName of $type)';
+                'processing annotation for field $fieldName of $type)';
         }
         newMap[attrName] = '${mappingSpec(ann)}$fieldName';
       });

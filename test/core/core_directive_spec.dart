@@ -46,19 +46,17 @@ void main() {
       });
 
       it('should throw when annotation is for existing mapping', () {
-        var module = new Module()
-            ..type(Bad1Component);
+        var module = new Module()..type(Bad1Component);
 
         var injector = applicationFactory().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Mapping for attribute foo is already defined (while '
-        'processing annottation for field foo of Bad1Component)');
+                   'processing annotation for field foo of Bad1Component)');
       });
 
       it('should throw when annotated both getter and setter', () {
-        var module = new Module()
-            ..type(Bad2Component);
+        var module = new Module()..type(Bad2Component);
 
         var injector = applicationFactory().addModule(module).createInjector();
         expect(() {

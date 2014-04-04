@@ -65,10 +65,9 @@ part of angular.directive;
  *     </ul>
  */
 
-@NgDirective(
-    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
+@NgTemplate(
     selector: '[ng-repeat]',
-    map: const {'.': '@expression'})
+    mapping: '@expression')
 class NgRepeat {
   static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(?:track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
   static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([$\w]+)|\(([$\w]+)\s*,\s*([$\w]+)\))$');
@@ -98,7 +97,7 @@ class NgRepeat {
     Match match = _SYNTAX.firstMatch(_expression);
     if (match == null) {
       throw "[NgErr7] ngRepeat error! Expected expression in form of '_item_ "
-          "in _collection_[ track by _id_]' but got '$_expression'.";
+            "in _collection_[ track by _id_]' but got '$_expression'.";
     }
 
     _listExpr = match.group(2);

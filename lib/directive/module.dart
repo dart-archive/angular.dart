@@ -33,7 +33,7 @@ part 'ng_control.dart';
 part 'ng_model.dart';
 part 'ng_pluralize.dart';
 part 'ng_repeat.dart';
-part 'ng_template.dart';
+part 'ng_plain_template.dart';
 part 'ng_show_hide.dart';
 part 'ng_src_boolean.dart';
 part 'ng_style.dart';
@@ -86,7 +86,7 @@ class NgDirectiveModule extends Module {
     value(NgEvent, null);
     value(NgStyle, null);
     value(NgNonBindable, null);
-    value(NgTemplate, null);
+    value(NgPlainTemplate, null);
     value(NgControl, new NgNullControl());
     value(NgForm, new NgNullForm());
 

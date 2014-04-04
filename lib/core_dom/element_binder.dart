@@ -48,16 +48,13 @@ class ElementBinder {
 
   final DirectiveRef component;
 
-  // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
-  final String childMode;
+  final bool compileChildren;
 
-  ElementBinder(this._perf, this._expando, this._parser, this.component, this.decorators,
-                this.onEvents, this.bindAttrs, this.childMode);
+  ElementBinder(this._perf, this._expando, this._parser, this.component,
+                this.decorators, this.onEvents, this.bindAttrs,
+                this.compileChildren);
 
   final bool hasTemplate = false;
-
-  bool get shouldCompileChildren =>
-      childMode == AbstractNgAnnotation.COMPILE_CHILDREN;
 
   var _directiveCache;
 
@@ -73,25 +70,33 @@ class ElementBinder {
   bool get hasDirectivesOrEvents =>
       _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
-  _createAttrMappings(controller, scope, DirectiveRef ref, nodeAttrs, filters, tasks) {
+  void _createAttrMappings(controller, scope, DirectiveRef ref, nodeAttrs, filters, tasks) {
+    var expression = ref.value;
+
     ref.mappings.forEach((MappingParts p) {
       var attrName = p.attrName;
+      var isTemplate = nodeAttrs == null;
       var dstExpression = p.dstExpression;
-      if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
 
       Expression dstPathFn = _parser(dstExpression);
       if (!dstPathFn.isAssignable) {
-        throw "Expression '$dstExpression' is not assignable in mapping '${p.originalValue}' "
-              "for attribute '$attrName'.";
+        var msg = "Expression '$dstExpression' is not assignable in mapping "
+                  "'${p.originalValue}'";
+        throw attrName == null ? msg : msg + " for attribute '$attrName'.";
       }
 
       switch (p.mode) {
         case '@': // string
           var taskId = tasks.registerTask();
-          nodeAttrs.observe(attrName, (value) {
-            dstPathFn.assign(controller, value);
+          if (isTemplate) {
+            dstPathFn.assign(controller, expression);
             tasks.completeTask(taskId);
-          });
+          } else {
+            nodeAttrs.observe(attrName, (value) {
+              dstPathFn.assign(controller, value);
+              tasks.completeTask(taskId);
+            });
+          }
           break;
 
         case '<=>': // two-way
@@ -124,32 +129,36 @@ class ElementBinder {
           break;
 
         case '=>': // one-way
-          if (nodeAttrs[attrName] == null) return;
+          if (!isTemplate) expression = nodeAttrs[attrName];
+          if (expression == null) return;
           var taskId = tasks.registerTask();
 
-          Expression attrExprFn = _parser(nodeAttrs[attrName]);
-          scope.watch(nodeAttrs[attrName], (v, _) {
+          scope.watch(expression, (v, _) {
             dstPathFn.assign(controller, v);
             tasks.completeTask(taskId);
           }, filters: filters);
           break;
 
         case '=>!': //  one-way, one-time
-          if (nodeAttrs[attrName] == null) return;
+          if (!isTemplate) expression = nodeAttrs[attrName];
+          if (expression == null) return;
 
-          Expression attrExprFn = _parser(nodeAttrs[attrName]);
           var watch;
-          watch = scope.watch(nodeAttrs[attrName], (value, _) {
-            if (dstPathFn.assign(controller, value) != null) {
+          watch = scope.watch(expression, (v, _) {
+            if (dstPathFn.assign(controller, v) != null) {
               watch.remove();
             }
           }, filters: filters);
           break;
 
         case '&': // callback
+          if (!isTemplate) expression = nodeAttrs[attrName];
           dstPathFn.assign(controller,
-              _parser(nodeAttrs[attrName]).bind(scope.context, ScopeLocals.wrapper));
+              _parser(expression).bind(scope.context, ScopeLocals.wrapper));
           break;
+
+        default:
+          throw "Unsupported mode '${p.mode}'";
       }
     });
   }
@@ -168,9 +177,9 @@ class ElementBinder {
           scope.context[(ref.annotation as NgController).publishAs] = controller;
         }
 
-        var tasks = new _TaskList(controller is NgAttachAware ? () {
-          if (scope.isAttached) controller.attach();
-        } : null);
+        var tasks = new _TaskList(controller is NgAttachAware ?
+            () { if (scope.isAttached) controller.attach(); } :
+            null);
 
         _createAttrMappings(controller, scope, ref, nodeAttrs, filters, tasks);
 
@@ -310,12 +319,12 @@ class ElementBinder {
  * Private class used for managing controller.attach() calls
  */
 class _TaskList {
-  var onDone;
+  final Function _onDone;
   final List _tasks = [];
   bool isDone = false;
 
-  _TaskList(this.onDone) {
-    if (onDone == null) isDone = true;
+  _TaskList(this._onDone) {
+    if (_onDone == null) isDone = true;
   }
 
   int registerTask() {
@@ -328,12 +337,12 @@ class _TaskList {
     if (isDone) return;
     _tasks[id] = true;
     if (_tasks.every((a) => a)) {
-      onDone();
+      _onDone();
       isDone = true;
     }
   }
 
-  doneRegistering() {
+  void doneRegistering() {
     completeTask(registerTask());
   }
 }

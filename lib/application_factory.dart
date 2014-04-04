@@ -48,6 +48,7 @@ import 'dart:html';
 ],
 metaTargets: const [
     NgInjectableService,
+    NgTemplate,
     NgDirective,
     NgController,
     NgComponent,

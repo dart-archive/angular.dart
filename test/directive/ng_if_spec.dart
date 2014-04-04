@@ -2,9 +2,7 @@ library ng_if_spec;
 
 import '../_specs.dart';
 
-@NgDirective(
-    selector: '[child-controller]',
-    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN)
+@NgTemplate(selector: '[child-controller]')
 class ChildController {
   ChildController(BoundViewFactory boundViewFactory,
                   ViewPort viewPort,

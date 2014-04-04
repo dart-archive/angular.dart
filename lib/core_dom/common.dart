@@ -8,7 +8,8 @@ class MappingParts {
   final String dstExpression;
   final String originalValue;
 
-  const MappingParts(this.attrName, this.mode, this.dstExpression, this.originalValue);
+  const MappingParts(this.attrName, this.mode, this.dstExpression,
+                     this.originalValue);
 }
 
 class DirectiveRef {

@@ -71,13 +71,6 @@ class _SelectorPart {
       : element;
 }
 
-_addRefs(ElementBinderBuilder builder, List<_Directive> directives, dom.Node node,
-         [String attrValue]) {
-  directives.forEach((directive) {
-    builder.addDirective(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
-  });
-}
-
 class _ElementSelector {
   final String name;
 
@@ -138,7 +131,7 @@ class _ElementSelector {
                                     List<_ElementSelector> partialSelection,
                                     dom.Node node, String nodeName) {
     if (elementMap.containsKey(nodeName)) {
-      _addRefs(builder, elementMap[nodeName], node);
+      builder._addRefs(elementMap[nodeName], node);
     }
     if (elementPartialMap.containsKey(nodeName)) {
       if (partialSelection == null) partialSelection = <_ElementSelector>[];
@@ -151,7 +144,7 @@ class _ElementSelector {
                                      List<_ElementSelector> partialSelection,
                                      dom.Node node, String className) {
     if (classMap.containsKey(className)) {
-      _addRefs(builder, classMap[className], node);
+      builder._addRefs(classMap[className], node);
     }
     if (classPartialMap.containsKey(className)) {
       if (partialSelection == null) partialSelection = <_ElementSelector>[];
@@ -170,10 +163,10 @@ class _ElementSelector {
     if (matchingKey != null) {
       Map<String, List<_Directive>> valuesMap = attrValueMap[matchingKey];
       if (valuesMap.containsKey('')) {
-        _addRefs(builder, valuesMap[''], node, attrValue);
+        builder._addRefs(valuesMap[''], node, attrValue);
       }
       if (attrValue != '' && valuesMap.containsKey(attrValue)) {
-        _addRefs(builder, valuesMap[attrValue], node, attrValue);
+        builder._addRefs(valuesMap[attrValue], node, attrValue);
       }
     }
     if (attrValuePartialMap.containsKey(attrName)) {
@@ -279,8 +272,8 @@ class DirectiveSelector {
     }
 
     // Select node
-    partialSelection = elementSelector.selectNode(builder,
-        partialSelection, element, nodeName);
+    partialSelection = elementSelector.selectNode(builder, partialSelection,
+        element, nodeName);
 
     // Select .name
     if ((element.classes) != null) {

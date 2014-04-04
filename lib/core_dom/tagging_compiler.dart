@@ -60,7 +60,7 @@ class TaggingCompiler implements Compiler {
         taggedElementBinderIndex = parentElementBinderOffset;
       }
 
-      if (elementBinder.shouldCompileChildren) {
+      if (elementBinder.compileChildren) {
         if (domCursor.descend()) {
           var addedDummy = false;
           if (taggedElementBinder == null) {

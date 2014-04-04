@@ -5,17 +5,13 @@ import 'dart:mirrors';
 
 @NgComponent(selector:'component')            class _Component{}
 @NgDirective(selector:'[ignore-children]',
-             children: AbstractNgAnnotation.IGNORE_CHILDREN)
-                                              class _IgnoreChildren{}
-@NgDirective(selector:'[structural]',
-             children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN)
-                                              class _Structural{}
+             compileChildren: false)          class _IgnoreChildren{}
+@NgTemplate(selector:'[structural]')          class _Structural{}
 @NgDirective(selector:'[directive]')          class _DirectiveAttr{}
 
 
 directiveFor(i) {
   ClassMirror cm = reflectType(i);
-
 }
 main() => describe('ElementBinderBuilder', () {
   var b;
@@ -23,11 +19,10 @@ main() => describe('ElementBinderBuilder', () {
   var node = null;
 
   beforeEachModule((Module module) {
-    module
-      ..type(_DirectiveAttr)
-      ..type(_Component)
-      ..type(_IgnoreChildren)
-      ..type(_Structural);
+    module..type(_DirectiveAttr)
+          ..type(_Component)
+          ..type(_IgnoreChildren)
+          ..type(_Structural);
   });
 
   beforeEach((DirectiveMap d, ElementBinderFactory f) {
@@ -50,7 +45,7 @@ main() => describe('ElementBinderBuilder', () {
 
     expect(b.decorators.length).toEqual(1);
     expect(b.component).toBeNull();
-    expect(b.childMode).toEqual(AbstractNgAnnotation.COMPILE_CHILDREN);
+    expect(b.compileChildren).toBe(true);
 
   });
 
@@ -72,6 +67,6 @@ main() => describe('ElementBinderBuilder', () {
 
     expect(b.decorators.length).toEqual(1);
     expect(b.component).toBeNull();
-    expect(b.childMode).toEqual(AbstractNgAnnotation.IGNORE_CHILDREN);
+    expect(b.compileChildren).toBe(false);
   });
 });

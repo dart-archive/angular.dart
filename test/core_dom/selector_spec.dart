@@ -15,20 +15,17 @@ import '../_specs.dart';
 
 @NgComponent(selector:'component')            class _Component{}
 @NgDirective(selector:'[attribute]')          class _Attribute{}
-@NgDirective(selector:'[structural]',
-             children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN)
-                                              class _Structural{}
+@NgTemplate(selector:'[structural]')          class _Structural{}
 
 @NgDirective(selector:'[ignore-children]',
-             children: AbstractNgAnnotation.IGNORE_CHILDREN)
-                                              class _IgnoreChildren{}
+             compileChildren: false)          class _IgnoreChildren{}
 
 @NgDirective(selector: '[my-model][required]')
 @NgDirective(selector: '[my-model][my-required]')
                                               class _TwoDirectives {}
 
-@NgDirective(selector: '[two-directives]') class _OneOfTwoDirectives {}
-@NgDirective(selector: '[two-directives]') class _TwoOfTwoDirectives {}
+@NgDirective(selector: '[two-directives]')    class _OneOfTwoDirectives {}
+@NgDirective(selector: '[two-directives]')    class _TwoOfTwoDirectives {}
 
 
 main() {

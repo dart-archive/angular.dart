@@ -3,7 +3,7 @@ library ng_template_spec;
 import '../_specs.dart';
 
 main() {
-  describe('NgTemplateDirective', () {
+  describe('NgPlainTemplate', () {
     TestBed _;
     var element;
 
@@ -21,14 +21,14 @@ main() {
 
     they('should populate TemplateCache with contents of a ng-template template element',
       [ // <template>
-        '<div>foo' +
-          '<template id="/ignore">ignore me</template>' +
-          '<template type="text/ng-template" id="/myTemplate.html"><x>{{y}}</x></template>' +
+        '<div>foo'
+          '<template id="/ignore">ignore me</template>'
+          '<template type="text/ng-template" id="/myTemplate.html"><x>{{y}}</x></template>'
         '</div>',
         // <script>
-        '<div>foo' +
-          '<script id="/ignore">ignore me</script>' +
-          '<script type="text/ng-template" id="/myTemplate.html"><x>{{y}}</x></script>' +
+        '<div>foo'
+          '<script id="/ignore">ignore me</script>'
+          '<script type="text/ng-template" id="/myTemplate.html"><x>{{y}}</x></script>'
         '</div>'],
       (TemplateCache templateCache) {
         _.compile(element);
@@ -39,8 +39,8 @@ main() {
 
     it('should not compile template elements', () {
       _.compile(element = e('<div>foo'
-          '<template type="text/javascript">some {{binding}} <div></div></template>'
-          '<template type="text/ng-template" id="/some">other {{binding}} <div></div></template>'
+            '<template type="text/javascript">some {{binding}} <div></div></template>'
+            '<template type="text/ng-template" id="/some">other {{binding}} <div></div></template>'
           '</div>'));
 
       microLeap();

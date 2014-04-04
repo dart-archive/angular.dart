@@ -162,18 +162,6 @@ class _ComponentFactory implements Function {
   }
 }
 
-class _AnchorAttrs extends NodeAttrs {
-  DirectiveRef _directiveRef;
-
-  _AnchorAttrs(this._directiveRef): super(null);
-
-  String operator [](name) => name == '.' ? _directiveRef.value : null;
-
-  void observe(String attributeName, _AttributeChanged notifyFn) {
-    notifyFn(attributeName == '.' ? _directiveRef.value : null);
-  }
-}
-
 String _html(obj) {
   if (obj is String) return obj;
   if (obj is List) return (obj as List).map((e) => _html(e)).join();
