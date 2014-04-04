@@ -111,8 +111,8 @@ abstract class Application {
       initializeDateFormatting(null, null).then((_) {
         try {
           var compiler = injector.get(Compiler);
-          var blockFactory = compiler(rootElements, injector.get(DirectiveMap));
-          blockFactory(injector, rootElements);
+          var viewFactory = compiler(rootElements, injector.get(DirectiveMap));
+          viewFactory(injector, rootElements);
         } catch (e, s) {
           exceptionHandler(e, s);
         }
