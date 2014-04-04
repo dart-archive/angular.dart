@@ -182,6 +182,7 @@ main() {
         "angular.directive.NgRepeat",
         "angular.directive.NgShow",
         "angular.directive.InputTextLike",
+        "angular.directive.InputDateLike",
         "angular.directive.InputNumberLike",
         "angular.directive.InputRadio",
         "angular.directive.InputCheckbox",

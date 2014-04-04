@@ -62,12 +62,14 @@ class NgDirectiveModule extends Module {
     value(NgRepeat, null);
     value(NgShow, null);
     value(InputTextLike, null);
+    value(InputDateLike, null);
     value(InputNumberLike, null);
     value(InputRadio, null);
     value(InputCheckbox, null);
     value(InputSelect, null);
     value(OptionValue, null);
     value(ContentEditable, null);
+    value(NgBindTypeForDateLike, null);
     value(NgModel, null);
     value(NgValue, null);
     value(NgTrueValue, new NgTrueValue());

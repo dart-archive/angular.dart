@@ -118,3 +118,10 @@ final Set<String> RESERVED_WORDS = new Set<String>.from(const [
   "while",
   "with"
 ]);
+
+/// Returns true iff o is [double.NAN].
+/// In particular, returns false if o is null.
+bool isNaN(Object o) => o is num && o.isNaN;
+
+/// Returns true iff o1 == o2 or both are [double.NAN].
+bool eqOrNaN(Object o1, Object o2) => o1 == o2 || (isNaN(o1) && isNaN(o2));
