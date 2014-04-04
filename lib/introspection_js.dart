@@ -39,10 +39,15 @@ new js.JsObject.jsify({"get": injector.get})..['_dart_'] = injector;
 js.JsObject _jsScope(Scope scope) {
   return new js.JsObject.jsify({
       "apply": scope.apply,
-      "digest": scope.rootScope.digest,
-      "flush": scope.rootScope.flush,
+      "broadcast": scope.broadcast,
       "context": scope.context,
+      "destroy": scope.destroy,
+      "digest": scope.rootScope.digest,
+      "emit": scope.emit,
+      "flush": scope.rootScope.flush,
       "get": (name) => scope.context[name],
+      "isAttached": scope.isAttached,
+      "isDestroyed": scope.isDestroyed,
       "set": (name, value) => scope.context[name] = value
   })..['_dart_'] = scope;
 }
