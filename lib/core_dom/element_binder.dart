@@ -1,6 +1,5 @@
 part of angular.core.dom_internal;
 
-
 class TemplateElementBinder extends ElementBinder {
   final DirectiveRef template;
   ViewFactory templateViewFactory;
@@ -15,17 +14,20 @@ class TemplateElementBinder extends ElementBinder {
     return _directiveCache = [template];
   }
 
-  TemplateElementBinder(_perf, _expando, this.template, this.templateBinder, onEvents, childMode)
+  TemplateElementBinder(_perf, _expando, this.template, this.templateBinder,
+                        onEvents, childMode)
       : super(_perf, _expando, null, null, onEvents, childMode);
 
-  toString() => "[TemplateElementBinder template:$template]";
+  String toString() => "[TemplateElementBinder template:$template]";
 
   _registerViewFactory(node, parentInjector, nodeModule) {
     assert(templateViewFactory != null);
     nodeModule
-      ..factory(ViewPort, (_) => new ViewPort(node, parentInjector.get(NgAnimate)))
+      ..factory(ViewPort, (_) =>
+          new ViewPort(node, parentInjector.get(NgAnimate)))
       ..value(ViewFactory, templateViewFactory)
-      ..factory(BoundViewFactory, (Injector injector) => templateViewFactory.bind(injector));
+      ..factory(BoundViewFactory, (Injector injector) =>
+          templateViewFactory.bind(injector));
   }
 }
 
@@ -35,14 +37,12 @@ class TemplateElementBinder extends ElementBinder {
  */
 class ElementBinder {
   // DI Services
-
   final Profiler _perf;
   final Expando _expando;
   final Map onEvents;
 
   // Member fields
   final decorators;
-
 
   final DirectiveRef component;
 
@@ -83,12 +83,9 @@ class ElementBinder {
 
         var attachDelayStatus = controller is NgAttachAware ? [false] : null;
         checkAttachReady() {
-          // TODO .every may be a better choice.
-          if (attachDelayStatus.reduce((a, b) => a && b)) {
+          if (attachDelayStatus.every((a) => a)) {
             attachDelayStatus = null;
-            if (scope.isAttached) {
-              controller.attach();
-            }
+            if (scope.isAttached) controller.attach();
           }
         }
         for (var map in ref.mappings) {
@@ -174,10 +171,9 @@ class ElementBinder {
 
   // Overridden in TemplateElementBinder
   _registerViewFactory(node, parentInjector, nodeModule) {
-    nodeModule
-      ..factory(ViewPort, null)
-      ..factory(ViewFactory, null)
-      ..factory(BoundViewFactory, null);
+    nodeModule..factory(ViewPort, null)
+              ..factory(ViewFactory, null)
+              ..factory(BoundViewFactory, null);
   }
 
   Injector bind(View view, Injector parentInjector, dom.Node node) {
@@ -234,7 +230,7 @@ class ElementBinder {
     return nodeInjector;
   }
 
-  toString() => "[ElementBinder decorators:$decorators]";
+  String toString() => "[ElementBinder decorators:$decorators]";
 }
 
 // Used for walking the DOM
@@ -244,15 +240,16 @@ class ElementBinderTreeRef {
 
   ElementBinderTreeRef(this.offsetIndex, this.subtree);
 }
+
 class ElementBinderTree {
-  ElementBinder binder;
-  List<ElementBinderTreeRef> subtrees;
+  final ElementBinder binder;
+  final List<ElementBinderTreeRef> subtrees;
 
   ElementBinderTree(this.binder, this.subtrees);
 }
 
 class TaggedTextBinder {
-  ElementBinder binder;
+  final ElementBinder binder;
   final int offsetIndex;
 
   TaggedTextBinder(this.binder, this.offsetIndex);
