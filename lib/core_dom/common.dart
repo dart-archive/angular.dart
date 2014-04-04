@@ -1,8 +1,6 @@
 part of angular.core.dom_internal;
 
-List<dom.Node> cloneElements(elements) {
-  return elements.map((el) => el.clone(true)).toList();
-}
+List<dom.Node> cloneElements(els) => els.map((el) => el.clone(true)).toList();
 
 class MappingParts {
   final String attrName;
@@ -18,7 +16,7 @@ class DirectiveRef {
   final Type type;
   final AbstractNgAnnotation annotation;
   final String value;
-  final mappings = new List<MappingParts>();
+  final mappings = <MappingParts>[];
 
   DirectiveRef(this.element, this.type, this.annotation, [ this.value ]);
 
@@ -37,8 +35,8 @@ class DirectiveRef {
  */
 Injector forceNewDirectivesAndFilters(Injector injector, List<Module> modules) {
   modules.add(new Module()
-      ..factory(Scope, (i) {
-        var scope = i.parent.get(Scope);
+      ..factory(Scope, (inj) {
+        var scope = inj.parent.get(Scope);
         return scope.createChild(new PrototypeMap(scope.context));
       }));
 

@@ -22,12 +22,11 @@ class TemplateElementBinder extends ElementBinder {
 
   _registerViewFactory(node, parentInjector, nodeModule) {
     assert(templateViewFactory != null);
-    nodeModule
-      ..factory(ViewPort, (_) =>
-          new ViewPort(node, parentInjector.get(NgAnimate)))
-      ..value(ViewFactory, templateViewFactory)
-      ..factory(BoundViewFactory, (Injector injector) =>
-          templateViewFactory.bind(injector));
+    nodeModule..factory(ViewPort, (_) =>
+                  new ViewPort(node, parentInjector.get(NgAnimate)))
+              ..value(ViewFactory, templateViewFactory)
+              ..factory(BoundViewFactory, (Injector injector) =>
+                  templateViewFactory.bind(injector));
   }
 }
 
@@ -61,10 +60,14 @@ class ElementBinder {
       childMode == AbstractNgAnnotation.COMPILE_CHILDREN;
 
   var _directiveCache;
+
   List<DirectiveRef> get _usableDirectiveRefs {
-    if (_directiveCache != null) return _directiveCache;
-    if (component != null) return _directiveCache = new List.from(decorators)..add(component);
-    return _directiveCache = decorators;
+    if (_directiveCache == null) {
+      _directiveCache = component != null ?
+          (new List.from(decorators)..add(component)):
+          decorators;
+    }
+    return _directiveCache;
   }
 
   bool get hasDirectivesOrEvents =>
@@ -151,7 +154,7 @@ class ElementBinder {
     });
   }
 
-  _link(nodeInjector, probe, scope, nodeAttrs, filters) {
+  void _link(nodeInjector, probe, scope, nodeAttrs, filters) {
     _usableDirectiveRefs.forEach((DirectiveRef ref) {
       var linkTimer;
       try {
@@ -174,11 +177,11 @@ class ElementBinder {
         if (controller is NgAttachAware) {
           var taskId = tasks.registerTask();
           Watch watch;
-          watch = scope.watch('1', // Cheat a bit.
+          watch = scope.watch(
+              '::1', // Cheat a bit.
               (_, __) {
-            watch.remove();
-            tasks.completeTask(taskId);
-          });
+                tasks.completeTask(taskId);
+              });
         }
 
         tasks.doneRegistering();
@@ -194,7 +197,7 @@ class ElementBinder {
     });
   }
 
-  _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
+  void _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
                             visibility) {
     if (ref.type == NgTextMustacheDirective) {
       nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
@@ -240,7 +243,7 @@ class ElementBinder {
   }
 
   // Overridden in TemplateElementBinder
-  _registerViewFactory(node, parentInjector, nodeModule) {
+  void _registerViewFactory(node, parentInjector, nodeModule) {
     nodeModule..factory(ViewPort, null)
               ..factory(ViewFactory, null)
               ..factory(BoundViewFactory, null);
@@ -355,7 +358,7 @@ class TaggedTextBinder {
   final int offsetIndex;
 
   TaggedTextBinder(this.binder, this.offsetIndex);
-  toString() => "[TaggedTextBinder binder:$binder offset:$offsetIndex]";
+  String toString() => "[TaggedTextBinder binder:$binder offset:$offsetIndex]";
 }
 
 // Used for the tagging compiler

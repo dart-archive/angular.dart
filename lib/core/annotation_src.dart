@@ -6,19 +6,20 @@ RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
 const String SHADOW_DOM_INJECTOR_NAME = 'SHADOW_INJECTOR';
 
-skipShadow(Injector injector)
-    => injector.name == SHADOW_DOM_INJECTOR_NAME ? injector.parent : injector;
+skipShadow(Injector injector) =>
+    injector.name == SHADOW_DOM_INJECTOR_NAME ? injector.parent : injector;
 
-localVisibility (Injector requesting, Injector defining)
-    => identical(skipShadow(requesting), defining);
+localVisibility (Injector requesting, Injector defining) =>
+    identical(skipShadow(requesting), defining);
 
 directChildrenVisibility(Injector requesting, Injector defining) {
   requesting = skipShadow(requesting);
-  return identical(requesting.parent, defining) || localVisibility(requesting, defining);
+  return identical(requesting.parent, defining) ||
+         localVisibility(requesting, defining);
 }
 
-AbstractNgAnnotation cloneWithNewMap(AbstractNgAnnotation annotation, map)
-    => annotation._cloneWithNewMap(map);
+AbstractNgAnnotation cloneWithNewMap(AbstractNgAnnotation annotation, map) =>
+    annotation._cloneWithNewMap(map);
 
 String mappingSpec(AbstractNgFieldAnnotation annotation) => annotation._mappingSpec;
 
@@ -295,48 +296,46 @@ class NgComponent extends AbstractNgAnnotation {
   @deprecated
   final String publishAs;
 
-  const NgComponent({
-    this.template,
-    this.templateUrl,
-    cssUrl,
-    applyAuthorStyles,
-    resetStyleInheritance,
-    this.publishAs,
-    module,
-    map,
-    selector,
-    visibility,
-    exportExpressions,
-    exportExpressionAttrs})
+  const NgComponent({this.template,
+                     this.templateUrl,
+                     cssUrl,
+                     applyAuthorStyles,
+                     resetStyleInheritance,
+                     this.publishAs,
+                     module,
+                     map,
+                     selector,
+                     visibility,
+                     exportExpressions,
+                     exportExpressionAttrs})
       : _cssUrls = cssUrl,
         _applyAuthorStyles = applyAuthorStyles,
         _resetStyleInheritance = resetStyleInheritance,
         super(selector: selector,
-             children: AbstractNgAnnotation.COMPILE_CHILDREN,
-             visibility: visibility,
-             map: map,
-             module: module,
-             exportExpressions: exportExpressions,
-             exportExpressionAttrs: exportExpressionAttrs);
+              children: AbstractNgAnnotation.COMPILE_CHILDREN,
+              visibility: visibility,
+              map: map,
+              module: module,
+              exportExpressions: exportExpressions,
+              exportExpressionAttrs: exportExpressionAttrs);
 
   List<String> get cssUrls => _cssUrls == null ?
       const [] :
       _cssUrls is List ?  _cssUrls : [_cssUrls];
 
   AbstractNgAnnotation _cloneWithNewMap(newMap) =>
-      new NgComponent(
-          template: template,
-          templateUrl: templateUrl,
-          cssUrl: cssUrls,
-          applyAuthorStyles: applyAuthorStyles,
-          resetStyleInheritance: resetStyleInheritance,
-          publishAs: publishAs,
-          map: newMap,
-          module: module,
-          selector: selector,
-          visibility: visibility,
-          exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
+      new NgComponent(template: template,
+                      templateUrl: templateUrl,
+                      cssUrl: cssUrls,
+                      applyAuthorStyles: applyAuthorStyles,
+                      resetStyleInheritance: resetStyleInheritance,
+                      publishAs: publishAs,
+                      map: newMap,
+                      module: module,
+                      selector: selector,
+                      visibility: visibility,
+                      exportExpressions: exportExpressions,
+                      exportExpressionAttrs: exportExpressionAttrs);
 }
 
 /**
@@ -367,12 +366,12 @@ class NgDirective extends AbstractNgAnnotation {
   static const Visibility DIRECT_CHILDREN_VISIBILITY = directChildrenVisibility;
 
   const NgDirective({children: AbstractNgAnnotation.COMPILE_CHILDREN,
-                    map,
-                    selector,
-                    module,
-                    visibility,
-                    exportExpressions,
-                    exportExpressionAttrs})
+                     map,
+                     selector,
+                     module,
+                     visibility,
+                     exportExpressions,
+                     exportExpressionAttrs})
       : super(selector: selector,
               children: children,
               visibility: visibility,
@@ -382,14 +381,13 @@ class NgDirective extends AbstractNgAnnotation {
               exportExpressionAttrs: exportExpressionAttrs);
 
   AbstractNgAnnotation _cloneWithNewMap(newMap) =>
-      new NgDirective(
-          children: children,
-          map: newMap,
-          module: module,
-          selector: selector,
-          visibility: visibility,
-          exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
+      new NgDirective(children: children,
+                      map: newMap,
+                      module: module,
+                      selector: selector,
+                      visibility: visibility,
+                      exportExpressions: exportExpressions,
+                      exportExpressionAttrs: exportExpressionAttrs);
 }
 
 /**
@@ -417,16 +415,14 @@ class NgController extends NgDirective {
    */
   final String publishAs;
 
-  const NgController({
-                    children: AbstractNgAnnotation.COMPILE_CHILDREN,
-                    this.publishAs,
-                    map,
-                    module,
-                    selector,
-                    visibility,
-                    exportExpressions,
-                    exportExpressionAttrs
-                    })
+  const NgController({children: AbstractNgAnnotation.COMPILE_CHILDREN,
+                      this.publishAs,
+                      map,
+                      module,
+                      selector,
+                      visibility,
+                      exportExpressions,
+                      exportExpressionAttrs})
       : super(selector: selector,
               children: children,
               visibility: visibility,
@@ -436,15 +432,14 @@ class NgController extends NgDirective {
               exportExpressionAttrs: exportExpressionAttrs);
 
   AbstractNgAnnotation _cloneWithNewMap(newMap) =>
-      new NgController(
-          children: children,
-          publishAs: publishAs,
-          module: module,
-          map: newMap,
-          selector: selector,
-          visibility: visibility,
-          exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
+      new NgController(children: children,
+                       publishAs: publishAs,
+                       module: module,
+                       map: newMap,
+                       selector: selector,
+                       visibility: visibility,
+                       exportExpressions: exportExpressions,
+                       exportExpressionAttrs: exportExpressionAttrs);
 }
 
 /**

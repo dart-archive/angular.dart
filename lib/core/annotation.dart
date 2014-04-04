@@ -35,4 +35,3 @@ export "package:angular/core/annotation_src.dart" show
 abstract class NgShadowRootAware {
   void onShadowRoot(ShadowRoot shadowRoot);
 }
-

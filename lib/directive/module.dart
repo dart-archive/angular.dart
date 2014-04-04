@@ -50,8 +50,7 @@ class NgDirectiveModule extends Module {
     value(NgBind, null);
     value(NgBindTemplate, null);
     value(NgBindHtml, null);
-    factory(dom.NodeValidator, (_) =>
-        new dom.NodeValidatorBuilder.common());
+    factory(dom.NodeValidator, (_) => new dom.NodeValidatorBuilder.common());
     value(NgClass, null);
     value(NgClassOdd, null);
     value(NgClassEven, null);

@@ -24,7 +24,7 @@ class ElementBinderFactory {
  * building ElementBinders.
  */
 class ElementBinderBuilder {
-  static RegExp _MAPPING = new RegExp(r'^(\@|=\>\!|\=\>|\<\=\>|\&)\s*(.*)$');
+  static RegExp _MAPPING = new RegExp(r'^(@|=>!|=>|<=>|&)\s*(.*)$');
 
   ElementBinderFactory _factory;
 
@@ -76,10 +76,10 @@ class ElementBinderBuilder {
     if (template != null) {
       var transclude = _factory.binder(this);
       return _factory.templateBinder(this, transclude);
-
     } else {
       return _factory.binder(this);
     }
 
+    return mappingFn;
   }
 }

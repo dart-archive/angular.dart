@@ -16,15 +16,12 @@ part of angular.core.dom_internal;
  *
  * Examples:
  *
- * <pre>
- *   element
- *   .class
- *   [attribute]
- *   [attribute=value]
- *   element[attribute1][attribute2=value]
- *   :contains(/abc/)
- * </pre>
- *
+ * * `element`
+ * * `.class`
+ * * `[attribute]`
+ * * `[attribute=value]`
+ * * `element[attribute1][attribute2=value]`
+ * * `:contains(/abc/)`
  *
  */
 class _Directive {
@@ -33,7 +30,7 @@ class _Directive {
 
   _Directive(this.type, this.annotation);
 
-  toString() => annotation.selector;
+  String toString() => annotation.selector;
 }
 
 
@@ -45,11 +42,11 @@ class _ContainsSelector {
       : regexp = new RegExp(regexp);
 }
 
-var _SELECTOR_REGEXP = new RegExp(r'^(?:([-\w]+)|(?:\.([-\w]+))|'
+final _SELECTOR_REGEXP = new RegExp(r'^(?:([-\w]+)|(?:\.([-\w]+))|'
     r'(?:\[([-\w*]+)(?:=([^\]]*))?\]))');
-var _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([-\w]+)(?:\=(.*))?\]$');
-var _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
-var _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
+final _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([-\w]+)(?:\=(.*))?\]$');
+final _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
+final _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
 
 class _SelectorPart {
   final String element;
@@ -95,7 +92,7 @@ class _ElementSelector {
 
   _ElementSelector(this.name);
 
-  addDirective(List<_SelectorPart> selectorParts, _Directive directive) {
+  void addDirective(List<_SelectorPart> selectorParts, _Directive directive) {
     var selectorPart = selectorParts.removeAt(0);
     var terminal = selectorParts.isEmpty;
     var name;
@@ -144,9 +141,7 @@ class _ElementSelector {
       _addRefs(builder, elementMap[nodeName], node);
     }
     if (elementPartialMap.containsKey(nodeName)) {
-      if (partialSelection == null) {
-        partialSelection = new List<_ElementSelector>();
-      }
+      if (partialSelection == null) partialSelection = <_ElementSelector>[];
       partialSelection.add(elementPartialMap[nodeName]);
     }
     return partialSelection;
@@ -159,9 +154,7 @@ class _ElementSelector {
       _addRefs(builder, classMap[className], node);
     }
     if (classPartialMap.containsKey(className)) {
-      if (partialSelection == null) {
-        partialSelection = new List<_ElementSelector>();
-      }
+      if (partialSelection == null) partialSelection = <_ElementSelector>[];
       partialSelection.add(classPartialMap[className]);
     }
     return partialSelection;
@@ -187,15 +180,11 @@ class _ElementSelector {
       Map<String, _ElementSelector> valuesPartialMap =
           attrValuePartialMap[attrName];
       if (valuesPartialMap.containsKey('')) {
-        if (partialSelection == null) {
-          partialSelection = new List<_ElementSelector>();
-        }
+        if (partialSelection == null) partialSelection = <_ElementSelector>[];
         partialSelection.add(valuesPartialMap['']);
       }
       if (attrValue != '' && valuesPartialMap.containsKey(attrValue)) {
-        if (partialSelection == null) {
-            partialSelection = new List<_ElementSelector>();
-        }
+        if (partialSelection == null) partialSelection = <_ElementSelector>[];
         partialSelection.add(valuesPartialMap[attrValue]);
       }
     }
@@ -209,10 +198,10 @@ class _ElementSelector {
   String _matchingKey(Iterable<String> keys, String attrName) =>
       keys.firstWhere((key) =>
           _matchingKeyCache.putIfAbsent(key,
-                  () => new RegExp('^${key.replaceAll('*', r'[\w\-]+')}\$'))
-              .hasMatch(attrName), orElse: () => null);
+              () => new RegExp('^${key.replaceAll('*', r'[\w\-]+')}\$'))
+                  .hasMatch(attrName), orElse: () => null);
 
-  toString() => 'ElementSelector($name)';
+  String toString() => 'ElementSelector($name)';
 }
 
 List<_SelectorPart> _splitCss(String selector, Type type) {
@@ -291,14 +280,14 @@ class DirectiveSelector {
 
     // Select node
     partialSelection = elementSelector.selectNode(builder,
-    partialSelection, element, nodeName);
+        partialSelection, element, nodeName);
 
     // Select .name
     if ((element.classes) != null) {
       for (var name in element.classes) {
         classes[name] = true;
         partialSelection = elementSelector.selectClass(builder,
-        partialSelection, element, name);
+            partialSelection, element, name);
       }
     }
 
@@ -307,9 +296,7 @@ class DirectiveSelector {
 
       if (attrName.startsWith("on-")) {
         builder.onEvents[attrName] = value;
-      }
-
-      if (attrName.startsWith("bind-")) {
+      } else if (attrName.startsWith("bind-")) {
         builder.bindAttrs[attrName] = value;
       }
 
@@ -337,11 +324,11 @@ class DirectiveSelector {
       elementSelectors.forEach((_ElementSelector elementSelector) {
         classes.forEach((className, _) {
           partialSelection = elementSelector.selectClass(builder,
-          partialSelection, node, className);
+              partialSelection, node, className);
         });
         attrs.forEach((attrName, value) {
           partialSelection = elementSelector.selectAttr(builder,
-          partialSelection, node, attrName, value);
+              partialSelection, node, attrName, value);
         });
       });
     }
@@ -357,27 +344,24 @@ class DirectiveSelector {
       if (selectorRegExp.regexp.hasMatch(value)) {
         _directives[selectorRegExp.annotation].forEach((type) {
           builder.addDirective(new DirectiveRef(node, type,
-          selectorRegExp.annotation, value));
+              selectorRegExp.annotation, value));
         });
       }
     }
     return builder.binder;
   }
 
-  ElementBinder matchComment(dom.Node node) {
-    return _binderFactory.builder().binder;
-  }
+  ElementBinder matchComment(dom.Node node) =>_binderFactory.builder().binder;
 }
 /**
  * Factory for creating a [DirectiveSelector].
  */
 @NgInjectableService()
 class DirectiveSelectorFactory {
-  ElementBinderFactory _binderFactory;
+  final ElementBinderFactory _binderFactory;
 
   DirectiveSelectorFactory(this._binderFactory);
 
-  DirectiveSelector selector(DirectiveMap directives) {
-    return new DirectiveSelector(directives, _binderFactory);
-  }
+  DirectiveSelector selector(DirectiveMap directives) =>
+      new DirectiveSelector(directives, _binderFactory);
 }
