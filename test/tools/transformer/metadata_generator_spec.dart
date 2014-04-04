@@ -192,10 +192,8 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgDirective(module: Enigne.module)
-                class Engine {
-                  static Engine.module => null;
-                }
+                @NgDirective(exportExpressions: ['one', 'two'])
+                class Engine {}
 
                 main() {}
                 '''
@@ -206,7 +204,8 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(module: Engine.module)',
+              "const import_1.NgDirective(exportExpressions: "
+                  "const ['one','two',])",
             ]
           });
     });
@@ -248,12 +247,8 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgFoo()
-                class Engine {}
-
-                @NgDirective(module: Car.module)
+                @NgDirective(module: MissingType.module)
                 class Car {
-                  static module() => null;
                 }
 
                 main() {}
@@ -272,8 +267,8 @@ main() {
             // 'warning: Unable to serialize annotation @NgFoo. '
             //     '(web/main.dart 2 16)',
             'warning: Unable to serialize annotation '
-                '@NgDirective(module: Car.module). '
-                '(web/main.dart 5 16)',
+                '@NgDirective(module: MissingType.module). '
+                '(web/main.dart 2 16)',
           ]);
     });
 
@@ -285,15 +280,16 @@ main() {
                 import 'package:angular/angular.dart';
                 import 'package:a/b.dart';
 
-                @NgDirective(module: Engine.module)
+                @NgDirective(module: Car.module)
                 class Engine {
-                  static module() => null;
                 }
 
                 main() {}
                 ''',
             'a|lib/b.dart': '''
-                class Car {}
+                class Car {
+                  static module() => null;
+                }
                 ''',
           },
           imports: [
@@ -303,7 +299,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(module: Engine.module)',
+              'const import_1.NgDirective(module: import_2.Car.module)',
             ]
           });
     });
@@ -572,14 +568,15 @@ const String footer = '''
 
 
 const String libAngular = '''
-library angular.core_internal;
+library angular.core.annotation;
 
 class NgAnnotation {
   NgAnnotation({map: const {}});
 }
 
 class NgDirective extends NgAnnotation {
-  const NgDirective({selector, module, map, visibility}) : super(map: map);
+  const NgDirective({selector, module, map, visibility, exportExpressions}) :
+      super(map: map);
 
   static const int CHILDREN_VISIBILITY = 1;
 }

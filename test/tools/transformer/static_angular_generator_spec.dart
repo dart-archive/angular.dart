@@ -97,7 +97,7 @@ main() {
 
 
 const String libAngularDynamic = '''
-library angular.dynamic;
+library angular.app.dynamic;
 class _NgDynamicApp {}
 
 dynamicApplication() => new _DynamicApplication();
