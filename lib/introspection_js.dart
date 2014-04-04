@@ -19,7 +19,7 @@ publishToJavaScript() {
   js.context
     ..['ngProbe'] = new js.JsFunction.withThis((_, dom.Node node) => _jsProbe(ngProbe(node)))
     ..['ngInjector'] = new js.JsFunction.withThis((_, dom.Node node) => _jsInjector(ngInjector(node)))
-    ..['ngScope'] = new js.JsFunction.withThis((_, dom.Node node) => _jsScope(ngScope(node)))
+    ..['ngScope'] = new js.JsFunction.withThis((_, dom.Node node) => _jsScope(ngScope(node), ngProbe(node).injector.get(ScopeStatsConfig)))
     ..['ngQuery'] = new js.JsFunction.withThis((_, dom.Node node, String selector, [String containsText]) =>
   new js.JsArray.from(ngQuery(node, selector, containsText)));
 }
@@ -28,7 +28,7 @@ js.JsObject _jsProbe(ElementProbe probe) {
   return new js.JsObject.jsify({
       "element": probe.element,
       "injector": _jsInjector(probe.injector),
-      "scope": _jsScope(probe.scope),
+      "scope": _jsScope(probe.scope, probe.injector.get(ScopeStatsConfig)),
       "directives": probe.directives.map((directive) => _jsDirective(directive))
   })..['_dart_'] = probe;
 }
@@ -36,7 +36,7 @@ js.JsObject _jsProbe(ElementProbe probe) {
 js.JsObject _jsInjector(Injector injector) =>
 new js.JsObject.jsify({"get": injector.get})..['_dart_'] = injector;
 
-js.JsObject _jsScope(Scope scope) {
+js.JsObject _jsScope(Scope scope, ScopeStatsConfig config) {
   return new js.JsObject.jsify({
       "apply": scope.apply,
       "broadcast": scope.broadcast,
@@ -48,7 +48,9 @@ js.JsObject _jsScope(Scope scope) {
       "get": (name) => scope.context[name],
       "isAttached": scope.isAttached,
       "isDestroyed": scope.isDestroyed,
-      "set": (name, value) => scope.context[name] = value
+      "set": (name, value) => scope.context[name] = value,
+      "scopeStatsEnable": () => config.emit = true,
+      "scopeStatsDisable": () => config.emit = false
   })..['_dart_'] = scope;
 }
 
