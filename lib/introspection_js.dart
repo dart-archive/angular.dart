@@ -16,10 +16,13 @@ import 'package:angular/core_dom/module_internal.dart';
 var elementExpando = new Expando('element');
 
 publishToJavaScript() {
+  emitScopeStats(emit) => (_, dom.Node node) => ngInjector(node).get(ScopeStatsConfig).emit = emit;
   js.context
     ..['ngProbe'] = new js.JsFunction.withThis((_, dom.Node node) => _jsProbe(ngProbe(node)))
     ..['ngInjector'] = new js.JsFunction.withThis((_, dom.Node node) => _jsInjector(ngInjector(node)))
     ..['ngScope'] = new js.JsFunction.withThis((_, dom.Node node) => _jsScope(ngScope(node)))
+    ..['enableScopeStats'] = new js.JsFunction.withThis(emitScopeStats(true))
+    ..['disableScopeStats'] = new js.JsFunction.withThis(emitScopeStats(false))
     ..['ngQuery'] = new js.JsFunction.withThis((_, dom.Node node, String selector, [String containsText]) =>
   new js.JsArray.from(ngQuery(node, selector, containsText)));
 }
