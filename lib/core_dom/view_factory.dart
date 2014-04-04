@@ -119,12 +119,12 @@ class WalkingViewFactory implements ViewFactory {
 class ViewCache {
   // _viewFactoryCache is unbounded
   final _viewFactoryCache = new LruCache<String, ViewFactory>(capacity: 0);
-  final Http $http;
-  final TemplateCache $templateCache;
+  final Http http;
+  final TemplateCache templateCache;
   final Compiler compiler;
   final dom.NodeTreeSanitizer treeSanitizer;
 
-  ViewCache(this.$http, this.$templateCache, this.compiler, this.treeSanitizer);
+  ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer);
 
   ViewFactory fromHtml(String html, DirectiveMap directives) {
     ViewFactory viewFactory = _viewFactoryCache.get(html);
@@ -138,7 +138,7 @@ class ViewCache {
   }
 
   async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives) {
-    return $http.getString(url, cache: $templateCache).then(
+    return http.getString(url, cache: templateCache).then(
         (html) => fromHtml(html, directives));
   }
 }
@@ -165,7 +165,7 @@ class _ComponentFactory implements Function {
                     this._expando);
 
   dynamic call(Injector injector, Scope scope,
-               ViewCache $viewCache, Http $http, TemplateCache $templateCache,
+               ViewCache viewCache, Http http, TemplateCache templateCache,
                DirectiveMap directives) {
     shadowDom = element.createShadowRoot()
         ..applyAuthorStyles = component.applyAuthorStyles
@@ -180,8 +180,8 @@ class _ComponentFactory implements Function {
     List<async.Future<String>> cssFutures = new List();
     var cssUrls = component.cssUrls;
     if (cssUrls.isNotEmpty) {
-      cssUrls.forEach((css) => cssFutures.add($http
-          .getString(css, cache: $templateCache)
+      cssUrls.forEach((css) => cssFutures.add(http
+          .getString(css, cache: templateCache)
           .catchError((e) => '/*\n$e\n*/\n')
       ));
     } else {
@@ -189,10 +189,10 @@ class _ComponentFactory implements Function {
     }
     var viewFuture;
     if (component.template != null) {
-      viewFuture = new async.Future.value($viewCache.fromHtml(
+      viewFuture = new async.Future.value(viewCache.fromHtml(
           component.template, directives));
     } else if (component.templateUrl != null) {
-      viewFuture = $viewCache.fromUrl(component.templateUrl, directives);
+      viewFuture = viewCache.fromUrl(component.templateUrl, directives);
     }
     TemplateLoader templateLoader = new TemplateLoader(
         async.Future.wait(cssFutures).then((Iterable<String> cssList) {

@@ -13,12 +13,12 @@ class MockAnimate extends NgAnimate {
 main() {
   describe('NgRepeater', () {
     Element element;
-    var $compile, scope, $exceptionHandler, directives;
+    var compile, scope, exceptionHandler, directives;
 
-    beforeEach((Injector injector, Scope $rootScope, Compiler compiler, DirectiveMap _directives) {
-      $exceptionHandler = injector.get(ExceptionHandler);
-      scope = $rootScope;
-      $compile = (html, [scope]) {
+    beforeEach((Injector injector, Scope rootScope, Compiler compiler, DirectiveMap _directives) {
+      exceptionHandler = injector.get(ExceptionHandler);
+      scope = rootScope;
+      compile = (html, [scope]) {
         element = e(html);
         var viewFactory = compiler([element], _directives);
         var blockInjector = injector;
@@ -68,7 +68,7 @@ main() {
 
 
     it(r'should iterate over an array of objects', () {
-      element = $compile(
+      element = compile(
         '<ul>'
           '<li ng-repeat="item in items">{{item.name}};</li>'
         '</ul>');
@@ -95,7 +95,7 @@ main() {
 
 
     it(r'should gracefully handle nulls', () {
-      element = $compile(
+      element = compile(
         '<div>'
           '<ul>'
             '<li ng-repeat="item in null">{{item.name}};</li>'
@@ -108,7 +108,7 @@ main() {
 
 
     it('should support filters', () {
-      element = $compile(
+      element = compile(
           '<div><span ng-repeat="item in items | filter:myFilter">{{item}}</span></div>');
       scope.context['items'] = ['foo', 'bar', 'baz'];
       scope.context['myFilter'] = (String item) => item.startsWith('b');
@@ -119,7 +119,7 @@ main() {
 
     describe('track by', () {
       it(r'should track using expression function', () {
-        element = $compile(
+        element = compile(
             '<ul>'
                 '<li ng-repeat="item in items track by item.id">{{item.name}};</li>'
             '</ul>');
@@ -136,7 +136,7 @@ main() {
 
 
       it(r'should track using build in $id function', () {
-        element = $compile(
+        element = compile(
             '<ul>'
                 r'<li ng-repeat="item in items track by $id(item)">{{item.name}};</li>'
             '</ul>');
@@ -153,7 +153,7 @@ main() {
 
 
       it(r'should iterate over an array of primitives', () {
-        element = $compile(
+        element = compile(
             r'<ul>'
                 r'<li ng-repeat="item in items track by $index">{{item}};</li>'
             r'</ul>');
@@ -237,7 +237,7 @@ main() {
 
     it(r'should error on wrong parsing of ngRepeat', () {
       expect(() {
-        $compile('<ul><li ng-repeat="i dont parse"></li></ul>')();
+        compile('<ul><li ng-repeat="i dont parse"></li></ul>')();
       }).toThrow("[NgErr7] ngRepeat error! Expected expression in form of "
                  "'_item_ in _collection_[ track by _id_]' but got "
                  "'i dont parse'.");
@@ -246,7 +246,7 @@ main() {
 
     it("should throw error when left-hand-side of ngRepeat can't be parsed", () {
         expect(() {
-          $compile('<ul><li ng-repeat="i dont parse in foo"></li></ul>')();
+          compile('<ul><li ng-repeat="i dont parse in foo"></li></ul>')();
         }).toThrow("[NgErr8] ngRepeat error! '_item_' in '_item_ in "
                   "_collection_' should be an identifier or '(_key_, _value_)' "
                   "expression, but got 'i dont parse'.");
@@ -255,7 +255,7 @@ main() {
 
     it(r'should expose iterator offset as $index when iterating over arrays',
         () {
-      element = $compile(
+      element = compile(
         '<ul>' +
           '<li ng-repeat="item in items">{{item}}:{{\$index}}|</li>' +
         '</ul>');
@@ -267,7 +267,7 @@ main() {
 
     it(r'should expose iterator position as $first, $middle and $last when iterating over arrays',
         () {
-      element = $compile(
+      element = compile(
         '<ul>'
           '<li ng-repeat="item in items">{{item}}:{{\$first}}-{{\$middle}}-{{\$last}}|</li>'
         '</ul>');
@@ -298,7 +298,7 @@ main() {
     });
 
     it(r'should report odd', () {
-      element = $compile(
+      element = compile(
         '<ul>'
           '<li ng-repeat="item in items">{{item}}:{{\$odd}}-{{\$even}}|</li>'
         '</ul>');
@@ -326,7 +326,7 @@ main() {
     });
 
     it(r'should repeat over nested arrays', () {
-      element = $compile(
+      element = compile(
         '<ul>' +
           '<li ng-repeat="subgroup in groups">' +
             '<div ng-repeat="group in subgroup">{{group}}|</div>X' +
@@ -343,7 +343,7 @@ main() {
       var a, b, c, d, lis;
 
       beforeEach(() {
-        element = $compile(
+        element = compile(
           '<ul>'
             '<li ng-repeat="item in items">{{key}}:{{val}}|></li>'
           '</ul>');
@@ -413,7 +413,7 @@ main() {
       scope.context['items'] = [1];
 
       var parentScope = scope.createChild(new PrototypeMap(scope.context));
-      element = $compile(
+      element = compile(
         '<ul>'
           '<li ng-repeat="item in items">{{item}}</li>'
         '</ul>', parentScope);
@@ -428,11 +428,11 @@ main() {
       var child = injector.createChild(
           [new Module()..value(NgAnimate, throwOnMove)]);
 
-      child.invoke((Injector injector, Scope $rootScope, Compiler compiler,
+      child.invoke((Injector injector, Scope rootScope, Compiler compiler,
                     DirectiveMap _directives) {
-        $exceptionHandler = injector.get(ExceptionHandler);
-        scope = $rootScope;
-        $compile = (html) {
+        exceptionHandler = injector.get(ExceptionHandler);
+        scope = rootScope;
+        compile = (html) {
           element = e(html);
           var viewFactory = compiler([element], _directives);
           viewFactory(injector, [element]);
@@ -441,7 +441,7 @@ main() {
         directives = _directives;
       });
 
-      element = $compile(
+      element = compile(
           '<ul>'
             '<li ng-repeat="item in items">{{item}}</li>'
           '</ul>');

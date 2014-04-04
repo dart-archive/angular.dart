@@ -11,7 +11,7 @@ part of angular.directive;
  *
  * This change permits the easy creation of action links with the `ngClick`
  * directive without changing the location or causing page reloads, e.g.:
- * `<a href="" ng-click="model.$save()">Save</a>`
+ * `<a href="" ng-click="model.save()">Save</a>`
  */
 @NgDirective(selector: 'a[href]')
 class NgA {
