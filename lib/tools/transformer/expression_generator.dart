@@ -1,7 +1,6 @@
 library angular.tools.transformer.expression_generator;
 
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:analyzer/src/generated/element.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/tools/html_extractor.dart';
@@ -177,7 +176,7 @@ final Map<String, Symbol> symbols = ${generateSymbolMap(symbols)};
     return '{\n${lines.join(",\n")}\n}';
   }
 
-  generateSymbolMap(Set<Strings> symbols) {
+  generateSymbolMap(Set<String> symbols) {
     var lines = symbols.map((key) => '  r"${key}": #$key');
     return '{\n${lines.join(",\n")}\n}';
   }

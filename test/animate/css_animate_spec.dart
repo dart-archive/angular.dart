@@ -111,11 +111,11 @@ class MockAnimationLoop extends Mock implements AnimationLoop {
 
   List<LoopedAnimation> animations = [];
 
-  play(LoopedAnimation animation) {
+  void play(LoopedAnimation animation) {
     animations.add(animation);
   }
 
-  frame() {
+  void frame() {
     for(var animation in animations) {
       animation.read(time);
     }

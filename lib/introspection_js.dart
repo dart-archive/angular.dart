@@ -7,7 +7,6 @@ import 'package:di/di.dart';
 import 'package:angular/introspection.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
-import 'package:angular/directive/module.dart';
 
 /**
  * A global write only variable which keeps track of objects attached to the

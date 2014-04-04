@@ -6,10 +6,11 @@ import '../_specs.dart';
 class Name {
   String firstName;
   String lastName;
-  Name({String this.firstName, String this.lastName});
+  Name({this.firstName, this.lastName});
   operator ==(Name other) =>
       (firstName == other.firstName && lastName == other.lastName);
   String toString() => 'Name(firstName: $firstName, lastName: $lastName)';
+  int get hashCode => firstName.hashCode + lastName.hashCode;
 }
 
 

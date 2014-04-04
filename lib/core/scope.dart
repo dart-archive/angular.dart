@@ -97,9 +97,9 @@ class ScopeLocals implements Map {
   void operator []=(String name, value) {
     _scope[name] = value;
   }
-  dynamic operator [](String name)
+  dynamic operator [](String name) =>
       // as Map needed to clear Dart2js warning
-      => ((_locals.containsKey(name) ? _locals : _scope) as Map)[name];
+      ((_locals.containsKey(name) ? _locals : _scope) as Map)[name];
 
   bool get isEmpty => _scope.isEmpty && _locals.isEmpty;
   bool get isNotEmpty => _scope.isNotEmpty || _locals.isNotEmpty;

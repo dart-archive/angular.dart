@@ -1,7 +1,6 @@
 library ng_element_spec;
 
 import '../_specs.dart';
-import 'dart:html' as dom;
 
 void main() {
   describe('ngElement', () {

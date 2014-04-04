@@ -6,10 +6,8 @@ library angular.introspection;
 import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'package:angular/introspection_js.dart';
-import 'package:angular/introspection.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
-import 'package:angular/directive/module.dart';
 
 /**
  * Return the closest [ElementProbe] object for a given [Element].

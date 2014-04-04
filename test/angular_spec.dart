@@ -103,7 +103,7 @@ main() {
         };
 
         var lib = currentMirrorSystem().findLibrary(new Symbol(libraryName));
-        return extractSymbols(lib);;
+        return extractSymbols(lib);
       }
 
       var names;
