@@ -837,8 +837,8 @@ void main() {
       // Dart futures fully.
       xdescribe('timeout', () {
 
-        it('should abort requests when timeout promise resolves', ($q) {
-          var canceler = $q.defer();
+        it('should abort requests when timeout promise resolves', (q) {
+          var canceler = q.defer();
 
           backend.expect('GET', '/some').respond(200);
 
@@ -851,7 +851,7 @@ void main() {
                 callback();
               });
 
-          //$rootScope.apply(() {
+          //rootScope.apply(() {
           canceler.resolve();
           //});
 

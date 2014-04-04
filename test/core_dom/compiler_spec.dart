@@ -124,7 +124,7 @@ void main() {
       expect(element.text).toEqual('blank12');
     });
 
-    it('should compile repeater with children', (Compiler $compile) {
+    it('should compile repeater with children', (Compiler compile) {
       var element = _.compile('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>');
 
       _.rootScope.context['items'] = ['A', 'b'];
@@ -138,7 +138,7 @@ void main() {
       expect(element).toHaveHtml('<!--ANCHOR: [ng-repeat]=item in items-->');
     });
 
-    it('should compile text', (Compiler $compile) {
+    it('should compile text', (Compiler compile) {
       var element = _.compile('<div>{{name}}<span>!</span></div>');
       _.rootScope.context['name'] = 'OK';
 
@@ -147,7 +147,7 @@ void main() {
       expect(element.text).toEqual('OK!');
     });
 
-    it('should compile nested repeater', (Compiler $compile) {
+    it('should compile nested repeater', (Compiler compile) {
       var element = _.compile(
           '<div>' +
           '<ul ng-repeat="lis in uls">' +
@@ -479,14 +479,14 @@ void main() {
             ..value(MockHttpBackend, httpBackend);
         });
 
-        it('should fire onTemplate method', async((Compiler $compile, Logger logger, MockHttpBackend backend) {
+        it('should fire onTemplate method', async((Compiler compile, Logger logger, MockHttpBackend backend) {
           backend.whenGET('some/template.url').respond('<div>WORKED</div>');
           var scope = _.rootScope.createChild({});
           scope.context['isReady'] = 'ready';
           scope.context['logger'] = logger;
           scope.context['once'] = null;
           var elts = es('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
-          $compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
+          compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
@@ -513,11 +513,11 @@ void main() {
           expect(elts).toHaveText('WORKED');
         }));
 
-        it('should should not call attach after scope is destroyed', async((Compiler $compile, Logger logger, MockHttpBackend backend) {
+        it('should should not call attach after scope is destroyed', async((Compiler compile, Logger logger, MockHttpBackend backend) {
           backend.whenGET('foo.html').respond('<div>WORKED</div>');
           var elts = es('<simple-attach></simple-attach>');
           var scope = _.rootScope.createChild({});
-          $compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
+          compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
           expect(logger).toEqual(['SimpleAttachComponent']);
           scope.destroy();
 

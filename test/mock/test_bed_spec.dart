@@ -5,9 +5,9 @@ import '../_specs.dart';
 void main() {
   describe('test bed', () {
     TestBed _;
-    Compiler $compile;
+    Compiler compile;
     Injector injector;
-    Scope $rootScope;
+    Scope rootScope;
 
     beforeEachModule((Module module) {
       module..type(MyTestBedDirective);

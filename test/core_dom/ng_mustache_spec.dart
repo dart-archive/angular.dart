@@ -11,11 +11,11 @@ main() {
     });
     beforeEach(inject((TestBed tb) => _ = tb));
 
-    it('should replace {{}} in text', inject((Compiler $compile,
+    it('should replace {{}} in text', inject((Compiler compile,
         Scope rootScope, Injector injector, DirectiveMap directives)
     {
       var element = es('<div>{{name}}<span>!</span></div>');
-      var template = $compile(element, directives);
+      var template = compile(element, directives);
 
       rootScope.context['name'] = 'OK';
       var view = template(injector);
@@ -44,12 +44,12 @@ main() {
       }));
     });
 
-    it('should replace {{}} in attribute', inject((Compiler $compile,
+    it('should replace {{}} in attribute', inject((Compiler compile,
         Scope rootScope, Injector injector, DirectiveMap directives)
     {
       Element element =
           e('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
-      var template = $compile([element], directives);
+      var template = compile([element], directives);
 
       rootScope.context['name'] = 'OK';
       rootScope.context['age'] = 23;
@@ -63,12 +63,12 @@ main() {
     }));
 
 
-    it('should allow newlines in attribute', inject((Compiler $compile,
+    it('should allow newlines in attribute', inject((Compiler compile,
        RootScope rootScope, Injector injector, DirectiveMap directives)
     {
       Element element =
           e('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
-      var template = $compile([element], directives);
+      var template = compile([element], directives);
 
       rootScope.context['line1'] = 'L1';
       rootScope.context['line2'] = 'L2';
@@ -82,11 +82,11 @@ main() {
     }));
 
 
-    it('should handle filters', inject((Compiler $compile, RootScope rootScope,
+    it('should handle filters', inject((Compiler compile, RootScope rootScope,
         Injector injector, DirectiveMap directives)
     {
       var element = es('<div>{{"World" | hello}}</div>');
-      var template = $compile(element, directives);
+      var template = compile(element, directives);
       var view = template(injector);
       rootScope.apply();
 
