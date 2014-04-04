@@ -13,7 +13,7 @@ function checkSize() {
   else
     expected=$2
     actual=`cat $file | gzip | wc -c`
-    if (( 100 * $actual >= 101 * $expected )); then
+    if (( 100 * $actual >= 105 * $expected )); then
       echo ${file} is too large expecting ${expected} was ${actual}.
       SIZE_TOO_BIG_COUNT=$((SIZE_TOO_BIG_COUNT + 1));
     fi
@@ -30,10 +30,10 @@ if [[ $TESTS == "dart2js" ]]; then
 
   (
     cd example
-    checkSize build/web/animation.dart.js 205753
-    checkSize build/web/bouncing_balls.dart.js 200130
-    checkSize build/web/hello_world.dart.js 197883
-    checkSize build/web/todo.dart.js 200783
+    checkSize build/web/animation.dart.js 208021
+    checkSize build/web/bouncing_balls.dart.js 202325
+    checkSize build/web/hello_world.dart.js 199919
+    checkSize build/web/todo.dart.js 203121
     if ((SIZE_TOO_BIG_COUNT > 0)); then
       exit 1
     else
