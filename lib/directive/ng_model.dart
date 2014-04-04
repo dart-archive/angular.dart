@@ -467,23 +467,37 @@ class _UidCounter {
 final _uidCounter = new _UidCounter();
 
 /**
- * Use `ng-value` directive with `<input type="radio">` or `<option>` to
- * allow binding to values other then strings. This is needed since the
- * `value` attribute on DOM element `<input type="radio" value="foo">` can
- * only be a string. With `ng-value` one can bind to any object.
+ * Usage:
+ * 
+ *     <input type=radio ng-model=model [ng-value=expr]>
+ * 
+ *     <option [ng-value=expr]>...</option>
+ * 
+ * Example:
+ * 
+ *     <select ng-model="robot">
+ *       <option ng-repeat="r in robots" ng-value="r">{{r.name}}</option>
+ *     </select>
+ * 
+ * When present, the value of this `ng-value` one-way attribute is assigned to
+ * the `ng-model` property when the corresponding radio element or option is
+ * selected. Note that `expr` can be not any type; i.e., it is not restricted
+ * to [String].
  */
-@NgDirective(selector: '[ng-value]')
+@NgDirective(selector: 'input[type=radio][ng-model][ng-value]')
+@NgDirective(selector: 'option[ng-value]')
 class NgValue {
+  static Module moduleFactory() => new Module()
+            ..factory(NgValue, (Injector i) => new NgValue(i.get(dom.Element)));
+  
   final dom.Element element;
-  @NgOneWay('ng-value')
-  var value;
+  var _value;
 
   NgValue(this.element);
-
-  readValue(dom.Element element) {
-    assert(this.element == null || element == this.element);
-    return this.element == null ? (element as dynamic).value : value;
-  }
+  
+  @NgOneWay('ng-value')
+  void set value(val) { this._value = val; }
+  get value => _value == null ? (element as dynamic).value : _value;
 }
 
 /**
@@ -544,7 +558,8 @@ class NgFalseValue {
  * `009`, `00A`, `00Z`, `010`, … and so on using more than 3 characters for the
  * name when the counter overflows.
  */
-@NgDirective(selector: 'input[type=radio][ng-model]')
+@NgDirective(selector: 'input[type=radio][ng-model]',
+  module: NgValue.moduleFactory)
 class InputRadio {
   final dom.RadioButtonInputElement radioButtonElement;
   final NgModel ngModel;
@@ -560,13 +575,13 @@ class InputRadio {
     }
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
-        radioButtonElement.checked = (value == ngValue.readValue(radioButtonElement));
+        radioButtonElement.checked = (value == ngValue.value);
       });
     };
     radioButtonElement
         ..onClick.listen((_) {
           if (radioButtonElement.checked) {
-            ngModel.viewValue = ngValue.readValue(radioButtonElement);
+            ngModel.viewValue = ngValue.value;
           }
         })
         ..onBlur.listen((e) {
