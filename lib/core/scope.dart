@@ -525,6 +525,8 @@ class RootScope extends Scope {
 
   String _state;
 
+  String get state => _state;
+
   RootScope(Object context, Parser parser, FieldGetterFactory fieldGetterFactory,
             FilterMap filterMap, this._exceptionHandler, this._ttl, this._zone,
             ScopeStats _scopeStats, ClosureMap closureMap)

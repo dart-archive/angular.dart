@@ -21,7 +21,8 @@ import 'package:angular/routing/module.dart';
 import 'package:angular/introspection_js.dart';
 
 /**
- * This is the top level module which describes the whole of angular.
+ * This is the top level module which describes the core angular of angular including filters and
+ * directives. The module is automatically included with [Application]
  *
  * The Module is made up of
  *
