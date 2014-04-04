@@ -173,6 +173,32 @@ http://localhost:8765/debug.html
 
 ## WebStorm configuration
 
+### Recent releases
+
+With the recent releases of WebStorm and the karma plugin, you could run the
+test suite by only adding a karma run configuration.
+
+Right-click on the `karma.conf.js` at the root of the project and select
+"create 'karma.conf.js'...".
+
+Set the parameters as follow:
+- **Node interpreter**: `/path/to/node`
+- **Karma node package**: `/path/to/node_modules/karma`
+- **Configuration file (usually *.conf.js)**: `path/to/angular.dart/karma.conf.js`
+- **Environment variables**:
+    - **DARTIUM_BIN**: `/path/to/dartium`
+    - **PATH**: `/path/to/dart-sdk/bin`
+    - **DART_FLAGS**: `--enable_type_checks --enable_asserts`
+
+Now just hit the run button next to the configuration name in the Toolbar and
+you should see the test running. The test suite is automatically executed each
+time a source file is modified.
+
+If you encounter troubles with this configuration, try using the one from the
+following section.
+
+### Former releases
+
 Start by creating a run configuration to launch the Karma server. Go to the menu
 "Run > Edit Configuration Menu" add create a `Node.js` configuration named
 "Karma server".
@@ -192,7 +218,7 @@ and pressing the play icon. You should see the following message at the bottom
 of the run window:
 `INFO [Chrome 34.0.1847 (Linux)]: Connected on socket 97GpzQz-MfHFPHgHOVkc with id 10199707`
 
-### Running the tests
+#### Running the tests
 
 You need to create a "Karma tests" run configuration. Start by copying the
 "Karma server" run configuration and xhange the **Application parameters** to
@@ -202,7 +228,7 @@ To execute the test suite, you just need to run this "Karma tests"
 configuration. You should make sure to execute "Karma server" first _(You do not
 need to restart the server once it has been started once)_.
 
-### Debugging
+#### Debugging
 
 You need to create a "JavaScript Debug" configuration named "Karma debug". Set
 the parameters as follow:
