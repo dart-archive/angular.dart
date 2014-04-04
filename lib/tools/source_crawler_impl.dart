@@ -45,7 +45,9 @@ class SourceCrawlerImpl implements SourceCrawler {
                       String currentFile, List<String> visited,
                       List<String> toVisit) {
     cu.directives.forEach((Directive directive) {
-      if (directive is ImportDirective || directive is PartDirective) {
+      if (directive is ImportDirective ||
+          directive is PartDirective ||
+          directive is ExportDirective) {
         UriBasedDirective import = directive;
         String canonicalFile = canonicalizeImportPath(
             currentDir, currentFile, import.uri.stringValue);
