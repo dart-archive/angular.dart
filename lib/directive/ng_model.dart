@@ -439,6 +439,192 @@ class InputNumberLike {
   }
 }
 
+/**
+ * This directive affects which IDL attribute will be used to read the value of
+ * date/time related input directives. Recognized values for this directive are:
+ * 
+ * - [DATE]: [dom.InputElement].valueAsDate will be read.
+ * - [NUMBER]: [dom.InputElement].valueAsNumber will be read.
+ * - [STRING]: [dom.InputElement].value will be read.
+ * 
+ * The default is [DATE]. Use other settings, e.g., when an app needs to support
+ * browsers that treat date-like inputs as text (in such a case the [STRING]
+ * kind would be appropriate) or, for browsers that fail to conform to the
+ * HTML5 standard in their processing of date-like inputs.
+ */
+@NgDirective(selector: 'input[type=date][ng-model][ng-bind-type]')
+@NgDirective(selector: 'input[type=time][ng-model][ng-bind-type]')
+@NgDirective(selector: 'input[type=datetime][ng-model][ng-bind-type]')
+@NgDirective(selector: 'input[type=datetime-local][ng-model][ng-bind-type]')
+@NgDirective(selector: 'input[type=month][ng-model][ng-bind-type]')
+@NgDirective(selector: 'input[type=week][ng-model][ng-bind-type]')
+class NgBindTypeForDateLike {
+  static const 
+    DATE = 'date',
+    NUMBER = 'number', 
+    STRING = 'string',
+    DEFAULT = DATE;
+  static const VALID_VALUES = const <String>[DATE, NUMBER, STRING];
+  
+  final dom.InputElement inputElement;
+  String _idlAttrKind = DEFAULT;
+
+  NgBindTypeForDateLike(dom.Element this.inputElement);
+  
+  @NgAttr('ng-bind-type')
+  void set idlAttrKind(final String _kind) {
+    String kind = _kind == null ? DEFAULT : _kind.toLowerCase();
+    if (!VALID_VALUES.contains(kind))
+      throw "Unsupported ng-bind-type attribute value '$_kind'; "
+            "it should be one of $VALID_VALUES";
+    _idlAttrKind = kind;
+  }
+
+  String get idlAttrKind => _idlAttrKind;
+  
+  dynamic get inputTypedValue {
+    switch (idlAttrKind) {
+      case DATE:   return inputValueAsDate;
+      case NUMBER: return inputElement.valueAsNumber;
+      default:     return inputElement.value;
+    }
+  }
+  
+  void set inputTypedValue(dynamic inputValue) {
+    if (inputValue is DateTime) {
+      inputValueAsDate = inputValue;
+    } else if (inputValue is num) {
+      inputElement.valueAsNumber = inputValue;
+    } else {
+      inputElement.value = inputValue;
+    }
+  }
+  
+  /// Input's `valueAsDate` normalized to UTC (per HTML5 std).
+  DateTime get inputValueAsDate {
+    DateTime dt;
+    // Wrap in try-catch due to 
+    // https://code.google.com/p/dart/issues/detail?id=17625
+    try {
+      dt = inputElement.valueAsDate;
+    } catch (e) {
+      dt = null;
+    }
+    return (dt != null && !dt.isUtc) ? dt.toUtc() : dt;
+  }
+  
+  /// Set input's `valueAsDate`. Argument is normalized to UTC if necessary
+  /// (per HTML standard).
+  void set inputValueAsDate(DateTime dt) {
+    inputElement.valueAsDate = (dt != null && !dt.isUtc) ? dt.toUtc() : dt;
+  }
+}
+
+/**
+ * **Background: Standards and Browsers**
+ * 
+ * According to the
+ * [HTML5 Standard](http://www.w3.org/TR/html5/forms.html#the-input-element),
+ * the [dom.InputElement.valueAsDate] and [dom.InputElement.valueAsNumber] IDL
+ * attributes should be available for all date/time related input types,
+ * except for `datetime-local` which is limited to
+ * [dom.InputElement.valueNumber]. Of course, all input types support
+ * [dom.InputElement.value] which yields a [String];
+ * [dom.InputElement.valueAsDate] yields a [DateTime] and
+ * [dom.InputElement.valueNumber] yields a [num].
+ * 
+ * But not all browsers currently support date/time related inputs and of
+ * those that do, some deviate from the standard. Hence, this directive
+ * allows developers to control the IDL attribute that will be used
+ * to read the value of a date/time input. This is achieved via the subordinate 
+ * 'ng-bind-type' directive; see [NgBindTypeForDateLike] for details.
+ *
+ * **Usage**:
+ *
+ *     <input type="date|datetime|datetime-local|month|time|week" 
+ *            [ng-bind-type="date"]
+ *            ng-model="myModel">
+ *
+ * **Model**:
+ *
+ *     dynamic myModel; // one of DateTime | num | String
+ *
+ * This directive creates a two-way binding between the input and a model
+ * property. The subordinate 'ng-bind-type' directive determines which input
+ * IDL attribute is read (see [NgBindTypeForDateLike] for details) and
+ * hence the type of the read values. The type of the model property value
+ * determines which IDL attribute is written to: [DateTime] and [num] values
+ * are assigned to [dom.InputElement.valueAsDate] and
+ * [dom.InputElement.valueNumber], respectively; [String] and `null` values
+ * are assigned to [dom.InputElement.value]. Setting the model to `null` will 
+ * clear the input if it is currently valid, otherwise, invalid input is left
+ * untouched (so that the user has an opportunity to correct it). To clear the 
+ * input unconditionally, set the model property to the empty string ('').
+ * 
+ * **Notes**:
+ * - As prescribed by the HTML5 standard, [DateTime] values returned by the
+ *   `valueAsDate` IDL attribute are meant to be in UTC.
+ * - As of the HTML5 Editor's Draft 29 March 2014, datetime-local is no longer
+ *   part of the standard. Other date related input are also at risk of being
+ *   dropped.
+ */
+
+@NgDirective(selector: 'input[type=date][ng-model]',
+    module: InputDateLike.moduleFactory)
+@NgDirective(selector: 'input[type=time][ng-model]',
+    module: InputDateLike.moduleFactory)
+@NgDirective(selector: 'input[type=datetime][ng-model]',
+    module: InputDateLike.moduleFactory)
+@NgDirective(selector: 'input[type=datetime-local][ng-model]',
+    module: InputDateLike.moduleFactory)
+@NgDirective(selector: 'input[type=month][ng-model]',
+    module: InputDateLike.moduleFactory)
+@NgDirective(selector: 'input[type=week][ng-model]',
+    module: InputDateLike.moduleFactory)
+class InputDateLike {
+  static Module moduleFactory() => new Module()..factory(NgBindTypeForDateLike, 
+      (Injector i) => new NgBindTypeForDateLike(i.get(dom.Element)));
+  final dom.InputElement inputElement;
+  final NgModel ngModel;
+  final Scope scope;
+  NgBindTypeForDateLike ngBindType;
+  
+  InputDateLike(dom.Element this.inputElement, this.ngModel, this.scope,
+      this.ngBindType) {
+    if (inputElement.type == 'datetime-local') {
+      ngBindType.idlAttrKind = NgBindTypeForDateLike.NUMBER;
+    }
+    ngModel.render = (value) {
+      scope.rootScope.domWrite(() {
+        if (!eqOrNaN(value, typedValue)) {
+          typedValue = value;
+        }
+      });
+    };
+    inputElement
+        ..onChange.listen(relaxFnArgs(processValue))
+        ..onInput.listen(relaxFnArgs(processValue))
+        ..onBlur.listen((e) {
+          ngModel.markAsTouched();
+        });
+  }
+  
+  dynamic get typedValue => ngBindType.inputTypedValue;
+  
+  void set typedValue(dynamic value) {
+    ngBindType.inputTypedValue = value;
+  }
+  
+  void processValue() {
+    var value = typedValue;
+    // print("processValue: value=$value, model=${ngModel.viewValue}");
+    if (!eqOrNaN(value, ngModel.viewValue)) {
+      scope.eval(() => ngModel.viewValue = value);
+    }
+    ngModel.validate();
+  }
+}
+
 class _UidCounter {
   static final int CHAR_0 = "0".codeUnitAt(0);
   static final int CHAR_9 = "9".codeUnitAt(0);
@@ -548,14 +734,14 @@ class NgFalseValue {
  *     <input type="radio" ng-model="category">
  *
  * This creates a two way databinding between the expression specified in
- * ng-model and the range input elements in the DOM.  If the ng-model value is
+ * ng-model and the range input elements in the DOM. If the ng-model value is
  * set to a value not corresponding to one of the radio elements, then none of
  * the radio elements will be check.  Otherwise, only the corresponding input
  * element in the group is checked.  Likewise, when a radio button element is
  * checked, the model is updated with its value.  Radio buttons that have a
  * `name` attribute are left alone.  Those that are missing the attribute will
  * have a unique `name` assigned to them.  This sequence goes `001`,  `001`, ...
- * `009`, `00A`, `00Z`, `010`, … and so on using more than 3 characters for the
+ * `009`, `00A`, `00Z`, `010`, and so on using more than 3 characters for the
  * name when the counter overflows.
  */
 @NgDirective(
@@ -598,7 +784,7 @@ class InputRadio {
  *     <span contenteditable= ng-model="name">
  *
  * This creates a two way databinding between the expression specified in
- * ng-model and the html element in the DOM.  If the ng-model value is
+ * ng-model and the html element in the DOM. If the ng-model value is
  * `null`, it is treated as equivalent to the empty string for rendering
  * purposes.
  */
