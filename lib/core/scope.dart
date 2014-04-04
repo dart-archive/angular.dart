@@ -218,7 +218,9 @@ class Scope {
         };
       } else if (expression.startsWith(':')) {
         expression = expression.substring(1);
-        fn = (value, last) => value == null ? null : reactionFn(value, last);
+        fn = (value, last) {
+          if (value != null)  reactionFn(value, last);
+        };
       }
     }
 
