@@ -90,7 +90,7 @@ class InputSelect implements NgAttachAware {
  * provides [ng-value] which allows binding to any expression.
  *
  */
-@NgDirective(selector: 'option')
+@NgDirective(selector: 'option', module: NgValue.moduleFactory)
 class OptionValue implements NgAttachAware,
     NgDetachAware {
   final InputSelect _inputSelectDirective;
@@ -117,7 +117,7 @@ class OptionValue implements NgAttachAware,
     }
   }
 
-  get ngValue => _ngValue.readValue(_element);
+  get ngValue => _ngValue.value;
 }
 
 class _SelectMode {
