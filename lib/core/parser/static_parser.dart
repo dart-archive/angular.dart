@@ -1,6 +1,7 @@
 library angular.core.parser.static_parser;
 
-import 'package:angular/core/module_internal.dart' show FilterMap, NgInjectableService;
+import 'package:angular/core/annotation.dart' show NgInjectableService;
+import 'package:angular/core/module_internal.dart' show FilterMap;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
 import 'package:angular/core/parser/syntax.dart';

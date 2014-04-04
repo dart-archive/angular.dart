@@ -33,8 +33,10 @@ library angular.core;
 
 
 export "package:angular/core/annotation.dart" show
+    NgAnnotation,
     NgAttachAware,
     NgAttr,
+    NgCallback,
     NgComponent,
     NgController,
     NgDetachAware,
@@ -76,7 +78,6 @@ export "package:angular/core/module_internal.dart" show
     CacheStats,
     ExceptionHandler,
     Interpolate,
-    NgCallback,
     NgZone,
     PrototypeMap,
     RootScope,
