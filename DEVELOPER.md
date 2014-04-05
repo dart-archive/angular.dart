@@ -188,7 +188,7 @@ Set the parameters as follow:
 - **Environment variables**:
     - **DARTIUM_BIN**: `/path/to/dartium`
     - **PATH**: `/path/to/dart-sdk/bin`
-    - **DART_FLAGS**: `--enable_type_checks --enable_asserts`
+    - **DART_FLAGS**: `--checked`
 
 Now just hit the run button next to the configuration name in the Toolbar and
 you should see the test running. The test suite is automatically executed each
@@ -211,7 +211,7 @@ Set the parameters as follow:
 - **Environment variables**:
     - **DARTIUM_BIN**: `/path/to/dartium`
     - **PATH**: `/path/to/dart-sdk/bin`
-    - **DART_FLAGS**: `--enable_type_checks --enable_asserts`
+    - **DART_FLAGS**: `--checked`
 
 Launch the server by selecting the "Karmer server" configuration in the toolbar
 and pressing the play icon. You should see the following message at the bottom

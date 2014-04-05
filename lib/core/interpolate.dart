@@ -6,7 +6,7 @@ part of angular.core_internal;
  *
  *     var interpolate = ...; // injected
  *     var exp = interpolate('Hello {{name}}!');
- *     expect(exp).toEqual('"Hello "+(name)+"!"');
+ *     expect(exp).toEqual('"Hello "+(name|stringify)+"!"');
  */
 @NgInjectableService()
 class Interpolate implements Function {
