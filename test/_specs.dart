@@ -4,7 +4,6 @@ import 'dart:html' hide Animation;
 
 import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
-import 'package:angular/mock/test_injection.dart';
 import 'package:unittest/unittest.dart' as unit;
 
 import 'jasmine_syntax.dart' as jasmine_syntax;
@@ -29,7 +28,6 @@ export 'package:angular/filter/module.dart';
 export 'package:angular/routing/module.dart';
 export 'package:angular/animate/module.dart';
 export 'package:angular/mock/module.dart';
-export 'package:angular/mock/test_injection.dart';
 export 'package:perf_api/perf_api.dart';
 
 es(String html) {

@@ -22,11 +22,13 @@ import 'package:angular/angular.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
+import 'package:angular/mock/test_injection.dart';
 import 'package:di/di.dart';
 import 'package:mock/mock.dart';
 
 import 'http_backend.dart';
 
+export 'package:angular/mock/test_injection.dart';
 export 'http_backend.dart';
 export 'zone.dart';
 
