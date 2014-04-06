@@ -39,7 +39,7 @@ part 'ng_src_boolean.dart';
 part 'ng_style.dart';
 part 'ng_switch.dart';
 part 'ng_non_bindable.dart';
-part 'input_select.dart';
+part 'ng_model_select.dart';
 part 'ng_form.dart';
 part 'ng_model_validators.dart';
 
