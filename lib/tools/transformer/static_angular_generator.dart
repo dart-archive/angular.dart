@@ -37,7 +37,7 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
 
     for (var directive in unit.directives) {
       if (directive is ImportDirective &&
-          directive.uri.stringValue == 'package:angular/angular_dynamic.dart') {
+          directive.uri.stringValue == 'package:angular/angular.dart') {
         var uri = directive.uri;
         transaction.edit(uri.beginToken.offset, uri.end,
             '\'package:angular/angular_static.dart\'');

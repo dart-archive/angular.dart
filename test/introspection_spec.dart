@@ -2,7 +2,7 @@ library introspection_spec;
 
 import '_specs.dart';
 import 'dart:js' as js;
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/angular.dart';
 
 void main() {
   describe('introspection', () {

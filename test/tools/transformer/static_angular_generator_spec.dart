@@ -21,10 +21,10 @@ main() {
     it('should modify dynamicApplication', () {
       return tests.applyTransformers(phases,
           inputs: {
-            'angular|lib/angular_dynamic.dart': libAngularDynamic,
+            'angular|lib/angular.dart': libAngular,
             'di|lib/di.dart': libDI,
             'a|web/main.dart': '''
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/angular.dart';
 import 'package:di/di.dart' show Module;
 
 class MyModule extends Module {}
@@ -58,10 +58,10 @@ main() {
     it('handles prefixed app imports', () {
       return tests.applyTransformers(phases,
           inputs: {
-            'angular|lib/angular_dynamic.dart': libAngularDynamic,
+            'angular|lib/angular.dart': libAngular,
             'di|lib/di.dart': libDI,
             'a|web/main.dart': '''
-import 'package:angular/angular_dynamic.dart' as ng;
+import 'package:angular/angular.dart' as ng;
 import 'package:di/di.dart' show Module;
 
 class MyModule extends Module {}
@@ -96,7 +96,7 @@ main() {
 
 
 
-const String libAngularDynamic = '''
+const String libAngular = '''
 library angular.app.dynamic;
 class _NgDynamicApp {}
 
