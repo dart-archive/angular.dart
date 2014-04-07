@@ -21,10 +21,10 @@ main() {
     it('should modify dynamicApplication', () {
       return tests.applyTransformers(phases,
           inputs: {
-            'angular|lib/angular_dynamic.dart': libAngularDynamic,
+            'angular|lib/angular.dart': libAngular,
             'di|lib/di.dart': libDI,
             'a|web/main.dart': '''
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/angular.dart';
 import 'package:di/di.dart' show Module;
 
 class MyModule extends Module {}
@@ -38,8 +38,9 @@ main() {
           },
           results: {
             'a|web/main.dart': '''
-import 'package:angular/angular_static.dart';
+import 'package:angular/angular.dart';
 import 'package:di/di.dart' show Module;
+import 'package:angular/angular_static.dart' as angular_static;
 import 'main_static_expressions.dart' as generated_static_expressions;
 import 'main_static_metadata.dart' as generated_static_metadata;
 import 'main_static_injector.dart' as generated_static_injector;
@@ -47,7 +48,7 @@ import 'main_static_injector.dart' as generated_static_injector;
 class MyModule extends Module {}
 
 main() {
-  var app = staticApplication(generated_static_injector.factories, generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols)
+  var app = angular_static.staticApplication(generated_static_injector.factories, generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols)
     .addModule(new MyModule())
     .run();
 }
@@ -58,10 +59,10 @@ main() {
     it('handles prefixed app imports', () {
       return tests.applyTransformers(phases,
           inputs: {
-            'angular|lib/angular_dynamic.dart': libAngularDynamic,
+            'angular|lib/angular.dart': libAngular,
             'di|lib/di.dart': libDI,
             'a|web/main.dart': '''
-import 'package:angular/angular_dynamic.dart' as ng;
+import 'package:angular/angular.dart' as ng;
 import 'package:di/di.dart' show Module;
 
 class MyModule extends Module {}
@@ -75,8 +76,9 @@ main() {
           },
           results: {
             'a|web/main.dart': '''
-import 'package:angular/angular_static.dart' as ng;
+import 'package:angular/angular.dart' as ng;
 import 'package:di/di.dart' show Module;
+import 'package:angular/angular_static.dart' as angular_static;
 import 'main_static_expressions.dart' as generated_static_expressions;
 import 'main_static_metadata.dart' as generated_static_metadata;
 import 'main_static_injector.dart' as generated_static_injector;
@@ -84,7 +86,7 @@ import 'main_static_injector.dart' as generated_static_injector;
 class MyModule extends Module {}
 
 main() {
-  var app = ng.staticApplication(generated_static_injector.factories, generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols)
+  var app = angular_static.staticApplication(generated_static_injector.factories, generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols)
     .addModule(new MyModule())
     .run();
 }
@@ -96,12 +98,9 @@ main() {
 
 
 
-const String libAngularDynamic = '''
-library angular.app.dynamic;
-class _NgDynamicApp {}
-
-dynamicApplication() => new _DynamicApplication();
-''';
+// Empty since angular_dynamic.dart import should have already been removed
+// at this point.
+const String libAngular = '';
 
 const String libDI = '''
 class Module {}

@@ -1,11 +1,12 @@
 library angular.transformer;
 
 import 'dart:io';
+import 'package:angular/tools/transformer/eliminate_dynamic.dart';
 import 'package:angular/tools/transformer/expression_generator.dart';
-import 'package:angular/tools/transformer/metadata_generator.dart';
-import 'package:angular/tools/transformer/static_angular_generator.dart';
 import 'package:angular/tools/transformer/html_dart_references_generator.dart';
+import 'package:angular/tools/transformer/metadata_generator.dart';
 import 'package:angular/tools/transformer/options.dart';
+import 'package:angular/tools/transformer/static_angular_generator.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:di/transformer/injector_generator.dart' as di;
@@ -122,6 +123,7 @@ Map<String, String> _readStringMapValue(Map args, String name) {
 List<List<Transformer>> _createPhases(TransformOptions options) {
   var resolvers = new Resolvers(options.sdkDirectory);
   return [
+    [new EliminateDynamic()],
     [new HtmlDartReferencesGenerator(options)],
     [new ExpressionGenerator(options, resolvers)],
     [new di.InjectorGenerator(options.diOptions, resolvers)],
