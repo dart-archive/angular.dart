@@ -14,7 +14,7 @@ part of angular.filter;
 @NgFilter(name:'number')
 class Number {
 
-  Map<num, NumberFormat> nfs = new Map<num, NumberFormat>();
+  var _nfs = new Map<String, Map<num, NumberFormat>>();
 
   /**
    *  [value]: the value to format
@@ -28,14 +28,16 @@ class Number {
     if (value is String) value = double.parse(value);
     if (!(value is num)) return value;
     if (value.isNaN) return '';
-    var nf = nfs[fractionSize];
+    var verifiedLocale = Intl.verifiedLocale(Intl.getCurrentLocale(), NumberFormat.localeExists);
+    _nfs.putIfAbsent(verifiedLocale, () => new Map<num, NumberFormat>());
+    var nf = _nfs[verifiedLocale][fractionSize];
     if (nf == null) {
       nf = new NumberFormat()..maximumIntegerDigits = 9;
       if (fractionSize != null) {
         nf.minimumFractionDigits = fractionSize;
         nf.maximumFractionDigits = fractionSize;
       }
-      nfs[fractionSize] = nf;
+      _nfs[verifiedLocale][fractionSize] = nf;
     }
     return nf.format(value);
   }

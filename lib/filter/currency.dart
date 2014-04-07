@@ -12,12 +12,8 @@ part of angular.filter;
  */
 @NgFilter(name:'currency')
 class Currency implements Function {
-  NumberFormat nf = new NumberFormat();
 
-  Currency() {
-    nf.minimumFractionDigits = 2;
-    nf.maximumFractionDigits = 2;
-  }
+  var _nfs = new Map<String, NumberFormat>();
 
   /**
    *  [value]: the value to format
@@ -30,6 +26,14 @@ class Currency implements Function {
     if (value is String) value = double.parse(value);
     if (value is! num) return value;
     if (value.isNaN) return '';
+    var verifiedLocale = Intl.verifiedLocale(Intl.getCurrentLocale(), NumberFormat.localeExists);
+    var nf = _nfs[verifiedLocale];
+    if (nf == null) {
+      nf = new NumberFormat();
+      nf.minimumFractionDigits = 2;
+      nf.maximumFractionDigits = 2;
+      _nfs[verifiedLocale] = nf;
+    }
     var neg = value < 0;
     if (neg) value = -value;
     var before = neg ? '(' : '';

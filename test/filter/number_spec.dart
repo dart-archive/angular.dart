@@ -1,6 +1,7 @@
 library number_spec;
 
 import '../_specs.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   describe('number', () {
@@ -44,6 +45,10 @@ void main() {
       expect(number(-1e-50, 0)).toEqual('-0');
       expect(number(-1e-6, 6)).toEqual('-0.000001');
       expect(number(-1e-7, 6)).toEqual('-0.000000');
+    });
+
+    it('should accept various locales', () {
+      expect(Intl.withLocale('de', () => number(1234.567, 2))).toEqual('1.234,57');
     });
   });
 }

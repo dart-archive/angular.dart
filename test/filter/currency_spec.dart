@@ -1,6 +1,7 @@
 library curerncy_spec;
 
 import '../_specs.dart';
+import 'package:intl/intl.dart';
 
 void main() {
   describe('number', () {
@@ -27,6 +28,10 @@ void main() {
       expect(currency(1.07 + 1 - 2.07)).toEqual(r'$0.00');
       expect(currency(0.008)).toEqual(r'$0.01');
       expect(currency(0.003)).toEqual(r'$0.00');
+    });
+
+    it('should accept various locales', () {
+      expect(Intl.withLocale('de', () => currency(0.008, '€', false))).toEqual(r'0,01€');
     });
   });
 }
