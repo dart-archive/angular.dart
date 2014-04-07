@@ -24,7 +24,7 @@ echo "Generating documentation"
     angular/routing/module.dart \
     angular/mock/module.dart \
     angular/perf/module.dart \
-    angular/angular_dynamic.dart \
+    angular/angular.dart \
     angular/angular_static.dart \
     angular/bootstrap.dart \
     angular/introspection.dart \

@@ -51,10 +51,9 @@ class AngularModule extends Module {
  * Application is how you configure and run an Angular application. Application is abstract. There are two
  * implementations: one is dynamic, using Mirrors; the other is static, using code generation.
  *
- * To create an Application, import angular_dynamic.dart and call dynamicApplication like so:
+ * To create an Application, import angular.dart and call dynamicApplication like so:
  *
  *     import 'package:angular/angular.dart';
- *     import 'package:angular/angular_dynamic.dart';
  *
  *     class HelloWorldController {
  *       ...

@@ -2,7 +2,7 @@ library routing_spec;
 
 import '../_specs.dart';
 import 'package:angular/mock/module.dart';
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/angular.dart';
 import 'dart:async';
 
 main() {

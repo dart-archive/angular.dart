@@ -1,6 +1,5 @@
 import 'package:perf_api/perf_api.dart';
 import 'package:angular/angular.dart';
-import 'package:angular/angular_dynamic.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'dart:html';
 import 'dart:math';

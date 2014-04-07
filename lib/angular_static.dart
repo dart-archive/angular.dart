@@ -15,6 +15,8 @@ import 'package:angular/core/registry_static.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
 
+export 'package:angular/angular_core.dart';
+
 export 'package:angular/core/parser/parser_static.dart' show
     StaticClosureMap;
 

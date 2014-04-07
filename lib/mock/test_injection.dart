@@ -1,6 +1,6 @@
 library angular.mock.test_injection;
 
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';

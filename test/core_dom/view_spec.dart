@@ -1,7 +1,7 @@
 library view_spec;
 
 import '../_specs.dart';
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/angular.dart';
 
 class Log {
   List<String> log = <String>[];

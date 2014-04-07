@@ -1,7 +1,7 @@
 library core_directive_spec;
 
 import '../_specs.dart';
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/angular.dart';
 
 void main() {
   describe('DirectiveMap', () {
