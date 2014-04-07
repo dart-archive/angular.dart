@@ -3,66 +3,48 @@ library angular.core.parser.syntax;
 import 'package:angular/core/parser/parser.dart' show LocalsWrapper;
 import 'package:angular/core/parser/unparser.dart' show Unparser;
 import 'package:angular/core/parser/utils.dart' show EvalError;
-import 'package:angular/core/module.dart';
+import 'package:angular/core/module_internal.dart';
 
 abstract class Visitor {
-  visit(Expression expression)
-      => expression.accept(this);
+  visit(Expression expression) => expression.accept(this);
 
-  visitExpression(Expression expression)
-      => null;
-  visitChain(Chain expression)
-      => visitExpression(expression);
-  visitFilter(Filter expression)
-      => visitExpression(expression);
+  visitExpression(Expression expression) => null;
+  visitChain(Chain expression) => visitExpression(expression);
+  visitFilter(Filter expression) => visitExpression(expression);
 
-  visitAssign(Assign expression)
-      => visitExpression(expression);
-  visitConditional(Conditional expression)
-      => visitExpression(expression);
+  visitAssign(Assign expression) => visitExpression(expression);
+  visitConditional(Conditional expression) => visitExpression(expression);
 
-  visitAccessScope(AccessScope expression)
-      => visitExpression(expression);
-  visitAccessMember(AccessMember expression)
-      => visitExpression(expression);
-  visitAccessKeyed(AccessKeyed expression)
-      => visitExpression(expression);
+  visitAccessScope(AccessScope expression) => visitExpression(expression);
+  visitAccessMember(AccessMember expression) => visitExpression(expression);
+  visitAccessKeyed(AccessKeyed expression) => visitExpression(expression);
 
-  visitCallScope(CallScope expression)
-      => visitExpression(expression);
-  visitCallFunction(CallFunction expression)
-      => visitExpression(expression);
-  visitCallMember(CallMember expression)
-      => visitExpression(expression);
+  visitCallScope(CallScope expression) => visitExpression(expression);
+  visitCallFunction(CallFunction expression) => visitExpression(expression);
+  visitCallMember(CallMember expression) => visitExpression(expression);
 
-  visitBinary(Binary expression)
-      => visitExpression(expression);
+  visitBinary(Binary expression) => visitExpression(expression);
 
-  visitPrefix(Prefix expression)
-      => visitExpression(expression);
+  visitPrefix(Prefix expression) => visitExpression(expression);
 
-  visitLiteral(Literal expression)
-      => visitExpression(expression);
-  visitLiteralPrimitive(LiteralPrimitive expression)
-      => visitLiteral(expression);
-  visitLiteralString(LiteralString expression)
-      => visitLiteral(expression);
-  visitLiteralArray(LiteralArray expression)
-      => visitLiteral(expression);
-  visitLiteralObject(LiteralObject expression)
-      => visitLiteral(expression);
+  visitLiteral(Literal expression) => visitExpression(expression);
+  visitLiteralPrimitive(LiteralPrimitive expression) =>
+      visitLiteral(expression);
+  visitLiteralString(LiteralString expression) => visitLiteral(expression);
+  visitLiteralArray(LiteralArray expression) => visitLiteral(expression);
+  visitLiteralObject(LiteralObject expression) => visitLiteral(expression);
 }
 
 abstract class Expression {
   bool get isAssignable => false;
   bool get isChain => false;
 
-  eval(scope, [FilterMap filters = defaultFilterMap])
-      => throw new EvalError("Cannot evaluate $this");
-  assign(scope, value)
-      => throw new EvalError("Cannot assign to $this");
-  bind(context, [LocalsWrapper wrapper])
-      => new BoundExpression(this, context, wrapper);
+  eval(scope, [FilterMap filters = defaultFilterMap]) =>
+      throw new EvalError("Cannot evaluate $this");
+  assign(scope, value) =>
+      throw new EvalError("Cannot assign to $this");
+  bind(context, [LocalsWrapper wrapper]) =>
+      new BoundExpression(this, context, wrapper);
 
   accept(Visitor visitor);
   String toString() => Unparser.unparse(this);
@@ -137,16 +119,29 @@ class AccessKeyed extends Expression {
   accept(Visitor visitor) => visitor.visitAccessKeyed(this);
 }
 
+class CallArguments {
+  final List<Expression> positionals;
+  final Map<String, Expression> named;
+  const CallArguments(this.positionals, this.named);
+
+  int get arity => positionals.length + named.length;
+
+  Expression operator[](int index) {
+    int split = positionals.length;
+    return index < split ? positionals[index] : named.values.elementAt(index - split);
+  }
+}
+
 class CallScope extends Expression {
   final String name;
-  final List<Expression> arguments;
+  final CallArguments arguments;
   CallScope(this.name, this.arguments);
   accept(Visitor visitor) => visitor.visitCallScope(this);
 }
 
 class CallFunction extends Expression {
   final Expression function;
-  final List<Expression> arguments;
+  final CallArguments arguments;
   CallFunction(this.function, this.arguments);
   accept(Visitor visitor) => visitor.visitCallFunction(this);
 }
@@ -154,7 +149,7 @@ class CallFunction extends Expression {
 class CallMember extends Expression {
   final Expression object;
   final String name;
-  final List<Expression> arguments;
+  final CallArguments arguments;
   CallMember(this.object, this.name, this.arguments);
   accept(Visitor visitor) => visitor.visitCallMember(this);
 }

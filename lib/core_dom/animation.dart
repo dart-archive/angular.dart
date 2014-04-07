@@ -1,12 +1,13 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 /**
- * The [NgAnimate] service provides dom lifecycle mangement, detection and
+ * The [NgAnimate] service provides dom lifecycle management, detection and
  * analysis of css animations, and hooks for custom animations. When any of
  * these animations are run, [Animation]s are returned so the animation can be
- * controled and so that custom dom manipulations can occur when animations
+ * controlled and so that custom dom manipulations can occur when animations
  * complete.
  */
+@NgInjectableService()
 class NgAnimate {
   /**
    * Add the [cssClass] to the classes on [element] after running any
@@ -78,7 +79,7 @@ abstract class Animation {
   async.Future<AnimationResult> get onCompleted;
 
   /**
-   * Stop and complete the animation immediatly. This has no effect if the
+   * Stop and complete the animation immediately. This has no effect if the
    * animation has already completed.
    *
    * The onCompleted future will be executed if the animation has not been
@@ -87,7 +88,7 @@ abstract class Animation {
   void complete();
 
   /**
-   * Stop and cancel the animation immediatly. This has no effect if the
+   * Stop and cancel the animation immediately. This has no effect if the
    * animation has already completed.
    *
    * The onCompleted future will be executed if the animation has not been
@@ -98,8 +99,8 @@ abstract class Animation {
 
 /**
  * Completed animation handle that is used when an animation is ignored and the
- * final effect of the animation is immediatly completed.
- * 
+ * final effect of the animation is immediately completed.
+ *
  * TODO(codelogic): consider making a singleton instance. Depends on how future
  * behaves.
  */
@@ -126,10 +127,10 @@ class AnimationResult {
   /// Animation was skipped, but should be continued.
   static const COMPLETED_IGNORED = const AnimationResult._('COMPLETED_IGNORED');
 
-  /// A [CANCELED] animation should not procced with it's final effects.
+  /// A [CANCELED] animation should not proceed with it's final effects.
   static const CANCELED = const AnimationResult._('CANCELED');
-  
-  /// Convienence method if you don't care exactly how an animation completed
+
+  /// Convenience method if you don't care exactly how an animation completed
   /// only that it did.
   bool get isCompleted => this == COMPLETED || this == COMPLETED_IGNORED;
 

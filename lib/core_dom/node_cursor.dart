@@ -1,45 +1,22 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 class NodeCursor {
-  List<dynamic> stack = [];
+  final stack = [];
   List<dom.Node> elements;
-  int index;
+  int index = 0;
 
-  NodeCursor(this.elements) : index = 0;
+  NodeCursor(this.elements);
 
-  isValid() => index < elements.length;
+  bool moveNext() => ++index < elements.length;
 
-  cursorSize() => 1;
+  dom.Node get current => index < elements.length ? elements[index] : null;
 
-  macroNext() {
-    for (var i = 0, ii = cursorSize(); i < ii; i++, index++){}
-
-    return this.isValid();
-  }
-
-  microNext() {
-    var length = elements.length;
-
-    if (index < length) {
-      index++;
-    }
-
-    return index < length;
-  }
-
-  nodeList() {
-    if (!isValid()) return [];  // or should we return null?
-
-    return elements.sublist(index, index + cursorSize());
-  }
-
-  descend() {
+  bool descend() {
     var childNodes = elements[index].nodes;
-    var hasChildren = childNodes != null && childNodes.length > 0;
+    var hasChildren = childNodes != null && childNodes.isNotEmpty;
 
     if (hasChildren) {
-      stack.add(index);
-      stack.add(elements);
+      stack..add(index)..add(elements);
       elements = new List.from(childNodes);
       index = 0;
     }
@@ -47,44 +24,26 @@ class NodeCursor {
     return hasChildren;
   }
 
-  ascend() {
+  void ascend() {
     elements = stack.removeLast();
     index = stack.removeLast();
   }
 
-  insertAnchorBefore(String name) {
-    var current = elements[index];
+  void insertAnchorBefore(String name) {
     var parent = current.parentNode;
-
     var anchor = new dom.Comment('ANCHOR: $name');
-
     elements.insert(index++, anchor);
-
-    if (parent != null) {
-      parent.insertBefore(anchor, current);
-    }
+    if (parent != null) parent.insertBefore(anchor, current);
   }
 
-  replaceWithAnchor(String name) {
+  NodeCursor replaceWithAnchor(String name) {
     insertAnchorBefore(name);
     var childCursor = remove();
-    this.index--;
+    index--;
     return childCursor;
   }
 
-  remove() {
-    var nodes = nodeList();
+  NodeCursor remove() => new NodeCursor([elements.removeAt(index)..remove()]);
 
-    for (var i = 0; i <  nodes.length; i++) {
-      // NOTE(deboer): If elements is a list of child nodes on a node, then
-      // calling Node.remove() may also remove it from the list.  Thus, we
-      // call elements.removeAt first so only one node is removed.
-      elements.removeAt(index);
-      nodes[i].remove();
-    }
-
-    return new NodeCursor(nodes);
-  }
-
-  isInstance() => false;
+  toString() => "[NodeCursor: $elements $index]";
 }

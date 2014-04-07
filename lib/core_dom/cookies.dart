@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 /**
 * This class provides low-level acces to the browser's cookies.
@@ -96,6 +96,7 @@ class BrowserCookies {
 /**
  *   Cookies service
  */
+@NgInjectableService()
 class Cookies {
   BrowserCookies _browserCookies;
   Cookies(this._browserCookies);

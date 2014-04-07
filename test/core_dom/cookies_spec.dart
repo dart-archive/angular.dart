@@ -1,7 +1,7 @@
 library cookies_spec;
 
 import '../_specs.dart';
-import 'package:angular/core_dom/module.dart';
+import 'package:angular/core/module.dart';
 
 void main() {
   describe('cookies', () {
@@ -31,18 +31,18 @@ void main() {
     describe('browser cookies', () {
       var cookies;
 
-      beforeEach(module((Module module) {
+      beforeEachModule((Module module) {
         module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
-      }));
+      });
 
-      beforeEach(inject((BrowserCookies iCookies) {
+      beforeEach((BrowserCookies iCookies) {
         iCookies.cookiePath = '/';
         deleteAllCookies();
         expect(document.cookie).toEqual('');
 
         iCookies.cookiePath = '/';
         cookies = iCookies;
-      }));
+      });
 
       describe('remove via cookies(cookieName, null)', () {
 
@@ -94,7 +94,7 @@ void main() {
         });
 
         it('should log warnings when 4kb per cookie storage limit is reached',
-        inject((ExceptionHandler exceptionHandler) {
+        (ExceptionHandler exceptionHandler) {
           var i, longVal = '', cookieStr;
 
           for (i=0; i<4083; i++) {
@@ -132,7 +132,7 @@ void main() {
           expect(errors[1].error).
           toEqual("Cookie 'x' possibly not set or overflowed because it was too large (12259 > 4096 bytes)!");
           errors.clear();
-        }));
+        });
       });
 
       xdescribe('put via cookies(cookieName, string), if no <base href> ', () {
@@ -214,10 +214,10 @@ void main() {
 
     describe('cookies service', () {
       var cookiesService;
-      beforeEach(inject((Cookies iCookies) {
+      beforeEach((Cookies iCookies) {
         cookiesService = iCookies;
         document.cookie = 'oatmealCookie=fresh;path=/';
-      }));
+      });
 
       it('should read cookie', () {
         expect(cookiesService["oatmealCookie"]).toEqual("fresh");

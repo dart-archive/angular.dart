@@ -1,10 +1,10 @@
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/utils.dart' show isReservedWord;
-import 'dart:math';
 
 class DartGetterSetterGen extends ParserBackend {
-  final Set<String> properties = new Set<String>();
-  final Map<String, Set<int>> calls = new Map<String, Set<int>>();
+  final properties = new Set<String>();
+  final calls = new Set<String>();
+  final symbols = new Set<String>();
 
   bool isAssignable(expression) => true;
 
@@ -13,20 +13,18 @@ class DartGetterSetterGen extends ParserBackend {
     properties.add(name);
   }
 
-  registerCall(String name, List arguments) {
+  registerCall(String name, CallArguments arguments) {
     if (isReservedWord(name)) return;
-    Set<int> arities = calls.putIfAbsent(name, () => new Set<int>());
-    arities.add(arguments.length);
+    calls.add(name);
+    symbols.addAll(arguments.named.keys);
   }
 
-  newAccessScope(String name)
-      => registerAccess(name);
-  newAccessMember(var object, String name)
-      => registerAccess(name);
-  newCallScope(String name, List arguments)
-      => registerCall(name, arguments);
-  newCallMember(var object, String name, List arguments)
-      => registerCall(name, arguments);
+  newAccessScope(String name) => registerAccess(name);
+  newAccessMember(var object, String name) => registerAccess(name);
+  newCallScope(String name, CallArguments arguments) =>
+      registerCall(name, arguments);
+  newCallMember(var object, String name, CallArguments arguments) =>
+      registerCall(name, arguments);
 }
 
 class ParserGetterSetter {
@@ -34,7 +32,7 @@ class ParserGetterSetter {
   final ParserBackend backend;
   ParserGetterSetter(this.parser, this.backend);
 
-  generateParser(List<String> exprs) {
+  generateParser(List<String> exprs, StringSink sink) {
     exprs.forEach((expr) {
       try {
         parser(expr);
@@ -44,58 +42,34 @@ class ParserGetterSetter {
     });
 
     DartGetterSetterGen backend = this.backend;
-    print(generateClosureMap(backend.properties, backend.calls));
+    sink.write(generateClosureMap(backend.properties, backend.calls,
+                                  backend.symbols));
   }
 
-  generateClosureMap(Set<String> properties, Map<String, Set<int>> calls) {
+  generateClosureMap(Set<String> properties,
+                     Set<String> calls,
+                     Set<String> symbols) {
+    var getters = new Set.from(properties)..addAll(calls);
     return '''
-class StaticClosureMap extends ClosureMap {
-  Map<String, Getter> _getters = ${generateGetterMap(properties)};
-  Map<String, Setter> _setters = ${generateSetterMap(properties)};
-  List<Map<String, Function>> _functions = ${generateFunctionMap(calls)};
-
-  Getter lookupGetter(String name)
-      => _getters[name];
-  Setter lookupSetter(String name)
-      => _setters[name];
-  lookupFunction(String name, int arity) 
-      => (arity < _functions.length) ? _functions[arity][name] : null;
-}
+StaticClosureMap closureMap = new StaticClosureMap(
+  ${generateGetterMap(getters)},
+  ${generateSetterMap(properties)},
+  ${generateSymbolMap(symbols)});
 ''';
   }
 
   generateGetterMap(Iterable<String> keys) {
-    var lines = keys.map((key) => 'r"${key}": (o) => o.$key');
-    return '{\n   ${lines.join(",\n    ")}\n  }';
+    var lines = keys.map((key) => '    r"${key}": (o) => o.$key');
+    return '{\n${lines.join(",\n")}\n  }';
   }
 
   generateSetterMap(Iterable<String> keys) {
-    var lines = keys.map((key) => 'r"${key}": (o, v) => o.$key = v');
-    return '{\n   ${lines.join(",\n    ")}\n  }';
+    var lines = keys.map((key) => '    r"${key}": (o,v) => o.$key = v');
+    return '{\n${lines.join(",\n")}\n  }';
   }
 
-  generateFunctionMap(Map<String, Set<int>> calls) {
-    Map<int, Set<String>> arities = {};
-    calls.forEach((name, callArities) {
-      callArities.forEach((arity){
-        arities.putIfAbsent(arity, () => new Set<String>()).add(name);
-      });
-    });
-
-    var maxArity = arities.keys.reduce((x, y) => max(x, y));
-
-    var maps = new Iterable.generate(maxArity, (arity) {
-      var names = arities[arity];
-      if (names == null) {
-        return '{\n    }';
-      } else {
-        var args = new List.generate(arity, (e) => "a$e").join(',');
-        var p = args.isEmpty ? '' : ', $args';
-        var lines = names.map((name) => 'r"$name": (o$p) => o.$name($args)');
-        return '{\n    ${lines.join(",\n    ")}\n  }';
-      }
-    });
-
-    return '[${maps.join(",")}]';
+  generateSymbolMap(Set<String> symbols) {
+    var lines = symbols.map((key) => '    r"${key}": #$key');
+    return '{\n${lines.join(",\n")}\n  }';
   }
 }

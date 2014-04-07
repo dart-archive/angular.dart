@@ -5,65 +5,94 @@ import '../_specs.dart';
 main() {
   describe('ng-mustache', () {
     TestBed _;
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       module.type(_HelloFilter);
-    }));
+      module.type(_FooDirective);
+    });
     beforeEach(inject((TestBed tb) => _ = tb));
 
-    it('should replace {{}} in text', inject((Compiler $compile, Scope rootScope, Injector injector, DirectiveMap directives) {
-      var element = $('<div>{{name}}<span>!</span></div>');
-      var template = $compile(element, directives);
+    it('should replace {{}} in text', inject((Compiler compile,
+        Scope rootScope, Injector injector, DirectiveMap directives)
+    {
+      var element = es('<div>{{name}}<span>!</span></div>');
+      var template = compile(element, directives);
 
       rootScope.context['name'] = 'OK';
-      var block = template(injector);
+      var view = template(injector);
 
-      element = $(block.elements);
+      element = view.nodes;
 
       rootScope.apply();
-      expect(element.text()).toEqual('OK!');
+      expect(element).toHaveText('OK!');
     }));
 
+    describe('observe/flush phase', () {
+      it('should first only when then value has settled', async((Logger log) {
+        _.compile('<div dir-foo="{{val}}"></div>');
 
-    it('should replace {{}} in attribute', inject((Compiler $compile, Scope rootScope, Injector injector, DirectiveMap directives) {
-      var element = $('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
-      var template = $compile(element, directives);
+        _.rootScope.apply();
+        // _FooDirective should NOT have observed any changes.
+        expect(log).toEqual([]);
+        expect(_.rootElement.attributes['dir-foo']).toEqual('');
+
+        _.rootScope.apply(() {
+          _.rootScope.context['val'] = 'value';
+        });
+        // _FooDirective should have observed exactly one change.
+        expect(_.rootElement.attributes['dir-foo']).toEqual('value');
+        expect(log).toEqual(['value']);
+      }));
+    });
+
+    it('should replace {{}} in attribute', inject((Compiler compile,
+        Scope rootScope, Injector injector, DirectiveMap directives)
+    {
+      Element element =
+          e('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
+      var template = compile([element], directives);
 
       rootScope.context['name'] = 'OK';
       rootScope.context['age'] = 23;
-      var block = template(injector);
+      var view = template(injector);
 
-      element = $(block.elements);
+      element = view.nodes[0];
 
       rootScope.apply();
-      expect(element.attr('some-attr')).toEqual('OK');
-      expect(element.attr('other-attr')).toEqual('23');
+      expect(element.attributes['some-attr']).toEqual('OK');
+      expect(element.attributes['other-attr']).toEqual('23');
     }));
 
 
-    it('should allow newlines in attribute', inject((Compiler $compile, RootScope rootScope, Injector injector, DirectiveMap directives) {
-      var element = $('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
-      var template = $compile(element, directives);
+    it('should allow newlines in attribute', inject((Compiler compile,
+       RootScope rootScope, Injector injector, DirectiveMap directives)
+    {
+      Element element =
+          e('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
+      var template = compile([element], directives);
 
       rootScope.context['line1'] = 'L1';
       rootScope.context['line2'] = 'L2';
-      var block = template(injector);
+      var view = template(injector);
 
-      element = $(block.elements);
+      element = view.nodes[0];
 
       rootScope.apply();
-      expect(element.attr('multiline-attr')).toEqual('line1: L1\nline2: L2');
+      expect(element.attributes['multiline-attr'])
+          .toEqual('line1: L1\nline2: L2');
     }));
 
 
-    it('should handle filters', inject((Compiler $compile, RootScope rootScope, Injector injector, DirectiveMap directives) {
-      var element = $('<div>{{"World" | hello}}</div>');
-      var template = $compile(element, directives);
-      var block = template(injector);
+    it('should handle filters', inject((Compiler compile, RootScope rootScope,
+        Injector injector, DirectiveMap directives)
+    {
+      var element = es('<div>{{"World" | hello}}</div>');
+      var template = compile(element, directives);
+      var view = template(injector);
       rootScope.apply();
 
-      element = $(block.elements);
+      element = view.nodes;
 
-      expect(element.html()).toEqual('Hello, World!');
+      expect(element).toHaveHtml('Hello, World!');
     }));
   });
 
@@ -89,7 +118,8 @@ main() {
     });
 
     it('should work together with ng-class', () {
-      var element = _.compile('<div ng-class="currentCls" ng-show="isVisible"></div>');
+      var element =
+          _.compile('<div ng-class="currentCls" ng-show="isVisible"></div>');
 
       expect(element).not.toHaveClass('active');
       expect(element).not.toHaveClass('ng-hide');
@@ -110,10 +140,22 @@ main() {
 
 }
 
-@NgFilter(name:'hello')
+@NgFilter(name: 'hello')
 class _HelloFilter {
   call(String str) {
     return 'Hello, $str!';
   }
 }
 
+@NgComponent(selector: '[dir-foo]')
+class _FooDirective implements NgAttachAware {
+  NodeAttrs attrs;
+  Logger log;
+
+  _FooDirective(this.attrs, this.log);
+
+  @override
+  void attach() {
+    attrs.observe('dir-foo', (val) => log(val));
+  }
+}

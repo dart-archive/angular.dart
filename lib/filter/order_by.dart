@@ -1,6 +1,6 @@
 part of angular.filter;
 
-typedef dynamic Mapper(dynamic e);
+typedef dynamic _Mapper(dynamic e);
 
 /**
  * Orders the provided [Iterable] by the `expression` predicate.
@@ -105,10 +105,10 @@ typedef dynamic Mapper(dynamic e);
  * chain.
  */
 @NgFilter(name: 'orderBy')
-class OrderByFilter {
+class OrderBy implements Function {
   Parser _parser;
 
-  OrderByFilter(this._parser);
+  OrderBy(this._parser);
 
   static _nop(e) => e;
   static bool _isNonZero(int n) => (n != 0);
@@ -122,7 +122,7 @@ class OrderByFilter {
   }
 
   static List _sorted(
-      List items, List<Mapper> mappers, List<Comparator> comparators, bool descending) {
+      List items, List<_Mapper> mappers, List<Comparator> comparators, bool descending) {
     // Do the standard decorate-sort-undecorate aka Schwartzian dance since Dart
     // doesn't support a key/transform parameter to sort().
     // Ref: http://en.wikipedia.org/wiki/Schwartzian_transform
@@ -142,7 +142,7 @@ class OrderByFilter {
       return null;
     }
     List expressions = null;
-    if (expression is String || expression is Mapper) {
+    if (expression is String || expression is _Mapper) {
       expressions = [expression];
     } else if (expression is List) {
       expressions = expression as List;
@@ -152,7 +152,7 @@ class OrderByFilter {
       return items;
     }
     int numExpressions = expressions.length;
-    List<Mapper> mappers = new List(numExpressions);
+    List<_Mapper> mappers = new List(numExpressions);
     List<Comparator> comparators = new List<Comparator>(numExpressions);
     for (int i = 0; i < numExpressions; i++) {
       expression = expressions[i];
@@ -170,8 +170,8 @@ class OrderByFilter {
           Expression parsed = _parser(strExp);
           mappers[i] = (e) => parsed.eval(e);
         }
-      } else if (expression is Mapper) {
-        mappers[i] = (expression as Mapper);
+      } else if (expression is _Mapper) {
+        mappers[i] = (expression as _Mapper);
         comparators[i] = _defaultComparator;
       }
     }

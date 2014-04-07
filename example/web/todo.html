@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/todo.css">
+    <title>Things To Do</title>
+    <script src="todo.dart" type="application/dart"></script>
+    <script src="packages/browser/dart.js"></script>
+</head>
+<body ng-app>
+
+    <div ng-hide="true" class="border well loading">Wait, Dart is loading this awesome app...</div>
+
+    <div todo-controller class="border well" ng-cloak>
+        <h2>Things To Do ;-)</h2>
+
+        <div class="right">
+            <button ng-click="todo.markAllDone()" class="btn btn-small">mark all done</button>
+            <button ng-click="todo.archiveDone()" class="btn btn-small">archive done</button>
+        </div>
+
+        <p>Remaining <b>{{todo.remaining()}}</b> of <b>{{todo.items.length}}</b> items.</p>
+
+
+        <ul class="well unstyled">
+            <li ng-repeat="item in todo.items" ng-class="todo.classFor(item)">
+                <label class="checkbox">
+                    <input type="checkbox" ng-model="item.done"> {{item.text}}
+                </label>
+            </li>
+        </ul>
+
+        <form class="form-inline" onsubmit="return false;">
+            <input type="text" ng-model="todo.newItem.text">
+            <button ng-click="todo.add()" ng-disabled="todo.newItem.isEmpty" class="btn btn-primary">add</button>
+            <button ng-click="todo.newItem.clear()" ng-disabled="todo.newItem.isEmpty" class="btn">clear</button>
+        </form>
+    </div>
+</body>
+</html>

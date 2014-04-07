@@ -11,10 +11,10 @@ part of angular.filter;
  *
  */
 @NgFilter(name:'currency')
-class CurrencyFilter {
+class Currency implements Function {
   NumberFormat nf = new NumberFormat();
 
-  CurrencyFilter() {
+  Currency() {
     nf.minimumFractionDigits = 2;
     nf.maximumFractionDigits = 2;
   }

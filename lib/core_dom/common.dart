@@ -1,4 +1,4 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
 List<dom.Node> cloneElements(elements) {
   return elements.map((el) => el.clone(true)).toList();
@@ -12,15 +12,16 @@ class DirectiveRef {
   final Type type;
   final NgAnnotation annotation;
   final String value;
-  final List<ApplyMapping> mappings = new List<ApplyMapping>();
-
-  BlockFactory blockFactory;
+  final mappings = new List<ApplyMapping>();
 
   DirectiveRef(this.element, this.type, this.annotation, [ this.value ]);
 
   String toString() {
-    var html = element is dom.Element ? (element as dom.Element).outerHtml : element.nodeValue;
-    return '{ element: $html, selector: ${annotation.selector}, value: $value, type: $type }';
+    var html = element is dom.Element
+        ? (element as dom.Element).outerHtml
+        : element.nodeValue;
+    return '{ element: $html, selector: ${annotation.selector}, value: $value, '
+           'type: $type }';
   }
 }
 
@@ -29,10 +30,12 @@ class DirectiveRef {
  * services from the provided modules.
  */
 Injector forceNewDirectivesAndFilters(Injector injector, List<Module> modules) {
-  modules.add(new Module()..factory(Scope, (i) {
-    var scope = i.parent.get(Scope);
-    return scope.createChild(new PrototypeMap(scope.context));
-  }));
+  modules.add(new Module()
+      ..factory(Scope, (i) {
+        var scope = i.parent.get(Scope);
+        return scope.createChild(new PrototypeMap(scope.context));
+      }));
+
   return injector.createChild(modules,
       forceNewInstances: [DirectiveMap, FilterMap]);
 }

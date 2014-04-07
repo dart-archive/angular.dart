@@ -3,16 +3,18 @@ part of angular.routing;
 /**
  * A factory of route to template bindings.
  */
-class ViewFactory {
+class RouteViewFactory {
   NgRoutingHelper locationService;
 
-  ViewFactory(this.locationService);
+  RouteViewFactory(this.locationService);
 
   call(String templateUrl) =>
       (RouteEnterEvent event) => _enterHandler(event, templateUrl);
 
-  _enterHandler(RouteEnterEvent event, String templateUrl, [List<Module> modules]) =>
-      locationService._route(event.route, templateUrl, fromEvent: true, modules: modules);
+  _enterHandler(RouteEnterEvent event, String templateUrl,
+                [List<Module> modules]) =>
+      locationService._route(event.route, templateUrl, fromEvent: true,
+          modules: modules);
 
   configure(Map<String, NgRouteCfg> config) =>
       _configure(locationService.router.root, config);
@@ -92,7 +94,7 @@ class NgRouteCfg {
  */
 @deprecated
 abstract class RouteInitializer {
-  void init(Router router, ViewFactory viewFactory);
+  void init(Router router, RouteViewFactory viewFactory);
 }
 
 /**
@@ -102,7 +104,7 @@ abstract class RouteInitializer {
  * The function will be called by the framework once the router is
  * instantiated but before [NgBindRouteDirective] and [NgViewDirective].
  */
-typedef void RouteInitializerFn(Router router, ViewFactory viewFactory);
+typedef void RouteInitializerFn(Router router, RouteViewFactory viewFactory);
 
 /**
  * A singleton helper service that handles routing initialization, global
@@ -111,11 +113,12 @@ typedef void RouteInitializerFn(Router router, ViewFactory viewFactory);
 @NgInjectableService()
 class NgRoutingHelper {
   final Router router;
-  final NgApp _ngApp;
+  final Application _ngApp;
   List<NgViewDirective> portals = <NgViewDirective>[];
   Map<String, _View> _templates = new Map<String, _View>();
 
-  NgRoutingHelper(RouteInitializer initializer, Injector injector, this.router, this._ngApp) {
+  NgRoutingHelper(RouteInitializer initializer, Injector injector, this.router,
+                  this._ngApp) {
     // TODO: move this to constructor parameters when di issue is fixed:
     // https://github.com/angular/di.dart/issues/40
     RouteInitializerFn initializerFn = injector.get(RouteInitializerFn);
@@ -125,9 +128,9 @@ class NgRoutingHelper {
     };
 
     if (initializerFn != null) {
-      initializerFn(router, new ViewFactory(this));
+      initializerFn(router, new RouteViewFactory(this));
     } else {
-      initializer.init(router, new ViewFactory(this));
+      initializer.init(router, new RouteViewFactory(this));
     }
     router.onRouteStart.listen((RouteStartEvent routeEvent) {
       routeEvent.completed.then((success) {
@@ -137,7 +140,7 @@ class NgRoutingHelper {
       });
     });
 
-    router.listen(appRoot: _ngApp.root);
+    router.listen(appRoot: _ngApp.element);
   }
 
   _reloadViews({Route startingFrom}) {

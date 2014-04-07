@@ -1,11 +1,13 @@
-part of angular;
-
 /**
- * A global write only variable which keeps track of objects attached to the
- * elements. This is useful for debugging AngularDart application from the
- * browser's REPL.
- */
-var _elementExpando = new Expando('element');
+* Introspection of Elements for debugging and tests.
+*/
+library angular.introspection;
+
+import 'dart:html' as dom;
+import 'package:di/di.dart';
+import 'package:angular/introspection_js.dart';
+import 'package:angular/core/module_internal.dart';
+import 'package:angular/core_dom/module_internal.dart';
 
 /**
  * Return the closest [ElementProbe] object for a given [Element].
@@ -19,8 +21,8 @@ ElementProbe ngProbe(dom.Node node) {
     throw "ngProbe called without node";
   }
   var origNode = node;
-  while(node != null) {
-    var probe = _elementExpando[node];
+  while (node != null) {
+    var probe = elementExpando[node];
     if (probe != null) return probe;
     node = node.parent;
   }
@@ -75,40 +77,7 @@ List<dom.Element> ngQuery(dom.Node element, String selector,
  * is not intended to be called from Angular application.
  */
 List<Object> ngDirectives(dom.Node node) {
-  ElementProbe probe = _elementExpando[node];
+  ElementProbe probe = elementExpando[node];
   return probe == null ? [] : probe.directives;
 }
 
-_publishToJavaScript() {
-  js.context
-      ..['ngProbe'] = new js.JsFunction.withThis((_, dom.Node node) => _jsProbe(ngProbe(node)))
-      ..['ngInjector'] = new js.JsFunction.withThis((_, dom.Node node) => _jsInjector(ngInjector(node)))
-      ..['ngScope'] = new js.JsFunction.withThis((_, dom.Node node) => _jsScope(ngScope(node)))
-      ..['ngQuery'] = new js.JsFunction.withThis((_, dom.Node node, String selector, [String containsText]) =>
-          new js.JsArray.from(ngQuery(node, selector, containsText)));
-}
-
-js.JsObject _jsProbe(ElementProbe probe) {
-  return new js.JsObject.jsify({
-    "element": probe.element,
-    "injector": _jsInjector(probe.injector),
-    "scope": _jsScope(probe.scope),
-    "directives": probe.directives.map((directive) => _jsDirective(directive))
-  })..['_dart_'] = probe;
-}
-
-js.JsObject _jsInjector(Injector injector) =>
-         new js.JsObject.jsify({"get": injector.get})..['_dart_'] = injector;
-
-js.JsObject _jsScope(Scope scope) {
-  return new js.JsObject.jsify({
-    "apply": scope.apply,
-    "digest": scope.rootScope.digest,
-    "flush": scope.rootScope.flush,
-    "context": scope.context,
-    "get": (name) => scope.context[name],
-    "set": (name, value) => scope.context[name] = value
-  })..['_dart_'] = scope;
-}
-
-_jsDirective(directive) => directive;

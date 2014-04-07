@@ -6,11 +6,15 @@ part of angular.animate;
  * running animations on child elements while the dom parent is also running an
  * animation.
  */
+@NgInjectableService()
 class AnimationOptimizer {
   final Map<dom.Element, Set<Animation>> _elements = new Map<dom.Element,
       Set<Animation>>();
   final Map<Animation, dom.Element> _animations = new Map<Animation,
       dom.Element>();
+
+  final Map<dom.Node, bool> _alwaysAnimate = new Map<dom.Node, bool>();
+  final Map<dom.Node, bool> _alwaysAnimateChildren = new Map<dom.Node, bool>();
 
   Expando _expando;
 
@@ -46,14 +50,50 @@ class AnimationOptimizer {
     }
   }
 
-  // TODO(codelogic): Allow animations to be forcibly prevented from executing
-  // on certain elements, elements and children, and forcibly allowed (ignoring
-  // parent animation state);
+  /**
+   * Since we can't overload forget...
+   */
+  void detachAlwaysAnimateOptions(dom.Element element) {
+    _alwaysAnimate.remove(element);
+    _alwaysAnimateChildren.remove(element);
+  }
+
+  /**
+   * Control animation for a specific element, ignoring every other option.
+   *   [mode] "always" will always animate this element.
+   *   [mode] "never" will never animate this element.
+   *   [mode] "auto" will detect if a parent animation is running or has child animations set.
+   */
+  void alwaysAnimate(dom.Element element, String mode) {
+    if (mode == "always") {
+      _alwaysAnimate[element] = true;
+    } else if (mode == "never") {
+      _alwaysAnimate[element] = false;
+    } else if (mode == "auto") {
+      _alwaysAnimate.remove(element);
+    }
+  }
+
+  /**
+   * Control animation for child elements, ignoring running animations unless 'auto' is provided as an option.
+   *   [mode] "always" will always animate children, unless it is specifically marked not to by [alwaysAnimate].
+   *   [mode] "never" will never animate children.
+   *   [mode] "auto" will detect if a parent animation is running or has child animations set.
+   */
+  void alwaysAnimateChildren(dom.Element element, String mode) {
+    if (mode == "always") {
+      _alwaysAnimateChildren[element] = true;
+    } else if (mode == "never") {
+      _alwaysAnimateChildren[element] = false;
+    } else if (mode == "auto") {
+      _alwaysAnimateChildren.remove(element);
+    }
+  }
 
   /**
    * Returns true if there is tracked animation on the given element.
    */
-  bool isAnimating(dom.Element element) {
+  bool _isAnimating(dom.Element element) {
     return _elements.containsKey(element);
   }
 
@@ -63,34 +103,53 @@ class AnimationOptimizer {
    * and [false] if the optimizer thinks that it should not execute.
    */
   bool shouldAnimate(dom.Node node) {
-    //var probe = _findElementProbe(node.parentNode);
-    var source = node;
+    bool alwaysAnimate = _alwaysAnimate[node];
+    if (alwaysAnimate != null) {
+      return alwaysAnimate;
+    }
+
+    // If there are 'always allow' or 'always prevent' animations declared,
+    // fallback to the automatic detection of running parent animations. By
+    // default, we assume that we can run.
+    bool autoDecision = true;
+
     node = node.parentNode;
     while (node != null) {
-      if (node.nodeType == dom.Node.ELEMENT_NODE
-          && isAnimating(node)) {
-        // If there is an already running animation, don't animate.
-        return false;
+      // Does this node give us animation information about our children?
+      alwaysAnimate = _alwaysAnimateChildren[node];
+      if (alwaysAnimate != null) {
+        return alwaysAnimate;
       }
-      
+
+      // If we hit a running parent animation, we still need to continue up
+      // the dom tree to see if there is or is not an 'alwaysAnimateChildren'
+      // decision somewhere.
+      if (autoDecision
+          && node.nodeType == dom.Node.ELEMENT_NODE
+          && _isAnimating(node)) {
+        // If there is an already running animation, don't animate.
+        autoDecision = false;
+      }
+
       // If we hit a null parent, try to break out of shadow dom.
-      if(node.parentNode == null) {
+      if (node.parentNode == null) {
         var probe = _findElementProbe(node);
         if (probe != null && probe.parent != null) {
-          // Escape shadow dom.
+          // Escape shadow dom!
           node = probe.parent.element;
         } else {
-          // If we are at the root of the document, we can animate.
-          return true;
+          // If we can't go any further, return the auto decision because we
+          // havent hit any other more important optimizations.
+          return autoDecision;
         }
       } else {
         node = node.parentNode;
       }
     }
 
-    return true;
+    return autoDecision;
   }
-  
+
   // Search and find the element probe for a given node.
   ElementProbe _findElementProbe(dom.Node node) {
     while (node != null) {

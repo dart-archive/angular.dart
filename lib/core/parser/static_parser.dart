@@ -1,6 +1,7 @@
 library angular.core.parser.static_parser;
 
-import 'package:angular/core/module.dart' show FilterMap, NgInjectableService;
+import 'package:angular/core/annotation.dart' show NgInjectableService;
+import 'package:angular/core/module_internal.dart' show FilterMap;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
 import 'package:angular/core/parser/syntax.dart';
@@ -15,7 +16,7 @@ class StaticParserFunctions {
 class StaticParser implements Parser<Expression> {
   final StaticParserFunctions _functions;
   final DynamicParser _fallbackParser;
-  final Map<String, Expression> _cache = {};
+  final _cache = <String, Expression>{};
   StaticParser(this._functions, this._fallbackParser);
 
   Expression call(String input) {

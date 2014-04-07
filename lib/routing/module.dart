@@ -1,4 +1,6 @@
 /**
+ * Route configuration for single-page applications.
+ *
  * The [routing] library makes it easier to build large single-page
  * applications. The library lets you map the browser address bar to semantic
  * structure of your application and keeps them in sync.
@@ -26,16 +28,16 @@
  * Lets try to define those routes in Angular. To get started we need to
  * provide an implementation of [RouteInitializerFn] function.
  *
- *    void initRoutes(Router router, ViewFactory view) {
+ *    void initRoutes(Router router, RouteViewFactory view) {
  *       // define routes here.
  *    }
  *
  *     var module = new Module()
- *       ..factory(RouteInitializerFn, (_) => initRoutes);
+ *       ..value(RouteInitializerFn, initRoutes);
  *
  *  Lets see how we could define our routes using the routing framework:
  *
- *     void initRoutes(Router router, ViewFactory view) {
+ *     void initRoutes(Router router, RouteViewFactory view) {
  *       router
  *         ..addRoute(
  *            name: 'recipes',
@@ -116,12 +118,12 @@
  *  [RouteHandle.discard] unsubscribes all listeneters created for the handle.
  *
  *
- *  # Hierarchical Routes
+ * ## Hierarchical Routes
  *
  *  The routing framework allows us to define trees of routes. In our recipes
  *  example we could have defined our routes like this:
  *
- *     void initRoutes(Router router, ViewFactory view) {
+ *     void initRoutes(Router router, RouteViewFactory view) {
  *       router
  *         ..addRoute(
  *            name: 'recipes',
@@ -144,7 +146,7 @@
  *                  path: '/edit',
  *                  enter: view('editRecipe.html')));
  *     }
- *   }
+ *
  */
 library angular.routing;
 
@@ -152,9 +154,11 @@ import 'dart:async';
 import 'dart:html';
 
 import 'package:di/di.dart';
-import 'package:angular/angular.dart';
+import 'package:angular/bootstrap.dart';
+import 'package:angular/core/annotation.dart';
+import 'package:angular/core/module_internal.dart';
+import 'package:angular/core_dom/module_internal.dart';
 import 'package:route_hierarchical/client.dart';
-export 'package:route_hierarchical/client.dart';
 
 part 'routing.dart';
 part 'ng_view.dart';

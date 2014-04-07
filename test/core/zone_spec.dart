@@ -8,18 +8,18 @@ void main() {
   describe('zone', () {
     var zone;
     var exceptionHandler;
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       exceptionHandler = new LoggingExceptionHandler();
       module.value(ExceptionHandler, exceptionHandler);
-    }));
+    });
 
-    beforeEach(inject((Logger log, ExceptionHandler eh) {
+    beforeEach((Logger log, ExceptionHandler eh) {
       zone = new NgZone();
       zone.onTurnDone = () {
         log('onTurnDone');
       };
       zone.onError = (e, s, ls) => eh(e, s);
-    }));
+    });
 
 
     describe('exceptions', () {
@@ -35,7 +35,7 @@ void main() {
       });
 
 
-      it('should call onError for errors from scheduleMicrotask', async(inject(() {
+      it('should call onError for errors from scheduleMicrotask', async(() {
         zone.run(() {
           scheduleMicrotask(() {
             throw ["async exception"];
@@ -44,10 +44,10 @@ void main() {
 
         expect(exceptionHandler.errors.length).toEqual(1);
         expect(exceptionHandler.errors[0].error).toEqual(["async exception"]);
-      })));
+      }));
 
 
-      it('should allow executing code outside the zone', inject(() {
+      it('should allow executing code outside the zone', () {
         var zone = new NgZone();
         var outerZone = Zone.current;
         var ngZone;
@@ -61,7 +61,7 @@ void main() {
 
         expect(outsideZone).toEqual(outerZone);
         expect(ngZone.parent).toEqual((outerZone));
-      }));
+      });
 
 
       it('should rethrow exceptions from the onTurnDone and call onError when the zone is sync', () {
@@ -100,7 +100,7 @@ void main() {
     });
 
     xdescribe('long stack traces', () {
-      it('should have nice error when crossing scheduleMicrotask boundries', async(inject(() {
+      it('should have nice error when crossing scheduleMicrotask boundries', async(() {
         var error;
         var stack;
         var longStacktrace;
@@ -132,15 +132,15 @@ void main() {
         expect('$longStacktrace').toContain('zone_spec.dart:${line+3}');
         expect('$longStacktrace').toContain('zone_spec.dart:${line+4}');
         expect('$longStacktrace').toContain('zone_spec.dart:${line+5}');
-      })));
+      }));
     });
 
-    it('should call onTurnDone after a synchronous block', inject((Logger log) {
+    it('should call onTurnDone after a synchronous view', (Logger log) {
       zone.run(() {
         log('run');
       });
       expect(log.result()).toEqual('run; onTurnDone');
-    }));
+    });
 
 
     it('should return the body return value from run', () {
@@ -148,7 +148,7 @@ void main() {
     });
 
 
-    it('should call onTurnDone for a scheduleMicrotask in onTurnDone', async(inject((Logger log) {
+    it('should call onTurnDone for a scheduleMicrotask in onTurnDone', async((Logger log) {
       var ran = false;
       zone.onTurnDone = () {
         if (!ran) {
@@ -162,10 +162,10 @@ void main() {
       microLeap();
 
       expect(log.result()).toEqual('run; onTurnDone; onTurnAsync; onTurnDone');
-    })));
+    }));
 
 
-    it('should call onTurnDone for a scheduleMicrotask in onTurnDone triggered by a scheduleMicrotask in run', async(inject((Logger log) {
+    it('should call onTurnDone for a scheduleMicrotask in onTurnDone triggered by a scheduleMicrotask in run', async((Logger log) {
       var ran = false;
       zone.onTurnDone = () {
         if (!ran) {
@@ -180,11 +180,11 @@ void main() {
       microLeap();
 
       expect(log.result()).toEqual('run; scheduleMicrotask; onTurnDone; onTurnAsync; onTurnDone');
-    })));
+    }));
 
 
 
-    it('should call onTurnDone once after a turn', async(inject((Logger log) {
+    it('should call onTurnDone once after a turn', async((Logger log) {
       zone.run(() {
         log('run start');
         scheduleMicrotask(() {
@@ -195,10 +195,10 @@ void main() {
       microLeap();
 
       expect(log.result()).toEqual('run start; run end; async; onTurnDone');
-    })));
+    }));
 
 
-    it('should work for Future.value as well', async(inject((Logger log) {
+    it('should work for Future.value as well', async((Logger log) {
       var futureRan = false;
       zone.onTurnDone = () {
         if (!futureRan) {
@@ -225,10 +225,10 @@ void main() {
       microLeap();
 
       expect(log.result()).toEqual('run start; run end; future then; future ?; future ?; onTurnDone; onTurn future; onTurnDone');
-    })));
+    }));
 
 
-    it('should call onTurnDone after each turn', async(inject((Logger log) {
+    it('should call onTurnDone after each turn', async((Logger log) {
       Completer a, b;
       zone.run(() {
         a = new Completer();
@@ -248,10 +248,10 @@ void main() {
       microLeap();
 
       expect(log.result()).toEqual('run start; onTurnDone; a then; onTurnDone; b then; onTurnDone');
-    })));
+    }));
 
 
-    it('should call onTurnDone after each turn in a chain', async(inject((Logger log) {
+    it('should call onTurnDone after each turn in a chain', async((Logger log) {
       zone.run(() {
         log('run start');
         scheduleMicrotask(() {
@@ -265,9 +265,9 @@ void main() {
       microLeap();
 
       expect(log.result()).toEqual('run start; run end; async1; async2; onTurnDone');
-    })));
+    }));
 
-    it('should call onTurnDone for futures created outside of run body', async(inject((Logger log) {
+    it('should call onTurnDone for futures created outside of run body', async((Logger log) {
       var future = new Future.value(4).then((x) => new Future.value(x));
       zone.run(() {
         future.then((_) => log('future then'));
@@ -276,10 +276,10 @@ void main() {
       microLeap();
 
       expect(log.result()).toEqual('zone run; onTurnDone; future then; onTurnDone');
-    })));
+    }));
 
 
-    it('should call onTurnDone even if there was an exception in body', async(inject((Logger log) {
+    it('should call onTurnDone even if there was an exception in body', async((Logger log) {
       zone.onError = (e, s, l) => log('onError');
       expect(() => zone.run(() {
         log('zone run');
@@ -287,10 +287,10 @@ void main() {
       })).toThrow('zoneError');
       expect(() => zone.assertInTurn()).toThrow();
       expect(log.result()).toEqual('zone run; onError; onTurnDone');
-    })));
+    }));
 
 
-    it('should call onTurnDone even if there was an exception in scheduleMicrotask', async(inject((Logger log) {
+    it('should call onTurnDone even if there was an exception in scheduleMicrotask', async((Logger log) {
       zone.onError = (e, s, l) => log('onError');
       zone.run(() {
         log('zone run');
@@ -304,7 +304,7 @@ void main() {
 
       expect(() => zone.assertInTurn()).toThrow();
       expect(log.result()).toEqual('zone run; scheduleMicrotask; onError; onTurnDone');
-    })));
+    }));
 
     it('should support assertInZone', async(() {
       var calls = '';

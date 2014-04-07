@@ -6,16 +6,17 @@ part of angular.animate;
  * animation framework. This implementation uses the [AnimationLoop] class to
  * queue and run CSS based transition and keyframe animations.
  */
+@NgInjectableService()
 class CssAnimate implements NgAnimate {
-  static const String NG_ANIMATE = "ng-animate";
-  static const String NG_MOVE = "ng-move";
-  static const String NG_INSERT = "ng-enter";
-  static const String NG_REMOVE = "ng-leave";
+  static const NG_ANIMATE = "ng-animate";
+  static const NG_MOVE = "ng-move";
+  static const NG_INSERT = "ng-enter";
+  static const NG_REMOVE = "ng-leave";
 
-  static const String NG_ADD_POSTFIX = "-add";
-  static const String NG_REMOVE_POSTFIX = "-remove";
-  static const String NG_ACTIVE_POSTFIX = "-active";
-  
+  static const NG_ADD_POSTFIX = "-add";
+  static const NG_REMOVE_POSTFIX = "-remove";
+  static const NG_ACTIVE_POSTFIX = "-active";
+
   final NoOpAnimation _noOp = new NoOpAnimation();
 
   final AnimationLoop _runner;
@@ -51,42 +52,36 @@ class CssAnimate implements NgAnimate {
                          { dom.Node insertBefore }) {
     util.domInsert(nodes, parent, insertBefore: insertBefore);
 
-    var animations = util.getElements(nodes).where((el) {
-      return _optimizer.shouldAnimate(el);
-    }).map((el) {
-      return animate(el, NG_INSERT);
-    });
+    var animations = util.getElements(nodes)
+        .where((el) =>_optimizer.shouldAnimate(el))
+        .map((el) => animate(el, NG_INSERT));
 
     return _animationFromList(animations);
   }
 
   Animation remove(Iterable<dom.Node> nodes) {
     var animations = nodes.map((node) {
-      if (node.nodeType == dom.Node.ELEMENT_NODE
-          && _optimizer.shouldAnimate(node)) {
+      if (node.nodeType == dom.Node.ELEMENT_NODE &&
+          _optimizer.shouldAnimate(node)) {
         return animate(node, NG_REMOVE);
       }
       return _noOp;
     });
 
     var result = _animationFromList(animations)..onCompleted.then((result) {
-      if (result.isCompleted) {
-        nodes.toList().forEach((n) => n.remove());
-      }
+      if (result.isCompleted) nodes.toList().forEach((n) => n.remove());
     });
-    
+
     return result;
   }
 
   Animation move(Iterable<dom.Node> nodes, dom.Node parent,
                        { dom.Node insertBefore }) {
     util.domMove(nodes, parent, insertBefore: insertBefore);
-    
-    var animations = util.getElements(nodes).where((el) {
-      return _optimizer.shouldAnimate(el);
-    }).map((el) {
-      return animate(el, NG_MOVE);
-    });
+
+    var animations = util.getElements(nodes)
+        .where((el) => _optimizer.shouldAnimate(el))
+        .map((el) => animate(el, NG_MOVE));
 
     return _animationFromList(animations);
   }
@@ -97,17 +92,15 @@ class CssAnimate implements NgAnimate {
    * instance.
    */
   CssAnimation animate(
-      dom.Element element, 
+      dom.Element element,
       String event,
       { String addAtStart,
         String addAtEnd,
         String removeAtStart,
         String removeAtEnd }) {
-    
+
     var _existing = _animationMap.findExisting(element, event);
-    if (_existing != null) {
-      return _existing;
-    }
+    if (_existing != null) return _existing;
 
     var animation = new CssAnimation(
         element,
@@ -123,41 +116,38 @@ class CssAnimate implements NgAnimate {
     _runner.play(animation);
     return animation;
   }
-  
+
   /**
    * For a given element and css event, attempt to find an existing instance
    * of the given animation and cancel it.
    */
   void cancelAnimation(dom.Element element, String event) {
     var existing = _animationMap.findExisting(element, event);
-                
-    if (existing != null) {
-      existing.cancel();
-    }
+
+    if (existing != null) existing.cancel();
   }
 }
 
 /**
  * Tracked set of currently running css animations grouped by element.
  */
+@NgInjectableService()
 class CssAnimationMap {
   final Map<dom.Element, Map<String, CssAnimation>> cssAnimations
       = new Map<dom.Element, Map<String, CssAnimation>>();
-  
+
   void track(CssAnimation animation) {
-    var animations = cssAnimations.putIfAbsent(animation.element, ()
-        => new Map<String, CssAnimation>());
+    var animations = cssAnimations.putIfAbsent(animation.element,
+        () => <String, CssAnimation>{});
     animations[animation.eventClass] = animation;
   }
-  
+
   void forget(CssAnimation animation) {
     var animations = cssAnimations[animation.element];
     animations.remove(animation.eventClass);
-    if (animations.length == 0) {
-      cssAnimations.remove(animation.element);
-    }
+    if (animations.length == 0) cssAnimations.remove(animation.element);
   }
-  
+
   CssAnimation findExisting(dom.Element element, String event) {
     var animations = cssAnimations[element];
     if (animations == null) return null;

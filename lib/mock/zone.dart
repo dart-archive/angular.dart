@@ -2,6 +2,16 @@ library angular.mock_zone;
 
 import 'dart:async' as dart_async;
 
+// async and sync are function compositions.
+class FunctionComposition {
+  Function outer;
+  Function inner;
+
+  FunctionComposition(this.outer, this.inner);
+
+  call() => outer(inner)();
+}
+
 final _asyncQueue = <Function>[];
 final _timerQueue = <_TimerSpec>[];
 final _asyncErrors = [];
@@ -31,7 +41,7 @@ bool _noMoreAsync = false;
  *
  */
 microLeap() {
-  while (!_asyncQueue.isEmpty) {
+  while (_asyncQueue.isNotEmpty) {
     // copy the queue as it may change.
     var toRun = new List.from(_asyncQueue);
     _asyncQueue.clear();
@@ -45,6 +55,11 @@ microLeap() {
     }
   }
 }
+
+/**
+ * Returns whether the async queue is empty.
+ */
+isAsyncQueueEmpty() => _asyncQueue.isEmpty;
 
 /**
  * Simulates a clock tick by running any scheduled timers. Can only be used
@@ -139,7 +154,9 @@ noMoreAsync() {
  *       ...
  *     }));
  */
-async(Function fn) => () {
+async(Function fn) => new FunctionComposition(_asyncOuter, fn);
+
+_asyncOuter(Function fn) => () {
   _noMoreAsync = false;
   _asyncErrors.clear();
   _timerQueue.clear();
@@ -186,7 +203,11 @@ _createTimer(Function fn, Duration duration, bool periodic) {
  * Enforces synchronous code.  Any calls to scheduleMicrotask inside of 'sync'
  * will throw an exception.
  */
-sync(Function fn) => () {
+sync(Function fn) => new FunctionComposition(_syncOuter, fn);
+
+_syncOuter(Function fn) => () {
+  _asyncErrors.clear();
+
   dart_async.runZoned(fn, zoneSpecification: new dart_async.ZoneSpecification(
     scheduleMicrotask: (_, __, ___, asyncFn) {
         throw ['scheduleMicrotask called from sync function.'];
@@ -197,8 +218,13 @@ sync(Function fn) => () {
     createPeriodicTimer:
         (_, __, ___, Duration period, void f(dart_async.Timer timer)) {
             throw ['periodic Timer created from sync function.'];
-        }
+        },
+    handleUncaughtError: (_, __, ___, e, s) => _asyncErrors.add([e, s])
     ));
+
+  _asyncErrors.forEach((e) {
+    throw "During runZoned: ${e[0]}.  Stack:\n${e[1]}";
+  });
 };
 
 class _TimerSpec implements dart_async.Timer {

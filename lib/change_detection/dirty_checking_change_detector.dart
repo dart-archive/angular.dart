@@ -1,18 +1,7 @@
 library dirty_checking_change_detector;
 
-import 'dart:mirrors';
 import 'dart:collection';
 import 'package:angular/change_detection/change_detection.dart';
-
-typedef FieldGetter(object);
-
-class GetterCache {
-  final Map<String, FieldGetter> _map;
-
-  GetterCache(this._map);
-
-  FieldGetter call(String name) => _map[name];
-}
 
 /**
  * [DirtyCheckingChangeDetector] determines which object properties have changed
@@ -20,30 +9,23 @@ class GetterCache {
  *
  * GOALS:
  *   - Plugable implementation, replaceable with other technologies, such as
- *   Object.observe().
+ *     Object.observe().
  *   - SPEED this needs to be as fast as possible.
  *   - No GC pressure. Since change detection runs often it should perform no
- *   memory allocations.
+ *     memory allocations.
  *   - The changes need to be delivered in a single data-structure at once.
- *   There are two reasons for this:
- *     1. It should be easy to measure the cost of change detection vs
- *     processing.
- *     2. The feature may move to VM for performance reason. The VM should be
- *     free to implement it in any way. The only requirement is that the list of
- *     changes need to be delivered.
+ *     There are two reasons for this:
+ *       1. It should be easy to measure the cost of change detection vs
+ *          processing.
+ *       2. The feature may move to VM for performance reason. The VM should be
+ *          free to implement it in any way. The only requirement is that the
+ *          list of changes need to be delivered.
  *
  * [DirtyCheckingRecord]
  *
  * Each property to be watched is recorded as a [DirtyCheckingRecord] and kept
  * in a linked list. Linked list are faster than Arrays for iteration. They also
  * allow removal of large blocks of watches in an efficient manner.
- *
- * [ChangeRecord]
- *
- * When the results are delivered they are a linked list of [ChangeRecord]s. For
- * efficiency reasons the [DirtyCheckingRecord] and [ChangeRecord] are two
- * different interfaces for the same underlying object this makes reporting
- * efficient since no additional memory allocation is performed.
  */
 class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
   /**
@@ -54,7 +36,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
    */
   final DirtyCheckingRecord _marker = new DirtyCheckingRecord.marker();
 
-  final GetterCache _getterCache;
+  final FieldGetterFactory _fieldGetterFactory;
 
   /**
    * All records for group are kept together and are denoted by head/tail.
@@ -75,12 +57,23 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     return tail._recordTail;
   }
 
+  bool get isAttached {
+    DirtyCheckingChangeDetectorGroup current = this;
+    DirtyCheckingChangeDetectorGroup parent;
+    while ((parent = current._parent) != null) {
+      current = parent;
+    }
+    return current is DirtyCheckingChangeDetector
+      ? true
+      : current._prev != null && current._next != null;
+  }
+
 
   DirtyCheckingChangeDetector get _root {
     var root = this;
-    var next;
-    while((next = root._parent) != null) {
-      root = next;
+    var parent;
+    while ((parent = root._parent) != null) {
+      root = parent;
     }
     return root is DirtyCheckingChangeDetector ? root : null;
   }
@@ -92,7 +85,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
    */
   DirtyCheckingChangeDetectorGroup _parent, _childHead, _childTail, _prev, _next;
 
-  DirtyCheckingChangeDetectorGroup(this._parent, this._getterCache) {
+  DirtyCheckingChangeDetectorGroup(this._parent, this._fieldGetterFactory) {
     // we need to insert the marker record at the beginning.
     if (_parent == null) {
       _recordHead = _marker;
@@ -111,7 +104,7 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     int count = 0;
     DirtyCheckingRecord cursor = _recordHead;
     DirtyCheckingRecord end = _childInclRecordTail;
-    while(cursor != null) {
+    while (cursor != null) {
       if (cursor._mode != DirtyCheckingRecord._MODE_MARKER_) {
         count++;
       }
@@ -123,17 +116,17 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
 
   WatchRecord<H> watch(Object object, String field, H handler) {
     assert(_root != null); // prove that we are not deleted connected;
-    var getter = field == null ? null : _getterCache(field);
-    return _recordAdd(new DirtyCheckingRecord(this, object, field, getter,
-        handler));
+    return _recordAdd(new DirtyCheckingRecord(this, _fieldGetterFactory,
+                                              handler, field, object));
   }
 
   /**
    * Create a child [ChangeDetector] group.
    */
   DirtyCheckingChangeDetectorGroup<H> newGroup() {
-    assert(_root._assertRecordsOk());
-    var child = new DirtyCheckingChangeDetectorGroup(this, _getterCache);
+    // Disabled due to issue https://github.com/angular/angular.dart/issues/812
+    // assert(_root._assertRecordsOk());
+    var child = new DirtyCheckingChangeDetectorGroup(this, _fieldGetterFactory);
     if (_childHead == null) {
       _childHead = _childTail = child;
     } else {
@@ -141,7 +134,8 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
       _childTail._next = child;
       _childTail = child;
     }
-    assert(_root._assertRecordsOk());
+    // Disabled due to issue https://github.com/angular/angular.dart/issues/812
+    // assert(_root._assertRecordsOk());
     return child;
   }
 
@@ -153,15 +147,11 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
     assert((root = _root) != null);
     assert(root._assertRecordsOk());
     DirtyCheckingRecord prevRecord = _recordHead._prevRecord;
-    DirtyCheckingRecord nextRecord = _childInclRecordTail._nextRecord;
+    var childInclRecordTail = _childInclRecordTail;
+    DirtyCheckingRecord nextRecord = childInclRecordTail._nextRecord;
 
     if (prevRecord != null) prevRecord._nextRecord = nextRecord;
     if (nextRecord != null) nextRecord._prevRecord = prevRecord;
-
-    var cursor = _recordHead;
-    while(cursor != nextRecord) {
-      cursor = cursor._nextRecord;
-    }
 
     var prevGroup = _prev;
     var nextGroup = _next;
@@ -177,6 +167,9 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
       nextGroup._prev = prevGroup;
     }
     _parent = null;
+    _prev = _next = null;
+    _recordHead._prevRecord = null;
+    childInclRecordTail._nextRecord = null;
     assert(root._assertRecordsOk());
   }
 
@@ -225,8 +218,8 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
       do {
         allRecords.add(record.toString());
         record = record._nextRecord;
-      }
-      while (record != includeChildrenTail);
+      } while (record != includeChildrenTail);
+      allRecords.add(includeChildrenTail);
       lines.add('FIELDS: ${allRecords.join(', ')}');
     }
 
@@ -250,7 +243,11 @@ class DirtyCheckingChangeDetectorGroup<H> implements ChangeDetectorGroup<H> {
 
 class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     implements ChangeDetector<H> {
-  DirtyCheckingChangeDetector(GetterCache getterCache): super(null, getterCache);
+
+  final DirtyCheckingRecord _fakeHead = new DirtyCheckingRecord.marker();
+
+  DirtyCheckingChangeDetector(FieldGetterFactory fieldGetterFactory)
+      : super(null, fieldGetterFactory);
 
   DirtyCheckingChangeDetector get _root => this;
 
@@ -258,47 +255,65 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     var record = this._recordHead;
     var groups = [this];
     DirtyCheckingChangeDetectorGroup group;
-    while(groups.isNotEmpty) {
+    while (groups.isNotEmpty) {
       group = groups.removeAt(0);
       DirtyCheckingChangeDetectorGroup childGroup = group._childTail;
-      while(childGroup != null) {
+      while (childGroup != null) {
         groups.insert(0, childGroup);
         childGroup = childGroup._prev;
       }
       var groupRecord = group._recordHead;
       var groupLast = group._recordTail;
-      while(true) {
+      if (record != groupRecord) {
+        throw "Next record is $record expecting $groupRecord";
+      }
+      var done = false;
+      while (!done && groupRecord != null) {
         if (groupRecord == record) {
+          if (record._group != null && record._group != group) {
+            throw "Wrong group: $record "
+                  "Got ${record._group} Expecting: $group";
+          }
           record = record._nextRecord;
         } else {
           throw 'lost: $record found $groupRecord\n$this';
         }
 
-        if (groupRecord == groupLast) break;
+        if (groupRecord._nextRecord != null &&
+            groupRecord._nextRecord._prevRecord != groupRecord) {
+          throw "prev/next pointer missmatch on "
+                "$groupRecord -> ${groupRecord._nextRecord} "
+                "<= ${groupRecord._nextRecord._prevRecord} in $this";
+        }
+        if (groupRecord._prevRecord != null &&
+            groupRecord._prevRecord._nextRecord != groupRecord) {
+              throw "prev/next pointer missmatch on "
+                    "$groupRecord -> ${groupRecord._prevRecord} "
+                    "<= ${groupRecord._prevRecord._nextChange} in $this";
+        }
+        if (groupRecord == groupLast) {
+          done = true;
+        }
         groupRecord = groupRecord._nextRecord;
       }
+    }
+    if(record != null) {
+      throw "Extra records at tail: $record on $this";
     }
     return true;
   }
 
-  DirtyCheckingRecord<H> collectChanges({ EvalExceptionHandler exceptionHandler,
-                                          AvgStopwatch stopwatch}) {
+  Iterator<Record<H>> collectChanges({EvalExceptionHandler exceptionHandler,
+                                      AvgStopwatch stopwatch}) {
     if (stopwatch != null) stopwatch.start();
-    DirtyCheckingRecord changeHead = null;
-    DirtyCheckingRecord changeTail = null;
+    DirtyCheckingRecord changeTail = _fakeHead;
     DirtyCheckingRecord current = _recordHead; // current index
 
     int count = 0;
     while (current != null) {
       try {
-        if (current.check() != null) {
-          if (changeHead == null) {
-            changeHead = changeTail = current;
-          } else {
-            changeTail = changeTail.nextChange = current;
-          }
-        }
-        if (stopwatch != null) count++;
+        if (current.check()) changeTail = changeTail._nextChange = current;
+        count++;
       } catch (e, s) {
         if (exceptionHandler == null) {
           rethrow;
@@ -308,13 +323,40 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
       }
       current = current._nextRecord;
     }
-    if (changeTail != null) changeTail.nextChange = null;
+
+    changeTail._nextChange = null;
     if (stopwatch != null) stopwatch..stop()..increment(count);
-    return changeHead;
+    DirtyCheckingRecord changeHead = _fakeHead._nextChange;
+    _fakeHead._nextChange = null;
+
+    return new _ChangeIterator(changeHead);
   }
 
   void remove() {
     throw new StateError('Root ChangeDetector can not be removed');
+  }
+}
+
+class _ChangeIterator<H> implements Iterator<Record<H>>{
+  DirtyCheckingRecord _current;
+  DirtyCheckingRecord _next;
+  DirtyCheckingRecord get current => _current;
+
+  _ChangeIterator(this._next);
+
+  bool moveNext() {
+    _current = _next;
+    if (_next != null) {
+      _next = _current._nextChange;
+      /*
+       * This is important to prevent memory leaks. If we don't reset then
+       * a record maybe pointing to a deleted change detector group and it
+       * will not release the reference until it fires again. So we have
+       * to be eager about releasing references.
+       */
+      _current._nextChange = null;
+    }
+    return _current != null;
   }
 }
 
@@ -327,21 +369,19 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
  * removing efficient. [DirtyCheckingRecord] also has a [nextChange] field which
  * creates a single linked list of all of the changes for efficient traversal.
  */
-class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
+class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
   static const List<String> _MODE_NAMES =
-      const ['MARKER', 'IDENT', 'REFLECT', 'GETTER', 'MAP[]', 'ITERABLE', 'MAP'];
+      const ['MARKER', 'IDENT', 'GETTER', 'MAP[]', 'ITERABLE', 'MAP'];
   static const int _MODE_MARKER_ = 0;
   static const int _MODE_IDENTITY_ = 1;
-  static const int _MODE_REFLECT_ = 2;
-  static const int _MODE_GETTER_ = 3;
-  static const int _MODE_MAP_FIELD_ = 4;
-  static const int _MODE_ITERABLE_ = 5;
-  static const int _MODE_MAP_ = 6;
+  static const int _MODE_GETTER_ = 2;
+  static const int _MODE_MAP_FIELD_ = 3;
+  static const int _MODE_ITERABLE_ = 4;
+  static const int _MODE_MAP_ = 5;
 
   final DirtyCheckingChangeDetectorGroup _group;
+  final FieldGetterFactory _fieldGetterFactory;
   final String field;
-  final Symbol _symbol;
-  final FieldGetter _getter;
   final H handler;
 
   int _mode;
@@ -350,52 +390,64 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
   var currentValue;
   DirtyCheckingRecord<H> _nextRecord;
   DirtyCheckingRecord<H> _prevRecord;
-  ChangeRecord<H> nextChange;
+  Record<H> _nextChange;
   var _object;
-  InstanceMirror _instanceMirror;
+  FieldGetter _getter;
 
-  DirtyCheckingRecord(this._group, object, fieldName, this._getter, this.handler)
-      : field = fieldName,
-        _symbol = fieldName == null ? null : new Symbol(fieldName)
-  {
-    this.object = object;
+  DirtyCheckingRecord(this._group, this._fieldGetterFactory, this.handler,
+                      this.field, _object) {
+    object = _object;
   }
 
   DirtyCheckingRecord.marker()
-      : handler = null,
+      : _group = null,
+        _fieldGetterFactory = null,
+        handler = null,
         field = null,
-        _group = null,
-        _symbol = null,
         _getter = null,
         _mode = _MODE_MARKER_;
 
-  get object => _object;
+  dynamic get object => _object;
 
   /**
    * Setting an [object] will cause the setter to introspect it and place
    * [DirtyCheckingRecord] into different access modes. If Object it sets up
    * reflection. If [Map] then it sets up map accessor.
    */
-  set object(obj) {
+  void set object(obj) {
     _object = obj;
     if (obj == null) {
       _mode = _MODE_IDENTITY_;
+      _getter = null;
       return;
     }
 
     if (field == null) {
-      _instanceMirror = null;
+      _getter = null;
       if (obj is Map) {
         if (_mode != _MODE_MAP_) {
-          // Last one was collection as well, don't reset state.
           _mode =  _MODE_MAP_;
           currentValue = new _MapChangeRecord();
         }
+        if (currentValue.isDirty) {
+          // We're dirty because the mapping we tracked by reference mutated.
+          // In addition, our reference has now changed.  We should compare the
+          // previous reported value of that mapping with the one from the
+          // new reference.
+          currentValue._revertToPreviousState();
+        }
+
       } else if (obj is Iterable) {
         if (_mode != _MODE_ITERABLE_) {
-          // Last one was collection as well, don't reset state.
-          _mode =  _MODE_ITERABLE_;
+          _mode = _MODE_ITERABLE_;
           currentValue = new _CollectionChangeRecord();
+        }
+        if (currentValue.isDirty) {
+          // We're dirty because the collection we tracked by reference mutated.
+          // In addition, our reference has now changed.  We should compare the
+          // previous reported value of that collection with the one from the
+          // new reference.
+          currentValue._revertToPreviousState();
         }
       } else {
         _mode = _MODE_IDENTITY_;
@@ -406,25 +458,19 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
 
     if (obj is Map) {
       _mode =  _MODE_MAP_FIELD_;
-      _instanceMirror = null;
-    } else if (_getter != null) {
-      _mode = _MODE_GETTER_;
-      _instanceMirror = null;
+      _getter = null;
     } else {
-      _mode = _MODE_REFLECT_;
-      _instanceMirror = reflect(obj);
+      _mode = _MODE_GETTER_;
+      _getter = _fieldGetterFactory.getter(obj, field);
     }
   }
 
-  ChangeRecord<H> check() {
+  bool check() {
     assert(_mode != null);
     var current;
     switch (_mode) {
       case _MODE_MARKER_:
-        return null;
-      case _MODE_REFLECT_:
-        current = _instanceMirror.getField(_symbol).reflectee;
-        break;
+        return false;
       case _MODE_GETTER_:
         current = _getter(object);
         break;
@@ -435,9 +481,9 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
         current = object;
         break;
       case _MODE_MAP_:
-        return (currentValue as _MapChangeRecord)._check(object) ? this : null;
+        return (currentValue as _MapChangeRecord)._check(object);
       case _MODE_ITERABLE_:
-        return (currentValue as _CollectionChangeRecord)._check(object) ? this : null;
+        return (currentValue as _CollectionChangeRecord)._check(object);
       default:
         assert(false);
     }
@@ -454,10 +500,10 @@ class DirtyCheckingRecord<H> implements ChangeRecord<H>, WatchRecord<H> {
       } else {
         previousValue = last;
         currentValue = current;
-        return this;
+        return true;
       }
     }
-    return null;
+    return false;
   }
 
 
@@ -474,12 +520,14 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   final Map<dynamic, KeyValueRecord> _records = new Map<dynamic, KeyValueRecord>();
   Map _map;
   KeyValueRecord _mapHead;
+  KeyValueRecord _previousMapHead;
   KeyValueRecord _changesHead, _changesTail;
   KeyValueRecord _additionsHead, _additionsTail;
   KeyValueRecord _removalsHead, _removalsTail;
 
   Map get map => _map;
   KeyValue<K, V> get mapHead => _mapHead;
+  PreviousKeyValue<K, V> get previousMapHead => _previousMapHead;
   ChangedKeyValue<K, V> get changesHead => _changesHead;
   AddedKeyValue<K, V> get additionsHead => _additionsHead;
   RemovedKeyValue<K, V> get removalsHead => _removalsHead;
@@ -488,9 +536,27 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
                  _changesHead != null ||
                  _removalsHead != null;
 
+  _revertToPreviousState() {
+    if (!isDirty) {
+      return;
+    }
+    KeyValueRecord record, prev;
+    int i = 0;
+    for (record = _mapHead = _previousMapHead;
+         record != null;
+         prev = record, record = record._previousNextKeyValue, ++i) {
+      record._currentValue = record._previousValue;
+      if (prev != null) {
+        prev._nextKeyValue = prev._previousNextKeyValue = record;
+      }
+    }
+    prev._nextKeyValue = null;
+    _undoDeltas();
+  }
+
   void forEachChange(void f(ChangedKeyValue<K, V> change)) {
     KeyValueRecord record = _changesHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextChangedKeyValue;
     }
@@ -498,7 +564,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
 
   void forEachAddition(void f(AddedKeyValue<K, V> addition)){
     KeyValueRecord record = _additionsHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextAddedKeyValue;
     }
@@ -506,7 +572,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
 
   void forEachRemoval(void f(RemovedKeyValue<K, V> removal)){
     KeyValueRecord record = _removalsHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextRemovedKeyValue;
     }
@@ -569,6 +635,18 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   }
 
   void _reset() {
+    if (isDirty) {
+      // Record the state of the mapping for a possible _revertToPreviousState()
+      for (KeyValueRecord record = _previousMapHead = _mapHead;
+           record != null;
+           record = record._nextKeyValue) {
+        record._previousNextKeyValue = record._nextKeyValue;
+      }
+      _undoDeltas();
+    }
+  }
+
+  void _undoDeltas() {
     var record = _changesHead;
     while (record != null) {
       record._previousValue = record._currentValue;
@@ -611,7 +689,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   }
 
   void _truncate(KeyValueRecord lastRecord, KeyValueRecord record) {
-    while(record != null) {
+    while (record != null) {
       if (lastRecord == null) {
         _mapHead = null;
       } else {
@@ -715,14 +793,42 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
       _changesTail = record;
     }
   }
+
+  String toString() {
+    List itemsList = [], previousList = [], changesList = [], additionsList = [], removalsList = [];
+    KeyValueRecord record;
+    for (record = _mapHead; record != null; record = record._nextKeyValue) {
+      itemsList.add("$record");
+    }
+    for (record = _previousMapHead; record != null; record = record._previousNextKeyValue) {
+      previousList.add("$record");
+    }
+    for (record = _changesHead; record != null; record = record._nextChangedKeyValue) {
+      changesList.add("$record");
+    }
+    for (record = _additionsHead; record != null; record = record._nextAddedKeyValue) {
+      additionsList.add("$record");
+    }
+    for (record = _removalsHead; record != null; record = record._nextRemovedKeyValue) {
+      removalsList.add("$record");
+    }
+    return """
+map: ${itemsList.join(", ")}
+previous: ${previousList.join(", ")}
+changes: ${changesList.join(", ")}
+additions: ${additionsList.join(", ")}
+removals: ${removalsList.join(", ")}
+""";
+  }
 }
 
-class KeyValueRecord<K, V> implements KeyValue<K, V>, AddedKeyValue<K, V>,
-    RemovedKeyValue<K, V>, ChangedKeyValue<K, V> {
+class KeyValueRecord<K, V> implements KeyValue<K, V>, PreviousKeyValue<K, V>,
+      AddedKeyValue<K, V>, RemovedKeyValue<K, V>, ChangedKeyValue<K, V> {
   final K key;
   V _previousValue, _currentValue;
 
   KeyValueRecord<K, V> _nextKeyValue;
+  KeyValueRecord<K, V> _previousNextKeyValue;
   KeyValueRecord<K, V> _nextAddedKeyValue;
   KeyValueRecord<K, V> _nextRemovedKeyValue, _prevRemovedKeyValue;
   KeyValueRecord<K, V> _nextChangedKeyValue;
@@ -732,37 +838,64 @@ class KeyValueRecord<K, V> implements KeyValue<K, V>, AddedKeyValue<K, V>,
   V get previousValue => _previousValue;
   V get currentValue => _currentValue;
   KeyValue<K, V> get nextKeyValue => _nextKeyValue;
+  PreviousKeyValue<K, V> get previousNextKeyValue => _previousNextKeyValue;
   AddedKeyValue<K, V> get nextAddedKeyValue => _nextAddedKeyValue;
   RemovedKeyValue<K, V> get nextRemovedKeyValue => _nextRemovedKeyValue;
   ChangedKeyValue<K, V> get nextChangedKeyValue => _nextChangedKeyValue;
 
   String toString() => _previousValue == _currentValue
-        ? key
+        ? "$key"
         : '$key[$_previousValue -> $_currentValue]';
 }
 
 
 class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   Iterable _iterable;
+  int _length;
+
   /** Used to keep track of items during moves. */
   DuplicateMap _items = new DuplicateMap();
 
   /** Used to keep track of removed items. */
   DuplicateMap _removedItems = new DuplicateMap();
 
+  ItemRecord<V> _previousCollectionHead;
   ItemRecord<V> _collectionHead, _collectionTail;
   ItemRecord<V> _additionsHead, _additionsTail;
   ItemRecord<V> _movesHead, _movesTail;
   ItemRecord<V> _removalsHead, _removalsTail;
 
+  CollectionChangeItem<V> get previousCollectionHead => _previousCollectionHead;
   CollectionChangeItem<V> get collectionHead => _collectionHead;
   CollectionChangeItem<V> get additionsHead => _additionsHead;
   CollectionChangeItem<V> get movesHead => _movesHead;
   CollectionChangeItem<V> get removalsHead => _removalsHead;
 
+  _revertToPreviousState() {
+    if (!isDirty) {
+      return;
+    }
+    _items.clear();
+    ItemRecord<V> record, prev;
+    int i = 0;
+    for (record = _collectionHead = _previousCollectionHead;
+         record != null;
+         prev = record, record = record._previousNextRec, ++i) {
+      record.currentIndex = record.previousIndex = i;
+      record._prevRec = prev;
+      if (prev != null) {
+        prev._nextRec = prev._previousNextRec = record;
+      }
+      _items.put(record);
+    }
+    prev._nextRec = null;
+    _collectionTail = prev;
+    _undoDeltas();
+  }
+
   void forEachAddition(void f(AddedItem<V> addition)){
     ItemRecord record = _additionsHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextAddedRec;
     }
@@ -770,7 +903,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
   void forEachMove(void f(MovedItem<V> change)) {
     ItemRecord record = _movesHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextMovedRec;
     }
@@ -778,26 +911,29 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
   void forEachRemoval(void f(RemovedItem<V> removal)){
     ItemRecord record = _removalsHead;
-    while(record != null) {
+    while (record != null) {
       f(record);
       record = record._nextRemovedRec;
     }
   }
 
   Iterable get iterable => _iterable;
+  int get length => _length;
 
   bool _check(Iterable collection) {
     _reset();
-    ItemRecord record = _collectionHead;
-    bool maybeDirty = false;
     if ((collection is UnmodifiableListView) &&
-    identical(_iterable, collection)) {
+        identical(_iterable, collection)) {
       // Short circuit and assume that the list has not been modified.
       return false;
     }
 
+    ItemRecord record = _collectionHead;
+    bool maybeDirty = false;
+
     if (collection is List) {
       List list = collection;
+      _length = list.length;
       for (int index = 0; index < list.length; index++) {
         var item = list[index];
         if (record == null || !identical(item, record.item)) {
@@ -822,6 +958,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
         record = record._nextRec;
         index++;
       }
+      _length = index;
     }
 
     _truncate(record);
@@ -835,17 +972,29 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
    * removals).
    */
   void _reset() {
+    if (isDirty) {
+      // Record the state of the collection for a possible _revertToPreviousState()
+      for (ItemRecord record = _previousCollectionHead = _collectionHead;
+           record != null;
+           record = record._nextRec) {
+        record._previousNextRec = record._nextRec;
+      }
+      _undoDeltas();
+    }
+  }
+
+  void _undoDeltas() {
     ItemRecord record;
 
     record = _additionsHead;
-    while(record != null) {
+    while (record != null) {
       record.previousIndex = record.currentIndex;
       record = record._nextAddedRec;
     }
     _additionsHead = _additionsTail = null;
 
     record = _movesHead;
-    while(record != null) {
+    while (record != null) {
       record.previousIndex = record.currentIndex;
       var nextRecord = record._nextMovedRec;
       assert((record._nextMovedRec = null) == null);
@@ -958,12 +1107,25 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
    */
   void _truncate(ItemRecord record) {
     // Anything after that needs to be removed;
-    while(record != null) {
+    while (record != null) {
       ItemRecord nextRecord = record._nextRec;
       _removals_add(_collection_unlink(record));
       record = nextRecord;
     }
     _removedItems.clear();
+
+    if (_additionsTail != null) {
+      _additionsTail._nextAddedRec = null;
+    }
+    if (_movesTail != null) {
+      _movesTail._nextMovedRec = null;
+    }
+    if (_collectionTail != null) {
+      _collectionTail._nextRec = null;
+    }
+    if (_removalsTail != null) {
+      _removalsTail._nextRemovedRec = null;
+    }
   }
 
   ItemRecord _collection_reinsertAfter(ItemRecord record, ItemRecord insertPrev,
@@ -1101,52 +1263,63 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
     var list = [];
     record = _collectionHead;
-    while(record != null) {
+    while (record != null) {
       list.add(record);
       record = record._nextRec;
     }
 
+    var previous = [];
+    record = _previousCollectionHead;
+    while (record != null) {
+      previous.add(record);
+      record = record._previousNextRec;
+    }
+
     var additions = [];
     record = _additionsHead;
-    while(record != null) {
+    while (record != null) {
       additions.add(record);
       record = record._nextAddedRec;
     }
 
     var moves = [];
     record = _movesHead;
-    while(record != null) {
+    while (record != null) {
       moves.add(record);
       record = record._nextMovedRec;
     }
 
     var removals = [];
     record = _removalsHead;
-    while(record != null) {
+    while (record != null) {
       removals.add(record);
       record = record._nextRemovedRec;
     }
 
     return """
 collection: ${list.join(", ")}
+previous: ${previous.join(", ")}
 additions: ${additions.join(", ")}
 moves: ${moves.join(", ")}
-removals: ${removals.join(", ")}'
-    """;
+removals: ${removals.join(", ")}
+""";
   }
 }
 
-class ItemRecord<V> implements CollectionItem<V>, AddedItem<V>, MovedItem<V>,
+class ItemRecord<V> implements PreviousCollectionItem<V>, CollectionItem<V>, AddedItem<V>, MovedItem<V>,
     RemovedItem<V> {
   int previousIndex = null;
   int currentIndex = null;
   V item = _INITIAL_;
 
+
+  ItemRecord<V> _previousNextRec;
   ItemRecord<V> _prevRec, _nextRec;
   ItemRecord<V> _prevDupRec, _nextDupRec;
   ItemRecord<V> _prevRemovedRec, _nextRemovedRec;
   ItemRecord<V> _nextAddedRec, _nextMovedRec;
 
+  PreviousCollectionItem<V> get previousNextItem => _previousNextRec;
   CollectionItem<V> get nextCollectionItem => _nextRec;
   RemovedItem<V> get nextRemovedItem => _nextRemovedRec;
   AddedItem<V> get nextAddedItem => _nextAddedRec;
@@ -1163,17 +1336,18 @@ class _DuplicateItemRecordList {
   ItemRecord head, tail;
 
   void add(ItemRecord record, ItemRecord beforeRecord) {
-    assert(record._prevDupRec == null);
-    assert(record._nextDupRec == null);
     assert(beforeRecord == null ? true : beforeRecord.item == record.item);
     if (head == null) {
       assert(beforeRecord == null);
       head = tail = record;
+      record._nextDupRec = null;
+      record._prevDupRec = null;
     } else {
       assert(record.item == head.item);
       if (beforeRecord == null) {
         tail._nextDupRec = record;
         record._prevDupRec = tail;
+        record._nextDupRec = null;
         tail = record;
       } else {
         var prev = beforeRecord._prevDupRec;
@@ -1192,9 +1366,9 @@ class _DuplicateItemRecordList {
 
   ItemRecord get(key, int hideIndex) {
     ItemRecord record = head;
-    while(record != null) {
-      if (hideIndex == null ||
-          hideIndex < record.currentIndex && identical(record.item, key)) {
+    while (record != null) {
+      if ((hideIndex == null || hideIndex < record.currentIndex) &&
+          identical(record.item, key)) {
         return record;
       }
       record = record._nextDupRec;
@@ -1206,7 +1380,7 @@ class _DuplicateItemRecordList {
     assert(() {
       // verify that the record being removed is someplace in the list.
       ItemRecord cursor = head;
-      while(cursor != null) {
+      while (cursor != null) {
         if (identical(cursor, record)) return true;
         cursor = cursor._nextDupRec;
       }
@@ -1225,10 +1399,6 @@ class _DuplicateItemRecordList {
     } else {
       next._prevDupRec = prev;
     }
-
-    assert((record._prevDupRec = null) == null);
-    assert((record._nextDupRec = null) == null);
-
     return head == null;
   }
 }
@@ -1241,8 +1411,6 @@ class DuplicateMap {
   final map = <dynamic, _DuplicateItemRecordList>{};
 
   void put(ItemRecord record, [ItemRecord beforeRecord = null]) {
-    assert(record._nextDupRec == null);
-    assert(record._prevDupRec == null);
     map.putIfAbsent(record.item, () => new _DuplicateItemRecordList())
         .add(record, beforeRecord);
   }
@@ -1268,7 +1436,11 @@ class DuplicateMap {
     return record;
   }
 
+  bool get isEmpty => map.isEmpty;
+
   void clear() {
     map.clear();
   }
+
+  String toString() => "$runtimeType($map)";
 }

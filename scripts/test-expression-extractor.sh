@@ -2,15 +2,17 @@
 
 set -e
 
-(cd demo/todo; pub get)
+(cd example; pub get)
+
+rm -rf xxx.dart
 
 OUT=$(mktemp XXX.dart)
 
-dart bin/expression_extractor.dart demo/todo/main.dart demo/todo /dev/null /dev/null $OUT
+dart --package-root=example/packages bin/expression_extractor.dart example/web/todo.dart example /dev/null /dev/null $OUT
 
 if [[ -e $OUT ]]; then
   echo "Expression extractor created an output file"
-  rm $OUT
+  rm -rf $OUT
   exit;
 fi;
 

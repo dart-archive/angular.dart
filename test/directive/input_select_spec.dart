@@ -9,7 +9,7 @@ main() {
 
     describe('ng-value', () {
       TestBed _;
-      beforeEach(inject((TestBed tb) => _ = tb));
+      beforeEach((TestBed tb) => _ = tb);
 
       it('should retrieve using ng-value', () {
         _.compile(
@@ -47,10 +47,10 @@ main() {
         expect(_.rootElement).toEqualSelect([['r2d2'], 'c3p0']);
       });
     });
-    
+
     TestBed _;
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     describe('select-one', () {
       it('should compile children of a select without a ngModel, but not create a model for it',
@@ -92,7 +92,7 @@ main() {
         _.rootScope.context['robot'] = 'r2d2';
         _.rootScope.apply();
 
-        var select = _.rootScope.context['p'].directive(InputSelectDirective);
+        var select = _.rootScope.context['p'].directive(InputSelect);
         expect(_.rootElement).toEqualSelect(['c3p0', ['r2d2']]);
 
         _.rootElement.querySelectorAll('option')[0].selected = true;
@@ -152,7 +152,7 @@ main() {
               '</select>');
           _.rootScope.apply();
 
-          var select = _.rootScope.context['p'].directive(InputSelectDirective);
+          var select = _.rootScope.context['p'].directive(InputSelect);
 
           expect(_.rootElement).toEqualSelect(['', ['x'], 'y']);
 
@@ -182,7 +182,7 @@ main() {
                   '<option ng-repeat="r in robots">{{r}}</option>' +
                 '</select>');
             _.rootScope.apply();
-            var select = _.rootScope.context['p'].directive(InputSelectDirective);
+            var select = _.rootScope.context['p'].directive(InputSelect);
 
             _.selectOption(_.rootElement, 'c3p0');
             expect(_.rootElement).toEqualSelect(['', ['c3p0'], 'r2d2']);
@@ -426,7 +426,7 @@ main() {
 
     describe('select from angular.js', () {
       TestBed _;
-      beforeEach(inject((TestBed tb) => _ = tb));
+      beforeEach((TestBed tb) => _ = tb);
 
       var scope, formElement, element;
 
@@ -436,10 +436,10 @@ main() {
         scope.apply();
       }
 
-      beforeEach(inject((Scope rootScope) {
+      beforeEach((Scope rootScope) {
         scope = rootScope;
         formElement = element = null;
-      }));
+      });
 
 
       afterEach(() {
@@ -497,15 +497,18 @@ main() {
         });
 
 
-        xit('should require', () {
+        it('should require', () {
           compile(
-            '<select name="select" ng-model="selection" required ng-change="change()">' +
+            '<select name="select" ng-model="selection" probe="i" required ng-change="change()">' +
               '<option value=""></option>' +
               '<option value="c">C</option>' +
             '</select>');
 
+          var element = scope.context['i'].element;
+
+          scope.context['log'] = '';
           scope.context['change'] = () {
-            scope.log += 'change;';
+            scope.context['log'] += 'change;';
           };
 
           scope.apply(() {
@@ -513,36 +516,38 @@ main() {
             scope.context['selection'] = 'c';
           });
 
-          expect(scope.context['form'].select.$error.required).toEqual(false);;
-          expect(element).toEqualValid();
-          expect(element).toEqualPristine();
+          expect(scope.context['form']['select'].hasErrorState('ng-required')).toEqual(false);
+          expect(scope.context['form']['select'].valid).toEqual(true);
+          expect(scope.context['form']['select'].pristine).toEqual(true);
 
           scope.apply(() {
             scope.context['selection'] = '';
           });
 
-          expect(scope.context['form'].select.$error.required).toEqual(true);;
-          expect(element).toEqualInvalid();
-          expect(element).toEqualPristine();
+          expect(scope.context['form']['select'].hasErrorState('ng-required')).toEqual(true);
+          expect(scope.context['form']['select'].invalid).toEqual(true);
+          expect(scope.context['form']['select'].pristine).toEqual(true);
           expect(scope.context['log']).toEqual('');
 
-          element[0].value = 'c';
+          element.value = 'c';
           _.triggerEvent(element, 'change');
-          expect(element).toEqualValid();
-          expect(element).toEqualDirty();
+          scope.apply();
+
+          expect(scope.context['form']['select'].valid).toEqual(true);
+          expect(scope.context['form']['select'].dirty).toEqual(true);
           expect(scope.context['log']).toEqual('change;');
         });
 
 
-        xit('should not be invalid if no require', () {
+        it('should not be invalid if no require', () {
           compile(
             '<select name="select" ng-model="selection">' +
               '<option value=""></option>' +
               '<option value="c">C</option>' +
             '</select>');
 
-          expect(element).toEqualValid();
-          expect(element).toEqualPristine();
+          expect(scope.context['form']['select'].valid).toEqual(true);
+          expect(scope.context['form']['select'].pristine).toEqual(true);
         });
 
 
@@ -616,32 +621,34 @@ main() {
           expect(element).toEqualSelect([['A'], ['B']]);
         });
 
-        xit('should require', () {
+        it('should require', () {
           compile(
-            '<select name="select"  ng-model="selection" multiple required>' +
+            '<select name="select" probe="i" ng-model="selection" multiple required>' +
               '<option>A</option>' +
               '<option>B</option>' +
             '</select>');
 
+          var element = scope.context['i'].element;
           scope.apply(() {
             scope.context['selection'] = [];
           });
 
-          expect(scope.context['form'].select.$error.required).toEqual(true);;
-          expect(element).toEqualInvalid();
-          expect(element).toEqualPristine();
+          expect(scope.context['form']['select'].hasErrorState('ng-required')).toEqual(true);
+          expect(scope.context['form']['select'].invalid).toEqual(true);
+          expect(scope.context['form']['select'].pristine).toEqual(true);
 
           scope.apply(() {
             scope.context['selection'] = ['A'];
           });
 
-          expect(element).toEqualValid();
-          expect(element).toEqualPristine();
+          expect(scope.context['form']['select'].valid).toEqual(true);
+          expect(scope.context['form']['select'].pristine).toEqual(true);
 
-          element[0].value = 'B';
+          element.value = 'B';
           _.triggerEvent(element, 'change');
-          expect(element).toEqualValid();
-          expect(element).toEqualDirty();
+
+          expect(scope.context['form']['select'].valid).toEqual(true);
+          expect(scope.context['form']['select'].dirty).toEqual(true);
         });
       });
 
@@ -858,43 +865,46 @@ main() {
           });
 
 
-          // TODO(misko): re-enable once we support group by
-          xit('should bind to scope value and group', () {
-            createSelect({
-              'ng-model': 'selected',
-              'ng-options': 'item.name group by item.group for item in values'
-            });
+          it('should bind to scope value and group', () {
+            var element = _.compile(
+                '<select ng-model="selected" probe="p">'
+                  '<optgroup label=\'{{ group["title"] }}\' ng-repeat="group in values">'
+                    '<option value=\'{{ item["val"] }}\' '
+                            'ng-repeat=\'item in group["items"]\'>{{ item["name"] }}</option>'
+                  '</optgroup>'
+                '</select>');
 
             scope.apply(() {
-              scope.context['values'] = [{'name': 'A'},
-                              {'name': 'B', group: 'first'},
-                              {'name': 'C', group: 'second'},
-                              {'name': 'D', group: 'first'},
-                              {'name': 'E', group: 'second'}];
-              scope.context['selected'] = scope.context['values'][3];
+              scope.context['values'] = [
+                { 'title': 'first',  'items':
+                  [{ 'val':'a', 'name' : 'A' }, { 'val':'c', 'name' : 'C' } ]},
+                { 'title': 'second', 'items':
+                  [{ 'val':'b', 'name' : 'B' }, { 'val':'d', 'name' : 'D' } ]}
+              ];
+              scope.context['selected'] = scope.context['values'][1]['items'][0]['val'];
             });
 
-            expect(element).toEqualSelect(['A', 'B', ['D'], 'C', 'E']);
+            expect(element).toEqualSelect(['a', 'c', ['b'], 'd']);
 
             var first = element.querySelectorAll('optgroup')[0];
             var b = first.querySelectorAll('option')[0];
             var d = first.querySelectorAll('option')[1];
-            expect(first.attr('label')).toEqual('first');
-            expect(b.text).toEqual('B');
-            expect(d.text).toEqual('D');
+            expect(first.getAttribute('label')).toEqual('first');
+            expect(b.text).toEqual('A');
+            expect(d.text).toEqual('C');
 
             var second = element.querySelectorAll('optgroup')[1];
             var c = second.querySelectorAll('option')[0];
             var e = second.querySelectorAll('option')[1];
-            expect(second.attr('label')).toEqual('second');
-            expect(c.text).toEqual('C');
-            expect(e.text).toEqual('E');
+            expect(second.getAttribute('label')).toEqual('second');
+            expect(c.text).toEqual('B');
+            expect(e.text).toEqual('D');
 
             scope.apply(() {
-              scope.context['selected'] = scope.context['values'][0];
+              scope.context['selected'] = scope.context['values'][0]['items'][1]['val'];
             });
 
-            expect(element.value).toEqual('0');
+            expect(element.value).toEqual('c');
           });
 
 
@@ -1227,26 +1237,26 @@ main() {
 
             element.value = '';
             _.triggerEvent(element, 'change');
-            expect(element).toEqualValid();
+            expect(element).toBeValid();
 
             scope.apply(() {
               scope.context['required'] = true;
             });
-            expect(element).toEqualInvalid();
+            expect(element).not.toBeValid();
 
             scope.apply(() {
               scope.context['value'] = scope.context['values'][0];
             });
-            expect(element).toEqualValid();
+            expect(element).toBeValid();
 
             element.value = '';
             _.triggerEvent(element, 'change');
-            expect(element).toEqualInvalid();
+            expect(element).not.toBeValid();
 
             scope.apply(() {
               scope.context['required'] = false;
             });
-            expect(element).toEqualValid();
+            expect(element).toBeValid();
           });
         });
       });
@@ -1272,9 +1282,9 @@ main() {
 
         it('should not blow up when option directive is found inside of a datalist',
             () {
-          _.compile('<div>' +
-                      '<datalist><option>some val</option></datalist>' +
-                      '<span>{{foo}}</span>' +
+          _.compile('<div>'
+                      '<datalist><option>some val</option></datalist>'
+                      '<span>{{foo}}</span>'
                     '</div>');
 
           _.rootScope.context['foo'] = 'success';

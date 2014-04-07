@@ -2,7 +2,7 @@ library angular.core.parser.eval;
 
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/utils.dart';
-import 'package:angular/core/module.dart';
+import 'package:angular/core/module_internal.dart';
 
 export 'package:angular/core/parser/eval_access.dart';
 export 'package:angular/core/parser/eval_calls.dart';
@@ -20,9 +20,9 @@ class Chain extends syntax.Chain {
 }
 
 class Filter extends syntax.Filter {
-  final List allArguments;
+  final List<syntax.Expression> allArguments;
   Filter(syntax.Expression expression, String name, List<syntax.Expression> arguments,
-         List<syntax.Expression> this.allArguments)
+         this.allArguments)
       : super(expression, name, arguments);
 
   eval(scope, [FilterMap filters]) =>
@@ -37,27 +37,44 @@ class Assign extends syntax.Assign {
 
 class Conditional extends syntax.Conditional {
   Conditional(syntax.Expression condition,
-              syntax.Expression yes, syntax.Expression no): super(condition, yes, no);
-  eval(scope, [FilterMap filters]) => toBool(condition.eval(scope))
-      ? yes.eval(scope)
-      : no.eval(scope);
+              syntax.Expression yes, syntax.Expression no)
+      : super(condition, yes, no);
+  eval(scope, [FilterMap filters]) => toBool(condition.eval(scope, filters))
+      ? yes.eval(scope, filters)
+      : no.eval(scope, filters);
 }
 
 class PrefixNot extends syntax.Prefix {
   PrefixNot(syntax.Expression expression) : super('!', expression);
-  eval(scope, [FilterMap filters]) => !toBool(expression.eval(scope));
+  eval(scope, [FilterMap filters]) => !toBool(expression.eval(scope, filters));
 }
 
 class Binary extends syntax.Binary {
   Binary(String operation, syntax.Expression left, syntax.Expression right):
       super(operation, left, right);
   eval(scope, [FilterMap filters]) {
-    var left = this.left.eval(scope);
+    var left = this.left.eval(scope, filters);
     switch (operation) {
-      case '&&': return toBool(left) && toBool(this.right.eval(scope));
-      case '||': return toBool(left) || toBool(this.right.eval(scope));
+      case '&&': return toBool(left) && toBool(this.right.eval(scope, filters));
+      case '||': return toBool(left) || toBool(this.right.eval(scope, filters));
     }
-    var right = this.right.eval(scope);
+    var right = this.right.eval(scope, filters);
+
+    // Null check for the operations.
+    if (left == null || right == null) {
+      switch (operation) {
+        case '+':
+          if (left != null) return left;
+          if (right != null) return right;
+          return 0;
+        case '-':
+          if (left != null) return left;
+          if (right != null) return 0 - right;
+          return 0;
+      }
+      return null;
+    }
+
     switch (operation) {
       case '+'  : return autoConvertAdd(left, right);
       case '-'  : return left - right;

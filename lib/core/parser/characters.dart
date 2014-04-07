@@ -97,36 +97,27 @@ const int $RBRACE = 125;
 const int $TILDE  = 126;
 const int $NBSP   = 160;
 
-bool isWhitespace(int code) {
-  return (code >= $TAB && code <= $SPACE) || (code == $NBSP);
-}
+bool isWhitespace(int code) =>
+  (code >= $TAB && code <= $SPACE) || (code == $NBSP);
 
-bool isIdentifierStart(int code) {
-  return ($a <= code && code <= $z)
-      || ($A <= code && code <= $Z)
-      || (code == $_)
-      || (code == $$);
-}
+bool isIdentifierStart(int code) =>
+    ($a <= code && code <= $z) ||
+    ($A <= code && code <= $Z) ||
+    (code == $_) ||
+    (code == $$);
 
-bool isIdentifierPart(int code) {
-  return ($a <= code && code <= $z)
-      || ($A <= code && code <= $Z)
-      || ($0 <= code && code <= $9)
-      || (code == $_)
-      || (code == $$);
-  }
+bool isIdentifierPart(int code) =>
+    ($a <= code && code <= $z) ||
+    ($A <= code && code <= $Z) ||
+    ($0 <= code && code <= $9) ||
+    (code == $_) ||
+    (code == $$);
 
-bool isDigit(int code) {
-  return ($0 <= code && code <= $9);
-}
+bool isDigit(int code) => $0 <= code && code <= $9;
 
-bool isExponentStart(int code) {
-  return (code == $e || code == $E);
-}
+bool isExponentStart(int code) => code == $e || code == $E;
 
-bool isExponentSign(int code) {
-  return (code == $MINUS || code == $PLUS);
-}
+bool isExponentSign(int code) => code == $MINUS || code == $PLUS;
 
 int unescape(int code) {
   switch(code) {

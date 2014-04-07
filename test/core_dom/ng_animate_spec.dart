@@ -5,12 +5,12 @@ import '../_specs.dart';
 main() {
   describe('NgAniamte', () {
     TestBed _;
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should exist',
-        inject((NgAnimate aniamte) {
+        (NgAnimate aniamte) {
       expect(aniamte).toBeDefined();
-    }));
+    });
 
     it('should add a css classes to nodes.', () {
       var animate = new NgAnimate();
@@ -47,8 +47,8 @@ main() {
     it('should move nodes and elements', () {
       var animate = new NgAnimate();
       _.compile('<div></div>');
-      List<Node> a = $('<span>A</span>a').toList();
-      List<Node> b = $('<span>B</span>b').toList();
+      List<Node> a = es('<span>A</span>a');
+      List<Node> b = es('<span>B</span>b');
       a.forEach((n) => _.rootElement.append(n));
       b.forEach((n) => _.rootElement.append(n));
 

@@ -4,22 +4,46 @@ node_js:
 env:
   matrix:
   - JOB=unit-stable
+    CHANNEL=stable
+    TESTS=vm
   - JOB=unit-dev
+    CHANNEL=dev
+    TESTS=vm
+  - JOB=unit-stable
+    CHANNEL=stable
+    TESTS=dart2js
+  - JOB=unit-dev
+    CHANNEL=DEV
+    TESTS=dart2js
   global:
   - CHROME_BIN=/usr/bin/google-chrome
-  - secure: NJt0LRmY2HoMw4QuTc+8MhDfSCTTuXe0kE7pC1flbhQOi/g6sdVX57b/4OZzBXRKG1oq/URX4FMeVgSuFQvTaEad0qsTPoGji/Mmk61LRtE/Mbo/H7v5P2tyGPPJ5S25C/xFo42cKDyzFU8Uv+5W2Htijsa3xt4VfAWcDmZJjuA=
+  - secure: "ZSUCLuDjvKEFmgjAd3GpUNCNkdjE66dEIiBfW+EfN0dv2+QHx/MHL4hRyKk2qbGjCr/suR9JWgmNE+Yu1A4fwzcYN52ehgyoLUCTL9YDk+XkFdFWpnjJ8364TDcDuJA0oxwcqJ9E3XUPv6sq1mbcX6DlkPKco7ZT8TLtGmd0nGA="
+
+# Don't test these branches.
+branches:
+  except:
+    - g3v1x
+
 before_install:
 - export DISPLAY=:99.0
-- sh -e /etc/init.d/xvfb start
-- sudo apt-get update -qq
-- sudo apt-get install -qq unzip chromium-browser
-- sudo apt-get install libxss1
-- wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-- sudo dpkg -i google-chrome*.deb
-- sudo chmod u+s /opt
+- ./scripts/travis/install.sh
 before_script:
 - ./scripts/travis/setup.sh
 script:
 - ./scripts/travis/build.sh
-after_script:
+after_success:
 - ./scripts/travis/publish-docs.sh
+- curl -o travis_after_all.py https://raw.github.com/jbdeboer/travis_after_all/master/travis_after_all.py
+- python travis_after_all.py
+- export $(cat .to_export_back)
+- |
+      if [ "$BUILD_LEADER" = "YES" ]; then
+        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
+          echo "All Succeded! Submitting..."
+          ./scripts/travis/presubmit.sh
+        else
+          echo "Some Failed, not submitting"
+        fi
+      else
+        echo "Other builds have not finished, not submitting"
+      fi

@@ -1,4 +1,4 @@
-part of angular.core;
+part of angular.core_internal;
 
 typedef void ZoneOnTurn();
 typedef void ZoneOnError(dynamic error, dynamic stacktrace,
@@ -29,18 +29,19 @@ class LongStackTrace {
  * A better zone API which implements onTurnDone.
  */
 class NgZone {
-  final async.Zone _outerZone;
+  final async.Zone _outerZone = async.Zone.current;
   async.Zone _zone;
 
-  NgZone()
-      : _outerZone = async.Zone.current
-  {
+  NgZone() {
     _zone = _outerZone.fork(specification: new async.ZoneSpecification(
         run: _onRun,
         runUnary: _onRunUnary,
         scheduleMicrotask: _onScheduleMicrotask,
         handleUncaughtError: _uncaughtError
     ));
+    // Prevent silently ignoring uncaught exceptions by forwarding such
+    // exceptions to the outer zone by default.
+    onError = (e, s, ls) => _outerZone.handleUncaughtError(e, s);
   }
 
 
@@ -62,11 +63,11 @@ class NgZone {
   }
   // Called from the parent zone.
   _onRun(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) =>
-    _onRunBase(self, delegate, zone, () => delegate.run(zone, fn));
+      _onRunBase(self, delegate, zone, () => delegate.run(zone, fn));
 
   _onRunUnary(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
               fn(args), args) =>
-    _onRunBase(self, delegate, zone, () => delegate.runUnary(zone, fn, args));
+      _onRunBase(self, delegate, zone, () => delegate.runUnary(zone, fn, args));
 
   _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate,
                        async.Zone zone, fn()) {
@@ -99,7 +100,7 @@ class NgZone {
       _errorThrownFromOnRun = true;
       rethrow;
     } finally {
-    _inFinishTurn = false;
+      _inFinishTurn = false;
     }
   }
 
@@ -108,7 +109,7 @@ class NgZone {
   /**
    * A function called with any errors from the zone.
    */
-  var onError = (e, s, ls) => null;
+  var onError = (e, s, ls) => print('$e\n$s\n$ls');
 
   /**
    * A function that is called at the end of each VM turn in which the
@@ -130,7 +131,7 @@ class NgZone {
     return new LongStackTrace(name, shortStacktrace, _longStacktrace);
   }
 
-  _getStacktrace() {
+  StackTrace _getStacktrace() {
     try {
       throw [];
     } catch (e, s) {

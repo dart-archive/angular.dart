@@ -1,12 +1,10 @@
 part of angular.directive;
 
-typedef dynamic ItemEval(dynamic item, num index);
-
 /**
  * HTML [SELECT] element with angular data-binding if used with
- * [NgModelDirective].
+ * [NgModel].
  *
- * The [NgModelDirective] will receive the currently selected item. The binding
+ * The [NgModel] will receive the currently selected item. The binding
  * is performed on the [OPTION].[value] property. An empty [OPTION].[value] is
  * treated as null.
  *
@@ -14,17 +12,16 @@ typedef dynamic ItemEval(dynamic item, num index);
  * unknown [OPTION] is inserted into the list. Once the model points to an
  * existing [OPTION] the unknown [OPTION] is removed.
  *
- * Becouse [OPTION].[value] attribute is a string, the model is bound to a
- * string. If there is need to bind to an object then [OptionValueDirective]
+ * Because [OPTION].[value] attribute is a string, the model is bound to a
+ * string. If there is need to bind to an object then [OptionValue]
  * should be used.
  *
  */
 @NgDirective(
     selector: 'select[ng-model]',
     visibility: NgDirective.CHILDREN_VISIBILITY)
-class InputSelectDirective implements NgAttachAware {
-  final Expando<OptionValueDirective> expando =
-      new Expando<OptionValueDirective>();
+class InputSelect implements NgAttachAware {
+  final expando = new Expando<OptionValue>();
   final dom.SelectElement _selectElement;
   final NodeAttrs _attrs;
   final NgModel _model;
@@ -36,15 +33,11 @@ class InputSelectDirective implements NgAttachAware {
   _SelectMode _mode = new _SelectMode(null, null, null);
   bool _dirty = false;
 
-  InputSelectDirective(dom.Element this._selectElement, this._attrs, this._model,
-                       this._scope) {
+  InputSelect(dom.Element this._selectElement, this._attrs, this._model,
+              this._scope) {
     _unknownOption.value = '?';
-    _unknownOption.text = ''; // Explicit due to dartbug.com/14407
-    _selectElement.querySelectorAll('option').forEach((o) {
-      if (_nullOption == null && o.value == '') {
-        _nullOption = o;
-      }
-    });
+    _nullOption = _selectElement.querySelectorAll('option')
+        .firstWhere((o) => o.value == '', orElse: () => null);
   }
 
   attach() {
@@ -52,7 +45,8 @@ class InputSelectDirective implements NgAttachAware {
       _mode.destroy();
       if (value == null) {
         _model.watchCollection = false;
-        _mode = new _SingleSelectMode(expando, _selectElement, _model, _nullOption, _unknownOption);
+        _mode = new _SingleSelectMode(expando, _selectElement, _model,
+            _nullOption, _unknownOption);
       } else {
         _model.watchCollection = true;
         _mode = new _MultipleSelectionMode(expando, _selectElement, _model);
@@ -79,7 +73,7 @@ class InputSelectDirective implements NgAttachAware {
     if (!_dirty) {
       _dirty = true;
       // TODO(misko): this hack need to delay the rendering until after domRead
-      // becouse the modelChange reads from the DOM. We should be able to render
+      // because the modelChange reads from the DOM. We should be able to render
       // without DOM changes.
       _scope.rootScope.domRead(() {
         _scope.rootScope.domWrite(() {
@@ -96,25 +90,22 @@ class InputSelectDirective implements NgAttachAware {
  * provides [ng-value] which allows binding to any expression.
  *
  */
-@NgDirective(
-    selector: 'option')
-class OptionValueDirective implements NgAttachAware,
+@NgDirective(selector: 'option', module: NgValue.moduleFactory)
+class OptionValue implements NgAttachAware,
     NgDetachAware {
-  final InputSelectDirective _inputSelectDirective;
+  final InputSelect _inputSelectDirective;
   final dom.Element _element;
 
   NgValue _ngValue;
 
-  OptionValueDirective(this._element, this._inputSelectDirective, this._ngValue) {
+  OptionValue(this._element, this._inputSelectDirective, this._ngValue) {
     if (_inputSelectDirective != null) {
       _inputSelectDirective.expando[_element] = this;
     }
   }
 
   attach() {
-    if (_inputSelectDirective != null) {
-      _inputSelectDirective.dirty();
-    }
+    if (_inputSelectDirective != null) _inputSelectDirective.dirty();
   }
 
   detach() {
@@ -124,11 +115,11 @@ class OptionValueDirective implements NgAttachAware,
     }
   }
 
-  get ngValue => _ngValue.readValue(_element);
+  get ngValue => _ngValue.value;
 }
 
 class _SelectMode {
-  final Expando<OptionValueDirective> expando;
+  final Expando<OptionValue> expando;
   final dom.SelectElement select;
   final NgModel model;
 
@@ -154,19 +145,21 @@ class _SingleSelectMode extends _SelectMode {
 
   bool _unknownOptionActive = false;
 
-  _SingleSelectMode(Expando<OptionValueDirective> expando,
+  _SingleSelectMode(Expando<OptionValue> expando,
                     dom.SelectElement select,
                     NgModel model,
                     this._nullOption,
-                    this._unknownOption
-                    ): super(expando, select, model) {
+                    this._unknownOption)
+      : super(expando, select, model) {
   }
 
   onViewChange(event) {
     var i = 0;
     model.viewValue = _forEachOption((option, _) {
       if (option.selected) {
-        return option == _nullOption ? null : expando[option].ngValue;
+        if (option == _nullOption) return null;
+        assert(expando[option] != null);
+        return expando[option].ngValue;
       }
       if (option != _unknownOption && option != _nullOption) i++;
     }, true);
@@ -180,8 +173,10 @@ class _SingleSelectMode extends _SelectMode {
       if (value == null) {
         selected = option == _nullOption;
       } else {
-        OptionValueDirective optionValueDirective = expando[option];
-        selected = optionValueDirective == null ? false : optionValueDirective.ngValue == value;
+        OptionValue optionValueDirective = expando[option];
+        selected = optionValueDirective == null ?
+            false :
+            optionValueDirective.ngValue == value;
       }
       found = found || selected;
       option.selected = selected;
@@ -203,7 +198,7 @@ class _SingleSelectMode extends _SelectMode {
 }
 
 class _MultipleSelectionMode extends _SelectMode {
-  _MultipleSelectionMode(Expando<OptionValueDirective> expando,
+  _MultipleSelectionMode(Expando<OptionValue> expando,
                          dom.SelectElement select,
                          NgModel model)
       : super(expando, select, model);
@@ -223,11 +218,9 @@ class _MultipleSelectionMode extends _SelectMode {
     if (selectedValues is List) {
       fn = (o, i) {
         var selected = expando[o];
-        if (selected == null) {
-          return false;
-        } else {
-          return o.selected = selectedValues.contains(selected.ngValue);
-        }
+        return selected == null ?
+            false :
+            o.selected = selectedValues.contains(selected.ngValue);
       };
     }
 

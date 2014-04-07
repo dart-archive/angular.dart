@@ -42,7 +42,9 @@ void main() {
         async(() {
           new Future.value('s').then((_) { thenRan = true; });
           expect(thenRan).toBe(false);
+          expect(isAsyncQueueEmpty()).toBe(false);
           microLeap();
+          expect(isAsyncQueueEmpty()).toBe(true);
           expect(thenRan).toBe(true);
           ran = true;
         })();

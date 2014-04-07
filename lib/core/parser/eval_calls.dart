@@ -1,125 +1,80 @@
 library angular.core.parser.eval_calls;
 
-import 'dart:mirrors';
+import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/utils.dart';
-import 'package:angular/core/module.dart';
+import 'package:angular/core/module_internal.dart';
 
-class CallScope extends syntax.CallScope with CallReflective {
-  final Symbol symbol;
-  CallScope(name, arguments)
-      : super(name, arguments)
-      , symbol = newSymbol(name);
-  eval(scope, [FilterMap filters]) => _eval(scope, scope);
+
+class CallScope extends syntax.CallScope {
+  final MethodClosure methodClosure;
+  CallScope(name, this.methodClosure, arguments)
+      : super(name, arguments);
+
+  eval(scope, [FilterMap filters]) {
+    var positionals = arguments.positionals;
+    var posArgs = new List(positionals.length);
+    for(var i = 0; i < positionals.length; i++) {
+      posArgs[i] = positionals[i].eval(scope, filters);
+    }
+    var namedArgs = {};
+    arguments.named.forEach((name, Expression exp) {
+      namedArgs[name] = exp.eval(scope, filters);
+    });
+    if (methodClosure == null) {
+      _throwUndefinedFunction(name);
+    }
+    return methodClosure(scope, posArgs, namedArgs);
+  }
 }
 
-class CallMember extends syntax.CallMember with CallReflective {
-  final Symbol symbol;
-  CallMember(object, name, arguments)
+class CallMember extends syntax.CallMember {
+  final MethodClosure methodClosure;
+  CallMember(object, this.methodClosure, name, arguments)
       : super(object, name, arguments)
-      , symbol = newSymbol(name);
-  eval(scope, [FilterMap filters]) => _eval(scope, object.eval(scope, filters));
-}
+  {
+    if (methodClosure == null) {
+      _throwUndefinedFunction(name);
+    }
+  }
 
-class CallScopeFast0 extends syntax.CallScope with CallFast {
-  final Function function;
-  CallScopeFast0(name, arguments, this.function) : super(name, arguments);
-  eval(scope, [FilterMap filters]) => _evaluate0(scope);
-}
-
-class CallScopeFast1 extends syntax.CallScope with CallFast {
-  final Function function;
-  CallScopeFast1(name, arguments, this.function) : super(name, arguments);
-  eval(scope, [FilterMap filters]) => _evaluate1(scope, arguments[0].eval(scope, filters));
-}
-
-class CallMemberFast0 extends syntax.CallMember with CallFast {
-  final Function function;
-  CallMemberFast0(object, name, arguments, this.function)
-      : super(object, name, arguments);
-  eval(scope, [FilterMap filters]) => _evaluate0(object.eval(scope, filters));
-}
-
-class CallMemberFast1 extends syntax.CallMember with CallFast {
-  final Function function;
-  CallMemberFast1(object, name, arguments, this.function)
-      : super(object, name, arguments);
-  eval(scope, [FilterMap filters]) => _evaluate1(object.eval(scope, filters),
-      arguments[0].eval(scope, filters));
+  eval(scope, [FilterMap filters]) {
+    var positionals = arguments.positionals;
+    var posArgs = new List(positionals.length);
+    for(var i = 0; i < positionals.length; i++) {
+      posArgs[i] = positionals[i].eval(scope, filters);
+    }
+    var namedArgs = {};
+    arguments.named.forEach((name, Expression exp) {
+      namedArgs[name] = exp.eval(scope, filters);
+    });
+    return methodClosure(object.eval(scope, filters), posArgs, namedArgs);
+  }
 }
 
 class CallFunction extends syntax.CallFunction {
-  CallFunction(function, arguments) : super(function, arguments);
+  final ClosureMap closureMap;
+  CallFunction(function, this.closureMap, arguments) : super(function, arguments);
   eval(scope, [FilterMap filters]) {
     var function  = this.function.eval(scope, filters);
-    if (function is !Function) {
+    if (function is! Function) {
       throw new EvalError('${this.function} is not a function');
     } else {
-      return relaxFnApply(function, evalList(scope, arguments, filters));
+      List positionals = evalList(scope, arguments.positionals, filters);
+      if (arguments.named.isNotEmpty) {
+        var named = new Map<Symbol, dynamic>();
+        arguments.named.forEach((String name, value) {
+          named[closureMap.lookupSymbol(name)] = value.eval(scope, filters);
+        });
+        return Function.apply(function, positionals, named);
+      } else {
+        return relaxFnApply(function, positionals);
+      }
     }
   }
 }
 
 
-/**
- * The [CallReflective] mixin is used to share code between call expressions
- * where we need to use reflection to do the invocation. We optimize for the
- * case where we invoke a method on the same holder repeatedly through caching.
- */
-abstract class CallReflective {
-  static const int CACHED_MAP = 0;
-  static const int CACHED_FUNCTION = 1;
-
-  int _cachedKind = 0;
-  var _cachedHolder = UNINITIALIZED;
-  var _cachedValue;
-
-  String get name;
-  Symbol get symbol;
-  List get arguments;
-
-  _eval(scope, holder) {
-    List arguments = evalList(scope, this.arguments);
-    if (!identical(holder, _cachedHolder)) {
-      return _evaluteUncached(holder, arguments);
-    }
-    return (_cachedKind == CACHED_MAP)
-        ? relaxFnApply(ensureFunctionFromMap(holder, name), arguments)
-        : _cachedValue.invoke(symbol, arguments).reflectee;
-  }
-
-  _evaluteUncached(holder, arguments) {
-    _cachedHolder = holder;
-    if (holder is Map) {
-      _cachedKind = CACHED_MAP;
-      _cachedValue = null;
-      return relaxFnApply(ensureFunctionFromMap(holder, name), arguments);
-    } else if (symbol == null) {
-      _cachedHolder = UNINITIALIZED;
-      throw new EvalError("Undefined function $name");
-    } else {
-      InstanceMirror mirror = reflect(holder);
-      _cachedKind = CACHED_FUNCTION;
-      _cachedValue = mirror;
-      return mirror.invoke(symbol, arguments).reflectee;
-    }
-  }
-}
-
-
-/**
- * The [CallFast] mixin is used to share code between call expressions
- * where we have a pre-compiled helper function that we use to do the
- * function invocation.
- */
-abstract class CallFast {
-  String get name;
-  Function get function;
-
-  _evaluate0(holder) => (holder is Map)
-      ? ensureFunctionFromMap(holder, name)()
-      : function(holder);
-  _evaluate1(holder, a0) => (holder is Map)
-      ? ensureFunctionFromMap(holder, name)(a0)
-      : function(holder, a0);
+_throwUndefinedFunction(name) {
+  throw "Undefined function $name";
 }

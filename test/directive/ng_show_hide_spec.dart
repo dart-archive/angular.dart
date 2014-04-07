@@ -6,7 +6,7 @@ import '../_specs.dart';
 main() {
   describe('NgHide', () {
     TestBed _;
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should add/remove ng-hide class', () {
       _.compile('<div ng-hide="isHidden"></div>');
@@ -27,7 +27,7 @@ main() {
   
   describe('NgShow', () {
     TestBed _;
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should add/remove ng-hide class', () {
       _.compile('<div ng-show="isShown"></div>');

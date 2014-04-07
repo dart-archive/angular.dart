@@ -88,87 +88,91 @@ part of angular.directive;
 @NgDirective(
     selector: '[ng-pluralize]',
     map: const { 'count': '=>count' })
-class NgPluralizeDirective {
-  final dom.Element element;
-  final Scope scope;
-  final Interpolate interpolate;
-  final AstParser parser;
-  int offset;
-  var discreteRules = <String, String>{};
-  var categoryRules = <Symbol, String>{};
+class NgPluralize {
+  final dom.Element _element;
+  final Scope _scope;
+  final Interpolate _interpolate;
+  int _offset;
+  final _discreteRules = <String, String>{};
+  final _categoryRules = <Symbol, String>{};
+  final _expressionCache = <String, String>{};
+  FilterMap _filters;
+
+  Watch _watch;
 
   static final RegExp IS_WHEN = new RegExp(r'^when-(minus-)?.');
+
   static const Map<String, Symbol> SYMBOLS = const {
-    'zero'  : #zero,
-    'one'   : #one,
-    'two'   : #two,
-    'few'   : #few,
-    'many'  : #many,
-    'other' : #other,
+      'zero'  : #zero,
+      'one'   : #one,
+      'two'   : #two,
+      'few'   : #few,
+      'many'  : #many,
+      'other' : #other,
   };
 
-  NgPluralizeDirective(this.scope, this.element, this.interpolate,
-                       NodeAttrs attributes, this.parser) {
-    Map<String, String> whens = attributes['when'] == null
-        ? {}
-        : scope.eval(attributes['when']);
-    offset = attributes['offset'] == null ? 0 : int.parse(attributes['offset']);
+  NgPluralize(this._scope, this._element, this._interpolate, this._filters) {
+    var attrs = _element.attributes;
+    final whens = attrs['when'] == null
+        ? <String, String>{}
+        : _scope.eval(attrs['when']);
+    _offset = attrs['offset'] == null ? 0 : int.parse(attrs['offset']);
 
-    element.attributes.keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
-      var ruleName = k.replaceFirst('when-', '').replaceFirst('minus-', '-');
-      whens[ruleName] = element.attributes[k];
+    _element.attributes.keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
+      var ruleName = k
+          .replaceFirst(new RegExp('^when-'), '')
+          .replaceFirst(new RegExp('^minus-'), '-');
+      whens[ruleName] = _element.attributes[k];
     });
 
     if (whens['other'] == null) {
       throw "ngPluralize error! The 'other' plural category must always be "
-          "specified";
+            "specified";
     }
 
     whens.forEach((k, v) {
       Symbol symbol = SYMBOLS[k];
       if (symbol != null) {
-        this.categoryRules[symbol] = v;
+        _categoryRules[symbol] = v;
       } else {
-        this.discreteRules[k] = v;
+        _discreteRules[k] = v;
       }
     });
   }
 
-  set count(value) {
+  void set count(value) {
     if (value is! num) {
       try {
-        value = int.parse(value);
+        value = num.parse(value);
       } catch(e) {
-        try {
-          value = double.parse(value);
-        } catch(e) {
-          element.text = '';
-          return;
-        }
+        _element.text = '';
+        return;
       }
     }
 
     String stringValue = value.toString();
     int intValue = value.toInt();
 
-    if (discreteRules[stringValue] != null) {
-      _setAndWatch(discreteRules[stringValue]);
+    if (_discreteRules[stringValue] != null) {
+      _setAndWatch(_discreteRules[stringValue]);
     } else {
-      intValue -= offset;
-      var exp = Function.apply(Intl.plural, [intValue], categoryRules);
+      intValue -= _offset;
+      var exp = Function.apply(Intl.plural, [intValue], _categoryRules);
       if (exp != null) {
-        exp = exp.replaceAll(r'{}', (value - offset).toString());
+        exp = exp.replaceAll(r'{}', (value - _offset).toString());
         _setAndWatch(exp);
       }
     }
   }
 
-  _setAndWatch(expression) {
-    var interpolation = interpolate(expression, false, '\${', '}');
-    interpolation.setter = (text) => element.text = text;
-    interpolation.setter(expression);
-    var items = interpolation.expressions.map((exp) => parser(exp)).toList();
-    AST ast = new PureFunctionAST(expression, new ArrayFn(), items);
-    scope.watch(ast, interpolation.call);
+  void _setAndWatch(template) {
+    if (_watch != null) _watch.remove();
+    var expression = _expressionCache.putIfAbsent(template, () =>
+        _interpolate(template, false, r'${', '}'));
+    _watch = _scope.watch(expression, _updateMarkup, filters: _filters);
+  }
+
+  void _updateMarkup(text, previousText) {
+    if (text != previousText) _element.text = text;
   }
 }

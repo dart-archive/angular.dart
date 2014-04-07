@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bouncing balls</title>
+    <style>
+        .balls {
+            border: 1px solid black;
+            width: 420px;
+            height: 420px;
+            margin: 5px;
+        }
+
+        .ball {
+            display: inline-block;
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 1px solid black;
+            -webkit-border-radius: 10px;
+            -moz-border-radius: 10px;
+            border-radius: 10px;
+        }
+
+        .fps-bar {
+            width: 200px;
+            height: 10px;
+            border: 1px solid black;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .fps {
+            height: 10px;
+            width: 60px;
+            background-color: green;
+        }
+    </style>
+</head>
+<body ng-app>
+  <div bounce-controller>
+    <div class="balls">
+        <div ng-repeat="ball in bounce.balls"
+             class="{{bounce.ballClassName}}"
+             ball-position="ball"></div>
+    </div>
+
+    <div>
+        <div class="fps-bar">
+            <div class="fps" ng-style-width="bounce.fps*4 + 'px'"></div>
+        </div>
+    </div>
+
+    {{bounce.fps}} fps. ({{bounce.balls.length}} balls) [{{1000/bounce.fps}} ms] <br>
+    Digest: {{bounce.digestTime}} ms<br>
+    <a href ng-click="bounce.changeCount(1)">+1</a>
+    <a href ng-click="bounce.changeCount(10)">+10</a>
+    <a href ng-click="bounce.changeCount(100)">+100</a>
+    <br>
+    <a href ng-click="bounce.changeCount(-1)">-1</a>
+    <a href ng-click="bounce.changeCount(-10)">-10</a>
+    <a href ng-click="bounce.changeCount(-100)">-100</a>
+    <br>
+    <a href ng-click="bounce.playPause()">&#x25B6;&#10073;&#10073;</a> <br>
+    <a href ng-click="bounce.toggleCSS()">Toggle CSS</a><br>
+    <a href ng-click="bounce.timeDigest()">noop</a><br>
+  </div>
+
+  <script type="application/dart" src="bouncing_balls.dart"></script>
+  <script src="packages/browser/dart.js"></script>
+</body>
+</html>

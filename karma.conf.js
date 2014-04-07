@@ -14,34 +14,38 @@ module.exports = function(config) {
       'test/config/filter_tests.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js',
-      'packages/browser/interop.js'
+      'packages/browser/interop.js',
+      'packages/shadow_dom/shadow_dom.debug.js'
     ],
 
     exclude: [
-      'test/io/**'
+      'test/io/**',
+      'test/tools/transformer/**'
     ],
 
     autoWatch: false,
 
     // If browser does not capture in given timeout [ms], kill it
-    captureTimeout: 5000,
+    captureTimeout: 20000,
+    // 5 minutes is enough time for dart2js to run on Travis...
+    browserNoActivityTimeout: 300000,
 
     plugins: [
       'karma-dart',
       'karma-chrome-launcher',
+      'karma-firefox-launcher',
       'karma-script-launcher',
       'karma-junit-reporter',
-      '../../../karma-parser-generator',
       '../../../karma-parser-getter-setter'
     ],
 
     customLaunchers: {
-      Dartium: { base: 'ChromeCanary', flags: ['--no-sandbox'] },
       ChromeNoSandbox: { base: 'Chrome', flags: ['--no-sandbox'] }
     },
 
+    browsers: ['Dartium'],
+
     preprocessors: {
-      'test/core/parser/generated_functions.dart': ['parser-generator'],
       'test/core/parser/generated_getter_setter.dart': ['parser-getter-setter']
     },
 

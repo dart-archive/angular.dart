@@ -18,10 +18,10 @@ part of angular.directive;
 @NgDirective(
   selector: '[ng-bind]',
   map: const {'ng-bind': '=>value'})
-class NgBindDirective {
+class NgBind {
   final dom.Element element;
 
-  NgBindDirective(this.element);
+  NgBind(this.element);
 
   set value(value) => element.text = value == null ? '' : value.toString();
 }

@@ -1,62 +1,62 @@
-part of angular.core.dom;
+part of angular.core.dom_internal;
 
+// This Directive is special and does not go through injection.
 @NgDirective(selector: r':contains(/{{.*}}/)')
 class NgTextMustacheDirective {
-  // This Directive is special and does not go through injection.
-  NgTextMustacheDirective(dom.Node element,
-                          String markup,
+  final dom.Node _element;
+
+  NgTextMustacheDirective(this._element,
+                          String template,
                           Interpolate interpolate,
                           Scope scope,
-                          AstParser parser,
                           FilterMap filters) {
-    Interpolation interpolation = interpolate(markup);
-    interpolation.setter = (text) => element.text = text;
+    String expression = interpolate(template);
 
-    List items = interpolation.expressions.map((exp) {
-      return parser(exp, filters:filters);
-    }).toList();
-    AST ast = new PureFunctionAST('[[$markup]]', new ArrayFn(), items);
-    scope.watch(ast, interpolation.call, readOnly: true);
+    scope.watch(expression,
+                _updateMarkup,
+                canChangeModel: false,
+                filters: filters);
   }
 
+  void _updateMarkup(text, previousText) {
+    _element.text = text;
+  }
 }
 
+// This Directive is special and does not go through injection.
 @NgDirective(selector: r'[*=/{{.*}}/]')
 class NgAttrMustacheDirective {
+  bool _hasObservers;
+  Watch _watch;
+  NodeAttrs _attrs;
+  String _attrName;
+
   // This Directive is special and does not go through injection.
-  NgAttrMustacheDirective(NodeAttrs attrs,
-                          String markup,
+  NgAttrMustacheDirective(this._attrs,
+                          String template,
                           Interpolate interpolate,
                           Scope scope,
-                          AstParser parser,
                           FilterMap filters) {
-    var eqPos = markup.indexOf('=');
-    var attrName = markup.substring(0, eqPos);
-    var attrValue = markup.substring(eqPos + 1);
-    Interpolation interpolation = interpolate(attrValue);
-    var lastValue = markup;
-    interpolation.setter = (text) {
-      if (lastValue != text) {
-            lastValue = attrs[attrName] = text;
-      }
-    };
-    // TODO(misko): figure out how to remove call to setter. It slows down
-    // Block instantiation
-    interpolation.setter('');
+    var eqPos = template.indexOf('=');
+    _attrName = template.substring(0, eqPos);
+    String expression = interpolate(template.substring(eqPos + 1));
 
-    List items = interpolation.expressions.map((exp) {
-      return parser(exp, filters:filters);
-    }).toList();
-    AST ast = new PureFunctionAST('[[$markup]]', new ArrayFn(), items);
-    /*
-      Attribute bindings are tricky. They need to be resolved on digest
-      inline with components so that any bindings to component can
-      be resolved before the component attach method. But once the
-      component is attached we need to run on the flush cycle rather
-      then digest cycle.
-     */
-    // TODO(misko): figure out how to get most of these on observe rather then watch.
-    scope.watch(ast, interpolation.call);
+    _updateMarkup('', template);
+
+    _attrs.listenObserverChanges(_attrName, (hasObservers) {
+    if (_hasObservers != hasObservers) {
+      _hasObservers = hasObservers;
+      if (_watch != null) _watch.remove();
+        _watch = scope.watch(expression, _updateMarkup, filters: filters,
+            canChangeModel: _hasObservers);
+      }
+    });
+  }
+
+  void _updateMarkup(text, previousText) {
+    if (text != previousText && !(previousText == null && text == '')) {
+        _attrs[_attrName] = text;
+    }
   }
 }
 

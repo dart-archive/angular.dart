@@ -2,19 +2,20 @@ library introspection_spec;
 
 import '_specs.dart';
 import 'dart:js' as js;
+import 'package:angular/angular_dynamic.dart';
 
 void main() {
   describe('introspection', () {
-    it('should retrieve ElementProbe', inject((TestBed _) {
+    it('should retrieve ElementProbe', (TestBed _) {
       _.compile('<div ng-bind="true"></div>');
       ElementProbe probe = ngProbe(_.rootElement);
       expect(probe.injector.parent).toBe(_.injector);
       expect(ngInjector(_.rootElement).parent).toBe(_.injector);
-      expect(probe.directives[0] is NgBindDirective).toBe(true);
-      expect(ngDirectives(_.rootElement)[0] is NgBindDirective).toBe(true);
+      expect(probe.directives[0] is NgBind).toBe(true);
+      expect(ngDirectives(_.rootElement)[0] is NgBind).toBe(true);
       expect(probe.scope).toBe(_.rootScope);
       expect(ngScope(_.rootElement)).toBe(_.rootScope);
-    }));
+    });
 
     toHtml(List list) => list.map((e) => e.outerHtml).join('');
 
@@ -40,17 +41,20 @@ void main() {
     // Does not work in dart2js.  deboer is investigating.
     it('should be available from Javascript', () {
       // The probe only works if there is a directive.
-      var elt = $('<div ng-app id=ngtop ng-bind="\'introspection FTW\'"></div>')[0];
+      var elt = e('<div ng-app id=ngtop ng-bind="\'introspection FTW\'"></div>');
       // Make it possible to find the element from JS
       document.body.append(elt);
-      ngBootstrap(element: elt);
+      (dynamicApplication()..element = elt).run();
 
       expect(js.context['ngProbe']).toBeDefined();
       expect(js.context['ngScope']).toBeDefined();
       expect(js.context['ngInjector']).toBeDefined();
       expect(js.context['ngQuery']).toBeDefined();
 
-      expect(js.context['ngProbe'].apply([js.context['ngtop']])).toBeDefined();
+
+      // Polymer does not support accessing named elements directly (e.g. window.ngtop)
+      // so we need to use getElementById to support Polymer's shadow DOM polyfill.
+      expect(js.context['ngProbe'].apply([document.getElementById('ngtop')])).toBeDefined();
     });
   });
 }

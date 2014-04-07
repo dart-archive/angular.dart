@@ -20,7 +20,7 @@ main() {
     it('should add a css class to an element node', async(() {
       _.compile('<div></div>');
       expect(_.rootElement).not.toHaveClass('foo');
-      
+
       animate.addClass(_.rootElement, 'foo');
       runner.frame();
 
@@ -58,8 +58,8 @@ main() {
 
     it('should move nodes', async(() {
       _.compile('<div></div>');
-      List<Node> a = $('<span>A</span>a').toList();
-      List<Node> b = $('<span>B</span>b').toList();
+      List<Node> a = es('<span>A</span>a');
+      List<Node> b = es('<span>B</span>b');
       a.forEach((n) => _.rootElement.append(n));
       b.forEach((n) => _.rootElement.append(n));
       expect(_.rootElement.text).toEqual("AaBb");
@@ -80,7 +80,7 @@ main() {
 
     it('should animate multiple elements', async(() {
       _.compile('<div></div>');
-      List<Node> nodes = $('<span>A</span>a<span>B</span>b').toList();
+      List<Node> nodes = es('<span>A</span>a<span>B</span>b');
 
       animate.insert(nodes, _.rootElement);
       runner.frame();
@@ -92,7 +92,7 @@ main() {
       animate.addClass(_.rootElement, 'test');
       runner.start();
       expect(_.rootElement).toHaveClass('test-add');
-      var spans = $('<span>A</span><span>B</span>');
+      var spans = es('<span>A</span><span>B</span>');
       animate.insert(spans, _.rootElement);
       runner.start();
       expect(spans.first).not.toHaveClass('ng-add');
@@ -102,7 +102,7 @@ main() {
 
 class MockAnimationLoop extends Mock implements AnimationLoop {
   num time = 0.0;
-  
+
   Future<AnimationResult> get onCompleted {
     var cmp = new Completer<AnimationResult>();
     cmp.complete(AnimationResult.COMPLETED);
@@ -110,20 +110,20 @@ class MockAnimationLoop extends Mock implements AnimationLoop {
   }
 
   List<LoopedAnimation> animations = [];
-  
-  play(Animation animation) {
+
+  void play(LoopedAnimation animation) {
     animations.add(animation);
   }
-  
-  frame() {
+
+  void frame() {
     for(var animation in animations) {
       animation.read(time);
     }
-    
+
     for(var animation in animations) {
       animation.update(time);
     }
-    
+
     time += 16.0;
   }
 

@@ -7,7 +7,7 @@ part of angular.directive;
  * will be sanitized using a default [NodeValidator] constructed as `new
  * dom.NodeValidatorBuilder.common()`.  In a future version, when Strict
  * Contextual Escaping support has been added to Angular.dart, this directive
- * will allow one to bypass the sanitizaton and innerHTML arbitrary trusted
+ * will allow one to bypass the sanitization and innerHTML arbitrary trusted
  * HTML.
  *
  * Example:
@@ -17,17 +17,17 @@ part of angular.directive;
 @NgDirective(
   selector: '[ng-bind-html]',
   map: const {'ng-bind-html': '=>value'})
-class NgBindHtmlDirective {
+class NgBindHtml {
   final dom.Element element;
   final dom.NodeValidator validator;
-  
-  NgBindHtmlDirective(this.element, dom.NodeValidator this.validator);
+
+  NgBindHtml(this.element, dom.NodeValidator this.validator);
 
   /**
    * Parsed expression from the `ng-bind-html` attribute.  The result of this
    * expression is innerHTML'd according to the rules specified in this class'
    * documentation.
    */
-  set value(value) => element.setInnerHtml(value == null ? '' : value.toString(),
-                                           validator: validator);
+  void set value(value) => element.setInnerHtml(
+      value == null ? '' : value.toString(), validator: validator);
 }

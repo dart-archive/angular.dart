@@ -6,11 +6,11 @@ import 'package:angular/playback/playback_http.dart';
 void main() {
   describe('Playback HTTP', () {
     MockHttpBackend backend;
-    beforeEach(module((Module m) {
+    beforeEachModule((Module m) {
       backend = new MockHttpBackend();
       var wrapper = new HttpBackendWrapper(backend);
       m..value(HttpBackendWrapper, wrapper)..type(PlaybackHttpBackendConfig);
-    }));
+    });
 
     afterEach(() {
       backend.verifyNoOutstandingRequest();
@@ -18,12 +18,12 @@ void main() {
     });
 
     describe('RecordingHttpBackend', () {
-      beforeEach(module((Module m) {
+      beforeEachModule((Module m) {
         m.type(HttpBackend, implementedBy: RecordingHttpBackend);
-      }));
+      });
 
 
-      it('should record a request', async(inject((Http http) {
+      it('should record a request', async((Http http) {
         backend.expectGET('request').respond(200, 'response');
 
         var responseData;
@@ -46,16 +46,16 @@ void main() {
         microLeap();
 
         expect(responseData).toEqual('response');
-      })));
+      }));
     });
 
 
     describe('PlaybackHttpBackend', () {
-      beforeEach(module((Module m) {
+      beforeEachModule((Module m) {
         m.type(HttpBackend, implementedBy: PlaybackHttpBackend);
-      }));
+      });
 
-      it('should replay a request', async(inject((Http http, HttpBackend hb) {
+      it('should replay a request', async((Http http, HttpBackend hb) {
         (hb as PlaybackHttpBackend).data = {
             r'{"url":"request","method":"GET","requestHeaders":{"Accept":"application/json, text/plain, */*","X-XSRF-TOKEN":"secret"},"data":null}':
             {'status': 200, 'headers': '', 'data': 'playback data'}
@@ -70,7 +70,7 @@ void main() {
         microLeap();
 
         expect(responseData).toEqual('playback data');
-      })));
+      }));
 
     });
   });

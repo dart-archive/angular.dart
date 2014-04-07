@@ -10,14 +10,14 @@ class TestBed {
   final Injector injector;
   final Scope rootScope;
   final Compiler compiler;
-  final Parser parser;
-
+  final Parser _parser;
+  final Expando expando;
 
   Element rootElement;
   List<Node> rootElements;
-  Block rootBlock;
+  View rootView;
 
-  TestBed(this.injector, this.rootScope, this.compiler, this.parser);
+  TestBed(this.injector, this.rootScope, this.compiler, this._parser, this.expando);
 
 
   /**
@@ -48,11 +48,11 @@ class TestBed {
     } else {
       throw 'Expecting: String, Node, or List<Node> got $html.';
     }
-    rootElement = rootElements[0];
+    rootElement = rootElements.length > 0 && rootElements[0] is Element ? rootElements[0] : null;
     if (directives == null) {
       directives = injector.get(DirectiveMap);
     }
-    rootBlock = compiler(rootElements, directives)(injector, rootElements);
+    rootView = compiler(rootElements, directives)(injector, rootElements);
     return rootElement;
   }
 
@@ -88,4 +88,15 @@ class TestBed {
     triggerEvent(element, 'change');
     rootScope.apply();
   }
+
+  getProbe(Node node) {
+    while (node != null) {
+      ElementProbe probe = expando[node];
+      if (probe != null) return probe;
+      node = node.parent;
+    }
+    throw 'Probe not found.';
+  }
+
+  getScope(Node node) => getProbe(node).scope;
 }

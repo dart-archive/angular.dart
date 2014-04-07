@@ -1,15 +1,16 @@
 library core_directive_spec;
 
 import '../_specs.dart';
+import 'package:angular/angular_dynamic.dart';
 
 void main() {
   describe('DirectiveMap', () {
 
-    beforeEach(module((Module module) {
+    beforeEachModule((Module module) {
       module..type(AnnotatedIoComponent);
-    }));
+    });
 
-    it('should extract attr map from annotated component', inject((DirectiveMap directives) {
+    it('should extract attr map from annotated component', (DirectiveMap directives) {
       var annotations = directives.annotationsFor(AnnotatedIoComponent);
       expect(annotations.length).toEqual(1);
       expect(annotations[0] is NgComponent).toBeTruthy();
@@ -18,12 +19,10 @@ void main() {
       expect(annotation.selector).toEqual('annotated-io');
       expect(annotation.visibility).toEqual(NgDirective.LOCAL_VISIBILITY);
       expect(annotation.exportExpressions).toEqual(['exportExpressions']);
-      expect(annotation.publishTypes).toEqual([String]);
+      expect(annotation.module).toEqual(AnnotatedIoComponent.module);
       expect(annotation.template).toEqual('template');
       expect(annotation.templateUrl).toEqual('templateUrl');
       expect(annotation.cssUrls).toEqual(['cssUrls']);
-      expect(annotation.applyAuthorStyles).toEqual(true);
-      expect(annotation.resetStyleInheritance).toEqual(true);
       expect(annotation.publishAs).toEqual('ctrl');
       expect(annotation.map).toEqual({
           'foo': '=>foo',
@@ -35,17 +34,22 @@ void main() {
           'expr-one-way2': '=>exprOneWay2',
           'expr-two-way': '<=>exprTwoWay'
       });
-    }));
+    });
 
     describe('exceptions', () {
+      var baseModule;
+      beforeEach(() {
+        baseModule = new Module()
+          ..type(DirectiveMap)
+          ..type(DirectiveSelectorFactory)
+          ..type(MetadataExtractor);
+      });
+
       it('should throw when annotation is for existing mapping', () {
         var module = new Module()
-            ..type(DirectiveMap)
-            ..type(Bad1Component)
-            ..type(MetadataExtractor)
-            ..type(FieldMetadataExtractor);
+            ..type(Bad1Component);
 
-        var injector = new DynamicInjector(modules: [module]);
+        var injector = dynamicApplication().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Mapping for attribute foo is already defined (while '
@@ -54,12 +58,9 @@ void main() {
 
       it('should throw when annotated both getter and setter', () {
         var module = new Module()
-            ..type(DirectiveMap)
-            ..type(Bad2Component)
-            ..type(MetadataExtractor)
-            ..type(FieldMetadataExtractor);
+            ..type(Bad2Component);
 
-        var injector = new DynamicInjector(modules: [module]);
+        var injector = dynamicApplication().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Attribute annotation for foo is defined more than once '
@@ -69,21 +70,29 @@ void main() {
   });
 }
 
+class NullParser implements Parser {
+  call(x) {
+    throw "NullParser";
+  }
+}
+
 @NgComponent(
     selector: 'annotated-io',
     template: 'template',
     templateUrl: 'templateUrl',
     cssUrl: const ['cssUrls'],
-    applyAuthorStyles: true,
-    resetStyleInheritance: true,
     publishAs: 'ctrl',
-    publishTypes: const [String],
+    module: AnnotatedIoComponent.module,
     visibility: NgDirective.LOCAL_VISIBILITY,
     exportExpressions: const ['exportExpressions'],
     map: const {
       'foo': '=>foo'
     })
 class AnnotatedIoComponent {
+  static module() => new Module()..factory(String,
+      (i) => i.get(AnnotatedIoComponent),
+      visibility: NgDirective.LOCAL_VISIBILITY);
+
   AnnotatedIoComponent(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
   }

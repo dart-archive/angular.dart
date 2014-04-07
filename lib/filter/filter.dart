@@ -1,8 +1,8 @@
 part of angular.filter;
 
 // Too bad you can't stick typedef's inside a class.
-typedef bool Predicate(e);
-typedef bool Equals(a, b);
+typedef bool _Predicate(e);
+typedef bool _Equals(a, b);
 
 /**
  * Selects a subset of items from the provided [List] and returns it as a new
@@ -110,10 +110,10 @@ typedef bool Equals(a, b);
  *     </html>
  */
 @NgFilter(name: 'filter')
-class FilterFilter {
+class Filter implements Function {
   Parser _parser;
-  Equals _comparator;
-  Equals _stringComparator;
+  _Equals _comparator;
+  _Equals _stringComparator;
 
   static _nop(e) => e;
   static _ensureBool(val) => (val is bool && val);
@@ -123,7 +123,7 @@ class FilterFilter {
                              (a is String && b is String && a == b) ||
                              (a is num && b is num && a.isNaN && b.isNaN);
 
-  FilterFilter(this._parser);
+  Filter(this._parser);
 
   void _configureComparator(var comparatorExpression) {
     if (comparatorExpression == null || comparatorExpression == false) {
@@ -132,7 +132,7 @@ class FilterFilter {
     } else if (comparatorExpression == true) {
       _stringComparator = _identical;
       _comparator = _defaultComparator;
-    } else if (comparatorExpression is Equals) {
+    } else if (comparatorExpression is _Equals) {
       _comparator = (a, b) => _ensureBool(comparatorExpression(a, b));
     } else {
       _comparator = null;
@@ -185,8 +185,8 @@ class FilterFilter {
     }
   }
 
-  Predicate _toPredicate(var expression) {
-    if (expression is Predicate) {
+  _Predicate _toPredicate(var expression) {
+    if (expression is _Predicate) {
       return (item) => _ensureBool(expression(item));
     } else if (_comparator == null) {
       return (item) => false; // Bad comparator → no items for you!

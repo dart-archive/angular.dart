@@ -9,7 +9,7 @@ part of angular.routing;
  * [NgViewDirective] can work with [NgViewDirective] to define nested views
  * for hierarchical routes. For example:
  *
- *     void initRoutes(Router router, ViewFactory view) {
+ *     void initRoutes(Router router, RouteViewFactory view) {
  *       router.root
  *         ..addRoute(
  *             name: 'library',
@@ -57,21 +57,27 @@ part of angular.routing;
  */
 @NgDirective(
     selector: 'ng-view',
-    publishTypes: const [RouteProvider],
+    module: NgViewDirective.module,
     visibility: NgDirective.CHILDREN_VISIBILITY)
 class NgViewDirective implements NgDetachAware, RouteProvider {
+  static final Module _module = new Module()
+    ..factory(RouteProvider,
+              (i) => i.get(RouteProvider),
+              visibility: NgDirective.CHILDREN_VISIBILITY);
+  static module() => _module;
+
   final NgRoutingHelper locationService;
-  final BlockCache blockCache;
+  final ViewCache viewCache;
   final Injector injector;
   final Element element;
   final Scope scope;
   RouteHandle _route;
 
-  Block _previousBlock;
-  Scope _previousScope;
+  View _view;
+  Scope _scope;
   Route _viewRoute;
 
-  NgViewDirective(this.element, this.blockCache,
+  NgViewDirective(this.element, this.viewCache,
                   Injector injector, Router router,
                   this.scope)
       : injector = injector,
@@ -114,25 +120,25 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
     }
 
     var newDirectives = viewInjector.get(DirectiveMap);
-    blockCache.fromUrl(templateUrl, newDirectives).then((blockFactory) {
+    viewCache.fromUrl(templateUrl, newDirectives).then((viewFactory) {
       _cleanUp();
-      _previousScope = scope.createChild(new PrototypeMap(scope.context));
-      _previousBlock = blockFactory(
+      _scope = scope.createChild(new PrototypeMap(scope.context));
+      _view = viewFactory(
           viewInjector.createChild(
-              [new Module()..value(Scope, _previousScope)]));
+              [new Module()..value(Scope, _scope)]));
 
-      _previousBlock.elements.forEach((elm) => element.append(elm));
+      _view.nodes.forEach((elm) => element.append(elm));
     });
   }
 
   _cleanUp() {
-    if (_previousBlock == null) return;
+    if (_view == null) return;
 
-    _previousBlock.remove();
-    _previousScope.destroy();
+    _view.nodes.forEach((node) => node.remove());
+    _scope.destroy();
 
-    _previousBlock = null;
-    _previousScope = null;
+    _view = null;
+    _scope = null;
   }
 
   Route get route => _viewRoute;
@@ -160,11 +166,11 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
  *       MyComponent(RouteProvider routeProvider) {
  *         _loadFoo(routeProvider.parameters['fooId']);
  *         route = routeProvider.route.newHandle();
- *         route.onRoute.listen((RouteEvent e) {
+ *         route.onEnter.listen((RouteEvent e) {
  *           // Do something when the route is activated.
  *         });
  *         route.onLeave.listen((RouteEvent e) {
- *           // Do something when the route is diactivated.
+ *           // Do something when the route is de-activated.
  *           e.allowLeave(allDataSaved());
  *         });
  *       }

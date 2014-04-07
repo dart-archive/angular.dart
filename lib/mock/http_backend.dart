@@ -1,36 +1,44 @@
-part of angular.mock;
+library angular.mock.http_backend;
+
+import 'dart:async' as dart_async;
+import 'dart:convert' show JSON;
+import 'dart:html';
+
+import 'package:angular/angular.dart';
+import 'package:angular/utils.dart' as utils;
+
 
 class _MockXhr {
-  var $$method, $$url, $$async, $$reqHeaders, $$respHeaders;
+  var method, url, async, reqHeaders, respHeaders;
 
   void open(method, url, async) {
-    $$method = method;
-    $$url = url;
-    $$async = async;
-    $$reqHeaders = {};
-    $$respHeaders = {};
+    this.method = method;
+    this.url = url;
+    this.async = async;
+    reqHeaders = {};
+    respHeaders = {};
   }
 
-  var $$data;
+  var data;
 
   void send(data) {
-    $$data = data;
+    data = data;
   }
 
   void setRequestHeader(key, value) {
-    $$reqHeaders[key] = value;
+    reqHeaders[key] = value;
   }
 
   String getResponseHeader(name) {
     // the lookup must be case insensitive, that's why we try two quick
     // lookups and full scan at last
-    if ($$respHeaders.containsKey(name)) return $$respHeaders[name];
+    if (respHeaders.containsKey(name)) return respHeaders[name];
 
     name = name.toLowerCase();
-    if ($$respHeaders.containsKey(name)) return $$respHeaders[name];
+    if (respHeaders.containsKey(name)) return respHeaders[name];
 
     String header = null;
-    $$respHeaders.forEach((headerName, headerVal) {
+    respHeaders.forEach((headerName, headerVal) {
       if (header != null) return;
       if (headerName.toLowerCase()) header = headerVal;
     });
@@ -38,11 +46,11 @@ class _MockXhr {
   }
 
   getAllResponseHeaders() {
-    if ($$respHeaders == null) return '';
+    if (respHeaders == null) return '';
 
     var lines = [];
 
-    $$respHeaders.forEach((key, value) {
+    respHeaders.forEach((key, value) {
       lines.add("$key: $value");
     });
     return lines.join('\n');
@@ -169,7 +177,7 @@ class MockHttpBackend implements HttpBackend {
     var wrapResponse = (wrapped) {
       var handleResponse = () {
         var response = wrapped.response(method, url, data, headers);
-        xhr.$$respHeaders = response[2];
+        xhr.respHeaders = response[2];
         utils.relaxFnApply(callback, [response[0], response[1],
              xhr.getAllResponseHeaders()]);
       };
@@ -252,8 +260,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenGET
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenGET
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for GET requests. For more info see `when()`.
    *
@@ -266,8 +274,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenDELETE
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenDELETE
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for DELETE requests. For more info see `when()`.
    *
@@ -280,8 +288,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenJSONP
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenJSONP
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for JSONP requests. For more info see `when()`.
    *
@@ -293,8 +301,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenPUT
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenPUT
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for PUT requests.  For more info see `when()`.
    *
@@ -308,8 +316,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenPOST
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenPOST
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for POST requests. For more info see `when()`.
    *
@@ -325,8 +333,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#whenHEAD
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#whenHEAD
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new backend definition for HEAD requests. For more info see `when()`.
    *
@@ -338,8 +346,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expect
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expect
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation.
    *
@@ -367,8 +375,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectGET
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectGET
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for GET requests. For more info see `expect()`.
    *
@@ -381,8 +389,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectDELETE
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectDELETE
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for DELETE requests. For more info see `expect()`.
    *
@@ -395,8 +403,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectJSONP
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectJSONP
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for JSONP requests. For more info see `expect()`.
    *
@@ -408,8 +416,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectPUT
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectPUT
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for PUT requests. For more info see `expect()`.
    *
@@ -423,8 +431,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectPOST
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectPOST
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for POST requests. For more info see `expect()`.
    *
@@ -438,8 +446,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectPATCH
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectPATCH
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for PATCH requests. For more info see `expect()`.
    *
@@ -453,8 +461,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#expectHEAD
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#expectHEAD
+   * @methodOf ngMock.httpBackend
    * @description
    * Creates a new request expectation for HEAD requests. For more info see `expect()`.
    *
@@ -466,8 +474,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#flush
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#flush
+   * @methodOf ngMock.httpBackend
    * @description
    * Flushes all pending requests using the trained responses.
    *
@@ -494,8 +502,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#verifyNoOutstandingExpectation
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#verifyNoOutstandingExpectation
+   * @methodOf ngMock.httpBackend
    * @description
    * Verifies that all of the requests defined via the `expect` api were made. If any of the
    * requests were not made, verifyNoOutstandingExpectation throws an exception.
@@ -504,7 +512,7 @@ class MockHttpBackend implements HttpBackend {
    * "afterEach" clause.
    *
    * <pre>
-   *   afterEach($httpBackend.verifyNoOutstandingExpectation);
+   *   afterEach(httpBackend.verifyNoOutstandingExpectation);
    * </pre>
    */
   void verifyNoOutstandingExpectation() {
@@ -516,8 +524,8 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#verifyNoOutstandingRequest
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#verifyNoOutstandingRequest
+   * @methodOf ngMock.httpBackend
    * @description
    * Verifies that there are no outstanding requests that need to be flushed.
    *
@@ -525,7 +533,7 @@ class MockHttpBackend implements HttpBackend {
    * "afterEach" clause.
    *
    * <pre>
-   *   afterEach($httpBackend.verifyNoOutstandingRequest);
+   *   afterEach(httpBackend.verifyNoOutstandingRequest);
    * </pre>
    */
   void verifyNoOutstandingRequest() {
@@ -535,12 +543,12 @@ class MockHttpBackend implements HttpBackend {
 
   /**
    * @ngdoc method
-   * @name ngMock.$httpBackend#resetExpectations
-   * @methodOf ngMock.$httpBackend
+   * @name ngMock.httpBackend#resetExpectations
+   * @methodOf ngMock.httpBackend
    * @description
    * Resets all request expectations, but preserves all backend definitions. Typically, you would
    * call resetExpectations during a multiple-phase test when you want to reuse the same instance of
-   * $httpBackend mock.
+   * httpBackend mock.
    */
   void resetExpectations() {
     expectations.length = 0;

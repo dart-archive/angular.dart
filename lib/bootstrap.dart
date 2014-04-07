@@ -1,7 +1,28 @@
-part of angular;
+/**
+ * Bootstrapping for Angular applications via [app:dynamic](#angular-app-dynamic) for development,
+ * or
+ * [app:static](#angular-app-static) for production.
+ *
+ */
+library angular.app;
+
+import 'dart:html' as dom;
+
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:di/di.dart';
+import 'package:angular/angular.dart';
+import 'package:angular/perf/module.dart';
+import 'package:angular/core/module_internal.dart';
+import 'package:angular/core/registry.dart';
+import 'package:angular/core_dom/module_internal.dart';
+import 'package:angular/directive/module.dart';
+import 'package:angular/filter/module.dart';
+import 'package:angular/routing/module.dart';
+import 'package:angular/introspection_js.dart';
 
 /**
- * This is the top level module which describes the whole of angular.
+ * This is the top level module which describes the core angular of angular including filters and
+ * directives. The module is automatically included with [Application]
  *
  * The Module is made up of
  *
@@ -22,81 +43,84 @@ class AngularModule extends Module {
     install(new NgRoutingModule());
 
     type(MetadataExtractor);
-    value(Expando, _elementExpando);
-    value(NgApp, new NgApp(dom.window.document.documentElement));
+    value(Expando, elementExpando);
   }
 }
-
-Injector _defaultInjectorFactory(List<Module> modules) =>
-    new DynamicInjector(modules: modules);
 
 /**
- * This method is the main entry point to an angular application.
+ * Application is how you configure and run an Angular application. Application is abstract. There are two
+ * implementations: one is dynamic, using Mirrors; the other is static, using code generation.
  *
- * # The [ngBootstrap] is responsible for:
+ * To create an Application, import angular_dynamic.dart and call dynamicApplication like so:
  *
- *   1. Locating the root element of the application,
- *   2. Creating Angular [NgZone]
- *   3. Inside the [NgZone] create an injector
- *   4. Retrieve the [Compiler] and compile the root eleement
+ *     import 'package:angular/angular.dart';
+ *     import 'package:angular/angular_dynamic.dart';
+ *
+ *     class HelloWorldController {
+ *       ...
+ *       }
+ *
+ *     main() {
+ *      dynamicApplication()
+ *        .addModule(new Module()..type(HelloWorldController))
+ *        .run();
+ *     }
+ *
+ * On `pub build`, dynamicApplication becomes staticApplication, as pub generates the getters,
+ * setters, annotations, and factories for the root Injector that [ngApp] creates. This
  *
  *
- * # Parameters:
- *
- *   - [module] Option application module to add to the [Injector].
- *   - [modules] Optional list of [Module]s to add to the [Injector] (if more than one is needed).
- *   - [element] Optional root element of the application. If non specified, the
- *     the root element is looked up using the [selector]. If selector can not
- *     identify a root, the root [HTML] element is used for bootstraping.
- *   - [selector] Optional CSS selector used to locate the root element for the application.
- *   - [injectorFactor] Optional factory responsible for creating the injector.
- *
- *
- *
- * # A typical way to boostrap an Angular application:
- *
- *     Module myAppModule = new Module();
- *     myAppModule.type(MyType);
- *     ....
- *     Injector injector = ngBootstrap(module: myAppModule);
  */
-Injector ngBootstrap({
-    Module module: null,
-    List<Module> modules: null,
-    dom.Element element: null,
-    String selector: '[ng-app]',
-    Injector injectorFactory(List<Module> modules): _defaultInjectorFactory}) {
-  _publishToJavaScript();
 
-  var ngModules = [new AngularModule()];
-  if (module != null) ngModules.add(module);
-  if (modules != null) ngModules.addAll(modules);
-  if (element == null) {
-    element = dom.querySelector(selector);
-    var document = dom.window.document;
+abstract class Application {
+  static _find(String selector, [dom.Element defaultElement]) {
+    var element = dom.window.document.querySelector(selector);
+    if (element == null) element = defaultElement;
     if (element == null) {
-      element = document.childNodes.firstWhere((e) => e is dom.Element);
+      throw "Could not find application element '$selector'.";
     }
+    return element;
   }
 
-  // The injector must be created inside the zone, so we create the
-  // zone manually and give it back to the injector as a value.
-  NgZone zone = new NgZone();
-  ngModules.add(new Module()
-      ..value(NgZone, zone)
-      ..value(NgApp, new NgApp(element)));
+  final zone = new NgZone();
+  final ngModule = new AngularModule();
+  final modules = <Module>[];
+  dom.Element element;
 
-  return zone.run(() {
-    var rootElements = [element];
-    Injector injector = injectorFactory(ngModules);
-    injector.get(Compiler)(rootElements, injector.get(DirectiveMap))
-        (injector, rootElements);
-    return injector;
-  });
-}
+  dom.Element selector(String selector) => element = _find(selector);
 
-/// Holds a reference to the root of the application used by ngBootstrap.
-class NgApp {
-  final dom.Element root;
-  NgApp(this.root);
+  Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
+    modules.add(ngModule);
+    ngModule..value(NgZone, zone)
+            ..value(Application, this)
+            ..factory(dom.Node, (i) => i.get(Application).element);
+  }
+
+  Injector injector;
+
+  Application addModule(Module module) {
+    modules.add(module);
+    return this;
+  }
+
+  Injector run() {
+    publishToJavaScript();
+    return zone.run(() {
+      var rootElements = [element];
+      Injector injector = createInjector();
+      ExceptionHandler exceptionHandler = injector.get(ExceptionHandler);
+      initializeDateFormatting(null, null).then((_) {
+        try {
+          var compiler = injector.get(Compiler);
+          var viewFactory = compiler(rootElements, injector.get(DirectiveMap));
+          viewFactory(injector, rootElements);
+        } catch (e, s) {
+          exceptionHandler(e, s);
+        }
+      });
+      return injector;
+    });
+  }
+
+  Injector createInjector();
 }

@@ -4,6 +4,7 @@ part of angular.animate;
  * Window.animationFrame update loop that tracks and drives
  * [LoopedAnimations]'s.
  */
+@NgInjectableService()
 class AnimationLoop {
   final AnimationFrame _frames;
   final Profiler _profiler;
@@ -23,7 +24,7 @@ class AnimationLoop {
    * Start and play an animation through the state transitions defined in
    * [Animation].
    */
-  void play(LoopedAnimation animation) {    
+  void play(LoopedAnimation animation) {
     _animations.add(animation);
     _queueAnimationFrame();
   }
@@ -42,7 +43,7 @@ class AnimationLoop {
 
   /* On the browsers animation frame event, update each of the tracked
    * animations. Group dom reads first, and and writes second.
-   *  
+   *
    *  At any point any animation may be updated by calling interrupt and cancel
    *  with a reference to the [Animation] to cancel. The [AnimationRunner] will
    *  then forget about the [Animation] and will not call any further methods on
@@ -56,7 +57,7 @@ class AnimationLoop {
     // Dom reads
     _read(timeInMs);
     _profiler.stopTimer("AnimationRunner.AnimationFrame.DomReads");
-    
+
     _profiler.startTimer("AnimationRunner.AnimationFrame.DomMutates");
     // Dom mutates
     _update(timeInMs);
@@ -86,7 +87,7 @@ class AnimationLoop {
       animation.read(timeInMs);
     }
   }
-  
+
   /**
    * Stop tracking and updating the [animation].
    */
@@ -100,9 +101,10 @@ class AnimationLoop {
  * Wrapper around window.requestAnimationFrame so it can be intercepted and
  * tested.
  */
+@NgInjectableService()
 class AnimationFrame {
   final dom.Window _wnd;
   Future<num> get animationFrame => _wnd.animationFrame;
-  
+
   AnimationFrame(this._wnd);
 }

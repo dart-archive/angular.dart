@@ -3,23 +3,33 @@ library ng_events_spec;
 import '../_specs.dart';
 import 'dart:html' as dom;
 
-void addTest(String name, [String eventType='MouseEvent', String eventName]) {
+void addTest(String name, [String eventType='MouseEvent', String eventName, exclusive=false]) {
   if (eventName == null) {
     eventName = name;
   }
 
-  describe('ng-$name', () {
+  var describeBody = () {
     TestBed _;
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
-    it('should evaluate the expression on $name', inject(() {
+    it('should evaluate the expression on $name', () {
       _.compile('<button ng-$name="abc = true; event = \$event"></button>');
       _.triggerEvent(_.rootElement, eventName, eventType);
       expect(_.rootScope.context['abc']).toEqual(true);
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
-    }));
-  });
+    });
+  };
+
+  if (exclusive) {
+    ddescribe('ng-$name', describeBody);
+  } else {
+    describe('ng-$name', describeBody);
+  }
+}
+
+void aaddTest(String name, [String eventType='MouseEvent', String eventName]) {
+  addTest(name, eventType, eventName, true);
 }
 
 main() {
@@ -77,5 +87,6 @@ main() {
     addTest('touchend'/*, 'TouchEvent'*/);
     addTest('touchmove'/*, 'TouchEvent'*/);
     addTest('touchstart'/*, 'TouchEvent'*/);
-    addTest('transitionend');
+    // Disabled due to http://dartbug.com/17990
+    //addTest('transitionend');
 }

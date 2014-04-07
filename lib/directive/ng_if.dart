@@ -1,14 +1,14 @@
 part of angular.directive;
 
 /**
- * Base class for NgIfAttrDirective and NgUnlessAttrDirective.
+ * Base class for NgIf and NgUnless.
  */
 abstract class _NgUnlessIfAttrDirectiveBase {
-  final BoundBlockFactory _boundBlockFactory;
-  final BlockHole _blockHole;
+  final BoundViewFactory _boundViewFactory;
+  final ViewPort _viewPort;
   final Scope _scope;
 
-  Block _block;
+  View _view;
 
   /**
    * The new child scope.  This child scope is recreated whenever the `ng-if`
@@ -18,31 +18,31 @@ abstract class _NgUnlessIfAttrDirectiveBase {
    */
   Scope _childScope;
 
-  _NgUnlessIfAttrDirectiveBase(this._boundBlockFactory, this._blockHole,
+  _NgUnlessIfAttrDirectiveBase(this._boundViewFactory, this._viewPort,
                                this._scope);
 
   // Override in subclass.
-  set condition(value);
+  void set condition(value);
 
-  void _ensureBlockExists() {
-    if (_block == null) {
+  void _ensureViewExists() {
+    if (_view == null) {
       _childScope = _scope.createChild(new PrototypeMap(_scope.context));
-      _block = _boundBlockFactory(_childScope);
-      var insertBlock = _block;
+      _view = _boundViewFactory(_childScope);
+      var view = _view;
       _scope.rootScope.domWrite(() {
-        insertBlock.insertAfter(_blockHole);
+        _viewPort.insert(view);
      });
     }
   }
 
-  void _ensureBlockDestroyed() {
-    if (_block != null) {
-      var removeBlock = _block;
+  void _ensureViewDestroyed() {
+    if (_view != null) {
+      var view = _view;
       _scope.rootScope.domWrite(() {
-        removeBlock.remove();
+        _viewPort.remove(view);
       });
       _childScope.destroy();
-      _block = null;
+      _view = null;
       _childScope = null;
     }
   }
@@ -51,7 +51,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
 
 /**
  * The `ng-if` directive compliments the `ng-unless` (provided by
- * [NgUnlessAttrDirective]) directive.
+ * [NgUnless]) directive.
  *
  * directive based on the **truthy/falsy** value of the provided expression.
  * Specifically, if the expression assigned to `ng-if` evaluates to a `false`
@@ -93,24 +93,24 @@ abstract class _NgUnlessIfAttrDirectiveBase {
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-if]',
     map: const {'.': '=>condition'})
-class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
-  NgIfDirective(BoundBlockFactory boundBlockFactory,
-                BlockHole blockHole,
-                Scope scope): super(boundBlockFactory, blockHole, scope);
+class NgIf extends _NgUnlessIfAttrDirectiveBase {
+  NgIf(BoundViewFactory boundViewFactory,
+       ViewPort viewPort,
+       Scope scope): super(boundViewFactory, viewPort, scope);
 
-  set condition(value) {
+  void set condition(value) {
     if (toBool(value)) {
-      _ensureBlockExists();
+      _ensureViewExists();
     } else {
-      _ensureBlockDestroyed();
+      _ensureViewDestroyed();
     }
   }
 }
 
 
 /**
- * The `ng-unless` directive compliments the `ng-if` (provided by
- * [NgIfAttrDirective]) directive.
+ * The `ng-unless` directive complements the `ng-if` (provided by
+ * [NgIf]) directive.
  *
  * The `ng-unless` directive recreates/destroys the DOM subtree containing the
  * directive based on the **falsy/truthy** value of the provided expression.
@@ -141,8 +141,8 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
  *
  * Example:
  *
- *     <!-- By using ng-unless instead of ng-show, we avoid the cost of the showdown
- *          filter, the repeater, etc. -->
+ *     <!-- By using ng-unless instead of ng-show, we avoid the cost of the
+ *          showdown filter, the repeater, etc. -->
  *     <div ng-unless="terseView">
  *        {{obj.details.markdownText | showdown}}
  *        <div ng-repeat="item in obj.details.items">
@@ -154,17 +154,17 @@ class NgIfDirective extends _NgUnlessIfAttrDirectiveBase {
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-unless]',
     map: const {'.': '=>condition'})
-class NgUnlessDirective extends _NgUnlessIfAttrDirectiveBase {
+class NgUnless extends _NgUnlessIfAttrDirectiveBase {
 
-  NgUnlessDirective(BoundBlockFactory boundBlockFactory,
-                    BlockHole blockHole,
-                    Scope scope): super(boundBlockFactory, blockHole, scope);
+  NgUnless(BoundViewFactory boundViewFactory,
+           ViewPort viewPort,
+           Scope scope): super(boundViewFactory, viewPort, scope);
 
-  set condition(value) {
+  void set condition(value) {
     if (!toBool(value)) {
-      _ensureBlockExists();
+      _ensureViewExists();
     } else {
-      _ensureBlockDestroyed();
+      _ensureViewDestroyed();
     }
   }
 }

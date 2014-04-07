@@ -3,17 +3,33 @@ library compiler_spec;
 import '../_specs.dart';
 
 
-void main() {
-  describe('dte.compiler', () {
-    Compiler $compile;
-    DirectiveMap directives;
-    Injector injector;
-    Scope rootScope;
+forBothCompilers(fn) {
+  describe('walking compiler', () {
+    beforeEachModule((Module m) {
+      m.type(Compiler, implementedBy: WalkingCompiler);
+      return m;
+    });
+    fn();
+  });
 
-    beforeEach(module((Module module) {
+  describe('tagging compiler', () {
+    beforeEachModule((Module m) {
+      m.type(Compiler, implementedBy: TaggingCompiler);
+      return m;
+    });
+    fn();
+  });
+}
+
+void main() {
+  forBothCompilers(() =>
+  describe('dte.compiler', () {
+    TestBed _;
+
+    beforeEachModule((Module module) {
       module
           ..type(TabComponent)
-          ..type(PublishTypesAttrDirective)
+          ..type(PublishModuleAttrDirective)
           ..type(PaneComponent)
           ..type(SimpleTranscludeInAttachAttrDirective)
           ..type(IgnoreChildrenDirective)
@@ -24,195 +40,203 @@ void main() {
           ..type(MyController)
           ..type(MyParentController)
           ..type(MyChildController);
-      return (Injector _injector) {
-        injector = _injector;
-        $compile = injector.get(Compiler);
-        directives = injector.get(DirectiveMap);
-        rootScope = injector.get(Scope);
-      };
-    }));
+    });
 
-    it('should compile basic hello world', inject(() {
-      var element = $('<div ng-bind="name"></div>');
-      var template = $compile(element, directives);
+    beforeEach(inject((TestBed tb) => _ = tb));
 
-      rootScope.context['name'] = 'angular';
-      template(injector, element);
+    it('should compile basic hello world', () {
+      var element = _.compile('<div ng-bind="name"></div>');
 
-      expect(element.text()).toEqual('');
-      rootScope.apply();
-      expect(element.text()).toEqual('angular');
-    }));
+      _.rootScope.context['name'] = 'angular';
 
-    it('should not throw on an empty list', inject(() {
-      $compile([], directives);
-    }));
+      expect(element.text).toEqual('');
+      _.rootScope.apply();
+      expect(element.text).toEqual('angular');
+    });
 
-    it('should compile a directive in a child', inject(() {
-      var element = $('<div><div ng-bind="name"></div></div>');
-      var template = $compile(element, directives);
+    it('should not throw on an empty list', () {
+      _.compile([]);
+    });
 
-      rootScope.context['name'] = 'angular';
+    it('should compile a comment on the top level', () {
+      _.compile('<!-- comment -->');
+      expect(_.rootElements[0]).toHaveHtml('<!-- comment -->');
+    });
 
+    it('should compile a comment with no directives around', () {
+      var element = _.compile('<div><!-- comment --></div>');
+      expect(element).toHaveHtml('<!-- comment -->');
+    });
 
-      template(injector, element);
+    it('should compile a comment when the parent has a directive', () {
+      var element = _.compile('<div ng-show="true"><!-- comment --></div>');
+      expect(element).toHaveHtml('<!-- comment -->');
+    });
 
-      expect(element.text()).toEqual('');
-      rootScope.apply();
-      expect(element.text()).toEqual('angular');
-    }));
+    it('should compile a directive in a child', () {
+      var element = _.compile('<div><div ng-bind="name"></div></div>');
 
-    it('should compile repeater', inject(() {
-      var element = $('<div><div ng-repeat="item in items" ng-bind="item"></div></div>');
-      var template = $compile(element, directives);
+      _.rootScope.context['name'] = 'angular';
 
-      rootScope.context['items'] = ['A', 'b'];
-      template(injector, element);
+      expect(element.text).toEqual('');
+      _.rootScope.apply();
+      expect(element.text).toEqual('angular');
+    });
 
-      expect(element.text()).toEqual('');
-      // TODO(deboer): Digest twice until we have dirty checking in the scope.
-      rootScope.apply();
-      rootScope.apply();
-      expect(element.text()).toEqual('Ab');
+    it('should compile repeater', () {
+      var element = _.compile('<div><div ng-repeat="item in items" ng-bind="item"></div></div>');
 
-      rootScope.context['items'] = [];
-      rootScope.apply();
-      expect(element.html()).toEqual('<!--ANCHOR: [ng-repeat]=item in items-->');
-    }));
+      _.rootScope.context['items'] = ['A', 'b'];
+      expect(element.text).toEqual('');
 
-    it('should compile repeater with children', inject((Compiler $compile) {
-      var element = $('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>');
-      var template = $compile(element, directives);
+      _.rootScope.apply();
+      expect(element.text).toEqual('Ab');
 
-      rootScope.context['items'] = ['A', 'b'];
-      template(injector, element);
+      _.rootScope.context['items'] = [];
+      _.rootScope.apply();
+      expect(element).toHaveHtml('<!--ANCHOR: [ng-repeat]=item in items-->');
+    });
 
-      expect(element.text()).toEqual('');
-      // TODO(deboer): Digest twice until we have dirty checking in the scope.
-      rootScope.apply();
-      rootScope.apply();
-      expect(element.text()).toEqual('Ab');
+    it('should compile a text child of a basic repeater', () {
+      var element = _.compile(
+                '<div ng-show="true">' +
+                  '<span ng-repeat="r in [1, 2]">{{r}}</span>' +
+                '</div>');
+      _.rootScope.apply();
+      expect(element.text).toEqual('12');
+    });
 
-      rootScope.context['items'] = [];
-      rootScope.apply();
-      expect(element.html()).toEqual('<!--ANCHOR: [ng-repeat]=item in items-->');
-    }));
+    it('should compile a text child of a repeat with a directive', () {
+      _.compile(
+            '<div ng-show="true">'
+              '<span ng-show=true" ng-repeat="r in robots">{{r}}</span>'
+            '</div>');
+    });
 
-    it('should compile text', inject((Compiler $compile) {
-      var element = $('<div>{{name}}<span>!</span></div>').contents();
-      element.remove(null);
+    it('should compile a sibling template directive', () {
+      var element = _.compile(
+        '<div ng-model="selected">'
+          '<option value="">blank</option>'
+          '<div ng-repeat="value in [1,2]" ng-value="value">{{value}}</div>'
+      '</div>');
 
-      var template = $compile(element, directives);
+      _.rootScope.apply();
+      expect(element.text).toEqual('blank12');
+    });
 
-      rootScope.context['name'] = 'OK';
-      var block = template(injector, element);
+    it('should compile repeater with children', (Compiler compile) {
+      var element = _.compile('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>');
 
-      element = $(block.elements);
+      _.rootScope.context['items'] = ['A', 'b'];
 
-      rootScope.apply();
-      expect(element.text()).toEqual('OK!');
-    }));
+      expect(element.text).toEqual('');
+      _.rootScope.apply();
+      expect(element.text).toEqual('Ab');
 
-    it('should compile nested repeater', inject((Compiler $compile) {
-      var element = $(
+      _.rootScope.context['items'] = [];
+      _.rootScope.apply();
+      expect(element).toHaveHtml('<!--ANCHOR: [ng-repeat]=item in items-->');
+    });
+
+    it('should compile text', (Compiler compile) {
+      var element = _.compile('<div>{{name}}<span>!</span></div>');
+      _.rootScope.context['name'] = 'OK';
+
+      microLeap();
+      _.rootScope.apply();
+      expect(element.text).toEqual('OK!');
+    });
+
+    it('should compile nested repeater', (Compiler compile) {
+      var element = _.compile(
           '<div>' +
           '<ul ng-repeat="lis in uls">' +
           '<li ng-repeat="li in lis">{{li}}</li>' +
           '</ul>' +
           '</div>');
-      var template = $compile(element, directives);
 
-      rootScope.context['uls'] = [['A'], ['b']];
-      template(injector, element);
+      _.rootScope.context['uls'] = [['A'], ['b']];
 
-      rootScope.apply();
-      expect(element.text()).toEqual('Ab');
-    }));
+      _.rootScope.apply();
+      expect(element.text).toEqual('Ab');
+    });
 
-    it('should compile two directives with the same selector', inject((Logger log) {
-      var element = $('<div two-directives></div>');
-      var template = $compile(element, directives);
+    it('should compile two directives with the same selector', (Logger log) {
+      var element = _.compile('<div two-directives></div>');
 
-      template(injector, element);
-      rootScope.apply();
+      _.rootScope.apply();
 
       expect(log).toEqual(['OneOfTwo', 'TwoOfTwo']);
-    }));
+    });
 
-    it('should compile a directive that ignores children', inject((Logger log) {
+    it('should compile a directive that ignores children', (Logger log) {
       // The ng-repeat comes first, so it is not ignored, but the children *are*
-      var element = $('<div ng-repeat="i in [1,2]" ignore-children><div two-directives></div></div>');
-      var template = $compile(element, directives);
+      var element = _.compile('<div ng-repeat="i in [1,2]" ignore-children><div two-directives></div></div>');
 
-      template(injector, element);
-      rootScope.apply();
+      _.rootScope.apply();
 
       expect(log).toEqual(['Ignore', 'Ignore']);
-    }));
+    });
+
+    it('should compile a text child after a directive child', () {
+      _.compile('<div><span ng-show="true">hi</span>{{hello}}</div>');
+    });
 
 
     describe("interpolation", () {
-      it('should interpolate attribute nodes', inject(() {
-        var element = $('<div test="{{name}}"></div>');
-        var template = $compile(element, directives);
+      it('should interpolate attribute nodes', () {
+        var element = _.compile('<div test="{{name}}"></div>');
 
-        rootScope.context['name'] = 'angular';
-        template(injector, element);
+        _.rootScope.context['name'] = 'angular';
 
-        rootScope.apply();
-        expect(element.attr('test')).toEqual('angular');
-      }));
+        _.rootScope.apply();
+        expect(element.attributes['test']).toEqual('angular');
+      });
 
-      it('should interpolate text nodes', inject(() {
-        var element = $('<div>{{name}}</div>');
-        var template = $compile(element, directives);
+      it('should interpolate text nodes', () {
+        var element = _.compile('<div>{{name}}</div>');
 
-        rootScope.context['name'] = 'angular';
-        template(injector, element);
+        _.rootScope.context['name'] = 'angular';
 
-        rootScope.apply();
-        expect(element.text()).toEqual('angular');
-      }));
+        _.rootScope.apply();
+        expect(element.text).toEqual('angular');
+      });
     });
 
 
     describe('components', () {
-      beforeEach(module((Module module) {
+      beforeEachModule((Module module) {
         module
-            ..type(SimpleComponent)
-            ..type(CamelCaseMapComponent)
-            ..type(IoComponent)
-            ..type(IoControllerComponent)
-            ..type(UnpublishedIoControllerComponent)
-            ..type(IncorrectMappingComponent)
-            ..type(NonAssignableMappingComponent)
-            ..type(ParentExpressionComponent)
-            ..type(PublishMeComponent)
-            ..type(PublishMeDirective)
-            ..type(LogComponent)
-            ..type(AttachDetachComponent)
-            ..type(SimpleAttachComponent)
-            ..type(SimpleComponent)
-            ..type(ExprAttrComponent)
-            ..type(SayHelloFilter);
+          ..type(SimpleComponent)
+          ..type(CamelCaseMapComponent)
+          ..type(IoComponent)
+          ..type(IoControllerComponent)
+          ..type(UnpublishedIoControllerComponent)
+          ..type(IncorrectMappingComponent)
+          ..type(NonAssignableMappingComponent)
+          ..type(ParentExpressionComponent)
+          ..type(PublishMeComponent)
+          ..type(PublishMeDirective)
+          ..type(LogComponent)
+          ..type(AttachDetachComponent)
+          ..type(SimpleAttachComponent)
+          ..type(SimpleComponent)
+          ..type(ExprAttrComponent)
+          ..type(LogElementComponent)
+          ..type(SayHelloFilter);
+      });
+
+      it('should select on element', async((NgZone zone) {
+        var element = _.compile(r'<div><simple></simple></div>');
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('INNER()');
       }));
 
-      it('should select on element', async(inject((NgZone zone) {
-        var element = $(r'<div><simple></simple></div>');
-
-        zone.run(() {
-          BlockFactory blockFactory = $compile(element, directives);
-          Block block = blockFactory(injector, element);
-        });
-
+      it('should store ElementProbe with Elements', async(() {
+        _.compile('<div><simple>innerText</simple></div>');
         microLeap();
-        expect(element.textWithShadow()).toEqual('INNER()');
-      })));
-
-      it('should store ElementProbe with Elements', async(inject((TestBed tb) {
-        tb.compile('<div><simple>innerText</simple></div>');
-        microLeap();
-        var simpleElement = tb.rootElement.querySelector('simple');
+        var simpleElement = _.rootElement.querySelector('simple');
         expect(simpleElement.text).toEqual('innerText');
         var simpleProbe = ngProbe(simpleElement);
         var simpleComponent = simpleProbe.injector.get(SimpleComponent);
@@ -222,277 +246,252 @@ void main() {
         expect(shadowProbe).toBeNotNull();
         expect(shadowProbe.element).toEqual(shadowRoot);
         expect(shadowProbe.parent.element).toEqual(simpleElement);
-      })));
+      }));
 
-      it('should create a simple component', async(inject((NgZone zone) {
-        rootScope.context['name'] = 'OUTTER';
-        var element = $(r'<div>{{name}}:<simple>{{name}}</simple></div>');
+      it('should create a simple component', async((NgZone zone) {
+        _.rootScope.context['name'] = 'OUTTER';
+        var element = _.compile(r'<div>{{name}}:<simple>{{name}}</simple></div>');
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('OUTTER:INNER(OUTTER)');
+      }));
 
-        zone.run(() {
-          BlockFactory blockFactory = $compile(element, directives);
-          Block block = blockFactory(injector, element);
-        });
+      it('should create a component that can access parent scope', async((NgZone zone) {
+        _.rootScope.context['fromParent'] = "should not be used";
+        _.rootScope.context['val'] = "poof";
+        var element = _.compile('<parent-expression from-parent=val></parent-expression>');
 
         microLeap();
-        expect(element.textWithShadow()).toEqual('OUTTER:INNER(OUTTER)');
-      })));
+        _.rootScope.apply();
+        expect(element).toHaveText('inside poof');
+      }));
 
-      it('should create a component that can access parent scope', async(inject((NgZone zone) {
-        rootScope.context['fromParent'] = "should not be used";
-        rootScope.context['val'] = "poof";
-        var element = $('<parent-expression from-parent=val></parent-expression>');
-
-        zone.run(() =>
-        $compile(element, directives)(injector, element));
+      it('should behave nicely if a mapped attribute is missing', async((NgZone zone) {
+        var element = _.compile('<parent-expression></parent-expression>');
 
         microLeap();
-        expect(renderedText(element)).toEqual('inside poof');
-      })));
+        _.rootScope.apply();
+        expect(element).toHaveText('inside ');
+      }));
 
-      it('should behave nicely if a mapped attribute is missing', async(inject((NgZone zone) {
-        var element = $('<parent-expression></parent-expression>');
-        zone.run(() =>
-        $compile(element, directives)(injector, element));
-
-        microLeap();
-        expect(renderedText(element)).toEqual('inside ');
-      })));
-
-      it('should behave nicely if a mapped attribute evals to null', async(inject((NgZone zone) {
-        rootScope.context['val'] = null;
-        var element = $('<parent-expression fromParent=val></parent-expression>');
-        zone.run(() =>
-        $compile(element, directives)(injector, element));
+      it('should behave nicely if a mapped attribute evals to null', async((NgZone zone) {
+        _.rootScope.context['val'] = null;
+        var element = _.compile('<parent-expression fromParent=val></parent-expression>');
 
         microLeap();
-        expect(renderedText(element)).toEqual('inside ');
-      })));
+        _.rootScope.apply();
+        expect(element).toHaveText('inside ');
+      }));
 
-      it('should create a component with I/O', async(inject(() {
-        var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
-        $compile(element, directives)(injector, element);
+      it('should create a component with I/O', async(() {
+         _.compile(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         microLeap();
 
-        rootScope.context['name'] = 'misko';
-        rootScope.apply();
-        var component = rootScope.context['ioComponent'];
+        _.rootScope.context['name'] = 'misko';
+        _.rootScope.apply();
+        var component = _.rootScope.context['ioComponent'];
         expect(component.scope.context['name']).toEqual(null);
         expect(component.scope.context['attr']).toEqual('A');
         expect(component.scope.context['expr']).toEqual('misko');
         component.scope.context['expr'] = 'angular';
-        rootScope.apply();
-        expect(rootScope.context['name']).toEqual('angular');
-        expect(rootScope.context['done']).toEqual(null);
+        _.rootScope.apply();
+        expect(_.rootScope.context['name']).toEqual('angular');
+        expect(_.rootScope.context['done']).toEqual(null);
         component.scope.context['ondone']();
-        expect(rootScope.context['done']).toEqual(true);
-      })));
+        expect(_.rootScope.context['done']).toEqual(true);
+      }));
 
-      xit('should should not create any watchers if no attributes are specified', async(inject((Profiler perf) {
-        var element = $(r'<div><io></io></div>');
-        $compile(element, directives)(injector, element);
+      xit('should should not create any watchers if no attributes are specified', async((Profiler perf) {
+        _.compile(r'<div><io></io></div>');
         microLeap();
-        injector.get(Scope).apply();
+        _.injector.get(Scope).apply();
         // Re-enable once we can publish these numbers
-        //expect(rootScope.watchGroup.totalFieldCost).toEqual(0);
-        //expect(rootScope.watchGroup.totalCollectionCost).toEqual(0);
-        //expect(rootScope.watchGroup.totalEvalCost).toEqual(0);
-        //expect(rootScope.observeGroup.totalFieldCost).toEqual(0);
-        //expect(rootScope.observeGroup.totalCollectionCost).toEqual(0);
-        //expect(rootScope.observeGroup.totalEvalCost).toEqual(0);
-      })));
+        //expect(_.rootScope.watchGroup.totalFieldCost).toEqual(0);
+        //expect(_.rootScope.watchGroup.totalCollectionCost).toEqual(0);
+        //expect(_.rootScope.watchGroup.totalEvalCost).toEqual(0);
+        //expect(_.rootScope.observeGroup.totalFieldCost).toEqual(0);
+        //expect(_.rootScope.observeGroup.totalCollectionCost).toEqual(0);
+        //expect(_.rootScope.observeGroup.totalEvalCost).toEqual(0);
+      }));
 
-      it('should create a component with I/O and "=" binding value should be available', async(inject(() {
-        rootScope.context['name'] = 'misko';
-        var element = $(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
-        $compile(element, directives)(injector, element);
+      it('should create a component with I/O and "=" binding value should be available', async(() {
+        _.rootScope.context['name'] = 'misko';
+        _.compile(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         microLeap();
 
-        var component = rootScope.context['ioComponent'];
-        rootScope.apply();
+        var component = _.rootScope.context['ioComponent'];
+        _.rootScope.apply();
         expect(component.scope.context['expr']).toEqual('misko');
         component.scope.context['expr'] = 'angular';
-        rootScope.apply();
-        expect(rootScope.context['name']).toEqual('angular');
-      })));
+        _.rootScope.apply();
+        expect(_.rootScope.context['name']).toEqual('angular');
+      }));
 
-      it('should create a component with I/O bound to controller and "=" binding value should be available', async(inject(() {
-        rootScope.context['done'] = false;
-        var element = $(r'<div><io-controller attr="A" expr="name" once="name" ondone="done=true"></io-controller></div>');
+      it('should create a component with I/O bound to controller and "=" binding value should be available', async(() {
+        _.rootScope.context['done'] = false;
+        _.compile(r'<div><io-controller attr="A" expr="name" once="name" ondone="done=true"></io-controller></div>');
 
-
-        expect(injector).toBeDefined();
-        $compile(element, directives)(injector, element);
+        expect(_.injector).toBeDefined();
         microLeap();
 
-        IoControllerComponent component = rootScope.context['ioComponent'];
+        IoControllerComponent component = _.rootScope.context['ioComponent'];
 
         expect(component.expr).toEqual(null);
         expect(component.exprOnce).toEqual(null);
         expect(component.attr).toEqual('A');
-        rootScope.apply();
+        _.rootScope.apply();
 
-        rootScope.context['name'] = 'misko';
-        rootScope.apply();
+        _.rootScope.context['name'] = 'misko';
+        _.rootScope.apply();
         expect(component.expr).toEqual('misko');
         expect(component.exprOnce).toEqual('misko');
 
-        rootScope.context['name'] = 'igor';
-        rootScope.apply();
+        _.rootScope.context['name'] = 'igor';
+        _.rootScope.apply();
         expect(component.expr).toEqual('igor');
         expect(component.exprOnce).toEqual('misko');
 
         component.expr = 'angular';
-        rootScope.apply();
-        expect(rootScope.context['name']).toEqual('angular');
+        _.rootScope.apply();
+        expect(_.rootScope.context['name']).toEqual('angular');
 
-        expect(rootScope.context['done']).toEqual(false);
+        expect(_.rootScope.context['done']).toEqual(false);
         component.onDone();
-        expect(rootScope.context['done']).toEqual(true);
+        expect(_.rootScope.context['done']).toEqual(true);
 
         // Should be noop
         component.onOptional();
-      })));
+      }));
 
-      it('should create a map attribute to controller', async(inject(() {
-        var element = $(r'<div><io-controller attr="{{name}}"></io-controller></div>');
-        $compile(element, directives)(injector, element);
+      it('should create a map attribute to controller', async(() {
+        _.compile(r'<div><io-controller attr="{{name}}"></io-controller></div>');
         microLeap();
 
-        IoControllerComponent component = rootScope.context['ioComponent'];
+        IoControllerComponent component = _.rootScope.context['ioComponent'];
 
-        rootScope.context['name'] = 'misko';
-        rootScope.apply();
+        _.rootScope.context['name'] = 'misko';
+        _.rootScope.apply();
         expect(component.attr).toEqual('misko');
 
-        rootScope.context['name'] = 'james';
-        rootScope.apply();
+        _.rootScope.context['name'] = 'james';
+        _.rootScope.apply();
         expect(component.attr).toEqual('james');
-      })));
+      }));
 
-      it('should create a unpublished component with I/O bound to controller and "=" binding value should be available', async(inject(() {
-        rootScope.context['name'] = 'misko';
-        rootScope.context['done'] = false;
-        var element = $(r'<div><unpublished-io-controller attr="A" expr="name" ondone="done=true"></unpublished-io-controller></div>');
-        $compile(element, directives)(injector, element);
+      it('should create a unpublished component with I/O bound to controller and "=" binding value should be available', async(() {
+        _.rootScope.context['name'] = 'misko';
+        _.rootScope.context['done'] = false;
+        _.compile(r'<div><unpublished-io-controller attr="A" expr="name" ondone="done=true"></unpublished-io-controller></div>');
         microLeap();
 
-        UnpublishedIoControllerComponent component = rootScope.context['ioComponent'];
-        rootScope.apply();
+        UnpublishedIoControllerComponent component = _.rootScope.context['ioComponent'];
+        _.rootScope.apply();
         expect(component.attr).toEqual('A');
         expect(component.expr).toEqual('misko');
         component.expr = 'angular';
-        rootScope.apply();
-        expect(rootScope.context['name']).toEqual('angular');
+        _.rootScope.apply();
+        expect(_.rootScope.context['name']).toEqual('angular');
 
-        expect(rootScope.context['done']).toEqual(false);
+        expect(_.rootScope.context['done']).toEqual(false);
         component.onDone();
-        expect(rootScope.context['done']).toEqual(true);
+        expect(_.rootScope.context['done']).toEqual(true);
 
         // Should be noop
         component.onOptional();
-      })));
+      }));
 
-      it('should error on incorrect mapping', async(inject(() {
+      it('should error on incorrect mapping', async(() {
         expect(() {
-          var element = $(r'<div><incorrect-mapping></incorrect-mapping</div>');
-          $compile(element, directives)(injector, element);
+          _.compile(r'<div><incorrect-mapping></incorrect-mapping</div>');
         }).toThrow("Unknown mapping 'foo\' for attribute 'attr'.");
-      })));
+      }));
 
-      it('should support filters in attribute expressions', async(inject(() {
-        var element = $(r'''<expr-attr-component expr="'Misko' | hello" one-way="'James' | hello" once="'Chirayu' | hello"></expr-attr-component>''');
-        $compile(element, directives)(injector, element);
-        ExprAttrComponent component = rootScope.context['exprAttrComponent'];
-        rootScope.apply();
+      it('should support filters in attribute expressions', async(() {
+        _.compile(r'''<expr-attr-component expr="'Misko' | hello" one-way="'James' | hello" once="'Chirayu' | hello"></expr-attr-component>''');
+        ExprAttrComponent component = _.rootScope.context['exprAttrComponent'];
+        _.rootScope.apply();
         expect(component.expr).toEqual('Hello, Misko!');
         expect(component.oneWay).toEqual('Hello, James!');
         expect(component.exprOnce).toEqual('Hello, Chirayu!');
-      })));
+      }));
 
-      it('should error on non-asignable-mapping', async(inject(() {
+      it('should error on non-asignable-mapping', async(() {
         expect(() {
-          var element = $(r'<div><non-assignable-mapping></non-assignable-mapping</div>');
-          $compile(element, directives)(injector, element);
+          _.compile(r'<div><non-assignable-mapping></non-assignable-mapping</div>');
         }).toThrow("Expression '1+2' is not assignable in mapping '@1+2' for attribute 'attr'.");
-      })));
+      }));
 
-      it('should expose mapped attributes as camel case', async(inject(() {
-        var element = $('<camel-case-map camel-case=G></camel-case-map>');
-        $compile(element, directives)(injector, element);
+      it('should expose mapped attributes as camel case', async(() {
+        _.compile('<camel-case-map camel-case=G></camel-case-map>');
         microLeap();
-        rootScope.apply();
-        var componentScope = rootScope.context['camelCase'];
+        _.rootScope.apply();
+        var componentScope = _.rootScope.context['camelCase'];
         expect(componentScope.context['camelCase']).toEqual('G');
-      })));
+      }));
 
-      it('should throw an exception if required directive is missing', async(inject((Compiler $compile, Scope rootScope, Injector injector) {
+      // TODO: This is a terrible test
+      it('should throw an exception if required directive is missing', async(() {
         try {
-          var element = $('<tab local><pane></pane><pane local></pane></tab>');
-          $compile(element, directives)(injector, element);
+          _.compile('<tab local><pane></pane><pane local></pane></tab>');
         } catch (e) {
           var text = '$e';
           expect(text).toContain('No provider found for');
           expect(text).toContain('(resolving ');
           expect(text).toContain('LocalAttrDirective');
         }
-      })));
-
-      it('should publish component controller into the scope', async(inject((NgZone zone) {
-        var element = $(r'<div><publish-me></publish-me></div>');
-        zone.run(() =>
-        $compile(element, directives)(injector, element));
-
-        microLeap();
-        expect(element.textWithShadow()).toEqual('WORKED');
-      })));
-
-      it('should publish directive controller into the scope', async(inject((NgZone zone) {
-        var element = $(r'<div><div publish-me>{{ctrlName.value}}</div></div>');
-        zone.run(() =>
-        $compile(element, directives)(injector, element));
-
-        microLeap();
-        expect(element.text()).toEqual('WORKED');
-      })));
-
-      it('should "publish" controller to injector under provided publishTypes', inject(() {
-        var element = $(r'<div publish-types></div>');
-        $compile(element, directives)(injector, element);
-        expect(PublishTypesAttrDirective._injector.get(PublishTypesAttrDirective)).
-        toBe(PublishTypesAttrDirective._injector.get(PublishTypesDirectiveSuperType));
       }));
 
-      it('should allow repeaters over controllers', async(inject((Logger logger) {
-        var element = $(r'<log ng-repeat="i in [1, 2]"></log>');
-        $compile(element, directives)(injector, element);
-        rootScope.apply();
+      it('should publish component controller into the scope', async((NgZone zone) {
+        var element = _.compile(r'<div><publish-me></publish-me></div>');
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('WORKED');
+      }));
+
+      it('should publish directive controller into the scope', async((NgZone zone) {
+        var element = _.compile(r'<div><div publish-me>{{ctrlName.value}}</div></div>');
+
+        microLeap();
+        _.rootScope.apply();
+        expect(element.text).toEqual('WORKED');
+      }));
+
+      it('should "publish" controller to injector under provided module', () {
+        _.compile(r'<div publish-types></div>');
+        expect(PublishModuleAttrDirective._injector.get(PublishModuleAttrDirective)).
+        toBe(PublishModuleAttrDirective._injector.get(PublishModuleDirectiveSuperType));
+      });
+
+      it('should allow repeaters over controllers', async((Logger logger) {
+        _.compile(r'<log ng-repeat="i in [1, 2]"></log>');
+        _.rootScope.apply();
         microLeap();
 
         expect(logger.length).toEqual(2);
-      })));
+      }));
 
       describe('lifecycle', () {
-        var backend;
-        beforeEach(module((Module module) {
-          backend = new MockHttpBackend();
-          module
-            ..value(HttpBackend, backend)
-            ..value(MockHttpBackend, backend);
-        }));
+        beforeEachModule((Module module) {
+          var httpBackend = new MockHttpBackend();
 
-        it('should fire onTemplate method', async(inject((Logger logger, MockHttpBackend backend) {
+          module
+            ..value(HttpBackend, httpBackend)
+            ..value(MockHttpBackend, httpBackend);
+        });
+
+        it('should fire onTemplate method', async((Compiler compile, Logger logger, MockHttpBackend backend) {
           backend.whenGET('some/template.url').respond('<div>WORKED</div>');
-          var scope = rootScope.createChild({});
+          var scope = _.rootScope.createChild({});
           scope.context['isReady'] = 'ready';
           scope.context['logger'] = logger;
           scope.context['once'] = null;
-          var element = $('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
-          $compile(element, directives)(injector.createChild([new Module()..value(Scope, scope)]), element);
+          var elts = es('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
+          compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
 
-          rootScope.apply();
+          _.rootScope.apply();
           var expected = ['new', 'attach:@ready; =>ready; =>!null', 'inner'];
           assert((() {
             // there is an assertion in flush which double checks that
@@ -506,48 +505,58 @@ void main() {
 
           backend.flush();
           microLeap();
-          expect(logger).toEqual(['templateLoaded', rootScope.context['shadowRoot']]);
+          expect(logger).toEqual(['templateLoaded', _.rootScope.context['shadowRoot']]);
           logger.clear();
 
           scope.destroy();
           expect(logger).toEqual(['detach']);
-          expect(element.textWithShadow()).toEqual('WORKED');
-        })));
+          expect(elts).toHaveText('WORKED');
+        }));
 
-        it('should should not call attach after scope is destroyed', async(inject((Logger logger, MockHttpBackend backend) {
+        it('should should not call attach after scope is destroyed', async((Compiler compile, Logger logger, MockHttpBackend backend) {
           backend.whenGET('foo.html').respond('<div>WORKED</div>');
-          var element = $('<simple-attach></simple-attach>');
-          var scope = rootScope.createChild({});
-          $compile(element, directives)(injector.createChild([new Module()..value(Scope, scope)]), element);
+          var elts = es('<simple-attach></simple-attach>');
+          var scope = _.rootScope.createChild({});
+          compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
           expect(logger).toEqual(['SimpleAttachComponent']);
           scope.destroy();
 
-          rootScope.apply();
+          _.rootScope.apply();
           microLeap();
 
           expect(logger).toEqual(['SimpleAttachComponent']);
-        })));
+        }));
+
+        it('should inject compenent element as the dom.Element', async((Logger log, TestBed _, MockHttpBackend backend) {
+          backend.whenGET('foo.html').respond('<div>WORKED</div>');
+          _.compile('<log-element></log-element>');
+          Element element = _.rootElement;
+          expect(log).toEqual([element, element, element.shadowRoot]);
+        }));
       });
 
       describe('invalid components', () {
         it('should throw a useful error message for missing selectors', () {
-          module((Module module) {
-            module
+          Module module = new Module()
               ..type(MissingSelector);
-          });
+          var injector = _.injector.createChild([module], forceNewInstances: [Compiler, DirectiveMap]);
+          var c = injector.get(Compiler);
+          var directives = injector.get(DirectiveMap);
           expect(() {
-            inject((Compiler c) { });
+              c(es('<div></div>'), injector.get(DirectiveMap));
           }).toThrow('Missing selector annotation for MissingSelector');
         });
 
 
         it('should throw a useful error message for invalid selector', () {
-          module((Module module) {
-            module
-              ..type(InvalidSelector);
-          });
+          Module module = new Module()
+            ..type(InvalidSelector);
+          var injector = _.injector.createChild([module], forceNewInstances: [Compiler, DirectiveMap]);
+          var c = injector.get(Compiler);
+          var directives = injector.get(DirectiveMap);
+
           expect(() {
-            inject((Compiler c) { });
+            c(es('<div></div>'), directives);
           }).toThrow('Unknown selector format \'buttonbar button\' for InvalidSelector');
         });
       });
@@ -555,47 +564,67 @@ void main() {
 
 
     describe('controller scoping', () {
-      it('should make controllers available to sibling and child controllers', async(inject((Compiler $compile, Scope rootScope, Logger log, Injector injector) {
-        var element = $('<tab local><pane local></pane><pane local></pane></tab>');
-        $compile(element, directives)(injector, element);
+      it('should make controllers available to sibling and child controllers', async((Logger log) {
+        _.compile('<tab local><pane local></pane><pane local></pane></tab>');
         microLeap();
 
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
-      })));
+      }));
 
-      it('should reuse controllers for transclusions', async(inject((Compiler $compile, Scope rootScope, Logger log, Injector injector) {
-        var element = $('<div simple-transclude-in-attach include-transclude>block</div>');
-        $compile(element, directives)(injector, element);
+      it('should use the correct parent injector', async((Logger log) {
+        // Getting the parent offsets correct while descending the template is tricky.  If we get it wrong, this
+        // test case will create too many TabCompoenents.
+
+        _.compile('<div ng-bind="true"><div ignore-children></div><tab local><pane local></pane></tab>');
         microLeap();
 
-        rootScope.apply();
+        expect(log.result()).toEqual('Ignore; TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0');
+      }));
+
+      it('should reuse controllers for transclusions', async((Logger log) {
+        _.compile('<div simple-transclude-in-attach include-transclude>view</div>');
+        microLeap();
+
+        _.rootScope.apply();
         expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
-      })));
+      }));
 
-      it('should expose a parent controller to the scope of its children', inject((TestBed _) {
-
+      it('should expose a parent controller to the scope of its children', (TestBed _) {
         var element = _.compile('<div my-parent-controller>'
             '  <div my-child-controller>{{ my_parent.data() }}</div>'
             '</div>');
 
-        rootScope.apply();
+        _.rootScope.apply();
 
         expect(element.text).toContain('my data');
-      }));
+      });
+
+      it('should expose a ancestor controller to the scope of its children thru a undecorated element', (TestBed _) {
+        var element = _.compile(
+            '<div my-parent-controller>'
+              '<div>'
+                '<div my-child-controller>{{ my_parent.data() }}</div>'
+              '</div>'
+            '</div>');
+
+        _.rootScope.apply();
+
+        expect(element.text).toContain('my data');
+      });
     });
 
 
     describe('NgDirective', () {
-      it('should allow creation of a new scope', inject((TestBed _) {
+      it('should allow creation of a new scope', () {
         _.rootScope.context['name'] = 'cover me';
         _.compile('<div><div my-controller>{{name}}</div></div>');
         _.rootScope.apply();
         expect(_.rootScope.context['name']).toEqual('cover me');
         expect(_.rootElement.text).toEqual('MyController');
-      }));
+      });
     });
 
-  });
+  }));
 }
 
 
@@ -653,10 +682,10 @@ class LocalAttrDirective {
     selector: '[simple-transclude-in-attach]',
     visibility: NgDirective.CHILDREN_VISIBILITY, children: NgAnnotation.TRANSCLUDE_CHILDREN)
 class SimpleTranscludeInAttachAttrDirective {
-  SimpleTranscludeInAttachAttrDirective(BlockHole blockHole, BoundBlockFactory boundBlockFactory, Logger log, RootScope scope) {
+  SimpleTranscludeInAttachAttrDirective(ViewPort viewPort, BoundViewFactory boundViewFactory, Logger log, RootScope scope) {
     scope.runAsync(() {
-      var block = boundBlockFactory(scope);
-      block.insertAfter(blockHole);
+      var view = boundViewFactory(scope);
+      viewPort.insert(view);
       log('SimpleTransclude');
     });
   }
@@ -693,15 +722,19 @@ class IgnoreChildrenDirective {
   }
 }
 
-class PublishTypesDirectiveSuperType {
+class PublishModuleDirectiveSuperType {
 }
 
 @NgDirective(
     selector: '[publish-types]',
-    publishTypes: const [PublishTypesDirectiveSuperType])
-class PublishTypesAttrDirective implements PublishTypesDirectiveSuperType {
+    module: PublishModuleAttrDirective.module)
+class PublishModuleAttrDirective implements PublishModuleDirectiveSuperType {
+  static Module _module = new Module()
+      ..factory(PublishModuleDirectiveSuperType, (i) => i.get(PublishModuleAttrDirective));
+  static module() => _module;
+
   static Injector _injector;
-  PublishTypesAttrDirective(Injector injector) {
+  PublishModuleAttrDirective(Injector injector) {
     _injector = injector;
   }
 }
@@ -923,4 +956,16 @@ class SimpleAttachComponent implements NgAttachAware, NgShadowRootAware {
   }
   attach() => logger('attach');
   onShadowRoot(_) => logger('onShadowRoot');
+}
+
+@NgComponent(
+    selector: 'log-element',
+    templateUrl: 'foo.html')
+class LogElementComponent{
+  LogElementComponent(Logger logger, Element element, Node node,
+                        ShadowRoot shadowRoot) {
+    logger(element);
+    logger(node);
+    logger(shadowRoot);
+  }
 }
