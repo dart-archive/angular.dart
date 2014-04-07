@@ -22,30 +22,15 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
   void applyResolver(Transform transform, Resolver resolver) {
     var asset = transform.primaryInput;
 
-    var dynamicApp =
-        resolver.getLibraryFunction('angular.app.dynamic.dynamicApplication');
-    if (dynamicApp == null) {
-      // No dynamic app imports, exit.
-      transform.addOutput(transform.primaryInput);
-      return;
-    }
-
     var id = asset.id;
     var lib = resolver.getLibrary(id);
     var transaction = resolver.createTextEditTransaction(lib);
     var unit = lib.definingCompilationUnit.node;
 
-    for (var directive in unit.directives) {
-      if (directive is ImportDirective &&
-          directive.uri.stringValue == 'package:angular/angular_dynamic.dart') {
-        var uri = directive.uri;
-        transaction.edit(uri.beginToken.offset, uri.end,
-            '\'package:angular/angular_static.dart\'');
-      }
-    }
+    _addImport(transaction, unit, 'package:angular/angular_static.dart',
+        'angular_static');
 
-    var dynamicToStatic =
-        new _NgDynamicToStaticVisitor(dynamicApp, transaction);
+    var dynamicToStatic = new _NgDynamicToStaticVisitor(transaction);
     unit.accept(dynamicToStatic);
 
     var generatedFilePrefix = '${path.url.basenameWithoutExtension(id.path)}';
@@ -75,14 +60,19 @@ void _addImport(TextEditTransaction transaction, CompilationUnit unit,
 }
 
 class _NgDynamicToStaticVisitor extends GeneralizingAstVisitor {
-  final Element ngDynamicFn;
   final TextEditTransaction transaction;
-  _NgDynamicToStaticVisitor(this.ngDynamicFn, this.transaction);
+  _NgDynamicToStaticVisitor(this.transaction);
 
   visitMethodInvocation(MethodInvocation m) {
-    if (m.methodName.bestElement == ngDynamicFn) {
-      transaction.edit(m.methodName.beginToken.offset,
-          m.methodName.endToken.end, 'staticApplication');
+    if (m.methodName.name == 'dynamicApplication') {
+      if (m.target is SimpleIdentifier) {
+        // Include the prefix in the rename.
+        transaction.edit(m.target.beginToken.offset, m.methodName.endToken.end,
+            'angular_static.staticApplication');
+      } else {
+        transaction.edit(m.methodName.beginToken.offset,
+            m.methodName.endToken.end, 'angular_static.staticApplication');
+      }
 
       var args = m.argumentList;
       transaction.edit(args.beginToken.offset + 1, args.end - 1,

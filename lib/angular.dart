@@ -10,4 +10,5 @@ export 'package:angular/filter/module.dart';
 export 'package:angular/routing/module.dart';
 export 'package:di/di.dart';
 export 'package:route_hierarchical/client.dart' hide childRoute;
+export 'package:angular/angular_dynamic.dart';
 

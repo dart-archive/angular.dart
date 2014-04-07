@@ -1,7 +1,6 @@
 library animation;
 
 import 'package:angular/angular.dart';
-import 'package:angular/angular_dynamic.dart';
 import 'package:angular/animate/module.dart';
 
 part 'animation/repeat_demo.dart';
