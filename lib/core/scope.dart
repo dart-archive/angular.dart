@@ -247,9 +247,6 @@ class Scope {
     return null;
   }
 
-  dynamic applyInZone([expression, Map locals]) =>
-      rootScope._zone.run(() => apply(expression, locals));
-
   dynamic apply([expression, Map locals]) {
     _assertInternalStateConsistency();
     rootScope._transitionState(null, RootScope.STATE_APPLY);

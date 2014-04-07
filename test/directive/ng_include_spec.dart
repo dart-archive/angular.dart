@@ -16,13 +16,12 @@ main() {
       expect(element.innerHtml).toEqual('');
 
       microLeap();  // load the template from cache.
-      scope.applyInZone(() {
-        scope.context['name'] = 'Vojta';
-      });
+      scope.context['name'] = 'Vojta';
+      scope.apply();
       expect(element.text).toEqual('my name is Vojta');
     }));
 
-    it('should fetch template from url using interpolation', async((Scope scope, TemplateCache cache) {
+    iit('should fetch template from url using interpolation', async((Scope scope, TemplateCache cache) {
       cache.put('tpl1.html', new HttpResponse(200, 'My name is {{name}}'));
       cache.put('tpl2.html', new HttpResponse(200, 'I am {{name}}'));
 
@@ -30,15 +29,19 @@ main() {
 
       expect(element.innerHtml).toEqual('');
 
-      scope.applyInZone(() {
-        scope.context['name'] = 'Vojta';
-        scope.context['template'] = 'tpl1.html';
-      });
+      scope.context['name'] = 'Vojta';
+      scope.context['template'] = 'tpl1.html';
+      microLeap();
+      scope.apply();
+      microLeap();
+      scope.apply();
       expect(element.text).toEqual('My name is Vojta');
 
-      scope.applyInZone(() {
-        scope.context['template'] = 'tpl2.html';
-      });
+      scope.context['template'] = 'tpl2.html';
+      microLeap();
+      scope.apply();
+      microLeap();
+      scope.apply();
       expect(element.text).toEqual('I am Vojta');
     }));
 
