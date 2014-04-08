@@ -7,10 +7,10 @@ cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
 
 # Dart doc can not be run from the same directory as dartdoc-viewer
 # see: https://code.google.com/p/dart/issues/detail?id=17231
-cd packages
 
-echo "Generating documentation"
-"$DART_DOCGEN" $DOC_OPTION $DOCDIR_OPTION \
+( cd packages
+  echo "Generating documentation"
+  "$DART_DOCGEN" $DOC_OPTION $DOCDIR_OPTION \
     --out ../docs \
     --start-page=angular \
     --exclude-lib=js,metadata,meta,mirrors,intl,number_symbols,number_symbol_data,intl_helpers,date_format_internal,date_symbols,angular.util \
@@ -30,10 +30,19 @@ echo "Generating documentation"
     angular/introspection.dart \
     di/di.dart \
     route_hierarchical/client.dart \
+)
 
-cd ..
+# Revert the temp copy of the README.md file
+rm README.md
+mv README-orig.md README.md
 
 DOCVIEWER_DIR="dartdoc-viewer";
+if [[ $1 == update ]]; then
+  rm -rf $DOCVIEWER_DIR/client/build/web/docs/
+  mv docs $DOCVIEWER_DIR/client/build/web/docs
+  exit;
+fi
+
 if [ ! -d "$DOCVIEWER_DIR" ]; then
    git clone https://github.com/angular/dartdoc-viewer.git -b angular-skin $DOCVIEWER_DIR
 else
@@ -51,7 +60,4 @@ rm -rf $DOCVIEWER_DIR/client/web/docs/
 mv docs/ $DOCVIEWER_DIR/client/web/docs/
 (cd $DOCVIEWER_DIR/client; pub build)
 
-# Revert the temp copy of the README.md file
-rm README.md
-mv README-orig.md README.md
 
