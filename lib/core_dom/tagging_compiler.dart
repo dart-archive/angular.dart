@@ -61,7 +61,7 @@ class TaggingCompiler implements Compiler {
       }
 
       if (elementBinder.compileChildren) {
-        if (domCursor.descend()) {
+        domCursor.processChildNodes(() {
           var addedDummy = false;
           if (taggedElementBinder == null) {
             addedDummy = true;
@@ -81,8 +81,7 @@ class TaggingCompiler implements Compiler {
             // end of the compilation process.
             node.classes.add('ng-binding');
           }
-          domCursor.ascend();
-        }
+        });
       }
     } else if (node.nodeType == dom.Node.TEXT_NODE ||
                node.nodeType == dom.Node.COMMENT_NODE) {

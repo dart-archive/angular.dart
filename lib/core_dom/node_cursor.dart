@@ -28,6 +28,15 @@ class NodeCursor {
     index = stack.removeLast();
   }
 
+  bool processChildNodes(Function fn) {
+    var hasChildren = descend();
+    if (hasChildren) {
+      fn();
+      ascend();
+    }
+    return hasChildren;
+  }
+
   void insertAnchorBefore(String name) {
     var parent = current.parentNode;
     var anchor = new dom.Comment('ANCHOR: $name');
