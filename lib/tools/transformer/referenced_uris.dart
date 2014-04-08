@@ -32,7 +32,7 @@ class _Processor {
 
   static const String cacheAnnotationName =
     'angular.template_cache_annotation.NgTemplateCache';
-  static const String componentAnnotationName = 'angular.core.annotation.NgComponent';
+  static const String componentAnnotationName = 'angular.core.annotation_src.NgComponent';
 
   _Processor(this.transform, this.resolver, this.options, this.skipNonCached,
       this.templatesOnly) {

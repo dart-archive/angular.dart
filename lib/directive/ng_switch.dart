@@ -111,7 +111,7 @@ class _Case {
 
 @NgDirective(
     selector: '[ng-switch-when]',
-    children: NgAnnotation.TRANSCLUDE_CHILDREN,
+    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
     map: const {'.': '@value'})
 class NgSwitchWhen {
   final NgSwitch ngSwitch;
@@ -125,7 +125,7 @@ class NgSwitchWhen {
 }
 
 @NgDirective(
-    children: NgAnnotation.TRANSCLUDE_CHILDREN,
+    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-switch-default]')
 class NgSwitchDefault {
 

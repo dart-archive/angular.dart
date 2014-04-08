@@ -5,10 +5,10 @@ import 'dart:mirrors';
 
 @NgComponent(selector:'component')            class _Component{}
 @NgDirective(selector:'[ignore-children]',
-             children: NgAnnotation.IGNORE_CHILDREN)
+             children: AbstractNgAnnotation.IGNORE_CHILDREN)
                                               class _IgnoreChildren{}
 @NgDirective(selector:'[structural]',
-             children: NgAnnotation.TRANSCLUDE_CHILDREN)
+             children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN)
                                               class _Structural{}
 @NgDirective(selector:'[directive]')          class _DirectiveAttr{}
 
@@ -36,7 +36,7 @@ main() => describe('ElementBinderBuilder', () {
   });
 
   addDirective(selector) {
-    directives.forEach((NgAnnotation annotation, Type type) {
+    directives.forEach((AbstractNgAnnotation annotation, Type type) {
       if (annotation.selector == selector)
         b.addDirective(new DirectiveRef(node, type, annotation, null));
     });
@@ -50,7 +50,7 @@ main() => describe('ElementBinderBuilder', () {
 
     expect(b.decorators.length).toEqual(1);
     expect(b.component).toBeNull();
-    expect(b.childMode).toEqual(NgAnnotation.COMPILE_CHILDREN);
+    expect(b.childMode).toEqual(AbstractNgAnnotation.COMPILE_CHILDREN);
 
   });
 
@@ -72,6 +72,6 @@ main() => describe('ElementBinderBuilder', () {
 
     expect(b.decorators.length).toEqual(1);
     expect(b.component).toBeNull();
-    expect(b.childMode).toEqual(NgAnnotation.IGNORE_CHILDREN);
+    expect(b.childMode).toEqual(AbstractNgAnnotation.IGNORE_CHILDREN);
   });
 });

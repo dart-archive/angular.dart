@@ -9,7 +9,7 @@ class Log {
   add(String msg) => log.add(msg);
 }
 
-@NgDirective(children: NgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo')
+@NgDirective(children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo')
 class LoggerViewDirective {
   LoggerViewDirective(ViewPort port, ViewFactory viewFactory,
       BoundViewFactory boundViewFactory, Logger logger) {
@@ -142,7 +142,7 @@ main() {
 
           var directiveRef = new DirectiveRef(null,
                                               LoggerViewDirective,
-                                              new NgDirective(children: NgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo'),
+                                              new NgDirective(children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo'),
                                               '');
           directiveRef.viewFactory = viewFactoryFactory($('<b>text</b>'), [], perf, new Expando());
           var binder = ebf.binder();

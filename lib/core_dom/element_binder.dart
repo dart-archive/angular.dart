@@ -58,7 +58,7 @@ class ElementBinder {
   final bool hasTemplate = false;
 
   bool get shouldCompileChildren =>
-      childMode == NgAnnotation.COMPILE_CHILDREN;
+      childMode == AbstractNgAnnotation.COMPILE_CHILDREN;
 
   var _directiveCache;
   List<DirectiveRef> get _usableDirectiveRefs {
@@ -269,7 +269,7 @@ class ElementBinder {
           ..factory(ElementProbe, (_) => probe);
 
       directiveRefs.forEach((DirectiveRef ref) {
-        NgAnnotation annotation = ref.annotation;
+        AbstractNgAnnotation annotation = ref.annotation;
         var visibility = ref.annotation.visibility;
         if (ref.annotation is NgController) {
           scope = scope.createChild(new PrototypeMap(scope.context));

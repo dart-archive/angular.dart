@@ -66,7 +66,7 @@ part of angular.directive;
  */
 
 @NgDirective(
-    children: NgAnnotation.TRANSCLUDE_CHILDREN,
+    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
     selector: '[ng-repeat]',
     map: const {'.': '@expression'})
 class NgRepeat {

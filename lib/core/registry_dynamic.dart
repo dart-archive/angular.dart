@@ -1,13 +1,13 @@
 library angular.core_dynamic;
 
 import 'dart:mirrors';
-import 'package:angular/core/annotation.dart';
+import 'package:angular/core/annotation_src.dart';
 import 'package:angular/core/registry.dart';
 
 export 'package:angular/core/registry.dart' show
     MetadataExtractor;
 
-var _fieldMetadataCache = new Map<Type, Map<String, AttrFieldAnnotation>>();
+var _fieldMetadataCache = new Map<Type, Map<String, AbstractNgFieldAnnotation>>();
 
 class DynamicMetadataExtractor implements MetadataExtractor {
   final _fieldAnnotations = [
@@ -30,38 +30,38 @@ class DynamicMetadataExtractor implements MetadataExtractor {
   }
 
   map(Type type, obj) {
-    if (obj is NgAnnotation) {
+    if (obj is AbstractNgAnnotation) {
       return mapDirectiveAnnotation(type, obj);
     } else {
       return obj;
     }
   }
 
-  NgAnnotation mapDirectiveAnnotation(Type type, NgAnnotation annotation) {
+  AbstractNgAnnotation mapDirectiveAnnotation(Type type, AbstractNgAnnotation annotation) {
     var match;
     var fieldMetadata = fieldMetadataExtractor(type);
     if (fieldMetadata.isNotEmpty) {
       var newMap = annotation.map == null ? {} : new Map.from(annotation.map);
-      fieldMetadata.forEach((String fieldName, AttrFieldAnnotation ann) {
+      fieldMetadata.forEach((String fieldName, AbstractNgFieldAnnotation ann) {
         var attrName = ann.attrName;
         if (newMap.containsKey(attrName)) {
           throw 'Mapping for attribute $attrName is already defined (while '
           'processing annottation for field $fieldName of $type)';
         }
-        newMap[attrName] = '${ann.mappingSpec}$fieldName';
+        newMap[attrName] = '${mappingSpec(ann)}$fieldName';
       });
-      annotation = annotation.cloneWithNewMap(newMap);
+      annotation = cloneWithNewMap(annotation, newMap);
     }
     return annotation;
   }
 
 
-  Map<String, AttrFieldAnnotation> fieldMetadataExtractor(Type type) =>
+  Map<String, AbstractNgFieldAnnotation> fieldMetadataExtractor(Type type) =>
       _fieldMetadataCache.putIfAbsent(type, () => _fieldMetadataExtractor(type));
 
-  Map<String, AttrFieldAnnotation> _fieldMetadataExtractor(Type type) {
+  Map<String, AbstractNgFieldAnnotation> _fieldMetadataExtractor(Type type) {
     ClassMirror cm = reflectType(type);
-    final fields = <String, AttrFieldAnnotation>{};
+    final fields = <String, AbstractNgFieldAnnotation>{};
     cm.declarations.forEach((Symbol name, DeclarationMirror decl) {
       if (decl is VariableMirror ||
       decl is MethodMirror && (decl.isGetter || decl.isSetter)) {
@@ -76,7 +76,7 @@ class DynamicMetadataExtractor implements MetadataExtractor {
               throw 'Attribute annotation for $fieldName is defined more '
               'than once in $type';
             }
-            fields[fieldName] = meta.reflectee as AttrFieldAnnotation;
+            fields[fieldName] = meta.reflectee as AbstractNgFieldAnnotation;
           }
         });
       }

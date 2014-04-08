@@ -570,11 +570,11 @@ const String footer = '''
 const String libAngular = '''
 library angular.core.annotation;
 
-class NgAnnotation {
-  NgAnnotation({map: const {}});
+class AbstractNgAnnotation {
+  AbstractNgAnnotation({map: const {}});
 }
 
-class NgDirective extends NgAnnotation {
+class NgDirective extends AbstractNgAnnotation {
   const NgDirective({selector, module, map, visibility, exportExpressions}) :
       super(map: map);
 

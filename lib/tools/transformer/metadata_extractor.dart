@@ -199,11 +199,11 @@ class AnnotationExtractor {
   final AssetId outputId;
 
   static const List<String> _angularAnnotationNames = const [
-    'angular.core.annotation.NgAttr',
-    'angular.core.annotation.NgOneWay',
-    'angular.core.annotation.NgOneWayOneTime',
-    'angular.core.annotation.NgTwoWay',
-    'angular.core.annotation.NgCallback'
+    'angular.core.annotation_src.NgAttr',
+    'angular.core.annotation_src.NgOneWay',
+    'angular.core.annotation_src.NgOneWayOneTime',
+    'angular.core.annotation_src.NgTwoWay',
+    'angular.core.annotation_src.NgCallback'
   ];
 
   static const Map<String, String> _annotationToMapping = const {
@@ -228,9 +228,9 @@ class AnnotationExtractor {
       }
       _annotationElements.add(type.unnamedConstructor);
     }
-    ngAnnotationType = resolver.getType('angular.core.annotation.NgAnnotation');
+    ngAnnotationType = resolver.getType('angular.core.annotation_src.AbstractNgAnnotation');
     if (ngAnnotationType == null) {
-      logger.warning('Unable to resolve NgAnnotation, '
+      logger.warning('Unable to resolve AbstractNgAnnotation, '
           'skipping member annotations.');
     }
   }
@@ -296,11 +296,11 @@ class AnnotationExtractor {
     return type;
   }
 
-  /// Folds all AttrFieldAnnotations into the NgAnnotation annotation on the
+  /// Folds all AttrFieldAnnotations into the AbstractNgAnnotation annotation on the
   /// class.
   void _foldMemberAnnotations(Map<String, Annotation> memberAnnotations,
       AnnotatedType type) {
-    // Filter down to NgAnnotation constructors.
+    // Filter down to AbstractNgAnnotation constructors.
     var ngAnnotations = type.annotations.where((a) {
       var element = a.element;
       if (element is! ConstructorElement) return false;

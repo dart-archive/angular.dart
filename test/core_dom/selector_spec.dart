@@ -16,11 +16,11 @@ import '../_specs.dart';
 @NgComponent(selector:'component')            class _Component{}
 @NgDirective(selector:'[attribute]')          class _Attribute{}
 @NgDirective(selector:'[structural]',
-             children: NgAnnotation.TRANSCLUDE_CHILDREN)
+             children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN)
                                               class _Structural{}
 
 @NgDirective(selector:'[ignore-children]',
-             children: NgAnnotation.IGNORE_CHILDREN)
+             children: AbstractNgAnnotation.IGNORE_CHILDREN)
                                               class _IgnoreChildren{}
 
 @NgDirective(selector: '[my-model][required]')

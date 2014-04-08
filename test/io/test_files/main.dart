@@ -1,7 +1,7 @@
 library test_files.main;
 
 @NgDirective(
-    children: NgAnnotation.TRANSCLUDE_CHILDREN,
+    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-if]',
     map: const {'.': '=>ngIfCondition'})
 class NgIfDirective {

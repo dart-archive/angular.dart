@@ -680,7 +680,7 @@ class LocalAttrDirective {
 
 @NgDirective(
     selector: '[simple-transclude-in-attach]',
-    visibility: NgDirective.CHILDREN_VISIBILITY, children: NgAnnotation.TRANSCLUDE_CHILDREN)
+    visibility: NgDirective.CHILDREN_VISIBILITY, children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN)
 class SimpleTranscludeInAttachAttrDirective {
   SimpleTranscludeInAttachAttrDirective(ViewPort viewPort, BoundViewFactory boundViewFactory, Logger log, RootScope scope) {
     scope.runAsync(() {
@@ -714,7 +714,7 @@ class TwoOfTwoDirectives {
 
 @NgDirective(
     selector: '[ignore-children]',
-    children: NgAnnotation.IGNORE_CHILDREN
+    children: AbstractNgAnnotation.IGNORE_CHILDREN
 )
 class IgnoreChildrenDirective {
   IgnoreChildrenDirective(Logger log) {

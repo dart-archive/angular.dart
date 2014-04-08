@@ -38,7 +38,7 @@ class ElementBinderBuilder {
   DirectiveRef component;
 
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
-  String childMode = NgAnnotation.COMPILE_CHILDREN;
+  String childMode = AbstractNgAnnotation.COMPILE_CHILDREN;
 
   ElementBinderBuilder(this._factory);
 
@@ -46,7 +46,7 @@ class ElementBinderBuilder {
     var annotation = ref.annotation;
     var children = annotation.children;
 
-    if (annotation.children == NgAnnotation.TRANSCLUDE_CHILDREN) {
+    if (annotation.children == AbstractNgAnnotation.TRANSCLUDE_CHILDREN) {
       template = ref;
     } else if (annotation is NgComponent) {
       component = ref;
@@ -54,7 +54,7 @@ class ElementBinderBuilder {
       decorators.add(ref);
     }
 
-    if (annotation.children == NgAnnotation.IGNORE_CHILDREN) {
+    if (annotation.children == AbstractNgAnnotation.IGNORE_CHILDREN) {
       childMode = annotation.children;
     }
 

@@ -4,7 +4,7 @@ import '../_specs.dart';
 
 @NgDirective(
     selector: '[child-controller]',
-    children: NgAnnotation.TRANSCLUDE_CHILDREN)
+    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN)
 class ChildController {
   ChildController(BoundViewFactory boundViewFactory,
                   ViewPort viewPort,
