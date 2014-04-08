@@ -80,7 +80,6 @@ main() {
         ]));
       });
 
-
       it('should match directive on [attribute]', () {
         expect(selector(element = e('<div directive=abc></div>')),
         toEqualsDirectiveInfos([
@@ -93,7 +92,6 @@ main() {
                 "name": 'directive' }]));
       });
 
-
       it('should match directive on element[attribute]', () {
         expect(selector(element = e('<b directive=abc></b>')),
         toEqualsDirectiveInfos([
@@ -103,7 +101,6 @@ main() {
         ]));
       });
 
-
       it('should match directive on [attribute=value]', () {
         expect(selector(element = e('<div directive=value></div>')),
         toEqualsDirectiveInfos([
@@ -111,7 +108,6 @@ main() {
             { "selector": '[directive=value]', "value": 'value', "element": element}
         ]));
       });
-
 
       it('should match directive on element[attribute=value]', () {
         expect(selector(element = e('<b directive=value></div>')),
@@ -139,8 +135,6 @@ main() {
                 "element": element, "name": 'wildcard-match'}
         ]));
       });
-
-
 
       it('should sort by priority', () {
         TemplateElementBinder eb = selector(element = e(
@@ -194,6 +188,16 @@ main() {
             { "selector": '[two-directives]', "value": '', "element": element},
             { "selector": '[two-directives]', "value": '', "element": element}
         ]));
+      });
+
+      it('should collect on-* attributes', () {
+        ElementBinder binder = selector(e('<input on-click="foo" on-blah="fad"></input>'));
+        expect(binder.onEvents).toEqual({'on-click': 'foo', 'on-blah': 'fad'});
+      });
+
+      it('should collect bind-* attributes', () {
+        ElementBinder binder = selector(e('<input bind-x="y" bind-z="yy"></input>'));
+        expect(binder.bindAttrs).toEqual({'bind-x': 'y', 'bind-z': 'yy'});
       });
     });
 

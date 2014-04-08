@@ -304,9 +304,15 @@ class DirectiveSelector {
 
     // Select [attributes]
     element.attributes.forEach((attrName, value) {
+
       if (attrName.startsWith("on-")) {
         builder.onEvents[attrName] = value;
       }
+
+      if (attrName.startsWith("bind-")) {
+        builder.bindAttrs[attrName] = value;
+      }
+
       attrs[attrName] = value;
       for (var k = 0; k < attrSelector.length; k++) {
         _ContainsSelector selectorRegExp = attrSelector[k];

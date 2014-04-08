@@ -15,8 +15,8 @@ class TemplateElementBinder extends ElementBinder {
   }
 
   TemplateElementBinder(_perf, _expando, this.template, this.templateBinder,
-                        onEvents, childMode)
-      : super(_perf, _expando, null, null, onEvents, childMode);
+                        onEvents, bindAttrs, childMode)
+      : super(_perf, _expando, null, null, onEvents, bindAttrs, childMode);
 
   String toString() => "[TemplateElementBinder template:$template]";
 
@@ -40,6 +40,7 @@ class ElementBinder {
   final Profiler _perf;
   final Expando _expando;
   final Map onEvents;
+  final Map bindAttrs;
 
   // Member fields
   final decorators;
@@ -50,7 +51,7 @@ class ElementBinder {
   final String childMode;
 
   ElementBinder(this._perf, this._expando, this.component, this.decorators, this.onEvents,
-                this.childMode);
+                this.bindAttrs, this.childMode);
 
   final bool hasTemplate = false;
 

@@ -11,10 +11,12 @@ class ElementBinderFactory {
   // TODO: Optimize this to re-use a builder.
   ElementBinderBuilder builder() => new ElementBinderBuilder(this, _parser);
 
-  ElementBinder binder(component, decorators, onEvents, childMode) =>
-      new ElementBinder(_perf, _expando, component, decorators, onEvents, childMode);
-  TemplateElementBinder templateBinder(template, transclude, onEvents, childMode) =>
-      new TemplateElementBinder(_perf, _expando, template, transclude, onEvents, childMode);
+  ElementBinder binder(ElementBinderBuilder b) =>
+      new ElementBinder(_perf, _expando,
+          b.component, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
+  TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
+      new TemplateElementBinder(_perf, _expando,
+          b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
 }
 
 /**
@@ -26,6 +28,7 @@ class ElementBinderBuilder {
   final Parser _parser;
 
   final onEvents = <String, String>{};
+  final bindAttrs = <String, String>{};
 
   var decorators = <DirectiveRef>[];
   DirectiveRef template;
@@ -166,11 +169,11 @@ class ElementBinderBuilder {
 
   ElementBinder get binder {
     if (template != null) {
-      var transclude = _factory.binder(component, decorators, onEvents, childMode);
-      return _factory.templateBinder(template, transclude, onEvents, childMode);
+      var transclude = _factory.binder(this);
+      return _factory.templateBinder(this, transclude);
 
     } else {
-      return _factory.binder(component, decorators, onEvents, childMode);
+      return _factory.binder(this);
     }
 
   }
