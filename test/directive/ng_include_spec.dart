@@ -21,7 +21,7 @@ main() {
       expect(element.text).toEqual('my name is Vojta');
     }));
 
-    iit('should fetch template from url using interpolation', async((Scope scope, TemplateCache cache) {
+    it('should fetch template from url using interpolation', async((Scope scope, TemplateCache cache) {
       cache.put('tpl1.html', new HttpResponse(200, 'My name is {{name}}'));
       cache.put('tpl2.html', new HttpResponse(200, 'I am {{name}}'));
 
