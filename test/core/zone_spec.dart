@@ -63,7 +63,6 @@ void main() {
         expect(ngZone.parent).toEqual((outerZone));
       });
 
-
       it('should rethrow exceptions from the onTurnDone and call onError when the zone is sync', () {
         zone.onTurnDone = () {
           throw ["fromOnTurnDone"];
@@ -359,5 +358,67 @@ void main() {
         microLeap();
       })).toThrow('ssertion');  // Support both dart2js and the VM with half a word.
     });
+  });
+
+  describe('AtMostOneMicrotaskZone', () {
+    it('should allow scheduling a microtask outside zone only once', async(() {
+      var zone = new NgZone();
+      var atMostOneMicrotaskZone = new AtMostOneMicrotaskZone();
+      var invokedFirst = false;
+      var invokedSecond = false;
+      zone.run(() {
+        atMostOneMicrotaskZone.run(() {
+          new Future.value('s').then((_) {
+            invokedFirst = true;
+          });
+        });
+        atMostOneMicrotaskZone.run(() {
+          new Future.value('s').then((_) {
+            invokedSecond = true;
+          });
+        });
+      });
+      microLeap();
+      expect(invokedFirst && invokedSecond).toEqual(true);
+    }));
+
+    it('should throw if more then one microtask is scheduled during run',
+        async(() {
+      var zone = new NgZone();
+      var atMostOneMicrotaskZone = new AtMostOneMicrotaskZone();
+      var error;
+      atMostOneMicrotaskZone.onError = (e,_,__) => error = e;
+      var outerZone = Zone.current;
+      zone.run(() {
+        atMostOneMicrotaskZone.run(() {
+          new Future.value('s').then((_) {
+            new Future.value('t').then((_) { });
+          });
+        });
+      });
+      microLeap();
+      expect(error is ScheduleMicrotaskError).toBe(true);
+    }));
+
+    it('should allow returning into angular zone', async(() {
+      var zone = new NgZone();
+      var atMostOneMicrotaskZone = new AtMostOneMicrotaskZone();
+      var invokedFirst = false;
+      var invokedSecond = false;
+      zone.run(() {
+        atMostOneMicrotaskZone.run(() {
+          new Future.value('s').then((_) {
+            invokedFirst = true;
+            zone.run(() {
+              new Future.value('s').then((_) {
+                invokedSecond = true;
+              });
+            });
+          });
+        });
+      });
+      microLeap();
+      expect(invokedFirst && invokedSecond).toEqual(true);
+    }));
   });
 }
