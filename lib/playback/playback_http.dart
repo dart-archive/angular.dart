@@ -12,6 +12,9 @@ import 'package:angular/playback/playback_data.dart' as playback_data;
 
 @NgInjectableService()
 class PlaybackHttpBackendConfig {
+
+  String get recorderUrl => '/record';
+
   requestKey(String url,
              {String method, bool withCredentials, String responseType,
              String mimeType, Map<String, String> requestHeaders, sendData,
@@ -63,7 +66,7 @@ class RecordingHttpBackend implements HttpBackend {
         onProgress: onProgress);
 
       assert(key is String);
-      _prodBackend.request('/record',  //TODO make this URL configurable.
+      _prodBackend.request(_config.recorderUrl,
         method: 'POST', sendData: JSON.encode({
           "key": key, "data": JSON.encode({
               "status": r.status,
