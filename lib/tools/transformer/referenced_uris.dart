@@ -190,11 +190,10 @@ class _Processor {
 
   Future<_CacheEntry> cacheEntry(_CacheEntry entry) {
     return transform.readInputAsString(entry.assetId).then((contents) {
-      if (contents == null) {
-        warn('Unable to find ${entry.uri} at ${entry.assetId}', entry.element);
-      }
       entry.contents = contents;
       return entry;
+    }, onError: (e) {
+      warn('Unable to find ${entry.uri} at ${entry.assetId}', entry.element);
     });
   }
 
@@ -221,6 +220,10 @@ class _Processor {
     templateUriRewrites.forEach((regexp, replacement) {
       uri = uri.replaceFirst(regexp, replacement);
     });
+    // Normalize packages/ uri's to be /packages/
+    if (uri.startsWith('packages/')) {
+      uri = '/' + uri;
+    }
     return uri;
   }
 

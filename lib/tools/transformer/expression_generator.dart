@@ -77,7 +77,8 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
 
     var controller = new StreamController<String>();
     var assets = options.htmlFiles
-        .map((path) => new AssetId(id.package, path))
+        .map((path) => _uriToAssetId(path, transform))
+        .where((id) => id != null)
         .toList();
 
     // Get all of the contents of templates in @NgComponent(templateUrl:'...')
@@ -95,13 +96,29 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
         // Add any manually specified HTML files.
         assets.map((id) => transform.readInputAsString(id))
             .map((future) =>
-                future.then(controller.add).catchError(controller.addError))
+                future.then(controller.add).catchError((e) {
+                  transform.logger.warning('Unable to find $id from html_files '
+                      'in pubspec.yaml.');
+                }))
         ).then((_) {
           controller.close();
         });
     });
 
     return controller.stream;
+  }
+
+  AssetId _uriToAssetId(String uri, Transform transform) {
+    if (path.url.isAbsolute(uri)) {
+      var parts = path.url.split(uri);
+      if (parts[1] == 'packages') {
+        var pkgPath = path.url.join('lib', path.url.joinAll(parts.skip(3)));
+        return new AssetId(parts[2], pkgPath);
+      }
+      transform.logger.warning('Cannot cache non-package absolute URIs. $uri');
+      return null;
+    }
+    return new AssetId(transform.primaryInput.id.package, uri);
   }
 
   /// Finds any HTML files referencing the primary input of the transform.
