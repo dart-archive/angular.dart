@@ -490,12 +490,29 @@ void main() {
           beforeEachModule((Module module) {
             module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
           });
+
+
           it(r'should dispatch exceptions to the exceptionHandler', (ExceptionHandler e) {
             LoggingExceptionHandler exceptionHandler = e;
             child.on('myEvent').listen((e) { throw 'bubbleException'; });
             grandChild.emit(r'myEvent');
             expect(log.join('>')).toEqual('2>1>0');
             expect(exceptionHandler.errors[0].error).toEqual('bubbleException');
+          });
+
+
+          it('should throw "model unstable" error when observer is present', (RootScope rootScope, NgZone zone, ExceptionHandler e) {
+            // Generates a different, equal, list on each evaluation.
+            rootScope.context['list'] = new UnstableList();
+
+            rootScope.watch('list.list', (n, v) => null, canChangeModel: true);
+            try {
+              zone.run(() => null);
+            } catch(_) {}
+
+            var errors = (e as LoggingExceptionHandler).errors;
+            expect(errors.length).toEqual(1);
+            expect(errors.first.error, startsWith('Model did not stabilize'));
           });
         });
 
@@ -1601,3 +1618,8 @@ class MockScopeStatsEmitter implements ScopeStatsEmitter {
     invoked = true;
   }
 }
+
+class UnstableList {
+  List get list => new List.generate(3, (i) => i);
+}
+
