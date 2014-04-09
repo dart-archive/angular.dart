@@ -224,9 +224,10 @@ class ElementBinder {
         Http http = injector.get(Http);
         TemplateCache templateCache = injector.get(TemplateCache);
         DirectiveMap directives = injector.get(DirectiveMap);
+        NgBaseCss baseCss = injector.get(NgBaseCss);
         // This is a bit of a hack since we are returning different type then we are.
         var componentFactory = new _ComponentFactory(node, ref.type, component,
-            injector.get(dom.NodeTreeSanitizer), _expando);
+            injector.get(dom.NodeTreeSanitizer), _expando, baseCss);
         var controller = componentFactory.call(injector, scope, viewCache, http, templateCache,
             directives);
 
