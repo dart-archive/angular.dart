@@ -227,7 +227,7 @@ void main() {
 
         expect(element).toHaveText('.hello{}.world{}Simple!');
         expect(element.children[0].shadowRoot).toHaveHtml(
-            '<style>.hello{}.world{}</style><div log="SIMPLE">Simple!</div>'
+            '<style>.hello{}</style><style>.world{}</style><div log="SIMPLE">Simple!</div>'
         );
         rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!

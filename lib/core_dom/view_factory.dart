@@ -197,9 +197,12 @@ class _ComponentFactory implements Function {
     TemplateLoader templateLoader = new TemplateLoader(
         async.Future.wait(cssFutures).then((Iterable<String> cssList) {
           if (cssList != null) {
-            var filteredCssList = cssList.where((css) => css != null );
-            shadowDom.setInnerHtml('<style>${filteredCssList.join('')}</style>',
-            treeSanitizer: treeSanitizer);
+            shadowDom.setInnerHtml(
+              cssList
+                .where((css) => css != null)
+                .map((css) => '<style>$css</style>')
+                .join(''),
+              treeSanitizer: treeSanitizer);
           }
           if (viewFuture != null) {
             return viewFuture.then((ViewFactory viewFactory) {
