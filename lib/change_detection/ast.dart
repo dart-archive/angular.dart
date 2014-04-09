@@ -84,7 +84,27 @@ class PureFunctionAST extends AST {
         super('$name(${_argList(argsAST)})');
 
   WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression);
+      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, true);
+}
+
+/**
+ * SYNTAX: fn(arg0, arg1, ...)
+ *
+ * Invoke a pure function. Pure means that the function has no state, and
+ * therefore it needs to be re-computed only if its args change.
+ */
+class ClosureAST extends AST {
+  final String name;
+  final /* dartbug.com/16401 Function */ fn;
+  final List<AST> argsAST;
+
+  ClosureAST(name, this.fn, argsAST)
+      : argsAST = argsAST,
+        name = name,
+        super('$name(${_argList(argsAST)})');
+
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
+      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, false);
 }
 
 /**

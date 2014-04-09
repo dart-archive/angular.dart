@@ -1047,7 +1047,7 @@ class ExpressionVisitor implements Visitor {
                               visit(exp.no)]);
   }
   void visitAccessKeyed(AccessKeyed exp) {
-    ast = new PureFunctionAST('[]', _operation_bracket,
+    ast = new ClosureAST('[]', _operation_bracket,
                              [visit(exp.object), visit(exp.key)]);
   }
   void visitLiteralPrimitive(LiteralPrimitive exp) {

@@ -353,6 +353,60 @@ void main() {
       });
 
 
+      it('should eval closure', () {
+        context['a'] = {'val': 1};
+        context['b'] = {'val': 2};
+        var innerState = 1;
+
+        var watch = watchGrp.watch(
+            new ClosureAST('sum',
+                (a, b) { logger('+'); return innerState+a+b; },
+                [parse('a.val'), parse('b.val')]
+            ),
+            (v, p) => logger(v)
+        );
+
+        // a; a.val; b; b.val;
+        expect(watchGrp.fieldCost).toEqual(4);
+        // add
+        expect(watchGrp.evalCost).toEqual(1);
+
+        watchGrp.detectChanges();
+        expect(logger).toEqual(['+', 4]);
+
+        // extra checks should trigger closures
+        watchGrp.detectChanges();
+        watchGrp.detectChanges();
+        expect(logger).toEqual(['+', 4, '+', '+']);
+        logger.clear();
+
+        // multiple arg changes should only trigger function once.
+        context['a']['val'] = 3;
+        context['b']['val'] = 4;
+
+        watchGrp.detectChanges();
+        expect(logger).toEqual(['+', 8]);
+        logger.clear();
+
+        // inner state change should only trigger function once.
+        innerState = 2;
+
+        watchGrp.detectChanges();
+        expect(logger).toEqual(['+', 9]);
+        logger.clear();
+
+        watch.remove();
+        expect(watchGrp.fieldCost).toEqual(0);
+        expect(watchGrp.evalCost).toEqual(0);
+
+        context['a']['val'] = 0;
+        context['b']['val'] = 0;
+
+        watchGrp.detectChanges();
+        expect(logger).toEqual([]);
+      });
+
+
       it('should eval chained pure function', () {
         context['a'] = {'val': 1};
         context['b'] = {'val': 2};

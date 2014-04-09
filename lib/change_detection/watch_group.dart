@@ -11,7 +11,7 @@ typedef void ChangeLog(String expression, current, previous);
 
 /**
  * Extend this class if you wish to pretend to be a function, but you don't know
- * number of arguments with which the function will get called.
+ * number of arguments with which the function will get called with.
  */
 abstract class FunctionApply {
   // dartbug.com/16401
@@ -183,11 +183,13 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
    * - [fn] function to evaluate.
    * - [argsAST] list of [AST]es which represent arguments passed to function.
    * - [expression] normalized expression used for caching.
+   * - [isPure] A pure function is one which holds no internal state. This implies that the
+   *   function is idempotent.
    */
   _EvalWatchRecord addFunctionWatch(/* dartbug.com/16401 Function */ fn, List<AST> argsAST,
                                     Map<Symbol, AST> namedArgsAST,
-                                    String expression) =>
-      _addEvalWatch(null, fn, null, argsAST, namedArgsAST, expression);
+                                    String expression, bool isPure) =>
+      _addEvalWatch(null, fn, null, argsAST, namedArgsAST, expression, isPure);
 
   /**
    * Watch a method [name]ed represented by an [expression].
@@ -200,18 +202,18 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   _EvalWatchRecord addMethodWatch(AST lhs, String name, List<AST> argsAST,
                                   Map<Symbol, AST> namedArgsAST,
                                   String expression) =>
-      _addEvalWatch(lhs, null, name, argsAST, namedArgsAST, expression);
+      _addEvalWatch(lhs, null, name, argsAST, namedArgsAST, expression, false);
 
 
 
   _EvalWatchRecord _addEvalWatch(AST lhsAST, /* dartbug.com/16401 Function */ fn, String name,
                                  List<AST> argsAST,
                                  Map<Symbol, AST> namedArgsAST,
-                                 String expression) {
+                                 String expression, bool isPure) {
     _InvokeHandler invokeHandler = new _InvokeHandler(this, expression);
     var evalWatchRecord = new _EvalWatchRecord(
         _rootGroup._fieldGetterFactory, this, invokeHandler, fn, name,
-        argsAST.length);
+        argsAST.length, isPure);
     invokeHandler.watchRecord = evalWatchRecord;
 
     if (lhsAST != null) {
@@ -701,15 +703,17 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
 
 
 class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
-  static const int _MODE_DELETED_        = -1;
-  static const int _MODE_MARKER_         = 0;
-  static const int _MODE_FUNCTION_       = 1;
-  static const int _MODE_FUNCTION_APPLY_ = 2;
-  static const int _MODE_NULL_           = 3;
-  static const int _MODE_FIELD_CLOSURE_  = 4;
-  static const int _MODE_MAP_CLOSURE_    = 5;
-  static const int _MODE_METHOD_         = 6;
-  static const int _MODE_METHOD_INVOKE_  = 7;
+  static const int _MODE_INVALID_             = -2;
+  static const int _MODE_DELETED_             = -1;
+  static const int _MODE_MARKER_              = 0;
+  static const int _MODE_PURE_FUNCTION_       = 1;
+  static const int _MODE_FUNCTION_            = 2;
+  static const int _MODE_PURE_FUNCTION_APPLY_ = 3;
+  static const int _MODE_NULL_                = 4;
+  static const int _MODE_FIELD_CLOSURE_       = 5;
+  static const int _MODE_MAP_CLOSURE_         = 6;
+  static const int _MODE_METHOD_              = 7;
+  static const int _MODE_METHOD_INVOKE_       = 8;
   WatchGroup watchGrp;
   final _Handler handler;
   final List args;
@@ -724,13 +728,13 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
   _EvalWatchRecord _prevEvalWatch, _nextEvalWatch;
 
   _EvalWatchRecord(this._fieldGetterFactory, this.watchGrp, this.handler,
-                   this.fn, this.name, int arity)
+                   this.fn, this.name, int arity, bool pure)
       : args = new List(arity)
   {
     if (fn is FunctionApply) {
-      mode = _MODE_FUNCTION_APPLY_;
+      mode = pure ? _MODE_PURE_FUNCTION_APPLY_: _MODE_INVALID_;
     } else if (fn is Function) {
-      mode = _MODE_FUNCTION_;
+      mode = pure ? _MODE_PURE_FUNCTION_ : _MODE_FUNCTION_;
     } else {
       mode = _MODE_NULL_;
     }
@@ -763,7 +767,8 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
     assert(mode != _MODE_DELETED_);
     assert(mode != _MODE_MARKER_);
     assert(mode != _MODE_FUNCTION_);
-    assert(mode != _MODE_FUNCTION_APPLY_);
+    assert(mode != _MODE_PURE_FUNCTION_);
+    assert(mode != _MODE_PURE_FUNCTION_APPLY_);
     _object = value;
 
     if (value == null) {
@@ -789,12 +794,16 @@ class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
       case _MODE_MARKER_:
       case _MODE_NULL_:
         return false;
-      case _MODE_FUNCTION_:
+      case _MODE_PURE_FUNCTION_:
         if (!dirtyArgs) return false;
         value = Function.apply(fn, args, namedArgs);
         dirtyArgs = false;
         break;
-      case _MODE_FUNCTION_APPLY_:
+      case _MODE_FUNCTION_:
+        value = Function.apply(fn, args, namedArgs);
+        dirtyArgs = false;
+        break;
+      case _MODE_PURE_FUNCTION_APPLY_:
         if (!dirtyArgs) return false;
         value = (fn as FunctionApply).apply(args);
         dirtyArgs = false;

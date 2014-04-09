@@ -150,6 +150,11 @@ void main() {
         logger.clear();
         rootScope.digest();
         expect(logger).toEqual([]);
+        logger.clear();
+
+        context['a']['b'] = 234;
+        rootScope.digest();
+        expect(logger).toEqual([234]);
       });
 
 
