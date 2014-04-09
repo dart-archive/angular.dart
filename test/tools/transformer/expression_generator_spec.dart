@@ -71,21 +71,29 @@ main() {
                     selector: 'my-component')
                 class FooComponent {}
 
+                @NgComponent(
+                    templateUrl: 'packages/b/bar.html',
+                    selector: 'my-component')
+                class BarComponent {}
+
                 main() {}
                 ''',
             'a|lib/foo.html': '''
                 <div>{{template.contents}}</div>''',
+            'b|lib/bar.html': '''
+                <div>{{bar}}</div>''',
             'a|web/index.html': '''
                 <script src='main.dart' type='application/dart'></script>''',
             'angular|lib/angular.dart': libAngular,
           },
-          getters: ['template', 'contents'],
-          setters: ['template', 'contents'],
+          getters: ['template', 'contents', 'bar'],
+          setters: ['template', 'contents', 'bar'],
           symbols: []);
     });
 
     it('should apply additional HTML files', () {
       htmlFiles.add('web/dummy.html');
+      htmlFiles.add('/packages/b/bar.html');
       return generates(phases,
           inputs: {
             'a|web/main.dart': '''
@@ -95,13 +103,43 @@ main() {
                 ''',
             'a|web/dummy.html': '''
                 <div>{{contents}}</div>''',
+            'b|lib/bar.html': '''
+                <div>{{bar}}</div>''',
             'a|web/index.html': '''
                 <script src='main.dart' type='application/dart'></script>''',
             'angular|lib/angular.dart': libAngular,
           },
-          getters: ['contents'],
-          setters: ['contents'],
+          getters: ['contents', 'bar'],
+          setters: ['contents', 'bar'],
           symbols: []).whenComplete(() {
+            htmlFiles.clear();
+          });
+    });
+
+    it('should warn on not-found HTML files', () {
+      htmlFiles.add('web/not-found.html');
+      return generates(phases,
+          inputs: {
+            'a|web/main.dart': '''
+                import 'package:angular/angular.dart';
+
+                main() {}
+
+                @NgComponent(
+                    templateUrl: 'packages/b/not-found.html',
+                    selector: 'my-component')
+                class BarComponent {}
+                ''',
+            'a|web/index.html': '''
+                <script src='main.dart' type='application/dart'></script>''',
+            'angular|lib/angular.dart': libAngular,
+          },
+          messages: [
+            'warning: Unable to find /packages/b/not-found.html at '
+                'b|lib/not-found.html (web/main.dart 4 16)',
+            'warning: Unable to find a|web/main.dart from html_files in '
+                'pubspec.yaml.',
+          ]).whenComplete(() {
             htmlFiles.clear();
           });
     });
@@ -110,9 +148,9 @@ main() {
 
 Future generates(List<List<Transformer>> phases,
     { Map<String, String> inputs,
-      List<String> getters,
-      List<String> setters,
-      List<String> symbols,
+      List<String> getters: const [],
+      List<String> setters: const [],
+      List<String> symbols: const [],
       Iterable<String> messages: const []}) {
 
   var buffer = new StringBuffer();
