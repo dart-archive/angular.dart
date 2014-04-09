@@ -7,7 +7,7 @@ export 'package:angular/change_detection/change_detection.dart' show
 /**
  * We are using mirrors, but there is no need to import anything.
  */
-@MirrorsUsed(targets: const [], metaTargets: const [])
+@MirrorsUsed(targets: const [ DynamicFieldGetterFactory ], metaTargets: const [] )
 import 'dart:mirrors';
 
 class DynamicFieldGetterFactory implements FieldGetterFactory {

@@ -1,7 +1,8 @@
 library angular.core.parser_dynamic;
 
-import 'package:angular/core/parser/parser.dart';
+@MirrorsUsed(targets: const [ DynamicClosureMap ], metaTargets: const [] )
 import 'dart:mirrors';
+import 'package:angular/core/parser/parser.dart';
 
 class DynamicClosureMap implements ClosureMap {
   final Map<String, Symbol> symbols = {};
