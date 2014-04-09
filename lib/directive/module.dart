@@ -20,6 +20,7 @@ import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/change_detection.dart';
 
 part 'ng_a.dart';
+part 'ng_base_css.dart';
 part 'ng_bind.dart';
 part 'ng_bind_html.dart';
 part 'ng_bind_template.dart';
@@ -45,6 +46,7 @@ part 'ng_model_validators.dart';
 class NgDirectiveModule extends Module {
   NgDirectiveModule() {
     value(NgA, null);
+    type(NgBaseCss);  // The root injector should have an empty NgBaseCss
     value(NgBind, null);
     value(NgBindTemplate, null);
     value(NgBindHtml, null);
