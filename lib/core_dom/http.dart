@@ -431,7 +431,7 @@ class Http {
     String method,
     data,
     Map<String, dynamic> params,
-    Map<String, String> headers,
+    Map<String, dynamic> headers,
     xsrfHeaderName,
     xsrfCookieName,
     interceptors,
