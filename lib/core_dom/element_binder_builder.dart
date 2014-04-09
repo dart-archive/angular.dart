@@ -9,13 +9,13 @@ class ElementBinderFactory {
   ElementBinderFactory(this._parser, this._perf, this._expando);
 
   // TODO: Optimize this to re-use a builder.
-  ElementBinderBuilder builder() => new ElementBinderBuilder(this, _parser);
+  ElementBinderBuilder builder() => new ElementBinderBuilder(this);
 
   ElementBinder binder(ElementBinderBuilder b) =>
-      new ElementBinder(_perf, _expando,
+      new ElementBinder(_perf, _expando, _parser,
           b.component, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
-      new TemplateElementBinder(_perf, _expando,
+      new TemplateElementBinder(_perf, _expando, _parser,
           b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
 }
 
@@ -24,8 +24,9 @@ class ElementBinderFactory {
  * building ElementBinders.
  */
 class ElementBinderBuilder {
+  static RegExp _MAPPING = new RegExp(r'^(\@|=\>\!|\=\>|\<\=\>|\&)\s*(.*)$');
+
   ElementBinderFactory _factory;
-  final Parser _parser;
 
   final onEvents = <String, String>{};
   final bindAttrs = <String, String>{};
@@ -39,8 +40,7 @@ class ElementBinderBuilder {
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   String childMode = NgAnnotation.COMPILE_CHILDREN;
 
-
-  ElementBinderBuilder(this._factory, this._parser);
+  ElementBinderBuilder(this._factory);
 
   addDirective(DirectiveRef ref) {
     var annotation = ref.annotation;
@@ -58,13 +58,6 @@ class ElementBinderBuilder {
       childMode = annotation.children;
     }
 
-    createMappings(ref);
-  }
-
-  static RegExp _MAPPING = new RegExp(r'^(\@|=\>\!|\=\>|\<\=\>|\&)\s*(.*)$');
-
-  createMappings(DirectiveRef ref) {
-    NgAnnotation annotation = ref.annotation;
     if (annotation.map != null) annotation.map.forEach((attrName, mapping) {
       Match match = _MAPPING.firstMatch(mapping);
       if (match == null) {
@@ -74,96 +67,8 @@ class ElementBinderBuilder {
       var dstPath = match[2];
 
       String dstExpression = dstPath.isEmpty ? attrName : dstPath;
-      Expression dstPathFn = _parser(dstExpression);
-      if (!dstPathFn.isAssignable) {
-        throw "Expression '$dstPath' is not assignable in mapping '$mapping' "
-            "for attribute '$attrName'.";
-      }
-      ApplyMapping mappingFn;
-      switch (mode) {
-        case '@':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
-                       FilterMap filters, notify()) {
-            attrs.observe(attrName, (value) {
-              dstPathFn.assign(controller, value);
-              notify();
-            });
-          };
-          break;
-        case '<=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
-                       FilterMap filters, notify()) {
-            if (attrs[attrName] == null) return notify();
-            String expression = attrs[attrName];
-            Expression expressionFn = _parser(expression);
-            var viewOutbound = false;
-            var viewInbound = false;
-            scope.watch(
-                expression, (inboundValue, _) {
-                  if (!viewInbound) {
-                    viewOutbound = true;
-                    scope.rootScope.runAsync(() => viewOutbound = false);
-                    var value = dstPathFn.assign(controller, inboundValue);
-                    notify();
-                    return value;
-                  }
-                },
-                filters: filters
-            );
-            if (expressionFn.isAssignable) {
-              scope.watch(
-                  dstExpression, (outboundValue, _) {
-                    if (!viewOutbound) {
-                      viewInbound = true;
-                      scope.rootScope.runAsync(() => viewInbound = false);
-                      expressionFn.assign(scope.context, outboundValue);
-                      notify();
-                    }
-                  },
-                  context: controller,
-                  filters: filters
-              );
-            }
-          };
-          break;
-        case '=>':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
-                       FilterMap filters, notify()) {
-            if (attrs[attrName] == null) return notify();
-            Expression attrExprFn = _parser(attrs[attrName]);
-            var shadowValue = null;
-            scope.watch(attrs[attrName], (v, _) {
-              dstPathFn.assign(controller, shadowValue = v);
-              notify();
-            },
-            filters: filters);
-          };
-          break;
-        case '=>!':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object controller,
-                       FilterMap filters, notify()) {
-            if (attrs[attrName] == null) return notify();
-            Expression attrExprFn = _parser(attrs[attrName]);
-            var watch;
-            watch = scope.watch(attrs[attrName], (value, _) {
-              if (dstPathFn.assign(controller, value) != null) {
-                watch.remove();
-              }
-            },
-            filters: filters);
-            notify();
-          };
-          break;
-        case '&':
-          mappingFn = (NodeAttrs attrs, Scope scope, Object dst,
-                       FilterMap filters, notify()) {
-            dstPathFn.assign(dst, _parser(attrs[attrName])
-            .bind(scope.context, ScopeLocals.wrapper));
-            notify();
-          };
-          break;
-      }
-      ref.mappings.add(mappingFn);
+
+      ref.mappings.add(new MappingParts(attrName, mode, dstExpression, mapping));
     });
   }
 

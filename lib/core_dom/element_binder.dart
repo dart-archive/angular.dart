@@ -14,9 +14,9 @@ class TemplateElementBinder extends ElementBinder {
     return _directiveCache = [template];
   }
 
-  TemplateElementBinder(_perf, _expando, this.template, this.templateBinder,
+  TemplateElementBinder(_perf, _expando, _parser, this.template, this.templateBinder,
                         onEvents, bindAttrs, childMode)
-      : super(_perf, _expando, null, null, onEvents, bindAttrs, childMode);
+      : super(_perf, _expando, _parser, null, null, onEvents, bindAttrs, childMode);
 
   String toString() => "[TemplateElementBinder template:$template]";
 
@@ -31,6 +31,7 @@ class TemplateElementBinder extends ElementBinder {
   }
 }
 
+
 /**
  * ElementBinder is created by the Selector and is responsible for instantiating
  * individual directives and binding element properties.
@@ -39,6 +40,7 @@ class ElementBinder {
   // DI Services
   final Profiler _perf;
   final Expando _expando;
+  final Parser _parser;
   final Map onEvents;
   final Map bindAttrs;
 
@@ -50,8 +52,8 @@ class ElementBinder {
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   final String childMode;
 
-  ElementBinder(this._perf, this._expando, this.component, this.decorators, this.onEvents,
-                this.bindAttrs, this.childMode);
+  ElementBinder(this._perf, this._expando, this._parser, this.component, this.decorators,
+                this.onEvents, this.bindAttrs, this.childMode);
 
   final bool hasTemplate = false;
 
@@ -68,6 +70,87 @@ class ElementBinder {
   bool get hasDirectivesOrEvents =>
       _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
+  _createAttrMappings(controller, scope, DirectiveRef ref, nodeAttrs, filters, tasks) {
+    ref.mappings.forEach((MappingParts p) {
+      var attrName = p.attrName;
+      var dstExpression = p.dstExpression;
+      if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
+
+      Expression dstPathFn = _parser(dstExpression);
+      if (!dstPathFn.isAssignable) {
+        throw "Expression '$dstExpression' is not assignable in mapping '${p.originalValue}' "
+              "for attribute '$attrName'.";
+      }
+
+      switch (p.mode) {
+        case '@': // string
+          var taskId = tasks.registerTask();
+          nodeAttrs.observe(attrName, (value) {
+            dstPathFn.assign(controller, value);
+            tasks.completeTask(taskId);
+          });
+          break;
+
+        case '<=>': // two-way
+          if (nodeAttrs[attrName] == null) return;
+
+          var taskId = tasks.registerTask();
+          String expression = nodeAttrs[attrName];
+          Expression expressionFn = _parser(expression);
+          var viewOutbound = false;
+          var viewInbound = false;
+          scope.watch(expression, (inboundValue, _) {
+            if (!viewInbound) {
+              viewOutbound = true;
+              scope.rootScope.runAsync(() => viewOutbound = false);
+              var value = dstPathFn.assign(controller, inboundValue);
+              tasks.completeTask(taskId);
+              return value;
+            }
+          }, filters: filters);
+          if (expressionFn.isAssignable) {
+            scope.watch(dstExpression, (outboundValue, _) {
+              if (!viewOutbound) {
+                viewInbound = true;
+                scope.rootScope.runAsync(() => viewInbound = false);
+                expressionFn.assign(scope.context, outboundValue);
+                tasks.completeTask(taskId);
+              }
+            }, context: controller, filters: filters);
+          }
+          break;
+
+        case '=>': // one-way
+          if (nodeAttrs[attrName] == null) return;
+          var taskId = tasks.registerTask();
+
+          Expression attrExprFn = _parser(nodeAttrs[attrName]);
+          scope.watch(nodeAttrs[attrName], (v, _) {
+            dstPathFn.assign(controller, v);
+            tasks.completeTask(taskId);
+          }, filters: filters);
+          break;
+
+        case '=>!': //  one-way, one-time
+          if (nodeAttrs[attrName] == null) return;
+
+          Expression attrExprFn = _parser(nodeAttrs[attrName]);
+          var watch;
+          watch = scope.watch(nodeAttrs[attrName], (value, _) {
+            if (dstPathFn.assign(controller, value) != null) {
+              watch.remove();
+            }
+          }, filters: filters);
+          break;
+
+        case '&': // callback
+          dstPathFn.assign(controller,
+              _parser(nodeAttrs[attrName]).bind(scope.context, ScopeLocals.wrapper));
+          break;
+      }
+    });
+  }
+
   _link(nodeInjector, probe, scope, nodeAttrs, filters) {
     _usableDirectiveRefs.forEach((DirectiveRef ref) {
       var linkTimer;
@@ -82,43 +165,28 @@ class ElementBinder {
           scope.context[(ref.annotation as NgController).publishAs] = controller;
         }
 
-        var attachDelayStatus = controller is NgAttachAware ? [false] : null;
-        checkAttachReady() {
-          if (attachDelayStatus.every((a) => a)) {
-            attachDelayStatus = null;
-            if (scope.isAttached) controller.attach();
-          }
-        }
-        for (var map in ref.mappings) {
-          var notify;
-          if (attachDelayStatus != null) {
-            var index = attachDelayStatus.length;
-            attachDelayStatus.add(false);
-            notify = () {
-              if (attachDelayStatus != null) {
-                attachDelayStatus[index] = true;
-                checkAttachReady();
-              }
-            };
-          } else {
-            notify = () => null;
-          }
-          if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-          map(nodeAttrs, scope, controller, filters, notify);
-        }
-        if (attachDelayStatus != null) {
+        var tasks = new _TaskList(controller is NgAttachAware ? () {
+          if (scope.isAttached) controller.attach();
+        } : null);
+
+        _createAttrMappings(controller, scope, ref, nodeAttrs, filters, tasks);
+
+        if (controller is NgAttachAware) {
+          var taskId = tasks.registerTask();
           Watch watch;
-          watch = scope.watch(
-              '1', // Cheat a bit.
-                  (_, __) {
-                watch.remove();
-                attachDelayStatus[0] = true;
-                checkAttachReady();
-              });
+          watch = scope.watch('1', // Cheat a bit.
+              (_, __) {
+            watch.remove();
+            tasks.completeTask(taskId);
+          });
         }
+
+        tasks.doneRegistering();
+
         if (controller is NgDetachAware) {
           scope.on(ScopeEvent.DESTROY).listen((_) => controller.detach());
         }
+
         assert(_perf.stopTimer(linkMapTimer) != false);
       } finally {
         assert(_perf.stopTimer(linkTimer) != false);
@@ -232,6 +300,38 @@ class ElementBinder {
   }
 
   String toString() => "[ElementBinder decorators:$decorators]";
+}
+
+/**
+ * Private class used for managing controller.attach() calls
+ */
+class _TaskList {
+  var onDone;
+  final List _tasks = [];
+  bool isDone = false;
+
+  _TaskList(this.onDone) {
+    if (onDone == null) isDone = true;
+  }
+
+  int registerTask() {
+    if (isDone) return null; // Do nothing if there is nothing to do.
+    _tasks.add(false);
+    return _tasks.length - 1;
+  }
+
+  void completeTask(id) {
+    if (isDone) return;
+    _tasks[id] = true;
+    if (_tasks.every((a) => a)) {
+      onDone();
+      isDone = true;
+    }
+  }
+
+  doneRegistering() {
+    completeTask(registerTask());
+  }
 }
 
 // Used for walking the DOM
