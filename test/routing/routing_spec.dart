@@ -6,8 +6,6 @@ import 'package:angular/angular_dynamic.dart';
 import 'dart:async';
 
 main() {
-  // Do not run in dart2js until the exception is fixed
-  if (identical(1.0, 1)) return;
   describe('routing', () {
     TestBed _;
     Router router;
