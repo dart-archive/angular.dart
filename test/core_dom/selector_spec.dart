@@ -234,7 +234,14 @@ class DirectiveInfosMatcher extends Matcher {
   Map expectedTemplate;
   Map expectedComponent;
 
-  DirectiveInfosMatcher(this.expected, {this.expectedTemplate, this.expectedComponent});
+  safeToString(a) => "${a['element']} ${a['selector']} ${a['value']}";
+  safeToStringRef(a) => "${a.element} ${a.annotation.selector} ${a.value}";
+
+  DirectiveInfosMatcher(this.expected, {this.expectedTemplate, this.expectedComponent}) {
+    if (expected != null) {
+      expected.sort((a, b) => Comparable.compare(safeToString(a), safeToString(b)));
+    }
+  }
 
   Description describe(Description description) =>
       description..add(expected.toString());
@@ -248,11 +255,12 @@ class DirectiveInfosMatcher extends Matcher {
   bool matches(ElementBinder binder, matchState) {
     var pass = true;
     if (expected != null) {
-      pass = expected.length == binder.decorators.length;
+      var decorators = new List.from(binder.decorators)
+          ..sort((a, b) => Comparable.compare(safeToStringRef(a), safeToStringRef(b)));
+      pass = expected.length == decorators.length;
       for (var i = 0, ii = expected.length; i < ii; i++) {
-        DirectiveRef directiveRef = binder.decorators[i];
+        DirectiveRef directiveRef = decorators[i];
         var expectedMap = expected[i];
-
         pass = pass && _refMatches(directiveRef, expectedMap);
       }
     }
