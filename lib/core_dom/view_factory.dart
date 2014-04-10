@@ -155,6 +155,7 @@ class _ComponentFactory implements Function {
   final NgComponent component;
   final dom.NodeTreeSanitizer treeSanitizer;
   final Expando _expando;
+  final NgBaseCss _baseCss;
 
   dom.ShadowRoot shadowDom;
   Scope shadowScope;
@@ -162,7 +163,7 @@ class _ComponentFactory implements Function {
   var controller;
 
   _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer,
-                    this._expando);
+                    this._expando, this._baseCss);
 
   dynamic call(Injector injector, Scope scope,
                ViewCache viewCache, Http http, TemplateCache templateCache,
@@ -178,7 +179,7 @@ class _ComponentFactory implements Function {
     // so change back to using @import once Chrome bug is fixed or a
     // better work around is found.
     List<async.Future<String>> cssFutures = new List();
-    var cssUrls = component.cssUrls;
+    var cssUrls = []..addAll(_baseCss.urls)..addAll(component.cssUrls);
     if (cssUrls.isNotEmpty) {
       cssUrls.forEach((css) => cssFutures.add(http
           .getString(css, cache: templateCache)
@@ -197,9 +198,12 @@ class _ComponentFactory implements Function {
     TemplateLoader templateLoader = new TemplateLoader(
         async.Future.wait(cssFutures).then((Iterable<String> cssList) {
           if (cssList != null) {
-            var filteredCssList = cssList.where((css) => css != null );
-            shadowDom.setInnerHtml('<style>${filteredCssList.join('')}</style>',
-            treeSanitizer: treeSanitizer);
+            shadowDom.setInnerHtml(
+              cssList
+                .where((css) => css != null)
+                .map((css) => '<style>$css</style>')
+                .join(''),
+              treeSanitizer: treeSanitizer);
           }
           if (viewFuture != null) {
             return viewFuture.then((ViewFactory viewFactory) {

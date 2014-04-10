@@ -15,6 +15,8 @@ import 'package:angular/core_dom/dom_util.dart' as util;
 import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
 import 'package:angular/core/registry.dart';
 
+import 'package:angular/directive/module.dart' show NgBaseCss;
+
 part 'animation.dart';
 part 'view.dart';
 part 'view_factory.dart';
