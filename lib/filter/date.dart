@@ -33,7 +33,7 @@ class Date implements Function {
     'shortTime':  'h:mm a',
   };
 
-  var _dfs = <String, DateFormat>{};
+  var _dfs = new Map<String, Map<String, DateFormat>>();
 
   /**
    *  [date]: Date to format either as Date object, milliseconds
@@ -52,13 +52,13 @@ class Date implements Function {
     if (date is String) date = DateTime.parse(date);
     if (date is num) date = new DateTime.fromMillisecondsSinceEpoch(date);
     if (date is! DateTime) return date;
-    var df = _dfs[format];
+    if (_MAP.containsKey(format)) format = _MAP[format];
+    var verifiedLocale = Intl.verifiedLocale(Intl.getCurrentLocale(), DateFormat.localeExists);
+    _dfs.putIfAbsent(verifiedLocale, () => new Map<String, DateFormat>());
+    var df = _dfs[verifiedLocale][format];
     if (df == null) {
-      if (_MAP.containsKey(format)) {
-        format = _MAP[format];
-      }
       df = new DateFormat(format);
-      _dfs[format] = df;
+      _dfs[verifiedLocale][format] = df;
     }
     return df.format(date);
   }
