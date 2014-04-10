@@ -182,7 +182,8 @@ class DirectiveMetadataCollectingVisitor {
                 StringLiteral attNameLiteral = ann.arguments.arguments.first;
                 if (meta.attributeMappings
                         .containsKey(attNameLiteral.stringValue)) {
-                  throw 'Attribute mapping already defined for $fieldName';
+                  throw 'Attribute mapping already defined for '
+                      '${clazz.name}.$fieldName';
                 }
                 meta.attributeMappings[attNameLiteral.stringValue] =
                     _attrAnnotationsToSpec[ann.name.name] + fieldName;

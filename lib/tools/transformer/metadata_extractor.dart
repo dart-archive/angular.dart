@@ -2,6 +2,7 @@ library angular.metadata_extractor;
 
 import 'package:analyzer/src/generated/ast.dart';
 import 'package:analyzer/src/generated/element.dart';
+import 'package:analyzer/src/generated/parser.dart' show ResolutionCopier;
 import 'package:analyzer/src/generated/scanner.dart';
 import 'package:analyzer/src/generated/utilities_dart.dart' show ParameterKind;
 import 'package:barback/barback.dart';
@@ -336,7 +337,14 @@ class AnnotationExtractor {
 
     // Default to using the first acceptable annotation- not sure if
     // more than one should ever occur.
-    var annotation = acceptableAnnotations.first;
+    var sourceAnnotation = acceptableAnnotations.first;
+
+    // Clone the annotation so we don't modify the one in the persistent AST.
+    var index = type.annotations.indexOf(sourceAnnotation);
+    var annotation = new AstCloner().visitAnnotation(sourceAnnotation);
+    ResolutionCopier.copyResolutionData(sourceAnnotation, annotation);
+    type.annotations[index] = annotation;
+
     var mapArg = annotation.arguments.arguments.firstWhere((arg) =>
         (arg is NamedExpression) && (arg.name.label.name == 'map'),
         orElse: () => null);
