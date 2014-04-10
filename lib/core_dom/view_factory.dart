@@ -123,14 +123,35 @@ class ViewCache {
   final TemplateCache templateCache;
   final Compiler compiler;
   final dom.NodeTreeSanitizer treeSanitizer;
+  final dom.HtmlDocument _parseDocument =
+      dom.document.implementation.createHtmlDocument('');
+
 
   ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer);
 
-  ViewFactory fromHtml(String html, DirectiveMap directives) {
+  ViewFactory fromHtml(String html, DirectiveMap directives, [String url]) {
     ViewFactory viewFactory = _viewFactoryCache.get(html);
     if (viewFactory == null) {
-      var div = new dom.Element.tag('div');
+      var base;
+      var originalUri;
+      if (url != null) {
+        originalUri = Uri.parse(url);
+        base = _parseDocument.createElement('base');
+        base.href = url;
+        _parseDocument.head.append(base);
+      } else {
+        originalUri = Uri.base;
+      }
+
+      var div = _parseDocument.createElement('div');
       div.setInnerHtml(html, treeSanitizer: treeSanitizer);
+      AbsoluteUris.resolveDom(div, originalUri);
+
+      dom.document.adoptNode(div);
+      if (base != null) {
+        base.remove();
+      }
+
       viewFactory = compiler(div.nodes, directives);
       _viewFactoryCache.put(html, viewFactory);
     }
