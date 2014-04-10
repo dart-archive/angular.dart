@@ -59,9 +59,9 @@ else
   )
 fi
 
-BROWSERS=Dartium,ChromeNoSandbox
+BROWSERS=Dartium,ChromeNoSandbox,FireFox
 if [[ $TESTS == "dart2js" ]]; then
-  BROWSERS=ChromeNoSandbox;
+  BROWSERS=ChromeNoSandbox,Firefox;
 elif [[ $TESTS == "vm" ]]; then
   BROWSERS=Dartium;
 fi
