@@ -1,6 +1,33 @@
 /**
  * Bootstrapping for Angular applications via code generation, for production.
  *
+ * Most angular.dart apps rely on dynamic transformation at compile time to generate the artifacts
+ * needed for tree shaking during compilation with `dart2js`. However,
+ * if your deployment environment makes it impossible for you to use transformers,
+ * you can call [staticApplication](#angular-app-static@id_staticApplication)
+ * directly in your `main()` function, and explicitly define the getters, setters, annotations, and
+ * factories yourself.
+ *
+ *     import 'package:angular/angular.dart';
+ *     import 'package:angular/angular_static.dart';
+ *
+ *     class MyModule extends Module {
+ *       MyModule() {
+ *         type(HelloWorldController);
+ *       }
+ *     }
+ *
+ *     main() {
+ *       staticApplication()
+ *           .addModule(new MyModule())
+ *           .run();
+ *     }
+ *
+ *  Note that you must explicitly import both
+ * `angular.dart` and `angular_static.dart` at the start of your file. See [staticApplication]
+ * (#angular-app-static@id_staticApplication) for more on explicit definitions required with this
+ * library.
+ *
  */
 library angular.app.static;
 

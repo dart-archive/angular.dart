@@ -17,14 +17,18 @@ class AnimationDemoController {
   var currentPage = "About";
 }
 
+class AnimationDemoModule extends Module {
+  AnimationDemoModule() {
+    install(new NgAnimateModule());
+    type(RepeatDemoComponent);
+    type(VisibilityDemoComponent);
+    type(StressDemoComponent);
+    type(CssDemoComponent);
+    type(AnimationDemoController);
+  }
+}
 main() {
   dynamicApplication()
-      .addModule(new Module()
-          ..type(RepeatDemoComponent)
-          ..type(VisibilityDemoComponent)
-          ..type(StressDemoComponent)
-          ..type(CssDemoComponent)
-          ..type(AnimationDemoController))
-      .addModule(new NgAnimateModule())
+      .addModule(new AnimationDemoModule())
       .run();
 }
