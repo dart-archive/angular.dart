@@ -1,6 +1,6 @@
 library test_files.main;
 
-import 'package:angular/core/module.dart';
+import 'package:angular/core/annotation_src.dart';
 
 @NgComponent(
     selector: 'my-component',

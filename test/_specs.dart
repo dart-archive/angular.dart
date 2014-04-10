@@ -11,7 +11,6 @@ import 'jasmine_syntax.dart' as jasmine_syntax;
 export 'dart:html' hide Animation;
 export 'package:unittest/unittest.dart';
 export 'package:mock/mock.dart';
-export 'package:unittest/mock.dart';
 export 'package:di/di.dart';
 export 'package:di/dynamic_injector.dart';
 export 'package:angular/angular.dart';

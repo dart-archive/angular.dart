@@ -3,11 +3,8 @@ library angular.tools.transformer.options;
 import 'dart:async';
 
 import 'package:barback/barback.dart';
-import 'package:analyzer/analyzer.dart' as analyzer;
-import 'package:analyzer/src/generated/ast.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:di/transformer/options.dart' as di;
-import 'package:path/path.dart' as path;
 
 /** Options used by Angular transformers */
 class TransformOptions {
