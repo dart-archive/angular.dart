@@ -1,6 +1,6 @@
 library angular.core.parser.lexer;
 
-import 'package:angular/core/annotation.dart';
+import 'package:angular/core/annotation_src.dart';
 import 'package:angular/core/parser/characters.dart';
 
 part 'tokens.dart';

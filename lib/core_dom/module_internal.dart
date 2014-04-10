@@ -7,7 +7,8 @@ import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 
-import 'package:angular/core/annotation_src.dart';
+import 'package:angular/core/annotation.dart';
+import 'package:angular/core/annotation_src.dart' show SHADOW_DOM_INJECTOR_NAME;
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
@@ -68,14 +69,4 @@ class NgCoreDomModule extends Module {
     type(NgElement);
     type(EventHandler);
   }
-}
-
-/**
- * Implementing components [onShadowRoot] method will be called when
- * the template for the component has been loaded and inserted into Shadow DOM.
- * It is guaranteed that when [onShadowRoot] is invoked, that shadow DOM
- * has been loaded and is ready.
- */
-abstract class NgShadowRootAware {
-  void onShadowRoot(dom.ShadowRoot shadowRoot);
 }

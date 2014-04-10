@@ -531,7 +531,6 @@ abstract class NgDetachAware {
   void detach();
 }
 
-
 /**
  * Use @[NgFilter] annotation to register a new filter. A filter is a class
  * with a [call] method (a callable function).

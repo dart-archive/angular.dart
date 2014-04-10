@@ -11,7 +11,7 @@ import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/utils.dart';
 
-import 'package:angular/core/annotation.dart';
+import 'package:angular/core/annotation_src.dart';
 
 import 'package:angular/change_detection/watch_group.dart';
 export 'package:angular/change_detection/watch_group.dart';
