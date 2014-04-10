@@ -5,7 +5,6 @@ import 'package:analyzer/src/generated/element.dart';
 import 'package:angular/tools/transformer/options.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
-import 'package:di/transformer/refactor.dart';
 import 'package:path/path.dart' as path;
 
 import 'metadata_extractor.dart';
