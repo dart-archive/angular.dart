@@ -1292,8 +1292,9 @@ void main() {
                 callbackCalled = true;
               }, onError: (e,s) {
                 // Dartium throws "Unexpected character"
-                // dart2js throws "Unexpected token"
-                expect('$e').toContain('Unexpected');
+                // dart2js/Chrome throws "Unexpected token"
+                // dart2js/Firefox throw "unexpected character"
+                expect('$e').toContain('nexpected');
                 onErrorCalled = true;
               });
               flush();
