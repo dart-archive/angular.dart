@@ -1,5 +1,6 @@
 library angular.transformer;
 
+import 'dart:async';
 import 'dart:io';
 import 'package:angular/tools/transformer/expression_generator.dart';
 import 'package:angular/tools/transformer/metadata_generator.dart';
@@ -123,9 +124,37 @@ List<List<Transformer>> _createPhases(TransformOptions options) {
   var resolvers = new Resolvers(options.sdkDirectory);
   return [
     [new HtmlDartReferencesGenerator(options)],
-    [new ExpressionGenerator(options, resolvers)],
-    [new di.InjectorGenerator(options.diOptions, resolvers)],
-    [new MetadataGenerator(options, resolvers)],
-    [new StaticAngularGenerator(options, resolvers)],
+    [new _SerialTransformer([
+      new ExpressionGenerator(options, resolvers),
+      new di.InjectorGenerator(options.diOptions, resolvers),
+      new MetadataGenerator(options, resolvers),
+      new StaticAngularGenerator(options, resolvers)
+    ])]
   ];
+}
+
+/// Helper which runs a group of transformers serially and ensures that
+/// transformers with shared data are always applied in a specific order.
+///
+/// Transformers which communicate only via assets do not need this additional
+/// synchronization.
+///
+/// This is used by Angular to ensure ordering of references to the cached
+/// resolvers.
+class _SerialTransformer extends Transformer {
+  final Iterable<Transformer> _transformers;
+  _SerialTransformer(this._transformers);
+
+  Future<bool> isPrimary(Asset input) =>
+      Future.wait(_transformers.map((t) => t.isPrimary(input)))
+          .then((l) => l.any((result) => result));
+
+  Future apply(Transform transform) {
+    return Future.forEach(_transformers, (t) {
+      return new Future.value(t.isPrimary(transform.primaryInput))
+        .then((isPrimary) {
+          if (isPrimary) return t.apply(transform);
+        });
+    });
+  }
 }
