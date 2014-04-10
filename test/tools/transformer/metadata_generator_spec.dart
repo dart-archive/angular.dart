@@ -508,6 +508,51 @@ main() {
           imports: [],
           classes: {});
     });
+
+    it('does not modify annotations in-place', () {
+      var main = '''
+          import 'package:angular/angular.dart';
+          import 'second.dart';
+
+          @NgDirective(map: {})
+          class Engine {
+            @NgTwoWay('two-way-stuff')
+            String get twoWayStuff => null;
+          }
+          main() {}
+          ''';
+      return generates(phases,
+          inputs: {
+            'angular|lib/angular.dart': libAngular,
+            'a|web/main.dart': main,
+            'a|web/second.dart': '''library second;'''
+          },
+          imports: [
+            'import \'main.dart\' as import_0;',
+            'import \'package:angular/angular.dart\' as import_1;',
+          ],
+          classes: {
+            'import_0.Engine': [
+              'const import_1.NgDirective(map: const {'
+                '\'two-way-stuff\': \'<=>twoWayStuff\'})',
+            ]
+          }).then((_) => generates(phases,
+              inputs: {
+                'angular|lib/angular.dart': libAngular,
+                'a|web/main.dart': main,
+                'a|web/second.dart': '''library a.second;'''
+              },
+              imports: [
+                'import \'main.dart\' as import_0;',
+                'import \'package:angular/angular.dart\' as import_1;',
+              ],
+              classes: {
+                'import_0.Engine': [
+                  'const import_1.NgDirective(map: const {'
+                    '\'two-way-stuff\': \'<=>twoWayStuff\'})',
+                ]
+              }));
+    });
   });
 }
 
@@ -568,7 +613,7 @@ const String footer = '''
 
 
 const String libAngular = '''
-library angular.core.annotation;
+library angular.core.annotation_src;
 
 class AbstractNgAnnotation {
   AbstractNgAnnotation({map: const {}});

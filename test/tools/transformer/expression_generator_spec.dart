@@ -181,7 +181,7 @@ import 'package:angular/change_detection/change_detection.dart';
 ''';
 
 const String libAngular = '''
-library angular.core.annotation;
+library angular.core.annotation_src;
 
 class NgComponent {
   const NgComponent({String templateUrl, String selector});
