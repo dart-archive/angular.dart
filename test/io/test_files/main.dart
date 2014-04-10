@@ -1,7 +1,5 @@
 library test_files.main;
 
-import 'package:angular/core/module.dart';
-
 @NgDirective(
     children: NgAnnotation.TRANSCLUDE_CHILDREN,
     selector:'[ng-if]',

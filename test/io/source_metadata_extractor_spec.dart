@@ -15,7 +15,7 @@ void main() {
       sourceMetadataExtractor
       .gatherDirectiveInfo('test/io/test_files/main.dart', sourceCrawler);
 
-      expect(directives, hasLength(4));
+      expect(directives.map((d) => d.selector), unorderedEquals(['[ng-if]', 'my-component']));
 
       DirectiveInfo info = directives.elementAt(1);
       expect(info.expressionAttrs, unorderedEquals(['expr', 'another-expression',
