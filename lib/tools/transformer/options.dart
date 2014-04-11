@@ -42,6 +42,4 @@ class TransformOptions {
     if (sdkDirectory == null)
       throw new ArgumentError('sdkDirectory must be provided.');
   }
-
-  Future<bool> isDartEntry(Asset asset) => isPossibleDartEntry(asset);
 }
