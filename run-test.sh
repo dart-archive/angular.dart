@@ -32,6 +32,9 @@ dart --version
 # run io tests
 dart --checked test/io/all.dart
 
+# run symbol extractor tests
+dart --checked test/tools/symbol_inspector/symbol_inspector_spec.dart
+
 # run transformer tests
 dart --checked test/tools/transformer/all.dart
 
