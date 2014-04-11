@@ -1,11 +1,20 @@
-/**
-*
-* Directives available in the main [angular.dart](#angular/angular) library.
-*
-* This package is imported for you as part of [angular.dart](#angular/angular),
-* and lists all of the basic directives that are part of Angular.
-*
-*/
+ /**
+ *
+ * Directives for [angular.dart](#angular/angular), a web framework for Dart. A directive attaches
+ * a specified behavior to a DOM element.
+ *
+ * This library is included as part of [angular.dart](#angular/angular). It provides all of
+ * the core Directives available in Angular. You can extend Angular by writing your own directives
+ * and providing them as part of a custom library.
+ *
+ * Directives consist of a class specifying the behavior, and a directive annotation (such as a
+ * [Decorator] or a [Component]) that describes when the behavior should be applied.
+ *
+ * For example:
+ *
+ *     <span ng-show="ctrl.isVisible">this text is conditionally visible</span>
+ *
+ */
 library angular.directive;
 
 import 'package:di/di.dart';
