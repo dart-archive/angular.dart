@@ -6,8 +6,8 @@ part of angular.animate;
  * animation framework. This implementation uses the [AnimationLoop] class to
  * queue and run CSS based transition and keyframe animations.
  */
-@NgInjectableService()
-class CssAnimate implements NgAnimate {
+@Injectable()
+class CssAnimate implements Animate {
   static const NG_ANIMATE = "ng-animate";
   static const NG_MOVE = "ng-move";
   static const NG_INSERT = "ng-enter";
@@ -131,7 +131,7 @@ class CssAnimate implements NgAnimate {
 /**
  * Tracked set of currently running css animations grouped by element.
  */
-@NgInjectableService()
+@Injectable()
 class CssAnimationMap {
   final Map<dom.Element, Map<String, CssAnimation>> cssAnimations
       = new Map<dom.Element, Map<String, CssAnimation>>();

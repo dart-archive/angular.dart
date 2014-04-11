@@ -29,7 +29,7 @@ part of angular.core.dom_internal;
  */
 class _Directive {
   final Type type;
-  final AbstractNgAnnotation annotation;
+  final Directive annotation;
 
   _Directive(this.type, this.annotation);
 
@@ -38,7 +38,7 @@ class _Directive {
 
 
 class _ContainsSelector {
-  final AbstractNgAnnotation annotation;
+  final Directive annotation;
   final RegExp regexp;
 
   _ContainsSelector(this.annotation, String regexp)
@@ -252,7 +252,7 @@ class DirectiveSelector {
     elementSelector = new _ElementSelector('');
     attrSelector = <_ContainsSelector>[];
     textSelector = <_ContainsSelector>[];
-    _directives.forEach((AbstractNgAnnotation annotation, Type type) {
+    _directives.forEach((Directive annotation, Type type) {
       var match;
       var selector = annotation.selector;
       List<_SelectorPart> selectorParts;
@@ -371,7 +371,7 @@ class DirectiveSelector {
 /**
  * Factory for creating a [DirectiveSelector].
  */
-@NgInjectableService()
+@Injectable()
 class DirectiveSelectorFactory {
   ElementBinderFactory _binderFactory;
 

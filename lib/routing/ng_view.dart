@@ -55,15 +55,15 @@ part of angular.routing;
  *       <li><a href="/library/23456/overview">Book 23456</a>
  *     </ul>
  */
-@NgDirective(
+@Decorator(
     selector: 'ng-view',
-    module: NgViewDirective.module,
-    visibility: NgDirective.CHILDREN_VISIBILITY)
-class NgViewDirective implements NgDetachAware, RouteProvider {
+    module: NgView.module,
+    visibility: Directive.CHILDREN_VISIBILITY)
+class NgView implements DetachAware, RouteProvider {
   static final Module _module = new Module()
     ..factory(RouteProvider,
-              (i) => i.get(NgViewDirective),
-              visibility: NgDirective.CHILDREN_VISIBILITY);
+              (i) => i.get(NgView),
+              visibility: Directive.CHILDREN_VISIBILITY);
   static module() => _module;
 
   final NgRoutingHelper locationService;
@@ -77,13 +77,13 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
   Scope _scope;
   Route _viewRoute;
 
-  NgViewDirective(this.element, this.viewCache,
+  NgView(this.element, this.viewCache,
                   Injector injector, Router router,
                   this.scope)
       : injector = injector,
         locationService = injector.get(NgRoutingHelper)
   {
-    RouteProvider routeProvider = injector.parent.get(NgViewDirective);
+    RouteProvider routeProvider = injector.parent.get(NgView);
     _route = routeProvider != null ?
         routeProvider.route.newHandle() :
         router.root.newHandle();
@@ -159,8 +159,8 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
  * Class that can be injected to retrieve information about the current route.
  * For example:
  *
- *     @NgComponent(/* ... */)
- *     class MyComponent implement NgDetachAware {
+ *     @Component(/* ... */)
+ *     class MyComponent implement DetachAware {
  *       RouteHandle route;
  *
  *       MyComponent(RouteProvider routeProvider) {

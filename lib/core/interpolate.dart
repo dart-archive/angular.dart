@@ -8,7 +8,7 @@ part of angular.core_internal;
  *     var exp = interpolate('Hello {{name}}!');
  *     expect(exp).toEqual('"Hello "+(name|stringify)+"!"');
  */
-@NgInjectableService()
+@Injectable()
 class Interpolate implements Function {
   final Parser _parse;
 
@@ -48,7 +48,7 @@ class Interpolate implements Function {
       if (startIdx != -1 && endIdx != -1) {
         if (index < startIdx) {
           // Empty strings could be stripped thanks to the stringify
-          // filter
+          // formatter
           expParts.add('"${template.substring(index, startIdx)}"');
         }
         expParts.add('(' + template.substring(startIdx + startLen, endIdx) +

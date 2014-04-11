@@ -6,7 +6,7 @@ part of angular.core.dom_internal;
 * use the Cookies service.
 *
 */
-@NgInjectableService()
+@Injectable()
 class BrowserCookies {
   ExceptionHandler _exceptionHandler;
   dom.Document _document;
@@ -96,7 +96,7 @@ class BrowserCookies {
 /**
  *   Cookies service
  */
-@NgInjectableService()
+@Injectable()
 class Cookies {
   BrowserCookies _browserCookies;
   Cookies(this._browserCookies);

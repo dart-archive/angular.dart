@@ -9,10 +9,10 @@ export 'package:angular/core/parser/eval_calls.dart';
 
 class Chain extends syntax.Chain {
   Chain(List<syntax.Expression> expressions) : super(expressions);
-  eval(scope, [FilterMap filters]) {
+  eval(scope, [FormatterMap formatters]) {
     var result;
     for (int i = 0; i < expressions.length; i++) {
-      var last = expressions[i].eval(scope, filters);
+      var last = expressions[i].eval(scope, formatters);
       if (last != null) result = last;
     }
     return result;
@@ -25,40 +25,40 @@ class Filter extends syntax.Filter {
          this.allArguments)
       : super(expression, name, arguments);
 
-  eval(scope, [FilterMap filters]) =>
-      Function.apply(filters(name), evalList(scope, allArguments, filters));
+  eval(scope, [FormatterMap formatters]) =>
+      Function.apply(formatters(name), evalList(scope, allArguments, formatters));
 }
 
 class Assign extends syntax.Assign {
   Assign(syntax.Expression target, value) : super(target, value);
-  eval(scope, [FilterMap filters]) =>
-      target.assign(scope, value.eval(scope, filters));
+  eval(scope, [FormatterMap formatters]) =>
+      target.assign(scope, value.eval(scope, formatters));
 }
 
 class Conditional extends syntax.Conditional {
   Conditional(syntax.Expression condition,
               syntax.Expression yes, syntax.Expression no)
       : super(condition, yes, no);
-  eval(scope, [FilterMap filters]) => toBool(condition.eval(scope, filters))
-      ? yes.eval(scope, filters)
-      : no.eval(scope, filters);
+  eval(scope, [FormatterMap formatters]) => toBool(condition.eval(scope, formatters))
+      ? yes.eval(scope, formatters)
+      : no.eval(scope, formatters);
 }
 
 class PrefixNot extends syntax.Prefix {
   PrefixNot(syntax.Expression expression) : super('!', expression);
-  eval(scope, [FilterMap filters]) => !toBool(expression.eval(scope, filters));
+  eval(scope, [FormatterMap formatters]) => !toBool(expression.eval(scope, formatters));
 }
 
 class Binary extends syntax.Binary {
   Binary(String operation, syntax.Expression left, syntax.Expression right):
       super(operation, left, right);
-  eval(scope, [FilterMap filters]) {
-    var left = this.left.eval(scope, filters);
+  eval(scope, [FormatterMap formatters]) {
+    var left = this.left.eval(scope, formatters);
     switch (operation) {
-      case '&&': return toBool(left) && toBool(this.right.eval(scope, filters));
-      case '||': return toBool(left) || toBool(this.right.eval(scope, filters));
+      case '&&': return toBool(left) && toBool(this.right.eval(scope, formatters));
+      case '||': return toBool(left) || toBool(this.right.eval(scope, formatters));
     }
-    var right = this.right.eval(scope, filters);
+    var right = this.right.eval(scope, formatters);
 
     // Null check for the operations.
     if (left == null || right == null) {
@@ -97,22 +97,22 @@ class Binary extends syntax.Binary {
 
 class LiteralPrimitive extends syntax.LiteralPrimitive {
   LiteralPrimitive(dynamic value) : super(value);
-  eval(scope, [FilterMap filters]) => value;
+  eval(scope, [FormatterMap formatters]) => value;
 }
 
 class LiteralString extends syntax.LiteralString {
   LiteralString(String value) : super(value);
-  eval(scope, [FilterMap filters]) => value;
+  eval(scope, [FormatterMap formatters]) => value;
 }
 
 class LiteralArray extends syntax.LiteralArray {
   LiteralArray(List<syntax.Expression> elements) : super(elements);
-  eval(scope, [FilterMap filters]) =>
-      elements.map((e) => e.eval(scope, filters)).toList();
+  eval(scope, [FormatterMap formatters]) =>
+      elements.map((e) => e.eval(scope, formatters)).toList();
 }
 
 class LiteralObject extends syntax.LiteralObject {
   LiteralObject(List<String> keys, List<syntax.Expression>values) : super(keys, values);
-  eval(scope, [FilterMap filters]) =>
-      new Map.fromIterables(keys, values.map((e) => e.eval(scope, filters)));
+  eval(scope, [FormatterMap formatters]) =>
+      new Map.fromIterables(keys, values.map((e) => e.eval(scope, formatters)));
 }

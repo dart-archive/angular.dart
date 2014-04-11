@@ -23,7 +23,7 @@ export 'package:angular/core_dom/module_internal.dart';
 export 'package:angular/core/parser/parser.dart';
 export 'package:angular/core/parser/lexer.dart';
 export 'package:angular/directive/module.dart';
-export 'package:angular/filter/module.dart';
+export 'package:angular/formatter/module.dart';
 export 'package:angular/routing/module.dart';
 export 'package:angular/animate/module.dart';
 export 'package:angular/mock/module.dart';

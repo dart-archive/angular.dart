@@ -1,6 +1,6 @@
 part of animation;
 
-@NgComponent(
+@Component(
     selector: 'stress-demo',
     template: '''
       <div class="stress-demo">
@@ -13,7 +13,7 @@ part of animation;
     ''',
     publishAs: 'ctrl',
     applyAuthorStyles: true)
-class StressDemoComponent {
+class StressDemo {
   bool _visible = true;
   final numbers = <int>[1, 2];
 

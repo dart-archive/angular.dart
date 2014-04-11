@@ -122,16 +122,16 @@ class DirectiveMetadataCollectingVisitor {
       // We only care about classes.
       if (declaration is! ClassDeclaration) return;
       ClassDeclaration clazz = declaration;
-      // Check class annotations for presense of NgComponent/NgDirective.
+      // Check class annotations for presense of Component/Decorator.
       DirectiveMetadata meta;
       clazz.metadata.forEach((Annotation ann) {
         if (ann.arguments == null) return; // Ignore non-class annotations.
         // TODO(pavelj): this is not a safe check for the type of the
         // annotations, but good enough for now.
-        if (ann.name.name != 'NgComponent'
-            && ann.name.name != 'NgDirective') return;
+        if (ann.name.name != 'Component'
+            && ann.name.name != 'Decorator') return;
 
-        bool isComponent = ann.name.name == 'NgComponent';
+        bool isComponent = ann.name.name == 'Component';
 
         meta = new DirectiveMetadata()
           ..className = clazz.name.name

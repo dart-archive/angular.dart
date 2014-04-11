@@ -7,7 +7,7 @@ import 'package:angular/core/registry.dart';
 export 'package:angular/core/registry.dart' show
     MetadataExtractor;
 
-var _fieldMetadataCache = new Map<Type, Map<String, AbstractNgFieldAnnotation>>();
+var _fieldMetadataCache = new Map<Type, Map<String, DirectiveAnnotation>>();
 
 class DynamicMetadataExtractor implements MetadataExtractor {
   final _fieldAnnotations = [
@@ -30,19 +30,19 @@ class DynamicMetadataExtractor implements MetadataExtractor {
   }
 
   map(Type type, obj) {
-    if (obj is AbstractNgAnnotation) {
+    if (obj is Directive) {
       return mapDirectiveAnnotation(type, obj);
     } else {
       return obj;
     }
   }
 
-  AbstractNgAnnotation mapDirectiveAnnotation(Type type, AbstractNgAnnotation annotation) {
+  Directive mapDirectiveAnnotation(Type type, Directive annotation) {
     var match;
     var fieldMetadata = fieldMetadataExtractor(type);
     if (fieldMetadata.isNotEmpty) {
       var newMap = annotation.map == null ? {} : new Map.from(annotation.map);
-      fieldMetadata.forEach((String fieldName, AbstractNgFieldAnnotation ann) {
+      fieldMetadata.forEach((String fieldName, DirectiveAnnotation ann) {
         var attrName = ann.attrName;
         if (newMap.containsKey(attrName)) {
           throw 'Mapping for attribute $attrName is already defined (while '
@@ -56,12 +56,12 @@ class DynamicMetadataExtractor implements MetadataExtractor {
   }
 
 
-  Map<String, AbstractNgFieldAnnotation> fieldMetadataExtractor(Type type) =>
+  Map<String, DirectiveAnnotation> fieldMetadataExtractor(Type type) =>
       _fieldMetadataCache.putIfAbsent(type, () => _fieldMetadataExtractor(type));
 
-  Map<String, AbstractNgFieldAnnotation> _fieldMetadataExtractor(Type type) {
+  Map<String, DirectiveAnnotation> _fieldMetadataExtractor(Type type) {
     ClassMirror cm = reflectType(type);
-    final fields = <String, AbstractNgFieldAnnotation>{};
+    final fields = <String, DirectiveAnnotation>{};
     cm.declarations.forEach((Symbol name, DeclarationMirror decl) {
       if (decl is VariableMirror ||
       decl is MethodMirror && (decl.isGetter || decl.isSetter)) {
@@ -76,7 +76,7 @@ class DynamicMetadataExtractor implements MetadataExtractor {
               throw 'Attribute annotation for $fieldName is defined more '
               'than once in $type';
             }
-            fields[fieldName] = meta.reflectee as AbstractNgFieldAnnotation;
+            fields[fieldName] = meta.reflectee as DirectiveAnnotation;
           }
         });
       }

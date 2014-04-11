@@ -1,4 +1,4 @@
-part of angular.filter;
+part of angular.formatter_internal;
 
 /**
  * Converts string to lowercase.
@@ -7,7 +7,7 @@ part of angular.filter;
  *
  *     {{ lowercase_expression | lowercase }}
  */
-@NgFilter(name:'lowercase')
+@Formatter(name:'lowercase')
 class Lowercase implements Function {
   call(String text) => text == null ? text : text.toLowerCase();
 }

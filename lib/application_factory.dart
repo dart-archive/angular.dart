@@ -35,7 +35,7 @@ import 'dart:html';
     'angular',
     'angular.core_internal',
     'angular.core.dom_internal',
-    'angular.filter',
+    'angular.formatter',
     'angular.perf',
     'angular.directive',
     'angular.routing',
@@ -47,11 +47,11 @@ import 'dart:html';
     NodeTreeSanitizer,
 ],
 metaTargets: const [
-    NgInjectableService,
-    NgDirective,
-    NgController,
-    NgComponent,
-    NgFilter
+    Injectable,
+    Decorator,
+    Controller,
+    Component,
+    Formatter
 ])
 import 'dart:mirrors' show MirrorsUsed;
 

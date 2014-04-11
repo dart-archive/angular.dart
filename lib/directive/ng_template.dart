@@ -18,12 +18,12 @@ part of angular.directive;
  *
  * Refer [TemplateCache] for a **full example** as well as more information.
  */
-@NgDirective(
+@Decorator(
   selector: 'template[type=text/ng-template]',
   map: const {'id': '@templateUrl'})
-@NgDirective(
+@Decorator(
   selector: 'script[type=text/ng-template]',
-  children: AbstractNgAnnotation.IGNORE_CHILDREN,
+  children: Directive.IGNORE_CHILDREN,
   map: const {'id': '@templateUrl'})
 class NgTemplate {
   final dom.Element element;

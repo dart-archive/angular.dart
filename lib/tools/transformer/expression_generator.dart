@@ -81,7 +81,7 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
         .where((id) => id != null)
         .toList();
 
-    // Get all of the contents of templates in @NgComponent(templateUrl:'...')
+    // Get all of the contents of templates in @Component(templateUrl:'...')
     gatherReferencedUris(transform, resolver, options,
         templatesOnly: true).then((templates) {
       templates.values.forEach(controller.add);

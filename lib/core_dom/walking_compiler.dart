@@ -1,6 +1,6 @@
 part of angular.core.dom_internal;
 
-@NgInjectableService()
+@Injectable()
 class WalkingCompiler implements Compiler {
   final Profiler _perf;
   final Expando _expando;

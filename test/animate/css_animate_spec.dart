@@ -7,7 +7,7 @@ import '../_specs.dart';
 main() {
   describe('CssAnimate', () {
     TestBed _;
-    NgAnimate animate;
+    Animate animate;
     MockAnimationLoop runner;
 
     beforeEach(inject((TestBed tb, Expando expand) {

@@ -7,7 +7,7 @@ void main() {
 
     describe('classes', () {
       it('should add classes to the element on domWrite',
-          (TestBed _, NgAnimate animate) {
+          (TestBed _, Animate animate) {
 
         var scope = _.rootScope;
         var element = e('<div></div>');
@@ -27,7 +27,7 @@ void main() {
       });
 
       it('should remove classes from the element on domWrite',
-          (TestBed _, NgAnimate animate) {
+          (TestBed _, Animate animate) {
 
         var scope = _.rootScope;
         var element = e('<div class="one two three four"></div>');
@@ -50,7 +50,7 @@ void main() {
       });
 
       it('should always apply the last dom operation on the given className',
-          (TestBed _, NgAnimate animate) {
+          (TestBed _, Animate animate) {
 
         var scope = _.rootScope;
         var element = e('<div></div>');
@@ -79,7 +79,7 @@ void main() {
 
   describe('attributes', () {
     it('should set attributes on domWrite to the element',
-        (TestBed _, NgAnimate animate) {
+        (TestBed _, Animate animate) {
 
       var scope = _.rootScope;
       var element = e('<div></div>');
@@ -99,7 +99,7 @@ void main() {
     });
 
     it('should remove attributes from the element on domWrite ',
-        (TestBed _, NgAnimate animate) {
+        (TestBed _, Animate animate) {
 
       var scope = _.rootScope;
       var element = e('<div id="foo" title="bar"></div>');
@@ -118,7 +118,7 @@ void main() {
     });
 
     it('should always apply the last operation on the attribute',
-        (TestBed _, NgAnimate animate) {
+        (TestBed _, Animate animate) {
 
       var scope = _.rootScope;
       var element = e('<div></div>');

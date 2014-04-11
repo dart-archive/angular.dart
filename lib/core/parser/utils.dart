@@ -19,7 +19,7 @@ class EvalError {
 }
 
 /// Evaluate the [list] in context of the [scope].
-List evalList(scope, List<Expression> list, [FilterMap filters]) {
+List evalList(scope, List<Expression> list, [FormatterMap formatters]) {
   final length = list.length;
   int cacheLength = _evalListCache.length;
   for (; cacheLength <= length; cacheLength++) {
@@ -27,7 +27,7 @@ List evalList(scope, List<Expression> list, [FilterMap filters]) {
   }
   List result = _evalListCache[length];
   for (int i = 0; i < length; i++) {
-    result[i] = list[i].eval(scope, filters);
+    result[i] = list[i].eval(scope, formatters);
   }
   return result;
 }

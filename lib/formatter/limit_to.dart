@@ -1,4 +1,4 @@
-part of angular.filter;
+part of angular.formatter_internal;
 
 /**
  * Creates a new List or String containing only a prefix/suffix of the
@@ -34,7 +34,7 @@ part of angular.filter;
  *     <li>i</li>
  *     <li>j</li>
  */
-@NgFilter(name:'limitTo')
+@Formatter(name:'limitTo')
 class LimitTo implements Function {
   Injector _injector;
 

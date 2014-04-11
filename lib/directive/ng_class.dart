@@ -62,7 +62,7 @@ part of angular.directive;
  *     }
  *
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-class]',
     map: const {'ng-class': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class'])
@@ -97,7 +97,7 @@ class NgClass extends _NgClassBase {
  *       color: blue;
  *     }
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-class-odd]',
     map: const {'ng-class-odd': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-odd'])
@@ -132,7 +132,7 @@ class NgClassOdd extends _NgClassBase {
  *       color: blue;
  *     }
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-class-even]',
     map: const {'ng-class-even': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-even'])

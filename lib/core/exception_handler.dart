@@ -7,7 +7,7 @@ part of angular.core_internal;
  * In your application it is expected that this service is overridden with
  * your implementation which can store the exception for later processing.
  */
-@NgInjectableService()
+@Injectable()
 class ExceptionHandler {
 
  /**

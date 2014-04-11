@@ -5,26 +5,26 @@ part of angular.directive;
  * on if an action is set, the form will automatically either allow
  * or prevent the default browser submission from occurring.
  */
-@NgDirective(
+@Decorator(
     selector: 'form',
     module: NgForm.module,
-    visibility: NgDirective.CHILDREN_VISIBILITY)
-@NgDirective(
+    visibility: Directive.CHILDREN_VISIBILITY)
+@Decorator(
     selector: 'fieldset',
     module: NgForm.module,
-    visibility: NgDirective.CHILDREN_VISIBILITY)
-@NgDirective(
+    visibility: Directive.CHILDREN_VISIBILITY)
+@Decorator(
     selector: '.ng-form',
     module: NgForm.module,
-    visibility: NgDirective.CHILDREN_VISIBILITY)
-@NgDirective(
+    visibility: Directive.CHILDREN_VISIBILITY)
+@Decorator(
     selector: '[ng-form]',
     module: NgForm.module,
     map: const { 'ng-form': '@name' },
-    visibility: NgDirective.CHILDREN_VISIBILITY)
+    visibility: Directive.CHILDREN_VISIBILITY)
 class NgForm extends NgControl {
   static final Module _module = new Module()
-    ..factory(NgControl, (i) => i.get(NgForm), visibility: NgDirective.CHILDREN_VISIBILITY);
+    ..factory(NgControl, (i) => i.get(NgForm), visibility: Directive.CHILDREN_VISIBILITY);
   static module() => _module;
 
   final Scope _scope;
@@ -39,7 +39,7 @@ class NgForm extends NgControl {
    * * [element] - The form DOM element.
    * * [injector] - An instance of Injector.
    */
-  NgForm(this._scope, NgElement element, Injector injector, NgAnimate animate) :
+  NgForm(this._scope, NgElement element, Injector injector, Animate animate) :
     super(element, injector, animate) {
 
     if (!element.node.attributes.containsKey('action')) {

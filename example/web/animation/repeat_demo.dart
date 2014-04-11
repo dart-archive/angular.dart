@@ -1,6 +1,6 @@
 part of animation;
 
-@NgComponent(
+@Component(
     selector: 'repeat-demo',
     template: '''
       <div class="repeat-demo">
@@ -18,7 +18,7 @@ part of animation;
     ''',
     publishAs: 'ctrl',
     applyAuthorStyles: true)
-class RepeatDemoComponent {
+class RepeatDemo {
   var thing = 0;
   final items = [];
 

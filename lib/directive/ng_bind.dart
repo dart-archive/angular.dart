@@ -15,7 +15,7 @@ part of angular.directive;
  *
  * An alternative solution to this problem would be using the ngCloak directive.
  */
-@NgDirective(
+@Decorator(
   selector: '[ng-bind]',
   map: const {'ng-bind': '=>value'})
 class NgBind {

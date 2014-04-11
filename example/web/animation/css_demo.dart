@@ -1,6 +1,6 @@
 part of animation;
 
-@NgComponent(
+@Component(
     selector: 'css-demo',
     template: '''
       <div class="css-demo">
@@ -24,7 +24,7 @@ part of animation;
     ''',
     publishAs: 'ctrl',
     applyAuthorStyles: true)
-class CssDemoComponent {
+class CssDemo {
   bool stateA = false;
   bool stateB = false;
   bool stateC = false;

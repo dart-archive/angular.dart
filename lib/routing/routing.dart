@@ -110,11 +110,11 @@ typedef void RouteInitializerFn(Router router, RouteViewFactory viewFactory);
  * A singleton helper service that handles routing initialization, global
  * events and view registries.
  */
-@NgInjectableService()
+@Injectable()
 class NgRoutingHelper {
   final Router router;
   final Application _ngApp;
-  List<NgViewDirective> portals = <NgViewDirective>[];
+  List<NgView> portals = <NgView>[];
   Map<String, _View> _templates = new Map<String, _View>();
 
   NgRoutingHelper(RouteInitializer initializer, Injector injector, this.router,
@@ -135,7 +135,7 @@ class NgRoutingHelper {
     router.onRouteStart.listen((RouteStartEvent routeEvent) {
       routeEvent.completed.then((success) {
         if (success) {
-          portals.forEach((NgViewDirective p) => p._maybeReloadViews());
+          portals.forEach((NgView p) => p._maybeReloadViews());
         }
       });
     });
@@ -154,7 +154,7 @@ class NgRoutingHelper {
       if (viewDef == null) continue;
       var templateUrl = viewDef.template;
 
-      NgViewDirective view = portals.lastWhere((NgViewDirective v) {
+      NgView view = portals.lastWhere((NgView v) {
         return _routePath(route) != _routePath(v._route) &&
             _routePath(route).startsWith(_routePath(v._route));
       }, orElse: () => null);
@@ -170,11 +170,11 @@ class NgRoutingHelper {
     _templates[_routePath(route)] = new _View(template, modules);
   }
 
-  _registerPortal(NgViewDirective ngView) {
+  _registerPortal(NgView ngView) {
     portals.add(ngView);
   }
 
-  _unregisterPortal(NgViewDirective ngView) {
+  _unregisterPortal(NgView ngView) {
     portals.remove(ngView);
   }
 }

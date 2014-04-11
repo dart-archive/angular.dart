@@ -2,7 +2,7 @@ library ng_base_css_spec;
 
 import '../_specs.dart';
 
-@NgComponent(
+@Component(
     selector: 'html-and-css',
     templateUrl: 'simple.html',
     cssUrl: 'simple.css')

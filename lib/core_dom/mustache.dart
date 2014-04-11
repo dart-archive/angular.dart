@@ -1,21 +1,21 @@
 part of angular.core.dom_internal;
 
 // This Directive is special and does not go through injection.
-@NgDirective(selector: r':contains(/{{.*}}/)')
-class NgTextMustacheDirective {
+@Decorator(selector: r':contains(/{{.*}}/)')
+class TextMustache {
   final dom.Node _element;
 
-  NgTextMustacheDirective(this._element,
+  TextMustache(this._element,
                           String template,
                           Interpolate interpolate,
                           Scope scope,
-                          FilterMap filters) {
+                          FormatterMap formatters) {
     String expression = interpolate(template);
 
     scope.watch(expression,
                 _updateMarkup,
                 canChangeModel: false,
-                filters: filters);
+                formatters: formatters);
   }
 
   void _updateMarkup(text, previousText) {
@@ -24,19 +24,19 @@ class NgTextMustacheDirective {
 }
 
 // This Directive is special and does not go through injection.
-@NgDirective(selector: r'[*=/{{.*}}/]')
-class NgAttrMustacheDirective {
+@Decorator(selector: r'[*=/{{.*}}/]')
+class AttrMustache {
   bool _hasObservers;
   Watch _watch;
   NodeAttrs _attrs;
   String _attrName;
 
   // This Directive is special and does not go through injection.
-  NgAttrMustacheDirective(this._attrs,
+  AttrMustache(this._attrs,
                           String template,
                           Interpolate interpolate,
                           Scope scope,
-                          FilterMap filters) {
+                          FormatterMap formatters) {
     var eqPos = template.indexOf('=');
     _attrName = template.substring(0, eqPos);
     String expression = interpolate(template.substring(eqPos + 1));
@@ -47,7 +47,7 @@ class NgAttrMustacheDirective {
     if (_hasObservers != hasObservers) {
       _hasObservers = hasObservers;
       if (_watch != null) _watch.remove();
-        _watch = scope.watch(expression, _updateMarkup, filters: filters,
+        _watch = scope.watch(expression, _updateMarkup, formatters: formatters,
             canChangeModel: _hasObservers);
       }
     });
