@@ -44,6 +44,8 @@ else
   # run io tests
   dart -c test/io/all.dart
 
+  dart --checked test/tools/symbol_inspector/symbol_inspector_spec.dart
+
   ./scripts/generate-expressions.sh
   ./scripts/analyze.sh
 
