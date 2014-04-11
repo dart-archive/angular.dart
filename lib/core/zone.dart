@@ -28,11 +28,11 @@ class LongStackTrace {
 /**
  * A better zone API which implements onTurnDone.
  */
-class NgZone {
+class VmTurnZone {
   final async.Zone _outerZone = async.Zone.current;
   async.Zone _zone;
 
-  NgZone() {
+  VmTurnZone() {
     _zone = _outerZone.fork(specification: new async.ZoneSpecification(
         run: _onRun,
         runUnary: _onRunUnary,
@@ -150,7 +150,7 @@ class NgZone {
   /**
    * Allows one to escape the auto-digest mechanism of Angular.
    *
-   *     myFunction(NgZone zone, Element element) {
+   *     myFunction(VmTurnZone zone, Element element) {
    *       element.onClick.listen(() {
    *         // auto-digest will run after element click.
    *       });

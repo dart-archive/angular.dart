@@ -2,34 +2,34 @@ library templateurl_spec;
 
 import '../_specs.dart';
 
-@NgComponent(
+@Component(
     selector: 'simple-url',
     templateUrl: 'simple.html')
 class SimpleUrlComponent {
 }
 
-@NgComponent(
+@Component(
     selector: 'html-and-css',
     templateUrl: 'simple.html',
     cssUrl: 'simple.css')
 class HtmlAndCssComponent {
 }
 
-@NgComponent(
+@Component(
     selector: 'html-and-css',
     templateUrl: 'simple.html',
     cssUrl: const ['simple.css', 'another.css'])
 class HtmlAndMultipleCssComponent {
 }
 
-@NgComponent(
+@Component(
     selector: 'inline-with-css',
     template: '<div>inline!</div>',
     cssUrl: 'simple.css')
 class InlineWithCssComponent {
 }
 
-@NgComponent(
+@Component(
     selector: 'only-css',
     cssUrl: 'simple.css')
 class OnlyCssComponent {
@@ -54,7 +54,7 @@ void main() {
 
       it('should use the UrlRewriter for both HTML and CSS URLs', async(inject(
           (Http http, Compiler compile, Scope rootScope, Logger log,
-           Injector injector, NgZone zone, MockHttpBackend backend,
+           Injector injector, VmTurnZone zone, MockHttpBackend backend,
            DirectiveMap directives) {
 
         backend

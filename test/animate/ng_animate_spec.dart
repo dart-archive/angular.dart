@@ -6,8 +6,8 @@ main() {
   module((Module module) {
     module
       ..type(AnimationOptimizer)
-      ..type(NgAnimateDirective)
-      ..type(NgAnimateChildrenDirective);
+      ..type(NgAnimate)
+      ..type(NgAnimateChildren);
   });
   describe('ng-animate', () {
     TestBed _;
@@ -17,8 +17,8 @@ main() {
       module((Module module) {
         module
           ..type(AnimationOptimizer)
-          ..type(NgAnimateDirective)
-          ..type(NgAnimateChildrenDirective);
+          ..type(NgAnimate)
+          ..type(NgAnimateChildren);
       });
       inject((TestBed tb, AnimationOptimizer opt) {
         _ = tb;

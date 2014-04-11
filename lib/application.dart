@@ -77,29 +77,29 @@ import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/directive/module.dart';
-import 'package:angular/filter/module.dart';
+import 'package:angular/formatter/module_internal.dart';
 import 'package:angular/routing/module.dart';
 import 'package:angular/introspection_js.dart';
 
 /**
  * This is the top level module which describes all Angular components,
- * including services, filters and directives. When instantiating an Angular application
+ * including services, formatters and directives. When instantiating an Angular application
  * through [applicationFactory](#angular-app-factory), AngularModule is automatically included.
  *
  * You can use AngularModule explicitly when creating a custom Injector that needs to know
- * about Angular services, filters, and directives. When writing tests, this is typically done for
+ * about Angular services, formatters, and directives. When writing tests, this is typically done for
  * you by the [SetUpInjector](#angular-mock@id_setUpInjector) method.
  *
 
  */
 class AngularModule extends Module {
   AngularModule() {
-    install(new NgCoreModule());
-    install(new NgCoreDomModule());
-    install(new NgDirectiveModule());
-    install(new NgFilterModule());
-    install(new NgPerfModule());
-    install(new NgRoutingModule());
+    install(new CoreModule());
+    install(new CoreDomModule());
+    install(new DecoratorFormatter());
+    install(new FormatterModule());
+    install(new PerfModule());
+    install(new RoutingModule());
 
     type(MetadataExtractor);
     value(Expando, elementExpando);
@@ -130,7 +130,7 @@ abstract class Application {
     return element;
   }
 
-  final NgZone zone = new NgZone();
+  final VmTurnZone zone = new VmTurnZone();
   final AngularModule ngModule = new AngularModule();
   final List<Module> modules = <Module>[];
   dom.Element element;
@@ -139,7 +139,7 @@ abstract class Application {
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
     modules.add(ngModule);
-    ngModule..value(NgZone, zone)
+    ngModule..value(VmTurnZone, zone)
             ..value(Application, this)
             ..factory(dom.Node, (i) => i.get(Application).element);
   }

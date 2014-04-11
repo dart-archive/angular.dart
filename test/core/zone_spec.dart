@@ -14,7 +14,7 @@ void main() {
     });
 
     beforeEach((Logger log, ExceptionHandler eh) {
-      zone = new NgZone();
+      zone = new VmTurnZone();
       zone.onTurnDone = () {
         log('onTurnDone');
       };
@@ -48,7 +48,7 @@ void main() {
 
 
       it('should allow executing code outside the zone', () {
-        var zone = new NgZone();
+        var zone = new VmTurnZone();
         var outerZone = Zone.current;
         var ngZone;
         var outsideZone;

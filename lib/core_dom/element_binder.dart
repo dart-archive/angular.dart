@@ -24,7 +24,7 @@ class TemplateElementBinder extends ElementBinder {
     assert(templateViewFactory != null);
     nodeModule
       ..factory(ViewPort, (_) =>
-          new ViewPort(node, parentInjector.get(NgAnimate)))
+          new ViewPort(node, parentInjector.get(Animate)))
       ..value(ViewFactory, templateViewFactory)
       ..factory(BoundViewFactory, (Injector injector) =>
           templateViewFactory.bind(injector));
@@ -58,7 +58,7 @@ class ElementBinder {
   final bool hasTemplate = false;
 
   bool get shouldCompileChildren =>
-      childMode == AbstractNgAnnotation.COMPILE_CHILDREN;
+      childMode == Directive.COMPILE_CHILDREN;
 
   var _directiveCache;
   List<DirectiveRef> get _usableDirectiveRefs {
@@ -70,7 +70,7 @@ class ElementBinder {
   bool get hasDirectivesOrEvents =>
       _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
-  _createAttrMappings(controller, scope, DirectiveRef ref, nodeAttrs, filters, tasks) {
+  _createAttrMappings(controller, scope, DirectiveRef ref, nodeAttrs, formatters, tasks) {
     ref.mappings.forEach((MappingParts p) {
       var attrName = p.attrName;
       var dstExpression = p.dstExpression;
@@ -107,7 +107,7 @@ class ElementBinder {
               tasks.completeTask(taskId);
               return value;
             }
-          }, filters: filters);
+          }, formatters: formatters);
           if (expressionFn.isAssignable) {
             scope.watch(dstExpression, (outboundValue, _) {
               if (!viewOutbound) {
@@ -116,7 +116,7 @@ class ElementBinder {
                 expressionFn.assign(scope.context, outboundValue);
                 tasks.completeTask(taskId);
               }
-            }, context: controller, filters: filters);
+            }, context: controller, formatters: formatters);
           }
           break;
 
@@ -128,7 +128,7 @@ class ElementBinder {
           scope.watch(nodeAttrs[attrName], (v, _) {
             dstPathFn.assign(controller, v);
             tasks.completeTask(taskId);
-          }, filters: filters);
+          }, formatters: formatters);
           break;
 
         case '=>!': //  one-way, one-time
@@ -140,7 +140,7 @@ class ElementBinder {
             if (dstPathFn.assign(controller, value) != null) {
               watch.remove();
             }
-          }, filters: filters);
+          }, formatters: formatters);
           break;
 
         case '&': // callback
@@ -151,7 +151,7 @@ class ElementBinder {
     });
   }
 
-  _link(nodeInjector, probe, scope, nodeAttrs, filters) {
+  _link(nodeInjector, probe, scope, nodeAttrs, formatters) {
     _usableDirectiveRefs.forEach((DirectiveRef ref) {
       var linkTimer;
       try {
@@ -161,17 +161,17 @@ class ElementBinder {
         probe.directives.add(controller);
         assert((linkMapTimer = _perf.startTimer('ng.view.link.map', ref.type)) != false);
 
-        if (ref.annotation is NgController) {
-          scope.context[(ref.annotation as NgController).publishAs] = controller;
+        if (ref.annotation is Controller) {
+          scope.context[(ref.annotation as Controller).publishAs] = controller;
         }
 
-        var tasks = new _TaskList(controller is NgAttachAware ? () {
+        var tasks = new _TaskList(controller is AttachAware ? () {
           if (scope.isAttached) controller.attach();
         } : null);
 
-        _createAttrMappings(controller, scope, ref, nodeAttrs, filters, tasks);
+        _createAttrMappings(controller, scope, ref, nodeAttrs, formatters, tasks);
 
-        if (controller is NgAttachAware) {
+        if (controller is AttachAware) {
           var taskId = tasks.registerTask();
           Watch watch;
           watch = scope.watch('1', // Cheat a bit.
@@ -183,7 +183,7 @@ class ElementBinder {
 
         tasks.doneRegistering();
 
-        if (controller is NgDetachAware) {
+        if (controller is DetachAware) {
           scope.on(ScopeEvent.DESTROY).listen((_) => controller.detach());
         }
 
@@ -196,28 +196,28 @@ class ElementBinder {
 
   _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
                             visibility) {
-    if (ref.type == NgTextMustacheDirective) {
-      nodeModule.factory(NgTextMustacheDirective, (Injector injector) {
-        return new NgTextMustacheDirective(node, ref.value, injector.get(Interpolate),
-            injector.get(Scope), injector.get(FilterMap));
+    if (ref.type == TextMustache) {
+      nodeModule.factory(TextMustache, (Injector injector) {
+        return new TextMustache(node, ref.value, injector.get(Interpolate),
+            injector.get(Scope), injector.get(FormatterMap));
       });
-    } else if (ref.type == NgAttrMustacheDirective) {
+    } else if (ref.type == AttrMustache) {
       if (nodesAttrsDirectives.isEmpty) {
-        nodeModule.factory(NgAttrMustacheDirective, (Injector injector) {
+        nodeModule.factory(AttrMustache, (Injector injector) {
           var scope = injector.get(Scope);
           var interpolate = injector.get(Interpolate);
           for (var ref in nodesAttrsDirectives) {
-            new NgAttrMustacheDirective(nodeAttrs, ref.value, interpolate, scope,
-                injector.get(FilterMap));
+            new AttrMustache(nodeAttrs, ref.value, interpolate, scope,
+                injector.get(FormatterMap));
           }
         });
       }
       nodesAttrsDirectives.add(ref);
-    } else if (ref.annotation is NgComponent) {
+    } else if (ref.annotation is Component) {
       //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
       // TODO(misko): there should be no need to wrap function like this.
       nodeModule.factory(ref.type, (Injector injector) {
-        var component = ref.annotation as NgComponent;
+        var component = ref.annotation as Component;
         Compiler compiler = injector.get(Compiler);
         Scope scope = injector.get(Scope);
         ViewCache viewCache = injector.get(ViewCache);
@@ -249,7 +249,7 @@ class ElementBinder {
   Injector bind(View view, Injector parentInjector, dom.Node node) {
     Injector nodeInjector;
     Scope scope = parentInjector.get(Scope);
-    FilterMap filters = parentInjector.get(FilterMap);
+    FormatterMap formatters = parentInjector.get(FormatterMap);
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
     ElementProbe probe;
 
@@ -269,9 +269,9 @@ class ElementBinder {
           ..factory(ElementProbe, (_) => probe);
 
       directiveRefs.forEach((DirectiveRef ref) {
-        AbstractNgAnnotation annotation = ref.annotation;
+        Directive annotation = ref.annotation;
         var visibility = ref.annotation.visibility;
-        if (ref.annotation is NgController) {
+        if (ref.annotation is Controller) {
           scope = scope.createChild(new PrototypeMap(scope.context));
           nodeModule.value(Scope, scope);
         }
@@ -292,7 +292,7 @@ class ElementBinder {
       assert(_perf.stopTimer(timerId) != false);
     }
 
-    _link(nodeInjector, probe, scope, nodeAttrs, filters);
+    _link(nodeInjector, probe, scope, nodeAttrs, formatters);
 
     onEvents.forEach((event, value) {
       view.registerEvent(EventHandler.attrNameToEventName(event));

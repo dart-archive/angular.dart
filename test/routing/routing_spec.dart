@@ -298,7 +298,7 @@ main() {
     }));
 
 
-    it('should synchronously load new filters from modules ', async(() {
+    it('should synchronously load new formatters from modules ', async(() {
       initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
@@ -324,7 +324,7 @@ main() {
     }));
 
 
-    it('should asynchronously load new filters from modules ', async(() {
+    it('should asynchronously load new formatters from modules ', async(() {
       initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
@@ -360,14 +360,14 @@ void initRoutes(Router router, RouteViewFactory view) {
   _router = router;
 }
 
-@NgDirective(selector: '[make-it-new]')
+@Decorator(selector: '[make-it-new]')
 class NewDirective {
   NewDirective(Element element) {
     element.innerHtml = 'New!';
   }
 }
 
-@NgFilter(name:'hello')
+@Formatter(name:'hello')
 class HelloFilter {
   call(String str) {
     return 'Hello, $str!';

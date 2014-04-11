@@ -22,10 +22,10 @@ part of angular.directive;
  * template it deletes the `ngCloak` element attribute, which makes the compiled
  * element visible.
  */
-@NgDirective(selector: '[ng-cloak]')
-@NgDirective(selector: '.ng-cloak')
+@Decorator(selector: '[ng-cloak]')
+@Decorator(selector: '.ng-cloak')
 class NgCloak {
-  NgCloak(dom.Element element, NgAnimate animate) {
+  NgCloak(dom.Element element, Animate animate) {
     element.attributes.remove('ng-cloak');
     animate.removeClass(element, 'ng-cloak');
   }

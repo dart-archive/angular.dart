@@ -1,4 +1,4 @@
-part of angular.filter;
+part of angular.formatter_internal;
 
 typedef dynamic _Mapper(dynamic e);
 
@@ -104,7 +104,7 @@ typedef dynamic _Mapper(dynamic e);
  * list itself might be provided as an expression that is looked up on the scope
  * chain.
  */
-@NgFilter(name: 'orderBy')
+@Formatter(name: 'orderBy')
 class OrderBy implements Function {
   Parser _parser;
 

@@ -13,11 +13,11 @@ part of angular.directive;
  * directive without changing the location or causing page reloads, e.g.:
  * `<a href="" ng-click="model.save()">Save</a>`
  */
-@NgDirective(selector: 'a[href]')
-class NgA {
+@Decorator(selector: 'a[href]')
+class AHref {
   final dom.Element element;
 
-  NgA(this.element, NgZone zone) {
+  AHref(this.element, VmTurnZone zone) {
     if (element.attributes["href"] == "") {
       zone.runOutsideAngular(() {
         element.onClick.listen((event) {

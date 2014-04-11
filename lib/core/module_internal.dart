@@ -29,14 +29,14 @@ part "scope.dart";
 part "zone.dart";
 
 
-class NgCoreModule extends Module {
-  NgCoreModule() {
+class CoreModule extends Module {
+  CoreModule() {
     type(ScopeDigestTTL);
 
     type(MetadataExtractor);
     type(Cache);
     type(ExceptionHandler);
-    type(FilterMap);
+    type(FormatterMap);
     type(Interpolate);
     type(RootScope);
     factory(Scope, (injector) => injector.get(RootScope));
@@ -45,7 +45,7 @@ class NgCoreModule extends Module {
     type(ScopeStatsEmitter);
     factory(ScopeStatsConfig, (i) => new ScopeStatsConfig());
     value(Object, {}); // RootScope context
-    type(NgZone);
+    type(VmTurnZone);
 
     type(Parser, implementedBy: DynamicParser);
     type(ParserBackend, implementedBy: DynamicParserBackend);

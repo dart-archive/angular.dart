@@ -17,10 +17,10 @@ directChildrenVisibility(Injector requesting, Injector defining) {
   return identical(requesting.parent, defining) || localVisibility(requesting, defining);
 }
 
-AbstractNgAnnotation cloneWithNewMap(AbstractNgAnnotation annotation, map)
+Directive cloneWithNewMap(Directive annotation, map)
     => annotation._cloneWithNewMap(map);
 
-String mappingSpec(AbstractNgFieldAnnotation annotation) => annotation._mappingSpec;
+String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
 
 /**
@@ -29,14 +29,27 @@ String mappingSpec(AbstractNgFieldAnnotation annotation) => annotation._mappingS
  * classes need to have a static factory generated when using static angular, and
  * therefore is required on any injectable class.
  */
-class NgInjectableService {
-  const NgInjectableService();
+class Injectable {
+  const Injectable();
 }
 
 /**
- * Abstract supper class of [NgController], [NgComponent], and [NgDirective].
+ * Abstract supper class of [Controller], [Component], and [Decorator].
  */
-abstract class AbstractNgAnnotation {
+abstract class Directive {
+
+  /// The directive can only be injected to other directives on the same element.
+  static const Visibility LOCAL_VISIBILITY = localVisibility;
+
+  /// The directive can be injected to other directives on the same or child elements.
+  static const Visibility CHILDREN_VISIBILITY = null;
+
+  /**
+   * The directive on this element can only be injected to other directives
+   * declared on elements which are direct children of the current element.
+   */
+  static const Visibility DIRECT_CHILDREN_VISIBILITY = directChildrenVisibility;
+
   /**
    * CSS selector which will trigger this component/directive.
    * CSS Selectors are limited to a single element and can contain:
@@ -86,12 +99,12 @@ abstract class AbstractNgAnnotation {
    * directives/components. This attribute controls whether the
    * controller is available to others.
    *
-   * * `local` [NgDirective.LOCAL_VISIBILITY] - the controller can be injected
+   * * `local` [Directive.LOCAL_VISIBILITY] - the controller can be injected
    *   into other directives / components on the same DOM element.
-   * * `children` [NgDirective.CHILDREN_VISIBILITY] - the controller can be
+   * * `children` [Directive.CHILDREN_VISIBILITY] - the controller can be
    *   injected into other directives / components on the same or child DOM
    *   elements.
-   * * `direct_children` [NgDirective.DIRECT_CHILDREN_VISIBILITY] - the
+   * * `direct_children` [Directive.DIRECT_CHILDREN_VISIBILITY] - the
    *   controller can be injected into other directives / components on the
    *   direct children of the current DOM element.
    */
@@ -105,19 +118,19 @@ abstract class AbstractNgAnnotation {
    *
    * Example:
    *
-   *     @NgDirective(
+   *     @Decorator(
    *       selector: '[foo]',
    *       module: Foo.moduleFactory)
    *     class Foo {
    *       static moduleFactory() => new Module()
-   *         ..type(SomeTypeA, visibility: NgDirective.LOCAL_VISIBILITY);
+   *         ..type(SomeTypeA, visibility: Directive.LOCAL_VISIBILITY);
    *     }
    *
    * When specifying types, factories or values in the module, notice that
    * `Visibility` maps to:
-   *  * [NgDirective.LOCAL_VISIBILITY]
-   *  * [NgDirective.CHILDREN_VISIBILITY]
-   *  * [NgDirective.DIRECT_CHILDREN_VISIBILITY]
+   *  * [Directive.LOCAL_VISIBILITY]
+   *  * [Directive.CHILDREN_VISIBILITY]
+   *  * [Directive.DIRECT_CHILDREN_VISIBILITY]
    */
   final Function module;
 
@@ -155,7 +168,7 @@ abstract class AbstractNgAnnotation {
    *                   selection="selectedItem"
    *                   on-selection-change="doSomething()">
    *
-   *     @NgComponent(
+   *     @Component(
    *       selector: 'my-component'
    *       map: const {
    *         'title': '@title',
@@ -200,10 +213,10 @@ abstract class AbstractNgAnnotation {
    */
   final List<String> exportExpressions;
 
-  const AbstractNgAnnotation({
+  const Directive({
     this.selector,
-    this.children: AbstractNgAnnotation.COMPILE_CHILDREN,
-    this.visibility: NgDirective.LOCAL_VISIBILITY,
+    this.children: Directive.COMPILE_CHILDREN,
+    this.visibility: Directive.LOCAL_VISIBILITY,
     this.module,
     this.map: const {},
     this.exportExpressions: const [],
@@ -213,9 +226,9 @@ abstract class AbstractNgAnnotation {
   toString() => selector;
   get hashCode => selector.hashCode;
   operator==(other) =>
-      other is AbstractNgAnnotation && selector == other.selector;
+      other is Directive && selector == other.selector;
 
-  AbstractNgAnnotation _cloneWithNewMap(newMap);
+  Directive _cloneWithNewMap(newMap);
 }
 
 
@@ -231,14 +244,14 @@ bool _resetStyleInheritanceDeprecationWarningPrinted = false;
  * ask for any injectable object in their constructor. Components
  * can also ask for other components or directives declared on the DOM element.
  *
- * Components can implement [NgAttachAware], [NgDetachAware],
- * [NgShadowRootAware] and declare these optional methods:
+ * Components can implement [AttachAware], [DetachAware],
+ * [ShadowRootAware] and declare these optional methods:
  *
  * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
  * * `onShadowRoot(ShadowRoot shadowRoot)` - Called when [ShadowRoot] is loaded.
  */
-class NgComponent extends AbstractNgAnnotation {
+class Component extends Directive {
   /**
    * Inlined HTML template for the component.
    */
@@ -295,7 +308,7 @@ class NgComponent extends AbstractNgAnnotation {
   @deprecated
   final String publishAs;
 
-  const NgComponent({
+  const Component({
     this.template,
     this.templateUrl,
     cssUrl,
@@ -312,7 +325,7 @@ class NgComponent extends AbstractNgAnnotation {
         _applyAuthorStyles = applyAuthorStyles,
         _resetStyleInheritance = resetStyleInheritance,
         super(selector: selector,
-             children: AbstractNgAnnotation.COMPILE_CHILDREN,
+             children: Directive.COMPILE_CHILDREN,
              visibility: visibility,
              map: map,
              module: module,
@@ -323,8 +336,8 @@ class NgComponent extends AbstractNgAnnotation {
       const [] :
       _cssUrls is List ?  _cssUrls : [_cssUrls];
 
-  AbstractNgAnnotation _cloneWithNewMap(newMap) =>
-      new NgComponent(
+  Directive _cloneWithNewMap(newMap) =>
+      new Component(
           template: template,
           templateUrl: templateUrl,
           cssUrl: cssUrls,
@@ -346,27 +359,14 @@ class NgComponent extends AbstractNgAnnotation {
  * ask for any injectable object in their constructor. Directives
  * can also ask for other components or directives declared on the DOM element.
  *
- * Directives can implement [NgAttachAware], [NgDetachAware] and
+ * Directives can implement [AttachAware], [DetachAware] and
  * declare these optional methods:
  *
  * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
  */
-class NgDirective extends AbstractNgAnnotation {
-
-  /// The directive can only be injected to other directives on the same element.
-  static const Visibility LOCAL_VISIBILITY = localVisibility;
-
-  /// The directive can be injected to other directives on the same or child elements.
-  static const Visibility CHILDREN_VISIBILITY = null;
-
-  /**
-   * The directive on this element can only be injected to other directives
-   * declared on elements which are direct children of the current element.
-   */
-  static const Visibility DIRECT_CHILDREN_VISIBILITY = directChildrenVisibility;
-
-  const NgDirective({children: AbstractNgAnnotation.COMPILE_CHILDREN,
+class Decorator extends Directive {
+  const Decorator({children: Directive.COMPILE_CHILDREN,
                     map,
                     selector,
                     module,
@@ -381,8 +381,8 @@ class NgDirective extends AbstractNgAnnotation {
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  AbstractNgAnnotation _cloneWithNewMap(newMap) =>
-      new NgDirective(
+  Directive _cloneWithNewMap(newMap) =>
+      new Decorator(
           children: children,
           map: newMap,
           module: module,
@@ -396,20 +396,21 @@ class NgDirective extends AbstractNgAnnotation {
  * Meta-data marker placed on a class which should act as a controller for your
  * application.
  *
- * Controllers are essentially [NgDirective]s with few key differences:
+ * Controllers are essentially [Decorator]s with few key differences:
  *
  * * Controllers create a new scope at the element.
  * * Controllers should not do any DOM manipulation.
  * * Controllers are meant for application-logic
  *   (rather then DOM manipulation logic which directives are meant for.)
  *
- * Controllers can implement [NgAttachAware], [NgDetachAware] and
+ * Controllers can implement [AttachAware], [DetachAware] and
  * declare these optional methods:
  *
  * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
  */
-class NgController extends NgDirective {
+@deprecated
+class Controller extends Decorator {
   /**
    * An expression under which the controller instance will be published into.
    * This allows the expressions in the template to be referring to controller
@@ -417,8 +418,8 @@ class NgController extends NgDirective {
    */
   final String publishAs;
 
-  const NgController({
-                    children: AbstractNgAnnotation.COMPILE_CHILDREN,
+  const Controller({
+                    children: Directive.COMPILE_CHILDREN,
                     this.publishAs,
                     map,
                     module,
@@ -435,8 +436,8 @@ class NgController extends NgDirective {
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  AbstractNgAnnotation _cloneWithNewMap(newMap) =>
-      new NgController(
+  Directive _cloneWithNewMap(newMap) =>
+      new Controller(
           children: children,
           publishAs: publishAs,
           module: module,
@@ -450,10 +451,10 @@ class NgController extends NgDirective {
 /**
  * Abstract supper class of [NgAttr], [NgCallback], [NgOneWay], [NgOneWayOneTime], and [NgTwoWay].
  */
-abstract class AbstractNgFieldAnnotation {
+abstract class DirectiveAnnotation {
   /// Element attribute name
   final String attrName;
-  const AbstractNgFieldAnnotation(this.attrName);
+  const DirectiveAnnotation(this.attrName);
   /// Element attribute mapping mode: `@`, `=>`, `=>!`, `<=>`, and `&`.
   String get _mappingSpec;
 }
@@ -464,7 +465,8 @@ abstract class AbstractNgFieldAnnotation {
  * The value of the attribute to be treated as a string, equivalent
  * to `@` specification.
  */
-class NgAttr extends AbstractNgFieldAnnotation {
+@deprecated
+class NgAttr extends DirectiveAnnotation {
   final _mappingSpec = '@';
   const NgAttr(String attrName) : super(attrName);
 }
@@ -475,7 +477,8 @@ class NgAttr extends AbstractNgFieldAnnotation {
  * The value of the attribute to be treated as a one-way expression, equivalent
  * to `=>` specification.
  */
-class NgOneWay extends AbstractNgFieldAnnotation {
+@deprecated
+class NgOneWay extends DirectiveAnnotation {
   final _mappingSpec = '=>';
   const NgOneWay(String attrName) : super(attrName);
 }
@@ -486,7 +489,8 @@ class NgOneWay extends AbstractNgFieldAnnotation {
  * The value of the attribute to be treated as a one time one-way expression,
  * equivalent to `=>!` specification.
  */
-class NgOneWayOneTime extends AbstractNgFieldAnnotation {
+@deprecated
+class NgOneWayOneTime extends DirectiveAnnotation {
   final _mappingSpec = '=>!';
   const NgOneWayOneTime(String attrName) : super(attrName);
 }
@@ -497,7 +501,8 @@ class NgOneWayOneTime extends AbstractNgFieldAnnotation {
  * The value of the attribute to be treated as a two-way expression,
  * equivalent to `<=>` specification.
  */
-class NgTwoWay extends AbstractNgFieldAnnotation {
+@deprecated
+class NgTwoWay extends DirectiveAnnotation {
   final _mappingSpec = '<=>';
   const NgTwoWay(String attrName) : super(attrName);
 }
@@ -508,37 +513,38 @@ class NgTwoWay extends AbstractNgFieldAnnotation {
  * The value of the attribute to be treated as a callback expression,
  * equivalent to `&` specification.
  */
-class NgCallback extends AbstractNgFieldAnnotation {
+@deprecated
+class NgCallback extends DirectiveAnnotation {
   final _mappingSpec = '&';
   const NgCallback(String attrName) : super(attrName);
 }
 
 /**
- * A directives or components may chose to implements [NgAttachAware].[attach] method.
+ * A directives or components may chose to implements [AttachAware].[attach] method.
  * If implemented the method will be called when the next scope digest occurs after
  * component instantiation. It is guaranteed that when [attach] is invoked, that all
  * attribute mappings have already been processed.
  */
-abstract class NgAttachAware {
+abstract class AttachAware {
   void attach();
 }
 
 /**
- * A directives or components may chose to implements [NgDetachAware].[detach] method.
+ * A directives or components may chose to implements [DetachAware].[detach] method.
  * If implemented the method will be called when the next associated scope is destroyed.
  */
-abstract class NgDetachAware {
+abstract class DetachAware {
   void detach();
 }
 
 /**
- * Use @[NgFilter] annotation to register a new filter. A filter is a class
+ * Use @[Formatter] annotation to register a new formatter. A formatter is a class
  * with a [call] method (a callable function).
  *
  * Usage:
  *
  *     // Declaration
- *     @NgFilter(name:'myFilter')
+ *     @Formatter(name:'myFilter')
  *     class MyFilter {
  *       call(valueToFilter, optArg1, optArg2) {
  *          return ...;
@@ -554,13 +560,13 @@ abstract class NgDetachAware {
  *     <!-- Usage -->
  *     <span>{{something | myFilter:arg1:arg2}}</span>
  */
-class NgFilter {
+class Formatter {
   final String name;
 
-  const NgFilter({this.name});
+  const Formatter({this.name});
 
   int get hashCode => name.hashCode;
   bool operator==(other) => name == other.name;
 
-  toString() => 'NgFilter: $name';
+  toString() => 'Formatter: $name';
 }

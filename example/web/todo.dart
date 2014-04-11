@@ -25,26 +25,26 @@ class Item {
 
 // ServerController interface. Logic in main.dart determines which
 // implementation we should use.
-abstract class ServerController {
-  init(TodoController todo);
+abstract class Server {
+  init(Todo todo);
 }
 
 
 // An implementation of ServerController that does nothing.
-@NgInjectableService()
-class NoServerController implements ServerController {
-  init(TodoController todo) { }
+@Injectable()
+class NoOpServer implements Server {
+  init(Todo todo) { }
 }
 
 
 // An implementation of ServerController that fetches items from
 // the server over HTTP.
-@NgInjectableService()
-class HttpServerController implements ServerController {
+@Injectable()
+class HttpServer implements Server {
   final Http _http;
-  HttpServerController(this._http);
+  HttpServer(this._http);
 
-  init(TodoController todo) {
+  init(Todo todo) {
     _http(method: 'GET', url: '/todos').then((HttpResponse data) {
       data.data.forEach((d) {
         todo.items.add(new Item(d["text"], d["done"]));
@@ -54,14 +54,14 @@ class HttpServerController implements ServerController {
 }
 
 
-@NgController(
+@Controller(
     selector: '[todo-controller]',
     publishAs: 'todo')
-class TodoController {
+class Todo {
   var items = <Item>[];
   Item newItem;
 
-  TodoController(ServerController serverController) {
+  Todo(Server serverController) {
     newItem = new Item();
     items = [
         new Item('Write Angular in Dart', true),
@@ -95,16 +95,16 @@ class TodoController {
 main() {
   print(window.location.search);
   var module = new Module()
-      ..type(TodoController)
+      ..type(Todo)
       ..type(PlaybackHttpBackendConfig);
 
   // If these is a query in the URL, use the server-backed
   // TodoController.  Otherwise, use the stored-data controller.
   var query = window.location.search;
   if (query.contains('?')) {
-    module.type(ServerController, implementedBy: HttpServerController);
+    module.type(Server, implementedBy: HttpServer);
   } else {
-    module.type(ServerController, implementedBy: NoServerController);
+    module.type(Server, implementedBy: NoOpServer);
   }
 
   if (query == '?record') {

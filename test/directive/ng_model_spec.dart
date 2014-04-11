@@ -84,7 +84,7 @@ void main() {
       });
 
       it('should write to input only if the value is different',
-        (Injector i, NgAnimate animate) {
+        (Injector i, Animate animate) {
 
         var scope = _.rootScope;
         var element = new dom.InputElement();
@@ -93,7 +93,7 @@ void main() {
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new NgAnimate());
+            nodeAttrs, new Animate());
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope);
 
@@ -362,7 +362,7 @@ void main() {
       });
 
       it('should write to input only if value is different',
-        (Injector i, NgAnimate animate) {
+        (Injector i, Animate animate) {
 
         var scope = _.rootScope;
         var element = new dom.InputElement();
@@ -371,7 +371,7 @@ void main() {
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new NgAnimate());
+            nodeAttrs, new Animate());
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope);
 
@@ -452,7 +452,7 @@ void main() {
       });
 
       it('should write to input only if value is different',
-        (Injector i, NgAnimate animate) {
+        (Injector i, Animate animate) {
 
         var scope = _.rootScope;
         var element = new dom.InputElement();
@@ -461,7 +461,7 @@ void main() {
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new NgAnimate());
+            nodeAttrs, new Animate());
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope);
 
@@ -550,7 +550,7 @@ void main() {
       });
 
       it('should write to input only if value is different',
-        (Injector i, NgAnimate animate) {
+        (Injector i, Animate animate) {
 
         var scope = _.rootScope;
         var element = new dom.InputElement();
@@ -559,7 +559,7 @@ void main() {
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new NgAnimate());
+            nodeAttrs, new Animate());
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope);
 
@@ -759,7 +759,7 @@ void main() {
       // NOTE(deboer): This test passes on Dartium, but fails in the content_shell.
       // The Dart team is looking into this bug.
       xit('should write to input only if value is different',
-        (Injector i, NgAnimate animate) {
+        (Injector i, Animate animate) {
 
         var scope = _.rootScope;
         var element = new dom.TextAreaElement();
@@ -768,7 +768,7 @@ void main() {
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new NgAnimate());
+            nodeAttrs, new Animate());
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope);
 
@@ -1542,7 +1542,7 @@ void main() {
   });
 }
 
-@NgController(
+@Controller(
     selector: '[no-love]',
     publishAs: 'ctrl')
 class ControllerWithNoLove {
@@ -1585,7 +1585,7 @@ class VowelValueParser implements NgModelConverter {
   }
 }
 
-@NgDirective(
+@Decorator(
     selector: '[custom-input-validation]')
 class MyCustomInputValidator extends NgValidator {
   MyCustomInputValidator(NgModel ngModel) {
@@ -1599,7 +1599,7 @@ class MyCustomInputValidator extends NgValidator {
   }
 }
 
-@NgDirective(
+@Decorator(
     selector: '[counting-validator]')
 class CountingValidator extends NgValidator {
 

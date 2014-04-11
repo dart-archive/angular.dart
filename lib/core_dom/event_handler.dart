@@ -5,9 +5,9 @@ typedef void EventFunction(event);
 /**
  * [EventHandler] is responsible for handling events bound using on-* syntax
  * (i.e. `on-click="ctrl.doSomething();"`). The root of the application has an
- * EventHandler attached as does every [NgComponent].
+ * EventHandler attached as does every [Component].
  *
- * Events bound within [NgComponent] are handled by EventHandler attached to
+ * Events bound within [Component] are handled by EventHandler attached to
  * their [ShadowRoot]. All other events are handled by EventHandler attached
  * to the application root ([Application]).
  *
@@ -19,14 +19,14 @@ typedef void EventFunction(event);
  *       <button on-click="ctrl.say('Hello');">Button</button>;
  *     </div>
  *
- *     @NgComponent(selector: '[foo]', publishAs: ctrl)
+ *     @Component(selector: '[foo]', publishAs: ctrl)
  *     class FooController {
  *       say(String something) => print(something);
  *     }
  *
  * When button is clicked, "Hello" will be printed in the console.
  */
-@NgInjectableService()
+@Injectable()
 class EventHandler {
   dom.Node _rootNode;
   final Expando _expando;
@@ -101,7 +101,7 @@ class EventHandler {
   }
 }
 
-@NgInjectableService()
+@Injectable()
 class ShadowRootEventHandler extends EventHandler {
   ShadowRootEventHandler(dom.ShadowRoot shadowRoot,
                          Expando expando,

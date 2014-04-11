@@ -26,8 +26,8 @@ class _NoopModelConverter extends NgModelConverter {
  * knows how to (in)validate the model and the form in which it is declared
  * (to be implemented)
  */
-@NgDirective(selector: '[ng-model]')
-class NgModel extends NgControl implements NgAttachAware {
+@Decorator(selector: '[ng-model]')
+class NgModel extends NgControl implements AttachAware {
   final Scope _scope;
 
   BoundSetter setter = (_, [__]) => null;
@@ -44,7 +44,7 @@ class NgModel extends NgControl implements NgAttachAware {
   bool _watchCollection;
 
   NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs,
-          NgAnimate animate)
+          Animate animate)
       : super(element, injector, animate)
   {
     _expression = attrs["ng-model"];
@@ -288,7 +288,7 @@ class NgModel extends NgControl implements NgAttachAware {
  *
  * Also see [NgTrueValue] and [NgFalseValue].
  */
-@NgDirective(selector: 'input[type=checkbox][ng-model]')
+@Decorator(selector: 'input[type=checkbox][ng-model]')
 class InputCheckbox {
   final dom.CheckboxInputElement inputElement;
   final NgModel ngModel;
@@ -327,12 +327,12 @@ class InputCheckbox {
  * as well as the other way around (when the scope property is updated).
  *
  */
-@NgDirective(selector: 'textarea[ng-model]')
-@NgDirective(selector: 'input[type=text][ng-model]')
-@NgDirective(selector: 'input[type=password][ng-model]')
-@NgDirective(selector: 'input[type=url][ng-model]')
-@NgDirective(selector: 'input[type=email][ng-model]')
-@NgDirective(selector: 'input[type=search][ng-model]')
+@Decorator(selector: 'textarea[ng-model]')
+@Decorator(selector: 'input[type=text][ng-model]')
+@Decorator(selector: 'input[type=password][ng-model]')
+@Decorator(selector: 'input[type=url][ng-model]')
+@Decorator(selector: 'input[type=email][ng-model]')
+@Decorator(selector: 'input[type=search][ng-model]')
 class InputTextLike {
   final dom.Element inputElement;
   final NgModel ngModel;
@@ -388,8 +388,8 @@ class InputTextLike {
  * Setting the model to [double.NAN] will have no effect (input will be left
  * unchanged).
  */
-@NgDirective(selector: 'input[type=number][ng-model]')
-@NgDirective(selector: 'input[type=range][ng-model]')
+@Decorator(selector: 'input[type=number][ng-model]')
+@Decorator(selector: 'input[type=range][ng-model]')
 class InputNumberLike {
   final dom.InputElement inputElement;
   final NgModel ngModel;
@@ -452,12 +452,12 @@ class InputNumberLike {
  * kind would be appropriate) or, for browsers that fail to conform to the
  * HTML5 standard in their processing of date-like inputs.
  */
-@NgDirective(selector: 'input[type=date][ng-model][ng-bind-type]')
-@NgDirective(selector: 'input[type=time][ng-model][ng-bind-type]')
-@NgDirective(selector: 'input[type=datetime][ng-model][ng-bind-type]')
-@NgDirective(selector: 'input[type=datetime-local][ng-model][ng-bind-type]')
-@NgDirective(selector: 'input[type=month][ng-model][ng-bind-type]')
-@NgDirective(selector: 'input[type=week][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=date][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=time][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=datetime][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=datetime-local][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=month][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=week][ng-model][ng-bind-type]')
 class NgBindTypeForDateLike {
   static const DATE = 'date';
   static const NUMBER = 'number';
@@ -568,17 +568,17 @@ class NgBindTypeForDateLike {
  *   dropped.
  */
 
-@NgDirective(selector: 'input[type=date][ng-model]',
+@Decorator(selector: 'input[type=date][ng-model]',
     module: InputDateLike.moduleFactory)
-@NgDirective(selector: 'input[type=time][ng-model]',
+@Decorator(selector: 'input[type=time][ng-model]',
     module: InputDateLike.moduleFactory)
-@NgDirective(selector: 'input[type=datetime][ng-model]',
+@Decorator(selector: 'input[type=datetime][ng-model]',
     module: InputDateLike.moduleFactory)
-@NgDirective(selector: 'input[type=datetime-local][ng-model]',
+@Decorator(selector: 'input[type=datetime-local][ng-model]',
     module: InputDateLike.moduleFactory)
-@NgDirective(selector: 'input[type=month][ng-model]',
+@Decorator(selector: 'input[type=month][ng-model]',
     module: InputDateLike.moduleFactory)
-@NgDirective(selector: 'input[type=week][ng-model]',
+@Decorator(selector: 'input[type=week][ng-model]',
     module: InputDateLike.moduleFactory)
 class InputDateLike {
   static Module moduleFactory() => new Module()..factory(NgBindTypeForDateLike,
@@ -667,8 +667,8 @@ final _uidCounter = new _UidCounter();
  * selected. Note that `expr` can be not any type; i.e., it is not restricted
  * to [String].
  */
-@NgDirective(selector: 'input[type=radio][ng-model][ng-value]')
-@NgDirective(selector: 'option[ng-value]')
+@Decorator(selector: 'input[type=radio][ng-model][ng-value]')
+@Decorator(selector: 'option[ng-value]')
 class NgValue {
   static Module _module = new Module()..type(NgValue);
   static Module moduleFactory() => _module;
@@ -694,7 +694,7 @@ class NgValue {
  * the model when the input is checked. Note that the expression can be of any
  * type, not just [String]. Also see [InputCheckboxDirective], [NgFalseValue].
  */
-@NgDirective(selector: 'input[type=checkbox][ng-model][ng-true-value]')
+@Decorator(selector: 'input[type=checkbox][ng-model][ng-true-value]')
 class NgTrueValue {
   final dom.Element element;
   @NgOneWay('ng-true-value')
@@ -716,7 +716,7 @@ class NgTrueValue {
  * the model when the input is unchecked. Note that the expression can be of any
  * type, not just [String]. Also see [InputCheckboxDirective], [NgTrueValue].
  */
-@NgDirective(selector: 'input[type=checkbox][ng-model][ng-false-value]')
+@Decorator(selector: 'input[type=checkbox][ng-model][ng-false-value]')
 class NgFalseValue {
   final dom.Element element;
   @NgOneWay('ng-false-value')
@@ -741,7 +741,7 @@ class NgFalseValue {
  * `009`, `00A`, `00Z`, `010`, and so on using more than 3 characters for the
  * name when the counter overflows.
  */
-@NgDirective(
+@Decorator(
     selector: 'input[type=radio][ng-model]',
     module: NgValue.moduleFactory)
 class InputRadio {
@@ -782,7 +782,7 @@ class InputRadio {
  * `null`, it is treated as equivalent to the empty string for rendering
  * purposes.
  */
-@NgDirective(selector: '[contenteditable][ng-model]')
+@Decorator(selector: '[contenteditable][ng-model]')
 class ContentEditable extends InputTextLike {
   ContentEditable(dom.Element inputElement, NgModel ngModel, Scope scope)
       : super(inputElement, ngModel, scope);

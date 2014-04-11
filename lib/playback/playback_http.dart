@@ -10,7 +10,7 @@ import 'package:angular/mock/http_backend.dart' as mock;
 
 import 'package:angular/playback/playback_data.dart' as playback_data;
 
-@NgInjectableService()
+@Injectable()
 class PlaybackHttpBackendConfig {
 
   String get recorderUrl => '/record';

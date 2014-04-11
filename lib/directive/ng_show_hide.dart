@@ -5,14 +5,14 @@ part of angular.directive;
  * expression provided to the ngHide attribute. The element is shown or hidden
  * by changing the removing or adding the ng-hide CSS class onto the element.
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-hide]',
     map: const {'ng-hide': '=>hide'})
 class NgHide {
   static String NG_HIDE_CLASS = 'ng-hide';
 
   final dom.Element element;
-  final NgAnimate animate;
+  final Animate animate;
 
   NgHide(this.element, this.animate);
 
@@ -30,12 +30,12 @@ class NgHide {
  * expression provided to the ngHide attribute. The element is shown or hidden
  * by changing the removing or adding the ng-hide CSS class onto the element.
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-show]',
     map: const {'ng-show': '=>show'})
 class NgShow {
   final dom.Element element;
-  final NgAnimate animate;
+  final Animate animate;
 
   NgShow(this.element, this.animate);
 

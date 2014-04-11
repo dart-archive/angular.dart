@@ -1,12 +1,12 @@
 library angular.core.parser.dynamic_parser;
 
 import 'package:angular/core/annotation_src.dart';
-import 'package:angular/core/module_internal.dart' show FilterMap;
+import 'package:angular/core/module_internal.dart' show FormatterMap;
 
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/core/parser/dynamic_parser_impl.dart';
-import 'package:angular/core/parser/syntax.dart' show defaultFilterMap;
+import 'package:angular/core/parser/syntax.dart' show defaultFormatterMap;
 
 import 'package:angular/core/parser/eval.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
@@ -19,7 +19,7 @@ abstract class ClosureMap {
   MethodClosure lookupFunction(String name, CallArguments arguments);
 }
 
-@NgInjectableService()
+@Injectable()
 class DynamicParser implements Parser<Expression> {
   final Lexer _lexer;
   final ParserBackend _backend;
@@ -48,9 +48,9 @@ class DynamicExpression extends Expression {
   accept(Visitor visitor) => _expression.accept(visitor);
   toString() => _expression.toString();
 
-  eval(scope, [FilterMap filters = defaultFilterMap]) {
+  eval(scope, [FormatterMap formatters = defaultFormatterMap]) {
     try {
-      return _expression.eval(scope, filters);
+      return _expression.eval(scope, formatters);
     } on EvalError catch (e, s) {
       throw e.unwrap("$this", s);
     }
@@ -65,7 +65,7 @@ class DynamicExpression extends Expression {
   }
 }
 
-@NgInjectableService()
+@Injectable()
 class DynamicParserBackend extends ParserBackend {
   final ClosureMap _closures;
   DynamicParserBackend(this._closures);

@@ -1,4 +1,4 @@
-part of angular.filter;
+part of angular.formatter_internal;
 
 /**
  * Converts string to uppercase.
@@ -7,7 +7,7 @@ part of angular.filter;
  *
  *     {{ uppercase_expression | uppercase }}
  */
-@NgFilter(name:'uppercase')
+@Formatter(name:'uppercase')
 class Uppercase implements Function {
   call(String text) => text == null ? text : text.toUpperCase();
 }

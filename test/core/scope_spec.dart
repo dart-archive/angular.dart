@@ -169,12 +169,12 @@ void main() {
         expect(logger).toEqual([true]);
       });
 
-      it('should support filters', (Logger logger, Map context,
-          RootScope rootScope, FilterMap filters) {
+      it('should support formatters', (Logger logger, Map context,
+          RootScope rootScope, FormatterMap formatters) {
         context['a'] = 123;
         context['b'] = 2;
         rootScope.watch('a | multiply:b', (value, previous) => logger(value),
-            filters: filters);
+            formatters: formatters);
         rootScope.digest();
         expect(logger).toEqual([246]);
         logger.clear();
@@ -183,11 +183,11 @@ void main() {
         logger.clear();
       });
 
-      it('should support arrays in filters', (Logger logger, Map context,
-          RootScope rootScope, FilterMap filters) {
+      it('should support arrays in formatters', (Logger logger, Map context,
+          RootScope rootScope, FormatterMap formatters) {
         context['a'] = [1];
         rootScope.watch('a | sort | listHead:"A" | listTail:"B"',
-            (value, previous) => logger(value), filters: filters);
+            (value, previous) => logger(value), formatters: formatters);
         rootScope.digest();
         expect(logger).toEqual(['sort', 'listHead', 'listTail', ['A', 1, 'B']]);
         logger.clear();
@@ -202,18 +202,18 @@ void main() {
         logger.clear();
 
         // We change the order, but sort should change it to same one and it should not
-        // call subsequent filters.
+        // call subsequent formatters.
         context['a'] = [2, 1];
         rootScope.digest();
         expect(logger).toEqual(['sort']);
         logger.clear();
       });
 
-      it('should support maps in filters', (Logger logger, Map context,
-          RootScope rootScope, FilterMap filters) {
+      it('should support maps in formatters', (Logger logger, Map context,
+          RootScope rootScope, FormatterMap formatters) {
         context['a'] = {'foo': 'bar'};
         rootScope.watch('a | identity | keys',
-            (value, previous) => logger(value), filters: filters);
+            (value, previous) => logger(value), formatters: formatters);
         rootScope.digest();
         expect(logger).toEqual(['identity', 'keys', ['foo']]);
         logger.clear();
@@ -501,7 +501,7 @@ void main() {
           });
 
 
-          it('should throw "model unstable" error when observer is present', (RootScope rootScope, NgZone zone, ExceptionHandler e) {
+          it('should throw "model unstable" error when observer is present', (RootScope rootScope, VmTurnZone zone, ExceptionHandler e) {
             // Generates a different, equal, list on each evaluation.
             rootScope.context['list'] = new UnstableList();
 
@@ -1189,12 +1189,12 @@ void main() {
 
 
       it(r'should be possible to remove every watch',
-          (RootScope rootScope, FilterMap filters) {
+          (RootScope rootScope, FormatterMap formatters) {
         rootScope.context['foo'] = 'bar';
         var watch1 = rootScope.watch('(foo|json)+"bar"', (v, p) => null,
-        filters: filters);
+        formatters: formatters);
         var watch2 = rootScope.watch('(foo|json)+"bar"', (v, p) => null,
-        filters: filters);
+        formatters: formatters);
 
         expect(() => watch1.remove()).not.toThrow();
         expect(() => watch2.remove()).not.toThrow();
@@ -1465,7 +1465,7 @@ void main() {
       });
 
       it('should call ExceptionHandler on zone errors',
-          async((RootScope rootScope, NgZone zone, ExceptionHandler e) {
+          async((RootScope rootScope, VmTurnZone zone, ExceptionHandler e) {
         zone.run(() {
           scheduleMicrotask(() => throw 'my error');
         });
@@ -1475,7 +1475,7 @@ void main() {
       }));
 
       it('should call ExceptionHandler on digest errors',
-        async((RootScope rootScope, NgZone zone, ExceptionHandler e) {
+        async((RootScope rootScope, VmTurnZone zone, ExceptionHandler e) {
         rootScope.context['badOne'] = () => new Map();
         rootScope.watch('badOne()', (_, __) => null);
 
@@ -1536,7 +1536,7 @@ void main() {
   });
 }
 
-@NgFilter(name: 'identity')
+@Formatter(name: 'identity')
 class _IdentityFilter {
   Logger logger;
   _IdentityFilter(this.logger);
@@ -1546,7 +1546,7 @@ class _IdentityFilter {
   }
 }
 
-@NgFilter(name: 'keys')
+@Formatter(name: 'keys')
 class _MapKeys {
   Logger logger;
   _MapKeys(this.logger);
@@ -1556,12 +1556,12 @@ class _MapKeys {
   }
 }
 
-@NgFilter(name: 'multiply')
+@Formatter(name: 'multiply')
 class _MultiplyFilter {
   call(a, b) => a * b;
 }
 
-@NgFilter(name: 'listHead')
+@Formatter(name: 'listHead')
 class _ListHeadFilter {
   Logger logger;
   _ListHeadFilter(this.logger);
@@ -1571,7 +1571,7 @@ class _ListHeadFilter {
   }
 }
 
-@NgFilter(name: 'listTail')
+@Formatter(name: 'listTail')
 class _ListTailFilter {
   Logger logger;
   _ListTailFilter(this.logger);
@@ -1581,7 +1581,7 @@ class _ListTailFilter {
   }
 }
 
-@NgFilter(name: 'sort')
+@Formatter(name: 'sort')
 class _SortFilter {
   Logger logger;
   _SortFilter(this.logger);
@@ -1591,14 +1591,14 @@ class _SortFilter {
   }
 }
 
-@NgFilter(name:'newFilter')
+@Formatter(name:'newFilter')
 class FilterOne {
   call(String str) {
     return '$str 1';
   }
 }
 
-@NgFilter(name:'newFilter')
+@Formatter(name:'newFilter')
 class FilterTwo {
   call(String str) {
     return '$str 2';

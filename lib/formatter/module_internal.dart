@@ -1,13 +1,4 @@
-/**
-*
-* Filters available in the main [angular.dart](#angular/angular) library.
-*
-* This package is imported for you as part of [angular.dart](#angular/angular),
-* and lists all of the basic filters that are part of Angular.
-*
-*
-*/
-library angular.filter;
+library angular.formatter_internal;
 
 import 'dart:convert' show JSON;
 import 'package:intl/intl.dart';
@@ -27,8 +18,8 @@ part 'order_by.dart';
 part 'uppercase.dart';
 part 'stringify.dart';
 
-class NgFilterModule extends Module {
-  NgFilterModule() {
+class FormatterModule extends Module {
+  FormatterModule() {
     type(Currency);
     type(Date);
     type(Filter);

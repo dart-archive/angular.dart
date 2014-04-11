@@ -1,4 +1,4 @@
-part of angular.filter;
+part of angular.formatter_internal;
 
 /**
  * Formats a number as a currency (ie $1,234.56). When no currency symbol is
@@ -10,7 +10,7 @@ part of angular.filter;
  *     {{ numeric_expression | currency[:symbol[:leading]] }}
  *
  */
-@NgFilter(name:'currency')
+@Formatter(name:'currency')
 class Currency implements Function {
 
   var _nfs = new Map<String, NumberFormat>();
