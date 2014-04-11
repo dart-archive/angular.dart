@@ -107,18 +107,22 @@ class AngularModule extends Module {
 }
 
 /**
- * Application represents configuration for your Angular application. There are two
- * implementations for this abstract class:
+ * The Application class provides the mechanism by which Angular creates, configures,
+ * and runs an application. There are two implementations for this abstract class:
  *
- * - [app:factory](#angular-app-factory) for development. In this mode Angular uses [dart:mirrors]
- *   (https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart-mirrors) to
- *   generate getters, setters, annotations, and factories dynamical at runtime. This mode
- *   is not ideal for `dart2js` compilation since `dart:mirrors` disable full tree-shaking of the
- *   resulting codebase.
- * - [app:factory:static](#angular-app-factory-static), which is used by transformers to generate
- *   the getters, setters, annotations, and factorise needed by Angular. Because the code
- *   is statically generated `dart2js` can than use full tree-shaking to produce minimal output
- *   size.
+ * - [app:factory](#angular-app-factory), which is intended for development. In this
+ *   mode Angular uses
+ *   [dart:mirrors](https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart-mirrors)
+ *   to dynamically generate getters, setters, annotations, and factories at runtime.
+ * - [app:factory:static](#angular-app-factory-static) is used as part of `pub
+ *   build` by transformers that generate the getters, setters, annotations,
+ *   and factories needed by Angular.
+ *   Because the code is statically generated, `dart2js` can then use full tree-shaking for
+ *   minimal output size.
+ *
+ * Refer to the documentation for [angular.app](#angular-app) for details of how to use
+ * applicationFactory to bootstrap your Angular application.
+ *
  */
 abstract class Application {
   static _find(String selector, [dom.Element defaultElement]) {
