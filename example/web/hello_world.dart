@@ -1,5 +1,5 @@
 import 'package:angular/angular.dart';
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/application_factory.dart';
 
 @NgController(
     selector: '[hello-world-controller]',
@@ -9,7 +9,7 @@ class HelloWorldController {
 }
 
 main() {
-  dynamicApplication()
+  applicationFactory()
       .addModule(new Module()..type(HelloWorldController))
       .run();
 }

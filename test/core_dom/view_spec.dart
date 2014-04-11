@@ -1,7 +1,7 @@
 library view_spec;
 
 import '../_specs.dart';
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/application_factory.dart';
 
 class Log {
   List<String> log = <String>[];
@@ -201,7 +201,7 @@ main() {
           ..type(ADirective)
           ..factory(Node, (injector) => document.body);
 
-        Injector rootInjector = dynamicApplication()
+        Injector rootInjector = applicationFactory()
             .addModule(rootModule)
             .createInjector();
         Log log = rootInjector.get(Log);

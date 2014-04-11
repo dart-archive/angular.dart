@@ -1,12 +1,12 @@
 /**
- * Bootstrapping for Angular applications via [app:dynamic](#angular-app-dynamic) for development,
- * or [app:static](#angular-app-static) for production.
+ * Bootstrapping for Angular applications via [app:factory](#angular-app-factory) for development,
+ * or [app:factory:static](#angular-app-factory-static) for production.
  *
  * In your `main()` function, you bootstrap Angular by explicitly defining and adding a module for
- * your app:
+ * your application:
  *
  *     import 'package:angular/angular.dart';
- *     import 'package:angular/angular_dynamic.dart';
+ *     import 'package:angular/application_factory.dart';
  *
  *     class MyModule extends Module {
  *       MyModule() {
@@ -15,25 +15,27 @@
  *     }
  *
  *     main() {
- *       dynamicApplication()
+ *       applicationFactory()
  *           .addModule(new MyModule())
  *           .run();
  *     }
  *
- * In the code above, we use [dynamicApplication](#angular-app-dynamic) to
+ * In the code above, we use [applicationFactory](#angular-app-factory) to
  * take advantage of [dart:mirrors]
  * (https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart-mirrors) during
- * development. When you run the app in Dartium, you are using the implementation found under
- * [app:dynamic](#angular-app-dynamic). Note also that you must explicitly import both
- * `angular.dart` and `angular_dynamic.dart` at the start of your file.
+ * development. When you run the app in Dartium the [app:factory](#angular-app-factory)
+ * implementation allows for quick edit-test development cycle.
  *
- * For production, transformers defined in your `pubspec.yaml` file convert the compiled code to
- * use the [app:static](#angular-app-static) implementation when you run `pub build`. Instead of
- * relying on mirrors, this automatically generates the getters, setters, annotations, and factories
- * needed by Dart for tree shaking in dart2js, ensuring that your final JavaScript code contains
- * only what is used by the root Injector that ngApp creates.
+ * Note that you must explicitly import both `angular.dart` and `application_factory.dart` at
+ * the start of your file.
  *
- * Add the transformers rule shown below to your `pubspec.yaml`:
+ * For production, transformers defined in your `pubspec.yaml` file convert the code to
+ * use the [app:factory:static](#angular-app-factory-static) when you run `pub build`. Instead of
+ * relying on mirrors (which disable tree-shaking and thus generate large JS size), the transformers
+ * generate getters, setters, annotations, and factories needed by Angular. The result is that
+ * `dart2js` can than enable tree-shaking and produce smaller output.
+ *
+ * To enable the transformers add this rule as shown below to your `pubspec.yaml`:
  *
  *     name: angular_dart_example
  *     version: 0.0.1
@@ -55,12 +57,13 @@
  *     transformers:
  *     - angular:
  *         html_files:
- *         - lib/_somelibrary/_some_component.html
+ *         - lib/_some_library_/_some_component_.html
  *
  * If you need a way to build your app without transformers, you can use
- * [staticApplication](#angular-app-static@id_staticApplication) directly, instead of
- * [dynamicApplication](#angular-app-dynamic@id_dynamicApplication). See the documentation for
- * the [app:static](#angular-app-static) library definition for more on this use case.
+ * [staticApplicationFactory](#angular-app-factory-static@id_staticApplicationFactory) directly,
+ * instead of [applicationFactory](#angular-app-factory@id_dynamicApplication). See the
+ * documentation for the [app:factory:static](#angular-app-factory-static) library definition for
+ * more on this use case.
  */
 library angular.app;
 
@@ -80,8 +83,8 @@ import 'package:angular/introspection_js.dart';
 
 /**
  * This is the top level module which describes all Angular components,
- * including services, filters and directives. When writing an Angular application,
- * AngularModule is automatically included.
+ * including services, filters and directives. When instantiating an Angular application
+ * through [applicationFactory](#angular-app-factory), AngularModule is automatically included.
  *
  * You can use AngularModule explicitly when creating a custom Injector that needs to know
  * about Angular services, filters, and directives. When writing tests, this is typically done for
@@ -104,17 +107,19 @@ class AngularModule extends Module {
 }
 
 /**
- * Application is how you configure and run an Angular application. There are two
+ * Application represents configuration for your Angular application. There are two
  * implementations for this abstract class:
  *
- * - [app:dynamic](#angular-app-dynamic) for development, which uses transformers to generate the
- * getters, setters, annotations, and factories needed by [dart:mirrors](https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart-mirrors) for tree shaking
- * - [app:static](#angular-app-static), for apps that explicitly specify their own getters,
- * setters, annotations, and factories and do not rely on transformation or  [dart:mirrors]
- * (https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart-mirrors)
- *
+ * - [app:factory](#angular-app-factory) for development. In this mode Angular uses [dart:mirrors]
+ *   (https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart-mirrors) to
+ *   generate getters, setters, annotations, and factories dynamical at runtime. This mode
+ *   is not ideal for `dart2js` compilation since `dart:mirrors` disable full tree-shaking of the
+ *   resulting codebase.
+ * - [app:factory:static](#angular-app-factory-static), which is used by transformers to generate
+ *   the getters, setters, annotations, and factorise needed by Angular. Because the code
+ *   is statically generated `dart2js` can than use full tree-shaking to produce minimal output
+ *   size.
  */
-
 abstract class Application {
   static _find(String selector, [dom.Element defaultElement]) {
     var element = dom.window.document.querySelector(selector);
@@ -125,9 +130,9 @@ abstract class Application {
     return element;
   }
 
-  final zone = new NgZone();
-  final ngModule = new AngularModule();
-  final modules = <Module>[];
+  final NgZone zone = new NgZone();
+  final AngularModule ngModule = new AngularModule();
+  final List<Module> modules = <Module>[];
   dom.Element element;
 
   dom.Element selector(String selector) => element = _find(selector);

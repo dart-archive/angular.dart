@@ -2,12 +2,12 @@
  * Bootstrapping for Angular applications via [dart:mirrors](https://api.dartlang
  * .org/apidocs/channels/stable/dartdoc-viewer/dart-mirrors) for development.
  *
- * Angular apps that use  [dynamicApplication](#angular-app-dynamic@id_dynamicApplication) rely on
+ * Angular apps that use  [applicationFactory](#angular-app-factory@id_dynamicApplication) rely on
  * dynamic transformation at compile time to generate the getters, setters, annotations, and
  * factories needed for tree shaking during compilation with `dart2js`. See the [angular:app]
  * (#angular-app) library for a discussion of how this works.
  */
-library angular.app.dynamic;
+library angular.app.factory;
 
 import 'package:di/dynamic_injector.dart';
 import 'package:angular/angular.dart';
@@ -66,4 +66,4 @@ class _DynamicApplication extends Application {
   Injector createInjector() => new DynamicInjector(modules: modules);
 }
 
-Application dynamicApplication() => new _DynamicApplication();
+Application applicationFactory() => new _DynamicApplication();

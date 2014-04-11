@@ -14,7 +14,7 @@ export 'package:mock/mock.dart';
 export 'package:di/di.dart';
 export 'package:di/dynamic_injector.dart';
 export 'package:angular/angular.dart';
-export 'package:angular/bootstrap.dart';
+export 'package:angular/application.dart';
 export 'package:angular/introspection.dart';
 export 'package:angular/core/annotation.dart';
 export 'package:angular/core/registry.dart';

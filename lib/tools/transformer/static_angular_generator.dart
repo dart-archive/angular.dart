@@ -22,7 +22,7 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
     var asset = transform.primaryInput;
 
     var dynamicApp =
-        resolver.getLibraryFunction('angular.app.dynamic.dynamicApplication');
+        resolver.getLibraryFunction('angular.app.factory.applicationFactory');
     if (dynamicApp == null) {
       // No dynamic app imports, exit.
       transform.addOutput(transform.primaryInput);
@@ -36,10 +36,10 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
 
     for (var directive in unit.directives) {
       if (directive is ImportDirective &&
-          directive.uri.stringValue == 'package:angular/angular_dynamic.dart') {
+          directive.uri.stringValue == 'package:angular/application_factory.dart') {
         var uri = directive.uri;
         transaction.edit(uri.beginToken.offset, uri.end,
-            '\'package:angular/angular_static.dart\'');
+            '\'package:angular/application_factory_static.dart\'');
       }
     }
 
@@ -81,7 +81,7 @@ class _NgDynamicToStaticVisitor extends GeneralizingAstVisitor {
   visitMethodInvocation(MethodInvocation m) {
     if (m.methodName.bestElement == ngDynamicFn) {
       transaction.edit(m.methodName.beginToken.offset,
-          m.methodName.endToken.end, 'staticApplication');
+          m.methodName.endToken.end, 'staticApplicationFactory');
 
       var args = m.argumentList;
       transaction.edit(args.beginToken.offset + 1, args.end - 1,

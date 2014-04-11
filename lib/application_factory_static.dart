@@ -1,15 +1,15 @@
 /**
  * Bootstrapping for Angular applications via code generation, for production.
  *
- * Most angular.dart apps rely on dynamic transformation at compile time to generate the artifacts
+ * Most angular.dart apps rely on static transformation at compile time to generate the artifacts
  * needed for tree shaking during compilation with `dart2js`. However,
  * if your deployment environment makes it impossible for you to use transformers,
- * you can call [staticApplication](#angular-app-static@id_staticApplication)
+ * you can call [staticApplicationFactory](#angular-app-factory-static@id_staticApplicationFactory)
  * directly in your `main()` function, and explicitly define the getters, setters, annotations, and
  * factories yourself.
  *
  *     import 'package:angular/angular.dart';
- *     import 'package:angular/angular_static.dart';
+ *     import 'package:angular/application_factory_static.dart';
  *
  *     class MyModule extends Module {
  *       MyModule() {
@@ -18,22 +18,22 @@
  *     }
  *
  *     main() {
- *       staticApplication()
+ *       staticApplicationFactory()
  *           .addModule(new MyModule())
  *           .run();
  *     }
  *
  *  Note that you must explicitly import both
- * `angular.dart` and `angular_static.dart` at the start of your file. See [staticApplication]
- * (#angular-app-static@id_staticApplication) for more on explicit definitions required with this
+ * `angular.dart` and `application_factory_static.dart` at the start of your file. See [staticApplicationFactory]
+ * (#angular-app-factory-static@id_staticApplicationFactory) for more on explicit definitions required with this
  * library.
  *
  */
-library angular.app.static;
+library angular.app.factory.static;
 
 import 'package:di/static_injector.dart';
 import 'package:di/di.dart' show TypeFactory, Injector;
-import 'package:angular/bootstrap.dart';
+import 'package:angular/application.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/parser_static.dart';
@@ -42,8 +42,9 @@ import 'package:angular/core/registry_static.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
 
-export 'package:angular/core/parser/parser_static.dart' show
-    StaticClosureMap;
+export 'package:angular/change_detection/change_detection.dart' show
+    FieldGetter,
+    FieldSetter;
 
 class _StaticApplication extends Application {
   final Map<Type, TypeFactory> typeFactories;
@@ -64,7 +65,7 @@ class _StaticApplication extends Application {
       new StaticInjector(modules: modules, typeFactories: typeFactories);
 }
 
-Application staticApplication(
+Application staticApplicationFactory(
     Map<Type, TypeFactory> typeFactories,
     Map<Type, Object> metadata,
     Map<String, FieldGetter> fieldGetters,

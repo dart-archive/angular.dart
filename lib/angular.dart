@@ -1,7 +1,7 @@
 library angular;
 
 
-export 'package:angular/bootstrap.dart';
+export 'package:angular/application.dart';
 export 'package:angular/core/module.dart';
 export 'package:angular/directive/module.dart';
 export 'package:angular/core/annotation.dart';

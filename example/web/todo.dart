@@ -3,7 +3,7 @@ library todo;
 import 'dart:html';
 
 import 'package:angular/angular.dart';
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/application_factory.dart';
 import 'package:angular/playback/playback_http.dart';
 
 class Item {
@@ -119,5 +119,5 @@ main() {
     module.type(HttpBackend, implementedBy: PlaybackHttpBackend);
   }
 
-  dynamicApplication().addModule(module).run();
+  applicationFactory().addModule(module).run();
 }

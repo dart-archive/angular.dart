@@ -24,9 +24,9 @@ cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
     angular/routing/module.dart \
     angular/mock/module.dart \
     angular/perf/module.dart \
-    angular/angular_dynamic.dart \
-    angular/angular_static.dart \
-    angular/bootstrap.dart \
+    angular/application_factory.dart \
+    angular/application_factory_static.dart \
+    angular/application.dart \
     angular/introspection.dart \
     di/di.dart \
     route_hierarchical/client.dart \

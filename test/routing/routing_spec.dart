@@ -2,7 +2,7 @@ library routing_spec;
 
 import '../_specs.dart';
 import 'package:angular/mock/module.dart';
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/application_factory.dart';
 import 'dart:async';
 
 main() {
@@ -44,7 +44,7 @@ main() {
     });
 
     initRouter(initializer) {
-      var injector = dynamicApplication()
+      var injector = applicationFactory()
         .addModule(new AngularMockModule())
         .addModule(new Module()..value(RouteInitializerFn, initializer))
         .createInjector();

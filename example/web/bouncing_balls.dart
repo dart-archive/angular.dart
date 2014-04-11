@@ -1,5 +1,5 @@
 import 'package:angular/angular.dart';
-import 'package:angular/angular_dynamic.dart';
+import 'package:angular/application_factory.dart';
 import 'dart:html';
 import 'dart:math';
 import 'dart:core';
@@ -131,5 +131,5 @@ class MyModule extends Module {
 }
 
 main() {
-  dynamicApplication().addModule(new MyModule()).run();
+  applicationFactory().addModule(new MyModule()).run();
 }
