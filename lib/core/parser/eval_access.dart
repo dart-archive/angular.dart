@@ -12,7 +12,7 @@ class AccessScopeFast extends syntax.AccessScope with AccessFast {
   AccessScopeFast(String name, this.getter, this.setter)
       : super(name),
         isThis = name == 'this';
-  eval(scope, [FilterMap filters]) => isThis ? scope : _eval(scope);
+  eval(scope, [FormatterMap formatters]) => isThis ? scope : _eval(scope);
   assign(scope, value) => _assign(scope, scope, value);
 }
 
@@ -21,15 +21,15 @@ class AccessMemberFast extends syntax.AccessMember with AccessFast {
   final Setter setter;
   AccessMemberFast(object, String name, this.getter, this.setter)
       : super(object, name);
-  eval(scope, [FilterMap filters]) => _eval(object.eval(scope, filters));
+  eval(scope, [FormatterMap formatters]) => _eval(object.eval(scope, formatters));
   assign(scope, value) => _assign(scope, object.eval(scope), value);
   _assignToNonExisting(scope, value) => object.assign(scope, { name: value });
 }
 
 class AccessKeyed extends syntax.AccessKeyed {
   AccessKeyed(object, key) : super(object, key);
-  eval(scope, [FilterMap filters]) =>
-      getKeyed(object.eval(scope, filters), key.eval(scope, filters));
+  eval(scope, [FormatterMap formatters]) =>
+      getKeyed(object.eval(scope, formatters), key.eval(scope, formatters));
   assign(scope, value) => setKeyed(object.eval(scope), key.eval(scope), value);
 }
 

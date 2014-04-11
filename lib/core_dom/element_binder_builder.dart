@@ -1,6 +1,6 @@
 part of angular.core.dom_internal;
 
-@NgInjectableService()
+@Injectable()
 class ElementBinderFactory {
   final Parser _parser;
   final Profiler _perf;
@@ -38,7 +38,7 @@ class ElementBinderBuilder {
   DirectiveRef component;
 
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
-  String childMode = AbstractNgAnnotation.COMPILE_CHILDREN;
+  String childMode = Directive.COMPILE_CHILDREN;
 
   ElementBinderBuilder(this._factory);
 
@@ -46,15 +46,15 @@ class ElementBinderBuilder {
     var annotation = ref.annotation;
     var children = annotation.children;
 
-    if (annotation.children == AbstractNgAnnotation.TRANSCLUDE_CHILDREN) {
+    if (annotation.children == Directive.TRANSCLUDE_CHILDREN) {
       template = ref;
-    } else if (annotation is NgComponent) {
+    } else if (annotation is Component) {
       component = ref;
     } else {
       decorators.add(ref);
     }
 
-    if (annotation.children == AbstractNgAnnotation.IGNORE_CHILDREN) {
+    if (annotation.children == Directive.IGNORE_CHILDREN) {
       childMode = annotation.children;
     }
 

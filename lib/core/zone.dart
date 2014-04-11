@@ -46,7 +46,7 @@ class LongStackTrace {
  * runs the Angular digest.  A component may want to inject this singleton if it
  * needs to run code _outside_ the Angular digest.
  */
-class NgZone {
+class VmTurnZone {
   /// an "outer" [Zone], which is the one that created this.
   async.Zone _outerZone;
 
@@ -59,7 +59,7 @@ class NgZone {
    * Defaults [onError] to forward errors to the outer [Zone].
    * Defaults [onTurnDone] to a no-op.
    */
-  NgZone() {
+  VmTurnZone() {
     _outerZone = async.Zone.current;
     _innerZone = _outerZone.fork(specification: new async.ZoneSpecification(
         run: _onRun,
@@ -181,7 +181,7 @@ class NgZone {
    * In a typical app where the inner zone is the Angular zone, this allows
    * one to escape Angular's auto-digest mechanism.
    *
-   *     myFunction(NgZone zone, Element element) {
+   *     myFunction(VmTurnZone zone, Element element) {
    *       element.onClick.listen(() {
    *         // auto-digest will run after element click.
    *       });

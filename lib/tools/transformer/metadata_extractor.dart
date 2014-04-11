@@ -215,7 +215,8 @@ class AnnotationExtractor {
     'NgCallback': '&',
   };
 
-  ClassElement ngAnnotationType;
+  ClassElement directiveType;
+  ClassElement formatterType;
 
   /// Resolved annotations that this will pick up for members.
   final List<Element> _annotationElements = <Element>[];
@@ -229,10 +230,13 @@ class AnnotationExtractor {
       }
       _annotationElements.add(type.unnamedConstructor);
     }
-    ngAnnotationType = resolver.getType('angular.core.annotation_src.AbstractNgAnnotation');
-    if (ngAnnotationType == null) {
-      logger.warning('Unable to resolve AbstractNgAnnotation, '
-          'skipping member annotations.');
+    directiveType = resolver.getType('angular.core.annotation_src.Directive');
+    formatterType = resolver.getType('angular.core.annotation_src.Formatter');
+    if (directiveType == null) {
+      logger.warning('Unable to resolve Directive, skipping member annotations.');
+    }
+    if (formatterType == null) {
+      logger.warning('Unable to resolve Formatter.');
     }
   }
 
@@ -269,11 +273,8 @@ class AnnotationExtractor {
                 annotation.parent.element);
             return false;
           }
-          // Skip all non-Ng* Attributes.
-          if (!cls.name.startsWith('Ng')) {
-            return false;
-          }
-          return true;
+          return element.enclosingElement.type.isAssignableTo(directiveType.type) ||
+                 element.enclosingElement.type.isAssignableTo(formatterType.type);
         }).toList();
 
 
@@ -297,16 +298,16 @@ class AnnotationExtractor {
     return type;
   }
 
-  /// Folds all AttrFieldAnnotations into the AbstractNgAnnotation annotation on the
+  /// Folds all AttrFieldAnnotations into the Directive annotation on the
   /// class.
   void _foldMemberAnnotations(Map<String, Annotation> memberAnnotations,
       AnnotatedType type) {
-    // Filter down to AbstractNgAnnotation constructors.
+    // Filter down to Directive constructors.
     var ngAnnotations = type.annotations.where((a) {
       var element = a.element;
       if (element is! ConstructorElement) return false;
       return element.enclosingElement.type.isAssignableTo(
-          ngAnnotationType.type);
+          directiveType.type);
     });
     if (ngAnnotations.isEmpty) {
       warn('Found field annotation but no class directives.', type.type);

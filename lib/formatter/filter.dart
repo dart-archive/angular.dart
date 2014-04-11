@@ -1,4 +1,4 @@
-part of angular.filter;
+part of angular.formatter_internal;
 
 // Too bad you can't stick typedef's inside a class.
 typedef bool _Predicate(e);
@@ -9,7 +9,7 @@ typedef bool _Equals(a, b);
  * [List].
  *
  * In addition to the input list (implicit in an Angular expression syntax),
- * this filter takes 1 required and 1 optional parameter.  They are:
+ * this formatter takes 1 required and 1 optional parameter.  They are:
  *
  * - `expression` (required) - one of [Map], [Function], [String], [bool], [num]
  * - `comparator` (optional)
@@ -32,7 +32,7 @@ typedef bool _Equals(a, b);
  *   That's equivalent to the simple substring match with a `String` as
  *   described above.
  *
- * - [Function]:  This allows you to supply a custom function to filter the
+ * - [Function]:  This allows you to supply a custom function to formatter the
  *   List.  The function is called for each element of the List.  The returned
  *   List contains exactly those elements for which this function returned
  *   `true`.
@@ -62,7 +62,7 @@ typedef bool _Equals(a, b);
  *     // main.dart
  *     import 'package:angular/angular.dart';
  *
- *     @NgDirective(selector: '[toy-data]')
+ *     @Decorator(selector: '[toy-data]')
  *     class ToyData {
  *       ToyData(Scope scope) {
  *         scope.friends = [{'name':'John',     'phone':'555-1276'},
@@ -109,7 +109,7 @@ typedef bool _Equals(a, b);
  *       </body>
  *     </html>
  */
-@NgFilter(name: 'filter')
+@Formatter(name: 'filter')
 class Filter implements Function {
   Parser _parser;
   _Equals _comparator;

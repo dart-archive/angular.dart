@@ -9,7 +9,7 @@
  * The angular.core library includes Angular's Directive and Filter classes:
  *
  *  - [angular.directive](#angular/angular-directive) lists all the basic directives
- *  - [angular.filter] (#angular/angular-filter) lists all the basic filters
+ *  - [angular.formatter] (#angular/angular-formatter) lists all the basic formatters
  *
  * You might also want to optionally import the following Angular libraries:
  *
@@ -62,10 +62,11 @@ export "package:angular/core_dom/module_internal.dart" show
     HttpResponse,
     HttpResponseConfig,
     LocationWrapper,
-    NoOpAnimation,
-    NullTreeSanitizer,
     NgAnimate,
     NgElement,
+    NoOpAnimation,
+    NullTreeSanitizer,
+    Animate,
     RequestErrorInterceptor,
     RequestInterceptor,
     Response,
@@ -82,7 +83,7 @@ export "package:angular/core/module_internal.dart" show
     ExceptionHandler,
     FilterMap,
     Interpolate,
-    NgZone,
+    VmTurnZone,
     PrototypeMap,
     RootScope,
     Scope,

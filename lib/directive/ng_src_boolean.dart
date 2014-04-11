@@ -22,13 +22,13 @@ part of angular.directive;
  *  - [ng-required]
  *  - [ng-selected]
  */
-@NgDirective(selector: '[ng-checked]',  map: const {'ng-checked':  '=>checked'})
-@NgDirective(selector: '[ng-disabled]', map: const {'ng-disabled': '=>disabled'})
-@NgDirective(selector: '[ng-multiple]', map: const {'ng-multiple': '=>multiple'})
-@NgDirective(selector: '[ng-open]',     map: const {'ng-open':     '=>open'})
-@NgDirective(selector: '[ng-readonly]', map: const {'ng-readonly': '=>readonly'})
-@NgDirective(selector: '[ng-required]', map: const {'ng-required': '=>required'})
-@NgDirective(selector: '[ng-selected]', map: const {'ng-selected': '=>selected'})
+@Decorator(selector: '[ng-checked]',  map: const {'ng-checked':  '=>checked'})
+@Decorator(selector: '[ng-disabled]', map: const {'ng-disabled': '=>disabled'})
+@Decorator(selector: '[ng-multiple]', map: const {'ng-multiple': '=>multiple'})
+@Decorator(selector: '[ng-open]',     map: const {'ng-open':     '=>open'})
+@Decorator(selector: '[ng-readonly]', map: const {'ng-readonly': '=>readonly'})
+@Decorator(selector: '[ng-required]', map: const {'ng-required': '=>required'})
+@Decorator(selector: '[ng-selected]', map: const {'ng-selected': '=>selected'})
 class NgBooleanAttribute {
   final NgElement _ngElement;
 
@@ -68,9 +68,9 @@ class NgBooleanAttribute {
  * - [ng-src]
  * - [ng-srcset]
  */
-@NgDirective(selector: '[ng-href]',   map: const {'ng-href':   '@href'})
-@NgDirective(selector: '[ng-src]',    map: const {'ng-src':    '@src'})
-@NgDirective(selector: '[ng-srcset]', map: const {'ng-srcset': '@srcset'})
+@Decorator(selector: '[ng-href]',   map: const {'ng-href':   '@href'})
+@Decorator(selector: '[ng-src]',    map: const {'ng-src':    '@src'})
+@Decorator(selector: '[ng-srcset]', map: const {'ng-srcset': '@srcset'})
 class NgSource {
   final NgElement _ngElement;
   NgSource(this._ngElement);
@@ -94,8 +94,8 @@ class NgSource {
  *       <circle ng-attr-cx="{{cx}}"></circle>
  *     </svg>
  */
-@NgDirective(selector: '[ng-attr-*]')
-class NgAttribute implements NgAttachAware {
+@Decorator(selector: '[ng-attr-*]')
+class NgAttribute implements AttachAware {
   final NodeAttrs _attrs;
 
   NgAttribute(this._attrs);

@@ -26,7 +26,7 @@ class BallModel {
 
 }
 
-@NgController(
+@Controller(
   selector: '[bounce-controller]',
   publishAs: 'bounce')
 class BounceController {
@@ -99,15 +99,15 @@ class BounceController {
 
 List<String> _CACHE = new List.generate(500, (i) => '${i}px');
 
-@NgDirective(
+@Decorator(
   selector: '[ball-position]',
   map: const {
     "ball-position": '=>position'},
   exportExpressions: const ['x', 'y'])
-class BallPositionDirective {
+class BallPosition {
   final Element element;
   final Scope scope;
-  BallPositionDirective(this.element, this.scope);
+  BallPosition(this.element, this.scope);
 
   px(x) => _CACHE[max(0, x.round())];
 
@@ -125,8 +125,7 @@ class BallPositionDirective {
 class MyModule extends Module {
   MyModule() {
     type(BounceController);
-    type(BallPositionDirective);
-    factory(ScopeStatsConfig, (i) => new ScopeStatsConfig());
+    type(BallPosition);
   }
 }
 

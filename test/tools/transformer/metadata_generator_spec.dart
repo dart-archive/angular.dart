@@ -27,7 +27,7 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgDirective(selector: r'[*=/{{.*}}/]')
+                @Decorator(selector: r'[*=/{{.*}}/]')
                 class Engine {
                   @NgOneWay('another-expression')
                   String anotherExpression;
@@ -48,7 +48,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(selector: r\'[*=/{{.*}}/]\', '
+              'const import_1.Decorator(selector: r\'[*=/{{.*}}/]\', '
                 'map: const {'
                 '\'another-expression\': \'=>anotherExpression\', '
                 '\'callback\': \'&callback\', '
@@ -84,7 +84,7 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgDirective(map: {'another-expression': '=>anotherExpression'})
+                @Decorator(map: {'another-expression': '=>anotherExpression'})
                 class Engine {
                   @NgOneWay('another-expression')
                   set anotherExpression(Function) {}
@@ -98,7 +98,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(map: const {'
+              'const import_1.Decorator(map: const {'
                 '\'another-expression\': \'=>anotherExpression\'})',
             ]
           },
@@ -115,7 +115,7 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgDirective(map: {'another-expression': '=>anotherExpression'})
+                @Decorator(map: {'another-expression': '=>anotherExpression'})
                 class Engine {
                   set anotherExpression(Function) {}
 
@@ -132,7 +132,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(map: const {'
+              'const import_1.Decorator(map: const {'
                 '\'another-expression\': \'=>anotherExpression\', '
                 '\'two-way-stuff\': \'<=>twoWayStuff\'})',
             ]
@@ -167,7 +167,7 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgDirective(map: const {'ng-value': '&ngValue', 'key': 'value'})
+                @Decorator(map: const {'ng-value': '&ngValue', 'key': 'value'})
                 class Engine {}
 
                 main() {}
@@ -179,7 +179,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(map: const {\'ng-value\': '
+              'const import_1.Decorator(map: const {\'ng-value\': '
               '\'&ngValue\', \'key\': \'value\'})',
             ]
           });
@@ -192,7 +192,7 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgDirective(exportExpressions: ['one', 'two'])
+                @Decorator(exportExpressions: ['one', 'two'])
                 class Engine {}
 
                 main() {}
@@ -204,7 +204,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              "const import_1.NgDirective(exportExpressions: "
+              "const import_1.Decorator(exportExpressions: "
                   "const ['one','two',])",
             ]
           });
@@ -217,10 +217,10 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgOneWay(true)
-                @NgOneWay(1.0)
-                @NgOneWay(1)
-                @NgOneWay(null)
+                @DummyAnnotation(true)
+                @DummyAnnotation(1.0)
+                @DummyAnnotation(1)
+                @DummyAnnotation(null)
                 class Engine {}
 
                 main() {}
@@ -232,12 +232,36 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgOneWay(true)',
-              'const import_1.NgOneWay(1.0)',
-              'const import_1.NgOneWay(1)',
-              'const import_1.NgOneWay(null)',
+              'const import_1.DummyAnnotation(true)',
+              'const import_1.DummyAnnotation(1.0)',
+              'const import_1.DummyAnnotation(1)',
+              'const import_1.DummyAnnotation(null)',
             ]
           });
+    });
+
+    it('should extract formatter', () {
+      return generates(phases,
+      inputs: {
+          'angular|lib/angular.dart': libAngular,
+          'a|web/main.dart': '''
+                import 'package:angular/angular.dart';
+
+                @Formatter()
+                class Engine {}
+
+                main() {}
+                '''
+      },
+      imports: [
+          'import \'main.dart\' as import_0;',
+          'import \'package:angular/angular.dart\' as import_1;',
+      ],
+      classes: {
+          'import_0.Engine': [
+              'const import_1.Formatter()',
+          ]
+      });
     });
 
     it('should skip and warn on unserializable annotations', () {
@@ -247,7 +271,7 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgDirective(module: MissingType.module)
+                @Decorator(module: MissingType.module)
                 class Car {
                 }
 
@@ -267,7 +291,7 @@ main() {
             // 'warning: Unable to serialize annotation @NgFoo. '
             //     '(web/main.dart 2 16)',
             'warning: Unable to serialize annotation '
-                '@NgDirective(module: MissingType.module). '
+                '@Decorator(module: MissingType.module). '
                 '(web/main.dart 2 16)',
           ]);
     });
@@ -280,7 +304,7 @@ main() {
                 import 'package:angular/angular.dart';
                 import 'package:a/b.dart';
 
-                @NgDirective(module: Car.module)
+                @Decorator(module: Car.module)
                 class Engine {
                 }
 
@@ -299,7 +323,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(module: import_2.Car.module)',
+              'const import_1.Decorator(module: import_2.Car.module)',
             ]
           });
     });
@@ -313,7 +337,7 @@ main() {
 
                 class Engine {
                   Engine() {
-                    @NgDirective()
+                    @Decorator()
                     print('something');
                   }
                 }
@@ -329,7 +353,7 @@ main() {
             'a|web/main.dart': r'''
                 import 'package:angular/angular.dart';
 
-                @NgOneWay('foo\' \\')
+                @DummyAnnotation('foo\' \\')
                 class Engine {
                 }
 
@@ -342,7 +366,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              r'''const import_1.NgOneWay('foo\' \\')''',
+              r'''const import_1.DummyAnnotation('foo\' \\')''',
             ]
           });
     });
@@ -354,7 +378,7 @@ main() {
             'a|web/main.dart': r'''
                 import 'package:angular/angular.dart';
 
-                @NgOneWay(r"""multiline
+                @DummyAnnotation(r"""multiline
                 string""")
                 class Engine {
                 }
@@ -368,7 +392,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              r'''const import_1.NgOneWay(r"""multiline
+              r'''const import_1.DummyAnnotation(r"""multiline
                 string""")''',
             ]
           });
@@ -381,8 +405,8 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgDirective(visibility: NgDirective.CHILDREN_VISIBILITY)
-                @NgDirective(visibility: CONST_VALUE)
+                @Decorator(visibility: Directive.CHILDREN_VISIBILITY)
+                @Decorator(visibility: CONST_VALUE)
                 class Engine {}
 
                 const int CONST_VALUE = 2;
@@ -396,9 +420,9 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(visibility: '
-                  'import_1.NgDirective.CHILDREN_VISIBILITY)',
-              'const import_1.NgDirective(visibility: import_0.CONST_VALUE)',
+              'const import_1.Decorator(visibility: '
+                  'import_1.Directive.CHILDREN_VISIBILITY)',
+              'const import_1.Decorator(visibility: import_0.CONST_VALUE)',
             ]
           });
     });
@@ -410,7 +434,7 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgDirective(module: Engine.module)
+                @Decorator(module: Engine.module)
                 class Engine {
                   static module() => null;
                 }
@@ -424,7 +448,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(module: import_0.Engine.module)'
+              'const import_1.Decorator(module: import_0.Engine.module)'
             ]
           });
     });
@@ -467,7 +491,7 @@ main() {
                 class Engine {
                 }
 
-                class NgFoo {
+                class NgFoo extends Directive {
                   const NgFoo.bar();
                   const NgFoo._private();
                 }
@@ -514,7 +538,7 @@ main() {
           import 'package:angular/angular.dart';
           import 'second.dart';
 
-          @NgDirective(map: {})
+          @Decorator(map: {})
           class Engine {
             @NgTwoWay('two-way-stuff')
             String get twoWayStuff => null;
@@ -533,7 +557,7 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(map: const {'
+              'const import_1.Decorator(map: const {'
                 '\'two-way-stuff\': \'<=>twoWayStuff\'})',
             ]
           }).then((_) => generates(phases,
@@ -548,7 +572,7 @@ main() {
               ],
               classes: {
                 'import_0.Engine': [
-                  'const import_1.NgDirective(map: const {'
+                  'const import_1.Decorator(map: const {'
                     '\'two-way-stuff\': \'<=>twoWayStuff\'})',
                 ]
               }));
@@ -615,15 +639,20 @@ const String footer = '''
 const String libAngular = '''
 library angular.core.annotation_src;
 
-class AbstractNgAnnotation {
-  AbstractNgAnnotation({map: const {}});
+class Formatter {};
+
+class Directive {
+  Directive({map: const {}});
+  static const int CHILDREN_VISIBILITY = 1;
 }
 
-class NgDirective extends AbstractNgAnnotation {
-  const NgDirective({selector, module, map, visibility, exportExpressions}) :
+class Decorator extends Directive {
+  const Decorator({selector, module, map, visibility, exportExpressions}) :
       super(map: map);
+}
 
-  static const int CHILDREN_VISIBILITY = 1;
+class DummyAnnotation extends Directive {
+  const DummyAnnotation(object);
 }
 
 class NgOneWay {
@@ -644,6 +673,4 @@ class NgAttr {
 class NgOneWayOneTime {
   const NgOneWayOneTime(arg);
 }
-
-class TextChangeListener {}
 ''';

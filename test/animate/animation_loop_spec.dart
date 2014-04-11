@@ -8,7 +8,7 @@ main() {
     TestBed _;
     AnimationLoop runner;
     MockAnimationFrame frame;
-    beforeEach(async(inject((TestBed tb, NgZone zone) {
+    beforeEach(async(inject((TestBed tb, VmTurnZone zone) {
       _ = tb;
       frame = new MockAnimationFrame();
       runner = new AnimationLoop(frame, new Profiler(), zone);

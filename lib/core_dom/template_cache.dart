@@ -6,7 +6,7 @@ part of angular.core.dom_internal;
  * All templates that are loaded from a URL are cached indefinitely in the
  * TemplateCache the first time they are needed.  This includes templates loaded
  * via `ng-include` or via the `templateUrl` field on components decorated with
- * [NgComponent].
+ * [Component].
  *
  * All attempts that require loading a template from a URL are first checked
  * against this cache.  Only when there is a cache miss is a network request
@@ -29,7 +29,7 @@ part of angular.core.dom_internal;
  *     import 'package:angular/angular.dart';
  *     import 'package:angular/application_factory.dart';
  *
- *     @NgDirective(selector: '[load-template-cache]')
+ *     @Directive(selector: '[load-template-cache]')
  *     class LoadTemplateCacheDirective {
  *       LoadTemplateCacheDirective(TemplateCache templateCache, Scope scope) {
  *         // Method 1 (imperative): Via the injected TemplateCache service.

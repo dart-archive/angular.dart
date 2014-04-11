@@ -17,10 +17,10 @@ part of angular.directive;
  * should be used.
  *
  */
-@NgDirective(
+@Decorator(
     selector: 'select[ng-model]',
-    visibility: NgDirective.CHILDREN_VISIBILITY)
-class InputSelect implements NgAttachAware {
+    visibility: Directive.CHILDREN_VISIBILITY)
+class InputSelect implements AttachAware {
   final expando = new Expando<OptionValue>();
   final dom.SelectElement _selectElement;
   final NodeAttrs _attrs;
@@ -90,9 +90,9 @@ class InputSelect implements NgAttachAware {
  * provides [ng-value] which allows binding to any expression.
  *
  */
-@NgDirective(selector: 'option', module: NgValue.moduleFactory)
-class OptionValue implements NgAttachAware,
-    NgDetachAware {
+@Decorator(selector: 'option', module: NgValue.moduleFactory)
+class OptionValue implements AttachAware,
+    DetachAware {
   final InputSelect _inputSelectDirective;
   final dom.Element _element;
 

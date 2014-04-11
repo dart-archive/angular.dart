@@ -39,7 +39,7 @@ abstract class Expression {
   bool get isAssignable => false;
   bool get isChain => false;
 
-  eval(scope, [FilterMap filters = defaultFilterMap]) =>
+  eval(scope, [FormatterMap formatters = defaultFormatterMap]) =>
       throw new EvalError("Cannot evaluate $this");
   assign(scope, value) =>
       throw new EvalError("Cannot assign to $this");
@@ -197,12 +197,12 @@ class LiteralObject extends Literal {
   accept(Visitor visitor) => visitor.visitLiteralObject(this);
 }
 
-const defaultFilterMap = const _DefaultFilterMap();
+const defaultFormatterMap = const _DefaultFormatterMap();
 
-class _DefaultFilterMap implements FilterMap {
-  const _DefaultFilterMap();
+class _DefaultFormatterMap implements FormatterMap {
+  const _DefaultFormatterMap();
 
-  call(name) => throw 'No NgFilter: $name found!';
+  call(name) => throw 'No Formatter: $name found!';
   Type operator[](annotation) => null;
   forEach(fn) { }
   annotationsFor(type) => null;

@@ -207,8 +207,8 @@ class TemplateCollectingVisitor {
         if (skippedClasses.contains(clazz.name.name)) return;
 
         switch (ann.name.name) {
-          case 'NgComponent':
-              extractNgComponentMetadata(ann, cacheUris); break;
+          case 'Component':
+              extractComponentMetadata(ann, cacheUris); break;
           case 'NgTemplateCache':
               cache = extractNgTemplateCache(ann, cacheUris); break;
         }
@@ -222,7 +222,7 @@ class TemplateCollectingVisitor {
     });
   }
 
-  void extractNgComponentMetadata(Annotation ann, List<String> cacheUris) {
+  void extractComponentMetadata(Annotation ann, List<String> cacheUris) {
     ann.arguments.arguments.forEach((Expression arg) {
       if (arg is NamedExpression) {
         NamedExpression namedArg = arg;

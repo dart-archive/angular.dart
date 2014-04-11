@@ -19,7 +19,7 @@ import 'package:angular/utils.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/change_detection.dart';
 
-part 'ng_a.dart';
+part 'a_href.dart';
 part 'ng_base_css.dart';
 part 'ng_bind.dart';
 part 'ng_bind_html.dart';
@@ -43,9 +43,9 @@ part 'ng_model_select.dart';
 part 'ng_form.dart';
 part 'ng_model_validators.dart';
 
-class NgDirectiveModule extends Module {
-  NgDirectiveModule() {
-    value(NgA, null);
+class DecoratorFormatter extends Module {
+  DecoratorFormatter() {
+    value(AHref, null);
     type(NgBaseCss);  // The root injector should have an empty NgBaseCss
     value(NgBind, null);
     value(NgBindTemplate, null);

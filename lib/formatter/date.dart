@@ -1,4 +1,4 @@
-part of angular.filter;
+part of angular.formatter_internal;
 
 /**
  * Formats date to a string based on the requested format.
@@ -20,7 +20,7 @@ part of angular.filter;
  *     {{ date_expression | date[:format] }}
  *
  */
-@NgFilter(name:'date')
+@Formatter(name:'date')
 class Date implements Function {
   static final _MAP = const <String, String> {
     'medium':     'MMM d, y h:mm:ss a',

@@ -2,13 +2,13 @@ library event_handler_spec;
 
 import '../_specs.dart';
 
-@NgController(selector: '[foo]', publishAs: 'ctrl')
+@Controller(selector: '[foo]', publishAs: 'ctrl')
 class FooController {
   var description = "desc";
   var invoked = false;
 }
 
-@NgComponent(selector: 'bar',
+@Component(selector: 'bar',
     template: '''
               <div>
                 <span on-abc="ctrl.invoked=true;"></span>

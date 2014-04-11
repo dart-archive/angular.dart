@@ -8,12 +8,12 @@ main() {
     beforeEach((TestBed tb) => _ = tb);
 
     it('should exist',
-        (NgAnimate aniamte) {
+        (Animate aniamte) {
       expect(aniamte).toBeDefined();
     });
 
     it('should add a css classes to nodes.', () {
-      var animate = new NgAnimate();
+      var animate = new Animate();
       _.compile('<div></div>');
       expect(_.rootElement).not.toHaveClass('foo');
       animate.addClass(_.rootElement, 'foo');
@@ -21,7 +21,7 @@ main() {
     });
 
     it('should remove css classes from nodes.', () {
-      var animate = new NgAnimate();
+      var animate = new Animate();
       _.compile('<div class="foo"></div>');
       expect(_.rootElement).toHaveClass('foo');
       animate.removeClass(_.rootElement, 'foo');
@@ -29,7 +29,7 @@ main() {
     });
 
     it('should insert elements', () {
-      var animate = new NgAnimate();
+      var animate = new Animate();
       _.compile('<div></div>');
       expect(_.rootElement.children.length).toBe(0);
       animate.insert([new Element.div()], _.rootElement);
@@ -37,7 +37,7 @@ main() {
     });
 
     it('should remove nodes and elements', () {
-      var animate = new NgAnimate();
+      var animate = new Animate();
       _.compile('<div><p>Hello World</p><!--comment--></div>');
       expect(_.rootElement.childNodes.length).toBe(2);
       animate.remove(_.rootElement.childNodes);
@@ -45,7 +45,7 @@ main() {
     });
 
     it('should move nodes and elements', () {
-      var animate = new NgAnimate();
+      var animate = new Animate();
       _.compile('<div></div>');
       List<Node> a = es('<span>A</span>a');
       List<Node> b = es('<span>B</span>b');

@@ -1,12 +1,12 @@
 part of angular.core.dom_internal;
 
-@NgInjectableService()
+@Injectable()
 class NgElement {
   static const _TO_BE_REMOVED = const Object();
 
   final dom.Element node;
   final Scope _scope;
-  final NgAnimate _animate;
+  final Animate _animate;
 
   final _classesToUpdate = <String, bool>{};
   final _attributesToUpdate = <String, dynamic>{};

@@ -140,18 +140,17 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
   }
 
   visitClassDeclaration(ClassDeclaration clazz) {
-    // Check class annotations for presense of NgComponent/NgDirective.
-    DirectiveMetadata meta;
+    // Check class annotations for presense of Component/Decorator.
     clazz.metadata.forEach((Annotation ann) {
       if (ann.arguments == null) return; // Ignore non-class annotations.
       // TODO(pavelj): this is not a safe check for the type of the
       // annotations, but good enough for now.
-      if (ann.name.name != 'NgComponent'
-          && ann.name.name != 'NgDirective') return;
+      if (ann.name.name != 'Component'
+          && ann.name.name != 'Decorator') return;
 
-      bool isComponent = ann.name.name == 'NgComponent';
+      bool isComponent = ann.name.name == 'Component';
 
-      meta = new DirectiveMetadata()
+      var meta = new DirectiveMetadata()
         ..className = clazz.name.name
         ..type = isComponent ? COMPONENT : DIRECTIVE;
       metadata.add(meta);
@@ -181,10 +180,8 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
           }
         }
       });
-    });
 
-    // Check fields/getters/setter for presense of attr mapping annotations.
-    if (meta != null) {
+      // Check fields/getters/setter for presense of attr mapping annotations.
       clazz.members.forEach((ClassMember member) {
         if (member is FieldDeclaration ||
             (member is MethodDeclaration &&
@@ -209,8 +206,7 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
           });
         }
       });
-    }
-
+    });
     return super.visitClassDeclaration(clazz);
   }
 }

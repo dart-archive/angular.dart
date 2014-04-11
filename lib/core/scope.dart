@@ -77,7 +77,7 @@ class ScopeEvent {
  * triggers watch A. If the system does not stabilize in TTL iterations then
  * the digest is stopped and an exception is thrown.
  */
-@NgInjectableService()
+@Injectable()
 class ScopeDigestTTL {
   final int ttl;
   ScopeDigestTTL(): ttl = 5;
@@ -198,7 +198,7 @@ class Scope {
    * [digest] cycle.
    */
   Watch watch(String expression, ReactionFn reactionFn,  {context,
-      FilterMap filters, bool canChangeModel: true, bool collection: false}) {
+      FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
     assert(isAttached);
     assert(expression is String);
     assert(canChangeModel is bool);
@@ -225,7 +225,7 @@ class Scope {
     }
 
     AST ast = rootScope._astParser(expression, context: context,
-        filters: filters, collection: collection);
+        formatters: formatters, collection: collection);
 
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
     return watch = group.watch(ast, fn);
@@ -361,7 +361,7 @@ _mapEqual(Map a, Map b) => a.length == b.length &&
  * stopped at runtime. The result emission can is configured by supplying a
  * [ScopeStatsEmitter].
  */
-@NgInjectableService()
+@Injectable()
 class ScopeStats {
   final fieldStopwatch = new AvgStopwatch();
   final evalStopwatch = new AvgStopwatch();
@@ -444,7 +444,7 @@ class ScopeStats {
  * ScopeStatsEmitter is in charge of formatting the [ScopeStats] and outputting
  * a message.
  */
-@NgInjectableService()
+@Injectable()
 class ScopeStatsEmitter {
   static String _PAD_ = '                       ';
   static String _HEADER_ = pad('APPLY', 7) + ':'+
@@ -501,7 +501,7 @@ class ScopeStatsConfig {
   }
 }
 
-@NgInjectableService()
+@Injectable()
 class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
   static final STATE_DIGEST = 'digest';
@@ -512,7 +512,7 @@ class RootScope extends Scope {
   final _AstParser _astParser;
   final Parser _parser;
   final ScopeDigestTTL _ttl;
-  final NgZone _zone;
+  final VmTurnZone _zone;
 
   _FunctionChain _runAsyncHead, _runAsyncTail;
   _FunctionChain _domWriteHead, _domWriteTail;
@@ -525,7 +525,7 @@ class RootScope extends Scope {
   String get state => _state;
 
   RootScope(Object context, Parser parser, FieldGetterFactory fieldGetterFactory,
-            FilterMap filterMap, this._exceptionHandler, this._ttl, this._zone,
+            FormatterMap filterMap, this._exceptionHandler, this._ttl, this._zone,
             ScopeStats _scopeStats, ClosureMap closureMap)
       : _scopeStats = _scopeStats,
         _parser = parser,
@@ -961,10 +961,10 @@ class _AstParser {
   _AstParser(this._parser, ClosureMap closureMap)
       : _visitor = new ExpressionVisitor(closureMap);
 
-  AST call(String input, {FilterMap filters,
+  AST call(String input, {FormatterMap formatters,
                           bool collection: false,
                           Object context: null }) {
-    _visitor.filters = filters;
+    _visitor.formatters = formatters;
     AST contextRef = _visitor.contextRef;
     try {
       if (context != null) {
@@ -974,7 +974,7 @@ class _AstParser {
       return collection ? _visitor.visitCollection(exp) : _visitor.visit(exp);
     } finally {
       _visitor.contextRef = contextRef;
-      _visitor.filters = null;
+      _visitor.formatters = null;
     }
   }
 }
@@ -988,7 +988,7 @@ class ExpressionVisitor implements Visitor {
   ExpressionVisitor(this._closureMap);
 
   AST ast;
-  FilterMap filters;
+  FormatterMap formatters;
 
   AST visit(Expression exp) {
     exp.accept(this);
@@ -1073,10 +1073,10 @@ class ExpressionVisitor implements Visitor {
   }
 
   void visitFilter(Filter exp) {
-    if (filters == null) {
-      throw new Exception("No filters have been registered");
+    if (formatters == null) {
+      throw new Exception("No formatters have been registered");
     }
-    Function filterFunction = filters(exp.name);
+    Function filterFunction = formatters(exp.name);
     List<AST> args = [visitCollection(exp.expression)];
     args.addAll(_toAst(exp.arguments).map((ast) => new CollectionAST(ast)));
     ast = new PureFunctionAST('|${exp.name}',
@@ -1191,7 +1191,7 @@ class _FilterWrapper extends FunctionApply {
     }
     var value = Function.apply(filterFn, args);
     if (value is Iterable) {
-      // Since filters are pure we can guarantee that this well never change.
+      // Since formatters are pure we can guarantee that this well never change.
       // By wrapping in UnmodifiableListView we can hint to the dirty checker
       // and short circuit the iterator.
       value = new UnmodifiableListView(value);

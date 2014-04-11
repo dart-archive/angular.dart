@@ -32,7 +32,7 @@ class _Processor {
 
   static const String cacheAnnotationName =
     'angular.template_cache_annotation.NgTemplateCache';
-  static const String componentAnnotationName = 'angular.core.annotation_src.NgComponent';
+  static const String componentAnnotationName = 'angular.core.annotation_src.Component';
 
   _Processor(this.transform, this.resolver, this.options, this.skipNonCached,
       this.templatesOnly) {
@@ -95,7 +95,7 @@ class _Processor {
     });
   }
 
-  /// Extracts the cacheable URIs from the NgComponent annotation.
+  /// Extracts the cacheable URIs from the Component annotation.
   List<_CacheEntry> processComponentAnnotation(_AnnotatedElement annotation) {
     var entries = <_CacheEntry>[];
     if (skipNonCached && isCachingSuppressed(annotation.element)) {

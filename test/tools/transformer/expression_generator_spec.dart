@@ -66,12 +66,12 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgComponent(
+                @Component(
                     templateUrl: 'lib/foo.html',
                     selector: 'my-component')
                 class FooComponent {}
 
-                @NgComponent(
+                @Component(
                     templateUrl: 'packages/b/bar.html',
                     selector: 'my-component')
                 class BarComponent {}
@@ -125,7 +125,7 @@ main() {
 
                 main() {}
 
-                @NgComponent(
+                @Component(
                     templateUrl: 'packages/b/not-found.html',
                     selector: 'my-component')
                 class BarComponent {}
@@ -183,7 +183,7 @@ import 'package:angular/change_detection/change_detection.dart';
 const String libAngular = '''
 library angular.core.annotation_src;
 
-class NgComponent {
-  const NgComponent({String templateUrl, String selector});
+class Component {
+  const Component({String templateUrl, String selector});
 }
 ''';
