@@ -137,7 +137,7 @@ class NgZone {
   ZoneOnError onError;
   // Prevent silently ignoring uncaught exceptions by forwarding such
   // exceptions to the outer zone.
-  ZoneOnError _defaultOnError(dynamic e, dynamic s, LongStackTrace ls) =>
+  void _defaultOnError(dynamic e, dynamic s, LongStackTrace ls) =>
       _outerZone.handleUncaughtError(e, s);
 
   /**
@@ -152,7 +152,7 @@ class NgZone {
    *   end.
    */
   ZoneOnTurn onTurnDone;
-  ZoneOnTurn _defaultOnTurnDone() => null;
+  void _defaultOnTurnDone() => null;
 
   LongStackTrace _longStacktrace = null;
 
