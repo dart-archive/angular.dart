@@ -133,7 +133,6 @@ class NgZone {
   /**
    * Called with any errors from the inner zone.
    */
-  // We can't initialize onError to _defaultOnError here: dartbug 13519.
   ZoneOnError onError;
   // Prevent silently ignoring uncaught exceptions by forwarding such
   // exceptions to the outer zone.
