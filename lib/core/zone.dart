@@ -1,11 +1,18 @@
 part of angular.core_internal;
 
+/**
+ * Handles an [NgZone] onTurnDone event.
+ */
 typedef void ZoneOnTurn();
+
+/**
+ * Handles an [NgZone] onError event.
+ */
 typedef void ZoneOnError(dynamic error, dynamic stacktrace,
                          LongStackTrace longStacktrace);
 
 /**
- * Contains the locations of runAsync calls across VM turns.
+ * Contains the locations of async calls across VM turns.
  */
 class LongStackTrace {
   final String reason;
@@ -26,24 +33,43 @@ class LongStackTrace {
 }
 
 /**
- * A better zone API which implements onTurnDone.
+ * A [Zone] wrapper that lets you schedule tasks after its private microtask
+ * queue is exhausted but before the next "turn", i.e. event loop iteration.
+ * This lets you freely schedule microtasks that prepare data, and set an
+ * [onTurnDone] handler that will consume that data after it's ready but before
+ * the browser has a chance to re-render.
+ * The wrapper maintains an "inner" and "outer" [Zone] and a private queue of
+ * all the microtasks scheduled on the inner [Zone].
+ *
+ * In a typical app, [ngDynamicApp] or [ngStaticApp] will create a singleton
+ * [NgZone] whose outer [Zone] is the root [Zone] and whose default [onTurnDone]
+ * runs the Angular digest.  A component may want to inject this singleton if it
+ * needs to run code _outside_ the Angular digest.
  */
 class NgZone {
-  final async.Zone _outerZone = async.Zone.current;
-  async.Zone _zone;
+  /// an "outer" [Zone], which is the one that created this.
+  async.Zone _outerZone;
 
+  /// an "inner" [Zone], which is a child of the outer [Zone].
+  async.Zone _innerZone;
+
+  /**
+   * Associates with this
+   *
+   * Defaults [onError] to forward errors to the outer [Zone].
+   * Defaults [onTurnDone] to a no-op.
+   */
   NgZone() {
-    _zone = _outerZone.fork(specification: new async.ZoneSpecification(
+    _outerZone = async.Zone.current;
+    _innerZone = _outerZone.fork(specification: new async.ZoneSpecification(
         run: _onRun,
         runUnary: _onRunUnary,
         scheduleMicrotask: _onScheduleMicrotask,
         handleUncaughtError: _uncaughtError
     ));
-    // Prevent silently ignoring uncaught exceptions by forwarding such
-    // exceptions to the outer zone by default.
-    onError = (e, s, ls) => _outerZone.handleUncaughtError(e, s);
+    onError = _defaultOnError;
+    onTurnDone = _defaultOnTurnDone;
   }
-
 
   List _asyncQueue = [];
   bool _errorThrownFromOnRun = false;
@@ -107,21 +133,27 @@ class NgZone {
   int _runningInTurn = 0;
 
   /**
-   * A function called with any errors from the zone.
+   * Called with any errors from the inner zone.
    */
-  var onError = (e, s, ls) => print('$e\n$s\n$ls');
+  ZoneOnError onError;
+
+  /// Prevent silently ignoring uncaught exceptions by forwarding such exceptions to the outer zone.
+  void _defaultOnError(dynamic e, dynamic s, LongStackTrace ls) =>
+      _outerZone.handleUncaughtError(e, s);
 
   /**
-   * A function that is called at the end of each VM turn in which the
-   * in-zone code or any runAsync callbacks were run.
+   * Called at the end of each VM turn in which inner zone code runs.
+   * "At the end" means after the private microtask queue of the inner zone is
+   * exhausted but before the next VM turn.  Notes
+   * - This won't wait for microtasks scheduled in zones other than the inner
+   *   zone, e.g. those scheduled with [runOutsideAngular].
+   * - [onTurnDone] runs repeatedly until it fails to schedule any more
+   *   microtasks, so you usually don't want it to schedule any.  For example,
+   *   if its first line of code is `new Future.value()`, the turn will _never_
+   *   end.
    */
-  var onTurnDone = () => null;  // Type was ZoneOnTurn: dartbug 13519
-
-  /**
-   * A function that is called when uncaught errors are thrown inside the zone.
-   */
-  // var onError = (dynamic e, dynamic s, LongStackTrace ls) => print('EXCEPTION: $e\n$s\n$ls');
-  // Type was ZoneOnError: dartbug 13519
+  ZoneOnTurn onTurnDone;
+  void _defaultOnTurnDone() => null;
 
   LongStackTrace _longStacktrace = null;
 
@@ -140,15 +172,14 @@ class NgZone {
   }
 
   /**
-   * Runs the provided function in the zone.  Any runAsync calls (e.g. futures)
-   * will also be run in this zone.
-   *
-   * Returns the return value of body.
+   * Runs [body] in the inner zone and returns whatever it returns.
    */
-  dynamic run(body()) => _zone.run(body);
+  dynamic run(body()) => _innerZone.run(body);
 
   /**
-   * Allows one to escape the auto-digest mechanism of Angular.
+   * Runs [body] in the outer zone and returns whatever it returns.
+   * In a typical app where the inner zone is the Angular zone, this allows
+   * one to escape Angular's auto-digest mechanism.
    *
    *     myFunction(NgZone zone, Element element) {
    *       element.onClick.listen(() {
@@ -163,10 +194,19 @@ class NgZone {
    */
   dynamic runOutsideAngular(body()) => _outerZone.run(body);
 
+  /**
+   * Throws an [AssertionError] if no task is currently running in the inner
+   * zone.  In a typical app where the inner zone is the Angular zone, this can
+   * be used to assert that the digest will indeed run at the end of the current
+   * turn.
+   */
   void assertInTurn() {
     assert(_runningInTurn > 0 || _inFinishTurn);
   }
 
+  /**
+   * Same as [assertInTurn].
+   */
   void assertInZone() {
     assertInTurn();
   }
