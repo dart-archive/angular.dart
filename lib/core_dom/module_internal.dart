@@ -30,7 +30,7 @@ part 'element_binder.dart';
 part 'element_binder_builder.dart';
 part 'event_handler.dart';
 part 'http.dart';
-part 'ng_mustache.dart';
+part 'mustache.dart';
 part 'node_cursor.dart';
 part 'selector.dart';
 part 'tagging_compiler.dart';
@@ -40,16 +40,16 @@ part 'tree_sanitizer.dart';
 part 'walking_compiler.dart';
 part 'ng_element.dart';
 
-class NgCoreDomModule extends Module {
-  NgCoreDomModule() {
+class CoreDomModule extends Module {
+  CoreDomModule() {
     value(dom.Window, dom.window);
     value(ElementProbe, null);
 
     factory(TemplateCache, (_) => new TemplateCache(capacity: 0));
     type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
 
-    type(NgTextMustacheDirective);
-    type(NgAttrMustacheDirective);
+    type(TextMustache);
+    type(AttrMustache);
 
     type(Compiler, implementedBy: TaggingCompiler);
     type(Http);
@@ -58,7 +58,7 @@ class NgCoreDomModule extends Module {
     type(HttpDefaultHeaders);
     type(HttpDefaults);
     type(HttpInterceptors);
-    type(NgAnimate);
+    type(Animate);
     type(ViewCache);
     type(BrowserCookies);
     type(Cookies);

@@ -82,7 +82,7 @@ main() {
     }));
 
 
-    it('should handle filters', inject((Compiler compile, RootScope rootScope,
+    it('should handle formatters', inject((Compiler compile, RootScope rootScope,
         Injector injector, DirectiveMap directives)
     {
       var element = es('<div>{{"World" | hello}}</div>');
@@ -140,15 +140,15 @@ main() {
 
 }
 
-@NgFilter(name: 'hello')
+@Formatter(name: 'hello')
 class _HelloFilter {
   call(String str) {
     return 'Hello, $str!';
   }
 }
 
-@NgComponent(selector: '[dir-foo]')
-class _FooDirective implements NgAttachAware {
+@Component(selector: '[dir-foo]')
+class _FooDirective implements AttachAware {
   NodeAttrs attrs;
   Logger log;
 

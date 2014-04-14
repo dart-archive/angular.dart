@@ -9,7 +9,7 @@ class Log {
   add(String msg) => log.add(msg);
 }
 
-@NgDirective(children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo')
+@Decorator(children: Directive.TRANSCLUDE_CHILDREN, selector: 'foo')
 class LoggerViewDirective {
   LoggerViewDirective(ViewPort port, ViewFactory viewFactory,
       BoundViewFactory boundViewFactory, Logger logger) {
@@ -23,21 +23,21 @@ class LoggerViewDirective {
   }
 }
 
-@NgDirective(selector: 'dir-a')
+@Decorator(selector: 'dir-a')
 class ADirective {
   ADirective(Log log) {
     log.add('ADirective');
   }
 }
 
-@NgDirective(selector: 'dir-b')
+@Decorator(selector: 'dir-b')
 class BDirective {
   BDirective(Log log) {
     log.add('BDirective');
   }
 }
 
-@NgFilter(name:'filterA')
+@Formatter(name:'filterA')
 class AFilter {
   Log log;
 
@@ -48,7 +48,7 @@ class AFilter {
   call(value) => value;
 }
 
-@NgFilter(name:'filterB')
+@Formatter(name:'filterB')
 class BFilter {
   Log log;
 
@@ -78,7 +78,7 @@ main() {
       beforeEach((Injector injector, Profiler perf) {
         rootElement.innerHtml = '<!-- anchor -->';
         anchor = new ViewPort(rootElement.childNodes[0],
-          injector.get(NgAnimate));
+          injector.get(Animate));
         a = (viewFactoryFactory(es('<span>A</span>a'), [], perf, expando))(injector);
         b = (viewFactoryFactory(es('<span>B</span>b'), [], perf, expando))(injector);
       });
@@ -142,7 +142,7 @@ main() {
 
           var directiveRef = new DirectiveRef(null,
                                               LoggerViewDirective,
-                                              new NgDirective(children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo'),
+                                              new Decorator(children: Directive.TRANSCLUDE_CHILDREN, selector: 'foo'),
                                               '');
           directiveRef.viewFactory = viewFactoryFactory($('<b>text</b>'), [], perf, new Expando());
           var binder = ebf.binder();
@@ -193,7 +193,7 @@ main() {
 
     describe('deferred', () {
 
-      it('should load directives/filters from the child injector', () {
+      it('should load directives/formatters from the child injector', () {
         Module rootModule = new Module()
           ..type(Probe)
           ..type(Log)

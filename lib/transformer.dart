@@ -34,11 +34,11 @@ class AngularTransformerGroup implements TransformerGroup {
 TransformOptions _parseSettings(Map args) {
   // Default angular annotations for injectable types
   var annotations = [
-      'angular.core.annotation_src.NgInjectableService',
-      'angular.core.annotation_src.NgDirective',
-      'angular.core.annotation_src.NgController',
-      'angular.core.annotation_src.NgComponent',
-      'angular.core.annotation_src.NgFilter'];
+      'angular.core.annotation_src.Injectable',
+      'angular.core.annotation_src.Decorator',
+      'angular.core.annotation_src.Controller',
+      'angular.core.annotation_src.Component',
+      'angular.core.annotation_src.Formatter'];
   annotations.addAll(_readStringListValue(args, 'injectable_annotations'));
 
   // List of types which are otherwise not indicated as being injectable.

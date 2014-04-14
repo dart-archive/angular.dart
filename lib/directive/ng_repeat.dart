@@ -54,8 +54,8 @@ part of angular.directive;
  *     not matter. Two objects are considered equivalent as long as their `id`
  *     property is same.
  *
- *     For example: `item in items | filter:searchText track by item.id` is a
- *     pattern that might be used to apply a filter to items in conjunction with
+ *     For example: `item in items | formatter:searchText track by item.id` is a
+ *     pattern that might be used to apply a formatter to items in conjunction with
  *     a tracking expression.
  *
  * # Example:
@@ -65,8 +65,8 @@ part of angular.directive;
  *     </ul>
  */
 
-@NgDirective(
-    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
+@Decorator(
+    children: Directive.TRANSCLUDE_CHILDREN,
     selector: '[ng-repeat]',
     map: const {'.': '@expression'})
 class NgRepeat {
@@ -77,7 +77,7 @@ class NgRepeat {
   final BoundViewFactory _boundViewFactory;
   final Scope _scope;
   final Parser _parser;
-  final FilterMap filters;
+  final FormatterMap formatters;
 
   String _expression;
   String _valueIdentifier;
@@ -88,7 +88,7 @@ class NgRepeat {
   Watch _watch;
 
   NgRepeat(this._viewPort, this._boundViewFactory, this._scope,
-           this._parser, this.filters);
+           this._parser, this.formatters);
 
   set expression(value) {
     assert(value != null);
@@ -136,7 +136,7 @@ class NgRepeat {
           _onChange(changes);
         },
         collection: true,
-        filters: filters
+        formatters: formatters
     );
   }
 

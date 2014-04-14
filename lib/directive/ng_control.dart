@@ -7,7 +7,7 @@ part of angular.directive;
  * NgControl is used with the form and fieldset as well as all other directives that
  * are used for user input with NgModel.
  */
-abstract class NgControl implements NgAttachAware, NgDetachAware {
+abstract class NgControl implements AttachAware, DetachAware {
   static const NG_VALID          = "ng-valid";
   static const NG_INVALID        = "ng-invalid";
   static const NG_PRISTINE       = "ng-pristine";
@@ -21,7 +21,7 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   bool _submitValid;
 
   final NgControl _parentControl;
-  final NgAnimate _animate;
+  final Animate _animate;
   final NgElement _element;
 
   final _controls = new List<NgControl>();
@@ -40,7 +40,7 @@ abstract class NgControl implements NgAttachAware, NgDetachAware {
   final infoStates = new Map<String, Set<NgControl>>();
 
   NgControl(NgElement this._element, Injector injector,
-      NgAnimate this._animate)
+      Animate this._animate)
       : _parentControl = injector.parent.get(NgControl);
 
   @override

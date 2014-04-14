@@ -7,12 +7,12 @@ void main() {
   describe('number', () {
     var number;
 
-    beforeEach((FilterMap map, Injector injector) {
-      number = injector.get(map[new NgFilter(name: 'number')]);
+    beforeEach((FormatterMap map, Injector injector) {
+      number = injector.get(map[new Formatter(name: 'number')]);
     });
 
 
-    it('should do basic filter', () {
+    it('should do basic formatter', () {
       expect(number(0, 0)).toEqual('0');
       expect(number(-999)).toEqual('-999');
       expect(number(123)).toEqual('123');
@@ -37,7 +37,7 @@ void main() {
       expect(number(1234.567, 2)).toEqual("1,234.57");
     });
 
-    it('should filter exponentially small numbers', () {
+    it('should formatter exponentially small numbers', () {
       expect(number(1e-50, 0)).toEqual('0');
       expect(number(1e-6, 6)).toEqual('0.000001');
       expect(number(1e-7, 6)).toEqual('0.000000');

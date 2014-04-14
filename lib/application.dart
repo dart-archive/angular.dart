@@ -77,29 +77,29 @@ import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/directive/module.dart';
-import 'package:angular/filter/module.dart';
+import 'package:angular/formatter/module_internal.dart';
 import 'package:angular/routing/module.dart';
 import 'package:angular/introspection_js.dart';
 
 /**
  * This is the top level module which describes all Angular components,
- * including services, filters and directives. When instantiating an Angular application
+ * including services, formatters and directives. When instantiating an Angular application
  * through [applicationFactory](#angular-app-factory), AngularModule is automatically included.
  *
  * You can use AngularModule explicitly when creating a custom Injector that needs to know
- * about Angular services, filters, and directives. When writing tests, this is typically done for
+ * about Angular services, formatters, and directives. When writing tests, this is typically done for
  * you by the [SetUpInjector](#angular-mock@id_setUpInjector) method.
  *
 
  */
 class AngularModule extends Module {
   AngularModule() {
-    install(new NgCoreModule());
-    install(new NgCoreDomModule());
-    install(new NgDirectiveModule());
-    install(new NgFilterModule());
-    install(new NgPerfModule());
-    install(new NgRoutingModule());
+    install(new CoreModule());
+    install(new CoreDomModule());
+    install(new DecoratorFormatter());
+    install(new FormatterModule());
+    install(new PerfModule());
+    install(new RoutingModule());
 
     type(MetadataExtractor);
     value(Expando, elementExpando);
@@ -107,18 +107,22 @@ class AngularModule extends Module {
 }
 
 /**
- * Application represents configuration for your Angular application. There are two
- * implementations for this abstract class:
+ * The Application class provides the mechanism by which Angular creates, configures,
+ * and runs an application. There are two implementations for this abstract class:
  *
- * - [app:factory](#angular-app-factory) for development. In this mode Angular uses [dart:mirrors]
- *   (https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart-mirrors) to
- *   generate getters, setters, annotations, and factories dynamical at runtime. This mode
- *   is not ideal for `dart2js` compilation since `dart:mirrors` disable full tree-shaking of the
- *   resulting codebase.
- * - [app:factory:static](#angular-app-factory-static), which is used by transformers to generate
- *   the getters, setters, annotations, and factorise needed by Angular. Because the code
- *   is statically generated `dart2js` can than use full tree-shaking to produce minimal output
- *   size.
+ * - [app:factory](#angular-app-factory), which is intended for development. In this
+ *   mode Angular uses
+ *   [dart:mirrors](https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart-mirrors)
+ *   to dynamically generate getters, setters, annotations, and factories at runtime.
+ * - [app:factory:static](#angular-app-factory-static) is used as part of `pub
+ *   build` by transformers that generate the getters, setters, annotations,
+ *   and factories needed by Angular.
+ *   Because the code is statically generated, `dart2js` can then use full tree-shaking for
+ *   minimal output size.
+ *
+ * Refer to the documentation for [angular.app](#angular-app) for details of how to use
+ * applicationFactory to bootstrap your Angular application.
+ *
  */
 abstract class Application {
   static _find(String selector, [dom.Element defaultElement]) {
@@ -130,7 +134,7 @@ abstract class Application {
     return element;
   }
 
-  final NgZone zone = new NgZone();
+  final VmTurnZone zone = new VmTurnZone();
   final AngularModule ngModule = new AngularModule();
   final List<Module> modules = <Module>[];
   dom.Element element;
@@ -139,7 +143,7 @@ abstract class Application {
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
     modules.add(ngModule);
-    ngModule..value(NgZone, zone)
+    ngModule..value(VmTurnZone, zone)
             ..value(Application, this)
             ..factory(dom.Node, (i) => i.get(Application).element);
   }

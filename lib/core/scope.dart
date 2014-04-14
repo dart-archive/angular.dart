@@ -77,7 +77,7 @@ class ScopeEvent {
  * triggers watch A. If the system does not stabilize in TTL iterations then
  * the digest is stopped and an exception is thrown.
  */
-@NgInjectableService()
+@Injectable()
 class ScopeDigestTTL {
   final int ttl;
   ScopeDigestTTL(): ttl = 5;
@@ -198,7 +198,7 @@ class Scope {
    * [digest] cycle.
    */
   Watch watch(String expression, ReactionFn reactionFn,  {context,
-      FilterMap filters, bool canChangeModel: true, bool collection: false}) {
+      FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
     assert(isAttached);
     assert(expression is String);
     assert(canChangeModel is bool);
@@ -225,7 +225,7 @@ class Scope {
     }
 
     AST ast = rootScope._astParser(expression, context: context,
-        filters: filters, collection: collection);
+        formatters: formatters, collection: collection);
 
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
     return watch = group.watch(ast, fn);
@@ -361,7 +361,7 @@ _mapEqual(Map a, Map b) => a.length == b.length &&
  * stopped at runtime. The result emission can is configured by supplying a
  * [ScopeStatsEmitter].
  */
-@NgInjectableService()
+@Injectable()
 class ScopeStats {
   final fieldStopwatch = new AvgStopwatch();
   final evalStopwatch = new AvgStopwatch();
@@ -444,7 +444,7 @@ class ScopeStats {
  * ScopeStatsEmitter is in charge of formatting the [ScopeStats] and outputting
  * a message.
  */
-@NgInjectableService()
+@Injectable()
 class ScopeStatsEmitter {
   static String _PAD_ = '                       ';
   static String _HEADER_ = pad('APPLY', 7) + ':'+
@@ -500,8 +500,19 @@ class ScopeStatsConfig {
     emit = true;
   }
 }
-
-@NgInjectableService()
+/**
+ *
+ * Every Angular application has exactly one RootScope. RootScope extends Scope, adding
+ * services related to change detection, async unit-of-work processing, and DOM read/write queues.
+ * The RootScope can not be destroyed.
+ *
+ * ## Lifecycle
+ *
+ * All work in Angular must be done within a context of a VmTurnZone. VmTurnZone detects the end
+ * of the VM turn, and calls the Apply method to process the changes at the end of VM turn.
+ *
+ */
+@Injectable()
 class RootScope extends Scope {
   static final STATE_APPLY = 'apply';
   static final STATE_DIGEST = 'digest';
@@ -512,7 +523,7 @@ class RootScope extends Scope {
   final _AstParser _astParser;
   final Parser _parser;
   final ScopeDigestTTL _ttl;
-  final NgZone _zone;
+  final VmTurnZone _zone;
 
   _FunctionChain _runAsyncHead, _runAsyncTail;
   _FunctionChain _domWriteHead, _domWriteTail;
@@ -522,10 +533,50 @@ class RootScope extends Scope {
 
   String _state;
 
+  /**
+   *
+   * While processing data bindings, Angular passes through multiple states. When testing or
+   * debugging, it can be useful to access the current `state`, which is one of the following:
+   *
+   *  ## `null`
+   *
+   *  Angular is not currently processing changes
+   *
+   *  ## `apply`
+   *
+   *  The apply state begins by executing the optional expression within the context of
+   * angular change detection mechanism. Any exceptions are delegated to [ExceptionHandler]. At the
+   * end of apply state RootScope enters the digest followed by flush phase (optionally if asserts
+   * enabled run assert phase.).
+   *
+   * ## `digest`
+   *
+   * The apply state begins by processing the async queue,
+   * followed by change detection
+   * on non-DOM listeners. Any changes detected are process using the reaction function. The digest
+   * phase is repeated as long as at least one change has been detected. By default, after 5
+   * iterations the model is considered unstable and angular exists with an exception. (See
+   * ScopeDigestTTL)
+   *
+   * ## `flush`
+   *
+   * Flush phase consist of these steps.
+   * 1) processing the DOM write queue,
+   * 2) followed by change detection on DOM only updates (these are reaction functions which must
+   *    not change the model state and hence don't need stabilization as in digest phase).
+   * 3) processing the DOM read queue
+   * 4) repeat step 1/3 (not 2) until queues are empty
+   *
+   * ## `assert`
+   *
+   * Optionally if dart assert is on, verify that flush reaction functions did not make any changes
+   * to model and throw error if changes detected.
+   *
+   */
   String get state => _state;
 
   RootScope(Object context, Parser parser, FieldGetterFactory fieldGetterFactory,
-            FilterMap filterMap, this._exceptionHandler, this._ttl, this._zone,
+            FormatterMap filterMap, this._exceptionHandler, this._ttl, this._zone,
             ScopeStats _scopeStats, ClosureMap closureMap)
       : _scopeStats = _scopeStats,
         _parser = parser,
@@ -961,10 +1012,10 @@ class _AstParser {
   _AstParser(this._parser, ClosureMap closureMap)
       : _visitor = new ExpressionVisitor(closureMap);
 
-  AST call(String input, {FilterMap filters,
+  AST call(String input, {FormatterMap formatters,
                           bool collection: false,
                           Object context: null }) {
-    _visitor.filters = filters;
+    _visitor.formatters = formatters;
     AST contextRef = _visitor.contextRef;
     try {
       if (context != null) {
@@ -974,7 +1025,7 @@ class _AstParser {
       return collection ? _visitor.visitCollection(exp) : _visitor.visit(exp);
     } finally {
       _visitor.contextRef = contextRef;
-      _visitor.filters = null;
+      _visitor.formatters = null;
     }
   }
 }
@@ -988,7 +1039,7 @@ class ExpressionVisitor implements Visitor {
   ExpressionVisitor(this._closureMap);
 
   AST ast;
-  FilterMap filters;
+  FormatterMap formatters;
 
   AST visit(Expression exp) {
     exp.accept(this);
@@ -1073,10 +1124,10 @@ class ExpressionVisitor implements Visitor {
   }
 
   void visitFilter(Filter exp) {
-    if (filters == null) {
-      throw new Exception("No filters have been registered");
+    if (formatters == null) {
+      throw new Exception("No formatters have been registered");
     }
-    Function filterFunction = filters(exp.name);
+    Function filterFunction = formatters(exp.name);
     List<AST> args = [visitCollection(exp.expression)];
     args.addAll(_toAst(exp.arguments).map((ast) => new CollectionAST(ast)));
     ast = new PureFunctionAST('|${exp.name}',
@@ -1191,7 +1242,7 @@ class _FilterWrapper extends FunctionApply {
     }
     var value = Function.apply(filterFn, args);
     if (value is Iterable) {
-      // Since filters are pure we can guarantee that this well never change.
+      // Since formatters are pure we can guarantee that this well never change.
       // By wrapping in UnmodifiableListView we can hint to the dirty checker
       // and short circuit the iterator.
       value = new UnmodifiableListView(value);

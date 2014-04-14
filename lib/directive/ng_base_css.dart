@@ -1,8 +1,8 @@
 part of angular.directive;
 
-@NgDirective(
+@Decorator(
     selector: '[ng-base-css]',
-    visibility: NgDirective.CHILDREN_VISIBILITY
+    visibility: Directive.CHILDREN_VISIBILITY
 )
 class NgBaseCss {
   List<String> _urls = const [];

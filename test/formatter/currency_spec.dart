@@ -7,8 +7,8 @@ void main() {
   describe('number', () {
     var currency;
 
-    beforeEach((FilterMap map, Injector injector) {
-      currency = injector.get(map[new NgFilter(name: 'currency')]);
+    beforeEach((FormatterMap map, Injector injector) {
+      currency = injector.get(map[new Formatter(name: 'currency')]);
     });
 
 

@@ -229,9 +229,9 @@ class AnnotationExtractor {
       }
       _annotationElements.add(type.unnamedConstructor);
     }
-    ngAnnotationType = resolver.getType('angular.core.annotation_src.AbstractNgAnnotation');
+    ngAnnotationType = resolver.getType('angular.core.annotation_src.Directive');
     if (ngAnnotationType == null) {
-      logger.warning('Unable to resolve AbstractNgAnnotation, '
+      logger.warning('Unable to resolve Directive, '
           'skipping member annotations.');
     }
   }
@@ -297,11 +297,11 @@ class AnnotationExtractor {
     return type;
   }
 
-  /// Folds all AttrFieldAnnotations into the AbstractNgAnnotation annotation on the
+  /// Folds all AttrFieldAnnotations into the Directive annotation on the
   /// class.
   void _foldMemberAnnotations(Map<String, Annotation> memberAnnotations,
       AnnotatedType type) {
-    // Filter down to AbstractNgAnnotation constructors.
+    // Filter down to Directive constructors.
     var ngAnnotations = type.annotations.where((a) {
       var element = a.element;
       if (element is! ConstructorElement) return false;

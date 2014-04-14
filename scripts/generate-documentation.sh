@@ -20,7 +20,7 @@ cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
     angular/core/annotation.dart \
     angular/core/module.dart \
     angular/directive/module.dart \
-    angular/filter/module.dart \
+    angular/formatter/module.dart \
     angular/routing/module.dart \
     angular/mock/module.dart \
     angular/perf/module.dart \

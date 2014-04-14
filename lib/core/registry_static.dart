@@ -1,9 +1,9 @@
 library angular.core_static;
 
-import 'package:angular/core/annotation_src.dart' show NgInjectableService;
+import 'package:angular/core/annotation_src.dart' show Injectable;
 import 'package:angular/core/registry.dart';
 
-@NgInjectableService()
+@Injectable()
 class StaticMetadataExtractor extends MetadataExtractor {
   final Map<Type, Iterable> metadataMap;
   final List empty = const [];

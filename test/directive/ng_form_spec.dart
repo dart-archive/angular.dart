@@ -724,7 +724,7 @@ void main() {
   });
 }
 
-@NgDirective(
+@Decorator(
     selector: '[custom-form-validation]')
 class MyCustomFormValidator extends NgValidator {
   final String name = 'custom';

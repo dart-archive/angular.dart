@@ -75,9 +75,9 @@
  *  displaying the recipe. Now, our `view-recipe` can inject [RouteProvider]
  *  to get hold of the route and its parameters. It might look like this:
  *
- *      @NgComponent(...)
- *      class ViewRecipeComponent {
- *        ViewRecipeComponent(RouteProvider routeProvider) {
+ *      @Component(...)
+ *      class ViewRecipe {
+ *        ViewRecipe(RouteProvider routeProvider) {
  *          String recipeId = routeProvider.parameters['recipeId'];
  *          _loadRecipe(recipeId);
  *        }
@@ -86,10 +86,10 @@
  *  [RouteProvider] and [Route] can be used to control navigation, specifically,
  *  leaving of the route. For example, lets consider "edit recipe" component:
  *
- *      @NgComponent(...)
- *      class EditRecipeComponent implements NgDetachAware {
+ *      @Component(...)
+ *      class EditRecipe implements DetachAware {
  *        RouteHandle route;
- *        EditRecipeComponent(RouteProvider routeProvider) {
+ *        EditRecipe(RouteProvider routeProvider) {
  *          RouteHandle route = routeProvider.route.newHandle();
  *          _loadRecipe(route);
  *          route.onLeave.listen((RouteEvent event) {
@@ -164,8 +164,8 @@ part 'routing.dart';
 part 'ng_view.dart';
 part 'ng_bind_route.dart';
 
-class NgRoutingModule extends Module {
-  NgRoutingModule({bool usePushState: true}) {
+class RoutingModule extends Module {
+  RoutingModule({bool usePushState: true}) {
     type(NgRoutingUsePushState);
     factory(Router, (injector) {
       var useFragment = !injector.get(NgRoutingUsePushState).usePushState;
@@ -178,8 +178,8 @@ class NgRoutingModule extends Module {
     value(RouteInitializerFn, null);
 
     // directives
-    value(NgViewDirective, null);
-    type(NgBindRouteDirective);
+    value(NgView, null);
+    type(NgBindRoute);
   }
 }
 
@@ -192,7 +192,7 @@ class NgRoutingModule extends Module {
  * "http://host:port/path#/foo/bar?baz=qux". Everything after hash (#) is used
  * by the router.
  */
-@NgInjectableService()
+@Injectable()
 class NgRoutingUsePushState {
   final bool usePushState;
   NgRoutingUsePushState(): usePushState = true;

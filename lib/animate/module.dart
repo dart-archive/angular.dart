@@ -14,10 +14,10 @@
  * elements for block level directives such as `ng-if`, `ng-repeat`,
  * `ng-hide`, and more.
  *
- * To use, install the NgAnimateModule into your main module:
+ * To use, install the AnimationModule into your main module:
  *
  *     var module = new Module()
- *       ..install(new NgAnimateModule());
+ *       ..install(new AnimationModule());
  *
  * Once the module has been installed, all block level DOM manipulations will
  * be routed through the [CssAnimate] class instead of the
@@ -124,7 +124,7 @@ part 'ng_animate.dart';
 final Logger _logger = new Logger('ng.animate');
 
 /**
- * Installing the NgAnimateModule will install a [CssAnimate] implementation of
+ * Installing the AnimationModule will install a [CssAnimate] implementation of
  * the [NgAnimate] interface in your application. This will change the behavior
  * of view construction, and some of the native directives to allow you to add
  * and define css transition and keyframe animations for the styles of your
@@ -153,14 +153,14 @@ final Logger _logger = new Logger('ng.animate');
  *       opacity: 0;
  *     }
  */
-class NgAnimateModule extends Module {
-  NgAnimateModule() {
+class AnimationModule extends Module {
+  AnimationModule() {
     type(AnimationFrame);
     type(AnimationLoop);
     type(CssAnimationMap);
     type(AnimationOptimizer);
-    type(NgAnimateDirective);
-    type(NgAnimateChildrenDirective);
+    type(NgAnimate);
+    type(NgAnimateChildren);
     type(NgAnimate, implementedBy: CssAnimate);
   }
 }

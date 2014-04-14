@@ -33,7 +33,7 @@ void main() {
   });
 }
 
-@NgDirective(selector: '[my-directive]')
+@Decorator(selector: '[my-directive]')
 class MyTestBedDirective {
   bool destroyed = false;
 

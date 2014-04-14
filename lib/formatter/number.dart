@@ -1,4 +1,4 @@
-part of angular.filter;
+part of angular.formatter_internal;
 
 /**
  * Formats a number as text.
@@ -11,7 +11,7 @@ part of angular.filter;
  *     {{ number_expression | number[:fractionSize] }}
  *
  */
-@NgFilter(name:'number')
+@Formatter(name:'number')
 class Number {
 
   var _nfs = new Map<String, Map<num, NumberFormat>>();

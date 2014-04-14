@@ -49,13 +49,13 @@ part of angular.directive;
  *       </div>
  *     </div>
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-switch]',
     map: const {
       'ng-switch': '=>value',
       'change': '&onChange'
     },
-    visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY)
+    visibility: Directive.DIRECT_CHILDREN_VISIBILITY)
 class NgSwitch {
   Map<String, List<_Case>> cases = new Map<String, List<_Case>>();
   List<_ViewScopePair> currentViews = <_ViewScopePair>[];
@@ -109,9 +109,9 @@ class _Case {
   _Case(this.anchor, this.viewFactory);
 }
 
-@NgDirective(
+@Decorator(
     selector: '[ng-switch-when]',
-    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
+    children: Directive.TRANSCLUDE_CHILDREN,
     map: const {'.': '@value'})
 class NgSwitchWhen {
   final NgSwitch ngSwitch;
@@ -124,8 +124,8 @@ class NgSwitchWhen {
   set value(String value) => ngSwitch.addCase('!$value', port, viewFactory);
 }
 
-@NgDirective(
-    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
+@Decorator(
+    children: Directive.TRANSCLUDE_CHILDREN,
     selector: '[ng-switch-default]')
 class NgSwitchDefault {
 

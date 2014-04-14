@@ -9,22 +9,22 @@ part 'animation/visibility_demo.dart';
 part 'animation/stress_demo.dart';
 part 'animation/css_demo.dart';
 
-@NgController(
+@Controller(
     selector: '[animation-demo]',
     publishAs: 'demo')
-class AnimationDemoController {
+class AnimationDemo {
   final pages = ["About", "ng-repeat", "Visibility", "Css", "Stress Test"];
   var currentPage = "About";
 }
 
 class AnimationDemoModule extends Module {
   AnimationDemoModule() {
-    install(new NgAnimateModule());
-    type(RepeatDemoComponent);
-    type(VisibilityDemoComponent);
-    type(StressDemoComponent);
-    type(CssDemoComponent);
-    type(AnimationDemoController);
+    install(new AnimationModule());
+    type(RepeatDemo);
+    type(VisibilityDemo);
+    type(StressDemo);
+    type(CssDemo);
+    type(AnimationDemo);
   }
 }
 main() {

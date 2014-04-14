@@ -115,7 +115,7 @@ class WalkingViewFactory implements ViewFactory {
  * It can be used synchronously if HTML is known or asynchronously if the
  * template HTML needs to be looked up from the URL.
  */
-@NgInjectableService()
+@Injectable()
 class ViewCache {
   // _viewFactoryCache is unbounded
   final _viewFactoryCache = new LruCache<String, ViewFactory>(capacity: 0);
@@ -152,7 +152,7 @@ class _ComponentFactory implements Function {
 
   final dom.Element element;
   final Type type;
-  final NgComponent component;
+  final Component component;
   final dom.NodeTreeSanitizer treeSanitizer;
   final Expando _expando;
   final NgBaseCss _baseCss;
@@ -215,10 +215,10 @@ class _ComponentFactory implements Function {
           return shadowDom;
         }));
     controller = createShadowInjector(injector, templateLoader).get(type);
-    if (controller is NgShadowRootAware) {
+    if (controller is ShadowRootAware) {
       templateLoader.template.then((_) {
         if (!shadowScope.isAttached) return;
-        (controller as NgShadowRootAware).onShadowRoot(shadowDom);
+        (controller as ShadowRootAware).onShadowRoot(shadowDom);
       });
     }
     return controller;

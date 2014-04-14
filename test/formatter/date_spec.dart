@@ -12,8 +12,8 @@ void main() {
 
     var date;
 
-    beforeEach((FilterMap map, Injector injector) {
-      date = injector.get(map[new NgFilter(name: 'date')]);
+    beforeEach((FormatterMap map, Injector injector) {
+      date = injector.get(map[new Formatter(name: 'date')]);
     });
 
     it('should ignore falsy inputs', () {
@@ -21,7 +21,7 @@ void main() {
       expect(date('')).toEqual('');
     });
 
-    it('should do basic filter', () {
+    it('should do basic formatter', () {
       expect(date(noon)).toEqual(date(noon, 'mediumDate'));
     });
 

@@ -16,7 +16,7 @@ class MappingParts {
 class DirectiveRef {
   final dom.Node element;
   final Type type;
-  final AbstractNgAnnotation annotation;
+  final Directive annotation;
   final String value;
   final mappings = new List<MappingParts>();
 
@@ -32,7 +32,7 @@ class DirectiveRef {
 }
 
 /**
- * Creates a child injector that allows loading new directives, filters and
+ * Creates a child injector that allows loading new directives, formatters and
  * services from the provided modules.
  */
 Injector forceNewDirectivesAndFilters(Injector injector, List<Module> modules) {
@@ -43,5 +43,5 @@ Injector forceNewDirectivesAndFilters(Injector injector, List<Module> modules) {
       }));
 
   return injector.createChild(modules,
-      forceNewInstances: [DirectiveMap, FilterMap]);
+      forceNewInstances: [DirectiveMap, FormatterMap]);
 }

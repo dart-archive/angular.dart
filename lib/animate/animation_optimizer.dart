@@ -6,7 +6,7 @@ part of angular.animate;
  * running animations on child elements while the dom parent is also running an
  * animation.
  */
-@NgInjectableService()
+@Injectable()
 class AnimationOptimizer {
   final Map<dom.Element, Set<Animation>> _elements = new Map<dom.Element,
       Set<Animation>>();

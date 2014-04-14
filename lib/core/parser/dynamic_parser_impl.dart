@@ -38,7 +38,7 @@ class DynamicParserImpl {
         isChain = true;
       }
       if (isChain && expr is Filter) {
-        error('Cannot have a filter in a chain');
+        error('Cannot have a formatter in a chain');
       }
     }
     return (expressions.length == 1)

@@ -13,11 +13,11 @@ void main() {
     it('should extract attr map from annotated component', (DirectiveMap directives) {
       var annotations = directives.annotationsFor(AnnotatedIoComponent);
       expect(annotations.length).toEqual(1);
-      expect(annotations[0] is NgComponent).toBeTruthy();
+      expect(annotations[0] is Component).toBeTruthy();
 
-      NgComponent annotation = annotations[0];
+      Component annotation = annotations[0];
       expect(annotation.selector).toEqual('annotated-io');
-      expect(annotation.visibility).toEqual(NgDirective.LOCAL_VISIBILITY);
+      expect(annotation.visibility).toEqual(Directive.LOCAL_VISIBILITY);
       expect(annotation.exportExpressions).toEqual(['exportExpressions']);
       expect(annotation.module).toEqual(AnnotatedIoComponent.module);
       expect(annotation.template).toEqual('template');
@@ -76,14 +76,14 @@ class NullParser implements Parser {
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'annotated-io',
     template: 'template',
     templateUrl: 'templateUrl',
     cssUrl: const ['cssUrls'],
     publishAs: 'ctrl',
     module: AnnotatedIoComponent.module,
-    visibility: NgDirective.LOCAL_VISIBILITY,
+    visibility: Directive.LOCAL_VISIBILITY,
     exportExpressions: const ['exportExpressions'],
     map: const {
       'foo': '=>foo'
@@ -91,7 +91,7 @@ class NullParser implements Parser {
 class AnnotatedIoComponent {
   static module() => new Module()..factory(String,
       (i) => i.get(AnnotatedIoComponent),
-      visibility: NgDirective.LOCAL_VISIBILITY);
+      visibility: Directive.LOCAL_VISIBILITY);
 
   AnnotatedIoComponent(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
@@ -120,7 +120,7 @@ class AnnotatedIoComponent {
   set exprTwoWay(val) {}
 }
 
-@NgComponent(
+@Component(
     selector: 'bad1',
     template: r'<content></content>',
     map: const {
@@ -131,7 +131,7 @@ class Bad1Component {
   String foo;
 }
 
-@NgComponent(
+@Component(
     selector: 'bad2',
     template: r'<content></content>')
 class Bad2Component {

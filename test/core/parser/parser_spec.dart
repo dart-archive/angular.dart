@@ -49,20 +49,20 @@ main() {
   describe('parse', () {
     Map<String, dynamic> context;
     Parser<Expression> parser;
-    FilterMap filters;
+    FormatterMap formatters;
 
     beforeEachModule((Module module) {
       module.type(IncrementFilter);
       module.type(SubstringFilter);
     });
 
-    beforeEach((Parser injectedParser, FilterMap injectedFilters) {
+    beforeEach((Parser injectedParser, FormatterMap injectedFilters) {
       parser = injectedParser;
-      filters = injectedFilters;
+      formatters = injectedFilters;
     });
 
-    eval(String text, [FilterMap f]) =>
-        parser(text).eval(context, f == null ? filters : f);
+    eval(String text, [FormatterMap f]) =>
+        parser(text).eval(context, f == null ? formatters : f);
     expectEval(String expr) => expect(() => eval(expr));
 
     beforeEach((){ context = {}; });
@@ -344,7 +344,7 @@ main() {
       });
 
 
-      it('should only allow identifier or keyword as filter names', () {
+      it('should only allow identifier or keyword as formatter names', () {
         expect(() => parser('"Foo"|(')).toThrow('identifier or keyword');
         expect(() => parser('"Foo"|1234')).toThrow('identifier or keyword');
         expect(() => parser('"Foo"|"uppercase"')).toThrow('identifier or keyword');
@@ -1103,59 +1103,59 @@ main() {
     });
 
 
-    describe('filters', () {
-      it('should call a filter', () {
-        expect(eval("'Foo'|uppercase", filters)).toEqual("FOO");
+    describe('formatters', () {
+      it('should call a formatter', () {
+        expect(eval("'Foo'|uppercase", formatters)).toEqual("FOO");
         // Re-enable after static parser is removed
-        //expect(eval("'f' + ('o'|uppercase) + 'o'", filters)).toEqual("fOo");
-        expect(eval("'fOo'|uppercase|lowercase", filters)).toEqual("foo");
+        //expect(eval("'f' + ('o'|uppercase) + 'o'", formatters)).toEqual("fOo");
+        expect(eval("'fOo'|uppercase|lowercase", formatters)).toEqual("foo");
       });
 
-      it('should call a filter with arguments', () {
-        expect(eval("1|increment:2", filters)).toEqual(3);
+      it('should call a formatter with arguments', () {
+        expect(eval("1|increment:2", formatters)).toEqual(3);
       });
 
-      it('should evaluate grouped filters', () {
+      it('should evaluate grouped formatters', () {
         context = {'name': 'MISKO'};
-        expect(eval('n = (name|lowercase)', filters)).toEqual('misko');
+        expect(eval('n = (name|lowercase)', formatters)).toEqual('misko');
         expect(eval('n')).toEqual('misko');
       });
 
-      it('should parse filters', () {
+      it('should parse formatters', () {
         expect(() {
           eval("1|nonexistent");
-        }).toThrow('No NgFilter: nonexistent found!');
+        }).toThrow('No Formatter: nonexistent found!');
         expect(() {
-          eval("1|nonexistent", filters);
-        }).toThrow('No NgFilter: nonexistent found!');
+          eval("1|nonexistent", formatters);
+        }).toThrow('No Formatter: nonexistent found!');
 
         context['offset'] =  3;
         expect(eval("'abcd'|substring:1:offset")).toEqual("bc");
         expect(eval("'abcd'|substring:1:3|uppercase")).toEqual("BC");
       });
 
-      it('should only use filters that are passed as an argument', (Injector injector) {
+      it('should only use formatters that are passed as an argument', (Injector injector) {
         var expression = parser("'World'|hello");
         expect(() {
-          expression.eval({}, filters);
-        }).toThrow('No NgFilter: hello found!');
+          expression.eval({}, formatters);
+        }).toThrow('No Formatter: hello found!');
 
         var module = new Module()
             ..type(HelloFilter);
         var childInjector = injector.createChild([module],
-            forceNewInstances: [FilterMap]);
-        var newFilters = childInjector.get(FilterMap);
+            forceNewInstances: [FormatterMap]);
+        var newFilters = childInjector.get(FormatterMap);
 
         expect(expression.eval({}, newFilters)).toEqual('Hello, World!');
       });
 
-      it('should not allow filters in a chain', () {
+      it('should not allow formatters in a chain', () {
         expect(() {
           parser("1;'World'|hello");
-        }).toThrow('Cannot have a filter in a chain the end of the expression [1;\'World\'|hello]');
+        }).toThrow('Cannot have a formatter in a chain the end of the expression [1;\'World\'|hello]');
         expect(() {
           parser("'World'|hello;1");
-        }).toThrow('Cannot have a filter in a chain at column 15 in [\'World\'|hello;1]');
+        }).toThrow('Cannot have a formatter in a chain at column 15 in [\'World\'|hello;1]');
       });
     });
   });
@@ -1193,19 +1193,19 @@ class ScopeWithErrors {
   get getNoSuchMethod => null.iDontExist();
 }
 
-@NgFilter(name:'increment')
+@Formatter(name:'increment')
 class IncrementFilter {
   call(a, b) => a + b;
 }
 
-@NgFilter(name:'substring')
+@Formatter(name:'substring')
 class SubstringFilter {
   call(String str, startIndex, [endIndex]) {
     return str.substring(startIndex, endIndex);
   }
 }
 
-@NgFilter(name:'hello')
+@Formatter(name:'hello')
 class HelloFilter {
   call(String str) {
     return 'Hello, $str!';

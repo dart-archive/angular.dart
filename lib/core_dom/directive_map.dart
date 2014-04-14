@@ -1,7 +1,7 @@
 part of angular.core.dom_internal;
 
-@NgInjectableService()
-class DirectiveMap extends AnnotationsMap<AbstractNgAnnotation> {
+@Injectable()
+class DirectiveMap extends AnnotationsMap<Directive> {
   DirectiveSelectorFactory _directiveSelectorFactory;
   DirectiveSelector _selector;
   DirectiveSelector get selector {

@@ -1,7 +1,7 @@
 library angular.core.parser.static_parser;
 
-import 'package:angular/core/annotation_src.dart' show NgInjectableService;
-import 'package:angular/core/module_internal.dart' show FilterMap;
+import 'package:angular/core/annotation_src.dart' show Injectable;
+import 'package:angular/core/module_internal.dart' show FormatterMap;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
 import 'package:angular/core/parser/syntax.dart';
@@ -12,7 +12,7 @@ class StaticParserFunctions {
   StaticParserFunctions(this.eval, this.assign);
 }
 
-@NgInjectableService()
+@Injectable()
 class StaticParser implements Parser<Expression> {
   final StaticParserFunctions _functions;
   final DynamicParser _fallbackParser;
@@ -43,9 +43,9 @@ class StaticExpression extends Expression {
   accept(Visitor visitor) => throw "Cannot visit static expression $this";
   toString() => _input;
 
-  eval(scope, [FilterMap filters = defaultFilterMap]) {
+  eval(scope, [FormatterMap formatters = defaultFormatterMap]) {
     try {
-      return _eval(scope, filters);
+      return _eval(scope, formatters);
     } on EvalError catch (e, s) {
       throw e.unwrap("$this", s);
     }

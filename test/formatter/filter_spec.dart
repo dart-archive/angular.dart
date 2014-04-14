@@ -33,14 +33,14 @@ class DynamicObject {
 main() {
   D([Map init]) => new DynamicObject(init);
 
-  describe('filter filter', () {
+  describe('formatter formatter', () {
     var filter;
 
-    beforeEach((Injector injector, FilterMap filterMap) {
-      filter = injector.get(filterMap[new NgFilter(name: 'filter')]);
+    beforeEach((Injector injector, FormatterMap filterMap) {
+      filter = injector.get(filterMap[new Formatter(name: 'formatter')]);
     });
 
-    it('should filter by string', () {
+    it('should formatter by string', () {
       List items = ['MIsKO',
                     {'name': 'shyam'},
                     ['adam'],
@@ -68,7 +68,7 @@ main() {
       expect(filter.call(items, "I don't exist").length).toBe(0);
     });
 
-    it('should filter bool items', () {
+    it('should formatter bool items', () {
       List items = ['truefalse', true, false, null];
       // true
       expect(filter.call(items, true)).toEqual([true]);
@@ -88,7 +88,7 @@ main() {
       expect(filter(items, 'misko').length).toBe(0);
     });
 
-    it('should filter on specific property', () {
+    it('should formatter on specific property', () {
       List items = [{'name': 'a',   'ignore': 'a'},
                     {'name': 'abc', 'ignore': 'a'},
                   D({'name': 'abd'})];

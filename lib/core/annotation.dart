@@ -1,24 +1,24 @@
 /**
- * Angular class annotations for Directives, Filters, and Services.
+ * Angular class annotations for Directives, Formatters, and Injectables.
  */
 library angular.core.annotation;
 
 import "dart:html" show ShadowRoot;
 
 export "package:angular/core/annotation_src.dart" show
-    NgAttachAware,
-    NgDetachAware,
-    NgShadowRootAware,
+    AttachAware,
+    DetachAware,
+    ShadowRootAware,
 
-    NgFilter,
-    NgInjectableService,
+    Formatter,
+    Injectable,
 
-    AbstractNgAnnotation,
-    NgComponent,
-    NgController,
-    NgDirective,
+    Directive,
+    Component,
+    Controller,
+    Decorator,
 
-    AbstractNgFieldAnnotation,
+    DirectiveAnnotation,
     NgAttr,
     NgCallback,
     NgOneWay,
@@ -32,7 +32,7 @@ export "package:angular/core/annotation_src.dart" show
  * It is guaranteed that when [onShadowRoot] is invoked, that shadow DOM
  * has been loaded and is ready.
  */
-abstract class NgShadowRootAware {
+abstract class ShadowRootAware {
   void onShadowRoot(ShadowRoot shadowRoot);
 }
 
