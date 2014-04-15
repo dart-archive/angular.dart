@@ -125,7 +125,7 @@ To run base tests:
 dart --checked test/io/all.dart
 
 # Run expression extractor tests:
-scripts/test-expression-extractor.sh
+./scripts/test-expression-extractor.sh
 
 # Run the Dart Analyzer:
 ./scripts/analyze.sh
@@ -146,7 +146,7 @@ tests proper by executing:
 
 ```shell
 . ./scripts/env.sh
-karma_run.sh
+./scripts/karma_run.sh
 ```
 
 **Note:**: If the dart analyzer fails with warnings, the tests will not run.

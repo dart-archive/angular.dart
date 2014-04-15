@@ -1,10 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-# OS-specific Dartium path defaults
-case $( uname -s ) in
-  Darwin)
-    DARTIUM_BIN=${DARTIUM_BIN:-"/Applications/dart/chromium/Chromium.app/Contents/MacOS/Chromium"};;
-esac
+. $(dirname $0)/env.sh
 
 # Check for node
 if [ -z "$(which node)" ]; then
@@ -14,10 +10,11 @@ if [ -z "$(which node)" ]; then
 fi
 
 # Check for karma
-KARMA_PATH="node_modules/karma/bin/karma"
+KARMA_PATH="$NGDART_BASE_DIR/node_modules/karma/bin/karma"
 if [ ! -e "$KARMA_PATH" ]; then
   echo "karma does not appear to be installed. Installing:"
+  cd $NGDART_BASE_DIR
   npm install
 fi
 
-dartanalyzer lib/angular.dart && node $KARMA_PATH run --port=8765
+$DARTANALYZER $NGDART_BASE_DIR/lib/angular.dart && node $KARMA_PATH run --port=8765

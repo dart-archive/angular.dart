@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 if [ -n "$DART_SDK" ]; then
@@ -33,13 +33,18 @@ export DART_DOCGEN=${DART_DOCGEN:-"$DARTSDK/bin/docgen"}
 
 export DARTIUM_BIN=${DARTIUM_BIN:-"$DARTIUM"}
 export CHROME_BIN=${CHROME_BIN:-"google-chrome"}
+
 export PATH=$PATH:$DARTSDK/bin
+
+export NGDART_SCRIPT_DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
+export NGDART_BASE_DIR=$(dirname $NGDART_SCRIPT_DIR)
 
 echo '*********'
 echo '** ENV **'
 echo '*********'
 echo DART_SDK=$DART_SDK
 echo DART=$DART
+$DART --version
 echo PUB=$PUB
 echo DARTANALYZER=$DARTANALYZER
 echo DARTDOC=$DARTDOC
@@ -47,3 +52,5 @@ echo DART_DOCGEN=$DART_DOCGEN
 echo DARTIUM_BIN=$DARTIUM_BIN
 echo CHROME_BIN=$CHROME_BIN
 echo PATH=$PATH
+echo NGDART_BASE_DIR=$NGDART_BASE_DIR
+echo NGDART_SCRIPT_DIR=$NGDART_SCRIPT_DIR

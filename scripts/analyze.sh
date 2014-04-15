@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -27,6 +27,6 @@ do
   echo export \'../$FILE\' hide main, NestedRouteInitializer\; >> $OUT
 done
 
-$(dirname $0)/generate-expressions.sh
+$NGDART_SCRIPT_DIR/generate-expressions.sh
 
 $DARTANALYZER $OUT
