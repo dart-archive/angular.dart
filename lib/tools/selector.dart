@@ -22,17 +22,17 @@ class _SelectorPart {
   final String attrName;
   final String attrValue;
 
-  const _SelectorPart.fromElement(String this.element)
+  const _SelectorPart.fromElement(this.element)
       : className = null, attrName = null, attrValue = null;
 
-  const _SelectorPart.fromClass(String this.className)
+  const _SelectorPart.fromClass(this.className)
       : element = null, attrName = null, attrValue = null;
 
 
-  const _SelectorPart.fromAttribute(String this.attrName, String this.attrValue)
+  const _SelectorPart.fromAttribute(this.attrName, this.attrValue)
       : element = null, className = null;
 
-  toString() =>
+  String toString() =>
     element == null
       ? (className == null
          ? (attrValue == '' ? '[$attrName]' : '[$attrName=$attrValue]')

@@ -116,7 +116,7 @@ void main() {
 }
 
 flattenList(list, map) => list.map(map).fold([], (prev, exprs) =>
-new List.from(prev)..addAll(exprs));
+    new List.from(prev)..addAll(exprs));
 
 List<DirectiveInfo> extractDirectiveInfo(List<DirectiveMetadata> metadata) {
   var sourceCrawler = new MockSourceCrawler();

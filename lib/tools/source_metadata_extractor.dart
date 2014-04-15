@@ -99,7 +99,7 @@ class SourceMetadataExtractor {
       dirInfo.expressionAttrs.forEach((String attr) {
         if (attr == '.') {
           var matches = _ATTR_SELECTOR_REGEXP.allMatches(dirInfo.selector);
-          if (matches.length > 0) {
+          if (matches.isNotEmpty) {
             reprocessedAttrs.add(matches.last.group(1));
           }
         } else {
