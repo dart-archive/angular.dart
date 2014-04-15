@@ -32,7 +32,7 @@ class AnnotatedType {
       Resolver resolver, Map<LibraryElement, String> prefixes) {
     sink.write('  ${prefixes[type.library]}${type.name}: const [\n');
     var writer = new _AnnotationWriter(sink, prefixes);
-    annotations.forEach((annotation) {
+    for (var annotation in annotations) {
       sink.write('    ');
       if (writer.writeAnnotation(annotation)) {
         sink.write(',\n');
@@ -42,7 +42,7 @@ class AnnotatedType {
             asset: resolver.getSourceAssetId(annotation.parent.element),
             span: resolver.getSourceSpan(annotation.parent.element));
       }
-    });
+    }
     sink.write('  ],\n');
   }
 }
@@ -325,53 +325,52 @@ class AnnotationExtractor {
       return;
     }
 
-    // Default to using the first acceptable annotation- not sure if
-    // more than one should ever occur.
-    var sourceAnnotation = acceptableAnnotations.first;
+    // Merge attribute annotations in all of the class annotations
+    acceptableAnnotations.forEach((srcAnnotation) {
+      // Clone the annotation so we don't modify the one in the persistent AST.
+      var index = type.annotations.indexOf(srcAnnotation);
+      var annotation = new AstCloner().visitAnnotation(srcAnnotation);
+      ResolutionCopier.copyResolutionData(srcAnnotation, annotation);
+      type.annotations[index] = annotation;
 
-    // Clone the annotation so we don't modify the one in the persistent AST.
-    var index = type.annotations.indexOf(sourceAnnotation);
-    var annotation = new AstCloner().visitAnnotation(sourceAnnotation);
-    ResolutionCopier.copyResolutionData(sourceAnnotation, annotation);
-    type.annotations[index] = annotation;
+      var mapArg = annotation.arguments.arguments.firstWhere(
+          (arg) => (arg is NamedExpression) && (arg.name.label.name == 'map'),
+          orElse: () => null);
 
-    var mapArg = annotation.arguments.arguments.firstWhere(
-            (arg) => (arg is NamedExpression) && (arg.name.label.name == 'map'),
-            orElse: () => null);
-
-    // If we don't have a 'map' parameter yet, add one.
-    if (mapArg == null) {
-      var map = new MapLiteral(null, null, null, [], null);
-      var label = new Label(new SimpleIdentifier(
-          new _GeneratedToken(TokenType.STRING, 'map')),
-          new _GeneratedToken(TokenType.COLON, ':'));
-      mapArg = new NamedExpression(label, map);
-      annotation.arguments.arguments.add(mapArg);
-    }
-
-    var map = mapArg.expression;
-    if (map is! MapLiteral) {
-      warn('Expected \'map\' argument of $annotation to be a map literal',
-          type.type);
-      return;
-    }
-    memberAnnotations.forEach((memberName, annotation) {
-      var key = annotation.arguments.arguments.first;
-      // If the key already exists then it means we have two annotations for
-      // same member.
-      if (map.entries.any((entry) => entry.key.toString() == key.toString())) {
-        warn('Directive $annotation already contains an entry for $key',
-            type.type);
-        return;
+      // If we don't have a 'map' parameter yet, add one.
+      if (mapArg == null) {
+        var map = new MapLiteral(null, null, null, [], null);
+        var label = new Label(new SimpleIdentifier(
+            new _GeneratedToken(TokenType.STRING, 'map')),
+        new _GeneratedToken(TokenType.COLON, ':'));
+        mapArg = new NamedExpression(label, map);
+        annotation.arguments.arguments.add(mapArg);
       }
 
-      var typeName = annotation.element.enclosingElement.name;
-      var value = '${_annotationToMapping[typeName]}$memberName';
-      var entry = new MapLiteralEntry(
-          key,
-          new _GeneratedToken(TokenType.COLON, ':'),
-          new SimpleStringLiteral(stringToken(value), value));
-      map.entries.add(entry);
+      var map = mapArg.expression;
+      if (map is! MapLiteral) {
+        warn('Expected \'map\' argument of $annotation to be a map literal',
+             type.type);
+        return;
+      }
+      memberAnnotations.forEach((memberName, annotation) {
+        var key = annotation.arguments.arguments.first;
+        // If the key already exists then it means we have two annotations for
+        // same member.
+        if (map.entries.any((entry) => entry.key.toString() == key.toString())) {
+          warn('Directive $annotation already contains an entry for $key',
+               type.type);
+          return;
+        }
+
+        var typeName = annotation.element.enclosingElement.name;
+        var value = '${_annotationToMapping[typeName]}$memberName';
+        var entry = new MapLiteralEntry(
+            key,
+            new _GeneratedToken(TokenType.COLON, ':'),
+            new SimpleStringLiteral(stringToken(value), value));
+        map.entries.add(entry);
+      });
     });
   }
 

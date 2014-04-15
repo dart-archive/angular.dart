@@ -84,26 +84,28 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
     // Get all of the contents of templates in @NgComponent(templateUrl:'...')
     gatherReferencedUris(transform, resolver, options, templatesOnly: true)
         .then((templates) {
-          templates.values.forEach(controller.add);})
+          templates.values.forEach(controller.add);
+        })
         .then((_) {
           // Add any HTML files referencing this Dart file.
-          return _findHtmlEntry(transform);})
+          return _findHtmlEntry(transform);
+        })
         .then((htmlRefId) {
           if (htmlRefId != null) assets.add(htmlRefId);
-            Future.wait(
-              // Add any manually specified HTML files.
-              assets
-                  .map((id) => transform.readInputAsString(id))
-                  .map((future) =>
-                      future
+          Future
+              .wait(
+                  // Add any manually specified HTML files.
+                  assets
+                      .map((id) => transform.readInputAsString(id))
+                      .map((future) => future
                           .then(controller.add)
                           .catchError((e) {
                             transform.logger.warning('Unable to find $id from '
-                                'html_files  in pubspec.yaml.');
+                                t'html_files  in pubspec.yaml.');
                           })))
-            .then((_) {
-              controller.close();
-            });
+              .then((_) {
+                controller.close();
+              });
         });
 
     return controller.stream;
