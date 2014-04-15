@@ -9,7 +9,7 @@
  * and to provide custom tools to make it easier to use routing with Angular
  * templates.
  *
- * Lets consider a simple recipe book application. The application might have
+ * Let's consider a simple recipe book application. The application might have
  * the following pages:
  *
  *   * recipes list/search
@@ -25,37 +25,37 @@
  *   * `/recipe/:recipeId/edit`
  *
  *
- * Lets try to define those routes in Angular. To get started we need to
+ * Let's try to define those routes in Angular. To get started we need to
  * provide an implementation of [RouteInitializerFn] function.
  *
- *    void initRoutes(Router router, RouteViewFactory view) {
- *       // define routes here.
- *    }
+ *      void initRoutes(Router router, RouteViewFactory view) {
+ *        // define routes here.
+ *      }
  *
- *     var module = new Module()
- *       ..value(RouteInitializerFn, initRoutes);
+ *      var module = new Module()
+ *          ..value(RouteInitializerFn, initRoutes);
  *
- *  Lets see how we could define our routes using the routing framework:
+ *  Let's see how we could define our routes using the routing framework:
  *
- *     void initRoutes(Router router, RouteViewFactory view) {
- *       router
- *         ..addRoute(
- *            name: 'recipes',
- *            path: '/recipes',
- *            enter: view('recipes.html'))
- *         ..addRoute(
- *            name: 'addRecipe',
- *            path: '/addRecipe',
- *            enter: view('addRecipe.html'))
- *         ..addRoute(
- *            name: 'viewRecipe',
- *            path: '/recipe/:recipeId/view',
- *            enter: view('viewRecipe.html'))
- *         ..addRoute(
- *            name: 'editRecipe',
- *            path: '/recipe/:recipeId/edit',
- *            enter: view('editRecipe.html'));
- *     }
+ *      void initRoutes(Router router, RouteViewFactory view) {
+ *        router.root
+ *            ..addRoute(
+ *                name: 'recipes',
+ *                path: '/recipes',
+ *                enter: view('recipes.html'))
+ *            ..addRoute(
+ *                name: 'addRecipe',
+ *                path: '/addRecipe',
+ *                enter: view('addRecipe.html'))
+ *            ..addRoute(
+ *                name: 'viewRecipe',
+ *                path: '/recipe/:recipeId/view',
+ *                enter: view('viewRecipe.html'))
+ *            ..addRoute(
+ *                name: 'editRecipe',
+ *                path: '/recipe/:recipeId/edit',
+ *                enter: view('editRecipe.html'));
+ *      }
  *
  *  We defined 4 routes and for each route we set views (templates) to be
  *  displayed when that route is "entered". For example, when the browser URL
@@ -66,7 +66,7 @@
  *
  *  Notice that `viewRecipe` and `editRecipe` route paths have `recipeId`
  *  parameter in them. We need to be able to get hold of that parameter in
- *  order to know which recipe to load. Lets consider the following
+ *  order to know which recipe to load. Let's consider the following
  *  `viewRecipe.html`.
  *
  *      <view-recipe></view-recipe>
@@ -84,7 +84,7 @@
  *      }
  *
  *  [RouteProvider] and [Route] can be used to control navigation, specifically,
- *  leaving of the route. For example, lets consider "edit recipe" component:
+ *  leaving of the route. For example, let's consider "edit recipe" component:
  *
  *      @NgComponent(...)
  *      class EditRecipeComponent implements NgDetachAware {
@@ -124,27 +124,27 @@
  *  example we could have defined our routes like this:
  *
  *     void initRoutes(Router router, RouteViewFactory view) {
- *       router
- *         ..addRoute(
- *            name: 'recipes',
- *            path: '/recipes',
- *            enter: view('recipes.html'))
- *         ..addRoute(
- *            name: 'addRecipe',
- *            path: '/addRecipe',
- *            enter: view('addRecipe.html'))
- *         ..addRoute(
- *            name: 'recipe',
- *            path: '/recipe/:recipeId',
- *            mount: (Route route) => route
- *               ..addRoute(
- *                  name: 'view',
- *                  path: '/view',
- *                  enter: view('viewRecipe.html'))
- *               ..addRoute(
- *                  name: 'edit',
- *                  path: '/edit',
- *                  enter: view('editRecipe.html')));
+ *       router.root
+ *           ..addRoute(
+ *              name: 'recipes',
+ *              path: '/recipes',
+ *              enter: view('recipes.html'))
+ *           ..addRoute(
+ *              name: 'addRecipe',
+ *              path: '/addRecipe',
+ *              enter: view('addRecipe.html'))
+ *           ..addRoute(
+ *              name: 'recipe',
+ *              path: '/recipe/:recipeId',
+ *              mount: (Route route) => route
+ *                  ..addRoute(
+ *                      name: 'view',
+ *                      path: '/view',
+ *                      enter: view('viewRecipe.html'))
+ *                  ..addRoute(
+ *                      name: 'edit',
+ *                      path: '/edit',
+ *                      enter: view('editRecipe.html')));
  *     }
  *
  */
