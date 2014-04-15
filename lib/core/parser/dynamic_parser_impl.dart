@@ -40,6 +40,9 @@ class DynamicParserImpl {
       if (isChain && expr is Filter) {
         error('Cannot have a filter in a chain');
       }
+      if (!isChain && index < tokens.length) {
+        error("'${next}' is an unexpected token", index);
+      }
     }
     return (expressions.length == 1)
         ? expressions.first

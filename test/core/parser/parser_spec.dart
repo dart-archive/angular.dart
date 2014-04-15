@@ -194,6 +194,10 @@ main() {
         expectEval("4()").toThrow('4 is not a function');
       });
 
+      it("should throw on an unexpected token", (){
+        expectEval("[1,2] trac")
+            .toThrow('Parser Error: \'trac\' is an unexpected token at column 7 in [[1,2] trac]');
+      });
 
       it('should fail gracefully when invoking non-function', () {
         expect(() {
