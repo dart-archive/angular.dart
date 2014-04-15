@@ -3,7 +3,7 @@ library ng_template_spec;
 import '../_specs.dart';
 
 main() {
-  describe('NgPlainTemplate', () {
+  describe('NgTemplateDirective', () {
     TestBed _;
     var element;
 

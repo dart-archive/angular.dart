@@ -86,7 +86,7 @@ class NgDirectiveModule extends Module {
     value(NgEvent, null);
     value(NgStyle, null);
     value(NgNonBindable, null);
-    value(NgPlainTemplate, null);
+    value(NgTemplateDirective, null);
     value(NgControl, new NgNullControl());
     value(NgForm, new NgNullForm());
 

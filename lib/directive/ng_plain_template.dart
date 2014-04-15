@@ -1,7 +1,7 @@
 part of angular.directive;
 
 /**
- * The [NgPlainTemplate] allows one to preload an Angular template
+ * The [NgTemplateDirective] allows one to preload an Angular template
  * into the [TemplateCache].  It works on `<template>` and `<script>` elements
  * that have `type="text/ng-template`.  For such elements, The entire contents
  * of the elements are loaded into the [TemplateCache] under the URL specified
@@ -25,11 +25,11 @@ part of angular.directive;
   selector: 'script[type=text/ng-template]',
   compileChildren: false,
   map: const {'id': '@templateUrl'})
-class NgPlainTemplate {
+class NgTemplateDirective {
   final dom.Element element;
   final TemplateCache templateCache;
 
-  NgPlainTemplate(this.element, this.templateCache);
+  NgTemplateDirective(this.element, this.templateCache);
   set templateUrl(url) => templateCache.put(url, new HttpResponse(200,
       element is dom.TemplateElement
           ? (element as dom.TemplateElement).content.innerHtml
