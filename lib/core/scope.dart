@@ -784,9 +784,9 @@ class _Streams {
     return event;
   }
 
-  static ScopeStream on(Scope scope,
-                        ExceptionHandler _exceptionHandler,
-                        String name) {
+  static async.Stream<ScopeEvent> on(Scope scope,
+                                     ExceptionHandler _exceptionHandler,
+                                     String name) {
     _forceNewScopeStream(scope, _exceptionHandler);
     return scope._streams._get(scope, name);
   }

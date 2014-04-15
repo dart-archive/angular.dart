@@ -32,12 +32,25 @@
 library angular.core;
 
 
+export "package:angular/core/parser/parser.dart" show
+    Parser;
+
+export "package:angular/core/parser/dynamic_parser.dart" show
+    ClosureMap;
+
+export "package:angular/change_detection/change_detection.dart" show
+    AvgStopwatch,
+    FieldGetterFactory;
+
 export "package:angular/core_dom/module_internal.dart" show
     Animation,
     AnimationResult,
     BrowserCookies,
+    Cache,
     Compiler,
     Cookies,
+    BoundViewFactory,
+    DirectiveMap,
     ElementProbe,
     EventHandler,
     Http,
@@ -48,20 +61,26 @@ export "package:angular/core_dom/module_internal.dart" show
     HttpInterceptors,
     HttpResponse,
     HttpResponseConfig,
+    LocationWrapper,
     NoOpAnimation,
     NullTreeSanitizer,
     NgAnimate,
+    NgElement,
     RequestErrorInterceptor,
     RequestInterceptor,
     Response,
     ResponseError,
+    UrlRewriter,
     TemplateCache,
     View,
+    ViewCache,
     ViewFactory,
     ViewPort;
+
 export "package:angular/core/module_internal.dart" show
     CacheStats,
     ExceptionHandler,
+    FilterMap,
     Interpolate,
     NgZone,
     PrototypeMap,
