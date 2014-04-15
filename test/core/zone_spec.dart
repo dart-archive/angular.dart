@@ -420,5 +420,45 @@ void main() {
       microLeap();
       expect(invokedFirst && invokedSecond).toEqual(true);
     }));
+
+    it('should not digest when executing in AtMostOneMicrotaskZone', () {
+      var ngZone = new NgZone();
+      var clickInvoked = false;
+      var element = document.createElement('div');
+      ngZone.run(() {
+        new AtMostOneMicrotaskZone().run(() {
+          element.onClick(() {
+            clickInvoked = true;
+          });
+        });
+      });
+      // First dispatch must execute but not trigger digest.
+      element.dispatch('click');
+      expect(clickInvoked).toEqual(false);
+      // Second dispatch must go through as well, and also not trigger digest.
+      element.dispatch('click');
+      expect(clickInvoked).toEqual(false);
+    });
+
+  it('should allow reentry to when executing in AtMostOneMicrotaskZone', () {
+    var ngZone = new NgZone();
+    var clickInvoked = false;
+    var element = document.createElement('div');
+    ngZone.run(() {
+      new AtMostOneMicrotaskZone().run(() {
+        element.onClick(() {
+          ngZone.run(() {
+            clickInvoked = true;
+          });
+        });
+      });
+    });
+    // First dispatch must execute and than trigger digest.
+    element.dispatch('click');
+    expect(clickInvoked).toEqual(false);
+    // Second dispatch must go through as well, and also  trigger digest.
+    element.dispatch('click');
+    expect(clickInvoked).toEqual(false);
+    });
   });
 }
