@@ -1,3 +1,96 @@
+<a name="v0.9.11"></a>
+# v0.9.11 poodle-clairvoyance (2014-04-15)
+
+
+## Bug Fixes
+
+- **NgA:** Do not cause a scope digest
+  ([de21f4de](https://github.com/angular/angular.dart/commit/de21f4de1f39a4745ad088805459848204457e23),
+   [#810](https://github.com/angular/angular.dart/issues/810))
+- **NgControl:** Remove dead code
+  ([b30ebe0f](https://github.com/angular/angular.dart/commit/b30ebe0fbaef0e7aa39d52a0bc8bf9cc2174386b))
+- **animation:** temporary fix for Animation symbol conflict
+  ([82b4f3e1](https://github.com/angular/angular.dart/commit/82b4f3e12a6a5b1e079c40c8341467089ab8fdf0))
+- **change-detection:** When two identical pure functions removed
+  ([84781ef3](https://github.com/angular/angular.dart/commit/84781ef3377b4cdb92a2cb3b98fb58468e34abc1),
+   [#787](https://github.com/angular/angular.dart/issues/787), [#788](https://github.com/angular/angular.dart/issues/788))
+- **core:** ensure change detection doesn't trigger an infinite loop while not in debug mode
+  ([6ac105c9](https://github.com/angular/angular.dart/commit/6ac105c9bf662c8717dab811c6c41ded9eed05ea))
+- **dirty-checking:** fix removal of watch record on disconnected group.
+  ([d22899aa](https://github.com/angular/angular.dart/commit/d22899aa68f4da15673821cb16f04d4f8c7a4dee))
+- **events:** make ShadowRootEventHandler play nice with static injection
+  ([d7683218](https://github.com/angular/angular.dart/commit/d76832181706a86dcef1e0c3b60749f82a2e0e27))
+- **example:** Adjust MirrorsUsed to make the Todo example work thru dart2js
+  ([ee4a448b](https://github.com/angular/angular.dart/commit/ee4a448b9defd4c9fda1e86f3c9c37e5465f7e21))
+- **filters:** pass filters to all evals
+  ([25dfd32f](https://github.com/angular/angular.dart/commit/25dfd32ff9e1523ee9220769871867111ed93c3b))
+- **forms:** change valid_submit and invalid_submit to camelcase
+  ([e5baa502](https://github.com/angular/angular.dart/commit/e5baa50235aa3ec53f00f87b86dab78ef5882900),
+   [#793](https://github.com/angular/angular.dart/issues/793))
+- **jasmine:** don't swallow exceptions in afterEach
+  ([ae15983d](https://github.com/angular/angular.dart/commit/ae15983d2134bf0fb1823f427654629f92c295d5))
+- **mustache:** fix regression that fired an initial empty string
+  ([c71b8cfc](https://github.com/angular/angular.dart/commit/c71b8cfc935d1599b2c1c7cef5a08ff4caee7010),
+   [#734](https://github.com/angular/angular.dart/issues/734))
+- **ng-model:** Do not use valueAsNumber to work around dartbug.com/15788
+  ([019209e7](https://github.com/angular/angular.dart/commit/019209e79ce0752351f2b8d74511fa39694d1e93),
+   [#694](https://github.com/angular/angular.dart/issues/694))
+- **ng-repeat:** don't use iterable.length
+  ([cf2671ab](https://github.com/angular/angular.dart/commit/cf2671ab718d019a0eaa7d7e0483cae196aaa76c))
+- **ng_mustache:** actually assign to _hasObservers
+  ([61c953d9](https://github.com/angular/angular.dart/commit/61c953d9be3e2626e159cd08ac585a67f412a37e))
+- **profiler:** Fix API
+  ([f032b376](https://github.com/angular/angular.dart/commit/f032b376c77b9b054d4c2b2db7b29cb7f7c71102))
+- **scope:** allow watching an empty string
+  ([bd0d4ffd](https://github.com/angular/angular.dart/commit/bd0d4ffdded131cd3040c6ddda32c46f6553b629))
+- **tagging-compiler:** support top level comments
+  ([dc75b016](https://github.com/angular/angular.dart/commit/dc75b0166cc93c08bf81fa364c247de3d97ad2c1))
+- **test:** fixes for latest unittest lib
+  ([c8527208](https://github.com/angular/angular.dart/commit/c852720827584065fdc5d48d5dc6d0e23770ebc1),
+   [#811](https://github.com/angular/angular.dart/issues/811))
+- **transformers:** fix breakage from commit 3fb218180b17bdc9808e575e3a9aaf9928fef28b
+  ([5caadbf1](https://github.com/angular/angular.dart/commit/5caadbf10304c46da552f4fa118351a3d2de4571))
+
+
+## Features
+
+- **AstParser:** Made the AST parser private to the scope
+  ([8944f0d9](https://github.com/angular/angular.dart/commit/8944f0d927a402f184160b6bfffdff664fb21ee4))
+- **deploy:** Move all reflection behind separate import
+  ([9bf04eba](https://github.com/angular/angular.dart/commit/9bf04eba808f7fc1f4e5285fad7feae360918718))
+- **expect:**
+  - toHaveText handles shadow DOM.  Deprecates JQuery.textWithShadow
+  ([0384346d](https://github.com/angular/angular.dart/commit/0384346db3b715f6a67425d81825d2d20caae74f))
+  - Move JQuery.text to Expect.toHaveText() and element.text
+  ([dfe84d8f](https://github.com/angular/angular.dart/commit/dfe84d8f48e97db992d1b70382a2e531b91a1607))
+- **karma:** Allow Firefox to execute Karma tests
+  ([bdfd0d21](https://github.com/angular/angular.dart/commit/bdfd0d2127a5b799e240292c0f475aba15f5bdac))
+- **ngRepeat:** make use if the new change detection
+  ([09871cb2](https://github.com/angular/angular.dart/commit/09871cb29b5345d49929895b2a490360eee69244))
+- **parser:** Add support for named arguments.
+  ([18ceb4df](https://github.com/angular/angular.dart/commit/18ceb4dfa751615cecc73ff38d7bb1744b914c0a),
+   [#762](https://github.com/angular/angular.dart/issues/762))
+- **transformers:** Add angular transformers to pub for no-mirror code generation
+  ([3fb21818](https://github.com/angular/angular.dart/commit/3fb218180b17bdc9808e575e3a9aaf9928fef28b))
+- **travis:** Only submit if all the builds complete
+  ([633d323d](https://github.com/angular/angular.dart/commit/633d323d672ee67ab2dbbd1dd6711a45aa86b0b5))
+
+
+## Performance Improvements
+
+- **DirtyCheckingChangeDetectorGroup:** Disable calls to _assertRecordsOk().
+  ([d6b9bb70](https://github.com/angular/angular.dart/commit/d6b9bb708af9b44b59e482d1a8588c29a2a3608f),
+   [#813](https://github.com/angular/angular.dart/issues/813))
+
+
+## Breaking Changes
+
+- **forms:** due to [e5baa502](https://github.com/angular/angular.dart/commit/e5baa50235aa3ec53f00f87b86dab78ef5882900),
+  All form code that uses control.valid_submit and control.invalid_submit
+will throw an error. Instead use control.validSubmit and control.invalidSubmit to check
+the submission validitity on a control.
+
+
 <a name="v0.9.10"></a>
 # v0.9.10 llama-magnetism (2014-03-20)
 
