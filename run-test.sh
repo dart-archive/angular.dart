@@ -42,5 +42,5 @@ scripts/test-expression-extractor.sh
   node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
   node "node_modules/karma/bin/karma" start karma.conf \
     --reporters=junit,dots --port=8765 --runner-port=8766 \
-    --browsers=Dartium,Chrome --single-run --no-colors
+    --browsers=Dartium,Chrome,Firefox --single-run --no-colors
 
