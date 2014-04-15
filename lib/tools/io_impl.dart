@@ -9,7 +9,7 @@ class IoServiceImpl implements IoService {
       new File(filePath).readAsStringSync();
 
   void visitFs(String rootDir, FsVisitor visitor) {
-    Directory root = new Directory(rootDir);
+    var root = new Directory(rootDir);
     if (!FileSystemEntity.isDirectorySync(rootDir)) {
       throw 'Expected $rootDir to be a directory!';
     }

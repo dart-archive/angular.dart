@@ -23,7 +23,7 @@ class _Processor {
   final Transform transform;
   final Resolver resolver;
   final TransformOptions options;
-  final Map<RegExp, String> templateUriRewrites = <RegExp, String>{};
+  final templateUriRewrites = <RegExp, String>{};
   final bool skipNonCached;
   final bool templatesOnly;
 
@@ -31,8 +31,9 @@ class _Processor {
   ConstructorElement componentAnnotation;
 
   static const String cacheAnnotationName =
-    'angular.template_cache_annotation.NgTemplateCache';
-  static const String componentAnnotationName = 'angular.core.annotation_src.NgComponent';
+      'angular.template_cache_annotation.NgTemplateCache';
+  static const String componentAnnotationName =
+      'angular.core.annotation_src.NgComponent';
 
   _Processor(this.transform, this.resolver, this.options, this.skipNonCached,
       this.templatesOnly) {
@@ -64,8 +65,8 @@ class _Processor {
         .where((type) => type.node != null)
         .expand(_AnnotatedElement.fromElement)
         .where((e) =>
-            (e.annotation.element == cacheAnnotation ||
-            e.annotation.element == componentAnnotation))
+            e.annotation.element == cacheAnnotation ||
+            e.annotation.element == componentAnnotation)
         .toList();
 
     var uriToEntry = <String, _CacheEntry>{};
@@ -107,9 +108,7 @@ class _Processor {
         if (paramName == 'templateUrl') {
           var entry = extractString('templateUrl', arg.expression,
               annotation.element);
-          if (entry != null) {
-            entries.add(entry);
-          }
+          if (entry != null) entries.add(entry);
         } else if (paramName == 'cssUrl' && !templatesOnly) {
           entries.addAll(extractListOrString(paramName, arg.expression,
               annotation.element));
@@ -220,11 +219,7 @@ class _Processor {
     templateUriRewrites.forEach((regexp, replacement) {
       uri = uri.replaceFirst(regexp, replacement);
     });
-    // Normalize packages/ uri's to be /packages/
-    if (uri.startsWith('packages/')) {
-      uri = '/' + uri;
-    }
-    return uri;
+    return uri.startsWith('packages/') ?  '/' + uri : uri;
   }
 
   void warn(String msg, Element element) {

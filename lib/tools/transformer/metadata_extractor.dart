@@ -18,23 +18,21 @@ class AnnotatedType {
    * Finds all the libraries referenced by the annotations
    */
   Iterable<LibraryElement> get referencedLibraries {
-    var libs = new Set();
-    libs.add(type.library);
+    var libs = new Set()..add(type.library);
 
     var libCollector = new _LibraryCollector();
-    for (var annotation in annotations) {
-      annotation.accept(libCollector);
-    }
-    libs.addAll(libCollector.libraries);
+    annotations.forEach((a) {
+      a.accept(libCollector);
+    });
 
-    return libs;
+    return libs..addAll(libCollector.libraries);
   }
 
   void writeClassAnnotations(StringBuffer sink, TransformLogger logger,
       Resolver resolver, Map<LibraryElement, String> prefixes) {
     sink.write('  ${prefixes[type.library]}${type.name}: const [\n');
     var writer = new _AnnotationWriter(sink, prefixes);
-    for (var annotation in annotations) {
+    annotations.forEach((annotation) {
       sink.write('    ');
       if (writer.writeAnnotation(annotation)) {
         sink.write(',\n');
@@ -44,7 +42,7 @@ class AnnotatedType {
             asset: resolver.getSourceAssetId(annotation.parent.element),
             span: resolver.getSourceSpan(annotation.parent.element));
       }
-    }
+    });
     sink.write('  ],\n');
   }
 }
@@ -53,12 +51,11 @@ class AnnotatedType {
  * Helper which finds all libraries referenced within the provided AST.
  */
 class _LibraryCollector extends GeneralizingAstVisitor {
-  final Set<LibraryElement> libraries = new Set<LibraryElement>();
+  final libraries = new Set<LibraryElement>();
+
   void visitSimpleIdentifier(SimpleIdentifier s) {
     var element = s.bestElement;
-    if (element != null) {
-      libraries.add(element.library);
-    }
+    if (element != null) libraries.add(element.library);
   }
 }
 
@@ -84,8 +81,7 @@ class _AnnotationWriter {
     var len = sink.length;
     if (!_writeAnnotation(annotation)) {
       var str = sink.toString();
-      sink.clear();
-      sink.write(str.substring(0, len));
+      sink..clear()..write(str.substring(0, len));
       return false;
     }
     return true;
@@ -97,9 +93,7 @@ class _AnnotationWriter {
       sink.write('const ${prefixes[element.library]}'
           '${element.enclosingElement.name}');
       // Named constructors
-      if (!element.name.isEmpty) {
-        sink.write('.${element.name}');
-      }
+      if (element.name.isNotEmpty) sink.write('.${element.name}');
       sink.write('(');
       if (!_writeArguments(annotation)) return false;
       sink.write(')');
@@ -112,7 +106,7 @@ class _AnnotationWriter {
     return false;
   }
 
-  /** Writes the arguments for a type constructor. */
+  /// Writes the arguments for a type constructor.
   bool _writeArguments(Annotation annotation) {
     var args = annotation.arguments;
     var index = 0;
@@ -123,9 +117,7 @@ class _AnnotationWriter {
       } else {
         if (!_writeExpression(arg)) return false;
       }
-      if (++index < args.arguments.length) {
-        sink.write(', ');
-      }
+      if (++index < args.arguments.length) sink.write(', ');
     }
     return true;
   }
@@ -152,9 +144,7 @@ class _AnnotationWriter {
         if (!_writeExpression(entry.key)) return false;
         sink.write(': ');
         if (!_writeExpression(entry.value)) return false;
-        if (++index < expression.entries.length) {
-          sink.write(', ');
-        }
+        if (++index < expression.entries.length) sink.write(', ');
       }
       sink.write('}');
       return true;
@@ -185,8 +175,10 @@ class _AnnotationWriter {
         return true;
       }
     }
-    if (expression is BooleanLiteral || expression is DoubleLiteral ||
-        expression is IntegerLiteral || expression is NullLiteral) {
+    if (expression is BooleanLiteral ||
+        expression is DoubleLiteral ||
+        expression is IntegerLiteral ||
+        expression is NullLiteral) {
       sink.write(expression.toSource());
       return true;
     }
@@ -218,7 +210,7 @@ class AnnotationExtractor {
   ClassElement ngAnnotationType;
 
   /// Resolved annotations that this will pick up for members.
-  final List<Element> _annotationElements = <Element>[];
+  final _annotationElements = <Element>[];
 
   AnnotationExtractor(this.logger, this.resolver, this.outputId) {
     for (var annotation in _angularAnnotationNames) {
@@ -229,10 +221,11 @@ class AnnotationExtractor {
       }
       _annotationElements.add(type.unnamedConstructor);
     }
-    ngAnnotationType = resolver.getType('angular.core.annotation_src.AbstractNgAnnotation');
+    ngAnnotationType =
+        resolver.getType('angular.core.annotation_src.AbstractNgAnnotation');
     if (ngAnnotationType == null) {
       logger.warning('Unable to resolve AbstractNgAnnotation, '
-          'skipping member annotations.');
+                     'skipping member annotations.');
     }
   }
 
@@ -240,7 +233,8 @@ class AnnotationExtractor {
   AnnotatedType extractAnnotations(ClassElement cls) {
     if (resolver.getImportUri(cls.library, from: outputId) == null) {
       warn('Dropping annotations for ${cls.name} because the '
-          'containing file cannot be imported (must be in a lib folder).', cls);
+           'containing file cannot be imported (must be in a lib folder).',
+           cls);
       return null;
     }
 
@@ -258,10 +252,8 @@ class AnnotationExtractor {
                 annotation.parent.element);
             return false;
           }
-          if (element is! ConstructorElement) {
-            // Only keeping constructor elements.
-            return false;
-          }
+          // Only keeping constructor elements.
+          if (element is! ConstructorElement) return false;
           ConstructorElement ctor = element;
           var cls = ctor.enclosingElement;
           if (!cls.isPublic) {
@@ -270,10 +262,7 @@ class AnnotationExtractor {
             return false;
           }
           // Skip all non-Ng* Attributes.
-          if (!cls.name.startsWith('Ng')) {
-            return false;
-          }
-          return true;
+          return cls.name.startsWith('Ng');
         }).toList();
 
 
@@ -297,8 +286,10 @@ class AnnotationExtractor {
     return type;
   }
 
-  /// Folds all AttrFieldAnnotations into the AbstractNgAnnotation annotation on the
-  /// class.
+  /**
+   * Folds all AttrFieldAnnotations into the AbstractNgAnnotation annotation on
+   * the class.
+   */
   void _foldMemberAnnotations(Map<String, Annotation> memberAnnotations,
       AnnotatedType type) {
     // Filter down to AbstractNgAnnotation constructors.
@@ -308,6 +299,7 @@ class AnnotationExtractor {
       return element.enclosingElement.type.isAssignableTo(
           ngAnnotationType.type);
     });
+
     if (ngAnnotations.isEmpty) {
       warn('Found field annotation but no class directives.', type.type);
       return;
@@ -319,9 +311,7 @@ class AnnotationExtractor {
       var ctor = a.element;
 
       for (var param in ctor.parameters) {
-        if (param.parameterKind != ParameterKind.NAMED) {
-          continue;
-        }
+        if (param.parameterKind != ParameterKind.NAMED) continue;
         if (param.name == 'map' && param.type.isAssignableTo(mapType)) {
           return true;
         }
@@ -331,7 +321,7 @@ class AnnotationExtractor {
 
     if (acceptableAnnotations.isEmpty) {
       warn('Could not find a constructor for member annotations in '
-          '$ngAnnotations', type.type);
+           '$ngAnnotations', type.type);
       return;
     }
 
@@ -345,9 +335,9 @@ class AnnotationExtractor {
     ResolutionCopier.copyResolutionData(sourceAnnotation, annotation);
     type.annotations[index] = annotation;
 
-    var mapArg = annotation.arguments.arguments.firstWhere((arg) =>
-        (arg is NamedExpression) && (arg.name.label.name == 'map'),
-        orElse: () => null);
+    var mapArg = annotation.arguments.arguments.firstWhere(
+            (arg) => (arg is NamedExpression) && (arg.name.label.name == 'map'),
+            orElse: () => null);
 
     // If we don't have a 'map' parameter yet, add one.
     if (mapArg == null) {
@@ -408,7 +398,7 @@ class _GeneratedToken extends Token {
 class _AnnotationVisitor extends GeneralizingAstVisitor {
   final List<Element> allowedMemberAnnotations;
   final List<Annotation> classAnnotations = [];
-  final Map<String, List<Annotation>> memberAnnotations = {};
+  final memberAnnotations = <String, List<Annotation>>{};
 
   _AnnotationVisitor(this.allowedMemberAnnotations);
 
@@ -430,5 +420,5 @@ class _AnnotationVisitor extends GeneralizingAstVisitor {
   }
 
   bool get hasAnnotations =>
-      !classAnnotations.isEmpty || !memberAnnotations.isEmpty;
+      classAnnotations.isNotEmpty || memberAnnotations.isNotEmpty;
 }

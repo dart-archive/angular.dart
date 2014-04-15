@@ -16,6 +16,6 @@ class NgTemplateCache {
   // override the default caching behavior for NgComponent annotation.
   final bool cache;
 
-  const NgTemplateCache(
-      {this.preCacheUrls : const <String> [], this.cache : true});
+  const NgTemplateCache({this.preCacheUrls : const <String> [],
+                        this.cache : true});
 }

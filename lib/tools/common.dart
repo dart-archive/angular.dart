@@ -3,15 +3,11 @@ library angular.tools.common;
 class DirectiveInfo {
   String selector;
   String template;
-  List<String> expressionAttrs = <String>[];
-  List<String> expressions = <String>[];
+  List<String> expressionAttrs;
+  List<String> expressions;
   DirectiveInfo([this.selector, this.expressionAttrs, this.expressions]) {
-    if (expressionAttrs == null) {
-      expressionAttrs = <String>[];
-    }
-    if (expressions == null) {
-      expressions = <String>[];
-    }
+    if (expressionAttrs == null) expressionAttrs = <String>[];
+    if (expressions == null) expressions = <String>[];
   }
 }
 
@@ -30,15 +26,9 @@ class DirectiveMetadata {
   DirectiveMetadata([this.className, this.type, this.selector,
                      this.attributeMappings, this.exportExpressionAttrs,
                      this.exportExpressions]) {
-    if (attributeMappings == null) {
-      attributeMappings = <String, String>{};
-    }
-    if (exportExpressions == null) {
-      exportExpressions = <String>[];
-    }
-    if (exportExpressionAttrs == null) {
-      exportExpressionAttrs = <String>[];
-    }
+    if (attributeMappings == null) attributeMappings = <String, String>{};
+    if (exportExpressions == null) exportExpressions = <String>[];
+    if (exportExpressionAttrs == null) exportExpressionAttrs = <String>[];
   }
 }
 
