@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-. ./scripts/env.sh
+. "$(dirname $0)/../env.sh"
 
 echo '==========='
 echo '== BUILD =='
@@ -24,14 +24,15 @@ function checkSize() {
   fi
 }
 
-# skip auxiliary tests if we are only running dart2js
 if [[ $TESTS == "dart2js" ]]; then
+  # skip auxiliary tests if we are only running dart2js
   echo '------------------------'
   echo '-- BUILDING: examples --'
   echo '------------------------'
 
   if [[ $CHANNEL == "DEV" ]]; then
-    dart "bin/pub_build.dart" -p example -e "example/expected_warnings.json"
+    $DART "$NGDART_BASE_DIR/bin/pub_build.dart" -p example \
+        -e "$NGDART_BASE_DIR/example/expected_warnings.json"
   else
     ( cd example; pub build )
   fi
@@ -40,7 +41,7 @@ if [[ $TESTS == "dart2js" ]]; then
     echo '-----------------------------------'
     echo '-- BUILDING: verify dart2js size --'
     echo '-----------------------------------'
-    cd example
+    cd $NGDART_BASE_DIR/example
     checkSize build/web/animation.dart.js 208021
     checkSize build/web/bouncing_balls.dart.js 202325
     checkSize build/web/hello_world.dart.js 199919
@@ -55,33 +56,34 @@ else
   echo '--------------'
   echo '-- TEST: io --'
   echo '--------------'
-  dart --checked test/io/all.dart
+  $DART --checked $NGDART_BASE_DIR/test/io/all.dart
 
   echo '----------------------------'
   echo '-- TEST: symbol extractor --'
   echo '----------------------------'
-  dart --checked test/tools/symbol_inspector/symbol_inspector_spec.dart
+  $DART --checked $NGDART_BASE_DIR/test/tools/symbol_inspector/symbol_inspector_spec.dart
 
-  ./scripts/generate-expressions.sh
-  ./scripts/analyze.sh
+  $NGDART_SCRIPT_DIR/generate-expressions.sh
+  $NGDART_SCRIPT_DIR/analyze.sh
 
   echo '-----------------------'
   echo '-- TEST: transformer --'
   echo '-----------------------'
-  dart --checked test/tools/transformer/all.dart
-
+  $DART --checked $NGDART_BASE_DIR/test/tools/transformer/all.dart
 
   echo '---------------------'
   echo '-- TEST: changelog --'
   echo '---------------------'
-  ./node_modules/jasmine-node/bin/jasmine-node ./scripts/changelog/;
+  $NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node \
+        $NGDART_SCRIPT_DIR/changelog/;
 
   (
     echo '----------------'
     echo '-- TEST: perf --'
     echo '----------------'
-    cd perf
-    pub install
+    cd $NGDART_BASE_DIR/perf
+    $PUB install
+
     for file in *_perf.dart; do
       echo ======= $file ========
       $DART $file
@@ -100,11 +102,11 @@ echo '-----------------------'
 echo '-- TEST: AngularDart --'
 echo '-----------------------'
 echo BROWSER=$BROWSERS
-./node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
-  node "node_modules/karma/bin/karma" start karma.conf \
+$NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
+node "node_modules/karma/bin/karma" start karma.conf \
     --reporters=junit,dots --port=8765 --runner-port=8766 \
     --browsers=$BROWSERS --single-run --no-colors
 
 if [[ $TESTS != "dart2js" ]]; then
-  ./scripts/generate-documentation.sh;
+  $NGDART_SCRIPT_DIR/generate-documentation.sh;
 fi
