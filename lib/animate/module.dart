@@ -24,7 +24,7 @@
  * default [NgAnimate] implementation. This will, in turn,
  * perform the tracking, manipulation, and computation for animations.
  *
- * As an example of how this works, lets walk through what happens whan an
+ * As an example of how this works, let's walk through what happens whan an
  * element is added to the DOM. The [CssAnimate] implementation will add the
  * `.ng-enter` class to new DOM elements when they are inserted into the DOM
  * by a directive and will read the computed style. If there is a
