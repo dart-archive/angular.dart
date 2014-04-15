@@ -18,10 +18,15 @@ directChildrenVisibility(Injector requesting, Injector defining) {
          localVisibility(requesting, defining);
 }
 
-AbstractNgAnnotation cloneWithNewMap(AbstractNgAnnotation annotation, map) =>
+AbstractNgAttrAnnotation cloneWithNewMap(AbstractNgAttrAnnotation annotation,
+                                         Map<String, String> map) =>
     annotation._cloneWithNewMap(map);
 
-String mappingSpec(AbstractNgFieldAnnotation annotation) => annotation._mappingSpec;
+NgTemplate cloneWithNewMapping(NgTemplate template, String mapping) =>
+    template._cloneWithNewMapping(mapping);
+
+String mappingSpec(AbstractNgFieldAnnotation annotation) =>
+    annotation._mappingSpec;
 
 
 /**
@@ -126,18 +131,33 @@ abstract class AbstractNgAnnotation {
     this.exportExpressionAttrs: const []
   });
 
-  toString() => selector;
-  get hashCode => selector.hashCode;
+  String toString() => selector;
+  int get hashCode => selector.hashCode;
   operator==(AbstractNgAnnotation other) =>
       other is AbstractNgAnnotation && selector == other.selector;
 }
 
 /**
- * todo(vicb): doc
+ * Meta-data marker placed on a class which should act as template.
+ *
+ * Angular templates are instantiated using dependency injection, and can
+ * ask for any injectable object in their constructor. Templates can also ask
+ * for other components or directives declared on the DOM element.
+ *
+ * Templates can implement [NgAttachAware], [NgDetachAware] and declare these
+ * optional methods:
+ *
+ * * `attach()` - Called on first [Scope.apply()].
+ * * `detach()` - Called on when owning scope is destroyed.
  */
 class NgTemplate extends AbstractNgAnnotation {
   /**
-   * todo (vicb): doc
+   * Use the [mapping] to define the mapping of the expression to a field.
+   * The value consists of a mode prefix followed by an expression.
+   * The destination expression will be evaluated against the instance of the
+   * template class.
+   *
+   * see [AbstractNgAttrAnnotation.map] for more details.
    */
   final String mapping;
 
@@ -153,7 +173,7 @@ class NgTemplate extends AbstractNgAnnotation {
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  NgTemplate cloneWithNewMapping(String newMapping) =>
+  NgTemplate _cloneWithNewMapping(String newMapping) =>
       new NgTemplate(mapping: newMapping,
                      module: module,
                      selector: selector,
