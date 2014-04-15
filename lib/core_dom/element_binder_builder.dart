@@ -13,10 +13,10 @@ class ElementBinderFactory {
 
   ElementBinder binder(ElementBinderBuilder b) =>
       new ElementBinder(_perf, _expando, _parser,
-          b.component, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
+          b.component, b.decorators, b.onEvents, b.bindAttrs, b.compileChildren);
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
       new TemplateElementBinder(_perf, _expando, _parser,
-          b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
+          b.template, transclude, b.onEvents, b.bindAttrs, b.compileChildren);
 }
 
 /**
@@ -24,7 +24,7 @@ class ElementBinderFactory {
  * building ElementBinders.
  */
 class ElementBinderBuilder {
-  static RegExp _MAPPING = new RegExp(r'^(\@|=\>\!|\=\>|\<\=\>|\&)\s*(.*)$');
+  static RegExp _MAPPING = new RegExp(r'^(@|=>!|=>|<=>|&)\s*(.*)$');
 
   ElementBinderFactory _factory;
 
@@ -37,49 +37,59 @@ class ElementBinderBuilder {
 
   DirectiveRef component;
 
-  // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
-  String childMode = AbstractNgAnnotation.COMPILE_CHILDREN;
+  bool compileChildren = true;
 
   ElementBinderBuilder(this._factory);
 
-  addDirective(DirectiveRef ref) {
+  void addDirective(DirectiveRef ref) {
     var annotation = ref.annotation;
-    var children = annotation.children;
 
-    if (annotation.children == AbstractNgAnnotation.TRANSCLUDE_CHILDREN) {
+    compileChildren = annotation.compileChildren;
+
+    if (annotation is NgTemplate) {
       template = ref;
-    } else if (annotation is NgComponent) {
-      component = ref;
+      _addMapping(ref, (annotation as NgTemplate).mapping);
     } else {
-      decorators.add(ref);
-    }
-
-    if (annotation.children == AbstractNgAnnotation.IGNORE_CHILDREN) {
-      childMode = annotation.children;
-    }
-
-    if (annotation.map != null) annotation.map.forEach((attrName, mapping) {
-      Match match = _MAPPING.firstMatch(mapping);
-      if (match == null) {
-        throw "Unknown mapping '$mapping' for attribute '$attrName'.";
+      if (annotation is NgComponent) {
+        component = ref;
+      } else {
+        decorators.add(ref);
       }
-      var mode = match[1];
-      var dstPath = match[2];
-
-      String dstExpression = dstPath.isEmpty ? attrName : dstPath;
-
-      ref.mappings.add(new MappingParts(attrName, mode, dstExpression, mapping));
-    });
+      annotation = annotation as AbstractNgAttrAnnotation;
+      if (annotation.map != null) {
+        annotation.map.forEach((attrName, mapping) {
+          _addMapping(ref, mapping, attrName);
+        });
+      }
+    }
   }
 
   ElementBinder get binder {
     if (template != null) {
       var transclude = _factory.binder(this);
       return _factory.templateBinder(this, transclude);
-
     } else {
       return _factory.binder(this);
     }
+  }
 
+  void _addMapping(DirectiveRef ref, String mapping, [String attrName]) {
+    if (mapping == null) return;
+    Match match = _MAPPING.firstMatch(mapping);
+    if (match == null) {
+      throw "Unknown mapping '$mapping' for attribute '$attrName'.";
+    }
+    var mode = match[1];
+    var dstPath = match[2];
+
+    if (dstPath.isEmpty && attrName != null) dstPath = attrName;
+
+    ref.mappings.add(new MappingParts(attrName, mode, dstPath, mapping));
+  }
+
+  void _addRefs(List<_Directive> directives, dom.Node node, [String attrValue]) {
+    directives.forEach((directive) {
+      addDirective(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
+    });
   }
 }

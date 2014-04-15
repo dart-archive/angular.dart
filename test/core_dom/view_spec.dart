@@ -9,7 +9,7 @@ class Log {
   add(String msg) => log.add(msg);
 }
 
-@NgDirective(children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN, selector: 'foo')
+@NgTemplate(selector: 'foo')
 class LoggerViewDirective {
   LoggerViewDirective(ViewPort port, ViewFactory viewFactory,
       BoundViewFactory boundViewFactory, Logger logger) {

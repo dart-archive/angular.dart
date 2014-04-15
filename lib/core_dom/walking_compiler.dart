@@ -45,15 +45,12 @@ class WalkingCompiler implements Compiler {
             templateBinder.template, templateBinder.templateBinder, directives);
       }
 
-      if (elementBinder.shouldCompileChildren) {
-        if (domCursor.descend()) {
+      if (elementBinder.compileChildren) {
+        domCursor.processChildNodes(() {
           templateCursor.descend();
-
           subtrees = _compileView(domCursor, templateCursor, null, directives);
-
-          domCursor.ascend();
           templateCursor.ascend();
-        }
+        });
       }
 
       if (elementBinder.hasDirectivesOrEvents) {

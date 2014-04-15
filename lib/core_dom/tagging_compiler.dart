@@ -19,8 +19,8 @@ class TaggingCompiler implements Compiler {
                                       List elementBinders) {
     var node = domCursor.current;
 
-    if (node.nodeType == 1) {
-      // If nodetype is a element, call selector matchElement.
+    if (node.nodeType == dom.Node.ELEMENT_NODE) {
+      // If the node is an element, call selector matchElement.
       // If text, call selector.matchText
 
       ElementBinder elementBinder = useExistingElementBinder == null ?
@@ -39,13 +39,13 @@ class TaggingCompiler implements Compiler {
     return null;
   }
 
-  _compileNode(NodeCursor domCursor,
-               ElementBinder elementBinder,
-               DirectiveMap directives,
-               List elementBinders,
-               int parentElementBinderOffset,
-               bool isTopLevel,
-               TaggedElementBinder directParentElementBinder) {
+  void _compileNode(NodeCursor domCursor,
+                    ElementBinder elementBinder,
+                    DirectiveMap directives,
+                    List elementBinders,
+                    int parentElementBinderOffset,
+                    bool isTopLevel,
+                    TaggedElementBinder directParentElementBinder) {
     var node = domCursor.current;
     if (node.nodeType == dom.Node.ELEMENT_NODE) {
       TaggedElementBinder taggedElementBinder;
@@ -60,8 +60,8 @@ class TaggingCompiler implements Compiler {
         taggedElementBinderIndex = parentElementBinderOffset;
       }
 
-      if (elementBinder.shouldCompileChildren) {
-        if (domCursor.descend()) {
+      if (elementBinder.compileChildren) {
+        domCursor.processChildNodes(() {
           var addedDummy = false;
           if (taggedElementBinder == null) {
             addedDummy = true;
@@ -81,8 +81,7 @@ class TaggingCompiler implements Compiler {
             // end of the compilation process.
             node.classes.add('ng-binding');
           }
-          domCursor.ascend();
-        }
+        });
       }
     } else if (node.nodeType == dom.Node.TEXT_NODE ||
                node.nodeType == dom.Node.COMMENT_NODE) {
@@ -156,18 +155,20 @@ class TaggingCompiler implements Compiler {
     return viewFactory;
   }
 
-  _isDummyBinder(TaggedElementBinder binder) =>
-    binder.binder == null && binder.textBinders == null && !binder.isTopLevel;
+  bool _isDummyBinder(TaggedElementBinder binder) =>
+    binder.binder == null &&
+    binder.textBinders == null &&
+    !binder.isTopLevel;
 
-  _removeUnusedBinders(List<TaggedElementBinder> binders) {
+  List<TaggedElementBinder> _removeUnusedBinders(List<TaggedElementBinder> binders) {
     // In order to support text nodes with directiveless parents, we
     // add dummy ElementBinders to the list.  After the entire template
     // has been compiled, we remove the dummies and update the offset indices
-    final output = [];
-    final List<int> offsetMap = [];
+    final output = <TaggedElementBinder>[];
+    final offsetMap = <int>[];
     int outputIndex = 0;
 
-    for (var i = 0, ii = binders.length; i < ii; i++) {
+    for (var i = 0; i < binders.length; i++) {
       TaggedElementBinder binder = binders[i];
       if (_isDummyBinder(binder)) {
         offsetMap.add(-2);

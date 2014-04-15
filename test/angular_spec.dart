@@ -202,7 +202,7 @@ main() {
         "angular.directive.NgEvent",
         "angular.directive.NgStyle",
         "angular.directive.NgNonBindable",
-        "angular.directive.NgTemplate",
+        "angular.directive.NgTemplateDirective",
         "angular.directive.NgControl",
         "angular.directive.NgForm",
         "angular.directive.NgModelRequiredValidator",

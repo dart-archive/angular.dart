@@ -6,21 +6,27 @@ RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
 const String SHADOW_DOM_INJECTOR_NAME = 'SHADOW_INJECTOR';
 
-skipShadow(Injector injector)
-    => injector.name == SHADOW_DOM_INJECTOR_NAME ? injector.parent : injector;
+skipShadow(Injector injector) =>
+    injector.name == SHADOW_DOM_INJECTOR_NAME ? injector.parent : injector;
 
-localVisibility (Injector requesting, Injector defining)
-    => identical(skipShadow(requesting), defining);
+localVisibility (Injector requesting, Injector defining) =>
+    identical(skipShadow(requesting), defining);
 
 directChildrenVisibility(Injector requesting, Injector defining) {
   requesting = skipShadow(requesting);
-  return identical(requesting.parent, defining) || localVisibility(requesting, defining);
+  return identical(requesting.parent, defining) ||
+         localVisibility(requesting, defining);
 }
 
-AbstractNgAnnotation cloneWithNewMap(AbstractNgAnnotation annotation, map)
-    => annotation._cloneWithNewMap(map);
+AbstractNgAttrAnnotation cloneWithNewMap(AbstractNgAttrAnnotation annotation,
+                                         Map<String, String> map) =>
+    annotation._cloneWithNewMap(map);
 
-String mappingSpec(AbstractNgFieldAnnotation annotation) => annotation._mappingSpec;
+NgTemplate cloneWithNewMapping(NgTemplate template, String mapping) =>
+    template._cloneWithNewMapping(mapping);
+
+String mappingSpec(AbstractNgFieldAnnotation annotation) =>
+    annotation._mappingSpec;
 
 
 /**
@@ -34,7 +40,7 @@ class NgInjectableService {
 }
 
 /**
- * Abstract supper class of [NgController], [NgComponent], and [NgDirective].
+ * Abstract supper class of [NgTemplate] & [AbstractNgAttrAnnotation]
  */
 abstract class AbstractNgAnnotation {
   /**
@@ -56,30 +62,11 @@ abstract class AbstractNgAnnotation {
    * Specifies the compiler action to be taken on the child nodes of the
    * element which this currently being compiled.  The values are:
    *
-   * * [COMPILE_CHILDREN] (*default*)
-   * * [TRANSCLUDE_CHILDREN]
-   * * [IGNORE_CHILDREN]
+   * * [:true:] Compile the child nodes of the element. (default)
+   * * [:false:] Do not compile/visit the child nodes.  Angular markup on
+   *   descendant nodes will not be processed.
    */
-  @deprecated
-  final String children;
-
-  /**
-   * Compile the child nodes of the element.  This is the default.
-   */
-  @deprecated
-  static const String COMPILE_CHILDREN = 'compile';
-  /**
-   * Compile the child nodes for transclusion and makes available
-   * [BoundViewFactory], [ViewFactory] and [ViewPort] for injection.
-   */
-  @deprecated
-  static const String TRANSCLUDE_CHILDREN = 'transclude';
-  /**
-   * Do not compile/visit the child nodes.  Angular markup on descendant nodes
-   * will not be processed.
-   */
-  @deprecated
-  static const String IGNORE_CHILDREN = 'ignore';
+  final bool compileChildren;
 
   /**
    * A directive/component controller class can be injected into other
@@ -122,15 +109,93 @@ abstract class AbstractNgAnnotation {
   final Function module;
 
   /**
-   * Use map to define the mapping of  DOM attributes to fields.
+   * Use the list to specify expressions containing attributes which are not
+   * included under [map] with '=' or '@' specification. This is used by
+   * angular transformer during deployment.
+   */
+  final List<String> exportExpressionAttrs;
+
+  /**
+   * Use the list to specify expressions which are evaluated dynamically
+   * (ex. via [Scope.eval]) and are otherwise not statically discoverable.
+   * This is used by angular transformer during deployment.
+   */
+  final List<String> exportExpressions;
+
+  const AbstractNgAnnotation({
+    this.selector,
+    this.compileChildren: true,
+    this.visibility: NgDirective.LOCAL_VISIBILITY,
+    this.module,
+    this.exportExpressions: const [],
+    this.exportExpressionAttrs: const []
+  });
+
+  String toString() => selector;
+  int get hashCode => selector.hashCode;
+  operator==(AbstractNgAnnotation other) =>
+      other is AbstractNgAnnotation && selector == other.selector;
+}
+
+/**
+ * Meta-data marker placed on a class which should act as template.
+ *
+ * Angular templates are instantiated using dependency injection, and can
+ * ask for any injectable object in their constructor. Templates can also ask
+ * for other components or directives declared on the DOM element.
+ *
+ * Templates can implement [NgAttachAware], [NgDetachAware] and declare these
+ * optional methods:
+ *
+ * * `attach()` - Called on first [Scope.apply()].
+ * * `detach()` - Called on when owning scope is destroyed.
+ */
+class NgTemplate extends AbstractNgAnnotation {
+  /**
+   * Use the [mapping] to define the mapping of the expression to a field.
+   * The value consists of a mode prefix followed by an expression.
+   * The destination expression will be evaluated against the instance of the
+   * template class.
+   *
+   * see [AbstractNgAttrAnnotation.map] for more details.
+   */
+  final String mapping;
+
+  const NgTemplate({this.mapping,
+                    String selector,
+                    Function module,
+                    Visibility visibility,
+                    List<String> exportExpressions,
+                    List<String> exportExpressionAttrs})
+      : super(selector: selector,
+              visibility: visibility,
+              module: module,
+              exportExpressions: exportExpressions,
+              exportExpressionAttrs: exportExpressionAttrs);
+
+  NgTemplate _cloneWithNewMapping(String newMapping) =>
+      new NgTemplate(mapping: newMapping,
+                     module: module,
+                     selector: selector,
+                     visibility: visibility,
+                     exportExpressions: exportExpressions,
+                     exportExpressionAttrs: exportExpressionAttrs);
+}
+
+/**
+ * Abstract supper class of [NgController], [NgComponent], and [NgDirective].
+ */
+abstract class AbstractNgAttrAnnotation extends AbstractNgAnnotation {
+  /**
+   * Use the [map] to define the mapping of  DOM attributes to fields.
    * The map's key is the DOM attribute name (DOM attribute is in dash-case).
    * The Map's value consists of a mode prefix followed by an expression.
    * The destination expression will be evaluated against the instance of the
    * directive / component class.
    *
    * * `@` - Map the DOM attribute string. The attribute string will be taken
-   *   literally or interpolated if it contains binding {{}} systax and assigned
-   *   to the expression. (cost: 0 watches)
+   *   literally or interpolated if it contains binding `{{}}` syntax and
+   *   assigned to the expression. (cost: 0 watches)
    *
    * * `=>` - Treat the DOM attribute value as an expression. Set up a watch,
    *   which will read the expression in the attribute and assign the value
@@ -186,38 +251,23 @@ abstract class AbstractNgAnnotation {
    */
   final Map<String, String> map;
 
-  /**
-   * Use the list to specify expressions containing attributes which are not
-   * included under [map] with '=' or '@' specification. This is used by
-   * angular transformer during deployment.
-   */
-  final List<String> exportExpressionAttrs;
+  const AbstractNgAttrAnnotation({
+      String selector,
+      bool compileChildren: true,
+      Visibility visibility: NgDirective.LOCAL_VISIBILITY,
+      Function module,
+      this.map: const {},
+      List<String> exportExpressions: const [],
+      List<String> exportExpressionAttrs: const []})
+      : super(selector: selector,
+              compileChildren: compileChildren,
+              visibility: visibility,
+              module: module,
+              exportExpressions: exportExpressions,
+              exportExpressionAttrs: exportExpressionAttrs);
 
-  /**
-   * Use the list to specify expressions which are evaluated dynamically
-   * (ex. via [Scope.eval]) and are otherwise not statically discoverable.
-   * This is used by angular transformer during deployment.
-   */
-  final List<String> exportExpressions;
-
-  const AbstractNgAnnotation({
-    this.selector,
-    this.children: AbstractNgAnnotation.COMPILE_CHILDREN,
-    this.visibility: NgDirective.LOCAL_VISIBILITY,
-    this.module,
-    this.map: const {},
-    this.exportExpressions: const [],
-    this.exportExpressionAttrs: const []
-  });
-
-  toString() => selector;
-  get hashCode => selector.hashCode;
-  operator==(other) =>
-      other is AbstractNgAnnotation && selector == other.selector;
-
-  AbstractNgAnnotation _cloneWithNewMap(newMap);
+  AbstractNgAnnotation _cloneWithNewMap(Map<String, String> newMap);
 }
-
 
 bool _applyAuthorStylesDeprecationWarningPrinted = false;
 bool _resetStyleInheritanceDeprecationWarningPrinted = false;
@@ -238,7 +288,7 @@ bool _resetStyleInheritanceDeprecationWarningPrinted = false;
  * * `detach()` - Called on when owning scope is destroyed.
  * * `onShadowRoot(ShadowRoot shadowRoot)` - Called when [ShadowRoot] is loaded.
  */
-class NgComponent extends AbstractNgAnnotation {
+class NgComponent extends AbstractNgAttrAnnotation {
   /**
    * Inlined HTML template for the component.
    */
@@ -295,48 +345,46 @@ class NgComponent extends AbstractNgAnnotation {
   @deprecated
   final String publishAs;
 
-  const NgComponent({
-    this.template,
-    this.templateUrl,
-    cssUrl,
-    applyAuthorStyles,
-    resetStyleInheritance,
-    this.publishAs,
-    module,
-    map,
-    selector,
-    visibility,
-    exportExpressions,
-    exportExpressionAttrs})
+  const NgComponent({this.template,
+                     this.templateUrl,
+                     cssUrl,
+                     applyAuthorStyles,
+                     resetStyleInheritance,
+                     this.publishAs,
+                     module,
+                     map,
+                     selector,
+                     visibility,
+                     exportExpressions,
+                     exportExpressionAttrs})
       : _cssUrls = cssUrl,
         _applyAuthorStyles = applyAuthorStyles,
         _resetStyleInheritance = resetStyleInheritance,
         super(selector: selector,
-             children: AbstractNgAnnotation.COMPILE_CHILDREN,
-             visibility: visibility,
-             map: map,
-             module: module,
-             exportExpressions: exportExpressions,
-             exportExpressionAttrs: exportExpressionAttrs);
+              compileChildren: true,
+              visibility: visibility,
+              map: map,
+              module: module,
+              exportExpressions: exportExpressions,
+              exportExpressionAttrs: exportExpressionAttrs);
 
   List<String> get cssUrls => _cssUrls == null ?
       const [] :
       _cssUrls is List ?  _cssUrls : [_cssUrls];
 
-  AbstractNgAnnotation _cloneWithNewMap(newMap) =>
-      new NgComponent(
-          template: template,
-          templateUrl: templateUrl,
-          cssUrl: cssUrls,
-          applyAuthorStyles: applyAuthorStyles,
-          resetStyleInheritance: resetStyleInheritance,
-          publishAs: publishAs,
-          map: newMap,
-          module: module,
-          selector: selector,
-          visibility: visibility,
-          exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
+  NgComponent _cloneWithNewMap(Map<String, String> newMap) =>
+      new NgComponent(template: template,
+                      templateUrl: templateUrl,
+                      cssUrl: cssUrls,
+                      applyAuthorStyles: applyAuthorStyles,
+                      resetStyleInheritance: resetStyleInheritance,
+                      publishAs: publishAs,
+                      map: newMap,
+                      module: module,
+                      selector: selector,
+                      visibility: visibility,
+                      exportExpressions: exportExpressions,
+                      exportExpressionAttrs: exportExpressionAttrs);
 }
 
 /**
@@ -352,7 +400,7 @@ class NgComponent extends AbstractNgAnnotation {
  * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
  */
-class NgDirective extends AbstractNgAnnotation {
+class NgDirective extends AbstractNgAttrAnnotation {
 
   /// The directive can only be injected to other directives on the same element.
   static const Visibility LOCAL_VISIBILITY = localVisibility;
@@ -366,30 +414,29 @@ class NgDirective extends AbstractNgAnnotation {
    */
   static const Visibility DIRECT_CHILDREN_VISIBILITY = directChildrenVisibility;
 
-  const NgDirective({children: AbstractNgAnnotation.COMPILE_CHILDREN,
-                    map,
-                    selector,
-                    module,
-                    visibility,
-                    exportExpressions,
-                    exportExpressionAttrs})
+  const NgDirective({compileChildren: true,
+                     map,
+                     selector,
+                     module,
+                     visibility,
+                     exportExpressions,
+                     exportExpressionAttrs})
       : super(selector: selector,
-              children: children,
+              compileChildren: compileChildren,
               visibility: visibility,
               map: map,
               module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  AbstractNgAnnotation _cloneWithNewMap(newMap) =>
-      new NgDirective(
-          children: children,
-          map: newMap,
-          module: module,
-          selector: selector,
-          visibility: visibility,
-          exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
+  NgDirective _cloneWithNewMap(newMap) =>
+      new NgDirective(compileChildren: compileChildren,
+                      map: newMap,
+                      module: module,
+                      selector: selector,
+                      visibility: visibility,
+                      exportExpressions: exportExpressions,
+                      exportExpressionAttrs: exportExpressionAttrs);
 }
 
 /**
@@ -409,7 +456,7 @@ class NgDirective extends AbstractNgAnnotation {
  * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
  */
-class NgController extends NgDirective {
+class NgController extends AbstractNgAttrAnnotation {
   /**
    * An expression under which the controller instance will be published into.
    * This allows the expressions in the template to be referring to controller
@@ -417,34 +464,31 @@ class NgController extends NgDirective {
    */
   final String publishAs;
 
-  const NgController({
-                    children: AbstractNgAnnotation.COMPILE_CHILDREN,
-                    this.publishAs,
-                    map,
-                    module,
-                    selector,
-                    visibility,
-                    exportExpressions,
-                    exportExpressionAttrs
-                    })
+  const NgController({compileChildren: true,
+                      this.publishAs,
+                      map,
+                      module,
+                      selector,
+                      visibility,
+                      exportExpressions,
+                      exportExpressionAttrs})
       : super(selector: selector,
-              children: children,
+              compileChildren: compileChildren,
               visibility: visibility,
               map: map,
               module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  AbstractNgAnnotation _cloneWithNewMap(newMap) =>
-      new NgController(
-          children: children,
-          publishAs: publishAs,
-          module: module,
-          map: newMap,
-          selector: selector,
-          visibility: visibility,
-          exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
+  NgController _cloneWithNewMap(newMap) =>
+      new NgController(compileChildren: compileChildren,
+                       publishAs: publishAs,
+                       module: module,
+                       map: newMap,
+                       selector: selector,
+                       visibility: visibility,
+                       exportExpressions: exportExpressions,
+                       exportExpressionAttrs: exportExpressionAttrs);
 }
 
 /**

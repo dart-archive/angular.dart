@@ -12,12 +12,11 @@ class NodeCursor {
   dom.Node get current => index < elements.length ? elements[index] : null;
 
   bool descend() {
-    var childNodes = elements[index].nodes;
-    var hasChildren = childNodes != null && childNodes.isNotEmpty;
+    var hasChildren = elements[index].hasChildNodes();
 
     if (hasChildren) {
       stack..add(index)..add(elements);
-      elements = new List.from(childNodes);
+      elements = new List.from(elements[index].nodes);
       index = 0;
     }
 
@@ -27,6 +26,15 @@ class NodeCursor {
   void ascend() {
     elements = stack.removeLast();
     index = stack.removeLast();
+  }
+
+  bool processChildNodes(Function fn) {
+    var hasChildren = descend();
+    if (hasChildren) {
+      fn();
+      ascend();
+    }
+    return hasChildren;
   }
 
   void insertAnchorBefore(String name) {
@@ -45,5 +53,5 @@ class NodeCursor {
 
   NodeCursor remove() => new NodeCursor([elements.removeAt(index)..remove()]);
 
-  toString() => "[NodeCursor: $elements $index]";
+  String toString() => "[NodeCursor: $elements $index]";
 }
