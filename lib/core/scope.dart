@@ -187,15 +187,22 @@ class Scope {
         this._stats);
 
   /**
-   * Use [watch] to set up a watch in the [apply] cycle.
+   * Use [watch] to set up change detection on an expression.
    *
-   * When [canChangeModel] is [:false:], the watch will be executed in the
-   * [flush] cycle. It should be used when the [reactionFn] does not change the
-   * model and allows speeding up the [digest] phase.
-   *
-   * On the opposite, [canChangeModel] should be set to [:true:] if the
-   * [reactionFn] could change the model so that the watch is evaluated in the
-   * [digest] cycle.
+   * * [expression]: The expression to watch for changes.
+   * * [reactionFn]: The reaction function to execute when a change is detected in the watched
+   *   expression.
+   * * [context]: The object against which the expression is evaluated. This defaults to the
+   *   [Scope.context] if no context is specified.
+   * * [formatters]: If the watched expression contains formatters,
+   *   this map specifies the set of formatters that are used by the expression.
+   * * [canChangeModel]: Specifies whether the [reactionFn] changes the model. Reaction
+   *   functions that change the model are processed as part of the [digest] cycle. Otherwise,
+   *   they are processed as part of the [flush] cycle.
+   * * [collection]: If [:true:], then the expression points to a collection (a list or a map),
+   *   and the collection should be shallow watched. If [:false:] then the expression is watched
+   *   by reference. When watching a collection, the reaction function receives a
+   *   [CollectionChangeItem] that lists all the changes.
    */
   Watch watch(String expression, ReactionFn reactionFn,  {context,
       FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
@@ -538,18 +545,24 @@ class RootScope extends Scope {
    * While processing data bindings, Angular passes through multiple states. When testing or
    * debugging, it can be useful to access the current `state`, which is one of the following:
    *
-   *  ## `null`
+   * * null
+   * * apply
+   * * digest
+   * * flush
+   * * assert
+   *
+   * ##null
    *
    *  Angular is not currently processing changes
    *
-   *  ## `apply`
+   * ##apply
    *
-   *  The apply state begins by executing the optional expression within the context of
+   * The apply state begins by executing the optional expression within the context of
    * angular change detection mechanism. Any exceptions are delegated to [ExceptionHandler]. At the
    * end of apply state RootScope enters the digest followed by flush phase (optionally if asserts
-   * enabled run assert phase.).
+   * enabled run assert phase.)
    *
-   * ## `digest`
+   * ##digest
    *
    * The apply state begins by processing the async queue,
    * followed by change detection
@@ -558,18 +571,19 @@ class RootScope extends Scope {
    * iterations the model is considered unstable and angular exists with an exception. (See
    * ScopeDigestTTL)
    *
-   * ## `flush`
+   * ##flush
    *
-   * Flush phase consist of these steps.
-   * 1) processing the DOM write queue,
-   * 2) followed by change detection on DOM only updates (these are reaction functions which must
+   * The flush phase consists of these steps:
+   *
+   * 1. processing the DOM write queue
+   * 2. change detection on DOM only updates (these are reaction functions which must
    *    not change the model state and hence don't need stabilization as in digest phase).
-   * 3) processing the DOM read queue
-   * 4) repeat step 1/3 (not 2) until queues are empty
+   * 3. processing the DOM read queue
+   * 4. repeat steps 1 and 3 (not 2) until queues are empty
    *
-   * ## `assert`
+   * ##assert
    *
-   * Optionally if dart assert is on, verify that flush reaction functions did not make any changes
+   * Optionally if Dart assert is on, verify that flush reaction functions did not make any changes
    * to model and throw error if changes detected.
    *
    */
@@ -596,6 +610,23 @@ class RootScope extends Scope {
   RootScope get rootScope => this;
   bool get isAttached => true;
 
+/**
+  * Propagates changes between different parts of the application model. Normally called by
+  * [VMTurnZone] right before DOM rendering to initiate data binding. May also be called directly
+  * for unit testing.
+  *
+  * Before each iteration of change detection, [digest] first processes the async queue. Any
+  * work scheduled on the queue is executed before change detection. Since work scheduled on
+  * the queue may generate more async calls, [digest] must process the queue multiple times before
+  * it completes. The async queue must be empty before the model is considered stable.
+  *
+  * Next, [digest] collects the changes that have occurred in the model. For each change,
+  * [digest] calls the associated [ReactionFn]. Since a [ReactionFn] may further change the model,
+  * [digest] processes changes multiple times until no more changes are detected.
+  *
+  * If the model does not stabilize within 5 iterations, an exception is thrown. See
+  * [ScopeDigestTTL].
+  */
   void digest() {
     _transitionState(null, STATE_DIGEST);
     try {

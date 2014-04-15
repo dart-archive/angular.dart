@@ -139,6 +139,9 @@ abstract class Application {
   final List<Module> modules = <Module>[];
   dom.Element element;
 
+/**
+* Creates a selector for a DOM element.
+*/
   dom.Element selector(String selector) => element = _find(selector);
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
@@ -148,6 +151,9 @@ abstract class Application {
             ..factory(dom.Node, (i) => i.get(Application).element);
   }
 
+/**
+* Returns the injector for this module.
+*/
   Injector injector;
 
   Application addModule(Module module) {
@@ -174,5 +180,9 @@ abstract class Application {
     });
   }
 
+/**
+*  Creates an injector function that can be used for retrieving services as well as for
+*  dependency injection.
+*/
   Injector createInjector();
 }
