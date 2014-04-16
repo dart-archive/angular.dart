@@ -15,6 +15,9 @@ class A {
   static StaticFieldType staticField = null;
 }
 
+class _PrivateClass {} // Should not be exported.
+typedef _PrivateTypedef(int a); // Also should not be exported.
+
 typedef TypedefReturnType TypedefType(TypedefParam a);
 
 class ConsParamType {}

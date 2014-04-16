@@ -25,6 +25,7 @@ Iterable<Symbol> _getUsedSymbols(DeclarationMirror decl, seenDecls, path, onlyTy
   seenDecls[decl.qualifiedName] = true;
 
   if (decl.isPrivate) return [];
+
   path = "$path -> $decl";
 
   var used = [];
@@ -97,6 +98,11 @@ getSymbolsFromLibrary(String libraryName) {
     if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + unwrapSymbol(lib.qualifiedName));
     printPrefix += "  ";
     lib.declarations.forEach((symbol, decl) {
+      if (decl.isPrivate) return;
+
+      // Work-around for dartbug.com/18271
+      if (decl is TypedefMirror && unwrapSymbol(symbol).startsWith('_')) return;
+
       if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + unwrapSymbol(symbol));
       names.add(new QualifiedSymbol(symbol, decl.qualifiedName, lib.qualifiedName));
       used[decl.qualifiedName] = _getUsedSymbols(decl, {}, "", false);
