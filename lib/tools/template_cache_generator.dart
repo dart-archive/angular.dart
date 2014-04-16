@@ -31,6 +31,7 @@ main(List arguments) {
     print('output: ${options.output}');
     print('sdk-path: ${options.sdkPath}');
     print('package-root: ${options.packageRoots.join(",")}');
+    print('template-root: ${options.templateRoots.join(",")}');
     var rewrites = options.urlRewrites.keys
         .map((k) => '${k.pattern},${options.urlRewrites[k]}')
         .join(';');
@@ -41,8 +42,8 @@ main(List arguments) {
   Map<String, String> templates = {};
 
   var c = new SourceCrawler(options.sdkPath, options.packageRoots);
-  var visitor =
-      new TemplateCollectingVisitor(templates, options.skippedClasses, c);
+  var visitor = new TemplateCollectingVisitor(templates, options.skippedClasses,
+      c, options.templateRoots);
   c.crawl(options.entryPoint,
       (CompilationUnitElement compilationUnit, SourceFile source) =>
           visitor(compilationUnit, source.canonicalPath));
@@ -64,6 +65,7 @@ class Options {
   String outputLibrary;
   String sdkPath;
   List<String> packageRoots;
+  List<String> templateRoots;
   String output;
   Map<RegExp, String> urlRewrites;
   Set<String> skippedClasses;
@@ -77,6 +79,9 @@ Options parseArgs(List arguments) {
           help: 'Dart SDK Path')
       ..addOption('package-root', abbr: 'p', defaultsTo: Platform.packageRoot,
           help: 'comma-separated list of package roots')
+      ..addOption('template-root', abbr: 't', defaultsTo: '.',
+          help: 'comma-separated list of paths from which templates with'
+                'absolute paths can be fetched')
       ..addOption('out', abbr: 'o', defaultsTo: '-',
           help: 'output file or "-" for stdout')
       ..addOption('url-rewrites', abbr: 'u',
@@ -118,6 +123,7 @@ Options parseArgs(List arguments) {
   var options = new Options();
   options.sdkPath = args['sdk-path'];
   options.packageRoots = args['package-root'].split(',');
+  options.templateRoots = args['template-root'].split(',');
   options.output = args['out'];
   if (args['url-rewrites'] != null) {
     options.urlRewrites = new LinkedHashMap.fromIterable(
@@ -174,9 +180,10 @@ class TemplateCollectingVisitor {
   Map<String, String> templates;
   Set<String> skippedClasses;
   SourceCrawler sourceCrawler;
+  List<String> templateRoots;
 
   TemplateCollectingVisitor(this.templates, this.skippedClasses,
-      this.sourceCrawler);
+      this.sourceCrawler, this.templateRoots);
 
   void call(CompilationUnitElement cue, String srcPath) {
     processDeclarations(cue, srcPath);
@@ -209,7 +216,8 @@ class TemplateCollectingVisitor {
       if (cache && cacheUris.isNotEmpty) {
         Source currentSrcDir = sourceCrawler.context.sourceFactory
             .resolveUri(null, 'file://$srcPath');
-        cacheUris..sort()..forEach((uri) => storeUriAsset(uri, currentSrcDir));
+        cacheUris..sort()..forEach(
+            (uri) => storeUriAsset(uri, currentSrcDir, templateRoots));
       }
     });
   }
@@ -252,8 +260,8 @@ class TemplateCollectingVisitor {
     return cache;
   }
 
-  void storeUriAsset(String uri, Source srcPath) {
-    String assetFileLocation = findAssetFileLocation(uri, srcPath);
+  void storeUriAsset(String uri, Source srcPath, templateRoots) {
+    String assetFileLocation = findAssetLocation(uri, srcPath, templateRoots);
     if (assetFileLocation == null) {
       print("Could not find asset for uri: $uri");
     } else {
@@ -261,10 +269,12 @@ class TemplateCollectingVisitor {
     }
   }
 
-  String findAssetFileLocation(String uri, Source srcPath) {
+  String findAssetLocation(String uri, Source srcPath, List<String>
+      templateRoots) {
     if (uri.startsWith('/')) {
-      // Absolute Path from working directory.
-      return '.${uri}';
+      var paths = templateRoots.map((r) => '$r/$uri');
+      return paths.firstWhere((p) => new File(p).existsSync(),
+          orElse: () => paths.first);
     }
     // Otherwise let the sourceFactory resolve for packages, and relative paths.
     Source source = sourceCrawler.context.sourceFactory
