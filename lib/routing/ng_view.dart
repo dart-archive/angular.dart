@@ -100,7 +100,7 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
     locationService._unregisterPortal(this);
   }
 
-  _show(String templateUrl, Route route, List<Module> modules) {
+  _show(_View viewDef, Route route, List<Module> modules) {
     assert(route.isActive);
 
     if (_viewRoute != null) return;
@@ -120,7 +120,10 @@ class NgViewDirective implements NgDetachAware, RouteProvider {
     }
 
     var newDirectives = viewInjector.get(DirectiveMap);
-    viewCache.fromUrl(templateUrl, newDirectives).then((viewFactory) {
+    var viewFuture = viewDef.templateHtml != null ?
+        new Future.value(viewCache.fromHtml(viewDef.templateHtml, newDirectives)) :
+        viewCache.fromUrl(viewDef.template, newDirectives);
+    viewFuture.then((viewFactory) {
       _cleanUp();
       _scope = scope.createChild(new PrototypeMap(scope.context));
       _view = viewFactory(

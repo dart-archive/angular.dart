@@ -83,10 +83,10 @@ main() {
         });
       });
 
-      expect(router.root.getRoute('foo').name).toEqual('foo');
-      expect(router.root.getRoute('foo.bar').name).toEqual('bar');
-      expect(router.root.getRoute('foo.baz').name).toEqual('baz');
-      expect(router.root.getRoute('aux').name).toEqual('aux');
+      expect(router.root.findRoute('foo').name).toEqual('foo');
+      expect(router.root.findRoute('foo.bar').name).toEqual('bar');
+      expect(router.root.findRoute('foo.baz').name).toEqual('baz');
+      expect(router.root.findRoute('aux').name).toEqual('aux');
 
       router.route('/foo');
       microLeap();

@@ -124,6 +124,38 @@ main() {
       expect(root.text).toEqual('LibraryRead Book 1234');
     }));
   });
+
+
+  describe('Inline template ngView', () {
+    TestBed _;
+    Router router;
+
+    beforeEachModule((Module m) {
+      m
+        ..install(new AngularMockModule())
+        ..value(RouteInitializerFn, (router, views) {
+          views.configure({
+            'foo': ngRoute(
+                path: '/foo',
+                viewHtml: '<h1>Hello</h1>')
+          });
+        });
+    });
+
+    beforeEach((TestBed tb, Router _router, TemplateCache templates) {
+      _ = tb;
+      router = _router;
+    });
+
+    it('should switch inline templates', async(() {
+      Element root = _.compile('<ng-view></ng-view>');
+      expect(root.text).toEqual('');
+
+      router.route('/foo');
+      microLeap();
+      expect(root.text).toEqual('Hello');
+    }));
+  });
 }
 
 class FlatRouteInitializer implements Function {

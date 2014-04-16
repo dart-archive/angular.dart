@@ -12,9 +12,9 @@ class RouteViewFactory {
       (RouteEnterEvent event) => _enterHandler(event, templateUrl);
 
   _enterHandler(RouteEnterEvent event, String templateUrl,
-                [List<Module> modules]) =>
+                {List<Module> modules, String templateHtml}) =>
       locationService._route(event.route, templateUrl, fromEvent: true,
-          modules: modules);
+          modules: modules, templateHtml: templateHtml);
 
   configure(Map<String, NgRouteCfg> config) =>
       _configure(locationService.router.root, config);
@@ -28,8 +28,9 @@ class RouteViewFactory {
           path: cfg.path,
           defaultRoute: cfg.defaultRoute,
           enter: (RouteEnterEvent e) {
-            if (cfg.view != null) {
-              _enterHandler(e, cfg.view, newModules);
+            if (cfg.view != null || cfg.viewHtml != null) {
+              _enterHandler(e, cfg.view,
+                  modules: newModules, templateHtml: cfg.viewHtml);
             }
             if (cfg.enter != null) {
               cfg.enter(e);
@@ -62,16 +63,18 @@ class RouteViewFactory {
   }
 }
 
-NgRouteCfg ngRoute({String path, String view, Map<String, NgRouteCfg> mount,
-    modules(), bool defaultRoute: false, RoutePreEnterEventHandler preEnter,
-    RouteEnterEventHandler enter, RouteLeaveEventHandler leave}) =>
-        new NgRouteCfg(path: path, view: view, mount: mount, modules: modules,
-            defaultRoute: defaultRoute, preEnter: preEnter, enter: enter,
-            leave: leave);
+NgRouteCfg ngRoute({String path, String view, String viewHtml,
+    Map<String, NgRouteCfg> mount, modules(), bool defaultRoute: false,
+    RoutePreEnterEventHandler preEnter, RouteEnterEventHandler enter,
+    RouteLeaveEventHandler leave}) =>
+        new NgRouteCfg(path: path, view: view, viewHtml: viewHtml, mount: mount,
+            modules: modules, defaultRoute: defaultRoute, preEnter: preEnter,
+            enter: enter, leave: leave);
 
 class NgRouteCfg {
   final String path;
   final String view;
+  final String viewHtml;
   final Map<String, NgRouteCfg> mount;
   final Function modules;
   final bool defaultRoute;
@@ -79,8 +82,8 @@ class NgRouteCfg {
   final RoutePreEnterEventHandler preEnter;
   final RouteLeaveEventHandler leave;
 
-  NgRouteCfg({this.view, this.path, this.mount, this.modules, this.defaultRoute,
-      this.enter, this.preEnter, this.leave});
+  NgRouteCfg({this.view, this.viewHtml, this.path, this.mount, this.modules,
+      this.defaultRoute, this.enter, this.preEnter, this.leave});
 }
 
 /**
@@ -159,15 +162,16 @@ class NgRoutingHelper {
             _routePath(route).startsWith(_routePath(v._route));
       }, orElse: () => null);
       if (view != null && !alreadyActiveViews.contains(view)) {
-        view._show(templateUrl, route, viewDef.modules);
+        view._show(viewDef, route, viewDef.modules);
         alreadyActiveViews.add(view);
         break;
       }
     }
   }
 
-  _route(Route route, String template, {bool fromEvent, List<Module> modules}) {
-    _templates[_routePath(route)] = new _View(template, modules);
+  _route(Route route, String template, {bool fromEvent, List<Module> modules,
+      String templateHtml}) {
+    _templates[_routePath(route)] = new _View(template, templateHtml, modules);
   }
 
   _registerPortal(NgViewDirective ngView) {
@@ -181,9 +185,10 @@ class NgRoutingHelper {
 
 class _View {
   final String template;
+  final String templateHtml;
   final List<Module> modules;
 
-  _View(this.template, this.modules);
+  _View(this.template, this.templateHtml, this.modules);
 }
 
 String _routePath(Route route) {
