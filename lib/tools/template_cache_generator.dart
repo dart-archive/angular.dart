@@ -7,6 +7,7 @@ import 'dart:collection';
 import 'package:analyzer/src/generated/ast.dart';
 import 'package:analyzer/src/generated/source.dart';
 import 'package:analyzer/src/generated/element.dart';
+import 'package:args/args.dart';
 import 'package:di/generator.dart';
 
 const String PACKAGE_PREFIX = 'package:';
@@ -21,64 +22,123 @@ primeTemplateCache(TemplateCache tc) {
 ''';
 
 const String FILE_FOOTER = '}';
-const SYSTEM_PACKAGE_ROOT = '%SYSTEM_PACKAGE_ROOT%';
 
-main(args) {
-  if (args.length < 4) {
-    print('Usage: templace_cache_generator path_to_entry_point sdk_path '
-        'output package_root1,package_root2,...|$SYSTEM_PACKAGE_ROOT '
-        'patternUrl1,rewriteTo1;patternUrl2,rewriteTo2 '
-        'blacklistClass1,blacklistClass2');
-    exit(1);
+main(List arguments) {
+  Options options = parseArgs(arguments);
+  if (options.verbose) {
+    print('entryPoint: ${options.entryPoint}');
+    print('outputLibrary: ${options.outputLibrary}');
+    print('output: ${options.output}');
+    print('sdk-path: ${options.sdkPath}');
+    print('package-root: ${options.packageRoots.join(",")}');
+    var rewrites = options.urlRewrites.keys
+        .map((k) => '${k.pattern},${options.urlRewrites[k]}')
+        .join(';');
+    print('url-rewrites: $rewrites');
+    print('skip-classes: ${options.skippedClasses.join(",")}');
   }
-
-  var entryPoint = args[0];
-  var sdkPath = args[1];
-  var output = args[2];
-  var outputLibrary = args[3];
-  var packageRoots = args[4] == SYSTEM_PACKAGE_ROOT ?
-      [Platform.packageRoot] : args[4].split(',');
-  Map<RegExp, String> urlRewriters = parseUrlRemapping(args[5]);
-  Set<String> blacklistedClasses = (args.length > 6)
-      ? new Set.from(args[6].split(','))
-      : new Set();
-
-  print('sdkPath: $sdkPath');
-  print('entryPoint: $entryPoint');
-  print('output: $output');
-  print('outputLibrary: $outputLibrary');
-  print('packageRoots: $packageRoots');
-  print('url rewritters: ' + args[5]);
-  print('blacklistedClasses: ' + blacklistedClasses.join(', '));
-
 
   Map<String, String> templates = {};
 
-  var c = new SourceCrawler(sdkPath, packageRoots);
+  var c = new SourceCrawler(options.sdkPath, options.packageRoots);
   var visitor =
-      new TemplateCollectingVisitor(templates, blacklistedClasses, c);
-  c.crawl(entryPoint,
+      new TemplateCollectingVisitor(templates, options.skippedClasses, c);
+  c.crawl(options.entryPoint,
       (CompilationUnitElement compilationUnit, SourceFile source) =>
           visitor(compilationUnit, source.canonicalPath));
 
-  var sink = new File(output).openWrite();
+  var sink;
+  if (options.output == '-') {
+    sink = stdout;
+  } else {
+    var f = new File(options.output)..createSync(recursive: true);
+    sink = f.openWrite();
+  }
   return printTemplateCache(
-      templates, urlRewriters, outputLibrary, sink).then((_) {
-        return sink.flush();
-      });
+      templates, options.urlRewrites, options.outputLibrary, sink)
+      .then((_) => sink.flush());
 }
 
-Map<RegExp, String> parseUrlRemapping(String argument) {
-  Map<RegExp, String> result = new LinkedHashMap();
-  if (argument.isEmpty) {
-    return result;
+class Options {
+  String entryPoint;
+  String outputLibrary;
+  String sdkPath;
+  List<String> packageRoots;
+  String output;
+  Map<RegExp, String> urlRewrites;
+  Set<String> skippedClasses;
+  bool verbose;
+}
+
+Options parseArgs(List arguments) {
+  var parser = new ArgParser()
+      ..addOption('sdk-path', abbr: 's',
+          defaultsTo: Platform.environment['DART_SDK'],
+          help: 'Dart SDK Path')
+      ..addOption('package-root', abbr: 'p', defaultsTo: Platform.packageRoot,
+          help: 'comma-separated list of package roots')
+      ..addOption('out', abbr: 'o', defaultsTo: '-',
+          help: 'output file or "-" for stdout')
+      ..addOption('url-rewrites', abbr: 'u',
+          help: 'semicolon-separated list of URL rewrite rules, of the form: '
+                'patternUrl,rewriteTo')
+      ..addOption('skip-classes', abbr: 'b',
+          help: 'comma-separated list of classes to skip templating')
+      ..addFlag('verbose', abbr: 'v', help: 'verbose output')
+      ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
+
+  printUsage() {
+    print('Usage: dart template_cache_generator.dart '
+          '--sdk-path=path [OPTION...] entryPoint libraryName');
+    print(parser.getUsage());
   }
 
-  argument.split(";").forEach((String pair) {
-    List<String> remapping = pair.split(",");
-    result[new RegExp(remapping[0])] = remapping[1];
-  });
-  return result;
+  fail(message) {
+    print('Error: $message\n');
+    printUsage();
+    exit(1);
+  }
+
+  var args;
+  try {
+    args = parser.parse(arguments);
+  } catch (e) {
+    fail('failed to parse arguments');
+  }
+
+  if (args['help']) {
+    printUsage();
+    exit(0);
+  }
+
+  if (args['sdk-path'] == null) {
+    fail('--sdk-path must be specified');
+  }
+
+  var options = new Options();
+  options.sdkPath = args['sdk-path'];
+  options.packageRoots = args['package-root'].split(',');
+  options.output = args['out'];
+  if (args['url-rewrites'] != null) {
+    options.urlRewrites = new LinkedHashMap.fromIterable(
+        args['url-rewrites'].split(';').map((p) => p.split(',')),
+        key:   (p) => new RegExp(p[0]),
+        value: (p) => p[1]);
+  } else {
+    options.urlRewrites = {};
+  }
+  if (args['skip-classes'] != null) {
+    options.skippedClasses = new Set.from(args['skip-classes'].split(','));
+  } else {
+    options.skippedClasses = new Set();
+  }
+  options.verbose = args['verbose'];
+  if (args.rest.length != 2) {
+    fail('unexpected arguments: ${args.rest.join(' ')}');
+  }
+  options.entryPoint = args.rest[0];
+  options.outputLibrary = args.rest[1];
+  return options;
 }
 
 printTemplateCache(Map<String, String> templateKeyMap,
@@ -112,10 +172,10 @@ printTemplateCache(Map<String, String> templateKeyMap,
 
 class TemplateCollectingVisitor {
   Map<String, String> templates;
-  Set<String> blacklistedClasses;
+  Set<String> skippedClasses;
   SourceCrawler sourceCrawler;
 
-  TemplateCollectingVisitor(this.templates, this.blacklistedClasses,
+  TemplateCollectingVisitor(this.templates, this.skippedClasses,
       this.sourceCrawler);
 
   void call(CompilationUnitElement cue, String srcPath) {
@@ -137,7 +197,7 @@ class TemplateCollectingVisitor {
       bool cache = true;
       clazz.metadata.forEach((Annotation ann) {
         if (ann.arguments == null) return; // Ignore non-class annotations.
-        if (blacklistedClasses.contains(clazz.name.name)) return;
+        if (skippedClasses.contains(clazz.name.name)) return;
 
         switch (ann.name.name) {
           case 'NgComponent':
