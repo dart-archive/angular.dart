@@ -145,7 +145,7 @@ class ViewCache {
 
       var div = _parseDocument.createElement('div');
       div.setInnerHtml(html, treeSanitizer: treeSanitizer);
-      AbsoluteUris.resolveDom(div, originalUri);
+      absolute.resolveDom(div, originalUri);
 
       dom.document.adoptNode(div);
       if (base != null) {
@@ -160,7 +160,7 @@ class ViewCache {
 
   async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives) {
     return http.get(url, cache: templateCache).then(
-        (resp) => fromHtml(resp.responseText, directives));
+        (resp) => fromHtml(resp.responseText, directives, url));
   }
 }
 

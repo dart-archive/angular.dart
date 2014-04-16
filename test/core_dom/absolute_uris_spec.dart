@@ -1,7 +1,7 @@
 library angular.test.core_dom.uri_resolver_spec;
 
 import 'dart:html' as dom;
-import 'package:angular/core_dom/absolute_uris.dart';
+import 'package:angular/core_dom/absolute_uris.dart' as absolute;
 import '../_specs.dart';
 
 
@@ -25,10 +25,11 @@ void main() {
         new DocumentFragment.html(html, validator: new NullSanitizer());
 
     it('resolves attribute URIs', () {
-      var node = new ImageElement()..src = 'foo.png';
+      var node = new ImageElement()..attributes['src'] = 'foo.png';
 
-      AbsoluteUris.resolveDom(node, originalBase);
-      expect(node.src).toEqual(local.resolve('foo/foo.png').toString());
+      absolute.resolveDom(node, originalBase);
+      expect(node.attributes['src']).toEqual(
+          originalBase.resolve('foo.png').toString());
     });
 
     it('resolves template contents', () {
@@ -37,10 +38,10 @@ void main() {
           <img src='foo.png'>
         </template>''');
 
-      AbsoluteUris.resolveDom(dom, originalBase);
+      absolute.resolveDom(dom, originalBase);
       var img = dom.children[0].content.children[0];
       container.append(img);
-      expect(img.src).toEqual(local.resolve('foo/foo.png').toString());
+      expect(img.src).toEqual(originalBase.resolve('foo.png').toString());
     });
 
     it('resolves CSS URIs', () {
@@ -51,7 +52,7 @@ void main() {
           }
         </style>''');
 
-      AbsoluteUris.resolveDom(dom, originalBase);
+      absolute.resolveDom(dom, originalBase);
       var style = dom.children[0];
       container.append(style);
       expect(style.sheet.rules[0].style.backgroundImage).toEqual(
@@ -65,7 +66,7 @@ void main() {
           @import 'bar.css';
         </style>''');
 
-      AbsoluteUris.resolveDom(dom, originalBase);
+      absolute.resolveDom(dom, originalBase);
       var style = dom.children[0];
       document.body.append(style);
       CssImportRule import1 = style.sheet.rules[0];
