@@ -732,6 +732,15 @@ abstract class _CollectionMatcher<T> extends Matcher {
     return result;
   }
 
+  // todo(vicb) merge with _getList() once map is refactored
+  List<T> _getCollectionList(Function it) {
+    var result = <T>[];
+    it((CollectionChangeItem<V> i) {
+      result.add(i);
+    });
+    return result;
+  }
+
   bool _compareLists(String tag, List expected, List actual, List diffs) {
     var equals = true;
     Iterator iActual = actual.iterator;
@@ -803,7 +812,7 @@ class CollectionRecordMatcher extends _CollectionMatcher<ItemRecord> {
   }
 
   bool checkCollection(CollectionChangeRecord changeRecord, List diffs) {
-    List items = _getList(changeRecord.collectionHead, (r) => r.nextCollectionItem);
+    List items = _getCollectionList((fn) => changeRecord.forEachItem(fn));
     bool equals = _compareLists("collection", collection, items, diffs);
     int iterableLength = changeRecord.iterable.toList().length;
     if (iterableLength != items.length) {
@@ -814,22 +823,22 @@ class CollectionRecordMatcher extends _CollectionMatcher<ItemRecord> {
   }
 
   bool checkPrevious(CollectionChangeRecord changeRecord, List diffs) {
-    List items = _getList(changeRecord.previousCollectionHead, (r) => r.previousNextItem);
+    List items = _getCollectionList((fn) => changeRecord.forEachPreviousItem(fn));
     return _compareLists("previous", previous, items, diffs);
   }
 
   bool checkAdditions(CollectionChangeRecord changeRecord, List diffs) {
-    List items = _getList(changeRecord.additionsHead, (r) => r.nextAddedItem);
+    List items = _getCollectionList((fn) => changeRecord.forEachAddition(fn));
     return _compareLists("additions", additions, items, diffs);
   }
 
   bool checkMoves(CollectionChangeRecord changeRecord, List diffs) {
-    List items = _getList(changeRecord.movesHead, (r) => r.nextMovedItem);
+    List items = _getCollectionList((fn) => changeRecord.forEachMove(fn));
     return _compareLists("moves", moves, items, diffs);
   }
 
   bool checkRemovals(CollectionChangeRecord changeRecord, List diffs) {
-    List items = _getList(changeRecord.removalsHead, (r) => r.nextRemovedItem);
+    List items = _getCollectionList((fn) => changeRecord.forEachRemoval(fn));
     return _compareLists("removes", removals, items, diffs);
   }
 }
@@ -920,8 +929,7 @@ class FooBar {
   bool operator==(other) =>
       other is FooBar && foo == other.foo && bar == other.bar;
 
-  int get hashCode =>
-      foo.hashCode ^ bar.hashCode;
+  int get hashCode => foo.hashCode ^ bar.hashCode;
 
-  toString() => '($id)$foo-$bar';
+  String toString() => '($id)$foo-$bar';
 }

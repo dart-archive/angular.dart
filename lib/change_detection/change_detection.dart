@@ -176,19 +176,11 @@ abstract class CollectionChangeRecord<V> {
   Iterable get iterable;
   int get length;
 
-  /** A list of [CollectionItem]s which are in the iteration order. */
-  CollectionItem<V> get collectionHead;
-  PreviousCollectionItem<V> get previousCollectionHead;
-  /** A list of new [AddedItem]s. */
-  AddedItem<V> get additionsHead;
-  /** A list of [MovedItem]s. */
-  MovedItem<V> get movesHead;
-  /** A list of [RemovedItem]s. */
-  RemovedItem<V> get removalsHead;
-
-  void forEachAddition(void f(AddedItem<V> addition));
-  void forEachMove(void f(MovedItem<V> move));
-  void forEachRemoval(void f(RemovedItem<V> removal));
+  void forEachItem(void f(CollectionChangeItem<V> item));
+  void forEachPreviousItem(void f(CollectionChangeItem<V> previousItem));
+  void forEachAddition(void f(CollectionChangeItem<V> addition));
+  void forEachMove(void f(CollectionChangeItem<V> move));
+  void forEachRemoval(void f(CollectionChangeItem<V> removal));
 }
 
 /**
@@ -204,42 +196,6 @@ abstract class CollectionChangeItem<V> {
 
   /** The item. */
   V get item;
-}
-
-/**
- * Used to create a linked list of collection items. These items are always in
- * the iteration order of the collection.
- */
-abstract class CollectionItem<V> extends CollectionChangeItem<V> {
-  CollectionItem<V> get nextCollectionItem;
-}
-
-/**
- * A linked list of new items added to the collection. These items are always in
- * the iteration order of the collection.
- */
-abstract class PreviousCollectionItem<V> extends CollectionChangeItem<V> {
-  PreviousCollectionItem<V> get previousNextItem;
-}
-
-abstract class AddedItem<V> extends CollectionChangeItem<V> {
-  AddedItem<V> get nextAddedItem;
-}
-
-/**
- * A linked list of items  moved in the collection. These items are always in
- * the iteration order of the collection.
- */
-abstract class MovedItem<V> extends CollectionChangeItem<V> {
-  MovedItem<V> get nextMovedItem;
-}
-
-/**
- * A linked list of items removed  from the collection. These items are always
- * in the iteration order of the collection.
- */
-abstract class RemovedItem<V> extends CollectionChangeItem<V> {
-  RemovedItem<V> get nextRemovedItem;
 }
 
 typedef dynamic FieldGetter(object);
