@@ -174,7 +174,7 @@ class NgRepeat {
         };
       }
     } else {
-      changes.forEachRemoval((removal) {
+      changes.forEachRemoval((CollectionChangeItem removal) {
         var index = removal.previousIndex;
         var row = _rows[index];
         row.scope.destroy();
@@ -182,13 +182,13 @@ class NgRepeat {
         leftInDom.removeAt(domLength - 1 - index);
       });
 
-      changes.forEachAddition((addition) {
+      changes.forEachAddition((CollectionChangeItem addition) {
         changeFunctions[addition.currentIndex] = (index, previousView) {
           addRow(index, addition.item, previousView);
         };
       });
 
-      changes.forEachMove((move) {
+      changes.forEachMove((CollectionChangeItem move) {
         var previousIndex = move.previousIndex;
         var value = move.item;
         changeFunctions[move.currentIndex] = (index, previousView) {

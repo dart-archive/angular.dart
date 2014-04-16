@@ -214,10 +214,10 @@ abstract class _NgClassBase {
         _currentSet.add(cls);
       });
     } else {
-      changes.forEachAddition((AddedItem a) {
+      changes.forEachAddition((CollectionChangeItem a) {
         _currentSet.add(a.item);
       });
-      changes.forEachRemoval((RemovedItem r) {
+      changes.forEachRemoval((CollectionChangeItem r) {
         _currentSet.remove(r.item);
       });
     }

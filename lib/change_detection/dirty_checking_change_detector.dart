@@ -853,67 +853,66 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   Iterable _iterable;
   int _length;
 
-  /** Used to keep track of items during moves. */
-  DuplicateMap _items = new DuplicateMap();
+  /// Keeps track of moved items.
+  DuplicateMap _movedItems = new DuplicateMap();
 
-  /** Used to keep track of removed items. */
+  /// Keeps track of removed items.
   DuplicateMap _removedItems = new DuplicateMap();
 
-  ItemRecord<V> _previousCollectionHead;
-  ItemRecord<V> _collectionHead, _collectionTail;
+  ItemRecord<V> _previousItHead;
+  ItemRecord<V> _itHead, _itTail;
   ItemRecord<V> _additionsHead, _additionsTail;
   ItemRecord<V> _movesHead, _movesTail;
   ItemRecord<V> _removalsHead, _removalsTail;
 
-  CollectionChangeItem<V> get previousCollectionHead => _previousCollectionHead;
-  CollectionChangeItem<V> get collectionHead => _collectionHead;
-  CollectionChangeItem<V> get additionsHead => _additionsHead;
-  CollectionChangeItem<V> get movesHead => _movesHead;
-  CollectionChangeItem<V> get removalsHead => _removalsHead;
+  void _revertToPreviousState() {
+    if (!isDirty) return;
 
-  _revertToPreviousState() {
-    if (!isDirty) {
-      return;
-    }
-    _items.clear();
-    ItemRecord<V> record, prev;
+    _movedItems.clear();
+    ItemRecord<V> prev;
     int i = 0;
-    for (record = _collectionHead = _previousCollectionHead;
+
+    for (ItemRecord<V> record = _itHead = _previousItHead;
          record != null;
-         prev = record, record = record._previousNextRec, ++i) {
+         prev = record, record = record._nextPrevious, i++) {
       record.currentIndex = record.previousIndex = i;
-      record._prevRec = prev;
-      if (prev != null) {
-        prev._nextRec = prev._previousNextRec = record;
-      }
-      _items.put(record);
+      record._prev = prev;
+      if (prev != null) prev._next = prev._nextPrevious = record;
+      _movedItems.put(record);
     }
-    prev._nextRec = null;
-    _collectionTail = prev;
+
+    prev._next = null;
+    _itTail = prev;
     _undoDeltas();
   }
 
-  void forEachAddition(void f(AddedItem<V> addition)){
-    ItemRecord record = _additionsHead;
-    while (record != null) {
+  void forEachItem(void f(CollectionChangeItem<V> item)) {
+    for (var record = _itHead; record != null; record = record._next) {
       f(record);
-      record = record._nextAddedRec;
     }
   }
 
-  void forEachMove(void f(MovedItem<V> change)) {
-    ItemRecord record = _movesHead;
-    while (record != null) {
+  void forEachPreviousItem(void f(CollectionChangeItem<V> previousItem)) {
+    for (var record = _previousItHead; record != null; record = record._nextPrevious) {
       f(record);
-      record = record._nextMovedRec;
     }
   }
 
-  void forEachRemoval(void f(RemovedItem<V> removal)){
-    ItemRecord record = _removalsHead;
-    while (record != null) {
+  void forEachAddition(void f(CollectionChangeItem<V> addition)){
+    for (var record = _additionsHead; record != null; record = record._nextAdded) {
       f(record);
-      record = record._nextRemovedRec;
+    }
+  }
+
+  void forEachMove(void f(CollectionChangeItem<V> change)) {
+    for (var record = _movesHead; record != null; record = record._nextMoved) {
+      f(record);
+    }
+  }
+
+  void forEachRemoval(void f(CollectionChangeItem<V> removal)){
+    for (var record = _removalsHead; record != null; record = record._nextRemoved) {
+      f(record);
     }
   }
 
@@ -922,19 +921,18 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
   bool _check(Iterable collection) {
     _reset();
-    if ((collection is UnmodifiableListView) &&
-        identical(_iterable, collection)) {
+    if (collection is UnmodifiableListView && identical(_iterable, collection)) {
       // Short circuit and assume that the list has not been modified.
       return false;
     }
 
-    ItemRecord record = _collectionHead;
+    ItemRecord<V> record = _itHead;
     bool maybeDirty = false;
 
     if (collection is List) {
       List list = collection;
       _length = list.length;
-      for (int index = 0; index < list.length; index++) {
+      for (int index = 0; index < _length; index++) {
         var item = list[index];
         if (record == null || !identical(item, record.item)) {
           record = mismatch(record, item, index);
@@ -943,7 +941,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
           // TODO(misko): can we limit this to duplicates only?
           record = verifyReinsertion(record, item, index);
         }
-        record = record._nextRec;
+        record = record._next;
       }
     } else {
       int index = 0;
@@ -955,7 +953,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
           // TODO(misko): can we limit this to duplicates only?
           record = verifyReinsertion(record, item, index);
         }
-        record = record._nextRec;
+        record = record._next;
         index++;
       }
       _length = index;
@@ -974,30 +972,30 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   void _reset() {
     if (isDirty) {
       // Record the state of the collection for a possible _revertToPreviousState()
-      for (ItemRecord record = _previousCollectionHead = _collectionHead;
+      for (ItemRecord<V> record = _previousItHead = _itHead;
            record != null;
-           record = record._nextRec) {
-        record._previousNextRec = record._nextRec;
+           record = record._next) {
+        record._nextPrevious = record._next;
       }
       _undoDeltas();
     }
   }
 
   void _undoDeltas() {
-    ItemRecord record;
+    ItemRecord<V> record;
 
     record = _additionsHead;
     while (record != null) {
       record.previousIndex = record.currentIndex;
-      record = record._nextAddedRec;
+      record = record._nextAdded;
     }
     _additionsHead = _additionsTail = null;
 
     record = _movesHead;
     while (record != null) {
       record.previousIndex = record.currentIndex;
-      var nextRecord = record._nextMovedRec;
-      assert((record._nextMovedRec = null) == null);
+      var nextRecord = record._nextMoved;
+      assert((record._nextMoved = null) == null);
       record = nextRecord;
     }
     _movesHead = _movesTail = null;
@@ -1009,20 +1007,19 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
    * A [_CollectionChangeRecord] is considered dirty if it has additions, moves
    * or removals.
    */
-  get isDirty => _additionsHead != null ||
-                 _movesHead != null ||
-                 _removalsHead != null;
+  bool get isDirty => _additionsHead != null ||
+                      _movesHead != null ||
+                      _removalsHead != null;
 
   /**
    * This is the core function which handles differences between collections.
    *
-   * - [record] is the record which we saw at this position last time. If `null`
-   *   then it is a new item.
+   * - [record] is the record which we saw at this position last time. If
+   *   [:null:] then it is a new item.
    * - [item] is the current item in the collection
    * - [index] is the position of the item in the collection
    */
-  ItemRecord mismatch(ItemRecord record, item, int index) {
-    // Guard against bogus String changes
+  ItemRecord<V> mismatch(ItemRecord<V> record, item, int index) {
     if (record != null) {
       if (item is String && record.item is String && record.item == item) {
         // this is false change in strings we need to recover, and pretend it is
@@ -1037,13 +1034,13 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     }
 
     // find the previous record so that we know where to insert after.
-    ItemRecord prev = record == null ? _collectionTail : record._prevRec;
+    ItemRecord<V> prev = record == null ? _itTail : record._prev;
 
     // Remove the record from the collection since we know it does not match the
     // item.
     if (record != null) _collection_remove(record);
     // Attempt to see if we have seen the item before.
-    record = _items.get(item, index);
+    record = _movedItems.get(item, index);
     if (record != null) {
       // We have seen this before, we need to move it forward in the collection.
       _collection_moveAfter(record, prev, index);
@@ -1056,7 +1053,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
         _collection_reinsertAfter(record, prev, index);
       } else {
         // It is a new item add it.
-        record = _collection_addAfter(new ItemRecord(item), prev, index);
+        record = _collection_addAfter(new ItemRecord<V>(item), prev, index);
       }
     }
     return record;
@@ -1088,11 +1085,11 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
    * position. This is incorrect, since a better way to think of it is as insert
    * of 'b' rather then switch 'a' with 'b' and then add 'a' at the end.
    */
-  ItemRecord verifyReinsertion(ItemRecord record, dynamic item,
+  ItemRecord<V> verifyReinsertion(ItemRecord record, dynamic item,
                                int index) {
-    ItemRecord reinsertRecord = _removedItems.get(item);
+    ItemRecord<V> reinsertRecord = _removedItems.get(item);
     if (reinsertRecord != null) {
-      record = _collection_reinsertAfter(reinsertRecord, record._prevRec, index);
+      record = _collection_reinsertAfter(reinsertRecord, record._prev, index);
     } else if (record.currentIndex != index) {
       record.currentIndex = index;
       _moves_add(record);
@@ -1105,47 +1102,40 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
    *
    * - [record] The first excess [ItemRecord].
    */
-  void _truncate(ItemRecord record) {
+  void _truncate(ItemRecord<V> record) {
     // Anything after that needs to be removed;
     while (record != null) {
-      ItemRecord nextRecord = record._nextRec;
+      ItemRecord<V> nextRecord = record._next;
       _removals_add(_collection_unlink(record));
       record = nextRecord;
     }
     _removedItems.clear();
 
-    if (_additionsTail != null) {
-      _additionsTail._nextAddedRec = null;
-    }
-    if (_movesTail != null) {
-      _movesTail._nextMovedRec = null;
-    }
-    if (_collectionTail != null) {
-      _collectionTail._nextRec = null;
-    }
-    if (_removalsTail != null) {
-      _removalsTail._nextRemovedRec = null;
-    }
+    if (_additionsTail != null) _additionsTail._nextAdded = null;
+    if (_movesTail != null) _movesTail._nextMoved = null;
+    if (_itTail != null) _itTail._next = null;
+    if (_removalsTail != null) _removalsTail._nextRemoved = null;
   }
 
-  ItemRecord _collection_reinsertAfter(ItemRecord record, ItemRecord insertPrev,
-                                       int index) {
+  ItemRecord<V> _collection_reinsertAfter(ItemRecord<V> record,
+                                          ItemRecord<V> insertPrev,
+                                          int index) {
     _removedItems.remove(record);
-    var prev = record._prevRemovedRec;
-    var next = record._nextRemovedRec;
+    var prev = record._prevRemoved;
+    var next = record._nextRemoved;
 
-    assert((record._prevRemovedRec = null) == null);
-    assert((record._nextRemovedRec = null) == null);
+    assert((record._prevRemoved = null) == null);
+    assert((record._nextRemoved = null) == null);
 
     if (prev == null) {
       _removalsHead = next;
     } else {
-      prev._nextRemovedRec = next;
+      prev._nextRemoved = next;
     }
     if (next == null) {
       _removalsTail = prev;
     } else {
-      next._prevRemovedRec = prev;
+      next._prevRemoved = prev;
     }
 
     _collection_insertAfter(record, insertPrev, index);
@@ -1153,96 +1143,99 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     return record;
   }
 
-  ItemRecord _collection_moveAfter(ItemRecord record, ItemRecord prev,
-                                   int index) {
+  ItemRecord<V> _collection_moveAfter(ItemRecord<V> record,
+                                      ItemRecord<V> prev,
+                                      int index) {
     _collection_unlink(record);
     _collection_insertAfter(record, prev, index);
     _moves_add(record);
     return record;
   }
 
-  ItemRecord _collection_addAfter(ItemRecord record, ItemRecord prev,
-                                  int index) {
+  ItemRecord<V> _collection_addAfter(ItemRecord<V> record,
+                                     ItemRecord<V> prev,
+                                     int index) {
     _collection_insertAfter(record, prev, index);
 
     if (_additionsTail == null) {
       assert(_additionsHead == null);
       _additionsTail = _additionsHead = record;
     } else {
-      assert(_additionsTail._nextAddedRec == null);
-      assert(record._nextAddedRec == null);
-      _additionsTail = _additionsTail._nextAddedRec = record;
+      assert(_additionsTail._nextAdded == null);
+      assert(record._nextAdded == null);
+      _additionsTail = _additionsTail._nextAdded = record;
     }
     return record;
   }
 
-  ItemRecord _collection_insertAfter(ItemRecord record, ItemRecord prev,
-                                     int index) {
+  ItemRecord<V> _collection_insertAfter(ItemRecord<V> record,
+                                        ItemRecord<V> prev,
+                                        int index) {
     assert(record != prev);
-    assert(record._nextRec == null);
-    assert(record._prevRec == null);
+    assert(record._next == null);
+    assert(record._prev == null);
 
-    ItemRecord next = prev == null ? _collectionHead : prev._nextRec;
+    ItemRecord<V> next = prev == null ? _itHead : prev._next;
     assert(next != record);
     assert(prev != record);
-    record._nextRec = next;
-    record._prevRec = prev;
+    record._next = next;
+    record._prev = prev;
     if (next == null) {
-      _collectionTail = record;
+      _itTail = record;
     } else {
-      next._prevRec = record;
+      next._prev = record;
     }
     if (prev == null) {
-      _collectionHead = record;
+      _itHead = record;
     } else {
-      prev._nextRec = record;
+      prev._next = record;
     }
 
-    _items.put(record);
+    _movedItems.put(record);
     record.currentIndex = index;
     return record;
   }
 
-  ItemRecord _collection_remove(ItemRecord record) =>
+  ItemRecord<V> _collection_remove(ItemRecord record) =>
       _removals_add(_collection_unlink(record));
 
-  ItemRecord _collection_unlink(ItemRecord record) {
-    _items.remove(record);
+  ItemRecord<V> _collection_unlink(ItemRecord record) {
+    _movedItems.remove(record);
 
-    var prev = record._prevRec;
-    var next = record._nextRec;
+    var prev = record._prev;
+    var next = record._next;
 
-    assert((record._prevRec = null) == null);
-    assert((record._nextRec = null) == null);
+    assert((record._prev = null) == null);
+    assert((record._next = null) == null);
 
     if (prev == null) {
-      _collectionHead = next;
+      _itHead = next;
     } else {
-      prev._nextRec = next;
+      prev._next = next;
     }
     if (next == null) {
-      _collectionTail = prev;
+      _itTail = prev;
     } else {
-      next._prevRec = prev;
+      next._prev = prev;
     }
 
     return record;
   }
 
-  ItemRecord _moves_add(ItemRecord record) {
-    assert(record._nextMovedRec == null);
+  ItemRecord<V> _moves_add(ItemRecord<V> record) {
+    assert(record._nextMoved == null);
     if (_movesTail == null) {
       assert(_movesHead == null);
       _movesTail = _movesHead = record;
     } else {
-      assert(_movesTail._nextMovedRec == null);
-      _movesTail = _movesTail._nextMovedRec = record;
+      assert(_movesTail._nextMoved == null);
+      _movesTail = _movesTail._nextMoved = record;
     }
 
     return record;
   }
 
-  ItemRecord _removals_add(ItemRecord record) {
+  ItemRecord<V> _removals_add(ItemRecord<V> record) {
     record.currentIndex = null;
     _removedItems.put(record);
 
@@ -1250,50 +1243,39 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       assert(_removalsHead == null);
       _removalsTail = _removalsHead = record;
     } else {
-      assert(_removalsTail._nextRemovedRec == null);
-      assert(record._nextRemovedRec == null);
-      record._prevRemovedRec = _removalsTail;
-      _removalsTail = _removalsTail._nextRemovedRec = record;
+      assert(_removalsTail._nextRemoved == null);
+      assert(record._nextRemoved == null);
+      record._prevRemoved = _removalsTail;
+      _removalsTail = _removalsTail._nextRemoved = record;
     }
     return record;
   }
 
   String toString() {
-    ItemRecord record;
+    ItemRecord<V> record;
 
     var list = [];
-    record = _collectionHead;
-    while (record != null) {
+    for (record = _itHead; record != null; record = record._next) {
       list.add(record);
-      record = record._nextRec;
     }
 
     var previous = [];
-    record = _previousCollectionHead;
-    while (record != null) {
+    for (record = _previousItHead; record != null; record = record._nextPrevious) {
       previous.add(record);
-      record = record._previousNextRec;
     }
 
     var additions = [];
-    record = _additionsHead;
-    while (record != null) {
+    for (record = _additionsHead; record != null; record = record._nextAdded) {
       additions.add(record);
-      record = record._nextAddedRec;
     }
-
     var moves = [];
-    record = _movesHead;
-    while (record != null) {
+    for (record = _movesHead; record != null; record = record._nextMoved) {
       moves.add(record);
-      record = record._nextMovedRec;
     }
 
     var removals = [];
-    record = _removalsHead;
-    while (record != null) {
+    for (record = _removalsHead; record != null; record = record._nextRemoved) {
       removals.add(record);
-      record = record._nextRemovedRec;
     }
 
     return """
@@ -1306,24 +1288,17 @@ removals: ${removals.join(", ")}
   }
 }
 
-class ItemRecord<V> implements PreviousCollectionItem<V>, CollectionItem<V>, AddedItem<V>, MovedItem<V>,
-    RemovedItem<V> {
-  int previousIndex = null;
-  int currentIndex = null;
-  V item = _INITIAL_;
+class ItemRecord<V> extends CollectionChangeItem<V>  {
+  int currentIndex;
+  int previousIndex;
+  V item;
 
-
-  ItemRecord<V> _previousNextRec;
-  ItemRecord<V> _prevRec, _nextRec;
-  ItemRecord<V> _prevDupRec, _nextDupRec;
-  ItemRecord<V> _prevRemovedRec, _nextRemovedRec;
-  ItemRecord<V> _nextAddedRec, _nextMovedRec;
-
-  PreviousCollectionItem<V> get previousNextItem => _previousNextRec;
-  CollectionItem<V> get nextCollectionItem => _nextRec;
-  RemovedItem<V> get nextRemovedItem => _nextRemovedRec;
-  AddedItem<V> get nextAddedItem => _nextAddedRec;
-  MovedItem<V> get nextMovedItem => _nextMovedRec;
+  ItemRecord<V> _nextPrevious;
+  ItemRecord<V> _prev, _next;
+  ItemRecord<V> _prevDup, _nextDup;
+  ItemRecord<V> _prevRemoved, _nextRemoved;
+  ItemRecord<V> _nextAdded;
+  ItemRecord<V> _nextMoved;
 
   ItemRecord(this.item);
 
@@ -1335,77 +1310,89 @@ class ItemRecord<V> implements PreviousCollectionItem<V>, CollectionItem<V>, Add
 class _DuplicateItemRecordList {
   ItemRecord head, tail;
 
-  void add(ItemRecord record, ItemRecord beforeRecord) {
-    assert(beforeRecord == null ? true : beforeRecord.item == record.item);
+  /**
+   * Add the [record] before the [previousRecord] in the list of duplicates or
+   * at the end of the list when no [previousRecord] is specified.
+   *
+   * Note: by design all records in the list of duplicates hold the save value
+   * in [record.item].
+   */
+  void add(ItemRecord record, ItemRecord previousRecord) {
+    assert(previousRecord == null || previousRecord.item == record.item);
     if (head == null) {
-      assert(beforeRecord == null);
+      assert(previousRecord == null);
       head = tail = record;
-      record._nextDupRec = null;
-      record._prevDupRec = null;
+      record._nextDup = null;
+      record._prevDup = null;
     } else {
       assert(record.item == head.item);
-      if (beforeRecord == null) {
-        tail._nextDupRec = record;
-        record._prevDupRec = tail;
-        record._nextDupRec = null;
+      if (previousRecord == null) {
+        tail._nextDup = record;
+        record._prevDup = tail;
+        record._nextDup = null;
         tail = record;
       } else {
-        var prev = beforeRecord._prevDupRec;
-        var next = beforeRecord;
-        record._prevDupRec = prev;
-        record._nextDupRec = next;
+        var prev = previousRecord._prevDup;
+        var next = previousRecord;
+        record._prevDup = prev;
+        record._nextDup = next;
         if (prev == null) {
           head = record;
         } else {
-          prev._nextDupRec = record;
+          prev._nextDup = record;
         }
-        next._prevDupRec = record;
+        next._prevDup = record;
       }
     }
   }
 
   ItemRecord get(key, int hideIndex) {
-    ItemRecord record = head;
-    while (record != null) {
+    ItemRecord record;
+    for (record = head; record != null; record = record._nextDup) {
       if ((hideIndex == null || hideIndex < record.currentIndex) &&
           identical(record.item, key)) {
         return record;
       }
-      record = record._nextDupRec;
     }
     return record;
   }
 
+  /**
+   * Remove one [ItemRecord] from the list of duplicates.
+   *
+   * Returns whether when the list of duplicates is empty.
+   */
   bool remove(ItemRecord record) {
     assert(() {
       // verify that the record being removed is someplace in the list.
-      ItemRecord cursor = head;
-      while (cursor != null) {
+      for (ItemRecord cursor = head; cursor != null; cursor = cursor._nextDup) {
         if (identical(cursor, record)) return true;
-        cursor = cursor._nextDupRec;
       }
       return false;
     });
 
-    var prev = record._prevDupRec;
-    var next = record._nextDupRec;
+    var prev = record._prevDup;
+    var next = record._nextDup;
     if (prev == null) {
       head = next;
     } else {
-      prev._nextDupRec = next;
+      prev._nextDup = next;
     }
     if (next == null) {
       tail = prev;
     } else {
-      next._prevDupRec = prev;
+      next._prevDup = prev;
     }
     return head == null;
   }
 }
 
 /**
- * This is a custom map which supports duplicate [ItemRecord] values for each
- * key.
+ * [DuplicateMap] maps [ItemRecord.value] to a list of [ItemRecord] having the
+ * same value (duplicates).
+ *
+ * The list of duplicates is implemented by [_DuplicateItemRecordList].
+ *
  */
 class DuplicateMap {
   final map = <dynamic, _DuplicateItemRecordList>{};
@@ -1429,6 +1416,11 @@ class DuplicateMap {
     return recordList == null ? null : recordList.get(key, hideIndex);
   }
 
+  /**
+   * Removes an [ItemRecord] from the list of duplicates.
+   *
+   * The list of duplicates also is removed from the map if it gets empty.
+   */
   ItemRecord remove(ItemRecord record) {
     _DuplicateItemRecordList recordList = map[record.item];
     assert(recordList != null);
