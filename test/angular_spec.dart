@@ -234,7 +234,6 @@ main() {
         "di.FactoryFn",
         "di.Injector",
         "di.InvalidBindingError",
-        "di.Key",  // common name, should be removed.
         "di.Module",
         "di.NoProviderError",
         "di.ObjectFactory",
