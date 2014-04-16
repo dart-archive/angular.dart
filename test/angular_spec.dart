@@ -1,5 +1,7 @@
 library angular_spec;
 
+import 'dart:mirrors';
+
 import '_specs.dart';
 import 'package:angular/utils.dart';
 import 'package:angular/tools/symbol_inspector/symbol_inspector.dart';
@@ -48,6 +50,14 @@ main() {
       // But make sure that you intend to export the symbol!
       // Questions?  Talk to @jbdeboer
 
+      // There is a bug at the intersection of the angular library,
+      // dart2js and findLibrary().  http://dartbug.com/18302
+      try {
+        currentMirrorSystem().findLibrary(const Symbol("angular"));
+      } catch (e) {
+        return;
+      }
+
       LibraryInfo libraryInfo;
       var names;
       try {  // Not impleneted in Dart VM 1.2
@@ -64,18 +74,29 @@ main() {
       var ALLOWED_NAMES = [
         "angular.app.AngularModule",
         "angular.app.Application",
+        "angular.core.annotation.ShadowRootAware",
         "angular.core.annotation_src.AttachAware",
         "angular.core.annotation_src.Component",
         "angular.core.annotation_src.Controller",
         "angular.core.annotation_src.Decorator",
         "angular.core.annotation_src.DetachAware",
+        "angular.core.annotation_src.Directive",
+        "angular.core.annotation_src.DirectiveAnnotation",
+        "angular.core.annotation_src.Formatter",
         "angular.core.annotation_src.Injectable",
+        "angular.core.annotation_src.NgAttr",
+        "angular.core.annotation_src.NgCallback",
+        "angular.core.annotation_src.NgOneWay",
+        "angular.core.annotation_src.NgOneWayOneTime",
+        "angular.core.annotation_src.NgTwoWay",
         "angular.core.dom_internal.Animate",
         "angular.core.dom_internal.Animation",
         "angular.core.dom_internal.AnimationResult",
+        "angular.core.dom_internal.BoundViewFactory",
         "angular.core.dom_internal.BrowserCookies",
         "angular.core.dom_internal.Compiler",
         "angular.core.dom_internal.Cookies",
+        "angular.core.dom_internal.DirectiveMap",
         "angular.core.dom_internal.ElementProbe",
         "angular.core.dom_internal.EventHandler",
         "angular.core.dom_internal.Http",
@@ -86,6 +107,8 @@ main() {
         "angular.core.dom_internal.HttpInterceptors",
         "angular.core.dom_internal.HttpResponse",
         "angular.core.dom_internal.HttpResponseConfig",
+        "angular.core.dom_internal.LocationWrapper",
+        "angular.core.dom_internal.NgElement",
         "angular.core.dom_internal.NoOpAnimation",
         "angular.core.dom_internal.NullTreeSanitizer",
         "angular.core.dom_internal.RequestErrorInterceptor",
@@ -93,7 +116,9 @@ main() {
         "angular.core.dom_internal.Response",
         "angular.core.dom_internal.ResponseError",
         "angular.core.dom_internal.TemplateCache",
+        "angular.core.dom_internal.UrlRewriter",
         "angular.core.dom_internal.View",
+        "angular.core.dom_internal.ViewCache",
         "angular.core.dom_internal.ViewFactory",
         "angular.core.dom_internal.ViewPort",
         "angular.core_internal.CacheStats",
@@ -107,8 +132,11 @@ main() {
         "angular.core_internal.ScopeStatsConfig",
         "angular.core_internal.ScopeStatsEmitter",
         "angular.core_internal.VmTurnZone",
+        "angular.core.parser.dynamic_parser.ClosureMap",
+        "angular.core.parser.Parser",
         "angular.directive.AHref",
         "angular.directive.ContentEditable",
+        "angular.directive.DecoratorFormatter",
         "angular.directive.InputCheckbox",
         "angular.directive.InputDateLike",
         "angular.directive.InputNumberLike",
@@ -116,9 +144,11 @@ main() {
         "angular.directive.InputSelect",
         "angular.directive.InputTextLike",
         "angular.directive.NgAttribute",
+        "angular.directive.NgBaseCss",
         "angular.directive.NgBind",
         "angular.directive.NgBindHtml",
         "angular.directive.NgBindTemplate",
+        "angular.directive.NgBindTypeForDateLike",
         "angular.directive.NgBooleanAttribute",
         "angular.directive.NgClass",
         "angular.directive.NgClassEven",
@@ -132,6 +162,7 @@ main() {
         "angular.directive.NgIf",
         "angular.directive.NgInclude",
         "angular.directive.NgModel",
+        "angular.directive.NgModelConverter",
         "angular.directive.NgModelEmailValidator",
         "angular.directive.NgModelMaxLengthValidator",
         "angular.directive.NgModelMaxNumberValidator",
@@ -142,6 +173,8 @@ main() {
         "angular.directive.NgModelRequiredValidator",
         "angular.directive.NgModelUrlValidator",
         "angular.directive.NgNonBindable",
+        "angular.directive.NgNullControl",
+        "angular.directive.NgNullForm",
         "angular.directive.NgPluralize",
         "angular.directive.NgRepeat",
         "angular.directive.NgShow",
@@ -153,6 +186,7 @@ main() {
         "angular.directive.NgTemplate",
         "angular.directive.NgTrueValue",
         "angular.directive.NgUnless",
+        "angular.directive.NgValidator",
         "angular.directive.NgValue",
         "angular.directive.OptionValue",
         "angular.formatter_internal.Currency",
@@ -165,12 +199,26 @@ main() {
         "angular.formatter_internal.OrderBy",
         "angular.formatter_internal.Stringify",
         "angular.formatter_internal.Uppercase",
+        "angular.introspection.ngDirectives",
+        "angular.introspection.ngInjector",
+        "angular.introspection.ngProbe",
+        "angular.introspection.ngQuery",
+        "angular.introspection.ngScope",
+        "angular.routing.NgBindRoute",
+        "angular.routing.ngRoute",
+        "angular.routing.NgRouteCfg",
+        "angular.routing.NgRoutingHelper",
+        "angular.routing.NgRoutingUsePushState",
+        "angular.routing.NgView",
         "angular.routing.RouteInitializer",
         "angular.routing.RouteInitializerFn",
         "angular.routing.RouteProvider",
         "angular.routing.RouteViewFactory",
+        "angular.routing.RoutingModule",
         "angular.watch_group.PrototypeMap",
         "angular.watch_group.Watch",
+        "change_detection.AvgStopwatch",
+        "change_detection.FieldGetterFactory",
         "di.CircularDependencyError",
         "di.FactoryFn",
         "di.Injector",
@@ -191,10 +239,10 @@ main() {
         "route.client.RouteLeaveEventHandler",
         "route.client.RoutePreEnterEvent",
         "route.client.RoutePreEnterEventHandler",
-        "route.client.RouteStartEvent",
         "route.client.Router",
+        "route.client.RouteStartEvent",
         "url_matcher.UrlMatch",
-        "url_matcher.UrlMatcher",
+        "url_matcher.UrlMatcher"
       ];
 
       var _nameMap = {};
@@ -232,13 +280,13 @@ main() {
 
         exported.add(key);
       };
+
+      names.forEach(assertSymbolNameIsOk);
+
       if (exported.isNotEmpty) {
         throw "These symbols are exported thru the angular library, but it shouldn't be:\n"
               "${exported.join('\n')}";
       }
-
-
-      names.forEach(assertSymbolNameIsOk);
 
       usedButNotExported.forEach((used, locs) {
         print("${unwrapSymbol(used)} : unexported, used from:");
