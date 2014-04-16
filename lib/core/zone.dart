@@ -5,6 +5,12 @@ typedef void ZoneOnError(dynamic error, dynamic stacktrace,
                          LongStackTrace longStacktrace);
 
 /**
+ * [ScheduleMicrotaskError] is used to indicate that there was a problem
+ * scheduling a microtask.
+ */
+class ScheduleMicrotaskError extends Error {}
+
+/**
  * Contains the locations of runAsync calls across VM turns.
  */
 class LongStackTrace {
@@ -43,7 +49,6 @@ class NgZone {
     // exceptions to the outer zone by default.
     onError = (e, s, ls) => _outerZone.handleUncaughtError(e, s);
   }
-
 
   List _asyncQueue = [];
   bool _errorThrownFromOnRun = false;
@@ -169,5 +174,59 @@ class NgZone {
 
   void assertInZone() {
     assertInTurn();
+  }
+}
+
+/**
+ * This zone is used to schedule **strictly** one microtask.
+ *
+ * This zone is used to schedule a microtask and have a guarantee that if another microtask is
+ * scheduled, before the first one has finished, an exception will be thrown.
+ */
+class AtMostOneMicrotaskZone {
+  final async.Zone _outerZone = async.Zone.current;
+  async.Zone _oneTimeOperationZone;
+  bool _scheduledOneTask = false;
+  LongStackTrace _longStacktrace = null;
+
+  /**
+   * Function executed if there is an error in the zone.
+   *
+   * By default this function is set to let parent zone handle the error. If this is not desired
+   * behavior this function can be overwritten.
+   */
+  ZoneOnError onError;
+
+  AtMostOneMicrotaskZone() {
+    _oneTimeOperationZone = _outerZone.fork(specification: new async.ZoneSpecification(
+        scheduleMicrotask: _onScheduleMicrotaskOnce,
+        handleUncaughtError: _uncaughtError
+    ));
+    onError = (e, s, ls) => _outerZone.handleUncaughtError(e, s);
+  }
+
+  /**
+   * Runs the provided function in the zone.
+   *
+   * Any runAsync calls (e.g. futures) will also be run in this zone. Returns the return value of
+   * body.
+   */
+  dynamic run(fn()) {
+    _scheduledOneTask = false;
+    _oneTimeOperationZone.run(fn);
+  }
+
+  _onScheduleMicrotaskOnce(async.Zone self, async.ZoneDelegate delegate,
+                           async.Zone zone, fn()) {
+    if (_scheduledOneTask) {
+      throw new ScheduleMicrotaskError();
+    };
+    _scheduledOneTask = true;
+    delegate.scheduleMicrotask(zone, fn);
+  }
+
+  _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
+                 e, StackTrace s) {
+    onError(e, s, _longStacktrace);
   }
 }
