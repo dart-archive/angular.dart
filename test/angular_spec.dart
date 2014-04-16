@@ -2,7 +2,7 @@ library angular_spec;
 
 import '_specs.dart';
 import 'package:angular/utils.dart';
-import 'package:angular/tools/symbol_inspector/symbol_inspector.dart';
+import 'dart:mirrors';
 
 main() {
   describe('angular.dart unittests', () {
@@ -48,10 +48,67 @@ main() {
       // But make sure that you intend to export the symbol!
       // Questions?  Talk to @jbdeboer
 
-      LibraryInfo libraryInfo;
+      var _SYMBOL_NAME = new RegExp('"(.*)"');
+      _unwrapSymbol(sym) => _SYMBOL_NAME.firstMatch(sym.toString()).group(1);
+
+      _getSymbolsFromLibrary(String libraryName) {
+        // Set this to true to see how symbols are exported from angular.
+        var SHOULD_PRINT_SYMBOL_TREE = false;
+
+        // TODO(deboer): Add types once Dart VM 1.2 is deprecated.
+        List extractSymbols(/* LibraryMirror */ lib, [String printPrefix = ""]) {
+          var names = [];
+
+          if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + _unwrapSymbol(lib.qualifiedName));
+          printPrefix += "  ";
+          lib.declarations.forEach((symbol, _) {
+            if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + _unwrapSymbol(symbol));
+            names.add([symbol, lib.qualifiedName]);
+          });
+
+          lib.libraryDependencies.forEach((/* LibraryDependencyMirror */ libDep) {
+            LibraryMirror target = libDep.targetLibrary;
+            if (!libDep.isExport) return;
+
+            var childNames = extractSymbols(target, printPrefix);
+
+            // If there was a "show" or "hide" on the exported library, filter the results.
+            // This API needs love :-(
+            var showSymbols = [], hideSymbols = [];
+            libDep.combinators.forEach((/* CombinatorMirror */ c) {
+              if (c.isShow) {
+                showSymbols.addAll(c.identifiers);
+              }
+              if (c.isHide) {
+                hideSymbols.addAll(c.identifiers);
+              }
+            });
+
+            // I don't think you can show and hide from the same library
+            assert(showSymbols.isEmpty || hideSymbols.isEmpty);
+            if (!showSymbols.isEmpty) {
+              childNames = childNames.where((List symAndLib) {
+                return showSymbols.contains(symAndLib[0]);
+              });
+            }
+            if (!hideSymbols.isEmpty) {
+              childNames = childNames.where((List symAndLib) {
+                return !hideSymbols.contains(symAndLib[0]);
+              });
+            }
+
+            names.addAll(childNames);
+          });
+          return names;
+        };
+
+        var lib = currentMirrorSystem().findLibrary(new Symbol(libraryName));
+        return extractSymbols(lib);
+      }
+
       var names;
       try {  // Not impleneted in Dart VM 1.2
-        libraryInfo = getSymbolsFromLibrary("angular");
+        names = _getSymbolsFromLibrary("angular");
       } on UnimplementedError catch (e) {
         return; // Not implemented, quietly skip.
       } catch (e) {
@@ -59,7 +116,9 @@ main() {
         return; // On VMes <1.2, quietly skip.
       }
 
-      names = libraryInfo.names;
+      var ALLOWED_PREFIXES = [
+        "_"
+      ];
 
       var ALLOWED_NAMES = [
         "angular.app.Application",
@@ -199,35 +258,18 @@ main() {
       ];
 
       var _nameMap = {};
-      var _qualifiedNameMap = {};
-
       ALLOWED_NAMES.forEach((x) => _nameMap[x] = true);
 
-      names.forEach((x) => _qualifiedNameMap[x.qualified] = true);
-
-      var usedButNotExported = {};
-
       var exported = [];
-      assertSymbolNameIsOk(QualifiedSymbol nameInfo) {
-        String name = unwrapSymbol(nameInfo.qualified);
-        String libName = unwrapSymbol(nameInfo.libraryName);
+      assertSymbolNameIsOk(List nameInfo) {
+        String name = _unwrapSymbol(nameInfo[0]);
+        String libName = _unwrapSymbol(nameInfo[1]);
 
-        var key = "$name";
+        if (ALLOWED_PREFIXES.any((prefix) => name.startsWith(prefix))) return;
+
+        var key = "$libName.$name";
         if (_nameMap.containsKey(key)) {
           _nameMap[key] = false;
-
-          // Check that all the exposed types are also exported
-          assert(libraryInfo.symbolsUsedForName.containsKey(nameInfo.qualified));
-          libraryInfo.symbolsUsedForName[nameInfo.qualified].forEach((usedSymbol) {
-            if ("$usedSymbol".contains('"dart.')) return;
-            if ("$usedSymbol" == 'Symbol("dynamic")') return;
-            if ("$usedSymbol" == 'Symbol("void")') return;
-
-            if (!_qualifiedNameMap.containsKey(usedSymbol)) {
-              usedButNotExported.putIfAbsent(usedSymbol, () => []);
-              usedButNotExported[usedSymbol].add(nameInfo.qualified);
-            }
-          });
           return;
         }
 
@@ -238,16 +280,7 @@ main() {
               "${exported.join('\n')}";
       }
 
-
       names.forEach(assertSymbolNameIsOk);
-
-      usedButNotExported.forEach((used, locs) {
-        print("${unwrapSymbol(used)} : unexported, used from:");
-        locs.forEach((l) {
-          print("    ${unwrapSymbol(l)}");
-        });
-        print("");
-      });
 
       // If there are keys that no longer need to be in the ALLOWED_NAMES list, complain.
       var keys = [];
@@ -260,4 +293,3 @@ main() {
     });
   });
 }
-
