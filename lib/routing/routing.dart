@@ -21,7 +21,7 @@ class RouteViewFactory {
 
   _configure(Route route, Map<String, NgRouteCfg> config) {
     config.forEach((name, cfg) {
-      var moduledCalled = false;
+      var modulesCalled = false;
       List<Module> newModules;
       route.addRoute(
           name: name,
@@ -37,8 +37,8 @@ class RouteViewFactory {
             }
           },
           preEnter: (RoutePreEnterEvent e) {
-            if (cfg.modules != null && !moduledCalled) {
-              moduledCalled = true;
+            if (cfg.modules != null && !modulesCalled) {
+              modulesCalled = true;
               var modules = cfg.modules();
               if (modules is Future) {
                 e.allowEnter(modules.then((List<Module> m) {
@@ -92,10 +92,8 @@ class NgRouteCfg {
  *
  * The [init] method will be called by the framework once the router is
  * instantiated but before [NgBindRouteDirective] and [NgViewDirective].
- *
- * Deprecated: use RouteInitializerFn instead.
  */
-@deprecated
+@Deprecated("use RouteInitializerFn instead")
 abstract class RouteInitializer {
   void init(Router router, RouteViewFactory viewFactory);
 }
@@ -146,7 +144,7 @@ class NgRoutingHelper {
     router.listen(appRoot: _ngApp.element);
   }
 
-  _reloadViews({Route startingFrom}) {
+  void _reloadViews({Route startingFrom}) {
     var alreadyActiveViews = [];
     var activePath = router.activePath;
     if (startingFrom != null) {
@@ -169,16 +167,16 @@ class NgRoutingHelper {
     }
   }
 
-  _route(Route route, String template, {bool fromEvent, List<Module> modules,
+  void _route(Route route, String template, {bool fromEvent, List<Module> modules,
       String templateHtml}) {
     _templates[_routePath(route)] = new _View(template, templateHtml, modules);
   }
 
-  _registerPortal(NgView ngView) {
+  void _registerPortal(NgView ngView) {
     portals.add(ngView);
   }
 
-  _unregisterPortal(NgView ngView) {
+  void _unregisterPortal(NgView ngView) {
     portals.remove(ngView);
   }
 }
