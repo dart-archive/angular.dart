@@ -1,7 +1,7 @@
 part of angular.directive;
 
 /**
- * The [NgTemplateElement] allows one to preload an Angular template
+ * The [NgTemplate] allows one to preload an Angular template
  * into the [TemplateCache].  It works on `<template>` and `<script>` elements
  * that have `type="text/ng-template`.  For such elements, The entire contents
  * of the elements are loaded into the [TemplateCache] under the URL specified
