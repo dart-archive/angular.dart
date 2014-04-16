@@ -44,8 +44,34 @@ main() {
     });
   });
 
-  describe('angular symbols', () {
-    it('should not export symbols that we do not know about', () {
+  describe('symbols', () {
+    it('should not export unknown symbols from animate', () {
+      LibraryInfo libraryInfo;
+      try {
+        libraryInfo = getSymbolsFromLibrary("angular.animate");
+      } on UnimplementedError catch (e) {
+        return; // Not implemented, quietly skip.
+      }
+
+      var ALLOWED_NAMES = [
+          "angular.animate.AbstractNgAnimate",
+          "angular.animate.AnimationLoop",
+          "angular.animate.AnimationModule",
+          "angular.animate.AnimationOptimizer",
+          "angular.animate.CssAnimate",
+          "angular.animate.CssAnimationMap",
+          "angular.animate.NgAnimate",
+          "angular.animate.NgAnimateChildren",
+          "angular.animate.CssAnimation",
+          "angular.animate.AnimationFrame",
+          "angular.animate.AnimationList",
+          "angular.animate.LoopedAnimation"
+      ];
+      assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
+
+    });
+
+    it('should not export unknown symbols from angular', () {
       // Test is failing? Add new symbols to the "ALLOWED_NAMES" list below.
       // But make sure that you intend to export the symbol!
       // Questions?  Talk to @jbdeboer
@@ -59,17 +85,11 @@ main() {
       }
 
       LibraryInfo libraryInfo;
-      var names;
-      try {  // Not impleneted in Dart VM 1.2
+      try {
         libraryInfo = getSymbolsFromLibrary("angular");
       } on UnimplementedError catch (e) {
         return; // Not implemented, quietly skip.
-      } catch (e) {
-        print("Error: $e");
-        return; // On VMes <1.2, quietly skip.
       }
-
-      names = libraryInfo.names;
 
       var ALLOWED_NAMES = [
         "angular.app.AngularModule",

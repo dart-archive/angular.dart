@@ -147,9 +147,7 @@ getSymbolsFromLibrary(String libraryName) {
   };
 
   var lib = currentMirrorSystem().findLibrary(new Symbol(libraryName));
-  try {
-    return extractSymbols(lib);
-  } catch (e,s) { print("EE: $e\nSS: $s"); }
+  return extractSymbols(lib);
 }
 
 var _SYMBOL_NAME = new RegExp('"(.*)"');
