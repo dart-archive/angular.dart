@@ -141,7 +141,7 @@ main() {
       compile(html);
       expect(element).toHaveText('content');
       element.querySelector('span').classes.remove('my-class');
-      expect(element.querySelector('span').classes.contains('my-class')).not.toBe(true);
+      expect(element.querySelector('span')).not.toHaveClass('my-class');
       rootScope.apply(() {
         rootScope.context['isVisible'] = false;
       });
@@ -150,7 +150,7 @@ main() {
         rootScope.context['isVisible'] = true;
       });
       // The newly inserted node should be a copy of the compiled state.
-      expect(element.querySelector('span').classes.contains('my-class')).toBe(true);
+      expect(element.querySelector('span')).toHaveClass('my-class');
     }
   );
 

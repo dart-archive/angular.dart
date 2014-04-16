@@ -7,24 +7,20 @@ part of angular.directive;
  */
 @Decorator(
     selector: 'form',
-    module: NgForm.module,
-    visibility: Directive.CHILDREN_VISIBILITY)
+    module: NgForm.module)
 @Decorator(
     selector: 'fieldset',
-    module: NgForm.module,
-    visibility: Directive.CHILDREN_VISIBILITY)
+    module: NgForm.module)
 @Decorator(
     selector: '.ng-form',
-    module: NgForm.module,
-    visibility: Directive.CHILDREN_VISIBILITY)
+    module: NgForm.module)
 @Decorator(
     selector: '[ng-form]',
     module: NgForm.module,
-    map: const { 'ng-form': '@name' },
-    visibility: Directive.CHILDREN_VISIBILITY)
+    map: const { 'ng-form': '@name' })
 class NgForm extends NgControl {
   static final Module _module = new Module()
-    ..factory(NgControl, (i) => i.get(NgForm), visibility: Directive.CHILDREN_VISIBILITY);
+      ..factory(NgControl, (i) => i.get(NgForm));
   static module() => _module;
 
   final Scope _scope;
