@@ -69,4 +69,39 @@ void main() => describe('symbol inspector', () {
         'simple_library.Generic'
     ]));
   });
+
+  describe('assert', () {
+    var SIMPLE_LIBRARY_SYMBOLS = [
+        "simple_library.ClosureParam",
+        "simple_library.StaticFieldType",
+        "simple_library.FieldType",
+        "simple_library.ConsParamType",
+        "simple_library.A",
+        "simple_library.TypedefType",
+        "simple_library.MethodReturnType",
+        "simple_library.TypedefReturnType",
+        "simple_library.GetterType",
+        "simple_library.ParamType",
+        "simple_library.Generic",
+        "simple_library.ClosureReturn",
+        "simple_library.TypedefParam"
+    ];
+    it('should assert symbol names are correct', () {
+      assertSymbolNamesAreOk(SIMPLE_LIBRARY_SYMBOLS,
+          getSymbolsFromLibrary(("simple_library")));
+    });
+
+    it('should throw if the list is missing symbols', () {
+      expect(() => assertSymbolNamesAreOk([],
+              getSymbolsFromLibrary(("simple_library"))),
+          throwsA(contains("These symbols are exported thru the angular "
+                           "library, but it shouldn't be")));
+    });
+
+    it('should throw if the list has unused symbols', () {
+      expect(() => assertSymbolNamesAreOk(SIMPLE_LIBRARY_SYMBOLS..add('hello'),
+              getSymbolsFromLibrary(("simple_library"))),
+          throwsA(contains("These whitelisted symbols are not used")));
+    });
+  });
 });

@@ -245,65 +245,7 @@ main() {
         "url_matcher.UrlMatcher"
       ];
 
-      var _nameMap = {};
-      var _qualifiedNameMap = {};
-
-      ALLOWED_NAMES.forEach((x) => _nameMap[x] = true);
-
-      names.forEach((x) => _qualifiedNameMap[x.qualified] = true);
-
-      var usedButNotExported = {};
-
-      var exported = [];
-      assertSymbolNameIsOk(QualifiedSymbol nameInfo) {
-        String name = unwrapSymbol(nameInfo.qualified);
-        String libName = unwrapSymbol(nameInfo.libraryName);
-
-        var key = "$name";
-        if (_nameMap.containsKey(key)) {
-          _nameMap[key] = false;
-
-          // Check that all the exposed types are also exported
-          assert(libraryInfo.symbolsUsedForName.containsKey(nameInfo.qualified));
-          libraryInfo.symbolsUsedForName[nameInfo.qualified].forEach((usedSymbol) {
-            if ("$usedSymbol".contains('"dart.')) return;
-            if ("$usedSymbol" == 'Symbol("dynamic")') return;
-            if ("$usedSymbol" == 'Symbol("void")') return;
-
-            if (!_qualifiedNameMap.containsKey(usedSymbol)) {
-              usedButNotExported.putIfAbsent(usedSymbol, () => []);
-              usedButNotExported[usedSymbol].add(nameInfo.qualified);
-            }
-          });
-          return;
-        }
-
-        exported.add(key);
-      };
-
-      names.forEach(assertSymbolNameIsOk);
-
-      if (exported.isNotEmpty) {
-        throw "These symbols are exported thru the angular library, but it shouldn't be:\n"
-              "${exported.join('\n')}";
-      }
-
-      usedButNotExported.forEach((used, locs) {
-        print("${unwrapSymbol(used)} : unexported, used from:");
-        locs.forEach((l) {
-          print("    ${unwrapSymbol(l)}");
-        });
-        print("");
-      });
-
-      // If there are keys that no longer need to be in the ALLOWED_NAMES list, complain.
-      var keys = [];
-      _nameMap.forEach((k,v) {
-        if (v) keys.add(k);
-      });
-      if (keys.isNotEmpty) {
-        throw "Missing symbols:\n${keys.join('\n')}";
-      }
+      assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
     });
   });
 }
