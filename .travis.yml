@@ -11,9 +11,10 @@ env:
   - JOB=unit-dev
     CHANNEL=dev
     TESTS=vm
-  - JOB=unit-stable
-    CHANNEL=stable
-    TESTS=dart2js
+# dissabled until dart2js fix lands in 1.3
+#  - JOB=unit-stable
+#    CHANNEL=stable
+#    TESTS=dart2js
   - JOB=unit-dev
     CHANNEL=DEV
     TESTS=dart2js
