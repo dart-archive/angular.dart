@@ -107,92 +107,120 @@ class SourceMetadataExtractor {
       });
       dirInfo.expressionAttrs = reprocessedAttrs;
       directives.add(dirInfo);
-
     });
+
+    directives.addAll(metadataVisitor.templates.map(
+        (tmpl) => new DirectiveInfo()..template = tmpl));
 
     return directives;
   }
 }
 
-class DirectiveMetadataCollectingVisitor {
-  List<DirectiveMetadata> metadata = <DirectiveMetadata>[];
+class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
+  final List<DirectiveMetadata> metadata;
+  final List<String> templates;
 
-  call(CompilationUnit cu) {
-    cu.declarations.forEach((CompilationUnitMember declaration) {
-      // We only care about classes.
-      if (declaration is! ClassDeclaration) return;
-      ClassDeclaration clazz = declaration;
-      // Check class annotations for presense of NgComponent/NgDirective.
-      DirectiveMetadata meta;
-      clazz.metadata.forEach((Annotation ann) {
-        if (ann.arguments == null) return; // Ignore non-class annotations.
-        // TODO(pavelj): this is not a safe check for the type of the
-        // annotations, but good enough for now.
-        if (ann.name.name != 'NgComponent'
-            && ann.name.name != 'NgDirective') return;
+  DirectiveMetadataCollectingAstVisitor(this.metadata, this.templates);
 
-        bool isComponent = ann.name.name == 'NgComponent';
+  visitMethodInvocation(MethodInvocation node) {
+    if (node.methodName.name == 'ngRoute') {
+      NamedExpression viewHtmlExpression =
+          node.argumentList.arguments
+          .firstWhere((e) => e is NamedExpression &&
+              e.name.label.name == 'viewHtml', orElse: () => null);
+      if (viewHtmlExpression != null) {
+        if (viewHtmlExpression.expression is! StringLiteral) {
+          throw 'viewHtml must be a string literal';
+        }
+        templates.add(
+            (viewHtmlExpression.expression as StringLiteral).stringValue);
+      }
+    }
+    super.visitMethodInvocation(node);
+  }
 
-        meta = new DirectiveMetadata()
-          ..className = clazz.name.name
-          ..type = isComponent ? COMPONENT : DIRECTIVE;
-        metadata.add(meta);
+  visitClassDeclaration(ClassDeclaration clazz) {
+    // Check class annotations for presense of NgComponent/NgDirective.
+    DirectiveMetadata meta;
+    clazz.metadata.forEach((Annotation ann) {
+      if (ann.arguments == null) return; // Ignore non-class annotations.
+      // TODO(pavelj): this is not a safe check for the type of the
+      // annotations, but good enough for now.
+      if (ann.name.name != 'NgComponent'
+          && ann.name.name != 'NgDirective') return;
 
-        ann.arguments.arguments.forEach((Expression arg) {
-          if (arg is NamedExpression) {
-            NamedExpression namedArg = arg;
-            var paramName = namedArg.name.label.name;
-            if (paramName == 'selector') {
-              meta.selector = assertString(namedArg.expression).stringValue;
-            }
-            if (paramName == 'template') {
-              meta.template = assertString(namedArg.expression).stringValue;
-            }
-            if (paramName == 'map') {
-              MapLiteral map = namedArg.expression;
-              map.entries.forEach((MapLiteralEntry entry) {
-                meta.attributeMappings[assertString(entry.key).stringValue] =
-                    assertString(entry.value).stringValue;
-              });
-            }
-            if (paramName == 'exportExpressions') {
-              meta.exportExpressions = getStringValues(namedArg.expression);
-            }
-            if (paramName == 'exportExpressionAttrs') {
-              meta.exportExpressionAttrs = getStringValues(namedArg.expression);
-            }
+      bool isComponent = ann.name.name == 'NgComponent';
+
+      meta = new DirectiveMetadata()
+        ..className = clazz.name.name
+        ..type = isComponent ? COMPONENT : DIRECTIVE;
+      metadata.add(meta);
+
+      ann.arguments.arguments.forEach((Expression arg) {
+        if (arg is NamedExpression) {
+          NamedExpression namedArg = arg;
+          var paramName = namedArg.name.label.name;
+          if (paramName == 'selector') {
+            meta.selector = assertString(namedArg.expression).stringValue;
           }
-        });
-      });
-
-      // Check fields/getters/setter for presense of attr mapping annotations.
-      if (meta != null) {
-        clazz.members.forEach((ClassMember member) {
-          if (member is FieldDeclaration ||
-              (member is MethodDeclaration &&
-                  (member.isSetter || member.isGetter))) {
-            member.metadata.forEach((Annotation ann) {
-              if (_attrAnnotationsToSpec.containsKey(ann.name.name)) {
-                String fieldName;
-                if (member is FieldDeclaration) {
-                  fieldName = member.fields.variables.first.name.name;
-                } else { // MethodDeclaration
-                  fieldName = (member as MethodDeclaration).name.name;
-                }
-                StringLiteral attNameLiteral = ann.arguments.arguments.first;
-                if (meta.attributeMappings
-                        .containsKey(attNameLiteral.stringValue)) {
-                  throw 'Attribute mapping already defined for '
-                      '${clazz.name}.$fieldName';
-                }
-                meta.attributeMappings[attNameLiteral.stringValue] =
-                    _attrAnnotationsToSpec[ann.name.name] + fieldName;
-              }
+          if (paramName == 'template') {
+            meta.template = assertString(namedArg.expression).stringValue;
+          }
+          if (paramName == 'map') {
+            MapLiteral map = namedArg.expression;
+            map.entries.forEach((MapLiteralEntry entry) {
+              meta.attributeMappings[assertString(entry.key).stringValue] =
+                  assertString(entry.value).stringValue;
             });
           }
-        });
-      }
+          if (paramName == 'exportExpressions') {
+            meta.exportExpressions = getStringValues(namedArg.expression);
+          }
+          if (paramName == 'exportExpressionAttrs') {
+            meta.exportExpressionAttrs = getStringValues(namedArg.expression);
+          }
+        }
+      });
     });
+
+    // Check fields/getters/setter for presense of attr mapping annotations.
+    if (meta != null) {
+      clazz.members.forEach((ClassMember member) {
+        if (member is FieldDeclaration ||
+            (member is MethodDeclaration &&
+                (member.isSetter || member.isGetter))) {
+          member.metadata.forEach((Annotation ann) {
+            if (_attrAnnotationsToSpec.containsKey(ann.name.name)) {
+              String fieldName;
+              if (member is FieldDeclaration) {
+                fieldName = member.fields.variables.first.name.name;
+              } else { // MethodDeclaration
+                fieldName = (member as MethodDeclaration).name.name;
+              }
+              StringLiteral attNameLiteral = ann.arguments.arguments.first;
+              if (meta.attributeMappings
+                      .containsKey(attNameLiteral.stringValue)) {
+                throw 'Attribute mapping already defined for '
+                    '${clazz.name}.$fieldName';
+              }
+              meta.attributeMappings[attNameLiteral.stringValue] =
+                  _attrAnnotationsToSpec[ann.name.name] + fieldName;
+            }
+          });
+        }
+      });
+    }
+
+    return super.visitClassDeclaration(clazz);
+  }
+}
+
+class DirectiveMetadataCollectingVisitor {
+  List<DirectiveMetadata> metadata = <DirectiveMetadata>[];
+  List<String> templates = <String>[];
+
+  call(CompilationUnit cu) {
+    cu.accept(new DirectiveMetadataCollectingAstVisitor(metadata, templates));
   }
 }
 

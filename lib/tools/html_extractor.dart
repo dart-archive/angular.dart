@@ -13,7 +13,7 @@ RegExp _MUSTACHE_REGEXP = new RegExp(r'{{([^}]*)}}');
 RegExp _NG_REPEAT_SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(\s+track\s+by\s+(.+)\s*)?$');
 
 class HtmlExpressionExtractor {
-  List<DirectiveInfo> directiveInfos;
+  Iterable<DirectiveInfo> directiveInfos;
 
   HtmlExpressionExtractor(this.directiveInfos) {
     for (DirectiveInfo directiveInfo in directiveInfos) {
@@ -55,7 +55,8 @@ class HtmlExpressionExtractor {
       }
 
       for (DirectiveInfo directiveInfo in directiveInfos) {
-        if (matchesNode(node, directiveInfo.selector)) {
+        if (directiveInfo.selector != null &&
+            matchesNode(node, directiveInfo.selector)) {
           directiveInfo.expressionAttrs.forEach((attr) {
             if (node.attributes[attr] != null && attr != 'ng-repeat') {
               expressions.add(node.attributes[attr]);

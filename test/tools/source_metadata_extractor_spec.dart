@@ -128,6 +128,7 @@ List<DirectiveInfo> extractDirectiveInfo(List<DirectiveMetadata> metadata) {
 class MockDirectiveMetadataCollectingVisitor
     implements DirectiveMetadataCollectingVisitor {
   List<DirectiveMetadata> metadata;
+  List<String> templates = <String>[];
 
   MockDirectiveMetadataCollectingVisitor(List<DirectiveMetadata> this.metadata);
 
