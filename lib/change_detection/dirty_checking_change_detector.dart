@@ -1027,7 +1027,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
         return record..item = item;
       }
 
-      if (item is num && item.isNaN && record.item is num && record.item.isNaN){
+      if (item is num && (item as num).isNaN && record.item is num && (record.item as num).isNaN){
         // we need this for JavaScript since in JS NaN !== NaN.
         return record;
       }

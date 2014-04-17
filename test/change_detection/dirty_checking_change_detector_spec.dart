@@ -735,7 +735,7 @@ abstract class _CollectionMatcher<T> extends Matcher {
   // todo(vicb) merge with _getList() once map is refactored
   List<T> _getCollectionList(Function it) {
     var result = <T>[];
-    it((CollectionChangeItem<V> i) {
+    it((CollectionChangeItem i) {
       result.add(i);
     });
     return result;
