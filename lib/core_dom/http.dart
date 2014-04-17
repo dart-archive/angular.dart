@@ -388,16 +388,6 @@ class Http {
        this.defaults, this._interceptors);
 
   /**
-   * DEPRECATED
-   */
-  async.Future<String> getString(String url, {bool withCredentials,
-      void onProgress(dom.ProgressEvent e), Cache cache}) =>
-      request(url,
-              withCredentials: withCredentials,
-              onProgress: onProgress,
-              cache: cache).then((HttpResponse xhr) => xhr.responseText);
-
-  /**
    * Parse a [requestUrl] and determine whether this is a same-origin request as
    * the application document.
    */
@@ -442,6 +432,7 @@ class Http {
       throw ['timeout not implemented'];
     }
 
+    url = _rewriter(url);
     method = method.toUpperCase();
 
     if (headers == null) headers = {};
@@ -461,8 +452,7 @@ class Http {
     });
 
     var serverRequest = (HttpResponseConfig config) {
-      assert(config.data == null || config.data is String ||
-          config.data is dom.File);
+      assert(config.data == null || config.data is String || config.data is dom.File);
 
       // Strip content-type if data is undefined
       if (config.data == null) {
@@ -471,12 +461,45 @@ class Http {
             .forEach((h) => headers.remove(h));
       }
 
-      return request(null,
-                     config: config,
-                     method: method,
-                     sendData: config.data,
-                     requestHeaders: config.headers,
-                     cache: cache);
+      url = _buildUrl(config.url, config.params);
+
+      if (cache == false) {
+        cache = null;
+      } else if (cache == null) {
+        cache = defaults.cache;
+      }
+
+      // We return a pending request only if caching is enabled.
+      if (cache != null && _pendingRequests.containsKey(url)) {
+        return _pendingRequests[url];
+      }
+      var cachedResponse = (cache != null && method == 'GET') ? cache.get(url) : null;
+      if (cachedResponse != null) {
+        return new async.Future.value(new HttpResponse.copy(cachedResponse));
+      }
+
+      var result = _backend.request(url,
+                                    method: method,
+                                    requestHeaders: config.headers,
+                                    sendData: config.data).then((dom.HttpRequest value) {
+        // TODO: Uncomment after apps migrate off of this class.
+        // assert(value.status >= 200 && value.status < 300);
+
+        var response = new HttpResponse(value.status, value.responseText,
+            parseHeaders(value), config);
+
+        if (cache != null) cache.put(url, response);
+        _pendingRequests.remove(url);
+        return response;
+      }, onError: (error) {
+        if (error is! dom.ProgressEvent) throw error;
+        dom.ProgressEvent event = error;
+        _pendingRequests.remove(url);
+        dom.HttpRequest request = event.currentTarget;
+        return new async.Future.error(
+            new HttpResponse(request.status, request.response, parseHeaders(request), config));
+      });
+      return _pendingRequests[url] = result;
     };
 
     var chain = [[serverRequest, null]];
@@ -632,80 +655,12 @@ class Http {
     });
     return parsed;
   }
-
   /**
    * Returns an [Iterable] of [Future] [HttpResponse]s for the requests
    * that the [Http] service is currently waiting for.
    */
   Iterable<async.Future<HttpResponse> > get pendingRequests =>
       _pendingRequests.values;
-
-  /**
-   * DEPRECATED
-   */
-  async.Future<HttpResponse> request(String rawUrl,
-      { HttpResponseConfig config,
-        String method: 'GET',
-        bool withCredentials: false,
-        String responseType,
-        String mimeType,
-        Map<String, String> requestHeaders,
-        sendData,
-        void onProgress(dom.ProgressEvent e),
-        /*Cache<String, HttpResponse> or false*/ cache }) {
-    String url;
-
-    if (config == null) {
-      url = _rewriter(rawUrl);
-      config = new HttpResponseConfig(url: url);
-    } else {
-      url = _buildUrl(config.url, config.params);
-    }
-
-    if (cache == false) {
-      cache = null;
-    } else if (cache == null) {
-      cache = defaults.cache;
-    }
-    // We return a pending request only if caching is enabled.
-    if (cache != null && _pendingRequests.containsKey(url)) {
-      return _pendingRequests[url];
-    }
-    var cachedResponse = (cache != null && method == 'GET')
-        ? cache.get(url)
-        : null;
-    if (cachedResponse != null) {
-      return new async.Future.value(new HttpResponse.copy(cachedResponse));
-    }
-
-    var result = _backend.request(url,
-        method: method,
-        withCredentials: withCredentials,
-        responseType: responseType,
-        mimeType: mimeType,
-        requestHeaders: requestHeaders,
-        sendData: sendData,
-        onProgress: onProgress).then((dom.HttpRequest value) {
-      // TODO: Uncomment after apps migrate off of this class.
-      // assert(value.status >= 200 && value.status < 300);
-
-      var response = new HttpResponse(value.status, value.responseText,
-          parseHeaders(value), config);
-
-      if (cache != null) cache.put(url, response);
-      _pendingRequests.remove(url);
-      return response;
-    }, onError: (error) {
-      if (error is! dom.ProgressEvent) throw error;
-      dom.ProgressEvent event = error;
-      _pendingRequests.remove(url);
-      dom.HttpRequest request = event.currentTarget;
-      return new async.Future.error(
-          new HttpResponse(request.status, request.response,
-              parseHeaders(request), config));
-    });
-    return _pendingRequests[url] = result;
-  }
 
   _buildUrl(String url, Map<String, dynamic> params) {
     if (params == null) return url;

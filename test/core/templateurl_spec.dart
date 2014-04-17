@@ -90,11 +90,12 @@ void main() {
       it('should replace element with template from url', async(inject(
           (Http http, Compiler compile, Scope rootScope,  Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
-        backend.expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
+        backend.expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = es('<div><simple-url log>ignore</simple-url><div>');
         compile(element, directives)(injector, element);
 
+        microLeap();
         backend.flush();
         microLeap();
 
@@ -107,7 +108,7 @@ void main() {
       it('should load template from URL once', async(inject(
           (Http http, Compiler compile, Scope rootScope,  Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
-        backend.whenGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
+        backend.whenGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = es(
             '<div>'
@@ -116,6 +117,7 @@ void main() {
             '<div>');
         compile(element, directives)(injector, element);
 
+        microLeap();
         backend.flush();
         microLeap();
 
@@ -130,12 +132,13 @@ void main() {
           (Http http, Compiler compile, Scope rootScope, Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend
-            ..expectGET('simple.css').respond('.hello{}')
-            ..expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
+            ..expectGET('simple.css').respond(200, '.hello{}')
+            ..expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
         compile([element], directives)(injector, [element]);
 
+        microLeap();
         backend.flush();
         microLeap();
 
@@ -152,9 +155,10 @@ void main() {
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
-        backend.expectGET('simple.css').respond('.hello{}');
+        backend.expectGET('simple.css').respond(200, '.hello{}');
         compile(element, directives)(injector, element);
 
+        microLeap();
         backend.flush();
         microLeap();
         expect(element[0]).toHaveText('.hello{}inline!');
@@ -167,6 +171,7 @@ void main() {
         backend.expectGET('simple.css').respond(500, 'some error');
         compile(element, directives)(injector, element);
 
+        microLeap();
         backend.flush();
         microLeap();
         expect(element.first).toHaveText(
@@ -180,9 +185,10 @@ void main() {
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><only-css log>ignore</only-css><div>');
-        backend.expectGET('simple.css').respond('.hello{}');
+        backend.expectGET('simple.css').respond(200, '.hello{}');
         compile(element, directives)(injector, element);
 
+        microLeap();
         backend.flush();
         microLeap();
         expect(element[0]).toHaveText('.hello{}');
@@ -192,12 +198,13 @@ void main() {
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         backend
-            ..expectGET('simple.css').respond('.hello{}')
-            ..expectGET('simple.html').respond('<div>Simple!</div>');
+            ..expectGET('simple.css').respond(200, '.hello{}')
+            ..expectGET('simple.html').respond(200, '<div>Simple!</div>');
 
         var element = es('<html-and-css>ignore</html-and-css>');
         compile(element, directives)(injector, element);
 
+        microLeap();
         backend.flush();
         microLeap();
         expect(element.first).toHaveText('.hello{}Simple!');
@@ -215,13 +222,14 @@ void main() {
           (Http http, Compiler compile, Scope rootScope, Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend
-            ..expectGET('simple.css').respond('.hello{}')
-            ..expectGET('another.css').respond('.world{}')
-            ..expectGET('simple.html').respond('<div log="SIMPLE">Simple!</div>');
+            ..expectGET('simple.css').respond(200, '.hello{}')
+            ..expectGET('another.css').respond(200, '.world{}')
+            ..expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
         compile([element], directives)(injector, [element]);
 
+        microLeap();
         backend.flush();
         microLeap();
 
