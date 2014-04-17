@@ -714,7 +714,7 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
 }
 
 
-class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
+class _EvalWatchRecord implements WatchRecord<_Handler> {
   static const int _MODE_INVALID_             = -2;
   static const int _MODE_DELETED_             = -1;
   static const int _MODE_MARKER_              = 0;
