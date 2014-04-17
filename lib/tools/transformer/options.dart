@@ -33,12 +33,13 @@ class TransformOptions {
 
   TransformOptions({String sdkDirectory, List<String> htmlFiles,
       Map<String, String> templateUriRewrites,
-      di.TransformOptions diOptions}) :
-      sdkDirectory = sdkDirectory,
-      htmlFiles = htmlFiles != null ? htmlFiles : [],
-      templateUriRewrites = templateUriRewrites != null ?
-          templateUriRewrites : {},
-      diOptions = diOptions {
+      di.TransformOptions diOptions})
+      : sdkDirectory = sdkDirectory,
+        htmlFiles = htmlFiles != null ? htmlFiles : [],
+        templateUriRewrites = templateUriRewrites != null ?
+            templateUriRewrites : {},
+        diOptions = diOptions
+  {
     if (sdkDirectory == null)
       throw new ArgumentError('sdkDirectory must be provided.');
   }

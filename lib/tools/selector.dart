@@ -11,8 +11,8 @@ class ContainsSelector {
   }
 }
 
-RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-\*]+)(?:=([^\]]*))?\]))');
-RegExp _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([\w\-]+)(?:\=(.*))?\]$');
+RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([-\w]+)|(?:\.([-\w]+))|(?:\[([-\w*]+)(?:=([^\]]*))?\]))');
+RegExp _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([-\w]+)(?:\=(.*))?\]$');
 RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
 RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
 
@@ -22,17 +22,17 @@ class _SelectorPart {
   final String attrName;
   final String attrValue;
 
-  const _SelectorPart.fromElement(String this.element)
+  const _SelectorPart.fromElement(this.element)
       : className = null, attrName = null, attrValue = null;
 
-  const _SelectorPart.fromClass(String this.className)
+  const _SelectorPart.fromClass(this.className)
       : element = null, attrName = null, attrValue = null;
 
 
-  const _SelectorPart.fromAttribute(String this.attrName, String this.attrValue)
+  const _SelectorPart.fromAttribute(this.attrName, this.attrValue)
       : element = null, className = null;
 
-  toString() =>
+  String toString() =>
     element == null
       ? (className == null
          ? (attrValue == '' ? '[$attrName]' : '[$attrName=$attrValue]')
@@ -68,19 +68,13 @@ List<_SelectorPart> _splitCss(String selector) {
 bool matchesNode(Node node, String selector) {
   var match, selectorParts;
   if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
-    if (node is! Text) {
-      return false;
-    }
+    if (node is! Text) return false;
     return new RegExp(match.group(1)).hasMatch((node as Text).text);
   } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
-    if (node is! Element) {
-      return false;
-    }
+    if (node is! Element) return false;
     var regexp = new RegExp(match.group(1));
     for (String attrName in node.attributes.keys) {
-      if (regexp.hasMatch(node.attributes[attrName])) {
-        return true;
-      }
+      if (regexp.hasMatch(node.attributes[attrName])) return true;
     }
     return false;
   } else if ((selectorParts = _splitCss(selector)) != null) {
@@ -90,9 +84,7 @@ bool matchesNode(Node node, String selector) {
     bool stillGood = true;
     selectorParts.forEach((_SelectorPart part) {
       if (part.element != null) {
-        if (nodeName != part.element) {
-          stillGood = false;
-        }
+        if (nodeName != part.element) stillGood = false;
       } else if (part.className != null) {
         if (node.attributes['class'] == null ||
             !node.attributes['class'].split(' ').contains(part.className)) {
@@ -116,5 +108,5 @@ bool matchesNode(Node node, String selector) {
 
 String _matchingKey(Iterable keys, String attrName) =>
     keys.firstWhere(
-        (key) => new RegExp('^${attrName.replaceAll('*', r'[\w\-]+')}\$').hasMatch(key.toString()),
+        (key) => new RegExp('^${attrName.replaceAll('*', r'[-\w]+')}\$').hasMatch(key.toString()),
         orElse: () => null);

@@ -18,9 +18,7 @@ class HtmlExpressionExtractor {
   HtmlExpressionExtractor(this.directiveInfos) {
     for (DirectiveInfo directiveInfo in directiveInfos) {
       expressions.addAll(directiveInfo.expressions);
-      if (directiveInfo.template != null) {
-        parseHtml(directiveInfo.template);
-      }
+      if (directiveInfo.template != null) parseHtml(directiveInfo.template);
     }
   }
 
@@ -69,9 +67,7 @@ class HtmlExpressionExtractor {
   visitNodes(List<Node> nodes, NodeVisitor visitor) {
     for (Node node in nodes) {
       visitor(node);
-      if (node.nodes.length > 0) {
-        visitNodes(node.nodes, visitor);
-      }
+      if (node.nodes.isNotEmpty) visitNodes(node.nodes, visitor);
     }
   }
 }

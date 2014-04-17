@@ -48,8 +48,8 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
         .forEach(htmlExtractor.parseHtml)
         .then((_) {
       var module = new Module()
-        ..type(Parser, implementedBy: DynamicParser)
-        ..type(ParserBackend, implementedBy: DartGetterSetterGen);
+          ..type(Parser, implementedBy: DynamicParser)
+          ..type(ParserBackend, implementedBy: DartGetterSetterGen);
       var injector =
           new DynamicInjector(modules: [module], allowImplicitInjection: true);
 
@@ -82,28 +82,31 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
         .toList();
 
     // Get all of the contents of templates in @NgComponent(templateUrl:'...')
-    gatherReferencedUris(transform, resolver, options,
-        templatesOnly: true).then((templates) {
-      templates.values.forEach(controller.add);
-    }).then((_) {
-      // Add any HTML files referencing this Dart file.
-      return _findHtmlEntry(transform);
-    }).then((htmlRefId) {
-      if (htmlRefId != null) {
-        assets.add(htmlRefId);
-      }
-      Future.wait(
-        // Add any manually specified HTML files.
-        assets.map((id) => transform.readInputAsString(id))
-            .map((future) =>
-                future.then(controller.add).catchError((e) {
-                  transform.logger.warning('Unable to find $id from html_files '
-                      'in pubspec.yaml.');
-                }))
-        ).then((_) {
-          controller.close();
+    gatherReferencedUris(transform, resolver, options, templatesOnly: true)
+        .then((templates) {
+          templates.values.forEach(controller.add);
+        })
+        .then((_) {
+          // Add any HTML files referencing this Dart file.
+          return _findHtmlEntry(transform);
+        })
+        .then((htmlRefId) {
+          if (htmlRefId != null) assets.add(htmlRefId);
+          Future
+              .wait(
+                  // Add any manually specified HTML files.
+                  assets
+                      .map((id) => transform.readInputAsString(id))
+                      .map((future) => future
+                          .then(controller.add)
+                          .catchError((e) {
+                            transform.logger.warning('Unable to find $id from '
+                                t'html_files  in pubspec.yaml.');
+                          })))
+              .then((_) {
+                controller.close();
+              });
         });
-    });
 
     return controller.stream;
   }
@@ -148,7 +151,8 @@ class _LibrarySourceCrawler implements SourceCrawler {
   _LibrarySourceCrawler(this.libraries);
 
   void crawl(String entryPoint, CompilationUnitVisitor visitor) {
-    libraries.expand((lib) => lib.units)
+    libraries
+        .expand((lib) => lib.units)
         .map((compilationUnitElement) => compilationUnitElement.node)
         .forEach(visitor);
   }

@@ -115,7 +115,12 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgDirective(map: {'another-expression': '=>anotherExpression'})
+                @NgDirective(
+                    selector: 'first',
+                    map: {'first-expression': '=>anotherExpression'})
+                @NgDirective(
+                    selector: 'second',
+                    map: {'second-expression': '=>anotherExpression'})
                 class Engine {
                   set anotherExpression(Function) {}
 
@@ -132,8 +137,13 @@ main() {
           ],
           classes: {
             'import_0.Engine': [
-              'const import_1.NgDirective(map: const {'
-                '\'another-expression\': \'=>anotherExpression\', '
+              'const import_1.NgDirective(selector: \'first\', '
+                'map: const {'
+                '\'first-expression\': \'=>anotherExpression\', '
+                '\'two-way-stuff\': \'<=>twoWayStuff\'})',
+              'const import_1.NgDirective(selector: \'second\', '
+                'map: const {'
+                '\'second-expression\': \'=>anotherExpression\', '
                 '\'two-way-stuff\': \'<=>twoWayStuff\'})',
             ]
           });

@@ -3,7 +3,7 @@ library angular.io;
 typedef FsVisitor(String file);
 
 /**
- * A simple mockabe wrapper around dart:io that can be used without introducing
+ * A simple mockable wrapper around dart:io that can be used without introducing
  * direct dependencies on dart:io.
  */
 abstract class IoService {

@@ -26,9 +26,9 @@ const SYSTEM_PACKAGE_ROOT = '%SYSTEM_PACKAGE_ROOT%';
 main(args) {
   if (args.length < 4) {
     print('Usage: templace_cache_generator path_to_entry_point sdk_path '
-        'output package_root1,package_root2,...|$SYSTEM_PACKAGE_ROOT '
-        'patternUrl1,rewriteTo1;patternUrl2,rewriteTo2 '
-        'blacklistClass1,blacklistClass2');
+          'output package_root1,package_root2,...|$SYSTEM_PACKAGE_ROOT '
+          'patternUrl1,rewriteTo1;patternUrl2,rewriteTo2 '
+          'blacklistClass1,blacklistClass2');
     exit(1);
   }
 
@@ -37,11 +37,12 @@ main(args) {
   var output = args[2];
   var outputLibrary = args[3];
   var packageRoots = args[4] == SYSTEM_PACKAGE_ROOT ?
-      [Platform.packageRoot] : args[4].split(',');
+      [Platform.packageRoot] :
+      args[4].split(',');
   Map<RegExp, String> urlRewriters = parseUrlRemapping(args[5]);
-  Set<String> blacklistedClasses = (args.length > 6)
-      ? new Set.from(args[6].split(','))
-      : new Set();
+  Set<String> blacklistedClasses = (args.length > 6) ?
+      new Set.from(args[6].split(',')) :
+      new Set();
 
   print('sdkPath: $sdkPath');
   print('entryPoint: $entryPoint');
@@ -51,8 +52,7 @@ main(args) {
   print('url rewritters: ' + args[5]);
   print('blacklistedClasses: ' + blacklistedClasses.join(', '));
 
-
-  Map<String, String> templates = {};
+  var templates = <String, String>{};
 
   var c = new SourceCrawler(sdkPath, packageRoots);
   var visitor =
@@ -62,29 +62,25 @@ main(args) {
           visitor(compilationUnit, source.canonicalPath));
 
   var sink = new File(output).openWrite();
-  return printTemplateCache(
-      templates, urlRewriters, outputLibrary, sink).then((_) {
-        return sink.flush();
-      });
+  return printTemplateCache(templates, urlRewriters, outputLibrary, sink)
+      .then((_) => sink.flush());
 }
 
 Map<RegExp, String> parseUrlRemapping(String argument) {
   Map<RegExp, String> result = new LinkedHashMap();
-  if (argument.isEmpty) {
-    return result;
-  }
+  if (argument.isEmpty) return result;
 
   argument.split(";").forEach((String pair) {
-    List<String> remapping = pair.split(",");
+    var remapping = pair.split(",");
     result[new RegExp(remapping[0])] = remapping[1];
   });
   return result;
 }
 
 printTemplateCache(Map<String, String> templateKeyMap,
-                        Map<RegExp, String> urlRewriters,
-                        String outputLibrary,
-                        IOSink outSink) {
+                   Map<RegExp, String> urlRewriters,
+                   String outputLibrary,
+                   IOSink outSink) {
 
   outSink.write(fileHeader(outputLibrary));
 
@@ -111,9 +107,9 @@ printTemplateCache(Map<String, String> templateKeyMap,
 }
 
 class TemplateCollectingVisitor {
-  Map<String, String> templates;
-  Set<String> blacklistedClasses;
-  SourceCrawler sourceCrawler;
+  final Map<String, String> templates;
+  final Set<String> blacklistedClasses;
+  final SourceCrawler sourceCrawler;
 
   TemplateCollectingVisitor(this.templates, this.blacklistedClasses,
       this.sourceCrawler);
@@ -133,7 +129,7 @@ class TemplateCollectingVisitor {
       // We only care about classes.
       if (declaration is! ClassDeclaration) return;
       ClassDeclaration clazz = declaration;
-      List<String> cacheUris = [];
+      var cacheUris = <String>[];
       bool cache = true;
       clazz.metadata.forEach((Annotation ann) {
         if (ann.arguments == null) return; // Ignore non-class annotations.
@@ -141,9 +137,11 @@ class TemplateCollectingVisitor {
 
         switch (ann.name.name) {
           case 'NgComponent':
-              extractNgComponentMetadata(ann, cacheUris); break;
+            extractNgComponentMetadata(ann, cacheUris);
+            break;
           case 'NgTemplateCache':
-              cache = extractNgTemplateCache(ann, cacheUris); break;
+            cache = extractNgTemplateCache(ann, cacheUris);
+            break;
         }
       });
       if (cache && cacheUris.isNotEmpty) {
@@ -181,8 +179,8 @@ class TemplateCollectingVisitor {
         var paramName = namedArg.name.label.name;
         if (paramName == 'preCacheUrls') {
           assertList(namedArg.expression).elements
-            ..forEach((expression) =>
-                cacheUris.add(assertString(expression).stringValue));
+              ..forEach((expression) =>
+                    cacheUris.add(assertString(expression).stringValue));
         }
         if (paramName == 'cache') {
           cache = assertBoolean(namedArg.expression).value;
@@ -202,10 +200,9 @@ class TemplateCollectingVisitor {
   }
 
   String findAssetFileLocation(String uri, Source srcPath) {
-    if (uri.startsWith('/')) {
-      // Absolute Path from working directory.
-      return '.${uri}';
-    }
+    // Absolute Path from working directory.
+    if (uri.startsWith('/')) return '.${uri}';
+
     // Otherwise let the sourceFactory resolve for packages, and relative paths.
     Source source = sourceCrawler.context.sourceFactory
         .resolveUri(srcPath, uri);

@@ -30,18 +30,16 @@ class SourceMetadataExtractor {
   List<DirectiveInfo> gatherDirectiveInfo(root, SourceCrawler sourceCrawler) {
     sourceCrawler.crawl(root, metadataVisitor);
 
-    List<DirectiveInfo> directives = <DirectiveInfo>[];
+    final directives = <DirectiveInfo>[];
     metadataVisitor.metadata.forEach((DirectiveMetadata meta) {
-      DirectiveInfo dirInfo = new DirectiveInfo();
+      var dirInfo = new DirectiveInfo();
       dirInfo.selector = meta.selector;
       dirInfo.template = meta.template;
       meta.attributeMappings.forEach((attrName, mappingSpec) {
         var spec = _specs
             .firstWhere((specPrefix) => mappingSpec.startsWith(specPrefix),
                 orElse: () => throw '$mappingSpec no matching spec');
-        if (spec != '@') {
-          dirInfo.expressionAttrs.add(attrName);
-        }
+        if (spec != '@') dirInfo.expressionAttrs.add(attrName);
         if (mappingSpec.length == 1) { // Shorthand. Remove.
           // TODO(pavelgj): Figure out if short-hand LHS should be expanded
           // and added to the expressions list.
@@ -98,9 +96,7 @@ class SourceMetadataExtractor {
       dirInfo.expressionAttrs.forEach((String attr) {
         if (attr == '.') {
           var matches = _ATTR_SELECTOR_REGEXP.allMatches(dirInfo.selector);
-          if (matches.length > 0) {
-            reprocessedAttrs.add(matches.last.group(1));
-          }
+          if (matches.isNotEmpty) reprocessedAttrs.add(matches.last.group(1));
         } else {
           reprocessedAttrs.add(attr);
         }
@@ -125,11 +121,12 @@ class DirectiveMetadataCollectingVisitor {
       // Check class annotations for presense of NgComponent/NgDirective.
       DirectiveMetadata meta;
       clazz.metadata.forEach((Annotation ann) {
-        if (ann.arguments == null) return; // Ignore non-class annotations.
+        if (ann.arguments == null) return;
+        // Ignore non-class annotations.
         // TODO(pavelj): this is not a safe check for the type of the
         // annotations, but good enough for now.
         if (ann.name.name != 'NgComponent'
-            && ann.name.name != 'NgDirective') return;
+        && ann.name.name != 'NgDirective') return;
 
         bool isComponent = ann.name.name == 'NgComponent';
 
@@ -141,63 +138,69 @@ class DirectiveMetadataCollectingVisitor {
         ann.arguments.arguments.forEach((Expression arg) {
           if (arg is NamedExpression) {
             NamedExpression namedArg = arg;
-            var paramName = namedArg.name.label.name;
-            if (paramName == 'selector') {
-              meta.selector = assertString(namedArg.expression).stringValue;
+            switch (namedArg.name.label.name) {
+              case 'selector':
+                meta.selector = assertString(namedArg.expression).stringValue;
+                break;
+
+              case 'template':
+                meta.template = assertString(namedArg.expression).stringValue;
+                break;
+
+              case 'map':
+                MapLiteral map = namedArg.expression;
+                map.entries.forEach((MapLiteralEntry entry) {
+                  meta.attributeMappings[assertString(entry.key).stringValue] =
+                  assertString(entry.value).stringValue;
+                });
+                break;
+
+              case 'exportExpressions':
+                meta.exportExpressions = getStringValues(namedArg.expression);
+                break;
+
+              case 'exportExpressionAttrs':
+                meta.exportExpressionAttrs =
+                getStringValues(namedArg.expression);
+                break;
             }
-            if (paramName == 'template') {
-              meta.template = assertString(namedArg.expression).stringValue;
-            }
-            if (paramName == 'map') {
-              MapLiteral map = namedArg.expression;
-              map.entries.forEach((MapLiteralEntry entry) {
-                meta.attributeMappings[assertString(entry.key).stringValue] =
-                    assertString(entry.value).stringValue;
+          }
+        });
+
+        // Check fields/getters/setter for presence of attr mapping annotations.
+        if (meta != null) {
+          clazz.members.forEach((ClassMember mbr) {
+            if (mbr is FieldDeclaration ||
+            mbr is MethodDeclaration && (mbr.isSetter || mbr.isGetter)) {
+              mbr.metadata.forEach((Annotation ann) {
+                if (_attrAnnotationsToSpec.containsKey(ann.name.name)) {
+                  String fieldName;
+                  if (mbr is FieldDeclaration) {
+                    fieldName = mbr.fields.variables.first.name.name;
+                  } else {
+                    // MethodDeclaration
+                    fieldName = (mbr as MethodDeclaration).name.name;
+                  }
+                  StringLiteral attNameLiteral = ann.arguments.arguments.first;
+                  if (meta.attributeMappings
+                  .containsKey(attNameLiteral.stringValue)) {
+                    throw 'Attribute mapping already defined for '
+                    '${clazz.name}.$fieldName';
+                  }
+                  meta.attributeMappings[attNameLiteral.stringValue] =
+                  _attrAnnotationsToSpec[ann.name.name] + fieldName;
+                }
               });
             }
-            if (paramName == 'exportExpressions') {
-              meta.exportExpressions = getStringValues(namedArg.expression);
-            }
-            if (paramName == 'exportExpressionAttrs') {
-              meta.exportExpressionAttrs = getStringValues(namedArg.expression);
-            }
-          }
-        });
+          });
+        }
       });
-
-      // Check fields/getters/setter for presense of attr mapping annotations.
-      if (meta != null) {
-        clazz.members.forEach((ClassMember member) {
-          if (member is FieldDeclaration ||
-              (member is MethodDeclaration &&
-                  (member.isSetter || member.isGetter))) {
-            member.metadata.forEach((Annotation ann) {
-              if (_attrAnnotationsToSpec.containsKey(ann.name.name)) {
-                String fieldName;
-                if (member is FieldDeclaration) {
-                  fieldName = member.fields.variables.first.name.name;
-                } else { // MethodDeclaration
-                  fieldName = (member as MethodDeclaration).name.name;
-                }
-                StringLiteral attNameLiteral = ann.arguments.arguments.first;
-                if (meta.attributeMappings
-                        .containsKey(attNameLiteral.stringValue)) {
-                  throw 'Attribute mapping already defined for '
-                      '${clazz.name}.$fieldName';
-                }
-                meta.attributeMappings[attNameLiteral.stringValue] =
-                    _attrAnnotationsToSpec[ann.name.name] + fieldName;
-              }
-            });
-          }
-        });
-      }
     });
   }
 }
 
 List<String> getStringValues(ListLiteral listLiteral) {
-  List<String> res = <String>[];
+  var res = <String>[];
   for (Expression element in listLiteral.elements) {
     res.add(assertString(element).stringValue);
   }

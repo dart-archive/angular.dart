@@ -9,9 +9,7 @@ class MockIoService implements IoService {
   MockIoService(this.mockData);
 
   String readAsStringSync(String filePath) {
-    if (!mockData.containsKey(filePath)) {
-      throw 'file not found';
-    }
+    if (!mockData.containsKey(filePath)) throw 'file not found';
     return mockData[filePath];
   }
 

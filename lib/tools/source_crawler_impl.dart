@@ -16,20 +16,19 @@ class SourceCrawlerImpl implements SourceCrawler {
   SourceCrawlerImpl(this.packageRoots);
 
   void crawl(String entryPoint, CompilationUnitVisitor visitor) {
-    List<String> visited = <String>[];
-    List<String> toVisit = <String>[];
+    final visited = new Set<String>();
+    final toVisit = new Set<String>();
     if (entryPoint.startsWith(PACKAGE_PREFIX)) {
       var path = resolvePackagePath(entryPoint);
-      if (path == null) {
-        throw 'Unable to resolve $entryPoint';
-      }
+      if (path == null) throw 'Unable to resolve $entryPoint';
       toVisit.add(path);
     } else {
       toVisit.add(entryPoint);
     }
 
     while (toVisit.isNotEmpty) {
-      var currentFile = toVisit.removeAt(0);
+      var currentFile = toVisit.first;
+      toVisit.remove(currentFile);
       visited.add(currentFile);
       var file = new File(currentFile);
       // Possible source file doesn't exist. For example if it is generated.
@@ -42,8 +41,8 @@ class SourceCrawlerImpl implements SourceCrawler {
   }
 
   void processImports(CompilationUnit cu, String currentDir,
-                      String currentFile, List<String> visited,
-                      List<String> toVisit) {
+                      String currentFile, Set<String> visited,
+                      Set<String> toVisit) {
     cu.directives.forEach((Directive directive) {
       if (directive is ImportDirective ||
           directive is PartDirective ||
@@ -52,10 +51,7 @@ class SourceCrawlerImpl implements SourceCrawler {
         String canonicalFile = canonicalizeImportPath(
             currentDir, currentFile, import.uri.stringValue);
         if (canonicalFile == null) return;
-        if (!visited.contains(canonicalFile) &&
-            !toVisit.contains(canonicalFile)) {
-          toVisit.add(canonicalFile);
-        }
+        if (!visited.contains(canonicalFile)) toVisit.add(canonicalFile);
       }
     });
   }
@@ -64,12 +60,8 @@ class SourceCrawlerImpl implements SourceCrawler {
                                 String currentFile,
                                 String uri) {
     // ignore core libraries
-    if (uri.startsWith('dart:')) {
-      return null;
-    }
-    if (uri.startsWith(PACKAGE_PREFIX)) {
-      return resolvePackagePath(uri);
-    }
+    if (uri.startsWith('dart:')) return null;
+    if (uri.startsWith(PACKAGE_PREFIX)) return resolvePackagePath(uri);
     // relative import.
     if (uri.startsWith('../')) {
       while (uri.startsWith('../')) {
@@ -83,18 +75,14 @@ class SourceCrawlerImpl implements SourceCrawler {
   String resolvePackagePath(String uri) {
     for (String packageRoot in packageRoots) {
       var resolvedPath = _packageUriResolver(uri, packageRoot);
-      if (new File(resolvedPath).existsSync()) {
-        return resolvedPath;
-      }
+      if (new File(resolvedPath).existsSync()) return resolvedPath;
     }
     return null;
   }
 
   String _packageUriResolver(String uri, String packageRoot) {
     var packagePath = uri.substring(PACKAGE_PREFIX.length);
-    if (!packageRoot.endsWith('/')) {
-      packageRoot = packageRoot + '/';
-    }
+    if (!packageRoot.endsWith('/')) packageRoot = packageRoot + '/';
     return packageRoot + packagePath;
   }
 }

@@ -12,9 +12,7 @@ void main() {
 
     it('should extract text mustache expressions', () {
       var ioService = new MockIoService({
-          'foo.html': r'''
-        <div>foo {{ctrl.bar}} baz {{aux}}</div>
-      '''
+          'foo.html': r'<div>foo {{ctrl.bar}} baz {{aux}}</div>'
       });
 
       var extractor = new HtmlExpressionExtractor([]);
@@ -25,9 +23,7 @@ void main() {
 
     it('should extract attribute mustache expressions', () {
       var ioService = new MockIoService({
-          'foo.html': r'''
-        <div foo="foo-{{ctrl.bar}}" baz="{{aux}}-baz"></div>
-      '''
+          'foo.html': r'<div foo="foo-{{ctrl.bar}}" baz="{{aux}}-baz"></div>'
       });
 
       var extractor = new HtmlExpressionExtractor([]);
@@ -38,9 +34,7 @@ void main() {
 
     it('should extract ng-repeat expressions', () {
       var ioService = new MockIoService({
-          'foo.html': r'''
-        <div ng-repeat="foo in ctrl.bar"></div>
-      '''
+          'foo.html': r'<div ng-repeat="foo in ctrl.bar"></div>'
       });
 
       var extractor = new HtmlExpressionExtractor([]);
@@ -62,9 +56,7 @@ void main() {
 
     it('should extract expressions from expression attributes', () {
       var ioService = new MockIoService({
-          'foo.html': r'''
-        <foo bar="ctrl.baz"></foo>
-      '''
+          'foo.html': r'<foo bar="ctrl.baz"></foo>'
       });
 
       var extractor = new HtmlExpressionExtractor([
@@ -77,9 +69,7 @@ void main() {
 
     it('should ignore ng-repeat while extracting attribute expressions', () {
       var ioService = new MockIoService({
-          'foo.html': r'''
-        <div ng-repeat="foo in ctrl.bar"></div>
-      '''
+          'foo.html': r'<div ng-repeat="foo in ctrl.bar"></div>'
       });
 
       var extractor = new HtmlExpressionExtractor([

@@ -23,8 +23,7 @@ main(args) {
   }
   IoService ioService = new IoServiceImpl();
 
-  var packageRoots =
-      (args.length < 6) ? [Platform.packageRoot] : args.sublist(5);
+  var packageRoots = args.length < 6 ? [Platform.packageRoot] : args.sublist(5);
   var sourceCrawler = new SourceCrawlerImpl(packageRoots);
   var sourceMetadataExtractor = new SourceMetadataExtractor();
   List<DirectiveInfo> directives =
@@ -38,17 +37,10 @@ main(args) {
   var headerFile = args[2];
   var footerFile = args[3];
   var outputFile = args[4];
-  var printer;
-  if (outputFile == '--') {
-    printer = stdout;
-  } else {
-    printer = new File(outputFile).openWrite();
-  }
+  var printer = outputFile == '--' ? stdout : new File(outputFile).openWrite();
 
   // Output the header file first.
-  if (headerFile != '') {
-    printer.write(_readFile(headerFile));
-  }
+  if (headerFile != '') printer.write(_readFile(headerFile));
 
   printer.write('// Found ${expressions.length} expressions\n');
   Module module = new Module()
@@ -67,9 +59,7 @@ main(args) {
 
 
   // Output footer last.
-  if (footerFile != '') {
-    printer.write(_readFile(footerFile));
-  }
+  if (footerFile != '') printer.write(_readFile(footerFile));
 }
 
 String _readFile(String filePath) => new File(filePath).readAsStringSync();
