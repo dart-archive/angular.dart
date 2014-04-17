@@ -1,3 +1,294 @@
+<a name="v0.10.0"></a>
+# v0.10.0 ostemad-teleportation (2014-04-17)
+
+*NOTE:* Contains significant BREAKING CHANGES!
+
+## Bug Fixes
+
+- **DateFilter:** cache DateFormat correctly
+  ([64cf96f1](https://github.com/angular/angular.dart/commit/64cf96f104f886036b6f25d0bda5d1307f50d1d1),
+   [#882](https://github.com/angular/angular.dart/issues/882))
+- **NgA:** Do not cause a scope digest
+  ([de21f4de](https://github.com/angular/angular.dart/commit/de21f4de1f39a4745ad088805459848204457e23),
+   [#810](https://github.com/angular/angular.dart/issues/810))
+- **NgControl:** Remove dead code
+  ([b30ebe0f](https://github.com/angular/angular.dart/commit/b30ebe0fbaef0e7aa39d52a0bc8bf9cc2174386b))
+- **angular.core:** re-export required annotations
+  ([6a9ea37c](https://github.com/angular/angular.dart/commit/6a9ea37cfb444bdfb5e99af42a091c12d949b307))
+- **animation:** temporary fix for Animation symbol conflict
+  ([82b4f3e1](https://github.com/angular/angular.dart/commit/82b4f3e12a6a5b1e079c40c8341467089ab8fdf0))
+- **application_factory:** add missing @MirrorsUsed targets
+  ([b5e835a0](https://github.com/angular/angular.dart/commit/b5e835a0e3b4bfd8b8b44c260bb0466caa75ab93),
+   [#911](https://github.com/angular/angular.dart/issues/911))
+- **bootstrap:** Rename bootstrapping methods
+  ([155582d1](https://github.com/angular/angular.dart/commit/155582d199e25aa69ff803b228c3c3c0e5b9ac70))
+- **change-detection:** When two identical pure functions removed
+  ([84781ef3](https://github.com/angular/angular.dart/commit/84781ef3377b4cdb92a2cb3b98fb58468e34abc1),
+   [#787](https://github.com/angular/angular.dart/issues/787), [#788](https://github.com/angular/angular.dart/issues/788))
+- **change-detection:** properly watch map['key'] constructs
+  ([03f0a4c7](https://github.com/angular/angular.dart/commit/03f0a4c72709d74c3b4d5f3fa168189efd7e5b97),
+   [#824](https://github.com/angular/angular.dart/issues/824))
+- **cookies:** Make sure Cookies is injectable.
+  ([8952cbdd](https://github.com/angular/angular.dart/commit/8952cbdd70f32e8b920942476648b1a8f1473480),
+   [#856](https://github.com/angular/angular.dart/issues/856))
+- **core:** ensure change detection doesn't trigger an infinite loop while not in debug mode
+  ([6ac105c9](https://github.com/angular/angular.dart/commit/6ac105c9bf662c8717dab811c6c41ded9eed05ea))
+- **dirty-checking:**
+  - handle simultaneous mutations and ref changes
+  ([28a79bc2](https://github.com/angular/angular.dart/commit/28a79bc21ef3a4a7b0824249bfa31a668275c76e))
+  - fix removal of watch record on disconnected group.
+  ([d22899aa](https://github.com/angular/angular.dart/commit/d22899aa68f4da15673821cb16f04d4f8c7a4dee))
+- **doc:** add angular.core.annotation lib to docs
+  ([ad2e6b0e](https://github.com/angular/angular.dart/commit/ad2e6b0e76357e3aeaee0cd1726247059acc1f49))
+- **docs:** reenable broken doc generation
+  ([e925a143](https://github.com/angular/angular.dart/commit/e925a1430e9de53d710e175703c57aefd4dad700))
+- **events:** make ShadowRootEventHandler play nice with static injection
+  ([d7683218](https://github.com/angular/angular.dart/commit/d76832181706a86dcef1e0c3b60749f82a2e0e27))
+- **example:** Adjust MirrorsUsed to make the Todo example work thru dart2js
+  ([ee4a448b](https://github.com/angular/angular.dart/commit/ee4a448b9defd4c9fda1e86f3c9c37e5465f7e21))
+- **export:** Add missing NgController to angualr.dart
+  ([7475ccc4](https://github.com/angular/angular.dart/commit/7475ccc44cec302a0bd0745e99ec491ff3289427))
+- **filters:**
+  - handle the current locale correctly
+  ([212b6f79](https://github.com/angular/angular.dart/commit/212b6f79560cc24b4a210c6f44e73a8408690fa9),
+   [#865](https://github.com/angular/angular.dart/issues/865))
+  - pass filters to all evals
+  ([25dfd32f](https://github.com/angular/angular.dart/commit/25dfd32ff9e1523ee9220769871867111ed93c3b))
+- **forms:** change valid_submit and invalid_submit to camelcase
+  ([e5baa502](https://github.com/angular/angular.dart/commit/e5baa50235aa3ec53f00f87b86dab78ef5882900),
+   [#793](https://github.com/angular/angular.dart/issues/793))
+- **http:** fix header map type for http.call()
+  ([a6cc826a](https://github.com/angular/angular.dart/commit/a6cc826a1bbe580dd2774b6d53e246a838d3425d))
+- **jasmine:** don't swallow exceptions in afterEach
+  ([ae15983d](https://github.com/angular/angular.dart/commit/ae15983d2134bf0fb1823f427654629f92c295d5))
+- **mirror:** added missing mirrors declarations
+  ([0ebb49f8](https://github.com/angular/angular.dart/commit/0ebb49f84c12ec2c4b11f1cf75d230f601975ebc))
+- **mock:** export test_injection from module
+  ([70546ca5](https://github.com/angular/angular.dart/commit/70546ca50dc5038ba911fcf972af90de492743d4))
+- **mustache:** fix regression that fired an initial empty string
+  ([c71b8cfc](https://github.com/angular/angular.dart/commit/c71b8cfc935d1599b2c1c7cef5a08ff4caee7010),
+   [#734](https://github.com/angular/angular.dart/issues/734))
+- **ng-model:** Do not use valueAsNumber to work around dartbug.com/15788
+  ([019209e7](https://github.com/angular/angular.dart/commit/019209e79ce0752351f2b8d74511fa39694d1e93),
+   [#694](https://github.com/angular/angular.dart/issues/694))
+- **ng-repeat:** don't use iterable.length
+  ([cf2671ab](https://github.com/angular/angular.dart/commit/cf2671ab718d019a0eaa7d7e0483cae196aaa76c))
+- **ng-view:** correct infinite loop in RouteProvider injection
+  ([be902f46](https://github.com/angular/angular.dart/commit/be902f46035b0ea9464eafd12eb4470316ec82fe))
+- **ng_mustache:** actually assign to _hasObservers
+  ([61c953d9](https://github.com/angular/angular.dart/commit/61c953d9be3e2626e159cd08ac585a67f412a37e))
+- **parser:** changes parser to throw an error when it encounters an unexpected token
+  ([7c26ab0d](https://github.com/angular/angular.dart/commit/7c26ab0dbce3b8ebbde26716e9dc1cfda1e38c71),
+   [#830](https://github.com/angular/angular.dart/issues/830), [#905](https://github.com/angular/angular.dart/issues/905))
+- **profiler:** Fix API
+  ([f032b376](https://github.com/angular/angular.dart/commit/f032b376c77b9b054d4c2b2db7b29cb7f7c71102))
+- **scope:** allow watching an empty string
+  ([bd0d4ffd](https://github.com/angular/angular.dart/commit/bd0d4ffdded131cd3040c6ddda32c46f6553b629))
+- **startup:** Avoid creating rarely needed objects
+  ([29bda806](https://github.com/angular/angular.dart/commit/29bda8061aa5240f5445ac28a310990f4f3b80d0))
+- **tagging-compiler:** support top level comments
+  ([dc75b016](https://github.com/angular/angular.dart/commit/dc75b0166cc93c08bf81fa364c247de3d97ad2c1))
+- **test:** fixes for latest unittest lib
+  ([c8527208](https://github.com/angular/angular.dart/commit/c852720827584065fdc5d48d5dc6d0e23770ebc1),
+   [#811](https://github.com/angular/angular.dart/issues/811))
+- **transformer:**
+  - Serializing execution of transformers
+  ([8b06e673](https://github.com/angular/angular.dart/commit/8b06e673d72d0e98d8a99ef159cc4ebc6fbf8c65),
+   [#889](https://github.com/angular/angular.dart/issues/889))
+  - crashes in metadata extraction while in pub serve
+  ([e35a5e17](https://github.com/angular/angular.dart/commit/e35a5e17e890d739ee546227fef98acbc66c1112),
+   [#888](https://github.com/angular/angular.dart/issues/888))
+  - Transformer needs html5lib 0.9.2
+  ([b52323e4](https://github.com/angular/angular.dart/commit/b52323e4e227d9de9a69134912845835733c20f7))
+- **transformers:**
+  - fix accidental breakage due to library rename. Added tests.
+  ([88593eec](https://github.com/angular/angular.dart/commit/88593eec6499f93765980087fcdf59a242ec9334))
+  - fix breakage from commit 3fb218180b17bdc9808e575e3a9aaf9928fef28b
+  ([5caadbf1](https://github.com/angular/angular.dart/commit/5caadbf10304c46da552f4fa118351a3d2de4571))
+- **watch_group:** remove debugging print statement
+  ([93c7b9af](https://github.com/angular/angular.dart/commit/93c7b9afbec1154e0869cb820210b401129ee4fe))
+
+
+## Features
+
+- **AstParser:** Made the AST parser private to the scope
+  ([8944f0d9](https://github.com/angular/angular.dart/commit/8944f0d927a402f184160b6bfffdff664fb21ee4))
+- **NgAnnotation:** Use `module` parameter to publish types.
+  ([5ec7e831](https://github.com/angular/angular.dart/commit/5ec7e831052ce1fe5af70dc970941a4a884a9e02),
+   [#779](https://github.com/angular/angular.dart/issues/779))
+- **NgBaseCss:** Add NgBaseCss, which adds css files to all components
+  ([06fc28a3](https://github.com/angular/angular.dart/commit/06fc28a319b9c0334a977c4a177348c6f6a3d003))
+- **Scope:**
+  - Allow turning emission of scope stats from console.
+  ([18ecd950](https://github.com/angular/angular.dart/commit/18ecd950cd815677cba35e26eb6069da19d73300),
+   [#836](https://github.com/angular/angular.dart/issues/836), [#857](https://github.com/angular/angular.dart/issues/857))
+  - Mirror Scope methods in ngScope.
+  ([277f2832](https://github.com/angular/angular.dart/commit/277f283258b7dcdb4994a1c78e6cee862386654d),
+   [#850](https://github.com/angular/angular.dart/issues/850), [#858](https://github.com/angular/angular.dart/issues/858))
+- **deploy:** Move all reflection behind separate import
+  ([9bf04eba](https://github.com/angular/angular.dart/commit/9bf04eba808f7fc1f4e5285fad7feae360918718))
+- **directives:** Add deprecated warning to applyAuthorStyle, resetStyleInheritance
+  ([779ccb80](https://github.com/angular/angular.dart/commit/779ccb800d6db85100418c3e4a89a6003048bcab),
+   [#838](https://github.com/angular/angular.dart/issues/838))
+- **event_spec:** Add aaddTest to run an event test in an iit
+  ([a5999863](https://github.com/angular/angular.dart/commit/a5999863f85bf172c75bd8f213d640b55f4a5cb8))
+- **expect:**
+  - toHaveText handles shadow DOM.  Deprecates JQuery.textWithShadow
+  ([0384346d](https://github.com/angular/angular.dart/commit/0384346db3b715f6a67425d81825d2d20caae74f))
+  - Move JQuery.text to Expect.toHaveText() and element.text
+  ([dfe84d8f](https://github.com/angular/angular.dart/commit/dfe84d8f48e97db992d1b70382a2e531b91a1607))
+- **http:** Allow overriding of recording URL.
+  ([6ecf1d54](https://github.com/angular/angular.dart/commit/6ecf1d54a2c294035427fd3f274e1fb8e098f45e),
+   [#872](https://github.com/angular/angular.dart/issues/872))
+- **karma:** Allow Firefox to execute Karma tests
+  ([4a6234b3](https://github.com/angular/angular.dart/commit/4a6234b350c7c25f7de45fceb19bceb31573cb30))
+- **metadata extractor:** Cache the fieldMetadataExtractor for greater performance
+  ([63c229c7](https://github.com/angular/angular.dart/commit/63c229c7f7dab901e650fb1c8b155d2bc006ca30))
+- **ng-model:** support input type=date | datetime and all other date/time variants
+  ([90e0e076](https://github.com/angular/angular.dart/commit/90e0e0761d2ed59b6a70ba31f9ceb741593bcb26),
+   [#747](https://github.com/angular/angular.dart/issues/747))
+- **ngElement:** add support for attributes
+  ([581861e5](https://github.com/angular/angular.dart/commit/581861e5f428b2fe43356be012e1fe35b9f7499a))
+- **ngRepeat:** make use of the new change detection
+  ([09871cb2](https://github.com/angular/angular.dart/commit/09871cb29b5345d49929895b2a490360eee69244))
+- **parser:** Add support for named arguments.
+  ([18ceb4df](https://github.com/angular/angular.dart/commit/18ceb4dfa751615cecc73ff38d7bb1744b914c0a),
+   [#762](https://github.com/angular/angular.dart/issues/762))
+- **routing:** allow routing to view html
+  ([cdc89c43](https://github.com/angular/angular.dart/commit/cdc89c43664c5d451ae92c83dd86922ccefd807c),
+   [#425](https://github.com/angular/angular.dart/issues/425), [#908](https://github.com/angular/angular.dart/issues/908))
+- **selector:** Collect bind- attributes.  More tests. Cleanup
+  ([4707826b](https://github.com/angular/angular.dart/commit/4707826bd1dff114addb16372f58b7cfc19a8ffc))
+- **template_cache_generator:** Support custom template path resolution
+  ([f5bf7eff](https://github.com/angular/angular.dart/commit/f5bf7effaacb9d2423e033a8d7ade122eef6910c),
+   [#923](https://github.com/angular/angular.dart/issues/923))
+- **transformers:** Add angular transformers to pub for no-mirror code generation
+  ([3fb21818](https://github.com/angular/angular.dart/commit/3fb218180b17bdc9808e575e3a9aaf9928fef28b))
+- **travis:**
+  - Firefox
+  ([23a3e35f](https://github.com/angular/angular.dart/commit/23a3e35f22489f66692d0559421f33cff0926ab7),
+   [#801](https://github.com/angular/angular.dart/issues/801))
+  - Only submit if all the builds complete
+  ([633d323d](https://github.com/angular/angular.dart/commit/633d323d672ee67ab2dbbd1dd6711a45aa86b0b5))
+- **view factory:** Each css file has its own &lt;style&gt; tag
+  ([4c81989f](https://github.com/angular/angular.dart/commit/4c81989fb404279c516ef11a5dccf067831732e0))
+
+
+## Performance Improvements
+
+- **DirtyCheckingChangeDetectorGroup:** Disable calls to _assertRecordsOk().
+  ([d6b9bb70](https://github.com/angular/angular.dart/commit/d6b9bb708af9b44b59e482d1a8588c29a2a3608f),
+   [#813](https://github.com/angular/angular.dart/issues/813))
+- **compiler:** 45x speedup. Cache the attribute keys.
+  ([556ef5cf](https://github.com/angular/angular.dart/commit/556ef5cfea30f210e5d56b42a054f46bbfdcf640))
+- **element_binder:** use every rather than reduce
+  ([27e2845d](https://github.com/angular/angular.dart/commit/27e2845d69597f2bfe4da7aa00cc8bc614e8ad19))
+
+
+## Breaking Changes
+
+- **NgAnnotation:** due to [5ec7e831](https://github.com/angular/angular.dart/commit/5ec7e831052ce1fe5af70dc970941a4a884a9e02),
+  `publishTypes` parameter is removed.
+
+  ```
+  @NgDirective(
+    publishTypes: [FooInt]
+  )
+  class Foo extends FooInt {
+  }
+  ```
+
+  becomes
+
+  ```
+  @NgDirective(
+    module: Foo.module,
+    visibility: NgDirective.LOCAL_VISIBILITY
+  )
+  class Foo extends FooInt {
+    module() => new Module()
+      ..factory(FooInt,
+                (i) => i.get(Foo),
+                visibility: NgDirective.LOCAL_VISIBILITY)
+  }
+  ```
+
+  Closes #779
+- **bootstrap:** due to [155582d1](https://github.com/angular/angular.dart/commit/155582d199e25aa69ff803b228c3c3c0e5b9ac70),
+
+  - import:
+    - angular/angular_dynamic.dart -> angular/application_factory.dart
+    - angular/angular_static.dart  -> angular/application_factory_static.dart
+
+  - functions:
+    - dynamicApplication()         -> applicationFactory()
+    - staticApplication()          -> staticApplicationFactory()
+- **forms:** due to [e5baa502](https://github.com/angular/angular.dart/commit/e5baa50235aa3ec53f00f87b86dab78ef5882900),
+  All form code that uses control.valid_submit and control.invalid_submit will throw an error. Instead use control.validSubmit
+  and control.invalidSubmit to checkthe submission validitity on a control.
+
+  Closes #793
+- **selector_spec:** due to [c03c538d](https://github.com/angular/angular.dart/commit/c03c538d31f01b7f543a03441fec613c2df2d641),
+  This relaxs the assumption that directives will be created in the same order everywhere.
+  For #801
+- **nameing:** due to [f055ab6f](https://github.com/angular/angular.dart/commit/f055ab6f7c4fadfdbb6a46d8bc547b304586d95c)
+  Closes #902
+
+  BREAKING CHANGE: These are the renames
+
+  - Concepts:
+    ```
+    - Filter                        -> Formatter
+    ```
+
+  - Importing:
+    ```
+    - angular/directive/ng_a.dart   -> angular/directive/a_href.dart
+    - angular/filter/currency.dart  -> angular/formatter/currency.dart
+    - angular/filter/date.dart      -> angular/formatter/date.dart
+    - angular/filter/filter.dart    -> angular/formatter/filter.dart
+    - angular/filter/json.dart      -> angular/formatter/json.dart
+    - angular/filter/limit_to.dart  -> angular/formatter/limit_to.dart
+    - angular/filter/lowercase.dart -> angular/formatter/lowercase.dart
+    - angular/filter/module.dart    -> angular/formatter/module.dart
+    - angular/filter/number.dart    -> angular/formatter/number.dart
+    - angular/filter/order_by.dart  -> angular/formatter/order_by.dart
+    - angular/filter/stringify.dart -> angular/formatter/stringify.dart
+    - angular/filter/uppercase.dart -> angular/formatter/uppercase.dart
+    ```
+
+  - Types:
+    ```
+    - NgA                           -> AHref
+    - NgAttachAware                 -> AttachAware
+    - NgDetachAware                 -> DetachAware
+    - NgShadowRootAware             -> ShadowRootAware
+    - NgFilter                      -> Formatter
+    - NgInjectableService           -> Injectable
+    - AbstractNgAnnotation          -> Directive
+    - AbstractNgFieldAnnotation     -> DirectiveAnnotation
+    - NgComponent                   -> Component
+    - NgController                  -> Controller
+    - NgDirective                   -> Decorator
+    - NgAnimate                     -> Animate
+    - NgZone                        -> VmTurnZone
+    - NgAnimationModule             -> AnimationModule
+    - NgCoreModule                  -> CoreModule
+    - NgCoreDomModule               -> CoreDomModule
+    - NgAnimationDirective          -> NgAnimation
+    - NgAnimationChildrenDirective  -> NgAnimationChildren
+    - FilterMap                     -> FormatterMap
+    - NgAttrMustacheDirective       -> AttrMustache
+    - NgTextMustacheDirective       -> TextMustache
+    ```
+
+  - Constants
+    ```
+    - NgDirective.LOCAL_VISIBILITY           -> Directive.LOCAL_VISIBILITY
+    - NgDirective.CHILDREN_VISIBILITY        -> Directive.CHILDREN_VISIBILITY
+    - NgDirective.DIRECT_CHILDREN_VISIBILITY -> Directive.DIRECT_CHILDREN_VISIBILITY
+    ```
+
 <a name="v0.9.10"></a>
 # v0.9.10 llama-magnetism (2014-03-20)
 
