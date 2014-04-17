@@ -3,6 +3,10 @@
 set -e
 . ./scripts/env.sh
 
+echo '==========='
+echo '== BUILD =='
+echo '==========='
+
 SIZE_TOO_BIG_COUNT=0
 
 function checkSize() {
@@ -22,6 +26,10 @@ function checkSize() {
 
 # skip auxiliary tests if we are only running dart2js
 if [[ $TESTS == "dart2js" ]]; then
+  echo '------------------------'
+  echo '-- BUILDING: examples --'
+  echo '------------------------'
+  
   if [[ $CHANNEL == "DEV" ]]; then
     dart "bin/pub_build.dart" -p example -e "example/expected_warnings.json"
   else
@@ -29,6 +37,9 @@ if [[ $TESTS == "dart2js" ]]; then
   fi
 
   (
+    echo '-----------------------------------'
+    echo '-- BUILDING: verify dart2js size --'
+    echo '-----------------------------------'
     cd example
     checkSize build/web/animation.dart.js 208021
     checkSize build/web/bouncing_balls.dart.js 202325
@@ -42,14 +53,23 @@ if [[ $TESTS == "dart2js" ]]; then
   )
 else
   # run io tests
+  echo '--------------'
+  echo '-- TEST: io --'
+  echo '--------------'
   dart -c test/io/all.dart
 
   ./scripts/generate-expressions.sh
   ./scripts/analyze.sh
 
+  echo '---------------------'
+  echo '-- TEST: changelog --'
+  echo '---------------------'
   ./node_modules/jasmine-node/bin/jasmine-node ./scripts/changelog/;
 
   (
+    echo '----------------'
+    echo '-- TEST: perf --'
+    echo '----------------'
     cd perf
     pub install
     for file in *_perf.dart; do
@@ -66,6 +86,10 @@ elif [[ $TESTS == "vm" ]]; then
   BROWSERS=Dartium;
 fi
 
+echo '-----------------------'
+echo '-- TEST: AngularDart --'
+echo '-----------------------'
+echo BROWSER=$BROWSERS
 ./node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
   node "node_modules/karma/bin/karma" start karma.conf \
     --reporters=junit,dots --port=8765 --runner-port=8766 \

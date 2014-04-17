@@ -3,6 +3,9 @@
 CHANNEL=`echo $JOB | cut -f 2 -d -`
 SHA=`git rev-parse HEAD`
 
+echo '==================='
+echo '== DOCS: publish =='
+echo '==================='
 echo Current channel is: $CHANNEL
 echo Current branch is: $TRAVIS_BRANCH
 echo Test result is: $TRAVIS_TEST_RESULT

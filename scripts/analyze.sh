@@ -4,6 +4,10 @@ set -e
 
 . $(dirname $0)/env.sh
 
+echo '==========='
+echo '== BUILD =='
+echo '==========='
+
 OUT=tmp/all.dart
 mkdir -p tmp
 

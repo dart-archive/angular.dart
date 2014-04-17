@@ -34,3 +34,16 @@ export DART_DOCGEN=${DART_DOCGEN:-"$DARTSDK/bin/docgen"}
 export DARTIUM_BIN=${DARTIUM_BIN:-"$DARTIUM"}
 export CHROME_BIN=${CHROME_BIN:-"google-chrome"}
 export PATH=$PATH:$DARTSDK/bin
+
+echo '*********'
+echo '** ENV **'
+echo '*********'
+echo DART_SDK=$DART_SDK
+echo DART=$DART
+echo PUB=$PUB
+echo DARTANALYZER=$DARTANALYZER
+echo DARTDOC=$DARTDOC
+echo DART_DOCGEN=$DART_DOCGEN
+echo DARTIUM_BIN=$DARTIUM_BIN
+echo CHROME_BIN=$CHROME_BIN
+echo PATH=$PATH
