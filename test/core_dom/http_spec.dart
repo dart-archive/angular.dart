@@ -940,8 +940,8 @@ void main() {
 
         var called = 0;
         zone.run(() {
-          http.getString('a[not sent to backed]').then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a[not sent to backed]').then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
         });
@@ -959,12 +959,12 @@ void main() {
 
         var called = 0;
         zone.run(() {
-          http.getString('a[some string]', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a[some string]', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
-          http.getString('a[different string]', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a[different string]', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -979,8 +979,8 @@ void main() {
       it('should support caching', async((Http http, VmTurnZone zone) {
         var called = 0;
         zone.run(() {
-          http.getString('fromCache', cache: cache).then((v) {
-            expect(v).toEqual(CACHED_VALUE);
+          http.get('fromCache', cache: cache).then((v) {
+            expect(v.responseText).toEqual(CACHED_VALUE);
             called += 1;
           });
         });
@@ -995,12 +995,12 @@ void main() {
 
         var called = 0;
         zone.run(() {
-          http.getString('a').then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a').then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
-          http.getString('a').then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a').then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -1018,12 +1018,12 @@ void main() {
 
         var called = 0;
         zone.run(() {
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -1040,8 +1040,8 @@ void main() {
 
         var called = 0;
         zone.run(() {
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
         });
@@ -1050,8 +1050,8 @@ void main() {
         flush();
 
         zone.run(() {
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -1067,8 +1067,8 @@ void main() {
         var called = 0;
         // The URL string 'f' is primed in the FakeCache
         zone.run(() {
-          http.getString('f', cache: cache).then((v) {
-            expect(v).toEqual(CACHED_VALUE);
+          http.get('f', cache: cache).then((v) {
+            expect(v.responseText).toEqual(CACHED_VALUE);
             called += 1;
           });
           expect(called).toEqual(0);
@@ -1085,7 +1085,7 @@ void main() {
 
         var response = null;
         zone.run(() {
-          http.getString('404.html').then(
+          http.get('404.html').then(
                   (v) => response = 'FAILED',
               onError:(v) { assert(v != null); return response = v; });
         });

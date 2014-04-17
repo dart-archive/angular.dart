@@ -138,8 +138,8 @@ class ViewCache {
   }
 
   async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives) {
-    return http.getString(url, cache: templateCache).then(
-        (html) => fromHtml(html, directives));
+    return http.get(url, cache: templateCache).then(
+        (resp) => fromHtml(resp.responseText, directives));
   }
 }
 
@@ -182,8 +182,8 @@ class _ComponentFactory implements Function {
     var cssUrls = []..addAll(_baseCss.urls)..addAll(component.cssUrls);
     if (cssUrls.isNotEmpty) {
       cssUrls.forEach((css) => cssFutures.add(http
-          .getString(css, cache: templateCache)
-          .catchError((e) => '/*\n$e\n*/\n')
+          .get(css, cache: templateCache).then((resp) => resp.responseText,
+            onError: (e) => '/*\n$e\n*/\n')
       ));
     } else {
       cssFutures.add(new async.Future.value(null));

@@ -480,7 +480,7 @@ void main() {
         });
 
         it('should fire onTemplate method', async((Compiler compile, Logger logger, MockHttpBackend backend) {
-          backend.whenGET('some/template.url').respond('<div>WORKED</div>');
+          backend.whenGET('some/template.url').respond(200, '<div>WORKED</div>');
           var scope = _.rootScope.createChild({});
           scope.context['isReady'] = 'ready';
           scope.context['logger'] = logger;
@@ -503,6 +503,7 @@ void main() {
           expect(logger).toEqual(expected);
           logger.clear();
 
+          microLeap();
           backend.flush();
           microLeap();
           expect(logger).toEqual(['templateLoaded', _.rootScope.context['shadowRoot']]);
