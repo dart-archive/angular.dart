@@ -421,7 +421,7 @@ void main() {
       expect(invokedFirst && invokedSecond).toEqual(true);
     }));
 
-    it('should not digest when executing in AtMostOneMicrotaskZone', (Logger log) {
+    iit('should not digest when executing in AtMostOneMicrotaskZone', (Logger log) {
       var ngZone = new NgZone();
       ngZone.onTurnDone = () {
         log('onTurnDone');
@@ -468,7 +468,28 @@ void main() {
     expect(log.result()).toEqual('insideNgZone; insideAtMostOneMicrotaskZone; onTurnDone; clickInvoked; insideNgZone; onTurnDone; clickInvoked; insideNgZone; onTurnDone');
   });
 
-    iit('should allow scheduling a microtask outside zone only once', async(() {
+  it('should not allow registering a callback from a callback', () {
+    var ngZone = new NgZone();
+    var error;
+    var elementOne = document.createElement('div');
+    var elementTwo = document.createElement('div');
+    var atMostOneMicrotaskZone = new AtMostOneMicrotaskZone();
+    atMostOneMicrotaskZone.onError = (e,_,__) => error = e;
+    ngZone.run(() {
+      atMostOneMicrotaskZone.run(() {
+        elementOne.onClick.listen((_) {
+          elementTwo.onClick.listen((_) {
+            // Should not happen
+          });
+        });
+      });
+    });
+    // First dispatch must execute and try to register another callback.
+    elementOne.dispatchEvent(new MouseEvent('click'));
+    expect(error is ScheduleMicrotaskError).toBe(true);
+  });
+
+    it('should allow scheduling a microtask outside zone only once', async(() {
       var zone = new NgZone();
       var atMostOneMicrotaskZone = new AtMostOneMicrotaskZone();
       var invokedFirst = false;
