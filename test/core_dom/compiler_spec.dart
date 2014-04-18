@@ -19,6 +19,16 @@ forBothCompilers(fn) {
     });
     fn();
   });
+
+  describe('transcluding components', () {
+    beforeEachModule((Module m) {
+      m.type(Compiler, implementedBy: TaggingCompiler);
+      m.type(ComponentFactory, implementedBy: TranscludingComponentFactory);
+
+      return m;
+    });
+    fn();
+  });
 }
 
 void main() {
@@ -207,7 +217,6 @@ void main() {
     describe('components', () {
       beforeEachModule((Module module) {
         module
-          ..type(SimpleComponent)
           ..type(CamelCaseMapComponent)
           ..type(IoComponent)
           ..type(IoControllerComponent)
@@ -221,31 +230,77 @@ void main() {
           ..type(AttachDetachComponent)
           ..type(SimpleAttachComponent)
           ..type(SimpleComponent)
+          ..type(SometimesComponent)
           ..type(ExprAttrComponent)
           ..type(LogElementComponent)
           ..type(SayHelloFilter);
       });
 
-      it('should select on element', async((VmTurnZone zone) {
+      it('should select on element', async(() {
         var element = _.compile(r'<div><simple></simple></div>');
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('INNER()');
       }));
 
+      it('should tranclude correctly', async(() {
+        var element = _.compile(r'<div><simple>trans</simple></div>');
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('INNER(trans)');
+      }));
+
+      it('should tranclude if content was not present initially', async(() {
+        var element = _.compile(r'<div>And <sometimes sometimes=sometimes>jump</sometimes></div>');
+        document.body.append(element);
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('And ');
+
+        _.rootScope.context['sometimes'] = true;
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('And jump');
+      }));
+
+      it('should redistribute content when the content tag disappears', async(() {
+        var element = _.compile(r'<div>And <sometimes sometimes=sometimes>jump</sometimes></div>');
+        document.body.append(element);
+
+        _.rootScope.context['sometimes'] = true;
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('And jump');
+
+        _.rootScope.context['sometimes'] = false;
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('And ');
+
+        _.rootScope.context['sometimes'] = true;
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('And jump');
+      }));
+
       it('should store ElementProbe with Elements', async(() {
         _.compile('<div><simple>innerText</simple></div>');
         microLeap();
+        _.rootScope.apply();
         var simpleElement = _.rootElement.querySelector('simple');
-        expect(simpleElement.text).toEqual('innerText');
+        expect(simpleElement).toHaveText('INNER(innerText)');
         var simpleProbe = ngProbe(simpleElement);
         var simpleComponent = simpleProbe.injector.get(SimpleComponent);
         expect(simpleComponent.scope.context['name']).toEqual('INNER');
         var shadowRoot = simpleElement.shadowRoot;
-        var shadowProbe = ngProbe(shadowRoot);
-        expect(shadowProbe).toBeNotNull();
-        expect(shadowProbe.element).toEqual(shadowRoot);
-        expect(shadowProbe.parent.element).toEqual(simpleElement);
+
+        // If there is no shadow root, skip this.
+        if (shadowRoot != null) {
+          var shadowProbe = ngProbe(shadowRoot);
+          expect(shadowProbe).toBeNotNull();
+          expect(shadowProbe.element).toEqual(shadowRoot);
+          expect(shadowProbe.parent.element).toEqual(simpleElement);
+        }
       }));
 
       it('should create a simple component', async((VmTurnZone zone) {
@@ -441,7 +496,7 @@ void main() {
         }
       }));
 
-      it('should publish component controller into the scope', async((VmTurnZone zone) {
+      it('should publish component controller into the scope', async(() {
         var element = _.compile(r'<div><publish-me></publish-me></div>');
         microLeap();
         _.rootScope.apply();
@@ -479,7 +534,7 @@ void main() {
             ..value(MockHttpBackend, httpBackend);
         });
 
-        it('should fire onTemplate method', async((Compiler compile, Logger logger, MockHttpBackend backend) {
+        it('should fire onShadowRoot method', async((Compiler compile, Logger logger, MockHttpBackend backend) {
           backend.whenGET('some/template.url').respond(200, '<div>WORKED</div>');
           var scope = _.rootScope.createChild({});
           scope.context['isReady'] = 'ready';
@@ -532,7 +587,9 @@ void main() {
           backend.whenGET('foo.html').respond('<div>WORKED</div>');
           _.compile('<log-element></log-element>');
           Element element = _.rootElement;
-          expect(log).toEqual([element, element, element.shadowRoot]);
+          expect(log).toEqual([element, element,
+            // If we don't have a shadowRoot, this is an invalid check
+            element.shadowRoot != null ? element.shadowRoot : log[2]]);
         }));
       });
 
@@ -748,6 +805,16 @@ class SimpleComponent {
   SimpleComponent(Scope this.scope) {
     scope.context['name'] = 'INNER';
   }
+}
+
+
+@Component(
+  selector: 'sometimes',
+  template: r'<div ng-if="ctrl.sometimes"><content></content></div>',
+  publishAs: 'ctrl')
+class SometimesComponent {
+  @NgTwoWay('sometimes')
+  var sometimes;
 }
 
 @Component(
