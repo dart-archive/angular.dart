@@ -140,15 +140,33 @@ class Expect {
   }
 
   _elementText(n, [bool notShadow = false]) {
-    if (n is List) {
+    if (n is Iterable) {
       return n.map((nn) => _elementText(nn)).join("");
     }
 
     if (n is Comment) return '';
 
     if (!notShadow && n is Element && n.shadowRoot != null) {
-      var shadowText = n.shadowRoot.text;
+      var cShadows = n.shadowRoot.nodes.map((n) => n.clone(true)).toList();
+      for (var i = 0, ii = cShadows.length; i < ii; i++) {
+        var n = cShadows[i];
+        if (n is Element) {
+          var updateElement = (e) {
+            var text = new Text('SHADOW-CONTENT');
+            if (e.parent == null) {
+              cShadows[i] = text;
+            } else {
+              e.parent.insertBefore(text, e);
+            }
+            e.nodes = [];
+          };
+          if (n is ContentElement) { updateElement(n); }
+          n.querySelectorAll('content').forEach(updateElement);
+        }
+      };
+      var shadowText = _elementText(cShadows, true);
       var domText = _elementText(n, true);
+
       return shadowText.replaceFirst("SHADOW-CONTENT", domText);
     }
 

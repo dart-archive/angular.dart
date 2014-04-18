@@ -849,7 +849,7 @@ class ParentExpressionComponent {
 
 @Component(
     selector: 'publish-me',
-    template: r'<content>{{ctrlName.value}}</content>',
+    template: r'{{ctrlName.value}}',
     publishAs: 'ctrlName')
 class PublishMeComponent {
   String value = 'WORKED';

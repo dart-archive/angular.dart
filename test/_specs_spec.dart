@@ -26,9 +26,18 @@ main() {
         var elt = e('<div>DOM content</div>');
         var shadow = elt.createShadowRoot();
         shadow.setInnerHtml(
-            '<div>Shadow content</div><content>SHADOW-CONTENT</content>',
+            '<div>Shadow content</div><content></content>',
             treeSanitizer: new NullTreeSanitizer());
         expect(elt).toHaveText('Shadow contentDOM content');
+      });
+
+      it('should work with shadow DOM even if content is not a direct child of shadow root', () {
+        var elt = e('<div>DOM content</div>');
+        var shadow = elt.createShadowRoot();
+        shadow.setInnerHtml(
+            '<div>Shadow content</div><span>:[<content></content>]</span>',
+            treeSanitizer: new NullTreeSanitizer());
+        expect(elt).toHaveText('Shadow content:[DOM content]');
       });
 
       it('should ignore comments', () {
