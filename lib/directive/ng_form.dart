@@ -17,10 +17,11 @@ part of angular.directive;
 @Decorator(
     selector: '[ng-form]',
     module: NgForm.module,
-    map: const { 'ng-form': '@name' })
-class NgForm extends NgControl {
+    map: const { 'ng-form': '@name' },
+    visibility: Directive.CHILDREN_VISIBILITY)
+class NgForm extends FormControl {
   static final Module _module = new Module()
-      ..bind(NgControl, toFactory: (i) => i.get(NgForm));
+      ..bind(FormControl, toFactory: (i) => i.get(NgForm));
   static module() => _module;
 
   final Scope _scope;
@@ -71,11 +72,11 @@ class NgForm extends NgControl {
     * Returns the child control that is associated with the given name. If multiple
     * child controls contain the same name then the first instance will be returned.
     */
-  NgControl operator[](String name) =>
+  FormControl operator[](String name) =>
       controls.containsKey(name) ? controls[name][0] : null;
 }
 
-class NgNullForm extends NgNullControl implements NgForm {
+class NgNullForm extends NullFormControl implements NgForm {
   var _scope;
 
   NgNullForm() {}

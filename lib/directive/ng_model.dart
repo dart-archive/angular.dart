@@ -27,7 +27,7 @@ class _NoopModelConverter extends NgModelConverter {
  * (to be implemented)
  */
 @Decorator(selector: '[ng-model]')
-class NgModel extends NgControl implements AttachAware {
+class NgModel extends FormControl implements AttachAware {
   final Scope _scope;
 
   BoundSetter setter = (_, [__]) => null;
@@ -84,19 +84,19 @@ class NgModel extends NgControl implements AttachAware {
   }
 
   void markAsUntouched() {
-    removeInfoState(this, NgControl.NG_TOUCHED);
+    removeInfoState(this, FormControl.NG_TOUCHED);
   }
 
   void markAsTouched() {
-    addInfoState(this, NgControl.NG_TOUCHED);
+    addInfoState(this, FormControl.NG_TOUCHED);
   }
 
   void markAsPristine() {
-    removeInfoState(this, NgControl.NG_DIRTY);
+    removeInfoState(this, FormControl.NG_DIRTY);
   }
 
   void markAsDirty() {
-    addInfoState(this, NgControl.NG_DIRTY);
+    addInfoState(this, FormControl.NG_DIRTY);
   }
 
   /**
@@ -239,9 +239,9 @@ class NgModel extends NgControl implements AttachAware {
     }
 
     if (invalid) {
-      addInfo(NgControl.NG_INVALID);
+      addInfo(FormControl.NG_INVALID);
     } else {
-      removeInfo(NgControl.NG_INVALID);
+      removeInfo(FormControl.NG_INVALID);
     }
   }
 
