@@ -215,6 +215,7 @@ main() {
         "angular.formatter_internal.Json",
         "angular.formatter_internal.LimitTo",
         "angular.formatter_internal.Lowercase",
+        "angular.formatter_internal.MapItems",
         "angular.formatter_internal.Number",
         "angular.formatter_internal.OrderBy",
         "angular.formatter_internal.Stringify",
