@@ -421,7 +421,7 @@ void main() {
       expect(invokedFirst && invokedSecond).toEqual(true);
     }));
 
-    iit('should not digest when executing in AtMostOneMicrotaskZone', (Logger log) {
+    it('should not digest when executing in AtMostOneMicrotaskZone', (Logger log) {
       var ngZone = new NgZone();
       ngZone.onTurnDone = () {
         log('onTurnDone');
@@ -443,51 +443,80 @@ void main() {
       expect(log.result()).toEqual('insideNgZone; insideAtMostOneMicrotaskZone; onTurnDone; clickInvoked; clickInvoked');
     });
 
-  it('should allow reentry to when executing in AtMostOneMicrotaskZone', (Logger log) {
-    var ngZone = new NgZone();
-    ngZone.onTurnDone = () {
-      log('onTurnDone');
-    };
-    var element = document.createElement('div');
-    ngZone.run(() {
-      log('insideNgZone');
-      new AtMostOneMicrotaskZone().run(() {
-        log('insideAtMostOneMicrotaskZone');
-        element.onClick.listen((_) {
-          log('clickInvoked');
-          ngZone.run(() {
-            log('insideNgZone');
+    it('should allow reentry to when executing in AtMostOneMicrotaskZone', (Logger log) {
+      var ngZone = new NgZone();
+      ngZone.onTurnDone = () {
+        log('onTurnDone');
+      };
+      var element = document.createElement('div');
+      ngZone.run(() {
+        log('insideNgZone');
+        new AtMostOneMicrotaskZone().run(() {
+          log('insideAtMostOneMicrotaskZone');
+          element.onClick.listen((_) {
+            log('clickInvoked');
+            ngZone.run(() {
+              log('insideNgZone');
+            });
           });
         });
       });
+      // First dispatch must execute and than trigger digest.
+      element.dispatchEvent(new MouseEvent('click'));
+      // Second dispatch must go through as well, and also  trigger digest.
+      element.dispatchEvent(new MouseEvent('click'));
+      expect(log.result()).toEqual('insideNgZone; insideAtMostOneMicrotaskZone; onTurnDone; clickInvoked; insideNgZone; onTurnDone; clickInvoked; insideNgZone; onTurnDone');
     });
-    // First dispatch must execute and than trigger digest.
-    element.dispatchEvent(new MouseEvent('click'));
-    // Second dispatch must go through as well, and also  trigger digest.
-    element.dispatchEvent(new MouseEvent('click'));
-    expect(log.result()).toEqual('insideNgZone; insideAtMostOneMicrotaskZone; onTurnDone; clickInvoked; insideNgZone; onTurnDone; clickInvoked; insideNgZone; onTurnDone');
-  });
 
-  it('should not allow registering a callback from a callback', () {
-    var ngZone = new NgZone();
-    var error;
-    var elementOne = document.createElement('div');
-    var elementTwo = document.createElement('div');
-    var atMostOneMicrotaskZone = new AtMostOneMicrotaskZone();
-    atMostOneMicrotaskZone.onError = (e,_,__) => error = e;
-    ngZone.run(() {
-      atMostOneMicrotaskZone.run(() {
-        elementOne.onClick.listen((_) {
+    // TODO: what about this?
+    it('should allow reentry to when executing in AtMostOneMicrotaskZone', (Logger log) {
+      var ngZone = new NgZone();
+      ngZone.onTurnDone = () {
+        log('onTurnDone');
+      };
+      var elementOne = document.createElement('div');
+      var elementTwo = document.createElement('div');
+      ngZone.run(() {
+        log('insideNgZone');
+        new AtMostOneMicrotaskZone().run(() {
+          log('insideAtMostOneMicrotaskZone');
+          elementOne.onClick.listen((_) {
+            log('clickInvoked');
+          });
           elementTwo.onClick.listen((_) {
-            // Should not happen
+            log('clickInvoked');
           });
         });
       });
+      // First dispatch must execute and than trigger digest.
+      element.dispatchEvent(new MouseEvent('click'));
+      // Second dispatch must go through as well, and also  trigger digest.
+      element.dispatchEvent(new MouseEvent('click'));
+      expect(log.result()).toEqual('insideNgZone; insideAtMostOneMicrotaskZone; onTurnDone; clickInvoked; insideNgZone; onTurnDone; clickInvoked; insideNgZone; onTurnDone');
     });
-    // First dispatch must execute and try to register another callback.
-    elementOne.dispatchEvent(new MouseEvent('click'));
-    expect(error is ScheduleMicrotaskError).toBe(true);
-  });
+
+    it('should not allow registering a callback from a callback', () {
+      var ngZone = new NgZone();
+      var error;
+      var elementOne = document.createElement('div');
+      var elementTwo = document.createElement('div');
+      ngZone.run(() {
+        var atMostOneMicrotaskZone = new AtMostOneMicrotaskZone();
+        atMostOneMicrotaskZone.onError = (e,_,__) => error = e;
+        atMostOneMicrotaskZone.run(() {
+          print('test1');
+          elementOne.onClick.listen((_) {
+            print('test2');
+            elementTwo.onClick.listen((_) {
+              print('test3');
+            });
+          });
+        });
+      });
+      // First dispatch must execute and try to register another callback.
+      elementOne.dispatchEvent(new MouseEvent('click'));
+      expect(error is ScheduleMicrotaskError).toBe(true);
+    });
 
     it('should allow scheduling a microtask outside zone only once', async(() {
       var zone = new NgZone();
