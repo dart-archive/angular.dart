@@ -495,20 +495,21 @@ void main() {
       expect(log.result()).toEqual('insideNgZone; insideAtMostOneMicrotaskZone; onTurnDone; clickInvoked; insideNgZone; onTurnDone; clickInvoked; insideNgZone; onTurnDone');
     });
 
-    it('should not allow registering a callback from a callback', () {
+    iit('should not allow registering a callback from a callback', () {
       var ngZone = new NgZone();
       var error;
+      ngZone.onError = (e, _, __) {
+        error = e;
+      };
       var elementOne = document.createElement('div');
       var elementTwo = document.createElement('div');
       ngZone.run(() {
         var atMostOneMicrotaskZone = new AtMostOneMicrotaskZone();
         atMostOneMicrotaskZone.onError = (e,_,__) => error = e;
         atMostOneMicrotaskZone.run(() {
-          print('test1');
           elementOne.onClick.listen((_) {
-            print('test2');
             elementTwo.onClick.listen((_) {
-              print('test3');
+              // should cause error
             });
           });
         });

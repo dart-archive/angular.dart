@@ -188,7 +188,6 @@ class NgZone {
 class AtMostOneMicrotaskZone {
   final async.Zone _outerZone = async.Zone.current;
   async.Zone _oneTimeOperationZone;
-  NoMoreMicrotasksZone _noMoreMicrotasksZone;
   bool _scheduledOneTask = false;
   LongStackTrace _longStacktrace = null;
 
@@ -205,15 +204,21 @@ class AtMostOneMicrotaskZone {
         run: _onRun,
         runUnary: _onRunUnary,
         scheduleMicrotask: _onScheduleMicrotaskOnce,
-        handleUncaughtError: _uncaughtError
+        handleUncaughtError: _uncaughtError,
+        registerUnaryCallback: _registerUnaryCallback
     ), zoneValues: {
       'name': 'AtMostOneMicrotaskZone'
     });
-    _noMoreMicrotasksZone = new NoMoreMicrotasksZone();
     onError = (e, s, ls) => _outerZone.handleUncaughtError(e, s);
   }
 
-  dynamic run(fn()) => _oneTimeOperationZone.run(fn);
+  var _allowedFn;
+  var _runningFn;
+
+  dynamic run(fn()) {
+    _allowedFn = _runningFn = fn;
+    _oneTimeOperationZone.run(fn);
+  }
 
   _onRun(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
     return delegate.run(zone, fn);
@@ -221,9 +226,8 @@ class AtMostOneMicrotaskZone {
 
   _onRunUnary(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
               fn(args), args) {
-    return delegate.run(zone, (args) {
-      _noMoreMicrotasksZone.run(() => fn(args));
-    });
+    _runningFn = fn;
+    return delegate.runUnary(zone, fn, args);
   }
 
   _onScheduleMicrotaskOnce(async.Zone self, async.ZoneDelegate delegate,
@@ -235,89 +239,28 @@ class AtMostOneMicrotaskZone {
     delegate.scheduleMicrotask(zone, fn);
   }
 
-  _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
-                 e, StackTrace s) {
-    onError(e, s, _longStacktrace);
-  }
-}
-
-class NoMoreMicrotasksZone {
-  final async.Zone _parentZone = async.Zone.current;
-  async.Zone _noMoreMicrotasksZone;
-  LongStackTrace _longStacktrace = null;
-
-  /**
-   * Function executed if there is an error in the zone.
-   *
-   * By default this function is set to let parent zone handle the error. If this is not desired
-   * behavior this function can be overwritten.
-   */
-  ZoneOnError onError;
-
-  NoMoreMicrotasksZone() {
-    _noMoreMicrotasksZone = _parentZone.fork(specification: new async.ZoneSpecification(
-        run: _onRun,
-        runUnary: _onRunUnary,
-        scheduleMicrotask: _onScheduleMicrotask,
-        handleUncaughtError: _uncaughtError,
-        registerCallback: _registerCallback,
-        registerUnaryCallback: _registerUnaryCallback,
-        registerBinaryCallback: _registerBinaryCallback,
-        createTimer: _createTimer,
-        createPeriodicTimer: _createPeriodicTimer
-    ), zoneValues: {
-      'name': 'NoMoreMicrotasksZone'
-    });
-    onError = (e, s, ls) => _parentZone.handleUncaughtError(e, s);
-  }
-
-  dynamic run(fn()) => _noMoreMicrotasksZone.run(fn);
-
-  _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate,
-                           async.Zone zone, fn()) {
-    print('onSchedule');
-    delegate.scheduleMicrotask(zone, fn);
-  }
-
-  _onRun(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
-    print('No more onRun');
-    return delegate.run(zone, fn);
-
-  }
-
-  _onRunUnary(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
-              fn(args), args) {
-    print('No more onRunUnary');
-    return delegate.run(zone, fn);
-  }
-
-  _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
-                 e, StackTrace s) {
-    onError(e, s, _longStacktrace);
-  }
-
   _registerCallback(async.Zone self, async.ZoneDelegate parent, async.Zone zone, f()) {
-    print('register callback');
+    print('At most one register callback');
+    if(_runningFn != _allowedFn)
+      throw new ScheduleMicrotaskError();
     return parent.registerCallback(zone, f);
   }
 
   _registerUnaryCallback(async.Zone self, async.ZoneDelegate parent, async.Zone zone, f(arg)) {
-    print('register unary callback');
+    print('At most one register unary callback');
+    if(_runningFn != _allowedFn)
+      throw new ScheduleMicrotaskError();
     return parent.registerUnaryCallback(zone, f);
   }
 
   _registerBinaryCallback(async.Zone self, async.ZoneDelegate parent, async.Zone zone, f(arg1, arg2)) {
-    print('register binary callback');
+    if(_runningFn != _allowedFn)
+      throw new ScheduleMicrotaskError();
     return parent.registerBinaryCallback(zone, f);
   }
 
-  _createTimer(async.Zone self, async.ZoneDelegate parent, async.Zone zone, Duration duration, void f()) {
-    print('Create timer');
-    return parent.createTimer(zone, duration, f);
-  }
-  _createPeriodicTimer(async.Zone self, async.ZoneDelegate parent, async.Zone zone,
-                       Duration period, void f(async.Timer timer)) {
-    print('Create periodic timer');
-    return parent.createPeriodicTimer(zone, period, f);
+  _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
+                 e, StackTrace s) {
+    onError(e, s, _longStacktrace);
   }
 }
