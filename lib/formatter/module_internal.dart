@@ -13,6 +13,7 @@ part 'filter.dart';
 part 'json.dart';
 part 'limit_to.dart';
 part 'lowercase.dart';
+part 'arrayify.dart';
 part 'number.dart';
 part 'order_by.dart';
 part 'uppercase.dart';
@@ -20,6 +21,7 @@ part 'stringify.dart';
 
 class FormatterModule extends Module {
   FormatterModule() {
+    type(Arrayify);
     type(Currency);
     type(Date);
     type(Filter);

@@ -29,6 +29,7 @@ export "package:angular/formatter/module_internal.dart" show
     Json,
     LimitTo,
     Lowercase,
+    Arrayify,
     Number,
     OrderBy,
     Uppercase,
