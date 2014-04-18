@@ -3,7 +3,12 @@ part of angular.core_internal;
 /**
  * Handles an [NgZone] onTurnDone event.
  */
-typedef void ZoneOnTurn();
+typedef void ZoneOnTurnDone();
+
+/**
+ * Handles an [NgZone] onTurnDone event.
+ */
+typedef void ZoneOnTurnStart();
 
 /**
  * Handles an [NgZone] onError event.
@@ -69,14 +74,20 @@ class VmTurnZone {
     ));
     onError = _defaultOnError;
     onTurnDone = _defaultOnTurnDone;
+    onTurnStart = _defaultOnTurnStart;
   }
 
   List _asyncQueue = [];
   bool _errorThrownFromOnRun = false;
 
+  var _currentlyInTurn = false;
   _onRunBase(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
     _runningInTurn++;
     try {
+      if (!_currentlyInTurn) {
+        _currentlyInTurn = true;
+        delegate.run(zone, onTurnStart);
+      }
       return fn();
     } catch (e, s) {
       onError(e, s, _longStacktrace);
@@ -115,11 +126,18 @@ class VmTurnZone {
       // Two loops here: the inner one runs all queued microtasks,
       // the outer runs onTurnDone (e.g. scope.digest) and then
       // any microtasks which may have been queued from onTurnDone.
+      // If any microtasks were scheduled during onTurnDone, onTurnStart
+      // will be executed before those microtasks.
       do {
+        if (!_currentlyInTurn) {
+          _currentlyInTurn = true;
+          delegate.run(zone, onTurnStart);
+        }
         while (!_asyncQueue.isEmpty) {
           delegate.run(zone, _asyncQueue.removeAt(0));
         }
         delegate.run(zone, onTurnDone);
+        _currentlyInTurn = false;
       } while (!_asyncQueue.isEmpty);
     } catch (e, s) {
       onError(e, s, _longStacktrace);
@@ -142,17 +160,30 @@ class VmTurnZone {
       _outerZone.handleUncaughtError(e, s);
 
   /**
+   * Called at the beginning of each VM turn in which inner zone code runs.
+   * "At the beginning" means before any of the microtasks from the private
+   * microtask queue of the inner zone is executed. Notes
+   * - [onTurnStart] runs repeatedly until no more microstasks are scheduled
+   *   within [onTurnStart], [run] or [onTurnDone]. You usually don't want it to
+   *   schedule any.  For example, if its first line of code is `new Future.value()`,
+   *   the turn will _never_ end.
+   */
+  ZoneOnTurnStart onTurnStart;
+  void _defaultOnTurnStart() => null;
+
+
+  /**
    * Called at the end of each VM turn in which inner zone code runs.
    * "At the end" means after the private microtask queue of the inner zone is
    * exhausted but before the next VM turn.  Notes
    * - This won't wait for microtasks scheduled in zones other than the inner
    *   zone, e.g. those scheduled with [runOutsideAngular].
-   * - [onTurnDone] runs repeatedly until it fails to schedule any more
-   *   microtasks, so you usually don't want it to schedule any.  For example,
-   *   if its first line of code is `new Future.value()`, the turn will _never_
-   *   end.
+   * - [onTurnDone] runs repeatedly until no more tasks are scheduled within
+   *   [onTurnStart], [run] or [onTurnDone]. You usually don't want it to
+   *   schedule any.  For example, if its first line of code is `new Future.value()`,
+   *   the turn will _never_ end.
    */
-  ZoneOnTurn onTurnDone;
+  ZoneOnTurnDone onTurnDone;
   void _defaultOnTurnDone() => null;
 
   LongStackTrace _longStacktrace = null;
