@@ -33,6 +33,7 @@ part 'http.dart';
 part 'mustache.dart';
 part 'node_cursor.dart';
 part 'selector.dart';
+part 'shadow_dom_component_factory.dart';
 part 'tagging_compiler.dart';
 part 'tagging_view_factory.dart';
 part 'template_cache.dart';
@@ -52,6 +53,7 @@ class CoreDomModule extends Module {
     type(AttrMustache);
 
     type(Compiler, implementedBy: TaggingCompiler);
+    type(ComponentFactory, implementedBy: ShadowDomComponentFactory);
     type(Http);
     type(UrlRewriter);
     type(HttpBackend);

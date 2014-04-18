@@ -14,9 +14,9 @@ class TemplateElementBinder extends ElementBinder {
     return _directiveCache = [template];
   }
 
-  TemplateElementBinder(_perf, _expando, _parser, this.template, this.templateBinder,
+  TemplateElementBinder(_perf, _expando, _parser, _componentFactory, this.template, this.templateBinder,
                         onEvents, bindAttrs, childMode)
-      : super(_perf, _expando, _parser, null, null, onEvents, bindAttrs, childMode);
+      : super(_perf, _expando, _parser, _componentFactory, null, null, onEvents, bindAttrs, childMode);
 
   String toString() => "[TemplateElementBinder template:$template]";
 
@@ -41,6 +41,7 @@ class ElementBinder {
   final Profiler _perf;
   final Expando _expando;
   final Parser _parser;
+  final ComponentFactory _componentFactory;
   final Map onEvents;
   final Map bindAttrs;
 
@@ -52,7 +53,7 @@ class ElementBinder {
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   final String childMode;
 
-  ElementBinder(this._perf, this._expando, this._parser, this.component, this.decorators,
+  ElementBinder(this._perf, this._expando, this._parser, this._componentFactory, this.component, this.decorators,
                 this.onEvents, this.bindAttrs, this.childMode);
 
   final bool hasTemplate = false;
@@ -214,26 +215,7 @@ class ElementBinder {
       }
       nodesAttrsDirectives.add(ref);
     } else if (ref.annotation is Component) {
-      //nodeModule.factory(type, new ComponentFactory(node, ref.directive), visibility: visibility);
-      // TODO(misko): there should be no need to wrap function like this.
-      nodeModule.factory(ref.type, (Injector injector) {
-        var component = ref.annotation as Component;
-        Compiler compiler = injector.get(Compiler);
-        Scope scope = injector.get(Scope);
-        ViewCache viewCache = injector.get(ViewCache);
-        Http http = injector.get(Http);
-        TemplateCache templateCache = injector.get(TemplateCache);
-        DirectiveMap directives = injector.get(DirectiveMap);
-        NgBaseCss baseCss = injector.get(NgBaseCss);
-        // This is a bit of a hack since we are returning different type then we are.
-        var componentFactory = new _ComponentFactory(node, ref.type, component,
-            injector.get(dom.NodeTreeSanitizer), _expando, baseCss);
-        var controller = componentFactory.call(injector, scope, viewCache, http, templateCache,
-            directives);
-
-        componentFactory.shadowScope.context[component.publishAs] = controller;
-        return controller;
-      }, visibility: visibility);
+      nodeModule.factory(ref.type, _componentFactory.call(node, ref), visibility: visibility);
     } else {
       nodeModule.type(ref.type, visibility: visibility);
     }
