@@ -236,6 +236,7 @@ main() {
         "angular.routing.RouteViewFactory",
         "angular.routing.RoutingModule",
         "angular.watch_group.PrototypeMap",
+        "angular.watch_group.ReactionFn",
         "angular.watch_group.Watch",
         "change_detection.AvgStopwatch",
         "change_detection.FieldGetterFactory",
