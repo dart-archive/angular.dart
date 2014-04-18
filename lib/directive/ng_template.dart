@@ -35,3 +35,5 @@ class NgTemplate {
           ? (element as dom.TemplateElement).content.innerHtml
           : element.innerHtml));
 }
+
+
