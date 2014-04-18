@@ -1,17 +1,17 @@
 part of angular.core_internal;
 
 /**
- * Handles an [NgZone] onTurnDone event.
+ * Handles an [VmTurnZone] onTurnDone event.
  */
 typedef void ZoneOnTurnDone();
 
 /**
- * Handles an [NgZone] onTurnDone event.
+ * Handles an [VmTurnZone] onTurnDone event.
  */
 typedef void ZoneOnTurnStart();
 
 /**
- * Handles an [NgZone] onError event.
+ * Handles an [VmTurnZone] onError event.
  */
 typedef void ZoneOnError(dynamic error, dynamic stacktrace,
                          LongStackTrace longStacktrace);
@@ -47,7 +47,7 @@ class LongStackTrace {
  * all the microtasks scheduled on the inner [Zone].
  *
  * In a typical app, [ngDynamicApp] or [ngStaticApp] will create a singleton
- * [NgZone] whose outer [Zone] is the root [Zone] and whose default [onTurnDone]
+ * [VmTurnZone] whose outer [Zone] is the root [Zone] and whose default [onTurnDone]
  * runs the Angular digest.  A component may want to inject this singleton if it
  * needs to run code _outside_ the Angular digest.
  */
