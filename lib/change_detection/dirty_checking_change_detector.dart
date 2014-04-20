@@ -462,6 +462,7 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
     } else {
       _mode = _MODE_GETTER_;
       _getter = _fieldGetterFactory.getter(obj, field);
+      currentValue = _getter(obj);
     }
   }
 
@@ -489,7 +490,11 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
     }
 
     var last = currentValue;
-    if (!identical(last, current)) {
+    // We use == to check if previous and current value are equal in case we're dealing with
+    // methods because
+    // var a = method1(); var b = method1();
+    // (a == b) == true, while identical(a, b) == false
+    if (current is Function ? last != current : !identical(last, current)) {
       if (last is String && current is String &&
           last == current) {
         // This is false change in strings we need to recover, and pretend it

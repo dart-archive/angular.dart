@@ -116,6 +116,16 @@ main() {
       expect(element.querySelectorAll('span').length).toEqual(2);
     });
 
+    it('should support function as a formatter', () {
+      scope.context['isEven'] = (num) => num % 2 == 0;
+      var element = compile(
+          '<div ng-show="true">'
+            '<span ng-repeat="r in [1, 2, 3, 4] | filter:isEven">{{r}}</span>'
+          '</div>');
+      scope.apply();
+      expect(element.text).toEqual('24');
+    });
+
 
     describe('track by', () {
       it(r'should track using expression function', () {
