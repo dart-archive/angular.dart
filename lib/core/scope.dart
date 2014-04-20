@@ -590,7 +590,7 @@ class RootScope extends Scope {
   String get state => _state;
 
   RootScope(Object context, Parser parser, FieldGetterFactory fieldGetterFactory,
-            FormatterMap filterMap, this._exceptionHandler, this._ttl, this._zone,
+            FormatterMap formatters, this._exceptionHandler, this._ttl, this._zone,
             ScopeStats _scopeStats, ClosureMap closureMap)
       : _scopeStats = _scopeStats,
         _parser = parser,
