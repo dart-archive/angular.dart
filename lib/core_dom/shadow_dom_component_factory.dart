@@ -4,6 +4,7 @@ abstract class ComponentFactory {
   FactoryFn call(dom.Node node, DirectiveRef ref);
 }
 
+@Injectable()
 class ShadowDomComponentFactory implements ComponentFactory {
   final Expando _expando;
 
@@ -21,7 +22,8 @@ class ShadowDomComponentFactory implements ComponentFactory {
         NgBaseCss baseCss = injector.get(NgBaseCss);
         // This is a bit of a hack since we are returning different type then we are.
         var componentFactory = new _ComponentFactory(node, ref.type, component,
-            injector.get(dom.NodeTreeSanitizer), _expando, baseCss);
+            injector.get(dom.NodeTreeSanitizer), _expando, baseCss,
+            injector.get(AnnotationUriResolver));
         var controller = componentFactory.call(injector, scope, viewCache, http, templateCache,
             directives);
 
@@ -45,6 +47,7 @@ class _ComponentFactory implements Function {
   final dom.NodeTreeSanitizer treeSanitizer;
   final Expando _expando;
   final NgBaseCss _baseCss;
+  final AnnotationUriResolver uriResolver;
 
   dom.ShadowRoot shadowDom;
   Scope shadowScope;
@@ -52,7 +55,7 @@ class _ComponentFactory implements Function {
   var controller;
 
   _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer,
-                    this._expando, this._baseCss);
+                    this._expando, this._baseCss, this.uriResolver);
 
   dynamic call(Injector injector, Scope scope,
                ViewCache viewCache, Http http, TemplateCache templateCache,
@@ -67,23 +70,28 @@ class _ComponentFactory implements Function {
     // styles all over the page. We shouldn't be doing browsers work,
     // so change back to using @import once Chrome bug is fixed or a
     // better work around is found.
-        List<async.Future<String>> cssFutures = new List();
-    var cssUrls = []..addAll(_baseCss.urls)..addAll(component.cssUrls);
+    List<async.Future<String>> cssFutures;
+    var componentCssUris = component.cssUrls
+        .map((typeRelativeUri) => uriResolver.resolve(typeRelativeUri, type));
+    var cssUrls = []..addAll(_baseCss.urls)..addAll(componentCssUris);
     if (cssUrls.isNotEmpty) {
-      cssUrls.forEach((css) => cssFutures.add(http
-      .get(css, cache: templateCache).then(
-              (resp) => resp.responseText,
-              onError: (e) => '/*\n$e\n*/\n')
-      ));
+      cssFutures = cssUrls
+          .map((uri) =>
+              http.get(uri, cache: templateCache).then((resp) {
+                return absolute.resolveCssText(
+                    resp.responseText, Uri.parse(uri));
+              }).catchError((e) => '/*\n$e\n*/\n'))
+          .toList();
     } else {
-      cssFutures.add(new async.Future.value(null));
+      cssFutures = [new async.Future.value(null)];
     }
     var viewFuture;
     if (component.template != null) {
       viewFuture = new async.Future.value(viewCache.fromHtml(
           component.template, directives));
     } else if (component.templateUrl != null) {
-      viewFuture = viewCache.fromUrl(component.templateUrl, directives);
+      var url = uriResolver.resolve(component.templateUrl, type);
+      viewFuture = viewCache.fromUrl(url, directives);
     }
     TemplateLoader templateLoader = new TemplateLoader(
         async.Future.wait(cssFutures).then((Iterable<String> cssList) {

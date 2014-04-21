@@ -134,11 +134,12 @@ void main() {
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         var templateSrc = 'base/test/core/simple.html';
         var templateUri = Uri.base.resolve(templateSrc);
-        backend.expectGET(templateSrc).respond('<div><img src="foo.png"/></div>');
+        backend.expectGET(templateSrc).respond(200, '<div><img src="foo.png"/></div>');
 
         var element = es('<div><simple-url log>ignore</simple-url><div>');
         compile(element, directives)(injector, element);
 
+        microLeap();
         backend.flush();
         microLeap();
 
@@ -182,6 +183,7 @@ void main() {
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
         compile([element], directives)(injector, [element]);
 
+        microLeap();
         backend.flush();
         microLeap();
 

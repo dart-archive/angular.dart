@@ -54,13 +54,14 @@ class _StaticApplication extends Application {
                Map<Type, Object> metadata,
                Map<String, FieldGetter> fieldGetters,
                Map<String, FieldSetter> fieldSetters,
-               Map<String, Symbol> symbols) {
+               Map<String, Symbol> symbols,
+               AnnotationUriResolver annotationUriResolver) {
     ngModule
-        ..type(AnnotationUriResolver, implementedBy: StaticAnnotationUriResolver)
         ..value(MetadataExtractor, new StaticMetadataExtractor(metadata))
         ..value(FieldGetterFactory, new StaticFieldGetterFactory(fieldGetters))
         ..value(ClosureMap, new StaticClosureMap(fieldGetters, fieldSetters,
-            symbols));
+            symbols))
+        ..value(AnnotationUriResolver, annotationUriResolver);
   }
 
   Injector createInjector() =>
@@ -99,7 +100,8 @@ Application staticApplicationFactory(
     Map<Type, Object> metadata,
     Map<String, FieldGetter> fieldGetters,
     Map<String, FieldSetter> fieldSetters,
-    Map<String, Symbol> symbols) {
+    Map<String, Symbol> symbols,
+    AnnotationUriResolver annotationUriResolver) {
   return new _StaticApplication(typeFactories, metadata, fieldGetters, fieldSetters,
-      symbols);
+      symbols, annotationUriResolver);
 }
