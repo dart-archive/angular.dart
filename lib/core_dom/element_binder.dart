@@ -14,9 +14,13 @@ class TemplateElementBinder extends ElementBinder {
     return _directiveCache = [template];
   }
 
-  TemplateElementBinder(_perf, _expando, _parser, _componentFactory, this.template, this.templateBinder,
+  TemplateElementBinder(perf, expando, parser, componentFactory,
+                        transcludingComponentFactory, shadowDomComponentFactory,
+                        this.template, this.templateBinder,
                         onEvents, bindAttrs, childMode)
-      : super(_perf, _expando, _parser, _componentFactory, null, null, onEvents, bindAttrs, childMode);
+      : super(perf, expando, parser, componentFactory,
+          transcludingComponentFactory, shadowDomComponentFactory,
+          null, null, onEvents, bindAttrs, childMode);
 
   String toString() => "[TemplateElementBinder template:$template]";
 
@@ -41,7 +45,11 @@ class ElementBinder {
   final Profiler _perf;
   final Expando _expando;
   final Parser _parser;
+
+  // The default component factory
   final ComponentFactory _componentFactory;
+  final TranscludingComponentFactory _transcludingComponentFactory;
+  final ShadowDomComponentFactory _shadowDomComponentFactory;
   final Map onEvents;
   final Map bindAttrs;
 
@@ -53,7 +61,11 @@ class ElementBinder {
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   final String childMode;
 
-  ElementBinder(this._perf, this._expando, this._parser, this._componentFactory, this.component, this.decorators,
+  ElementBinder(this._perf, this._expando, this._parser,
+                this._componentFactory,
+                this._transcludingComponentFactory,
+                this._shadowDomComponentFactory,
+                this.component, this.decorators,
                 this.onEvents, this.bindAttrs, this.childMode);
 
   final bool hasTemplate = false;
@@ -215,7 +227,16 @@ class ElementBinder {
       }
       nodesAttrsDirectives.add(ref);
     } else if (ref.annotation is Component) {
-      nodeModule.factory(ref.type, _componentFactory.call(node, ref), visibility: visibility);
+      var factory;
+      var annotation = ref.annotation as Component;
+      if (annotation.useShadowDom == true) {
+        factory = _shadowDomComponentFactory;
+      } else if (annotation.useShadowDom == false) {
+        factory = _transcludingComponentFactory;
+      } else {
+        factory = _componentFactory;
+      }
+      nodeModule.factory(ref.type, factory.call(node, ref), visibility: visibility);
     } else {
       nodeModule.type(ref.type, visibility: visibility);
     }

@@ -618,6 +618,35 @@ void main() {
           }).toThrow('Unknown selector format \'buttonbar button\' for InvalidSelector');
         });
       });
+
+      describe('useShadowDom option', () {
+        beforeEachModule((Module m) {
+          m.type(ShadowyComponent);
+          m.type(ShadowlessComponent);
+        });
+
+        it('should create shadowy components', async((Logger log) {
+          _.compile('<shadowy></shadowy>');
+          expect(log).toEqual(['shadowy']);
+          expect(_.rootElement.shadowRoot).toBeNotNull();
+        }));
+
+        it('should create shadowless components', async((Logger log) {
+          _.compile('<shadowless></shadowless>');
+          expect(log).toEqual(['shadowless']);
+          expect(_.rootElement.shadowRoot).toBeNull();
+        }));
+
+        it('should create other components with the default strategy', async((ComponentFactory factory) {
+          _.compile('<simple></simple>');
+          if (factory is TranscludingComponentFactory) {
+            expect(_.rootElement.shadowRoot).toBeNull();
+          } else {
+            expect(factory is ShadowDomComponentFactory).toBeTruthy();
+            expect(_.rootElement.shadowRoot).toBeNotNull();
+          }
+        }));
+      });
     });
 
 
@@ -807,6 +836,27 @@ class SimpleComponent {
   }
 }
 
+@Component(
+  selector: 'shadowy',
+  template: r'With shadow DOM',
+  useShadowDom: true
+)
+class ShadowyComponent {
+  ShadowyComponent(Logger log) {
+    log('shadowy');
+  }
+}
+
+@Component(
+    selector: 'shadowless',
+    template: r'Without shadow DOM',
+    useShadowDom: false
+)
+class ShadowlessComponent {
+  ShadowlessComponent(Logger log) {
+    log('shadowless');
+  }
+}
 
 @Component(
   selector: 'sometimes',

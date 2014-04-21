@@ -57,9 +57,11 @@ class CoreDomModule extends Module {
     type(Compiler, implementedBy: TaggingCompiler);
 
     type(ComponentFactory, implementedBy: ShadowDomComponentFactory);
+    type(ShadowDomComponentFactory);
+    type(TranscludingComponentFactory);
     type(_Content);
     value(_ContentPort, null);
-
+    
     type(Http);
     type(UrlRewriter);
     type(HttpBackend);
