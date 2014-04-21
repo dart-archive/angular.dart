@@ -13,6 +13,7 @@ part 'filter.dart';
 part 'json.dart';
 part 'limit_to.dart';
 part 'lowercase.dart';
+part 'map.dart';
 part 'number.dart';
 part 'order_by.dart';
 part 'uppercase.dart';
@@ -26,6 +27,7 @@ class FormatterModule extends Module {
     type(Json);
     type(LimitTo);
     type(Lowercase);
+    type(MapItems);
     type(Number);
     type(OrderBy);
     type(Uppercase);
