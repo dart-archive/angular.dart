@@ -13,11 +13,20 @@ void main() {
     FieldGetterFactory getterFactory = new StaticFieldGetterFactory({
         "first": (o) => o.first,
         "age": (o) => o.age,
-        "last": (o) => o.last
+        "last": (o) => o.last,
+        "toString": (o) => o.toString
     });
 
     beforeEach(() {
       detector = new DirtyCheckingChangeDetector<String>(getterFactory);
+    });
+
+    describe('StaticFieldGetterFactory', () {
+      iit('should detect methods', () {
+        var obj = new _User();
+        expect(getterFactory.isMethod(obj, 'toString')).toEqual(true);
+        expect(getterFactory.isMethod(obj, 'age')).toEqual(false);
+      });
     });
 
     describe('object field', () {
