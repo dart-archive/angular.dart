@@ -57,6 +57,8 @@ class CoreDomModule extends Module {
     type(Compiler, implementedBy: TaggingCompiler);
 
     type(ComponentFactory, implementedBy: ShadowDomComponentFactory);
+    type(ShadowDomComponentFactory);
+    type(TranscludingComponentFactory);
     type(Content);
     value(ContentPort, null);
     
