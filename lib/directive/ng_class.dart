@@ -230,7 +230,7 @@ abstract class _NgClassBase {
         if (toBool(active)) _currentSet.add(cls);
       });
     } else {
-      changes.forEachChange((ChangedKeyValue kv) {
+      changes.forEachChange((MapKeyValue kv) {
         var cls = kv.key;
         var active = toBool(kv.currentValue);
         var wasActive = toBool(kv.previousValue);
