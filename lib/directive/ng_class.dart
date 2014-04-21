@@ -230,7 +230,7 @@ abstract class _NgClassBase {
         if (toBool(active)) _currentSet.add(cls);
       });
     } else {
-      changes.forEachChange((ChangedKeyValue kv) {
+      changes.forEachChange((MapKeyValue kv) {
         var cls = kv.key;
         var active = toBool(kv.currentValue);
         var wasActive = toBool(kv.previousValue);
@@ -242,10 +242,10 @@ abstract class _NgClassBase {
           }
         }
       });
-      changes.forEachAddition((AddedKeyValue kv) {
+      changes.forEachAddition((MapKeyValue kv) {
         if (toBool(kv.currentValue)) _currentSet.add(kv.key);
       });
-      changes.forEachRemoval((RemovedKeyValue kv) {
+      changes.forEachRemoval((MapKeyValue kv) {
         if (toBool(kv.previousValue)) _currentSet.remove(kv.key);
       });
     }
