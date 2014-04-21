@@ -114,19 +114,11 @@ abstract class MapChangeRecord<K, V> {
   /// The underlying map object
   Map get map;
 
-  /// A list of [CollectionKeyValue]s which are in the iteration order. */
-  KeyValue<K, V> get mapHead;
-  PreviousKeyValue<K, V> get previousMapHead;
-  /// A list of changed items.
-  ChangedKeyValue<K, V> get changesHead;
-  /// A list of new added items.
-  AddedKeyValue<K, V> get additionsHead;
-  /// A list of removed items
-  RemovedKeyValue<K, V> get removalsHead;
-
-  void forEachChange(void f(ChangedKeyValue<K, V> change));
-  void forEachAddition(void f(AddedKeyValue<K, V> addition));
-  void forEachRemoval(void f(RemovedKeyValue<K, V> removal));
+  void forEachItem(void f(MapKeyValue<K, V> item));
+  void forEachPreviousItem(void f(MapKeyValue<K, V> previousItem));
+  void forEachChange(void f(MapKeyValue<K, V> change));
+  void forEachAddition(void f(MapKeyValue<K, V> addition));
+  void forEachRemoval(void f(MapKeyValue<K, V> removal));
 }
 
 /**
@@ -142,26 +134,6 @@ abstract class MapKeyValue<K, V> {
 
   /// Current item location in the list or [null] if removal.
   V get currentValue;
-}
-
-abstract class KeyValue<K, V> extends MapKeyValue<K, V> {
-  KeyValue<K, V> get nextKeyValue;
-}
-
-abstract class PreviousKeyValue<K, V> extends MapKeyValue<K, V> {
-  PreviousKeyValue<K, V> get previousNextKeyValue;
-}
-
-abstract class AddedKeyValue<K, V> extends MapKeyValue<K, V> {
-  AddedKeyValue<K, V> get nextAddedKeyValue;
-}
-
-abstract class RemovedKeyValue<K, V> extends MapKeyValue<K, V> {
-  RemovedKeyValue<K, V> get nextRemovedKeyValue;
-}
-
-abstract class ChangedKeyValue<K, V> extends MapKeyValue<K, V> {
-  ChangedKeyValue<K, V> get nextChangedKeyValue;
 }
 
 /**

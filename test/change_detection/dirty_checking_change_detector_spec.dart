@@ -733,19 +733,10 @@ class ChangeMatcher extends Matcher {
 }
 
 abstract class _CollectionMatcher<T> extends Matcher {
-  List<T> _getList(T item, T next(T)) {
+  List<T> _getList(Function it) {
     var result = <T>[];
-    for (; item != null; item = next(item)) {
+    it((item) {
       result.add(item);
-    }
-    return result;
-  }
-
-  // todo(vicb) merge with _getList() once map is refactored
-  List<T> _getCollectionList(Function it) {
-    var result = <T>[];
-    it((CollectionChangeItem i) {
-      result.add(i);
     });
     return result;
   }
@@ -821,7 +812,7 @@ class CollectionRecordMatcher extends _CollectionMatcher<ItemRecord> {
   }
 
   bool checkCollection(CollectionChangeRecord changeRecord, List diffs) {
-    List items = _getCollectionList((fn) => changeRecord.forEachItem(fn));
+    List items = _getList((fn) => changeRecord.forEachItem(fn));
     bool equals = _compareLists("collection", collection, items, diffs);
     int iterableLength = changeRecord.iterable.toList().length;
     if (iterableLength != items.length) {
@@ -832,22 +823,22 @@ class CollectionRecordMatcher extends _CollectionMatcher<ItemRecord> {
   }
 
   bool checkPrevious(CollectionChangeRecord changeRecord, List diffs) {
-    List items = _getCollectionList((fn) => changeRecord.forEachPreviousItem(fn));
+    List items = _getList((fn) => changeRecord.forEachPreviousItem(fn));
     return _compareLists("previous", previous, items, diffs);
   }
 
   bool checkAdditions(CollectionChangeRecord changeRecord, List diffs) {
-    List items = _getCollectionList((fn) => changeRecord.forEachAddition(fn));
+    List items = _getList((fn) => changeRecord.forEachAddition(fn));
     return _compareLists("additions", additions, items, diffs);
   }
 
   bool checkMoves(CollectionChangeRecord changeRecord, List diffs) {
-    List items = _getCollectionList((fn) => changeRecord.forEachMove(fn));
+    List items = _getList((fn) => changeRecord.forEachMove(fn));
     return _compareLists("moves", moves, items, diffs);
   }
 
   bool checkRemovals(CollectionChangeRecord changeRecord, List diffs) {
-    List items = _getCollectionList((fn) => changeRecord.forEachRemoval(fn));
+    List items = _getList((fn) => changeRecord.forEachRemoval(fn));
     return _compareLists("removes", removals, items, diffs);
   }
 }
@@ -893,7 +884,7 @@ class MapRecordMatcher  extends _CollectionMatcher<KeyValueRecord> {
   }
 
   bool checkMap(MapChangeRecord changeRecord, List diffs) {
-    List items = _getList(changeRecord.mapHead, (r) => r.nextKeyValue);
+    List items = _getList((fn) => changeRecord.forEachItem(fn));
     bool equals = _compareLists("map", map, items, diffs);
     int mapLength = changeRecord.map.length;
     if (mapLength != items.length) {
@@ -904,22 +895,22 @@ class MapRecordMatcher  extends _CollectionMatcher<KeyValueRecord> {
   }
 
   bool checkPrevious(MapChangeRecord changeRecord, List diffs) {
-    List items = _getList(changeRecord.previousMapHead, (r) => r.previousNextKeyValue);
+    List items = _getList((fn) => changeRecord.forEachPreviousItem(fn));
     return _compareLists("previous", previous, items, diffs);
   }
 
   bool checkAdditions(MapChangeRecord changeRecord, List diffs) {
-    List items = _getList(changeRecord.additionsHead, (r) => r.nextAddedKeyValue);
+    List items = _getList((fn) => changeRecord.forEachAddition(fn));
     return _compareLists("additions", additions, items, diffs);
   }
 
   bool checkChanges(MapChangeRecord changeRecord, List diffs) {
-    List items = _getList(changeRecord.changesHead, (r) => r.nextChangedKeyValue);
+    List items = _getList((fn) => changeRecord.forEachChange(fn));
     return _compareLists("changes", changes, items, diffs);
   }
 
   bool checkRemovals(MapChangeRecord changeRecord, List diffs) {
-    List items = _getList(changeRecord.removalsHead, (r) => r.nextRemovedKeyValue);
+    List items = _getList((fn) => changeRecord.forEachRemoval(fn));
     return _compareLists("removals", removals, items, diffs);
   }
 }
