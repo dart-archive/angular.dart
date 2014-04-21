@@ -45,7 +45,8 @@ void main() => describe('annotations', () {
         selector: '',
         visibility: Directive.LOCAL_VISIBILITY,
         exportExpressions: [],
-        exportExpressionAttrs: []
+        exportExpressionAttrs: [],
+        useShadowDom: true
       );
 
       // Check that no fields are null
