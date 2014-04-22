@@ -756,12 +756,12 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     if (prev == null) {
       _removalsHead = next;
     } else {
-      prev._nextRemovedKeyValue = next;
+      prev._nextRemoved = next;
     }
     if (next == null) {
       _removalsTail = prev;
     } else {
-      next._prevRemovedKeyValue = prev;
+      next._prevRemoved = prev;
     }
     record._prevRemoved = record._nextRemoved = null;
   }
