@@ -6,17 +6,22 @@ class ElementBinderFactory {
   final Profiler _perf;
   final Expando _expando;
   final ComponentFactory _componentFactory;
+  final TranscludingComponentFactory _transcludingComponentFactory;
+  final ShadowDomComponentFactory _shadowDomComponentFactory;
 
-  ElementBinderFactory(this._parser, this._perf, this._expando, this._componentFactory);
+  ElementBinderFactory(this._parser, this._perf, this._expando, this._componentFactory,
+      this._transcludingComponentFactory, this._shadowDomComponentFactory);
 
   // TODO: Optimize this to re-use a builder.
   ElementBinderBuilder builder() => new ElementBinderBuilder(this);
 
   ElementBinder binder(ElementBinderBuilder b) =>
       new ElementBinder(_perf, _expando, _parser, _componentFactory,
+          _transcludingComponentFactory, _shadowDomComponentFactory,
           b.component, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
       new TemplateElementBinder(_perf, _expando, _parser, _componentFactory,
+          _transcludingComponentFactory, _shadowDomComponentFactory,
           b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
 }
 

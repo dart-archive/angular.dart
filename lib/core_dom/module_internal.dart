@@ -34,9 +34,11 @@ part 'mustache.dart';
 part 'node_cursor.dart';
 part 'selector.dart';
 part 'shadow_dom_component_factory.dart';
+part 'shadowless_shadow_root.dart';
 part 'tagging_compiler.dart';
 part 'tagging_view_factory.dart';
 part 'template_cache.dart';
+part 'transcluding_component_factory.dart';
 part 'tree_sanitizer.dart';
 part 'walking_compiler.dart';
 part 'ng_element.dart';
@@ -53,7 +55,13 @@ class CoreDomModule extends Module {
     type(AttrMustache);
 
     type(Compiler, implementedBy: TaggingCompiler);
+
     type(ComponentFactory, implementedBy: ShadowDomComponentFactory);
+    type(ShadowDomComponentFactory);
+    type(TranscludingComponentFactory);
+    type(_Content);
+    value(_ContentPort, null);
+    
     type(Http);
     type(UrlRewriter);
     type(HttpBackend);

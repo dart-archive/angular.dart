@@ -308,6 +308,13 @@ class Component extends Directive {
   @deprecated
   final String publishAs;
 
+  /**
+   * If set to true, this component will always use shadow DOM.
+   * If set to false, this component will never use shadow DOM.
+   * If unset, the compiler's default construction strategy will be used
+   */
+  final bool useShadowDom;
+
   const Component({
     this.template,
     this.templateUrl,
@@ -320,7 +327,8 @@ class Component extends Directive {
     selector,
     visibility,
     exportExpressions,
-    exportExpressionAttrs})
+    exportExpressionAttrs,
+    this.useShadowDom})
       : _cssUrls = cssUrl,
         _applyAuthorStyles = applyAuthorStyles,
         _resetStyleInheritance = resetStyleInheritance,

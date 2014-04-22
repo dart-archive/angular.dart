@@ -2,6 +2,24 @@ part of angular.core.dom_internal;
 
 abstract class ComponentFactory {
   FactoryFn call(dom.Node node, DirectiveRef ref);
+
+  static _viewFuture(Component component, ViewCache viewCache, DirectiveMap directives) {
+    if (component.template != null) {
+      return new async.Future.value(viewCache.fromHtml(component.template, directives));
+    } else if (component.templateUrl != null) {
+      return viewCache.fromUrl(component.templateUrl, directives);
+    }
+    return null;
+  }
+
+  static TemplateLoader _setupOnShadowDomAttach(controller, templateLoader, shadowScope) {
+    if (controller is ShadowRootAware) {
+      templateLoader.template.then((shadowDom) {
+        if (!shadowScope.isAttached) return;
+        (controller as ShadowRootAware).onShadowRoot(shadowDom);
+      });
+    }
+  }
 }
 
 class ShadowDomComponentFactory implements ComponentFactory {
@@ -12,7 +30,6 @@ class ShadowDomComponentFactory implements ComponentFactory {
   FactoryFn call(dom.Node node, DirectiveRef ref) {
     return (Injector injector) {
         var component = ref.annotation as Component;
-        Compiler compiler = injector.get(Compiler);
         Scope scope = injector.get(Scope);
         ViewCache viewCache = injector.get(ViewCache);
         Http http = injector.get(Http);
@@ -78,13 +95,7 @@ class _ComponentFactory implements Function {
     } else {
       cssFutures.add(new async.Future.value(null));
     }
-    var viewFuture;
-    if (component.template != null) {
-      viewFuture = new async.Future.value(viewCache.fromHtml(
-          component.template, directives));
-    } else if (component.templateUrl != null) {
-      viewFuture = viewCache.fromUrl(component.templateUrl, directives);
-    }
+    var viewFuture = ComponentFactory._viewFuture(component, viewCache, directives);
     TemplateLoader templateLoader = new TemplateLoader(
         async.Future.wait(cssFutures).then((Iterable<String> cssList) {
           if (cssList != null) {
@@ -98,19 +109,14 @@ class _ComponentFactory implements Function {
           if (viewFuture != null) {
             return viewFuture.then((ViewFactory viewFactory) {
               return (!shadowScope.isAttached) ?
-              shadowDom :
-              attachViewToShadowDom(viewFactory);
+                shadowDom :
+                attachViewToShadowDom(viewFactory);
             });
           }
           return shadowDom;
         }));
     controller = createShadowInjector(injector, templateLoader).get(type);
-    if (controller is ShadowRootAware) {
-      templateLoader.template.then((_) {
-        if (!shadowScope.isAttached) return;
-        (controller as ShadowRootAware).onShadowRoot(shadowDom);
-      });
-    }
+    ComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
     return controller;
   }
 
