@@ -29,7 +29,7 @@ if [[ $TESTS == "dart2js" ]]; then
   echo '------------------------'
   echo '-- BUILDING: examples --'
   echo '------------------------'
-  
+
   if [[ $CHANNEL == "DEV" ]]; then
     dart "bin/pub_build.dart" -p example -e "example/expected_warnings.json"
   else
@@ -52,16 +52,24 @@ if [[ $TESTS == "dart2js" ]]; then
     fi
   )
 else
-  # run io tests
   echo '--------------'
   echo '-- TEST: io --'
   echo '--------------'
-  dart -c test/io/all.dart
+  dart --checked test/io/all.dart
 
+  echo '----------------------------'
+  echo '-- TEST: symbol extractor --'
+  echo '----------------------------'
   dart --checked test/tools/symbol_inspector/symbol_inspector_spec.dart
 
   ./scripts/generate-expressions.sh
   ./scripts/analyze.sh
+
+  echo '-----------------------'
+  echo '-- TEST: transformer --'
+  echo '-----------------------'
+  dart --checked test/tools/transformer/all.dart
+
 
   echo '---------------------'
   echo '-- TEST: changelog --'
