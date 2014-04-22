@@ -77,7 +77,7 @@ main() {
                   String get twoWayStuff => null;
                 }
 
-                @NgDirective(selector: r'[*=/{{.*}}/]')
+                @Decorator(selector: r'[*=/{{.*}}/]')
                 class InternalCombustionEngine extends Engine {
                   @NgOneWay('ice-expression')
                   String iceExpression;
@@ -91,7 +91,7 @@ main() {
           ],
           classes: {
             'import_0.InternalCombustionEngine': [
-              'const import_1.NgDirective(selector: r\'[*=/{{.*}}/]\', '
+              'const import_1.Decorator(selector: r\'[*=/{{.*}}/]\', '
                 'map: const {'
                 '\'ice-expression\': \'=>iceExpression\', '
                 '\'another-expression\': \'=>anotherExpression\', '
@@ -109,6 +109,7 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
+                @DummyAnnotation("parse attribute annotations")
                 class Engine {
                   @NgCallback('callback')
                   @NgOneWay('another-expression')
@@ -117,8 +118,17 @@ main() {
                 main() {}
                 '''
           },
+          imports: [
+            'import \'main.dart\' as import_0;',
+            'import \'package:angular/angular.dart\' as import_1;',
+          ],
+          classes: {
+              'import_0.Engine': [
+                  'const import_1.DummyAnnotation("parse attribute annotations")',
+              ]
+          },
           messages: ['warning: callback can only have one annotation. '
-              '(web/main.dart 3 18)']);
+              '(web/main.dart 4 18)']);
     });
 
     it('should warn on duplicated annotations', () {
@@ -200,6 +210,7 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
+                @DummyAnnotation("parse attribute annotations")
                 class Engine {
                   @NgCallback('callback')
                   set callback(Function) {}
@@ -210,8 +221,17 @@ main() {
                 main() {}
                 '''
           },
+          imports: [
+            'import \'main.dart\' as import_0;',
+            'import \'package:angular/angular.dart\' as import_1;',
+          ],
+          classes: {
+              'import_0.Engine': [
+                  'const import_1.DummyAnnotation("parse attribute annotations")',
+              ]
+          },
           messages: ['warning: callback can only have one annotation. '
-              '(web/main.dart 3 18)']);
+              '(web/main.dart 4 18)']);
     });
 
     it('should extract map arguments', () {
@@ -722,8 +742,9 @@ class NgCallback {
 }
 
 class NgAttr {
-  const NgAttr();
+  const NgAttr(arg);
 }
+
 class NgOneWayOneTime {
   const NgOneWayOneTime(arg);
 }
