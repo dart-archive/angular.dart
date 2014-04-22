@@ -97,7 +97,7 @@ main() {
           'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @NgComponent(
+                @Component(
                     templateUrl: 'lib/foo.html',
                     selector: 'my-component')
                 class FooComponent extends BarComponent {
