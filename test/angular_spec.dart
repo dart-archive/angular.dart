@@ -225,6 +225,10 @@ main() {
         "angular.introspection.ngProbe",
         "angular.introspection.ngQuery",
         "angular.introspection.ngScope",
+        // TODO(jdeboer): these are not in root library but should still be verified.
+        //"angular.messages.MessagesModule",
+        //"angular.messages.NgMessages",
+        //"angular.messages.NgMessage",
         "angular.routing.NgBindRoute",
         "angular.routing.ngRoute",
         "angular.routing.NgRouteCfg",
