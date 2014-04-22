@@ -159,8 +159,8 @@ class AnimationModule extends Module {
     type(AnimationLoop);
     type(CssAnimationMap);
     type(AnimationOptimizer);
-    type(NgAnimate);
+    value(NgAnimate, null);
     type(NgAnimateChildren);
-    type(NgAnimate, implementedBy: CssAnimate);
+    type(Animate, implementedBy: CssAnimate);
   }
 }
