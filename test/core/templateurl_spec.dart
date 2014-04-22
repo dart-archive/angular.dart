@@ -1,5 +1,6 @@
 library templateurl_spec;
 
+import 'dart:html' as dom;
 import '../_specs.dart';
 
 @Component(
@@ -58,8 +59,8 @@ void main() {
            DirectiveMap directives) {
 
         backend
-            ..whenGET('PREFIX:simple.html').respond('<div log="SIMPLE">Simple!</div>')
-            ..whenGET('PREFIX:simple.css').respond('.hello{}');
+            ..whenGET('PREFIX:base/test/core/simple.html').respond('<div log="SIMPLE">Simple!</div>')
+            ..whenGET('PREFIX:base/test/core/simple.css').respond('.hello{}');
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
         zone.run(() {
@@ -90,7 +91,7 @@ void main() {
       it('should replace element with template from url', async(inject(
           (Http http, Compiler compile, Scope rootScope,  Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
-        backend.expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
+        backend.expectGET('base/test/core/simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = es('<div><simple-url log>ignore</simple-url><div>');
         compile(element, directives)(injector, element);
@@ -108,7 +109,7 @@ void main() {
       it('should load template from URL once', async(inject(
           (Http http, Compiler compile, Scope rootScope,  Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
-        backend.whenGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
+        backend.whenGET('base/test/core/simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = es(
             '<div>'
@@ -128,12 +129,30 @@ void main() {
         expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
       })));
 
+      it('should use template-relative URIs', async(inject(
+          (Http http, Compiler compile, Scope rootScope,  Logger log,
+           Injector injector, MockHttpBackend backend, DirectiveMap directives) {
+        var templateSrc = 'base/test/core/simple.html';
+        var templateUri = Uri.base.resolve(templateSrc);
+        backend.expectGET(templateSrc).respond(200, '<div><img src="foo.png"/></div>');
+
+        var element = es('<div><simple-url log>ignore</simple-url><div>');
+        compile(element, directives)(injector, element);
+
+        microLeap();
+        backend.flush();
+        microLeap();
+
+        var img = element[0].children[0].shadowRoot.querySelector('img');
+        expect(img.src).toEqual(templateUri.resolve('foo.png').toString());
+      })));
+
       it('should load a CSS file into a style', async(inject(
           (Http http, Compiler compile, Scope rootScope, Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend
-            ..expectGET('simple.css').respond(200, '.hello{}')
-            ..expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
+            ..expectGET('base/test/core/simple.css').respond(200, '.hello{}')
+            ..expectGET('base/test/core/simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
         compile([element], directives)(injector, [element]);
@@ -151,11 +170,37 @@ void main() {
         expect(log.result()).toEqual('LOG; SIMPLE');
       })));
 
+      it('should use template-relative CSS URIs', async(inject(
+          (Http http, Compiler compile, Scope rootScope,  Logger log,
+           Injector injector, MockHttpBackend backend, DirectiveMap directives) {
+
+        var cssSrc = 'base/test/core/simple.css';
+        var cssUri = Uri.base.resolve(cssSrc);
+        backend
+            ..expectGET(cssSrc).respond(200, 'body { background-image: url(foo.png);}')
+            ..expectGET('base/test/core/simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
+
+        var element = e('<div><html-and-css log>ignore</html-and-css><div>');
+        compile([element], directives)(injector, [element]);
+
+        microLeap();
+        backend.flush();
+        microLeap();
+
+        var style = element.children[0].shadowRoot.querySelector('style');
+        dom.document.body.append(style);
+
+        expect(style.sheet.rules[0].style.backgroundImage).toEqual(
+          'url(${cssUri.resolve('foo.png')})');
+
+        style.remove();
+      })));
+
       it('should load a CSS file with a \$template', async(inject(
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
-        backend.expectGET('simple.css').respond(200, '.hello{}');
+        backend.expectGET('base/test/core/simple.css').respond(200, '.hello{}');
         compile(element, directives)(injector, element);
 
         microLeap();
@@ -168,7 +213,7 @@ void main() {
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
-        backend.expectGET('simple.css').respond(500, 'some error');
+        backend.expectGET('base/test/core/simple.css').respond(500, 'some error');
         compile(element, directives)(injector, element);
 
         microLeap();
@@ -185,7 +230,7 @@ void main() {
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><only-css log>ignore</only-css><div>');
-        backend.expectGET('simple.css').respond(200, '.hello{}');
+        backend.expectGET('base/test/core/simple.css').respond(200, '.hello{}');
         compile(element, directives)(injector, element);
 
         microLeap();
@@ -198,8 +243,8 @@ void main() {
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         backend
-            ..expectGET('simple.css').respond(200, '.hello{}')
-            ..expectGET('simple.html').respond(200, '<div>Simple!</div>');
+            ..expectGET('base/test/core/simple.css').respond(200, '.hello{}')
+            ..expectGET('base/test/core/simple.html').respond(200, '<div>Simple!</div>');
 
         var element = es('<html-and-css>ignore</html-and-css>');
         compile(element, directives)(injector, element);
@@ -222,9 +267,9 @@ void main() {
           (Http http, Compiler compile, Scope rootScope, Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend
-            ..expectGET('simple.css').respond(200, '.hello{}')
-            ..expectGET('another.css').respond(200, '.world{}')
-            ..expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
+            ..expectGET('base/test/core/simple.css').respond(200, '.hello{}')
+            ..expectGET('base/test/core/another.css').respond(200, '.world{}')
+            ..expectGET('base/test/core/simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
         compile([element], directives)(injector, [element]);

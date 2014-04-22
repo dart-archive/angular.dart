@@ -3,9 +3,10 @@ library angular.transformer;
 import 'dart:async';
 import 'dart:io';
 import 'package:angular/tools/transformer/expression_generator.dart';
+import 'package:angular/tools/transformer/html_dart_references_generator.dart';
 import 'package:angular/tools/transformer/metadata_generator.dart';
 import 'package:angular/tools/transformer/static_angular_generator.dart';
-import 'package:angular/tools/transformer/html_dart_references_generator.dart';
+import 'package:angular/tools/transformer/type_relative_uri_generator.dart';
 import 'package:angular/tools/transformer/options.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
@@ -128,6 +129,7 @@ List<List<Transformer>> _createPhases(TransformOptions options) {
       new ExpressionGenerator(options, resolvers),
       new di.InjectorGenerator(options.diOptions, resolvers),
       new MetadataGenerator(options, resolvers),
+      new TypeRelativeUriGenerator(options, resolvers),
       new StaticAngularGenerator(options, resolvers)
     ])]
   ];
@@ -157,4 +159,5 @@ class _SerialTransformer extends Transformer {
         });
     });
   }
+  String toString() => 'Angular';
 }

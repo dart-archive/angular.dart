@@ -55,6 +55,9 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
     _addImport(transaction, unit,
         '${generatedFilePrefix}_static_injector.dart',
         'generated_static_injector');
+    _addImport(transaction, unit,
+        '${generatedFilePrefix}_type_relative_uris.dart',
+        'generated_type_uris');
 
     var printer = transaction.commit();
     var url = id.path.startsWith('lib/')
@@ -87,7 +90,8 @@ class _NgDynamicToStaticVisitor extends GeneralizingAstVisitor {
         'generated_static_metadata.typeAnnotations, '
         'generated_static_expressions.getters, '
         'generated_static_expressions.setters, '
-        'generated_static_expressions.symbols');
+        'generated_static_expressions.symbols, '
+        'generated_type_uris.uriResolver');
     }
     super.visitMethodInvocation(m);
   }
