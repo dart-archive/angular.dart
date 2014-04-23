@@ -73,11 +73,14 @@ class _SpecInjector {
  *
  * NOTE: Calling inject creates an injector, which prevents any more calls to [module].
  *
+ * NOTE: [inject] will never return the result of [fn]. If you need to return a [Future]
+ * for unittest to consume, take a look at [async], [clockTick], and [microLeap] instead.
+ *
  * Typical usage:
  *
  *     test('wrap whole test', inject((TestBed tb) {
  *       tb.compile(...);
- *     });
+ *     }));
  *
  *     test('wrap part of a test', () {
  *       module((Module module) {
