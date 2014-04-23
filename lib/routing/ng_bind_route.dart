@@ -23,7 +23,6 @@ part of angular.routing;
  * however it does not effect view resolution by nested ng-view(s).
  */
 @Decorator(
-    visibility: Directive.CHILDREN_VISIBILITY,
     selector: '[ng-bind-route]',
     module: NgBindRoute.module,
     map: const {'ng-bind-route': '@routeName'})

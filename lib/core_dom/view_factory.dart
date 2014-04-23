@@ -129,7 +129,7 @@ class ViewCache {
   ViewFactory fromHtml(String html, DirectiveMap directives) {
     ViewFactory viewFactory = _viewFactoryCache.get(html);
     if (viewFactory == null) {
-      var div = new dom.Element.tag('div');
+      var div = new dom.DivElement();
       div.setInnerHtml(html, treeSanitizer: treeSanitizer);
       viewFactory = compiler(div.nodes, directives);
       _viewFactoryCache.put(html, viewFactory);
