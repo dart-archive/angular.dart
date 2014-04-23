@@ -132,7 +132,7 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
 }
 
 void _writeStaticExpressionHeader(AssetId id, StringSink sink) {
-  var libPath = path.withoutExtension(id.path).replaceAll('/', '.');
+  var libPath = path.withoutExtension(id.path).replaceAll('/', '.').replaceAll('-', '_');
   sink.write('''
 library ${id.package}.$libPath.generated_expressions;
 
