@@ -71,6 +71,7 @@ class MetadataGenerator extends Transformer with ResolverTransformer {
 
 void _writeHeader(AssetId id, StringSink sink) {
   var libPath = path.withoutExtension(id.path).replaceAll('/', '.');
+  libPath = libPath.replaceAll('-', '_');
   sink.write('''
 library ${id.package}.$libPath.generated_metadata;
 
