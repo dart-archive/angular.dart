@@ -4,7 +4,7 @@ import 'package:angular/core/annotation_src.dart';
 import 'package:angular/routing/module.dart';
 import 'package:di/di.dart';
 
-@NgDirective(
+@Decorator(
     selector:'[ng-if]',
     map: const {'.': '=>ngIfCondition'})
 class NgIfDirective {
