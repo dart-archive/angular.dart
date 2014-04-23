@@ -33,5 +33,9 @@ main() {
       .toEqual('"X\nY"+(A\n+B|stringify)+"C\nD"');
     });
 
+    it('should escape double quotes', (Interpolate interpolate) {
+      expect(interpolate(r'"{{a}}')).toEqual(r'"\""+(a|stringify)');
+      expect(interpolate(r'\"{{a}}')).toEqual(r'"\\\""+(a|stringify)');
+    });
   });
 }
