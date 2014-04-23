@@ -10,10 +10,6 @@ part of angular.core_internal;
  */
 @Injectable()
 class Interpolate implements Function {
-  final Parser _parse;
-
-  Interpolate(this._parse);
-
   /**
    * Compiles markup text into expression.
    *
