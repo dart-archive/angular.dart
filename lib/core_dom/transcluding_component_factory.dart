@@ -62,6 +62,7 @@ class ContentPort {
   }
 }
 
+@Injectable()
 class TranscludingComponentFactory implements ComponentFactory {
   final Expando _expando;
 
