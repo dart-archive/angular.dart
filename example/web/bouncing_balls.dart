@@ -26,9 +26,7 @@ class BallModel {
 
 }
 
-@Controller(
-  selector: '[bounce-controller]',
-  publishAs: 'bounce')
+@Controller(selector: '[bounce-controller]')
 class BounceController {
   var lastTime = window.performance.now();
   var run = false;

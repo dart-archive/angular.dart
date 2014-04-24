@@ -4,10 +4,10 @@ part of animation;
     selector: 'stress-demo',
     template: '''
       <div class="stress-demo">
-        <button ng-click="ctrl.visible = !ctrl.visible">
+        <button ng-click="visible = !visible">
           Toggle Visibility</button>
         <div>
-          <div class="stress-box" ng-repeat="number in ctrl.numbers"></div>
+          <div class="stress-box" ng-repeat="number in numbers"></div>
         </div>
       </div>
     ''',

@@ -54,9 +54,7 @@ class HttpServer implements Server {
 }
 
 
-@Controller(
-    selector: '[todo-controller]',
-    publishAs: 'todo')
+@Controller(selector: '[todo-controller]')
 class Todo {
   var items = <Item>[];
   Item newItem;
