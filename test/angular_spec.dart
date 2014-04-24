@@ -245,6 +245,7 @@ main() {
         "di.FactoryFn",
         "di.Injector",
         "di.InvalidBindingError",
+        "di.Key",
         "di.Module",
         "di.NoProviderError",
         "di.ObjectFactory",

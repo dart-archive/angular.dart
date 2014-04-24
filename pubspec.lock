@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.13.2"
+    version: "0.13.6"
   args:
     description: args
     source: hosted
@@ -20,7 +20,7 @@ packages:
   browser:
     description: browser
     source: hosted
-    version: "0.10.0+1"
+    version: "0.10.0+2"
   code_transformers:
     description: code_transformers
     source: hosted
@@ -32,7 +32,7 @@ packages:
   di:
     description: di
     source: hosted
-    version: "0.0.37"
+    version: "0.0.38"
   html5lib:
     description: html5lib
     source: hosted
@@ -40,7 +40,7 @@ packages:
   intl:
     description: intl
     source: hosted
-    version: "0.8.10+4"
+    version: "0.9.8"
   logging:
     description: logging
     source: hosted
@@ -49,14 +49,10 @@ packages:
     description: matcher
     source: hosted
     version: "0.10.0"
-  meta:
-    description: meta
-    source: hosted
-    version: "0.8.8"
   mock:
     description: mock
     source: hosted
-    version: "0.10.0"
+    version: "0.10.0+1"
   path:
     description: path
     source: hosted
@@ -80,11 +76,11 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "0.9.3"
+    version: "0.9.3+1"
   unittest:
     description: unittest
     source: hosted
-    version: "0.10.1+1"
+    version: "0.10.1+2"
   utf:
     description: utf
     source: hosted
