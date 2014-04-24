@@ -10,7 +10,7 @@ import 'package:code_transformers/resolver.dart';
 
 class AnnotatedType {
   final ClassElement type;
-  Iterable<Annotation> annotations;
+  List<Annotation> annotations;
 
   AnnotatedType(this.type);
 
@@ -269,8 +269,7 @@ class AnnotationExtractor {
         .where((Annotation annotation) {
           var element = annotation.element;
           if (element != null && !element.isPublic) {
-            warn('Annotation $annotation is not public.',
-                annotation.parent.element);
+            warn('Annotation $annotation is not public.', cls);
             return false;
           }
           if (element is! ConstructorElement) {
@@ -278,10 +277,9 @@ class AnnotationExtractor {
             return false;
           }
           ConstructorElement ctor = element;
-          var cls = ctor.enclosingElement;
-          if (!cls.isPublic) {
-            warn('Annotation $annotation is not public.',
-                annotation.parent.element);
+          var annotationClass = ctor.enclosingElement;
+          if (!annotationClass.isPublic) {
+            warn('Annotation $annotation is not public.', cls);
             return false;
           }
           return element.enclosingElement.type.isAssignableTo(directiveType.type) ||
