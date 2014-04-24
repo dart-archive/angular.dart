@@ -9,7 +9,7 @@ import 'package:angular/tools/transformer/html_dart_references_generator.dart';
 import 'package:angular/tools/transformer/options.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
-import 'package:di/transformer/injector_generator.dart' as di;
+import 'package:di/transformer/injector_generator.dart' show InjectorGenerator;
 import 'package:di/transformer/options.dart' as di;
 import 'package:path/path.dart' as path;
 
@@ -126,7 +126,7 @@ List<List<Transformer>> _createPhases(TransformOptions options) {
     [new HtmlDartReferencesGenerator(options)],
     [new _SerialTransformer([
       new ExpressionGenerator(options, resolvers),
-      new di.InjectorGenerator(options.diOptions, resolvers),
+      new InjectorGenerator(options.diOptions, resolvers),
       new MetadataGenerator(options, resolvers),
       new StaticAngularGenerator(options, resolvers)
     ])]
@@ -145,7 +145,7 @@ class _SerialTransformer extends Transformer {
   final Iterable<Transformer> _transformers;
   _SerialTransformer(this._transformers);
 
-  Future<bool> isPrimary(Asset input) =>
+  Future<bool> isPrimary(input) =>
       Future.wait(_transformers.map((t) => t.isPrimary(input)))
           .then((l) => l.any((result) => result));
 

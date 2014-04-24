@@ -1,6 +1,5 @@
 library angular.tools.transformer.metadata_generator;
 
-import 'dart:async';
 import 'package:analyzer/src/generated/element.dart';
 import 'package:angular/tools/transformer/options.dart';
 import 'package:barback/barback.dart';
