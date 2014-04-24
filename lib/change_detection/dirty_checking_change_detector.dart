@@ -2,6 +2,7 @@ library dirty_checking_change_detector;
 
 import 'dart:collection';
 import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/change_detection/watch_group.dart';
 
 /**
  * [DirtyCheckingChangeDetector] determines which object properties have changed
@@ -369,7 +370,7 @@ class _ChangeIterator<H> implements Iterator<Record<H>>{
  * removing efficient. [DirtyCheckingRecord] also has a [nextChange] field which
  * creates a single linked list of all of the changes for efficient traversal.
  */
-class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
+class DirtyCheckingRecord<H> implements WatchRecord<H> {
   static const List<String> _MODE_NAMES =
       const ['MARKER', 'IDENT', 'GETTER', 'MAP[]', 'ITERABLE', 'MAP'];
   static const int _MODE_MARKER_ = 0;
@@ -455,6 +456,19 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
 
       return;
     }
+
+    while (obj is LocalContext) {
+      var ctx = obj as LocalContext;
+      if (ctx.hasProperty(field)) {
+        _object = obj;
+        _mode =  _MODE_MAP_FIELD_;
+        _getter = null;
+        return;
+      }
+      obj = ctx.parent;
+    }
+
+    if (obj == null) throw "$field property does not exist on $_object";
 
     if (obj is Map) {
       _mode =  _MODE_MAP_FIELD_;

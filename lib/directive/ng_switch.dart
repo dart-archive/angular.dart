@@ -1,19 +1,19 @@
 part of angular.directive;
 
 /**
- * The ngSwitch directive is used to conditionally swap DOM structure on your
- * template based on a scope expression. Elements within ngSwitch but without
- * ngSwitchWhen or ngSwitchDefault directives will be preserved at the location
+ * The [ngSwitch] directive is used to conditionally swap DOM structure on your
+ * template based on a scope expression. Elements within [ngSwitch] but without
+ * [ngSwitchWhen] or [ngSwitchDefault] directives will be preserved at the location
  * as specified in the template.
  *
- * The directive itself works similar to ngInclude, however, instead of
- * downloading template code (or loading it from the template cache), ngSwitch
- * simply choses one of the nested elements and makes it visible based on which
+ * The directive itself works similar to [ngInclude], however, instead of
+ * downloading template code (or loading it from the template cache), [ngSwitch]
+ * simply chooses one of the nested elements and makes it visible based on which
  * element matches the value obtained from the evaluated expression. In other
  * words, you define a container element (where you place the directive), place
  * an expression on the **ng-switch="..." attribute**, define any inner elements
  * inside of the directive and place a when attribute per element. The when
- * attribute is used to inform ngSwitch which element to display when the on
+ * attribute is used to inform [ngSwitch] which element to display when the on
  * expression is evaluated. If a matching expression is not found via a when
  * attribute then an element with the default attribute is displayed.
  *
@@ -57,56 +57,49 @@ part of angular.directive;
     },
     visibility: Directive.DIRECT_CHILDREN_VISIBILITY)
 class NgSwitch {
-  Map<String, List<_Case>> cases = new Map<String, List<_Case>>();
-  List<_ViewScopePair> currentViews = <_ViewScopePair>[];
+  final cases = <String, List<_Case>>{'?': <_Case>[]};
+  final currentViews = <_ViewScopePair>[];
   Function onChange;
   final Scope scope;
 
-  NgSwitch(this.scope) {
-    cases['?'] = <_Case>[];
+  NgSwitch(this.scope);
+
+  void addCase(String value, ViewPort anchor, BoundViewFactory viewFactory) {
+    cases.putIfAbsent(value, () => <_Case>[]).add(new _Case(anchor, viewFactory));
   }
 
-  addCase(String value, ViewPort anchor, BoundViewFactory viewFactory) {
-    cases.putIfAbsent(value, () => <_Case>[]);
-    cases[value].add(new _Case(anchor, viewFactory));
-  }
-
-  set value(val) {
-    currentViews
-        ..forEach((_ViewScopePair pair) {
-          pair.port.remove(pair.view);
-          pair.scope.destroy();
-        })
-        ..clear();
+  void set value(val) {
+    currentViews..forEach((_ViewScopePair pair) => pair.remove())
+                ..clear();
 
     val = '!$val';
     (cases.containsKey(val) ? cases[val] : cases['?'])
         .forEach((_Case caze) {
-          Scope childScope = scope.createChild(new PrototypeMap(scope.context));
-          var view = caze.viewFactory(childScope);
-          caze.anchor.insert(view);
-          currentViews.add(new _ViewScopePair(view, caze.anchor,
-            childScope));
+          var view = caze.viewFactory(scope);
+          caze.port.insert(view);
+          currentViews.add(new _ViewScopePair(view, caze.port));
         });
-    if (onChange != null) {
-      onChange();
-    }
+
+    if (onChange != null) onChange();
   }
 }
 
 class _ViewScopePair {
-  final View view;
-  final ViewPort port;
-  final Scope scope;
+  final View _view;
+  final ViewPort _port;
 
-  _ViewScopePair(this.view, this.port, this.scope);
+  _ViewScopePair(this._view, this._port);
+
+  void remove() {
+    _port.remove(_view);
+  }
 }
 
 class _Case {
-  final ViewPort anchor;
+  final ViewPort port;
   final BoundViewFactory viewFactory;
 
-  _Case(this.anchor, this.viewFactory);
+  _Case(this.port, this.viewFactory);
 }
 
 @Decorator(
@@ -114,23 +107,20 @@ class _Case {
     children: Directive.TRANSCLUDE_CHILDREN,
     map: const {'.': '@value'})
 class NgSwitchWhen {
-  final NgSwitch ngSwitch;
-  final ViewPort port;
-  final BoundViewFactory viewFactory;
-  final Scope scope;
+  final NgSwitch _ngSwitch;
+  final ViewPort _port;
+  final BoundViewFactory _viewFactory;
 
-  NgSwitchWhen(this.ngSwitch, this.port, this.viewFactory, this.scope);
+  NgSwitchWhen(this._ngSwitch, this._port, this._viewFactory);
 
-  set value(String value) => ngSwitch.addCase('!$value', port, viewFactory);
+  void set value(String value) => _ngSwitch.addCase('!$value', _port, _viewFactory);
 }
 
 @Decorator(
     children: Directive.TRANSCLUDE_CHILDREN,
     selector: '[ng-switch-default]')
 class NgSwitchDefault {
-
-  NgSwitchDefault(NgSwitch ngSwitch, ViewPort port,
-                  BoundViewFactory viewFactory, Scope scope) {
+  NgSwitchDefault(NgSwitch ngSwitch, ViewPort port, BoundViewFactory viewFactory) {
     ngSwitch.addCase('?', port, viewFactory);
   }
 }

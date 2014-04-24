@@ -19,43 +19,35 @@ part of angular.directive;
     selector: '[ng-include]',
     map: const {'ng-include': '@url'})
 class NgInclude {
-
-  final dom.Element element;
-  final Scope scope;
-  final ViewCache viewCache;
-  final Injector injector;
-  final DirectiveMap directives;
+  final dom.Element _element;
+  final Scope _scope;
+  final ViewCache _viewCache;
+  final Injector _injector;
+  final DirectiveMap _directives;
 
   View _view;
-  Scope _scope;
 
-  NgInclude(this.element, this.scope, this.viewCache, this.injector, this.directives);
+  NgInclude(this._element, this._scope, this._viewCache, this._injector, this._directives);
 
-  _cleanUp() {
-    if (_view == null) return;
-
-    _view.nodes.forEach((node) => node.remove);
-    _scope.destroy();
-    element.innerHtml = '';
-
-    _view = null;
-    _scope = null;
-  }
-
-  _updateContent(createView) {
-    // create a new scope
-    _scope = scope.createChild(new PrototypeMap(scope.context));
-    _view = createView(injector.createChild([new Module()
-        ..bind(Scope, toValue: _scope)]));
-
-    _view.nodes.forEach((node) => element.append(node));
-  }
-
-
-  set url(value) {
+  void set url(value) {
     _cleanUp();
     if (value != null && value != '') {
-      viewCache.fromUrl(value, directives).then(_updateContent);
+      _viewCache.fromUrl(value, _directives).then(_updateContent);
     }
+  }
+
+  void _cleanUp() {
+    if (_view == null) return;
+    _view.nodes.forEach((node) => node.remove);
+    _element.innerHtml = '';
+    _view = null;
+  }
+
+  void _updateContent(createView) {
+    // create a new scope
+    _scope = scope.createChild(new PrototypeMap(scope.context));
+    _view = createView(new Module()..bind(Scope, toValue: _scope));
+
+    _view.nodes.forEach((node) => element.append(node));
   }
 }

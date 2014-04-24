@@ -112,8 +112,7 @@ class NgRepeat {
             ..[r'$index'] = index
             ..[r'$id'] = (obj) => obj;
         if (_keyIdentifier != null) context[_keyIdentifier] = key;
-        return relaxFnArgs(trackBy.eval)(new ScopeLocals(_scope.context,
-            context));
+        return relaxFnArgs(trackBy.eval)(new LocalContext(_scope.context, context));
       });
     }
 
@@ -151,17 +150,12 @@ class NgRepeat {
     var domIndex;
 
     var addRow = (int index, value, View previousView) {
-      var childContext = _updateContext(new PrototypeMap(_scope.context), index,
-          length)..[_valueIdentifier] = value;
+      // todo vicb
+      var childContext = new LocalContext(_scope.context);
+      childContext = _updateContext(childContext, index, length, _valueIdentifier);
       var childScope = _scope.createChild(childContext);
       var view = _boundViewFactory(childScope);
-      var nodes = view.nodes;
-      rows[index] = new _Row(_generateId(index, value, index))
-          ..view = view
-          ..scope = childScope
-          ..nodes = nodes
-          ..startNode = nodes.first
-          ..endNode = nodes.last;
+      rows[index] = new _Row(_generateId(index, value, index), childScope, view);
       _viewPort.insert(view, insertAfter: previousView);
     };
 
@@ -216,8 +210,7 @@ class NgRepeat {
       if (changeFn == null) {
         rows[targetIndex] = _rows[targetIndex];
         domIndex--;
-        // The element has not moved but `$last` and `$middle` might still need
-        // to be updated
+        // The element has not moved but `$last` and `$middle` might still need to be updated
         _updateContext(rows[targetIndex].scope.context, targetIndex, length);
       } else {
         changeFn(targetIndex, previousView);
@@ -228,9 +221,12 @@ class NgRepeat {
     _rows = rows;
   }
 
-  PrototypeMap _updateContext(PrototypeMap context, int index, int length) {
-    var first = (index == 0);
-    var last = (index == length - 1);
+  LocalContext _updateContext(LocalContext context, int index, int len, [String valueId = null]) {
+    var first = index == 0;
+    var last = index == len - 1;
+
+    if (valueId != null) context[r'_valueIdentifier'] = valueId;
+
     return context
         ..[r'$index'] = index
         ..[r'$first'] = first
@@ -245,9 +241,6 @@ class _Row {
   final id;
   Scope scope;
   View view;
-  dom.Element startNode;
-  dom.Element endNode;
-  List<dom.Element> nodes;
 
-  _Row(this.id);
+  _Row(this.id, this.scope, this.view);
 }

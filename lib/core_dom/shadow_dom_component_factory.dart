@@ -35,19 +35,19 @@ class ShadowDomComponentFactory implements ComponentFactory {
   FactoryFn call(dom.Node node, DirectiveRef ref) {
     return (Injector injector) {
         var component = ref.annotation as Component;
-        Scope scope = injector.get(Scope);
-        ViewCache viewCache = injector.get(ViewCache);
-        Http http = injector.get(Http);
-        TemplateCache templateCache = injector.get(TemplateCache);
-        DirectiveMap directives = injector.get(DirectiveMap);
-        NgBaseCss baseCss = injector.get(NgBaseCss);
+        final scope = injector.get(Scope);
+        final viewCache = injector.get(ViewCache);
+        final http = injector.get(Http);
+        final templateCache = injector.get(TemplateCache);
+        final directives = injector.get(DirectiveMap);
+        final baseCss = injector.get(NgBaseCss);
         // This is a bit of a hack since we are returning different type then we are.
         var componentFactory = new _ComponentFactory(node, ref.type, component,
             injector.get(dom.NodeTreeSanitizer), _expando, baseCss, _styleElementCache);
         var controller = componentFactory.call(injector, scope, viewCache, http, templateCache,
             directives);
 
-        componentFactory.shadowScope.context[component.publishAs] = controller;
+        componentFactory.shadowScope.context = controller;
         return controller;
       };
   }

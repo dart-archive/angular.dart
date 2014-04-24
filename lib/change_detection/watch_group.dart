@@ -15,8 +15,10 @@ part 'prototype_map.dart';
  * * [value]: The current value of the watched expression.
  * * [previousValue]: The previous value of the watched expression.
  *
- * If the expression is watching a collection (a list or a map), then [value] is wrapped in
- * a [CollectionChangeItem] that lists all the changes.
+ * Notes:
+ *
+ * * [value] is a [CollectionChangeRecord] when a Collection is being watched
+ * * [value] is a [MapChangeRecord] when a [Map] is being watched
  */
 typedef void ReactionFn(value, previousValue);
 typedef void ChangeLog(String expression, current, previous);

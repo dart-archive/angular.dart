@@ -138,7 +138,16 @@ class Scope {
   /**
    * The default execution context for [watch]es [observe]ers, and [eval]uation.
    */
-  final context;
+  // todo(vicb) was final
+  var _context;
+
+  get context => _context;
+  set context(ctx) {
+
+    print("scope: setting context to $ctx");
+    _context = ctx;
+
+  }
 
   /**
    * The [RootScope] of the application.
@@ -184,9 +193,12 @@ class Scope {
   /// Do not use. Exposes internal state for testing.
   bool get hasOwnStreams => _streams != null  && _streams._scope == this;
 
-  Scope(Object this.context, this.rootScope, this._parentScope,
+  // todo(vicb) this.context
+  Scope(Object _context, this.rootScope, this._parentScope,
         this._readWriteGroup, this._readOnlyGroup, this.id,
-        this._stats);
+        this._stats) {
+    context = _context;
+  }
 
   /**
    * Use [watch] to set up change detection on an expression.
@@ -206,7 +218,7 @@ class Scope {
    *   by reference. When watching a collection, the reaction function receives a
    *   [CollectionChangeItem] that lists all the changes.
    */
-  Watch watch(String expression, ReactionFn reactionFn,  {context,
+  Watch watch(String expression, ReactionFn reactionFn, {context,
       FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
     assert(isAttached);
     assert(expression is String);
@@ -246,8 +258,8 @@ class Scope {
            expression is String ||
            expression is Function);
     if (expression is String && expression.isNotEmpty) {
-      var obj = locals == null ? context : new ScopeLocals(context, locals);
-      return rootScope._parser(expression).eval(obj);
+      var ctx = locals == null ? context : new LocalContext(context, locals);
+      return rootScope._parser(expression).eval(ctx);
     }
 
     assert(locals == null);
@@ -323,7 +335,7 @@ class Scope {
     _parentScope = null;
   }
 
-  _assertInternalStateConsistency() {
+  void _assertInternalStateConsistency() {
     assert((() {
       rootScope._verifyStreams(null, '', []);
       return true;
@@ -360,7 +372,7 @@ class Scope {
   }
 }
 
-_mapEqual(Map a, Map b) => a.length == b.length &&
+bool _mapEqual(Map a, Map b) => a.length == b.length &&
     a.keys.every((k) => b.containsKey(k) && a[k] == b[k]);
 
 /**
@@ -401,7 +413,7 @@ class ScopeStats {
       processStopwatch.elapsedMicroseconds;
   }
 
-  _stopwatchReset() {
+  void _stopwatchReset() {
     fieldStopwatch.reset();
     evalStopwatch.reset();
     processStopwatch.reset();
@@ -466,9 +478,9 @@ class ScopeStatsEmitter {
 
   static pad(String str, int size) => _PAD_.substring(0, max(size - str.length, 0)) + str;
 
-  _ms(num value) => '${pad(_nfDec.format(value), 9)} ms';
-  _us(num value) => _ms(value / 1000);
-  _tally(num value) => '${pad(_nfInt.format(value), 6)}';
+  String _ms(num value) => '${pad(_nfDec.format(value), 9)} ms';
+  String _us(num value) => _ms(value / 1000);
+  String _tally(num value) => '${pad(_nfInt.format(value), 6)}';
 
   /**
    * Emit a message based on the phase and state of stopwatches.
@@ -492,9 +504,8 @@ class ScopeStatsEmitter {
     return (prefix == '1' ? _HEADER_ : '')  + '     #$prefix:';
   }
 
-  String _stat(AvgStopwatch s) {
-    return '${_tally(s.count)} / ${_us(s.elapsedMicroseconds)} @(${_tally(s.ratePerMs)} #/ms)';
-  }
+  String _stat(AvgStopwatch s) =>
+      '${_tally(s.count)} / ${_us(s.elapsedMicroseconds)} @(${_tally(s.ratePerMs)} #/ms)';
 }
 
 /**
@@ -505,6 +516,7 @@ class ScopeStatsConfig {
   var emit = false;
 
   ScopeStatsConfig();
+
   ScopeStatsConfig.enabled() {
     emit = true;
   }
@@ -570,8 +582,8 @@ class RootScope extends Scope {
    * followed by change detection
    * on non-DOM listeners. Any changes detected are process using the reaction function. The digest
    * phase is repeated as long as at least one change has been detected. By default, after 5
-   * iterations the model is considered unstable and angular exists with an exception. (See
-   * ScopeDigestTTL)
+   * iterations the model is considered unstable and angular exits with an exception. (See
+   * [ScopeDigestTTL])
    *
    * ##flush
    *

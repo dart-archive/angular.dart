@@ -114,7 +114,7 @@ class TranscludingComponentFactory implements ComponentFactory {
       childInjector = injector.createChild([childModule], name: SHADOW_DOM_INJECTOR_NAME);
 
       var controller = childInjector.get(ref.type);
-      shadowScope.context[component.publishAs] = controller;
+      shadowScope.context = controller;
       ComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
       return controller;
     };

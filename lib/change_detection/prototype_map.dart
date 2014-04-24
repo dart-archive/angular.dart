@@ -1,37 +1,27 @@
 part of angular.watch_group;
 
-class PrototypeMap<K, V> implements Map<K,V> {
-  final Map<K, V> prototype;
-  final Map<K, V> self = new Map();
+// todo(vicb) rename to ContextLocals + rename the file
+class LocalContext {
+  // todo(vicb) _parentContext
+  final Object parent;
+  final Map _locals = <String, Object>{};
 
-  PrototypeMap(this.prototype);
-
-  void operator []=(name, value) {
-    self[name] = value;
+  LocalContext(this.parent, [Map<String, Object> locals = null]) {
+    if (locals != null) _locals.addAll(locals);
+    _locals[r'$parent'] = parent;
   }
-  V operator [](name) => self.containsKey(name) ? self[name] : prototype[name];
 
-  bool get isEmpty => self.isEmpty && prototype.isEmpty;
-  bool get isNotEmpty => self.isNotEmpty || prototype.isNotEmpty;
-  // todo(vbe) include prototype keys ?
-  Iterable<K> get keys => self.keys;
-  // todo(vbe) include prototype values ?
-  Iterable<V> get values => self.values;
-  int get length => self.length;
+  static LocalContext wrapper(context, Map<String, Object> locals) =>
+      new LocalContext(context, locals);
 
-  void forEach(fn) {
-    // todo(vbe) include prototype ?
-    self.forEach(fn);
+  bool hasProperty(String prop) => _locals.containsKey(prop);
+
+  void operator[]=(String prop, value) {
+    _locals[prop] = value;
   }
-  V remove(key) => self.remove(key);
-  clear() => self.clear;
-  // todo(vbe) include prototype ?
-  bool containsKey(key) => self.containsKey(key);
-  // todo(vbe) include prototype ?
-  bool containsValue(key) => self.containsValue(key);
-  void addAll(map) {
-    self.addAll(map);
+
+  dynamic operator[](String prop) {
+    assert(hasProperty(prop));
+    return _locals[prop];
   }
-  // todo(vbe) include prototype ?
-  V putIfAbsent(key, fn) => self.putIfAbsent(key, fn);
 }
