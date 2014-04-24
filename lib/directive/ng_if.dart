@@ -1,7 +1,7 @@
 part of angular.directive;
 
 /**
- * Base class for NgIf and NgUnless.
+ * Base class for [NgIf] and [NgUnless].
  */
 abstract class _NgUnlessIfAttrDirectiveBase {
   final BoundViewFactory _boundViewFactory;

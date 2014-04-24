@@ -1,7 +1,6 @@
 part of angular.core.dom_internal;
 
-@Decorator(
-   selector: 'content')
+@Decorator(selector: 'content')
 class Content implements AttachAware, DetachAware {
   final ContentPort _port;
   final dom.Element _element;
@@ -12,7 +11,7 @@ class Content implements AttachAware, DetachAware {
     if (_port == null) return;
     _beginComment = _port.content(_element);
   }
-  
+
   void detach() {
     if (_port == null) return;
     _port.detachContent(_beginComment);
@@ -21,16 +20,16 @@ class Content implements AttachAware, DetachAware {
 
 class ContentPort {
   dom.Element _element;
-  var _childNodes = [];
+  final _childNodes = <dom.Node>[];
 
   ContentPort(this._element);
 
   void pullNodes() {
     _childNodes.addAll(_element.nodes);
-    _element.nodes = [];
+    _element.nodes.clear();
   }
 
-  content(dom.Element elt) {
+  dom.Comment content(dom.Element elt) {
     var hash = elt.hashCode;
     var beginComment = new dom.Comment("content $hash");
 
@@ -38,7 +37,7 @@ class ContentPort {
       elt.parent.insertBefore(beginComment, elt);
       elt.parent.insertAllBefore(_childNodes, elt);
       elt.parent.insertBefore(new dom.Comment("end-content $hash"), elt);
-      _childNodes = [];
+      _childNodes.clear();
     }
     elt.remove();
     return beginComment;
