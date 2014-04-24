@@ -23,7 +23,6 @@ void main() {
       expect(annotation.template).toEqual('template');
       expect(annotation.templateUrl).toEqual('templateUrl');
       expect(annotation.cssUrls).toEqual(['cssUrls']);
-      expect(annotation.publishAs).toEqual('ctrl');
       expect(annotation.map).toEqual({
           'foo': '=>foo',
           'attr': '@attr',
@@ -104,15 +103,14 @@ class NullParser implements Parser {
     template: 'template',
     templateUrl: 'templateUrl',
     cssUrl: const ['cssUrls'],
-    publishAs: 'ctrl',
     module: AnnotatedIoComponent.module,
     visibility: Directive.LOCAL_VISIBILITY,
     exportExpressions: const ['exportExpressions'],
-    map: const {
-      'foo': '=>foo'
-    })
+    map: const {'foo': '=>foo'})
 class AnnotatedIoComponent {
-  static module() => new Module()..bind(String, toFactory: (i) => i.get(AnnotatedIoComponent),
+  static module() => new Module()..bind(
+      String,
+      toFactory: (i) => i.get(AnnotatedIoComponent),
       visibility: Directive.LOCAL_VISIBILITY);
 
   AnnotatedIoComponent(Scope scope) {

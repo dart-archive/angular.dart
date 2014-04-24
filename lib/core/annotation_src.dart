@@ -301,14 +301,6 @@ class Component extends Directive {
   final bool _resetStyleInheritance;
 
   /**
-   * An expression under which the component's controller instance will be
-   * published into. This allows the expressions in the template to be referring
-   * to controller instance and its properties.
-   */
-  @deprecated
-  final String publishAs;
-
-  /**
    * If set to true, this component will always use shadow DOM.
    * If set to false, this component will never use shadow DOM.
    * If unset, the compiler's default construction strategy will be used
@@ -321,7 +313,6 @@ class Component extends Directive {
     cssUrl,
     applyAuthorStyles,
     resetStyleInheritance,
-    this.publishAs,
     module,
     map,
     selector,
@@ -351,7 +342,6 @@ class Component extends Directive {
           cssUrl: cssUrls,
           applyAuthorStyles: applyAuthorStyles,
           resetStyleInheritance: resetStyleInheritance,
-          publishAs: publishAs,
           map: newMap,
           module: module,
           selector: selector,
@@ -420,16 +410,8 @@ class Decorator extends Directive {
  */
 @deprecated
 class Controller extends Decorator {
-  /**
-   * An expression under which the controller instance will be published into.
-   * This allows the expressions in the template to be referring to controller
-   * instance and its properties.
-   */
-  final String publishAs;
-
   const Controller({
                     children: Directive.COMPILE_CHILDREN,
-                    this.publishAs,
                     map,
                     module,
                     selector,
@@ -448,7 +430,6 @@ class Controller extends Decorator {
   Directive _cloneWithNewMap(newMap) =>
       new Controller(
           children: children,
-          publishAs: publishAs,
           module: module,
           map: newMap,
           selector: selector,

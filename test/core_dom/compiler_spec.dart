@@ -758,18 +758,12 @@ void main() {
 }
 
 
-@Controller(
-  selector: '[my-parent-controller]',
-  publishAs: 'my_parent')
+@Controller(selector: '[my-parent-controller]')
 class MyParentController {
-  data() {
-    return "my data";
-  }
+  String data() => "my data";
 }
 
-@Controller(
-  selector: '[my-child-controller]',
-  publishAs: 'my_child')
+@Controller(selector: '[my-child-controller]')
 class MyChildController {}
 
 @Component(
@@ -882,8 +876,7 @@ class SimpleComponent {
 @Component(
   selector: 'shadowy',
   template: r'With shadow DOM',
-  useShadowDom: true
-)
+  useShadowDom: true)
 class ShadowyComponent {
   ShadowyComponent(Logger log) {
     log('shadowy');
@@ -893,8 +886,7 @@ class ShadowyComponent {
 @Component(
     selector: 'shadowless',
     template: r'Without shadow DOM',
-    useShadowDom: false
-)
+    useShadowDom: false)
 class ShadowlessComponent {
   ShadowlessComponent(Logger log) {
     log('shadowless');
@@ -903,13 +895,13 @@ class ShadowlessComponent {
 
 @Component(
   selector: 'sometimes',
-  template: r'<div ng-if="ctrl.sometimes"><content></content></div>',
-  publishAs: 'ctrl')
+  template: r'<div ng-if="sometimes"><content></content></div>')
 class SometimesComponent {
   @NgTwoWay('sometimes')
   var sometimes;
 }
 
+// todo(vicb)
 @Component(
     selector: 'io',
     template: r'<content></content>',
@@ -920,8 +912,7 @@ class SometimesComponent {
     })
 class IoComponent {
   Scope scope;
-  IoComponent(Scope scope) {
-    this.scope = scope;
+  IoComponent(this.scope) {
     scope.rootScope.context['ioComponent'] = this;
     scope.context['expr'] = 'initialExpr';
   }
@@ -930,7 +921,6 @@ class IoComponent {
 @Component(
     selector: 'io-controller',
     template: r'<content></content>',
-    publishAs: 'ctrl',
     map: const {
         'attr': '@attr',
         'expr': '<=>expr',
@@ -945,8 +935,7 @@ class IoControllerComponent {
   var exprOnce;
   var onDone;
   var onOptional;
-  IoControllerComponent(Scope scope) {
-    this.scope = scope;
+  IoControllerComponent(this.scope) {
     scope.rootScope.context['ioComponent'] = this;
   }
 }
@@ -1010,15 +999,12 @@ class ParentExpressionComponent {
 
 @Component(
     selector: 'publish-me',
-    template: r'{{ctrlName.value}}',
-    publishAs: 'ctrlName')
+    template: r'{{ctrlName.value}}')
 class PublishMeComponent {
   String value = 'WORKED';
 }
 
-@Controller (
-    selector: '[publish-me]',
-    publishAs: 'ctrlName')
+@Controller (selector: '[publish-me]')
 class PublishMeDirective {
   String value = 'WORKED';
 }
@@ -1026,8 +1012,7 @@ class PublishMeDirective {
 
 @Component(
     selector: 'log',
-    template: r'<content></content>',
-    publishAs: 'ctrlName')
+    template: r'<content></content>')
 class LogComponent {
   LogComponent(Scope scope, Logger logger) {
     logger(scope);
@@ -1058,17 +1043,17 @@ class AttachDetachComponent implements AttachAware, DetachAware, ShadowRootAware
     templateLoader.template.then((_) => logger('templateLoaded'));
   }
 
-  attach() => logger('attach:@$attrValue; =>$exprValue; =>!$onceValue');
-  detach() => logger('detach');
-  onShadowRoot(shadowRoot) {
+  void attach() => logger('attach:@$attrValue; =>$exprValue; =>!$onceValue');
+
+  void detach() => logger('detach');
+
+  void onShadowRoot(shadowRoot) {
     scope.rootScope.context['shadowRoot'] = shadowRoot;
     logger(shadowRoot);
   }
 }
 
-@Controller(
-    selector: '[my-controller]',
-    publishAs: 'myCtrl')
+@Controller(selector: '[my-controller]')
 class MyController {
   MyController(Scope scope) {
     scope.context['name'] = 'MyController';
@@ -1083,15 +1068,12 @@ class InvalidSelector {}
 
 @Formatter(name:'hello')
 class SayHelloFormatter {
-  call(String str) {
-    return 'Hello, $str!';
-  }
+  String call(String str) => 'Hello, $str!';
 }
 
 @Component(
     selector: 'expr-attr-component',
     template: r'<content></content>',
-    publishAs: 'ctrl',
     map: const {
         'expr': '<=>expr',
         'one-way': '=>oneWay',
@@ -1115,8 +1097,8 @@ class SimpleAttachComponent implements AttachAware, ShadowRootAware {
   SimpleAttachComponent(this.logger) {
     logger('SimpleAttachComponent');
   }
-  attach() => logger('attach');
-  onShadowRoot(_) => logger('onShadowRoot');
+  void attach() => logger('attach');
+  void onShadowRoot(_) => logger('onShadowRoot');
 }
 
 @Component(
@@ -1124,7 +1106,7 @@ class SimpleAttachComponent implements AttachAware, ShadowRootAware {
     templateUrl: 'foo.html')
 class LogElementComponent{
   LogElementComponent(Logger logger, Element element, Node node,
-                        ShadowRoot shadowRoot) {
+                      ShadowRoot shadowRoot) {
     logger(element);
     logger(node);
     logger(shadowRoot);

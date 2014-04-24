@@ -39,7 +39,6 @@ void main() => describe('annotations', () {
         cssUrl: [''],
         applyAuthorStyles: true,
         resetStyleInheritance: true,
-        publishAs: '',
         module: (){},
         map: {},
         selector: '',
@@ -80,7 +79,6 @@ void main() => describe('annotations', () {
   describe('controller', () {
     it('should set all fields on clone when all the fields are set', () {
       var controller = new Controller(
-          publishAs: '',
           children: 'xxx',
           map: {},
           selector: '',

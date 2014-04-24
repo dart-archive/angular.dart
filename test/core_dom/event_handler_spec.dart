@@ -2,7 +2,7 @@ library event_handler_spec;
 
 import '../_specs.dart';
 
-@Controller(selector: '[foo]', publishAs: 'ctrl')
+@Controller(selector: '[foo]')
 class FooController {
   var description = "desc";
   var invoked = false;
@@ -11,14 +11,14 @@ class FooController {
 @Component(selector: 'bar',
     template: '''
               <div>
-                <span on-abc="ctrl.invoked=true;"></span>
+                <span on-abc="invoked=true;"></span>
                 <content></content>
               </div>
-              ''',
-    publishAs: 'ctrl')
+              ''')
 class BarComponent {
   var invoked = false;
   BarComponent(RootScope scope) {
+    // todo(vicb)
     scope.context['ctrl'] = this;
   }
 }
@@ -58,7 +58,7 @@ main() {
     it('shoud register and handle event with long name', inject((TestBed _) {
       var e = compile(_,
         '''<div foo>
-          <div on-my-new-event="ctrl.invoked=true;"></div>
+          <div on-my-new-event="invoked=true;"></div>
         </div>''');
 
       _.triggerEvent(e.querySelector('[on-my-new-event]'), 'myNewEvent');
@@ -69,7 +69,7 @@ main() {
     it('shoud have model updates applied correctly', inject((TestBed _) {
       var e = compile(_,
         '''<div foo>
-          <div on-abc='ctrl.description="new description";'>{{ctrl.description}}</div>
+          <div on-abc='description="new description";'>{{description}}</div>
         </div>''');
       var el = document.querySelector('[on-abc]');
       el.dispatchEvent(new Event('abc'));
@@ -93,7 +93,7 @@ main() {
       var e = compile(_,
         '''<div foo>
              <bar>
-               <div on-abc="ctrl.invoked=true;"></div>
+               <div on-abc="invoked=true;"></div>
              </bar>
            </div>''');
 
