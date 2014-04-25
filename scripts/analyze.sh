@@ -16,7 +16,7 @@ $DARTANALYZER --version
 echo // generated file > $OUT
 
 for FILE in $(ls lib/angular.dart \
-                 perf/*_perf.dart \
+                 benchmarks/*_perf.dart \
                  test/*_spec.dart \
                  test/*/*_spec.dart \
                  lib/change_detection/change_detection.dart \

@@ -8,8 +8,8 @@ module.exports = function(config) {
     // all tests must be 'included', but all other libraries must be 'served' and
     // optionally 'watched' only.
     files: [
-      'perf/dom/*.dart',
-      'perf/*_perf.dart',
+      'benchmark/dom/*.dart',
+      'benchmark/*_perf.dart',
       'test/config/filter_tests.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js',

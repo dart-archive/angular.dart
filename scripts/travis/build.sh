@@ -78,10 +78,10 @@ else
         $NGDART_SCRIPT_DIR/changelog/;
 
   (
-    echo '----------------'
-    echo '-- TEST: perf --'
-    echo '----------------'
-    cd $NGDART_BASE_DIR/perf
+    echo '---------------------'
+    echo '-- TEST: benchmark --'
+    echo '---------------------'
+    cd $NGDART_BASE_DIR/benchmark
     $PUB install
 
     for file in *_perf.dart; do
