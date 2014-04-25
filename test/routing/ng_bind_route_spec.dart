@@ -43,6 +43,12 @@ main() {
           .toEqual('all');
     }));
 
+    it('should expose NgBindRoute as RouteProvider', async(() {
+      Element root = _.compile(
+          '<div ng-bind-route="library"><div probe="routeProbe"></div></div>');
+      expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider) is NgBindRoute).toBeTruthy();
+    }));
+
   });
 }
 
