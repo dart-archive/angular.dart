@@ -6,23 +6,26 @@ import 'package:angular/core/parser/parser.dart';
 
 class DynamicClosureMap implements ClosureMap {
   final Map<String, Symbol> symbols = {};
+
   Getter lookupGetter(String name) {
-    var symbol = new Symbol(name);
+    var symbol;
     return (o) {
       if (o is Map) {
         return o[name];
       } else {
+        if (symbol == null) symbol = lookupSymbol(name);
         return reflect(o).getField(symbol).reflectee;
       }
     };
   }
 
   Setter lookupSetter(String name) {
-    var symbol = new Symbol(name);
+    var symbol;
     return (o, value) {
       if (o is Map) {
         return o[name] = value;
       } else {
+        if (symbol == null) symbol = lookupSymbol(name);
         reflect(o).setField(symbol, value);
         return value;
       }
@@ -30,13 +33,9 @@ class DynamicClosureMap implements ClosureMap {
   }
 
   MethodClosure lookupFunction(String name, CallArguments arguments) {
-    var symbol = new Symbol(name);
+    var symbol;
     return (o, posArgs, namedArgs) {
-      var sNamedArgs = {};
-      namedArgs.forEach((name, value) {
-        var symbol = symbols.putIfAbsent(name, () => new Symbol(name));
-        sNamedArgs[symbol] = value;
-      });
+      var sNamedArgs = new Map.fromIterables(namedArgs.keys.map(lookupSymbol), namedArgs.values);
       if (o is Map) {
         var fn = o[name];
         if (fn is Function) {
@@ -46,6 +45,7 @@ class DynamicClosureMap implements ClosureMap {
         }
       } else {
         try {
+          if (symbol == null) symbol = lookupSymbol(name);
           return reflect(o).invoke(symbol, posArgs, sNamedArgs).reflectee;
         } on NoSuchMethodError catch (e) {
           throw 'Undefined function $name';
@@ -54,5 +54,5 @@ class DynamicClosureMap implements ClosureMap {
     };
   }
 
-  Symbol lookupSymbol(String name) => new Symbol(name);
+  Symbol lookupSymbol(String name) => symbols.putIfAbsent(name, () => new Symbol(name));
 }
