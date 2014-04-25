@@ -64,6 +64,7 @@ export "package:angular/core/module_internal.dart" show
     Interpolate,
     VmTurnZone,
     RootScope,
+    ClosureMapLocalsAware,
     ContextLocals,
     Scope,
     ScopeDigestTTL,

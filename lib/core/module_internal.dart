@@ -52,5 +52,6 @@ class CoreModule extends Module {
     bind(DynamicParser);
     bind(DynamicParserBackend);
     bind(Lexer);
+    bind(ClosureMapLocalsAware);
   }
 }

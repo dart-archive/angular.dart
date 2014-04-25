@@ -57,7 +57,8 @@ class _StaticApplication extends Application {
     ngModule
         ..bind(MetadataExtractor, toValue: new StaticMetadataExtractor(metadata))
         ..bind(FieldGetterFactory, toValue: new StaticFieldGetterFactory(fieldGetters))
-        ..bind(ClosureMap, toValue: new StaticClosureMap(fieldGetters, fieldSetters, symbols));
+        ..bind(ClosureMap, toFactory: new ClosureMapLocalsAware(
+                    new StaticClosureMap(fieldGetters, fieldSetters, symbols)));
   }
 
   Injector createInjector() =>

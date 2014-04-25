@@ -5,50 +5,6 @@ import 'package:angular/core/annotation_src.dart';
 import 'package:angular/core/registry.dart';
 export 'package:angular/core/registry.dart' show MetadataExtractor;
 
-import 'package:angular/core/parser/parser.dart';
-import 'package:angular/change_detection/watch_group.dart' show ContextLocals;
-import 'package:angular/core/parser/parser_dynamic.dart' show DynamicClosureMap;
-
-@MirrorsUsed(targets: const [ DynamicClosureMapLocalsAware ], metaTargets: const [] )
-
-class DynamicClosureMapLocalsAware extends DynamicClosureMap {
-  var getter;
-  Getter lookupGetter(String name) {
-    return (o) {
-      if (o is ContextLocals) {
-        var ctx = o as ContextLocals;
-        if (ctx.hasProperty(name)) return ctx[name];
-        o = ctx.rootContext;
-      }
-      if (getter == null) getter = super.lookupGetter(name);
-      return getter(o);
-    };
-  }
-
-  Setter lookupSetter(String name) {
-    var setter = super.lookupSetter(name);
-    return (o, value) {
-      return o is ContextLocals ?
-          setter(o.rootContext, value) :
-          setter(o, value);
-    };
-  }
-
-  MethodClosure lookupFunction(String name, CallArguments arguments) {
-    var fn = super.lookupFunction(name, arguments);
-    return (o, posArgs, namedArgs) {
-      if (o is ContextLocals) {
-        var ctx = o as ContextLocals;
-        if (ctx.hasProperty(name)) {
-          return fn({name: ctx[name]}, posArgs, namedArgs);
-        }
-        o = ctx.rootContext;
-      }
-      fn(o, posArgs, namedArgs);
-    };
-  }
-}
-
 var _fieldMetadataCache = new Map<Type, Map<String, DirectiveAnnotation>>();
 
 class DynamicMetadataExtractor implements MetadataExtractor {

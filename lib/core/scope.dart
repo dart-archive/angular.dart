@@ -1311,3 +1311,47 @@ class _FormatterWrapper extends FunctionApply {
     return value;
   }
 }
+
+@Injectable()
+class ClosureMapLocalsAware implements ClosureMap {
+  final ClosureMap wrappedClsMap;
+
+  ClosureMapLocalsAware(this.wrappedClsMap);
+
+  Getter lookupGetter(String name) {
+    var getter;
+    return (o) {
+      if (o is ContextLocals) {
+        var ctx = o as ContextLocals;
+        if (ctx.hasProperty(name)) return ctx[name];
+        o = ctx.rootContext;
+      }
+      if (getter == null) getter = wrappedClsMap.lookupGetter(name);
+      return getter(o);
+    };
+  }
+
+  Setter lookupSetter(String name) {
+    var setter = wrappedClsMap.lookupSetter(name);
+    return (o, value) {
+      return o is ContextLocals ?
+          setter(o.rootContext, value) :
+          setter(o, value);
+    };
+  }
+
+  MethodClosure lookupFunction(String name, CallArguments arguments) {
+    var fn = wrappedClsMap.lookupFunction(name, arguments);
+    return (o, pArgs, nArgs) {
+      if (o is ContextLocals) {
+        var ctx = o as ContextLocals;
+        if (ctx.hasProperty(name)) return fn({name: ctx[name]}, pArgs, nArgs);
+        o = ctx.rootContext;
+      }
+      return fn(o, pArgs, nArgs);
+    };
+  }
+
+  Symbol lookupSymbol(String name) => wrappedClsMap.lookupSymbol(name);
+}
+
