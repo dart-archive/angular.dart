@@ -90,18 +90,12 @@ class Todo {
 
 main() {
   print(window.location.search);
-  var module = new Module()
-      ..bind(Todo)
-      ..bind(PlaybackHttpBackendConfig);
+  var module = new Module()..bind(PlaybackHttpBackendConfig);
 
   // If these is a query in the URL, use the server-backed
   // TodoController.  Otherwise, use the stored-data controller.
   var query = window.location.search;
-  if (query.contains('?')) {
-    module.bind(Server, toImplementation: HttpServer);
-  } else {
-    module.bind(Server, toImplementation: NoOpServer);
-  }
+  module.bind(Server, toImplementation: query.contains('?') ? HttpServer : NoOpServer);
 
   if (query == '?record') {
     print('Using recording HttpBackend');
@@ -116,6 +110,7 @@ main() {
   }
 
   applicationFactory()
-    .addModule(module..type(Object, implementedBy: Todo))
-    .run();
+      .addModule(module)
+      .rootContextType(Todo)
+      .run();
 }

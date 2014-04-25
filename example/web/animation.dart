@@ -9,7 +9,6 @@ part 'animation/visibility_demo.dart';
 part 'animation/stress_demo.dart';
 part 'animation/css_demo.dart';
 
-@Controller(selector: '[animation-demo]')
 class AnimationDemo {
   final pages = ["About", "ng-repeat", "Visibility", "Css", "Stress Test"];
   var currentPage = "About";
@@ -22,11 +21,11 @@ class AnimationDemoModule extends Module {
     bind(VisibilityDemo);
     bind(StressDemo);
     bind(CssDemo);
-    bind(AnimationDemo);
   }
 }
 main() {
   applicationFactory()
       .addModule(new AnimationDemoModule())
+      .rootContextType(AnimationDemo)
       .run();
 }

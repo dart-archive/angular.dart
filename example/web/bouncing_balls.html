@@ -40,7 +40,7 @@
   <div bounce-controller>
     <div class="balls">
         <div ng-repeat="ball in balls"
-             class="{{ballClassName}}"
+             class="{{ ballClassName }}"
              ball-position="ball"></div>
     </div>
 
@@ -50,8 +50,8 @@
         </div>
     </div>
 
-    {{bounce.fps}} fps. ({{bounce.balls.length}} balls) [{{1000/bounce.fps}} ms] <br>
-    Digest: {{bounce.digestTime}} ms<br>
+    {{ fps }} fps. ({{ balls.length }} balls) [{{ 1000 / fps }} ms] <br>
+    Digest: {{ digestTime }} ms<br>
     <a href ng-click="changeCount(1)">+1</a>
     <a href ng-click="changeCount(10)">+10</a>
     <a href ng-click="changeCount(100)">+100</a>
