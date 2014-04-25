@@ -193,6 +193,42 @@ void main() {
     });
 
 
+    describe("bind-", () {
+      beforeEachModule((Module module) {
+        module
+          ..type(IoComponent);
+      });
+
+      it('should support bind- syntax', () {
+        var element = _.compile('<div ng-bind bind-ng-bind="name"></div>');
+
+        _.rootScope.context['name'] = 'angular';
+
+        expect(element.text).toEqual('');
+        _.rootScope.apply();
+        expect(element.text).toEqual('angular');
+      });
+
+      it('should work with attrs, one-way, two-way and callbacks', async(() {
+         _.compile('<div><io bind-attr="\'A\'" bind-expr="name" bind-ondone="done=true"></io></div>');
+
+        _.rootScope.context['name'] = 'misko';
+        microLeap();
+        _.rootScope.apply();
+        var component = _.rootScope.context['ioComponent'];
+        expect(component.scope.context['name']).toEqual(null);
+        expect(component.scope.context['attr']).toEqual('A');
+        expect(component.scope.context['expr']).toEqual('misko');
+        component.scope.context['expr'] = 'angular';
+        _.rootScope.apply();
+        expect(_.rootScope.context['name']).toEqual('angular');
+        expect(_.rootScope.context['done']).toEqual(null);
+        component.scope.context['ondone']();
+        expect(_.rootScope.context['done']).toEqual(true);
+      }));
+    });
+
+
     describe("interpolation", () {
       it('should interpolate attribute nodes', () {
         var element = _.compile('<div test="{{name}}"></div>');
