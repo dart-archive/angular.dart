@@ -30,6 +30,8 @@ class ShadowDomComponentFactory implements ComponentFactory {
 
   ShadowDomComponentFactory(this._expando);
 
+  final Map<String, async.Future<dom.StyleElement>> _styleElementCache = {};
+
   FactoryFn call(dom.Node node, DirectiveRef ref) {
     return (Injector injector) {
         var component = ref.annotation as Component;
@@ -41,7 +43,7 @@ class ShadowDomComponentFactory implements ComponentFactory {
         NgBaseCss baseCss = injector.get(NgBaseCss);
         // This is a bit of a hack since we are returning different type then we are.
         var componentFactory = new _ComponentFactory(node, ref.type, component,
-            injector.get(dom.NodeTreeSanitizer), _expando, baseCss);
+            injector.get(dom.NodeTreeSanitizer), _expando, baseCss, _styleElementCache);
         var controller = componentFactory.call(injector, scope, viewCache, http, templateCache,
             directives);
 
@@ -65,6 +67,7 @@ class _ComponentFactory implements Function {
   final dom.NodeTreeSanitizer treeSanitizer;
   final Expando _expando;
   final NgBaseCss _baseCss;
+  final Map<String, async.Future<dom.StyleElement>> _styleElementCache;
 
   dom.ShadowRoot shadowDom;
   Scope shadowScope;
@@ -72,7 +75,7 @@ class _ComponentFactory implements Function {
   var controller;
 
   _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer,
-                    this._expando, this._baseCss);
+                    this._expando, this._baseCss, this._styleElementCache);
 
   dynamic call(Injector injector, Scope scope,
                ViewCache viewCache, Http http, TemplateCache templateCache,
@@ -87,28 +90,24 @@ class _ComponentFactory implements Function {
     // styles all over the page. We shouldn't be doing browsers work,
     // so change back to using @import once Chrome bug is fixed or a
     // better work around is found.
-        List<async.Future<String>> cssFutures = new List();
+    Iterable<async.Future<dom.StyleElement>> cssFutures;
     var cssUrls = []..addAll(_baseCss.urls)..addAll(component.cssUrls);
     if (cssUrls.isNotEmpty) {
-      cssUrls.forEach((css) => cssFutures.add(http
-      .get(css, cache: templateCache).then(
-              (resp) => resp.responseText,
-              onError: (e) => '/*\n$e\n*/\n')
-      ));
+      cssFutures = cssUrls.map((cssUrl) => _styleElementCache.putIfAbsent(cssUrl, () =>
+        http.get(cssUrl, cache: templateCache)
+          .then((resp) => resp.responseText,
+            onError: (e) => '/*\n$e\n*/\n')
+          .then((styleContent) => new dom.StyleElement()..appendText(styleContent))
+      )).toList();
     } else {
-      cssFutures.add(new async.Future.value(null));
+      cssFutures = [new async.Future.value(null)];
     }
     var viewFuture = ComponentFactory._viewFuture(component, viewCache, directives);
     TemplateLoader templateLoader = new TemplateLoader(
         async.Future.wait(cssFutures).then((Iterable<String> cssList) {
-          if (cssList != null) {
-            shadowDom.setInnerHtml(
-                cssList
-                .where((css) => css != null)
-                .map((css) => '<style>$css</style>')
-                .join(''),
-                treeSanitizer: treeSanitizer);
-          }
+          cssList
+              .where((styleElement) => styleElement != null)
+              .forEach((styleElement) => shadowDom.append(styleElement.clone(true)));
           if (viewFuture != null) {
             return viewFuture.then((ViewFactory viewFactory) {
               return (!shadowScope.isAttached) ?
