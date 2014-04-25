@@ -53,8 +53,6 @@ class HttpServer implements Server {
   }
 }
 
-
-@Controller(selector: '[todo-controller]')
 class Todo {
   var items = <Item>[];
   Item newItem;
@@ -117,5 +115,7 @@ main() {
     module.bind(HttpBackend, toImplementation: PlaybackHttpBackend);
   }
 
-  applicationFactory().addModule(module).run();
+  applicationFactory()
+    .addModule(module..type(Object, implementedBy: Todo))
+    .run();
 }
