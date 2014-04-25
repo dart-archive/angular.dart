@@ -201,8 +201,8 @@ class ElementBinder {
         assert((linkMapTimer = _perf.startTimer('ng.view.link.map', ref.type)) != false);
 
 
+        // todo(vicb): delete
         if (ref.annotation is Controller) {
-          // todo(vicb)
           print("_link context = $controller");
           scope.context = controller;
         }

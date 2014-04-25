@@ -169,7 +169,8 @@ abstract class _NgClassBase {
     nodeAttrs.observe('class', (String cls) {
       if (prevCls != cls) {
         prevCls = cls;
-        _applyChanges(_scope.context[r'$index']);
+        var index = _scope.hasLocal(r'$index') ? _scope.getLocal(r'$index') : null;
+        _applyChanges(index);
       }
     });
   }
@@ -178,7 +179,8 @@ abstract class _NgClassBase {
     if (_watchExpression != null) _watchExpression.remove();
     _watchExpression = _scope.watch(expression, (v, _) {
         _computeChanges(v);
-        _applyChanges(_scope.context[r'$index']);
+        var index = _scope.hasLocal(r'$index') ? _scope.getLocal(r'$index') : null;
+        _applyChanges(index);
       },
       canChangeModel: false,
       collection: true);

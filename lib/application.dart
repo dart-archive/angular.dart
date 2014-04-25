@@ -17,6 +17,7 @@
  *     main() {
  *       applicationFactory()
  *           .addModule(new MyModule())
+ *           .rootContextType(HelloWorldController)
  *           .run();
  *     }
  *
@@ -90,7 +91,6 @@ import 'package:angular/introspection_js.dart';
  * about Angular services, formatters, and directives. When writing tests, this is typically done for
  * you by the [SetUpInjector](#angular-mock@id_setUpInjector) method.
  *
-
  */
 class AngularModule extends Module {
   AngularModule() {
@@ -139,9 +139,7 @@ abstract class Application {
   final List<Module> modules = <Module>[];
   dom.Element element;
 
-/**
-* Creates a selector for a DOM element.
-*/
+  /// Creates a selector for a DOM element.
   dom.Element selector(String selector) => element = _find(selector);
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
@@ -151,13 +149,16 @@ abstract class Application {
             ..bind(dom.Node, toFactory: (i) => i.get(Application).element);
   }
 
-/**
-* Returns the injector for this module.
-*/
+  /// injector for this module.
   Injector injector;
 
   Application addModule(Module module) {
     modules.add(module);
+    return this;
+  }
+
+  Application rootContextType(Type rootContext) {
+    modules.add(new Module()..type(Object, implementedBy: rootContext));
     return this;
   }
 

@@ -57,38 +57,39 @@ part of angular.directive;
     },
     visibility: Directive.DIRECT_CHILDREN_VISIBILITY)
 class NgSwitch {
-  final cases = <String, List<_Case>>{'?': <_Case>[]};
-  final currentViews = <_ViewScopePair>[];
+  final _cases = <String, List<_Case>>{'?': <_Case>[]};
+  final _currentViews = <_ViewAndPort>[];
   Function onChange;
-  final Scope scope;
+  final Scope _scope;
 
-  NgSwitch(this.scope);
+  NgSwitch(this._scope);
 
   void addCase(String value, ViewPort anchor, BoundViewFactory viewFactory) {
-    cases.putIfAbsent(value, () => <_Case>[]).add(new _Case(anchor, viewFactory));
+    _cases.putIfAbsent(value, () => <_Case>[]).add(new _Case(anchor, viewFactory));
   }
 
   void set value(val) {
-    currentViews..forEach((_ViewScopePair pair) => pair.remove())
-                ..clear();
+    _currentViews..forEach((_ViewScopePair pair) => pair.remove())
+                 ..clear();
 
     val = '!$val';
-    (cases.containsKey(val) ? cases[val] : cases['?'])
-        .forEach((_Case caze) {
-          var view = caze.viewFactory(scope);
-          caze.port.insert(view);
-          currentViews.add(new _ViewScopePair(view, caze.port));
-        });
+    var cases = _cases.containsKey(val) ? _cases[val] : _cases['?'];
+    cases.forEach((_Case c) {
+      // todo (vicb) -> create Child ?
+      var view = c.viewFactory(_scope);
+      c.port.insert(view);
+      _currentViews.add(new _ViewAndPort(view, c.port));
+    });
 
     if (onChange != null) onChange();
   }
 }
 
-class _ViewScopePair {
+class _ViewAndPort {
   final View _view;
   final ViewPort _port;
 
-  _ViewScopePair(this._view, this._port);
+  _ViewAndPort(this._view, this._port);
 
   void remove() {
     _port.remove(_view);

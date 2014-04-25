@@ -100,14 +100,13 @@ class Scope {
    */
   // todo(vicb) was final
   var _context;
-
-  get context => _context;
-  set context(ctx) {
-
-    print("scope: setting context to $ctx");
+  dynamic get context => _context;
+  void set context(ctx) {
     _context = ctx;
-
   }
+
+  bool hasLocal(name) => _context is ContextLocals && (_context as ContextLocals).hasProperty(name);
+  dynamic getLocal(name) => (_context as ContextLocals)[name];
 
   /**
    * The [RootScope] of the application.
