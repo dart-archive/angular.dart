@@ -224,6 +224,7 @@ class MockHttpBackend implements HttpBackend {
         return;
       }
     }
+
     throw wasExpected ?
         ['No response defined !'] :
         ['Unexpected request: $method $url\n' + (expectation != null ?
