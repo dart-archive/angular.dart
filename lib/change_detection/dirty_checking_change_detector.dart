@@ -415,9 +415,10 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
    * [DirtyCheckingRecord] into different access modes. If Object it sets up
    * reflection. If [Map] then it sets up map accessor.
    */
-  void set object(obj) {
-    _object = obj;
-    if (obj == null) {
+  void set object(Object object) {
+    _object = object;
+
+    if (object == null) {
       _mode = _MODE_IDENTITY_;
       _getter = null;
       return;
@@ -425,7 +426,8 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
 
     if (field == null) {
       _getter = null;
-      if (obj is Map) {
+
+      if (object is Map) {
         if (_mode != _MODE_MAP_) {
           _mode =  _MODE_MAP_;
           currentValue = new _MapChangeRecord();
@@ -437,8 +439,10 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
           // new reference.
           currentValue._revertToPreviousState();
         }
+        return;
+      }
 
-      } else if (obj is Iterable) {
+      if (object is Iterable) {
         if (_mode != _MODE_ITERABLE_) {
           _mode = _MODE_ITERABLE_;
           currentValue = new _CollectionChangeRecord();
@@ -450,6 +454,7 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
           // new reference.
           currentValue._revertToPreviousState();
         }
+        return;
       } else {
         _mode = _MODE_IDENTITY_;
       }
@@ -457,30 +462,32 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
       return;
     }
 
-    if (obj is ContextLocals) {
-      var ctx = obj as ContextLocals;
+    if (object is Map) {
+      _mode =  _MODE_MAP_FIELD_;
+      _getter = null;
+      return;
+    }
+
+    if (object is ContextLocals) {
+      var ctx = object as ContextLocals;
       if (ctx.hasProperty(field)) {
-        _object = obj;
+        _object = object;
         _mode =  _MODE_MAP_FIELD_;
         _getter = null;
         return;
       }
-      obj = ctx.rootContext;
+      object = ctx.rootContext;
     }
 
-    if (obj is Map) {
-      _mode =  _MODE_MAP_FIELD_;
-      _getter = null;
-    } else {
-      if (_fieldGetterFactory.isMethod(obj, field)) {
-        _mode = _MODE_IDENTITY_;
-        previousValue = currentValue = _fieldGetterFactory.method(obj, field)(obj);
-        assert(previousValue is Function);
-      } else {
-        _mode = _MODE_GETTER_;
-        _getter = _fieldGetterFactory.getter(obj, field);
-      }
+    if (_fieldGetterFactory.isMethod(object, field)) {
+      _mode = _MODE_IDENTITY_;
+      previousValue = currentValue = _fieldGetterFactory.method(object, field)(object);
+      assert(previousValue is Function);
     }
+
+    _mode = _MODE_GETTER_;
+    _getter = _fieldGetterFactory.getter(object, field);
+    currentValue = _getter(object);
   }
 
   bool check() {
@@ -531,8 +538,6 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
 
   String toString() => '${_MODE_NAMES[_mode]}[$field]{$hashCode}';
 }
-
-final Object _INITIAL_ = new Object();
 
 class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   final _records = new Map<dynamic, KeyValueRecord>();

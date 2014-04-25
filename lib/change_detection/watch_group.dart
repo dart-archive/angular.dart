@@ -773,33 +773,45 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
         fn = null,
         name = null;
 
-  get field => '()';
+  String get field => '()';
 
-  get object => _object;
+  dynamic get object => _object;
 
-  set object(value) {
+  void set object(object) {
     assert(mode != _MODE_DELETED_);
     assert(mode != _MODE_MARKER_);
     assert(mode != _MODE_FUNCTION_);
     assert(mode != _MODE_PURE_FUNCTION_);
     assert(mode != _MODE_PURE_FUNCTION_APPLY_);
-    _object = value;
+    _object = object;
 
-    if (value == null) {
+    if (object == null) {
       mode = _MODE_NULL_;
-    } else {
-      if (value is Map) {
-        mode =  _MODE_MAP_CLOSURE_;
-      } else {
-        if (_fieldGetterFactory.isMethod(value, name)) {
-          mode = _fieldGetterFactory.isMethodInvoke ? _MODE_METHOD_INVOKE_ : _MODE_METHOD_;
-          fn = _fieldGetterFactory.method(value, name);
-        } else {
-          mode = _MODE_FIELD_CLOSURE_;
-          fn = _fieldGetterFactory.getter(value, name);
-        }
-      }
+      return;
     }
+
+    if (object is Map) {
+      mode =  _MODE_MAP_CLOSURE_;
+      return;
+    }
+
+    if (object is ContextLocals) {
+      var ctx = object as ContextLocals;
+      if (ctx.hasProperty(name)) {
+        mode = _MODE_MAP_CLOSURE_;
+        return;
+      }
+      object = ctx.rootContext;
+    }
+
+    if (_fieldGetterFactory.isMethod(object, name)) {
+      mode = _fieldGetterFactory.isMethodInvoke ? _MODE_METHOD_INVOKE_ : _MODE_METHOD_;
+      fn = _fieldGetterFactory.method(object, name);
+      return;
+    }
+
+    mode = _MODE_FIELD_CLOSURE_;
+    fn = _fieldGetterFactory.getter(object, name);
   }
 
   bool check() {

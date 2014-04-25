@@ -84,46 +84,6 @@ class ScopeDigestTTL {
   ScopeDigestTTL.value(this.ttl);
 }
 
-//TODO(misko): I don't think this should be in scope.
-class ScopeLocals implements Map {
-  static wrapper(scope, Map<String, Object> locals) =>
-      new ScopeLocals(scope, locals);
-
-  Map _scope;
-  Map<String, Object> _locals;
-
-  ScopeLocals(this._scope, this._locals);
-
-  void operator []=(String name, value) {
-    _scope[name] = value;
-  }
-  dynamic operator [](String name) {
-    // Map needed to clear Dart2js warning
-    Map map = _locals.containsKey(name) ? _locals : _scope;
-    return map[name];
-  }
-
-  bool get isEmpty => _scope.isEmpty && _locals.isEmpty;
-  bool get isNotEmpty => _scope.isNotEmpty || _locals.isNotEmpty;
-  List<String> get keys => _scope.keys;
-  List get values => _scope.values;
-  int get length => _scope.length;
-
-  void forEach(fn) {
-    _scope.forEach(fn);
-  }
-  dynamic remove(key) => _scope.remove(key);
-  void clear() {
-    _scope.clear;
-  }
-  bool containsKey(key) => _scope.containsKey(key);
-  bool containsValue(key) => _scope.containsValue(key);
-  void addAll(map) {
-    _scope.addAll(map);
-  }
-  dynamic putIfAbsent(key, fn) => _scope.putIfAbsent(key, fn);
-}
-
 /**
  * [Scope] is represents a collection of [watch]es [observe]ers, and [context]
  * for the watchers, observers and [eval]uations. Scopes structure loosely
