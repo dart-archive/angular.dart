@@ -37,6 +37,9 @@ export CHROME_BIN=${CHROME_BIN:-"google-chrome"}
 export PATH=$PATH:$DARTSDK/bin
 
 export NGDART_SCRIPT_DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
+if [ -n $NGDART_SCRIPT_DIR ]; then
+  export NGDART_SCRIPT_DIR=./scripts
+fi
 export NGDART_BASE_DIR=$(dirname $NGDART_SCRIPT_DIR)
 
 echo '*********'

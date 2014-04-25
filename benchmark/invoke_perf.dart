@@ -1,4 +1,4 @@
-library angular.perf.invoke;
+library angular.benchmarks.invoke;
 
 import 'package:benchmark_harness/benchmark_harness.dart';
 

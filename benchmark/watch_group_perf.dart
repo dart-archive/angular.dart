@@ -1,4 +1,4 @@
-library angular.perf.watch_group;
+library angular.benchmarks.watch_group;
 
 import '_perf.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
