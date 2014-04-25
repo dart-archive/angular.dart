@@ -15,7 +15,6 @@ part of animation;
       </ul>
       </div>
     ''',
-    publishAs: 'ctrl',
     applyAuthorStyles: true)
 class RepeatDemo {
   var thing = 0;

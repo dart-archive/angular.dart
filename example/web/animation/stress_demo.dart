@@ -11,7 +11,6 @@ part of animation;
         </div>
       </div>
     ''',
-    publishAs: 'ctrl',
     applyAuthorStyles: true)
 class StressDemo {
   bool _visible = true;

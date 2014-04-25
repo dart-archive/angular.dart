@@ -22,7 +22,6 @@ part of animation;
         </div>
       </div>
     ''',
-    publishAs: 'ctrl',
     applyAuthorStyles: true)
 class CssDemo {
   bool stateA = false;
