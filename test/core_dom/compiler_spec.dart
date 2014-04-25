@@ -517,6 +517,11 @@ void main() {
         toBe(PublishModuleAttrDirective._injector.get(PublishModuleDirectiveSuperType));
       });
 
+      it('should expose PublishModuleDirectiveSuperType as PublishModuleDirectiveSuperType', () {
+        _.compile(r'<div publish-types probe="publishModuleProbe"></div>');
+        expect(_.rootScope.context['publishModuleProbe'].injector.get(PublishModuleDirectiveSuperType) is PublishModuleAttrDirective).toBeTruthy();
+      });
+
       it('should allow repeaters over controllers', async((Logger logger) {
         _.compile(r'<log ng-repeat="i in [1, 2]"></log>');
         _.rootScope.apply();

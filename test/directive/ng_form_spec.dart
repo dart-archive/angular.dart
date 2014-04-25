@@ -143,6 +143,13 @@ void main() {
         expect(form).toBeValid();
       });
 
+      it('should expose NgForm as NgControl', (Scope scope, TestBed _) {
+        _.compile('<form name="myForm" probe="formProbe"><input type="text" /></form>');
+        scope.apply();
+
+        expect(scope.context['formProbe'].injector.get(NgControl) is NgForm).toBeTruthy();
+      });
+
       it('should add and remove the correct flags when set to valid and to invalid',
         (Scope scope, TestBed _) {
 

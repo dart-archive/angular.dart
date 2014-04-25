@@ -21,9 +21,9 @@ main() {
       router = _router;
 
       templates.put('foo.html', new HttpResponse(200,
-          '<h1>Foo</h1>'));
+          '<h1 probe="p">Foo</h1>'));
       templates.put('bar.html', new HttpResponse(200,
-          '<h1>Bar</h1>'));
+          '<h1 probe="p">Bar</h1>'));
     });
 
 
@@ -45,6 +45,15 @@ main() {
       microLeap();
       _.rootScope.apply();
       expect(root.text).toEqual('Foo');
+    }));
+
+    it('should expose NgView as RouteProvider', async(() {
+      _.compile('<ng-view probe="m"></ng-view>');
+      router.route('/foo');
+      microLeap();
+      _.rootScope.apply();
+
+      expect(_.rootScope.context['p'].injector.get(RouteProvider) is NgView).toBeTruthy();
     }));
 
 
