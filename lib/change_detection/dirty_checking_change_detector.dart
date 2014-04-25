@@ -457,18 +457,16 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
       return;
     }
 
-    while (obj is LocalContext) {
-      var ctx = obj as LocalContext;
+    if (obj is ContextLocals) {
+      var ctx = obj as ContextLocals;
       if (ctx.hasProperty(field)) {
         _object = obj;
         _mode =  _MODE_MAP_FIELD_;
         _getter = null;
         return;
       }
-      obj = ctx.parent;
+      obj = ctx.rootContext;
     }
-
-    if (obj == null) throw "$field property does not exist on $_object";
 
     if (obj is Map) {
       _mode =  _MODE_MAP_FIELD_;

@@ -258,7 +258,7 @@ class Scope {
            expression is String ||
            expression is Function);
     if (expression is String && expression.isNotEmpty) {
-      var ctx = locals == null ? context : new LocalContext(context, locals);
+      var ctx = locals == null ? context : new ContextLocals(context, locals);
       return rootScope._parser(expression).eval(ctx);
     }
 
@@ -1084,7 +1084,6 @@ class ExpressionVisitor implements syntax.Visitor {
   final ClosureMap _closureMap;
   AST contextRef = scopeContextRef;
 
-
   ExpressionVisitor(this._closureMap);
 
   AST ast;
@@ -1103,8 +1102,7 @@ class ExpressionVisitor implements syntax.Visitor {
   AST visitCollection(syntax.Expression exp) => new CollectionAST(visit(exp));
   AST _mapToAst(syntax.Expression expression) => visit(expression);
 
-  List<AST> _toAst(List<syntax.Expression> expressions) =>
-      expressions.map(_mapToAst).toList();
+  List<AST> _toAst(List<syntax.Expression> expressions) => expressions.map(_mapToAst).toList();
 
   Map<Symbol, AST> _toAstMap(Map<String, syntax.Expression> expressions) {
     if (expressions.isEmpty) return const {};
@@ -1125,37 +1123,47 @@ class ExpressionVisitor implements syntax.Visitor {
     Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
     ast = new MethodAST(visit(exp.object), exp.name, positionals, named);
   }
+
   void visitAccessScope(syntax.AccessScope exp) {
     ast = new FieldReadAST(contextRef, exp.name);
   }
+
   void visitAccessMember(syntax.AccessMember exp) {
     ast = new FieldReadAST(visit(exp.object), exp.name);
   }
+
   void visitBinary(syntax.Binary exp) {
     ast = new PureFunctionAST(exp.operation,
                               _operationToFunction(exp.operation),
                               [visit(exp.left), visit(exp.right)]);
   }
+
+
   void visitPrefix(syntax.Prefix exp) {
     ast = new PureFunctionAST(exp.operation,
                               _operationToFunction(exp.operation),
                               [visit(exp.expression)]);
   }
+
   void visitConditional(syntax.Conditional exp) {
     ast = new PureFunctionAST('?:', _operation_ternary,
                               [visit(exp.condition), visit(exp.yes),
                               visit(exp.no)]);
   }
+
   void visitAccessKeyed(syntax.AccessKeyed exp) {
     ast = new ClosureAST('[]', _operation_bracket,
                              [visit(exp.object), visit(exp.key)]);
   }
+
   void visitLiteralPrimitive(syntax.LiteralPrimitive exp) {
     ast = new ConstantAST(exp.value);
   }
+
   void visitLiteralString(syntax.LiteralString exp) {
     ast = new ConstantAST(exp.value);
   }
+
   void visitLiteralArray(syntax.LiteralArray exp) {
     List<AST> items = _toAst(exp.elements);
     ast = new PureFunctionAST('[${items.join(', ')}]', new ArrayFn(), items);
@@ -1187,15 +1195,19 @@ class ExpressionVisitor implements syntax.Visitor {
   void visitCallFunction(syntax.CallFunction exp) {
     _notSupported("function's returing functions");
   }
+
   void visitAssign(syntax.Assign exp) {
     _notSupported('assignement');
   }
+
   void visitLiteral(syntax.Literal exp) {
     _notSupported('literal');
   }
+
   void visitExpression(syntax.Expression exp) {
     _notSupported('?');
   }
+
   void visitChain(syntax.Chain exp) {
     _notSupported(';');
   }

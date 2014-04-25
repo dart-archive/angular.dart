@@ -112,7 +112,7 @@ class NgRepeat {
             ..[r'$index'] = index
             ..[r'$id'] = (obj) => obj;
         if (_keyIdentifier != null) context[_keyIdentifier] = key;
-        return relaxFnArgs(trackBy.eval)(new LocalContext(_scope.context, context));
+        return relaxFnArgs(trackBy.eval)(new ContextLocals(_scope.context, context));
       });
     }
 
@@ -151,8 +151,9 @@ class NgRepeat {
 
     var addRow = (int index, value, View previousView) {
       // todo vicb
-      var childContext = new LocalContext(_scope.context);
-      childContext = _updateContext(childContext, index, length, _valueIdentifier);
+      var childContext = new ContextLocals(_scope.context);
+      childContext = _updateContext(childContext, index, length);
+      childContext[_valueIdentifier] = value;
       var childScope = _scope.createChild(childContext);
       var view = _boundViewFactory(childScope);
       rows[index] = new _Row(_generateId(index, value, index), childScope, view);
@@ -189,6 +190,7 @@ class NgRepeat {
           var previousRow = _rows[previousIndex];
           var childScope = previousRow.scope;
           var childContext = _updateContext(childScope.context, index, length);
+          childContext[_valueIdentifier] = value;
           if (!identical(childScope.context[_valueIdentifier], value)) {
             childContext[_valueIdentifier] = value;
           }
@@ -221,11 +223,10 @@ class NgRepeat {
     _rows = rows;
   }
 
-  LocalContext _updateContext(LocalContext context, int index, int len, [String valueId = null]) {
+  // todo(vicb): computeLocals
+  ContextLocals _updateContext(ContextLocals context, int index, int len) {
     var first = index == 0;
     var last = index == len - 1;
-
-    if (valueId != null) context[r'_valueIdentifier'] = valueId;
 
     return context
         ..[r'$index'] = index

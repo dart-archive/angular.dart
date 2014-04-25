@@ -1,20 +1,34 @@
 part of angular.watch_group;
 
 // todo(vicb) rename to ContextLocals + rename the file
-class LocalContext {
+class ContextLocals {
   // todo(vicb) _parentContext
   final Object parent;
+  Object _rootContext;
   final Map _locals = <String, Object>{};
 
-  LocalContext(this.parent, [Map<String, Object> locals = null]) {
+  ContextLocals(this.parent, [Map<String, Object> locals = null]) {
+    assert(parent != null);
     if (locals != null) _locals.addAll(locals);
     _locals[r'$parent'] = parent;
   }
 
-  static LocalContext wrapper(context, Map<String, Object> locals) =>
-      new LocalContext(context, locals);
+  static ContextLocals wrapper(context, Map<String, Object> locals) =>
+      new ContextLocals(context, locals);
 
-  bool hasProperty(String prop) => _locals.containsKey(prop);
+  dynamic get rootContext {
+    if (_rootContext == null) {
+      _rootContext = parent is ContextLocals ?
+          (parent as ContextLocals).rootContext :
+          parent;
+    }
+    return _rootContext;
+  }
+
+  bool hasProperty(String prop) {
+    return _locals.containsKey(prop) ||
+           parent is ContextLocals && (parent as ContextLocals).hasProperty(prop);
+  }
 
   void operator[]=(String prop, value) {
     _locals[prop] = value;
@@ -22,6 +36,11 @@ class LocalContext {
 
   dynamic operator[](String prop) {
     assert(hasProperty(prop));
+    var context = this;
+    while (!context._locals.containsKey(prop)) {
+      // todo(vicb) cache context where prop is defined
+      context = context.parent;
+    }
     return _locals[prop];
   }
 }

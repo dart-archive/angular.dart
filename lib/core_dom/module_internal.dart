@@ -14,7 +14,7 @@ import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
 
 // todo vicb
-import 'package:angular/change_detection/watch_group.dart' show Watch, LocalContext;
+import 'package:angular/change_detection/watch_group.dart' show Watch, ContextLocals;
 import 'package:angular/core/registry.dart';
 
 import 'package:angular/directive/module.dart' show NgBaseCss;
