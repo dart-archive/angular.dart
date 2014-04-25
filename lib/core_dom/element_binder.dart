@@ -83,16 +83,70 @@ class ElementBinder {
   bool get hasDirectivesOrEvents =>
       _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
-  _createAttrMappings(controller, scope, DirectiveRef ref, nodeAttrs, formatters, tasks) {
-    ref.mappings.forEach((MappingParts p) {
+  _bindTwoWay(tasks, expression, scope, dstPathFn, controller, formatters, dstExpression) {
+    var taskId = tasks.registerTask();
+    Expression expressionFn = _parser(expression);
+
+    var viewOutbound = false;
+    var viewInbound = false;
+    scope.watch(expression, (inboundValue, _) {
+      if (!viewInbound) {
+        viewOutbound = true;
+        scope.rootScope.runAsync(() => viewOutbound = false);
+        var value = dstPathFn.assign(controller, inboundValue);
+        tasks.completeTask(taskId);
+        return value;
+      }
+    }, formatters: formatters);
+    if (expressionFn.isAssignable) {
+      scope.watch(dstExpression, (outboundValue, _) {
+        if (!viewOutbound) {
+          viewInbound = true;
+          scope.rootScope.runAsync(() => viewInbound = false);
+          expressionFn.assign(scope.context, outboundValue);
+          tasks.completeTask(taskId);
+        }
+      }, context: controller, formatters: formatters);
+    }
+  }
+
+  _bindOneWay(tasks, expression, scope, dstPathFn, controller, formatters) {
+    var taskId = tasks.registerTask();
+
+    Expression attrExprFn = _parser(expression);
+    scope.watch(expression, (v, _) {
+      dstPathFn.assign(controller, v);
+      tasks.completeTask(taskId);
+    }, formatters: formatters);
+  }
+
+  _bindCallback(dstPathFn, controller, expression, scope) {
+    dstPathFn.assign(controller, _parser(expression).bind(scope.context, ScopeLocals.wrapper));
+  }
+
+  _createAttrMappings(controller, scope, List<MappingParts> mappings, nodeAttrs, formatters, tasks) {
+    mappings.forEach((MappingParts p) {
       var attrName = p.attrName;
       var dstExpression = p.dstExpression;
-      if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
 
       Expression dstPathFn = _parser(dstExpression);
       if (!dstPathFn.isAssignable) {
         throw "Expression '$dstExpression' is not assignable in mapping '${p.originalValue}' "
               "for attribute '$attrName'.";
+      }
+
+      // Check if there is a bind attribute for this mapping.
+      var bindAttr = bindAttrs["bind-${p.attrName}"];
+      if (bindAttr != null) {
+        if (p.mode == '<=>') {
+          _bindTwoWay(tasks, bindAttr, scope, dstPathFn,
+              controller, formatters, dstExpression);
+        } else if(p.mode == '&') {
+          _bindCallback(dstPathFn, controller, bindAttr, scope);
+        } else {
+          _bindOneWay(tasks, bindAttr, scope, dstPathFn, controller, formatters);
+        }
+        return;
       }
 
       switch (p.mode) {
@@ -107,41 +161,14 @@ class ElementBinder {
         case '<=>': // two-way
           if (nodeAttrs[attrName] == null) return;
 
-          var taskId = tasks.registerTask();
-          String expression = nodeAttrs[attrName];
-          Expression expressionFn = _parser(expression);
-          var viewOutbound = false;
-          var viewInbound = false;
-          scope.watch(expression, (inboundValue, _) {
-            if (!viewInbound) {
-              viewOutbound = true;
-              scope.rootScope.runAsync(() => viewOutbound = false);
-              var value = dstPathFn.assign(controller, inboundValue);
-              tasks.completeTask(taskId);
-              return value;
-            }
-          }, formatters: formatters);
-          if (expressionFn.isAssignable) {
-            scope.watch(dstExpression, (outboundValue, _) {
-              if (!viewOutbound) {
-                viewInbound = true;
-                scope.rootScope.runAsync(() => viewInbound = false);
-                expressionFn.assign(scope.context, outboundValue);
-                tasks.completeTask(taskId);
-              }
-            }, context: controller, formatters: formatters);
-          }
+          _bindTwoWay(tasks, nodeAttrs[attrName], scope, dstPathFn,
+              controller, formatters, dstExpression);
           break;
 
         case '=>': // one-way
           if (nodeAttrs[attrName] == null) return;
-          var taskId = tasks.registerTask();
-
-          Expression attrExprFn = _parser(nodeAttrs[attrName]);
-          scope.watch(nodeAttrs[attrName], (v, _) {
-            dstPathFn.assign(controller, v);
-            tasks.completeTask(taskId);
-          }, formatters: formatters);
+          _bindOneWay(tasks, nodeAttrs[attrName], scope,
+              dstPathFn, controller, formatters);
           break;
 
         case '=>!': //  one-way, one-time
@@ -157,8 +184,7 @@ class ElementBinder {
           break;
 
         case '&': // callback
-          dstPathFn.assign(controller,
-              _parser(nodeAttrs[attrName]).bind(scope.context, ScopeLocals.wrapper));
+          _bindCallback(dstPathFn, controller, nodeAttrs[attrName], scope);
           break;
       }
     });
@@ -182,7 +208,10 @@ class ElementBinder {
           if (scope.isAttached) controller.attach();
         } : null);
 
-        _createAttrMappings(controller, scope, ref, nodeAttrs, formatters, tasks);
+        if (ref.mappings.isNotEmpty) {
+          if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
+          _createAttrMappings(controller, scope, ref.mappings, nodeAttrs, formatters, tasks);
+        }
 
         if (controller is AttachAware) {
           var taskId = tasks.registerTask();
