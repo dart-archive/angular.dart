@@ -4,12 +4,14 @@ import 'dart:html' hide Animation;
 
 import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
-import 'package:unittest/unittest.dart' as unit;
 
-import 'jasmine_syntax.dart' as jasmine_syntax;
+import 'package:guinness/guinness_html.dart' as gns;
 
 export 'dart:html' hide Animation;
-export 'package:unittest/unittest.dart';
+
+export 'package:unittest/unittest.dart' hide expect;
+export 'package:guinness/guinness_html.dart';
+
 export 'package:mock/mock.dart';
 export 'package:di/di.dart';
 export 'package:di/dynamic_injector.dart';
@@ -37,193 +39,41 @@ es(String html) {
 
 e(String html) => es(html).first;
 
-Expect expect(actual, [unit.Matcher matcher = null]) {
-  if (matcher != null) unit.expect(actual, matcher);
-  return new Expect(actual);
+
+Expect expect(actual, [matcher]) {
+  final expect = new Expect(actual);
+  if (matcher != null) {
+    expect.to(matcher);
+  }
+  return expect;
 }
 
-class Expect {
-  var actual;
-  NotExpect not;
+class Expect extends gns.Expect {
+  Expect(actual) : super(actual);
 
-  Expect(this.actual) {
-    not = new NotExpect(this);
-  }
+  NotExpect get not => new NotExpect(actual);
 
-  toEqual(expected) => unit.expect(actual, unit.equals(expected));
-  toContain(expected) => unit.expect(actual, unit.contains(expected));
-  toBe(expected) => unit.expect(actual,
-      unit.predicate((actual) => identical(expected, actual), '$expected'));
-  toThrow([exception]) => unit.expect(actual, exception == null ?
-      unit.throws:
-      unit.throwsA(new ExceptionContains(exception)));
-  toBeFalsy() => unit.expect(actual, _isFalsy,
-      reason: '"$actual" is not Falsy');
-  toBeTruthy() => unit.expect(actual, (v) => !_isFalsy(v),
-      reason: '"$actual" is not Truthy');
-  toBeDefined() => unit.expect(actual, unit.isNotNull);
-  toBeNull() => unit.expect(actual, unit.isNull);
-  toBeNotNull() => unit.expect(actual, unit.isNotNull);
-
-  toHaveHtml(expected) => unit.expect(_toHtml(actual), unit.equals(expected));
-  toHaveText(expected) =>
-      unit.expect(_elementText(actual), unit.equals(expected));
-
-  toHaveBeenCalled() =>
-      unit.expect(actual.called, true, reason: 'method not called');
-  toHaveBeenCalledOnce() => unit.expect(actual.count, 1,
-      reason: 'method invoked ${actual.count} expected once');
-  toHaveBeenCalledWith([a,b,c,d,e,f]) =>
-      unit.expect(actual.firstArgsMatch(a,b,c,d,e,f), true,
-          reason: 'method invoked with correct arguments');
-  toHaveBeenCalledOnceWith([a,b,c,d,e,f]) =>
-      unit.expect(actual.count == 1 && actual.firstArgsMatch(a,b,c,d,e,f),
-         true,
-         reason: 'method invoked once with correct arguments. '
-                 '(Called ${actual.count} times)');
-
-  toHaveClass(cls) => unit.expect(actual.classes.contains(cls), true,
-      reason: ' Expected ${actual} to have css class ${cls}');
-
-  toHaveAttribute(name, [value = null]) {
-    unit.expect(actual.attributes.containsKey(name), true,
-        reason: 'Epxected $actual to have attribute $name');
-    if (value != null) {
-      unit.expect(actual.attributes[name], value,
-          reason: 'Epxected $actual attribute "$name" to be "$value"');
-    }
-  }
-
-  toEqualSelect(options) {
-    var actualOptions = [];
-
-    for (var option in actual.querySelectorAll('option')) {
-      actualOptions.add(option.selected ? [option.value] : option.value);
-    }
-    return unit.expect(actualOptions, options);
-  }
-
-  toBeValid() => unit.expect(actual.valid && !actual.invalid, true,
+  toBeValid() => _expect(actual.valid && !actual.invalid, true,
       reason: 'Form is not valid');
-  toBePristine() =>
-    unit.expect(actual.pristine && !actual.dirty, true,
-        reason: 'Form is dirty');
 
-  _isFalsy(v) => v == null ? true: v is bool ? v == false : false;
+  toBePristine() => _expect(actual.pristine && !actual.dirty, true,
+      reason: 'Form is dirty');
 
-  _toHtml(node, [bool outer = false]) {
-    if (node is Comment) {
-      return '<!--${node.text}-->';
-    } else if (node is DocumentFragment) {
-      var acc = '';
-      node.childNodes.forEach((n) { acc += _toHtml(n, true); });
-      return acc;
-    } else if (node is List) {
-      var acc = '';
-      node.forEach((n) { acc += _toHtml(n); });
-      return acc;
-    } else if (node is Element) {
-      // Remove all the "ng-binding" internal classes
-      node = node.clone(true) as Element;
-      node.classes.remove('ng-binding');
-      node.querySelectorAll(".ng-binding").forEach((Element e) {
-        e.classes.remove('ng-binding');
-      });
-      var htmlString = outer ? node.outerHtml : node.innerHtml;
-      // Strip out empty class attributes.  This seems like a Dart bug...
-      return htmlString.replaceAll(' class=""', '').trim();
-    } else if (node is Text) {
-      return node.text;
-    } else {
-      throw "JQuery._toHtml not implemented for node type [${node.nodeType}]";
-    }
-  }
-
-  _elementText(n, [bool notShadow = false]) {
-    if (n is Iterable) {
-      return n.map((nn) => _elementText(nn)).join("");
-    }
-
-    if (n is Comment) return '';
-
-    if (!notShadow && n is Element && n.shadowRoot != null) {
-      var cShadows = n.shadowRoot.nodes.map((n) => n.clone(true)).toList();
-      for (var i = 0, ii = cShadows.length; i < ii; i++) {
-        var n = cShadows[i];
-        if (n is Element) {
-          var updateElement = (e) {
-            var text = new Text('SHADOW-CONTENT');
-            if (e.parent == null) {
-              cShadows[i] = text;
-            } else {
-              e.parent.insertBefore(text, e);
-            }
-            e.nodes = [];
-          };
-          if (n is ContentElement) { updateElement(n); }
-          n.querySelectorAll('content').forEach(updateElement);
-        }
-      };
-      var shadowText = _elementText(cShadows, true);
-      var domText = _elementText(n, true);
-
-      return shadowText.replaceFirst("SHADOW-CONTENT", domText);
-    }
-
-    if (n.nodes == null || n.nodes.length == 0) return n.text;
-
-    return n.nodes.map((cn) => _elementText(cn)).join("");
-  }
+  get _expect => gns.guinness.matchers.expect;
 }
 
-class NotExpect {
-  Expect _expect;
-  get actual => _expect.actual;
+class NotExpect extends gns.NotExpect {
+  NotExpect(actual) : super(actual);
 
-  NotExpect(this._expect);
-
-  toHaveBeenCalled() =>
-      unit.expect(actual.called, false, reason: 'method called');
-  toThrow() => actual();
-
-  toHaveClass(cls) => unit.expect(actual.classes.contains(cls), false,
-      reason: ' Expected ${actual} to not have css class ${cls}');
-  toHaveAttribute(name) => unit.expect(actual.attributes.containsKey(name),
-      false, reason: ' Expected $actual to not have attribute "$name"');
-  toBe(expected) => unit.expect(actual,
-      unit.predicate((actual) => !identical(expected, actual), 'not $expected'));
-  toEqual(expected) => unit.expect(actual,
-      unit.predicate((actual) => expected != actual, 'not $expected'));
-  toContain(expected) => unit.expect(actual,
-      unit.predicate((actual) => !actual.contains(expected), 'not $expected'));
-  toBePristine() => unit.expect(actual.pristine && !actual.dirty, false,
-      reason: 'Form is pristine');
-  toBeValid() => unit.expect(actual.valid && !actual.invalid, false,
+  toBeValid() => _expect(actual.valid && !actual.invalid, false,
       reason: 'Form is valid');
+
+  toBePristine() => _expect(actual.pristine && !actual.dirty, false,
+      reason: 'Form is pristine');
+
+  get _expect => gns.guinness.matchers.expect;
 }
 
-class ExceptionContains extends unit.Matcher {
-
-  final _expected;
-
-  const ExceptionContains(this._expected);
-
-  bool matches(item, Map matchState) {
-    if (item is String) {
-      return item.indexOf(_expected) >= 0;
-    }
-    return matches('$item', matchState);
-  }
-
-  unit.Description describe(unit.Description description) =>
-      description.add('exception contains ').addDescriptionOf(_expected);
-
-  unit.Description describeMismatch(item, unit.Description mismatchDescription,
-                               Map matchState, bool verbose) {
-      return super.describeMismatch('$item', mismatchDescription, matchState,
-          verbose);
-  }
-}
 
 _injectify(fn) {
   // The function does two things:
@@ -236,20 +86,29 @@ _injectify(fn) {
   return fn.outer(inject(fn.inner));
 }
 
-// Jasmine syntax
-beforeEachModule(fn) => jasmine_syntax.beforeEach(module(fn), priority:1);
-beforeEach(fn) => jasmine_syntax.beforeEach(_injectify(fn));
-afterEach(fn) => jasmine_syntax.afterEach(_injectify(fn));
-it(name, fn) => jasmine_syntax.it(name, _injectify(fn));
-iit(name, fn) => jasmine_syntax.iit(name, _injectify(fn));
-xit(name, fn) => jasmine_syntax.xit(name, fn);
-xdescribe(name, fn) => jasmine_syntax.xdescribe(name, fn);
-ddescribe(name, fn) => jasmine_syntax.ddescribe(name, fn);
-describe(name, fn) => jasmine_syntax.describe(name, fn);
+// Replace guinness syntax elements to inject dependencies.
+beforeEachModule(fn) => gns.beforeEach(module(fn), priority:1);
+beforeEach(fn) => gns.beforeEach(_injectify(fn));
+afterEach(fn) => gns.afterEach(_injectify(fn));
+it(name, fn) => gns.it(name, _injectify(fn));
+iit(name, fn) => gns.iit(name, _injectify(fn));
 
-var jasmine = jasmine_syntax.jasmine;
+_removeNgBinding(node) {
+  if (node is Element) {
+    node = node.clone(true) as Element;
+    node.classes.remove('ng-binding');
+    node.querySelectorAll(".ng-binding").forEach((Element e) {
+      e.classes.remove('ng-binding');
+    });
+    return node;
+  }
+  return node;
+}
 
 main() {
-  jasmine_syntax.beforeEach(setUpInjector, priority:3);
-  jasmine_syntax.afterEach(tearDownInjector);
+  gns.beforeEach(setUpInjector, priority:3);
+  gns.afterEach(tearDownInjector);
+
+  gns.guinnessEnableHtmlMatchers();
+  gns.guinness.matchers.config.preprocessHtml = _removeNgBinding;
 }

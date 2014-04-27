@@ -10,7 +10,7 @@ module.exports = function(config) {
     files: [
       'benchmark/dom/*.dart',
       'benchmark/*_perf.dart',
-      'test/config/filter_tests.dart',
+      'test/config/init_guinness.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js',
       'packages/browser/interop.js'
@@ -28,6 +28,10 @@ module.exports = function(config) {
       'karma-junit-reporter',
       '../../../karma-parser-getter-setter'
     ],
+
+    karmaDartImports: {
+      guinness: 'package:guinness/guinness_html.dart'
+    },
 
     preprocessors: {
       'test/core/parser/generated_getter_setter.dart': ['parser-getter-setter']

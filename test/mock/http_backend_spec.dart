@@ -22,7 +22,7 @@ void main() {
     var undefined = null;
 
     beforeEach((HttpBackend httpBackend) {
-      callback = jasmine.createSpy('callback');
+      callback = guinness.createSpy('callback');
       hb = httpBackend;
     });
 
@@ -31,7 +31,7 @@ void main() {
       hb.when('GET', '/url1').respond(200, 'content', {});
       hb.when('GET', '/url1').respond(201, 'another', {});
 
-      callback.andCallFake((status, response) {
+      callback.andCallFake((status, response, _) {
         expect(status).toBe(200);
         expect(response).toBe('content');
       });
@@ -48,7 +48,7 @@ void main() {
       hb.when('GET', '/url2').respond(200, {'key': 'value'}, {});
 
 
-      callback.andCallFake((status, response) {
+      callback.andCallFake((status, response, _) {
         expect(status).toBe(200);
         logger(response);
       });
@@ -87,17 +87,17 @@ void main() {
         hb.when('GET', '/url', null, {'X': 'val2'}).respond(202, 'content2');
         hb.when('GET', '/url').respond(203, 'content3');
 
-        hb('GET', '/url', null, (status, response) {
+        hb('GET', '/url', null, (status, response, _) {
           expect(status).toBe(203);
           expect(response).toBe('content3');
         });
 
-        hb('GET', '/url', null, (status, response) {
+        hb('GET', '/url', null, (status, response, _) {
           expect(status).toBe(201);
           expect(response).toBe('content1');
         }, {'X': 'val1'});
 
-        hb('GET', '/url', null, (status, response) {
+        hb('GET', '/url', null, (status, response, _) {
           expect(status).toBe(202);
           expect(response).toBe('content2');
         }, {'X': 'val2'});
@@ -127,7 +127,7 @@ void main() {
 
     it('should match only method', () {
       hb.when('GET').respond(202, 'c');
-      callback.andCallFake((status, response) {
+      callback.andCallFake((status, response, _) {
         expect(status).toBe(202);
         expect(response).toBe('c');
       });
@@ -151,8 +151,8 @@ void main() {
       hb.flush();
 
       expect(callback.callCount).toBe(2);
-      expect(callback.argsForCall[0]).toEqual([201, 'second', '']);
-      expect(callback.argsForCall[1]).toEqual([200, 'first', '']);
+      expect(callback.calls[0].positionalArguments).toEqual([201, 'second', '']);
+      expect(callback.calls[1].positionalArguments).toEqual([200, 'first', '']);
     });
 
 
@@ -177,7 +177,7 @@ void main() {
       });
 
       it('should default status code to 200', () {
-        callback.andCallFake((status, response) {
+        callback.andCallFake((status, response, _) {
           expect(status).toBe(200);
           expect(response).toBe('some-data');
         });
@@ -202,8 +202,8 @@ void main() {
         hb.flush();
 
         expect(callback.callCount).toBe(2);
-        expect(callback.argsForCall[0]).toEqual([200, 'first', '']);
-        expect(callback.argsForCall[1]).toEqual([200, 'second', '']);
+        expect(callback.calls[0].positionalArguments).toEqual([200, 'first', '']);
+        expect(callback.calls[1].positionalArguments).toEqual([200, 'second', '']);
       });
     });
 
@@ -220,7 +220,7 @@ void main() {
 
 
       it('should have precedence over when()', () {
-        callback.andCallFake((status, response) {
+        callback.andCallFake((status, response, _) {
           expect(status).toBe(299);
           expect(response).toBe('expect');
         });
@@ -257,7 +257,7 @@ void main() {
 
 
       it("should use when's respond() when no expect() respond is defined", () {
-        callback.andCallFake((status, response) {
+        callback.andCallFake((status, response, _) {
           expect(status).toBe(201);
           expect(response).toBe('data');
         });
@@ -331,7 +331,7 @@ void main() {
     it('should abort requests when timeout promise resolves', () {
       hb.expect('GET', '/url1').respond(200);
 
-      var canceler, then = jasmine.createSpy('then').andCallFake((fn) {
+      var canceler, then = guinness.createSpy('then').andCallFake((fn) {
         canceler = fn;
       });
 
@@ -429,7 +429,7 @@ void main() {
 
 
       it('should remove all pending responses', () {
-        var cancelledClb = jasmine.createSpy('cancelled');
+        var cancelledClb = guinness.createSpy('cancelled');
 
         hb.expect('GET', '/url').respond(200, '');
         hb('GET', '/url', null, cancelledClb);
@@ -445,7 +445,7 @@ void main() {
 
 
       it('should not remove definitions', () {
-        var cancelledClb = jasmine.createSpy('cancelled');
+        var cancelledClb = guinness.createSpy('cancelled');
 
         hb.when('GET', '/url').respond(200, 'success');
         hb('GET', '/url', null, cancelledClb);

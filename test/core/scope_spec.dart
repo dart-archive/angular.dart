@@ -1167,7 +1167,7 @@ void main() {
 
       it(r'should return a function that allows listeners to be unregistered', inject(
           (RootScope rootScope) {
-        var listener = jasmine.createSpy('watch listener');
+        var listener = guinness.createSpy('watch listener');
         var watch;
 
         watch = rootScope.watch('foo', listener);
@@ -1248,7 +1248,7 @@ void main() {
             ..watch('numberValue', logger)
             ..digest();
 
-        expect(log.removeAt(0).isNaN).toEqual(true); //jasmine's toBe and toEqual don't work well with NaNs
+        expect(log.removeAt(0).isNaN).toEqual(true); //guinness's toBe and toEqual don't work well with NaNs
         expect(log).toEqual([null, '', false, 23]);
         log = [];
         rootScope.digest();

@@ -4,9 +4,9 @@ import 'package:analyzer/src/generated/ast.dart';
 import 'package:angular/tools/common.dart';
 import 'package:angular/tools/source_crawler.dart';
 import 'package:angular/tools/source_metadata_extractor.dart';
-import 'package:unittest/unittest.dart';
 
-import '../jasmine_syntax.dart';
+import 'package:unittest/unittest.dart' hide expect;
+import 'package:guinness/guinness.dart';
 
 void main() {
   describe('SourceMetadataExtractor', () {

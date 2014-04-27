@@ -3,8 +3,9 @@ library ng.tool.source_metadata_extractor_spec;
 import 'package:angular/tools/common.dart';
 import 'package:angular/tools/source_crawler_impl.dart';
 import 'package:angular/tools/source_metadata_extractor.dart';
-import '../jasmine_syntax.dart';
-import 'package:unittest/unittest.dart';
+
+import 'package:unittest/unittest.dart' hide expect;
+import 'package:guinness/guinness.dart';
 
 void main() {
   describe('source_metadata_extractor', () {
