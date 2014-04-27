@@ -24,6 +24,7 @@ abstract class ComponentFactory {
   }
 }
 
+@Injectable()
 class ShadowDomComponentFactory implements ComponentFactory {
   final Expando _expando;
 
