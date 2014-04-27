@@ -4,13 +4,13 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.13.4"
+    version: "0.13.6"
   angular:
     description:
       path: ".."
       relative: true
     source: path
-    version: "0.9.10"
+    version: "0.10.0"
   args:
     description: args
     source: hosted
@@ -18,7 +18,7 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.11.1"
+    version: "0.13.0"
   benchmark_harness:
     description: benchmark_harness
     source: hosted
@@ -26,7 +26,7 @@ packages:
   browser:
     description: browser
     source: hosted
-    version: "0.10.0+1"
+    version: "0.10.0+2"
   code_transformers:
     description: code_transformers
     source: hosted
@@ -38,7 +38,7 @@ packages:
   di:
     description: di
     source: hosted
-    version: "0.0.37"
+    version: "0.0.40"
   html5lib:
     description: html5lib
     source: hosted
@@ -58,7 +58,7 @@ packages:
   mock:
     description: mock
     source: hosted
-    version: "0.10.0"
+    version: "0.10.0+1"
   path:
     description: path
     source: hosted
@@ -70,7 +70,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.18"
+    version: "0.4.19"
   shadow_dom:
     description: shadow_dom
     source: hosted
@@ -82,7 +82,7 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "0.9.3"
+    version: "0.9.3+1"
   unittest:
     description: unittest
     source: hosted
