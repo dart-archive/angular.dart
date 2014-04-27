@@ -64,7 +64,7 @@ void main() {
 
       beforeEach((Http h) {
         http = h;
-        callback = jasmine.createSpy('callback');
+        callback = guinness.createSpy('callback');
       });
 
 
@@ -629,7 +629,7 @@ void main() {
           microLeap();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0].data).toEqual('content');
+          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content');
         }));
 
 
@@ -660,7 +660,7 @@ void main() {
           flush();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0].data).toEqual('content2');
+          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content2');
         }));
 
 
@@ -672,7 +672,7 @@ void main() {
           flush();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0].data).toEqual('content2');
+          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content2');
         }));
 
 
@@ -695,7 +695,7 @@ void main() {
           flush();
 
           expect(callback).toHaveBeenCalledOnce();
-          expect(callback.mostRecentCall.args[0].data).toEqual('content2');
+          expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content2');
         }));
 
 
@@ -777,7 +777,7 @@ void main() {
             microLeap();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual('content');
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content');
 
             // Invalidate cache entry.
             http.defaults.cache.remove("/url");
@@ -807,7 +807,7 @@ void main() {
             microLeap();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual('content-default-cache');
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content-default-cache');
             callback.reset();
 
             // Serve request from local cache when it is given (but default filled too).
@@ -815,7 +815,7 @@ void main() {
             microLeap();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual('content-local-cache');
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content-local-cache');
           }));
 
           it('should be skipped if {cache: false} is passed in request config', async(() {
@@ -893,7 +893,7 @@ void main() {
           expect(http.pendingRequests.length).toEqual(0);
 
           http(method: 'get', url: '/cached', cache: true);
-          jasmine.spyOn(http.pendingRequests, 'add').andCallThrough();
+          guinness.spyOn(http.pendingRequests, 'add').andCallThrough();
           //expect(http.pendingRequests.add).toHaveBeenCalledOnce();
 
           expect(http.pendingRequests.length).toEqual(0);
@@ -1171,7 +1171,7 @@ void main() {
 
         beforeEach((Http h) {
           http = h;
-          callback = jasmine.createSpy('callback');
+          callback = guinness.createSpy('callback');
         });
 
         describe('request', () {
@@ -1250,7 +1250,7 @@ void main() {
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.args[0].data).toEqual({'foo': 'bar', 'baz': 23});
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual({'foo': 'bar', 'baz': 23});
             }));
 
 
@@ -1260,7 +1260,7 @@ void main() {
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo': 'bar'}]);
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual([1, 'abc', {'foo': 'bar'}]);
             }));
 
 
@@ -1270,7 +1270,7 @@ void main() {
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
             }));
 
 
@@ -1280,7 +1280,7 @@ void main() {
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.args[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual([1, 'abc', {'foo':'bar'}]);
             }));
 
 
@@ -1309,7 +1309,7 @@ void main() {
               flush();
 
               expect(callback).toHaveBeenCalledOnce();
-              expect(callback.mostRecentCall.args[0].data).toEqual('{{some}}');
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('{{some}}');
             }));
           });
 
@@ -1324,7 +1324,7 @@ void main() {
             flush();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual('header1');
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('header1');
           }));
 
           it('should pipeline more functions', async(() {
@@ -1339,7 +1339,7 @@ void main() {
             flush();
 
             expect(callback).toHaveBeenCalledOnce();
-            expect(callback.mostRecentCall.args[0].data).toEqual('RESP-FIRST:V1');
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('RESP-FIRST:V1');
           }));
         });
       });

@@ -2,9 +2,9 @@ library angular.selector_spec;
 
 import 'package:angular/tools/selector.dart';
 import 'package:html5lib/dom.dart';
-import 'package:unittest/unittest.dart';
 
-import '../jasmine_syntax.dart';
+import 'package:unittest/unittest.dart' hide expect;
+import 'package:guinness/guinness.dart';
 
 void main() {
   describe('selector', () {

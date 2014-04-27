@@ -8,10 +8,9 @@ module.exports = function(config) {
     // all tests must be 'included', but all other libraries must be 'served' and
     // optionally 'watched' only.
     files: [
-      'test/jasmine_syntax.dart',
       'test/*.dart',
       'test/**/*_spec.dart',
-      'test/config/filter_tests.dart',
+      'test/config/init_guinness.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js',
       'packages/browser/interop.js',
@@ -39,6 +38,10 @@ module.exports = function(config) {
       'karma-junit-reporter',
       '../../../karma-parser-getter-setter'
     ],
+
+    karmaDartImports: {
+      guinness: 'package:guinness/guinness_html.dart'
+    },
 
     customLaunchers: {
       ChromeNoSandbox: { base: 'Chrome', flags: ['--no-sandbox'] }

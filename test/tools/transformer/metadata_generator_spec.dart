@@ -8,7 +8,8 @@ import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:code_transformers/tests.dart' as tests;
 
-import '../../jasmine_syntax.dart';
+import 'package:unittest/unittest.dart' hide expect;
+import 'package:guinness/guinness.dart';
 
 main() {
   describe('MetadataGenerator', () {

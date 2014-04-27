@@ -8,8 +8,9 @@ import 'package:angular/tools/io_impl.dart';
 import 'package:angular/tools/source_crawler_impl.dart';
 import 'package:angular/tools/html_extractor.dart';
 import 'package:angular/tools/source_metadata_extractor.dart';
-import '../jasmine_syntax.dart';
-import 'package:unittest/unittest.dart';
+
+import 'package:unittest/unittest.dart' hide expect;
+import 'package:guinness/guinness.dart';
 
 void main() {
   describe('expression_extractor', () {
