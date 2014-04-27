@@ -2,9 +2,9 @@ library html_extractor_spec;
 
 import 'package:angular/tools/common.dart';
 import 'package:angular/tools/html_extractor.dart';
-import 'package:unittest/unittest.dart';
 
-import '../jasmine_syntax.dart';
+import 'package:unittest/unittest.dart' hide expect;
+import 'package:guinness/guinness.dart';
 import 'mock_io_service.dart';
 
 void main() {

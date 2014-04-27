@@ -1,5 +1,4 @@
 import '../../test/_specs.dart' as perf;
-import '../../test/jasmine_syntax.dart' as jasmine;
 import '../_perf.dart' hide xtime, time;
 import 'package:angular/mock/module.dart';
 
@@ -17,6 +16,5 @@ time(name, body, {verify:_noop, cleanUp:_noop}) {
 }
 
 main() {
-  jasmine.main();
   perf.main();
 }

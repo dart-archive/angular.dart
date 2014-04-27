@@ -1,10 +1,10 @@
 library angular.tools.symbol_inspector;
 
 import 'package:angular/tools/symbol_inspector/symbol_inspector.dart';
-import 'package:unittest/unittest.dart';
 import 'simple_library.dart';
 
-import '../../jasmine_syntax.dart';
+import 'package:unittest/unittest.dart' hide expect;
+import 'package:guinness/guinness.dart';
 
 Symbol symbolForName(libraryInfo, String name) =>
     libraryInfo.names.firstWhere(

@@ -4,8 +4,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:angular/tools/template_cache_generator.dart' as generator;
-import '../jasmine_syntax.dart';
-import 'package:unittest/unittest.dart';
+
+import 'package:guinness/guinness.dart';
 
 void main() {
   describe('template_cache_generator', () {

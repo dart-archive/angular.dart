@@ -186,7 +186,7 @@ void main() {
       var child1 = getChildScope();
       expect(child1).toBeNotNull();
       expect(element.text).toEqual('works');
-      var destroyListener = jasmine.createSpy('watch listener');
+      var destroyListener = guinness.createSpy('watch listener');
       var watcher = child1.on(ScopeEvent.DESTROY).listen(destroyListener);
 
       _.rootScope.context['url'] = 'x';
