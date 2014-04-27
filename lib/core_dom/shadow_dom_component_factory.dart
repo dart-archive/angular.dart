@@ -4,6 +4,7 @@ abstract class ComponentFactory {
   FactoryFn call(dom.Node node, DirectiveRef ref);
 }
 
+@Injectable()
 class ShadowDomComponentFactory implements ComponentFactory {
   final Expando _expando;
 
