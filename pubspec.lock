@@ -12,7 +12,7 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.12.0"
+    version: "0.13.0"
   benchmark_harness:
     description: benchmark_harness
     source: hosted
@@ -32,7 +32,7 @@ packages:
   di:
     description: di
     source: hosted
-    version: "0.0.38"
+    version: "0.0.40"
   html5lib:
     description: html5lib
     source: hosted
@@ -64,7 +64,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.18"
+    version: "0.4.19"
   shadow_dom:
     description: shadow_dom
     source: hosted
