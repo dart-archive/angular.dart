@@ -23,15 +23,12 @@ part of angular.core.dom_internal;
 class DirectiveSelector {
   ElementBinderFactory _binderFactory;
   DirectiveMap _directives;
-  var elementSelector;
-  var attrSelector;
-  var textSelector;
+  var elementSelector = new _ElementSelector('');
+  var attrSelector = <_ContainsSelector>[];
+  var textSelector = <_ContainsSelector>[];
 
   /// Parses all the [_directives] so they can be retrieved via [matchElement]
   DirectiveSelector(this._directives, this._binderFactory) {
-    elementSelector = new _ElementSelector('');
-    attrSelector = <_ContainsSelector>[];
-    textSelector = <_ContainsSelector>[];
     _directives.forEach((Directive annotation, Type type) {
       var match;
       var selector = annotation.selector;
@@ -62,7 +59,7 @@ class DirectiveSelector {
 
     ElementBinderBuilder builder = _binderFactory.builder();
     List<_ElementSelector> partialSelection;
-    var classes = <String, bool>{};
+    var classes = new Set<String>();
     Map<String, String> attrs = {};
 
     dom.Element element = node;
@@ -75,11 +72,11 @@ class DirectiveSelector {
 
     // Select node
     partialSelection = elementSelector.selectNode(builder,
-    partialSelection, element, nodeName);
+        partialSelection, element, nodeName);
 
     // Select .name
     for (var name in element.classes) {
-      classes[name] = true;
+      classes.add(name);
       partialSelection = elementSelector.selectClass(builder,
           partialSelection, element, name);
     }
@@ -115,13 +112,13 @@ class DirectiveSelector {
       List<_ElementSelector> elementSelectors = partialSelection;
       partialSelection = null;
       elementSelectors.forEach((_ElementSelector elementSelector) {
-        classes.forEach((className, _) {
+        classes.forEach((className) {
           partialSelection = elementSelector.selectClass(builder,
-          partialSelection, node, className);
+              partialSelection, node, className);
         });
         attrs.forEach((attrName, value) {
           partialSelection = elementSelector.selectAttr(builder,
-          partialSelection, node, attrName, value);
+              partialSelection, node, attrName, value);
         });
       });
     }
@@ -198,7 +195,7 @@ class _SelectorPart {
   const _SelectorPart.fromAttribute(this.attrName, this.attrValue)
       : element = null, className = null;
 
-  toString() =>
+  String toString() =>
     element == null
       ? (className == null
          ? (attrValue == '' ? '[$attrName]' : '[$attrName=$attrValue]')
@@ -227,7 +224,7 @@ class _ElementSelector {
 
   _ElementSelector(this.name);
 
-  addDirective(List<_SelectorPart> selectorParts, _Directive directive) {
+  void addDirective(List<_SelectorPart> selectorParts, _Directive directive) {
     var selectorPart = selectorParts.removeAt(0);
     var terminal = selectorParts.isEmpty;
     var name;
@@ -266,8 +263,6 @@ class _ElementSelector {
       throw "Unknown selector part '$selectorPart'.";
     }
   }
-
-
 
   List<_ElementSelector> selectNode(ElementBinderBuilder builder,
                                     List<_ElementSelector> partialSelection,
@@ -351,7 +346,7 @@ List<_SelectorPart> _splitCss(String selector, Type type) {
   var parts = <_SelectorPart>[];
   var remainder = selector;
   var match;
-  while (!remainder.isEmpty) {
+  while (remainder.isNotEmpty) {
     if ((match = _SELECTOR_REGEXP.firstMatch(remainder)) != null) {
       if (match[1] != null) {
         parts.add(new _SelectorPart.fromElement(match[1].toLowerCase()));

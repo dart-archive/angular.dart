@@ -245,8 +245,8 @@ class ElementBinder {
     });
   }
 
-  _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
-                            visibility) {
+  void _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
+                                 visibility) {
     if (ref.type == TextMustache) {
       nodeModule.bind(TextMustache, toFactory: (Injector injector) {
         return new TextMustache(node, ref.value, injector.get(Interpolate),
@@ -281,7 +281,7 @@ class ElementBinder {
   }
 
   // Overridden in TemplateElementBinder
-  _registerViewFactory(node, parentInjector, nodeModule) {
+  void _registerViewFactory(node, parentInjector, nodeModule) {
     nodeModule..bind(ViewPort, toValue: null)
               ..bind(ViewFactory, toValue: null)
               ..bind(BoundViewFactory, toValue: null);
@@ -396,7 +396,7 @@ class TaggedTextBinder {
   final int offsetIndex;
 
   TaggedTextBinder(this.binder, this.offsetIndex);
-  toString() => "[TaggedTextBinder binder:$binder offset:$offsetIndex]";
+  String toString() => "[TaggedTextBinder binder:$binder offset:$offsetIndex]";
 }
 
 // Used for the tagging compiler
@@ -413,6 +413,8 @@ class TaggedElementBinder {
     if (textBinders == null) textBinders = [];
     textBinders.add(tagged);
   }
+
+  bool get isDummy => binder == null && textBinders == null && !isTopLevel;
 
   String toString() => "[TaggedElementBinder binder:$binder parentBinderOffset:"
                        "$parentBinderOffset textBinders:$textBinders]";
