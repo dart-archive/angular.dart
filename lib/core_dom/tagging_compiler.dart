@@ -19,8 +19,8 @@ class TaggingCompiler implements Compiler {
                                       List elementBinders) {
     var node = domCursor.current;
 
-    if (node.nodeType == 1) {
-      // If nodetype is a element, call selector matchElement.
+    if (node.nodeType == dom.Node.ELEMENT_NODE) {
+      // If the node is an element, call selector matchElement.
       // If text, call selector.matchText
 
       ElementBinder elementBinder = useExistingElementBinder == null ?
@@ -39,13 +39,13 @@ class TaggingCompiler implements Compiler {
     return null;
   }
 
-  _compileNode(NodeCursor domCursor,
-               ElementBinder elementBinder,
-               DirectiveMap directives,
-               List elementBinders,
-               int parentElementBinderOffset,
-               bool isTopLevel,
-               TaggedElementBinder directParentElementBinder) {
+  void _compileNode(NodeCursor domCursor,
+                    ElementBinder elementBinder,
+                    DirectiveMap directives,
+                    List elementBinders,
+                    int parentElementBinderOffset,
+                    bool isTopLevel,
+                    TaggedElementBinder directParentElementBinder) {
     var node = domCursor.current;
     if (node.nodeType == dom.Node.ELEMENT_NODE) {
       TaggedElementBinder taggedElementBinder;
@@ -73,7 +73,7 @@ class TaggingCompiler implements Compiler {
           _compileView(domCursor, null, directives, taggedElementBinderIndex,
               taggedElementBinder, elementBinders, false);
 
-          if (addedDummy && !_isDummyBinder(taggedElementBinder)) {
+          if (addedDummy && !taggedElementBinder.isDummy) {
             // We are keeping the element binder, so add the class
             // to the DOM node as well.
             //
@@ -101,13 +101,13 @@ class TaggingCompiler implements Compiler {
     }
   }
 
-  List _compileView(NodeCursor domCursor,
-                    ElementBinder useExistingElementBinder,
-                    DirectiveMap directives,
-                    int parentElementBinderOffset,
-                    TaggedElementBinder directParentElementBinder,
-                    List<TaggedElementBinder> elementBinders,
-                    bool isTopLevel) {
+  List<TaggedElementBinder> _compileView(NodeCursor domCursor,
+                                         ElementBinder useExistingElementBinder,
+                                         DirectiveMap directives,
+                                         int parentElementBinderOffset,
+                                         TaggedElementBinder directParentElementBinder,
+                                         List<TaggedElementBinder> elementBinders,
+                                         bool isTopLevel) {
     assert(parentElementBinderOffset != null);
     assert(parentElementBinderOffset < elementBinders.length);
     if (domCursor.current == null) return null;
@@ -156,20 +156,17 @@ class TaggingCompiler implements Compiler {
     return viewFactory;
   }
 
-  _isDummyBinder(TaggedElementBinder binder) =>
-    binder.binder == null && binder.textBinders == null && !binder.isTopLevel;
-
-  _removeUnusedBinders(List<TaggedElementBinder> binders) {
+  List<TaggedElementBinder> _removeUnusedBinders(List<TaggedElementBinder> binders) {
     // In order to support text nodes with directiveless parents, we
     // add dummy ElementBinders to the list.  After the entire template
     // has been compiled, we remove the dummies and update the offset indices
-    final output = [];
+    final output = <TaggedElementBinder>[];
     final List<int> offsetMap = [];
     int outputIndex = 0;
 
-    for (var i = 0, ii = binders.length; i < ii; i++) {
+    for (var i = 0; i < binders.length; i++) {
       TaggedElementBinder binder = binders[i];
-      if (_isDummyBinder(binder)) {
+      if (binder.isDummy) {
         offsetMap.add(-2);
       } else {
         if (binder.parentBinderOffset != -1) {

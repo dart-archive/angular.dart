@@ -14,7 +14,8 @@ abstract class ComponentFactory {
     return null;
   }
 
-  static void _setupOnShadowDomAttach(controller, templateLoader, shadowScope) {
+  static void _setupOnShadowDomAttach(controller, TemplateLoader templateLoader,
+                                      Scope shadowScope) {
     if (controller is ShadowRootAware) {
       templateLoader.template.then((shadowDom) {
         if (!shadowScope.isAttached) return;

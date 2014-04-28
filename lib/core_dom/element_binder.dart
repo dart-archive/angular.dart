@@ -83,7 +83,7 @@ class ElementBinder {
   bool get hasDirectivesOrEvents =>
       _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
-  _bindTwoWay(tasks, expression, scope, dstPathFn, controller, formatters, dstExpression) {
+  void _bindTwoWay(tasks, expression, scope, dstPathFn, controller, formatters, dstExpression) {
     var taskId = tasks.registerTask();
     Expression expressionFn = _parser(expression);
 
@@ -120,11 +120,13 @@ class ElementBinder {
     }, formatters: formatters);
   }
 
-  _bindCallback(dstPathFn, controller, expression, scope) {
+  void _bindCallback(dstPathFn, controller, expression, scope) {
     dstPathFn.assign(controller, _parser(expression).bind(scope.context, ScopeLocals.wrapper));
   }
 
-  _createAttrMappings(directive, scope, List<MappingParts> mappings, nodeAttrs, formatters, tasks) {
+
+  void _createAttrMappings(directive, scope, List<MappingParts> mappings, nodeAttrs, formatters,
+                           tasks) {
     mappings.forEach((MappingParts p) {
       var attrName = p.attrName;
       var dstExpression = p.dstExpression;
@@ -199,7 +201,7 @@ class ElementBinder {
     });
   }
 
-  _link(nodeInjector, probe, scope, nodeAttrs, formatters) {
+  void _link(nodeInjector, probe, scope, nodeAttrs, formatters) {
     _usableDirectiveRefs.forEach((DirectiveRef ref) {
       var linkTimer;
       try {
@@ -245,8 +247,8 @@ class ElementBinder {
     });
   }
 
-  _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
-                            visibility) {
+  void _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
+                                 visibility) {
     if (ref.type == TextMustache) {
       nodeModule.bind(TextMustache, toFactory: (Injector injector) {
         return new TextMustache(node, ref.value, injector.get(Interpolate),
@@ -281,7 +283,7 @@ class ElementBinder {
   }
 
   // Overridden in TemplateElementBinder
-  _registerViewFactory(node, parentInjector, nodeModule) {
+  void _registerViewFactory(node, parentInjector, nodeModule) {
     nodeModule..bind(ViewPort, toValue: null)
               ..bind(ViewFactory, toValue: null)
               ..bind(BoundViewFactory, toValue: null);
@@ -348,7 +350,7 @@ class ElementBinder {
  * Private class used for managing controller.attach() calls
  */
 class _TaskList {
-  var onDone;
+  Function onDone;
   final List _tasks = [];
   bool isDone = false;
 
@@ -371,7 +373,7 @@ class _TaskList {
     }
   }
 
-  doneRegistering() {
+  void doneRegistering() {
     completeTask(registerTask());
   }
 }
@@ -396,7 +398,7 @@ class TaggedTextBinder {
   final int offsetIndex;
 
   TaggedTextBinder(this.binder, this.offsetIndex);
-  toString() => "[TaggedTextBinder binder:$binder offset:$offsetIndex]";
+  String toString() => "[TaggedTextBinder binder:$binder offset:$offsetIndex]";
 }
 
 // Used for the tagging compiler
@@ -413,6 +415,8 @@ class TaggedElementBinder {
     if (textBinders == null) textBinders = [];
     textBinders.add(tagged);
   }
+
+  bool get isDummy => binder == null && textBinders == null && !isTopLevel;
 
   String toString() => "[TaggedElementBinder binder:$binder parentBinderOffset:"
                        "$parentBinderOffset textBinders:$textBinders]";
