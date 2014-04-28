@@ -7,49 +7,46 @@ class NgModelOptions {
   int _debounceChangeValue = null;
   int _debounceInputValue = null;
 
-  static const String _debounceDefaultKey = "default";
-  static const String _debounceBlurKey = "blur";
-  static const String _debounceChangeKey = "change";
-  static const String _debounceInputKey = "input";
+  static const String DEBOUNCE_DEFAULT_KEY = "default";
+  static const String DEBOUNCE_BLUR_KEY = "blur";
+  static const String DEBOUNCE_CHANGE_KEY = "change";
+  static const String DEBOUNCE_INPUT_KEY = "input";
 
   NgModelOptions(NodeAttrs attrs) {
-    print("options: " + attrs["ng-model-options"].replaceFirst("debounce", "'debounce'").replaceAll("'", "\""));
     Map options = convert.JSON.decode(attrs["ng-model-options"].replaceFirst("debounce", "'debounce'").replaceAll("'", "\""));
 
-    if (options["debounce"].containsKey(_debounceDefaultKey)) _debounceDefaultValue = options["debounce"][_debounceDefaultKey];
-    if (options["debounce"].containsKey(_debounceBlurKey)) _debounceBlurValue = options["debounce"][_debounceBlurKey];
-    if (options["debounce"].containsKey(_debounceChangeKey)) _debounceChangeValue = options["debounce"][_debounceChangeKey];
-    if (options["debounce"].containsKey(_debounceInputKey)) _debounceInputValue = options["debounce"][_debounceInputKey];
+    if (options["debounce"].containsKey(DEBOUNCE_DEFAULT_KEY)) _debounceDefaultValue = options["debounce"][DEBOUNCE_DEFAULT_KEY];
+    _debounceBlurValue = options["debounce"][DEBOUNCE_BLUR_KEY];
+    _debounceChangeValue = options["debounce"][DEBOUNCE_CHANGE_KEY];
+    _debounceInputValue = options["debounce"][DEBOUNCE_INPUT_KEY];
   }
 
   async.Timer _blurTimer;
   void executeBlurFunc(func()) {
-    if (_blurTimer != null && !_blurTimer.isActive) _blurTimer.cancel();
-    
     var delay = _debounceBlurValue == null ? _debounceDefaultValue : _debounceBlurValue;
-    _runFuncDebounced(delay, func, (timer)=>_blurTimer = timer);
+    _runFuncDebounced(delay, func, (timer)=>_blurTimer = timer,_blurTimer);
   }
 
   async.Timer _changeTimer;
   void executeChangeFunc(func()) {
-    if (_changeTimer != null && !_changeTimer.isActive) _changeTimer.cancel();
-    
     var delay = _debounceChangeValue == null ? _debounceDefaultValue : _debounceChangeValue;
-    _runFuncDebounced(delay, func, (timer)=>_changeTimer = timer);
+    _runFuncDebounced(delay, func, (timer)=>_changeTimer = timer, _changeTimer);
   }
 
   async.Timer _inputTimer;
   void executeInputFunc(func()) {
-    if (_inputTimer != null && _inputTimer.isActive) _inputTimer.cancel();
-    
     var delay = _debounceInputValue == null ? _debounceDefaultValue : _debounceInputValue;
-    _runFuncDebounced(delay, func, (timer) => _inputTimer = timer);
+    _runFuncDebounced(delay, func, (timer) => _inputTimer = timer, _inputTimer);
   }
   
-  void _runFuncDebounced(int delay, func(), setTimer(async.Timer timer)){
-    if(delay == 0)
+  void _runFuncDebounced(int delay, func(), setTimer(async.Timer timer), async.Timer timer){
+    if (timer != null && timer.isActive) timer.cancel();
+    
+    if(delay == 0){
       func();
-    else
+    }      
+    else{
       setTimer(new async.Timer(new Duration(milliseconds: delay), func));
+    }
   }
 }

@@ -43,9 +43,10 @@ class NgModel extends NgControl implements AttachAware {
   Watch _watch;
   bool _watchCollection;
 
-  NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs, 
+  NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs,
           Animate animate)
-      : super(element, injector, animate) {
+      : super(element, injector, animate) 
+  {
     _expression = attrs["ng-model"];
     watchCollection = false;
 
@@ -296,7 +297,8 @@ class InputCheckbox {
   final NgModelOptions ngModelOptions;
   final Scope scope;
 
-  InputCheckbox(dom.Element this.inputElement, this.ngModel, this.scope, this.ngTrueValue, this.ngFalseValue, this.ngModelOptions) {
+  InputCheckbox(dom.Element this.inputElement, this.ngModel,
+                this.scope, this.ngTrueValue, this.ngFalseValue, this.ngModelOptions) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         inputElement.checked = ngTrueValue.isValue(value);
