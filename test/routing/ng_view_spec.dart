@@ -10,8 +10,8 @@ main() {
     TestBed _;
     Router router;
 
-    beforeEachModule((Module m) {
-      m
+    beforeEachModule((Module module) {
+      module
         ..install(new AngularMockModule())
         ..type(RouteInitializerFn, implementedBy: FlatRouteInitializer);
     });
@@ -28,48 +28,53 @@ main() {
 
 
     it('should switch template', async(() {
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view></div>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
+      _.rootScope.apply();
       expect(root.text).toEqual('Foo');
 
       router.route('/bar');
       microLeap();
+      _.rootScope.apply();
       expect(root.text).toEqual('Bar');
 
       router.route('/foo');
       microLeap();
+      _.rootScope.apply();
       expect(root.text).toEqual('Foo');
     }));
 
 
     it('should switch template when route is already active', async(() {
       // Force the routing system to initialize.
-      _.compile('<ng-view></ng-view>');
+      _.compile('<div><ng-view></ng-view></div>');
 
       router.route('/foo');
       microLeap();
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view></div>');
       expect(root.text).toEqual('');
 
-      _.rootScope.apply();
       microLeap();
+      _.rootScope.apply();
       expect(root.text).toEqual('Foo');
     }));
 
 
     it('should clear template when route is deactivated', async(() {
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view></div>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
+      _.rootScope.apply();
       expect(root.text).toEqual('Foo');
 
       router.route('/baz'); // route without a template
       microLeap();
+      _.rootScope.apply();
       expect(root.text).toEqual('');
     }));
 
@@ -80,8 +85,8 @@ main() {
     TestBed _;
     Router router;
 
-    beforeEachModule((Module m) {
-      m
+    beforeEachModule((Module module) {
+      module
         ..install(new AngularMockModule())
         ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer);
     });
@@ -102,26 +107,63 @@ main() {
     });
 
     it('should switch nested templates', async(() {
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view></div>');
       expect(root.text).toEqual('');
 
       router.route('/library/all');
       microLeap();
+      _.rootScope.apply();
       expect(root.text).toEqual('LibraryBooks');
 
       router.route('/library/1234');
       microLeap();
+      _.rootScope.apply();
       expect(root.text).toEqual('LibraryBook 1234');
 
       // nothing should change here
       router.route('/library/1234/overview');
       microLeap();
+      _.rootScope.apply();
       expect(root.text).toEqual('LibraryBook 1234');
 
       // nothing should change here
       router.route('/library/1234/read');
       microLeap();
+      _.rootScope.apply();
       expect(root.text).toEqual('LibraryRead Book 1234');
+    }));
+  });
+
+
+  describe('Inline template ngView', () {
+    TestBed _;
+    Router router;
+
+    beforeEachModule((Module module) {
+      module
+        ..install(new AngularMockModule())
+        ..value(RouteInitializerFn, (router, views) {
+          views.configure({
+            'foo': ngRoute(
+                path: '/foo',
+                viewHtml: '<h1>Hello</h1>')
+          });
+        });
+    });
+
+    beforeEach((TestBed tb, Router _router, TemplateCache templates) {
+      _ = tb;
+      router = _router;
+    });
+
+    it('should switch inline templates', async(() {
+      Element root = _.compile('<div><ng-view></ng-view></div>');
+      expect(root.text).toEqual('');
+
+      router.route('/foo');
+      microLeap();
+      _.rootScope.apply();
+      expect(root.text).toEqual('Hello');
     }));
   });
 }

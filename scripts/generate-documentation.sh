@@ -2,6 +2,9 @@
 . $(dirname $0)/env.sh
 
 # Temporary change to delete the Build Status image markdown from the README (image md not supported by dartdoc-viewer)
+echo '******************************'
+echo '** GENERATING DOCUMENTATION **'
+echo '******************************'
 cp README.md README-orig.md
 cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
 
@@ -20,7 +23,7 @@ cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
     angular/core/annotation.dart \
     angular/core/module.dart \
     angular/directive/module.dart \
-    angular/filter/module.dart \
+    angular/formatter/module.dart \
     angular/routing/module.dart \
     angular/mock/module.dart \
     angular/perf/module.dart \
@@ -43,6 +46,9 @@ if [[ $1 == update ]]; then
   exit;
 fi
 
+echo '--------------------------'
+echo '-- DOCS: dartdoc-viewer --'
+echo '--------------------------'
 if [ ! -d "$DOCVIEWER_DIR" ]; then
    git clone https://github.com/angular/dartdoc-viewer.git -b angular-skin $DOCVIEWER_DIR
 else
@@ -58,6 +64,9 @@ echo $doc_version at $head_sha \(with Dart SDK $dartsdk_version\) > docs/VERSION
 
 rm -rf $DOCVIEWER_DIR/client/web/docs/
 mv docs/ $DOCVIEWER_DIR/client/web/docs/
+echo '---------------------'
+echo '-- DOCS: pub build --'
+echo '---------------------'
 (cd $DOCVIEWER_DIR/client; pub build)
 
 

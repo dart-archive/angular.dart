@@ -13,9 +13,9 @@ import 'package:unittest/unittest.dart';
 
 void main() {
   describe('expression_extractor', () {
-    it('should extract all expressions from source and templates', () {
-      Module module = new Module();
 
+    Iterable<String> _extractExpressions(file) {
+      Module module = new Module();
       Injector injector = new DynamicInjector(modules: [module],
       allowImplicitInjection: true);
 
@@ -24,11 +24,16 @@ void main() {
       var sourceMetadataExtractor = new SourceMetadataExtractor();
       List<DirectiveInfo> directives =
       sourceMetadataExtractor
-      .gatherDirectiveInfo('test/io/test_files/main.dart', sourceCrawler);
+      .gatherDirectiveInfo(file, sourceCrawler);
       var htmlExtractor = new HtmlExpressionExtractor(directives);
       htmlExtractor.crawl('test/io/test_files/', ioService);
 
-      var expressions = htmlExtractor.expressions;
+      return htmlExtractor.expressions;
+    }
+
+    it('should extract all expressions from source and templates', () {
+      var expressions = _extractExpressions('test/io/test_files/main.dart');
+
       expect(expressions, unorderedEquals([
           'ctrl.expr',
           'ctrl.anotherExpression',
@@ -44,6 +49,12 @@ void main() {
           'ngIfCondition',
           'ctrl.if'
       ]));
+    });
+
+    it('should extract expressions from ngRoute viewHtml', () {
+      var expressions = _extractExpressions('test/io/test_files/routing.dart');
+      expect(expressions, contains('foo'));
+      expect(expressions, contains('bar'));
     });
   });
 }

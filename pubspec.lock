@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.13.2"
+    version: "0.13.6"
   args:
     description: args
     source: hosted
@@ -12,7 +12,7 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.11.1"
+    version: "0.13.0"
   benchmark_harness:
     description: benchmark_harness
     source: hosted
@@ -24,18 +24,15 @@ packages:
   code_transformers:
     description: code_transformers
     source: hosted
-    version: "0.1.0+1"
+    version: "0.1.3"
   collection:
     description: collection
     source: hosted
     version: "0.9.1"
   di:
-    description:
-      ref: null
-      resolved-ref: a2de00d84934f4610d1f9e108c39614e66a773f5
-      url: "git://github.com/angular/di.dart.git"
-    source: git
-    version: "0.0.34"
+    description: di
+    source: hosted
+    version: "0.0.40"
   html5lib:
     description: html5lib
     source: hosted
@@ -43,7 +40,7 @@ packages:
   intl:
     description: intl
     source: hosted
-    version: "0.8.10+4"
+    version: "0.9.8"
   logging:
     description: logging
     source: hosted
@@ -52,14 +49,10 @@ packages:
     description: matcher
     source: hosted
     version: "0.10.0"
-  meta:
-    description: meta
-    source: hosted
-    version: "0.8.8"
   mock:
     description: mock
     source: hosted
-    version: "0.10.0"
+    version: "0.10.0+1"
   path:
     description: path
     source: hosted
@@ -71,7 +64,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.18"
+    version: "0.4.19"
   shadow_dom:
     description: shadow_dom
     source: hosted
@@ -83,11 +76,11 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "0.9.3"
+    version: "0.9.3+1"
   unittest:
     description: unittest
     source: hosted
-    version: "0.10.1+1"
+    version: "0.10.1+2"
   utf:
     description: utf
     source: hosted

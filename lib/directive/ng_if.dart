@@ -81,7 +81,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
  * Example:
  *
  *     <!-- By using ng-if instead of ng-show, we avoid the cost of the showdown
- *          filter, the repeater, etc. -->
+ *          formatter, the repeater, etc. -->
  *     <div ng-if="showDetails">
  *        {{obj.details.markdownText | showdown}}
  *        <div ng-repeat="item in obj.details.items">
@@ -89,8 +89,8 @@ abstract class _NgUnlessIfAttrDirectiveBase {
  *        </div>
  *     </div>
  */
-@NgDirective(
-    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
+@Decorator(
+    children: Directive.TRANSCLUDE_CHILDREN,
     selector:'[ng-if]',
     map: const {'.': '=>condition'})
 class NgIf extends _NgUnlessIfAttrDirectiveBase {
@@ -142,7 +142,7 @@ class NgIf extends _NgUnlessIfAttrDirectiveBase {
  * Example:
  *
  *     <!-- By using ng-unless instead of ng-show, we avoid the cost of the
- *          showdown filter, the repeater, etc. -->
+ *          showdown formatter, the repeater, etc. -->
  *     <div ng-unless="terseView">
  *        {{obj.details.markdownText | showdown}}
  *        <div ng-repeat="item in obj.details.items">
@@ -150,8 +150,8 @@ class NgIf extends _NgUnlessIfAttrDirectiveBase {
  *        </div>
  *     </div>
  */
-@NgDirective(
-    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
+@Decorator(
+    children: Directive.TRANSCLUDE_CHILDREN,
     selector:'[ng-unless]',
     map: const {'.': '=>condition'})
 class NgUnless extends _NgUnlessIfAttrDirectiveBase {

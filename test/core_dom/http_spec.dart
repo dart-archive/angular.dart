@@ -935,13 +935,13 @@ void main() {
       });
 
 
-      it('should rewrite URLs before calling the backend', async((Http http, NgZone zone) {
+      it('should rewrite URLs before calling the backend', async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
         zone.run(() {
-          http.getString('a[not sent to backed]').then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a[not sent to backed]').then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
         });
@@ -954,17 +954,17 @@ void main() {
       }));
 
 
-      it('should support pending requests for different raw URLs', async((Http http, NgZone zone) {
+      it('should support pending requests for different raw URLs', async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
         zone.run(() {
-          http.getString('a[some string]', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a[some string]', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
-          http.getString('a[different string]', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a[different string]', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -976,11 +976,11 @@ void main() {
       }));
 
 
-      it('should support caching', async((Http http, NgZone zone) {
+      it('should support caching', async((Http http, VmTurnZone zone) {
         var called = 0;
         zone.run(() {
-          http.getString('fromCache', cache: cache).then((v) {
-            expect(v).toEqual(CACHED_VALUE);
+          http.get('fromCache', cache: cache).then((v) {
+            expect(v.responseText).toEqual(CACHED_VALUE);
             called += 1;
           });
         });
@@ -990,17 +990,17 @@ void main() {
     });
 
     describe('caching', () {
-      it('should not cache if no cache is present', async((Http http, NgZone zone) {
+      it('should not cache if no cache is present', async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE, null);
 
         var called = 0;
         zone.run(() {
-          http.getString('a').then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a').then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
-          http.getString('a').then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a').then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -1013,17 +1013,17 @@ void main() {
       }));
 
 
-      it('should return a pending request', async((Http http, NgZone zone) {
+      it('should return a pending request', async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE);
 
         var called = 0;
         zone.run(() {
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -1035,13 +1035,13 @@ void main() {
       }));
 
 
-      it('should not return a pending request after the request is complete', async((Http http, NgZone zone) {
+      it('should not return a pending request after the request is complete', async((Http http, VmTurnZone zone) {
         backend.when('GET', 'a').respond(200, VALUE, null);
 
         var called = 0;
         zone.run(() {
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 1;
           });
         });
@@ -1050,8 +1050,8 @@ void main() {
         flush();
 
         zone.run(() {
-          http.getString('a', cache: cache).then((v) {
-            expect(v).toEqual(VALUE);
+          http.get('a', cache: cache).then((v) {
+            expect(v.responseText).toEqual(VALUE);
             called += 10;
           });
         });
@@ -1063,12 +1063,12 @@ void main() {
       }));
 
 
-      it('should return a cached value if present', async((Http http, NgZone zone) {
+      it('should return a cached value if present', async((Http http, VmTurnZone zone) {
         var called = 0;
         // The URL string 'f' is primed in the FakeCache
         zone.run(() {
-          http.getString('f', cache: cache).then((v) {
-            expect(v).toEqual(CACHED_VALUE);
+          http.get('f', cache: cache).then((v) {
+            expect(v.responseText).toEqual(CACHED_VALUE);
             called += 1;
           });
           expect(called).toEqual(0);
@@ -1080,12 +1080,12 @@ void main() {
 
 
     describe('error handling', () {
-      it('should reject 404 status codes', async((Http http, NgZone zone) {
+      it('should reject 404 status codes', async((Http http, VmTurnZone zone) {
         backend.when('GET', '404.html').respond(404, VALUE);
 
         var response = null;
         zone.run(() {
-          http.getString('404.html').then(
+          http.get('404.html').then(
                   (v) => response = 'FAILED',
               onError:(v) { assert(v != null); return response = v; });
         });

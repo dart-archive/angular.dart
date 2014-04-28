@@ -20,7 +20,8 @@ module.exports = function(config) {
 
     exclude: [
       'test/io/**',
-      'test/tools/transformer/**'
+      'test/tools/transformer/**',
+      'test/tools/symbol_inspector/**'
     ],
 
     autoWatch: false,

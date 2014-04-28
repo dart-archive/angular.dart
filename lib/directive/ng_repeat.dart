@@ -55,7 +55,7 @@ part of angular.directive;
  *     property is same.
  *
  *     For example: `item in items | filter:searchText track by item.id` is a
- *     pattern that might be used to apply a filter to items in conjunction with
+ *     pattern that might be used to apply a formatter to items in conjunction with
  *     a tracking expression.
  *
  * # Example:
@@ -65,8 +65,8 @@ part of angular.directive;
  *     </ul>
  */
 
-@NgDirective(
-    children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN,
+@Decorator(
+    children: Directive.TRANSCLUDE_CHILDREN,
     selector: '[ng-repeat]',
     map: const {'.': '@expression'})
 class NgRepeat {
@@ -77,7 +77,7 @@ class NgRepeat {
   final BoundViewFactory _boundViewFactory;
   final Scope _scope;
   final Parser _parser;
-  final FilterMap filters;
+  final FormatterMap formatters;
 
   String _expression;
   String _valueIdentifier;
@@ -88,7 +88,7 @@ class NgRepeat {
   Watch _watch;
 
   NgRepeat(this._viewPort, this._boundViewFactory, this._scope,
-           this._parser, this.filters);
+           this._parser, this.formatters);
 
   set expression(value) {
     assert(value != null);
@@ -136,7 +136,7 @@ class NgRepeat {
           _onChange(changes);
         },
         collection: true,
-        filters: filters
+        formatters: formatters
     );
   }
 
@@ -174,7 +174,7 @@ class NgRepeat {
         };
       }
     } else {
-      changes.forEachRemoval((removal) {
+      changes.forEachRemoval((CollectionChangeItem removal) {
         var index = removal.previousIndex;
         var row = _rows[index];
         row.scope.destroy();
@@ -182,13 +182,13 @@ class NgRepeat {
         leftInDom.removeAt(domLength - 1 - index);
       });
 
-      changes.forEachAddition((addition) {
+      changes.forEachAddition((CollectionChangeItem addition) {
         changeFunctions[addition.currentIndex] = (index, previousView) {
           addRow(index, addition.item, previousView);
         };
       });
 
-      changes.forEachMove((move) {
+      changes.forEachMove((CollectionChangeItem move) {
         var previousIndex = move.previousIndex;
         var value = move.item;
         changeFunctions[move.currentIndex] = (index, previousView) {

@@ -2,33 +2,33 @@ library angular.dom.selector_spec;
 
 import '../_specs.dart';
 
-@NgDirective(selector:'b')                    class _BElement{}
-@NgDirective(selector:'.b')                   class _BClass{}
-@NgDirective(selector:'[directive]')          class _DirectiveAttr{}
-@NgDirective(selector:'[wildcard-*]')         class _WildcardDirectiveAttr{}
-@NgDirective(selector:'[directive=d][foo=f]') class _DirectiveFooAttr{}
-@NgDirective(selector:'b[directive]')         class _BElementDirectiveAttr{}
-@NgDirective(selector:'[directive=value]')    class _DirectiveValueAttr{}
-@NgDirective(selector:'b[directive=value]')   class _BElementDirectiveValue{}
-@NgDirective(selector:':contains(/abc/)')     class _ContainsAbc{}
-@NgDirective(selector:'[*=/xyz/]')            class _AttributeContainsXyz{}
+@Decorator(selector:'b')                    class _BElement{}
+@Decorator(selector:'.b')                   class _BClass{}
+@Decorator(selector:'[directive]')          class _DirectiveAttr{}
+@Decorator(selector:'[wildcard-*]')         class _WildcardDirectiveAttr{}
+@Decorator(selector:'[directive=d][foo=f]') class _DirectiveFooAttr{}
+@Decorator(selector:'b[directive]')         class _BElementDirectiveAttr{}
+@Decorator(selector:'[directive=value]')    class _DirectiveValueAttr{}
+@Decorator(selector:'b[directive=value]')   class _BElementDirectiveValue{}
+@Decorator(selector:':contains(/abc/)')     class _ContainsAbc{}
+@Decorator(selector:'[*=/xyz/]')            class _AttributeContainsXyz{}
 
-@NgComponent(selector:'component')            class _Component{}
-@NgDirective(selector:'[attribute]')          class _Attribute{}
-@NgDirective(selector:'[structural]',
-             children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN)
+@Component(selector:'component')            class _Component{}
+@Decorator(selector:'[attribute]')          class _Attribute{}
+@Decorator(selector:'[structural]',
+             children: Directive.TRANSCLUDE_CHILDREN)
                                               class _Structural{}
 
-@NgDirective(selector:'[ignore-children]',
-             children: AbstractNgAnnotation.IGNORE_CHILDREN)
+@Decorator(selector:'[ignore-children]',
+             children: Directive.IGNORE_CHILDREN)
                                               class _IgnoreChildren{}
 
-@NgDirective(selector: '[my-model][required]')
-@NgDirective(selector: '[my-model][my-required]')
+@Decorator(selector: '[my-model][required]')
+@Decorator(selector: '[my-model][my-required]')
                                               class _TwoDirectives {}
 
-@NgDirective(selector: '[two-directives]') class _OneOfTwoDirectives {}
-@NgDirective(selector: '[two-directives]') class _TwoOfTwoDirectives {}
+@Decorator(selector: '[two-directives]') class _OneOfTwoDirectives {}
+@Decorator(selector: '[two-directives]') class _TwoOfTwoDirectives {}
 
 
 main() {

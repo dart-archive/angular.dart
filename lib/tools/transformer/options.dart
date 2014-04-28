@@ -1,9 +1,5 @@
 library angular.tools.transformer.options;
 
-import 'dart:async';
-
-import 'package:barback/barback.dart';
-import 'package:code_transformers/resolver.dart';
 import 'package:di/transformer/options.dart' as di;
 
 /** Options used by Angular transformers */
@@ -42,6 +38,4 @@ class TransformOptions {
     if (sdkDirectory == null)
       throw new ArgumentError('sdkDirectory must be provided.');
   }
-
-  Future<bool> isDartEntry(Asset asset) => isPossibleDartEntry(asset);
 }

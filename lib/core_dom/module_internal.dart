@@ -30,35 +30,45 @@ part 'element_binder.dart';
 part 'element_binder_builder.dart';
 part 'event_handler.dart';
 part 'http.dart';
-part 'ng_mustache.dart';
+part 'mustache.dart';
 part 'node_cursor.dart';
 part 'selector.dart';
+part 'shadow_dom_component_factory.dart';
+part 'shadowless_shadow_root.dart';
 part 'tagging_compiler.dart';
 part 'tagging_view_factory.dart';
 part 'template_cache.dart';
+part 'transcluding_component_factory.dart';
 part 'tree_sanitizer.dart';
 part 'walking_compiler.dart';
 part 'ng_element.dart';
 
-class NgCoreDomModule extends Module {
-  NgCoreDomModule() {
+class CoreDomModule extends Module {
+  CoreDomModule() {
     value(dom.Window, dom.window);
     value(ElementProbe, null);
 
     factory(TemplateCache, (_) => new TemplateCache(capacity: 0));
     type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
 
-    type(NgTextMustacheDirective);
-    type(NgAttrMustacheDirective);
+    type(TextMustache);
+    type(AttrMustache);
 
     type(Compiler, implementedBy: TaggingCompiler);
+
+    type(ComponentFactory, implementedBy: ShadowDomComponentFactory);
+    type(ShadowDomComponentFactory);
+    type(TranscludingComponentFactory);
+    type(Content);
+    value(ContentPort, null);
+    
     type(Http);
     type(UrlRewriter);
     type(HttpBackend);
     type(HttpDefaultHeaders);
     type(HttpDefaults);
     type(HttpInterceptors);
-    type(NgAnimate);
+    type(Animate);
     type(ViewCache);
     type(BrowserCookies);
     type(Cookies);

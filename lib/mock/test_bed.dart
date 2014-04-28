@@ -70,12 +70,12 @@ class TestBed {
   }
 
   /**
-   * Triggern a specific DOM element on a given node to test directives
+   * Trigger a specific DOM element on a given node to test directives
    * which listen to events.
    */
   triggerEvent(element, name, [type='MouseEvent']) {
     element.dispatchEvent(new Event.eventType(type, name));
-    // Since we are manually triggering event we need to simpulate apply();
+    // Since we are manually triggering event we need to simulate apply();
     rootScope.apply();
   }
 

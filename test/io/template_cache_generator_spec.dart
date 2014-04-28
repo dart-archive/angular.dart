@@ -14,11 +14,12 @@ void main() {
       var tmpDir = Directory.systemTemp.createTempSync();
       Future flush;
       try {
-        flush = generator.main(['test/io/test_files/templates/main.dart',
-        Platform.environment['DART_SDK'],
-            '${tmpDir.path}/generated.dart', 'generated',
-            '%SYSTEM_PACKAGE_ROOT%',
-            '/test/io/test_files,rewritten', 'MyComponent3']);
+        flush = generator.main([
+            '--out=${tmpDir.path}/generated.dart',
+            '--url-rewrites=/test/io/test_files,rewritten',
+            '--skip-classes=MyComponent3',
+            'test/io/test_files/templates/main.dart',
+            'generated']);
       } catch(_) {
         tmpDir.deleteSync(recursive: true);
         rethrow;
@@ -42,11 +43,12 @@ void main() {
       var tmpDir = Directory.systemTemp.createTempSync();
       Future flush;
       try {
-        flush = generator.main(['test/io/test_files/cssUrls/main.dart',
-            Platform.environment['DART_SDK'],
-            '${tmpDir.path}/generated.dart', 'generated',
-            '%SYSTEM_PACKAGE_ROOT%',
-            '/test/io/test_files,rewritten', 'MyComponent3']);
+        flush = generator.main([
+            '--out=${tmpDir.path}/generated.dart',
+            '--url-rewrites=/test/io/test_files,rewritten',
+            '--skip-classes=MyComponent3',
+            'test/io/test_files/cssUrls/main.dart',
+            'generated']);
       } catch(_) {
         tmpDir.deleteSync(recursive: true);
         rethrow;

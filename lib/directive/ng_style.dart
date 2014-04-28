@@ -7,7 +7,7 @@ part of angular.directive;
   * @example
   *     <span ng-style="{color:'red'}">Sample Text</span>
   */
-@NgDirective(
+@Decorator(
     selector: '[ng-style]',
     map: const {'ng-style': '@styleExpression'})
 class NgStyle {

@@ -14,7 +14,7 @@ part of angular.directive;
  *
  *     <div ng-bind-html="htmlVar"></div>
  */
-@NgDirective(
+@Decorator(
   selector: '[ng-bind-html]',
   map: const {'ng-bind-html': '=>value'})
 class NgBindHtml {

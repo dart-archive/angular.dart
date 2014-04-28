@@ -114,19 +114,11 @@ abstract class MapChangeRecord<K, V> {
   /// The underlying map object
   Map get map;
 
-  /// A list of [CollectionKeyValue]s which are in the iteration order. */
-  KeyValue<K, V> get mapHead;
-  PreviousKeyValue<K, V> get previousMapHead;
-  /// A list of changed items.
-  ChangedKeyValue<K, V> get changesHead;
-  /// A list of new added items.
-  AddedKeyValue<K, V> get additionsHead;
-  /// A list of removed items
-  RemovedKeyValue<K, V> get removalsHead;
-
-  void forEachChange(void f(ChangedKeyValue<K, V> change));
-  void forEachAddition(void f(AddedKeyValue<K, V> addition));
-  void forEachRemoval(void f(RemovedKeyValue<K, V> removal));
+  void forEachItem(void f(MapKeyValue<K, V> item));
+  void forEachPreviousItem(void f(MapKeyValue<K, V> previousItem));
+  void forEachChange(void f(MapKeyValue<K, V> change));
+  void forEachAddition(void f(MapKeyValue<K, V> addition));
+  void forEachRemoval(void f(MapKeyValue<K, V> removal));
 }
 
 /**
@@ -144,26 +136,6 @@ abstract class MapKeyValue<K, V> {
   V get currentValue;
 }
 
-abstract class KeyValue<K, V> extends MapKeyValue<K, V> {
-  KeyValue<K, V> get nextKeyValue;
-}
-
-abstract class PreviousKeyValue<K, V> extends MapKeyValue<K, V> {
-  PreviousKeyValue<K, V> get previousNextKeyValue;
-}
-
-abstract class AddedKeyValue<K, V> extends MapKeyValue<K, V> {
-  AddedKeyValue<K, V> get nextAddedKeyValue;
-}
-
-abstract class RemovedKeyValue<K, V> extends MapKeyValue<K, V> {
-  RemovedKeyValue<K, V> get nextRemovedKeyValue;
-}
-
-abstract class ChangedKeyValue<K, V> extends MapKeyValue<K, V> {
-  ChangedKeyValue<K, V> get nextChangedKeyValue;
-}
-
 /**
  * If the [ChangeDetector] is watching an [Iterable] then the [currentValue] of
  * [Record] will contain an instance of [CollectionChangeRecord]. The
@@ -176,19 +148,11 @@ abstract class CollectionChangeRecord<V> {
   Iterable get iterable;
   int get length;
 
-  /** A list of [CollectionItem]s which are in the iteration order. */
-  CollectionItem<V> get collectionHead;
-  PreviousCollectionItem<V> get previousCollectionHead;
-  /** A list of new [AddedItem]s. */
-  AddedItem<V> get additionsHead;
-  /** A list of [MovedItem]s. */
-  MovedItem<V> get movesHead;
-  /** A list of [RemovedItem]s. */
-  RemovedItem<V> get removalsHead;
-
-  void forEachAddition(void f(AddedItem<V> addition));
-  void forEachMove(void f(MovedItem<V> move));
-  void forEachRemoval(void f(RemovedItem<V> removal));
+  void forEachItem(void f(CollectionChangeItem<V> item));
+  void forEachPreviousItem(void f(CollectionChangeItem<V> previousItem));
+  void forEachAddition(void f(CollectionChangeItem<V> addition));
+  void forEachMove(void f(CollectionChangeItem<V> move));
+  void forEachRemoval(void f(CollectionChangeItem<V> removal));
 }
 
 /**
@@ -204,42 +168,6 @@ abstract class CollectionChangeItem<V> {
 
   /** The item. */
   V get item;
-}
-
-/**
- * Used to create a linked list of collection items. These items are always in
- * the iteration order of the collection.
- */
-abstract class CollectionItem<V> extends CollectionChangeItem<V> {
-  CollectionItem<V> get nextCollectionItem;
-}
-
-/**
- * A linked list of new items added to the collection. These items are always in
- * the iteration order of the collection.
- */
-abstract class PreviousCollectionItem<V> extends CollectionChangeItem<V> {
-  PreviousCollectionItem<V> get previousNextItem;
-}
-
-abstract class AddedItem<V> extends CollectionChangeItem<V> {
-  AddedItem<V> get nextAddedItem;
-}
-
-/**
- * A linked list of items  moved in the collection. These items are always in
- * the iteration order of the collection.
- */
-abstract class MovedItem<V> extends CollectionChangeItem<V> {
-  MovedItem<V> get nextMovedItem;
-}
-
-/**
- * A linked list of items removed  from the collection. These items are always
- * in the iteration order of the collection.
- */
-abstract class RemovedItem<V> extends CollectionChangeItem<V> {
-  RemovedItem<V> get nextRemovedItem;
 }
 
 typedef dynamic FieldGetter(object);

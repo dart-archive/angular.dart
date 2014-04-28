@@ -28,7 +28,7 @@ class View {
  */
 class ViewPort {
   final dom.Node placeholder;
-  final NgAnimate _animate;
+  final Animate _animate;
   final _views = <View>[];
 
   ViewPort(this.placeholder, this._animate);

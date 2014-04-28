@@ -82,10 +82,10 @@ part of angular.directive;
  * for example, you must provide explicit number rules for 0, 1, 2 and 3. You
  * must also provide plural strings for at least the "other" plural category.
  */
-@NgDirective(
+@Decorator(
     selector: 'ng-pluralize',
     map: const { 'count': '=>count' })
-@NgDirective(
+@Decorator(
     selector: '[ng-pluralize]',
     map: const { 'count': '=>count' })
 class NgPluralize {
@@ -96,7 +96,7 @@ class NgPluralize {
   final _discreteRules = <String, String>{};
   final _categoryRules = <Symbol, String>{};
   final _expressionCache = <String, String>{};
-  FilterMap _filters;
+  FormatterMap _formatters;
 
   Watch _watch;
 
@@ -111,7 +111,7 @@ class NgPluralize {
       'other' : #other,
   };
 
-  NgPluralize(this._scope, this._element, this._interpolate, this._filters) {
+  NgPluralize(this._scope, this._element, this._interpolate, this._formatters) {
     var attrs = _element.attributes;
     final whens = attrs['when'] == null
         ? <String, String>{}
@@ -169,7 +169,7 @@ class NgPluralize {
     if (_watch != null) _watch.remove();
     var expression = _expressionCache.putIfAbsent(template, () =>
         _interpolate(template, false, r'${', '}'));
-    _watch = _scope.watch(expression, _updateMarkup, filters: _filters);
+    _watch = _scope.watch(expression, _updateMarkup, formatters: _formatters);
   }
 
   void _updateMarkup(text, previousText) {

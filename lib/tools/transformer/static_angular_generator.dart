@@ -1,6 +1,5 @@
 library angular.tools.transformer.static_angular_generator;
 
-import 'dart:async';
 import 'package:analyzer/src/generated/ast.dart';
 import 'package:analyzer/src/generated/element.dart';
 import 'package:angular/tools/transformer/options.dart';
@@ -15,8 +14,6 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
   StaticAngularGenerator(this.options, Resolvers resolvers) {
     this.resolvers = resolvers;
   }
-
-  Future<bool> isPrimary(Asset input) => options.isDartEntry(input);
 
   void applyResolver(Transform transform, Resolver resolver) {
     var asset = transform.primaryInput;

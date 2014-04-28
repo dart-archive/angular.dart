@@ -6,7 +6,7 @@ part of angular.directive;
  * attribute. Unlike ngBind, the ngBindTemplate can contain multiple {{ }}
  * expressions.
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-bind-template]',
     map: const {'ng-bind-template': '@bind'})
 class NgBindTemplate {

@@ -1,21 +1,27 @@
 part of angular.core.dom_internal;
 
-@NgInjectableService()
+@Injectable()
 class ElementBinderFactory {
   final Parser _parser;
   final Profiler _perf;
   final Expando _expando;
+  final ComponentFactory _componentFactory;
+  final TranscludingComponentFactory _transcludingComponentFactory;
+  final ShadowDomComponentFactory _shadowDomComponentFactory;
 
-  ElementBinderFactory(this._parser, this._perf, this._expando);
+  ElementBinderFactory(this._parser, this._perf, this._expando, this._componentFactory,
+      this._transcludingComponentFactory, this._shadowDomComponentFactory);
 
   // TODO: Optimize this to re-use a builder.
   ElementBinderBuilder builder() => new ElementBinderBuilder(this);
 
   ElementBinder binder(ElementBinderBuilder b) =>
-      new ElementBinder(_perf, _expando, _parser,
+      new ElementBinder(_perf, _expando, _parser, _componentFactory,
+          _transcludingComponentFactory, _shadowDomComponentFactory,
           b.component, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
-      new TemplateElementBinder(_perf, _expando, _parser,
+      new TemplateElementBinder(_perf, _expando, _parser, _componentFactory,
+          _transcludingComponentFactory, _shadowDomComponentFactory,
           b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
 }
 
@@ -38,7 +44,7 @@ class ElementBinderBuilder {
   DirectiveRef component;
 
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
-  String childMode = AbstractNgAnnotation.COMPILE_CHILDREN;
+  String childMode = Directive.COMPILE_CHILDREN;
 
   ElementBinderBuilder(this._factory);
 
@@ -46,15 +52,15 @@ class ElementBinderBuilder {
     var annotation = ref.annotation;
     var children = annotation.children;
 
-    if (annotation.children == AbstractNgAnnotation.TRANSCLUDE_CHILDREN) {
+    if (annotation.children == Directive.TRANSCLUDE_CHILDREN) {
       template = ref;
-    } else if (annotation is NgComponent) {
+    } else if (annotation is Component) {
       component = ref;
     } else {
       decorators.add(ref);
     }
 
-    if (annotation.children == AbstractNgAnnotation.IGNORE_CHILDREN) {
+    if (annotation.children == Directive.IGNORE_CHILDREN) {
       childMode = annotation.children;
     }
 

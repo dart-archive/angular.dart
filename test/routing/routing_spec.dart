@@ -83,10 +83,10 @@ main() {
         });
       });
 
-      expect(router.root.getRoute('foo').name).toEqual('foo');
-      expect(router.root.getRoute('foo.bar').name).toEqual('bar');
-      expect(router.root.getRoute('foo.baz').name).toEqual('baz');
-      expect(router.root.getRoute('aux').name).toEqual('aux');
+      expect(router.root.findRoute('foo').name).toEqual('foo');
+      expect(router.root.findRoute('foo.bar').name).toEqual('bar');
+      expect(router.root.findRoute('foo.baz').name).toEqual('baz');
+      expect(router.root.findRoute('aux').name).toEqual('aux');
 
       router.route('/foo');
       microLeap();
@@ -158,12 +158,12 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<h1>Foo</h1>'));
 
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view><div>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-
+      _.rootScope.apply();
       expect(enterCount).toBe(1);
       expect(root.text).toEqual('Foo');
     }));
@@ -231,18 +231,18 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<h1>Foo</h1>'));
 
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view><div>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-
+      _.rootScope.apply();
       expect(root.text).toEqual('Foo');
       expect(leaveCount).toBe(0);
 
       router.route('/bar');
       microLeap();
-
+      _.rootScope.apply();
       expect(root.text).toEqual('');
       expect(leaveCount).toBe(1);
     }));
@@ -263,12 +263,12 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div make-it-new>Old!</div>'));
 
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view><div>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-
+      _.rootScope.apply();
       expect(root.text).toEqual('New!');
     }));
 
@@ -288,17 +288,17 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div make-it-new>Old!</div>'));
 
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view><div>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-
+      _.rootScope.apply();
       expect(root.text).toEqual('New!');
     }));
 
 
-    it('should synchronously load new filters from modules ', async(() {
+    it('should synchronously load new formatters from modules ', async(() {
       initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
@@ -313,18 +313,17 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div>{{\'World\' | hello}}</div>'));
 
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view></div>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
       _.rootScope.apply();
-
       expect(root.text).toEqual('Hello, World!');
     }));
 
 
-    it('should asynchronously load new filters from modules ', async(() {
+    it('should asynchronously load new formatters from modules ', async(() {
       initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(
@@ -339,13 +338,12 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div>{{\'World\' | hello}}</div>'));
 
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view></div>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
       _.rootScope.apply();
-
       expect(root.text).toEqual('Hello, World!');
     }));
 
@@ -360,16 +358,16 @@ void initRoutes(Router router, RouteViewFactory view) {
   _router = router;
 }
 
-@NgDirective(selector: '[make-it-new]')
+@Decorator(selector: '[make-it-new]')
 class NewDirective {
   NewDirective(Element element) {
     element.innerHtml = 'New!';
   }
 }
 
-@NgFilter(name:'hello')
+@Formatter(name:'hello')
 class HelloFilter {
-  call(String str) {
+  String call(String str) {
     return 'Hello, $str!';
   }
 }

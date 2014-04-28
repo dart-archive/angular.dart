@@ -5,7 +5,7 @@ class _LinkedListItem<I extends _LinkedListItem> {
   I _previous, _next;
 }
 
-class _LinkedList<L extends _LinkedList> {
+class _LinkedList<L extends _LinkedListItem> {
   L _head, _tail;
 
   static _Handler _add(_Handler list, _LinkedListItem item) {

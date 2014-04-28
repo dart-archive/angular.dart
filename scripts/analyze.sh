@@ -1,8 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
 . $(dirname $0)/env.sh
+
+echo '==========='
+echo '== BUILD =='
+echo '==========='
 
 OUT=tmp/all.dart
 mkdir -p tmp
@@ -12,7 +16,7 @@ $DARTANALYZER --version
 echo // generated file > $OUT
 
 for FILE in $(ls lib/angular.dart \
-                 perf/*_perf.dart \
+                 benchmarks/*_perf.dart \
                  test/*_spec.dart \
                  test/*/*_spec.dart \
                  lib/change_detection/change_detection.dart \
@@ -23,6 +27,6 @@ do
   echo export \'../$FILE\' hide main, NestedRouteInitializer\; >> $OUT
 done
 
-$(dirname $0)/generate-expressions.sh
+$NGDART_SCRIPT_DIR/generate-expressions.sh
 
 $DARTANALYZER $OUT

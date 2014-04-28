@@ -3,7 +3,7 @@ library ng_repeat_spec;
 import '../_specs.dart';
 
 // Mock animate instance that throws on move
-class MockAnimate extends NgAnimate {
+class MockAnimate extends Animate {
   Animation move(Iterable<Node> nodes, Node parent,
                  {Node insertBefore}) {
     throw "Move should not be called";
@@ -107,13 +107,23 @@ main() {
     });
 
 
-    it('should support filters', () {
+    it('should support formatters', () {
       element = compile(
           '<div><span ng-repeat="item in items | filter:myFilter">{{item}}</span></div>');
       scope.context['items'] = ['foo', 'bar', 'baz'];
       scope.context['myFilter'] = (String item) => item.startsWith('b');
       scope.apply();
       expect(element.querySelectorAll('span').length).toEqual(2);
+    });
+
+    it('should support function as a formatter', () {
+      scope.context['isEven'] = (num) => num % 2 == 0;
+      var element = compile(
+          '<div ng-show="true">'
+            '<span ng-repeat="r in [1, 2] | filter:isEven">{{r}}</span>'
+          '</div>');
+      scope.apply();
+      expect(element.text).toEqual('2');
     });
 
 
@@ -426,7 +436,7 @@ main() {
     inject((Injector injector) {
       var throwOnMove = new MockAnimate();
       var child = injector.createChild(
-          [new Module()..value(NgAnimate, throwOnMove)]);
+          [new Module()..value(Animate, throwOnMove)]);
 
       child.invoke((Injector injector, Scope rootScope, Compiler compiler,
                     DirectiveMap _directives) {

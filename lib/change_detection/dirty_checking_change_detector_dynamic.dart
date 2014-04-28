@@ -13,12 +13,11 @@ import 'dart:mirrors';
 class DynamicFieldGetterFactory implements FieldGetterFactory {
   final isMethodInvoke = true;
 
-  bool isMethod(Object object, String name) {
-    try {
-      return method(object, name) != null;
-    } catch (e, s) {
-      return false;
-    }
+  isMethod(Object object, String name) {
+    var declaration = reflectClass(object.runtimeType).declarations[new Symbol(name)];
+    return declaration != null &&
+           declaration is MethodMirror &&
+           (declaration as MethodMirror).isRegularMethod;
   }
 
   Function method(Object object, String name) {

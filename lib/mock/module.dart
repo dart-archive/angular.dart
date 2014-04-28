@@ -48,7 +48,7 @@ part 'mock_window.dart';
  *   - [MockHttpBackend] instead of [HttpBackend]
  *   - [Logger]
  *   - [RethrowExceptionHandler] instead of [ExceptionHandler]
- *   - [NgZone] which displays errors to console;
+ *   - [VmTurnZone] which displays errors to console;
  */
 class AngularMockModule extends Module {
   AngularMockModule() {
@@ -60,8 +60,8 @@ class AngularMockModule extends Module {
     value(Element, document.body);
     value(Node, document.body);
     factory(HttpBackend, (Injector i) => i.get(MockHttpBackend));
-    factory(NgZone, (_) {
-      return new NgZone()
+    factory(VmTurnZone, (_) {
+      return new VmTurnZone()
         ..onError = (e, s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
     });
     type(Window, implementedBy: MockWindow);

@@ -1,68 +1,78 @@
 part of angular.directive;
 
 /**
- * The `ngClass` allows you to set CSS classes on HTML an element, dynamically,
- * by databinding an expression that represents all classes to be added.
+ * The `ngClass` directive allows you to dynamically style an HTML element,
+ * by binding to an expression that represents the classes to be bound.
  *
- * The directive won't add duplicate classes if a particular class was
- * already set.
+ * Classes are specified by a bound model that can be a string, array, or map:
  *
- * When the expression changes, the previously added classes are removed and
- * only then the new classes are added.
+ *  * String syntax: If the expression is a space-delimited list of CSS classes,
+ *    CSS classes within the string are additively applied to the element.
+ *  * Array syntax: If the expression is an array, CSS classes are additively applied to the
+ *    element.
+ *  * Map syntax: If the expression is a map of 'key':value pairs, then the truthiness of the
+ *    value is used to determine which CSS classes are applied. (Here,
+ *    the keys correspond to the CSS classes to be applied.)
  *
- * The result of the expression evaluation can be a string representing space
- * delimited class names, an array, or a map of class names to boolean values.
- * In the case of a map, the names of the properties whose values are truthy
- * will be added as css classes to the element.
+ * The directive won't add duplicate classes if a particular class was already set. When the
+ * expression changes, CSS classes are updated to reflect the change.
  *
- * ##Examples
+ * # Examples
  *
- * index.html:
+ * Let's assume that we have a simple stylesheet that defines three CSS classes for the following
+ * examples.
  *
- *     <!--
- *       The map syntax:
- *
- *           ng-class="{key1: value1, key2: value2, ...}"
- *
- *       results in only adding CSS classes represented by the map keys when
- *       the corresponding value expressions are truthy.
- *
- *       To use a css class that contains a hyphen (such as line-through in this
- *       example), you should quote the name to make it a valid map key.  You
- *       may, of course, quote all the map keys for consistency.
- *     -->
- *     <p ng-class="{'line-through': strike, bold: bold, red: red}">Map Syntax Example</p>
- *     <input type="checkbox" ng-model="bold"> bold
- *     <input type="checkbox" ng-model="strike"> strike
- *     <input type="checkbox" ng-model="red"> red
- *     <hr>
- *
- *     <p ng-class="style">Using String Syntax</p>
- *     <input type="text" ng-model="style" placeholder="Type: bold strike red">
- *     <hr>
- *
- *     <p ng-class="[style1, style2, style3]">Using Array Syntax</p>
- *     <input ng-model="style1" placeholder="Type: bold"><br>
- *     <input ng-model="style2" placeholder="Type: strike"><br>
- *     <input ng-model="style3" placeholder="Type: red"><br>
- *
- * style.css:
- *
- *     .strike {
+ *     .text-remove {
  *       text-decoration: line-through;
  *     }
- *     .line-through {
- *       text-decoration: line-through;
- *     }
- *     .bold {
+ *     .strong {
  *         font-weight: bold;
  *     }
- *     .red {
+ *     .alert {
  *         color: red;
  *     }
  *
+ * ## String Syntax
+ *
+ *     <input type="text" ng-model="style"
+ *         placeholder="Type an expression here, e.g.: strong
+ *     text-remove alert">
+ *     <p ng-class="style">Using String Syntax</p>
+ *
+ * When the user types a string into the text box, it's evaluated as a list of CSS classes to be
+ * applied to the <p> element on which `ng-class` is applied. For example,
+ * "strong text-remove" applies both `bold` and `line-through` to the text "Using String Syntax".
+ *
+ * ## Array Syntax
+ *
+ *     <input ng-model="style1"
+ *        placeholder="Type an expression, e.g. strong:"><br>
+ *     <input ng-model="style2"
+ *        placeholder="Type an expression, e.g. text-remove:"><br>
+ *     <input ng-model="style3"
+ *        placeholder="Type an expression, e.g. alert:"><br>
+ *     <p ng-class="[style1, style2, style3]">Using Array Syntax</p>
+ *
+ * Here the array is defined by the input in three text boxes. Typing a CSS class name
+ * into each box additively applies those CSS classes to the text "Using Array Syntax".
+ *
+ * ## Map Syntax
+ *
+ *     <input type="checkbox" ng-model="bold"> apply "strong" class
+ *     <input type="checkbox" ng-model="deleted"> apply "text-remove" class
+ *     <input type="checkbox" ng-model="caution"> apply "alert" class
+ *     <p ng-class="{
+ *         'text-remove': deleted,
+ *         'strong': bold,
+ *         'alert': caution}">
+ *        Map Syntax Example</p>
+ *
+ * Here the map associates CSS classes to the input checkboxes. If a checkbox evaluates to true,
+ * that style is applied additively to the text "Map Syntax Example". Note that the class
+ * names are escaped in single quotes, since the map keys represent strings.
+ *
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-class]',
     map: const {'ng-class': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class'])
@@ -97,7 +107,7 @@ class NgClass extends _NgClassBase {
  *       color: blue;
  *     }
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-class-odd]',
     map: const {'ng-class-odd': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-odd'])
@@ -132,7 +142,7 @@ class NgClassOdd extends _NgClassBase {
  *       color: blue;
  *     }
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-class-even]',
     map: const {'ng-class-even': '@valueExpression'},
     exportExpressionAttrs: const ['ng-class-even'])
@@ -214,10 +224,10 @@ abstract class _NgClassBase {
         _currentSet.add(cls);
       });
     } else {
-      changes.forEachAddition((AddedItem a) {
+      changes.forEachAddition((CollectionChangeItem a) {
         _currentSet.add(a.item);
       });
-      changes.forEachRemoval((RemovedItem r) {
+      changes.forEachRemoval((CollectionChangeItem r) {
         _currentSet.remove(r.item);
       });
     }
@@ -230,7 +240,7 @@ abstract class _NgClassBase {
         if (toBool(active)) _currentSet.add(cls);
       });
     } else {
-      changes.forEachChange((ChangedKeyValue kv) {
+      changes.forEachChange((MapKeyValue kv) {
         var cls = kv.key;
         var active = toBool(kv.currentValue);
         var wasActive = toBool(kv.previousValue);
@@ -242,10 +252,10 @@ abstract class _NgClassBase {
           }
         }
       });
-      changes.forEachAddition((AddedKeyValue kv) {
+      changes.forEachAddition((MapKeyValue kv) {
         if (toBool(kv.currentValue)) _currentSet.add(kv.key);
       });
-      changes.forEachRemoval((RemovedKeyValue kv) {
+      changes.forEachRemoval((MapKeyValue kv) {
         if (toBool(kv.previousValue)) _currentSet.remove(kv.key);
       });
     }

@@ -6,7 +6,7 @@ TaggedElementBinder _addBinder(List list, TaggedElementBinder binder) {
   return binder;
 }
 
-@NgInjectableService()
+@Injectable()
 class TaggingCompiler implements Compiler {
   final Profiler _perf;
   final Expando _expando;

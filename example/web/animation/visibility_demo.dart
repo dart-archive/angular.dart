@@ -1,6 +1,6 @@
 part of animation;
 
-@NgComponent(
+@Component(
     selector: 'visibility-demo',
     template: '''
       <div class="visibility-demo">
@@ -18,6 +18,6 @@ part of animation;
     ''',
     publishAs: 'ctrl',
     applyAuthorStyles: true)
-class VisibilityDemoComponent {
+class VisibilityDemo {
   bool visible = false;
 }

@@ -30,8 +30,6 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
     this.resolvers = resolvers;
   }
 
-  Future<bool> isPrimary(Asset input) => options.isDartEntry(input);
-
   Future applyResolver(Transform transform, Resolver resolver) {
     var asset = transform.primaryInput;
     var outputBuffer = new StringBuffer();
@@ -81,7 +79,7 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
         .where((id) => id != null)
         .toList();
 
-    // Get all of the contents of templates in @NgComponent(templateUrl:'...')
+    // Get all of the contents of templates in @Component(templateUrl:'...')
     gatherReferencedUris(transform, resolver, options,
         templatesOnly: true).then((templates) {
       templates.values.forEach(controller.add);
@@ -134,7 +132,7 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
 }
 
 void _writeStaticExpressionHeader(AssetId id, StringSink sink) {
-  var libPath = path.withoutExtension(id.path).replaceAll('/', '.');
+  var libPath = path.withoutExtension(id.path).replaceAll('/', '.').replaceAll('-', '_');
   sink.write('''
 library ${id.package}.$libPath.generated_expressions;
 

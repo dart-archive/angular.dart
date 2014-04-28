@@ -5,7 +5,7 @@ import 'package:angular/core/parser/characters.dart';
 
 part 'tokens.dart';
 
-@NgInjectableService()
+@Injectable()
 class Lexer {
   List<Token> call(String text) {
     Scanner scanner = new Scanner(text);

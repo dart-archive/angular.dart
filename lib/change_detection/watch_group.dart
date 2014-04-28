@@ -6,6 +6,18 @@ part 'linked_list.dart';
 part 'ast.dart';
 part 'prototype_map.dart';
 
+/**
+ * A function that is notified of changes to the model.
+ *
+ * ReactionFn is a function implemented by the developer that executes when a change is detected
+ * in a watched expression.
+ *
+ * * [value]: The current value of the watched expression.
+ * * [previousValue]: The previous value of the watched expression.
+ *
+ * If the expression is watching a collection (a list or a map), then [value] is wrapped in
+ * a [CollectionChangeItem] that lists all the changes.
+ */
 typedef void ReactionFn(value, previousValue);
 typedef void ChangeLog(String expression, current, previous);
 
@@ -702,7 +714,7 @@ class _InvokeHandler extends _Handler implements _ArgHandlerList {
 }
 
 
-class _EvalWatchRecord implements WatchRecord<_Handler>, Record<_Handler> {
+class _EvalWatchRecord implements WatchRecord<_Handler> {
   static const int _MODE_INVALID_             = -2;
   static const int _MODE_DELETED_             = -1;
   static const int _MODE_MARKER_              = 0;

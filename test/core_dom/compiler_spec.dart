@@ -19,6 +19,16 @@ forBothCompilers(fn) {
     });
     fn();
   });
+
+  describe('transcluding components', () {
+    beforeEachModule((Module m) {
+      m.type(Compiler, implementedBy: TaggingCompiler);
+      m.type(ComponentFactory, implementedBy: TranscludingComponentFactory);
+
+      return m;
+    });
+    fn();
+  });
 }
 
 void main() {
@@ -207,7 +217,6 @@ void main() {
     describe('components', () {
       beforeEachModule((Module module) {
         module
-          ..type(SimpleComponent)
           ..type(CamelCaseMapComponent)
           ..type(IoComponent)
           ..type(IoControllerComponent)
@@ -221,34 +230,80 @@ void main() {
           ..type(AttachDetachComponent)
           ..type(SimpleAttachComponent)
           ..type(SimpleComponent)
+          ..type(SometimesComponent)
           ..type(ExprAttrComponent)
           ..type(LogElementComponent)
           ..type(SayHelloFilter);
       });
 
-      it('should select on element', async((NgZone zone) {
+      it('should select on element', async(() {
         var element = _.compile(r'<div><simple></simple></div>');
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('INNER()');
       }));
 
+      it('should tranclude correctly', async(() {
+        var element = _.compile(r'<div><simple>trans</simple></div>');
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('INNER(trans)');
+      }));
+
+      it('should tranclude if content was not present initially', async(() {
+        var element = _.compile(r'<div>And <sometimes sometimes=sometimes>jump</sometimes></div>');
+        document.body.append(element);
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('And ');
+
+        _.rootScope.context['sometimes'] = true;
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('And jump');
+      }));
+
+      it('should redistribute content when the content tag disappears', async(() {
+        var element = _.compile(r'<div>And <sometimes sometimes=sometimes>jump</sometimes></div>');
+        document.body.append(element);
+
+        _.rootScope.context['sometimes'] = true;
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('And jump');
+
+        _.rootScope.context['sometimes'] = false;
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('And ');
+
+        _.rootScope.context['sometimes'] = true;
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('And jump');
+      }));
+
       it('should store ElementProbe with Elements', async(() {
         _.compile('<div><simple>innerText</simple></div>');
         microLeap();
+        _.rootScope.apply();
         var simpleElement = _.rootElement.querySelector('simple');
-        expect(simpleElement.text).toEqual('innerText');
+        expect(simpleElement).toHaveText('INNER(innerText)');
         var simpleProbe = ngProbe(simpleElement);
         var simpleComponent = simpleProbe.injector.get(SimpleComponent);
         expect(simpleComponent.scope.context['name']).toEqual('INNER');
         var shadowRoot = simpleElement.shadowRoot;
-        var shadowProbe = ngProbe(shadowRoot);
-        expect(shadowProbe).toBeNotNull();
-        expect(shadowProbe.element).toEqual(shadowRoot);
-        expect(shadowProbe.parent.element).toEqual(simpleElement);
+
+        // If there is no shadow root, skip this.
+        if (shadowRoot != null) {
+          var shadowProbe = ngProbe(shadowRoot);
+          expect(shadowProbe).toBeNotNull();
+          expect(shadowProbe.element).toEqual(shadowRoot);
+          expect(shadowProbe.parent.element).toEqual(simpleElement);
+        }
       }));
 
-      it('should create a simple component', async((NgZone zone) {
+      it('should create a simple component', async((VmTurnZone zone) {
         _.rootScope.context['name'] = 'OUTTER';
         var element = _.compile(r'<div>{{name}}:<simple>{{name}}</simple></div>');
         microLeap();
@@ -256,7 +311,7 @@ void main() {
         expect(element).toHaveText('OUTTER:INNER(OUTTER)');
       }));
 
-      it('should create a component that can access parent scope', async((NgZone zone) {
+      it('should create a component that can access parent scope', async((VmTurnZone zone) {
         _.rootScope.context['fromParent'] = "should not be used";
         _.rootScope.context['val'] = "poof";
         var element = _.compile('<parent-expression from-parent=val></parent-expression>');
@@ -266,7 +321,7 @@ void main() {
         expect(element).toHaveText('inside poof');
       }));
 
-      it('should behave nicely if a mapped attribute is missing', async((NgZone zone) {
+      it('should behave nicely if a mapped attribute is missing', async((VmTurnZone zone) {
         var element = _.compile('<parent-expression></parent-expression>');
 
         microLeap();
@@ -274,7 +329,7 @@ void main() {
         expect(element).toHaveText('inside ');
       }));
 
-      it('should behave nicely if a mapped attribute evals to null', async((NgZone zone) {
+      it('should behave nicely if a mapped attribute evals to null', async((VmTurnZone zone) {
         _.rootScope.context['val'] = null;
         var element = _.compile('<parent-expression fromParent=val></parent-expression>');
 
@@ -406,7 +461,7 @@ void main() {
         }).toThrow("Unknown mapping 'foo\' for attribute 'attr'.");
       }));
 
-      it('should support filters in attribute expressions', async(() {
+      it('should support formatters in attribute expressions', async(() {
         _.compile(r'''<expr-attr-component expr="'Misko' | hello" one-way="'James' | hello" once="'Chirayu' | hello"></expr-attr-component>''');
         ExprAttrComponent component = _.rootScope.context['exprAttrComponent'];
         _.rootScope.apply();
@@ -441,14 +496,14 @@ void main() {
         }
       }));
 
-      it('should publish component controller into the scope', async((NgZone zone) {
+      it('should publish component controller into the scope', async(() {
         var element = _.compile(r'<div><publish-me></publish-me></div>');
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('WORKED');
       }));
 
-      it('should publish directive controller into the scope', async((NgZone zone) {
+      it('should publish directive controller into the scope', async((VmTurnZone zone) {
         var element = _.compile(r'<div><div publish-me>{{ctrlName.value}}</div></div>');
 
         microLeap();
@@ -479,8 +534,8 @@ void main() {
             ..value(MockHttpBackend, httpBackend);
         });
 
-        it('should fire onTemplate method', async((Compiler compile, Logger logger, MockHttpBackend backend) {
-          backend.whenGET('some/template.url').respond('<div>WORKED</div>');
+        it('should fire onShadowRoot method', async((Compiler compile, Logger logger, MockHttpBackend backend) {
+          backend.whenGET('some/template.url').respond(200, '<div>WORKED</div>');
           var scope = _.rootScope.createChild({});
           scope.context['isReady'] = 'ready';
           scope.context['logger'] = logger;
@@ -503,6 +558,7 @@ void main() {
           expect(logger).toEqual(expected);
           logger.clear();
 
+          microLeap();
           backend.flush();
           microLeap();
           expect(logger).toEqual(['templateLoaded', _.rootScope.context['shadowRoot']]);
@@ -531,7 +587,9 @@ void main() {
           backend.whenGET('foo.html').respond('<div>WORKED</div>');
           _.compile('<log-element></log-element>');
           Element element = _.rootElement;
-          expect(log).toEqual([element, element, element.shadowRoot]);
+          expect(log).toEqual([element, element,
+            // If we don't have a shadowRoot, this is an invalid check
+            element.shadowRoot != null ? element.shadowRoot : log[2]]);
         }));
       });
 
@@ -560,6 +618,35 @@ void main() {
           }).toThrow('Unknown selector format \'buttonbar button\' for InvalidSelector');
         });
       });
+
+      describe('useShadowDom option', () {
+        beforeEachModule((Module m) {
+          m.type(ShadowyComponent);
+          m.type(ShadowlessComponent);
+        });
+
+        it('should create shadowy components', async((Logger log) {
+          _.compile('<shadowy></shadowy>');
+          expect(log).toEqual(['shadowy']);
+          expect(_.rootElement.shadowRoot).toBeNotNull();
+        }));
+
+        it('should create shadowless components', async((Logger log) {
+          _.compile('<shadowless></shadowless>');
+          expect(log).toEqual(['shadowless']);
+          expect(_.rootElement.shadowRoot).toBeNull();
+        }));
+
+        it('should create other components with the default strategy', async((ComponentFactory factory) {
+          _.compile('<simple></simple>');
+          if (factory is TranscludingComponentFactory) {
+            expect(_.rootElement.shadowRoot).toBeNull();
+          } else {
+            expect(factory is ShadowDomComponentFactory).toBeTruthy();
+            expect(_.rootElement.shadowRoot).toBeNotNull();
+          }
+        }));
+      });
     });
 
 
@@ -573,7 +660,7 @@ void main() {
 
       it('should use the correct parent injector', async((Logger log) {
         // Getting the parent offsets correct while descending the template is tricky.  If we get it wrong, this
-        // test case will create too many TabCompoenents.
+        // test case will create too many TabComponents.
 
         _.compile('<div ng-bind="true"><div ignore-children></div><tab local><pane local></pane></tab>');
         microLeap();
@@ -614,7 +701,7 @@ void main() {
     });
 
 
-    describe('NgDirective', () {
+    describe('Decorator', () {
       it('should allow creation of a new scope', () {
         _.rootScope.context['name'] = 'cover me';
         _.compile('<div><div my-controller>{{name}}</div></div>');
@@ -628,7 +715,7 @@ void main() {
 }
 
 
-@NgController(
+@Controller(
   selector: '[my-parent-controller]',
   publishAs: 'my_parent')
 class MyParentController {
@@ -637,14 +724,14 @@ class MyParentController {
   }
 }
 
-@NgController(
+@Controller(
   selector: '[my-child-controller]',
   publishAs: 'my_child')
 class MyChildController {}
 
-@NgComponent(
+@Component(
     selector: 'tab',
-    visibility: NgDirective.DIRECT_CHILDREN_VISIBILITY)
+    visibility: Directive.DIRECT_CHILDREN_VISIBILITY)
 class TabComponent {
   int id = 0;
   Logger log;
@@ -655,7 +742,7 @@ class TabComponent {
   }
 }
 
-@NgComponent(selector: 'pane')
+@Component(selector: 'pane')
 class PaneComponent {
   TabComponent tabComponent;
   LocalAttrDirective localDirective;
@@ -666,9 +753,9 @@ class PaneComponent {
   }
 }
 
-@NgDirective(
+@Decorator(
     selector: '[local]',
-    visibility: NgDirective.LOCAL_VISIBILITY)
+    visibility: Directive.LOCAL_VISIBILITY)
 class LocalAttrDirective {
   int id = 0;
   Logger log;
@@ -678,9 +765,9 @@ class LocalAttrDirective {
   }
 }
 
-@NgDirective(
+@Decorator(
     selector: '[simple-transclude-in-attach]',
-    visibility: NgDirective.CHILDREN_VISIBILITY, children: AbstractNgAnnotation.TRANSCLUDE_CHILDREN)
+    visibility: Directive.CHILDREN_VISIBILITY, children: Directive.TRANSCLUDE_CHILDREN)
 class SimpleTranscludeInAttachAttrDirective {
   SimpleTranscludeInAttachAttrDirective(ViewPort viewPort, BoundViewFactory boundViewFactory, Logger log, RootScope scope) {
     scope.runAsync(() {
@@ -691,30 +778,30 @@ class SimpleTranscludeInAttachAttrDirective {
   }
 }
 
-@NgDirective(selector: '[include-transclude]')
+@Decorator(selector: '[include-transclude]')
 class IncludeTranscludeAttrDirective {
   IncludeTranscludeAttrDirective(SimpleTranscludeInAttachAttrDirective simple, Logger log) {
     log('IncludeTransclude');
   }
 }
 
-@NgDirective(selector: '[two-directives]')
+@Decorator(selector: '[two-directives]')
 class OneOfTwoDirectives {
   OneOfTwoDirectives(Logger log) {
     log('OneOfTwo');
   }
 }
 
-@NgDirective(selector: '[two-directives]')
+@Decorator(selector: '[two-directives]')
 class TwoOfTwoDirectives {
   TwoOfTwoDirectives(Logger log) {
     log('TwoOfTwo');
   }
 }
 
-@NgDirective(
+@Decorator(
     selector: '[ignore-children]',
-    children: AbstractNgAnnotation.IGNORE_CHILDREN
+    children: Directive.IGNORE_CHILDREN
 )
 class IgnoreChildrenDirective {
   IgnoreChildrenDirective(Logger log) {
@@ -725,7 +812,7 @@ class IgnoreChildrenDirective {
 class PublishModuleDirectiveSuperType {
 }
 
-@NgDirective(
+@Decorator(
     selector: '[publish-types]',
     module: PublishModuleAttrDirective.module)
 class PublishModuleAttrDirective implements PublishModuleDirectiveSuperType {
@@ -739,7 +826,7 @@ class PublishModuleAttrDirective implements PublishModuleDirectiveSuperType {
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'simple',
     template: r'{{name}}(<content>SHADOW-CONTENT</content>)')
 class SimpleComponent {
@@ -749,7 +836,38 @@ class SimpleComponent {
   }
 }
 
-@NgComponent(
+@Component(
+  selector: 'shadowy',
+  template: r'With shadow DOM',
+  useShadowDom: true
+)
+class ShadowyComponent {
+  ShadowyComponent(Logger log) {
+    log('shadowy');
+  }
+}
+
+@Component(
+    selector: 'shadowless',
+    template: r'Without shadow DOM',
+    useShadowDom: false
+)
+class ShadowlessComponent {
+  ShadowlessComponent(Logger log) {
+    log('shadowless');
+  }
+}
+
+@Component(
+  selector: 'sometimes',
+  template: r'<div ng-if="ctrl.sometimes"><content></content></div>',
+  publishAs: 'ctrl')
+class SometimesComponent {
+  @NgTwoWay('sometimes')
+  var sometimes;
+}
+
+@Component(
     selector: 'io',
     template: r'<content></content>',
     map: const {
@@ -766,7 +884,7 @@ class IoComponent {
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'io-controller',
     template: r'<content></content>',
     publishAs: 'ctrl',
@@ -790,7 +908,7 @@ class IoControllerComponent {
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'unpublished-io-controller',
     template: r'<content></content>',
     map: const {
@@ -812,19 +930,19 @@ class UnpublishedIoControllerComponent {
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'incorrect-mapping',
     template: r'<content></content>',
     map: const { 'attr': 'foo' })
 class IncorrectMappingComponent { }
 
-@NgComponent(
+@Component(
     selector: 'non-assignable-mapping',
     template: r'<content></content>',
     map: const { 'attr': '@1+2' })
 class NonAssignableMappingComponent { }
 
-@NgComponent(
+@Component(
     selector: 'camel-case-map',
     map: const {
       'camel-case': '@scope.context.camelCase',
@@ -836,7 +954,7 @@ class CamelCaseMapComponent {
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'parent-expression',
     template: '<div>inside {{fromParent()}}</div>',
     map: const {
@@ -847,15 +965,15 @@ class ParentExpressionComponent {
   ParentExpressionComponent(Scope this.scope);
 }
 
-@NgComponent(
+@Component(
     selector: 'publish-me',
-    template: r'<content>{{ctrlName.value}}</content>',
+    template: r'{{ctrlName.value}}',
     publishAs: 'ctrlName')
 class PublishMeComponent {
   String value = 'WORKED';
 }
 
-@NgController (
+@Controller (
     selector: '[publish-me]',
     publishAs: 'ctrlName')
 class PublishMeDirective {
@@ -863,7 +981,7 @@ class PublishMeDirective {
 }
 
 
-@NgComponent(
+@Component(
     selector: 'log',
     template: r'<content></content>',
     publishAs: 'ctrlName')
@@ -873,7 +991,7 @@ class LogComponent {
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'attach-detach',
     templateUrl: 'some/template.url',
     map: const {
@@ -884,7 +1002,7 @@ class LogComponent {
         'optional-two': '<=>optional',
         'optional-once': '=>!optional',
     })
-class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRootAware {
+class AttachDetachComponent implements AttachAware, DetachAware, ShadowRootAware {
   Logger logger;
   Scope scope;
   String attrValue = 'too early';
@@ -905,7 +1023,7 @@ class AttachDetachComponent implements NgAttachAware, NgDetachAware, NgShadowRoo
   }
 }
 
-@NgController(
+@Controller(
     selector: '[my-controller]',
     publishAs: 'myCtrl')
 class MyController {
@@ -914,20 +1032,20 @@ class MyController {
   }
 }
 
-@NgComponent()
+@Component()
 class MissingSelector {}
 
-@NgComponent(selector: 'buttonbar button')
+@Component(selector: 'buttonbar button')
 class InvalidSelector {}
 
-@NgFilter(name:'hello')
+@Formatter(name:'hello')
 class SayHelloFilter {
   call(String str) {
     return 'Hello, $str!';
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'expr-attr-component',
     template: r'<content></content>',
     publishAs: 'ctrl',
@@ -946,10 +1064,10 @@ class ExprAttrComponent {
   }
 }
 
-@NgComponent(
+@Component(
     selector: 'simple-attach',
     templateUrl: 'foo.html')
-class SimpleAttachComponent implements NgAttachAware, NgShadowRootAware {
+class SimpleAttachComponent implements AttachAware, ShadowRootAware {
   Logger logger;
   SimpleAttachComponent(this.logger) {
     logger('SimpleAttachComponent');
@@ -958,7 +1076,7 @@ class SimpleAttachComponent implements NgAttachAware, NgShadowRootAware {
   onShadowRoot(_) => logger('onShadowRoot');
 }
 
-@NgComponent(
+@Component(
     selector: 'log-element',
     templateUrl: 'foo.html')
 class LogElementComponent{

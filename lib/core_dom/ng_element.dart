@@ -1,12 +1,12 @@
 part of angular.core.dom_internal;
 
-@NgInjectableService()
+@Injectable()
 class NgElement {
   static const _TO_BE_REMOVED = const Object();
 
   final dom.Element node;
   final Scope _scope;
-  final NgAnimate _animate;
+  final Animate _animate;
 
   final _classesToUpdate = <String, bool>{};
   final _attributesToUpdate = <String, dynamic>{};
@@ -25,7 +25,6 @@ class NgElement {
     _classesToUpdate[className] = false;
   }
 
-  // todo(vicb) add tests
   void setAttribute(String attrName, [value = '']) {
     _scheduleDomWrite();
     _attributesToUpdate[attrName] = value == null ? '' : value;
@@ -36,6 +35,7 @@ class NgElement {
     _attributesToUpdate[attrName] = _TO_BE_REMOVED;
   }
 
+  /// Schedules a DOM write for the next flush phase
   _scheduleDomWrite() {
     if (!_writeScheduled) {
       _writeScheduled = true;
@@ -46,6 +46,7 @@ class NgElement {
     }
   }
 
+  /// Executes scheduled DOM update - this should be called from the flush phase
   _writeToDom() {
     _classesToUpdate.forEach((String className, bool toBeAdded) {
       toBeAdded

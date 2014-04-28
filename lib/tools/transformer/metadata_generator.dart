@@ -1,6 +1,5 @@
 library angular.tools.transformer.metadata_generator;
 
-import 'dart:async';
 import 'package:analyzer/src/generated/element.dart';
 import 'package:angular/tools/transformer/options.dart';
 import 'package:barback/barback.dart';
@@ -15,8 +14,6 @@ class MetadataGenerator extends Transformer with ResolverTransformer {
   MetadataGenerator(this.options, Resolvers resolvers) {
     this.resolvers = resolvers;
   }
-
-  Future<bool> isPrimary(Asset input) => options.isDartEntry(input);
 
   void applyResolver(Transform transform, Resolver resolver) {
     var asset = transform.primaryInput;
@@ -72,7 +69,7 @@ class MetadataGenerator extends Transformer with ResolverTransformer {
 }
 
 void _writeHeader(AssetId id, StringSink sink) {
-  var libPath = path.withoutExtension(id.path).replaceAll('/', '.');
+  var libPath = path.withoutExtension(id.path).replaceAll('/', '.').replaceAll('-', '_');
   sink.write('''
 library ${id.package}.$libPath.generated_metadata;
 

@@ -6,7 +6,7 @@ part of angular.directive;
  * A new child [Scope] is created for the included DOM subtree.
  *
  * [NgInclude] provides only one small part of the power of
- * [NgComponent].  Consider using directives and components instead as they
+ * [Component].  Consider using directives and components instead as they
  * provide this feature as well as much more.
  *
  * Note: The browser's Same Origin Policy (<http://v.gd/5LE5CA>) and
@@ -15,7 +15,7 @@ part of angular.directive;
  * [NgInclude] won't work for cross-domain requests on all browsers and
  * for `file://` access on some browsers.
  */
-@NgDirective(
+@Decorator(
     selector: '[ng-include]',
     map: const {'ng-include': '@url'})
 class NgInclude {

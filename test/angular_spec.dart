@@ -1,8 +1,10 @@
 library angular_spec;
 
+import 'dart:mirrors';
+
 import '_specs.dart';
 import 'package:angular/utils.dart';
-import 'dart:mirrors';
+import 'package:angular/tools/symbol_inspector/symbol_inspector.dart';
 
 main() {
   describe('angular.dart unittests', () {
@@ -42,109 +44,79 @@ main() {
     });
   });
 
-  describe('angular symbols', () {
-    it('should not export symbols that we do not know about', () {
+  describe('symbols', () {
+    it('should not export unknown symbols from animate', () {
+      LibraryInfo libraryInfo;
+      try {
+        libraryInfo = getSymbolsFromLibrary("angular.animate");
+      } on UnimplementedError catch (e) {
+        return; // Not implemented, quietly skip.
+      }
+
+      var ALLOWED_NAMES = [
+          "angular.animate.AbstractNgAnimate",
+          "angular.animate.AnimationLoop",
+          "angular.animate.AnimationModule",
+          "angular.animate.AnimationOptimizer",
+          "angular.animate.CssAnimate",
+          "angular.animate.CssAnimationMap",
+          "angular.animate.NgAnimate",
+          "angular.animate.NgAnimateChildren",
+          "angular.animate.CssAnimation",
+          "angular.animate.AnimationFrame",
+          "angular.animate.AnimationList",
+          "angular.animate.LoopedAnimation"
+      ];
+      assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
+
+    });
+
+    it('should not export unknown symbols from angular', () {
       // Test is failing? Add new symbols to the "ALLOWED_NAMES" list below.
       // But make sure that you intend to export the symbol!
       // Questions?  Talk to @jbdeboer
 
-      var _SYMBOL_NAME = new RegExp('"(.*)"');
-      _unwrapSymbol(sym) => _SYMBOL_NAME.firstMatch(sym.toString()).group(1);
-
-      _getSymbolsFromLibrary(String libraryName) {
-        // Set this to true to see how symbols are exported from angular.
-        var SHOULD_PRINT_SYMBOL_TREE = false;
-
-        // TODO(deboer): Add types once Dart VM 1.2 is deprecated.
-        List extractSymbols(/* LibraryMirror */ lib, [String printPrefix = ""]) {
-          var names = [];
-
-          if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + _unwrapSymbol(lib.qualifiedName));
-          printPrefix += "  ";
-          lib.declarations.forEach((symbol, _) {
-            if (SHOULD_PRINT_SYMBOL_TREE) print(printPrefix + _unwrapSymbol(symbol));
-            names.add([symbol, lib.qualifiedName]);
-          });
-
-          lib.libraryDependencies.forEach((/* LibraryDependencyMirror */ libDep) {
-            LibraryMirror target = libDep.targetLibrary;
-            if (!libDep.isExport) return;
-
-            var childNames = extractSymbols(target, printPrefix);
-
-            // If there was a "show" or "hide" on the exported library, filter the results.
-            // This API needs love :-(
-            var showSymbols = [], hideSymbols = [];
-            libDep.combinators.forEach((/* CombinatorMirror */ c) {
-              if (c.isShow) {
-                showSymbols.addAll(c.identifiers);
-              }
-              if (c.isHide) {
-                hideSymbols.addAll(c.identifiers);
-              }
-            });
-
-            // I don't think you can show and hide from the same library
-            assert(showSymbols.isEmpty || hideSymbols.isEmpty);
-            if (!showSymbols.isEmpty) {
-              childNames = childNames.where((List symAndLib) {
-                return showSymbols.contains(symAndLib[0]);
-              });
-            }
-            if (!hideSymbols.isEmpty) {
-              childNames = childNames.where((List symAndLib) {
-                return !hideSymbols.contains(symAndLib[0]);
-              });
-            }
-
-            names.addAll(childNames);
-          });
-          return names;
-        };
-
-        var lib = currentMirrorSystem().findLibrary(new Symbol(libraryName));
-        return extractSymbols(lib);
+      // There is a bug at the intersection of the angular library,
+      // dart2js and findLibrary().  http://dartbug.com/18302
+      try {
+        currentMirrorSystem().findLibrary(const Symbol("angular"));
+      } catch (e) {
+        return;
       }
 
-      var names;
-      try {  // Not impleneted in Dart VM 1.2
-        names = _getSymbolsFromLibrary("angular");
+      LibraryInfo libraryInfo;
+      try {
+        libraryInfo = getSymbolsFromLibrary("angular");
       } on UnimplementedError catch (e) {
         return; // Not implemented, quietly skip.
-      } catch (e) {
-        print("Error: $e");
-        return; // On VMes <1.2, quietly skip.
       }
 
-      var ALLOWED_PREFIXES = [
-        "_"
-      ];
-
       var ALLOWED_NAMES = [
-        "angular.app.Application",
         "angular.app.AngularModule",
-        "angular.core.annotation_src.NgAttachAware",
-        "angular.core.annotation_src.NgComponent",
-        "angular.core.annotation_src.NgController",
-        "angular.core.annotation_src.NgDetachAware",
-        "angular.core.annotation_src.NgDirective",
-        "angular.core.annotation_src.NgInjectableService",
-        "angular.core_internal.CacheStats",
-        "angular.core_internal.ExceptionHandler",
-        "angular.core_internal.Interpolate",
-        "angular.core_internal.RootScope",
-        "angular.core_internal.NgZone",
-        "angular.core_internal.Scope",
-        "angular.core_internal.ScopeDigestTTL",
-        "angular.core_internal.ScopeEvent",
-        "angular.core_internal.ScopeStats",
-        "angular.core_internal.ScopeStatsConfig",
-        "angular.core_internal.ScopeStatsEmitter",
+        "angular.app.Application",
+        "angular.core.annotation.ShadowRootAware",
+        "angular.core.annotation_src.AttachAware",
+        "angular.core.annotation_src.Component",
+        "angular.core.annotation_src.Controller",
+        "angular.core.annotation_src.Decorator",
+        "angular.core.annotation_src.DetachAware",
+        "angular.core.annotation_src.Directive",
+        "angular.core.annotation_src.DirectiveAnnotation",
+        "angular.core.annotation_src.Formatter",
+        "angular.core.annotation_src.Injectable",
+        "angular.core.annotation_src.NgAttr",
+        "angular.core.annotation_src.NgCallback",
+        "angular.core.annotation_src.NgOneWay",
+        "angular.core.annotation_src.NgOneWayOneTime",
+        "angular.core.annotation_src.NgTwoWay",
+        "angular.core.dom_internal.Animate",
         "angular.core.dom_internal.Animation",
         "angular.core.dom_internal.AnimationResult",
+        "angular.core.dom_internal.BoundViewFactory",
         "angular.core.dom_internal.BrowserCookies",
         "angular.core.dom_internal.Compiler",
         "angular.core.dom_internal.Cookies",
+        "angular.core.dom_internal.DirectiveMap",
         "angular.core.dom_internal.ElementProbe",
         "angular.core.dom_internal.EventHandler",
         "angular.core.dom_internal.Http",
@@ -155,86 +127,125 @@ main() {
         "angular.core.dom_internal.HttpInterceptors",
         "angular.core.dom_internal.HttpResponse",
         "angular.core.dom_internal.HttpResponseConfig",
+        "angular.core.dom_internal.LocationWrapper",
+        "angular.core.dom_internal.NgElement",
         "angular.core.dom_internal.NoOpAnimation",
         "angular.core.dom_internal.NullTreeSanitizer",
-        "angular.core.dom_internal.NgAnimate",
         "angular.core.dom_internal.RequestErrorInterceptor",
         "angular.core.dom_internal.RequestInterceptor",
         "angular.core.dom_internal.Response",
         "angular.core.dom_internal.ResponseError",
         "angular.core.dom_internal.TemplateCache",
+        "angular.core.dom_internal.UrlRewriter",
         "angular.core.dom_internal.View",
+        "angular.core.dom_internal.ViewCache",
         "angular.core.dom_internal.ViewFactory",
         "angular.core.dom_internal.ViewPort",
-        "angular.directive.NgA",
-        "angular.directive.NgBind",
-        "angular.directive.NgBindTemplate",
-        "angular.directive.NgBindHtml",
-        "angular.directive.NgClass",
-        "angular.directive.NgClassOdd",
-        "angular.directive.NgClassEven",
-        "angular.directive.NgCloak",
-        "angular.directive.NgHide",
-        "angular.directive.NgIf",
-        "angular.directive.NgUnless",
-        "angular.directive.NgInclude",
-        "angular.directive.NgPluralize",
-        "angular.directive.NgRepeat",
-        "angular.directive.NgShow",
-        "angular.directive.InputTextLike",
+        "angular.core_internal.CacheStats",
+        "angular.core_internal.ExceptionHandler",
+        "angular.core_internal.Interpolate",
+        "angular.core_internal.RootScope",
+        "angular.core_internal.Scope",
+        "angular.core_internal.ScopeDigestTTL",
+        "angular.core_internal.ScopeEvent",
+        "angular.core_internal.ScopeStats",
+        "angular.core_internal.ScopeStatsConfig",
+        "angular.core_internal.ScopeStatsEmitter",
+        "angular.core_internal.VmTurnZone",
+        "angular.core.parser.dynamic_parser.ClosureMap",
+        "angular.core.parser.Parser",
+        "angular.directive.AHref",
+        "angular.directive.ContentEditable",
+        "angular.directive.DecoratorFormatter",
+        "angular.directive.InputCheckbox",
         "angular.directive.InputDateLike",
         "angular.directive.InputNumberLike",
         "angular.directive.InputRadio",
-        "angular.directive.InputCheckbox",
         "angular.directive.InputSelect",
-        "angular.directive.OptionValue",
-        "angular.directive.ContentEditable",
-        "angular.directive.NgModel",
-        "angular.directive.NgValue",
-        "angular.directive.NgTrueValue",
-        "angular.directive.NgFalseValue",
-        "angular.directive.NgSwitch",
-        "angular.directive.NgSwitchWhen",
-        "angular.directive.NgSwitchDefault",
-        "angular.directive.NgBooleanAttribute",
-        "angular.directive.NgSource",
+        "angular.directive.InputTextLike",
         "angular.directive.NgAttribute",
-        "angular.directive.NgEvent",
-        "angular.directive.NgStyle",
-        "angular.directive.NgNonBindable",
-        "angular.directive.NgTemplate",
+        "angular.directive.NgBaseCss",
+        "angular.directive.NgBind",
+        "angular.directive.NgBindHtml",
+        "angular.directive.NgBindTemplate",
+        "angular.directive.NgBindTypeForDateLike",
+        "angular.directive.NgBooleanAttribute",
+        "angular.directive.NgClass",
+        "angular.directive.NgClassEven",
+        "angular.directive.NgClassOdd",
+        "angular.directive.NgCloak",
         "angular.directive.NgControl",
+        "angular.directive.NgEvent",
+        "angular.directive.NgFalseValue",
         "angular.directive.NgForm",
+        "angular.directive.NgHide",
+        "angular.directive.NgIf",
+        "angular.directive.NgInclude",
+        "angular.directive.NgModel",
+        "angular.directive.NgModelConverter",
+        "angular.directive.NgModelEmailValidator",
+        "angular.directive.NgModelMaxLengthValidator",
+        "angular.directive.NgModelMaxNumberValidator",
+        "angular.directive.NgModelMinLengthValidator",
+        "angular.directive.NgModelMinNumberValidator",
+        "angular.directive.NgModelNumberValidator",
+        "angular.directive.NgModelPatternValidator",
         "angular.directive.NgModelRequiredValidator",
         "angular.directive.NgModelUrlValidator",
-        "angular.directive.NgModelEmailValidator",
-        "angular.directive.NgModelNumberValidator",
-        "angular.directive.NgModelMaxNumberValidator",
-        "angular.directive.NgModelMinNumberValidator",
-        "angular.directive.NgModelPatternValidator",
-        "angular.directive.NgModelMinLengthValidator",
-        "angular.directive.NgModelMaxLengthValidator",
-        "angular.filter.Currency",
-        "angular.filter.Date",
-        "angular.filter.Filter",
-        "angular.filter.Json",
-        "angular.filter.LimitTo",
-        "angular.filter.Lowercase",
-        "angular.filter.Number",
-        "angular.filter.OrderBy",
-        "angular.filter.Stringify",
-        "angular.filter.Uppercase",
+        "angular.directive.NgNonBindable",
+        "angular.directive.NgNullControl",
+        "angular.directive.NgNullForm",
+        "angular.directive.NgPluralize",
+        "angular.directive.NgRepeat",
+        "angular.directive.NgShow",
+        "angular.directive.NgSource",
+        "angular.directive.NgStyle",
+        "angular.directive.NgSwitch",
+        "angular.directive.NgSwitchDefault",
+        "angular.directive.NgSwitchWhen",
+        "angular.directive.NgTemplate",
+        "angular.directive.NgTrueValue",
+        "angular.directive.NgUnless",
+        "angular.directive.NgValidator",
+        "angular.directive.NgValue",
+        "angular.directive.OptionValue",
+        "angular.formatter_internal.Currency",
+        "angular.formatter_internal.Date",
+        "angular.formatter_internal.Filter",
+        "angular.formatter_internal.Json",
+        "angular.formatter_internal.LimitTo",
+        "angular.formatter_internal.Lowercase",
+        "angular.formatter_internal.Arrayify",
+        "angular.formatter_internal.Number",
+        "angular.formatter_internal.OrderBy",
+        "angular.formatter_internal.Stringify",
+        "angular.formatter_internal.Uppercase",
+        "angular.introspection.ngDirectives",
+        "angular.introspection.ngInjector",
+        "angular.introspection.ngProbe",
+        "angular.introspection.ngQuery",
+        "angular.introspection.ngScope",
+        "angular.routing.NgBindRoute",
+        "angular.routing.ngRoute",
+        "angular.routing.NgRouteCfg",
+        "angular.routing.NgRoutingHelper",
+        "angular.routing.NgRoutingUsePushState",
+        "angular.routing.NgView",
         "angular.routing.RouteInitializer",
         "angular.routing.RouteInitializerFn",
         "angular.routing.RouteProvider",
         "angular.routing.RouteViewFactory",
+        "angular.routing.RoutingModule",
         "angular.watch_group.PrototypeMap",
+        "angular.watch_group.ReactionFn",
         "angular.watch_group.Watch",
+        "change_detection.AvgStopwatch",
+        "change_detection.FieldGetterFactory",
         "di.CircularDependencyError",
         "di.FactoryFn",
         "di.Injector",
         "di.InvalidBindingError",
-        "di.Key",  // common name, should be removed.
+        "di.Key",
         "di.Module",
         "di.NoProviderError",
         "di.ObjectFactory",
@@ -251,45 +262,14 @@ main() {
         "route.client.RouteLeaveEventHandler",
         "route.client.RoutePreEnterEvent",
         "route.client.RoutePreEnterEventHandler",
-        "route.client.RouteStartEvent",
         "route.client.Router",
+        "route.client.RouteStartEvent",
         "url_matcher.UrlMatch",
-        "url_matcher.UrlMatcher",
+        "url_matcher.UrlMatcher"
       ];
 
-      var _nameMap = {};
-      ALLOWED_NAMES.forEach((x) => _nameMap[x] = true);
-
-      var exported = [];
-      assertSymbolNameIsOk(List nameInfo) {
-        String name = _unwrapSymbol(nameInfo[0]);
-        String libName = _unwrapSymbol(nameInfo[1]);
-
-        if (ALLOWED_PREFIXES.any((prefix) => name.startsWith(prefix))) return;
-
-        var key = "$libName.$name";
-        if (_nameMap.containsKey(key)) {
-          _nameMap[key] = false;
-          return;
-        }
-
-        exported.add(key);
-      };
-      if (exported.isNotEmpty) {
-        throw "These symbols are exported thru the angular library, but it shouldn't be:\n"
-              "${exported.join('\n')}";
-      }
-
-      names.forEach(assertSymbolNameIsOk);
-
-      // If there are keys that no longer need to be in the ALLOWED_NAMES list, complain.
-      var keys = [];
-      _nameMap.forEach((k,v) {
-        if (v) keys.add(k);
-      });
-      if (keys.isNotEmpty) {
-        throw "Missing symbols:\n${keys.join('\n')}";
-      }
+      assertSymbolNamesAreOk(ALLOWED_NAMES, libraryInfo);
     });
   });
 }
+
