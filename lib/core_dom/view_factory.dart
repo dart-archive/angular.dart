@@ -82,22 +82,9 @@ class WalkingViewFactory implements ViewFactory {
       var timerId;
       try {
         assert((timerId = _perf.startTimer('ng.view.link', _html(node))) != false);
-        // if node isn't attached to the DOM, create a parent for it.
-        var parentNode = node.parentNode;
-        var fakeParent = false;
-        if (parentNode == null) {
-          fakeParent = true;
-          parentNode = new dom.DivElement()..append(node);
-        }
-
         var childInjector = binder != null ?
             binder.bind(view, parentInjector, node) :
             parentInjector;
-
-        if (fakeParent) {
-          // extract the node from the parentNode.
-          nodeList[nodeListIndex] = parentNode.nodes[0];
-        }
 
         if (tree.subtrees != null) {
           _link(view, node.nodes, tree.subtrees, childInjector);
