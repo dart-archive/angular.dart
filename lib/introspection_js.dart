@@ -17,11 +17,14 @@ var elementExpando = new Expando('element');
 
 publishToJavaScript() {
   js.context
-    ..['ngProbe'] = new js.JsFunction.withThis((_, dom.Node node) => _jsProbe(ngProbe(node)))
-    ..['ngInjector'] = new js.JsFunction.withThis((_, dom.Node node) => _jsInjector(ngInjector(node)))
-    ..['ngScope'] = new js.JsFunction.withThis((_, dom.Node node) => _jsScope(ngScope(node), ngProbe(node).injector.get(ScopeStatsConfig)))
+    ..['ngProbe'] = new js.JsFunction.withThis((_, nodeOrSelector) =>
+        _jsProbe(ngProbe(nodeOrSelector)))
+    ..['ngInjector'] = new js.JsFunction.withThis((_, nodeOrSelector) =>
+        _jsInjector(ngInjector(nodeOrSelector)))
+    ..['ngScope'] = new js.JsFunction.withThis((_, nodeOrSelector) =>
+        _jsScope(ngScope(nodeOrSelector), ngProbe(nodeOrSelector).injector.get(ScopeStatsConfig)))
     ..['ngQuery'] = new js.JsFunction.withThis((_, dom.Node node, String selector, [String containsText]) =>
-  new js.JsArray.from(ngQuery(node, selector, containsText)));
+        new js.JsArray.from(ngQuery(node, selector, containsText)));
 }
 
 js.JsObject _jsProbe(ElementProbe probe) {
@@ -34,7 +37,7 @@ js.JsObject _jsProbe(ElementProbe probe) {
 }
 
 js.JsObject _jsInjector(Injector injector) =>
-new js.JsObject.jsify({"get": injector.get})..['_dart_'] = injector;
+    new js.JsObject.jsify({"get": injector.get})..['_dart_'] = injector;
 
 js.JsObject _jsScope(Scope scope, ScopeStatsConfig config) {
   return new js.JsObject.jsify({
