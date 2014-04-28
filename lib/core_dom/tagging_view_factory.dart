@@ -7,8 +7,7 @@ class TaggingViewFactory implements ViewFactory {
 
   TaggingViewFactory(this.templateNodes, this.elementBinders, this._perf);
 
-  BoundViewFactory bind(Injector injector) =>
-  new BoundViewFactory(this, injector);
+  BoundViewFactory bind(Injector injector) => new BoundViewFactory(this, injector);
 
   View call(Injector injector, [List<dom.Node> nodes /* TODO: document fragment */]) {
     if (nodes == null) {
@@ -37,7 +36,7 @@ class TaggingViewFactory implements ViewFactory {
         binder != null ? binder.bind(view, parentInjector, boundNode) : parentInjector;
 
     if (tagged.textBinders != null) {
-      for (var k = 0, kk = tagged.textBinders.length; k < kk; k++) {
+      for (var k = 0; k < tagged.textBinders.length; k++) {
         TaggedTextBinder taggedText = tagged.textBinders[k];
         taggedText.binder.bind(view, elementInjector, boundNode.childNodes[taggedText.offsetIndex]);
       }
