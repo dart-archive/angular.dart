@@ -19,7 +19,7 @@ class TaggingCompiler implements Compiler {
                                       List elementBinders) {
     var node = domCursor.current;
 
-    if (node.nodeType == 1) {
+    if (node.nodeType == dom.Node.ELEMENT_NODE) {
       // If nodetype is a element, call selector matchElement.
       // If text, call selector.matchText
 

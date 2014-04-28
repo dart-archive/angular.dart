@@ -80,8 +80,7 @@ class ElementBinder {
     return _directiveCache = decorators;
   }
 
-  bool get hasDirectivesOrEvents =>
-      _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
+  bool get hasDirectivesOrEvents => _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
   _bindTwoWay(tasks, expression, scope, dstPathFn, controller, formatters, dstExpression) {
     var taskId = tasks.registerTask();
@@ -190,7 +189,7 @@ class ElementBinder {
     });
   }
 
-  _link(nodeInjector, probe, scope, nodeAttrs, formatters) {
+  void _link(nodeInjector, probe, scope, nodeAttrs, formatters) {
     _usableDirectiveRefs.forEach((DirectiveRef ref) {
       var linkTimer;
       try {
@@ -239,8 +238,8 @@ class ElementBinder {
     });
   }
 
-  _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
-                            visibility) {
+  void _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives,
+                                 nodeAttrs, visibility) {
     if (ref.type == TextMustache) {
       nodeModule.bind(TextMustache, toFactory: (Injector injector) {
         return new TextMustache(node, ref.value, injector.get(Interpolate),
