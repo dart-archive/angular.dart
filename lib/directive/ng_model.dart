@@ -43,10 +43,10 @@ class NgModel extends NgControl implements AttachAware {
   Watch _watch;
   bool _watchCollection;
 
-  NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs, Animate animate)
+  NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs, 
+          Animate animate)
       : super(element, injector, animate) {
     _expression = attrs["ng-model"];
-    print("model: " + _expression);
     watchCollection = false;
 
     //Since the user will never be editing the value of a select element then
@@ -141,10 +141,12 @@ class NgModel extends NgControl implements AttachAware {
     };
 
     _watchCollection = value;
-    if (_watch != null) _watch.remove();
+    if (_watch!=null) _watch.remove();
     if (_watchCollection) {
       _watch = _scope.watch(_expression, (changeRecord, _) {
-        onChange(changeRecord is CollectionChangeRecord ? changeRecord.iterable : changeRecord);
+        onChange(changeRecord is CollectionChangeRecord 
+                    ? changeRecord.iterable 
+                    : changeRecord);
       }, collection: true);
     } else if (_expression != null) {
       _watch = _scope.watch(_expression, onChange);
@@ -326,7 +328,12 @@ class InputCheckbox {
  * as well as the other way around (when the scope property is updated).
  *
  */
-@Decorator(selector: 'textarea[ng-model]')@Decorator(selector: 'input[type=text][ng-model]')@Decorator(selector: 'input[type=password][ng-model]')@Decorator(selector: 'input[type=url][ng-model]')@Decorator(selector: 'input[type=email][ng-model]')@Decorator(selector: 'input[type=search][ng-model]')
+@Decorator(selector: 'textarea[ng-model]')
+@Decorator(selector: 'input[type=text][ng-model]')
+@Decorator(selector: 'input[type=password][ng-model]')
+@Decorator(selector: 'input[type=url][ng-model]')
+@Decorator(selector: 'input[type=email][ng-model]')
+@Decorator(selector: 'input[type=search][ng-model]')
 class InputTextLike {
   final dom.Element inputElement;
   final NgModel ngModel;
@@ -352,8 +359,6 @@ class InputTextLike {
       });
     };
 
-    print("text type");
-
     inputElement
         ..onChange.listen((event) => ngModelOptions.executeChangeFunc(() => processValue(event)))
         ..onInput.listen((event) => ngModelOptions.executeInputFunc(() => processValue(event)))
@@ -363,7 +368,6 @@ class InputTextLike {
   }
 
   void processValue([_]) {
-    print("processed viewValue ${ngModel.viewValue} typeValue ${typedValue}");
     var value = typedValue;
 
     if (value != ngModel.viewValue) ngModel.viewValue = value;
@@ -389,7 +393,8 @@ class InputTextLike {
  * Setting the model to [double.NAN] will have no effect (input will be left
  * unchanged).
  */
-@Decorator(selector: 'input[type=number][ng-model]')@Decorator(selector: 'input[type=range][ng-model]')
+@Decorator(selector: 'input[type=number][ng-model]')
+@Decorator(selector: 'input[type=range][ng-model]')
 class InputNumberLike {
   final dom.InputElement inputElement;
   final NgModel ngModel;
@@ -452,7 +457,12 @@ class InputNumberLike {
  * kind would be appropriate) or, for browsers that fail to conform to the
  * HTML5 standard in their processing of date-like inputs.
  */
-@Decorator(selector: 'input[type=date][ng-model][ng-bind-type]')@Decorator(selector: 'input[type=time][ng-model][ng-bind-type]')@Decorator(selector: 'input[type=datetime][ng-model][ng-bind-type]')@Decorator(selector: 'input[type=datetime-local][ng-model][ng-bind-type]')@Decorator(selector: 'input[type=month][ng-model][ng-bind-type]')@Decorator(selector: 'input[type=week][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=date][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=time][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=datetime][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=datetime-local][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=month][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=week][ng-model][ng-bind-type]')
 class NgBindTypeForDateLike {
   static const DATE = 'date';
   static const NUMBER = 'number';
@@ -564,7 +574,12 @@ class NgBindTypeForDateLike {
  *   dropped.
  */
 
-@Decorator(selector: 'input[type=date][ng-model]', module: InputDateLike.moduleFactory)@Decorator(selector: 'input[type=time][ng-model]', module: InputDateLike.moduleFactory)@Decorator(selector: 'input[type=datetime][ng-model]', module: InputDateLike.moduleFactory)@Decorator(selector: 'input[type=datetime-local][ng-model]', module: InputDateLike.moduleFactory)@Decorator(selector: 'input[type=month][ng-model]', module: InputDateLike.moduleFactory)@Decorator(selector: 'input[type=week][ng-model]', module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=date][ng-model]', module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=time][ng-model]', module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=datetime][ng-model]', module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=datetime-local][ng-model]', module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=month][ng-model]', module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=week][ng-model]', module: InputDateLike.moduleFactory)
 class InputDateLike {
   static Module moduleFactory() => new Module()..factory(NgBindTypeForDateLike, (Injector i) => new NgBindTypeForDateLike(i.get(dom.Element)));
   final dom.InputElement inputElement;
@@ -651,7 +666,8 @@ final _uidCounter = new _UidCounter();
  * selected. Note that `expr` can be not any type; i.e., it is not restricted
  * to [String].
  */
-@Decorator(selector: 'input[type=radio][ng-model][ng-value]')@Decorator(selector: 'option[ng-value]')
+@Decorator(selector: 'input[type=radio][ng-model][ng-value]')
+@Decorator(selector: 'option[ng-value]')
 class NgValue {
   static Module _module = new Module()..type(NgValue);
   static Module moduleFactory() => _module;
