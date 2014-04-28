@@ -24,7 +24,7 @@ dependencies:
   intl: '>=0.8.7 <0.10.0'
   perf_api: '>=0.0.8 <0.1.0'
   route_hierarchical: '>=0.4.18 <0.5.0'
-  shadow_dom: '>=0.9.1 <1.0.0'
+  web_components: '>=0.3.3 <0.4.0'
 dev_dependencies:
   benchmark_harness: '>=1.0.0'
   unittest: '>=0.10.1 <0.12.0'
@@ -33,6 +33,6 @@ dev_dependencies:
 dependency_overrides:
   analyzer: '0.13.6'
   di: '0.0.40'
-  route_hierarchical: '0.4.19'
+  route_hierarchical: '0.4.20'
   args: '0.10.0+1'
   code_transformers: '0.1.3'

@@ -12,7 +12,7 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.11.1"
+    version: "0.13.0"
   benchmark_harness:
     description: benchmark_harness
     source: hosted
@@ -68,11 +68,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.19"
-  shadow_dom:
-    description: shadow_dom
-    source: hosted
-    version: "0.10.0"
+    version: "0.4.20"
   source_maps:
     description: source_maps
     source: hosted
@@ -89,3 +85,7 @@ packages:
     description: utf
     source: hosted
     version: "0.9.0"
+  web_components:
+    description: web_components
+    source: hosted
+    version: "0.3.4"
