@@ -13,11 +13,11 @@ class NodeCursor {
 
   bool descend() {
     var childNodes = elements[index].nodes;
-    var hasChildren = childNodes != null && childNodes.isNotEmpty;
+    var hasChildren = childNodes.isNotEmpty;
 
     if (hasChildren) {
       stack..add(index)..add(elements);
-      elements = new List.from(childNodes);
+      elements = childNodes;
       index = 0;
     }
 
