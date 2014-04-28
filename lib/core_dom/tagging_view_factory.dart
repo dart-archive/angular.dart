@@ -60,13 +60,15 @@ class TaggingViewFactory implements ViewFactory {
 
       if (node.nodeType == 1) {
         var elts = node.querySelectorAll('.ng-binding');
-        // HACK: querySelectorAll doesn't return the node.
-        var startIndex = node.classes.contains('ng-binding') ? -1 : 0;
-        for (int j = startIndex, jj = elts.length; j < jj; j++, elementBinderIndex++) {
+        // querySelectorAll doesn't return the node itself
+        if (node.classes.contains('ng-binding')) {
+          var tagged = elementBinders[elementBinderIndex];
+          _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors, view, node);
+          elementBinderIndex++;
+        }
+        for (int j = 0; j <  elts.length; j++, elementBinderIndex++) {
           TaggedElementBinder tagged = elementBinders[elementBinderIndex];
-          var boundNode = j == -1 ? node : elts[j];
-
-          _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors, view, boundNode);
+          _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors, view, elts[j]);
         }
       } else if (node.nodeType == 3 || node.nodeType == 8) {
         TaggedElementBinder tagged = elementBinders[elementBinderIndex];
