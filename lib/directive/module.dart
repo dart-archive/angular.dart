@@ -19,6 +19,8 @@ library angular.directive;
 
 import 'package:di/di.dart';
 import 'dart:html' as dom;
+import 'dart:convert' as convert;
+import 'dart:async' as async;
 import 'package:intl/intl.dart';
 import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
@@ -51,6 +53,7 @@ part 'ng_non_bindable.dart';
 part 'ng_model_select.dart';
 part 'ng_form.dart';
 part 'ng_model_validators.dart';
+part 'ng_model_options.dart';
 
 class DecoratorFormatter extends Module {
   DecoratorFormatter() {
@@ -82,6 +85,7 @@ class DecoratorFormatter extends Module {
     value(ContentEditable, null);
     value(NgBindTypeForDateLike, null);
     value(NgModel, null);
+    value(NgModelOptions, null);
     value(NgValue, null);
     value(NgTrueValue, new NgTrueValue());
     value(NgFalseValue, new NgFalseValue());
