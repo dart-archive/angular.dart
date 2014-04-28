@@ -52,15 +52,6 @@ class TaggingViewFactory implements ViewFactory {
     for (int i = 0; i < nodeList.length; i++) {
       var node = nodeList[i];
 
-      // if node isn't attached to the DOM, create a parent for it.
-      var parentNode = node.parentNode;
-      var fakeParent = false;
-      if (parentNode == null) {
-        fakeParent = true;
-        parentNode = new dom.DivElement();
-        parentNode.append(node);
-      }
-
       if (node.nodeType == dom.Node.ELEMENT_NODE) {
         var elts = node.querySelectorAll('.ng-binding');
         // querySelectorAll doesn't return the node itself
@@ -84,11 +75,6 @@ class TaggingViewFactory implements ViewFactory {
         elementBinderIndex++;
       } else {
         throw "nodeType sadness ${node.nodeType}}";
-      }
-
-      if (fakeParent) {
-        // extract the node from the parentNode.
-        nodeList[i] = parentNode.nodes[0];
       }
     }
     return view;
