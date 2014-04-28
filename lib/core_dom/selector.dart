@@ -78,12 +78,10 @@ class DirectiveSelector {
     partialSelection, element, nodeName);
 
     // Select .name
-    if ((element.classes) != null) {
-      for (var name in element.classes) {
-        classes[name] = true;
-        partialSelection = elementSelector.selectClass(builder,
-        partialSelection, element, name);
-      }
+    for (var name in element.classes) {
+      classes[name] = true;
+      partialSelection = elementSelector.selectClass(builder,
+          partialSelection, element, name);
     }
 
     // Select [attributes]
