@@ -195,7 +195,7 @@ class NgModel extends NgControl implements AttachAware {
 
   get viewValue => _viewValue;
   void set viewValue(value) {
-     _viewValue = value;
+    _viewValue = value;
     modelValue = value;
   }
 
