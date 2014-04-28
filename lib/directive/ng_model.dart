@@ -45,7 +45,7 @@ class NgModel extends NgControl implements AttachAware {
 
   NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs,
           Animate animate)
-      : super(element, injector, animate) 
+      : super(element, injector, animate)
   {
     _expression = attrs["ng-model"];
     watchCollection = false;
@@ -355,7 +355,8 @@ class InputTextLike {
         if (value == null) value = '';
 
         var currentValue = typedValue;
-        if (value != currentValue && !(value is num && currentValue is num && value.isNaN && currentValue.isNaN)) {
+        if (value != currentValue && !(value is num && currentValue is num &&
+            value.isNaN && currentValue.isNaN)) {
           typedValue = value;
         }
       });
@@ -480,7 +481,9 @@ class NgBindTypeForDateLike {
   @NgAttr('ng-bind-type')
   void set idlAttrKind(final String _kind) {
     String kind = _kind == null ? DEFAULT : _kind.toLowerCase();
-    if (!VALID_VALUES.contains(kind)) throw "Unsupported ng-bind-type attribute value '$_kind'; " "it should be one of $VALID_VALUES";
+    if (!VALID_VALUES.contains(kind))
+      throw "Unsupported ng-bind-type attribute value '$_kind'; "
+            "it should be one of $VALID_VALUES";
     _idlAttrKind = kind;
   }
 
@@ -583,14 +586,16 @@ class NgBindTypeForDateLike {
 @Decorator(selector: 'input[type=month][ng-model]', module: InputDateLike.moduleFactory)
 @Decorator(selector: 'input[type=week][ng-model]', module: InputDateLike.moduleFactory)
 class InputDateLike {
-  static Module moduleFactory() => new Module()..factory(NgBindTypeForDateLike, (Injector i) => new NgBindTypeForDateLike(i.get(dom.Element)));
+  static Module moduleFactory() => new Module()..factory(NgBindTypeForDateLike,
+      (Injector i) => new NgBindTypeForDateLike(i.get(dom.Element)));
   final dom.InputElement inputElement;
   final NgModel ngModel;
   final NgModelOptions ngModelOptions;
   final Scope scope;
   NgBindTypeForDateLike ngBindType;
 
-  InputDateLike(dom.Element this.inputElement, this.ngModel, this.scope, this.ngBindType, this.ngModelOptions) {
+  InputDateLike(dom.Element this.inputElement, this.ngModel, this.scope,
+      this.ngBindType, this.ngModelOptions) {
     if (inputElement.type == 'datetime-local') {
       ngBindType.idlAttrKind = NgBindTypeForDateLike.NUMBER;
     }
@@ -744,14 +749,17 @@ class NgFalseValue {
  * `009`, `00A`, `00Z`, `010`, and so on using more than 3 characters for the
  * name when the counter overflows.
  */
-@Decorator(selector: 'input[type=radio][ng-model]', module: NgValue.moduleFactory)
+@Decorator(
+    selector: 'input[type=radio][ng-model]',
+    module: NgValue.moduleFactory)
 class InputRadio {
   final dom.RadioButtonInputElement radioButtonElement;
   final NgModel ngModel;
   final NgValue ngValue;
   final Scope scope;
 
-  InputRadio(dom.Element this.radioButtonElement, this.ngModel, this.scope, this.ngValue, NodeAttrs attrs) {
+  InputRadio(dom.Element this.radioButtonElement, this.ngModel,
+             this.scope, this.ngValue, NodeAttrs attrs) {
     // If there's no "name" set, we'll set a unique name.  This ensures
     // less surprising behavior about which radio buttons are grouped together.
     if (attrs['name'] == '' || attrs['name'] == null) {
