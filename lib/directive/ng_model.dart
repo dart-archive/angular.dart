@@ -145,9 +145,9 @@ class NgModel extends NgControl implements AttachAware {
     if (_watch!=null) _watch.remove();
     if (_watchCollection) {
       _watch = _scope.watch(_expression, (changeRecord, _) {
-        onChange(changeRecord is CollectionChangeRecord 
-                    ? changeRecord.iterable 
-                    : changeRecord);
+            onChange(changeRecord is CollectionChangeRecord
+                        ? changeRecord.iterable
+                        : changeRecord);
       }, collection: true);
     } else if (_expression != null) {
       _watch = _scope.watch(_expression, onChange);
@@ -195,8 +195,7 @@ class NgModel extends NgControl implements AttachAware {
 
   get viewValue => _viewValue;
   void set viewValue(value) {
-    //delay set
-    _viewValue = value;
+     _viewValue = value;
     modelValue = value;
   }
 
@@ -204,7 +203,7 @@ class NgModel extends NgControl implements AttachAware {
   void set modelValue(value) {
     try {
       value = converter.parse(value);
-    } catch (e) {
+    } catch(e) {
       value = null;
     }
     _modelValue = value;
@@ -305,10 +304,10 @@ class InputCheckbox {
       });
     };
     inputElement
-        ..onChange.listen((_)=>ngModelOptions.executeChangeFunc(() {
+        ..onChange.listen((_) => ngModelOptions.executeChangeFunc(() {
           ngModel.viewValue = inputElement.checked ? ngTrueValue.value : ngFalseValue.value;
         }))
-        ..onBlur.listen((_)=>ngModelOptions.executeBlurFunc(() {
+        ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() {
           ngModel.markAsTouched();
         }));
   }
@@ -579,12 +578,18 @@ class NgBindTypeForDateLike {
  *   dropped.
  */
 
-@Decorator(selector: 'input[type=date][ng-model]', module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=time][ng-model]', module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=datetime][ng-model]', module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=datetime-local][ng-model]', module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=month][ng-model]', module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=week][ng-model]', module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=date][ng-model]',
+    module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=time][ng-model]',
+    module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=datetime][ng-model]',
+    module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=datetime-local][ng-model]',
+    module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=month][ng-model]',
+    module: InputDateLike.moduleFactory)
+@Decorator(selector: 'input[type=week][ng-model]',
+    module: InputDateLike.moduleFactory)
 class InputDateLike {
   static Module moduleFactory() => new Module()..factory(NgBindTypeForDateLike,
       (Injector i) => new NgBindTypeForDateLike(i.get(dom.Element)));
@@ -607,7 +612,7 @@ class InputDateLike {
     inputElement
         ..onChange.listen((event) => ngModelOptions.executeChangeFunc(() => processValue()))
         ..onInput.listen((event) => ngModelOptions.executeInputFunc(() => processValue()))
-        ..onBlur.listen((_)=> ngModelOptions.executeBlurFunc(() => () {
+        ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() => () {
           ngModel.markAsTouched();
         }));
   }

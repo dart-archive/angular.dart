@@ -3,9 +3,9 @@ part of angular.directive;
 @Decorator(selector: 'input[ng-model-options]')
 class NgModelOptions {
   int _debounceDefaultValue = 0;
-  int _debounceBlurValue = null;
-  int _debounceChangeValue = null;
-  int _debounceInputValue = null;
+  int _debounceBlurValue;
+  int _debounceChangeValue;
+  int _debounceInputValue;
 
   static const String _DEBOUNCE_DEFAULT_KEY = "default";
   static const String _DEBOUNCE_BLUR_KEY = "blur";
