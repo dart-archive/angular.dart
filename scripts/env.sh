@@ -30,6 +30,7 @@ export PUB=${PUB:-"$DARTSDK/bin/pub"}
 export DARTANALYZER=${DARTANALYZER:-"$DARTSDK/bin/dartanalyzer"}
 export DARTDOC=${DARTDOC:-"$DARTSDK/bin/dartdoc"}
 export DART_DOCGEN=${DART_DOCGEN:-"$DARTSDK/bin/docgen"}
+export DART_VM_OPTIONS="--old_gen_heap_size=2048"
 
 export DARTIUM_BIN=${DARTIUM_BIN:-"$DARTIUM"}
 export CHROME_BIN=${CHROME_BIN:-"google-chrome"}
