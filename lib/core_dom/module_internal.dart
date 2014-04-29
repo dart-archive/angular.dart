@@ -48,7 +48,8 @@ class CoreDomModule extends Module {
     value(dom.Window, dom.window);
     value(ElementProbe, null);
 
-    factory(TemplateCache, (_) => new TemplateCache(capacity: 0));
+    // Default to a unlimited-sized TemplateCache
+    factory(TemplateCache, (_) => new TemplateCache());
     type(dom.NodeTreeSanitizer, implementedBy: NullTreeSanitizer);
 
     type(TextMustache);

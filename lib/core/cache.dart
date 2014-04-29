@@ -82,7 +82,7 @@ class LruCache<K, V> extends Cache<K, V> {
   int _misses = 0;
 
   LruCache({int capacity}) {
-    this._capacity = (capacity == null) ? 0 : capacity;
+    this._capacity = capacity;
   }
 
   V get(K key) {
@@ -101,13 +101,12 @@ class LruCache<K, V> extends Cache<K, V> {
   V put(K key, V value) {
     // idempotent.  needed to refresh an existing key.
     _entries.remove(key);
-    // _capacity always > 0 but might not be true in some future.
-    if (_capacity > 0 && _capacity == _entries.length) {
+    _entries[key] = value;
+    if (_capacity != null && _capacity < _entries.length) {
       // drop oldest entry when at capacity
       // _entries.keys.first is fairly cheap - 2 new calls.
       _entries.remove(_entries.keys.first);
     }
-    _entries[key] = value;
     return value;
   }
 
