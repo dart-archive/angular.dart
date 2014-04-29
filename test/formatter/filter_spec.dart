@@ -48,7 +48,7 @@ class DynamicObject {
 main() {
   D([Map init]) => new DynamicObject(init);
 
-  ddescribe('filter formatter', () {
+  describe('filter formatter', () {
     var filter;
 
     beforeEach((Injector injector, FormatterMap filterMap) {
