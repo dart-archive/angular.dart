@@ -10,6 +10,8 @@ typedef void ZoneOnTurnDone();
  */
 typedef void ZoneOnTurnStart();
 
+typedef void ZoneScheduleMicrotask(fn());
+
 /**
  * Handles a [VmTurnZone] onError event.
  */
@@ -57,6 +59,8 @@ class VmTurnZone {
 
   /// an "inner" [Zone], which is a child of the outer [Zone].
   async.Zone _innerZone;
+
+  ZoneScheduleMicrotask defaultOnScheduleMicrotask;
 
   /**
    * Associates with this
@@ -111,6 +115,10 @@ class VmTurnZone {
 
   _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate,
                        async.Zone zone, fn()) {
+    if (defaultOnScheduleMicrotask != null) {
+      return defaultOnScheduleMicrotask(fn);
+    }
+
     _asyncQueue.add(() => delegate.run(zone, fn));
     if (_runningInTurn == 0 && !_inFinishTurn)  _finishTurn(zone, delegate);
   }

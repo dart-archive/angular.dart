@@ -435,5 +435,112 @@ void main() {
         microLeap();
       })).toThrow('ssertion');  // Support both dart2js and the VM with half a word.
     });
+
+    group('microtask scheduler', () {
+
+      it('should execute microtask scheduled in onTurnDone before onTurnDone is complete',
+          async((Logger log) {
+        var microtaskResult = false;
+        zone.onTurnStart = () {
+          log('onTurnStart');
+        };
+        zone.onTurnDone = () {
+          log('onTurnDone(begin)');
+          scheduleMicrotask(() {
+            log('executeMicrotask');
+            return true;
+          });
+          log('onTurnDone(end)');
+        };
+        zone.defaultOnScheduleMicrotask = (microTaskFn) {
+          log('onScheduleMicrotask(begin)');
+          microtaskResult = microTaskFn();
+          log('onScheduleMicrotask(end)');
+        };
+        zone.run(() {
+          log('run');
+        });
+
+        expect(log.result()).toEqual('onTurnStart; run; onTurnDone(begin); '
+          'onScheduleMicrotask(begin); executeMicrotask; onScheduleMicrotask(end); onTurnDone(end)'
+        );
+        expect(microtaskResult).toBeTruthy();
+      }));
+
+      it('should work with future scheduled in onTurnDone', async((Logger log) {
+        zone.onTurnStart = () {
+          log('onTurnStart');
+        };
+        zone.onTurnDone = () {
+          log('onTurnDone(begin)');
+          new Future.value('async').then((v) {
+            log('executed ${v}');
+          });
+          log('onTurnDone(end)');
+        };
+        zone.defaultOnScheduleMicrotask = (microTaskFn) {
+          log('onScheduleMicrotask(begin)');
+          microTaskFn();
+          log('onScheduleMicrotask(end)');
+        };
+        zone.run(() {
+          log('run');
+        });
+
+        expect(log.result()).toEqual('onTurnStart; run; onTurnDone(begin); '
+          'onScheduleMicrotask(begin); onScheduleMicrotask(end); onScheduleMicrotask(begin);'
+          ' executed async; onScheduleMicrotask(end); onTurnDone(end)');
+      }));
+
+      it('should execute microtask scheduled in run before onTurnDone starts',
+        async((Logger log) {
+        zone.onTurnStart = () {
+          log('onTurnStart');
+        };
+        zone.onTurnDone = () {
+          log('onTurnDone');
+        };
+        zone.defaultOnScheduleMicrotask = (microTaskFn) {
+          log('onScheduleMicrotask(begin)');
+          microTaskFn();
+          log('onScheduleMicrotask(end)');
+        };
+        zone.run(() {
+          log('run');
+          scheduleMicrotask(() {
+            log('executeMicrotask');
+            return true;
+          });
+        });
+
+        expect(log.result()).toEqual('onTurnStart; run; onScheduleMicrotask(begin);'
+          ' executeMicrotask; onScheduleMicrotask(end); onTurnDone');
+      }));
+
+      it('should execute microtask scheduled in onTurnStart before run',
+        async((Logger log) {
+        zone.onTurnStart = () {
+          log('onTurnStart');
+          scheduleMicrotask(() {
+            log('executeMicrotask');
+          });
+        };
+        zone.onTurnDone = () {
+          log('onTurnDone');
+        };
+        zone.defaultOnScheduleMicrotask = (microTaskFn) {
+          log('onScheduleMicrotask(begin)');
+          microTaskFn();
+          log('onScheduleMicrotask(end)');
+        };
+        zone.run(() {
+          log('run');
+        });
+
+        expect(log.result()).toEqual('onTurnStart; onScheduleMicrotask(begin); executeMicrotask;'
+          ' onScheduleMicrotask(end); run; onTurnDone');
+      }));
+
+    });
   });
 }
