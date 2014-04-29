@@ -19,9 +19,9 @@ class Chain extends syntax.Chain {
   }
 }
 
-class Filter extends syntax.Filter {
+class Formatter extends syntax.Formatter {
   final List<syntax.Expression> allArguments;
-  Filter(syntax.Expression expression, String name, List<syntax.Expression> arguments,
+  Formatter(syntax.Expression expression, String name, List<syntax.Expression> arguments,
          this.allArguments)
       : super(expression, name, arguments);
 

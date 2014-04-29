@@ -116,7 +116,7 @@ class NgView implements DetachAware, RouteProvider {
 
     var viewInjector = modules == null ?
         _injector :
-        forceNewDirectivesAndFilters(_injector, modules);
+        forceNewDirectivesAndFormatters(_injector, modules);
 
     var newDirectives = viewInjector.get(DirectiveMap);
     var viewFuture = viewDef.templateHtml != null ?

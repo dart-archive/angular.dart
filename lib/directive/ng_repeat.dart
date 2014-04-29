@@ -35,7 +35,7 @@ part of angular.directive;
  *   specified the ng-repeat associates elements by identity in the collection.
  *   It is an error to have more than one tracking function to resolve to the
  *   same key. (This would mean that two distinct objects are mapped to the same
- *   DOM element, which is not possible.)  Filters should be applied to the
+ *   DOM element, which is not possible.)  Formatters should be applied to the
  *   expression, before specifying a tracking expression.
  *
  *     For example: `item in items` is equivalent to `item in items track by

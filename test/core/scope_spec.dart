@@ -15,11 +15,11 @@ void main() {
           ..value(Object, context)
           ..value(Map, context)
           ..type(RootScope)
-          ..type(_MultiplyFilter)
-          ..type(_ListHeadFilter)
-          ..type(_ListTailFilter)
-          ..type(_SortFilter)
-          ..type(_IdentityFilter)
+          ..type(_MultiplyFormatter)
+          ..type(_ListHeadFormatter)
+          ..type(_ListTailFormatter)
+          ..type(_SortFormatter)
+          ..type(_IdentityFormatter)
           ..type(_MapKeys)
           ..type(ScopeStatsEmitter, implementedBy: MockScopeStatsEmitter);
     });
@@ -1537,9 +1537,9 @@ void main() {
 }
 
 @Formatter(name: 'identity')
-class _IdentityFilter {
+class _IdentityFormatter {
   Logger logger;
-  _IdentityFilter(this.logger);
+  _IdentityFormatter(this.logger);
   call(v) {
     logger('identity');
     return v;
@@ -1557,14 +1557,14 @@ class _MapKeys {
 }
 
 @Formatter(name: 'multiply')
-class _MultiplyFilter {
+class _MultiplyFormatter {
   call(a, b) => a * b;
 }
 
 @Formatter(name: 'listHead')
-class _ListHeadFilter {
+class _ListHeadFormatter {
   Logger logger;
-  _ListHeadFilter(this.logger);
+  _ListHeadFormatter(this.logger);
   call(list, head) {
     logger('listHead');
     return [head]..addAll(list);
@@ -1572,9 +1572,9 @@ class _ListHeadFilter {
 }
 
 @Formatter(name: 'listTail')
-class _ListTailFilter {
+class _ListTailFormatter {
   Logger logger;
-  _ListTailFilter(this.logger);
+  _ListTailFormatter(this.logger);
   call(list, tail) {
     logger('listTail');
     return new List.from(list)..add(tail);
@@ -1582,24 +1582,24 @@ class _ListTailFilter {
 }
 
 @Formatter(name: 'sort')
-class _SortFilter {
+class _SortFormatter {
   Logger logger;
-  _SortFilter(this.logger);
+  _SortFormatter(this.logger);
   call(list) {
     logger('sort');
     return new List.from(list)..sort();
   }
 }
 
-@Formatter(name:'newFilter')
-class FilterOne {
+@Formatter(name:'newFormatter')
+class FormatterOne {
   call(String str) {
     return '$str 1';
   }
 }
 
-@Formatter(name:'newFilter')
-class FilterTwo {
+@Formatter(name:'newFormatter')
+class FormatterTwo {
   call(String str) {
     return '$str 2';
   }

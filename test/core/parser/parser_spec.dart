@@ -52,13 +52,13 @@ main() {
     FormatterMap formatters;
 
     beforeEachModule((Module module) {
-      module.type(IncrementFilter);
-      module.type(SubstringFilter);
+      module.type(IncrementFormatter);
+      module.type(SubstringFormatter);
     });
 
-    beforeEach((Parser injectedParser, FormatterMap injectedFilters) {
+    beforeEach((Parser injectedParser, FormatterMap injectedFormatters) {
       parser = injectedParser;
-      formatters = injectedFilters;
+      formatters = injectedFormatters;
     });
 
     eval(String text, [FormatterMap f]) =>
@@ -1145,12 +1145,12 @@ main() {
         }).toThrow('No Formatter: hello found!');
 
         var module = new Module()
-            ..type(HelloFilter);
+            ..type(HelloFormatter);
         var childInjector = injector.createChild([module],
             forceNewInstances: [FormatterMap]);
-        var newFilters = childInjector.get(FormatterMap);
+        var newFormatters = childInjector.get(FormatterMap);
 
-        expect(expression.eval({}, newFilters)).toEqual('Hello, World!');
+        expect(expression.eval({}, newFormatters)).toEqual('Hello, World!');
       });
 
       it('should not allow formatters in a chain', () {
@@ -1198,19 +1198,19 @@ class ScopeWithErrors {
 }
 
 @Formatter(name:'increment')
-class IncrementFilter {
+class IncrementFormatter {
   call(a, b) => a + b;
 }
 
 @Formatter(name:'substring')
-class SubstringFilter {
+class SubstringFormatter {
   call(String str, startIndex, [endIndex]) {
     return str.substring(startIndex, endIndex);
   }
 }
 
 @Formatter(name:'hello')
-class HelloFilter {
+class HelloFormatter {
   call(String str) {
     return 'Hello, $str!';
   }
