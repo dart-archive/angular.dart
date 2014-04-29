@@ -6,7 +6,7 @@ main() {
   describe('ng-mustache', () {
     TestBed _;
     beforeEachModule((Module module) {
-      module.type(_HelloFilter);
+      module.type(_HelloFormatter);
       module.type(_FooDirective);
     });
     beforeEach(inject((TestBed tb) => _ = tb));
@@ -141,7 +141,7 @@ main() {
 }
 
 @Formatter(name: 'hello')
-class _HelloFilter {
+class _HelloFormatter {
   call(String str) {
     return 'Hello, $str!';
   }

@@ -553,9 +553,9 @@ abstract class DetachAware {
  * Usage:
  *
  *     // Declaration
- *     @Formatter(name:'myFilter')
- *     class MyFilter {
- *       call(valueToFilter, optArg1, optArg2) {
+ *     @Formatter(name:'myFormatter')
+ *     class MyFormatter {
+ *       call(valueToFormat, optArg1, optArg2) {
  *          return ...;
  *       }
  *     }
@@ -563,11 +563,11 @@ abstract class DetachAware {
  *
  *     // Registration
  *     var module = ...;
- *     module.type(MyFilter);
+ *     module.type(MyFormatter);
  *
  *
  *     <!-- Usage -->
- *     <span>{{something | myFilter:arg1:arg2}}</span>
+ *     <span>{{something | myFormatter:arg1:arg2}}</span>
  */
 class Formatter {
   final String name;

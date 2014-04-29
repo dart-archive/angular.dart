@@ -18,7 +18,7 @@ export 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/core/parser/utils.dart';
-import 'package:angular/core/parser/syntax.dart';
+import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/registry.dart';
 
 part "cache.dart";

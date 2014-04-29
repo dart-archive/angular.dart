@@ -1061,7 +1061,7 @@ class _AstParser {
   }
 }
 
-class ExpressionVisitor implements Visitor {
+class ExpressionVisitor implements syntax.Visitor {
   static final ContextReferenceAST scopeContextRef = new ContextReferenceAST();
   final ClosureMap _closureMap;
   AST contextRef = scopeContextRef;
@@ -1072,7 +1072,7 @@ class ExpressionVisitor implements Visitor {
   AST ast;
   FormatterMap formatters;
 
-  AST visit(Expression exp) {
+  AST visit(syntax.Expression exp) {
     exp.accept(this);
     assert(ast != null);
     try {
@@ -1082,68 +1082,68 @@ class ExpressionVisitor implements Visitor {
     }
   }
 
-  AST visitCollection(Expression exp) => new CollectionAST(visit(exp));
-  AST _mapToAst(Expression expression) => visit(expression);
+  AST visitCollection(syntax.Expression exp) => new CollectionAST(visit(exp));
+  AST _mapToAst(syntax.Expression expression) => visit(expression);
 
-  List<AST> _toAst(List<Expression> expressions) =>
+  List<AST> _toAst(List<syntax.Expression> expressions) =>
       expressions.map(_mapToAst).toList();
 
-  Map<Symbol, AST> _toAstMap(Map<String, Expression> expressions) {
+  Map<Symbol, AST> _toAstMap(Map<String, syntax.Expression> expressions) {
     if (expressions.isEmpty) return const {};
     Map<Symbol, AST> result = new Map<Symbol, AST>();
-    expressions.forEach((String name, Expression expression) {
+    expressions.forEach((String name, syntax.Expression expression) {
       result[_closureMap.lookupSymbol(name)] = _mapToAst(expression);
     });
     return result;
   }
 
-  void visitCallScope(CallScope exp) {
+  void visitCallScope(syntax.CallScope exp) {
     List<AST> positionals = _toAst(exp.arguments.positionals);
     Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
     ast = new MethodAST(contextRef, exp.name, positionals, named);
   }
-  void visitCallMember(CallMember exp) {
+  void visitCallMember(syntax.CallMember exp) {
     List<AST> positionals = _toAst(exp.arguments.positionals);
     Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
     ast = new MethodAST(visit(exp.object), exp.name, positionals, named);
   }
-  visitAccessScope(AccessScope exp) {
+  void visitAccessScope(syntax.AccessScope exp) {
     ast = new FieldReadAST(contextRef, exp.name);
   }
-  visitAccessMember(AccessMember exp) {
+  void visitAccessMember(syntax.AccessMember exp) {
     ast = new FieldReadAST(visit(exp.object), exp.name);
   }
-  visitBinary(Binary exp) {
+  void visitBinary(syntax.Binary exp) {
     ast = new PureFunctionAST(exp.operation,
                               _operationToFunction(exp.operation),
                               [visit(exp.left), visit(exp.right)]);
   }
-  void visitPrefix(Prefix exp) {
+  void visitPrefix(syntax.Prefix exp) {
     ast = new PureFunctionAST(exp.operation,
                               _operationToFunction(exp.operation),
                               [visit(exp.expression)]);
   }
-  void visitConditional(Conditional exp) {
+  void visitConditional(syntax.Conditional exp) {
     ast = new PureFunctionAST('?:', _operation_ternary,
                               [visit(exp.condition), visit(exp.yes),
                               visit(exp.no)]);
   }
-  void visitAccessKeyed(AccessKeyed exp) {
+  void visitAccessKeyed(syntax.AccessKeyed exp) {
     ast = new ClosureAST('[]', _operation_bracket,
                              [visit(exp.object), visit(exp.key)]);
   }
-  void visitLiteralPrimitive(LiteralPrimitive exp) {
+  void visitLiteralPrimitive(syntax.LiteralPrimitive exp) {
     ast = new ConstantAST(exp.value);
   }
-  void visitLiteralString(LiteralString exp) {
+  void visitLiteralString(syntax.LiteralString exp) {
     ast = new ConstantAST(exp.value);
   }
-  void visitLiteralArray(LiteralArray exp) {
+  void visitLiteralArray(syntax.LiteralArray exp) {
     List<AST> items = _toAst(exp.elements);
     ast = new PureFunctionAST('[${items.join(', ')}]', new ArrayFn(), items);
   }
 
-  void visitLiteralObject(LiteralObject exp) {
+  void visitLiteralObject(syntax.LiteralObject exp) {
     List<String> keys = exp.keys;
     List<AST> values = _toAst(exp.values);
     assert(keys.length == values.length);
@@ -1154,31 +1154,31 @@ class ExpressionVisitor implements Visitor {
     ast = new PureFunctionAST('{${kv.join(', ')}}', new MapFn(keys), values);
   }
 
-  void visitFilter(Filter exp) {
+  void visitFormatter(syntax.Formatter exp) {
     if (formatters == null) {
       throw new Exception("No formatters have been registered");
     }
-    Function filterFunction = formatters(exp.name);
+    Function formatterFunction = formatters(exp.name);
     List<AST> args = [visitCollection(exp.expression)];
     args.addAll(_toAst(exp.arguments).map((ast) => new CollectionAST(ast)));
     ast = new PureFunctionAST('|${exp.name}',
-        new _FilterWrapper(filterFunction, args.length), args);
+        new _FormatterWrapper(formatterFunction, args.length), args);
   }
 
   // TODO(misko): this is a corner case. Choosing not to implement for now.
-  void visitCallFunction(CallFunction exp) {
+  void visitCallFunction(syntax.CallFunction exp) {
     _notSupported("function's returing functions");
   }
-  void visitAssign(Assign exp) {
+  void visitAssign(syntax.Assign exp) {
     _notSupported('assignement');
   }
-  void visitLiteral(Literal exp) {
+  void visitLiteral(syntax.Literal exp) {
     _notSupported('literal');
   }
-  void visitExpression(Expression exp) {
+  void visitExpression(syntax.Expression exp) {
     _notSupported('?');
   }
-  void visitChain(Chain exp) {
+  void visitChain(syntax.Chain exp) {
     _notSupported(';');
   }
 
@@ -1249,11 +1249,11 @@ class MapFn extends FunctionApply {
   }
 }
 
-class _FilterWrapper extends FunctionApply {
-  final Function filterFn;
+class _FormatterWrapper extends FunctionApply {
+  final Function formatterFn;
   final List args;
   final List<Watch> argsWatches;
-  _FilterWrapper(this.filterFn, length):
+  _FormatterWrapper(this.formatterFn, length):
       args = new List(length),
       argsWatches = new List(length);
 
@@ -1271,7 +1271,7 @@ class _FilterWrapper extends FunctionApply {
        }
       }
     }
-    var value = Function.apply(filterFn, args);
+    var value = Function.apply(formatterFn, args);
     if (value is Iterable) {
       // Since formatters are pure we can guarantee that this well never change.
       // By wrapping in UnmodifiableListView we can hint to the dirty checker

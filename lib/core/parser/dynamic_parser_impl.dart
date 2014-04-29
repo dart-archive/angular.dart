@@ -32,12 +32,12 @@ class DynamicParserImpl {
           next.isCharacter($RBRACKET)) {
         error('Unconsumed token $next');
       }
-      var expr = parseFilter();
+      var expr = parseFormatter();
       expressions.add(expr);
       while (optionalCharacter($SEMICOLON)) {
         isChain = true;
       }
-      if (isChain && expr is Filter) {
+      if (isChain && expr is Formatter) {
         error('Cannot have a formatter in a chain');
       }
       if (!isChain && index < tokens.length) {
@@ -49,7 +49,7 @@ class DynamicParserImpl {
         : backend.newChain(expressions);
   }
 
-  parseFilter() {
+  parseFormatter() {
     var result = parseExpression();
     while (optionalOperator('|')) {
       String name = expectIdentifierOrKeyword();
@@ -58,7 +58,7 @@ class DynamicParserImpl {
         // TODO(kasperl): Is this really supposed to be expressions?
         arguments.add(parseExpression());
       }
-      result = backend.newFilter(result, name, arguments);
+      result = backend.newFormatter(result, name, arguments);
     }
     return result;
   }
@@ -217,7 +217,7 @@ class DynamicParserImpl {
 
   parsePrimary() {
     if (optionalCharacter($LPAREN)) {
-      var result = parseFilter();
+      var result = parseFormatter();
       expectCharacter($RPAREN);
       return result;
     } else if (next.isKeywordNull || next.isKeywordUndefined) {
