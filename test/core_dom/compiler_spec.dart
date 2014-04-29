@@ -233,7 +233,7 @@ void main() {
           ..type(SometimesComponent)
           ..type(ExprAttrComponent)
           ..type(LogElementComponent)
-          ..type(SayHelloFilter);
+          ..type(SayHelloFormatter);
       });
 
       it('should select on element', async(() {
@@ -1039,7 +1039,7 @@ class MissingSelector {}
 class InvalidSelector {}
 
 @Formatter(name:'hello')
-class SayHelloFilter {
+class SayHelloFormatter {
   call(String str) {
     return 'Hello, $str!';
   }

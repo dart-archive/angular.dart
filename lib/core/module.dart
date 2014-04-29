@@ -61,7 +61,6 @@ export "package:angular/core_dom/module_internal.dart" show
 export "package:angular/core/module_internal.dart" show
     CacheStats,
     ExceptionHandler,
-    FilterMap,
     Interpolate,
     VmTurnZone,
     PrototypeMap,

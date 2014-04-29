@@ -23,7 +23,7 @@ abstract class ParserBackend<T> {
   bool isAssignable(T expression);
 
   T newChain(List expressions) => null;
-  T newFilter(T expression, String name, List arguments) => null;
+  T newFormatter(T expression, String name, List arguments) => null;
 
   T newAssign(T target, T value) => null;
   T newConditional(T condition, T yes, T no) => null;
