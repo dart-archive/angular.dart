@@ -39,9 +39,9 @@ void main() {
 
     beforeEachModule((Module module) {
       module
-          ..type(ControllerWithNoLove)
-          ..type(MyCustomInputValidator)
-          ..type(CountingValidator);
+          ..bind(ControllerWithNoLove)
+          ..bind(MyCustomInputValidator)
+          ..bind(CountingValidator);
     });
 
     beforeEach((TestBed tb) => _ = tb);

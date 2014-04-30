@@ -436,7 +436,7 @@ main() {
     inject((Injector injector) {
       var throwOnMove = new MockAnimate();
       var child = injector.createChild(
-          [new Module()..value(Animate, throwOnMove)]);
+          [new Module()..bind(Animate, toValue: throwOnMove)]);
 
       child.invoke((Injector injector, Scope rootScope, Compiler compiler,
                     DirectiveMap _directives) {

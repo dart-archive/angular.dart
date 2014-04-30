@@ -10,7 +10,7 @@ void main() {
     var exceptionHandler;
     beforeEachModule((Module module) {
       exceptionHandler = new LoggingExceptionHandler();
-      module.value(ExceptionHandler, exceptionHandler);
+      module.bind(ExceptionHandler, toValue: exceptionHandler);
     });
 
     beforeEach((Logger log, ExceptionHandler eh) {

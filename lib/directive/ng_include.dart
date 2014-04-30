@@ -46,7 +46,7 @@ class NgInclude {
     // create a new scope
     _scope = scope.createChild(new PrototypeMap(scope.context));
     _view = createView(injector.createChild([new Module()
-        ..value(Scope, _scope)]));
+        ..bind(Scope, toValue: _scope)]));
 
     _view.nodes.forEach((node) => element.append(node));
   }

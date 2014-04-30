@@ -61,7 +61,7 @@ part of angular.routing;
     children: Directive.TRANSCLUDE_CHILDREN)
 class NgView implements DetachAware, RouteProvider {
   static final Module _module = new Module()
-      ..factory(RouteProvider, (i) => i.get(NgView));
+      ..bind(RouteProvider, toFactory: (i) => i.get(NgView));
 
   static module() => _module;
 
@@ -127,7 +127,7 @@ class NgView implements DetachAware, RouteProvider {
       _cleanUp();
       _childScope = _scope.createChild(new PrototypeMap(_scope.context));
       _view = viewFactory(
-          viewInjector.createChild([new Module()..value(Scope, _childScope)]));
+          viewInjector.createChild([new Module()..bind(Scope, toValue: _childScope)]));
 
       var view = _view;
       _scope.rootScope.domWrite(() {

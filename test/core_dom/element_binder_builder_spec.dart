@@ -24,10 +24,10 @@ main() => describe('ElementBinderBuilder', () {
 
   beforeEachModule((Module module) {
     module
-      ..type(_DirectiveAttr)
-      ..type(_Component)
-      ..type(_IgnoreChildren)
-      ..type(_Structural);
+      ..bind(_DirectiveAttr)
+      ..bind(_Component)
+      ..bind(_IgnoreChildren)
+      ..bind(_Structural);
   });
 
   beforeEach((DirectiveMap d, ElementBinderFactory f) {

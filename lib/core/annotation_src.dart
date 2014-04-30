@@ -123,7 +123,7 @@ abstract class Directive {
    *       module: Foo.moduleFactory)
    *     class Foo {
    *       static moduleFactory() => new Module()
-   *         ..type(SomeTypeA, visibility: Directive.LOCAL_VISIBILITY);
+   *         ..bind(SomeTypeA, visibility: Directive.LOCAL_VISIBILITY);
    *     }
    *
    * When specifying types, factories or values in the module, notice that
@@ -563,7 +563,11 @@ abstract class DetachAware {
  *
  *     // Registration
  *     var module = ...;
+<<<<<<< HEAD
  *     module.type(MyFormatter);
+=======
+ *     module.bind(MyFilter);
+>>>>>>> chore: Replace Module.[type|value|factory]() with Module.bind()
  *
  *
  *     <!-- Usage -->

@@ -60,9 +60,9 @@ import 'dart:mirrors' show MirrorsUsed;
 class _DynamicApplication extends Application {
   _DynamicApplication() {
     ngModule
-        ..type(MetadataExtractor, implementedBy: DynamicMetadataExtractor)
-        ..type(FieldGetterFactory, implementedBy: DynamicFieldGetterFactory)
-        ..type(ClosureMap, implementedBy: DynamicClosureMap);
+        ..bind(MetadataExtractor, toImplementation: DynamicMetadataExtractor)
+        ..bind(FieldGetterFactory, toImplementation: DynamicFieldGetterFactory)
+        ..bind(ClosureMap, toImplementation: DynamicClosureMap);
   }
 
   Injector createInjector() => new DynamicInjector(modules: modules);

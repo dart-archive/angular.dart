@@ -16,7 +16,7 @@ class _SpecInjector {
 
   _SpecInjector() {
     var moduleModule = new Module()
-      ..factory(Module, (Injector injector) => addModule(new Module()));
+      ..bind(Module, toFactory: (Injector injector) => addModule(new Module()));
     moduleInjector = new DynamicInjector(modules: [moduleModule]);
   }
 
@@ -84,7 +84,7 @@ class _SpecInjector {
  *
  *     test('wrap part of a test', () {
  *       module((Module module) {
- *         module.type(Foo);
+ *         module.bind(Foo);
  *       });
  *       inject((TestBed tb) {
  *         tb.compile(...);
@@ -110,12 +110,12 @@ inject(Function fn) {
  * hence no more calls to [module] can be made.
  *
  *     setUp(module((Module model) {
- *       module.type(Foo);
+ *       module.bind(Foo);
  *     });
  *
  *     test('foo', () {
  *       module((Module module) {
- *         module.type(Foo);
+ *         module.bind(Foo);
  *       });
  *     });
  */

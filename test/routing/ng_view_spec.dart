@@ -13,7 +13,7 @@ main() {
     beforeEachModule((Module module) {
       module
         ..install(new AngularMockModule())
-        ..type(RouteInitializerFn, implementedBy: FlatRouteInitializer);
+        ..bind(RouteInitializerFn, toImplementation: FlatRouteInitializer);
     });
 
     beforeEach((TestBed tb, Router _router, TemplateCache templates) {
@@ -97,7 +97,7 @@ main() {
     beforeEachModule((Module module) {
       module
         ..install(new AngularMockModule())
-        ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer);
+        ..bind(RouteInitializerFn, toImplementation: NestedRouteInitializer);
     });
 
     beforeEach((TestBed tb, Router _router, TemplateCache templates) {
@@ -151,7 +151,7 @@ main() {
     beforeEachModule((Module module) {
       module
         ..install(new AngularMockModule())
-        ..value(RouteInitializerFn, (router, views) {
+        ..bind(RouteInitializerFn, toValue: (router, views) {
           views.configure({
             'foo': ngRoute(
                 path: '/foo',

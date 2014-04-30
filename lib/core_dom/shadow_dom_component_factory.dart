@@ -131,13 +131,13 @@ class _ComponentFactory implements Function {
   Injector createShadowInjector(injector, TemplateLoader templateLoader) {
     var probe;
     var shadowModule = new Module()
-      ..type(type)
-      ..type(NgElement)
-      ..type(EventHandler, implementedBy: ShadowRootEventHandler)
-      ..value(Scope, shadowScope)
-      ..value(TemplateLoader, templateLoader)
-      ..value(dom.ShadowRoot, shadowDom)
-      ..factory(ElementProbe, (_) => probe);
+      ..bind(type)
+      ..bind(NgElement)
+      ..bind(EventHandler, toImplementation: ShadowRootEventHandler)
+      ..bind(Scope, toValue: shadowScope)
+      ..bind(TemplateLoader, toValue: templateLoader)
+      ..bind(dom.ShadowRoot, toValue: shadowDom)
+      ..bind(ElementProbe, toFactory: (_) => probe);
     shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
     probe = _expando[shadowDom] = new ElementProbe(
         injector.get(ElementProbe), shadowDom, shadowInjector, shadowScope);

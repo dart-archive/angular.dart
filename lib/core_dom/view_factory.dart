@@ -16,7 +16,7 @@ class BoundViewFactory {
   BoundViewFactory(this.viewFactory, this.injector);
 
   View call(Scope scope) =>
-      viewFactory(injector.createChild([new Module()..value(Scope, scope)]));
+      viewFactory(injector.createChild([new Module()..bind(Scope, toValue: scope)]));
 }
 
 abstract class ViewFactory implements Function {

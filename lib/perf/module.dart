@@ -22,6 +22,6 @@ part 'dev_tools_timeline.dart';
 
 class PerfModule extends Module {
   PerfModule() {
-    type(Profiler, implementedBy: Profiler);
+    bind(Profiler, toImplementation: Profiler);
   }
 }

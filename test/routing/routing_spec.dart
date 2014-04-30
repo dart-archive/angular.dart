@@ -16,8 +16,8 @@ main() {
       router = new Router(useFragment: false, windowImpl: new MockWindow());
       m
         ..install(new AngularMockModule())
-        ..factory(RouteInitializerFn, (_) => initRoutes)
-        ..value(Router, router);
+        ..bind(RouteInitializerFn, toFactory: (_) => initRoutes)
+        ..bind(Router, toValue: router);
     });
 
     beforeEach((TestBed tb) {
@@ -46,7 +46,7 @@ main() {
     initRouter(initializer) {
       var injector = applicationFactory()
         .addModule(new AngularMockModule())
-        .addModule(new Module()..value(RouteInitializerFn, initializer))
+        .addModule(new Module()..bind(RouteInitializerFn, toValue: initializer))
         .createInjector();
       injector.get(NgRoutingHelper); // force routing initialization
       router = injector.get(Router);
@@ -254,7 +254,7 @@ main() {
           'foo': ngRoute(
               path: '/foo',
               modules: () => [
-                new Module()..type(NewDirective)
+                new Module()..bind(NewDirective)
               ],
               view: 'foo.html'
           ),
@@ -279,7 +279,7 @@ main() {
           'foo': ngRoute(
               path: '/foo',
               modules: () => new Future.value([
-                new Module()..type(NewDirective)
+                new Module()..bind(NewDirective)
               ]),
               view: 'foo.html'
           ),
@@ -304,7 +304,7 @@ main() {
           'foo': ngRoute(
               path: '/foo',
               modules: () => [
-                new Module()..type(HelloFormatter)
+                new Module()..bind(HelloFormatter)
               ],
               view: 'foo.html'
           ),
@@ -329,7 +329,7 @@ main() {
           'foo': ngRoute(
               path: '/foo',
               modules: () => new Future.value([
-                new Module()..type(HelloFormatter)
+                new Module()..bind(HelloFormatter)
               ]),
               view: 'foo.html'
           ),
