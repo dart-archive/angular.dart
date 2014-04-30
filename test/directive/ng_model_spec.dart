@@ -84,11 +84,11 @@ void main() {
       });
 
       it('should write to input only if the value is different',
-        (Injector i, Animate animate) {
+        (Injector i, Animate animate, EventHandler eventHandler) {
 
         var scope = _.rootScope;
         var element = new dom.InputElement();
-        var ngElement = new NgElement(element, scope, animate);
+        var ngElement = new NgElement(element, scope, animate, eventHandler);
 
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
@@ -362,11 +362,11 @@ void main() {
       });
 
       it('should write to input only if value is different',
-        (Injector i, Animate animate) {
+        (Injector i, Animate animate, EventHandler eventHandler) {
 
         var scope = _.rootScope;
         var element = new dom.InputElement();
-        var ngElement = new NgElement(element, scope, animate);
+        var ngElement = new NgElement(element, scope, animate, eventHandler);
 
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
@@ -452,11 +452,11 @@ void main() {
       });
 
       it('should write to input only if value is different',
-        (Injector i, Animate animate) {
+        (Injector i, Animate animate, EventHandler eventHandler) {
 
         var scope = _.rootScope;
         var element = new dom.InputElement();
-        var ngElement = new NgElement(element, scope, animate);
+        var ngElement = new NgElement(element, scope, animate, eventHandler);
 
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
@@ -550,11 +550,11 @@ void main() {
       });
 
       it('should write to input only if value is different',
-        (Injector i, Animate animate) {
+        (Injector i, Animate animate, EventHandler eventHandler) {
 
         var scope = _.rootScope;
         var element = new dom.InputElement();
-        var ngElement = new NgElement(element, scope, animate);
+        var ngElement = new NgElement(element, scope, animate, eventHandler);
 
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
@@ -759,11 +759,11 @@ void main() {
       // NOTE(deboer): This test passes on Dartium, but fails in the content_shell.
       // The Dart team is looking into this bug.
       xit('should write to input only if value is different',
-        (Injector i, Animate animate) {
+        (Injector i, Animate animate, EventHandler eventHandler) {
 
         var scope = _.rootScope;
         var element = new dom.TextAreaElement();
-        var ngElement = new NgElement(element, scope, animate);
+        var ngElement = new NgElement(element, scope, animate, eventHandler);
 
         NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';

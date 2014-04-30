@@ -171,6 +171,11 @@ class ElementProbe {
   final Injector injector;
   final Scope scope;
   final directives = [];
+  final Map<String, List<Function>> listeners = {};
 
   ElementProbe(this.parent, this.element, this.injector, this.scope);
+
+  void addListener(String eventName, fn(Event)) {
+    listeners.putIfAbsent(eventName, () => []).add(fn);
+  }
 }
