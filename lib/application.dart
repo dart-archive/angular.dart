@@ -126,7 +126,7 @@ class AngularModule extends Module {
  */
 abstract class Application {
   static _find(String selector, [dom.Element defaultElement]) {
-    var element = dom.window.document.querySelector(selector);
+    var element = dom.document.querySelector(selector);
     if (element == null) element = defaultElement;
     if (element == null) {
       throw "Could not find application element '$selector'.";
