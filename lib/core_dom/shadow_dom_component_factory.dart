@@ -14,7 +14,7 @@ abstract class ComponentFactory {
     return null;
   }
 
-  static TemplateLoader _setupOnShadowDomAttach(controller, templateLoader, shadowScope) {
+  static void _setupOnShadowDomAttach(controller, templateLoader, shadowScope) {
     if (controller is ShadowRootAware) {
       templateLoader.template.then((shadowDom) {
         if (!shadowScope.isAttached) return;
@@ -104,7 +104,7 @@ class _ComponentFactory implements Function {
     }
     var viewFuture = ComponentFactory._viewFuture(component, viewCache, directives);
     TemplateLoader templateLoader = new TemplateLoader(
-        async.Future.wait(cssFutures).then((Iterable<String> cssList) {
+        async.Future.wait(cssFutures).then((Iterable<dom.StyleElement> cssList) {
           cssList
               .where((styleElement) => styleElement != null)
               .forEach((styleElement) => shadowDom.append(styleElement.clone(true)));

@@ -4,9 +4,9 @@ set -e
 
 . $(dirname $0)/env.sh
 
-echo '==========='
-echo '== BUILD =='
-echo '==========='
+echo '============='
+echo '== ANALYZE =='
+echo '============='
 
 OUT=tmp/all.dart
 mkdir -p tmp
@@ -16,7 +16,7 @@ $DARTANALYZER --version
 echo // generated file > $OUT
 
 for FILE in $(ls lib/angular.dart \
-                 benchmarks/*_perf.dart \
+                 benchmark/*_perf.dart \
                  test/*_spec.dart \
                  test/*/*_spec.dart \
                  lib/change_detection/change_detection.dart \

@@ -88,17 +88,18 @@ class TranscludingComponentFactory implements ComponentFactory {
 
       // Append the component's template as children
       var viewFuture = ComponentFactory._viewFuture(component, viewCache, directives);
+      var elementFuture;
 
       if (viewFuture != null) {
-        viewFuture = viewFuture.then((ViewFactory viewFactory) {
+        elementFuture = viewFuture.then((ViewFactory viewFactory) {
           contentPort.pullNodes();
           element.nodes.addAll(viewFactory(childInjector).nodes);
           return element;
         });
       } else {
-        viewFuture = new async.Future.microtask(() => contentPort.pullNodes());
+        elementFuture = new async.Future.microtask(() => contentPort.pullNodes());
       }
-      TemplateLoader templateLoader = new TemplateLoader(viewFuture);
+      TemplateLoader templateLoader = new TemplateLoader(elementFuture);
 
       Scope shadowScope = scope.createChild({});
 
