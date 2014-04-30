@@ -11,6 +11,12 @@ typedef void ZoneOnTurnDone();
 typedef void ZoneOnTurnStart();
 
 /**
+ * Handles a [VmTurnZone] defaultOnScheduleMicrotask.
+ */
+typedef void ZoneScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
+                                   fn());
+
+/**
  * Handles a [VmTurnZone] onError event.
  */
 typedef void ZoneOnError(dynamic error, dynamic stacktrace,
@@ -59,6 +65,11 @@ class VmTurnZone {
   async.Zone _innerZone;
 
   /**
+   *
+   */
+  ZoneScheduleMicrotask onScheduleMicrotask;
+
+  /**
    * Associates with this
    *
    * - an "outer" [Zone], which is the one that created this.
@@ -78,6 +89,7 @@ class VmTurnZone {
     onError = _defaultOnError;
     onTurnDone = _defaultOnTurnDone;
     onTurnStart = _defaultOnTurnStart;
+    onScheduleMicrotask = _defaultOnScheduleMicrotask;
   }
 
   List _asyncQueue = [];
@@ -111,6 +123,11 @@ class VmTurnZone {
 
   _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate,
                        async.Zone zone, fn()) {
+    onScheduleMicrotask(self, delegate, zone, fn);
+  }
+
+  _defaultOnScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate,
+                              async.Zone zone, fn()) {
     _asyncQueue.add(() => delegate.run(zone, fn));
     if (_runningInTurn == 0 && !_inFinishTurn)  _finishTurn(zone, delegate);
   }
