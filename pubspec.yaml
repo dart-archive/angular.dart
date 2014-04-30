@@ -29,3 +29,9 @@ dev_dependencies:
   benchmark_harness: '>=1.0.0'
   unittest: '>=0.10.1 <0.12.0'
   mock: '>=0.10.0 <0.12.0'
+dependency_overrides:
+  analyzer: '0.11.6'
+  di: '0.0.34'
+  route_hierarchical: '0.4.13'
+  args: '0.10.0+1'
+  code_transformers: '0.1.3'

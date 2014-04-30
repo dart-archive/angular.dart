@@ -4,15 +4,15 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.13.2"
+    version: "0.11.6"
   args:
     description: args
     source: hosted
-    version: "0.10.0+2"
+    version: "0.10.0+1"
   barback:
     description: barback
     source: hosted
-    version: "0.13.0"
+    version: "0.11.1"
   benchmark_harness:
     description: benchmark_harness
     source: hosted
@@ -32,7 +32,7 @@ packages:
   di:
     description: di
     source: hosted
-    version: "0.0.37"
+    version: "0.0.34"
   html5lib:
     description: html5lib
     source: hosted
@@ -68,7 +68,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.18"
+    version: "0.4.13"
   shadow_dom:
     description: shadow_dom
     source: hosted
