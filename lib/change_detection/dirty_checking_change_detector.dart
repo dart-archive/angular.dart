@@ -467,7 +467,6 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
       } else {
         _mode = _MODE_GETTER_;
         _getter = _fieldGetterFactory.getter(obj, field);
-        currentValue = _getter(obj);
       }
     }
   }

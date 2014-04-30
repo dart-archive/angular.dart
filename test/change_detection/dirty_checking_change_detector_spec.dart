@@ -744,6 +744,9 @@ void main() {
 
         detector..watch(user, 'isUnderAgeAsVariable', null);
         changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+
+        changeIterator = detector.collectChanges();
         expect(changeIterator.moveNext()).toEqual(false);
 
         user.isUnderAgeAsVariable = () => false;
