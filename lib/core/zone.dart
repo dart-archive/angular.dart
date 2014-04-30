@@ -60,7 +60,7 @@ class VmTurnZone {
   /// an "inner" [Zone], which is a child of the outer [Zone].
   async.Zone _innerZone;
 
-  ZoneScheduleMicrotask defaultOnScheduleMicrotask;
+  ZoneScheduleMicrotask onScheduleMicrotask;
 
   /**
    * Associates with this
@@ -115,8 +115,8 @@ class VmTurnZone {
 
   _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate,
                        async.Zone zone, fn()) {
-    if (defaultOnScheduleMicrotask != null) {
-      return defaultOnScheduleMicrotask(fn);
+    if (onScheduleMicrotask != null) {
+      return onScheduleMicrotask(fn);
     }
 
     _asyncQueue.add(() => delegate.run(zone, fn));

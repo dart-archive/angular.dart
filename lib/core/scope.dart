@@ -605,6 +605,7 @@ class RootScope extends Scope {
   {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
+    _zone.onScheduleMicrotask = runAsync;
   }
 
   RootScope get rootScope => this;
