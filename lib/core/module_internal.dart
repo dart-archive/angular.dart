@@ -31,26 +31,26 @@ part "zone.dart";
 
 class CoreModule extends Module {
   CoreModule() {
-    type(ScopeDigestTTL);
+    bind(ScopeDigestTTL);
 
-    type(MetadataExtractor);
-    type(Cache);
-    type(ExceptionHandler);
-    type(FormatterMap);
-    type(Interpolate);
-    type(RootScope);
-    factory(Scope, (injector) => injector.get(RootScope));
-    factory(ClosureMap, (_) => throw "Must provide dynamic/static ClosureMap.");
-    type(ScopeStats);
-    type(ScopeStatsEmitter);
-    factory(ScopeStatsConfig, (i) => new ScopeStatsConfig());
-    value(Object, {}); // RootScope context
-    type(VmTurnZone);
+    bind(MetadataExtractor);
+    bind(Cache);
+    bind(ExceptionHandler);
+    bind(FormatterMap);
+    bind(Interpolate);
+    bind(RootScope);
+    bind(Scope, toFactory: (injector) => injector.get(RootScope));
+    bind(ClosureMap, toFactory: (_) => throw "Must provide dynamic/static ClosureMap.");
+    bind(ScopeStats);
+    bind(ScopeStatsEmitter);
+    bind(ScopeStatsConfig, toFactory: (i) => new ScopeStatsConfig());
+    bind(Object, toValue: {}); // RootScope context
+    bind(VmTurnZone);
 
-    type(Parser, implementedBy: DynamicParser);
-    type(ParserBackend, implementedBy: DynamicParserBackend);
-    type(DynamicParser);
-    type(DynamicParserBackend);
-    type(Lexer);
+    bind(Parser, toImplementation: DynamicParser);
+    bind(ParserBackend, toImplementation: DynamicParserBackend);
+    bind(DynamicParser);
+    bind(DynamicParserBackend);
+    bind(Lexer);
   }
 }

@@ -11,7 +11,7 @@ main() {
 
     beforeEachModule((Module m) => m
       ..install(new AngularMockModule())
-      ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer));
+      ..bind(RouteInitializerFn, toImplementation: NestedRouteInitializer));
 
     beforeEach((TestBed tb) {
       _ = tb;

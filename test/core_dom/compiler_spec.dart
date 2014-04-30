@@ -6,7 +6,7 @@ import '../_specs.dart';
 forBothCompilers(fn) {
   describe('walking compiler', () {
     beforeEachModule((Module m) {
-      m.type(Compiler, implementedBy: WalkingCompiler);
+      m.bind(Compiler, toImplementation: WalkingCompiler);
       return m;
     });
     fn();
@@ -14,7 +14,7 @@ forBothCompilers(fn) {
 
   describe('tagging compiler', () {
     beforeEachModule((Module m) {
-      m.type(Compiler, implementedBy: TaggingCompiler);
+      m.bind(Compiler, toImplementation: TaggingCompiler);
       return m;
     });
     fn();
@@ -22,8 +22,8 @@ forBothCompilers(fn) {
 
   describe('transcluding components', () {
     beforeEachModule((Module m) {
-      m.type(Compiler, implementedBy: TaggingCompiler);
-      m.type(ComponentFactory, implementedBy: TranscludingComponentFactory);
+      m.bind(Compiler, toImplementation: TaggingCompiler);
+      m.bind(ComponentFactory, toImplementation: TranscludingComponentFactory);
 
       return m;
     });
@@ -38,18 +38,18 @@ void main() {
 
     beforeEachModule((Module module) {
       module
-          ..type(TabComponent)
-          ..type(PublishModuleAttrDirective)
-          ..type(PaneComponent)
-          ..type(SimpleTranscludeInAttachAttrDirective)
-          ..type(IgnoreChildrenDirective)
-          ..type(IncludeTranscludeAttrDirective)
-          ..type(LocalAttrDirective)
-          ..type(OneOfTwoDirectives)
-          ..type(TwoOfTwoDirectives)
-          ..type(MyController)
-          ..type(MyParentController)
-          ..type(MyChildController);
+          ..bind(TabComponent)
+          ..bind(PublishModuleAttrDirective)
+          ..bind(PaneComponent)
+          ..bind(SimpleTranscludeInAttachAttrDirective)
+          ..bind(IgnoreChildrenDirective)
+          ..bind(IncludeTranscludeAttrDirective)
+          ..bind(LocalAttrDirective)
+          ..bind(OneOfTwoDirectives)
+          ..bind(TwoOfTwoDirectives)
+          ..bind(MyController)
+          ..bind(MyParentController)
+          ..bind(MyChildController);
     });
 
     beforeEach(inject((TestBed tb) => _ = tb));
@@ -196,7 +196,7 @@ void main() {
     describe("bind-", () {
       beforeEachModule((Module module) {
         module
-          ..type(IoComponent);
+          ..bind(IoComponent);
       });
 
       it('should support bind- syntax', () {
@@ -253,23 +253,23 @@ void main() {
     describe('components', () {
       beforeEachModule((Module module) {
         module
-          ..type(CamelCaseMapComponent)
-          ..type(IoComponent)
-          ..type(IoControllerComponent)
-          ..type(UnpublishedIoControllerComponent)
-          ..type(IncorrectMappingComponent)
-          ..type(NonAssignableMappingComponent)
-          ..type(ParentExpressionComponent)
-          ..type(PublishMeComponent)
-          ..type(PublishMeDirective)
-          ..type(LogComponent)
-          ..type(AttachDetachComponent)
-          ..type(SimpleAttachComponent)
-          ..type(SimpleComponent)
-          ..type(SometimesComponent)
-          ..type(ExprAttrComponent)
-          ..type(LogElementComponent)
-          ..type(SayHelloFormatter);
+          ..bind(CamelCaseMapComponent)
+          ..bind(IoComponent)
+          ..bind(IoControllerComponent)
+          ..bind(UnpublishedIoControllerComponent)
+          ..bind(IncorrectMappingComponent)
+          ..bind(NonAssignableMappingComponent)
+          ..bind(ParentExpressionComponent)
+          ..bind(PublishMeComponent)
+          ..bind(PublishMeDirective)
+          ..bind(LogComponent)
+          ..bind(AttachDetachComponent)
+          ..bind(SimpleAttachComponent)
+          ..bind(SimpleComponent)
+          ..bind(SometimesComponent)
+          ..bind(ExprAttrComponent)
+          ..bind(LogElementComponent)
+          ..bind(SayHelloFormatter);
       });
 
       it('should select on element', async(() {
@@ -573,8 +573,8 @@ void main() {
           var httpBackend = new MockHttpBackend();
 
           module
-            ..value(HttpBackend, httpBackend)
-            ..value(MockHttpBackend, httpBackend);
+            ..bind(HttpBackend, toValue: httpBackend)
+            ..bind(MockHttpBackend, toValue: httpBackend);
         });
 
         it('should fire onShadowRoot method', async((Compiler compile, Logger logger, MockHttpBackend backend) {
@@ -584,7 +584,7 @@ void main() {
           scope.context['logger'] = logger;
           scope.context['once'] = null;
           var elts = es('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
-          compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
+          compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..bind(Scope, toValue: scope)]), elts);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
@@ -616,7 +616,7 @@ void main() {
           backend.whenGET('foo.html').respond('<div>WORKED</div>');
           var elts = es('<simple-attach></simple-attach>');
           var scope = _.rootScope.createChild({});
-          compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..value(Scope, scope)]), elts);
+          compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..bind(Scope, toValue: scope)]), elts);
           expect(logger).toEqual(['SimpleAttachComponent']);
           scope.destroy();
 
@@ -639,7 +639,7 @@ void main() {
       describe('invalid components', () {
         it('should throw a useful error message for missing selectors', () {
           Module module = new Module()
-              ..type(MissingSelector);
+              ..bind(MissingSelector);
           var injector = _.injector.createChild([module], forceNewInstances: [Compiler, DirectiveMap]);
           var c = injector.get(Compiler);
           var directives = injector.get(DirectiveMap);
@@ -651,7 +651,7 @@ void main() {
 
         it('should throw a useful error message for invalid selector', () {
           Module module = new Module()
-            ..type(InvalidSelector);
+            ..bind(InvalidSelector);
           var injector = _.injector.createChild([module], forceNewInstances: [Compiler, DirectiveMap]);
           var c = injector.get(Compiler);
           var directives = injector.get(DirectiveMap);
@@ -664,8 +664,8 @@ void main() {
 
       describe('useShadowDom option', () {
         beforeEachModule((Module m) {
-          m.type(ShadowyComponent);
-          m.type(ShadowlessComponent);
+          m.bind(ShadowyComponent);
+          m.bind(ShadowlessComponent);
         });
 
         it('should create shadowy components', async((Logger log) {
@@ -860,7 +860,7 @@ class PublishModuleDirectiveSuperType {
     module: PublishModuleAttrDirective.module)
 class PublishModuleAttrDirective implements PublishModuleDirectiveSuperType {
   static Module _module = new Module()
-      ..factory(PublishModuleDirectiveSuperType, (i) => i.get(PublishModuleAttrDirective));
+      ..bind(PublishModuleDirectiveSuperType, toFactory: (i) => i.get(PublishModuleAttrDirective));
   static module() => _module;
 
   static Injector _injector;

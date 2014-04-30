@@ -576,7 +576,7 @@ void main() {
 
       describe('custom validators', () {
         beforeEachModule((Module module) {
-          module.type(MyCustomFormValidator);
+          module.bind(MyCustomFormValidator);
         });
 
         it('should display the valid and invalid CSS classes on the element for custom validations', (TestBed _, Scope scope) {
@@ -718,7 +718,7 @@ void main() {
 
     describe('regression tests: form', () {
       beforeEachModule((Module module) {
-        module.type(NgForm);
+        module.bind(NgForm);
       });
 
       it('should be resolvable by injector if configured by user.',

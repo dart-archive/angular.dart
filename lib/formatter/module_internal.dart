@@ -21,16 +21,16 @@ part 'stringify.dart';
 
 class FormatterModule extends Module {
   FormatterModule() {
-    type(Arrayify);
-    type(Currency);
-    type(Date);
-    type(Filter);
-    type(Json);
-    type(LimitTo);
-    type(Lowercase);
-    type(Number);
-    type(OrderBy);
-    type(Uppercase);
-    type(Stringify);
+    bind(Arrayify);
+    bind(Currency);
+    bind(Date);
+    bind(Filter);
+    bind(Json);
+    bind(LimitTo);
+    bind(Lowercase);
+    bind(Number);
+    bind(OrderBy);
+    bind(Uppercase);
+    bind(Stringify);
   }
 }

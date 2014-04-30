@@ -37,7 +37,7 @@ class TestBed {
   Element compile(html, {Scope scope, DirectiveMap directives}) {
     var injector = this.injector;
     if (scope != null) {
-      injector = injector.createChild([new Module()..value(Scope, scope)]);
+      injector = injector.createChild([new Module()..bind(Scope, toValue: scope)]);
     }
     if (html is String) {
       rootElements = toNodeList(html);

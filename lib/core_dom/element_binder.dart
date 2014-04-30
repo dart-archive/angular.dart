@@ -27,10 +27,10 @@ class TemplateElementBinder extends ElementBinder {
   _registerViewFactory(node, parentInjector, nodeModule) {
     assert(templateViewFactory != null);
     nodeModule
-      ..factory(ViewPort, (_) =>
+      ..bind(ViewPort, toFactory: (_) =>
           new ViewPort(node, parentInjector.get(Animate)))
-      ..value(ViewFactory, templateViewFactory)
-      ..factory(BoundViewFactory, (Injector injector) =>
+      ..bind(ViewFactory, toValue: templateViewFactory)
+      ..bind(BoundViewFactory, toFactory: (Injector injector) =>
           templateViewFactory.bind(injector));
   }
 }
@@ -239,13 +239,13 @@ class ElementBinder {
   _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
                             visibility) {
     if (ref.type == TextMustache) {
-      nodeModule.factory(TextMustache, (Injector injector) {
+      nodeModule.bind(TextMustache, toFactory: (Injector injector) {
         return new TextMustache(node, ref.value, injector.get(Interpolate),
             injector.get(Scope), injector.get(FormatterMap));
       });
     } else if (ref.type == AttrMustache) {
       if (nodesAttrsDirectives.isEmpty) {
-        nodeModule.factory(AttrMustache, (Injector injector) {
+        nodeModule.bind(AttrMustache, toFactory: (Injector injector) {
           var scope = injector.get(Scope);
           var interpolate = injector.get(Interpolate);
           for (var ref in nodesAttrsDirectives) {
@@ -265,17 +265,17 @@ class ElementBinder {
       } else {
         factory = _componentFactory;
       }
-      nodeModule.factory(ref.type, factory.call(node, ref), visibility: visibility);
+      nodeModule.bind(ref.type, toFactory: factory.call(node, ref), visibility: visibility);
     } else {
-      nodeModule.type(ref.type, visibility: visibility);
+      nodeModule.bind(ref.type, visibility: visibility);
     }
   }
 
   // Overridden in TemplateElementBinder
   _registerViewFactory(node, parentInjector, nodeModule) {
-    nodeModule..factory(ViewPort, null)
-              ..factory(ViewFactory, null)
-              ..factory(BoundViewFactory, null);
+    nodeModule..bind(ViewPort, toValue: null)
+              ..bind(ViewFactory, toValue: null)
+              ..bind(BoundViewFactory, toValue: null);
   }
 
   Injector bind(View view, Injector parentInjector, dom.Node node) {
@@ -293,19 +293,19 @@ class ElementBinder {
 
       var nodesAttrsDirectives = [];
       var nodeModule = new Module()
-          ..type(NgElement)
-          ..value(View, view)
-          ..value(dom.Element, node)
-          ..value(dom.Node, node)
-          ..value(NodeAttrs, nodeAttrs)
-          ..factory(ElementProbe, (_) => probe);
+          ..bind(NgElement)
+          ..bind(View, toValue: view)
+          ..bind(dom.Element, toValue: node)
+          ..bind(dom.Node, toValue: node)
+          ..bind(NodeAttrs, toValue: nodeAttrs)
+          ..bind(ElementProbe, toFactory: (_) => probe);
 
       directiveRefs.forEach((DirectiveRef ref) {
         Directive annotation = ref.annotation;
         var visibility = ref.annotation.visibility;
         if (ref.annotation is Controller) {
           scope = scope.createChild(new PrototypeMap(scope.context));
-          nodeModule.value(Scope, scope);
+          nodeModule.bind(Scope, toValue: scope);
         }
 
         _createDirectiveFactories(ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,

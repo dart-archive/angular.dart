@@ -49,8 +49,8 @@ void main() {
     describe('loading with http rewriting', () {
       beforeEachModule((Module module) {
         module
-            ..type(HtmlAndCssComponent)
-            ..type(UrlRewriter, implementedBy: PrefixedUrlRewriter);
+            ..bind(HtmlAndCssComponent)
+            ..bind(UrlRewriter, toImplementation: PrefixedUrlRewriter);
       });
 
       it('should use the UrlRewriter for both HTML and CSS URLs', async(inject(
@@ -81,11 +81,11 @@ void main() {
     describe('async template loading', () {
       beforeEachModule((Module module) {
         module
-            ..type(LogAttrDirective)
-            ..type(SimpleUrlComponent)
-            ..type(HtmlAndCssComponent)
-            ..type(OnlyCssComponent)
-            ..type(InlineWithCssComponent);
+            ..bind(LogAttrDirective)
+            ..bind(SimpleUrlComponent)
+            ..bind(HtmlAndCssComponent)
+            ..bind(OnlyCssComponent)
+            ..bind(InlineWithCssComponent);
       });
 
       it('should replace element with template from url', async(inject(
@@ -215,8 +215,8 @@ void main() {
     describe('multiple css loading', () {
       beforeEachModule((Module module) {
         module
-            ..type(LogAttrDirective)
-            ..type(HtmlAndMultipleCssComponent);
+            ..bind(LogAttrDirective)
+            ..bind(HtmlAndMultipleCssComponent);
       });
 
       it('should load multiple CSS files into a style', async(inject(
@@ -247,8 +247,8 @@ void main() {
     describe('style cache', () {
       beforeEachModule((Module module) {
         module
-            ..type(HtmlAndCssComponent)
-            ..value(TemplateCache, new TemplateCache(capacity: 0));
+            ..bind(HtmlAndCssComponent)
+            ..bind(TemplateCache, toValue: new TemplateCache(capacity: 0));
       });
 
       it('should load css from the style cache for the second component', async(inject(

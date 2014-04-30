@@ -20,11 +20,11 @@ class AnimationDemo {
 class AnimationDemoModule extends Module {
   AnimationDemoModule() {
     install(new AnimationModule());
-    type(RepeatDemo);
-    type(VisibilityDemo);
-    type(StressDemo);
-    type(CssDemo);
-    type(AnimationDemo);
+    bind(RepeatDemo);
+    bind(VisibilityDemo);
+    bind(StressDemo);
+    bind(CssDemo);
+    bind(AnimationDemo);
   }
 }
 main() {

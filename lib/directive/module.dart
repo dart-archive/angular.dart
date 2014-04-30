@@ -54,60 +54,59 @@ part 'ng_model_validators.dart';
 
 class DecoratorFormatter extends Module {
   DecoratorFormatter() {
-    value(AHref, null);
-    type(NgBaseCss);  // The root injector should have an empty NgBaseCss
-    value(NgBind, null);
-    value(NgBindTemplate, null);
-    value(NgBindHtml, null);
-    factory(dom.NodeValidator, (_) =>
-        new dom.NodeValidatorBuilder.common());
-    value(NgClass, null);
-    value(NgClassOdd, null);
-    value(NgClassEven, null);
-    value(NgCloak, null);
-    value(NgHide, null);
-    value(NgIf, null);
-    value(NgUnless, null);
-    value(NgInclude, null);
-    value(NgPluralize, null);
-    value(NgRepeat, null);
-    value(NgShow, null);
-    value(InputTextLike, null);
-    value(InputDateLike, null);
-    value(InputNumberLike, null);
-    value(InputRadio, null);
-    value(InputCheckbox, null);
-    value(InputSelect, null);
-    value(OptionValue, null);
-    value(ContentEditable, null);
-    value(NgBindTypeForDateLike, null);
-    value(NgModel, null);
-    value(NgValue, null);
-    value(NgTrueValue, new NgTrueValue());
-    value(NgFalseValue, new NgFalseValue());
-    value(NgSwitch, null);
-    value(NgSwitchWhen, null);
-    value(NgSwitchDefault, null);
+    bind(AHref, toValue: null);
+    bind(NgBaseCss);  // The root injector should have an empty NgBaseCss
+    bind(NgBind, toValue: null);
+    bind(NgBindTemplate, toValue: null);
+    bind(NgBindHtml, toValue: null);
+    bind(dom.NodeValidator, toFactory: (_) => new dom.NodeValidatorBuilder.common());
+    bind(NgClass, toValue: null);
+    bind(NgClassOdd, toValue: null);
+    bind(NgClassEven, toValue: null);
+    bind(NgCloak, toValue: null);
+    bind(NgHide, toValue: null);
+    bind(NgIf, toValue: null);
+    bind(NgUnless, toValue: null);
+    bind(NgInclude, toValue: null);
+    bind(NgPluralize, toValue: null);
+    bind(NgRepeat, toValue: null);
+    bind(NgShow, toValue: null);
+    bind(InputTextLike, toValue: null);
+    bind(InputDateLike, toValue: null);
+    bind(InputNumberLike, toValue: null);
+    bind(InputRadio, toValue: null);
+    bind(InputCheckbox, toValue: null);
+    bind(InputSelect, toValue: null);
+    bind(OptionValue, toValue: null);
+    bind(ContentEditable, toValue: null);
+    bind(NgBindTypeForDateLike, toValue: null);
+    bind(NgModel, toValue: null);
+    bind(NgValue, toValue: null);
+    bind(NgTrueValue, toValue: new NgTrueValue());
+    bind(NgFalseValue, toValue: new NgFalseValue());
+    bind(NgSwitch, toValue: null);
+    bind(NgSwitchWhen, toValue: null);
+    bind(NgSwitchDefault, toValue: null);
 
-    value(NgBooleanAttribute, null);
-    value(NgSource, null);
-    value(NgAttribute, null);
+    bind(NgBooleanAttribute, toValue: null);
+    bind(NgSource, toValue: null);
+    bind(NgAttribute, toValue: null);
 
-    value(NgEvent, null);
-    value(NgStyle, null);
-    value(NgNonBindable, null);
-    value(NgTemplate, null);
-    value(NgControl, new NgNullControl());
-    value(NgForm, new NgNullForm());
+    bind(NgEvent, toValue: null);
+    bind(NgStyle, toValue: null);
+    bind(NgNonBindable, toValue: null);
+    bind(NgTemplate, toValue: null);
+    bind(NgControl, toValue: new NgNullControl());
+    bind(NgForm, toValue: new NgNullForm());
 
-    value(NgModelRequiredValidator, null);
-    value(NgModelUrlValidator, null);
-    value(NgModelEmailValidator, null);
-    value(NgModelNumberValidator, null);
-    value(NgModelMaxNumberValidator, null);
-    value(NgModelMinNumberValidator, null);
-    value(NgModelPatternValidator, null);
-    value(NgModelMinLengthValidator, null);
-    value(NgModelMaxLengthValidator, null);
+    bind(NgModelRequiredValidator, toValue: null);
+    bind(NgModelUrlValidator, toValue: null);
+    bind(NgModelEmailValidator, toValue: null);
+    bind(NgModelNumberValidator, toValue: null);
+    bind(NgModelMaxNumberValidator, toValue: null);
+    bind(NgModelMinNumberValidator, toValue: null);
+    bind(NgModelPatternValidator, toValue: null);
+    bind(NgModelMinLengthValidator, toValue: null);
+    bind(NgModelMaxLengthValidator, toValue: null);
   }
 }

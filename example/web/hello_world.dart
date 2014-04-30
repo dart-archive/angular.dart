@@ -10,6 +10,6 @@ class HelloWorld {
 
 main() {
   applicationFactory()
-      .addModule(new Module()..type(HelloWorld))
+      .addModule(new Module()..bind(HelloWorld))
       .run();
 }

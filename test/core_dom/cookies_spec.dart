@@ -32,7 +32,7 @@ void main() {
       var cookies;
 
       beforeEachModule((Module module) {
-        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+        module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
       });
 
       beforeEach((BrowserCookies iCookies) {

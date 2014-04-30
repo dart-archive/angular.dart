@@ -52,18 +52,18 @@ part 'mock_window.dart';
  */
 class AngularMockModule extends Module {
   AngularMockModule() {
-    type(ExceptionHandler, implementedBy: RethrowExceptionHandler);
-    type(TestBed);
-    type(Probe);
-    type(Logger);
-    type(MockHttpBackend);
-    value(Element, document.body);
-    value(Node, document.body);
-    factory(HttpBackend, (Injector i) => i.get(MockHttpBackend));
-    factory(VmTurnZone, (_) {
+    bind(ExceptionHandler, toImplementation: RethrowExceptionHandler);
+    bind(TestBed);
+    bind(Probe);
+    bind(Logger);
+    bind(MockHttpBackend);
+    bind(Element, toValue: document.body);
+    bind(Node, toValue: document.body);
+    bind(HttpBackend, toFactory: (Injector i) => i.get(MockHttpBackend));
+    bind(VmTurnZone, toFactory: (_) {
       return new VmTurnZone()
         ..onError = (e, s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
     });
-    type(Window, implementedBy: MockWindow);
+    bind(Window, toImplementation: MockWindow);
   }
 }

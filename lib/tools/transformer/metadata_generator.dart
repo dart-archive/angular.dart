@@ -82,7 +82,7 @@ import 'package:di/di.dart' show Module;
 void _writePreamble(StringSink sink) {
   sink.write('''
 Module get metadataModule => new Module()
-    ..value(MetadataExtractor, new _StaticMetadataExtractor());
+    ..bind(MetadataExtractor, toValue: new _StaticMetadataExtractor());
 
 class _StaticMetadataExtractor implements MetadataExtractor {
   Iterable call(Type type) {

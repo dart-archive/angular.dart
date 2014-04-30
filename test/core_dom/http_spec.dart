@@ -46,9 +46,9 @@ void main() {
       locationWrapper = new MockLocationWrapper();
       cache = new FakeCache();
       module
-        ..value(HttpBackend, backend)
-        ..value(LocationWrapper, locationWrapper)
-        ..type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+        ..bind(HttpBackend, toValue: backend)
+        ..bind(LocationWrapper, toValue: locationWrapper)
+        ..bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
     });
 
     afterEach((ExceptionHandler eh, Scope scope) {
@@ -931,7 +931,7 @@ void main() {
 
     describe('url rewriting', () {
       beforeEachModule((Module module) {
-        module.type(UrlRewriter, implementedBy: SubstringRewriter);
+        module.bind(UrlRewriter, toImplementation: SubstringRewriter);
       });
 
 
