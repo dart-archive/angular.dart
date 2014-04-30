@@ -373,11 +373,13 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
   static const List<String> _MODE_NAMES =
       const ['MARKER', 'IDENT', 'GETTER', 'MAP[]', 'ITERABLE', 'MAP'];
   static const int _MODE_MARKER_ = 0;
-  static const int _MODE_IDENTITY_ = 1;
-  static const int _MODE_GETTER_ = 2;
-  static const int _MODE_MAP_FIELD_ = 3;
-  static const int _MODE_ITERABLE_ = 4;
-  static const int _MODE_MAP_ = 5;
+  static const int _MODE_NOOP_ = 1;
+  static const int _MODE_IDENTITY_ = 2;
+  static const int _MODE_GETTER_ = 3;
+  static const int _MODE_GETTER_OR_METHOD_CLOSURE_ = 4;
+  static const int _MODE_MAP_FIELD_ = 5;
+  static const int _MODE_ITERABLE_ = 6;
+  static const int _MODE_MAP_ = 7;
 
   final DirtyCheckingChangeDetectorGroup _group;
   final FieldGetterFactory _fieldGetterFactory;
@@ -460,7 +462,7 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
       _mode =  _MODE_MAP_FIELD_;
       _getter = null;
     } else {
-      _mode = _MODE_GETTER_;
+      _mode = _MODE_GETTER_OR_METHOD_CLOSURE_;
       _getter = _fieldGetterFactory.getter(obj, field);
     }
   }
@@ -471,14 +473,30 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
     switch (_mode) {
       case _MODE_MARKER_:
         return false;
+      case _MODE_NOOP_:
+        return false;
       case _MODE_GETTER_:
         current = _getter(object);
+        break;
+      case _MODE_GETTER_OR_METHOD_CLOSURE_:
+        // NOTE: When Dart looks up a method "foo" on object "x", it returns a
+        // new closure for each lookup.  They compare equal via "==" but are no
+        // identical().  There's no point getting a new value each time and
+        // decide it's the same so we'll skip further checking after the first
+        // time.
+        current = _getter(object);
+        if (current is Function && !identical(current, _getter(object))) {
+          _mode = _MODE_NOOP_;
+        } else {
+          _mode = _MODE_GETTER_;
+        }
         break;
       case _MODE_MAP_FIELD_:
         current = object[field];
         break;
       case _MODE_IDENTITY_:
         current = object;
+        _mode = _MODE_NOOP_;
         break;
       case _MODE_MAP_:
         return (currentValue as _MapChangeRecord)._check(object);
