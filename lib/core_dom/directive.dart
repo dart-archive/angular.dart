@@ -86,7 +86,7 @@ class NodeAttrs {
  * ShadowRoot is ready.
  */
 class TemplateLoader {
-  final async.Future<dom.ShadowRoot> template;
+  final async.Future<dom.Node> template;
 
   TemplateLoader(this.template);
 }

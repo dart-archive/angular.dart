@@ -9,7 +9,7 @@ _getName(VariableMirror v) => _SYMBOL_NAME.firstMatch(v.simpleName.toString()).g
 
 Map<String, dynamic> variables(x) {
   Map variables = {};
-  InstanceMirror mirror = reflect(x) as InstanceMirror;
+  InstanceMirror mirror = reflect(x);
   ClassMirror type = mirror.type;
   do {
     type.declarations.forEach((k,v) {

@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+if [[ -n $ENV_SET ]]; then
+  exit 0
+else
+  export ENV_SET=1
+fi
+
 if [ -n "$DART_SDK" ]; then
     DARTSDK=$DART_SDK
 else
@@ -24,6 +30,17 @@ else
     fi
 fi
 
+case $( uname -s ) in
+  Darwin)
+    path=$(readlink ${BASH_SOURCE[0]}||echo './scripts/env.sh')
+    export NGDART_SCRIPT_DIR=$(dirname $path)
+    ;;
+  Linux)
+    export NGDART_SCRIPT_DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
+    ;;
+esac
+export NGDART_BASE_DIR=$(dirname $NGDART_SCRIPT_DIR)
+
 export DART_SDK="$DARTSDK"
 export DART=${DART:-"$DARTSDK/bin/dart"}
 export PUB=${PUB:-"$DARTSDK/bin/pub"}
@@ -31,24 +48,15 @@ export DARTANALYZER=${DARTANALYZER:-"$DARTSDK/bin/dartanalyzer"}
 export DARTDOC=${DARTDOC:-"$DARTSDK/bin/dartdoc"}
 export DART_DOCGEN=${DART_DOCGEN:-"$DARTSDK/bin/docgen"}
 export DART_VM_OPTIONS="--old_gen_heap_size=2048"
-
 export DARTIUM_BIN=${DARTIUM_BIN:-"$DARTIUM"}
 export CHROME_BIN=${CHROME_BIN:-"google-chrome"}
-
 export PATH=$PATH:$DARTSDK/bin
-
-export NGDART_SCRIPT_DIR=$(dirname $(readlink -f ${BASH_SOURCE[0]}))
-if [ -n $NGDART_SCRIPT_DIR ]; then
-  export NGDART_SCRIPT_DIR=./scripts
-fi
-export NGDART_BASE_DIR=$(dirname $NGDART_SCRIPT_DIR)
 
 echo '*********'
 echo '** ENV **'
 echo '*********'
 echo DART_SDK=$DART_SDK
 echo DART=$DART
-$DART --version
 echo PUB=$PUB
 echo DARTANALYZER=$DARTANALYZER
 echo DARTDOC=$DARTDOC
@@ -58,3 +66,4 @@ echo CHROME_BIN=$CHROME_BIN
 echo PATH=$PATH
 echo NGDART_BASE_DIR=$NGDART_BASE_DIR
 echo NGDART_SCRIPT_DIR=$NGDART_SCRIPT_DIR
+$DART --version 2>&1
