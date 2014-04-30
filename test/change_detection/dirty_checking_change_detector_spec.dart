@@ -4,29 +4,16 @@ import '../_specs.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
+import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'dart:collection';
 import 'dart:math';
 
-void main() {
-  describe('DirtyCheckingChangeDetector', () {
+void testWithGetterFactory(FieldGetterFactory getterFactory) {
+  describe('DirtyCheckingChangeDetector with ${getterFactory.runtimeType}', () {
     DirtyCheckingChangeDetector<String> detector;
-    FieldGetterFactory getterFactory = new StaticFieldGetterFactory({
-        "first": (o) => o.first,
-        "age": (o) => o.age,
-        "last": (o) => o.last,
-        "toString": (o) => o.toString
-    });
 
     beforeEach(() {
       detector = new DirtyCheckingChangeDetector<String>(getterFactory);
-    });
-
-    describe('StaticFieldGetterFactory', () {
-      it('should detect methods', () {
-        var obj = new _User();
-        expect(getterFactory.isMethod(obj, 'toString')).toEqual(true);
-        expect(getterFactory.isMethod(obj, 'age')).toEqual(false);
-      });
     });
 
     describe('object field', () {
@@ -657,6 +644,42 @@ void main() {
       });
     });
 
+    describe('function watching', () {
+      it('should detect no changes when watching a function', () {
+        var user = new _User('marko', 'vuksanovic', 15);
+        Iterator changeIterator;
+
+        detector..watch(user, 'isUnderAge', null);
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+        expect(changeIterator.moveNext()).toEqual(false);
+
+        user.age = 17;
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(false);
+
+        user.age = 30;
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(false);
+      });
+
+      it('should detect change when watching a property function', () {
+        var user = new _User('marko', 'vuksanovic', 30);
+        Iterator changeIterator;
+
+        detector..watch(user, 'isUnderAgeAsVariable', null);
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(false);
+
+        user.isUnderAgeAsVariable = () => false;
+        changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+      });
+    });
+
     describe('DuplicateMap', () {
       DuplicateMap map;
       beforeEach(() => map = new DuplicateMap());
@@ -689,12 +712,36 @@ void main() {
   });
 }
 
+
+void main() {
+  testWithGetterFactory(new DynamicFieldGetterFactory());
+
+  testWithGetterFactory(new StaticFieldGetterFactory({
+      "first": (o) => o.first,
+      "age": (o) => o.age,
+      "last": (o) => o.last,
+      "toString": (o) => o.toString,
+      "isUnderAge": (o) => o.isUnderAge,
+      "isUnderAgeAsVariable": (o) => o.isUnderAgeAsVariable,
+  }));
+}
+
+
 class _User {
   String first;
   String last;
   num age;
+  var isUnderAgeAsVariable;
+  List<String> list = ['foo', 'bar', 'baz'];
+  Map map = {'foo': 'bar', 'baz': 'cux'};
 
-  _User([this.first, this.last, this.age]);
+  _User([this.first, this.last, this.age]) {
+    isUnderAgeAsVariable = isUnderAge;
+  }
+
+  bool isUnderAge() {
+    return age != null ? age < 18 : false;
+  }
 }
 
 Matcher toEqualCollectionRecord({collection, previous, additions, moves, removals}) =>
@@ -914,7 +961,6 @@ class MapRecordMatcher  extends _CollectionMatcher<KeyValueRecord> {
     return _compareLists("removals", removals, items, diffs);
   }
 }
-
 
 class FooBar {
   static int fooIds = 0;
