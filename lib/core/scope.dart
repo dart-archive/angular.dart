@@ -613,6 +613,7 @@ class RootScope extends Scope {
   {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
+    _zone.onScheduleMicrotask = runAsync;
   }
 
   RootScope get rootScope => this;
@@ -756,6 +757,9 @@ class RootScope extends Scope {
 
   // QUEUES
   void runAsync(fn()) {
+    if (_state == STATE_FLUSH || _state == STATE_FLUSH_ASSERT) {
+      throw "Scheduling microtasks not allowed in $state state.";
+    }
     var chain = new _FunctionChain(fn);
     if (_runAsyncHead == null) {
       _runAsyncHead = _runAsyncTail = chain;
