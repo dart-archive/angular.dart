@@ -245,6 +245,7 @@ main() {
         "di.FactoryFn",
         "di.Injector",
         "di.InvalidBindingError",
+        "di.Key",
         "di.Module",
         "di.NoProviderError",
         "di.ObjectFactory",
@@ -256,7 +257,8 @@ main() {
         "route.client.RouteEnterEventHandler",
         "route.client.RouteEvent",
         "route.client.RouteHandle",
-        "route.client.RouteImpl",
+        // This will be present in the new Route package.
+        // "route.client.RouteImpl",
         "route.client.RouteLeaveEvent",
         "route.client.RouteLeaveEventHandler",
         "route.client.RoutePreEnterEvent",
