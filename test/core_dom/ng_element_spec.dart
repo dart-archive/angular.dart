@@ -7,11 +7,11 @@ void main() {
 
     describe('classes', () {
       it('should add classes to the element on domWrite',
-          (TestBed _, Animate animate) {
+          (TestBed _, Animate animate, EventHandler eventHandler) {
 
         var scope = _.rootScope;
         var element = e('<div></div>');
-        var ngElement = new NgElement(element, scope, animate);
+        var ngElement = new NgElement(element, scope, animate, eventHandler);
 
         ngElement..addClass('one')..addClass('two three');
 
@@ -27,11 +27,11 @@ void main() {
       });
 
       it('should remove classes from the element on domWrite',
-          (TestBed _, Animate animate) {
+          (TestBed _, Animate animate, EventHandler eventHandler) {
 
         var scope = _.rootScope;
         var element = e('<div class="one two three four"></div>');
-        var ngElement = new NgElement(element, scope, animate);
+        var ngElement = new NgElement(element, scope, animate, eventHandler);
 
         ngElement..removeClass('one')
                  ..removeClass('two')
@@ -50,11 +50,11 @@ void main() {
       });
 
       it('should always apply the last dom operation on the given className',
-          (TestBed _, Animate animate) {
+          (TestBed _, Animate animate, EventHandler eventHandler) {
 
         var scope = _.rootScope;
         var element = e('<div></div>');
-        var ngElement = new NgElement(element, scope, animate);
+        var ngElement = new NgElement(element, scope, animate, eventHandler);
 
         ngElement..addClass('one')
                  ..addClass('one')
@@ -79,11 +79,11 @@ void main() {
 
   describe('attributes', () {
     it('should set attributes on domWrite to the element',
-        (TestBed _, Animate animate) {
+        (TestBed _, Animate animate, EventHandler eventHandler) {
 
       var scope = _.rootScope;
       var element = e('<div></div>');
-      var ngElement = new NgElement(element, scope, animate);
+      var ngElement = new NgElement(element, scope, animate, eventHandler);
 
       ngElement.setAttribute('id', 'foo');
       ngElement.setAttribute('title', 'bar');
@@ -99,11 +99,11 @@ void main() {
     });
 
     it('should remove attributes from the element on domWrite ',
-        (TestBed _, Animate animate) {
+        (TestBed _, Animate animate, EventHandler eventHandler) {
 
       var scope = _.rootScope;
       var element = e('<div id="foo" title="bar"></div>');
-      var ngElement = new NgElement(element, scope, animate);
+      var ngElement = new NgElement(element, scope, animate, eventHandler);
 
       ngElement..removeAttribute('id')
                ..removeAttribute('title');
@@ -118,11 +118,11 @@ void main() {
     });
 
     it('should always apply the last operation on the attribute',
-        (TestBed _, Animate animate) {
+        (TestBed _, Animate animate, EventHandler eventHandler) {
 
       var scope = _.rootScope;
       var element = e('<div></div>');
-      var ngElement = new NgElement(element, scope, animate);
+      var ngElement = new NgElement(element, scope, animate, eventHandler);
 
       ngElement..setAttribute('id', 'foo')
                ..setAttribute('id', 'foo')

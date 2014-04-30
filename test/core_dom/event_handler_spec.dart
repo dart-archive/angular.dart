@@ -6,6 +6,23 @@ import '../_specs.dart';
 class FooController {
   var description = "desc";
   var invoked = false;
+  var anotherInvoked = false;
+  EventHandler eventHandler;
+  NgElement element;
+
+  FooController(this.element) {
+    element.addEventListener('cux', onCux);
+    element.addEventListener('cux', onAnotherCux);
+  }
+
+  void onCux(Event e) {
+    invoked = true;
+  }
+
+  void onAnotherCux(Event e) {
+    anotherInvoked = true;
+  }
+
 }
 
 @Component(selector: 'bar',
@@ -41,14 +58,37 @@ main() {
       expect(_.getScope(e).context['ctrl'].invoked).toEqual(true);
     }));
 
+    it('should allow registration using method', inject((TestBed _, Application app) {
+      var e = _.compile(
+      '''<div foo>
+          <div baz></div>
+        </div>''');
+      document.body.append(app.element..append(e));
+
+      _.triggerEvent(e.querySelector('[baz]'), 'cux');
+      expect(_.getScope(e).context['ctrl'].invoked).toEqual(true);
+    }));
+
+    it('should allow registration of multiple event handlers using method',
+        inject((TestBed _, Application app) {
+      var e = _.compile(
+          '''<div foo>
+          <div baz></div>
+        </div>''');
+      document.body.append(app.element..append(e));
+
+      _.triggerEvent(e.querySelector('[baz]'), 'cux');
+      expect(_.getScope(e).context['ctrl'].invoked).toEqual(true);
+      expect(_.getScope(e).context['ctrl'].anotherInvoked).toEqual(true);
+    }));
+
     it('shoud register and handle event with long name', inject((TestBed _, Application app) {
       var e = _.compile(
         '''<div foo>
           <div on-my-new-event="ctrl.invoked=true;"></div>
         </div>''');
-      document.body.append(app.element..append(e));
 
-      _.triggerEvent(e.querySelector('[on-my-new-event]'), 'myNewEvent');
+      _.triggerEvent(e.querySelector('[on-my-new-event]'), 'myNewEvent', 'CustomEvent', true);
       var fooScope = _.getScope(e);
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
     }));
@@ -58,22 +98,21 @@ main() {
         '''<div foo>
           <div on-abc='ctrl.description="new description";'>{{ctrl.description}}</div>
         </div>''');
-      document.body.append(app.element..append(e));
-      var el = document.querySelector('[on-abc]');
-      el.dispatchEvent(new Event('abc'));
+
+      var el = e.querySelector('[on-abc]');
+      _.triggerEvent(el, 'abc', 'CustomEvent', true);
       _.rootScope.apply();
       expect(el.text).toEqual("new description");
     }));
 
     it('should register event when shadow dom is used', async((TestBed _, Application app) {
       var e = _.compile('<bar></bar>');
-      document.body.append(app.element..append(e));
 
       microLeap();
 
       var shadowRoot = e.shadowRoot;
       var span = shadowRoot.querySelector('span');
-      span.dispatchEvent(new CustomEvent('abc'));
+      _.triggerEvent(span, 'abc', 'CustomEvent', true);
       var ctrl = _.rootScope.context['ctrl'];
       expect(ctrl.invoked).toEqual(true);
     }));
@@ -85,16 +124,15 @@ main() {
                <div on-abc="ctrl.invoked=true;"></div>
              </bar>
            </div>''');
-      document.body.append(app.element..append(e));
 
       microLeap();
 
-      document.querySelector('[on-abc]').dispatchEvent(new Event('abc'));
-      var shadowRoot = document.querySelector('bar').shadowRoot;
+      _.triggerEvent(e.querySelector('[on-abc]'), 'abc', 'CustomEvent', true);
+      var shadowRoot = e.querySelector('bar').shadowRoot;
       var shadowRootScope = _.getScope(shadowRoot);
       expect(shadowRootScope.context['ctrl'].invoked).toEqual(false);
 
-      var fooScope = _.getScope(document.querySelector('[foo]'));
+      var fooScope = _.getScope(e);
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
     })));
   });
