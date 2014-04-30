@@ -19,9 +19,7 @@ env:
     TESTS=dart2js
   global:
   - CHROME_BIN=/usr/bin/google-chrome
-  # https://github.com/angular/angular.dart/commit/40563c891ed63e86b72d160fcafc6bfda0d21577
-  # was good, but I'd recommend to regenerate leaked access token before
-  # someone would use it in name of evil
+  - secure: "AKoqpZ699egF0i4uT/FQ5b4jIc0h+KVbhtVCql0uFxwFIl2HjOYgDayrUCAf6USfpW0LghZxJJhBamWOl/505eNSe9HvEd8JLg/to+1Fo9xi9llsu5ehmNH31/5pue4EvsrVuEap1qqL6/BNwI2cAryayU0p5tV0g8gL5h4IxG8="
 
 # Don't test these branches.
 branches:
@@ -36,18 +34,4 @@ before_script:
 script:
 - ./scripts/travis/build.sh
 after_success:
-- ./scripts/travis/publish-docs.sh
-- curl -Lo travis_after_all.py https://raw.github.com/jbdeboer/travis_after_all/master/travis_after_all.py
-- python travis_after_all.py
-- export $(cat .to_export_back)
-- |
-      if [ "$BUILD_LEADER" = "YES" ]; then
-        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-          echo "All Succeded! Submitting..."
-          ./scripts/travis/presubmit.sh
-        else
-          echo "Some Failed, not submitting"
-        fi
-      else
-        echo "Other builds have not finished, not submitting"
-      fi
+- ./scripts/travis/after-success.sh
