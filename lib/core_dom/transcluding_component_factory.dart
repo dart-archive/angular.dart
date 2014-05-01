@@ -100,8 +100,6 @@ class TranscludingComponentFactory implements ComponentFactory {
       }
       TemplateLoader templateLoader = new TemplateLoader(elementFuture);
 
-      Scope shadowScope = scope.createChild({});
-
       var probe;
       var childModule = new Module()
           ..bind(ref.type)
@@ -114,7 +112,8 @@ class TranscludingComponentFactory implements ComponentFactory {
       childInjector = injector.createChild([childModule], name: SHADOW_DOM_INJECTOR_NAME);
 
       var controller = childInjector.get(ref.type);
-      ComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
+      var childScope = childInjector.get(Scope);
+      ComponentFactory._setupOnShadowDomAttach(controller, templateLoader, childScope);
       return controller;
     };
   }
