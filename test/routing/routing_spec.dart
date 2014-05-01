@@ -159,12 +159,12 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<h1>Foo</h1>'));
 
-      Element root = _.compile('<div><ng-view></ng-view><div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-      _.rootScope.apply();
+
       expect(enterCount).toBe(1);
       expect(root.text).toEqual('Foo');
     }));
@@ -232,18 +232,18 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<h1>Foo</h1>'));
 
-      Element root = _.compile('<div><ng-view></ng-view><div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-      _.rootScope.apply();
+
       expect(root.text).toEqual('Foo');
       expect(leaveCount).toBe(0);
 
       router.route('/bar');
       microLeap();
-      _.rootScope.apply();
+
       expect(root.text).toEqual('');
       expect(leaveCount).toBe(1);
     }));
@@ -264,12 +264,12 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div make-it-new>Old!</div>'));
 
-      Element root = _.compile('<div><ng-view></ng-view><div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-      _.rootScope.apply();
+
       expect(root.text).toEqual('New!');
     }));
 
@@ -289,12 +289,12 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div make-it-new>Old!</div>'));
 
-      Element root = _.compile('<div><ng-view></ng-view><div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-      _.rootScope.apply();
+
       expect(root.text).toEqual('New!');
     }));
 
@@ -314,12 +314,13 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div>{{\'World\' | hello}}</div>'));
 
-      Element root = _.compile('<div><ng-view></ng-view></div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
       _.rootScope.apply();
+
       expect(root.text).toEqual('Hello, World!');
     }));
 
@@ -339,12 +340,13 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div>{{\'World\' | hello}}</div>'));
 
-      Element root = _.compile('<div><ng-view></ng-view></div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
       _.rootScope.apply();
+
       expect(root.text).toEqual('Hello, World!');
     }));
 
@@ -368,7 +370,7 @@ class NewDirective {
 
 @Formatter(name:'hello')
 class HelloFilter {
-  String call(String str) {
+  call(String str) {
     return 'Hello, $str!';
   }
 }
