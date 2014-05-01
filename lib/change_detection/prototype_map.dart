@@ -1,6 +1,6 @@
 part of angular.watch_group;
 
-// todo(vicb) rename to ContextLocals + rename the file
+// todo(vicb) rename the file
 class ContextLocals {
   // todo(vicb) _parentContext
   final Object parent;
@@ -37,10 +37,11 @@ class ContextLocals {
   dynamic operator[](String prop) {
     assert(hasProperty(prop));
     var context = this;
+
     while (!context._locals.containsKey(prop)) {
       // todo(vicb) cache context where prop is defined
       context = context.parent;
     }
-    return _locals[prop];
+    return context._locals[prop];
   }
 }

@@ -45,7 +45,9 @@ abstract class AccessFast {
 
   _eval(holder) {
     if (holder == null) return null;
-    return (holder is Map) ? holder[name] : getter(holder);
+    if (holder is ContextLocals) return (holder as ContextLocals)[name];
+    if (holder is Map) return holder[name];
+    return getter(holder);
   }
 
   _assign(scope, holder, value) {
@@ -53,7 +55,9 @@ abstract class AccessFast {
       _assignToNonExisting(scope, value);
       return value;
     } else {
-      return (holder is Map) ? (holder[name] = value) : setter(holder, value);
+      if (holder is ContextLocals) return (holder as ContextLocals)[name] = value;
+      if (holder is Map) return holder[name] = value;
+      return setter(holder, value);
     }
   }
 
