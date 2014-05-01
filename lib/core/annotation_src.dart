@@ -563,11 +563,7 @@ abstract class DetachAware {
  *
  *     // Registration
  *     var module = ...;
-<<<<<<< HEAD
- *     module.type(MyFormatter);
-=======
- *     module.bind(MyFilter);
->>>>>>> chore: Replace Module.[type|value|factory]() with Module.bind()
+ *     module.bind(MyFormatter);
  *
  *
  *     <!-- Usage -->
