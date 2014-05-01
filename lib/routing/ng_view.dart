@@ -62,7 +62,6 @@ part of angular.routing;
 class NgView implements DetachAware, RouteProvider {
   static final Module _module = new Module()
       ..bind(RouteProvider, toFactory: (i) => i.get(NgView));
-
   static module() => _module;
 
   final NgRoutingHelper locationService;
@@ -113,10 +112,9 @@ class NgView implements DetachAware, RouteProvider {
       _cleanUp();
     });
 
-    var viewInjector = injector;
-    if (modules != null) {
-      viewInjector = forceNewDirectivesAndFormatters(viewInjector, modules);
-    }
+    var viewInjector = modules == null ?
+        injector :
+        forceNewDirectivesAndFormatters(injector, modules);
 
     var newDirectives = viewInjector.get(DirectiveMap);
     var viewFuture = viewDef.templateHtml != null ?
@@ -127,7 +125,6 @@ class NgView implements DetachAware, RouteProvider {
       _scope = scope.createChild(new PrototypeMap(scope.context));
       _view = viewFactory(
           viewInjector.createChild([new Module()..bind(Scope, toValue: _scope)]));
-
       _view.nodes.forEach((elm) => element.append(elm));
     });
   }
