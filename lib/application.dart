@@ -158,7 +158,7 @@ abstract class Application {
   }
 
   Application rootContextType(Type rootContext) {
-    modules.add(new Module()..type(Object, implementedBy: rootContext));
+    modules.add(new Module()..bind(Object, toImplementation: rootContext));
     return this;
   }
 

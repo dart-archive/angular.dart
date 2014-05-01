@@ -62,7 +62,7 @@ class _DynamicApplication extends Application {
     ngModule
         ..bind(MetadataExtractor, toImplementation: DynamicMetadataExtractor)
         ..bind(FieldGetterFactory, toImplementation: DynamicFieldGetterFactory)
-        ..bind(ClosureMap, toFactory: new ClosureMapLocalsAware(new DynamicClosureMap()));
+        ..bind(ClosureMap, toFactory: (_) => new ClosureMapLocalsAware(new DynamicClosureMap()));
   }
 
   Injector createInjector() => new DynamicInjector(modules: modules);

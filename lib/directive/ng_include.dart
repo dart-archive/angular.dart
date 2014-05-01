@@ -29,7 +29,7 @@ class NgInclude {
 
   NgInclude(this._element, this._scope, this._viewCache, this._injector, this._directives);
 
-  void set url(value) {
+  void set url(String value) {
     _cleanUp();
     if (value != null && value != '') {
       _viewCache.fromUrl(value, _directives).then(_updateContent);
@@ -43,9 +43,7 @@ class NgInclude {
     _view = null;
   }
 
-  void _updateContent(createView) {
-    // create a new scope
-    _scope = scope.createChild(new PrototypeMap(scope.context));
+  void _updateContent(ViewFactory createView) {
     _view = createView(new Module()..bind(Scope, toValue: _scope));
 
     _view.nodes.forEach((node) => element.append(node));
