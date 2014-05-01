@@ -20,7 +20,7 @@ typedef void EventFunction(event);
  *     </div>
  *
  *     @Component(selector: '[foo]')
- *     class FooController {
+ *     class FooComponent {
  *       void say(String something) {
  *         print(something);
  *       }
@@ -50,31 +50,25 @@ class EventHandler {
   }
 
   void _eventListener(dom.Event event) {
-    dom.Node element = event.target;
-    while (element != null && element != _rootNode) {
+    for (dom.Node el = event.target; el != null && el != _rootNode; el = el.parentNode) {
       var expression;
-      if (element is dom.Element)
-        expression = (element as dom.Element).attributes[eventNameToAttrName(event.type)];
+      if (el is dom.Element)
+        expression = (el as dom.Element).attributes[eventNameToAttrName(event.type)];
       if (expression != null) {
         try {
-          var scope = _getScope(element);
+          var scope = _getScope(el);
           if (scope != null) scope.eval(expression);
         } catch (e, s) {
           _exceptionHandler(e, s);
         }
       }
-      element = element.parentNode;
     }
   }
 
-  Scope _getScope(dom.Node element) {
-    // var topElement = (rootNode is dom.ShadowRoot) ? rootNode.parentNode : rootNode;
-    while (element != _rootNode.parentNode) {
-      ElementProbe probe = _expando[element];
-      if (probe != null) {
-        return probe.scope;
-      }
-      element = element.parentNode;
+  Scope _getScope(dom.Node el) {
+    for (;el != _rootNode.parentNode; el = el.parentNode) {
+      ElementProbe probe = _expando[el];
+      if (probe != null) return probe.scope;
     }
     return null;
   }
@@ -84,10 +78,10 @@ class EventHandler {
   * be transformed into on-some-custom-event.
   */
   static String eventNameToAttrName(String eventName) {
-    var part = eventName.replaceAllMapped(new RegExp("([A-Z])"), (Match match) {
+    var part = eventName.replaceAllMapped(new RegExp('([A-Z])'), (Match match) {
       return '-${match.group(0).toLowerCase()}';
     });
-    return 'on-${part}';
+    return 'on-$part';
   }
 
   /**
@@ -95,18 +89,17 @@ class EventHandler {
   * corresponds to event named 'someCustomEvent'.
   */
   static String attrNameToEventName(String attrName) {
-    var part = attrName.startsWith("on-") ? attrName.substring(3) : attrName;
+    var part = attrName.startsWith('on-') ? attrName.substring(3) : attrName;
     part = part.replaceAllMapped(new RegExp(r'\-(\w)'), (Match match) {
       return match.group(0).toUpperCase();
     });
-    return part.replaceAll("-", "");
+    return part.replaceAll('-', '');
   }
 }
 
 @Injectable()
 class ShadowRootEventHandler extends EventHandler {
-  ShadowRootEventHandler(dom.ShadowRoot shadowRoot,
-                         Expando expando,
+  ShadowRootEventHandler(dom.ShadowRoot shadowRoot, Expando expando,
                          ExceptionHandler exceptionHandler)
       : super(shadowRoot, expando, exceptionHandler);
 }

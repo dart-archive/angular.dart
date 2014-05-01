@@ -107,14 +107,13 @@ class TranscludingComponentFactory implements ComponentFactory {
           ..bind(ref.type)
           ..bind(NgElement)
           ..bind(ContentPort, toValue: contentPort)
-          ..bind(Scope, toValue: shadowScope)
+          ..bind(Scope, toFactory: (i) => scope.createChild(i.get(ref.type)))
           ..bind(TemplateLoader, toValue: templateLoader)
           ..bind(dom.ShadowRoot, toValue: new ShadowlessShadowRoot(element))
           ..bind(ElementProbe, toFactory: (_) => probe);
       childInjector = injector.createChild([childModule], name: SHADOW_DOM_INJECTOR_NAME);
 
       var controller = childInjector.get(ref.type);
-      shadowScope.context = controller;
       ComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
       return controller;
     };

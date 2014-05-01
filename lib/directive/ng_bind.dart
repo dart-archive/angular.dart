@@ -8,7 +8,7 @@ part of angular.directive;
  * Typically, you don't use ngBind directly, but instead you use the double
  * curly markup like {{ expression }} which is similar but less verbose.
  *
- * It is preferrable to use ngBind instead of {{ expression }} when a template
+ * It is preferable to use ngBind instead of {{ expression }} when a template
  * is momentarily displayed by the browser in its raw state before Angular
  * compiles it. Since ngBind is an element attribute, it makes the bindings
  * invisible to the user while the page is loading.
