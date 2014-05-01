@@ -24,14 +24,12 @@ class TemplateElementBinder extends ElementBinder {
 
   String toString() => "[TemplateElementBinder template:$template]";
 
-  _registerViewFactory(node, parentInjector, nodeModule) {
+  void _registerViewFactory(node, parentInjector, nodeModule) {
     assert(templateViewFactory != null);
     nodeModule
-      ..bind(ViewPort, toFactory: (_) =>
-          new ViewPort(node, parentInjector.get(Animate)))
-      ..bind(ViewFactory, toValue: templateViewFactory)
-      ..bind(BoundViewFactory, toFactory: (Injector injector) =>
-          templateViewFactory.bind(injector));
+        ..bind(ViewPort, toFactory: (_) => new ViewPort(node, parentInjector.get(Animate)))
+        ..bind(ViewFactory, toValue: templateViewFactory)
+        ..bind(BoundViewFactory, toFactory: (Injector inj) => templateViewFactory.bind(inj));
   }
 }
 
@@ -82,7 +80,7 @@ class ElementBinder {
 
   bool get hasDirectivesOrEvents => _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
-  _bindTwoWay(tasks, expression, scope, dstPathFn, controller, formatters, dstExpression) {
+  void _bindTwoWay(tasks, expression, scope, dstPathFn, controller, formatters, dstExpression) {
     var taskId = tasks.registerTask();
     Expression expressionFn = _parser(expression);
 
@@ -109,7 +107,7 @@ class ElementBinder {
     }
   }
 
-  _bindOneWay(tasks, expression, scope, dstPathFn, controller, formatters) {
+  void _bindOneWay(tasks, expression, scope, dstPathFn, controller, formatters) {
     var taskId = tasks.registerTask();
 
     Expression attrExprFn = _parser(expression);
@@ -119,11 +117,12 @@ class ElementBinder {
     }, formatters: formatters);
   }
 
-  _bindCallback(dstPathFn, controller, expression, scope) {
+  void _bindCallback(dstPathFn, controller, expression, scope) {
     dstPathFn.assign(controller, _parser(expression).bind(scope.context, ContextLocals.wrapper));
   }
 
-  _createAttrMappings(controller, scope, List<MappingParts> mappings, nodeAttrs, formatters, tasks) {
+  void _createAttrMappings(controller, scope, List<MappingParts> mappings, nodeAttrs,
+                           formatters, tasks) {
     mappings.forEach((MappingParts p) {
       var attrName = p.attrName;
       var dstExpression = p.dstExpression;
@@ -138,8 +137,7 @@ class ElementBinder {
       var bindAttr = bindAttrs["bind-${p.attrName}"];
       if (bindAttr != null) {
         if (p.mode == '<=>') {
-          _bindTwoWay(tasks, bindAttr, scope, dstPathFn,
-              controller, formatters, dstExpression);
+          _bindTwoWay(tasks, bindAttr, scope, dstPathFn, controller, formatters, dstExpression);
         } else if(p.mode == '&') {
           _bindCallback(dstPathFn, controller, bindAttr, scope);
         } else {
@@ -166,8 +164,7 @@ class ElementBinder {
 
         case '=>': // one-way
           if (nodeAttrs[attrName] == null) return;
-          _bindOneWay(tasks, nodeAttrs[attrName], scope,
-              dstPathFn, controller, formatters);
+          _bindOneWay(tasks, nodeAttrs[attrName], scope, dstPathFn, controller, formatters);
           break;
 
         case '=>!': //  one-way, one-time
@@ -274,7 +271,7 @@ class ElementBinder {
   }
 
   // Overridden in TemplateElementBinder
-  _registerViewFactory(node, parentInjector, nodeModule) {
+  void _registerViewFactory(node, parentInjector, nodeModule) {
     nodeModule..bind(ViewPort, toValue: null)
               ..bind(ViewFactory, toValue: null)
               ..bind(BoundViewFactory, toValue: null);
