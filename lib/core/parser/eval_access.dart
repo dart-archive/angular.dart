@@ -38,19 +38,21 @@ class AccessKeyed extends syntax.AccessKeyed {
  * where we have a pair of pre-compiled getter and setter functions that we
  * use to do the access the field.
  */
+// todo(vicb) - parser should not depend on ContextLocals
+// todo(vicb) - Map should not be a special case so that we can access the props
 abstract class AccessFast {
   String get name;
   Getter get getter;
   Setter get setter;
 
-  _eval(holder) {
+  dynamic _eval(holder) {
     if (holder == null) return null;
     if (holder is ContextLocals) return (holder as ContextLocals)[name];
     if (holder is Map) return holder[name];
     return getter(holder);
   }
 
-  _assign(scope, holder, value) {
+  dynamic _assign(scope, holder, value) {
     if (holder == null) {
       _assignToNonExisting(scope, value);
       return value;
