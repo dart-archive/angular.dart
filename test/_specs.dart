@@ -215,6 +215,7 @@ _removeNgBinding(node) {
 
 main() {
   gns.beforeEach(setUpInjector, priority:3);
+  gns.afterEach(cleanUpAppRoot);
   gns.afterEach(tearDownInjector);
 
   gns.guinnessEnableHtmlMatchers();

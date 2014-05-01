@@ -59,14 +59,16 @@ part 'mock_cache_register.dart';
  */
 class AngularMockModule extends Module {
   AngularMockModule() {
+    bind(MockApplication);
+    bind(Application, toImplementation: MockApplication);
     bind(ExceptionHandler, toImplementation: RethrowExceptionHandler);
     bind(TestBed);
     bind(Probe);
     bind(Logger);
     bind(MockHttpBackend);
     bind(CacheRegister, toImplementation: MockCacheRegister);
-    bind(Element, toValue: document.body);
-    bind(Node, toValue: document.body);
+    bind(Element, toFactory: (app) => app.element, inject: [MockApplication]);
+    bind(Node, inject: [Element]);
     bind(HttpBackend, toInstanceOf: MOCK_HTTP_BACKEND_KEY);
     bind(VmTurnZone, toFactory: () {
       return new VmTurnZone()
@@ -77,4 +79,21 @@ class AngularMockModule extends Module {
     bind(PlatformJsBasedShim, toInstanceOf: MockWebPlatformShim);
     bind(DefaultPlatformShim, toInstanceOf: MockWebPlatformShim);
   }
+}
+
+class MockApplication extends Application {
+  var _element;
+
+  Element get element {
+    if (_element == null) {
+      _element = new DivElement()..attributes['ng-app'] = '';
+    }
+    return _element;
+  }
+
+  void destroyElement() {
+    _element = null;
+  }
+
+  Injector createInjector() => throw 'MockApplications can not create injectors';
 }
