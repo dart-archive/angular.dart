@@ -25,60 +25,49 @@ class BarComponent {
 
 main() {
   describe('EventHandler', () {
-    Element ngAppElement;
     beforeEachModule((Module module) {
-      ngAppElement = new DivElement()..attributes['ng-app'] = '';
-      module..bind(FooController);
-      module..bind(BarComponent);
-      module..bind(Node, toValue: ngAppElement);
-      document.body.append(ngAppElement);
+      module
+        ..bind(FooController)..bind(BarComponent);
     });
 
-    afterEach(() {
-      ngAppElement.remove();
-      ngAppElement = null;
-    });
-
-    compile(_, html) {
-      ngAppElement.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
-      _.compile(ngAppElement);
-      return ngAppElement.firstChild;
-    }
-
-    it('should register and handle event', inject((TestBed _) {
-      var e = compile(_,
+    it('should register and handle event', inject((TestBed _, Application app) {
+      var e = _.compile(
         '''<div foo>
           <div on-abc="ctrl.invoked=true;"></div>
         </div>''');
+      document.body.append(app.element..append(e));
 
       _.triggerEvent(e.querySelector('[on-abc]'), 'abc');
       expect(_.getScope(e).context['ctrl'].invoked).toEqual(true);
     }));
 
-    it('shoud register and handle event with long name', inject((TestBed _) {
-      var e = compile(_,
+    it('shoud register and handle event with long name', inject((TestBed _, Application app) {
+      var e = _.compile(
         '''<div foo>
           <div on-my-new-event="ctrl.invoked=true;"></div>
         </div>''');
+      document.body.append(app.element..append(e));
 
       _.triggerEvent(e.querySelector('[on-my-new-event]'), 'myNewEvent');
       var fooScope = _.getScope(e);
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
     }));
 
-    it('shoud have model updates applied correctly', inject((TestBed _) {
-      var e = compile(_,
+    it('should have model updates applied correctly', inject((TestBed _, Application app) {
+      var e = _.compile(
         '''<div foo>
           <div on-abc='ctrl.description="new description";'>{{ctrl.description}}</div>
         </div>''');
+      document.body.append(app.element..append(e));
       var el = document.querySelector('[on-abc]');
       el.dispatchEvent(new Event('abc'));
       _.rootScope.apply();
       expect(el.text).toEqual("new description");
     }));
 
-    it('shoud register event when shadow dom is used', async((TestBed _) {
-      var e = compile(_,'<bar></bar>');
+    it('should register event when shadow dom is used', async((TestBed _, Application app) {
+      var e = _.compile('<bar></bar>');
+      document.body.append(app.element..append(e));
 
       microLeap();
 
@@ -89,13 +78,14 @@ main() {
       expect(ctrl.invoked).toEqual(true);
     }));
 
-    it('shoud handle event within content only once', async(inject((TestBed _) {
-      var e = compile(_,
+    it('shoud handle event within content only once', async(inject((TestBed _, Application app) {
+      var e = _.compile(
         '''<div foo>
              <bar>
                <div on-abc="ctrl.invoked=true;"></div>
              </bar>
            </div>''');
+      document.body.append(app.element..append(e));
 
       microLeap();
 

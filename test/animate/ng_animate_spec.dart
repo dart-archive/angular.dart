@@ -26,10 +26,6 @@ main() {
       });
     });
 
-    afterEach(() {
-      tearDownInjector();
-    });
-
     it('should control animations on elements', () {
       _.compile('<div ng-animate="never"><div></div></div>');
       _.rootScope.apply();

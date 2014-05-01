@@ -251,5 +251,6 @@ var jasmine = jasmine_syntax.jasmine;
 
 main() {
   jasmine_syntax.beforeEach(setUpInjector, priority:3);
+  jasmine_syntax.afterEach(cleanUpAppRoot);
   jasmine_syntax.afterEach(tearDownInjector);
 }
