@@ -47,8 +47,12 @@ abstract class AccessFast {
 
   dynamic _eval(holder) {
     if (holder == null) return null;
-    if (holder is ContextLocals) return (holder as ContextLocals)[name];
     if (holder is Map) return holder[name];
+    if (holder is ContextLocals) {
+      var ctx = holder as ContextLocals;
+      if (ctx.hasProperty(name)) return ctx[name];
+      holder = ctx.rootContext;
+    }
     return getter(holder);
   }
 
@@ -57,8 +61,12 @@ abstract class AccessFast {
       _assignToNonExisting(scope, value);
       return value;
     } else {
-      if (holder is ContextLocals) return (holder as ContextLocals)[name] = value;
       if (holder is Map) return holder[name] = value;
+      if (holder is ContextLocals) {
+        var ctx = holder as ContextLocals;
+        if (ctx.hasProperty(name)) return ctx[name] = value;
+        holder = ctx.rootContext;
+      }
       return setter(holder, value);
     }
   }
