@@ -1,9 +1,13 @@
 library angular.mock.test_injection;
 
+import 'dart:html';
+
+import 'package:angular/application.dart';
 import 'package:angular/application_factory.dart';
 import 'package:angular/mock/module.dart';
 import 'package:di/di.dart';
 import 'package:di/dynamic_injector.dart';
+import 'module.dart';
 
 _SpecInjector _currentSpecInjector = null;
 
@@ -59,11 +63,6 @@ class _SpecInjector {
     } catch (e, s) {
       throw "$e\n$s\nDECLARED AT:$declarationStack";
     }
-  }
-
-  reset() {
-    injector = null;
-    injectiorCreateLocation = null;
   }
 }
 
@@ -146,4 +145,13 @@ void setUpInjector() {
  */
 void tearDownInjector() {
   _currentSpecInjector = null;
+}
+
+void cleanUpAppRoot() {
+  if (_currentSpecInjector.injector != null) {
+    var app = _currentSpecInjector.injector.get(Application);
+    assert(app is MockApplication);
+    app.destroyElement();
+  }
+  document.body.setInnerHtml('');
 }
