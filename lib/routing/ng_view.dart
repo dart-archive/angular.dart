@@ -58,49 +58,47 @@ part of angular.routing;
 @Decorator(
     selector: 'ng-view',
     module: NgView.module,
-    children: Directive.TRANSCLUDE_CHILDREN)
+    visibility: Directive.CHILDREN_VISIBILITY)
 class NgView implements DetachAware, RouteProvider {
   static final Module _module = new Module()
       ..bind(RouteProvider, toFactory: (i) => i.get(NgView));
-
   static module() => _module;
 
-  final NgRoutingHelper _locationService;
-  final ViewCache _viewCache;
-  final Injector _injector;
-  final Scope _scope;
+  final NgRoutingHelper locationService;
+  final ViewCache viewCache;
+  final Injector injector;
+  final Element element;
+  final Scope scope;
   RouteHandle _route;
 
-  final ViewPort _viewPort;
-
   View _view;
-  Scope _childScope;
+  Scope _scope;
   Route _viewRoute;
 
-
-  NgView(this._viewCache, Injector injector, Router router,
-         this._scope, this._viewPort)
-      : _injector = injector,
-        _locationService = injector.get(NgRoutingHelper)
+  NgView(this.element, this.viewCache,
+                  Injector injector, Router router,
+                  this.scope)
+      : injector = injector,
+        locationService = injector.get(NgRoutingHelper)
   {
-    RouteProvider routeProvider = _injector.parent.get(NgView);
+    RouteProvider routeProvider = injector.parent.get(NgView);
     _route = routeProvider != null ?
         routeProvider.route.newHandle() :
         router.root.newHandle();
-    _locationService._registerPortal(this);
+    locationService._registerPortal(this);
     _maybeReloadViews();
   }
 
   void _maybeReloadViews() {
-    if (_route.isActive) _locationService._reloadViews(startingFrom: _route);
+    if (_route.isActive) locationService._reloadViews(startingFrom: _route);
   }
 
-  void detach() {
+  detach() {
     _route.discard();
-    _locationService._unregisterPortal(this);
+    locationService._unregisterPortal(this);
   }
 
-  void _show(_View viewDef, Route route, List<Module> modules) {
+  _show(_View viewDef, Route route, List<Module> modules) {
     assert(route.isActive);
 
     if (_viewRoute != null) return;
@@ -115,51 +113,40 @@ class NgView implements DetachAware, RouteProvider {
     });
 
     var viewInjector = modules == null ?
-        _injector :
-        forceNewDirectivesAndFormatters(_injector, modules);
+        injector :
+        forceNewDirectivesAndFormatters(injector, modules);
 
     var newDirectives = viewInjector.get(DirectiveMap);
     var viewFuture = viewDef.templateHtml != null ?
-        new Future.value(_viewCache.fromHtml(viewDef.templateHtml, newDirectives)) :
-        _viewCache.fromUrl(viewDef.template, newDirectives);
-
+        new Future.value(viewCache.fromHtml(viewDef.templateHtml, newDirectives)) :
+        viewCache.fromUrl(viewDef.template, newDirectives);
     viewFuture.then((viewFactory) {
       _cleanUp();
-      _childScope = _scope.createChild(new PrototypeMap(_scope.context));
+      _scope = scope.createChild(new PrototypeMap(scope.context));
       _view = viewFactory(
-          viewInjector.createChild([new Module()..bind(Scope, toValue: _childScope)]));
-
-      var view = _view;
-      _scope.rootScope.domWrite(() {
-        _viewPort.insert(view);
-      });
+          viewInjector.createChild([new Module()..bind(Scope, toValue: _scope)]));
+      _view.nodes.forEach((elm) => element.append(elm));
     });
   }
 
-  void _cleanUp() {
+  _cleanUp() {
     if (_view == null) return;
 
-    var view = _view;
-    var childScope = _childScope;
-    _scope.rootScope.domWrite(() {
-      _viewPort.remove(view);
-      childScope.destroy();
-    });
+    _view.nodes.forEach((node) => node.remove());
+    _scope.destroy();
 
     _view = null;
-    _childScope = null;
+    _scope = null;
   }
 
   Route get route => _viewRoute;
-
   String get routeName => _viewRoute.name;
-
   Map<String, String> get parameters {
     var res = <String, String>{};
-    var route = _viewRoute;
-    while (route != null) {
-      res.addAll(route.parameters);
-      route = route.parent;
+    var p = _viewRoute;
+    while (p != null) {
+      res.addAll(p.parameters);
+      p = p.parent;
     }
     return res;
   }
