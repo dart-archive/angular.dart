@@ -38,7 +38,7 @@ class DirectiveSelector {
       }
 
       if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
-        textSelector.add(new _ContainsSelector(annotation, match.group(1)));
+        textSelector.add(new _ContainsSelector(annotation, match[1]));
       } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
         attrSelector.add(new _ContainsSelector(annotation, match[1]));
       } else if ((selectorParts = _splitCss(selector, type)) != null){
@@ -223,42 +223,39 @@ class _ElementSelector {
   _ElementSelector(this._name);
 
   void addDirective(List<_SelectorPart> selectorParts, _Directive directive) {
-    var selectorPart = selectorParts.removeAt(0);
-    var terminal = selectorParts.isEmpty;
+    assert(selectorParts.isNotEmpty);
+    var elSelector = this;
     var name;
-    if ((name = selectorPart.element) != null) {
-      if (terminal) {
-        _elementMap.putIfAbsent(name, () => []).add(directive);
+    for (var i = 0; i < selectorParts.length; i++) {
+      var part = selectorParts[i];
+      var terminal = i == selectorParts.length - 1;
+      if ((name = part.element) != null) {
+        if (terminal) {
+          elSelector._elementMap.putIfAbsent(name, () => []).add(directive);
+        } else {
+          elSelector = elSelector._elementPartialMap
+              .putIfAbsent(name, () => new _ElementSelector(name));
+        }
+      } else if ((name = part.className) != null) {
+        if (terminal) {
+          elSelector._classMap.putIfAbsent(name, () => []).add(directive);
+        } else {
+          elSelector = elSelector._classPartialMap
+              .putIfAbsent(name, () => new _ElementSelector(name));
+        }
+      } else if ((name = part.attrName) != null) {
+        if (terminal) {
+          elSelector._attrValueMap.putIfAbsent(name, () => <String, List<_Directive>>{})
+              .putIfAbsent(part.attrValue, () => [])
+              .add(directive);
+        } else {
+          elSelector = elSelector._attrValuePartialMap
+              .putIfAbsent(name, () => <String, _ElementSelector>{})
+              .putIfAbsent(part.attrValue, () => new _ElementSelector(name));
+        }
       } else {
-        _elementPartialMap
-            .putIfAbsent(name, () => new _ElementSelector(name))
-            .addDirective(selectorParts, directive);
+        throw "Unknown selector part '$part'.";
       }
-    } else if ((name = selectorPart.className) != null) {
-      if (terminal) {
-        _classMap
-            .putIfAbsent(name, () => [])
-            .add(directive);
-      } else {
-        _classPartialMap
-            .putIfAbsent(name, () => new _ElementSelector(name))
-            .addDirective(selectorParts, directive);
-      }
-    } else if ((name = selectorPart.attrName) != null) {
-      if (terminal) {
-        _attrValueMap
-            .putIfAbsent(name, () => <String, List<_Directive>>{})
-            .putIfAbsent(selectorPart.attrValue, () => [])
-            .add(directive);
-      } else {
-        _attrValuePartialMap
-            .putIfAbsent(name, () => <String, _ElementSelector>{})
-            .putIfAbsent(selectorPart.attrValue, () =>
-                new _ElementSelector(name))
-            .addDirective(selectorParts, directive);
-      }
-    } else {
-      throw "Unknown selector part '$selectorPart'.";
     }
   }
 
