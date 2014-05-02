@@ -174,11 +174,13 @@ class _ContainsSelector {
       : regexp = new RegExp(regexp);
 }
 
-var _SELECTOR_REGEXP = new RegExp(r'^(?:([-\w]+)|(?:\.([-\w]+))|'
-    r'(?:\[([-\w*]+)(?:=([^\]]*))?\]))');
-var _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([-\w]+)(?:\=(.*))?\]$');
-var _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
-var _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
+final _SELECTOR_REGEXP = new RegExp(
+    r'(?:([-\w]+)|'                       // "tag"
+    r'(?:\.([-\w]+))|'                    // ".class"
+    r'(?:\[([-\w*]+)(?:=([^\]]*))?\]))'); // "[name]", "[name=value]" or "[name*=value]"
+final _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([-\w]+)(?:\=(.*))?\]$');
+final _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
+final _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
 
 class _SelectorPart {
   final String element;
@@ -342,27 +344,34 @@ class _ElementSelector {
   toString() => 'ElementSelector($name)';
 }
 
+/**
+ * Turn a CSS selector string into a list of [_SelectorPart]s
+ */
 List<_SelectorPart> _splitCss(String selector, Type type) {
-  var parts = <_SelectorPart>[];
-  var remainder = selector;
-  var match;
-  while (remainder.isNotEmpty) {
-    if ((match = _SELECTOR_REGEXP.firstMatch(remainder)) != null) {
-      if (match[1] != null) {
-        parts.add(new _SelectorPart.fromElement(match[1].toLowerCase()));
-      } else if (match[2] != null) {
-        parts.add(new _SelectorPart.fromClass(match[2].toLowerCase()));
-      } else if (match[3] != null) {
-        var attrValue = match[4] == null ? '' : match[4].toLowerCase();
-        parts.add(new _SelectorPart.fromAttribute(match[3].toLowerCase(),
-                                                  attrValue));
-      } else {
-        throw "Missmatched RegExp $_SELECTOR_REGEXP on $remainder";
-      }
-    } else {
+  final parts = <_SelectorPart>[];
+  var previousPartEndAt = 0;
+  final matchedSelectors = _SELECTOR_REGEXP.allMatches(selector).toList();
+  if (matchedSelectors.isEmpty) {
+    throw "Unknown selector format '$selector' for $type.";
+  }
+  matchedSelectors.forEach((Match selectorMatch) {
+    if (selectorMatch[1] != null) {
+      // "tag"
+      parts.add(new _SelectorPart.fromElement(selectorMatch[1].toLowerCase()));
+    } else if (selectorMatch[2] != null) {
+      // ".class"
+      parts.add(new _SelectorPart.fromClass(selectorMatch[2].toLowerCase()));
+    } else if (selectorMatch[3] != null) {
+      // [name], [name=value] and [name*=value]
+      var attrValue = selectorMatch[4] == null ? '' : selectorMatch[4].toLowerCase();
+      parts.add(new _SelectorPart.fromAttribute(selectorMatch[3].toLowerCase(), attrValue));
+    }
+    if (selectorMatch.start != previousPartEndAt) {
+      // Successive matches should occur back to back
       throw "Unknown selector format '$selector' for $type.";
     }
-    remainder = remainder.substring(match.end);
-  }
+    previousPartEndAt = selectorMatch.end;
+  });
+
   return parts;
 }
