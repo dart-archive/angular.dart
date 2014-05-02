@@ -339,11 +339,11 @@ class ScopeStats {
   final evalStopwatch = new AvgStopwatch();
   final processStopwatch = new AvgStopwatch();
 
-  List<int> _digestLoopTimes = [];
+  final _digestLoopTimes = <int>[];
   int _flushPhaseDuration = 0 ;
   int _assertFlushPhaseDuration = 0;
 
-  int _loopNo = 0;
+  int _loopNo;
   ScopeStatsEmitter _emitter;
   ScopeStatsConfig _config;
 
@@ -353,7 +353,7 @@ class ScopeStats {
   ScopeStats(this._emitter, this._config);
 
   void digestStart() {
-    _digestLoopTimes = [];
+    _digestLoopTimes.clear();
     _stopwatchReset();
     _loopNo = 0;
   }
@@ -373,10 +373,9 @@ class ScopeStats {
   void digestLoop(int changeCount) {
     _loopNo++;
     if (_config.emit && _emitter != null) {
-      _emitter.emit(_loopNo.toString(), fieldStopwatch, evalStopwatch,
-        processStopwatch);
+      _emitter.emit(_loopNo.toString(), fieldStopwatch, evalStopwatch, processStopwatch);
     }
-    _digestLoopTimes.add( _allStagesDuration() );
+    _digestLoopTimes.add(_allStagesDuration());
     _stopwatchReset();
   }
 
@@ -387,23 +386,25 @@ class ScopeStats {
   void domWriteEnd() {}
   void domReadStart() {}
   void domReadEnd() {}
+
   void flushStart() {
     _stopwatchReset();
   }
+
   void flushEnd() {
     if (_config.emit && _emitter != null) {
-      _emitter.emit(RootScope.STATE_FLUSH, fieldStopwatch, evalStopwatch,
-        processStopwatch);
+      _emitter.emit(RootScope.STATE_FLUSH, fieldStopwatch, evalStopwatch, processStopwatch);
     }
     _flushPhaseDuration = _allStagesDuration();
   }
+
   void flushAssertStart() {
     _stopwatchReset();
   }
+
   void flushAssertEnd() {
     if (_config.emit && _emitter != null) {
-      _emitter.emit(RootScope.STATE_FLUSH_ASSERT, fieldStopwatch, evalStopwatch,
-        processStopwatch);
+      _emitter.emit(RootScope.STATE_FLUSH_ASSERT, fieldStopwatch, evalStopwatch, processStopwatch);
     }
     _assertFlushPhaseDuration = _allStagesDuration();
   }
