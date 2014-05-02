@@ -74,18 +74,20 @@ class ElementBinderBuilder {
       childMode = annotation.children;
     }
 
-    if (annotation.map != null) annotation.map.forEach((attrName, mapping) {
-      Match match = _MAPPING.firstMatch(mapping);
-      if (match == null) {
-        throw "Unknown mapping '$mapping' for attribute '$attrName'.";
-      }
-      var mode = match[1];
-      var dstPath = match[2];
+    if (annotation.map != null) {
+      annotation.map.forEach((attrName, mapping) {
+        Match match = _MAPPING.firstMatch(mapping);
+        if (match == null) {
+          throw "Unknown mapping '$mapping' for attribute '$attrName'.";
+        }
+        var mode = match[1];
+        var dstPath = match[2];
 
-      String dstExpression = dstPath.isEmpty ? attrName : dstPath;
+        String dstExpression = dstPath.isEmpty ? attrName : dstPath;
 
-      ref.mappings.add(new MappingParts(attrName, mode, dstExpression, mapping));
-    });
+        ref.mappings.add(new MappingParts(attrName, mode, dstExpression, mapping));
+      });
+    }
   }
 
   /// Creates an returns an [ElementBinder] or a [TemplateElementBinder]
