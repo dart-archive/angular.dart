@@ -12,8 +12,6 @@ class TextMustache {
                           FormatterMap formatters) {
     String expression = interpolate(template);
 
-    print('Mustache: watching $expression');
-
     scope.watch(expression,
                 _updateMarkup,
                 canChangeModel: false,
@@ -21,7 +19,6 @@ class TextMustache {
   }
 
   void _updateMarkup(text, previousText) {
-    print('Mustache: changed $previousText -> $text');
     _element.text = text;
   }
 }
