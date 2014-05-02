@@ -317,7 +317,7 @@ class InputCheckbox {
 /**
  * Usage:
  *
- *     <input type="text|url|password|email" ng-model="myModel">
+ *     <input type="text|url|password|email|search|tel" ng-model="myModel">
  *     <textarea ng-model="myModel"></textarea>
  *
  * This creates a two-way binding between any string-based input element
@@ -333,6 +333,7 @@ class InputCheckbox {
 @Decorator(selector: 'input[type=url][ng-model]')
 @Decorator(selector: 'input[type=email][ng-model]')
 @Decorator(selector: 'input[type=search][ng-model]')
+@Decorator(selector: 'input[type=tel][ng-model]')
 class InputTextLike {
   final dom.Element inputElement;
   final NgModel ngModel;
