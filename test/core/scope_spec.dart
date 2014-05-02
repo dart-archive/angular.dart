@@ -1227,6 +1227,20 @@ void main() {
       });
 
 
+      it(r'should detect infinite digest through runAsync', (RootScope rootScope) {
+        rootScope.context['value'] = () { rootScope.runAsync(() {}); return 'a'; };
+        rootScope.watch('value()', (_, __) {});
+
+        expect(() {
+          rootScope.digest();
+        }).toThrow('Model did not stabilize in 5 digests. '
+        'Last 3 iterations:\n'
+        'async:1\n'
+        'async:1\n'
+        'async:1');
+      });
+
+
       it(r'should always call the watchr with newVal and oldVal equal on the first run',
       inject((RootScope rootScope) {
         var log = [];
@@ -1500,15 +1514,22 @@ void main() {
         })
       );
 
-      it('should not allow microtasks in flush phase',
+      it('should allow microtasks in flush phase and process them immediatly',
         async((Logger log, VmTurnZone zone, RootScope scope) {
+          scope.watch('g()', (_, __) {});
+          scope.context['g'] = () {
+            log('!');
+            return 0;
+          };
+
           zone.run(() {
             scope.domWrite(() {
-              return new Future.value('FAIL');
+              log('domWriteA');
+              return new Future.value(null).then((_) => scope.domWrite(() => log('domWriteB')));
             });
           });
           expect(log).toEqual(
-              ['[', '(', 'CATCH: Scheduling microtasks not allowed in flush state.', ')', ']']);
+              ['[', '!', '!', 'domWriteA', '(', ')', 'domWriteB', /* assert */'!', ']']);
         })
       );
 
