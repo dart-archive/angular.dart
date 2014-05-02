@@ -209,18 +209,18 @@ _addRefs(ElementBinderBuilder builder, List<_Directive> directives, dom.Node nod
 }
 
 class _ElementSelector {
-  final String name;
+  final String _name;
 
-  final elementMap = <String, List<_Directive>>{};
-  final elementPartialMap = <String, _ElementSelector>{};
+  final _elementMap = <String, List<_Directive>>{};
+  final _elementPartialMap = <String, _ElementSelector>{};
 
-  final classMap = <String, List<_Directive>>{};
-  final classPartialMap = <String, _ElementSelector>{};
+  final _classMap = <String, List<_Directive>>{};
+  final _classPartialMap = <String, _ElementSelector>{};
 
-  final attrValueMap = <String, Map<String, List<_Directive>>>{};
-  final attrValuePartialMap = <String, Map<String, _ElementSelector>>{};
+  final _attrValueMap = <String, Map<String, List<_Directive>>>{};
+  final _attrValuePartialMap = <String, Map<String, _ElementSelector>>{};
 
-  _ElementSelector(this.name);
+  _ElementSelector(this._name);
 
   void addDirective(List<_SelectorPart> selectorParts, _Directive directive) {
     var selectorPart = selectorParts.removeAt(0);
@@ -228,30 +228,30 @@ class _ElementSelector {
     var name;
     if ((name = selectorPart.element) != null) {
       if (terminal) {
-        elementMap.putIfAbsent(name, () => []).add(directive);
+        _elementMap.putIfAbsent(name, () => []).add(directive);
       } else {
-        elementPartialMap
+        _elementPartialMap
             .putIfAbsent(name, () => new _ElementSelector(name))
             .addDirective(selectorParts, directive);
       }
     } else if ((name = selectorPart.className) != null) {
       if (terminal) {
-        classMap
+        _classMap
             .putIfAbsent(name, () => [])
             .add(directive);
       } else {
-        classPartialMap
+        _classPartialMap
             .putIfAbsent(name, () => new _ElementSelector(name))
             .addDirective(selectorParts, directive);
       }
     } else if ((name = selectorPart.attrName) != null) {
       if (terminal) {
-        attrValueMap
+        _attrValueMap
             .putIfAbsent(name, () => <String, List<_Directive>>{})
             .putIfAbsent(selectorPart.attrValue, () => [])
             .add(directive);
       } else {
-        attrValuePartialMap
+        _attrValuePartialMap
             .putIfAbsent(name, () => <String, _ElementSelector>{})
             .putIfAbsent(selectorPart.attrValue, () =>
                 new _ElementSelector(name))
@@ -265,14 +265,14 @@ class _ElementSelector {
   List<_ElementSelector> selectNode(ElementBinderBuilder builder,
                                     List<_ElementSelector> partialSelection,
                                     dom.Node node, String nodeName) {
-    if (elementMap.containsKey(nodeName)) {
-      _addRefs(builder, elementMap[nodeName], node);
+    if (_elementMap.containsKey(nodeName)) {
+      _addRefs(builder, _elementMap[nodeName], node);
     }
-    if (elementPartialMap.containsKey(nodeName)) {
+    if (_elementPartialMap.containsKey(nodeName)) {
       if (partialSelection == null) {
         partialSelection = new List<_ElementSelector>();
       }
-      partialSelection.add(elementPartialMap[nodeName]);
+      partialSelection.add(_elementPartialMap[nodeName]);
     }
     return partialSelection;
   }
@@ -280,14 +280,14 @@ class _ElementSelector {
   List<_ElementSelector> selectClass(ElementBinderBuilder builder,
                                      List<_ElementSelector> partialSelection,
                                      dom.Node node, String className) {
-    if (classMap.containsKey(className)) {
-      _addRefs(builder, classMap[className], node);
+    if (_classMap.containsKey(className)) {
+      _addRefs(builder, _classMap[className], node);
     }
-    if (classPartialMap.containsKey(className)) {
+    if (_classPartialMap.containsKey(className)) {
       if (partialSelection == null) {
         partialSelection = new List<_ElementSelector>();
       }
-      partialSelection.add(classPartialMap[className]);
+      partialSelection.add(_classPartialMap[className]);
     }
     return partialSelection;
   }
@@ -297,10 +297,10 @@ class _ElementSelector {
                                     dom.Node node, String attrName,
                                     String attrValue) {
 
-    String matchingKey = _matchingKey(attrValueMap.keys, attrName);
+    String matchingKey = _matchingKey(_attrValueMap.keys, attrName);
 
     if (matchingKey != null) {
-      Map<String, List<_Directive>> valuesMap = attrValueMap[matchingKey];
+      Map<String, List<_Directive>> valuesMap = _attrValueMap[matchingKey];
       if (valuesMap.containsKey('')) {
         _addRefs(builder, valuesMap[''], node, attrValue);
       }
@@ -308,9 +308,9 @@ class _ElementSelector {
         _addRefs(builder, valuesMap[attrValue], node, attrValue);
       }
     }
-    if (attrValuePartialMap.containsKey(attrName)) {
+    if (_attrValuePartialMap.containsKey(attrName)) {
       Map<String, _ElementSelector> valuesPartialMap =
-          attrValuePartialMap[attrName];
+          _attrValuePartialMap[attrName];
       if (valuesPartialMap.containsKey('')) {
         if (partialSelection == null) {
           partialSelection = new List<_ElementSelector>();
