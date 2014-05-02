@@ -1271,7 +1271,6 @@ class _FormatterWrapper extends FunctionApply {
   }
 }
 
-@Injectable()
 class ClosureMapLocalsAware implements ClosureMap {
   final ClosureMap wrappedClsMap;
 
