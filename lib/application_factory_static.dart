@@ -11,15 +11,9 @@
  *     import 'package:angular/angular.dart';
  *     import 'package:angular/application_factory_static.dart';
  *
- *     class MyModule extends Module {
- *       MyModule() {
- *         bind(HelloWorldController);
- *       }
- *     }
- *
  *     main() {
  *       staticApplicationFactory()
- *           .addModule(new MyModule())
+ *           .rootContextType(HelloWorldController)
  *           .run();
  *     }
  *

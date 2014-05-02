@@ -196,13 +196,6 @@ class ElementBinder {
         probe.directives.add(controller);
         assert((linkMapTimer = _perf.startTimer('ng.view.link.map', ref.type)) != false);
 
-
-        // todo(vicb): delete
-        if (ref.annotation is Controller) {
-          print("_link context = $controller");
-          scope.context = controller;
-        }
-
         var tasks = new _TaskList(controller is AttachAware ?
             () {if (scope.isAttached) controller.attach();} :
             null);
@@ -301,11 +294,6 @@ class ElementBinder {
 
       directiveRefs.forEach((DirectiveRef ref) {
         Directive annotation = ref.annotation;
-        if (annotation is Controller) {
-          //todo(vicb)
-          scope = scope.createChild(scope.context);
-          nodeModule.bind(Scope, toValue: scope);
-        }
 
         _createDirectiveFactories(ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
             annotation.visibility);

@@ -34,7 +34,7 @@ class Injectable {
 }
 
 /**
- * Abstract supper class of [Controller], [Component], and [Decorator].
+ * Abstract supper class of [Component], and [Decorator].
  */
 abstract class Directive {
 
@@ -385,53 +385,6 @@ class Decorator extends Directive {
           children: children,
           map: newMap,
           module: module,
-          selector: selector,
-          visibility: visibility,
-          exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
-}
-
-/**
- * Meta-data marker placed on a class which should act as a controller for your
- * application.
- *
- * Controllers are essentially [Decorator]s with few key differences:
- *
- * * Controllers create a new scope at the element.
- * * Controllers should not do any DOM manipulation.
- * * Controllers are meant for application-logic
- *   (rather then DOM manipulation logic which directives are meant for.)
- *
- * Controllers can implement [AttachAware], [DetachAware] and
- * declare these optional methods:
- *
- * * `attach()` - Called on first [Scope.apply()].
- * * `detach()` - Called on when owning scope is destroyed.
- */
-@deprecated
-class Controller extends Decorator {
-  const Controller({
-                    children: Directive.COMPILE_CHILDREN,
-                    map,
-                    module,
-                    selector,
-                    visibility,
-                    exportExpressions,
-                    exportExpressionAttrs
-                    })
-      : super(selector: selector,
-              children: children,
-              visibility: visibility,
-              map: map,
-              module: module,
-              exportExpressions: exportExpressions,
-              exportExpressionAttrs: exportExpressionAttrs);
-
-  Directive _cloneWithNewMap(newMap) =>
-      new Controller(
-          children: children,
-          module: module,
-          map: newMap,
           selector: selector,
           visibility: visibility,
           exportExpressions: exportExpressions,
