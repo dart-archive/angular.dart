@@ -31,7 +31,7 @@ class ElementBinderFactory {
  * building ElementBinders.
  */
 class ElementBinderBuilder {
-  static RegExp _MAPPING = new RegExp(r'^(\@|=\>\!|\=\>|\<\=\>|\&)\s*(.*)$');
+  static final RegExp _MAPPING = new RegExp(r'^(@|=>!|=>|<=>|&)\s*(.*)$');
 
   ElementBinderFactory _factory;
 
@@ -40,7 +40,7 @@ class ElementBinderBuilder {
   /// "bind-*" attribute names and values, added by a [DirectiveSelector]
   final bindAttrs = <String, String>{};
 
-  var decorators = <DirectiveRef>[];
+  final decorators = <DirectiveRef>[];
   DirectiveRef template;
   DirectiveRef component;
 
