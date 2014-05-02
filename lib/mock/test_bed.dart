@@ -27,10 +27,10 @@ class TestBed {
    *
    *   - [String] then treat it as HTML
    *   - [Node] then treat it as the root node
-   *   - [List<Node>] then treat it as a collection of nods
+   *   - [List<Node>] then treat it as a collection of nodes
    *
    * After the compilation the [rootElements] contains an array of compiled root nodes,
-   * and [rootElement] contains the first element from the [rootElemets].
+   * and [rootElement] contains the first element from the [rootElements].
    *
    * An option [scope] parameter can be supplied to link it with non root scope.
    */
@@ -48,7 +48,7 @@ class TestBed {
     } else {
       throw 'Expecting: String, Node, or List<Node> got $html.';
     }
-    rootElement = rootElements.length > 0 && rootElements[0] is Element ? rootElements[0] : null;
+    rootElement = rootElements.isNotEmpty && rootElements[0] is Element ? rootElements[0] : null;
     if (directives == null) {
       directives = injector.get(DirectiveMap);
     }
@@ -62,11 +62,7 @@ class TestBed {
   List<Element> toNodeList(html) {
     var div = new DivElement();
     div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
-    var nodes = [];
-    for (var node in div.nodes) {
-      nodes.add(node);
-    }
-    return nodes;
+    return new List.from(div.nodes);
   }
 
   /**
@@ -81,7 +77,7 @@ class TestBed {
 
   /**
    * Select an [OPTION] in a [SELECT] with a given name and trigger the
-   * appropriate DOM event. Used when testing [SELECT] controlls in forms.
+   * appropriate DOM event. Used when testing [SELECT] controls in forms.
    */
   selectOption(element, text) {
     element.querySelectorAll('option').forEach((o) => o.selected = o.text == text);
@@ -98,5 +94,5 @@ class TestBed {
     throw 'Probe not found.';
   }
 
-  getScope(Node node) => getProbe(node).scope;
+  Scope getScope(Node node) => getProbe(node).scope;
 }
