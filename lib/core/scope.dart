@@ -98,15 +98,10 @@ class Scope {
   /**
    * The default execution context for [watch]es [observe]ers, and [eval]uation.
    */
-  // todo(vicb) was final
-  var _context;
-  dynamic get context => _context;
-  void set context(ctx) {
-    _context = ctx;
-  }
+  final context;
 
-  bool hasLocal(name) => _context is ContextLocals && (_context as ContextLocals).hasProperty(name);
-  dynamic getLocal(name) => (_context as ContextLocals)[name];
+  bool hasLocal(name) => context is ContextLocals && (context as ContextLocals).hasProperty(name);
+  dynamic getLocal(name) => (context as ContextLocals)[name];
 
   /**
    * The [RootScope] of the application.
@@ -152,12 +147,9 @@ class Scope {
   /// Do not use. Exposes internal state for testing.
   bool get hasOwnStreams => _streams != null  && _streams._scope == this;
 
-  // todo(vicb) this.context
-  Scope(Object _context, this.rootScope, this._parentScope,
+  Scope(this.context, this.rootScope, this._parentScope,
         this._readWriteGroup, this._readOnlyGroup, this.id,
-        this._stats) {
-    context = _context;
-  }
+        this._stats);
 
   /**
    * Use [watch] to set up change detection on an expression.
