@@ -42,8 +42,7 @@ class DirectiveSelector {
       } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
         attrSelector.add(new _ContainsSelector(annotation, match[1]));
       } else if ((selectorParts = _splitCss(selector, type)) != null){
-        elementSelector.addDirective(selectorParts,
-        new _Directive(type, annotation));
+        elementSelector.addDirective(selectorParts, new _Directive(type, annotation));
       } else {
         throw new ArgumentError('Unsupported Selector: $selector');
       }
@@ -59,8 +58,8 @@ class DirectiveSelector {
 
     ElementBinderBuilder builder = _binderFactory.builder();
     List<_ElementSelector> partialSelection;
-    var classes = new Set<String>();
-    Map<String, String> attrs = {};
+    final classes = new Set<String>();
+    final attrs = <String, String>{};
 
     dom.Element element = node;
     String nodeName = element.tagName.toLowerCase();
@@ -71,14 +70,12 @@ class DirectiveSelector {
     }
 
     // Select node
-    partialSelection = elementSelector.selectNode(builder,
-        partialSelection, element, nodeName);
+    partialSelection = elementSelector.selectNode(builder, partialSelection, element, nodeName);
 
     // Select .name
     for (var name in element.classes) {
       classes.add(name);
-      partialSelection = elementSelector.selectClass(builder,
-          partialSelection, element, name);
+      partialSelection = elementSelector.selectClass(builder, partialSelection, element, name);
     }
 
     // Select [attributes]
@@ -163,7 +160,7 @@ class _Directive {
 
   _Directive(this.type, this.annotation);
 
-  toString() => annotation.selector;
+  String toString() => annotation.selector;
 }
 
 class _ContainsSelector {
@@ -178,9 +175,8 @@ final _SELECTOR_REGEXP = new RegExp(
     r'(?:([-\w]+)|'                       // "tag"
     r'(?:\.([-\w]+))|'                    // ".class"
     r'(?:\[([-\w*]+)(?:=([^\]]*))?\]))'); // "[name]", "[name=value]" or "[name*=value]"
-final _COMMENT_COMPONENT_REGEXP = new RegExp(r'^\[([-\w]+)(?:\=(.*))?\]$');
-final _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); //
-final _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$'); //
+final _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); // ":contains(/text/)"
+final _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$');  // "[*=/value/]
 
 class _SelectorPart {
   final String element;
@@ -215,14 +211,14 @@ _addRefs(ElementBinderBuilder builder, List<_Directive> directives, dom.Node nod
 class _ElementSelector {
   final String name;
 
-  var elementMap = <String, List<_Directive>>{};
-  var elementPartialMap = <String, _ElementSelector>{};
+  final elementMap = <String, List<_Directive>>{};
+  final elementPartialMap = <String, _ElementSelector>{};
 
-  var classMap = <String, List<_Directive>>{};
-  var classPartialMap = <String, _ElementSelector>{};
+  final classMap = <String, List<_Directive>>{};
+  final classPartialMap = <String, _ElementSelector>{};
 
-  var attrValueMap = <String, Map<String, List<_Directive>>>{};
-  var attrValuePartialMap = <String, Map<String, _ElementSelector>>{};
+  final attrValueMap = <String, Map<String, List<_Directive>>>{};
+  final attrValuePartialMap = <String, Map<String, _ElementSelector>>{};
 
   _ElementSelector(this.name);
 
@@ -338,10 +334,10 @@ class _ElementSelector {
   String _matchingKey(Iterable<String> keys, String attrName) =>
       keys.firstWhere((key) =>
           _matchingKeyCache.putIfAbsent(key,
-                  () => new RegExp('^${key.replaceAll('*', r'[\w\-]+')}\$'))
+                  () => new RegExp('^${key.replaceAll('*', r'[-\w]+')}\$'))
               .hasMatch(attrName), orElse: () => null);
 
-  toString() => 'ElementSelector($name)';
+  String toString() => 'ElementSelector($name)';
 }
 
 /**
