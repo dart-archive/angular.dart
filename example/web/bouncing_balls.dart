@@ -79,7 +79,7 @@ class BounceController {
     var delay = now - lastTime;
 
     fps = (1000/delay).round();
-    for(var i=0, ii=balls.length; i<ii; i++) {
+    for(var i = 0; i < balls.length; i++) {
       var b = balls[i];
       b.x += delay * b.velX;
       b.y += delay * b.velY;
@@ -127,7 +127,7 @@ class MyModule extends Module {
 
 main() {
   applicationFactory()
-    .rootContextType(BounceController)
-    .addModule(new MyModule())
-    .run();
+      .rootContextType(BounceController)
+      .addModule(new MyModule())
+      .run();
 }
