@@ -84,5 +84,9 @@ class MockApplication extends Application {
     _element = null;
   }
 
+  void attachToRenderDOM(Element element) {
+    document.body.append(this._element..append(element));
+  }
+
   Injector createInjector() => throw 'MockApplications can not create injectors';
 }

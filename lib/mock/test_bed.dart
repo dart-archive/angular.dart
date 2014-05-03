@@ -75,9 +75,10 @@ class TestBed {
    * Trigger a specific DOM element on a given node to test directives
    * which listen to events.
    */
-  triggerEvent(element, name, [String type='MouseEvent', emulateBubbling=false]) {
-    if (emulateBubbling == true) {
+  triggerEvent(element, name, {type : 'MouseEvent'}) {
+    if (!_isAttachedToRenderDOM(element)) {
       _eventHandler.walkDomTreeAndExecute(element, new Event.eventType(type, name));
+      element.dispatchEvent(new Event.eventType(type, name));
     } else {
       element.dispatchEvent(new Event.eventType(type, name));
     }
@@ -105,4 +106,13 @@ class TestBed {
   }
 
   getScope(Node node) => getProbe(node).scope;
+
+  bool _isAttachedToRenderDOM(Node node) {
+    var doc = window.document;
+    while (node != doc) {
+      if (node == null) return false;
+      node = node.parentNode;
+    }
+    return true;
+  }
 }

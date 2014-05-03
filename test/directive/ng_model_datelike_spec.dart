@@ -87,8 +87,7 @@ void main() {
       });
 
       it('should update model from the input "valueAsDate" IDL attribute', () {
-        _.compile('<input type=date ng-model=model>');
-        inputElement = _.rootElement as dom.InputElement;
+        inputElement = _.compile('<input type=date ng-model=model>') as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
         inputElement.valueAsDate = dateTime;

@@ -32,8 +32,28 @@ main() {
                 '<option value="c">ccc</option>'
               '</select>'
             '</div>');
-      document.body.append(app.element..append(fooElement));
+      var selectElement = fooElement.children.first;
+      _.rootScope.apply();
 
+      expect(selectElement).toEqualSelect([['a'], 'b', 'c']);
+      expect(_.rootScope.context['selectProbe'].injector.get(NgValueController).seenValue).toEqual("");
+
+      selectElement.querySelectorAll('option')[1].selected = true;
+      _.triggerEvent(selectElement, 'change');
+
+      expect(selectElement).toEqualSelect(['a', ['b'], 'c']);
+      expect(_.rootScope.context['selectProbe'].injector.get(NgValueController).seenValue).toEqual("b");
+    });
+
+    it('should update model before calling function when using ng-change', (Application app) {
+      var fooElement = _.compile(
+          '<div value-ctrl>'
+          '<select ng-change="ctrl.onSelectionChanged()" probe="selectProbe" ng-model="ctrl.currentValue">'
+          '<option value="a">aaa</option>'
+          '<option value="b">bbb</option>'
+          '<option value="c">ccc</option>'
+          '</select>'
+          '</div>');
       var selectElement = fooElement.children.first;
       _.rootScope.apply();
 
@@ -52,7 +72,6 @@ main() {
             '<select ng-model="robot" probe="p">'
               '<option ng-repeat="r in robots" ng-value="r">{{r.name}}</option>'
             '</select>');
-        document.body.append(app.element..append(selectElement));
 
         var r2d2 = {"name":"r2d2"};
         var c3p0 = {"name":"c3p0"};
@@ -72,7 +91,6 @@ main() {
             '<select ng-model="robot" probe="p" multiple>'
             '<option ng-repeat="r in robots" ng-value="r">{{r.name}}</option>'
             '</select>');
-        document.body.append(app.element..append(selectElement));
         var r2d2 = { "name":"r2d2"};
         var c3p0 = {"name":"c3p0"};
         _.rootScope.context['robots'] = [ r2d2, c3p0 ];
@@ -122,12 +140,10 @@ main() {
       });
 
       it('should work with repeated value options', (Application app) {
-        var e = _.compile(
+        var selectElement = _.compile(
             '<select ng-model="robot" probe="p">'
               '<option ng-repeat="r in robots">{{r}}</option>'
             '</select>');
-        document.body.append(app.element..append(e));
-        var selectElement = document.querySelector('select');
         _.rootScope.context['robots'] = ['c3p0', 'r2d2'];
         _.rootScope.context['robot'] = 'r2d2';
         _.rootScope.apply();
@@ -135,7 +151,7 @@ main() {
         var select = _.rootScope.context['p'].directive(InputSelect);
         expect(selectElement).toEqualSelect(['c3p0', ['r2d2']]);
 
-        _.rootElement.querySelectorAll('option')[0].selected = true;
+        selectElement.querySelectorAll('option')[0].selected = true;
         _.triggerEvent(selectElement, 'change');
 
 
@@ -190,7 +206,6 @@ main() {
                 '<option value="x">robot x</option>' +
                 '<option value="y">robot y</option>' +
               '</select>');
-          document.body.append(app.element..append(selectElement));
           _.rootScope.apply();
           var select = _.rootScope.context['p'].directive(InputSelect);
 
@@ -221,7 +236,6 @@ main() {
                   '<option value="">--select--</option>' +
                   '<option ng-repeat="r in robots">{{r}}</option>' +
                 '</select>');
-            document.body.append(app.element..append(selectElement));
             _.rootScope.apply();
             var select = _.rootScope.context['p'].directive(InputSelect);
 
@@ -545,7 +559,6 @@ main() {
               '<option value=""></option>' +
               '<option value="c">C</option>' +
             '</select>');
-          document.body.append(app.element..append(e));
 
           var element = scope.context['i'].element;
 
@@ -667,13 +680,13 @@ main() {
           expect(element).toEqualSelect([['A'], ['B']]);
         });
 
-        it('should require', (Application app) {
+        it('should require', (MockApplication app) {
           var e = compile(
             '<select name="select" probe="i" ng-model="selection" multiple required>' +
               '<option>A</option>' +
               '<option>B</option>' +
             '</select>');
-          document.body.append(app.element..append(e));
+          app.attachToRenderDOM(e);
 
           var element = scope.context['i'].element;
           scope.apply(() {
@@ -1039,8 +1052,6 @@ main() {
           it('should select correct input if previously selected option was "?"',
               (Application app) {
             var e = createSingleSelect();
-            document.body.append(app.element..append(e));
-
             scope.apply(() {
               scope.context['values'] = [{'name': 'A'}, {'name': 'B'}];
               scope.context['selected'] = {};
@@ -1157,8 +1168,6 @@ main() {
 
           it('should update model on change', (Application app) {
             var e = createSingleSelect();
-            document.body.append(app.element..append(e));
-
             scope.apply(() {
               scope.context['values'] = [{'name': 'A'}, {'name': 'B'}];
               scope.context['selected'] = scope.context['values'][0];
@@ -1175,8 +1184,6 @@ main() {
           it('should update model on change through expression', (Application app) {
             var e = createSelect({'ng-model': 'selected'}, null, null,
                 'item in values', 'item.name', 'item.id');
-            document.body.append(app.element..append(e));
-
             scope.apply(() {
               scope.context['values'] = [{'id': 10, 'name': 'A'}, {'id': 20, 'name': 'B'}];
               scope.context['selected'] = scope.context['values'][0]['id'];
@@ -1192,8 +1199,6 @@ main() {
 
           it('should update model to null on change', (Application app) {
             var e = createSingleSelect(true);
-            document.body.append(app.element..append(e));
-
             scope.apply(() {
               scope.context['values'] = [{'name': 'A'}, {'name': 'B'}];
               scope.context['selected'] = scope.context['values'][0];
@@ -1242,8 +1247,6 @@ main() {
 
           it('should update model on change', (Application app) {
             var e = createMultiSelect();
-            document.body.append(app.element..append(e));
-
             scope.apply(() {
               scope.context['values'] = [{'name': 'A'}, {'name': 'B'}];
               scope.context['selected'] = [];
