@@ -23,7 +23,7 @@ main() {
       });
       beforeEach((TestBed tb) => _ = tb);
 
-      it('should update model before calling function', (Application app) {
+      it('should update model before calling function when using on-change', (Application app) {
         var fooElement = _.compile(
             '<div value-ctrl>'
               '<select on-change="ctrl.onSelectionChanged()" probe="selectProbe" ng-model="ctrl.currentValue">'
@@ -32,6 +32,28 @@ main() {
                 '<option value="c">ccc</option>'
               '</select>'
             '</div>');
+      var selectElement = fooElement.children.first;
+      _.rootScope.apply();
+
+      expect(selectElement).toEqualSelect([['a'], 'b', 'c']);
+      expect(_.rootScope.context['selectProbe'].injector.get(NgValueController).seenValue).toEqual("");
+
+      selectElement.querySelectorAll('option')[1].selected = true;
+      _.triggerEvent(selectElement, 'change');
+
+      expect(selectElement).toEqualSelect(['a', ['b'], 'c']);
+      expect(_.rootScope.context['selectProbe'].injector.get(NgValueController).seenValue).toEqual("b");
+    });
+
+    it('should update model before calling function when using ng-change', (Application app) {
+      var fooElement = _.compile(
+          '<div value-ctrl>'
+          '<select ng-change="ctrl.onSelectionChanged()" probe="selectProbe" ng-model="ctrl.currentValue">'
+          '<option value="a">aaa</option>'
+          '<option value="b">bbb</option>'
+          '<option value="c">ccc</option>'
+          '</select>'
+          '</div>');
       var selectElement = fooElement.children.first;
       _.rootScope.apply();
 

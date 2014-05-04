@@ -45,7 +45,7 @@ main() {
     addTest('copy');
     addTest('cut');
     // The event name differs from the ng- directive name.
-    addTest('doubleclick', 'MouseEvent', 'dblclick');
+    addTest('doubleclick');
     addTest('drag');
     addTest('dragend');
     addTest('dragenter');
@@ -70,7 +70,7 @@ main() {
     addTest('mouseout');
     addTest('mouseover');
     addTest('mouseup');
-    addTest('mousewheel', 'MouseEvent', 'wheel');
+    addTest('mousewheel');
     addTest('paste');
     addTest('reset');
     addTest('scroll');
