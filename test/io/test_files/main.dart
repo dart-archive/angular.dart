@@ -2,10 +2,9 @@ library test_files.main;
 
 import 'package:angular/core/annotation_src.dart';
 
-@Decorator(
-    children: Directive.TRANSCLUDE_CHILDREN,
+@Template(
     selector:'[ng-if]',
-    map: const {'.': '=>ngIfCondition'})
+    map: const {'ng-if': '=>ngIfCondition'})
 class NgIfDirective {
   bool ngIfCondition;
 }

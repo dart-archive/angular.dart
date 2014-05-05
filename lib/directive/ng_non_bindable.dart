@@ -20,5 +20,5 @@ part of angular.directive;
  */
 @Decorator(
     selector: '[ng-non-bindable]',
-    children: Directive.IGNORE_CHILDREN)
+    compileChildren: false)
 class NgNonBindable {}

@@ -4,10 +4,11 @@ import '../_specs.dart';
 import 'package:angular/application_factory.dart';
 
 void main() {
-  describe('DirectiveMap', () {
+  describe('DirectiveMap on @Component and @Decorator', () {
 
     beforeEachModule((Module module) {
-      module..bind(AnnotatedIoComponent);
+      module..bind(AnnotatedIoComponent)
+            ..type(AnnotatedTemplate);
     });
 
     it('should extract attr map from annotated component', (DirectiveMap directives) {
@@ -36,6 +37,28 @@ void main() {
       });
     });
 
+    it('should extract attr map from annotated template', (DirectiveMap directives) {
+      var annotations = directives.annotationsFor(AnnotatedTemplate);
+      expect(annotations.length).toEqual(1);
+      expect(annotations[0] is Template).toBeTruthy();
+
+      Template annotation = annotations[0];
+      expect(annotation.selector).toEqual('[template]');
+      expect(annotation.visibility).toEqual(Directive.LOCAL_VISIBILITY);
+      expect(annotation.exportExpressions).toEqual(['exportExpressions']);
+      expect(annotation.module).toEqual(AnnotatedTemplate.module);
+      expect(annotation.map).toEqual({
+          'template': '=>template',
+          'attr': '@attr',
+          'expr': '<=>expr',
+          'expr-one-way': '=>exprOneWay',
+          'expr-one-way-one-shot': '=>!exprOneWayOneShot',
+          'callback': '&callback',
+          'expr-one-way2': '=>exprOneWay2',
+          'expr-two-way': '<=>exprTwoWay'
+      });
+    });
+
     describe('exceptions', () {
       var baseModule;
       beforeEach(() {
@@ -53,7 +76,7 @@ void main() {
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Mapping for attribute foo is already defined (while '
-        'processing annottation for field foo of Bad1Component)');
+                   'processing annotation for field foo of Bad1Component)');
       });
 
       it('should throw when annotated both getter and setter', () {
@@ -64,7 +87,7 @@ void main() {
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Attribute annotation for foo is defined more than once '
-        'in Bad2Component');
+                   'in Bad2Component');
       });
     });
 
@@ -112,12 +135,51 @@ class NullParser implements Parser {
       'foo': '=>foo'
     })
 class AnnotatedIoComponent {
-  static module() => new Module()..bind(String, toFactory: (i) => i.get(AnnotatedIoComponent),
+  static module() => new Module()..bind(
+      String,
+      toFactory: (i) => i.get(AnnotatedIoComponent),
       visibility: Directive.LOCAL_VISIBILITY);
 
   AnnotatedIoComponent(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
   }
+
+  @NgAttr('attr')
+  String attr;
+
+  @NgTwoWay('expr')
+  String expr;
+
+  @NgOneWay('expr-one-way')
+  String exprOneWay;
+
+  @NgOneWayOneTime('expr-one-way-one-shot')
+  String exprOneWayOneShot;
+
+  @NgCallback('callback')
+  Function callback;
+
+  @NgOneWay('expr-one-way2')
+  set exprOneWay2(val) {}
+
+  @NgTwoWay('expr-two-way')
+  get exprTwoWay => null;
+  set exprTwoWay(val) {}
+}
+
+@Template(
+    selector: '[template]',
+    visibility: Directive.LOCAL_VISIBILITY,
+    module: AnnotatedTemplate.module,
+    exportExpressions: const ['exportExpressions'],
+    map: const {'template': '=>template'})
+class AnnotatedTemplate {
+  static module() => new Module()..bind(
+      String,
+      toFactory: (i) => i.get(AnnotatedTemplate),
+      visibility: Directive.LOCAL_VISIBILITY);
+
+  var template;
 
   @NgAttr('attr')
   String attr;
@@ -149,6 +211,7 @@ class AnnotatedIoComponent {
       'foo': '=>foo'
     })
 class Bad1Component {
+  // The mapping for foo is already defined in @Component
   @NgOneWay('foo')
   String foo;
 }
@@ -157,6 +220,7 @@ class Bad1Component {
     selector: 'bad2',
     template: r'<content></content>')
 class Bad2Component {
+  // The mapping for foo is defined on two different attributes
   @NgOneWay('foo')
   get foo => null;
 

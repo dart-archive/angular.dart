@@ -3,14 +3,19 @@ library angular.dom.element_binder_spec;
 import '../_specs.dart';
 import 'dart:mirrors';
 
-@Component(selector:'component')            class _Component{}
-@Decorator(selector:'[ignore-children]',
-             children: Directive.IGNORE_CHILDREN)
-                                              class _IgnoreChildren{}
-@Decorator(selector:'[structural]',
-             children: Directive.TRANSCLUDE_CHILDREN)
-                                              class _Structural{}
-@Decorator(selector:'[directive]')          class _DirectiveAttr{}
+@Component(selector:'component')
+class _Component{}
+
+@Decorator(
+    selector:'[ignore-children]',
+    compileChildren: false)
+class _IgnoreChildren{}
+
+@Template(selector:'[structural]')
+class _Structural{}
+
+@Decorator(selector:'[directive]')
+class _DirectiveAttr{}
 
 
 directiveFor(i) {
@@ -50,7 +55,7 @@ main() => describe('ElementBinderBuilder', () {
 
     expect(b.decorators.length).toEqual(1);
     expect(b.component).toBeNull();
-    expect(b.childMode).toEqual(Directive.COMPILE_CHILDREN);
+    expect(b.compileChildren).toBe(true);
 
   });
 
@@ -72,6 +77,6 @@ main() => describe('ElementBinderBuilder', () {
 
     expect(b.decorators.length).toEqual(1);
     expect(b.component).toBeNull();
-    expect(b.childMode).toEqual(Directive.IGNORE_CHILDREN);
+    expect(b.compileChildren).toBe(false);
   });
 });
