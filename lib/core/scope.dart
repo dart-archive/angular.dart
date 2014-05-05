@@ -84,46 +84,6 @@ class ScopeDigestTTL {
   ScopeDigestTTL.value(this.ttl);
 }
 
-//TODO(misko): I don't think this should be in scope.
-class ScopeLocals implements Map {
-  static wrapper(scope, Map<String, Object> locals) =>
-      new ScopeLocals(scope, locals);
-
-  Map _scope;
-  Map<String, Object> _locals;
-
-  ScopeLocals(this._scope, this._locals);
-
-  void operator []=(String name, value) {
-    _scope[name] = value;
-  }
-  dynamic operator [](String name) {
-    // Map needed to clear Dart2js warning
-    Map map = _locals.containsKey(name) ? _locals : _scope;
-    return map[name];
-  }
-
-  bool get isEmpty => _scope.isEmpty && _locals.isEmpty;
-  bool get isNotEmpty => _scope.isNotEmpty || _locals.isNotEmpty;
-  List<String> get keys => _scope.keys;
-  List get values => _scope.values;
-  int get length => _scope.length;
-
-  void forEach(fn) {
-    _scope.forEach(fn);
-  }
-  dynamic remove(key) => _scope.remove(key);
-  void clear() {
-    _scope.clear;
-  }
-  bool containsKey(key) => _scope.containsKey(key);
-  bool containsValue(key) => _scope.containsValue(key);
-  void addAll(map) {
-    _scope.addAll(map);
-  }
-  dynamic putIfAbsent(key, fn) => _scope.putIfAbsent(key, fn);
-}
-
 /**
  * [Scope] is represents a collection of [watch]es [observe]ers, and [context]
  * for the watchers, observers and [eval]uations. Scopes structure loosely
@@ -139,6 +99,9 @@ class Scope {
    * The default execution context for [watch]es [observe]ers, and [eval]uation.
    */
   final context;
+
+  bool hasLocal(name) => context is ContextLocals && (context as ContextLocals).hasProperty(name);
+  dynamic getLocal(name) => (context as ContextLocals)[name];
 
   /**
    * The [RootScope] of the application.
@@ -184,7 +147,7 @@ class Scope {
   /// Do not use. Exposes internal state for testing.
   bool get hasOwnStreams => _streams != null  && _streams._scope == this;
 
-  Scope(Object this.context, this.rootScope, this._parentScope,
+  Scope(this.context, this.rootScope, this._parentScope,
         this._readWriteGroup, this._readOnlyGroup, this.id,
         this._stats);
 
@@ -206,7 +169,7 @@ class Scope {
    *   by reference. When watching a collection, the reaction function receives a
    *   [CollectionChangeItem] that lists all the changes.
    */
-  Watch watch(String expression, ReactionFn reactionFn,  {context,
+  Watch watch(String expression, ReactionFn reactionFn, {context,
       FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
     assert(isAttached);
     assert(expression is String);
@@ -246,8 +209,8 @@ class Scope {
            expression is String ||
            expression is Function);
     if (expression is String && expression.isNotEmpty) {
-      var obj = locals == null ? context : new ScopeLocals(context, locals);
-      return rootScope._parser(expression).eval(obj);
+      var ctx = locals == null ? context : new ContextLocals(context, locals);
+      return rootScope._parser(expression).eval(ctx);
     }
 
     assert(locals == null);
@@ -323,7 +286,7 @@ class Scope {
     _parentScope = null;
   }
 
-  _assertInternalStateConsistency() {
+  void _assertInternalStateConsistency() {
     assert((() {
       rootScope._verifyStreams(null, '', []);
       return true;
@@ -360,7 +323,7 @@ class Scope {
   }
 }
 
-_mapEqual(Map a, Map b) => a.length == b.length &&
+bool _mapEqual(Map a, Map b) => a.length == b.length &&
     a.keys.every((k) => b.containsKey(k) && a[k] == b[k]);
 
 /**
@@ -376,11 +339,11 @@ class ScopeStats {
   final evalStopwatch = new AvgStopwatch();
   final processStopwatch = new AvgStopwatch();
 
-  List<int> _digestLoopTimes = [];
+  final _digestLoopTimes = <int>[];
   int _flushPhaseDuration = 0 ;
   int _assertFlushPhaseDuration = 0;
 
-  int _loopNo = 0;
+  int _loopNo;
   ScopeStatsEmitter _emitter;
   ScopeStatsConfig _config;
 
@@ -390,7 +353,7 @@ class ScopeStats {
   ScopeStats(this._emitter, this._config);
 
   void digestStart() {
-    _digestLoopTimes = [];
+    _digestLoopTimes.clear();
     _stopwatchReset();
     _loopNo = 0;
   }
@@ -401,7 +364,7 @@ class ScopeStats {
       processStopwatch.elapsedMicroseconds;
   }
 
-  _stopwatchReset() {
+  void _stopwatchReset() {
     fieldStopwatch.reset();
     evalStopwatch.reset();
     processStopwatch.reset();
@@ -410,10 +373,9 @@ class ScopeStats {
   void digestLoop(int changeCount) {
     _loopNo++;
     if (_config.emit && _emitter != null) {
-      _emitter.emit(_loopNo.toString(), fieldStopwatch, evalStopwatch,
-        processStopwatch);
+      _emitter.emit(_loopNo.toString(), fieldStopwatch, evalStopwatch, processStopwatch);
     }
-    _digestLoopTimes.add( _allStagesDuration() );
+    _digestLoopTimes.add(_allStagesDuration());
     _stopwatchReset();
   }
 
@@ -424,23 +386,25 @@ class ScopeStats {
   void domWriteEnd() {}
   void domReadStart() {}
   void domReadEnd() {}
+
   void flushStart() {
     _stopwatchReset();
   }
+
   void flushEnd() {
     if (_config.emit && _emitter != null) {
-      _emitter.emit(RootScope.STATE_FLUSH, fieldStopwatch, evalStopwatch,
-        processStopwatch);
+      _emitter.emit(RootScope.STATE_FLUSH, fieldStopwatch, evalStopwatch, processStopwatch);
     }
     _flushPhaseDuration = _allStagesDuration();
   }
+
   void flushAssertStart() {
     _stopwatchReset();
   }
+
   void flushAssertEnd() {
     if (_config.emit && _emitter != null) {
-      _emitter.emit(RootScope.STATE_FLUSH_ASSERT, fieldStopwatch, evalStopwatch,
-        processStopwatch);
+      _emitter.emit(RootScope.STATE_FLUSH_ASSERT, fieldStopwatch, evalStopwatch, processStopwatch);
     }
     _assertFlushPhaseDuration = _allStagesDuration();
   }
@@ -466,9 +430,9 @@ class ScopeStatsEmitter {
 
   static pad(String str, int size) => _PAD_.substring(0, max(size - str.length, 0)) + str;
 
-  _ms(num value) => '${pad(_nfDec.format(value), 9)} ms';
-  _us(num value) => _ms(value / 1000);
-  _tally(num value) => '${pad(_nfInt.format(value), 6)}';
+  String _ms(num value) => '${pad(_nfDec.format(value), 9)} ms';
+  String _us(num value) => _ms(value / 1000);
+  String _tally(num value) => '${pad(_nfInt.format(value), 6)}';
 
   /**
    * Emit a message based on the phase and state of stopwatches.
@@ -492,9 +456,8 @@ class ScopeStatsEmitter {
     return (prefix == '1' ? _HEADER_ : '')  + '     #$prefix:';
   }
 
-  String _stat(AvgStopwatch s) {
-    return '${_tally(s.count)} / ${_us(s.elapsedMicroseconds)} @(${_tally(s.ratePerMs)} #/ms)';
-  }
+  String _stat(AvgStopwatch s) =>
+      '${_tally(s.count)} / ${_us(s.elapsedMicroseconds)} @(${_tally(s.ratePerMs)} #/ms)';
 }
 
 /**
@@ -505,6 +468,7 @@ class ScopeStatsConfig {
   var emit = false;
 
   ScopeStatsConfig();
+
   ScopeStatsConfig.enabled() {
     emit = true;
   }
@@ -570,8 +534,8 @@ class RootScope extends Scope {
    * followed by change detection
    * on non-DOM listeners. Any changes detected are process using the reaction function. The digest
    * phase is repeated as long as at least one change has been detected. By default, after 5
-   * iterations the model is considered unstable and angular exists with an exception. (See
-   * ScopeDigestTTL)
+   * iterations the model is considered unstable and angular exits with an exception. (See
+   * [ScopeDigestTTL])
    *
    * ##flush
    *
@@ -1072,7 +1036,6 @@ class ExpressionVisitor implements syntax.Visitor {
   final ClosureMap _closureMap;
   AST contextRef = scopeContextRef;
 
-
   ExpressionVisitor(this._closureMap);
 
   AST ast;
@@ -1091,8 +1054,7 @@ class ExpressionVisitor implements syntax.Visitor {
   AST visitCollection(syntax.Expression exp) => new CollectionAST(visit(exp));
   AST _mapToAst(syntax.Expression expression) => visit(expression);
 
-  List<AST> _toAst(List<syntax.Expression> expressions) =>
-      expressions.map(_mapToAst).toList();
+  List<AST> _toAst(List<syntax.Expression> expressions) => expressions.map(_mapToAst).toList();
 
   Map<Symbol, AST> _toAstMap(Map<String, syntax.Expression> expressions) {
     if (expressions.isEmpty) return const {};
@@ -1113,37 +1075,47 @@ class ExpressionVisitor implements syntax.Visitor {
     Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
     ast = new MethodAST(visit(exp.object), exp.name, positionals, named);
   }
+
   void visitAccessScope(syntax.AccessScope exp) {
     ast = new FieldReadAST(contextRef, exp.name);
   }
+
   void visitAccessMember(syntax.AccessMember exp) {
     ast = new FieldReadAST(visit(exp.object), exp.name);
   }
+
   void visitBinary(syntax.Binary exp) {
     ast = new PureFunctionAST(exp.operation,
                               _operationToFunction(exp.operation),
                               [visit(exp.left), visit(exp.right)]);
   }
+
+
   void visitPrefix(syntax.Prefix exp) {
     ast = new PureFunctionAST(exp.operation,
                               _operationToFunction(exp.operation),
                               [visit(exp.expression)]);
   }
+
   void visitConditional(syntax.Conditional exp) {
     ast = new PureFunctionAST('?:', _operation_ternary,
                               [visit(exp.condition), visit(exp.yes),
                               visit(exp.no)]);
   }
+
   void visitAccessKeyed(syntax.AccessKeyed exp) {
     ast = new ClosureAST('[]', _operation_bracket,
                              [visit(exp.object), visit(exp.key)]);
   }
+
   void visitLiteralPrimitive(syntax.LiteralPrimitive exp) {
     ast = new ConstantAST(exp.value);
   }
+
   void visitLiteralString(syntax.LiteralString exp) {
     ast = new ConstantAST(exp.value);
   }
+
   void visitLiteralArray(syntax.LiteralArray exp) {
     List<AST> items = _toAst(exp.elements);
     ast = new PureFunctionAST('[${items.join(', ')}]', new ArrayFn(), items);
@@ -1175,15 +1147,19 @@ class ExpressionVisitor implements syntax.Visitor {
   void visitCallFunction(syntax.CallFunction exp) {
     _notSupported("function's returing functions");
   }
+
   void visitAssign(syntax.Assign exp) {
     _notSupported('assignement');
   }
+
   void visitLiteral(syntax.Literal exp) {
     _notSupported('literal');
   }
+
   void visitExpression(syntax.Expression exp) {
     _notSupported('?');
   }
+
   void visitChain(syntax.Chain exp) {
     _notSupported(';');
   }
@@ -1287,3 +1263,46 @@ class _FormatterWrapper extends FunctionApply {
     return value;
   }
 }
+
+class ClosureMapLocalsAware implements ClosureMap {
+  final ClosureMap wrappedClsMap;
+
+  ClosureMapLocalsAware(this.wrappedClsMap);
+
+  Getter lookupGetter(String name) {
+    var getter;
+    return (o) {
+      if (o is ContextLocals) {
+        var ctx = o as ContextLocals;
+        if (ctx.hasProperty(name)) return ctx[name];
+        o = ctx.rootContext;
+      }
+      if (getter == null) getter = wrappedClsMap.lookupGetter(name);
+      return getter(o);
+    };
+  }
+
+  Setter lookupSetter(String name) {
+    var setter = wrappedClsMap.lookupSetter(name);
+    return (o, value) {
+      return o is ContextLocals ?
+          setter(o.rootContext, value) :
+          setter(o, value);
+    };
+  }
+
+  MethodClosure lookupFunction(String name, CallArguments arguments) {
+    var fn = wrappedClsMap.lookupFunction(name, arguments);
+    return (o, pArgs, nArgs) {
+      if (o is ContextLocals) {
+        var ctx = o as ContextLocals;
+        if (ctx.hasProperty(name)) return fn({name: ctx[name]}, pArgs, nArgs);
+        o = ctx.rootContext;
+      }
+      return fn(o, pArgs, nArgs);
+    };
+  }
+
+  Symbol lookupSymbol(String name) => wrappedClsMap.lookupSymbol(name);
+}
+

@@ -51,7 +51,6 @@ import 'dart:html';
 metaTargets: const [
     Injectable,
     Decorator,
-    Controller,
     Component,
     Formatter
 ])
@@ -62,7 +61,7 @@ class _DynamicApplication extends Application {
     ngModule
         ..bind(MetadataExtractor, toImplementation: DynamicMetadataExtractor)
         ..bind(FieldGetterFactory, toImplementation: DynamicFieldGetterFactory)
-        ..bind(ClosureMap, toImplementation: DynamicClosureMap);
+        ..bind(ClosureMap, toFactory: (_) => new ClosureMapLocalsAware(new DynamicClosureMap()));
   }
 
   Injector createInjector() => new DynamicInjector(modules: modules);

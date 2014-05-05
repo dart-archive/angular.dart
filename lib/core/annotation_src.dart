@@ -34,7 +34,7 @@ class Injectable {
 }
 
 /**
- * Abstract supper class of [Controller], [Component], and [Decorator].
+ * Abstract supper class of [Component], and [Decorator].
  */
 abstract class Directive {
 
@@ -301,14 +301,6 @@ class Component extends Directive {
   final bool _resetStyleInheritance;
 
   /**
-   * An expression under which the component's controller instance will be
-   * published into. This allows the expressions in the template to be referring
-   * to controller instance and its properties.
-   */
-  @deprecated
-  final String publishAs;
-
-  /**
    * If set to true, this component will always use shadow DOM.
    * If set to false, this component will never use shadow DOM.
    * If unset, the compiler's default construction strategy will be used
@@ -321,7 +313,6 @@ class Component extends Directive {
     cssUrl,
     applyAuthorStyles,
     resetStyleInheritance,
-    this.publishAs,
     module,
     map,
     selector,
@@ -351,7 +342,6 @@ class Component extends Directive {
           cssUrl: cssUrls,
           applyAuthorStyles: applyAuthorStyles,
           resetStyleInheritance: resetStyleInheritance,
-          publishAs: publishAs,
           map: newMap,
           module: module,
           selector: selector,
@@ -395,62 +385,6 @@ class Decorator extends Directive {
           children: children,
           map: newMap,
           module: module,
-          selector: selector,
-          visibility: visibility,
-          exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
-}
-
-/**
- * Meta-data marker placed on a class which should act as a controller for your
- * application.
- *
- * Controllers are essentially [Decorator]s with few key differences:
- *
- * * Controllers create a new scope at the element.
- * * Controllers should not do any DOM manipulation.
- * * Controllers are meant for application-logic
- *   (rather then DOM manipulation logic which directives are meant for.)
- *
- * Controllers can implement [AttachAware], [DetachAware] and
- * declare these optional methods:
- *
- * * `attach()` - Called on first [Scope.apply()].
- * * `detach()` - Called on when owning scope is destroyed.
- */
-@deprecated
-class Controller extends Decorator {
-  /**
-   * An expression under which the controller instance will be published into.
-   * This allows the expressions in the template to be referring to controller
-   * instance and its properties.
-   */
-  final String publishAs;
-
-  const Controller({
-                    children: Directive.COMPILE_CHILDREN,
-                    this.publishAs,
-                    map,
-                    module,
-                    selector,
-                    visibility,
-                    exportExpressions,
-                    exportExpressionAttrs
-                    })
-      : super(selector: selector,
-              children: children,
-              visibility: visibility,
-              map: map,
-              module: module,
-              exportExpressions: exportExpressions,
-              exportExpressionAttrs: exportExpressionAttrs);
-
-  Directive _cloneWithNewMap(newMap) =>
-      new Controller(
-          children: children,
-          publishAs: publishAs,
-          module: module,
-          map: newMap,
           selector: selector,
           visibility: visibility,
           exportExpressions: exportExpressions,

@@ -39,7 +39,8 @@ Injector forceNewDirectivesAndFormatters(Injector injector, List<Module> modules
   modules.add(new Module()
       ..bind(Scope, toFactory: (i) {
         var scope = i.parent.get(Scope);
-        return scope.createChild(new PrototypeMap(scope.context));
+        //todo(vicb)
+        return scope.createChild(scope.context);
       }));
 
   return injector.createChild(modules,

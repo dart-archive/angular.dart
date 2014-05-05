@@ -2,6 +2,7 @@ library dirty_checking_change_detector;
 
 import 'dart:collection';
 import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/change_detection/watch_group.dart';
 
 /**
  * [DirtyCheckingChangeDetector] determines which object properties have changed
@@ -369,7 +370,7 @@ class _ChangeIterator<H> implements Iterator<Record<H>>{
  * removing efficient. [DirtyCheckingRecord] also has a [nextChange] field which
  * creates a single linked list of all of the changes for efficient traversal.
  */
-class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
+class DirtyCheckingRecord<H> implements WatchRecord<H> {
   static const List<String> _MODE_NAMES =
       const ['MARKER', 'IDENT', 'GETTER', 'MAP[]', 'ITERABLE', 'MAP'];
   static const int _MODE_MARKER_ = 0;
@@ -414,9 +415,10 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
    * [DirtyCheckingRecord] into different access modes. If Object it sets up
    * reflection. If [Map] then it sets up map accessor.
    */
-  void set object(obj) {
-    _object = obj;
-    if (obj == null) {
+  void set object(Object object) {
+    _object = object;
+
+    if (object == null) {
       _mode = _MODE_IDENTITY_;
       _getter = null;
       return;
@@ -424,7 +426,8 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
 
     if (field == null) {
       _getter = null;
-      if (obj is Map) {
+
+      if (object is Map) {
         if (_mode != _MODE_MAP_) {
           _mode =  _MODE_MAP_;
           currentValue = new _MapChangeRecord();
@@ -436,8 +439,10 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
           // new reference.
           currentValue._revertToPreviousState();
         }
+        return;
+      }
 
-      } else if (obj is Iterable) {
+      if (object is Iterable) {
         if (_mode != _MODE_ITERABLE_) {
           _mode = _MODE_ITERABLE_;
           currentValue = new _CollectionChangeRecord();
@@ -449,6 +454,7 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
           // new reference.
           currentValue._revertToPreviousState();
         }
+        return;
       } else {
         _mode = _MODE_IDENTITY_;
       }
@@ -456,19 +462,32 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
       return;
     }
 
-    if (obj is Map) {
+    if (object is Map) {
       _mode =  _MODE_MAP_FIELD_;
       _getter = null;
-    } else {
-      if (_fieldGetterFactory.isMethod(obj, field)) {
-        _mode = _MODE_IDENTITY_;
-        previousValue = currentValue = _fieldGetterFactory.method(obj, field)(obj);
-        assert(previousValue is Function);
-      } else {
-        _mode = _MODE_GETTER_;
-        _getter = _fieldGetterFactory.getter(obj, field);
-      }
+      return;
     }
+
+    if (object is ContextLocals) {
+      var ctx = object as ContextLocals;
+      if (ctx.hasProperty(field)) {
+        _object = object;
+        _mode =  _MODE_MAP_FIELD_;
+        _getter = null;
+        return;
+      }
+      object = ctx.rootContext;
+    }
+
+    if (_fieldGetterFactory.isMethod(object, field)) {
+      _mode = _MODE_IDENTITY_;
+      previousValue = currentValue = _fieldGetterFactory.method(object, field)(object);
+      assert(previousValue is Function);
+    }
+
+    _mode = _MODE_GETTER_;
+    _getter = _fieldGetterFactory.getter(object, field);
+    currentValue = _getter(object);
   }
 
   bool check() {
@@ -519,8 +538,6 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
 
   String toString() => '${_MODE_NAMES[_mode]}[$field]{$hashCode}';
 }
-
-final Object _INITIAL_ = new Object();
 
 class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   final _records = new Map<dynamic, KeyValueRecord>();

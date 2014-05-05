@@ -12,7 +12,7 @@
  *
  * For example:
  *
- *     <span ng-show="ctrl.isVisible">this text is conditionally visible</span>
+ *     <span ng-show="isVisible">this text is conditionally visible</span>
  *
  */
 library angular.directive;

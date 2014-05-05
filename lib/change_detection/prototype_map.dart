@@ -1,37 +1,47 @@
 part of angular.watch_group;
 
-class PrototypeMap<K, V> implements Map<K,V> {
-  final Map<K, V> prototype;
-  final Map<K, V> self = new Map();
+// todo(vicb) rename the file
+class ContextLocals {
+  // todo(vicb) _parentContext
+  final Object parent;
+  Object _rootContext;
+  final Map _locals = <String, Object>{};
 
-  PrototypeMap(this.prototype);
-
-  void operator []=(name, value) {
-    self[name] = value;
+  ContextLocals(this.parent, [Map<String, Object> locals = null]) {
+    assert(parent != null);
+    if (locals != null) _locals.addAll(locals);
+    _locals[r'$parent'] = parent;
   }
-  V operator [](name) => self.containsKey(name) ? self[name] : prototype[name];
 
-  bool get isEmpty => self.isEmpty && prototype.isEmpty;
-  bool get isNotEmpty => self.isNotEmpty || prototype.isNotEmpty;
-  // todo(vbe) include prototype keys ?
-  Iterable<K> get keys => self.keys;
-  // todo(vbe) include prototype values ?
-  Iterable<V> get values => self.values;
-  int get length => self.length;
+  static ContextLocals wrapper(context, Map<String, Object> locals) =>
+      new ContextLocals(context, locals);
 
-  void forEach(fn) {
-    // todo(vbe) include prototype ?
-    self.forEach(fn);
+  dynamic get rootContext {
+    if (_rootContext == null) {
+      _rootContext = parent is ContextLocals ?
+          (parent as ContextLocals).rootContext :
+          parent;
+    }
+    return _rootContext;
   }
-  V remove(key) => self.remove(key);
-  clear() => self.clear;
-  // todo(vbe) include prototype ?
-  bool containsKey(key) => self.containsKey(key);
-  // todo(vbe) include prototype ?
-  bool containsValue(key) => self.containsValue(key);
-  void addAll(map) {
-    self.addAll(map);
+
+  bool hasProperty(String prop) {
+    return _locals.containsKey(prop) ||
+           parent is ContextLocals && (parent as ContextLocals).hasProperty(prop);
   }
-  // todo(vbe) include prototype ?
-  V putIfAbsent(key, fn) => self.putIfAbsent(key, fn);
+
+  void operator[]=(String prop, value) {
+    _locals[prop] = value;
+  }
+
+  dynamic operator[](String prop) {
+    assert(hasProperty(prop));
+    var context = this;
+
+    while (!context._locals.containsKey(prop)) {
+      // todo(vicb) cache context where prop is defined
+      context = context.parent;
+    }
+    return context._locals[prop];
+  }
 }

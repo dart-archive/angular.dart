@@ -4,11 +4,11 @@
  * The [angular.animate](#angular/angular-animate) library makes it easier to build animations
  * that affect the lifecycle of DOM elements. A useful example of this is animating the
  * removal of an element from the DOM. In order to do this ideally the
- * operation should immediatly execute and manipulate the data model,
+ * operation should immediately execute and manipulate the data model,
  * and the framework should handle the actual remove of the DOM element once
- * the animation complets. This ensures that the logic and model of the
- * application is seperated so that the state of the model can be reasoned
- * about without having to wory about future modifications of the model.
+ * the animation completes. This ensures that the logic and model of the
+ * application is separated so that the state of the model can be reasoned
+ * about without having to worry about future modifications of the model.
  * This library uses computed css styles to calculate the total duration
  * of an animation and handles the addition, removal, and modification of DOM
  * elements for block level directives such as `ng-if`, `ng-repeat`,
@@ -16,15 +16,14 @@
  *
  * To use, install the AnimationModule into your main module:
  *
- *     var module = new Module()
- *       ..install(new AnimationModule());
+ *     var module = new Module()..install(new AnimationModule());
  *
  * Once the module has been installed, all block level DOM manipulations will
  * be routed through the [CssAnimate] class instead of the
  * default [NgAnimate] implementation. This will, in turn,
  * perform the tracking, manipulation, and computation for animations.
  *
- * As an example of how this works, let's walk through what happens whan an
+ * As an example of how this works, let's walk through what happens when an
  * element is added to the DOM. The [CssAnimate] implementation will add the
  * `.ng-enter` class to new DOM elements when they are inserted into the DOM
  * by a directive and will read the computed style. If there is a
@@ -35,7 +34,7 @@
  * precomputed duration) the `.ng-enter` and `.ng-enter-active` classes
  * will be removed from the DOM element.
  *
- * When removing elements from the DOM, a simliar pattern is followed. The
+ * When removing elements from the DOM, a similar pattern is followed. The
  * `.ng-leave` class will be added to an element, the transition and / or
  * keyframe animation duration will be computed, and if it is non-zero the
  * animation will be run by adding the `.ng-leave-active` class. When
@@ -58,7 +57,7 @@
  * Fade out example:
  *
  * HTML:
- *     <div class="goodbye" ng-if="ctrl.visible">
+ *     <div class="goodbye" ng-if="visible">
  *       Goodbye world!
  *     </div>
  *
@@ -71,8 +70,8 @@
  *       opacity: 0;
  *     }
  *
- * This will perform a fade out animation on the 'goodby' div when the
- * `ctrl.visible` property goes from `true` to `false`.
+ * This will perform a fade out animation on the 'goodbye' div when the
+ * `visible` property goes from `true` to `false`.
  *
  * The [CssAnimate] will also do optimizations on running animations by
  * preventing child DOM animations with the [AnimationOptimizer]. This
@@ -129,11 +128,11 @@ final Logger _logger = new Logger('ng.animate');
  * of view construction, and some of the native directives to allow you to add
  * and define css transition and keyframe animations for the styles of your
  * elements.
- * 
+ *
  *   Example html:
  *
  *     <div ng-if="ctrl.myBoolean" class="my-div">...</div>
- *   
+ *
  *   Example css defining an opacity transition over .5 seconds using the
  *   `.ng-enter` and `.ng-leave` css classes:
  *
@@ -144,7 +143,7 @@ final Logger _logger = new Logger('ng.animate');
  *     .my-div.ng-enter-active {
  *       opacity: 1;
  *     }
- *     
+ *
  *     .my-div.ng-leave {
  *       transition: all 500ms;
  *       opacity: 1;

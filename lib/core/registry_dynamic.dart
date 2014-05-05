@@ -3,9 +3,7 @@ library angular.core_dynamic;
 import 'dart:mirrors';
 import 'package:angular/core/annotation_src.dart';
 import 'package:angular/core/registry.dart';
-
-export 'package:angular/core/registry.dart' show
-    MetadataExtractor;
+export 'package:angular/core/registry.dart' show MetadataExtractor;
 
 var _fieldMetadataCache = new Map<Type, Map<String, DirectiveAnnotation>>();
 

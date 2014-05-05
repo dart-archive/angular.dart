@@ -67,3 +67,10 @@ abstract class ParserBackend<T> {
   T newLiteralNumber(num value) => newLiteralPrimitive(value);
   T newLiteralString(String value) => null;
 }
+
+abstract class ClosureMap {
+  Getter lookupGetter(String name);
+  Setter lookupSetter(String name);
+  Symbol lookupSymbol(String name);
+  MethodClosure lookupFunction(String name, CallArguments arguments);
+}

@@ -1,7 +1,7 @@
 part of angular.directive;
 
 /**
- * Base class for NgIf and NgUnless.
+ * Base class for [NgIf] and [NgUnless].
  */
 abstract class _NgUnlessIfAttrDirectiveBase {
   final BoundViewFactory _boundViewFactory;
@@ -10,24 +10,14 @@ abstract class _NgUnlessIfAttrDirectiveBase {
 
   View _view;
 
-  /**
-   * The new child scope.  This child scope is recreated whenever the `ng-if`
-   * subtree is inserted into the DOM and destroyed when it's removed from the
-   * DOM.  Refer
-   * https://github.com/angular/angular.js/wiki/The-Nuances-of-Scope-prototypical-Inheritance prototypical inheritance
-   */
-  Scope _childScope;
-
-  _NgUnlessIfAttrDirectiveBase(this._boundViewFactory, this._viewPort,
-                               this._scope);
+  _NgUnlessIfAttrDirectiveBase(this._boundViewFactory, this._viewPort, this._scope);
 
   // Override in subclass.
   void set condition(value);
 
   void _ensureViewExists() {
     if (_view == null) {
-      _childScope = _scope.createChild(new PrototypeMap(_scope.context));
-      _view = _boundViewFactory(_childScope);
+      _view = _boundViewFactory(_scope);
       var view = _view;
       _scope.rootScope.domWrite(() {
         _viewPort.insert(view);
@@ -41,9 +31,7 @@ abstract class _NgUnlessIfAttrDirectiveBase {
       _scope.rootScope.domWrite(() {
         _viewPort.remove(view);
       });
-      _childScope.destroy();
       _view = null;
-      _childScope = null;
     }
   }
 }

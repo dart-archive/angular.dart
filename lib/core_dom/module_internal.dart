@@ -13,7 +13,8 @@ import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
 
-import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
+// todo vicb
+import 'package:angular/change_detection/watch_group.dart' show Watch, ContextLocals;
 import 'package:angular/core/registry.dart';
 
 import 'package:angular/directive/module.dart' show NgBaseCss;
@@ -62,7 +63,7 @@ class CoreDomModule extends Module {
     bind(TranscludingComponentFactory);
     bind(Content);
     bind(ContentPort, toValue: null);
-    
+
     bind(Http);
     bind(UrlRewriter);
     bind(HttpBackend);
