@@ -117,7 +117,7 @@ class SourceMetadataExtractor {
   }
 }
 
-class DirectiveMetadataCollectingAstVisitor extends RecursiveASTVisitor {
+class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
   final List<DirectiveMetadata> metadata;
   final List<String> templates;
 
