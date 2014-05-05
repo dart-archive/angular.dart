@@ -40,17 +40,25 @@ class InputSelect implements AttachAware {
   }
 
   attach() {
+    var singleSelectMode = () {
+      _model.watchCollection = false;
+      _mode = new _SingleSelectMode(expando, _selectElement, _model, _nullOption, _unknownOption);
+      _mode.onModelChange(_model.viewValue);
+    };
+
+    var multiSelectMode = () {
+      _model.watchCollection = true;
+      _mode = new _MultipleSelectionMode(expando, _selectElement, _model);
+      _mode.onModelChange(_model.viewValue);
+    };
+
+    if (!_selectElement.attributes.containsKey('multiple')) {
+      singleSelectMode();
+    }
     _attrs.observe('multiple', (value) {
       _mode.destroy();
-      if (value == null) {
-        _model.watchCollection = false;
-        _mode = new _SingleSelectMode(expando, _selectElement, _model,
-            _nullOption, _unknownOption);
-      } else {
-        _model.watchCollection = true;
-        _mode = new _MultipleSelectionMode(expando, _selectElement, _model);
-      }
-      _mode.onModelChange(_model.viewValue);
+      if (value == null || value == '') multiSelectMode();
+      else singleSelectMode();
     });
 
     _selectElement.onChange.listen((event) => _mode.onViewChange(event));

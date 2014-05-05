@@ -264,6 +264,7 @@ class NgModelMinLengthValidator implements NgValidator {
 
   NgModelMinLengthValidator(NgModel this._ngModel) {
     _ngModel.addValidator(this);
+    _minlength = 0;
   }
 
   bool isValid(modelValue) {

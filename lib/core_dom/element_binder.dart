@@ -124,10 +124,9 @@ class ElementBinder {
     dstPathFn.assign(controller, _parser(expression).bind(scope.context, ScopeLocals.wrapper));
   }
 
-
-  void _createAttrMappings(directive, scope, List<MappingParts> mappings, nodeAttrs, formatters,
+  void _createAttrMappings(directive, scope, DirectiveRef ref, nodeAttrs, formatters,
                            tasks) {
-    mappings.forEach((MappingParts p) {
+    ref.mappings.forEach((MappingParts p) {
       var attrName = p.attrName;
       var dstExpression = p.dstExpression;
 
@@ -154,6 +153,10 @@ class ElementBinder {
       switch (p.mode) {
         case '@': // string
           var taskId = tasks.registerTask();
+          if (ref.element is dom.Element &&
+              !(ref.element as dom.Element).attributes.containsKey(attrName)) {
+            tasks.completeTask(taskId);
+          }
           nodeAttrs.observe(attrName, (value) {
             dstPathFn.assign(directive, value);
             tasks.completeTask(taskId);
@@ -221,7 +224,7 @@ class ElementBinder {
 
         if (ref.mappings.isNotEmpty) {
           if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-          _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, formatters, tasks);
+          _createAttrMappings(directive, scope, ref, nodeAttrs, formatters, tasks);
         }
 
         if (directive is AttachAware) {
