@@ -116,11 +116,11 @@ class DirectiveSelector {
       elementSelectors.forEach((_ElementSelector elementSelector) {
         classes.forEach((className, _) {
           partialSelection = elementSelector.selectClass(builder,
-          partialSelection, node, className);
+              partialSelection, node, className);
         });
         attrs.forEach((attrName, value) {
           partialSelection = elementSelector.selectAttr(builder,
-          partialSelection, node, attrName, value);
+              partialSelection, node, attrName, value);
         });
       });
     }
@@ -152,7 +152,7 @@ class DirectiveSelector {
  */
 @Injectable()
 class DirectiveSelectorFactory {
-  ElementBinderFactory _binderFactory;
+  final ElementBinderFactory _binderFactory;
 
   DirectiveSelectorFactory(this._binderFactory);
 
@@ -166,7 +166,7 @@ class _Directive {
 
   _Directive(this.type, this.annotation);
 
-  toString() => annotation.selector;
+  String toString() => annotation.selector;
 }
 
 class _ContainsSelector {
@@ -198,7 +198,7 @@ class _SelectorPart {
   const _SelectorPart.fromAttribute(this.attrName, this.attrValue)
       : element = null, className = null;
 
-  toString() =>
+  String toString() =>
     element == null
       ? (className == null
          ? (attrValue == '' ? '[$attrName]' : '[$attrName=$attrValue]')
@@ -344,7 +344,7 @@ class _ElementSelector {
                   () => new RegExp('^${key.replaceAll('*', r'[\w\-]+')}\$'))
               .hasMatch(attrName), orElse: () => null);
 
-  toString() => 'ElementSelector($name)';
+  String toString() => 'ElementSelector($name)';
 }
 
 List<_SelectorPart> _splitCss(String selector, Type type) {

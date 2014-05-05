@@ -75,9 +75,12 @@ class ElementBinder {
 
   var _directiveCache;
   List<DirectiveRef> get _usableDirectiveRefs {
-    if (_directiveCache != null) return _directiveCache;
-    if (component != null) return _directiveCache = new List.from(decorators)..add(component);
-    return _directiveCache = decorators;
+    if (_directiveCache == null) {
+      _directiveCache = component != null ?
+          (new List.from(decorators)..add(component)) :
+          decorators;
+    }
+    return _directiveCache;
   }
 
   bool get hasDirectivesOrEvents =>
@@ -216,11 +219,10 @@ class ElementBinder {
         if (controller is AttachAware) {
           var taskId = tasks.registerTask();
           Watch watch;
-          watch = scope.watch('1', // Cheat a bit.
+          watch = scope.watch('::1', // Cheat a bit.
               (_, __) {
-            watch.remove();
-            tasks.completeTask(taskId);
-          });
+                tasks.completeTask(taskId);
+              });
         }
 
         tasks.doneRegistering();

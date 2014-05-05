@@ -12,12 +12,11 @@ class NodeCursor {
   dom.Node get current => index < elements.length ? elements[index] : null;
 
   bool descend() {
-    var childNodes = elements[index].nodes;
-    var hasChildren = childNodes != null && childNodes.isNotEmpty;
+    var hasChildren = elements[index].hasChildNodes();
 
     if (hasChildren) {
       stack..add(index)..add(elements);
-      elements = new List.from(childNodes);
+      elements = new List.from(elements[index].nodes);
       index = 0;
     }
 
@@ -45,5 +44,5 @@ class NodeCursor {
 
   NodeCursor remove() => new NodeCursor([elements.removeAt(index)..remove()]);
 
-  toString() => "[NodeCursor: $elements $index]";
+  String toString() => "[NodeCursor: $elements $index]";
 }
