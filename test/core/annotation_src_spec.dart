@@ -60,7 +60,7 @@ void main() => describe('annotations', () {
   describe('decorator', () {
     it('should set all fields on clone when all the fields are set', () {
       var decorator = new Decorator(
-          children: 'xxx',
+          compileChildren: false,
           map: {},
           selector: '',
           module: (){},
@@ -77,11 +77,30 @@ void main() => describe('annotations', () {
     });
   });
 
+  describe('template', () {
+    it('should set all fields on clone when all the fields are set', () {
+      var template = new Template(
+          map: {},
+          selector: '',
+          module: (){},
+          visibility: Directive.LOCAL_VISIBILITY,
+          exportExpressions: [],
+          exportExpressionAttrs: []
+      );
+
+      // Check that no fields are null
+      expect(nullFields(template)).toEqual([]);
+
+      // Check that the clone is the same as the original.
+      expect(variables(cloneWithNewMap(template, {}))).toEqual(variables(template));
+    });
+  });
+
   describe('controller', () {
     it('should set all fields on clone when all the fields are set', () {
       var controller = new Controller(
           publishAs: '',
-          children: 'xxx',
+          compileChildren: false,
           map: {},
           selector: '',
           module: (){},

@@ -53,7 +53,7 @@ class MyMap extends AnnotationMap<MyAnnotation> {
 class MyAnnotation {
   final String name;
 
-  const MyAnnotation(String this.name);
+  const MyAnnotation(this.name);
 
   toString() => name;
   get hashCode => name.hashCode;

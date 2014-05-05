@@ -138,13 +138,14 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
   }
 
   visitClassDeclaration(ClassDeclaration clazz) {
-    // Check class annotations for presense of Component/Decorator.
+    // Check class annotations for presence of Component or Decorator.
     clazz.metadata.forEach((Annotation ann) {
       if (ann.arguments == null) return; // Ignore non-class annotations.
       // TODO(pavelj): this is not a safe check for the type of the
       // annotations, but good enough for now.
-      if (ann.name.name != 'Component'
-          && ann.name.name != 'Decorator') return;
+      if (ann.name.name != 'Component' &&
+          ann.name.name != 'Decorator' &&
+          ann.name.name != 'Template') return;
 
       bool isComponent = ann.name.name == 'Component';
 

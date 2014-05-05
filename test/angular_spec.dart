@@ -109,6 +109,7 @@ main() {
         "angular.core.annotation_src.NgOneWay",
         "angular.core.annotation_src.NgOneWayOneTime",
         "angular.core.annotation_src.NgTwoWay",
+        "angular.core.annotation_src.Template",
         "angular.core.dom_internal.Animate",
         "angular.core.dom_internal.Animation",
         "angular.core.dom_internal.AnimationResult",

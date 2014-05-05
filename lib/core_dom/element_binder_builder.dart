@@ -18,11 +18,12 @@ class ElementBinderFactory {
   ElementBinder binder(ElementBinderBuilder b) =>
       new ElementBinder(_perf, _expando, _parser, _componentFactory,
           _transcludingComponentFactory, _shadowDomComponentFactory,
-          b.component, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
+          b.component, b.decorators, b.onEvents, b.bindAttrs, b.compileChildren);
+
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
       new TemplateElementBinder(_perf, _expando, _parser, _componentFactory,
           _transcludingComponentFactory, _shadowDomComponentFactory,
-          b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
+          b.template, transclude, b.onEvents, b.bindAttrs, b.compileChildren);
 }
 
 /**
@@ -37,55 +38,49 @@ class ElementBinderBuilder {
   final onEvents = <String, String>{};
   final bindAttrs = <String, String>{};
 
-  var decorators = <DirectiveRef>[];
-  DirectiveRef template;
   ViewFactory templateViewFactory;
+  bool isTemplate = false;
+  var decorators = <DirectiveRef>[];
 
   DirectiveRef component;
+  DirectiveRef template;
 
-  // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
-  String childMode = Directive.COMPILE_CHILDREN;
+  bool compileChildren = true;
 
   ElementBinderBuilder(this._factory);
 
   addDirective(DirectiveRef ref) {
     var annotation = ref.annotation;
-    var children = annotation.children;
+    compileChildren = compileChildren && annotation.compileChildren;
 
-    if (annotation.children == Directive.TRANSCLUDE_CHILDREN) {
+    if (annotation is Template) {
       template = ref;
+      isTemplate = true;
     } else if (annotation is Component) {
       component = ref;
     } else {
       decorators.add(ref);
     }
 
-    if (annotation.children == Directive.IGNORE_CHILDREN) {
-      childMode = annotation.children;
-    }
-
     if (annotation.map != null) annotation.map.forEach((attrName, mapping) {
       Match match = _MAPPING.firstMatch(mapping);
-      if (match == null) {
-        throw "Unknown mapping '$mapping' for attribute '$attrName'.";
-      }
+      if (match == null) throw "Unknown mapping '$mapping' for attribute '$attrName'.";
+
       var mode = match[1];
       var dstPath = match[2];
 
-      String dstExpression = dstPath.isEmpty ? attrName : dstPath;
+      if (dstPath.isEmpty) dstPath = attrName;
 
-      ref.mappings.add(new MappingParts(attrName, mode, dstExpression, mapping));
+      ref.mappings.add(new MappingParts(attrName, mode, dstPath, mapping));
     });
   }
 
   ElementBinder get binder {
-    if (template != null) {
+    if (isTemplate) {
       var transclude = _factory.binder(this);
       return _factory.templateBinder(this, transclude);
-
     } else {
       return _factory.binder(this);
     }
-
   }
 }

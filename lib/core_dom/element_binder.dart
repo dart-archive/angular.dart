@@ -58,20 +58,16 @@ class ElementBinder {
 
   final DirectiveRef component;
 
-  // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
-  final String childMode;
+  final bool compileChildren;
 
   ElementBinder(this._perf, this._expando, this._parser,
                 this._componentFactory,
                 this._transcludingComponentFactory,
                 this._shadowDomComponentFactory,
                 this.component, this.decorators,
-                this.onEvents, this.bindAttrs, this.childMode);
+                this.onEvents, this.bindAttrs, this.compileChildren);
 
   final bool hasTemplate = false;
-
-  bool get shouldCompileChildren =>
-      childMode == Directive.COMPILE_CHILDREN;
 
   var _directiveCache;
   List<DirectiveRef> get _usableDirectiveRefs {
@@ -127,10 +123,18 @@ class ElementBinder {
     dstPathFn.assign(controller, _parser(expression).bind(scope.context, ScopeLocals.wrapper));
   }
 
-  _createAttrMappings(controller, scope, List<MappingParts> mappings, nodeAttrs, formatters, tasks) {
-    mappings.forEach((MappingParts p) {
+  _createAttrMappings(controller, scope, DirectiveRef ref, nodeAttrs, formatters, tasks) {
+    ref.mappings.forEach((MappingParts p) {
       var attrName = p.attrName;
       var dstExpression = p.dstExpression;
+
+      var attrValue;
+      if (nodeAttrs == null) {
+        assert(ref.annotation is Template);
+        attrValue = ref._templateAttrs[attrName];
+      } else {
+        attrValue = nodeAttrs[attrName];
+      }
 
       Expression dstPathFn = _parser(dstExpression);
       if (!dstPathFn.isAssignable) {
@@ -142,8 +146,7 @@ class ElementBinder {
       var bindAttr = bindAttrs["bind-${p.attrName}"];
       if (bindAttr != null) {
         if (p.mode == '<=>') {
-          _bindTwoWay(tasks, bindAttr, scope, dstPathFn,
-              controller, formatters, dstExpression);
+          _bindTwoWay(tasks, bindAttr, scope, dstPathFn, controller, formatters, dstExpression);
         } else if(p.mode == '&') {
           _bindCallback(dstPathFn, controller, bindAttr, scope);
         } else {
@@ -155,29 +158,32 @@ class ElementBinder {
       switch (p.mode) {
         case '@': // string
           var taskId = tasks.registerTask();
-          nodeAttrs.observe(attrName, (value) {
-            dstPathFn.assign(controller, value);
+          if (nodeAttrs == null) {
+            dstPathFn.assign(controller, attrValue);
             tasks.completeTask(taskId);
-          });
+          } else {
+            nodeAttrs.observe(attrName, (value) {
+              dstPathFn.assign(controller, value);
+              tasks.completeTask(taskId);
+            });
+          }
           break;
 
         case '<=>': // two-way
-          if (nodeAttrs[attrName] == null) return;
+          if (attrValue == null) return;
 
-          _bindTwoWay(tasks, nodeAttrs[attrName], scope, dstPathFn,
-              controller, formatters, dstExpression);
+          _bindTwoWay(tasks, attrValue, scope, dstPathFn, controller, formatters, dstExpression);
           break;
 
         case '=>': // one-way
-          if (nodeAttrs[attrName] == null) return;
-          _bindOneWay(tasks, nodeAttrs[attrName], scope,
-              dstPathFn, controller, formatters);
+          if (attrValue == null) return;
+          _bindOneWay(tasks, attrValue, scope, dstPathFn, controller, formatters);
           break;
 
         case '=>!': //  one-way, one-time
-          if (nodeAttrs[attrName] == null) return;
+          if (attrValue == null) return;
 
-          Expression attrExprFn = _parser(nodeAttrs[attrName]);
+          Expression attrExprFn = _parser(attrValue);
           var watch;
           watch = scope.watch(nodeAttrs[attrName], (value, _) {
             if (dstPathFn.assign(controller, value) != null) {
@@ -187,7 +193,7 @@ class ElementBinder {
           break;
 
         case '&': // callback
-          _bindCallback(dstPathFn, controller, nodeAttrs[attrName], scope);
+          _bindCallback(dstPathFn, controller, attrValue, scope);
           break;
       }
     });
@@ -212,8 +218,7 @@ class ElementBinder {
         } : null);
 
         if (ref.mappings.isNotEmpty) {
-          if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-          _createAttrMappings(controller, scope, ref.mappings, nodeAttrs, formatters, tasks);
+          _createAttrMappings(controller, scope, ref, nodeAttrs, formatters, tasks);
         }
 
         if (controller is AttachAware) {
@@ -341,12 +346,12 @@ class ElementBinder {
  * Private class used for managing controller.attach() calls
  */
 class _TaskList {
-  var onDone;
+  final Function _onDone;
   final List _tasks = [];
   bool isDone = false;
 
-  _TaskList(this.onDone) {
-    if (onDone == null) isDone = true;
+  _TaskList(this._onDone) {
+    if (_onDone == null) isDone = true;
   }
 
   int registerTask() {
@@ -359,12 +364,12 @@ class _TaskList {
     if (isDone) return;
     _tasks[id] = true;
     if (_tasks.every((a) => a)) {
-      onDone();
+      _onDone();
       isDone = true;
     }
   }
 
-  doneRegistering() {
+  void doneRegistering() {
     completeTask(registerTask());
   }
 }
