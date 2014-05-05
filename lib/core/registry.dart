@@ -42,20 +42,20 @@ abstract class AnnotationsMap<K> {
       extractMetadata(type)
           .where((annotation) => annotation is K)
           .forEach((annotation) {
-            map.putIfAbsent(annotation, () => []).add(type);
+            map.putIfAbsent(annotation, () => <Type>[]).add(type);
           });
     });
   }
 
-  List operator[](K annotation) {
+  List<Type> operator[](K annotation) {
     var value = map[annotation];
     if (value == null) throw 'No $annotation found!';
     return value;
   }
 
   void forEach(fn(K, Type)) {
-    map.forEach((annotation, types) {
-      types.forEach((type) {
+    map.forEach((K annotation, List<Type> types) {
+      types.forEach((Type type) {
         fn(annotation, type);
       });
     });
@@ -63,8 +63,8 @@ abstract class AnnotationsMap<K> {
 
   List<K> annotationsFor(Type type) {
     var res = <K>[];
-    forEach((ann, annType) {
-      if (annType == type) res.add(ann);
+    map.forEach((K ann, List<Type> types) {
+      if (types.contains(type)) res.add(ann);
     });
     return res;
   }

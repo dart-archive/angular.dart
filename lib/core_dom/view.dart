@@ -38,7 +38,7 @@ class ViewPort {
     _viewsInsertAfter(view, insertAfter);
 
     _animate.insert(view.nodes, placeholder.parentNode,
-      insertBefore: previousNode.nextNode);
+        insertBefore: previousNode.nextNode);
   }
 
   void remove(View view) {
