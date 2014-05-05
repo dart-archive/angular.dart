@@ -69,7 +69,7 @@ class NgSwitch {
   }
 
   void set value(val) {
-    _currentViews..forEach((_ViewScopePair pair) => pair.remove())
+    _currentViews..forEach((_ViewAndPort vp) => vp.remove())
                  ..clear();
 
     val = '!$val';
