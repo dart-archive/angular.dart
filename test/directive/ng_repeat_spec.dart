@@ -355,7 +355,7 @@ main() {
       beforeEach(() {
         element = compile(
           '<ul>'
-            '<li ng-repeat="item in items">{{key}}:{{val}}|></li>'
+            r'<li ng-repeat="item in items">{{ $index }}</li>'
           '</ul>');
         a = {};
         b = {};
