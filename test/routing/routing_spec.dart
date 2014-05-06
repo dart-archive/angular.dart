@@ -53,8 +53,7 @@ main() {
       _ = injector.get(TestBed);
     }
 
-    // TODO(chirayu): requires new route package.
-    xit('should configure route hierarchy from provided config', async(() {
+    it('should configure route hierarchy from provided config', async(() {
       var counters = {
         'foo': 0,
         'bar': 0,
