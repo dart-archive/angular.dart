@@ -4,7 +4,6 @@ import '../_specs.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
-import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'dart:collection';
 import 'dart:math';
 
@@ -15,9 +14,7 @@ void main() {
         "first": (o) => o.first,
         "age": (o) => o.age,
         "last": (o) => o.last,
-        "toString": (o) => o.toString,
-        "isUnderAge": (o) => o.isUnderAge,
-        "isUnderAgeAsVariable": (o) => o.isUnderAgeAsVariable
+        "toString": (o) => o.toString
     });
 
     beforeEach(() {
@@ -25,69 +22,10 @@ void main() {
     });
 
     describe('StaticFieldGetterFactory', () {
-      DirtyCheckingChangeDetector<String> detector;
-      var user = new _User('Marko', 'Vuksanovic', 30);
-      FieldGetterFactory getterFactory = new StaticFieldGetterFactory({
-          "first": (o) => o.first,
-          "age": (o) => o.age,
-          "last": (o) => o.last,
-          "toString": (o) => o.toString,
-          "isUnderAge": (o) => o.isUnderAge,
-          "isUnderAgeAsVariable": (o) => o.isUnderAgeAsVariable,
-          "list": (o) => o.list,
-          "map": (o) => o.map
-      });
-
-      beforeEach(() {
-        detector = new DirtyCheckingChangeDetector<String>(getterFactory);
-      });
-
       it('should detect methods', () {
         var obj = new _User();
         expect(getterFactory.isMethod(obj, 'toString')).toEqual(true);
         expect(getterFactory.isMethod(obj, 'age')).toEqual(false);
-      });
-
-      it('should return true is method is real method', () {
-        expect(getterFactory.isMethod(user, 'isUnderAge')).toEqual(true);
-      });
-
-      it('should return false is field is a function', () {
-        expect(getterFactory.isMethod(user, 'isUnderAgeAsVariable')).toEqual(false);
-      });
-
-      it('should return false is field is a list', () {
-        expect(getterFactory.isMethod(user, 'list')).toEqual(false);
-      });
-
-      it('should return false is field is a map', () {
-        expect(getterFactory.isMethod(user, 'map')).toEqual(false);
-      });
-    });
-
-    describe('Dynamic GetterFactory', () {
-      DirtyCheckingChangeDetector<String> detector;
-      var user = new _User('Marko', 'Vuksanovic', 30);
-      FieldGetterFactory getterFactory = new DynamicFieldGetterFactory();
-
-      beforeEach(() {
-        detector = new DirtyCheckingChangeDetector<String>(getterFactory);
-      });
-
-      it('should return true is method is real method', () {
-        expect(getterFactory.isMethod(user, 'isUnderAge')).toEqual(true);
-      });
-
-      it('should return false is field is a function', () {
-        expect(getterFactory.isMethod(user, 'isUnderAgeAsVariable')).toEqual(false);
-      });
-
-      it('should return false is field is a list', () {
-        expect(getterFactory.isMethod(user, 'list')).toEqual(false);
-      });
-
-      it('should return false is field is a map', () {
-        expect(getterFactory.isMethod(user, 'map')).toEqual(false);
       });
     });
 
@@ -719,42 +657,6 @@ void main() {
       });
     });
 
-    describe('function watching', () {
-      it('should detect no changes when watching a function', () {
-        var user = new _User('marko', 'vuksanovic', 15);
-        Iterator changeIterator;
-
-        detector..watch(user, 'isUnderAge', null);
-        changeIterator = detector.collectChanges();
-        expect(changeIterator.moveNext()).toEqual(true);
-        expect(changeIterator.moveNext()).toEqual(false);
-
-        user.age = 17;
-        changeIterator = detector.collectChanges();
-        expect(changeIterator.moveNext()).toEqual(false);
-
-        user.age = 30;
-        changeIterator = detector.collectChanges();
-        expect(changeIterator.moveNext()).toEqual(false);
-      });
-
-      it('should detect change when watching a property function', () {
-        var user = new _User('marko', 'vuksanovic', 30);
-        Iterator changeIterator;
-
-        detector..watch(user, 'isUnderAgeAsVariable', null);
-        changeIterator = detector.collectChanges();
-        expect(changeIterator.moveNext()).toEqual(true);
-
-        changeIterator = detector.collectChanges();
-        expect(changeIterator.moveNext()).toEqual(false);
-
-        user.isUnderAgeAsVariable = () => false;
-        changeIterator = detector.collectChanges();
-        expect(changeIterator.moveNext()).toEqual(true);
-      });
-    });
-
     describe('DuplicateMap', () {
       DuplicateMap map;
       beforeEach(() => map = new DuplicateMap());
@@ -791,17 +693,8 @@ class _User {
   String first;
   String last;
   num age;
-  var isUnderAgeAsVariable;
-  List<String> list = ['foo', 'bar', 'baz'];
-  Map map = {'foo': 'bar', 'baz': 'cux'};
 
-  _User([this.first, this.last, this.age]) {
-    isUnderAgeAsVariable = isUnderAge;
-  }
-
-  bool isUnderAge() {
-    return age != null ? age < 18 : false;
-  }
+  _User([this.first, this.last, this.age]);
 }
 
 Matcher toEqualCollectionRecord({collection, previous, additions, moves, removals}) =>
