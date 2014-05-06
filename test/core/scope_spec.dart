@@ -1291,13 +1291,29 @@ void main() {
 
       it('should properly watch array of fields 3', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = 'abc';
-        rootScope.watch('foo.contains("b")', (v, o) => log([v, o]));
+        String expression = 'foo.contains("b")';
+        if (identical(1, 1.0)) { // dart2js
+          // The previous expression does not work in dart2js (dartbug 13523)
+          // Use a working one for now.
+          expression = 'foo.contains("b", 0)';
+        }
+        rootScope.watch(expression, (v, o) => log([v, o]));
         expect(log).toEqual([]);
         rootScope.apply();
         expect(log).toEqual([[true, null]]);
         log.clear();
       });
 
+      it('should watch closures both as a leaf and as method call', (RootScope rootScope, Logger log) {
+        rootScope.context['foo'] = new Foo();
+        rootScope.context['increment'] = null;
+        rootScope.watch('foo.increment', (v, _) => rootScope.context['increment'] = v);
+        rootScope.watch('increment(1)', (v, o) => log([v, o]));
+        expect(log).toEqual([]);
+        rootScope.apply();
+        expect(log).toEqual([[null, null], [2, null]]);
+        log.clear();
+      });
 
       it('should not trigger new watcher in the flush where it was added', (Scope scope) {
         var log = [] ;
@@ -1623,3 +1639,6 @@ class UnstableList {
   List get list => new List.generate(3, (i) => i);
 }
 
+class Foo {
+  increment(x) => x+1;
+}

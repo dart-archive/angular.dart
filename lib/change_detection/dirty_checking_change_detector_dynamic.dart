@@ -11,26 +11,9 @@ export 'package:angular/change_detection/change_detection.dart' show
 import 'dart:mirrors';
 
 class DynamicFieldGetterFactory implements FieldGetterFactory {
-  final isMethodInvoke = true;
-
-  bool isMethod(Object object, String name) {
-    try {
-      return method(object, name) != null;
-    } catch (e, s) {
-      return false;
-    }
-  }
-
-  Function method(Object object, String name) {
-    Symbol symbol = new Symbol(name);
-    InstanceMirror instanceMirror = reflect(object);
-    return (List args, Map namedArgs) =>
-        instanceMirror.invoke(symbol, args, namedArgs).reflectee;
-  }
-
   FieldGetter getter(Object object, String name) {
     Symbol symbol = new Symbol(name);
     InstanceMirror instanceMirror = reflect(object);
-    return (Object object) =>  instanceMirror.getField(symbol).reflectee;
+    return (Object object) => instanceMirror.getField(symbol).reflectee;
   }
 }
