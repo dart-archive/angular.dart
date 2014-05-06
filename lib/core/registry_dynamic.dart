@@ -9,7 +9,6 @@ export 'package:angular/core/registry.dart' show
 
 var _fieldMetadataCache = new Map<Type, Map<String, DirectiveAnnotation>>();
 
-@Injectable()
 class DynamicMetadataExtractor implements MetadataExtractor {
   final _fieldAnnotations = [
         reflectType(NgAttr),
