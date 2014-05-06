@@ -452,7 +452,7 @@ void main() {
           });
           log('onTurnDone(end)');
         };
-        zone.onScheduleMicrotask = (microTaskFn) {
+        zone.defaultOnScheduleMicrotask = (microTaskFn) {
           log('onScheduleMicrotask(begin)');
           microtaskResult = microTaskFn();
           log('onScheduleMicrotask(end)');
@@ -478,7 +478,7 @@ void main() {
           });
           log('onTurnDone(end)');
         };
-        zone.onScheduleMicrotask = (microTaskFn) {
+        zone.defaultOnScheduleMicrotask = (microTaskFn) {
           log('onScheduleMicrotask(begin)');
           microTaskFn();
           log('onScheduleMicrotask(end)');
@@ -500,7 +500,7 @@ void main() {
         zone.onTurnDone = () {
           log('onTurnDone');
         };
-        zone.onScheduleMicrotask = (microTaskFn) {
+        zone.defaultOnScheduleMicrotask = (microTaskFn) {
           log('onScheduleMicrotask(begin)');
           microTaskFn();
           log('onScheduleMicrotask(end)');
@@ -528,7 +528,7 @@ void main() {
         zone.onTurnDone = () {
           log('onTurnDone');
         };
-        zone.onScheduleMicrotask = (microTaskFn) {
+        zone.defaultOnScheduleMicrotask = (microTaskFn) {
           log('onScheduleMicrotask(begin)');
           microTaskFn();
           log('onScheduleMicrotask(end)');
