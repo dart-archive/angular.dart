@@ -1,3 +1,96 @@
+<a name="v0.11.0"></a>
+# v0.11.0 ungulate-funambulism (2014-05-06)
+
+
+## Bug Fixes
+
+- **Animate:** Animation rename types.
+  ([70b2e408](https://github.com/angular/angular.dart/commit/70b2e408559cc21ed471fcd25421260a53547118))
+- **Change detection:** _LinkList items extend _LinkedListItem
+  ([2960d7c2](https://github.com/angular/angular.dart/commit/2960d7c25d35933f60bd8d33c44a9950a31d67b2),
+   [#932](https://github.com/angular/angular.dart/issues/932))
+- **Dirty Checking:** fix watching methods/closures
+  ([d71c7fa7](https://github.com/angular/angular.dart/commit/d71c7fa7e146cc07606dd6693fc644d6fec37f1c),
+   [#999](https://github.com/angular/angular.dart/issues/999))
+- **ShadowDomComponentFactory:** annotate ShadowDomComponentFactory with @Injectable so that appropriate entry in static factories in generated.
+  ([61ce182d](https://github.com/angular/angular.dart/commit/61ce182df43f23a6065ba45a19718c774bbdf0fa),
+   [#963](https://github.com/angular/angular.dart/issues/963))
+- **StaticMetadataExtractor:** Map members annotations to all annotations
+  ([9622318e](https://github.com/angular/angular.dart/commit/9622318ef4fdc16ae8265b01ebf9262f578e861d),
+   [#904](https://github.com/angular/angular.dart/issues/904))
+- **angular_spec:** Acutally assert
+  ([aae2c1f9](https://github.com/angular/angular.dart/commit/aae2c1f9e5d7c4f0723da176615c86dca2cacb88))
+- **change-detection:** correctly detect isMethod in StaticFieldGetterFactory
+  ([474b002e](https://github.com/angular/angular.dart/commit/474b002eed5611608fe9ee58b324f926579a0a02))
+- **codegen:** Add missing @Injectable annotation
+  ([a4375192](https://github.com/angular/angular.dart/commit/a437519204bce8d66929a2cf55ae30a66cd88bcc))
+- **dccd:** Fix _MapChangeRecord
+  ([36923850](https://github.com/angular/angular.dart/commit/3692385031adfb0ef9e58a79c3a9a795b36a2c28))
+- **interpolate:** changes the interpolate function to escape double quotes
+  ([806ed695](https://github.com/angular/angular.dart/commit/806ed69576b91e3612a4acd5477042566add744a),
+   [#937](https://github.com/angular/angular.dart/issues/937))
+- **ngModel:** add input type tel to ngModel directive
+  ([a91bbca8](https://github.com/angular/angular.dart/commit/a91bbca87b62f675251dcfd341a3f56dabb3a6b6))
+- **specs:** toHaveText merges shadow DOM correctly
+  ([d4127643](https://github.com/angular/angular.dart/commit/d41276435570a2a8c9b3fcee2f60a7a9364bc8a7))
+- **symbol_inspector:** Do not return private symbols
+  ([a66b2c13](https://github.com/angular/angular.dart/commit/a66b2c136c7830eb042053243757d3a1d1540dfd))
+- **tests:** Use updated annotation type
+  ([c93a1bde](https://github.com/angular/angular.dart/commit/c93a1bde5eaa2457b320006a1db528b644669d02),
+   [#948](https://github.com/angular/angular.dart/issues/948))
+- **transformer:**
+  - Fixing some analyzer warnings
+  ([1360d193](https://github.com/angular/angular.dart/commit/1360d193f908d5b9b62e2b34ff5aebbefee5c46e),
+   [#955](https://github.com/angular/angular.dart/issues/955))
+  - Fixing invalid code generation for dashed filenames
+  ([1df0f641](https://github.com/angular/angular.dart/commit/1df0f641d85dc82d4d1494f0ba0e618ddeb76421),
+   [#947](https://github.com/angular/angular.dart/issues/947))
+- **travis:** Curl should follow redirects when fetching scripts
+  ([40563c89](https://github.com/angular/angular.dart/commit/40563c891ed63e86b72d160fcafc6bfda0d21577))
+
+
+## Features
+
+- **LRUCache:** Support zero-length caches
+  ([3e60863e](https://github.com/angular/angular.dart/commit/3e60863ed2567e7f0380951eb32d18799409320c))
+- **VmTurnZone:** VmTurnZone can handle scheduling microtasks.
+  ([ecf9b714](https://github.com/angular/angular.dart/commit/ecf9b7148e2fcb90ec9f5e897ad5c480c303a827),
+   [#976](https://github.com/angular/angular.dart/issues/976), [#979](https://github.com/angular/angular.dart/issues/979))
+- **Zone:** add onTurnStart to NgZone.
+  ([4bf0c32e](https://github.com/angular/angular.dart/commit/4bf0c32ef26980f7f7e5c95b8a3b1c15156f6522),
+   [#83](https://github.com/angular/angular.dart/issues/83))
+- **annotation:** Annotations on superclasses are honored
+  ([eee41911](https://github.com/angular/angular.dart/commit/eee4191130b2cd16f00aa1aaa57ce4fadee1454e),
+   [#829](https://github.com/angular/angular.dart/issues/829))
+- **compiler:**
+  - bind- syntax
+  ([4d17c119](https://github.com/angular/angular.dart/commit/4d17c1193bc39bc92026ce5b5e0ff9e45df03de8),
+   [#957](https://github.com/angular/angular.dart/issues/957))
+  - useShadowDom option
+  ([c60e9369](https://github.com/angular/angular.dart/commit/c60e9369a60a4ca1a2ff37def9c7a0e98cd274fd),
+   [#367](https://github.com/angular/angular.dart/issues/367), [#936](https://github.com/angular/angular.dart/issues/936))
+  - Shadow DOM-less components
+  ([26ad8801](https://github.com/angular/angular.dart/commit/26ad8801b11255da49ceb120656bc79d2b4bfb4d))
+- **debug:** Make ngProbe accept a CSS selector
+  ([eb057c38](https://github.com/angular/angular.dart/commit/eb057c384bdc6f6112c0c92536b134cd13ab76be),
+   [#970](https://github.com/angular/angular.dart/issues/970))
+- **formatter:** Add arrayify formatter.
+  ([d2780f8b](https://github.com/angular/angular.dart/commit/d2780f8bb849c62d995d939d00594ebe93428631),
+   [#394](https://github.com/angular/angular.dart/issues/394), [#931](https://github.com/angular/angular.dart/issues/931))
+
+
+## Performance Improvements
+
+- **compiler:** 31%. Cache CSS in Style elements.
+  ([cd2594da](https://github.com/angular/angular.dart/commit/cd2594da80a343824bb98b4c87ed99c2118f7b2c))
+
+
+## Breaking Changes
+
+- **Http:** due to [39a143d](https://github.com/angular/angular.dart/commit/39a143da630965703cbe53e45e902e97163a75d54),
+
+The deprecated Http.getString() method has been removed in favour of Http.get()
+ 
 <a name="v0.10.0"></a>
 # v0.10.0 ostemad-teleportation (2014-04-17)
 
