@@ -7,7 +7,7 @@ void main() {
   describe('DirectiveMap', () {
 
     beforeEachModule((Module module) {
-      module..type(AnnotatedIoComponent);
+      module..bind(AnnotatedIoComponent);
     });
 
     it('should extract attr map from annotated component', (DirectiveMap directives) {
@@ -40,14 +40,14 @@ void main() {
       var baseModule;
       beforeEach(() {
         baseModule = new Module()
-          ..type(DirectiveMap)
-          ..type(DirectiveSelectorFactory)
-          ..type(MetadataExtractor);
+          ..bind(DirectiveMap)
+          ..bind(DirectiveSelectorFactory)
+          ..bind(MetadataExtractor);
       });
 
       it('should throw when annotation is for existing mapping', () {
         var module = new Module()
-            ..type(Bad1Component);
+            ..bind(Bad1Component);
 
         var injector = applicationFactory().addModule(module).createInjector();
         expect(() {
@@ -58,7 +58,7 @@ void main() {
 
       it('should throw when annotated both getter and setter', () {
         var module = new Module()
-            ..type(Bad2Component);
+            ..bind(Bad2Component);
 
         var injector = applicationFactory().addModule(module).createInjector();
         expect(() {
@@ -73,7 +73,7 @@ void main() {
       var nodeAttrs;
 
       beforeEachModule((Module module) {
-        module..type(Sub)..type(Base);
+        module..bind(Sub)..bind(Base);
       });
 
       it("should extract attr map from annotated component which inherits other component", (DirectiveMap directives) {
@@ -112,8 +112,7 @@ class NullParser implements Parser {
       'foo': '=>foo'
     })
 class AnnotatedIoComponent {
-  static module() => new Module()..factory(String,
-      (i) => i.get(AnnotatedIoComponent),
+  static module() => new Module()..bind(String, toFactory: (i) => i.get(AnnotatedIoComponent),
       visibility: Directive.LOCAL_VISIBILITY);
 
   AnnotatedIoComponent(Scope scope) {

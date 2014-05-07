@@ -42,14 +42,15 @@ class PrefixedUrlRewriter extends UrlRewriter {
 void main() {
   describe('template url', () {
     afterEach((MockHttpBackend backend) {
+      backend.verifyNoOutstandingExpectation();
       backend.verifyNoOutstandingRequest();
     });
 
     describe('loading with http rewriting', () {
       beforeEachModule((Module module) {
         module
-            ..type(HtmlAndCssComponent)
-            ..type(UrlRewriter, implementedBy: PrefixedUrlRewriter);
+            ..bind(HtmlAndCssComponent)
+            ..bind(UrlRewriter, toImplementation: PrefixedUrlRewriter);
       });
 
       it('should use the UrlRewriter for both HTML and CSS URLs', async(inject(
@@ -80,11 +81,11 @@ void main() {
     describe('async template loading', () {
       beforeEachModule((Module module) {
         module
-            ..type(LogAttrDirective)
-            ..type(SimpleUrlComponent)
-            ..type(HtmlAndCssComponent)
-            ..type(OnlyCssComponent)
-            ..type(InlineWithCssComponent);
+            ..bind(LogAttrDirective)
+            ..bind(SimpleUrlComponent)
+            ..bind(HtmlAndCssComponent)
+            ..bind(OnlyCssComponent)
+            ..bind(InlineWithCssComponent);
       });
 
       it('should replace element with template from url', async(inject(
@@ -214,8 +215,8 @@ void main() {
     describe('multiple css loading', () {
       beforeEachModule((Module module) {
         module
-            ..type(LogAttrDirective)
-            ..type(HtmlAndMultipleCssComponent);
+            ..bind(LogAttrDirective)
+            ..bind(HtmlAndMultipleCssComponent);
       });
 
       it('should load multiple CSS files into a style', async(inject(
@@ -240,6 +241,48 @@ void main() {
         rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
+      })));
+    });
+
+    describe('style cache', () {
+      beforeEachModule((Module module) {
+        module
+            ..bind(HtmlAndCssComponent)
+            ..bind(TemplateCache, toValue: new TemplateCache(capacity: 0));
+      });
+
+      it('should load css from the style cache for the second component', async(inject(
+          (Http http, Compiler compile, MockHttpBackend backend,
+           DirectiveMap directives, Injector injector) {
+        backend
+          ..expectGET('simple.css').respond(200, '.hello{}')
+          ..expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
+
+        var element = e('<div><html-and-css>ignore</html-and-css><div>');
+        compile([element], directives)(injector, [element]);
+
+        microLeap();
+        backend.flush();
+        microLeap();
+
+        expect(element.children[0].shadowRoot).toHaveHtml(
+            '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
+        );
+
+        // Since the template cache is disabled, we expect a 'simple.html' call.
+        backend
+          ..expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
+
+        var element2 = e('<div><html-and-css>ignore</html-and-css><div>');
+        compile([element2], directives)(injector, [element2]);
+
+        microLeap();
+        backend.flush();
+        microLeap();
+
+        expect(element2.children[0].shadowRoot).toHaveHtml(
+            '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
+        );
       })));
     });
   });

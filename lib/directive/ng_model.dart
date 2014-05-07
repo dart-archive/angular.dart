@@ -319,7 +319,7 @@ class InputCheckbox {
 /**
  * Usage:
  *
- *     <input type="text|url|password|email" ng-model="myModel">
+ *     <input type="text|url|password|email|search|tel" ng-model="myModel">
  *     <textarea ng-model="myModel"></textarea>
  *
  * This creates a two-way binding between any string-based input element
@@ -335,6 +335,7 @@ class InputCheckbox {
 @Decorator(selector: 'input[type=url][ng-model]')
 @Decorator(selector: 'input[type=email][ng-model]')
 @Decorator(selector: 'input[type=search][ng-model]')
+@Decorator(selector: 'input[type=tel][ng-model]')
 class InputTextLike {
   final dom.Element inputElement;
   final NgModel ngModel;
@@ -591,8 +592,8 @@ class NgBindTypeForDateLike {
 @Decorator(selector: 'input[type=week][ng-model]',
     module: InputDateLike.moduleFactory)
 class InputDateLike {
-  static Module moduleFactory() => new Module()..factory(NgBindTypeForDateLike,
-      (Injector i) => new NgBindTypeForDateLike(i.get(dom.Element)));
+  static Module moduleFactory() => new Module()..bind(NgBindTypeForDateLike,
+      toFactory: (Injector i) => new NgBindTypeForDateLike(i.get(dom.Element)));
   final dom.InputElement inputElement;
   final NgModel ngModel;
   final NgModelOptions ngModelOptions;
@@ -681,7 +682,7 @@ final _uidCounter = new _UidCounter();
 @Decorator(selector: 'input[type=radio][ng-model][ng-value]')
 @Decorator(selector: 'option[ng-value]')
 class NgValue {
-  static Module _module = new Module()..type(NgValue);
+  static Module _module = new Module()..bind(NgValue);
   static Module moduleFactory() => _module;
 
   final dom.Element element;

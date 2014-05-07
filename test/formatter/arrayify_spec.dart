@@ -1,7 +1,6 @@
 library map_spec;
 
 import '../_specs.dart';
-import 'package:angular/formatter/module.dart';
 
 void main() {
   describe('arrayify', () {

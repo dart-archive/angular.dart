@@ -10,7 +10,7 @@
  *
  *     class MyModule extends Module {
  *       MyModule() {
- *         type(HelloWorldController);
+ *         bind(HelloWorldController);
  *       }
  *     }
  *
@@ -101,8 +101,8 @@ class AngularModule extends Module {
     install(new PerfModule());
     install(new RoutingModule());
 
-    type(MetadataExtractor);
-    value(Expando, elementExpando);
+    bind(MetadataExtractor);
+    bind(Expando, toValue: elementExpando);
   }
 }
 
@@ -126,7 +126,7 @@ class AngularModule extends Module {
  */
 abstract class Application {
   static _find(String selector, [dom.Element defaultElement]) {
-    var element = dom.window.document.querySelector(selector);
+    var element = dom.document.querySelector(selector);
     if (element == null) element = defaultElement;
     if (element == null) {
       throw "Could not find application element '$selector'.";
@@ -146,9 +146,9 @@ abstract class Application {
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
     modules.add(ngModule);
-    ngModule..value(VmTurnZone, zone)
-            ..value(Application, this)
-            ..factory(dom.Node, (i) => i.get(Application).element);
+    ngModule..bind(VmTurnZone, toValue: zone)
+            ..bind(Application, toValue: this)
+            ..bind(dom.Node, toFactory: (i) => i.get(Application).element);
   }
 
 /**

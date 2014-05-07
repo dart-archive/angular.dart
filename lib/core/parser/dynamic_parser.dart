@@ -1,6 +1,6 @@
 library angular.core.parser.dynamic_parser;
 
-import 'package:angular/core/annotation_src.dart';
+import 'package:angular/core/annotation_src.dart' hide Formatter;
 import 'package:angular/core/module_internal.dart' show FormatterMap;
 
 import 'package:angular/core/parser/parser.dart';
@@ -72,11 +72,11 @@ class DynamicParserBackend extends ParserBackend {
 
   bool isAssignable(Expression expression) => expression.isAssignable;
 
-  Expression newFilter(expression, name, arguments) {
+  Expression newFormatter(expression, name, arguments) {
     List allArguments = new List(arguments.length + 1);
     allArguments[0] = expression;
     allArguments.setAll(1, arguments);
-    return new Filter(expression, name, arguments, allArguments);
+    return new Formatter(expression, name, arguments, allArguments);
   }
 
   Expression newChain(expressions) => new Chain(expressions);

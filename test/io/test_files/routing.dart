@@ -16,7 +16,7 @@ main() {
       path: '/bar',
       viewHtml: '<div ng-if="bar"></div>');
   var module = new Module()
-      ..value(RouteInitializerFn, (router, views) {
+      ..bind(RouteInitializerFn, toValue: (router, views) {
         views.configure({
           'foo': ngRoute(
               path: '/foo',

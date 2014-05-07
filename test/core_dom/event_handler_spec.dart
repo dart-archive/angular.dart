@@ -28,9 +28,9 @@ main() {
     Element ngAppElement;
     beforeEachModule((Module module) {
       ngAppElement = new DivElement()..attributes['ng-app'] = '';
-      module..type(FooController);
-      module..type(BarComponent);
-      module..value(Node, ngAppElement);
+      module..bind(FooController);
+      module..bind(BarComponent);
+      module..bind(Node, toValue: ngAppElement);
       document.body.append(ngAppElement);
     });
 

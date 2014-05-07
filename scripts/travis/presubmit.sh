@@ -1,7 +1,12 @@
 #!/bin/bash
+set -e
 
 #  If we're on the presubmit branch, the stable Dart release, and all unit
 #  tests pass, merge the presubmit branch into master and push it.
+
+echo '***************'
+echo '** PRESUBMIT **'
+echo '***************'
 
 
 CHANNEL=`echo $JOB | cut -f 2 -d -`

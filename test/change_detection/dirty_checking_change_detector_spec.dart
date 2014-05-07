@@ -8,87 +8,12 @@ import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.
 import 'dart:collection';
 import 'dart:math';
 
-void main() {
-  describe('DirtyCheckingChangeDetector', () {
+void testWithGetterFactory(FieldGetterFactory getterFactory) {
+  describe('DirtyCheckingChangeDetector with ${getterFactory.runtimeType}', () {
     DirtyCheckingChangeDetector<String> detector;
-    FieldGetterFactory getterFactory = new StaticFieldGetterFactory({
-        "first": (o) => o.first,
-        "age": (o) => o.age,
-        "last": (o) => o.last,
-        "toString": (o) => o.toString,
-        "isUnderAge": (o) => o.isUnderAge,
-        "isUnderAgeAsVariable": (o) => o.isUnderAgeAsVariable
-    });
 
     beforeEach(() {
       detector = new DirtyCheckingChangeDetector<String>(getterFactory);
-    });
-
-    describe('StaticFieldGetterFactory', () {
-      DirtyCheckingChangeDetector<String> detector;
-      var user = new _User('Marko', 'Vuksanovic', 30);
-      FieldGetterFactory getterFactory = new StaticFieldGetterFactory({
-          "first": (o) => o.first,
-          "age": (o) => o.age,
-          "last": (o) => o.last,
-          "toString": (o) => o.toString,
-          "isUnderAge": (o) => o.isUnderAge,
-          "isUnderAgeAsVariable": (o) => o.isUnderAgeAsVariable,
-          "list": (o) => o.list,
-          "map": (o) => o.map
-      });
-
-      beforeEach(() {
-        detector = new DirtyCheckingChangeDetector<String>(getterFactory);
-      });
-
-      it('should detect methods', () {
-        var obj = new _User();
-        expect(getterFactory.isMethod(obj, 'toString')).toEqual(true);
-        expect(getterFactory.isMethod(obj, 'age')).toEqual(false);
-      });
-
-      it('should return true is method is real method', () {
-        expect(getterFactory.isMethod(user, 'isUnderAge')).toEqual(true);
-      });
-
-      it('should return false is field is a function', () {
-        expect(getterFactory.isMethod(user, 'isUnderAgeAsVariable')).toEqual(false);
-      });
-
-      it('should return false is field is a list', () {
-        expect(getterFactory.isMethod(user, 'list')).toEqual(false);
-      });
-
-      it('should return false is field is a map', () {
-        expect(getterFactory.isMethod(user, 'map')).toEqual(false);
-      });
-    });
-
-    describe('Dynamic GetterFactory', () {
-      DirtyCheckingChangeDetector<String> detector;
-      var user = new _User('Marko', 'Vuksanovic', 30);
-      FieldGetterFactory getterFactory = new DynamicFieldGetterFactory();
-
-      beforeEach(() {
-        detector = new DirtyCheckingChangeDetector<String>(getterFactory);
-      });
-
-      it('should return true is method is real method', () {
-        expect(getterFactory.isMethod(user, 'isUnderAge')).toEqual(true);
-      });
-
-      it('should return false is field is a function', () {
-        expect(getterFactory.isMethod(user, 'isUnderAgeAsVariable')).toEqual(false);
-      });
-
-      it('should return false is field is a list', () {
-        expect(getterFactory.isMethod(user, 'list')).toEqual(false);
-      });
-
-      it('should return false is field is a map', () {
-        expect(getterFactory.isMethod(user, 'map')).toEqual(false);
-      });
     });
 
     describe('object field', () {
@@ -744,6 +669,9 @@ void main() {
 
         detector..watch(user, 'isUnderAgeAsVariable', null);
         changeIterator = detector.collectChanges();
+        expect(changeIterator.moveNext()).toEqual(true);
+
+        changeIterator = detector.collectChanges();
         expect(changeIterator.moveNext()).toEqual(false);
 
         user.isUnderAgeAsVariable = () => false;
@@ -783,6 +711,21 @@ void main() {
     });
   });
 }
+
+
+void main() {
+  testWithGetterFactory(new DynamicFieldGetterFactory());
+
+  testWithGetterFactory(new StaticFieldGetterFactory({
+      "first": (o) => o.first,
+      "age": (o) => o.age,
+      "last": (o) => o.last,
+      "toString": (o) => o.toString,
+      "isUnderAge": (o) => o.isUnderAge,
+      "isUnderAgeAsVariable": (o) => o.isUnderAgeAsVariable,
+  }));
+}
+
 
 class _User {
   String first;
@@ -1018,7 +961,6 @@ class MapRecordMatcher  extends _CollectionMatcher<KeyValueRecord> {
     return _compareLists("removals", removals, items, diffs);
   }
 }
-
 
 class FooBar {
   static int fooIds = 0;

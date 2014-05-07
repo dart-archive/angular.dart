@@ -143,6 +143,13 @@ void main() {
         expect(form).toBeValid();
       });
 
+      it('should expose NgForm as NgControl', (Scope scope, TestBed _) {
+        _.compile('<form name="myForm" probe="formProbe"><input type="text" /></form>');
+        scope.apply();
+
+        expect(scope.context['formProbe'].injector.get(NgControl) is NgForm).toBeTruthy();
+      });
+
       it('should add and remove the correct flags when set to valid and to invalid',
         (Scope scope, TestBed _) {
 
@@ -569,7 +576,7 @@ void main() {
 
       describe('custom validators', () {
         beforeEachModule((Module module) {
-          module.type(MyCustomFormValidator);
+          module.bind(MyCustomFormValidator);
         });
 
         it('should display the valid and invalid CSS classes on the element for custom validations', (TestBed _, Scope scope) {
@@ -711,7 +718,7 @@ void main() {
 
     describe('regression tests: form', () {
       beforeEachModule((Module module) {
-        module.type(NgForm);
+        module.bind(NgForm);
       });
 
       it('should be resolvable by injector if configured by user.',

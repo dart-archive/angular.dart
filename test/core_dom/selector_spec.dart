@@ -41,23 +41,23 @@ main() {
     beforeEach(() => log = []);
     beforeEachModule((Module module) {
       module
-          ..type(_BElement)
-          ..type(_BClass)
-          ..type(_DirectiveAttr)
-          ..type(_WildcardDirectiveAttr)
-          ..type(_DirectiveFooAttr)
-          ..type(_BElementDirectiveAttr)
-          ..type(_DirectiveValueAttr)
-          ..type(_BElementDirectiveValue)
-          ..type(_ContainsAbc)
-          ..type(_AttributeContainsXyz)
-          ..type(_Component)
-          ..type(_Attribute)
-          ..type(_Structural)
-          ..type(_IgnoreChildren)
-          ..type(_TwoDirectives)
-          ..type(_OneOfTwoDirectives)
-          ..type(_TwoOfTwoDirectives);
+          ..bind(_BElement)
+          ..bind(_BClass)
+          ..bind(_DirectiveAttr)
+          ..bind(_WildcardDirectiveAttr)
+          ..bind(_DirectiveFooAttr)
+          ..bind(_BElementDirectiveAttr)
+          ..bind(_DirectiveValueAttr)
+          ..bind(_BElementDirectiveValue)
+          ..bind(_ContainsAbc)
+          ..bind(_AttributeContainsXyz)
+          ..bind(_Component)
+          ..bind(_Attribute)
+          ..bind(_Structural)
+          ..bind(_IgnoreChildren)
+          ..bind(_TwoDirectives)
+          ..bind(_OneOfTwoDirectives)
+          ..bind(_TwoOfTwoDirectives);
     });
 
     describe('matchElement', () {

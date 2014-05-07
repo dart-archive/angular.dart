@@ -13,7 +13,7 @@
  *
  *     class MyModule extends Module {
  *       MyModule() {
- *         type(HelloWorldController);
+ *         bind(HelloWorldController);
  *       }
  *     }
  *
@@ -55,10 +55,9 @@ class _StaticApplication extends Application {
                Map<String, FieldSetter> fieldSetters,
                Map<String, Symbol> symbols) {
     ngModule
-        ..value(MetadataExtractor, new StaticMetadataExtractor(metadata))
-        ..value(FieldGetterFactory, new StaticFieldGetterFactory(fieldGetters))
-        ..value(ClosureMap, new StaticClosureMap(fieldGetters, fieldSetters,
-            symbols));
+        ..bind(MetadataExtractor, toValue: new StaticMetadataExtractor(metadata))
+        ..bind(FieldGetterFactory, toValue: new StaticFieldGetterFactory(fieldGetters))
+        ..bind(ClosureMap, toValue: new StaticClosureMap(fieldGetters, fieldSetters, symbols));
   }
 
   Injector createInjector() =>
@@ -76,7 +75,7 @@ class _StaticApplication extends Application {
 *
 *     main() {
 *       applicationFactory()
-*       .addModule(new Module()..type(HelloWorld))
+*       .addModule(new Module()..bind(HelloWorld))
 *       .run();
 *       }
 *
@@ -88,7 +87,7 @@ class _StaticApplication extends Application {
 *        generated_static_expressions.getters,
 *        generated_static_expressions.setters,
 *        generated_static_expressions.symbols)
-*       .addModule(new Module()..type(HelloWorldController))
+*       .addModule(new Module()..bind(HelloWorldController))
 *       .run();
 *
 */
@@ -98,6 +97,5 @@ Application staticApplicationFactory(
     Map<String, FieldGetter> fieldGetters,
     Map<String, FieldSetter> fieldSetters,
     Map<String, Symbol> symbols) {
-  return new _StaticApplication(typeFactories, metadata, fieldGetters, fieldSetters,
-      symbols);
+  return new _StaticApplication(typeFactories, metadata, fieldGetters, fieldSetters, symbols);
 }

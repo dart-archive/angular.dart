@@ -11,17 +11,17 @@ void main() {
     beforeEachModule((Module module) {
       Map context = {};
       module
-          ..type(ChangeDetector, implementedBy: DirtyCheckingChangeDetector)
-          ..value(Object, context)
-          ..value(Map, context)
-          ..type(RootScope)
-          ..type(_MultiplyFilter)
-          ..type(_ListHeadFilter)
-          ..type(_ListTailFilter)
-          ..type(_SortFilter)
-          ..type(_IdentityFilter)
-          ..type(_MapKeys)
-          ..type(ScopeStatsEmitter, implementedBy: MockScopeStatsEmitter);
+          ..bind(ChangeDetector, toImplementation: DirtyCheckingChangeDetector)
+          ..bind(Object, toValue: context)
+          ..bind(Map, toValue: context)
+          ..bind(RootScope)
+          ..bind(_MultiplyFormatter)
+          ..bind(_ListHeadFormatter)
+          ..bind(_ListTailFormatter)
+          ..bind(_SortFormatter)
+          ..bind(_IdentityFormatter)
+          ..bind(_MapKeys)
+          ..bind(ScopeStatsEmitter, toImplementation: MockScopeStatsEmitter);
     });
 
     describe('AST Bridge', () {
@@ -488,7 +488,7 @@ void main() {
 
         describe('exceptions', () {
           beforeEachModule((Module module) {
-            module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+            module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
           });
 
 
@@ -822,7 +822,7 @@ void main() {
       describe(r'exceptions', () {
         var log;
         beforeEachModule((Module module) {
-          return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+          return module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
         });
 
         beforeEach((RootScope rootScope) {
@@ -901,7 +901,7 @@ void main() {
       describe(r'exceptions', () {
         var log;
         beforeEachModule((Module module) {
-          return module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+          return module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
         });
         beforeEach((RootScope rootScope) {
           rootScope.context['log'] = () { log += 'digest;'; return null; };
@@ -1050,7 +1050,7 @@ void main() {
 
       describe('exceptions', () {
         beforeEachModule((Module module) {
-          module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+          module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
         });
         it(r'should delegate exceptions', (RootScope rootScope, ExceptionHandler e) {
           LoggingExceptionHandler exceptionHandler = e;
@@ -1291,13 +1291,29 @@ void main() {
 
       it('should properly watch array of fields 3', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = 'abc';
-        rootScope.watch('foo.contains("b")', (v, o) => log([v, o]));
+        String expression = 'foo.contains("b")';
+        if (identical(1, 1.0)) { // dart2js
+          // The previous expression does not work in dart2js (dartbug 13523)
+          // Use a working one for now.
+          expression = 'foo.contains("b", 0)';
+        }
+        rootScope.watch(expression, (v, o) => log([v, o]));
         expect(log).toEqual([]);
         rootScope.apply();
         expect(log).toEqual([[true, null]]);
         log.clear();
       });
 
+      it('should watch closures both as a leaf and as method call', (RootScope rootScope, Logger log) {
+        rootScope.context['foo'] = new Foo();
+        rootScope.context['increment'] = null;
+        rootScope.watch('foo.increment', (v, _) => rootScope.context['increment'] = v);
+        rootScope.watch('increment(1)', (v, o) => log([v, o]));
+        expect(log).toEqual([]);
+        rootScope.apply();
+        expect(log).toEqual([[null, null], [2, null]]);
+        log.clear();
+      });
 
       it('should not trigger new watcher in the flush where it was added', (Scope scope) {
         var log = [] ;
@@ -1433,7 +1449,7 @@ void main() {
 
     describe('domRead/domWrite', () {
       beforeEachModule((Module module) {
-        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+        module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
       });
 
       it(r'should run writes before reads', (RootScope rootScope, Logger logger, ExceptionHandler e) {
@@ -1461,7 +1477,7 @@ void main() {
 
     describe('exceptionHander', () {
       beforeEachModule((Module module) {
-        module.type(ExceptionHandler, implementedBy: LoggingExceptionHandler);
+        module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
       });
 
       it('should call ExceptionHandler on zone errors',
@@ -1537,9 +1553,9 @@ void main() {
 }
 
 @Formatter(name: 'identity')
-class _IdentityFilter {
+class _IdentityFormatter {
   Logger logger;
-  _IdentityFilter(this.logger);
+  _IdentityFormatter(this.logger);
   call(v) {
     logger('identity');
     return v;
@@ -1557,14 +1573,14 @@ class _MapKeys {
 }
 
 @Formatter(name: 'multiply')
-class _MultiplyFilter {
+class _MultiplyFormatter {
   call(a, b) => a * b;
 }
 
 @Formatter(name: 'listHead')
-class _ListHeadFilter {
+class _ListHeadFormatter {
   Logger logger;
-  _ListHeadFilter(this.logger);
+  _ListHeadFormatter(this.logger);
   call(list, head) {
     logger('listHead');
     return [head]..addAll(list);
@@ -1572,9 +1588,9 @@ class _ListHeadFilter {
 }
 
 @Formatter(name: 'listTail')
-class _ListTailFilter {
+class _ListTailFormatter {
   Logger logger;
-  _ListTailFilter(this.logger);
+  _ListTailFormatter(this.logger);
   call(list, tail) {
     logger('listTail');
     return new List.from(list)..add(tail);
@@ -1582,24 +1598,24 @@ class _ListTailFilter {
 }
 
 @Formatter(name: 'sort')
-class _SortFilter {
+class _SortFormatter {
   Logger logger;
-  _SortFilter(this.logger);
+  _SortFormatter(this.logger);
   call(list) {
     logger('sort');
     return new List.from(list)..sort();
   }
 }
 
-@Formatter(name:'newFilter')
-class FilterOne {
+@Formatter(name:'newFormatter')
+class FormatterOne {
   call(String str) {
     return '$str 1';
   }
 }
 
-@Formatter(name:'newFilter')
-class FilterTwo {
+@Formatter(name:'newFormatter')
+class FormatterTwo {
   call(String str) {
     return '$str 2';
   }
@@ -1623,3 +1639,6 @@ class UnstableList {
   List get list => new List.generate(3, (i) => i);
 }
 
+class Foo {
+  increment(x) => x+1;
+}

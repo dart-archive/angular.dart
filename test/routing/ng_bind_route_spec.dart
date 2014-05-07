@@ -11,7 +11,7 @@ main() {
 
     beforeEachModule((Module m) => m
       ..install(new AngularMockModule())
-      ..type(RouteInitializerFn, implementedBy: NestedRouteInitializer));
+      ..bind(RouteInitializerFn, toImplementation: NestedRouteInitializer));
 
     beforeEach((TestBed tb) {
       _ = tb;
@@ -41,6 +41,12 @@ main() {
           '</div>');
       expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider).route.name)
           .toEqual('all');
+    }));
+
+    it('should expose NgBindRoute as RouteProvider', async(() {
+      Element root = _.compile(
+          '<div ng-bind-route="library"><div probe="routeProbe"></div></div>');
+      expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider) is NgBindRoute).toBeTruthy();
     }));
 
   });

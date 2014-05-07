@@ -7,9 +7,9 @@ main() {
   describe('RegistryMap', () {
     it('should allow for multiple registry keys to be added', () {
       var module = new Module()
-          ..type(MyMap)
-          ..type(A1)
-          ..type(A2);
+          ..bind(MyMap)
+          ..bind(A1)
+          ..bind(A2);
 
       var injector = applicationFactory().addModule(module).createInjector();
       expect(() {
@@ -19,8 +19,8 @@ main() {
 
     it('should iterate over all types', () {
       var module = new Module()
-          ..type(MyMap)
-          ..type(A1);
+          ..bind(MyMap)
+          ..bind(A1);
 
       var injector = applicationFactory().addModule(module).createInjector();
       var keys = [];
@@ -33,8 +33,8 @@ main() {
 
     it('should safely ignore typedefs', () {
       var module = new Module()
-          ..type(MyMap)
-          ..value(MyTypedef, (String _) => null);
+          ..bind(MyMap)
+          ..bind(MyTypedef, toValue: (String _) => null);
 
       var injector = applicationFactory().addModule(module).createInjector();
       expect(() => injector.get(MyMap), isNot(throws));

@@ -3,6 +3,7 @@ library introspection_spec;
 import '_specs.dart';
 import 'dart:js' as js;
 import 'package:angular/application_factory.dart';
+import 'dart:html';
 
 void main() {
   describe('introspection', () {
@@ -29,6 +30,20 @@ void main() {
       expect(toHtml(ngQuery(div, 'li', 'stash'))).toEqual('<li>stash</li>');
       expect(toHtml(ngQuery(div, 'li', 'secret'))).toEqual('<li>secret</li>');
       expect(toHtml(ngQuery(div, 'li', 'xxx'))).toEqual('');
+    });
+
+    it('should select probe using CSS selector', (TestBed _) {
+      _.compile('<div ng-show="true">WORKS</div>');
+      document.body.append(_.rootElement);
+      var div = new Element.html('<div><p><span></span></p></div>');
+      var span = div.querySelector('span');
+      var shadowRoot = span.createShadowRoot();
+      shadowRoot.innerHtml = '<ul><li>stash</li><li>secret</li><ul>';
+
+      ElementProbe probe = ngProbe('[ng-show]');
+      expect(probe).toBeDefined();
+      expect(probe.injector.get(NgShow) is NgShow).toEqual(true);
+      _.rootElement.remove();
     });
 
     it('should select elements in the root shadow root', () {

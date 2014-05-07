@@ -2,11 +2,26 @@ library filter_spec;
 
 import '../_specs.dart';
 
+// Const keys to keep the compiler fast
+var _nameToSymbol = const {
+  'name': const Symbol('name'),
+  'current': const Symbol('current'),
+  'first': const Symbol('first'),
+  'last': const Symbol('last'),
+  'done': const Symbol('done'),
+  'key': const Symbol('key'),
+  'nonkey': const Symbol('nonkey')
+};
+
 // Helper to simulate some real objects.  Purposefully doesn't implement Map.
 class DynamicObject {
   final Map<Symbol, dynamic> _map = {};
   DynamicObject([Map init]) {
-    init.forEach((key, value) => _map[new Symbol(key)] = value);
+    init.forEach((key, value) {
+      var symbol = _nameToSymbol[key];
+      if (symbol == null) { throw "Missing nameToSymbol[$key]"; }
+      _map[symbol] = value;
+    });
   }
   toString() => "$_map";
   operator ==(DynamicObject other) {

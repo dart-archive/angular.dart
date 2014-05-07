@@ -124,8 +124,8 @@ class BallPosition {
 
 class MyModule extends Module {
   MyModule() {
-    type(BounceController);
-    type(BallPosition);
+    bind(BounceController);
+    bind(BallPosition);
   }
 }
 

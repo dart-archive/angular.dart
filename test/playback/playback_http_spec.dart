@@ -9,7 +9,9 @@ void main() {
     beforeEachModule((Module m) {
       backend = new MockHttpBackend();
       var wrapper = new HttpBackendWrapper(backend);
-      m..value(HttpBackendWrapper, wrapper)..type(PlaybackHttpBackendConfig);
+      m
+        ..bind(HttpBackendWrapper, toValue: wrapper)
+        ..bind(PlaybackHttpBackendConfig);
     });
 
     afterEach(() {
@@ -19,7 +21,7 @@ void main() {
 
     describe('RecordingHttpBackend', () {
       beforeEachModule((Module m) {
-        m.type(HttpBackend, implementedBy: RecordingHttpBackend);
+        m.bind(HttpBackend, toImplementation: RecordingHttpBackend);
       });
 
 
@@ -52,7 +54,7 @@ void main() {
 
     describe('PlaybackHttpBackend', () {
       beforeEachModule((Module m) {
-        m.type(HttpBackend, implementedBy: PlaybackHttpBackend);
+        m.bind(HttpBackend, toImplementation: PlaybackHttpBackend);
       });
 
       it('should replay a request', async((Http http, HttpBackend hb) {

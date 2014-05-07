@@ -37,23 +37,23 @@ class BDirective {
   }
 }
 
-@Formatter(name:'filterA')
-class AFilter {
+@Formatter(name:'formatterA')
+class AFormatter {
   Log log;
 
-  AFilter(this.log) {
-    log.add('AFilter');
+  AFormatter(this.log) {
+    log.add('AFormatter');
   }
 
   call(value) => value;
 }
 
-@Formatter(name:'filterB')
-class BFilter {
+@Formatter(name:'formatterB')
+class BFormatter {
   Log log;
 
-  BFilter(this.log) {
-    log.add('BFilter');
+  BFormatter(this.log) {
+    log.add('BFormatter');
   }
 
   call(value) => value;
@@ -195,11 +195,11 @@ main() {
 
       it('should load directives/formatters from the child injector', () {
         Module rootModule = new Module()
-          ..type(Probe)
-          ..type(Log)
-          ..type(AFilter)
-          ..type(ADirective)
-          ..factory(Node, (injector) => document.body);
+          ..bind(Probe)
+          ..bind(Log)
+          ..bind(AFormatter)
+          ..bind(ADirective)
+          ..bind(Node, toFactory: (injector) => document.body);
 
         Injector rootInjector = applicationFactory()
             .addModule(rootModule)
@@ -209,24 +209,24 @@ main() {
 
         Compiler compiler = rootInjector.get(Compiler);
         DirectiveMap directives = rootInjector.get(DirectiveMap);
-        compiler(es('<dir-a>{{\'a\' | filterA}}</dir-a><dir-b></dir-b>'), directives)(rootInjector);
+        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootInjector);
         rootScope.apply();
 
-        expect(log.log, equals(['ADirective', 'AFilter']));
+        expect(log.log, equals(['ADirective', 'AFormatter']));
 
 
         Module childModule = new Module()
-          ..type(BFilter)
-          ..type(BDirective);
+          ..bind(BFormatter)
+          ..bind(BDirective);
 
-        var childInjector = forceNewDirectivesAndFilters(rootInjector, [childModule]);
+        var childInjector = forceNewDirectivesAndFormatters(rootInjector, [childModule]);
 
         DirectiveMap newDirectives = childInjector.get(DirectiveMap);
-        compiler(es('<dir-a probe="dirA"></dir-a>{{\'a\' | filterA}}'
-            '<dir-b probe="dirB"></dir-b>{{\'b\' | filterB}}'), newDirectives)(childInjector);
+        compiler(es('<dir-a probe="dirA"></dir-a>{{\'a\' | formatterA}}'
+            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(childInjector);
         rootScope.apply();
 
-        expect(log.log, equals(['ADirective', 'AFilter', 'ADirective', 'BDirective', 'BFilter']));
+        expect(log.log, equals(['ADirective', 'AFormatter', 'ADirective', 'BDirective', 'BFormatter']));
       });
 
     });

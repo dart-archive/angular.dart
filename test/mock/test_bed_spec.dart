@@ -10,7 +10,7 @@ void main() {
     Scope rootScope;
 
     beforeEachModule((Module module) {
-      module..type(MyTestBedDirective);
+      module..bind(MyTestBedDirective);
       return (TestBed tb) => _ = tb;
     });
 

@@ -31,11 +31,11 @@ Iterable<Symbol> _getUsedSymbols(DeclarationMirror decl, seenDecls, path, onlyTy
   var used = [];
 
   if (decl is TypedefMirror) {
-    var tddecl = decl as TypedefMirror;
+    TypedefMirror tddecl = decl;
     used.addAll(_getUsedSymbols(tddecl.referent, seenDecls, path, onlyType));
   }
   if (decl is FunctionTypeMirror) {
-    var ftdecl = decl as FunctionTypeMirror;
+    FunctionTypeMirror ftdecl = decl;
 
     ftdecl.parameters.forEach((ParameterMirror p) {
       used.addAll(_getUsedSymbols(p.type, seenDecls, path, onlyType));
@@ -50,7 +50,7 @@ Iterable<Symbol> _getUsedSymbols(DeclarationMirror decl, seenDecls, path, onlyTy
 
   if (!onlyType) {
     if (decl is ClassMirror) {
-      var cdecl = decl as ClassMirror;
+      ClassMirror cdecl = decl;
       cdecl.declarations.forEach((s, d) {
         try {
           used.addAll(_getUsedSymbols(d, seenDecls, path, false));
@@ -62,7 +62,7 @@ Iterable<Symbol> _getUsedSymbols(DeclarationMirror decl, seenDecls, path, onlyTy
     }
 
     if (decl is MethodMirror) {
-      var mdecl = decl as MethodMirror;
+      MethodMirror mdecl = decl;
       if (mdecl.parameters != null)
         mdecl.parameters.forEach((p) {
           used.addAll(_getUsedSymbols(p.type, seenDecls, path, true));
@@ -71,14 +71,14 @@ Iterable<Symbol> _getUsedSymbols(DeclarationMirror decl, seenDecls, path, onlyTy
     }
 
     if (decl is VariableMirror) {
-      var vdecl = decl as VariableMirror;
+      VariableMirror vdecl = decl;
       used.addAll(_getUsedSymbols(vdecl.type, seenDecls, path, true));
     }
   }
 
   // Strip out type variables.
   if (decl is TypeMirror) {
-    var tdecl = decl as TypeMirror;
+    TypeMirror tdecl = decl;
     var typeVariables = tdecl.typeVariables.map((tv) => tv.qualifiedName);
     used = used.where((x) => !typeVariables.contains(x));
   }

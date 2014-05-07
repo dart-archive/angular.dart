@@ -41,7 +41,7 @@ part of angular.core.dom_internal;
  *
  *     main() {
  *       applicationFactory()
- *           .addModule(new Module()..type(LoadTemplateCacheDirective))
+ *           .addModule(new Module()..bind(LoadTemplateCacheDirective))
  *           .run();
  *     }
  *

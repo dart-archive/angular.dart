@@ -16,8 +16,8 @@ main() {
       router = new Router(useFragment: false, windowImpl: new MockWindow());
       m
         ..install(new AngularMockModule())
-        ..factory(RouteInitializerFn, (_) => initRoutes)
-        ..value(Router, router);
+        ..bind(RouteInitializerFn, toFactory: (_) => initRoutes)
+        ..bind(Router, toValue: router);
     });
 
     beforeEach((TestBed tb) {
@@ -46,7 +46,7 @@ main() {
     initRouter(initializer) {
       var injector = applicationFactory()
         .addModule(new AngularMockModule())
-        .addModule(new Module()..value(RouteInitializerFn, initializer))
+        .addModule(new Module()..bind(RouteInitializerFn, toValue: initializer))
         .createInjector();
       injector.get(NgRoutingHelper); // force routing initialization
       router = injector.get(Router);
@@ -158,12 +158,12 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<h1>Foo</h1>'));
 
-      Element root = _.compile('<div><ng-view></ng-view><div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-      _.rootScope.apply();
+
       expect(enterCount).toBe(1);
       expect(root.text).toEqual('Foo');
     }));
@@ -231,18 +231,18 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<h1>Foo</h1>'));
 
-      Element root = _.compile('<div><ng-view></ng-view><div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-      _.rootScope.apply();
+
       expect(root.text).toEqual('Foo');
       expect(leaveCount).toBe(0);
 
       router.route('/bar');
       microLeap();
-      _.rootScope.apply();
+
       expect(root.text).toEqual('');
       expect(leaveCount).toBe(1);
     }));
@@ -254,7 +254,7 @@ main() {
           'foo': ngRoute(
               path: '/foo',
               modules: () => [
-                new Module()..type(NewDirective)
+                new Module()..bind(NewDirective)
               ],
               view: 'foo.html'
           ),
@@ -263,12 +263,12 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div make-it-new>Old!</div>'));
 
-      Element root = _.compile('<div><ng-view></ng-view><div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-      _.rootScope.apply();
+
       expect(root.text).toEqual('New!');
     }));
 
@@ -279,7 +279,7 @@ main() {
           'foo': ngRoute(
               path: '/foo',
               modules: () => new Future.value([
-                new Module()..type(NewDirective)
+                new Module()..bind(NewDirective)
               ]),
               view: 'foo.html'
           ),
@@ -288,12 +288,12 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div make-it-new>Old!</div>'));
 
-      Element root = _.compile('<div><ng-view></ng-view><div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
-      _.rootScope.apply();
+
       expect(root.text).toEqual('New!');
     }));
 
@@ -304,7 +304,7 @@ main() {
           'foo': ngRoute(
               path: '/foo',
               modules: () => [
-                new Module()..type(HelloFilter)
+                new Module()..bind(HelloFormatter)
               ],
               view: 'foo.html'
           ),
@@ -313,12 +313,13 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div>{{\'World\' | hello}}</div>'));
 
-      Element root = _.compile('<div><ng-view></ng-view></div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
       _.rootScope.apply();
+
       expect(root.text).toEqual('Hello, World!');
     }));
 
@@ -329,7 +330,7 @@ main() {
           'foo': ngRoute(
               path: '/foo',
               modules: () => new Future.value([
-                new Module()..type(HelloFilter)
+                new Module()..bind(HelloFormatter)
               ]),
               view: 'foo.html'
           ),
@@ -338,12 +339,13 @@ main() {
       _.injector.get(TemplateCache)
           .put('foo.html', new HttpResponse(200, '<div>{{\'World\' | hello}}</div>'));
 
-      Element root = _.compile('<div><ng-view></ng-view></div>');
+      Element root = _.compile('<ng-view></ng-view>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
       _.rootScope.apply();
+
       expect(root.text).toEqual('Hello, World!');
     }));
 
@@ -366,7 +368,7 @@ class NewDirective {
 }
 
 @Formatter(name:'hello')
-class HelloFilter {
+class HelloFormatter {
   String call(String str) {
     return 'Hello, $str!';
   }

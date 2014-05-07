@@ -12,9 +12,9 @@ class FormatterMap extends AnnotationMap<Formatter> {
         super(injector, extractMetadata);
 
   call(String name) {
-    var filter = new Formatter(name: name);
-    var filterType = this[filter];
-    return _injector.get(filterType);
+    var formatter = new Formatter(name: name);
+    var formatterType = this[formatter];
+    return _injector.get(formatterType);
   }
 }
 

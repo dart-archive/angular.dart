@@ -18,7 +18,7 @@ main() {
 
     describe('injected NodeValidator', () {
       beforeEachModule((Module module) {
-        module.factory(dom.NodeValidator, (_) {
+        module.bind(dom.NodeValidator, toFactory: (_) {
           final validator = new NodeValidatorBuilder();
           validator.allowNavigation(new AnyUriPolicy());
           validator.allowTextElements();

@@ -147,6 +147,12 @@ void main() {
         expect(stats.hits).toEqual(2);
         expect(stats.misses).toEqual(1);
       }));
+
+      it('should hold nothing if capacity is zero', () {
+        var cache = new LruCache<int, int>(capacity: 0);
+        cache.put(1, 10);
+        expect(cache.get(1)).toBeNull();
+      });
     });
   });
 }

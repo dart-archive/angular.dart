@@ -11,7 +11,7 @@ class _HtmlAndCssComponent {}
 main() => describe('NgBaseCss', () {
   beforeEachModule((Module module) {
     module
-      ..type(_HtmlAndCssComponent);
+      ..bind(_HtmlAndCssComponent);
   });
 
   it('should load css urls from ng-base-css', async((TestBed _, MockHttpBackend backend) {
@@ -52,7 +52,7 @@ main() => describe('NgBaseCss', () {
 
   describe('from injector', () {
     beforeEachModule((Module module) {
-      module.value(NgBaseCss, new NgBaseCss()..urls = ['injected.css']);
+      module.bind(NgBaseCss, toValue: new NgBaseCss()..urls = ['injected.css']);
     });
 
     it('ng-base-css should be available from the injector', async((TestBed _, MockHttpBackend backend) {

@@ -88,29 +88,30 @@ class TranscludingComponentFactory implements ComponentFactory {
 
       // Append the component's template as children
       var viewFuture = ComponentFactory._viewFuture(component, viewCache, directives);
+      var elementFuture;
 
       if (viewFuture != null) {
-        viewFuture = viewFuture.then((ViewFactory viewFactory) {
+        elementFuture = viewFuture.then((ViewFactory viewFactory) {
           contentPort.pullNodes();
           element.nodes.addAll(viewFactory(childInjector).nodes);
           return element;
         });
       } else {
-        viewFuture = new async.Future.microtask(() => contentPort.pullNodes());
+        elementFuture = new async.Future.microtask(() => contentPort.pullNodes());
       }
-      TemplateLoader templateLoader = new TemplateLoader(viewFuture);
+      TemplateLoader templateLoader = new TemplateLoader(elementFuture);
 
       Scope shadowScope = scope.createChild({});
 
       var probe;
       var childModule = new Module()
-          ..type(ref.type)
-          ..type(NgElement)
-          ..value(ContentPort, contentPort)
-          ..value(Scope, shadowScope)
-          ..value(TemplateLoader, templateLoader)
-          ..value(dom.ShadowRoot, new ShadowlessShadowRoot(element))
-          ..factory(ElementProbe, (_) => probe);
+          ..bind(ref.type)
+          ..bind(NgElement)
+          ..bind(ContentPort, toValue: contentPort)
+          ..bind(Scope, toValue: shadowScope)
+          ..bind(TemplateLoader, toValue: templateLoader)
+          ..bind(dom.ShadowRoot, toValue: new ShadowlessShadowRoot(element))
+          ..bind(ElementProbe, toFactory: (_) => probe);
       childInjector = injector.createChild([childModule], name: SHADOW_DOM_INJECTOR_NAME);
 
       var controller = childInjector.get(ref.type);

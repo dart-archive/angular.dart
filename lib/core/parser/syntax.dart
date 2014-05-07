@@ -10,7 +10,7 @@ abstract class Visitor {
 
   visitExpression(Expression expression) => null;
   visitChain(Chain expression) => visitExpression(expression);
-  visitFilter(Filter expression) => visitExpression(expression);
+  visitFormatter(Formatter expression) => visitExpression(expression);
 
   visitAssign(Assign expression) => visitExpression(expression);
   visitConditional(Conditional expression) => visitExpression(expression);
@@ -73,12 +73,12 @@ class Chain extends Expression {
   accept(Visitor visitor) => visitor.visitChain(this);
 }
 
-class Filter extends Expression {
+class Formatter extends Expression {
   final Expression expression;
   final String name;
   final List<Expression> arguments;
-  Filter(this.expression, this.name, this.arguments);
-  accept(Visitor visitor) => visitor.visitFilter(this);
+  Formatter(this.expression, this.name, this.arguments);
+  accept(Visitor visitor) => visitor.visitFormatter(this);
 }
 
 class Assign extends Expression {
