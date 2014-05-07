@@ -76,19 +76,6 @@ else
   echo '---------------------'
   $NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node \
         $NGDART_SCRIPT_DIR/changelog/;
-
-  (
-    echo '---------------------'
-    echo '-- TEST: benchmark --'
-    echo '---------------------'
-    cd $NGDART_BASE_DIR/benchmark
-    $PUB install
-
-    for file in *_perf.dart; do
-      echo ======= $file ========
-      $DART $file
-    done
-  )
 fi
 
 echo '-----------------------'
