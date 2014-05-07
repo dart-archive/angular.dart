@@ -416,15 +416,14 @@ void main() {
 
     describe('onSubmit', () {
       it('should suppress the submission event if no action is provided within the form', (Scope scope, TestBed _) {
-        var element = e('<form name="myForm"></form>');
+        var element = _.compile('<form name="myForm"></form>');
 
-        _.compile(element);
         scope.apply();
 
         Event submissionEvent = new Event.eventType('CustomEvent', 'submit');
 
         expect(submissionEvent.defaultPrevented).toBe(false);
-        element.dispatchEvent(submissionEvent);
+        _.triggerEvent(element, event: submissionEvent);
         expect(submissionEvent.defaultPrevented).toBe(true);
 
         Event fakeEvent = new Event.eventType('CustomEvent', 'running');
@@ -452,7 +451,7 @@ void main() {
         scope.apply();
 
         _.rootScope.context['submitted'] = false;
-        _.triggerEvent(e, 'submit', type: 'CustomEvent');
+        _.triggerEvent(e, name: 'submit', type: 'CustomEvent');
 
         expect(_.rootScope.context['submitted']).toBe(true);
       });
@@ -478,7 +477,7 @@ void main() {
 
         Event submissionEvent = new Event.eventType('CustomEvent', 'submit');
 
-        formElement.dispatchEvent(submissionEvent);
+        _.triggerEvent(formElement, event: submissionEvent);
         scope.apply();
 
         expect(form.submitted).toBe(true);
@@ -488,7 +487,7 @@ void main() {
         expect(formElement).not.toHaveClass('ng-submit-valid');
 
         _.rootScope.apply('myModel = "man"');
-        formElement.dispatchEvent(submissionEvent);
+        _.triggerEvent(formElement, event: submissionEvent);
         scope.apply();
 
         expect(form.submitted).toBe(true);
@@ -643,7 +642,7 @@ void main() {
         expect(form).not.toHaveClass('ng-touched');
         expect(form).toHaveClass('ng-untouched');
 
-        _.triggerEvent(input, 'blur');
+        _.triggerEvent(input, name: 'blur');
         scope.apply();
 
         expect(formModel.touched).toBe(true);
@@ -659,7 +658,7 @@ void main() {
         expect(form).not.toHaveClass('ng-touched');
         expect(form).toHaveClass('ng-untouched');
 
-        _.triggerEvent(input, 'blur');
+        _.triggerEvent(input, name: 'blur');
 
         expect(formModel.touched).toBe(true);
       });
@@ -672,13 +671,13 @@ void main() {
         NgForm formModel = _.rootScope.context['duperForm'];
         var model = _.rootScope.context['i'].directive(NgModel);
         var input = model.element.node;
-        _.triggerEvent(input, 'blur');
+        _.triggerEvent(input, name: 'blur');
 
         expect(formModel.touched).toBe(true);
         expect(model.touched).toBe(true);
         expect(formModel.invalid).toBe(true);
 
-        _.triggerEvent(form, 'submit');
+        _.triggerEvent(form, name: 'submit');
 
         expect(formModel.touched).toBe(true);
         expect(model.touched).toBe(true);
@@ -687,7 +686,7 @@ void main() {
         scope.apply(() {
           scope.context['myModel'] = 'value';
         });
-        _.triggerEvent(form, 'submit');
+        _.triggerEvent(form, name: 'submit');
 
         expect(formModel).toBeValid();
         expect(model.touched).toBe(false);

@@ -75,13 +75,10 @@ class TestBed {
    * Trigger a specific DOM element on a given node to test directives
    * which listen to events.
    */
-  triggerEvent(element, name, {type : 'MouseEvent'}) {
-    if (!_isAttachedToRenderDOM(element)) {
-      _eventHandler.walkDomTreeAndExecute(element, new Event.eventType(type, name));
-      element.dispatchEvent(new Event.eventType(type, name));
-    } else {
-      element.dispatchEvent(new Event.eventType(type, name));
-    }
+  triggerEvent(element, {name, type : 'MouseEvent', event}) {
+    var e = event == null ? new Event.eventType(type, name) : event;
+    element.dispatchEvent(e);
+    if (!_isAttachedToRenderDOM(element)) _eventHandler.walkDomTreeAndExecute(element, e);
     // Since we are manually triggering event we need to simulate apply();
     rootScope.apply();
   }
@@ -92,7 +89,7 @@ class TestBed {
    */
   selectOption(element, text) {
     element.querySelectorAll('option').forEach((o) => o.selected = o.text == text);
-    triggerEvent(element, 'change');
+    triggerEvent(element, name: 'change');
     rootScope.apply();
   }
 

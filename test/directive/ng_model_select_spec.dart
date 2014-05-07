@@ -39,7 +39,7 @@ main() {
       expect(_.rootScope.context['selectProbe'].injector.get(NgValueController).seenValue).toEqual("");
 
       selectElement.querySelectorAll('option')[1].selected = true;
-      _.triggerEvent(selectElement, 'change');
+      _.triggerEvent(selectElement, name: 'change');
 
       expect(selectElement).toEqualSelect(['a', ['b'], 'c']);
       expect(_.rootScope.context['selectProbe'].injector.get(NgValueController).seenValue).toEqual("b");
@@ -61,7 +61,7 @@ main() {
       expect(_.rootScope.context['selectProbe'].injector.get(NgValueController).seenValue).toEqual("");
 
       selectElement.querySelectorAll('option')[1].selected = true;
-      _.triggerEvent(selectElement, 'change');
+      _.triggerEvent(selectElement, name: 'change');
 
       expect(selectElement).toEqualSelect(['a', ['b'], 'c']);
       expect(_.rootScope.context['selectProbe'].injector.get(NgValueController).seenValue).toEqual("b");
@@ -83,7 +83,7 @@ main() {
       expect(_.rootScope.context['selectProbe'].injector.get(NgValueController).seenValue).toEqual("");
 
       selectElement.querySelectorAll('option')[1].selected = true;
-      _.triggerEvent(selectElement, 'change');
+      _.triggerEvent(selectElement, name: 'change');
 
       expect(selectElement).toEqualSelect(['a', ['b'], 'c']);
       expect(_.rootScope.context['selectProbe'].injector.get(NgValueController).seenValue).toEqual("b");
@@ -174,7 +174,7 @@ main() {
         expect(selectElement).toEqualSelect(['c3p0', ['r2d2']]);
 
         selectElement.querySelectorAll('option')[0].selected = true;
-        _.triggerEvent(selectElement, 'change');
+        _.triggerEvent(selectElement, name: 'change');
 
 
         expect(selectElement).toEqualSelect([['c3p0'], 'r2d2']);
@@ -570,7 +570,7 @@ main() {
           });
 
           element.value = 'c';
-          _.triggerEvent(element, 'change');
+          _.triggerEvent(element, name: 'change');
           expect(log).toEqual('change:c;');
         });
 
@@ -608,7 +608,7 @@ main() {
           expect(scope.context['log']).toEqual('');
 
           element.value = 'c';
-          _.triggerEvent(element, 'change');
+          _.triggerEvent(element, name: 'change');
           scope.apply();
 
           expect(scope.context['form']['select'].valid).toEqual(true);
@@ -727,7 +727,7 @@ main() {
           expect(scope.context['form']['select'].pristine).toEqual(true);
 
           element.value = 'B';
-          _.triggerEvent(element, 'change');
+          _.triggerEvent(element, name: 'change');
 
           expect(scope.context['form']['select'].valid).toEqual(true);
           expect(scope.context['form']['select'].dirty).toEqual(true);
@@ -1198,7 +1198,7 @@ main() {
             expect(element.querySelectorAll('option')[0].selected).toEqual(true);
 
             element.querySelectorAll('option')[1].selected = true;
-            _.triggerEvent(element, 'change');
+            _.triggerEvent(element, name: 'change');
             expect(scope.context['selected']).toEqual(scope.context['values'][1]);
           });
 
@@ -1214,7 +1214,7 @@ main() {
             expect(element).toEqualSelect([['A'], 'B']);
 
             element.querySelectorAll('option')[1].selected = true;
-            _.triggerEvent(element, 'change');
+            _.triggerEvent(element, name: 'change');
             expect(scope.context['selected']).toEqual(scope.context['values'][1]['id']);
           });
 
@@ -1276,7 +1276,7 @@ main() {
 
             element.querySelectorAll('option')[0].selected = true;
 
-            _.triggerEvent(element, 'change');
+            _.triggerEvent(element, name: 'change');
             expect(scope.context['selected']).toEqual([scope.context['values'][0]]);
           });
 
@@ -1314,7 +1314,7 @@ main() {
             });
 
             element.value = '';
-            _.triggerEvent(element, 'change');
+            _.triggerEvent(element, name: 'change');
             expect(element).toBeValid();
 
             scope.apply(() {
@@ -1328,7 +1328,7 @@ main() {
             expect(element).toBeValid();
 
             element.value = '';
-            _.triggerEvent(element, 'change');
+            _.triggerEvent(element, name: 'change');
             expect(element).not.toBeValid();
 
             scope.apply(() {

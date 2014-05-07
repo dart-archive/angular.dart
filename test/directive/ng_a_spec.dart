@@ -11,16 +11,23 @@ main() {
 
     beforeEach((TestBed tb) => _ = tb);
 
-    it('should bind click listener when href zero length string', (Scope scope) {
-      _.compile('<a href="" ng-click="abc = 4; event = \$event"></a>');
-      _.triggerEvent(_.rootElement, 'click');
+    it('should bind click listener when href zero length string', (Scope scope,
+                                                                   MockApplication app) {
+      var e = _.compile('<a href="" ng-click="abc = 4; event = \$event"></a>');
+      // We have to attach a element to render DOM, otherwise it will cause full page refresh when
+      // href = "".
+      app.attachToRenderDOM(e);
+      _.triggerEvent(e, name: 'click');
       expect(_.rootScope.context['abc']).toEqual(4);
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
     });
 
-    it('should bind click listener when href empty', (Scope scope) {
-      _.compile('<a href ng-click="abc = 5; event = \$event"></a>');
-      _.triggerEvent(_.rootElement, 'click');
+    it('should bind click listener when href empty', (Scope scope, MockApplication app) {
+      var e = _.compile('<a href ng-click="abc = 5; event = \$event"></a>');
+      // We have to attach a element to render DOM, otherwise it will cause full page refresh when
+      // href is not set.
+      app.attachToRenderDOM(e);
+      _.triggerEvent(e, name: 'click');
       expect(_.rootScope.context['abc']).toEqual(5);
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
     });
@@ -33,7 +40,7 @@ main() {
       window.location.href = '#something';
       var e = _.compile('<a href="#"></a>');
       app.attachToRenderDOM(e);
-      _.triggerEvent(e, 'click');
+      _.triggerEvent(e, name: 'click');
       expect(window.location.href.endsWith("#")).toEqual(true);
     });
 
@@ -44,13 +51,13 @@ main() {
 
       var e =_.compile('<a href="{{url}}" ng-click="abc = true; event = \$event"></a>');
       app.attachToRenderDOM(e);
-      _.triggerEvent(e, 'click');
+      _.triggerEvent(e, name: 'click');
       expect(_.rootScope.context['abc']).toEqual(true);
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
       window.location.href = '#';
       _.rootScope.context['url'] = '#url';
       _.rootScope.apply();
-      _.triggerEvent(e, 'click');
+      _.triggerEvent(e, name: 'click');
       expect(window.location.href.endsWith("#url")).toEqual(true);
     });
   });

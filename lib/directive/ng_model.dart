@@ -292,25 +292,21 @@ class NgModel extends NgControl implements AttachAware {
 class InputCheckbox {
   final dom.CheckboxInputElement inputElement;
   final NgModel ngModel;
+  final NgElement ngElement;
   final NgTrueValue ngTrueValue;
   final NgFalseValue ngFalseValue;
   final Scope scope;
 
-  InputCheckbox(dom.Element this.inputElement, this.ngModel,
+  InputCheckbox(dom.Element this.inputElement, this.ngModel, this.ngElement,
                 this.scope, this.ngTrueValue, this.ngFalseValue) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         inputElement.checked = ngTrueValue.isValue(value);
       });
     };
-    inputElement
-        ..onChange.listen((_) {
-          ngModel.viewValue = inputElement.checked
-              ? ngTrueValue.value : ngFalseValue.value;
-        })
-        ..onBlur.listen((e) {
-          ngModel.markAsTouched();
-        });
+    ngElement.addEventListener('change',(_) => ngModel.viewValue = inputElement.checked ?
+      ngTrueValue.value : ngFalseValue.value );
+    ngElement.addEventListener('blur', (e) => ngModel.markAsTouched());
   }
 }
 
@@ -337,6 +333,7 @@ class InputCheckbox {
 class InputTextLike {
   final dom.Element inputElement;
   final NgModel ngModel;
+  final NgElement ngElement;
   final Scope scope;
   String _inputType;
 
@@ -345,7 +342,7 @@ class InputTextLike {
     (inputElement as dynamic).value = (value == null) ? '' : value.toString();
   }
 
-  InputTextLike(this.inputElement, this.ngModel, this.scope) {
+  InputTextLike(this.inputElement, this.ngModel, this.ngElement, this.scope) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         if (value == null) value = '';
@@ -357,12 +354,9 @@ class InputTextLike {
         }
       });
     };
-    inputElement
-        ..onChange.listen(processValue)
-        ..onInput.listen(processValue)
-        ..onBlur.listen((e) {
-          ngModel.markAsTouched();
-        });
+    ngElement.addEventListener('change', processValue);
+    ngElement.addEventListener('input', processValue);
+    ngElement.addEventListener('blur', (e) => ngModel.markAsTouched());
   }
 
   void processValue([_]) {
@@ -394,6 +388,7 @@ class InputTextLike {
 class InputNumberLike {
   final dom.InputElement inputElement;
   final NgModel ngModel;
+  final NgElement ngElement;
   final Scope scope;
 
 
@@ -414,7 +409,7 @@ class InputNumberLike {
     }
   }
 
-  InputNumberLike(dom.Element this.inputElement, this.ngModel, this.scope) {
+  InputNumberLike(dom.Element this.inputElement, this.ngModel, this.ngElement, this.scope) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         if (value != typedValue
@@ -423,12 +418,9 @@ class InputNumberLike {
         }
       });
     };
-    inputElement
-        ..onChange.listen(relaxFnArgs(processValue))
-        ..onInput.listen(relaxFnArgs(processValue))
-        ..onBlur.listen((e) {
-          ngModel.markAsTouched();
-        });
+    ngElement.addEventListener('change', relaxFnArgs(processValue));
+    ngElement.addEventListener('input', relaxFnArgs(processValue));
+    ngElement.addEventListener('blur', (e) => ngModel.markAsTouched());
   }
 
   void processValue() {
@@ -586,10 +578,11 @@ class InputDateLike {
       toFactory: (Injector i) => new NgBindTypeForDateLike(i.get(dom.Element)));
   final dom.InputElement inputElement;
   final NgModel ngModel;
+  final NgElement ngElement;
   final Scope scope;
   NgBindTypeForDateLike ngBindType;
 
-  InputDateLike(dom.Element this.inputElement, this.ngModel, this.scope,
+  InputDateLike(dom.Element this.inputElement, this.ngModel, this.ngElement, this.scope,
       this.ngBindType) {
     if (inputElement.type == 'datetime-local') {
       ngBindType.idlAttrKind = NgBindTypeForDateLike.NUMBER;
@@ -599,12 +592,9 @@ class InputDateLike {
         if (!eqOrNaN(value, typedValue)) typedValue = value;
       });
     };
-    inputElement
-        ..onChange.listen(relaxFnArgs(processValue))
-        ..onInput.listen(relaxFnArgs(processValue))
-        ..onBlur.listen((e) {
-          ngModel.markAsTouched();
-        });
+    ngElement.addEventListener('change', relaxFnArgs(processValue));
+    ngElement.addEventListener('input', relaxFnArgs(processValue));
+    ngElement.addEventListener('blur', (e) => ngModel.markAsTouched());
   }
 
   dynamic get typedValue => ngBindType.inputTypedValue;
@@ -748,10 +738,11 @@ class NgFalseValue {
 class InputRadio {
   final dom.RadioButtonInputElement radioButtonElement;
   final NgModel ngModel;
+  final NgElement ngElement;
   final NgValue ngValue;
   final Scope scope;
 
-  InputRadio(dom.Element this.radioButtonElement, this.ngModel,
+  InputRadio(dom.Element this.radioButtonElement, this.ngModel, this.ngElement,
              this.scope, this.ngValue, NodeAttrs attrs) {
     // If there's no "name" set, we'll set a unique name.  This ensures
     // less surprising behavior about which radio buttons are grouped together.
@@ -763,13 +754,12 @@ class InputRadio {
         radioButtonElement.checked = (value == ngValue.value);
       });
     };
-    radioButtonElement
-        ..onClick.listen((_) {
-          if (radioButtonElement.checked) ngModel.viewValue = ngValue.value;
-        })
-        ..onBlur.listen((e) {
-          ngModel.markAsTouched();
-        });
+    ngElement.addEventListener('click', (_) {
+      if (radioButtonElement.checked) ngModel.viewValue = ngValue.value;
+    } );
+    ngElement.addEventListener('blur', (e) {
+      return ngModel.markAsTouched();
+    });
   }
 }
 
@@ -785,8 +775,8 @@ class InputRadio {
  */
 @Decorator(selector: '[contenteditable][ng-model]')
 class ContentEditable extends InputTextLike {
-  ContentEditable(dom.Element inputElement, NgModel ngModel, Scope scope)
-      : super(inputElement, ngModel, scope);
+  ContentEditable(dom.Element inputElement, NgModel ngModel, NgElement ngElement, Scope scope)
+      : super(inputElement, ngModel, ngElement, scope);
 
   // The implementation is identical to InputTextLike but use innerHtml instead of value
   String get typedValue => (inputElement as dynamic).innerHtml;

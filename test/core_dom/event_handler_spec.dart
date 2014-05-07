@@ -54,7 +54,7 @@ main() {
         </div>''');
       app.attachToRenderDOM(e);
 
-      _.triggerEvent(e.querySelector('[on-abc]'), 'abc');
+      _.triggerEvent(e.querySelector('[on-abc]'), name: 'abc');
       expect(_.getScope(e).context['ctrl'].invoked).toEqual(true);
     }));
 
@@ -65,7 +65,7 @@ main() {
         </div>''');
       app.attachToRenderDOM(e);
 
-      _.triggerEvent(e.querySelector('[baz]'), 'cux');
+      _.triggerEvent(e.querySelector('[baz]'), name: 'cux');
       expect(_.getScope(e).context['ctrl'].invoked).toEqual(true);
     }));
 
@@ -77,7 +77,7 @@ main() {
         </div>''');
       app.attachToRenderDOM(e);
 
-      _.triggerEvent(e.querySelector('[baz]'), 'cux');
+      _.triggerEvent(e.querySelector('[baz]'), name: 'cux');
       expect(_.getScope(e).context['ctrl'].invoked).toEqual(true);
       expect(_.getScope(e).context['ctrl'].anotherInvoked).toEqual(true);
     }));
@@ -88,7 +88,7 @@ main() {
           <div on-my-new-event="ctrl.invoked=true;"></div>
         </div>''');
 
-      _.triggerEvent(e.querySelector('[on-my-new-event]'), 'myNewEvent', type: 'CustomEvent');
+      _.triggerEvent(e.querySelector('[on-my-new-event]'), name: 'myNewEvent', type: 'CustomEvent');
       var fooScope = _.getScope(e);
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
     }));
@@ -100,7 +100,7 @@ main() {
         </div>''');
 
       var el = e.querySelector('[on-abc]');
-      _.triggerEvent(el, 'abc', type: 'CustomEvent');
+      _.triggerEvent(el, name: 'abc', type: 'CustomEvent');
       _.rootScope.apply();
       expect(el.text).toEqual("new description");
     }));
@@ -112,7 +112,7 @@ main() {
 
       var shadowRoot = e.shadowRoot;
       var span = shadowRoot.querySelector('span');
-      _.triggerEvent(span, 'abc', type: 'CustomEvent');
+      _.triggerEvent(span, name: 'abc', type: 'CustomEvent');
       var ctrl = _.rootScope.context['ctrl'];
       expect(ctrl.invoked).toEqual(true);
     }));
@@ -127,7 +127,7 @@ main() {
 
       microLeap();
 
-      _.triggerEvent(e.querySelector('[on-abc]'), 'abc', type: 'CustomEvent');
+      _.triggerEvent(e.querySelector('[on-abc]'), name: 'abc', type: 'CustomEvent');
       var shadowRoot = e.querySelector('bar').shadowRoot;
       var shadowRootScope = _.getScope(shadowRoot);
       expect(shadowRootScope.context['ctrl'].invoked).toEqual(false);

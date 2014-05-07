@@ -91,7 +91,7 @@ void main() {
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
         inputElement.valueAsDate = dateTime;
-        _.triggerEvent(inputElement, 'change');
+        _.triggerEvent(inputElement, name: 'change');
         expect(_.rootScope.context['model']).toEqual(dateTime);
       });
 
@@ -101,7 +101,7 @@ void main() {
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
         inputElement.value = dtAsString;
-        _.triggerEvent(inputElement, 'change');
+        _.triggerEvent(inputElement, name: 'change');
         expect(_.rootScope.context['model']).toEqual(dateTime);
       });
 
@@ -170,7 +170,7 @@ void main() {
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
         inputElement.valueAsDate = dateTime;
-        _.triggerEvent(inputElement, 'change');
+        _.triggerEvent(inputElement, name: 'change');
         expect(_.rootScope.context['model']).toEqual(dateTime);
       });
 
@@ -180,7 +180,7 @@ void main() {
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
         inputElement.value = dtAsString;
-        _.triggerEvent(inputElement, 'change');
+        _.triggerEvent(inputElement, name: 'change');
         expect(_.rootScope.context['model']).toEqual(dateTime);
       });
 
@@ -252,7 +252,7 @@ void main() {
 
         inputElement.valueAsNumber = dateTime;
         expect(inputElement.valueAsNumber).toEqual(dateTime);
-        _.triggerEvent(inputElement, 'change');
+        _.triggerEvent(inputElement, name: 'change');
         expect(_.rootScope.context['model']).toEqual(dateTime);
       });
 
@@ -262,7 +262,7 @@ void main() {
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
         inputElement.value = dtAsString;
-        _.triggerEvent(inputElement, 'change');
+        _.triggerEvent(inputElement, name: 'change');
         expect(_.rootScope.context['model']).toEqual(dateTime);
       });
 
@@ -324,7 +324,7 @@ void main() {
             false)) return; // skip test
 
         inputElement.value = dtAsString;
-        _.triggerEvent(inputElement, 'change');
+        _.triggerEvent(inputElement, name: 'change');
         expect(_.rootScope.context['model']).toEqual(dtAsString);
       });
     });
@@ -362,7 +362,7 @@ void main() {
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
         inputElement.valueAsDate = dateTime;
-        _.triggerEvent(inputElement, 'change');
+        _.triggerEvent(inputElement, name: 'change');
         expect(_.rootScope.context['model']).toEqual(dateTime);
       });
 
@@ -372,7 +372,7 @@ void main() {
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
         inputElement.value = dtAsString;
-        _.triggerEvent(inputElement, 'change');
+        _.triggerEvent(inputElement, name: 'change');
         expect(_.rootScope.context['model']).toEqual(dateTime);
       });
 
@@ -440,7 +440,7 @@ void main() {
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
         inputElement.valueAsDate = dateTime;
-        _.triggerEvent(inputElement, 'change');
+        _.triggerEvent(inputElement, name: 'change');
         expect(_.rootScope.context['model']).toEqual(dateTime);
       });
 
@@ -450,7 +450,7 @@ void main() {
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
         inputElement.value = dtAsString;
-        _.triggerEvent(inputElement, 'change');
+        _.triggerEvent(inputElement, name: 'change');
         expect(_.rootScope.context['model']).toEqual(dateTime);
       });
 
