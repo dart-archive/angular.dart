@@ -269,7 +269,8 @@ void main() {
           ..bind(SometimesComponent)
           ..bind(ExprAttrComponent)
           ..bind(LogElementComponent)
-          ..bind(SayHelloFormatter);
+          ..bind(SayHelloFormatter)
+          ..bind(OneTimeDecorator);
       });
 
       it('should select on element', async(() {
@@ -689,6 +690,64 @@ void main() {
             expect(_.rootElement.shadowRoot).toBeNotNull();
           }
         }));
+      });
+
+      describe('bindings', () {
+        it('should set a one-time binding with the correct value', (Logger logger) {
+          _.compile(r'<div one-time="v"></div>');
+
+          _.rootScope.context['v'] = 1;
+
+          var context = _.rootScope.context;
+          _.rootScope.watch('3+4', (v, _) => context['v'] = v);
+
+          // In the 1st digest iteration:
+          //   v will be set to 7
+          //   OneTimeDecorator.value will be set to 1
+          // In the 2nd digest iteration:
+          //   OneTimeDecorator.value will be set to 7
+          _.rootScope.apply();
+
+          expect(logger).toEqual([1, 7]);
+        });
+
+        it('should keep one-time binding until it is set to non-null', (Logger logger) {
+          _.compile(r'<div one-time="v"></div>');
+          _.rootScope.context['v'] = null;
+          _.rootScope.apply();
+          expect(logger).toEqual([null]);
+
+          _.rootScope.context['v'] = 7;
+          _.rootScope.apply();
+          expect(logger).toEqual([null, 7]);
+
+          // Check that the binding is removed.
+          _.rootScope.context['v'] = 8;
+          _.rootScope.apply();
+          expect(logger).toEqual([null, 7]);
+        });
+
+        it('should remove the one-time binding only if it stablizied to null', (Logger logger) {
+          _.compile(r'<div one-time="v"></div>');
+
+          _.rootScope.context['v'] = 1;
+
+          var context = _.rootScope.context;
+          _.rootScope.watch('3+4', (v, _) => context['v'] = null);
+
+          _.rootScope.apply();
+          expect(logger).toEqual([1, null]);
+
+          // Even though there was a null in the unstable model, we shouldn't remove the binding
+          context['v'] = 8;
+          _.rootScope.apply();
+           expect(logger).toEqual([1, null, 8]);
+
+          // Check that the binding is removed.
+          _.rootScope.context['v'] = 9;
+          _.rootScope.apply();
+          expect(logger).toEqual([1, null, 8]);
+        });
       });
     });
 
@@ -1129,4 +1188,15 @@ class LogElementComponent{
     logger(node);
     logger(shadowRoot);
   }
+}
+
+@Decorator(
+    selector: '[one-time]',
+    map: const {
+      'one-time': '=>!value'
+})
+class OneTimeDecorator {
+  Logger log;
+  OneTimeDecorator(this.log);
+  set value(v) => log(v);
 }
