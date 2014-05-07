@@ -19,6 +19,8 @@ library angular.directive;
 
 import 'package:di/di.dart';
 import 'dart:html' as dom;
+import 'dart:convert' as convert;
+import 'dart:async' as async;
 import 'package:intl/intl.dart';
 import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
@@ -51,10 +53,11 @@ part 'ng_non_bindable.dart';
 part 'ng_model_select.dart';
 part 'ng_form.dart';
 part 'ng_model_validators.dart';
+part 'ng_model_options.dart';
 
 class DecoratorFormatter extends Module {
   DecoratorFormatter() {
-    bind(AHref, toValue: null);
+	bind(AHref, toValue: null);
     bind(NgBaseCss);  // The root injector should have an empty NgBaseCss
     bind(NgBind, toValue: null);
     bind(NgBindTemplate, toValue: null);
@@ -81,6 +84,7 @@ class DecoratorFormatter extends Module {
     bind(ContentEditable, toValue: null);
     bind(NgBindTypeForDateLike, toValue: null);
     bind(NgModel, toValue: null);
+    bind(NgModelOptions, toValue: null);
     bind(NgValue, toValue: null);
     bind(NgTrueValue, toValue: new NgTrueValue());
     bind(NgFalseValue, toValue: new NgFalseValue());
