@@ -1293,7 +1293,7 @@ void main() {
         rootScope.context['foo'] = 'abc';
         String expression = 'foo.contains("b")';
         if (identical(1, 1.0)) { // dart2js
-          // The previous expression does not work in dart2js (dartbug 13523)
+          // The previous expression does not work in dart2js (http://dartbug.com/18673)
           // Use a working one for now.
           expression = 'foo.contains("b", 0)';
         }
