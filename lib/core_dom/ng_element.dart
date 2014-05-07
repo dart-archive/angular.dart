@@ -7,17 +7,22 @@ class NgElement {
   final dom.Element node;
   final Scope _scope;
   final Animate _animate;
+  final EventHandler _eventHandler;
 
   final _classesToUpdate = <String, bool>{};
   final _attributesToUpdate = <String, dynamic>{};
 
   bool _writeScheduled = false;
 
-  NgElement(this.node, this._scope, this._animate);
+  NgElement(this.node, this._scope, this._animate, this._eventHandler);
 
   void addClass(String className) {
     _scheduleDomWrite();
     _classesToUpdate[className] = true;
+  }
+
+  void addEventListener(String eventName, callback(Event)) {
+    _eventHandler.registerCallback(node, eventName, callback);
   }
 
   void removeClass(String className) {

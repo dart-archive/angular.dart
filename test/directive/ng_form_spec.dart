@@ -448,15 +448,11 @@ void main() {
       });
 
       it('should execute the ng-submit expression if provided upon form submission', (Scope scope, TestBed _) {
-        var element = e('<form name="myForm" ng-submit="submitted = true"></form>');
-
-        _.compile(element);
+        var e = _.compile('<form name="myForm" ng-submit="submitted = true"></form>');
         scope.apply();
 
         _.rootScope.context['submitted'] = false;
-
-        Event submissionEvent = new Event.eventType('CustomEvent', 'submit');
-        element.dispatchEvent(submissionEvent);
+        _.triggerEvent(e, 'submit', type: 'CustomEvent');
 
         expect(_.rootScope.context['submitted']).toBe(true);
       });

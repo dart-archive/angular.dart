@@ -31,7 +31,7 @@ class EventHandler {
   dom.Node _rootNode;
   final Expando _expando;
   final ExceptionHandler _exceptionHandler;
-  final _listeners = <String, Function>{};
+  final _listeners = <String, async.StreamSubscription>{};
 
   EventHandler(this._rootNode, this._expando, this._exceptionHandler);
 
@@ -41,22 +41,40 @@ class EventHandler {
    */
   void register(String eventName) {
     _listeners.putIfAbsent(eventName, () {
-      dom.EventListener eventListener = this._eventListener;
-      _rootNode.on[eventName].listen(eventListener);
-      return eventListener;
+      return _rootNode.on[eventName].listen(_eventListener);
     });
   }
 
-  void _eventListener(dom.Event event) {
-    dom.Node element = event.target;
+  void registerCallback(dom.Element element, String eventName, EventFunction callbackFn) {
+    ElementProbe probe = _expando[element];
+    probe.addListener(eventName, callbackFn);
+    register(eventName);
+  }
+
+  async.Future releaseListeners() {
+    return _listeners.forEach((_, async.StreamSubscription subscription) => subscription.cancel());
+  }
+
+  void walkDomTreeAndExecute(dom.Node element, dom.Event event) {
     while (element != null && element != _rootNode) {
-      var expression;
-      if (element is dom.Element)
+      var expression, probe;
+      if (element is dom.Element) {
         expression = (element as dom.Element).attributes[eventNameToAttrName(event.type)];
-      if (expression != null) {
+        probe = _getProbe(element);
+      }
+      if (probe != null && probe.listeners[event.type] != null) {
+        probe.listeners[event.type].forEach((fn) {
+          try {
+            fn(event);
+          } catch (e, s) {
+            _exceptionHandler(e, s);
+          }
+        });
+      }
+      if (probe != null && expression != null) {
         try {
-          var scope = _getScope(element);
-          if (scope != null) scope.eval(expression);
+          Scope scope = probe.scope;
+          if (scope != null) scope.eval(expression, {r'$event': event});
         } catch (e, s) {
           _exceptionHandler(e, s);
         }
@@ -65,12 +83,17 @@ class EventHandler {
     }
   }
 
-  Scope _getScope(dom.Node element) {
+  void _eventListener(dom.Event event) {
+    var element = event.target;
+    walkDomTreeAndExecute(element, event);
+  }
+
+  ElementProbe _getProbe(dom.Node element) {
     // var topElement = (rootNode is dom.ShadowRoot) ? rootNode.parentNode : rootNode;
     while (element != _rootNode.parentNode) {
       ElementProbe probe = _expando[element];
       if (probe != null) {
-        return probe.scope;
+        return probe;
       }
       element = element.parentNode;
     }

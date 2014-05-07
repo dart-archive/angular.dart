@@ -12,12 +12,14 @@ class TestBed {
   final Compiler compiler;
   final Parser _parser;
   final Expando expando;
+  final EventHandler _eventHandler;
 
   Element rootElement;
   List<Node> rootElements;
   View rootView;
 
-  TestBed(this.injector, this.rootScope, this.compiler, this._parser, this.expando);
+  TestBed(this.injector, this.rootScope, this.compiler, this._parser, this._eventHandler,
+          this.expando);
 
 
   /**
@@ -73,8 +75,13 @@ class TestBed {
    * Trigger a specific DOM element on a given node to test directives
    * which listen to events.
    */
-  triggerEvent(element, name, [type='MouseEvent']) {
-    element.dispatchEvent(new Event.eventType(type, name));
+  triggerEvent(element, name, {type : 'MouseEvent'}) {
+    if (!_isAttachedToRenderDOM(element)) {
+      _eventHandler.walkDomTreeAndExecute(element, new Event.eventType(type, name));
+      element.dispatchEvent(new Event.eventType(type, name));
+    } else {
+      element.dispatchEvent(new Event.eventType(type, name));
+    }
     // Since we are manually triggering event we need to simulate apply();
     rootScope.apply();
   }
@@ -99,4 +106,13 @@ class TestBed {
   }
 
   getScope(Node node) => getProbe(node).scope;
+
+  bool _isAttachedToRenderDOM(Node node) {
+    var doc = window.document;
+    while (node != doc) {
+      if (node == null) return false;
+      node = node.parentNode;
+    }
+    return true;
+  }
 }
