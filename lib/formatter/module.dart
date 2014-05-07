@@ -5,7 +5,8 @@
  *
  * This library is included as part of [angular.dart](#angular/angular). It provides all of
  * the core formatters available in Angular. You can extend Angular by writing your own formatters
- * and providing them as part of a custom library.
+ * and providing them as part of a custom library. See the @[Formatter](#angular-core-annotation
+ * .Formatter) class annotation for more detail.
  *
  * Formatters are typically used within `{{ }}` to
  * convert data to human-readable form. They may also be used inside repeaters to transform arrays.
