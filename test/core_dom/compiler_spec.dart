@@ -179,7 +179,7 @@ void main() {
       expect(log).toEqual(['OneOfTwo', 'TwoOfTwo']);
     });
 
-    it('should compile a directive that ignores children', (Logger log) {
+    iit('should compile a directive that ignores children', (Logger log) {
       // The ng-repeat comes first, so it is not ignored, but the children *are*
       var element = _.compile('<div ng-repeat="i in [1,2]" ignore-children><div two-directives></div></div>');
 
@@ -774,7 +774,7 @@ class MyChildController {}
 
 @Component(
     selector: 'tab',
-    visibility: Directive.DIRECT_CHILDREN_VISIBILITY)
+    visibility: ViewDirective.DIRECT_CHILDREN_VISIBILITY)
 class TabComponent {
   int id = 0;
   Logger log;
@@ -798,7 +798,7 @@ class PaneComponent {
 
 @Decorator(
     selector: '[local]',
-    visibility: Directive.LOCAL_VISIBILITY)
+    visibility: ViewDirective.LOCAL_VISIBILITY)
 class LocalAttrDirective {
   int id = 0;
   Logger log;
@@ -810,7 +810,7 @@ class LocalAttrDirective {
 
 @Template(
     selector: '[simple-transclude-in-attach]',
-    visibility: Directive.CHILDREN_VISIBILITY)
+    visibility: ViewDirective.CHILDREN_VISIBILITY)
 class SimpleTranscludeInAttachAttrDirective {
   SimpleTranscludeInAttachAttrDirective(ViewPort viewPort, BoundViewFactory boundViewFactory, Logger log, RootScope scope) {
     scope.runAsync(() {
@@ -842,7 +842,7 @@ class TwoOfTwoDirectives {
   }
 }
 
-@Decorator(
+@Macro(
     selector: '[ignore-children]',
     compileChildren: false)
 class IgnoreChildrenDirective {

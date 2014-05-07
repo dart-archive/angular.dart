@@ -15,7 +15,7 @@ class MappingParts {
 class DirectiveRef {
   final dom.Node element;
   final Type type;
-  final Directive annotation;
+  final ViewDirective annotation;
   final String value;
   final mappings = new List<MappingParts>();
   Map<String, String> _templateAttrs;

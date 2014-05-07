@@ -17,7 +17,7 @@ directChildrenVisibility(Injector requesting, Injector defining) {
   return identical(requesting.parent, defining) || localVisibility(requesting, defining);
 }
 
-Directive cloneWithNewMap(Directive annotation, map) => annotation._cloneWithNewMap(map);
+ViewDirective cloneWithNewMap(ViewDirective annotation, map) => annotation._cloneWithNewMap(map);
 
 String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
@@ -33,22 +33,9 @@ class Injectable {
 }
 
 /**
- * Abstract supper class of [Controller], [Component], and [Decorator].
+ * Abstract super class of all directives ([Component], [Decorator], [Template] and [Macro]).
  */
 abstract class Directive {
-
-  /// The directive can only be injected to other directives on the same element.
-  static const Visibility LOCAL_VISIBILITY = localVisibility;
-
-  /// The directive can be injected to other directives on the same or child elements.
-  static const Visibility CHILDREN_VISIBILITY = null;
-
-  /**
-   * The directive on this element can only be injected to other directives
-   * declared on elements which are direct children of the current element.
-   */
-  static const Visibility DIRECT_CHILDREN_VISIBILITY = directChildrenVisibility;
-
   /**
    * CSS selector which will trigger this component/directive.
    * CSS Selectors are limited to a single element and can contain:
@@ -64,6 +51,13 @@ abstract class Directive {
    */
   final String selector;
 
+  const Directive({ this.selector });
+}
+
+/**
+ * A directive which executes during compilation, and which can modify DOM template.
+ */
+class Macro extends Directive {
   /**
    * Specifies the compiler action to be taken on the child nodes of the
    * element which this currently being compiled.  The values are:
@@ -72,7 +66,29 @@ abstract class Directive {
    * * [:false:] Do not compile/visit the child nodes.  Angular markup on
    *   descendant nodes will not be processed.
    */
-   final bool compileChildren;
+  final bool compileChildren;
+
+  const Macro({ String selector,
+                this.compileChildren})
+    : super(selector: selector);
+}
+
+/**
+ * Abstract super class of [Controller], [Component], and [Decorator].
+ */
+abstract class ViewDirective extends Directive {
+
+  /// The directive can only be injected to other directives on the same element.
+  static const Visibility LOCAL_VISIBILITY = localVisibility;
+
+  /// The directive can be injected to other directives on the same or child elements.
+  static const Visibility CHILDREN_VISIBILITY = null;
+
+  /**
+   * The directive on this element can only be injected to other directives
+   * declared on elements which are direct children of the current element.
+   */
+  static const Visibility DIRECT_CHILDREN_VISIBILITY = directChildrenVisibility;
 
   /**
    * A directive/component controller class can be injected into other
@@ -193,23 +209,23 @@ abstract class Directive {
    */
   final List<String> exportExpressions;
 
-  const Directive({
-    this.selector,
-    this.compileChildren: true,
-    this.visibility: Directive.LOCAL_VISIBILITY,
+  const ViewDirective({
+    String selector,
+    this.visibility: ViewDirective.LOCAL_VISIBILITY,
     this.module,
     this.map: const {},
     this.exportExpressions: const [],
     this.exportExpressionAttrs: const []
-  });
+  })
+    : super(selector: selector);
 
   String toString() => selector;
 
   int get hashCode => selector.hashCode;
 
-  bool operator==(other) => other is Directive && selector == other.selector;
+  bool operator==(other) => other is ViewDirective && selector == other.selector;
 
-  Directive _cloneWithNewMap(newMap);
+  ViewDirective _cloneWithNewMap(newMap);
 }
 
 
@@ -232,7 +248,7 @@ bool _resetStyleInheritanceDeprecationWarningPrinted = false;
  * * `detach()` - Called on when owning scope is destroyed.
  * * `onShadowRoot(ShadowRoot shadowRoot)` - Called when [ShadowRoot] is loaded.
  */
-class Component extends Directive {
+class Component extends ViewDirective {
   /**
    * Inlined HTML template for the component.
    */
@@ -314,7 +330,6 @@ class Component extends Directive {
         _applyAuthorStyles = applyAuthorStyles,
         _resetStyleInheritance = resetStyleInheritance,
         super(selector: selector,
-             compileChildren: true,
              visibility: visibility,
              map: map,
              module: module,
@@ -355,16 +370,14 @@ class Component extends Directive {
  * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
  */
-class Decorator extends Directive {
-  const Decorator({compileChildren: true,
-                    map,
-                    selector,
-                    module,
-                    visibility,
-                    exportExpressions,
-                    exportExpressionAttrs})
+class Decorator extends ViewDirective {
+  const Decorator({map,
+                   selector,
+                   module,
+                   visibility,
+                   exportExpressions,
+                   exportExpressionAttrs})
       : super(selector: selector,
-              compileChildren: compileChildren,
               visibility: visibility,
               map: map,
               module: module,
@@ -373,7 +386,6 @@ class Decorator extends Directive {
 
   Decorator _cloneWithNewMap(newMap) =>
       new Decorator(
-          compileChildren: compileChildren,
           map: newMap,
           module: module,
           selector: selector,
@@ -397,7 +409,7 @@ class Decorator extends Directive {
 * * `attach()` - Called on first [Scope.apply()].
 * * `detach()` - Called on when owning scope is destroyed.
 */
-class Template extends Directive {
+class Template extends ViewDirective {
   const Template({map,
                   selector,
                   module,
@@ -405,7 +417,6 @@ class Template extends Directive {
                   exportExpressions,
                   exportExpressionAttrs})
       : super(selector: selector,
-              compileChildren: true,
               visibility: visibility,
               map: map,
               module: module,
@@ -447,9 +458,7 @@ class Controller extends Decorator {
    */
   final String publishAs;
 
-  const Controller({
-                    compileChildren: true,
-                    this.publishAs,
+  const Controller({this.publishAs,
                     map,
                     module,
                     selector,
@@ -458,16 +467,14 @@ class Controller extends Decorator {
                     exportExpressionAttrs
                     })
       : super(selector: selector,
-              compileChildren: compileChildren,
               visibility: visibility,
               map: map,
               module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  Directive _cloneWithNewMap(newMap) =>
+  ViewDirective _cloneWithNewMap(newMap) =>
       new Controller(
-          compileChildren: compileChildren,
           publishAs: publishAs,
           module: module,
           map: newMap,

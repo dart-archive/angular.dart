@@ -14,6 +14,8 @@ export "package:angular/core/annotation_src.dart" show
     Injectable,
 
     Directive,
+    ViewDirective,
+    Macro,
     Component,
     Controller,
     Decorator,

@@ -37,7 +37,7 @@ class DynamicMetadataExtractor implements MetadataExtractor {
   * duplicated in the [AbstractNgAttrAnnotation.map]
   */
  dynamic _mergeMap(Type type, annotation) {
-   if (annotation is! Directive) return annotation;
+   if (annotation is! ViewDirective) return annotation;
     var metaData = _extractFieldMetadata(type);
     if (metaData.isNotEmpty) {
       var newMap = annotation.map == null ? <String, String>{} : new Map.from(annotation.map);

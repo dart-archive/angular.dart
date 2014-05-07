@@ -33,7 +33,7 @@ class NgBindRoute implements RouteProvider {
 
   static final Module _module = new Module()
       ..bind(RouteProvider, toFactory: (i) => i.get(NgBindRoute),
-             visibility: Directive.CHILDREN_VISIBILITY);
+             visibility: ViewDirective.CHILDREN_VISIBILITY);
   static module() => _module;
 
   // We inject NgRoutingHelper to force initialization of routing.

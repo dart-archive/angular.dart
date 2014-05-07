@@ -18,7 +18,13 @@ part of angular.directive;
  * element.  However, the `foo` attribute *will* be interpolated because it is
  * not on a child node.
  */
-@Decorator(
+@Macro(
     selector: '[ng-non-bindable]',
+    compileChildren: false)
+@Macro(
+    selector: 'template',
+    compileChildren: false)
+@Macro(
+    selector: 'script',
     compileChildren: false)
 class NgNonBindable {}

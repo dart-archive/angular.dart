@@ -17,7 +17,7 @@ import '../_specs.dart';
 @Decorator(selector:'[attribute]')          class _Attribute{}
 @Template(selector:'[structural]')          class _Structural{}
 
-@Decorator(selector:'[ignore-children]',
+@Macro(selector:'[ignore-children]',
            compileChildren: false)          class _IgnoreChildren{}
 
 @Decorator(selector: '[my-model][required]')

@@ -18,7 +18,7 @@ void main() {
 
       Component annotation = annotations[0];
       expect(annotation.selector).toEqual('annotated-io');
-      expect(annotation.visibility).toEqual(Directive.LOCAL_VISIBILITY);
+      expect(annotation.visibility).toEqual(ViewDirective.LOCAL_VISIBILITY);
       expect(annotation.exportExpressions).toEqual(['exportExpressions']);
       expect(annotation.module).toEqual(AnnotatedIoComponent.module);
       expect(annotation.template).toEqual('template');
@@ -44,7 +44,7 @@ void main() {
 
       Template annotation = annotations[0];
       expect(annotation.selector).toEqual('[template]');
-      expect(annotation.visibility).toEqual(Directive.LOCAL_VISIBILITY);
+      expect(annotation.visibility).toEqual(ViewDirective.LOCAL_VISIBILITY);
       expect(annotation.exportExpressions).toEqual(['exportExpressions']);
       expect(annotation.module).toEqual(AnnotatedTemplate.module);
       expect(annotation.map).toEqual({
@@ -102,9 +102,9 @@ void main() {
       it("should extract attr map from annotated component which inherits other component", (DirectiveMap directives) {
         var annotations = directives.annotationsFor(Sub);
         expect(annotations.length).toEqual(1);
-        expect(annotations[0] is Directive).toBeTruthy();
+        expect(annotations[0] is ViewDirective).toBeTruthy();
 
-        Directive annotation = annotations[0];
+        ViewDirective annotation = annotations[0];
         expect(annotation.selector).toEqual('[sub]');
         expect(annotation.map).toEqual({
           "foo": "=>foo",
@@ -129,7 +129,7 @@ class NullParser implements Parser {
     cssUrl: const ['cssUrls'],
     publishAs: 'ctrl',
     module: AnnotatedIoComponent.module,
-    visibility: Directive.LOCAL_VISIBILITY,
+    visibility: ViewDirective.LOCAL_VISIBILITY,
     exportExpressions: const ['exportExpressions'],
     map: const {
       'foo': '=>foo'
@@ -138,7 +138,7 @@ class AnnotatedIoComponent {
   static module() => new Module()..bind(
       String,
       toFactory: (i) => i.get(AnnotatedIoComponent),
-      visibility: Directive.LOCAL_VISIBILITY);
+      visibility: ViewDirective.LOCAL_VISIBILITY);
 
   AnnotatedIoComponent(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
@@ -169,7 +169,7 @@ class AnnotatedIoComponent {
 
 @Template(
     selector: '[template]',
-    visibility: Directive.LOCAL_VISIBILITY,
+    visibility: ViewDirective.LOCAL_VISIBILITY,
     module: AnnotatedTemplate.module,
     exportExpressions: const ['exportExpressions'],
     map: const {'template': '=>template'})
@@ -177,7 +177,7 @@ class AnnotatedTemplate {
   static module() => new Module()..bind(
       String,
       toFactory: (i) => i.get(AnnotatedTemplate),
-      visibility: Directive.LOCAL_VISIBILITY);
+      visibility: ViewDirective.LOCAL_VISIBILITY);
 
   var template;
 

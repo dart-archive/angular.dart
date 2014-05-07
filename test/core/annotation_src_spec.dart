@@ -43,7 +43,7 @@ void main() => describe('annotations', () {
         module: (){},
         map: {},
         selector: '',
-        visibility: Directive.LOCAL_VISIBILITY,
+        visibility: ViewDirective.LOCAL_VISIBILITY,
         exportExpressions: [],
         exportExpressionAttrs: [],
         useShadowDom: true
@@ -60,11 +60,10 @@ void main() => describe('annotations', () {
   describe('decorator', () {
     it('should set all fields on clone when all the fields are set', () {
       var decorator = new Decorator(
-          compileChildren: false,
           map: {},
           selector: '',
           module: (){},
-          visibility: Directive.LOCAL_VISIBILITY,
+          visibility: ViewDirective.LOCAL_VISIBILITY,
           exportExpressions: [],
           exportExpressionAttrs: []
       );
@@ -83,7 +82,7 @@ void main() => describe('annotations', () {
           map: {},
           selector: '',
           module: (){},
-          visibility: Directive.LOCAL_VISIBILITY,
+          visibility: ViewDirective.LOCAL_VISIBILITY,
           exportExpressions: [],
           exportExpressionAttrs: []
       );
@@ -100,11 +99,10 @@ void main() => describe('annotations', () {
     it('should set all fields on clone when all the fields are set', () {
       var controller = new Controller(
           publishAs: '',
-          compileChildren: false,
           map: {},
           selector: '',
           module: (){},
-          visibility: Directive.LOCAL_VISIBILITY,
+          visibility: ViewDirective.LOCAL_VISIBILITY,
           exportExpressions: [],
           exportExpressionAttrs: []
       );

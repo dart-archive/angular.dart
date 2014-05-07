@@ -6,7 +6,7 @@ import 'dart:mirrors';
 @Component(selector:'component')
 class _Component{}
 
-@Decorator(
+@Macro(
     selector:'[ignore-children]',
     compileChildren: false)
 class _IgnoreChildren{}
@@ -41,7 +41,7 @@ main() => describe('ElementBinderBuilder', () {
   });
 
   addDirective(selector) {
-    directives.forEach((Directive annotation, Type type) {
+    directives.forEach((ViewDirective annotation, Type type) {
       if (annotation.selector == selector)
         b.addDirective(new DirectiveRef(node, type, annotation, null));
     });

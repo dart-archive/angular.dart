@@ -58,7 +58,7 @@ part of angular.routing;
 @Decorator(
     selector: 'ng-view',
     module: NgView.module,
-    visibility: Directive.CHILDREN_VISIBILITY)
+    visibility: ViewDirective.CHILDREN_VISIBILITY)
 class NgView implements DetachAware, RouteProvider {
   static final Module _module = new Module()
       ..bind(RouteProvider, toFactory: (i) => i.get(NgView));

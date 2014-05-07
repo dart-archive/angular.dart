@@ -51,7 +51,6 @@ class ElementBinderBuilder {
 
   addDirective(DirectiveRef ref) {
     var annotation = ref.annotation;
-    compileChildren = compileChildren && annotation.compileChildren;
 
     if (annotation is Template) {
       template = ref;
