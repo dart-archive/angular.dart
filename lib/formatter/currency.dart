@@ -1,7 +1,7 @@
 part of angular.formatter_internal;
 
 /**
- * Formats a number as a currency (for example $1,234.56).
+ * Formats a number as a currency (for example 1,234.56$).
  *
  * When no currency symbol is provided, '$' is used. For more on formatters,
  * see the [angular:formatter](#angular-formatter) library.
