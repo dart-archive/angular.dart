@@ -290,21 +290,21 @@ class NgModel extends NgControl implements AttachAware {
  */
 @Decorator(selector: 'input[type=checkbox][ng-model]')
 class InputCheckbox {
-  final dom.CheckboxInputElement inputElement;
+  dom.CheckboxInputElement _inputElement;
   final NgModel ngModel;
   final NgElement ngElement;
   final NgTrueValue ngTrueValue;
   final NgFalseValue ngFalseValue;
   final Scope scope;
 
-  InputCheckbox(dom.Element this.inputElement, this.ngModel, this.ngElement,
-                this.scope, this.ngTrueValue, this.ngFalseValue) {
+  InputCheckbox(this.ngModel, this.ngElement, this.scope, this.ngTrueValue, this.ngFalseValue) {
+    _inputElement = ngElement.node;
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
-        inputElement.checked = ngTrueValue.isValue(value);
+        _inputElement.checked = ngTrueValue.isValue(value);
       });
     };
-    ngElement.addEventListener('change',(_) => ngModel.viewValue = inputElement.checked ?
+    ngElement.addEventListener('change',(_) => ngModel.viewValue = _inputElement.checked ?
       ngTrueValue.value : ngFalseValue.value );
     ngElement.addEventListener('blur', (e) => ngModel.markAsTouched());
   }
@@ -331,18 +331,17 @@ class InputCheckbox {
 @Decorator(selector: 'input[type=search][ng-model]')
 @Decorator(selector: 'input[type=tel][ng-model]')
 class InputTextLike {
-  final dom.Element inputElement;
   final NgModel ngModel;
   final NgElement ngElement;
   final Scope scope;
   String _inputType;
 
-  get typedValue => (inputElement as dynamic).value;
+  get typedValue => (ngElement.node as dynamic).value;
   void set typedValue(value) {
-    (inputElement as dynamic).value = (value == null) ? '' : value.toString();
+    (ngElement.node as dynamic).value = (value == null) ? '' : value.toString();
   }
 
-  InputTextLike(this.inputElement, this.ngModel, this.ngElement, this.scope) {
+  InputTextLike(this.ngModel, this.ngElement, this.scope) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         if (value == null) value = '';
@@ -386,14 +385,14 @@ class InputTextLike {
 @Decorator(selector: 'input[type=number][ng-model]')
 @Decorator(selector: 'input[type=range][ng-model]')
 class InputNumberLike {
-  final dom.InputElement inputElement;
+  dom.InputElement _inputElement;
   final NgModel ngModel;
   final NgElement ngElement;
   final Scope scope;
 
 
   // We can't use [inputElement.valueAsNumber] due to http://dartbug.com/15788
-  num get typedValue => num.parse(inputElement.value, (v) => double.NAN);
+  num get typedValue => num.parse(_inputElement.value, (v) => double.NAN);
 
   void set typedValue(num value) {
     // [chalin, 2014-02-16] This post
@@ -402,14 +401,15 @@ class InputNumberLike {
     // it does not. [TODO: put BUG/ISSUE number here].  We implement a
     // workaround by setting `value`. Clean-up once the bug is fixed.
     if (value == null) {
-      inputElement.value = null;
+      _inputElement.value = null;
     } else {
       // We can't use inputElement.valueAsNumber due to http://dartbug.com/15788
-      inputElement.value = "$value";
+      _inputElement.value = "$value";
     }
   }
 
-  InputNumberLike(dom.Element this.inputElement, this.ngModel, this.ngElement, this.scope) {
+  InputNumberLike(this.ngModel, this.ngElement, this.scope) {
+    _inputElement = ngElement.node;
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         if (value != typedValue
@@ -576,15 +576,14 @@ class NgBindTypeForDateLike {
 class InputDateLike {
   static Module moduleFactory() => new Module()..bind(NgBindTypeForDateLike,
       toFactory: (Injector i) => new NgBindTypeForDateLike(i.get(dom.Element)));
-  final dom.InputElement inputElement;
   final NgModel ngModel;
   final NgElement ngElement;
   final Scope scope;
   NgBindTypeForDateLike ngBindType;
 
-  InputDateLike(dom.Element this.inputElement, this.ngModel, this.ngElement, this.scope,
+  InputDateLike(this.ngModel, this.ngElement, this.scope,
       this.ngBindType) {
-    if (inputElement.type == 'datetime-local') {
+    if ((ngElement.node as dom.InputElement).type == 'datetime-local') {
       ngBindType.idlAttrKind = NgBindTypeForDateLike.NUMBER;
     }
     ngModel.render = (value) {
@@ -736,14 +735,12 @@ class NgFalseValue {
     selector: 'input[type=radio][ng-model]',
     module: NgValue.moduleFactory)
 class InputRadio {
-  final dom.RadioButtonInputElement radioButtonElement;
   final NgModel ngModel;
   final NgElement ngElement;
   final NgValue ngValue;
   final Scope scope;
 
-  InputRadio(dom.Element this.radioButtonElement, this.ngModel, this.ngElement,
-             this.scope, this.ngValue, NodeAttrs attrs) {
+  InputRadio(this.ngModel, this.ngElement, this.scope, this.ngValue, NodeAttrs attrs) {
     // If there's no "name" set, we'll set a unique name.  This ensures
     // less surprising behavior about which radio buttons are grouped together.
     if (attrs['name'] == '' || attrs['name'] == null) {
@@ -751,11 +748,11 @@ class InputRadio {
     }
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
-        radioButtonElement.checked = (value == ngValue.value);
+        (ngElement.node as dom.InputElement).checked = (value == ngValue.value);
       });
     };
     ngElement.addEventListener('click', (_) {
-      if (radioButtonElement.checked) ngModel.viewValue = ngValue.value;
+      if ((ngElement.node as dom.InputElement).checked) ngModel.viewValue = ngValue.value;
     } );
     ngElement.addEventListener('blur', (e) {
       return ngModel.markAsTouched();
@@ -775,12 +772,12 @@ class InputRadio {
  */
 @Decorator(selector: '[contenteditable][ng-model]')
 class ContentEditable extends InputTextLike {
-  ContentEditable(dom.Element inputElement, NgModel ngModel, NgElement ngElement, Scope scope)
-      : super(inputElement, ngModel, ngElement, scope);
+  ContentEditable(NgModel ngModel, NgElement ngElement, Scope scope)
+      : super(ngModel, ngElement, scope);
 
   // The implementation is identical to InputTextLike but use innerHtml instead of value
-  String get typedValue => (inputElement as dynamic).innerHtml;
+  String get typedValue => (ngElement.node as dynamic).innerHtml;
   void set typedValue(String value) {
-    (inputElement as dynamic).innerHtml = (value == null) ? '' : value;
+    (ngElement.node as dynamic).innerHtml = (value == null) ? '' : value;
   }
 }

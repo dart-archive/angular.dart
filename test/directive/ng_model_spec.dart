@@ -97,7 +97,7 @@ void main() {
         ElementProbe probe = new ElementProbe(null, element, i, scope);
         expando[element] = probe;
         dom.querySelector('body').append(element);
-        var input = new InputTextLike(element, model, ngElement, scope);
+        var input = new InputTextLike(model, ngElement, scope);
 
         element
             ..value = 'abc'
@@ -380,7 +380,7 @@ void main() {
         expando[element] = probe;
         // selectionStart and selectionEnd do not work if element is not attached to DOM.
         app.attachToRenderDOM(element);
-        var input = new InputTextLike(element, model, ngElement, scope);
+        var input = new InputTextLike(model, ngElement, scope);
 
         element
           ..value = 'abc'
@@ -474,7 +474,7 @@ void main() {
         expando[element] = probe;
         // selectionStart and selectionEnd do not work if element is not attached to DOM.
         app.attachToRenderDOM(element);
-        var input = new InputTextLike(element, model, ngElement, scope);
+        var input = new InputTextLike(model, ngElement, scope);
 
         element
           ..value = 'abc'
@@ -576,7 +576,7 @@ void main() {
         expando[element] = probe;
         // selectionStart and selectionEnd do not work if element is not attached to DOM.
         app.attachToRenderDOM(element);
-        var input = new InputTextLike(element, model, ngElement, scope);
+        var input = new InputTextLike(model, ngElement, scope);
 
         element
           ..value = 'abc'
@@ -785,7 +785,7 @@ void main() {
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
             nodeAttrs, new Animate());
         dom.querySelector('body').append(element);
-        var input = new InputTextLike(element, model, ngElement, scope);
+        var input = new InputTextLike(model, ngElement, scope);
 
         element
           ..value = 'abc'

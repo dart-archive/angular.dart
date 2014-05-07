@@ -15,14 +15,13 @@ part of angular.directive;
  */
 @Decorator(selector: 'a[href]')
 class AHref {
-  final dom.Element element;
   final NgElement ngElement;
 
-  AHref(this.element, this.ngElement, VmTurnZone zone) {
-    if (element.attributes["href"] == "") {
+  AHref(this.ngElement, VmTurnZone zone) {
+    if (ngElement.node.attributes["href"] == "") {
       zone.runOutsideAngular(() {
         ngElement.addEventListener('click', (event) {
-          if (element.attributes["href"] == "") {
+          if (ngElement.node.attributes["href"] == "") {
             event.preventDefault();
           }
         });
