@@ -1,22 +1,35 @@
 language: node_js
 node_js:
 - "0.11"
-addons:
-  firefox: "28.0"
 env:
   matrix:
+  # Dart with Dartium
   - JOB=unit-stable
     CHANNEL=stable
     TESTS=vm
+    BROWSER=Dartium
   - JOB=unit-dev
     CHANNEL=dev
     TESTS=vm
-  - JOB=unit-stable
+    BROWSER=Dartium
+  # JS with Firefox
+  - JOB=unit-stable-ff
     CHANNEL=stable
     TESTS=dart2js
-  - JOB=unit-dev
+    BROWSER=Firefox
+  - JOB=unit-dev-ff
     CHANNEL=DEV
     TESTS=dart2js
+    BROWSER=Firefox
+  # JS with Chrome
+  - JOB=unit-stable-chrome
+    CHANNEL=stable
+    TESTS=dart2js
+    BROWSER=ChromeNoSandbox
+  - JOB=unit-dev-chrome
+    CHANNEL=DEV
+    TESTS=dart2js
+    BROWSER=ChromeNoSandbox
   global:
   - CHROME_BIN=/usr/bin/google-chrome
   - secure: "AKoqpZ699egF0i4uT/FQ5b4jIc0h+KVbhtVCql0uFxwFIl2HjOYgDayrUCAf6USfpW0LghZxJJhBamWOl/505eNSe9HvEd8JLg/to+1Fo9xi9llsu5ehmNH31/5pue4EvsrVuEap1qqL6/BNwI2cAryayU0p5tV0g8gL5h4IxG8="

@@ -5,11 +5,9 @@ set -e
 case $( uname -s ) in
   Linux)
     DART_SDK_ZIP=dartsdk-linux-x64-release.zip
-    DARTIUM_ZIP=dartium-linux-x64-release.zip
     ;;
   Darwin)
     DART_SDK_ZIP=dartsdk-macos-x64-release.zip
-    DARTIUM_ZIP=dartium-macos-ia32-release.zip
     ;;
 esac
 
@@ -22,15 +20,6 @@ echo Fetched new dart version $(unzip -p $DART_SDK_ZIP dart-sdk/version)
 rm -rf dart-sdk
 unzip $DART_SDK_ZIP > /dev/null
 rm $DART_SDK_ZIP
-
-if [[ $TESTS != "dart2js" ]]; then
-  echo http://storage.googleapis.com/dart-archive/channels/$CHANNEL/raw/latest/dartium/$DARTIUM_ZIP
-  curl http://storage.googleapis.com/dart-archive/channels/$CHANNEL/raw/latest/dartium/$DARTIUM_ZIP > $DARTIUM_ZIP
-  unzip $DARTIUM_ZIP > /dev/null
-  rm -rf dartium
-  rm $DARTIUM_ZIP
-  mv dartium-* dartium;
-fi
 
 echo =============================================================================
 . ./scripts/env.sh
