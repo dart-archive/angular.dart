@@ -176,9 +176,18 @@ class ElementBinder {
 
           Expression attrExprFn = _parser(nodeAttrs[attrName]);
           var watch;
+          var lastOneTimeValue;
           watch = scope.watch(nodeAttrs[attrName], (value, _) {
-            if (dstPathFn.assign(controller, value) != null) {
-              watch.remove();
+            if ((lastOneTimeValue = dstPathFn.assign(controller, value)) != null && watch != null) {
+                var watchToRemove = watch;
+                watch = null;
+                scope.rootScope.domWrite(() {
+                  if (lastOneTimeValue != null) {
+                    watchToRemove.remove();
+                  } else {  // It was set to non-null, but stablized to null, wait.
+                    watch = watchToRemove;
+                  }
+                });
             }
           }, formatters: formatters);
           break;
