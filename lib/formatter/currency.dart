@@ -1,8 +1,10 @@
 part of angular.formatter_internal;
 
 /**
- * Formats a number as a currency (ie $1,234.56). When no currency symbol is
- * provided, '$' used.
+ * Formats a number as a currency (for example $1,234.56).
+ *
+ * When no currency symbol is provided, '$' is used. For more on formatters,
+ * see the [angular:formatter](#angular-formatter) library.
  *
  *
  * Usage:
@@ -16,11 +18,11 @@ class Currency implements Function {
   var _nfs = new Map<String, NumberFormat>();
 
   /**
-   *  [value]: the value to format
+   *  Format a number as a currency.
    *
-   *  [symbol]: Symbol to use.
-   *
-   *  [leading]: Symbol should be placed in front of the number
+   *  - `value`: the value to format as currency.
+   *  - `symbol`: the currency symbol to use. If no symbol is specified, `$` is used.
+   *  - `leading`: places the symbol in front of the number instead of following it.
    */
   call(value, [symbol = r'$', leading = true]) {
     if (value is String) value = double.parse(value);

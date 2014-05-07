@@ -8,40 +8,35 @@ typedef bool _Equals(a, b);
  * Selects a subset of items from the provided [List] and returns it as a new
  * [List].
  *
- * In addition to the input list (implicit in an Angular expression syntax),
- * this formatter takes 1 required and 1 optional parameter.  They are:
+ * Usage:
  *
- * - `expression` (required) - one of [Map], [Function], [String], [bool], [num]
- * - `comparator` (optional)
+ *      <div ng-repeat="item in items | filter:_expression_[:_comparator_]">
  *
- * <br>
+ * In addition to the `expression`, which is used to select a subset from the list,
+ * you can also specify a `comparator` to specify how the operation is performed. 
  *
- * # expression
  *
- * can be one of:
+ * `expression` can be of the following types:
  *
- * - [String], [bool] and [num]:  Only items in the List that directly
+ * - [String], [bool] and [num]:  Only items in the list that directly
  *   match this expression, items that are Maps with any value matching this
- *   item and items that are Lists containing a matching items are returned.
+ *   item, and items that are lists containing a matching items are returned.
  *
  * - [Map]:  This defines a pattern map.  Filters specific properties on objects
- *   contained in the input List.  For example `{name:"M", phone:"1"}` predicate
+ *   contained in the input list.  For example `{name:"M", phone:"1"}` predicate
  *   will return a list of items which have property `name` containing "M" and
  *   property `phone` containing "1".  A special property name, `$`, can be used
  *   (as in `{$: "text"}`) to accept a match against any property of the object.
  *   That's equivalent to the simple substring match with a `String` as
  *   described above.
  *
- * - [Function]:  This allows you to supply a custom function to formatter the
+ * - [Function]:  This allows you to supply a custom function to filter the
  *   List.  The function is called for each element of the List.  The returned
  *   List contains exactly those elements for which this function returned
  *   `true`.
  *
- * <br>
  *
- * # comparator
- *
- * can be one of:
+ * `comparator` is optional and can be one of the following:
  *
  * - `bool comparator(expected, actual)`:  The function will be called with the
  *   object value and the predicate value to compare and should return true if
@@ -55,7 +50,6 @@ typedef bool _Equals(a, b);
  *
  * - `false|null`:  Specifies case insensitive substring matching.
  *
- * <br>
  *
  * # Example ([view in plunker](http://plnkr.co/edit/6Mxz6r?p=info)):
  *
