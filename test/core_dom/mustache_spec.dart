@@ -94,6 +94,10 @@ main() {
 
       expect(element).toHaveHtml('Hello, World!');
     }));
+
+    it('should support one way bindings', () {
+
+    });
   });
 
   describe('NgShow', () {

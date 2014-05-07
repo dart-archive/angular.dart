@@ -197,7 +197,11 @@ abstract class Directive {
    *    callable function will result in the expression `doSomething()` to
    *    be executed in the parent context.
    */
+  @deprecated
   final Map<String, String> map;
+
+  final Map<String, String> bind;
+  final Map<String, String> observe;
 
   /**
    * Use the list to specify expressions containing attributes which are not
@@ -219,6 +223,8 @@ abstract class Directive {
     this.visibility: Directive.LOCAL_VISIBILITY,
     this.module,
     this.map: const {},
+    this.bind: const {},
+    this.observe: const {},
     this.exportExpressions: const [],
     this.exportExpressionAttrs: const []
   });
@@ -324,6 +330,8 @@ class Component extends Directive {
     this.publishAs,
     module,
     map,
+    bind,
+    observe,
     selector,
     visibility,
     exportExpressions,
@@ -336,6 +344,8 @@ class Component extends Directive {
              children: Directive.COMPILE_CHILDREN,
              visibility: visibility,
              map: map,
+             bind: bind,
+             observe: observe,
              module: module,
              exportExpressions: exportExpressions,
              exportExpressionAttrs: exportExpressionAttrs);
@@ -353,6 +363,8 @@ class Component extends Directive {
           resetStyleInheritance: resetStyleInheritance,
           publishAs: publishAs,
           map: newMap,
+          bind: bind,
+          observe: observe,
           module: module,
           selector: selector,
           visibility: visibility,
@@ -377,6 +389,8 @@ class Component extends Directive {
 class Decorator extends Directive {
   const Decorator({children: Directive.COMPILE_CHILDREN,
                     map,
+                    bind,
+                    observe,
                     selector,
                     module,
                     visibility,
@@ -386,6 +400,8 @@ class Decorator extends Directive {
               children: children,
               visibility: visibility,
               map: map,
+              bind: bind,
+              observe: observe,
               module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
@@ -394,6 +410,8 @@ class Decorator extends Directive {
       new Decorator(
           children: children,
           map: newMap,
+          bind: bind,
+          observe: observe,
           module: module,
           selector: selector,
           visibility: visibility,
@@ -431,6 +449,8 @@ class Controller extends Decorator {
                     children: Directive.COMPILE_CHILDREN,
                     this.publishAs,
                     map,
+                    bind,
+                    observe,
                     module,
                     selector,
                     visibility,
@@ -441,6 +461,8 @@ class Controller extends Decorator {
               children: children,
               visibility: visibility,
               map: map,
+              bind: bind,
+              observe: observe,
               module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
@@ -451,6 +473,8 @@ class Controller extends Decorator {
           publishAs: publishAs,
           module: module,
           map: newMap,
+          bind: bind,
+          observe: observe,
           selector: selector,
           visibility: visibility,
           exportExpressions: exportExpressions,
