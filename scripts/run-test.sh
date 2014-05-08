@@ -16,16 +16,16 @@ cd $NGDART_BASE_DIR
 npm install
 
 # Print the dart VM version to the logs
-dart --version
+$DART --version
 
 # run io tests
-dart --checked $NGDART_BASE_DIR/test/io/all.dart
+$DART --checked $NGDART_BASE_DIR/test/io/all.dart
 
 # run transformer tests
-dart --checked $NGDART_BASE_DIR/test/tools/transformer/all.dart
+$DART --checked $NGDART_BASE_DIR/test/tools/transformer/all.dart
 
 # run expression extractor tests
-dart --checked $NGDART_BASE_DIR/test/tools/symbol_inspector/symbol_inspector_spec.dart
+$DART --checked $NGDART_BASE_DIR/test/tools/symbol_inspector/symbol_inspector_spec.dart
 
 $NGDART_SCRIPT_DIR/analyze.sh &&
   $NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
