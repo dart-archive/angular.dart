@@ -39,6 +39,7 @@ import 'dart:html';
     'angular.perf',
     'angular.directive',
     'angular.routing',
+    'angular.messages',
     'angular.core.annotation_src',
     'angular.core.parser.Parser',
     'angular.core.parser.dynamic_parser',
