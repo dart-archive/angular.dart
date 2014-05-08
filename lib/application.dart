@@ -89,8 +89,6 @@ import 'package:angular/introspection_js.dart';
  * You can use AngularModule explicitly when creating a custom Injector that needs to know
  * about Angular services, formatters, and directives. When writing tests, this is typically done for
  * you by the [SetUpInjector](#angular-mock@id_setUpInjector) method.
- *
-
  */
 class AngularModule extends Module {
   AngularModule() {
@@ -139,9 +137,9 @@ abstract class Application {
   final List<Module> modules = <Module>[];
   dom.Element element;
 
-/**
-* Creates a selector for a DOM element.
-*/
+  /**
+   * Creates a selector for a DOM element.
+   */
   dom.Element selector(String selector) => element = _find(selector);
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
@@ -151,9 +149,9 @@ abstract class Application {
             ..bind(dom.Node, toFactory: (i) => i.get(Application).element);
   }
 
-/**
-* Returns the injector for this module.
-*/
+  /**
+   * Returns the injector for this module.
+   */
   Injector injector;
 
   Application addModule(Module module) {
@@ -180,9 +178,9 @@ abstract class Application {
     });
   }
 
-/**
-*  Creates an injector function that can be used for retrieving services as well as for
-*  dependency injection.
-*/
+  /**
+   * Creates an injector function that can be used for retrieving services as well as for
+   * dependency injection.
+   */
   Injector createInjector();
 }
