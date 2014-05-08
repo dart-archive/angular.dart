@@ -76,26 +76,6 @@ else
   echo '---------------------'
   $NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node \
         $NGDART_SCRIPT_DIR/changelog/;
-
-  (
-    echo '---------------------'
-    echo '-- TEST: benchmark --'
-    echo '---------------------'
-    cd $NGDART_BASE_DIR/benchmark
-    $PUB install
-
-    for file in *_perf.dart; do
-      echo ======= $file ========
-      $DART $file
-    done
-  )
-fi
-
-BROWSERS=Dartium,ChromeNoSandbox,FireFox
-if [[ $TESTS == "dart2js" ]]; then
-  BROWSERS=ChromeNoSandbox,Firefox;
-elif [[ $TESTS == "vm" ]]; then
-  BROWSERS=Dartium;
 fi
 
 echo '-----------------------'
@@ -105,7 +85,7 @@ echo BROWSER=$BROWSERS
 $NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
 node "node_modules/karma/bin/karma" start karma.conf \
     --reporters=junit,dots --port=8765 --runner-port=8766 \
-    --browsers=$BROWSERS --single-run --no-colors
+    --browsers=$BROWSER --single-run --no-colors
 
 if [[ $TESTS != "dart2js" ]]; then
   $NGDART_SCRIPT_DIR/generate-documentation.sh;
