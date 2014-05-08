@@ -11,28 +11,25 @@ cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
 # Dart doc can not be run from the same directory as dartdoc-viewer
 # see: https://code.google.com/p/dart/issues/detail?id=17231
 
-( cd packages
-  echo "Generating documentation"
+( echo "Generating documentation"
   "$DART_DOCGEN" $DOC_OPTION $DOCDIR_OPTION \
-    --out ../docs \
+    --out docs \
     --start-page=angular \
     --exclude-lib=js,metadata,meta,mirrors,intl,number_symbols,number_symbol_data,intl_helpers,date_format_internal,date_symbols,angular.util \
     --no-include-sdk \
-    --package-root=../packages \
-    angular/animate/module.dart \
-    angular/core/annotation.dart \
-    angular/core/module.dart \
-    angular/directive/module.dart \
-    angular/formatter/module.dart \
-    angular/routing/module.dart \
-    angular/mock/module.dart \
-    angular/perf/module.dart \
-    angular/application_factory.dart \
-    angular/application_factory_static.dart \
-    angular/application.dart \
-    angular/introspection.dart \
-    di/di.dart \
-    route_hierarchical/client.dart \
+    --package-root=packages \
+    lib/angular.dart \
+    lib/application_factory.dart \
+    lib/application_factory_static.dart \
+    lib/application.dart lib/introspection.dart \
+    lib/animate/module.dart \
+    lib/core/annotation.dart \
+    lib/core/module.dart \
+    lib/directive/module.dart \
+    lib/formatter/module.dart \
+    lib/routing/module.dart \
+    lib/mock/module.dart \
+    lib/perf/module.dart \
 )
 
 # Revert the temp copy of the README.md file
