@@ -86,16 +86,18 @@ void main() {
       it('should write to input only if the value is different',
         (Injector i, Animate animate) {
 
+        NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
+
         var scope = _.rootScope;
         var element = new dom.InputElement();
         var ngElement = new NgElement(element, scope, animate);
+        var ngModelOptions = new NgModelOptions();
 
-        NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
             nodeAttrs, new Animate());
         dom.querySelector('body').append(element);
-        var input = new InputTextLike(element, model, scope);
+        var input = new InputTextLike(element, model, scope, ngModelOptions);
 
         element
             ..value = 'abc'
@@ -364,16 +366,18 @@ void main() {
       it('should write to input only if value is different',
         (Injector i, Animate animate) {
 
+        NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
+
         var scope = _.rootScope;
         var element = new dom.InputElement();
         var ngElement = new NgElement(element, scope, animate);
+        var ngModelOptions = new NgModelOptions();
 
-        NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
             nodeAttrs, new Animate());
         dom.querySelector('body').append(element);
-        var input = new InputTextLike(element, model, scope);
+        var input = new InputTextLike(element, model, scope, ngModelOptions);
 
         element
           ..value = 'abc'
@@ -454,16 +458,18 @@ void main() {
       it('should write to input only if value is different',
         (Injector i, Animate animate) {
 
+        NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
+
         var scope = _.rootScope;
         var element = new dom.InputElement();
         var ngElement = new NgElement(element, scope, animate);
+        var ngModelOptions = new NgModelOptions();
 
-        NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
             nodeAttrs, new Animate());
         dom.querySelector('body').append(element);
-        var input = new InputTextLike(element, model, scope);
+        var input = new InputTextLike(element, model, scope, ngModelOptions);
 
         element
           ..value = 'abc'
@@ -552,16 +558,18 @@ void main() {
       it('should write to input only if value is different',
         (Injector i, Animate animate) {
 
+        NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
+
         var scope = _.rootScope;
         var element = new dom.InputElement();
         var ngElement = new NgElement(element, scope, animate);
+        var ngModelOptions = new NgModelOptions();
 
-        NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
             nodeAttrs, new Animate());
         dom.querySelector('body').append(element);
-        var input = new InputTextLike(element, model, scope);
+        var input = new InputTextLike(element, model, scope, ngModelOptions);
 
         element
           ..value = 'abc'
@@ -761,16 +769,18 @@ void main() {
       xit('should write to input only if value is different',
         (Injector i, Animate animate) {
 
+        NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
+
         var scope = _.rootScope;
         var element = new dom.TextAreaElement();
         var ngElement = new NgElement(element, scope, animate);
+        var ngModelOptions = new NgModelOptions();
 
-        NodeAttrs nodeAttrs = new NodeAttrs(new DivElement());
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
             nodeAttrs, new Animate());
         dom.querySelector('body').append(element);
-        var input = new InputTextLike(element, model, scope);
+        var input = new InputTextLike(element, model, scope, ngModelOptions);
 
         element
           ..value = 'abc'
