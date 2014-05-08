@@ -192,6 +192,12 @@ class Scope {
    * Use [watch] to set up change detection on an expression.
    *
    * * [expression]: The expression to watch for changes.
+   *   Expressions may use a special notation in addition to what is supported by the parser.
+   *   In particular:
+   *   - If an expression begins with '::', it is unwatched as soon as it evaluates to a non-null
+   *   value.
+   *   - If an expression begins with ':', it only calls the [reactionFn] if the expression
+   *   evaluates to a non-null value.
    * * [reactionFn]: The reaction function to execute when a change is detected in the watched
    *   expression.
    * * [context]: The object against which the expression is evaluated. This defaults to the
