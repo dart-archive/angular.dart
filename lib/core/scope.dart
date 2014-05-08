@@ -541,6 +541,7 @@ class RootScope extends Scope {
   final VmTurnZone _zone;
 
   _FunctionChain _runAsyncHead, _runAsyncTail;
+  _FunctionChain _runAsyncStableHead, _runAsyncStableTail;
   _FunctionChain _domWriteHead, _domWriteTail;
   _FunctionChain _domReadHead, _domReadTail;
 
@@ -681,6 +682,18 @@ class RootScope extends Scope {
                 'Last $LOG_COUNT iterations:\n${log.join('\n')}';
         }
         _scopeStats.digestLoop(count);
+        if (count == 0) {
+          while (_runAsyncStableHead != null) {
+            count++;
+            try {
+              _runAsyncStableHead.fn();
+            } catch (e, s) {
+              _exceptionHandler(e, s);
+            }
+            _runAsyncStableHead = _runAsyncStableHead._next;
+          }
+          _runAsyncStableTail = null;
+        }
       } while (count > 0);
     } finally {
       _scopeStats.digestEnd();
@@ -755,12 +768,23 @@ class RootScope extends Scope {
   }
 
   // QUEUES
-  void runAsync(fn()) {
+  void runAsync(fn(), {bool stable: false}) {
+    if (_state == STATE_FLUSH || _state == STATE_FLUSH_ASSERT) {
+      throw "Scheduling microtasks not allowed in $state state.";
+    }
     var chain = new _FunctionChain(fn);
-    if (_runAsyncHead == null) {
-      _runAsyncHead = _runAsyncTail = chain;
+    if (stable) {
+      if (_runAsyncStableHead == null) {
+        _runAsyncStableHead = _runAsyncStableTail = chain;
+      } else {
+        _runAsyncStableTail = _runAsyncStableTail._next = chain;
+      }
     } else {
-      _runAsyncTail = _runAsyncTail._next = chain;
+      if (_runAsyncHead == null) {
+        _runAsyncHead = _runAsyncTail = chain;
+      } else {
+        _runAsyncTail = _runAsyncTail._next = chain;
+      }
     }
   }
 

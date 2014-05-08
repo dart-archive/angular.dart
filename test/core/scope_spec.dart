@@ -1444,6 +1444,51 @@ void main() {
         rootScope.digest();
         expect(rootScope.context['log']).toEqual('12');
       });
+
+      describe('stable', () {
+        it('should run after model is stable', (RootScope scope, Logger logger) {
+          var c = scope.context;
+          c['a'] = 0;
+          c['b'] = 0;
+          c['c'] = 0;
+
+          scope.runAsync(() => logger('a=${c['a']};b=${c['b']};c=${c['c']};'), stable: true);
+          scope.watch('b', (_, __) => scope.context['c']++);
+          scope.watch('a', (_, __) => scope.context['b']++);
+          scope.digest();
+          expect(logger).toEqual(['a=0;b=1;c=2;']);
+        });
+
+        it(r'should run callback before watch', (RootScope rootScope) {
+          var log = '';
+          rootScope.runAsync(() { log += 'parent.async;'; }, stable: true);
+          rootScope.watch('value', (_, __) { log += 'parent.digest;'; });
+          rootScope.digest();
+          expect(log).toEqual('parent.digest;parent.async;');
+        });
+
+        it(r'should cause a digest rerun', (RootScope rootScope) {
+          rootScope.context['log'] = '';
+          rootScope.context['value'] = 0;
+          // NOTE(deboer): watch listener string functions not yet supported
+          //rootScope.watch('value', 'log = log + ".";');
+          rootScope.watch('value', (_, __) { rootScope.context['log'] += "."; });
+          rootScope.watch('init', (_, __) {
+            rootScope.runAsync(() => rootScope.eval('value = 123; log = log + "=" '), stable: true);
+            expect(rootScope.context['value']).toEqual(0);
+          });
+          rootScope.digest();
+          expect(rootScope.context['log']).toEqual('.=.');
+        });
+
+        it(r'should run async in the same order as added', (RootScope rootScope) {
+          rootScope.context['log'] = '';
+          rootScope.runAsync(() => rootScope.eval("log = log + 1"), stable: true);
+          rootScope.runAsync(() => rootScope.eval("log = log + 2"), stable: true);
+          rootScope.digest();
+          expect(rootScope.context['log']).toEqual('12');
+        });
+      });
     });
 
 
