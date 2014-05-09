@@ -107,6 +107,6 @@ node "node_modules/karma/bin/karma" start karma.conf \
     --reporters=junit,dots --port=8765 --runner-port=8766 \
     --browsers=$BROWSERS --single-run --no-colors
 
-if [[ $TESTS != "dart2js" ]]; then
+if [[ $TESTS == "dart2js" ]]; then
   $NGDART_SCRIPT_DIR/generate-documentation.sh;
 fi

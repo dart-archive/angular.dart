@@ -30,7 +30,7 @@ if [ "$TRAVIS_REPO_SLUG" = "angular/angular.dart" ]; then
     git config user.name "travis@travis-ci.org"
 
     echo "Adding files..."
-    git add .
+    git add --all .
     git commit -m "Automated push of generated docs from SHA: https://github.com/angular/angular.dart/commit/$SHA"
     git push
   fi
