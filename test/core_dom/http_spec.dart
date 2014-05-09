@@ -98,6 +98,15 @@ void main() {
         flush();
       }));
 
+      describe('backend', () {
+        it('should pass on withCredentials to backend and use GET as default method',
+            async(() {
+          backend.expect('GET', '/url', null, null, true).respond('');
+          http(url: '/url', method: 'GET', withCredentials: true);
+          flush();
+        }));
+      });
+
 
       describe('params', () {
         it('should do basic request with params and encode', async(() {
