@@ -98,6 +98,23 @@ void main() {
         flush();
       }));
 
+      describe('backend', () {
+        beforeEachModule((Module module) {
+          FakeBackend fakeBackend = new FakeBackend();
+          module.bind(HttpBackend, toFactory: (i) => fakeBackend);
+          module.bind(FakeBackend, toFactory: (i) => i.get(HttpBackend));
+        });
+
+        it('should pass on withCredentials to backend and use GET as default method',
+            async((FakeBackend backend) {
+          http(url: '/url', method: 'GET', withCredentials: true);
+          microLeap();
+          expect(backend.url).toEqual('/url');
+          expect(backend.method).toEqual('GET');
+          expect(backend.withCredentials).toBeTruthy();
+        }));
+      });
+
 
       describe('params', () {
         it('should do basic request with params and encode', async(() {
@@ -1355,4 +1372,41 @@ class FakeFile implements File {
   String get type => null;
   Blob slice([int start, int end, String contentType]) => null;
   int get lastModified => new DateTime.now().millisecondsSinceEpoch;
+}
+
+class FakeBackend extends Mock implements HttpBackend {
+
+  String url;
+  String method;
+  bool withCredentials;
+  String responseType;
+  String mimeType;
+  Map<String, String> requestHeaders;
+  dynamic sendData;
+
+  Future<HttpRequest> request(String url, {
+                              String method,
+                              bool withCredentials,
+                              String responseType,
+                              String mimeType,
+                              Map<String, String> requestHeaders,
+                              sendData,
+                              void onProgress(ProgressEvent e)}) {
+    this.url = url;
+    this.method = method;
+    this.withCredentials = withCredentials;
+    this.responseType = responseType;
+    this.mimeType = mimeType;
+    this.requestHeaders = requestHeaders;
+    this.sendData = sendData;
+    HttpRequest request = new HttpRequest();
+    return new Future.value(new HttpRequest());
+  }
+}
+
+class FakeHttpRequest extends Mock implements HttpRequest {
+  FakeHttpRequest() {
+    when(callsTo('get status')).thenReturn(200);
+    when(callsTo('get responseText')).thenReturn('Fake Request');
+  }
 }
