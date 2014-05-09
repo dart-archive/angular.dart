@@ -10,7 +10,7 @@ echo Current channel is: $CHANNEL
 echo Current branch is: $TRAVIS_BRANCH
 echo Test result is: $TRAVIS_TEST_RESULT
 
-if [ "$CHANNEL" = "dev" ] && [ "$TRAVIS_REPO_SLUG" = "angular/angular.dart" ]; then
+if [ "$TRAVIS_REPO_SLUG" = "angular/angular.dart" ]; then
   if [ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$TRAVIS_BRANCH" = "master" ]; then
     echo "Gettting current docs from docs.angulardart.org repo on Github"
     rm -Rf docs.angulardart.org
