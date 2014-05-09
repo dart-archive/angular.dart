@@ -91,13 +91,6 @@ else
   )
 fi
 
-BROWSERS=Dartium,ChromeNoSandbox,FireFox
-if [[ $TESTS == "dart2js" ]]; then
-  BROWSERS=ChromeNoSandbox,Firefox;
-elif [[ $TESTS == "vm" ]]; then
-  BROWSERS=Dartium;
-fi
-
 echo '-----------------------'
 echo '-- TEST: AngularDart --'
 echo '-----------------------'
