@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-#  If we're on the presubmit branch, the stable Dart release, and all unit
+#  If we're on the presubmit branch, the dev Dart release, and all unit
 #  tests pass, merge the presubmit branch into master and push it.
 
 echo '***************'

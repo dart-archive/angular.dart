@@ -6,7 +6,7 @@ addons:
 env:
   matrix:
   - JOB=unit-dev
-    CHANNEL=DEV
+    CHANNEL=dev
     TESTS=dart2js
   - JOB=unit-dev
     CHANNEL=dev
