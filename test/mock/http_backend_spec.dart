@@ -43,6 +43,21 @@ void main() {
       expect(callback).toHaveBeenCalledOnce();
     });
 
+    it('should match when with credentials is set', () {
+      hb.when('GET', '/url1').respond(200, 'content', {});
+      hb.when('GET', '/url1', null, null, true).respond(201, 'another', {});
+
+      callback.andCallFake((status, response, _) {
+        expect(status).toBe(201);
+        expect(response).toBe('another');
+      });
+
+      hb('GET', '/url1', callback, withCredentials: true);
+      expect(callback).not.toHaveBeenCalled();
+      hb.flush();
+      expect(callback).toHaveBeenCalledOnce();
+    });
+
 
     it('should respond with JSON', (Logger logger) {
       hb.when('GET', '/url1').respond(200, ['abc'], {});

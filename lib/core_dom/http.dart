@@ -410,6 +410,8 @@ class Http {
   * - headers: Map of strings or functions which return strings representing
   *      HTTP headers to send to the server. If the return value of a function
   *      is null, the header will not be sent.
+  * - withCredentials: True if cross-site requests should use credentials such as cookies or
+  *      authorization headers; false otherwise. If not specified, defaults to false.
   * - xsrfHeaderName: TBI
   * - xsrfCookieName: TBI
   * - interceptors: Either a [HttpInterceptor] or a [HttpInterceptors]
@@ -422,6 +424,7 @@ class Http {
     data,
     Map<String, dynamic> params,
     Map<String, dynamic> headers,
+    bool withCredentials: false,
     xsrfHeaderName,
     xsrfCookieName,
     interceptors,
@@ -481,7 +484,8 @@ class Http {
       var result = _backend.request(url,
                                     method: method,
                                     requestHeaders: config.headers,
-                                    sendData: config.data).then((dom.HttpRequest value) {
+                                    sendData: config.data,
+                                    withCredentials: withCredentials).then((dom.HttpRequest value) {
         // TODO: Uncomment after apps migrate off of this class.
         // assert(value.status >= 200 && value.status < 300);
 
@@ -535,15 +539,16 @@ class Http {
     String data,
     Map<String, dynamic> params,
     Map<String, String> headers,
+    bool withCredentials: false,
     xsrfHeaderName,
     xsrfCookieName,
     interceptors,
     cache,
     timeout
-  }) => call(method: 'GET', url: url, data: data, params: params,
-             headers: headers, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors,
-             cache: cache, timeout: timeout);
+  }) => call(method: 'GET', url: url, data: data, params: params, headers: headers,
+             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
+             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
+             timeout: timeout);
 
   /**
    * Shortcut method for DELETE requests.  See [call] for a complete description
@@ -553,15 +558,16 @@ class Http {
     String data,
     Map<String, dynamic> params,
     Map<String, String> headers,
+    bool withCredentials: false,
     xsrfHeaderName,
     xsrfCookieName,
     interceptors,
     cache,
     timeout
-  }) => call(method: 'DELETE', url: url, data: data, params: params,
-             headers: headers, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors,
-             cache: cache, timeout: timeout);
+  }) => call(method: 'DELETE', url: url, data: data, params: params, headers: headers,
+             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
+             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
+             timeout: timeout);
 
   /**
    * Shortcut method for HEAD requests.  See [call] for a complete description
@@ -571,15 +577,16 @@ class Http {
     String data,
     Map<String, dynamic> params,
     Map<String, String> headers,
+    bool withCredentials: false,
     xsrfHeaderName,
     xsrfCookieName,
     interceptors,
     cache,
     timeout
-  }) => call(method: 'HEAD', url: url, data: data, params: params,
-             headers: headers, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors,
-             cache: cache, timeout: timeout);
+  }) => call(method: 'HEAD', url: url, data: data, params: params, headers: headers,
+             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
+             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
+             timeout: timeout);
 
   /**
    * Shortcut method for PUT requests.  See [call] for a complete description
@@ -588,15 +595,16 @@ class Http {
   async.Future<HttpResponse> put(String url, String data, {
     Map<String, dynamic> params,
     Map<String, String> headers,
+    bool withCredentials: false,
     xsrfHeaderName,
     xsrfCookieName,
     interceptors,
     cache,
     timeout
-  }) => call(method: 'PUT', url: url, data: data, params: params,
-             headers: headers, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors,
-             cache: cache, timeout: timeout);
+  }) => call(method: 'PUT', url: url, data: data, params: params, headers: headers,
+             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
+             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
+             timeout: timeout);
 
   /**
    * Shortcut method for POST requests.  See [call] for a complete description
@@ -605,15 +613,16 @@ class Http {
   async.Future<HttpResponse> post(String url, String data, {
     Map<String, dynamic> params,
     Map<String, String> headers,
+    bool withCredentials: false,
     xsrfHeaderName,
     xsrfCookieName,
     interceptors,
     cache,
     timeout
-  }) => call(method: 'POST', url: url, data: data, params: params,
-             headers: headers, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors,
-             cache: cache, timeout: timeout);
+  }) => call(method: 'POST', url: url, data: data, params: params, headers: headers,
+             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
+             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
+             timeout: timeout);
 
   /**
    * Shortcut method for JSONP requests.  See [call] for a complete description
@@ -623,15 +632,16 @@ class Http {
     String data,
     Map<String, dynamic> params,
     Map<String, String> headers,
+    bool withCredentials: false,
     xsrfHeaderName,
     xsrfCookieName,
     interceptors,
     cache,
     timeout
-  }) => call(method: 'JSONP', url: url, data: data, params: params,
-             headers: headers, xsrfHeaderName: xsrfHeaderName,
-             xsrfCookieName: xsrfCookieName, interceptors: interceptors,
-             cache: cache, timeout: timeout);
+  }) => call(method: 'JSONP', url: url, data: data, params: params, headers: headers,
+             withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
+             xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
+             timeout: timeout);
 
   /**
    * Parse raw headers into key-value object

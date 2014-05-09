@@ -64,20 +64,23 @@ class _MockXhr {
  * An internal class used by [MockHttpBackend].
  */
 class MockHttpExpectation {
-  final method;
-  final url;
+  final String method;
+  final /*String or RegExp*/ url;
   final data;
   final headers;
+  final bool withCredentials;
 
   var response;
 
-  MockHttpExpectation(this.method, this.url, [this.data, this.headers]);
+  MockHttpExpectation(this.method, this.url, [this.data, this.headers, withCredentials]) :
+      this.withCredentials = withCredentials == true;
 
-  bool match(method, url, [data, headers]) {
+  bool match(method, url, [data, headers, withCredentials]) {
     if (method != method) return false;
     if (!matchUrl(url)) return false;
     if (data != null && !matchData(data)) return false;
     if (headers != null && !matchHeaders(headers)) return false;
+    if (withCredentials != null && !matchWithCredentials(withCredentials)) return false;
     return true;
   }
 
@@ -102,6 +105,8 @@ class MockHttpExpectation {
     return JSON.encode(data) == JSON.encode(d);
   }
 
+  bool matchWithCredentials(withCredentials) => this.withCredentials == withCredentials;
+
   String toString() => "$method $url";
 }
 
@@ -124,7 +129,7 @@ class MockHttpBackend implements HttpBackend {
    * This function is called from [Http] and designed to mimic the Dart APIs.
    */
   dart_async.Future request(String url,
-                 {String method, bool withCredentials, String responseType,
+                 {String method, bool withCredentials: false, String responseType,
                  String mimeType, Map<String, String> requestHeaders, sendData,
                  void onProgress(ProgressEvent e)}) {
     dart_async.Completer c = new dart_async.Completer();
@@ -137,7 +142,7 @@ class MockHttpBackend implements HttpBackend {
       }
     };
     call(method == null ? 'GET' : method, url, callback,
-         data: sendData, headers: requestHeaders);
+         data: sendData, headers: requestHeaders, withCredentials: withCredentials);
     return c.future;
   }
 
@@ -163,7 +168,7 @@ class MockHttpBackend implements HttpBackend {
   * A callback oriented API.  This function takes a callback with
   * will be called with (status, data, headers)
   */
-  void call(method, url, callback, {data, headers, timeout}) {
+  void call(method, url, callback, {data, headers, timeout, withCredentials: false}) {
     var xhr = new _MockXhr(),
         expectation = expectations.isEmpty ? null : expectations[0],
         wasExpected = false;
@@ -206,6 +211,11 @@ class MockHttpBackend implements HttpBackend {
             'EXPECTED: ${prettyPrint(expectation.headers)}\n'
             'GOT:      ${prettyPrint(headers)}'];
 
+      if (!expectation.matchWithCredentials(withCredentials))
+        throw ['Expected $expectation with different withCredentials\n'
+            'EXPECTED: ${prettyPrint(expectation.withCredentials)}\n'
+            'GOT:      ${prettyPrint(withCredentials)}'];
+
       expectations.removeAt(0);
 
       if (expectation.response != null) {
@@ -216,7 +226,7 @@ class MockHttpBackend implements HttpBackend {
     }
 
     for (var definition in definitions) {
-      if (definition.match(method, url, data, headers != null ? headers : {})) {
+      if (definition.match(method, url, data, headers != null ? headers : {}, withCredentials)) {
         if (definition.response != null) {
           // if $browser specified, we do auto flush all requests
           responses.add(wrapResponse(definition));
@@ -248,8 +258,8 @@ class MockHttpBackend implements HttpBackend {
    *    an array containing response status (number), response data (string) and response headers
    *    (Object).
    */
-  _Chain when(method, [url, data, headers]) {
-    var definition = new MockHttpExpectation(method, url, data, headers),
+  _Chain when(method, [url, data, headers, withCredentials = false]) {
+    var definition = new MockHttpExpectation(method, url, data, headers, withCredentials),
         chain = new _Chain(respond: (status, data, headers) {
           definition.response = _createResponse(status, data, headers);
         });
@@ -364,8 +374,8 @@ class MockHttpBackend implements HttpBackend {
    *    an array containing response status (number), response data (string) and response headers
    *    (Object).
    */
-  _Chain expect(method, [url, data, headers]) {
-    var expectation = new MockHttpExpectation(method, url, data, headers);
+  _Chain expect(method, [url, data, headers, withCredentials = false]) {
+    var expectation = new MockHttpExpectation(method, url, data, headers, withCredentials);
     expectations.add(expectation);
     return new _Chain(respond: (status, data, headers) {
       expectation.response = _createResponse(status, data, headers);
@@ -385,7 +395,8 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    * request is handled. See #expect for more info.
    */
-  _Chain expectGET(url, [headers]) => expect('GET', url, null, headers);
+  _Chain expectGET(url, [headers, withCredentials = false]) => expect('GET', url, null, headers,
+      withCredentials);
 
   /**
    * @ngdoc method
@@ -399,7 +410,8 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    *   request is handled.
    */
-  _Chain expectDELETE(url, [headers]) => expect('DELETE', url, null, headers);
+  _Chain expectDELETE(url, [headers, withCredentials = false]) => expect('DELETE', url, null,
+      headers, withCredentials);
 
   /**
    * @ngdoc method
@@ -412,7 +424,8 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    *   request is handled.
    */
-  _Chain expectJSONP(url, [headers]) => expect('JSONP', url, null, headers);
+  _Chain expectJSONP(url, [headers, withCredentials = false]) => expect('JSONP', url, null, headers,
+      withCredentials);
 
   /**
    * @ngdoc method
@@ -427,7 +440,8 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    *   request is handled.
    */
-  _Chain expectPUT(url, [data, headers]) => expect('PUT', url, data, headers);
+  _Chain expectPUT(url, [data, headers, withCredentials = false]) => expect('PUT', url, data,
+      headers, withCredentials);
 
   /**
    * @ngdoc method
@@ -442,7 +456,8 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    *   request is handled.
    */
-  _Chain expectPOST(url, [data, headers]) => expect('POST', url, data, headers);
+  _Chain expectPOST(url, [data, headers, withCredentials = false]) => expect('POST', url, data,
+      headers, withCredentials);
 
   /**
    * @ngdoc method
@@ -457,7 +472,8 @@ class MockHttpBackend implements HttpBackend {
    * @returns {requestHandler} Returns an object with `respond` method that control how a matched
    *   request is handled.
    */
-  _Chain expectPATCH(url, [data, headers]) => expect('PATCH', url, data, headers);
+  _Chain expectPATCH(url, [data, headers, withCredentials = false]) => expect('PATCH', url, data,
+      headers, withCredentials);
 
   /**
    * @ngdoc method
