@@ -5,15 +5,15 @@ addons:
   firefox: "28.0"
 env:
   matrix:
+  - JOB=unit-stable
+    CHANNEL=stable
+    TESTS=dart2js
   - JOB=unit-dev
     CHANNEL=dev
     TESTS=dart2js
   - JOB=unit-dev
     CHANNEL=dev
     TESTS=vm
-  - JOB=unit-stable
-    CHANNEL=stable
-    TESTS=dart2js
   - JOB=unit-stable
     CHANNEL=stable
     TESTS=vm
