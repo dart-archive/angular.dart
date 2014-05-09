@@ -39,6 +39,7 @@ if [[ -z $ENV_SET ]]; then
   export NGDART_BASE_DIR=$(dirname $NGDART_SCRIPT_DIR)
 
   export DART_SDK="$DARTSDK"
+  export DARTSDK
   export DART=${DART:-"$DARTSDK/bin/dart"}
   export PUB=${PUB:-"$DARTSDK/bin/pub"}
   export DARTANALYZER=${DARTANALYZER:-"$DARTSDK/bin/dartanalyzer"}
