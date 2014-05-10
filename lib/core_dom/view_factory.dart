@@ -118,7 +118,7 @@ class WalkingViewFactory implements ViewFactory {
 @Injectable()
 class ViewCache {
   // _viewFactoryCache is unbounded
-  final _viewFactoryCache = new LruCache<String, ViewFactory>(capacity: 0);
+  final _viewFactoryCache = new LruCache<String, ViewFactory>();
   final Http http;
   final TemplateCache templateCache;
   final Compiler compiler;
