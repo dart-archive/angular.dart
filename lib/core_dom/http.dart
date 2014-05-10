@@ -392,7 +392,7 @@ class Http {
    * the application document.
    */
   bool _urlIsSameOrigin(String requestUrl) {
-    Uri originUrl = Uri.parse(_location.location.toString());
+    Uri originUrl = Uri.parse(_location.location.href);
     Uri parsed = originUrl.resolve(requestUrl);
     return (parsed.scheme == originUrl.scheme && parsed.host == originUrl.host);
   }
