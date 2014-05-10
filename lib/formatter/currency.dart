@@ -15,7 +15,7 @@ part of angular.formatter_internal;
  *
  *     {{ 1234 | currency }}                 // output is $1,234.00
  *     {{ 1234 | currency:'CAD' }}           // output is CAD1,234.00
- *     {{ 1234 | currency:'CAD':false }}    // output is  1,234.00CAD
+ *     {{ 1234 | currency:'CAD':false }}     // output is 1,234.00CAD
  *
  *
  */
