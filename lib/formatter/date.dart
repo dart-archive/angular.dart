@@ -3,42 +3,45 @@ part of angular.formatter_internal;
 /**
  * Formats a date value to a string based on the requested format.
  *
- * Usage:
+ * # Usage
  *
  *     date_expression | date[:format]
  *
- * Here `format` may be specified explicitly, or by using one of the following predefined
- * localizable names:
+ * `format` may be specified explicitly, or by using one of the following predefined shorthand:
  *
- *      FORMAT NAME     AS DEFINED FOR en_US             OUTPUT
- *     -------------   ----------------------   ---------------------------
- *      medium          MMM d, y h:mm:ss a       Sep 3, 2010 12:05:08 pm
- *      short           M/d/yy h:mm a            9/3/10 12:05 pm
- *      fullDate        EEEE, MMMM d, y          Friday, September 3, 2010
- *      longDate        MMMM d, y                September 3, 2010
- *      mediumDate      MMM d, y                 Sep 3, 2010
- *      shortDate       M/d/yy                   9/3/10
- *      mediumTime      h:mm:ss a                12:05:08 pm
- *      shortTime       h:mm a                   12:05 pm
- *
+ *      FORMAT NAME        OUTPUT for en_US
+ *     -------------  ---------------------------
+ *      medium         Sep 3, 2010 12:05:08 PM
+ *      short          9/3/10 12:05 PM
+ *      fullDate       Friday, September 3, 2010
+ *      longDate       September 3, 2010
+ *      mediumDate     Sep 3, 2010
+ *      shortDate      9/3/10
+ *      mediumTime     12:05:08 PM
+ *      shortTime      12:05 PM
  *
  * For more on explicit formatting of dates and date syntax, see the documentation for the
  * [DartFormat class](https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/intl/intl.DateFormat).
  *
+ * # Example
+ *
+ *     '2014-05-22' | date:'fullDate'     // "Thursday, May 22, 2014" for the en_US locale
+ *
  */
 @Formatter(name:'date')
 class Date implements Function {
-  static final _MAP = const <String, String> {
-    'medium':     'MMM d, y h:mm:ss a',
-    'short':      'M/d/yy h:mm a',
-    'fullDate':   'EEEE, MMMM d, y',
-    'longDate':   'MMMM d, y',
-    'mediumDate': 'MMM d, y',
-    'shortDate':  'M/d/yy',
-    'mediumTime': 'h:mm:ss a',
-    'shortTime':  'h:mm a',
+  static final _PATTERNS = const <String, dynamic> {
+    'medium':     const [DateFormat.YEAR_ABBR_MONTH_DAY, DateFormat.HOUR_MINUTE_SECOND],
+    'short':      const [DateFormat.YEAR_NUM_MONTH_DAY, DateFormat.HOUR_MINUTE],
+    'fullDate':   DateFormat.YEAR_MONTH_WEEKDAY_DAY,
+    'longDate':   DateFormat.YEAR_MONTH_DAY,
+    'mediumDate': DateFormat.YEAR_ABBR_MONTH_DAY,
+    'shortDate':  DateFormat.YEAR_NUM_MONTH_DAY,
+    'mediumTime': DateFormat.HOUR_MINUTE_SECOND,
+    'shortTime':  DateFormat.HOUR_MINUTE,
   };
 
+  /// locale -> (format -> DateFormat)
   var _dfs = new Map<String, Map<String, DateFormat>>();
 
   /**
@@ -55,14 +58,26 @@ class Date implements Function {
     if (date is String) date = DateTime.parse(date);
     if (date is num) date = new DateTime.fromMillisecondsSinceEpoch(date);
     if (date is! DateTime) return date;
-    if (_MAP.containsKey(format)) format = _MAP[format];
     var verifiedLocale = Intl.verifiedLocale(Intl.getCurrentLocale(), DateFormat.localeExists);
-    _dfs.putIfAbsent(verifiedLocale, () => new Map<String, DateFormat>());
-    var df = _dfs[verifiedLocale][format];
-    if (df == null) {
-      df = new DateFormat(format);
-      _dfs[verifiedLocale][format] = df;
+    return _getDateFormat(verifiedLocale, format).format(date);
+  }
+
+  DateFormat _getDateFormat(String locale, String format) {
+    _dfs.putIfAbsent(locale, () => <String, DateFormat>{});
+
+    if (_dfs[locale][format] == null) {
+      var pattern = _PATTERNS.containsKey(format) ? _PATTERNS[format] : format;
+      if (pattern is !Iterable) pattern = [pattern];
+      var df = new DateFormat();
+      pattern.forEach((p) {
+         df.addPattern(p);
+      });
+      if (format == "short" || format == "shortDate") {
+        // "short" and "shortDate" formats use a 2-digit year
+        df = new DateFormat(df.pattern.replaceAll(new RegExp('y+'), 'yy'));
+      }
+      _dfs[locale][format] = df;
     }
-    return df.format(date);
+    return _dfs[locale][format];
   }
 }
