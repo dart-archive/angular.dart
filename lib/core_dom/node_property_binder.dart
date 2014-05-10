@@ -124,15 +124,17 @@ class NodeBinderBuilder {
         });
         var cDirExp = parser(directiveExp);
         var directivePropertyBinder = new DirectivePropertyBinder(
-            directiveIndex, directiveExp, getter(cDirExp), setter(cDirExp));
+            directiveIndex, directiveExp, annotation.canChangeModel,
+            getter(cDirExp), setter(cDirExp));
         directivePropertyBinders[directiveExp] = directivePropertyBinder;
-        nodePropertyBinder.directivePropertyBinders.add(directivePropertyBinder);
+        nodePropertyBinder.addDirectivePropertyBinder(directivePropertyBinder);
       });
       _forEach(annotation.observe, (String watchExp, String reactionFnExp) {
         var directivePropBinder = directivePropertyBinders.putIfAbsent(watchExp, () {
           // This means that this watcher does not have corresponding node property binding
-          var nakedDirectivePropBinder = new DirectivePropertyBinder(directiveIndex, watchExp);
-          nakedNodePropertyBinder.directivePropertyBinders.add(nakedDirectivePropBinder);
+          var nakedDirectivePropBinder = new DirectivePropertyBinder(
+              directiveIndex, watchExp, annotation.canChangeModel);
+          nakedNodePropertyBinder.addDirectivePropertyBinder(nakedDirectivePropBinder);
           return nakedDirectivePropBinder;
         });
         var cReactionFnExp = parser(reactionFnExp);
@@ -272,12 +274,17 @@ class NodePropertyBinder {
   final Getter getter;
   final Setter setter;
   final List<DirectivePropertyBinder> directivePropertyBinders = <DirectivePropertyBinder>[];
+  bool canChangeModel = false;
 
   NodePropertyBinder([this.property, this.getter, this.setter, this.bindExp, this.bindExpSetter]);
 
+  addDirectivePropertyBinder(DirectivePropertyBinder propertyBinder) {
+    canChangeModel = canChangeModel || propertyBinder.canChangeModel;
+    directivePropertyBinders.add(propertyBinder);
+  }
+
   /// Construct an instance node binding from the prototype.
   NodePropertyBinding bind(Scope scope, FormatterMap formatters, Node node, List directives) {
-    var canChangeModel = directivePropertyBinders.isNotEmpty;
     var binding = new NodePropertyBinding(
         scope, formatters, node, property, getter, setter, bindExp, bindExpSetter, canChangeModel);
     for(DirectivePropertyBinder directivePropertyBinder in directivePropertyBinders) {
@@ -298,14 +305,16 @@ class DirectivePropertyBinder {
   final Getter getter;
   final Setter setter;
   final String watchExp;
+  final bool canChangeModel;
   Getter reactionFnGetter;
 
-  DirectivePropertyBinder(this.index, this.watchExp, [this.getter, this.setter]);
+  DirectivePropertyBinder(this.index, this.watchExp, this.canChangeModel,
+                          [this.getter, this.setter]);
 
   /// Construct an instance directive binding from the prototype.
   DirectivePropertyBinding bind(NodePropertyBinding nodeBinding, Scope scope, Object directive) {
     return new DirectivePropertyBinding(
-        scope, nodeBinding, directive, getter, setter, watchExp,
+        scope, nodeBinding, directive, canChangeModel, getter, setter, watchExp,
         reactionFnGetter == null ? null : reactionFnGetter(directive));
   }
 }
@@ -313,7 +322,7 @@ class DirectivePropertyBinder {
 /**
  * Represents a binding between the Node instance and bind-* expressions.
  */
-class NodePropertyBinding {
+class NodePropertyBinding implements FlushAware {
   final Scope scope;
   final Node node;
   final String property;
@@ -321,9 +330,10 @@ class NodePropertyBinding {
   final Setter setter;
   final Setter bindSetter;
   final List<DirectivePropertyBinding> directiveBindings = <DirectivePropertyBinding>[];
-  final bool wrapInDomWrite;
+  final bool canChangeModel;
   Watch _watch;
   var _lastValue;
+  FlushQueue _nodePropertyWriteflushQueue;
 
   NodePropertyBinding(Scope this.scope,
                       FormatterMap formatters,
@@ -333,12 +343,12 @@ class NodePropertyBinding {
                       this.setter,
                       String bindExp,
                       this.bindSetter,
-                      bool canChangeModel)
-    : wrapInDomWrite = canChangeModel
+                      this.canChangeModel)
   {
+    _nodePropertyWriteflushQueue = new FlushQueue(this, scope.rootScope, !canChangeModel);
     if (bindExp != null && bindExp.isNotEmpty) {
       _watch = scope.watch(bindExp, (v, _) => setValue(v),
-          formatters: formatters, canChangeModel: canChangeModel);
+      formatters: formatters, canChangeModel: canChangeModel);
     }
   }
 
@@ -354,27 +364,29 @@ class NodePropertyBinding {
     if (same(value, _lastValue)) return;
     _lastValue = value;
     if (setter != null) {
-      if (wrapInDomWrite) {
-        scope.rootScope.domWrite(() => setter(node, value));
-      } else {
-        setter(node, value);
-      }
+      _nodePropertyWriteflushQueue.schedule();
     }
     if(bindSetter != null) bindSetter(scope.context, value);
     for(DirectivePropertyBinding directiveBinding in directiveBindings) {
       directiveBinding.setValue(value);
     }
   }
+
+  flush() {
+    setter(node, _lastValue);
+  }
 }
 
 /**
  * Represents a binding between the directive instance and node instance.
  */
-class DirectivePropertyBinding {
+class DirectivePropertyBinding implements FlushAware {
   /// Associated NodePropertyBinding
   final NodePropertyBinding nodeBinding;
   /// Directive instance
   final Object directive;
+  /// If true then run part of digest if false run part of flush and dissable reverse binding
+  bool canChangeModel;
 
   /**
    * Directive instance getter function representing the `directiveExpression`
@@ -400,34 +412,78 @@ class DirectivePropertyBinding {
 
   /// Last value from the watch. Needed to stop circular updates.
   var _lastValue;
+  var _newValue;
+  var _suppressAssignment = false;
+
+  FlushQueue _flushQueue;
+
 
   DirectivePropertyBinding(
       Scope scope,
       this.nodeBinding,
       this.directive,
+      this.canChangeModel,
       this.getter,
       this.setter,
       this.watchExp,
       this.reactionFn)
   {
-    if (watchExp != null && watchExp.isNotEmpty) {
+    var immediate = nodeBinding.canChangeModel == canChangeModel;
+    _flushQueue = new FlushQueue(this, scope.rootScope, immediate);
+    if (watchExp != null && watchExp.isNotEmpty && canChangeModel) {
       scope.watch(watchExp, (_, __) => check(), context: directive);
     }
   }
 
   /// called by [Scope.watch]
   check() {
-    setValue(getter(directive));
+    try {
+      _suppressAssignment = true;
+      nodeBinding.setValue(getter(directive));
+    } finally {
+      _suppressAssignment = false;
+    }
   }
 
   /// Notify binding of a change to value. This change could come from [Watch] or from
   /// [NodePropertyBinding]
   setValue(value) {
+    _newValue = value;
+    _flushQueue.schedule();
+  }
+
+  flush() {
+    var value = _newValue;
     var lastValue = _lastValue;
-    if (same(value, lastValue)) return;
-    _lastValue = value;
-    if (nodeBinding != null) nodeBinding.setValue(value);
-    if (setter != null) setter(directive, value);
+    _lastValue = _newValue;
+    if (!_suppressAssignment && setter != null) setter(directive, value);
     if (reactionFn != null) reactionFn(value, lastValue);
+  }
+}
+
+abstract class FlushAware {
+  flush();
+}
+
+class FlushQueue {
+  final RootScope rootScope;
+  final FlushAware flushAware;
+  final bool immediate;
+  bool _isPending = false;
+  Function _flushFn;
+
+  FlushQueue(this.flushAware, this.rootScope, this.immediate) {
+    _flushFn = () {
+      _isPending = false;
+      flushAware.flush();
+    };
+  }
+  
+  void schedule() {
+    if (immediate) {
+      _flushFn();
+    } else if (!_isPending) {
+      rootScope.domWrite(_flushFn);
+    }
   }
 }

@@ -202,6 +202,7 @@ abstract class Directive {
 
   final Map<String, String> bind;
   final Map<String, String> observe;
+  final bool canChangeModel;
 
   /**
    * Use the list to specify expressions containing attributes which are not
@@ -224,10 +225,12 @@ abstract class Directive {
     this.module,
     this.map: const {},
     this.bind: const {},
+    bool canChangeModel,
     this.observe: const {},
     this.exportExpressions: const [],
     this.exportExpressionAttrs: const []
-  });
+  })
+    : canChangeModel = canChangeModel == null ? true : canChangeModel;
 
   toString() => selector;
   get hashCode => selector.hashCode;
@@ -333,6 +336,7 @@ class Component extends Directive {
     bind,
     observe,
     selector,
+    canChangeModel,
     visibility,
     exportExpressions,
     exportExpressionAttrs,
@@ -347,6 +351,7 @@ class Component extends Directive {
              bind: bind,
              observe: observe,
              module: module,
+             canChangeModel: canChangeModel,
              exportExpressions: exportExpressions,
              exportExpressionAttrs: exportExpressionAttrs);
 
@@ -365,6 +370,7 @@ class Component extends Directive {
           map: newMap,
           bind: bind,
           observe: observe,
+          canChangeModel: canChangeModel,
           module: module,
           selector: selector,
           visibility: visibility,
@@ -393,6 +399,7 @@ class Decorator extends Directive {
                     observe,
                     selector,
                     module,
+                    canChangeModel,
                     visibility,
                     exportExpressions,
                     exportExpressionAttrs})
@@ -402,6 +409,7 @@ class Decorator extends Directive {
               map: map,
               bind: bind,
               observe: observe,
+              canChangeModel: canChangeModel,
               module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
@@ -412,6 +420,7 @@ class Decorator extends Directive {
           map: newMap,
           bind: bind,
           observe: observe,
+          canChangeModel: canChangeModel,
           module: module,
           selector: selector,
           visibility: visibility,
@@ -453,6 +462,7 @@ class Controller extends Decorator {
                     observe,
                     module,
                     selector,
+                    canChangeModel,
                     visibility,
                     exportExpressions,
                     exportExpressionAttrs
@@ -463,6 +473,7 @@ class Controller extends Decorator {
               map: map,
               bind: bind,
               observe: observe,
+              canChangeModel: canChangeModel,
               module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
@@ -474,6 +485,7 @@ class Controller extends Decorator {
           module: module,
           map: newMap,
           bind: bind,
+          canChangeModel: canChangeModel,
           observe: observe,
           selector: selector,
           visibility: visibility,

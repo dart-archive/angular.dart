@@ -206,7 +206,7 @@ main() {
       expect(genericDirective.a).toEqual('ABC');
       expect(logger).toEqual(
           ['name=ABC', 'My: ABC <- null', 'a=ABC', 'Generic: ABC <- null',
-           'attach:my', 'attach:generic','flush']);
+           'attach:my', 'attach:generic', 'flush']);
       logger.clear();
 
       genericDirective.a = '123';
@@ -216,8 +216,67 @@ main() {
       expect(myDirective.name).toEqual('123');
       expect(genericDirective.a).toEqual('123');
       expect(logger).toEqual(
-          ['a=123', 'name=123', 'My: 123 <- ABC', 'a=123', 'Generic: 123 <- ABC', 'flush']);
+          ['a=123', 'name=123', 'My: 123 <- ABC', 'Generic: 123 <- ABC', 'flush']);
       logger.clear();
+    });
+
+    describe('canChangeModel', () {
+      it('should schedule only one way and flush phase binding', (Logger logger) {
+        setup(inputElement,
+              attrs: {
+                  'bind-value': 'exp'},
+              directives: {
+                  MyDirective: new Decorator(
+                      bind: { 'value': 'name' },
+                      observe: { 'name': 'onNameChange' },
+                      canChangeModel: false)});
+
+        MyDirective myDirective = injector.get(MyDirective);
+        rootScope.domWrite(() => logger('flushStart'));
+        rootScope.domRead(() => logger('flushEnd'));
+        rootScope.apply('exp = "ABC"');
+        expect(myDirective.name).toEqual('ABC');
+        expect(logger).toEqual(
+            ['attach:my', 'flushStart', 'name=ABC', 'My: ABC <- null', 'flushEnd']);
+        logger.clear();
+
+        myDirective.name = 'foo';
+        logger.clear(); // clear assignment
+        rootScope.apply();
+        expect(myDirective.name).toEqual('foo');
+        expect(rootScope.context['exp']).toEqual('ABC');
+        expect(logger).toEqual([]);
+      });
+
+      it('should support mix canChangeModel', (Logger logger) {
+        setup(inputElement,
+              attrs: {
+                  'bind-value': 'exp'},
+              directives: {
+                  MyDirective: new Decorator(
+                      bind: { 'value': 'name' },
+                      observe: { 'name': 'onNameChange' },
+                      canChangeModel: false),
+                  GenericDirective: new Decorator(
+                      bind: { 'value': 'a' },
+                      observe: {'a': 'onAChange'},
+                      canChangeModel: true)
+              });
+        rootScope.apply();
+        expect(logger).toEqual(
+            ['attach:my', 'attach:generic']);
+        logger.clear();
+
+        MyDirective myDirective = injector.get(MyDirective);
+        rootScope.domWrite(() => logger('flushStart'));
+        rootScope.domRead(() => logger('flushEnd'));
+        rootScope.apply('exp = "ABC"');
+        expect(myDirective.name).toEqual('ABC');
+        expect(logger).toEqual(
+            ['a=ABC', 'Generic: ABC <- null',
+             'flushStart', 'name=ABC', 'My: ABC <- null', 'flushEnd']);
+        logger.clear();
+      });
     });
 
     describe('child nodes binding', () {
@@ -272,15 +331,23 @@ main() {
   });
 }
 
+_verifyAssignment(name, logger, value, oldValue) {
+  if (identical(value, oldValue)) {
+    throw "Reasignment error for $name=$value <- $oldValue!";
+  }
+  logger('$name=$value');
+  return value;
+}
+
 class MyDirective implements AttachAware, DetachAware {
   Logger logger;
   var _title = 'default';
   get title => _title;
-  set title(v) { logger('title=$v'); _title = v;}
-
+  set title(v) => _title = _verifyAssignment('title', logger, v, _title);
+  
   var _name = 'default';
   get name => _name;
-  set name(v) { logger('name=$v'); _name = v;}
+  set name(v) => _name = _verifyAssignment('name', logger, v, _name);
 
   MyDirective(this.logger);
 
@@ -293,11 +360,11 @@ class GenericDirective implements AttachAware, DetachAware {
   Logger logger;
   var _a;
   get a => _a;
-  set a(v) { logger('a=$v'); _a = v;}
+  set a(v) => _a = _verifyAssignment('a', logger, v, _a);
   
   var _b;
   get b => _b;
-  set b(v) { logger('b=$v'); _b = v;}
+  set b(v) => _b = _verifyAssignment('b', logger, v, _b);
 
   GenericDirective(this.logger);
 
