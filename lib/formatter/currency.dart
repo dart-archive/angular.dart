@@ -1,7 +1,7 @@
 part of angular.formatter_internal;
 
 /**
- * Formats a number as a currency (for example 1,234.56$).
+ * Formats a number as a currency (for example $1,234.56).
  *
  * When no currency symbol is provided, '$' is used. For more on formatters,
  * see the [angular:formatter](#angular-formatter) library.
@@ -22,7 +22,8 @@ class Currency implements Function {
    *
    *  - `value`: the value to format as currency.
    *  - `symbol`: the currency symbol to use. If no symbol is specified, `$` is used.
-   *  - `leading`: places the symbol in front of the number instead of following it.
+   *  - `leading`: when set to false, places the symbol after the number instead of before
+   *  it.
    */
   call(value, [symbol = r'$', leading = true]) {
     if (value is String) value = double.parse(value);
