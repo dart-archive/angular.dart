@@ -1,8 +1,9 @@
 part of angular.formatter_internal;
 
 /**
- * Allows you to convert a JavaScript object into JSON string. This formatter is
- * mostly useful for debugging.
+ * Converts a JavaScript object into a JSON string.
+ *
+ * This formatter is mostly useful for debugging.
  *
  * Usage:
  *
