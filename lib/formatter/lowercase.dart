@@ -1,7 +1,7 @@
 part of angular.formatter_internal;
 
 /**
- * Converts string to lowercase.
+ * Converts a string to lowercase.
  *
  * Usage:
  *
