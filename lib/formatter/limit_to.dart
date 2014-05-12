@@ -8,19 +8,19 @@ part of angular.formatter_internal;
  *
  * Usage:
  *
- *     {{ expression | limitTo:_value_ }}
+ *     {{ expression | limitTo:_number_ }}
  *
  *
- *     <div ng-repeat="item in expression | limitTo:_value_">{{item}}</div>
+ *     <div ng-repeat="item in expression | limitTo:_number_">{{item}}</div>
  *
  *
- * Where the input expression is a [List] or [String], and `limitTo` evaluates to:
+ * Where the input expression is a [List] or [String], and `limitTo` is:
  *
- * - **a positive integer**: return _value_ items from the beginning of the list or string
+ * - **a positive integer**: return _number_ items from the beginning of the list or string
  * expression.
- * - **a negative integer**: return _value_ items from the end of the list or string expression.
- * - **null or non-integer**: return an empty list or string.
+ * - **a negative integer**: return _number_ items from the end of the list or string expression.
  * - **`|limitTo|` greater than the size of the expression**: return the entire expression.
+ * - **null** or all other cases: return an empty list or string.
  *
  * When operating on a [List], the returned list is always a copy even when all
  * the elements are being returned.
