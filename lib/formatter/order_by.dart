@@ -3,7 +3,32 @@ part of angular.formatter_internal;
 typedef dynamic _Mapper(dynamic e);
 
 /**
- * Orders the provided [Iterable] by the `expression` predicate.
+ * Orders the the elements of an object by a predicate expression.
+ *
+ * Usage:
+ *
+ *      <div ng-repeat="item in items | orderBy: [+/-]_expression_[:true]">
+ *
+ *
+ * The input must be an [Iterable] object. The expression may be specified as:
+ *
+ * - `+`: sort the elements in asending order. This is the default comparator.
+ * - `-`: sort the elements in descending order.
+ * - **a string expression**: sort on a decorated/transformed value, such as "lastName",
+ *    or to sort non-primitives values.
+ * - **a custom callable expression**: an expression that will be called to transform the element
+ * before a sort.
+ * - **a list**: the list may consist of either string or callable expressions.  A list expression
+ * indicates a list of fallback expressions to use when a comparision results in the items
+ * being equal.
+ *
+ * If the expression is explicitly empty(`orderBy:```), the elements are sorted in
+ * ascending order, using the default comparator, `+`.
+ *
+ * Last, by appending `:true`, you can set "descending order" to true,
+ * which has the same effect as the `-` comparator.
+ *
+ * # Examples
  *
  * Example 1: Simple array and single/empty expression.
  *
@@ -24,7 +49,7 @@ typedef dynamic _Mapper(dynamic e);
  *     <ul>
  *
  * The empty string expression, `''`, here signifies sorting in ascending order
- * using the default comparator.  Using `'+'` would also work as the `+` prefix
+ * using the default comparator.  Using `'+'` would also work, as the `+` prefix
  * is implied.
  *
  * To sort in descending order, you would use the `'-'` prefix.
@@ -44,7 +69,7 @@ typedef dynamic _Mapper(dynamic e);
  *
  * Example 2: Complex objects, single expression.
  *
- * You may provide a more complex expression to sort non-primitives values or
+ * You may provide a more complex expression to sort non-primitive values or
  * if you want to sort on a decorated/transformed value.
  *
  * e.g. Support you have a list `users` that looks like this:
@@ -135,7 +160,10 @@ class OrderBy implements Function {
   }
 
   /**
-   * expression: String/Function or Array of String/Function.
+   * Order a list by expression.
+   *
+   * - `expression`: String/Function or Array of String/Function.
+   * - `descending`: When specified, use descending order. (The default is ascending order.)
    */
   List call(List items, var expression, [bool descending=false]) {
     if (items == null) {
