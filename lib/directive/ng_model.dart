@@ -263,6 +263,10 @@ class NgModel extends NgControl implements AttachAware {
 }
 
 /**
+ *
+ * Creates a two-way databinding between the `ng-model` expression
+ * and the checkbox input element state.
+ *
  * Usage:
  *
  *     <input type="checkbox"
@@ -271,20 +275,22 @@ class NgModel extends NgControl implements AttachAware {
  *            [ng-false-value="f_expr"]
  *            >
  *
- * This creates a two way databinding between the `ng-model` expression
- * and the checkbox input element state.
+ * If the optional `ng-true-value` is absent,
+ *  - if the model expression evaluates to true or to a nonzero [:num:],
+ *  then the checkbox is checked
+ *  -  otherwise, the checkbox is unchecked
  *
- * If the optional `ng-true-value` is absent then: if the model expression
- * evaluates to true or to a nonzero [:num:], then the checkbox is checked;
- * otherwise, it is unchecked.
+ * If `ng-true-value="t_expr"` is present,
+ *  - if the model expression evaluates to the same value as `t_expr`, then the checkbox is checked
+ *  - otherwise, it is unchecked.
  *
- * If `ng-true-value="t_expr"` is present, then: if the model expression
- * evaluates to the same value as `t_expr` then the checkbox is checked;
- * otherwise, it is unchecked.
+ * When the checkbox is checked,
+ *  - the model is set to the value of `t_expr` if present
+ *  - otherwise, the model is set to `true`
  *
- * When the checkbox is checked, the model is set to the value of `t_expr` if
- * present, true otherwise. When unchecked, it is set to the value of
- * `f_expr` if present, false otherwise.
+ * When the checkbox is unchecked,
+ *  - the model is set to the value of `f_expr` if present
+ *  - otherwise, the model is set to false.
  *
  * Also see [NgTrueValue] and [NgFalseValue].
  */
@@ -318,16 +324,18 @@ class InputCheckbox {
 
 
 /**
+ * Creates a two-way databinding between the `ng-model` expression
+ * and the `<input>` or `<textarea>` string-based input elements.
+ *
  * Usage:
  *
  *     <input type="text|url|password|email|search|tel" ng-model="myModel">
  *     <textarea ng-model="myModel"></textarea>
  *
- * This creates a two-way binding between any string-based input element
- * (both `<input>` and `<textarea>`) so long as the ng-model attribute is
- * present on the input element. Whenever the value of the input element
- * changes then the matching model property on the scope will be updated
- * as well as the other way around (when the scope property is updated).
+ * When the ng-model attribute is present on the input element,
+ * and the value of the input element changes, the matching model property on the scope
+ * is updated. Likewise, if the value of the model property changes on the scope,
+ * the value of the input element is updated.
  *
  */
 @Decorator(selector: 'textarea[ng-model]')
@@ -381,6 +389,9 @@ class InputTextLike {
 }
 
 /**
+ * Creates a two-way databinding between the `ng-model` expression
+ * and a numeric input element.
+ *
  * Usage:
  *
  *     <input type="number|range" ng-model="myModel">
@@ -389,12 +400,13 @@ class InputTextLike {
  *
  *     num myModel;
  *
- * This creates a two-way binding between the input and the named model property
- * (e.g., myModel in the example above). When processing the input, its value is
- * read as a [:num:], via the [dom.InputElement.valueAsNumber] field. If the
- * input text does not represent a number, then the model is appropriately set
- * to [double.NAN]. Setting the model property to [null] will clear the input.
- * Setting the model to [double.NAN] will have no effect (input will be left
+ * When processing the input, its value is read as a `num`, via the
+ * `dom.InputElement.valueAsNumber` field.
+ *
+ * If the input text does not represent a number, then the
+ * model is set to `double.NAN`. Setting the model property to `null` will clear the input.
+ *
+ * Setting the model to `double.NAN` will have no effect (input will be left
  * unchanged).
  */
 @Decorator(selector: 'input[type=number][ng-model]')
@@ -739,20 +751,24 @@ class NgFalseValue {
 }
 
 /**
+ * Creates a two-way databinding between the `ng-model` expression
+ * and the radio input elements in the DOM.
+ *
  * Usage:
  *
- *     <input type="radio" ng-model="category">
+ *     <input type="radio" name="foo" ng-model="category">
  *
- * This creates a two way databinding between the expression specified in
- * ng-model and the range input elements in the DOM. If the ng-model value is
- * set to a value not corresponding to one of the radio elements, then none of
- * the radio elements will be check.  Otherwise, only the corresponding input
- * element in the group is checked.  Likewise, when a radio button element is
- * checked, the model is updated with its value.  Radio buttons that have a
- * `name` attribute are left alone.  Those that are missing the attribute will
- * have a unique `name` assigned to them.  This sequence goes `001`,  `001`, ...
- * `009`, `00A`, `00Z`, `010`, and so on using more than 3 characters for the
- * name when the counter overflows.
+ *
+ *  - If the ng-model value corresponds to one of the radio elements, that input element will be
+ *    selected.
+ *  - If the ng-model value doesn't correspond to any of the radio elements, then none of
+ * the radio elements will be selected.
+ *  - When a radio button element is selected, the model is updated with its value.
+ *
+ * Radio buttons that do not have a `name` attribute set will have a unique `name` assigned to
+ * them. (If a `name` is already defined, it remains unchanged.) The sequence of assigned names
+ * goes from `001`,  `001`, ..., `009`, `00A`, `00Z`, `010`, and so on using more than 3
+ * characters for the name when the counter overflows.
  */
 @Decorator(
     selector: 'input[type=radio][ng-model]',
@@ -786,13 +802,15 @@ class InputRadio {
 }
 
 /**
- * Usage (span could be replaced with any element which supports text content, such as `p`):
+ * Creates a two-way databinding between the expression specified in `ng-model` and the HTML element
+ * in the DOM.
  *
- *     <span contenteditable= ng-model="name">
+ * Usage:
  *
- * This creates a two way databinding between the expression specified in
- * ng-model and the html element in the DOM. If the ng-model value is
- * `null`, it is treated as equivalent to the empty string for rendering
+ *     <span contenteditable ng-model="name">
+ *
+ * The `<span>` element could be any element which supports text content, such as `<p>`.
+ * If the ng-model value is `null`, it is treated as equivalent to the empty string for rendering
  * purposes.
  */
 @Decorator(selector: '[contenteditable][ng-model]')
