@@ -19,7 +19,6 @@ library angular.directive;
 
 import 'package:di/di.dart';
 import 'dart:html' as dom;
-import 'dart:convert' as convert;
 import 'dart:async' as async;
 import 'package:intl/intl.dart';
 import 'package:angular/core/annotation.dart';
