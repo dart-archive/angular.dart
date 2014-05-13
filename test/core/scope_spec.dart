@@ -238,9 +238,9 @@ void main() {
         });
 
         it('children should point to root', (RootScope rootScope) {
-          var child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          var child = rootScope.createChild(rootScope.context);
           expect(child.rootScope).toEqual(rootScope);
-          expect(child.createChild(new PrototypeMap(rootScope.context)).rootScope).toEqual(rootScope);
+          expect(child.createChild(rootScope.context).rootScope).toEqual(rootScope);
         });
       });
 
@@ -253,11 +253,11 @@ void main() {
 
 
         it('should point to parent', (RootScope rootScope) {
-          var child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          var child = rootScope.createChild(rootScope.context);
           expect(child.id).toEqual(':0');
           expect(rootScope.parentScope).toEqual(null);
           expect(child.parentScope).toEqual(rootScope);
-          expect(child.createChild(new PrototypeMap(rootScope.context)).parentScope).toEqual(child);
+          expect(child.createChild(rootScope.context).parentScope).toEqual(child);
         });
       });
     });
@@ -274,7 +274,7 @@ void main() {
 
         it(r'should add listener for both emit and broadcast events', (RootScope rootScope) {
           var log = '',
-          child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          child = rootScope.createChild(rootScope.context);
 
           eventFn(event) {
             expect(event).not.toEqual(null);
@@ -294,7 +294,7 @@ void main() {
 
         it(r'should return a function that deregisters the listener', (RootScope rootScope) {
           var log = '';
-          var child = rootScope.createChild(new PrototypeMap(rootScope.context));
+          var child = rootScope.createChild(rootScope.context);
           var subscription;
 
           eventFn(e) {
@@ -411,7 +411,7 @@ void main() {
           var random = new Random();
           for (var i = 0; i < 1000; i++) {
             if (i % 10 == 0) {
-              scopes = [root.createChild(null)];
+              scopes = [root.createChild({})];
               listeners = [];
               steps = [];
             }
@@ -420,9 +420,9 @@ void main() {
                 if (scopes.length > 10) break;
                 var index = random.nextInt(scopes.length);
                 Scope scope = scopes[index];
-                var child = scope.createChild(null);
+                var child = scope.createChild({});
                 scopes.add(child);
-                steps.add('scopes[$index].createChild(null)');
+                steps.add('scopes[$index].createChild({})');
                 break;
               case 1:
                 var index = random.nextInt(scopes.length);
@@ -971,37 +971,6 @@ void main() {
 
     });
 
-
-    describe('ScopeLocals', () {
-      it('should read from locals', (RootScope scope) {
-        scope.context['a'] = 'XXX';
-        scope.context['c'] = 'C';
-        var scopeLocal = new ScopeLocals(scope.context, {'a': 'A', 'b': 'B'});
-        expect(scopeLocal['a']).toEqual('A');
-        expect(scopeLocal['b']).toEqual('B');
-        expect(scopeLocal['c']).toEqual('C');
-      });
-
-      it('should write to Scope', (RootScope scope) {
-        scope.context['a'] = 'XXX';
-        scope.context['c'] = 'C';
-        var scopeLocal = new ScopeLocals(scope.context, {'a': 'A', 'b': 'B'});
-
-        scopeLocal['a'] = 'aW';
-        scopeLocal['b'] = 'bW';
-        scopeLocal['c'] = 'cW';
-
-        expect(scope.context['a']).toEqual('aW');
-        expect(scope.context['b']).toEqual('bW');
-        expect(scope.context['c']).toEqual('cW');
-
-        expect(scopeLocal['a']).toEqual('A');
-        expect(scopeLocal['b']).toEqual('B');
-        expect(scopeLocal['c']).toEqual('cW');
-      });
-    });
-
-
     describe(r'watch/digest', () {
       it(r'should watch and fire on simple property change', (RootScope rootScope) {
         var log;
@@ -1021,7 +990,7 @@ void main() {
       });
 
 
-      it('should watch/observe on objects other then contex', (RootScope rootScope) {
+      it('should watch/observe on objects other than context', (RootScope rootScope) {
         var log = '';
         var map = {'a': 'A', 'b': 'B'};
         rootScope.watch('a', (a, b) => log += a, context: map);

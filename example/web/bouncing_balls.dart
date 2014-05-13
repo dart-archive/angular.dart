@@ -26,20 +26,18 @@ class BallModel {
 
 }
 
-@Controller(
-  selector: '[bounce-controller]',
-  publishAs: 'bounce')
-class BounceController {
+@Injectable()
+class BounceController implements ScopeAware {
+  Scope scope;
   var lastTime = window.performance.now();
   var run = false;
   var fps = 0;
   var digestTime = 0;
   var currentDigestTime = 0;
   var balls = [];
-  final Scope scope;
   var ballClassName = 'ball';
 
-  BounceController(this.scope) {
+  BounceController() {
     changeCount(100);
     if (run) tick();
   }
@@ -82,7 +80,7 @@ class BounceController {
     var delay = now - lastTime;
 
     fps = (1000/delay).round();
-    for(var i=0, ii=balls.length; i<ii; i++) {
+    for(var i = 0; i < balls.length; i++) {
       var b = balls[i];
       b.x += delay * b.velX;
       b.y += delay * b.velY;
@@ -124,11 +122,13 @@ class BallPosition {
 
 class MyModule extends Module {
   MyModule() {
-    bind(BounceController);
     bind(BallPosition);
   }
 }
 
 main() {
-  applicationFactory().addModule(new MyModule()).run();
+  applicationFactory()
+      .rootContextType(BounceController)
+      .addModule(new MyModule())
+      .run();
 }

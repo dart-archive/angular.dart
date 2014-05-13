@@ -121,7 +121,7 @@ class ElementBinder {
   }
 
   void _bindCallback(dstPathFn, controller, expression, scope) {
-    dstPathFn.assign(controller, _parser(expression).bind(scope.context, ScopeLocals.wrapper));
+    dstPathFn.assign(controller, _parser(expression).bind(scope.context, ContextLocals.wrapper));
   }
 
 
@@ -211,13 +211,9 @@ class ElementBinder {
         probe.directives.add(directive);
         assert((linkMapTimer = _perf.startTimer('ng.view.link.map', ref.type)) != false);
 
-        if (ref.annotation is Controller) {
-          scope.context[(ref.annotation as Controller).publishAs] = directive;
-        }
-
-        var tasks = new _TaskList(directive is AttachAware ? () {
-          if (scope.isAttached) directive.attach();
-        } : null);
+        var tasks = new _TaskList(directive is AttachAware ?
+            () {if (scope.isAttached) directive.attach();} :
+            null);
 
         if (ref.mappings.isNotEmpty) {
           if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
@@ -313,16 +309,11 @@ class ElementBinder {
 
       directiveRefs.forEach((DirectiveRef ref) {
         Directive annotation = ref.annotation;
-        var visibility = ref.annotation.visibility;
-        if (ref.annotation is Controller) {
-          scope = scope.createChild(new PrototypeMap(scope.context));
-          nodeModule.bind(Scope, toValue: scope);
-        }
 
         _createDirectiveFactories(ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
-            visibility);
-        if (ref.annotation.module != null) {
-           nodeModule.install(ref.annotation.module());
+            annotation.visibility);
+        if (annotation.module != null) {
+           nodeModule.install(annotation.module());
         }
       });
 

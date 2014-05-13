@@ -11,19 +11,19 @@
 
     <div ng-hide="true" class="border well loading">Wait, Dart is loading this awesome app...</div>
 
-    <div todo-controller class="border well" ng-cloak>
+    <div class="border well" ng-cloak>
         <h2>Things To Do ;-)</h2>
 
         <div class="right">
-            <button ng-click="todo.markAllDone()" class="btn btn-small">mark all done</button>
-            <button ng-click="todo.archiveDone()" class="btn btn-small">archive done</button>
+            <button ng-click="markAllDone()" class="btn btn-small">mark all done</button>
+            <button ng-click="archiveDone()" class="btn btn-small">archive done</button>
         </div>
 
-        <p>Remaining <b>{{todo.remaining()}}</b> of <b>{{todo.items.length}}</b> items.</p>
+        <p>Remaining <b>{{ remaining() }}</b> of <b>{{ items.length }}</b> items.</p>
 
 
         <ul class="well unstyled">
-            <li ng-repeat="item in todo.items" ng-class="todo.classFor(item)">
+            <li ng-repeat="item in items" ng-class="classFor(item)">
                 <label class="checkbox">
                     <input type="checkbox" ng-model="item.done"> {{item.text}}
                 </label>
@@ -31,9 +31,9 @@
         </ul>
 
         <form class="form-inline" onsubmit="return false;">
-            <input type="text" ng-model="todo.newItem.text">
-            <button ng-click="todo.add()" ng-disabled="todo.newItem.isEmpty" class="btn btn-primary">add</button>
-            <button ng-click="todo.newItem.clear()" ng-disabled="todo.newItem.isEmpty" class="btn">clear</button>
+            <input type="text" ng-model="newItem.text">
+            <button ng-click="add()" ng-disabled="newItem.isEmpty" class="btn btn-primary">add</button>
+            <button ng-click="newItem.clear()" ng-disabled="newItem.isEmpty" class="btn">clear</button>
         </form>
     </div>
 </body>

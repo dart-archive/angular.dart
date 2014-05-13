@@ -20,28 +20,26 @@ main() {
       _ = tb;
       router = _router;
 
-      templates.put('foo.html', new HttpResponse(200,
-          '<h1 probe="p">Foo</h1>'));
-      templates.put('bar.html', new HttpResponse(200,
-          '<h1 probe="p">Bar</h1>'));
+      templates.put('foo.html', new HttpResponse(200, '<h1 probe="p">Foo</h1>'));
+      templates.put('bar.html', new HttpResponse(200, '<h1 probe="p">Bar</h1>'));
     });
 
 
     it('should switch template', async(() {
       Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
 
       router.route('/foo');
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root).toHaveText('Foo');
 
       router.route('/bar');
       microLeap();
-      expect(root.text).toEqual('Bar');
+      expect(root).toHaveText('Bar');
 
       router.route('/foo');
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root).toHaveText('Foo');
     }));
 
     it('should expose NgView as RouteProvider', async(() {
@@ -61,25 +59,50 @@ main() {
       router.route('/foo');
       microLeap();
       Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
 
       _.rootScope.apply();
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root).toHaveText('Foo');
     }));
 
 
     it('should clear template when route is deactivated', async(() {
       Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
 
       router.route('/foo');
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root).toHaveText('Foo');
 
       router.route('/baz'); // route without a template
       microLeap();
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
+    }));
+
+    it('should create and destroy a child scope', async((RootScope scope) {
+      Element root = _.compile('<ng-view></ng-view>');
+
+      var getChildScope = () => scope.context['p'] == null ?
+          null : scope.context['p'].scope;
+
+      expect(root).toHaveText('');
+      expect(getChildScope()).toBeNull();
+
+      router.route('/foo');
+      microLeap();
+      expect(root).toHaveText('Foo');
+      var childScope1 = getChildScope();
+      expect(childScope1).toBeNotNull();
+      var destroyListener = guinness.createSpy('destroy child scope');
+      var watcher = childScope1.on(ScopeEvent.DESTROY).listen(destroyListener);
+
+      router.route('/baz');
+      microLeap();
+      expect(root).toHaveText('');
+      expect(destroyListener).toHaveBeenCalledOnce();
+      var childScope2 = getChildScope();
+      expect(childScope2).toBeNull();
     }));
 
   });
@@ -112,25 +135,25 @@ main() {
 
     it('should switch nested templates', async(() {
       Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
 
       router.route('/library/all');
       microLeap();
-      expect(root.text).toEqual('LibraryBooks');
+      expect(root).toHaveText('LibraryBooks');
 
       router.route('/library/1234');
       microLeap();
-      expect(root.text).toEqual('LibraryBook 1234');
+      expect(root).toHaveText('LibraryBook 1234');
 
       // nothing should change here
       router.route('/library/1234/overview');
       microLeap();
-      expect(root.text).toEqual('LibraryBook 1234');
+      expect(root).toHaveText('LibraryBook 1234');
 
       // nothing should change here
       router.route('/library/1234/read');
       microLeap();
-      expect(root.text).toEqual('LibraryRead Book 1234');
+      expect(root).toHaveText('LibraryRead Book 1234');
     }));
   });
 
@@ -158,11 +181,11 @@ main() {
 
     it('should switch inline templates', async(() {
       Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
 
       router.route('/foo');
       microLeap();
-      expect(root.text).toEqual('Hello');
+      expect(root).toHaveText('Hello');
     }));
   });
 }

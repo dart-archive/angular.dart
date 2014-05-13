@@ -52,23 +52,12 @@ class ShadowDomComponentFactory implements ComponentFactory {
             _expando,
             baseCss,
             _styleElementCache);
-        var controller = componentFactory.call(injector, scope, viewCache, http, templateCache,
-            directives);
-
-        componentFactory.shadowScope.context[component.publishAs] = controller;
-        return controller;
+        return componentFactory.call(injector, scope, viewCache, http, templateCache, directives);
       };
   }
 }
 
-
-/**
- * ComponentFactory is responsible for setting up components. This includes
- * the shadowDom, fetching template, importing styles, setting up attribute
- * mappings, publishing the controller, and compiling and caching the template.
- */
 class _ComponentFactory implements Function {
-
   final dom.Element element;
   final Type type;
   final Component component;
@@ -93,10 +82,9 @@ class _ComponentFactory implements Function {
                ViewCache viewCache, Http http, TemplateCache templateCache,
                DirectiveMap directives) {
     shadowDom = element.createShadowRoot()
-      ..applyAuthorStyles = component.applyAuthorStyles
-      ..resetStyleInheritance = component.resetStyleInheritance;
+        ..applyAuthorStyles = component.applyAuthorStyles
+        ..resetStyleInheritance = component.resetStyleInheritance;
 
-    shadowScope = scope.createChild({}); // Isolate
     // TODO(pavelgj): fetching CSS with Http is mainly an attempt to
     // work around an unfiled Chrome bug when reloading same CSS breaks
     // styles all over the page. We shouldn't be doing browsers work,
@@ -109,8 +97,7 @@ class _ComponentFactory implements Function {
       cssFutures = cssUrls.map((cssUrl) => _styleElementCache.putIfAbsent(
           new _ComponentAssetKey(tag, cssUrl), () =>
         http.get(cssUrl, cache: templateCache)
-          .then((resp) => resp.responseText,
-            onError: (e) => '/*\n$e\n*/\n')
+          .then((resp) => resp.responseText, onError: (e) => '/*\n$e\n*/\n')
           .then((String css) {
 
             // Shim CSS if required
@@ -120,15 +107,14 @@ class _ComponentFactory implements Function {
 
             // If a css rewriter is installed, run the css through a rewriter
             var styleElement = new dom.StyleElement()
-                ..appendText(componentCssRewriter(css, selector: tag,
-                    cssUrl: cssUrl));
+                ..appendText(componentCssRewriter(css, selector: tag, cssUrl: cssUrl));
 
             // ensure there are no invalid tags or modifications
             treeSanitizer.sanitizeTree(styleElement);
 
             // If the css shim is required, it means that scoping does not
             // work, and adding the style to the head of the document is
-            // preferrable.
+            // preferable.
             if (platform.cssShimRequired) {
               dom.document.head.append(styleElement);
             }
@@ -164,7 +150,9 @@ class _ComponentFactory implements Function {
           }
           return shadowDom;
         }));
-    controller = createShadowInjector(injector, templateLoader).get(type);
+
+    var shadowInjector = createShadowInjector(scope, injector, templateLoader);
+    var controller = shadowInjector.get(type);
     ComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
     return controller;
   }
@@ -175,19 +163,23 @@ class _ComponentFactory implements Function {
     return shadowDom;
   }
 
-  Injector createShadowInjector(injector, TemplateLoader templateLoader) {
+  Injector createShadowInjector(Scope scope, Injector injector, TemplateLoader templateLoader) {
     var probe;
     var shadowModule = new Module()
-      ..bind(type)
-      ..bind(NgElement)
-      ..bind(EventHandler, toImplementation: ShadowRootEventHandler)
-      ..bind(Scope, toValue: shadowScope)
-      ..bind(TemplateLoader, toValue: templateLoader)
-      ..bind(dom.ShadowRoot, toValue: shadowDom)
-      ..bind(ElementProbe, toFactory: (_) => probe);
+        ..bind(type)
+        ..bind(NgElement)
+        ..bind(EventHandler, toImplementation: ShadowRootEventHandler)
+        ..bind(Scope, toFactory: (Injector inj) => scope.createChild(inj.get(type)))
+        ..bind(TemplateLoader, toValue: templateLoader)
+        ..bind(dom.ShadowRoot, toValue: shadowDom)
+        ..bind(ElementProbe, toFactory: (_) => probe);
+
     shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
+    shadowScope = shadowInjector.get(Scope);
+
     probe = _expando[shadowDom] = new ElementProbe(
         injector.get(ElementProbe), shadowDom, shadowInjector, shadowScope);
+
     return shadowInjector;
   }
 }

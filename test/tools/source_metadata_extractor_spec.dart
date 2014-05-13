@@ -105,11 +105,11 @@ void main() {
       var info = extractDirectiveInfo([
           new DirectiveMetadata('MyFooAttrDirective', DIRECTIVE, '[blah][foo]', {
               '.': '=>fooExpr'
-          }, null, ['ctrl.baz'])
+          }, null, ['baz'])
       ]);
 
       expect(flattenList(info, (DirectiveInfo i) => i.expressions),
-      equals(['fooExpr', 'ctrl.baz']));
+      equals(['fooExpr', 'baz']));
     });
 
   });

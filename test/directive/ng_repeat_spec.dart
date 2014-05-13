@@ -449,13 +449,13 @@ main() {
     it('should correctly handle detached state', () {
       scope.context['items'] = [1];
 
-      var parentScope = scope.createChild(new PrototypeMap(scope.context));
+      var childScope = scope.createChild(scope.context);
       element = compile(
         '<ul>'
           '<li ng-repeat="item in items">{{item}}</li>'
-        '</ul>', parentScope);
+        '</ul>', childScope);
 
-      parentScope.destroy();
+      childScope.destroy();
       expect(scope.apply).not.toThrow();
     });
 
