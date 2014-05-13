@@ -124,7 +124,7 @@ class ElementBinder {
     dstPathFn.assign(controller, _parser(expression).bind(scope.context, ScopeLocals.wrapper));
   }
 
-  _createAttrMappings(controller, scope, List<MappingParts> mappings, nodeAttrs, formatters, tasks) {
+  _createAttrMappings(directive, scope, List<MappingParts> mappings, nodeAttrs, formatters, tasks) {
     mappings.forEach((MappingParts p) {
       var attrName = p.attrName;
       var dstExpression = p.dstExpression;
@@ -140,11 +140,11 @@ class ElementBinder {
       if (bindAttr != null) {
         if (p.mode == '<=>') {
           _bindTwoWay(tasks, bindAttr, scope, dstPathFn,
-              controller, formatters, dstExpression);
+              directive, formatters, dstExpression);
         } else if(p.mode == '&') {
-          _bindCallback(dstPathFn, controller, bindAttr, scope);
+          _bindCallback(dstPathFn, directive, bindAttr, scope);
         } else {
-          _bindOneWay(tasks, bindAttr, scope, dstPathFn, controller, formatters);
+          _bindOneWay(tasks, bindAttr, scope, dstPathFn, directive, formatters);
         }
         return;
       }
@@ -153,7 +153,7 @@ class ElementBinder {
         case '@': // string
           var taskId = tasks.registerTask();
           nodeAttrs.observe(attrName, (value) {
-            dstPathFn.assign(controller, value);
+            dstPathFn.assign(directive, value);
             tasks.completeTask(taskId);
           });
           break;
@@ -162,13 +162,13 @@ class ElementBinder {
           if (nodeAttrs[attrName] == null) return;
 
           _bindTwoWay(tasks, nodeAttrs[attrName], scope, dstPathFn,
-              controller, formatters, dstExpression);
+              directive, formatters, dstExpression);
           break;
 
         case '=>': // one-way
           if (nodeAttrs[attrName] == null) return;
           _bindOneWay(tasks, nodeAttrs[attrName], scope,
-              dstPathFn, controller, formatters);
+              dstPathFn, directive, formatters);
           break;
 
         case '=>!': //  one-way, one-time
@@ -178,7 +178,7 @@ class ElementBinder {
           var watch;
           var lastOneTimeValue;
           watch = scope.watch(nodeAttrs[attrName], (value, _) {
-            if ((lastOneTimeValue = dstPathFn.assign(controller, value)) != null && watch != null) {
+            if ((lastOneTimeValue = dstPathFn.assign(directive, value)) != null && watch != null) {
                 var watchToRemove = watch;
                 watch = null;
                 scope.rootScope.domWrite(() {
@@ -193,7 +193,7 @@ class ElementBinder {
           break;
 
         case '&': // callback
-          _bindCallback(dstPathFn, controller, nodeAttrs[attrName], scope);
+          _bindCallback(dstPathFn, directive, nodeAttrs[attrName], scope);
           break;
       }
     });
@@ -205,24 +205,24 @@ class ElementBinder {
       try {
         var linkMapTimer;
         assert((linkTimer = _perf.startTimer('ng.view.link', ref.type)) != false);
-        var controller = nodeInjector.get(ref.type);
-        probe.directives.add(controller);
+        var directive = nodeInjector.get(ref.type);
+        probe.directives.add(directive);
         assert((linkMapTimer = _perf.startTimer('ng.view.link.map', ref.type)) != false);
 
         if (ref.annotation is Controller) {
-          scope.context[(ref.annotation as Controller).publishAs] = controller;
+          scope.context[(ref.annotation as Controller).publishAs] = directive;
         }
 
-        var tasks = new _TaskList(controller is AttachAware ? () {
-          if (scope.isAttached) controller.attach();
+        var tasks = new _TaskList(directive is AttachAware ? () {
+          if (scope.isAttached) directive.attach();
         } : null);
 
         if (ref.mappings.isNotEmpty) {
           if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-          _createAttrMappings(controller, scope, ref.mappings, nodeAttrs, formatters, tasks);
+          _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, formatters, tasks);
         }
 
-        if (controller is AttachAware) {
+        if (directive is AttachAware) {
           var taskId = tasks.registerTask();
           Watch watch;
           watch = scope.watch('1', // Cheat a bit.
@@ -234,8 +234,8 @@ class ElementBinder {
 
         tasks.doneRegistering();
 
-        if (controller is DetachAware) {
-          scope.on(ScopeEvent.DESTROY).listen((_) => controller.detach());
+        if (directive is DetachAware) {
+          scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
         }
 
         assert(_perf.stopTimer(linkMapTimer) != false);
