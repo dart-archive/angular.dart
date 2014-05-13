@@ -19,6 +19,7 @@ class ElementBinderFactory {
       new ElementBinder(_perf, _expando, _parser, _componentFactory,
           _transcludingComponentFactory, _shadowDomComponentFactory,
           b.component, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
+
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
       new TemplateElementBinder(_perf, _expando, _parser, _componentFactory,
           _transcludingComponentFactory, _shadowDomComponentFactory,
@@ -34,13 +35,13 @@ class ElementBinderBuilder {
 
   ElementBinderFactory _factory;
 
+  /// "on-*" attribute names and values, added by a [DirectiveSelector]
   final onEvents = <String, String>{};
+  /// "bind-*" attribute names and values, added by a [DirectiveSelector]
   final bindAttrs = <String, String>{};
 
   var decorators = <DirectiveRef>[];
   DirectiveRef template;
-  ViewFactory templateViewFactory;
-
   DirectiveRef component;
 
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
@@ -48,6 +49,15 @@ class ElementBinderBuilder {
 
   ElementBinderBuilder(this._factory);
 
+  /**
+   * Adds [DirectiveRef]s to this [ElementBinderBuilder].
+   *
+   * [addDirective] gets called from [Selector.matchElement] for each directive triggered by the
+   * element.
+   *
+   * When the [Directive] annotation defines a `map`, the attribute mappings are added to the
+   * [DirectiveRef].
+   */
   addDirective(DirectiveRef ref) {
     var annotation = ref.annotation;
     var children = annotation.children;
@@ -78,14 +88,9 @@ class ElementBinderBuilder {
     });
   }
 
+  /// Creates an returns an [ElementBinder] or a [TemplateElementBinder]
   ElementBinder get binder {
-    if (template != null) {
-      var transclude = _factory.binder(this);
-      return _factory.templateBinder(this, transclude);
-
-    } else {
-      return _factory.binder(this);
-    }
-
+    var elBinder = _factory.binder(this);
+    return template == null ? elBinder : _factory.templateBinder(this, elBinder);
   }
 }
