@@ -63,10 +63,9 @@ void main() {
             ..whenGET('PREFIX:simple.css').respond('.hello{}');
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
-        zone.run(() {
-          compile([element], directives)(injector, [element]);
-        });
+        compile([element], directives)(injector, [element]);
 
+        microLeap();
         backend.flush();
         microLeap();
 
