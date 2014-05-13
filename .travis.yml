@@ -21,6 +21,9 @@ env:
   - CHROME_BIN=/usr/bin/google-chrome
   - secure: "AKoqpZ699egF0i4uT/FQ5b4jIc0h+KVbhtVCql0uFxwFIl2HjOYgDayrUCAf6USfpW0LghZxJJhBamWOl/505eNSe9HvEd8JLg/to+1Fo9xi9llsu5ehmNH31/5pue4EvsrVuEap1qqL6/BNwI2cAryayU0p5tV0g8gL5h4IxG8="
 
+notifications:
+  flowdock: 09f79f18085674aeb53805cc4c3fa1f3
+
 # Don't test these branches.
 branches:
   except:
