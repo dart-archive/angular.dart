@@ -9,8 +9,7 @@ main() {
     beforeEach((TestBed tb) => _ = tb);
 
     it('should set.text', (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
-      var element = e('<div ng-bind="a"></div>');
-      compiler([element], directives)(injector, [element]);
+      var element = _.compile('<div bind-ng-bind="a"></div>');
       scope.context['a'] = "abc123";
       scope.apply();
       expect(element.text).toEqual('abc123');
@@ -18,7 +17,7 @@ main() {
 
 
     it('should bind to non string values', (Scope scope) {
-      var element = _.compile('<div ng-bind="value"></div>');
+      var element = _.compile('<div ng-bind="{{value}}"></div>');
 
       scope.apply(() {
         scope.context['value'] = null;

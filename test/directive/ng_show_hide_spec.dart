@@ -9,7 +9,7 @@ main() {
     beforeEach((TestBed tb) => _ = tb);
 
     it('should add/remove ng-hide class', () {
-      _.compile('<div ng-hide="isHidden"></div>');
+      _.compile('<div bind-ng-hide="isHidden"></div>');
 
       expect(_.rootElement).not.toHaveClass('ng-hide');
 
@@ -30,7 +30,7 @@ main() {
     beforeEach((TestBed tb) => _ = tb);
 
     it('should add/remove ng-hide class', () {
-      _.compile('<div ng-show="isShown"></div>');
+      _.compile('<div bind-ng-show="isShown"></div>');
 
       expect(_.rootElement).not.toHaveClass('ng-hide');
 

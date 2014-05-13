@@ -15,13 +15,14 @@ abstract class NgValidator {
 }
 
 /**
- * Validates the model depending if required or ng-required is present on the element.
+ * Validates the model depending if required is present on the element.
  */
 @Decorator(
-    selector: '[ng-model][required]')
-@Decorator(
-    selector: '[ng-model][ng-required]',
-    map: const {'ng-required': '=>required'})
+    selector: '[ng-model][ng-required],[ng-model][required]',
+    bind: const {
+        'required': 'required',
+        'ngRequired': 'required'
+    })
 class NgModelRequiredValidator implements NgValidator {
 
   final String name = 'ng-required';
@@ -89,8 +90,7 @@ class NgModelEmailValidator implements NgValidator {
 /**
  * Validates the model to see if its contents match a valid number.
  */
-@Decorator(selector: 'input[type=number][ng-model]')
-@Decorator(selector: 'input[type=range][ng-model]')
+@Decorator(selector: 'input[type=range][ng-model], input[type=number][ng-model]')
 class NgModelNumberValidator implements NgValidator {
 
   final String name = 'ng-number';
@@ -117,14 +117,9 @@ class NgModelNumberValidator implements NgValidator {
 /**
  * Validates the model to see if the numeric value than or equal to the max value.
  */
-@Decorator(selector: 'input[type=number][ng-model][max]')
-@Decorator(selector: 'input[type=range][ng-model][max]')
 @Decorator(
-    selector: 'input[type=number][ng-model][ng-max]',
-    map: const {'ng-max': '=>max'})
-@Decorator(
-    selector: 'input[type=range][ng-model][ng-max]',
-    map: const {'ng-max': '=>max'})
+    selector: 'input[type=range][ng-model][max], input[type=number][ng-model][max]',
+    bind: const {'max': 'max'})
 class NgModelMaxNumberValidator implements NgValidator {
 
   final String name = 'ng-max';
@@ -135,7 +130,6 @@ class NgModelMaxNumberValidator implements NgValidator {
     _ngModel.addValidator(this);
   }
 
-  @NgAttr('max')
   get max => _max;
   set max(value) {
     try {
@@ -168,14 +162,9 @@ class NgModelMaxNumberValidator implements NgValidator {
 /**
  * Validates the model to see if the numeric value is greater than or equal to the min value.
  */
-@Decorator(selector: 'input[type=number][ng-model][min]')
-@Decorator(selector: 'input[type=range][ng-model][min]')
 @Decorator(
-    selector: 'input[type=number][ng-model][ng-min]',
-    map: const {'ng-min': '=>min'})
-@Decorator(
-    selector: 'input[type=range][ng-model][ng-min]',
-    map: const {'ng-min': '=>min'})
+    selector: 'input[type=range][ng-model][min], input[type=number][ng-model][min]',
+    bind: const {'min': 'min'})
 class NgModelMinNumberValidator implements NgValidator {
 
   final String name = 'ng-min';
@@ -186,7 +175,6 @@ class NgModelMinNumberValidator implements NgValidator {
     _ngModel.addValidator(this);
   }
 
-  @NgAttr('min')
   get min => _min;
   set min(value) {
     try {
@@ -218,12 +206,11 @@ class NgModelMinNumberValidator implements NgValidator {
 
 /**
  * Validates the model to see if its contents match the given pattern present on either the
- * HTML pattern or ng-pattern attributes present on the input element.
+ * HTML pattern attributes present on the input element.
  */
-@Decorator(selector: '[ng-model][pattern]')
 @Decorator(
-    selector: '[ng-model][ng-pattern]',
-    map: const {'ng-pattern': '=>pattern'})
+    selector: '[ng-model][pattern]',
+    bind: const {'pattern': 'pattern'})
 class NgModelPatternValidator implements NgValidator {
 
   final String name = 'ng-pattern';
@@ -240,7 +227,6 @@ class NgModelPatternValidator implements NgValidator {
            _pattern.hasMatch(modelValue);
   }
 
-  @NgAttr('pattern')
   void set pattern(val) {
     _pattern = val != null && val.length > 0 ? new RegExp(val) : null;
     _ngModel.validateLater();
@@ -249,13 +235,12 @@ class NgModelPatternValidator implements NgValidator {
 
 /**
  * Validates the model to see if the length of its contents are greater than or
- * equal to the minimum length set in place by the HTML minlength or
- * ng-minlength attributes present on the input element.
+ * equal to the minimum length set in place by the HTML minlength
+ * attributes present on the input element.
  */
-@Decorator(selector: '[ng-model][minlength]')
 @Decorator(
-    selector: '[ng-model][ng-minlength]',
-    map: const {'ng-minlength': '=>minlength'})
+    selector: '[ng-model][minlength]',
+    bind: const {'minlength': 'minlength'})
 class NgModelMinLengthValidator implements NgValidator {
 
   final String name = 'ng-minlength';
@@ -272,7 +257,6 @@ class NgModelMinLengthValidator implements NgValidator {
            modelValue.length >= _minlength;
   }
 
-  @NgAttr('minlength')
   void set minlength(value) {
     _minlength = value == null ? 0 : int.parse(value.toString());
     _ngModel.validateLater();
@@ -281,13 +265,12 @@ class NgModelMinLengthValidator implements NgValidator {
 
 /**
  * Validates the model to see if the length of its contents are less than or
- * equal to the maximum length set in place by the HTML maxlength or
- * ng-maxlength attributes present on the input element.
+ * equal to the maximum length set in place by the HTML maxlength
+ * attributes present on the input element.
  */
-@Decorator(selector: '[ng-model][maxlength]')
 @Decorator(
-    selector: '[ng-model][ng-maxlength]',
-    map: const {'ng-maxlength': '=>maxlength'})
+    selector: '[ng-model][maxlength]',
+    bind: const {'maxlength': 'maxlength'})
 class NgModelMaxLengthValidator implements NgValidator {
 
   final String name = 'ng-maxlength';
@@ -301,7 +284,6 @@ class NgModelMaxLengthValidator implements NgValidator {
   bool isValid(modelValue) =>
       _maxlength == 0 || (modelValue == null ? 0 : modelValue.length) <= _maxlength;
 
-  @NgAttr('maxlength')
   void set maxlength(value) {
     _maxlength = value == null ? 0 : int.parse(value.toString());
     _ngModel.validateLater();

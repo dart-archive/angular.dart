@@ -30,14 +30,14 @@ main() {
 
                 @Decorator(selector: r'[*=/{{.*}}/]')
                 class Engine {
-                  @NgOneWay('another-expression')
+                  @Bind('another-expression')
                   String anotherExpression;
 
-                  @NgCallback('callback')
+                  @Bind('callback')
                   set callback(Function) {}
 
                   set twoWayStuff(String abc) {}
-                  @NgTwoWay('two-way-stuff')
+                  @Bind('two-way-stuff')
                   String get twoWayStuff => null;
                 }
                 main() {}
@@ -67,20 +67,19 @@ main() {
                 import 'package:angular/angular.dart';
 
                 class Engine {
-                  @NgOneWay('another-expression')
+                  @Bind('anotherExpression')
                   String anotherExpression;
 
-                  @NgCallback('callback')
                   set callback(Function) {}
 
                   set twoWayStuff(String abc) {}
-                  @NgTwoWay('two-way-stuff')
+                  @Bind('twoWayStuff')
                   String get twoWayStuff => null;
                 }
 
                 @Decorator(selector: r'[*=/{{.*}}/]')
                 class InternalCombustionEngine extends Engine {
-                  @NgOneWay('ice-expression')
+                  @Bind('iceExpression')
                   String iceExpression;
                 }
                 main() {}
@@ -112,8 +111,7 @@ main() {
 
                 @DummyAnnotation("parse attribute annotations")
                 class Engine {
-                  @NgCallback('callback')
-                  @NgOneWay('another-expression')
+                  @Bind('another-expression')
                   set callback(Function) {}
                 }
                 main() {}
@@ -141,7 +139,7 @@ main() {
 
                 @Decorator(map: {'another-expression': '=>anotherExpression'})
                 class Engine {
-                  @NgOneWay('another-expression')
+                  @Bind('another-expression')
                   set anotherExpression(Function) {}
                 }
                 main() {}
@@ -157,7 +155,7 @@ main() {
                 '\'another-expression\': \'=>anotherExpression\'})',
             ]
           },
-          messages: ['warning: Directive @NgOneWay(\'another-expression\') '
+          messages: ['warning: Directive @Bind(\'another-expression\') '
               'already contains an entry for \'another-expression\' '
               '(web/main.dart 2 16)'
           ]);
@@ -180,7 +178,7 @@ main() {
                   set anotherExpression(Function) {}
 
                   set twoWayStuff(String abc) {}
-                  @NgTwoWay('two-way-stuff')
+                  @Bind('two-way-stuff')
                   String get twoWayStuff => null;
                 }
                 main() {}
@@ -213,10 +211,9 @@ main() {
 
                 @DummyAnnotation("parse attribute annotations")
                 class Engine {
-                  @NgCallback('callback')
                   set callback(Function) {}
 
-                  @NgOneWay('another-expression')
+                  @Bind('another-expression')
                   get callback => null;
                 }
                 main() {}
@@ -615,7 +612,7 @@ main() {
 
           @Decorator(map: {})
           class Engine {
-            @NgTwoWay('two-way-stuff')
+            @Bind('two-way-stuff')
             String get twoWayStuff => null;
           }
           main() {}

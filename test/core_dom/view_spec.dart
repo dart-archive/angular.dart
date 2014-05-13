@@ -2,6 +2,7 @@ library view_spec;
 
 import '../_specs.dart';
 import 'package:angular/application_factory.dart';
+import 'package:angular/core_dom/node_property_binder.dart';
 
 class Log {
   List<String> log = <String>[];
@@ -61,7 +62,11 @@ class BFormatter {
 
 
 main() {
-  var viewFactoryFactory = (a,b,c,d) => new WalkingViewFactory(a,b,c,d);
+  var viewFactoryFactory = (elements,binders,perf) {
+    var template = new TemplateElement();
+    elements.forEach((e) => template.append(e));
+    return new TaggingViewFactory(template, binders, perf);
+  };
   describe('View', () {
     var anchor;
     Element rootElement;
@@ -75,12 +80,12 @@ main() {
       var a, b;
       var expando = new Expando();
 
-      beforeEach((Injector injector, Profiler perf) {
+      beforeEach((Injector injector, RootScope scope, Profiler perf) {
         rootElement.innerHtml = '<!-- anchor -->';
         anchor = new ViewPort(rootElement.childNodes[0],
           injector.get(Animate));
-        a = (viewFactoryFactory(es('<span>A</span>a'), [], perf, expando))(injector);
-        b = (viewFactoryFactory(es('<span>B</span>b'), [], perf, expando))(injector);
+        a = (viewFactoryFactory(es('<span>A</span>a'), [new NodeBinder.root()], perf))(injector, scope);
+        b = (viewFactoryFactory(es('<span>B</span>b'), [new NodeBinder.root()], perf))(injector, scope);
       });
 
 
@@ -209,10 +214,11 @@ main() {
 
         Compiler compiler = rootInjector.get(Compiler);
         DirectiveMap directives = rootInjector.get(DirectiveMap);
-        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootInjector);
+        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootInjector, rootScope);
         rootScope.apply();
 
         expect(log.log, equals(['ADirective', 'AFormatter']));
+        log.log.clear();
 
 
         Module childModule = new Module()
@@ -223,10 +229,10 @@ main() {
 
         DirectiveMap newDirectives = childInjector.get(DirectiveMap);
         compiler(es('<dir-a probe="dirA"></dir-a>{{\'a\' | formatterA}}'
-            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(childInjector);
+            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(childInjector, rootScope);
         rootScope.apply();
 
-        expect(log.log, equals(['ADirective', 'AFormatter', 'ADirective', 'BDirective', 'BFormatter']));
+        expect(log.log, equals(['BFormatter', 'ADirective', 'BDirective']));
       });
 
     });

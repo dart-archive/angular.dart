@@ -10,16 +10,21 @@ main() {
     TestBed _;
 
     beforeEach((TestBed tb) => _ = tb);
+    
+    compile(html) {
+      _.compile(html);
+      _.injector.get(Element).append(_.rootElement);
+    }
 
     it('should bind click listener when href zero length string', (Scope scope) {
-      _.compile('<a href="" ng-click="abc = 4; event = \$event"></a>');
+      compile('<a href="" on-click="abc = 4; event = \$event"></a>');
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
       expect(_.rootScope.context['abc']).toEqual(4);
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
     });
 
     it('should bind click listener when href empty', (Scope scope) {
-      _.compile('<a href ng-click="abc = 5; event = \$event"></a>');
+      compile('<a href on-click="abc = 5; event = \$event"></a>');
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
       expect(_.rootScope.context['abc']).toEqual(5);
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
@@ -31,7 +36,7 @@ main() {
       if (isBrowser('Firefox')) return;
 
       window.location.href = '#something';
-      _.compile('<a href="#"></a>');
+      compile('<a href="#"></a>');
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
       expect(window.location.href.endsWith("#")).toEqual(true);
     });
@@ -41,7 +46,7 @@ main() {
       // value does not update synchronously.  I do not know how to test this.
       if (isBrowser('Firefox')) return;
 
-      _.compile('<a href="{{url}}" ng-click="abc = true; event = \$event"></a>');
+      compile('<a href="{{url}}" on-click="abc = true; event = \$event"></a>');
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
       expect(_.rootScope.context['abc']).toEqual(true);
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);

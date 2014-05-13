@@ -64,7 +64,7 @@ void main() {
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
         zone.run(() {
-          compile([element], directives)(injector, [element]);
+          element = compile([element], directives)(injector, rootScope).nodes[0];
         });
 
         backend.flush();
@@ -94,7 +94,7 @@ void main() {
         backend.expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = es('<div><simple-url log>ignore</simple-url><div>');
-        compile(element, directives)(injector, element);
+        element = compile(element, directives)(injector, rootScope).nodes;
 
         microLeap();
         backend.flush();
@@ -116,7 +116,7 @@ void main() {
             '<simple-url log>ignore</simple-url>'
             '<simple-url log>ignore</simple-url>'
             '<div>');
-        compile(element, directives)(injector, element);
+        element = compile(element, directives)(injector, rootScope).nodes;
 
         microLeap();
         backend.flush();
@@ -137,7 +137,7 @@ void main() {
             ..expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
-        compile([element], directives)(injector, [element]);
+        element = compile([element], directives)(injector, rootScope).nodes[0];
 
         microLeap();
         backend.flush();
@@ -157,7 +157,7 @@ void main() {
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
         backend.expectGET('simple.css').respond(200, '.hello{}');
-        compile(element, directives)(injector, element);
+        element = compile(element, directives)(injector, rootScope).nodes;
 
         microLeap();
         backend.flush();
@@ -170,7 +170,7 @@ void main() {
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
         backend.expectGET('simple.css').respond(500, 'some error');
-        compile(element, directives)(injector, element);
+        element = compile(element, directives)(injector, rootScope).nodes;
 
         microLeap();
         backend.flush();
@@ -187,7 +187,7 @@ void main() {
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><only-css log>ignore</only-css><div>');
         backend.expectGET('simple.css').respond(200, '.hello{}');
-        compile(element, directives)(injector, element);
+        element = compile(element, directives)(injector, rootScope).nodes;
 
         microLeap();
         backend.flush();
@@ -203,7 +203,7 @@ void main() {
             ..expectGET('simple.html').respond(200, '<div>Simple!</div>');
 
         var element = es('<html-and-css>ignore</html-and-css>');
-        compile(element, directives)(injector, element);
+        element = compile(element, directives)(injector, rootScope).nodes;
 
         microLeap();
         backend.flush();
@@ -228,7 +228,7 @@ void main() {
             ..expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = e('<div><html-and-css log>ignore</html-and-css><div>');
-        compile([element], directives)(injector, [element]);
+        element = compile([element], directives)(injector, rootScope).nodes[0];
 
         microLeap();
         backend.flush();
@@ -253,13 +253,13 @@ void main() {
 
       it('should load css from the style cache for the second component', async(inject(
           (Http http, Compiler compile, MockHttpBackend backend,
-           DirectiveMap directives, Injector injector) {
+           DirectiveMap directives, Injector injector, RootScope rootScope) {
         backend
           ..expectGET('simple.css').respond(200, '.hello{}')
           ..expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element = e('<div><html-and-css>ignore</html-and-css><div>');
-        compile([element], directives)(injector, [element]);
+        element = compile([element], directives)(injector, rootScope).nodes[0];
 
         microLeap();
         backend.flush();
@@ -274,7 +274,7 @@ void main() {
           ..expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
 
         var element2 = e('<div><html-and-css>ignore</html-and-css><div>');
-        compile([element2], directives)(injector, [element2]);
+        element2 = compile([element2], directives)(injector, rootScope).nodes[0];
 
         microLeap();
         backend.flush();

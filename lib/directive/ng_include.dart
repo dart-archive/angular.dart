@@ -17,7 +17,7 @@ part of angular.directive;
  */
 @Decorator(
     selector: '[ng-include]',
-    map: const {'ng-include': '@url'})
+    bind: const {'ng-include': 'url'})
 class NgInclude {
 
   final dom.Element element;

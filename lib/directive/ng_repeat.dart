@@ -68,7 +68,7 @@ part of angular.directive;
 @Decorator(
     children: Directive.TRANSCLUDE_CHILDREN,
     selector: '[ng-repeat]',
-    map: const {'.': '@expression'})
+    bind: const {'ngRepeat': 'expression'})
 class NgRepeat {
   static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(?:track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
   static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([$\w]+)|\(([$\w]+)\s*,\s*([$\w]+)\))$');
@@ -131,7 +131,7 @@ class NgRepeat {
 
     _watch = _scope.watch(
         _listExpr,
-        (CollectionChangeRecord changes, _) {
+        (changes, _) {
           _onChange((changes is CollectionChangeRecord) ? changes : null);
         },
         collection: true,

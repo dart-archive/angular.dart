@@ -1,19 +1,24 @@
 part of angular.core.dom_internal;
 
+abstract class OnEvent {
+  fire(String name, [dynamic data]);
+}
+
 @Injectable()
-class NgElement {
+class NgElement implements OnEvent {
   static const _TO_BE_REMOVED = const Object();
 
   final dom.Element node;
   final Scope _scope;
   final Animate _animate;
+  final EventHandler _eventHandler;
 
   final _classesToUpdate = <String, bool>{};
   final _attributesToUpdate = <String, dynamic>{};
 
   bool _writeScheduled = false;
 
-  NgElement(this.node, this._scope, this._animate);
+  NgElement(this.node, this._scope, this._animate, this._eventHandler);
 
   void addClass(String className) {
     _scheduleDomWrite();
@@ -33,6 +38,10 @@ class NgElement {
   void removeAttribute(String attrName) {
     _scheduleDomWrite();
     _attributesToUpdate[attrName] = _TO_BE_REMOVED;
+  }
+
+  fire(String name, [dynamic data]) {
+    _eventHandler.fire(node, name, data);
   }
 
   /// Schedules a DOM write for the next flush phase

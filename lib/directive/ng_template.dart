@@ -19,12 +19,9 @@ part of angular.directive;
  * Refer [TemplateCache] for a **full example** as well as more information.
  */
 @Decorator(
-  selector: 'template[type=text/ng-template]',
-  map: const {'id': '@templateUrl'})
-@Decorator(
-  selector: 'script[type=text/ng-template]',
+  selector: 'script[type=text/ng-template], template[type=text/ng-template]',
   children: Directive.IGNORE_CHILDREN,
-  map: const {'id': '@templateUrl'})
+  bind: const {'id': 'templateUrl'})
 class NgTemplate {
   final dom.Element element;
   final TemplateCache templateCache;

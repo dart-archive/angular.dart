@@ -13,7 +13,7 @@ class TestBed {
   final Parser _parser;
   final Expando expando;
 
-  Element rootElement;
+  Element get rootElement => rootElements.length > 0 ? rootElements[0] : null;
   List<Node> rootElements;
   View rootView;
 
@@ -34,7 +34,7 @@ class TestBed {
    *
    * An option [scope] parameter can be supplied to link it with non root scope.
    */
-  Element compile(html, {Scope scope, DirectiveMap directives}) {
+  Node compile(html, {Scope scope, DirectiveMap directives}) {
     var injector = this.injector;
     if (scope != null) {
       injector = injector.createChild([new Module()..bind(Scope, toValue: scope)]);
@@ -48,11 +48,11 @@ class TestBed {
     } else {
       throw 'Expecting: String, Node, or List<Node> got $html.';
     }
-    rootElement = rootElements.length > 0 && rootElements[0] is Element ? rootElements[0] : null;
     if (directives == null) {
       directives = injector.get(DirectiveMap);
     }
-    rootView = compiler(rootElements, directives)(injector, rootElements);
+    ViewFactory viewFactory = compiler(rootElements, directives, compileInPlace: true);
+    rootView = viewFactory(injector, injector.get(Scope));
     return rootElement;
   }
 
@@ -99,4 +99,9 @@ class TestBed {
   }
 
   getScope(Node node) => getProbe(node).scope;
+
+  query(selector) {
+    List<Element> elements = rootElement.querySelectorAll(selector);
+    return elements.isEmpty ? null : elements.first;
+  }
 }

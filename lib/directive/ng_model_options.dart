@@ -2,7 +2,7 @@ part of angular.directive;
 
 @Decorator(
     selector: 'input[ng-model-options]',
-    map: const {'ng-model-options': '=>options'})
+    bind: const {'ng-model-options': 'options'})
 class NgModelOptions {
   static const String _DEBOUNCE_DEFAULT_KEY = "default";
   static const String _DEBOUNCE_BLUR_KEY = "blur";

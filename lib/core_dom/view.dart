@@ -13,13 +13,7 @@ part of angular.core.dom_internal;
  */
 class View {
   final List<dom.Node> nodes;
-  final EventHandler eventHandler;
-
-  View(this.nodes, this.eventHandler);
-
-  void registerEvent(String eventName) {
-    eventHandler.register(eventName);
-  }
+  View(this.nodes);
 }
 
 /**
@@ -31,7 +25,9 @@ class ViewPort {
   final Animate _animate;
   final _views = <View>[];
 
-  ViewPort(this.placeholder, this._animate);
+  ViewPort(this.placeholder, this._animate) {
+    assert(placeholder is dom.Node);
+  }
 
   void insert(View view, { View insertAfter }) {
     dom.Node previousNode = _lastNode(insertAfter);
@@ -60,8 +56,11 @@ class ViewPort {
     _views.insert(index, view);
   }
 
-  dom.Node _lastNode(View insertAfter) =>
-    insertAfter == null
-      ? placeholder
-      : insertAfter.nodes.last;
+  dom.Node _lastNode(View insertAfter) {
+    if (insertAfter == null) {
+      return placeholder;
+    } else {
+      return insertAfter.nodes.last;
+    }
+  }
 }

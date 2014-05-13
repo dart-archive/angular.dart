@@ -24,15 +24,14 @@ void main() {
       expect(annotation.templateUrl).toEqual('templateUrl');
       expect(annotation.cssUrls).toEqual(['cssUrls']);
       expect(annotation.publishAs).toEqual('ctrl');
-      expect(annotation.map).toEqual({
-          'foo': '=>foo',
-          'attr': '@attr',
-          'expr': '<=>expr',
-          'expr-one-way': '=>exprOneWay',
-          'expr-one-way-one-shot': '=>!exprOneWayOneShot',
-          'callback': '&callback',
-          'expr-one-way2': '=>exprOneWay2',
-          'expr-two-way': '<=>exprTwoWay'
+      expect(annotation.bind).toEqual({
+          'foo': 'foo',
+          'attr': 'attr',
+          'attrExpr': 'expr',
+          'exprOneWay': 'exprOneWay',
+          'exprOneWayOneShot': 'exprOneWayOneShot',
+          'exprOneWay2': 'exprOneWay2',
+          'exprTwoWay': 'exprTwoWay'
       });
     });
 
@@ -52,8 +51,8 @@ void main() {
         var injector = applicationFactory().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
-        }).toThrow('Mapping for attribute foo is already defined (while '
-        'processing annottation for field foo of Bad1Component)');
+        }).toThrow('Mapping for property foo is already defined (while '
+                   'processing annottation for field foo of Bad1Component)');
       });
 
       it('should throw when annotated both getter and setter', () {
@@ -83,10 +82,10 @@ void main() {
 
         Directive annotation = annotations[0];
         expect(annotation.selector).toEqual('[sub]');
-        expect(annotation.map).toEqual({
-          "foo": "=>foo",
-          "bar": "=>bar",
-          "baz": "=>baz"
+        expect(annotation.bind).toEqual({
+          "foo": "foo",
+          "bar": "bar",
+          "baz": "baz"
         });
       });
     });
@@ -108,8 +107,8 @@ class NullParser implements Parser {
     module: AnnotatedIoComponent.module,
     visibility: Directive.LOCAL_VISIBILITY,
     exportExpressions: const ['exportExpressions'],
-    map: const {
-      'foo': '=>foo'
+    bind: const {
+      'foo': 'foo'
     })
 class AnnotatedIoComponent {
   static module() => new Module()..bind(String, toFactory: (i) => i.get(AnnotatedIoComponent),
@@ -119,25 +118,22 @@ class AnnotatedIoComponent {
     scope.rootScope.context['ioComponent'] = this;
   }
 
-  @NgAttr('attr')
+  @Bind()
   String attr;
 
-  @NgTwoWay('expr')
+  @Bind('attrExpr')
   String expr;
 
-  @NgOneWay('expr-one-way')
+  @Bind('exprOneWay')
   String exprOneWay;
 
-  @NgOneWayOneTime('expr-one-way-one-shot')
+  @Bind('exprOneWayOneShot')
   String exprOneWayOneShot;
 
-  @NgCallback('callback')
-  Function callback;
-
-  @NgOneWay('expr-one-way2')
+  @Bind('exprOneWay2')
   set exprOneWay2(val) {}
 
-  @NgTwoWay('expr-two-way')
+  @Bind('exprTwoWay')
   get exprTwoWay => null;
   set exprTwoWay(val) {}
 }
@@ -145,11 +141,11 @@ class AnnotatedIoComponent {
 @Component(
     selector: 'bad1',
     template: r'<content></content>',
-    map: const {
-      'foo': '=>foo'
+    bind: const {
+      'foo': 'foo'
     })
 class Bad1Component {
-  @NgOneWay('foo')
+  @Bind('foo')
   String foo;
 }
 
@@ -157,24 +153,24 @@ class Bad1Component {
     selector: 'bad2',
     template: r'<content></content>')
 class Bad2Component {
-  @NgOneWay('foo')
+  @Bind('foo')
   get foo => null;
 
-  @NgOneWay('foo')
+  @Bind('foo')
   set foo(val) {}
 }
 
 @Decorator(selector: '[sub]')
 class Sub extends Base {
-  @NgOneWay('bar')
+  @Bind('bar')
   String bar;
 }
 
 class Base {
-  @NgOneWay('baz')
+  @Bind('baz')
   String baz;
 
-  @NgOneWay('foo')
+  @Bind('foo')
   String foo;
 }
 

@@ -14,20 +14,23 @@ void main() {
     it('should default to whole page', () {
       var body = setBody('<div>{{"works"}}</div>');
       applicationFactory().run();
-      expect(body).toHaveHtml('<div>works</div>');
+      body = window.document.querySelector('body');
+      expect(body.text).toEqual('works');
     });
 
     it('should compile starting at ng-app node', () {
       var body = setBody(
-          '<div>{{ignor me}}<div ng-app ng-bind="\'works\'"></div></div>');
+          '<div>{{ignor me}}<div ng-app ng-bind="works"></div></div>');
       applicationFactory().run();
+      body = window.document.querySelector('body');
       expect(body.text).toEqual('{{ignor me}}works');
     });
 
     it('should compile starting at ng-app node', () {
       var body = setBody(
-          '<div>{{ignor me}}<div ng-bind="\'works\'"></div></div>');
+          '<div>{{ignor me}}<div ng-bind="works"></div></div>');
       applicationFactory()..selector('div[ng-bind]')..run();
+      body = window.document.querySelector('body');
       expect(body.text).toEqual('{{ignor me}}works');
     });
   });

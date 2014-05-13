@@ -9,7 +9,8 @@ part of angular.directive;
   */
 @Decorator(
     selector: '[ng-style]',
-    map: const {'ng-style': '@styleExpression'})
+    canChangeModel: false,
+    bind: const {'ng-style': 'styleExpression'})
 class NgStyle {
   final dom.Element _element;
   final Scope _scope;

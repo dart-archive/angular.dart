@@ -74,11 +74,13 @@ part of angular.directive;
  */
 @Decorator(
     selector: '[ng-class]',
-    map: const {'ng-class': '@valueExpression'},
+    canChangeModel: false,
+    bind: const {'ngClass': 'value'},
+    observe: const {'value': '*onValueChange'},
     exportExpressionAttrs: const ['ng-class'])
 class NgClass extends _NgClassBase {
-  NgClass(NgElement ngElement, Scope scope, NodeAttrs nodeAttrs)
-      : super(ngElement, scope, nodeAttrs);
+  NgClass(NgElement ngElement, Scope scope)
+      : super(ngElement, scope);
 }
 
 /**
@@ -93,7 +95,7 @@ class NgClass extends _NgClassBase {
  * index.html:
  *
  *     <li ng-repeat="name in ['John', 'Mary', 'Cate', 'Suz']">
- *       <span ng-class-odd="'odd'" ng-class-even="'even'">
+ *       <span ng-class-odd="odd" ng-class-even="even">
  *         {{name}}
  *       </span>
  *     </li>
@@ -109,11 +111,13 @@ class NgClass extends _NgClassBase {
  */
 @Decorator(
     selector: '[ng-class-odd]',
-    map: const {'ng-class-odd': '@valueExpression'},
+    canChangeModel: false,
+    bind: const {'ngClassOdd': 'value'},
+    observe: const {'value': '*onValueChange'},
     exportExpressionAttrs: const ['ng-class-odd'])
 class NgClassOdd extends _NgClassBase {
-  NgClassOdd(NgElement ngElement, Scope scope, NodeAttrs nodeAttrs)
-      : super(ngElement, scope, nodeAttrs, 0);
+  NgClassOdd(NgElement ngElement, Scope scope)
+      : super(ngElement, scope, 0);
 }
 
 /**
@@ -144,11 +148,13 @@ class NgClassOdd extends _NgClassBase {
  */
 @Decorator(
     selector: '[ng-class-even]',
-    map: const {'ng-class-even': '@valueExpression'},
+    canChangeModel: false,
+    bind: const {'ngClassEven': 'value'},
+    observe: const {'value': '*onValueChange'},
     exportExpressionAttrs: const ['ng-class-even'])
 class NgClassEven extends _NgClassBase {
-  NgClassEven(NgElement ngElement, Scope scope, NodeAttrs nodeAttrs)
-      : super(ngElement, scope, nodeAttrs, 1);
+  NgClassEven(NgElement ngElement, Scope scope)
+      : super(ngElement, scope, 1);
 }
 
 abstract class _NgClassBase {
@@ -160,13 +166,16 @@ abstract class _NgClassBase {
   var _previousSet = new Set<String>();
   var _currentSet = new Set<String>();
   bool _first = true;
+  var _value;
+  set value(v) => _value = v;
 
-  _NgClassBase(this._ngElement, this._scope, NodeAttrs nodeAttrs,
-               [this._mode = null])
+  _NgClassBase(this._ngElement, this._scope, [this._mode = null])
   {
+    //TODO(misko): fix me
+    return;
     var prevCls;
 
-    nodeAttrs.observe('class', (String cls) {
+    ngElement.observe('class', (String cls) {
       if (prevCls != cls) {
         prevCls = cls;
         _applyChanges(_scope.context[r'$index']);
@@ -174,14 +183,9 @@ abstract class _NgClassBase {
     });
   }
 
-  set valueExpression(expression) {
-    if (_watchExpression != null) _watchExpression.remove();
-    _watchExpression = _scope.watch(expression, (v, _) {
-        _computeChanges(v);
-        _applyChanges(_scope.context[r'$index']);
-      },
-      canChangeModel: false,
-      collection: true);
+  onValueChange(value, _) {
+    _computeChanges(value);
+    _applyChanges(_scope.context[r'$index']);
 
     if (_mode != null) {
       if (_watchPosition != null) _watchPosition.remove();

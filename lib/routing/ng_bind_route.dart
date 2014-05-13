@@ -25,7 +25,7 @@ part of angular.routing;
 @Decorator(
     selector: '[ng-bind-route]',
     module: NgBindRoute.module,
-    map: const {'ng-bind-route': '@routeName'})
+    bind: const {'ng-bind-route': 'routeName'})
 class NgBindRoute implements RouteProvider {
   Router _router;
   String routeName;

@@ -7,7 +7,8 @@ part of angular.directive;
  */
 @Decorator(
     selector: '[ng-hide]',
-    map: const {'ng-hide': '=>hide'})
+    canChangeModel: false,
+    bind: const {'ngHide': 'hide'})
 class NgHide {
   static String NG_HIDE_CLASS = 'ng-hide';
 
@@ -18,9 +19,9 @@ class NgHide {
 
   set hide(value) {
     if (toBool(value)) {
-      animate.addClass(element, NG_HIDE_CLASS);
+      element.addClass(NgHide.NG_HIDE_CLASS);
     } else {
-      animate.removeClass(element, NG_HIDE_CLASS);
+      element.removeClass(NgHide.NG_HIDE_CLASS);
     }
   }
 }
@@ -32,18 +33,18 @@ class NgHide {
  */
 @Decorator(
     selector: '[ng-show]',
-    map: const {'ng-show': '=>show'})
+    canChangeModel: false,
+    bind: const {'ngShow': 'show'})
 class NgShow {
-  final dom.Element element;
-  final Animate animate;
+  final NgElement element;
 
-  NgShow(this.element, this.animate);
+  NgShow(this.element);
 
   set show(value) {
     if (toBool(value)) {
-      animate.removeClass(element, NgHide.NG_HIDE_CLASS);
+      element.removeClass(NgHide.NG_HIDE_CLASS);
     } else {
-      animate.addClass(element, NgHide.NG_HIDE_CLASS);
+      element.addClass(NgHide.NG_HIDE_CLASS);
     }
   }
 }

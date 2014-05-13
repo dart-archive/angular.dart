@@ -102,12 +102,12 @@ main() {
                     templateUrl: 'lib/foo.html',
                     selector: 'my-component')
                 class FooComponent extends BarComponent {
-                  @NgAttr('foo')
+                  @Bind('foo')
                   var foo;
                 }
 
                 class BarComponent {
-                  @NgAttr('bar')
+                  @Bind('bar')
                   var bar;
                 }
 

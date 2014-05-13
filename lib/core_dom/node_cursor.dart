@@ -29,15 +29,17 @@ class NodeCursor {
     index = stack.removeLast();
   }
 
-  void insertAnchorBefore(String name) {
+  void insertAnchorBefore(Map<String, String> attrs) {
     var parent = current.parentNode;
-    var anchor = new dom.Comment('ANCHOR: $name');
+    var anchor = new dom.TemplateElement()
+        ..classes.add(NG_BINDING)
+        ..attributes.addAll(attrs);
     elements.insert(index++, anchor);
     if (parent != null) parent.insertBefore(anchor, current);
   }
 
-  NodeCursor replaceWithAnchor(String name) {
-    insertAnchorBefore(name);
+  NodeCursor replaceWithAnchor(Map<String, String> attrs) {
+    insertAnchorBefore(attrs);
     var childCursor = remove();
     index--;
     return childCursor;

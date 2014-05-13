@@ -16,18 +16,21 @@ part of angular.directive;
  */
 @Decorator(
   selector: '[ng-bind-html]',
-  map: const {'ng-bind-html': '=>value'})
+  canChangeModel: false,
+  bind: const {'ngBindHtml': 'value'})
 class NgBindHtml {
   final dom.Element element;
   final dom.NodeValidator validator;
 
-  NgBindHtml(this.element, dom.NodeValidator this.validator);
+  NgBindHtml(this.element, dom.NodeValidator this.validator) {
+    print('NgBindHtml');
+  }
 
   /**
    * Parsed expression from the `ng-bind-html` attribute.  The result of this
    * expression is innerHTML'd according to the rules specified in this class'
    * documentation.
    */
-  void set value(value) => element.setInnerHtml(
-      value == null ? '' : value.toString(), validator: validator);
+  void set value(value) {print('NgBindHtml.value=$value'); element.setInnerHtml(
+      value == null ? '' : value.toString(), validator: validator); }
 }

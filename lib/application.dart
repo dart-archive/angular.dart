@@ -142,7 +142,7 @@ abstract class Application {
    */
   dom.Element selector(String selector) => element = _find(selector);
 
-  Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
+  Application(): element = _find('[ng-app]', _find('body', null)) {
     modules.add(ngModule);
     ngModule..bind(VmTurnZone, toValue: zone)
             ..bind(Application, toValue: this)
@@ -167,9 +167,13 @@ abstract class Application {
       ExceptionHandler exceptionHandler = injector.get(ExceptionHandler);
       initializeDateFormatting(null, null).then((_) {
         try {
-          var compiler = injector.get(Compiler);
-          var viewFactory = compiler(rootElements, injector.get(DirectiveMap));
-          viewFactory(injector, rootElements);
+          Compiler compiler = injector.get(Compiler);
+          var anchor = new dom.TemplateElement();
+          element.replaceWith(anchor);
+          ViewPort viewPort = new ViewPort(anchor, injector.get(Animate));
+          ViewFactory viewFactory = compiler(rootElements, injector.get(DirectiveMap));
+          View view = viewFactory(injector, injector.get(Scope));
+          viewPort.insert(view);
         } catch (e, s) {
           exceptionHandler(e, s);
         }

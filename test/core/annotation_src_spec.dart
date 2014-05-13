@@ -41,7 +41,8 @@ void main() => describe('annotations', () {
         resetStyleInheritance: true,
         publishAs: '',
         module: (){},
-        map: {},
+        bind: {},
+        observe: {},
         selector: '',
         visibility: Directive.LOCAL_VISIBILITY,
         exportExpressions: [],
@@ -53,7 +54,7 @@ void main() => describe('annotations', () {
       expect(nullFields(component)).toEqual([]);
 
       // Check that the clone is the same as the original.
-      expect(variables(cloneWithNewMap(component, {}))).toEqual(variables(component));
+      expect(variables(cloneWithNewBind(component, {}))).toEqual(variables(component));
     });
   });
 
@@ -61,7 +62,8 @@ void main() => describe('annotations', () {
     it('should set all fields on clone when all the fields are set', () {
       var decorator = new Decorator(
           children: 'xxx',
-          map: {},
+          bind: {},
+          observe: {},
           selector: '',
           module: (){},
           visibility: Directive.LOCAL_VISIBILITY,
@@ -73,7 +75,7 @@ void main() => describe('annotations', () {
       expect(nullFields(decorator)).toEqual([]);
 
       // Check that the clone is the same as the original.
-      expect(variables(cloneWithNewMap(decorator, {}))).toEqual(variables(decorator));
+      expect(variables(cloneWithNewBind(decorator, {}))).toEqual(variables(decorator));
     });
   });
 
@@ -82,7 +84,8 @@ void main() => describe('annotations', () {
       var controller = new Controller(
           publishAs: '',
           children: 'xxx',
-          map: {},
+          bind: {},
+          observe: {},
           selector: '',
           module: (){},
           visibility: Directive.LOCAL_VISIBILITY,
@@ -94,7 +97,7 @@ void main() => describe('annotations', () {
       expect(nullFields(controller)).toEqual([]);
 
       // Check that the clone is the same as the original.
-      expect(variables(cloneWithNewMap(controller, {}))).toEqual(variables(controller));
+      expect(variables(cloneWithNewBind(controller, {}))).toEqual(variables(controller));
     });
   });
 });

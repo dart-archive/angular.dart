@@ -6,7 +6,7 @@ part of angular.animate;
  * directive is not applied the default value is [auto] for animation.
  */
 @Decorator(selector: '[ng-animate]',
-    map: const {'ng-animate': '@option'})
+    bind: const {'ng-animate': 'option'})
 class NgAnimate  extends AbstractNgAnimate {
   set option(value) {
     _option = value;
@@ -26,7 +26,7 @@ class NgAnimate  extends AbstractNgAnimate {
  * more specific.
  */
 @Decorator(selector: '[ng-animate-children]',
-    map: const {'ng-animate-children': '@option'})
+    bind: const {'ngAnimateChildren': 'option'})
 class NgAnimateChildren extends AbstractNgAnimate {
   set option(value) {
     _option = value;

@@ -3,10 +3,12 @@ library angular.core_dom.node_property_binder_spec;
 import '../_specs.dart';
 import 'package:angular/core_dom/node_property_binder.dart';
 import 'dart:html';
+import 'package:angular/change_detection/change_detection.dart' show
+  CollectionChangeRecord, MapChangeRecord;
 
 
 main() {
-  ddescribe('node_property_binder', () {
+  describe('node_property_binder', () {
     Injector injector;
     RootScope rootScope;
     Map context;
@@ -28,7 +30,8 @@ main() {
       inputElement = new InputElement();
       nodePropertiesBinderBuilder = new NodeBinderBuilder(
           injector.get(Parser),
-          injector.get(ExceptionHandler));
+          injector.get(ExceptionHandler),
+          injector.get(AutoSelectComponentFactory));
       expando[appElement] = new ElementProbe(null, appElement, injector, rootScope);
     });
 
@@ -38,25 +41,26 @@ main() {
 
     setup(Element element,
           { Scope scope,
-            Map attrs,
+            Map attrs: const {},
             List<String> events: const ['change'],
             Map<Type, Directive> directives: const {} }) {
       appElement.append(element);
       Map<String, String> bindings = {};
-      Map<String, String> onEvents = {};
+      List<String> onEvents = <String>[];
       attrs.forEach((name, value) {
         element.attributes[name] = value;
         if (name.startsWith('bind-')) {
           bindings[name.substring('bind-'.length)] = value;
         }
         if (name.startsWith('on-')) {
-          onEvents[name.substring('on-'.length)] = value;
+          onEvents.add(name.substring('on-'.length));
         }
       });
       if (scope == null) scope = rootScope;
       NodeBinder binder = nodePropertiesBinderBuilder.build(
           element, events, attrs, bindings, onEvents, directives);
-      binder.bind(injector, scope, injector.get(FormatterMap), injector.get(EventHandler), element);
+      var ngElement = new NgElement(element, scope, null, null);
+      binder.bind(injector, scope, injector.get(FormatterMap), injector.get(EventHandler), ngElement);
     }
 
     describe('camelCase', () {
@@ -134,7 +138,7 @@ main() {
 
     describe('directive binding', () {
       it('should bind to existing properties', (Logger logger) {
-        setup(inputElement, 
+        setup(inputElement,
             attrs: {
                 'bind-title': 'titleExp',
                 'value': 'Initial Value'},
@@ -169,7 +173,7 @@ main() {
       });
 
       it('should bind to non-existing properties', () {
-        setup(inputElement, 
+        setup(inputElement,
             attrs: {
                 'bind-dont-exist1': 'exp',
                 'dont-exist2': 'two'},
@@ -184,10 +188,32 @@ main() {
         expect(genericDirective.a).toEqual('one');
         expect(genericDirective.b).toEqual('two');
       });
+
+
+      it('should bind iterable properties', (Logger logger) {
+        setup(inputElement,
+        attrs: { 'bind-collection': 'list' },
+        directives: {
+            GenericDirective: new Decorator(
+                canChangeModel: false,
+                bind: { 'collection': 'a', },
+                observe: { 'a': '*onAChange' }),
+            MyDirective: new Decorator(
+                bind: { 'collection': 'title' })
+        });
+        var list = rootScope.context['list'] = [];
+        rootScope.apply();
+        expect(logger).toEqual(
+            ['title=[]', 'attach:generic', 'attach:my', 'a=[]', 'Generic: [] <- default']);
+        logger.clear();
+        list.add('a');
+        rootScope.apply();
+        expect(logger).toEqual(['title=[a]', 'a=[a]', 'Generic: CollectionChangeRecord <- null']);
+      });
     });
 
-    it('should update other directive when value changes', (Logger logger) {
-      setup(inputElement, 
+  it('should update other directive when value changes', (Logger logger) {
+      setup(inputElement,
           attrs: {
               'bind-value': 'exp'},
           directives: {
@@ -264,7 +290,9 @@ main() {
               });
         rootScope.apply();
         expect(logger).toEqual(
-            ['attach:my', 'attach:generic']);
+            [ 'a=null', 'Generic: null <- null', 'attach:my', 'attach:generic',
+              // canChangeModel false
+              'name=null', 'My: null <- initial a' ]);
         logger.clear();
 
         MyDirective myDirective = injector.get(MyDirective);
@@ -326,13 +354,108 @@ main() {
         tb.triggerEvent(inputElement, 'foo');
         expect(scope.context['event']).toEqual(true);
       });
+    });
 
+    describe('transclusion', () {
+      it('should split bindings by template directive', () {
+        var events = ['event'];
+        var onEvents = ['onEvent'];
+        var attrs = {};
+        var bindings = { 'name': 'nameExp', 'value': 'valueExp' };
+        var directives = {
+            MyDirective: new Decorator(
+                children: Directive.TRANSCLUDE_CHILDREN,
+                bind: { 'name': 'name' },
+                observe: { 'name': 'onNameChange' },
+                canChangeModel: false),
+            GenericDirective: new Decorator(
+                bind: { 'value': 'a' },
+                observe: {'a': 'onAChange'},
+                canChangeModel: true)
+        };
+        NodeBinder binder = nodePropertiesBinderBuilder.build(
+            inputElement, events, attrs, bindings, onEvents, directives);
+
+        expect(binder.templateElement).toEqual(inputElement);
+        expect(binder.events).toEqual([]);
+        expect(binder.onEvents).toEqual([]);
+        expect(binder.nodePropertyBinders.length).toEqual(1);
+        var nodePropertyBinders = binder.nodePropertyBinders;
+        expect(nodePropertyBinders.length).toEqual(1);
+        expect(nodePropertyBinders[0].property).toEqual('name');
+        expect(nodePropertyBinders[0].directivePropertyBinders.length).toEqual(1);
+        expect(nodePropertyBinders[0].directivePropertyBinders[0].watchExp).toEqual('name');
+        expect(binder.directiveTypes).toEqual([MyDirective]);
+
+        NodeBinder transcludeBinder = binder.transcludeBinder;
+        expect(transcludeBinder.templateElement).toEqual(inputElement);
+        expect(transcludeBinder.events).toEqual(['event']);
+        expect(transcludeBinder.onEvents).toEqual(['onEvent']);
+        nodePropertyBinders = transcludeBinder.nodePropertyBinders;
+        expect(nodePropertyBinders.length).toEqual(1);
+        expect(nodePropertyBinders[0].property).toEqual('value');
+        expect(nodePropertyBinders[0].directivePropertyBinders.length).toEqual(1);
+        expect(nodePropertyBinders[0].directivePropertyBinders[0].watchExp).toEqual('a');
+        expect(transcludeBinder.directiveTypes).toEqual([GenericDirective]);
+        expect(nodePropertyBinders[0].directivePropertyBinders[0].index).toEqual(0);
+      });
+    });
+
+    describe('default values', () {
+      it('should take directive initial value', (Logger log) {
+        inputElement.value = 'initialValue';
+        setup(inputElement,
+            directives: {
+                MyDirective: new Decorator(
+                    bind: {
+                      'value': 'name',
+                      'nonStandardAttribute': 'title'
+                    },
+                    observe: {
+                      'title': 'onNameChange'
+                    })});
+
+        rootScope.apply();
+
+        MyDirective directive = injector.get(MyDirective);
+
+        expect(log).toEqual(['name=initialValue', 'My: default <- null', 'attach:my']);
+        expect(inputElement.value).toEqual('initialValue');
+        print('title: ${directive.title}; name: ${directive.name}');
+        expect(directive.name).toEqual('initialValue');
+        expect(directive.title).toEqual('default');
+      });
+
+      it('should take binding intitial value over directive', () {
+        inputElement.value = 'initialValue';
+        setup(inputElement,
+            attrs: {
+              'bind-value': 'myValue',
+              'title': 'Title'
+            },
+            directives: {
+                MyDirective: new Decorator(
+                    bind: {
+                        'value': 'name',
+                        'title': 'title'
+                    })});
+
+        rootScope.context['myValue'] = 'Value123';
+        rootScope.apply();
+        MyDirective directive = injector.get(MyDirective);
+
+        expect(inputElement.value).toEqual('Value123');
+        expect(inputElement.title).toEqual('Title');
+
+        expect(directive.name).toEqual('Value123');
+        expect(directive.title).toEqual('Title');
+      });
     });
   });
 }
 
 _verifyAssignment(name, logger, value, oldValue) {
-  if (identical(value, oldValue)) {
+  if (identical(value, oldValue) && value is! List) {
     throw "Reasignment error for $name=$value <- $oldValue!";
   }
   logger('$name=$value');
@@ -358,17 +481,18 @@ class MyDirective implements AttachAware, DetachAware {
 
 class GenericDirective implements AttachAware, DetachAware {
   Logger logger;
-  var _a;
+  var _a = 'initial a';
   get a => _a;
   set a(v) => _a = _verifyAssignment('a', logger, v, _a);
   
-  var _b;
+  var _b = 'initial b';
   get b => _b;
   set b(v) => _b = _verifyAssignment('b', logger, v, _b);
 
   GenericDirective(this.logger);
 
-  onAChange(value, old) => logger('Generic: $value <- $old');
+  onAChange(value, old) =>
+      logger('Generic: ${value is CollectionChangeRecord ? 'CollectionChangeRecord' : value} <- $old');
   attach() => logger('attach:generic');
   detach() => logger('detach:generic');
 }

@@ -18,12 +18,7 @@ export "package:angular/core/annotation_src.dart" show
     Controller,
     Decorator,
 
-    DirectiveAnnotation,
-    NgAttr,
-    NgCallback,
-    NgOneWay,
-    NgOneWayOneTime,
-    NgTwoWay;
+    Bind;
 
 
 /**

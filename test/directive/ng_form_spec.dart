@@ -105,6 +105,7 @@ void main() {
         var model1 = scope.context['m'].directive(NgModel);
         var model2 = scope.context['n'].directive(NgModel);
 
+        print(model1);
         expect(model1).toBePristine();
         expect(model2).toBePristine();
 

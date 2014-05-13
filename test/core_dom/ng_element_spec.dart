@@ -11,7 +11,7 @@ void main() {
 
         var scope = _.rootScope;
         var element = e('<div></div>');
-        var ngElement = new NgElement(element, scope, animate);
+        var ngElement = new NgElement(element, scope, animate, null);
 
         ngElement..addClass('one')..addClass('two three');
 
@@ -31,7 +31,7 @@ void main() {
 
         var scope = _.rootScope;
         var element = e('<div class="one two three four"></div>');
-        var ngElement = new NgElement(element, scope, animate);
+        var ngElement = new NgElement(element, scope, animate, null);
 
         ngElement..removeClass('one')
                  ..removeClass('two')
@@ -54,7 +54,7 @@ void main() {
 
         var scope = _.rootScope;
         var element = e('<div></div>');
-        var ngElement = new NgElement(element, scope, animate);
+        var ngElement = new NgElement(element, scope, animate, null);
 
         ngElement..addClass('one')
                  ..addClass('one')
@@ -83,7 +83,7 @@ void main() {
 
       var scope = _.rootScope;
       var element = e('<div></div>');
-      var ngElement = new NgElement(element, scope, animate);
+      var ngElement = new NgElement(element, scope, animate, null);
 
       ngElement.setAttribute('id', 'foo');
       ngElement.setAttribute('title', 'bar');
@@ -103,7 +103,7 @@ void main() {
 
       var scope = _.rootScope;
       var element = e('<div id="foo" title="bar"></div>');
-      var ngElement = new NgElement(element, scope, animate);
+      var ngElement = new NgElement(element, scope, animate, null);
 
       ngElement..removeAttribute('id')
                ..removeAttribute('title');
@@ -122,7 +122,7 @@ void main() {
 
       var scope = _.rootScope;
       var element = e('<div></div>');
-      var ngElement = new NgElement(element, scope, animate);
+      var ngElement = new NgElement(element, scope, animate, null);
 
       ngElement..setAttribute('id', 'foo')
                ..setAttribute('id', 'foo')

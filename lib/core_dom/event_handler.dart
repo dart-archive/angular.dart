@@ -40,6 +40,7 @@ class EventHandler {
    * which bubbles to this node, gets processed by this [EventHandler].
    */
   void register(String eventName) {
+    print(eventName);
     _listeners.putIfAbsent(eventName, () {
       dom.EventListener eventListener = this._eventListener;
       _rootNode.on[eventName].listen(eventListener);
@@ -47,27 +48,30 @@ class EventHandler {
     });
   }
 
-  void _eventListener(dom.Event event) {
-    dom.Node element = event.target;
-    while (element != null && element != _rootNode) {
+  void fire(dom.Node node, String eventType, [dynamic data]) {
+    print('fire(${node.outerHtml}, $eventType)');
+    while (node != null && node != _rootNode) {
       var expression;
-      if (element is dom.Element)
-        expression = (element as dom.Element).attributes[eventNameToAttrName(event.type)];
+      if (node is dom.Element)
+        expression = node.attributes[eventNameToAttrName(eventType)];
       if (expression != null) {
         try {
-          var scope = _getScope(element);
-          if (scope != null) scope.eval(expression);
+          var scope = _getScope(node);
+          print(expression);
+          if (scope != null) scope.eval(expression, {r'$event': data});
         } catch (e, s) {
           _exceptionHandler(e, s);
         }
       }
-      element = element.parentNode;
+      node = node.parentNode;
     }
   }
 
+  void _eventListener(dom.Event event) => fire(event.target, event.type, event);
+
   Scope _getScope(dom.Node element) {
     // var topElement = (rootNode is dom.ShadowRoot) ? rootNode.parentNode : rootNode;
-    while (element != _rootNode.parentNode) {
+    while (element != _rootNode.parentNode && element != null) {
       ElementProbe probe = _expando[element];
       if (probe != null) {
         return probe.scope;

@@ -9,18 +9,17 @@ const String SHADOW_DOM_INJECTOR_NAME = 'SHADOW_INJECTOR';
 skipShadow(Injector injector)
     => injector.name == SHADOW_DOM_INJECTOR_NAME ? injector.parent : injector;
 
-localVisibility (Injector requesting, Injector defining)
-    => identical(skipShadow(requesting), defining);
+localVisibility (Injector requesting, Injector defining) {
+  return identical(skipShadow(requesting), defining);
+}
 
 directChildrenVisibility(Injector requesting, Injector defining) {
   requesting = skipShadow(requesting);
   return identical(requesting.parent, defining) || localVisibility(requesting, defining);
 }
 
-Directive cloneWithNewMap(Directive annotation, map)
-    => annotation._cloneWithNewMap(map);
-
-String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
+Directive cloneWithNewBind(Directive annotation, Map<String, String> bind)
+    => annotation._cloneWithNewBind(bind);
 
 
 /**
@@ -134,72 +133,6 @@ abstract class Directive {
    */
   final Function module;
 
-  /**
-   * Use map to define the mapping of  DOM attributes to fields.
-   * The map's key is the DOM attribute name (DOM attribute is in dash-case).
-   * The Map's value consists of a mode prefix followed by an expression.
-   * The destination expression will be evaluated against the instance of the
-   * directive / component class.
-   *
-   * * `@` - Map the DOM attribute string. The attribute string will be taken
-   *   literally or interpolated if it contains binding {{}} systax and assigned
-   *   to the expression. (cost: 0 watches)
-   *
-   * * `=>` - Treat the DOM attribute value as an expression. Set up a watch,
-   *   which will read the expression in the attribute and assign the value
-   *   to destination expression. (cost: 1 watch)
-   *
-   * * `<=>` - Treat the DOM attribute value as an expression. Set up a watch
-   *   on both outside as well as component scope to keep the src and
-   *   destination in sync. (cost: 2 watches)
-   *
-   * * `=>!` - Treat the DOM attribute value as an expression. Set up a one time
-   *   watch on expression. Once the expression turns truthy it will no longer
-   *   update. (cost: 1 watches until not null, then 0 watches)
-   *
-   * * `&` - Treat the DOM attribute value as an expression. Assign a closure
-   *   function into the field. This allows the component to control
-   *   the invocation of the closure. This is useful for passing
-   *   expressions into controllers which act like callbacks. (cost: 0 watches)
-   *
-   * Example:
-   *
-   *     <my-component title="Hello {{username}}"
-   *                   selection="selectedItem"
-   *                   on-selection-change="doSomething()">
-   *
-   *     @Component(
-   *       selector: 'my-component'
-   *       map: const {
-   *         'title': '@title',
-   *         'selection': '<=>currentItem',
-   *         'on-selection-change': '&onChange'})
-   *     class MyComponent {
-   *       String title;
-   *       var currentItem;
-   *       ParsedFn onChange;
-   *     }
-   *
-   *  The above example shows how all three mapping modes are used.
-   *
-   *  * `@title` maps the title DOM attribute to the controller `title`
-   *    field. Notice that this maps the content of the attribute, which
-   *    means that it can be used with `{{}}` interpolation.
-   *
-   *  * `<=>currentItem` maps the expression (in this case the `selectedItem`
-   *    in the current scope into the `currentItem` in the controller. Notice
-   *    that mapping is bi-directional. A change either in field or on
-   *    parent scope will result in change to the other.
-   *
-   *  * `&onChange` maps the expression into the controller `onChange`
-   *    field. The result of mapping is a callable function which can be
-   *    invoked at any time by the controller. The invocation of the
-   *    callable function will result in the expression `doSomething()` to
-   *    be executed in the parent context.
-   */
-  @deprecated
-  final Map<String, String> map;
-
   final Map<String, String> bind;
   final Map<String, String> observe;
   final bool canChangeModel;
@@ -223,7 +156,6 @@ abstract class Directive {
     this.children: Directive.COMPILE_CHILDREN,
     this.visibility: Directive.LOCAL_VISIBILITY,
     this.module,
-    this.map: const {},
     this.bind: const {},
     bool canChangeModel,
     this.observe: const {},
@@ -237,7 +169,7 @@ abstract class Directive {
   operator==(other) =>
       other is Directive && selector == other.selector;
 
-  Directive _cloneWithNewMap(newMap);
+  Directive _cloneWithNewBind(newBind);
 }
 
 
@@ -332,7 +264,6 @@ class Component extends Directive {
     resetStyleInheritance,
     this.publishAs,
     module,
-    map,
     bind,
     observe,
     selector,
@@ -347,7 +278,6 @@ class Component extends Directive {
         super(selector: selector,
              children: Directive.COMPILE_CHILDREN,
              visibility: visibility,
-             map: map,
              bind: bind,
              observe: observe,
              module: module,
@@ -359,7 +289,7 @@ class Component extends Directive {
       const [] :
       _cssUrls is List ?  _cssUrls : [_cssUrls];
 
-  Directive _cloneWithNewMap(newMap) =>
+  Directive _cloneWithNewBind(newBind) =>
       new Component(
           template: template,
           templateUrl: templateUrl,
@@ -367,8 +297,7 @@ class Component extends Directive {
           applyAuthorStyles: applyAuthorStyles,
           resetStyleInheritance: resetStyleInheritance,
           publishAs: publishAs,
-          map: newMap,
-          bind: bind,
+          bind: newBind,
           observe: observe,
           canChangeModel: canChangeModel,
           module: module,
@@ -394,7 +323,6 @@ class Component extends Directive {
  */
 class Decorator extends Directive {
   const Decorator({children: Directive.COMPILE_CHILDREN,
-                    map,
                     bind,
                     observe,
                     selector,
@@ -406,7 +334,6 @@ class Decorator extends Directive {
       : super(selector: selector,
               children: children,
               visibility: visibility,
-              map: map,
               bind: bind,
               observe: observe,
               canChangeModel: canChangeModel,
@@ -414,11 +341,10 @@ class Decorator extends Directive {
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  Directive _cloneWithNewMap(newMap) =>
+  Directive _cloneWithNewBind(newBind) =>
       new Decorator(
           children: children,
-          map: newMap,
-          bind: bind,
+          bind: newBind,
           observe: observe,
           canChangeModel: canChangeModel,
           module: module,
@@ -457,7 +383,6 @@ class Controller extends Decorator {
   const Controller({
                     children: Directive.COMPILE_CHILDREN,
                     this.publishAs,
-                    map,
                     bind,
                     observe,
                     module,
@@ -470,7 +395,6 @@ class Controller extends Decorator {
       : super(selector: selector,
               children: children,
               visibility: visibility,
-              map: map,
               bind: bind,
               observe: observe,
               canChangeModel: canChangeModel,
@@ -478,13 +402,12 @@ class Controller extends Decorator {
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  Directive _cloneWithNewMap(newMap) =>
+  Directive _cloneWithNewBind(newBind) =>
       new Controller(
           children: children,
           publishAs: publishAs,
           module: module,
-          map: newMap,
-          bind: bind,
+          bind: newBind,
           canChangeModel: canChangeModel,
           observe: observe,
           selector: selector,
@@ -494,74 +417,10 @@ class Controller extends Decorator {
 }
 
 /**
- * Abstract supper class of [NgAttr], [NgCallback], [NgOneWay], [NgOneWayOneTime], and [NgTwoWay].
  */
-abstract class DirectiveAnnotation {
-  /// Element attribute name
-  final String attrName;
-  const DirectiveAnnotation(this.attrName);
-  /// Element attribute mapping mode: `@`, `=>`, `=>!`, `<=>`, and `&`.
-  String get _mappingSpec;
-}
-
-/**
- * When applied as an annotation on a directive field specifies that
- * the field is to be mapped to DOM attribute with the provided [attrName].
- * The value of the attribute to be treated as a string, equivalent
- * to `@` specification.
- */
-@deprecated
-class NgAttr extends DirectiveAnnotation {
-  final _mappingSpec = '@';
-  const NgAttr(String attrName) : super(attrName);
-}
-
-/**
- * When applied as an annotation on a directive field specifies that
- * the field is to be mapped to DOM attribute with the provided [attrName].
- * The value of the attribute to be treated as a one-way expression, equivalent
- * to `=>` specification.
- */
-@deprecated
-class NgOneWay extends DirectiveAnnotation {
-  final _mappingSpec = '=>';
-  const NgOneWay(String attrName) : super(attrName);
-}
-
-/**
- * When applied as an annotation on a directive field specifies that
- * the field is to be mapped to DOM attribute with the provided [attrName].
- * The value of the attribute to be treated as a one time one-way expression,
- * equivalent to `=>!` specification.
- */
-@deprecated
-class NgOneWayOneTime extends DirectiveAnnotation {
-  final _mappingSpec = '=>!';
-  const NgOneWayOneTime(String attrName) : super(attrName);
-}
-
-/**
- * When applied as an annotation on a directive field specifies that
- * the field is to be mapped to DOM attribute with the provided [attrName].
- * The value of the attribute to be treated as a two-way expression,
- * equivalent to `<=>` specification.
- */
-@deprecated
-class NgTwoWay extends DirectiveAnnotation {
-  final _mappingSpec = '<=>';
-  const NgTwoWay(String attrName) : super(attrName);
-}
-
-/**
- * When applied as an annotation on a directive field specifies that
- * the field is to be mapped to DOM attribute with the provided [attrName].
- * The value of the attribute to be treated as a callback expression,
- * equivalent to `&` specification.
- */
-@deprecated
-class NgCallback extends DirectiveAnnotation {
-  final _mappingSpec = '&';
-  const NgCallback(String attrName) : super(attrName);
+class Bind {
+  final String nodeProperty;
+  const Bind([this.nodeProperty = null]);
 }
 
 /**

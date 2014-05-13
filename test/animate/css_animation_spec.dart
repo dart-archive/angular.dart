@@ -10,11 +10,11 @@ main() {
     afterEach(() => _.rootElements.forEach((e) => e.remove()));
     
     it('should correctly respond to an animation lifecycle', async(() {
-      _.compile("<style>.event { transition: all 500ms; }</style>"
-          +"<div class='always remove-start remove-end'></div>");
-      
+      _.compile("<div><style>.event { transition: all 500ms; }</style>"
+          +"<div class='always remove-start remove-end'></div></div>");
+
       _.rootElements.forEach((e) => document.body.append(e));
-      var element = _.rootElements[1];
+      var element = _.query('div');
 
       expect(element).toHaveClass('always');
       expect(element).toHaveClass('remove-start');
@@ -66,10 +66,10 @@ main() {
     }));
     
     it('should swap removeAtEnd class if initial style is display none', async(() {
-      _.compile("<style>.event { transition: all 500ms; display: none; }</style>"
-          "<div class='remove-at-end'></div>");
+      _.compile("<div><style>.event { transition: all 500ms; display: none; }</style>"
+          "<div class='remove-at-end'></div></div>");
       _.rootElements.forEach((e) => document.body.append(e));
-      var element = _.rootElements[1];
+      var element = _.query('div');
 
       var animation = new CssAnimation(element, "event", "event-active",
           removeAtEnd: 'remove-at-end', addAtEnd: 'add-at-end');
@@ -88,9 +88,9 @@ main() {
     }));
     
     it('should add classes at end', async(() {
-      _.compile("<style>.event { transition: all 500ms; }</style><div></div>");
+      _.compile("<div><style>.event { transition: all 500ms; }</style><div></div></div>");
       _.rootElements.forEach((e) => document.body.append(e));
-      var element = _.rootElements[1];
+      var element = _.query('div');
 
       var animation = new CssAnimation(element, "event", "event-active",
           addAtEnd: 'add-at-end');
@@ -107,10 +107,10 @@ main() {
     }));
 
     it('should remove the cssClassToRemove', async(() {
-      _.compile("<style>.event { transition: all 500ms; }</style>"
-          +"<div class=\"remove-end\"></div>");
+      _.compile("<div><style>.event { transition: all 500ms; }</style>"
+          +"<div class=\"remove-end\"></div></div>");
       _.rootElements.forEach((e) => document.body.append(e));
-      var element = _.rootElements[1];
+      var element = _.query('div');
 
       var animation = new CssAnimation(element, "event", "event-active",
           removeAtEnd: 'magic');
@@ -123,9 +123,9 @@ main() {
     }));
     
     it('should clean up event classes when canceled after read', async(() {
-      _.compile("<style>.event { transition: all 500ms; }</style><div></div>");
+      _.compile("<div><style>.event { transition: all 500ms; }</style><div></div></div>");
       _.rootElements.forEach((e) => document.body.append(e));
-      var element = _.rootElements[1];
+      var element = _.query('div');
       var animation = new CssAnimation(element, "event", "event-active",
           addAtEnd: 'magic');
 
@@ -137,9 +137,9 @@ main() {
     }));
     
     it('should clean up event classes when canceled after update', async(() {
-      _.compile("<style>.event { transition: all 500ms; }</style><div></div>");
+      _.compile("<div><style>.event { transition: all 500ms; }</style><div></div></div>");
       _.rootElements.forEach((e) => document.body.append(e));
-      var element = _.rootElements[1];
+      var element = _.query('div');
 
       var animation = new CssAnimation(element, "event", "event-active",
           addAtEnd: 'add-end');

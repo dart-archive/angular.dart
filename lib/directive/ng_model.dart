@@ -26,13 +26,15 @@ class _NoopModelConverter extends NgModelConverter {
  * knows how to (in)validate the model and the form in which it is declared
  * (to be implemented)
  */
-@Decorator(selector: '[ng-model]')
-class NgModel extends NgControl implements AttachAware {
+@Decorator(
+  selector: '[ng-model]',
+  bind: const {
+      'name': 'name',
+      'ngModel': 'modelValue'
+  })
+class NgModel extends NgControl {
   final Scope _scope;
 
-  BoundSetter setter = (_, [__]) => null;
-
-  String _expression;
   var _originalValue, _viewValue, _modelValue;
   bool _alwaysProcessViewValue;
   bool _toBeValidated = false;
@@ -40,32 +42,17 @@ class NgModel extends NgControl implements AttachAware {
 
   final _validators = <NgValidator>[];
   NgModelConverter _converter;
-  Watch _watch;
-  bool _watchCollection;
 
-  NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs,
-          Animate animate)
+  NgModel(this._scope, NgElement element, Injector injector, Animate animate)
       : super(element, injector, animate)
   {
-    _expression = attrs["ng-model"];
-    watchCollection = false;
-
     //Since the user will never be editing the value of a select element then
     //there is no reason to guard the formatter from changing the DOM value.
     _alwaysProcessViewValue = element.node.tagName == 'SELECT';
     converter = new _NoopModelConverter();
     markAsUntouched();
     markAsPristine();
-  }
-
-  void _processViewValue(value) {
-    validate();
-    _viewValue = converter.format(value);
-    _scope.rootScope.domWrite(() => render(_viewValue));
-  }
-
-  void attach() {
-    watchCollection = false;
+    _originalValue = this;
   }
 
   /**
@@ -73,9 +60,8 @@ class NgModel extends NgControl implements AttachAware {
     * with by the user at all then the model will be also reset to an "untouched" state.
     */
   void reset() {
-    markAsUntouched();
-    _processViewValue(_originalValue);
     modelValue = _originalValue;
+    markAsUntouched();
   }
 
   void onSubmit(bool valid) {
@@ -119,51 +105,15 @@ class NgModel extends NgControl implements AttachAware {
   NgModelConverter get converter => _converter;
   set converter(NgModelConverter c) {
     _converter = c;
-    _processViewValue(modelValue);
+    var currentValue = _modelValue;
+    _modelValue = this; // trick it so that the next assignment goes through;
+    modelValue = currentValue;
   }
 
-  @NgAttr('name')
   String get name => _name;
   void set name(value) {
     _name = value;
     _parentControl.addControl(this);
-  }
-
-  // TODO(misko): could we get rid of watch collection, and just always watch the collection?
-  bool get watchCollection => _watchCollection;
-  void set watchCollection(value) {
-    if (_watchCollection == value) return;
-
-    var onChange = (value, [_]) {
-      if (_alwaysProcessViewValue || _modelValue != value) {
-        _modelValue = value;
-        _processViewValue(value);
-      }
-    };
-
-    _watchCollection = value;
-    if (_watch!=null) _watch.remove();
-    if (_watchCollection) {
-      _watch = _scope.watch(_expression, (changeRecord, _) {
-            onChange(changeRecord is CollectionChangeRecord
-                        ? changeRecord.iterable
-                        : changeRecord);
-          },
-          collection: true);
-    } else if (_expression != null) {
-      _watch = _scope.watch(_expression, onChange);
-    }
-  }
-
-  // TODO(misko): getters/setters need to go. We need AST here.
-  @NgCallback('ng-model')
-  void set model(BoundExpression boundExpression) {
-    setter = boundExpression.assign;
-    _scope.rootScope.runAsync(() {
-      _modelValue = boundExpression();
-      _originalValue = modelValue;
-      _processViewValue(_modelValue);
-    });
   }
 
   /**
@@ -197,24 +147,24 @@ class NgModel extends NgControl implements AttachAware {
   get viewValue => _viewValue;
   void set viewValue(value) {
     _viewValue = value;
-    modelValue = value;
+    try {
+      _modelValue = converter.parse(_viewValue);
+    } catch(e) {
+    }
+    validate();
   }
 
   get modelValue => _modelValue;
   void set modelValue(value) {
+    if (_originalValue == this) _originalValue = value;
+    if (value == _modelValue) return;
     try {
-      value = converter.parse(value);
+      _viewValue = converter.format(_modelValue = value);
     } catch(e) {
       value = null;
     }
-    _modelValue = value;
-    setter(value);
-
-    if (modelValue == _originalValue) {
-      markAsPristine();
-    } else {
-      markAsDirty();
-    }
+    validate();
+    _scope.rootScope.domWrite(() => render(_viewValue));
   }
 
   /**
@@ -242,6 +192,11 @@ class NgModel extends NgControl implements AttachAware {
       addInfo(NgControl.NG_INVALID);
     } else {
       removeInfo(NgControl.NG_INVALID);
+    }
+    if (modelValue == _originalValue) {
+      markAsPristine();
+    } else {
+      markAsDirty();
     }
   }
 
@@ -306,7 +261,7 @@ class InputCheckbox {
     };
     inputElement
         ..onChange.listen((_) => ngModelOptions.executeChangeFunc(() {
-          ngModel.viewValue = inputElement.checked ? ngTrueValue.value : ngFalseValue.value;
+          ngModel.viewValue = inputElement.checked ? ngTrueValue._value : ngFalseValue.value;
         }))
         ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() {
           ngModel.markAsTouched();
@@ -330,13 +285,13 @@ class InputCheckbox {
  * as well as the other way around (when the scope property is updated).
  *
  */
-@Decorator(selector: 'textarea[ng-model]')
-@Decorator(selector: 'input[type=text][ng-model]')
-@Decorator(selector: 'input[type=password][ng-model]')
-@Decorator(selector: 'input[type=url][ng-model]')
-@Decorator(selector: 'input[type=email][ng-model]')
-@Decorator(selector: 'input[type=search][ng-model]')
-@Decorator(selector: 'input[type=tel][ng-model]')
+@Decorator(selector: 'textarea[ng-model],'
+                     'input[type=text][ng-model],'
+                     'input[type=password][ng-model],'
+                     'input[type=url][ng-model],'
+                     'input[type=email][ng-model],'
+                     'input[type=search][ng-model],'
+                     'input[type=tel][ng-model]')
 class InputTextLike {
   final dom.Element inputElement;
   final NgModel ngModel;
@@ -377,6 +332,7 @@ class InputTextLike {
     if (value != ngModel.viewValue) ngModel.viewValue = value;
 
     ngModel.validate();
+    ngModel.markAsDirty();
   }
 }
 
@@ -397,8 +353,7 @@ class InputTextLike {
  * Setting the model to [double.NAN] will have no effect (input will be left
  * unchanged).
  */
-@Decorator(selector: 'input[type=number][ng-model]')
-@Decorator(selector: 'input[type=range][ng-model]')
+@Decorator(selector: 'input[type=number][ng-model],input[type=range][ng-model]')
 class InputNumberLike {
   final dom.InputElement inputElement;
   final NgModel ngModel;
@@ -462,12 +417,17 @@ class InputNumberLike {
  * kind would be appropriate) or, for browsers that fail to conform to the
  * HTML5 standard in their processing of date-like inputs.
  */
-@Decorator(selector: 'input[type=date][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=time][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=datetime][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=datetime-local][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=month][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=week][ng-model][ng-bind-type]')
+@Decorator(
+    selector: 'input[type=week][ng-model][ng-bind-type],'
+              'input[type=date][ng-model][ng-bind-type],'
+              'input[type=time][ng-model][ng-bind-type],'
+              'input[type=datetime][ng-model][ng-bind-type],'
+              'input[type=datetime-local][ng-model][ng-bind-type],'
+              'input[type=month][ng-model][ng-bind-type]',
+    bind: const {
+      'ngBindType': 'idlAttrKind'
+    }
+)
 class NgBindTypeForDateLike {
   static const DATE = 'date';
   static const NUMBER = 'number';
@@ -480,7 +440,6 @@ class NgBindTypeForDateLike {
 
   NgBindTypeForDateLike(dom.Element this.inputElement);
 
-  @NgAttr('ng-bind-type')
   void set idlAttrKind(final String _kind) {
     String kind = _kind == null ? DEFAULT : _kind.toLowerCase();
     if (!VALID_VALUES.contains(kind))
@@ -578,17 +537,13 @@ class NgBindTypeForDateLike {
  *   dropped.
  */
 
-@Decorator(selector: 'input[type=date][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=time][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=datetime][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=datetime-local][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=month][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=week][ng-model]',
+@Decorator(
+    selector: 'input[type=date][ng-model],'
+              'input[type=time][ng-model],'
+              'input[type=datetime][ng-model],'
+              'input[type=datetime-local][ng-model],'
+              'input[type=month][ng-model],'
+              'input[type=week][ng-model]',
     module: InputDateLike.moduleFactory)
 class InputDateLike {
   static Module moduleFactory() => new Module()..bind(NgBindTypeForDateLike,
@@ -625,7 +580,6 @@ class InputDateLike {
 
   void processValue() {
     var value = typedValue;
-    // print("processValue: value=$value, model=${ngModel.viewValue}");
     if (!eqOrNaN(value, ngModel.viewValue)) {
       scope.eval(() => ngModel.viewValue = value);
     }
@@ -678,8 +632,13 @@ final _uidCounter = new _UidCounter();
  * selected. Note that `expr` can be not any type; i.e., it is not restricted
  * to [String].
  */
-@Decorator(selector: 'input[type=radio][ng-model][ng-value]')
-@Decorator(selector: 'option[ng-value]')
+@Decorator(
+    selector: 'option[value],'
+              'input[type=radio][ng-model][ng-value]',
+    bind: const {
+        'ngValue': 'value'
+    }
+)
 class NgValue {
   static Module _module = new Module()..bind(NgValue);
   static Module moduleFactory() => _module;
@@ -689,7 +648,6 @@ class NgValue {
 
   NgValue(this.element);
 
-  @NgOneWay('ng-value')
   void set value(val) {
     this._value = val;
   }
@@ -707,15 +665,18 @@ class NgValue {
  * the model when the input is checked. Note that the expression can be of any
  * type, not just [String]. Also see [InputCheckboxDirective], [NgFalseValue].
  */
-@Decorator(selector: 'input[type=checkbox][ng-model][ng-true-value]')
+@Decorator(
+    selector: 'input[type=checkbox][ng-model][ng-true-value]',
+    bind: const {'ngTrueValue': 'value'}
+)
 class NgTrueValue {
   final dom.Element element;
-  @NgOneWay('ng-true-value')
-  var value = true;
+  var _value = true;
+  set value(v) { _value = v; }
 
   NgTrueValue([this.element]);
 
-  bool isValue(val) => element == null ? toBool(val) : val == value;
+  bool isValue(val) => element == null ? toBool(val) : val == _value;
 }
 
 /**
@@ -729,10 +690,12 @@ class NgTrueValue {
  * the model when the input is unchecked. Note that the expression can be of any
  * type, not just [String]. Also see [InputCheckboxDirective], [NgTrueValue].
  */
-@Decorator(selector: 'input[type=checkbox][ng-model][ng-false-value]')
+@Decorator(
+    selector: 'input[type=checkbox][ng-model][ng-false-value]',
+    bind: const {'ngFalseValue': 'value'}
+)
 class NgFalseValue {
   final dom.Element element;
-  @NgOneWay('ng-false-value')
   var value = false;
 
   NgFalseValue([this.element]);
@@ -764,9 +727,10 @@ class InputRadio {
   final Scope scope;
 
   InputRadio(dom.Element this.radioButtonElement, this.ngModel,
-             this.scope, this.ngValue, NodeAttrs attrs) {
+             this.scope, this.ngValue) {
     // If there's no "name" set, we'll set a unique name.  This ensures
     // less surprising behavior about which radio buttons are grouped together.
+    var attrs = radioButtonElement.attributes;
     if (attrs['name'] == '' || attrs['name'] == null) {
       attrs["name"] = _uidCounter.next();
     }

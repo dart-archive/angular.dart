@@ -67,16 +67,18 @@ main() {
 
     it('should create child cursor upon replace of top level', () {
       var parentCursor = new NodeCursor([a]);
-      var childCursor = parentCursor.replaceWithAnchor('child');
+      var childCursor = parentCursor.replaceWithAnchor({'key': 'value'});
 
       expect(parentCursor.elements.length, equals(1));
-      expect(STRINGIFY(parentCursor.elements[0]), equals('<!--ANCHOR: child-->'));
+      expect(STRINGIFY(parentCursor.elements[0]),
+          equals('<template class="ng-binding" key="value"></template>'));
       expect(childCursor.elements, equals([a]));
 
-      var leafCursor = childCursor.replaceWithAnchor('leaf');
+      var leafCursor = childCursor.replaceWithAnchor({'leaf': 'true'});
 
       expect(childCursor.elements.length, equals(1));
-      expect(STRINGIFY(childCursor.elements[0]), equals('<!--ANCHOR: leaf-->'));
+      expect(STRINGIFY(childCursor.elements[0]),
+          equals('<template class="ng-binding" leaf="true"></template>'));
       expect(leafCursor.elements, equals([a]));
     });
 
@@ -86,8 +88,9 @@ main() {
       var parentCursor = new NodeCursor(dom);
       parentCursor.descend(); // <span>
 
-      var childCursor = parentCursor.replaceWithAnchor('child');
-      expect(STRINGIFY(dom), equals('[<div><!--ANCHOR: child--></div>]'));
+      var childCursor = parentCursor.replaceWithAnchor({'key': 'value'});
+      expect(STRINGIFY(dom),
+          equals('[<div><template class="ng-binding" key="value"></template></div>]'));
 
       expect(STRINGIFY(childCursor.elements.first), equals('<span>text</span>'));
     });
@@ -96,8 +99,9 @@ main() {
       var dom = es('<span>text</span>MoreText<div>other</div>');
       var parentCursor = new NodeCursor(dom);
 
-      var childCursor = parentCursor.replaceWithAnchor('child');
-      expect(STRINGIFY(dom), equals('[<!--ANCHOR: child-->, MoreText, <div>other</div>]'));
+      var childCursor = parentCursor.replaceWithAnchor({});
+      expect(STRINGIFY(dom),
+          equals('[<template class="ng-binding"></template>, MoreText, <div>other</div>]'));
 
       expect(STRINGIFY(childCursor.elements.first), equals('<span>text</span>'));
     });

@@ -34,9 +34,7 @@ part 'a_href.dart';
 part 'ng_base_css.dart';
 part 'ng_bind.dart';
 part 'ng_bind_html.dart';
-part 'ng_bind_template.dart';
 part 'ng_class.dart';
-part 'ng_events.dart';
 part 'ng_cloak.dart';
 part 'ng_if.dart';
 part 'ng_include.dart';
@@ -46,7 +44,6 @@ part 'ng_pluralize.dart';
 part 'ng_repeat.dart';
 part 'ng_template.dart';
 part 'ng_show_hide.dart';
-part 'ng_src_boolean.dart';
 part 'ng_style.dart';
 part 'ng_switch.dart';
 part 'ng_non_bindable.dart';
@@ -60,7 +57,6 @@ class DecoratorFormatter extends Module {
     bind(AHref, toValue: null);
     bind(NgBaseCss);  // The root injector should have an empty NgBaseCss
     bind(NgBind, toValue: null);
-    bind(NgBindTemplate, toValue: null);
     bind(NgBindHtml, toValue: null);
     bind(dom.NodeValidator, toFactory: (_) => new dom.NodeValidatorBuilder.common());
     bind(NgClass, toValue: null);
@@ -92,11 +88,6 @@ class DecoratorFormatter extends Module {
     bind(NgSwitchWhen, toValue: null);
     bind(NgSwitchDefault, toValue: null);
 
-    bind(NgBooleanAttribute, toValue: null);
-    bind(NgSource, toValue: null);
-    bind(NgAttribute, toValue: null);
-
-    bind(NgEvent, toValue: null);
     bind(NgStyle, toValue: null);
     bind(NgNonBindable, toValue: null);
     bind(NgTemplate, toValue: null);

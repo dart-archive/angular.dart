@@ -1,18 +1,31 @@
 library angular.core_dom.node_property_binder;
 
-import 'package:angular/change_detection/watch_group.dart' show Watch;
-import 'package:angular/core/parser/parser.dart' show Parser, Setter, Getter;
-import 'package:angular/core/parser/syntax.dart' show Expression;
+import 'package:angular/change_detection/watch_group.dart' show
+    Watch;
+
+import 'package:angular/core/parser/parser.dart' show
+    Parser, Setter, Getter;
+
+import 'package:angular/core/parser/syntax.dart' show
+    Expression;
+
 import 'package:angular/core/module_internal.dart' show
     Scope, RootScope, ScopeEvent, FormatterMap, ExceptionHandler, ReactionFn;
-import 'package:angular/core_dom/module_internal.dart' show EventHandler;
-import 'package:angular/core/annotation.dart' show Directive, AttachAware, DetachAware;
+
+import 'package:angular/core_dom/module_internal.dart' show
+    EventHandler, ViewFactory, AutoSelectComponentFactory, NG_BINDING, NgElement;
+
+import 'package:angular/core/annotation.dart' show
+    Directive, Component, AttachAware, DetachAware;
+
+import 'package:angular/change_detection/change_detection.dart' show
+    CollectionChangeRecord, MapChangeRecord;
 
 import 'package:di/di.dart';
 import 'dart:html' show Node, Element;
 
 bool same(a, b) =>
-    identical(a, b) ||
+    (a is! CollectionChangeRecord && a is! MapChangeRecord && identical(a, b)) ||
     (a is String && b is String && a == b) ||
     (a is num && a.isNaN && b is num && b.isNaN);
 
@@ -26,8 +39,8 @@ bool _understandsGetter(Object obj, String property, Getter getter) {
     try {
       getter(obj);
       understands = true;
-    } on NoSuchMethodError catch (e) {
-      understands = false;
+    } catch (e) {
+      understands = !(e is NoSuchMethodError);
     }
     propertyMap[property] = understands;
   }
@@ -42,6 +55,7 @@ class Case {
 
   Case() {
     preset('readonly', 'readOnly');
+    preset('class', 'className');
   }
 
   void preset(String dash, String camel) {
@@ -65,15 +79,12 @@ class Case {
 class NodeBinderBuilder {
   static final Case _case = new Case();
   static final RegExp _CHILD = new RegExp(r'^(\d+)-(text)$'); // support text only
-  final Parser parser;
+  static final RegExp _PREFIX = new RegExp(r'^:?:?'); // support text only
+  final Parser _parser;
   final ExceptionHandler exceptionHandler;
-  final _dashCaseMap = {
-  };
-  final _camelCaseMap = {
-    'readonly': 'readOnly'
-  };
+  final AutoSelectComponentFactory componentFactory;
 
-  NodeBinderBuilder(this.parser, this.exceptionHandler);
+  NodeBinderBuilder(this._parser, this.exceptionHandler, this.componentFactory);
 
   /**
    * Compile a list of binders from a template prototype.
@@ -85,24 +96,26 @@ class NodeBinderBuilder {
    *   bindings between the directive and node.
    */
   NodeBinder build(
-      Element templateNode,
+      Element templateElement,
       List<String> nodeChangeEvents,
       Map<String, String> attributes,
       Map<String, String> bindings,
-      Map<String, String> onEvents,
+      List<String> onEvents,
       Map<Type, Directive> directives)
   {
     var nodePropertyBinders = <String, NodePropertyBinder>{};
-    var nakedNodePropertyBinder = new NodePropertyBinder();
     var childNodePropertyBinders = [];
     var directiveTypes = <Type>[];
     var childNodes;
+    var module = new Module();
+    var isTerminal = false;
+    Type templateType = null;
     bindings.forEach((String propertyName, String propertyBindExp) {
       var match = _CHILD.firstMatch(propertyName);
       if (match != null) {
         var childIndex = int.parse(match.group(1));
         propertyName = _case.camel(match.group(2));
-        if (childNodes == null) childNodes = templateNode.childNodes;
+        if (childNodes == null) childNodes = templateElement.childNodes;
         if (childIndex < childNodes.length) {
           childNodePropertyBinders.length = childIndex + 1; // make sure that we have right length
           childNodePropertyBinders[childIndex] = _createNodePropertyBinder(
@@ -111,43 +124,103 @@ class NodeBinderBuilder {
       } else {
         propertyName = _case.camel(propertyName);
         nodePropertyBinders[propertyName] =
-            _createNodePropertyBinder(templateNode, attributes, propertyName, propertyBindExp);
+            _createNodePropertyBinder(templateElement, attributes, propertyName, propertyBindExp);
       }
     });
     directives.forEach((Type directiveType, Directive annotation) {
-      var directiveIndex = directiveTypes.length;
-      directiveTypes.add(directiveType);
-      var directivePropertyBinders = <String, DirectivePropertyBinder>{};
-      _forEach(annotation.bind, (String nodeProp, String directiveExp) {
-        var nodePropertyBinder = nodePropertyBinders.putIfAbsent(nodeProp, () {
-          return _createNodePropertyBinder(templateNode, attributes, nodeProp);
-        });
-        var cDirExp = parser(directiveExp);
-        var directivePropertyBinder = new DirectivePropertyBinder(
-            directiveIndex, directiveExp, annotation.canChangeModel,
-            getter(cDirExp), setter(cDirExp));
-        directivePropertyBinders[directiveExp] = directivePropertyBinder;
-        nodePropertyBinder.addDirectivePropertyBinder(directivePropertyBinder);
-      });
-      _forEach(annotation.observe, (String watchExp, String reactionFnExp) {
-        var directivePropBinder = directivePropertyBinders.putIfAbsent(watchExp, () {
-          // This means that this watcher does not have corresponding node property binding
-          var nakedDirectivePropBinder = new DirectivePropertyBinder(
-              directiveIndex, watchExp, annotation.canChangeModel);
-          nakedNodePropertyBinder.addDirectivePropertyBinder(nakedDirectivePropBinder);
-          return nakedDirectivePropBinder;
-        });
-        var cReactionFnExp = parser(reactionFnExp);
-        directivePropBinder.reactionFnGetter = getter(cReactionFnExp);
-      });
+      if (_isTransclusionDirective(annotation)) {
+        // process transclusion directives separate.
+        templateType = directiveType;
+      } else {
+        if (annotation.children == Directive.IGNORE_CHILDREN) isTerminal = true;
+        _processDirectiveBindings(directiveType, annotation, module, attributes, directiveTypes,
+            nodePropertyBinders, templateElement);
+      }
     });
-    if (nakedNodePropertyBinder.directivePropertyBinders.isNotEmpty) {
-      nodePropertyBinders[''] = nakedNodePropertyBinder;
+    var templatePropertyBinders = null;
+    var templateDirectiveTypes;
+    var templateModule;
+    if (templateType != null) {
+      // remove the transclusion bindings
+      templatePropertyBinders = <String, NodePropertyBinder>{};
+      templateDirectiveTypes = <Type>[];
+      templateModule = new Module();
+      Directive annotation = directives[templateType];
+      _forEach(annotation.bind, (String property, String directiveExp) {
+        NodePropertyBinder binder = nodePropertyBinders.remove(property);
+        if (binder != null) {
+          if (binder.directivePropertyBinders.isNotEmpty) {
+            throw "Property '$property' can not be bound to both Template and non-Template directive.";
+          }
+          templatePropertyBinders[property] = binder;
+        }
+      });
+      _processDirectiveBindings(templateType, annotation, templateModule, attributes,
+          templateDirectiveTypes, templatePropertyBinders, templateElement);
     }
-    return new NodeBinder(nodeChangeEvents, onEvents.keys.toList(),
-                          nodePropertyBinders.values.toList(),
-                          childNodePropertyBinders, directiveTypes);
+
+    var nodeBinder = new NodeBinder(
+        templateElement,
+        nodeChangeEvents,
+        onEvents.map((n) => _case.camel(n)).toList(),
+        nodePropertyBinders.values.toList(),
+        childNodePropertyBinders,
+        directiveTypes,
+        module,
+        isTerminal);
+
+    if (templateType != null) {
+      nodeBinder = new NodeBinder(templateElement, [], [],
+          templatePropertyBinders.values.toList(), [], templateDirectiveTypes,
+          templateModule, true, nodeBinder);
+    }
+
+    return nodeBinder;
   }
+
+  _processDirectiveBindings(Type directiveType, Directive annotation, Module module,
+                            Map<String, String> attributes, List<Type> directiveTypes,
+                            Map<String, NodePropertyBinder> nodePropertyBinders, templateElement) {
+    if (annotation.module != null) module.install(annotation.module());
+    if (annotation is Component) {
+      module.bind(directiveType,
+                  toFactory: componentFactory(directiveType, annotation),
+                  visibility: annotation.visibility);
+    } else {
+      module.bind(directiveType, visibility: annotation.visibility);
+    }
+    var directiveIndex = directiveTypes.length;
+    directiveTypes.add(directiveType);
+    var directivePropertyBinders = <String, DirectivePropertyBinder>{
+    };
+    _forEach(annotation.bind, (String nodeProp, String directiveExp) {
+      var nodePropertyBinder = nodePropertyBinders.putIfAbsent(nodeProp, () {
+        return _createNodePropertyBinder(templateElement, attributes, nodeProp);
+      });
+      var cDirExp = _parse(directiveExp);
+      var directivePropertyBinder = new DirectivePropertyBinder(
+          directiveIndex, directiveExp, annotation.canChangeModel,
+          cDirExp.eval, getter(cDirExp), setter(cDirExp));
+      directivePropertyBinders[directiveExp] = directivePropertyBinder;
+      nodePropertyBinder.addDirectivePropertyBinder(directivePropertyBinder);
+    });
+    _forEach(annotation.observe, (String watchExp, String reactionFnExp) {
+      var directivePropBinder = directivePropertyBinders.putIfAbsent(watchExp, () {
+        // This means that this watcher does not have corresponding node property binding
+        var nakedDirectivePropBinder = new DirectivePropertyBinder(
+            directiveIndex, watchExp, annotation.canChangeModel);
+        return nodePropertyBinders
+            .putIfAbsent('', () => new NodePropertyBinder())
+            ..addDirectivePropertyBinder(nakedDirectivePropBinder);
+      });
+      directivePropBinder.isCollection = reactionFnExp.startsWith('*');
+      if (directivePropBinder.isCollection) reactionFnExp = reactionFnExp.substring(1);
+      var cReactionFnExp = _parse(reactionFnExp);
+      directivePropBinder.reactionFnGetter = getter(cReactionFnExp);
+    });
+  }
+
+
 
   /// Extract getter from [Expression] and wrap it in try-catch block.
   Getter getter(Expression expression) {
@@ -168,7 +241,9 @@ class NodeBinderBuilder {
     var nakedSetter = expression.assign;
     return (obj, value) {
       try {
-        return nakedSetter(obj, value);
+        if (value is CollectionChangeRecord) value = value.iterable;
+        if (value is MapChangeRecord) value = value.map;
+        nakedSetter(obj, value);
       } catch (e, s) {
         exceptionHandler(e, s);
       }
@@ -187,40 +262,103 @@ class NodeBinderBuilder {
       String propertyName,
       [String propertyBindExp])
   {
-    var propertyExp = parser(propertyName);
+    assert(!propertyName.contains('-'));
+    var propertyExp = _parse(propertyName);
     var nodePropertyGetter;
     var nodePropertySetter;
+    bool isNaked = false;
+    String attributeValue;
     if (_understandsGetter(templateElement, propertyName, propertyExp.eval)) {
+      attributeValue = propertyName;
       nodePropertyGetter = getter(propertyExp);
       nodePropertySetter = setter(propertyExp);
     } else if (templateElement is Element) {
-      var emulatedValue = attributes[_case.dash(propertyName)];
+      var attrName = _case.dash(propertyName);
+      if (!attributes.containsKey(attrName) && propertyBindExp == null) isNaked = true;
+      var emulatedValue = propertyBindExp == null ? attributeValue = attributes[attrName] : null;
       nodePropertyGetter = (_) => emulatedValue;
       nodePropertySetter = (_, value) => emulatedValue = value;
     }
     return new NodePropertyBinder(
-        propertyName, nodePropertyGetter, nodePropertySetter, propertyBindExp,
-        propertyBindExp == null ? null : setter(parser(propertyBindExp)));
+        propertyName, isNaked, attributeValue,
+        nodePropertyGetter, nodePropertySetter, propertyBindExp,
+        propertyBindExp == null ? null : setter(_parse(propertyBindExp)));
   }
 
+  _isTransclusionDirective(Directive annotation) =>
+      annotation.children == Directive.TRANSCLUDE_CHILDREN;
+
+  _parse(String exp) => _parser(exp.replaceAll(_PREFIX, ''));
 }
 
 class NodeBinder {
+  final Element templateElement;
   final List<String> events;
   final List<String> onEvents;
   final List<NodePropertyBinder> nodePropertyBinders;
   final List<NodePropertyBinder> childNodePropertyBinders;
   final List<Type> directiveTypes;
+  final Module module;
+  final NodeBinder transcludeBinder;
+  final bool isTerminal;
+
+  int parentBinderOffset = -1;
+  ViewFactory viewFactory;
+  bool isEmpty;
 
   NodeBinder(
+      this.templateElement,
       this.events,
       this.onEvents,
       this.nodePropertyBinders,
       this.childNodePropertyBinders,
-      this.directiveTypes);
+      this.directiveTypes,
+      this.module,
+      this.isTerminal,
+      [this.transcludeBinder]) {
+
+    isEmpty =
+        onEvents.isEmpty &&
+        nodePropertyBinders.isEmpty &&
+        childNodePropertyBinders.isEmpty &&
+        directiveTypes.isEmpty;
+
+    if (!isEmpty && transcludeBinder == null) {
+      templateElement.classes.add(NG_BINDING);
+    }
+  }
+
+  NodeBinder.root()
+    : templateElement = null,
+      transcludeBinder = null,
+      events = const [],
+      onEvents = const [],
+      nodePropertyBinders = const [],
+      childNodePropertyBinders = <NodePropertyBinder>[],
+      directiveTypes = const [],
+      isTerminal = false,
+      module = new Module()
+  {
+    isEmpty = false;
+  }
+
+  get isNotEmpty => !isEmpty;
+
+  addChildTextInterpolation(int index, String interpolation) {
+    if (templateElement != null) {
+      templateElement.attributes['bind-$index-text'] = interpolation;
+      if (isEmpty) templateElement.classes.add(NG_BINDING);
+    }
+    isEmpty = false;
+    if (childNodePropertyBinders.length <= index) {
+      childNodePropertyBinders.length = index + 1;
+    }
+    childNodePropertyBinders[index] = new NodePropertyBinder(
+        'text', false, '', (n) => n.text, (n, v) => n.text = v, interpolation);
+  }
 
   NodeBindings bind(Injector injector, Scope scope, FormatterMap formatters,
-                    EventHandler eventHandler, Node node) {
+                    EventHandler eventHandler, NgElement element) {
     var directives = [];
     for(Type type in directiveTypes) {
       var directive = injector.get(type);
@@ -230,22 +368,41 @@ class NodeBinder {
     }
     var nodePropertyBindings = [];
     for(NodePropertyBinder binder in nodePropertyBinders) {
-      nodePropertyBindings.add(binder.bind(scope, formatters, node, directives));
+      nodePropertyBindings.add(binder.bind(scope, formatters, element.node, element, directives));
     }
-    for(var i = 0, childNodes = node.childNodes; i < childNodePropertyBinders.length; i++) {
+    for(var i = 0, childNodes = element.node.childNodes; i < childNodePropertyBinders.length; i++) {
       var binder = childNodePropertyBinders[i];
       if (binder != null) {
-        binder.bind(scope, formatters, childNodes[i], null);
+        binder.bind(scope, formatters, childNodes[i], null, null);
       }
     }
-    var nodeBindings = new NodeBindings(nodePropertyBindings);
+    var nodeBindings = new NodeBindings(nodePropertyBindings, directives);
     for(String onEvent in onEvents) {
       eventHandler.register(onEvent);
     }
     // TODO(misko): use EventHandler for this;
-    events.forEach((e) => node.addEventListener(e, (e) => nodeBindings.check(true)));
+    //events.forEach((e) => element.node.addEventListener(e, (e) => nodeBindings.check(true)));
     return nodeBindings;
   }
+
+  Map<String, String> get anchorAttrs {
+    assert(directiveTypes.length == 1);
+    var attrs = {'type': 'ng/ViewPort/${directiveTypes.first}'};
+    nodePropertyBinders.forEach((NodePropertyBinder binder) {
+      if (binder.bindExp == null) {
+        attrs[binder.property] = binder.attributeValue;
+      } else {
+        attrs['bind-${binder.property}'] = binder.bindExp;
+      }
+    });
+    return attrs;
+  }
+
+  toString() => 'NodeBinder' + _props({
+      'parentBinderOffset': parentBinderOffset,
+      'bind': nodePropertyBinders,
+      'Type': directiveTypes,
+      'child': childNodePropertyBinders});
 }
 
 /**
@@ -253,8 +410,9 @@ class NodeBinder {
  */
 class NodeBindings {
   final List<NodePropertyBinding> nodePropertyBindings;
+  final List directives;
 
-  NodeBindings(this.nodePropertyBindings);
+  NodeBindings(this.nodePropertyBindings, this.directives);
 
   /// Dirty check the Node for changes in properties.
   check(bool fromEvent) {
@@ -269,14 +427,20 @@ class NodeBindings {
  */
 class NodePropertyBinder {
   final String property;
+  final bool isNaked;
+  final String attributeValue;
   final String bindExp;
   final Setter bindExpSetter;
   final Getter getter;
   final Setter setter;
   final List<DirectivePropertyBinder> directivePropertyBinders = <DirectivePropertyBinder>[];
   bool canChangeModel = false;
+  bool get isCollection => directivePropertyBinders.where((b) => b.isCollection).isNotEmpty;
 
-  NodePropertyBinder([this.property, this.getter, this.setter, this.bindExp, this.bindExpSetter]);
+  NodePropertyBinder([this.property, bool isNaked, this.attributeValue,
+                      this.getter, this.setter,
+                      this.bindExp, this.bindExpSetter])
+      : isNaked = isNaked == null ? true : isNaked;
 
   addDirectivePropertyBinder(DirectivePropertyBinder propertyBinder) {
     canChangeModel = canChangeModel || propertyBinder.canChangeModel;
@@ -284,9 +448,8 @@ class NodePropertyBinder {
   }
 
   /// Construct an instance node binding from the prototype.
-  NodePropertyBinding bind(Scope scope, FormatterMap formatters, Node node, List directives) {
-    var binding = new NodePropertyBinding(
-        scope, formatters, node, property, getter, setter, bindExp, bindExpSetter, canChangeModel);
+  NodePropertyBinding bind(Scope scope, FormatterMap formatters, Node node, NgElement element, List directives) {
+    var binding = new NodePropertyBinding(scope, formatters, node, element, this);
     for(DirectivePropertyBinder directivePropertyBinder in directivePropertyBinders) {
       var directive = directives[directivePropertyBinder.index];
       binding.directiveBindings.add(directivePropertyBinder.bind(binding, scope, directive));
@@ -294,29 +457,51 @@ class NodePropertyBinder {
     binding.check(false);
     return binding;
   }
+
+
+  toString() => 'NodePropretyBinder' + _props({
+      'property': property,
+      'bindExp': bindExp,
+      'dir': directivePropertyBinders});
+
 }
 
 /**
  * Represents a prototype of a directive binding. (A way to build binding).
  */
 class DirectivePropertyBinder {
+  static final _PROP_NAME_ONLY = new RegExp(r'^[_\w][_\w\d]*$');
   /// Directive index in the list of directives for fast lookup.
   final int index;
   final Getter getter;
+  final Getter nakedGetter;
   final Setter setter;
   final String watchExp;
   final bool canChangeModel;
   Getter reactionFnGetter;
+  bool isCollection = false;
+  bool canRead = null;
 
   DirectivePropertyBinder(this.index, this.watchExp, this.canChangeModel,
-                          [this.getter, this.setter]);
+                          [this.nakedGetter, this.getter, this.setter]) {
+    if (watchExp == null) {
+      canRead = false;
+    } else if (!_PROP_NAME_ONLY.hasMatch(watchExp)) {
+      canRead = true;
+    }
+  }
 
   /// Construct an instance directive binding from the prototype.
   DirectivePropertyBinding bind(NodePropertyBinding nodeBinding, Scope scope, Object directive) {
-    return new DirectivePropertyBinding(
-        scope, nodeBinding, directive, canChangeModel, getter, setter, watchExp,
-        reactionFnGetter == null ? null : reactionFnGetter(directive));
+    if (canRead == null) {
+      canRead = _understandsGetter(directive, watchExp, nakedGetter);
+    }
+    return new DirectivePropertyBinding(this, scope, nodeBinding, directive);
   }
+
+  toString() => 'DirectivePropertyBinder' + _props({
+      'exp': watchExp,
+      'reaction': reactionFnGetter});
 }
 
 /**
@@ -325,55 +510,72 @@ class DirectivePropertyBinder {
 class NodePropertyBinding implements FlushAware {
   final Scope scope;
   final Node node;
-  final String property;
-  final Getter getter;
-  final Setter setter;
-  final Setter bindSetter;
+  final NgElement element;
+  final NodePropertyBinder binder;
   final List<DirectivePropertyBinding> directiveBindings = <DirectivePropertyBinding>[];
-  final bool canChangeModel;
   Watch _watch;
-  var _lastValue;
   FlushQueue _nodePropertyWriteflushQueue;
+  var _newValue, _lastValue, _currentValue;
 
   NodePropertyBinding(Scope this.scope,
                       FormatterMap formatters,
                       this.node,
-                      this.property,
-                      this.getter,
-                      this.setter,
-                      String bindExp,
-                      this.bindSetter,
-                      this.canChangeModel)
+                      this.element,
+                      this.binder)
   {
+    var canChangeModel = binder.canChangeModel;
+    _currentValue = this;
     _nodePropertyWriteflushQueue = new FlushQueue(this, scope.rootScope, !canChangeModel);
+    var bindExp = binder.bindExp;
     if (bindExp != null && bindExp.isNotEmpty) {
-      _watch = scope.watch(bindExp, (v, _) => setValue(v),
-      formatters: formatters, canChangeModel: canChangeModel);
+      _watch = scope.watch(bindExp, setValue, formatters: formatters,
+          canChangeModel: canChangeModel, collection: binder.isCollection);
     }
   }
 
   /// Manually check to see if the Node instance property has changed. Usually invoked as a result
   /// of DOM event.
-  check(bool doToEvent) {
-    if (!doToEvent && _watch != null) return;
-    setValue(getter(node));
+  check(bool fromDomEvent) {
+    if (fromDomEvent || _watch == null && !binder.isNaked) {
+      var value = binder.getter(node);
+      if (same(_currentValue, value)) return;
+      setValue(value, _currentValue);
+      if(binder.bindExpSetter != null) binder.bindExpSetter(scope.context, value);
+    }
   }
 
   /// Notify binding of change, (either from the [check] method or from [DirectivePropertyBinding]).
-  setValue(value) {
-    if (same(value, _lastValue)) return;
-    _lastValue = value;
-    if (setter != null) {
+  setValue(value, lastValue, [DirectivePropertyBinding source]) {
+    if (same(value, _currentValue)) return;
+    _newValue = value;
+    _lastValue = lastValue;
+    if (binder.setter != null) {
       _nodePropertyWriteflushQueue.schedule();
     }
-    if(bindSetter != null) bindSetter(scope.context, value);
+    if(source !=null && binder.bindExpSetter != null) binder.bindExpSetter(scope.context, value);
     for(DirectivePropertyBinding directiveBinding in directiveBindings) {
-      directiveBinding.setValue(value);
+      if (source != directiveBinding) {
+        directiveBinding.setValue(value, lastValue);
+      }
     }
   }
 
   flush() {
-    setter(node, _lastValue);
+    _currentValue = _newValue;
+    if (binder.property == 'className') {
+      _toSet(_lastValue).forEach(element.removeClass);
+      _toSet(_newValue).forEach(element.addClass);
+    } else {
+      binder.setter(node, _newValue);
+    }
+  }
+
+  Set<String> _toSet(String list) {
+    var set = new Set();
+    if (list is String) {
+      set.addAll(list.split(' '));
+    }
+    return set;
   }
 }
 
@@ -381,22 +583,12 @@ class NodePropertyBinding implements FlushAware {
  * Represents a binding between the directive instance and node instance.
  */
 class DirectivePropertyBinding implements FlushAware {
+  final DirectivePropertyBinder binder;
+
   /// Associated NodePropertyBinding
   final NodePropertyBinding nodeBinding;
   /// Directive instance
   final Object directive;
-  /// If true then run part of digest if false run part of flush and dissable reverse binding
-  bool canChangeModel;
-
-  /**
-   * Directive instance getter function representing the `directiveExpression`
-   *
-   *     @Directive({ bind: const {'nodeProperty': 'directiveExpression'}})
-   */
-  final Getter getter;
-
-  /// Directive instance setter function. See [getter].
-  final Setter setter;
 
   /**
    * Directives `directiveReactionMethod` which needs to be called when `directiveExpression`
@@ -405,59 +597,60 @@ class DirectivePropertyBinding implements FlushAware {
    *     @Directive({ observe: const {'directiveExpression': 'directiveReactionMethod'}})
    */
   final ReactionFn reactionFn;
-  final String watchExp;
   /// The [Watch] if the directive needs to be observed. This is either from [Directive.bind]
   /// or [Directive.observe] annotation.
   Watch _watch;
 
-  /// Last value from the watch. Needed to stop circular updates.
-  var _lastValue;
-  var _newValue;
-  var _suppressAssignment = false;
+  var _skipInitialWatchChange = true;
+  var _newValue, _lastValue, _currentValue;
 
   FlushQueue _flushQueue;
 
-
   DirectivePropertyBinding(
+      DirectivePropertyBinder binder,
       Scope scope,
       this.nodeBinding,
-      this.directive,
-      this.canChangeModel,
-      this.getter,
-      this.setter,
-      this.watchExp,
-      this.reactionFn)
+      dynamic directive)
+    : binder = binder,
+      directive = directive,
+      reactionFn = binder.reactionFnGetter == null ? null : binder.reactionFnGetter(directive)
   {
-    var immediate = nodeBinding.canChangeModel == canChangeModel;
+    _currentValue = _newValue = this;
+    var immediate = nodeBinding.binder.canChangeModel == binder.canChangeModel;
+    if (nodeBinding.binder.isNaked) {
+      _skipInitialWatchChange = false;
+    }
     _flushQueue = new FlushQueue(this, scope.rootScope, immediate);
-    if (watchExp != null && watchExp.isNotEmpty && canChangeModel) {
-      scope.watch(watchExp, (_, __) => check(), context: directive);
+    if (binder.watchExp != null && binder.canRead &&
+        binder.watchExp.isNotEmpty && binder.canChangeModel) {
+      scope.watch(binder.watchExp, onPropertyChange, context: directive,
+          collection: binder.isCollection);
     }
   }
 
   /// called by [Scope.watch]
-  check() {
-    try {
-      _suppressAssignment = true;
-      nodeBinding.setValue(getter(directive));
-    } finally {
-      _suppressAssignment = false;
+  onPropertyChange(value, lastValue) {
+    if(_skipInitialWatchChange) {
+      _skipInitialWatchChange = false;
+      // skip the first check if the node property is naked.
+      return;
     }
+    nodeBinding.setValue(value, lastValue, this);
+    if (reactionFn != null && !same(_currentValue, value)) reactionFn(_currentValue = value, lastValue);
   }
 
   /// Notify binding of a change to value. This change could come from [Watch] or from
   /// [NodePropertyBinding]
-  setValue(value) {
+  setValue(value, lastValue) {
     _newValue = value;
+    _lastValue = lastValue;
     _flushQueue.schedule();
   }
 
   flush() {
-    var value = _newValue;
-    var lastValue = _lastValue;
-    _lastValue = _newValue;
-    if (!_suppressAssignment && setter != null) setter(directive, value);
-    if (reactionFn != null) reactionFn(value, lastValue);
+    if (same(_currentValue, _newValue)) return;
+    if (binder.setter != null) binder.setter(directive, _currentValue = _newValue);
+    if (reactionFn != null) reactionFn(_newValue, _lastValue);
   }
 }
 
@@ -487,3 +680,7 @@ class FlushQueue {
     }
   }
 }
+
+_props(Map<String, dynamic> map) =>
+    '{' + map.keys.map((k) => _prop(k, map[k])).where((t) => t.isNotEmpty).join(', ') + '}';
+_prop(name, value) => value == null || (value is List && value.isEmpty) ? '' : '$name=$value';

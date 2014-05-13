@@ -13,8 +13,9 @@ void addTest(String name, [String eventType='MouseEvent', String eventName, excl
 
     beforeEach((TestBed tb) => _ = tb);
 
-    it('should evaluate the expression on $name', () {
-      _.compile('<button ng-$name="abc = true; event = \$event"></button>');
+    it('should evaluate the expression on $name', (Element ngApp) {
+      _.compile('<button on-$name="abc = true; event = \$event"></button>');
+      ngApp.append(_.rootElement);
       _.triggerEvent(_.rootElement, eventName, eventType);
       expect(_.rootScope.context['abc']).toEqual(true);
       expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
@@ -45,7 +46,7 @@ main() {
     addTest('copy');
     addTest('cut');
     // The event name differs from the ng- directive name.
-    addTest('doubleclick', 'MouseEvent', 'dblclick');
+    addTest('doubleclick', 'MouseEvent', 'doubleclick');
     addTest('drag');
     addTest('dragend');
     addTest('dragenter');
@@ -53,7 +54,6 @@ main() {
     addTest('dragover');
     addTest('dragstart');
     addTest('drop');
-    addTest('error');
     addTest('focus');
     //addTest('fullscreenchange');
     //addTest('fullscreenerror');

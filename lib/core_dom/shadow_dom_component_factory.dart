@@ -1,7 +1,7 @@
 part of angular.core.dom_internal;
 
 abstract class ComponentFactory {
-  FactoryFn call(dom.Node node, DirectiveRef ref);
+  FactoryFn call(Type type, Component annotation);
 
   static async.Future<ViewFactory> _viewFuture(
         Component component, ViewCache viewCache, DirectiveMap directives) {
@@ -24,17 +24,35 @@ abstract class ComponentFactory {
   }
 }
 
+class AutoSelectComponentFactory extends ComponentFactory {
+  ShadowDomComponentFactory shadowComponentFactory;
+  TranscludingComponentFactory transcludingComponentFactory;
+  ComponentFactory defaultComponentFactory;
+
+  AutoSelectComponentFactory(this.defaultComponentFactory,
+                             this.shadowComponentFactory,
+                             this.transcludingComponentFactory);
+
+  FactoryFn call(Type type, Component annotation) {
+    ComponentFactory factory;
+    if (annotation.useShadowDom == true) {
+      factory = shadowComponentFactory;
+    } else if (annotation.useShadowDom == false) {
+      factory = transcludingComponentFactory;
+    } else {
+      factory = defaultComponentFactory;
+    }
+    return factory(type, annotation);
+  }
+}
+
 @Injectable()
 class ShadowDomComponentFactory implements ComponentFactory {
-  final Expando _expando;
-
-  ShadowDomComponentFactory(this._expando);
-
   final Map<String, async.Future<dom.StyleElement>> _styleElementCache = {};
 
-  FactoryFn call(dom.Node node, DirectiveRef ref) {
+  FactoryFn call(Type type, Component annotation) {
+    // TODO(misko): hoist modules setup outside the closure
     return (Injector injector) {
-        var component = ref.annotation as Component;
         Scope scope = injector.get(Scope);
         ViewCache viewCache = injector.get(ViewCache);
         Http http = injector.get(Http);
@@ -42,12 +60,12 @@ class ShadowDomComponentFactory implements ComponentFactory {
         DirectiveMap directives = injector.get(DirectiveMap);
         NgBaseCss baseCss = injector.get(NgBaseCss);
         // This is a bit of a hack since we are returning different type then we are.
-        var componentFactory = new _ComponentFactory(node, ref.type, component,
-            injector.get(dom.NodeTreeSanitizer), _expando, baseCss, _styleElementCache);
+        var componentFactory = new _ComponentFactory(injector.get(dom.Element), type, annotation,
+            injector.get(dom.NodeTreeSanitizer), injector.get(Expando), baseCss, _styleElementCache);
         var controller = componentFactory.call(injector, scope, viewCache, http, templateCache,
             directives);
 
-        componentFactory.shadowScope.context[component.publishAs] = controller;
+        componentFactory.shadowScope.context[annotation.publishAs] = controller;
         return controller;
       };
   }
@@ -84,7 +102,7 @@ class _ComponentFactory implements Function {
       ..applyAuthorStyles = component.applyAuthorStyles
       ..resetStyleInheritance = component.resetStyleInheritance;
 
-    shadowScope = scope.createChild({}); // Isolate
+    shadowScope = scope.createChild({'SHADOW':true}); // Isolate
     // TODO(pavelgj): fetching CSS with Http is mainly an attempt to
     // work around an unfiled Chrome bug when reloading same CSS breaks
     // styles all over the page. We shouldn't be doing browsers work,
@@ -112,7 +130,7 @@ class _ComponentFactory implements Function {
             return viewFuture.then((ViewFactory viewFactory) {
               return (!shadowScope.isAttached) ?
                 shadowDom :
-                attachViewToShadowDom(viewFactory);
+                attachViewToShadowDom(viewFactory, shadowScope);
             });
           }
           return shadowDom;
@@ -122,8 +140,8 @@ class _ComponentFactory implements Function {
     return controller;
   }
 
-  dom.ShadowRoot attachViewToShadowDom(ViewFactory viewFactory) {
-    var view = viewFactory(shadowInjector);
+  dom.ShadowRoot attachViewToShadowDom(ViewFactory viewFactory, Scope scope) {
+    var view = viewFactory(shadowInjector, scope);
     shadowDom.nodes.addAll(view.nodes);
     return shadowDom;
   }

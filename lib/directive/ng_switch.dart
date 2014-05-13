@@ -51,9 +51,8 @@ part of angular.directive;
  */
 @Decorator(
     selector: '[ng-switch]',
-    map: const {
-      'ng-switch': '=>value',
-      'change': '&onChange'
+    bind: const {
+      'ng-switch': 'value'
     },
     visibility: Directive.DIRECT_CHILDREN_VISIBILITY)
 class NgSwitch {
@@ -112,7 +111,7 @@ class _Case {
 @Decorator(
     selector: '[ng-switch-when]',
     children: Directive.TRANSCLUDE_CHILDREN,
-    map: const {'.': '@value'})
+    bind: const {'ngSwitchWhen': 'value'})
 class NgSwitchWhen {
   final NgSwitch ngSwitch;
   final ViewPort port;

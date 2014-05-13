@@ -64,25 +64,21 @@ class ContentPort {
 
 @Injectable()
 class TranscludingComponentFactory implements ComponentFactory {
-  final Expando _expando;
-
-  TranscludingComponentFactory(this._expando);
-
-  FactoryFn call(dom.Node node, DirectiveRef ref) {
+  FactoryFn call(Type type, Component component) {
     // CSS is not supported.
-    assert((ref.annotation as Component).cssUrls == null ||
-           (ref.annotation as Component).cssUrls.isEmpty);
+    assert(component.cssUrls == null || component.cssUrls.isEmpty);
 
-    var element = node as dom.Element;
+    // TODO(misko): hoist modules setup outside the closure
     return (Injector injector) {
+      var element = injector.get(dom.Element);
       var childInjector;
-      var component = ref.annotation as Component;
       Scope scope = injector.get(Scope);
       ViewCache viewCache = injector.get(ViewCache);
       Http http = injector.get(Http);
       TemplateCache templateCache = injector.get(TemplateCache);
       DirectiveMap directives = injector.get(DirectiveMap);
       NgBaseCss baseCss = injector.get(NgBaseCss);
+      Scope shadowScope = scope.createChild({});
 
       var contentPort = new ContentPort(element);
 
@@ -93,7 +89,7 @@ class TranscludingComponentFactory implements ComponentFactory {
       if (viewFuture != null) {
         elementFuture = viewFuture.then((ViewFactory viewFactory) {
           contentPort.pullNodes();
-          element.nodes.addAll(viewFactory(childInjector).nodes);
+          element.nodes.addAll(viewFactory(childInjector, shadowScope).nodes);
           return element;
         });
       } else {
@@ -101,11 +97,10 @@ class TranscludingComponentFactory implements ComponentFactory {
       }
       TemplateLoader templateLoader = new TemplateLoader(elementFuture);
 
-      Scope shadowScope = scope.createChild({});
 
       var probe;
       var childModule = new Module()
-          ..bind(ref.type)
+          ..bind(type)
           ..bind(NgElement)
           ..bind(ContentPort, toValue: contentPort)
           ..bind(Scope, toValue: shadowScope)
@@ -114,7 +109,7 @@ class TranscludingComponentFactory implements ComponentFactory {
           ..bind(ElementProbe, toFactory: (_) => probe);
       childInjector = injector.createChild([childModule], name: SHADOW_DOM_INJECTOR_NAME);
 
-      var controller = childInjector.get(ref.type);
+      var controller = childInjector.get(type);
       shadowScope.context[component.publishAs] = controller;
       ComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
       return controller;

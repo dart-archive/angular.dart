@@ -2,10 +2,13 @@ library event_handler_spec;
 
 import '../_specs.dart';
 
-@Controller(selector: '[foo]', publishAs: 'ctrl')
+@Decorator(selector: '[foo]')
 class FooController {
   var description = "desc";
   var invoked = false;
+  FooController(Scope scope) {
+    scope.context['foo'] = this;
+  }
 }
 
 @Component(selector: 'bar',
@@ -19,7 +22,7 @@ class FooController {
 class BarComponent {
   var invoked = false;
   BarComponent(RootScope scope) {
-    scope.context['ctrl'] = this;
+    scope.context['bar'] = this;
   }
 }
 
@@ -48,28 +51,28 @@ main() {
     it('should register and handle event', inject((TestBed _) {
       var e = compile(_,
         '''<div foo>
-          <div on-abc="ctrl.invoked=true;"></div>
+          <div on-abc="foo.invoked=true;"></div>
         </div>''');
 
       _.triggerEvent(e.querySelector('[on-abc]'), 'abc');
-      expect(_.getScope(e).context['ctrl'].invoked).toEqual(true);
+      expect(_.getScope(e).context['foo'].invoked).toEqual(true);
     }));
 
     it('shoud register and handle event with long name', inject((TestBed _) {
       var e = compile(_,
         '''<div foo>
-          <div on-my-new-event="ctrl.invoked=true;"></div>
+          <span on-my-new-event="foo.invoked=true;"></span>
         </div>''');
 
       _.triggerEvent(e.querySelector('[on-my-new-event]'), 'myNewEvent');
       var fooScope = _.getScope(e);
-      expect(fooScope.context['ctrl'].invoked).toEqual(true);
+      expect(fooScope.context['foo'].invoked).toEqual(true);
     }));
 
     it('shoud have model updates applied correctly', inject((TestBed _) {
       var e = compile(_,
         '''<div foo>
-          <div on-abc='ctrl.description="new description";'>{{ctrl.description}}</div>
+          <div on-abc='foo.description="new description";'>{{foo.description}}</div>
         </div>''');
       var el = document.querySelector('[on-abc]');
       el.dispatchEvent(new Event('abc'));
@@ -85,15 +88,15 @@ main() {
       var shadowRoot = e.shadowRoot;
       var span = shadowRoot.querySelector('span');
       span.dispatchEvent(new CustomEvent('abc'));
-      var ctrl = _.rootScope.context['ctrl'];
-      expect(ctrl.invoked).toEqual(true);
+      var bar = _.rootScope.context['bar'];
+      expect(bar.invoked).toEqual(true);
     }));
 
     it('shoud handle event within content only once', async(inject((TestBed _) {
       var e = compile(_,
         '''<div foo>
              <bar>
-               <div on-abc="ctrl.invoked=true;"></div>
+               <div on-abc="foo.invoked=true;"></div>
              </bar>
            </div>''');
 
@@ -105,7 +108,7 @@ main() {
       expect(shadowRootScope.context['ctrl'].invoked).toEqual(false);
 
       var fooScope = _.getScope(document.querySelector('[foo]'));
-      expect(fooScope.context['ctrl'].invoked).toEqual(true);
+      expect(fooScope.context['foo'].invoked).toEqual(true);
     })));
   });
 }

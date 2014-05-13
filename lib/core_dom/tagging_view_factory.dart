@@ -1,87 +1,77 @@
 part of angular.core.dom_internal;
 
-class TaggingViewFactory implements ViewFactory {
-  final List<TaggedElementBinder> elementBinders;
-  final List<dom.Node> templateNodes;
-  final Profiler _perf;
+const NG_BINDING = 'ng-binding';
+const NG_BINDING_SELECTOR = '.$NG_BINDING';
 
-  TaggingViewFactory(this.templateNodes, this.elementBinders, this._perf);
+class TaggingViewFactory implements ViewFactory {
+  final List<NodeBinder> elementBinders;
+  final dom.Element template;
+  final Profiler _perf;
+  final bool compileInPlace;
+
+  TaggingViewFactory(this.template, this.elementBinders, this._perf, { this.compileInPlace: false }) {
+    assert(this.template.querySelectorAll(NG_BINDING_SELECTOR).length + 1 == elementBinders.length);
+  }
 
   BoundViewFactory bind(Injector injector) =>
   new BoundViewFactory(this, injector);
 
-  View call(Injector injector, [List<dom.Node> nodes /* TODO: document fragment */]) {
-    if (nodes == null) {
-      nodes = cloneElements(templateNodes);
-    }
+  View call(Injector injector, Scope scope) {
+    assert(injector != null);
+    assert(scope != null);
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
-      var view = new View(nodes, injector.get(EventHandler));
-      _link(view, nodes, elementBinders, injector);
-      return view;
+      dom.Element instance = compileInPlace ? template : template.clone(true);
+      List<dom.Element> elements = [instance];
+      elements.addAll(instance.querySelectorAll(NG_BINDING_SELECTOR));
+      _bindElements(elements, elementBinders, injector, scope,
+          injector.get(Animate), injector.get(EventHandler), injector.get(FormatterMap),
+          injector.get(Expando));
+      elements.removeAt(0);
+      return new View(compileInPlace ? [template] : instance.childNodes.toList());
     } finally {
       assert(_perf.stopTimer(timerId) != false);
     }
   }
 
-  _bindTagged(TaggedElementBinder tagged, rootInjector, elementBinders, View view, boundNode) {
-    var binder = tagged.binder;
-    var parentInjector = tagged.parentBinderOffset == -1 ? rootInjector : elementBinders[tagged.parentBinderOffset].injector;
-    assert(parentInjector != null);
+  void _bindElements(List<dom.Element> elements, List<NodeBinder> binders, Injector rootInjector,
+             Scope scope, Animate animate, EventHandler eventHandler, FormatterMap formatters, Expando expando) {
+    assert(elements.length == binders.length);
 
-    tagged.injector = binder != null ? binder.bind(view, parentInjector, boundNode) : parentInjector;
+    var injectors = new List<Injector>(binders.length);
+    const NODE = Directive.LOCAL_VISIBILITY;
+    const SHOULD_BE_NODE = null; // TODO(misko): fix me.
 
-    if (tagged.textBinders != null) {
-      for (var k = 0, kk = tagged.textBinders.length; k < kk; k++) {
-        TaggedTextBinder taggedText = tagged.textBinders[k];
-        taggedText.binder.bind(view, tagged.injector, boundNode.childNodes[taggedText.offsetIndex]);
+    for (var i = 0; i < binders.length; i++) {
+      var module = new Module();
+      ElementProbe elementProbe;
+      NodeBinder binder = binders[i];
+      var parentIndex = binder.parentBinderOffset;
+      dom.Element element = elements[i];
+      var ngElement = new NgElement(element, scope, animate, eventHandler);
+      if (binder.transcludeBinder != null) {
+        module.bind(ViewPort, visibility: NODE);
+        module.bind(ViewFactory, toValue: binder.viewFactory/**, visibility: NODE**/);
+        module.bind(BoundViewFactory, toFactory: BoundViewFactory.factory, visibility: NODE);
       }
-    }
-  }
-
-  View _link(View view, List<dom.Node> nodeList, List elementBinders, Injector rootInjector) {
-    var directiveDefsByName = {};
-
-    var elementBinderIndex = 0;
-    for (int i = 0, ii = nodeList.length; i < ii; i++) {
-      var node = nodeList[i];
-
-      // if node isn't attached to the DOM, create a parent for it.
-      var parentNode = node.parentNode;
-      var fakeParent = false;
-      if (parentNode == null) {
-        fakeParent = true;
-        parentNode = new dom.DivElement();
-        parentNode.append(node);
-      }
-
-      if (node.nodeType == 1) {
-        var elts = node.querySelectorAll('.ng-binding');
-        // HACK: querySelectorAll doesn't return the node.
-        var startIndex = node.classes.contains('ng-binding') ? -1 : 0;
-        for (int j = startIndex, jj = elts.length; j < jj; j++, elementBinderIndex++) {
-          TaggedElementBinder tagged = elementBinders[elementBinderIndex];
-          var boundNode = j == -1 ? node : elts[j];
-
-          _bindTagged(tagged, rootInjector, elementBinders, view, boundNode);
-        }
-      } else if (node.nodeType == 3 || node.nodeType == 8) {
-        TaggedElementBinder tagged = elementBinders[elementBinderIndex];
-        assert(tagged.binder != null || tagged.isTopLevel);
-        if (tagged.binder != null) {
-          _bindTagged(tagged, rootInjector, elementBinders, view, node);
-        }
-        elementBinderIndex++;
+      module.bind(dom.Node, toValue: element, visibility: SHOULD_BE_NODE);
+      module.bind(dom.Element, toValue: element, visibility: SHOULD_BE_NODE);
+      module.bind(NgElement, toValue: ngElement, visibility: SHOULD_BE_NODE);
+      module.bind(OnEvent, toImplementation: NgElement, visibility: SHOULD_BE_NODE);
+      module.bind(ElementProbe, toFactory: (i) => elementProbe);
+      Injector parentInjector;
+      if (parentIndex < 0) {
+        parentInjector = rootInjector;
+        module.bind(Scope, toValue: scope);
       } else {
-        throw "nodeType sadness ${node.nodeType}}";
+        parentInjector = injectors[parentIndex];
       }
-
-      if (fakeParent) {
-        // extract the node from the parentNode.
-        nodeList[i] = parentNode.nodes[0];
-      }
+      var injector = injectors[i] = parentInjector.createChild([module, binder.module]);
+      ElementProbe parentProbe = parentInjector.get(ElementProbe);
+      elementProbe = expando[element] = new ElementProbe(parentProbe, element, injector, scope);
+      NodeBindings bindings = binder.bind(injector, scope, formatters, eventHandler, ngElement);
+      elementProbe.directives.addAll(bindings.directives);
     }
-    return view;
   }
 }

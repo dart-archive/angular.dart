@@ -10,13 +10,15 @@ import 'package:perf_api/perf_api.dart';
 import 'package:angular/core/annotation.dart';
 import 'package:angular/core/annotation_src.dart' show SHADOW_DOM_INJECTOR_NAME;
 import 'package:angular/core/module_internal.dart';
-import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
 
 import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
 import 'package:angular/core/registry.dart';
 
 import 'package:angular/directive/module.dart' show NgBaseCss;
+
+import 'package:angular/core_dom/node_property_binder.dart' show
+  NodeBinderBuilder, NodeBinder, NodeBindings;
 
 part 'animation.dart';
 part 'view.dart';
@@ -26,11 +28,8 @@ part 'common.dart';
 part 'compiler.dart';
 part 'directive.dart';
 part 'directive_map.dart';
-part 'element_binder.dart';
-part 'element_binder_builder.dart';
 part 'event_handler.dart';
 part 'http.dart';
-part 'mustache.dart';
 part 'node_cursor.dart';
 part 'selector.dart';
 part 'shadow_dom_component_factory.dart';
@@ -40,7 +39,6 @@ part 'tagging_view_factory.dart';
 part 'template_cache.dart';
 part 'transcluding_component_factory.dart';
 part 'tree_sanitizer.dart';
-part 'walking_compiler.dart';
 part 'ng_element.dart';
 
 class CoreDomModule extends Module {
@@ -52,13 +50,11 @@ class CoreDomModule extends Module {
     bind(TemplateCache, toFactory: (_) => new TemplateCache());
     bind(dom.NodeTreeSanitizer, toImplementation: NullTreeSanitizer);
 
-    bind(TextMustache);
-    bind(AttrMustache);
-
     bind(Compiler, toImplementation: TaggingCompiler);
 
     bind(ComponentFactory, toImplementation: ShadowDomComponentFactory);
     bind(ShadowDomComponentFactory);
+    bind(AutoSelectComponentFactory);
     bind(TranscludingComponentFactory);
     bind(Content);
     bind(ContentPort, toValue: null);
@@ -76,7 +72,7 @@ class CoreDomModule extends Module {
     bind(LocationWrapper);
     bind(DirectiveMap);
     bind(DirectiveSelectorFactory);
-    bind(ElementBinderFactory);
+    bind(NodeBinderBuilder);
     bind(NgElement);
     bind(EventHandler);
   }

@@ -7,15 +7,11 @@ import 'package:angular/core/registry.dart';
 export 'package:angular/core/registry.dart' show
     MetadataExtractor;
 
-var _fieldMetadataCache = new Map<Type, Map<String, DirectiveAnnotation>>();
+var _fieldMetadataCache = new Map<Type, Map<String, Bind>>();
 
 class DynamicMetadataExtractor implements MetadataExtractor {
   final _fieldAnnotations = [
-        reflectType(NgAttr),
-        reflectType(NgOneWay),
-        reflectType(NgOneWayOneTime),
-        reflectType(NgTwoWay),
-        reflectType(NgCallback)
+        reflectType(Bind)
   ];
 
   Iterable call(Type type) {
@@ -31,36 +27,37 @@ class DynamicMetadataExtractor implements MetadataExtractor {
 
   map(Type type, obj) {
     if (obj is Directive) {
-      return mapDirectiveAnnotation(type, obj);
+      return mapBind(type, obj);
     } else {
       return obj;
     }
   }
 
-  Directive mapDirectiveAnnotation(Type type, Directive annotation) {
+  Directive mapBind(Type type, Directive annotation) {
     var match;
     var fieldMetadata = fieldMetadataExtractor(type);
     if (fieldMetadata.isNotEmpty) {
-      var newMap = annotation.map == null ? {} : new Map.from(annotation.map);
-      fieldMetadata.forEach((String fieldName, DirectiveAnnotation ann) {
-        var attrName = ann.attrName;
-        if (newMap.containsKey(attrName)) {
-          throw 'Mapping for attribute $attrName is already defined (while '
-          'processing annottation for field $fieldName of $type)';
+      var newBind = annotation.bind == null ? {} : new Map.from(annotation.bind);
+      fieldMetadata.forEach((String fieldName, Bind ann) {
+        var nodePropName = ann.nodeProperty;
+        if (nodePropName == null) nodePropName = fieldName;
+        if (newBind.containsKey(nodePropName)) {
+          throw 'Mapping for property $nodePropName is already defined (while '
+                'processing annottation for field $fieldName of $type)';
         }
-        newMap[attrName] = '${mappingSpec(ann)}$fieldName';
+        newBind[nodePropName] = '$fieldName';
       });
-      annotation = cloneWithNewMap(annotation, newMap);
+      annotation = cloneWithNewBind(annotation, newBind);
     }
     return annotation;
   }
 
 
-  Map<String, DirectiveAnnotation> fieldMetadataExtractor(Type type) =>
+  Map<String, Bind> fieldMetadataExtractor(Type type) =>
       _fieldMetadataCache.putIfAbsent(type, () => _fieldMetadataExtractor(reflectType(type)));
 
-  Map<String, DirectiveAnnotation> _fieldMetadataExtractor(ClassMirror cm) {
-    var fields = <String, DirectiveAnnotation>{};
+  Map<String, Bind> _fieldMetadataExtractor(ClassMirror cm) {
+    var fields = <String, Bind>{};
     if(cm.superclass != null) {
       fields.addAll(_fieldMetadataExtractor(cm.superclass));
     } else {
@@ -81,7 +78,7 @@ class DynamicMetadataExtractor implements MetadataExtractor {
               throw 'Attribute annotation for $fieldName is defined more '
                 'than once in ${cm.reflectedType}';
             }
-            fields[fieldName] = meta.reflectee as DirectiveAnnotation;
+            fields[fieldName] = meta.reflectee as Bind;
           }
         });
       }
