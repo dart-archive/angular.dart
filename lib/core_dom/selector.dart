@@ -1,17 +1,13 @@
 part of angular.core.dom_internal;
 
 /**
- * DirectiveSelector is a function which given a node it will return a
- * list of [DirectiveRef]s which are triggered by this node.
+ * [DirectiveSelector] is used by the [Compiler] during the template walking to extract the
+ * [DirectiveRef]s.
  *
- * DirectiveSelector is used by the [Compiler] during the template walking
- * to extract the [DirectiveRef]s.
+ * [DirectiveSelector] can be created using the [DirectiveSelectorFactory].
  *
- * DirectiveSelector can be created using the [DirectiveSelectorFactory].
- *
- * The DirectiveSelector supports CSS selectors which do not cross
- * element boundaries only. The selectors can have any mix of element-name,
- * class-names and attribute-names.
+ * The DirectiveSelector supports CSS selectors which do not cross element boundaries only. The
+ * selectors can have any mix of element-name, class-names and attribute-names.
  *
  * Examples:
  *
@@ -19,8 +15,10 @@ part of angular.core.dom_internal;
  *  * .class
  *  * [attribute]
  *  * [attribute=value]
+ *  * [wildcard-*]
  *  * element[attribute1][attribute2=value]
  *  * :contains(/abc/)
+ *  * [*=/abc/]
  */
 class DirectiveSelector {
   ElementBinderFactory _binderFactory;
@@ -29,6 +27,7 @@ class DirectiveSelector {
   var attrSelector;
   var textSelector;
 
+  /// Parses all the [_directives] so they can be retrieved via [matchElement]
   DirectiveSelector(this._directives, this._binderFactory) {
     elementSelector = new _ElementSelector('');
     attrSelector = <_ContainsSelector>[];
@@ -54,6 +53,10 @@ class DirectiveSelector {
     });
   }
 
+  /**
+   * [matchElement] returns an [ElementBinder] or a [TemplateElementBinder] configured with all the
+   * directives triggered by the `node`.
+   */
   ElementBinder matchElement(dom.Node node) {
     assert(node is dom.Element);
 
@@ -143,8 +146,7 @@ class DirectiveSelector {
     return builder.binder;
   }
 
-  ElementBinder matchComment(dom.Node node) =>
-      _binderFactory.builder().binder;
+  ElementBinder matchComment(dom.Node node) => _binderFactory.builder().binder;
 }
 
 /**
