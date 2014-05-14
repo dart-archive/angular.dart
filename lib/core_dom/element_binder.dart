@@ -403,7 +403,6 @@ class TaggedTextBinder {
 class TaggedElementBinder {
   final ElementBinder binder;
   int parentBinderOffset;
-  var injector;
   bool isTopLevel;
 
   List<TaggedTextBinder> textBinders;
@@ -416,6 +415,5 @@ class TaggedElementBinder {
   }
 
   String toString() => "[TaggedElementBinder binder:$binder parentBinderOffset:"
-                       "$parentBinderOffset textBinders:$textBinders "
-                       "injector:$injector]";
+                       "$parentBinderOffset textBinders:$textBinders]";
 }
