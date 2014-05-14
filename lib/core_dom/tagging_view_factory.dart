@@ -18,29 +18,31 @@ class TaggingViewFactory implements ViewFactory {
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
       var view = new View(nodes, injector.get(EventHandler));
-      _link(view, nodes, elementBinders, injector);
+      _link(view, nodes, injector);
       return view;
     } finally {
       assert(_perf.stopTimer(timerId) != false);
     }
   }
 
-  _bindTagged(TaggedElementBinder tagged, rootInjector, elementBinders, View view, boundNode) {
+  _bindTagged(TaggedElementBinder tagged, int elementBinderIndex, rootInjector, elementInjectors, View view, boundNode) {
     var binder = tagged.binder;
-    var parentInjector = tagged.parentBinderOffset == -1 ? rootInjector : elementBinders[tagged.parentBinderOffset].injector;
+    var parentInjector = tagged.parentBinderOffset == -1 ? rootInjector : elementInjectors[tagged.parentBinderOffset];
     assert(parentInjector != null);
 
-    tagged.injector = binder != null ? binder.bind(view, parentInjector, boundNode) : parentInjector;
+    var elementInjector = elementInjectors[elementBinderIndex] =
+        binder != null ? binder.bind(view, parentInjector, boundNode) : parentInjector;
 
     if (tagged.textBinders != null) {
       for (var k = 0, kk = tagged.textBinders.length; k < kk; k++) {
         TaggedTextBinder taggedText = tagged.textBinders[k];
-        taggedText.binder.bind(view, tagged.injector, boundNode.childNodes[taggedText.offsetIndex]);
+        taggedText.binder.bind(view, elementInjector, boundNode.childNodes[taggedText.offsetIndex]);
       }
     }
   }
 
-  View _link(View view, List<dom.Node> nodeList, List elementBinders, Injector rootInjector) {
+  View _link(View view, List<dom.Node> nodeList, Injector rootInjector) {
+    var elementInjectors = new List(elementBinders.length);
     var directiveDefsByName = {};
 
     var elementBinderIndex = 0;
@@ -64,13 +66,13 @@ class TaggingViewFactory implements ViewFactory {
           TaggedElementBinder tagged = elementBinders[elementBinderIndex];
           var boundNode = j == -1 ? node : elts[j];
 
-          _bindTagged(tagged, rootInjector, elementBinders, view, boundNode);
+          _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors, view, boundNode);
         }
       } else if (node.nodeType == 3 || node.nodeType == 8) {
         TaggedElementBinder tagged = elementBinders[elementBinderIndex];
         assert(tagged.binder != null || tagged.isTopLevel);
         if (tagged.binder != null) {
-          _bindTagged(tagged, rootInjector, elementBinders, view, node);
+          _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors, view, node);
         }
         elementBinderIndex++;
       } else {
