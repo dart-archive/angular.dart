@@ -1,6 +1,7 @@
 library ng_model_validators;
 
 import '../_specs.dart';
+import 'dart:mirrors';
 
 void main() {
   they(should, tokens, callback, [exclusive=false]) {
@@ -24,6 +25,8 @@ void main() {
         _.compile('<input type="text" ng-model="val" probe="i" required />');
         Probe probe = _.rootScope.context['i'];
         var model = probe.directive(NgModel);
+
+        _.rootScope.apply();
 
         model.validate();
         expect(model.valid).toEqual(false);
@@ -627,6 +630,55 @@ void main() {
 
         expect(model.valid).toBe(true);
       });
-    }); 
+    });
+
+    describe('lifecycle', () {
+      beforeEach((Injector injector) {
+
+      });
+
+      // Mapping from directive name to attributes used to select the directive.
+      var samples = {
+          "NgModelRequiredValidator": "required",
+          "NgModelUrlValidator": "type=url",
+          "NgModelEmailValidator": "type=email",
+          "NgModelNumberValidator": "type=number",
+          "NgModelMaxNumberValidator": "type=number max=5",
+          "NgModelMinNumberValidator": "type=number min=5",
+          "NgModelPatternValidator": "pattern=5",
+          "NgModelMinLengthValidator": "minlength=5",
+          "NgModelMaxLengthValidator": "maxlength=5"
+      };
+
+      it('should test all the validators', (Injector injector) {
+        var reflectNgValidator = reflectType(NgValidator);
+        var validators = injector.types
+          .where((t) =>
+            reflectType(t).isSubtypeOf(reflectNgValidator))
+          .forEach((type) {
+            if (!samples.containsKey("$type")) {
+              throw "Missing key $type";
+            }
+          });
+      });
+
+      samples.forEach((name, value) {
+        it('should not leak $name through ngModel', () {
+          _.compile('<input ng-if="mif" ng-model="val" probe="i" $value />');
+          _.rootScope.apply("mif = true");
+
+          Probe probe = _.rootScope.context['i'];
+          var model = probe.directive(NgModel);
+
+
+          expect(model.validators.length > 0).toBeTruthy();
+
+          _.rootScope.apply("mif = false");
+
+          expect(model.validators.length).toEqual(0);
+
+        });
+      });
+    });
   });
 }
