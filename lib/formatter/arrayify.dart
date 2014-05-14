@@ -1,9 +1,9 @@
 part of angular.formatter_internal;
 
 /**
- * Given a Map, returns a list of items which have `key` and `value` property.
+ * Transforms a Map into an array so that the map can be used with `ng-repeat`.
  *
- * Usage:
+ * Example:
  *
  *     <div ng-repeat="item in {'key1': 'value1', 'key2':'value2'} | arrayify">
  *       {{item.key}}: {{item.value}}

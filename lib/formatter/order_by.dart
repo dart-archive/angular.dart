@@ -3,30 +3,31 @@ part of angular.formatter_internal;
 typedef dynamic _Mapper(dynamic e);
 
 /**
- * Orders the the elements of an object by a predicate expression.
+ * Orders the the elements of a list using a predicate.
  *
- * Usage:
+ * # Usage
  *
- *      <div ng-repeat="item in items | orderBy: [+/-]_expression_[:true]">
+ *      expression | orderBy: predicate[:true]
  *
+ * The input to orderBy must be an [Iterable] object. The predicate may be specified as:
  *
- * The input must be an [Iterable] object. The expression may be specified as:
- *
- * - `+`: sort the elements in asending order. This is the default comparator.
- * - `-`: sort the elements in descending order.
- * - **a string expression**: sort on a decorated/transformed value, such as "lastName",
- *    or to sort non-primitives values.
+ * - **a string**: a string containing an expression, such as "user.lastName", used to order the list.
  * - **a custom callable expression**: an expression that will be called to transform the element
- * before a sort.
- * - **a list**: the list may consist of either string or callable expressions.  A list expression
- * indicates a list of fallback expressions to use when a comparision results in the items
- * being equal.
+ *   before a sort.
+ * - **a list**: the list may consist of either strings or callable expressions.  A list expression
+ *   indicates a list of fallback expressions to use when a comparision results in the items
+ *   being equal.
  *
- * If the expression is explicitly empty(`orderBy:```), the elements are sorted in
+ * If the expression is explicitly empty(`orderBy:''`), the elements are sorted in
  * ascending order, using the default comparator, `+`.
  *
- * Last, by appending `:true`, you can set "descending order" to true,
- * which has the same effect as the `-` comparator.
+ * A string expression in the predicate can be prefixed to indicate sort order:
+ *
+ * - `+`: sort the elements in asending order. This is the default.
+ * - `-`: sort the elements in descending order.
+ *
+ * Alternately, by appending `true`, you can set "descending order" to true, which has the same effect as the `-`
+ * prefix.
  *
  * # Examples
  *
@@ -85,7 +86,7 @@ typedef dynamic _Mapper(dynamic e);
  * If you want to list the authors sorted by `lastName`, you would use
  *
  *     <li ng-repeat="author in authors | orderBy:'lastName'">
- *       {{author.lastName}}, {{author.firstName
+ *       {{author.lastName}}, {{author.firstName}}
  *     </li>
  *
  * The string expression, `'lastName'`, indicates that the sort should be on the

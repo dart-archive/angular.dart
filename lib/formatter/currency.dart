@@ -7,9 +7,16 @@ part of angular.formatter_internal;
  * see the [angular:formatter](#angular-formatter) library.
  *
  *
- * Usage:
+ * # Usage
  *
- *     {{ numeric_expression | currency[:symbol[:leading]] }}
+ *     expression | currency[:symbol[:leading]]
+ *
+ * # Example
+ *
+ *     {{ 1234 | currency }}                 // output is $1,234.00
+ *     {{ 1234 | currency:'CAD' }}           // output is CAD1,234.00
+ *     {{ 1234 | currency:'CAD':false }}    // output is  1,234.00CAD
+ *
  *
  */
 @Formatter(name:'currency')
@@ -22,8 +29,8 @@ class Currency implements Function {
    *
    *  - `value`: the value to format as currency.
    *  - `symbol`: the currency symbol to use. If no symbol is specified, `$` is used.
-   *  - `leading`: when set to false, places the symbol after the number instead of before
-   *  it.
+   *  - `leading`: false places the symbol after the number instead of before
+   *     it. (By default, leading is true.)
    */
   call(value, [symbol = r'$', leading = true]) {
     if (value is String) value = double.parse(value);

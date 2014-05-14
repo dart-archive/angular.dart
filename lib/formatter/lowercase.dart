@@ -3,9 +3,9 @@ part of angular.formatter_internal;
 /**
  * Converts a string to lowercase.
  *
- * Usage:
+ * # Usage
  *
- *     {{ lowercase_expression | lowercase }}
+ *     expression | lowercase
  */
 @Formatter(name:'lowercase')
 class Lowercase implements Function {
