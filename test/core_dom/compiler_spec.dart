@@ -867,9 +867,9 @@ class LocalAttrDirective {
   }
 }
 
-@Decorator(
+@Template(
     selector: '[simple-transclude-in-attach]',
-    visibility: Directive.CHILDREN_VISIBILITY, children: Directive.TRANSCLUDE_CHILDREN)
+    visibility: Directive.CHILDREN_VISIBILITY)
 class SimpleTranscludeInAttachAttrDirective {
   SimpleTranscludeInAttachAttrDirective(ViewPort viewPort, BoundViewFactory boundViewFactory, Logger log, RootScope scope) {
     scope.runAsync(() {
@@ -903,8 +903,7 @@ class TwoOfTwoDirectives {
 
 @Decorator(
     selector: '[ignore-children]',
-    children: Directive.IGNORE_CHILDREN
-)
+    compileChildren: false)
 class IgnoreChildrenDirective {
   IgnoreChildrenDirective(Logger log) {
     log('Ignore');

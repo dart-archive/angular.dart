@@ -78,12 +78,11 @@ class SourceMetadataExtractor {
                 substring(0, className.length - _COMPONENT.length);
           } else {
             throw "Directive name '$className' must end with $_DIRECTIVE, "
-            "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
+                  "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
           }
         } else {
           if (className.endsWith(_ATTR_DIRECTIVE)) {
-            var attrName = className.
-                substring(0, className.length - _ATTR_DIRECTIVE.length);
+            var attrName = className.substring(0, className.length - _ATTR_DIRECTIVE.length);
             dirInfo.selector = '[$attrName]';
           } else if (className.endsWith(_DIRECTIVE)) {
             dirInfo.selector = className.
@@ -139,13 +138,14 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
   }
 
   visitClassDeclaration(ClassDeclaration clazz) {
-    // Check class annotations for presense of Component/Decorator.
+    // Check class annotations for presence of Component or Decorator.
     clazz.metadata.forEach((Annotation ann) {
       if (ann.arguments == null) return; // Ignore non-class annotations.
       // TODO(pavelj): this is not a safe check for the type of the
       // annotations, but good enough for now.
-      if (ann.name.name != 'Component'
-          && ann.name.name != 'Decorator') return;
+      if (ann.name.name != 'Component' &&
+          ann.name.name != 'Decorator' &&
+          ann.name.name != 'Template') return;
 
       bool isComponent = ann.name.name == 'Component';
 
@@ -158,24 +158,26 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
         if (arg is NamedExpression) {
           NamedExpression namedArg = arg;
           var paramName = namedArg.name.label.name;
-          if (paramName == 'selector') {
-            meta.selector = assertString(namedArg.expression).stringValue;
-          }
-          if (paramName == 'template') {
-            meta.template = assertString(namedArg.expression).stringValue;
-          }
-          if (paramName == 'map') {
-            MapLiteral map = namedArg.expression;
-            map.entries.forEach((MapLiteralEntry entry) {
-              meta.attributeMappings[assertString(entry.key).stringValue] =
-                  assertString(entry.value).stringValue;
-            });
-          }
-          if (paramName == 'exportExpressions') {
-            meta.exportExpressions = getStringValues(namedArg.expression);
-          }
-          if (paramName == 'exportExpressionAttrs') {
-            meta.exportExpressionAttrs = getStringValues(namedArg.expression);
+          switch (paramName) {
+            case 'selector':
+              meta.selector = assertString(namedArg.expression).stringValue;
+              break;
+            case 'template':
+              meta.template = assertString(namedArg.expression).stringValue;
+              break;
+            case 'map':
+              MapLiteral map = namedArg.expression;
+              map.entries.forEach((MapLiteralEntry entry) {
+                meta.attributeMappings[assertString(entry.key).stringValue] =
+                    assertString(entry.value).stringValue;
+              });
+            break;
+            case 'exportExpressions':
+              meta.exportExpressions = getStringValues(namedArg.expression);
+              break;
+            case 'exportExpressionAttrs':
+              meta.exportExpressionAttrs = getStringValues(namedArg.expression);
+              break;
           }
         }
       });
@@ -202,8 +204,7 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
     // Check fields/getters/setter for presence of attr mapping annotations.
     clazz.members.forEach((ClassMember member) {
       if (member is FieldDeclaration ||
-      (member is MethodDeclaration &&
-      (member.isSetter || member.isGetter))) {
+         (member is MethodDeclaration && (member.isSetter || member.isGetter))) {
         member.metadata.forEach((Annotation ann) {
           if (_attrAnnotationsToSpec.containsKey(ann.name.name)) {
             String fieldName;
@@ -213,13 +214,11 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
               fieldName = (member as MethodDeclaration).name.name;
             }
             StringLiteral attNameLiteral = ann.arguments.arguments.first;
-            if (meta.attributeMappings
-            .containsKey(attNameLiteral.stringValue)) {
-              throw 'Attribute mapping already defined for '
-              '${clazz.name}.$fieldName';
+            if (meta.attributeMappings.containsKey(attNameLiteral.stringValue)) {
+              throw 'Attribute mapping already defined for ${clazz.name}.$fieldName';
             }
             meta.attributeMappings[attNameLiteral.stringValue] =
-            _attrAnnotationsToSpec[ann.name.name] + fieldName;
+                _attrAnnotationsToSpec[ann.name.name] + fieldName;
           }
         });
       }

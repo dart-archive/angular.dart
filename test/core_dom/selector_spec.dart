@@ -15,20 +15,17 @@ import '../_specs.dart';
 
 @Component(selector:'component')            class _Component{}
 @Decorator(selector:'[attribute]')          class _Attribute{}
-@Decorator(selector:'[structural]',
-             children: Directive.TRANSCLUDE_CHILDREN)
-                                              class _Structural{}
+@Template(selector:'[structural]')          class _Structural{}
 
 @Decorator(selector:'[ignore-children]',
-             children: Directive.IGNORE_CHILDREN)
-                                              class _IgnoreChildren{}
+           compileChildren: false)          class _IgnoreChildren{}
 
 @Decorator(selector: '[my-model][required]')
 @Decorator(selector: '[my-model][my-required]')
-                                              class _TwoDirectives {}
+                                            class _TwoDirectives {}
 
-@Decorator(selector: '[two-directives]') class _OneOfTwoDirectives {}
-@Decorator(selector: '[two-directives]') class _TwoOfTwoDirectives {}
+@Decorator(selector: '[two-directives]')    class _OneOfTwoDirectives {}
+@Decorator(selector: '[two-directives]')    class _TwoOfTwoDirectives {}
 
 
 main() {

@@ -143,18 +143,6 @@ class ViewCache {
   }
 }
 
-class _AnchorAttrs extends NodeAttrs {
-  DirectiveRef _directiveRef;
-
-  _AnchorAttrs(DirectiveRef this._directiveRef): super(null);
-
-  String operator [](name) => name == '.' ? _directiveRef.value : null;
-
-  void observe(String attributeName, _AttributeChanged notifyFn) {
-    notifyFn(attributeName == '.' ? _directiveRef.value : null);
-  }
-}
-
 String _html(obj) {
   if (obj is String) {
     return obj;

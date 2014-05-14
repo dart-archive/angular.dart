@@ -6,19 +6,18 @@ RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
 const String SHADOW_DOM_INJECTOR_NAME = 'SHADOW_INJECTOR';
 
-skipShadow(Injector injector)
-    => injector.name == SHADOW_DOM_INJECTOR_NAME ? injector.parent : injector;
+skipShadow(Injector injector) =>
+    injector.name == SHADOW_DOM_INJECTOR_NAME ? injector.parent : injector;
 
-localVisibility (Injector requesting, Injector defining)
-    => identical(skipShadow(requesting), defining);
+localVisibility (Injector requesting, Injector defining) =>
+    identical(skipShadow(requesting), defining);
 
 directChildrenVisibility(Injector requesting, Injector defining) {
   requesting = skipShadow(requesting);
   return identical(requesting.parent, defining) || localVisibility(requesting, defining);
 }
 
-Directive cloneWithNewMap(Directive annotation, map)
-    => annotation._cloneWithNewMap(map);
+Directive cloneWithNewMap(Directive annotation, map) => annotation._cloneWithNewMap(map);
 
 String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
@@ -69,30 +68,11 @@ abstract class Directive {
    * Specifies the compiler action to be taken on the child nodes of the
    * element which this currently being compiled.  The values are:
    *
-   * * [COMPILE_CHILDREN] (*default*)
-   * * [TRANSCLUDE_CHILDREN]
-   * * [IGNORE_CHILDREN]
+   * * [:true:] Compile the child nodes of the element. (default)
+   * * [:false:] Do not compile/visit the child nodes.  Angular markup on
+   *   descendant nodes will not be processed.
    */
-  @deprecated
-  final String children;
-
-  /**
-   * Compile the child nodes of the element.  This is the default.
-   */
-  @deprecated
-  static const String COMPILE_CHILDREN = 'compile';
-  /**
-   * Compile the child nodes for transclusion and makes available
-   * [BoundViewFactory], [ViewFactory] and [ViewPort] for injection.
-   */
-  @deprecated
-  static const String TRANSCLUDE_CHILDREN = 'transclude';
-  /**
-   * Do not compile/visit the child nodes.  Angular markup on descendant nodes
-   * will not be processed.
-   */
-  @deprecated
-  static const String IGNORE_CHILDREN = 'ignore';
+   final bool compileChildren;
 
   /**
    * A directive/component controller class can be injected into other
@@ -123,7 +103,7 @@ abstract class Directive {
    *       module: Foo.moduleFactory)
    *     class Foo {
    *       static moduleFactory() => new Module()
-   *         ..bind(SomeTypeA, visibility: Directive.LOCAL_VISIBILITY);
+   *           ..bind(SomeTypeA, visibility: Directive.LOCAL_VISIBILITY);
    *     }
    *
    * When specifying types, factories or values in the module, notice that
@@ -215,7 +195,7 @@ abstract class Directive {
 
   const Directive({
     this.selector,
-    this.children: Directive.COMPILE_CHILDREN,
+    this.compileChildren: true,
     this.visibility: Directive.LOCAL_VISIBILITY,
     this.module,
     this.map: const {},
@@ -223,10 +203,11 @@ abstract class Directive {
     this.exportExpressionAttrs: const []
   });
 
-  toString() => selector;
-  get hashCode => selector.hashCode;
-  operator==(other) =>
-      other is Directive && selector == other.selector;
+  String toString() => selector;
+
+  int get hashCode => selector.hashCode;
+
+  bool operator==(other) => other is Directive && selector == other.selector;
 
   Directive _cloneWithNewMap(newMap);
 }
@@ -333,7 +314,7 @@ class Component extends Directive {
         _applyAuthorStyles = applyAuthorStyles,
         _resetStyleInheritance = resetStyleInheritance,
         super(selector: selector,
-             children: Directive.COMPILE_CHILDREN,
+             compileChildren: true,
              visibility: visibility,
              map: map,
              module: module,
@@ -344,7 +325,7 @@ class Component extends Directive {
       const [] :
       _cssUrls is List ?  _cssUrls : [_cssUrls];
 
-  Directive _cloneWithNewMap(newMap) =>
+  Component _cloneWithNewMap(newMap) =>
       new Component(
           template: template,
           templateUrl: templateUrl,
@@ -375,7 +356,7 @@ class Component extends Directive {
  * * `detach()` - Called on when owning scope is destroyed.
  */
 class Decorator extends Directive {
-  const Decorator({children: Directive.COMPILE_CHILDREN,
+  const Decorator({compileChildren: true,
                     map,
                     selector,
                     module,
@@ -383,22 +364,61 @@ class Decorator extends Directive {
                     exportExpressions,
                     exportExpressionAttrs})
       : super(selector: selector,
-              children: children,
+              compileChildren: compileChildren,
               visibility: visibility,
               map: map,
               module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  Directive _cloneWithNewMap(newMap) =>
+  Decorator _cloneWithNewMap(newMap) =>
       new Decorator(
-          children: children,
+          compileChildren: compileChildren,
           map: newMap,
           module: module,
           selector: selector,
           visibility: visibility,
           exportExpressions: exportExpressions,
           exportExpressionAttrs: exportExpressionAttrs);
+}
+
+
+
+/**
+* Meta-data marker placed on a class which should act as template.
+*
+* Angular templates are instantiated using dependency injection, and can
+* ask for any injectable object in their constructor. Templates can also ask
+* for other components or directives declared on the DOM element.
+*
+* Templates can implement [NgAttachAware], [NgDetachAware] and declare these
+* optional methods:
+*
+* * `attach()` - Called on first [Scope.apply()].
+* * `detach()` - Called on when owning scope is destroyed.
+*/
+class Template extends Directive {
+  const Template({map,
+                  selector,
+                  module,
+                  visibility,
+                  exportExpressions,
+                  exportExpressionAttrs})
+      : super(selector: selector,
+              compileChildren: true,
+              visibility: visibility,
+              map: map,
+              module: module,
+              exportExpressions: exportExpressions,
+              exportExpressionAttrs: exportExpressionAttrs);
+
+  Template _cloneWithNewMap(newMap) =>
+      new Template(map: newMap,
+                   module: module,
+                   selector: selector,
+                   visibility: visibility,
+                   exportExpressions: exportExpressions,
+                   exportExpressionAttrs: exportExpressionAttrs);
 }
 
 /**
@@ -428,7 +448,7 @@ class Controller extends Decorator {
   final String publishAs;
 
   const Controller({
-                    children: Directive.COMPILE_CHILDREN,
+                    compileChildren: true,
                     this.publishAs,
                     map,
                     module,
@@ -438,7 +458,7 @@ class Controller extends Decorator {
                     exportExpressionAttrs
                     })
       : super(selector: selector,
-              children: children,
+              compileChildren: compileChildren,
               visibility: visibility,
               map: map,
               module: module,
@@ -447,7 +467,7 @@ class Controller extends Decorator {
 
   Directive _cloneWithNewMap(newMap) =>
       new Controller(
-          children: children,
+          compileChildren: compileChildren,
           publishAs: publishAs,
           module: module,
           map: newMap,

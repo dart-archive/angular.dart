@@ -1,8 +1,7 @@
 part of angular.core.dom_internal;
 
-List<dom.Node> cloneElements(elements) {
-  return elements.map((el) => el.clone(true)).toList();
-}
+List<dom.Node> cloneElements(elements) =>
+    elements.map((el) => el.clone(true)).toList();
 
 class MappingParts {
   final String attrName;
@@ -19,8 +18,18 @@ class DirectiveRef {
   final Directive annotation;
   final String value;
   final mappings = new List<MappingParts>();
+  Map<String, String> _templateAttrs;
+  Map<String, String> get templateAttrs => _templateAttrs;
 
-  DirectiveRef(this.element, this.type, this.annotation, [ this.value ]);
+  DirectiveRef(this.element, this.type, this.annotation, [ this.value ]) {
+    if (annotation is Template && annotation.map != null) {
+      var attributes = (element as dom.Element).attributes;
+      _templateAttrs = <String, String>{};
+      annotation.map.keys.forEach((attrName) {
+        _templateAttrs[attrName] = attributes[attrName];
+      });
+    }
+  }
 
   String toString() {
     var html = element is dom.Element

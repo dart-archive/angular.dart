@@ -2,11 +2,13 @@ part of angular.core.dom_internal;
 
 @Injectable()
 class DirectiveMap extends AnnotationsMap<Directive> {
-  DirectiveSelectorFactory _directiveSelectorFactory;
+  final DirectiveSelectorFactory _directiveSelectorFactory;
   DirectiveSelector _selector;
   DirectiveSelector get selector {
-    if (_selector != null) return _selector;
-    return _selector = _directiveSelectorFactory.selector(this);
+    if (_selector == null) {
+      _selector = _directiveSelectorFactory.selector(this);
+    }
+    return _selector;
   }
 
   DirectiveMap(Injector injector,
