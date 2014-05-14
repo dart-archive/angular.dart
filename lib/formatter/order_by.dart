@@ -22,7 +22,7 @@ typedef dynamic _Mapper(dynamic e);
  * indicates a list of fallback expressions to use when a comparision results in the items
  * being equal.
  *
- * If the expression is explicitly empty(`orderBy:```), the elements are sorted in
+ * If the expression is explicitly empty(`orderBy:''`), the elements are sorted in
  * ascending order, using the default comparator, `+`.
  *
  * Last, by appending `:true`, you can set "descending order" to true,
