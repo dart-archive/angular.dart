@@ -1,5 +1,4 @@
 /**
- *
  * Formatters for [angular.dart](#angular/angular), a web framework for Dart. A formatter is a
  * pure function that performs a transformation on input data from an expression.
  *
@@ -13,17 +12,16 @@
  *
  * For example:
  *
- *      {{ _some_expression_ | json }}
+ *     {{ expression | json }}
  *
  * or, in a repeater:
  *
- *      <div ng-repeat="item in items | filter:_predicate_">
- *
- *
+ *      <div ng-repeat="item in items | limitTo:2">
  */
 library angular.formatter;
 
 export "package:angular/formatter/module_internal.dart" show
+    FormatterModule,
     Currency,
     Date,
     Filter,

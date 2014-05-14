@@ -19,6 +19,12 @@ part 'order_by.dart';
 part 'uppercase.dart';
 part 'stringify.dart';
 
+/**
+ * This module registers all the Angular formatters.
+ *
+ * When instantiating an Angular application through applicationFactory,
+ * FormatterModule is automatically included.
+ */
 class FormatterModule extends Module {
   FormatterModule() {
     bind(Arrayify);

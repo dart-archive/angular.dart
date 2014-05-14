@@ -213,6 +213,7 @@ main() {
         "angular.formatter_internal.Currency",
         "angular.formatter_internal.Date",
         "angular.formatter_internal.Filter",
+        "angular.formatter_internal.FormatterModule",
         "angular.formatter_internal.Json",
         "angular.formatter_internal.LimitTo",
         "angular.formatter_internal.Lowercase",
