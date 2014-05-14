@@ -263,7 +263,6 @@ class NgModel extends NgControl implements AttachAware {
 }
 
 /**
- *
  * Creates a two-way databinding between the `ng-model` expression
  * and the checkbox input element state.
  *
@@ -277,8 +276,8 @@ class NgModel extends NgControl implements AttachAware {
  *
  * If the optional `ng-true-value` is absent,
  *  - if the model expression evaluates to true or to a nonzero [:num:],
- *  then the checkbox is checked
- *  -  otherwise, the checkbox is unchecked
+ *    then the checkbox is checked
+ *  - otherwise, the checkbox is unchecked
  *
  * If `ng-true-value="t_expr"` is present,
  *  - if the model expression evaluates to the same value as `t_expr`, then the checkbox is checked
@@ -332,7 +331,7 @@ class InputCheckbox {
  *     <input type="text|url|password|email|search|tel" ng-model="myModel">
  *     <textarea ng-model="myModel"></textarea>
  *
- * When the ng-model attribute is present on the input element,
+ * When the `ng-model` attribute is present on the input element,
  * and the value of the input element changes, the matching model property on the scope
  * is updated. Likewise, if the value of the model property changes on the scope,
  * the value of the input element is updated.
@@ -759,10 +758,10 @@ class NgFalseValue {
  *     <input type="radio" name="foo" ng-model="category">
  *
  *
- *  - If the ng-model value corresponds to one of the radio elements, that input element will be
+ *  - If the `ng-model` value corresponds to one of the radio elements, that input element will be
  *    selected.
- *  - If the ng-model value doesn't correspond to any of the radio elements, then none of
- * the radio elements will be selected.
+ *  - If the `ng-model` value doesn't correspond to any of the radio elements, then none of
+ *    the radio elements will be selected.
  *  - When a radio button element is selected, the model is updated with its value.
  *
  * Radio buttons that do not have a `name` attribute set will have a unique `name` assigned to

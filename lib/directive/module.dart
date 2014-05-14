@@ -1,5 +1,4 @@
  /**
- *
  * Directives for [angular.dart](#angular/angular), a web framework for Dart. A directive attaches
  * a specified behavior to a DOM element.
  *
@@ -13,7 +12,6 @@
  * For example:
  *
  *     <span ng-show="ctrl.isVisible">this text is conditionally visible</span>
- *
  */
 library angular.directive;
 
@@ -55,12 +53,10 @@ part 'ng_model_validators.dart';
 part 'ng_model_options.dart';
 
 /**
- *
- * This module describes all the Angular directives.
+ * This module registers all the Angular directives.
  *
  * When instantiating an Angular application through applicationFactory,
  * DirectiveModule is automatically included.
- *
  */
 class DirectiveModule extends Module {
   DirectiveModule() {
