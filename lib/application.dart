@@ -94,7 +94,7 @@ class AngularModule extends Module {
   AngularModule() {
     install(new CoreModule());
     install(new CoreDomModule());
-    install(new DecoratorFormatter());
+    install(new DirectiveModule());
     install(new FormatterModule());
     install(new PerfModule());
     install(new RoutingModule());
