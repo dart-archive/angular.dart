@@ -6,9 +6,9 @@ part of angular.formatter_internal;
  * Null objects are converted to an empty string.
  *
  *
- * Usage:
+ * # Usage:
  *
- *     {{ expression | stringify }}
+ *     expression | stringify
  */
 @Formatter(name:'stringify')
 class Stringify implements Function {

@@ -6,13 +6,9 @@ part of angular.formatter_internal;
  *
  * The number of elements to return is specified by the `limitTo` parameter.
  *
- * Usage:
+ * # Usage
  *
- *     {{ expression | limitTo:_number_ }}
- *
- *
- *     <div ng-repeat="item in expression | limitTo:_number_">{{item}}</div>
- *
+ *     expression | limitTo:number
  *
  * Where the input expression is a [List] or [String], and `limitTo` is:
  *
@@ -25,15 +21,14 @@ part of angular.formatter_internal;
  * When operating on a [List], the returned list is always a copy even when all
  * the elements are being returned.
  *
- * Example:
+ * # Examples
  *
- * - `{{ 'abcdefghij' | limitTo: 4 }}` → `'abcd'`
- * - `{{ 'abcdefghij' | limitTo: -4 }}` → `'ghij'`
- * - `{{ 'abcdefghij' | limitTo: -100 }}` → `'abcdefghij'`
+ *     {{ 'abcdefghij' | limitTo: 4 }}       // output is 'abcd'
+ *     {{ 'abcdefghij' | limitTo: -4 }}      // output is 'ghij'
+ *     {{ 'abcdefghij' | limitTo: -100 }}    // output is 'abcdefghij'
  *
- * <br>
  *
- * This [ng-repeat] directive:
+ * This `ng-repeat` directive:
  *
  *     <li ng-repeat="i in 'abcdefghij' | limitTo:-2">{{i}}</li>
  *

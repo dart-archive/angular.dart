@@ -547,13 +547,16 @@ abstract class DetachAware {
 }
 
 /**
- * Use the @[Formatter] class annotation to register a new formatter.
+ * Use the @[Formatter] class annotation to identify a class as a formatter.
  *
  * A formatter is a pure function that performs a transformation on input data from an expression.
  * For more on formatters in Angular, see the documentation for the
  * [angular:formatter](#angular-formatter) library.
  *
- * Usage:
+ * A formatter class must have a call method with at least one parameter, which specifies the value to format. Any
+ * additional parameters are treated as arguments of the formatter.
+ *
+ * **Usage**
  *
  *     // Declaration
  *     @Formatter(name:'myFormatter')

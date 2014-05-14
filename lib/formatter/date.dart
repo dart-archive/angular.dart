@@ -5,7 +5,7 @@ part of angular.formatter_internal;
  *
  * Usage:
  *
- *     {{ date_expression | date[:format] }}
+ *     date_expression | date[:format]
  *
  * Here `format` may be specified explicitly, or by using one of the following predefined
  * localizable names:

@@ -6,9 +6,9 @@ part of angular.formatter_internal;
  * If the input is not a number, an empty string is returned.
  *
  *
- * Usage:
+ * # Usage
  *
- *     {{ number_expression | number[:fractionSize] }}
+ *     number_expression | number[:fractionSize]
  *
  */
 @Formatter(name:'number')
@@ -22,7 +22,7 @@ class Number {
    * - `value`: the value to format
    * - `fractionSize`: Number of decimal places to round the number to.
    *
-   * When fractionSize is not provided, fraction size is computed from the current locale's number
+   * When `fractionSize` is not provided, fraction size is computed from the current locale's number
    * formatting pattern. In the case of the default locale, it will be 3.
    *
    */
