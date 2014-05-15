@@ -69,7 +69,7 @@ class NgModel extends NgControl implements AttachAware {
   }
 
   /**
-    * Resets the model value to it's original (pristine) value. If the model has been interacted
+    * Resets the model value to its original (pristine) value. If the model has been interacted
     * with by the user at all then the model will be also reset to an "untouched" state.
     */
   void reset() {
@@ -266,7 +266,7 @@ class NgModel extends NgControl implements AttachAware {
  * Creates a two-way databinding between the `ng-model` expression
  * and the checkbox input element state.
  *
- * Usage:
+  * **Usage**
  *
  *     <input type="checkbox"
  *            ng-model="expr"
@@ -326,7 +326,7 @@ class InputCheckbox {
  * Creates a two-way databinding between the `ng-model` expression
  * and the `<input>` or `<textarea>` string-based input elements.
  *
- * Usage:
+  * **Usage**
  *
  *     <input type="text|url|password|email|search|tel" ng-model="myModel">
  *     <textarea ng-model="myModel"></textarea>
@@ -391,11 +391,11 @@ class InputTextLike {
  * Creates a two-way databinding between the `ng-model` expression
  * and a numeric input element.
  *
- * Usage:
+  * **Usage**
  *
  *     <input type="number|range" ng-model="myModel">
  *
- * Model:
+ * **Model**
  *
  *     num myModel;
  *
@@ -674,7 +674,7 @@ final _uidCounter = new _UidCounter();
  * When the element is selected, the `ng-model` property of that element is set to the bound value.
  * Note that `expr` can be any type; i.e., it is not restricted to [String].
  *
- * Usage:
+  * **Usage**
  *
  *     <input type=radio ng-model=model [ng-value=expr]>
  *
@@ -712,7 +712,7 @@ class NgValue {
  * Assigns the value of a bound expression to the model when an input checkbox is
  * checked.
  *
- * Usage:
+  * **Usage**
  *
  *     <input type=checkbox
  *            ng-model=model
@@ -736,7 +736,7 @@ class NgTrueValue {
  * Assigns the value of a bound expression to the model when an input checkbox is
  * unchecked.
  *
- * Usage:
+  * **Usage**
  *
  *     <input type=checkbox
  *            ng-model=model
@@ -758,7 +758,7 @@ class NgFalseValue {
  * Creates a two-way databinding between the `ng-model` expression
  * and the radio input elements in the DOM.
  *
- * Usage:
+  * **Usage**
  *
  *     <input type="radio" name="foo" ng-model="category">
  *
@@ -809,7 +809,7 @@ class InputRadio {
  * Creates a two-way databinding between the expression specified in `ng-model` and the HTML element
  * in the DOM.
  *
- * Usage:
+  * **Usage**
  *
  *     <span contenteditable ng-model="name">
  *
