@@ -668,6 +668,12 @@ class _UidCounter {
 final _uidCounter = new _UidCounter();
 
 /**
+ * Binds an expression to the value of a radio element or option,
+ * to be used when that element is selected.
+ *
+ * When the element is selected, the `ng-model` property of that element is set to the bound value.
+ * Note that `expr` can be any type; i.e., it is not restricted to [String].
+ *
  * Usage:
  *
  *     <input type=radio ng-model=model [ng-value=expr]>
@@ -682,8 +688,7 @@ final _uidCounter = new _UidCounter();
  *
  * When present, the value of this `ng-value` one-way attribute is assigned to
  * the `ng-model` property when the corresponding radio element or option is
- * selected. Note that `expr` can be not any type; i.e., it is not restricted
- * to [String].
+ * selected.
  */
 @Decorator(selector: 'input[type=radio][ng-model][ng-value]')
 @Decorator(selector: 'option[ng-value]')
@@ -704,15 +709,17 @@ class NgValue {
 }
 
 /**
+ * Assigns the value of a bound expression to the model when an input checkbox is
+ * checked.
+ *
  * Usage:
  *
  *     <input type=checkbox
  *            ng-model=model
  *            [ng-true-value=expr]>
  *
- * The initial value of the expression bound to this directive is assigned to
- * the model when the input is checked. Note that the expression can be of any
- * type, not just [String]. Also see [InputCheckboxDirective], [NgFalseValue].
+ * Note that the expression can be of any type, not just [String].
+ * Also see [InputCheckboxDirective], [NgFalseValue].
  */
 @Decorator(selector: 'input[type=checkbox][ng-model][ng-true-value]')
 class NgTrueValue {
