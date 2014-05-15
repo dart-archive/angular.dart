@@ -541,23 +541,18 @@ class NgBindTypeForDateLike {
 }
 
 /**
- * **Background: Standards and Browsers**
+ * Controls the IDL attribute that reads the value of a date/time input,
+ * to support browsers that deviate from the HTML5 standard for date/time.
  *
- * According to the
- * [HTML5 Standard](http://www.w3.org/TR/html5/forms.html#the-input-element),
- * the [dom.InputElement.valueAsDate] and [dom.InputElement.valueAsNumber] IDL
- * attributes should be available for all date/time related input types,
- * except for `datetime-local` which is limited to
- * [dom.InputElement.valueNumber]. Of course, all input types support
- * [dom.InputElement.value] which yields a [String];
- * [dom.InputElement.valueAsDate] yields a [DateTime] and
- * [dom.InputElement.valueNumber] yields a [num].
+ * The [HTML5 Standard](http://www.w3.org/TR/html5/forms.html#the-input-element) for date/time
+ * related inputs specifies that the [dom.InputElement.valueAsDate] and
+ * [dom.InputElement.valueAsNumber] IDL attributes should be available for all date/time related
+ * input types, except for `datetime-local` which is limited to [dom.InputElement.valueNumber].
  *
- * But not all browsers currently support date/time related inputs and of
- * those that do, some deviate from the standard. Hence, this directive
- * allows developers to control the IDL attribute that will be used
- * to read the value of a date/time input. This is achieved via the subordinate
- * 'ng-bind-type' directive; see [NgBindTypeForDateLike] for details.
+ * This directive creates a two-way binding between the input and a model
+ * property. The subordinate 'ng-bind-type' directive determines which input
+ * IDL attribute is read (see [NgBindTypeForDateLike] for details) and
+ * hence the type of the read values.
  *
  * **Usage**:
  *
@@ -569,23 +564,24 @@ class NgBindTypeForDateLike {
  *
  *     dynamic myModel; // one of DateTime | num | String
  *
- * This directive creates a two-way binding between the input and a model
- * property. The subordinate 'ng-bind-type' directive determines which input
- * IDL attribute is read (see [NgBindTypeForDateLike] for details) and
- * hence the type of the read values. The type of the model property value
- * determines which IDL attribute is written to: [DateTime] and [num] values
- * are assigned to [dom.InputElement.valueAsDate] and
- * [dom.InputElement.valueNumber], respectively; [String] and `null` values
- * are assigned to [dom.InputElement.value]. Setting the model to `null` will
- * clear the input if it is currently valid, otherwise, invalid input is left
- * untouched (so that the user has an opportunity to correct it). To clear the
- * input unconditionally, set the model property to the empty string ('').
+ * The type of the model property value determines which IDL attribute is written to:
+ *
+ *  - `DateTime` values are assigned to `dom.InputElement.valueAsDate`
+ *  - `num` values are assigned to `dom.InputElement.valueAsDate`
+ *  - `String` and `null` values are assigned to `dom.InputElement.value`
+ *
+ * Setting the model to `null` will clear the input if it is currently
+ * valid, otherwise, invalid input is left untouched (so that the user has an opportunity to
+ * correct it).
+ *
+ * To clear the input unconditionally, set the model property to the empty string (`''`).
  *
  * **Notes**:
+ *
  * - As prescribed by the HTML5 standard, [DateTime] values returned by the
  *   `valueAsDate` IDL attribute are meant to be in UTC.
  * - As of the HTML5 Editor's Draft 29 March 2014, datetime-local is no longer
- *   part of the standard. Other date related input are also at risk of being
+ *   part of the standard. Other date-related input are also at risk of being
  *   dropped.
  */
 
