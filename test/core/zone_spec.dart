@@ -452,7 +452,7 @@ void main() {
           });
           log('onTurnDone(end)');
         };
-        zone.defaultOnScheduleMicrotask = (microTaskFn) {
+        zone.onScheduleMicrotask = (microTaskFn) {
           log('onScheduleMicrotask(begin)');
           microtaskResult = microTaskFn();
           log('onScheduleMicrotask(end)');
@@ -478,7 +478,7 @@ void main() {
           });
           log('onTurnDone(end)');
         };
-        zone.defaultOnScheduleMicrotask = (microTaskFn) {
+        zone.onScheduleMicrotask = (microTaskFn) {
           log('onScheduleMicrotask(begin)');
           microTaskFn();
           log('onScheduleMicrotask(end)');
@@ -500,7 +500,7 @@ void main() {
         zone.onTurnDone = () {
           log('onTurnDone');
         };
-        zone.defaultOnScheduleMicrotask = (microTaskFn) {
+        zone.onScheduleMicrotask = (microTaskFn) {
           log('onScheduleMicrotask(begin)');
           microTaskFn();
           log('onScheduleMicrotask(end)');
@@ -528,7 +528,7 @@ void main() {
         zone.onTurnDone = () {
           log('onTurnDone');
         };
-        zone.defaultOnScheduleMicrotask = (microTaskFn) {
+        zone.onScheduleMicrotask = (microTaskFn) {
           log('onScheduleMicrotask(begin)');
           microTaskFn();
           log('onScheduleMicrotask(end)');
@@ -540,6 +540,36 @@ void main() {
         expect(log.result()).toEqual('onTurnStart; onScheduleMicrotask(begin); executeMicrotask;'
           ' onScheduleMicrotask(end); run; onTurnDone');
       }));
+
+      iit('should execute microtask scheduled outside the turn', (Logger log) {
+        zone = new VmTurnZone();
+
+        var taskToRun = null;
+
+        zone.onTurnDone = () {
+          if (taskToRun != null) taskToRun();
+          taskToRun = null;
+          log('onTurnDone');
+        };
+
+        zone.onScheduleMicrotask = (microTaskFn) {
+          log('onScheduleMicrotask');
+          taskToRun = microTaskFn;
+        };
+
+        var completer;
+        zone.run(() {
+          completer = new Completer();
+          completer.future.then((x) => log('future'));
+          log('first');
+        });
+        completer.complete();
+
+        expect(log).toEqual([
+            'first', 'onTurnDone',
+            'onScheduleMicrotask', 'future', 'onTurnDone'
+        ]);
+      });
 
     });
   });

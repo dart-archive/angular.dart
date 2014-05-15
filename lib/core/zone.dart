@@ -60,8 +60,6 @@ class VmTurnZone {
   /// an "inner" [Zone], which is a child of the outer [Zone].
   async.Zone _innerZone;
 
-  ZoneScheduleMicrotask defaultOnScheduleMicrotask;
-
   /**
    * Associates with this
    *
@@ -82,6 +80,7 @@ class VmTurnZone {
     onError = _defaultOnError;
     onTurnDone = _defaultOnTurnDone;
     onTurnStart = _defaultOnTurnStart;
+    onScheduleMicrotask = _defaultOnScheduleMicrotask;
   }
 
   List _asyncQueue = [];
@@ -115,11 +114,7 @@ class VmTurnZone {
 
   _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate,
                        async.Zone zone, fn()) {
-    if (defaultOnScheduleMicrotask != null) {
-      return defaultOnScheduleMicrotask(fn);
-    }
-
-    _asyncQueue.add(() => delegate.run(zone, fn));
+    onScheduleMicrotask(() => delegate.run(zone, fn));
     if (_runningInTurn == 0 && !_inFinishTurn)  _finishTurn(zone, delegate);
   }
 
@@ -196,6 +191,13 @@ class VmTurnZone {
    */
   ZoneOnTurnDone onTurnDone;
   void _defaultOnTurnDone() => null;
+
+  /**
+   * Called any time a microtask is scheduled. If you override [onScheduleMicrotask], you
+   * are expected to call the function at some point.
+   */
+  ZoneScheduleMicrotask onScheduleMicrotask;
+  void _defaultOnScheduleMicrotask(fn) => _asyncQueue.add(fn);
 
   LongStackTrace _longStacktrace = null;
 
