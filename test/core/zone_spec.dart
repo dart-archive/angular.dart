@@ -541,7 +541,7 @@ void main() {
           ' onScheduleMicrotask(end); run; onTurnDone');
       }));
 
-      iit('should execute microtask scheduled outside the turn', (Logger log) {
+      it('should execute microtask scheduled outside the turn', (Logger log) {
         zone = new VmTurnZone();
 
         var taskToRun = null;
