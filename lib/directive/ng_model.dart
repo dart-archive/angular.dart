@@ -733,14 +733,16 @@ class NgTrueValue {
 }
 
 /**
+ * Assigns the value of a bound expression to the model when an input checkbox is
+ * unchecked.
+ *
  * Usage:
  *
  *     <input type=checkbox
  *            ng-model=model
  *            [ng-false-value=expr]>
  *
- * The initial value of the expression bound to this directive is assigned to
- * the model when the input is unchecked. Note that the expression can be of any
+ * Note that the expression can be of any
  * type, not just [String]. Also see [InputCheckboxDirective], [NgTrueValue].
  */
 @Decorator(selector: 'input[type=checkbox][ng-model][ng-false-value]')
