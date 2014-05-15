@@ -353,7 +353,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     lines.add('WatchGroup[$id](watches: ${watches.join(', ')})');
     var childGroup = _watchGroupHead;
     while (childGroup != null) {
-      lines.add('  ' + childGroup.toString().replace('\n', '\n  '));
+      lines.add('  ' + childGroup.toString().replaceAll('\n', '\n  '));
       childGroup = childGroup._nextWatchGroup;
     }
     return lines.join('\n');

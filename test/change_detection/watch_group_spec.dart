@@ -71,6 +71,16 @@ void main() {
       logger = _logger;
     }));
 
+    it('should have a toString for debugging', () {
+      watchGrp.watch(parse('a'), (v, p) {});
+      watchGrp.newGroup({});
+      expect("$watchGrp").toEqual(
+          'WATCHES: MARKER[null], MARKER[null]\n'
+          'WatchGroup[](watches: MARKER[null])\n'
+          '  WatchGroup[.0](watches: MARKER[null])'
+      );
+    });
+
     describe('watch lifecycle', () {
       it('should prevent reaction fn on removed', () {
         context['a'] = 'hello';
