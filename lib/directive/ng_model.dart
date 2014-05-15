@@ -1,10 +1,10 @@
 part of angular.directive;
 
 /**
- * NgModelConverter is the class interface for performing transformations on
- * the viewValue and modelValue properties on a model. A new converter can be created
- * by implementing the NgModelConverter class and then attaching to a model via the
- * provided setter.
+ * Class interface for performing transformations on the viewValue and modelValue properties on a model.
+ *
+ * A new converter can be created by implementing the NgModelConverter class and then attaching to
+ * a model via the provided setter.
  */
 abstract class NgModelConverter {
   String get name;
@@ -18,6 +18,7 @@ class _NoopModelConverter extends NgModelConverter {
 
 /**
  * Ng-model directive is responsible for reading/writing to the model.
+ *
  * The directive itself is headless. (It does not know how to render or what
  * events to listen for.) It is meant to be used with other directives which
  * provide the rendering and listening capabilities. The directive itself
