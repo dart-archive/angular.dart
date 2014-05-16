@@ -11,7 +11,7 @@ main() {
     it('should set.text', (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
       var element = e('<div ng-bind="a"></div>');
       compiler([element], directives)(injector, [element]);
-      scope.context['a'] = "abc123";
+      scope.context.a = "abc123";
       scope.apply();
       expect(element.text).toEqual('abc123');
     });
@@ -21,17 +21,17 @@ main() {
       var element = _.compile('<div ng-bind="value"></div>');
 
       scope.apply(() {
-        scope.context['value'] = null;
+        scope.context.value = null;
       });
       expect(element.text).toEqual('');
 
       scope.apply(() {
-        scope.context['value'] = true;
+        scope.context.value = true;
       });
       expect(element.text).toEqual('true');
 
       scope.apply(() {
-        scope.context['value'] = 1;
+        scope.context.value = 1;
       });
       expect(element.text).toEqual('1');
     });

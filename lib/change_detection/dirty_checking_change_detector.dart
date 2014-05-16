@@ -467,22 +467,17 @@ class DirtyCheckingRecord<H> implements WatchRecord<H> {
       return;
     }
 
-    if (object is Map) {
-      _mode =  _MODE_MAP_FIELD_;
-      _getter = null;
-    } else {
-      while (object is ContextLocals) {
-        var ctx = object as ContextLocals;
-        if (ctx.hasProperty(field)) {
-          _mode =  _MODE_MAP_FIELD_;
-          _getter = null;
-          return;
-        }
-        object = ctx.parentContext;
+    while (object is ContextLocals) {
+      var ctx = object as ContextLocals;
+      if (ctx.hasProperty(field)) {
+        _mode =  _MODE_MAP_FIELD_;
+        _getter = null;
+        return;
       }
-      _mode = _MODE_GETTER_OR_METHOD_CLOSURE_;
-      _getter = _fieldGetterFactory.getter(object, field);
+      object = ctx.parentContext;
     }
+    _mode = _MODE_GETTER_OR_METHOD_CLOSURE_;
+    _getter = _fieldGetterFactory.getter(object, field);
   }
 
   bool check() {

@@ -12,7 +12,7 @@ import '../_specs.dart';
 class BarComponent {
   var invoked = false;
   BarComponent(RootScope scope) {
-    scope.context['ctrl'] = this;
+    scope.context.ctrl = this;
   }
 }
 
@@ -44,7 +44,7 @@ main() {
         </div>''');
 
       _.triggerEvent(e.querySelector('[on-abc]'), 'abc');
-      expect(_.rootScope.context['invoked']).toEqual(true);
+      expect(_.rootScope.context.invoked).toEqual(true);
     }));
 
     it('shoud register and handle event with long name', inject((TestBed _) {
@@ -54,7 +54,7 @@ main() {
         </div>''');
 
       _.triggerEvent(e.querySelector('[on-my-new-event]'), 'myNewEvent');
-      expect(_.rootScope.context['invoked']).toEqual(true);
+      expect(_.rootScope.context.invoked).toEqual(true);
     }));
 
     it('shoud have model updates applied correctly', inject((TestBed _) {
@@ -76,7 +76,7 @@ main() {
       var shadowRoot = e.shadowRoot;
       var span = shadowRoot.querySelector('span');
       span.dispatchEvent(new CustomEvent('abc'));
-      var ctrl = _.rootScope.context['ctrl'];
+      var ctrl = _.rootScope.context.ctrl;
       expect(ctrl.invoked).toEqual(true);
     }));
 
@@ -95,7 +95,7 @@ main() {
       var shadowRootScope = _.getScope(shadowRoot);
       expect(shadowRootScope.context.invoked).toEqual(false);
 
-      expect(_.rootScope.context['invoked']).toEqual(true);
+      expect(_.rootScope.context.invoked).toEqual(true);
     })));
   });
 }

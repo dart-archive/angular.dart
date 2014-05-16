@@ -48,7 +48,7 @@ main() {
       microLeap();
       _.rootScope.apply();
 
-      expect(_.rootScope.context['p'].injector.get(RouteProvider) is NgView).toBeTruthy();
+      expect(_.rootScope.context.$probes['p'].injector.get(RouteProvider) is NgView).toBeTruthy();
     }));
 
 
@@ -83,8 +83,8 @@ main() {
     it('should create and destroy a child scope', async((RootScope scope) {
       Element root = _.compile('<ng-view></ng-view>');
 
-      var getChildScope = () => scope.context['p'] == null ?
-          null : scope.context['p'].scope;
+      var getChildScope = () => scope.context.$probes['p'] == null ?
+          null : scope.context.$probes['p'].scope;
 
       expect(root).toHaveText('');
       expect(getChildScope()).toBeNull();
