@@ -29,4 +29,4 @@ done
 
 $NGDART_SCRIPT_DIR/generate-expressions.sh
 
-$DARTANALYZER $OUT
+$DARTANALYZER --no-hints $OUT
