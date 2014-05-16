@@ -140,7 +140,7 @@ class VmTurnZone {
           delegate.run(zone, onTurnStart);
         }
         while (!_asyncQueue.isEmpty) {
-          delegate.run(zone, _asyncQueue.removeAt(0));
+          _asyncQueue.removeAt(0)();
         }
         delegate.run(zone, onTurnDone);
         _currentlyInTurn = false;
