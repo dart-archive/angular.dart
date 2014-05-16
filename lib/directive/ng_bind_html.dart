@@ -2,7 +2,7 @@ part of angular.directive;
 
 /**
  * Sanitizes an HTML string and invokes the browser's parser to insert the string into
- * the containing element in the DOM. `Selector:[ng-bind-html]`
+ * the containing element in the DOM. `Selector: [ng-bind-html]`
  *
  * # Example
  *

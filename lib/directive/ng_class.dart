@@ -2,7 +2,7 @@ part of angular.directive;
 
 /**
  * The `ngClass` directive allows you to dynamically style an HTML element,
- * by binding to an expression that represents the classes to be bound.
+ * by binding to an expression that represents the classes to be bound. `Selector: [ng-class]`
  *
  * Classes are specified by a bound model that can be a string, array, or map:
  *
