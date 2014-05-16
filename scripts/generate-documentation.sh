@@ -26,6 +26,7 @@ cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
     angular/formatter/module.dart \
     angular/routing/module.dart \
     angular/mock/module.dart \
+    angular/messages/module.dart \
     angular/perf/module.dart \
     angular/application_factory.dart \
     angular/application_factory_static.dart \

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>[ng-message] { color:white; background:maroon; }</style>
+</head>
+<body>
+
+  <script type="text/ng-template" id="tpl">
+    <div ng-message="ng-required">You did not enter a value</div>
+    <div ng-message="ng-maxlength">{{ $control.viewValue }} is too long</div>
+    <div ng-message="ng-pattern">You have incorrectly entered the value</div>
+    <div ng-message="ng-email">Your email is incorrect</div>
+  </script>
+
+  <form name="myForm">
+    <div class="form-input">
+      <label>Email Address:</label>
+      <input type="email"
+             name="email"
+             autocomplete="off"
+             minlength="5"
+             maxlength="10"
+             required
+             ng-model="email">
+      <div ng-messages="myForm['email'].errorStates" ng-messages-include="tpl" ng-messages-multiple="true">
+        <div ng-message="ng-maxlength">{{ $control.viewValue }} is too long</div>
+      </div>
+    </div>
+
+    <div class="form-input">
+      <label>First Name:</label>
+      <input type="text" ng-model="first_name" name="first_name" required autocomplete="off" pattern="[A-Z]">
+
+      <div ng-messages="myForm['first_name'].errorStates" ng-messages-include="tpl">
+        <div ng-message="ng-required">You did not enter your first name</div>
+        <div ng-message="ng-pattern">You did not enter your first name properly</div>
+      </div>
+    </div>
+
+    <div class="form-input">
+      <label>Username:</label>
+      <input type="text" ng-model="username" name="username" required autocomplete="off">
+
+      <div ng-messages="myForm['username'].errorStates" ng-messages-include="tpl"></div>
+    </div>
+
+    <div class="form-input">
+      <label>Age:</label>
+      <input type="number" ng-model="age" name="age" required autocomplete="off">
+
+      <div ng-messages="myForm['age'].errorStates">
+        <div ng-message="ng-number">You did not enter your age properly</div>
+      </div>
+    </div>
+  </form>
+
+<script type="application/dart" src="messages.dart"></script>
+<script src="packages/browser/dart.js"></script>
+</body>
+</html>

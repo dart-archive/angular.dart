@@ -1,13 +1,13 @@
 part of angular.directive;
 
 /**
- * The NgControl class is a super-class for handling info and error states between
- * inner controls and models. NgControl will automatically apply the associated CSS
+ * The FormControl class is a super-class for handling info and error states between
+ * inner controls and models. FormControl will automatically apply the associated CSS
  * classes for the error and info states that are applied as well as status flags.
- * NgControl is used with the form and fieldset as well as all other directives that
+ * FormControl is used with the form and fieldset as well as all other directives that
  * are used for user input with NgModel.
  */
-abstract class NgControl implements AttachAware, DetachAware {
+abstract class FormControl implements AttachAware, DetachAware {
   static const NG_VALID          = "ng-valid";
   static const NG_INVALID        = "ng-invalid";
   static const NG_PRISTINE       = "ng-pristine";
@@ -20,28 +20,28 @@ abstract class NgControl implements AttachAware, DetachAware {
   String _name;
   bool _submitValid;
 
-  final NgControl _parentControl;
+  final FormControl _parentControl;
   final Animate _animate;
   final NgElement _element;
 
-  final _controls = new List<NgControl>();
-  final _controlByName = new Map<String, List<NgControl>>();
+  final _controls = new List<FormControl>();
+  final _controlByName = new Map<String, List<FormControl>>();
 
   /**
     * The list of errors present on the control represented by an error name and
     * an inner control instance.
     */
-  final errorStates = new Map<String, Set<NgControl>>();
+  final errorStates = new Map<String, Set<FormControl>>();
 
   /**
     * The list of info messages present on the control represented by an state name and
     * an inner control instance.
     */
-  final infoStates = new Map<String, Set<NgControl>>();
+  final infoStates = new Map<String, Set<FormControl>>();
 
-  NgControl(NgElement this._element, Injector injector,
+  FormControl(NgElement this._element, Injector injector,
       Animate this._animate)
-      : _parentControl = injector.parent.get(NgControl);
+      : _parentControl = injector.parent.get(FormControl);
 
   @override
   void attach() {
@@ -75,7 +75,7 @@ abstract class NgControl implements AttachAware, DetachAware {
     });
   }
 
-  NgControl get parentControl => _parentControl;
+  FormControl get parentControl => _parentControl;
 
   /**
     * Whether or not the form has been submitted yet.
@@ -135,12 +135,12 @@ abstract class NgControl implements AttachAware, DetachAware {
   /**
    * Registers a form control into the form for validation.
    *
-   * * [control] - The form control which will be registered (see [NgControl]).
+   * * [control] - The form control which will be registered (see [FormControl]).
    */
-  void addControl(NgControl control) {
+  void addControl(FormControl control) {
     _controls.add(control);
     if (control.name != null) {
-      _controlByName.putIfAbsent(control.name, () => <NgControl>[]).add(control);
+      _controlByName.putIfAbsent(control.name, () => <FormControl>[]).add(control);
     }
   }
 
@@ -148,9 +148,9 @@ abstract class NgControl implements AttachAware, DetachAware {
    * De-registers a form control from the list of controls associated with the
    * form.
    *
-   * * [control] - The form control which will be de-registered (see [NgControl]).
+   * * [control] - The form control which will be de-registered (see [FormControl]).
    */
-  void removeControl(NgControl control) {
+  void removeControl(FormControl control) {
     _controls.remove(control);
     String key = control.name;
     if (key != null && _controlByName.containsKey(key)) {
@@ -162,9 +162,9 @@ abstract class NgControl implements AttachAware, DetachAware {
   /**
    * Clears all the info and error states that are associated with the control.
    *
-   * * [control] - The form control which will be cleared of all state (see [NgControl]).
+   * * [control] - The form control which will be cleared of all state (see [FormControl]).
    */
-  void removeStates(NgControl control) {
+  void removeStates(FormControl control) {
     bool hasRemovals = false;
     errorStates.keys.toList().forEach((state) {
       Set matchingControls = errorStates[state];
@@ -201,7 +201,7 @@ abstract class NgControl implements AttachAware, DetachAware {
    * * [childControl] - The child control that contains the error.
    * * [errorName] - The name of the given error (e.g. ng-required, ng-pattern, etc...).
    */
-  void addErrorState(NgControl childControl, String errorName) {
+  void addErrorState(FormControl childControl, String errorName) {
     element..addClass(errorName + '-invalid')..removeClass(errorName + '-valid');
     errorStates.putIfAbsent(errorName, () => new Set()).add(childControl);
     _parentControl.addErrorState(this, errorName);
@@ -215,7 +215,7 @@ abstract class NgControl implements AttachAware, DetachAware {
    * * [childControl] - The child control that contains the error.
    * * [errorName] - The name of the given error (e.g. ng-required, ng-pattern, etc...).
    */
-  void removeErrorState(NgControl childControl, String errorName) {
+  void removeErrorState(FormControl childControl, String errorName) {
     if (!errorStates.containsKey(errorName)) return;
 
     bool hasError = _controls.any((child) => child.hasErrorState(errorName));
@@ -245,7 +245,7 @@ abstract class NgControl implements AttachAware, DetachAware {
    * * [childControl] - The child control that contains the error.
    * * [stateName] - The name of the given error (e.g. ng-required, ng-pattern, etc...).
    */
-  void addInfoState(NgControl childControl, String stateName) {
+  void addInfoState(FormControl childControl, String stateName) {
     String oppositeState = _getOppositeInfoState(stateName);
     if (oppositeState != null) element.removeClass(oppositeState);
     element.addClass(stateName);
@@ -262,7 +262,7 @@ abstract class NgControl implements AttachAware, DetachAware {
    * * [childControl] - The child control that contains the error.
    * * [stateName] - The name of the given error (e.g. ng-required, ng-pattern, etc...).
    */
-  void removeInfoState(NgControl childControl, String stateName) {
+  void removeInfoState(FormControl childControl, String stateName) {
     String oppositeState = _getOppositeInfoState(stateName);
     if (infoStates.containsKey(stateName)) {
       bool hasState = _controls.any((child) =>
@@ -274,17 +274,17 @@ abstract class NgControl implements AttachAware, DetachAware {
         _parentControl.removeInfoState(this, stateName);
       }
     } else if (oppositeState != null) {
-      NgControl parent = this;
+      FormControl parent = this;
       do {
         parent.element..addClass(oppositeState)..removeClass(stateName);
         parent = parent.parentControl;
       }
-      while(parent != null && parent is! NgNullControl);
+      while(parent != null && parent is! NullFormControl);
     }
   }
 }
 
-class NgNullControl implements NgControl {
+class NullFormControl implements FormControl {
   var _name, _dirty, _valid, _submitValid, _pristine, _element, _touched;
   var _controls, _parentControl, _controlName, _animate, infoStates, errorStates;
   var errors, _controlByName;
@@ -294,7 +294,7 @@ class NgNullControl implements NgControl {
 
   void addControl(control) {}
   void removeControl(control) {}
-  void updateControlValidity(NgControl ctrl, String errorType, bool isValid) {}
+  void updateControlValidity(FormControl ctrl, String errorType, bool isValid) {}
 
   String get name => null;
   void set name(name) {}
@@ -312,10 +312,10 @@ class NgNullControl implements NgControl {
   get parentControl => null;
 
   String _getOppositeInfoState(String state) => null;
-  void addErrorState(NgControl control, String state) {}
-  void removeErrorState(NgControl control, String state) {}
-  void addInfoState(NgControl control, String state) {}
-  void removeInfoState(NgControl control, String state) {}
+  void addErrorState(FormControl control, String state) {}
+  void removeErrorState(FormControl control, String state) {}
+  void addInfoState(FormControl control, String state) {}
+  void removeInfoState(FormControl control, String state) {}
 
   void reset() {}
   void attach() {}
@@ -323,5 +323,5 @@ class NgNullControl implements NgControl {
 
   bool hasErrorState(String key) => false;
 
-  void removeStates(NgControl control) {}
+  void removeStates(FormControl control) {}
 }
