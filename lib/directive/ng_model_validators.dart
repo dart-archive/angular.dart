@@ -14,6 +14,20 @@ abstract class NgValidator {
   bool isValid(modelValue);
 }
 
+abstract class _NgModelValidator implements NgValidator, AttachAware, DetachAware {
+  final NgModel _ngModel;
+
+  _NgModelValidator(this._ngModel);
+
+  attach() {
+    _ngModel.addValidator(this);
+  }
+
+  detach() {
+    _ngModel.removeValidator(this);
+  }
+}
+
 /**
  * Validates the model depending if required or ng-required is present on the element.
  */
@@ -22,15 +36,12 @@ abstract class NgValidator {
 @Decorator(
     selector: '[ng-model][ng-required]',
     map: const {'ng-required': '=>required'})
-class NgModelRequiredValidator implements NgValidator {
+class NgModelRequiredValidator extends _NgModelValidator {
 
   final String name = 'ng-required';
   bool _required = true;
-  final NgModel _ngModel;
 
-  NgModelRequiredValidator(NgModel this._ngModel) {
-    _ngModel.addValidator(this);
-  }
+  NgModelRequiredValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(modelValue) {
     // Any element which isn't required is always valid.
@@ -53,16 +64,14 @@ class NgModelRequiredValidator implements NgValidator {
  * Validates the model to see if its contents match a valid URL pattern.
  */
 @Decorator(selector: 'input[type=url][ng-model]')
-class NgModelUrlValidator implements NgValidator {
+class NgModelUrlValidator extends _NgModelValidator {
   static final URL_REGEXP = new RegExp(
       r'^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?' +
       r'(\/|\/([\w#!:.?+=&%@!\-\/]))?$');
 
   final String name = 'ng-url';
 
-  NgModelUrlValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelUrlValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(modelValue) =>
       modelValue == null || modelValue.isEmpty || URL_REGEXP.hasMatch(modelValue);
@@ -72,15 +81,13 @@ class NgModelUrlValidator implements NgValidator {
  * Validates the model to see if its contents match a valid email pattern.
  */
 @Decorator(selector: 'input[type=email][ng-model]')
-class NgModelEmailValidator implements NgValidator {
+class NgModelEmailValidator extends _NgModelValidator {
   static final EMAIL_REGEXP = new RegExp(
       r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,6}$');
 
   final String name = 'ng-email';
 
-  NgModelEmailValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelEmailValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(modelValue) =>
       modelValue == null || modelValue.isEmpty || EMAIL_REGEXP.hasMatch(modelValue);
@@ -91,13 +98,11 @@ class NgModelEmailValidator implements NgValidator {
  */
 @Decorator(selector: 'input[type=number][ng-model]')
 @Decorator(selector: 'input[type=range][ng-model]')
-class NgModelNumberValidator implements NgValidator {
+class NgModelNumberValidator extends _NgModelValidator {
 
   final String name = 'ng-number';
 
-  NgModelNumberValidator(NgModel ngModel) {
-    ngModel.addValidator(this);
-  }
+  NgModelNumberValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(modelValue) {
     if (modelValue != null) {
@@ -125,15 +130,12 @@ class NgModelNumberValidator implements NgValidator {
 @Decorator(
     selector: 'input[type=range][ng-model][ng-max]',
     map: const {'ng-max': '=>max'})
-class NgModelMaxNumberValidator implements NgValidator {
+class NgModelMaxNumberValidator extends _NgModelValidator {
 
   final String name = 'ng-max';
   double _max;
-  final NgModel _ngModel;
 
-  NgModelMaxNumberValidator(NgModel this._ngModel) {
-    _ngModel.addValidator(this);
-  }
+  NgModelMaxNumberValidator(NgModel ngModel) : super(ngModel);
 
   @NgAttr('max')
   get max => _max;
@@ -176,15 +178,12 @@ class NgModelMaxNumberValidator implements NgValidator {
 @Decorator(
     selector: 'input[type=range][ng-model][ng-min]',
     map: const {'ng-min': '=>min'})
-class NgModelMinNumberValidator implements NgValidator {
+class NgModelMinNumberValidator extends _NgModelValidator {
 
   final String name = 'ng-min';
   double _min;
-  final NgModel _ngModel;
 
-  NgModelMinNumberValidator(NgModel this._ngModel) {
-    _ngModel.addValidator(this);
-  }
+  NgModelMinNumberValidator(NgModel ngModel) : super(ngModel);
 
   @NgAttr('min')
   get min => _min;
@@ -224,15 +223,12 @@ class NgModelMinNumberValidator implements NgValidator {
 @Decorator(
     selector: '[ng-model][ng-pattern]',
     map: const {'ng-pattern': '=>pattern'})
-class NgModelPatternValidator implements NgValidator {
+class NgModelPatternValidator extends _NgModelValidator {
 
   final String name = 'ng-pattern';
   RegExp _pattern;
-  final NgModel _ngModel;
 
-  NgModelPatternValidator(NgModel this._ngModel) {
-    _ngModel.addValidator(this);
-  }
+  NgModelPatternValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(modelValue) {
     //remember, only required validates for the input being empty
@@ -256,15 +252,12 @@ class NgModelPatternValidator implements NgValidator {
 @Decorator(
     selector: '[ng-model][ng-minlength]',
     map: const {'ng-minlength': '=>minlength'})
-class NgModelMinLengthValidator implements NgValidator {
+class NgModelMinLengthValidator extends _NgModelValidator {
 
   final String name = 'ng-minlength';
   int _minlength;
-  final NgModel _ngModel;
 
-  NgModelMinLengthValidator(NgModel this._ngModel) {
-    _ngModel.addValidator(this);
-  }
+  NgModelMinLengthValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(modelValue) {
     //remember, only required validates for the input being empty
@@ -288,15 +281,12 @@ class NgModelMinLengthValidator implements NgValidator {
 @Decorator(
     selector: '[ng-model][ng-maxlength]',
     map: const {'ng-maxlength': '=>maxlength'})
-class NgModelMaxLengthValidator implements NgValidator {
+class NgModelMaxLengthValidator extends _NgModelValidator {
 
   final String name = 'ng-maxlength';
   int _maxlength = 0;
-  final NgModel _ngModel;
 
-  NgModelMaxLengthValidator(NgModel this._ngModel) {
-    _ngModel.addValidator(this);
-  }
+  NgModelMaxLengthValidator(NgModel ngModel) : super(ngModel);
 
   bool isValid(modelValue) =>
       _maxlength == 0 || (modelValue == null ? 0 : modelValue.length) <= _maxlength;
