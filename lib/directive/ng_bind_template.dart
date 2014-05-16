@@ -1,10 +1,13 @@
 part of angular.directive;
 
 /**
- * The [NgBindTemplate] specifies that the element text content should
- * be replaced with the interpolation of the template in the ngBindTemplate
- * attribute. Unlike ngBind, the ngBindTemplate can contain multiple {{ }}
- * expressions.
+ * Replaces the text content of an element with an interpolated template. `Selector:[ng-bind-template]`
+ *
+ * # Example
+ *
+ *     <div ng-bind-template="{{salutation}} {{name}}!">
+ *
+ * Unlike [ngBind], the `ng-bind-template` attribute can contain multiple `{{ }}` expressions.
  */
 @Decorator(
     selector: '[ng-bind-template]',

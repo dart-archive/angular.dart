@@ -236,7 +236,7 @@ bool _applyAuthorStylesDeprecationWarningPrinted = false;
 bool _resetStyleInheritanceDeprecationWarningPrinted = false;
 
 /**
- * Meta-data marker placed on a class which should act as a controller for the
+ * Annotation placed on a class which should act as a controller for the
  * component. Angular components are a light-weight version of web-components.
  * Angular components use shadow-DOM for rendering their templates.
  *
@@ -249,7 +249,8 @@ bool _resetStyleInheritanceDeprecationWarningPrinted = false;
  *
  * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
- * * `onShadowRoot(ShadowRoot shadowRoot)` - Called when [ShadowRoot] is loaded.
+ * * `onShadowRoot(ShadowRoot shadowRoot)` - Called when
+ * [ShadowRoot](https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart-dom-html.ShadowRoot) is loaded.
  */
 class Component extends Directive {
   /**
@@ -362,7 +363,7 @@ class Component extends Directive {
 }
 
 /**
- * Meta-data marker placed on a class which should act as a directive.
+ * Annotation placed on a class which should act as a directive.
  *
  * Angular directives are instantiated using dependency injection, and can
  * ask for any injectable object in their constructor. Directives
@@ -402,7 +403,7 @@ class Decorator extends Directive {
 }
 
 /**
- * Meta-data marker placed on a class which should act as a controller for your
+ * Annotation placed on a class which should act as a controller for your
  * application.
  *
  * Controllers are essentially [Decorator]s with few key differences:

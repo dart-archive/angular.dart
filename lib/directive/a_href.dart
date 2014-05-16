@@ -1,14 +1,13 @@
 part of angular.directive;
 
 /**
- * Modifies the default behavior of the HTML `<a>` element to allow for data binding.
+ * Modifies the default behavior of the HTML `<a>` element to prevent navigation from the current page when the `href`
+ * attribute is empty. `Selector: a[href]`
  *
- * When an `href` tag is empty, or when used with `ng-click`, this directive intercepts and
- * modifies  the default behavior of the `<a>` element. This change permits the easy
- * creation of action links with the [OnClick] directive, without changing the location or causing
- * a page reload.
+ * This change permits the easy creation of action links with the [OnClick] directive, without changing the location
+ * or causing a page reload.
  *
-* Example:
+ * # Example
  *
  *     <a href="" ng-click="model.save()">Save</a>
  */

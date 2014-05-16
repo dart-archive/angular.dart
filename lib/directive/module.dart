@@ -7,7 +7,8 @@
  * and providing them as part of a custom library.
  *
  * Directives consist of a class specifying the behavior, and a directive annotation (such as a
- * [Decorator] or a [Component]) that describes when the behavior should be applied.
+ * [Decorator](#angular-core-annotation.Decorator) or a [Component](#angular-core-annotation.Component)) that
+  * describes when the behavior should be applied.
  *
  * For example:
  *
