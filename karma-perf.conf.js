@@ -8,12 +8,13 @@ module.exports = function(config) {
     // all tests must be 'included', but all other libraries must be 'served' and
     // optionally 'watched' only.
     files: [
+      'packages/web_components/platform.js',
+      'packages/web_components/dart_support.js',
       'benchmark/dom/*.dart',
       'benchmark/*_perf.dart',
       'test/config/init_guinness.dart',
       {pattern: '**/*.dart', watched: true, included: false, served: true},
-      'packages/browser/dart.js',
-      'packages/browser/interop.js'
+      'packages/browser/dart.js'
     ],
 
     autoWatch: false,
