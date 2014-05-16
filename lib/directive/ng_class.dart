@@ -11,8 +11,8 @@ part of angular.directive;
  *  * Array syntax: If the expression is an array, CSS classes are additively applied to the
  *    element.
  *  * Map syntax: If the expression is a map of 'key':value pairs, then the truthiness of the
- *    value is used to determine which CSS classes are applied. (Here,
- *    the keys correspond to the CSS classes to be applied.)
+ *    value is used to determine which CSS classes are applied. (Here, the keys correspond to the
+ *    CSS classes to be applied.)
  *
  * The directive won't add duplicate classes if a particular class was already set. When the
  * expression changes, CSS classes are updated to reflect the change.
@@ -82,6 +82,8 @@ class NgClass extends _NgClassBase {
 }
 
 /**
+ * Dynamically style only odd rows in a list via data.
+ *
  * The `ngClassOdd` and `ngClassEven` directives work exactly as
  * {@link ng.directive:ngClass ngClass}, except it works in
  * conjunction with `ngRepeat` and takes affect only on odd (even) rows.
