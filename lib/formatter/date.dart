@@ -5,7 +5,7 @@ part of angular.formatter_internal;
  *
  * Usage:
  *
- *     {{ date_expression | date[:format] }}
+ *     date_expression | date[:format]
  *
  * Here `format` may be specified explicitly, or by using one of the following predefined
  * localizable names:
@@ -23,7 +23,7 @@ part of angular.formatter_internal;
  *
  *
  * For more on explicit formatting of dates and date syntax, see the documentation for the
- * [DartFormat class](http://api.dartlang.org/docs/releases/latest/intl/DateFormat.html).
+ * [DartFormat class](https://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/intl/intl.DateFormat).
  *
  */
 @Formatter(name:'date')

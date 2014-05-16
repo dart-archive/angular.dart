@@ -1,12 +1,18 @@
 part of angular.formatter_internal;
 
 /**
- * Allows you to convert a JavaScript object into JSON string. This formatter is
- * mostly useful for debugging.
+ * Converts an object into a JSON string.
  *
- * Usage:
+ * This formatter is mostly useful for debugging.
  *
- *     {{ json_expression | json }}
+ * Note that the object to convert must be directly encodable to JSON, that is, a
+ * number, boolean, string, null, list or a map with string keys).  To convert other objects, the
+ * [toEncodable](http://api.dartlang.org/apidocs/channels/stable/dartdoc-viewer/dart-convert
+ * .JsonCodec#id_encode) function must be used first.
+ *
+ * # Usage
+ *
+ *     json_expression | json
  */
 @Formatter(name:'json')
 class Json implements Function {

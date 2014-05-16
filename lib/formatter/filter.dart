@@ -8,15 +8,14 @@ typedef bool _Equals(a, b);
  * Selects a subset of items from the provided [List] and returns it as a new
  * [List].
  *
- * Usage:
+ * # Usage
  *
- *      <div ng-repeat="item in items | filter:_expression_[:_comparator_]">
+ *      filter: expression[:comparator]
  *
- * In addition to the `expression`, which is used to select a subset from the list,
- * you can also specify a `comparator` to specify how the operation is performed. 
+ * In addition to the expression, which is used to select a subset from the list,
+ * you can also specify a comparator to specify how the operation is performed. 
  *
- *
- * `expression` can be of the following types:
+ * The expression can be of the following types:
  *
  * - [String], [bool] and [num]:  Only items in the list that directly
  *   match this expression, items that are Maps with any value matching this
@@ -36,7 +35,7 @@ typedef bool _Equals(a, b);
  *   `true`.
  *
  *
- * `comparator` is optional and can be one of the following:
+ * The comparator is optional and can be one of the following:
  *
  * - `bool comparator(expected, actual)`:  The function will be called with the
  *   object value and the predicate value to compare and should return true if

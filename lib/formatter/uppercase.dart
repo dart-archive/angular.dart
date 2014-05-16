@@ -1,11 +1,11 @@
 part of angular.formatter_internal;
 
 /**
- * Converts string to uppercase.
+ * Converts a string to uppercase.
  *
- * Usage:
+ * # Usage:
  *
- *     {{ uppercase_expression | uppercase }}
+ *     expression | uppercase
  */
 @Formatter(name:'uppercase')
 class Uppercase implements Function {

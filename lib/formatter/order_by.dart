@@ -3,7 +3,30 @@ part of angular.formatter_internal;
 typedef dynamic _Mapper(dynamic e);
 
 /**
- * Orders the provided [Iterable] by the `expression` predicate.
+ * Orders the the elements of a list using a predicate.
+ *
+ * # Usage
+ *
+ *      expression | orderBy: predicate[:true]
+ *
+ * The input to orderBy must be an [Iterable] object. The predicate may be specified as:
+ *
+ * - **a string**: a string containing an expression, such as "user.lastName", used to order the list. The string
+ *   expression can be prefixed to indicate sort order:
+ *    - `+`: sort the elements in asending order. This is the default.
+ *    - `-`: sort the elements in descending order.
+ * - **a custom callable expression**: an expression that will be called to transform the element
+ *   before a sort.
+ * - **a list**: the list may consist of either strings or callable expressions.  A list expression
+ *   indicates a list of fallback expressions to use when a comparision results in the items
+ *   being equal.
+ *
+ * If the expression is explicitly empty(`orderBy:''`), the elements are sorted in
+ * ascending order, using the default comparator, `+`.
+ *
+ * Last, by appending `true`, you can set "descending order" to true, which has the same effect as the `-` comparator.
+ *
+ * # Examples
  *
  * Example 1: Simple array and single/empty expression.
  *
@@ -24,7 +47,7 @@ typedef dynamic _Mapper(dynamic e);
  *     <ul>
  *
  * The empty string expression, `''`, here signifies sorting in ascending order
- * using the default comparator.  Using `'+'` would also work as the `+` prefix
+ * using the default comparator.  Using `'+'` would also work, as the `+` prefix
  * is implied.
  *
  * To sort in descending order, you would use the `'-'` prefix.
@@ -44,7 +67,7 @@ typedef dynamic _Mapper(dynamic e);
  *
  * Example 2: Complex objects, single expression.
  *
- * You may provide a more complex expression to sort non-primitives values or
+ * You may provide a more complex expression to sort non-primitive values or
  * if you want to sort on a decorated/transformed value.
  *
  * e.g. Support you have a list `users` that looks like this:
@@ -60,7 +83,7 @@ typedef dynamic _Mapper(dynamic e);
  * If you want to list the authors sorted by `lastName`, you would use
  *
  *     <li ng-repeat="author in authors | orderBy:'lastName'">
- *       {{author.lastName}}, {{author.firstName
+ *       {{author.lastName}}, {{author.firstName}}
  *     </li>
  *
  * The string expression, `'lastName'`, indicates that the sort should be on the
@@ -135,7 +158,10 @@ class OrderBy implements Function {
   }
 
   /**
-   * expression: String/Function or Array of String/Function.
+   * Order a list by expression.
+   *
+   * - `expression`: String/Function or Array of String/Function.
+   * - `descending`: When specified, use descending order. (The default is ascending order.)
    */
   List call(List items, var expression, [bool descending=false]) {
     if (items == null) {
