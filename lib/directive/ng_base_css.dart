@@ -1,6 +1,6 @@
 part of angular.directive;
 /**
- * Specifies a base CSS to use for components defined under the directive. `Selector:[ng-base-css]`
+ * Specifies a base CSS to use for components defined under the directive. `Selector: [ng-base-css]`
  *
  * The NgBaseCss directive is typically used at the top of an Angular application, so that everything in the
  * application inherits the specified stylesheet.

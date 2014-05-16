@@ -1,7 +1,7 @@
 part of angular.directive;
 
 /**
- * Replaces the text content of an element with an interpolated template. `Selector:[ng-bind-template]`
+ * Replaces the text content of an element with an interpolated template. `Selector: [ng-bind-template]`
  *
  * # Example
  *

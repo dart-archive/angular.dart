@@ -1,11 +1,11 @@
 part of angular.directive;
 
 /**
- * The NgControl class is a super-class for handling info and error states between
- * inner controls and models. NgControl will automatically apply the associated CSS
- * classes for the error and info states that are applied as well as status flags.
- * NgControl is used with the form and fieldset as well as all other directives that
- * are used for user input with NgModel.
+ * Contains info and error states used during form and input validation.
+ *
+ * NgControl is a common superclass for forms and input controls that handles info and error states, as well as
+ * status flags. NgControl is used with the form and fieldset as well as all other directives that are used for
+ * user input with NgModel.
  */
 abstract class NgControl implements AttachAware, DetachAware {
   static const NG_VALID          = "ng-valid";
@@ -93,7 +93,7 @@ abstract class NgControl implements AttachAware, DetachAware {
   bool get invalidSubmit => _submitValid == false;
 
   String get name => _name;
-  void set name(value) {
+  void set name(String value) {
     _name = value;
   }
 

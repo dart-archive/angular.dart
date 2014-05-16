@@ -2,7 +2,7 @@ part of angular.directive;
 
 /**
  * Replaces the text content of the specified HTML element with the value of a given expression,
- * and updates the text content when the value of that expression changes. `Selector:[ng-bind]`
+ * and updates the text content when the value of that expression changes. `Selector: [ng-bind]`
  *
  * Typically, you don't use ngBind directly, but instead you use the double
  * curly markup `{{ expression }}` which is similar but less verbose.
@@ -12,7 +12,7 @@ part of angular.directive;
  * bindings from showing by using `ng-bind` instead of `{{ }}`. Since `ng-bind` is an element attribute, nothing is
  * shown to the user.
  *
- * An alternative solution to this problem would be using the [ngCloak] directive.
+ * An alternative solution to this problem would be using the [NgCloak] directive.
  */
 @Decorator(
   selector: '[ng-bind]',
