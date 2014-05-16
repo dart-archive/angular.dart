@@ -1,9 +1,9 @@
 part of angular.formatter_internal;
 
 /**
- * Allows you to convert an object to a string.
+ * Converts an object to a string.
  *
- * Null object are converted to an empty string.
+ * Null objects are converted to an empty string.
  *
  *
  * Usage:

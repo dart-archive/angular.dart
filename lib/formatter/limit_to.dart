@@ -2,20 +2,28 @@ part of angular.formatter_internal;
 
 /**
  * Creates a new List or String containing only a prefix/suffix of the
- * elements as specified by the `limit` parameter.
+ * elements.
  *
- * When operating on a List, the returned list is always a copy even when all
+ * The number of elements to return is specified by the `limitTo` parameter.
+ *
+ * Usage:
+ *
+ *     {{ expression | limitTo:_number_ }}
+ *
+ *
+ *     <div ng-repeat="item in expression | limitTo:_number_">{{item}}</div>
+ *
+ *
+ * Where the input expression is a [List] or [String], and `limitTo` is:
+ *
+ * - **a positive integer**: return _number_ items from the beginning of the list or string
+ * expression.
+ * - **a negative integer**: return _number_ items from the end of the list or string expression.
+ * - **`|limitTo|` greater than the size of the expression**: return the entire expression.
+ * - **null** or all other cases: return an empty list or string.
+ *
+ * When operating on a [List], the returned list is always a copy even when all
  * the elements are being returned.
- *
- * When the `limit` expression evaluates to a positive integer, `limit` items
- * from the beginning of the List/String are returned.  When `limit` evaluates
- * to a negative integer, `|limit|` items from the end of the List/String are
- * returned.  If `|limit|` is larger than the size of the List/String, then the
- * entire List/String is returned.  In the case of a List, a copy of the list is
- * returned.
- *
- * If the `limit` expression evaluates to a null or non-integer, then an empty
- * list is returned.  If the input is a null List/String, a null is returned.
  *
  * Example:
  *
@@ -29,7 +37,7 @@ part of angular.formatter_internal;
  *
  *     <li ng-repeat="i in 'abcdefghij' | limitTo:-2">{{i}}</li>
  *
- * results in
+ * produces the following:
  *
  *     <li>i</li>
  *     <li>j</li>

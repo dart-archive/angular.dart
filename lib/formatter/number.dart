@@ -3,7 +3,7 @@ part of angular.formatter_internal;
 /**
  * Formats a number as text.
  *
- * If the input is not a number an empty string is returned.
+ * If the input is not a number, an empty string is returned.
  *
  *
  * Usage:
@@ -17,12 +17,14 @@ class Number {
   var _nfs = new Map<String, Map<num, NumberFormat>>();
 
   /**
-   *  [value]: the value to format
+   * Format a number as text.
    *
-   *  [fractionSize]: Number of decimal places to round the number to. If this
-   *    is not provided then the fraction size is computed from the current
-   *    locale's number formatting pattern. In the case of the default locale,
-   *    it will be 3.
+   * - `value`: the value to format
+   * - `fractionSize`: Number of decimal places to round the number to.
+   *
+   * When `fractionSize` is not provided, fraction size is computed from the current locale's number
+   * formatting pattern. In the case of the default locale, it will be 3.
+   *
    */
   call(value, [fractionSize = null]) {
     if (value is String) value = double.parse(value);
