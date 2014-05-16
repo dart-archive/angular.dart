@@ -7,7 +7,7 @@ typedef dynamic _Mapper(dynamic e);
  *
  * # Usage
  *
- *      expression | orderBy: predicate[:true]
+ *      expression | orderBy:predicate[:true]
  *
  * The input to orderBy must be an [Iterable] object. The predicate may be specified as:
  *
@@ -23,7 +23,7 @@ typedef dynamic _Mapper(dynamic e);
  *
  * A string expression in the predicate can be prefixed to indicate sort order:
  *
- * - `+`: sort the elements in asending order. This is the default.
+ * - `+`: sort the elements in ascending order. This is the default.
  * - `-`: sort the elements in descending order.
  *
  * Alternately, by appending `true`, you can set "descending order" to true, which has the same effect as the `-`
@@ -107,7 +107,7 @@ typedef dynamic _Mapper(dynamic e);
  *     <li ng-repeat="author in authors | orderBy:getAuthorId">
  *
  * In the previous snippet, `getAuthorId` would evaluate to a callable when
- * evaluated on the [Scope] of the `<li>` element.  That callable is called once
+ * evaluated on the [Scope](#angular-core.Scope) of the `<li>` element.  That callable is called once
  * for each element in the list (i.e. each author object) and the sort order is
  * determined by the sort order of the value mapped by the callable.
  *
