@@ -1,14 +1,14 @@
- /**
- * Directives for [angular.dart](#angular/angular), a web framework for Dart. A directive attaches
- * a specified behavior to a DOM element.
+/**
+ * All of the core directives available in Angular. This library is included as part of [angular
+ * .dart](#angular/angular).
  *
- * This library is included as part of [angular.dart](#angular/angular). It provides all of
- * the core Directives available in Angular. You can extend Angular by writing your own directives
- * and providing them as part of a custom library.
+ * A directive attaches a specified behavior to a DOM element. You can extend Angular by writing
+ * your own directives and providing them as part of a custom library.
  *
  * Directives consist of a class specifying the behavior, and a directive annotation (such as a
- * [Decorator](#angular-core-annotation.Decorator) or a [Component](#angular-core-annotation.Component)) that
-  * describes when the behavior should be applied.
+ * [Decorator](#angular-core-annotation.Decorator) or a
+ * [Component](#angular-core-annotation.Component)) that describes when the behavior should be
+ * applied.
  *
  * For example:
  *
