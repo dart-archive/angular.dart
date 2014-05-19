@@ -14,11 +14,11 @@ env:
   - JOB=unit-dev
     CHANNEL=dev
     TESTS=vm
-    BROWSERS=Dartium
+    BROWSERS=DartiumWithWebPlatform
   - JOB=unit-stable
     CHANNEL=stable
     TESTS=vm
-    BROWSERS=Dartium
+    BROWSERS=DartiumWithWebPlatform
   global:
   - FIREFOX_VERSION="29.0"
   - CHROME_BIN=/usr/bin/google-chrome
