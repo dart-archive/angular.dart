@@ -44,10 +44,14 @@ module.exports = function(config) {
     },
 
     customLaunchers: {
-      ChromeNoSandbox: { base: 'Chrome', flags: ['--no-sandbox'] }
+      ChromeNoSandbox: { base: 'Chrome', flags: ['--no-sandbox'] },
+      // Only needed for Chrome 34.  These features are enabled by default in Chrome 35.
+      DartiumWithWebPlatform: {
+        base: 'Dartium',
+        flags: ['--enable-experimental-web-platform-features'] }
     },
 
-    browsers: ['Dartium'],
+    browsers: ['DartiumWithWebPlatform'],
 
     preprocessors: {
       'test/core/parser/generated_getter_setter.dart': ['parser-getter-setter']
