@@ -60,9 +60,11 @@ export "package:angular/core_dom/module_internal.dart" show
 
 export "package:angular/core/module_internal.dart" show
     CacheStats,
+    ComponentCssRewriter,
     ExceptionHandler,
     Interpolate,
     VmTurnZone,
+    WebPlatform,
     PrototypeMap,
     RootScope,
     Scope,
