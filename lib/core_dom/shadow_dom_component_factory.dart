@@ -30,7 +30,7 @@ class ShadowDomComponentFactory implements ComponentFactory {
 
   ShadowDomComponentFactory(this._expando);
 
-  final Map<String, async.Future<dom.StyleElement>> _styleElementCache = {};
+  final Map<_ComponentAssetKey, async.Future<dom.StyleElement>> _styleElementCache = {};
 
   FactoryFn call(dom.Node node, DirectiveRef ref) {
     return (Injector injector) {
@@ -42,8 +42,15 @@ class ShadowDomComponentFactory implements ComponentFactory {
         DirectiveMap directives = injector.get(DirectiveMap);
         NgBaseCss baseCss = injector.get(NgBaseCss);
         // This is a bit of a hack since we are returning different type then we are.
-        var componentFactory = new _ComponentFactory(node, ref.type, component,
-            injector.get(dom.NodeTreeSanitizer), _expando, baseCss, _styleElementCache);
+        var componentFactory = new _ComponentFactory(node,
+            ref.type,
+            component,
+            injector.get(dom.NodeTreeSanitizer),
+            injector.get(WebPlatform),
+            injector.get(ComponentCssRewriter),
+            _expando,
+            baseCss,
+            _styleElementCache);
         var controller = componentFactory.call(injector, scope, viewCache, http, templateCache,
             directives);
 
@@ -67,7 +74,10 @@ class _ComponentFactory implements Function {
   final dom.NodeTreeSanitizer treeSanitizer;
   final Expando _expando;
   final NgBaseCss _baseCss;
-  final Map<String, async.Future<dom.StyleElement>> _styleElementCache;
+  final Map<_ComponentAssetKey, async.Future<dom.StyleElement>>
+      _styleElementCache;
+  final ComponentCssRewriter componentCssRewriter;
+  final WebPlatform platform;
 
   dom.ShadowRoot shadowDom;
   Scope shadowScope;
@@ -75,7 +85,8 @@ class _ComponentFactory implements Function {
   var controller;
 
   _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer,
-                    this._expando, this._baseCss, this._styleElementCache);
+                    this.platform, this.componentCssRewriter, this._expando,
+                    this._baseCss, this._styleElementCache);
 
   dynamic call(Injector injector, Scope scope,
                ViewCache viewCache, Http http, TemplateCache templateCache,
@@ -92,22 +103,57 @@ class _ComponentFactory implements Function {
     // better work around is found.
     Iterable<async.Future<dom.StyleElement>> cssFutures;
     var cssUrls = []..addAll(_baseCss.urls)..addAll(component.cssUrls);
+    var tag = element.tagName.toLowerCase();
     if (cssUrls.isNotEmpty) {
-      cssFutures = cssUrls.map((cssUrl) => _styleElementCache.putIfAbsent(cssUrl, () =>
+      cssFutures = cssUrls.map((cssUrl) => _styleElementCache.putIfAbsent(
+          new _ComponentAssetKey(tag, cssUrl), () =>
         http.get(cssUrl, cache: templateCache)
           .then((resp) => resp.responseText,
             onError: (e) => '/*\n$e\n*/\n')
-          .then((styleContent) => new dom.StyleElement()..appendText(styleContent))
+          .then((String css) {
+
+            // Shim CSS if required
+            if (platform.cssShimRequired) {
+              css = platform.shimCss(css, selector: tag, cssUrl: cssUrl);
+            }
+
+            // If a css rewriter is installed, run the css through a rewriter
+            var styleElement = new dom.StyleElement()
+                ..appendText(componentCssRewriter(css, selector: tag,
+                    cssUrl: cssUrl));
+
+            // ensure there are no invalid tags or modifications
+            treeSanitizer.sanitizeTree(styleElement);
+
+            // If the css shim is required, it means that scoping does not
+            // work, and adding the style to the head of the document is
+            // preferrable.
+            if (platform.cssShimRequired) {
+              dom.document.head.append(styleElement);
+            }
+
+            return styleElement;
+          })
       )).toList();
     } else {
       cssFutures = [new async.Future.value(null)];
     }
-    var viewFuture = ComponentFactory._viewFuture(component, viewCache, directives);
+
+    var platformViewCache = new PlatformViewCache(viewCache, tag, platform);
+
+    var viewFuture = ComponentFactory._viewFuture(component, platformViewCache,
+        directives);
+
     TemplateLoader templateLoader = new TemplateLoader(
         async.Future.wait(cssFutures).then((Iterable<dom.StyleElement> cssList) {
-          cssList
-              .where((styleElement) => styleElement != null)
-              .forEach((styleElement) => shadowDom.append(styleElement.clone(true)));
+          // This prevents style duplication by only adding css to the shadow
+          // root if there is a native implementation of shadow dom.
+          if (!platform.cssShimRequired) {
+            cssList.where((styleElement) => styleElement != null)
+              .forEach((styleElement) {
+                shadowDom.append(styleElement.clone(true));
+              });
+          }
           if (viewFuture != null) {
             return viewFuture.then((ViewFactory viewFactory) {
               return (!shadowScope.isAttached) ?
@@ -142,5 +188,35 @@ class _ComponentFactory implements Function {
     probe = _expando[shadowDom] = new ElementProbe(
         injector.get(ElementProbe), shadowDom, shadowInjector, shadowScope);
     return shadowInjector;
+  }
+}
+
+class _ComponentAssetKey {
+  final String tag;
+  final String assetUrl;
+
+  final String _key;
+
+  _ComponentAssetKey(String tag, String assetUrl)
+      : _key = "$tag|$assetUrl",
+        this.tag = tag,
+        this.assetUrl = assetUrl;
+
+  @override
+  String toString() => _key;
+
+  @override
+  int get hashCode => _key.hashCode;
+
+  bool operator ==(key) =>
+      key is _ComponentAssetKey
+      && tag == key.tag
+      && assetUrl == key.assetUrl;
+}
+
+@Injectable()
+class ComponentCssRewriter {
+  String call(String css, { String selector, String cssUrl} ) {
+    return css;
   }
 }

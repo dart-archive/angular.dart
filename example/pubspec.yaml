@@ -5,6 +5,7 @@ dependencies:
     path: ../
   browser: any
   unittest: any
+  web_components: any
 
 transformers:
 - angular

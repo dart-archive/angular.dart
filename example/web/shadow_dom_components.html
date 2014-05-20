@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Components test page</title>
+    <style>
+        body {
+            margin: 0;
+            /* Extra spacing at top and bottom */
+            padding: 20px 20px 0 20px;
+            min-height: 100%;
+            font-family: sans-serif;
+        }
+        [ng-cloak] {
+            display: none;
+        }
+    </style>
+
+    <script src="packages/web_components/platform.js"></script>
+    <script src="packages/web_components/dart_support.js"></script>
+</head>
+
+<body>
+    <p ng-if="false">Just waiting for this demo app to load...</p>
+    <div class="content" ng-cloak>
+        <h1>Hi</h1>
+
+        <p>There should be <strong>three</strong> components here. One red,
+            one green, one blue:</p>
+
+        <my-component color="red">I'm a red component</my-component>
+        <my-component color="green">I'm a green component</my-component>
+        <my-component color="blue">I'm a blue component</my-component>
+
+        <br />
+        <my-component color="grey">I'm a
+            <span>content span</span></my-component>
+        <br />
+        <div class="red">I'm just a div with the <code>.red</code> class</div>
+        <div class="green">I'm just a div with the <code>.green</code> class</div>
+        <div class="blue">I'm just a div with the <code>.blue</code> class</div>
+        <br />
+        <h4>Nesting</h4>
+
+
+        <my-component color="red">
+            <my-component color="green">
+                <my-component color="blue">
+                    I'm a blue component.
+                </my-component>
+            </my-component>
+        </my-component>
+
+        <my-component color="green">
+            <my-component color="blue">
+                <my-component color="red">
+                    I'm a red component.
+                </my-component>
+            </my-component>
+        </my-component>
+
+        <my-component color="blue">
+            <my-component color="red">
+                <my-component color="green">
+                    I'm a green component.
+                </my-component>
+            </my-component>
+        </my-component>
+    </div>
+    <script type="application/dart" src="shadow_dom_components.dart"></script>
+    <script src="packages/browser/dart.js"></script>
+</body>
+</html>

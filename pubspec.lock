@@ -12,7 +12,7 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.12.0"
+    version: "0.13.0"
   benchmark_harness:
     description: benchmark_harness
     source: hosted
@@ -44,7 +44,7 @@ packages:
   intl:
     description: intl
     source: hosted
-    version: "0.9.8"
+    version: "0.9.9"
   logging:
     description: logging
     source: hosted
@@ -56,7 +56,7 @@ packages:
   mock:
     description: mock
     source: hosted
-    version: "0.10.0+1"
+    version: "0.11.0+1"
   path:
     description: path
     source: hosted
@@ -80,7 +80,7 @@ packages:
   unittest:
     description: unittest
     source: hosted
-    version: "0.10.1+2"
+    version: "0.11.0"
   utf:
     description: utf
     source: hosted
