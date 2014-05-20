@@ -15,7 +15,7 @@ import 'package:angular/core_dom/module_internal.dart';
  */
 var elementExpando = new Expando('element');
 
-publishToJavaScript() {
+void publishToJavaScript() {
   js.context
     ..['ngProbe'] = new js.JsFunction.withThis((_, nodeOrSelector) =>
         _jsProbe(ngProbe(nodeOrSelector)))
