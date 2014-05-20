@@ -37,6 +37,7 @@ part 'exception_handler.dart';
 part 'log.dart';
 part 'probe.dart';
 part 'test_bed.dart';
+part 'mock_platform.dart';
 part 'mock_window.dart';
 
 /**
@@ -47,6 +48,7 @@ part 'mock_window.dart';
  *   - [TestBed]
  *   - [Probe]
  *   - [MockHttpBackend] instead of [HttpBackend]
+ *   - [MockWebPlatform] instead of [WebPlatform]
  *   - [Logger]
  *   - [RethrowExceptionHandler] instead of [ExceptionHandler]
  *   - [VmTurnZone] which displays errors to console;
@@ -66,5 +68,8 @@ class AngularMockModule extends Module {
         ..onError = (e, s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
     });
     bind(Window, toImplementation: MockWindow);
+    var mockPlatform = new MockWebPlatform();
+    bind(MockWebPlatform, toValue: mockPlatform);
+    bind(WebPlatform, toValue: mockPlatform);
   }
 }
