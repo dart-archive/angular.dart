@@ -52,7 +52,7 @@ class ContentPort {
 
     var next;
     for (next = _beginComment.nextNode;
-         next.nodeType != dom.Node.COMMENT_NODE && next.text != endCommentText;
+         next.nodeType != dom.Node.COMMENT_NODE || next.text != endCommentText;
          next = _beginComment.nextNode) {
       _childNodes.add(next);
       next.remove();
