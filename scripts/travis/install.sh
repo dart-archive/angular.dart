@@ -12,7 +12,7 @@ shopt -s nocasematch
 
 if [[ $BROWSERS =~ "dartium" ]]; then
   echo "Installing Dartium from $DARTIUM_ZIP"
-  curl $DARTIUM_ZIP > dartium.zip
+  curl -L $DARTIUM_ZIP > dartium.zip
   unzip dartium.zip > /dev/null
   rm -rf dartium
   rm dartium.zip
