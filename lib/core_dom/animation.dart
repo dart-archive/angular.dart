@@ -10,6 +10,16 @@ part of angular.core.dom_internal;
 @Injectable()
 class Animate {
   /**
+   * When set to false, all animations are disabled.  When true, animations are
+   * allowed.
+   */
+  bool _animationsAllowed = true;
+  bool get animationsAllowed => _animationsAllowed;
+  void set animationsAllowed(bool allowed) {
+    _animationsAllowed = allowed;
+  }
+
+  /**
    * Add the [cssClass] to the classes on [element] after running any
    * defined animations.
    */
