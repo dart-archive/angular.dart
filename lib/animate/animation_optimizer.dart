@@ -13,6 +13,11 @@ class AnimationOptimizer {
   final Map<Animation, dom.Element> _animations = new Map<Animation,
       dom.Element>();
 
+  /**
+   * Toggle to disable all animations through this optimizer.
+   * TODO(chirayu): Rename to animationsDisabled instead.
+   */
+  bool animationsAllowed = true;
   final Map<dom.Node, bool> _alwaysAnimate = new Map<dom.Node, bool>();
   final Map<dom.Node, bool> _alwaysAnimateChildren = new Map<dom.Node, bool>();
 
@@ -103,6 +108,9 @@ class AnimationOptimizer {
    * and [false] if the optimizer thinks that it should not execute.
    */
   bool shouldAnimate(dom.Node node) {
+    if (!animationsAllowed) {
+      return false;
+    }
     bool alwaysAnimate = _alwaysAnimate[node];
     if (alwaysAnimate != null) {
       return alwaysAnimate;
