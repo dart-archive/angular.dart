@@ -26,9 +26,9 @@ class AttrMustache {
 
   // This Directive is special and does not go through injection.
   AttrMustache(this._attrs,
-                          String this._attrName,
-                          AST valueAST,
-                          Scope scope) {
+               String this._attrName,
+               AST valueAST,
+               Scope scope) {
     _updateMarkup('', 'INITIAL-VALUE');
 
     _attrs.listenObserverChanges(_attrName, (hasObservers) {

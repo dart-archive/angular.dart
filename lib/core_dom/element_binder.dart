@@ -237,9 +237,8 @@ class ElementBinder {
   void _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
                                  visibility) {
     if (ref.type == TextMustache) {
-      nodeModule.bind(TextMustache, toFactory: (Injector injector) {
-        return new TextMustache(node, ref.valueAST, injector.getByKey(SCOPE_KEY));
-      });
+      nodeModule.bind(TextMustache, toFactory: (Injector injector) => new TextMustache(
+              node, ref.valueAST, injector.getByKey(SCOPE_KEY)));
     } else if (ref.type == AttrMustache) {
       if (nodesAttrsDirectives.isEmpty) {
         nodeModule.bind(AttrMustache, toFactory: (Injector injector) {
@@ -310,6 +309,11 @@ class ElementBinder {
       probe = _expando[node] =
           new ElementProbe(parentInjector.getByKey(ELEMENT_PROBE_KEY),
                            node, nodeInjector, scope);
+      directiveRefs.forEach((DirectiveRef ref) {
+        if (ref.valueAST != null) {
+          probe.bindingExpressions.add(ref.valueAST.expression);
+        }
+      });
       scope.on(ScopeEvent.DESTROY).listen((_) {
         _expando[node] = null;
       });
