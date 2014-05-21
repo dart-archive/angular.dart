@@ -4,7 +4,7 @@ import 'dart:async';
 
 import '../_specs.dart';
 
-main() {
+_run(bool animationsAllowed) {
   describe('CssAnimate', () {
     TestBed _;
     Animate animate;
@@ -12,9 +12,10 @@ main() {
 
     beforeEach(inject((TestBed tb, Expando expand) {
       _ = tb;
-      runner = new MockAnimationLoop();
+      runner = new MockAnimationLoop(animationsAllowed);
       animate = new CssAnimate(runner,
           new CssAnimationMap(), new AnimationOptimizer(expand));
+      animate.animationsAllowed = animationsAllowed;
     }));
 
     it('should add a css class to an element node', async(() {
@@ -91,7 +92,9 @@ main() {
       _.compile('<div></div>');
       animate.addClass(_.rootElement, 'test');
       runner.start();
-      expect(_.rootElement).toHaveClass('test-add');
+      if (animationsAllowed) {
+        expect(_.rootElement).toHaveClass('test-add');
+      }
       var spans = es('<span>A</span><span>B</span>');
       animate.insert(spans, _.rootElement);
       runner.start();
@@ -101,7 +104,10 @@ main() {
 }
 
 class MockAnimationLoop extends Mock implements AnimationLoop {
+  bool animationsAllowed;
   num time = 0.0;
+
+  MockAnimationLoop(this.animationsAllowed);
 
   Future<AnimationResult> get onCompleted {
     var cmp = new Completer<AnimationResult>();
@@ -128,4 +134,8 @@ class MockAnimationLoop extends Mock implements AnimationLoop {
   }
 
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+main() {
+  [true, false].forEach(_run);
 }
