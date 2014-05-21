@@ -17,7 +17,7 @@ part of animation;
       </div>
     ''',
     publishAs: 'ctrl',
-    applyAuthorStyles: true)
+    useShadowDom: false)
 class VisibilityDemo {
   bool visible = false;
 }
