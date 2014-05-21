@@ -53,23 +53,112 @@ void main() {
       expect(toHtml(ngQuery(div, 'li'))).toEqual('<li>stash</li><li>secret</li>');
     });
 
-    // Does not work in dart2js.  deboer is investigating.
-    it('should be available from Javascript', () {
-      // The probe only works if there is a directive.
-      var elt = e('<div ng-app id=ngtop ng-bind="\'introspection FTW\'"></div>');
-      // Make it possible to find the element from JS
-      document.body.append(elt);
-      (applicationFactory()..element = elt).run();
+    describe('JavaScript bindings', () {
+      var elt, angular, ngtop;
 
-      expect(js.context['ngProbe']).toBeDefined();
-      expect(js.context['ngScope']).toBeDefined();
-      expect(js.context['ngInjector']).toBeDefined();
-      expect(js.context['ngQuery']).toBeDefined();
+      beforeEach(() {
+        elt = e('<div ng-app id="ngtop" ng-model="myModel">'
+                    '<div ng-bind="\'introspection FTW\'"></div>'
+                    '<div my-attr="{{attrMustache}}"></div>'
+                    '<div>{{textMustache}}</div>'
+                '</div>');
+        // Make it possible to find the element from JS
+        document.body.append(elt);
+        (applicationFactory()..element = elt).run();
+        angular = js.context['angular'];
+        // Polymer does not support accessing named elements directly (e.g. window.ngtop)
+        // so we need to use getElementById to support Polymer's shadow DOM polyfill.
+        ngtop = document.getElementById('ngtop');
+      });
 
+      afterEach(() {
+        elt.remove();
+        elt = angular = ngtop = null;
+      });
 
-      // Polymer does not support accessing named elements directly (e.g. window.ngtop)
-      // so we need to use getElementById to support Polymer's shadow DOM polyfill.
-      expect(js.context['ngProbe'].apply([document.getElementById('ngtop')])).toBeDefined();
+      // Does not work in dart2js.  deboer is investigating.
+      it('should be available from Javascript', () {
+        expect(js.context['ngProbe']).toBeDefined();
+        expect(js.context['ngInjector']).toBeDefined();
+        expect(js.context['ngScope']).toBeDefined();
+        expect(js.context['ngQuery']).toBeDefined();
+        expect(angular).toBeDefined();
+        expect(angular['resumeBootstrap']).toBeDefined();
+        expect(angular['getTestability']).toBeDefined();
+
+        expect(js.context['ngProbe'].apply([ngtop])).toBeDefined();
+      });
+
+      describe(r'testability', () {
+        var testability;
+
+        beforeEach(() {
+          testability = angular['getTestability'].apply([ngtop]);
+        });
+
+        it('should be available from Javascript', () {
+          expect(testability).toBeDefined();
+        });
+
+        it('should expose allowAnimations', () {
+          allowAnimations(allowed) => testability['allowAnimations'].apply([allowed]);
+          expect(allowAnimations(false)).toEqual(true);
+          expect(allowAnimations(false)).toEqual(false);
+          expect(allowAnimations(true)).toEqual(false);
+          expect(allowAnimations(true)).toEqual(true);
+        });
+
+        describe('bindings', () {
+          it('should find exact bindings', () {
+            // exactMatch should fail.
+            var bindingNodes = testability['findBindings'].apply(['introspection', true]);
+            expect(bindingNodes.length).toEqual(0);
+
+            // substring search (default) should succeed.
+            // exactMatch should default to false.
+            bindingNodes = testability['findBindings'].apply(['introspection']);
+            expect(bindingNodes.length).toEqual(1);
+            bindingNodes = testability['findBindings'].apply(['introspection', false]);
+            expect(bindingNodes.length).toEqual(1);
+
+            // and so should exact search with the correct query.
+            bindingNodes = testability['findBindings'].apply(["'introspection FTW'", true]);
+            expect(bindingNodes.length).toEqual(1);
+          });
+
+          _assertBinding(String query) {
+            var bindingNodes = testability['findBindings'].apply([query]);
+            expect(bindingNodes.length).toEqual(1);
+            var node = bindingNodes[0];
+            var probe = js.context['ngProbe'].apply([node]);
+            expect(probe).toBeDefined();
+            var bindings = probe['bindings'];
+            expect(bindings['length']).toEqual(1);
+            expect(bindings[0].contains(query)).toBe(true);
+          }
+
+          it('should find ng-bind bindings', () => _assertBinding('introspection FTW'));
+          it('should find attribute mustache bindings', () => _assertBinding('attrMustache'));
+          it('should find text mustache bindings', () => _assertBinding('textMustache'));
+        });
+
+        it('should find models', () {
+          // exactMatch should fail.
+          var modelNodes = testability['findModels'].apply(['my', true]);
+          expect(modelNodes.length).toEqual(0);
+
+          // substring search (default) should succeed.
+          modelNodes = testability['findModels'].apply(['my']);
+          expect(modelNodes.length).toEqual(1);
+          var divElement = modelNodes[0];
+          expect(divElement is DivElement).toEqual(true);
+          var probe = js.context['ngProbe'].apply([divElement]);
+          expect(probe).toBeDefined();
+          var models = probe['models'];
+          expect(models['length']).toEqual(1);
+          expect(models[0]).toEqual('myModel');
+        });
+      });
     });
   });
 }

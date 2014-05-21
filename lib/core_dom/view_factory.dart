@@ -193,6 +193,8 @@ class ElementProbe {
   final Injector injector;
   final Scope scope;
   final directives = [];
+  final bindingExpressions = <String>[];
+  final modelExpressions = <String>[];
 
   ElementProbe(this.parent, this.element, this.injector, this.scope);
 }

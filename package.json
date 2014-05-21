@@ -16,6 +16,7 @@
     "karma-junit-reporter": "~0.2.1",
     "jasmine-node": "*",
     "jasmine-reporters": "~0.4.1",
+    "protractor-dart": "0.0.3",
     "qq": "*"
   },
   "licenses": [
