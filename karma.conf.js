@@ -1,6 +1,6 @@
 module.exports = function(config) {
   config.set({
-    //logLevel: config.LOG_DEBUG,
+    // logLevel: config.LOG_DEBUG,
     basePath: '.',
     frameworks: ['dart-unittest'],
 
@@ -26,12 +26,15 @@ module.exports = function(config) {
     autoWatch: false,
 
     // If browser does not capture in given timeout [ms], kill it
-    captureTimeout: 20000,
+    captureTimeout: 120000,
     // 5 minutes is enough time for dart2js to run on Travis...
     browserNoActivityTimeout: 300000,
 
+    browserDisconnectTimeout: 60000,
+
     plugins: [
       'karma-dart',
+      'karma-sauce-launcher',
       'karma-chrome-launcher',
       'karma-firefox-launcher',
       'karma-script-launcher',
@@ -44,14 +47,15 @@ module.exports = function(config) {
     },
 
     customLaunchers: {
-      ChromeNoSandbox: { base: 'Chrome', flags: ['--no-sandbox'] },
+      'SL_Chrome': { base: 'SauceLabs', browserName: 'chrome', version: '34' },
+      'SL_Firefox': { base: 'SauceLabs', browserName: 'firefox', version: '28' },
       // Only needed for Chrome 34.  These features are enabled by default in Chrome 35.
       DartiumWithWebPlatform: {
         base: 'Dartium',
         flags: ['--enable-experimental-web-platform-features'] }
     },
 
-    browsers: ['DartiumWithWebPlatform'],
+    browsers: ['Firefox'],
 
     preprocessors: {
       'test/core/parser/generated_getter_setter.dart': ['parser-getter-setter']
@@ -60,6 +64,15 @@ module.exports = function(config) {
     junitReporter: {
       outputFile: 'test_out/unit.xml',
       suite: 'unit'
+    },
+
+    reporters: ['dots'],
+
+    sauceLabs: {
+        testName: 'AngularDart',
+        options: {
+            'selenium-version': '2.41.0'
+        }
     }
   });
 };

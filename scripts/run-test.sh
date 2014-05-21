@@ -30,6 +30,6 @@ $DART --checked $NGDART_BASE_DIR/test/tools/symbol_inspector/symbol_inspector_sp
 $NGDART_SCRIPT_DIR/analyze.sh &&
   $NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node playback_middleware/spec/ &&
   node "node_modules/karma/bin/karma" start karma.conf \
-    --reporters=junit,dots --port=8765 --runner-port=8766 \
-    --browsers=Dartium,Chrome,Firefox --single-run --no-colors
+    --reporters=dots --port=8765 --runner-port=8766 \
+    --browsers=SL_Firefox --single-run --no-colors
 
