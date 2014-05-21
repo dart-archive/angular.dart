@@ -81,7 +81,7 @@ import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/directive/module.dart';
 import 'package:angular/formatter/module_internal.dart';
 import 'package:angular/routing/module.dart';
-import 'package:angular/introspection_js.dart';
+import 'package:angular/introspection.dart';
 
 import 'package:angular/core_dom/static_keys.dart';
 

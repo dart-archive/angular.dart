@@ -95,7 +95,7 @@ void main() {
 
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new Animate());
+            nodeAttrs, new Animate(), null);
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
 
@@ -375,7 +375,7 @@ void main() {
 
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new Animate());
+            nodeAttrs, new Animate(), null);
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
 
@@ -467,7 +467,7 @@ void main() {
 
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new Animate());
+            nodeAttrs, new Animate(), null);
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
 
@@ -567,7 +567,7 @@ void main() {
 
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new Animate());
+            nodeAttrs, new Animate(), null);
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
 
@@ -778,7 +778,7 @@ void main() {
 
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new Animate());
+            nodeAttrs, new Animate(), null);
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
 

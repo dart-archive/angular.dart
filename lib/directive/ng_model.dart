@@ -45,10 +45,13 @@ class NgModel extends NgControl implements AttachAware {
   bool _watchCollection;
 
   NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs,
-          Animate animate)
+          Animate animate, ElementProbe probe)
       : super(element, injector, animate)
   {
     _expression = attrs["ng-model"];
+    if (probe != null) {
+      probe.modelExpressions.add(_expression);
+    }
     watchCollection = false;
 
     //Since the user will never be editing the value of a select element then
