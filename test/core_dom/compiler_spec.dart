@@ -19,6 +19,10 @@ forBothCompilers(fn) {
     });
     fn();
   });
+}
+
+forAllCompilersAndComponentFactories(fn) {
+  forBothCompilers(fn);
 
   describe('transcluding components', () {
     beforeEachModule((Module m) {
@@ -33,6 +37,29 @@ forBothCompilers(fn) {
 
 void main() {
   forBothCompilers(() =>
+  describe('TranscludingComponentFactory', () {
+    TestBed _;
+
+    beforeEachModule((Module m) {
+      return m
+          ..bind(ComponentFactory, toImplementation: TranscludingComponentFactory)
+          ..bind(SimpleComponent);
+    });
+
+    beforeEach(inject((TestBed tb) => _ = tb));
+
+    it('should correctly detach transcluded content when scope destroyed', async(() {
+      var scope = _.rootScope.createChild({});
+      var element = _.compile(r'<div><simple><span ng-if="true == true">trans</span></simple></div>', scope: scope);
+      microLeap();
+      _.rootScope.apply();
+      expect(element).toHaveText('INNER(trans)');
+      scope.destroy();
+      expect(element).toHaveText('INNER()');
+    }));
+  }));
+
+  forAllCompilersAndComponentFactories(() =>
   describe('dte.compiler', () {
     TestBed _;
 
