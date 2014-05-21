@@ -4,7 +4,7 @@
  *
  * A formatter is a pure function that performs a transformation on input data from an expression.
  * You can extend Angular by writing your own formatters and providing them as part of a custom
- * library. See the @[Formatter](#angular-core-annotation .Formatter) class annotation for more
+ * library. See the @[Formatter](#angular-core-annotation.Formatter) class annotation for more
  * detail.
  *
  * Formatters are typically used within `{{ }}` to
