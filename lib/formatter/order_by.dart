@@ -31,7 +31,7 @@ typedef dynamic _Mapper(dynamic e);
  *
  * # Examples
  *
- * Example 1: Simple array and single/empty expression.
+ * ## Example 1: Simple array and single/empty expression.
  *
  * Assume that you have an array on scope called `colors` and that it has a list
  * of these strings – `['red', 'blue', 'green']`.  You might sort these in
@@ -68,7 +68,7 @@ typedef dynamic _Mapper(dynamic e);
  *       <li ng-repeat="color in colors | orderBy:'':true">{{color}}</li>
  *     </ul>
  *
- * Example 2: Complex objects, single expression.
+ * ## Example 2: Complex objects, single expression.
  *
  * You may provide a more complex expression to sort non-primitive values or
  * if you want to sort on a decorated/transformed value.
@@ -111,7 +111,7 @@ typedef dynamic _Mapper(dynamic e);
  * for each element in the list (i.e. each author object) and the sort order is
  * determined by the sort order of the value mapped by the callable.
  *
- * Example 3: List expressions
+ * ## Example 3: List expressions
  *
  * Both a string expression and the callable expression are simple versions of
  * the more general list expression.  You may pass a list as the orderBy

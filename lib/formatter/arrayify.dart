@@ -3,7 +3,7 @@ part of angular.formatter_internal;
 /**
  * Transforms a Map into an array so that the map can be used with `ng-repeat`.
  *
- * Example:
+ * # Example
  *
  *     <div ng-repeat="item in {'key1': 'value1', 'key2':'value2'} | arrayify">
  *       {{item.key}}: {{item.value}}

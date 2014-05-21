@@ -10,7 +10,7 @@ typedef bool _Equals(a, b);
  *
  * # Usage
  *
- *      filter: expression[:comparator]
+ *      filter:expression[:comparator]
  *
  * In addition to the expression, which is used to select a subset from the list,
  * you can also specify a comparator to specify how the operation is performed. 
