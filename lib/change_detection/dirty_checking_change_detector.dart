@@ -371,7 +371,14 @@ class _ChangeIterator<H> implements Iterator<Record<H>>{
  */
 class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
   static const List<String> _MODE_NAMES =
-      const ['MARKER', 'IDENT', 'GETTER', 'MAP[]', 'ITERABLE', 'MAP'];
+      const ['MARKER',
+             'NOOP',
+             'IDENTITY',
+             'GETTER',
+             'GETTER / CLOSURE'
+             'MAP[]',
+             'ITERABLE',
+             'MAP'];
   static const int _MODE_MARKER_ = 0;
   static const int _MODE_NOOP_ = 1;
   static const int _MODE_IDENTITY_ = 2;
