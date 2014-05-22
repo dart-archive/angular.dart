@@ -353,9 +353,11 @@ class _TaskList {
   Function onDone;
   final List _tasks = [];
   bool isDone = false;
+  int firstTask;
 
   _TaskList(this.onDone) {
     if (onDone == null) isDone = true;
+    firstTask = registerTask();
   }
 
   int registerTask() {
@@ -374,7 +376,7 @@ class _TaskList {
   }
 
   void doneRegistering() {
-    completeTask(registerTask());
+    completeTask(firstTask);
   }
 }
 
