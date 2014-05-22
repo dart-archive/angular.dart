@@ -16,7 +16,8 @@ void main() {
     TestBed _;
     beforeEach((TestBed tb) => _ = tb);
 
-    var hb, callback, realBackendSpy;
+    MockHttpBackend hb;
+    var callback, realBackendSpy;
 
     var noop = (_, __) {};
     var undefined = null;
@@ -36,7 +37,7 @@ void main() {
         expect(response).toBe('content');
       });
 
-      hb('GET', '/url1', null, callback);
+      hb('GET', '/url1', callback);
       expect(callback).not.toHaveBeenCalled();
       hb.flush();
       expect(callback).toHaveBeenCalledOnce();
@@ -53,8 +54,8 @@ void main() {
         logger(response);
       });
 
-      hb('GET', '/url1', null, callback);
-      hb('GET', '/url2', null, callback);
+      hb('GET', '/url1', callback);
+      hb('GET', '/url2', callback);
       hb.flush();
       expect(logger).toEqual(['["abc"]', '{"key":"value"}']);
     });
@@ -63,7 +64,7 @@ void main() {
     it('should throw error when unexpected request', () {
       hb.when('GET', '/url1').respond(200, 'content');
       expect(() {
-        hb('GET', '/xxx');
+        hb('GET', '/xxx', noop);
       }).toThrow('Unexpected request: GET /xxx\nNo more requests expected');
     });
 
@@ -87,20 +88,20 @@ void main() {
         hb.when('GET', '/url', null, {'X': 'val2'}).respond(202, 'content2');
         hb.when('GET', '/url').respond(203, 'content3');
 
-        hb('GET', '/url', null, (status, response, _) {
+        hb('GET', '/url', (status, response, _) {
           expect(status).toBe(203);
           expect(response).toBe('content3');
         });
 
-        hb('GET', '/url', null, (status, response, _) {
+        hb('GET', '/url', (status, response, _) {
           expect(status).toBe(201);
           expect(response).toBe('content1');
-        }, {'X': 'val1'});
+        }, headers: {'X': 'val1'});
 
-        hb('GET', '/url', null, (status, response, _) {
+        hb('GET', '/url', (status, response, _) {
           expect(status).toBe(202);
           expect(response).toBe('content2');
-        }, {'X': 'val2'});
+        }, headers: {'X': 'val2'});
 
         hb.flush();
       } catch (e,s) { print("$e $s"); }
@@ -111,15 +112,15 @@ void main() {
       hb.when('GET', '/a/b', '{a: true}').respond(201, 'content1');
       hb.when('GET', '/a/b').respond(202, 'content2');
 
-      hb('GET', '/a/b', '{a: true}', (status, response) {
+      hb('GET', '/a/b', (status, response) {
         expect(status).toBe(201);
         expect(response).toBe('content1');
-      });
+      }, data: '{a: true}');
 
-      hb('GET', '/a/b', '{}', (status, response) {
+      hb('GET', '/a/b', (status, response) {
         expect(status).toBe(202);
         expect(response).toBe('content2');
-      });
+      }, data: '{}');
 
       hb.flush();
     });
@@ -132,9 +133,9 @@ void main() {
         expect(response).toBe('c');
       });
 
-      hb('GET', '/some', null, callback, {});
-      hb('GET', '/another', null, callback, {'X-Fake': 'Header'});
-      hb('GET', '/third', 'some-data', callback, {});
+      hb('GET', '/some', callback, headers: {});
+      hb('GET', '/another', callback, headers: {'X-Fake': 'Header'});
+      hb('GET', '/third', callback, data: 'some-data', headers: {});
       hb.flush();
 
       expect(callback).toHaveBeenCalled();
@@ -145,8 +146,8 @@ void main() {
       hb.when('GET', '/url1').respond(200, 'first');
       hb.when('GET', '/url2').respond(201, 'second');
 
-      hb('GET', '/url2', null, callback);
-      hb('GET', '/url1', null, callback);
+      hb('GET', '/url2', callback);
+      hb('GET', '/url1', callback);
 
       hb.flush();
 
@@ -159,7 +160,7 @@ void main() {
     describe('respond()', () {
       it('should take values', () {
         hb.expect('GET', '/url1').respond(200, 'first', {'header': 'val'});
-        hb('GET', '/url1', null, callback);
+        hb('GET', '/url1', callback);
         hb.flush();
 
         expect(callback).toHaveBeenCalledOnceWith(200, 'first', "header: val");
@@ -170,7 +171,7 @@ void main() {
           return [301, m + u + ';' + d + ';a=' + h['a'], {'Connection': 'keep-alive'}];
         });
 
-        hb('GET', '/some', 'data', callback, {'a': 'b'});
+        hb('GET', '/some', callback, data: 'data', headers: {'a': 'b'});
         hb.flush();
 
         expect(callback).toHaveBeenCalledOnceWith(301, 'GET/some;data;a=b', 'Connection: keep-alive');
@@ -184,8 +185,8 @@ void main() {
 
         hb.expect('GET', '/url1').respond('some-data');
         hb.expect('GET', '/url2').respond('some-data', {'X-Header': 'true'});
-        hb('GET', '/url1', null, callback);
-        hb('GET', '/url2', null, callback);
+        hb('GET', '/url1', callback);
+        hb('GET', '/url2', callback);
         hb.flush();
         expect(callback).toHaveBeenCalled();
         expect(callback.callCount).toBe(2);
@@ -196,8 +197,8 @@ void main() {
         hb.expect('GET', '/url1').respond(200, 'first');
         hb.expect('GET', '/url2').respond('second');
 
-        hb('GET', '/url1', null, callback);
-        hb('GET', '/url2', null, callback);
+        hb('GET', '/url1', callback);
+        hb('GET', '/url2', callback);
 
         hb.flush();
 
@@ -214,7 +215,7 @@ void main() {
         hb.expect('GET', '/url2').respond(200, '');
 
         expect(() {
-          hb('GET', '/url2', null, noop, {});
+          hb('GET', '/url2', noop, headers: {});
         }).toThrow('Unexpected request: GET /url2\nExpected GET /url1');
       });
 
@@ -228,7 +229,7 @@ void main() {
         hb.when('GET', '/url').respond(200, 'when');
         hb.expect('GET', '/url').respond(299, 'expect');
 
-        hb('GET', '/url', null, callback, null);
+        hb('GET', '/url', callback);
         hb.flush();
         expect(callback).toHaveBeenCalledOnce();
       });
@@ -239,7 +240,7 @@ void main() {
         hb.expect('GET', '/match', null, {'Content-Type': 'application/json'}).respond(200, '', {});
 
         expect(() {
-          hb('GET', '/match', null, noop, {});
+          hb('GET', '/match', noop, headers: {});
         }).toThrow('Expected GET /match with different headers\n' +
         'EXPECTED: {"Content-Type":"application/json"}\nGOT:      {}');
       });
@@ -250,7 +251,7 @@ void main() {
         hb.expect('GET', '/match', 'some-data').respond(200, '', {});
 
         expect(() {
-          hb('GET', '/match', 'different', noop, null);
+          hb('GET', '/match', noop, data: 'different');
         }).toThrow('Expected GET /match with different data\n' +
         'EXPECTED: some-data\nGOT:      different');
       });
@@ -264,7 +265,7 @@ void main() {
 
         hb.when('GET', '/some').respond(201, 'data');
         hb.expect('GET', '/some');
-        hb('GET', '/some', null, callback);
+        hb('GET', '/some', callback);
         hb.flush();
 
         expect(callback).toHaveBeenCalled();
@@ -277,8 +278,8 @@ void main() {
       it('flush() should flush requests fired during callbacks', () {
         hb.when('GET', '/some').respond(200, '');
         hb.when('GET', '/other').respond(200, '');
-        hb('GET', '/some', null, (_, __) {
-          hb('GET', '/other', null, callback);
+        hb('GET', '/some', (_, __) {
+          hb('GET', '/other', callback);
         });
 
         hb.flush();
@@ -288,9 +289,9 @@ void main() {
 
       it('should flush given number of pending requests', () {
         hb.when('GET').respond(200, '');
-        hb('GET', '/some', null, callback);
-        hb('GET', '/some', null, callback);
-        hb('GET', '/some', null, callback);
+        hb('GET', '/some', callback);
+        hb('GET', '/some', callback);
+        hb('GET', '/some', callback);
 
         hb.flush(2);
         expect(callback).toHaveBeenCalled();
@@ -300,7 +301,7 @@ void main() {
 
       it('should throw exception when flushing more requests than pending', () {
         hb.when('GET').respond(200, '');
-        hb('GET', '/url', null, callback);
+        hb('GET', '/url', callback);
 
         expect(() {hb.flush(2);}).toThrow('No more pending request to flush !');
         expect(callback).toHaveBeenCalledOnce();
@@ -311,7 +312,7 @@ void main() {
         expect(() {hb.flush();}).toThrow('No pending request to flush !');
 
         hb.when('GET').respond(200, '');
-        hb('GET', '/some', null, callback);
+        hb('GET', '/some', callback);
         hb.flush();
 
         expect(() {hb.flush();}).toThrow('No pending request to flush !');
@@ -322,7 +323,7 @@ void main() {
         hb.expect('GET', '/url1').respond();
         hb.expect('GET', '/url2').respond();
 
-        hb('GET', '/url1', null, noop);
+        hb('GET', '/url1', noop);
         expect(() {hb.flush();}).toThrow('Unsatisfied requests: GET /url2');
       });
     });
@@ -335,7 +336,7 @@ void main() {
         canceler = fn;
       });
 
-      hb('GET', '/url1', null, callback, null, new _Chain(then: then));
+      hb('GET', '/url1', callback, timeout: new _Chain(then: then));
       expect(canceler is Function).toBe(true);
 
       canceler();  // simulate promise resolution
@@ -349,7 +350,7 @@ void main() {
     it('should throw an exception if no response defined', () {
       hb.when('GET', '/test');
       expect(() {
-        hb('GET', '/test', null, callback);
+        hb('GET', '/test', callback);
       }).toThrow('No response defined !');
     });
 
@@ -357,7 +358,7 @@ void main() {
     it('should throw an exception if no response for exception and no definition', () {
       hb.expect('GET', '/url');
       expect(() {
-        hb('GET', '/url', null, callback);
+        hb('GET', '/url', callback);
       }).toThrow('No response defined !');
     });
 
@@ -366,8 +367,8 @@ void main() {
       hb.when('JSONP', '/url1').respond(200);
       hb.expect('JSONP', '/url2').respond(200);
 
-      expect(hb('JSONP', '/url1')).toBeNull();
-      expect(hb('JSONP', '/url2')).toBeNull();
+      expect(hb('JSONP', '/url1', noop)).toBeNull();
+      expect(hb('JSONP', '/url2', noop)).toBeNull();
     });
 
 
@@ -378,7 +379,7 @@ void main() {
         hb.expect('GET', '/u2').respond(200, '', {});
         hb.expect('POST', '/u3').respond(201, '', {});
 
-        hb('POST', '/u1', 'ddd', noop, {});
+        hb('POST', '/u1', noop, data: 'ddd', headers: {});
 
         expect(() {hb.verifyNoOutstandingExpectation();}).
         toThrow('Unsatisfied requests: GET /u2, POST /u3');
@@ -397,8 +398,8 @@ void main() {
         hb.expect('POST', '/u3').respond(201, '', {});
         hb.when('DELETE', '/some').respond(200, '');
 
-        hb('GET', '/u2');
-        hb('POST', '/u3');
+        hb('GET', '/u2', noop);
+        hb('POST', '/u3', noop);
 
         expect(() {hb.verifyNoOutstandingExpectation();}).not.toThrow();
       });
@@ -408,7 +409,7 @@ void main() {
 
       it('should throw exception if not all requests were flushed', () {
         hb.when('GET').respond(200);
-        hb('GET', '/some', null, noop, {});
+        hb('GET', '/some', noop, headers: {});
 
         expect(() {
           hb.verifyNoOutstandingRequest();
@@ -432,11 +433,11 @@ void main() {
         var cancelledClb = guinness.createSpy('cancelled');
 
         hb.expect('GET', '/url').respond(200, '');
-        hb('GET', '/url', null, cancelledClb);
+        hb('GET', '/url', cancelledClb);
         hb.resetExpectations();
 
         hb.expect('GET', '/url').respond(300, '');
-        hb('GET', '/url', null, callback, {});
+        hb('GET', '/url', callback, headers: {});
         hb.flush();
 
         expect(callback).toHaveBeenCalledOnce();
@@ -448,10 +449,10 @@ void main() {
         var cancelledClb = guinness.createSpy('cancelled');
 
         hb.when('GET', '/url').respond(200, 'success');
-        hb('GET', '/url', null, cancelledClb);
+        hb('GET', '/url', cancelledClb);
         hb.resetExpectations();
 
-        hb('GET', '/url', null, callback, {});
+        hb('GET', '/url', callback, headers: {});
         hb.flush();
 
         expect(callback).toHaveBeenCalledOnce();
@@ -477,7 +478,7 @@ void main() {
         var shortcut = step[0], method = step[1];
         it('should provide $shortcut  shortcut method', () {
           shortcut('/foo').respond('bar');
-          hb(method, '/foo', undefined, callback);
+          hb(method, '/foo', callback);
           hb.flush();
           expect(callback).toHaveBeenCalledOnceWith(200, 'bar', '');
         });

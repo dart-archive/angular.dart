@@ -136,8 +136,8 @@ class MockHttpBackend implements HttpBackend {
             new MockHttpRequest(status, data, headers)));
       }
     };
-    call(method == null ? 'GET' : method, url, sendData, callback,
-         requestHeaders);
+    call(method == null ? 'GET' : method, url, callback,
+         data: sendData, headers: requestHeaders);
     return c.future;
   }
 
@@ -163,7 +163,7 @@ class MockHttpBackend implements HttpBackend {
   * A callback oriented API.  This function takes a callback with
   * will be called with (status, data, headers)
   */
-  void call(method, [url, data, callback, headers, timeout]) {
+  void call(method, url, callback, {data, headers, timeout}) {
     var xhr = new _MockXhr(),
         expectation = expectations.isEmpty ? null : expectations[0],
         wasExpected = false;
