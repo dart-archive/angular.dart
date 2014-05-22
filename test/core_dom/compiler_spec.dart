@@ -280,6 +280,7 @@ void main() {
     describe('components', () {
       beforeEachModule((Module module) {
         module
+          ..bind(AttachWithAttr)
           ..bind(CamelCaseMapComponent)
           ..bind(IoComponent)
           ..bind(IoControllerComponent)
@@ -652,6 +653,15 @@ void main() {
           microLeap();
 
           expect(logger).toEqual(['SimpleAttachComponent']);
+        }));
+
+        it('should call attach after mappings have been set', async((Logger logger) {
+          _.compile('<attach-with-attr attr="a" oneway="1+1"></attach-with-attr>');
+
+          _.rootScope.apply();
+          microLeap();
+
+          expect(logger).toEqual(['attr', 'oneway', 'attach']);
         }));
 
         it('should inject compenent element as the dom.Element', async((Logger log, TestBed _, MockHttpBackend backend) {
@@ -1203,6 +1213,19 @@ class SimpleAttachComponent implements AttachAware, ShadowRootAware {
   }
   attach() => logger('attach');
   onShadowRoot(_) => logger('onShadowRoot');
+}
+
+@Decorator(
+    selector: 'attach-with-attr'
+)
+class AttachWithAttr implements AttachAware {
+  Logger logger;
+  AttachWithAttr(this.logger);
+  attach() => logger('attach');
+  @NgAttr('attr')
+  set attr(v) => logger('attr');
+  @NgOneWay('oneway')
+  set oneway(v) => logger('oneway');
 }
 
 @Component(
