@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "karma" : "~0.12.0",
+    "karma-sauce-launcher": "^0.2.3",
     "karma-dart" : "~0.2.6",
     "karma-script-launcher": "*",
     "karma-chrome-launcher": "~0.1.3",
