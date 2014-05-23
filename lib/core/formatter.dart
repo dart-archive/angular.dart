@@ -8,7 +8,7 @@ part of angular.core_internal;
 class FormatterMap extends AnnotationMap<Formatter> {
   Injector _injector;
   FormatterMap(Injector injector, MetadataExtractor extractMetadata)
-      : this._injector = injector,
+      : _injector = injector,
         super(injector, extractMetadata);
 
   Function call(String name) {

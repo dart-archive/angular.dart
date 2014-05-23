@@ -1,8 +1,6 @@
 part of angular.core.dom_internal;
 
-List<dom.Node> cloneElements(elements) {
-  return elements.map((el) => el.clone(true)).toList();
-}
+List<dom.Node> cloneElements(elements) => elements.map((el) => el.clone(true)).toList();
 
 class MappingParts {
   final String attrName;
@@ -18,7 +16,7 @@ class DirectiveRef {
   final Type type;
   final Directive annotation;
   final String value;
-  final mappings = new List<MappingParts>();
+  final mappings = <MappingParts>[];
 
   DirectiveRef(this.element, this.type, this.annotation, [ this.value ]);
 

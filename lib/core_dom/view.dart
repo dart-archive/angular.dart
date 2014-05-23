@@ -37,8 +37,7 @@ class ViewPort {
     dom.Node previousNode = _lastNode(insertAfter);
     _viewsInsertAfter(view, insertAfter);
 
-    _animate.insert(view.nodes, placeholder.parentNode,
-      insertBefore: previousNode.nextNode);
+    _animate.insert(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
   }
 
   void remove(View view) {
@@ -51,8 +50,7 @@ class ViewPort {
     _views.remove(view);
     _viewsInsertAfter(view, moveAfter);
 
-    _animate.move(view.nodes, placeholder.parentNode,
-      insertBefore: previousNode.nextNode);
+    _animate.move(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
   }
 
   void _viewsInsertAfter(View view, View insertAfter) {
@@ -61,7 +59,5 @@ class ViewPort {
   }
 
   dom.Node _lastNode(View insertAfter) =>
-    insertAfter == null
-      ? placeholder
-      : insertAfter.nodes.last;
+      insertAfter == null ? placeholder : insertAfter.nodes.last;
 }

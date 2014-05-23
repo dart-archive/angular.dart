@@ -41,8 +41,7 @@ class WalkingViewFactory implements ViewFactory {
         eb is ElementBinderTreeRef));
   }
 
-  BoundViewFactory bind(Injector injector) =>
-      new BoundViewFactory(this, injector);
+  BoundViewFactory bind(Injector injector) => new BoundViewFactory(this, injector);
 
   View call(Injector injector, [List<dom.Node> nodes]) {
     if (nodes == null) nodes = cloneElements(templateElements);
