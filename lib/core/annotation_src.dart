@@ -223,9 +223,11 @@ abstract class Directive {
     this.exportExpressionAttrs: const []
   });
 
-  toString() => selector;
-  get hashCode => selector.hashCode;
-  operator==(other) =>
+  String toString() => selector;
+
+  int get hashCode => selector.hashCode;
+
+  bool operator==(other) =>
       other is Directive && selector == other.selector;
 
   Directive _cloneWithNewMap(newMap);

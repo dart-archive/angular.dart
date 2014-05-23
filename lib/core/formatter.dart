@@ -11,7 +11,7 @@ class FormatterMap extends AnnotationMap<Formatter> {
       : this._injector = injector,
         super(injector, extractMetadata);
 
-  call(String name) {
+  Function call(String name) {
     var formatter = new Formatter(name: name);
     var formatterType = this[formatter];
     return _injector.get(formatterType);

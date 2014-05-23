@@ -110,7 +110,7 @@ class ElementBinder {
     }
   }
 
-  _bindOneWay(tasks, expression, scope, dstPathFn, controller, formatters) {
+  void _bindOneWay(tasks, expression, scope, dstPathFn, controller, formatters) {
     var taskId = tasks.registerTask();
 
     Expression attrExprFn = _parser(expression);
