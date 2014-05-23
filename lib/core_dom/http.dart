@@ -435,7 +435,7 @@ class Http {
   async.Future<HttpResponse> call({
     String url,
     String method,
-    data,
+    dynamic data,
     Map<String, dynamic> params,
     Map<String, dynamic> headers,
     bool withCredentials: false,
@@ -469,8 +469,6 @@ class Http {
     });
 
     serverRequest(HttpResponseConfig config) {
-      assert(config.data == null || config.data is String || config.data is dom.File);
-
       // Strip content-type if data is undefined
       if (config.data == null) {
         new List.from(headers.keys)
@@ -553,7 +551,6 @@ class Http {
    * of parameters.
    */
   async.Future<HttpResponse> get(String url, {
-    String data,
     Map<String, dynamic> params,
     Map<String, String> headers,
     bool withCredentials: false,
@@ -562,7 +559,7 @@ class Http {
     interceptors,
     cache,
     timeout
-  }) => call(method: 'GET', url: url, data: data, params: params, headers: headers,
+  }) => call(method: 'GET', url: url, data: null, params: params, headers: headers,
              withCredentials: withCredentials, xsrfHeaderName: xsrfHeaderName,
              xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
              timeout: timeout);
@@ -572,7 +569,7 @@ class Http {
    * of parameters.
    */
   async.Future<HttpResponse> delete(String url, {
-    String data,
+    dynamic data,
     Map<String, dynamic> params,
     Map<String, String> headers,
     bool withCredentials: false,
@@ -591,7 +588,7 @@ class Http {
    * of parameters.
    */
   async.Future<HttpResponse> head(String url, {
-    String data,
+    dynamic data,
     Map<String, dynamic> params,
     Map<String, String> headers,
     bool withCredentials: false,
@@ -609,7 +606,7 @@ class Http {
    * Shortcut method for PUT requests.  See [call] for a complete description
    * of parameters.
    */
-  async.Future<HttpResponse> put(String url, String data, {
+  async.Future<HttpResponse> put(String url, dynamic data, {
     Map<String, dynamic> params,
     Map<String, String> headers,
     bool withCredentials: false,
@@ -627,7 +624,7 @@ class Http {
    * Shortcut method for POST requests.  See [call] for a complete description
    * of parameters.
    */
-  async.Future<HttpResponse> post(String url, String data, {
+  async.Future<HttpResponse> post(String url, dynamic data, {
     Map<String, dynamic> params,
     Map<String, String> headers,
     bool withCredentials: false,
@@ -646,7 +643,7 @@ class Http {
    * of parameters.
    */
   async.Future<HttpResponse> jsonp(String url, {
-    String data,
+    dynamic data,
     Map<String, dynamic> params,
     Map<String, String> headers,
     bool withCredentials: false,
