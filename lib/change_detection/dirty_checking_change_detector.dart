@@ -370,15 +370,15 @@ class _ChangeIterator<H> implements Iterator<Record<H>>{
  * creates a single linked list of all of the changes for efficient traversal.
  */
 class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
-  static const List<String> _MODE_NAMES =
-      const ['MARKER',
-             'NOOP',
-             'IDENTITY',
-             'GETTER',
-             'GETTER / CLOSURE'
-             'MAP[]',
-             'ITERABLE',
-             'MAP'];
+  static const List<String> _MODE_NAMES = const [
+      'MARKER',
+      'NOOP',
+      'IDENTITY',
+      'GETTER',
+      'GETTER / CLOSURE'
+      'MAP[]',
+      'ITERABLE',
+      'MAP'];
   static const int _MODE_MARKER_ = 0;
   static const int _MODE_NOOP_ = 1;
   static const int _MODE_IDENTITY_ = 2;
@@ -536,7 +536,8 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
     _group._recordRemove(this);
   }
 
-  String toString() => '${_MODE_NAMES[_mode]}[$field]{$hashCode}';
+  String toString() =>
+      '${_mode < _MODE_NAMES.length ?  _MODE_NAMES[_mode] : '?'}[$field]{$hashCode}';
 }
 
 final Object _INITIAL_ = new Object();
