@@ -20,8 +20,8 @@ env:
     TESTS=vm
     BROWSERS=DartiumWithWebPlatform
   global:
-  - secure: "UiibgQ+Phh+k/tXudlYC3uz7Qt6xyAD1voY4s1wJqebGjvq7W/B+fp5jlnnF0GAQqryJTTJh6n+aBpCw+DyYCxD6Fss5/1/nW+sjlqL3mTGc0I38OeEjYPurbDu+Ql28v6PadMaU99NQ88gGHiEvb0YsutdTlgJPcBk52s3vCjk="
-  - secure: "C9rsosMHZx7N/F1AYgB/66lqH0QNrA+uAPMbOeTmUubBBmn2N6/6GKAiCkMSFz45iX6Xb9z+0E9+jrdUPjVN/3asPd8WTTg/1weQENUuBtxAfCpeGU0qLWdYif3YfquCs9ZHW6J9QUJpF0+frqpJnjwLP2MmJbChEeMa/yo4JDk="
+  - secure: "X89uS1x0WLfuNeJ0bt1niFHL9wr2Rx7KYx20rCJ2X058u+SFXkYAEaJ7HyzSSbrvqgYoslecRm2Alf1TXzLKfccQxo8bYe2/7NBXvAvGfpxb0aZMFviTDUqydgjLeDO6Voo+VBUVhk9qCBJCIirf42Cezf1GKgJNBw6a4vSALLw="
+  - secure: "HQ8ywAd80Z/1lY+c1zA9Weyb4ZFKXQqIqnCM6DKxnD48U8EUNmwaCiobqY6T21MSmDhVr0f36Exns71dPov70V7P3WNUdLZKNtpyedJ7375+xBUWOLucFJHv01bQ7EPTQeAnJuJoyfqYuWequ1fzwCDUrca4iaJT8AGPnabpIE8="
   - FIREFOX_VERSION="29.0"
   - CHROME_BIN=/usr/bin/google-chrome
   - secure: "AKoqpZ699egF0i4uT/FQ5b4jIc0h+KVbhtVCql0uFxwFIl2HjOYgDayrUCAf6USfpW0LghZxJJhBamWOl/505eNSe9HvEd8JLg/to+1Fo9xi9llsu5ehmNH31/5pue4EvsrVuEap1qqL6/BNwI2cAryayU0p5tV0g8gL5h4IxG8="
