@@ -11,7 +11,6 @@ export "package:angular/core/annotation_src.dart" show
     ShadowRootAware,
 
     Formatter,
-    Injectable,
 
     Directive,
     Component,
@@ -24,6 +23,8 @@ export "package:angular/core/annotation_src.dart" show
     NgOneWay,
     NgOneWayOneTime,
     NgTwoWay;
+
+export 'package:di/annotations.dart' show Injectable;
 
 
 /**

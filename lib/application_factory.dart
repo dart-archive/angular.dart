@@ -49,8 +49,8 @@ import 'dart:html';
     NodeTreeSanitizer,
 ],
 metaTargets: const [
-    Injectable,
     Decorator,
+    Injectable,
     Controller,
     Component,
     Formatter

@@ -12,6 +12,8 @@ import 'package:angular/core/parser/eval.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
 import 'package:angular/utils.dart';
 
+import 'package:di/annotations.dart';
+
 abstract class ClosureMap {
   Getter lookupGetter(String name);
   Setter lookupSetter(String name);

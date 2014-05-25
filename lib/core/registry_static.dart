@@ -1,6 +1,6 @@
 library angular.core_static;
 
-import 'package:angular/core/annotation_src.dart' show Injectable;
+import 'package:angular/core/annotation.dart' show Injectable;
 import 'package:angular/core/registry.dart';
 
 @Injectable()

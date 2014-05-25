@@ -5,6 +5,7 @@ import 'dart:convert' show JSON;
 import 'dart:html' as dom;
 import 'dart:js' as js;
 
+import 'package:di/annotations.dart';
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
 

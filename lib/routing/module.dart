@@ -127,7 +127,7 @@ import 'dart:html';
 
 import 'package:di/di.dart';
 import 'package:angular/application.dart';
-import 'package:angular/core/annotation_src.dart';
+import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:route_hierarchical/client.dart';
