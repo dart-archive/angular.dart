@@ -327,7 +327,6 @@ main() {
       expect(element.text).toEqual('misko:0|shyam:1|frodo:2|');
     });
 
-
     it(r'should expose iterator position as $first, $middle and $last when iterating over arrays',
         () {
       element = compile(
@@ -401,6 +400,53 @@ main() {
       expect(element.text).toEqual('a|b|Xc|d|X');
     });
 
+    describe('nested watching', () {
+      it('should not error when the first watched item is removed', () {
+        element = compile(
+            '<ul>'
+            '  <li ng-repeat="i in items">'
+           r'    <input ng-model="items[$index]">'
+            '  </li>'
+            '</ul>');
+        scope.context['items'] = ['misko', 'shyam', 'frodo'];
+        scope.apply();
+        expect(element.children.length).toEqual(3);
+        scope.context['items'].remove('misko');
+        scope.apply();
+        expect(element.children.length).toEqual(2);
+      });
+
+      it('should not error when the last watched item is removed', () {
+        element = compile(
+            '<ul>'
+            '  <li ng-repeat="i in items">'
+           r'    <input ng-model="items[$index]">'
+            '  </li>'
+            '</ul>');
+        scope.context['items'] = ['misko', 'shyam', 'frodo'];
+        scope.apply();
+        expect(element.children.length).toEqual(3);
+        scope.context['items'].remove('frodo');
+        scope.apply();
+        expect(element.children.length).toEqual(2);
+      });
+
+      it('should not error when multiple watched items are removed at the same time', () {
+        element = compile(
+            '<ul>'
+            '  <li ng-repeat="i in items">'
+           r'    <input ng-model="items[$index]">'
+            '  </li>'
+            '</ul>');
+        scope.context['items'] = ['misko', 'shyam', 'frodo', 'igor'];
+        scope.apply();
+        expect(element.children.length).toEqual(4);
+        scope.context['items'].remove('shyam');
+        scope.context['items'].remove('frodo');
+        scope.apply();
+        expect(element.children.length).toEqual(2);
+      });
+    });
 
     describe('stability', () {
       var a, b, c, d, lis;
@@ -419,7 +465,6 @@ main() {
         scope.apply();
         lis = element.querySelectorAll('li');
       });
-
 
       it(r'should preserve the order of elements', () {
         scope.context['items'] = [a, c, d];
