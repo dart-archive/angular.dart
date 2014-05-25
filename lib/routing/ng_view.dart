@@ -9,32 +9,28 @@ part of angular.routing;
  * [NgViewDirective] can work with [NgViewDirective] to define nested views
  * for hierarchical routes. For example:
  *
- *     void initRoutes(Router router, RouteViewFactory view) {
- *       router.root
- *         ..addRoute(
- *             name: 'library',
- *             path: '/library',
- *             enter: view('library.html'),
- *             mount: (Route route) => route
- *               ..addRoute(
- *                   name: 'all',
- *                   path: '/all',
- *                   enter: view('book_list.html'))
- *               ..addRoute(
- *                   name: 'book',
- *                   path: '/:bookId',
- *                   mount: (Route route) => route
- *                     ..addRoute(
- *                         name: 'overview',
- *                         path: '/overview',
- *                         defaultRoute: true,
- *                         enter: view('book_overview.html'))
- *                     ..addRoute(
- *                         name: 'read',
- *                         path: '/read',
- *                         enter: view('book_read.html'))));
- *     }
- *   }
+ *     void initRoutes(Router router, RouteViewFactory views) {
+ *       views.configure({
+ *          'library': ngRoute(
+ *              path: '/library',
+ *              view: 'library.html',
+ *              mount: {
+ *                  'all': ngRoute(
+ *                      path: '/all',
+ *                      view: 'book_list.html'),
+ *                   'book': ngRoute(
+ *                      path: '/:bookId',
+ *                      mount: {
+ *                          'overview': ngRoute(
+ *                              path: '/overview',
+ *                              defaultRoute: true,
+ *                              view: 'book_overview.html'),
+ *                          'read': ngRoute(
+ *                              path: '/read',
+ *                              view: 'book_read.html'),
+ *                      })
+ *              })
+ *       });
  *
  * index.html:
  *
