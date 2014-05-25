@@ -193,7 +193,14 @@ _operation_logical_and(left, right)            => toBool(left) && toBool(right);
 _operation_logical_or(left, right)             => toBool(left) || toBool(right);
 
 _operation_ternary(condition, yes, no) => toBool(condition) ? yes : no;
-_operation_bracket(obj, key) => obj == null ? null : obj[key];
+_operation_bracket(obj, key) {
+  if (obj != null && (
+      obj is! List || (key is int && key >= 0 && key < obj.length))) {
+    return obj[key];
+  } else {
+    return null;
+  }
+}
 
 class ArrayFn extends FunctionApply {
   // TODO(misko): figure out why do we need to make a copy?
