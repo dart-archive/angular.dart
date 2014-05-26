@@ -28,27 +28,30 @@ main() {
 
 
     it('should switch template', async(() {
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view></div>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
+      _.rootScope.flush();
       expect(root.text).toEqual('Foo');
 
       router.route('/bar');
       microLeap();
+      _.rootScope.flush();
       expect(root.text).toEqual('Bar');
 
       router.route('/foo');
       microLeap();
+      _.rootScope.flush();
       expect(root.text).toEqual('Foo');
     }));
 
     it('should expose NgView as RouteProvider', async(() {
-      _.compile('<ng-view probe="m"></ng-view>');
+      _.compile('<div><ng-view probe="m"></ng-view></div>');
       router.route('/foo');
       microLeap();
-      _.rootScope.apply();
+      _.rootScope.flush();
 
       expect(_.rootScope.context['p'].injector.get(RouteProvider) is NgView).toBeTruthy();
     }));
@@ -56,29 +59,31 @@ main() {
 
     it('should switch template when route is already active', async(() {
       // Force the routing system to initialize.
-      _.compile('<ng-view></ng-view>');
+      _.compile('<div><ng-view></ng-view></div>');
 
       router.route('/foo');
       microLeap();
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view></div>');
       expect(root.text).toEqual('');
 
-      _.rootScope.apply();
       microLeap();
+      _.rootScope.flush();
       expect(root.text).toEqual('Foo');
     }));
 
 
     it('should clear template when route is deactivated', async(() {
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view></div>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
+      _.rootScope.flush();
       expect(root.text).toEqual('Foo');
 
       router.route('/baz'); // route without a template
       microLeap();
+      _.rootScope.flush();
       expect(root.text).toEqual('');
     }));
 
@@ -111,25 +116,29 @@ main() {
     });
 
     it('should switch nested templates', async(() {
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view></div>');
       expect(root.text).toEqual('');
 
       router.route('/library/all');
       microLeap();
+      _.rootScope.flush();
       expect(root.text).toEqual('LibraryBooks');
 
       router.route('/library/1234');
       microLeap();
+      _.rootScope.flush();
       expect(root.text).toEqual('LibraryBook 1234');
 
       // nothing should change here
       router.route('/library/1234/overview');
       microLeap();
+      _.rootScope.flush();
       expect(root.text).toEqual('LibraryBook 1234');
 
       // nothing should change here
       router.route('/library/1234/read');
       microLeap();
+      _.rootScope.flush();
       expect(root.text).toEqual('LibraryRead Book 1234');
     }));
   });
@@ -157,11 +166,12 @@ main() {
     });
 
     it('should switch inline templates', async(() {
-      Element root = _.compile('<ng-view></ng-view>');
+      Element root = _.compile('<div><ng-view></ng-view></div>');
       expect(root.text).toEqual('');
 
       router.route('/foo');
       microLeap();
+      _.rootScope.flush();
       expect(root.text).toEqual('Hello');
     }));
   });

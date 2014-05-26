@@ -54,7 +54,7 @@ part of angular.routing;
 @Decorator(
     selector: 'ng-view',
     module: NgView.module,
-    visibility: Directive.CHILDREN_VISIBILITY)
+    children: Directive.TRANSCLUDE_CHILDREN)
 class NgView implements DetachAware, RouteProvider {
   static final Module _module = new Module()
       ..bind(RouteProvider, toFactory: (i) => i.get(NgView));
@@ -63,17 +63,16 @@ class NgView implements DetachAware, RouteProvider {
   final NgRoutingHelper locationService;
   final ViewCache viewCache;
   final Injector injector;
-  final Element element;
   final Scope scope;
+  final ViewPort _viewPort;
+
   RouteHandle _route;
 
   View _view;
   Scope _scope;
   Route _viewRoute;
 
-  NgView(this.element, this.viewCache,
-                  Injector injector, Router router,
-                  this.scope)
+  NgView(this.viewCache, Injector injector, Router router, this.scope, this._viewPort)
       : injector = injector,
         locationService = injector.get(NgRoutingHelper)
   {
@@ -119,24 +118,31 @@ class NgView implements DetachAware, RouteProvider {
     viewFuture.then((viewFactory) {
       _cleanUp();
       _scope = scope.createChild(new PrototypeMap(scope.context));
-      _view = viewFactory(
-          viewInjector.createChild([new Module()..bind(Scope, toValue: _scope)]));
-      _view.nodes.forEach((elm) => element.append(elm));
+      _view = viewFactory(viewInjector.createChild([new Module()..bind(Scope, toValue: _scope)]));
+      _scope.rootScope.domWrite(() {
+        _viewPort.insert(_view);
+      });
     });
   }
 
   _cleanUp() {
     if (_view == null) return;
 
-    _view.nodes.forEach((node) => node.remove());
-    _scope.destroy();
+    var view = _view;
+    var childScope = _scope;
+    _scope.rootScope.domWrite(() {
+      _viewPort.remove(view);
+      childScope.destroy();
+    });
 
     _view = null;
     _scope = null;
   }
 
   Route get route => _viewRoute;
+
   String get routeName => _viewRoute.name;
+
   Map<String, String> get parameters {
     var res = <String, String>{};
     var p = _viewRoute;
