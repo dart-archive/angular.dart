@@ -141,8 +141,7 @@ class RoutingModule extends Module {
     bind(NgRoutingUsePushState);
     bind(Router, toFactory: (injector) {
       var useFragment = !injector.get(NgRoutingUsePushState).usePushState;
-      return new Router(useFragment: useFragment,
-                        windowImpl: injector.get(Window));
+      return new Router(useFragment: useFragment, windowImpl: injector.get(Window));
     });
     bind(NgRoutingHelper);
     bind(RouteProvider, toValue: null);

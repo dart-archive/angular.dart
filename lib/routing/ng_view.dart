@@ -53,48 +53,46 @@ part of angular.routing;
  */
 @Decorator(
     selector: 'ng-view',
-    module: NgView.module,
-    visibility: Directive.CHILDREN_VISIBILITY)
+    module: NgView.module)
 class NgView implements DetachAware, RouteProvider {
   static final Module _module = new Module()
       ..bind(RouteProvider, toFactory: (i) => i.get(NgView));
-  static module() => _module;
 
-  final NgRoutingHelper locationService;
-  final ViewCache viewCache;
-  final Injector injector;
-  final Element element;
-  final Scope scope;
+  static Module module() => _module;
+
+  final NgRoutingHelper _locationService;
+  final ViewCache _viewCache;
+  final Injector _injector;
+  final Element _element;
+  final Scope _scope;
   RouteHandle _route;
 
   View _view;
-  Scope _scope;
+  Scope _childScope;
   Route _viewRoute;
 
-  NgView(this.element, this.viewCache,
-                  Injector injector, Router router,
-                  this.scope)
-      : injector = injector,
-        locationService = injector.get(NgRoutingHelper)
+  NgView(this._element, this._viewCache, Injector injector, Router router, this._scope)
+      : _injector = injector,
+        _locationService = injector.get(NgRoutingHelper)
   {
     RouteProvider routeProvider = injector.parent.get(NgView);
     _route = routeProvider != null ?
         routeProvider.route.newHandle() :
         router.root.newHandle();
-    locationService._registerPortal(this);
+    _locationService._registerPortal(this);
     _maybeReloadViews();
   }
 
   void _maybeReloadViews() {
-    if (_route.isActive) locationService._reloadViews(startingFrom: _route);
+    if (_route.isActive) _locationService._reloadViews(startingFrom: _route);
   }
 
-  detach() {
+  void detach() {
     _route.discard();
-    locationService._unregisterPortal(this);
+    _locationService._unregisterPortal(this);
   }
 
-  _show(_View viewDef, Route route, List<Module> modules) {
+  void _show(_View viewDef, Route route, List<Module> modules) {
     assert(route.isActive);
 
     if (_viewRoute != null) return;
@@ -109,34 +107,36 @@ class NgView implements DetachAware, RouteProvider {
     });
 
     var viewInjector = modules == null ?
-        injector :
-        forceNewDirectivesAndFormatters(injector, modules);
+        _injector :
+        forceNewDirectivesAndFormatters(_injector, modules);
 
     var newDirectives = viewInjector.get(DirectiveMap);
     var viewFuture = viewDef.templateHtml != null ?
-        new Future.value(viewCache.fromHtml(viewDef.templateHtml, newDirectives)) :
-        viewCache.fromUrl(viewDef.template, newDirectives);
+        new Future.value(_viewCache.fromHtml(viewDef.templateHtml, newDirectives)) :
+        _viewCache.fromUrl(viewDef.template, newDirectives);
     viewFuture.then((viewFactory) {
       _cleanUp();
-      _scope = scope.createChild(new PrototypeMap(scope.context));
+      _childScope = _scope.createChild(new PrototypeMap(_scope.context));
       _view = viewFactory(
-          viewInjector.createChild([new Module()..bind(Scope, toValue: _scope)]));
-      _view.nodes.forEach((elm) => element.append(elm));
+          viewInjector.createChild([new Module()..bind(Scope, toValue: _childScope)]));
+      _view.nodes.forEach((elm) => _element.append(elm));
     });
   }
 
-  _cleanUp() {
+  void _cleanUp() {
     if (_view == null) return;
 
     _view.nodes.forEach((node) => node.remove());
-    _scope.destroy();
+    _childScope.destroy();
 
     _view = null;
-    _scope = null;
+    _childScope = null;
   }
 
   Route get route => _viewRoute;
+
   String get routeName => _viewRoute.name;
+
   Map<String, String> get parameters {
     var res = <String, String>{};
     var p = _viewRoute;

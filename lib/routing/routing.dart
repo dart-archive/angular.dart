@@ -8,18 +8,20 @@ class RouteViewFactory {
 
   RouteViewFactory(this.locationService);
 
-  call(String templateUrl) =>
+  Function call(String templateUrl) =>
       (RouteEnterEvent event) => _enterHandler(event, templateUrl);
 
-  _enterHandler(RouteEnterEvent event, String templateUrl,
-                {List<Module> modules, String templateHtml}) =>
-      locationService._route(event.route, templateUrl, fromEvent: true,
-          modules: modules, templateHtml: templateHtml);
+  void _enterHandler(RouteEnterEvent event, String templateUrl,
+                     {List<Module> modules, String templateHtml}) {
+    locationService._route(event.route, templateUrl, fromEvent: true,
+        modules: modules, templateHtml: templateHtml);
+  }
 
-  configure(Map<String, NgRouteCfg> config) =>
-      _configure(locationService.router.root, config);
+  void configure(Map<String, NgRouteCfg> config) {
+    _configure(locationService.router.root, config);
+  }
 
-  _configure(Route route, Map<String, NgRouteCfg> config) {
+  void _configure(Route route, Map<String, NgRouteCfg> config) {
     config.forEach((name, cfg) {
       var modulesCalled = false;
       List<Module> newModules;
@@ -115,8 +117,8 @@ typedef void RouteInitializerFn(Router router, RouteViewFactory viewFactory);
 class NgRoutingHelper {
   final Router router;
   final Application _ngApp;
-  List<NgView> portals = <NgView>[];
-  Map<String, _View> _templates = new Map<String, _View>();
+  final _portals = <NgView>[];
+  final _templates = <String, _View>{};
 
   NgRoutingHelper(RouteInitializer initializer, Injector injector, this.router,
                   this._ngApp) {
@@ -136,7 +138,7 @@ class NgRoutingHelper {
     router.onRouteStart.listen((RouteStartEvent routeEvent) {
       routeEvent.completed.then((success) {
         if (success) {
-          portals.forEach((NgView p) => p._maybeReloadViews());
+          _portals.forEach((NgView p) => p._maybeReloadViews());
         }
       });
     });
@@ -155,7 +157,7 @@ class NgRoutingHelper {
       if (viewDef == null) continue;
       var templateUrl = viewDef.template;
 
-      NgView view = portals.lastWhere((NgView v) {
+      NgView view = _portals.lastWhere((NgView v) {
         return _routePath(route) != _routePath(v._route) &&
             _routePath(route).startsWith(_routePath(v._route));
       }, orElse: () => null);
@@ -173,11 +175,11 @@ class NgRoutingHelper {
   }
 
   void _registerPortal(NgView ngView) {
-    portals.add(ngView);
+    _portals.add(ngView);
   }
 
   void _unregisterPortal(NgView ngView) {
-    portals.remove(ngView);
+    _portals.remove(ngView);
   }
 }
 
@@ -190,7 +192,7 @@ class _View {
 }
 
 String _routePath(Route route) {
-  var path = [];
+  final path = [];
   var p = route;
   while (p.parent != null) {
     path.insert(0, p.name);
