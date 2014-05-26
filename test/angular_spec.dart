@@ -266,6 +266,8 @@ main() {
         "route.client.RouteLeaveEventHandler",
         "route.client.RoutePreEnterEvent",
         "route.client.RoutePreEnterEventHandler",
+        "route.client.RoutePreLeaveEvent",
+        "route.client.RoutePreLeaveEventHandler",
         "route.client.Router",
         "route.client.RouteStartEvent",
         "url_matcher.UrlMatch",
