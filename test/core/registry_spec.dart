@@ -53,11 +53,13 @@ class MyMap extends AnnotationMap<MyAnnotation> {
 class MyAnnotation {
   final String name;
 
-  const MyAnnotation(String this.name);
+  const MyAnnotation(this.name);
 
-  toString() => name;
-  get hashCode => name.hashCode;
-  operator==(other) => this.name == other.name;
+  String toString() => name;
+
+  int get hashCode => name.hashCode;
+
+  bool operator==(other) => name == other.name;
 }
 
 @MyAnnotation('A') @MyAnnotation('B') class A1 {}

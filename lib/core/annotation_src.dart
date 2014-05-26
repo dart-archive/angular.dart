@@ -6,19 +6,18 @@ RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
 const String SHADOW_DOM_INJECTOR_NAME = 'SHADOW_INJECTOR';
 
-skipShadow(Injector injector)
-    => injector.name == SHADOW_DOM_INJECTOR_NAME ? injector.parent : injector;
+skipShadow(Injector injector) =>
+    injector.name == SHADOW_DOM_INJECTOR_NAME ? injector.parent : injector;
 
-localVisibility (Injector requesting, Injector defining)
-    => identical(skipShadow(requesting), defining);
+localVisibility (Injector requesting, Injector defining) =>
+    identical(skipShadow(requesting), defining);
 
 directChildrenVisibility(Injector requesting, Injector defining) {
   requesting = skipShadow(requesting);
   return identical(requesting.parent, defining) || localVisibility(requesting, defining);
 }
 
-Directive cloneWithNewMap(Directive annotation, map)
-    => annotation._cloneWithNewMap(map);
+Directive cloneWithNewMap(Directive annotation, map) => annotation._cloneWithNewMap(map);
 
 String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
@@ -223,9 +222,11 @@ abstract class Directive {
     this.exportExpressionAttrs: const []
   });
 
-  toString() => selector;
-  get hashCode => selector.hashCode;
-  operator==(other) =>
+  String toString() => selector;
+
+  int get hashCode => selector.hashCode;
+
+  bool operator==(other) =>
       other is Directive && selector == other.selector;
 
   Directive _cloneWithNewMap(newMap);

@@ -110,7 +110,7 @@ class ElementBinder {
     }
   }
 
-  _bindOneWay(tasks, expression, scope, dstPathFn, controller, formatters) {
+  void _bindOneWay(tasks, expression, scope, dstPathFn, controller, formatters) {
     var taskId = tasks.registerTask();
 
     Expression attrExprFn = _parser(expression);
@@ -227,9 +227,8 @@ class ElementBinder {
         if (directive is AttachAware) {
           var taskId = tasks.registerTask();
           Watch watch;
-          watch = scope.watch('1', // Cheat a bit.
+          watch = scope.watch('::1', // Cheat a bit.
               (_, __) {
-            watch.remove();
             tasks.completeTask(taskId);
           });
         }
@@ -400,6 +399,7 @@ class TaggedTextBinder {
   final int offsetIndex;
 
   TaggedTextBinder(this.binder, this.offsetIndex);
+
   String toString() => "[TaggedTextBinder binder:$binder offset:$offsetIndex]";
 }
 
