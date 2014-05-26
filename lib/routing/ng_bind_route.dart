@@ -27,14 +27,15 @@ part of angular.routing;
     module: NgBindRoute.module,
     map: const {'ng-bind-route': '@routeName'})
 class NgBindRoute implements RouteProvider {
-  Router _router;
   String routeName;
-  Injector _injector;
+  final Router _router;
+  final Injector _injector;
 
   static final Module _module = new Module()
       ..bind(RouteProvider, toFactory: (i) => i.get(NgBindRoute),
              visibility: Directive.CHILDREN_VISIBILITY);
-  static module() => _module;
+
+  static Module module() => _module;
 
   // We inject NgRoutingHelper to force initialization of routing.
   NgBindRoute(this._router, this._injector, NgRoutingHelper _);
