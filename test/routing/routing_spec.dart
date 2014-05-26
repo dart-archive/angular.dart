@@ -169,6 +169,66 @@ main() {
     }));
 
 
+    it('should call preEnter callback and be able to veto', async(() {
+      int preEnterCount = 0;
+      initRouter((Router router, RouteViewFactory views) {
+        views.configure({
+          'foo': ngRoute(
+              path: '/foo',
+              preEnter: (RoutePreEnterEvent e) {
+                preEnterCount++;
+                e.allowEnter(new Future.value(false));
+              },
+              view: 'foo.html'
+          ),
+        });
+      });
+
+      Element root = _.compile('<ng-view></ng-view>');
+      expect(root.text).toEqual('');
+
+      router.route('/foo');
+      microLeap();
+
+      expect(preEnterCount).toBe(1);
+      expect(root.text).toEqual(''); // didn't enter.
+    }));
+
+
+    it('should call preLeave callback and be able to veto', async(() {
+      int preLeaveCount = 0;
+      initRouter((Router router, RouteViewFactory views) {
+        views.configure({
+          'foo': ngRoute(
+              path: '/foo',
+              preLeave: (RoutePreLeaveEvent e) {
+                preLeaveCount++;
+                e.allowLeave(new Future.value(false));
+              },
+              view: 'foo.html'
+          ),
+        });
+      });
+      _.injector.get(TemplateCache)
+          .put('foo.html', new HttpResponse(200, '<h1>Foo</h1>'));
+
+      Element root = _.compile('<ng-view></ng-view>');
+      expect(root.text).toEqual('');
+
+      router.route('/foo');
+      microLeap();
+
+      expect(preLeaveCount).toBe(0);
+      expect(root.text).toEqual('Foo');
+
+      router.route('');
+      microLeap();
+
+      expect(preLeaveCount).toBe(1);
+      expect(root.text).toEqual('Foo'); // didn't leave.
+    }));
+
+
     it('should call preEnter callback and load modules', async(() {
       int preEnterCount = 0;
       int modulesCount = 0;
