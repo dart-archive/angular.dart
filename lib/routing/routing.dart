@@ -55,6 +55,11 @@ class RouteViewFactory {
               cfg.preEnter(e);
             }
           },
+          preLeave: (RoutePreLeaveEvent e) {
+            if (cfg.preLeave != null) {
+              cfg.preLeave(e);
+            }
+          },
           leave: cfg.leave,
           mount: (Route mountRoute) {
             if (cfg.mount != null) {
@@ -68,10 +73,10 @@ class RouteViewFactory {
 NgRouteCfg ngRoute({String path, String view, String viewHtml,
     Map<String, NgRouteCfg> mount, modules(), bool defaultRoute: false,
     RoutePreEnterEventHandler preEnter, RouteEnterEventHandler enter,
-    RouteLeaveEventHandler leave}) =>
+    RoutePreLeaveEventHandler preLeave, RouteLeaveEventHandler leave}) =>
         new NgRouteCfg(path: path, view: view, viewHtml: viewHtml, mount: mount,
             modules: modules, defaultRoute: defaultRoute, preEnter: preEnter,
-            enter: enter, leave: leave);
+            preLeave: preLeave, enter: enter, leave: leave);
 
 class NgRouteCfg {
   final String path;
@@ -82,10 +87,11 @@ class NgRouteCfg {
   final bool defaultRoute;
   final RouteEnterEventHandler enter;
   final RoutePreEnterEventHandler preEnter;
+  final RoutePreLeaveEventHandler preLeave;
   final RouteLeaveEventHandler leave;
 
   NgRouteCfg({this.view, this.viewHtml, this.path, this.mount, this.modules,
-      this.defaultRoute, this.enter, this.preEnter, this.leave});
+      this.defaultRoute, this.enter, this.preEnter, this.preLeave, this.leave});
 }
 
 /**
