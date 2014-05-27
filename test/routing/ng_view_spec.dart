@@ -168,50 +168,32 @@ main() {
 }
 
 class FlatRouteInitializer implements Function {
-  void call(Router router, RouteViewFactory view) {
-    router.root
-      ..addRoute(
-          name: 'foo',
-          path: '/foo',
-          enter: view('foo.html'))
-      ..addRoute(
-          name: 'bar',
-          path: '/bar',
-          enter: view('bar.html'))
-      ..addRoute(
-          name: 'baz',
-          path: '/baz'); // route without a template
+  void call(Router router, RouteViewFactory views) {
+    views.configure({
+        'foo': ngRoute(path: '/foo', view:'foo.html'),
+        'bar': ngRoute(path: '/bar', view: 'bar.html'),
+        'baz': ngRoute(path: '/baz'),
+    });
   }
 }
 
 class NestedRouteInitializer implements Function {
-  void call(Router router, RouteViewFactory view) {
-    router.root
-      ..addRoute(
-          name: 'library',
+  void call(Router router, RouteViewFactory views) {
+    views.configure({
+      'library': ngRoute(
           path: '/library',
-          enter: view('library.html'),
-          mount: (Route route) => route
-            ..addRoute(
-                name: 'all',
-                path: '/all',
-                enter: view('book_list.html'))
-            ..addRoute(
-                name: 'book',
-                path: '/:bookId',
-                mount: (Route route) => route
-                  ..addRoute(
-                      name: 'overview',
-                      path: '/overview',
-                      defaultRoute: true,
-                      enter: view('book_overview.html'))
-                  ..addRoute(
-                      name: 'read',
-                      path: '/read',
-                      enter: view('book_read.html'))))
-                  ..addRoute(
-                      name: 'admin',
-                      path: '/admin',
-                      enter: view('admin.html'));
+          view: 'library.html',
+          mount: {
+              'all': ngRoute(path: '/all', view: 'book_list.html'),
+              'book': ngRoute(
+                  path: '/:bookId',
+                  mount: {
+                      'overview': ngRoute(path: '/overview', view: 'book_overview.html',
+                                          defaultRoute: true),
+                      'read': ngRoute(path: '/read', view: 'book_read.html'),
+                      'admin': ngRoute(path: '/admin', view: 'admin.html'),
+                  })
+          })
+    });
   }
 }
