@@ -316,6 +316,11 @@ class Component extends Directive {
    */
   final bool useShadowDom;
 
+  /**
+   * Defaults to true, but if set to false any NgBaseCss stylesheets will be ignored.
+   */
+  final bool useNgBaseCss;
+
   const Component({
     this.template,
     this.templateUrl,
@@ -329,7 +334,8 @@ class Component extends Directive {
     visibility,
     exportExpressions,
     exportExpressionAttrs,
-    this.useShadowDom})
+    this.useShadowDom,
+    this.useNgBaseCss: true})
       : _cssUrls = cssUrl,
         _applyAuthorStyles = applyAuthorStyles,
         _resetStyleInheritance = resetStyleInheritance,
@@ -359,7 +365,8 @@ class Component extends Directive {
           visibility: visibility,
           exportExpressions: exportExpressions,
           exportExpressionAttrs: exportExpressionAttrs,
-          useShadowDom: useShadowDom);
+          useShadowDom: useShadowDom,
+          useNgBaseCss: useNgBaseCss);
 }
 
 /**
