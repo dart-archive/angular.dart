@@ -45,6 +45,10 @@ packages:
     description: intl
     source: hosted
     version: "0.9.9"
+  js:
+    description: js
+    source: hosted
+    version: "0.2.2"
   logging:
     description: logging
     source: hosted
@@ -65,6 +69,10 @@ packages:
     description: perf_api
     source: hosted
     version: "0.0.8"
+  protractor:
+    description: protractor
+    source: hosted
+    version: "0.0.2"
   route_hierarchical:
     description: route_hierarchical
     source: hosted

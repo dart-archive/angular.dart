@@ -102,6 +102,13 @@ node "node_modules/karma/bin/karma" start karma.conf \
     --reporters=junit,dots --port=8765 --runner-port=8766 \
     --browsers=$BROWSERS --single-run --no-colors
 
+
+echo '---------------------------'
+echo '-- E2E TEST: AngularDart --'
+echo '---------------------------'
+$NGDART_BASE_DIR/scripts/run-e2e-test.sh
+
+
 echo '-------------------------'
 echo '-- DOCS: Generate Docs --'
 echo '-------------------------'

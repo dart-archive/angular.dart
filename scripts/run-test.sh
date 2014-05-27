@@ -33,3 +33,5 @@ $NGDART_SCRIPT_DIR/analyze.sh &&
     --reporters=junit,dots --port=8765 --runner-port=8766 \
     --browsers=Dartium,Chrome,Firefox --single-run --no-colors
 
+# Run E2E tests
+$NGDART_BASE_DIR/scripts/run-e2e-test.sh
