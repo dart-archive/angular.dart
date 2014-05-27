@@ -41,7 +41,7 @@ class ShadowDomComponentFactory implements ComponentFactory {
         Http http = injector.get(Http);
         TemplateCache templateCache = injector.get(TemplateCache);
         DirectiveMap directives = injector.get(DirectiveMap);
-        NgBaseCss baseCss = injector.get(NgBaseCss);
+        NgBaseCss baseCss = component.useNgBaseCss ? injector.get(NgBaseCss) : null;
         // This is a bit of a hack since we are returning different type then we are.
         var componentFactory = new _ComponentFactory(node,
             ref.type,
@@ -103,7 +103,9 @@ class _ComponentFactory implements Function {
     // so change back to using @import once Chrome bug is fixed or a
     // better work around is found.
     Iterable<async.Future<dom.StyleElement>> cssFutures;
-    var cssUrls = []..addAll(_baseCss.urls)..addAll(component.cssUrls);
+    var cssUrls = _baseCss != null ?
+      ([]..addAll(_baseCss.urls)..addAll(component.cssUrls)) :
+      component.cssUrls;
     var tag = element.tagName.toLowerCase();
     if (cssUrls.isNotEmpty) {
       cssFutures = cssUrls.map((cssUrl) => _styleElementCache.putIfAbsent(
