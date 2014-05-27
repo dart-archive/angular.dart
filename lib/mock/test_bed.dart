@@ -8,7 +8,7 @@ part of angular.mock;
  */
 class TestBed {
   final Injector injector;
-  final Scope rootScope;
+  final RootScope rootScope;
   final Compiler compiler;
   final Parser _parser;
   final Expando expando;
