@@ -29,30 +29,33 @@ class View {
 class ViewPort {
   final dom.Node placeholder;
   final Animate _animate;
+  final RootScope _rootScope;
   final _views = <View>[];
 
-  ViewPort(this.placeholder, this._animate);
+  ViewPort(this.placeholder, this._animate, this._rootScope);
 
   void insert(View view, { View insertAfter }) {
     dom.Node previousNode = _lastNode(insertAfter);
-    _viewsInsertAfter(view, insertAfter);
-
-    _animate.insert(view.nodes, placeholder.parentNode,
-      insertBefore: previousNode.nextNode);
+    _rootScope.domWrite(() {
+      _viewsInsertAfter(view, insertAfter);
+      _animate.insert(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+    });
   }
 
   void remove(View view) {
-    _views.remove(view);
-    _animate.remove(view.nodes);
+    _rootScope.domWrite(() {
+      _views.remove(view);
+      _animate.remove(view.nodes);
+    });
   }
 
   void move(View view, { View moveAfter }) {
     dom.Node previousNode = _lastNode(moveAfter);
-    _views.remove(view);
-    _viewsInsertAfter(view, moveAfter);
-
-    _animate.move(view.nodes, placeholder.parentNode,
-      insertBefore: previousNode.nextNode);
+    _rootScope.domWrite(() {
+      _views.remove(view);
+      _viewsInsertAfter(view, moveAfter);
+      _animate.move(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+    });
   }
 
   void _viewsInsertAfter(View view, View insertAfter) {
@@ -61,7 +64,5 @@ class ViewPort {
   }
 
   dom.Node _lastNode(View insertAfter) =>
-    insertAfter == null
-      ? placeholder
-      : insertAfter.nodes.last;
+      insertAfter == null ? placeholder : insertAfter.nodes.last;
 }

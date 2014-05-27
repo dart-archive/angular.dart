@@ -29,18 +29,14 @@ abstract class _NgUnlessIfAttrDirectiveBase {
       _childScope = _scope.createChild(new PrototypeMap(_scope.context));
       _view = _boundViewFactory(_childScope);
       var view = _view;
-      _scope.rootScope.domWrite(() {
-        _viewPort.insert(view);
-     });
+      _viewPort.insert(view);
     }
   }
 
   void _ensureViewDestroyed() {
     if (_view != null) {
       var view = _view;
-      _scope.rootScope.domWrite(() {
-        _viewPort.remove(view);
-      });
+      _viewPort.remove(view);
       _childScope.destroy();
       _view = null;
       _childScope = null;
