@@ -8,10 +8,19 @@ import '../_specs.dart';
     cssUrl: 'simple.css')
 class _HtmlAndCssComponent {}
 
+@Component(
+    selector: 'no-base-css',
+    templateUrl: 'simple.html',
+    cssUrl: 'simple.css',
+    useNgBaseCss: false)
+class _NoBaseCssComponent {}
+
+
 main() => describe('NgBaseCss', () {
   beforeEachModule((Module module) {
     module
-      ..bind(_HtmlAndCssComponent);
+      ..bind(_HtmlAndCssComponent)
+      ..bind(_NoBaseCssComponent);
   });
 
   it('should load css urls from ng-base-css', async((TestBed _, MockHttpBackend backend) {
@@ -50,6 +59,23 @@ main() => describe('NgBaseCss', () {
     );
   }));
 
+  it('should respect useNgBaseCss', async((TestBed _, MockHttpBackend backend) {
+    backend
+      ..expectGET('simple.css').respond(200, '.simple{}')
+      ..expectGET('simple.html').respond(200, '<div>Simple!</div>');
+
+    var element = e('<div ng-base-css="base.css"><no-base-css>ignore</no-base-css></div>');
+    _.compile(element);
+
+    microLeap();
+    backend.flush();
+    microLeap();
+
+    expect(element.children[0].shadowRoot).toHaveHtml(
+        '<style>.simple{}</style><div>Simple!</div>'
+    );
+  }));
+
   describe('from injector', () {
     beforeEachModule((Module module) {
       module.bind(NgBaseCss, toValue: new NgBaseCss()..urls = ['injected.css']);
@@ -70,6 +96,23 @@ main() => describe('NgBaseCss', () {
 
       expect(element.children[0].shadowRoot).toHaveHtml(
           '<style>.injected{}</style><style>.simple{}</style><div>Simple!</div>'
+      );
+    }));
+
+    it('should respect useNgBaseCss', async((TestBed _, MockHttpBackend backend) {
+      backend
+        ..expectGET('simple.css').respond(200, '.simple{}')
+        ..expectGET('simple.html').respond(200, '<div>Simple!</div>');
+
+      var element = e('<div><no-base-css>ignore</no-base-css></div>');
+      _.compile(element);
+
+      microLeap();
+      backend.flush();
+      microLeap();
+
+      expect(element.children[0].shadowRoot).toHaveHtml(
+          '<style>.simple{}</style><div>Simple!</div>'
       );
     }));
   });
