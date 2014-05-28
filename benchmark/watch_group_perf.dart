@@ -27,7 +27,6 @@ var _dynamicFieldGetterFactory = new DynamicFieldGetterFactory();
 main() {
   _fieldRead();
   _fieldReadGetter();
-  _mapRead();
   _methodInvoke0();
   _methodInvoke1();
   _function2();
@@ -105,39 +104,6 @@ _fieldReadGetter() {
   print('Watch: ${watchGrp.fieldCost}; eval: ${watchGrp.evalCost}');
 
   time('fieldReadGetter', () => watchGrp.detectChanges());
-}
-
-_mapRead() {
-  var map = {
-      'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4,
-      'f': 0, 'g': 1, 'h': 2, 'i': 3, 'j': 4,
-      'k': 0, 'l': 1, 'm': 2, 'n': 3, 'o': 4,
-      'p': 0, 'q': 1, 'r': 2, 's': 3, 't': 4};
-  var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
-      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), map)
-          ..watch(_parse('a'), _reactionFn)
-          ..watch(_parse('b'), _reactionFn)
-          ..watch(_parse('c'), _reactionFn)
-          ..watch(_parse('d'), _reactionFn)
-          ..watch(_parse('e'), _reactionFn)
-          ..watch(_parse('f'), _reactionFn)
-          ..watch(_parse('g'), _reactionFn)
-          ..watch(_parse('h'), _reactionFn)
-          ..watch(_parse('i'), _reactionFn)
-          ..watch(_parse('j'), _reactionFn)
-          ..watch(_parse('k'), _reactionFn)
-          ..watch(_parse('l'), _reactionFn)
-          ..watch(_parse('m'), _reactionFn)
-          ..watch(_parse('n'), _reactionFn)
-          ..watch(_parse('o'), _reactionFn)
-          ..watch(_parse('p'), _reactionFn)
-          ..watch(_parse('q'), _reactionFn)
-          ..watch(_parse('r'), _reactionFn)
-          ..watch(_parse('s'), _reactionFn)
-          ..watch(_parse('t'), _reactionFn);
-
-  print('Watch: ${watchGrp.fieldCost}; eval: ${watchGrp.evalCost}');
-  time('mapRead', () => watchGrp.detectChanges());
 }
 
 _methodInvoke0() {

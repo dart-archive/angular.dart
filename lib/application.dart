@@ -8,15 +8,9 @@
  *     import 'package:angular/angular.dart';
  *     import 'package:angular/application_factory.dart';
  *
- *     class MyModule extends Module {
- *       MyModule() {
- *         bind(HelloWorldController);
- *       }
- *     }
- *
  *     main() {
  *       applicationFactory()
- *           .addModule(new MyModule())
+ *           .rootContextType(HelloWorldController)
  *           .run();
  *     }
  *
@@ -156,6 +150,11 @@ abstract class Application {
 
   Application addModule(Module module) {
     modules.add(module);
+    return this;
+  }
+
+  Application rootContextType(Type rootContext) {
+    modules.add(new Module()..bind(Object, toImplementation: rootContext));
     return this;
   }
 

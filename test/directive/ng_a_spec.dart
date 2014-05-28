@@ -14,15 +14,15 @@ main() {
     it('should bind click listener when href zero length string', (Scope scope) {
       _.compile('<a href="" ng-click="abc = 4; event = \$event"></a>');
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
-      expect(_.rootScope.context['abc']).toEqual(4);
-      expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
+      expect(_.rootScope.context.abc).toEqual(4);
+      expect(_.rootScope.context.event is dom.UIEvent).toEqual(true);
     });
 
-    it('should bind click listener when href empty', (Scope scope) {
+    it('should bind click listener when href empty', () {
       _.compile('<a href ng-click="abc = 5; event = \$event"></a>');
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
-      expect(_.rootScope.context['abc']).toEqual(5);
-      expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
+      expect(_.rootScope.context.abc).toEqual(5);
+      expect(_.rootScope.context.event is dom.UIEvent).toEqual(true);
     });
 
     it('should not bind click listener to non empty href', (Scope scope) {
@@ -43,10 +43,10 @@ main() {
 
       _.compile('<a href="{{url}}" ng-click="abc = true; event = \$event"></a>');
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
-      expect(_.rootScope.context['abc']).toEqual(true);
-      expect(_.rootScope.context['event'] is dom.UIEvent).toEqual(true);
+      expect(_.rootScope.context.abc).toEqual(true);
+      expect(_.rootScope.context.event is dom.UIEvent).toEqual(true);
       window.location.href = '#';
-      _.rootScope.context['url'] = '#url';
+      _.rootScope.context.url = '#url';
       _.rootScope.apply();
       _.triggerEvent(_.rootElement, 'click', 'MouseEvent');
       expect(window.location.href.endsWith("#url")).toEqual(true);

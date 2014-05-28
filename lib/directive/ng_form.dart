@@ -58,7 +58,6 @@ class NgForm extends NgControl {
   set name(String value) {
     if (value != null) {
       super.name = value;
-      _scope.context[name] = this;
     }
   }
 

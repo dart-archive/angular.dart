@@ -16,7 +16,7 @@ class NgIfDirective {
       'attr': '@attr',
       'expr': '=>expr'
     },
-    template: '<div>{{ctrl.inline.template.expression}}</div>',
+    template: '<div>{{inline.template.expression}}</div>',
     exportExpressionAttrs: const ['exported-attr'],
     exportExpressions: const ['exported + expression'])
 class MyComponent {

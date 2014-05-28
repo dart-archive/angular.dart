@@ -114,9 +114,10 @@ class NgView implements DetachAware, RouteProvider {
     var viewFuture = viewDef.templateHtml != null ?
         new Future.value(_viewCache.fromHtml(viewDef.templateHtml, newDirectives)) :
         _viewCache.fromUrl(viewDef.template, newDirectives);
+
     viewFuture.then((viewFactory) {
       _cleanUp();
-      _childScope = _scope.createChild(new PrototypeMap(_scope.context));
+      _childScope = _scope.createChild(_scope.context);
       _view = viewFactory(
           viewInjector.createChild([new Module()..bind(Scope, toValue: _childScope)]));
       _view.nodes.forEach((elm) => _element.append(elm));
@@ -128,9 +129,8 @@ class NgView implements DetachAware, RouteProvider {
 
     _view.nodes.forEach((node) => node.remove());
     _childScope.destroy();
-
-    _view = null;
     _childScope = null;
+    _view = null;
   }
 
   Route get route => _viewRoute;
@@ -139,10 +139,10 @@ class NgView implements DetachAware, RouteProvider {
 
   Map<String, String> get parameters {
     var res = <String, String>{};
-    var p = _viewRoute;
-    while (p != null) {
-      res.addAll(p.parameters);
-      p = p.parent;
+    var route = _viewRoute;
+    while (route != null) {
+      res.addAll(route.parameters);
+      route = route.parent;
     }
     return res;
   }

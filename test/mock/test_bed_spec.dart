@@ -21,7 +21,7 @@ void main() {
 
         _.compile('<div my-directive probe="i"></div>', scope: childScope);
 
-        Probe probe = _.rootScope.context['i'];
+        Probe probe = _.rootScope.context.$probes['i'];
         var directiveInst = probe.directive(MyTestBedDirective);
 
         childScope.destroy();

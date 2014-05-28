@@ -2,51 +2,8 @@ library filter_spec;
 
 import '../_specs.dart';
 
-// Const keys to keep the compiler fast
-var _nameToSymbol = const {
-  'name': const Symbol('name'),
-  'current': const Symbol('current'),
-  'first': const Symbol('first'),
-  'last': const Symbol('last'),
-  'done': const Symbol('done'),
-  'key': const Symbol('key'),
-  'nonkey': const Symbol('nonkey')
-};
-
-// Helper to simulate some real objects.  Purposefully doesn't implement Map.
-class DynamicObject {
-  final Map<Symbol, dynamic> _map = {};
-  DynamicObject([Map init]) {
-    init.forEach((key, value) {
-      var symbol = _nameToSymbol[key];
-      if (symbol == null) { throw "Missing nameToSymbol[$key]"; }
-      _map[symbol] = value;
-    });
-  }
-  toString() => "$_map";
-  operator ==(DynamicObject other) {
-    return (_map.length == other._map.length &&
-            _map.keys.toSet().difference(other._map.keys.toSet()).length == 0 &&
-            _map.keys.every((key) => _map[key] == other._map[key]));
-  }
-  int get hashCode => 0;
-  noSuchMethod(Invocation invocation) {
-    Symbol name = invocation.memberName;
-    if (invocation.isGetter) {
-      return _map[name];
-    } else if (invocation.isSetter) {
-      return _map[name] = invocation.positionalArguments[0];
-    } else if (invocation.isMethod) {
-      return Function.apply(_map[name],
-          invocation.positionalArguments, invocation.namedArguments);
-    } else {
-      throw "DynamicObject: Unexpected invocation.";
-    }
-  }
-}
-
 main() {
-  D([Map init]) => new DynamicObject(init);
+  D([Map init]) => new DynamicObject()..addProperties(init);
 
   describe('filter formatter', () {
     var filter;
@@ -106,17 +63,17 @@ main() {
     it('should formatter on specific property', () {
       List items = [{'name': 'a',   'ignore': 'a'},
                     {'name': 'abc', 'ignore': 'a'},
-                  D({'name': 'abd'})];
+                    {'name': 'abd'}];
       expect(filter(items, {}).length).toBe(3);
 
-      expect(filter(items, {'name': 'a'}).length).toBe(3);
+      expect(filter(items, {"this['name']": 'a'}).length).toBe(3);
 
-      expect(filter(items, {'name': 'ab'}).length).toBe(2);
-      expect(filter(items, {'name': 'ab'})[0]['name']).toBe('abc');
-      expect(filter(items, {'name': 'ab'})[1].name).toBe('abd');
+      expect(filter(items, {"this['name']": 'ab'}).length).toBe(2);
+      expect(filter(items, {"this['name']": 'ab'})[0]['name']).toBe('abc');
+      expect(filter(items, {"this['name']": 'ab'})[1]['name']).toBe('abd');
 
-      expect(filter(items, {'name': 'c'}).length).toBe(1);
-      expect(filter(items, {'name': 'c'})[0]['name']).toBe('abc');
+      expect(filter(items, {"this['name']": 'c'}).length).toBe(1);
+      expect(filter(items, {"this['name']": 'c'})[0]['name']).toBe('abc');
     });
 
     it('should take function as predicate', () {
@@ -128,25 +85,25 @@ main() {
     });
 
     it('should take object as predicate', () {
-      List items = [{'first': 'misko', 'last': 'hevery'},
-                  D({'first': 'adam',  'last': 'abrons'})];
+      List items = [new DynamicObject()..addProperties({'first': 'misko', 'last': 'hevery'}),
+                    new DynamicObject()..addProperties({'first': 'adam',  'last': 'abrons'})];
 
-      expect(filter(items, {'first':'',      'last':''}).length).toBe(2);
-      expect(filter(items, {'first':'',      'last':'hevery'}).length).toBe(1);
-      expect(filter(items, {'first':'adam',  'last':'hevery'}).length).toBe(0);
-      expect(filter(items, {'first':'misko', 'last':'hevery'}).length).toBe(1);
-      expect(filter(items, {'first':'misko', 'last':'hevery'})[0]).toEqual(items[0]);
+      expect(filter(items, {'first': '',      'last': ''}).length).toBe(2);
+      expect(filter(items, {'first': '',      'last': 'hevery'}).length).toBe(1);
+      expect(filter(items, {'first': 'adam',  'last': 'hevery'}).length).toBe(0);
+      expect(filter(items, {'first': 'misko', 'last': 'hevery'}).length).toBe(1);
+      expect(filter(items, {'first': 'misko', 'last': 'hevery'})[0]).toEqual(items[0]);
     });
 
     it('should support boolean properties', () {
       List items = [{'name': 'tom',  'current': true},
-                  D({'name': 'demi', 'current': false}),
+                    {'name': 'demi', 'current': false},
                     {'name': 'sofia'}];
 
-      expect(filter(items, {'current':true}).length).toBe(1);
-      expect(filter(items, {'current':true})[0]['name']).toBe('tom');
-      expect(filter(items, {'current':false}).length).toBe(1);
-      expect(filter(items, {'current':false})[0].name).toBe('demi');
+      expect(filter(items, {"this['current']": true}).length).toBe(1);
+      expect(filter(items, {"this['current']": true})[0]['name']).toBe('tom');
+      expect(filter(items, {"this['current']": false}).length).toBe(1);
+      expect(filter(items, {"this['current']": false})[0]['name']).toBe('demi');
     });
 
     it('should support negation operator', () {
@@ -168,16 +125,16 @@ main() {
         items = [{'key': 'value1',  'nonkey': 1},
                  {'key': 'value2',  'nonkey': 2},
                  {'key': 'value12', 'nonkey': 3},
-               D({'key': 'value1',  'nonkey': 4}),
-               D({'key': 'Value1',  'nonkey': 5})];
-        expr = {'key': 'value1'};
+                 {'key': 'value1',  'nonkey': 4},
+                 {'key': 'Value1',  'nonkey': 5}];
+        expr = {"this['key']": 'value1'};
         expect(filter(items, expr, true)).toEqual([items[0], items[3]]);
 
         items = [{'key':  1, 'nonkey': 1},
                  {'key':  2, 'nonkey': 2},
                  {'key': 12, 'nonkey': 3},
                  {'key':  1, 'nonkey': 4}];
-        expr = {'key': 1};
+        expr = {"this['key']": 1};
         expect(filter(items, expr, true)).toEqual([items[0], items[3]]);
 
         expr = 12;
@@ -185,18 +142,17 @@ main() {
       });
 
       it('and use the function given to compare values', () {
-        List items = [{'key':  1,  'nonkey':  1},
-                      {'key':  2,  'nonkey':  2},
-                    D({'key': 12, 'nonkey':  3}),
-                      {'key':  1,  'nonkey': 14},
+        List items = [{'key':  1, 'nonkey':  1},
+                      {'key':  2, 'nonkey':  2},
+                      {'key': 12, 'nonkey':  3},
+                      {'key':  1, 'nonkey': 14},
                       {'key': 13, 'nonkey': 14}];
-        var expr = {'key': 10};
         var comparator = (obj, value) => obj is num && obj > value;
-        expect(filter(items, expr, comparator)).toEqual([items[2], items[4]]);
 
-        expr = 10;
-        // DynamicObject doesn't match!
-        expect(filter(items, expr, comparator)).toEqual([items[3], items[4]]);
+        // items having their 'key' item > 10
+        expect(filter(items, {"this['key']": 10}, comparator)).toEqual([items[2], items[4]]);
+        // items having any value > 10
+        expect(filter(items, 10, comparator)).toEqual([items[2], items[3], items[4]]);
       });
 
     });

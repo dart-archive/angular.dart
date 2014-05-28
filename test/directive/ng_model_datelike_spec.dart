@@ -31,7 +31,7 @@ void main() {
     return (dt != null && !dt.isUtc) ? dt.toUtc() : dt;
   }
 
-  bool isBrowser(String pattern) => 
+  bool isBrowser(String pattern) =>
       dom.window.navigator.userAgent.indexOf(pattern) > 0;
 
   /** Use this function to determine if a non type=text or type=textarea
@@ -69,7 +69,7 @@ void main() {
 
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
       });
@@ -81,7 +81,7 @@ void main() {
 
         _.rootScope.apply();
         expect(inputElement.value).toEqual('');
-        _.rootScope.context['model'] = dtAsString;
+        _.rootScope.context.model = dtAsString;
         _.rootScope.apply();
         expect(inputElement.value).toEqual(dtAsString);
       });
@@ -93,7 +93,7 @@ void main() {
 
         inputElement.valueAsDate = dateTime;
         _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(dateTime);
+        expect(_.rootScope.context.model).toEqual(dateTime);
       });
 
       it('should update model from the input "value" IDL attribute', () {
@@ -103,7 +103,7 @@ void main() {
 
         inputElement.value = dtAsString;
         _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(dateTime);
+        expect(_.rootScope.context.model).toEqual(dateTime);
       });
 
       it('should clear input when model is the empty string', () {
@@ -111,11 +111,11 @@ void main() {
         inputElement = _.rootElement as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
 
-        _.rootScope.context['model'] = '';
+        _.rootScope.context.model = '';
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
         expect(inputElement.value).toEqual('');
@@ -126,11 +126,11 @@ void main() {
         inputElement = _.rootElement as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
 
-        _.rootScope.context['model'] = null;
+        _.rootScope.context.model = null;
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
         expect(inputElement.value).toEqual('');
@@ -148,7 +148,7 @@ void main() {
 
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
       });
@@ -160,7 +160,7 @@ void main() {
 
         _.rootScope.apply();
         expect(inputElement.value).toEqual('');
-        _.rootScope.context['model'] = dtAsString;
+        _.rootScope.context.model = dtAsString;
         _.rootScope.apply();
         expect(inputElement.value).toEqual(dtAsString);
       });
@@ -172,7 +172,7 @@ void main() {
 
         inputElement.valueAsDate = dateTime;
         _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(dateTime);
+        expect(_.rootScope.context.model).toEqual(dateTime);
       });
 
       it('should update model from the input "value" IDL attribute', () {
@@ -182,7 +182,7 @@ void main() {
 
         inputElement.value = dtAsString;
         _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(dateTime);
+        expect(_.rootScope.context.model).toEqual(dateTime);
       });
 
       it('should clear input when model is the empty string', () {
@@ -190,11 +190,11 @@ void main() {
         inputElement = _.rootElement as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
 
-        _.rootScope.context['model'] = '';
+        _.rootScope.context.model = '';
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
         expect(inputElement.value).toEqual('');
@@ -205,11 +205,11 @@ void main() {
         inputElement = _.rootElement as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
 
-        _.rootScope.context['model'] = null;
+        _.rootScope.context.model = null;
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
         expect(inputElement.value).toEqual('');
@@ -228,7 +228,7 @@ void main() {
 
         _.rootScope.apply();
         expect(inputElement.valueAsNumber.isNaN).toBeTruthy();
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputElement.valueAsNumber).toEqual(dateTime);
       });
@@ -240,7 +240,7 @@ void main() {
 
         _.rootScope.apply();
         expect(inputElement.value).toEqual('');
-        _.rootScope.context['model'] = dtAsString;
+        _.rootScope.context.model = dtAsString;
         _.rootScope.apply();
         expect(inputElement.value).toEqual(dtAsString);
       });
@@ -254,7 +254,7 @@ void main() {
         inputElement.valueAsNumber = dateTime;
         expect(inputElement.valueAsNumber).toEqual(dateTime);
         _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(dateTime);
+        expect(_.rootScope.context.model).toEqual(dateTime);
       });
 
       it('should update model from the input "value" IDL attribute', () {
@@ -264,7 +264,7 @@ void main() {
 
         inputElement.value = dtAsString;
         _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(dateTime);
+        expect(_.rootScope.context.model).toEqual(dateTime);
       });
 
       it('should clear input when model is the empty string', () {
@@ -272,11 +272,11 @@ void main() {
         inputElement = _.rootElement as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputElement.valueAsNumber).toEqual(dateTime);
 
-        _.rootScope.context['model'] = '';
+        _.rootScope.context.model = '';
         _.rootScope.apply();
         expect(inputElement.valueAsNumber.isNaN).toBeTruthy();
         expect(inputElement.value).toEqual('');
@@ -287,11 +287,11 @@ void main() {
         inputElement = _.rootElement as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputElement.valueAsNumber).toEqual(dateTime);
 
-        _.rootScope.context['model'] = null;
+        _.rootScope.context.model = null;
         _.rootScope.apply();
         expect(inputElement.valueAsNumber.isNaN).toBeTruthy();
         expect(inputElement.value).toEqual('');
@@ -313,7 +313,7 @@ void main() {
 
         _.rootScope.apply();
         expect(inputElement.value).toEqual('');
-        _.rootScope.context['model'] = dtAsString;
+        _.rootScope.context.model = dtAsString;
         _.rootScope.apply();
         expect(inputElement.value).toEqual(dtAsString);
       });
@@ -326,7 +326,7 @@ void main() {
 
         inputElement.value = dtAsString;
         _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(dtAsString);
+        expect(_.rootScope.context.model).toEqual(dtAsString);
       });
     });
 
@@ -341,7 +341,7 @@ void main() {
 
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
       });
@@ -352,7 +352,7 @@ void main() {
 
         _.rootScope.apply();
         expect(inputElement.value).toEqual('');
-        _.rootScope.context['model'] = dtAsString;
+        _.rootScope.context.model = dtAsString;
         _.rootScope.apply();
         expect(inputElement.value).toEqual(dtAsString);
       });
@@ -364,7 +364,7 @@ void main() {
 
         inputElement.valueAsDate = dateTime;
         _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(dateTime);
+        expect(_.rootScope.context.model).toEqual(dateTime);
       });
 
       it('should update model from the input "value" IDL attribute', () {
@@ -374,7 +374,7 @@ void main() {
 
         inputElement.value = dtAsString;
         _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(dateTime);
+        expect(_.rootScope.context.model).toEqual(dateTime);
       });
 
       it('should clear input when model is the empty string', () {
@@ -382,11 +382,11 @@ void main() {
         inputElement = _.rootElement as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
 
-        _.rootScope.context['model'] = '';
+        _.rootScope.context.model = '';
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
         expect(inputElement.value).toEqual('');
@@ -397,11 +397,11 @@ void main() {
         inputElement = _.rootElement as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
 
-        _.rootScope.context['model'] = null;
+        _.rootScope.context.model = null;
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
         expect(inputElement.value).toEqual('');
@@ -419,7 +419,7 @@ void main() {
 
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
       });
@@ -430,7 +430,7 @@ void main() {
 
         _.rootScope.apply();
         expect(inputElement.value).toEqual('');
-        _.rootScope.context['model'] = dtAsString;
+        _.rootScope.context.model = dtAsString;
         _.rootScope.apply();
         expect(inputElement.value).toEqual(dtAsString);
       });
@@ -442,7 +442,7 @@ void main() {
 
         inputElement.valueAsDate = dateTime;
         _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(dateTime);
+        expect(_.rootScope.context.model).toEqual(dateTime);
       });
 
       it('should update model from the input "value" IDL attribute', () {
@@ -452,7 +452,7 @@ void main() {
 
         inputElement.value = dtAsString;
         _.triggerEvent(inputElement, 'change');
-        expect(_.rootScope.context['model']).toEqual(dateTime);
+        expect(_.rootScope.context.model).toEqual(dateTime);
       });
 
       it('should clear input when model is the empty string', () {
@@ -460,11 +460,11 @@ void main() {
         inputElement = _.rootElement as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
 
-        _.rootScope.context['model'] = '';
+        _.rootScope.context.model = '';
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
         expect(inputElement.value).toEqual('');
@@ -475,11 +475,11 @@ void main() {
         inputElement = _.rootElement as dom.InputElement;
         if (!nonTextInputElementSupported(inputElement)) return; // skip test
 
-        _.rootScope.context['model'] = dateTime;
+        _.rootScope.context.model = dateTime;
         _.rootScope.apply();
         expect(inputValueAsDate()).toEqual(dateTime);
 
-        _.rootScope.context['model'] = null;
+        _.rootScope.context.model = null;
         _.rootScope.apply();
         expect(inputValueAsDate()).toBeNull();
         expect(inputElement.value).toEqual('');

@@ -36,7 +36,6 @@ TransformOptions _parseSettings(Map args) {
   var annotations = [
       'angular.core.annotation_src.Injectable',
       'angular.core.annotation_src.Decorator',
-      'angular.core.annotation_src.Controller',
       'angular.core.annotation_src.Component',
       'angular.core.annotation_src.Formatter'];
   annotations.addAll(_readStringListValue(args, 'injectable_annotations'));
