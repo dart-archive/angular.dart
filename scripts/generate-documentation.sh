@@ -54,7 +54,7 @@ fi;
 
 # Create a version file from the current build version
 doc_version=`head CHANGELOG.md | awk 'NR==2' | sed 's/^# //'`
-dartsdk_version=`cat $DARTSDK/version`
+dartsdk_version=`cat $DART_SDK/version`
 head_sha=`git rev-parse --short HEAD`
 
 echo $doc_version at $head_sha \(with Dart SDK $dartsdk_version\) > docs/VERSION
