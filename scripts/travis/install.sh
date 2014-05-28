@@ -16,6 +16,5 @@ if [[ $BROWSERS =~ "dartium" ]]; then
   unzip dartium.zip > /dev/null
   rm -rf dartium
   rm dartium.zip
-  mv dartium-* dartium
+  mv dartium-* chromium
 fi
-
