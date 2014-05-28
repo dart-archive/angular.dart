@@ -12,7 +12,7 @@ main() {
       expect(() {
         dynamic v = 6;
         String s = v;
-      }).toThrow();
+      }).toThrowWith();
     });
   });
 
@@ -40,7 +40,7 @@ main() {
     it('should fail with not enough arguments', () {
       expect(() {
         relaxFnApply((required, alsoRequired) => "happy", [1]);
-      }).toThrow('Unknown function type, expecting 0 to 5 args.');
+      }).toThrowWith(message: 'Unknown function type, expecting 0 to 5 args.');
     });
   });
 

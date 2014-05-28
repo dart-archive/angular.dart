@@ -292,7 +292,7 @@ void main() {
         watchLast.remove();
         expect(watchGrp.fieldCost).toEqual(0);
 
-        expect(() => watch.remove()).toThrow('Already deleted!');
+        expect(() => watch.remove()).toThrowWith(message: 'Already deleted!');
       });
 
       it('should eval pure FunctionApply', () {

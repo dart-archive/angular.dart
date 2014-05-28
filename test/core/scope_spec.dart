@@ -874,8 +874,8 @@ void main() {
 
       it(r'should properly reset phase on exception', (RootScope rootScope) {
         var error = 'MyError';
-        expect(() => rootScope.apply(() { throw error; })).toThrow(error);
-        expect(() => rootScope.apply(() { throw error; })).toThrow(error);
+        expect(() => rootScope.apply(() { throw error; })).toThrowWith(message: error);
+        expect(() => rootScope.apply(() { throw error; })).toThrowWith(message: error);
       });
     });
 
@@ -963,9 +963,9 @@ void main() {
 
           retValue = 2;
           expect(rootScope.flush).
-          toThrow('Observer reaction functions should not change model. \n'
-          'These watch changes were detected: logger("watch"): 2 <= 1\n'
-          'These observe changes were detected: ');
+          toThrowWith(message: 'Observer reaction functions should not change model. \n'
+                               'These watch changes were detected: logger("watch"): 2 <= 1\n'
+                               'These observe changes were detected: ');
         });
       });
 
@@ -1156,7 +1156,7 @@ void main() {
         rootScope.watch('name', (a, b) {
           expect(() {
             rootScope.digest();
-          }).toThrow(r'digest already in progress');
+          }).toThrowWith(message: r'digest already in progress');
           callCount++;
         });
         rootScope.context['name'] = 'a';
@@ -1219,11 +1219,11 @@ void main() {
 
         expect(() {
           rootScope.digest();
-        }).toThrow('Model did not stabilize in 5 digests. '
-        'Last 3 iterations:\n'
-        'a: 2 <= 1, b: 2 <= 1\n'
-        'a: 3 <= 2, b: 3 <= 2\n'
-        'a: 4 <= 3, b: 4 <= 3');
+        }).toThrowWith(message: 'Model did not stabilize in 5 digests. '
+                                'Last 3 iterations:\n'
+                                'a: 2 <= 1, b: 2 <= 1\n'
+                                'a: 3 <= 2, b: 3 <= 2\n'
+                                'a: 4 <= 3, b: 4 <= 3');
       });
 
 

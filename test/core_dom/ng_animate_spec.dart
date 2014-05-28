@@ -64,17 +64,17 @@ main() {
       expect(_.rootElement.text).toEqual("BbAa");
     });
   });
-  
+
   describe('NoOpAnimation', () {
     it('should not do anything async unless the future is asked for', () {
       var completer = new NoOpAnimation();
       expect(completer).toBeDefined();
     });
-        
+
     it('should create a future once onCompleted is accessed', () {
-      expect(() => new NoOpAnimation().onCompleted).toThrow();
+      expect(() => new NoOpAnimation().onCompleted).toThrowWith();
     });
-        
+
     it('should return a [COMPLETED_IGNORED] result when completed.', async(() {
       bool success = false;
       new NoOpAnimation().onCompleted.then((result) {

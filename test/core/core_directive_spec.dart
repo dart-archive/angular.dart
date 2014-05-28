@@ -52,8 +52,8 @@ void main() {
         var injector = applicationFactory().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
-        }).toThrow('Mapping for attribute foo is already defined (while '
-        'processing annottation for field foo of Bad1Component)');
+        }).toThrowWith(message: 'Mapping for attribute foo is already defined (while '
+                                'processing annottation for field foo of Bad1Component)');
       });
 
       it('should throw when annotated both getter and setter', () {
@@ -63,8 +63,8 @@ void main() {
         var injector = applicationFactory().addModule(module).createInjector();
         expect(() {
           injector.get(DirectiveMap);
-        }).toThrow('Attribute annotation for foo is defined more than once '
-        'in Bad2Component');
+        }).toThrowWith(message: 'Attribute annotation for foo is defined more than once '
+                                'in Bad2Component');
       });
     });
 

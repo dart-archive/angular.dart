@@ -275,18 +275,18 @@ main() {
     it(r'should error on wrong parsing of ngRepeat', () {
       expect(() {
         compile('<ul><li ng-repeat="i dont parse"></li></ul>')();
-      }).toThrow("[NgErr7] ngRepeat error! Expected expression in form of "
-                 "'_item_ in _collection_[ track by _id_]' but got "
-                 "'i dont parse'.");
+      }).toThrowWith(message: "[NgErr7] ngRepeat error! Expected expression in form of "
+                              "'_item_ in _collection_[ track by _id_]' but got "
+                              "'i dont parse'.");
     });
 
 
     it("should throw error when left-hand-side of ngRepeat can't be parsed", () {
         expect(() {
           compile('<ul><li ng-repeat="i dont parse in foo"></li></ul>')();
-        }).toThrow("[NgErr8] ngRepeat error! '_item_' in '_item_ in "
-                  "_collection_' should be an identifier or '(_key_, _value_)' "
-                  "expression, but got 'i dont parse'.");
+        }).toThrowWith(message: "[NgErr8] ngRepeat error! '_item_' in '_item_ in "
+                                "_collection_' should be an identifier or '(_key_, _value_)' "
+                                "expression, but got 'i dont parse'.");
     });
 
 
