@@ -36,7 +36,7 @@ packages:
   guinness:
     description: guinness
     source: hosted
-    version: "0.1.4"
+    version: "0.1.5"
   html5lib:
     description: html5lib
     source: hosted
@@ -60,7 +60,7 @@ packages:
   path:
     description: path
     source: hosted
-    version: "1.1.0"
+    version: "1.2.0"
   perf_api:
     description: perf_api
     source: hosted
@@ -68,7 +68,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.20"
+    version: "0.4.21"
   source_maps:
     description: source_maps
     source: hosted
@@ -76,7 +76,7 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "0.9.3+1"
+    version: "0.9.3+2"
   unittest:
     description: unittest
     source: hosted
