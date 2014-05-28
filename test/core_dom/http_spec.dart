@@ -838,6 +838,22 @@ void main() {
             http(method: 'GET', url: '/url', cache: false);
             flush();
           }));
+
+          it('should use default cache if {cache: true} is passed in request config', async(() {
+            http.defaults.cache = cache;
+
+            // Fill default cache.
+            backend.expect('GET', '/url').respond(200, 'content-cache');
+            http(method: 'GET', url: '/url', cache: true);
+            flush();
+
+            // Serve request from default cache when {cache: true} is set.
+            http(method: 'GET', url: '/url', cache: true).then(callback);
+            microLeap();
+
+            expect(callback).toHaveBeenCalledOnce();
+            expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('content-cache');
+          }));
         });
       });
 

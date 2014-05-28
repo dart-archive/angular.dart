@@ -408,27 +408,30 @@ class Http {
     return (parsed.scheme == originUrl.scheme && parsed.host == originUrl.host);
   }
 
-/**
-  * Returns a [Future<HttpResponse>] when the request is fulfilled.
-  *
-  * Named Parameters:
-  * - method: HTTP method (e.g. 'GET', 'POST', etc)
-  * - url: Absolute or relative URL of the resource being requested.
-  * - data: Data to be sent as the request message data.
-  * - params: Map of strings or objects which will be turned to
-  *          `?key1=value1&key2=value2` after the url. If the values are
-  *           not strings, they will be JSONified.
-  * - headers: Map of strings or functions which return strings representing
-  *      HTTP headers to send to the server. If the return value of a function
-  *      is null, the header will not be sent.
-  * - withCredentials: True if cross-site requests should use credentials such as cookies or
-  *      authorization headers; false otherwise. If not specified, defaults to false.
-  * - xsrfHeaderName: TBI
-  * - xsrfCookieName: TBI
-  * - interceptors: Either a [HttpInterceptor] or a [HttpInterceptors]
-  * - cache: Boolean or [Cache].  If true, the default cache will be used.
-  * - timeout: deprecated
-*/
+  /**
+   * Returns a [Future<HttpResponse>] when the request is fulfilled.
+   *
+   * Named Parameters:
+   * - method: HTTP method (e.g. 'GET', 'POST', etc)
+   * - url: Absolute or relative URL of the resource being requested.
+   * - data: Data to be sent as the request message data.
+   * - params: Map of strings or objects which will be turned to
+   *          `?key1=value1&key2=value2` after the url. If the values are
+   *           not strings, they will be JSONified.
+   * - headers: Map of strings or functions which return strings representing
+   *      HTTP headers to send to the server. If the return value of a function
+   *      is null, the header will not be sent.
+   * - withCredentials: True if cross-site requests should use credentials such as cookies or
+   *      authorization headers; false otherwise. If not specified, defaults to false.
+   * - xsrfHeaderName: XSRF header name sent with the request. If not specified
+   *      [defaults.xsrfHeaderName] is used.
+   * - xsrfCookieName: XSRF cookie name. If not specified [defaults.xsrfCookieName] is used.
+   * - interceptors: Either a [HttpInterceptor] or a [HttpInterceptors]
+   * - cache: Boolean or [Cache].  If true, null or not specified at all, the default cache will be
+   *      used. If false, no cache will be used. If object of type [Cache] is provided, that object
+   *      will be used as cache.
+   * - timeout: deprecated
+  */
   async.Future<HttpResponse> call({
     String url,
     String method,
@@ -436,8 +439,8 @@ class Http {
     Map<String, dynamic> params,
     Map<String, dynamic> headers,
     bool withCredentials: false,
-    xsrfHeaderName,
-    xsrfCookieName,
+    String xsrfHeaderName,
+    String xsrfCookieName,
     interceptors,
     cache,
     timeout
@@ -479,7 +482,7 @@ class Http {
 
       if (cache == false) {
         cache = null;
-      } else if (cache == null) {
+      } else if (cache == true || cache == null) {
         cache = defaults.cache;
       }
 
