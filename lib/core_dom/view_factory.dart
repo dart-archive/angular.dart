@@ -15,8 +15,10 @@ class BoundViewFactory {
 
   BoundViewFactory(this.viewFactory, this.injector);
 
+  static Key _SCOPE_KEY = new Key(Scope);
+
   View call(Scope scope) =>
-      viewFactory(injector.createChild([new Module()..bind(Scope, toValue: scope)]));
+      viewFactory(injector.createChild([new Module()..bindByKey(_SCOPE_KEY, toValue: scope)]));
 }
 
 abstract class ViewFactory implements Function {

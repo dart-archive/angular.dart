@@ -96,7 +96,7 @@ class DirectiveSelector {
           // the value. Yes it is a bit of a hack.
           _directives[selectorRegExp.annotation].forEach((type) {
             builder.addDirective(new DirectiveRef(
-                node, type, selectorRegExp.annotation, '$attrName=$value'));
+                node, type, selectorRegExp.annotation, new Key(type), '$attrName=$value'));
           });
         }
       }
@@ -131,7 +131,7 @@ class DirectiveSelector {
       if (selectorRegExp.regexp.hasMatch(value)) {
         _directives[selectorRegExp.annotation].forEach((type) {
           builder.addDirective(new DirectiveRef(node, type,
-              selectorRegExp.annotation, value));
+              selectorRegExp.annotation, new Key(type), value));
         });
       }
     }
@@ -204,7 +204,7 @@ class _SelectorPart {
 _addRefs(ElementBinderBuilder builder, List<_Directive> directives, dom.Node node,
          [String attrValue]) {
   directives.forEach((directive) {
-    builder.addDirective(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
+    builder.addDirective(new DirectiveRef(node, directive.type, directive.annotation, new Key(directive.type), attrValue));
   });
 }
 
