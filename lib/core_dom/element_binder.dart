@@ -203,46 +203,36 @@ class ElementBinder {
 
   void _link(nodeInjector, probe, scope, nodeAttrs, formatters) {
     _usableDirectiveRefs.forEach((DirectiveRef ref) {
-      var linkTimer;
-      try {
-        var linkMapTimer;
-        assert((linkTimer = _perf.startTimer('ng.view.link', ref.type)) != false);
-        var directive = nodeInjector.get(ref.type);
-        probe.directives.add(directive);
-        assert((linkMapTimer = _perf.startTimer('ng.view.link.map', ref.type)) != false);
+      var directive = nodeInjector.get(ref.type);
+      probe.directives.add(directive);
 
-        if (ref.annotation is Controller) {
-          scope.context[(ref.annotation as Controller).publishAs] = directive;
-        }
+      if (ref.annotation is Controller) {
+        scope.context[(ref.annotation as Controller).publishAs] = directive;
+      }
 
-        var tasks = new _TaskList(directive is AttachAware ? () {
-          if (scope.isAttached) directive.attach();
-        } : null);
+      var tasks = new _TaskList(directive is AttachAware ? () {
+        if (scope.isAttached) directive.attach();
+      } : null);
 
-        if (ref.mappings.isNotEmpty) {
-          if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-          _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, formatters, tasks);
-        }
+      if (ref.mappings.isNotEmpty) {
+        if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
+        _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, formatters, tasks);
+      }
 
-        if (directive is AttachAware) {
-          var taskId = tasks.registerTask();
-          Watch watch;
-          watch = scope.watch('1', // Cheat a bit.
-              (_, __) {
-            watch.remove();
-            tasks.completeTask(taskId);
-          });
-        }
+      if (directive is AttachAware) {
+        var taskId = tasks.registerTask();
+        Watch watch;
+        watch = scope.watch('1', // Cheat a bit.
+            (_, __) {
+          watch.remove();
+          tasks.completeTask(taskId);
+        });
+      }
 
-        tasks.doneRegistering();
+      tasks.doneRegistering();
 
-        if (directive is DetachAware) {
-          scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
-        }
-
-        assert(_perf.stopTimer(linkMapTimer) != false);
-      } finally {
-        assert(_perf.stopTimer(linkTimer) != false);
+      if (directive is DetachAware) {
+        scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
       }
     });
   }
