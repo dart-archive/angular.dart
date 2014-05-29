@@ -5,12 +5,12 @@ import '../_specs.dart';
 main() {
   describe('NodeAttrs', () {
     var element;
-    var nodeAttrs;
+    NodeAttrs nodeAttrs;
     TestBed _;
 
     beforeEach((TestBed tb) {
       _ = tb;
-      element = _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo"></div>');
+      element = _.compile('<div foo="bar" foo-bar="baz" foo-bar-baz="foo" cux></div>');
       nodeAttrs = new NodeAttrs(element);
     });
 
@@ -27,7 +27,7 @@ main() {
     it('should provide a forEach function to iterate over attributes', () {
       Map<String, String> attrMap = new Map();
       nodeAttrs.forEach((k, v) => attrMap[k] = v);
-      expect(attrMap).toEqual({'foo': 'bar', 'foo-bar': 'baz', 'foo-bar-baz': 'foo'});
+      expect(attrMap).toEqual({'foo': 'bar', 'foo-bar': 'baz', 'foo-bar-baz': 'foo', 'cux': ''});
     });
 
     it('should provide a contains method', () {
@@ -38,7 +38,34 @@ main() {
     });
 
     it('should return the attribute names', () {
-      expect(nodeAttrs.keys.toList()..sort()).toEqual(['foo', 'foo-bar', 'foo-bar-baz']);
+      expect(nodeAttrs.keys.toList()..sort()).toEqual(['cux', 'foo', 'foo-bar', 'foo-bar-baz']);
+    });
+
+    it('should not call function with argument set to null when observing a'
+        ' property', () {
+      var invoked;
+      nodeAttrs.observe("a", (arg) {
+        invoked = true;
+      });
+      expect(invoked).toBeFalsy();
+    });
+
+    it('should call function when argument is set when observing a property',
+        () {
+      var seenValue = '';
+      nodeAttrs.observe("foo", (arg) {
+        seenValue = arg;
+      });
+      expect(seenValue).toEqual('bar');
+    });
+
+    it('should call function with argument set to \'\' when observing a boolean attribute',
+        () {
+      var seenValue;
+      nodeAttrs.observe("cux", (arg) {
+        seenValue = arg;
+      });
+      expect(seenValue).toEqual('');
     });
   });
 }

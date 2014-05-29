@@ -710,6 +710,8 @@ void main() {
         Probe probe = s.context['i'];
         var model = probe.directive(NgModel);
 
+        _.rootScope.apply();
+
         expect(s.eval('name')).toEqual('cool');
         expect(s.eval('myForm.name')).toEqual('myForm');
         expect(s.eval('myForm["name"]')).toBe(model);

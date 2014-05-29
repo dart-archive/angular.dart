@@ -67,6 +67,7 @@ class NgModel extends NgControl implements AttachAware {
 
   void attach() {
     watchCollection = false;
+    _parentControl.addControl(this);
   }
 
   /**
@@ -127,7 +128,6 @@ class NgModel extends NgControl implements AttachAware {
   String get name => _name;
   void set name(value) {
     _name = value;
-    _parentControl.addControl(this);
   }
 
   // TODO(misko): could we get rid of watch collection, and just always watch the collection?

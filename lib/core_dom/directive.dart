@@ -57,7 +57,10 @@ class NodeAttrs {
       if (_mustacheAttrs[attrName].isComputed) notifyFn(this[attrName]);
       _mustacheAttrs[attrName].notifyFn(true);
     } else {
-      notifyFn(this[attrName]);
+      if (element.attributes.containsKey(attrName)) {
+        var value = element.attributes[attrName];
+        notifyFn(this[attrName]);
+      }
     }
   }
 
