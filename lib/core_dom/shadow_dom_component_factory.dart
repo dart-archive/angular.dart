@@ -33,18 +33,20 @@ class ShadowDomComponentFactory implements ComponentFactory {
 
   final Map<String, async.Future<dom.StyleElement>> _styleElementCache = {};
 
+  
+  
   FactoryFn call(dom.Node node, DirectiveRef ref) {
     return (Injector injector) {
         var component = ref.annotation as Component;
-        Scope scope = injector.get(Scope);
-        ViewCache viewCache = injector.get(ViewCache);
-        Http http = injector.get(Http);
-        TemplateCache templateCache = injector.get(TemplateCache);
-        DirectiveMap directives = injector.get(DirectiveMap);
-        NgBaseCss baseCss = component.useNgBaseCss ? injector.get(NgBaseCss) : null;
+        Scope scope = injector.getByKey(_SCOPE_KEY);
+        ViewCache viewCache = injector.getByKey(_VIEW_CACHE_KEY);
+        Http http = injector.getByKey(_HTTP_KEY);
+        TemplateCache templateCache = injector.getByKey(_TEMPLATE_CACHE_KEY);
+        DirectiveMap directives = injector.getByKey(_DIRECTIVE_MAP_KEY);
+        NgBaseCss baseCss = component.useNgBaseCss ? injector.getByKey(_NG_BASE_CSS_KEY) : null;
         // This is a bit of a hack since we are returning different type then we are.
-        var componentFactory = new _ComponentFactory(node, ref.type, component,
-            injector.get(dom.NodeTreeSanitizer), _expando, baseCss, _styleElementCache);
+        var componentFactory = new _ComponentFactory(node, ref.typeKey, component,
+            injector.getByKey(_NODE_TREE_SANITIZER_KEY), _expando, baseCss, _styleElementCache);
         var controller = componentFactory.call(injector, scope, viewCache, http, templateCache,
             directives);
 
@@ -63,7 +65,7 @@ class ShadowDomComponentFactory implements ComponentFactory {
 class _ComponentFactory implements Function {
 
   final dom.Element element;
-  final Type type;
+  final Key typeKey;
   final Component component;
   final dom.NodeTreeSanitizer treeSanitizer;
   final Expando _expando;
@@ -75,7 +77,7 @@ class _ComponentFactory implements Function {
   Injector shadowInjector;
   var controller;
 
-  _ComponentFactory(this.element, this.type, this.component, this.treeSanitizer,
+  _ComponentFactory(this.element, this.typeKey, this.component, this.treeSanitizer,
                     this._expando, this._baseCss, this._styleElementCache);
 
   dynamic call(Injector injector, Scope scope,
@@ -118,7 +120,7 @@ class _ComponentFactory implements Function {
           }
           return shadowDom;
         }));
-    controller = createShadowInjector(injector, templateLoader).get(type);
+    controller = createShadowInjector(injector, templateLoader).getByKey(typeKey);
     ComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
     return controller;
   }
@@ -131,17 +133,17 @@ class _ComponentFactory implements Function {
 
   Injector createShadowInjector(injector, TemplateLoader templateLoader) {
     var probe;
-    var shadowModule = new Module()
-      ..bind(type)
-      ..bind(NgElement)
-      ..bind(EventHandler, toImplementation: ShadowRootEventHandler)
-      ..bind(Scope, toValue: shadowScope)
-      ..bind(TemplateLoader, toValue: templateLoader)
-      ..bind(dom.ShadowRoot, toValue: shadowDom)
-      ..bind(ElementProbe, toFactory: (_) => probe);
-    shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
+   var shadowModule = new Module()
+      ..bindByKey(typeKey)
+      ..bindByKey(_NG_ELEMENT_KEY)
+      ..bindByKey(_EVENT_HANDLER_KEY, toImplementation: ShadowRootEventHandler)
+      ..bindByKey(_SCOPE_KEY, toValue: shadowScope)
+      ..bindByKey(_TEMPLATE_LOADER_KEY, toValue: templateLoader)
+      ..bindByKey(_SHADOW_ROOT_KEY, toValue: shadowDom)
+      ..bindByKey(_ELEMENT_PROBE, toFactory: (_) => probe);
+      shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
     probe = _expando[shadowDom] = new ElementProbe(
-        injector.get(ElementProbe), shadowDom, shadowInjector, shadowScope);
+        injector.getByKey(_ELEMENT_PROBE), shadowDom, shadowInjector, shadowScope);
     shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) {_expando[shadowDom] = null;});
     return shadowInjector;
   }

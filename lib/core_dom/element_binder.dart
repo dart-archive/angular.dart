@@ -27,10 +27,10 @@ class TemplateElementBinder extends ElementBinder {
   _registerViewFactory(node, parentInjector, nodeModule) {
     assert(templateViewFactory != null);
     nodeModule
-      ..bind(ViewPort, toFactory: (_) =>
-          new ViewPort(node, parentInjector.get(Animate)))
-      ..bind(ViewFactory, toValue: templateViewFactory)
-      ..bind(BoundViewFactory, toFactory: (Injector injector) =>
+      ..bindByKey(_VIEW_PORT_KEY, toFactory: (_) =>
+          new ViewPort(node, parentInjector.getByKey(_ANIMATE_KEY)))
+      ..bindByKey(_VIEW_FACTORY_KEY, toValue: templateViewFactory)
+      ..bindByKey(_BOUND_VIEW_FACTORY_KEY, toFactory: (Injector injector) =>
           templateViewFactory.bind(injector));
   }
 }
@@ -203,7 +203,7 @@ class ElementBinder {
 
   void _link(nodeInjector, probe, scope, nodeAttrs, formatters) {
     _usableDirectiveRefs.forEach((DirectiveRef ref) {
-      var directive = nodeInjector.get(ref.type);
+      var directive = nodeInjector.getByKey(ref.typeKey);
       probe.directives.add(directive);
 
       if (ref.annotation is Controller) {
@@ -240,18 +240,18 @@ class ElementBinder {
   void _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
                                  visibility) {
     if (ref.type == TextMustache) {
-      nodeModule.bind(TextMustache, toFactory: (Injector injector) {
-        return new TextMustache(node, ref.value, injector.get(Interpolate),
-            injector.get(Scope), injector.get(FormatterMap));
+      nodeModule.bindByKey(_TEXT_MUSTACHE_KEY, toFactory: (Injector injector) {
+        return new TextMustache(node, ref.value, injector.getByKey(_INTERPOLATE_KEY),
+            injector.getByKey(_SCOPE_KEY), injector.getByKey(_FORMATTER_MAP_KEY));
       });
     } else if (ref.type == AttrMustache) {
       if (nodesAttrsDirectives.isEmpty) {
         nodeModule.bind(AttrMustache, toFactory: (Injector injector) {
-          var scope = injector.get(Scope);
-          var interpolate = injector.get(Interpolate);
+          var scope = injector.getByKey(_SCOPE_KEY);
+          var interpolate = injector.getByKey(_INTERPOLATE_KEY);
           for (var ref in nodesAttrsDirectives) {
             new AttrMustache(nodeAttrs, ref.value, interpolate, scope,
-                injector.get(FormatterMap));
+                injector.getByKey(_FORMATTER_MAP_KEY));
           }
         });
       }
@@ -266,23 +266,24 @@ class ElementBinder {
       } else {
         factory = _componentFactory;
       }
-      nodeModule.bind(ref.type, toFactory: factory.call(node, ref), visibility: visibility);
+      nodeModule.bindByKey(ref.typeKey, toFactory: factory.call(node, ref), visibility: visibility);
     } else {
-      nodeModule.bind(ref.type, visibility: visibility);
+      nodeModule.bindByKey(ref.typeKey, visibility: visibility);
     }
   }
 
   // Overridden in TemplateElementBinder
   void _registerViewFactory(node, parentInjector, nodeModule) {
-    nodeModule..bind(ViewPort, toValue: null)
-              ..bind(ViewFactory, toValue: null)
-              ..bind(BoundViewFactory, toValue: null);
+    nodeModule..bindByKey(_VIEW_PORT_KEY, toValue: null)
+              ..bindByKey(_VIEW_FACTORY_KEY, toValue: null)
+              ..bindByKey(_BOUND_VIEW_FACTORY_KEY, toValue: null);
   }
+
 
   Injector bind(View view, Injector parentInjector, dom.Node node) {
     Injector nodeInjector;
-    Scope scope = parentInjector.get(Scope);
-    FormatterMap formatters = parentInjector.get(FormatterMap);
+    Scope scope = parentInjector.getByKey(_SCOPE_KEY);
+    FormatterMap formatters = parentInjector.getByKey(_FORMATTER_MAP_KEY);
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
     ElementProbe probe;
 
@@ -291,12 +292,12 @@ class ElementBinder {
 
     var nodesAttrsDirectives = [];
     var nodeModule = new Module()
-        ..bind(NgElement)
-        ..bind(View, toValue: view)
-        ..bind(dom.Element, toValue: node)
-        ..bind(dom.Node, toValue: node)
-        ..bind(NodeAttrs, toValue: nodeAttrs)
-        ..bind(ElementProbe, toFactory: (_) => probe);
+        ..bindByKey(_NG_ELEMENT_KEY)
+        ..bindByKey(_VIEW_KEY, toValue: view)
+        ..bindByKey(_ELEMENT_KEY, toValue: node)
+        ..bindByKey(_NODE_KEY, toValue: node)
+        ..bindByKey(_NODE_ATTRS_KEY, toValue: nodeAttrs)
+        ..bindByKey(_ELEMENT_PROBE_KEY, toFactory: (_) => probe);
 
     directiveRefs.forEach((DirectiveRef ref) {
       Directive annotation = ref.annotation;
@@ -317,7 +318,7 @@ class ElementBinder {
 
     nodeInjector = parentInjector.createChild([nodeModule]);
     probe = _expando[node] = new ElementProbe(
-        parentInjector.get(ElementProbe), node, nodeInjector, scope);
+        parentInjector.getByKey(_ELEMENT_PROBE_KEY), node, nodeInjector, scope);
     scope.on(ScopeEvent.DESTROY).listen((_) {_expando[node] = null;});
 
     _link(nodeInjector, probe, scope, nodeAttrs, formatters);

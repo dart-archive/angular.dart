@@ -38,7 +38,7 @@ main() => describe('ElementBinderBuilder', () {
   addDirective(selector) {
     directives.forEach((Directive annotation, Type type) {
       if (annotation.selector == selector)
-        b.addDirective(new DirectiveRef(node, type, annotation, null));
+        b.addDirective(new DirectiveRef(node, type, annotation, new Key(type), null));
     });
     b = b.binder;
   }
