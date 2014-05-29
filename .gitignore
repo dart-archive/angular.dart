@@ -10,11 +10,12 @@ npm-debug.log
 .DS_Store
 dart-sdk
 dartium
-**/build/**
-**/*.dart.js
-**/*.dart.js.deps
-**/*.dart.js.map
-**/*.dart.precompiled.js
+build/
+*.dart.js
+*.dart.js.deps
+*.dart.js.map
+*.dart.precompiled.js
 docs.angulardart.org
 dartdoc-viewer
 docs
+/pubspec.lock
