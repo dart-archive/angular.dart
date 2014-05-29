@@ -137,7 +137,7 @@ List<Object> ngDirectives(nodeOrSelector) => ngProbe(nodeOrSelector).directives;
 
 
 js.JsObject _jsProbe(ElementProbe probe) {
-  return new js.JsObject.jsify({
+  return _jsify({
       "element": probe.element,
       "injector": _jsInjector(probe.injector),
       "scope": _jsScopeFromProbe(probe),
@@ -149,15 +149,84 @@ js.JsObject _jsProbe(ElementProbe probe) {
 
 
 js.JsObject _jsInjector(Injector injector) =>
-    new js.JsObject.jsify({"get": injector.get})..['_dart_'] = injector;
+    _jsify({"get": injector.get})..['_dart_'] = injector;
 
 
 js.JsObject _jsScopeFromProbe(ElementProbe probe) =>
     _jsScope(probe.scope, probe.injector.getByKey(SCOPE_STATS_CONFIG_KEY));
 
 
+
+// Work around http://dartbug.com/17752
+// Proxies a Dart function that accepts up to 10 parameters.
+js.JsFunction _jsFunction(Function fn) {
+  const Object X = __varargSentinel;
+  Function fnCopy = fn;  // workaround a bug.
+  return new js.JsFunction.withThis(
+      (thisArg, [o1=X, o2=X, o3=X, o4=X, o5=X, o6=X, o7=X, o8=X, o9=X, o10=X]) {
+        // Work around a bug in dart 1.4.0 where the closurized variable, fn,
+        // gets mysteriously replaced with our own closure function leading to a
+        // stack overflow.
+        fn = fnCopy;
+        if (o10 == null && identical(o9, X)) {
+          // Work around another bug in dart 1.4.0.  This bug is not present in
+          // dart 1.5.0-dev.2.0.
+          // In dart 1.4.0, when running in Dartium (not dart2js), if you invoke
+          // a JsFunction from Dart code (either by calling .apply([args]) on it
+          // or by calling .callMethod(jsFuncName, [args]) on a JsObject
+          // containing the JsFunction, regardless of whether you specified the
+          // thisArg keyword parameter, the Dart function is called with the
+          // first argument in the thisArg param causing all the arguments to be
+          // shifted by one.  We can detect this by the fact that o10 is null
+          // but o9 is X (should only happen when o9 got a default value) and
+          // work around it by using thisArg as the first parameter.
+          return __invokeFn(fn, thisArg, o1, o2, o3, o4, o5, o6, o7, o8, o9);
+        } else {
+          return __invokeFn(fn, o1, o2, o3, o4, o5, o6, o7, o8, o9, o10);
+        }
+      }
+      );
+}
+
+
+const Object __varargSentinel = const Object();
+
+
+__invokeFn(fn, o1, o2, o3, o4, o5, o6, o7, o8, o9, o10) {
+  var args = [o1, o2, o3, o4, o5, o6, o7, o8, o9, o10];
+  while (args.length > 0 && identical(args.last, __varargSentinel)) {
+    args.removeLast();
+  }
+  return _jsify(Function.apply(fn, args));
+}
+
+
+// Helper function to JSify a Dart object.  While this is *required* to JSify
+// the result of a scope.eval(), other uses are not required and are used to
+// work around http://dartbug.com/17752 in a convenient way (that bug affects
+// dart2js in checked mode.)
+_jsify(var obj) {
+  if (obj == null || obj is js.JsObject) {
+    return obj;
+  }
+  if (obj is Function) {
+    return _jsFunction(obj);
+  }
+  if ((obj is Map) || (obj is Iterable)) {
+    var mappedObj = (obj is Map) ? 
+        new Map.fromIterables(obj.keys, obj.values.map(_jsify)) : obj.map(_jsify);
+    if (obj is List) {
+      return new js.JsArray.from(mappedObj);
+    } else {
+      return new js.JsObject.jsify(mappedObj);
+    }
+  }
+  return obj;
+}
+
+
 js.JsObject _jsScope(Scope scope, ScopeStatsConfig config) {
-  return new js.JsObject.jsify({
+  return _jsify({
       "apply": scope.apply,
       "broadcast": scope.broadcast,
       "context": scope.context,
@@ -173,18 +242,6 @@ js.JsObject _jsScope(Scope scope, ScopeStatsConfig config) {
       "scopeStatsDisable": () => config.emit = false,
       r"$eval": (expr) => _jsify(scope.eval(expr)),
   })..['_dart_'] = scope;
-}
-
-
-// Helper function to JSify the result of a scope.eval() for simple cases.
-_jsify(var obj) {
-  if (obj is js.JsObject) {
-    return obj;
-  } else if (obj is Iterable) {
-    return new js.JsObject.jsify(obj)..['_dart_'] = obj;
-  } else {
-    return obj;
-  }
 }
 
 
@@ -261,7 +318,7 @@ class _Testability implements _JsObjectProxyable {
   }
 
   js.JsObject _toJsObject() {
-    return new js.JsObject.jsify({
+    return _jsify({
         'allowAnimations': allowAnimations,
         'findBindings': (bindingString, [exactMatch]) =>
             findBindings(bindingString, exactMatch),
@@ -280,14 +337,18 @@ class _Testability implements _JsObjectProxyable {
 
 
 void publishToJavaScript() {
-  var C = js.context;
-  C['ngProbe'] = (nodeOrSelector) => _jsProbe(ngProbe(nodeOrSelector));
-  C['ngInjector'] = (nodeOrSelector) => _jsInjector(ngInjector(nodeOrSelector));
-  C['ngScope'] = (nodeOrSelector) => _jsScopeFromProbe(ngProbe(nodeOrSelector));
-  C['ngQuery'] = (dom.Node node, String selector, [String containsText]) =>
-      new js.JsArray.from(ngQuery(node, selector, containsText));
-  C['angular'] = new js.JsObject.jsify({
+  var D = {};
+  D['ngProbe'] = (nodeOrSelector) => _jsProbe(ngProbe(nodeOrSelector));
+  D['ngInjector'] = (nodeOrSelector) => _jsInjector(ngInjector(nodeOrSelector));
+  D['ngScope'] = (nodeOrSelector) => _jsScopeFromProbe(ngProbe(nodeOrSelector));
+  D['ngQuery'] = (dom.Node node, String selector, [String containsText]) =>
+      ngQuery(node, selector, containsText);
+  D['angular'] = {
         'resumeBootstrap': ([arg]) {},
         'getTestability': (node) => new _Testability.fromNode(node)._toJsObject(),
-  });
+  };
+  js.JsObject J = _jsify(D);
+  for (String key in D.keys) {
+    js.context[key] = J[key];
+  }
 }
