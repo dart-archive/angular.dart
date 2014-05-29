@@ -296,44 +296,38 @@ class ElementBinder {
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
     ElementProbe probe;
 
-    var timerId;
-    assert((timerId = _perf.startTimer('ng.view.link.setUp', _html(node))) != false);
     var directiveRefs = _usableDirectiveRefs;
-    try {
-      if (!hasDirectivesOrEvents) return parentInjector;
+    if (!hasDirectivesOrEvents) return parentInjector;
 
-      var nodesAttrsDirectives = [];
-      var nodeModule = new Module()
-          ..bind(NgElement)
-          ..bind(View, toValue: view)
-          ..bind(dom.Element, toValue: node)
-          ..bind(dom.Node, toValue: node)
-          ..bind(NodeAttrs, toValue: nodeAttrs)
-          ..bind(ElementProbe, toFactory: (_) => probe);
+    var nodesAttrsDirectives = [];
+    var nodeModule = new Module()
+        ..bind(NgElement)
+        ..bind(View, toValue: view)
+        ..bind(dom.Element, toValue: node)
+        ..bind(dom.Node, toValue: node)
+        ..bind(NodeAttrs, toValue: nodeAttrs)
+        ..bind(ElementProbe, toFactory: (_) => probe);
 
-      directiveRefs.forEach((DirectiveRef ref) {
-        Directive annotation = ref.annotation;
-        var visibility = ref.annotation.visibility;
-        if (ref.annotation is Controller) {
-          scope = scope.createChild(new PrototypeMap(scope.context));
-          nodeModule.bind(Scope, toValue: scope);
-        }
+    directiveRefs.forEach((DirectiveRef ref) {
+      Directive annotation = ref.annotation;
+      var visibility = ref.annotation.visibility;
+      if (ref.annotation is Controller) {
+        scope = scope.createChild(new PrototypeMap(scope.context));
+        nodeModule.bind(Scope, toValue: scope);
+      }
 
-        _createDirectiveFactories(ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
-            visibility);
-        if (ref.annotation.module != null) {
-           nodeModule.install(ref.annotation.module());
-        }
-      });
+      _createDirectiveFactories(ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
+          visibility);
+      if (ref.annotation.module != null) {
+         nodeModule.install(ref.annotation.module());
+      }
+    });
 
-      _registerViewFactory(node, parentInjector, nodeModule);
+    _registerViewFactory(node, parentInjector, nodeModule);
 
-      nodeInjector = parentInjector.createChild([nodeModule]);
-      probe = _expando[node] = new ElementProbe(
-          parentInjector.get(ElementProbe), node, nodeInjector, scope);
-    } finally {
-      assert(_perf.stopTimer(timerId) != false);
-    }
+    nodeInjector = parentInjector.createChild([nodeModule]);
+    probe = _expando[node] = new ElementProbe(
+        parentInjector.get(ElementProbe), node, nodeInjector, scope);
 
     _link(nodeInjector, probe, scope, nodeAttrs, formatters);
 
