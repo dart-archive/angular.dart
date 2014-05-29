@@ -16,11 +16,12 @@ class MappingParts {
 class DirectiveRef {
   final dom.Node element;
   final Type type;
+  final Key typeKey;
   final Directive annotation;
   final String value;
   final mappings = new List<MappingParts>();
 
-  DirectiveRef(this.element, this.type, this.annotation, [ this.value ]);
+  DirectiveRef(this.element, this.type, this.annotation, this.typeKey, [ this.value ]);
 
   String toString() {
     var html = element is dom.Element

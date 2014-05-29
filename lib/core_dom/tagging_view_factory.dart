@@ -9,6 +9,8 @@ class TaggingViewFactory implements ViewFactory {
 
   BoundViewFactory bind(Injector injector) => new BoundViewFactory(this, injector);
 
+  static Key _EVENT_HANDLER_KEY = new Key(EventHandler);
+
   View call(Injector injector, [List<dom.Node> nodes /* TODO: document fragment */]) {
     if (nodes == null) {
       nodes = cloneElements(templateNodes);
@@ -16,7 +18,7 @@ class TaggingViewFactory implements ViewFactory {
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
-      var view = new View(nodes, injector.get(EventHandler));
+      var view = new View(nodes, injector.getByKey(_EVENT_HANDLER_KEY));
       _link(view, nodes, injector);
       return view;
     } finally {
