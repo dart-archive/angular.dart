@@ -235,15 +235,15 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     }
 
     // Convert the args from AST to WatchRecords
-    Iterable<WatchRecord<_Handler>> records = argsAST.map((ast) =>
-        _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this)));
-    int i = 0;
-    records.forEach((WatchRecord<_Handler> record) {
-      _ArgHandler handler = new _PositionalArgHandler(this, evalWatchRecord, i++);
+    for (var i = 0; i < argsAST.length; i++) {
+      var ast = argsAST[i];
+      WatchRecord<_Handler> record =
+          _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this));
+      _ArgHandler handler = new _PositionalArgHandler(this, evalWatchRecord, i);
       _ArgHandlerList._add(invokeHandler, handler);
       record.handler.addForwardHandler(handler);
       handler.acceptValue(record.currentValue);
-    });
+    }
 
     namedArgsAST.forEach((Symbol name, AST ast) {
       WatchRecord<_Handler> record = _cache.putIfAbsent(ast.expression,
