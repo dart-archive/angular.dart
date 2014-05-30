@@ -21,19 +21,19 @@ void main() {
     DirtyCheckingChangeDetector changeDetector;
     Logger logger;
     Parser parser;
-    ExpressionVisitor visitor;
+    ASTParser astParser;
 
-    beforeEach(inject((Logger _logger, Parser _parser) {
+    beforeEach(inject((Logger _logger, Parser _parser, ASTParser _astParser) {
       context = {};
       var getterFactory = new DynamicFieldGetterFactory();
       changeDetector = new DirtyCheckingChangeDetector(getterFactory);
       watchGrp = new RootWatchGroup(getterFactory, changeDetector, context);
-      visitor = new ExpressionVisitor(new DynamicClosureMap());
       logger = _logger;
       parser = _parser;
+      astParser = _astParser;
     }));
 
-    AST parse(String expression) => visitor.visit(parser(expression));
+    AST parse(String expression) => astParser(expression);
 
     eval(String expression, [evalContext]) {
       AST ast = parse(expression);

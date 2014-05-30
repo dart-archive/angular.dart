@@ -5,6 +5,7 @@ import 'dart:collection';
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/formatter.dart';
+import 'package:angular/core/annotation_src.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/core/parser/utils.dart';
@@ -18,48 +19,29 @@ class _FunctionChain {
   }
 }
 
-class AstParser {
+@Injectable()
+class ASTParser {
   final Parser _parser;
-  int _id = 0;
-  final ExpressionVisitor _visitor;
+  final ClosureMap _closureMap;
 
-  AstParser(this._parser, ClosureMap closureMap)
-      : _visitor = new ExpressionVisitor(closureMap);
+  ASTParser(this._parser, this._closureMap);
 
   AST call(String input, {FormatterMap formatters,
                           bool collection: false }) {
-    _visitor.formatters = formatters;
-    AST contextRef = _visitor.contextRef;
-    try {
-      var exp = _parser(input);
-      return collection ? _visitor.visitCollection(exp) : _visitor.visit(exp);
-    } finally {
-      _visitor.contextRef = contextRef;
-      _visitor.formatters = null;
-    }
+    var visitor = new _ExpressionVisitor(_closureMap, formatters);
+    var exp = _parser(input);
+    return collection ? visitor.visitCollection(exp) : visitor.visit(exp);
   }
 }
 
-class ExpressionVisitor implements syntax.Visitor {
-  static final ContextReferenceAST scopeContextRef = new ContextReferenceAST();
+class _ExpressionVisitor implements syntax.Visitor {
+  static final ContextReferenceAST contextRef = new ContextReferenceAST();
   final ClosureMap _closureMap;
-  AST contextRef = scopeContextRef;
+  final FormatterMap _formatters;
 
+  _ExpressionVisitor(this._closureMap, this._formatters);
 
-  ExpressionVisitor(this._closureMap);
-
-  AST ast;
-  FormatterMap formatters;
-
-  AST visit(syntax.Expression exp) {
-    exp.accept(this);
-    assert(ast != null);
-    try {
-      return ast;
-    } finally {
-      ast = null;
-    }
-  }
+  AST visit(syntax.Expression exp) => exp.accept(this);
 
   AST visitCollection(syntax.Expression exp) => new CollectionAST(visit(exp));
   AST _mapToAst(syntax.Expression expression) => visit(expression);
@@ -76,53 +58,53 @@ class ExpressionVisitor implements syntax.Visitor {
     return result;
   }
 
-  void visitCallScope(syntax.CallScope exp) {
+  AST visitCallScope(syntax.CallScope exp) {
     List<AST> positionals = _toAst(exp.arguments.positionals);
     Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
-    ast = new MethodAST(contextRef, exp.name, positionals, named);
+    return new MethodAST(contextRef, exp.name, positionals, named);
   }
-  void visitCallMember(syntax.CallMember exp) {
+  AST visitCallMember(syntax.CallMember exp) {
     List<AST> positionals = _toAst(exp.arguments.positionals);
     Map<Symbol, AST> named = _toAstMap(exp.arguments.named);
-    ast = new MethodAST(visit(exp.object), exp.name, positionals, named);
+    return new MethodAST(visit(exp.object), exp.name, positionals, named);
   }
-  void visitAccessScope(syntax.AccessScope exp) {
-    ast = new FieldReadAST(contextRef, exp.name);
-  }
-  void visitAccessMember(syntax.AccessMember exp) {
-    ast = new FieldReadAST(visit(exp.object), exp.name);
-  }
-  void visitBinary(syntax.Binary exp) {
-    ast = new PureFunctionAST(exp.operation,
-                              _operationToFunction(exp.operation),
-                              [visit(exp.left), visit(exp.right)]);
-  }
-  void visitPrefix(syntax.Prefix exp) {
-    ast = new PureFunctionAST(exp.operation,
-                              _operationToFunction(exp.operation),
-                              [visit(exp.expression)]);
-  }
-  void visitConditional(syntax.Conditional exp) {
-    ast = new PureFunctionAST('?:', _operation_ternary,
-                              [visit(exp.condition), visit(exp.yes),
-                              visit(exp.no)]);
-  }
-  void visitAccessKeyed(syntax.AccessKeyed exp) {
-    ast = new ClosureAST('[]', _operation_bracket,
-                             [visit(exp.object), visit(exp.key)]);
-  }
-  void visitLiteralPrimitive(syntax.LiteralPrimitive exp) {
-    ast = new ConstantAST(exp.value);
-  }
-  void visitLiteralString(syntax.LiteralString exp) {
-    ast = new ConstantAST(exp.value);
-  }
-  void visitLiteralArray(syntax.LiteralArray exp) {
+  AST visitAccessScope(syntax.AccessScope exp) =>
+      new FieldReadAST(contextRef, exp.name);
+
+  AST visitAccessMember(syntax.AccessMember exp) =>
+      new FieldReadAST(visit(exp.object), exp.name);
+
+  AST visitBinary(syntax.Binary exp) =>
+      new PureFunctionAST(exp.operation,
+                          _operationToFunction(exp.operation),
+                          [visit(exp.left), visit(exp.right)]);
+
+  AST visitPrefix(syntax.Prefix exp) =>
+      new PureFunctionAST(exp.operation,
+                          _operationToFunction(exp.operation),
+                          [visit(exp.expression)]);
+
+  AST visitConditional(syntax.Conditional exp) =>
+      new PureFunctionAST('?:', _operation_ternary,
+                          [visit(exp.condition), visit(exp.yes),
+                          visit(exp.no)]);
+
+  AST visitAccessKeyed(syntax.AccessKeyed exp) =>
+      new ClosureAST('[]', _operation_bracket,
+                     [visit(exp.object), visit(exp.key)]);
+
+  AST visitLiteralPrimitive(syntax.LiteralPrimitive exp) =>
+      new ConstantAST(exp.value);
+
+  AST visitLiteralString(syntax.LiteralString exp) =>
+      new ConstantAST(exp.value);
+
+  AST visitLiteralArray(syntax.LiteralArray exp) {
     List<AST> items = _toAst(exp.elements);
-    ast = new PureFunctionAST('[${items.join(', ')}]', new ArrayFn(), items);
+    return new PureFunctionAST('[${items.join(', ')}]', new ArrayFn(), items);
   }
 
-  void visitLiteralObject(syntax.LiteralObject exp) {
+  AST visitLiteralObject(syntax.LiteralObject exp) {
     List<String> keys = exp.keys;
     List<AST> values = _toAst(exp.values);
     assert(keys.length == values.length);
@@ -130,17 +112,17 @@ class ExpressionVisitor implements syntax.Visitor {
     for (var i = 0; i < keys.length; i++) {
       kv.add('${keys[i]}: ${values[i]}');
     }
-    ast = new PureFunctionAST('{${kv.join(', ')}}', new MapFn(keys), values);
+    return new PureFunctionAST('{${kv.join(', ')}}', new MapFn(keys), values);
   }
 
-  void visitFormatter(syntax.Formatter exp) {
-    if (formatters == null) {
+  AST visitFormatter(syntax.Formatter exp) {
+    if (_formatters == null) {
       throw new Exception("No formatters have been registered");
     }
-    Function formatterFunction = formatters(exp.name);
+    Function formatterFunction = _formatters(exp.name);
     List<AST> args = [visitCollection(exp.expression)];
     args.addAll(_toAst(exp.arguments).map((ast) => new CollectionAST(ast)));
-    ast = new PureFunctionAST('|${exp.name}',
+    return new PureFunctionAST('|${exp.name}',
         new _FormatterWrapper(formatterFunction, args.length), args);
   }
 
