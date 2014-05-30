@@ -1,5 +1,8 @@
-part of angular.core_internal;
+library angular.core_internal.formatter_map;
 
+import 'package:di/di.dart';
+import 'package:angular/core/annotation_src.dart';
+import 'package:angular/core/registry.dart';
 
 /**
  * Registry of formatters at runtime.
