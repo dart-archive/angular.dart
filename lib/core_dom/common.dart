@@ -6,11 +6,12 @@ List<dom.Node> cloneElements(elements) {
 
 class MappingParts {
   final String attrName;
+  final AST attrValueAST;
   final String mode;
-  final String dstExpression;
+  final AST dstAST;
   final String originalValue;
 
-  const MappingParts(this.attrName, this.mode, this.dstExpression, this.originalValue);
+  const MappingParts(this.attrName, this.attrValueAST, this.mode, this.dstAST, this.originalValue);
 }
 
 class DirectiveRef {

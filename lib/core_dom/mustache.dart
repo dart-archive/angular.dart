@@ -26,21 +26,16 @@ class AttrMustache {
 
   // This Directive is special and does not go through injection.
   AttrMustache(this._attrs,
-                          String template,
-                          Interpolate interpolate,
-                          Scope scope,
-                          FormatterMap formatters) {
-    var eqPos = template.indexOf('=');
-    _attrName = template.substring(0, eqPos);
-    String expression = interpolate(template.substring(eqPos + 1));
-
-    _updateMarkup('', template);
+                          String this._attrName,
+                          AST valueAST,
+                          Scope scope) {
+    _updateMarkup('', 'INITIAL-VALUE');
 
     _attrs.listenObserverChanges(_attrName, (hasObservers) {
     if (_hasObservers != hasObservers) {
       _hasObservers = hasObservers;
       if (_watch != null) _watch.remove();
-        _watch = scope.watch(expression, _updateMarkup, formatters: formatters,
+        _watch = scope.watchAST(valueAST, _updateMarkup,
             canChangeModel: _hasObservers);
       }
     });

@@ -9,6 +9,7 @@ part of angular.watch_group;
 abstract class AST {
   static final String _CONTEXT = '#';
   final String expression;
+  var parsedExp; // The parsed version of expression.
   AST(expression)
       : expression = expression.startsWith('#.')
           ? expression.substring(2)

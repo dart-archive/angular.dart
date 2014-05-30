@@ -32,7 +32,7 @@ main() => describe('ElementBinderBuilder', () {
 
   beforeEach((DirectiveMap d, ElementBinderFactory f) {
     directives = d;
-    b = f.builder();
+    b = f.builder(null);
   });
 
   addDirective(selector) {
