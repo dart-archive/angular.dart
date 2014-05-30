@@ -555,7 +555,7 @@ class RootScope extends Scope {
   static final STATE_FLUSH_ASSERT = 'assert';
 
   final ExceptionHandler _exceptionHandler;
-  final AstParser _astParser;
+  final ASTParser _astParser;
   final Parser _parser;
   final ScopeDigestTTL _ttl;
   final VmTurnZone _zone;
@@ -617,12 +617,12 @@ class RootScope extends Scope {
    */
   String get state => _state;
 
-  RootScope(Object context, Parser parser, FieldGetterFactory fieldGetterFactory,
+  RootScope(Object context, Parser parser, ASTParser astParser, FieldGetterFactory fieldGetterFactory,
             FormatterMap formatters, this._exceptionHandler, this._ttl, this._zone,
-            ScopeStats _scopeStats, ClosureMap closureMap)
+            ScopeStats _scopeStats)
       : _scopeStats = _scopeStats,
         _parser = parser,
-        _astParser = new AstParser(parser, closureMap),
+        _astParser = astParser,
         super(context, null, null,
             new RootWatchGroup(fieldGetterFactory,
                 new DirtyCheckingChangeDetector(fieldGetterFactory), context),
