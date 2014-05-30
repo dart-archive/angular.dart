@@ -2,6 +2,7 @@ library watch_group_spec;
 
 import '../_specs.dart';
 import 'dart:collection';
+import 'package:angular/change_detection/ast_parser.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
