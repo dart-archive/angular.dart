@@ -30,7 +30,9 @@ class ASTParser {
                           bool collection: false }) {
     var visitor = new _ExpressionVisitor(_closureMap, formatters);
     var exp = _parser(input);
-    return collection ? visitor.visitCollection(exp) : visitor.visit(exp);
+    AST ast = collection ? visitor.visitCollection(exp) : visitor.visit(exp);
+    ast.parsedExp = exp;
+    return ast;
   }
 }
 

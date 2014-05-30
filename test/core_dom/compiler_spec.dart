@@ -146,7 +146,7 @@ void main() {
     it('should compile a text child of a repeat with a directive', () {
       _.compile(
             '<div ng-show="true">'
-              '<span ng-show=true" ng-repeat="r in robots">{{r}}</span>'
+              '<span ng-show="true" ng-repeat="r in robots">{{r}}</span>'
             '</div>');
     });
 
@@ -236,7 +236,7 @@ void main() {
         expect(element.text).toEqual('angular');
       });
 
-      it('should work with attrs, one-way, two-way and callbacks', async(() {
+      xit('should work with attrs, one-way, two-way and callbacks', async(() {
          _.compile('<div><io bind-attr="\'A\'" bind-expr="name" bind-ondone="done=true"></io></div>');
 
         _.rootScope.context['name'] = 'misko';
@@ -546,7 +546,7 @@ void main() {
       it('should error on non-asignable-mapping', async(() {
         expect(() {
           _.compile(r'<div><non-assignable-mapping></non-assignable-mapping</div>');
-        }).toThrow("Expression '1+2' is not assignable in mapping '@1+2' for attribute 'attr'.");
+        }).toThrow("Expression '+(1, 2)' is not assignable in mapping '@1+2' for attribute 'attr'.");
       }));
 
       it('should expose mapped attributes as camel case', async(() {
