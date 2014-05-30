@@ -83,7 +83,8 @@ class ElementBinder {
   bool get hasDirectivesOrEvents =>
       _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
-  void _bindTwoWay(tasks, expression, scope, dstPathFn, controller, formatters, dstExpression) {
+  void _bindTwoWay(tasks, expression, scope, directiveScope,
+                   dstPathFn, controller, formatters, dstExpression) {
     var taskId = tasks.registerTask();
     Expression expressionFn = _parser(expression);
 
@@ -99,14 +100,14 @@ class ElementBinder {
       }
     }, formatters: formatters);
     if (expressionFn.isAssignable) {
-      scope.watch(dstExpression, (outboundValue, _) {
+      directiveScope.watch(dstExpression, (outboundValue, _) {
         if (!viewOutbound) {
           viewInbound = true;
           scope.rootScope.runAsync(() => viewInbound = false);
           expressionFn.assign(scope.context, outboundValue);
           tasks.completeTask(taskId);
         }
-      }, context: controller, formatters: formatters);
+      }, formatters: formatters);
     }
   }
 
@@ -127,6 +128,7 @@ class ElementBinder {
 
   void _createAttrMappings(directive, scope, List<MappingParts> mappings, nodeAttrs, formatters,
                            tasks) {
+    Scope directiveScope; // Only created if there is a two-way binding in the element.
     mappings.forEach((MappingParts p) {
       var attrName = p.attrName;
       var dstExpression = p.dstExpression;
@@ -141,7 +143,10 @@ class ElementBinder {
       var bindAttr = bindAttrs["bind-${p.attrName}"];
       if (bindAttr != null) {
         if (p.mode == '<=>') {
-          _bindTwoWay(tasks, bindAttr, scope, dstPathFn,
+          if (directiveScope == null) {
+            directiveScope = scope.createChild(directive);
+          }
+          _bindTwoWay(tasks, bindAttr, scope, directiveScope, dstPathFn,
               directive, formatters, dstExpression);
         } else if(p.mode == '&') {
           _bindCallback(dstPathFn, directive, bindAttr, scope);
@@ -162,8 +167,10 @@ class ElementBinder {
 
         case '<=>': // two-way
           if (nodeAttrs[attrName] == null) return;
-
-          _bindTwoWay(tasks, nodeAttrs[attrName], scope, dstPathFn,
+          if (directiveScope == null) {
+            directiveScope = scope.createChild(directive);
+          }
+          _bindTwoWay(tasks, nodeAttrs[attrName], scope, directiveScope, dstPathFn,
               directive, formatters, dstExpression);
           break;
 
