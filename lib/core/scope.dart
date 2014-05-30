@@ -261,8 +261,19 @@ class Scope {
     AST ast = rootScope._astParser(expression,
         formatters: formatters, collection: collection);
 
+    return watch = watchAST(ast, fn, canChangeModel: canChangeModel);
+  }
+
+  /**
+   * Use [watch] to set up change detection on an pre-parsed AST.
+   *
+   * * [ast] The pre-parsed AST.
+   * * [reactionFn]: The function executed when a change is detected.
+   * * [canChangeModel]: Whether or not the [reactionFn] can change the model.
+   */
+  Watch watchAST(AST ast, ReactionFn reactionFn, {bool canChangeModel: true}) {
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
-    return watch = group.watch(ast, fn);
+    return group.watch(ast, reactionFn);
   }
   static Map _oneTimeWarnings = {};
 
