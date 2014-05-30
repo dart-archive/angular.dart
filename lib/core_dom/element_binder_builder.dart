@@ -8,12 +8,15 @@ class ElementBinderFactory {
   final ComponentFactory _componentFactory;
   final TranscludingComponentFactory _transcludingComponentFactory;
   final ShadowDomComponentFactory _shadowDomComponentFactory;
+  final ASTParser _astParser;
 
   ElementBinderFactory(this._parser, this._perf, this._expando, this._componentFactory,
-      this._transcludingComponentFactory, this._shadowDomComponentFactory);
+      this._transcludingComponentFactory, this._shadowDomComponentFactory,
+      this._astParser);
 
   // TODO: Optimize this to re-use a builder.
-  ElementBinderBuilder builder() => new ElementBinderBuilder(this);
+  ElementBinderBuilder builder(FormatterMap formatters) =>
+    new ElementBinderBuilder(this, _astParser, formatters);
 
   ElementBinder binder(ElementBinderBuilder b) =>
       new ElementBinder(_perf, _expando, _parser, _componentFactory,
@@ -34,11 +37,13 @@ class ElementBinderBuilder {
   static final RegExp _MAPPING = new RegExp(r'^(@|=>!|=>|<=>|&)\s*(.*)$');
 
   ElementBinderFactory _factory;
+  ASTParser _astParser;
+  FormatterMap _formatters;
 
   /// "on-*" attribute names and values, added by a [DirectiveSelector]
   final onEvents = <String, String>{};
   /// "bind-*" attribute names and values, added by a [DirectiveSelector]
-  final bindAttrs = <String, String>{};
+  final bindAttrs = <String, AST>{};
 
   final decorators = <DirectiveRef>[];
   DirectiveRef template;
@@ -47,7 +52,7 @@ class ElementBinderBuilder {
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   String childMode = Directive.COMPILE_CHILDREN;
 
-  ElementBinderBuilder(this._factory);
+  ElementBinderBuilder(this._factory, this._astParser, this._formatters);
 
   /**
    * Adds [DirectiveRef]s to this [ElementBinderBuilder].
@@ -84,8 +89,17 @@ class ElementBinderBuilder {
         var dstPath = match[2];
 
         String dstExpression = dstPath.isEmpty ? attrName : dstPath;
+        AST dstAST = _astParser(dstExpression); // no formatters
 
-        ref.mappings.add(new MappingParts(attrName, mode, dstExpression, mapping));
+        // Look up the value of attrName and compute an AST
+        AST ast;
+        if (mode != '@' && mode != '&') {
+          var value = attrName == "." ? ref.value : (ref.element as dom.Element).attributes[attrName];
+          if (value == null || value.isEmpty) { value = "''"; }
+          ast = _astParser(value, formatters: _formatters);
+        }
+
+        ref.mappings.add(new MappingParts(attrName, ast, mode, dstAST, mapping));
       });
     }
   }

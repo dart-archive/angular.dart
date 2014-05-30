@@ -59,7 +59,7 @@ class DirectiveSelector {
   ElementBinder matchElement(dom.Node node) {
     assert(node is dom.Element);
 
-    ElementBinderBuilder builder = _binderFactory.builder();
+    ElementBinderBuilder builder = _binderFactory.builder(_formatters);
     List<_ElementSelector> partialSelection;
     final classes = new Set<String>();
     final attrs = <String, String>{};
@@ -87,7 +87,7 @@ class DirectiveSelector {
       if (attrName.startsWith("on-")) {
         builder.onEvents[attrName] = value;
       } else if (attrName.startsWith("bind-")) {
-        builder.bindAttrs[attrName] = value;
+        builder.bindAttrs[attrName] = _astParser(value, formatters: _formatters);
       }
 
       attrs[attrName] = value;
@@ -98,8 +98,11 @@ class DirectiveSelector {
           // we need to pass the name to the directive by prefixing it to
           // the value. Yes it is a bit of a hack.
           _directives[selectorRegExp.annotation].forEach((type) {
+            // Pre-compute the AST to watch this value.
+            String expression = _interpolate(value);
+            AST valueAST = _astParser(expression, formatters: _formatters);
             builder.addDirective(new DirectiveRef(
-                node, type, selectorRegExp.annotation, new Key(type), '$attrName=$value'));
+                node, type, selectorRegExp.annotation, new Key(type), attrName, valueAST));
           });
         }
       }
@@ -126,7 +129,7 @@ class DirectiveSelector {
   }
 
   ElementBinder matchText(dom.Node node) {
-    ElementBinderBuilder builder = _binderFactory.builder();
+    ElementBinderBuilder builder = _binderFactory.builder(_formatters);
 
     var value = node.nodeValue;
     for (var k = 0; k < textSelector.length; k++) {
@@ -145,7 +148,7 @@ class DirectiveSelector {
     return builder.binder;
   }
 
-  ElementBinder matchComment(dom.Node node) => _binderFactory.builder().binder;
+  ElementBinder matchComment(dom.Node node) => _binderFactory.builder(null).binder;
 }
 
 /**
