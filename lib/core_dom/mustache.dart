@@ -5,17 +5,10 @@ part of angular.core.dom_internal;
 class TextMustache {
   final dom.Node _element;
 
-  TextMustache(this._element,
-                          String template,
-                          Interpolate interpolate,
-                          Scope scope,
-                          FormatterMap formatters) {
-    String expression = interpolate(template);
-
-    scope.watch(expression,
+  TextMustache(this._element, AST ast, Scope scope) {
+    scope.watchAST(ast,
                 _updateMarkup,
-                canChangeModel: false,
-                formatters: formatters);
+                canChangeModel: false);
   }
 
   void _updateMarkup(text, previousText) {

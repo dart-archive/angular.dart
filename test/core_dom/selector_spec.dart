@@ -209,7 +209,9 @@ main() {
       it('should match text', () {
         expect(selector(element = e('before-abc-after')),
         toEqualsDirectiveInfos([
-            { "selector": ':contains(/abc/)', "value": 'before-abc-after',
+            { "selector": ':contains(/abc/)',
+                "value": 'before-abc-after',
+                "ast": '"before-abc-after"',
                 "element": element, "name": '#text'}
         ]));
       });
@@ -249,7 +251,8 @@ class DirectiveInfosMatcher extends Matcher {
   bool _refMatches(directiveRef, expectedMap) =>
     directiveRef.element == expectedMap['element'] &&
     directiveRef.annotation.selector == expectedMap['selector'] &&
-    directiveRef.value == expectedMap['value'];
+    directiveRef.value == expectedMap['value'] &&
+    (directiveRef.valueAST == null || directiveRef.valueAST.expression == expectedMap['ast']);
 
 
   bool matches(ElementBinder binder, matchState) {
