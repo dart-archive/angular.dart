@@ -179,7 +179,7 @@ class _ComponentFactory implements Function {
 
   Injector createShadowInjector(injector, TemplateLoader templateLoader) {
     var probe;
-   var shadowModule = new Module()
+    var shadowModule = new Module()
       ..bindByKey(typeKey)
       ..bindByKey(_NG_ELEMENT_KEY)
       ..bindByKey(_EVENT_HANDLER_KEY, toImplementation: ShadowRootEventHandler)
@@ -187,9 +187,10 @@ class _ComponentFactory implements Function {
       ..bindByKey(_TEMPLATE_LOADER_KEY, toValue: templateLoader)
       ..bindByKey(_SHADOW_ROOT_KEY, toValue: shadowDom)
       ..bindByKey(_ELEMENT_PROBE, toFactory: (_) => probe);
-      shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
+    shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
     probe = _expando[shadowDom] = new ElementProbe(
         injector.getByKey(_ELEMENT_PROBE), shadowDom, shadowInjector, shadowScope);
+    shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) {_expando[shadowDom] = null;});
     return shadowInjector;
   }
 }

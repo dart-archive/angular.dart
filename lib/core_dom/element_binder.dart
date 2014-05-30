@@ -319,6 +319,7 @@ class ElementBinder {
     nodeInjector = parentInjector.createChild([nodeModule]);
     probe = _expando[node] = new ElementProbe(
         parentInjector.getByKey(_ELEMENT_PROBE_KEY), node, nodeInjector, scope);
+    scope.on(ScopeEvent.DESTROY).listen((_) {_expando[node] = null;});
 
     _link(nodeInjector, probe, scope, nodeAttrs, formatters);
 
