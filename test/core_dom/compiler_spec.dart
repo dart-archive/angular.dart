@@ -727,6 +727,28 @@ void main() {
             expect(_.rootElement.shadowRoot).toBeNotNull();
           }
         }));
+
+        describe('expando memory', () {
+          Expando expando;
+
+          beforeEach(inject((Expando _expando) => expando = _expando));
+
+          ['shadowy', 'shadowless'].forEach((selector) {
+            it('should release expando when a node is freed ($selector)', async(() {
+              _.rootScope.context['flag'] = true;
+              _.compile('<div><div ng-if=flag><$selector>x</$selector></div></div>');
+              microLeap(); _.rootScope.apply();
+              var element = _.rootElement.querySelector('$selector');
+              if (element.shadowRoot != null) {
+                element = element.shadowRoot;
+              }
+              expect(expando[element]).not.toEqual(null);
+              _.rootScope.context['flag'] = false;
+              microLeap(); _.rootScope.apply();
+              expect(expando[element]).toEqual(null);
+            }));
+          });
+        });
       });
 
       describe('bindings', () {
@@ -849,7 +871,6 @@ void main() {
         expect(_.rootElement.text).toEqual('MyController');
       });
     });
-
   }));
 }
 
@@ -971,6 +992,16 @@ class PublishModuleAttrDirective implements PublishModuleDirectiveSuperType {
 class SimpleComponent {
   Scope scope;
   SimpleComponent(Scope this.scope) {
+    scope.context['name'] = 'INNER';
+  }
+}
+
+@Component(
+    selector: 'simple2',
+    template: r'{{name}}(<content>SHADOW-CONTENT</content>)')
+class Simple2Component {
+  Scope scope;
+  Simple2Component(Scope this.scope) {
     scope.context['name'] = 'INNER';
   }
 }
