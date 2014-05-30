@@ -212,7 +212,7 @@ main() {
         compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootInjector);
         rootScope.apply();
 
-        expect(log.log, equals(['ADirective', 'AFormatter']));
+        expect(log.log, equals(['AFormatter', 'ADirective']));
 
 
         Module childModule = new Module()
@@ -226,7 +226,7 @@ main() {
             '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(childInjector);
         rootScope.apply();
 
-        expect(log.log, equals(['ADirective', 'AFormatter', 'ADirective', 'BDirective', 'BFormatter']));
+        expect(log.log, equals(['AFormatter', 'ADirective', 'BFormatter', 'ADirective', 'BDirective']));
       });
 
     });
