@@ -15,16 +15,17 @@ import 'package:angular/core/annotation_src.dart';
 
 import 'package:angular/change_detection/watch_group.dart';
 export 'package:angular/change_detection/watch_group.dart';
+import 'package:angular/change_detection/ast_parser.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+import 'package:angular/core/formatter.dart';
+export 'package:angular/core/formatter.dart';
 import 'package:angular/core/parser/utils.dart';
-import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/registry.dart';
 import 'package:angular/core/static_keys.dart';
 
 part "cache.dart";
 part "exception_handler.dart";
-part 'formatter.dart';
 part "interpolate.dart";
 part "scope.dart";
 part "zone.dart";
