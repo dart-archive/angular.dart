@@ -348,6 +348,14 @@ void main() {
         expect(element).toHaveText('And jump');
       }));
 
+      it('should safely remove transcluding components that transclude no content', async(() {
+        _.rootScope.context['flag'] = true;
+        _.compile('<div ng-if=flag><simple></simple></div>');
+        microLeap(); _.rootScope.apply();
+        _.rootScope.context['flag'] = false;
+        microLeap(); _.rootScope.apply();
+      }));
+
       it('should store ElementProbe with Elements', async(() {
         _.compile('<div><simple>innerText</simple></div>');
         microLeap();
