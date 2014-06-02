@@ -142,6 +142,7 @@ class _ComponentFactory implements Function {
     shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
     probe = _expando[shadowDom] = new ElementProbe(
         injector.get(ElementProbe), shadowDom, shadowInjector, shadowScope);
+    shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) {_expando[shadowDom] = null;});
     return shadowInjector;
   }
 }
