@@ -112,6 +112,8 @@ _removeNgBinding(node) {
   return node;
 }
 
+bool get isDart2js => identical(1, 1.0);
+
 main() {
   gns.beforeEach(setUpInjector, priority:3);
   gns.afterEach(tearDownInjector);
