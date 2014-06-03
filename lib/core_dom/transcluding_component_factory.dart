@@ -83,12 +83,12 @@ class TranscludingComponentFactory implements ComponentFactory {
     return (Injector injector) {
       var childInjector;
       var component = ref.annotation as Component;
-      Scope scope = injector.get(Scope);
-      ViewCache viewCache = injector.get(ViewCache);
-      Http http = injector.get(Http);
-      TemplateCache templateCache = injector.get(TemplateCache);
-      DirectiveMap directives = injector.get(DirectiveMap);
-      NgBaseCss baseCss = injector.get(NgBaseCss);
+      Scope scope = injector.getByKey(SCOPE_KEY);
+      ViewCache viewCache = injector.getByKey(VIEW_CACHE_KEY);
+      Http http = injector.getByKey(HTTP_KEY);
+      TemplateCache templateCache = injector.getByKey(TEMPLATE_CACHE_KEY);
+      DirectiveMap directives = injector.getByKey(DIRECTIVE_MAP_KEY);
+      NgBaseCss baseCss = injector.getByKey(NG_BASE_CSS_KEY);
 
       var contentPort = new ContentPort(element);
 

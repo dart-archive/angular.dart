@@ -41,7 +41,7 @@ abstract class NgControl implements AttachAware, DetachAware {
 
   NgControl(NgElement this._element, Injector injector,
       Animate this._animate)
-      : _parentControl = injector.parent.get(NgControl);
+      : _parentControl = injector.parent.getByKey(NG_CONTROL_KEY);
 
   @override
   void attach() {

@@ -6,6 +6,7 @@ import 'dart:js' as js;
 import 'package:di/di.dart';
 import 'package:angular/introspection.dart';
 import 'package:angular/core/module_internal.dart';
+import 'package:angular/core/static_keys.dart';
 import 'package:angular/core_dom/module_internal.dart';
 
 /**
@@ -22,16 +23,17 @@ void publishToJavaScript() {
     ..['ngInjector'] = new js.JsFunction.withThis((_, nodeOrSelector) =>
         _jsInjector(ngInjector(nodeOrSelector)))
     ..['ngScope'] = new js.JsFunction.withThis((_, nodeOrSelector) =>
-        _jsScope(ngScope(nodeOrSelector), ngProbe(nodeOrSelector).injector.get(ScopeStatsConfig)))
-    ..['ngQuery'] = new js.JsFunction.withThis((_, dom.Node node, String selector, [String containsText]) =>
-        new js.JsArray.from(ngQuery(node, selector, containsText)));
+        _jsScope(ngScope(nodeOrSelector),
+        ngProbe(nodeOrSelector).injector.getByKey(SCOPE_STATS_CONFIG_KEY)))
+    ..['ngQuery'] = new js.JsFunction.withThis((_, dom.Node node, String selector,
+        [String containsText]) => new js.JsArray.from(ngQuery(node, selector, containsText)));
 }
 
 js.JsObject _jsProbe(ElementProbe probe) {
   return new js.JsObject.jsify({
       "element": probe.element,
       "injector": _jsInjector(probe.injector),
-      "scope": _jsScope(probe.scope, probe.injector.get(ScopeStatsConfig)),
+      "scope": _jsScope(probe.scope, probe.injector.getByKey(SCOPE_STATS_CONFIG_KEY)),
       "directives": probe.directives.map((directive) => _jsDirective(directive))
   })..['_dart_'] = probe;
 }

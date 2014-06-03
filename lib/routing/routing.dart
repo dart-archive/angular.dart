@@ -124,7 +124,7 @@ class NgRoutingHelper {
                   this._ngApp) {
     // TODO: move this to constructor parameters when di issue is fixed:
     // https://github.com/angular/di.dart/issues/40
-    RouteInitializerFn initializerFn = injector.get(RouteInitializerFn);
+    RouteInitializerFn initializerFn = injector.getByKey(ROUTE_INITIALIZER_FN_KEY);
     if (initializer == null && initializerFn == null) {
       window.console.error('No RouteInitializer implementation provided.');
       return;
