@@ -94,7 +94,9 @@ class _ComponentFactory implements Function {
     // so change back to using @import once Chrome bug is fixed or a
     // better work around is found.
     Iterable<async.Future<dom.StyleElement>> cssFutures;
-    var cssUrls = []..addAll(_baseCss.urls)..addAll(component.cssUrls);
+    var cssUrls = _baseCss != null ?
+       ([]..addAll(_baseCss.urls)..addAll(component.cssUrls)) :
+       component.cssUrls;
     if (cssUrls.isNotEmpty) {
       cssFutures = cssUrls.map((cssUrl) => _styleElementCache.putIfAbsent(cssUrl, () =>
         http.get(cssUrl, cache: templateCache)
