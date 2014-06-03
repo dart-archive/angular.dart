@@ -3,9 +3,8 @@ version: 0.0.1
 dependencies:
   angular:
     path: ../
-  browser: any
-  unittest: any
-  web_components: any
+  browser: ">=0.10.0 <0.11.0"
+  web_components: ">=0.3.4 <0.4.0"
 
 transformers:
 - angular
