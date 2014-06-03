@@ -1,0 +1,32 @@
+<html>
+<head>
+   <title>TreeComponent Benchmark</title>
+    <script src="bp.js"></script>
+    <script src="tree.dart" type="application/dart"></script>
+    <script src="packages/browser/dart.js"></script>
+    <script src="packages/browser/interop.js"></script>
+</head>
+
+<body ng-app>
+  <div id="benchmarkContainer"></div>
+  <p>
+  Render a 2^9 prefix tree with AngularDart
+  </p>
+
+  <div>Default: <input type=checkbox ng-model="useDefault"></div>
+  <div>Baseline: <input type=checkbox ng-model="useBaseline"></div>
+  <div>Baseline + scope: <input type=checkbox ng-model="useBaselineScoped"></div>
+  <div>Baseline + class: <input type=checkbox ng-model="useBaselineClass"></div>
+ 
+
+  <tree ng-if="useDefault" data=initData></tree>
+
+  <ng-free-tree ng-if="useBaseline" data=initData></ng-free-tree>
+  <ng-free-tree-scoped ng-if="useBaselineScoped" data=initData></ng-free-tree-scoped>
+  <ng-free-tree-class ng-if="useBaselineClass" data=initData></ng-free-tree-class>
+
+  <!-- Quick hack so the baseline test's bindings are compiled in the static parser -->
+  <div ng-if="false">{{tree}}</div>
+
+</body> 
+</html>
