@@ -1,3 +1,99 @@
+<a name="v0.12.0"></a>
+# v0.12.0 sprightly-argentinosaurus (2014-06-03)
+
+## Bug Fixes
+
+- **NgStyle:** make NgStyle export expressions
+  ([8470abd3](https://github.com/angular/angular.dart/commit/8470abd3b58a46ca2bce96b925155fac7a8f2969),
+   [#993](https://github.com/angular/angular.dart/issues/993))
+- **ViewCache:** Use an unbounded cache in the ViewCache.
+  ([36d93d87](https://github.com/angular/angular.dart/commit/36d93d8764c28fa02da3c4ccb622fbe19af229d9))
+- **VmTurnZone:**
+  - Remove a unneeded delegate.run() call.
+  ([a0d5d82d](https://github.com/angular/angular.dart/commit/a0d5d82d1fbc7aa5e7ba279d8153a33129318b9d))
+  - onScheduleMicrotask behaves correctly with orphaned scheduleMicrotasks.
+  ([a8699da0](https://github.com/angular/angular.dart/commit/a8699da016c754e08502ae24034a86bd8d6e0d8e))
+- **angular_spec:** export symbols for the route preLeave event
+  ([7c9a7585](https://github.com/angular/angular.dart/commit/7c9a7585f265bcba88e05fa41f3b6a4698633460))
+- **compiler:**
+  - Do not store injectors with TaggingElementBinders
+  ([a9dc429c](https://github.com/angular/angular.dart/commit/a9dc429c4e9fd019193f51b8db97281fa8529903))
+  - OneWayOneTime bindings now wait for the model to stablize
+  ([0e129496](https://github.com/angular/angular.dart/commit/0e1294966d7daacc0aa7866fd9674e8e5695abb5),
+   [#1013](https://github.com/angular/angular.dart/issues/1013))
+- **dccd:** fix DirtyCheckingRecord.toString() throws an exception
+  ([efcdca3f](https://github.com/angular/angular.dart/commit/efcdca3f2fe603318979647c28fd9815b94646a8))
+- **directives:** remove an unused import
+  ([6102d8a1](https://github.com/angular/angular.dart/commit/6102d8a15092f2206093842ab8629c86472d4a4e))
+- **element binder:**
+  - fix memory leak with expando value holding onto node
+  ([b7f175bf](https://github.com/angular/angular.dart/commit/b7f175bfa9b2786a58718d544fc75c867cd2fa40))
+  - Ensure mappings are evaluated before attach() is called.
+  ([fef0da0a](https://github.com/angular/angular.dart/commit/fef0da0a045856134bdb4e8e56b8bce05d4f6511),
+   [#1059](https://github.com/angular/angular.dart/issues/1059))
+- **http:** use location.href instead of toString
+  ([6a48a39d](https://github.com/angular/angular.dart/commit/6a48a39da1ab22693aed354e0df84590915cf84b))
+- **ng-repeat:** handle the ref changing to null and back
+  ([46b4c0e0](https://github.com/angular/angular.dart/commit/46b4c0e020709ceb88c590e825b106a081a68226),
+   [#1015](https://github.com/angular/angular.dart/issues/1015))
+- **transcluding component factory:** allow removing components that have no content to transclude
+  ([706f9e9b](https://github.com/angular/angular.dart/commit/706f9e9b1442c86d37cfe2bb5cdb6d2d950ce541))
+- **transcluding_component_factory:** fix content detach logic
+  ([3141d32e](https://github.com/angular/angular.dart/commit/3141d32ee72c3a3dd1674b10702e411b740690a2))
+- **watch group:** Fixed WatchGroup.toString(), added a test.
+  ([c9776b4c](https://github.com/angular/angular.dart/commit/c9776b4c7d30b01ea22a014f9120e862c9c3463a))
+
+## Features
+
+- **Http:** Http service can make cross-site requests (get, post, put, etc.) which use credentials (such as cookies or authorization headers).
+  ([3ef9d8e4](https://github.com/angular/angular.dart/commit/3ef9d8e4dc1491f6fa0afda5b29444c03d454919),
+   [#945](https://github.com/angular/angular.dart/issues/945), [#1026](https://github.com/angular/angular.dart/issues/1026))
+- **date:** Use localized patterns for shorthand format
+  ([fb1bcf47](https://github.com/angular/angular.dart/commit/fb1bcf477765b444aef6460c2cf245ef11c85822))
+- **dccd:** Make toString() code more robust
+  ([47ad9d9b](https://github.com/angular/angular.dart/commit/47ad9d9b73c17fdd3fd31aa2ef1d477ff50420e2))
+- **ng-base-css:** useNgBaseCss Component annotation field.
+  ([b861a9fc](https://github.com/angular/angular.dart/commit/b861a9fcc1d2bcf60c6ef937d88bcd88aeaab629))
+- **ng-model:** Added ng-model-options
+  ([f7115aa8](https://github.com/angular/angular.dart/commit/f7115aa86da0cd7b37e68b2a652959e6572ffa14),
+   [#969](https://github.com/angular/angular.dart/issues/969), [#974](https://github.com/angular/angular.dart/issues/974))
+- **platform:** Make angular invoke web_component polyfills for browsers without native web_component implementations.
+  ([0c22a3b6](https://github.com/angular/angular.dart/commit/0c22a3b6d73ab6789dca7859ce3424e6018fa688))
+- **travis:** Web platform features for Chrome 34
+  ([7466489d](https://github.com/angular/angular.dart/commit/7466489dfa9326fda14c2a57e7f2c60e41313da9))
+
+## Performance Improvements
+
+- **NodeCursor:** Do not duplicate child nodes
+  ([45436680](https://github.com/angular/angular.dart/commit/454366808d711ccd0cc05fc8d8eb7f565ba4ff29))
+- **_ElementSelector:** Remove recursion in addDirective
+  ([2fbb60b5](https://github.com/angular/angular.dart/commit/2fbb60b54f0675464f87f3311e2e28936e320562))
+- **interpolate:** 20%. Cache the interpolated expressions.
+  ([669d47ce](https://github.com/angular/angular.dart/commit/669d47ce8dd9c1df1033a7f0715be76843be67a3))
+- **selector:** Remove an useless check
+  ([6fea97d4](https://github.com/angular/angular.dart/commit/6fea97d4f02ad525b4b900b8a31b7184692e5296))
+- **tagging_view_factory:** Move a test out of the loop
+  ([e4f7e349](https://github.com/angular/angular.dart/commit/e4f7e349809c7a27dcb0729ad100036cbb6fd7cf))
+- **view factory:**
+  - Compute DI Keys ahead of time
+  ([317c23c0](https://github.com/angular/angular.dart/commit/317c23c0953f54d8c589a5d77cf86a06603cf067),
+   [#1085](https://github.com/angular/angular.dart/issues/1085))
+  - Remove try-finally from ElementBinder._link
+  ([60626104](https://github.com/angular/angular.dart/commit/606261043295812c8c7e6dab07aad9808003f075))
+  - Remove a try-catch and a timer for the critical path
+  ([9f4defef](https://github.com/angular/angular.dart/commit/9f4defef56d85c5a07fbf7bbfd2db98810657b4e))
+- **watch group:** Do not use List.map for tiny lists
+  ([61f33489](https://github.com/angular/angular.dart/commit/61f33489055717fecb0c0f58a0cee663bd535846))
+
+
+## Breaking Changes
+
+- **VmTurnZone:** due to [a8699da0](https://github.com/angular/angular.dart/commit/a8699da016c754e08502ae24034a86bd8d6e0d8e),
+ 
+
+`Zone.defaultOnScheduleMicrotask` is now named `Zone.onScheduleMicrotask`
+
+
 <a name="v0.11.0"></a>
 # v0.11.0 ungulate-funambulism (2014-05-06)
 
