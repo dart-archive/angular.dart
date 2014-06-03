@@ -81,6 +81,8 @@ import 'package:angular/formatter/module_internal.dart';
 import 'package:angular/routing/module.dart';
 import 'package:angular/introspection_js.dart';
 
+import 'package:angular/core_dom/static_keys.dart';
+
 /**
  * This is the top level module which describes all Angular components,
  * including services, formatters and directives. When instantiating an Angular application
@@ -146,7 +148,7 @@ abstract class Application {
     modules.add(ngModule);
     ngModule..bind(VmTurnZone, toValue: zone)
             ..bind(Application, toValue: this)
-            ..bind(dom.Node, toFactory: (i) => i.get(Application).element);
+            ..bind(dom.Node, toFactory: (i) => i.getByKey(new Key(Application)).element);
   }
 
   /**
@@ -164,11 +166,11 @@ abstract class Application {
     return zone.run(() {
       var rootElements = [element];
       Injector injector = createInjector();
-      ExceptionHandler exceptionHandler = injector.get(ExceptionHandler);
+      ExceptionHandler exceptionHandler = injector.getByKey(EXCEPTION_HANDLER_KEY);
       initializeDateFormatting(null, null).then((_) {
         try {
-          var compiler = injector.get(Compiler);
-          var viewFactory = compiler(rootElements, injector.get(DirectiveMap));
+          var compiler = injector.getByKey(COMPILER_KEY);
+          var viewFactory = compiler(rootElements, injector.getByKey(DIRECTIVE_MAP_KEY));
           viewFactory(injector, rootElements);
         } catch (e, s) {
           exceptionHandler(e, s);

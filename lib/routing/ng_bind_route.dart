@@ -32,7 +32,7 @@ class NgBindRoute implements RouteProvider {
   final Injector _injector;
 
   static final Module _module = new Module()
-      ..bind(RouteProvider, toFactory: (i) => i.get(NgBindRoute),
+      ..bind(RouteProvider, toFactory: (i) => i.getByKey(NG_BIND_ROUTE_KEY),
              visibility: Directive.CHILDREN_VISIBILITY);
 
   static Module module() => _module;
@@ -41,7 +41,7 @@ class NgBindRoute implements RouteProvider {
   NgBindRoute(this._router, this._injector, NgRoutingHelper _);
 
   /// Returns the parent [RouteProvider].
-  RouteProvider get _parent => _injector.parent.get(RouteProvider);
+  RouteProvider get _parent => _injector.parent.getByKey(ROUTE_PROVIDER_KEY);
 
   Route get route => routeName.startsWith('.') ?
       _parent.route.getRoute(routeName.substring(1)) :

@@ -20,6 +20,7 @@ import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/core/parser/utils.dart';
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/registry.dart';
+import 'package:angular/core/static_keys.dart';
 
 part "cache.dart";
 part "exception_handler.dart";
@@ -39,7 +40,7 @@ class CoreModule extends Module {
     bind(FormatterMap);
     bind(Interpolate);
     bind(RootScope);
-    bind(Scope, toFactory: (injector) => injector.get(RootScope));
+    bind(Scope, toFactory: (injector) => injector.getByKey(ROOT_SCOPE_KEY));
     bind(ClosureMap, toFactory: (_) => throw "Must provide dynamic/static ClosureMap.");
     bind(ScopeStats);
     bind(ScopeStatsEmitter);

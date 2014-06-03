@@ -39,7 +39,7 @@ class DirectiveRef {
 Injector forceNewDirectivesAndFormatters(Injector injector, List<Module> modules) {
   modules.add(new Module()
       ..bind(Scope, toFactory: (i) {
-        var scope = i.parent.get(Scope);
+        var scope = i.parent.getByKey(SCOPE_KEY);
         return scope.createChild(new PrototypeMap(scope.context));
       }));
 

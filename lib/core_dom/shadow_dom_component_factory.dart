@@ -38,19 +38,19 @@ class ShadowDomComponentFactory implements ComponentFactory {
   FactoryFn call(dom.Node node, DirectiveRef ref) {
     return (Injector injector) {
         var component = ref.annotation as Component;
-        Scope scope = injector.getByKey(_SCOPE_KEY);
-        ViewCache viewCache = injector.getByKey(_VIEW_CACHE_KEY);
-        Http http = injector.getByKey(_HTTP_KEY);
-        TemplateCache templateCache = injector.getByKey(_TEMPLATE_CACHE_KEY);
-        DirectiveMap directives = injector.getByKey(_DIRECTIVE_MAP_KEY);
-        NgBaseCss baseCss = component.useNgBaseCss ? injector.getByKey(_NG_BASE_CSS_KEY) : null;
+        Scope scope = injector.getByKey(SCOPE_KEY);
+        ViewCache viewCache = injector.getByKey(VIEW_CACHE_KEY);
+        Http http = injector.getByKey(HTTP_KEY);
+        TemplateCache templateCache = injector.getByKey(TEMPLATE_CACHE_KEY);
+        DirectiveMap directives = injector.getByKey(DIRECTIVE_MAP_KEY);
+        NgBaseCss baseCss = component.useNgBaseCss ? injector.getByKey(NG_BASE_CSS_KEY) : null;
         // This is a bit of a hack since we are returning different type then we are.
         var componentFactory = new _ComponentFactory(node,
             ref.typeKey,
             component,
-            injector.getByKey(_NODE_TREE_SANITIZER_KEY),
-            injector.getByKey(_WEB_PLATFORM_KEY),
-            injector.getByKey(_COMPONENT_CSS_REWRITER_KEY),
+            injector.getByKey(NODE_TREE_SANITIZER_KEY),
+            injector.getByKey(WEB_PLATFORM_KEY),
+            injector.getByKey(COMPONENT_CSS_REWRITER_KEY),
             _expando,
             baseCss,
             _styleElementCache);
@@ -183,15 +183,15 @@ class _ComponentFactory implements Function {
     var probe;
     var shadowModule = new Module()
       ..bindByKey(typeKey)
-      ..bindByKey(_NG_ELEMENT_KEY)
-      ..bindByKey(_EVENT_HANDLER_KEY, toImplementation: ShadowRootEventHandler)
-      ..bindByKey(_SCOPE_KEY, toValue: shadowScope)
-      ..bindByKey(_TEMPLATE_LOADER_KEY, toValue: templateLoader)
-      ..bindByKey(_SHADOW_ROOT_KEY, toValue: shadowDom)
-      ..bindByKey(_ELEMENT_PROBE, toFactory: (_) => probe);
+      ..bindByKey(NG_ELEMENT_KEY)
+      ..bindByKey(EVENT_HANDLER_KEY, toImplementation: ShadowRootEventHandler)
+      ..bindByKey(SCOPE_KEY, toValue: shadowScope)
+      ..bindByKey(TEMPLATE_LOADER_KEY, toValue: templateLoader)
+      ..bindByKey(SHADOW_ROOT_KEY, toValue: shadowDom)
+      ..bindByKey(ELEMENT_PROBE_KEY, toFactory: (_) => probe);
     shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
     probe = _expando[shadowDom] = new ElementProbe(
-        injector.getByKey(_ELEMENT_PROBE), shadowDom, shadowInjector, shadowScope);
+        injector.getByKey(ELEMENT_PROBE_KEY), shadowDom, shadowInjector, shadowScope);
     shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) {_expando[shadowDom] = null;});
     return shadowInjector;
   }

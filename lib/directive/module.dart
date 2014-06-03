@@ -27,6 +27,7 @@ import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/utils.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/directive/static_keys.dart';
 
 part 'a_href.dart';
 part 'ng_base_css.dart';

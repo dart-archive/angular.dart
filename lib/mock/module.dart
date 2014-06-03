@@ -22,6 +22,7 @@ import 'package:angular/angular.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
+import 'package:angular/mock/static_keys.dart';
 import 'package:di/di.dart';
 import 'package:mock/mock.dart';
 
@@ -61,7 +62,7 @@ class AngularMockModule extends Module {
     bind(MockHttpBackend);
     bind(Element, toValue: document.body);
     bind(Node, toValue: document.body);
-    bind(HttpBackend, toFactory: (Injector i) => i.get(MockHttpBackend));
+    bind(HttpBackend, toFactory: (Injector i) => i.getByKey(MOCK_HTTP_BACKEND_KEY));
     bind(VmTurnZone, toFactory: (_) {
       return new VmTurnZone()
         ..onError = (e, s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');

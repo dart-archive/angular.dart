@@ -132,6 +132,8 @@ import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:route_hierarchical/client.dart';
 
+import 'package:angular/routing/static_keys.dart';
+
 part 'routing.dart';
 part 'ng_view.dart';
 part 'ng_bind_route.dart';
@@ -140,8 +142,8 @@ class RoutingModule extends Module {
   RoutingModule({bool usePushState: true}) {
     bind(NgRoutingUsePushState);
     bind(Router, toFactory: (injector) {
-      var useFragment = !injector.get(NgRoutingUsePushState).usePushState;
-      return new Router(useFragment: useFragment, windowImpl: injector.get(Window));
+      var useFragment = !injector.getByKey(NG_ROUTING_USE_PUSH_STATE_KEY).usePushState;
+      return new Router(useFragment: useFragment, windowImpl: injector.getByKey(WINDOW_KEY));
     });
     bind(NgRoutingHelper);
     bind(RouteProvider, toValue: null);

@@ -50,7 +50,7 @@ class TestBed {
     }
     rootElement = rootElements.length > 0 && rootElements[0] is Element ? rootElements[0] : null;
     if (directives == null) {
-      directives = injector.get(DirectiveMap);
+      directives = injector.getByKey(DIRECTIVE_MAP_KEY);
     }
     rootView = compiler(rootElements, directives)(injector, rootElements);
     return rootElement;

@@ -20,7 +20,7 @@ part of angular.directive;
     map: const { 'ng-form': '@name' })
 class NgForm extends NgControl {
   static final Module _module = new Module()
-      ..bind(NgControl, toFactory: (i) => i.get(NgForm));
+      ..bind(NgControl, toFactory: (i) => i.getByKey(NG_FORM_KEY));
   static module() => _module;
 
   final Scope _scope;
