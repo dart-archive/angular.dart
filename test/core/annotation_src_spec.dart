@@ -5,6 +5,7 @@ import 'dart:mirrors';
 import '../_specs.dart';
 
 var _SYMBOL_NAME = new RegExp('"([^@]*).*"');
+
 _getName(VariableMirror v) => _SYMBOL_NAME.firstMatch(v.simpleName.toString()).group(1);
 
 Map<String, dynamic> variables(x) {
@@ -30,71 +31,80 @@ List<String> nullFields(x) {
   return ret;
 }
 
-void main() => describe('annotations', () {
-  describe('component', () {
-    it('should set all fields on clone when all the fields are set', () {
-      var component = new Component(
-        template: '',
-        templateUrl: '',
-        cssUrl: [''],
-        applyAuthorStyles: true,
-        resetStyleInheritance: true,
-        publishAs: '',
-        module: (){},
-        map: {},
-        selector: '',
-        visibility: Directive.LOCAL_VISIBILITY,
-        exportExpressions: [],
-        exportExpressionAttrs: [],
-        useShadowDom: true
-      );
+void main() {
+  var dartOnlyDescribe = describe;
 
-      // Check that no fields are null
-      expect(nullFields(component)).toEqual([]);
+  if (isDart2js) {
+    // We can not access mirror after the code is compiled (dart2js)
+    dartOnlyDescribe = xdescribe;
+  }
 
-      // Check that the clone is the same as the original.
-      expect(variables(cloneWithNewMap(component, {}))).toEqual(variables(component));
-    });
-  });
-
-  describe('decorator', () {
-    it('should set all fields on clone when all the fields are set', () {
-      var decorator = new Decorator(
-          children: 'xxx',
-          map: {},
-          selector: '',
-          module: (){},
-          visibility: Directive.LOCAL_VISIBILITY,
-          exportExpressions: [],
-          exportExpressionAttrs: []
-      );
-
-      // Check that no fields are null
-      expect(nullFields(decorator)).toEqual([]);
-
-      // Check that the clone is the same as the original.
-      expect(variables(cloneWithNewMap(decorator, {}))).toEqual(variables(decorator));
-    });
-  });
-
-  describe('controller', () {
-    it('should set all fields on clone when all the fields are set', () {
-      var controller = new Controller(
+  dartOnlyDescribe('annotations', () {
+    describe('component', () {
+      it('should set all fields on clone when all the fields are set', () {
+        var component = new Component(
+          template: '',
+          templateUrl: '',
+          cssUrl: [''],
+          applyAuthorStyles: true,
+          resetStyleInheritance: true,
           publishAs: '',
-          children: 'xxx',
+          module: (){},
           map: {},
           selector: '',
-          module: (){},
           visibility: Directive.LOCAL_VISIBILITY,
           exportExpressions: [],
-          exportExpressionAttrs: []
-      );
+          exportExpressionAttrs: [],
+          useShadowDom: true
+        );
 
-      // Check that no fields are null
-      expect(nullFields(controller)).toEqual([]);
+        // Check that no fields are null
+        expect(nullFields(component)).toEqual([]);
 
-      // Check that the clone is the same as the original.
-      expect(variables(cloneWithNewMap(controller, {}))).toEqual(variables(controller));
+        // Check that the clone is the same as the original.
+        expect(variables(cloneWithNewMap(component, {}))).toEqual(variables(component));
+      });
+    });
+
+    describe('decorator', () {
+      it('should set all fields on clone when all the fields are set', () {
+        var decorator = new Decorator(
+            children: 'xxx',
+            map: {},
+            selector: '',
+            module: (){},
+            visibility: Directive.LOCAL_VISIBILITY,
+            exportExpressions: [],
+            exportExpressionAttrs: []
+        );
+
+        // Check that no fields are null
+        expect(nullFields(decorator)).toEqual([]);
+
+        // Check that the clone is the same as the original.
+        expect(variables(cloneWithNewMap(decorator, {}))).toEqual(variables(decorator));
+      });
+    });
+
+    describe('controller', () {
+      it('should set all fields on clone when all the fields are set', () {
+        var controller = new Controller(
+            publishAs: '',
+            children: 'xxx',
+            map: {},
+            selector: '',
+            module: (){},
+            visibility: Directive.LOCAL_VISIBILITY,
+            exportExpressions: [],
+            exportExpressionAttrs: []
+        );
+
+        // Check that no fields are null
+        expect(nullFields(controller)).toEqual([]);
+
+        // Check that the clone is the same as the original.
+        expect(variables(cloneWithNewMap(controller, {}))).toEqual(variables(controller));
+      });
     });
   });
-});
+}
