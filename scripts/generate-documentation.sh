@@ -17,8 +17,8 @@ cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
     --start-page=angular \
     --exclude-lib=js,metadata,meta,mirrors,intl,number_symbols,number_symbol_data,intl_helpers,date_format_internal,date_symbols,angular.util \
     --no-include-sdk \
+    --include-dependent-packages \
     --package-root=packages \
-    lib/angular.dart \
     lib/application_factory.dart \
     lib/application_factory_static.dart \
     lib/application.dart lib/introspection.dart \
@@ -30,6 +30,7 @@ cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
     lib/routing/module.dart \
     lib/mock/module.dart \
     lib/perf/module.dart \
+    lib/di/module.dart
 )
 
 # Revert the temp copy of the README.md file
