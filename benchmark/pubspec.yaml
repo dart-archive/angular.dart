@@ -1,4 +1,4 @@
-name: angular-perf
+name: angularperf
 version: 0.10.0
 description: Angular benchmarks
 dependencies:
@@ -8,3 +8,8 @@ dev_dependencies:
   benchmark_harness: '>=1.0.0'
   unittest: '>=0.10.1 <0.12.0'
   mock: '>=0.10.0 <0.12.0'
+transformers:
+- angular
+- $dart2js:
+    minify: false
+    checked: false
