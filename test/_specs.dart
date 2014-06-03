@@ -32,19 +32,15 @@ export 'package:angular/mock/module.dart';
 export 'package:perf_api/perf_api.dart';
 
 es(String html) {
-  var div = new DivElement();
-  div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
+  var div = new DivElement()..setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
   return new List.from(div.nodes);
 }
 
 e(String html) => es(html).first;
 
-
 Expect expect(actual, [matcher]) {
   final expect = new Expect(actual);
-  if (matcher != null) {
-    expect.to(matcher);
-  }
+  if (matcher != null) expect.to(matcher);
   return expect;
 }
 
@@ -53,29 +49,25 @@ class Expect extends gns.Expect {
 
   NotExpect get not => new NotExpect(actual);
 
-  toBeValid() => _expect(actual.valid && !actual.invalid, true,
-      reason: 'Form is not valid');
+  void toBeValid() => _expect(actual.valid && !actual.invalid, true, reason: 'Form is not valid');
 
-  toBePristine() => _expect(actual.pristine && !actual.dirty, true,
-      reason: 'Form is dirty');
+  void toBePristine() => _expect(actual.pristine && !actual.dirty, true, reason: 'Form is dirty');
 
-  get _expect => gns.guinness.matchers.expect;
+  Function get _expect => gns.guinness.matchers.expect;
 }
 
 class NotExpect extends gns.NotExpect {
   NotExpect(actual) : super(actual);
 
-  toBeValid() => _expect(actual.valid && !actual.invalid, false,
-      reason: 'Form is valid');
+  void toBeValid() => _expect(actual.valid && !actual.invalid, false, reason: 'Form is valid');
 
-  toBePristine() => _expect(actual.pristine && !actual.dirty, false,
-      reason: 'Form is pristine');
+  void toBePristine() => _expect(actual.pristine && !actual.dirty, false, reason: 'Form is pristine');
 
-  get _expect => gns.guinness.matchers.expect;
+  Function get _expect => gns.guinness.matchers.expect;
 }
 
 
-_injectify(fn) {
+Function _injectify(Function fn) {
   // The function does two things:
   // First: if the it() passed a function, we wrap it in
   //        the "sync" FunctionComposition.
@@ -83,24 +75,39 @@ _injectify(fn) {
   //         we inject "inject" into the middle of the
   //         composition.
   if (fn is! FunctionComposition) fn = sync(fn);
-  return fn.outer(inject(fn.inner));
+  var fc = fn as FunctionComposition;
+  return fc.outer(inject(fc.inner));
 }
 
 // Replace guinness syntax elements to inject dependencies.
-beforeEachModule(fn) => gns.beforeEach(module(fn), priority:1);
-beforeEach(fn) => gns.beforeEach(_injectify(fn));
-afterEach(fn) => gns.afterEach(_injectify(fn));
-it(name, fn) => gns.it(name, _injectify(fn));
-iit(name, fn) => gns.iit(name, _injectify(fn));
+void beforeEachModule(Function fn) {
+  gns.beforeEach(module(fn), priority:1);
+}
+
+void beforeEach(Function fn) {
+  gns.beforeEach(_injectify(fn));
+}
+
+void afterEach(Function fn) {
+   gns.afterEach(_injectify(fn));
+}
+
+void it(String name, Function fn) {
+  gns.it(name, _injectify(fn));
+}
+
+void iit(String name, Function fn) {
+  gns.iit(name, _injectify(fn));
+}
 
 _removeNgBinding(node) {
   if (node is Element) {
-    node = node.clone(true) as Element;
-    node.classes.remove('ng-binding');
-    node.querySelectorAll(".ng-binding").forEach((Element e) {
+    var el = node.clone(true) as Element;
+    el.classes.remove('ng-binding');
+    el.querySelectorAll(".ng-binding").forEach((Element e) {
       e.classes.remove('ng-binding');
     });
-    return node;
+    return el;
   }
   return node;
 }
