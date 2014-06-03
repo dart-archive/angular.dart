@@ -75,7 +75,7 @@ class _ComponentFactory implements Function {
   final Key typeKey;
   final Component component;
   final dom.NodeTreeSanitizer treeSanitizer;
-  final Expando _expando;
+t  final Expando _expando;
   final NgBaseCss _baseCss;
   final Map<_ComponentAssetKey, async.Future<dom.StyleElement>>
       _styleElementCache;
