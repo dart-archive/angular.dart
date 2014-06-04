@@ -288,6 +288,31 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
               moves: ['2[1 -> 0]', '1[0 -> 1]'],
               removals: []));
         });
+
+        it('should handle swapping elements correctly - gh1097', () {
+          // This test would only have failed in non-checked mode only
+          var list = ['a', 'b', 'c'];
+          var record = detector.watch(list, null, null);
+          var iterator = detector.collectChanges()..moveNext();
+
+          list..clear()..addAll(['b', 'a', 'c']);
+          iterator = detector.collectChanges()..moveNext();
+          expect(iterator.current.currentValue, toEqualCollectionRecord(
+              collection: ['b[1 -> 0]', 'a[0 -> 1]', 'c'],
+              previous: ['a[0 -> 1]', 'b[1 -> 0]', 'c'],
+              additions: [],
+              moves: ['b[1 -> 0]', 'a[0 -> 1]', 'c'],
+              removals: []));
+
+          list..clear()..addAll(['b', 'c', 'a']);
+          iterator = detector.collectChanges()..moveNext();
+          expect(iterator.current.currentValue, toEqualCollectionRecord(
+              collection: ['b', 'c[2 -> 1]', 'a[1 -> 2]'],
+              previous: ['b', 'a[1 -> 2]', 'c[2 -> 1]'],
+              additions: [],
+              moves: ['c[2 -> 1]', 'a[1 -> 2]'],
+              removals: []));
+        });
       });
 
       it('should detect changes in list', () {
