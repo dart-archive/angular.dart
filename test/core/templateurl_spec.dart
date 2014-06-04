@@ -269,15 +269,9 @@ void main() {
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
 
-        // Since the template cache is disabled, we expect a 'simple.html' call.
-        backend
-          ..expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
-
         var element2 = e('<div><html-and-css>ignore</html-and-css><div>');
         compile([element2], directives)(injector, [element2]);
 
-        microLeap();
-        backend.flush();
         microLeap();
 
         expect(element2.children[0].shadowRoot).toHaveHtml(

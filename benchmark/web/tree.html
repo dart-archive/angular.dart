@@ -14,12 +14,14 @@
   </p>
 
   <div>Default: <input type=checkbox ng-model="useDefault"></div>
+  <div>From URL: <input type=checkbox ng-model="useUrl"></div>
   <div>Baseline: <input type=checkbox ng-model="useBaseline"></div>
   <div>Baseline + scope: <input type=checkbox ng-model="useBaselineScoped"></div>
   <div>Baseline + class: <input type=checkbox ng-model="useBaselineClass"></div>
  
 
   <tree ng-if="useDefault" data=initData></tree>
+  <tree-url ng-if="useUrl" data=initData></tree-url>
 
   <ng-free-tree ng-if="useBaseline" data=initData></ng-free-tree>
   <ng-free-tree-scoped ng-if="useBaselineScoped" data=initData></ng-free-tree-scoped>
