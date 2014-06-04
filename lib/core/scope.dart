@@ -200,8 +200,6 @@ class Scope {
    *   evaluates to a non-null value.
    * * [reactionFn]: The reaction function to execute when a change is detected in the watched
    *   expression.
-   * * [context]: The object against which the expression is evaluated. This defaults to the
-   *   [Scope.context] if no context is specified.
    * * [formatters]: If the watched expression contains formatters,
    *   this map specifies the set of formatters that are used by the expression.
    * * [canChangeModel]: Specifies whether the [reactionFn] changes the model. Reaction
@@ -217,6 +215,27 @@ class Scope {
     assert(isAttached);
     assert(expression is String);
     assert(canChangeModel is bool);
+
+    // TODO(deboer): Temporary shim until all uses are fixed.
+    if (context != null) {
+      assert(() {
+        try {
+          throw [];
+        } catch (e, s) {
+          var msg = "WARNING: The Scope.watch's context parameter "
+          "is deprecated.\nScope.watch was called from:\n$s";
+          _oneTimeWarnings.putIfAbsent(msg, () => print(msg));
+        }
+        return true;
+      });
+
+      // Create a child scope instead.
+      return createChild(context)
+          .watch(expression, reactionFn,
+                 formatters: formatters,
+                 canChangeModel: canChangeModel,
+                 collection: collection);
+    }
 
     Watch watch;
     ReactionFn fn = reactionFn;
@@ -239,12 +258,13 @@ class Scope {
       }
     }
 
-    AST ast = rootScope._astParser(expression, context: context,
+    AST ast = rootScope._astParser(expression,
         formatters: formatters, collection: collection);
 
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
     return watch = group.watch(ast, fn);
   }
+  static Map _oneTimeWarnings = {};
 
   dynamic eval(expression, [Map locals]) {
     assert(isAttached);
@@ -1052,14 +1072,10 @@ class _AstParser {
       : _visitor = new ExpressionVisitor(closureMap);
 
   AST call(String input, {FormatterMap formatters,
-                          bool collection: false,
-                          Object context: null }) {
+                          bool collection: false }) {
     _visitor.formatters = formatters;
     AST contextRef = _visitor.contextRef;
     try {
-      if (context != null) {
-        _visitor.contextRef = new ConstantAST(context, '#${_id++}');
-      }
       var exp = _parser(input);
       return collection ? _visitor.visitCollection(exp) : _visitor.visit(exp);
     } finally {
