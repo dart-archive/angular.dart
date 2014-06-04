@@ -1370,7 +1370,7 @@ void main() {
           inputElement.value = 'xzy';
           _.triggerEvent(inputElement, 'change');
           _.rootScope.apply();
-        })).toThrow('love');
+        })).toThrowWith(message: 'love');
 
       });
     });

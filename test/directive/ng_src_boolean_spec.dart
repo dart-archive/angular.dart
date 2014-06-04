@@ -122,9 +122,10 @@ main() {
     xit('should NOT interpolate a multi-part expression for non-img src attribute', () {
       expect(() {
         _.compile('<div ng-src="some/{{id}}"></div>');
-      }).toThrow("Error while interpolating: some/{{id}}\nStrict " +
-          "Contextual Escaping disallows interpolations that concatenate multiple expressions " +
-          "when a trusted value is required.  See http://docs.angularjs.org/api/ng.sce");
+      }).toThrowWith(message: "Error while interpolating: some/{{id}}\nStrict Contextual Escaping "
+                              "disallows interpolations that concatenate multiple expressions "
+                              "when a trusted value is required.  "
+                              "See http://docs.angularjs.org/api/ng.sce");
     });
 
 
@@ -146,8 +147,9 @@ main() {
           _.rootScope.context['id'] = sce.trustAsUrl('http://somewhere');
         });
         _.rootElement.attributes['src'];
-      }).toThrow("Can't interpolate: {{id}}\nError: [sce:insecurl] Viewed " +
-          "loading resource from url not allowed by sceDelegate policy.  URL: http://somewhere");
+      }).toThrowWith(message: "Can't interpolate: {{id}}\nError: [sce:insecurl] Viewed loading "
+                              "resource from url not allowed by sceDelegate policy.  "
+                              "URL: http://somewhere");
     });
 
   });
