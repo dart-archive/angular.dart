@@ -24,11 +24,14 @@ import 'package:angular/core/parser/utils.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core/static_keys.dart';
 
-part "cache.dart";
-part "exception_handler.dart";
-part "interpolate.dart";
-part "scope.dart";
-part "zone.dart";
+part 'cache.dart';
+part 'exception_handler.dart';
+part 'interpolate.dart';
+part 'lifecycle.dart';
+part 'scope.dart';
+part 'scheduler.dart';
+part 'root_scope.dart';
+part 'zone.dart';
 
 
 class CoreModule extends Module {
@@ -43,6 +46,8 @@ class CoreModule extends Module {
     bind(RootScope);
     bind(Scope, toFactory: (injector) => injector.getByKey(ROOT_SCOPE_KEY));
     bind(ClosureMap, toFactory: (_) => throw "Must provide dynamic/static ClosureMap.");
+    bind(LifeCycle);
+    bind(Scheduler);
     bind(ScopeStats);
     bind(ScopeStatsEmitter);
     bind(ScopeStatsConfig, toFactory: (i) => new ScopeStatsConfig());
