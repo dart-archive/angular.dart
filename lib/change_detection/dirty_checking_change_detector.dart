@@ -1142,9 +1142,6 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     var prev = record._prevRemoved;
     var next = record._nextRemoved;
 
-    assert((record._prevRemoved = null) == null);
-    assert((record._nextRemoved = null) == null);
-
     if (prev == null) {
       _removalsHead = next;
     } else {
@@ -1252,10 +1249,12 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     record.currentIndex = null;
     if (_removedItems == null) _removedItems = new DuplicateMap();
     _removedItems.put(record);
+    record._nextRemoved = null;
 
     if (_removalsTail == null) {
       assert(_removalsHead == null);
       _removalsTail = _removalsHead = record;
+      record._prevRemoved = null;
     } else {
       assert(_removalsTail._nextRemoved == null);
       assert(record._nextRemoved == null);
