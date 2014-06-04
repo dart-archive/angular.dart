@@ -118,6 +118,7 @@ class WalkingViewFactory implements ViewFactory {
 @Injectable()
 class ViewCache {
   // _viewFactoryCache is unbounded
+  // This cache contains both HTML and URL keys.
   final _viewFactoryCache = new LruCache<String, ViewFactory>();
   final Http http;
   final TemplateCache templateCache;
@@ -138,8 +139,15 @@ class ViewCache {
   }
 
   async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives) {
-    return http.get(url, cache: templateCache).then(
-        (resp) => fromHtml(resp.responseText, directives));
+    ViewFactory viewFactory = _viewFactoryCache.get(url);
+    if (viewFactory == null) {
+      return http.get(url, cache: templateCache).then((resp) {
+        var viewFactoryFromHttp = fromHtml(resp.responseText, directives);
+        _viewFactoryCache.put(url, viewFactoryFromHttp);
+        return viewFactoryFromHttp;
+      });
+    }
+    return new async.Future.value(viewFactory);
   }
 }
 

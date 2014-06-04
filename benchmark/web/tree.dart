@@ -19,6 +19,15 @@ class TreeComponent {
   var data;
 }
 
+@Component(
+    selector: 'tree-url',
+    templateUrl: 'tree-tmpl.html',
+    publishAs: 'ctrl')
+class TreeUrlComponent {
+  @NgOneWay('data')
+  var data;
+}
+
 
 // This is a baseline implementation of TreeComponent.
 // It assumes the data never changes and simply throws elements on the DOM
@@ -239,6 +248,7 @@ main() {
 
   var module = new Module()
       ..type(TreeComponent)
+      ..type(TreeUrlComponent)
       ..type(NgFreeTree)
       ..type(NgFreeTreeScoped)
       ..type(NgFreeTreeClass)
