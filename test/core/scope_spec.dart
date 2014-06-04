@@ -1021,7 +1021,7 @@ void main() {
       });
 
 
-      it('should watch/observe on objects other then contex', (RootScope rootScope) {
+      it('should watch/observe on objects other then context (DEPRECATED)', (RootScope rootScope) {
         var log = '';
         var map = {'a': 'A', 'b': 'B'};
         rootScope.watch('a', (a, b) => log += a, context: map);
