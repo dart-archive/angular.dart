@@ -983,9 +983,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   }
 
   /**
-   * Reset the state of the change objects to show no changes. This means set
-   * previousKey to currentKey, and clear all of the queues (additions, moves,
-   * removals).
+   * Reset the state of the change objects to show no changes. This means set previousKey to
+   * currentKey, and clear all of the queues (additions, moves, removals).
    */
   void _reset() {
     if (isDirty) {
@@ -999,6 +998,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     }
   }
 
+  /// Set the [previousIndex]es of moved and added items to their [currentIndex]es
+  /// Reset the list of additions, moves and removals
   void _undoDeltas() {
     ItemRecord<V> record;
 
@@ -1021,10 +1022,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     assert(isDirty == false);
   }
 
-  /**
-   * A [_CollectionChangeRecord] is considered dirty if it has additions, moves
-   * or removals.
-   */
+  /// A [_CollectionChangeRecord] is considered dirty if it has additions, moves or removals.
   bool get isDirty => _additionsHead != null ||
                       _movesHead != null ||
                       _removalsHead != null;
@@ -1032,8 +1030,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   /**
    * This is the core function which handles differences between collections.
    *
-   * - [record] is the record which we saw at this position last time. If
-   *   [:null:] then it is a new item.
+   * - [record] is the record which we saw at this position last time. If [:null:] then it is a new
+   *   item.
    * - [item] is the current item in the collection
    * - [index] is the position of the item in the collection
    */
@@ -1325,15 +1323,15 @@ class ItemRecord<V> extends CollectionChangeItem<V>  {
       : '$item[$previousIndex -> $currentIndex]';
 }
 
+/// A linked list of [ItemRecord]s with the same [ItemRecord.item]
 class _DuplicateItemRecordList {
   ItemRecord head, tail;
 
   /**
-   * Add the [record] before the [previousRecord] in the list of duplicates or
-   * at the end of the list when no [previousRecord] is specified.
+   * Add the [record] before the [insertBefore] in the list of duplicates or at the end of the list
+   * when no [insertBefore] is specified.
    *
-   * Note: by design all records in the list of duplicates hold the save value
-   * in [record.item].
+   * Note: by design all records in the list of duplicates hold the save value in [record.item].
    */
   void add(ItemRecord record, ItemRecord previousRecord) {
     assert(previousRecord == null || previousRecord.item == record.item);
@@ -1364,7 +1362,9 @@ class _DuplicateItemRecordList {
     }
   }
 
-  ItemRecord get(key, int hideIndex) {
+  /// Returns an [ItemRecord] having [ItemRecord.item] == [item] and [ItemRecord.currentIndex] >=
+  /// [hideIndex]
+  ItemRecord get(item, int hideIndex) {
     ItemRecord record;
     for (record = head; record != null; record = record._nextDup) {
       if ((hideIndex == null || hideIndex < record.currentIndex) &&
@@ -1378,7 +1378,7 @@ class _DuplicateItemRecordList {
   /**
    * Remove one [ItemRecord] from the list of duplicates.
    *
-   * Returns whether when the list of duplicates is empty.
+   * Returns whether the list of duplicates is empty.
    */
   bool remove(ItemRecord record) {
     assert(() {
@@ -1406,11 +1406,10 @@ class _DuplicateItemRecordList {
 }
 
 /**
- * [DuplicateMap] maps [ItemRecord.value] to a list of [ItemRecord] having the
- * same value (duplicates).
+ * [DuplicateMap] maps [ItemRecord.value] to a list of [ItemRecord] having the same value
+ * (duplicates).
  *
  * The list of duplicates is implemented by [_DuplicateItemRecordList].
- *
  */
 class DuplicateMap {
   final map = <dynamic, _DuplicateItemRecordList>{};
@@ -1421,13 +1420,11 @@ class DuplicateMap {
   }
 
   /**
-   * Retrieve the `value` using [key]. Because the [ItemRecord] value maybe one
-   * which we have already iterated over, we use the [hideIndex] to pretend it
-   * is not there.
+   * Retrieve the `value` using [key]. Because the [ItemRecord] value maybe one which we have
+   * already iterated over, we use the [hideIndex] to pretend it is not there.
    *
-   * Use case: `[a, b, c, a, a]` if we are at index `3` which is the second `a`
-   * then asking if we have any more `a`s needs to return the last `a` not the
-   * first or second.
+   * Use case: `[a, b, c, a, a]` if we are at index `3` which is the second `a` then asking if we
+   * have any more `a`s needs to return the last `a` not the first or second.
    */
   ItemRecord get(key, [int hideIndex]) {
     _DuplicateItemRecordList recordList = map[key];
