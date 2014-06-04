@@ -195,8 +195,6 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         try {
           for (var i = 0; i < 100000; i++) {
             if (i % 50 == 0) {
-              //print(steps);
-              //print('===================================');
               records = [];
               steps = [];
               detectors = [new DirtyCheckingChangeDetector<String>(getterFactory)];
