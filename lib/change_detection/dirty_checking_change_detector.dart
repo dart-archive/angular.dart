@@ -515,13 +515,13 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
 
     var last = currentValue;
     if (!identical(last, current)) {
-      if (last is String && current is String &&
-          last == current) {
+      if (last is String && current is String && last == current) {
         // This is false change in strings we need to recover, and pretend it
         // is the same. We save the value so that next time identity will pass
         currentValue = current;
       } else if (last is num && last.isNaN && current is num && current.isNaN) {
-        // we need this for the compiled JavaScript since in JS NaN !== NaN.
+        // Doubles are identical iff they have the same representation as 64-bit IEEE floating
+        // point numbers.
       } else {
         previousValue = last;
         currentValue = current;
@@ -1045,7 +1045,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       }
 
       if (item is num && (item as num).isNaN && record.item is num && (record.item as num).isNaN) {
-        // we need this for JavaScript since in JS NaN !== NaN.
+        // Doubles are identical iff they have the same representation as 64-bit IEEE floating
+        // point numbers.
         return record;
       }
     }
