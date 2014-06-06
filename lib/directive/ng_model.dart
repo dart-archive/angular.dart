@@ -268,7 +268,7 @@ class NgModel extends NgControl implements AttachAware {
 
 /**
  * Creates a two-way databinding between the `ng-model` expression
- * and the checkbox input element state.
+ * and the checkbox input element state. `Selector: input[type=checkbox][ng-model]`
  *
   * **Usage**
  *
@@ -279,21 +279,25 @@ class NgModel extends NgControl implements AttachAware {
  *            >
  *
  * If the optional `ng-true-value` is absent,
- *  - if the model expression evaluates to true or to a nonzero [:num:],
+ *
+ *  * if the model expression evaluates to true or to a nonzero [:num:],
  *    then the checkbox is checked
- *  - otherwise, the checkbox is unchecked
+ *  * otherwise, the checkbox is unchecked
  *
  * If `ng-true-value="t_expr"` is present,
- *  - if the model expression evaluates to the same value as `t_expr`, then the checkbox is checked
- *  - otherwise, it is unchecked.
+ *
+ *  * if the model expression evaluates to the same value as `t_expr`, then the checkbox is checked
+ *  * otherwise, it is unchecked.
  *
  * When the checkbox is checked,
- *  - the model is set to the value of `t_expr` if present
- *  - otherwise, the model is set to `true`
+ *
+ *  * the model is set to the value of `t_expr` if present
+ *  * otherwise, the model is set to `true`
  *
  * When the checkbox is unchecked,
- *  - the model is set to the value of `f_expr` if present
- *  - otherwise, the model is set to false.
+ *
+ *  * the model is set to the value of `f_expr` if present
+ *  * otherwise, the model is set to false.
  *
  * Also see [NgTrueValue] and [NgFalseValue].
  */
@@ -393,7 +397,7 @@ class InputTextLike {
 
 /**
  * Creates a two-way databinding between the `ng-model` expression
- * and a numeric input element.
+ * and a numeric input element. `Selector:input[type=number|range][ng-model]
  *
   * **Usage**
  *
@@ -546,15 +550,16 @@ class NgBindTypeForDateLike {
 
 /**
  * Controls the IDL attribute that reads the value of a date/time input,
- * to support browsers that deviate from the HTML5 standard for date/time.
+ * to support browsers that deviate from the HTML5 standard for date/time. `Selector:
+ * input[type=date|datetime|datetime-local|month|time|week][ng-model]`
  *
  * The [HTML5 Standard](http://www.w3.org/TR/html5/forms.html#the-input-element) for date/time
- * related inputs specifies that the [dom.InputElement.valueAsDate] and
- * [dom.InputElement.valueAsNumber] IDL attributes should be available for all date/time related
- * input types, except for `datetime-local` which is limited to [dom.InputElement.valueNumber].
+ * related inputs specifies that the `dom.InputElement.valueAsDate` and
+ * `dom.InputElement.valueAsNumber` IDL attributes should be available for all date/time related
+ * input types, except for `datetime-local` which is limited to `dom.InputElement.valueNumber`.
  *
  * This directive creates a two-way binding between the input and a model
- * property. The subordinate 'ng-bind-type' directive determines which input
+ * property. The subordinate `ng-bind-type` directive determines which input
  * IDL attribute is read (see [NgBindTypeForDateLike] for details) and
  * hence the type of the read values.
  *
@@ -760,7 +765,7 @@ class NgFalseValue {
 
 /**
  * Creates a two-way databinding between the `ng-model` expression
- * and the radio input elements in the DOM.
+ * and the radio input elements in the DOM. `Selector: input[type=radio][ng-model]`
  *
   * **Usage**
  *
@@ -811,7 +816,7 @@ class InputRadio {
 
 /**
  * Creates a two-way databinding between the expression specified in `ng-model` and the HTML element
- * in the DOM.
+ * in the DOM. `Selector: [contenteditable][ng-model]`
  *
   * **Usage**
  *
