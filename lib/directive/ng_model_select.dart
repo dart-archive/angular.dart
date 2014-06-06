@@ -1,21 +1,22 @@
 part of angular.directive;
 
 /**
- * HTML [SELECT] element with angular data-binding if used with
- * [NgModel].
+ * Modifies the behavior of the HTML `<select>` element to perform data binding between the
+ * `option.value` attribute and the model. `Selector: select[ng-model]`
  *
- * The [NgModel] will receive the currently selected item. The binding
- * is performed on the [OPTION].[value] property. An empty [OPTION].[value] is
- * treated as null.
+ * An empty `option.value` is treated as null. If the model specifies a value which does not map
+ * to an existing option,  a new unknown option is inserted into the list. Once the model again
+ * points to an existing option, the unknown option is removed.
  *
- * If you the model contains value which does not map to any [OPTION] then a new
- * unknown [OPTION] is inserted into the list. Once the model points to an
- * existing [OPTION] the unknown [OPTION] is removed.
+ * # Example
+ *     <select ng-model="robot">
+ *       <option value="Marvin" selected>Marvin</option>
+ *       <option value="Speedy">Speedy</option>
+ *       <option value="Tik-Tok">Tik-Tok</option>
+ *     </select>
  *
- * Because [OPTION].[value] attribute is a string, the model is bound to a
- * string. If there is need to bind to an object then [OptionValue]
- * should be used.
- *
+ * Note: The `option.value` attribute for the `<select>` element is defined as a string. To bind to
+ * an object for `option.value`, see the [OptionValue] directive.
  */
 @Decorator(
     selector: 'select[ng-model]')
@@ -85,9 +86,15 @@ class InputSelect implements AttachAware {
 }
 
 /**
- * Since the [value] attribute of the [OPTION] can only be a string, Angular
- * provides [ng-value] which allows binding to any expression.
+ * Modifies the behavior of the HTML `<option>` element to perform data binding between an
+ * expression for the `option.value` attribute and the model. `Selector: option[ng-value]`
  *
+ * # Example
+ *     <select ng-model="robot">
+ *       <option ng-repeat "r in robots" ng-value="r">{{r.name}}</option>
+ *     </select>
+ *
+ * Note: See [InputSelect] for the simpler case where `option.value` is a string.
  */
 @Decorator(selector: 'option', module: NgValue.moduleFactory)
 class OptionValue implements AttachAware,
