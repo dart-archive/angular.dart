@@ -1,9 +1,9 @@
 part of angular.directive;
 
 /**
- * The form directive listens on submission requests and, depending,
- * on if an action is set, the form will automatically either allow
- * or prevent the default browser submission from occurring.
+ * Listens on form submission requests and if an action is set, either allows or
+ * prevents the default browser form submission action from occurring. `Selector: [ng-form]` or
+ * `.ng-form` or `form` or `fieldset`
  */
 @Decorator(
     selector: 'form',

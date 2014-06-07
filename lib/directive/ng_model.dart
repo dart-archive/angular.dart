@@ -717,7 +717,7 @@ class NgValue {
 
 /**
  * Assigns the value of a bound expression to the model when an input checkbox is
- * checked.
+ * checked. `Selector: input[type=checkbox][ng-model][ng-true-value]`
  *
   * **Usage**
  *
@@ -741,9 +741,9 @@ class NgTrueValue {
 
 /**
  * Assigns the value of a bound expression to the model when an input checkbox is
- * unchecked.
+ * unchecked. `Selector: input[type=checkbox][ng-model][ng-false-value]`
  *
-  * **Usage**
+ * **Usage**
  *
  *     <input type=checkbox
  *            ng-model=model
