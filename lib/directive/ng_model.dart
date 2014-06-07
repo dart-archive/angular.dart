@@ -332,9 +332,10 @@ class InputCheckbox {
 
 /**
  * Creates a two-way databinding between the `ng-model` expression
- * and the `<input>` or `<textarea>` string-based input elements.
+ * and the `<input>` or `<textarea>` string-based input elements.  `Selector: textarea[ng-model]`
+ * or `input[type=text|password|url|email|search|tel][ng-model]`
  *
-  * **Usage**
+ * **Usage**
  *
  *     <input type="text|url|password|email|search|tel" ng-model="myModel">
  *     <textarea ng-model="myModel"></textarea>
@@ -397,7 +398,7 @@ class InputTextLike {
 
 /**
  * Creates a two-way databinding between the `ng-model` expression
- * and a numeric input element. `Selector:input[type=number|range][ng-model]
+ * and a numeric input element. `Selector:input[type=number|range][ng-model]`
  *
   * **Usage**
  *
@@ -469,17 +470,17 @@ class InputNumberLike {
 }
 
 /**
- * This directive affects which IDL attribute will be used to read the value of
- * date/time related input directives. Recognized values for this directive are:
+ * Subordinate directive to [InputDateLike] that specifies the type for date/time related values.
+ * `Selector: input[type=date|time|datetime|datetime-local|month|week][ng-model][ng-bind-type]`
  *
- * - [DATE]: [dom.InputElement].valueAsDate will be read.
- * - [NUMBER]: [dom.InputElement].valueAsNumber will be read.
- * - [STRING]: [dom.InputElement].value will be read.
+ * This directive controls which IDL attribute is read and thus sets the type. This allows an app
+ * to support browsers that deviate from the HTML5 standard for date/time.
  *
- * The default is [DATE]. Use other settings, e.g., when an app needs to support
- * browsers that treat date-like inputs as text (in such a case the [STRING]
- * kind would be appropriate) or, for browsers that fail to conform to the
- * HTML5 standard in their processing of date-like inputs.
+ * Recognized values for this directive are:
+ *
+ * - [DATE]: `dom.InputElement.valueAsDate` is read. (This is the default.)
+ * - [NUMBER]: `dom.InputElement.valueAsNumber` is read.
+ * - [STRING]: `dom.InputElement.value` is read.
  */
 @Decorator(selector: 'input[type=date][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
 @Decorator(selector: 'input[type=time][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
