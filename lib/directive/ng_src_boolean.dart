@@ -1,26 +1,21 @@
 part of angular.directive;
 
 /**
- * Allows adding and removing the boolean attributes from the element.
+ * Sets boolean HTML attributes as true or false. `Selector:
+ * [ng-checked]` or `[ng-disabled]` or `[ng-multiple]` or `[ng-open]` or `[ng-readonly]` or
+ * `[ng-required]` or `[ng-selected]`
  *
- * Using `<button disabled="{{false}}">` does not work since it would result
- * in `<button disabled="false">` rather than `<button>`.
- * Browsers change behavior based on presence/absence of the attribute rather
- * its value.
+ * Since the presence of a boolean attribute on an element represents the true value,
+ * and the absence of the attribute represents the false value, `<button disabled="{{false}}">`
+ * would produce `<button disabled="false">` (which disables the button) rather than the desired
+ * result: `<button>`.
  *
- * For this reason we provide alternate `ng-`attribute directives to
- * add/remove boolean attributes such as `<button ng-disabled="{{false}}">`
- * which will result in proper removal of the attribute.
+ * Angular provides alternate `ng-`attribute directives that set elements to true or false
+ * by adding or removing boolean attributes as needed.
  *
- * The full list of supported attributes are:
+ * #Example
  *
- *  - [ng-checked]
- *  - [ng-disabled]
- *  - [ng-multiple]
- *  - [ng-open]
- *  - [ng-readonly]
- *  - [ng-required]
- *  - [ng-selected]
+ *     <button ng-disabled="isDisabled">Button</button>
  */
 @Decorator(selector: '[ng-checked]',  map: const {'ng-checked':  '=>checked'})
 @Decorator(selector: '[ng-disabled]', map: const {'ng-disabled': '=>disabled'})
@@ -82,14 +77,15 @@ class NgSource {
 }
 
 /**
- * In SVG some attributes have a specific syntax. Placing `{{interpolation}}` in
- * those attributes will break the attribute syntax, and browser will clear the
- * attribute.
+ * Provides a generic way to use `{{ }}` interpolation for attributes within validated SVG
+ * elements. `Selector: [ng-attr-*]`
  *
- * The `ng-attr-*` is a generic way to use interpolation without breaking the
- * attribute syntax validator. The `ng-attr-` part get stripped.
+ * Because the browser validates SVG syntax, using `{{interpolation}}` inside some validated
+ * `<svg>` elements causes the browser to ignore the interpolated value. The `ng-attr-*` selector
+ * inserts `{{ }}` into the element without breaking validation. (The `ng-attr-` part is stripped
+ * out during rendering.)
  *
- * @example
+ * #Example
  *     <svg>
  *       <circle ng-attr-cx="{{cx}}"></circle>
  *     </svg>
