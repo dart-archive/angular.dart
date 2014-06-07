@@ -32,7 +32,7 @@ main() => describe('ElementBinderBuilder', () {
 
   beforeEach((DirectiveMap d, ElementBinderFactory f) {
     directives = d;
-    b = f.builder(null);
+    b = f.builder(null, null);
   });
 
   addDirective(selector) {
@@ -49,17 +49,17 @@ main() => describe('ElementBinderBuilder', () {
     addDirective('[directive]');
 
     expect(b.decorators.length).toEqual(1);
-    expect(b.component).toBeNull();
+    expect(b.componentData).toBeNull();
     expect(b.childMode).toEqual(Directive.COMPILE_CHILDREN);
 
   });
 
-  it('should add a component', () {
+  it('should add a component', async(() {
     addDirective('component');
 
     expect(b.decorators.length).toEqual(0);
-    expect(b.component).toBeNotNull();
-  });
+    expect(b.componentData).toBeNotNull();
+  }));
 
   it('should add a template', () {
     addDirective('[structural]');
@@ -71,7 +71,7 @@ main() => describe('ElementBinderBuilder', () {
     addDirective('[ignore-children]');
 
     expect(b.decorators.length).toEqual(1);
-    expect(b.component).toBeNull();
+    expect(b.componentData).toBeNull();
     expect(b.childMode).toEqual(Directive.IGNORE_CHILDREN);
   });
 });
