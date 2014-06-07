@@ -82,25 +82,17 @@ class NgClass extends _NgClassBase {
 }
 
 /**
- * Dynamically style only odd rows in a list via data.
+ * Dynamically style only odd rows in an `ng-repeat` list. `Selector: [ng-class-odd]`
  *
- * The `ngClassOdd` and `ngClassEven` directives work exactly as
- * {@link ng.directive:ngClass ngClass}, except it works in
- * conjunction with `ngRepeat` and takes affect only on odd (even) rows.
+ * This directive works exactly as [ngClass] with regard to String, Array,
+ * and Map syntax for associating CSS classes with an element, but only affects odd rows in a
+ * list.
  *
- * This directive can be applied only within a scope of an `ngRepeat`.
+ * Also see [ngClassEven], which applies CSS classes to even rows.
  *
- * ##Examples
- *
- * index.html:
- *
- *     <li ng-repeat="name in ['John', 'Mary', 'Cate', 'Suz']">
- *       <span ng-class-odd="'odd'" ng-class-even="'even'">
- *         {{name}}
- *       </span>
- *     </li>
- *
- * style.css:
+ * ##Example
+ * Let's assume that we have a simple stylesheet that defines two CSS classes for the following
+ * example.
  *
  *     .odd {
  *       color: red;
@@ -108,6 +100,14 @@ class NgClass extends _NgClassBase {
  *     .even {
  *       color: blue;
  *     }
+ *
+ * The following template applies these classes to the odd and even rows respectively:
+ *
+ *     <li ng-repeat="name in ['John', 'Mary', 'Cate', 'Suz']">
+ *       <span ng-class-odd="'odd'" ng-class-even="'even'">
+ *         {{name}}
+ *       </span>
+ *     </li>
  */
 @Decorator(
     selector: '[ng-class-odd]',
@@ -119,23 +119,17 @@ class NgClassOdd extends _NgClassBase {
 }
 
 /**
- * The `ngClassOdd` and `ngClassEven` directives work exactly as
- * {@link ng.directive:ngClass ngClass}, except it works in
- * conjunction with `ngRepeat` and takes affect only on odd (even) rows.
+ * Dynamically style only even rows in an `ng-repeat` list. `Selector: [ng-class-even]`
  *
- * This directive can be applied only within a scope of an `ngRepeat`.
+ * This directive works exactly as [ngClass] with regard to String, Array,
+ * and Map syntax for associating CSS classes with an element, but only affects even rows in a
+ * list.
  *
- * ##Examples
+ * Also see [ngClassEven], which applies CSS classes to even rows.
  *
- * index.html:
- *
- *     <li ng-repeat="name in ['John', 'Mary', 'Cate', 'Suz']">
- *       <span ng-class-odd="'odd'" ng-class-even="'even'">
- *         {{name}}
- *       </span>
- *     </li>
- *
- * style.css:
+ * ##Example
+ * Let's assume that we have a simple stylesheet that defines two CSS classes for the following
+ * example.
  *
  *     .odd {
  *       color: red;
@@ -143,6 +137,14 @@ class NgClassOdd extends _NgClassBase {
  *     .even {
  *       color: blue;
  *     }
+ *
+ * The following template applies these classes to the odd and even rows respectively:
+ *
+ *     <li ng-repeat="name in ['John', 'Mary', 'Cate', 'Suz']">
+ *       <span ng-class-odd="'odd'" ng-class-even="'even'">
+ *         {{name}}
+ *       </span>
+ *     </li>
  */
 @Decorator(
     selector: '[ng-class-even]',
