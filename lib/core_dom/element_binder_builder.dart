@@ -6,29 +6,25 @@ class ElementBinderFactory {
   final Profiler _perf;
   final CompilerConfig _config;
   final Expando _expando;
-  final ComponentFactory _componentFactory;
-  final TranscludingComponentFactory _transcludingComponentFactory;
-  final ShadowDomComponentFactory _shadowDomComponentFactory;
-  final ASTParser _astParser;
+  final ASTParser astParser;
+  final ComponentFactory componentFactory;
+  final ShadowDomComponentFactory shadowDomComponentFactory;
+  final TranscludingComponentFactory transcludingComponentFactory;
 
   ElementBinderFactory(this._parser, this._perf, this._config, this._expando,
-      this._componentFactory,
-      this._transcludingComponentFactory,
-      this._shadowDomComponentFactory,
-      this._astParser);
+      this.astParser, this.componentFactory, this.shadowDomComponentFactory, this.transcludingComponentFactory);
 
   // TODO: Optimize this to re-use a builder.
-  ElementBinderBuilder builder(FormatterMap formatters) =>
-    new ElementBinderBuilder(this, _astParser, formatters);
+  ElementBinderBuilder builder(FormatterMap formatters, DirectiveMap directives) =>
+    new ElementBinderBuilder(this,formatters, directives);
 
   ElementBinder binder(ElementBinderBuilder b) =>
-      new ElementBinder(_perf, _expando, _parser, _config, _componentFactory,
-          _transcludingComponentFactory, _shadowDomComponentFactory,
-          b.component, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
+
+      new ElementBinder(_perf, _expando, _parser, _config,
+          b.componentData, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
 
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
-      new TemplateElementBinder(_perf, _expando, _parser, _config, _componentFactory,
-          _transcludingComponentFactory, _shadowDomComponentFactory,
+      new TemplateElementBinder(_perf, _expando, _parser, _config,
           b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
 }
 
@@ -39,9 +35,9 @@ class ElementBinderFactory {
 class ElementBinderBuilder {
   static final RegExp _MAPPING = new RegExp(r'^(@|=>!|=>|<=>|&)\s*(.*)$');
 
-  ElementBinderFactory _factory;
-  ASTParser _astParser;
-  FormatterMap _formatters;
+  final ElementBinderFactory _factory;
+  final DirectiveMap _directives;
+  final FormatterMap _formatters;
 
   /// "on-*" attribute names and values, added by a [DirectiveSelector]
   final onEvents = <String, String>{};
@@ -50,12 +46,12 @@ class ElementBinderBuilder {
 
   final decorators = <DirectiveRef>[];
   DirectiveRef template;
-  DirectiveRef component;
+  BoundComponentData componentData;
 
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   String childMode = Directive.COMPILE_CHILDREN;
 
-  ElementBinderBuilder(this._factory, this._astParser, this._formatters);
+  ElementBinderBuilder(this._factory, this._formatters, this._directives);
 
   /**
    * Adds [DirectiveRef]s to this [ElementBinderBuilder].
@@ -73,7 +69,17 @@ class ElementBinderBuilder {
     if (annotation.children == Directive.TRANSCLUDE_CHILDREN) {
       template = ref;
     } else if (annotation is Component) {
-      component = ref;
+      ComponentFactory factory;
+      var annotation = ref.annotation as Component;
+      if (annotation.useShadowDom == true) {
+        factory = _factory.shadowDomComponentFactory;
+      } else if (annotation.useShadowDom == false) {
+        factory = _factory.transcludingComponentFactory;
+      } else {
+        factory = _factory.componentFactory;
+      }
+
+      componentData = new BoundComponentData(ref, () => factory.bind(ref, _directives));
     } else {
       decorators.add(ref);
     }
@@ -92,14 +98,14 @@ class ElementBinderBuilder {
         var dstPath = match[2];
 
         String dstExpression = dstPath.isEmpty ? attrName : dstPath;
-        AST dstAST = _astParser(dstExpression); // no formatters
+        AST dstAST = _factory.astParser(dstExpression); // no formatters
 
         // Look up the value of attrName and compute an AST
         AST ast;
         if (mode != '@' && mode != '&') {
           var value = attrName == "." ? ref.value : (ref.element as dom.Element).attributes[attrName];
           if (value == null || value.isEmpty) { value = "''"; }
-          ast = _astParser(value, formatters: _formatters);
+          ast = _factory.astParser(value, formatters: _formatters);
         }
 
         ref.mappings.add(new MappingParts(attrName, ast, mode, dstAST, mapping));
@@ -112,4 +118,31 @@ class ElementBinderBuilder {
     var elBinder = _factory.binder(this);
     return template == null ? elBinder : _factory.templateBinder(this, elBinder);
   }
+}
+
+/**
+ * Data used by the ComponentFactory to construct components.
+ */
+class BoundComponentData {
+  final DirectiveRef ref;
+  BoundComponentFactory _instance;
+  Function _gen;
+  BoundComponentFactory get factory {
+    if (_instance != null) return _instance;
+    _instance = _gen();
+    _gen = null; // Clear the gen function for GC.
+    return _instance;
+  }
+
+  Component get component => ref.annotation as Component;
+  @Deprecated('Use typeKey instead')
+  Type get type => ref.type;
+  Key get typeKey => ref.typeKey;
+
+
+  /**
+   * * [ref]: The components directive ref
+   * * [_gen]: A function which returns a [BoundComponentFactory].  Called lazily.
+   */
+  BoundComponentData(this.ref, this._gen);
 }

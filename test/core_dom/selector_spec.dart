@@ -138,7 +138,7 @@ main() {
         ]));
       });
 
-      it('should sort by priority', () {
+      it('should sort by priority', async(() {
         TemplateElementBinder eb = selector(element = e(
             '<component attribute ignore-children structural></component>'));
         expect(eb,
@@ -154,7 +154,7 @@ main() {
 
             ],
             component: { "selector": "component", "value": null, "element": element }));
-      });
+      }));
 
       it('should match on multiple directives', () {
         expect(selector(element = e('<div directive="d" foo="f"></div>')),
@@ -275,7 +275,7 @@ class DirectiveInfosMatcher extends Matcher {
       pass = pass && _refMatches((binder as TemplateElementBinder).template, expectedTemplate);
     }
     if (pass && expectedComponent != null) {
-      pass = pass && _refMatches(binder.component, expectedComponent);
+      pass = pass && _refMatches(binder.componentData.ref, expectedComponent);
     }
     return pass;
   }
