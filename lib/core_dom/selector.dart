@@ -59,7 +59,7 @@ class DirectiveSelector {
   ElementBinder matchElement(dom.Node node) {
     assert(node is dom.Element);
 
-    ElementBinderBuilder builder = _binderFactory.builder(_formatters);
+    ElementBinderBuilder builder = _binderFactory.builder(_formatters, _directives);
     List<_ElementSelector> partialSelection;
     final classes = new Set<String>();
     final attrs = <String, String>{};
@@ -129,7 +129,7 @@ class DirectiveSelector {
   }
 
   ElementBinder matchText(dom.Node node) {
-    ElementBinderBuilder builder = _binderFactory.builder(_formatters);
+    ElementBinderBuilder builder = _binderFactory.builder(_formatters, _directives);
 
     var value = node.nodeValue;
     for (var k = 0; k < textSelector.length; k++) {
@@ -148,7 +148,7 @@ class DirectiveSelector {
     return builder.binder;
   }
 
-  ElementBinder matchComment(dom.Node node) => _binderFactory.builder(null).binder;
+  ElementBinder matchComment(dom.Node node) => _binderFactory.builder(null, null).binder;
 }
 
 /**
