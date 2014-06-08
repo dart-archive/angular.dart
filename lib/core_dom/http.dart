@@ -69,7 +69,7 @@ class HttpInterceptor {
 class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   Function request = (HttpResponseConfig config) {
     if (config.data != null && config.data is! String &&
-        config.data is! dom.File) {
+        config.data is! dom.File && config.data is! dom.FormData) {
       config.data = JSON.encode(config.data);
     }
     return config;
