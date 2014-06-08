@@ -108,7 +108,7 @@ main() {
 
 
     it('should gracefully handle ref changing to null and back', () {
-      scope.context['items'] = ['odin', 'dva',];
+      scope.context['items'] = ['odin', 'dva'];
       element = compile(
         '<div>'
           '<ul>'
@@ -121,6 +121,32 @@ main() {
       expect(element.text).toEqual('odin;dva;');
 
       scope.context['items'] = null;
+      scope.apply();
+      expect(element.querySelectorAll('ul').length).toEqual(1);
+      expect(element.querySelectorAll('li').length).toEqual(0);
+      expect(element.text).toEqual('');
+
+      scope.context['items'] = ['odin', 'dva', 'tri'];
+      scope.apply();
+      expect(element.querySelectorAll('ul').length).toEqual(1);
+      expect(element.querySelectorAll('li').length).toEqual(3);
+      expect(element.text).toEqual('odin;dva;tri;');
+    });
+
+    it('should gracefully handle ref changing to non-list and back', () {
+      scope.context['items'] = ['odin', 'dva'];
+      element = compile(
+        '<div>'
+          '<ul>'
+            '<li ng-repeat="item in items">{{item}};</li>'
+          '</ul>'
+        '</div>');
+      scope.apply();
+      expect(element.querySelectorAll('ul').length).toEqual(1);
+      expect(element.querySelectorAll('li').length).toEqual(2);
+      expect(element.text).toEqual('odin;dva;');
+
+      scope.context['items'] = 'string';
       scope.apply();
       expect(element.querySelectorAll('ul').length).toEqual(1);
       expect(element.querySelectorAll('li').length).toEqual(0);
