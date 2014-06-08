@@ -244,23 +244,35 @@ class HttpDefaultHeaders {
     'PATCH' : {'Content-Type': _defaultContentType}
   };
 
-  _applyHeaders(method, ucHeaders, headers) {
+  _applyHeaders(method, ucHeaders, headers, data) {
     if (!_headers.containsKey(method)) return;
+    final removeContentTypeHeader = data != null && data is dom.FormData;
+    String contentTypeHeader;
     _headers[method].forEach((k, v) {
-      if (!ucHeaders.contains(k.toUpperCase())) {
+      final kUpper = k.toUpperCase();
+      if(removeContentTypeHeader && kUpper == 'CONTENT-TYPE') {
+        contentTypeHeader = k;
+      }
+      
+      if (!ucHeaders.contains(kUpper) 
+          && !(kUpper == 'CONTENT-TYPE' && removeContentTypeHeader)) {
         headers[k] = v;
       }
     });
+    
+    if(removeContentTypeHeader && contentTypeHeader != null) {
+      headers.remove(contentTypeHeader);
+    }
   }
 
   /**
    * Called from [Http], this method sets default headers on [headers]
    */
-  setHeaders(Map<String, String> headers, String method) {
+  setHeaders(Map<String, String> headers, String method, dynamic data) {
     assert(headers != null);
     var ucHeaders = headers.keys.map((x) => x.toUpperCase()).toSet();
-    _applyHeaders('COMMON', ucHeaders, headers);
-    _applyHeaders(method.toUpperCase(), ucHeaders, headers);
+    _applyHeaders('COMMON', ucHeaders, headers, data);
+    _applyHeaders(method.toUpperCase(), ucHeaders, headers, data);
   }
 
   /**
@@ -344,8 +356,9 @@ class HttpDefaults {
  * can be configured using the [HttpDefaultHeaders] object.  The defaults are:
  *
  * - For all requests: `Accept: application/json, text/plain, * / *`
- * - For POST, PUT, PATCH requests: `Content-Type: application/json`
- *
+ * - For POST, PUT, PATCH requests that supply [dom.FormData]: `Content-Type: multipart/form-data`
+ * - For all other POST, PUT, PATCH requests: `Content-Type: application/json`
+ *   
  * # Caching
  *
  * To enable caching, pass a [Cache] object into the [call] method.  The [Http]
@@ -442,7 +455,7 @@ class Http {
     method = method.toUpperCase();
 
     if (headers == null) headers = {};
-    defaults.headers.setHeaders(headers, method);
+    defaults.headers.setHeaders(headers, method, data);
 
     var xsrfValue = _urlIsSameOrigin(url) ?
         _cookies[xsrfCookieName != null ? xsrfCookieName : defaults.xsrfCookieName] :
