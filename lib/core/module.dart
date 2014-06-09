@@ -28,6 +28,7 @@ export "package:angular/core_dom/module_internal.dart" show
     BrowserCookies,
     Cache,
     Compiler,
+    CompilerConfig,
     Cookies,
     BoundViewFactory,
     DirectiveMap,

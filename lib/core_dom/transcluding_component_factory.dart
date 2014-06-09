@@ -71,8 +71,9 @@ class ContentPort {
 @Injectable()
 class TranscludingComponentFactory implements ComponentFactory {
   final Expando _expando;
+  final CompilerConfig _config;
 
-  TranscludingComponentFactory(this._expando);
+  TranscludingComponentFactory(this._expando, this._config);
 
   FactoryFn call(dom.Node node, DirectiveRef ref) {
     // CSS is not supported.
@@ -116,8 +117,11 @@ class TranscludingComponentFactory implements ComponentFactory {
           ..bind(ContentPort, toValue: contentPort)
           ..bind(Scope, toValue: shadowScope)
           ..bind(TemplateLoader, toValue: templateLoader)
-          ..bind(dom.ShadowRoot, toValue: new ShadowlessShadowRoot(element))
-          ..bind(ElementProbe, toFactory: (_) => probe);
+          ..bind(dom.ShadowRoot, toValue: new ShadowlessShadowRoot(element));
+
+      if (_config.elementProbeEnabled) {
+       childModule.bind(ElementProbe, toFactory: (_) => probe);
+      }
       childInjector = injector.createChild([childModule], name: SHADOW_DOM_INJECTOR_NAME);
 
       var controller = childInjector.get(ref.type);

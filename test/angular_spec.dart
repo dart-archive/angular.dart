@@ -115,6 +115,7 @@ main() {
         "angular.core.dom_internal.BoundViewFactory",
         "angular.core.dom_internal.BrowserCookies",
         "angular.core.dom_internal.Compiler",
+        "angular.core.dom_internal.CompilerConfig",
         "angular.core.dom_internal.Cookies",
         "angular.core.dom_internal.DirectiveMap",
         "angular.core.dom_internal.ElementProbe",
