@@ -35,7 +35,7 @@ window.addEventListener('DOMContentLoaded', function() {
   btn.innerText = "Loop";
   var running = false;
   btn.addEventListener('click', loopBenchmark);
-  
+
   container.appendChild(btn);
 
   function loopBenchmark() {
@@ -50,10 +50,10 @@ window.addEventListener('DOMContentLoaded', function() {
           if (running) {
             window.requestAnimationFrame(function() {
               if (running) runBenchmarkSteps(loopB);
-            });  
+            });
           }
         };
-        loopB();  
+        loopB();
       });
     }
   }
@@ -68,7 +68,7 @@ window.addEventListener('DOMContentLoaded', function() {
         runBenchmarkSteps(function() {
           onceBtn.innerText = "Once";
         });
-      });  
+      });
     });
   });
   container.appendChild(onceBtn);
@@ -99,6 +99,9 @@ window.addEventListener('DOMContentLoaded', function() {
     // Run all the steps;
     var times = {};
     window.benchmarkSteps.forEach(function(bs) {
+      if (typeof window.gc === 'function') {
+        window.gc();
+      }
       var startTime = numMilliseconds();
       bs.fn();
       times[bs.name] = numMilliseconds() - startTime;
@@ -109,7 +112,7 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 
   var timesPerAction = {};
-   
+
   var NUM_SAMPLES = 10;
   function calcStats(times) {
     var iH = '';
