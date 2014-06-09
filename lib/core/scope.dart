@@ -301,9 +301,10 @@ class Scope {
     } catch (e, s) {
       rootScope._exceptionHandler(e, s);
     } finally {
-      rootScope.._transitionState(RootScope.STATE_APPLY, null)
-               ..digest()
-               ..flush();
+      rootScope.._transitionState(RootScope.STATE_APPLY, null);
+      do {
+        rootScope..digest()..flush();
+      } while (rootScope._runAsyncHead != null);
     }
   }
 
@@ -644,6 +645,7 @@ class RootScope extends Scope {
   {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
+    _zone.onScheduleMicrotask = runAsync;
   }
 
   RootScope get rootScope => this;
@@ -679,15 +681,8 @@ class RootScope extends Scope {
       ChangeLog changeLog;
       _scopeStats.digestStart();
       do {
-        while (_runAsyncHead != null) {
-          try {
-            _runAsyncHead.fn();
-          } catch (e, s) {
-            _exceptionHandler(e, s);
-          }
-          _runAsyncHead = _runAsyncHead._next;
-        }
-        _runAsyncTail = null;
+
+        int asyncCount = _runAsyncFns();
 
         digestTTL--;
         count = rootWatchGroup.detectChanges(
@@ -703,7 +698,7 @@ class RootScope extends Scope {
             digestLog = [];
             changeLog = (e, c, p) => digestLog.add('$e: $c <= $p');
           } else {
-            log.add(digestLog.join(', '));
+            log.add("${asyncCount > 0 ? 'async:$asyncCount' : ''}${digestLog.join(', ')}");
             digestLog.clear();
           }
         }
@@ -712,7 +707,7 @@ class RootScope extends Scope {
                 'Last $LOG_COUNT iterations:\n${log.join('\n')}';
         }
         _scopeStats.digestLoop(count);
-      } while (count > 0);
+      } while (count > 0 || _runAsyncHead != null);
     } finally {
       _scopeStats.digestEnd();
       _transitionState(STATE_DIGEST, null);
@@ -787,12 +782,30 @@ class RootScope extends Scope {
 
   // QUEUES
   void runAsync(fn()) {
+    if (_state == STATE_FLUSH_ASSERT) {
+      throw "Scheduling microtasks not allowed in $state state.";
+    }
     var chain = new _FunctionChain(fn);
     if (_runAsyncHead == null) {
       _runAsyncHead = _runAsyncTail = chain;
     } else {
       _runAsyncTail = _runAsyncTail._next = chain;
     }
+  }
+
+  _runAsyncFns() {
+    var count = 0;
+    while (_runAsyncHead != null) {
+      try {
+        count++;
+        _runAsyncHead.fn();
+      } catch (e, s) {
+        _exceptionHandler(e, s);
+      }
+      _runAsyncHead = _runAsyncHead._next;
+    }
+    _runAsyncTail = null;
+    return count;
   }
 
   void domWrite(fn()) {

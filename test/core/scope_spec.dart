@@ -1227,6 +1227,20 @@ void main() {
       });
 
 
+      it(r'should detect infinite digest through runAsync', (RootScope rootScope) {
+        rootScope.context['value'] = () { rootScope.runAsync(() {}); return 'a'; };
+        rootScope.watch('value()', (_, __) {});
+
+        expect(() {
+          rootScope.digest();
+        }).toThrow('Model did not stabilize in 5 digests. '
+        'Last 3 iterations:\n'
+        'async:1\n'
+        'async:1\n'
+        'async:1');
+      });
+
+
       it(r'should always call the watchr with newVal and oldVal equal on the first run',
       inject((RootScope rootScope) {
         var log = [];
@@ -1440,6 +1454,105 @@ void main() {
       });
     });
 
+    describe('microtask processing', () {
+      beforeEach((VmTurnZone zone, RootScope scope, Logger log) {
+        var onTurnDone = zone.onTurnDone;
+        zone.onTurnDone = () {
+          log('[');
+          onTurnDone();
+          log(']');
+        };
+        var onScheduleMicrotask = zone.onScheduleMicrotask;
+        zone.onScheduleMicrotask = (fn) {
+          log('(');
+          try {
+            onScheduleMicrotask(fn);
+          } catch (e) {
+            log('CATCH: $e');
+          }
+          log(')');
+        };
+      });
+
+      it('should schedule apply after future resolution',
+        async((Logger log, VmTurnZone zone, RootScope scope) {
+          Completer completer;
+          zone.run(() {
+            completer = new Completer();
+            completer.future.then((value) {
+              log('then($value)');
+            });
+          });
+
+          scope.runAsync(() => log('before'));
+          log.clear();
+          completer.complete('OK'); // this one causes APPLY which processe 'before'
+          // This one schedules work but apply already run so it does not execute.
+          scope.runAsync(() => log('NOT_EXECUTED'));
+
+          expect(log).toEqual(['(', ')', '[', 'before', 'then(OK)', ']']);
+        })
+      );
+
+      it('should schedule microtask to runAsync queue during digest',
+        async((Logger log, VmTurnZone zone, RootScope scope) {
+          Completer completer;
+          zone.run(() {
+            completer = new Completer();
+            completer.future.
+              then((value) {
+                scope.runAsync(() => log('in(${scope.state})'));
+                return new Future.value(value);
+              }).
+              then((value) {
+                log('then($value)');
+              });
+          });
+          log.clear();
+          completer.complete('OK');
+          expect(log).toEqual(['(', ')', '[', '(', ')', 'in(digest)', 'then(OK)', ']']);
+        })
+      );
+
+      it('should allow microtasks in flush phase, but will trigger another digest',
+        async((Logger log, VmTurnZone zone, RootScope scope) {
+          scope.watch('g()', (_, __) {});
+          scope.context['g'] = () {
+            log('!');
+            return 0;
+          };
+
+          zone.run(() {
+            scope.domWrite(() {
+              log('domWriteA');
+              return new Future.value(null).then((_) => scope.domWrite(() => log('domWriteB')));
+            });
+          });
+          expect(log).toEqual(
+              ['[', '!', '!', 'domWriteA', '(', ')', '!', '!', 'domWriteB', /* assert */'!', ']']);
+        })
+      );
+
+      it('should allow creation of Completers in flush phase',
+        async((Logger log, VmTurnZone zone, RootScope scope) {
+          Completer completer;
+          zone.run(() {
+            scope.domWrite(() {
+              log('new Completer');
+              completer = new Completer();
+              completer.future.then((value) {
+                log('then($value)');
+              });
+            });
+          });
+          log('=');
+          completer.complete('OK');
+          log(';');
+          expect(log).toEqual(
+              ['[', 'new Completer', ']', '=', '(', ')', '[', 'then(OK)', ']', ';']);
+        })
+      );
+    });
 
     describe('domRead/domWrite', () {
       beforeEachModule((Module module) {
