@@ -4,14 +4,17 @@ part of angular.core.dom_internal;
 class ElementBinderFactory {
   final Parser _parser;
   final Profiler _perf;
+  final CompilerConfig _config;
   final Expando _expando;
   final ComponentFactory _componentFactory;
   final TranscludingComponentFactory _transcludingComponentFactory;
   final ShadowDomComponentFactory _shadowDomComponentFactory;
   final ASTParser _astParser;
 
-  ElementBinderFactory(this._parser, this._perf, this._expando, this._componentFactory,
-      this._transcludingComponentFactory, this._shadowDomComponentFactory,
+  ElementBinderFactory(this._parser, this._perf, this._config, this._expando,
+      this._componentFactory,
+      this._transcludingComponentFactory,
+      this._shadowDomComponentFactory,
       this._astParser);
 
   // TODO: Optimize this to re-use a builder.
@@ -19,12 +22,12 @@ class ElementBinderFactory {
     new ElementBinderBuilder(this, _astParser, formatters);
 
   ElementBinder binder(ElementBinderBuilder b) =>
-      new ElementBinder(_perf, _expando, _parser, _componentFactory,
+      new ElementBinder(_perf, _expando, _parser, _config, _componentFactory,
           _transcludingComponentFactory, _shadowDomComponentFactory,
           b.component, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
 
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
-      new TemplateElementBinder(_perf, _expando, _parser, _componentFactory,
+      new TemplateElementBinder(_perf, _expando, _parser, _config, _componentFactory,
           _transcludingComponentFactory, _shadowDomComponentFactory,
           b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
 }
