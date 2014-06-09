@@ -28,8 +28,9 @@ abstract class ComponentFactory {
 @Injectable()
 class ShadowDomComponentFactory implements ComponentFactory {
   final Expando _expando;
+  final CompilerConfig _config;
 
-  ShadowDomComponentFactory(this._expando);
+  ShadowDomComponentFactory(this._expando, this._config);
 
   final Map<_ComponentAssetKey, async.Future<dom.StyleElement>> _styleElementCache = {};
 
@@ -53,7 +54,8 @@ class ShadowDomComponentFactory implements ComponentFactory {
             injector.getByKey(COMPONENT_CSS_REWRITER_KEY),
             _expando,
             baseCss,
-            _styleElementCache);
+            _styleElementCache,
+            _config);
         var controller = componentFactory.call(injector, scope, viewCache, http, templateCache,
             directives);
 
@@ -81,6 +83,7 @@ class _ComponentFactory implements Function {
       _styleElementCache;
   final ComponentCssRewriter componentCssRewriter;
   final WebPlatform platform;
+  final CompilerConfig _config;
 
   dom.ShadowRoot shadowDom;
   Scope shadowScope;
@@ -89,7 +92,7 @@ class _ComponentFactory implements Function {
 
   _ComponentFactory(this.element, this.typeKey, this.component, this.treeSanitizer,
                     this.platform, this.componentCssRewriter, this._expando,
-                    this._baseCss, this._styleElementCache);
+                    this._baseCss, this._styleElementCache, this._config);
 
   dynamic call(Injector injector, Scope scope,
                ViewCache viewCache, Http http, TemplateCache templateCache,
@@ -187,12 +190,21 @@ class _ComponentFactory implements Function {
       ..bindByKey(EVENT_HANDLER_KEY, toImplementation: ShadowRootEventHandler)
       ..bindByKey(SCOPE_KEY, toValue: shadowScope)
       ..bindByKey(TEMPLATE_LOADER_KEY, toValue: templateLoader)
-      ..bindByKey(SHADOW_ROOT_KEY, toValue: shadowDom)
-      ..bindByKey(ELEMENT_PROBE_KEY, toFactory: (_) => probe);
+      ..bindByKey(SHADOW_ROOT_KEY, toValue: shadowDom);
+    if (_config.elementProbeEnabled) {
+      shadowModule.bindByKey(ELEMENT_PROBE_KEY, toFactory: (_) => probe);
+    }
+
     shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
-    probe = _expando[shadowDom] = new ElementProbe(
-        injector.getByKey(ELEMENT_PROBE_KEY), shadowDom, shadowInjector, shadowScope);
-    shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) {_expando[shadowDom] = null;});
+
+    if (_config.elementProbeEnabled) {
+      probe = _expando[shadowDom] =
+          new ElementProbe(injector.getByKey(ELEMENT_PROBE_KEY),
+                           shadowDom, shadowInjector, shadowScope);
+      shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) {
+        _expando[shadowDom] = null;
+      });
+    }
     return shadowInjector;
   }
 }
