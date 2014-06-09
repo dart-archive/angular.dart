@@ -14,11 +14,11 @@ class TemplateElementBinder extends ElementBinder {
     return _directiveCache = [template];
   }
 
-  TemplateElementBinder(perf, expando, parser, componentFactory,
+  TemplateElementBinder(perf, expando, parser, config, componentFactory,
                         transcludingComponentFactory, shadowDomComponentFactory,
                         this.template, this.templateBinder,
                         onEvents, bindAttrs, childMode)
-      : super(perf, expando, parser, componentFactory,
+      : super(perf, expando, parser, config, componentFactory,
           transcludingComponentFactory, shadowDomComponentFactory,
           null, null, onEvents, bindAttrs, childMode);
 
@@ -45,6 +45,7 @@ class ElementBinder {
   final Profiler _perf;
   final Expando _expando;
   final Parser _parser;
+  final CompilerConfig _config;
 
   // The default component factory
   final ComponentFactory _componentFactory;
@@ -61,7 +62,7 @@ class ElementBinder {
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   final String childMode;
 
-  ElementBinder(this._perf, this._expando, this._parser,
+  ElementBinder(this._perf, this._expando, this._parser, this._config,
                 this._componentFactory,
                 this._transcludingComponentFactory,
                 this._shadowDomComponentFactory,
@@ -207,7 +208,9 @@ class ElementBinder {
   void _link(nodeInjector, probe, scope, nodeAttrs) {
     _usableDirectiveRefs.forEach((DirectiveRef ref) {
       var directive = nodeInjector.getByKey(ref.typeKey);
-      probe.directives.add(directive);
+      if (probe != null) {
+        probe.directives.add(directive);
+      }
 
       if (ref.annotation is Controller) {
         scope.context[(ref.annotation as Controller).publishAs] = directive;
@@ -295,8 +298,11 @@ class ElementBinder {
         ..bindByKey(VIEW_KEY, toValue: view)
         ..bindByKey(ELEMENT_KEY, toValue: node)
         ..bindByKey(NODE_KEY, toValue: node)
-        ..bindByKey(NODE_ATTRS_KEY, toValue: nodeAttrs)
-        ..bindByKey(ELEMENT_PROBE_KEY, toFactory: (_) => probe);
+        ..bindByKey(NODE_ATTRS_KEY, toValue: nodeAttrs);
+
+    if (_config.elementProbeEnabled) {
+      nodeModule.bindByKey(ELEMENT_PROBE_KEY, toFactory: (_) => probe);
+    }
 
     directiveRefs.forEach((DirectiveRef ref) {
       Directive annotation = ref.annotation;
@@ -316,9 +322,14 @@ class ElementBinder {
     _registerViewFactory(node, parentInjector, nodeModule);
 
     nodeInjector = parentInjector.createChild([nodeModule]);
-    probe = _expando[node] = new ElementProbe(
-        parentInjector.getByKey(ELEMENT_PROBE_KEY), node, nodeInjector, scope);
-    scope.on(ScopeEvent.DESTROY).listen((_) {_expando[node] = null;});
+    if (_config.elementProbeEnabled) {
+      probe = _expando[node] =
+          new ElementProbe(parentInjector.getByKey(ELEMENT_PROBE_KEY),
+                           node, nodeInjector, scope);
+      scope.on(ScopeEvent.DESTROY).listen((_) {
+        _expando[node] = null;
+      });
+    }
 
     _link(nodeInjector, probe, scope, nodeAttrs);
 

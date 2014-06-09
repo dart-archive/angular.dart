@@ -9,7 +9,7 @@ forBothCompilers(fn) {
       m.bind(Compiler, toImplementation: WalkingCompiler);
       return m;
     });
-    fn();
+    fn('walking');
   });
 
   describe('tagging compiler', () {
@@ -17,7 +17,16 @@ forBothCompilers(fn) {
       m.bind(Compiler, toImplementation: TaggingCompiler);
       return m;
     });
-    fn();
+    fn('tagging');
+  });
+
+  describe('tagging compiler with ElementProbe disabled', () {
+    beforeEachModule((Module m) {
+      m.bind(Compiler, toImplementation: TaggingCompiler);
+      m.bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
+      return m;
+    });
+    fn('tagging-no-elementProbe');
   });
 }
 
@@ -31,12 +40,12 @@ forAllCompilersAndComponentFactories(fn) {
 
       return m;
     });
-    fn();
+    fn('transcluding');
   });
 }
 
 void main() {
-  forBothCompilers(() =>
+  forBothCompilers((compilerType) =>
   describe('TranscludingComponentFactory', () {
     TestBed _;
 
@@ -59,7 +68,7 @@ void main() {
     }));
   }));
 
-  forAllCompilersAndComponentFactories(() =>
+  forAllCompilersAndComponentFactories((compilerType) =>
   describe('dte.compiler', () {
     TestBed _;
 
@@ -357,6 +366,8 @@ void main() {
       }));
 
       it('should store ElementProbe with Elements', async(() {
+        if (compilerType == 'tagging-no-elementProbe') return;
+
         _.compile('<div><simple>innerText</simple></div>');
         microLeap();
         _.rootScope.apply();
@@ -368,13 +379,39 @@ void main() {
         var shadowRoot = simpleElement.shadowRoot;
 
         // If there is no shadow root, skip this.
-        if (shadowRoot != null) {
+        if (compilerType != 'transcluding') {
           var shadowProbe = ngProbe(shadowRoot);
           expect(shadowProbe).toBeNotNull();
           expect(shadowProbe.element).toEqual(shadowRoot);
           expect(shadowProbe.parent.element).toEqual(simpleElement);
         }
       }));
+
+      describe('elementProbeEnabled option', () {
+        beforeEachModule((Module m) {
+          m.bind(CompilerConfig, toValue:
+              new CompilerConfig.withOptions(elementProbeEnabled: false));
+        });
+
+        it('should not store ElementProbe with Elements', async(() {
+          _.compile('<div><simple>innerText</simple></div>');
+          microLeap();
+          _.rootScope.apply();
+          var simpleElement = _.rootElement.querySelector('simple');
+          expect(simpleElement).toHaveText('INNER(innerText)');
+
+          expect(() => ngProbe(simpleElement))
+              .toThrow("Could not find a probe for the node 'simple' nor its parents");
+
+          var shadowRoot = simpleElement.shadowRoot;
+
+          // If there is no shadow root, skip this.
+          if (compilerType != 'transcluding') {
+            expect(() => ngProbe(shadowRoot))
+                .toThrow("Could not find a probe for the node 'Instance of 'ShadowRoot'' nor its parents");
+          }
+        }));
+      });
 
       it('should create a simple component', async((VmTurnZone zone) {
         _.rootScope.context['name'] = 'OUTTER';
@@ -737,6 +774,8 @@ void main() {
         }));
 
         describe('expando memory', () {
+          if (compilerType == 'tagging-no-elementProbe') return;
+
           Expando expando;
 
           beforeEach(inject((Expando _expando) => expando = _expando));

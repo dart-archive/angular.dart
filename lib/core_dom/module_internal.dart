@@ -27,6 +27,7 @@ part 'view_factory.dart';
 part 'cookies.dart';
 part 'common.dart';
 part 'compiler.dart';
+part 'compiler_config.dart';
 part 'directive.dart';
 part 'directive_map.dart';
 part 'element_binder.dart';
@@ -60,6 +61,7 @@ class CoreDomModule extends Module {
     bind(AttrMustache);
 
     bind(Compiler, toImplementation: TaggingCompiler);
+    bind(CompilerConfig);
 
     bind(ComponentFactory, toImplementation: ShadowDomComponentFactory);
     bind(ShadowDomComponentFactory);
