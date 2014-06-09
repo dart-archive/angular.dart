@@ -301,7 +301,7 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
               collection: ['b[1 -> 0]', 'a[0 -> 1]', 'c'],
               previous: ['a[0 -> 1]', 'b[1 -> 0]', 'c'],
               additions: [],
-              moves: ['b[1 -> 0]', 'a[0 -> 1]', 'c'],
+              moves: ['b[1 -> 0]', 'a[0 -> 1]'],
               removals: []));
 
           list..clear()..addAll(['b', 'c', 'a']);
@@ -530,6 +530,21 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
             previous: ['(1)a-a[0 -> 1]'],
             additions: ['(2)a-a[null -> 0]'],
             moves: ['(1)a-a[0 -> 1]'],
+            removals: []));
+      });
+
+      it('should not report unnecessary moves', () {
+        var list = ['a', 'b', 'c'];
+        var record = detector.watch(list, null, null);
+        var iterator = detector.collectChanges()..moveNext();
+
+        list..clear()..addAll(['b', 'a', 'c']);
+        iterator = detector.collectChanges()..moveNext();
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
+            collection: ['b[1 -> 0]', 'a[0 -> 1]', 'c'],
+            previous: ['a[0 -> 1]', 'b[1 -> 0]', 'c'],
+            additions: [],
+            moves: ['b[1 -> 0]', 'a[0 -> 1]'],
             removals: []));
       });
     });

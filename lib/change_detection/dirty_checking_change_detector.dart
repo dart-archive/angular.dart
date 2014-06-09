@@ -1110,7 +1110,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       record = _reinsertAfter(reinsertRecord, record._prev, index);
     } else if (record.currentIndex != index) {
       record.currentIndex = index;
-      _addToMoves(record);
+      _addToMoves(record, index);
     }
     return record;
   }
@@ -1152,14 +1152,14 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     }
 
     _insertAfter(record, prevRecord, index);
-    _addToMoves(record);
+    _addToMoves(record, index);
     return record;
   }
 
   ItemRecord<V> _moveAfter(ItemRecord<V> record, ItemRecord<V> prevRecord, int index) {
     _unlink(record);
     _insertAfter(record, prevRecord, index);
-    _addToMoves(record);
+    _addToMoves(record, index);
     return record;
   }
 
@@ -1228,8 +1228,11 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     return record;
   }
 
-  ItemRecord<V> _addToMoves(ItemRecord<V> record) {
+  ItemRecord<V> _addToMoves(ItemRecord<V> record, int toIndex) {
     assert(record._nextMoved == null);
+
+    if (record.previousIndex == toIndex) return record;
+
     if (_movesTail == null) {
       assert(_movesHead == null);
       _movesTail = _movesHead = record;
