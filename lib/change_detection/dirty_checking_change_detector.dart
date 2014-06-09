@@ -1303,40 +1303,22 @@ class _DuplicateItemRecordList {
   ItemRecord _head, _tail;
 
   /**
-   * Add the [record] before the [insertBefore] in the list of duplicates or at the end of the list
-   * when no [insertBefore] is specified.
+   * Append the [record] to the list of duplicates.
    *
    * Note: by design all records in the list of duplicates hold the save value in [record.item].
    */
-  void add(ItemRecord record, ItemRecord insertBefore) {
-    assert(insertBefore == null || insertBefore.item == record.item);
+  void add(ItemRecord record) {
     if (_head == null) {
-      /// pushing the first [ItemRecord] to the list
-      assert(insertBefore == null);
       _head = _tail = record;
       record._nextDup = null;
       record._prevDup = null;
     } else {
-      // adding a duplicate [ItemRecord] to the list
       assert(record.item ==  _head.item ||
              record.item is num && record.item.isNaN && _head.item is num && _head.item.isNaN);
-      if (insertBefore == null) {
-        _tail._nextDup = record;
-        record._prevDup = _tail;
-        record._nextDup = null;
-        _tail = record;
-      } else {
-        var prev = insertBefore._prevDup;
-        var next = insertBefore;
-        record._prevDup = prev;
-        record._nextDup = next;
-        if (prev == null) {
-          _head = record;
-        } else {
-          prev._nextDup = record;
-        }
-        next._prevDup = record;
-      }
+      _tail._nextDup = record;
+      record._prevDup = _tail;
+      record._nextDup = null;
+      _tail = record;
     }
   }
 
@@ -1390,16 +1372,16 @@ class _DuplicateItemRecordList {
  * The list of duplicates is implemented by [_DuplicateItemRecordList].
  */
 class DuplicateMap {
-  static final nanKey = const Object();
+  static final _nanKey = const Object();
   final map = new HashMap<dynamic, _DuplicateItemRecordList>();
 
-  void put(ItemRecord record, [ItemRecord insertBefore = null]) {
+  void put(ItemRecord record) {
     var key = _getKey(record.item);
     _DuplicateItemRecordList duplicates = map[key];
     if (duplicates == null) {
       duplicates = map[key] = new _DuplicateItemRecordList();
     }
-    duplicates.add(record, insertBefore);
+    duplicates.add(record);
   }
 
   /**
@@ -1436,7 +1418,7 @@ class DuplicateMap {
   }
 
   /// Required to handle num.NAN as a Map value
-  dynamic _getKey(value) => value is num && value.isNaN ? nanKey : value;
+  dynamic _getKey(value) => value is num && value.isNaN ? _nanKey : value;
 
   String toString() => "DuplicateMap($map)";
 }
