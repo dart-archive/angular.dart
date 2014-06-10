@@ -3,6 +3,8 @@ library angular.core.parser.lexer;
 import 'package:angular/core/annotation_src.dart';
 import 'package:angular/core/parser/characters.dart';
 
+import 'package:di/annotations.dart';
+
 part 'tokens.dart';
 
 @Injectable()

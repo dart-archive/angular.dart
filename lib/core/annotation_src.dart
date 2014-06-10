@@ -22,17 +22,6 @@ Directive cloneWithNewMap(Directive annotation, map)
 
 String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
-
-/**
- * An annotation when applied to a class indicates that the class (service) will
- * be instantiated by di injector. This annotation is also used to designate which
- * classes need to have a static factory generated when using static angular, and
- * therefore is required on any injectable class.
- */
-class Injectable {
-  const Injectable();
-}
-
 /**
  * Abstract supper class of [Controller], [Component], and [Decorator].
  */

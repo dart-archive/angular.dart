@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 
 import 'package:di/di.dart';
+import 'package:di/annotations.dart';
 
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';

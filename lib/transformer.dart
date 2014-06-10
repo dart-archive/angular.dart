@@ -34,7 +34,6 @@ class AngularTransformerGroup implements TransformerGroup {
 TransformOptions _parseSettings(Map args) {
   // Default angular annotations for injectable types
   var annotations = [
-      'angular.core.annotation_src.Injectable',
       'angular.core.annotation_src.Decorator',
       'angular.core.annotation_src.Controller',
       'angular.core.annotation_src.Component',
