@@ -40,15 +40,18 @@ class DirectiveSelector {
         throw new ArgumentError('Missing selector annotation for $type');
       }
 
-      if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
-        textSelector.add(new _ContainsSelector(annotation, match[1]));
-      } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
-        attrSelector.add(new _ContainsSelector(annotation, match[1]));
-      } else if ((selectorParts = _splitCss(selector, type)) != null){
-        elementSelector.addDirective(selectorParts, new _Directive(type, annotation));
-      } else {
-        throw new ArgumentError('Unsupported Selector: $selector');
-      }
+      final parser = new CssSelectorParser();
+      parser.splitCompositeSelector(selector).forEach((simpleSelector) {
+        if ((match = _CONTAINS_REGEXP.firstMatch(simpleSelector)) != null) {
+          textSelector.add(new _ContainsSelector(annotation, match[1]));
+        } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(simpleSelector)) != null) {
+          attrSelector.add(new _ContainsSelector(annotation, match[1]));
+        } else if ((selectorParts = parser.splitSelectorIntoParts(simpleSelector, type)) != null){
+          elementSelector.addDirective(selectorParts, new _Directive(type, annotation));
+        } else {
+          throw new ArgumentError('Unsupported Selector: $simpleSelector');
+        }
+      });
     });
   }
 
@@ -360,30 +363,70 @@ class _ElementSelector {
   String toString() => 'ElementSelector($_name)';
 }
 
-/**
- * Turn a CSS selector string into a list of [_SelectorPart]s
- */
-List<_SelectorPart> _splitCss(String selector, Type type) {
-  var parts = <_SelectorPart>[];
-  var remainder = selector;
-  var match;
-  while (remainder.isNotEmpty) {
-    if ((match = _SELECTOR_REGEXP.firstMatch(remainder)) != null) {
-      if (match[1] != null) {
-        parts.add(new _SelectorPart.fromElement(match[1].toLowerCase()));
-      } else if (match[2] != null) {
-        parts.add(new _SelectorPart.fromClass(match[2].toLowerCase()));
-      } else if (match[3] != null) {
-        var attrValue = match[4] == null ? '' : match[4].toLowerCase();
-        parts.add(new _SelectorPart.fromAttribute(match[3].toLowerCase(),
-                                                  attrValue));
+class CssSelectorParser {
+  /**
+   * Turn a composite CSS selector string into a list of simple selectors
+   */
+  List<String> splitCompositeSelector(String selector) {
+    final res = [];
+    final buffer = new StringBuffer();
+    final stack = [];
+
+    addSelectorToResults() => res.add(buffer.toString().trim());
+
+    isQuote(String c) => c == '/' || c == '"' || c == "'" ;
+
+    handleQuote(String c) {
+      if (!isQuote(c)) return;
+
+      if (stack.isNotEmpty && stack.last == c) {
+        stack.removeLast();
       } else {
-        throw "Missmatched RegExp $_SELECTOR_REGEXP on $remainder";
+        stack.add(c);
       }
-    } else {
-      throw "Unknown selector format '$selector' for $type.";
     }
-    remainder = remainder.substring(match.end);
+
+    for (var i = 0; i < selector.length; ++i) {
+      var c = selector[i];
+      if (c == ',' && stack.isEmpty) {
+        addSelectorToResults();
+        buffer.clear();
+      } else {
+        handleQuote(c);
+        buffer.write(c);
+      }
+    }
+
+    addSelectorToResults();
+
+    return res;
   }
-  return parts;
+
+  /**
+   * Turn a CSS selector string into a list of [_SelectorPart]s
+   */
+  List<_SelectorPart> splitSelectorIntoParts(String selector, Type type) {
+    var parts = <_SelectorPart>[];
+    var remainder = selector;
+    var match;
+    while (remainder.isNotEmpty) {
+      if ((match = _SELECTOR_REGEXP.firstMatch(remainder)) != null) {
+        if (match[1] != null) {
+          parts.add(new _SelectorPart.fromElement(match[1].toLowerCase()));
+        } else if (match[2] != null) {
+          parts.add(new _SelectorPart.fromClass(match[2].toLowerCase()));
+        } else if (match[3] != null) {
+          var attrValue = match[4] == null ? '' : match[4].toLowerCase();
+          parts.add(new _SelectorPart.fromAttribute(match[3].toLowerCase(),
+          attrValue));
+        } else {
+          throw "Missmatched RegExp $_SELECTOR_REGEXP on $remainder";
+        }
+      } else {
+        throw "Unknown selector format '$selector' for $type.";
+      }
+      remainder = remainder.substring(match.end);
+    }
+    return parts;
+  }
 }

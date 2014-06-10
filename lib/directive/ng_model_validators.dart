@@ -89,8 +89,7 @@ class NgModelEmailValidator implements NgValidator {
 /**
  * Validates the model to see if its contents match a valid number.
  */
-@Decorator(selector: 'input[type=number][ng-model]')
-@Decorator(selector: 'input[type=range][ng-model]')
+@Decorator(selector: 'input[type=number][ng-model], input[type=range][ng-model]')
 class NgModelNumberValidator implements NgValidator {
 
   final String name = 'ng-number';
@@ -117,13 +116,9 @@ class NgModelNumberValidator implements NgValidator {
 /**
  * Validates the model to see if the numeric value than or equal to the max value.
  */
-@Decorator(selector: 'input[type=number][ng-model][max]')
-@Decorator(selector: 'input[type=range][ng-model][max]')
+@Decorator(selector: 'input[type=number][ng-model][max], input[type=range][ng-model][max]')
 @Decorator(
-    selector: 'input[type=number][ng-model][ng-max]',
-    map: const {'ng-max': '=>max'})
-@Decorator(
-    selector: 'input[type=range][ng-model][ng-max]',
+    selector: 'input[type=number][ng-model][ng-max], input[type=range][ng-model][ng-max]',
     map: const {'ng-max': '=>max'})
 class NgModelMaxNumberValidator implements NgValidator {
 
@@ -168,13 +163,9 @@ class NgModelMaxNumberValidator implements NgValidator {
 /**
  * Validates the model to see if the numeric value is greater than or equal to the min value.
  */
-@Decorator(selector: 'input[type=number][ng-model][min]')
-@Decorator(selector: 'input[type=range][ng-model][min]')
+@Decorator(selector: 'input[type=number][ng-model][min], input[type=range][ng-model][min]')
 @Decorator(
-    selector: 'input[type=number][ng-model][ng-min]',
-    map: const {'ng-min': '=>min'})
-@Decorator(
-    selector: 'input[type=range][ng-model][ng-min]',
+    selector: 'input[type=number][ng-model][ng-min], input[type=range][ng-model][ng-min]',
     map: const {'ng-min': '=>min'})
 class NgModelMinNumberValidator implements NgValidator {
 

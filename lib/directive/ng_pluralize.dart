@@ -83,10 +83,7 @@ part of angular.directive;
  * must also provide plural strings for at least the "other" plural category.
  */
 @Decorator(
-    selector: 'ng-pluralize',
-    map: const { 'count': '=>count' })
-@Decorator(
-    selector: '[ng-pluralize]',
+    selector: 'ng-pluralize, [ng-pluralize]',
     map: const { 'count': '=>count' })
 class NgPluralize {
   final dom.Element _element;

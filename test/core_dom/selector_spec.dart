@@ -12,6 +12,7 @@ import '../_specs.dart';
 @Decorator(selector:'b[directive=value]')   class _BElementDirectiveValue{}
 @Decorator(selector:':contains(/abc/)')     class _ContainsAbc{}
 @Decorator(selector:'[*=/xyz/]')            class _AttributeContainsXyz{}
+@Decorator(selector: '[attr1], [attr2]')    class _DirectiveSelectorWithComma {}
 
 @Component(selector:'component')            class _Component{}
 @Decorator(selector:'[attribute]')          class _Attribute{}
@@ -30,7 +31,6 @@ import '../_specs.dart';
 @Decorator(selector: '[two-directives]') class _OneOfTwoDirectives {}
 @Decorator(selector: '[two-directives]') class _TwoOfTwoDirectives {}
 
-
 main() {
   describe('Selector', () {
     var log;
@@ -47,10 +47,11 @@ main() {
           ..bind(_WildcardDirectiveAttr)
           ..bind(_DirectiveFooAttr)
           ..bind(_BElementDirectiveAttr)
-          ..bind(_DirectiveValueAttr)
+          ..bind(_DirectiveSelectorWithComma)
           ..bind(_BElementDirectiveValue)
           ..bind(_ContainsAbc)
           ..bind(_AttributeContainsXyz)
+          ..bind(_DirectiveValueAttr)
           ..bind(_Component)
           ..bind(_Attribute)
           ..bind(_Structural)
@@ -120,6 +121,20 @@ main() {
         ]));
       });
 
+      it('should match directive when multiple selectors separated by a comma', () {
+        expect(
+            selector(element = e('<div attr1="value"></div>')),
+            toEqualsDirectiveInfos([
+                { "selector": '[attr1], [attr2]', "value": 'value', "element": element}
+            ]));
+
+        expect(
+            selector(element = e('<div attr2="value"></div>')),
+            toEqualsDirectiveInfos([
+                { "selector": '[attr1], [attr2]', "value": 'value', "element": element}
+            ]));
+      });
+
       it('should match attributes', () {
         expect(selector(element = e('<div attr="before-xyz-after"></div>')),
         toEqualsDirectiveInfos([
@@ -168,10 +183,11 @@ main() {
         expect(
             selector(element = e('<input type="text" ng-model="val" probe="i" required="true" />')),
             toEqualsDirectiveInfos([
-                { "selector": '[ng-model]',                 "value": 'val',   "element": element},
-                { "selector": '[probe]',                    "value": 'i',     "element": element},
-                { "selector": '[ng-model][required]',       "value": 'true',  "element": element},
-                { "selector": 'input[type=text][ng-model]', "value": 'val',   "element": element}
+                { "selector": '[ng-model]',           "value": 'val',   "element": element},
+                { "selector": '[probe]',              "value": 'i',     "element": element},
+                { "selector": '[ng-model][required]', "value": 'true',  "element": element},
+                { "selector": new RegExp(r'input\[type=text\]\[ng-model\]'),
+                    "value": 'val',   "element": element}
             ]));
       });
 
@@ -232,44 +248,54 @@ main() {
       });
     });
   });
-}
 
+  describe('CssSelectorParser', () {
+    final parser = new CssSelectorParser();
+
+    describe("splitCompositeSelector", () {
+      it("should split a composite selector", () {
+        expect(parser.splitCompositeSelector("one,two")).toEqual(["one", "two"]);
+      });
+
+      it("should work when there is only one selector", () {
+        expect(parser.splitCompositeSelector("one")).toEqual(["one"]);
+      });
+
+      it("should trim splitted selectors", () {
+        expect(parser.splitCompositeSelector("one, two")).toEqual(["one", "two"]);
+      });
+
+      it("should handle commas in quotes", () {
+        expect(parser.splitCompositeSelector(":contains(/,/), [*=/,/], [a=','], [a=\",\"]")).
+            toEqual([":contains(/,/)", "[*=/,/]", "[a=',']", "[a=\",\"]"]);
+      });
+    });
+  });
+}
 
 class DirectiveInfosMatcher extends Matcher {
   final List<Map> expected;
   Map expectedTemplate;
   Map expectedComponent;
 
-  safeToString(a) => "${a['element']} ${a['selector']} ${a['value']}";
-  safeToStringRef(a) => "${a.element} ${a.annotation.selector} ${a.value}";
-
-  DirectiveInfosMatcher(this.expected, {this.expectedTemplate, this.expectedComponent}) {
-    if (expected != null) {
-      expected.sort((a, b) => Comparable.compare(safeToString(a), safeToString(b)));
-    }
-  }
+  DirectiveInfosMatcher(this.expected, {this.expectedTemplate, this.expectedComponent});
 
   Description describe(Description description) =>
       description..add(expected.toString());
 
   bool _refMatches(directiveRef, expectedMap) =>
-    directiveRef.element == expectedMap['element'] &&
-    directiveRef.annotation.selector == expectedMap['selector'] &&
-    directiveRef.value == expectedMap['value'] &&
-    (directiveRef.valueAST == null || directiveRef.valueAST.expression == expectedMap['ast']);
+      directiveRef.element == expectedMap['element'] &&
+      _selectorMatches(expectedMap["selector"], directiveRef.annotation.selector) &&
+      directiveRef.value == expectedMap['value'] &&
+      (directiveRef.valueAST == null || directiveRef.valueAST.expression == expectedMap['ast']);
 
+  bool _selectorMatches(expected, actual) =>
+      (expected is RegExp) ? expected.hasMatch(actual) : expected == actual;
 
   bool matches(ElementBinder binder, matchState) {
     var pass = true;
     if (expected != null) {
-      var decorators = new List.from(binder.decorators)
-          ..sort((a, b) => Comparable.compare(safeToStringRef(a), safeToStringRef(b)));
-      pass = expected.length == decorators.length;
-      for (var i = 0, ii = expected.length; i < ii; i++) {
-        DirectiveRef directiveRef = decorators[i];
-        var expectedMap = expected[i];
-        pass = pass && _refMatches(directiveRef, expectedMap);
-      }
+      pass = pass && _expectedMatches(expected, new List.from(binder.decorators));
     }
     if (pass && expectedTemplate != null) {
       pass = pass && _refMatches((binder as TemplateElementBinder).template, expectedTemplate);
@@ -278,6 +304,18 @@ class DirectiveInfosMatcher extends Matcher {
       pass = pass && _refMatches(binder.componentData.ref, expectedComponent);
     }
     return pass;
+  }
+
+  _expectedMatches(expected, decorators) {
+    return expected.every((expectedMap) {
+      final matchingDecorators = decorators.where((d) => _refMatches(d, expectedMap));
+      if (matchingDecorators.isEmpty) {
+        return false;
+      } else {
+        decorators.remove(matchingDecorators.first);
+        return true;
+      }
+    });
   }
 }
 

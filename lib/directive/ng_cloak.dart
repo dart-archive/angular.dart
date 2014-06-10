@@ -30,8 +30,7 @@ part of angular.directive;
  *      <div class="myclass ng-cloak">
  *
  */
-@Decorator(selector: '[ng-cloak]')
-@Decorator(selector: '.ng-cloak')
+@Decorator(selector: '[ng-cloak], .ng-cloak')
 class NgCloak {
   NgCloak(dom.Element element, Animate animate) {
     element.attributes.remove('ng-cloak');
