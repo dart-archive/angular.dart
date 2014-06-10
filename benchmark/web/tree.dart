@@ -2,6 +2,7 @@ import 'package:di/di.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/application_factory.dart';
+import 'package:angular/change_detection/ast_parser.dart';
 
 import 'dart:html';
 import 'dart:math';
@@ -80,6 +81,7 @@ class NgFreeTree implements ShadowRootAware {
   }
 }
 
+var treeValueAST, treeRightNotNullAST, treeLeftNotNullAST, treeRightAST, treeLeftAST, treeAST;
 /**
  *  A baseline version of TreeComponent which uses Angular's Scope to
  *  manage data.  This version is setting up data binding so arbitrary
@@ -116,28 +118,28 @@ class NgFreeTreeScoped implements ShadowRootAware {
     var root = elt.createShadowRoot();
     var scope = parentScope.createChild({});
 
-    parentScope.watch(treeExpr, (v, _) {
+    parentScope.watchAST(treeExpr, (v, _) {
       scope.context['tree'] = v;
     });
 
     var s = new SpanElement();
     root.append(s);
-    scope.watch('tree.value', (v, _) {
+    scope.watchAST(treeValueAST, (v, _) {
       if (v != null) {
         s.text = " $v";
       }
     });
 
-    scope.watch('tree.right != null', (v, _) {
+    scope.watchAST(treeRightNotNullAST, (v, _) {
       if (v != true) return;
       s.append(new SpanElement()
-          ..append(newFreeTree(scope, 'tree.right')));
+          ..append(newFreeTree(scope, treeRightAST)));
     });
 
-    scope.watch('tree.left != null', (v, _) {
+    scope.watchAST(treeLeftNotNullAST, (v, _) {
       if (v != true) return;
       s.append(new SpanElement()
-        ..append(newFreeTree(scope, 'tree.left')));
+        ..append(newFreeTree(scope, treeLeftAST)));
     });
 
     return elt;
@@ -152,7 +154,7 @@ class NgFreeTreeScoped implements ShadowRootAware {
     treeScope = scope.createChild({});
     treeScope.context['tree'] = tree;
     root.innerHtml = '';
-    root.append(newFreeTree(treeScope, 'tree'));
+    root.append(newFreeTree(treeScope, treeAST));
   }
 }
 
@@ -170,7 +172,7 @@ class FreeTreeClass {
   Scope parentScope;
 
   FreeTreeClass(this.parentScope, treeExpr) {
-    parentScope.watch(treeExpr, (v, _) {
+    parentScope.watchAST(treeExpr, (v, _) {
       tree = v;
     });
   }
@@ -182,22 +184,22 @@ class FreeTreeClass {
 
     var s = new SpanElement();
     root.append(s);
-    scope.watch('tree.value', (v, _) {
+    scope.watchAST(treeValueAST, (v, _) {
       if (v != null) {
         s.text = " $v";
       }
     });
     
-    scope.watch('tree.right != null', (v, _) {
+    scope.watchAST(treeRightNotNullAST, (v, _) {
       if (v != true) return;
       s.append(new SpanElement()
-          ..append(new FreeTreeClass(scope, 'tree.right').element()));
+          ..append(new FreeTreeClass(scope, treeRightAST).element()));
     });
     
-    scope.watch('tree.left != null', (v, _) {
+    scope.watchAST(treeLeftNotNullAST, (v, _) {
       if (v != true) return;
       s.append(new SpanElement()
-        ..append(new FreeTreeClass(scope, 'tree.left').element()));
+        ..append(new FreeTreeClass(scope, treeLeftAST).element()));
     });
     
     return elt;
@@ -237,7 +239,7 @@ class NgFreeTreeClass implements ShadowRootAware {
     treeScope = scope.createChild({});
     treeScope.context['tree'] = tree;
     root.innerHtml = '';
-    root.append(new FreeTreeClass(treeScope, 'tree').element());
+    root.append(new FreeTreeClass(treeScope, treeAST).element());
   }
 }
 
@@ -252,10 +254,21 @@ main() {
       ..type(NgFreeTree)
       ..type(NgFreeTreeScoped)
       ..type(NgFreeTreeClass)
-      ..factory(ScopeDigestTTL, (i) => new ScopeDigestTTL.value(15));
+      ..factory(ScopeDigestTTL, (i) => new ScopeDigestTTL.value(15))
+      ..bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
 
   var injector = applicationFactory().addModule(module).run();
   assert(injector != null);
+
+  // Set up ASTs
+  var parser = injector.get(ASTParser);
+  treeValueAST = parser('tree.value');
+  treeRightNotNullAST = parser('tree.right != null');
+  treeLeftNotNullAST = parser('tree.left != null');
+  treeRightAST = parser('tree.right');
+  treeLeftAST = parser('tree.left');
+  treeAST = parser('tree');
+
   VmTurnZone zone = injector.get(VmTurnZone);
   Scope scope = injector.get(Scope);
 
