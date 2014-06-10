@@ -38,7 +38,7 @@ packages:
   di:
     description: di
     source: hosted
-    version: "0.0.40"
+    version: "1.0.0"
   html5lib:
     description: html5lib
     source: hosted
@@ -62,7 +62,7 @@ packages:
   path:
     description: path
     source: hosted
-    version: "1.1.0"
+    version: "1.2.1"
   perf_api:
     description: perf_api
     source: hosted
