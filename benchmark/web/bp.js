@@ -1,8 +1,32 @@
 var bp = window.bp = {};
 bp.steps = window.benchmarkSteps = [];
-bp.timesPerAction = {};
-bp.running = false;
-bp.numSamples = 10;
+bp.runState = {};
+
+bp.setRunState = function (samples, iterations, ignoreCount) {
+  bp.runState.numSamples = samples;
+  bp.runState.iterations = iterations;
+  bp.runState.ignoreCount = ignoreCount;
+  bp.runState.recentTimePerStep = {};
+  bp.runState.timesPerAction = {};
+};
+
+bp.resetRunState = function() {
+  bp.runState = {
+    numSamples: 0,
+    iterations: 0,
+    ignoreCount: 0,
+    recentTimePerStep: {},
+    timesPerAction: {}
+  };
+};
+
+bp.interpolateHtml = function(string, list) {
+  list.forEach(function(item, i) {
+    var exp = new RegExp('%' + i, ['g']);
+    string = string.replace(exp, item);
+  });
+  return string;
+}
 
 bp.numMilliseconds = function() {
   if (window.performance != null && typeof window.performance.now == 'function') {
@@ -15,75 +39,117 @@ bp.numMilliseconds = function() {
   }
 };
 
-bp.loopBenchmark = function loopBenchmark() {
-  if (bp.running) {
+bp.loopBenchmark = function () {
+  if (bp.runState.iterations <= -1) {
+    //Time to stop looping
+    bp.setRunState(10, 0);
     bp.loopBtn.innerText = 'Loop';
-    bp.running = false;
-  } else {
-    window.requestAnimationFrame(function() {
-      bp.loopBtn.innerText = 'Pause';
-      bp.running = true;
-      var loopB = function() {
-        if (bp.running) {
-          window.requestAnimationFrame(function() {
-            if (bp.running) bp.runBenchmarkSteps(loopB);
-          });
-        }
-      };
-      loopB();
-    });
+    return;
   }
+  bp.setRunState(10, -1);
+  bp.loopBtn.innerText = 'Pause';
+  bp.runAllTests();
 };
 
 bp.onceBenchmark = function() {
-  var btn = bp.onceBtn;
-  window.requestAnimationFrame(function() {
-    btn.innerText = '...';
-    window.requestAnimationFrame(function() {
-      bp.runBenchmarkSteps(function() {
-        btn.innerText = 'Once';
-      });
+  bp.setRunState(10, 1);
+  bp.onceBtn.innerText = '...';
+  bp.runAllTests(function() {
+    bp.onceBtn.innerText = 'Once';
+  });
+};
+
+bp.twentyFiveBenchmark = function() {
+  var twentyFiveBtn = bp.twentyFiveBtn;
+  bp.setRunState(20, 25);
+  twentyFiveBtn.innerText = 'Looping...';
+  bp.runAllTests(function() {
+    twentyFiveBtn.innerText = 'Loop 25x';
+  }, 5);
+};
+
+bp.runTimedTest = function (bs) {
+  if (typeof window.gc === 'function') {
+    window.gc();
+  }
+  var startTime = bp.numMilliseconds();
+  bs.fn();
+  return bp.numMilliseconds() - startTime;
+};
+
+bp.runAllTests = function (done) {
+  if (bp.runState.iterations--) {
+    bp.steps.forEach(function(bs) {
+      bp.runState.recentTimePerStep[bs.name] = bp.runTimedTest(bs);
     });
-  });
+    bp.report = bp.calcStats();
+    bp.writeReport(bp.report);
+    window.requestAnimationFrame(function() {
+      bp.runAllTests(done);
+    });
+  }
+  else {
+    bp.writeReport(bp.report);
+    bp.resetRunState();
+    done && done();
+  }
+}
+
+bp.padName = function (name) {
+  return name.length < 10 ?
+    ('         ' + name).slice(-10).replace(/ /g, '&nbsp;') :
+    name;
 };
 
-bp.runBenchmarkSteps = function runBenchmarkSteps(done) {
-  // Run all the steps;
-  var times = {};
-  bp.steps.forEach(function(bs) {
-    if (typeof window.gc === 'function') {
-      window.gc();
-    }
-    var startTime = bp.numMilliseconds();
-    bs.fn();
-    times[bs.name] = bp.numMilliseconds() - startTime;
-  });
-  bp.calcStats(times);
-
-  done();
+bp.generateReportPartial = function(name, avg, times) {
+  return bp.interpolateHtml(
+      '<div>%0: avg-%1:<b>%2ms</b> [%3]ms</div>',
+      [
+        bp.padName(name),
+        bp.runState.numSamples,
+        ('' + avg).substr(0,6),
+        times.join(', ')
+      ]);
 };
 
-bp.calcStats = function calcStats(times) {
-  var iH = '';
-  bp.steps.forEach(function(bs) {
-    var tpa = bp.timesPerAction[bs.name];
-    if (!tpa) {
-      tpa = bp.timesPerAction[bs.name] =  {
-        times: [], // circular buffer
-        fmtTimes: [],
-        nextEntry: 0
-      }
+bp.getAverage = function (times, runState) {
+  var avg = 0, ignoreCount = (runState && runState.ignoreCount) || 0;
+  times = times.slice(ignoreCount);
+  times.forEach(function(x) { avg += x; });
+  return avg / times.length;
+};
+
+bp.writeReport = function(reportContent) {
+  bp.infoDiv.innerHTML = reportContent;
+};
+
+bp.getTimesPerAction = function(name) {
+  var tpa = bp.runState.timesPerAction[name];
+  if (!tpa) {
+    tpa = bp.runState.timesPerAction[name] =  {
+      times: [], // circular buffer
+      fmtTimes: [],
+      nextEntry: 0
     }
-    tpa.fmtTimes[tpa.nextEntry] = ('' + times[bs.name]).substr(0,6);
-    tpa.times[tpa.nextEntry++] = times[bs.name];
-    tpa.nextEntry %= bp.numSamples;
-    var avg = 0;
-    tpa.times.forEach(function(x) { avg += x; });
-    avg /= Math.min(bp.numSamples, tpa.times.length);
-    avg = ('' + avg).substr(0,6);
-    iH += '<div>' + ('         ' + bs.name).slice(-10).replace(/ /g, '&nbsp;') + ': avg-' + bp.numSamples + ':<b>' + avg + 'ms</b> [' + tpa.fmtTimes.join(', ') + ']ms</div>';
+  }
+  return tpa;
+};
+
+bp.calcStats = function() {
+  var report = '';
+  bp.steps.forEach(function(bs) {
+    var stepName = bs.name,
+        timeForStep = bp.runState.recentTimePerStep[stepName],
+        tpa = bp.getTimesPerAction(stepName),
+        avg;
+    tpa.fmtTimes[tpa.nextEntry] = ('' + timeForStep).substr(0,6);
+    tpa.times[tpa.nextEntry++] = timeForStep;
+    tpa.nextEntry %= bp.runState.numSamples;
+    avg = bp.getAverage(tpa.times, bp.runState);
+
+    report += bp.generateReportPartial(stepName, avg, tpa.fmtTimes);
   });
-  bp.infoDiv.innerHTML = iH;
+  return report;
 };
 
 bp.container = function() {
@@ -118,13 +184,7 @@ bp.addLinks = function() {
     // Add new benchmark suites here
     ['tree.html', 'TreeComponent']
   ].forEach((function (link) {
-    linkHtml += [
-      '<a class=bpLink href=',
-      link[0],
-      '>',
-      link[1],
-      '</a>'
-    ].join('');
+    linkHtml += bp.interpolateHtml('<a class=bpLink href=%0>%1</a>', link);
   }));
 
   linkDiv.innerHTML = linkHtml;
@@ -141,7 +201,7 @@ bp.onDOMContentLoaded = function() {
   bp.addLinks();
   bp.addButton('loopBtn', 'Loop', bp.loopBenchmark);
   bp.addButton('onceBtn', 'Once', bp.onceBenchmark);
-
+  bp.addButton('twentyFiveBtn', 'Loop 25x', bp.twentyFiveBenchmark);
   bp.addInfo();
 };
 
