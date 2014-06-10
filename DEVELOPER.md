@@ -221,7 +221,7 @@ of the run window:
 #### Running the tests
 
 You need to create a "Karma tests" run configuration. Start by copying the
-"Karma server" run configuration and xhange the **Application parameters** to
+"Karma server" run configuration and change the **Application parameters** to
 `run --port=8765`.
 
 To execute the test suite, you just need to run this "Karma tests"
