@@ -4,6 +4,7 @@ import 'dart:async' as async;
 import 'dart:convert' show JSON;
 import 'dart:html' as dom;
 import 'dart:js' as js;
+import 'dart:profiler';
 
 import 'package:di/di.dart';
 import 'package:perf_api/perf_api.dart';
