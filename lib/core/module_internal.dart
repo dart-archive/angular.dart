@@ -3,6 +3,7 @@ library angular.core_internal;
 import 'dart:async' as async;
 import 'dart:collection';
 import 'dart:math';
+import 'dart:profiler';
 import 'package:intl/intl.dart';
 
 import 'package:di/di.dart';
