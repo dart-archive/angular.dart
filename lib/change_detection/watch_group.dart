@@ -849,6 +849,8 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
       if (value is String && current is String && value == current) {
         // it is really the same, recover and save so next time identity is same
         current = value;
+      } else if (value is num && value.isNaN && current is num && current.isNaN) {
+        // we need this for the compiled JavaScript since in JS NaN !== NaN.
       } else {
         previousValue = current;
         currentValue = value;
