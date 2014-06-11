@@ -3,11 +3,12 @@ library angular.core_dynamic;
 import 'dart:mirrors';
 import 'package:angular/core/annotation_src.dart';
 import 'package:angular/core/registry.dart';
+import 'dart:collection';
 
 export 'package:angular/core/registry.dart' show
     MetadataExtractor;
 
-var _fieldMetadataCache = new Map<Type, Map<String, DirectiveAnnotation>>();
+var _fieldMetadataCache = new HashMap<Type, Map<String, DirectiveAnnotation>>();
 
 class DynamicMetadataExtractor implements MetadataExtractor {
   final _fieldAnnotations = [
@@ -41,7 +42,7 @@ class DynamicMetadataExtractor implements MetadataExtractor {
     var match;
     var fieldMetadata = fieldMetadataExtractor(type);
     if (fieldMetadata.isNotEmpty) {
-      var newMap = annotation.map == null ? {} : new Map.from(annotation.map);
+      var newMap = annotation.map == null ? new HashMap() : new HashMap.from(annotation.map);
       fieldMetadata.forEach((String fieldName, DirectiveAnnotation ann) {
         var attrName = ann.attrName;
         if (newMap.containsKey(attrName)) {
@@ -60,11 +61,11 @@ class DynamicMetadataExtractor implements MetadataExtractor {
       _fieldMetadataCache.putIfAbsent(type, () => _fieldMetadataExtractor(reflectType(type)));
 
   Map<String, DirectiveAnnotation> _fieldMetadataExtractor(ClassMirror cm) {
-    var fields = <String, DirectiveAnnotation>{};
+    var fields = new HashMap<String, DirectiveAnnotation>();
     if(cm.superclass != null) {
       fields.addAll(_fieldMetadataExtractor(cm.superclass));
     } else {
-      fields = {};
+      fields = new HashMap();
     }
     Map<Symbol, DeclarationMirror> declarations = cm.declarations;
     declarations.forEach((symbol, dm) {

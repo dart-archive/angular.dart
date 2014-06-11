@@ -382,7 +382,7 @@ class HttpDefaults {
  */
 @Injectable()
 class Http {
-  var _pendingRequests = <String, async.Future<HttpResponse>>{};
+  var _pendingRequests = new HashMap<String, async.Future<HttpResponse>>();
   BrowserCookies _cookies;
   LocationWrapper _location;
   UrlRewriter _rewriter;
@@ -662,7 +662,7 @@ class Http {
   static Map<String, String> parseHeaders(dom.HttpRequest value) {
     var headers = value.getAllResponseHeaders();
 
-    var parsed = {};
+    var parsed = new HashMap();
 
     if (headers == null) return parsed;
 

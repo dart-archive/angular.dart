@@ -543,7 +543,7 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
 final Object _INITIAL_ = new Object();
 
 class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
-  final _records = new Map<dynamic, KeyValueRecord>();
+  final _records = new HashMap<dynamic, KeyValueRecord>();
   Map _map;
 
   Map get map => _map;
@@ -1414,7 +1414,7 @@ class _DuplicateItemRecordList {
  * The list of duplicates is implemented by [_DuplicateItemRecordList].
  */
 class DuplicateMap {
-  final map = <dynamic, _DuplicateItemRecordList>{};
+  final map = new HashMap<dynamic, _DuplicateItemRecordList>();
 
   void put(ItemRecord record, [ItemRecord insertBefore = null]) {
     map.putIfAbsent(record.item, () => new _DuplicateItemRecordList()).add(record, insertBefore);

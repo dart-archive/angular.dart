@@ -10,7 +10,7 @@ part of angular.core_internal;
  */
 @Injectable()
 class Interpolate implements Function {
-  var _cache = {};
+  var _cache = new HashMap();
   /**
    * Compiles markup text into expression.
    *

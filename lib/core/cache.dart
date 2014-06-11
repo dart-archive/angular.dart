@@ -43,7 +43,7 @@ abstract class Cache<K, V> {
  * An unbounded cache.
  */
 class UnboundedCache<K, V> implements Cache<K, V> {
-  Map<K, V> _entries = <K, V>{};
+  Map<K, V> _entries = new HashMap<K, V>();
   int _hits = 0;
   int _misses = 0;
 
