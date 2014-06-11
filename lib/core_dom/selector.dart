@@ -62,7 +62,7 @@ class DirectiveSelector {
     ElementBinderBuilder builder = _binderFactory.builder(_formatters, _directives);
     List<_ElementSelector> partialSelection;
     final classes = new Set<String>();
-    final attrs = <String, String>{};
+    final attrs = new HashMap<String, String>();
 
     dom.Element element = node;
     String nodeName = element.tagName.toLowerCase();
@@ -234,14 +234,14 @@ _addRefs(ElementBinderBuilder builder, List<_Directive> directives, dom.Node nod
 class _ElementSelector {
   final String _name;
 
-  final _elementMap = <String, List<_Directive>>{};
-  final _elementPartialMap = <String, _ElementSelector>{};
+  final _elementMap = new HashMap<String, List<_Directive>>();
+  final _elementPartialMap = new HashMap<String, _ElementSelector>();
 
-  final _classMap = <String, List<_Directive>>{};
-  final _classPartialMap = <String, _ElementSelector>{};
+  final _classMap = new HashMap<String, List<_Directive>>();
+  final _classPartialMap = new HashMap<String, _ElementSelector>();
 
-  final _attrValueMap = <String, Map<String, List<_Directive>>>{};
-  final _attrValuePartialMap = <String, Map<String, _ElementSelector>>{};
+  final _attrValueMap = new HashMap<String, Map<String, List<_Directive>>>();
+  final _attrValuePartialMap = new HashMap<String, Map<String, _ElementSelector>>();
 
   _ElementSelector(this._name);
 
@@ -268,12 +268,12 @@ class _ElementSelector {
         }
       } else if ((name = part.attrName) != null) {
         if (terminal) {
-          elSelector._attrValueMap.putIfAbsent(name, () => <String, List<_Directive>>{})
+          elSelector._attrValueMap.putIfAbsent(name, () => new HashMap<String, List<_Directive>>())
               .putIfAbsent(part.attrValue, () => [])
               .add(directive);
         } else {
           elSelector = elSelector._attrValuePartialMap
-              .putIfAbsent(name, () => <String, _ElementSelector>{})
+              .putIfAbsent(name, () => new HashMap<String, _ElementSelector>())
               .putIfAbsent(part.attrValue, () => new _ElementSelector(name));
         }
       } else {
@@ -349,7 +349,7 @@ class _ElementSelector {
 
   // A global cache for the _matchingKey RegExps.  The size is bounded by
   // the number of attribute directive selectors used in the application.
-  static var _matchingKeyCache = <String, RegExp>{};
+  static var _matchingKeyCache = new HashMap<String, RegExp>();
 
   String _matchingKey(Iterable<String> keys, String attrName) =>
       keys.firstWhere((key) =>

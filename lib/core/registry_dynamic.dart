@@ -3,11 +3,12 @@ library angular.core_dynamic;
 import 'dart:mirrors';
 import 'package:angular/core/annotation_src.dart';
 import 'package:angular/core/registry.dart';
+import 'dart:collection';
 
 export 'package:angular/core/registry.dart' show
     MetadataExtractor;
 
-var _fieldMetadataCache = new Map<Type, Map<String, DirectiveAnnotation>>();
+var _fieldMetadataCache = new HashMap<Type, Map<String, DirectiveAnnotation>>();
 
 class DynamicMetadataExtractor implements MetadataExtractor {
   final _fieldAnnotations = [

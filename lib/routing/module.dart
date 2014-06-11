@@ -133,6 +133,7 @@ import 'package:angular/core_dom/module_internal.dart';
 import 'package:route_hierarchical/client.dart';
 
 import 'package:angular/routing/static_keys.dart';
+import 'dart:collection';
 
 part 'routing.dart';
 part 'ng_view.dart';

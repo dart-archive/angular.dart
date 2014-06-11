@@ -138,7 +138,7 @@ class NgView implements DetachAware, RouteProvider {
   String get routeName => _viewRoute.name;
 
   Map<String, String> get parameters {
-    var res = <String, String>{};
+    var res = new HashMap<String, String>();
     var p = _viewRoute;
     while (p != null) {
       res.addAll(p.parameters);

@@ -134,11 +134,11 @@ class CssAnimate implements Animate {
 @Injectable()
 class CssAnimationMap {
   final Map<dom.Element, Map<String, CssAnimation>> cssAnimations
-      = new Map<dom.Element, Map<String, CssAnimation>>();
+      = new HashMap<dom.Element, Map<String, CssAnimation>>();
 
   void track(CssAnimation animation) {
     var animations = cssAnimations.putIfAbsent(animation.element,
-        () => <String, CssAnimation>{});
+        () => new HashMap<String, CssAnimation>());
     animations[animation.eventClass] = animation;
   }
 

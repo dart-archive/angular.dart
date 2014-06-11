@@ -113,6 +113,7 @@ import 'package:di/di.dart';
     'angular.animate'
 ])
 import 'dart:mirrors' show MirrorsUsed;
+import 'dart:collection';
 
 part 'animations.dart';
 part 'animation_loop.dart';

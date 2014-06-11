@@ -22,6 +22,7 @@ import 'package:angular/change_detection/ast_parser.dart';
 import 'package:angular/core/registry.dart';
 
 import 'package:angular/directive/module.dart' show NgBaseCss;
+import 'dart:collection';
 
 part 'animation.dart';
 part 'view.dart';
