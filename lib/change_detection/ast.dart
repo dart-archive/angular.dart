@@ -91,8 +91,7 @@ class PureFunctionAST extends AST {
 /**
  * SYNTAX: fn(arg0, arg1, ...)
  *
- * Invoke a pure function. Pure means that the function has no state, and
- * therefore it needs to be re-computed only if its args change.
+ * Invoke a (non-pure) function.
  */
 class ClosureAST extends AST {
   final String name;
