@@ -12,6 +12,23 @@ describe('bp', function() {
 
   beforeEach(function() {
     bp._container = document.createElement('div');
+
+    var sampleRange = document.createElement('input');
+    sampleRange.setAttribute('type', 'range');
+    sampleRange.setAttribute('min', '1');
+    sampleRange.setAttribute('max', '100');
+    sampleRange.setAttribute('id', 'sampleRange');
+    bp._container.appendChild(sampleRange);
+
+    var sampleRangeValue = document.createElement('span')
+    sampleRangeValue.setAttribute('id', 'sampleRangeValue');
+    bp._container.appendChild(sampleRangeValue);
+
+    bp.runState = {
+      numSamples: 10,
+      recentTimePerStep: {},
+      timesPerAction: {}
+    };
   });
 
   describe('.loopBenchmark()', function() {
@@ -71,11 +88,11 @@ describe('bp', function() {
     });
 
 
-    it('should set the runState to 10 samples and -1 iterations', function() {
-      var spy = spyOn(bp, 'setRunState');
+    it('should set the runState -1 iterations', function() {
+      var spy = spyOn(bp, 'setIterations');
       bp.runState.iterations = 0;
       bp.loopBenchmark();
-      expect(spy).toHaveBeenCalledWith(10, -1);
+      expect(spy).toHaveBeenCalledWith(-1);
     });
 
 
@@ -126,10 +143,10 @@ describe('bp', function() {
     });
 
 
-    it('should set the runState to 20 samples and 25 iterations', function() {
-      var spy = spyOn(bp, 'setRunState');
+    it('should set the runState to25 iterations', function() {
+      var spy = spyOn(bp, 'setIterations');
       bp.twentyFiveBenchmark();
-      expect(spy).toHaveBeenCalledWith(20, 25);
+      expect(spy).toHaveBeenCalledWith(25);
     });
 
 
@@ -169,6 +186,29 @@ describe('bp', function() {
   });
 
 
+  describe('.addSampleRange()', function() {
+    it('should set the default value to the current numSamples', function() {
+      bp.runState.numSamples = 10;
+      bp.addSampleRange();
+      expect(bp.sampleRange.value).toBe('10');
+    });
+  });
+
+
+  describe('.onSampleRangeChanged()', function() {
+    beforeEach(function() {
+      bp.resetIterations();
+    });
+
+
+    it('should change the numSamples property', function() {
+      expect(bp.runState.numSamples).toBe(10);
+      bp.onSampleRangeChanged({target: {value: '80'}});
+      expect(bp.runState.numSamples).toBe(80);
+    });
+  });
+
+
   describe('.addButton()', function() {
 
   });
@@ -198,23 +238,21 @@ describe('bp', function() {
   });
 
 
-  describe('.setRunState()', function() {
+  describe('.setIterations()', function() {
     it('should set provided arguments to runState object', function() {
-      bp.runState = {};
-      bp.setRunState(10, 15, 5);
+      bp.runState = {numSamples: 10};
+      bp.setIterations(15);
       expect(bp.runState.numSamples).toBe(10);
       expect(bp.runState.iterations).toBe(15);
-      expect(bp.runState.ignoreCount).toBe(5);
     });
   });
 
 
-  describe('.resetRunState()', function() {
+  describe('.resetIterations()', function() {
     it('should set runState object to defaults', function() {
       bp.runState = {
         numSamples: 99,
         iterations: 100,
-        ignoreCount: 25,
         recentTimePerStep: {
           fakeStep: 2
         },
@@ -225,12 +263,11 @@ describe('bp', function() {
         }
       }
 
-      bp.resetRunState();
-      expect(bp.runState.numSamples).toBe(0);
+      bp.resetIterations();
+      expect(bp.runState.numSamples).toBe(99);
       expect(bp.runState.iterations).toBe(0);
-      expect(bp.runState.ignoreCount).toBe(0);
-      expect(bp.runState.timesPerAction).toEqual({});
-      expect(bp.runState.recentTimePerStep).toEqual({});
+      expect(bp.runState.timesPerAction).toEqual({fakeStep: {times: [5]}});
+      expect(bp.runState.recentTimePerStep).toEqual({fakeStep: 2});
     });
   });
 
@@ -251,27 +288,14 @@ describe('bp', function() {
   });
 
 
-  describe('.padName()', function() {
-    it('should return a left-side padded name to total 10 characters', function() {
-      expect(bp.padName('Jeff')).toBe('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jeff');
-      expect(bp.padName('Robertoooo')).toBe('Robertoooo');
-    });
-
-
-    it('should not pad if input is greater than 10 characters', function() {
-      expect(bp.padName('Robertooooo')).toBe('Robertooooo');
-    });
-  });
-
-
   describe('.runAllTests()', function() {
     beforeEach(function() {
       bp.steps = [mockStep];
       bp.infoDiv = document.createElement('div');
     });
 
-    it('should call resetRunState before calling done', function() {
-      var spy = spyOn(bp, 'resetRunState');
+    it('should call resetIterations before calling done', function() {
+      var spy = spyOn(bp, 'resetIterations');
       bp.runState.iterations = 0;
       bp.runAllTests();
       expect(spy).toHaveBeenCalled();
@@ -283,7 +307,7 @@ describe('bp', function() {
       var doneSpy = jasmine.createSpy('done');
 
       runs(function() {
-        bp.setRunState(5, 5);
+        bp.setIterations(5, 5);
         bp.runAllTests(doneSpy);
       });
 
@@ -299,9 +323,10 @@ describe('bp', function() {
 
     it('should add as many times to timePerStep as are specified by numSamples', function() {
       var doneSpy = jasmine.createSpy('done');
-      var resetSpy = spyOn(bp, 'resetRunState');
+      var resetSpy = spyOn(bp, 'resetIterations');
       runs(function() {
-        bp.setRunState(8, 10);
+        bp.runState.numSamples = 8;
+        bp.setIterations(10);
         bp.runAllTests(doneSpy);
       });
 
@@ -316,16 +341,24 @@ describe('bp', function() {
   });
 
 
-  describe('.getAverage()', function() {
-    it('should return the average of a set of numbers', function() {
-      expect(bp.getAverage([100,0,50,75,25])).toBe(50);
+  describe('.rightSizeTimes()', function() {
+    it('should make remove the left side of the input if longer than numSamples', function() {
+      bp.runState.numSamples = 3;
+      expect(bp.rightSizeTimes([0,1,2,3,4,5,6])).toEqual([4,5,6]);
     });
 
 
-    it('should trim the first parts of a set if trim argument provided', function() {
-      expect(bp.getAverage([100,100,100,5,5], {
-        ignoreCount: 3
-      })).toBe(5);
+    it('should return the whole list if shorter than or equal to numSamples', function() {
+      bp.runState.numSamples = 7;
+      expect(bp.rightSizeTimes([0,1,2,3,4,5,6])).toEqual([0,1,2,3,4,5,6]);
+      expect(bp.rightSizeTimes([0,1,2,3,4,5])).toEqual([0,1,2,3,4,5]);
+    });
+  });
+
+
+  describe('.getAverage()', function() {
+    it('should return the average of a set of numbers', function() {
+      expect(bp.getAverage([100,0,50,75,25])).toBe(50);
     });
   });
 
@@ -372,13 +405,6 @@ describe('bp', function() {
     });
 
 
-    it('should set the nextEntry of the tpa to 0 if one less than numSamples', function() {
-      bp.runState.timesPerAction.fakeStep.nextEntry = 4;
-      bp.calcStats();
-      expect(bp.runState.timesPerAction.fakeStep.nextEntry).toBe(0);
-    });
-
-
     it('should return an string report', function() {
       expect(typeof bp.calcStats()).toBe('string');
     });
@@ -389,7 +415,7 @@ describe('bp', function() {
     it('should return an html string with provided values', function() {
       bp.runState.numSamples = 9;
       expect(bp.generateReportPartial('foo', 10, [9,11])).
-        toBe('<div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;foo: avg-9:<b>10ms</b> [9, 11]ms</div>')
+        toBe('<tr><td>foo</td><td class="average">10ms</td><td>[9, 11]ms</td></tr>')
     });
   });
 
@@ -407,11 +433,13 @@ describe('bp', function() {
     it('should call methods to write to the dom', function() {
       var linksSpy = spyOn(bp, 'addLinks');
       var buttonSpy = spyOn(bp, 'addButton');
+      var rangeSpy = spyOn(bp, 'addSampleRange');
       var infoSpy = spyOn(bp, 'addInfo');
 
       bp.onDOMContentLoaded();
       expect(linksSpy).toHaveBeenCalled();
       expect(buttonSpy.callCount).toBe(3);
+      expect(rangeSpy).toHaveBeenCalled();
       expect(infoSpy).toHaveBeenCalled();
     });
   });
