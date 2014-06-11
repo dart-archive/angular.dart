@@ -40,9 +40,9 @@ class ElementBinderBuilder {
   final FormatterMap _formatters;
 
   /// "on-*" attribute names and values, added by a [DirectiveSelector]
-  final onEvents = <String, String>{};
+  final onEvents = new HashMap<String, String>();
   /// "bind-*" attribute names and values, added by a [DirectiveSelector]
-  final bindAttrs = <String, AST>{};
+  final bindAttrs = new HashMap<String, AST>();
 
   final decorators = <DirectiveRef>[];
   DirectiveRef template;

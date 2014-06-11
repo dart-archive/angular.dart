@@ -16,7 +16,7 @@ class StaticParserFunctions {
 class StaticParser implements Parser<Expression> {
   final StaticParserFunctions _functions;
   final DynamicParser _fallbackParser;
-  final _cache = <String, Expression>{};
+  final _cache = new HashMap<String, Expression>();
   StaticParser(this._functions, this._fallbackParser);
 
   Expression call(String input) {

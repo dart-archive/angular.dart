@@ -1,6 +1,7 @@
 library angular.watch_group;
 
 import 'package:angular/change_detection/change_detection.dart';
+import 'dart:collection';
 
 part 'linked_list.dart';
 part 'ast.dart';
@@ -119,7 +120,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
       : id = '',
         _rootGroup = null,
         _parentWatchGroup = null,
-        _cache = new Map<String, WatchRecord<_Handler>>()
+        _cache = new HashMap<String, WatchRecord<_Handler>>()
   {
     _marker.watchGrp = this;
     _evalWatchTail = _evalWatchHead = _marker;
@@ -289,7 +290,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
         this,
         _changeDetector.newGroup(),
         context == null ? this.context : context,
-        <String, WatchRecord<_Handler>>{},
+        new HashMap<String, WatchRecord<_Handler>>(),
         _rootGroup == null ? this : _rootGroup);
     _WatchGroupList._add(this, childGroup);
     var marker = childGroup._marker;
@@ -680,7 +681,7 @@ class _NamedArgHandler extends _ArgHandler {
 
   void acceptValue(object) {
     if (watchRecord.namedArgs == null) {
-      watchRecord.namedArgs = new Map<Symbol, dynamic>();
+      watchRecord.namedArgs = new HashMap<Symbol, dynamic>();
     }
     watchRecord.dirtyArgs = true;
     watchRecord.namedArgs[name] = object;
