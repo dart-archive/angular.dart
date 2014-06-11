@@ -3,6 +3,7 @@ bp.steps = window.benchmarkSteps = [];
 bp.runState = {
   numSamples: 10,
   recentTimePerStep: {},
+  recentGCTimePerStep: {},
   timesPerAction: {}
 };
 
@@ -82,13 +83,25 @@ bp.runTimedTest = function (bs) {
   }
   var startTime = bp.numMilliseconds();
   bs.fn();
-  return bp.numMilliseconds() - startTime;
+  var endTime = bp.numMilliseconds() - startTime;
+
+  var startGCTime = bp.numMilliseconds();
+  if (typeof window.gc === 'function') {
+    window.gc();
+  }
+  var endGCTime = bp.numMilliseconds() - startGCTime;
+  return {
+    time: endTime,
+    gcTime: endGCTime
+  };
 };
 
 bp.runAllTests = function (done) {
   if (bp.runState.iterations--) {
     bp.steps.forEach(function(bs) {
-      bp.runState.recentTimePerStep[bs.name] = bp.runTimedTest(bs);
+      var testResults = bp.runTimedTest(bs);
+      bp.runState.recentTimePerStep[bs.name] = testResults.time;
+      bp.runState.recentGCTimePerStep[bs.name] = testResults.gcTime;
     });
     bp.report = bp.calcStats();
     bp.writeReport(bp.report);
@@ -103,20 +116,28 @@ bp.runAllTests = function (done) {
   }
 }
 
-bp.generateReportPartial = function(name, avg, times) {
+bp.generateReportPartial = function(name, avg, fmtTimes, gcTimes) {
   return bp.interpolateHtml(
-      '<tr><td>%0</td><td class="average">%1ms</td><td>[%2]ms</td></tr>',
+      '<tr><td>%0</td><td class="average">test:%1ms<br>gc:%2ms<br>combined: %3ms</td><td>%4</td><td>%5</td></tr>',
       [
         name,
-        ('' + avg).substr(0,6),
-        times.join(', ')
+        ('' + avg.time).substr(0,6),
+        ('' + avg.gcTime).substr(0,6),
+        ('' + (avg.time + avg.gcTime)).substr(0,6),
+        fmtTimes.join('<br>'),
+        gcTimes.join('<br>')
       ]);
 };
 
-bp.getAverage = function (times, runState) {
-  var avg = 0;
-  times.forEach(function(x) { avg += x; });
-  return avg / times.length;
+bp.getAverage = function (times, gcTimes, runState) {
+  var timesAvg = 0;
+  var gcAvg = 0;
+  times.forEach(function(x) { timesAvg += x; });
+  gcTimes.forEach(function(x) { gcAvg += x; });
+  return {
+    gcTime: gcAvg / gcTimes.length,
+    time: timesAvg / times.length
+  };
 };
 
 bp.writeReport = function(reportContent) {
@@ -129,6 +150,8 @@ bp.getTimesPerAction = function(name) {
     tpa = bp.runState.timesPerAction[name] = {
       times: [], // circular buffer
       fmtTimes: [],
+      fmtGCTimes: [],
+      gcTimes: [],
       nextEntry: 0
     }
   }
@@ -149,17 +172,25 @@ bp.calcStats = function() {
   bp.steps.forEach(function(bs) {
     var stepName = bs.name,
         timeForStep = bp.runState.recentTimePerStep[stepName],
+        gcTimeForStep = bp.runState.recentGCTimePerStep[stepName],
         tpa = bp.getTimesPerAction(stepName),
         avg;
 
-    tpa.fmtTimes[tpa.nextEntry] = ('' + timeForStep).substr(0,6);
+    tpa.fmtTimes[tpa.nextEntry] = timeForStep.toString().substr(0, 6);
     tpa.fmtTimes = bp.rightSizeTimes(tpa.fmtTimes);
+
+    tpa.fmtGCTimes[tpa.nextEntry] = gcTimeForStep.toString().substr(0, 6);
+    tpa.fmtGCTimes = bp.rightSizeTimes(tpa.fmtGCTimes);
+
+    tpa.gcTimes[tpa.nextEntry] = gcTimeForStep;
+    tpa.gcTimes = bp.rightSizeTimes(tpa.gcTimes);
+
     tpa.times[tpa.nextEntry++] = timeForStep;
     tpa.times = bp.rightSizeTimes(tpa.times);
-    tpa.nextEntry %= bp.runState.numSamples;
-    avg = bp.getAverage(tpa.times, bp.runState);
 
-    report += bp.generateReportPartial(stepName, avg, tpa.fmtTimes);
+    tpa.nextEntry %= bp.runState.numSamples;
+    avg = bp.getAverage(tpa.times, tpa.gcTimes);
+    report += bp.generateReportPartial(stepName, avg, tpa.fmtTimes, tpa.fmtGCTimes);
   });
   return report;
 };
