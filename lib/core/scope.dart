@@ -175,8 +175,8 @@ class Scope {
   // TODO(misko): WatchGroup should be private.
   // Instead we should expose performance stats about the watches
   // such as # of watches, checks/1ms, field checks, function checks, etc
-  final WatchGroup _readWriteGroup;
-  final WatchGroup _readOnlyGroup;
+  final WatchGroup _digestGroup;
+  final WatchGroup _flushGroup;
 
   Scope _childHead, _childTail, _next, _prev;
   _Streams _streams;
@@ -184,9 +184,8 @@ class Scope {
   /// Do not use. Exposes internal state for testing.
   bool get hasOwnStreams => _streams != null  && _streams._scope == this;
 
-  Scope(Object this.context, this.rootScope, this._parentScope,
-        this._readWriteGroup, this._readOnlyGroup, this.id,
-        this._stats);
+  Scope(Object this.context, this.rootScope, this._parentScope, this._digestGroup, this._flushGroup,
+        this.id, this._stats);
 
   /**
    * Use [watch] to set up change detection on an expression.
@@ -272,7 +271,7 @@ class Scope {
    * * [canChangeModel]: Whether or not the [reactionFn] can change the model.
    */
   Watch watchAST(AST ast, ReactionFn reactionFn, {bool canChangeModel: true}) {
-    WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
+    WatchGroup group = canChangeModel ? _digestGroup : _flushGroup;
     return group.watch(ast, reactionFn);
   }
   static Map _oneTimeWarnings = {};
@@ -295,13 +294,13 @@ class Scope {
 
   dynamic apply([expression, Map locals]) {
     _assertInternalStateConsistency();
-    rootScope._transitionState(null, RootScope.STATE_APPLY);
+    rootScope.ensureStartCycle();
     try {
       return eval(expression, locals);
     } catch (e, s) {
       rootScope._exceptionHandler(e, s);
     } finally {
-      rootScope.._transitionState(RootScope.STATE_APPLY, null)
+      rootScope..ensureEndCycle()
                ..digest()
                ..flush();
     }
@@ -325,8 +324,8 @@ class Scope {
   Scope createChild(Object childContext) {
     assert(isAttached);
     var child = new Scope(childContext, rootScope, this,
-                          _readWriteGroup.newGroup(childContext),
-                          _readOnlyGroup.newGroup(childContext),
+                          _digestGroup.newGroup(childContext),
+                          _flushGroup.newGroup(childContext),
                          '$id:${_childScopeNextId++}',
                          _stats);
 
@@ -355,8 +354,8 @@ class Scope {
 
     _next = _prev = null;
 
-    _readWriteGroup.remove();
-    _readOnlyGroup.remove();
+    _digestGroup.remove();
+    _flushGroup.remove();
     _parentScope = null;
   }
 
@@ -466,7 +465,7 @@ class ScopeStats {
   }
   void flushEnd() {
     if (_config.emit && _emitter != null) {
-      _emitter.emit(RootScope.STATE_FLUSH, fieldStopwatch, evalStopwatch,
+      _emitter.emit(LifeCycle.STATE_FLUSH, fieldStopwatch, evalStopwatch,
         processStopwatch);
     }
     _flushPhaseDuration = _allStagesDuration();
@@ -476,7 +475,7 @@ class ScopeStats {
   }
   void flushAssertEnd() {
     if (_config.emit && _emitter != null) {
-      _emitter.emit(RootScope.STATE_FLUSH_ASSERT, fieldStopwatch, evalStopwatch,
+      _emitter.emit(LifeCycle.STATE_FLUSH_ASSERT, fieldStopwatch, evalStopwatch,
         processStopwatch);
     }
     _assertFlushPhaseDuration = _allStagesDuration();
@@ -523,8 +522,8 @@ class ScopeStatsEmitter {
   }
 
   String _formatPrefix(String prefix) {
-    if (prefix == RootScope.STATE_FLUSH) return '  flush:';
-    if (prefix == RootScope.STATE_FLUSH_ASSERT) return ' assert:';
+    if (prefix == LifeCycle.STATE_FLUSH) return '  flush:';
+    if (prefix == LifeCycle.STATE_FLUSH_ASSERT) return ' assert:';
 
     return (prefix == '1' ? _HEADER_ : '')  + '     #$prefix:';
   }
@@ -544,281 +543,6 @@ class ScopeStatsConfig {
   ScopeStatsConfig();
   ScopeStatsConfig.enabled() {
     emit = true;
-  }
-}
-/**
- *
- * Every Angular application has exactly one RootScope. RootScope extends Scope, adding
- * services related to change detection, async unit-of-work processing, and DOM read/write queues.
- * The RootScope can not be destroyed.
- *
- * ## Lifecycle
- *
- * All work in Angular must be done within a context of a VmTurnZone. VmTurnZone detects the end
- * of the VM turn, and calls the Apply method to process the changes at the end of VM turn.
- *
- */
-@Injectable()
-class RootScope extends Scope {
-  static final STATE_APPLY = 'apply';
-  static final STATE_DIGEST = 'digest';
-  static final STATE_FLUSH = 'flush';
-  static final STATE_FLUSH_ASSERT = 'assert';
-
-  final ExceptionHandler _exceptionHandler;
-  final ASTParser _astParser;
-  final Parser _parser;
-  final ScopeDigestTTL _ttl;
-  final VmTurnZone _zone;
-
-  _FunctionChain _runAsyncHead, _runAsyncTail;
-  _FunctionChain _domWriteHead, _domWriteTail;
-  _FunctionChain _domReadHead, _domReadTail;
-
-  final ScopeStats _scopeStats;
-
-  String _state;
-
-  /**
-   *
-   * While processing data bindings, Angular passes through multiple states. When testing or
-   * debugging, it can be useful to access the current `state`, which is one of the following:
-   *
-   * * null
-   * * apply
-   * * digest
-   * * flush
-   * * assert
-   *
-   * ##null
-   *
-   *  Angular is not currently processing changes
-   *
-   * ##apply
-   *
-   * The apply state begins by executing the optional expression within the context of
-   * angular change detection mechanism. Any exceptions are delegated to [ExceptionHandler]. At the
-   * end of apply state RootScope enters the digest followed by flush phase (optionally if asserts
-   * enabled run assert phase.)
-   *
-   * ##digest
-   *
-   * The apply state begins by processing the async queue,
-   * followed by change detection
-   * on non-DOM listeners. Any changes detected are process using the reaction function. The digest
-   * phase is repeated as long as at least one change has been detected. By default, after 5
-   * iterations the model is considered unstable and angular exists with an exception. (See
-   * ScopeDigestTTL)
-   *
-   * ##flush
-   *
-   * The flush phase consists of these steps:
-   *
-   * 1. processing the DOM write queue
-   * 2. change detection on DOM only updates (these are reaction functions which must
-   *    not change the model state and hence don't need stabilization as in digest phase).
-   * 3. processing the DOM read queue
-   * 4. repeat steps 1 and 3 (not 2) until queues are empty
-   *
-   * ##assert
-   *
-   * Optionally if Dart assert is on, verify that flush reaction functions did not make any changes
-   * to model and throw error if changes detected.
-   *
-   */
-  String get state => _state;
-
-  RootScope(Object context, Parser parser, ASTParser astParser, FieldGetterFactory fieldGetterFactory,
-            FormatterMap formatters, this._exceptionHandler, this._ttl, this._zone,
-            ScopeStats _scopeStats)
-      : _scopeStats = _scopeStats,
-        _parser = parser,
-        _astParser = astParser,
-        super(context, null, null,
-            new RootWatchGroup(fieldGetterFactory,
-                new DirtyCheckingChangeDetector(fieldGetterFactory), context),
-            new RootWatchGroup(fieldGetterFactory,
-                new DirtyCheckingChangeDetector(fieldGetterFactory), context),
-            '',
-            _scopeStats)
-  {
-    _zone.onTurnDone = apply;
-    _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
-  }
-
-  RootScope get rootScope => this;
-  bool get isAttached => true;
-
-/**
-  * Propagates changes between different parts of the application model. Normally called by
-  * [VMTurnZone] right before DOM rendering to initiate data binding. May also be called directly
-  * for unit testing.
-  *
-  * Before each iteration of change detection, [digest] first processes the async queue. Any
-  * work scheduled on the queue is executed before change detection. Since work scheduled on
-  * the queue may generate more async calls, [digest] must process the queue multiple times before
-  * it completes. The async queue must be empty before the model is considered stable.
-  *
-  * Next, [digest] collects the changes that have occurred in the model. For each change,
-  * [digest] calls the associated [ReactionFn]. Since a [ReactionFn] may further change the model,
-  * [digest] processes changes multiple times until no more changes are detected.
-  *
-  * If the model does not stabilize within 5 iterations, an exception is thrown. See
-  * [ScopeDigestTTL].
-  */
-  void digest() {
-    _transitionState(null, STATE_DIGEST);
-    try {
-      var rootWatchGroup = _readWriteGroup as RootWatchGroup;
-
-      int digestTTL = _ttl.ttl;
-      const int LOG_COUNT = 3;
-      List log;
-      List digestLog;
-      var count;
-      ChangeLog changeLog;
-      _scopeStats.digestStart();
-      do {
-        while (_runAsyncHead != null) {
-          try {
-            _runAsyncHead.fn();
-          } catch (e, s) {
-            _exceptionHandler(e, s);
-          }
-          _runAsyncHead = _runAsyncHead._next;
-        }
-        _runAsyncTail = null;
-
-        digestTTL--;
-        count = rootWatchGroup.detectChanges(
-            exceptionHandler: _exceptionHandler,
-            changeLog: changeLog,
-            fieldStopwatch: _scopeStats.fieldStopwatch,
-            evalStopwatch: _scopeStats.evalStopwatch,
-            processStopwatch: _scopeStats.processStopwatch);
-
-        if (digestTTL <= LOG_COUNT) {
-          if (changeLog == null) {
-            log = [];
-            digestLog = [];
-            changeLog = (e, c, p) => digestLog.add('$e: $c <= $p');
-          } else {
-            log.add(digestLog.join(', '));
-            digestLog.clear();
-          }
-        }
-        if (digestTTL == 0) {
-          throw 'Model did not stabilize in ${_ttl.ttl} digests. '
-                'Last $LOG_COUNT iterations:\n${log.join('\n')}';
-        }
-        _scopeStats.digestLoop(count);
-      } while (count > 0);
-    } finally {
-      _scopeStats.digestEnd();
-      _transitionState(STATE_DIGEST, null);
-    }
-  }
-
-  void flush() {
-    _stats.flushStart();
-    _transitionState(null, STATE_FLUSH);
-    RootWatchGroup readOnlyGroup = this._readOnlyGroup as RootWatchGroup;
-    bool runObservers = true;
-    try {
-      do {
-        if (_domWriteHead != null) _stats.domWriteStart();
-        while (_domWriteHead != null) {
-          try {
-            _domWriteHead.fn();
-          } catch (e, s) {
-            _exceptionHandler(e, s);
-          }
-          _domWriteHead = _domWriteHead._next;
-          if (_domWriteHead == null) _stats.domWriteEnd();
-        }
-        _domWriteTail = null;
-        if (runObservers) {
-          runObservers = false;
-          readOnlyGroup.detectChanges(exceptionHandler:_exceptionHandler,
-              fieldStopwatch: _scopeStats.fieldStopwatch,
-              evalStopwatch: _scopeStats.evalStopwatch,
-              processStopwatch: _scopeStats.processStopwatch);
-        }
-        if (_domReadHead != null) _stats.domReadStart();
-        while (_domReadHead != null) {
-          try {
-            _domReadHead.fn();
-          } catch (e, s) {
-            _exceptionHandler(e, s);
-          }
-          _domReadHead = _domReadHead._next;
-          if (_domReadHead == null) _stats.domReadEnd();
-        }
-        _domReadTail = null;
-      } while (_domWriteHead != null || _domReadHead != null);
-      _stats.flushEnd();
-      assert((() {
-        _stats.flushAssertStart();
-        var digestLog = [];
-        var flushLog = [];
-        (_readWriteGroup as RootWatchGroup).detectChanges(
-            changeLog: (s, c, p) => digestLog.add('$s: $c <= $p'),
-            fieldStopwatch: _scopeStats.fieldStopwatch,
-            evalStopwatch: _scopeStats.evalStopwatch,
-            processStopwatch: _scopeStats.processStopwatch);
-        (_readOnlyGroup as RootWatchGroup).detectChanges(
-            changeLog: (s, c, p) => flushLog.add('$s: $c <= $p'),
-            fieldStopwatch: _scopeStats.fieldStopwatch,
-            evalStopwatch: _scopeStats.evalStopwatch,
-            processStopwatch: _scopeStats.processStopwatch);
-        if (digestLog.isNotEmpty || flushLog.isNotEmpty) {
-          throw 'Observer reaction functions should not change model. \n'
-                'These watch changes were detected: ${digestLog.join('; ')}\n'
-                'These observe changes were detected: ${flushLog.join('; ')}';
-        }
-        _stats.flushAssertEnd();
-        return true;
-      })());
-    } finally {
-      _stats.cycleEnd();
-      _transitionState(STATE_FLUSH, null);
-    }
-  }
-
-  // QUEUES
-  void runAsync(fn()) {
-    var chain = new _FunctionChain(fn);
-    if (_runAsyncHead == null) {
-      _runAsyncHead = _runAsyncTail = chain;
-    } else {
-      _runAsyncTail = _runAsyncTail._next = chain;
-    }
-  }
-
-  void domWrite(fn()) {
-    var chain = new _FunctionChain(fn);
-    if (_domWriteHead == null) {
-      _domWriteHead = _domWriteTail = chain;
-    } else {
-      _domWriteTail = _domWriteTail._next = chain;
-    }
-  }
-
-  void domRead(fn()) {
-    var chain = new _FunctionChain(fn);
-    if (_domReadHead == null) {
-      _domReadHead = _domReadTail = chain;
-    } else {
-      _domReadTail = _domReadTail._next = chain;
-    }
-  }
-
-  void destroy() {}
-
-  void _transitionState(String from, String to) {
-    assert(isAttached);
-    if (_state != from) throw "$_state already in progress can not enter $to.";
-    _state = to;
   }
 }
 
