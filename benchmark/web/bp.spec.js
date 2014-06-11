@@ -27,6 +27,7 @@ describe('bp', function() {
     bp.runState = {
       numSamples: 10,
       recentTimePerStep: {},
+      recentGCTimePerStep: {},
       timesPerAction: {}
     };
   });
@@ -283,7 +284,7 @@ describe('bp', function() {
 
     it('should return the time required to run the test', function() {
       var times = {};
-      expect(typeof bp.runTimedTest(mockStep, times)).toBe('number');
+      expect(typeof bp.runTimedTest(mockStep, times).time).toBe('number');
     });
   });
 
@@ -358,7 +359,10 @@ describe('bp', function() {
 
   describe('.getAverage()', function() {
     it('should return the average of a set of numbers', function() {
-      expect(bp.getAverage([100,0,50,75,25])).toBe(50);
+      expect(bp.getAverage([100,0,50,75,25], [2,4,2,4,3])).toEqual({
+        gcTime: 3,
+        time: 50
+      });
     });
   });
 
@@ -372,27 +376,37 @@ describe('bp', function() {
         recentTimePerStep: {
           fakeStep: 5
         },
+        recentGCTimePerStep: {
+          fakeStep: 2
+        },
         timesPerAction: {
           fakeStep: {
             times: [3,7],
             fmtTimes: ['3', '7'],
+            fmtGCTimes: ['1','3'],
+            gcTimes: [1,3],
             nextEntry: 2
           },
         }
       };
     });
 
+
     it('should call generateReportPartial() with the correct info', function() {
       var spy = spyOn(bp, 'generateReportPartial');
       bp.calcStats();
-      expect(spy).toHaveBeenCalledWith('fakeStep', 5, ['3','7','5']);
+      expect(spy).toHaveBeenCalledWith('fakeStep', {time: 5, gcTime: 2}, ['3','7','5'], ['1','3','2'])
+      expect(spy.calls[0].args[0]).toBe('fakeStep');
+      expect(spy.calls[0].args[1].gcTime).toBe(2);
+      expect(spy.calls[0].args[1].time).toBe(5);
+      expect(spy.calls[0].args[2]).toEqual(['3','7', '5']);
     });
 
 
     it('should call getAverage() with the correct info', function() {
-      var spy = spyOn(bp, 'getAverage');
+      var spy = spyOn(bp, 'getAverage').andCallThrough();
       bp.calcStats();
-      expect(spy).toHaveBeenCalledWith([3,7,5], bp.runState);
+      expect(spy).toHaveBeenCalledWith([ 3, 7, 5 ], [ 1, 3, 2 ]);
     });
 
 
@@ -414,8 +428,8 @@ describe('bp', function() {
   describe('.generateReportPartial()', function() {
     it('should return an html string with provided values', function() {
       bp.runState.numSamples = 9;
-      expect(bp.generateReportPartial('foo', 10, [9,11])).
-        toBe('<tr><td>foo</td><td class="average">10ms</td><td>[9, 11]ms</td></tr>')
+      expect(bp.generateReportPartial('foo', {time: 10, gcTime: 5}, ['9', '11'], ['4','6'])).
+        toBe('<tr><td>foo</td><td class="average">test:10ms<br>gc:5ms<br>combined: 15ms</td><td>9<br>11</td><td>4<br>6</td></tr>')
     });
   });
 
