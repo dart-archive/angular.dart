@@ -528,6 +528,27 @@ void main() {
         expect(logger).toEqual([]);
       });
 
+      it('should ignore NaN != NaN', () {
+        watchGrp.watch(new ClosureAST('NaN', () => double.NAN, []), (_, __) => logger('NaN'));
+
+        watchGrp.detectChanges();
+        expect(logger).toEqual(['NaN']);
+
+        logger.clear();
+        watchGrp.detectChanges();
+        expect(logger).toEqual([]);
+      }) ;
+
+      it('should test string by value', () {
+        watchGrp.watch(new ClosureAST('String', () => 'value', []), (v, _) => logger(v));
+
+        watchGrp.detectChanges();
+        expect(logger).toEqual(['value']);
+
+        logger.clear();
+        watchGrp.detectChanges();
+        expect(logger).toEqual([]);
+      });
 
       it('should eval method', () {
         var obj = new MyClass(logger);
