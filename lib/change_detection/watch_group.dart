@@ -679,6 +679,9 @@ class _NamedArgHandler extends _ArgHandler {
         super(watchGrp, 'namedArg[$name]', record);
 
   void acceptValue(object) {
+    if (watchRecord.namedArgs == null) {
+      watchRecord.namedArgs = new Map<Symbol, dynamic>();
+    }
     watchRecord.dirtyArgs = true;
     watchRecord.namedArgs[name] = object;
   }
@@ -728,7 +731,7 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
   WatchGroup watchGrp;
   final _Handler handler;
   final List args;
-  final Map<Symbol, dynamic> namedArgs =  new Map<Symbol, dynamic>();
+  Map<Symbol, dynamic> namedArgs = null;
   final String name;
   int mode;
   Function fn;
