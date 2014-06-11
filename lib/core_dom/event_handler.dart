@@ -31,7 +31,7 @@ class EventHandler {
   dom.Node _rootNode;
   final Expando _expando;
   final ExceptionHandler _exceptionHandler;
-  final _listeners = <String, Function>{};
+  final _listeners = new HashMap<String, Function>();
 
   EventHandler(this._rootNode, this._expando, this._exceptionHandler);
 

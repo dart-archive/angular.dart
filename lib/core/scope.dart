@@ -275,7 +275,7 @@ class Scope {
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
     return group.watch(ast, reactionFn);
   }
-  static Map _oneTimeWarnings = {};
+  static Map _oneTimeWarnings = new HashMap();
 
   dynamic eval(expression, [Map locals]) {
     assert(isAttached);
@@ -369,8 +369,8 @@ class Scope {
 
   Map<bool,int> _verifyStreams(parentScope, prefix, log) {
     assert(_parentScope == parentScope);
-    var counts = {};
-    var typeCounts = _streams == null ? {} : _streams._typeCounts;
+    var counts = new HashMap();
+    var typeCounts = _streams == null ? new HashMap() : _streams._typeCounts;
     var connection = _streams != null && _streams._scope == this ? '=' : '-';
     log..add(prefix)..add(hashCode)..add(connection)..add(typeCounts)..add('\n');
     if (_streams == null) {
@@ -862,14 +862,14 @@ class _Streams {
   /// Scope we belong to.
   final Scope _scope;
   /// [Stream]s for [_scope] only
-  final _streams = new Map<String, ScopeStream>();
+  final _streams = new HashMap<String, ScopeStream>();
   /// Child [Scope] event counts.
   final Map<String, int> _typeCounts;
 
   _Streams(this._scope, this._exceptionHandler, _Streams inheritStreams)
       : _typeCounts = inheritStreams == null
-          ? <String, int>{}
-          : new Map.from(inheritStreams._typeCounts);
+          ? new HashMap<String, int>()
+          : new HashMap.from(inheritStreams._typeCounts);
 
   static ScopeEvent emit(Scope scope, String name, data) {
     var event = new ScopeEvent(name, scope, data);

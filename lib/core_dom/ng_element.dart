@@ -8,8 +8,8 @@ class NgElement {
   final Scope _scope;
   final Animate _animate;
 
-  final _classesToUpdate = <String, bool>{};
-  final _attributesToUpdate = <String, dynamic>{};
+  final _classesToUpdate = new HashMap<String, bool>();
+  final _attributesToUpdate = new HashMap<String, dynamic>();
 
   bool _writeScheduled = false;
 

@@ -133,7 +133,7 @@ class NgEvent {
   // Is it better to use a map of listeners or have 29 properties on this
   // object?  One would pretty much only assign to one or two of those
   // properties.  I'm opting for the map since it's less boilerplate code.
-  var listeners = {};
+  var listeners = new HashMap();
   final dom.Element element;
   final Scope scope;
 
