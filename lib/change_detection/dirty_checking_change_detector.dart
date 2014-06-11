@@ -872,10 +872,10 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   int _length;
 
   /// Keeps track of moved items.
-  DuplicateMap _movedItems = new DuplicateMap();
+  DuplicateMap _movedItems;
 
   /// Keeps track of removed items.
-  DuplicateMap _removedItems = new DuplicateMap();
+  DuplicateMap _removedItems;
 
   ItemRecord<V> _previousItHead;
   ItemRecord<V> _itHead, _itTail;
@@ -886,7 +886,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   void _revertToPreviousState() {
     if (!isDirty) return;
 
-    _movedItems.clear();
+    if (_movedItems != null) _movedItems.clear();
     ItemRecord<V> prev;
     int i = 0;
 
@@ -896,6 +896,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       record.currentIndex = record.previousIndex = i;
       record._prev = prev;
       if (prev != null) prev._next = prev._nextPrevious = record;
+
+      if (_movedItems == null) _movedItems = new DuplicateMap();
       _movedItems.put(record);
     }
 
@@ -1058,13 +1060,13 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     // item.
     if (record != null) _collection_remove(record);
     // Attempt to see if we have seen the item before.
-    record = _movedItems.get(item, index);
+    record = _movedItems == null ? null : _movedItems.get(item, index);
     if (record != null) {
       // We have seen this before, we need to move it forward in the collection.
       _collection_moveAfter(record, prev, index);
     } else {
       // Never seen it, check evicted list.
-      record = _removedItems.get(item);
+      record = _removedItems == null ? null : _removedItems.get(item);
       if (record != null) {
         // It is an item which we have earlier evict it, reinsert it back into
         // the list.
@@ -1103,9 +1105,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
    * position. This is incorrect, since a better way to think of it is as insert
    * of 'b' rather then switch 'a' with 'b' and then add 'a' at the end.
    */
-  ItemRecord<V> verifyReinsertion(ItemRecord record, dynamic item,
-                               int index) {
-    ItemRecord<V> reinsertRecord = _removedItems.get(item);
+  ItemRecord<V> verifyReinsertion(ItemRecord record, item, int index) {
+    ItemRecord<V> reinsertRecord = _removedItems == null ? null : _removedItems.get(item);
     if (reinsertRecord != null) {
       record = _collection_reinsertAfter(reinsertRecord, record._prev, index);
     } else if (record.currentIndex != index) {
@@ -1127,7 +1128,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       _removals_add(_collection_unlink(record));
       record = nextRecord;
     }
-    _removedItems.clear();
+    if (_removedItems != null) _removedItems.clear();
 
     if (_additionsTail != null) _additionsTail._nextAdded = null;
     if (_movesTail != null) _movesTail._nextMoved = null;
@@ -1138,7 +1139,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   ItemRecord<V> _collection_reinsertAfter(ItemRecord<V> record,
                                           ItemRecord<V> insertPrev,
                                           int index) {
-    _removedItems.remove(record);
+    if (_removedItems != null) _removedItems.remove(record);
     var prev = record._prevRemoved;
     var next = record._nextRemoved;
 
@@ -1209,6 +1210,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       prev._next = record;
     }
 
+    if (_movedItems == null) _movedItems = new DuplicateMap();
+
     _movedItems.put(record);
     record.currentIndex = index;
     return record;
@@ -1218,7 +1221,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       _removals_add(_collection_unlink(record));
 
   ItemRecord<V> _collection_unlink(ItemRecord record) {
-    _movedItems.remove(record);
+    if (_movedItems != null) _movedItems.remove(record);
 
     var prev = record._prev;
     var next = record._next;
@@ -1255,6 +1258,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
 
   ItemRecord<V> _removals_add(ItemRecord<V> record) {
     record.currentIndex = null;
+    if (_removedItems == null) _removedItems = new DuplicateMap();
     _removedItems.put(record);
 
     if (_removalsTail == null) {
