@@ -390,6 +390,21 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         expect(detector.collectChanges().moveNext()).toEqual(false);
       });
 
+      it('should detect [NaN] moves', () {
+        var list = [double.NAN, double.NAN];
+        detector..watch(list, null, null)..collectChanges();
+
+        list..clear()..addAll(['foo', double.NAN, double.NAN]);
+        var iterator = detector.collectChanges();
+        expect(iterator.moveNext()).toEqual(true);
+        expect(iterator.current.currentValue, toEqualCollectionRecord(
+            collection: ['foo[null -> 0]', 'NaN[0 -> 1]', 'NaN[1 -> 2]'],
+            previous: ['NaN[0 -> 1]', 'NaN[1 -> 2]'],
+            additions: ['foo[null -> 0]'],
+            moves: ['NaN[0 -> 1]', 'NaN[1 -> 2]'],
+            removals: []));
+      });
+
       it('should remove and add same item', () {
         var list = ['a', 'b', 'c'];
         var record = detector.watch(list, null, 'handler');
