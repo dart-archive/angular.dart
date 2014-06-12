@@ -25,7 +25,7 @@ describe('bp', function() {
     bp._container.appendChild(sampleRangeValue);
 
     bp.runState = {
-      numSamples: 10,
+      numSamples: 20,
       recentTimePerStep: {},
       recentGCTimePerStep: {},
       timesPerAction: {}
@@ -189,9 +189,9 @@ describe('bp', function() {
 
   describe('.addSampleRange()', function() {
     it('should set the default value to the current numSamples', function() {
-      bp.runState.numSamples = 10;
+      bp.runState.numSamples = 20;
       bp.addSampleRange();
-      expect(bp.sampleRange.value).toBe('10');
+      expect(bp.sampleRange.value).toBe('20');
     });
   });
 
@@ -203,7 +203,7 @@ describe('bp', function() {
 
 
     it('should change the numSamples property', function() {
-      expect(bp.runState.numSamples).toBe(10);
+      expect(bp.runState.numSamples).toBe(20);
       bp.onSampleRangeChanged({target: {value: '80'}});
       expect(bp.runState.numSamples).toBe(80);
     });
@@ -241,9 +241,9 @@ describe('bp', function() {
 
   describe('.setIterations()', function() {
     it('should set provided arguments to runState object', function() {
-      bp.runState = {numSamples: 10};
+      bp.runState = {numSamples: 20};
       bp.setIterations(15);
-      expect(bp.runState.numSamples).toBe(10);
+      expect(bp.runState.numSamples).toBe(20);
       expect(bp.runState.iterations).toBe(15);
     });
   });
@@ -429,7 +429,7 @@ describe('bp', function() {
     it('should return an html string with provided values', function() {
       bp.runState.numSamples = 9;
       expect(bp.generateReportPartial('foo', {time: 10, gcTime: 5}, ['9', '11'], ['4','6'])).
-        toBe('<tr><td>foo</td><td class="average">test:10ms<br>gc:5ms<br>combined: 15ms</td><td>9<br>11</td><td>4<br>6</td></tr>')
+        toBe('<tr class="sampleContainer"><td>foo</td><td class="average">test:10ms<br>gc:5ms<br>combined: 15ms</td><td><div class="sampleContainer"><div class="testTimeCol">9<br>11</div><div class="testTimeCol">4<br>6</div></div></td></tr>')
     });
   });
 

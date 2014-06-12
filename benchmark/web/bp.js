@@ -1,7 +1,7 @@
 var bp = window.bp = {};
 bp.steps = window.benchmarkSteps = [];
 bp.runState = {
-  numSamples: 10,
+  numSamples: 20,
   recentTimePerStep: {},
   recentGCTimePerStep: {},
   timesPerAction: {}
@@ -118,7 +118,11 @@ bp.runAllTests = function (done) {
 
 bp.generateReportPartial = function(name, avg, fmtTimes, gcTimes) {
   return bp.interpolateHtml(
-      '<tr><td>%0</td><td class="average">test:%1ms<br>gc:%2ms<br>combined: %3ms</td><td>%4</td><td>%5</td></tr>',
+      '<tr class="sampleContainer">' +
+        '<td>%0</td>' +
+        '<td class="average">test:%1ms<br>gc:%2ms<br>combined: %3ms</td>' +
+        '<td><div class="sampleContainer"><div class="testTimeCol">%4</div><div class="testTimeCol">%5</div></div></td>' +
+      '</tr>',
       [
         name,
         ('' + avg.time).substr(0,6),
