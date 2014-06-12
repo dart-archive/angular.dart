@@ -9,6 +9,8 @@
     <style>
       .bpLink { background: lightblue; padding: 1em; margin-bottom: 1.5em; }
       td.average { font-weight: bold; }
+      .sampleContainer {max-height:250px; overflow-y: auto; }
+      .testTimeCol { display: inline-block; width: 48%; }
     </style>
 </head>
 
@@ -28,7 +30,7 @@
                 Select number of samples to collect and average:
                 <span id="sampleRangeValue"></span>
               </label>
-              <input id="sampleRange" type="text">
+              <input id="sampleRange" type="text" value="20">
             </div>
           </form>
           <div class="btn-group">
@@ -43,8 +45,14 @@
               <tr>
                 <th>step</th>
                 <th>average</th>
-                <th>test time (ms)</th>
-                <th>gc time (ms)</th>
+                <th>
+                  <div class="testTimeCol">
+                    test time (ms)
+                  </div>
+                  <div class="testTimeCol" style="margin-left:-8px">
+                    gc time (ms)
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody class="info" style="font-family: monospace"></tbody>
