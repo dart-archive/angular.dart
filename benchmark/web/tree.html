@@ -11,7 +11,7 @@
       .bpLink { background: lightblue; padding: 1em; margin-bottom: 1.5em; }
       td.average { font-weight: bold; }
       .sampleContainer {max-height:250px; overflow-y: auto; }
-      .testTimeCol { display: inline-block; width: 48%; }
+      .testTimeCol { display: inline-block; width: 24%; }
     </style>
 </head>
 
@@ -53,11 +53,49 @@
                   <div class="testTimeCol" style="margin-left:-8px">
                     gc time (ms)
                   </div>
+                  <div class="testTimeCol">
+                    garbage (KB)
+                  </div>
+                  <div class="testTimeCol" style="margin-left:-8px">
+                    retained memory (KB)
+                  </div>
                 </th>
               </tr>
             </thead>
             <tbody class="info" style="font-family: monospace"></tbody>
           </table>
+          <script type="template" id="infoTemplate">
+            <tr class="sampleContainer">
+              <td><%= name %></td>
+              <td class="average">
+                test:<%= avg.time %>ms
+                <br>
+                gc:<%= avg.gcTime %>ms
+                <br>
+                combined: <%= avg.combinedTime %>ms
+                <br>
+                garbage: <%= avg.garbage %>KB
+                <br>
+                retained: <%= avg.retained %>KB
+              </td>
+              <td>
+                <div class="sampleContainer">
+                  <div class="testTimeCol">
+                    <%= times %>
+                  </div>
+                  <div class="testTimeCol">
+                    <%= gcTimes %>
+                  </div>
+                  <div class="testTimeCol">
+                    <%= garbageTimes %>
+                  </div>
+                  <div class="testTimeCol">
+                    <%= retainedTimes %>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </script>
         </div>
       </div>
     </div>
