@@ -1,5 +1,7 @@
 library change_detection;
 
+import 'package:angular/change_detection/execution_stats.dart';
+
 typedef void EvalExceptionHandler(error, stack);
 
 /**
@@ -54,6 +56,7 @@ abstract class ChangeDetector<H> extends ChangeDetectorGroup<H> {
    * same order as they were registered.
    */
   Iterator<Record<H>> collectChanges({EvalExceptionHandler exceptionHandler,
+                                      ExecutionStats executionStats, Stopwatch executionStopwatch,
                                       AvgStopwatch stopwatch });
 }
 

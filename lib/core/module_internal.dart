@@ -18,6 +18,8 @@ export 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/ast_parser.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+import 'package:angular/change_detection/execution_stats.dart';
+export 'package:angular/change_detection/execution_stats.dart';
 import 'package:angular/core/formatter.dart';
 export 'package:angular/core/formatter.dart';
 import 'package:angular/core/parser/utils.dart';
@@ -43,6 +45,7 @@ class CoreModule extends Module {
     bind(RootScope);
     bind(Scope, toFactory: (injector) => injector.getByKey(ROOT_SCOPE_KEY));
     bind(ClosureMap, toFactory: (_) => throw "Must provide dynamic/static ClosureMap.");
+    bind(ExecutionStats, toValue: null);
     bind(ScopeStats);
     bind(ScopeStatsEmitter);
     bind(ScopeStatsConfig, toFactory: (i) => new ScopeStatsConfig());

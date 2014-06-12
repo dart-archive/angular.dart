@@ -51,7 +51,7 @@ class _CollectionCheck extends BenchmarkBase {
 
 _fieldRead() {
   var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
-      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), new _Obj())
+      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), new _Obj(), null)
           ..watch(_parse('a'), _reactionFn)
           ..watch(_parse('b'), _reactionFn)
           ..watch(_parse('c'), _reactionFn)
@@ -80,7 +80,7 @@ _fieldRead() {
 
 _fieldReadGetter() {
   var  watchGrp= new RootWatchGroup(_staticFieldGetterFactory,
-      new DirtyCheckingChangeDetector(_staticFieldGetterFactory), new _Obj())
+      new DirtyCheckingChangeDetector(_staticFieldGetterFactory), new _Obj(), null)
           ..watch(_parse('a'), _reactionFn)
           ..watch(_parse('b'), _reactionFn)
           ..watch(_parse('c'), _reactionFn)
@@ -114,7 +114,7 @@ _mapRead() {
       'k': 0, 'l': 1, 'm': 2, 'n': 3, 'o': 4,
       'p': 0, 'q': 1, 'r': 2, 's': 3, 't': 4};
   var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
-      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), map)
+      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), map, null)
           ..watch(_parse('a'), _reactionFn)
           ..watch(_parse('b'), _reactionFn)
           ..watch(_parse('c'), _reactionFn)
@@ -144,7 +144,7 @@ _methodInvoke0() {
   var context = new _Obj();
   context.a = new _Obj();
   var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
-      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), context)
+      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), context, null)
           ..watch(_method('a', 'methodA'), _reactionFn)
           ..watch(_method('a', 'methodB'), _reactionFn)
           ..watch(_method('a', 'methodC'), _reactionFn)
@@ -174,7 +174,7 @@ _methodInvoke1() {
   var context = new _Obj();
   context.a = new _Obj();
   var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
-      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), context)
+      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), context, null)
           ..watch(_method('a', 'methodA1', [_parse('a')]), _reactionFn)
           ..watch(_method('a', 'methodB1', [_parse('a')]), _reactionFn)
           ..watch(_method('a', 'methodC1', [_parse('a')]), _reactionFn)
@@ -203,7 +203,7 @@ _methodInvoke1() {
 _function2() {
   var context = new _Obj();
   var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
-      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), context)
+      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), context, null)
           ..watch(_add(0, _parse('a'), _parse('a')), _reactionFn)
           ..watch(_add(1, _parse('a'), _parse('a')), _reactionFn)
           ..watch(_add(2, _parse('a'), _parse('a')), _reactionFn)

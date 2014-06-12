@@ -16,7 +16,7 @@ import 'package:angular/core_dom/module_internal.dart';
  */
 var elementExpando = new Expando('element');
 
-void publishToJavaScript() {
+void publishToJavaScript(Injector rootInjector) {
   js.context
     ..['ngProbe'] = new js.JsFunction.withThis((_, nodeOrSelector) =>
         _jsProbe(ngProbe(nodeOrSelector)))
@@ -26,7 +26,8 @@ void publishToJavaScript() {
         _jsScope(ngScope(nodeOrSelector),
         ngProbe(nodeOrSelector).injector.getByKey(SCOPE_STATS_CONFIG_KEY)))
     ..['ngQuery'] = new js.JsFunction.withThis((_, dom.Node node, String selector,
-        [String containsText]) => new js.JsArray.from(ngQuery(node, selector, containsText)));
+        [String containsText]) => new js.JsArray.from(ngQuery(node, selector, containsText)))
+    ..['ngStats'] = new js.JsFunction.withThis((_) => _jsReactionFnStats(rootInjector.get(ExecutionStats)));
 }
 
 js.JsObject _jsProbe(ElementProbe probe) {
@@ -57,6 +58,17 @@ js.JsObject _jsScope(Scope scope, ScopeStatsConfig config) {
       "scopeStatsEnable": () => config.emit = true,
       "scopeStatsDisable": () => config.emit = false
   })..['_dart_'] = scope;
+}
+
+js.JsObject _jsReactionFnStats(ExecutionStats fnStats) {
+  return new js.JsObject.jsify({
+      "showDirtyCheckStats": fnStats.showDirtyCheckStats,
+      "showEvalStats": fnStats.showEvalStats,
+      "showReactionFnStats": fnStats.showReactionFnStats,
+      "enable": fnStats.enable,
+      "disable": fnStats.disable,
+      "reset": fnStats.reset,
+  })..['_dart_'] = fnStats;
 }
 
 _jsDirective(directive) => directive;

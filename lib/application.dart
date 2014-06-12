@@ -162,8 +162,7 @@ abstract class Application {
   }
 
   Injector run() {
-    publishToJavaScript();
-    return zone.run(() {
+    var injector = zone.run(() {
       var rootElements = [element];
       Injector injector = createInjector();
       ExceptionHandler exceptionHandler = injector.getByKey(EXCEPTION_HANDLER_KEY);
@@ -178,6 +177,8 @@ abstract class Application {
       });
       return injector;
     });
+    publishToJavaScript(injector);
+    return injector;
   }
 
   /**

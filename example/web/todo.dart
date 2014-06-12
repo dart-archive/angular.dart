@@ -96,7 +96,9 @@ main() {
   print(window.location.search);
   var module = new Module()
       ..bind(Todo)
-      ..bind(PlaybackHttpBackendConfig);
+      ..bind(PlaybackHttpBackendConfig)
+      ..bind(ExecutionStats, toFactory: (i) => new ExecutionStats(15, i.get(ExecutionStatsEmitter)))
+      ..bind(ExecutionStatsEmitter);
 
   // If these is a query in the URL, use the server-backed
   // TodoController.  Otherwise, use the stored-data controller.

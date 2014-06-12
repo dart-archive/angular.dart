@@ -1,7 +1,8 @@
 library angular.watch_group;
 
-import 'package:angular/change_detection/change_detection.dart';
 import 'dart:collection';
+import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/change_detection/execution_stats.dart';
 
 part 'linked_list.dart';
 part 'ast.dart';
@@ -367,6 +368,8 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 class RootWatchGroup extends WatchGroup {
   final FieldGetterFactory _fieldGetterFactory;
   Watch _dirtyWatchHead, _dirtyWatchTail;
+  Stopwatch executionStopwatch;
+  final ExecutionStats executionStats;
 
   /**
    * Every time a [WatchGroup] is destroyed we increment the counter. During
@@ -378,10 +381,10 @@ class RootWatchGroup extends WatchGroup {
   int _removeCount = 0;
 
 
-  RootWatchGroup(this._fieldGetterFactory,
-                 ChangeDetector changeDetector,
-                 Object context)
-      : super._root(changeDetector, context);
+  RootWatchGroup(this._fieldGetterFactory, ChangeDetector changeDetector, Object context,
+                 this.executionStats) : super._root(changeDetector, context) {
+    if (executionStats != null) executionStopwatch = new Stopwatch();
+  }
 
   RootWatchGroup get _rootGroup => this;
 
@@ -405,6 +408,8 @@ class RootWatchGroup extends WatchGroup {
     Iterator<Record<_Handler>> changedRecordIterator =
         (_changeDetector as ChangeDetector<_Handler>).collectChanges(
             exceptionHandler:exceptionHandler,
+            executionStats: executionStats,
+            executionStopwatch: executionStopwatch,
             stopwatch: fieldStopwatch);
     if (processStopwatch != null) processStopwatch.start();
     while (changedRecordIterator.moveNext()) {
@@ -423,7 +428,19 @@ class RootWatchGroup extends WatchGroup {
     while (evalRecord != null) {
       try {
         if (evalStopwatch != null) evalCount++;
-        if (evalRecord.check() && changeLog != null) {
+        if (executionStats != null && executionStats.config.enabled) {
+          executionStopwatch.reset();
+          executionStopwatch.start();
+        }
+        var evalCheck = evalRecord.check();
+        if (executionStats != null && executionStats.config.enabled) {
+          executionStopwatch.stop();
+          if (executionStopwatch.elapsedMicroseconds >= executionStats.config.threshold) {
+            executionStats.addEvalEntry(new ExecutionEntry(
+                executionStopwatch.elapsedMicroseconds, evalRecord));
+          }
+        }
+        if (evalCheck && changeLog != null) {
           changeLog(evalRecord.handler.expression,
                     evalRecord.currentValue,
                     evalRecord.previousValue);
@@ -448,7 +465,18 @@ class RootWatchGroup extends WatchGroup {
         count++;
         try {
           if (root._removeCount == 0 || dirtyWatch._watchGroup.isAttached) {
+            if (executionStats != null && executionStats.config.enabled) {
+              executionStopwatch.reset();
+              executionStopwatch.start();
+            }
             dirtyWatch.invoke();
+            if (executionStats != null && executionStats.config.enabled) {
+              executionStopwatch.stop();
+              if (executionStopwatch.elapsedMicroseconds >= executionStats.config.threshold) {
+                executionStats.addDirtyWatchEntry(new ExecutionEntry(
+                    executionStopwatch.elapsedMicroseconds, dirtyWatch));
+              }
+            }
           }
         } catch (e, s) {
           if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
@@ -515,6 +543,10 @@ class Watch {
     var handler = _record.handler;
     _WatchList._remove(handler, this);
     handler.release();
+  }
+
+  String toString() {
+    return '${_watchGroup.id}:${expression}';
   }
 }
 
