@@ -218,17 +218,6 @@ class Scope {
 
     // TODO(deboer): Temporary shim until all uses are fixed.
     if (context != null) {
-      assert(() {
-        try {
-          throw [];
-        } catch (e, s) {
-          var msg = "WARNING: The Scope.watch's context parameter "
-          "is deprecated.\nScope.watch was called from:\n$s";
-          _oneTimeWarnings.putIfAbsent(msg, () => print(msg));
-        }
-        return true;
-      });
-
       // Create a child scope instead.
       return createChild(context)
           .watch(expression, reactionFn,
@@ -275,7 +264,6 @@ class Scope {
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
     return group.watch(ast, reactionFn);
   }
-  static Map _oneTimeWarnings = new HashMap();
 
   dynamic eval(expression, [Map locals]) {
     assert(isAttached);
