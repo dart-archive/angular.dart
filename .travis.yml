@@ -27,7 +27,7 @@ env:
 # Don't test these branches.
 branches:
   except:
-    - g3v1x
+    - g3v1x-master
 
 before_install:
 - export DISPLAY=:99.0
