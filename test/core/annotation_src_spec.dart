@@ -30,9 +30,7 @@ List<String> nullFields(x) {
   return ret;
 }
 
-// TODO(deboer): These tests are disabled due to dartbug.com/19177
-// That bug should be fixed soon
-void main() => xdescribe('annotations', () {
+void main() => describe('annotations', () {
   describe('component', () {
     it('should set all fields on clone when all the fields are set', () {
       var component = new Component(
