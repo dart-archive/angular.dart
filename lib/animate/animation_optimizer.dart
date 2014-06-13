@@ -119,6 +119,7 @@ class AnimationOptimizer {
     // fallback to the automatic detection of running parent animations. By
     // default, we assume that we can run.
     bool autoDecision = true;
+    bool hasShadowDOM = false;
 
     node = node.parentNode;
     while (node != null) {
@@ -138,12 +139,20 @@ class AnimationOptimizer {
         autoDecision = false;
       }
 
-      // If we hit a null parent, try to break out of shadow dom.
-      if (node.parentNode == null) {
-        var probe = _findElementProbe(node);
-        if (probe != null && probe.parent != null) {
-          // Escape shadow dom!
-          node = probe.parent.element;
+      bool isShadowRoot = node is dom.ShadowRoot;
+
+      // .shadowRoot is only visible outside of the shadow world
+      // but it is null when you're already inside of the shadow zone
+      // therefore we can traverse up until the parent node is null
+      if (!isShadowRoot && !hasShadowDOM && node.shadowRoot != null && node.shadowRoot.host != null) {
+        node = node.shadowRoot.query('content');
+        // node.shadowRoot will still be accessible even when you've already went past the host
+        // therefore we need to set this flag to avoid causing the lookup to go into an infinite loop
+        hasShadowDOM = true;
+      } else if (node.parentNode == null) {
+        if (isShadowRoot && node.host != null) {
+          // Escape the world of shadows!
+          node = node.host;
         } else {
           // If we can't go any further, return the auto decision because we
           // havent hit any other more important optimizations.
@@ -155,16 +164,5 @@ class AnimationOptimizer {
     }
 
     return autoDecision;
-  }
-
-  // Search and find the element probe for a given node.
-  ElementProbe _findElementProbe(dom.Node node) {
-    while (node != null) {
-      if (_expando[node] != null) {
-        return _expando[node];
-      }
-      node = node.parentNode;
-    }
-    return null;
   }
 }

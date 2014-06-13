@@ -151,7 +151,64 @@ _run({bool animationsAllowed}) {
       expect(optimizer.shouldAnimate(_.rootElement.children[0].children[0]))
         .toBe(animationsAllowed);
     });
+
+    describe("ShadowRoot and Web Components", () {
+      beforeEachModule((Module m) {
+        return m.bind(SimpleAnimationComponent);
+      });
+
+      it('should check to see if an animation is enabled against a parent outside of the shadow zone', async(() {
+        _.compile('<div><inner><span>innerText</span></inner></div>');
+        microLeap();
+        _.rootScope.apply();
+
+        var animationsEnabled = optimizer.animationsAllowed;
+
+        var outerElement = _.rootElement;
+        var innerElement = _.rootElement.query('span');
+
+        var animation = new NoOpAnimation();
+
+        expect(optimizer.shouldAnimate(outerElement)).toBe(animationsEnabled);
+        expect(optimizer.shouldAnimate(innerElement)).toBe(animationsEnabled);
+
+        optimizer.track(animation, outerElement);
+
+        expect(optimizer.shouldAnimate(outerElement)).toBe(animationsEnabled);
+        expect(optimizer.shouldAnimate(innerElement)).toBe(false);
+      }));
+
+      it('should check to see if an animation is enabled against a parent inside of the shadow zone', async(() {
+        _.compile('<div><inner><span>innerText</span></inner></div>');
+        microLeap();
+        _.rootScope.apply();
+
+        var animationsEnabled = optimizer.animationsAllowed;
+
+        var outerElement = _.rootElement;
+        var innerElement = _.rootElement.query('span');
+        var trackElement = innerElement.parentNode.shadowRoot.query('b');
+
+        var animation = new NoOpAnimation();
+
+        expect(optimizer.shouldAnimate(outerElement)).toBe(animationsEnabled);
+        expect(optimizer.shouldAnimate(innerElement)).toBe(animationsEnabled);
+
+        optimizer.track(animation, trackElement);
+
+        expect(optimizer.shouldAnimate(outerElement)).toBe(animationsEnabled);
+        expect(optimizer.shouldAnimate(innerElement)).toBe(false);
+      }));
+    });
   });
+}
+
+@Component(
+    selector: 'inner',
+    template: r'(<b><content></content></b>)')
+class SimpleAnimationComponent {
+  Scope scope;
+  SimpleAnimationComponent(Scope this.scope);
 }
 
 main() {
