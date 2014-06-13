@@ -188,7 +188,7 @@ bp.getTimesPerAction = function(name) {
       times: [], // circular buffer
       fmtTimes: [],
       gcTimes: [],
-      fmtGCTimes: [],
+      fmtGcTimes: [],
       garbageTimes: [],
       fmtGarbageTimes: [],
       retainedTimes: [],
@@ -208,6 +208,15 @@ bp.rightSizeTimes = function(times) {
   return times;
 };
 
+bp.updateTimes = function(tpa, index, reference, recentTime) {
+  var fmtKey = 'fmt' + reference.charAt(0).toUpperCase() + reference.slice(1);
+  tpa[reference][index] = recentTime;
+  tpa[reference] = bp.rightSizeTimes(tpa[reference]);
+  tpa[fmtKey][index] = recentTime.toString().substr(0, 6);
+  tpa[fmtKey] = bp.rightSizeTimes(tpa[fmtKey]);
+
+};
+
 bp.calcStats = function() {
   var report = '';
   bp.steps.forEach(function(bs) {
@@ -220,28 +229,10 @@ bp.calcStats = function() {
         reportModel,
         avg;
 
-
-    tpa.gcTimes[tpa.nextEntry] = gcTimeForStep;
-    tpa.gcTimes = bp.rightSizeTimes(tpa.gcTimes);
-    tpa.fmtGCTimes[tpa.nextEntry] = gcTimeForStep.toString().substr(0, 6);
-    tpa.fmtGCTimes = bp.rightSizeTimes(tpa.fmtGCTimes);
-
-
-
-    tpa.garbageTimes[tpa.nextEntry] = garbageTimeForStep / 1e3;
-    tpa.garbageTimes = bp.rightSizeTimes(tpa.garbageTimes);
-    tpa.fmtGarbageTimes[tpa.nextEntry] = (garbageTimeForStep / 1e3).toFixed(3).toString();
-    tpa.fmtGarbageTimes = bp.rightSizeTimes(tpa.fmtGarbageTimes);
-
-    tpa.retainedTimes[tpa.nextEntry] = retainedTimeForStep / 1e3;
-    tpa.retainedTimes = bp.rightSizeTimes(tpa.retainedTimes);
-    tpa.fmtRetainedTimes[tpa.nextEntry] = (retainedTimeForStep / 1e3).toFixed(3).toString();
-    tpa.fmtRetainedTimes = bp.rightSizeTimes(tpa.fmtRetainedTimes);
-
-    tpa.times[tpa.nextEntry] = timeForStep;
-    tpa.times = bp.rightSizeTimes(tpa.times);
-    tpa.fmtTimes[tpa.nextEntry] = timeForStep.toString().substr(0, 6);
-    tpa.fmtTimes = bp.rightSizeTimes(tpa.fmtTimes);
+    bp.updateTimes(tpa, tpa.nextEntry, 'gcTimes', gcTimeForStep);
+    bp.updateTimes(tpa, tpa.nextEntry, 'garbageTimes', garbageTimeForStep / 1e3);
+    bp.updateTimes(tpa, tpa.nextEntry, 'retainedTimes', retainedTimeForStep / 1e3);
+    bp.updateTimes(tpa, tpa.nextEntry, 'times', timeForStep);
 
     tpa.nextEntry++;
     tpa.nextEntry %= bp.runState.numSamples;
@@ -254,7 +245,7 @@ bp.calcStats = function() {
       name: stepName,
       avg: avg,
       times: tpa.fmtTimes,
-      gcTimes: tpa.fmtGCTimes,
+      gcTimes: tpa.fmtGcTimes,
       garbageTimes: tpa.fmtGarbageTimes,
       retainedTimes: tpa.fmtRetainedTimes
     });
@@ -294,7 +285,6 @@ bp.addLinks = function() {
 bp.addInfo = function() {
   bp.infoDiv = bp.container().querySelector('tbody.info');
   bp.infoTemplate = _.template(bp.container().querySelector('#infoTemplate').innerHTML);
-  console.log(bp.infoTemplate)
 };
 
 bp.onDOMContentLoaded = function() {
