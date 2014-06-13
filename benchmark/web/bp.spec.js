@@ -394,7 +394,7 @@ describe('bp', function() {
           fakeStep: {
             times: [3,7],
             fmtTimes: ['3', '7'],
-            fmtGCTimes: ['1','3'],
+            fmtGcTimes: ['1','3'],
             garbageTimes: [50,50],
             fmtGarbageTimes: ['50','50'],
             retainedTimes: [25,25],
