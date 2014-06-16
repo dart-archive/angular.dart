@@ -34,6 +34,30 @@ describe('bp', function() {
     };
   });
 
+  describe('.Statistics', function() {
+    describe('.calculateConfidenceInterval()', function() {
+      it('should provide the correct confidence interval', function() {
+        expect(bp.Statistics.calculateConfidenceInterval(30, 1000)).toBe(1.86);
+      });
+    });
+
+
+    describe('.calculateStandardDeviation()', function() {
+      it('should provide the correct standardDeviation for the provided sample', function() {
+        expect(bp.Statistics.calculateStandardDeviation([
+          2,4,4,4,5,5,7,9
+        ])).toBe(2);
+      });
+    });
+
+
+    describe('.getConfidenceRange()', function() {
+      it('should return an array of low and high confidence range', function() {
+        expect(bp.Statistics.getConfidenceRange(100, 1.5)).toEqual([98.5,101.5]);
+      });
+    });
+  });
+
   describe('.loopBenchmark()', function() {
     var runAllTestsSpy, btn;
     beforeEach(function() {
