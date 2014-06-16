@@ -468,15 +468,6 @@ describe('bp', function() {
   });
 
 
-  describe('.generateReportPartial()', function() {
-    xit('should return an html string with provided values', function() {
-      bp.runState.numSamples = 9;
-      expect(bp.generateReportPartial('foo', {time: 10, gcTime: 5}, ['9', '11'], ['4','6'])).
-        toBe('<tr class="sampleContainer"><td>foo</td><td class="average">test:10ms<br>gc:5ms<br>combined: 15ms</td><td><div class="sampleContainer"><div class="testTimeCol">9<br>11</div><div class="testTimeCol">4<br>6</div></div></td></tr>')
-    });
-  });
-
-
   describe('.writeReport()', function() {
     it('should write the report to the infoDiv', function() {
       bp.infoDiv = document.createElement('div');
