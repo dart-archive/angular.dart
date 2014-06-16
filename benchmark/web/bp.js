@@ -1,4 +1,8 @@
 var bp = window.bp = {};
+bp.Statistics = {
+  //Taken from z-table where confidence is 95%
+  criticalValue: 1.96
+};
 bp.steps = window.benchmarkSteps = [];
 bp.runState = {
   numSamples: 20,
@@ -7,6 +11,36 @@ bp.runState = {
   recentGarbagePerStep: {},
   recentRetainedMemoryPerStep: {},
   timesPerAction: {}
+};
+
+bp.Statistics.getConfidenceRange = function(mean, confidenceInterval) {
+  return [
+    mean - confidenceInterval,
+    mean + confidenceInterval
+  ];
+};
+
+bp.Statistics.calculateConfidenceInterval = function(standardDeviation, sampleSize) {
+  var standardError = standardDeviation / Math.sqrt(sampleSize);
+  var marginOfError = bp.Statistics.criticalValue * standardError;
+  marginOfError = Math.round(marginOfError * 100) / 100;
+  return marginOfError;
+};
+
+bp.Statistics.calculateStandardDeviation = function(sample) {
+  var mean = 0;
+  var deviation = 0;
+  sample.forEach(function(x) {
+    mean += x;
+  });
+  mean = mean / sample.length;
+
+  sample.forEach(function(x) {
+    deviation += Math.pow(x - mean, 2);
+  });
+  deviation = deviation / sample.length;
+  deviation = Math.sqrt(deviation);
+  return deviation;
 };
 
 bp.setIterations = function (iterations) {
