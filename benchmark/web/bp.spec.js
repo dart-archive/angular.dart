@@ -55,6 +55,18 @@ describe('bp', function() {
       it('should return an array of low and high confidence range', function() {
         expect(bp.Statistics.getConfidenceRange(100, 1.5)).toEqual([98.5,101.5]);
       });
+
+
+      it('should round values to 2 decimal points', function() {
+        expect(bp.Statistics.getConfidenceRange(100,1.111111)).toEqual([100-1.11,100+1.11]);
+      })
+    });
+
+
+    describe('.getStabilityOfSample()', function() {
+      it('should return the percentage of samples that fall within the provided range', function() {
+        expect(bp.Statistics.getStabilityOfSample([0,5,5,10],[5,6])).toBe(0.5);
+      });
     });
   });
 
