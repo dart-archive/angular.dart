@@ -70,6 +70,14 @@
               <td class="average">
                 test:<%= avg.time %>ms
                 <br>
+                times within range: <%= timesStability %>%
+                <br>
+                confidence interval: <%= timesConfidenceInterval %>
+                <br>
+                confidence range:
+                  <%= timesConfidenceRange[0] %> -
+                  <%= timesConfidenceRange[1] %>
+                <br>
                 gc:<%= avg.gcTime %>ms
                 <br>
                 combined: <%= avg.combinedTime %>ms
