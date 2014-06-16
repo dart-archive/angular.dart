@@ -13,10 +13,19 @@ bp.runState = {
   timesPerAction: {}
 };
 
+bp.Statistics.getStabilityOfSample = function (sample, confidenceRange) {
+  var inRange = 0;
+  sample.forEach(function(x) {
+    inRange += x <= confidenceRange[1] && x >= confidenceRange[0] ? 1 : 0;
+  })
+  return Math.round((inRange / sample.length) * 100) / 100;
+
+};
+
 bp.Statistics.getConfidenceRange = function(mean, confidenceInterval) {
   return [
-    mean - confidenceInterval,
-    mean + confidenceInterval
+    Math.round((mean - confidenceInterval) * 100) / 100,
+    Math.round((mean + confidenceInterval) * 100) / 100
   ];
 };
 
@@ -174,20 +183,18 @@ bp.runAllTests = function (done) {
 }
 
 bp.generateReportModel = function (rawModel) {
-  return {
-    name: rawModel.name,
-    avg: {
-      time: ('' + rawModel.avg.time).substr(0,6),
-      gcTime: ('' + rawModel.avg.gcTime).substr(0,6),
-      garbage: ('' + rawModel.avg.garbage).substr(0,6),
-      retained: ('' + rawModel.avg.retained).substr(0,6),
-      combinedTime: ('' + (rawModel.avg.time + rawModel.avg.gcTime)).substr(0,6)
-    },
-    times: rawModel.times.join('<br>'),
-    gcTimes: rawModel.gcTimes.join('<br>'),
-    garbageTimes: rawModel.garbageTimes.join('<br>'),
-    retainedTimes: rawModel.retainedTimes.join('<br>')
+  rawModel.avg = {
+    time: ('' + rawModel.avg.time).substr(0,6),
+    gcTime: ('' + rawModel.avg.gcTime).substr(0,6),
+    garbage: ('' + rawModel.avg.garbage).substr(0,6),
+    retained: ('' + rawModel.avg.retained).substr(0,6),
+    combinedTime: ('' + (rawModel.avg.time + rawModel.avg.gcTime)).substr(0,6)
   };
+  rawModel.times = rawModel.times.join('<br>'),
+  rawModel.gcTimes = rawModel.gcTimes.join('<br>'),
+  rawModel.garbageTimes = rawModel.garbageTimes.join('<br>'),
+  rawModel.retainedTimes = rawModel.retainedTimes.join('<br>')
+  return rawModel;
 };
 
 bp.generateReportPartial = function(model) {
@@ -261,7 +268,9 @@ bp.calcStats = function() {
         retainedTimeForStep = bp.runState.recentRetainedMemoryPerStep[stepName],
         tpa = bp.getTimesPerAction(stepName),
         reportModel,
-        avg;
+        avg,
+        timesConfidenceInterval,
+        timesConfidenceRange;
 
     bp.updateTimes(tpa, tpa.nextEntry, 'gcTimes', gcTimeForStep);
     bp.updateTimes(tpa, tpa.nextEntry, 'garbageTimes', garbageTimeForStep / 1e3);
@@ -275,10 +284,22 @@ bp.calcStats = function() {
         tpa.gcTimes,
         tpa.garbageTimes,
         tpa.retainedTimes);
+
+    timesConfidenceInterval = bp.Statistics.calculateConfidenceInterval(
+        bp.Statistics.calculateStandardDeviation(tpa.times),
+        tpa.times.length
+    );
+    timesConfidenceRange = bp.Statistics.getConfidenceRange(
+        avg.time,
+        timesConfidenceInterval
+    );
     reportModel = bp.generateReportModel({
       name: stepName,
       avg: avg,
       times: tpa.fmtTimes,
+      timesConfidenceInterval: timesConfidenceInterval,
+      timesConfidenceRange: timesConfidenceRange,
+      timesStability: bp.Statistics.getStabilityOfSample(tpa.times, timesConfidenceRange) * 100,
       gcTimes: tpa.fmtGcTimes,
       garbageTimes: tpa.fmtGarbageTimes,
       retainedTimes: tpa.fmtRetainedTimes
