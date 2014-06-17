@@ -252,7 +252,8 @@ bp.calcStats = function() {
         tpa = bp.getTimesPerAction(stepName),
         reportModel,
         avg,
-        timesConfidenceInterval;
+        timesConfidenceInterval,
+        timesStandardDeviation;
 
     bp.updateTimes(tpa, tpa.nextEntry, 'gcTimes', gcTimeForStep);
     bp.updateTimes(tpa, tpa.nextEntry, 'garbageTimes', garbageTimeForStep / 1e3);
@@ -266,9 +267,9 @@ bp.calcStats = function() {
         tpa.gcTimes,
         tpa.garbageTimes,
         tpa.retainedTimes);
-
+    timesStandardDeviation = bp.Statistics.calculateStandardDeviation(tpa.times, avg.time);
     timesConfidenceInterval = bp.Statistics.calculateConfidenceInterval(
-        bp.Statistics.calculateStandardDeviation(tpa.times, avg.time),
+        timesStandardDeviation,
         tpa.times.length
     );
 
@@ -276,6 +277,7 @@ bp.calcStats = function() {
       name: stepName,
       avg: avg,
       times: tpa.fmtTimes,
+      timesStandardDeviation: timesStandardDeviation,
       timesRelativeMarginOfError: bp.Statistics.calculateRelativeMarginOfError(timesConfidenceInterval, avg.time),
       gcTimes: tpa.fmtGcTimes,
       garbageTimes: tpa.fmtGarbageTimes,
