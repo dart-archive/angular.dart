@@ -381,18 +381,6 @@ describe('bp', function() {
   });
 
 
-  describe('.getAverages()', function() {
-    it('should return the average of a set of numbers', function() {
-      expect(bp.getAverages([100,0,50,75,25], [2,4,2,4,3], [1,2],[3,4])).toEqual({
-        gcTime: 3,
-        time: 50,
-        garbage: 1.5,
-        retained: 3.5
-      });
-    });
-  });
-
-
   describe('.calcStats()', function() {
     beforeEach(function() {
       bp.steps = [mockStep];
@@ -432,13 +420,6 @@ describe('bp', function() {
       var spy = spyOn(bp, 'generateReportPartial');
       bp.calcStats();
       expect(spy).toHaveBeenCalledWith('fakeStep', {time: 5, gcTime: 2}, ['3','7','5'], ['1','3','2'], [50,50,200], [25,25,100])
-    });
-
-
-    it('should call getAverages() with the correct info', function() {
-      var spy = spyOn(bp, 'getAverages').andCallThrough();
-      bp.calcStats();
-      expect(spy).toHaveBeenCalledWith([ 3, 7, 5 ], [ 1, 3, 2 ], [50,50,0.2], [25,25,0.1]);
     });
 
 
