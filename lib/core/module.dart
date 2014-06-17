@@ -26,6 +26,9 @@ export "package:angular/cache/module.dart" show
     CacheRegister,
     CacheRegisterStats;
 
+export "package:angular/core_dom/directive_injector.dart" show
+    DirectiveInjector;
+
 export "package:angular/core_dom/module_internal.dart" show
     Animation,
     AnimationResult,

@@ -147,7 +147,7 @@ void main() {
         _.compile('<form name="myForm" probe="formProbe"><input type="text" /></form>');
         scope.apply();
 
-        expect(scope.context['formProbe'].injector.get(NgControl) is NgForm).toBeTruthy();
+        expect(scope.context['formProbe'].directiveInjector.get(NgControl) is NgForm).toBeTruthy();
       });
 
       it('should add and remove the correct flags when set to valid and to invalid',
@@ -722,9 +722,9 @@ void main() {
       });
 
       it('should be resolvable by injector if configured by user.',
-           (Injector injector, Compiler compiler, DirectiveMap directives) {
+           (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
         var element = es('<form></form>');
-        expect(() => compiler(element, directives)(injector, element))
+        expect(() => compiler(element, directives)(scope, injector.get(DirectiveInjector), element))
             .not.toThrow();
       });
     });

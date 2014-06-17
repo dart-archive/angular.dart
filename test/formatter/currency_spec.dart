@@ -8,7 +8,7 @@ void main() {
     var currency;
 
     beforeEach((FormatterMap map, Injector injector) {
-      currency = injector.get(map[new Formatter(name: 'currency')]);
+      currency = injector.get(map['currency']);
     });
 
 

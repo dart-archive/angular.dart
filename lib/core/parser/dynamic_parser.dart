@@ -1,5 +1,6 @@
 library angular.core.parser.dynamic_parser;
 
+import 'package:di/di.dart' show Injectable;
 import 'package:angular/cache/module.dart';
 import 'package:angular/core/annotation_src.dart' hide Formatter;
 import 'package:angular/core/module_internal.dart' show FormatterMap;

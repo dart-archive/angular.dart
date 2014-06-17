@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.13.6"
+    version: "0.15.7"
   args:
     description: args
     source: hosted
@@ -24,7 +24,7 @@ packages:
   code_transformers:
     description: code_transformers
     source: hosted
-    version: "0.1.3+1"
+    version: "0.1.4+2"
   collection:
     description: collection
     source: hosted
@@ -32,7 +32,7 @@ packages:
   di:
     description: di
     source: hosted
-    version: "1.0.0"
+    version: "2.0.0-alpha.7"
   guinness:
     description: guinness
     source: hosted
@@ -44,7 +44,7 @@ packages:
   intl:
     description: intl
     source: hosted
-    version: "0.9.9"
+    version: "0.9.10"
   logging:
     description: logging
     source: hosted

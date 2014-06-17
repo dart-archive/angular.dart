@@ -11,11 +11,11 @@ void main() {
     });
 
     it('should extract attr map from annotated component', (DirectiveMap directives) {
-      var annotations = directives.annotationsFor(AnnotatedIoComponent);
-      expect(annotations.length).toEqual(1);
-      expect(annotations[0] is Component).toBeTruthy();
+      var tuples = directives['annotated-io'];
+      expect(tuples.length).toEqual(1);
+      expect(tuples[0].directive is Component).toBeTruthy();
 
-      Component annotation = annotations[0];
+      Component annotation = tuples[0].directive;
       expect(annotation.selector).toEqual('annotated-io');
       expect(annotation.visibility).toEqual(Directive.LOCAL_VISIBILITY);
       expect(annotation.exportExpressions).toEqual(['exportExpressions']);
@@ -77,11 +77,11 @@ void main() {
       });
 
       it("should extract attr map from annotated component which inherits other component", (DirectiveMap directives) {
-        var annotations = directives.annotationsFor(Sub);
-        expect(annotations.length).toEqual(1);
-        expect(annotations[0] is Directive).toBeTruthy();
+        var tupls = directives['[sub]'];
+        expect(tupls.length).toEqual(1);
+        expect(tupls[0].directive is Directive).toBeTruthy();
 
-        Directive annotation = annotations[0];
+        Directive annotation = tupls[0].directive;
         expect(annotation.selector).toEqual('[sub]');
         expect(annotation.map).toEqual({
           "foo": "=>foo",
@@ -112,7 +112,7 @@ class NullParser implements Parser {
       'foo': '=>foo'
     })
 class AnnotatedIoComponent {
-  static module() => new Module()..bind(String, toFactory: (i) => i.get(AnnotatedIoComponent),
+  static module(i) => i.bind(String, toFactory: (i) => i.get(AnnotatedIoComponent),
       visibility: Directive.LOCAL_VISIBILITY);
 
   AnnotatedIoComponent(Scope scope) {

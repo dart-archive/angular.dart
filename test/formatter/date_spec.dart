@@ -13,7 +13,7 @@ void main() {
     var date;
 
     beforeEach((FormatterMap map, Injector injector) {
-      date = injector.get(map[new Formatter(name: 'date')]);
+      date = injector.get(map['date']);
     });
 
     it('should ignore falsy inputs', () {

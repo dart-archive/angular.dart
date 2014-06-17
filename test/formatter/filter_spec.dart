@@ -52,7 +52,7 @@ main() {
     var filter;
 
     beforeEach((Injector injector, FormatterMap filterMap) {
-      filter = injector.get(filterMap[new Formatter(name: 'filter')]);
+      filter = injector.get(filterMap['filter']);
     });
 
     it('should formatter by string', () {

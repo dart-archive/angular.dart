@@ -49,8 +49,9 @@ main() => describe('ngView', () {
       router.route('/foo');
       microLeap();
       _.rootScope.apply();
+      Probe probe = _.rootScope.context['p'];
 
-      expect(_.rootScope.context['p'].injector.get(RouteProvider) is NgView).toBeTruthy();
+      expect(probe.directiveInjector.get(RouteProvider) is NgView).toBeTruthy();
     }));
 
 

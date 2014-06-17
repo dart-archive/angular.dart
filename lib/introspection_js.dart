@@ -38,7 +38,7 @@ js.JsObject _jsProbe(ElementProbe probe) {
   })..['_dart_'] = probe;
 }
 
-js.JsObject _jsInjector(Injector injector) =>
+js.JsObject _jsInjector(injector) =>
     new js.JsObject.jsify({"get": injector.get})..['_dart_'] = injector;
 
 js.JsObject _jsScope(Scope scope, ScopeStatsConfig config) {

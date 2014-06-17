@@ -18,7 +18,7 @@ main() {
       var template = compile(element, directives);
 
       rootScope.context['name'] = 'OK';
-      var view = template(injector);
+      var view = template(rootScope, injector.get(DirectiveInjector));
 
       element = view.nodes;
 
@@ -27,7 +27,7 @@ main() {
     }));
 
     describe('observe/flush phase', () {
-      it('should first only when then value has settled', async((Logger log) {
+      it('should fire only when then value has settled', async((Logger log) {
         _.compile('<div dir-foo="{{val}}"></div>');
 
         _.rootScope.apply();
@@ -53,7 +53,7 @@ main() {
 
       rootScope.context['name'] = 'OK';
       rootScope.context['age'] = 23;
-      var view = template(injector);
+      var view = template(rootScope, injector.get(DirectiveInjector));
 
       element = view.nodes[0];
 
@@ -72,7 +72,7 @@ main() {
 
       rootScope.context['line1'] = 'L1';
       rootScope.context['line2'] = 'L2';
-      var view = template(injector);
+      var view = template(rootScope, injector.get(DirectiveInjector));
 
       element = view.nodes[0];
 
@@ -87,7 +87,7 @@ main() {
     {
       var element = es('<div>{{"World" | hello}}</div>');
       var template = compile(element, directives);
-      var view = template(injector);
+      var view = template(rootScope, injector.get(DirectiveInjector));
       rootScope.apply();
 
       element = view.nodes;

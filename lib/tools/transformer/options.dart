@@ -1,6 +1,6 @@
 library angular.tools.transformer.options;
 
-import 'package:di/transformer/options.dart' as di;
+import 'package:di/transformer.dart' as di show TransformOptions;
 
 /** Options used by Angular transformers */
 class TransformOptions {

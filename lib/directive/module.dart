@@ -24,6 +24,7 @@ import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/module_internal.dart';
+import 'package:angular/core_dom/directive_injector.dart';
 import 'package:angular/utils.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/change_detection.dart';
@@ -63,12 +64,14 @@ part 'ng_model_options.dart';
  */
 class DirectiveModule extends Module {
   DirectiveModule() {
+    bind(DirectiveInjector, toImplementation: DefaultDirectiveInjector);
+
     bind(AHref, toValue: null);
     bind(NgBaseCss);  // The root injector should have an empty NgBaseCss
     bind(NgBind, toValue: null);
     bind(NgBindTemplate, toValue: null);
     bind(NgBindHtml, toValue: null);
-    bind(dom.NodeValidator, toFactory: (_) => new dom.NodeValidatorBuilder.common());
+    bind(dom.NodeValidator, toFactory: () => new dom.NodeValidatorBuilder.common());
     bind(NgClass, toValue: null);
     bind(NgClassOdd, toValue: null);
     bind(NgClassEven, toValue: null);
