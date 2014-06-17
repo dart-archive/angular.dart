@@ -70,6 +70,8 @@
               <td class="average">
                 test:<%= avg.time %>ms &plusmn; <%- Math.round(timesRelativeMarginOfError * 100) %>%
                 <br>
+                deviation: <%= timesStandardDeviation %>
+                <br>
                 gc:<%= avg.gcTime %>ms
                 <br>
                 combined: <%= avg.combinedTime %>ms
