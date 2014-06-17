@@ -1,16 +1,35 @@
-var bp = window.bp = {};
-bp.Statistics = {
-  //Taken from z-table where confidence is 95%
-  criticalValue: 1.96
+var bp = window.bp = {
+  steps: window.benchmarkSteps = [],
+  Statistics: {
+    //Taken from z-table where confidence is 95%
+    criticalValue: 1.96
+  },
+  Runner: {
+    runState: {
+      iterations: 0,
+      numSamples: 20,
+      recentTimePerStep: {},
+      recentGCTimePerStep: {},
+      recentGarbagePerStep: {},
+      recentRetainedMemoryPerStep: {}
+    }
+  },
+  Document: {},
+  Report: {
+    timesPerAction: {}
+  },
+  Measure: {}
 };
-bp.steps = window.benchmarkSteps = [];
-bp.runState = {
-  numSamples: 20,
-  recentTimePerStep: {},
-  recentGCTimePerStep: {},
-  recentGarbagePerStep: {},
-  recentRetainedMemoryPerStep: {},
-  timesPerAction: {}
+
+bp.Measure.numMilliseconds = function() {
+  if (window.performance != null && typeof window.performance.now == 'function') {
+    return window.performance.now();
+  } else if (window.performance != null && typeof window.performance.webkitNow == 'function') {
+    return window.performance.webkitNow();
+  } else {
+    console.log('using Date.now');
+    return Date.now();
+  }
 };
 
 bp.Statistics.getMean = function (sample) {
@@ -42,69 +61,66 @@ bp.Statistics.calculateStandardDeviation = function(sample, mean) {
   return deviation;
 };
 
-bp.setIterations = function (iterations) {
-  bp.runState.iterations = iterations;
+bp.Runner.setIterations = function (iterations) {
+  bp.Runner.runState.iterations = iterations;
 };
 
-bp.resetIterations = function() {
-  bp.runState.iterations = 0;
+bp.Runner.resetIterations = function() {
+  bp.Runner.runState.iterations = 0;
 };
 
-bp.numMilliseconds = function() {
-  if (window.performance != null && typeof window.performance.now == 'function') {
-    return window.performance.now();
-  } else if (window.performance != null && typeof window.performance.webkitNow == 'function') {
-    return window.performance.webkitNow();
-  } else {
-    console.log('using Date.now');
-    return Date.now();
-  }
-};
-
-bp.loopBenchmark = function () {
-  if (bp.runState.iterations <= -1) {
+bp.Runner.loopBenchmark = function () {
+  if (bp.Runner.runState.iterations <= -1) {
     //Time to stop looping
-    bp.setIterations(0);
-    bp.loopBtn.innerText = 'Loop';
+    bp.Runner.setIterations(0);
+    bp.Document.loopBtn.innerText = 'Loop';
     return;
   }
-  bp.setIterations(-1);
-  bp.loopBtn.innerText = 'Pause';
-  bp.runAllTests();
+  bp.Runner.setIterations(-1);
+  bp.Document.loopBtn.innerText = 'Pause';
+  bp.Runner.runAllTests();
 };
 
-bp.onceBenchmark = function() {
-  bp.setIterations(1);
-  bp.onceBtn.innerText = '...';
-  bp.runAllTests(function() {
-    bp.onceBtn.innerText = 'Once';
+bp.Runner.onceBenchmark = function() {
+  bp.Runner.setIterations(1);
+  bp.Document.onceBtn.innerText = '...';
+  bp.Runner.runAllTests(function() {
+    bp.Document.onceBtn.innerText = 'Once';
   });
 };
 
-bp.twentyFiveBenchmark = function() {
-  var twentyFiveBtn = bp.twentyFiveBtn;
-  bp.setIterations(25);
+bp.Runner.twentyFiveBenchmark = function() {
+  var twentyFiveBtn = bp.Document.twentyFiveBtn;
+  bp.Runner.setIterations(25);
   twentyFiveBtn.innerText = 'Looping...';
-  bp.runAllTests(function() {
+  bp.Runner.runAllTests(function() {
     twentyFiveBtn.innerText = 'Loop 25x';
   }, 5);
 };
 
-bp.addSampleRange = function() {
-  bp.sampleRange = bp.container().querySelector('#sampleRange');
-  bp.sampleRange.value = Math.max(bp.runState.numSamples, 1);
-  bp.sampleRange.addEventListener('input', bp.onSampleRangeChanged);
-  bp.sampleRangeValue = bp.container().querySelector('#sampleRangeValue');
-  bp.sampleRangeValue.innerText = bp.runState.numSamples;
+bp.Runner.runAllTests = function (done) {
+  if (bp.Runner.runState.iterations--) {
+    bp.steps.forEach(function(bs) {
+      var testResults = bp.Runner.runTimedTest(bs);
+      bp.Runner.runState.recentTimePerStep[bs.name] = testResults.time;
+      bp.Runner.runState.recentGCTimePerStep[bs.name] = testResults.gcTime;
+      bp.Runner.runState.recentGarbagePerStep[bs.name] = testResults.garbage;
+      bp.Runner.runState.recentRetainedMemoryPerStep[bs.name] = testResults.retainedDelta;
+    });
+    bp.Report.markup = bp.Report.calcStats();
+    bp.Document.writeReport(bp.Report.markup);
+    window.requestAnimationFrame(function() {
+      bp.Runner.runAllTests(done);
+    });
+  }
+  else {
+    bp.Document.writeReport(bp.Report.markup);
+    bp.Runner.resetIterations();
+    done && done();
+  }
 };
 
-bp.onSampleRangeChanged = function (evt) {
-  var value = evt.target.value;
-  bp.runState.numSamples = parseInt(value, 10);
-  bp.sampleRangeValue.innerText = value;
-};
-
-bp.runTimedTest = function (bs) {
+bp.Runner.runTimedTest = function (bs) {
   var startTime,
       endTime,
       startGCTime,
@@ -119,16 +135,16 @@ bp.runTimedTest = function (bs) {
   }
 
   beforeHeap = performance.memory.usedJSHeapSize;
-  startTime = bp.numMilliseconds();
+  startTime = bp.Measure.numMilliseconds();
   bs.fn();
-  endTime = bp.numMilliseconds() - startTime;
+  endTime = bp.Measure.numMilliseconds() - startTime;
   afterHeap = performance.memory.usedJSHeapSize;
 
-  startGCTime = bp.numMilliseconds();
+  startGCTime = bp.Measure.numMilliseconds();
   if (typeof window.gc === 'function') {
     window.gc();
   }
-  endGCTime = bp.numMilliseconds() - startGCTime;
+  endGCTime = bp.Measure.numMilliseconds() - startGCTime;
 
   finalHeap = performance.memory.usedJSHeapSize;
   garbage = Math.abs(finalHeap - afterHeap);
@@ -142,30 +158,7 @@ bp.runTimedTest = function (bs) {
   };
 };
 
-bp.runAllTests = function (done) {
-  var report;
-  if (bp.runState.iterations--) {
-    bp.steps.forEach(function(bs) {
-      var testResults = bp.runTimedTest(bs);
-      bp.runState.recentTimePerStep[bs.name] = testResults.time;
-      bp.runState.recentGCTimePerStep[bs.name] = testResults.gcTime;
-      bp.runState.recentGarbagePerStep[bs.name] = testResults.garbage;
-      bp.runState.recentRetainedMemoryPerStep[bs.name] = testResults.retainedDelta;
-    });
-    report = bp.calcStats();
-    bp.writeReport(report);
-    window.requestAnimationFrame(function() {
-      bp.runAllTests(done);
-    });
-  }
-  else {
-    bp.writeReport(report);
-    bp.resetIterations();
-    done && done();
-  }
-}
-
-bp.generateReportModel = function (rawModel) {
+bp.Report.generateReportModel = function (rawModel) {
   rawModel.avg = {
     time: ('' + rawModel.avg.time).substr(0,6),
     gcTime: ('' + rawModel.avg.gcTime).substr(0,6),
@@ -181,18 +174,18 @@ bp.generateReportModel = function (rawModel) {
   return rawModel;
 };
 
-bp.generateReportPartial = function(model) {
+bp.Report.generatePartial = function(model) {
   return bp.infoTemplate(model);
 };
 
-bp.writeReport = function(reportContent) {
-  bp.infoDiv.innerHTML = reportContent;
+bp.Document.writeReport = function(reportContent) {
+  bp.Document.infoDiv.innerHTML = reportContent;
 };
 
-bp.getTimesPerAction = function(name) {
-  var tpa = bp.runState.timesPerAction[name];
+bp.Report.getTimesPerAction = function(name) {
+  var tpa = bp.Report.timesPerAction[name];
   if (!tpa) {
-    tpa = bp.runState.timesPerAction[name] = {
+    tpa = bp.Report.timesPerAction[name] = {
       times: [], // circular buffer
       fmtTimes: [],
       gcTimes: [],
@@ -207,8 +200,8 @@ bp.getTimesPerAction = function(name) {
   return tpa;
 };
 
-bp.rightSizeTimes = function(times) {
-  var delta = times.length - bp.runState.numSamples;
+bp.Report.rightSizeTimes = function(times) {
+  var delta = times.length - bp.Runner.runState.numSamples;
   if (delta > 0) {
     return times.slice(delta);
   }
@@ -216,36 +209,35 @@ bp.rightSizeTimes = function(times) {
   return times;
 };
 
-bp.updateTimes = function(tpa, index, reference, recentTime) {
+bp.Report.updateTimes = function(tpa, index, reference, recentTime) {
   var fmtKey = 'fmt' + reference.charAt(0).toUpperCase() + reference.slice(1);
   tpa[reference][index] = recentTime;
-  tpa[reference] = bp.rightSizeTimes(tpa[reference]);
+  tpa[reference] = bp.Report.rightSizeTimes(tpa[reference]);
   tpa[fmtKey][index] = recentTime.toString().substr(0, 6);
-  tpa[fmtKey] = bp.rightSizeTimes(tpa[fmtKey]);
-
+  tpa[fmtKey] = bp.Report.rightSizeTimes(tpa[fmtKey]);
 };
 
-bp.calcStats = function() {
+bp.Report.calcStats = function() {
   var report = '';
   bp.steps.forEach(function(bs) {
     var stepName = bs.name,
-        timeForStep = bp.runState.recentTimePerStep[stepName],
-        gcTimeForStep = bp.runState.recentGCTimePerStep[stepName],
-        garbageTimeForStep = bp.runState.recentGarbagePerStep[stepName],
-        retainedTimeForStep = bp.runState.recentRetainedMemoryPerStep[stepName],
-        tpa = bp.getTimesPerAction(stepName),
+        timeForStep = bp.Runner.runState.recentTimePerStep[stepName],
+        gcTimeForStep = bp.Runner.runState.recentGCTimePerStep[stepName],
+        garbageTimeForStep = bp.Runner.runState.recentGarbagePerStep[stepName],
+        retainedTimeForStep = bp.Runner.runState.recentRetainedMemoryPerStep[stepName],
+        tpa = bp.Report.getTimesPerAction(stepName),
         reportModel,
         avg,
         timesConfidenceInterval,
         timesStandardDeviation;
 
-    bp.updateTimes(tpa, tpa.nextEntry, 'gcTimes', gcTimeForStep);
-    bp.updateTimes(tpa, tpa.nextEntry, 'garbageTimes', garbageTimeForStep / 1e3);
-    bp.updateTimes(tpa, tpa.nextEntry, 'retainedTimes', retainedTimeForStep / 1e3);
-    bp.updateTimes(tpa, tpa.nextEntry, 'times', timeForStep);
+    bp.Report.updateTimes(tpa, tpa.nextEntry, 'gcTimes', gcTimeForStep);
+    bp.Report.updateTimes(tpa, tpa.nextEntry, 'garbageTimes', garbageTimeForStep / 1e3);
+    bp.Report.updateTimes(tpa, tpa.nextEntry, 'retainedTimes', retainedTimeForStep / 1e3);
+    bp.Report.updateTimes(tpa, tpa.nextEntry, 'times', timeForStep);
 
     tpa.nextEntry++;
-    tpa.nextEntry %= bp.runState.numSamples;
+    tpa.nextEntry %= bp.Runner.runState.numSamples;
     avg = {
       gcTime: bp.Statistics.getMean(tpa.gcTimes),
       time: bp.Statistics.getMean(tpa.times),
@@ -259,7 +251,7 @@ bp.calcStats = function() {
         tpa.times.length
     );
 
-    reportModel = bp.generateReportModel({
+    reportModel = bp.Report.generateReportModel({
       name: stepName,
       avg: avg,
       times: tpa.fmtTimes,
@@ -269,27 +261,48 @@ bp.calcStats = function() {
       garbageTimes: tpa.fmtGarbageTimes,
       retainedTimes: tpa.fmtRetainedTimes
     });
-    report += bp.generateReportPartial(reportModel);
+    report += bp.Report.generatePartial(reportModel);
   });
   return report;
 };
 
-bp.container = function() {
+bp.Document.addSampleRange = function() {
+  bp.Document.sampleRange = bp.Document.container().querySelector('#sampleRange');
+  if (bp.Document.sampleRange) {
+    bp.Document.sampleRange.value = Math.max(bp.Runner.runState.numSamples, 1);
+    bp.Document.sampleRange.addEventListener('input', bp.Document.onSampleInputChanged);
+    bp.Document.sampleRangeValue = bp.Document.container().querySelector('#sampleRangeValue');
+    bp.Document.sampleRangeValue.innerText = bp.Runner.runState.numSamples;
+  }
+
+};
+
+bp.Document.onSampleInputChanged = function (evt) {
+  var value = evt.target.value;
+  bp.Runner.runState.numSamples = parseInt(value, 10);
+  if (bp.Document.sampleRangeValue) {
+    bp.Document.sampleRangeValue.innerText = value;
+  }
+};
+
+bp.Document.container = function() {
   if (!bp._container) {
     bp._container = document.querySelector('#benchmarkContainer');
   }
   return bp._container;
 }
 
-bp.addButton = function(reference, handler) {
-  var container = bp.container();
-  bp[reference] = container.querySelector('button.' + reference);
-  bp[reference].addEventListener('click', handler);
+bp.Document.addButton = function(reference, handler) {
+  var container = bp.Document.container();
+  bp.Document[reference] = container.querySelector('button.' + reference);
+  if (bp.Document[reference]) {
+    bp.Document[reference].addEventListener('click', handler);
+  }
 }
 
-bp.addLinks = function() {
+bp.Document.addLinks = function() {
   // Add links to everything
-  var linkDiv = bp.container().querySelector('.versionContent');
+  var linkDiv = bp.Document.container().querySelector('.versionContent');
   var linkHtml = '';
 
   [
@@ -299,21 +312,25 @@ bp.addLinks = function() {
     linkHtml += '<a href="'+ link[0] +'">'+ link[1] +'</a>';
   }));
 
-  linkDiv.innerHTML = linkHtml;
+  if (linkDiv) {
+    linkDiv.innerHTML = linkHtml;
+  }
 };
 
-bp.addInfo = function() {
-  bp.infoDiv = bp.container().querySelector('tbody.info');
-  bp.infoTemplate = _.template(bp.container().querySelector('#infoTemplate').innerHTML);
+bp.Document.addInfo = function() {
+  bp.Document.infoDiv = bp.Document.container().querySelector('tbody.info');
+  if (bp.Document.infoDiv) {
+    bp.infoTemplate = _.template(bp.Document.container().querySelector('#infoTemplate').innerHTML);
+  }
 };
 
-bp.onDOMContentLoaded = function() {
-  bp.addLinks();
-  bp.addButton('loopBtn', bp.loopBenchmark);
-  bp.addButton('onceBtn', bp.onceBenchmark);
-  bp.addButton('twentyFiveBtn', bp.twentyFiveBenchmark);
-  bp.addSampleRange();
-  bp.addInfo();
+bp.Document.onDOMContentLoaded = function() {
+  bp.Document.addLinks();
+  bp.Document.addButton('loopBtn', bp.Runner.loopBenchmark);
+  bp.Document.addButton('onceBtn', bp.Runner.onceBenchmark);
+  bp.Document.addButton('twentyFiveBtn', bp.Runner.twentyFiveBenchmark);
+  bp.Document.addSampleRange();
+  bp.Document.addInfo();
 };
 
-window.addEventListener('DOMContentLoaded', bp.onDOMContentLoaded);
+window.addEventListener('DOMContentLoaded', bp.Document.onDOMContentLoaded);
