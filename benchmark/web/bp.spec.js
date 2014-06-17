@@ -262,20 +262,6 @@ describe('bp', function() {
   });
 
 
-  describe('.interpolateHtml', function() {
-    it('should render a list of values into a string', function() {
-      expect(bp.interpolateHtml('<div>%0</div><a>%1</a>', ['Hello', 'Jeff'])).
-        toBe('<div>Hello</div><a>Jeff</a>');
-    });
-
-
-    it('should replace multiple instances of a token', function() {
-      expect(bp.interpolateHtml('<div>%0</div><a>%0</a>', ['Hello'])).
-        toBe('<div>Hello</div><a>Hello</a>');
-    });
-  });
-
-
   describe('.setIterations()', function() {
     it('should set provided arguments to runState object', function() {
       bp.runState = {numSamples: 20};
