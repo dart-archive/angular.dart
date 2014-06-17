@@ -69,6 +69,25 @@ microLeap() {
 isAsyncQueueEmpty() => _asyncQueue.isEmpty;
 
 /**
+ * Returns whether there are outstanding timers.
+ */
+isTimerQueueEmpty() => _timerQueue.isEmpty;
+
+/**
+ * Returns whether there are outstanding non-periodic timers.
+ */
+isNonPeriodicTimerQueueEmpty() => _timerQueue
+    .where((_TimerSpec spec) => !spec.periodic)
+    .isEmpty;
+
+/**
+ * Returns whether there are outstanding periodic timers.
+ */
+isPeriodicTimerQueueEmpty() => _timerQueue
+    .where((_TimerSpec spec) => spec.periodic)
+    .isEmpty;
+
+/**
  * Simulates a clock tick by running any scheduled timers. Can only be used
  * in [async] tests.Clock tick will call [microLeap] to process the microtask
  * queue before each timer callback.
