@@ -13,37 +13,27 @@ bp.runState = {
   timesPerAction: {}
 };
 
-bp.Statistics.getStabilityOfSample = function (sample, confidenceRange) {
-  var inRange = 0;
-  sample.forEach(function(x) {
-    inRange += x <= confidenceRange[1] && x >= confidenceRange[0] ? 1 : 0;
-  })
-  return Math.round((inRange / sample.length) * 100) / 100;
-
-};
-
-bp.Statistics.getConfidenceRange = function(mean, confidenceInterval) {
-  return [
-    Math.round((mean - confidenceInterval) * 100) / 100,
-    Math.round((mean + confidenceInterval) * 100) / 100
-  ];
-};
+bp.Statistics.getMean = function (sample) {
+  var total = 0;
+  sample.forEach(function(x) { total += x; });
+  return total / sample.length;
+}
 
 bp.Statistics.calculateConfidenceInterval = function(standardDeviation, sampleSize) {
   var standardError = standardDeviation / Math.sqrt(sampleSize);
-  var marginOfError = bp.Statistics.criticalValue * standardError;
-  marginOfError = Math.round(marginOfError * 100) / 100;
-  return marginOfError;
+  return bp.Statistics.criticalValue * standardError;
 };
 
-bp.Statistics.calculateStandardDeviation = function(sample) {
-  var mean = 0;
-  var deviation = 0;
-  sample.forEach(function(x) {
-    mean += x;
-  });
-  mean = mean / sample.length;
+bp.Statistics.calculateRelativeMarginOfError = function (marginOfError, mean) {
+  /*
+   * Converts absolute margin of error to a relative margin of error by
+   * converting it to a percentage of the mean.
+   */
+  return (marginOfError / mean);
+};
 
+bp.Statistics.calculateStandardDeviation = function(sample, mean) {
+  var deviation = 0;
   sample.forEach(function(x) {
     deviation += Math.pow(x - mean, 2);
   });
@@ -194,6 +184,7 @@ bp.generateReportModel = function (rawModel) {
   rawModel.gcTimes = rawModel.gcTimes.join('<br>'),
   rawModel.garbageTimes = rawModel.garbageTimes.join('<br>'),
   rawModel.retainedTimes = rawModel.retainedTimes.join('<br>')
+  rawModel.timesConfidenceInterval = (rawModel.timesConfidenceInterval || 0).toFixed(2);
   return rawModel;
 };
 
@@ -201,20 +192,12 @@ bp.generateReportPartial = function(model) {
   return bp.infoTemplate(model);
 };
 
-bp.getAverage = function (times, gcTimes, garbageTimes, retainedTimes) {
-  var timesAvg = 0;
-  var gcAvg = 0;
-  var garbageAvg = 0;
-  var retainedAvg = 0;
-  times.forEach(function(x) { timesAvg += x; });
-  gcTimes.forEach(function(x) { gcAvg += x; });
-  garbageTimes.forEach(function(x) { garbageAvg += x; });
-  retainedTimes.forEach(function(x) { retainedAvg += x; });
+bp.getAverages = function (times, gcTimes, garbageTimes, retainedTimes) {
   return {
-    gcTime: gcAvg / gcTimes.length,
-    time: timesAvg / times.length,
-    garbage: garbageAvg / garbageTimes.length,
-    retained: retainedAvg / retainedTimes.length
+    gcTime: bp.Statistics.getMean(gcTimes),
+    time: bp.Statistics.getMean(times),
+    garbage: bp.Statistics.getMean(garbageTimes),
+    retained: bp.Statistics.getMean(retainedTimes)
   };
 };
 
@@ -269,8 +252,7 @@ bp.calcStats = function() {
         tpa = bp.getTimesPerAction(stepName),
         reportModel,
         avg,
-        timesConfidenceInterval,
-        timesConfidenceRange;
+        timesConfidenceInterval;
 
     bp.updateTimes(tpa, tpa.nextEntry, 'gcTimes', gcTimeForStep);
     bp.updateTimes(tpa, tpa.nextEntry, 'garbageTimes', garbageTimeForStep / 1e3);
@@ -279,27 +261,22 @@ bp.calcStats = function() {
 
     tpa.nextEntry++;
     tpa.nextEntry %= bp.runState.numSamples;
-    avg = bp.getAverage(
+    avg = bp.getAverages(
         tpa.times,
         tpa.gcTimes,
         tpa.garbageTimes,
         tpa.retainedTimes);
 
     timesConfidenceInterval = bp.Statistics.calculateConfidenceInterval(
-        bp.Statistics.calculateStandardDeviation(tpa.times),
+        bp.Statistics.calculateStandardDeviation(tpa.times, avg.time),
         tpa.times.length
     );
-    timesConfidenceRange = bp.Statistics.getConfidenceRange(
-        avg.time,
-        timesConfidenceInterval
-    );
+
     reportModel = bp.generateReportModel({
       name: stepName,
       avg: avg,
       times: tpa.fmtTimes,
-      timesConfidenceInterval: timesConfidenceInterval,
-      timesConfidenceRange: timesConfidenceRange,
-      timesStability: bp.Statistics.getStabilityOfSample(tpa.times, timesConfidenceRange) * 100,
+      timesRelativeMarginOfError: bp.Statistics.calculateRelativeMarginOfError(timesConfidenceInterval, avg.time),
       gcTimes: tpa.fmtGcTimes,
       garbageTimes: tpa.fmtGarbageTimes,
       retainedTimes: tpa.fmtRetainedTimes

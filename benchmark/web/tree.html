@@ -68,15 +68,7 @@
             <tr class="sampleContainer">
               <td><%= name %></td>
               <td class="average">
-                test:<%= avg.time %>ms
-                <br>
-                times within range: <%= timesStability %>%
-                <br>
-                confidence interval: <%= timesConfidenceInterval %>
-                <br>
-                confidence range:
-                  <%= timesConfidenceRange[0] %> -
-                  <%= timesConfidenceRange[1] %>
+                test:<%= avg.time %>ms &plusmn; <%- Math.round(timesRelativeMarginOfError * 100) %>%
                 <br>
                 gc:<%= avg.gcTime %>ms
                 <br>
