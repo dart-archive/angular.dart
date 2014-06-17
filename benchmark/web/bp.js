@@ -50,14 +50,6 @@ bp.resetIterations = function() {
   bp.runState.iterations = 0;
 };
 
-bp.interpolateHtml = function(string, list) {
-  list.forEach(function(item, i) {
-    var exp = new RegExp('%' + i, ['g']);
-    string = string.replace(exp, item);
-  });
-  return string;
-}
-
 bp.numMilliseconds = function() {
   if (window.performance != null && typeof window.performance.now == 'function') {
     return window.performance.now();
@@ -310,7 +302,7 @@ bp.addLinks = function() {
     // Add new benchmark suites here
     ['tree.html', 'TreeComponent']
   ].forEach((function (link) {
-    linkHtml += bp.interpolateHtml('<a href=%0>%1</a>', link);
+    linkHtml += '<a href="'+ link[0] +'">'+ link[1] +'</a>';
   }));
 
   linkDiv.innerHTML = linkHtml;
