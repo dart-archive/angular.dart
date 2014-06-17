@@ -17,7 +17,7 @@ bp.Statistics.getMean = function (sample) {
   var total = 0;
   sample.forEach(function(x) { total += x; });
   return total / sample.length;
-}
+};
 
 bp.Statistics.calculateConfidenceInterval = function(standardDeviation, sampleSize) {
   var standardError = standardDeviation / Math.sqrt(sampleSize);
@@ -143,6 +143,7 @@ bp.runTimedTest = function (bs) {
 };
 
 bp.runAllTests = function (done) {
+  var report;
   if (bp.runState.iterations--) {
     bp.steps.forEach(function(bs) {
       var testResults = bp.runTimedTest(bs);
@@ -151,14 +152,14 @@ bp.runAllTests = function (done) {
       bp.runState.recentGarbagePerStep[bs.name] = testResults.garbage;
       bp.runState.recentRetainedMemoryPerStep[bs.name] = testResults.retainedDelta;
     });
-    bp.report = bp.calcStats();
-    bp.writeReport(bp.report);
+    report = bp.calcStats();
+    bp.writeReport(report);
     window.requestAnimationFrame(function() {
       bp.runAllTests(done);
     });
   }
   else {
-    bp.writeReport(bp.report);
+    bp.writeReport(report);
     bp.resetIterations();
     done && done();
   }
@@ -182,15 +183,6 @@ bp.generateReportModel = function (rawModel) {
 
 bp.generateReportPartial = function(model) {
   return bp.infoTemplate(model);
-};
-
-bp.getAverages = function (times, gcTimes, garbageTimes, retainedTimes) {
-  return {
-    gcTime: bp.Statistics.getMean(gcTimes),
-    time: bp.Statistics.getMean(times),
-    garbage: bp.Statistics.getMean(garbageTimes),
-    retained: bp.Statistics.getMean(retainedTimes)
-  };
 };
 
 bp.writeReport = function(reportContent) {
@@ -254,11 +246,13 @@ bp.calcStats = function() {
 
     tpa.nextEntry++;
     tpa.nextEntry %= bp.runState.numSamples;
-    avg = bp.getAverages(
-        tpa.times,
-        tpa.gcTimes,
-        tpa.garbageTimes,
-        tpa.retainedTimes);
+    avg = {
+      gcTime: bp.Statistics.getMean(tpa.gcTimes),
+      time: bp.Statistics.getMean(tpa.times),
+      garbage: bp.Statistics.getMean(tpa.garbageTimes),
+      retained: bp.Statistics.getMean(tpa.retainedTimes)
+    };
+
     timesStandardDeviation = bp.Statistics.calculateStandardDeviation(tpa.times, avg.time);
     timesConfidenceInterval = bp.Statistics.calculateConfidenceInterval(
         timesStandardDeviation,
