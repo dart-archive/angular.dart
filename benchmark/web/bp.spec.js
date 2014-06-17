@@ -12,26 +12,16 @@ describe('bp', function() {
 
   beforeEach(function() {
     bp._container = document.createElement('div');
-
-    var sampleRange = document.createElement('input');
-    sampleRange.setAttribute('type', 'range');
-    sampleRange.setAttribute('min', '1');
-    sampleRange.setAttribute('max', '100');
-    sampleRange.setAttribute('id', 'sampleRange');
-    bp._container.appendChild(sampleRange);
-
-    var sampleRangeValue = document.createElement('span')
-    sampleRangeValue.setAttribute('id', 'sampleRangeValue');
-    bp._container.appendChild(sampleRangeValue);
-
-    bp.runState = {
+    bp.Runner.runState = {
+      iterations: 0,
       numSamples: 20,
       recentTimePerStep: {},
       recentGCTimePerStep: {},
       recentGarbagePerStep: {},
-      recentRetainedMemoryPerStep: {},
-      timesPerAction: {}
+      recentRetainedMemoryPerStep: {}
     };
+
+    bp.Report.timesPerAction = {};
   });
 
   describe('.Statistics', function() {
@@ -69,337 +59,330 @@ describe('bp', function() {
     });
   });
 
-  describe('.loopBenchmark()', function() {
-    var runAllTestsSpy, btn;
-    beforeEach(function() {
-      runAllTestsSpy = spyOn(bp, 'runAllTests');
-      bp.loopBtn = document.createElement('button');
-    });
 
-    it('should call runAllTests if iterations does not start at greater than -1', function() {
-      bp.runState.iterations = 0;
-      bp.loopBenchmark();
-      expect(runAllTestsSpy).toHaveBeenCalled();
-      expect(runAllTestsSpy.callCount).toBe(1);
-    });
-
-
-    it('should not call runAllTests if iterations is already -1', function() {
-      runs(function() {
-        bp.runState.iterations = -1;
-        bp.loopBenchmark();
+  describe('.Document', function() {
+    describe('.container()', function() {
+      it('should return bp._container if set', function() {
+        bp._container = 'fooelement';
+        expect(bp.Document.container()).toBe('fooelement');
       });
 
-      waits(1);
 
-      runs(function() {
-        expect(runAllTestsSpy).not.toHaveBeenCalled();
+      it('should query the document for #benchmarkContainer if no _container', function() {
+        var spy = spyOn(document, 'querySelector');
+        bp._container = null;
+        bp.Document.container();
+        expect(spy).toHaveBeenCalled();
       });
     });
 
 
-    it('should not call runAllTests if iterations is less than -1', function() {
-      runs(function() {
-        bp.runState.iterations = -50;
-        bp.loopBenchmark();
+    describe('.onSampleRangeChanged()', function() {
+      beforeEach(function() {
+        bp.Runner.resetIterations();
       });
 
-      waits(1);
 
-      runs(function() {
-        expect(runAllTestsSpy).not.toHaveBeenCalled();
+      it('should change the numSamples property', function() {
+        expect(bp.Runner.runState.numSamples).toBe(20);
+        bp.Document.onSampleInputChanged({target: {value: '80'}});
+        expect(bp.Runner.runState.numSamples).toBe(80);
       });
     });
 
 
-    it('should set the button text to "Pause" while iterating', function() {
-      bp.runState.iterations = 0;
-      bp.loopBenchmark();
-      expect(bp.loopBtn.innerText).toBe('Pause');
+    describe('.writeReport()', function() {
+      it('should write the report to the infoDiv', function() {
+        bp.Document.infoDiv = document.createElement('div');
+        bp.Document.writeReport('report!');
+        expect(bp.Document.infoDiv.innerHTML).toBe('report!')
+      });
     });
 
 
-    it('should set the button text to "Loop" while iterating', function() {
-      bp.runState.iterations = -1;
-      bp.loopBenchmark();
-      expect(bp.loopBtn.innerText).toBe('Loop');
-    });
+    describe('.onDOMContentLoaded()', function() {
+      it('should call methods to write to the dom', function() {
+        var linksSpy = spyOn(bp.Document, 'addLinks');
+        var buttonSpy = spyOn(bp.Document, 'addButton');
+        var rangeSpy = spyOn(bp.Document, 'addSampleRange');
+        var infoSpy = spyOn(bp.Document, 'addInfo');
 
-
-    it('should set the runState -1 iterations', function() {
-      var spy = spyOn(bp, 'setIterations');
-      bp.runState.iterations = 0;
-      bp.loopBenchmark();
-      expect(spy).toHaveBeenCalledWith(-1);
-    });
-
-
-    it('should set the iterations to 0 if iterations is already -1', function() {
-      bp.runState.iterations = -1;
-      bp.loopBenchmark();
-      expect(bp.runState.iterations).toBe(0);
+        bp.Document.onDOMContentLoaded();
+        expect(linksSpy).toHaveBeenCalled();
+        expect(buttonSpy.callCount).toBe(3);
+        expect(rangeSpy).toHaveBeenCalled();
+        expect(infoSpy).toHaveBeenCalled();
+      });
     });
   });
 
 
-  describe('.onceBenchmark()', function() {
-    var runAllTestsSpy;
-    beforeEach(function() {
-      bp.onceBtn = document.createElement('button');
-      runAllTestsSpy = spyOn(bp, 'runAllTests');
-    });
-
-    it('should call runAllTests', function() {
-      expect(runAllTestsSpy.callCount).toBe(0);
-      bp.onceBenchmark();
-      expect(runAllTestsSpy).toHaveBeenCalled();
+  describe('.Runner', function() {
+    describe('.setIterations()', function() {
+      it('should set provided arguments to runState object', function() {
+        bp.Runner.runState = {numSamples: 20};
+        bp.Runner.setIterations(15);
+        expect(bp.Runner.runState.numSamples).toBe(20);
+        expect(bp.Runner.runState.iterations).toBe(15);
+      });
     });
 
 
-    it('should set the button text to "..."', function() {
-      expect(runAllTestsSpy.callCount).toBe(0);
-      bp.onceBenchmark();
-      expect(bp.onceBtn.innerText).toBe('...');
-    });
-
-
-    it('should set the text back to Once when done running test', function() {
-      expect(bp.onceBtn.innerText).not.toBe('Once');
-      bp.onceBenchmark();
-      var done = runAllTestsSpy.calls[0].args[0];
-      done();
-      expect(bp.onceBtn.innerText).toBe('Once');
-    });
-  });
-
-
-  describe('.twentyFiveBenchmark()', function() {
-    var runAllTestsSpy;
-    beforeEach(function() {
-      bp.twentyFiveBtn = document.createElement('button');
-      runAllTestsSpy = spyOn(bp, 'runAllTests');
-    });
-
-
-    it('should set the runState to25 iterations', function() {
-      var spy = spyOn(bp, 'setIterations');
-      bp.twentyFiveBenchmark();
-      expect(spy).toHaveBeenCalledWith(25);
-    });
-
-
-    it('should change the button text to "Looping..."', function() {
-      expect(bp.twentyFiveBtn.innerText).not.toBe('Looping...');
-      bp.twentyFiveBenchmark();
-      expect(bp.twentyFiveBtn.innerText).toBe('Looping...');
-    });
-
-
-    it('should call runAllTests', function() {
-      bp.twentyFiveBenchmark();
-      expect(runAllTestsSpy).toHaveBeenCalled();
-    });
-
-
-    it('should pass runAllTests a third argument specifying times to ignore', function() {
-      bp.twentyFiveBenchmark();
-      expect(runAllTestsSpy.calls[0].args[1]).toBe(5);
-    });
-  });
-
-
-  describe('.container()', function() {
-    it('should return bp._container if set', function() {
-      bp._container = 'fooelement';
-      expect(bp.container()).toBe('fooelement');
-    });
-
-
-    it('should query the document for #benchmarkContainer if no _container', function() {
-      var spy = spyOn(document, 'querySelector');
-      bp._container = null;
-      bp.container();
-      expect(spy).toHaveBeenCalled();
-    });
-  });
-
-
-  describe('.addSampleRange()', function() {
-    it('should set the default value to the current numSamples', function() {
-      bp.runState.numSamples = 20;
-      bp.addSampleRange();
-      expect(bp.sampleRange.value).toBe('20');
-    });
-  });
-
-
-  describe('.onSampleRangeChanged()', function() {
-    beforeEach(function() {
-      bp.resetIterations();
-    });
-
-
-    it('should change the numSamples property', function() {
-      expect(bp.runState.numSamples).toBe(20);
-      bp.onSampleRangeChanged({target: {value: '80'}});
-      expect(bp.runState.numSamples).toBe(80);
-    });
-  });
-
-
-  describe('.addButton()', function() {
-
-  });
-
-
-  describe('.addLinks()', function() {
-
-  });
-
-
-  describe('.addInfo()', function() {
-
-  });
-
-
-  describe('.setIterations()', function() {
-    it('should set provided arguments to runState object', function() {
-      bp.runState = {numSamples: 20};
-      bp.setIterations(15);
-      expect(bp.runState.numSamples).toBe(20);
-      expect(bp.runState.iterations).toBe(15);
-    });
-  });
-
-
-  describe('.resetIterations()', function() {
-    it('should set runState object to defaults', function() {
-      bp.runState = {
-        numSamples: 99,
-        iterations: 100,
-        recentTimePerStep: {
-          fakeStep: 2
-        },
-        timesPerAction: {
+    describe('.resetIterations()', function() {
+      it('should set runState object to defaults', function() {
+        bp.Runner.runState = {
+          numSamples: 99,
+          iterations: 100,
+          recentTimePerStep: {
+            fakeStep: 2
+          }
+        }
+        bp.Report.timesPerAction = {
           fakeStep: {
             times: [5]
           }
-        }
-      }
+        };
 
-      bp.resetIterations();
-      expect(bp.runState.numSamples).toBe(99);
-      expect(bp.runState.iterations).toBe(0);
-      expect(bp.runState.timesPerAction).toEqual({fakeStep: {times: [5]}});
-      expect(bp.runState.recentTimePerStep).toEqual({fakeStep: 2});
-    });
-  });
-
-
-  describe('.runTimedTest()', function() {
-    it('should call gc if available', function() {
-      window.gc = window.gc || function() {};
-      var spy = spyOn(window, 'gc');
-      bp.runTimedTest(mockStep, {});
-      expect(spy).toHaveBeenCalled();
-    });
-
-
-    it('should return the time required to run the test', function() {
-      var times = {};
-      expect(typeof bp.runTimedTest(mockStep, times).time).toBe('number');
-    });
-  });
-
-
-  describe('.runAllTests()', function() {
-    beforeEach(function() {
-      bp.steps = [mockStep];
-      bp.infoDiv = document.createElement('div');
-      bp.infoTemplate = jasmine.createSpy('infoTemplate');
-    });
-
-    it('should call resetIterations before calling done', function() {
-      var spy = spyOn(bp, 'resetIterations');
-      bp.runState.iterations = 0;
-      bp.runAllTests();
-      expect(spy).toHaveBeenCalled();
-    });
-
-
-    it('should call done after running for the appropriate number of iterations', function() {
-      var spy = spyOn(mockStep, 'fn');
-      var doneSpy = jasmine.createSpy('done');
-
-      runs(function() {
-        bp.setIterations(5, 5);
-        bp.runAllTests(doneSpy);
-      });
-
-      waitsFor(function() {
-        return doneSpy.callCount;
-      }, 'done to be called', 200);
-
-      runs(function() {
-        expect(spy.callCount).toBe(5);
+        bp.Runner.resetIterations();
+        expect(bp.Runner.runState.numSamples).toBe(99);
+        expect(bp.Runner.runState.iterations).toBe(0);
+        expect(bp.Report.timesPerAction).toEqual({fakeStep: {times: [5]}});
+        expect(bp.Runner.runState.recentTimePerStep).toEqual({fakeStep: 2});
       });
     });
 
 
-    it('should add as many times to timePerStep as are specified by numSamples', function() {
-      var doneSpy = jasmine.createSpy('done');
-      var resetSpy = spyOn(bp, 'resetIterations');
-      runs(function() {
-        bp.runState.numSamples = 8;
-        bp.setIterations(10);
-        bp.runAllTests(doneSpy);
+    describe('.runTimedTest()', function() {
+      it('should call gc if available', function() {
+        window.gc = window.gc || function() {};
+        var spy = spyOn(window, 'gc');
+        bp.Runner.runTimedTest(mockStep, {});
+        expect(spy).toHaveBeenCalled();
       });
 
-      waitsFor(function() {
-        return doneSpy.callCount;
-      }, 'done to be called', 200);
 
-      runs(function() {
-        expect(bp.runState.timesPerAction.fakeStep.times.length).toBe(8);
+      it('should return the time required to run the test', function() {
+        var times = {};
+        expect(typeof bp.Runner.runTimedTest(mockStep, times).time).toBe('number');
+      });
+    });
+
+
+    describe('.runAllTests()', function() {
+      beforeEach(function() {
+        bp.steps = [mockStep];
+        bp.Document.infoDiv = document.createElement('div');
+        bp.infoTemplate = jasmine.createSpy('infoTemplate');
+      });
+
+      it('should call resetIterations before calling done', function() {
+        var spy = spyOn(bp.Runner, 'resetIterations');
+        bp.Runner.runState.iterations = 0;
+        bp.Runner.runAllTests();
+        expect(spy).toHaveBeenCalled();
+      });
+
+
+      it('should call done after running for the appropriate number of iterations', function() {
+        var spy = spyOn(mockStep, 'fn');
+        var doneSpy = jasmine.createSpy('done');
+
+        runs(function() {
+          bp.Runner.setIterations(5, 5);
+          bp.Runner.runAllTests(doneSpy);
+        });
+
+        waitsFor(function() {
+          return doneSpy.callCount;
+        }, 'done to be called', 200);
+
+        runs(function() {
+          expect(spy.callCount).toBe(5);
+        });
+      });
+
+
+      it('should add as many times to timePerStep as are specified by numSamples', function() {
+        var doneSpy = jasmine.createSpy('done');
+        var resetSpy = spyOn(bp.Runner, 'resetIterations');
+        runs(function() {
+          bp.Runner.runState.numSamples = 8;
+          bp.Runner.setIterations(10);
+          bp.Runner.runAllTests(doneSpy);
+        });
+
+        waitsFor(function() {
+          return doneSpy.callCount;
+        }, 'done to be called', 200);
+
+        runs(function() {
+          expect(bp.Report.timesPerAction.fakeStep.times.length).toBe(8);
+        });
+      });
+    });
+
+
+    describe('.loopBenchmark()', function() {
+      var runAllTestsSpy, btn;
+      beforeEach(function() {
+        runAllTestsSpy = spyOn(bp.Runner, 'runAllTests');
+        bp.Document.loopBtn = document.createElement('button');
+      });
+
+      it('should call runAllTests if iterations does not start at greater than -1', function() {
+        bp.Runner.runState.iterations = 0;
+        bp.Runner.loopBenchmark();
+        expect(runAllTestsSpy).toHaveBeenCalled();
+        expect(runAllTestsSpy.callCount).toBe(1);
+      });
+
+
+      it('should not call runAllTests if iterations is already -1', function() {
+        runs(function() {
+          bp.Runner.runState.iterations = -1;
+          bp.Runner.loopBenchmark();
+        });
+
+        waits(1);
+
+        runs(function() {
+          expect(runAllTestsSpy).not.toHaveBeenCalled();
+        });
+      });
+
+
+      it('should not call runAllTests if iterations is less than -1', function() {
+        runs(function() {
+          bp.Runner.runState.iterations = -50;
+          bp.Runner.loopBenchmark();
+        });
+
+        waits(1);
+
+        runs(function() {
+          expect(runAllTestsSpy).not.toHaveBeenCalled();
+        });
+      });
+
+
+      it('should set the button text to "Pause" while iterating', function() {
+        bp.Runner.runState.iterations = 0;
+        bp.Runner.loopBenchmark();
+        expect(bp.Document.loopBtn.innerText).toBe('Pause');
+      });
+
+
+      it('should set the button text to "Loop" while iterating', function() {
+        bp.Runner.runState.iterations = -1;
+        bp.Runner.loopBenchmark();
+        expect(bp.Document.loopBtn.innerText).toBe('Loop');
+      });
+
+
+      it('should set the runState -1 iterations', function() {
+        var spy = spyOn(bp.Runner, 'setIterations');
+        bp.Runner.runState.iterations = 0;
+        bp.Runner.loopBenchmark();
+        expect(spy).toHaveBeenCalledWith(-1);
+      });
+
+
+      it('should set the iterations to 0 if iterations is already -1', function() {
+        bp.Runner.runState.iterations = -1;
+        bp.Runner.loopBenchmark();
+        expect(bp.Runner.runState.iterations).toBe(0);
+      });
+    });
+
+
+    describe('.onceBenchmark()', function() {
+      var runAllTestsSpy;
+      beforeEach(function() {
+        bp.Document.onceBtn = document.createElement('button');
+        runAllTestsSpy = spyOn(bp.Runner, 'runAllTests');
+      });
+
+      it('should call runAllTests', function() {
+        expect(runAllTestsSpy.callCount).toBe(0);
+        bp.Runner.onceBenchmark();
+        expect(runAllTestsSpy).toHaveBeenCalled();
+      });
+
+
+      it('should set the button text to "..."', function() {
+        expect(runAllTestsSpy.callCount).toBe(0);
+        bp.Runner.onceBenchmark();
+        expect(bp.Document.onceBtn.innerText).toBe('...');
+      });
+
+
+      it('should set the text back to Once when done running test', function() {
+        expect(bp.Document.onceBtn.innerText).not.toBe('Once');
+        bp.Runner.onceBenchmark();
+        var done = runAllTestsSpy.calls[0].args[0];
+        done();
+        expect(bp.Document.onceBtn.innerText).toBe('Once');
+      });
+    });
+
+
+    describe('.twentyFiveBenchmark()', function() {
+      var runAllTestsSpy;
+      beforeEach(function() {
+        bp.Document.twentyFiveBtn = document.createElement('button');
+        runAllTestsSpy = spyOn(bp.Runner, 'runAllTests');
+      });
+
+
+      it('should set the runState to25 iterations', function() {
+        var spy = spyOn(bp.Runner, 'setIterations');
+        bp.Runner.twentyFiveBenchmark();
+        expect(spy).toHaveBeenCalledWith(25);
+      });
+
+
+      it('should change the button text to "Looping..."', function() {
+        expect(bp.Document.twentyFiveBtn.innerText).not.toBe('Looping...');
+        bp.Runner.twentyFiveBenchmark();
+        expect(bp.Document.twentyFiveBtn.innerText).toBe('Looping...');
+      });
+
+
+      it('should call runAllTests', function() {
+        bp.Runner.twentyFiveBenchmark();
+        expect(runAllTestsSpy).toHaveBeenCalled();
+      });
+
+
+      it('should pass runAllTests a third argument specifying times to ignore', function() {
+        bp.Runner.twentyFiveBenchmark();
+        expect(runAllTestsSpy.calls[0].args[1]).toBe(5);
       });
     });
   });
 
 
-  describe('.rightSizeTimes()', function() {
-    it('should make remove the left side of the input if longer than numSamples', function() {
-      bp.runState.numSamples = 3;
-      expect(bp.rightSizeTimes([0,1,2,3,4,5,6])).toEqual([4,5,6]);
-    });
-
-
-    it('should return the whole list if shorter than or equal to numSamples', function() {
-      bp.runState.numSamples = 7;
-      expect(bp.rightSizeTimes([0,1,2,3,4,5,6])).toEqual([0,1,2,3,4,5,6]);
-      expect(bp.rightSizeTimes([0,1,2,3,4,5])).toEqual([0,1,2,3,4,5]);
-    });
-  });
-
-
-  describe('.calcStats()', function() {
-    beforeEach(function() {
-      bp.steps = [mockStep];
-      bp.runState = {
-        numSamples: 5,
-        iterations: 5,
-        recentTimePerStep: {
-          fakeStep: 5
-        },
-        recentGCTimePerStep: {
-          fakeStep: 2
-        },
-        recentGarbagePerStep: {
-          fakeStep: 200
-        },
-        recentRetainedMemoryPerStep: {
-          fakeStep: 100
-        },
-        timesPerAction: {
+  describe('.Report', function() {
+    describe('.calcStats()', function() {
+      beforeEach(function() {
+        bp.steps = [mockStep];
+        bp.Runner.runState = {
+          numSamples: 5,
+          iterations: 5,
+          recentTimePerStep: {
+            fakeStep: 5
+          },
+          recentGCTimePerStep: {
+            fakeStep: 2
+          },
+          recentGarbagePerStep: {
+            fakeStep: 200
+          },
+          recentRetainedMemoryPerStep: {
+            fakeStep: 100
+          }
+        };
+        bp.Report.timesPerAction = {
           fakeStep: {
             times: [3,7],
             fmtTimes: ['3', '7'],
@@ -411,88 +394,78 @@ describe('bp', function() {
             gcTimes: [1,3],
             nextEntry: 2
           },
-        }
-      };
-    });
+        };
+      });
 
 
-    xit('should call generateReportPartial() with the correct info', function() {
-      var spy = spyOn(bp, 'generateReportPartial');
-      bp.calcStats();
-      expect(spy).toHaveBeenCalledWith('fakeStep', {time: 5, gcTime: 2}, ['3','7','5'], ['1','3','2'], [50,50,200], [25,25,100])
-    });
+      xit('should call generateReportPartial() with the correct info', function() {
+        var spy = spyOn(bp, 'generateReportPartial');
+        bp.Report.calcStats();
+        expect(spy).toHaveBeenCalledWith('fakeStep', {time: 5, gcTime: 2}, ['3','7','5'], ['1','3','2'], [50,50,200], [25,25,100])
+      });
 
 
-    it('should set the most recent time for each step to the next entry', function() {
-      bp.calcStats();
-      expect(bp.runState.timesPerAction.fakeStep.times[2]).toBe(5);
-      bp.runState.recentTimePerStep.fakeStep = 25;
-      bp.calcStats();
-      expect(bp.runState.timesPerAction.fakeStep.times[3]).toBe(25);
-    });
+      it('should set the most recent time for each step to the next entry', function() {
+        bp.Report.calcStats();
+        expect(bp.Report.timesPerAction.fakeStep.times[2]).toBe(5);
+        bp.Runner.runState.recentTimePerStep.fakeStep = 25;
+        bp.Report.calcStats();
+        expect(bp.Report.timesPerAction.fakeStep.times[3]).toBe(25);
+      });
 
 
-    it('should return an string report', function() {
-      expect(typeof bp.calcStats()).toBe('string');
-    });
-  });
-
-
-  describe('.generateReportModel()', function() {
-    it('should return properly formatted data', function() {
-      expect(bp.generateReportModel({
-        name: 'Some Step',
-        avg: {
-          time: 1.234567,
-          gcTime: 2.345678,
-          garbage: 6.5,
-          retained: 7.5
-        },
-        times: ['1','2'],
-        gcTimes: ['4','5'],
-        garbageTimes: ['6','7'],
-        retainedTimes: ['7','8'],
-        timesConfidenceInterval: 0.5555
-      })).toEqual({
-        name : 'Some Step',
-        avg : {
-          time : '1.2345',
-          gcTime : '2.3456',
-          garbage : '6.5',
-          retained : '7.5',
-          combinedTime : '3.5802'
-        },
-        times : '1<br>2',
-        gcTimes : '4<br>5',
-        garbageTimes : '6<br>7',
-        retainedTimes : '7<br>8',
-        timesConfidenceInterval: '0.56'
+      it('should return an string report', function() {
+        expect(typeof bp.Report.calcStats()).toBe('string');
       });
     });
-  });
 
 
-  describe('.writeReport()', function() {
-    it('should write the report to the infoDiv', function() {
-      bp.infoDiv = document.createElement('div');
-      bp.writeReport('report!');
-      expect(bp.infoDiv.innerHTML).toBe('report!')
+    describe('.rightSizeTimes()', function() {
+      it('should make remove the left side of the input if longer than numSamples', function() {
+        bp.Runner.runState.numSamples = 3;
+        expect(bp.Report.rightSizeTimes([0,1,2,3,4,5,6])).toEqual([4,5,6]);
+      });
+
+
+      it('should return the whole list if shorter than or equal to numSamples', function() {
+        bp.Runner.runState.numSamples = 7;
+        expect(bp.Report.rightSizeTimes([0,1,2,3,4,5,6])).toEqual([0,1,2,3,4,5,6]);
+        expect(bp.Report.rightSizeTimes([0,1,2,3,4,5])).toEqual([0,1,2,3,4,5]);
+      });
     });
-  });
 
 
-  describe('.onDOMContentLoaded()', function() {
-    it('should call methods to write to the dom', function() {
-      var linksSpy = spyOn(bp, 'addLinks');
-      var buttonSpy = spyOn(bp, 'addButton');
-      var rangeSpy = spyOn(bp, 'addSampleRange');
-      var infoSpy = spyOn(bp, 'addInfo');
-
-      bp.onDOMContentLoaded();
-      expect(linksSpy).toHaveBeenCalled();
-      expect(buttonSpy.callCount).toBe(3);
-      expect(rangeSpy).toHaveBeenCalled();
-      expect(infoSpy).toHaveBeenCalled();
+    describe('.generateReportModel()', function() {
+      it('should return properly formatted data', function() {
+        expect(bp.Report.generateReportModel({
+          name: 'Some Step',
+          avg: {
+            time: 1.234567,
+            gcTime: 2.345678,
+            garbage: 6.5,
+            retained: 7.5
+          },
+          times: ['1','2'],
+          gcTimes: ['4','5'],
+          garbageTimes: ['6','7'],
+          retainedTimes: ['7','8'],
+          timesConfidenceInterval: 0.5555
+        })).toEqual({
+          name : 'Some Step',
+          avg : {
+            time : '1.2345',
+            gcTime : '2.3456',
+            garbage : '6.5',
+            retained : '7.5',
+            combinedTime : '3.5802'
+          },
+          times : '1<br>2',
+          gcTimes : '4<br>5',
+          garbageTimes : '6<br>7',
+          retainedTimes : '7<br>8',
+          timesConfidenceInterval: '0.56'
+        });
+      });
     });
   });
 });
