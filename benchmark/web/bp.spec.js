@@ -58,7 +58,13 @@ describe('bp', function() {
       it('should provide the correct standardDeviation for the provided sample and mean', function() {
         expect(bp.Statistics.calculateStandardDeviation([
           2,4,4,4,5,5,7,9
-        ], 5)).toBe(2);
+        ], 5)).toBe(2.138089935299395);
+      });
+
+
+      it('should provide the correct standardDeviation for the provided sample and mean', function() {
+        expect(bp.Statistics.calculateStandardDeviation([
+          674.64,701.78,668.33,662.15,663.34,677.32,664.25,1233.00,1100.80,716.15,681.52,671.23,702.70,686.89,939.39,830.28,695.46,695.66,675.15,667.48], 750.38)).toBe(158.57877026559186);
       });
     });
   });
