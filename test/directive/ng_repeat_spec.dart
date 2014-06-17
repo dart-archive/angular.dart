@@ -466,6 +466,15 @@ main() {
         lis = element.querySelectorAll('li');
       });
 
+      it(r'should correctly update rows orders - gh1154', () {
+        scope.context['items'] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+        scope.apply();
+        expect(element).toHaveText('0123456789');
+        scope.context['items'] = [1, 2, 6, 7, 4, 3, 5, 8, 9, 0];
+        scope.apply();
+        expect(element).toHaveText('0123456789');
+      });
+
       it(r'should preserve the order of elements', () {
         scope.context['items'] = [a, c, d];
         scope.apply();
