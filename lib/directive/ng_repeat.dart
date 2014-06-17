@@ -87,8 +87,7 @@ class NgRepeat {
   Function _generateId = (key, value, index) => value;
   Watch _watch;
 
-  NgRepeat(this._viewPort, this._boundViewFactory, this._scope,
-           this._parser, this.formatters);
+  NgRepeat(this._viewPort, this._boundViewFactory, this._scope, this._parser, this.formatters);
 
   set expression(value) {
     assert(value != null);
@@ -220,9 +219,14 @@ class NgRepeat {
       var changeFn = changeFunctions[targetIndex];
       if (changeFn == null) {
         rows[targetIndex] = _rows[targetIndex];
-        domIndex--;
         // The element has not moved but `$last` and `$middle` might still need
         // to be updated
+        var childContext =  _updateContext(rows[targetIndex].scope.context, targetIndex, length);
+        if (domIndex < 0 || leftInDom[domIndex] != targetIndex) {
+          _viewPort.move(rows[targetIndex].view, moveAfter: previousView);
+          leftInDom.remove(targetIndex);
+        }
+        domIndex--;
         _updateContext(rows[targetIndex].scope.context, targetIndex, length);
       } else {
         changeFn(targetIndex, previousView);
