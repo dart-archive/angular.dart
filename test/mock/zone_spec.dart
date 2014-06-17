@@ -332,6 +332,28 @@ void main() {
                 (_) => dump("i never run"));
           })).toThrow('1 active timer(s) are still in the queue.');
         });
+
+        it('should report no timers when there are none', async(() {
+          expect(isTimerQueueEmpty()).toBe(true);
+          expect(isNonPeriodicTimerQueueEmpty()).toBe(true);
+          expect(isPeriodicTimerQueueEmpty()).toBe(true);
+        }));
+
+        it('should report remaining non-periodic timers', async(() {
+          new Future(() => null);
+          expect(isTimerQueueEmpty()).toBe(false);
+          expect(isNonPeriodicTimerQueueEmpty()).toBe(false);
+          expect(isPeriodicTimerQueueEmpty()).toBe(true);
+          clockTick();
+        }));
+
+        it('should report remaining periodic timers', async(() {
+          var t = new Timer.periodic(new Duration(seconds: 1), (_) => null);
+          expect(isTimerQueueEmpty()).toBe(false);
+          expect(isNonPeriodicTimerQueueEmpty()).toBe(true);
+          expect(isPeriodicTimerQueueEmpty()).toBe(false);
+          t.cancel();
+        }));
       });
     });
   });
