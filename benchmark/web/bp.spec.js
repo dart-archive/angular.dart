@@ -37,35 +37,28 @@ describe('bp', function() {
   describe('.Statistics', function() {
     describe('.calculateConfidenceInterval()', function() {
       it('should provide the correct confidence interval', function() {
-        expect(bp.Statistics.calculateConfidenceInterval(30, 1000)).toBe(1.86);
+        expect(bp.Statistics.calculateConfidenceInterval(30, 1000)).toBe(1.859419264179007);
+      });
+    });
+
+
+    describe('.calculateRelativeMarginOfError()', function() {
+      expect(bp.Statistics.calculateRelativeMarginOfError(1.85, 5)).toBe(0.37);
+    });
+
+
+    describe('.getMean()', function() {
+      it('should return the mean for a given sample', function() {
+        expect(bp.Statistics.getMean([1,2,5,4])).toBe(3);
       });
     });
 
 
     describe('.calculateStandardDeviation()', function() {
-      it('should provide the correct standardDeviation for the provided sample', function() {
+      it('should provide the correct standardDeviation for the provided sample and mean', function() {
         expect(bp.Statistics.calculateStandardDeviation([
           2,4,4,4,5,5,7,9
-        ])).toBe(2);
-      });
-    });
-
-
-    describe('.getConfidenceRange()', function() {
-      it('should return an array of low and high confidence range', function() {
-        expect(bp.Statistics.getConfidenceRange(100, 1.5)).toEqual([98.5,101.5]);
-      });
-
-
-      it('should round values to 2 decimal points', function() {
-        expect(bp.Statistics.getConfidenceRange(100,1.111111)).toEqual([100-1.11,100+1.11]);
-      })
-    });
-
-
-    describe('.getStabilityOfSample()', function() {
-      it('should return the percentage of samples that fall within the provided range', function() {
-        expect(bp.Statistics.getStabilityOfSample([0,5,5,10],[5,6])).toBe(0.5);
+        ], 5)).toBe(2);
       });
     });
   });
@@ -396,9 +389,9 @@ describe('bp', function() {
   });
 
 
-  describe('.getAverage()', function() {
+  describe('.getAverages()', function() {
     it('should return the average of a set of numbers', function() {
-      expect(bp.getAverage([100,0,50,75,25], [2,4,2,4,3], [1,2],[3,4])).toEqual({
+      expect(bp.getAverages([100,0,50,75,25], [2,4,2,4,3], [1,2],[3,4])).toEqual({
         gcTime: 3,
         time: 50,
         garbage: 1.5,
@@ -450,8 +443,8 @@ describe('bp', function() {
     });
 
 
-    it('should call getAverage() with the correct info', function() {
-      var spy = spyOn(bp, 'getAverage').andCallThrough();
+    it('should call getAverages() with the correct info', function() {
+      var spy = spyOn(bp, 'getAverages').andCallThrough();
       bp.calcStats();
       expect(spy).toHaveBeenCalledWith([ 3, 7, 5 ], [ 1, 3, 2 ], [50,50,0.2], [25,25,0.1]);
     });
@@ -485,7 +478,8 @@ describe('bp', function() {
         times: ['1','2'],
         gcTimes: ['4','5'],
         garbageTimes: ['6','7'],
-        retainedTimes: ['7','8']
+        retainedTimes: ['7','8'],
+        timesConfidenceInterval: 0.5555
       })).toEqual({
         name : 'Some Step',
         avg : {
@@ -498,7 +492,8 @@ describe('bp', function() {
         times : '1<br>2',
         gcTimes : '4<br>5',
         garbageTimes : '6<br>7',
-        retainedTimes : '7<br>8'
+        retainedTimes : '7<br>8',
+        timesConfidenceInterval: '0.56'
       });
     });
   });
