@@ -37,7 +37,7 @@ bp.Statistics.calculateStandardDeviation = function(sample, mean) {
   sample.forEach(function(x) {
     deviation += Math.pow(x - mean, 2);
   });
-  deviation = deviation / sample.length;
+  deviation = deviation / (sample.length -1);
   deviation = Math.sqrt(deviation);
   return deviation;
 };
