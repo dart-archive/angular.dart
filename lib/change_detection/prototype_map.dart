@@ -34,4 +34,6 @@ class PrototypeMap<K, V> implements Map<K,V> {
   }
   // todo(vbe) include prototype ?
   V putIfAbsent(key, fn) => self.putIfAbsent(key, fn);
+
+  toString() => self.toString();
 }

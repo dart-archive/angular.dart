@@ -63,7 +63,7 @@ class BFormatter {
 main() {
   var viewFactoryFactory = (a,b,c,d) => new WalkingViewFactory(a,b,c,d);
   describe('View', () {
-    var anchor;
+    ViewPort viewPort;
     Element rootElement;
     var viewCache;
 
@@ -77,32 +77,36 @@ main() {
 
       beforeEach((Injector injector, Profiler perf) {
         rootElement.innerHtml = '<!-- anchor -->';
-        anchor = new ViewPort(rootElement.childNodes[0],
+        var scope = injector.get(Scope);
+        viewPort = new ViewPort(null, injector, scope, rootElement.childNodes[0],
           injector.get(Animate));
-        a = (viewFactoryFactory(es('<span>A</span>a'), [], perf, expando))(injector);
-        b = (viewFactoryFactory(es('<span>B</span>b'), [], perf, expando))(injector);
+        a = (viewFactoryFactory(es('<span>A</span>a'), [], perf, expando))(scope, null, injector);
+        b = (viewFactoryFactory(es('<span>B</span>b'), [], perf, expando))(scope, null, injector);
       });
 
 
       describe('insertAfter', () {
-        it('should insert block after anchor view', () {
-          anchor.insert(a);
+        it('should insert block after anchor view', (RootScope scope) {
+          viewPort.insert(a);
+          scope.flush();
 
           expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a');
         });
 
 
-        it('should insert multi element view after another multi element view', () {
-          anchor.insert(a);
-          anchor.insert(b, insertAfter: a);
+        it('should insert multi element view after another multi element view', (RootScope scope) {
+          viewPort.insert(a);
+          viewPort.insert(b, insertAfter: a);
+          scope.flush();
 
           expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
         });
 
 
-        it('should insert multi element view before another multi element view', () {
-          anchor.insert(b);
-          anchor.insert(a);
+        it('should insert multi element view before another multi element view', (RootScope scope) {
+          viewPort.insert(b);
+          viewPort.insert(a);
+          scope.flush();
 
           expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
         });
@@ -110,20 +114,23 @@ main() {
 
 
       describe('remove', () {
-        beforeEach(() {
-          anchor.insert(a);
-          anchor.insert(b, insertAfter: a);
+        beforeEach((RootScope scope) {
+          viewPort.insert(a);
+          viewPort.insert(b, insertAfter: a);
+          scope.flush();
 
           expect(rootElement.text).toEqual('AaBb');
         });
 
-        it('should remove the last view', () {
-          anchor.remove(b);
+        it('should remove the last view', (RootScope scope) {
+          viewPort.remove(b);
+          scope.flush();
           expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a');
         });
 
-        it('should remove child views from parent pseudo black', () {
-          anchor.remove(a);
+        it('should remove child views from parent pseudo black', (RootScope scope) {
+          viewPort.remove(a);
+          scope.flush();
           expect(rootElement).toHaveHtml('<!-- anchor --><span>B</span>b');
         });
 
@@ -176,16 +183,18 @@ main() {
 
 
       describe('moveAfter', () {
-        beforeEach(() {
-          anchor.insert(a);
-          anchor.insert(b, insertAfter: a);
+        beforeEach((RootScope scope) {
+          viewPort.insert(a);
+          viewPort.insert(b, insertAfter: a);
+          scope.flush();
 
           expect(rootElement.text).toEqual('AaBb');
         });
 
 
-        it('should move last to middle', () {
-          anchor.move(a, moveAfter: b);
+        it('should move last to middle', (RootScope scope) {
+          viewPort.move(a, moveAfter: b);
+          scope.flush();
           expect(rootElement).toHaveHtml('<!-- anchor --><span>B</span>b<span>A</span>a');
         });
       });
@@ -193,7 +202,7 @@ main() {
 
     describe('deferred', () {
 
-      it('should load directives/formatters from the child injector', () {
+      it('should load directives/formatters from the child injector', (RootScope scope) {
         Module rootModule = new Module()
           ..bind(Probe)
           ..bind(Log)
@@ -209,7 +218,7 @@ main() {
 
         Compiler compiler = rootInjector.get(Compiler);
         DirectiveMap directives = rootInjector.get(DirectiveMap);
-        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootInjector);
+        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootScope, null, rootInjector);
         rootScope.apply();
 
         expect(log.log, equals(['AFormatter', 'ADirective']));
@@ -222,8 +231,9 @@ main() {
         var childInjector = forceNewDirectivesAndFormatters(rootInjector, [childModule]);
 
         DirectiveMap newDirectives = childInjector.get(DirectiveMap);
+        var scope = childInjector.get(Scope);
         compiler(es('<dir-a probe="dirA"></dir-a>{{\'a\' | formatterA}}'
-            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(childInjector);
+            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(scope, null, childInjector);
         rootScope.apply();
 
         expect(log.log, equals(['AFormatter', 'ADirective', 'BFormatter', 'ADirective', 'BDirective']));

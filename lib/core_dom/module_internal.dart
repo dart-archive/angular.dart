@@ -12,11 +12,12 @@ import 'package:perf_api/perf_api.dart';
 import 'package:angular/cache/module.dart';
 
 import 'package:angular/core/annotation.dart';
-import 'package:angular/core/annotation_src.dart' show SHADOW_DOM_INJECTOR_NAME;
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
 import 'package:angular/core_dom/static_keys.dart';
+import 'package:angular/core_dom/directive_injector.dart';
+export 'package:angular/core_dom/directive_injector.dart' show DirectiveInjector;
 
 import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
 import 'package:angular/change_detection/ast_parser.dart';

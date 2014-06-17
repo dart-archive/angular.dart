@@ -1,6 +1,7 @@
 library compiler_spec;
 
 import '../_specs.dart';
+import 'package:angular/core_dom/directive_injector.dart';
 
 
 forBothCompilers(fn) {
@@ -374,7 +375,7 @@ void main() {
         var simpleElement = _.rootElement.querySelector('simple');
         expect(simpleElement).toHaveText('INNER(innerText)');
         var simpleProbe = ngProbe(simpleElement);
-        var simpleComponent = simpleProbe.injector.get(SimpleComponent);
+        var simpleComponent = simpleProbe.directiveInjector.getByKey(new Key(SimpleComponent));
         expect(simpleComponent.scope.context['name']).toEqual('INNER');
         var shadowRoot = simpleElement.shadowRoot;
 
@@ -629,8 +630,8 @@ void main() {
 
       it('should expose PublishModuleDirectiveSuperType as PublishModuleDirectiveSuperType', () {
         _.compile(r'<div publish-types probe="publishModuleProbe"></div>');
-        var probe = _.rootScope.context['publishModuleProbe'];
-        var directive = probe.injector.get(PublishModuleDirectiveSuperType);
+        Probe probe = _.rootScope.context['publishModuleProbe'];
+        var directive = probe.directiveInjector.get(PublishModuleDirectiveSuperType);
         expect(directive is PublishModuleAttrDirective).toBeTruthy();
       });
 
@@ -658,7 +659,7 @@ void main() {
           scope.context['logger'] = logger;
           scope.context['once'] = null;
           var elts = es('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
-          compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..bind(Scope, toValue: scope)]), elts);
+          compile(elts, _.injector.get(DirectiveMap))(scope, null, _.injector, elts);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
@@ -690,7 +691,7 @@ void main() {
           backend.whenGET('foo.html').respond('<div>WORKED</div>');
           var elts = es('<simple-attach></simple-attach>');
           var scope = _.rootScope.createChild({});
-          compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..bind(Scope, toValue: scope)]), elts);
+          compile(elts, _.injector.get(DirectiveMap))(scope, null, _.injector, elts);
           expect(logger).toEqual(['SimpleAttachComponent']);
           scope.destroy();
 
@@ -722,8 +723,9 @@ void main() {
       describe('invalid components', () {
         it('should throw a useful error message for missing selectors', () {
           Module module = new Module()
+              ..bind(DirectiveMap)
               ..bind(MissingSelector);
-          var injector = _.injector.createChild([module], forceNewInstances: [Compiler, DirectiveMap]);
+          var injector = _.injector.createChild([module]);
           var c = injector.get(Compiler);
           var directives = injector.get(DirectiveMap);
           expect(() {
@@ -734,8 +736,9 @@ void main() {
 
         it('should throw a useful error message for invalid selector', () {
           Module module = new Module()
+            ..bind(DirectiveMap)
             ..bind(InvalidSelector);
-          var injector = _.injector.createChild([module], forceNewInstances: [Compiler, DirectiveMap]);
+          var injector = _.injector.createChild([module]);
           var c = injector.get(Compiler);
           var directives = injector.get(DirectiveMap);
 
@@ -876,7 +879,24 @@ void main() {
         expect(log.result()).toEqual('Ignore; TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0');
       }));
 
-      it('should reuse controllers for transclusions', async((Logger log) {
+      /*
+        This test is dissabled becouse I (misko) thinks it has no real use case. It is easier
+        to understand in terms of ng-repeat
+
+          <tabs>
+            <!-- ng-repeat -->
+            <pane></pane>
+          </tabs>
+
+          Should pane be allowed to get a hold of ng-repeat? Right now ng-repeat injector is
+          to the side and is not in any of the parents of the pane. Making an injector a
+          parent of pane would put the ng-repeat between tabs and pane and it would break
+          the DirectChild between tabs and pane.
+
+          It is not clear to me (misko) that there is a use case for getting hold of the
+          tranrscluding directive such a ng-repeat.
+       */
+      xit('should reuse controllers for transclusions', async((Logger log) {
         _.compile('<div simple-transclude-in-attach include-transclude>view</div>');
         microLeap();
 
@@ -915,6 +935,7 @@ void main() {
         _.compile('<div><div my-controller>{{name}}</div></div>');
         _.rootScope.apply();
         expect(_.rootScope.context['name']).toEqual('cover me');
+        expect(_.rootScope.context['myCtrl'] is MyController).toEqual(true);
         expect(_.rootElement.text).toEqual('MyController');
       });
     });
@@ -974,7 +995,8 @@ class LocalAttrDirective {
 
 @Decorator(
     selector: '[simple-transclude-in-attach]',
-    visibility: Directive.CHILDREN_VISIBILITY, children: Directive.TRANSCLUDE_CHILDREN)
+    visibility: Visibility.LOCAL,
+    children: Directive.TRANSCLUDE_CHILDREN)
 class SimpleTranscludeInAttachAttrDirective {
   SimpleTranscludeInAttachAttrDirective(ViewPort viewPort, BoundViewFactory boundViewFactory, Logger log, RootScope scope) {
     scope.runAsync(() {
@@ -1023,12 +1045,10 @@ class PublishModuleDirectiveSuperType {
     selector: '[publish-types]',
     module: PublishModuleAttrDirective.module)
 class PublishModuleAttrDirective implements PublishModuleDirectiveSuperType {
-  static Module _module = new Module()
-      ..bind(PublishModuleDirectiveSuperType, toFactory: (i) => i.get(PublishModuleAttrDirective));
-  static module() => _module;
+  static module(i) => i.bind(PublishModuleDirectiveSuperType, inject: PublishModuleAttrDirective);
 
-  static Injector _injector;
-  PublishModuleAttrDirective(Injector injector) {
+  static DirectiveInjector _injector;
+  PublishModuleAttrDirective(DirectiveInjector injector) {
     _injector = injector;
   }
 }

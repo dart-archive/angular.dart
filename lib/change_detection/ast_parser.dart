@@ -2,6 +2,7 @@ library angular.change_detection.ast_parser;
 
 import 'dart:collection';
 
+import 'package:di/di.dart' show Injectable;
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/formatter.dart';

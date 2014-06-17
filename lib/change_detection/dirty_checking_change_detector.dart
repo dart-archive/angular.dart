@@ -1417,7 +1417,12 @@ class DuplicateMap {
   final map = new HashMap<dynamic, _DuplicateItemRecordList>();
 
   void put(ItemRecord record, [ItemRecord insertBefore = null]) {
-    map.putIfAbsent(record.item, () => new _DuplicateItemRecordList()).add(record, insertBefore);
+    var key = record.item;
+    _DuplicateItemRecordList duplicates = map[key];
+    if (duplicates == null) {
+      duplicates = map[key] = new _DuplicateItemRecordList();
+    }
+    duplicates.add(record, insertBefore);
   }
 
   /**

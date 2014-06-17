@@ -55,14 +55,13 @@ part of angular.routing;
     selector: 'ng-view',
     module: NgView.module)
 class NgView implements DetachAware, RouteProvider {
-  static final Module _module = new Module()
-      ..bind(RouteProvider, toFactory: (i) => i.getByKey(NG_VIEW_KEY));
-
-  static Module module() => _module;
+  static void module(DirectiveModule module)
+      => module.bind(RouteProvider, inject: NG_VIEW_KEY, visibility: Visibility.CHILDREN);
 
   final NgRoutingHelper _locationService;
   final ViewCache _viewCache;
-  final Injector _injector;
+  final Injector _appInjector;
+  final DirectiveInjector _dirInjector;
   final Element _element;
   final Scope _scope;
   RouteHandle _route;
@@ -71,11 +70,12 @@ class NgView implements DetachAware, RouteProvider {
   Scope _childScope;
   Route _viewRoute;
 
-  NgView(this._element, this._viewCache, Injector injector, Router router, this._scope)
-      : _injector = injector,
-        _locationService = injector.getByKey(NG_ROUTING_HELPER_KEY)
+  NgView(this._element, this._viewCache, DirectiveInjector dirInjector, this._appInjector,
+         Router router, this._scope)
+      : _dirInjector = dirInjector,
+        _locationService = dirInjector.getByKey(NG_ROUTING_HELPER_KEY)
   {
-    RouteProvider routeProvider = injector.parent.getByKey(NG_VIEW_KEY);
+    RouteProvider routeProvider = dirInjector.parent.getByKey(NG_VIEW_KEY);
     _route = routeProvider != null ?
         routeProvider.route.newHandle() :
         router.root.newHandle();
@@ -106,19 +106,18 @@ class NgView implements DetachAware, RouteProvider {
       _cleanUp();
     });
 
-    var viewInjector = modules == null ?
-        _injector :
-        forceNewDirectivesAndFormatters(_injector, modules);
+    Injector viewInjector = modules == null ?
+        _appInjector :
+        forceNewDirectivesAndFormatters(_appInjector, modules);
 
     var newDirectives = viewInjector.getByKey(DIRECTIVE_MAP_KEY);
     var viewFuture = viewDef.templateHtml != null ?
         new Future.value(_viewCache.fromHtml(viewDef.templateHtml, newDirectives)) :
         _viewCache.fromUrl(viewDef.template, newDirectives);
-    viewFuture.then((viewFactory) {
+    viewFuture.then((ViewFactory viewFactory) {
       _cleanUp();
       _childScope = _scope.createChild(new PrototypeMap(_scope.context));
-      _view = viewFactory(
-          viewInjector.createChild([new Module()..bind(Scope, toValue: _childScope)]));
+      _view = viewFactory(_childScope, _dirInjector, viewInjector);
       _view.nodes.forEach((elm) => _element.append(elm));
     });
   }

@@ -112,7 +112,7 @@ class NullParser implements Parser {
       'foo': '=>foo'
     })
 class AnnotatedIoComponent {
-  static module() => new Module()..bind(String, toFactory: (i) => i.get(AnnotatedIoComponent),
+  static module(i) => i.bind(String, toFactory: (i) => i.get(AnnotatedIoComponent),
       visibility: Directive.LOCAL_VISIBILITY);
 
   AnnotatedIoComponent(Scope scope) {

@@ -18,7 +18,8 @@ part of angular.directive;
  *
  */
 @Decorator(
-    selector: 'select[ng-model]')
+    selector: 'select[ng-model]',
+    visibility: Visibility.CHILDREN)
 class InputSelect implements AttachAware {
   final expando = new Expando<OptionValue>();
   final dom.SelectElement _selectElement;
@@ -50,7 +51,9 @@ class InputSelect implements AttachAware {
         _model.watchCollection = true;
         _mode = new _MultipleSelectionMode(expando, _selectElement, _model);
       }
-      _mode.onModelChange(_model.viewValue);
+      _scope.rootScope.domRead(() {
+        _mode.onModelChange(_model.viewValue);
+      });
     });
 
     _selectElement.onChange.listen((event) => _mode.onViewChange(event));
@@ -89,7 +92,7 @@ class InputSelect implements AttachAware {
  * provides [ng-value] which allows binding to any expression.
  *
  */
-@Decorator(selector: 'option', module: NgValue.moduleFactory)
+@Decorator(selector: 'option', module: NgValue.module)
 class OptionValue implements AttachAware,
     DetachAware {
   final InputSelect _inputSelectDirective;
@@ -129,10 +132,10 @@ class _SelectMode {
   destroy() {}
 
   get _options => select.querySelectorAll('option');
-  _forEachOption(fn, [quiteOnReturn = false]) {
+  _forEachOption(fn, [quitOnReturn = false]) {
     for (var i = 0; i < _options.length; i++) {
       var retValue = fn(_options[i], i);
-      if (quiteOnReturn && retValue != null) return retValue;
+      if (quitOnReturn && retValue != null) return retValue;
     }
     return null;
   }

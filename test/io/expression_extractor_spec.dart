@@ -1,7 +1,6 @@
 library ng.tool.expression_extractor_spec;
 
 import 'package:di/di.dart';
-import 'package:di/dynamic_injector.dart';
 import 'package:angular/tools/common.dart';
 import 'package:angular/tools/io.dart';
 import 'package:angular/tools/io_impl.dart';
@@ -17,8 +16,7 @@ void main() {
 
     Iterable<String> _extractExpressions(file) {
       Module module = new Module();
-      Injector injector = new DynamicInjector(modules: [module],
-      allowImplicitInjection: true);
+      Injector injector = new ModuleInjector([module]);
 
       IoService ioService = new IoServiceImpl();
       var sourceCrawler = new SourceCrawlerImpl(['packages/']);

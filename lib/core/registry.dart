@@ -1,12 +1,12 @@
 library angular.core.registry;
 
-import 'package:di/di.dart' show Injector;
+import 'package:di/di.dart' show Injector, ModuleInjector;
 
 abstract class AnnotationMap<K> {
   final Map<K, Type> _map = {};
 
   AnnotationMap(Injector injector, MetadataExtractor extractMetadata) {
-    injector.types.forEach((type) {
+    (injector as ModuleInjector).types.forEach((type) {
       extractMetadata(type)
           .where((annotation) => annotation is K)
           .forEach((annotation) {
@@ -38,7 +38,7 @@ abstract class AnnotationsMap<K> {
   final Map<K, List<Type>> map = {};
 
   AnnotationsMap(Injector injector, MetadataExtractor extractMetadata) {
-    injector.types.forEach((type) {
+    (injector as ModuleInjector).types.forEach((type) {
       extractMetadata(type)
           .where((annotation) => annotation is K)
           .forEach((annotation) {

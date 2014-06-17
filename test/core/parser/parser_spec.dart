@@ -1145,9 +1145,9 @@ main() {
         }).toThrow('No Formatter: hello found!');
 
         var module = new Module()
+            ..bind(FormatterMap)
             ..bind(HelloFormatter);
-        var childInjector = injector.createChild([module],
-            forceNewInstances: [FormatterMap]);
+        var childInjector = injector.createChild([module]);
         var newFormatters = childInjector.get(FormatterMap);
 
         expect(expression.eval({}, newFormatters)).toEqual('Hello, World!');

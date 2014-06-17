@@ -41,7 +41,7 @@ class CoreModule extends Module {
     bind(FormatterMap);
     bind(Interpolate);
     bind(RootScope);
-    bind(Scope, toFactory: (injector) => injector.getByKey(ROOT_SCOPE_KEY));
+    bind(Scope, inject: [ROOT_SCOPE_KEY]);
     bind(ClosureMap, toFactory: (_) => throw "Must provide dynamic/static ClosureMap.");
     bind(ScopeStats);
     bind(ScopeStatsEmitter);

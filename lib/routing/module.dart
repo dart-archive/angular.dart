@@ -142,10 +142,10 @@ part 'ng_bind_route.dart';
 class RoutingModule extends Module {
   RoutingModule({bool usePushState: true}) {
     bind(NgRoutingUsePushState);
-    bind(Router, toFactory: (injector) {
-      var useFragment = !injector.getByKey(NG_ROUTING_USE_PUSH_STATE_KEY).usePushState;
-      return new Router(useFragment: useFragment, windowImpl: injector.getByKey(WINDOW_KEY));
-    });
+    bind(Router, toFactory: (p) {
+      var useFragment = !p[0].usePushState;
+      return new Router(useFragment: useFragment, windowImpl: p[1]);
+    }, inject: [NG_ROUTING_USE_PUSH_STATE_KEY, WINDOW_KEY]);
     bind(NgRoutingHelper);
     bind(RouteProvider, toValue: null);
     bind(RouteInitializer, toValue: null);

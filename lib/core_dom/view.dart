@@ -12,10 +12,11 @@ part of angular.core.dom_internal;
  *
  */
 class View {
+  final Scope scope;
   final List<dom.Node> nodes;
   final EventHandler eventHandler;
 
-  View(this.nodes, this.eventHandler);
+  View(this.nodes, this.scope, this.eventHandler);
 
   void registerEvent(String eventName) {
     eventHandler.register(eventName);
@@ -27,32 +28,47 @@ class View {
  * [placeholder] node that is used as the insertion point for view nodes.
  */
 class ViewPort {
+  final DirectiveInjector directiveInjector;
+  final Injector appInjector;
+  final Scope scope;
   final dom.Node placeholder;
   final Animate _animate;
   final _views = <View>[];
 
-  ViewPort(this.placeholder, this._animate);
+  ViewPort(this.directiveInjector, this.appInjector, this.scope, this.placeholder, this._animate);
 
-  void insert(View view, { View insertAfter }) {
-    dom.Node previousNode = _lastNode(insertAfter);
-    _viewsInsertAfter(view, insertAfter);
-
-    _animate.insert(view.nodes, placeholder.parentNode,
-      insertBefore: previousNode.nextNode);
+  View insertNew(ViewFactory viewFactory, { View insertAfter, Scope viewScope}) {
+    if (viewScope == null) viewScope = scope.createChild(new PrototypeMap(scope.context));
+    View view = viewFactory.call(viewScope, directiveInjector, appInjector);
+    return insert(view, insertAfter: insertAfter);
   }
 
-  void remove(View view) {
+  View insert(View view, { View insertAfter }) {
+    scope.rootScope.domWrite(() {
+      dom.Node previousNode = _lastNode(insertAfter);
+      _viewsInsertAfter(view, insertAfter);
+      _animate.insert(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+    });
+    return view;
+  }
+
+  View remove(View view) {
+    view.scope.destroy();
     _views.remove(view);
-    _animate.remove(view.nodes);
+    scope.rootScope.domWrite(() {
+      _animate.remove(view.nodes);
+    });
+    return view;
   }
 
-  void move(View view, { View moveAfter }) {
+  View move(View view, { View moveAfter }) {
     dom.Node previousNode = _lastNode(moveAfter);
     _views.remove(view);
     _viewsInsertAfter(view, moveAfter);
-
-    _animate.move(view.nodes, placeholder.parentNode,
-      insertBefore: previousNode.nextNode);
+    scope.rootScope.domWrite(() {
+      _animate.move(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+    });
+    return view;
   }
 
   void _viewsInsertAfter(View view, View insertAfter) {

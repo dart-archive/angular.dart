@@ -11,12 +11,14 @@ export "package:angular/core/annotation_src.dart" show
     ShadowRootAware,
 
     Formatter,
-    Injectable,
+    DirectiveModule,
+    DomModuleConfig,
 
     Directive,
     Component,
     Controller,
     Decorator,
+    Visibility,
 
     DirectiveAnnotation,
     NgAttr,
