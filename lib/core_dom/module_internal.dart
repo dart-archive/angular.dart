@@ -58,7 +58,11 @@ class CoreDomModule extends Module {
     bind(ElementProbe, toValue: null);
 
     // Default to a unlimited-sized TemplateCache
-    bind(TemplateCache, toFactory: (_) => new TemplateCache());
+    bind(TemplateCache, toFactory: (i) {
+      var templateCache = new TemplateCache();
+      i.getByKey(CACHE_REGISTER_KEY).registerCache("TemplateCache", templateCache);
+      return templateCache;
+    });
     bind(dom.NodeTreeSanitizer, toImplementation: NullTreeSanitizer);
 
     bind(TextMustache);

@@ -14,6 +14,7 @@ import 'package:angular/utils.dart';
 
 import 'package:angular/core/annotation_src.dart';
 
+import 'package:angular/cache/module.dart';
 import 'package:angular/change_detection/watch_group.dart';
 export 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/ast_parser.dart';
