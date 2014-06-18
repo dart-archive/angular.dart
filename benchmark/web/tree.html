@@ -68,42 +68,42 @@
             <tr class="sampleContainer">
               <td><%= name %></td>
               <td class="average">
-                test:<%= avg.testTime.toFixed(2) %>ms
+                test:<%= testTime.avg.mean.toFixed(2) %>ms
                 <br>
-                deviation: <%= avg.testTimesStdDev.toFixed(2) %>
+                deviation: <%= testTime.avg.stdDev.toFixed(2) %>
                 <br>
-                coefficient of variation: <%= Math.round(avg.coefficientOfVariation * 100) %>%
+                coefficient of variation: <%= Math.round(testTime.avg.coefficientOfVariation * 100) %>%
                 <br>
-                gc:<%= avg.gcTime.toFixed(2) %>ms
+                gc:<%= gcTime.avg.mean.toFixed(2) %>ms
                 <br>
-                combined: <%= avg.combinedTime.toFixed(2) %>ms
+                combined: <%= (testTime.avg.mean + gcTime.avg.mean).toFixed(2) %>ms
                 <br>
-                garbage: <%= (avg.garbage / 1e3).toFixed(2) %>KB
+                garbage: <%= (garbageCount.avg.mean / 1e3).toFixed(2) %>KB
                 <br>
-                retained: <%= (avg.retained / 1e3).toFixed(2) %>KB
+                retained: <%= (retainedCount.avg.mean / 1e3).toFixed(2) %>KB
               </td>
               <td>
                 <div class="sampleContainer">
                   <div class="testTimeCol">
-                    <% _.each(testTimes, function(time) { %>
+                    <% _.each(testTime.history, function(time) { %>
                       <%= time.toFixed(2) %>
                       <br>
                     <% }); %>
                   </div>
                   <div class="testTimeCol">
-                    <% _.each(gcTimes, function(time) { %>
+                    <% _.each(gcTime.history, function(time) { %>
                       <%= time.toFixed(2) %>
                       <br>
                     <% }); %>
                   </div>
                   <div class="testTimeCol">
-                  <% _.each(garbageCount, function(count) { %>
+                  <% _.each(garbageCount.history, function(count) { %>
                       <%= (count / 1e3).toFixed(2) %>
                       <br>
                     <% }); %>
                   </div>
                   <div class="testTimeCol">
-                    <% _.each(retainedCount, function(count) { %>
+                    <% _.each(retainedCount.history, function(count) { %>
                       <%= (count / 1e3).toFixed(2) %>
                       <br>
                     <% }); %>

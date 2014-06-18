@@ -214,7 +214,7 @@ describe('bp', function() {
         }, 'done to be called', 200);
 
         runs(function() {
-          expect(bp.Report.timesPerAction.fakeStep.testTimes.length).toBe(8);
+          expect(bp.Report.timesPerAction.fakeStep.testTime.history.length).toBe(8);
         });
       });
     });
@@ -378,29 +378,31 @@ describe('bp', function() {
         };
         bp.Report.timesPerAction = {
           fakeStep: {
-            testTimes: [3,7],
-            garbageCount: [50,50],
-            retainedCount: [25,25],
-            gcTimes: [1,3],
+            testTime: {
+              history: [3,7]
+            },
+            garbageCount: {
+              history: [50,50]
+            },
+            retainedCount: {
+              history: [25,25]
+            },
+            gcTime: {
+              recent: 3,
+              history: [1,3]
+            },
             nextEntry: 2
           },
         };
       });
 
 
-      xit('should call generateReportPartial() with the correct info', function() {
-        var spy = spyOn(bp, 'generateReportPartial');
-        bp.Report.calcStats();
-        expect(spy).toHaveBeenCalledWith('fakeStep', {time: 5, gcTime: 2}, ['3','7','5'], ['1','3','2'], [50,50,200], [25,25,100])
-      });
-
-
       it('should set the most recent time for each step to the next entry', function() {
         bp.Report.calcStats();
-        expect(bp.Report.timesPerAction.fakeStep.testTimes[2]).toBe(5);
+        expect(bp.Report.timesPerAction.fakeStep.testTime.history[2]).toBe(5);
         bp.Runner.runState.recentResult.fakeStep.testTime = 25;
         bp.Report.calcStats();
-        expect(bp.Report.timesPerAction.fakeStep.testTimes[3]).toBe(25);
+        expect(bp.Report.timesPerAction.fakeStep.testTime.history[3]).toBe(25);
       });
 
 
