@@ -11,6 +11,10 @@ part of angular.core_internal;
 @Injectable()
 class Interpolate implements Function {
   var _cache = new HashMap();
+
+  Interpolate(CacheRegister cacheRegister) {
+    cacheRegister.registerCache("Interpolate", _cache);
+  }
   /**
    * Compiles markup text into expression.
    *
