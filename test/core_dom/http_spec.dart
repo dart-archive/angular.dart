@@ -1422,6 +1422,39 @@ void main() {
         });
       });
     });
+
+    describe('coalesce', () {
+      beforeEachModule((Module module) {
+        module.bind(HttpConfig, toFactory: (i) => new HttpConfig(
+                coalesce: true, coalesceDuration: new Duration(milliseconds: 100)));
+      });
+
+      it('should coalesce requests', async((Http http) {
+        backend.expect('GET', '/foo').respond(200, 'foo');
+        backend.expect('GET', '/bar').respond(200, 'bar');
+
+        var fooResp, barResp;
+        http.get('/foo').then((HttpResponse resp) => fooResp = resp.data);
+        http.get('/bar').then((HttpResponse resp) => barResp = resp.data);
+
+        microLeap();
+        backend.flush();
+        microLeap();
+        expect(fooResp).toBeNull();
+        expect(barResp).toBeNull();
+
+        clockTick(milliseconds: 99);
+        microLeap();
+        expect(fooResp).toBeNull();
+        expect(barResp).toBeNull();
+
+        clockTick(milliseconds: 1);
+        microLeap();
+        expect(fooResp).toEqual('foo');
+        expect(barResp).toEqual('bar');
+      }));
+
+    });
   });
 }
 
