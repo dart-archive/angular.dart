@@ -38,6 +38,11 @@ typedef RequestInterceptor(HttpResponseConfig);
 typedef RequestErrorInterceptor(dynamic);
 typedef Response(HttpResponse);
 typedef ResponseError(dynamic);
+typedef _CompleteResponse(HttpResponse);
+typedef _RunCoaleced(fn());
+
+_runNow(fn()) => fn();
+_identity(x) => x;
 
 /**
 * HttpInterceptors are used to modify the Http request. They can be added to
@@ -382,23 +387,29 @@ class HttpDefaults {
  */
 @Injectable()
 class Http {
-  var _pendingRequests = new HashMap<String, async.Future<HttpResponse>>();
-  BrowserCookies _cookies;
-  LocationWrapper _location;
-  UrlRewriter _rewriter;
-  HttpBackend _backend;
-  HttpInterceptors _interceptors;
+  final _pendingRequests = new HashMap<String, async.Future<HttpResponse>>();
+  final BrowserCookies _cookies;
+  final LocationWrapper _location;
+  final UrlRewriter _rewriter;
+  final HttpBackend _backend;
+  final HttpInterceptors _interceptors;
+  final RootScope _rootScope;
+  final HttpConfig _httpConfig;
+  final VmTurnZone _zone;
+
+  final _responseQueue = <Function>[];
+  async.Timer _responseQueueTimer;
 
   /**
    * The defaults for [Http]
    */
-  HttpDefaults defaults;
+  final HttpDefaults defaults;
 
   /**
    * Constructor, useful for DI.
    */
-  Http(this._cookies, this._location, this._rewriter, this._backend,
-       this.defaults, this._interceptors);
+  Http(this._cookies, this._location, this._rewriter, this._backend, this.defaults,
+       this._interceptors, this._rootScope, this._httpConfig, this._zone);
 
   /**
    * Parse a [requestUrl] and determine whether this is a same-origin request as
@@ -495,29 +506,25 @@ class Http {
         return new async.Future.value(new HttpResponse.copy(cachedResponse));
       }
 
-      var result = _backend.request(url,
-                                    method: method,
-                                    requestHeaders: config.headers,
-                                    sendData: config.data,
-                                    withCredentials: withCredentials).then((dom.HttpRequest value) {
-        // TODO: Uncomment after apps migrate off of this class.
-        // assert(value.status >= 200 && value.status < 300);
+      requestFromBackend(runCoalesced, onComplete, onError) => _backend.request(
+          url,
+          method: method,
+          requestHeaders: config.headers,
+          sendData: config.data,
+          withCredentials: withCredentials
+      ).then((dom.HttpRequest req) => _onResponse(req, runCoalesced, onComplete, config, cache, url),
+             onError: (e) => _onError(e, runCoalesced, onError, config, url));
 
-        var response = new HttpResponse(value.status, value.responseText,
-            parseHeaders(value), config);
-
-        if (cache != null) cache.put(url, response);
-        _pendingRequests.remove(url);
-        return response;
-      }, onError: (error) {
-        if (error is! dom.ProgressEvent) throw error;
-        dom.ProgressEvent event = error;
-        _pendingRequests.remove(url);
-        dom.HttpRequest request = event.currentTarget;
-        return new async.Future.error(
-            new HttpResponse(request.status, request.response, parseHeaders(request), config));
-      });
-      return _pendingRequests[url] = result;
+      async.Future responseFuture;
+      if (_httpConfig.coalesceDuration != null) {
+        async.Completer completer = new async.Completer();
+        responseFuture = completer.future;
+        _zone.runOutsideAngular(() => requestFromBackend(
+            _coalesce, completer.complete, completer.completeError));
+      } else {
+        responseFuture = requestFromBackend(_runNow, _identity, _identity);
+      }
+      return _pendingRequests[url] = responseFuture;
     };
 
     var chain = [[serverRequest, null]];
@@ -663,11 +670,50 @@ class Http {
              xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
              timeout: timeout);
 
+  _onResponse(dom.HttpRequest request, _RunCoaleced runCoalesced, _CompleteResponse onComplete,
+              HttpResponseConfig config, cache, String url) {
+    // TODO: Uncomment after apps migrate off of this class.
+    // assert(request.status >= 200 && request.status < 300);
+
+    var response = new HttpResponse(
+        request.status, request.responseText, parseHeaders(request), config);
+
+    if (cache != null) cache.put(url, response);
+    _pendingRequests.remove(url);
+    return runCoalesced(() => onComplete(response));
+  }
+
+  _onError(error, _RunCoaleced runCoalesced, _CompleteResponse onError,
+           HttpResponseConfig config, String url) {
+    if (error is! dom.ProgressEvent) throw error;
+    dom.ProgressEvent event = error;
+    _pendingRequests.remove(url);
+    dom.HttpRequest request = event.currentTarget;
+    var response = new HttpResponse(
+        request.status, request.response, parseHeaders(request), config);
+    return runCoalesced(() => onError(new async.Future.error(response)));
+  }
+
+  _coalesce(fn()) {
+    _responseQueue.add(fn);
+    if (_responseQueueTimer == null) {
+      _responseQueueTimer = new async.Timer(_httpConfig.coalesceDuration, _flushResponseQueue);
+    }
+  }
+
+  _flushResponseQueue() => _rootScope.apply(_flushResponseQueueSync);
+
+  _flushResponseQueueSync() {
+    _responseQueueTimer = null;
+    _responseQueue.forEach(_runNow);
+    _responseQueue.clear();
+  }
+
   /**
    * Parse raw headers into key-value object
    */
-  static Map<String, String> parseHeaders(dom.HttpRequest value) {
-    var headers = value.getAllResponseHeaders();
+  static Map<String, String> parseHeaders(dom.HttpRequest request) {
+    var headers = request.getAllResponseHeaders();
 
     var parsed = new HashMap();
 
@@ -716,4 +762,11 @@ class Http {
           .replaceAll('%24', r'$')
           .replaceAll('%2C', ',')
           .replaceAll('%20', pctEncodeSpaces ? '%20' : '+');
+}
+
+@Injectable()
+class HttpConfig {
+  final Duration coalesceDuration;
+
+  HttpConfig({this.coalesceDuration});
 }

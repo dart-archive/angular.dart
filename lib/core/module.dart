@@ -39,6 +39,7 @@ export "package:angular/core_dom/module_internal.dart" show
     EventHandler,
     Http,
     HttpBackend,
+    HttpConfig,
     HttpDefaultHeaders,
     HttpDefaults,
     HttpInterceptor,
