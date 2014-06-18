@@ -22,11 +22,16 @@ export "package:angular/change_detection/change_detection.dart" show
     AvgStopwatch,
     FieldGetterFactory;
 
+export "package:angular/cache/module.dart" show
+    Cache,
+    CacheRegister,
+    CacheRegisterStats,
+    LruCache;
+
 export "package:angular/core_dom/module_internal.dart" show
     Animation,
     AnimationResult,
     BrowserCookies,
-    Cache,
     Compiler,
     CompilerConfig,
     Cookies,

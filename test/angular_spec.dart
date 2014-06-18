@@ -94,6 +94,10 @@ main() {
       var ALLOWED_NAMES = [
         "angular.app.AngularModule",
         "angular.app.Application",
+        "angular.cache.Cache",
+        "angular.cache.CacheRegister",
+        "angular.cache.CacheRegisterStats",
+        "angular.cache.LruCache",
         "angular.core.annotation.ShadowRootAware",
         "angular.core.annotation_src.AttachAware",
         "angular.core.annotation_src.Component",
@@ -142,7 +146,6 @@ main() {
         "angular.core.dom_internal.ViewCache",
         "angular.core.dom_internal.ViewFactory",
         "angular.core.dom_internal.ViewPort",
-        "angular.core_internal.CacheStats",
         "angular.core_internal.ExceptionHandler",
         "angular.core_internal.Interpolate",
         "angular.core_internal.RootScope",

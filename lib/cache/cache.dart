@@ -1,4 +1,4 @@
-part of angular.core_internal;
+part of angular.cache;
 
 class CacheStats {
   final int capacity;
@@ -32,10 +32,15 @@ abstract class Cache<K, V> {
   /**
    * Removes all entries from the cache.
    */
+  @Deprecated('Use clear() instead')
   void removeAll();
   int get capacity;
+  @Deprecated('Use length instead')
   int get size;
   CacheStats stats();
+
+  void clear() => removeAll();
+  int get length => size;
 }
 
 

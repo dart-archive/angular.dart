@@ -73,6 +73,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:di/di.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/perf/module.dart';
+import 'package:angular/cache/module.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core_dom/module_internal.dart';
@@ -94,6 +95,7 @@ import 'package:angular/core_dom/static_keys.dart';
  */
 class AngularModule extends Module {
   AngularModule() {
+    install(new CacheModule());
     install(new CoreModule());
     install(new CoreDomModule());
     install(new DirectiveModule());

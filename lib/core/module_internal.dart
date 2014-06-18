@@ -24,7 +24,6 @@ import 'package:angular/core/parser/utils.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core/static_keys.dart';
 
-part "cache.dart";
 part "exception_handler.dart";
 part "interpolate.dart";
 part "scope.dart";
@@ -36,7 +35,6 @@ class CoreModule extends Module {
     bind(ScopeDigestTTL);
 
     bind(MetadataExtractor);
-    bind(Cache);
     bind(ExceptionHandler);
     bind(FormatterMap);
     bind(Interpolate);
