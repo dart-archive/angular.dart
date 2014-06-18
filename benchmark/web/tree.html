@@ -9,9 +9,10 @@
     <link rel="stylesheet" href="bootstrap.min.css">
     <style>
       .bpLink { background: lightblue; padding: 1em; margin-bottom: 1.5em; }
-      td.average { font-weight: bold; }
-      .sampleContainer {max-height:250px; overflow-y: auto; }
-      .testTimeCol { display: inline-block; width: 24%; }
+      .row.average { font-weight: bold; background: #eee; border-bottom: 1px solid #CCC; padding: 12px 0; margin-bottom: 12px; }
+      .row.headings { font-size: 18px; font-weight: bold; }
+      .average .title { font-size: 28px; }
+      .scrollable { max-height:250px !important; overflow-y: auto; }
     </style>
 </head>
 
@@ -41,76 +42,81 @@
           </div>
           <hr>
 
-          <table class="table table-striped results-table">
-            <thead>
-              <tr>
-                <th>step</th>
-                <th>average</th>
-                <th>
-                  <div class="testTimeCol">
-                    test time (ms)
-                  </div>
-                  <div class="testTimeCol" style="margin-left:-8px">
-                    gc time (ms)
-                  </div>
-                  <div class="testTimeCol">
-                    garbage (KB)
-                  </div>
-                  <div class="testTimeCol" style="margin-left:-8px">
-                    retained memory (KB)
-                  </div>
-                </th>
-              </tr>
-            </thead>
-            <tbody class="info" style="font-family: monospace"></tbody>
-          </table>
-          <script type="template" id="infoTemplate">
-            <tr class="sampleContainer">
-              <td><%= name %></td>
-              <td class="average">
-                test:<%= testTime.avg.mean.toFixed(2) %>ms
-                <br>
-                deviation: <%= testTime.avg.stdDev.toFixed(2) %>
-                <br>
-                coefficient of variation: <%= Math.round(testTime.avg.coefficientOfVariation * 100) %>%
-                <br>
-                gc:<%= gcTime.avg.mean.toFixed(2) %>ms
-                <br>
-                combined: <%= (testTime.avg.mean + gcTime.avg.mean).toFixed(2) %>ms
-                <br>
-                garbage: <%= (garbageCount.avg.mean / 1e3).toFixed(2) %>KB
-                <br>
-                retained: <%= (retainedCount.avg.mean / 1e3).toFixed(2) %>KB
-              </td>
-              <td>
-                <div class="sampleContainer">
-                  <div class="testTimeCol">
-                    <% _.each(testTime.history, function(time) { %>
-                      <%= time.toFixed(2) %>
-                      <br>
-                    <% }); %>
-                  </div>
-                  <div class="testTimeCol">
-                    <% _.each(gcTime.history, function(time) { %>
-                      <%= time.toFixed(2) %>
-                      <br>
-                    <% }); %>
-                  </div>
-                  <div class="testTimeCol">
-                  <% _.each(garbageCount.history, function(count) { %>
-                      <%= (count / 1e3).toFixed(2) %>
-                      <br>
-                    <% }); %>
-                  </div>
-                  <div class="testTimeCol">
-                    <% _.each(retainedCount.history, function(count) { %>
-                      <%= (count / 1e3).toFixed(2) %>
-                      <br>
-                    <% }); %>
-                  </div>
+          <div class="table table-striped results-table">
+            <div class="thead">
+              <div class="row headings">
+                <div class="th col-md-2 col-md-offset-2">
+                  test time (ms)
                 </div>
-              </td>
-            </tr>
+                <div class="th col-md-2">
+                  gc time (ms)
+                </div>
+                <div class="th col-md-2">
+                  garbage (KB)
+                </div>
+                <div class="th col-md-2">
+                  retained memory (KB)
+                </div>
+              </div>
+            </div>
+            <div class="tbody info"></div>
+          </div>
+
+          <script type="template" id="infoTemplate">
+            <div class="row average">
+              <div class="td col-md-2 title"><%= name %></div>
+              <div class="td col-md-2">
+                mean: <%= testTime.avg.mean.toFixed(2) %>ms
+                &plusmn; <%= Math.round(testTime.avg.coefficientOfVariation * 100) %>%
+                <br>
+                (stddev <%= testTime.avg.stdDev.toFixed(2) %>)
+              </div>
+              <div class="td col-md-2">
+                mean: <%= gcTime.avg.mean.toFixed(2) %>ms
+                <br>
+                (combined: <%= (testTime.avg.mean + gcTime.avg.mean).toFixed(2) %>ms)
+              </div>
+              <div class="td col-md-2">
+                mean: <%= (garbageCount.avg.mean / 1e3).toFixed(2) %>KB
+              </div>
+              <div class="td col-md-2">
+                mean: <%= (retainedCount.avg.mean / 1e3).toFixed(2) %>KB
+              </div>
+            </div>
+            <div class="row scrollable">
+              <div class="td col-md-2 col-md-offset-2">
+                <div class="sampleContainer">
+                  <% _.each(testTime.history, function(time) { %>
+                    <%= time.toFixed(2) %>
+                    <br>
+                  <% }); %>
+                </div>
+              </div>
+              <div class="td col-md-2">
+                <div class="sampleContainer">
+                  <% _.each(gcTime.history, function(time) { %>
+                    <%= time.toFixed(2) %>
+                    <br>
+                  <% }); %>
+                </div>
+              </div>
+              <div class="td col-md-2">
+                <div class="sampleContainer">
+                  <% _.each(garbageCount.history, function(count) { %>
+                    <%= (count / 1e3).toFixed(2) %>
+                    <br>
+                  <% }); %>
+                </div>
+              </div>
+              <div class="td col-md-2">
+                <div class="sampleContainer">
+                  <% _.each(retainedCount.history, function(count) { %>
+                    <%= (count / 1e3).toFixed(2) %>
+                    <br>
+                  <% }); %>
+                </div>
+              </div>
+            </div>
           </script>
         </div>
       </div>
