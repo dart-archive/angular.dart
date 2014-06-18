@@ -57,6 +57,11 @@ describe('bp', function() {
           674.64,701.78,668.33,662.15,663.34,677.32,664.25,1233.00,1100.80,716.15,681.52,671.23,702.70,686.89,939.39,830.28,695.46,695.66,675.15,667.48], 750.38)).toBe(158.57877026559186);
       });
     });
+
+
+    describe('.calculateCoefficientOfVariation()', function() {
+      expect(bp.Statistics.calculateCoefficientOfVariation(0.5, 5)).toBe(0.1);
+    });
   });
 
 
