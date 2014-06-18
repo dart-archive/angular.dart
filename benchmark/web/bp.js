@@ -276,7 +276,7 @@ bp.Document.addLinks = function() {
 };
 
 bp.Document.addInfo = function() {
-  bp.Document.infoDiv = bp.Document.container().querySelector('tbody.info');
+  bp.Document.infoDiv = bp.Document.container().querySelector('div.info');
   if (bp.Document.infoDiv) {
     bp.Document.infoTemplate = _.template(bp.Document.container().querySelector('#infoTemplate').innerHTML);
   }
