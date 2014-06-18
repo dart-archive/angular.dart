@@ -8,10 +8,7 @@ var bp = window.bp = {
     runState: {
       iterations: 0,
       numSamples: 20,
-      recentTimePerStep: {},
-      recentGCTimePerStep: {},
-      recentGarbagePerStep: {},
-      recentRetainedMemoryPerStep: {}
+      recentResult: {}
     }
   },
   Document: {},
@@ -106,10 +103,7 @@ bp.Runner.runAllTests = function (done) {
   if (bp.Runner.runState.iterations--) {
     bp.steps.forEach(function(bs) {
       var testResults = bp.Runner.runTimedTest(bs);
-      bp.Runner.runState.recentTimePerStep[bs.name] = testResults.time;
-      bp.Runner.runState.recentGCTimePerStep[bs.name] = testResults.gcTime;
-      bp.Runner.runState.recentGarbagePerStep[bs.name] = testResults.garbage;
-      bp.Runner.runState.recentRetainedMemoryPerStep[bs.name] = testResults.retainedDelta;
+      bp.Runner.runState.recentResult[bs.name] = testResults;
     });
     bp.Report.markup = bp.Report.calcStats();
     bp.Document.writeReport(bp.Report.markup);
@@ -129,7 +123,7 @@ bp.Runner.runTimedTest = function (bs) {
       endTime,
       startGCTime,
       endGCTime,
-      retainedDelta,
+      retainedMemory,
       garbage,
       beforeHeap,
       afterHeap,
@@ -152,34 +146,18 @@ bp.Runner.runTimedTest = function (bs) {
 
   finalHeap = performance.memory.usedJSHeapSize;
   garbage = Math.abs(finalHeap - afterHeap);
-  retainedDelta = finalHeap - beforeHeap;
+  retainedMemory = finalHeap - beforeHeap;
   return {
-    time: endTime,
+    testTime: endTime,
     gcTime: endGCTime,
     beforeHeap: beforeHeap,
     garbage: garbage,
-    retainedDelta: retainedDelta
+    retainedMemory: retainedMemory
   };
-};
-
-bp.Report.generateReportModel = function (rawModel) {
-  rawModel.avg = {
-    time: ('' + rawModel.avg.time).substr(0,6),
-    gcTime: ('' + rawModel.avg.gcTime).substr(0,6),
-    garbage: ('' + rawModel.avg.garbage).substr(0,6),
-    retained: ('' + rawModel.avg.retained).substr(0,6),
-    combinedTime: ('' + (rawModel.avg.time + rawModel.avg.gcTime)).substr(0,6)
-  };
-  rawModel.times = rawModel.times.join('<br>'),
-  rawModel.gcTimes = rawModel.gcTimes.join('<br>'),
-  rawModel.garbageTimes = rawModel.garbageTimes.join('<br>'),
-  rawModel.retainedTimes = rawModel.retainedTimes.join('<br>')
-  rawModel.timesConfidenceInterval = (rawModel.timesConfidenceInterval || 0).toFixed(2);
-  return rawModel;
 };
 
 bp.Report.generatePartial = function(model) {
-  return bp.infoTemplate(model);
+  return bp.Document.infoTemplate(model);
 };
 
 bp.Document.writeReport = function(reportContent) {
@@ -190,14 +168,10 @@ bp.Report.getTimesPerAction = function(name) {
   var tpa = bp.Report.timesPerAction[name];
   if (!tpa) {
     tpa = bp.Report.timesPerAction[name] = {
-      times: [], // circular buffer
-      fmtTimes: [],
+      testTimes: [], // circular buffer
       gcTimes: [],
-      fmtGcTimes: [],
-      garbageTimes: [],
-      fmtGarbageTimes: [],
-      retainedTimes: [],
-      fmtRetainedTimes: [],
+      garbageCount: [],
+      retainedCount: [],
       nextEntry: 0
     }
   }
@@ -214,58 +188,42 @@ bp.Report.rightSizeTimes = function(times) {
 };
 
 bp.Report.updateTimes = function(tpa, index, reference, recentTime) {
-  var fmtKey = 'fmt' + reference.charAt(0).toUpperCase() + reference.slice(1);
   tpa[reference][index] = recentTime;
   tpa[reference] = bp.Report.rightSizeTimes(tpa[reference]);
-  tpa[fmtKey][index] = recentTime.toString().substr(0, 6);
-  tpa[fmtKey] = bp.Report.rightSizeTimes(tpa[fmtKey]);
 };
 
 bp.Report.calcStats = function() {
   var report = '';
   bp.steps.forEach(function(bs) {
-    var stepName = bs.name,
-        timeForStep = bp.Runner.runState.recentTimePerStep[stepName],
-        gcTimeForStep = bp.Runner.runState.recentGCTimePerStep[stepName],
-        garbageTimeForStep = bp.Runner.runState.recentGarbagePerStep[stepName],
-        retainedTimeForStep = bp.Runner.runState.recentRetainedMemoryPerStep[stepName],
-        tpa = bp.Report.getTimesPerAction(stepName),
-        reportModel,
-        avg,
-        timesConfidenceInterval,
-        timesStandardDeviation;
+    var recentResult = bp.Runner.runState.recentResult[bs.name],
+        tpa = bp.Report.getTimesPerAction(bs.name);
 
-    bp.Report.updateTimes(tpa, tpa.nextEntry, 'gcTimes', gcTimeForStep);
-    bp.Report.updateTimes(tpa, tpa.nextEntry, 'garbageTimes', garbageTimeForStep / 1e3);
-    bp.Report.updateTimes(tpa, tpa.nextEntry, 'retainedTimes', retainedTimeForStep / 1e3);
-    bp.Report.updateTimes(tpa, tpa.nextEntry, 'times', timeForStep);
+    bp.Report.updateTimes(tpa, tpa.nextEntry, 'gcTimes', recentResult.gcTime);
+    bp.Report.updateTimes(tpa, tpa.nextEntry, 'garbageCount', recentResult.garbage / 1e3);
+    bp.Report.updateTimes(tpa, tpa.nextEntry, 'retainedCount', recentResult.retainedMemory / 1e3);
+    bp.Report.updateTimes(tpa, tpa.nextEntry, 'testTimes', recentResult.testTime);
 
     tpa.nextEntry++;
     tpa.nextEntry %= bp.Runner.runState.numSamples;
-    avg = {
-      gcTime: bp.Statistics.getMean(tpa.gcTimes),
-      time: bp.Statistics.getMean(tpa.times),
-      garbage: bp.Statistics.getMean(tpa.garbageTimes),
-      retained: bp.Statistics.getMean(tpa.retainedTimes)
+
+    var meanTestTime = bp.Statistics.getMean(tpa.testTimes);
+    var testTimesStdDev = bp.Statistics.calculateStandardDeviation(tpa.testTimes, meanTestTime);
+    var avgGCTime = bp.Statistics.getMean(tpa.gcTimes);
+    var avg = {
+      gcTime: avgGCTime,
+      testTime: meanTestTime,
+      combinedTime: meanTestTime + avgGCTime,
+      garbage: bp.Statistics.getMean(tpa.garbageCount),
+      retained: bp.Statistics.getMean(tpa.retainedCount),
+      testTimesStdDev: testTimesStdDev,
+      coefficientOfVariation: bp.Statistics.calculateCoefficientOfVariation(testTimesStdDev, meanTestTime)
     };
 
-    timesStandardDeviation = bp.Statistics.calculateStandardDeviation(tpa.times, avg.time);
-    timesConfidenceInterval = bp.Statistics.calculateConfidenceInterval(
-        timesStandardDeviation,
-        tpa.times.length
-    );
+    var reportModel = _.clone(tpa);
+    reportModel.name = bs.name;
+    reportModel.avg = avg;
+    reportModel.testTimes = tpa.testTimes;
 
-    reportModel = bp.Report.generateReportModel({
-      name: stepName,
-      avg: avg,
-      times: tpa.fmtTimes,
-      timesStandardDeviation: timesStandardDeviation,
-      coefficientOfVariation: bp.Statistics.calculateCoefficientOfVariation(timesStandardDeviation, avg.time),
-      timesRelativeMarginOfError: bp.Statistics.calculateRelativeMarginOfError(timesConfidenceInterval, avg.time),
-      gcTimes: tpa.fmtGcTimes,
-      garbageTimes: tpa.fmtGarbageTimes,
-      retainedTimes: tpa.fmtRetainedTimes
-    });
     report += bp.Report.generatePartial(reportModel);
   });
   return report;
@@ -291,10 +249,10 @@ bp.Document.onSampleInputChanged = function (evt) {
 };
 
 bp.Document.container = function() {
-  if (!bp._container) {
-    bp._container = document.querySelector('#benchmarkContainer');
+  if (!bp.Document._container) {
+    bp.Document._container = document.querySelector('#benchmarkContainer');
   }
-  return bp._container;
+  return bp.Document._container;
 }
 
 bp.Document.addButton = function(reference, handler) {
@@ -325,11 +283,12 @@ bp.Document.addLinks = function() {
 bp.Document.addInfo = function() {
   bp.Document.infoDiv = bp.Document.container().querySelector('tbody.info');
   if (bp.Document.infoDiv) {
-    bp.infoTemplate = _.template(bp.Document.container().querySelector('#infoTemplate').innerHTML);
+    bp.Document.infoTemplate = _.template(bp.Document.container().querySelector('#infoTemplate').innerHTML);
   }
 };
 
 bp.Document.onDOMContentLoaded = function() {
+  if (!bp.Document.container()) return;
   bp.Document.addLinks();
   bp.Document.addButton('loopBtn', bp.Runner.loopBenchmark);
   bp.Document.addButton('onceBtn', bp.Runner.onceBenchmark);
