@@ -72,6 +72,8 @@
                 <br>
                 deviation: <%= timesStandardDeviation %>
                 <br>
+                coefficient of variation: <%= Math.round(coefficientOfVariation * 100) %>%
+                <br>
                 gc:<%= avg.gcTime %>ms
                 <br>
                 combined: <%= avg.combinedTime %>ms
