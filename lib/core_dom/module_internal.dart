@@ -85,6 +85,7 @@ class CoreDomModule extends Module {
     bind(HttpDefaultHeaders);
     bind(HttpDefaults);
     bind(HttpInterceptors);
+    bind(HttpConfig, toFactory: (i) => new HttpConfig(coalesce: false));
     bind(Animate);
     bind(ViewCache);
     bind(BrowserCookies);

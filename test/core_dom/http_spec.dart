@@ -42,10 +42,11 @@ void main() {
     }
 
     beforeEachModule((Module module) {
-      backend = new MockHttpBackend();
       locationWrapper = new MockLocationWrapper();
       cache = new FakeCache();
+      backend =  new MockHttpBackend();
       module
+        ..bind(MockHttpBackend, toValue: backend)
         ..bind(HttpBackend, toValue: backend)
         ..bind(LocationWrapper, toValue: locationWrapper)
         ..bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
@@ -62,10 +63,10 @@ void main() {
       Http http;
       var callback;
 
-      beforeEach((Http h) {
+      beforeEach(async((Http h) {
         http = h;
         callback = guinness.createSpy('callback');
-      });
+      }));
 
 
       it('should do basic request', async(() {
@@ -1247,10 +1248,10 @@ void main() {
         Http http;
         var callback;
 
-        beforeEach((Http h) {
+        beforeEach(async((Http h) {
           http = h;
           callback = guinness.createSpy('callback');
-        });
+        }));
 
         describe('request', () {
 
@@ -1421,6 +1422,28 @@ void main() {
           }));
         });
       });
+    });
+
+    describe('coalesce', () {
+      beforeEachModule((Module module) {
+        module.bind(HttpConfig, toFactory: (i) => new HttpConfig(coalesce: true, timeout: 100));
+      });
+
+      it('should coalesce requests', async((Http http) {
+        backend.expect('GET', '/foo').respond(200, 'foo');
+        backend.expect('GET', '/bar').respond(200, 'bar');
+
+        var fooResp, barResp;
+        http.get('/foo').then((HttpResponse resp) => expect(resp.data, 'foo'));
+        http.get('/bar').then((HttpResponse resp) => expect(resp.data, 'bar'));
+
+
+        microLeap();
+        backend.flush();
+        microLeap();
+        clockTick(milliseconds: 100);
+      }));
+
     });
   });
 }

@@ -1,5 +1,6 @@
 library compiler_spec;
 
+import 'dart:async';
 import '../_specs.dart';
 
 
@@ -88,7 +89,7 @@ void main() {
           ..bind(MyChildController);
     });
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach(async(inject((TestBed tb) => _ = tb)));
 
     it('should compile basic hello world', () {
       var element = _.compile('<div ng-bind="name"></div>');
@@ -645,7 +646,6 @@ void main() {
       describe('lifecycle', () {
         beforeEachModule((Module module) {
           var httpBackend = new MockHttpBackend();
-
           module
             ..bind(HttpBackend, toValue: httpBackend)
             ..bind(MockHttpBackend, toValue: httpBackend);

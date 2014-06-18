@@ -375,6 +375,11 @@ class Http {
   UrlRewriter _rewriter;
   HttpBackend _backend;
   HttpInterceptors _interceptors;
+  RootScope _rootScope;
+  VmTurnZone _zone;
+  List<Function> _responseQueue = [];
+  async.Timer _responseQueueTimer;
+  HttpConfig _httpConfig;
 
   /**
    * The defaults for [Http]
@@ -384,8 +389,9 @@ class Http {
   /**
    * Constructor, useful for DI.
    */
-  Http(this._cookies, this._location, this._rewriter, this._backend,
-       this.defaults, this._interceptors);
+  Http(this._cookies, this._location, this._rewriter, this._backend, this.defaults, this._interceptors, this._rootScope,
+       this._httpConfig, this._zone) {
+  }
 
   /**
    * Parse a [requestUrl] and determine whether this is a same-origin request as
@@ -482,29 +488,14 @@ class Http {
         return new async.Future.value(new HttpResponse.copy(cachedResponse));
       }
 
-      var result = _backend.request(url,
-                                    method: method,
-                                    requestHeaders: config.headers,
-                                    sendData: config.data,
-                                    withCredentials: withCredentials).then((dom.HttpRequest value) {
-        // TODO: Uncomment after apps migrate off of this class.
-        // assert(value.status >= 200 && value.status < 300);
-
-        var response = new HttpResponse(value.status, value.responseText,
-            parseHeaders(value), config);
-
-        if (cache != null) cache.put(url, response);
-        _pendingRequests.remove(url);
-        return response;
-      }, onError: (error) {
-        if (error is! dom.ProgressEvent) throw error;
-        dom.ProgressEvent event = error;
-        _pendingRequests.remove(url);
-        dom.HttpRequest request = event.currentTarget;
-        return new async.Future.error(
-            new HttpResponse(request.status, request.response, parseHeaders(request), config));
+      async.Completer reqCompleter = new async.Completer();
+      _zone.runOutsideAngular(() {
+        var f = _backend.request(url, method: method, requestHeaders: config.headers, sendData: config.data,
+          withCredentials: withCredentials).then((dom.HttpRequest req) =>_onResponse(req, reqCompleter, config, cache, url),
+          onError: (e) =>_onError(e,reqCompleter, config, url));
       });
-      return _pendingRequests[url] = result;
+
+      return _pendingRequests[url] = reqCompleter.future;
     };
 
     var chain = [[serverRequest, null]];
@@ -650,6 +641,43 @@ class Http {
              xsrfCookieName: xsrfCookieName, interceptors: interceptors, cache: cache,
              timeout: timeout);
 
+  _onResponse(dom.HttpRequest value, async.Completer completer, HttpResponseConfig config, cache,
+              String url) {
+    // TODO: Uncomment after apps migrate off of this class.
+    // assert(value.status >= 200 && value.status < 300);
+
+    var response = new HttpResponse(value.status, value.responseText, parseHeaders(value),
+        config);
+
+    if (cache != null) cache.put(url, response);
+    _pendingRequests.remove(url);
+    if (_httpConfig.coalesce) {
+      if (_responseQueueTimer == null) _registerTimer();
+      _responseQueue.add(() => completer.complete(response));
+    } else {
+      completer.complete(response);
+    }
+  }
+
+  _onError(error, async.Completer completer, HttpResponseConfig config, String url) {
+    if (error is! dom.ProgressEvent) throw error;
+    dom.ProgressEvent event = error;
+    _pendingRequests.remove(url);
+    dom.HttpRequest request = event.currentTarget;
+    completer.completeError(new HttpResponse(request.status, request.response,
+        parseHeaders(request), config));
+  }
+
+  _cleanUpQueue() {
+    _responseQueue.forEach((Function fn) => _rootScope.runAsync(() => fn()));
+    _responseQueue.clear();
+    _responseQueueTimer = null;
+  }
+
+  _registerTimer() {
+    _responseQueueTimer = new async.Timer(new Duration(milliseconds: _httpConfig.timeout), _cleanUpQueue);
+  }
+
   /**
    * Parse raw headers into key-value object
    */
@@ -703,4 +731,12 @@ class Http {
           .replaceAll('%24', r'$')
           .replaceAll('%2C', ',')
           .replaceAll('%20', pctEncodeSpaces ? '%20' : '+');
+}
+
+@Injectable()
+class HttpConfig {
+  bool coalesce = false;
+  num timeout;
+
+  HttpConfig({this.coalesce, this.timeout});
 }
