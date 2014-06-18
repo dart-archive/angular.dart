@@ -2,6 +2,7 @@ library angular.core_dom.static_keys;
 
 import 'dart:html' as dom;
 import 'package:di/di.dart';
+import 'package:angular/cache/module.dart';
 import 'package:angular/core/static_keys.dart';
 import 'package:angular/core_dom/module_internal.dart';
 
@@ -12,6 +13,7 @@ export 'package:angular/core/static_keys.dart';
 
 Key ANIMATE_KEY = new Key(Animate);
 Key BOUND_VIEW_FACTORY_KEY = new Key(BoundViewFactory);
+Key CACHE_REGISTER_KEY = new Key(CacheRegister);
 Key COMPILER_KEY = new Key(Compiler);
 Key COMPONENT_CSS_REWRITER_KEY = new Key(ComponentCssRewriter);
 Key DIRECTIVE_MAP_KEY = new Key(DirectiveMap);

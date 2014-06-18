@@ -45,7 +45,11 @@ class ShadowDomComponentFactory implements ComponentFactory {
 
   final Map<_ComponentAssetKey, async.Future<dom.StyleElement>> styleElementCache = {};
 
-  ShadowDomComponentFactory(this.viewCache, this.http, this.templateCache, this.platform, this.componentCssRewriter, this.treeSanitizer, this.expando, this.config);
+  ShadowDomComponentFactory(this.viewCache, this.http, this.templateCache, this.platform,
+                            this.componentCssRewriter, this.treeSanitizer, this.expando,
+                            this.config, CacheRegister cacheRegister) {
+    cacheRegister.registerCache("ShadowDomComponentFactoryStyles", styleElementCache);
+  }
 
   bind(DirectiveRef ref, directives) =>
       new BoundShadowDomComponentFactory(this, ref, directives);

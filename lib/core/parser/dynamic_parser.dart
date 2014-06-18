@@ -1,5 +1,6 @@
 library angular.core.parser.dynamic_parser;
 
+import 'package:angular/cache/module.dart';
 import 'package:angular/core/annotation_src.dart' hide Formatter;
 import 'package:angular/core/module_internal.dart' show FormatterMap;
 
@@ -24,7 +25,9 @@ class DynamicParser implements Parser<Expression> {
   final Lexer _lexer;
   final ParserBackend _backend;
   final Map<String, Expression> _cache = {};
-  DynamicParser(this._lexer, this._backend);
+  DynamicParser(this._lexer, this._backend, CacheRegister cacheRegister) {
+    cacheRegister.registerCache("DynamicParser", _cache);
+  }
 
   Expression call(String input) {
     if (input == null) input = '';
