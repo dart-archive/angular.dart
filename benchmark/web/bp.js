@@ -43,12 +43,16 @@ bp.Statistics.calculateConfidenceInterval = function(standardDeviation, sampleSi
   return bp.Statistics.criticalValue * standardError;
 };
 
-bp.Statistics.calculateRelativeMarginOfError = function (marginOfError, mean) {
+bp.Statistics.calculateRelativeMarginOfError = function(marginOfError, mean) {
   /*
    * Converts absolute margin of error to a relative margin of error by
    * converting it to a percentage of the mean.
    */
   return (marginOfError / mean);
+};
+
+bp.Statistics.calculateCoefficientOfVariation = function(standardDeviation, mean) {
+  return standardDeviation / mean;
 };
 
 bp.Statistics.calculateStandardDeviation = function(sample, mean) {
@@ -256,6 +260,7 @@ bp.Report.calcStats = function() {
       avg: avg,
       times: tpa.fmtTimes,
       timesStandardDeviation: timesStandardDeviation,
+      coefficientOfVariation: bp.Statistics.calculateCoefficientOfVariation(timesStandardDeviation, avg.time),
       timesRelativeMarginOfError: bp.Statistics.calculateRelativeMarginOfError(timesConfidenceInterval, avg.time),
       gcTimes: tpa.fmtGcTimes,
       garbageTimes: tpa.fmtGarbageTimes,
