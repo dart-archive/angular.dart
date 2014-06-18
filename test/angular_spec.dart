@@ -94,6 +94,9 @@ main() {
       var ALLOWED_NAMES = [
         "angular.app.AngularModule",
         "angular.app.Application",
+        "angular.change_detection.execution_stats.ExecutionStats",
+        "angular.change_detection.execution_stats.ExecutionStatsConfig",
+        "angular.change_detection.execution_stats.ExecutionStatsEmitter",
         "angular.core.annotation.ShadowRootAware",
         "angular.core.annotation_src.AttachAware",
         "angular.core.annotation_src.Component",

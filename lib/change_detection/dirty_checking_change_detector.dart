@@ -2,6 +2,7 @@ library dirty_checking_change_detector;
 
 import 'dart:collection';
 import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/change_detection/execution_stats.dart';
 
 /**
  * [DirtyCheckingChangeDetector] determines which object properties have changed
@@ -304,6 +305,8 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
   }
 
   Iterator<Record<H>> collectChanges({EvalExceptionHandler exceptionHandler,
+                                      ExecutionStats executionStats,
+                                      Stopwatch executionStopwatch,
                                       AvgStopwatch stopwatch}) {
     if (stopwatch != null) stopwatch.start();
     DirtyCheckingRecord changeTail = _fakeHead;
@@ -312,7 +315,19 @@ class DirtyCheckingChangeDetector<H> extends DirtyCheckingChangeDetectorGroup<H>
     int count = 0;
     while (current != null) {
       try {
-        if (current.check()) changeTail = changeTail._nextChange = current;
+        if (executionStats != null && executionStats.config.enabled) {
+          executionStopwatch.reset();
+          executionStopwatch.start();
+        }
+        var check = current.check();
+        if (executionStats != null && executionStats.config.enabled) {
+          executionStopwatch.stop();
+          if (executionStopwatch.elapsedMicroseconds >= executionStats.config.threshold) {
+            executionStats.addDirtyCheckEntry(new ExecutionEntry(
+                executionStopwatch.elapsedMicroseconds, current));
+          }
+        }
+        if (check) changeTail = changeTail._nextChange = current;
         count++;
       } catch (e, s) {
         if (exceptionHandler == null) {

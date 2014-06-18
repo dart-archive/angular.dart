@@ -27,7 +27,7 @@ void main() {
       context = {};
       var getterFactory = new DynamicFieldGetterFactory();
       changeDetector = new DirtyCheckingChangeDetector(getterFactory);
-      watchGrp = new RootWatchGroup(getterFactory, changeDetector, context);
+      watchGrp = new RootWatchGroup(getterFactory, changeDetector, context, null);
       logger = _logger;
       parser = _parser;
       astParser = _astParser;
@@ -68,7 +68,7 @@ void main() {
       context = {};
       var getterFactory = new DynamicFieldGetterFactory();
       changeDetector = new DirtyCheckingChangeDetector(getterFactory);
-      watchGrp = new RootWatchGroup(getterFactory, changeDetector, context);
+      watchGrp = new RootWatchGroup(getterFactory, changeDetector, context, null);
       logger = _logger;
     }));
 
@@ -954,6 +954,61 @@ void main() {
         watchGrp.detectChanges();
         expect(logger).toEqual(['A', 'B']);
         logger.clear();
+      });
+    });
+
+    describe('profile', () {
+      var getterFactory, execStats;
+
+      beforeEach(() {
+        getterFactory = new DynamicFieldGetterFactory();
+        changeDetector = new DirtyCheckingChangeDetector(getterFactory);
+        execStats = null;
+        context['a'] = 'hello';
+      });
+
+      it('should allow profiling iff ExecutionStats object is provided', () {
+        ExecutionStats execStats = new ExecutionStats(new ExecutionStatsEmitter(),
+            new ExecutionStatsConfig(threshold: 0, enabled: true));
+        RootWatchGroup watchGrp = new RootWatchGroup(getterFactory, changeDetector, context, execStats);
+
+        List log = [];
+        watchGrp.watch(parse('a'), (v, p) => log.add(v));
+        watchGrp.detectChanges();
+
+        expect(log.length).toBe(1);
+        expect(log.first).toEqual('hello');
+        expect(execStats.reactionFnStats.length).toBe(1);
+      });
+
+      it('should allow one to enable, disable and reset stats', () {
+        ExecutionStats execStats = new ExecutionStats(new ExecutionStatsEmitter(),
+        new ExecutionStatsConfig(threshold: 0, enabled: true));
+        RootWatchGroup watchGrp = new RootWatchGroup(getterFactory, changeDetector, context, execStats);
+
+        watchGrp.watch(parse('a'), (v, p) {});
+        watchGrp.detectChanges();
+        expect(execStats.reactionFnStats.length).toBe(1);
+
+        execStats.disable();
+        context['a'] = 'hola';
+        watchGrp.detectChanges();
+        expect(execStats.reactionFnStats.length).toBe(1);
+
+        execStats.enable();
+
+        context['a'] = 'ola';
+        watchGrp.detectChanges();
+        expect(execStats.reactionFnStats.length).toBe(2);
+
+        execStats.reset();
+        expect(execStats.reactionFnStats.length).toBe(0);
+      });
+
+      it('should have executionStats set to null iff ExecutionStats object is null', () {
+        RootWatchGroup watchGrp = new RootWatchGroup(getterFactory, changeDetector, context, null);
+        expect(watchGrp.executionStats).toBeNull();
+        expect(watchGrp.executionStopwatch).toBeNull();
       });
     });
 

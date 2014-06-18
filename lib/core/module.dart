@@ -12,6 +12,9 @@ library angular.core;
 export "package:angular/change_detection/watch_group.dart" show
     ReactionFn;
 
+export 'package:angular/change_detection/execution_stats.dart' show
+    ExecutionStats, ExecutionStatsEmitter, ExecutionStatsConfig;
+
 export "package:angular/core/parser/parser.dart" show
     Parser;
 

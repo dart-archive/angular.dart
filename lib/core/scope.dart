@@ -315,8 +315,8 @@ class Scope {
     var child = new Scope(childContext, rootScope, this,
                           _readWriteGroup.newGroup(childContext),
                           _readOnlyGroup.newGroup(childContext),
-                         '$id:${_childScopeNextId++}',
-                         _stats);
+                          '$id:${_childScopeNextId++}',
+                          _stats);
 
     var prev = _childTail;
     child._prev = prev;
@@ -618,17 +618,17 @@ class RootScope extends Scope {
 
   RootScope(Object context, Parser parser, ASTParser astParser, FieldGetterFactory fieldGetterFactory,
             FormatterMap formatters, this._exceptionHandler, this._ttl, this._zone,
-            ScopeStats _scopeStats)
-      : _scopeStats = _scopeStats,
+            ScopeStats scopeStats, ExecutionStats execStats)
+      : _scopeStats = scopeStats,
         _parser = parser,
         _astParser = astParser,
         super(context, null, null,
             new RootWatchGroup(fieldGetterFactory,
-                new DirtyCheckingChangeDetector(fieldGetterFactory), context),
+                new DirtyCheckingChangeDetector(fieldGetterFactory), context, execStats),
             new RootWatchGroup(fieldGetterFactory,
-                new DirtyCheckingChangeDetector(fieldGetterFactory), context),
+                new DirtyCheckingChangeDetector(fieldGetterFactory), context, execStats),
             '',
-            _scopeStats)
+            scopeStats)
   {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
