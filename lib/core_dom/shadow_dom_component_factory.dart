@@ -30,10 +30,11 @@ class ShadowDomComponentFactory implements ComponentFactory {
   final Expando _expando;
   final CompilerConfig _config;
 
-  ShadowDomComponentFactory(this._expando, this._config);
+  ShadowDomComponentFactory(this._expando, this._config, CacheRegister cacheRegister) {
+    cacheRegister.registerCache("ShadowDomComponentFactoryStyles", _styleElementCache);
+  }
 
   final Map<String, async.Future<dom.StyleElement>> _styleElementCache = {};
-
   
   
   FactoryFn call(dom.Node node, DirectiveRef ref) {
