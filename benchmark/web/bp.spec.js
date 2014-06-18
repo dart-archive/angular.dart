@@ -11,14 +11,14 @@ describe('bp', function() {
       };
 
   beforeEach(function() {
-    bp._container = document.createElement('div');
+    bp.Document._container = document.createElement('div');
+    bp.Document.infoTemplate = function(model) {
+      return JSON.stringify(model);
+    }
     bp.Runner.runState = {
       iterations: 0,
       numSamples: 20,
-      recentTimePerStep: {},
-      recentGCTimePerStep: {},
-      recentGarbagePerStep: {},
-      recentRetainedMemoryPerStep: {}
+      recentResult: {}
     };
 
     bp.Report.timesPerAction = {};
@@ -67,17 +67,8 @@ describe('bp', function() {
 
   describe('.Document', function() {
     describe('.container()', function() {
-      it('should return bp._container if set', function() {
-        bp._container = 'fooelement';
-        expect(bp.Document.container()).toBe('fooelement');
-      });
-
-
-      it('should query the document for #benchmarkContainer if no _container', function() {
-        var spy = spyOn(document, 'querySelector');
-        bp._container = null;
-        bp.Document.container();
-        expect(spy).toHaveBeenCalled();
+      it('should return bp.Document._container if set', function() {
+        expect(bp.Document.container() instanceof HTMLElement).toBe(true);
       });
     });
 
@@ -138,21 +129,23 @@ describe('bp', function() {
         bp.Runner.runState = {
           numSamples: 99,
           iterations: 100,
-          recentTimePerStep: {
-            fakeStep: 2
+          recentResult: {
+            fakeStep: {
+              testTime: 2
+            }
           }
         }
         bp.Report.timesPerAction = {
           fakeStep: {
-            times: [5]
+            testTimes: [5]
           }
         };
 
         bp.Runner.resetIterations();
         expect(bp.Runner.runState.numSamples).toBe(99);
         expect(bp.Runner.runState.iterations).toBe(0);
-        expect(bp.Report.timesPerAction).toEqual({fakeStep: {times: [5]}});
-        expect(bp.Runner.runState.recentTimePerStep).toEqual({fakeStep: 2});
+        expect(bp.Report.timesPerAction).toEqual({fakeStep: {testTimes: [5]}});
+        expect(bp.Runner.runState.recentResult['fakeStep'].testTime).toEqual(2);
       });
     });
 
@@ -168,7 +161,7 @@ describe('bp', function() {
 
       it('should return the time required to run the test', function() {
         var times = {};
-        expect(typeof bp.Runner.runTimedTest(mockStep, times).time).toBe('number');
+        expect(typeof bp.Runner.runTimedTest(mockStep, times).testTime).toBe('number');
       });
     });
 
@@ -221,7 +214,7 @@ describe('bp', function() {
         }, 'done to be called', 200);
 
         runs(function() {
-          expect(bp.Report.timesPerAction.fakeStep.times.length).toBe(8);
+          expect(bp.Report.timesPerAction.fakeStep.testTimes.length).toBe(8);
         });
       });
     });
@@ -374,28 +367,20 @@ describe('bp', function() {
         bp.Runner.runState = {
           numSamples: 5,
           iterations: 5,
-          recentTimePerStep: {
-            fakeStep: 5
-          },
-          recentGCTimePerStep: {
-            fakeStep: 2
-          },
-          recentGarbagePerStep: {
-            fakeStep: 200
-          },
-          recentRetainedMemoryPerStep: {
-            fakeStep: 100
+          recentResult: {
+            fakeStep: {
+              testTime: 5,
+              gcTime: 2,
+              recentGarbagePerStep: 200,
+              recentRetainedMemoryPerStep: 100
+            }
           }
         };
         bp.Report.timesPerAction = {
           fakeStep: {
-            times: [3,7],
-            fmtTimes: ['3', '7'],
-            fmtGcTimes: ['1','3'],
-            garbageTimes: [50,50],
-            fmtGarbageTimes: ['50','50'],
-            retainedTimes: [25,25],
-            fmtRetainedTimes: ['25','25'],
+            testTimes: [3,7],
+            garbageCount: [50,50],
+            retainedCount: [25,25],
             gcTimes: [1,3],
             nextEntry: 2
           },
@@ -412,10 +397,10 @@ describe('bp', function() {
 
       it('should set the most recent time for each step to the next entry', function() {
         bp.Report.calcStats();
-        expect(bp.Report.timesPerAction.fakeStep.times[2]).toBe(5);
-        bp.Runner.runState.recentTimePerStep.fakeStep = 25;
+        expect(bp.Report.timesPerAction.fakeStep.testTimes[2]).toBe(5);
+        bp.Runner.runState.recentResult.fakeStep.testTime = 25;
         bp.Report.calcStats();
-        expect(bp.Report.timesPerAction.fakeStep.times[3]).toBe(25);
+        expect(bp.Report.timesPerAction.fakeStep.testTimes[3]).toBe(25);
       });
 
 
@@ -436,40 +421,6 @@ describe('bp', function() {
         bp.Runner.runState.numSamples = 7;
         expect(bp.Report.rightSizeTimes([0,1,2,3,4,5,6])).toEqual([0,1,2,3,4,5,6]);
         expect(bp.Report.rightSizeTimes([0,1,2,3,4,5])).toEqual([0,1,2,3,4,5]);
-      });
-    });
-
-
-    describe('.generateReportModel()', function() {
-      it('should return properly formatted data', function() {
-        expect(bp.Report.generateReportModel({
-          name: 'Some Step',
-          avg: {
-            time: 1.234567,
-            gcTime: 2.345678,
-            garbage: 6.5,
-            retained: 7.5
-          },
-          times: ['1','2'],
-          gcTimes: ['4','5'],
-          garbageTimes: ['6','7'],
-          retainedTimes: ['7','8'],
-          timesConfidenceInterval: 0.5555
-        })).toEqual({
-          name : 'Some Step',
-          avg : {
-            time : '1.2345',
-            gcTime : '2.3456',
-            garbage : '6.5',
-            retained : '7.5',
-            combinedTime : '3.5802'
-          },
-          times : '1<br>2',
-          gcTimes : '4<br>5',
-          garbageTimes : '6<br>7',
-          retainedTimes : '7<br>8',
-          timesConfidenceInterval: '0.56'
-        });
       });
     });
   });
