@@ -131,7 +131,7 @@ class NgRepeat {
 
     _watch = _scope.watch(
         _listExpr,
-        (CollectionChangeRecord changes, _) {
+        (changes, _) {
           _onChange((changes is CollectionChangeRecord) ? changes : null);
         },
         collection: true,
