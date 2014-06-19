@@ -88,9 +88,8 @@ void main() {
         // we don't care about the data field.
         backend.expect('POST', '/url', 'null').respond('');
 
-        http(url: '/url', method: 'POST');
         expect(() {
-          flush();
+          http(url: '/url', method: 'POST');
         }).toThrow('with different data');
 
         // satisfy the expectation for our afterEach's assert.
@@ -951,6 +950,60 @@ void main() {
           http.get('/url');
           flush();
         }));
+      });
+
+      describe('request interceptors', () {
+        bool interceptorCalled;
+
+        beforeEach(() {
+          interceptorCalled = false;
+        });
+
+        describe('synchronous', () {
+          beforeEachModule((Module module) {
+            module.bind(HttpInterceptors, toValue: new HttpInterceptors()
+              // The first interceptor is sync, causing the second interceptor to be called synchronously
+              ..add(new HttpInterceptor(request: (cfg) => cfg))
+              ..add(new HttpInterceptor(request: (cfg) {
+                interceptorCalled = true;
+                return cfg;
+              })));
+          });
+
+          it('should call backend synchronously if request interceptor chain is '
+             'synchronous', async(() {
+            backend.expect('POST', '/url', '').respond('');
+            http(url: '/url', method: 'POST', data: '');
+            expect(interceptorCalled).toBe(true);
+            expect(backend.responses.isEmpty).toBe(false);  // request made immediately
+            flush();
+          }));
+        });
+
+        describe('asynchronous', () {
+          beforeEachModule((Module module) {
+            module.bind(HttpInterceptors, toValue: new HttpInterceptors()
+              // The first interceptor is async, causing the second interceptor to be
+              // called in a microtask
+              ..add(new HttpInterceptor(request: (cfg) => new Future.value(cfg)))
+              ..add(new HttpInterceptor(request: (cfg) {
+                interceptorCalled = true;
+                return cfg;
+              })));
+          });
+
+          it('should call backend asynchronously if request interceptor chain is '
+             'asynchronous', async(() {
+            backend.expect('POST', '/url', '').respond('');
+            http(url: '/url', method: 'POST', data: '');
+            expect(interceptorCalled).toBe(false);
+            expect(backend.expectations.isEmpty).toBe(false);
+            backend.verifyNoOutstandingRequest();
+
+            flush();
+            expect(interceptorCalled).toBe(true);
+          }));
+        });
       });
     });
 
