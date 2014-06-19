@@ -457,7 +457,7 @@ class Http {
       if (v is Function) headers[k] = v();
     });
 
-    var serverRequest = (HttpResponseConfig config) {
+    serverRequest(HttpResponseConfig config) {
       // Strip content-type if data is undefined
       if (config.data == null) {
         new List.from(headers.keys)
@@ -509,11 +509,11 @@ class Http {
 
     var chain = [[serverRequest, null]];
 
-    var future = new async.Future.value(new HttpResponseConfig(
+    var initialInput = new HttpResponseConfig(
         url: url,
         params: params,
         headers: headers,
-        data: data));
+        data: data);
 
     _interceptors.constructChain(chain);
 
@@ -525,11 +525,18 @@ class Http {
       interceptors.constructChain(chain);
     }
 
-    chain.forEach((chainFns) {
-      future = future.then(chainFns[0], onError: chainFns[1]);
-    });
+    // Try to run interceptors synchronously until one of them returns a Future. This
+    // makes sure that in common cases the HTTP backend sends the HTTP request immediately
+    // saving dozens of millis of RPC latency.
+    var chainResult = chain.fold(initialInput, (prev, chainFns) => prev is async.Future
+        ? prev.then(chainFns[0], onError: chainFns[1])
+        : chainFns[0](prev));
 
-    return future;
+    // Depending on the implementation of HttpBackend (e.g. with a local cache) the entire
+    // chain could finish synchronously with a non-Future result.
+    return chainResult is async.Future
+        ? chainResult
+        : new async.Future.value(chainResult);
   }
 
   /**
