@@ -23,6 +23,7 @@ Key NG_ELEMENT_KEY = new Key(NgElement);
 Key NODE_ATTRS_KEY = new Key(NodeAttrs);
 Key NODE_KEY = new Key(dom.Node);
 Key NODE_TREE_SANITIZER_KEY = new Key(dom.NodeTreeSanitizer);
+Key SHADOW_DOM_COMPONENT_FACTORY_KEY = new Key(ShadowDomComponentFactory);
 Key SHADOW_ROOT_KEY = new Key(dom.ShadowRoot);
 Key TEMPLATE_CACHE_KEY = new Key(TemplateCache);
 Key TEMPLATE_LOADER_KEY = new Key(TemplateLoader);

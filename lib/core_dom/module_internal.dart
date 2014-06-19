@@ -61,7 +61,7 @@ class CoreDomModule extends Module {
     bind(Compiler, toImplementation: TaggingCompiler);
     bind(CompilerConfig);
 
-    bind(ComponentFactory, toImplementation: ShadowDomComponentFactory);
+    bind(ComponentFactory, toFactory: (i) => i.getByKey(SHADOW_DOM_COMPONENT_FACTORY_KEY));
     bind(ShadowDomComponentFactory);
     bind(TranscludingComponentFactory);
     bind(Content);
