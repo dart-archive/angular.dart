@@ -4,7 +4,6 @@ import 'dart:collection';
 import 'package:angular/change_detection/change_detection.dart';
 import 'dart:async';
 import 'package:observe/observe.dart' as obs;
-import 'package:smoke/smoke.dart' as smoke;
 
 /**
  * [DirtyCheckingChangeDetector] determines which object properties have changed
@@ -567,15 +566,11 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
         // no-op if closure (see _MODE_GETTER_OR_METHOD_CLOSURE_) or until the next notification
         _mode = _MODE_NOOP_;
         if (current is! Function || identical(current, _getter(object))) {
-          var subscription = (object as obs.ChangeNotifier).changes.listen((records) {
-            for (var rec in records) {
-              // todo(vicb) Change to String if dartbug.com/17863 eventually gets fixed
-              if (smoke.symbolToName(rec.name) == field) {
-                // Run the dccd after the observed `object.field` is updated
-                _mode = _MODE_GETTER_NOTIFIED_;
-                break;
-              }
-            }
+          var subscription = (object as obs.Observable).changes.listen((records) {
+            // todo(vicb) we should only go to the _MODE_GETTER_NOTIFIED_ mode when a record
+            // is applicable to the current `field`. With the current implementation, any field
+            // on an observable object will trigger this listener.
+            _mode = _MODE_GETTER_NOTIFIED_;
           });
           _group._registerObservable(this, subscription);
         }
