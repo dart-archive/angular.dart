@@ -6,6 +6,11 @@ import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:benchmark_harness/benchmark_harness.dart';
+import 'package:observe/observe.dart';
+import 'package:observe/mirrors_used.dart';
+import "dart:io";
+import "dart:async";
+import "dart:convert";
 
 @MirrorsUsed(
     targets: const [
@@ -25,33 +30,135 @@ var _staticFieldGetterFactory = new StaticFieldGetterFactory({
 var _dynamicFieldGetterFactory = new DynamicFieldGetterFactory();
 
 main() {
-  _fieldRead();
-  _fieldReadGetter();
+  _collectionRead(observable:false, changeCount:0);
+  _collectionRead(observable:true, changeCount:0);
+
+  _collectionRead(observable:false, changeCount:1);
+  _collectionRead(observable:true, changeCount:1);
+
+  _collectionRead(observable:false, changeCount:10);
+  _collectionRead(observable:true, changeCount:10);
+
+  _groupAddRemove(observable:false);
+  _groupAddRemove(observable:true);
+
+  _fieldRead(observable:false, staticGetter: false, changeCount: 0);
+  _fieldRead(observable:true, staticGetter: false, changeCount: 0);
+
+  _fieldRead(observable:false, staticGetter: false, changeCount: 1);
+  _fieldRead(observable:true, staticGetter: false, changeCount: 1);
+
+  _fieldRead(observable:false, staticGetter: false, changeCount: 10);
+  _fieldRead(observable:true, staticGetter: false, changeCount: 10);
+
+  _fieldRead(observable:false, staticGetter: true, changeCount: 0);
+  _fieldRead(observable:true, staticGetter: true, changeCount: 0);
+
+  _fieldRead(observable:false, staticGetter: true, changeCount: 1);
+  _fieldRead(observable:true, staticGetter: true, changeCount: 1);
+
+  _fieldRead(observable:false, staticGetter: true, changeCount: 10);
+  _fieldRead(observable:true, staticGetter: true, changeCount: 10);
+
   _mapRead();
   _methodInvoke0();
   _methodInvoke1();
   _function2();
-  new _CollectionCheck().report();
 }
 
-class _CollectionCheck extends BenchmarkBase {
-  List<int> list = new List.generate(1000, (i) => i);
+void _collectionRead({bool observable, int changeCount}) {
   var detector = new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory);
 
-  _CollectionCheck(): super('change-detect List[1000]') {
-    detector
-        ..watch(list, null, 'handler')
-        ..collectChanges(); // intialize
+  var description = '';
+
+  List<int> list = new List.generate(20, (i) => i);
+
+  if (observable) {
+    list = new ObservableList<int>.from(list);
+    description += '[CHANGE NOTIFIER]';
+  } else {
+    description += '[DIRTY CHECK]';
+  }
+  if (changeCount == 0) {
+    description += ' 0/${list.length} change';
+  } else if (changeCount == 1) {
+    description += ' 1/${list.length} change';
+  } else if (changeCount > 1) {
+    description += ' $changeCount/${list.length} changes';
   }
 
-  run() {
+  var watch = detector.watch(list, null, 'handler');
+  detector.collectChanges();
+
+  time(description + (observable ? ' ObservableList' : ' List'), () {
     detector.collectChanges();
+    if (changeCount == 1) {
+      list[3]++;
+    } else if (changeCount > 1) {
+      for (var i = 0; i < list.length; i++) {
+        list[i]++;
+      }
+    }
+  });
+}
+
+void _groupAddRemove({bool observable}) {
+  var description = '';
+  if (observable) {
+    description += '[CHANGE NOTIFIER]';
+  } else {
+    description += '[DIRTY CHECK]';
   }
+  var rootWatchGrp = new RootWatchGroup(_staticFieldGetterFactory,
+        new DirtyCheckingChangeDetector(_staticFieldGetterFactory), {});
+  var testRun = () {
+    for (int i = 0; i < 10; i++) {
+          WatchGroup child = rootWatchGrp.newGroup(observable ? new _ObservableObj() : new _Obj())
+                ..watch(_parse('a'), _reactionFn)
+                ..watch(_parse('b'), _reactionFn)
+                ..watch(_parse('c'), _reactionFn)
+                ..watch(_parse('d'), _reactionFn)
+                ..watch(_parse('e'), _reactionFn)
+                ..watch(_parse('f'), _reactionFn)
+                ..watch(_parse('g'), _reactionFn)
+                ..watch(_parse('h'), _reactionFn)
+                ..watch(_parse('i'), _reactionFn)
+                ..watch(_parse('j'), _reactionFn);
+          rootWatchGrp.detectChanges();
+          child.remove();
+        }
+
+  };
+  time(description + ' add/remove 10 watchGroups with 10 watches', testRun);
 }
 
-_fieldRead() {
-  var watchGrp = new RootWatchGroup(_dynamicFieldGetterFactory,
-      new DirtyCheckingChangeDetector(_dynamicFieldGetterFactory), new _Obj())
+void _fieldRead({bool observable, bool staticGetter, int changeCount}) {
+  var description = '';
+  var obj;
+  if (observable) {
+    description += '[CHANGE NOTIFIER]';
+    obj = new _ObservableObj();
+  } else {
+    description += '[DIRTY CHECK]';
+    obj = new _Obj();
+  }
+  var fieldGetterFactory;
+  if (staticGetter) {
+    description += ' staticGetter';
+    fieldGetterFactory = _staticFieldGetterFactory;
+  } else {
+    description += ' dynamicGetter';
+    fieldGetterFactory = _dynamicFieldGetterFactory;
+  }
+  if (changeCount == 0) {
+    description +=' 0/20 field change';
+  } else if (changeCount == 1) {
+    description +=' 1/20 field change';
+  } else if (changeCount > 1) {
+    description +=' 20/20 field changes';
+  }
+  var watchGrp = new RootWatchGroup(fieldGetterFactory,
+      new DirtyCheckingChangeDetector(fieldGetterFactory), obj)
           ..watch(_parse('a'), _reactionFn)
           ..watch(_parse('b'), _reactionFn)
           ..watch(_parse('c'), _reactionFn)
@@ -75,36 +182,33 @@ _fieldRead() {
 
   print('Watch: ${watchGrp.fieldCost}; eval: ${watchGrp.evalCost}');
 
-  time('fieldRead', () => watchGrp.detectChanges());
-}
-
-_fieldReadGetter() {
-  var  watchGrp= new RootWatchGroup(_staticFieldGetterFactory,
-      new DirtyCheckingChangeDetector(_staticFieldGetterFactory), new _Obj())
-          ..watch(_parse('a'), _reactionFn)
-          ..watch(_parse('b'), _reactionFn)
-          ..watch(_parse('c'), _reactionFn)
-          ..watch(_parse('d'), _reactionFn)
-          ..watch(_parse('e'), _reactionFn)
-          ..watch(_parse('f'), _reactionFn)
-          ..watch(_parse('g'), _reactionFn)
-          ..watch(_parse('h'), _reactionFn)
-          ..watch(_parse('i'), _reactionFn)
-          ..watch(_parse('j'), _reactionFn)
-          ..watch(_parse('k'), _reactionFn)
-          ..watch(_parse('l'), _reactionFn)
-          ..watch(_parse('m'), _reactionFn)
-          ..watch(_parse('n'), _reactionFn)
-          ..watch(_parse('o'), _reactionFn)
-          ..watch(_parse('p'), _reactionFn)
-          ..watch(_parse('q'), _reactionFn)
-          ..watch(_parse('r'), _reactionFn)
-          ..watch(_parse('s'), _reactionFn)
-          ..watch(_parse('t'), _reactionFn);
-
-  print('Watch: ${watchGrp.fieldCost}; eval: ${watchGrp.evalCost}');
-
-  time('fieldReadGetter', () => watchGrp.detectChanges());
+  time(description + ' on the same object', () {
+    if (changeCount == 1) {
+      obj.c++;
+    } else if (changeCount > 1) {
+      obj.a++;
+      obj.b++;
+      obj.c++;
+      obj.d++;
+      obj.e++;
+      obj.f++;
+      obj.g++;
+      obj.h++;
+      obj.i++;
+      obj.j++;
+      obj.k++;
+      obj.l++;
+      obj.m++;
+      obj.n++;
+      obj.o++;
+      obj.p++;
+      obj.q++;
+      obj.r++;
+      obj.s++;
+      obj.t++;
+    }
+    watchGrp.detectChanges();
+  });
 }
 
 _mapRead() {
@@ -313,5 +417,86 @@ class _Obj {
   methodR() => r;
   methodS() => s;
   methodT() => t;
+}
 
+class _ObservableObj extends ChangeNotifier {
+  @reflectable @observable dynamic get a => __$a;
+  dynamic __$a = 1;
+  @reflectable set a(dynamic value) { __$a = notifyPropertyChange(#a, __$a, value); }
+
+  @reflectable @observable dynamic get b => __$b;
+  dynamic __$b = 2;
+  @reflectable set b(dynamic value) { __$b = notifyPropertyChange(#b, __$b, value); }
+
+  @reflectable @observable dynamic get c => __$c;
+  dynamic __$c = 3;
+  @reflectable set c(dynamic value) { __$c = notifyPropertyChange(#c, __$c, value); }
+
+  @reflectable @observable dynamic get d => __$d;
+  dynamic __$d = 4;
+  @reflectable set d(dynamic value) { __$d = notifyPropertyChange(#d, __$d, value); }
+
+  @reflectable @observable dynamic get e => __$e;
+  dynamic __$e = 5;
+  @reflectable set e(dynamic value) { __$e = notifyPropertyChange(#e, __$e, value); }
+
+  @reflectable @observable dynamic get f => __$f;
+  dynamic __$f = 6;
+  @reflectable set f(dynamic value) { __$f = notifyPropertyChange(#f, __$f, value); }
+
+  @reflectable @observable dynamic get g => __$g;
+  dynamic __$g = 7;
+  @reflectable set g(dynamic value) { __$g = notifyPropertyChange(#g, __$g, value); }
+
+  @reflectable @observable dynamic get h => __$h;
+  dynamic __$h = 8;
+  @reflectable set h(dynamic value) { __$h = notifyPropertyChange(#h, __$h, value); }
+
+  @reflectable @observable dynamic get i => __$i;
+  dynamic __$i = 9;
+  @reflectable set i(dynamic value) { __$i = notifyPropertyChange(#i, __$i, value); }
+
+  @reflectable @observable dynamic get j => __$j;
+  dynamic __$j = 10;
+  @reflectable set j(dynamic value) { __$j = notifyPropertyChange(#j, __$j, value); }
+
+  @reflectable @observable dynamic get k => __$k;
+  dynamic __$k = 11;
+  @reflectable set k(dynamic value) { __$k = notifyPropertyChange(#k, __$k, value); }
+
+  @reflectable @observable dynamic get l => __$l;
+  dynamic __$l = 12;
+  @reflectable set l(dynamic value) { __$l = notifyPropertyChange(#l, __$l, value); }
+
+  @reflectable @observable dynamic get m => __$m;
+  dynamic __$m = 13;
+  @reflectable set m(dynamic value) { __$m = notifyPropertyChange(#m, __$m, value); }
+
+  @reflectable @observable dynamic get n => __$n;
+  dynamic __$n = 14;
+  @reflectable set n(dynamic value) { __$n = notifyPropertyChange(#n, __$n, value); }
+
+  @reflectable @observable dynamic get o => __$o;
+  dynamic __$o = 15;
+  @reflectable set o(dynamic value) { __$o = notifyPropertyChange(#o, __$o, value); }
+
+  @reflectable @observable dynamic get p => __$p;
+  dynamic __$p = 16;
+  @reflectable set p(dynamic value) { __$p = notifyPropertyChange(#p, __$p, value); }
+
+  @reflectable @observable dynamic get q => __$q;
+  dynamic __$q = 17;
+  @reflectable set q(dynamic value) { __$q = notifyPropertyChange(#q, __$q, value); }
+
+  @reflectable @observable dynamic get r => __$r;
+  dynamic __$r = 18;
+  @reflectable set r(dynamic value) { __$r = notifyPropertyChange(#r, __$r, value); }
+
+  @reflectable @observable dynamic get s => __$s;
+  dynamic __$s = 19;
+  @reflectable set s(dynamic value) { __$s = notifyPropertyChange(#s, __$s, value); }
+
+  @reflectable @observable dynamic get t => __$t;
+  dynamic __$t = 20;
+  @reflectable set t(dynamic value) { __$t = notifyPropertyChange(#t, __$t, value); }
 }
