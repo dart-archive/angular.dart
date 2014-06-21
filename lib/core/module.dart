@@ -23,7 +23,6 @@ export "package:angular/change_detection/change_detection.dart" show
     FieldGetterFactory;
 
 export "package:angular/cache/module.dart" show
-    Cache,
     CacheRegister,
     CacheRegisterStats,
     LruCache;
