@@ -12,6 +12,7 @@ import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:di/transformer.dart' as di;
 import 'package:path/path.dart' as path;
+import 'package:observe/transformer.dart' show ObservableTransformer;
 
 
  /**
@@ -128,6 +129,7 @@ Transformer _staticGenerator(TransformOptions options) {
 
 List<List<Transformer>> _createPhases(TransformOptions options) =>
   [
+    [ new ObservableTransformer() ],
     [ new HtmlDartReferencesGenerator(options) ],
     [ new di.InjectorGenerator(options.diOptions, new Resolvers(options.sdkDirectory)) ],
     [ _staticGenerator(options) ]

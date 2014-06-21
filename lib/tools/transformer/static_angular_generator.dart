@@ -18,8 +18,7 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
   void applyResolver(Transform transform, Resolver resolver) {
     var asset = transform.primaryInput;
 
-    var dynamicApp =
-        resolver.getLibraryFunction('angular.app.factory.applicationFactory');
+    var dynamicApp = resolver.getLibraryFunction('angular.app.factory.applicationFactory');
     if (dynamicApp == null) {
       // No dynamic app imports, exit.
       transform.addOutput(transform.primaryInput);
@@ -40,11 +39,11 @@ class StaticAngularGenerator extends Transformer with ResolverTransformer {
       }
     }
 
-    var dynamicToStatic =
-        new _NgDynamicToStaticVisitor(dynamicApp, transaction);
+    var dynamicToStatic = new _NgDynamicToStaticVisitor(dynamicApp, transaction);
     unit.accept(dynamicToStatic);
 
     var generatedFilePrefix = '${path.url.basenameWithoutExtension(id.path)}';
+
     _addImport(transaction, unit,
         '${generatedFilePrefix}_static_expressions.dart',
         'generated_static_expressions');
