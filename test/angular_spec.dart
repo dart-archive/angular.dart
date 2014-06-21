@@ -94,7 +94,6 @@ main() {
       var ALLOWED_NAMES = [
         "angular.app.AngularModule",
         "angular.app.Application",
-        "angular.cache.Cache",
         "angular.cache.CacheRegister",
         "angular.cache.CacheRegisterStats",
         "angular.core.annotation.ShadowRootAware",
