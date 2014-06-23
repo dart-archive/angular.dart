@@ -247,8 +247,14 @@ class Scope {
       }
     }
 
-    AST ast = rootScope._astParser(expression,
-        formatters: formatters, collection: collection);
+    String astKey =
+        "${collection ? "C" : "."}${formatters == null ? "." : formatters.hashCode}$expression";
+    AST ast = rootScope.astCache[astKey];
+    if (ast == null) {
+      ast = rootScope.astCache[astKey] =
+          rootScope._astParser(expression,
+              formatters: formatters, collection: collection);
+    }
 
     return watch = watchAST(ast, fn, canChangeModel: canChangeModel);
   }
@@ -559,6 +565,9 @@ class RootScope extends Scope {
   final ScopeDigestTTL _ttl;
   final VmTurnZone _zone;
 
+  // For Scope.watch().
+  final Map<String, AST> astCache = new HashMap<String, AST>();
+
   _FunctionChain _runAsyncHead, _runAsyncTail;
   _FunctionChain _domWriteHead, _domWriteTail;
   _FunctionChain _domReadHead, _domReadTail;
@@ -618,7 +627,7 @@ class RootScope extends Scope {
 
   RootScope(Object context, Parser parser, ASTParser astParser, FieldGetterFactory fieldGetterFactory,
             FormatterMap formatters, this._exceptionHandler, this._ttl, this._zone,
-            ScopeStats _scopeStats)
+            ScopeStats _scopeStats, CacheRegister cacheRegister)
       : _scopeStats = _scopeStats,
         _parser = parser,
         _astParser = astParser,
@@ -632,6 +641,7 @@ class RootScope extends Scope {
   {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
+    cacheRegister.registerCache("ScopeWatchASTs", astCache);
   }
 
   RootScope get rootScope => this;
