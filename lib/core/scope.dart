@@ -254,8 +254,14 @@ class Scope {
       }
     }
 
-    AST ast = rootScope._astParser(expression,
-        formatters: formatters, collection: collection);
+    String astKey =
+        "${collection ? "C" : "."}${formatters == null ? "." : formatters.hashCode}$expression";
+    AST ast = rootScope.astCache[astKey];
+    if (ast == null) {
+      ast = rootScope.astCache[astKey] =
+          rootScope._astParser(expression,
+              formatters: formatters, collection: collection);
+    }
 
     return watch = watchAST(ast, fn, canChangeModel: canChangeModel);
   }
@@ -568,6 +574,9 @@ class RootScope extends Scope {
   final ScopeDigestTTL _ttl;
   final VmTurnZone _zone;
 
+  // For Scope.watch().
+  final Map<String, AST> astCache = new HashMap<String, AST>();
+
   _FunctionChain _runAsyncHead, _runAsyncTail;
   _FunctionChain _domWriteHead, _domWriteTail;
   _FunctionChain _domReadHead, _domReadTail;
@@ -629,7 +638,7 @@ class RootScope extends Scope {
 
   RootScope(Object context, Parser parser, ASTParser astParser,
             FieldGetterFactory fieldGetterFactory, FormatterMap formatters, this._exceptionHandler,
-            ScopeDigestTTL ttl, this._zone, ScopeStats _scopeStats)
+            ScopeDigestTTL ttl, this._zone, ScopeStats _scopeStats, CacheRegister cacheRegister)
       : _scopeStats = _scopeStats,
         _ttl = ttl,
         _parser = parser,
@@ -650,6 +659,7 @@ class RootScope extends Scope {
     for(num i = 0; i <= _ttl.ttl; i++) {
       _digestTags.add(new UserTag('NgDigest${i}'));
     }
+    cacheRegister.registerCache("ScopeWatchASTs", astCache);
   }
 
   RootScope get rootScope => this;
