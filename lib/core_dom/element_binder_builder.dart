@@ -3,6 +3,7 @@ part of angular.core.dom_internal;
 @Injectable()
 class ElementBinderFactory {
   final Parser _parser;
+  final ASTParser _astParser;
   final Profiler _perf;
   final CompilerConfig _config;
   final Expando _expando;
@@ -11,7 +12,7 @@ class ElementBinderFactory {
   final ShadowDomComponentFactory shadowDomComponentFactory;
   final TranscludingComponentFactory transcludingComponentFactory;
 
-  ElementBinderFactory(this._parser, this._perf, this._config, this._expando,
+  ElementBinderFactory(this._parser, this._astParser, this._perf, this._config, this._expando,
       this.astParser, this.componentFactory, this.shadowDomComponentFactory, this.transcludingComponentFactory);
 
   // TODO: Optimize this to re-use a builder.
@@ -19,13 +20,12 @@ class ElementBinderFactory {
     new ElementBinderBuilder(this,formatters, directives);
 
   ElementBinder binder(ElementBinderBuilder b) =>
-
       new ElementBinder(_perf, _expando, _parser, _config,
-          b.componentData, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
+          b.componentData, b.decorators, b.onEvents, b.bindAttrs, b.childMode, _astParser('1'));
 
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
       new TemplateElementBinder(_perf, _expando, _parser, _config,
-          b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
+          b.template, transclude, b.onEvents, b.bindAttrs, b.childMode, _astParser('1'));
 }
 
 /**
