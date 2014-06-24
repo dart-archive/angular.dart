@@ -8,9 +8,8 @@ var VALUE = 'val';
 var CACHED_VALUE = 'cached_value';
 
 class FakeCache extends UnboundedCache<String, HttpResponse> {
-  get(x) => x == 'f' ? new HttpResponse(200, CACHED_VALUE) : null;
-  put(_,__) => null;
-
+  HttpResponse get(x) => x == 'f' ? new HttpResponse(200, CACHED_VALUE) : null;
+  HttpResponse put(_,__) => null;
 }
 
 class SubstringRewriter extends UrlRewriter {
