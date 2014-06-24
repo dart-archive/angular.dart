@@ -44,10 +44,10 @@ main() {
     });
 
     initRouter(initializer) {
-      var injector = applicationFactory()
-        .addModule(new AngularMockModule())
-        .addModule(new Module()..bind(RouteInitializerFn, toValue: initializer)..bind(MyDirective))
-        .createInjector();
+      var app = applicationFactory()
+          ..addModule(new AngularMockModule())
+          ..addModule(new Module()..bind(RouteInitializerFn, toValue: initializer)..bind(MyDirective));
+      var injector = app.createInjector();
       injector.get(NgRoutingHelper); // force routing initialization
       router = injector.get(Router);
       _ = injector.get(TestBed);
