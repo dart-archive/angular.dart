@@ -8,7 +8,7 @@ time(name, body) {
   print('$name: => ${statMeasure(body)}');
 }
 
-statMeasure(body) {
+StatSample statMeasure(body) {
   var list = [];
   var count = 100;
   for(var i = 0; i < count; i++) {
@@ -18,11 +18,11 @@ statMeasure(body) {
   return new StatSample(list);
 }
 
-measure(b) {
+Sample measure(b) {
   // actual test;
   var count = 0;
   var stopwatch = new Stopwatch();
-  var targetTime = 50 * 1000;
+  var targetTime = 500;
   stopwatch.start();
   do {
     b();
@@ -48,6 +48,9 @@ measure(b) {
       b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 7
       b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 8
       b(); b(); b(); b(); b(); b(); b(); b(); b(); b(); // 9
+    }
+    for(var i = 0; i < count % 100; i++) {
+      b();
     }
   }
   stopwatch.stop();
@@ -98,12 +101,12 @@ class StatSample {
 }
 
 class Sample {
-  num count;
-  num time_us;
+  final num count;
+  final num time_us;
 
   Sample(this.count, this.time_us);
 
-  get rate => count / time_us;
+  num get rate => count / time_us;
 
-  toString() => rate;
+  String toString() => '$rate';
 }
