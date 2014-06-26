@@ -90,6 +90,7 @@ class NgView implements DetachAware, RouteProvider {
   void detach() {
     _route.discard();
     _locationService._unregisterPortal(this);
+    _cleanUp();
   }
 
   void _show(_View viewDef, Route route, List<Module> modules) {
@@ -128,7 +129,6 @@ class NgView implements DetachAware, RouteProvider {
 
     _view.nodes.forEach((node) => node.remove());
     _childScope.destroy();
-
     _view = null;
     _childScope = null;
   }
