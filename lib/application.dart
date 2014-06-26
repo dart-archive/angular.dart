@@ -74,6 +74,7 @@ import 'package:di/di.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/perf/module.dart';
 import 'package:angular/cache/module.dart';
+import 'package:angular/cache/js_cache_register.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core_dom/module_internal.dart';
@@ -100,6 +101,7 @@ class AngularModule extends Module {
     install(new CoreDomModule());
     install(new DirectiveModule());
     install(new FormatterModule());
+    install(new JsCacheModule());
     install(new PerfModule());
     install(new RoutingModule());
 
@@ -169,6 +171,8 @@ abstract class Application {
       var rootElements = [element];
       Injector injector = createInjector();
       ExceptionHandler exceptionHandler = injector.getByKey(EXCEPTION_HANDLER_KEY);
+      // Publish cache register interface
+      injector.getByKey(JS_CACHE_REGISTER_KEY);
       initializeDateFormatting(null, null).then((_) {
         try {
           var compiler = injector.getByKey(COMPILER_KEY);
