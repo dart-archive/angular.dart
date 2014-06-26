@@ -19,6 +19,7 @@ export 'package:angular/angular.dart';
 export 'package:angular/application.dart';
 export 'package:angular/introspection.dart';
 export 'package:angular/cache/module.dart';
+export 'package:angular/cache/js_cache_register.dart';
 export 'package:angular/core/annotation.dart';
 export 'package:angular/core/registry.dart';
 export 'package:angular/core/module_internal.dart';

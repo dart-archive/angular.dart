@@ -50,7 +50,7 @@ class CacheRegister {
    */
   void clear([String name]) {
     if (name == null) {
-      _caches.forEach((k, Map v) {
+      _caches.forEach((k, v) {
         v.clear();
       });
       return;
