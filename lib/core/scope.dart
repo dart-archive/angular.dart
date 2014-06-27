@@ -141,6 +141,7 @@ class ScopeLocals implements Map {
 class Scope {
   final String id;
   int _childScopeNextId = 0;
+  FormatterMap _formatters;
 
   /**
    * The default execution context for [watch]es [observe]ers, and [eval]uation.
@@ -193,7 +194,7 @@ class Scope {
 
   Scope(Object this.context, this.rootScope, this._parentScope,
         this._readWriteGroup, this._readOnlyGroup, this.id,
-        this._stats);
+        this._stats, this._formatters);
 
   /**
    * Use [watch] to set up change detection on an expression.
@@ -259,8 +260,7 @@ class Scope {
     AST ast = rootScope.astCache[astKey];
     if (ast == null) {
       ast = rootScope.astCache[astKey] =
-          rootScope._astParser(expression,
-              formatters: formatters, collection: collection);
+          rootScope._astParser(expression, collection: collection);
     }
 
     return watch = watchAST(ast, fn, canChangeModel: canChangeModel);
@@ -275,7 +275,7 @@ class Scope {
    */
   Watch watchAST(AST ast, ReactionFn reactionFn, {bool canChangeModel: true}) {
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
-    return group.watch(ast, reactionFn);
+    return group.watch(ast, reactionFn, _formatters);
   }
 
   dynamic eval(expression, [Map locals]) {
@@ -331,7 +331,7 @@ class Scope {
                           _readWriteGroup.newGroup(childContext),
                           _readOnlyGroup.newGroup(childContext),
                          '$id:${_childScopeNextId++}',
-                         _stats);
+                         _stats, _formatters);
 
     var prev = _childTail;
     child._prev = prev;
@@ -651,7 +651,7 @@ class RootScope extends Scope {
                 new DirtyCheckingChangeDetector(fieldGetterFactory), context, profile: true,
                   ttl: ttl.ttl),
             '',
-            _scopeStats)
+            _scopeStats, formatters)
   {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);

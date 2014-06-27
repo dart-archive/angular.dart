@@ -87,7 +87,7 @@ class DirectiveSelector {
       if (attrName.startsWith("on-")) {
         builder.onEvents[attrName] = value;
       } else if (attrName.startsWith("bind-")) {
-        builder.bindAttrs[attrName] = _astParser(value, formatters: _formatters);
+        builder.bindAttrs[attrName] = _astParser(value);
       }
 
       attrs[attrName] = value;
@@ -100,7 +100,7 @@ class DirectiveSelector {
           _directives[selectorRegExp.annotation].forEach((type) {
             // Pre-compute the AST to watch this value.
             String expression = _interpolate(value);
-            AST valueAST = _astParser(expression, formatters: _formatters);
+            AST valueAST = _astParser(expression);
             builder.addDirective(new DirectiveRef(
                 node, type, selectorRegExp.annotation, new Key(type), attrName, valueAST));
           });
@@ -138,7 +138,7 @@ class DirectiveSelector {
         _directives[selectorRegExp.annotation].forEach((type) {
           // Pre-compute the AST to watch this value.
           String expression = _interpolate(value);
-          var valueAST = _astParser(expression, formatters: _formatters);
+          var valueAST = _astParser(expression);
 
           builder.addDirective(new DirectiveRef(node, type,
               selectorRegExp.annotation, new Key(type), value, valueAST));

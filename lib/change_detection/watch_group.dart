@@ -2,6 +2,8 @@ library angular.watch_group;
 
 import 'dart:profiler';
 import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/core/parser/syntax.dart';
+import 'package:angular/core/formatter.dart';
 import 'dart:collection';
 
 part 'linked_list.dart';
@@ -139,10 +141,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     return false;
   }
 
-  Watch watch(AST expression, ReactionFn reactionFn) {
+  Watch watch(AST expression, ReactionFn reactionFn, FormatterMap formatter) {
     WatchRecord<_Handler> watchRecord =
         _cache.putIfAbsent(expression.expression,
-            () => expression.setupWatch(this));
+            () => expression.setupWatch(this, formatter: formatter));
     return watchRecord.handler.addReactionFn(reactionFn);
   }
 
@@ -152,7 +154,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
    * - [name] the field to watch.
    * - [lhs] left-hand-side of the field.
    */
-  WatchRecord<_Handler> addFieldWatch(AST lhs, String name, String expression) {
+  WatchRecord<_Handler> addFieldWatch(AST lhs, String name, String expression, FormatterMap formatters) {
     var fieldHandler = new _FieldHandler(this, expression);
 
     // Create a Record for the current field and assign the change record
@@ -162,7 +164,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     fieldHandler.watchRecord = watchRecord;
 
     WatchRecord<_Handler> lhsWR = _cache.putIfAbsent(lhs.expression,
-        () => lhs.setupWatch(this));
+        () => lhs.setupWatch(this, formatter: formatters));
 
     // We set a field forwarding handler on LHS. This will allow the change
     // objects to propagate to the current WatchRecord.
@@ -173,13 +175,13 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     return watchRecord;
   }
 
-  WatchRecord<_Handler> addCollectionWatch(AST ast) {
+  WatchRecord<_Handler> addCollectionWatch(AST ast, FormatterMap formatters) {
     var collectionHandler = new _CollectionHandler(this, ast.expression);
     var watchRecord = _changeDetector.watch(null, null, collectionHandler);
     _collectionCost++;
     collectionHandler.watchRecord = watchRecord;
     WatchRecord<_Handler> astWR = _cache.putIfAbsent(ast.expression,
-        () => ast.setupWatch(this));
+        () => ast.setupWatch(this, formatter: formatters));
 
     // We set a field forwarding handler on LHS. This will allow the change
     // objects to propagate to the current WatchRecord.
@@ -201,8 +203,8 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
    */
   _EvalWatchRecord addFunctionWatch(Function fn, List<AST> argsAST,
                                     Map<Symbol, AST> namedArgsAST,
-                                    String expression, bool isPure) =>
-      _addEvalWatch(null, fn, null, argsAST, namedArgsAST, expression, isPure);
+                                    String expression, bool isPure, FormatterMap formatters) =>
+      _addEvalWatch(null, fn, null, argsAST, namedArgsAST, expression, isPure, formatters);
 
   /**
    * Watch a method [name]ed represented by an [expression].
@@ -214,33 +216,26 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
    */
   _EvalWatchRecord addMethodWatch(AST lhs, String name, List<AST> argsAST,
                                   Map<Symbol, AST> namedArgsAST,
-                                  String expression) =>
-     _addEvalWatch(lhs, null, name, argsAST, namedArgsAST, expression, false);
+                                  String expression, FormatterMap formatters) =>
+     _addEvalWatch(lhs, null, name, argsAST, namedArgsAST, expression, false, formatters);
 
 
 
   _EvalWatchRecord _addEvalWatch(AST lhsAST, Function fn, String name,
                                  List<AST> argsAST,
                                  Map<Symbol, AST> namedArgsAST,
-                                 String expression, bool isPure) {
+                                 String expression, bool isPure, FormatterMap formatters) {
     _InvokeHandler invokeHandler = new _InvokeHandler(this, expression);
     var evalWatchRecord = new _EvalWatchRecord(
         _rootGroup._fieldGetterFactory, this, invokeHandler, fn, name,
         argsAST.length, isPure);
     invokeHandler.watchRecord = evalWatchRecord;
 
-    if (lhsAST != null) {
-      var lhsWR = _cache.putIfAbsent(lhsAST.expression,
-          () => lhsAST.setupWatch(this));
-      lhsWR.handler.addForwardHandler(invokeHandler);
-      invokeHandler.acceptValue(lhsWR.currentValue);
-    }
-
     // Convert the args from AST to WatchRecords
     for (var i = 0; i < argsAST.length; i++) {
       var ast = argsAST[i];
       WatchRecord<_Handler> record =
-          _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this));
+          _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this, formatter: formatters));
       _ArgHandler handler = new _PositionalArgHandler(this, evalWatchRecord, i);
       _ArgHandlerList._add(invokeHandler, handler);
       record.handler.addForwardHandler(handler);
@@ -249,12 +244,19 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
     namedArgsAST.forEach((Symbol name, AST ast) {
       WatchRecord<_Handler> record = _cache.putIfAbsent(ast.expression,
-          () => ast.setupWatch(this));
+          () => ast.setupWatch(this, formatter: formatters));
       _ArgHandler handler = new _NamedArgHandler(this, evalWatchRecord, name);
       _ArgHandlerList._add(invokeHandler, handler);
       record.handler.addForwardHandler(handler);
       handler.acceptValue(record.currentValue);
     });
+
+    if (lhsAST != null) {
+      var lhsWR = _cache.putIfAbsent(lhsAST.expression,
+          () => lhsAST.setupWatch(this, formatter: formatters));
+      lhsWR.handler.addForwardHandler(invokeHandler);
+      invokeHandler.acceptValue(lhsWR.currentValue);
+    }
 
     // Must be done last
     _EvalWatchList._add(this, evalWatchRecord);
