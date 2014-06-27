@@ -38,7 +38,7 @@ following products on your development machine:
 * [Node.js](http://nodejs.org): We use Node to run a development web server,
   run tests, and generate distributable files. We also use Node's Package
   Manager (`npm`). Depending on your system, you can install Node either from
-  source or as a pre-packaged bundle.
+  source or as a pre-packaged bundle. You will need node v0.10.29+.
 
 ## Getting the Sources
 
@@ -115,46 +115,27 @@ pub install
 
 NOTE: scripts are being written to embody the following steps.
 
-To run base tests:
+To run all unit tests:
 
 ```shell
-# Source a script to define yet more environment variables
-. ./scripts/env.sh
-
-# Run io tests:
-dart --checked test/io/all.dart
-
-# Run expression extractor tests:
-./scripts/test-expression-extractor.sh
-
-# Run the Dart Analyzer:
-./scripts/analyze.sh
+# Run all tests
+./scripts/run-test.sh
 ```
 
-To run Karma tests over Dartium, execute the following shell commands (which
-will launch the Karma server):
+To run Karma tests over Dartium, execute the following shell command:
 
 ```shell
-. ./scripts/env.sh
 node "node_modules/karma/bin/karma" start karma.conf \
     --reporters=junit,dots --port=8765 --runner-port=8766 \
-    --browsers=Dartium
+    --browsers=Dartium --single-run
 ```
 
-In another shell window or tab, or from your favorite IDE, launch the Karma
-tests proper by executing:
+To make a persistent Karma server that watches for changes in your files and
+runs tests on change, replace `--single-run` with `--auto-watch`.
 
-```shell
-. ./scripts/env.sh
-./scripts/karma_run.sh
-```
 
 **Note:**: If the dart analyzer fails with warnings, the tests will not run.
 You can manually run the tests if this happens:
-
-```shell
-karma run --port=8765
-```
 
 **Note**: If you want to only run a single test you can alter the test you wish
 to run by changing `it` to `iit` or `describe` to `ddescribe`. This will only
