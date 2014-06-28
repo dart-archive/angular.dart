@@ -35,11 +35,17 @@ class WebPlatform {
 
   void shimShadowDom(dom.Element root, String selector) {
     if (shadowDomShimRequired) {
-
       // This adds an empty attribute with the name of the component tag onto
       // each element in the shadow root.
-      root.querySelectorAll("*")
-          .forEach((n) => n.attributes[selector] = "");
+      //
+      // Remove the try-catch once https://github.com/angular/angular.dart/issues/1189 is
+      // fixed.
+      try {
+        root.querySelectorAll("*")
+        .forEach((n) => n.attributes[selector] = "");
+      } catch (e, s) {
+        print("WARNING: Failed to set up Shadow DOM shim for $selector.\n$e\n$s");
+      }
     }
   }
 }
