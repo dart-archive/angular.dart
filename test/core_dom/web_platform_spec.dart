@@ -10,6 +10,7 @@ main() {
     beforeEachModule((Module module) {
       module
         ..bind(WebPlatformTestComponent)
+        ..bind(WebPlatformTestComponentWithAttribute)
         ..bind(InnerComponent)
         ..bind(OuterComponent)
         ..bind(WebPlatform, toValue: new WebPlatform());
@@ -52,6 +53,24 @@ main() {
       } finally {
         element.remove();
       }
+    }));
+
+    it('should not crash with an attribute selector; but wont work either..',
+       async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
+
+      backend
+        ..expectGET('style.css').respond(200, 'span { background-color: red; '
+      '}')
+        ..expectGET('template.html').respond(200, '<span>foo</span>');
+
+      Element element = e('<span><test-wptca a><span>ignore'
+      '</span></test-wptca></span>');
+
+      _.compile(element);
+
+      microLeap();
+      backend.flush();
+      microLeap();
     }));
 
     it('should scope :host styles to the primary element.',
@@ -174,6 +193,14 @@ main() {
     templateUrl: "template.html",
     cssUrl: "style.css")
 class WebPlatformTestComponent {
+}
+
+@Component(
+    selector: "test-wptca[a]",
+    publishAs: "ctrl",
+    templateUrl: "template.html",
+    cssUrl: "style.css")
+class WebPlatformTestComponentWithAttribute {
 }
 
 @Component(
