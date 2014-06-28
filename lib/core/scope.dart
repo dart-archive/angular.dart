@@ -263,7 +263,7 @@ class Scope {
           rootScope._astParser(expression, collection: collection);
     }
 
-    return watch = watchAST(ast, fn, canChangeModel: canChangeModel);
+    return watch = watchAST(ast, fn, canChangeModel: canChangeModel, context: context);
   }
 
   /**
@@ -273,10 +273,12 @@ class Scope {
    * * [reactionFn]: The function executed when a change is detected.
    * * [canChangeModel]: Whether or not the [reactionFn] can change the model.
    */
-  Watch watchAST(AST ast, ReactionFn reactionFn, {bool canChangeModel: true, FormatterMap formatters}) {
+  Watch watchAST(AST ast, ReactionFn reactionFn, {bool canChangeModel: true, dynamic context,
+      FormatterMap formatters}) {
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
     if (formatters == null) formatters = _formatters;
-    return group.watch(ast, reactionFn, formatters);
+    context = context == null ? this.context : context;
+    return group.watch(ast, reactionFn, context, formatters);
   }
 
   dynamic eval(expression, [Map locals]) {
@@ -329,8 +331,8 @@ class Scope {
   Scope createChild(Object childContext) {
     assert(isAttached);
     var child = new Scope(childContext, rootScope, this,
-                          _readWriteGroup.newGroup(childContext),
-                          _readOnlyGroup.newGroup(childContext),
+                          _readWriteGroup.newGroup(),
+                          _readOnlyGroup.newGroup(),
                          '$id:${_childScopeNextId++}',
                          _stats, _formatters);
 
@@ -646,11 +648,9 @@ class RootScope extends Scope {
         _astParser = astParser,
         super(context, null, null,
             new RootWatchGroup(fieldGetterFactory,
-                new DirtyCheckingChangeDetector(fieldGetterFactory), context, profile: true,
-                  ttl: ttl.ttl),
+                new DirtyCheckingChangeDetector(fieldGetterFactory), profile: true, ttl: ttl.ttl),
             new RootWatchGroup(fieldGetterFactory,
-                new DirtyCheckingChangeDetector(fieldGetterFactory), context, profile: true,
-                  ttl: ttl.ttl),
+                new DirtyCheckingChangeDetector(fieldGetterFactory), profile: true, ttl: ttl.ttl),
             '',
             _scopeStats, formatters)
   {
