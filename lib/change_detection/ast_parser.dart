@@ -116,15 +116,9 @@ class _ExpressionVisitor implements syntax.Visitor {
   }
 
   AST visitFormatter(syntax.Formatter exp) {
-//    if (_formatters == null) {
-//      throw new Exception("No formatters have been registered");
-//    }
-//    Function formatterFunction = _formatters(exp.name);
     List<AST> args = [visitCollection(exp.expression)];
     args.addAll(_toAst(exp.arguments).map((ast) => new CollectionAST(ast)));
     return new FormatterAST(exp.name, args);
-//    return new PureFunctionAST('|${exp.name}',
-//        new _FormatterWrapper(formatterFunction, args.length), args);
   }
 
   // TODO(misko): this is a corner case. Choosing not to implement for now.
