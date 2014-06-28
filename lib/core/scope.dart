@@ -273,9 +273,10 @@ class Scope {
    * * [reactionFn]: The function executed when a change is detected.
    * * [canChangeModel]: Whether or not the [reactionFn] can change the model.
    */
-  Watch watchAST(AST ast, ReactionFn reactionFn, {bool canChangeModel: true}) {
+  Watch watchAST(AST ast, ReactionFn reactionFn, {bool canChangeModel: true, FormatterMap formatters}) {
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
-    return group.watch(ast, reactionFn, _formatters);
+    if (formatters == null) formatters = _formatters;
+    return group.watch(ast, reactionFn, formatters);
   }
 
   dynamic eval(expression, [Map locals]) {
