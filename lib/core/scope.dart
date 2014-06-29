@@ -274,11 +274,11 @@ class Scope {
    * * [canChangeModel]: Whether or not the [reactionFn] can change the model.
    */
   Watch watchAST(AST ast, ReactionFn reactionFn, {bool canChangeModel: true, dynamic context,
-      FormatterMap formatters}) {
+      dynamic userData, HashMap<String, WatchRecord<_Handler>> cache}) {
     WatchGroup group = canChangeModel ? _readWriteGroup : _readOnlyGroup;
-    if (formatters == null) formatters = _formatters;
+    if (userData == null) userData = _formatters;
     context = context == null ? this.context : context;
-    return group.watch(ast, reactionFn, context, formatters);
+    return group.watch(ast, reactionFn, context, userData, cache);
   }
 
   dynamic eval(expression, [Map locals]) {

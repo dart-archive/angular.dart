@@ -17,7 +17,8 @@ abstract class AST {
   {
     assert(expression!=null);
   }
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData]);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+    Map<String, WatchRecord<_Handler>> cache]);
   String toString() => expression;
 }
 
@@ -28,8 +29,8 @@ abstract class AST {
  */
 class ContextReferenceAST extends AST {
   ContextReferenceAST(): super(AST._CONTEXT);
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData]) =>
-      new _ConstantWatchRecord(watchGroup, expression, context);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => new _ConstantWatchRecord(watchGroup, expression, context);
 }
 
 /**
@@ -46,8 +47,8 @@ class ConstantAST extends AST {
             ? constant is String ? '"$constant"' : '$constant'
             : expression);
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData]) =>
-      new _ConstantWatchRecord(watchGroup, expression, constant);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => new _ConstantWatchRecord(watchGroup, expression, constant);
 }
 
 /**
@@ -64,8 +65,9 @@ class FieldReadAST extends AST {
         name = name,
         super('$lhs.$name');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData]) =>
-      watchGroup.addFieldWatch(lhs, name, expression, context, userData);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) =>
+          watchGroup.addFieldWatch(lhs, name, expression, context, userData, cache);
 }
 
 /**
@@ -82,8 +84,9 @@ class PureFunctionAST extends AST {
   PureFunctionAST(name, this.fn, argsAST)
       : name = name, argsAST = argsAST, super('$name(${_argList(argsAST)})');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData]) =>
-      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, true, context, userData);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, true,
+          context, userData, cache);
 }
 
 /**
@@ -96,11 +99,12 @@ class FormatterAST extends AST {
 
   FormatterAST(name, args): name = name, args = args, super('$name(${_argList(args)})');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData]) {
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) {
     if(userData is! FormatterMap) throw "userData must be of type FormatterMap.";
     Function formatterFunction = userData(name);
     var fn = new _FormatterWrapper(formatterFunction, args.length);
-    return watchGroup.addFunctionWatch(fn, args, const {}, expression, true, context, userData);
+    return watchGroup.addFunctionWatch(fn, args, const {}, expression, true, context, userData, cache);
   }
 
 
@@ -122,8 +126,9 @@ class ClosureAST extends AST {
         name = name,
         super('$name(${_argList(argsAST)})');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData]) =>
-      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, false, context, userData);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => watchGroup.addFunctionWatch(fn, argsAST, const {}, expression,
+          false, context, userData, cache);
 }
 
 /**
@@ -143,8 +148,9 @@ class MethodAST extends AST {
         argsAST = argsAST,
         super('$lhsAST.$name(${_argList(argsAST)})');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData]) =>
-      watchGroup.addMethodWatch(lhsAST, name, argsAST, namedArgsAST, expression, context, userData);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => watchGroup.addMethodWatch(lhsAST, name, argsAST, namedArgsAST,
+          expression, context, userData, cache);
 }
 
 
@@ -154,8 +160,8 @@ class CollectionAST extends AST {
       : valueAST = valueAST,
         super('#collection($valueAST)');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData]) =>
-      watchGroup.addCollectionWatch(valueAST, context, userData);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => watchGroup.addCollectionWatch(valueAST, context, userData, cache);
 }
 
 String _argList(List<AST> items) => items.join(', ');

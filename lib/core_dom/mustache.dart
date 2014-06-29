@@ -9,7 +9,7 @@ class TextMustache {
   TextMustache(this._element, AST ast, Scope scope, this.formatters) {
     scope.watchAST(ast,
                 _updateMarkup,
-                canChangeModel: false, formatters: formatters);
+                canChangeModel: false, userData: formatters);
   }
 
   void _updateMarkup(text, previousText) {
@@ -38,7 +38,7 @@ class AttrMustache {
       _hasObservers = hasObservers;
       if (_watch != null) _watch.remove();
         _watch = scope.watchAST(valueAST, _updateMarkup,
-            canChangeModel: _hasObservers, formatters: _formatters);
+            canChangeModel: _hasObservers, userData: _formatters);
       }
     });
   }
