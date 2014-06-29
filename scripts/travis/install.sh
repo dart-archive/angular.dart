@@ -19,22 +19,3 @@ if [[ $BROWSERS =~ "dartium" ]]; then
   mv dartium-* dartium
 fi
 
-if [[ $BROWSERS =~ "chrome" ]]; then
-  echo "Installing Chrome from $CHROME_DEB"
-  wget $CHROME_DEB
-  dpkg -I google-chrome*.deb
-  sudo dpkg -i google-chrome*.deb
-  sudo chmod u+s /opt
-fi
-
-if [[ $BROWSERS =~ "firefox" ]]; then
-  echo "Installing Firefox from $FF_TAR"
-  sudo mkdir -p /usr/local/firefox-$FIREFOX_VERSION
-  sudo chmod u+s /usr/local/firefox-$FIREFOX_VERSION
-  wget -O /tmp/firefox.tar.bz2 $FF_TAR
-  cd /usr/local/firefox-$FIREFOX_VERSION
-  sudo tar xf /tmp/firefox.tar.bz2
-  sudo ln -sf /usr/local/firefox-$FIREFOX_VERSION/firefox/firefox /usr/local/bin/firefox
-  sudo ln -sf /usr/local/firefox-$FIREFOX_VERSION/firefox/firefox-bin /usr/local/bin/firefox-bin
-  export FIREFOX_BIN=/usr/local/bin/firefox
-fi
