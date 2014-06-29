@@ -19,12 +19,13 @@ module.exports = function(config) {
 
     autoWatch: false,
 
-    // If browser does not capture in given timeout [ms], kill it
-    captureTimeout: 5000,
+    // If browser does not capture in given timeout [ms], kill it. Note long time is for dart2js.
+    captureTimeout: 120000,
 
     plugins: [
       'karma-dart',
       'karma-chrome-launcher',
+      'karma-sauce-launcher',
       'karma-script-launcher',
       'karma-junit-reporter',
       '../../../karma-parser-getter-setter'
