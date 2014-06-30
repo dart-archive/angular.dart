@@ -16,16 +16,16 @@ class ElementBinderFactory {
 
   // TODO: Optimize this to re-use a builder.
   ElementBinderBuilder builder(FormatterMap formatters, DirectiveMap directives) =>
-    new ElementBinderBuilder(this,formatters, directives);
+    new ElementBinderBuilder(this, directives, formatters);
 
   ElementBinder binder(ElementBinderBuilder b) =>
 
       new ElementBinder(_perf, _expando, _parser, _config,
-          b.componentData, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
+          b.componentData, b.decorators, b.onEvents, b.bindAttrs, b.childMode, b.formatters);
 
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
       new TemplateElementBinder(_perf, _expando, _parser, _config,
-          b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
+          b.template, transclude, b.onEvents, b.bindAttrs, b.childMode, b.formatters);
 }
 
 /**
@@ -37,7 +37,7 @@ class ElementBinderBuilder {
 
   final ElementBinderFactory _factory;
   final DirectiveMap _directives;
-  final FormatterMap _formatters;
+  final FormatterMap formatters;
 
   /// "on-*" attribute names and values, added by a [DirectiveSelector]
   final onEvents = new HashMap<String, String>();
@@ -51,7 +51,7 @@ class ElementBinderBuilder {
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   String childMode = Directive.COMPILE_CHILDREN;
 
-  ElementBinderBuilder(this._factory, this._formatters, this._directives);
+  ElementBinderBuilder(this._factory, this._directives, this.formatters);
 
   /**
    * Adds [DirectiveRef]s to this [ElementBinderBuilder].
@@ -105,7 +105,7 @@ class ElementBinderBuilder {
         if (mode != '@' && mode != '&') {
           var value = attrName == "." ? ref.value : (ref.element as dom.Element).attributes[attrName];
           if (value == null || value.isEmpty) { value = "''"; }
-          ast = _factory.astParser(value, formatters: _formatters);
+          ast = _factory.astParser(value);
         }
 
         ref.mappings.add(new MappingParts(attrName, ast, mode, dstAST, mapping));

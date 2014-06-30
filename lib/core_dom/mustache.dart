@@ -4,11 +4,12 @@ part of angular.core.dom_internal;
 @Decorator(selector: r':contains(/{{.*}}/)')
 class TextMustache {
   final dom.Node _element;
+  final FormatterMap formatters;
 
-  TextMustache(this._element, AST ast, Scope scope) {
+  TextMustache(this._element, AST ast, Scope scope, this.formatters) {
     scope.watchAST(ast,
                 _updateMarkup,
-                canChangeModel: false);
+                canChangeModel: false, userData: formatters);
   }
 
   void _updateMarkup(text, previousText) {
@@ -23,12 +24,13 @@ class AttrMustache {
   Watch _watch;
   NodeAttrs _attrs;
   String _attrName;
+  FormatterMap _formatters;
 
   // This Directive is special and does not go through injection.
   AttrMustache(this._attrs,
                           String this._attrName,
                           AST valueAST,
-                          Scope scope) {
+                          Scope scope, this._formatters) {
     _updateMarkup('', 'INITIAL-VALUE');
 
     _attrs.listenObserverChanges(_attrName, (hasObservers) {
@@ -36,7 +38,7 @@ class AttrMustache {
       _hasObservers = hasObservers;
       if (_watch != null) _watch.remove();
         _watch = scope.watchAST(valueAST, _updateMarkup,
-            canChangeModel: _hasObservers);
+            canChangeModel: _hasObservers, userData: _formatters);
       }
     });
   }

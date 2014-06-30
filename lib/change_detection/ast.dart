@@ -9,7 +9,7 @@ part of angular.watch_group;
 abstract class AST {
   static final String _CONTEXT = '#';
   final String expression;
-  var parsedExp; // The parsed version of expression.
+  Expression parsedExp; // The parsed version of expression.
   AST(expression)
       : expression = expression.startsWith('#.')
           ? expression.substring(2)
@@ -17,7 +17,8 @@ abstract class AST {
   {
     assert(expression!=null);
   }
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+    Map<String, WatchRecord<_Handler>> cache]);
   String toString() => expression;
 }
 
@@ -28,8 +29,8 @@ abstract class AST {
  */
 class ContextReferenceAST extends AST {
   ContextReferenceAST(): super(AST._CONTEXT);
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      new _ConstantWatchRecord(watchGroup, expression, watchGroup.context);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => new _ConstantWatchRecord(watchGroup, expression, context);
 }
 
 /**
@@ -46,8 +47,8 @@ class ConstantAST extends AST {
             ? constant is String ? '"$constant"' : '$constant'
             : expression);
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      new _ConstantWatchRecord(watchGroup, expression, constant);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => new _ConstantWatchRecord(watchGroup, expression, constant);
 }
 
 /**
@@ -64,8 +65,9 @@ class FieldReadAST extends AST {
         name = name,
         super('$lhs.$name');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addFieldWatch(lhs, name, expression);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) =>
+          watchGroup.addFieldWatch(lhs, name, expression, context, userData, cache);
 }
 
 /**
@@ -80,12 +82,32 @@ class PureFunctionAST extends AST {
   final List<AST> argsAST;
 
   PureFunctionAST(name, this.fn, argsAST)
-      : argsAST = argsAST,
-        name = name,
-        super('$name(${_argList(argsAST)})');
+      : name = name, argsAST = argsAST, super('$name(${_argList(argsAST)})');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, true);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, true,
+          context, userData, cache);
+}
+
+/**
+ *
+ */
+class FormatterAST extends AST {
+
+  List<AST> args;
+  String name;
+
+  FormatterAST(name, args): name = name, args = args, super('$name(${_argList(args)})');
+
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) {
+    if(userData is! FormatterMap) throw "userData must be of type FormatterMap.";
+    Function formatterFunction = userData(name);
+    var fn = new _FormatterWrapper(formatterFunction, args.length);
+    return watchGroup.addFunctionWatch(fn, args, const {}, expression, true, context, userData, cache);
+  }
+
+
 }
 
 /**
@@ -104,8 +126,9 @@ class ClosureAST extends AST {
         name = name,
         super('$name(${_argList(argsAST)})');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, false);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => watchGroup.addFunctionWatch(fn, argsAST, const {}, expression,
+          false, context, userData, cache);
 }
 
 /**
@@ -125,8 +148,9 @@ class MethodAST extends AST {
         argsAST = argsAST,
         super('$lhsAST.$name(${_argList(argsAST)})');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addMethodWatch(lhsAST, name, argsAST, namedArgsAST, expression);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => watchGroup.addMethodWatch(lhsAST, name, argsAST, namedArgsAST,
+          expression, context, userData, cache);
 }
 
 
@@ -136,8 +160,8 @@ class CollectionAST extends AST {
       : valueAST = valueAST,
         super('#collection($valueAST)');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addCollectionWatch(valueAST);
+  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup, [dynamic context, dynamic userData,
+      Map<String, WatchRecord<_Handler>> cache]) => watchGroup.addCollectionWatch(valueAST, context, userData, cache);
 }
 
 String _argList(List<AST> items) => items.join(', ');
@@ -164,5 +188,38 @@ class _ConstantWatchRecord extends WatchRecord<_Handler> {
   get object => null;
   set object(_) => null;
   get nextChange => null;
+}
+
+class _FormatterWrapper extends FunctionApply {
+  final Function formatterFn;
+  final List args;
+  final List<Watch> argsWatches;
+  _FormatterWrapper(this.formatterFn, length):
+  args = new List(length),
+  argsWatches = new List(length);
+
+  apply(List values) {
+    for (var i=0; i < values.length; i++) {
+      var value = values[i];
+      var lastValue = args[i];
+      if (!identical(value, lastValue)) {
+        if (value is CollectionChangeRecord) {
+          args[i] = (value as CollectionChangeRecord).iterable;
+        } else if (value is MapChangeRecord) {
+          args[i] = (value as MapChangeRecord).map;
+        } else {
+          args[i] = value;
+        }
+      }
+    }
+    var value = Function.apply(formatterFn, args);
+    if (value is Iterable) {
+      // Since formatters are pure we can guarantee that this well never change.
+      // By wrapping in UnmodifiableListView we can hint to the dirty checker
+      // and short circuit the iterator.
+      value = new UnmodifiableListView(value);
+    }
+    return value;
+  }
 }
 

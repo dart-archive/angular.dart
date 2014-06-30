@@ -16,9 +16,9 @@ class TemplateElementBinder extends ElementBinder {
 
   TemplateElementBinder(perf, expando, parser, config,
                         this.template, this.templateBinder,
-                        onEvents, bindAttrs, childMode)
+                        onEvents, bindAttrs, childMode, FormatterMap formatters)
       : super(perf, expando, parser, config,
-          null, null, onEvents, bindAttrs, childMode);
+          null, null, onEvents, bindAttrs, childMode, formatters);
 
   String toString() => "[TemplateElementBinder template:$template]";
 
@@ -44,6 +44,7 @@ class ElementBinder {
   final Expando _expando;
   final Parser _parser;
   final CompilerConfig _config;
+  final FormatterMap _formatters;
 
   final Map onEvents;
   final Map bindAttrs;
@@ -58,7 +59,7 @@ class ElementBinder {
 
   ElementBinder(this._perf, this._expando, this._parser, this._config,
                 this.componentData, this.decorators,
-                this.onEvents, this.bindAttrs, this.childMode);
+                this.onEvents, this.bindAttrs, this.childMode, this._formatters);
 
   final bool hasTemplate = false;
 
@@ -238,14 +239,14 @@ class ElementBinder {
                                  visibility) {
     if (ref.type == TextMustache) {
       nodeModule.bind(TextMustache, toFactory: (Injector injector) {
-        return new TextMustache(node, ref.valueAST, injector.getByKey(SCOPE_KEY));
+        return new TextMustache(node, ref.valueAST, injector.getByKey(SCOPE_KEY), _formatters);
       });
     } else if (ref.type == AttrMustache) {
       if (nodesAttrsDirectives.isEmpty) {
         nodeModule.bind(AttrMustache, toFactory: (Injector injector) {
           var scope = injector.getByKey(SCOPE_KEY);
           for (var ref in nodesAttrsDirectives) {
-            new AttrMustache(nodeAttrs, ref.value, ref.valueAST, scope);
+            new AttrMustache(nodeAttrs, ref.value, ref.valueAST, scope, _formatters);
           }
         });
       }

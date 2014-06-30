@@ -26,9 +26,8 @@ class ASTParser {
 
   ASTParser(this._parser, this._closureMap);
 
-  AST call(String input, {FormatterMap formatters,
-                          bool collection: false }) {
-    var visitor = new _ExpressionVisitor(_closureMap, formatters);
+  AST call(String input, {bool collection: false }) {
+    var visitor = new _ExpressionVisitor(_closureMap);
     var exp = _parser(input);
     AST ast = collection ? visitor.visitCollection(exp) : visitor.visit(exp);
     ast.parsedExp = exp;
@@ -39,9 +38,8 @@ class ASTParser {
 class _ExpressionVisitor implements syntax.Visitor {
   static final ContextReferenceAST contextRef = new ContextReferenceAST();
   final ClosureMap _closureMap;
-  final FormatterMap _formatters;
 
-  _ExpressionVisitor(this._closureMap, this._formatters);
+  _ExpressionVisitor(this._closureMap);
 
   AST visit(syntax.Expression exp) => exp.accept(this);
 
@@ -118,14 +116,9 @@ class _ExpressionVisitor implements syntax.Visitor {
   }
 
   AST visitFormatter(syntax.Formatter exp) {
-    if (_formatters == null) {
-      throw new Exception("No formatters have been registered");
-    }
-    Function formatterFunction = _formatters(exp.name);
     List<AST> args = [visitCollection(exp.expression)];
     args.addAll(_toAst(exp.arguments).map((ast) => new CollectionAST(ast)));
-    return new PureFunctionAST('|${exp.name}',
-        new _FormatterWrapper(formatterFunction, args.length), args);
+    return new FormatterAST(exp.name, args);
   }
 
   // TODO(misko): this is a corner case. Choosing not to implement for now.
@@ -216,38 +209,5 @@ class MapFn extends FunctionApply {
     // TODO(misko): figure out why do we need to make a copy instead of reusing instance?
     assert(values.length == keys.length);
     return new Map.fromIterables(keys, values);
-  }
-}
-
-class _FormatterWrapper extends FunctionApply {
-  final Function formatterFn;
-  final List args;
-  final List<Watch> argsWatches;
-  _FormatterWrapper(this.formatterFn, length):
-      args = new List(length),
-      argsWatches = new List(length);
-
-  apply(List values) {
-    for (var i=0; i < values.length; i++) {
-      var value = values[i];
-      var lastValue = args[i];
-      if (!identical(value, lastValue)) {
-       if (value is CollectionChangeRecord) {
-         args[i] = (value as CollectionChangeRecord).iterable;
-       } else if (value is MapChangeRecord) {
-         args[i] = (value as MapChangeRecord).map;
-       } else {
-         args[i] = value;
-       }
-      }
-    }
-    var value = Function.apply(formatterFn, args);
-    if (value is Iterable) {
-      // Since formatters are pure we can guarantee that this well never change.
-      // By wrapping in UnmodifiableListView we can hint to the dirty checker
-      // and short circuit the iterator.
-      value = new UnmodifiableListView(value);
-    }
-    return value;
   }
 }
