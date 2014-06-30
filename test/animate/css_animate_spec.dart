@@ -1,20 +1,22 @@
 library css_animate_spec;
 
 import 'dart:async';
+import 'dart:js' as js;
 
 import '../_specs.dart';
 
-main() {
-  describe('CssAnimate', () {
+_run({bool animationsAllowed}) {
+  describe('animationsAllowed=$animationsAllowed', () {
     TestBed _;
     Animate animate;
     MockAnimationLoop runner;
 
     beforeEach(inject((TestBed tb, Expando expand) {
       _ = tb;
-      runner = new MockAnimationLoop();
+      runner = new MockAnimationLoop(animationsAllowed);
       animate = new CssAnimate(runner,
           new CssAnimationMap(), new AnimationOptimizer(expand));
+      animate.animationsAllowed = animationsAllowed;
     }));
 
     it('should add a css class to an element node', async(() {
@@ -91,7 +93,9 @@ main() {
       _.compile('<div></div>');
       animate.addClass(_.rootElement, 'test');
       runner.start();
-      expect(_.rootElement).toHaveClass('test-add');
+      if (animationsAllowed) {
+        expect(_.rootElement).toHaveClass('test-add');
+      }
       var spans = es('<span>A</span><span>B</span>');
       animate.insert(spans, _.rootElement);
       runner.start();
@@ -101,7 +105,10 @@ main() {
 }
 
 class MockAnimationLoop extends Mock implements AnimationLoop {
+  bool animationsAllowed;
   num time = 0.0;
+
+  MockAnimationLoop(this.animationsAllowed);
 
   Future<AnimationResult> get onCompleted {
     var cmp = new Completer<AnimationResult>();
@@ -128,4 +135,17 @@ class MockAnimationLoop extends Mock implements AnimationLoop {
   }
 
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+main() {
+  describe('CssAnimate', () {
+    _run(animationsAllowed: true);
+    if (!identical(1, 1.0) && js.context['DART_VERSION'].toString().contains("version: 1.5.")) {
+      // Remove this block when issue #1219 is fixed.
+      // In Dart 1.5's Dartium, running both describes in any order causes
+      // ng_model_spec to fails.  This is not the case in Dart 1.4 or Dart 1.6.
+      return;
+    }
+    _run(animationsAllowed: false);
+  });
 }

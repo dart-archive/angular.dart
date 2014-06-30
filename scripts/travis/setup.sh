@@ -27,3 +27,6 @@ echo ===========================================================================
 . ./scripts/env.sh
 $DART --version
 $PUB install
+
+# Record dart version for tests.
+echo $'import "dart:js";\n\nmain() {\n  context["DART_VERSION"] = \''"$($DART --version 2>&1)"$'\';\n}' > test/dart_version.dart
