@@ -2,7 +2,6 @@ library angular.watch_group;
 
 import 'dart:profiler';
 import 'package:angular/change_detection/change_detection.dart';
-import 'package:angular/core/parser/syntax.dart';
 import 'package:angular/core/formatter.dart';
 import 'dart:collection';
 
