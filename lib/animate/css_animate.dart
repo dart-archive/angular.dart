@@ -25,6 +25,11 @@ class CssAnimate implements Animate {
 
   CssAnimate(this._runner, this._animationMap, this._optimizer);
 
+  bool get animationsAllowed => _optimizer.animationsAllowed;
+  void set animationsAllowed(bool allowed) {
+    _optimizer.animationsAllowed = allowed;
+  }
+
   Animation addClass(dom.Element element, String cssClass) {
     if (!_optimizer.shouldAnimate(element)) {
       element.classes.add(cssClass);
