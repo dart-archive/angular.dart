@@ -3,22 +3,35 @@ node_js:
 - '0.11'
 env:
   matrix:
-  - JOB=unit-stable CHANNEL=stable TESTS=dart2js BROWSERS=SL_Chrome,SL_Firefox
-  - JOB=unit-dev CHANNEL=dev TESTS=dart2js BROWSERS=SL_Chrome,SL_Firefox
-  - JOB=unit-dev CHANNEL=dev TESTS=vm BROWSERS=DartiumWithWebPlatform
-  - JOB=unit-g3stable CHANNEL=stable TESTS=vm BROWSERS=DartiumWithWebPlatform USE_G3=YES
-  - JOB=unit-stable CHANNEL=stable TESTS=vm BROWSERS=DartiumWithWebPlatform
+  - JOB=unit-g3stable
+    CHANNEL=stable
+    TESTS=vm
+    BROWSERS=DartiumWithWebPlatform
+    USE_G3=YES
+  - JOB=unit-stable
+    CHANNEL=stable
+    TESTS=vm
+    BROWSERS=DartiumWithWebPlatform
+  - JOB=unit-dev
+    CHANNEL=dev
+    TESTS=vm
+    BROWSERS=DartiumWithWebPlatform
+  - JOB=unit-stable
+    CHANNEL=stable
+    TESTS=dart2js
+    BROWSERS=SL_Chrome,SL_Firefox
+  - JOB=unit-dev
+    CHANNEL=dev
+    TESTS=dart2js
+    BROWSERS=SL_Chrome,SL_Firefox
   global:
-  - FIREFOX_VERSION="29.0"
+  - FIREFOX_VERSION="30.0"
+  - CHROME_VERSION="35.0"
   - secure: AKoqpZ699egF0i4uT/FQ5b4jIc0h+KVbhtVCql0uFxwFIl2HjOYgDayrUCAf6USfpW0LghZxJJhBamWOl/505eNSe9HvEd8JLg/to+1Fo9xi9llsu5ehmNH31/5pue4EvsrVuEap1qqL6/BNwI2cAryayU0p5tV0g8gL5h4IxG8=
   - LOGS_DIR=/tmp/angular-build/logs
   - BROWSER_PROVIDER_READY_FILE=/tmp/sauce-connect-ready
   - SAUCE_USERNAME=angular-ci
-  - SAUCE_ACCESS_KEY=78924453-3ea4-4aa8-acbf-8ff434f889b9
-addons:
-  sauce_connect:
-    username: "angular-ci"
-    access-key: "78924453-3ea4-4aa8-acbf-8ff434f889b9"
+  - SAUCE_ACCESS_KEY=9b988f434ff8-fbca-8aa4-4ae3-35442987
 
 branches:
   except:
@@ -28,7 +41,6 @@ before_install:
 - ./scripts/travis/install.sh
 before_script:
 - mkdir -p $LOGS_DIR
-- export SAUCE_ACCESS_KEY=`echo $SAUCE_ACCESS_KEY | rev`
 - ./scripts/travis/setup.sh
 - ./scripts/sauce/sauce_connect_setup.sh
 - ./scripts/sauce/sauce_connect_block.sh
@@ -36,3 +48,5 @@ script:
 - ./scripts/travis/build.sh
 after_success:
 - ./scripts/travis/after-success.sh
+after_script:
+- ./scripts/travis/print-logs.sh

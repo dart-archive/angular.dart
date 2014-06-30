@@ -9,6 +9,8 @@ echo '==========='
 
 SIZE_TOO_BIG_COUNT=0
 
+export SAUCE_ACCESS_KEY=`echo $SAUCE_ACCESS_KEY | rev`
+
 function checkSize() {
   file=$1
   if [[ ! -e $file ]]; then
