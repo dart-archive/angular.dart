@@ -72,7 +72,7 @@ packages:
   protractor:
     description: protractor
     source: hosted
-    version: "0.0.2"
+    version: "0.0.3"
   route_hierarchical:
     description: route_hierarchical
     source: hosted
