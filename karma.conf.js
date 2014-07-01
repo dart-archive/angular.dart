@@ -75,7 +75,8 @@ module.exports = function(config) {
         tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER,
         startConnect: false,
         options:  {
-            'selenium-version': '2.41.0'
+            'selenium-version': '2.41.0',
+            'max-duration': 2700
         }
     }
   });
