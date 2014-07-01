@@ -1,6 +1,5 @@
 library angular.watch_group;
 
-import 'dart:profiler';
 import 'package:angular/change_detection/change_detection.dart';
 import 'dart:collection';
 
@@ -368,8 +367,6 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 class RootWatchGroup extends WatchGroup {
   final FieldGetterFactory _fieldGetterFactory;
   Watch _dirtyWatchHead, _dirtyWatchTail;
-  List<UserTag> _detectChangesTags = [];
-  List<UserTag> _reactionFnTags = [];
 
   /**
    * Every time a [WatchGroup] is destroyed we increment the counter. During
@@ -381,22 +378,10 @@ class RootWatchGroup extends WatchGroup {
   int _removeCount = 0;
 
 
-  RootWatchGroup(this._fieldGetterFactory, ChangeDetector changeDetector, Object context, {
-    bool profile: false,  int ttl })
-      : super._root(changeDetector, context) {
-    if (profile) {
-      _detectChangesTags = new List(ttl + 2);
-      _reactionFnTags = new List(ttl + 2);
-      for (int i = 0; i < ttl; i++) {
-        _detectChangesTags[i] = new UserTag('DetectChanges / NgDigest${i}');
-        _reactionFnTags[i] = new UserTag('ReactionFn / NgDigest${i}');
-      }
-      _detectChangesTags[ttl] = new UserTag('DetectChanges / NgFlush');
-      _detectChangesTags[ttl + 1] = new UserTag('DetectChanges / NgAssert');
-      _reactionFnTags[ttl] = new UserTag('ReactionFn / NgFlush');
-      _reactionFnTags[ttl + 1] = new UserTag('ReactionFn / NgAssert');
-    }
-  }
+  RootWatchGroup(this._fieldGetterFactory,
+                 ChangeDetector changeDetector,
+                 Object context)
+      : super._root(changeDetector, context);
 
   RootWatchGroup get _rootGroup => this;
 
@@ -415,10 +400,7 @@ class RootWatchGroup extends WatchGroup {
                       ChangeLog changeLog,
                       AvgStopwatch fieldStopwatch,
                       AvgStopwatch evalStopwatch,
-                      AvgStopwatch processStopwatch,
-                      num sequenceNumber}) {
-    var previous;
-    if (sequenceNumber != null) previous = _detectChangesTags[sequenceNumber].makeCurrent();
+                      AvgStopwatch processStopwatch}) {
     // Process the Records from the change detector
     Iterator<Record<_Handler>> changedRecordIterator =
         (_changeDetector as ChangeDetector<_Handler>).collectChanges(
@@ -466,13 +448,7 @@ class RootWatchGroup extends WatchGroup {
         count++;
         try {
           if (root._removeCount == 0 || dirtyWatch._watchGroup.isAttached) {
-            if (sequenceNumber != null) {
-              var previous = _reactionFnTags[sequenceNumber].makeCurrent();
-              dirtyWatch.invoke();
-              previous.makeCurrent();
-            } else {
-              dirtyWatch.invoke();
-            }
+            dirtyWatch.invoke();
           }
         } catch (e, s) {
           if (exceptionHandler == null) rethrow; else exceptionHandler(e, s);
@@ -486,7 +462,6 @@ class RootWatchGroup extends WatchGroup {
       root._removeCount = 0;
     }
     if (processStopwatch != null) processStopwatch..stop()..increment(count);
-    if (previous != null) previous.makeCurrent();
     return count;
   }
 

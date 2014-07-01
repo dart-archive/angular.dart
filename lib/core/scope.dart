@@ -3,13 +3,6 @@ part of angular.core_internal;
 typedef EvalFunction0();
 typedef EvalFunction1(context);
 
-final UserTag APPLY_USER_TAG = new UserTag('Apply');
-final UserTag FLUSH_TAG = new UserTag('NgFlush');
-final UserTag RUN_ASYNC_TAG = new UserTag('NgRunAsync');
-final UserTag DOM_READ_TAG = new UserTag('NgDomRead');
-final UserTag DOM_WRITE_TAG = new UserTag('NgDomWrite');
-final UserTag ASSERT_TAG = new UserTag('NgAssert');
-
 /**
  * Injected into the listener function within [Scope.on] to provide
  * event-specific details to the scope listener.
@@ -295,7 +288,6 @@ class Scope {
   }
 
   dynamic apply([expression, Map locals]) {
-    var previous = APPLY_USER_TAG.makeCurrent();
     _assertInternalStateConsistency();
     rootScope._transitionState(null, RootScope.STATE_APPLY);
     try {
@@ -303,7 +295,6 @@ class Scope {
     } catch (e, s) {
       rootScope._exceptionHandler(e, s);
     } finally {
-      previous.makeCurrent();
       rootScope.._transitionState(RootScope.STATE_APPLY, null)
                ..digest()
                ..flush();
@@ -585,8 +576,6 @@ class RootScope extends Scope {
 
   String _state;
 
-  final List<UserTag> _digestTags = [];
-
   /**
    *
    * While processing data bindings, Angular passes through multiple states. When testing or
@@ -636,30 +625,24 @@ class RootScope extends Scope {
    */
   String get state => _state;
 
-  RootScope(Object context, Parser parser, ASTParser astParser,
-            FieldGetterFactory fieldGetterFactory, FormatterMap formatters, this._exceptionHandler,
-            ScopeDigestTTL ttl, this._zone, ScopeStats _scopeStats, CacheRegister cacheRegister)
+  RootScope(Object context, Parser parser, ASTParser astParser, FieldGetterFactory fieldGetterFactory,
+            FormatterMap formatters, this._exceptionHandler, this._ttl, this._zone,
+            ScopeStats _scopeStats, CacheRegister cacheRegister)
       : _scopeStats = _scopeStats,
-        _ttl = ttl,
         _parser = parser,
         _astParser = astParser,
         super(context, null, null,
             new RootWatchGroup(fieldGetterFactory,
-                new DirtyCheckingChangeDetector(fieldGetterFactory), context, profile: true,
-                  ttl: ttl.ttl),
+                new DirtyCheckingChangeDetector(fieldGetterFactory), context),
             new RootWatchGroup(fieldGetterFactory,
-                new DirtyCheckingChangeDetector(fieldGetterFactory), context, profile: true,
-                  ttl: ttl.ttl),
+                new DirtyCheckingChangeDetector(fieldGetterFactory), context),
             '',
             _scopeStats)
   {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
     _zone.onScheduleMicrotask = runAsync;
-    for(num i = 0; i <= _ttl.ttl; i++) {
-      _digestTags.add(new UserTag('NgDigest${i}'));
-    }
-    cacheRegister.registerCache("ScopeWatchASTs", astCache);
+  cacheRegister.registerCache("ScopeWatchASTs", astCache);
   }
 
   RootScope get rootScope => this;
@@ -683,12 +666,11 @@ class RootScope extends Scope {
   * [ScopeDigestTTL].
   */
   void digest() {
-    int digestTTL = _ttl.ttl;
     _transitionState(null, STATE_DIGEST);
     try {
       var rootWatchGroup = _readWriteGroup as RootWatchGroup;
 
-
+      int digestTTL = _ttl.ttl;
       const int LOG_COUNT = 3;
       List log;
       List digestLog;
@@ -696,8 +678,6 @@ class RootScope extends Scope {
       ChangeLog changeLog;
       _scopeStats.digestStart();
       do {
-        var sequenceNo = _ttl.ttl - digestTTL;
-        var previousTag = _digestTags[sequenceNo].makeCurrent();
 
         int asyncCount = _runAsyncFns();
 
@@ -707,8 +687,7 @@ class RootScope extends Scope {
             changeLog: changeLog,
             fieldStopwatch: _scopeStats.fieldStopwatch,
             evalStopwatch: _scopeStats.evalStopwatch,
-            processStopwatch: _scopeStats.processStopwatch,
-            sequenceNumber: sequenceNo);
+            processStopwatch: _scopeStats.processStopwatch);
 
         if (digestTTL <= LOG_COUNT) {
           if (changeLog == null) {
@@ -721,13 +700,10 @@ class RootScope extends Scope {
           }
         }
         if (digestTTL == 0) {
-          if (previousTag != null) previousTag.makeCurrent();
           throw 'Model did not stabilize in ${_ttl.ttl} digests. '
-              'Last $LOG_COUNT iterations:\n${log.join('\n')}';
+                'Last $LOG_COUNT iterations:\n${log.join('\n')}';
         }
-
         _scopeStats.digestLoop(count);
-        previousTag.makeCurrent();
       } while (count > 0 || _runAsyncHead != null);
     } finally {
       _scopeStats.digestEnd();
@@ -736,7 +712,6 @@ class RootScope extends Scope {
   }
 
   void flush() {
-    var previousTag = FLUSH_TAG.makeCurrent();
     _stats.flushStart();
     _transitionState(null, STATE_FLUSH);
     RootWatchGroup readOnlyGroup = this._readOnlyGroup as RootWatchGroup;
@@ -759,8 +734,7 @@ class RootScope extends Scope {
           readOnlyGroup.detectChanges(exceptionHandler:_exceptionHandler,
               fieldStopwatch: _scopeStats.fieldStopwatch,
               evalStopwatch: _scopeStats.evalStopwatch,
-              processStopwatch: _scopeStats.processStopwatch,
-              sequenceNumber: _ttl.ttl);
+              processStopwatch: _scopeStats.processStopwatch);
         }
         if (_domReadHead != null) _stats.domReadStart();
         while (_domReadHead != null) {
@@ -777,7 +751,6 @@ class RootScope extends Scope {
       } while (_domWriteHead != null || _domReadHead != null || _runAsyncHead != null);
       _stats.flushEnd();
       assert((() {
-        var previousTag = ASSERT_TAG.makeCurrent();
         _stats.flushAssertStart();
         var digestLog = [];
         var flushLog = [];
@@ -785,27 +758,23 @@ class RootScope extends Scope {
             changeLog: (s, c, p) => digestLog.add('$s: $c <= $p'),
             fieldStopwatch: _scopeStats.fieldStopwatch,
             evalStopwatch: _scopeStats.evalStopwatch,
-            processStopwatch: _scopeStats.processStopwatch,
-            sequenceNumber: _ttl.ttl + 1);
+            processStopwatch: _scopeStats.processStopwatch);
         (_readOnlyGroup as RootWatchGroup).detectChanges(
             changeLog: (s, c, p) => flushLog.add('$s: $c <= $p'),
             fieldStopwatch: _scopeStats.fieldStopwatch,
             evalStopwatch: _scopeStats.evalStopwatch,
-            processStopwatch: _scopeStats.processStopwatch,
-            sequenceNumber: _ttl.ttl + 1);
+            processStopwatch: _scopeStats.processStopwatch);
         if (digestLog.isNotEmpty || flushLog.isNotEmpty) {
           throw 'Observer reaction functions should not change model. \n'
                 'These watch changes were detected: ${digestLog.join('; ')}\n'
                 'These observe changes were detected: ${flushLog.join('; ')}';
         }
         _stats.flushAssertEnd();
-        previousTag.makeCurrent();
         return true;
       })());
     } finally {
       _stats.cycleEnd();
       _transitionState(STATE_FLUSH, null);
-      previousTag.makeCurrent();
     }
   }
 
@@ -814,14 +783,12 @@ class RootScope extends Scope {
     if (_state == STATE_FLUSH_ASSERT) {
       throw "Scheduling microtasks not allowed in $state state.";
     }
-    var previousTag = RUN_ASYNC_TAG.makeCurrent();
     var chain = new _FunctionChain(fn);
     if (_runAsyncHead == null) {
       _runAsyncHead = _runAsyncTail = chain;
     } else {
       _runAsyncTail = _runAsyncTail._next = chain;
     }
-    previousTag.makeCurrent();
   }
 
   _runAsyncFns() {
@@ -840,25 +807,21 @@ class RootScope extends Scope {
   }
 
   void domWrite(fn()) {
-    var previousTag = DOM_WRITE_TAG.makeCurrent();
     var chain = new _FunctionChain(fn);
     if (_domWriteHead == null) {
       _domWriteHead = _domWriteTail = chain;
     } else {
       _domWriteTail = _domWriteTail._next = chain;
     }
-    previousTag.makeCurrent();
   }
 
   void domRead(fn()) {
-    var previousTag = DOM_READ_TAG.makeCurrent();
     var chain = new _FunctionChain(fn);
     if (_domReadHead == null) {
       _domReadHead = _domReadTail = chain;
     } else {
       _domReadTail = _domReadTail._next = chain;
     }
-    previousTag.makeCurrent();
   }
 
   void destroy() {}
