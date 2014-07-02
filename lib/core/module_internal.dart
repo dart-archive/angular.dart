@@ -48,8 +48,8 @@ class CoreModule extends Module {
     bind(Object, toValue: {}); // RootScope context
     bind(VmTurnZone);
 
-    bind(Parser, toImplementation: DynamicParser);
-    bind(ParserBackend, toImplementation: DynamicParserBackend);
+    bind(Parser, toFactory: (i) => i.get(DynamicParser));
+    bind(ParserBackend, toFactory: (i) => i.get(DynamicParserBackend));
     bind(DynamicParser);
     bind(DynamicParserBackend);
     bind(Lexer);
