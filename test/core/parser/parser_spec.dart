@@ -56,6 +56,17 @@ main() {
       module.bind(SubstringFormatter);
     });
 
+    describe('DynamicParser', () {
+      // This is important because the DynamicParser expects to be a singleton
+      // to share its cache.  It therefore registers with the CacheRegister and
+      // having more than one instance will result in a duplicate registration.
+      it('should be identical to Parser in dynamic mode', (Parser p, DynamicParser dp) {
+        if (p is DynamicParser) {
+          expect(identical(p, dp)).toBeTruthy();;
+        }
+      });
+    });
+
     beforeEach((Parser injectedParser, FormatterMap injectedFormatters) {
       parser = injectedParser;
       formatters = injectedFormatters;
