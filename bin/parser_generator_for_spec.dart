@@ -6,8 +6,8 @@ import 'package:angular/core/parser/parser.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
 
 main(arguments) {
-  Module module = new Module()..bind(Parser, toImplementation: DynamicParser);
-  module.bind(ParserBackend, toImplementation: DartGetterSetterGen);
+  Module module = new Module()..bind(Parser, toFactory: (i) => i.get(DynamicParser));
+  module.bind(ParserBackend, toFactory: (i) => i.get(DartGetterSetterGen));
   Injector injector = new DynamicInjector(modules: [module],
       allowImplicitInjection: true);
 
