@@ -9,7 +9,7 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 
 @MirrorsUsed(
     targets: const [
-      'angular.perf.watch_group'
+      'angular.benchmarks.watch_group'
     ],
     override: '*'
 )
