@@ -73,25 +73,21 @@ abstract class Directive {
    * * [TRANSCLUDE_CHILDREN]
    * * [IGNORE_CHILDREN]
    */
-  @deprecated
   final String children;
 
   /**
    * Compile the child nodes of the element.  This is the default.
    */
-  @deprecated
   static const String COMPILE_CHILDREN = 'compile';
   /**
    * Compile the child nodes for transclusion and makes available
    * [BoundViewFactory], [ViewFactory] and [ViewPort] for injection.
    */
-  @deprecated
   static const String TRANSCLUDE_CHILDREN = 'transclude';
   /**
    * Do not compile/visit the child nodes.  Angular markup on descendant nodes
    * will not be processed.
    */
-  @deprecated
   static const String IGNORE_CHILDREN = 'ignore';
 
   /**
@@ -306,7 +302,6 @@ class Component extends Directive {
    * published into. This allows the expressions in the template to be referring
    * to controller instance and its properties.
    */
-  @deprecated
   final String publishAs;
 
   /**
@@ -482,7 +477,6 @@ abstract class DirectiveAnnotation {
  * The value of the attribute to be treated as a string, equivalent
  * to `@` specification.
  */
-@deprecated
 class NgAttr extends DirectiveAnnotation {
   final _mappingSpec = '@';
   const NgAttr(String attrName) : super(attrName);
@@ -494,7 +488,6 @@ class NgAttr extends DirectiveAnnotation {
  * The value of the attribute to be treated as a one-way expression, equivalent
  * to `=>` specification.
  */
-@deprecated
 class NgOneWay extends DirectiveAnnotation {
   final _mappingSpec = '=>';
   const NgOneWay(String attrName) : super(attrName);
@@ -506,7 +499,6 @@ class NgOneWay extends DirectiveAnnotation {
  * The value of the attribute to be treated as a one time one-way expression,
  * equivalent to `=>!` specification.
  */
-@deprecated
 class NgOneWayOneTime extends DirectiveAnnotation {
   final _mappingSpec = '=>!';
   const NgOneWayOneTime(String attrName) : super(attrName);
@@ -518,7 +510,6 @@ class NgOneWayOneTime extends DirectiveAnnotation {
  * The value of the attribute to be treated as a two-way expression,
  * equivalent to `<=>` specification.
  */
-@deprecated
 class NgTwoWay extends DirectiveAnnotation {
   final _mappingSpec = '<=>';
   const NgTwoWay(String attrName) : super(attrName);
@@ -530,7 +521,6 @@ class NgTwoWay extends DirectiveAnnotation {
  * The value of the attribute to be treated as a callback expression,
  * equivalent to `&` specification.
  */
-@deprecated
 class NgCallback extends DirectiveAnnotation {
   final _mappingSpec = '&';
   const NgCallback(String attrName) : super(attrName);
