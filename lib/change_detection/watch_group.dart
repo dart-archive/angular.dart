@@ -661,10 +661,11 @@ abstract class _ArgHandler extends _Handler {
 }
 
 class _PositionalArgHandler extends _ArgHandler {
+  static final List<String> _ARGS = new List.generate(20, (index) => 'arg[$index]');
   final int index;
   _PositionalArgHandler(WatchGroup watchGrp, _EvalWatchRecord record, int index)
       : this.index = index,
-        super(watchGrp, 'arg[$index]', record);
+        super(watchGrp, _ARGS[index], record);
 
   void acceptValue(object) {
     watchRecord.dirtyArgs = true;
@@ -673,11 +674,17 @@ class _PositionalArgHandler extends _ArgHandler {
 }
 
 class _NamedArgHandler extends _ArgHandler {
+  static final Map<Symbol, String> _NAMED_ARG = new HashMap<Symbol, String>();
+  static String _GET_NAMED_ARG(Symbol symbol) {
+    String name = _NAMED_ARG[symbol];
+    if (name == null) name = _NAMED_ARG[symbol] = 'namedArg[$name]';
+    return name;
+  }
   final Symbol name;
 
   _NamedArgHandler(WatchGroup watchGrp, _EvalWatchRecord record, Symbol name)
       : this.name = name,
-        super(watchGrp, 'namedArg[$name]', record);
+        super(watchGrp, _GET_NAMED_ARG(name), record);
 
   void acceptValue(object) {
     if (watchRecord.namedArgs == null) {
