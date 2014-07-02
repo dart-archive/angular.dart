@@ -16,8 +16,8 @@ if [ "$TRAVIS_REPO_SLUG" = "angular/angular.dart" ]; then
     rm -Rf docs.angulardart.org
     git clone https://github.com/angular/docs.angulardart.org.git
 
-    echo "Removing old stable docs..."
-    rm -rf docs.angulardart.org/docs
+#    echo "Removing old stable docs..."
+#    rm -rf docs.angulardart.org/docs
 
     echo "Copying new docs into stable folder..."
     rsync -a dartdoc-viewer/client/build/web/* docs.angulardart.org/
