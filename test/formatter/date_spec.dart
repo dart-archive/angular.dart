@@ -47,7 +47,13 @@ void main() {
     });
 
     it('should accept various locales', async(() {
-      expect(Intl.withLocale('de', () => date(noon, "medium"))).toEqual('3. Sep 2010 12:05:08');
+      // Angular's pubspec for intl spans versions with breaking changes.  This
+      // is ok for Angular, because they are not breaking changes for us (e.g.
+      // date formatting changes would be breaking changes, but CLDR updates are
+      // not.)  The tests below use SV and FR which are mostly stable across
+      // different versions of the intl package (as opposed to DE which received
+      // CLDR updates.)
+      expect(Intl.withLocale('sv', () => date(noon, "medium"))).toEqual('3 sep 2010 12:05:08');
       expect(Intl.withLocale('fr', () => date(noon, "medium"))).toEqual('3 sept. 2010 12:05:08');
     }));
   });
