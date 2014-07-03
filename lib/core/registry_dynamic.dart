@@ -42,7 +42,7 @@ class DynamicMetadataExtractor implements MetadataExtractor {
     var match;
     var fieldMetadata = fieldMetadataExtractor(type);
     if (fieldMetadata.isNotEmpty) {
-      var newMap = annotation.map == null ? new HashMap() : new HashMap.from(annotation.map);
+      var newMap = annotation.map == null ? {} : new Map.from(annotation.map);
       fieldMetadata.forEach((String fieldName, DirectiveAnnotation ann) {
         var attrName = ann.attrName;
         if (newMap.containsKey(attrName)) {
@@ -61,11 +61,11 @@ class DynamicMetadataExtractor implements MetadataExtractor {
       _fieldMetadataCache.putIfAbsent(type, () => _fieldMetadataExtractor(reflectType(type)));
 
   Map<String, DirectiveAnnotation> _fieldMetadataExtractor(ClassMirror cm) {
-    var fields = new HashMap<String, DirectiveAnnotation>();
+    var fields = <String, DirectiveAnnotation>{};
     if(cm.superclass != null) {
       fields.addAll(_fieldMetadataExtractor(cm.superclass));
     } else {
-      fields = new HashMap();
+      fields = {};
     }
     Map<Symbol, DeclarationMirror> declarations = cm.declarations;
     declarations.forEach((symbol, dm) {
