@@ -70,16 +70,14 @@ void main() {
 
 
       it('should do basic request', async(() {
-        backend.expect('GET', '/url').respond('');
         http(url: '/url', method: 'GET');
-        flush();
+        backend.flushGET('/url').respond('');
       }));
 
 
       it('should pass data if specified', async(() {
-        backend.expect('POST', '/url', 'some-data').respond('');
         http(url: '/url', method: 'POST', data: 'some-data');
-        flush();
+        backend.flushPOST('/url', 'some-data').respond('');
       }));
 
 
@@ -89,13 +87,15 @@ void main() {
         // we don't care about the data field.
         backend.expect('POST', '/url', 'null').respond('');
 
+
         expect(() {
           http(url: '/url', method: 'POST');
+          backend.flush();
         }).toThrow('with different data');
 
         // satisfy the expectation for our afterEach's assert.
         http(url: '/url', method: 'POST', data: 'null');
-        flush();
+        backend.flush();
       }));
 
       describe('backend', () {
@@ -975,8 +975,9 @@ void main() {
              'synchronous', async(() {
             backend.expect('POST', '/url', '').respond('');
             http(url: '/url', method: 'POST', data: '');
+
             expect(interceptorCalled).toBe(true);
-            expect(backend.responses.isEmpty).toBe(false);  // request made immediately
+            expect(backend.requests.isEmpty).toBe(false);  // request made immediately
             flush();
           }));
         });
