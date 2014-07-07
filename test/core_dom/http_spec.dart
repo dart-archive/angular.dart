@@ -10,6 +10,8 @@ var CACHED_VALUE = 'cached_value';
 class FakeCache extends UnboundedCache<String, HttpResponse> {
   HttpResponse get(x) => x == 'f' ? new HttpResponse(200, CACHED_VALUE) : null;
   HttpResponse put(_,__) => null;
+  void clear() {}
+  int get length => 0;
 }
 
 class SubstringRewriter extends UrlRewriter {
