@@ -220,10 +220,6 @@ abstract class Directive {
   });
 
   toString() => selector;
-  get hashCode => selector.hashCode;
-  operator==(other) =>
-      other is Directive && selector == other.selector;
-
   Directive _cloneWithNewMap(newMap);
 }
 
@@ -583,9 +579,6 @@ class Formatter {
   final String name;
 
   const Formatter({this.name});
-
-  int get hashCode => name.hashCode;
-  bool operator==(other) => name == other.name;
 
   toString() => 'Formatter: $name';
 }
