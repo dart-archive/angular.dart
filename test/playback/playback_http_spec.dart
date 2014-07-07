@@ -26,25 +26,21 @@ void main() {
 
 
       it('should record a request', async((Http http) {
-        backend.expectGET('request').respond(200, 'response');
-
         var responseData;
 
         http(method: 'GET', url: 'request').then((HttpResponse r) {
           responseData = r.data;
         });
 
+        backend.flushGET('request').respond(200, 'response');
         microLeap();
-        backend.flush();
         backend
-        .expectPOST('/record',
+        .flushPOST('/record',
             r'{"key":"{\"url\":\"request\",\"method\":\"GET\",\"requestHeaders\":'
             r'{\"Accept\":\"application/json, text/plain, */*\",\"X-XSRF-TOKEN\":\"secret\"},\"data\":null}",'
             r'"data":"{\"status\":200,\"headers\":\"\",\"data\":\"response\"}"}')
         .respond(200);
 
-        microLeap();
-        backend.flush();
         microLeap();
 
         expect(responseData).toEqual('response');
