@@ -60,7 +60,7 @@ module.exports = function(config) {
         flags: ['--enable-experimental-web-platform-features'] }
     },
 
-    browsers: ['DartiumWithWebPlatform', 'SL_Firefox', 'SL_Chrome'],
+    browsers: ['DartiumWithWebPlatform'],
 
     preprocessors: {
       'test/core/parser/generated_getter_setter.dart': ['parser-getter-setter']
