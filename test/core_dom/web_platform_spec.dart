@@ -19,19 +19,14 @@ main() {
     it('should scope styles to shadow dom across browsers.',
       async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
 
-      backend
-        ..expectGET('style.css').respond(200, 'span { background-color: red; '
-            '}')
-        ..expectGET('template.html').respond(200, '<span>foo</span>');
-
       Element element = e('<span><test-wptc><span>ignore'
         '</span></test-wptc></span>');
 
       _.compile(element);
 
-      microLeap();
-      backend.flush();
-      microLeap();
+      backend
+          ..flushGET('style.css').respond(200, 'span {background-color: red;}')
+          ..flushGET('template.html').respond(200, '<span>foo</span>');
 
       try {
         document.body.append(element);
@@ -58,37 +53,27 @@ main() {
     it('should not crash with an attribute selector; but wont work either..',
        async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
 
-      backend
-        ..expectGET('style.css').respond(200, 'span { background-color: red; '
-      '}')
-        ..expectGET('template.html').respond(200, '<span>foo</span>');
-
       Element element = e('<span><test-wptca a><span>ignore'
       '</span></test-wptca></span>');
 
       _.compile(element);
 
-      microLeap();
-      backend.flush();
-      microLeap();
+      backend
+        ..flushGET('style.css').respond(200, 'span{background-color: red}')
+        ..flushGET('template.html').respond(200, '<span>foo</span>');
     }));
 
     it('should scope :host styles to the primary element.',
     async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
-
-      backend
-        ..expectGET('style.css').respond(200, ':host {'
-            'background-color: red; }')
-        ..expectGET('template.html').respond(200, '<span>foo</span>');
 
       Element element = e('<span><test-wptc><span>ignore'
         '</span></test-wptc></span>');
 
       _.compile(element);
 
-      microLeap();
-      backend.flush();
-      microLeap();
+      backend
+        ..flushGET('style.css').respond(200, ':host {background-color: red; }')
+        ..flushGET('template.html').respond(200, '<span>foo</span>');
 
       try {
         document.body.append(element);
@@ -109,21 +94,17 @@ main() {
     xit('should scope ::content rules to component content.',
     async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
 
-      backend
-        ..expectGET('style.css').respond(200,
-          "polyfill-next-selector { content: ':host span:not([:host])'; }"
-          "::content span { background-color: red; }")
-        ..expectGET('template.html').respond(200,
-          '<span><content></content></span>');
-
       Element element = e('<test-wptc><span>RED'
       '</span></test-wptc>');
 
       _.compile(element);
 
-      microLeap();
-      backend.flush();
-      microLeap();
+      backend
+          ..flushGET('style.css').respond(200,
+            "polyfill-next-selector { content: ':host span:not([:host])'; }"
+            "::content span { background-color: red; }")
+          ..flushGET('template.html').respond(200,
+            '<span><content></content></span>');
 
       try {
         document.body.append(element);
@@ -147,25 +128,23 @@ main() {
     xit('should style into child shadow dom with ::shadow.',
     async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
 
-      backend
-        ..expectGET('outer-style.css').respond(200, 'my-inner::shadow .foo {'
-      'background-color: red; }')
-        ..expectGET('outer-html.html').respond(200,
-      '<my-inner><span class="foo">foo</span></my-inner>');
-
-
       Element element = e('<my-outer></my-outer>');
 
       _.compile(element);
 
-      microLeap();
+
       backend
-        ..flush()
-        ..expectGET('inner-style.css').respond(200, '/* no style */')
-        ..expectGET('inner-html.html').respond(200,
-          '<span class="foo"><content></content></span>');
+          ..flushGET('outer-style.css').respond(200,
+            'my-inner::shadow .foo {background-color: red; }')
+          ..flushGET('outer-html.html').respond(200,
+            '<my-inner><span class="foo">foo</span></my-inner>');
+
       microLeap();
-      backend.flush();
+
+      backend
+          ..flushGET('inner-style.css').respond(200, '/* no style */')
+          ..flushGET('inner-html.html').respond(200,
+            '<span class="foo"><content></content></span>');
 
       try {
         document.body.append(element);
