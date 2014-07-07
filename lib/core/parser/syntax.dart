@@ -205,5 +205,4 @@ class _DefaultFormatterMap implements FormatterMap {
   call(name) => throw 'No Formatter: $name found!';
   Type operator[](annotation) => null;
   forEach(fn) { }
-  annotationsFor(type) => null;
 }
