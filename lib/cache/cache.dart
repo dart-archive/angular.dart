@@ -69,6 +69,8 @@ class UnboundedCache<K, V> extends Cache<K, V> {
   CacheStats stats() => new CacheStats(capacity, size, _hits, _misses);
   // Debugging helper.
   String toString() => "[$runtimeType: size=${_entries.length}, items=$_entries]";
+  int get length => -1;
+  void clear() {}
 }
 
 
