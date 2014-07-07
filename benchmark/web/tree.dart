@@ -249,12 +249,12 @@ main() {
   var cleanup, createDom;
 
   var module = new Module()
-      ..type(TreeComponent)
-      ..type(TreeUrlComponent)
-      ..type(NgFreeTree)
-      ..type(NgFreeTreeScoped)
-      ..type(NgFreeTreeClass)
-      ..factory(ScopeDigestTTL, (i) => new ScopeDigestTTL.value(15))
+      ..bind(TreeComponent)
+      ..bind(TreeUrlComponent)
+      ..bind(NgFreeTree)
+      ..bind(NgFreeTreeScoped)
+      ..bind(NgFreeTreeClass)
+      ..bind(ScopeDigestTTL, toFactory: (_) => new ScopeDigestTTL.value(15))
       ..bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
 
   var injector = applicationFactory().addModule(module).run();
