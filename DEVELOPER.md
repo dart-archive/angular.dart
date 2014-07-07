@@ -213,7 +213,7 @@ Set the parameters as follow:
     - **PATH**: `/path/to/dart-sdk/bin`
     - **DART_FLAGS**: `--checked`
 
-Launch the server by selecting the "Karmer server" configuration in the toolbar
+Launch the server by selecting the "Karma server" configuration in the toolbar
 and pressing the play icon. You should see the following message at the bottom
 of the run window:
 `INFO [Chrome 34.0.1847 (Linux)]: Connected on socket 97GpzQz-MfHFPHgHOVkc with id 10199707`
