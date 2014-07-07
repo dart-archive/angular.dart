@@ -139,9 +139,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   }
 
   Watch watch(AST expression, ReactionFn reactionFn) {
-    WatchRecord<_Handler> watchRecord =
-        _cache.putIfAbsent(expression.expression,
-            () => expression.setupWatch(this));
+    WatchRecord<_Handler> watchRecord = _cache[expression.expression];
+    if (watchRecord == null) {
+      _cache[expression.expression] = watchRecord = expression.setupWatch(this);
+    }
     return watchRecord.handler.addReactionFn(reactionFn);
   }
 
@@ -160,8 +161,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     _fieldCost++;
     fieldHandler.watchRecord = watchRecord;
 
-    WatchRecord<_Handler> lhsWR = _cache.putIfAbsent(lhs.expression,
-        () => lhs.setupWatch(this));
+    WatchRecord<_Handler> lhsWR = _cache[lhs.expression];
+    if (lhsWR == null) {
+      lhsWR = _cache[lhs.expression] = lhs.setupWatch(this);
+    }
 
     // We set a field forwarding handler on LHS. This will allow the change
     // objects to propagate to the current WatchRecord.
@@ -177,8 +180,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     var watchRecord = _changeDetector.watch(null, null, collectionHandler);
     _collectionCost++;
     collectionHandler.watchRecord = watchRecord;
-    WatchRecord<_Handler> astWR = _cache.putIfAbsent(ast.expression,
-        () => ast.setupWatch(this));
+    WatchRecord<_Handler> astWR = _cache[ast.expression];
+    if (astWR == null) {
+      astWR = _cache[ast.expression] = ast.setupWatch(this);
+    }
 
     // We set a field forwarding handler on LHS. This will allow the change
     // objects to propagate to the current WatchRecord.
@@ -229,8 +234,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     invokeHandler.watchRecord = evalWatchRecord;
 
     if (lhsAST != null) {
-      var lhsWR = _cache.putIfAbsent(lhsAST.expression,
-          () => lhsAST.setupWatch(this));
+      var lhsWR = _cache[lhsAST.expression];
+      if (lhsWR == null) {
+        lhsWR = _cache[lhsAST.expression] = lhsAST.setupWatch(this);
+      }
       lhsWR.handler.addForwardHandler(invokeHandler);
       invokeHandler.acceptValue(lhsWR.currentValue);
     }
@@ -238,8 +245,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     // Convert the args from AST to WatchRecords
     for (var i = 0; i < argsAST.length; i++) {
       var ast = argsAST[i];
-      WatchRecord<_Handler> record =
-          _cache.putIfAbsent(ast.expression, () => ast.setupWatch(this));
+      WatchRecord<_Handler> record = _cache[ast.expression];
+      if (record == null) {
+        record = _cache[ast.expression] = ast.setupWatch(this);
+      }
       _ArgHandler handler = new _PositionalArgHandler(this, evalWatchRecord, i);
       _ArgHandlerList._add(invokeHandler, handler);
       record.handler.addForwardHandler(handler);
@@ -247,8 +256,10 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
     }
 
     namedArgsAST.forEach((Symbol name, AST ast) {
-      WatchRecord<_Handler> record = _cache.putIfAbsent(ast.expression,
-          () => ast.setupWatch(this));
+      WatchRecord<_Handler> record = _cache[ast.expression];
+      if (record == null) {
+        record = _cache[ast.expression] = ast.setupWatch(this);
+      }
       _ArgHandler handler = new _NamedArgHandler(this, evalWatchRecord, name);
       _ArgHandlerList._add(invokeHandler, handler);
       record.handler.addForwardHandler(handler);

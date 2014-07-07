@@ -118,7 +118,8 @@ class ElementBinder {
 
   void _createAttrMappings(directive, scope, List<MappingParts> mappings, nodeAttrs, tasks) {
     Scope directiveScope; // Only created if there is a two-way binding in the element.
-    mappings.forEach((MappingParts p) {
+    for(var i = 0; i < mappings.length; i++) {
+      MappingParts p = mappings[i];
       var attrName = p.attrName;
       var attrValueAST = p.attrValueAST;
       AST dstAST = p.dstAST;
@@ -142,7 +143,7 @@ class ElementBinder {
         } else {
           _bindOneWay(tasks, bindAttr, scope, dstAST, directive);
         }
-        return;
+        continue;
       }
 
       switch (p.mode) {
@@ -155,7 +156,7 @@ class ElementBinder {
           break;
 
         case '<=>': // two-way
-          if (nodeAttrs[attrName] == null) return;
+          if (nodeAttrs[attrName] == null) continue;
           if (directiveScope == null) {
             directiveScope = scope.createChild(directive);
           }
@@ -164,13 +165,12 @@ class ElementBinder {
           break;
 
         case '=>': // one-way
-          if (nodeAttrs[attrName] == null) return;
-          _bindOneWay(tasks, attrValueAST, scope,
-              dstAST, directive);
+          if (nodeAttrs[attrName] == null) continue;
+          _bindOneWay(tasks, attrValueAST, scope, dstAST, directive);
           break;
 
         case '=>!': //  one-way, one-time
-          if (nodeAttrs[attrName] == null) return;
+          if (nodeAttrs[attrName] == null) continue;
 
           var watch;
           var lastOneTimeValue;
@@ -193,7 +193,7 @@ class ElementBinder {
           _bindCallback(dstAST.parsedExp, directive, nodeAttrs[attrName], scope);
           break;
       }
-    });
+    }
   }
 
   void _link(nodeInjector, probe, scope, nodeAttrs) {
