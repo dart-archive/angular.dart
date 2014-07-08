@@ -124,7 +124,6 @@ main() {
         "angular.core.dom_internal.EventHandler",
         "angular.core.dom_internal.Http",
         "angular.core.dom_internal.HttpBackend",
-        "angular.core.dom_internal.HttpConfig",
         "angular.core.dom_internal.HttpDefaultHeaders",
         "angular.core.dom_internal.HttpDefaults",
         "angular.core.dom_internal.HttpInterceptor",
