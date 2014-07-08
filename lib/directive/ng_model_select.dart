@@ -50,7 +50,9 @@ class InputSelect implements AttachAware {
         _model.watchCollection = true;
         _mode = new _MultipleSelectionMode(expando, _selectElement, _model);
       }
-      _mode.onModelChange(_model.viewValue);
+      _scope.rootScope.domRead(() {
+        _mode.onModelChange(_model.viewValue);
+      });
     });
 
     _selectElement.onChange.listen((event) => _mode.onViewChange(event));
