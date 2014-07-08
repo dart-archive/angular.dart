@@ -4,46 +4,29 @@ part of angular.directive;
  * Base class for NgIf and NgUnless.
  */
 abstract class _NgUnlessIfAttrDirectiveBase {
-  final BoundViewFactory _boundViewFactory;
+  final ViewFactory _viewFactory;
   final ViewPort _viewPort;
   final Scope _scope;
 
   View _view;
 
-  /**
-   * The new child scope.  This child scope is recreated whenever the `ng-if`
-   * subtree is inserted into the DOM and destroyed when it's removed from the
-   * DOM.  Refer
-   * https://github.com/angular/angular.js/wiki/The-Nuances-of-Scope-prototypical-Inheritance prototypical inheritance
-   */
-  Scope _childScope;
-
-  _NgUnlessIfAttrDirectiveBase(this._boundViewFactory, this._viewPort,
-                               this._scope);
+  _NgUnlessIfAttrDirectiveBase(this._viewFactory, this._viewPort, this._scope) {
+    assert(_viewFactory != null);
+  }
 
   // Override in subclass.
   void set condition(value);
 
   void _ensureViewExists() {
     if (_view == null) {
-      _childScope = _scope.createChild(new PrototypeMap(_scope.context));
-      _view = _boundViewFactory(_childScope);
-      var view = _view;
-      _scope.rootScope.domWrite(() {
-        _viewPort.insert(view);
-     });
+      _view = _viewPort.insertNew(_viewFactory);
     }
   }
 
   void _ensureViewDestroyed() {
     if (_view != null) {
-      var view = _view;
-      _scope.rootScope.domWrite(() {
-        _viewPort.remove(view);
-      });
-      _childScope.destroy();
+      _viewPort.remove(_view);
       _view = null;
-      _childScope = null;
     }
   }
 }
@@ -94,9 +77,8 @@ abstract class _NgUnlessIfAttrDirectiveBase {
     selector:'[ng-if]',
     map: const {'.': '=>condition'})
 class NgIf extends _NgUnlessIfAttrDirectiveBase {
-  NgIf(BoundViewFactory boundViewFactory,
-       ViewPort viewPort,
-       Scope scope): super(boundViewFactory, viewPort, scope);
+  NgIf(ViewFactory viewFactory, ViewPort viewPort, Scope scope)
+      : super(viewFactory, viewPort, scope);
 
   void set condition(value) {
     if (toBool(value)) {
@@ -156,9 +138,8 @@ class NgIf extends _NgUnlessIfAttrDirectiveBase {
     map: const {'.': '=>condition'})
 class NgUnless extends _NgUnlessIfAttrDirectiveBase {
 
-  NgUnless(BoundViewFactory boundViewFactory,
-           ViewPort viewPort,
-           Scope scope): super(boundViewFactory, viewPort, scope);
+  NgUnless(ViewFactory viewFactory, ViewPort viewPort, Scope scope)
+      : super(viewFactory, viewPort, scope);
 
   void set condition(value) {
     if (!toBool(value)) {
