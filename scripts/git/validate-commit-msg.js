@@ -23,7 +23,8 @@ var TYPES = {
   refactor: true,
   test: true,
   chore: true,
-  revert: true
+  revert: true,
+  perf: true
 };
 
 
