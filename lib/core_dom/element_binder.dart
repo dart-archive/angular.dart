@@ -77,7 +77,7 @@ class ElementBinder {
 
   void _bindTwoWay(tasks, AST ast, scope, directiveScope,
                    controller, AST dstAST) {
-    var taskId = tasks.registerTask();
+    var taskId = (tasks != null) ? tasks.registerTask() : 0;
 
     var viewOutbound = false;
     var viewInbound = false;
@@ -86,7 +86,7 @@ class ElementBinder {
         viewOutbound = true;
         scope.rootScope.runAsync(() => viewOutbound = false);
         var value = dstAST.parsedExp.assign(controller, inboundValue);
-        tasks.completeTask(taskId);
+        if (tasks != null) tasks.completeTask(taskId);
         return value;
       }
     });
@@ -96,18 +96,18 @@ class ElementBinder {
           viewInbound = true;
           scope.rootScope.runAsync(() => viewInbound = false);
           ast.parsedExp.assign(scope.context, outboundValue);
-          tasks.completeTask(taskId);
+          if (tasks != null) tasks.completeTask(taskId);
         }
       });
     }
   }
 
   _bindOneWay(tasks, ast, scope, AST dstAST, controller) {
-    var taskId = tasks.registerTask();
+    var taskId = (tasks != null) ? tasks.registerTask() : 0;
 
     scope.watchAST(ast, (v, _) {
       dstAST.parsedExp.assign(controller, v);
-      tasks.completeTask(taskId);
+      if (tasks != null) tasks.completeTask(taskId);
     });
   }
 
@@ -147,10 +147,10 @@ class ElementBinder {
 
       switch (p.mode) {
         case '@': // string
-          var taskId = tasks.registerTask();
+          var taskId = (tasks != null) ? tasks.registerTask() : 0;
           nodeAttrs.observe(attrName, (value) {
             dstAST.parsedExp.assign(directive, value);
-            tasks.completeTask(taskId);
+            if (tasks != null) tasks.completeTask(taskId);
           });
           break;
 
@@ -207,9 +207,9 @@ class ElementBinder {
         scope.context[(ref.annotation as Controller).publishAs] = directive;
       }
 
-      var tasks = new _TaskList(directive is AttachAware ? () {
+      var tasks = directive is AttachAware ? new _TaskList(() {
         if (scope.isAttached) directive.attach();
-      } : null);
+      }) : null;
 
       if (ref.mappings.isNotEmpty) {
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
@@ -217,16 +217,16 @@ class ElementBinder {
       }
 
       if (directive is AttachAware) {
-        var taskId = tasks.registerTask();
+        var taskId = (tasks != null) ? tasks.registerTask() : 0;
         Watch watch;
         watch = scope.watch('1', // Cheat a bit.
             (_, __) {
           watch.remove();
-          tasks.completeTask(taskId);
+          if (tasks != null) tasks.completeTask(taskId);
         });
       }
 
-      tasks.doneRegistering();
+      if (tasks != null) tasks.doneRegistering();
 
       if (directive is DetachAware) {
         scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
