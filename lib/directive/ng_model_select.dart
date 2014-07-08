@@ -129,10 +129,10 @@ class _SelectMode {
   destroy() {}
 
   get _options => select.querySelectorAll('option');
-  _forEachOption(fn, [quiteOnReturn = false]) {
+  _forEachOption(fn, [quitOnReturn = false]) {
     for (var i = 0; i < _options.length; i++) {
       var retValue = fn(_options[i], i);
-      if (quiteOnReturn && retValue != null) return retValue;
+      if (quitOnReturn && retValue != null) return retValue;
     }
     return null;
   }
