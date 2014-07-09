@@ -211,13 +211,13 @@ abstract class Directive {
 
   const Directive({
     this.selector,
-    this.children: Directive.COMPILE_CHILDREN,
-    visibility,
+    this.children,
+    this.visibility,
     this.module,
     this.map: const {},
     this.exportExpressions: const [],
     this.exportExpressionAttrs: const []
-  }) : this.visibility = (visibility == null) ? Visibility.CHILDREN : visibility;
+  });
 
   toString() => selector;
   get hashCode => selector.hashCode;

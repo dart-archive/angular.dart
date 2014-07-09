@@ -18,7 +18,8 @@ part of angular.directive;
  *
  */
 @Decorator(
-    selector: 'select[ng-model]')
+    selector: 'select[ng-model]',
+    visibility: Visibility.CHILDREN)
 class InputSelect implements AttachAware {
   final expando = new Expando<OptionValue>();
   final dom.SelectElement _selectElement;
