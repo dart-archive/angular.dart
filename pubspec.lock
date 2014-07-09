@@ -36,7 +36,7 @@ packages:
   guinness:
     description: guinness
     source: hosted
-    version: "0.1.5"
+    version: "0.1.12"
   html5lib:
     description: html5lib
     source: hosted
