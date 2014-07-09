@@ -11,13 +11,13 @@ _run({bool animationsAllowed}) {
     Animate animate;
     MockAnimationLoop runner;
 
-    beforeEach(inject((TestBed tb, Expando expand) {
+    beforeEach((TestBed tb, Expando expand) {
       _ = tb;
       runner = new MockAnimationLoop(animationsAllowed);
       animate = new CssAnimate(runner,
           new CssAnimationMap(), new AnimationOptimizer(expand));
       animate.animationsAllowed = animationsAllowed;
-    }));
+    });
 
     it('should add a css class to an element node', async(() {
       _.compile('<div></div>');

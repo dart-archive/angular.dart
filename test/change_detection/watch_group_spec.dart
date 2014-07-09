@@ -23,7 +23,7 @@ void main() {
     Parser parser;
     ASTParser astParser;
 
-    beforeEach(inject((Logger _logger, Parser _parser, ASTParser _astParser) {
+    beforeEach((Logger _logger, Parser _parser, ASTParser _astParser) {
       context = {};
       var getterFactory = new DynamicFieldGetterFactory();
       changeDetector = new DirtyCheckingChangeDetector(getterFactory);
@@ -31,7 +31,7 @@ void main() {
       logger = _logger;
       parser = _parser;
       astParser = _astParser;
-    }));
+    });
 
     AST parse(String expression) => astParser(expression);
 
@@ -64,13 +64,13 @@ void main() {
       expect(logger).toEqual(list);
     }
 
-    beforeEach(inject((Logger _logger) {
+    beforeEach((Logger _logger) {
       context = {};
       var getterFactory = new DynamicFieldGetterFactory();
       changeDetector = new DirtyCheckingChangeDetector(getterFactory);
       watchGrp = new RootWatchGroup(getterFactory, changeDetector, context);
       logger = _logger;
-    }));
+    });
 
     it('should have a toString for debugging', () {
       watchGrp.watch(parse('a'), (v, p) {});
