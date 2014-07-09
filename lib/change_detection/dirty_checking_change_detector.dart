@@ -1372,7 +1372,7 @@ class _DuplicateItemRecordList {
     ItemRecord record;
     for (record = head; record != null; record = record._nextDup) {
       if ((hideIndex == null || hideIndex < record.currentIndex) &&
-          identical(record.item, key)) {
+          identical(record.item, item)) {
         return record;
       }
     }
