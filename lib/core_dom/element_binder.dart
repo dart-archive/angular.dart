@@ -16,9 +16,9 @@ class TemplateElementBinder extends ElementBinder {
 
   TemplateElementBinder(perf, expando, parser, config,
                         this.template, this.templateBinder,
-                        onEvents, bindAttrs, childMode)
+                        onEvents, bindAttrs, childMode, helperAst)
       : super(perf, expando, parser, config,
-          null, null, onEvents, bindAttrs, childMode);
+          null, null, onEvents, bindAttrs, childMode, helperAst);
 
   String toString() => "[TemplateElementBinder template:$template]";
 
@@ -44,6 +44,7 @@ class ElementBinder {
   final Expando _expando;
   final Parser _parser;
   final CompilerConfig _config;
+  AST _helperAst;
 
   final Map onEvents;
   final Map bindAttrs;
@@ -58,7 +59,7 @@ class ElementBinder {
 
   ElementBinder(this._perf, this._expando, this._parser, this._config,
                 this.componentData, this.decorators,
-                this.onEvents, this.bindAttrs, this.childMode);
+                this.onEvents, this.bindAttrs, this.childMode, this._helperAst);
 
   final bool hasTemplate = false;
 

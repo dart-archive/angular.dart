@@ -2,6 +2,7 @@ library ng_model_spec;
 
 import '../_specs.dart';
 import 'dart:html' as dom;
+import 'package:angular/change_detection/ast_parser.dart';
 
 //-----------------------------------------------------------------------------
 // Utility functions
@@ -95,7 +96,7 @@ void main() {
 
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new Animate());
+            nodeAttrs, i.get(ASTParser), new Animate());
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
 
@@ -375,7 +376,7 @@ void main() {
 
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new Animate());
+            nodeAttrs, i.get(ASTParser), new Animate());
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
 
@@ -467,7 +468,7 @@ void main() {
 
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new Animate());
+            nodeAttrs, i.get(ASTParser), new Animate());
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
 
@@ -567,7 +568,7 @@ void main() {
 
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new Animate());
+            nodeAttrs, i.get(ASTParser), new Animate());
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
 
@@ -778,7 +779,7 @@ void main() {
 
         nodeAttrs['ng-model'] = 'model';
         var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
-            nodeAttrs, new Animate());
+            nodeAttrs, i.get(ASTParser), new Animate());
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
 

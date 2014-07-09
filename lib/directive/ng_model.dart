@@ -30,6 +30,9 @@ class _NoopModelConverter extends NgModelConverter {
 @Decorator(selector: '[ng-model]')
 class NgModel extends NgControl implements AttachAware {
   final Scope _scope;
+  final ASTParser _astParser;
+  AST _ast;
+  AST _collectionAst;
 
   BoundSetter setter = (_, [__]) => null;
 
@@ -44,11 +47,14 @@ class NgModel extends NgControl implements AttachAware {
   Watch _watch;
   bool _watchCollection;
 
-  NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs,
+  NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs, this._astParser,
           Animate animate)
       : super(element, injector, animate)
   {
     _expression = attrs["ng-model"];
+    _ast = _astParser(_expression);
+    _collectionAst = _astParser(_expression, collection: true);
+
     watchCollection = false;
 
     //Since the user will never be editing the value of a select element then
@@ -132,7 +138,7 @@ class NgModel extends NgControl implements AttachAware {
 
   // TODO(misko): could we get rid of watch collection, and just always watch the collection?
   bool get watchCollection => _watchCollection;
-  void set watchCollection(value) {
+  void set watchCollection(bool value) {
     if (_watchCollection == value) return;
 
     var onChange = (value, [_]) {
@@ -145,14 +151,13 @@ class NgModel extends NgControl implements AttachAware {
     _watchCollection = value;
     if (_watch!=null) _watch.remove();
     if (_watchCollection) {
-      _watch = _scope.watch(_expression, (changeRecord, _) {
+      _watch = _scope.watchAST(_collectionAst, (changeRecord, _) {
             onChange(changeRecord is CollectionChangeRecord
                         ? changeRecord.iterable
                         : changeRecord);
-          },
-          collection: true);
-    } else if (_expression != null) {
-      _watch = _scope.watch(_expression, onChange);
+          });
+    } else if (_ast != null) {
+      _watch = _scope.watchAST(_ast, onChange);
     }
   }
 
