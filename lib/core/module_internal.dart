@@ -36,18 +36,16 @@ class CoreModule extends Module {
   CoreModule() {
     bind(ScopeDigestTTL);
 
-    bind(MetadataExtractor);
     bind(ExceptionHandler);
     bind(FormatterMap);
     bind(Interpolate);
     bind(RootScope);
-    bind(Scope, toFactory: (injector) => injector.getByKey(ROOT_SCOPE_KEY));
-    bind(ClosureMap, toFactory: (_) => throw "Must provide dynamic/static ClosureMap.");
+    bind(Scope, inject: [ROOT_SCOPE_KEY]);
+    bind(ClosureMap, toFactory: () => throw "Must provide dynamic/static ClosureMap.");
     bind(ScopeStats);
     bind(ScopeStatsEmitter);
-    bind(ScopeStatsConfig, toFactory: (i) => new ScopeStatsConfig());
+    bind(ScopeStatsConfig, toFactory: () => new ScopeStatsConfig());
     bind(Object, toValue: {}); // RootScope context
-    bind(VmTurnZone);
 
     bind(Parser, toImplementation: DynamicParser);
     bind(ParserBackend, toImplementation: DynamicParserBackend);

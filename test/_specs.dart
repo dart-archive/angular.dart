@@ -2,6 +2,7 @@ library ng_specs;
 
 import 'dart:html' hide Animation;
 
+import 'package:di/di_dynamic.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
 
@@ -14,7 +15,6 @@ export 'package:guinness/guinness_html.dart';
 
 export 'package:mock/mock.dart';
 export 'package:di/di.dart';
-export 'package:di/dynamic_injector.dart';
 export 'package:angular/angular.dart';
 export 'package:angular/application.dart';
 export 'package:angular/introspection.dart';
@@ -114,6 +114,7 @@ _removeNgBinding(node) {
 }
 
 main() {
+  setupModuleTypeReflector();
   gns.beforeEach(setUpInjector, priority:3);
   gns.afterEach(tearDownInjector);
 

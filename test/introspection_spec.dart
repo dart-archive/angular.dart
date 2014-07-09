@@ -10,8 +10,8 @@ void main() {
     it('should retrieve ElementProbe', (TestBed _) {
       _.compile('<div ng-bind="true"></div>');
       ElementProbe probe = ngProbe(_.rootElement);
-      expect(probe.injector.parent).toBe(_.injector);
-      expect(ngInjector(_.rootElement).parent).toBe(_.injector);
+      expect(probe.directiveInjector.appInjector).toBe(_.injector);
+      expect(ngInjector(_.rootElement)).toBe(_.injector);
       expect(probe.directives[0] is NgBind).toBe(true);
       expect(ngDirectives(_.rootElement)[0] is NgBind).toBe(true);
       expect(probe.scope).toBe(_.rootScope);
@@ -42,7 +42,7 @@ void main() {
 
       ElementProbe probe = ngProbe('[ng-show]');
       expect(probe).toBeDefined();
-      expect(probe.injector.get(NgShow) is NgShow).toEqual(true);
+      expect(probe.directiveInjector.get(NgShow) is NgShow).toEqual(true);
       _.rootElement.remove();
     });
 

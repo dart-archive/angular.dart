@@ -9,7 +9,6 @@
  */
 library angular.app.factory;
 
-import 'package:di/dynamic_injector.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core/parser/parser.dart' show ClosureMap;
@@ -64,8 +63,6 @@ class _DynamicApplication extends Application {
         ..bind(FieldGetterFactory, toImplementation: DynamicFieldGetterFactory)
         ..bind(ClosureMap, toImplementation: DynamicClosureMap);
   }
-
-  Injector createInjector() => new DynamicInjector(modules: modules);
 }
 
 /**

@@ -20,12 +20,12 @@ main() {
       scope = rootScope;
       compile = (html, [scope]) {
         element = e(html);
-        var viewFactory = compiler([element], _directives);
-        var blockInjector = injector;
+        ViewFactory viewFactory = compiler([element], _directives);
+        Injector blockInjector = injector;
         if (scope != null) {
-          viewFactory.bind(injector)(scope);
+          viewFactory.bind(null, injector)(scope);
         } else {
-          viewFactory(injector, [element]);
+          viewFactory(rootScope, null, injector, [element]);
         }
         return element;
       };
@@ -35,7 +35,7 @@ main() {
     it(r'should set create a list of items', (Scope scope, Compiler compiler, Injector injector) {
       var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
-      View view = viewFactory(injector, element);
+      View view = viewFactory(scope, null, injector, element);
       scope.context['items'] = ['a', 'b'];
       scope.apply();
       expect(element).toHaveText('ab');
@@ -50,7 +50,7 @@ main() {
       });
       var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
-      View view = viewFactory(injector, element);
+      View view = viewFactory(scope, null, injector, element);
       scope.apply();
       expect(element).toHaveText('ab');
     });
@@ -60,7 +60,7 @@ main() {
         (Scope scope, Compiler compiler, Injector injector) {
       var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
-      View view = viewFactory(injector, element);
+      View view = viewFactory(scope, null, injector, element);
       scope.context['items'] = ['a', 'b'].map((i) => i); // makes an iterable
       scope.apply();
       expect(element).toHaveText('ab');
@@ -531,23 +531,20 @@ main() {
     });
 
     it(r'should not move blocks when elements only added or removed',
-    inject((Injector injector) {
+    inject((Injector injector, Scope rootScope, Compiler compiler,
+            DirectiveMap _directives, ExceptionHandler exceptionHandler) {
       var throwOnMove = new MockAnimate();
       var child = injector.createChild(
           [new Module()..bind(Animate, toValue: throwOnMove)]);
 
-      child.invoke((Injector injector, Scope rootScope, Compiler compiler,
-                    DirectiveMap _directives) {
-        exceptionHandler = injector.get(ExceptionHandler);
-        scope = rootScope;
-        compile = (html) {
-          element = e(html);
-          var viewFactory = compiler([element], _directives);
-          viewFactory(injector, [element]);
-          return element;
-        };
-        directives = _directives;
-      });
+      scope = rootScope;
+      compile = (html) {
+        element = e(html);
+        var viewFactory = compiler([element], _directives);
+        viewFactory(scope, null, child, [element]);
+        return element;
+      };
+      directives = _directives;
 
       element = compile(
           '<ul>'

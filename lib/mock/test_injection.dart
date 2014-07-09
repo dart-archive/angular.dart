@@ -3,26 +3,26 @@ library angular.mock.test_injection;
 import 'package:angular/application_factory.dart';
 import 'package:angular/mock/module.dart';
 import 'package:di/di.dart';
-import 'package:di/dynamic_injector.dart';
+import 'dart:mirrors';
 
 _SpecInjector _currentSpecInjector = null;
 
 class _SpecInjector {
-  DynamicInjector moduleInjector;
-  DynamicInjector injector;
+  Injector moduleInjector;
+  Injector injector;
   dynamic injectiorCreateLocation;
   final modules = <Module>[];
   final initFns = <Function>[];
 
   _SpecInjector() {
     var moduleModule = new Module()
-      ..bind(Module, toFactory: (Injector injector) => addModule(new Module()));
-    moduleInjector = new DynamicInjector(modules: [moduleModule]);
+      ..bind(Module, toFactory: () => addModule(new Module()));
+    moduleInjector = new ModuleInjector([moduleModule]);
   }
 
   addModule(module) {
     if (injector != null) {
-      throw ["Injector already crated, can not add more modules."];
+      throw ["Injector already created, can not add more modules."];
     }
     modules.add(module);
     return module;
@@ -34,7 +34,7 @@ class _SpecInjector {
     }
     try {
       if (fnOrModule is Function) {
-        var initFn = moduleInjector.invoke(fnOrModule);
+        var initFn = _invoke(moduleInjector, fnOrModule);
         if (initFn is Function) initFns.add(initFn);
       } else if (fnOrModule is Module) {
         addModule(fnOrModule);
@@ -50,12 +50,12 @@ class _SpecInjector {
     try {
       if (injector == null) {
         injectiorCreateLocation = declarationStack;
-        injector = new DynamicInjector(modules: modules); // Implicit injection is disabled.
+        injector = new ModuleInjector(modules); // Implicit injection is disabled.
         initFns.forEach((fn) {
-          injector.invoke(fn);
+          _invoke(injector, fn);
         });
       }
-      injector.invoke(fn);
+      _invoke(injector, fn);
     } catch (e, s) {
       throw "$e\n$s\nDECLARED AT:$declarationStack";
     }
@@ -64,6 +64,25 @@ class _SpecInjector {
   reset() {
     injector = null;
     injectiorCreateLocation = null;
+  }
+
+  _invoke(Injector injector, Function fn) {
+    ClosureMirror cm = reflect(fn);
+    MethodMirror mm = cm.function;
+    List args = mm.parameters.map((ParameterMirror parameter) {
+      var metadata = parameter.metadata;
+      Key key = new Key(
+          (parameter.type as ClassMirror).reflectedType,
+          metadata.isEmpty ? null : metadata.first.type.reflectedType);
+      try {
+        return injector.getByKey(key);
+      } on NoProviderError catch (e) {
+        (e as NoProviderError).appendKey(key);
+        rethrow;
+      }
+    }).toList();
+
+    return cm.apply(args).reflectee;
   }
 }
 

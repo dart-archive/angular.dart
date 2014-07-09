@@ -91,7 +91,7 @@ class InputSelect implements AttachAware {
  * provides [ng-value] which allows binding to any expression.
  *
  */
-@Decorator(selector: 'option', module: NgValue.moduleFactory)
+@Decorator(selector: 'option', module: NgValue.module)
 class OptionValue implements AttachAware,
     DetachAware {
   final InputSelect _inputSelectDirective;

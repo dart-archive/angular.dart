@@ -1,36 +1,29 @@
 library angular.core.annotation_src;
 
-import "package:di/di.dart" show Injector, Visibility;
+import "package:di/di.dart" show Injector, Visibility, Factory;
+
+abstract class DirectiveBinder {
+  bind(key, {Function toFactory, Factory toFactoryPos, inject,
+             Visibility visibility: Visibility.LOCAL});
+}
+
+typedef void DirectiveBinderFn(DirectiveBinder module);
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
-
-const String SHADOW_DOM_INJECTOR_NAME = 'SHADOW_INJECTOR';
-
-skipShadow(Injector injector)
-    => injector.name == SHADOW_DOM_INJECTOR_NAME ? injector.parent : injector;
-
-localVisibility (Injector requesting, Injector defining)
-    => identical(skipShadow(requesting), defining);
-
-directChildrenVisibility(Injector requesting, Injector defining) {
-  requesting = skipShadow(requesting);
-  return identical(requesting.parent, defining) || localVisibility(requesting, defining);
-}
 
 Directive cloneWithNewMap(Directive annotation, map)
     => annotation._cloneWithNewMap(map);
 
 String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
+class Visibility {
+  static const LOCAL = const Visibility._('LOCAL');
+  static const CHILDREN = const Visibility._('CHILDREN');
+  static const DIRECT_CHILD = const Visibility._('DIRECT_CHILD');
 
-/**
- * An annotation when applied to a class indicates that the class (service) will
- * be instantiated by di injector. This annotation is also used to designate which
- * classes need to have a static factory generated when using static angular, and
- * therefore is required on any injectable class.
- */
-class Injectable {
-  const Injectable();
+  final String name;
+  const Visibility._(this.name);
+  toString() => 'Visibility: $name';
 }
 
 /**
@@ -39,16 +32,19 @@ class Injectable {
 abstract class Directive {
 
   /// The directive can only be injected to other directives on the same element.
-  static const Visibility LOCAL_VISIBILITY = localVisibility;
+  @deprecated // ('Use Visibility.LOCAL instead')
+  static const Visibility LOCAL_VISIBILITY = Visibility.LOCAL;
 
   /// The directive can be injected to other directives on the same or child elements.
-  static const Visibility CHILDREN_VISIBILITY = null;
+  @deprecated// ('Use Visibility.CHILDREN instead')
+  static const Visibility CHILDREN_VISIBILITY = Visibility.CHILDREN;
 
   /**
    * The directive on this element can only be injected to other directives
    * declared on elements which are direct children of the current element.
    */
-  static const Visibility DIRECT_CHILDREN_VISIBILITY = directChildrenVisibility;
+  @deprecated// ('Use Visibility.DIRECT_CHILD instead')
+  static const Visibility DIRECT_CHILDREN_VISIBILITY = Visibility.DIRECT_CHILD;
 
   /**
    * CSS selector which will trigger this component/directive.
@@ -132,7 +128,7 @@ abstract class Directive {
    *  * [Directive.CHILDREN_VISIBILITY]
    *  * [Directive.DIRECT_CHILDREN_VISIBILITY]
    */
-  final Function module;
+  final DirectiveBinderFn module;
 
   /**
    * Use map to define the mapping of  DOM attributes to fields.
@@ -216,12 +212,12 @@ abstract class Directive {
   const Directive({
     this.selector,
     this.children: Directive.COMPILE_CHILDREN,
-    this.visibility: Directive.LOCAL_VISIBILITY,
+    visibility,
     this.module,
     this.map: const {},
     this.exportExpressions: const [],
     this.exportExpressionAttrs: const []
-  });
+  }) : this.visibility = (visibility == null) ? Visibility.CHILDREN : visibility;
 
   toString() => selector;
   get hashCode => selector.hashCode;
@@ -328,7 +324,7 @@ class Component extends Directive {
     applyAuthorStyles,
     resetStyleInheritance,
     this.publishAs,
-    module,
+    DirectiveBinderFn module,
     map,
     selector,
     visibility,
@@ -386,7 +382,7 @@ class Decorator extends Directive {
   const Decorator({children: Directive.COMPILE_CHILDREN,
                     map,
                     selector,
-                    module,
+                    DirectiveBinderFn module,
                     visibility,
                     exportExpressions,
                     exportExpressionAttrs})
@@ -439,7 +435,7 @@ class Controller extends Decorator {
                     children: Directive.COMPILE_CHILDREN,
                     this.publishAs,
                     map,
-                    module,
+                    DirectiveBinderFn module,
                     selector,
                     visibility,
                     exportExpressions,
