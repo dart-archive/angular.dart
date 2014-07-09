@@ -14,20 +14,17 @@ void main() {
       return (TestBed tb) => _ = tb;
     });
 
-    it('should allow for a scope-based compile', () {
+    it('should allow for a scope-based compile', (Scope scope) {
+      Scope childScope = scope.createChild({});
 
-      inject((Scope scope) {
-        Scope childScope = scope.createChild({});
+      _.compile('<div my-directive probe="i"></div>', scope: childScope);
 
-        _.compile('<div my-directive probe="i"></div>', scope: childScope);
+      Probe probe = _.rootScope.context['i'];
+      var directiveInst = probe.directive(MyTestBedDirective);
 
-        Probe probe = _.rootScope.context['i'];
-        var directiveInst = probe.directive(MyTestBedDirective);
+      childScope.destroy();
 
-        childScope.destroy();
-
-        expect(directiveInst.destroyed).toBe(true);
-      });
+      expect(directiveInst.destroyed).toBe(true);
     });
 
   });

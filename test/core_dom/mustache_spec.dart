@@ -9,10 +9,10 @@ main() {
       module.bind(_HelloFormatter);
       module.bind(_FooDirective);
     });
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
-    it('should replace {{}} in text', inject((Compiler compile,
-        Scope rootScope, Injector injector, DirectiveMap directives)
+    it('should replace {{}} in text', (Compiler compile, Scope rootScope,
+        Injector injector, DirectiveMap directives)
     {
       var element = es('<div>{{name}}<span>!</span></div>');
       var template = compile(element, directives);
@@ -24,7 +24,7 @@ main() {
 
       rootScope.apply();
       expect(element).toHaveText('OK!');
-    }));
+    });
 
     describe('observe/flush phase', () {
       it('should fire only when then value has settled', async((Logger log) {
@@ -44,9 +44,8 @@ main() {
       }));
     });
 
-    it('should replace {{}} in attribute', inject((Compiler compile,
-        Scope rootScope, Injector injector, DirectiveMap directives)
-    {
+    it('should replace {{}} in attribute', (Compiler compile, Scope rootScope,
+        Injector injector, DirectiveMap directives) {
       Element element =
           e('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
       var template = compile([element], directives);
@@ -60,12 +59,11 @@ main() {
       rootScope.apply();
       expect(element.attributes['some-attr']).toEqual('OK');
       expect(element.attributes['other-attr']).toEqual('23');
-    }));
+    });
 
 
-    it('should allow newlines in attribute', inject((Compiler compile,
-       RootScope rootScope, Injector injector, DirectiveMap directives)
-    {
+    it('should allow newlines in attribute', (Compiler compile,
+        RootScope rootScope, Injector injector, DirectiveMap directives) {
       Element element =
           e('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
       var template = compile([element], directives);
@@ -79,12 +77,11 @@ main() {
       rootScope.apply();
       expect(element.attributes['multiline-attr'])
           .toEqual('line1: L1\nline2: L2');
-    }));
+    });
 
 
-    it('should handle formatters', inject((Compiler compile, RootScope rootScope,
-        Injector injector, DirectiveMap directives)
-    {
+    it('should handle formatters', (Compiler compile, RootScope rootScope,
+        Injector injector, DirectiveMap directives) {
       var element = es('<div>{{"World" | hello}}</div>');
       var template = compile(element, directives);
       var view = template(rootScope, injector.get(DirectiveInjector));
@@ -93,13 +90,13 @@ main() {
       element = view.nodes;
 
       expect(element).toHaveHtml('Hello, World!');
-    }));
+    });
   });
 
   describe('NgShow', () {
     TestBed _;
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should add/remove ng-hide class', () {
       var element = _.compile('<div ng-show="isVisible"></div>');

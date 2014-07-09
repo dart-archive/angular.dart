@@ -7,10 +7,10 @@ _run({bool animationsAllowed}) {
   describe('animationsAllowed=$animationsAllowed', () {
     TestBed _;
     AnimationOptimizer optimizer;
-    beforeEach(inject((TestBed tb, Expando expand) {
+    beforeEach((TestBed tb, Expando expand) {
       _ = tb;
       optimizer = new AnimationOptimizer(expand)..animationsAllowed = animationsAllowed;
-    }));
+    });
     
     it('should prevent animations on child elements', () {
       var animation = new NoOpAnimation();

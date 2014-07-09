@@ -67,17 +67,17 @@ void main() {
 
       describe('put, get & remove', () {
 
-        it('should add cache entries via add and retrieve them via get', inject(() {
+        it('should add cache entries via add and retrieve them via get', () {
           var obj = {'bar':'baz'};
           cache.put('key1', 'bar');
           cache.put('key2', obj);
 
           expect(cache.get('key2')).toBe(obj);
           expect(cache.get('key1')).toBe('bar');
-        }));
+        });
 
 
-        it('should remove entries via remove', inject(() {
+        it('should remove entries via remove', () {
           cache.put('k1', 'foo');
           cache.put('k2', 'bar');
 
@@ -90,22 +90,22 @@ void main() {
 
           expect(cache.get('k1')).toBeNull();
           expect(cache.get('k2')).toBeNull();
-        }));
+        });
 
 
-        it('should return null when entry does not exist', inject(() {
+        it('should return null when entry does not exist', () {
           expect(cache.remove('non-existent')).toBeNull();
-        }));
+        });
 
-        it("should return value from put", inject(() {
+        it("should return value from put", () {
           var obj = {};
           expect(cache.put('k1', obj)).toBe(obj);
-        }));
+        });
       });
 
 
       describe('removeAll', () {
-        it('should blow away all data', inject(() {
+        it('should blow away all data', () {
           cache.put('id1', 1);
           cache.put('id2', 2);
           cache.put('id3', 3);
@@ -115,13 +115,13 @@ void main() {
           expect(cache.get('id1')).toBeNull();
           expect(cache.get('id2')).toBeNull();
           expect(cache.get('id3')).toBeNull();
-        }));
+        });
       });
     });
 
     // TODO(chirayu): Add a lot more tests and tests and don't rely on toString()
     describe('LRU cache', () {
-      it('should have LRU behavior with ordering keys and eviction', inject(() {
+      it('should have LRU behavior with ordering keys and eviction', () {
         var cache = new LruCache<int, int>(capacity: 4);
         cache.put(1, 10);
         cache.put(2, 20);
@@ -146,7 +146,7 @@ void main() {
         expect(stats.size).toEqual(0);
         expect(stats.hits).toEqual(2);
         expect(stats.misses).toEqual(1);
-      }));
+      });
 
       it('should hold nothing if capacity is zero', () {
         var cache = new LruCache<int, int>(capacity: 0);
