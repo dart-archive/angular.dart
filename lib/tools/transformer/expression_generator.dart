@@ -2,7 +2,9 @@ library angular.tools.transformer.expression_generator;
 
 import 'dart:async';
 import 'package:analyzer/src/generated/element.dart';
+import 'package:angular/cache/module.dart';
 import 'package:angular/core/parser/parser.dart';
+import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/tools/html_extractor.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
 import 'package:angular/tools/source_crawler.dart';
@@ -12,7 +14,7 @@ import 'package:angular/tools/transformer/referenced_uris.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:di/di.dart';
-import 'package:di/dynamic_injector.dart';
+import 'package:di/di_dynamic.dart' as di;
 import 'package:path/path.dart' as path;
 
 /**
@@ -28,6 +30,7 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
 
   ExpressionGenerator(this.options, Resolvers resolvers) {
     this.resolvers = resolvers;
+    di.setupModuleTypeReflector();
   }
 
   Future applyResolver(Transform transform, Resolver resolver) {
@@ -46,10 +49,12 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
         .forEach(htmlExtractor.parseHtml)
         .then((_) {
       var module = new Module()
-        ..bind(Parser, toFactory: (i) => i.get(DynamicParser))
-        ..bind(ParserBackend, toFactory: (i) => i.get(DartGetterSetterGen));
-      var injector =
-          new DynamicInjector(modules: [module], allowImplicitInjection: true);
+        ..install(new CacheModule())
+        ..bind(Parser, inject: [DynamicParser])
+        ..bind(ParserBackend, inject: [DartGetterSetterGen])
+        ..bind(Lexer)
+        ..bind(_ParserGetterSetter);
+      var injector = new ModuleInjector([module]);
 
       injector.get(_ParserGetterSetter).generateParser(
           htmlExtractor.expressions.toList(), outputBuffer);

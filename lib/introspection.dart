@@ -8,6 +8,7 @@ import 'package:di/di.dart';
 import 'package:angular/introspection_js.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
+import 'package:angular/core_dom/directive_injector.dart' show DirectiveInjector;
 
 /**
  * Return the [ElementProbe] object for the closest [Element] in the hierarchy.
@@ -47,7 +48,8 @@ ElementProbe ngProbe(nodeOrSelector) {
  * application from the browser's REPL, unit or end-to-end tests. The function
  * is not intended to be called from Angular application.
  */
-Injector ngInjector(nodeOrSelector) => ngProbe(nodeOrSelector).injector;
+Injector ngInjector(nodeOrSelector) => ngProbe(nodeOrSelector).appInjector;
+DirectiveInjector directiveInjector(nodeOrSelector) => ngProbe(nodeOrSelector).directiveInjector;
 
 
 /**

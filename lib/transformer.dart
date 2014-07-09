@@ -9,8 +9,7 @@ import 'package:angular/tools/transformer/html_dart_references_generator.dart';
 import 'package:angular/tools/transformer/options.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
-import 'package:di/transformer/injector_generator.dart' show InjectorGenerator;
-import 'package:di/transformer/options.dart' as di;
+import 'package:di/transformer.dart' as di;
 import 'package:path/path.dart' as path;
 
 
@@ -34,7 +33,7 @@ class AngularTransformerGroup implements TransformerGroup {
 TransformOptions _parseSettings(Map args) {
   // Default angular annotations for injectable types
   var annotations = [
-      'angular.core.annotation_src.Injectable',
+      'di.annotations.Injectable',
       'angular.core.annotation_src.Decorator',
       'angular.core.annotation_src.Controller',
       'angular.core.annotation_src.Component',
@@ -120,10 +119,10 @@ Map<String, String> _readStringMapValue(Map args, String name) {
 List<List<Transformer>> _createPhases(TransformOptions options) {
   var resolvers = new Resolvers(options.sdkDirectory);
   return [
-    [new HtmlDartReferencesGenerator(options)],
-    [new _SerialTransformer([
+    [ new HtmlDartReferencesGenerator(options) ],
+    [ new di.InjectorGenerator(options.diOptions, resolvers) ],
+    [ new _SerialTransformer([
       new ExpressionGenerator(options, resolvers),
-      new InjectorGenerator(options.diOptions, resolvers),
       new MetadataGenerator(options, resolvers),
       new StaticAngularGenerator(options, resolvers)
     ])]

@@ -19,7 +19,7 @@ class FooController {
 class BarComponent {
   var invoked = false;
   BarComponent(RootScope scope) {
-    scope.context['ctrl'] = this;
+    scope.context['barComponent'] = this;
   }
 }
 
@@ -85,7 +85,7 @@ main() {
       var shadowRoot = e.shadowRoot;
       var span = shadowRoot.querySelector('span');
       span.dispatchEvent(new CustomEvent('abc'));
-      var ctrl = _.rootScope.context['ctrl'];
+      BarComponent ctrl = _.rootScope.context['barComponent'];
       expect(ctrl.invoked).toEqual(true);
     }));
 
@@ -102,7 +102,8 @@ main() {
       document.querySelector('[on-abc]').dispatchEvent(new Event('abc'));
       var shadowRoot = document.querySelector('bar').shadowRoot;
       var shadowRootScope = _.getScope(shadowRoot);
-      expect(shadowRootScope.context['ctrl'].invoked).toEqual(false);
+      BarComponent ctrl = shadowRootScope.context['ctrl'];
+      expect(ctrl.invoked).toEqual(false);
 
       var fooScope = _.getScope(document.querySelector('[foo]'));
       expect(fooScope.context['ctrl'].invoked).toEqual(true);

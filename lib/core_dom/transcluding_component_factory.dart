@@ -96,25 +96,24 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
         _directives);
   }
 
-  FactoryFn call(dom.Node node) {
+  List<Key> get callArgs => _CALL_ARGS;
+  static var _CALL_ARGS = [ DIRECTIVE_INJECTOR_KEY, INJECTOR_KEY, SCOPE_KEY,
+                            VIEW_CACHE_KEY, HTTP_KEY, TEMPLATE_CACHE_KEY,
+                            DIRECTIVE_MAP_KEY, NG_BASE_CSS_KEY, EVENT_HANDLER_KEY];
+  Function call(dom.Node node) {
     // CSS is not supported.
     assert(_component.cssUrls == null ||
            _component.cssUrls.isEmpty);
 
     var element = node as dom.Element;
-    return (Injector injector) {
+    return (DirectiveInjector injector, Injector appInjector, Scope scope,
+            ViewCache viewCache, Http http, TemplateCache templateCache,
+            DirectiveMap directives, NgBaseCss baseCss, EventHandler eventHandler) {
 
-      var childInjector;
+      DirectiveInjector childInjector;
       var childInjectorCompleter; // Used if the ViewFuture is available before the childInjector.
 
       var component = _component;
-      Scope scope = injector.getByKey(SCOPE_KEY);
-      ViewCache viewCache = injector.getByKey(VIEW_CACHE_KEY);
-      Http http = injector.getByKey(HTTP_KEY);
-      TemplateCache templateCache = injector.getByKey(TEMPLATE_CACHE_KEY);
-      DirectiveMap directives = injector.getByKey(DIRECTIVE_MAP_KEY);
-      NgBaseCss baseCss = injector.getByKey(NG_BASE_CSS_KEY);
-
       var contentPort = new ContentPort(element);
 
       // Append the component's template as children
@@ -124,12 +123,14 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
         elementFuture = _viewFuture.then((ViewFactory viewFactory) {
           contentPort.pullNodes();
           if (childInjector != null) {
-            element.nodes.addAll(viewFactory(childInjector).nodes);
+            element.nodes.addAll(
+                viewFactory.call(childInjector.scope, childInjector, appInjector).nodes);
             return element;
           } else {
             childInjectorCompleter = new async.Completer();
             return childInjectorCompleter.future.then((childInjector) {
-              element.nodes.addAll(viewFactory(childInjector).nodes);
+              element.nodes.addAll(
+                  viewFactory.call(childInjector.scope, childInjector, appInjector).nodes);
               return element;
             });
           }
@@ -139,26 +140,18 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       }
       TemplateLoader templateLoader = new TemplateLoader(elementFuture);
 
-      Scope shadowScope = scope.createChild({});
+      Scope shadowScope = scope.createChild({'SHADOW': true});
 
-      var probe;
-      var childModule = new Module()
-          ..bind(_ref.type)
-          ..bind(NgElement)
-          ..bind(ContentPort, toValue: contentPort)
-          ..bind(Scope, toValue: shadowScope)
-          ..bind(TemplateLoader, toValue: templateLoader)
-          ..bind(dom.ShadowRoot, toValue: new ShadowlessShadowRoot(element));
+      childInjector = new ShadowlessComponentDirectiveInjector(injector, appInjector,
+          eventHandler, shadowScope, templateLoader, new ShadowlessShadowRoot(element),
+          contentPort);
+      childInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 
-      if (_f.config.elementProbeEnabled) {
-       childModule.bind(ElementProbe, toFactory: (_) => probe);
-      }
-      childInjector = injector.createChild([childModule], name: SHADOW_DOM_INJECTOR_NAME);
       if (childInjectorCompleter != null) {
         childInjectorCompleter.complete(childInjector);
       }
 
-      var controller = childInjector.get(_ref.type);
+      var controller = childInjector.getByKey(_ref.typeKey);
       shadowScope.context[component.publishAs] = controller;
       BoundComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
       return controller;

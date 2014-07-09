@@ -24,6 +24,7 @@ import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/module_internal.dart';
+import 'package:angular/core_dom/directive_injector.dart';
 import 'package:angular/utils.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/change_detection.dart';
@@ -68,7 +69,7 @@ class DirectiveModule extends Module {
     bind(NgBind, toValue: null);
     bind(NgBindTemplate, toValue: null);
     bind(NgBindHtml, toValue: null);
-    bind(dom.NodeValidator, toFactory: (_) => new dom.NodeValidatorBuilder.common());
+    bind(dom.NodeValidator, toFactory: () => new dom.NodeValidatorBuilder.common());
     bind(NgClass, toValue: null);
     bind(NgClassOdd, toValue: null);
     bind(NgClassEven, toValue: null);

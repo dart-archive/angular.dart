@@ -17,13 +17,18 @@ class MappingParts {
 class DirectiveRef {
   final dom.Node element;
   final Type type;
+  final Factory factory;
+  final List<Key> paramKeys;
   final Key typeKey;
   final Directive annotation;
   final String value;
   final AST valueAST;
   final mappings = new List<MappingParts>();
 
-  DirectiveRef(this.element, this.type, this.annotation, this.typeKey, [ this.value, this.valueAST ]);
+  DirectiveRef(this.element, type, this.annotation, this.typeKey, [ this.value, this.valueAST ])
+      : type = type,
+        factory = Module.DEFAULT_REFLECTOR.factoryFor(type),
+        paramKeys = Module.DEFAULT_REFLECTOR.parameterKeysFor(type);
 
   String toString() {
     var html = element is dom.Element
@@ -41,11 +46,12 @@ class DirectiveRef {
  */
 Injector forceNewDirectivesAndFormatters(Injector injector, List<Module> modules) {
   modules.add(new Module()
-      ..bind(Scope, toFactory: (i) {
-        var scope = i.parent.getByKey(SCOPE_KEY);
-        return scope.createChild(new PrototypeMap(scope.context));
-      }));
+      ..bind(Scope, toFactory: (Injector injector) {
+          var scope = injector.parent.getByKey(SCOPE_KEY);
+          return scope.createChild(new PrototypeMap(scope.context));
+        }, inject: [INJECTOR_KEY])
+      ..bind(DirectiveMap)
+      ..bind(FormatterMap));
 
-  return injector.createChild(modules,
-      forceNewInstances: [DirectiveMap, FormatterMap]);
+  return new ModuleInjector(modules, injector);
 }

@@ -39,7 +39,7 @@ abstract class NgControl implements AttachAware, DetachAware {
     */
   final infoStates = new Map<String, Set<NgControl>>();
 
-  NgControl(NgElement this._element, Injector injector,
+  NgControl(NgElement this._element, DirectiveInjector injector,
       Animate this._animate)
       : _parentControl = injector.parent.getByKey(NG_CONTROL_KEY);
 

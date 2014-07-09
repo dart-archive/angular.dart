@@ -41,9 +41,9 @@ class DirectiveSelector {
       }
 
       if ((match = _CONTAINS_REGEXP.firstMatch(selector)) != null) {
-        textSelector.add(new _ContainsSelector(annotation, match[1]));
+        textSelector.add(new _ContainsSelector(selector, match[1]));
       } else if ((match = _ATTR_CONTAINS_REGEXP.firstMatch(selector)) != null) {
-        attrSelector.add(new _ContainsSelector(annotation, match[1]));
+        attrSelector.add(new _ContainsSelector(selector, match[1]));
       } else if ((selectorParts = _splitCss(selector, type)) != null){
         elementSelector.addDirective(selectorParts, new _Directive(type, annotation));
       } else {
@@ -97,12 +97,12 @@ class DirectiveSelector {
           // this directive is matched on any attribute name, and so
           // we need to pass the name to the directive by prefixing it to
           // the value. Yes it is a bit of a hack.
-          _directives[selectorRegExp.annotation].forEach((type) {
+          _directives[selectorRegExp.selector].forEach((DirectiveTypeTuple tuple) {
             // Pre-compute the AST to watch this value.
             String expression = _interpolate(value);
             AST valueAST = _astParser(expression, formatters: _formatters);
             builder.addDirective(new DirectiveRef(
-                node, type, selectorRegExp.annotation, new Key(type), attrName, valueAST));
+                node, tuple.type, tuple.directive, new Key(tuple.type), attrName, valueAST));
           });
         }
       }
@@ -135,13 +135,13 @@ class DirectiveSelector {
     for (var k = 0; k < textSelector.length; k++) {
       var selectorRegExp = textSelector[k];
       if (selectorRegExp.regexp.hasMatch(value)) {
-        _directives[selectorRegExp.annotation].forEach((type) {
+        _directives[selectorRegExp.selector].forEach((tuple) {
           // Pre-compute the AST to watch this value.
           String expression = _interpolate(value);
           var valueAST = _astParser(expression, formatters: _formatters);
 
-          builder.addDirective(new DirectiveRef(node, type,
-              selectorRegExp.annotation, new Key(type), value, valueAST));
+          builder.addDirective(new DirectiveRef(node, tuple.type,
+              tuple.directive, new Key(tuple.type), value, valueAST));
         });
       }
     }
@@ -187,10 +187,10 @@ class _Directive {
 }
 
 class _ContainsSelector {
-  final Directive annotation;
+  final String selector;
   final RegExp regexp;
 
-  _ContainsSelector(this.annotation, String regexp)
+  _ContainsSelector(this.selector, String regexp)
       : regexp = new RegExp(regexp);
 }
 

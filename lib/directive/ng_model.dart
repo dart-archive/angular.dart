@@ -44,7 +44,7 @@ class NgModel extends NgControl implements AttachAware {
   Watch _watch;
   bool _watchCollection;
 
-  NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs,
+  NgModel(this._scope, NgElement element, DirectiveInjector injector, NodeAttrs attrs,
           Animate animate)
       : super(element, injector, animate)
   {
@@ -599,8 +599,9 @@ class NgBindTypeForDateLike {
 @Decorator(selector: 'input[type=week][ng-model]',
     module: InputDateLike.moduleFactory)
 class InputDateLike {
-  static Module moduleFactory() => new Module()..bind(NgBindTypeForDateLike,
-      toFactory: (Injector i) => new NgBindTypeForDateLike(i.getByKey(ELEMENT_KEY)));
+  static void moduleFactory(DirectiveBinder binder)
+        => binder.bind(NgBindTypeForDateLike,
+            toFactory: (dom.Element e) => new NgBindTypeForDateLike(e), inject: [ELEMENT_KEY]);
   final dom.InputElement inputElement;
   final NgModel ngModel;
   final NgModelOptions ngModelOptions;
@@ -694,8 +695,7 @@ final _uidCounter = new _UidCounter();
 @Decorator(selector: 'input[type=radio][ng-model][ng-value]')
 @Decorator(selector: 'option[ng-value]')
 class NgValue {
-  static Module _module = new Module()..bind(NgValue);
-  static Module moduleFactory() => _module;
+  static module(DirectiveBinder binder) => binder.bind(NgValue, visibility: Visibility.LOCAL);
 
   final dom.Element element;
   var _value;
@@ -777,7 +777,7 @@ class NgFalseValue {
  */
 @Decorator(
     selector: 'input[type=radio][ng-model]',
-    module: NgValue.moduleFactory)
+    module: NgValue.module)
 class InputRadio {
   final dom.RadioButtonInputElement radioButtonElement;
   final NgModel ngModel;

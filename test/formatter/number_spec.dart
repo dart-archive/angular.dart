@@ -8,7 +8,7 @@ void main() {
     var number;
 
     beforeEach((FormatterMap map, Injector injector) {
-      number = injector.get(map[new Formatter(name: 'number')]);
+      number = injector.get(map['number']);
     });
 
 

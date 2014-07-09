@@ -10,13 +10,15 @@ part of angular.mock;
  *    rootScope.myProbe.directive(SomeAttrDirective);
  */
 @Decorator(selector: '[probe]')
+@deprecated
 class Probe implements DetachAware {
   final Scope scope;
-  final Injector injector;
+  final DirectiveInjector directiveInjector;
+  final Injector appInjector;
   final Element element;
   String _probeName;
 
-  Probe(this.scope, this.injector, this.element) {
+  Probe(this.scope, this.directiveInjector, this.appInjector, this.element) {
     _probeName = element.attributes['probe'];
     scope.rootScope.context[_probeName] = this;
   }
@@ -28,6 +30,6 @@ class Probe implements DetachAware {
   /**
    * Retrieve a Directive at the current element.
    */
-  directive(Type type) => injector.get(type);
+  directive(Type type) => directiveInjector.get(type);
 }
 
