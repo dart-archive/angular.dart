@@ -6,10 +6,10 @@ main() {
   describe('AnimationLoop', () {
     TestBed _;
     AnimationOptimizer optimizer;
-    beforeEach(inject((TestBed tb, Expando expand) {
+    beforeEach((TestBed tb, Expando expand) {
       _ = tb;
       optimizer = new AnimationOptimizer(expand);
-    }));
+    });
     
     it('should prevent animations on child elements', () {
       var animation = new NoOpAnimation();

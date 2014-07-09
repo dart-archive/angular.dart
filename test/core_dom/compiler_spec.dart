@@ -55,7 +55,7 @@ void main() {
           ..bind(SimpleComponent);
     });
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should correctly detach transcluded content when scope destroyed', async(() {
       var scope = _.rootScope.createChild({});
@@ -88,7 +88,7 @@ void main() {
           ..bind(MyChildController);
     });
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
 
     it('should compile basic hello world', () {
       var element = _.compile('<div ng-bind="name"></div>');
@@ -778,7 +778,7 @@ void main() {
 
           Expando expando;
 
-          beforeEach(inject((Expando _expando) => expando = _expando));
+          beforeEach((Expando _expando) => expando = _expando);
 
           ['shadowy', 'shadowless'].forEach((selector) {
             it('should release expando when a node is freed ($selector)', async(() {
