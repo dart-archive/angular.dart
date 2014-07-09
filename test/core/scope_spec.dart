@@ -654,7 +654,7 @@ void main() {
 
 
           it('should skip scopes which dont have given event',
-          inject((RootScope rootScope, Logger log) {
+          (RootScope rootScope, Logger log) {
             var child1 = rootScope.createChild('A');
             rootScope.createChild('A1');
             rootScope.createChild('A2');
@@ -663,7 +663,7 @@ void main() {
             child2.on('event').listen((e) => log(e.data));
             rootScope.broadcast('event', 'OK');
             expect(log).toEqual(['OK']);
-          }));
+          });
         });
 
 
@@ -847,14 +847,14 @@ void main() {
         });
 
 
-        it(r'should execute and return value and update', inject(
-                (RootScope rootScope, ExceptionHandler e) {
-              LoggingExceptionHandler exceptionHandler = e;
-              rootScope.context['name'] = 'abc';
-              expect(rootScope.apply((context) => context['name'])).toEqual('abc');
-              expect(log).toEqual('digest;digest;');
-              exceptionHandler.assertEmpty();
-            }));
+        it(r'should execute and return value and update',
+            (RootScope rootScope, ExceptionHandler e) {
+          LoggingExceptionHandler exceptionHandler = e;
+          rootScope.context['name'] = 'abc';
+          expect(rootScope.apply((context) => context['name'])).toEqual('abc');
+          expect(log).toEqual('digest;digest;');
+          exceptionHandler.assertEmpty();
+        });
 
 
         it(r'should execute and return value and update', (RootScope rootScope) {
@@ -924,14 +924,14 @@ void main() {
           exceptionHandler.assertEmpty();
         });
 
-        it(r'should execute and return value and update', inject(
-                (RootScope rootScope, ExceptionHandler e) {
-              LoggingExceptionHandler exceptionHandler = e;
-              rootScope.context['name'] = 'abc';
-              expect(rootScope.apply((context) => context['name'])).toEqual('abc');
-              expect(log).toEqual('digest;digest;');
-              exceptionHandler.assertEmpty();
-            }));
+        it(r'should execute and return value and update',
+            (RootScope rootScope, ExceptionHandler e) {
+          LoggingExceptionHandler exceptionHandler = e;
+          rootScope.context['name'] = 'abc';
+          expect(rootScope.apply((context) => context['name'])).toEqual('abc');
+          expect(log).toEqual('digest;digest;');
+          exceptionHandler.assertEmpty();
+        });
 
         it(r'should execute and return value and update', (RootScope rootScope) {
           rootScope.context['name'] = 'abc';
@@ -1092,23 +1092,22 @@ void main() {
       });
 
 
-      it(r'should run digest multiple times', inject(
-              (RootScope rootScope) {
-            // tests a traversal edge case which we originally missed
-            var log = [];
-            var childA = rootScope.createChild({'log': log});
-            var childB = rootScope.createChild({'log': log});
+      it(r'should run digest multiple times', (RootScope rootScope) {
+        // tests a traversal edge case which we originally missed
+        var log = [];
+        var childA = rootScope.createChild({'log': log});
+        var childB = rootScope.createChild({'log': log});
 
-            rootScope.context['log'] = log;
+        rootScope.context['log'] = log;
 
-            rootScope.watch("log.add('r')", (_, __) => null);
-            childA.watch("log.add('a')", (_, __) => null);
-            childB.watch("log.add('b')", (_, __) => null);
+        rootScope.watch("log.add('r')", (_, __) => null);
+        childA.watch("log.add('a')", (_, __) => null);
+        childB.watch("log.add('b')", (_, __) => null);
 
-            // init
-            rootScope.digest();
-            expect(log.join('')).toEqual('rabrab');
-          }));
+        // init
+        rootScope.digest();
+        expect(log.join('')).toEqual('rabrab');
+      });
 
 
       it(r'should repeat watch cycle while model changes are identified', (RootScope rootScope) {
@@ -1165,7 +1164,7 @@ void main() {
       });
 
 
-      it(r'should return a function that allows listeners to be unregistered', inject(
+      it(r'should return a function that allows listeners to be unregistered',
           (RootScope rootScope) {
         var listener = guinness.createSpy('watch listener');
         var watch;
@@ -1185,7 +1184,7 @@ void main() {
         watch.remove();
         rootScope.digest(); //trigger
         expect(listener).not.toHaveBeenCalled();
-      }));
+      });
 
 
       it(r'should be possible to remove every watch',
@@ -1242,7 +1241,7 @@ void main() {
 
 
       it(r'should always call the watchr with newVal and oldVal equal on the first run',
-      inject((RootScope rootScope) {
+          (RootScope rootScope) {
         var log = [];
         var logger = (newVal, oldVal) {
           var val = (newVal == oldVal || (newVal != oldVal && oldVal != newVal)) ? newVal : 'xxx';
@@ -1267,7 +1266,7 @@ void main() {
         log = [];
         rootScope.digest();
         expect(log).toEqual([]);
-      }));
+      });
 
 
       it('should properly watch constants', (RootScope rootScope, Logger log) {

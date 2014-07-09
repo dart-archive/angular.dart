@@ -531,7 +531,7 @@ main() {
     });
 
     it(r'should not move blocks when elements only added or removed',
-    inject((Injector injector) {
+      (Injector injector) {
       var throwOnMove = new MockAnimate();
       var child = injector.createChild(
           [new Module()..bind(Animate, toValue: throwOnMove)]);
@@ -566,6 +566,6 @@ main() {
            ..apply();
 
       expect(element).toHaveText('bc');
-    }));
+    });
   });
 }
