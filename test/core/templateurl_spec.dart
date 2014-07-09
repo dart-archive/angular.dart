@@ -53,7 +53,7 @@ void main() {
             ..bind(UrlRewriter, toImplementation: PrefixedUrlRewriter);
       });
 
-      it('should use the UrlRewriter for both HTML and CSS URLs', async(inject(
+      it('should use the UrlRewriter for both HTML and CSS URLs', async(
           (Http http, Compiler compile, Scope rootScope, Logger log,
            Injector injector, VmTurnZone zone, MockHttpBackend backend,
            DirectiveMap directives) {
@@ -74,7 +74,7 @@ void main() {
         expect(element.children[0].shadowRoot).toHaveHtml(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
-      })));
+      }));
     });
 
 
@@ -88,7 +88,7 @@ void main() {
             ..bind(InlineWithCssComponent);
       });
 
-      it('should replace element with template from url', async(inject(
+      it('should replace element with template from url', async(
           (Http http, Compiler compile, Scope rootScope,  Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend.expectGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
@@ -104,9 +104,9 @@ void main() {
         rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
-      })));
+      }));
 
-      it('should load template from URL once', async(inject(
+      it('should load template from URL once', async(
           (Http http, Compiler compile, Scope rootScope,  Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend.whenGET('simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
@@ -127,9 +127,9 @@ void main() {
 
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
-      })));
+      }));
 
-      it('should load a CSS file into a style', async(inject(
+      it('should load a CSS file into a style', async(
           (Http http, Compiler compile, Scope rootScope, Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend
@@ -150,9 +150,9 @@ void main() {
         rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
-      })));
+      }));
 
-      it('should load a CSS file with a \$template', async(inject(
+      it('should load a CSS file with a \$template', async(
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
@@ -163,9 +163,9 @@ void main() {
         backend.flush();
         microLeap();
         expect(element[0]).toHaveText('.hello{}inline!');
-      })));
+      }));
 
-      it('should ignore CSS load errors ', async(inject(
+      it('should ignore CSS load errors ', async(
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
@@ -180,9 +180,9 @@ void main() {
             'HTTP 500: some error\n'
             '*/\n'
             'inline!');
-      })));
+      }));
 
-      it('should load a CSS with no template', async(inject(
+      it('should load a CSS with no template', async(
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         var element = es('<div><only-css log>ignore</only-css><div>');
@@ -193,9 +193,9 @@ void main() {
         backend.flush();
         microLeap();
         expect(element[0]).toHaveText('.hello{}');
-      })));
+      }));
 
-      it('should load the CSS before the template is loaded', async(inject(
+      it('should load the CSS before the template is loaded', async(
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
         backend
@@ -209,7 +209,7 @@ void main() {
         backend.flush();
         microLeap();
         expect(element.first).toHaveText('.hello{}Simple!');
-      })));
+      }));
     });
 
     describe('multiple css loading', () {
@@ -219,7 +219,7 @@ void main() {
             ..bind(HtmlAndMultipleCssComponent);
       });
 
-      it('should load multiple CSS files into a style', async(inject(
+      it('should load multiple CSS files into a style', async(
           (Http http, Compiler compile, Scope rootScope, Logger log,
            Injector injector, MockHttpBackend backend, DirectiveMap directives) {
         backend
@@ -241,7 +241,7 @@ void main() {
         rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
-      })));
+      }));
     });
 
     describe('style cache', () {
@@ -251,7 +251,7 @@ void main() {
             ..bind(TemplateCache, toValue: new TemplateCache(capacity: 0));
       });
 
-      it('should load css from the style cache for the second component', async(inject(
+      it('should load css from the style cache for the second component', async(
           (Http http, Compiler compile, MockHttpBackend backend, RootScope rootScope,
            DirectiveMap directives, Injector injector) {
         backend
@@ -277,7 +277,7 @@ void main() {
         expect(element2.children[0].shadowRoot).toHaveHtml(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
-      })));
+      }));
     });
   });
 }

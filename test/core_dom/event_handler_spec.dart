@@ -45,7 +45,7 @@ main() {
       return ngAppElement.firstChild;
     }
 
-    it('should register and handle event', inject((TestBed _) {
+    it('should register and handle event', (TestBed _) {
       var e = compile(_,
         '''<div foo>
           <div on-abc="ctrl.invoked=true;"></div>
@@ -53,9 +53,9 @@ main() {
 
       _.triggerEvent(e.querySelector('[on-abc]'), 'abc');
       expect(_.getScope(e).context['ctrl'].invoked).toEqual(true);
-    }));
+    });
 
-    it('shoud register and handle event with long name', inject((TestBed _) {
+    it('shoud register and handle event with long name', (TestBed _) {
       var e = compile(_,
         '''<div foo>
           <div on-my-new-event="ctrl.invoked=true;"></div>
@@ -64,9 +64,9 @@ main() {
       _.triggerEvent(e.querySelector('[on-my-new-event]'), 'myNewEvent');
       var fooScope = _.getScope(e);
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
-    }));
+    });
 
-    it('shoud have model updates applied correctly', inject((TestBed _) {
+    it('shoud have model updates applied correctly', (TestBed _) {
       var e = compile(_,
         '''<div foo>
           <div on-abc='ctrl.description="new description";'>{{ctrl.description}}</div>
@@ -75,7 +75,7 @@ main() {
       el.dispatchEvent(new Event('abc'));
       _.rootScope.apply();
       expect(el.text).toEqual("new description");
-    }));
+    });
 
     it('shoud register event when shadow dom is used', async((TestBed _) {
       var e = compile(_,'<bar></bar>');
@@ -89,7 +89,7 @@ main() {
       expect(ctrl.invoked).toEqual(true);
     }));
 
-    it('shoud handle event within content only once', async(inject((TestBed _) {
+    it('shoud handle event within content only once', async((TestBed _) {
       var e = compile(_,
         '''<div foo>
              <bar>
@@ -107,6 +107,6 @@ main() {
 
       var fooScope = _.getScope(document.querySelector('[foo]'));
       expect(fooScope.context['ctrl'].invoked).toEqual(true);
-    })));
+    }));
   });
 }

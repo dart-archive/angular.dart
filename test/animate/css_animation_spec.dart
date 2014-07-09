@@ -6,7 +6,7 @@ main() {
   describe('CssAnimation', () {
     TestBed _;
 
-    beforeEach(inject((TestBed tb) => _ = tb));
+    beforeEach((TestBed tb) => _ = tb);
     afterEach(() => _.rootElements.forEach((e) => e.remove()));
     
     it('should correctly respond to an animation lifecycle', async(() {
