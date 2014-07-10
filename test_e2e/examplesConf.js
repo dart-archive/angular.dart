@@ -35,7 +35,7 @@ var config = {
     isVerbose: true, // display spec names.
     showColors: true, // print colors to the terminal.
     includeStackTrace: true, // include stack traces in failures.
-    defaultTimeoutInterval: 40000 // wait time in ms before failing a test.
+    defaultTimeoutInterval: 80000 // wait time in ms before failing a test.
   },
 };
 
@@ -49,8 +49,6 @@ if (process.env.SAUCE_USERNAME != null) {
     capability['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
     capability['build'] = process.env.TRAVIS_BUILD_NUMBER;
     capability['name'] = 'AngularDart E2E Suite';
-    // Double the timeout for Sauce.
-    capability['defaultTimeoutInterval'] *= 2;
   });
 }
 
