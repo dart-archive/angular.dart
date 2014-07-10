@@ -21,6 +21,7 @@ import 'package:angular/change_detection/ast_parser.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector.dart';
 import 'package:angular/core/formatter.dart';
+import 'package:angular/collection/micro_map.dart';
 export 'package:angular/core/formatter.dart';
 import 'package:angular/core/parser/utils.dart';
 import 'package:angular/core/registry.dart';
@@ -45,7 +46,7 @@ class CoreModule extends Module {
     bind(ScopeStats);
     bind(ScopeStatsEmitter);
     bind(ScopeStatsConfig);
-    bind(Object, toValue: {}); // RootScope context
+    bind(Object, toValue: new MicroMap()); // RootScope context
 
     bind(Parser, toInstanceOf: DynamicParser);
     bind(ParserBackend, toInstanceOf: DynamicParserBackend);
