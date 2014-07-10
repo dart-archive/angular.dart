@@ -25,6 +25,7 @@ import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/core_dom/directive_injector.dart';
+import 'package:angular/collection/micro_map.dart';
 import 'package:angular/utils.dart';
 import 'package:angular/change_detection/watch_group.dart';
 import 'package:angular/change_detection/change_detection.dart';

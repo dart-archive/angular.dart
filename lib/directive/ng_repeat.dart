@@ -107,7 +107,7 @@ class NgRepeat {
     if (trackByExpr != null) {
       Expression trackBy = _parser(trackByExpr);
       _generateId = ((key, value, index) {
-        final context = new HashMap<String, Object>()
+        final context = new MicroMap<String, Object>()
             ..[_valueIdentifier] = value
             ..[r'$index'] = index
             ..[r'$id'] = (obj) => obj;

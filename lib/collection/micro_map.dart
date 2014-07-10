@@ -35,6 +35,7 @@ class MicroMap<K, V> implements Map {
 
   MicroMap() {
     count = 0;
+    clear();
   }
 
   bool containsValue(Object value) {
