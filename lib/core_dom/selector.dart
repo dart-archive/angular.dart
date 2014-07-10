@@ -102,7 +102,7 @@ class DirectiveSelector {
             String expression = _interpolate(value);
             AST valueAST = _astParser(expression, formatters: _formatters);
             builder.addDirective(new DirectiveRef(
-                node, type, selectorRegExp.annotation, new Key(type), attrName, valueAST));
+                node, type, selectorRegExp.annotation, attrName, valueAST));
           });
         }
       }
@@ -135,13 +135,13 @@ class DirectiveSelector {
     for (var k = 0; k < textSelector.length; k++) {
       var selectorRegExp = textSelector[k];
       if (selectorRegExp.regexp.hasMatch(value)) {
-        _directives[selectorRegExp.annotation].forEach((type) {
+        var annotation = selectorRegExp.annotation;
+        _directives[annotation].forEach((type) {
           // Pre-compute the AST to watch this value.
           String expression = _interpolate(value);
           var valueAST = _astParser(expression, formatters: _formatters);
 
-          builder.addDirective(new DirectiveRef(node, type,
-              selectorRegExp.annotation, new Key(type), value, valueAST));
+          builder.addDirective(new DirectiveRef(node, type, annotation, value, valueAST));
         });
       }
     }
@@ -227,7 +227,7 @@ class _SelectorPart {
 _addRefs(ElementBinderBuilder builder, List<_Directive> directives, dom.Node node,
          [String attrValue]) {
   directives.forEach((directive) {
-    builder.addDirective(new DirectiveRef(node, directive.type, directive.annotation, new Key(directive.type), attrValue));
+    builder.addDirective(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
   });
 }
 
