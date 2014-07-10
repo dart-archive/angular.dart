@@ -89,76 +89,79 @@ void main() {
         expect(js.context['ngProbe'].apply([ngtop])).toBeDefined();
       });
 
-      describe(r'testability', () {
-        var testability;
+      // Issue #1219
+      if (identical(1, 1.0) || !js.context['DART_VERSION'].toString().contains("version: 1.5.")) {
+        describe(r'testability', () {
+          var testability;
 
-        beforeEach(() {
-          testability = angular['getTestability'].apply([ngtop]);
-        });
-
-        it('should be available from Javascript', () {
-          expect(testability).toBeDefined();
-        });
-
-        it('should expose allowAnimations', () {
-          allowAnimations(allowed) => testability['allowAnimations'].apply([allowed]);
-          expect(allowAnimations(false)).toEqual(true);
-          expect(allowAnimations(false)).toEqual(false);
-          expect(allowAnimations(true)).toEqual(false);
-          expect(allowAnimations(true)).toEqual(true);
-        });
-
-        describe('bindings', () {
-          it('should find exact bindings', () {
-            // exactMatch should fail.
-            var bindingNodes = testability['findBindings'].apply(['introspection', true]);
-            expect(bindingNodes.length).toEqual(0);
-
-            // substring search (default) should succeed.
-            // exactMatch should default to false.
-            bindingNodes = testability['findBindings'].apply(['introspection']);
-            expect(bindingNodes.length).toEqual(1);
-            bindingNodes = testability['findBindings'].apply(['introspection', false]);
-            expect(bindingNodes.length).toEqual(1);
-
-            // and so should exact search with the correct query.
-            bindingNodes = testability['findBindings'].apply(["'introspection FTW'", true]);
-            expect(bindingNodes.length).toEqual(1);
+          beforeEach(() {
+            testability = angular['getTestability'].apply([ngtop]);
           });
 
-          _assertBinding(String query) {
-            var bindingNodes = testability['findBindings'].apply([query]);
-            expect(bindingNodes.length).toEqual(1);
-            var node = bindingNodes[0];
-            var probe = js.context['ngProbe'].apply([node]);
+          it('should be available from Javascript', () {
+            expect(testability).toBeDefined();
+          });
+
+          it('should expose allowAnimations', () {
+            allowAnimations(allowed) => testability['allowAnimations'].apply([allowed]);
+            expect(allowAnimations(false)).toEqual(true);
+            expect(allowAnimations(false)).toEqual(false);
+            expect(allowAnimations(true)).toEqual(false);
+            expect(allowAnimations(true)).toEqual(true);
+          });
+
+          describe('bindings', () {
+            it('should find exact bindings', () {
+              // exactMatch should fail.
+              var bindingNodes = testability['findBindings'].apply(['introspection', true]);
+              expect(bindingNodes.length).toEqual(0);
+
+              // substring search (default) should succeed.
+              // exactMatch should default to false.
+              bindingNodes = testability['findBindings'].apply(['introspection']);
+              expect(bindingNodes.length).toEqual(1);
+              bindingNodes = testability['findBindings'].apply(['introspection', false]);
+              expect(bindingNodes.length).toEqual(1);
+
+              // and so should exact search with the correct query.
+              bindingNodes = testability['findBindings'].apply(["'introspection FTW'", true]);
+              expect(bindingNodes.length).toEqual(1);
+            });
+
+            _assertBinding(String query) {
+              var bindingNodes = testability['findBindings'].apply([query]);
+              expect(bindingNodes.length).toEqual(1);
+              var node = bindingNodes[0];
+              var probe = js.context['ngProbe'].apply([node]);
+              expect(probe).toBeDefined();
+              var bindings = probe['bindings'];
+              expect(bindings['length']).toEqual(1);
+              expect(bindings[0].contains(query)).toBe(true);
+            }
+
+            it('should find ng-bind bindings', () => _assertBinding('introspection FTW'));
+            it('should find attribute mustache bindings', () => _assertBinding('attrMustache'));
+            it('should find text mustache bindings', () => _assertBinding('textMustache'));
+          });
+
+          it('should find models', () {
+            // exactMatch should fail.
+            var modelNodes = testability['findModels'].apply(['my', true]);
+            expect(modelNodes.length).toEqual(0);
+
+            // substring search (default) should succeed.
+            modelNodes = testability['findModels'].apply(['my']);
+            expect(modelNodes.length).toEqual(1);
+            var divElement = modelNodes[0];
+            expect(divElement is DivElement).toEqual(true);
+            var probe = js.context['ngProbe'].apply([divElement]);
             expect(probe).toBeDefined();
-            var bindings = probe['bindings'];
-            expect(bindings['length']).toEqual(1);
-            expect(bindings[0].contains(query)).toBe(true);
-          }
-
-          it('should find ng-bind bindings', () => _assertBinding('introspection FTW'));
-          it('should find attribute mustache bindings', () => _assertBinding('attrMustache'));
-          it('should find text mustache bindings', () => _assertBinding('textMustache'));
+            var models = probe['models'];
+            expect(models['length']).toEqual(1);
+            expect(models[0]).toEqual('myModel');
+          });
         });
-
-        it('should find models', () {
-          // exactMatch should fail.
-          var modelNodes = testability['findModels'].apply(['my', true]);
-          expect(modelNodes.length).toEqual(0);
-
-          // substring search (default) should succeed.
-          modelNodes = testability['findModels'].apply(['my']);
-          expect(modelNodes.length).toEqual(1);
-          var divElement = modelNodes[0];
-          expect(divElement is DivElement).toEqual(true);
-          var probe = js.context['ngProbe'].apply([divElement]);
-          expect(probe).toBeDefined();
-          var models = probe['models'];
-          expect(models['length']).toEqual(1);
-          expect(models[0]).toEqual('myModel');
-        });
-      });
+      }
     });
   });
 }
