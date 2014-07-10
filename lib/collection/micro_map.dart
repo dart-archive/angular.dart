@@ -225,7 +225,51 @@ class MicroMap<K, V> implements Map {
   }
 
   void forEach(void f(K key, V value)) {
-
+    if(delegate == null) {
+      if (count == 0) return;
+      if(_key0  != null) { f(_key0 , _obj0 ); }
+      if (count == 1) return;
+      if(_key1  != null) { f(_key1 , _obj1 ); }
+      if (count == 2) return;
+      if(_key2  != null) { f(_key2 , _obj2 ); }
+      if (count == 3) return;
+      if(_key3  != null) { f(_key3 , _obj3 ); }
+      if (count == 4) return;
+      if(_key4  != null) { f(_key4 , _obj4 ); }
+      if (count == 5) return;
+      if(_key5  != null) { f(_key5 , _obj5 ); }
+      if (count == 6) return;
+      if(_key6  != null) { f(_key6 , _obj6 ); }
+      if (count == 7) return;
+      if(_key7  != null) { f(_key7 , _obj7 ); }
+      if (count == 8) return;
+      if(_key8  != null) { f(_key8 , _obj8 ); }
+      if (count == 9) return;
+      if(_key9  != null) { f(_key9 , _obj9 ); }
+      if (count == 10) return;
+      if(_key10 != null) { f(_key10, _obj10); }
+      if (count == 11) return;
+      if(_key11 != null) { f(_key11, _obj11); }
+      if (count == 12) return;
+      if(_key12 != null) { f(_key12, _obj12); }
+      if (count == 13) return;
+      if(_key13 != null) { f(_key13, _obj13); }
+      if (count == 14) return;
+      if(_key14 != null) { f(_key14, _obj14); }
+      if (count == 15) return;
+      if(_key15 != null) { f(_key15, _obj15); }
+      if (count == 16) return;
+      if(_key16 != null) { f(_key16, _obj16); }
+      if (count == 17) return;
+      if(_key17 != null) { f(_key17, _obj17); }
+      if (count == 18) return;
+      if(_key18 != null) { f(_key18, _obj18); }
+      if (count == 19) return;
+      if(_key19 != null) { f(_key19, _obj19); }
+    }
+    else {
+      delegate.forEach(f);
+    }
   }
 
   Iterable<K> get keys {

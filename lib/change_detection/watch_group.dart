@@ -1,6 +1,7 @@
 library angular.watch_group;
 
 import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/collection/micro_map.dart';
 import 'dart:collection';
 
 part 'linked_list.dart';
