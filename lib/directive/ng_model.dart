@@ -338,13 +338,14 @@ class InputCheckbox {
  * the value of the input element is updated.
  *
  */
-@Decorator(selector: 'textarea[ng-model]')
-@Decorator(selector: 'input[type=text][ng-model]')
-@Decorator(selector: 'input[type=password][ng-model]')
-@Decorator(selector: 'input[type=url][ng-model]')
-@Decorator(selector: 'input[type=email][ng-model]')
-@Decorator(selector: 'input[type=search][ng-model]')
-@Decorator(selector: 'input[type=tel][ng-model]')
+@Decorator(selector: '''
+    textarea[ng-model],
+    input[type=text][ng-model],
+    input[type=password][ng-model],
+    input[type=url][ng-model],
+    input[type=email][ng-model],
+    input[type=search][ng-model],
+    input[type=tel][ng-model]''')
 class InputTextLike {
   final dom.Element inputElement;
   final NgModel ngModel;
@@ -409,8 +410,7 @@ class InputTextLike {
  * Setting the model to `double.NAN` will have no effect (input will be left
  * unchanged).
  */
-@Decorator(selector: 'input[type=number][ng-model]')
-@Decorator(selector: 'input[type=range][ng-model]')
+@Decorator(selector: 'input[type=number][ng-model], input[type=range][ng-model]')
 class InputNumberLike {
   final dom.InputElement inputElement;
   final NgModel ngModel;
@@ -474,12 +474,13 @@ class InputNumberLike {
  * kind would be appropriate) or, for browsers that fail to conform to the
  * HTML5 standard in their processing of date-like inputs.
  */
-@Decorator(selector: 'input[type=date][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=time][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=datetime][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=datetime-local][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=month][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=week][ng-model][ng-bind-type]')
+@Decorator(selector: '''
+    input[type=date][ng-model][ng-bind-type],
+    input[type=time][ng-model][ng-bind-type],
+    input[type=datetime][ng-model][ng-bind-type],
+    input[type=datetime-local][ng-model][ng-bind-type],
+    input[type=month][ng-model][ng-bind-type],
+    input[type=week][ng-model][ng-bind-type]''')
 class NgBindTypeForDateLike {
   static const DATE = 'date';
   static const NUMBER = 'number';
@@ -586,17 +587,13 @@ class NgBindTypeForDateLike {
  *   dropped.
  */
 
-@Decorator(selector: 'input[type=date][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=time][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=datetime][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=datetime-local][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=month][ng-model]',
-    module: InputDateLike.moduleFactory)
-@Decorator(selector: 'input[type=week][ng-model]',
+@Decorator(selector: '''
+    input[type=date][ng-model],
+    input[type=time][ng-model],
+    input[type=datetime][ng-model],
+    input[type=datetime-local][ng-model],
+    input[type=month][ng-model],
+    input[type=week][ng-model]''',
     module: InputDateLike.moduleFactory)
 class InputDateLike {
   static Module moduleFactory() => new Module()..bind(NgBindTypeForDateLike,
@@ -691,8 +688,7 @@ final _uidCounter = new _UidCounter();
  * the `ng-model` property when the corresponding radio element or option is
  * selected.
  */
-@Decorator(selector: 'input[type=radio][ng-model][ng-value]')
-@Decorator(selector: 'option[ng-value]')
+@Decorator(selector: 'input[type=radio][ng-model][ng-value], option[ng-value]')
 class NgValue {
   static Module _module = new Module()..bind(NgValue);
   static Module moduleFactory() => _module;

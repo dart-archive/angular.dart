@@ -52,6 +52,15 @@ void main() {
       expect(matchesNode(node, 'b[directive=wrongvalue]'), isFalse);
     });
 
+    it('should match directive when multiple selectors separated by a comma', () {
+      final nodeA = new Element.html('<div directiveA></div>');
+      expect(matchesNode(nodeA, '[directiveA],[directiveB]'), isTrue);
+      expect(matchesNode(nodeA, '[directiff]'), isFalse);
+
+      final nodeB = new Element.html('<div directiveB></div>');
+      expect(matchesNode(nodeB, '[directiveA],[directiveB]'), isTrue);
+    });
+
     it('should match attributes', () {
       var node = new Element.html('<div attr="before-xyz-after"></div>');
       expect(matchesNode(node, '[*=/xyz/]'), isTrue);

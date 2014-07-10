@@ -6,13 +6,7 @@ part of angular.directive;
  * or prevent the default browser submission from occurring.
  */
 @Decorator(
-    selector: 'form',
-    module: NgForm.module)
-@Decorator(
-    selector: 'fieldset',
-    module: NgForm.module)
-@Decorator(
-    selector: '.ng-form',
+    selector: 'form, fieldset, .nf-form',
     module: NgForm.module)
 @Decorator(
     selector: '[ng-form]',
