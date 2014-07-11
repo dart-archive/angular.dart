@@ -1,5 +1,6 @@
 library angular.core_internal.formatter_map;
 
+import 'dart:collection';
 import 'package:di/di.dart';
 import 'package:angular/core/annotation_src.dart';
 import 'package:angular/core/registry.dart';
@@ -8,16 +9,30 @@ import 'package:angular/core/registry.dart';
  * Registry of formatters at runtime.
  */
 @Injectable()
-class FormatterMap extends AnnotationMap<Formatter> {
-  Injector _injector;
-  FormatterMap(Injector injector, MetadataExtractor extractMetadata)
-      : this._injector = injector,
-        super(injector, extractMetadata);
+class FormatterMap {
+  final Map<String, Type> _map = new HashMap<String, Type>();
+  final Injector _injector;
 
-  call(String name) {
-    var formatter = new Formatter(name: name);
-    var formatterType = this[formatter];
-    return _injector.get(formatterType);
+  FormatterMap(this._injector, MetadataExtractor extractMetadata) {
+    _injector.types.forEach((type) {
+      extractMetadata(type)
+      .where((annotation) => annotation is Formatter)
+      .forEach((Formatter formatter) {
+        _map[formatter.name] = type;
+      });
+    });
+  }
+
+  call(String name) => _injector.get(this[name]);
+
+  Type operator[](String name) {
+    Type formatterType = _map[name];
+    if (formatterType == null) throw "No formatter '$name' found!";
+    return formatterType;
+  }
+
+  void forEach(fn(K, Type)) {
+    _map.forEach(fn);
   }
 }
 
