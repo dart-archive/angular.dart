@@ -30,8 +30,6 @@
  */
 library angular.app.factory.static;
 
-import 'package:di/static_injector.dart';
-import 'package:di/di.dart' show TypeFactory, Injector;
 import 'package:angular/application.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core/parser/parser.dart';
@@ -46,9 +44,7 @@ export 'package:angular/change_detection/change_detection.dart' show
     FieldSetter;
 
 class _StaticApplication extends Application {
-  final Map<Type, TypeFactory> typeFactories;
-
-  _StaticApplication(Map<Type, TypeFactory> this.typeFactories,
+  _StaticApplication(
                Map<Type, Object> metadata,
                Map<String, FieldGetter> fieldGetters,
                Map<String, FieldSetter> fieldSetters,
@@ -58,9 +54,6 @@ class _StaticApplication extends Application {
         ..bind(FieldGetterFactory, toValue: new StaticFieldGetterFactory(fieldGetters))
         ..bind(ClosureMap, toValue: new StaticClosureMap(fieldGetters, fieldSetters, symbols));
   }
-
-  Injector createInjector() =>
-      new StaticInjector(modules: modules, typeFactories: typeFactories);
 }
 
 /**
@@ -81,20 +74,19 @@ class _StaticApplication extends Application {
  * becomes:
  *
  *     main() {
- *       staticApplication(generated_static_injector.factories,
- *        generated_static_metadata.typeAnnotations,
- *        generated_static_expressions.getters,
- *        generated_static_expressions.setters,
- *        generated_static_expressions.symbols)
- *       .addModule(new Module()..bind(HelloWorldController))
- *       .run();
+ *       staticApplication(
+ *           generated_static_metadata.typeAnnotations,
+ *           generated_static_expressions.getters,
+ *           generated_static_expressions.setters,
+ *           generated_static_expressions.symbols)
+ *         .addModule(new Module()..bind(HelloWorldController))
+ *         .run();
  *
  */
 Application staticApplicationFactory(
-    Map<Type, TypeFactory> typeFactories,
     Map<Type, Object> metadata,
     Map<String, FieldGetter> fieldGetters,
     Map<String, FieldSetter> fieldSetters,
     Map<String, Symbol> symbols) {
-  return new _StaticApplication(typeFactories, metadata, fieldGetters, fieldSetters, symbols);
+  return new _StaticApplication(metadata, fieldGetters, fieldSetters, symbols);
 }

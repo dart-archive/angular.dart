@@ -14,7 +14,6 @@ export 'package:guinness/guinness_html.dart';
 
 export 'package:mock/mock.dart';
 export 'package:di/di.dart';
-export 'package:di/dynamic_injector.dart';
 export 'package:angular/angular.dart';
 export 'package:angular/application.dart';
 export 'package:angular/introspection.dart';

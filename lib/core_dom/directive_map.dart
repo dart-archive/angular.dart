@@ -18,7 +18,7 @@ class DirectiveMap {
                this._formatters,
                MetadataExtractor metadataExtractor,
                this._directiveSelectorFactory) {
-    injector.types.forEach((type) {
+    (injector as ModuleInjector).types.forEach((type) {
       metadataExtractor(type)
       .where((annotation) => annotation is Directive)
       .forEach((Directive directive) {

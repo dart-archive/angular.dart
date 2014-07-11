@@ -40,7 +40,7 @@ void main() => describe('annotations', () {
         applyAuthorStyles: true,
         resetStyleInheritance: true,
         publishAs: '',
-        module: (){},
+        module: (i){},
         map: {},
         selector: '',
         visibility: Directive.LOCAL_VISIBILITY,
@@ -63,7 +63,7 @@ void main() => describe('annotations', () {
           children: 'xxx',
           map: {},
           selector: '',
-          module: (){},
+          module: (i){},
           visibility: Directive.LOCAL_VISIBILITY,
           exportExpressions: [],
           exportExpressionAttrs: []
@@ -84,7 +84,7 @@ void main() => describe('annotations', () {
           children: 'xxx',
           map: {},
           selector: '',
-          module: (){},
+          module: (i){},
           visibility: Directive.LOCAL_VISIBILITY,
           exportExpressions: [],
           exportExpressionAttrs: []

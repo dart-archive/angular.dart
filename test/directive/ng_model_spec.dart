@@ -36,6 +36,7 @@ bool isBrowser(String pattern) => dom.window.navigator.userAgent.indexOf(pattern
 void main() {
   describe('ng-model', () {
     TestBed _;
+    DirectiveInjector dirInjector;
 
     beforeEachModule((Module module) {
       module
@@ -44,7 +45,10 @@ void main() {
           ..bind(CountingValidator);
     });
 
-    beforeEach((TestBed tb) => _ = tb);
+    beforeEach((TestBed tb) {
+      _ = tb;
+      dirInjector = new DirectiveInjector(null, _.injector, null, null, null, null, null);
+    });
 
     describe('type="text" like', () {
       it('should update input value from model', () {
@@ -94,7 +98,7 @@ void main() {
         var ngModelOptions = new NgModelOptions();
 
         nodeAttrs['ng-model'] = 'model';
-        var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
+        var model = new NgModel(scope, ngElement, dirInjector,
             nodeAttrs, new Animate(), null);
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
@@ -374,7 +378,7 @@ void main() {
         var ngModelOptions = new NgModelOptions();
 
         nodeAttrs['ng-model'] = 'model';
-        var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
+        var model = new NgModel(scope, ngElement, dirInjector,
             nodeAttrs, new Animate(), null);
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
@@ -466,7 +470,7 @@ void main() {
         var ngModelOptions = new NgModelOptions();
 
         nodeAttrs['ng-model'] = 'model';
-        var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
+        var model = new NgModel(scope, ngElement, dirInjector,
             nodeAttrs, new Animate(), null);
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
@@ -571,7 +575,7 @@ void main() {
         var ngModelOptions = new NgModelOptions();
 
         nodeAttrs['ng-model'] = 'model';
-        var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
+        var model = new NgModel(scope, ngElement, dirInjector,
             nodeAttrs, new Animate(), null);
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);
@@ -782,7 +786,7 @@ void main() {
         var ngModelOptions = new NgModelOptions();
 
         nodeAttrs['ng-model'] = 'model';
-        var model = new NgModel(scope, ngElement, i.createChild([new Module()]),
+        var model = new NgModel(scope, ngElement, dirInjector,
             nodeAttrs, new Animate(), null);
         dom.querySelector('body').append(element);
         var input = new InputTextLike(element, model, scope, ngModelOptions);

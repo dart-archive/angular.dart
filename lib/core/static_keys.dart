@@ -3,6 +3,7 @@ library angular.static_keys;
 import 'package:di/di.dart';
 import 'package:angular/core/module_internal.dart';
 
+final Key INJECTOR_KEY = new Key(Injector);
 final Key EXCEPTION_HANDLER_KEY = new Key(ExceptionHandler);
 final Key ROOT_SCOPE_KEY = new Key(RootScope);
 final Key SCOPE_KEY = new Key(Scope);

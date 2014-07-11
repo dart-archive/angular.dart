@@ -9,20 +9,21 @@ part of angular.core.dom_internal;
  *
  * The BoundViewFactory needs [Scope] to be created.
  */
+@deprecated
 class BoundViewFactory {
   ViewFactory viewFactory;
-  Injector injector;
+  DirectiveInjector directiveInjector;
 
-  BoundViewFactory(this.viewFactory, this.injector);
+  BoundViewFactory(this.viewFactory, this.directiveInjector);
 
-  View call(Scope scope) =>
-      viewFactory(injector.createChild([new Module()..bindByKey(SCOPE_KEY, toValue: scope)]));
+  View call(Scope scope) => viewFactory(scope, directiveInjector);
 }
 
 abstract class ViewFactory implements Function {
-  BoundViewFactory bind(Injector injector);
+  @deprecated
+  BoundViewFactory bind(DirectiveInjector directiveInjector);
 
-  View call(Injector injector, [List<dom.Node> elements]);
+  View call(Scope scope, DirectiveInjector directiveInjector, [List<dom.Node> elements]);
 }
 
 /**
@@ -41,24 +42,28 @@ class WalkingViewFactory implements ViewFactory {
         eb is ElementBinderTreeRef));
   }
 
-  BoundViewFactory bind(Injector injector) =>
-      new BoundViewFactory(this, injector);
+  BoundViewFactory bind(DirectiveInjector directiveInjector) =>
+      new BoundViewFactory(this, directiveInjector);
 
-  View call(Injector injector, [List<dom.Node> nodes]) {
+  View call(Scope scope, DirectiveInjector directiveInjector, [List<dom.Node> nodes]) {
+    assert(directiveInjector != null);
     if (nodes == null) nodes = cloneElements(templateElements);
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
-      var view = new View(nodes, injector.getByKey(EVENT_HANDLER_KEY));
-      _link(view, nodes, elementBinders, injector);
+      EventHandler eventHandler =  directiveInjector.getByKey(EVENT_HANDLER_KEY);
+      Animate animate = directiveInjector.getByKey(ANIMATE_KEY);
+      var view = new View(nodes, scope, eventHandler);
+      _link(view, scope, nodes, elementBinders, eventHandler, animate, directiveInjector);
       return view;
     } finally {
       assert(_perf.stopTimer(timerId) != false);
     }
   }
 
-  View _link(View view, List<dom.Node> nodeList, List elementBinders,
-             Injector parentInjector) {
+  View _link(View view, Scope scope, List<dom.Node> nodeList, List elementBinders,
+             EventHandler eventHandler, Animate animate,
+             DirectiveInjector directiveInjector) {
 
     var preRenderedIndexOffset = 0;
     var directiveDefsByName = {};
@@ -90,17 +95,22 @@ class WalkingViewFactory implements ViewFactory {
           parentNode = new dom.DivElement()..append(node);
         }
 
-        var childInjector = binder != null ?
-            binder.bind(view, parentInjector, node) :
-            parentInjector;
+        DirectiveInjector childInjector;
+        if (binder == null) {
+          childInjector = directiveInjector;
+        } else {
+          childInjector = binder.bind(view, scope, directiveInjector, node, eventHandler, animate);
 
+          // TODO(misko): Remove this after we remove controllers. No controllers -> 1to1 Scope:View.
+          if (childInjector != directiveInjector) scope = childInjector.scope;
+        }
         if (fakeParent) {
           // extract the node from the parentNode.
           nodeList[nodeListIndex] = parentNode.nodes[0];
         }
 
         if (tree.subtrees != null) {
-          _link(view, node.nodes, tree.subtrees, childInjector);
+          _link(view, scope, node.nodes, tree.subtrees, eventHandler, animate, childInjector);
         }
       } finally {
         assert(_perf.stopTimer(timerId) != false);
@@ -190,9 +200,9 @@ String _html(obj) {
 class ElementProbe {
   final ElementProbe parent;
   final dom.Node element;
-  final Injector injector;
+  final DirectiveInjector injector;
   final Scope scope;
-  final directives = [];
+  List get directives => injector.directives;
   final bindingExpressions = <String>[];
   final modelExpressions = <String>[];
 

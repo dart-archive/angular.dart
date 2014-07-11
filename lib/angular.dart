@@ -9,6 +9,6 @@ export 'package:angular/introspection.dart' hide
     elementExpando, publishToJavaScript;
 export 'package:angular/formatter/module.dart';
 export 'package:angular/routing/module.dart';
-export 'package:di/di.dart' hide lastKeyId;
+export 'package:di/di.dart';
+export 'package:di/annotations.dart';
 export 'package:route_hierarchical/client.dart' hide childRoute;
-

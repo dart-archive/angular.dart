@@ -29,13 +29,10 @@ part of angular.routing;
 class NgBindRoute implements RouteProvider {
   String routeName;
   final Router _router;
-  final Injector _injector;
+  final DirectiveInjector _injector;
 
-  static final Module _module = new Module()
-      ..bind(RouteProvider, inject: const [NgBindRoute],
-             visibility: Directive.CHILDREN_VISIBILITY);
-
-  static Module module() => _module;
+  static void module(DirectiveBinder binder)
+      => binder.bind(RouteProvider, inject: NG_BIND_ROUTE_KEY, visibility: Visibility.CHILDREN);
 
   // We inject NgRoutingHelper to force initialization of routing.
   NgBindRoute(this._router, this._injector, NgRoutingHelper _);

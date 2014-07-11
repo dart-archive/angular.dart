@@ -13,12 +13,12 @@ export "package:angular/core/annotation_src.dart" show
     Formatter,
     DirectiveBinder,
     DirectiveBinderFn,
-    Injectable,
 
     Directive,
     Component,
     Controller,
     Decorator,
+    Visibility,
 
     DirectiveAnnotation,
     NgAttr,
