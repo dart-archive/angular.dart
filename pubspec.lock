@@ -32,7 +32,7 @@ packages:
   di:
     description: di
     source: hosted
-    version: "1.2.1"
+    version: "1.2.2"
   guinness:
     description: guinness
     source: hosted
