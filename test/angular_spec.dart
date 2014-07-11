@@ -249,7 +249,7 @@ main() {
         "change_detection.FieldGetterFactory",
         "di.CircularDependencyError",
         "di.FactoryFn",
-        "di.Injector",
+        "di.injector.Injector",
         "di.InvalidBindingError",
         "di.key.Key",
         "di.Module",
