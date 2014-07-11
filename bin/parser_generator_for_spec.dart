@@ -1,14 +1,12 @@
 import 'dart:io' as io;
 
 import 'package:di/di.dart';
-import 'package:di/di_dynamic.dart';
 import 'package:angular/cache/module.dart';
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/tools/parser_getter_setter/generator.dart';
 
 main(arguments) {
-  setupModuleTypeReflector();
   Module module = new Module()
     ..bind(Lexer)
     ..bind(ParserGetterSetter)

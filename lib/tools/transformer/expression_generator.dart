@@ -14,7 +14,7 @@ import 'package:angular/tools/transformer/referenced_uris.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:di/di.dart';
-import 'package:di/di_dynamic.dart' as di;
+import 'package:di/src/reflector_dynamic.dart';
 import 'package:path/path.dart' as path;
 
 /**
@@ -30,7 +30,6 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
 
   ExpressionGenerator(this.options, Resolvers resolvers) {
     this.resolvers = resolvers;
-    di.setupModuleTypeReflector();
   }
 
   Future applyResolver(Transform transform, Resolver resolver) {
@@ -48,8 +47,8 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
     return _getHtmlSources(transform, resolver)
         .forEach(htmlExtractor.parseHtml)
         .then((_) {
-      var module = new Module()
-        ..install(new CacheModule())
+      var module = new Module.withReflector(getReflector())
+        ..install(new CacheModule.withReflector(getReflector()))
         ..bind(Parser, toImplementation: DynamicParser)
         ..bind(ParserBackend, toImplementation: DartGetterSetterGen)
         ..bind(Lexer)

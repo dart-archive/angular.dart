@@ -1,5 +1,4 @@
 import 'package:di/di.dart';
-import 'package:di/di_dynamic.dart';
 import 'package:angular/angular.dart';
 import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/application_factory.dart';
@@ -247,7 +246,6 @@ class NgFreeTreeClass implements ShadowRootAware {
 
 // Main function runs the benchmark.
 main() {
-  setupModuleTypeReflector();
   var cleanup, createDom;
 
   var module = new Module()

@@ -30,7 +30,6 @@
  */
 library angular.app.factory.static;
 
-import 'package:di/di.dart' show TypeFactory, Injector;
 import 'package:angular/application.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core/parser/parser.dart';

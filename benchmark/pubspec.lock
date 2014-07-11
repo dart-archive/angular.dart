@@ -40,7 +40,7 @@ packages:
       path: "../../di.dart"
       relative: true
     source: path
-    version: "2.0.0-alpha.6"
+    version: "2.0.0-alpha.9"
   html5lib:
     description: html5lib
     source: hosted
