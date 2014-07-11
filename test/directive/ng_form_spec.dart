@@ -722,9 +722,9 @@ void main() {
       });
 
       it('should be resolvable by injector if configured by user.',
-           (Injector injector, Compiler compiler, DirectiveMap directives) {
+           (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
         var element = es('<form></form>');
-        expect(() => compiler(element, directives)(injector, element))
+        expect(() => compiler(element, directives)(scope, injector.get(DirectiveInjector), element))
             .not.toThrow();
       });
     });

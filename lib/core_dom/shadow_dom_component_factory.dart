@@ -8,7 +8,8 @@ abstract class ComponentFactory {
  * A Component factory with has been bound to a specific component type.
  */
 abstract class BoundComponentFactory {
-  FactoryFn call(dom.Element element);
+  List<Key> get callArgs;
+  Function call(dom.Element element);
 
   static async.Future<ViewFactory> _viewFuture(
         Component component, ViewCache viewCache, DirectiveMap directives) {
@@ -115,19 +116,20 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
     );
   }
 
-  FactoryFn call(dom.Element element) {
-    return (Injector injector) {
-      Scope scope = injector.getByKey(SCOPE_KEY);
-      NgBaseCss baseCss = _component.useNgBaseCss ? injector.getByKey(NG_BASE_CSS_KEY) : null;
-
+  List<Key> get callArgs => _CALL_ARGS;
+  static final _CALL_ARGS = [DIRECTIVE_INJECTOR_KEY, SCOPE_KEY, NG_BASE_CSS_KEY,
+                             EVENT_HANDLER_KEY];
+  Function call(dom.Element element) {
+    return (DirectiveInjector injector, Scope scope, NgBaseCss baseCss,
+            EventHandler eventHandler) {
       var shadowDom = element.createShadowRoot()
         ..applyAuthorStyles = _component.applyAuthorStyles
         ..resetStyleInheritance = _component.resetStyleInheritance;
 
-      var shadowScope = scope.createChild({}); // Isolate
+      var shadowScope = scope.createChild(new HashMap()); // Isolate
 
       async.Future<Iterable<dom.StyleElement>> cssFuture;
-      if (baseCss != null) {
+      if (_component.useNgBaseCss == true) {
         cssFuture = async.Future.wait(
                 [async.Future.wait(baseCss.urls.map(_styleFuture)), _styleElementsFuture])
             .then((twoLists) {
@@ -138,7 +140,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
         cssFuture = _styleElementsFuture;
       }
 
-      Injector shadowInjector;
+      ComponentDirectiveInjector shadowInjector;
 
       TemplateLoader templateLoader = new TemplateLoader(
           cssFuture.then((Iterable<dom.StyleElement> cssList) {
@@ -151,7 +153,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
               return _viewFuture.then((ViewFactory viewFactory) {
                 if (shadowScope.isAttached) {
                   shadowDom.nodes.addAll(
-                      viewFactory(shadowInjector).nodes);
+                      viewFactory.call(shadowInjector.scope, shadowInjector).nodes);
                 }
                 return shadowDom;
               });
@@ -160,27 +162,13 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
           }));
 
       var probe;
-      var shadowModule = new Module()
-        ..bindByKey(_ref.typeKey)
-        ..bindByKey(NG_ELEMENT_KEY)
-        ..bindByKey(EVENT_HANDLER_KEY, toImplementation: ShadowRootEventHandler)
-        ..bindByKey(SCOPE_KEY, toValue: shadowScope)
-        ..bindByKey(TEMPLATE_LOADER_KEY, toValue: templateLoader)
-        ..bindByKey(SHADOW_ROOT_KEY, toValue: shadowDom);
+      shadowInjector = new ShadowDomComponentDirectiveInjector(injector, injector.appInjector,
+          shadowScope, templateLoader, shadowDom);
+      shadowInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 
       if (_f.config.elementProbeEnabled) {
-        shadowModule.bindByKey(ELEMENT_PROBE_KEY, inject: const [], toFactory: () => probe);
-      }
-
-      shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
-
-      if (_f.config.elementProbeEnabled) {
-        probe = _f.expando[shadowDom] =
-        new ElementProbe(injector.getByKey(ELEMENT_PROBE_KEY),
-        shadowDom, shadowInjector, shadowScope);
-        shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) {
-          _f.expando[shadowDom] = null;
-        });
+        probe = _f.expando[shadowDom] = shadowInjector.elementProbe;
+        shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) => _f.expando[shadowDom] = null);
       }
 
       var controller = shadowInjector.getByKey(_ref.typeKey);

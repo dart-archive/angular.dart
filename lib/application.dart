@@ -84,6 +84,7 @@ import 'package:angular/routing/module.dart';
 import 'package:angular/introspection.dart';
 
 import 'package:angular/core_dom/static_keys.dart';
+import 'package:angular/core_dom/directive_injector.dart';
 
 /**
  * This is the top level module which describes all Angular components,
@@ -96,6 +97,7 @@ import 'package:angular/core_dom/static_keys.dart';
  */
 class AngularModule extends Module {
   AngularModule() {
+    DirectiveInjector.initUID();
     install(new CacheModule());
     install(new CoreModule());
     install(new CoreDomModule());
@@ -105,7 +107,6 @@ class AngularModule extends Module {
     install(new PerfModule());
     install(new RoutingModule());
 
-    bind(MetadataExtractor);
     bind(Expando, toValue: elementExpando);
   }
 }
@@ -175,9 +176,11 @@ abstract class Application {
       injector.getByKey(JS_CACHE_REGISTER_KEY);
       initializeDateFormatting(null, null).then((_) {
         try {
-          var compiler = injector.getByKey(COMPILER_KEY);
-          var viewFactory = compiler(rootElements, injector.getByKey(DIRECTIVE_MAP_KEY));
-          viewFactory(injector, rootElements);
+          Compiler compiler = injector.getByKey(COMPILER_KEY);
+          DirectiveMap directiveMap = injector.getByKey(DIRECTIVE_MAP_KEY);
+          RootScope rootScope = injector.getByKey(ROOT_SCOPE_KEY);
+          ViewFactory viewFactory = compiler(rootElements, directiveMap);
+          viewFactory(rootScope, injector.get(DirectiveInjector), rootElements);
         } catch (e, s) {
           exceptionHandler(e, s);
         }
@@ -190,5 +193,5 @@ abstract class Application {
    * Creates an injector function that can be used for retrieving services as well as for
    * dependency injection.
    */
-  Injector createInjector();
+  Injector createInjector() => new ModuleInjector(modules);
 }

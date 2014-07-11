@@ -4,6 +4,7 @@ library angular.cache.js;
 
 import 'dart:js' as js;
 import 'package:di/di.dart';
+import 'package:di/annotations.dart';
 import 'package:angular/core/annotation_src.dart';
 import 'package:angular/cache/module.dart';
 

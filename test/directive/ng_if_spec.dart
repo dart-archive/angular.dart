@@ -28,7 +28,7 @@ main() {
     logger = _logger;
     compile = (html, [applyFn]) {
       element = e(html);
-      compiler([element], _directives)(injector, [element]);
+      compiler([element], _directives)(scope, injector.get(DirectiveInjector), [element]);
       scope.apply(applyFn);
     };
     directives = _directives;

@@ -246,6 +246,7 @@ class NgFreeTreeClass implements ShadowRootAware {
 
 // Main function runs the benchmark.
 main() {
+  setupModuleTypeReflector();
   var cleanup, createDom;
 
   var module = new Module()

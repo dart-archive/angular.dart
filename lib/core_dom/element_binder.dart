@@ -21,16 +21,6 @@ class TemplateElementBinder extends ElementBinder {
           null, null, onEvents, bindAttrs, childMode);
 
   String toString() => "[TemplateElementBinder template:$template]";
-
-  _registerViewFactory(node, parentInjector, nodeModule) {
-    assert(templateViewFactory != null);
-    nodeModule
-      ..bindByKey(VIEW_PORT_KEY, inject: const [], toFactory: () =>
-          new ViewPort(node, parentInjector.getByKey(ANIMATE_KEY)))
-      ..bindByKey(VIEW_FACTORY_KEY, toValue: templateViewFactory)
-      ..bindByKey(BOUND_VIEW_FACTORY_KEY, inject: const [Injector], toFactory: (Injector injector) =>
-          templateViewFactory.bind(injector));
-  }
 }
 
 // TODO: This class exists for forwards API compatibility only.
@@ -143,7 +133,7 @@ class ElementBinder {
       }
 
       // Check if there is a bind attribute for this mapping.
-      var bindAttr = bindAttrs["bind-${p.attrName}"];
+      var bindAttr = bindAttrs[p.bindAttrName];
       if (bindAttr != null) {
         if (p.mode == '<=>') {
           if (directiveScope == null) {
@@ -209,15 +199,15 @@ class ElementBinder {
     }
   }
 
-  void _link(nodeInjector, probe, scope, nodeAttrs) {
-    _usableDirectiveRefs.forEach((DirectiveRef ref) {
-      var directive = nodeInjector.getByKey(ref.typeKey);
-      if (probe != null) {
-        probe.directives.add(directive);
-      }
+  void _link(DirectiveInjector directiveInjector, Scope scope, nodeAttrs) {
+    for(var i = 0; i < _usableDirectiveRefs.length; i++) {
+      DirectiveRef ref = _usableDirectiveRefs[i];
+      var key = ref.typeKey;
+      if (identical(key, TEXT_MUSTACHE_KEY) || identical(key, ATTR_MUSTACHE_KEY)) continue;
+      var directive = directiveInjector.getByKey(ref.typeKey);
 
       if (ref.annotation is Controller) {
-        scope.context[(ref.annotation as Controller).publishAs] = directive;
+        scope.parentScope.context[(ref.annotation as Controller).publishAs] = directive;
       }
 
       var tasks = directive is AttachAware ? new _TaskList(() {
@@ -244,107 +234,74 @@ class ElementBinder {
       if (directive is DetachAware) {
         scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
       }
-    });
-  }
-
-  void _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
-                                 visibility) {
-    if (ref.type == TextMustache) {
-      nodeModule.bind(TextMustache, inject: const [Scope],
-          toFactory: (Scope scope) => new TextMustache(node, ref.valueAST, scope));
-    } else if (ref.type == AttrMustache) {
-      if (nodesAttrsDirectives.isEmpty) {
-        nodeModule.bind(AttrMustache, inject: const[Scope], toFactory: (Scope scope) {
-          for (var ref in nodesAttrsDirectives) {
-            new AttrMustache(nodeAttrs, ref.value, ref.valueAST, scope);
-          }
-        });
-      }
-      nodesAttrsDirectives.add(ref);
-    } else if (ref.annotation is Component) {
-      assert(ref == componentData.ref);
-
-      nodeModule.bindByKey(ref.typeKey, inject: const [Injector],
-          toFactory: componentData.factory.call(node), visibility: visibility);
-    } else {
-      nodeModule.bindByKey(ref.typeKey, visibility: visibility);
     }
   }
 
-  // Overridden in TemplateElementBinder
-  void _registerViewFactory(node, parentInjector, nodeModule) {
-    nodeModule..bindByKey(VIEW_PORT_KEY, toValue: null)
-              ..bindByKey(VIEW_FACTORY_KEY, toValue: null)
-              ..bindByKey(BOUND_VIEW_FACTORY_KEY, toValue: null);
+  void _createDirectiveFactories(DirectiveRef ref, DirectiveInjector nodeInjector, node,
+                                 nodeAttrs) {
+    if (ref.typeKey == TEXT_MUSTACHE_KEY) {
+      new TextMustache(node, ref.valueAST, nodeInjector.scope);
+    } else if (ref.typeKey == ATTR_MUSTACHE_KEY) {
+      new AttrMustache(nodeAttrs, ref.value, ref.valueAST, nodeInjector.scope);
+    } else if (ref.annotation is Component) {
+      assert(ref == componentData.ref);
+
+      BoundComponentFactory boundComponentFactory = componentData.factory;
+      Function componentFactory = boundComponentFactory.call(node);
+      nodeInjector.bindByKey(ref.typeKey, componentFactory,
+          boundComponentFactory.callArgs, ref.annotation.visibility);
+    } else {
+      nodeInjector.bindByKey(ref.typeKey, ref.factory, ref.paramKeys, ref.annotation.visibility);
+    }
   }
 
-
-  Injector bind(View view, Injector parentInjector, dom.Node node) {
-    Injector nodeInjector;
-    Scope scope = parentInjector.getByKey(SCOPE_KEY);
+  DirectiveInjector bind(View view, Scope scope,
+                         DirectiveInjector parentInjector,
+                         dom.Node node, EventHandler eventHandler, Animate animate) {
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
-    ElementProbe probe;
 
     var directiveRefs = _usableDirectiveRefs;
     if (!hasDirectivesOrEvents) return parentInjector;
 
-    var nodesAttrsDirectives = [];
-    var nodeModule = new Module()
-        ..bindByKey(NG_ELEMENT_KEY)
-        ..bindByKey(VIEW_KEY, toValue: view)
-        ..bindByKey(ELEMENT_KEY, toValue: node)
-        ..bindByKey(NODE_KEY, toValue: node)
-        ..bindByKey(NODE_ATTRS_KEY, toValue: nodeAttrs);
-
-    if (_config.elementProbeEnabled) {
-      nodeModule.bindByKey(ELEMENT_PROBE_KEY, inject: const [], toFactory: () => probe);
+    DirectiveInjector nodeInjector;
+    if (this is TemplateElementBinder) {
+      nodeInjector = new TemplateDirectiveInjector(parentInjector, parentInjector.appInjector,
+          node, nodeAttrs, eventHandler, scope, animate,
+          (this as TemplateElementBinder).templateViewFactory);
+    } else {
+      nodeInjector = new DirectiveInjector(parentInjector, parentInjector.appInjector,
+          node, nodeAttrs, eventHandler, scope, animate);
     }
 
-    directiveRefs.forEach((DirectiveRef ref) {
+    for(var i = 0; i < directiveRefs.length; i++) {
+      DirectiveRef ref = directiveRefs[i];
       Directive annotation = ref.annotation;
-      var visibility = ref.annotation.visibility;
       if (ref.annotation is Controller) {
-        scope = scope.createChild(new PrototypeMap(scope.context));
-        nodeModule.bind(Scope, toValue: scope);
+        scope = nodeInjector.scope = scope.createChild(new PrototypeMap(scope.context));
       }
-
-      _createDirectiveFactories(ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
-          visibility);
-      // Choose between old-style Module-based API and new-style DirectiveBinder-base API
-      var moduleFn = ref.annotation.module;
-      if (moduleFn != null) {
-        if (moduleFn is DirectiveBinderFn) {
-          var binder = new _DirectiveBinderImpl();
-          moduleFn(binder);
-          nodeModule.install(binder.module);
-        } else {
-          nodeModule.install(moduleFn());
-        }
+      _createDirectiveFactories(ref, nodeInjector, node, nodeAttrs);
+      if (ref.annotation.module != null) {
+        DirectiveBinderFn config = ref.annotation.module;
+        if (config != null) config(nodeInjector);
       }
-    });
-
-    _registerViewFactory(node, parentInjector, nodeModule);
-
-    nodeInjector = parentInjector.createChild([nodeModule]);
-    if (_config.elementProbeEnabled) {
-      probe = _expando[node] =
-          new ElementProbe(parentInjector.getByKey(ELEMENT_PROBE_KEY),
-                           node, nodeInjector, scope);
-      directiveRefs.forEach((DirectiveRef ref) {
-        if (ref.valueAST != null) {
-          probe.bindingExpressions.add(ref.valueAST.expression);
-        }
-      });
-      scope.on(ScopeEvent.DESTROY).listen((_) {
-        _expando[node] = null;
-      });
+      if (_config.elementProbeEnabled && ref.valueAST != null) {
+        nodeInjector.elementProbe.bindingExpressions.add(ref.valueAST.expression);
+      }
     }
 
-    _link(nodeInjector, probe, scope, nodeAttrs);
+    if (_config.elementProbeEnabled) {
+      _expando[node] = nodeInjector.elementProbe;
+      // TODO(misko): pretty sure that clearing Expando is not necessary. Remove?
+      scope.on(ScopeEvent.DESTROY).listen((_) => _expando[node] = null);
+    }
 
-    onEvents.forEach((event, value) {
-      view.registerEvent(EventHandler.attrNameToEventName(event));
-    });
+    _link(nodeInjector, scope, nodeAttrs);
+
+    if (onEvents.isNotEmpty) {
+      onEvents.forEach((event, value) {
+        view.registerEvent(EventHandler.attrNameToEventName(event));
+      });
+    }
     return nodeInjector;
   }
 

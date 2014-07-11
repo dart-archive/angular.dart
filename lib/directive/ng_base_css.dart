@@ -8,7 +8,9 @@ part of angular.directive;
  * # Example
  *     <div ng-base-css="my_application.css">
  */
-@Decorator(selector: '[ng-base-css]')
+@Decorator(
+    selector: '[ng-base-css]',
+    visibility: Visibility.CHILDREN)
 class NgBaseCss {
   List<String> _urls = const [];
 
