@@ -85,7 +85,9 @@ void main() {
           ..bind(TwoOfTwoDirectives)
           ..bind(MyController)
           ..bind(MyParentController)
-          ..bind(MyChildController);
+          ..bind(MyChildController)
+          ..bind(SameNameDecorator)
+          ..bind(SameNameTransclude);
     });
 
     beforeEach(inject((TestBed tb) => _ = tb));
@@ -917,6 +919,16 @@ void main() {
         expect(_.rootScope.context['name']).toEqual('cover me');
         expect(_.rootElement.text).toEqual('MyController');
       });
+
+      it('should allow multiple directives with the same selector of different type', (DirectiveMap map) {
+        _.compile('<div><div same-name="worked"></div></div>');
+        _.rootScope.apply();
+        SameNameTransclude transclude = _.rootScope.context['sameTransclude'];
+        SameNameDecorator decorator = _.rootScope.context['sameDecorator'];
+
+        expect(transclude.valueTransclude).toEqual('worked');
+        expect(decorator.valueDecorator).toEqual('worked');
+      });
     });
   }));
 }
@@ -1327,4 +1339,28 @@ class OneTimeDecorator {
   Logger log;
   OneTimeDecorator(this.log);
   set value(v) => log(v);
+}
+
+@Decorator(
+  selector: '[same-name]',
+  children: Directive.TRANSCLUDE_CHILDREN,
+  map: const { '.': '@valueTransclude' }
+)
+class SameNameTransclude {
+  var valueTransclude;
+  SameNameTransclude(ViewPort port, ViewFactory factory, RootScope scope, Injector injector) {
+    port.insert(factory.call(injector));
+    scope.context['sameTransclude'] = this;
+  }
+}
+
+@Decorator(
+    selector: '[same-name]',
+    map: const { 'same-name': '@valueDecorator' }
+)
+class SameNameDecorator {
+  var valueDecorator;
+  SameNameDecorator(RootScope scope) {
+    scope.context['sameDecorator'] = this;
+  }
 }
