@@ -75,7 +75,6 @@ class NgSwitch {
     currentViews
         ..forEach((_ViewScopePair pair) {
           pair.port.remove(pair.view);
-          pair.scope.destroy();
         })
         ..clear();
 

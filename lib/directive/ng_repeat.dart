@@ -176,7 +176,6 @@ class NgRepeat {
     } else {
       if (changes == null) {
         _rows.forEach((row) {
-          row.scope.destroy();
           _viewPort.remove(row.view);
         });
         leftInDom.clear();
@@ -184,7 +183,6 @@ class NgRepeat {
         changes.forEachRemoval((CollectionChangeItem removal) {
           var index = removal.previousIndex;
           var row = _rows[index];
-          row.scope.destroy();
           _viewPort.remove(row.view);
           leftInDom.removeAt(domLength - 1 - index);
         });

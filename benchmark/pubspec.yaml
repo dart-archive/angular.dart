@@ -13,3 +13,4 @@ transformers:
 - $dart2js:
     minify: false
     checked: false
+    commandLineOptions: [--dump-info]

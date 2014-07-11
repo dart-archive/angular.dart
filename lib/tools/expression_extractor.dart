@@ -10,7 +10,6 @@ import 'package:angular/tools/io_impl.dart';
 import 'package:angular/tools/common.dart';
 
 import 'package:di/di.dart';
-import 'package:di/dynamic_injector.dart';
 
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
@@ -61,7 +60,7 @@ main(args) {
       ..bind(CacheRegister)
       ..bind(Parser, inject: [DynamicParser])
       ..bind(ParserBackend, inject: [DartGetterSetterGen]);
-  Injector injector = new DynamicInjector(modules: [module]);
+  Injector injector = new ModuleInjector([module]);
 
   runZoned(() {
     // Run the generator.

@@ -6,17 +6,18 @@ import 'dart:html' as dom;
 import 'dart:js' as js;
 
 import 'package:di/di.dart';
+import 'package:di/annotations.dart';
 import 'package:perf_api/perf_api.dart';
 
 import 'package:angular/cache/module.dart';
 
 import 'package:angular/core/annotation.dart';
-import 'package:angular/core/annotation_src.dart'
-    show SHADOW_DOM_INJECTOR_NAME, DirectiveBinder, DirectiveBinderFn;
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
 import 'package:angular/core_dom/static_keys.dart';
+import 'package:angular/core_dom/directive_injector.dart';
+export 'package:angular/core_dom/directive_injector.dart' show DirectiveInjector;
 
 import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
 import 'package:angular/change_detection/ast_parser.dart';
@@ -26,8 +27,6 @@ import 'package:angular/directive/module.dart' show NgBaseCss;
 import 'dart:collection';
 
 part 'animation.dart';
-part 'view.dart';
-part 'view_factory.dart';
 part 'cookies.dart';
 part 'common.dart';
 part 'compiler.dart';
@@ -39,8 +38,8 @@ part 'element_binder_builder.dart';
 part 'event_handler.dart';
 part 'http.dart';
 part 'mustache.dart';
+part 'ng_element.dart';
 part 'node_cursor.dart';
-part 'web_platform.dart';
 part 'selector.dart';
 part 'shadow_dom_component_factory.dart';
 part 'shadowless_shadow_root.dart';
@@ -49,8 +48,10 @@ part 'tagging_view_factory.dart';
 part 'template_cache.dart';
 part 'transcluding_component_factory.dart';
 part 'tree_sanitizer.dart';
+part 'view.dart';
+part 'view_factory.dart';
 part 'walking_compiler.dart';
-part 'ng_element.dart';
+part 'web_platform.dart';
 
 class CoreDomModule extends Module {
   CoreDomModule() {
@@ -62,7 +63,7 @@ class CoreDomModule extends Module {
       var templateCache = new TemplateCache();
       register.registerCache("TemplateCache", templateCache);
       return templateCache;
-    }, inject: [CacheRegister]);
+    }, inject: [CACHE_REGISTER_KEY]);
     bind(dom.NodeTreeSanitizer, toImplementation: NullTreeSanitizer);
 
     bind(TextMustache);
@@ -71,7 +72,7 @@ class CoreDomModule extends Module {
     bind(Compiler, toImplementation: TaggingCompiler);
     bind(CompilerConfig);
 
-    bind(ComponentFactory, inject: [ShadowDomComponentFactory]);
+    bind(ComponentFactory, inject: [SHADOW_DOM_COMPONENT_FACTORY_KEY]);
     bind(ShadowDomComponentFactory);
     bind(TranscludingComponentFactory);
     bind(Content);

@@ -10,6 +10,7 @@ import 'package:di/di.dart';
 import 'package:angular/animate/module.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
+import 'package:angular/core_dom/directive_injector.dart' show DirectiveInjector;
 import 'package:angular/core/static_keys.dart';
 
 
@@ -92,7 +93,7 @@ ElementProbe ngProbe(nodeOrSelector) {
  * application from the browser's REPL, unit or end-to-end tests. The function
  * is not intended to be called from Angular application.
  */
-Injector ngInjector(nodeOrSelector) => ngProbe(nodeOrSelector).injector;
+DirectiveInjector ngInjector(nodeOrSelector) => ngProbe(nodeOrSelector).injector;
 
 
 /**
@@ -148,7 +149,7 @@ js.JsObject _jsProbe(ElementProbe probe) {
 }
 
 
-js.JsObject _jsInjector(Injector injector) =>
+js.JsObject _jsInjector(DirectiveInjector injector) =>
     _jsify({"get": injector.get})..['_dart_'] = injector;
 
 

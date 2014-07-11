@@ -44,7 +44,7 @@ class NgModel extends NgControl implements AttachAware {
   Watch _watch;
   bool _watchCollection;
 
-  NgModel(this._scope, NgElement element, Injector injector, NodeAttrs attrs,
+  NgModel(this._scope, NgElement element, DirectiveInjector injector, NodeAttrs attrs,
           Animate animate, ElementProbe probe)
       : super(element, injector, animate)
   {
@@ -477,12 +477,12 @@ class InputNumberLike {
  * kind would be appropriate) or, for browsers that fail to conform to the
  * HTML5 standard in their processing of date-like inputs.
  */
-@Decorator(selector: 'input[type=date][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=time][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=datetime][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=datetime-local][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=month][ng-model][ng-bind-type]')
-@Decorator(selector: 'input[type=week][ng-model][ng-bind-type]')
+@Decorator(selector: 'input[type=date][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
+@Decorator(selector: 'input[type=time][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
+@Decorator(selector: 'input[type=datetime][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
+@Decorator(selector: 'input[type=datetime-local][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
+@Decorator(selector: 'input[type=month][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
+@Decorator(selector: 'input[type=week][ng-model][ng-bind-type]', visibility: Visibility.LOCAL)
 class NgBindTypeForDateLike {
   static const DATE = 'date';
   static const NUMBER = 'number';
@@ -602,8 +602,9 @@ class NgBindTypeForDateLike {
 @Decorator(selector: 'input[type=week][ng-model]',
     module: InputDateLike.moduleFactory)
 class InputDateLike {
-  static Module moduleFactory() => new Module()..bind(NgBindTypeForDateLike,
-      toFactory: (dom.Element e) => new NgBindTypeForDateLike(e), inject: [dom.Element]);
+  static void moduleFactory(DirectiveBinder binder)
+        => binder.bind(NgBindTypeForDateLike,
+            toFactory: (dom.Element e) => new NgBindTypeForDateLike(e), inject: [ELEMENT_KEY]);
   final dom.InputElement inputElement;
   final NgModel ngModel;
   final NgModelOptions ngModelOptions;
@@ -694,11 +695,10 @@ final _uidCounter = new _UidCounter();
  * the `ng-model` property when the corresponding radio element or option is
  * selected.
  */
-@Decorator(selector: 'input[type=radio][ng-model][ng-value]')
-@Decorator(selector: 'option[ng-value]')
+@Decorator(selector: 'input[type=radio][ng-model][ng-value]', visibility: Visibility.LOCAL)
+@Decorator(selector: 'option[ng-value]', visibility: Visibility.LOCAL)
 class NgValue {
-  static Module _module = new Module()..bind(NgValue);
-  static Module moduleFactory() => _module;
+  static module(DirectiveBinder binder) => binder.bind(NgValue, visibility: Visibility.LOCAL);
 
   final dom.Element element;
   var _value;
@@ -780,7 +780,7 @@ class NgFalseValue {
  */
 @Decorator(
     selector: 'input[type=radio][ng-model]',
-    module: NgValue.moduleFactory)
+    module: NgValue.module)
 class InputRadio {
   final dom.RadioButtonInputElement radioButtonElement;
   final NgModel ngModel;
