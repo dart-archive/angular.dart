@@ -4,7 +4,7 @@ import 'dart:collection';
 
 const int _LIST_ELEMENTS = 20;
 
-class MicroIterable<E> implements Iterable {
+class MicroIterable<E> extends Object with IterableMixin implements Iterable  {
   var _element0;
   var _element1;
   var _element2;
@@ -53,88 +53,77 @@ class MicroIterable<E> implements Iterable {
 
   Iterator<E> get iterator => new _ListIterator(this);
 
-  Iterable map(f(E element)) {
-
-  }
-
-  Iterable<E> where(bool test(E element)) {
-
-  }
-
-  Iterable expand(Iterable f(E element)) {
-
-  }
-
   bool contains(Object element) {
-
+    if (_element0 == element) return true;
+    else if (_element1 == element) return true;
+    else if (_element2 == element) return true;
+    else if (_element3 == element) return true;
+    else if (_element4 == element) return true;
+    else if (_element5 == element) return true;
+    else if (_element6 == element) return true;
+    else if (_element7 == element) return true;
+    else if (_element8 == element) return true;
+    else if (_element9 == element) return true;
+    else if (_element10 == element) return true;
+    else if (_element11 == element) return true;
+    else if (_element12 == element) return true;
+    else if (_element13 == element) return true;
+    else if (_element14 == element) return true;
+    else if (_element15 == element) return true;
+    else if (_element16 == element) return true;
+    else if (_element17 == element) return true;
+    else if (_element18 == element) return true;
+    else if (_element19 == element) return true;
+    else return false;
   }
 
-  void forEach(void f(E element)) {
-
-  }
-
-  E reduce(E combine(E value, E element)) {
-
-  }
-
-  dynamic fold(initialValue, dynamic combine(previousValue, E element)) {
-
-  }
-
-  bool every(bool test(E element)) {
-
-  }
-
-  String join([String separator]) {
-
-  }
-
-  bool any(bool test(E element)) {
-
+  String join([String separator = ""]) {
+    if (_element0 == null) return null;
+    var joined = '${_element0}';
+    if (_element1 == null) return joined;
+    joined = '$joined$separator$_element1';
+    if (_element2 == null) return joined;
+    joined = '$joined$separator$_element2';
+    if (_element3 == null) return joined;
+    joined = '$joined$separator$_element3';
+    if (_element4 == null) return joined;
+    joined = '$joined$separator$_element4';
+    if (_element5 == null) return joined;
+    joined = '$joined$separator$_element5';
+    if (_element6 == null) return joined;
+    joined = '$joined$separator$_element6';
+    if (_element7 == null) return joined;
+    joined = '$joined$separator$_element7';
+    if (_element8 == null) return joined;
+    joined = '$joined$separator$_element8';
+    if (_element9 == null) return joined;
+    joined = '$joined$separator$_element9';
+    if (_element10 == null) return joined;
+    joined = '$joined$separator$_element10';
+    if (_element11 == null) return joined;
+    joined = '$joined$separator$_element11';
+    if (_element12 == null) return joined;
+    joined = '$joined$separator$_element12';
+    if (_element13 == null) return joined;
+    joined = '$joined$separator$_element13';
+    if (_element14 == null) return joined;
+    joined = '$joined$separator$_element14';
+    if (_element15 == null) return joined;
+    joined = '$joined$separator$_element15';
+    if (_element16 == null) return joined;
+    joined = '$joined$separator$_element16';
+    if (_element17 == null) return joined;
+    joined = '$joined$separator$_element17';
+    if (_element18 == null) return joined;
+    joined = '$joined$separator$_element18';
+    if (_element19 == null) return joined;
+    joined = '$joined$separator$_element19';
+    return joined;
   }
 
   List<E> toList({bool growable}) {
-    List<E> list = new List.from(this, growable: growable);
-    if (_element0  != null) list.add(_element0) ;
-    if (_element1 == null) return list;
-    if (_element1  != null) list.add(_element1 );
-    if (_element2 == null) return list;
-    if (_element2  != null) list.add(_element2 );
-    if (_element3 == null) return list;
-    if (_element3  != null) list.add(_element3 );
-    if (_element4 == null) return list;
-    if (_element4  != null) list.add(_element4 );
-    if (_element5 == null) return list;
-    if (_element5  != null) list.add(_element5 );
-    if (_element6 == null) return list;
-    if (_element6  != null) list.add(_element6 );
-    if (_element7 == null) return list;
-    if (_element7  != null) list.add(_element7 );
-    if (_element8 == null) return list;
-    if (_element8  != null) list.add(_element8 );
-    if (_element9 == null) return list;
-    if (_element9  != null) list.add(_element9 );
-    if (_element10 == null) return list;
-    if (_element10 != null) list.add(_element10);
-    if (_element11 == null) return list;
-    if (_element11 != null) list.add(_element11);
-    if (_element12 == null) return list;
-    if (_element12 != null) list.add(_element12);
-    if (_element13 == null) return list;
-    if (_element13 != null) list.add(_element13);
-    if (_element14 == null) return list;
-    if (_element14 != null) list.add(_element14);
-    if (_element15 == null) return list;
-    if (_element15 != null) list.add(_element15);
-    if (_element16 == null) return list;
-    if (_element16 != null) list.add(_element16);
-    if (_element17 == null) return list;
-    if (_element17 != null) list.add(_element17);
-    if (_element18 == null) return list;
-    if (_element18 != null) list.add(_element18);
-    if (_element19 == null) return list;
-    if (_element19 != null) list.add(_element19);
-    return list;
+    if (growable != null) return new List.from(this, growable: growable);
+    return new List.from(this);
   }
 
   Set<E> toSet() {
@@ -188,22 +177,6 @@ class MicroIterable<E> implements Iterable {
 
   bool get isNotEmpty => _count != 0;
 
-  Iterable<E> take(int n) {
-
-  }
-
-  Iterable<E> takeWhile(bool test(E value)) {
-
-  }
-
-  Iterable<E> skip(int n) {
-
-  }
-
-  Iterable<E> skipWhile(bool test(E value)) {
-
-  }
-
   E get first {
     if (_element0  != null) return _element0 ;
     if (_element1  != null) return _element1 ;
@@ -254,18 +227,6 @@ class MicroIterable<E> implements Iterable {
     if (length == 0) throw "No elements";
     if (length > 1) throw "More then one element";
     return elementAt(0);
-  }
-
-  E firstWhere(bool test(E element), {E orElse()}) {
-
-  }
-
-  E lastWhere(bool test(E element), {E orElse()}) {
-
-  }
-
-  E singleWhere(bool test(E element)) {
-
   }
 
   E elementAt(int index) {

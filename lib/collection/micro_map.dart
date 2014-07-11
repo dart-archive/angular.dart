@@ -1,6 +1,7 @@
 library angular.collection;
 
 import 'dart:collection';
+import 'micro_iterable.dart';
 
 const int _LIST_ELEMENTS = 20;
 const int MODE_ARRAY = 0;
@@ -274,54 +275,15 @@ class MicroMap<K, V> implements Map {
 
   Iterable<K> get keys {
     if (delegate != null) return delegate.keys;
-    List ks = [];
-    if(_key0 != null) ks.add(_key0);
-    if(_key1 != null) ks.add(_key1);
-    if(_key2 != null) ks.add(_key2);
-    if(_key3 != null) ks.add(_key3);
-    if(_key4 != null) ks.add(_key4);
-    if(_key5 != null) ks.add(_key5);
-    if(_key6 != null) ks.add(_key6);
-    if(_key7 != null) ks.add(_key7);
-    if(_key8 != null) ks.add(_key8);
-    if(_key9 != null) ks.add(_key9);
-    if(_key10 != null) ks.add(_key10);
-    if(_key11 != null) ks.add(_key11);
-    if(_key12 != null) ks.add(_key12);
-    if(_key13 != null) ks.add(_key13);
-    if(_key14 != null) ks.add(_key14);
-    if(_key15 != null) ks.add(_key15);
-    if(_key16 != null) ks.add(_key16);
-    if(_key17 != null) ks.add(_key17);
-    if(_key18 != null) ks.add(_key18);
-    if(_key19 != null) ks.add(_key19);
-    return ks;
+    return new MicroIterable(_key0, _key1, _key2, _key3, _key4, _key5, _key6, _key7, _key8, _key9, _key10, _key11, _key12,
+        _key13, _key14, _key15, _key16, _key17, _key18, _key19, length);
   }
 
   Iterable<V> get values {
     if (delegate != null) return delegate.values;
     List vs = [];
-    if(_obj0 != null) vs.add(_obj0);
-    if(_obj1 != null) vs.add(_obj1);
-    if(_obj2 != null) vs.add(_obj2);
-    if(_obj3 != null) vs.add(_obj3);
-    if(_obj4 != null) vs.add(_obj4);
-    if(_obj5 != null) vs.add(_obj5);
-    if(_obj6 != null) vs.add(_obj6);
-    if(_obj7 != null) vs.add(_obj7);
-    if(_obj8 != null) vs.add(_obj8);
-    if(_obj9 != null) vs.add(_obj9);
-    if(_obj10 != null) vs.add(_obj10);
-    if(_obj11 != null) vs.add(_obj11);
-    if(_obj12 != null) vs.add(_obj12);
-    if(_obj13 != null) vs.add(_obj13);
-    if(_obj14 != null) vs.add(_obj14);
-    if(_obj15 != null) vs.add(_obj15);
-    if(_obj16 != null) vs.add(_obj16);
-    if(_obj17 != null) vs.add(_obj17);
-    if(_obj18 != null) vs.add(_obj18);
-    if(_obj19 != null) vs.add(_obj19);
-    return vs;
+    return new MicroIterable(_obj0, _obj1, _obj2, _obj3, _obj4, _obj5, _obj6, _obj7, _obj8, _obj9, _obj0, _obj11, _obj12,
+        _obj13, _obj14, _obj15, _obj16, _obj17, _obj18, _obj19, length);
   }
 
   int get length {
