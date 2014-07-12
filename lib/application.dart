@@ -152,7 +152,7 @@ abstract class Application {
     modules.add(ngModule);
     ngModule..bind(VmTurnZone, toValue: zone)
             ..bind(Application, toValue: this)
-            ..bind(dom.Node, toFactory: (i) => i.getByKey(new Key(Application)).element);
+            ..bind(dom.Node, toFactory: (Application app) => app.element, inject: [Application]);
   }
 
   /**

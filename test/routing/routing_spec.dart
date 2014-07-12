@@ -16,7 +16,7 @@ main() {
       router = new Router(useFragment: false, windowImpl: new MockWindow());
       m
         ..install(new AngularMockModule())
-        ..bind(RouteInitializerFn, toFactory: (_) => initRoutes)
+        ..bind(RouteInitializerFn, toFactory: () => initRoutes, inject: [])
         ..bind(Router, toValue: router);
     });
 

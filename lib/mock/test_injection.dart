@@ -16,13 +16,13 @@ class _SpecInjector {
 
   _SpecInjector() {
     var moduleModule = new Module()
-      ..bind(Module, toFactory: (Injector injector) => addModule(new Module()));
+      ..bind(Module, toFactory: () => addModule(new Module()), inject: []);
     moduleInjector = new DynamicInjector(modules: [moduleModule]);
   }
 
   addModule(module) {
     if (injector != null) {
-      throw ["Injector already crated, can not add more modules."];
+      throw ["Injector already created, can not add more modules."];
     }
     modules.add(module);
     return module;
