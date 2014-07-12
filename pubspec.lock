@@ -64,7 +64,7 @@ packages:
   path:
     description: path
     source: hosted
-    version: "1.2.1"
+    version: "1.2.0"
   perf_api:
     description: perf_api
     source: hosted
@@ -84,7 +84,7 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "0.9.3+1"
+    version: "0.9.3+2"
   unittest:
     description: unittest
     source: hosted
