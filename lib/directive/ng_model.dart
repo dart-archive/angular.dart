@@ -603,7 +603,7 @@ class NgBindTypeForDateLike {
     module: InputDateLike.moduleFactory)
 class InputDateLike {
   static Module moduleFactory() => new Module()..bind(NgBindTypeForDateLike,
-      toFactory: (Injector i) => new NgBindTypeForDateLike(i.getByKey(ELEMENT_KEY)));
+      toFactory: (dom.Element e) => new NgBindTypeForDateLike(e), inject: [dom.Element]);
   final dom.InputElement inputElement;
   final NgModel ngModel;
   final NgModelOptions ngModelOptions;
