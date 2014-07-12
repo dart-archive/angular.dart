@@ -37,7 +37,8 @@ void main() {
       expect(map.length).toBe(20);
       expect(map.toString()).toEqual('{1: a, 2: b, 3: c, 4: d, 5: e, 6: f, 7: g, 8: h, 9: i, 10: j, 11: k,'
       ' 12: l, 13: m, 14: n, 15: o, 16: p, 17: q, 18: r, 19: s, 20: t}');
-      expect(map.mode).toEqual(MODE_ARRAY);
+      // once map mode has been hit it stays.
+      expect(map.mode).toEqual(MODE_MAP);
 
       map.remove(20);
       map.remove(19);
@@ -47,7 +48,8 @@ void main() {
       expect(map.length).toBe(15);
       expect(map.toString()).toEqual('{1: a, 2: b, 3: c, 4: d, 5: e, 6: f, 7: g, 8: h, 9: i, 10: j, 11: k,'
       ' 12: l, 13: m, 14: n, 15: o}');
-      expect(map.mode).toEqual(MODE_ARRAY);
+      // once map mode has been hit it stays.
+      expect(map.mode).toEqual(MODE_MAP);
     });
 
     describe('mode', () {
@@ -60,15 +62,6 @@ void main() {
       it('should switch to map mode', () {
         map[21] = '21';
         expect(map.mode).toBe(MODE_MAP);
-      });
-
-      it('should switch back to array mode', () {
-        map[21] = '21';
-        expect(map.mode).toBe(MODE_MAP);
-
-        var removed = map.remove(14);
-        expect(removed).toEqual('n');
-        expect(map.mode).toBe(MODE_ARRAY);
       });
     });
 
@@ -110,6 +103,11 @@ void main() {
         map[1] = 'foo';
         expect(map.length).toBe(1);
         expect(map.mode).toBe(MODE_ARRAY);
+      });
+
+      it('null key is valid', () {
+        map[null] = 'bar';
+        expect(map.length).toBe(2);
       });
     });
 
@@ -173,18 +171,11 @@ void main() {
     });
 
     describe('clear', () {
-      it('should be in fast mode (array) after clearing', () {
-        MicroMap map = new MicroMap();
-        insert(map, 0, 25);
-        map.clear();
-        expect(map.mode).toBe(MODE_ARRAY);
-      });
-
-      it('should be in fast mode (array) after clearing', () {
+      it('should length 0 after clearing', () {
         MicroMap map = new MicroMap();
         insert(map, 0, 15);
         map.clear();
-        expect(map.mode).toBe(MODE_ARRAY);
+        expect(map.length).toBe(0);
       });
     });
 
@@ -192,6 +183,19 @@ void main() {
       it('should return null when removing element which does not exist', () {
         MicroMap map = new MicroMap();
         expect(map.remove(1)).toBeNull();
+      });
+
+      it('should not get confused by a null key or value', () {
+        MicroMap map = new MicroMap();
+        map[null] = null;
+        map[1] = 'foo';
+
+        expect(map.remove(null)).toBe(null);
+        expect(map.count).toBe(1);
+        expect(map[1]).toBe('foo');
+
+        expect(map.remove(null)).toBe(null);
+        expect(map.count).toBe(1);
       });
     });
   });
