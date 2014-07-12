@@ -254,7 +254,7 @@ main() {
       ..bind(NgFreeTree)
       ..bind(NgFreeTreeScoped)
       ..bind(NgFreeTreeClass)
-      ..bind(ScopeDigestTTL, toFactory: (_) => new ScopeDigestTTL.value(15))
+      ..bind(ScopeDigestTTL, toFactory: () => new ScopeDigestTTL.value(15), inject: [])
       ..bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
 
   var injector = applicationFactory().addModule(module).run();

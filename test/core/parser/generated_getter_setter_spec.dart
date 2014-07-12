@@ -7,7 +7,7 @@ import 'generated_getter_setter.dart' as gen;
 main() {
   describe('hybrid getter-setter', () {
     beforeEachModule((Module module) {
-      module..bind(Parser, toFactory: (i) => i.get(DynamicParser))
+      module..bind(Parser, inject: [DynamicParser])
             ..bind(ClosureMap, toValue: gen.closureMap);
     });
     parser_spec.main();

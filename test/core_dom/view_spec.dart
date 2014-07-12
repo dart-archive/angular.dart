@@ -199,7 +199,7 @@ main() {
           ..bind(Log)
           ..bind(AFormatter)
           ..bind(ADirective)
-          ..bind(Node, toFactory: (injector) => document.body);
+          ..bind(Node, toFactory: () => document.body, inject: []);
 
         Injector rootInjector = applicationFactory()
             .addModule(rootModule)

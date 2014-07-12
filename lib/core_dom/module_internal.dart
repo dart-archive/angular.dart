@@ -57,11 +57,11 @@ class CoreDomModule extends Module {
     bind(ElementProbe, toValue: null);
 
     // Default to a unlimited-sized TemplateCache
-    bind(TemplateCache, toFactory: (i) {
+    bind(TemplateCache, toFactory: (CacheRegister register) {
       var templateCache = new TemplateCache();
-      i.getByKey(CACHE_REGISTER_KEY).registerCache("TemplateCache", templateCache);
+      register.registerCache("TemplateCache", templateCache);
       return templateCache;
-    });
+    }, inject: [CacheRegister]);
     bind(dom.NodeTreeSanitizer, toImplementation: NullTreeSanitizer);
 
     bind(TextMustache);
@@ -70,7 +70,7 @@ class CoreDomModule extends Module {
     bind(Compiler, toImplementation: TaggingCompiler);
     bind(CompilerConfig);
 
-    bind(ComponentFactory, toFactory: (i) => i.getByKey(SHADOW_DOM_COMPONENT_FACTORY_KEY));
+    bind(ComponentFactory, inject: [ShadowDomComponentFactory]);
     bind(ShadowDomComponentFactory);
     bind(TranscludingComponentFactory);
     bind(Content);

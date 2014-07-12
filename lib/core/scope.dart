@@ -532,6 +532,7 @@ class ScopeStatsEmitter {
  * ScopeStatsConfig is used to modify behavior of [ScopeStats]. You can use this
  * object to modify behavior at runtime too.
  */
+@Injectable()
 class ScopeStatsConfig {
   var emit = false;
 
