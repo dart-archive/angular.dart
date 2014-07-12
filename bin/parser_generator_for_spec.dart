@@ -102,6 +102,8 @@ main(arguments) {
       'map["square"] = 6',
       'method',
       'method()',
+      'causeException',
+      'causeException()',
       'notAFn()',
       'notmixed',
       'obj[0].name=1',

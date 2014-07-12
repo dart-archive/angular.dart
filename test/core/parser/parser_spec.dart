@@ -10,6 +10,7 @@ class TestData {
   set str(x) => _str = x;
 
   method() => "testMethod";
+  causeException() => this.x();
   sub1(a, {b: 0}) => a - b;
   sub2({a: 0, b: 0}) => a - b;
 }
@@ -444,6 +445,12 @@ main() {
         eval('obj.field.key = 4');
 
         expect(context['obj'].field['key']).toEqual(4);
+      });
+
+      iit('should rethrow an error from a function', () {
+        expect(() {
+          parser("causeException()").eval(new TestData());
+        }).toThrow('NoSuchMethodError');
       });
 
 

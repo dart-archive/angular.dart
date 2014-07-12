@@ -45,11 +45,7 @@ class DynamicClosureMap implements ClosureMap {
           throw "Property '$name' is not of type function.";
         }
       } else {
-        try {
-          return reflect(o).invoke(symbol, posArgs, sNamedArgs).reflectee;
-        } on NoSuchMethodError catch (e) {
-          throw 'Undefined function $name';
-        }
+        return reflect(o).invoke(symbol, posArgs, sNamedArgs).reflectee;
       }
     };
   }
