@@ -33,6 +33,19 @@ class TemplateElementBinder extends ElementBinder {
   }
 }
 
+// TODO: This class exists for forwards API compatibility only.
+//       Remove it after migration to DI 2.0.
+class _DirectiveBinderImpl implements DirectiveBinder {
+  final module = new Module();
+
+  _DirectiveBinderImpl();
+
+  bind(key, {Function toFactory: DEFAULT_VALUE, List inject: null,
+      Visibility visibility: Directive.LOCAL_VISIBILITY}) {
+    module.bind(key, toFactory: toFactory, inject: inject,
+        visibility: visibility);
+  }
+}
 
 /**
  * ElementBinder is created by the Selector and is responsible for instantiating
@@ -297,8 +310,16 @@ class ElementBinder {
 
       _createDirectiveFactories(ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
           visibility);
-      if (ref.annotation.module != null) {
-         nodeModule.install(ref.annotation.module());
+      // Choose between old-style Module-based API and new-style DirectiveBinder-base API
+      var moduleFn = ref.annotation.module;
+      if (moduleFn != null) {
+        if (moduleFn is DirectiveBinderFn) {
+          var binder = new _DirectiveBinderImpl();
+          moduleFn(binder);
+          nodeModule.install(binder.module);
+        } else {
+          nodeModule.install(moduleFn());
+        }
       }
     });
 
