@@ -17,8 +17,8 @@ typedef void Mustache(bool hasObservers);
 class NodeAttrs {
   final dom.Element element;
 
-  Map<String, List<_AttributeChanged>> _observers;
-  final _mustacheAttrs = new HashMap<String, _MustacheAttr>();
+  MicroMap<String, List<_AttributeChanged>> _observers;
+  final _mustacheAttrs = new MicroMap<String, _MustacheAttr>();
 
   NodeAttrs(this.element);
 
@@ -49,7 +49,7 @@ class NodeAttrs {
    * [:true:]
    */
   observe(String attrName, notifyFn(String value)) {
-    if (_observers == null) _observers = new HashMap<String, List<_AttributeChanged>>();
+    if (_observers == null) _observers = new MicroMap<String, List<_AttributeChanged>>();
     _observers.putIfAbsent(attrName, () => <_AttributeChanged>[])
               .add(notifyFn);
 
