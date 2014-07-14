@@ -11,7 +11,8 @@ import 'package:perf_api/perf_api.dart';
 import 'package:angular/cache/module.dart';
 
 import 'package:angular/core/annotation.dart';
-import 'package:angular/core/annotation_src.dart' show SHADOW_DOM_INJECTOR_NAME;
+import 'package:angular/core/annotation_src.dart'
+    show SHADOW_DOM_INJECTOR_NAME, DirectiveBinder, DirectiveBinderFn;
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;

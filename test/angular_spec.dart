@@ -104,6 +104,8 @@ main() {
         "angular.core.annotation_src.DetachAware",
         "angular.core.annotation_src.Directive",
         "angular.core.annotation_src.DirectiveAnnotation",
+        "angular.core.annotation_src.DirectiveBinder",
+        "angular.core.annotation_src.DirectiveBinderFn",
         "angular.core.annotation_src.Formatter",
         "angular.core.annotation_src.Injectable",
         "angular.core.annotation_src.NgAttr",

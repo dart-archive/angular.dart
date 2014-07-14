@@ -11,6 +11,8 @@ export "package:angular/core/annotation_src.dart" show
     ShadowRootAware,
 
     Formatter,
+    DirectiveBinder,
+    DirectiveBinderFn,
     Injectable,
 
     Directive,
