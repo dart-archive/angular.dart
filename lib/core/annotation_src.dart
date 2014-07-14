@@ -2,6 +2,13 @@ library angular.core.annotation_src;
 
 import "package:di/di.dart" show Injector, Visibility;
 
+abstract class DirectiveBinder {
+  bind(key, {Function toFactory, inject,
+      Visibility visibility: Directive.CHILDREN_VISIBILITY});
+}
+
+typedef void DirectiveBinderFn(DirectiveBinder module);
+
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
 const String SHADOW_DOM_INJECTOR_NAME = 'SHADOW_INJECTOR';
