@@ -268,12 +268,12 @@ class _ElementSelector {
         }
       } else if ((name = part.attrName) != null) {
         if (terminal) {
-          elSelector._attrValueMap.putIfAbsent(name, () => new HashMap<String, List<_Directive>>())
+          elSelector._attrValueMap.putIfAbsent(name, () => new MicroMap<String, List<_Directive>>())
               .putIfAbsent(part.attrValue, () => [])
               .add(directive);
         } else {
           elSelector = elSelector._attrValuePartialMap
-              .putIfAbsent(name, () => new HashMap<String, _ElementSelector>())
+              .putIfAbsent(name, () => new MicroMap<String, _ElementSelector>())
               .putIfAbsent(part.attrValue, () => new _ElementSelector(name));
         }
       } else {
