@@ -234,14 +234,14 @@ _addRefs(ElementBinderBuilder builder, List<_Directive> directives, dom.Node nod
 class _ElementSelector {
   final String _name;
 
-  final _elementMap = new HashMap<String, List<_Directive>>();
-  final _elementPartialMap = new HashMap<String, _ElementSelector>();
+  final _elementMap = new MicroMap<String, List<_Directive>>();
+  final _elementPartialMap = new MicroMap<String, _ElementSelector>();
 
-  final _classMap = new HashMap<String, List<_Directive>>();
-  final _classPartialMap = new HashMap<String, _ElementSelector>();
+  final _classMap = new MicroMap<String, List<_Directive>>();
+  final _classPartialMap = new MicroMap<String, _ElementSelector>();
 
-  final _attrValueMap = new HashMap<String, Map<String, List<_Directive>>>();
-  final _attrValuePartialMap = new HashMap<String, Map<String, _ElementSelector>>();
+  final _attrValueMap = new MicroMap<String, Map<String, List<_Directive>>>();
+  final _attrValuePartialMap = new MicroMap<String, Map<String, _ElementSelector>>();
 
   _ElementSelector(this._name);
 

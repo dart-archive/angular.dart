@@ -10,6 +10,7 @@ import 'package:perf_api/perf_api.dart';
 
 import 'package:angular/cache/module.dart';
 
+import 'package:angular/collection/micro_map.dart';
 import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';
