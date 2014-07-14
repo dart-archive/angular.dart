@@ -246,6 +246,7 @@ main() {
         "angular.watch_group.Watch",
         "change_detection.AvgStopwatch",
         "change_detection.FieldGetterFactory",
+        "di.DEFAULT_VALUE",
         "di.CircularDependencyError",
         "di.FactoryFn",
         "di.injector.Injector",
