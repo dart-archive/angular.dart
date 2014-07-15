@@ -254,8 +254,7 @@ class ElementBinder {
           toFactory: (Scope scope) => new TextMustache(node, ref.valueAST, scope));
     } else if (ref.type == AttrMustache) {
       if (nodesAttrsDirectives.isEmpty) {
-        nodeModule.bind(AttrMustache, toFactory: (Injector injector) {
-          var scope = injector.getByKey(SCOPE_KEY);
+        nodeModule.bind(AttrMustache, inject: const[Scope], toFactory: (Scope scope) {
           for (var ref in nodesAttrsDirectives) {
             new AttrMustache(nodeAttrs, ref.value, ref.valueAST, scope);
           }
