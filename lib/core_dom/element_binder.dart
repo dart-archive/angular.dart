@@ -25,10 +25,10 @@ class TemplateElementBinder extends ElementBinder {
   _registerViewFactory(node, parentInjector, nodeModule) {
     assert(templateViewFactory != null);
     nodeModule
-      ..bindByKey(VIEW_PORT_KEY, toFactory: (_) =>
+      ..bindByKey(VIEW_PORT_KEY, inject: const [], toFactory: () =>
           new ViewPort(node, parentInjector.getByKey(ANIMATE_KEY)))
       ..bindByKey(VIEW_FACTORY_KEY, toValue: templateViewFactory)
-      ..bindByKey(BOUND_VIEW_FACTORY_KEY, toFactory: (Injector injector) =>
+      ..bindByKey(BOUND_VIEW_FACTORY_KEY, inject: const [Injector], toFactory: (Injector injector) =>
           templateViewFactory.bind(injector));
   }
 }
@@ -250,8 +250,8 @@ class ElementBinder {
   void _createDirectiveFactories(DirectiveRef ref, nodeModule, node, nodesAttrsDirectives, nodeAttrs,
                                  visibility) {
     if (ref.type == TextMustache) {
-      nodeModule.bind(TextMustache, toFactory: (Injector injector) => new TextMustache(
-              node, ref.valueAST, injector.getByKey(SCOPE_KEY)));
+      nodeModule.bind(TextMustache, inject: const [Scope],
+          toFactory: (Scope scope) => new TextMustache(node, ref.valueAST, scope));
     } else if (ref.type == AttrMustache) {
       if (nodesAttrsDirectives.isEmpty) {
         nodeModule.bind(AttrMustache, toFactory: (Injector injector) {
@@ -265,7 +265,8 @@ class ElementBinder {
     } else if (ref.annotation is Component) {
       assert(ref == componentData.ref);
 
-      nodeModule.bindByKey(ref.typeKey, toFactory: componentData.factory.call(node), visibility: visibility);
+      nodeModule.bindByKey(ref.typeKey, inject: const [Injector],
+          toFactory: componentData.factory.call(node), visibility: visibility);
     } else {
       nodeModule.bindByKey(ref.typeKey, visibility: visibility);
     }
@@ -297,7 +298,7 @@ class ElementBinder {
         ..bindByKey(NODE_ATTRS_KEY, toValue: nodeAttrs);
 
     if (_config.elementProbeEnabled) {
-      nodeModule.bindByKey(ELEMENT_PROBE_KEY, toFactory: (_) => probe);
+      nodeModule.bindByKey(ELEMENT_PROBE_KEY, inject: const [], toFactory: () => probe);
     }
 
     directiveRefs.forEach((DirectiveRef ref) {
