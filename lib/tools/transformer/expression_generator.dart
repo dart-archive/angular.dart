@@ -46,8 +46,8 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
         .forEach(htmlExtractor.parseHtml)
         .then((_) {
       var module = new Module()
-        ..bind(Parser, toFactory: (i) => i.get(DynamicParser))
-        ..bind(ParserBackend, toFactory: (i) => i.get(DartGetterSetterGen));
+        ..bind(Parser, inject: const [DynamicParser])
+        ..bind(ParserBackend, inject: const [DartGetterSetterGen]);
       var injector =
           new DynamicInjector(modules: [module], allowImplicitInjection: true);
 

@@ -32,7 +32,7 @@ class NgBindRoute implements RouteProvider {
   final Injector _injector;
 
   static final Module _module = new Module()
-      ..bind(RouteProvider, toFactory: (i) => i.getByKey(NG_BIND_ROUTE_KEY),
+      ..bind(RouteProvider, inject: const [NgBindRoute],
              visibility: Directive.CHILDREN_VISIBILITY);
 
   static Module module() => _module;
