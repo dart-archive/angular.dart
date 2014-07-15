@@ -151,7 +151,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
           ..bind(dom.ShadowRoot, toValue: new ShadowlessShadowRoot(element));
 
       if (_f.config.elementProbeEnabled) {
-       childModule.bind(ElementProbe, toFactory: (_) => probe);
+       childModule.bind(ElementProbe, inject: const [], toFactory: () => probe);
       }
       childInjector = injector.createChild([childModule], name: SHADOW_DOM_INJECTOR_NAME);
       if (childInjectorCompleter != null) {

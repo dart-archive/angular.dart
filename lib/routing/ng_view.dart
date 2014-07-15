@@ -56,7 +56,7 @@ part of angular.routing;
     module: NgView.module)
 class NgView implements DetachAware, RouteProvider {
   static final Module _module = new Module()
-      ..bind(RouteProvider, toFactory: (i) => i.getByKey(NG_VIEW_KEY));
+      ..bind(RouteProvider, inject: const [NgView]);
 
   static Module module() => _module;
 

@@ -169,7 +169,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
         ..bindByKey(SHADOW_ROOT_KEY, toValue: shadowDom);
 
       if (_f.config.elementProbeEnabled) {
-        shadowModule.bindByKey(ELEMENT_PROBE_KEY, toFactory: (_) => probe);
+        shadowModule.bindByKey(ELEMENT_PROBE_KEY, inject: const [], toFactory: () => probe);
       }
 
       shadowInjector = injector.createChild([shadowModule], name: SHADOW_DOM_INJECTOR_NAME);
