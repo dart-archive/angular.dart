@@ -70,6 +70,9 @@
                 &plusmn; <%= Math.round(testTime.avg.coefficientOfVariation * 100) %>%
                 <br>
                 (stddev <%= testTime.avg.stdDev.toFixed(2) %>)
+                <br>
+                (min <%= testTime.min.toFixed(2) %> /
+                 max <%= testTime.max.toFixed(2) %>)
               </div>
               <div class="td col-md-2">
                 mean: <%= gcTime.avg.mean.toFixed(2) %>ms
