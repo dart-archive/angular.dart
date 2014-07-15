@@ -75,55 +75,56 @@ main() {
       var a, b;
       var expando = new Expando();
 
-      beforeEach((Injector injector, Profiler perf) {
+      beforeEach((Injector injector, Profiler perf, TestBed _) {
         rootElement.innerHtml = '<!-- anchor -->';
-        anchor = new ViewPort(rootElement.childNodes[0],
-          injector.get(Animate));
+        anchor = new ViewPort(rootElement.childNodes[0], injector.get(Animate), _.rootScope);
         a = (viewFactoryFactory(es('<span>A</span>a'), [], perf, expando))(injector);
         b = (viewFactoryFactory(es('<span>B</span>b'), [], perf, expando))(injector);
       });
 
 
       describe('insertAfter', () {
-        it('should insert block after anchor view', () {
+        it('should insert block after anchor view', (TestBed _) {
           anchor.insert(a);
-
+          _.rootScope.flush();
           expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a');
         });
 
 
-        it('should insert multi element view after another multi element view', () {
+        it('should insert multi element view after another multi element view', (TestBed _) {
           anchor.insert(a);
           anchor.insert(b, insertAfter: a);
-
+          _.rootScope.flush();
           expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
         });
 
 
-        it('should insert multi element view before another multi element view', () {
+        it('should insert multi element view before another multi element view', (TestBed _) {
           anchor.insert(b);
           anchor.insert(a);
-
+          _.rootScope.flush();
           expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a<span>B</span>b');
         });
       });
 
 
       describe('remove', () {
-        beforeEach(() {
+        beforeEach((TestBed _) {
           anchor.insert(a);
           anchor.insert(b, insertAfter: a);
-
+          _.rootScope.flush();
           expect(rootElement.text).toEqual('AaBb');
         });
 
-        it('should remove the last view', () {
+        it('should remove the last view', (TestBed _) {
           anchor.remove(b);
+          _.rootScope.flush();
           expect(rootElement).toHaveHtml('<!-- anchor --><span>A</span>a');
         });
 
-        it('should remove child views from parent pseudo black', () {
+        it('should remove child views from parent pseudo black', (TestBed _) {
           anchor.remove(a);
+          _.rootScope.flush();
           expect(rootElement).toHaveHtml('<!-- anchor --><span>B</span>b');
         });
 
@@ -176,16 +177,17 @@ main() {
 
 
       describe('moveAfter', () {
-        beforeEach(() {
+        beforeEach((TestBed _) {
           anchor.insert(a);
           anchor.insert(b, insertAfter: a);
-
+          _.rootScope.flush();
           expect(rootElement.text).toEqual('AaBb');
         });
 
 
-        it('should move last to middle', () {
+        it('should move last to middle', (TestBed _) {
           anchor.move(a, moveAfter: b);
+          _.rootScope.flush();
           expect(rootElement).toHaveHtml('<!-- anchor --><span>B</span>b<span>A</span>a');
         });
       });

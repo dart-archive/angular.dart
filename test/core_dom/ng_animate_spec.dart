@@ -3,13 +3,13 @@ library no_animate_spec;
 import '../_specs.dart';
 
 main() {
-  describe('NgAniamte', () {
+  describe('NgAnimate', () {
     TestBed _;
     beforeEach((TestBed tb) => _ = tb);
 
     it('should exist',
-        (Animate aniamte) {
-      expect(aniamte).toBeDefined();
+        (Animate animate) {
+      expect(animate).toBeDefined();
     });
 
     it('should add a css classes to nodes.', () {
@@ -64,17 +64,17 @@ main() {
       expect(_.rootElement.text).toEqual("BbAa");
     });
   });
-  
+
   describe('NoOpAnimation', () {
     it('should not do anything async unless the future is asked for', () {
       var completer = new NoOpAnimation();
       expect(completer).toBeDefined();
     });
-        
+
     it('should create a future once onCompleted is accessed', () {
       expect(() => new NoOpAnimation().onCompleted).toThrow();
     });
-        
+
     it('should return a [COMPLETED_IGNORED] result when completed.', async(() {
       bool success = false;
       new NoOpAnimation().onCompleted.then((result) {

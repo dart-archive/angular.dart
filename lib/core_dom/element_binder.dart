@@ -22,11 +22,13 @@ class TemplateElementBinder extends ElementBinder {
 
   String toString() => "[TemplateElementBinder template:$template]";
 
-  _registerViewFactory(node, parentInjector, nodeModule) {
+  void _registerViewFactory(dom.Node node, Injector parentInjector, Module nodeModule) {
     assert(templateViewFactory != null);
     nodeModule
       ..bindByKey(VIEW_PORT_KEY, toFactory: (_) =>
-          new ViewPort(node, parentInjector.getByKey(ANIMATE_KEY)))
+          new ViewPort(node,
+                       parentInjector.getByKey(ANIMATE_KEY),
+                       parentInjector.getByKey(ROOT_SCOPE_KEY)))
       ..bindByKey(VIEW_FACTORY_KEY, toValue: templateViewFactory)
       ..bindByKey(BOUND_VIEW_FACTORY_KEY, toFactory: (Injector injector) =>
           templateViewFactory.bind(injector));
@@ -194,7 +196,7 @@ class ElementBinder {
                 scope.rootScope.domWrite(() {
                   if (lastOneTimeValue != null) {
                     watchToRemove.remove();
-                  } else {  // It was set to non-null, but stablized to null, wait.
+                  } else {  // It was set to non-null, but stabilized to null, wait.
                     watch = watchToRemove;
                   }
                 });
