@@ -177,7 +177,9 @@ bp.Report.getTimesPerAction = function(name) {
       tpa[c] = {
         recent: undefined,
         history: [],
-        avg: {}
+        avg: {},
+        min: Number.MAX_VALUE,
+        max: Number.MIN_VALUE
       };
     });
   }
@@ -194,9 +196,12 @@ bp.Report.rightSizeTimes = function(times) {
 };
 
 bp.Report.updateTimes = function(tpa, index, reference, recentTime) {
-  tpa[reference].recent = recentTime;
-  tpa[reference].history[index] = recentTime;
-  tpa[reference].history = bp.Report.rightSizeTimes(tpa[reference].history);
+  var curTpa = tpa[reference];
+  curTpa.recent = recentTime;
+  curTpa.history[index] = recentTime;
+  curTpa.history = bp.Report.rightSizeTimes(curTpa.history);
+  curTpa.min = Math.min(curTpa.min, recentTime);
+  curTpa.max = Math.max(curTpa.max, recentTime);
 };
 
 bp.Report.calcStats = function() {
