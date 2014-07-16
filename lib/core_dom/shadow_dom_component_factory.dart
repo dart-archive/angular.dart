@@ -190,8 +190,8 @@ class _ComponentAssetKey {
 
   _ComponentAssetKey(String tag, String assetUrl)
       : _key = "$tag|$assetUrl",
-        this.tag = tag,
-        this.assetUrl = assetUrl;
+        tag = tag,
+        assetUrl = assetUrl;
 
   @override
   String toString() => _key;
@@ -200,9 +200,9 @@ class _ComponentAssetKey {
   int get hashCode => _key.hashCode;
 
   bool operator ==(key) =>
-      key is _ComponentAssetKey
-      && tag == key.tag
-      && assetUrl == key.assetUrl;
+      key is _ComponentAssetKey &&
+      tag == key.tag &&
+      assetUrl == key.assetUrl;
 }
 
 @Injectable()
