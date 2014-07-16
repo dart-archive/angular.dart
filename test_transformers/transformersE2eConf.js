@@ -4,34 +4,30 @@
  *
  * DARTIUM: The full path to the Dartium binary.
  *
- * TEST_EXAMPLE_BASEURL: Overrides the default baseUrl to one of your
- *     choosing.  (The default is http://localhost:8080 which is the
- *     correct if you simply run "pub serve" inside the example folder
- *     of the AngularDart repo.)
+ * TEST_TRANSFORMERS_BASEURL: Overrides the default baseUrl to one of
+ *     your choosing.  (The default is http://localhost:8080 which is the
+ *     correct if you simply run "pub serve" inside the example folder of the
+ *     AngularDart repo.)
  */
 
-var configQuery = require('./configQuery.js');
+// TODO(chirayu/diana): Relocate shared configQuery.js
+var configQuery = require('../test_e2e/configQuery.js');
 
 var config = {
     seleniumAddress: 'http://127.0.0.1:4444/wd/hub',
 
-    specs: [
-	'animation_spec.dart',
-	'hello_world_spec.dart',
-    'todo_spec.dart'
-    ],
-
-    splitTestsBetweenCapabilities: true,
+    specs: ['relative_uris_spec.dart'],
 
     multiCapabilities: [{
 	'browserName': 'chrome',
 	'chromeOptions': configQuery.getChromeOptions(),
-	count: 4
+	count: 1
     }],
 
     baseUrl: configQuery.getBaseUrl({
-	envVar: "TEST_EXAMPLE_BASEURL"
+	envVar: "TEST_TRANSFORMERS_BASEURL"
     }),
+
 
     jasmineNodeOpts: {
 	isVerbose: true, // display spec names.
@@ -50,7 +46,7 @@ if (process.env.SAUCE_USERNAME != null) {
     config.multiCapabilities.forEach(function(capability) {
 	capability['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
 	capability['build'] = process.env.TRAVIS_BUILD_NUMBER;
-	capability['name'] = 'AngularDart E2E Suite';
+	capability['name'] = 'AngularDart Transformers E2E Suite';
     });
 }
 

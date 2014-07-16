@@ -43,11 +43,12 @@ import 'package:angular/application_factory_static.dart';
 import 'package:di/di.dart' show Module;
 import 'main_static_expressions.dart' as generated_static_expressions;
 import 'main_static_metadata.dart' as generated_static_metadata;
+import 'main_static_type_to_uri_mapper.dart' as generated_static_type_to_uri_mapper;
 
 class MyModule extends Module {}
 
 main() {
-  var app = staticApplicationFactory(generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols)
+  var app = staticApplicationFactory(generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols, generated_static_type_to_uri_mapper.typeToUriMapper)
     .addModule(new MyModule())
     .run();
 }
@@ -79,11 +80,12 @@ import 'package:angular/application_factory_static.dart' as ng;
 import 'package:di/di.dart' show Module;
 import 'main_static_expressions.dart' as generated_static_expressions;
 import 'main_static_metadata.dart' as generated_static_metadata;
+import 'main_static_type_to_uri_mapper.dart' as generated_static_type_to_uri_mapper;
 
 class MyModule extends Module {}
 
 main() {
-  var app = ng.staticApplicationFactory(generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols)
+  var app = ng.staticApplicationFactory(generated_static_metadata.typeAnnotations, generated_static_expressions.getters, generated_static_expressions.setters, generated_static_expressions.symbols, generated_static_type_to_uri_mapper.typeToUriMapper)
     .addModule(new MyModule())
     .run();
 }
