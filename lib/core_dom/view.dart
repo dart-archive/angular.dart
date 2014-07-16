@@ -36,8 +36,8 @@ class ViewPort {
 
   ViewPort(this.directiveInjector, this.scope, this.placeholder, this._animate);
 
-  View insertNew(ViewFactory viewFactory, { View insertAfter, Scope viewScope}) {
-    if (viewScope == null) viewScope = scope.createChild(new PrototypeMap(scope.context));
+  View insertNew(ViewFactory viewFactory, {View insertAfter, Scope viewScope}) {
+    if (viewScope == null) viewScope = scope.createChild(scope.context);
     View view = viewFactory.call(viewScope, directiveInjector);
     return insert(view, insertAfter: insertAfter);
   }

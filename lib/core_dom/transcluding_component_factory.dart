@@ -113,7 +113,6 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       DirectiveInjector childInjector;
       var childInjectorCompleter; // Used if the ViewFuture is available before the childInjector.
 
-      var component = _component;
       var contentPort = new ContentPort(element);
 
       // Append the component's template as children
@@ -143,8 +142,9 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       Scope shadowScope = scope.createChild(new HashMap());
 
       childInjector = new ShadowlessComponentDirectiveInjector(injector, injector.appInjector,
-          eventHandler, shadowScope, templateLoader, new ShadowlessShadowRoot(element),
-          contentPort);
+          eventHandler, templateLoader, new ShadowlessShadowRoot(element), contentPort,
+          _ref.typeKey);
+
       childInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 
       if (childInjectorCompleter != null) {
