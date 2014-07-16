@@ -17,6 +17,8 @@ import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'package:angular/core/registry_dynamic.dart';
 import 'package:angular/core/parser/parser_dynamic.dart';
+import 'package:angular/core_dom/annotation_uri_resolver.dart';
+import 'package:angular/core_dom/annotation_uri_resolver_dynamic.dart';
 import 'dart:html';
 
 /**
@@ -60,6 +62,7 @@ import 'dart:mirrors' show MirrorsUsed;
 class _DynamicApplication extends Application {
   _DynamicApplication() {
     ngModule
+        ..bind(AnnotationUriResolver, toImplementation: DynamicAnnotationUriResolver)
         ..bind(MetadataExtractor, toImplementation: DynamicMetadataExtractor)
         ..bind(FieldGetterFactory, toImplementation: DynamicFieldGetterFactory)
         ..bind(ClosureMap, toImplementation: DynamicClosureMap);

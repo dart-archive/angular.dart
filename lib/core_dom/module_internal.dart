@@ -18,6 +18,9 @@ import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core_dom/dom_util.dart' as util;
 import 'package:angular/core_dom/static_keys.dart';
 
+import 'package:angular/core_dom/annotation_uri_resolver.dart';
+import 'package:angular/core_dom/absolute_uris.dart' as absolute;
+
 import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
 import 'package:angular/change_detection/ast_parser.dart';
 import 'package:angular/core/registry.dart';

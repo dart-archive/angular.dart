@@ -654,7 +654,7 @@ void main() {
         });
 
         it('should fire onShadowRoot method', async((Compiler compile, Logger logger, MockHttpBackend backend) {
-          backend.whenGET('some/template.url').respond(200, '<div>WORKED</div>');
+          backend.whenGET('base/test/core_dom/some/template.url').respond(200, '<div>WORKED</div>');
           var scope = _.rootScope.createChild({});
           scope.context['isReady'] = 'ready';
           scope.context['logger'] = logger;
@@ -689,7 +689,7 @@ void main() {
         }));
 
         it('should should not call attach after scope is destroyed', async((Compiler compile, Logger logger, MockHttpBackend backend) {
-          backend.whenGET('foo.html').respond('<div>WORKED</div>');
+          backend.whenGET('base/test/core_dom/foo.html').respond('<div>WORKED</div>');
           var elts = es('<simple-attach></simple-attach>');
           var scope = _.rootScope.createChild({});
           compile(elts, _.injector.get(DirectiveMap))(_.injector.createChild([new Module()..bind(Scope, toValue: scope)]), elts);
@@ -712,7 +712,7 @@ void main() {
         }));
 
         it('should inject compenent element as the dom.Element', async((Logger log, TestBed _, MockHttpBackend backend) {
-          backend.whenGET('foo.html').respond('<div>WORKED</div>');
+          backend.whenGET('base/test/core_dom/foo.html').respond('<div>WORKED</div>');
           _.compile('<log-element></log-element>');
           Element element = _.rootElement;
           expect(log).toEqual([element, element,
