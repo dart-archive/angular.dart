@@ -24,6 +24,27 @@ env:
     CHANNEL=dev
     TESTS=dart2js
     BROWSERS=SL_Chrome,SL_Firefox
+  - JOB=e2e-g3stable
+    CHANNEL=stable
+    TESTS=vm
+    BROWSERS=DartiumWithWebPlatform
+    USE_G3=YES
+  - JOB=e2e-stable
+    CHANNEL=stable
+    TESTS=vm
+    BROWSERS=DartiumWithWebPlatform
+  - JOB=e2e-dev
+    CHANNEL=dev
+    TESTS=vm
+    BROWSERS=DartiumWithWebPlatform
+  - JOB=e2e-stable
+    CHANNEL=stable
+    TESTS=dart2js
+    BROWSERS=SL_Chrome,SL_Firefox
+  - JOB=e2e-dev
+    CHANNEL=dev
+    TESTS=dart2js
+    BROWSERS=SL_Chrome,SL_Firefox
   global:
   - FIREFOX_VERSION="30.0"
   - CHROME_VERSION="35.0"

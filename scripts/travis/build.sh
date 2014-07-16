@@ -26,6 +26,17 @@ function checkSize() {
   fi
 }
 
+
+# E2E tests only?
+if [[ $JOB == e2e-* ]]; then
+  echo '---------------------------'
+  echo '-- E2E TEST: AngularDart --'
+  echo '---------------------------'
+  $NGDART_BASE_DIR/scripts/run-e2e-test.sh
+  exit 0
+fi
+
+
 if [[ $TESTS == "dart2js" ]]; then
   # skip auxiliary tests if we are only running dart2js
   echo '------------------------'
@@ -101,12 +112,6 @@ $NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node playback_middleware/
 node "node_modules/karma/bin/karma" start karma.conf \
     --reporters=junit,dots --port=8765 --runner-port=8766 \
     --browsers=$BROWSERS --single-run --no-colors
-
-
-echo '---------------------------'
-echo '-- E2E TEST: AngularDart --'
-echo '---------------------------'
-$NGDART_BASE_DIR/scripts/run-e2e-test.sh
 
 
 echo '-------------------------'
