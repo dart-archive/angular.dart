@@ -134,27 +134,37 @@ class ViewCache {
   final TemplateCache templateCache;
   final Compiler compiler;
   final dom.NodeTreeSanitizer treeSanitizer;
+  final dom.HtmlDocument parseDocument =
+      dom.document.implementation.createHtmlDocument('');
+  final ResourceUrlResolver resourceResolver;
 
-  ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer, CacheRegister cacheRegister) {
+  ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer, this.resourceResolver, CacheRegister cacheRegister) {
     cacheRegister.registerCache('viewCache', viewFactoryCache);
   }
 
-  ViewFactory fromHtml(String html, DirectiveMap directives) {
+  ViewFactory fromHtml(String html, DirectiveMap directives, [Uri baseUri]) {
     ViewFactory viewFactory = viewFactoryCache.get(html);
+    if (baseUri != null)
+      html = resourceResolver.resolveHtml(html, baseUri);
+    else
+      html = resourceResolver.resolveHtml(html);
+
+    var div = parseDocument.createElement('div');
+    div.setInnerHtml(html, treeSanitizer: treeSanitizer);
+
     if (viewFactory == null) {
-      var div = new dom.DivElement();
-      div.setInnerHtml(html, treeSanitizer: treeSanitizer);
       viewFactory = compiler(div.nodes, directives);
       viewFactoryCache.put(html, viewFactory);
     }
     return viewFactory;
   }
 
-  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives) {
+  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives, [Uri baseUri]) {
     ViewFactory viewFactory = viewFactoryCache.get(url);
     if (viewFactory == null) {
       return http.get(url, cache: templateCache).then((resp) {
-        var viewFactoryFromHttp = fromHtml(resp.responseText, directives);
+        var viewFactoryFromHttp = fromHtml(resourceResolver.resolveHtml(
+                                           resp.responseText, baseUri), directives);
         viewFactoryCache.put(url, viewFactoryFromHttp);
         return viewFactoryFromHttp;
       });

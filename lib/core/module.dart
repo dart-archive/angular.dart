@@ -59,6 +59,7 @@ export "package:angular/core_dom/module_internal.dart" show
     RequestInterceptor,
     Response,
     ResponseError,
+    ResourceResolverConfig,
     UrlRewriter,
     TemplateCache,
     View,

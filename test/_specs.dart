@@ -23,6 +23,7 @@ export 'package:angular/core/annotation.dart';
 export 'package:angular/core/registry.dart';
 export 'package:angular/core/module_internal.dart';
 export 'package:angular/core_dom/module_internal.dart';
+export 'package:angular/core_dom/type_to_uri_mapper.dart';
 export 'package:angular/core/parser/parser.dart';
 export 'package:angular/core/parser/lexer.dart';
 export 'package:angular/directive/module.dart';

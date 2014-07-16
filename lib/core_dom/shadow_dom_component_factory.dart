@@ -12,12 +12,16 @@ abstract class BoundComponentFactory {
   Function call(dom.Element element);
 
   static async.Future<ViewFactory> _viewFuture(
-        Component component, ViewCache viewCache, DirectiveMap directives) {
+        Component component, ViewCache viewCache, DirectiveMap directives,
+        TypeToUriMapper uriMapper, ResourceUrlResolver resourceResolver, Type type) {
     if (component.template != null) {
-      return new async.Future.value(viewCache.fromHtml(component.template, directives));
+      var baseUri = uriMapper.uriForType(type);
+      return new async.Future.value(viewCache.fromHtml(component.template, directives, baseUri));
     }
     if (component.templateUrl != null) {
-      return viewCache.fromUrl(component.templateUrl, directives);
+      var url = resourceResolver.combineWithType(type, component.templateUrl);
+      var baseUri = Uri.parse(url);
+      return viewCache.fromUrl(url, directives, baseUri);
     }
     return null;
   }
@@ -43,12 +47,15 @@ class ShadowDomComponentFactory implements ComponentFactory {
   final dom.NodeTreeSanitizer treeSanitizer;
   final Expando expando;
   final CompilerConfig config;
+  final TypeToUriMapper uriMapper;
+  final ResourceUrlResolver resourceResolver;
 
   final Map<_ComponentAssetKey, async.Future<dom.StyleElement>> styleElementCache = {};
 
   ShadowDomComponentFactory(this.viewCache, this.http, this.templateCache, this.platform,
                             this.componentCssRewriter, this.treeSanitizer, this.expando,
-                            this.config, CacheRegister cacheRegister) {
+                            this.config, this.uriMapper, this.resourceResolver, 
+                            CacheRegister cacheRegister) {
     cacheRegister.registerCache("ShadowDomComponentFactoryStyles", styleElementCache);
   }
 
@@ -75,20 +82,26 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
     _viewFuture = BoundComponentFactory._viewFuture(
         _component,
         new PlatformViewCache(_f.viewCache, _tag, _f.platform),
-        _directives);
+        _directives,
+        _f.uriMapper,
+        _f.resourceResolver,
+        _ref.type);
   }
 
-  async.Future<dom.StyleElement> _styleFuture(cssUrl) {
+  async.Future<dom.StyleElement> _styleFuture(cssUrl, {resolveUri: true}) {
+    if (resolveUri)
+      cssUrl = _f.resourceResolver.combineWithType(_ref.type, cssUrl);
+
     Http http = _f.http;
     TemplateCache templateCache = _f.templateCache;
     WebPlatform platform = _f.platform;
     ComponentCssRewriter componentCssRewriter = _f.componentCssRewriter;
-    dom.NodeTreeSanitizer treeSanitizer = _f.treeSanitizer;
+    dom.NodeTreeSanitizer treeSanitizer = _f.treeSanitizer;    
 
     return _f.styleElementCache.putIfAbsent(
         new _ComponentAssetKey(_tag, cssUrl), () =>
         http.get(cssUrl, cache: templateCache)
-        .then((resp) => resp.responseText,
+        .then((resp) => _f.resourceResolver.resolveCssText(resp.responseText, Uri.parse(cssUrl)),
         onError: (e) => '/*\n$e\n*/\n')
         .then((String css) {
 
@@ -133,7 +146,8 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
       async.Future<Iterable<dom.StyleElement>> cssFuture;
       if (_component.useNgBaseCss == true) {
         cssFuture = async.Future.wait(
-                [async.Future.wait(baseCss.urls.map(_styleFuture)), _styleElementsFuture])
+                [async.Future.wait(baseCss.urls.map((cssUrl) =>
+                    _styleFuture(cssUrl, resolveUri: false))), _styleElementsFuture])
             .then((twoLists) {
               assert(twoLists.length == 2);
               return []..addAll(twoLists[0])..addAll(twoLists[1]);

@@ -71,7 +71,7 @@ main() {
         '''<div foo>
           <div on-abc='ctrl.description="new description";'>{{ctrl.description}}</div>
         </div>''');
-      var el = document.querySelector('[on-abc]');
+      var el = e.querySelector('[on-abc]');
       el.dispatchEvent(new Event('abc'));
       _.rootScope.apply();
       expect(el.text).toEqual("new description");

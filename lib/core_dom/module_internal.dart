@@ -19,6 +19,9 @@ import 'package:angular/core_dom/static_keys.dart';
 import 'package:angular/core_dom/directive_injector.dart';
 export 'package:angular/core_dom/directive_injector.dart' show DirectiveInjector;
 
+import 'package:angular/core_dom/type_to_uri_mapper.dart';
+import 'package:angular/core_dom/absolute_uris.dart';
+
 import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
 import 'package:angular/change_detection/ast_parser.dart';
 import 'package:angular/core/registry.dart';
@@ -80,6 +83,7 @@ class CoreDomModule extends Module {
     bind(ComponentCssRewriter);
     bind(WebPlatform);
 
+    bind(ResourceUrlResolver);
     bind(Http);
     bind(UrlRewriter);
     bind(HttpBackend);
@@ -87,6 +91,8 @@ class CoreDomModule extends Module {
     bind(HttpDefaults);
     bind(HttpInterceptors);
     bind(HttpConfig, toValue: new HttpConfig());
+    bind(ResourceResolverConfig, toValue: 
+      new ResourceResolverConfig(useRelativeUrls: false));
     bind(Animate);
     bind(ViewCache);
     bind(BrowserCookies);

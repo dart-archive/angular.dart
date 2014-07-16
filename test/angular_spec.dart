@@ -140,6 +140,7 @@ main() {
         "angular.core.dom_internal.RequestErrorInterceptor",
         "angular.core.dom_internal.RequestInterceptor",
         "angular.core.dom_internal.Response",
+        "angular.core.dom_internal.ResourceResolverConfig",
         "angular.core.dom_internal.ResponseError",
         "angular.core.dom_internal.TemplateCache",
         "angular.core.dom_internal.UrlRewriter",

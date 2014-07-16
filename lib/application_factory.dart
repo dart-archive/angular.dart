@@ -16,6 +16,8 @@ import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'package:angular/core/registry_dynamic.dart';
 import 'package:angular/core/parser/parser_dynamic.dart';
+import 'package:angular/core_dom/type_to_uri_mapper.dart';
+import 'package:angular/core_dom/type_to_uri_mapper_dynamic.dart';
 import 'dart:html';
 
 /**
@@ -59,6 +61,7 @@ import 'dart:mirrors' show MirrorsUsed;
 class _DynamicApplication extends Application {
   _DynamicApplication() {
     ngModule
+        ..bind(TypeToUriMapper, toImplementation: DynamicTypeToUriMapper)
         ..bind(MetadataExtractor, toImplementation: DynamicMetadataExtractor)
         ..bind(FieldGetterFactory, toImplementation: DynamicFieldGetterFactory)
         ..bind(ClosureMap, toImplementation: DynamicClosureMap);
