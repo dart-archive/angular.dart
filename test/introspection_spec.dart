@@ -53,6 +53,42 @@ void main() {
       expect(toHtml(ngQuery(div, 'li'))).toEqual('<li>stash</li><li>secret</li>');
     });
 
+    describe('getTestability', () {
+      for (bool elementProbeEnabled in [false, true]) {
+        describe('elementProbeEnabled=$elementProbeEnabled', () {
+          var elt;
+
+          beforeEachModule((Module m) {
+            m.bind(CompilerConfig, toValue:
+                new CompilerConfig.withOptions(elementProbeEnabled: elementProbeEnabled));
+          });
+
+          beforeEach((TestBed _) {
+            elt = _.compile('<div ng-bind="0"></div>');
+            document.body.append(elt);
+          });
+
+          afterEach(() {
+            elt.remove();
+          });
+
+          if (elementProbeEnabled) {
+            it('should return a Testability object', () {
+              expect(getTestability(elt)).toBeDefined();
+            });
+          } else {
+            it('should throw an exception', () {
+              expect(() => getTestability(elt)).toThrow(
+                  "Could not find an ElementProbe for div.  This might happen "
+                  "either because there is no Angular directive for that node OR "
+                  "because your application is running with ElementProbes "
+                  "disabled (CompilerConfig.elementProbeEnabled = false).");
+            });
+          }
+        });
+      }
+    });
+
     describe('JavaScript bindings', () {
       var elt, angular, ngtop;
 
@@ -92,6 +128,7 @@ void main() {
       // Issue #1219
       if (identical(1, 1.0) || !js.context['DART_VERSION'].toString().contains("version: 1.5.")) {
         describe(r'testability', () {
+
           var testability;
 
           beforeEach(() {
