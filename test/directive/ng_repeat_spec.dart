@@ -404,9 +404,7 @@ main() {
       it('should not error when the first watched item is removed', () {
         element = compile(
             '<ul>'
-            '  <li ng-repeat="i in items">'
-           r'    <input ng-model="items[$index]">'
-            '  </li>'
+            '  <li ng-repeat="i in items">{{ i }}</li>'
             '</ul>');
         scope.context['items'] = ['misko', 'shyam', 'frodo'];
         scope.apply();
@@ -419,9 +417,7 @@ main() {
       it('should not error when the last watched item is removed', () {
         element = compile(
             '<ul>'
-            '  <li ng-repeat="i in items">'
-           r'    <input ng-model="items[$index]">'
-            '  </li>'
+            '  <li ng-repeat="i in items">{{ i }}</li>'
             '</ul>');
         scope.context['items'] = ['misko', 'shyam', 'frodo'];
         scope.apply();
@@ -434,15 +430,12 @@ main() {
       it('should not error when multiple watched items are removed at the same time', () {
         element = compile(
             '<ul>'
-            '  <li ng-repeat="i in items">'
-           r'    <input ng-model="items[$index]">'
-            '  </li>'
+            '  <li ng-repeat="i in items">{{ i }}</li>'
             '</ul>');
         scope.context['items'] = ['misko', 'shyam', 'frodo', 'igor'];
         scope.apply();
         expect(element.children.length).toEqual(4);
-        scope.context['items'].remove('shyam');
-        scope.context['items'].remove('frodo');
+        scope.context['items']..remove('shyam')..remove('frodo');
         scope.apply();
         expect(element.children.length).toEqual(2);
       });
@@ -529,13 +522,13 @@ main() {
     it('should correctly handle detached state', () {
       scope.context['items'] = [1];
 
-      var parentScope = scope.createChild(new PrototypeMap(scope.context));
+      var childScope = scope.createChild(scope.context);
       element = compile(
         '<ul>'
           '<li ng-repeat="item in items">{{item}}</li>'
-        '</ul>', parentScope);
+        '</ul>', childScope);
 
-      parentScope.destroy();
+      childScope.destroy();
       expect(scope.apply).not.toThrow();
     });
 

@@ -8,15 +8,9 @@
  *     import 'package:angular/angular.dart';
  *     import 'package:angular/application_factory.dart';
  *
- *     class MyModule extends Module {
- *       MyModule() {
- *         bind(HelloWorldController);
- *       }
- *     }
- *
  *     main() {
  *       applicationFactory()
- *           .addModule(new MyModule())
+ *           .rootContextType(HelloWorldController)
  *           .run();
  *     }
  *

@@ -189,7 +189,6 @@ main() {
 
 @Component(
     selector: "test-wptc",
-    publishAs: "ctrl",
     templateUrl: "template.html",
     cssUrl: "style.css")
 class WebPlatformTestComponent {
@@ -197,7 +196,6 @@ class WebPlatformTestComponent {
 
 @Component(
     selector: "test-wptca[a]",
-    publishAs: "ctrl",
     templateUrl: "template.html",
     cssUrl: "style.css")
 class WebPlatformTestComponentWithAttribute {
@@ -205,7 +203,6 @@ class WebPlatformTestComponentWithAttribute {
 
 @Component(
     selector: "my-inner",
-    publishAs: "ctrl",
     templateUrl: "inner-html.html",
     cssUrl: "inner-style.css")
 class InnerComponent {
@@ -213,7 +210,6 @@ class InnerComponent {
 
 @Component(
     selector: "my-outer",
-    publishAs: "ctrl",
     templateUrl: "outer-html.html",
     cssUrl: "outer-style.css")
 class OuterComponent {

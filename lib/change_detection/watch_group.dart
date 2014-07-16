@@ -5,7 +5,7 @@ import 'dart:collection';
 
 part 'linked_list.dart';
 part 'ast.dart';
-part 'prototype_map.dart';
+part 'context_locals.dart';
 
 /**
  * A function that is notified of changes to the model.
@@ -796,24 +796,31 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
 
   get object => _object;
 
-  set object(value) {
+  void set object(object) {
     assert(mode != _MODE_DELETED_);
     assert(mode != _MODE_MARKER_);
     assert(mode != _MODE_FUNCTION_);
     assert(mode != _MODE_PURE_FUNCTION_);
     assert(mode != _MODE_PURE_FUNCTION_APPLY_);
-    _object = value;
+    _object = object;
 
-    if (value == null) {
+    if (object == null) {
       mode = _MODE_NULL_;
+    } else if (object is Map) {
+      mode = _MODE_MAP_CLOSURE_;
     } else {
-      if (value is Map) {
-        mode =  _MODE_MAP_CLOSURE_;
-      } else {
-        mode = _MODE_FIELD_OR_METHOD_CLOSURE_;
-        fn = _fieldGetterFactory.getter(value, name);
+      while (object is ContextLocals) {
+        var ctx = object as ContextLocals;
+        if (ctx.hasProperty(name)) {
+          mode =  _MODE_MAP_CLOSURE_;
+          return;
+        }
+        object = ctx.parentContext;
       }
+      mode = _MODE_FIELD_OR_METHOD_CLOSURE_;
+      fn = _fieldGetterFactory.getter(object, name);
     }
+
   }
 
   bool check() {

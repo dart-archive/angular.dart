@@ -39,30 +39,30 @@
 <body ng-app>
   <div bounce-controller>
     <div class="balls">
-        <div ng-repeat="ball in bounce.balls"
-             class="{{bounce.ballClassName}}"
+        <div ng-repeat="ball in balls"
+             class="{{ ballClassName }}"
              ball-position="ball"></div>
     </div>
 
     <div>
         <div class="fps-bar">
-            <div class="fps" ng-style-width="bounce.fps*4 + 'px'"></div>
+            <div class="fps" ng-style-width="fps * 4 + 'px'"></div>
         </div>
     </div>
 
-    {{bounce.fps}} fps. ({{bounce.balls.length}} balls) [{{1000/bounce.fps}} ms] <br>
-    Digest: {{bounce.digestTime}} ms<br>
-    <a href ng-click="bounce.changeCount(1)">+1</a>
-    <a href ng-click="bounce.changeCount(10)">+10</a>
-    <a href ng-click="bounce.changeCount(100)">+100</a>
+    {{ fps }} fps. ({{ balls.length }} balls) [{{ 1000 / fps }} ms] <br>
+    Digest: {{ digestTime }} ms<br>
+    <a href ng-click="changeCount(1)">+1</a>
+    <a href ng-click="changeCount(10)">+10</a>
+    <a href ng-click="changeCount(100)">+100</a>
     <br>
-    <a href ng-click="bounce.changeCount(-1)">-1</a>
-    <a href ng-click="bounce.changeCount(-10)">-10</a>
-    <a href ng-click="bounce.changeCount(-100)">-100</a>
+    <a href ng-click="changeCount(-1)">-1</a>
+    <a href ng-click="changeCount(-10)">-10</a>
+    <a href ng-click="changeCount(-100)">-100</a>
     <br>
-    <a href ng-click="bounce.playPause()">&#x25B6;&#10073;&#10073;</a> <br>
-    <a href ng-click="bounce.toggleCSS()">Toggle CSS</a><br>
-    <a href ng-click="bounce.timeDigest()">noop</a><br>
+    <a href ng-click="playPause()">&#x25B6;&#10073;&#10073;</a> <br>
+    <a href ng-click="toggleCSS()">Toggle CSS</a><br>
+    <a href ng-click="timeDigest()">noop</a><br>
   </div>
 
   <script type="application/dart" src="bouncing_balls.dart"></script>

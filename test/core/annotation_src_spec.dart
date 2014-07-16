@@ -39,14 +39,14 @@ void main() => describe('annotations', () {
         cssUrl: [''],
         applyAuthorStyles: true,
         resetStyleInheritance: true,
-        publishAs: '',
-        module: (i){},
+        module: (i) {},
         map: {},
         selector: '',
         visibility: Directive.LOCAL_VISIBILITY,
         exportExpressions: [],
         exportExpressionAttrs: [],
-        useShadowDom: true
+        useShadowDom: true,
+        publishAs: ''
       );
 
       // Check that no fields are null
@@ -74,27 +74,6 @@ void main() => describe('annotations', () {
 
       // Check that the clone is the same as the original.
       expect(variables(cloneWithNewMap(decorator, {}))).toEqual(variables(decorator));
-    });
-  });
-
-  describe('controller', () {
-    it('should set all fields on clone when all the fields are set', () {
-      var controller = new Controller(
-          publishAs: '',
-          children: 'xxx',
-          map: {},
-          selector: '',
-          module: (i){},
-          visibility: Directive.LOCAL_VISIBILITY,
-          exportExpressions: [],
-          exportExpressionAttrs: []
-      );
-
-      // Check that no fields are null
-      expect(nullFields(controller)).toEqual([]);
-
-      // Check that the clone is the same as the original.
-      expect(variables(cloneWithNewMap(controller, {}))).toEqual(variables(controller));
     });
   });
 });

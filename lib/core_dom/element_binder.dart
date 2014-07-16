@@ -101,7 +101,7 @@ class ElementBinder {
   }
 
   void _bindCallback(dstPathFn, controller, expression, scope) {
-    dstPathFn.assign(controller, _parser(expression).bind(scope.context, ScopeLocals.wrapper));
+    dstPathFn.assign(controller, _parser(expression).bind(scope.context, ContextLocals.wrapper));
   }
 
 
@@ -192,13 +192,11 @@ class ElementBinder {
       if (identical(key, TEXT_MUSTACHE_KEY) || identical(key, ATTR_MUSTACHE_KEY)) continue;
       var directive = directiveInjector.getByKey(ref.typeKey);
 
-      if (ref.annotation is Controller) {
-        scope.parentScope.context[(ref.annotation as Controller).publishAs] = directive;
-      }
-
-      var tasks = directive is AttachAware ? new _TaskList(() {
-        if (scope.isAttached) directive.attach();
-      }) : null;
+      var tasks = directive is AttachAware ?
+        new _TaskList(() {
+          if (scope.isAttached) directive.attach();
+        }) :
+        null;
 
       if (ref.mappings.isNotEmpty) {
         if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
@@ -261,10 +259,7 @@ class ElementBinder {
 
     for(var i = 0; i < directiveRefs.length; i++) {
       DirectiveRef ref = directiveRefs[i];
-      Directive annotation = ref.annotation;
-      if (ref.annotation is Controller) {
-        scope = nodeInjector.scope = scope.createChild(new PrototypeMap(scope.context));
-      }
+
       _createDirectiveFactories(ref, nodeInjector, node, nodeAttrs);
       if (ref.annotation.module != null) {
         DirectiveBinderFn config = ref.annotation.module;
