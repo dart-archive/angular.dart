@@ -444,10 +444,12 @@ class ComponentDirectiveInjector extends DirectiveInjector {
 
   final TemplateLoader _templateLoader;
   final ShadowRoot _shadowRoot;
+  // The key for the directive that triggered the creation of this injector.
+  final Key _typeKey;
 
   ComponentDirectiveInjector(DirectiveInjector parent, Injector appInjector,
                         EventHandler eventHandler, Scope scope,
-                        this._templateLoader, this._shadowRoot, LightDom lightDom,
+                        this._templateLoader, this._shadowRoot, LightDom lightDom, this._typeKey,
                         [View view, ShadowBoundary shadowBoundary])
       : super(parent, appInjector, parent._node, parent._nodeAttrs, eventHandler, scope,
               parent._animate, view, shadowBoundary) {
@@ -463,6 +465,13 @@ class ComponentDirectiveInjector extends DirectiveInjector {
       case SHADOW_ROOT_KEY_ID: return _shadowRoot;
       case DIRECTIVE_INJECTOR_KEY_ID: return _parent;
       case COMPONENT_DIRECTIVE_INJECTOR_KEY_ID: return this;
+      // Currently, this is guaranteed to be called after controller creation.
+      case SCOPE_KEY_ID:
+        if (scope == null) {
+          Scope parentScope = _parent.scope;
+          scope = parentScope.createChild(getByKey(_typeKey));
+        }
+        return scope;
       default: return super._getById(keyId);
     }
   }

@@ -58,7 +58,7 @@ part of angular.directive;
     visibility: Directive.DIRECT_CHILDREN_VISIBILITY)
 class NgSwitch {
   final _cases = <String, List<_Case>>{'?': <_Case>[]};
-  final _currentViews = <_ViewScopePair>[];
+  final _currentViews = <_ViewRef>[];
   Function onChange;
   final Scope _scope;
 
@@ -68,20 +68,18 @@ class NgSwitch {
     _cases.putIfAbsent(value, () => <_Case>[]).add(new _Case(anchor, viewFactory));
   }
 
-  set value(val) {
-    _currentViews
-        ..forEach((_ViewScopePair pair) {
-          pair.port.remove(pair.view);
-        })
-        ..clear();
+  void set value(val) {
+    _currentViews..forEach((_ViewRef view) => view.remove())
+                 ..clear();
 
     val = '!$val';
-    (_cases.containsKey(val) ? _cases[val] : _cases['?'])
+<<<<<<< HEAD
+    (cases.containsKey(val) ? cases[val] : cases['?'])
         .forEach((_Case caze) {
-          Scope childScope = _scope.createProtoChild();
+          Scope childScope = scope.createProtoChild();
           var view = caze.viewFactory(childScope);
           caze.anchor.insert(view);
-          _currentViews.add(new _ViewScopePair(view, caze.anchor,
+          currentViews.add(new _ViewScopePair(view, caze.anchor,
             childScope));
         });
     if (onChange != null) {
@@ -97,12 +95,16 @@ class _ViewScopePair {
 
   _ViewScopePair(this.view, this.port, this.scope);
 }
+=======
+    var cases = _cases.containsKey(val) ? _cases[val] : _cases['?'];
+    cases.forEach((_Case caze) {
+      var childScope = _scope.createChild(_scope.context);
+      _currentViews.add(caze.createView(childScope));
+    });
+>>>>>>> feat(scope): component is the new context
 
-class _Case {
-  final ViewPort anchor;
-  final BoundViewFactory viewFactory;
-
-  _Case(this.anchor, this.viewFactory);
+    if (onChange != null) onChange();
+  }
 }
 
 @Decorator(
@@ -125,5 +127,30 @@ class NgSwitchWhen {
 class NgSwitchDefault {
   NgSwitchDefault(NgSwitch ngSwitch, ViewPort port, BoundViewFactory viewFactory) {
     ngSwitch.addCase('?', port, viewFactory);
+  }
+}
+
+class _ViewRef {
+  final View _view;
+  final ViewPort _port;
+  final Scope _scope;
+
+  _ViewRef(this._view, this._port, this._scope);
+
+  void remove() {
+    _port.remove(_view);
+  }
+}
+
+class _Case {
+  final ViewPort port;
+  final BoundViewFactory viewFactory;
+
+  _Case(this.port, this.viewFactory);
+
+  _ViewRef createView(Scope scope) {
+    var view = viewFactory(scope);
+    port.insert(view);
+    return new _ViewRef(view, port, scope);
   }
 }

@@ -1596,8 +1596,7 @@ void main() {
 
 @Component(
     selector: 'no-love',
-    template: '<input type="text" ng-model="ctrl.love">',
-    publishAs: 'ctrl')
+    template: '<input type="text" ng-model="love">')
 class ComponentWithNoLove {
 }
 

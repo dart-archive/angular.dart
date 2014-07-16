@@ -12,16 +12,15 @@ main() {
 
 @Component(
     selector: "my-component",
-    publishAs: "ctrl",
     template: """
-      <div class="custom-component" ng-class="ctrl.color">
+      <div class="custom-component" ng-class="color">
         <span>Shadow [</span>
         <content></content>
         <span>]</span>
-        <a href="#" ng-click="ctrl.on=!ctrl.on"><my-button>
+        <a href="#" ng-click="on=!on"><my-button>
           Toggle</my-button></a>
-        <span ng-if="ctrl.on">off</span>
-        <span ng-if="!ctrl.on">on</span>
+        <span ng-if="on">off</span>
+        <span ng-if="!on">on</span>
       </div>
     """,
     cssUrl: "/css/shadow_dom_components.css")

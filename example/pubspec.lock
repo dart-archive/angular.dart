@@ -18,7 +18,7 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.14.0+3"
+    version: "0.14.2"
   browser:
     description: browser
     source: hosted
@@ -59,6 +59,10 @@ packages:
     description: perf_api
     source: hosted
     version: "0.0.9"
+  pool:
+    description: pool
+    source: hosted
+    version: "1.0.1"
   quiver:
     description: quiver
     source: hosted
@@ -78,7 +82,7 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "0.9.3+2"
+    version: "1.0.2"
   typed_mock:
     description: typed_mock
     source: hosted

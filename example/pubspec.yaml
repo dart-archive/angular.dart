@@ -5,7 +5,6 @@ dependencies:
     path: ../
   browser: any
   unittest: any
-  quiver: any
   web_components: any
 
 transformers:

@@ -1,8 +1,8 @@
 <form class="page-grid form"
       name="myForm"
       novalidate
-      ng-submit="form_ctrl.submit()"
-      ng-class="{submitted:submitted}">
+      ng-submit="submit()"
+      ng-class="{submitted:myForm.submitted}">
   <div class="grid-left">
     <h2 class="page-header">AngularJS Wallpaper Designer</h2>
     <section>
@@ -10,7 +10,7 @@
       <div class="field">
         <div class="picker xwide resolution-picker" ng-class="{'ng-invalid':myForm['resolution'].invalid}">
           <select ng-model="info.resolution" placeholder="Resolution Size" required name="resolution">
-            <option ng-repeat="resolution in form_ctrl.resolutions" ng-value="resolution">
+            <option ng-repeat="resolution in resolutions" ng-value="resolution">
               {{ resolution }}
             </option>
           </select>
@@ -46,13 +46,13 @@
     <section class="sub-section" ng-form="colorsForm">
       <h3>Colors</h3>
       <span class="medium secondary btn sub-action">
-        <a href="" ng-click="form_ctrl.newColor()">New Color</a>
+        <a href="" ng-click="newColor()">New Color</a>
       </span>
-      <div ng-form="colorForm" ng-repeat="color in form_ctrl.colors" class="inline-row">
+      <div ng-form="colorForm" ng-repeat="color in colors" class="inline-row">
         <div class="field">
           <div class="picker">
             <select ng-model="color.type">
-              <option ng-repeat="type in form_ctrl.colorTypes">{{ type }}</option>
+              <option ng-repeat="type in colorTypes">{{ type }}</option>
             </select>
           </div>
         </div>
@@ -89,10 +89,10 @@
     </nav>
   </div>
   <div class="grid-right" preview-controller>
-    <div class="color-backdrop s-{{ form_ctrl.getTotalSquares(info.squares) }}">
+    <div class="color-backdrop s-{{ getTotalSquares(info.squares) }}">
       <div class="color-cell"
            ng-style="{'background-color': color}"
-           ng-repeat="color in preview.expandList(form_ctrl.formatColors(), form_ctrl.getTotalSquares(info.squares))">
+           ng-repeat="color in preview.expandList(formatColors(), getTotalSquares(info.squares))">
       </div>
     </div>
 

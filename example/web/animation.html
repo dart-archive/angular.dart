@@ -6,13 +6,13 @@
 </head>
 <body class="ng-cloak" ng-app animation-demo>
   <nav>
-    <button ng-repeat="page in demo.pages"
-        ng-click="demo.currentPage = page"
-        ng-class="{'current': demo.currentPage == page}">
+    <button ng-repeat="page in pages"
+        ng-click="currentPage = page"
+        ng-class="{'current': currentPage == page}">
       {{page}}
     </button>
   </nav>
-  <div class="content" ng-switch="demo.currentPage">
+  <div class="content" ng-switch="currentPage">
     <div class="demo" ng-switch-default>
 
       <h2>About</h2>

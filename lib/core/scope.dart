@@ -69,46 +69,6 @@ class ScopeDigestTTL {
   ScopeDigestTTL.value(this.ttl);
 }
 
-//TODO(misko): I don't think this should be in scope.
-class ScopeLocals implements Map {
-  static wrapper(scope, Map<String, Object> locals) =>
-      new ScopeLocals(scope, locals);
-
-  Map _scope;
-  Map<String, Object> _locals;
-
-  ScopeLocals(this._scope, this._locals);
-
-  void operator []=(String name, value) {
-    _scope[name] = value;
-  }
-  dynamic operator [](String name) {
-    // Map needed to clear Dart2js warning
-    Map map = _locals.containsKey(name) ? _locals : _scope;
-    return map[name];
-  }
-
-  bool get isEmpty => _scope.isEmpty && _locals.isEmpty;
-  bool get isNotEmpty => _scope.isNotEmpty || _locals.isNotEmpty;
-  List<String> get keys => _scope.keys;
-  List get values => _scope.values;
-  int get length => _scope.length;
-
-  void forEach(fn) {
-    _scope.forEach(fn);
-  }
-  dynamic remove(key) => _scope.remove(key);
-  void clear() {
-    _scope.clear;
-  }
-  bool containsKey(key) => _scope.containsKey(key);
-  bool containsValue(key) => _scope.containsValue(key);
-  void addAll(map) {
-    _scope.addAll(map);
-  }
-  dynamic putIfAbsent(key, fn) => _scope.putIfAbsent(key, fn);
-}
-
 /**
  * When a [Directive] or the root context class implements [ScopeAware] the scope
  * setter will be called to set the [Scope] on this component.
@@ -151,7 +111,7 @@ class Scope {
   int _childScopeNextId = 0;
 
   /// The default execution context for [watch]es [observe]ers, and [eval]uation.
-  final context;
+  final dynamic context;
 
   /// The [RootScope] of the application.
   final RootScope rootScope;
@@ -184,8 +144,8 @@ class Scope {
   // TODO(misko): WatchGroup should be private.
   // Instead we should expose performance stats about the watches
   // such as # of watches, checks/1ms, field checks, function checks, etc
-  final WatchGroup _readWriteGroup;
-  final WatchGroup _readOnlyGroup;
+  WatchGroup _readWriteGroup;
+  WatchGroup _readOnlyGroup;
 
   Scope _childHead, _childTail, _next, _prev;
   _Streams _streams;
@@ -297,8 +257,8 @@ class Scope {
            expression is String ||
            expression is Function);
     if (expression is String && expression.isNotEmpty) {
-      var obj = locals == null ? context : new ScopeLocals(context, locals);
-      return rootScope._parser(expression).eval(obj);
+      var ctx = locals == null ? context : new ContextLocals(context, locals);
+      return rootScope._parser(expression).eval(ctx);
     }
 
     assert(locals == null);
@@ -369,8 +329,8 @@ class Scope {
     var child = new Scope(childContext, rootScope, this,
                           _readWriteGroup.newGroup(childContext),
                           _readOnlyGroup.newGroup(childContext),
-                         '$id:${_childScopeNextId++}',
-                         _stats);
+                          '$id:${_childScopeNextId++}',
+                          _stats);
 
     var prev = _childTail;
     child._prev = prev;
@@ -382,7 +342,7 @@ class Scope {
 
   /// Creates a child [Scope] that is prototypal with respect to current scope.
   Scope createProtoChild() {
-    return createChild(new PrototypeMap(context));
+    return createChild(new ContextLocals(context));
   }
 
   /**

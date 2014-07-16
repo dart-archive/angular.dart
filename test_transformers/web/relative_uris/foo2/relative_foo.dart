@@ -5,8 +5,6 @@ import 'package:angular/angular.dart';
 @Component(
     selector: 'relative-foo',
     useShadowDom: false,
-    templateUrl: 'relative_foo.html',
-    publishAs: 'ctrl',
-    applyAuthorStyles: true)
+    templateUrl: 'relative_foo.html')
 class RelativeFooComponent {
 }

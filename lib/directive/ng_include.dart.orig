@@ -43,7 +43,11 @@ class NgInclude {
 
   _updateContent(ViewFactory viewFactory) {
     // create a new scope
+<<<<<<< HEAD
     _childScope = scope.createProtoChild();
+=======
+    _childScope = scope.createChild(scope.context);
+>>>>>>> feat(scope): component is the new context
     _view = viewFactory(_childScope, directiveInjector);
     _view.nodes.forEach((node) => element.append(node));
   }

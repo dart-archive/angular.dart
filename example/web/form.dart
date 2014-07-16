@@ -25,15 +25,20 @@ class FormCtrl {
                                      '2560x1440',
                                      '2560x1600'];
 
-  final Scope scope;
-  final NgForm form;
+  Scope scope;
   final List colors = [];
   final List formattedColors = [];
+  NgForm myForm;
+  NgForm colorForm;
+  NgForm colorsForm;
+  Map info;
+  PreviewCtrl preview;
 
-  FormCtrl(this.scope, this.form) {
+  FormCtrl() {
     newColor(_COLOR_HEX, '#222');
     newColor(_COLOR_HEX, '#444');
     newColor(_COLOR_HEX, '#000');
+    info = new Map();
   }
 
   List<String> get colorTypes => _COLOR_TYPES;
@@ -41,7 +46,7 @@ class FormCtrl {
   List<String> get resolutions => _RESOLUTIONS;
 
   void submit() {
-    form.reset();
+    myForm.reset();
   }
 
   int getTotalSquares(inputValue) {
@@ -110,8 +115,8 @@ class FormCtrl {
     selector: '[preview-controller]'
 )
 class PreviewCtrl {
-  PreviewCtrl(Scope scope) {
-    scope.context['preview'] = this;
+  PreviewCtrl(FormCtrl form) {
+    form.preview = this;
   }
 
   List _collection = [];

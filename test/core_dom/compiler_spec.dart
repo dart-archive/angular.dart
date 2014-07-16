@@ -220,9 +220,10 @@ void main() {
         _.compile('<div><io bind-attr="\'A\'"></io></div>');
         microLeap();
         _.rootScope.apply();
+        microLeap();
 
         var component = _.rootScope.context['ioComponent'];
-        expect(component.scope.context['attr']).toEqual('A');
+        expect(component.attr).toEqual('A');
       }));
 
       it('should work with one-way bindings', async(() {
@@ -231,9 +232,9 @@ void main() {
         microLeap();
         _.rootScope.apply();
         var component = _.rootScope.context['ioComponent'];
-        expect(component.scope.context['oneway']).toEqual('misko');
+        expect(component.oneway).toEqual('misko');
 
-        component.scope.context['oneway'] = 'angular';
+        component.oneway = 'angular';
         _.rootScope.apply();
         // Not two-way, did not change.
         expect(_.rootScope.context['name']).toEqual('misko');
@@ -246,8 +247,9 @@ void main() {
         microLeap();
         _.rootScope.apply();
         var component = _.rootScope.context['ioComponent'];
-        expect(component.scope.context['expr']).toEqual('misko');
-        component.scope.context['expr'] = 'angular';
+        expect(component.attr).toBeNull();
+        expect(component.expr).toEqual('misko');
+        component.expr = 'angular';
         _.rootScope.apply();
         expect(_.rootScope.context['name']).toEqual('angular');
       }));
@@ -403,20 +405,20 @@ void main() {
             '</conditional-content>'
           '</div>');
 
-          final scope = _shadowScope(element.children[0]);
+          final component = ngProbe(element.children[0]).directive(ConditionalContentComponent);
 
           microLeap();
-          scope.apply();
+          _.rootScope.apply();
           expect(element).toHaveText('(, ABC)');
 
-          scope.context['showLeft'] = true;
+          component.showLeft = true;
           microLeap();
-          scope.apply();
+          _.rootScope.apply();
           expect(element).toHaveText('(A, BC)');
 
-          scope.context['showLeft'] = false;
+          component.showLeft = false;
           microLeap();
-          scope.apply();
+          _.rootScope.apply();
           expect(element).toHaveText('(, ABC)');
         }));
 
@@ -508,7 +510,7 @@ void main() {
         expect(simpleElement).toHaveText('INNER(innerText)');
         var simpleProbe = ngProbe(simpleElement);
         var simpleComponent = simpleProbe.injector.getByKey(new Key(SimpleComponent));
-        expect(simpleComponent.scope.context['name']).toEqual('INNER');
+        expect(simpleComponent.name).toEqual('INNER');
         var shadowRoot = simpleElement.shadowRoot;
 
         // If there is no shadow root, skip this.
@@ -604,14 +606,13 @@ void main() {
         _.rootScope.context['name'] = 'misko';
         _.rootScope.apply();
         var component = _.rootScope.context['ioComponent'];
-        expect(component.scope.context['name']).toEqual(null);
-        expect(component.scope.context['attr']).toEqual('A');
-        expect(component.scope.context['expr']).toEqual('misko');
-        component.scope.context['expr'] = 'angular';
+        expect(component.attr).toEqual('A');
+        expect(component.expr).toEqual('misko');
+        component.expr = 'angular';
         _.rootScope.apply();
         expect(_.rootScope.context['name']).toEqual('angular');
         expect(_.rootScope.context['done']).toEqual(null);
-        component.scope.context['ondone']();
+        component.ondone();
         expect(_.rootScope.context['done']).toEqual(true);
       }));
 
@@ -635,8 +636,8 @@ void main() {
 
         var component = _.rootScope.context['ioComponent'];
         _.rootScope.apply();
-        expect(component.scope.context['expr']).toEqual('misko');
-        component.scope.context['expr'] = 'angular';
+        expect(component.expr).toEqual('misko');
+        component.expr = 'angular';
         _.rootScope.apply();
         expect(_.rootScope.context['name']).toEqual('angular');
       }));
@@ -739,8 +740,8 @@ void main() {
         _.compile('<camel-case-map camel-case=G></camel-case-map>');
         microLeap();
         _.rootScope.apply();
-        var componentScope = _.rootScope.context['camelCase'];
-        expect(componentScope.context['camelCase']).toEqual('G');
+        var componentContext = _.rootScope.context['camelCase'];
+        expect(componentContext.camelCase).toEqual('G');
       }));
 
       // TODO: This is a terrible test
@@ -753,6 +754,13 @@ void main() {
           expect(text).toContain('(resolving ');
           expect(text).toContain('LocalAttrDirective');
         }
+      }));
+
+      it('should publish component controller into the scope', async(() {
+        var element = _.compile(r'<div><publish-me></publish-me></div>');
+        microLeap();
+        _.rootScope.apply();
+        expect(element).toHaveText('WORKED');
       }));
 
       it('should "publish" controller to injector under provided module', () {
@@ -1012,7 +1020,6 @@ void main() {
       });
     });
 
-
     describe('controller scoping', () {
       it('should make controllers available to sibling and child controllers', async((Logger log) {
         _.compile('<tab local><pane local></pane><pane local></pane></tab>');
@@ -1071,20 +1078,23 @@ void main() {
         _.rootScope.apply();
 
         expect(log.result()).toEqual('Scope set');
-
         if (config.elementProbeEnabled) {
-          expect(ngInjector(element).get(ScopeAwareComponent).
-              scope.context['foo']).toEqual('bar');
+          var controller = ngInjector(element).get(ScopeAwareComponent);
+          expect(controller.scope.context).toEqual(controller);
         }
       }));
 
-      it('should call scope setter on ScopeAware decorators', async((TestBed _, Logger log) {
+      it('should call scope setter on ScopeAware decorators', async((TestBed _, Logger log, CompilerConfig config) {
         var element = _.compile('<div scope-aware-dec></div>');
 
         _.rootScope.apply();
 
         expect(log.result()).toEqual('Scope set');
-        expect(_.rootScope.context['foo']).toEqual('bar');
+
+        if (config.elementProbeEnabled) {
+          var scopePassedIn = ngInjector(element).get(ScopeAwareComponent).scope;
+          expect(scopePassedIn).toEqual(_.rootScope);
+        }
       }));
     });
 
@@ -1125,9 +1135,7 @@ void main() {
     visibility: Directive.DIRECT_CHILDREN_VISIBILITY)
 class TabComponent {
   int id = 0;
-  Logger log;
-  LocalAttrDirective local;
-  TabComponent(Logger this.log, LocalAttrDirective this.local, Scope scope) {
+  TabComponent(Logger log, LocalAttrDirective local) {
     log('TabComponent-${id++}');
     local.ping();
   }
@@ -1139,7 +1147,7 @@ class TabComponent {
 )
 class LazyPane {
   int id = 0;
-  LazyPane(Logger logger, LazyPaneHelper lph, Scope scope) {
+  LazyPane(Logger logger, LazyPaneHelper lph) {
     logger('LazyPane-${id++}');
   }
 }
@@ -1148,10 +1156,7 @@ class LazyPaneHelper {}
 
 @Component(selector: 'pane')
 class PaneComponent {
-  TabComponent tabComponent;
-  LocalAttrDirective localDirective;
-  Logger log;
-  PaneComponent(TabComponent this.tabComponent, LocalAttrDirective this.localDirective, Logger this.log, Scope scope) {
+  PaneComponent(TabComponent tabComponent, LocalAttrDirective localDirective, Logger log) {
     log('PaneComponent-${tabComponent.id++}');
     localDirective.ping();
   }
@@ -1261,18 +1266,15 @@ class PublishModuleAttrDirective implements PublishModuleDirectiveSuperType {
     selector: 'simple',
     template: r'{{name}}(<content></content>)')
 class SimpleComponent {
-  Scope scope;
-  SimpleComponent(Scope this.scope) {
-    scope.context['name'] = 'INNER';
-  }
+  var name = 'INNER';
 }
 
 @Component(
     selector: 'multiple-content-tags',
     template: r'(<content select=".left"></content>, <content></content>)')
-class MultipleContentTagsComponent {
-  final Scope scope;
-  MultipleContentTagsComponent(this.scope);
+class MultipleContentTagsComponent implements ScopeAware {
+  Scope scope;
+  MultipleContentTagsComponent();
 }
 
 @Component(
@@ -1298,35 +1300,46 @@ class TranscludingComponent {
 }
 
 @Component(
-  selector: 'conditional-content',
-  template: r'(<div ng-if="showLeft"><content select=".left"></content></div>, <content></content>)')
-class ConditionalContentComponent {
+    selector: 'conditional-content',
+    template: r'(<div ng-if="showLeft"><content select=".left"></content></div>, <content></content>)')
+class ConditionalContentComponent implements ScopeAware {
   Scope scope;
-  ConditionalContentComponent(this.scope);
+  var showLeft;
+  ConditionalContentComponent();
+}
+
+@Component(
+  selector: 'sometimes',
+  template: r'<div ng-if="sometimes"><content></content></div>')
+class SometimesComponent {
+  @NgTwoWay('sometimes')
+  var sometimes;
 }
 
 @Component(
     selector: 'io',
     template: r'<content></content>',
     map: const {
-        'attr': '@scope.context.attr',
-        'expr': '<=>scope.context.expr',
-        'oneway': '=>scope.context.oneway',
-        'ondone': '&scope.context.ondone',
+        'attr': '@attr',
+        'expr': '<=>expr',
+        'oneway': '=>oneway',
+        'ondone': '&ondone',
     })
-class IoComponent {
-  Scope scope;
-  IoComponent(Scope scope) {
-    this.scope = scope;
+class IoComponent implements ScopeAware {
+  var attr;
+  var oneway;
+  var expr = 'initialExpr';
+  Function ondone;
+  var done;
+
+  void set scope(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
-    scope.context['expr'] = 'initialExpr';
   }
 }
 
 @Component(
     selector: 'io-controller',
     template: r'<content></content>',
-    publishAs: 'ctrl',
     map: const {
         'attr': '@attr',
         'expr': '<=>expr',
@@ -1334,15 +1347,14 @@ class IoComponent {
         'ondone': '&onDone',
         'on-optional': '&onOptional'
     })
-class IoControllerComponent {
-  Scope scope;
+class IoControllerComponent implements ScopeAware {
   var attr;
   var expr;
   var exprOnce;
   var onDone;
   var onOptional;
-  IoControllerComponent(Scope scope) {
-    this.scope = scope;
+
+  void set scope(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
   }
 }
@@ -1356,15 +1368,14 @@ class IoControllerComponent {
         'ondone': '&onDone',
         'onOptional': '&onOptional'
     })
-class UnpublishedIoControllerComponent {
-  Scope scope;
+class UnpublishedIoControllerComponent implements ScopeAware {
   var attr;
   var expr;
   var exprOnce;
   var onDone;
   var onOptional;
-  UnpublishedIoControllerComponent(Scope scope) {
-    this.scope = scope;
+
+  void set scope(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;
   }
 }
@@ -1384,12 +1395,13 @@ class NonAssignableMappingComponent { }
 @Component(
     selector: 'camel-case-map',
     map: const {
-      'camel-case': '@scope.context.camelCase',
+      'camel-case': '@camelCase',
     })
-class CamelCaseMapComponent {
-  Scope scope;
-  CamelCaseMapComponent(Scope this.scope) {
-    scope.rootScope.context['camelCase'] = scope;
+class CamelCaseMapComponent implements ScopeAware {
+  var camelCase;
+
+  void set scope(Scope scope) {
+    scope.rootScope.context['camelCase'] = this;
   }
 }
 
@@ -1397,28 +1409,26 @@ class CamelCaseMapComponent {
     selector: 'parent-expression',
     template: '<div>inside {{fromParent()}}</div>',
     map: const {
-      'from-parent': '&scope.context.fromParent',
+      'from-parent': '&fromParent',
     })
 class ParentExpressionComponent {
   Scope scope;
-  ParentExpressionComponent(Scope this.scope);
+  var fromParent;
 }
 
 @Component(
     selector: 'publish-me',
-    template: r'{{ctrlName.value}}',
-    publishAs: 'ctrlName')
+    template: r'{{value}}')
 class PublishMeComponent {
   String value = 'WORKED';
 }
 
 @Component(
     selector: 'log',
-    template: r'<content></content>',
-    publishAs: 'ctrlName')
+    template: r'<content></content>')
 class LogComponent {
-  LogComponent(Scope scope, Logger logger) {
-    logger(scope);
+  LogComponent(Logger logger) {
+    logger("LogComponent");
   }
 }
 
@@ -1433,7 +1443,7 @@ class LogComponent {
         'optional-two': '<=>optional',
         'optional-once': '=>!optional',
     })
-class AttachDetachComponent implements AttachAware, DetachAware, ShadowRootAware {
+class AttachDetachComponent implements AttachAware, DetachAware, ShadowRootAware, ScopeAware {
   Logger logger;
   Scope scope;
   String attrValue = 'too early';
@@ -1441,7 +1451,7 @@ class AttachDetachComponent implements AttachAware, DetachAware, ShadowRootAware
   String onceValue = 'too early';
   String optional;
 
-  AttachDetachComponent(Logger this.logger, TemplateLoader templateLoader, Scope this.scope) {
+  AttachDetachComponent(this.logger, TemplateLoader templateLoader) {
     logger('new');
     templateLoader.template.then((_) => logger('templateLoaded'));
   }
@@ -1470,18 +1480,17 @@ class SayHelloFormatter {
 @Component(
     selector: 'expr-attr-component',
     template: r'<content></content>',
-    publishAs: 'ctrl',
     map: const {
         'expr': '<=>expr',
         'one-way': '=>oneWay',
         'once': '=>!exprOnce'
     })
-class ExprAttrComponent {
+class ExprAttrComponent implements ScopeAware {
   var expr;
   var oneWay;
   var exprOnce;
 
-  ExprAttrComponent(Scope scope) {
+  void set scope(Scope scope) {
     scope.rootScope.context['exprAttrComponent'] = this;
   }
 }
@@ -1491,11 +1500,18 @@ class ExprAttrComponent {
     templateUrl: 'foo.html')
 class SimpleAttachComponent implements AttachAware, ShadowRootAware {
   Logger logger;
+
   SimpleAttachComponent(this.logger) {
     logger('SimpleAttachComponent');
   }
-  attach() => logger('attach');
-  onShadowRoot(_) => logger('onShadowRoot');
+
+  void attach() {
+    logger('attach');
+  }
+
+  void onShadowRoot(_) {
+    logger('onShadowRoot');
+  }
 }
 
 @Decorator(
@@ -1516,7 +1532,7 @@ class AttachWithAttr implements AttachAware {
     templateUrl: 'foo.html')
 class LogElementComponent{
   LogElementComponent(Logger logger, Element element, Node node,
-                        ShadowRoot shadowRoot) {
+                      ShadowRoot shadowRoot) {
     logger(element);
     logger(node);
     logger(shadowRoot);
@@ -1530,8 +1546,10 @@ class LogElementComponent{
 })
 class OneTimeDecorator {
   Logger log;
+
   OneTimeDecorator(this.log);
-  set value(v) => log(v);
+
+  void set value(v) => log(v);
 }
 
 @Decorator(
@@ -1570,8 +1588,10 @@ class ScopeAwareComponent implements ScopeAware {
   ScopeAwareComponent(this.log) {}
   void set scope(Scope scope) {
     log('Scope set');
-    scope.context['foo'] = 'bar';
     _scope = scope;
+    // Despite a new scope is created with a ScopeAware component
+    // scope setter should not be called, in this case.
+    scope.createChild(this);
   }
   Scope get scope => _scope;
 }
@@ -1589,8 +1609,7 @@ class InnerShadowy {}
 
 @Component(
   selector: 'once-inside',
-  template: '<div one-time="ctrl.ot"></div>',
-  publishAs: 'ctrl'
+  template: '<div one-time="ot"></div>'
 )
 class OnceInside {
   var ot;
@@ -1618,27 +1637,27 @@ class InjectorDependentComponent {
     selector: 'outer-with-div',
     template: 'OUTER(<simple><div><content select=".left"></content></div></simple>)'
 )
-class OuterWithDivComponent {
-  final Scope scope;
-  OuterWithDivComponent(this.scope);
+class OuterWithDivComponent implements ScopeAware {
+  Scope scope;
+  OuterWithDivComponent();
 }
 
 @Component(
     selector: 'outer',
     template: 'OUTER(<inner><content></content></inner>)'
 )
-class OuterComponent {
-  final Scope scope;
-  OuterComponent(this.scope);
+class OuterComponent implements ScopeAware {
+  Scope scope;
+  OuterComponent();
 }
 
 @Component(
     selector: 'inner',
     template: 'INNER(<innerinner><content></content></innerinner>)'
 )
-class InnerComponent {
-  final Scope scope;
-  InnerComponent(this.scope);
+class InnerComponent implements ScopeAware {
+  Scope scope;
+  InnerComponent();
 }
 
 @Component(
@@ -1654,12 +1673,4 @@ class InnerInnerComponent {
     templateUrl: 'template.html'
 )
 class TemplateUrlComponent {
-}
-
-_shadowScope(element){
-  if (element.shadowRoot != null) {
-    return ngProbe(element.shadowRoot).scope;
-  } else {
-    return ngProbe(element).directives[0].scope;
-  }
 }

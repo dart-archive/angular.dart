@@ -172,9 +172,16 @@ class NgRepeat {
     addFn((CollectionChangeItem addition) {
       var value = addition.item;
       changeFunctions[addition.currentIndex] = (index, previousView) {
+<<<<<<< HEAD
         var childScope = _scope.createProtoChild();
         var childContext = _updateContext(childScope.context, index, length)
-            ..[_valueIdentifier] = value;
+            ..[_valueIdentifier] = addition.item;
+=======
+        var childContext = new ContextLocals(_scope.context);
+        childContext = _updateContext(childContext, index, length);
+        childContext[_valueIdentifier] = value;
+        var childScope = _scope.createChild(childContext);
+>>>>>>> feat(scope): component is the new context
         var view = views[index] = _boundViewFactory(childScope);
         _viewPort.insert(view, insertAfter: previousView);
       };
@@ -222,10 +229,16 @@ class NgRepeat {
     _views = views;
   }
 
+<<<<<<< HEAD
+  Map _updateContext(Map context, int index, int length) {
+    var first = (index == 0);
+    var last = (index == length - 1);
+=======
   ContextLocals _updateContext(ContextLocals context, int index, int len) {
     var first = index == 0;
     var last = index == len - 1;
 
+>>>>>>> feat(scope): component is the new context
     return context
         ..[r'$index'] = index
         ..[r'$first'] = first

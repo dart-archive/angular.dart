@@ -7,7 +7,11 @@ import 'package:angular/core/parser/eval.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;
 import 'package:angular/cache/module.dart';
 import 'package:angular/core/annotation_src.dart' hide Formatter;
-import 'package:angular/core/module_internal.dart' show FormatterMap;
+import 'package:angular/core/module_internal.dart' show
+    FormatterMap,
+    ContextLocals;
+
+import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/core/parser/parse_expression.dart';
 import 'package:angular/utils.dart';
@@ -128,7 +132,7 @@ class _UnwrapExceptionDecorator extends Expression {
 @Injectable()
 class RuntimeParserBackend extends ParserBackend {
   final ClosureMap _closures;
-  RuntimeParserBackend(this._closures);
+  RuntimeParserBackend(ClosureMap _closures): _closures = new ClosureMapLocalsAware(_closures);
 
   bool isAssignable(Expression expression) => expression.isAssignable;
 
@@ -196,4 +200,62 @@ class RuntimeParserBackend extends ParserBackend {
     }
   }
 }
+
+// todo(vicb) Would probably be better to remove this from the parser
+class ClosureMapLocalsAware implements ClosureMap {
+  final ClosureMap wrappedClsMap;
+
+  ClosureMapLocalsAware(this.wrappedClsMap);
+
+  Getter lookupGetter(String name) {
+    return (o) {
+      while (o is ContextLocals) {
+        var ctx = o as ContextLocals;
+        if (ctx.hasProperty(name)) return ctx[name];
+        o = ctx.parentContext;
+      }
+      var getter = wrappedClsMap.lookupGetter(name);
+      return getter(o);
+    };
+  }
+
+  Setter lookupSetter(String name) {
+    return (o, value) {
+      while (o is ContextLocals) {
+        var ctx = o as ContextLocals;
+        if (ctx.hasProperty(name)) return ctx[name] = value;
+        o = ctx.parentContext;
+      }
+      var setter = wrappedClsMap.lookupSetter(name);
+      return setter(o, value);
+    };
+  }
+
+  MethodClosure lookupFunction(String name, CallArguments arguments) {
+    return (o, pArgs, nArgs) {
+      while (o is ContextLocals) {
+        var ctx = o as ContextLocals;
+        if (ctx.hasProperty(name)) {
+          var fn = ctx[name];
+          if (fn is Function) {
+            var snArgs = {};
+            nArgs.forEach((name, value) {
+              var symbol = wrappedClsMap.lookupGetter(name);
+              snArgs[symbol] = value;
+            });
+            return Function.apply(fn, pArgs, snArgs);
+          } else {
+            throw "Property '$name' is not of type function.";
+          }
+        }
+        o = ctx.parentContext;
+      }
+      var fn = wrappedClsMap.lookupFunction(name, arguments);
+      return fn(o, pArgs, nArgs);
+    };
+  }
+
+  Symbol lookupSymbol(String name) => wrappedClsMap.lookupSymbol(name);
+}
+
 
