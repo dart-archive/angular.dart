@@ -20,9 +20,9 @@ main() {
       async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
 
       backend
-        ..expectGET('style.css').respond(200, 'span { background-color: red; '
+        ..expectGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/style.css').respond(200, 'span { background-color: red; '
             '}')
-        ..expectGET('template.html').respond(200, '<span>foo</span>');
+        ..expectGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/template.html').respond(200, '<span>foo</span>');
 
       Element element = e('<span><test-wptc><span>ignore'
         '</span></test-wptc></span>');
@@ -59,9 +59,9 @@ main() {
        async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
 
       backend
-        ..expectGET('style.css').respond(200, 'span { background-color: red; '
+        ..expectGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/style.css').respond(200, 'span { background-color: red; '
       '}')
-        ..expectGET('template.html').respond(200, '<span>foo</span>');
+        ..expectGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/template.html').respond(200, '<span>foo</span>');
 
       Element element = e('<span><test-wptca a><span>ignore'
       '</span></test-wptca></span>');
@@ -77,9 +77,9 @@ main() {
     async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
 
       backend
-        ..expectGET('style.css').respond(200, ':host {'
+        ..expectGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/style.css').respond(200, ':host {'
             'background-color: red; }')
-        ..expectGET('template.html').respond(200, '<span>foo</span>');
+        ..expectGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/template.html').respond(200, '<span>foo</span>');
 
       Element element = e('<span><test-wptc><span>ignore'
         '</span></test-wptc></span>');
