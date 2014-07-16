@@ -80,6 +80,11 @@ getKeyed(object, key) {
   } else if (object == null) {
     throw new EvalError('Accessing null object');
   } else {
+    while (object is ContextLocals) {
+      var ctx = object as ContextLocals;
+      if (ctx.hasProperty(key)) break;
+      object = ctx.parentContext;
+    }
     return object[key];
   }
 }
@@ -93,6 +98,11 @@ setKeyed(object, key, value) {
   } else if (object is Map) {
     object["$key"] = value; // toString dangerous?
   } else {
+    while (object is ContextLocals) {
+      var ctx = object as ContextLocals;
+      if (ctx.hasProperty(key)) break;
+      object = ctx.parentContext;
+    }
     object[key] = value;
   }
   return value;

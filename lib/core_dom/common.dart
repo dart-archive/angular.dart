@@ -49,7 +49,7 @@ Injector forceNewDirectivesAndFormatters(Injector injector, DirectiveInjector di
   modules.add(new Module()
       ..bind(Scope, toFactory: (Injector injector) {
           var scope = injector.parent.getByKey(SCOPE_KEY);
-          return scope.createChild(new PrototypeMap(scope.context));
+          return scope.createChild(scope.context);
         }, inject: [INJECTOR_KEY])
       ..bind(DirectiveMap)
       ..bind(FormatterMap)

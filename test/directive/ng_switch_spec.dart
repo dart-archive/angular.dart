@@ -174,7 +174,7 @@ void main() {
       _.rootScope.apply();
 
       var getChildScope = () => _.rootScope.context['probe'] == null ?
-      null : _.rootScope.context['probe'].scope;
+          null : _.rootScope.context['probe'].scope;
 
       expect(getChildScope()).toBeNull();
 

@@ -40,7 +40,7 @@ void main() {
 
     beforeEachModule((Module module) {
       module
-          ..bind(ControllerWithNoLove)
+          ..bind(ComponentWithNoLove)
           ..bind(MyCustomInputValidator)
           ..bind(CountingValidator);
     });
@@ -1426,15 +1426,10 @@ void main() {
     describe('error messages', () {
       it('should produce a useful error for bad ng-model expressions', () {
         expect(async(() {
-          _.compile('<div no-love><textarea ng-model=ctrl.love probe="loveProbe"></textarea></div');
-          Probe probe = _.rootScope.context['loveProbe'];
-          TextAreaElement inputElement = probe.element;
-
-          inputElement.value = 'xzy';
-          _.triggerEvent(inputElement, 'change');
+          _.compile('<div><no-love></no-love></div>');
+          microLeap();
           _.rootScope.apply();
-        })).toThrow('love');
-
+        })).toThrow("Class 'ComponentWithNoLove' has no instance getter 'love'.");
       });
     });
 
@@ -1669,11 +1664,10 @@ void main() {
   });
 }
 
-@Controller(
-    selector: '[no-love]',
-    publishAs: 'ctrl')
-class ControllerWithNoLove {
-  var apathy = null;
+@Component(
+    selector: 'no-love',
+    template: '<input type="text" ng-model="love">')
+class ComponentWithNoLove {
 }
 
 class LowercaseValueParser implements NgModelConverter {

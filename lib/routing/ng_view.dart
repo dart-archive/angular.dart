@@ -1,13 +1,13 @@
 part of angular.routing;
 
 /**
- * A directive that works with the [Router] and loads the template associated
- * with the current route.
+ * A directive that works with the [Router] and loads the template associated with the current
+ * route.
  *
  *     <ng-view></ng-view>
  *
- * [NgViewDirective] can work with [NgViewDirective] to define nested views
- * for hierarchical routes. For example:
+ * [NgViewDirective] can work with [NgViewDirective] to define nested views for hierarchical routes.
+ * For example:
  *
  *     void initRoutes(Router router, RouteViewFactory views) {
  *       views.configure({
@@ -122,9 +122,9 @@ class NgView implements DetachAware, RouteProvider {
         _viewCache.fromUrl(viewDef.template, newDirectives);
     viewFuture.then((ViewFactory viewFactory) {
       _cleanUp();
-      _childScope = _scope.createChild(new PrototypeMap(_scope.context));
+      _childScope = _scope.createChild(_scope.context);
       _view = viewFactory(_childScope, directiveInjector);
-      _view.nodes.forEach((elm) => _element.append(elm));
+      _view.nodes.forEach((el) => _element.append(el));
     });
   }
 
@@ -133,8 +133,8 @@ class NgView implements DetachAware, RouteProvider {
 
     _view.nodes.forEach((node) => node.remove());
     _childScope.destroy();
-    _view = null;
     _childScope = null;
+    _view = null;
   }
 
   Route get route => _viewRoute;
@@ -142,13 +142,13 @@ class NgView implements DetachAware, RouteProvider {
   String get routeName => _viewRoute.name;
 
   Map<String, String> get parameters {
-    var res = new HashMap<String, String>();
-    var p = _viewRoute;
-    while (p != null) {
-      res.addAll(p.parameters);
-      p = p.parent;
+    var params = new HashMap<String, String>();
+    var route = _viewRoute;
+    while (route != null) {
+      params.addAll(route.parameters);
+      route = route.parent;
     }
-    return res;
+    return params;
   }
 }
 
@@ -187,7 +187,6 @@ class NgView implements DetachAware, RouteProvider {
  * injected [RouteProvider] will be null.
  */
 abstract class RouteProvider {
-
   /**
    * Returns [Route] for current view.
    */

@@ -34,19 +34,15 @@ void main() {
       var expressions = _extractExpressions('test/io/test_files/main.dart');
 
       expect(expressions, unorderedEquals([
-          'ctrl.expr',
-          'ctrl.anotherExpression',
-          'ctrl.callback',
-          'ctrl.twoWayStuff',
           'attr',
           'expr',
           'anotherExpression',
           'callback',
           'twoWayStuff',
           'exported + expression',
-          'ctrl.inline.template.expression',
+          'inline.template.expression',
           'ngIfCondition',
-          'ctrl.if'
+          'if'
       ]));
     });
 

@@ -173,7 +173,8 @@ abstract class _NgClassBase {
     nodeAttrs.observe('class', (String cls) {
       if (prevCls != cls) {
         prevCls = cls;
-        _applyChanges(_scope.context[r'$index']);
+        var index = _hasLocal(_scope, r'$index') ? _getLocal(_scope, r'$index') : null;
+        _applyChanges(index);
       }
     });
   }
@@ -182,7 +183,8 @@ abstract class _NgClassBase {
     if (_watchExpression != null) _watchExpression.remove();
     _watchExpression = _scope.watch(expression, (v, _) {
         _computeChanges(v);
-        _applyChanges(_scope.context[r'$index']);
+        var index = _hasLocal(_scope, r'$index') ? _getLocal(_scope, r'$index') : null;
+        _applyChanges(index);
       },
       canChangeModel: false,
       collection: true);
@@ -277,4 +279,22 @@ abstract class _NgClassBase {
 
     _previousSet = _currentSet.toSet();
   }
+}
+
+bool _hasLocal(context, name) {
+  var ctx = context;
+  while (ctx is ContextLocals) {
+    if (ctx.hasProperty(name)) return true;
+    ctx = ctx.parentScope;
+  }
+  return false;
+}
+
+dynamic _getLocal(context, name) {
+  var ctx = context;
+  while (ctx is ContextLocals) {
+    if (ctx.hasProperty(name)) return ctx[name];
+    ctx = ctx.parentScope;
+  }
+  return null;
 }

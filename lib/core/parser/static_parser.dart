@@ -1,7 +1,7 @@
 library angular.core.parser.static_parser;
 
 import 'package:angular/cache/module.dart' show CacheRegister;
-import 'package:angular/core/annotation_src.dart' show Injectable;
+import 'package:di/di.dart' show Injectable;
 import 'package:angular/core/module_internal.dart' show FormatterMap;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/utils.dart' show EvalError;

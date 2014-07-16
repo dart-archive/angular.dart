@@ -728,7 +728,7 @@ main() {
         context['a'] = {'b': 1};
         context['this'] = context;
         var locals = {'b': 2};
-        var fn = parser("this['a'].b").bind(context, ScopeLocals.wrapper);
+        var fn = parser("this['a'].b").bind(context, ContextLocals.wrapper);
         expect(fn(locals)).toEqual(1);
       });
 
@@ -975,25 +975,26 @@ main() {
       });
     });
 
-
     describe('locals', () {
+      // todo (vicb)
       it('should expose local variables', () {
-        expect(parser('a').bind({'a': 6}, ScopeLocals.wrapper)({'a': 1})).toEqual(1);
-        expect(parser('add(a,b)').
-          bind({'b': 1, 'add': (a, b) { return a + b; }}, ScopeLocals.wrapper)({'a': 2})).toEqual(3);
+        expect(parser('a').bind({'a': 6}, ContextLocals.wrapper)({'a': 1})).toEqual(1);
+
+        expect(parser('add(a,b)')
+            .bind(new Context(), ContextLocals.wrapper)({'a': 2})).toEqual(3);
       });
 
 
       it('should expose traverse locals', () {
-        expect(parser('a.b').bind({'a': {'b': 6}}, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
-        expect(parser('a.b').bind({'a': null}, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
-        expect(parser('a.b').bind({'a': {'b': 5}}, ScopeLocals.wrapper)({'a': null})).toEqual(null);
+        expect(parser('a.b').bind({'a': {'b': 6}}, ContextLocals.wrapper)({'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind({'a': null}, ContextLocals.wrapper)({'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind({'a': {'b': 5}}, ContextLocals.wrapper)({'a': null})).toEqual(null);
       });
 
 
       it('should work with scopes', (Scope scope) {
         scope.context['a'] = {'b': 6};
-        expect(parser('a.b').bind(scope.context, ScopeLocals.wrapper)({'a': {'b':1}})).toEqual(1);
+        expect(parser('a.b').bind(scope.context, ContextLocals.wrapper)({'a': {'b':1}})).toEqual(1);
       });
 
       it('should expose assignment function', () {
@@ -1001,7 +1002,7 @@ main() {
         expect(fn.assign).toBeNotNull();
         var scope = {};
         var locals = {"a": {}};
-        fn.bind(scope, ScopeLocals.wrapper).assign(123, locals);
+        fn.bind(scope, ContextLocals.wrapper).assign(123, locals);
         expect(scope).toEqual({});
         expect(locals["a"]).toEqual({'b':123});
       });
@@ -1232,4 +1233,9 @@ class HelloFormatter {
   call(String str) {
     return 'Hello, $str!';
   }
+}
+
+class Context {
+  var b = 1;
+  add(a, b) => a + b;
 }

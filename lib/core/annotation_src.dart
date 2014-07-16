@@ -15,8 +15,7 @@ typedef void DirectiveBinderFn(DirectiveBinder binder);
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
-Directive cloneWithNewMap(Directive annotation, map)
-    => annotation._cloneWithNewMap(map);
+Directive cloneWithNewMap(Directive annotation, map) => annotation._cloneWithNewMap(map);
 
 String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
@@ -27,11 +26,11 @@ class Visibility {
 
   final String name;
   const Visibility._(this.name);
-  toString() => 'Visibility: $name';
+  String toString() => 'Visibility: $name';
 }
 
 /**
- * Abstract supper class of [Controller], [Component], and [Decorator].
+ * Abstract supper class of [Component], and [Decorator].
  */
 abstract class Directive {
 
@@ -218,7 +217,6 @@ abstract class Directive {
   Directive _cloneWithNewMap(newMap);
 }
 
-
 bool _applyAuthorStylesDeprecationWarningPrinted = false;
 bool _resetStyleInheritanceDeprecationWarningPrinted = false;
 
@@ -285,13 +283,6 @@ class Component extends Directive {
   final bool _resetStyleInheritance;
 
   /**
-   * An expression under which the component's controller instance will be
-   * published into. This allows the expressions in the template to be referring
-   * to controller instance and its properties.
-   */
-  final String publishAs;
-
-  /**
    * If set to true, this component will always use shadow DOM.
    * If set to false, this component will never use shadow DOM.
    * If unset, the compiler's default construction strategy will be used
@@ -309,7 +300,6 @@ class Component extends Directive {
     cssUrl,
     applyAuthorStyles,
     resetStyleInheritance,
-    this.publishAs,
     DirectiveBinderFn module,
     map,
     selector,
@@ -340,7 +330,6 @@ class Component extends Directive {
           cssUrl: cssUrls,
           applyAuthorStyles: applyAuthorStyles,
           resetStyleInheritance: resetStyleInheritance,
-          publishAs: publishAs,
           map: newMap,
           module: module,
           selector: selector,
@@ -385,62 +374,6 @@ class Decorator extends Directive {
           children: children,
           map: newMap,
           module: module,
-          selector: selector,
-          visibility: visibility,
-          exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
-}
-
-/**
- * Annotation placed on a class which should act as a controller for your
- * application.
- *
- * Controllers are essentially [Decorator]s with few key differences:
- *
- * * Controllers create a new scope at the element.
- * * Controllers should not do any DOM manipulation.
- * * Controllers are meant for application-logic
- *   (rather then DOM manipulation logic which directives are meant for.)
- *
- * Controllers can implement [AttachAware], [DetachAware] and
- * declare these optional methods:
- *
- * * `attach()` - Called on first [Scope.apply()].
- * * `detach()` - Called on when owning scope is destroyed.
- */
-@deprecated
-class Controller extends Decorator {
-  /**
-   * An expression under which the controller instance will be published into.
-   * This allows the expressions in the template to be referring to controller
-   * instance and its properties.
-   */
-  final String publishAs;
-
-  const Controller({
-                    children: Directive.COMPILE_CHILDREN,
-                    this.publishAs,
-                    map,
-                    DirectiveBinderFn module,
-                    selector,
-                    visibility,
-                    exportExpressions,
-                    exportExpressionAttrs
-                    })
-      : super(selector: selector,
-              children: children,
-              visibility: visibility,
-              map: map,
-              module: module,
-              exportExpressions: exportExpressions,
-              exportExpressionAttrs: exportExpressionAttrs);
-
-  Directive _cloneWithNewMap(newMap) =>
-      new Controller(
-          children: children,
-          publishAs: publishAs,
-          module: module,
-          map: newMap,
           selector: selector,
           visibility: visibility,
           exportExpressions: exportExpressions,
@@ -538,8 +471,8 @@ abstract class DetachAware {
  * For more on formatters in Angular, see the documentation for the
  * [angular:formatter](#angular-formatter) library.
  *
- * A formatter class must have a call method with at least one parameter, which specifies the value to format. Any
- * additional parameters are treated as arguments of the formatter.
+ * A formatter class must have a call method with at least one parameter, which specifies the value
+ * to format. Any additional parameters are treated as arguments of the formatter.
  *
  * **Usage**
  *
@@ -565,5 +498,5 @@ class Formatter {
 
   const Formatter({this.name});
 
-  toString() => 'Formatter: $name';
+  String toString() => 'Formatter: $name';
 }

@@ -4,7 +4,7 @@ typedef void EventFunction(event);
 
 /**
  * [EventHandler] is responsible for handling events bound using on-* syntax
- * (i.e. `on-click="ctrl.doSomething();"`). The root of the application has an
+ * (i.e. `on-click="doSomething();"`). The root of the application has an
  * EventHandler attached as does every [Component].
  *
  * Events bound within [Component] are handled by EventHandler attached to
@@ -16,12 +16,14 @@ typedef void EventFunction(event);
  * Example:
  *
  *     <div foo>
- *       <button on-click="ctrl.say('Hello');">Button</button>;
+ *       <button on-click="say('Hello');">Button</button>;
  *     </div>
  *
- *     @Component(selector: '[foo]', publishAs: ctrl)
- *     class FooController {
- *       say(String something) => print(something);
+ *     @Component(selector: '[foo]')
+ *     class FooComponent {
+ *       void say(String something) {
+ *         print(something);
+ *       }
  *     }
  *
  * When button is clicked, "Hello" will be printed in the console.

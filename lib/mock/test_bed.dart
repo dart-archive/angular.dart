@@ -91,7 +91,7 @@ class TestBed {
     rootScope.apply();
   }
 
-  getProbe(Node node) {
+  ElementProbe getProbe(Node node) {
     while (node != null) {
       ElementProbe probe = expando[node];
       if (probe != null) return probe;
@@ -100,5 +100,5 @@ class TestBed {
     throw 'Probe not found.';
   }
 
-  getScope(Node node) => getProbe(node).scope;
+  Scope getScope(Node node) => getProbe(node).scope;
 }
