@@ -238,9 +238,15 @@ void main() {
         });
 
         it('children should point to root', (RootScope rootScope) {
+<<<<<<< HEAD
           var child = rootScope.createProtoChild();
           expect(child.rootScope).toEqual(rootScope);
           expect(child.createProtoChild().rootScope).toEqual(rootScope);
+=======
+          var child = rootScope.createChild(rootScope.context);
+          expect(child.rootScope).toEqual(rootScope);
+          expect(child.createChild(rootScope.context).rootScope).toEqual(rootScope);
+>>>>>>> feat(scope): component is the new context
         });
       });
 
@@ -253,11 +259,19 @@ void main() {
 
 
         it('should point to parent', (RootScope rootScope) {
+<<<<<<< HEAD
           var child = rootScope.createProtoChild();
           expect(child.id).toEqual(':0');
           expect(rootScope.parentScope).toEqual(null);
           expect(child.parentScope).toEqual(rootScope);
           expect(child.createProtoChild().parentScope).toEqual(child);
+=======
+          var child = rootScope.createChild(rootScope.context);
+          expect(child.id).toEqual(':0');
+          expect(rootScope.parentScope).toEqual(null);
+          expect(child.parentScope).toEqual(rootScope);
+          expect(child.createChild(rootScope.context).parentScope).toEqual(child);
+>>>>>>> feat(scope): component is the new context
         });
       });
     });
@@ -274,7 +288,11 @@ void main() {
 
         it(r'should add listener for both emit and broadcast events', (RootScope rootScope) {
           var log = '',
+<<<<<<< HEAD
           child = rootScope.createProtoChild();
+=======
+          child = rootScope.createChild(rootScope.context);
+>>>>>>> feat(scope): component is the new context
 
           eventFn(event) {
             expect(event).not.toEqual(null);
@@ -294,7 +312,11 @@ void main() {
 
         it(r'should return a function that deregisters the listener', (RootScope rootScope) {
           var log = '';
+<<<<<<< HEAD
           var child = rootScope.createProtoChild();
+=======
+          var child = rootScope.createChild(rootScope.context);
+>>>>>>> feat(scope): component is the new context
           var subscription;
 
           eventFn(e) {

@@ -2,6 +2,7 @@ library angular.core.parser.utils;
 
 import 'package:angular/core/parser/syntax.dart' show Expression;
 import 'package:angular/core/formatter.dart' show FormatterMap;
+import 'package:angular/core/module_internal.dart' show ContextLocals;
 export 'package:angular/utils.dart' show relaxFnApply, relaxFnArgs, toBool;
 
 /// Marker for an uninitialized value.
@@ -80,6 +81,11 @@ getKeyed(object, key) {
   } else if (object == null) {
     throw new EvalError('Accessing null object');
   } else {
+    while (object is ContextLocals) {
+      var ctx = object as ContextLocals;
+      if (ctx.hasProperty(key)) break;
+      object = ctx.parentContext;
+    }
     return object[key];
   }
 }
@@ -93,6 +99,11 @@ setKeyed(object, key, value) {
   } else if (object is Map) {
     object["$key"] = value; // toString dangerous?
   } else {
+    while (object is ContextLocals) {
+      var ctx = object as ContextLocals;
+      if (ctx.hasProperty(key)) break;
+      object = ctx.parentContext;
+    }
     object[key] = value;
   }
   return value;

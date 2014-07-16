@@ -13,40 +13,40 @@ void main() {
     it('should extract text mustache expressions', () {
       var ioService = new MockIoService({
           'foo.html': r'''
-        <div>foo {{ctrl.bar}} baz {{aux}}</div>
+        <div>foo {{bar}} baz {{aux}}</div>
       '''
       });
 
       var extractor = new HtmlExpressionExtractor([]);
       extractor.crawl('/', ioService);
       expect(extractor.expressions.toList()..sort(),
-      equals(['aux', 'ctrl.bar']));
+      equals(['aux', 'bar']));
     });
 
     it('should extract attribute mustache expressions', () {
       var ioService = new MockIoService({
           'foo.html': r'''
-        <div foo="foo-{{ctrl.bar}}" baz="{{aux}}-baz"></div>
+        <div foo="foo-{{bar}}" baz="{{aux}}-baz"></div>
       '''
       });
 
       var extractor = new HtmlExpressionExtractor([]);
       extractor.crawl('/', ioService);
       expect(extractor.expressions.toList()..sort(),
-      equals(['aux', 'ctrl.bar']));
+      equals(['aux', 'bar']));
     });
 
     it('should extract ng-repeat expressions', () {
       var ioService = new MockIoService({
           'foo.html': r'''
-        <div ng-repeat="foo in ctrl.bar"></div>
+        <div ng-repeat="foo in bar"></div>
       '''
       });
 
       var extractor = new HtmlExpressionExtractor([]);
       extractor.crawl('/', ioService);
       expect(extractor.expressions.toList()..sort(),
-      equals(['ctrl.bar']));
+      equals(['bar']));
     });
 
     it('should extract expressions provided in the directive info', () {
@@ -61,30 +61,30 @@ void main() {
     });
 
     it('should extract expressions from expression attributes', () {
-      var ioService = new MockIoService({'foo.html': r'<foo bar="ctrl.baz"></foo>'});
+      var ioService = new MockIoService({
+          'foo.html': r'<foo bar="baz"></foo>'
+      });
 
       var extractor = new HtmlExpressionExtractor([
           new DirectiveInfo('foo', ['bar'])
       ]);
       extractor.crawl('/', ioService);
-      expect(extractor.expressions.toList()).toEqual(['ctrl.baz']);
+      expect(extractor.expressions.toList()).toEqual(['baz']);
     });
 
     it('should extract expressions from expression attributes for camelCased attributes', () {
-      var ioService = new MockIoService({'foo.html': r'<foo fooBar="ctrl.baz"></foo>'});
+      var ioService = new MockIoService({'foo.html': r'<foo fooBar="baz"></foo>'});
 
       var extractor = new HtmlExpressionExtractor([
           new DirectiveInfo('foo', ['fooBar'])
       ]);
       extractor.crawl('/', ioService);
-      expect(extractor.expressions.toList()).toEqual(['ctrl.baz']);
+      expect(extractor.expressions.toList()).toEqual(['baz']);
     });
 
     it('should ignore ng-repeat while extracting attribute expressions', () {
       var ioService = new MockIoService({
-          'foo.html': r'''
-        <div ng-repeat="foo in ctrl.bar"></div>
-      '''
+          'foo.html': r'<div ng-repeat="foo in bar"></div>'
       });
 
       var extractor = new HtmlExpressionExtractor([
@@ -93,7 +93,7 @@ void main() {
       extractor.crawl('/', ioService);
       // Basically we don't want to extract "foo in ctrl.bar".
       expect(extractor.expressions.toList()..sort(),
-      equals(['ctrl.bar']));
+      equals(['bar']));
     });
   });
 }

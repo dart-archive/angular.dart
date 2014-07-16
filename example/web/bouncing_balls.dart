@@ -26,15 +26,9 @@ class BallModel {
   }
 }
 
-
-@Component(
-  selector: 'bounce-controller',
-  publishAs: 'ctrl',
-  templateUrl: 'bouncing_controller.html',
-  cssUrl: 'bouncing_controller.css'
-)
-class BounceController {
-  RootScope rootScope;
+@Injectable()
+class BounceController implements ScopeAware {
+  Scope scope;
   var lastTime = window.performance.now();
   var run = false;
   var fps = 0;
@@ -43,9 +37,8 @@ class BounceController {
   var balls = [];
   var ballClassName = 'ball';
 
-  BounceController(this.rootScope) {
+  BounceController() {
     changeCount(100);
-    if (run) tick();
   }
 
   void toggleCSS() {
@@ -76,7 +69,7 @@ class BounceController {
   void timeDigest() {
     var start = window.performance.now();
     digestTime = currentDigestTime;
-    rootScope.domRead(() {
+    scope.rootScope.domRead(() {
       currentDigestTime = window.performance.now() - start;
     });
   }
@@ -135,6 +128,7 @@ class MyModule extends Module {
 
 main() {
   applicationFactory()
+      .rootContextType(BounceController)
       .addModule(new MyModule())
       .run();
 }

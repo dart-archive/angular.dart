@@ -92,19 +92,9 @@ class Todo {
 }
 
 
-// Temporary workaround, because context needs to extend Map.
-@Injectable()
-class TodoHashMap extends DelegatingMap {
-  final Map _delegate;
-  TodoHashMap(Todo todo) : _delegate = new Map() {
-    _delegate['todo'] = todo;
-  }
-  Map get delegate => _delegate;
-}
-
 main() {
   print(window.location.search);
-  var module = new Module()..bind(PlaybackHttpBackendConfig)..bind(Todo);
+  var module = new Module()..bind(PlaybackHttpBackendConfig);
 
   // If these is a query in the URL, use the server-backed
   // TodoController.  Otherwise, use the stored-data controller.
@@ -124,7 +114,7 @@ main() {
   }
 
   applicationFactory()
-      .rootContextType(TodoHashMap)
       .addModule(module)
+      .rootContextType(Todo)
       .run();
 }
