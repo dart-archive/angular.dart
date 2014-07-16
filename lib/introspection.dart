@@ -209,6 +209,9 @@ _jsify(var obj) {
   if (obj == null || obj is js.JsObject) {
     return obj;
   }
+  if (obj is _JsObjectProxyable) {
+    return obj._toJsObject();
+  }
   if (obj is Function) {
     return _jsFunction(obj);
   }
@@ -269,7 +272,6 @@ class _Testability implements _JsObjectProxyable {
   final ElementProbe probe;
 
   _Testability(this.node, this.probe);
-  _Testability.fromNode(dom.Node node): this(node, _findProbeInTree(node));
 
   notifyWhenNoOutstandingRequests(callback) {
     probe.injector.get(VmTurnZone).run(
@@ -336,6 +338,18 @@ class _Testability implements _JsObjectProxyable {
 }
 
 
+_Testability getTestability(dom.Node node) {
+  ElementProbe probe = _findProbeInTree(node);
+  if (probe == null) {
+    throw ("Could not find an ElementProbe for $node.  This might happen "
+           "either because there is no Angular directive for that node OR "
+           "because your application is running with ElementProbes disabled "
+           "(CompilerConfig.elementProbeEnabled = false).");
+  }
+  return new _Testability(node, probe);
+}
+
+
 void publishToJavaScript() {
   var D = {};
   D['ngProbe'] = (nodeOrSelector) => _jsProbe(ngProbe(nodeOrSelector));
@@ -345,7 +359,7 @@ void publishToJavaScript() {
       ngQuery(node, selector, containsText);
   D['angular'] = {
         'resumeBootstrap': ([arg]) {},
-        'getTestability': (node) => new _Testability.fromNode(node)._toJsObject(),
+        'getTestability': getTestability,
   };
   js.JsObject J = _jsify(D);
   for (String key in D.keys) {
