@@ -81,7 +81,7 @@ class ScopeDigestTTL {
  * a `scope` setter:
  *
  *     @Component(...)
- *     class MyComponent {
+ *     class MyComponent implements ScopeAware {
  *       Watch watch;
  *
  *       MyComponent(Dependency myDep) {
@@ -96,7 +96,7 @@ class ScopeDigestTTL {
  *     }
  */
 abstract class ScopeAware {
-  void set context(ctx);
+  void set scope(Scope scope);
 }
 
 /**
@@ -110,7 +110,7 @@ class Scope {
   int _childScopeNextId = 0;
 
   /// The default execution context for [watch]es [observe]ers, and [eval]uation.
-  final Object context;
+  final context;
 
   /// The [RootScope] of the application.
   final RootScope rootScope;
@@ -140,8 +140,8 @@ class Scope {
   // TODO(misko): WatchGroup should be private.
   // Instead we should expose performance stats about the watches
   // such as # of watches, checks/1ms, field checks, function checks, etc
-  WatchGroup _readWriteGroup;
-  WatchGroup _readOnlyGroup;
+  final WatchGroup _readWriteGroup;
+  final WatchGroup _readOnlyGroup;
 
   Scope _childHead, _childTail, _next, _prev;
   _Streams _streams;
@@ -149,11 +149,11 @@ class Scope {
   /// Do not use. Exposes internal state for testing.
   bool get hasOwnStreams => _streams != null  && _streams._scope == this;
 
-  Scope(this.context, this.rootScope, this._parentScope,
+  Scope(Object this.context, this.rootScope, this._parentScope,
         this._readWriteGroup, this._readOnlyGroup, this.id,
         this._stats)
   {
-    if (context is ScopeAware) context.scope = this;
+    if (context is ScopeAware) (context as ScopeAware).scope = this;
   }
 
   /**
@@ -651,7 +651,7 @@ class RootScope extends Scope {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
     _zone.onScheduleMicrotask = runAsync;
-  cacheRegister.registerCache("ScopeWatchASTs", astCache);
+    cacheRegister.registerCache("ScopeWatchASTs", astCache);
   }
 
   RootScope get rootScope => this;

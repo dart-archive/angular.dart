@@ -13,14 +13,12 @@ import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/core_dom/directive_injector.dart' show DirectiveInjector;
 import 'package:angular/core/static_keys.dart';
 
-
 /**
  * A global write only variable which keeps track of objects attached to the
  * elements. This is useful for debugging AngularDart application from the
  * browser's REPL.
  */
 var elementExpando = new Expando('element');
-
 
 ElementProbe _findProbeWalkingUp(dom.Node node, [dom.Node ascendUntil]) {
   while (node != null && node != ascendUntil) {
@@ -31,7 +29,6 @@ ElementProbe _findProbeWalkingUp(dom.Node node, [dom.Node ascendUntil]) {
   return null;
 }
 
-
 _walkProbesInTree(dom.Node node, Function walker) {
   var probe = elementExpando[node];
   if (probe == null || walker(probe) != true) {
@@ -40,7 +37,6 @@ _walkProbesInTree(dom.Node node, Function walker) {
     }
   }
 }
-
 
 ElementProbe _findProbeInTree(dom.Node node, [dom.Node ascendUntil]) {
   var probe;
@@ -51,13 +47,11 @@ ElementProbe _findProbeInTree(dom.Node node, [dom.Node ascendUntil]) {
   return (probe != null) ? probe : _findProbeWalkingUp(node, ascendUntil);
 }
 
-
 List<ElementProbe> _findAllProbesInTree(dom.Node node) {
   List<ElementProbe> probes = [];
   _walkProbesInTree(node, probes.add);
   return probes;
 }
-
 
 /**
  * Return the [ElementProbe] object for the closest [Element] in the hierarchy.
@@ -85,7 +79,6 @@ ElementProbe ngProbe(nodeOrSelector) {
   throw "Could not find a probe for the $forWhat '$nodeOrSelector' nor its parents";
 }
 
-
 /**
  * Return the [Injector] associated with a current [Element].
  *
@@ -94,7 +87,6 @@ ElementProbe ngProbe(nodeOrSelector) {
  * is not intended to be called from Angular application.
  */
 DirectiveInjector ngInjector(nodeOrSelector) => ngProbe(nodeOrSelector).injector;
-
 
 /**
  * Return the [Scope] associated with a current [Element].
@@ -105,9 +97,7 @@ DirectiveInjector ngInjector(nodeOrSelector) => ngProbe(nodeOrSelector).injector
  */
 Scope ngScope(nodeOrSelector) => ngProbe(nodeOrSelector).scope;
 
-
-List<dom.Element> ngQuery(dom.Node element, String selector,
-                          [String containsText]) {
+List<dom.Element> ngQuery(dom.Node element, String selector, [String containsText]) {
   var list = [];
   var children = [element];
   if ((element is dom.Element) && element.shadowRoot != null) {
@@ -125,7 +115,6 @@ List<dom.Element> ngQuery(dom.Node element, String selector,
   return list;
 }
 
-
 /**
  * Return a List of directives associated with a current [Element].
  *
@@ -134,8 +123,6 @@ List<dom.Element> ngQuery(dom.Node element, String selector,
  * is not intended to be called from Angular application.
  */
 List<Object> ngDirectives(nodeOrSelector) => ngProbe(nodeOrSelector).directives;
-
-
 
 js.JsObject _jsProbe(ElementProbe probe) {
   return _jsify({
@@ -148,15 +135,11 @@ js.JsObject _jsProbe(ElementProbe probe) {
   })..['_dart_'] = probe;
 }
 
-
 js.JsObject _jsInjector(DirectiveInjector injector) =>
     _jsify({"get": injector.get})..['_dart_'] = injector;
 
-
 js.JsObject _jsScopeFromProbe(ElementProbe probe) =>
     _jsScope(probe.scope, probe.injector.getByKey(SCOPE_STATS_CONFIG_KEY));
-
-
 
 // Work around http://dartbug.com/17752
 // Proxies a Dart function that accepts up to 10 parameters.
@@ -189,13 +172,11 @@ js.JsFunction _jsFunction(Function fn) {
       );
 }
 
-
 const Object __varargSentinel = const Object();
-
 
 __invokeFn(fn, o1, o2, o3, o4, o5, o6, o7, o8, o9, o10) {
   var args = [o1, o2, o3, o4, o5, o6, o7, o8, o9, o10];
-  while (args.length > 0 && identical(args.last, __varargSentinel)) {
+  while (args.isNotEmpty && identical(args.last, __varargSentinel)) {
     args.removeLast();
   }
   return _jsify(Function.apply(fn, args));
@@ -217,7 +198,7 @@ _jsify(var obj) {
     return _jsFunction(obj);
   }
   if ((obj is Map) || (obj is Iterable)) {
-    var mappedObj = (obj is Map) ? 
+    var mappedObj = (obj is Map) ?
         new Map.fromIterables(obj.keys, obj.values.map(_jsify)) : obj.map(_jsify);
     if (obj is List) {
       return new js.JsArray.from(mappedObj);
@@ -228,7 +209,6 @@ _jsify(var obj) {
   return obj;
 }
 
-
 js.JsObject _jsScope(Scope scope, ScopeStatsConfig config) {
   return _jsify({
       "apply": scope.apply,
@@ -238,27 +218,23 @@ js.JsObject _jsScope(Scope scope, ScopeStatsConfig config) {
       "digest": scope.rootScope.digest,
       "emit": scope.emit,
       "flush": scope.rootScope.flush,
-      "get": (name) => scope.context[name],
+      "get": (name) => scope.context.name,
       "isAttached": scope.isAttached,
       "isDestroyed": scope.isDestroyed,
-      "set": (name, value) => scope.context[name] = value,
+      "set": (name, value) => scope.context.name = value,
       "scopeStatsEnable": () => config.emit = true,
       "scopeStatsDisable": () => config.emit = false,
       r"$eval": (expr) => _jsify(scope.eval(expr)),
   })..['_dart_'] = scope;
 }
 
-
 _jsDirective(directive) => directive;
-
 
 abstract class _JsObjectProxyable {
   js.JsObject _toJsObject();
 }
 
-
 typedef List<String> _GetExpressionsFromProbe(ElementProbe probe);
-
 
 /**
  * Returns the "$testability service" object for JS / Protractor use.
@@ -285,8 +261,8 @@ class _Testability implements _JsObjectProxyable {
    * parameter is provided and true, it restricts the searches to bindings that
    * are exact matches for [modelString].
    */
-  List<dom.Node> findModels(String modelString, [bool exactMatch]) => _findByExpression(
-      modelString, exactMatch, (ElementProbe probe) => probe.modelExpressions);
+  List<dom.Node> findModels(String modelString, [bool exactMatch]) =>
+      _findByExpression(modelString, exactMatch, (ElementProbe p) => p.modelExpressions);
 
   /**
    * Returns a list of all nodes in the selected tree that have `ng-bind` or
@@ -294,14 +270,13 @@ class _Testability implements _JsObjectProxyable {
    * [exactMatch] parameter is provided and true, it restricts the searches to
    * bindings that are exact matches for [bindingString].
    */
-  List<dom.Node> findBindings(String bindingString, [bool exactMatch]) => _findByExpression(
-      bindingString, exactMatch, (ElementProbe probe) => probe.bindingExpressions);
+  List<dom.Node> findBindings(String bindingString, [bool exactMatch]) =>
+      _findByExpression(bindingString, exactMatch, (ElementProbe p) => p.bindingExpressions);
 
-  List<dom.Node> _findByExpression(String query, bool exactMatch, _GetExpressionsFromProbe getExpressions) {
+  List<dom.Node> _findByExpression(String query, bool exactMatch,
+                                   _GetExpressionsFromProbe getExpressions) {
     List<ElementProbe> probes = _findAllProbesInTree(node);
-    if (probes.length == 0) {
-      probes.add(_findProbeWalkingUp(node));
-    }
+    if (probes.isEmpty) probes.add(_findProbeWalkingUp(node));
     List<dom.Node> results = [];
     for (ElementProbe probe in probes) {
       for (String expression in getExpressions(probe)) {
@@ -313,7 +288,7 @@ class _Testability implements _JsObjectProxyable {
     return results;
   }
 
-  allowAnimations(bool allowed) {
+  bool allowAnimations(bool allowed) {
     Animate animate = probe.injector.get(Animate);
     bool previous = animate.animationsAllowed;
     animate.animationsAllowed = (allowed == true);
@@ -336,12 +311,10 @@ class _Testability implements _JsObjectProxyable {
         'probe': () => _jsProbe(probe),
         'scope': () => _jsScopeFromProbe(probe),
         'eval': (expr) => probe.scope.eval(expr),
-        'query': (String selector, [String containsText]) =>
-            ngQuery(node, selector, containsText),
+        'query': (String selector, [String containsText]) => ngQuery(node, selector, containsText),
     })..['_dart_'] = this;
   }
 }
-
 
 _Testability getTestability(dom.Node node) {
   ElementProbe probe = _findProbeInTree(node);

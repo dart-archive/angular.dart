@@ -57,7 +57,8 @@ class NgForm extends NgControl {
   set name(String value) {
     if (value != null) {
       super.name = value;
-      _scope.context[name] = this;
+      // todo(vicb) find a way to publish this info in the context (ContextLocals)
+      //_scope.context[name] = this;
     }
   }
 

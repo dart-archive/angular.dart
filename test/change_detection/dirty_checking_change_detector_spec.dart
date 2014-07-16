@@ -76,11 +76,12 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
       });
 
       it('should treat map field dereference as []', () {
-        var obj = {'name':'misko'};
+        var obj = new DynamicObject();
+        obj.name = 'misko';
         detector.watch(obj, 'name', null);
         detector.collectChanges(); // throw away first set
 
-        obj['name'] = 'Misko';
+        obj.name = 'Misko';
         var changeIterator = detector.collectChanges();
         expect(changeIterator.moveNext()).toEqual(true);
         expect(changeIterator.current.currentValue).toEqual('Misko');
@@ -90,11 +91,11 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
 
     describe('insertions / removals', () {
       it('should insert at the end of list', () {
-        var obj = {};
+        var obj = new DynamicObject();
         var a = detector.watch(obj, 'a', 'a');
         var b = detector.watch(obj, 'b', 'b');
 
-        obj['a'] = obj['b'] = 1;
+        obj.a = obj.b = 1;
         var changeIterator = detector.collectChanges();
         expect(changeIterator.moveNext()).toEqual(true);
         expect(changeIterator.current.handler).toEqual('a');
@@ -102,21 +103,21 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         expect(changeIterator.current.handler).toEqual('b');
         expect(changeIterator.moveNext()).toEqual(false);
 
-        obj['a'] = obj['b'] = 2;
+        obj.a = obj.b = 2;
         a.remove();
         changeIterator = detector.collectChanges();
         expect(changeIterator.moveNext()).toEqual(true);
         expect(changeIterator.current.handler).toEqual('b');
         expect(changeIterator.moveNext()).toEqual(false);
 
-        obj['a'] = obj['b'] = 3;
+        obj.a = obj.b = 3;
         b.remove();
         changeIterator = detector.collectChanges();
         expect(changeIterator.moveNext()).toEqual(false);
       });
 
       it('should remove all watches in group and group\'s children', () {
-        var obj = {};
+        var obj = new DynamicObject();
         detector.watch(obj, 'a', '0a');
         var child1a = detector.newGroup();
         var child1b = detector.newGroup();
@@ -128,37 +129,36 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
         child2.watch(obj,'a', '2A');
 
         var iterator;
-        obj['a'] = 1;
+        obj.a = 1;
         expect(detector.collectChanges(),
             toEqualChanges(['0a', '0A', '1a', '1A', '2A', '1b']));
 
-        obj['a'] = 2;
+        obj.a = 2;
         child1a.remove(); // should also remove child2
         expect(detector.collectChanges(), toEqualChanges(['0a', '0A', '1b']));
       });
 
       it('should add watches within its own group', () {
-        var obj = {};
+        var obj = new DynamicObject();
         var ra = detector.watch(obj, 'a', 'a');
         var child = detector.newGroup();
-        var cb = child.watch(obj,'b', 'b');
-        var iterotar;
+        var cb = child.watch(obj, 'b', 'b');
 
-        obj['a'] = obj['b'] = 1;
+        obj.a = obj.b = 1;
         expect(detector.collectChanges(), toEqualChanges(['a', 'b']));
 
-        obj['a'] = obj['b'] = 2;
+        obj.a = obj.b = 2;
         ra.remove();
         expect(detector.collectChanges(), toEqualChanges(['b']));
 
-        obj['a'] = obj['b'] = 3;
+        obj.a = obj.b = 3;
         cb.remove();
         expect(detector.collectChanges(), toEqualChanges([]));
 
         // TODO: add them back in wrong order, assert events in right order
         cb = child.watch(obj,'b', 'b');
         ra = detector.watch(obj, 'a', 'a');
-        obj['a'] = obj['b'] = 4;
+        obj.a = obj.b = 4;
         expect(detector.collectChanges(), toEqualChanges(['a', 'b']));
       });
 
@@ -776,6 +776,12 @@ void main() {
       "toString": (o) => o.toString,
       "isUnderAge": (o) => o.isUnderAge,
       "isUnderAgeAsVariable": (o) => o.isUnderAgeAsVariable,
+      "a": (o) => o.a,
+      "b": (o) => o.b,
+      "name": (o) => o.name,
+      "someField": (o) => o.someField,
+      "f1": (o) => o.f1,
+      "f2": (o) => o.f2,
   }));
 }
 

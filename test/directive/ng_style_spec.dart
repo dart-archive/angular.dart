@@ -37,7 +37,7 @@ void main() {
         document.body.append(element);
         _.compile(element);
         scope = _.rootScope;
-        scope.context['styleObj'] = {'margin-top': '44px'};
+        scope.context.styleObj = {'margin-top': '44px'};
         scope.apply();
         element.style.height = heightVal;
       });
@@ -60,7 +60,7 @@ void main() {
 
 
       it(r'should not mess up stuff after $apply with non-colliding model changes', () {
-        scope.context['styleObj'] = {'padding-top': '99px'};
+        scope.context.styleObj = {'padding-top': '99px'};
         scope.apply();
         expect(element.style.width).toEqual(widthVal);
         expect(element.style.marginTop).not.toEqual('44px');
@@ -70,11 +70,11 @@ void main() {
 
 
       it(r'should overwrite original styles after a colliding model change', () {
-        scope.context['styleObj'] = {'height': '99px', 'width': '88px'};
+        scope.context.styleObj = {'height': '99px', 'width': '88px'};
         scope.apply();
         expect(element.style.width).toEqual('88px');
         expect(element.style.height).toEqual('99px');
-        scope.context['styleObj'] = {};
+        scope.context.styleObj = {};
         scope.apply();
         expect(element.style.width).not.toEqual('88px');
         expect(element.style.height).not.toEqual('99px');

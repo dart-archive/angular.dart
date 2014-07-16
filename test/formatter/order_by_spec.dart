@@ -14,26 +14,40 @@ class Name {
 }
 
 
+class AB {
+  var a;
+  var b;
+  AB(this.a, this.b);
+  String toString() => 'a=$a, b=$b';
+}
+
 main() {
   describe('orderBy formatter', () {
-    var Emily___Bronte = new Name(firstName: 'Emily', lastName: 'Bronte'),
-        Mark____Twain = {'firstName': 'Mark',    'lastName': 'Twain'},
-        Jeffrey_Archer = {'firstName': 'Jeffrey', 'lastName': 'Archer'},
-        Isaac___Asimov = new Name(firstName: 'Isaac', lastName: 'Asimov'),
-        Oscar___Wilde = {'firstName': 'Oscar',   'lastName': 'Wilde'};
+    var Emily___Bronte = new Name(firstName: 'Emily',   lastName: 'Bronte'),
+        Mark____Twain  = new Name(firstName: 'Mark',    lastName: 'Twain'),
+        Jeffrey_Archer = new Name(firstName: 'Jeffrey', lastName: 'Archer'),
+        Isaac___Asimov = new Name(firstName: 'Isaac',   lastName: 'Asimov'),
+        Oscar___Wilde  = new Name(firstName: 'Oscar',   lastName: 'Wilde');
+
+    var _1010 = new AB(10, 10);
+    var _1020 = new AB(10, 20);
+    var _2010 = new AB(20, 10);
+    var _2020 = new AB(20, 20);
+
     beforeEach((Scope scope, Parser parse, FormatterMap formatters) {
-      scope.context['authors'] = [
+      scope.context.authors = [
         Emily___Bronte,
         Mark____Twain,
         Jeffrey_Archer,
         Isaac___Asimov,
         Oscar___Wilde,
       ];
-      scope.context['items'] = [
-        {'a': 10, 'b': 10},
-        {'a': 10, 'b': 20},
-        {'a': 20, 'b': 10},
-        {'a': 20, 'b': 20},
+
+      scope.context.items = [
+          _1010,
+          _1020,
+          _2010,
+          _2020,
       ];
     });
 
@@ -43,12 +57,12 @@ main() {
     });
 
     it('should pass through argument when expression is null', (Scope scope, Parser parse, FormatterMap formatters) {
-      var list = scope.context['list'] = [1, 3, 2];
+      var list = scope.context.list = [1, 3, 2];
       expect(parse('list | orderBy:thisIsNull').eval(scope.context, formatters)).toBe(list);
     });
 
     it('should sort with "empty" expression using default comparator', (Scope scope, Parser parse, FormatterMap formatters) {
-      scope.context['list'] = [1, 3, 2];
+      scope.context.list = [1, 3, 2];
       expect(parse('list | orderBy:""').eval(scope.context, formatters)).toEqual([1, 2, 3]);
       expect(parse('list | orderBy:"+"').eval(scope.context, formatters)).toEqual([1, 2, 3]);
       expect(parse('list | orderBy:"-"').eval(scope.context, formatters)).toEqual([3, 2, 1]);
@@ -70,7 +84,7 @@ main() {
         Oscar___Wilde,
       ]);
 
-      scope.context['sortKey'] = 'firstName';
+      scope.context.sortKey = 'firstName';
       expect(parse('authors | orderBy:sortKey').eval(scope.context, formatters)).toEqual([
         Emily___Bronte,
         Isaac___Asimov,
@@ -140,41 +154,41 @@ main() {
     it('should support an array of expressions',
        (Scope scope, Parser parse, FormatterMap formatters) {
       expect(parse('items | orderBy:["-a", "-b"]').eval(scope.context, formatters)).toEqual([
-        {'a': 20, 'b': 20},
-        {'a': 20, 'b': 10},
-        {'a': 10, 'b': 20},
-        {'a': 10, 'b': 10},
+          _2020,
+          _2010,
+          _1020,
+          _1010,
       ]);
       expect(parse('items | orderBy:["-b", "-a"]').eval(scope.context, formatters)).toEqual([
-        {'a': 20, 'b': 20},
-        {'a': 10, 'b': 20},
-        {'a': 20, 'b': 10},
-        {'a': 10, 'b': 10},
+          _2020,
+          _1020,
+          _2010,
+          _1010,
       ]);
       expect(parse('items | orderBy:["a", "-b"]').eval(scope.context, formatters)).toEqual([
-        {'a': 10, 'b': 20},
-        {'a': 10, 'b': 10},
-        {'a': 20, 'b': 20},
-        {'a': 20, 'b': 10},
+          _1020,
+          _1010,
+          _2020,
+          _2010
       ]);
       expect(parse('items | orderBy:["a", "-b"]:true').eval(scope.context, formatters)).toEqual([
-        {'a': 20, 'b': 10},
-        {'a': 20, 'b': 20},
-        {'a': 10, 'b': 10},
-        {'a': 10, 'b': 20},
+          _2010,
+          _2020,
+          _1010,
+          _1020,
       ]);
     });
 
     it('should support function expressions',
        (Scope scope, Parser parse, FormatterMap formatters) {
-      scope.context['func'] = (e) => -(e['a'] + e['b']);
+      scope.context.func = (e) => -(e.a + e.b);
       expect(parse('items | orderBy:[func, "a", "-b"]').eval(scope.context, formatters)).toEqual([
-        {'a': 20, 'b': 20},
-        {'a': 10, 'b': 20},
-        {'a': 20, 'b': 10},
-        {'a': 10, 'b': 10},
+          _2020,
+          _1020,
+          _2010,
+          _1010,
       ]);
-      scope.context['func'] = (e) => (e is Name) ? e.lastName : e['lastName'];
+      scope.context.func = (e) => e.lastName;
       expect(parse('authors | orderBy:func').eval(scope.context, formatters)).toEqual([
         Jeffrey_Archer,
         Isaac___Asimov,
@@ -183,6 +197,5 @@ main() {
         Oscar___Wilde,
       ]);
     });
-
   });
 }

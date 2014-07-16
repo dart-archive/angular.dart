@@ -3,9 +3,9 @@ part of angular.directive;
 /**
  * Contains info and error states used during form and input validation.
  *
- * NgControl is a common superclass for forms and input controls that handles info and error states, as well as
- * status flags. NgControl is used with the form and fieldset as well as all other directives that are used for
- * user input with NgModel.
+ * [NgControl] is a common superclass for forms and input controls that handles info and error
+ * states, as well as status flags. NgControl is used with the form and fieldset as well as all
+ * other directives that are used for user input with NgModel.
  */
 abstract class NgControl implements AttachAware, DetachAware {
   static const NG_VALID          = "ng-valid";

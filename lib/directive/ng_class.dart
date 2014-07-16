@@ -173,8 +173,7 @@ abstract class _NgClassBase {
     nodeAttrs.observe('class', (String cls) {
       if (prevCls != cls) {
         prevCls = cls;
-        var index = _hasLocal(_scope, r'$index') ? _getLocal(_scope, r'$index') : null;
-        _applyChanges(index);
+        _applyChanges(_getLocal(_scope, r'$index', null));
       }
     });
   }
@@ -183,8 +182,7 @@ abstract class _NgClassBase {
     if (_watchExpression != null) _watchExpression.remove();
     _watchExpression = _scope.watch(expression, (v, _) {
         _computeChanges(v);
-        var index = _hasLocal(_scope, r'$index') ? _getLocal(_scope, r'$index') : null;
-        _applyChanges(index);
+        _applyChanges(_getLocal(_scope, r'$index', null));
       },
       canChangeModel: false,
       collection: true);
@@ -281,20 +279,13 @@ abstract class _NgClassBase {
   }
 }
 
-bool _hasLocal(context, name) {
-  var ctx = context;
-  while (ctx is ContextLocals) {
-    if (ctx.hasProperty(name)) return true;
-    ctx = ctx.parentScope;
-  }
-  return false;
-}
-
-dynamic _getLocal(context, name) {
-  var ctx = context;
+/// Returns a value from the [scope] context.
+/// Walks up the [ContextLocals] tree and returns the [defaultValue] when the value is not found.
+dynamic _getLocal(Scope scope, String name, defaultValue) {
+  var ctx = scope.context;
   while (ctx is ContextLocals) {
     if (ctx.hasProperty(name)) return ctx[name];
     ctx = ctx.parentScope;
   }
-  return null;
+  return defaultValue;
 }

@@ -27,16 +27,7 @@ class StaticClosureMap extends ClosureMap {
     return (o, posArgs, namedArgs) {
       var sNamedArgs = {};
       namedArgs.forEach((name, value) => sNamedArgs[symbols[name]] = value);
-      if (o is Map) {
-        var fn = o[name];
-        if (fn is Function) {
-          return Function.apply(fn, posArgs, sNamedArgs);
-        } else {
-          throw "Property '$name' is not of type function.";
-        }
-      } else {
-        return Function.apply(fn(o), posArgs, sNamedArgs);
-      }
+      return Function.apply(fn(o), posArgs, sNamedArgs);
     };
   }
 

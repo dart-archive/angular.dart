@@ -17,7 +17,7 @@ main() {
       var element = es('<div>{{name}}<span>!</span></div>');
       var template = compile(element, directives);
 
-      rootScope.context['name'] = 'OK';
+      rootScope.context.name = 'OK';
       var view = template(rootScope, injector.get(DirectiveInjector));
 
       element = view.nodes;
@@ -36,7 +36,7 @@ main() {
         expect(_.rootElement.attributes['dir-foo']).toEqual('');
 
         _.rootScope.apply(() {
-          _.rootScope.context['val'] = 'value';
+          _.rootScope.context.val = 'value';
         });
         // _FooDirective should have observed exactly one change.
         expect(_.rootElement.attributes['dir-foo']).toEqual('value');
@@ -50,8 +50,8 @@ main() {
           e('<div some-attr="{{name}}" other-attr="{{age}}"></div>');
       var template = compile([element], directives);
 
-      rootScope.context['name'] = 'OK';
-      rootScope.context['age'] = 23;
+      rootScope.context.name = 'OK';
+      rootScope.context.age = 23;
       var view = template(rootScope, injector.get(DirectiveInjector));
 
       element = view.nodes[0];
@@ -68,8 +68,8 @@ main() {
           e('<div multiline-attr="line1: {{line1}}\nline2: {{line2}}"></div>');
       var template = compile([element], directives);
 
-      rootScope.context['line1'] = 'L1';
-      rootScope.context['line2'] = 'L2';
+      rootScope.context.line1 = 'L1';
+      rootScope.context.line2 = 'L2';
       var view = template(rootScope, injector.get(DirectiveInjector));
 
       element = view.nodes[0];
@@ -104,12 +104,12 @@ main() {
       expect(element).not.toHaveClass('ng-hide');
 
       _.rootScope.apply(() {
-        _.rootScope.context['isVisible'] = true;
+        _.rootScope.context.isVisible = true;
       });
       expect(element).not.toHaveClass('ng-hide');
 
       _.rootScope.apply(() {
-        _.rootScope.context['isVisible'] = false;
+        _.rootScope.context.isVisible = false;
       });
       expect(element).toHaveClass('ng-hide');
     });
@@ -122,13 +122,13 @@ main() {
       expect(element).not.toHaveClass('ng-hide');
 
       _.rootScope.apply(() {
-        _.rootScope.context['currentCls'] = 'active';
+        _.rootScope.context.currentCls = 'active';
       });
       expect(element).toHaveClass('active');
       expect(element).toHaveClass('ng-hide');
 
       _.rootScope.apply(() {
-        _.rootScope.context['isVisible'] = true;
+        _.rootScope.context.isVisible = true;
       });
       expect(element).toHaveClass('active');
       expect(element).not.toHaveClass('ng-hide');

@@ -204,11 +204,12 @@ main() {
 
       it('should load directives/formatters from the child injector', (RootScope scope) {
         Module rootModule = new Module()
-          ..bind(Probe)
-          ..bind(Log)
-          ..bind(AFormatter)
-          ..bind(ADirective)
-          ..bind(Node, toFactory: () => document.body, inject: []);
+            ..bind(Probe)
+            ..bind(Log)
+            ..bind(AFormatter)
+            ..bind(ADirective)
+            ..bind(Node, toFactory: () => document.body, inject: [])
+            ..bind(Object, toImplementation: TestContext);
 
         Injector rootInjector = applicationFactory()
             .addModule(rootModule)

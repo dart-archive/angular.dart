@@ -10,7 +10,7 @@ main() {
           (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
       var element = es('<div ng-bind-html="htmlVar"></div>');
       compiler(element, directives)(scope, injector.get(DirectiveInjector), element);
-      scope.context['htmlVar'] = '<a href="http://www.google.com"><b>Google!</b></a>';
+      scope.context.htmlVar = '<a href="http://www.google.com"><b>Google!</b></a>';
       scope.apply();
       // Sanitization removes the href attribute on the <a> tag.
       expect(element).toHaveHtml('<a><b>Google!</b></a>');
@@ -29,7 +29,7 @@ main() {
       it('should use injected NodeValidator and override default sanitize behavior', (Scope scope, Injector injector, Compiler compiler, DirectiveMap directives) {
         var element = es('<div ng-bind-html="htmlVar"></div>');
         compiler(element, directives)(scope, injector.get(DirectiveInjector), element);
-        scope.context['htmlVar'] = '<a href="http://www.google.com"><b>Google!</b></a>';
+        scope.context.htmlVar = '<a href="http://www.google.com"><b>Google!</b></a>';
         scope.apply();
         // Sanitation allows href attributes per injected sanitizer.
         expect(element).toHaveHtml('<a href="http://www.google.com"><b>Google!</b></a>');
