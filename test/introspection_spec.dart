@@ -100,7 +100,9 @@ void main() {
                 '</div>');
         // Make it possible to find the element from JS
         document.body.append(elt);
-        (applicationFactory()..element = elt).run();
+        applicationFactory()..element = elt
+                            ..rootContextType(_Context)
+                            ..run();
         angular = js.context['angular'];
         // Polymer does not support accessing named elements directly (e.g. window.ngtop)
         // so we need to use getElementById to support Polymer's shadow DOM polyfill.
@@ -201,4 +203,10 @@ void main() {
       }
     });
   });
+}
+
+class _Context {
+  var myModel;
+  var attrMustache;
+  var textMustache;
 }

@@ -93,7 +93,7 @@ void main() {
     it('should compile basic hello world', () {
       var element = _.compile('<div ng-bind="name"></div>');
 
-      _.rootScope.context['name'] = 'angular';
+      _.rootScope.context.name = 'angular';
 
       expect(element.text).toEqual('');
       _.rootScope.apply();
@@ -122,7 +122,7 @@ void main() {
     it('should compile a directive in a child', () {
       var element = _.compile('<div><div ng-bind="name"></div></div>');
 
-      _.rootScope.context['name'] = 'angular';
+      _.rootScope.context.name = 'angular';
 
       expect(element.text).toEqual('');
       _.rootScope.apply();
@@ -132,13 +132,13 @@ void main() {
     it('should compile repeater', () {
       var element = _.compile('<div><div ng-repeat="item in items" ng-bind="item"></div></div>');
 
-      _.rootScope.context['items'] = ['A', 'b'];
+      _.rootScope.context.items = ['A', 'b'];
       expect(element.text).toEqual('');
 
       _.rootScope.apply();
       expect(element.text).toEqual('Ab');
 
-      _.rootScope.context['items'] = [];
+      _.rootScope.context.items = [];
       _.rootScope.apply();
       expect(element).toHaveHtml('<!--ANCHOR: [ng-repeat]=item in items-->');
     });
@@ -173,20 +173,20 @@ void main() {
     it('should compile repeater with children', (Compiler compile) {
       var element = _.compile('<div><div ng-repeat="item in items"><div ng-bind="item"></div></div></div>');
 
-      _.rootScope.context['items'] = ['A', 'b'];
+      _.rootScope.context.items = ['A', 'b'];
 
       expect(element.text).toEqual('');
       _.rootScope.apply();
       expect(element.text).toEqual('Ab');
 
-      _.rootScope.context['items'] = [];
+      _.rootScope.context.items = [];
       _.rootScope.apply();
       expect(element).toHaveHtml('<!--ANCHOR: [ng-repeat]=item in items-->');
     });
 
     it('should compile text', (Compiler compile) {
       var element = _.compile('<div>{{name}}<span>!</span></div>');
-      _.rootScope.context['name'] = 'OK';
+      _.rootScope.context.name = 'OK';
 
       microLeap();
       _.rootScope.apply();
@@ -195,13 +195,13 @@ void main() {
 
     it('should compile nested repeater', (Compiler compile) {
       var element = _.compile(
-          '<div>' +
-          '<ul ng-repeat="lis in uls">' +
-          '<li ng-repeat="li in lis">{{li}}</li>' +
-          '</ul>' +
+          '<div>'
+            '<ul ng-repeat="lis in uls">'
+              '<li ng-repeat="li in lis">{{li}}</li>'
+            '</ul>'
           '</div>');
 
-      _.rootScope.context['uls'] = [['A'], ['b']];
+      _.rootScope.context.uls = [['A'], ['b']];
 
       _.rootScope.apply();
       expect(element.text).toEqual('Ab');
@@ -238,7 +238,7 @@ void main() {
       it('should support bind- syntax', () {
         var element = _.compile('<div ng-bind bind-ng-bind="name"></div>');
 
-        _.rootScope.context['name'] = 'angular';
+        _.rootScope.context.name = 'angular';
 
         expect(element.text).toEqual('');
         _.rootScope.apply();
@@ -248,18 +248,18 @@ void main() {
       xit('should work with attrs, one-way, two-way and callbacks', async(() {
          _.compile('<div><io bind-attr="\'A\'" bind-expr="name" bind-ondone="done=true"></io></div>');
 
-        _.rootScope.context['name'] = 'misko';
+        _.rootScope.context.name = 'misko';
         microLeap();
         _.rootScope.apply();
-        var component = _.rootScope.context['ioComponent'];
+        var component = _.rootScope.context.ioComponent;
         expect(component.attr).toEqual('A');
         expect(component.expr).toEqual('misko');
         component.expr = 'angular';
         _.rootScope.apply();
-        expect(_.rootScope.context['name']).toEqual('angular');
-        expect(_.rootScope.context['done']).toEqual(null);
+        expect(_.rootScope.context.name).toEqual('angular');
+        expect(_.rootScope.context.done).toEqual(null);
         component.ondone();
-        expect(_.rootScope.context['done']).toEqual(true);
+        expect(_.rootScope.context.done).toEqual(true);
       }));
     });
 
@@ -268,7 +268,7 @@ void main() {
       it('should interpolate attribute nodes', () {
         var element = _.compile('<div test="{{name}}"></div>');
 
-        _.rootScope.context['name'] = 'angular';
+        _.rootScope.context.name = 'angular';
 
         _.rootScope.apply();
         expect(element.attributes['test']).toEqual('angular');
@@ -277,7 +277,7 @@ void main() {
       it('should interpolate text nodes', () {
         var element = _.compile('<div>{{name}}</div>');
 
-        _.rootScope.context['name'] = 'angular';
+        _.rootScope.context.name = 'angular';
 
         _.rootScope.apply();
         expect(element.text).toEqual('angular');
@@ -329,7 +329,7 @@ void main() {
         _.rootScope.apply();
         expect(element).toHaveText('And ');
 
-        _.rootScope.context['sometimes'] = true;
+        _.rootScope.context.sometimes = true;
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('And jump');
@@ -339,27 +339,27 @@ void main() {
         var element = _.compile(r'<div>And <sometimes sometimes=sometimes>jump</sometimes></div>');
         document.body.append(element);
 
-        _.rootScope.context['sometimes'] = true;
+        _.rootScope.context.sometimes = true;
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('And jump');
 
-        _.rootScope.context['sometimes'] = false;
+        _.rootScope.context.sometimes = false;
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('And ');
 
-        _.rootScope.context['sometimes'] = true;
+        _.rootScope.context.sometimes = true;
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('And jump');
       }));
 
       it('should safely remove transcluding components that transclude no content', async(() {
-        _.rootScope.context['flag'] = true;
+        _.rootScope.context.flag = true;
         _.compile('<div ng-if=flag><simple></simple></div>');
         microLeap(); _.rootScope.apply();
-        _.rootScope.context['flag'] = false;
+        _.rootScope.context.flag = false;
         microLeap(); _.rootScope.apply();
       }));
 
@@ -412,7 +412,7 @@ void main() {
       });
 
       it('should create a simple component', async((VmTurnZone zone) {
-        _.rootScope.context['name'] = 'OUTTER';
+        _.rootScope.context.name = 'OUTTER';
         var element = _.compile(r'<div>{{name}}:<simple>{{name}}</simple></div>');
         microLeap();
         _.rootScope.apply();
@@ -420,8 +420,8 @@ void main() {
       }));
 
       it('should create a component that can access parent scope', async((VmTurnZone zone) {
-        _.rootScope.context['fromParent'] = "should not be used";
-        _.rootScope.context['val'] = "poof";
+        _.rootScope.context.fromParent = "should not be used";
+        _.rootScope.context.val = "poof";
         var element = _.compile('<parent-expression from-parent=val></parent-expression>');
 
         microLeap();
@@ -438,7 +438,7 @@ void main() {
       }));
 
       it('should behave nicely if a mapped attribute evals to null', async((VmTurnZone zone) {
-        _.rootScope.context['val'] = null;
+        _.rootScope.context.val = null;
         var element = _.compile('<parent-expression fromParent=val></parent-expression>');
 
         microLeap();
@@ -450,17 +450,17 @@ void main() {
          _.compile(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         microLeap();
 
-        _.rootScope.context['name'] = 'misko';
+        _.rootScope.context.name = 'misko';
         _.rootScope.apply();
-        var component = _.rootScope.context['ioComponent'];
+        var component = _.rootScope.context.ioComponent;
         expect(component.attr).toEqual('A');
         expect(component.expr).toEqual('misko');
         component.expr = 'angular';
         _.rootScope.apply();
-        expect(_.rootScope.context['name']).toEqual('angular');
-        expect(_.rootScope.context['done']).toEqual(null);
+        expect(_.rootScope.context.name).toEqual('angular');
+        expect(_.rootScope.context.done).toEqual(null);
         component.ondone();
-        expect(_.rootScope.context['done']).toEqual(true);
+        expect(_.rootScope.context.done).toEqual(true);
       }));
 
       xit('should should not create any watchers if no attributes are specified', async((Profiler perf) {
@@ -477,49 +477,49 @@ void main() {
       }));
 
       it('should create a component with I/O and "=" binding value should be available', async(() {
-        _.rootScope.context['name'] = 'misko';
+        _.rootScope.context.name = 'misko';
         _.compile(r'<div><io attr="A" expr="name" ondone="done=true"></io></div>');
         microLeap();
 
-        var component = _.rootScope.context['ioComponent'];
+        var component = _.rootScope.context.ioComponent;
         _.rootScope.apply();
         expect(component.expr).toEqual('misko');
         component.expr = 'angular';
         _.rootScope.apply();
-        expect(_.rootScope.context['name']).toEqual('angular');
+        expect(_.rootScope.context.name).toEqual('angular');
       }));
 
       it('should create a component with I/O bound to controller and "=" binding value should be available', async(() {
-        _.rootScope.context['done'] = false;
+        _.rootScope.context.done = false;
         _.compile(r'<div><io-controller attr="A" expr="name" once="name" ondone="done=true"></io-controller></div>');
 
         expect(_.injector).toBeDefined();
         microLeap();
 
-        IoControllerComponent component = _.rootScope.context['ioComponent'];
+        IoControllerComponent component = _.rootScope.context.ioComponent;
 
         expect(component.expr).toEqual(null);
         expect(component.exprOnce).toEqual(null);
         expect(component.attr).toEqual('A');
         _.rootScope.apply();
 
-        _.rootScope.context['name'] = 'misko';
+        _.rootScope.context.name = 'misko';
         _.rootScope.apply();
         expect(component.expr).toEqual('misko');
         expect(component.exprOnce).toEqual('misko');
 
-        _.rootScope.context['name'] = 'igor';
+        _.rootScope.context.name = 'igor';
         _.rootScope.apply();
         expect(component.expr).toEqual('igor');
         expect(component.exprOnce).toEqual('misko');
 
         component.expr = 'angular';
         _.rootScope.apply();
-        expect(_.rootScope.context['name']).toEqual('angular');
+        expect(_.rootScope.context.name).toEqual('angular');
 
-        expect(_.rootScope.context['done']).toEqual(false);
+        expect(_.rootScope.context.done).toEqual(false);
         component.onDone();
-        expect(_.rootScope.context['done']).toEqual(true);
+        expect(_.rootScope.context.done).toEqual(true);
 
         // Should be noop
         component.onOptional();
@@ -529,34 +529,34 @@ void main() {
         _.compile(r'<div><io-controller attr="{{name}}"></io-controller></div>');
         microLeap();
 
-        IoControllerComponent component = _.rootScope.context['ioComponent'];
+        IoControllerComponent component = _.rootScope.context.ioComponent;
 
-        _.rootScope.context['name'] = 'misko';
+        _.rootScope.context.name = 'misko';
         _.rootScope.apply();
         expect(component.attr).toEqual('misko');
 
-        _.rootScope.context['name'] = 'james';
+        _.rootScope.context.name = 'james';
         _.rootScope.apply();
         expect(component.attr).toEqual('james');
       }));
 
       it('should create a unpublished component with I/O bound to controller and "=" binding value should be available', async(() {
-        _.rootScope.context['name'] = 'misko';
-        _.rootScope.context['done'] = false;
+        _.rootScope.context.name = 'misko';
+        _.rootScope.context.done = false;
         _.compile(r'<div><unpublished-io-controller attr="A" expr="name" ondone="done=true"></unpublished-io-controller></div>');
         microLeap();
 
-        UnpublishedIoControllerComponent component = _.rootScope.context['ioComponent'];
+        UnpublishedIoControllerComponent component = _.rootScope.context.ioComponent;
         _.rootScope.apply();
         expect(component.attr).toEqual('A');
         expect(component.expr).toEqual('misko');
         component.expr = 'angular';
         _.rootScope.apply();
-        expect(_.rootScope.context['name']).toEqual('angular');
+        expect(_.rootScope.context.name).toEqual('angular');
 
-        expect(_.rootScope.context['done']).toEqual(false);
+        expect(_.rootScope.context.done).toEqual(false);
         component.onDone();
-        expect(_.rootScope.context['done']).toEqual(true);
+        expect(_.rootScope.context.done).toEqual(true);
 
         // Should be noop
         component.onOptional();
@@ -570,7 +570,7 @@ void main() {
 
       it('should support formatters in attribute expressions', async(() {
         _.compile(r'''<expr-attr-component expr="'Misko' | hello" one-way="'James' | hello" once="'Chirayu' | hello"></expr-attr-component>''');
-        ExprAttrComponent component = _.rootScope.context['exprAttrComponent'];
+        ExprAttrComponent component = _.rootScope.context.exprAttrComponent;
         _.rootScope.apply();
         expect(component.expr).toEqual('Hello, Misko!');
         expect(component.oneWay).toEqual('Hello, James!');
@@ -587,7 +587,7 @@ void main() {
         _.compile('<camel-case-map camel-case=G></camel-case-map>');
         microLeap();
         _.rootScope.apply();
-        var componentContext = _.rootScope.context['camelCase'];
+        var componentContext = _.rootScope.context.camelCase;
         expect(componentContext.camelCase).toEqual('G');
       }));
 
@@ -618,7 +618,7 @@ void main() {
 
       it('should expose PublishModuleDirectiveSuperType as PublishModuleDirectiveSuperType', () {
         _.compile(r'<div publish-types probe="publishModuleProbe"></div>');
-        Probe probe = _.rootScope.context['publishModuleProbe'];
+        Probe probe = _.rootScope.context.$probes['publishModuleProbe'];
         var directive = probe.injector.get(PublishModuleDirectiveSuperType);
         expect(directive is PublishModuleAttrDirective).toBeTruthy();
       });
@@ -642,10 +642,10 @@ void main() {
 
         it('should fire onShadowRoot method', async((Compiler compile, Logger logger, MockHttpBackend backend) {
           backend.whenGET('some/template.url').respond(200, '<div>WORKED</div>');
-          var scope = _.rootScope.createChild({});
-          scope.context['isReady'] = 'ready';
-          scope.context['logger'] = logger;
-          scope.context['once'] = null;
+          var scope = _.rootScope.createChild(_.rootScope.context);
+          scope.context.isReady = 'ready';
+          scope.context.logger = logger;
+          scope.context.once = null;
           var elts = es('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
           compile(elts, _.injector.get(DirectiveMap))(scope, _.directiveInjector, elts);
           expect(logger).toEqual(['new']);
@@ -667,7 +667,7 @@ void main() {
           microLeap();
           backend.flush();
           microLeap();
-          expect(logger).toEqual(['templateLoaded', _.rootScope.context['shadowRoot']]);
+          expect(logger).toEqual(['templateLoaded', _.rootScope.context.shadowRoot]);
           logger.clear();
 
           scope.destroy();
@@ -678,7 +678,7 @@ void main() {
         it('should should not call attach after scope is destroyed', async((Compiler compile, Logger logger, MockHttpBackend backend) {
           backend.whenGET('foo.html').respond('<div>WORKED</div>');
           var elts = es('<simple-attach></simple-attach>');
-          var scope = _.rootScope.createChild({});
+          var scope = _.rootScope.createChild(_.rootScope.context);
           compile(elts, _.injector.get(DirectiveMap))(scope, _.directiveInjector, elts);
           expect(logger).toEqual(['SimpleAttachComponent']);
           scope.destroy();
@@ -773,7 +773,7 @@ void main() {
 
           ['shadowy', 'shadowless'].forEach((selector) {
             it('should release expando when a node is freed ($selector)', async(() {
-              _.rootScope.context['flag'] = true;
+              _.rootScope.context.flag = true;
               _.compile('<div><div ng-if=flag><$selector>x</$selector></div></div>');
               microLeap(); _.rootScope.apply();
               var element = _.rootElement.querySelector('$selector');
@@ -781,7 +781,7 @@ void main() {
                 element = element.shadowRoot;
               }
               expect(expando[element]).not.toEqual(null);
-              _.rootScope.context['flag'] = false;
+              _.rootScope.context.flag = false;
               microLeap(); _.rootScope.apply();
               expect(expando[element]).toEqual(null);
             }));
@@ -793,10 +793,10 @@ void main() {
         it('should set a one-time binding with the correct value', (Logger logger) {
           _.compile(r'<div one-time="v"></div>');
 
-          _.rootScope.context['v'] = 1;
+          _.rootScope.context.v = 1;
 
           var context = _.rootScope.context;
-          _.rootScope.watch('3+4', (v, _) => context['v'] = v);
+          _.rootScope.watch('3+4', (v, _) => context.v = v);
 
           // In the 1st digest iteration:
           //   v will be set to 7
@@ -810,16 +810,16 @@ void main() {
 
         it('should keep one-time binding until it is set to non-null', (Logger logger) {
           _.compile(r'<div one-time="v"></div>');
-          _.rootScope.context['v'] = null;
+          _.rootScope.context.v = null;
           _.rootScope.apply();
           expect(logger).toEqual([null]);
 
-          _.rootScope.context['v'] = 7;
+          _.rootScope.context.v = 7;
           _.rootScope.apply();
           expect(logger).toEqual([null, 7]);
 
           // Check that the binding is removed.
-          _.rootScope.context['v'] = 8;
+          _.rootScope.context.v = 8;
           _.rootScope.apply();
           expect(logger).toEqual([null, 7]);
         });
@@ -827,21 +827,21 @@ void main() {
         it('should remove the one-time binding only if it stablizied to null', (Logger logger) {
           _.compile(r'<div one-time="v"></div>');
 
-          _.rootScope.context['v'] = 1;
+          _.rootScope.context.v = 1;
 
           var context = _.rootScope.context;
-          _.rootScope.watch('3+4', (v, _) => context['v'] = null);
+          _.rootScope.watch('3+4', (v, _) => context.v = null);
 
           _.rootScope.apply();
           expect(logger).toEqual([1, null]);
 
           // Even though there was a null in the unstable model, we shouldn't remove the binding
-          context['v'] = 8;
+          context.v = 8;
           _.rootScope.apply();
            expect(logger).toEqual([1, null, 8]);
 
           // Check that the binding is removed.
-          _.rootScope.context['v'] = 9;
+          _.rootScope.context.v = 9;
           _.rootScope.apply();
           expect(logger).toEqual([1, null, 8]);
         });
@@ -897,8 +897,8 @@ void main() {
       it('should allow multiple directives with the same selector of different type', (DirectiveMap map) {
         _.compile('<div><div same-name="worked"></div></div>');
         _.rootScope.apply();
-        SameNameTransclude transclude = _.rootScope.context['sameTransclude'];
-        SameNameDecorator decorator = _.rootScope.context['sameDecorator'];
+        SameNameTransclude transclude = _.rootScope.context.sameTransclude;
+        SameNameDecorator decorator = _.rootScope.context.sameDecorator;
 
         expect(transclude.valueTransclude).toEqual('worked');
         expect(decorator.valueDecorator).toEqual('worked');
@@ -1061,7 +1061,7 @@ class IoComponent implements ScopeAware {
   var done;
 
   void set scope(Scope scope) {
-    scope.rootScope.context['ioComponent'] = this;
+    scope.rootScope.context.ioComponent = this;
   }
 }
 
@@ -1083,7 +1083,7 @@ class IoControllerComponent implements ScopeAware {
   var onOptional;
 
   void set scope(Scope scope) {
-    scope.rootScope.context['ioComponent'] = this;
+    scope.rootScope.context.ioComponent = this;
   }
 }
 
@@ -1104,7 +1104,7 @@ class UnpublishedIoControllerComponent implements ScopeAware {
   var onOptional;
 
   void set scope(Scope scope) {
-    scope.rootScope.context['ioComponent'] = this;
+    scope.rootScope.context.ioComponent = this;
   }
 }
 
@@ -1129,7 +1129,7 @@ class CamelCaseMapComponent implements ScopeAware {
   var camelCase;
 
   void set scope(Scope scope) {
-    scope.rootScope.context['camelCase'] = this;
+    scope.rootScope.context.camelCase = this;
   }
 }
 
@@ -1189,7 +1189,7 @@ class AttachDetachComponent implements AttachAware, DetachAware, ShadowRootAware
   void detach() => logger('detach');
 
   void onShadowRoot(shadowRoot) {
-    scope.rootScope.context['shadowRoot'] = shadowRoot;
+    scope.rootScope.context.shadowRoot = shadowRoot;
     logger(shadowRoot);
   }
 }
@@ -1221,7 +1221,7 @@ class ExprAttrComponent implements ScopeAware {
   var exprOnce;
 
   void set scope(Scope scope) {
-    scope.rootScope.context['exprAttrComponent'] = this;
+    scope.rootScope.context.exprAttrComponent = this;
   }
 }
 
@@ -1285,23 +1285,21 @@ class OneTimeDecorator {
 @Decorator(
   selector: '[same-name]',
   children: Directive.TRANSCLUDE_CHILDREN,
-  map: const { '.': '@valueTransclude' }
-)
+  map: const { '.': '@valueTransclude' })
 class SameNameTransclude {
   var valueTransclude;
   SameNameTransclude(ViewPort port, ViewFactory factory, RootScope scope) {
     port.insertNew(factory);
-    scope.context['sameTransclude'] = this;
+    scope.context.sameTransclude = this;
   }
 }
 
 @Decorator(
     selector: '[same-name]',
-    map: const { 'same-name': '@valueDecorator' }
-)
+    map: const { 'same-name': '@valueDecorator' })
 class SameNameDecorator {
   var valueDecorator;
   SameNameDecorator(RootScope scope) {
-    scope.context['sameDecorator'] = this;
+    scope.context.sameDecorator = this;
   }
 }

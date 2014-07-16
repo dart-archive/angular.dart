@@ -10,18 +10,18 @@ main() {
 
     it('should add new and remove old classes dynamically', () {
       var element = _.compile('<div class="existing" ng-class="dynClass"></div>');
-      _.rootScope.context['dynClass'] = 'A';
+      _.rootScope.context.dynClass = 'A';
       _.rootScope.apply();
       expect(element).toHaveClass('existing');
       expect(element).toHaveClass('A');
 
-      _.rootScope.context['dynClass'] = 'B';
+      _.rootScope.context.dynClass = 'B';
       _.rootScope.apply();
       expect(element).toHaveClass('existing');
       expect(element).not.toHaveClass('A');
       expect(element).toHaveClass('B');
 
-      _.rootScope.context['dynClass'] = null;
+      _.rootScope.context.dynClass = null;
       _.rootScope.apply();
       expect(element).toHaveClass('existing');
       expect(element).not.toHaveClass('A');
@@ -30,9 +30,9 @@ main() {
 
 
     it('should support adding multiple classes via an array', () {
-      _.rootScope.context['a'] = 'a';
-      _.rootScope.context['b'] = '';
-      _.rootScope.context['c'] = null;
+      _.rootScope.context.a = 'a';
+      _.rootScope.context.b = '';
+      _.rootScope.context.c = null;
       var element = _.compile('<div class="existing" ng-class="[\'literalA\', a, b, c]"></div>');
       _.rootScope.apply();
       expect(element).toHaveClass('existing');
@@ -40,9 +40,9 @@ main() {
       expect(element).not.toHaveClass('b');
       expect(element).not.toHaveClass('c');
       expect(element).not.toHaveClass('null');
-      _.rootScope.context['a']  = null;
-      _.rootScope.context['b']  = 'b';
-      _.rootScope.context['c']  = 'c';
+      _.rootScope.context.a  = null;
+      _.rootScope.context.b  = 'b';
+      _.rootScope.context.c  = 'c';
       _.rootScope.apply();
       expect(element).not.toHaveClass('a');
       expect(element).toHaveClass('b');
@@ -56,15 +56,15 @@ main() {
               '<div class="existing" ' +
               'ng-class="{A: conditionA, B: conditionB(), AnotB: conditionA&&!conditionB()}">' +
           '</div>');
-          _.rootScope.context['conditionA'] = true;
-          _.rootScope.context['conditionB'] = () { return false; };
+          _.rootScope.context.conditionA = true;
+          _.rootScope.context.conditionB = () => false;
           _.rootScope.apply();
           expect(element).toHaveClass('existing');
           expect(element).toHaveClass('A');
           expect(element).not.toHaveClass('B');
           expect(element).toHaveClass('AnotB');
 
-          _.rootScope.context['conditionB'] = () { return true; };
+          _.rootScope.context.conditionB = () => true;
           _.rootScope.apply();
           expect(element).toHaveClass('existing');
           expect(element).toHaveClass('A');
@@ -76,11 +76,11 @@ main() {
     it('should remove classes when the referenced object is the same but its property is changed',
         () {
           var element = _.compile('<div ng-class="classes"></div>');
-          _.rootScope.context['classes'] = { 'A': true, 'B': true };
+          _.rootScope.context.classes = { 'A': true, 'B': true };
           _.rootScope.apply();
           expect(element).toHaveClass('A');
           expect(element).toHaveClass('B');
-          _.rootScope.context['classes']['A'] = false;
+          _.rootScope.context.classes['A'] = false;
           _.rootScope.apply();
           expect(element).not.toHaveClass('A');
           expect(element).toHaveClass('B');
@@ -97,13 +97,13 @@ main() {
 
     it('should preserve class added post compilation with pre-existing classes', () {
       var element = _.compile('<div class="existing" ng-class="dynClass"></div>');
-      _.rootScope.context['dynClass'] = 'A';
+      _.rootScope.context.dynClass = 'A';
       _.rootScope.apply();
       expect(element).toHaveClass('existing');
 
       // add extra class, change model and eval
       element.classes.add('newClass');
-      _.rootScope.context['dynClass'] = 'B';
+      _.rootScope.context.dynClass = 'B';
       _.rootScope.apply();
 
       expect(element).toHaveClass('existing');
@@ -114,13 +114,13 @@ main() {
 
     it('should preserve class added post compilation without pre-existing classes"', () {
       var element = _.compile('<div ng-class="dynClass"></div>');
-      _.rootScope.context['dynClass'] = 'A';
+      _.rootScope.context.dynClass = 'A';
       _.rootScope.apply();
       expect(element).toHaveClass('A');
 
       // add extra class, change model and eval
       element.classes.add('newClass');
-      _.rootScope.context['dynClass'] = 'B';
+      _.rootScope.context.dynClass = 'B';
       _.rootScope.apply();
 
       expect(element).toHaveClass('B');
@@ -130,9 +130,9 @@ main() {
 
     it('should preserve other classes with similar name"', () {
       var element = _.compile('<div class="ui-panel ui-selected" ng-class="dynCls"></div>');
-      _.rootScope.context['dynCls'] = 'panel';
+      _.rootScope.context.dynCls = 'panel';
       _.rootScope.apply();
-      _.rootScope.context['dynCls'] = 'foo';
+      _.rootScope.context.dynCls = 'foo';
       _.rootScope.apply();
       // TODO(deboer): Abstract ng-binding
       expect(element.className.replaceAll(' ng-binding', '')).toEqual('ui-panel ui-selected foo');
@@ -141,7 +141,7 @@ main() {
 
     it('should not add duplicate classes', () {
       var element = _.compile('<div class="panel bar" ng-class="dynCls"></div>');
-      _.rootScope.context['dynCls'] = 'panel';
+      _.rootScope.context.dynCls = 'panel';
       _.rootScope.apply();
       // TODO(deboer): Abstract ng-binding
       expect(element.className.replaceAll(' ng-binding', '')).toEqual('panel bar');
@@ -150,9 +150,9 @@ main() {
 
     it('should remove classes even if it was specified via class attribute', () {
       var element = _.compile('<div class="panel bar" ng-class="dynCls"></div>');
-      _.rootScope.context['dynCls'] = 'panel';
+      _.rootScope.context.dynCls = 'panel';
       _.rootScope.apply();
-      _.rootScope.context['dynCls'] = 'window';
+      _.rootScope.context.dynCls = 'window';
       _.rootScope.apply();
       // TODO(deboer): Abstract ng-binding
       expect(element.className.replaceAll(' ng-binding', '')).toEqual('bar window');
@@ -161,10 +161,10 @@ main() {
 
     it('should remove classes even if they were added by another code', () {
       var element = _.compile('<div ng-class="dynCls"></div>');
-      _.rootScope.context['dynCls'] = 'foo';
+      _.rootScope.context.dynCls = 'foo';
       _.rootScope.apply();
       element.classes.add('foo');
-      _.rootScope.context['dynCls'] = '';
+      _.rootScope.context.dynCls = '';
       _.rootScope.apply();
     });
 
@@ -227,8 +227,8 @@ main() {
       var element = _.compile('<div class="one {{cls}} three" ng-class="{four: four}"></div>');
 
       _.rootScope.apply(() {
-        _.rootScope.context['cls'] = "two";
-        _.rootScope.context['four'] = true;
+        _.rootScope.context.cls = "two";
+        _.rootScope.context.four = true;
       });
       expect(element).toHaveClass('one');
       expect(element).toHaveClass('two'); // interpolated
@@ -236,7 +236,7 @@ main() {
       expect(element).toHaveClass('four');
 
       _.rootScope.apply(() {
-        _.rootScope.context['cls'] = "too";
+        _.rootScope.context.cls = "too";
       });
 
       expect(element).toHaveClass('one');
@@ -246,7 +246,7 @@ main() {
       expect(element).not.toHaveClass('two');
 
       _.rootScope.apply(() {
-        _.rootScope.context['cls'] = "to";
+        _.rootScope.context.cls = "to";
       });
 
       expect(element).toHaveClass('one');
@@ -259,9 +259,9 @@ main() {
 
 
     it('should not mess up class value due to observing an interpolated class attribute', () {
-      _.rootScope.context['foo'] = true;
+      _.rootScope.context.foo = true;
       _.rootScope.watch("anything", (_0, _1) {
-        _.rootScope.context['foo'] = false;
+        _.rootScope.context.foo = false;
       });
       var element = _.compile('<div ng-class="{foo:foo}"></div>');
       _.rootScope.apply();
@@ -274,10 +274,10 @@ main() {
         '<li ng-repeat="i in items" ' +
         'ng-class-odd="\'odd\'" ng-class-even="\'even\'"></li>' +
         '<ul>');
-      _.rootScope.context['items'] = ['a','b','c'];
+      _.rootScope.context.items = ['a','b','c'];
       _.rootScope.apply();
 
-      _.rootScope.context['items'] = ['a','b'];
+      _.rootScope.context.items = ['a','b'];
       _.rootScope.apply();
 
       var e1 = element.nodes[1];
@@ -296,10 +296,10 @@ main() {
         '<li ng-repeat="i in items" ' +
         'ng-class-odd="\'odd\'" ng-class-even="\'even\'">i</li>' +
         '<ul>');
-      _.rootScope.context['items'] = ['a','b'];
+      _.rootScope.context.items = ['a','b'];
       _.rootScope.apply();
 
-      _.rootScope.context['items'] = ['b','a'];
+      _.rootScope.context.items = ['b','a'];
       _.rootScope.apply();
 
       var e1 = element.nodes[1];

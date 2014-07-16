@@ -5,12 +5,12 @@ import '../_specs.dart';
 main() {
   describe('orderBy formatter', () {
     beforeEach((Scope scope, Parser parse, FormatterMap formatters) {
-      scope.context['list'] = 'abcdefgh'.split('');
-      scope.context['string'] = 'tuvwxyz';
+      scope.context.list = 'abcdefgh'.split('');
+      scope.context.string = 'tuvwxyz';
     });
 
     it('should return the first X items when X is positive', (Scope scope, Parser parse, FormatterMap formatters) {
-      scope.context['limit'] = 3;
+      scope.context.limit = 3;
       expect(parse('list | limitTo: 3').eval(scope.context, formatters)).toEqual(['a', 'b', 'c']);
       expect(parse('list | limitTo: limit').eval(scope.context, formatters)).toEqual(['a', 'b', 'c']);
       expect(parse('string | limitTo: 3').eval(scope.context, formatters)).toEqual('tuv');
@@ -18,7 +18,7 @@ main() {
     });
 
     it('should return the last X items when X is negative', (Scope scope, Parser parse, FormatterMap formatters) {
-      scope.context['limit'] = 3;
+      scope.context.limit = 3;
       expect(parse('list | limitTo: -3').eval(scope.context, formatters)).toEqual(['f', 'g', 'h']);
       expect(parse('list | limitTo: -limit').eval(scope.context, formatters)).toEqual(['f', 'g', 'h']);
       expect(parse('string | limitTo: -3').eval(scope.context, formatters)).toEqual('xyz');
@@ -40,15 +40,20 @@ main() {
 
     it('should return a copy of input array if X is exceeds array length',
        (Scope scope, Parser parse, FormatterMap formatters) {
-      expect(parse('list | limitTo: 20').eval(scope.context, formatters)).toEqual(scope.context['list']);
-      expect(parse('list | limitTo: -20').eval(scope.context, formatters)).toEqual(scope.context['list']);
-      expect(parse('list | limitTo: 20').eval(scope.context, formatters)).not.toBe(scope.context['list']);
+      expect(parse('list | limitTo: 20').eval(scope.context, formatters))
+          .toEqual(scope.context.list);
+      expect(parse('list | limitTo: -20').eval(scope.context, formatters))
+          .toEqual(scope.context.list);
+      expect(parse('list | limitTo: 20').eval(scope.context, formatters))
+          .not.toBe(scope.context.list);
     });
 
     it('should return the entire string if X exceeds input length',
        (Scope scope, Parser parse, FormatterMap formatters) {
-      expect(parse('string | limitTo: 20').eval(scope.context, formatters)).toEqual(scope.context['string']);
-      expect(parse('string | limitTo: -20').eval(scope.context, formatters)).toEqual(scope.context['string']);
+      expect(parse('string | limitTo: 20').eval(scope.context, formatters))
+          .toEqual(scope.context.string);
+      expect(parse('string | limitTo: -20').eval(scope.context, formatters))
+          .toEqual(scope.context.string);
     });
 
   });

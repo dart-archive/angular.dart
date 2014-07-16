@@ -17,19 +17,19 @@ void main() {
           '</div>');
       expect(element.innerHtml).toEqual(
           '<!--ANCHOR: [ng-switch-when]=1--><!--ANCHOR: [ng-switch-when]=2--><!--ANCHOR: [ng-switch-when]=true-->');
-      _.rootScope.context['select'] = 1;
+      _.rootScope.context.select = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('first:');
-      _.rootScope.context['name'] = "shyam";
+      _.rootScope.context.name = "shyam";
       _.rootScope.apply();
       expect(element.text).toEqual('first:shyam');
-      _.rootScope.context['select'] = 2;
+      _.rootScope.context.select = 2;
       _.rootScope.apply();
       expect(element.text).toEqual('second:shyam');
-      _.rootScope.context['name'] = 'misko';
+      _.rootScope.context.name = 'misko';
       _.rootScope.apply();
       expect(element.text).toEqual('second:misko');
-      _.rootScope.context['select'] = true;
+      _.rootScope.context.select = true;
       _.rootScope.apply();
       expect(element.text).toEqual('true:misko');
     });
@@ -47,19 +47,19 @@ void main() {
       '<!--ANCHOR: [ng-switch-when]=1-->'
       '<!--ANCHOR: [ng-switch-when]=2-->'
       '<!--ANCHOR: [ng-switch-when]=true-->');
-      _.rootScope.context['select'] = 1;
+      _.rootScope.context.select = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('first:, first too:');
-      _.rootScope.context['name'] = "shyam";
+      _.rootScope.context.name = "shyam";
       _.rootScope.apply();
       expect(element.text).toEqual('first:shyam, first too:shyam');
-      _.rootScope.context['select'] = 2;
+      _.rootScope.context.select = 2;
       _.rootScope.apply();
       expect(element.text).toEqual('second:shyam');
-      _.rootScope.context['name'] = 'misko';
+      _.rootScope.context.name = 'misko';
       _.rootScope.apply();
       expect(element.text).toEqual('second:misko');
-      _.rootScope.context['select'] = true;
+      _.rootScope.context.select = true;
       _.rootScope.apply();
       expect(element.text).toEqual('true:misko');
     });
@@ -73,7 +73,7 @@ void main() {
           '</div ng-switch>');
       _.rootScope.apply();
       expect(element.text).toEqual('other');
-      _.rootScope.context['select'] = 1;
+      _.rootScope.context.select = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('one');
     });
@@ -88,7 +88,7 @@ void main() {
           '</ul>');
       _.rootScope.apply();
       expect(element.text).toEqual('other, other too');
-      _.rootScope.context['select'] = 1;
+      _.rootScope.context.select = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('one');
     });
@@ -105,7 +105,7 @@ void main() {
           '</ul>');
       _.rootScope.apply();
       expect(element.text).toEqual('always other, other too ');
-      _.rootScope.context['select'] = 1;
+      _.rootScope.context.select = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('always one ');
     });
@@ -128,7 +128,7 @@ void main() {
           '</ul>');
       _.rootScope.apply();
       expect(element.text).toEqual('135678');
-      _.rootScope.context['select'] = 1;
+      _.rootScope.context.select = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('12368');
     });
@@ -148,7 +148,7 @@ void main() {
           '</ul>');
       _.rootScope.apply();
       expect(element.text).toEqual('3567');
-      _.rootScope.context['select'] = 1;
+      _.rootScope.context.select = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('236');
     });
@@ -159,9 +159,9 @@ void main() {
           '<div ng-switch="url" change="name=\'works\'">' +
           '<div ng-switch-when="a">{{name}}</div>' +
           '</div ng-switch>');
-      _.rootScope.context['url'] = 'a';
+      _.rootScope.context.url = 'a';
       _.rootScope.apply();
-      expect(_.rootScope.context['name']).toEqual('works');
+      expect(_.rootScope.context.name).toEqual('works');
       expect(element.text).toEqual('works');
     });
 
@@ -173,13 +173,13 @@ void main() {
           '</div ng-switch>');
       _.rootScope.apply();
 
-      var getChildScope = () => _.rootScope.context['probe'] == null ?
-          null : _.rootScope.context['probe'].scope;
+      var getChildScope = () => _.rootScope.context.$probes['probe'] == null ?
+          null : _.rootScope.context.$probes['probe'].scope;
 
       expect(getChildScope()).toBeNull();
 
-      _.rootScope.context['url'] = 'a';
-      _.rootScope.context['name'] = 'works';
+      _.rootScope.context.url = 'a';
+      _.rootScope.context.name = 'works';
       _.rootScope.apply();
       var child1 = getChildScope();
       expect(child1).toBeNotNull();
@@ -187,13 +187,13 @@ void main() {
       var destroyListener = guinness.createSpy('watch listener');
       var watcher = child1.on(ScopeEvent.DESTROY).listen(destroyListener);
 
-      _.rootScope.context['url'] = 'x';
+      _.rootScope.context.url = 'x';
       _.rootScope.apply();
       expect(getChildScope()).toBeNull();
       expect(destroyListener).toHaveBeenCalledOnce();
       watcher.cancel();
 
-      _.rootScope.context['url'] = 'a';
+      _.rootScope.context.url = 'a';
       _.rootScope.apply();
       var child2 = getChildScope();
       expect(child2).toBeDefined();
