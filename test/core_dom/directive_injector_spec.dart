@@ -203,7 +203,7 @@ void main() {
         it('should not allow reseting visibility', () {
           addDirective(_Type0, Visibility.LOCAL);
           expect(() => addDirective(_Type0, Visibility.DIRECT_CHILD)).toThrowWith(
-              message: 'Can not set Visibility: DIRECT_CHILD on _Type0, it alread has Visibility: LOCAL');
+              message: 'Can not set Visibility: DIRECT_CHILD on _Type0, it already has Visibility: LOCAL');
         });
 
         it('should allow child injector to see types declared at parent injector', () {
