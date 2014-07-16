@@ -67,6 +67,7 @@ EventHandler eventHandler(DirectiveInjector di) => di._eventHandler;
 
 class DirectiveInjector implements DirectiveBinder {
   static bool _isInit = false;
+
   static initUID() {
     if (_isInit) return;
     _isInit = true;
@@ -94,6 +95,7 @@ class DirectiveInjector implements DirectiveBinder {
       if (_KEYS[i].uid != i) throw 'MISSORDERED KEYS ARRAY: ${_KEYS} at $i';
     }
   }
+
   static List<Key> _KEYS =
       [ UNDEFINED_ID
       , INJECTOR_KEY
@@ -133,6 +135,7 @@ class DirectiveInjector implements DirectiveBinder {
   NgElement _ngElement;
   ElementProbe _elementProbe;
 
+  // Keys, instances, parameter keys and factory functions
   Key _key0 = null; dynamic _obj0; List<Key> _pKeys0; Function _factory0;
   Key _key1 = null; dynamic _obj1; List<Key> _pKeys1; Function _factory1;
   Key _key2 = null; dynamic _obj2; List<Key> _pKeys2; Function _factory2;
@@ -153,11 +156,11 @@ class DirectiveInjector implements DirectiveBinder {
   @Deprecated("Deprecated. Use getFromParent instead.")
   Object get parent => this._parent;
 
-  static _toVisId(Visibility v) => identical(v, Visibility.LOCAL)
+  static _toVisibilityId(Visibility v) => identical(v, Visibility.LOCAL)
       ? VISIBILITY_LOCAL
       : (identical(v, Visibility.CHILDREN) ? VISIBILITY_CHILDREN : VISIBILITY_DIRECT_CHILD);
 
-  static _toVis(int id) {
+  static Visibility _toVisibility(int id) {
     switch (id) {
       case VISIBILITY_LOCAL:                  return Visibility.LOCAL;
       case VISIBILITY_DIRECT_CHILD:           return Visibility.DIRECT_CHILD;
@@ -181,7 +184,7 @@ class DirectiveInjector implements DirectiveBinder {
             toInstanceOf,
             inject: const[],
             Visibility visibility: Visibility.LOCAL}) {
-    if (key == null) throw 'Key is required';
+    assert(key != null);
     if (key is! Key) key = new Key(key);
     if (inject is! List) inject = [inject];
 
@@ -193,13 +196,13 @@ class DirectiveInjector implements DirectiveBinder {
 
   void bindByKey(Key key, Function factory, List<Key> parameterKeys, [Visibility visibility]) {
     if (visibility == null) visibility = Visibility.CHILDREN;
-    int visibilityId = _toVisId(visibility);
+    int visibilityId = _toVisibilityId(visibility);
     int keyVisId = key.uid;
     if (keyVisId != visibilityId) {
       if (keyVisId == null) {
         key.uid = visibilityId;
       } else {
-        throw "Can not set $visibility on $key, it alread has ${_toVis(keyVisId)}";
+        throw "Can not set $visibility on $key, it already has ${_toVisibility(keyVisId)}";
       }
     }
     if      (_key0 == null || identical(_key0, key)) { _key0 = key; _pKeys0 = parameterKeys; _factory0 = factory; }
@@ -249,17 +252,17 @@ class DirectiveInjector implements DirectiveBinder {
     }
   }
 
-  num _getDepth(int visType) {
-    switch(visType) {
+  num _getDepth(int visibility) {
+    switch(visibility) {
       case VISIBILITY_LOCAL:        return 0;
       case VISIBILITY_DIRECT_CHILD: return 1;
       case VISIBILITY_CHILDREN:     return _MAX_TREE_DEPTH;
-      default: throw 'Invalid visibility "$visType"';
+      default: throw 'Invalid visibility "$visibility"';
     }
   }
 
-  _getDirectiveByKey(Key k, int visType, Injector appInjector) {
-    num treeDepth = _getDepth(visType);
+  _getDirectiveByKey(Key k, int visibility, Injector appInjector) {
+    num treeDepth = _getDepth(visibility);
     // ci stands for currentInjector, abbreviated for readability.
     var ci = this;
     while (ci != null && treeDepth >= 0) {
@@ -376,7 +379,6 @@ class DirectiveInjector implements DirectiveBinder {
     return obj;
   }
 
-
   ElementProbe get elementProbe {
     if (_elementProbe == null) {
       ElementProbe parentProbe = _parent == null ? null : _parent.elementProbe;
@@ -475,7 +477,7 @@ class ComponentDirectiveInjector extends DirectiveInjector {
 
   // Add 1 to visibility to allow to skip over current component injector.
   // For example, a local directive is visible from its component injector children.
-  num _getDepth(int visType) => super._getDepth(visType) + 1;
+  num _getDepth(int visibility) => super._getDepth(visibility) + 1;
 }
 
 

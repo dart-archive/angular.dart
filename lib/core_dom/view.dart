@@ -54,7 +54,7 @@ class ViewPort {
     _parentView.addViewPort(this);
   }
 
-  View insertNew(ViewFactory viewFactory, { View insertAfter, Scope viewScope}) {
+  View insertNew(ViewFactory viewFactory, {View insertAfter, Scope viewScope}) {
     if (viewScope == null) viewScope = scope.createProtoChild();
     View view = viewFactory.call(viewScope, directiveInjector);
     return insert(view, insertAfter: insertAfter);
