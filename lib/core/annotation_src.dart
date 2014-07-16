@@ -250,6 +250,39 @@ abstract class Directive {
  */
 class Component extends Directive {
   /**
+   * This property is left here for backward compatibility, but it is not required.
+   *
+   * Before:
+   *
+   *     @Component(publishAs: 'ctrl', ...)
+   *     class MyComponent {
+   *       // ...
+   *     }
+   *
+   *    in component template:  {{ctrl.foo}}
+   *
+   * After:
+   *
+   *    @Component(publishAs: 'ctrl', ...)
+   *     class MyComponent {
+   *       // You must add a getter named after the publishAs configuration
+   *       MyComponent get ctrl => this;
+   *
+   *       // ...
+   *     }
+   *
+   * Finally:
+   *
+   *    @Component()
+   *    class MyComponent {}
+   *
+   *    in component template:  {{foo}}
+   */
+  @Deprecated('next release. This property is left for backward compatibility but setting it has no'
+              ' effect.')
+  final String publishAs;
+
+  /**
    * Inlined HTML template for the component.
    */
   final String template;
@@ -264,13 +297,6 @@ class Component extends Directive {
    * A list of CSS URLs to load into the shadow DOM.
    */
   final _cssUrls;
-
-  /**
-   * An expression under which the component's controller instance will be
-   * published into. This allows the expressions in the template to be referring
-   * to controller instance and its properties.
-   */
-  final String publishAs;
 
   /**
    * If set to true, this component will always use shadow DOM.
@@ -288,7 +314,6 @@ class Component extends Directive {
     this.template,
     this.templateUrl,
     cssUrl,
-    this.publishAs,
     DirectiveBinderFn module,
     map,
     selector,
@@ -297,7 +322,8 @@ class Component extends Directive {
     exportExpressionAttrs,
     this.useShadowDom,
     this.useNgBaseCss: true,
-    updateBoundElementPropertiesOnEvents
+    updateBoundElementPropertiesOnEvents,
+    this.publishAs
   }) : _cssUrls = cssUrl,
         super(selector: selector,
              children: Directive.COMPILE_CHILDREN,
@@ -317,7 +343,6 @@ class Component extends Directive {
           template: template,
           templateUrl: templateUrl,
           cssUrl: cssUrls,
-          publishAs: publishAs,
           map: newMap,
           module: module,
           selector: selector,
@@ -326,7 +351,8 @@ class Component extends Directive {
           exportExpressionAttrs: exportExpressionAttrs,
           useShadowDom: useShadowDom,
           useNgBaseCss: useNgBaseCss,
-          updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
+          updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents,
+          publishAs: publishAs);
 }
 
 /**

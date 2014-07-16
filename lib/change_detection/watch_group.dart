@@ -7,6 +7,7 @@ import 'package:angular/ng_tracing.dart';
 part 'linked_list.dart';
 part 'ast.dart';
 part 'prototype_map.dart';
+part 'context_locals.dart';
 
 /**
  * A function that is notified of changes to the model.
@@ -86,6 +87,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
   /// STATS: Number of invocation watchers (closures/methods) which are in use.
   int get evalCost => _evalCost;
+
 
   /// STATS: Number of invocation watchers which are in use including child [WatchGroup]s.
   int get totalEvalCost {
@@ -784,24 +786,33 @@ class _EvalWatchRecord implements WatchRecord<_Handler> {
 
   get object => _object;
 
-  set object(value) {
+  void set object(object) {
     assert(mode != _MODE_DELETED_);
     assert(mode != _MODE_MARKER_);
     assert(mode != _MODE_FUNCTION_);
     assert(mode != _MODE_PURE_FUNCTION_);
     assert(mode != _MODE_PURE_FUNCTION_APPLY_);
-    _object = value;
 
-    if (value == null) {
+    // The watched object can change inside this method, so use _object throughout.
+    _object = object;
+
+    if (_object == null) {
       mode = _MODE_NULL_;
+    } else if (_object is Map) {
+      mode = _MODE_MAP_CLOSURE_;
     } else {
-      if (value is Map) {
-        mode =  _MODE_MAP_CLOSURE_;
-      } else {
-        mode = _MODE_FIELD_OR_METHOD_CLOSURE_;
-        fn = _fieldGetterFactory.getter(value, name);
+      while (_object is ContextLocals) {
+        var ctx = _object as ContextLocals;
+        if (ctx.hasProperty(name)) {
+          mode =  _MODE_MAP_CLOSURE_;
+          return;
+        }
+        _object = ctx.parentContext;
       }
+      mode = _MODE_FIELD_OR_METHOD_CLOSURE_;
+      fn = _fieldGetterFactory.getter(_object, name);
     }
+
   }
 
   bool check() {

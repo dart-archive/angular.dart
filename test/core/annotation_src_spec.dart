@@ -37,15 +37,15 @@ void main() => describe('annotations', () {
         template: '',
         templateUrl: '',
         cssUrl: [''],
-        publishAs: '',
-        module: (i){},
+        module: (i) {},
         map: {},
         selector: '',
         visibility: Directive.LOCAL_VISIBILITY,
         exportExpressions: [],
         exportExpressionAttrs: [],
         useShadowDom: true,
-        updateBoundElementPropertiesOnEvents: []
+        updateBoundElementPropertiesOnEvents: [],
+        publishAs: ''
       );
 
       // Check that no fields are null

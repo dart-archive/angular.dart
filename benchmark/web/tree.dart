@@ -5,17 +5,14 @@ import 'package:angular/application_factory.dart';
 import 'package:angular/change_detection/ast_parser.dart';
 
 import 'dart:html';
-import 'dart:math';
 import 'dart:js' as js;
 
 @Component(
     selector: 'tree',
     template: '<span> {{ctrl.data.value}}'
-    '<span ng-if="ctrl.data.right != null"><tree data=ctrl.data.right></span>'
-    '<span ng-if="ctrl.data.left != null"><tree data=ctrl.data.left></span>'
-    '</span>',
-    publishAs: 'ctrl',
-    useShadowDom: true)
+    '<span ng-if="data.right != null"><tree data=data.right></span>'
+    '<span ng-if="data.left != null"><tree data=data.left></span>'
+    '</span>')
 class TreeComponent {
   @NgOneWay('data')
   var data;
@@ -34,9 +31,7 @@ class TranscludingTreeComponent extends TreeComponent {}
 
 @Component(
     selector: 'tree-url',
-    templateUrl: 'tree-tmpl.html',
-    publishAs: 'ctrl',
-    useShadowDom: true)
+    templateUrl: 'tree-tmpl.html')
 class TreeUrlComponent {
   @NgOneWay('data')
   var data;
@@ -209,19 +204,19 @@ class FreeTreeClass {
         s.text = " $v";
       }
     });
-    
+
     scope.watchAST(treeRightNotNullAST, (v, _) {
       if (v != true) return;
       s.append(new SpanElement()
           ..append(new FreeTreeClass(scope, treeRightAST).element()));
     });
-    
+
     scope.watchAST(treeLeftNotNullAST, (v, _) {
       if (v != true) return;
       s.append(new SpanElement()
         ..append(new FreeTreeClass(scope, treeLeftAST).element()));
     });
-    
+
     return elt;
   }
 }

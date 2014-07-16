@@ -120,7 +120,11 @@ class NgView implements DetachAware, RouteProvider {
         _viewCache.fromUrl(viewDef.template, newDirectives, Uri.base);
     viewFuture.then((ViewFactory viewFactory) {
       _cleanUp();
+<<<<<<< HEAD
       _childScope = _scope.createProtoChild();
+=======
+      _childScope = _scope.createChild(_scope.context);
+>>>>>>> feat(scope): component is the new context
       _view = viewFactory(_childScope, _dirInjector);
       _view.nodes.forEach((el) => _element.append(el));
     });

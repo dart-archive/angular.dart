@@ -247,6 +247,7 @@ main() {
         "angular.tracing.traceEnter1",
         "angular.tracing.traceLeave",
         "angular.tracing.traceLeaveVal",
+        "angular.watch_group.ContextLocals",
         "angular.watch_group.PrototypeMap",
         "angular.watch_group.ReactionFn",
         "angular.watch_group.Watch",
