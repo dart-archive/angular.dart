@@ -273,7 +273,7 @@ class _Testability implements _JsObjectProxyable {
 
   _Testability(this.node, this.probe);
 
-  notifyWhenNoOutstandingRequests(callback) {
+  whenStable(callback) {
     probe.injector.get(VmTurnZone).run(
         () => new async.Timer(Duration.ZERO, callback));
   }
@@ -326,8 +326,12 @@ class _Testability implements _JsObjectProxyable {
             findBindings(bindingString, exactMatch),
         'findModels': (modelExpressions, [exactMatch]) =>
             findModels(modelExpressions, exactMatch),
-        'notifyWhenNoOutstandingRequests': (callback) =>
-            notifyWhenNoOutstandingRequests(() => callback.apply([])),
+        'whenStable': (callback) =>
+            whenStable(() => callback.apply([])),
+        'notifyWhenNoOutstandingRequests': (callback) {
+           print("DEPRECATED: notifyWhenNoOutstandingRequests has been renamed to whenStable");
+           whenStable(() => callback.apply([]));
+        },
         'probe': () => _jsProbe(probe),
         'scope': () => _jsScopeFromProbe(probe),
         'eval': (expr) => probe.scope.eval(expr),
