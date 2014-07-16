@@ -55,7 +55,7 @@ class NgInclude {
   set url(value) {
     _cleanUp();
     if (value != null && value != '') {
-      viewCache.fromUrl(value, directives).then(_updateContent);
+      viewCache.fromUrl(value, directives, Uri.base).then(_updateContent);
     }
   }
 }

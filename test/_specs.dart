@@ -8,6 +8,7 @@ import 'package:angular/mock/module.dart';
 
 import 'package:unittest/unittest.dart' as unit;
 import 'package:guinness/guinness_html.dart' as gns;
+import 'package:angular/core_dom/resource_url_resolver.dart';
 
 export 'dart:html' hide Animation;
 
@@ -25,6 +26,7 @@ export 'package:angular/core/annotation.dart';
 export 'package:angular/core/registry.dart';
 export 'package:angular/core/module_internal.dart';
 export 'package:angular/core_dom/module_internal.dart';
+export 'package:angular/core_dom/type_to_uri_mapper.dart';
 export 'package:angular/core/parser/parser.dart';
 export 'package:angular/core/parser/lexer.dart';
 export 'package:angular/directive/module.dart';
@@ -40,6 +42,12 @@ es(String html) {
 }
 
 e(String html) => es(html).first;
+
+// All our tests files are served under this prefix when run under Karma.  (i.e.
+// this file, _specs.dart, is at path /base/test/_specs.dart.  However, if
+// you're using a different test server or reconfigured the base prefix, then
+// you can set this to something different.
+String TEST_SERVER_BASE_PREFIX = "base/";
 
 Expect expect(actual, [matcher]) {
   final expect = new Expect(actual);
@@ -204,4 +212,8 @@ main() {
 
   gns.guinnessEnableHtmlMatchers();
   gns.guinness.matchers.config.preprocessHtml = _removeNgBinding;
+
+  beforeEachModule((Module m) {
+    m.bind(ResourceResolverConfig);
+  });
 }
