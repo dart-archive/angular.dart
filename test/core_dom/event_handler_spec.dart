@@ -71,7 +71,7 @@ main() {
         '''<div foo>
           <div on-abc='ctrl.description="new description";'>{{ctrl.description}}</div>
         </div>''');
-      var el = document.querySelector('[on-abc]');
+      var el = e.querySelector('[on-abc]');
       el.dispatchEvent(new Event('abc'));
       _.rootScope.apply();
       expect(el.text).toEqual("new description");
@@ -100,7 +100,7 @@ main() {
       microLeap();
 
       document.querySelector('[on-abc]').dispatchEvent(new Event('abc'));
-      var shadowRoot = document.querySelector('bar').shadowRoot;
+      var shadowRoot = e.querySelector('bar').shadowRoot;
       var shadowRootScope = _.getScope(shadowRoot);
       expect(shadowRootScope.context['ctrl'].invoked).toEqual(false);
 
