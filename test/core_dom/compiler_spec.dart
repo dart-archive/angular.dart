@@ -79,7 +79,10 @@ void main() {
           ..bind(MyScopeModifyingController)
           ..bind(SameNameDecorator)
           ..bind(SameNameTransclude)
-          ..bind(ScopeAwareComponent);
+          ..bind(ScopeAwareComponent)
+          ..bind(Parent, toValue: null)
+          ..bind(Child)
+          ..bind(ChildTemplateComponent);
     });
 
     beforeEach((TestBed tb) => _ = tb);
@@ -301,7 +304,9 @@ void main() {
           ..bind(ExprAttrComponent)
           ..bind(LogElementComponent)
           ..bind(SayHelloFormatter)
-          ..bind(OneTimeDecorator);
+          ..bind(OneTimeDecorator)
+          ..bind(OuterShadowless)
+          ..bind(InnerShadowy);
       });
 
       it('should select on element', async(() {
@@ -652,7 +657,7 @@ void main() {
           scope.context['logger'] = logger;
           scope.context['once'] = null;
           var elts = es('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
-          compile(elts, _.injector.get(DirectiveMap))(scope, _.directiveInjector, elts);
+          compile(elts, _.injector.get(DirectiveMap))(scope, null, elts);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
@@ -684,7 +689,7 @@ void main() {
           backend.whenGET('foo.html').respond('<div>WORKED</div>');
           var elts = es('<simple-attach></simple-attach>');
           var scope = _.rootScope.createChild({});
-          compile(elts, _.injector.get(DirectiveMap))(scope, _.directiveInjector, elts);
+          compile(elts, _.injector.get(DirectiveMap))(scope, null, elts);
           expect(logger).toEqual(['SimpleAttachComponent']);
           scope.destroy();
 
@@ -757,6 +762,13 @@ void main() {
           _.compile('<shadowless></shadowless>');
           expect(log).toEqual(['shadowless']);
           expect(_.rootElement.shadowRoot).toBeNull();
+        }));
+
+        it('should correctly interpolate shadowless components inside shadowy', async(() {
+          var element = _.compile('<outer-shadowless>outer-text</outer-shadowless>');
+          microLeap();
+          _.rootScope.apply();
+          expect(element).toHaveText('inner-text');
         }));
 
         it('should create other components with the default strategy', async((ComponentFactory factory) {
@@ -862,6 +874,14 @@ void main() {
         expect(log.result()).toEqual('TabComponent-0; LocalAttrDirective-0; PaneComponent-1; LocalAttrDirective-0; PaneComponent-2; LocalAttrDirective-0');
       }));
 
+      it('should break injection at component injectors', async((Logger log) {
+        _.compile('<parent><child-tmp-cmp><child></child></child-tmp-cmp></parent>');
+        microLeap();
+        // The child in the light dom should receive parent,
+        // while the child from the template should receive the app level null parent.
+        expect(log.result()).toEqual('got parent; null parent');
+      }));
+
       it('should use the correct parent injector', async((Logger log) {
         // Getting the parent offsets correct while descending the template is tricky.  If we get it wrong, this
         // test case will create too many TabComponents.
@@ -960,6 +980,23 @@ void main() {
         expect(decorator.valueDecorator).toEqual('worked');
       });
     });
+
+    describe('Injection accross application injection boundaries', () {
+      it('should create directive injectors for elements only',
+          async((TestBed _, Logger logger, CompilerConfig config) {
+        if (!config.elementProbeEnabled) return;
+        _.compile('<tab></tab>');
+        var directiveInjector = ngInjector(_.rootElement);
+        var lazyInjector = NgView.createChildInjectorWithReload(
+            _.injector,
+            [new Module()..bind(LazyPane)..bind(LazyPaneHelper)]);
+        var dirMap = lazyInjector.get(DirectiveMap);
+        ViewFactory viewFactory = _.compiler([new Element.tag('lazy-pane')], dirMap);
+        var childScope = _.rootScope.createChild({});
+        viewFactory(childScope, directiveInjector);
+        expect(logger).toContain('LazyPane-0');
+      }));
+    });
   }));
 }
 
@@ -998,6 +1035,19 @@ class TabComponent {
   }
 }
 
+@Component(
+  selector: 'lazy-pane',
+  visibility: Directive.CHILDREN_VISIBILITY
+)
+class LazyPane {
+  int id = 0;
+  LazyPane(Logger logger, LazyPaneHelper lph, Scope scope) {
+    logger('LazyPane-${id++}');
+  }
+}
+
+class LazyPaneHelper {}
+
 @Component(selector: 'pane')
 class PaneComponent {
   TabComponent tabComponent;
@@ -1019,6 +1069,33 @@ class LocalAttrDirective {
   ping() {
     log('LocalAttrDirective-${id++}');
   }
+}
+
+@Decorator(
+    selector: 'parent',
+    visibility: Directive.CHILDREN_VISIBILITY
+)
+class Parent {
+  Parent(Logger log) {}
+}
+
+
+@Decorator(
+    selector: 'child',
+    visibility: Directive.CHILDREN_VISIBILITY
+)
+class Child {
+  Child(Parent p, Logger log) {
+    log(p == null ? 'null parent' : 'got parent');
+  }
+}
+
+@Component(
+    selector: 'child-tmp-cmp',
+    template: '<child></child><content></content>'
+)
+class ChildTemplateComponent {
+  ChildTemplateComponent() {}
 }
 
 @Decorator(
@@ -1412,3 +1489,14 @@ class ScopeAwareComponent implements ScopeAware {
     log('Scope set');
   }
 }
+
+@Component(
+  selector: 'outer-shadowless',
+  template: '<inner-shadowy>inner-text</inner-shadowy>',
+  useShadowDom: false)
+class OuterShadowless {}
+
+@Component(
+  selector: 'inner-shadowy',
+  template: '<content></content>')
+class InnerShadowy {}
