@@ -49,6 +49,7 @@ class DirectiveRef {
  */
 Injector forceNewDirectivesAndFormatters(Injector injector, DirectiveInjector dirInjector,
                                          List<Module> modules) {
+  var childInjector;
   modules.add(new Module()
       ..bind(Scope, toFactory: (Injector injector) {
           var scope = injector.parent.getByKey(SCOPE_KEY);
@@ -57,7 +58,8 @@ Injector forceNewDirectivesAndFormatters(Injector injector, DirectiveInjector di
       ..bind(DirectiveMap)
       ..bind(FormatterMap)
       ..bind(DirectiveInjector,
-              toFactory: () => new DefaultDirectiveInjector.newAppInjector(dirInjector, injector)));
+              inject: [],
+              toFactory: () => new DirectiveInjector.def(dirInjector, childInjector)));
 
-  return new ModuleInjector(modules, injector);
+  return childInjector = new ModuleInjector(modules, injector);
 }
