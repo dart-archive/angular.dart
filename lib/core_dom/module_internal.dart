@@ -60,8 +60,7 @@ class CoreDomModule extends Module {
     bind(TemplateCache, toFactory: (CacheRegister register) {
       var templateCache = new TemplateCache();
       register.registerCache("TemplateCache", templateCache);
-      return templateCache;
-    }, inject: [CACHE_REGISTER_KEY]);
+      return templateCache; }, inject: [CACHE_REGISTER_KEY]);
     bind(dom.NodeTreeSanitizer, toImplementation: NullTreeSanitizer);
 
     bind(TextMustache);
@@ -95,5 +94,8 @@ class CoreDomModule extends Module {
     bind(ElementBinderFactory);
     bind(NgElement);
     bind(EventHandler);
+    // TODO(rkirov): remove this once clients have stopped relying on it.
+    bind(DirectiveInjector, toValue: null);
+
   }
 }

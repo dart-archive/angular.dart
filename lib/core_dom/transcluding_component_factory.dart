@@ -77,19 +77,20 @@ class TranscludingComponentFactory implements ComponentFactory {
 
   TranscludingComponentFactory(this.expando, this.viewCache, this.config);
 
-  bind(DirectiveRef ref, directives) =>
-      new BoundTranscludingComponentFactory(this, ref, directives);
+  bind(DirectiveRef ref, directives, injector) =>
+      new BoundTranscludingComponentFactory(this, ref, directives, injector);
 }
 
 class BoundTranscludingComponentFactory implements BoundComponentFactory {
   final TranscludingComponentFactory _f;
   final DirectiveRef _ref;
   final DirectiveMap _directives;
+  final Injector _injector;
 
   Component get _component => _ref.annotation as Component;
   async.Future<ViewFactory> _viewFuture;
 
-  BoundTranscludingComponentFactory(this._f, this._ref, this._directives) {
+  BoundTranscludingComponentFactory(this._f, this._ref, this._directives, this._injector) {
     _viewFuture = BoundComponentFactory._viewFuture(
         _component,
         _f.viewCache,
@@ -142,7 +143,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
 
       Scope shadowScope = scope.createChild(new HashMap());
 
-      childInjector = new ShadowlessComponentDirectiveInjector(injector, injector.appInjector,
+      childInjector = new ComponentDirectiveInjector(injector, this._injector,
           eventHandler, shadowScope, templateLoader, new ShadowlessShadowRoot(element),
           contentPort);
       childInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
