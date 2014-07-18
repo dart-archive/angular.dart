@@ -26,12 +26,14 @@ class DirectiveSelector {
   Interpolate _interpolate;
   FormatterMap _formatters;
   ASTParser _astParser;
+  final Injector _injector;
   var elementSelector = new _ElementSelector('');
   var attrSelector = <_ContainsSelector>[];
   var textSelector = <_ContainsSelector>[];
 
   /// Parses all the [_directives] so they can be retrieved via [matchElement]
-  DirectiveSelector(this._directives, this._formatters, this._binderFactory, this._interpolate, this._astParser) {
+  DirectiveSelector(this._directives, this._formatters, this._binderFactory, this._interpolate,
+      this._astParser, this._injector) {
     _directives.forEach((Directive annotation, Type type) {
       var match;
       var selector = annotation.selector;
@@ -59,7 +61,7 @@ class DirectiveSelector {
   ElementBinder matchElement(dom.Node node) {
     assert(node is dom.Element);
 
-    ElementBinderBuilder builder = _binderFactory.builder(_formatters, _directives);
+    ElementBinderBuilder builder = _binderFactory.builder(_formatters, _directives, _injector);
     List<_ElementSelector> partialSelection;
     final classes = new Set<String>();
     final attrs = new HashMap<String, String>();
@@ -129,7 +131,7 @@ class DirectiveSelector {
   }
 
   ElementBinder matchText(dom.Node node) {
-    ElementBinderBuilder builder = _binderFactory.builder(_formatters, _directives);
+    ElementBinderBuilder builder = _binderFactory.builder(_formatters, _directives, _injector);
 
     var value = node.nodeValue;
     for (var k = 0; k < textSelector.length; k++) {
@@ -148,7 +150,7 @@ class DirectiveSelector {
     return builder.binder;
   }
 
-  ElementBinder matchComment(dom.Node node) => _binderFactory.builder(null, null).binder;
+  ElementBinder matchComment(dom.Node node) => _binderFactory.builder(null, null, _injector).binder;
 }
 
 /**
@@ -171,10 +173,10 @@ class DirectiveSelectorFactory {
    * NOTE: [formatters] will become required very soon.  New code must pass
    * both parameters.
    */
-  DirectiveSelector selector(DirectiveMap directives, [FormatterMap formatters]) =>
+  DirectiveSelector selector(DirectiveMap directives, Injector injector, [FormatterMap formatters]) =>
       new DirectiveSelector(directives,
           formatters != null ? formatters : _defaultFormatterMap,
-          _binderFactory, _interpolate, _astParser);
+          _binderFactory, _interpolate, _astParser, injector);
 }
 
 class _Directive {

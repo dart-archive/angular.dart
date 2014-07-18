@@ -66,10 +66,9 @@ class TaggingViewFactory implements ViewFactory {
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
-      Animate animate = directiveInjector.getByKey(ANIMATE_KEY);
-      EventHandler eventHandler = directiveInjector.getByKey(EVENT_HANDLER_KEY);
-      var view = new View(nodes, scope, eventHandler);
-      _link(view, scope, nodes, eventHandler, animate, directiveInjector);
+
+      var view = new View(nodes, scope);
+      _link(view, scope, nodes, directiveInjector);
       return view;
     } finally {
       assert(_perf.stopTimer(timerId) != false);
@@ -78,8 +77,7 @@ class TaggingViewFactory implements ViewFactory {
 
   void _bindTagged(TaggedElementBinder tagged, int elementBinderIndex,
                    DirectiveInjector rootInjector,
-                   List<DirectiveInjector> elementInjectors, View view, boundNode, Scope scope,
-                   EventHandler eventHandler, Animate animate) {
+                   List<DirectiveInjector> elementInjectors, View view, boundNode, Scope scope) {
     var binder = tagged.binder;
     DirectiveInjector parentInjector =
         tagged.parentBinderOffset == -1 ? rootInjector : elementInjectors[tagged.parentBinderOffset];
@@ -92,7 +90,7 @@ class TaggingViewFactory implements ViewFactory {
       if (parentInjector != rootInjector && parentInjector.scope != null) {
         scope = parentInjector.scope;
       }
-      elementInjector = binder.bind(view, scope, parentInjector, boundNode, eventHandler, animate);
+      elementInjector = binder.bind(view, scope, parentInjector, boundNode);
     }
     // TODO(misko): Remove this after we remove controllers. No controllers -> 1to1 Scope:View.
     if (elementInjector != rootInjector && elementInjector.scope != null) {
@@ -104,13 +102,12 @@ class TaggingViewFactory implements ViewFactory {
       for (var k = 0; k < tagged.textBinders.length; k++) {
         TaggedTextBinder taggedText = tagged.textBinders[k];
         var childNode = boundNode.childNodes[taggedText.offsetIndex];
-        taggedText.binder.bind(view, scope, elementInjector, childNode, eventHandler, animate);
+        taggedText.binder.bind(view, scope, elementInjector, childNode);
       }
     }
   }
 
-  View _link(View view, Scope scope, List<dom.Node> nodeList, EventHandler eventHandler,
-             Animate animate, DirectiveInjector rootInjector) {
+  View _link(View view, Scope scope, List<dom.Node> nodeList, DirectiveInjector rootInjector) {
     var elementInjectors = new List<DirectiveInjector>(elementBinders.length);
     var directiveDefsByName = {};
 
@@ -132,7 +129,7 @@ class TaggingViewFactory implements ViewFactory {
         if (linkingInfo.containsNgBinding) {
           var tagged = elementBinders[elementBinderIndex];
           _bindTagged(tagged, elementBinderIndex, rootInjector,
-              elementInjectors, view, node, scope, eventHandler, animate);
+              elementInjectors, view, node, scope);
           elementBinderIndex++;
         }
 
@@ -141,7 +138,7 @@ class TaggingViewFactory implements ViewFactory {
           for (int j = 0; j < elts.length; j++, elementBinderIndex++) {
             TaggedElementBinder tagged = elementBinders[elementBinderIndex];
             _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors,
-                        view, elts[j], scope, eventHandler, animate);
+                        view, elts[j], scope);
           }
         }
       } else {
@@ -149,7 +146,7 @@ class TaggingViewFactory implements ViewFactory {
         assert(tagged.binder != null || tagged.isTopLevel);
         if (tagged.binder != null) {
           _bindTagged(tagged, elementBinderIndex, rootInjector,
-              elementInjectors, view, node, scope, eventHandler, animate);
+              elementInjectors, view, node, scope);
         }
         elementBinderIndex++;
       }
