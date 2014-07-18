@@ -1,7 +1,7 @@
 part of angular.core.dom_internal;
 
 abstract class ComponentFactory {
-  BoundComponentFactory bind(DirectiveRef ref, directives);
+  BoundComponentFactory bind(DirectiveRef ref, directives, Injector injector);
 }
 
 /**
@@ -52,8 +52,8 @@ class ShadowDomComponentFactory implements ComponentFactory {
     cacheRegister.registerCache("ShadowDomComponentFactoryStyles", styleElementCache);
   }
 
-  bind(DirectiveRef ref, directives) =>
-      new BoundShadowDomComponentFactory(this, ref, directives);
+  bind(DirectiveRef ref, directives, injector) =>
+      new BoundShadowDomComponentFactory(this, ref, directives, injector);
 }
 
 class BoundShadowDomComponentFactory implements BoundComponentFactory {
@@ -61,6 +61,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   final ShadowDomComponentFactory _f;
   final DirectiveRef _ref;
   final DirectiveMap _directives;
+  final Injector _injector;
 
   Component get _component => _ref.annotation as Component;
 
@@ -68,7 +69,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   async.Future<Iterable<dom.StyleElement>> _styleElementsFuture;
   async.Future<ViewFactory> _viewFuture;
 
-  BoundShadowDomComponentFactory(this._f, this._ref, this._directives) {
+  BoundShadowDomComponentFactory(this._f, this._ref, this._directives, this._injector) {
     _tag = _component.selector.toLowerCase();
     _styleElementsFuture = async.Future.wait(_component.cssUrls.map(_styleFuture));
 
@@ -164,7 +165,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
           }));
 
       var probe;
-      shadowInjector = new ShadowDomComponentDirectiveInjector(injector, injector.appInjector,
+      shadowInjector = new ShadowDomComponentDirectiveInjector(injector, this._injector,
           shadowScope, templateLoader, shadowDom);
       shadowInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 

@@ -8,7 +8,6 @@ part of angular.mock;
  */
 class TestBed {
   final Injector injector;
-  final DirectiveInjector directiveInjector;
   final Scope rootScope;
   final Compiler compiler;
   final Parser _parser;
@@ -18,7 +17,7 @@ class TestBed {
   List<Node> rootElements;
   View rootView;
 
-  TestBed(this.injector, this.directiveInjector, this.rootScope, this.compiler, this._parser, this.expando);
+  TestBed(this.injector, this.rootScope, this.compiler, this._parser, this.expando);
 
 
   /**
@@ -50,7 +49,7 @@ class TestBed {
     if (directives == null) {
       directives = injector.getByKey(DIRECTIVE_MAP_KEY);
     }
-    rootView = compiler(rootElements, directives)(scope, injector.get(DirectiveInjector), rootElements);
+    rootView = compiler(rootElements, directives)(scope, null, rootElements);
     return rootElement;
   }
 

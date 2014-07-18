@@ -38,7 +38,7 @@ class NgBindRoute implements RouteProvider {
   NgBindRoute(this._router, this._injector, NgRoutingHelper _);
 
   /// Returns the parent [RouteProvider].
-  RouteProvider get _parent => _injector.parent.getByKey(ROUTE_PROVIDER_KEY);
+  RouteProvider get _parent => _injector.parentGetByKey(ROUTE_PROVIDER_KEY);
 
   Route get route => routeName.startsWith('.') ?
       _parent.route.getRoute(routeName.substring(1)) :
