@@ -48,7 +48,7 @@ class DynamicClosureMap implements ClosureMap {
         try {
           return reflect(o).invoke(symbol, posArgs, sNamedArgs).reflectee;
         } on NoSuchMethodError catch (e) {
-          throw 'Undefined function $name';
+          throw 'Undefined function or exception in $name $e';
         }
       }
     };
