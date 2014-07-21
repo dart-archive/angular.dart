@@ -13,10 +13,7 @@ export "package:angular/change_detection/watch_group.dart" show
     ReactionFn;
 
 export "package:angular/core/parser/parser.dart" show
-    Parser;
-
-export "package:angular/core/parser/dynamic_parser.dart" show
-    ClosureMap;
+    Parser, ClosureMap;
 
 export "package:angular/change_detection/change_detection.dart" show
     AvgStopwatch,

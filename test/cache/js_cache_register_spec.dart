@@ -8,7 +8,7 @@ main() => describe('JsCacheRegister', () {
   s() => js.context['ngCaches']['sizes'].apply([]);
 
   // Create some caches in the system
-  beforeEach((JsCacheRegister js, DynamicParser dp, ViewCache vc) { });
+  beforeEach((JsCacheRegister js, Parser dp, ViewCache vc) { });
 
   it('should publish a JS interface', () {
     expect(js.context['ngCaches']).toBeDefined();
@@ -18,16 +18,16 @@ main() => describe('JsCacheRegister', () {
     expect(js.context['Object']['keys'].apply([s()]).length > 0).toBeTruthy();
   });
 
-  it('should clear one cache', (DynamicParser p) {
+  it('should clear one cache', (Parser p) {
     p('1');
 
-    expect(s()['DynamicParser'] > 0).toBeTruthy();
+    expect(s()['Parser'] > 0).toBeTruthy();
 
-    js.context['ngCaches']['clear'].apply(['DynamicParser']);
-    expect(s()['DynamicParser']).toEqual(0);
+    js.context['ngCaches']['clear'].apply(['Parser']);
+    expect(s()['Parser']).toEqual(0);
   });
 
-  it('should clear all caches', (DynamicParser p) {
+  it('should clear all caches', (Parser p) {
     p('1');
 
     var stats = s();

@@ -49,7 +49,7 @@ class ExpressionGenerator extends Transformer with ResolverTransformer {
         .then((_) {
       var module = new Module.withReflector(getReflector())
         ..install(new CacheModule.withReflector(getReflector()))
-        ..bind(Parser, toImplementation: DynamicParser)
+        ..bind(Parser)
         ..bind(ParserBackend, toImplementation: DartGetterSetterGen)
         ..bind(Lexer)
         ..bind(_ParserGetterSetter);
