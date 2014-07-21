@@ -57,8 +57,8 @@ void main() {
 
     it('should throw when the selector does not match any element', (TestBed _) {
       _.compile('<div></div>');
-      expect(() => ngProbe('input', _.rootElement))
-          .toThrowWith(message: "The 'input' selector does not match any node");
+      expect(() => ngProbe('input'))
+          .toThrow("The 'input' selector does not match any node");
     });
 
     it('should select elements in the root shadow root', () {

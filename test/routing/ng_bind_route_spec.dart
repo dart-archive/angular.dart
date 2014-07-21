@@ -19,16 +19,14 @@ main() {
 
 
     it('should inject null RouteProvider when no ng-bind-route', async(() {
-      Element root = _.compile('<div probe="routeProbe"></div>');
-      expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider)).toBeNull();
+      Element root = _.compile('<div ng-show="true"></div>');
+      expect(ngInjector('div', root).get(RouteProvider)).toBeNull();
     }));
 
 
     it('should inject RouteProvider with correct flat route', async(() {
-      Element root = _.compile(
-          '<div ng-bind-route="library"><div probe="routeProbe"></div></div>');
-      expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider).routeName)
-          .toEqual('library');
+      Element root = _.compile('<div ng-bind-route="library"><div id=target></div></div>');
+      expect(ngInjector('#target', root).get(RouteProvider).routeName).toEqual('library');
     }));
 
 
@@ -36,17 +34,15 @@ main() {
       Element root = _.compile(
           '<div ng-bind-route="library">'
           '  <div ng-bind-route=".all">'
-          '    <div probe="routeProbe"></div>'
+          '    <div id=target></div>'
           '  </div>'
           '</div>');
-      expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider).route.name)
-          .toEqual('all');
+      expect(ngInjector('#target', root).get(RouteProvider).route.name).toEqual('all');
     }));
 
     it('should expose NgBindRoute as RouteProvider', async(() {
-      Element root = _.compile(
-          '<div ng-bind-route="library"><div probe="routeProbe"></div></div>');
-      expect(_.rootScope.context['routeProbe'].injector.get(RouteProvider) is NgBindRoute).toBeTruthy();
+      Element root = _.compile('<div ng-bind-route="library"><div id=target></div></div>');
+      expect(ngInjector('#target', root).get(RouteProvider) is NgBindRoute).toBeTruthy();
     }));
 
   });
