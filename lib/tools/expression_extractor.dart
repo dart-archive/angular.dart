@@ -55,11 +55,10 @@ main(args) {
   Module module = new Module()
       ..bind(ParserGetterSetter)
       ..bind(Lexer)
-      ..bind(DynamicParser)
       ..bind(DartGetterSetterGen)
       ..bind(CacheRegister)
-      ..bind(Parser, toInstanceOf: DynamicParser)
-      ..bind(ParserBackend, toInstanceOf: DartGetterSetterGen);
+      ..bind(Parser)
+      ..bind(ParserBackend, inject: [DartGetterSetterGen]);
   Injector injector = new ModuleInjector([module]);
 
   runZoned(() {

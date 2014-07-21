@@ -10,7 +10,7 @@ main(arguments) {
   Module module = new Module()
     ..bind(Lexer)
     ..bind(ParserGetterSetter)
-    ..bind(Parser, toImplementation: DynamicParser)
+    ..bind(Parser)
     ..install(new CacheModule());
   module.bind(ParserBackend, toImplementation: DartGetterSetterGen);
   Injector injector = new ModuleInjector([module]);

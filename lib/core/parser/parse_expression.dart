@@ -1,4 +1,4 @@
-library angular.core.parser.dynamic_parser_impl;
+library angular.core.parser.parse_expression;
 
 import 'package:angular/core/parser/parser.dart' show ParserBackend;
 import 'package:angular/core/parser/lexer.dart';
@@ -6,13 +6,16 @@ import 'package:angular/core/parser/syntax.dart';
 import 'package:angular/core/parser/characters.dart';
 import 'package:angular/utils.dart' show isReservedWord;
 
-class DynamicParserImpl {
+Expression parseExpression(Lexer lexer, ParserBackend backend, String input) =>
+    new _ParseExpression(lexer, backend, input).parseChain();
+
+class _ParseExpression {
   final ParserBackend backend;
   final String input;
   final List<Token> tokens;
   int index = 0;
 
-  DynamicParserImpl(Lexer lexer, this.backend, String input)
+  _ParseExpression(Lexer lexer, this.backend, String input)
       : this.input = input, tokens = lexer.call(input);
 
   Token get next => peek(0);
