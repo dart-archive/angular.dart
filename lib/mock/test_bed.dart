@@ -31,7 +31,7 @@ class TestBed {
    *   - [List<Node>] then treat it as a collection of nods
    *
    * After the compilation the [rootElements] contains an array of compiled root nodes,
-   * and [rootElement] contains the first element from the [rootElemets].
+   * and [rootElement] contains the first element from the [rootElements].
    *
    * An option [scope] parameter can be supplied to link it with non root scope.
    */
