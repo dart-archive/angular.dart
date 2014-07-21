@@ -48,10 +48,9 @@ class CoreModule extends Module {
     bind(ScopeStatsConfig);
     bind(Object, toValue: {}); // RootScope context
 
-    bind(Parser, toInstanceOf: DynamicParser);
-    bind(ParserBackend, toInstanceOf: DynamicParserBackend);
-    bind(DynamicParser);
-    bind(DynamicParserBackend);
+    bind(Parser);
+    bind(RuntimeParserBackend);
+    bind(ParserBackend, toInstanceOf: RuntimeParserBackend);
     bind(Lexer);
     bind(ASTParser);
   }

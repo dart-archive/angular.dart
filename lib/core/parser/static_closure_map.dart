@@ -2,7 +2,6 @@ library angular.core.static_closure_map;
 
 import 'package:angular/core/parser/parser.dart';
 
-
 class StaticClosureMap extends ClosureMap {
   final Map<String, Getter> getters;
   final Map<String, Setter> setters;

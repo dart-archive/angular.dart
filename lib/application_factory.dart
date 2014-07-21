@@ -40,7 +40,7 @@ import 'dart:html';
     'angular.routing',
     'angular.core.annotation_src',
     'angular.core.parser.Parser',
-    'angular.core.parser.dynamic_parser',
+    'angular.core.parser',
     'angular.core.parser.lexer',
     'angular.core_dynamic.DynamicMetadataExtractor',
     'perf_api',
