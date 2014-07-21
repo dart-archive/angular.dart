@@ -138,7 +138,8 @@ List<dom.Element> ngQuery(dom.Node element, String selector, [String containsTex
  * application from the browser's REPL, unit or end-to-end tests. The function
  * is not intended to be called from Angular application.
  */
-List<Object> ngDirectives(nodeOrSelector) => ngProbe(nodeOrSelector).directives;
+List<Object> ngDirectives(nodeOrSelector, [dom.Node root]) =>
+    ngProbe(nodeOrSelector, root).directives;
 
 js.JsObject _jsProbe(ElementProbe probe) {
   return _jsify({

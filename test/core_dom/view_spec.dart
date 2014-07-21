@@ -219,7 +219,8 @@ main() {
 
         Compiler compiler = rootInjector.get(Compiler);
         DirectiveMap directives = rootInjector.get(DirectiveMap);
-        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootScope, rootInjector.get(DirectiveInjector));
+        var els = es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>');
+        compiler(els, directives)(rootScope, rootInjector.get(DirectiveInjector));
         rootScope.apply();
 
         expect(log.log, equals(['AFormatter', 'ADirective']));
@@ -233,11 +234,12 @@ main() {
 
         DirectiveMap newDirectives = childInjector.get(DirectiveMap);
         var scope = childInjector.get(Scope);
-        compiler(es('<dir-a probe="dirA"></dir-a>{{\'a\' | formatterA}}'
-            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(scope, childInjector.get(DirectiveInjector));
+        els = es('<dir-a></dir-a>{{\'a\' | formatterA}}<dir-b></dir-b>{{\'b\' | formatterB}}');
+        compiler(els, newDirectives)(scope, childInjector.get(DirectiveInjector));
         rootScope.apply();
 
-        expect(log.log, equals(['AFormatter', 'ADirective', 'BFormatter', 'ADirective', 'BDirective']));
+        expect(log.log)
+            .toEqual(['AFormatter', 'ADirective', 'BFormatter', 'ADirective', 'BDirective']);
       });
 
     });

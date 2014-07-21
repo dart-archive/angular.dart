@@ -168,24 +168,29 @@ void main() {
 
     it('should properly create and destroy child scopes', () {
       var element = _.compile(
-          '<div ng-switch="url">' +
-          '<div ng-switch-when="a" probe="probe">{{name}}</div>' +
+          '<div ng-switch="url">'
+            '<div ng-switch-when="a" ng-show="true">{{name}}</div>'
           '</div ng-switch>');
       _.rootScope.apply();
 
-      var getChildScope = () => _.rootScope.context.$probes['probe'] == null ?
-          null : _.rootScope.context.$probes['probe'].scope;
+      var getChildScope = () {
+        try {
+          return ngScope('[ng-switch-when]', element);
+        } catch (e) {
+          return null;
+        }
+      };
 
       expect(getChildScope()).toBeNull();
 
       _.rootScope.context.url = 'a';
       _.rootScope.context.name = 'works';
       _.rootScope.apply();
-      var child1 = getChildScope();
-      expect(child1).toBeNotNull();
+      var childScope1 = getChildScope();
+      expect(childScope1).toBeNotNull();
       expect(element.text).toEqual('works');
       var destroyListener = guinness.createSpy('watch listener');
-      var watcher = child1.on(ScopeEvent.DESTROY).listen(destroyListener);
+      var watcher = childScope1.on(ScopeEvent.DESTROY).listen(destroyListener);
 
       _.rootScope.context.url = 'x';
       _.rootScope.apply();
@@ -195,9 +200,9 @@ void main() {
 
       _.rootScope.context.url = 'a';
       _.rootScope.apply();
-      var child2 = getChildScope();
-      expect(child2).toBeDefined();
-      expect(child2).not.toBe(child1);
+      var childScope2 = getChildScope();
+      expect(childScope2).toBeDefined();
+      expect(childScope2).not.toBe(childScope1);
     });
   });
 }

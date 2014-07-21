@@ -9,7 +9,6 @@ class ChildController {
   ChildController(BoundViewFactory boundViewFactory,
                   ViewPort viewPort,
                   Scope scope) {
-    scope.context.setBy = 'childController';
     viewPort.insert(boundViewFactory(scope));
   }
 }
@@ -67,60 +66,6 @@ main() {
       });
 
       expect(element.querySelectorAll('span').length).toEqual(0);
-    }
-  );
-
-  they('should create and destroy a child scope',
-    [
-      // ng-if
-      '<div>' +
-      '  <div ng-if="isVisible">'.trim() +
-      '    <span child-controller id="inside" probe="probe">inside {{ctx}};</span>'.trim() +
-      '  </div>'.trim() +
-      '  <span id="outside">outside {{ctx}}</span>'.trim() +
-      '</div>',
-      // ng-unless
-      '<div>' +
-      '  <div ng-unless="!isVisible">'.trim() +
-      '    <span child-controller id="inside" probe="probe">inside {{ctx}};</span>'.trim() +
-      '  </div>'.trim() +
-      '  <span id="outside">outside {{ctx}}</span>'.trim() +
-      '</div>'],
-    (html) {
-      rootScope.context.ctx = 'parent';
-
-      var getChildScope = () => rootScope.context.$probes['probe'] == null ?
-          null : rootScope.context.$probes['probe'].scope;
-
-      compile(html);
-      expect(element).toHaveText('outside parent');
-      expect(getChildScope()).toBeNull();
-
-      rootScope.apply(() {
-        rootScope.context.isVisible = true;
-      });
-      // The nested scope uses the parent context
-      expect(element).toHaveText('inside parent;outside parent');
-      expect(element.querySelector('#outside')).toHaveHtml('outside parent');
-      expect(element.querySelector('#inside')).toHaveHtml('inside parent;');
-
-      var childScope1 = getChildScope();
-      expect(childScope1).toBeNotNull();
-      var destroyListener = guinness.createSpy('destroy child scope');
-      var watcher = childScope1.on(ScopeEvent.DESTROY).listen(destroyListener);
-
-      rootScope.apply(() {
-        rootScope.context.isVisible = false;
-      });
-      expect(getChildScope()).toBeNull();
-      expect(destroyListener).toHaveBeenCalledOnce();
-
-      rootScope.apply(() {
-        rootScope.context.isVisible = true;
-      });
-      var childScope2 = getChildScope();
-      expect(childScope2).toBeNotNull();
-      expect(childScope2).not.toBe(childScope1);
     }
   );
 
