@@ -4,78 +4,63 @@ typedef EvalFunction0();
 typedef EvalFunction1(context);
 
 /**
- * Injected into the listener function within [Scope.on] to provide
- * event-specific details to the scope listener.
+ * Injected into the listener function within [Scope.on] to provide event-specific details to the
+ * scope listener.
  */
 class ScopeEvent {
   static final String DESTROY = 'ng-destroy';
 
   /**
-   * Data attached to the event. This would be the optional parameter
-   * from [Scope.emit] and [Scope.broadcast].
+   * Data attached to the event. This would be the optional parameter from [Scope.emit] and
+   * [Scope.broadcast].
    */
   final data;
 
-  /**
-   * The name of the intercepted scope event.
-   */
   final String name;
 
-  /**
-   * The origin scope that triggered the event (via broadcast or emit).
-   */
+  /// The origin scope that triggered the event (via [Scope.broadcast] or [Scope.emit]).
   final Scope targetScope;
 
   /**
-   * The destination scope that intercepted the event. As
-   * the event traverses the scope hierarchy the the event instance
-   * stays the same, but the [currentScope] reflects the scope
-   * of the current listener which is firing.
+   * The destination scope that intercepted the event. As the event traverses the scope hierarchy
+   * the event instance stays the same, but the [currentScope] reflects the scope of the listener
+   * which is firing.
    */
   Scope get currentScope => _currentScope;
   Scope _currentScope;
 
-  /**
-   * true or false depending on if [stopPropagation] was executed.
-   */
+  /// true or false depending on if [stopPropagation] was executed.
   bool get propagationStopped => _propagationStopped;
   bool _propagationStopped = false;
 
-  /**
-   * true or false depending on if [preventDefault] was executed.
-   */
+  /// true or false depending on if [preventDefault] was executed.
   bool get defaultPrevented => _defaultPrevented;
   bool _defaultPrevented = false;
 
   /**
-   * [name] - The name of the scope event.
-   * [targetScope] - The destination scope that is listening on the event.
+   * [name]: The name of the scope event.
+   * [targetScope]: The scope that triggers the event.
+   * [data]: Arbitrary data attached to the event.
    */
   ScopeEvent(this.name, this.targetScope, this.data);
 
-  /**
-   * Prevents the intercepted event from propagating further to successive
-   * scopes.
-   */
+  /// Prevents the intercepted event from propagating further
   void stopPropagation () {
     _propagationStopped = true;
   }
 
-  /**
-   * Sets the defaultPrevented flag to true.
-   */
+  /// Sets the defaultPrevented flag to true.
   void preventDefault() {
     _defaultPrevented = true;
   }
 }
 
 /**
- * Allows the configuration of [Scope.digest] iteration maximum time-to-live
- * value. Digest keeps checking the state of the watcher getters until it
- * can execute one full iteration with no watchers triggering. TTL is used
- * to prevent an infinite loop where watch A triggers watch B which in turn
- * triggers watch A. If the system does not stabilize in TTL iterations then
- * the digest is stopped and an exception is thrown.
+ * Allows the configuration of [Scope.digest] iteration maximum time-to-live value. Digest keeps
+ * checking the state of the watcher getters until it can execute one full iteration with no
+ * watchers triggering. The TTL is used to prevent an infinite loop where watch A triggers watch B
+ * which in turn triggers watch A. If the system does not stabilize in TTL iterations then the
+ * digest is stopped and an exception is thrown.
  */
 @Injectable()
 class ScopeDigestTTL {
@@ -125,31 +110,23 @@ class ScopeLocals implements Map {
 }
 
 /**
- * [Scope] is represents a collection of [watch]es [observe]ers, and [context]
- * for the watchers, observers and [eval]uations. Scopes structure loosely
- * mimics the DOM structure. Scopes and [View]s are bound to each other.
- * As scopes are created and destroyed by [ViewFactory] they are responsible
- * for change detection, change processing and memory management.
+ * [Scope] represents a collection of [watch]es [observer]s, and a [context] for the watchers,
+ * observers and [eval]uations. Scopes structure loosely mimics the DOM structure. Scopes and
+ * [View]s are bound to each other. As scopes are created and destroyed by [ViewFactory] they are
+ * responsible for change detection, change processing and memory management.
  */
 class Scope {
   final String id;
   int _childScopeNextId = 0;
 
-  /**
-   * The default execution context for [watch]es [observe]ers, and [eval]uation.
-   */
+  /// The default execution context for [watch]es [observe]ers, and [eval]uation.
   final context;
 
-  /**
-   * The [RootScope] of the application.
-   */
+  /// The [RootScope] of the application.
   final RootScope rootScope;
 
   Scope _parentScope;
 
-  /**
-   * The parent [Scope].
-   */
   Scope get parentScope => _parentScope;
 
   final ScopeStats _stats;
@@ -167,9 +144,7 @@ class Scope {
     return true;
   }
 
-  /**
-   * Returns true if the scope is still attached to the [RootScope].
-   */
+  /// true when the scope is still attached to the [RootScope].
   bool get isAttached => !isDestroyed;
 
   // TODO(misko): WatchGroup should be private.
@@ -262,7 +237,7 @@ class Scope {
   /**
    * Use [watch] to set up change detection on an pre-parsed AST.
    *
-   * * [ast] The pre-parsed AST.
+   * * [ast]: The pre-parsed AST.
    * * [reactionFn]: The function executed when a change is detected.
    * * [canChangeModel]: Whether or not the [reactionFn] can change the model.
    */
@@ -271,6 +246,17 @@ class Scope {
     return group.watch(ast, reactionFn);
   }
 
+  /**
+   * Evaluates the [expression] against the current scope and returns the result. Note that, the
+   * expression data is relative to the data within the scope. Therefore an expression such as
+   * `a + b` will deference variables `a` and `b` and return a result so long as `a` and `b`
+   * exist on the scope.
+   *
+   * * [expression]: The expression that will be evaluated. This can be either a Function or a
+   *   String.
+   * * [locals]: A Map that will override any matching context members for the purposes of the
+   *   evaluation.
+   */
   dynamic eval(expression, [Map locals]) {
     assert(isAttached);
     assert(expression == null ||
@@ -287,6 +273,12 @@ class Scope {
     return null;
   }
 
+  /**
+   * Triggers a digest cycle. It accepts an optional [expression] to evaluate before the digest
+   * operation. The result of that expression will be returned afterwards.
+   *
+   * [apply] should only be called from the within unit tests to simulate the life cycle of a scope.
+   */
   dynamic apply([expression, Map locals]) {
     _assertInternalStateConsistency();
     rootScope._transitionState(null, RootScope.STATE_APPLY);
@@ -301,21 +293,42 @@ class Scope {
     }
   }
 
+  /**
+   * Triggers a [ScopeEvent] referenced by the [name] parameters upwards towards the root of the
+   * scope tree. If intercepted, by a parent scope containing a matching scope event listener
+   * (which is registered via the [on] method), then the event listener callback function will be
+   * executed.
+   *
+   * The triggered [ScopeEvent] references the [data] so that they can be retrieve in the listener.
+   */
   ScopeEvent emit(String name, [data]) {
     assert(isAttached);
     return _Streams.emit(this, name, data);
   }
 
+  /**
+   * Triggers a [ScopeEvent] referenced by the [name] parameters downards towards the leaf nodes of
+   * the scope tree. If intercepted, by a child scope containing a matching scope event listener
+   * (which is registered via the [on] method), then the event listener callback function will be
+   * executed.
+   *
+   * The triggered [ScopeEvent] references the [data] so that they can be retrieve in the listener.
+   */
   ScopeEvent broadcast(String name, [data]) {
     assert(isAttached);
     return _Streams.broadcast(this, name, data);
   }
 
+  /**
+   * Registers a scope-based event listener to intercept events triggered by [broadcast] (from any
+   * parent scopes) or [emit] (from child scopes) that match the given event [name].
+   */
   ScopeStream on(String name) {
     assert(isAttached);
     return _Streams.on(this, rootScope._exceptionHandler, name);
   }
 
+  /// Creates a child [Scope] with the given [childContext]
   Scope createChild(Object childContext) {
     assert(isAttached);
     var child = new Scope(childContext, rootScope, this,
@@ -331,6 +344,17 @@ class Scope {
     return child;
   }
 
+  /**
+   * Removes the current scope (and all of its children) from the parent scope. Removal implies
+   * that calls to [digest] will no longer propagate to the current scope nor its children.
+   *
+   * The `destroy()` operation is usually used within directives that perform transclusion on
+   * multiple child elements (like ngRepeat) which create multiple child scopes.
+   *
+   * Just before a scope is destroyed, a [ScopeEvent.DESTROY] event is broadcasted from this scope.
+   * This allows for child scopes (such as shared directives) to perform any necessary cleanup
+   * before the scope is removed from the application.
+   */
   void destroy() {
     assert(isAttached);
     broadcast(ScopeEvent.DESTROY);
@@ -480,10 +504,7 @@ class ScopeStats {
   }
 }
 
-/**
- * ScopeStatsEmitter is in charge of formatting the [ScopeStats] and outputting
- * a message.
- */
+/// ScopeStatsEmitter is in charge of formatting the [ScopeStats] and outputting a message.
 @Injectable()
 class ScopeStatsEmitter {
   static String _PAD_ = '                       ';
@@ -497,9 +518,9 @@ class ScopeStatsEmitter {
 
   static pad(String str, int size) => _PAD_.substring(0, max(size - str.length, 0)) + str;
 
-  _ms(num value) => '${pad(_nfDec.format(value), 9)} ms';
-  _us(num value) => _ms(value / 1000);
-  _tally(num value) => '${pad(_nfInt.format(value), 6)}';
+  String _ms(num value) => '${pad(_nfDec.format(value), 9)} ms';
+  String _us(num value) => _ms(value / 1000);
+  String _tally(num value) => '${pad(_nfInt.format(value), 6)}';
 
   /**
    * Emit a message based on the phase and state of stopwatches.
@@ -537,12 +558,9 @@ class ScopeStatsConfig {
   var emit = false;
 
   ScopeStatsConfig();
-  ScopeStatsConfig.enabled() {
-    emit = true;
-  }
+  ScopeStatsConfig.enabled(): emit = true;
 }
 /**
- *
  * Every Angular application has exactly one RootScope. RootScope extends Scope, adding
  * services related to change detection, async unit-of-work processing, and DOM read/write queues.
  * The RootScope can not be destroyed.
@@ -551,7 +569,6 @@ class ScopeStatsConfig {
  *
  * All work in Angular must be done within a context of a VmTurnZone. VmTurnZone detects the end
  * of the VM turn, and calls the Apply method to process the changes at the end of VM turn.
- *
  */
 @Injectable()
 class RootScope extends Scope {
@@ -578,28 +595,27 @@ class RootScope extends Scope {
   String _state;
 
   /**
-   *
    * While processing data bindings, Angular passes through multiple states. When testing or
    * debugging, it can be useful to access the current `state`, which is one of the following:
    *
-   * * null
-   * * apply
-   * * digest
-   * * flush
-   * * assert
+   * * `null`
+   * * `STATE_APPLY`
+   * * `STATE_DIGEST`
+   * * `STATE_FLUSH`
+   * * `STATE_FLUSH_ASSERT`
    *
-   * ##null
+   * ## `null`
    *
    *  Angular is not currently processing changes
    *
-   * ##apply
+   * ## `STATE_APPLY`
    *
    * The apply state begins by executing the optional expression within the context of
    * angular change detection mechanism. Any exceptions are delegated to [ExceptionHandler]. At the
    * end of apply state RootScope enters the digest followed by flush phase (optionally if asserts
    * enabled run assert phase.)
    *
-   * ##digest
+   * ## `STATE_DIGEST`
    *
    * The apply state begins by processing the async queue,
    * followed by change detection
@@ -608,7 +624,7 @@ class RootScope extends Scope {
    * iterations the model is considered unstable and angular exists with an exception. (See
    * ScopeDigestTTL)
    *
-   * ##flush
+   * ## `STATE_FLUSH`
    *
    * The flush phase consists of these steps:
    *
@@ -618,11 +634,10 @@ class RootScope extends Scope {
    * 3. processing the DOM read queue
    * 4. repeat steps 1 and 3 (not 2) until queues are empty
    *
-   * ##assert
+   * ## `STATE_FLUSH_ASSERT`
    *
    * Optionally if Dart assert is on, verify that flush reaction functions did not make any changes
    * to model and throw error if changes detected.
-   *
    */
   String get state => _state;
 
@@ -648,7 +663,7 @@ class RootScope extends Scope {
   RootScope get rootScope => this;
   bool get isAttached => true;
 
-/**
+  /**
   * Propagates changes between different parts of the application model. Normally called by
   * [VMTurnZone] right before DOM rendering to initiate data binding. May also be called directly
   * for unit testing.
@@ -822,26 +837,22 @@ class RootScope extends Scope {
 }
 
 /**
- * Keeps track of Streams for each Scope. When emitting events
- * we would need to walk the whole tree. Its faster if we can prune
- * the Scopes we have to visit.
+ * Keeps track of Streams for each Scope. When emitting events we would need to walk the whole tree.
+ * Its faster if we can prune the Scopes we have to visit.
  *
  * Scope with no [_ScopeStreams] has no events registered on itself or children
  *
- * We keep track of [Stream]s, and also child scope [Stream]s. To save
- * memory we use the same stream object on all of our parents if they don't
- * have one. But that means that we have to keep track if the stream belongs
- * to the node.
+ * We keep track of [Stream]s, and also child scope [Stream]s. To save memory we use the same stream
+ * object on all of our parents if they don't have one. But that means that we have to keep track
+ * if the stream belongs to the node.
  *
- * Scope with [_ScopeStreams] but who's [_scope] does not match the scope
- * is only inherited
+ * Scope with [_ScopeStreams] but who's [_scope] does not match the scope is only inherited
  *
- * Only [Scope] with [_ScopeStreams] who's [_scope] matches the [Scope]
- * instance is the actual scope.
+ * Only [Scope] with [_ScopeStreams] who's [_scope] matches the [Scope] instance is the actual
+ * scope.
  *
- * Once the [Stream] is created it can not be removed even if all listeners
- * are canceled. That is because we don't know if someone still has reference
- * to it.
+ * Once the [Stream] is created it can not be removed even if all listeners are canceled. That is
+ * because we don't know if someone still has reference to it.
  */
 class _Streams {
   final ExceptionHandler _exceptionHandler;
