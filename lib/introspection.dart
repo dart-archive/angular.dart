@@ -89,9 +89,7 @@ ElementProbe ngProbe(nodeOrSelector, [dom.Node root]) {
     node = nodes.first;
   }
   var probe = _findProbeWalkingUp(node);
-  if (probe != null) {
-    return probe;
-  }
+  if (probe != null) return probe;
   var forWhat = (nodeOrSelector is String) ? "selector" : "node";
   throw "Could not find a probe for the $forWhat '$nodeOrSelector' nor its parents";
 }
@@ -121,7 +119,7 @@ List<dom.Element> ngQuery(dom.Node element, String selector, [String containsTex
   if ((element is dom.Element) && element.shadowRoot != null) {
     children.add(element.shadowRoot);
   }
-  while (!children.isEmpty) {
+  while (children.isNotEmpty) {
     var child = children.removeAt(0);
     child.querySelectorAll(selector).forEach((e) {
       if (containsText == null || e.text.contains(containsText)) list.add(e);
