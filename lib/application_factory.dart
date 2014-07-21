@@ -16,7 +16,7 @@ import 'package:angular/core/parser/parser.dart' show ClosureMap;
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
 import 'package:angular/core/registry_dynamic.dart';
-import 'package:angular/core/parser/parser_dynamic.dart';
+import 'package:angular/core/parser/dynamic_closure_map.dart';
 import 'dart:html';
 
 /**

@@ -1,4 +1,4 @@
-library angular.core.parser_dynamic;
+library angular.core.dynamic_closure_map;
 
 @MirrorsUsed(targets: const [ DynamicClosureMap ], metaTargets: const [] )
 import 'dart:mirrors';

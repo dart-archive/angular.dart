@@ -35,7 +35,7 @@ import 'package:di/di.dart' show TypeFactory, Injector;
 import 'package:angular/application.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core/parser/parser.dart';
-import 'package:angular/core/parser/parser_static.dart';
+import 'package:angular/core/parser/static_closure_map.dart';
 import 'package:angular/core/parser/dynamic_parser.dart';
 import 'package:angular/core/registry_static.dart';
 import 'package:angular/change_detection/change_detection.dart';
