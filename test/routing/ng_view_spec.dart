@@ -20,8 +20,8 @@ main() => describe('ngView', () {
       _ = tb;
       router = _router;
 
-      templates.put('foo.html', new HttpResponse(200, '<h1 probe="p">Foo</h1>'));
-      templates.put('bar.html', new HttpResponse(200, '<h1 probe="p">Bar</h1>'));
+      templates.put('foo.html', new HttpResponse(200, '<h1>Foo</h1>'));
+      templates.put('bar.html', new HttpResponse(200, '<h1>Bar</h1>'));
     });
 
 
@@ -43,13 +43,13 @@ main() => describe('ngView', () {
     }));
 
     it('should expose NgView as RouteProvider', async(() {
-      _.compile('<ng-view probe="m"></ng-view>');
+      _.compile('<ng-view></ng-view>');
       router.route('/foo');
       microLeap();
       _.rootScope.apply();
       Probe probe = _.rootScope.context.$probes['p'];
 
-      expect(probe.injector.get(RouteProvider) is NgView).toBeTruthy();
+      expect(ngInjector('h1', _.rootElement).get(RouteProvider) is NgView).toBeTruthy();
     }));
 
 
@@ -80,32 +80,6 @@ main() => describe('ngView', () {
       microLeap();
       expect(root).toHaveText('');
     }));
-
-    it('should create and destroy a child scope', async((RootScope scope) {
-      Element root = _.compile('<ng-view></ng-view>');
-
-      var getChildScope = () => scope.context.$probes['p'] == null ?
-          null : scope.context.$probes['p'].scope;
-
-      expect(root).toHaveText('');
-      expect(getChildScope()).toBeNull();
-
-      router.route('/foo');
-      microLeap();
-      expect(root).toHaveText('Foo');
-      var childScope1 = getChildScope();
-      expect(childScope1).toBeNotNull();
-      var destroyListener = guinness.createSpy('destroy child scope');
-      var watcher = childScope1.on(ScopeEvent.DESTROY).listen(destroyListener);
-
-      router.route('/baz');
-      microLeap();
-      expect(root).toHaveText('');
-      expect(destroyListener).toHaveBeenCalledOnce();
-      var childScope2 = getChildScope();
-      expect(childScope2).toBeNull();
-    }));
-
   });
 
 

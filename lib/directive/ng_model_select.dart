@@ -113,11 +113,11 @@ class OptionValue implements AttachAware,
     }
   }
 
-  attach() {
+  void attach() {
     if (_inputSelectDirective != null) _inputSelectDirective.dirty();
   }
 
-  detach() {
+  void detach() {
     if (_inputSelectDirective != null) {
       _inputSelectDirective.dirty();
       _inputSelectDirective.expando[_element] = null;

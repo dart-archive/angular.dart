@@ -624,9 +624,8 @@ void main() {
       });
 
       it('should expose PublishModuleDirectiveSuperType as PublishModuleDirectiveSuperType', () {
-        _.compile(r'<div publish-types probe="publishModuleProbe"></div>');
-        Probe probe = _.rootScope.context.$probes['publishModuleProbe'];
-        var directive = probe.injector.get(PublishModuleDirectiveSuperType);
+        _.compile(r'<div publish-types></div>');
+        var directive = PublishModuleAttrDirective._injector.get(PublishModuleDirectiveSuperType);
         expect(directive is PublishModuleAttrDirective).toBeTruthy();
       });
 
