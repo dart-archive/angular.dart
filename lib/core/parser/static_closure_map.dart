@@ -1,4 +1,4 @@
-library angular.core.parser_static;
+library angular.core.static_closure_map;
 
 import 'package:angular/core/parser/parser.dart';
 
