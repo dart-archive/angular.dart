@@ -95,9 +95,7 @@ ElementProbe ngProbe(nodeOrSelector, [dom.Node root]) {
     node = nodes.first;
   }
   var probe = _findProbeWalkingUp(node);
-  if (probe != null) {
-    return probe;
-  }
+  if (probe != null) return probe;
   var forWhat = (nodeOrSelector is String) ? "selector" : "node";
   throw "Could not find a probe for the $forWhat '$nodeOrSelector' nor its parents";
 }
@@ -130,7 +128,7 @@ List<dom.Element> ngQuery(dom.Node element, String selector, [String containsTex
   if ((element is dom.Element) && element.shadowRoot != null) {
     children.add(element.shadowRoot);
   }
-  while (!children.isEmpty) {
+  while (children.isNotEmpty) {
     var child = children.removeAt(0);
     child.querySelectorAll(selector).forEach((e) {
       if (containsText == null || e.text.contains(containsText)) list.add(e);
@@ -151,7 +149,6 @@ List<dom.Element> ngQuery(dom.Node element, String selector, [String containsTex
  * is not intended to be called from Angular application.
  */
 List<Object> ngDirectives(nodeOrSelector) => ngProbe(nodeOrSelector).directives;
-
 
 
 js.JsObject _jsProbe(ElementProbe probe) {
@@ -234,7 +231,7 @@ _jsify(var obj) {
     return _jsFunction(obj);
   }
   if ((obj is Map) || (obj is Iterable)) {
-    var mappedObj = (obj is Map) ? 
+    var mappedObj = (obj is Map) ?
         new Map.fromIterables(obj.keys, obj.values.map(_jsify)) : obj.map(_jsify);
     if (obj is List) {
       return new js.JsArray.from(mappedObj);

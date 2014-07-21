@@ -4,8 +4,11 @@ import '../_specs.dart';
 import 'package:angular/core_dom/directive_injector.dart';
 
 
-forBothCompilers(fn) {
+var probeEnabled;
+
+forCompilerSetups(fn) {
   describe('walking compiler', () {
+    probeEnabled = true;
     beforeEachModule((Module m) {
       m.bind(Compiler, toImplementation: WalkingCompiler);
       return m;
@@ -14,6 +17,7 @@ forBothCompilers(fn) {
   });
 
   describe('tagging compiler', () {
+    probeEnabled = true;
     beforeEachModule((Module m) {
       m.bind(Compiler, toImplementation: TaggingCompiler);
       return m;
@@ -22,6 +26,7 @@ forBothCompilers(fn) {
   });
 
   describe('tagging compiler with ElementProbe disabled', () {
+    probeEnabled = false;
     beforeEachModule((Module m) {
       m.bind(Compiler, toImplementation: TaggingCompiler);
       m.bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
@@ -32,7 +37,9 @@ forBothCompilers(fn) {
 }
 
 forAllCompilersAndComponentFactories(fn) {
-  forBothCompilers(fn);
+  describe('shadow dom components', () {
+    forCompilerSetups(fn);
+  });
 
   describe('transcluding components', () {
     beforeEachModule((Module m) {
@@ -46,7 +53,7 @@ forAllCompilersAndComponentFactories(fn) {
 }
 
 void main() {
-  forBothCompilers((compilerType) =>
+  forCompilerSetups((compilerType) =>
   describe('TranscludingComponentFactory', () {
     TestBed _;
 
@@ -370,7 +377,7 @@ void main() {
       }));
 
       it('should store ElementProbe with Elements', async(() {
-        if (compilerType == 'tagging-no-elementProbe') return;
+        if (!probeEnabled) return;
 
         _.compile('<div><simple>innerText</simple></div>');
         microLeap();
