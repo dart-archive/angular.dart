@@ -69,6 +69,22 @@ class NgModelUrlValidator implements NgValidator {
 }
 
 /**
+ * Validates the model to see if its contents match a valid color pattern.
+ */
+@Decorator(selector: 'input[type=color][ng-model]')
+class NgModelColorValidator implements NgValidator {
+  static final COLOR_REGEXP = new RegExp(r'^#[0-9a-f]{6}$', caseSensitive: false);
+  final String name = 'ng-color';
+
+  NgModelColorValidator(NgModel ngModel) {
+    ngModel.addValidator(this);
+  }
+
+  bool isValid(modelValue) =>
+    modelValue == null || modelValue.isEmpty || COLOR_REGEXP.hasMatch(modelValue);
+}
+
+/**
  * Validates the model to see if its contents match a valid email pattern.
  */
 @Decorator(selector: 'input[type=email][ng-model]')

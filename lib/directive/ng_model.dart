@@ -332,7 +332,7 @@ class InputCheckbox {
  *
   * **Usage**
  *
- *     <input type="text|url|password|email|search|tel" ng-model="myModel">
+ *     <input type="text|url|password|email|search|tel|color" ng-model="myModel">
  *     <textarea ng-model="myModel"></textarea>
  *
  * When the `ng-model` attribute is present on the input element,
@@ -348,6 +348,7 @@ class InputCheckbox {
 @Decorator(selector: 'input[type=email][ng-model]')
 @Decorator(selector: 'input[type=search][ng-model]')
 @Decorator(selector: 'input[type=tel][ng-model]')
+@Decorator(selector: 'input[type=color][ng-model]')
 class InputTextLike {
   final dom.Element inputElement;
   final NgModel ngModel;
@@ -707,7 +708,7 @@ class NgValue {
 
   @NgOneWay('ng-value')
   void set value(val) {
-    this._value = val;
+    _value = val;
   }
   dynamic get value => _value == null ? (element as dynamic).value : _value;
 }
