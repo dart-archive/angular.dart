@@ -53,6 +53,31 @@ main() {
       _ = injector.get(TestBed);
     }
 
+    it('should configure route dontLeaveOnParameterChanges parameter', async(() {
+      initRouter((Router router, RouteViewFactory views) {
+        views.configure({
+          'foo': ngRoute(path: r'/foo/:param')
+        });
+        // default value should be false
+        expect(router.findRoute('foo').dontLeaveOnParamChanges).toEqual(false);
+      });
+
+
+      initRouter((Router router, RouteViewFactory views) {
+        views.configure({
+          'foo': ngRoute(path: r'/foo/:param', dontLeaveOnParamChanges: false)
+        });
+        expect(router.findRoute('foo').dontLeaveOnParamChanges).toEqual(false);
+      });
+
+      initRouter((Router router, RouteViewFactory views) {
+        views.configure({
+          'foo': ngRoute(path: r'/foo/:param', dontLeaveOnParamChanges: true)
+        });
+        expect(router.findRoute('foo').dontLeaveOnParamChanges).toEqual(true);
+      });
+    }));
+
     it('should configure route hierarchy from provided config', async(() {
       var counters = {
         'foo': 0,
@@ -127,7 +152,6 @@ main() {
 
 
     it('should set the default route', async(() {
-      int enterCount = 0;
       initRouter((Router router, RouteViewFactory views) {
         views.configure({
           'foo': ngRoute(path: '/foo'),
