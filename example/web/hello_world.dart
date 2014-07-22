@@ -6,6 +6,7 @@ import 'package:angular/application_factory.dart';
     publishAs: 'ctrl')
 class HelloWorld {
   String name = "world";
+  String color = "#aaaaaa";
 }
 
 main() {
