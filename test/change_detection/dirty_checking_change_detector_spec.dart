@@ -271,6 +271,33 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
               removals: []));
         });
 
+        it('should support switching refs - gh 1158', async(() {
+          var list = [0];
+
+          var record = detector.watch(list, null, null);
+          if (detector.collectChanges().moveNext()) {
+            detector.collectChanges();
+          }
+
+          record.object = [1, 0];
+          var iterator = detector.collectChanges()..moveNext();
+          expect(iterator.current.currentValue, toEqualCollectionRecord(
+              collection: ['1[null -> 0]', '0[0 -> 1]'],
+              previous: ['0[0 -> 1]'],
+              additions: ['1[null -> 0]'],
+              moves: ['0[0 -> 1]'],
+              removals: []));
+
+          record.object = [2, 1, 0];
+          iterator = detector.collectChanges()..moveNext();
+          expect(iterator.current.currentValue, toEqualCollectionRecord(
+              collection: ['2[null -> 0]', '1[null -> 1]', '0[0 -> 2]'],
+              previous: ['0[0 -> 2]'],
+              additions: ['2[null -> 0]', '1[null -> 1]'],
+              moves: ['0[0 -> 2]'],
+              removals: []));
+        }));
+
         it('should handle swapping elements correctly', () {
           var list = [1, 2];
           var record = detector.watch(list, null, null);
