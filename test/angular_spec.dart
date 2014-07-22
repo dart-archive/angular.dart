@@ -275,8 +275,6 @@ main() {
         "route.client.RouteImpl",
         "route.client.RouteLeaveEvent",
         "route.client.RouteLeaveEventHandler",
-        "route.client.RoutePreLeaveEvent",
-        "route.client.RoutePreLeaveEventHandler",
         "route.client.RoutePreEnterEvent",
         "route.client.RoutePreEnterEventHandler",
         "route.client.Router",
