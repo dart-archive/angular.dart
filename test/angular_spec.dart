@@ -189,6 +189,7 @@ main() {
         "angular.directive.NgInclude",
         "angular.directive.NgModel",
         "angular.directive.NgModelOptions",
+        "angular.directive.NgModelColorValidator",
         "angular.directive.NgModelConverter",
         "angular.directive.NgModelEmailValidator",
         "angular.directive.NgModelMaxLengthValidator",
