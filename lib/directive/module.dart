@@ -120,5 +120,6 @@ class DirectiveModule extends Module {
     bind(NgModelPatternValidator, toValue: null);
     bind(NgModelMinLengthValidator, toValue: null);
     bind(NgModelMaxLengthValidator, toValue: null);
+    bind(NgModelColorValidator, toValue: null);
   }
 }
