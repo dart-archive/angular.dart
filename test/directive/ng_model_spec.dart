@@ -1105,6 +1105,60 @@ void main() {
       });
     });
 
+    describe('type="color"', () {
+      it('should update input value from model', () {
+        _.compile('<input type="color" ng-model="model">');
+        _.rootScope.apply();
+
+        expect((_.rootElement as dom.InputElement).value).toEqual('#000000');
+
+        _.rootScope.apply('model = "#123456"');
+        expect((_.rootElement as dom.InputElement).value).toEqual('#123456');
+      });
+
+      it('should render as #000000 on default and when a null value is present', () {
+        _.compile('<input type="color" ng-model="model">');
+        _.rootScope.apply();
+
+        expect((_.rootElement as dom.InputElement).value).toEqual('#000000');
+
+        _.rootScope.apply('model = null');
+        expect((_.rootElement as dom.InputElement).value).toEqual('#000000');
+      });
+
+      it('should update model from the input value', () {
+        _.compile('<input type="color" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        inputElement.value = '#000000';
+        _.triggerEvent(inputElement, 'change');
+        expect(_.rootScope.context['model']).toEqual('#000000');
+
+        inputElement.value = '#ffffff';
+        var input = probe.directive(InputTextLike);
+        input.processValue();
+        expect(_.rootScope.context['model']).toEqual('#ffffff');
+      });
+
+      it('should only render the input value upon the next digest', (Scope scope) {
+        _.compile('<input type="color" ng-model="model" probe="p">');
+        Probe probe = _.rootScope.context['p'];
+        var ngModel = probe.directive(NgModel);
+        InputElement inputElement = probe.element;
+
+        ngModel.render('#aabbcc');
+        scope.context['model'] = '#aabbcc';
+
+        expect(inputElement.value).not.toEqual('#aabbcc');
+
+        scope.apply();
+
+        expect(inputElement.value).toEqual('#aabbcc');
+      });
+    });
+
     describe('contenteditable', () {
       it('should update content from model', () {
         _.compile('<p contenteditable ng-model="model">');
