@@ -43,9 +43,11 @@ part 'ng_element.dart';
 part 'node_cursor.dart';
 part 'selector.dart';
 part 'shadow_dom_component_factory.dart';
-part 'shadowless_shadow_root.dart';
+part 'emulated_shadow_root.dart';
 part 'template_cache.dart';
 part 'transcluding_component_factory.dart';
+part 'light_dom.dart';
+part 'content_tag.dart';
 part 'tree_sanitizer.dart';
 part 'view.dart';
 part 'view_factory.dart';
@@ -73,7 +75,8 @@ class CoreDomModule extends Module {
     bind(ShadowDomComponentFactory);
     bind(TranscludingComponentFactory);
     bind(Content);
-    bind(ContentPort, toValue: null);
+    bind(DestinationLightDom, toValue: null);
+    bind(SourceLightDom, toValue: null);
     bind(ComponentCssRewriter);
     bind(WebPlatform);
 

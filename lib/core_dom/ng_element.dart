@@ -7,13 +7,14 @@ class NgElement {
   final dom.Element node;
   final Scope _scope;
   final Animate _animate;
+  final DestinationLightDom _lightDom;
 
   final _classesToUpdate = new HashMap<String, bool>();
   final _attributesToUpdate = new HashMap<String, dynamic>();
 
   bool _writeScheduled = false;
 
-  NgElement(this.node, this._scope, this._animate);
+  NgElement(this.node, this._scope, this._animate, [this._lightDom]);
 
   void addClass(String className) {
     _scheduleDomWrite();
@@ -41,6 +42,7 @@ class NgElement {
       _writeScheduled = true;
       _scope.rootScope.domWrite(() {
         _writeToDom();
+        _notifyLightDom();
         _writeScheduled = false;
       });
     }
@@ -63,5 +65,9 @@ class NgElement {
       }
     });
     _attributesToUpdate.clear();
+  }
+
+  void _notifyLightDom() {
+    if (_lightDom != null) _lightDom.redistribute();
   }
 }

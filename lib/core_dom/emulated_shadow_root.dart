@@ -1,7 +1,7 @@
 part of angular.core.dom_internal;
-class ShadowlessShadowRoot implements dom.ShadowRoot {
+class EmulatedShadowRoot implements dom.ShadowRoot {
   dom.Element _element;
-  ShadowlessShadowRoot(this._element);
+  EmulatedShadowRoot(this._element);
   _notSupported() { throw new UnsupportedError("Not supported"); }
   dom.Element get activeElement => _notSupported();
   dom.Element get host => _notSupported();

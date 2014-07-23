@@ -62,7 +62,6 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   final DirectiveRef _ref;
   final DirectiveMap _directives;
   final Injector _injector;
-  final DirectiveInjector _directive_injector;
 
   Component get _component => _ref.annotation as Component;
 
