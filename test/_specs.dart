@@ -5,6 +5,7 @@ import 'dart:html' hide Animation;
 import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
 
+import 'package:unittest/unittest.dart' as unit;
 import 'package:guinness/guinness_html.dart' as gns;
 
 export 'dart:html' hide Animation;
@@ -54,6 +55,8 @@ class Expect extends gns.Expect {
 
   void toBePristine() => _expect(actual.pristine && !actual.dirty, true, reason: 'Form is dirty');
 
+  void toHaveText(String text) => _expect(actual, new _TextMatcher(text));
+
   Function get _expect => gns.guinness.matchers.expect;
 }
 
@@ -65,6 +68,33 @@ class NotExpect extends gns.NotExpect {
   void toBePristine() => _expect(actual.pristine && !actual.dirty, false, reason: 'Form is pristine');
 
   Function get _expect => gns.guinness.matchers.expect;
+}
+
+
+class _TextMatcher extends unit.Matcher {
+  final String expected;
+
+  _TextMatcher(this.expected);
+
+  unit.Description describe(unit.Description description) =>
+      description..replace("element matching: ${expected}");
+
+  unit.Description describeMismatch(actual, unit.Description mismatchDescription,
+      Map matchState, bool verbose) =>
+      mismatchDescription..add(_elementText(actual));
+
+  bool matches(actual, Map matchState) =>
+      _elementText(actual) == expected;
+}
+
+String _elementText(n) {
+  hasShadowRoot(n) => n is Element && n.shadowRoot != null;
+  if (n is Iterable) return n.map((nn) => _elementText(nn)).join("");
+  if (n is Comment) return '';
+  if (n is ContentElement) return _elementText(n.getDistributedNodes());
+  if (hasShadowRoot(n)) return _elementText(n.shadowRoot.nodes);
+  if (n.nodes == null || n.nodes.isEmpty) return n.text;
+  return _elementText(n.nodes);
 }
 
 

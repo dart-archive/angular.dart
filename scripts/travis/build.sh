@@ -57,7 +57,7 @@ if [[ $TESTS == "dart2js" ]]; then
     cd $NGDART_BASE_DIR/example
     checkSize build/web/animation.dart.js 208021
     checkSize build/web/bouncing_balls.dart.js 202325
-    checkSize build/web/hello_world.dart.js 199919
+    checkSize build/web/hello_world.dart.js 210000
     checkSize build/web/todo.dart.js 203121
     if ((SIZE_TOO_BIG_COUNT > 0)); then
       exit 1

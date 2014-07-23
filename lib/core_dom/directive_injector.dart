@@ -14,14 +14,15 @@ import 'package:angular/core/module.dart' show Scope, RootScope;
 import 'package:angular/core/annotation.dart' show Visibility, DirectiveBinder;
 import 'package:angular/core_dom/module_internal.dart'
   show Animate, View, ViewFactory, BoundViewFactory, ViewPort, NodeAttrs, ElementProbe,
-      NgElement, ContentPort, TemplateLoader, ShadowRootEventHandler, EventHandler;
+      NgElement, DestinationLightDom, SourceLightDom, LightDom, TemplateLoader, ShadowRootEventHandler, EventHandler;
 
 var _TAG_GET = new UserTag('DirectiveInjector.get()');
 var _TAG_INSTANTIATE = new UserTag('DirectiveInjector.instantiate()');
 
 final DIRECTIVE_INJECTOR_KEY = new Key(DirectiveInjector);
 final COMPONENT_DIRECTIVE_INJECTOR_KEY = new Key(ComponentDirectiveInjector);
-final CONTENT_PORT_KEY = new Key(ContentPort);
+final DESTINATION_LIGHT_DOM_KEY = new Key(DestinationLightDom);
+final SOURCE_LIGHT_DOM_KEY = new Key(SourceLightDom);
 final TEMPLATE_LOADER_KEY = new Key(TemplateLoader);
 final SHADOW_ROOT_KEY = new Key(ShadowRoot);
 
@@ -31,26 +32,27 @@ const int VISIBILITY_LOCAL                    = -1;
 const int VISIBILITY_DIRECT_CHILD             = -2;
 const int VISIBILITY_CHILDREN                 = -3;
 
-const int UNDEFINED_ID              = 0;
-const int INJECTOR_KEY_ID           = 1;
-const int DIRECTIVE_INJECTOR_KEY_ID = 2;
-const int NODE_KEY_ID               = 3;
-const int ELEMENT_KEY_ID            = 4;
-const int NODE_ATTRS_KEY_ID         = 5;
-const int ANIMATE_KEY_ID            = 6;
-const int SCOPE_KEY_ID              = 7;
-const int VIEW_KEY_ID               = 8;
-const int VIEW_PORT_KEY_ID          = 9;
-const int VIEW_FACTORY_KEY_ID       = 10;
-const int NG_ELEMENT_KEY_ID         = 11;
-const int BOUND_VIEW_FACTORY_KEY_ID = 12;
-const int ELEMENT_PROBE_KEY_ID      = 13;
-const int TEMPLATE_LOADER_KEY_ID    = 14;
-const int SHADOW_ROOT_KEY_ID        = 15;
-const int CONTENT_PORT_KEY_ID       = 16;
-const int EVENT_HANDLER_KEY_ID      = 17;
-const int COMPONENT_DIRECTIVE_INJECTOR_KEY_ID = 18;
-const int KEEP_ME_LAST              = 19;
+const int UNDEFINED_ID                  = 0;
+const int INJECTOR_KEY_ID               = 1;
+const int DIRECTIVE_INJECTOR_KEY_ID     = 2;
+const int NODE_KEY_ID                   = 3;
+const int ELEMENT_KEY_ID                = 4;
+const int NODE_ATTRS_KEY_ID             = 5;
+const int ANIMATE_KEY_ID                = 6;
+const int SCOPE_KEY_ID                  = 7;
+const int VIEW_KEY_ID                   = 8;
+const int VIEW_PORT_KEY_ID              = 9;
+const int VIEW_FACTORY_KEY_ID           = 10;
+const int NG_ELEMENT_KEY_ID             = 11;
+const int BOUND_VIEW_FACTORY_KEY_ID     = 12;
+const int ELEMENT_PROBE_KEY_ID          = 13;
+const int TEMPLATE_LOADER_KEY_ID        = 14;
+const int SHADOW_ROOT_KEY_ID            = 15;
+const int DESTINATION_LIGHT_DOM_KEY_ID  = 16;
+const int SOURCE_LIGHT_DOM_KEY_ID       = 17;
+const int EVENT_HANDLER_KEY_ID          = 18;
+const int COMPONENT_DIRECTIVE_INJECTOR_KEY_ID = 19;
+const int KEEP_ME_LAST                  = 20;
 
 EventHandler eventHandler(DirectiveInjector di) => di._eventHandler;
 
@@ -59,23 +61,24 @@ class DirectiveInjector implements DirectiveBinder {
   static initUID() {
     if (_isInit) return;
     _isInit = true;
-    INJECTOR_KEY.uid           = INJECTOR_KEY_ID;
-    DIRECTIVE_INJECTOR_KEY.uid = DIRECTIVE_INJECTOR_KEY_ID;
-    NODE_KEY.uid               = NODE_KEY_ID;
-    ELEMENT_KEY.uid            = ELEMENT_KEY_ID;
-    NODE_ATTRS_KEY.uid         = NODE_ATTRS_KEY_ID;
-    SCOPE_KEY.uid              = SCOPE_KEY_ID;
-    VIEW_KEY.uid               = VIEW_KEY_ID;
-    VIEW_PORT_KEY.uid          = VIEW_PORT_KEY_ID;
-    VIEW_FACTORY_KEY.uid       = VIEW_FACTORY_KEY_ID;
-    NG_ELEMENT_KEY.uid         = NG_ELEMENT_KEY_ID;
-    BOUND_VIEW_FACTORY_KEY.uid = BOUND_VIEW_FACTORY_KEY_ID;
-    ELEMENT_PROBE_KEY.uid      = ELEMENT_PROBE_KEY_ID;
-    TEMPLATE_LOADER_KEY.uid    = TEMPLATE_LOADER_KEY_ID;
-    SHADOW_ROOT_KEY.uid        = SHADOW_ROOT_KEY_ID;
-    CONTENT_PORT_KEY.uid       = CONTENT_PORT_KEY_ID;
-    EVENT_HANDLER_KEY.uid      = EVENT_HANDLER_KEY_ID;
-    ANIMATE_KEY.uid            = ANIMATE_KEY_ID;
+    INJECTOR_KEY.uid               = INJECTOR_KEY_ID;
+    DIRECTIVE_INJECTOR_KEY.uid     = DIRECTIVE_INJECTOR_KEY_ID;
+    NODE_KEY.uid                   = NODE_KEY_ID;
+    ELEMENT_KEY.uid                = ELEMENT_KEY_ID;
+    NODE_ATTRS_KEY.uid             = NODE_ATTRS_KEY_ID;
+    SCOPE_KEY.uid                  = SCOPE_KEY_ID;
+    VIEW_KEY.uid                   = VIEW_KEY_ID;
+    VIEW_PORT_KEY.uid              = VIEW_PORT_KEY_ID;
+    VIEW_FACTORY_KEY.uid           = VIEW_FACTORY_KEY_ID;
+    NG_ELEMENT_KEY.uid             = NG_ELEMENT_KEY_ID;
+    BOUND_VIEW_FACTORY_KEY.uid     = BOUND_VIEW_FACTORY_KEY_ID;
+    ELEMENT_PROBE_KEY.uid          = ELEMENT_PROBE_KEY_ID;
+    TEMPLATE_LOADER_KEY.uid        = TEMPLATE_LOADER_KEY_ID;
+    SHADOW_ROOT_KEY.uid            = SHADOW_ROOT_KEY_ID;
+    DESTINATION_LIGHT_DOM_KEY.uid  = DESTINATION_LIGHT_DOM_KEY_ID;
+    SOURCE_LIGHT_DOM_KEY.uid       = SOURCE_LIGHT_DOM_KEY_ID;
+    EVENT_HANDLER_KEY.uid          = EVENT_HANDLER_KEY_ID;
+    ANIMATE_KEY.uid                = ANIMATE_KEY_ID;
     COMPONENT_DIRECTIVE_INJECTOR_KEY.uid = COMPONENT_DIRECTIVE_INJECTOR_KEY_ID;
     for(var i = 1; i < KEEP_ME_LAST; i++) {
       if (_KEYS[i].uid != i) throw 'MISSORDERED KEYS ARRAY: ${_KEYS} at $i';
@@ -98,7 +101,8 @@ class DirectiveInjector implements DirectiveBinder {
       , ELEMENT_PROBE_KEY
       , TEMPLATE_LOADER_KEY
       , SHADOW_ROOT_KEY
-      , CONTENT_PORT_KEY
+      , DESTINATION_LIGHT_DOM_KEY
+      , SOURCE_LIGHT_DOM_KEY
       , EVENT_HANDLER_KEY
       , COMPONENT_DIRECTIVE_INJECTOR_KEY
       , KEEP_ME_LAST
@@ -110,6 +114,7 @@ class DirectiveInjector implements DirectiveBinder {
   final NodeAttrs _nodeAttrs;
   final Animate _animate;
   final EventHandler _eventHandler;
+  LightDom lightDom;
   Scope scope;  //TODO(misko): this should be final after we get rid of controller
   final View _view;
 
@@ -282,24 +287,19 @@ class DirectiveInjector implements DirectiveBinder {
 
   Object _getById(int keyId) {
     switch(keyId) {
-      case INJECTOR_KEY_ID:           return _appInjector;
-      case DIRECTIVE_INJECTOR_KEY_ID: return this;
-      case NODE_KEY_ID:               return _node;
-      case ELEMENT_KEY_ID:            return _node;
-      case NODE_ATTRS_KEY_ID:         return _nodeAttrs;
-      case ANIMATE_KEY_ID:            return _animate;
-      case SCOPE_KEY_ID:              return scope;
-      case ELEMENT_PROBE_KEY_ID:      return elementProbe;
-      case NG_ELEMENT_KEY_ID:         return ngElement;
-      case EVENT_HANDLER_KEY_ID:      return _eventHandler;
-      case CONTENT_PORT_KEY_ID:
-        var currentInjector = _parent;
-        while (currentInjector != null) {
-          if (currentInjector is ComponentDirectiveInjector) return currentInjector._contentPort;
-          currentInjector = currentInjector._parent;
-        }
-        return null;
-      case VIEW_KEY_ID:               return _view;
+      case INJECTOR_KEY_ID:               return _appInjector;
+      case DIRECTIVE_INJECTOR_KEY_ID:     return this;
+      case NODE_KEY_ID:                   return _node;
+      case ELEMENT_KEY_ID:                return _node;
+      case NODE_ATTRS_KEY_ID:             return _nodeAttrs;
+      case ANIMATE_KEY_ID:                return _animate;
+      case SCOPE_KEY_ID:                  return scope;
+      case ELEMENT_PROBE_KEY_ID:          return elementProbe;
+      case NG_ELEMENT_KEY_ID:             return ngElement;
+      case EVENT_HANDLER_KEY_ID:          return _eventHandler;
+      case DESTINATION_LIGHT_DOM_KEY_ID:  return _destLightDom;
+      case SOURCE_LIGHT_DOM_KEY_ID:       return _sourceLightDom;
+      case VIEW_KEY_ID:                   return _view;
       default: new NoProviderError(_KEYS[keyId]);
     }
   }
@@ -367,10 +367,20 @@ class DirectiveInjector implements DirectiveBinder {
 
   NgElement get ngElement {
     if (_ngElement == null) {
-      _ngElement = new NgElement(_node, scope, _animate);
+      _ngElement = new NgElement(_node, scope, _animate, _destLightDom);
     }
     return _ngElement;
   }
+
+  SourceLightDom get _sourceLightDom {
+    var curr = _parent;
+    while (curr != null && curr is! ComponentDirectiveInjector) {
+      curr = curr.parent;
+    }
+    return curr == null || curr.parent == null ? null : curr.parent.lightDom;
+  }
+
+  DestinationLightDom get _destLightDom => _parent == null ? null : _parent.lightDom;
 }
 
 class TemplateDirectiveInjector extends DirectiveInjector {
@@ -388,29 +398,35 @@ class TemplateDirectiveInjector extends DirectiveInjector {
     switch(keyId) {
       case VIEW_FACTORY_KEY_ID: return _viewFactory;
       case VIEW_PORT_KEY_ID: return ((_viewPort) == null) ?
-            _viewPort = new ViewPort(this, scope, _node, _animate) : _viewPort;
+            _viewPort = _createViewPort() : _viewPort;
       case BOUND_VIEW_FACTORY_KEY_ID: return (_boundViewFactory == null) ?
             _boundViewFactory = _viewFactory.bind(_parent) : _boundViewFactory;
       default: return super._getById(keyId);
     }
   }
 
+  ViewPort _createViewPort() {
+    final viewPort = new ViewPort(this, scope, _node, _animate, _destLightDom);
+    if (_destLightDom != null) _destLightDom.addViewPort(viewPort);
+    return viewPort;
+  }
+  
 }
 
 class ComponentDirectiveInjector extends DirectiveInjector {
 
   final TemplateLoader _templateLoader;
   final ShadowRoot _shadowRoot;
-  final ContentPort _contentPort;
 
   ComponentDirectiveInjector(DirectiveInjector parent, Injector appInjector,
                         EventHandler eventHandler, Scope scope,
-                        this._templateLoader, this._shadowRoot, this._contentPort, [View view])
+                        this._templateLoader, this._shadowRoot, LightDom lightDom, [View view])
       : super(parent, appInjector, parent._node, parent._nodeAttrs, eventHandler, scope,
               parent._animate, view) {
     // A single component creates a ComponentDirectiveInjector and its DirectiveInjector parent,
     // so parent should never be null.
     assert(parent != null);
+    _parent.lightDom = lightDom;
   }
 
   Object _getById(int keyId) {
@@ -435,4 +451,3 @@ class ComponentDirectiveInjector extends DirectiveInjector {
   // For example, a local directive is visible from its component injector children.
   num _getDepth(int visType) => super._getDepth(visType) + 1;
 }
-
