@@ -9,10 +9,10 @@ main() {
 
     beforeEachModule((Module module) {
       module
-        ..bind(WebPlatformTestComponent)
-        ..bind(WebPlatformTestComponentWithAttribute)
-        ..bind(InnerComponent)
-        ..bind(OuterComponent)
+        ..bind(_WebPlatformTestComponent)
+        ..bind(_WebPlatformTestComponentWithAttribute)
+        ..bind(_InnerComponent)
+        ..bind(_OuterComponent)
         ..bind(WebPlatform, toValue: new WebPlatform());
     });
 
@@ -192,7 +192,7 @@ main() {
     publishAs: "ctrl",
     templateUrl: "template.html",
     cssUrl: "style.css")
-class WebPlatformTestComponent {
+class _WebPlatformTestComponent {
 }
 
 @Component(
@@ -200,7 +200,7 @@ class WebPlatformTestComponent {
     publishAs: "ctrl",
     templateUrl: "template.html",
     cssUrl: "style.css")
-class WebPlatformTestComponentWithAttribute {
+class _WebPlatformTestComponentWithAttribute {
 }
 
 @Component(
@@ -208,7 +208,7 @@ class WebPlatformTestComponentWithAttribute {
     publishAs: "ctrl",
     templateUrl: "inner-html.html",
     cssUrl: "inner-style.css")
-class InnerComponent {
+class _InnerComponent {
 }
 
 @Component(
@@ -216,8 +216,5 @@ class InnerComponent {
     publishAs: "ctrl",
     templateUrl: "outer-html.html",
     cssUrl: "outer-style.css")
-class OuterComponent {
+class _OuterComponent {
 }
-
-
-

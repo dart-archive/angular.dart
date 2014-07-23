@@ -1,73 +1,5 @@
 part of angular.core.dom_internal;
 
-@Decorator(
-   selector: 'content')
-class Content implements AttachAware, DetachAware {
-  final ContentPort _port;
-  final dom.Element _element;
-  dom.Comment _beginComment;
-  Content(this._port, this._element);
-
-  void attach() {
-    if (_port == null) return;
-    _beginComment = _port.content(_element);
-  }
-  
-  void detach() {
-    if (_port == null) return;
-    _port.detachContent(_beginComment);
-  }
-}
-
-class ContentPort {
-  dom.Element _element;
-  var _childNodes = [];
-
-  ContentPort(this._element);
-
-  void pullNodes() {
-    _childNodes.addAll(_element.nodes);
-    _element.nodes = [];
-  }
-
-  content(dom.Element elt) {
-    var hash = elt.hashCode;
-    var beginComment = null;
-
-    if (_childNodes.isNotEmpty) {
-      beginComment = new dom.Comment("content $hash");
-      elt.parent.insertBefore(beginComment, elt);
-      elt.parent.insertAllBefore(_childNodes, elt);
-      elt.parent.insertBefore(new dom.Comment("end-content $hash"), elt);
-      _childNodes = [];
-    }
-
-    elt.remove();
-    return beginComment;
-  }
-
-  void detachContent(dom.Comment _beginComment) {
-    // Search for endComment and extract everything in between.
-    // TODO optimize -- there may be a better way of pulling out nodes.
-
-    if (_beginComment == null) {
-      return;
-    }
-
-    var endCommentText = "end-${_beginComment.text}";
-
-    var next;
-    for (next = _beginComment.nextNode;
-         next.nodeType != dom.Node.COMMENT_NODE || next.text != endCommentText;
-         next = _beginComment.nextNode) {
-      _childNodes.add(next);
-      next.remove();
-    }
-    assert(next.nodeType == dom.Node.COMMENT_NODE && next.text == endCommentText);
-    next.remove();
-  }
-}
-
 @Injectable()
 class TranscludingComponentFactory implements ComponentFactory {
 
@@ -115,37 +47,36 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       var childInjectorCompleter; // Used if the ViewFuture is available before the childInjector.
 
       var component = _component;
-      var contentPort = new ContentPort(element);
+      var lightDom = new LightDom(element, scope);
 
       // Append the component's template as children
       var elementFuture;
 
       if (_viewFuture != null) {
         elementFuture = _viewFuture.then((ViewFactory viewFactory) {
-          contentPort.pullNodes();
+          lightDom.pullNodes();
+
           if (childInjector != null) {
-            element.nodes.addAll(
-                viewFactory.call(childInjector.scope, childInjector).nodes);
+            lightDom.shadowDomView = viewFactory.call(childInjector.scope, childInjector);
             return element;
           } else {
             childInjectorCompleter = new async.Completer();
             return childInjectorCompleter.future.then((childInjector) {
-              element.nodes.addAll(
-                  viewFactory.call(childInjector.scope, childInjector).nodes);
+              lightDom.shadowDomView = viewFactory.call(childInjector.scope, childInjector);
               return element;
             });
           }
         });
       } else {
-        elementFuture = new async.Future.microtask(() => contentPort.pullNodes());
+        elementFuture = new async.Future.microtask(() => lightDom.pullNodes());
       }
       TemplateLoader templateLoader = new TemplateLoader(elementFuture);
 
       Scope shadowScope = scope.createChild(new HashMap());
 
       childInjector = new ComponentDirectiveInjector(injector, this._injector,
-          eventHandler, shadowScope, templateLoader, new ShadowlessShadowRoot(element),
-          contentPort, view);
+          eventHandler, shadowScope, templateLoader, new EmulatedShadowRoot(element), lightDom, view);
+
       childInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 
       if (childInjectorCompleter != null) {

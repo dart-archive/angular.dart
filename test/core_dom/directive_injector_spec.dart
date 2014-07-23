@@ -79,6 +79,34 @@ void main() {
         expect(() => injector.get(_TypeA)).toThrow('No provider found for _TypeA');
       });
 
+      describe("returning SourceLightDom", () {
+        it('should return the light dom of the closest host element', () {
+          final lightDom = new LightDom(null, null);
+
+          final componentInjector = new ComponentDirectiveInjector(
+              injector, null, null, null, null, null, lightDom, null);
+          final childInjector = new DirectiveInjector(componentInjector, null, null, null, null, null, null, null);
+          final grandChildInjector = new DirectiveInjector(childInjector, null, null, null, null, null,null, null);
+
+          expect(grandChildInjector.getByKey(SOURCE_LIGHT_DOM_KEY)).toBe(lightDom);
+        });
+
+        it('should return null otherwise', () {
+          expect(injector.getByKey(SOURCE_LIGHT_DOM_KEY)).toBe(null);
+        });
+      });
+
+      describe("returning DestinationLightDom", () {
+        it('should return the light dom of the parent injector', () {
+          final lightDom = new LightDom(null, null);
+          injector.lightDom = lightDom;
+
+          final childInjector = new DirectiveInjector(injector, null, null, null, null, null, null, null);
+
+          expect(childInjector.getByKey(DESTINATION_LIGHT_DOM_KEY)).toBe(lightDom);
+        });
+      });
+
       describe('Visibility', () {
         DirectiveInjector childInjector;
         DirectiveInjector leafInjector;
