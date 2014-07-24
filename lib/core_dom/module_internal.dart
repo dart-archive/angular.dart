@@ -72,14 +72,14 @@ class CoreDomModule extends Module {
     bind(Compiler, toImplementation: TaggingCompiler);
     bind(CompilerConfig);
 
-    bind(ComponentFactory, inject: [SHADOW_DOM_COMPONENT_FACTORY_KEY]);
+    bind(ComponentFactory, toInstanceOf: SHADOW_DOM_COMPONENT_FACTORY_KEY);
     bind(ShadowDomComponentFactory);
     bind(TranscludingComponentFactory);
     bind(Content);
     bind(ContentPort, toValue: null);
     bind(ComponentCssRewriter);
     bind(WebPlatform);
-    
+
     bind(Http);
     bind(UrlRewriter);
     bind(HttpBackend);
