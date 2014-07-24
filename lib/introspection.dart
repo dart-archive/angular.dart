@@ -64,23 +64,38 @@ List<ElementProbe> _findAllProbesInTree(dom.Node node) {
  *
  * The node parameter could be:
  * * a [dom.Node],
- * * a CSS selector for this node.
+ * * a CSS selector to look for a matching node inside the [root] or the dom.document.
+ *
+ * Specifying a [root] element allows querying a node that is not attached to the DOM. It is an
+ * error to pass a [root] element that is already attached to the DOM.
  *
  * **NOTE:** This global method is here to make it easier to debug Angular
  * application from the browser's REPL, unit or end-to-end tests. The
  * function is not intended to be called from Angular application.
  */
-ElementProbe ngProbe(nodeOrSelector) {
-  if (nodeOrSelector == null) throw "ngProbe called without node";
+ElementProbe ngProbe(nodeOrSelector, [dom.Node root]) {
+  if (nodeOrSelector == null) throw "ngProbe called without node/selector";
   var node = nodeOrSelector;
   if (nodeOrSelector is String) {
-    var nodes = ngQuery(dom.document, nodeOrSelector);
-    node = (nodes.isNotEmpty) ? nodes.first : null;
+    if (root == null) {
+      root = dom.document;
+    } else {
+      var attached = false;
+      for (var parent = root.parentNode; parent != null; parent = parent.parentNode) {
+        if (parent == dom.document) {
+          attached = true;
+          break;
+        }
+      }
+      if (attached) throw "The root element must not be attached to the DOM";
+      root = new dom.DivElement()..append(root);
+    }
+    var nodes = ngQuery(root, nodeOrSelector);
+    if (nodes.isEmpty) throw "The '$nodeOrSelector' selector does not match any node";
+    node = nodes.first;
   }
   var probe = _findProbeWalkingUp(node);
-  if (probe != null) {
-    return probe;
-  }
+  if (probe != null) return probe;
   var forWhat = (nodeOrSelector is String) ? "selector" : "node";
   throw "Could not find a probe for the $forWhat '$nodeOrSelector' nor its parents";
 }
@@ -93,7 +108,8 @@ ElementProbe ngProbe(nodeOrSelector) {
  * application from the browser's REPL, unit or end-to-end tests. The function
  * is not intended to be called from Angular application.
  */
-DirectiveInjector ngInjector(nodeOrSelector) => ngProbe(nodeOrSelector).injector;
+DirectiveInjector ngInjector(nodeOrSelector, [dom.Node root]) =>
+    ngProbe(nodeOrSelector, root).injector;
 
 
 /**
@@ -103,17 +119,16 @@ DirectiveInjector ngInjector(nodeOrSelector) => ngProbe(nodeOrSelector).injector
  * application from the browser's REPL, unit or end-to-end tests. The function
  * is not intended to be called from Angular application.
  */
-Scope ngScope(nodeOrSelector) => ngProbe(nodeOrSelector).scope;
+Scope ngScope(nodeOrSelector, [dom.Node root]) => ngProbe(nodeOrSelector, root).scope;
 
 
-List<dom.Element> ngQuery(dom.Node element, String selector,
-                          [String containsText]) {
+List<dom.Element> ngQuery(dom.Node element, String selector, [String containsText]) {
   var list = [];
   var children = [element];
   if ((element is dom.Element) && element.shadowRoot != null) {
     children.add(element.shadowRoot);
   }
-  while (!children.isEmpty) {
+  while (children.isNotEmpty) {
     var child = children.removeAt(0);
     child.querySelectorAll(selector).forEach((e) {
       if (containsText == null || e.text.contains(containsText)) list.add(e);
@@ -134,7 +149,6 @@ List<dom.Element> ngQuery(dom.Node element, String selector,
  * is not intended to be called from Angular application.
  */
 List<Object> ngDirectives(nodeOrSelector) => ngProbe(nodeOrSelector).directives;
-
 
 
 js.JsObject _jsProbe(ElementProbe probe) {
@@ -217,7 +231,7 @@ _jsify(var obj) {
     return _jsFunction(obj);
   }
   if ((obj is Map) || (obj is Iterable)) {
-    var mappedObj = (obj is Map) ? 
+    var mappedObj = (obj is Map) ?
         new Map.fromIterables(obj.keys, obj.values.map(_jsify)) : obj.map(_jsify);
     if (obj is List) {
       return new js.JsArray.from(mappedObj);

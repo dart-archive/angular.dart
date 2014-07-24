@@ -13,7 +13,7 @@ main() {
 
       it('should retrieve using ng-value', () {
         _.compile(
-            '<select ng-model="robot" probe="p">'
+            '<select ng-model="robot">'
               '<option ng-repeat="r in robots" ng-value="r">{{r.name}}</option>'
             '</select>');
         var r2d2 = {"name":"r2d2"};
@@ -31,7 +31,7 @@ main() {
 
       it('should retrieve using ng-value', () {
         _.compile(
-            '<select ng-model="robot" probe="p" multiple>'
+            '<select ng-model="robot" multiple>'
             '<option ng-repeat="r in robots" ng-value="r">{{r.name}}</option>'
             '</select>');
         var r2d2 = { "name":"r2d2"};
@@ -84,7 +84,7 @@ main() {
 
       it('should work with repeated value options', () {
         _.compile(
-            '<select ng-model="robot" probe="p">'
+            '<select ng-model="robot">'
               '<option ng-repeat="r in robots">{{r}}</option>'
             '</select>');
 
@@ -92,7 +92,7 @@ main() {
         _.rootScope.context['robot'] = 'r2d2';
         _.rootScope.apply();
 
-        var select = _.rootScope.context['p'].directive(InputSelect);
+        var select = ngInjector('option', _.rootElement).get(InputSelect);
         expect(_.rootElement).toEqualSelect(['c3p0', ['r2d2']]);
 
         _.rootElement.querySelectorAll('option')[0].selected = true;
@@ -145,14 +145,14 @@ main() {
         it('should set the model to empty string when empty option is selected', () {
           _.rootScope.context['robot'] = 'x';
           _.compile(
-              '<select ng-model="robot" probe="p">' +
-                '<option value="">--select--</option>' +
-                '<option value="x">robot x</option>' +
-                '<option value="y">robot y</option>' +
+              '<select ng-model="robot">'
+                '<option value="">--select--</option>'
+                '<option value="x">robot x</option>'
+                '<option value="y">robot y</option>'
               '</select>');
           _.rootScope.apply();
 
-          var select = _.rootScope.context['p'].directive(InputSelect);
+          var select = ngInjector('select', _.rootElement).get(InputSelect);
 
           expect(_.rootElement).toEqualSelect(['', ['x'], 'y']);
 
@@ -166,9 +166,9 @@ main() {
           it('should select empty option when model is undefined', () {
             _.rootScope.context['robots'] = ['c3p0', 'r2d2'];
             _.compile(
-                '<select ng-model="robot">' +
-                  '<option value="">--select--</option>' +
-                  '<option ng-repeat="r in robots">{{r}}</option>' +
+                '<select ng-model="robot">'
+                  '<option value="">--select--</option>'
+                  '<option ng-repeat="r in robots">{{r}}</option>'
                 '</select>');
             _.rootScope.apply();
             expect(_.rootElement).toEqualSelect([[''], 'c3p0', 'r2d2']);
@@ -177,12 +177,12 @@ main() {
           it('should set model to empty string when selected', () {
             _.rootScope.context['robots'] = ['c3p0', 'r2d2'];
             _.compile(
-                '<select ng-model="robot" probe="p">' +
-                  '<option value="">--select--</option>' +
-                  '<option ng-repeat="r in robots">{{r}}</option>' +
+                '<select ng-model="robot">'
+                  '<option value="">--select--</option>'
+                  '<option ng-repeat="r in robots">{{r}}</option>'
                 '</select>');
             _.rootScope.apply();
-            var select = _.rootScope.context['p'].directive(InputSelect);
+            var select = ngInjector('select', _.rootElement).get(InputSelect);
 
             _.selectOption(_.rootElement, 'c3p0');
             expect(_.rootElement).toEqualSelect(['', ['c3p0'], 'r2d2']);
@@ -499,12 +499,10 @@ main() {
 
         it('should require', () {
           compile(
-            '<select name="select" ng-model="selection" probe="i" required ng-change="change()">' +
+            '<select name="select" ng-model="selection" required ng-change="change()">' +
               '<option value=""></option>' +
               '<option value="c">C</option>' +
             '</select>');
-
-          var element = scope.context['i'].element;
 
           scope.context['log'] = '';
           scope.context['change'] = () {
@@ -623,12 +621,11 @@ main() {
 
         it('should require', () {
           compile(
-            '<select name="select" probe="i" ng-model="selection" multiple required>' +
-              '<option>A</option>' +
-              '<option>B</option>' +
+            '<select name="select" ng-model="selection" multiple required>'
+              '<option>A</option>'
+              '<option>B</option>'
             '</select>');
 
-          var element = scope.context['i'].element;
           scope.apply(() {
             scope.context['selection'] = [];
           });
@@ -867,7 +864,7 @@ main() {
 
           it('should bind to scope value and group', () {
             var element = _.compile(
-                '<select ng-model="selected" probe="p">'
+                '<select ng-model="selected">'
                   '<optgroup label=\'{{ group["title"] }}\' ng-repeat="group in values">'
                     '<option value=\'{{ item["val"] }}\' '
                             'ng-repeat=\'item in group["items"]\'>{{ item["name"] }}</option>'

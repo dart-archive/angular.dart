@@ -35,15 +35,30 @@ void main() {
     it('should select probe using CSS selector', (TestBed _) {
       _.compile('<div ng-show="true">WORKS</div>');
       document.body.append(_.rootElement);
-      var div = new Element.html('<div><p><span></span></p></div>');
-      var span = div.querySelector('span');
-      var shadowRoot = span.createShadowRoot();
-      shadowRoot.innerHtml = '<ul><li>stash</li><li>secret</li><ul>';
-
       ElementProbe probe = ngProbe('[ng-show]');
       expect(probe).toBeDefined();
       expect(probe.injector.get(NgShow) is NgShow).toEqual(true);
       _.rootElement.remove();
+    });
+
+    it('should throw if the root Element is attached to the DOM', (TestBed _) {
+      _.compile('<div ng-show="true">WORKS</div>');
+      document.body.append(_.rootElement);
+      expect(() => ngProbe('[ng-show]', _.rootElement))
+          .toThrow("The root element must not be attached to the DOM");
+    });
+
+    it('should select probe using CSS selector inside the given root element',(TestBed _) {
+      _.compile('<div ng-show="true">WORKS</div>');
+      ElementProbe probe = ngProbe('[ng-show]', _.rootElement);
+      expect(probe).toBeDefined();
+      expect(probe.injector.get(NgShow) is NgShow).toEqual(true);
+    });
+
+    it('should throw when the selector does not match any element', (TestBed _) {
+      _.compile('<div></div>');
+      expect(() => ngProbe('input'))
+          .toThrow("The 'input' selector does not match any node");
     });
 
     it('should select elements in the root shadow root', () {

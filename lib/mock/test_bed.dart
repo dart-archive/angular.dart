@@ -31,7 +31,7 @@ class TestBed {
    *   - [List<Node>] then treat it as a collection of nods
    *
    * After the compilation the [rootElements] contains an array of compiled root nodes,
-   * and [rootElement] contains the first element from the [rootElemets].
+   * and [rootElement] contains the first element from the [rootElements].
    *
    * An option [scope] parameter can be supplied to link it with non root scope.
    */
@@ -46,7 +46,7 @@ class TestBed {
     } else {
       throw 'Expecting: String, Node, or List<Node> got $html.';
     }
-    rootElement = rootElements.length > 0 && rootElements[0] is Element ? rootElements[0] : null;
+    rootElement = rootElements.isNotEmpty && rootElements[0] is Element ? rootElements[0] : null;
     if (directives == null) {
       directives = injector.getByKey(DIRECTIVE_MAP_KEY);
     }
