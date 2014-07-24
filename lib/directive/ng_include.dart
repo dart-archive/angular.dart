@@ -23,7 +23,6 @@ class NgInclude {
   final dom.Element element;
   final Scope scope;
   final ViewCache viewCache;
-  final Injector appInjector;
   final DirectiveInjector directiveInjector;
   final DirectiveMap directives;
 
@@ -31,7 +30,7 @@ class NgInclude {
   Scope _scope;
 
   NgInclude(this.element, this.scope, this.viewCache,
-            this.directiveInjector, this.appInjector, this.directives);
+            this.directiveInjector, this.directives);
 
   _cleanUp() {
     if (_view == null) return;
