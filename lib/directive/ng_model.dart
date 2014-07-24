@@ -370,12 +370,8 @@ class InputTextLike {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
         if (value == null) value = '';
-
         var currentValue = typedValue;
-        if (value != currentValue && !(value is num && currentValue is num &&
-            value.isNaN && currentValue.isNaN)) {
-          typedValue = value;
-        }
+        if (!eqOrNaN(value, currentValue)) typedValue = value;
       });
     };
 
