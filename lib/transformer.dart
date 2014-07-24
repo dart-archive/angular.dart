@@ -11,6 +11,7 @@ import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:di/transformer.dart' as di;
 import 'package:path/path.dart' as path;
+import 'package:observe/transformer.dart' show ObservableTransformer;
 
 
  /**
@@ -119,13 +120,14 @@ Map<String, String> _readStringMapValue(Map args, String name) {
 List<List<Transformer>> _createPhases(TransformOptions options) {
   var resolvers = new Resolvers(options.sdkDirectory);
   return [
-    [ new HtmlDartReferencesGenerator(options) ],
-    [ new di.InjectorGenerator(options.diOptions, resolvers) ],
-    [ new _SerialTransformer([
-      new ExpressionGenerator(options, resolvers),
-      new MetadataGenerator(options, resolvers),
-      new StaticAngularGenerator(options, resolvers)
-    ])]
+    [new ObservableTransformer()],
+    [new HtmlDartReferencesGenerator(options) ],
+    [new di.InjectorGenerator(options.diOptions, resolvers) ],
+    [new _SerialTransformer([
+       new ExpressionGenerator(options, resolvers),
+       new MetadataGenerator(options, resolvers),
+       new StaticAngularGenerator(options, resolvers)
+    ])],
   ];
 }
 

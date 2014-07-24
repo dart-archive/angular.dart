@@ -18,13 +18,11 @@ class MetadataGenerator extends Transformer with ResolverTransformer {
   void applyResolver(Transform transform, Resolver resolver) {
     var asset = transform.primaryInput;
     var id = asset.id;
-    var outputFilename = '${path.url.basenameWithoutExtension(id.path)}'
-        '_static_metadata.dart';
+    var outputFilename = '${path.url.basenameWithoutExtension(id.path)}_static_metadata.dart';
     var outputPath = path.url.join(path.url.dirname(id.path), outputFilename);
     var outputId = new AssetId(id.package, outputPath);
 
-    var extractor = new AnnotationExtractor(transform.logger, resolver,
-        outputId);
+    var extractor = new AnnotationExtractor(transform.logger, resolver, outputId);
 
     var outputBuffer = new StringBuffer();
     _writeHeader(asset.id, outputBuffer);
@@ -57,14 +55,12 @@ class MetadataGenerator extends Transformer with ResolverTransformer {
 
     _writeClassPreamble(outputBuffer);
     for (var type in annotatedTypes) {
-      type.writeClassAnnotations(
-          outputBuffer, transform.logger, resolver, importPrefixes);
+      type.writeClassAnnotations(outputBuffer, transform.logger, resolver, importPrefixes);
     }
     _writeClassEpilogue(outputBuffer);
 
-    transform.addOutput(
-          new Asset.fromString(outputId, outputBuffer.toString()));
-    transform.addOutput(asset);
+    transform..addOutput(new Asset.fromString(outputId, outputBuffer.toString()))
+             ..addOutput(asset);
   }
 }
 
