@@ -63,7 +63,7 @@ class AngularMockModule extends Module {
     bind(MockHttpBackend);
     bind(Element, toValue: document.body);
     bind(Node, toValue: document.body);
-    bind(HttpBackend, inject:[MOCK_HTTP_BACKEND_KEY]);
+    bind(HttpBackend, toInstanceOf: MOCK_HTTP_BACKEND_KEY);
     bind(VmTurnZone, toFactory: () {
       return new VmTurnZone()
         ..onError = (e, s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
