@@ -40,15 +40,15 @@ class CoreModule extends Module {
     bind(FormatterMap);
     bind(Interpolate);
     bind(RootScope);
-    bind(Scope, inject: [RootScope]);
+    bind(Scope, toInstanceOf: RootScope);
     bind(ClosureMap, toFactory: () => throw "Must provide dynamic/static ClosureMap.", inject: []);
     bind(ScopeStats);
     bind(ScopeStatsEmitter);
     bind(ScopeStatsConfig);
     bind(Object, toValue: {}); // RootScope context
 
-    bind(Parser, inject: [DynamicParser]);
-    bind(ParserBackend, inject: [DynamicParserBackend]);
+    bind(Parser, toInstanceOf: DynamicParser);
+    bind(ParserBackend, toInstanceOf: DynamicParserBackend);
     bind(DynamicParser);
     bind(DynamicParserBackend);
     bind(Lexer);
