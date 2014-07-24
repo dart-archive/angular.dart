@@ -515,13 +515,13 @@ class DirtyCheckingRecord<H> implements Record<H>, WatchRecord<H> {
 
     var last = currentValue;
     if (!identical(last, current)) {
-      if (last is String && current is String &&
-          last == current) {
+      if (last is String && current is String && last == current) {
         // This is false change in strings we need to recover, and pretend it
         // is the same. We save the value so that next time identity will pass
         currentValue = current;
       } else if (last is num && last.isNaN && current is num && current.isNaN) {
-        // we need this for the compiled JavaScript since in JS NaN !== NaN.
+        // Doubles are identical iff they have the same representation as 64-bit IEEE floating
+        // point numbers.
       } else {
         previousValue = last;
         currentValue = current;
@@ -871,11 +871,11 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   Iterable _iterable;
   int _length;
 
-  /// Keeps track of moved items.
-  DuplicateMap _movedItems;
+  /// Keeps track of the used records at any point in time (during & across `_check()` calls)
+  DuplicateMap _linkedRecords;
 
-  /// Keeps track of removed items.
-  DuplicateMap _removedItems;
+  /// Keeps track of the removed records at any point in time during `_check()` calls.
+  DuplicateMap _unlinkedRecords;
 
   ItemRecord<V> _previousItHead;
   ItemRecord<V> _itHead, _itTail;
@@ -886,7 +886,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   void _revertToPreviousState() {
     if (!isDirty) return;
 
-    if (_movedItems != null) _movedItems.clear();
+    if (_linkedRecords != null) _linkedRecords.clear();
     ItemRecord<V> prev;
     int i = 0;
 
@@ -897,8 +897,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       record._prev = prev;
       if (prev != null) prev._next = prev._nextPrevious = record;
 
-      if (_movedItems == null) _movedItems = new DuplicateMap();
-      _movedItems.put(record);
+      if (_linkedRecords == null) _linkedRecords = new DuplicateMap();
+      _linkedRecords.put(record);
     }
 
     prev._next = null;
@@ -1045,7 +1045,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       }
 
       if (item is num && (item as num).isNaN && record.item is num && (record.item as num).isNaN) {
-        // we need this for JavaScript since in JS NaN !== NaN.
+        // Doubles are identical iff they have the same representation as 64-bit IEEE floating
+        // point numbers.
         return record;
       }
     }
@@ -1062,13 +1063,13 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
     }
 
     // Attempt to see if we have seen the item before.
-    record = _movedItems == null ? null : _movedItems.get(item, index);
+    record = _linkedRecords == null ? null : _linkedRecords.get(item, index);
     if (record != null) {
       // We have seen this before, we need to move it forward in the collection.
       _moveAfter(record, previousRecord, index);
     } else {
       // Never seen it, check evicted list.
-      record = _removedItems == null ? null : _removedItems.get(item);
+      record = _unlinkedRecords == null ? null : _unlinkedRecords.get(item);
       if (record != null) {
         // It is an item which we have evicted earlier: reinsert it back into the list.
         _reinsertAfter(record, previousRecord, index);
@@ -1107,7 +1108,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
    * of 'b' rather then switch 'a' with 'b' and then add 'a' at the end.
    */
   ItemRecord<V> verifyReinsertion(ItemRecord record, item, int index) {
-    ItemRecord<V> reinsertRecord = _removedItems == null ? null : _removedItems.get(item);
+    ItemRecord<V> reinsertRecord = _unlinkedRecords == null ? null : _unlinkedRecords.get(item);
     if (reinsertRecord != null) {
       record = _reinsertAfter(reinsertRecord, record._prev, index);
     } else if (record.currentIndex != index) {
@@ -1129,7 +1130,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       _addToRemovals(_unlink(record));
       record = nextRecord;
     }
-    if (_removedItems != null) _removedItems.clear();
+    if (_unlinkedRecords != null) _unlinkedRecords.clear();
 
     if (_additionsTail != null) _additionsTail._nextAdded = null;
     if (_movesTail != null) _movesTail._nextMoved = null;
@@ -1138,7 +1139,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   }
 
   ItemRecord<V> _reinsertAfter(ItemRecord<V> record, ItemRecord<V> prevRecord, int index) {
-    if (_removedItems != null) _removedItems.remove(record);
+    if (_unlinkedRecords != null) _unlinkedRecords.remove(record);
     var prev = record._prevRemoved;
     var next = record._nextRemoved;
 
@@ -1200,9 +1201,9 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
       prevRecord._next = record;
     }
 
-    if (_movedItems == null) _movedItems = new DuplicateMap();
+    if (_linkedRecords == null) _linkedRecords = new DuplicateMap();
+    _linkedRecords.put(record);
 
-    _movedItems.put(record);
     record.currentIndex = index;
     return record;
   }
@@ -1210,7 +1211,7 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   ItemRecord<V> _remove(ItemRecord record) => _addToRemovals(_unlink(record));
 
   ItemRecord<V> _unlink(ItemRecord record) {
-    if (_movedItems != null) _movedItems.remove(record);
+    if (_linkedRecords != null) _linkedRecords.remove(record);
 
     var prev = record._prev;
     var next = record._next;
@@ -1249,8 +1250,8 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   }
 
   ItemRecord<V> _addToRemovals(ItemRecord<V> record) {
-    if (_removedItems == null) _removedItems = new DuplicateMap();
-    _removedItems.put(record);
+    if (_unlinkedRecords == null) _unlinkedRecords = new DuplicateMap();
+    _unlinkedRecords.put(record);
     record.currentIndex = null;
     record._nextRemoved = null;
 
