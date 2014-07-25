@@ -64,6 +64,7 @@ part 'ng_model_options.dart';
  */
 class DirectiveModule extends Module {
   DirectiveModule() {
+    bind(DirectiveInjector, toImplementation: DefaultDirectiveInjector);
 
     bind(AHref, toValue: null);
     bind(NgBaseCss);  // The root injector should have an empty NgBaseCss

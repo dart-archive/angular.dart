@@ -180,7 +180,7 @@ abstract class Application {
           DirectiveMap directiveMap = injector.getByKey(DIRECTIVE_MAP_KEY);
           RootScope rootScope = injector.getByKey(ROOT_SCOPE_KEY);
           ViewFactory viewFactory = compiler(rootElements, directiveMap);
-          viewFactory(rootScope, null, rootElements);
+          viewFactory(rootScope, injector.get(DirectiveInjector), rootElements);
         } catch (e, s) {
           exceptionHandler(e, s);
         }

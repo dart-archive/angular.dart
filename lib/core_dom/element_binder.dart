@@ -14,10 +14,10 @@ class TemplateElementBinder extends ElementBinder {
     return _directiveCache = [template];
   }
 
-  TemplateElementBinder(perf, expando, parser, config, appInjector,
+  TemplateElementBinder(perf, expando, parser, config,
                         this.template, this.templateBinder,
                         onEvents, bindAttrs, childMode)
-      : super(perf, expando, parser, config, appInjector,
+      : super(perf, expando, parser, config,
           null, null, onEvents, bindAttrs, childMode);
 
   String toString() => "[TemplateElementBinder template:$template]";
@@ -47,8 +47,6 @@ class ElementBinder {
   final Expando _expando;
   final Parser _parser;
   final CompilerConfig _config;
-  final Injector _appInjector;
-  Animate _animate;
 
   final Map onEvents;
   final Map bindAttrs;
@@ -62,10 +60,8 @@ class ElementBinder {
   final String childMode;
 
   ElementBinder(this._perf, this._expando, this._parser, this._config,
-                this._appInjector, this.componentData, this.decorators,
-                this.onEvents, this.bindAttrs, this.childMode) {
-    _animate = _appInjector.getByKey(ANIMATE_KEY);
-  }
+                this.componentData, this.decorators,
+                this.onEvents, this.bindAttrs, this.childMode);
 
   final bool hasTemplate = false;
 
@@ -261,21 +257,20 @@ class ElementBinder {
 
   DirectiveInjector bind(View view, Scope scope,
                          DirectiveInjector parentInjector,
-                         dom.Node node) {
+                         dom.Node node, EventHandler eventHandler, Animate animate) {
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
 
     var directiveRefs = _usableDirectiveRefs;
     if (!hasDirectivesOrEvents) return parentInjector;
 
     DirectiveInjector nodeInjector;
-    var parentEventHandler = parentInjector == null ?
-        _appInjector.getByKey(EVENT_HANDLER_KEY) :
-        eventHandler(parentInjector);
     if (this is TemplateElementBinder) {
-      nodeInjector = new TemplateDirectiveInjector(parentInjector, _appInjector,
-          node, nodeAttrs, parentEventHandler, scope, _animate, (this as TemplateElementBinder).templateViewFactory);
+      nodeInjector = new TemplateDirectiveInjector(parentInjector, parentInjector.appInjector,
+          node, nodeAttrs, eventHandler, scope, animate,
+          (this as TemplateElementBinder).templateViewFactory);
     } else {
-      nodeInjector = new DirectiveInjector(parentInjector, _appInjector, node, nodeAttrs, parentEventHandler, scope, _animate);
+      nodeInjector = new DirectiveInjector(parentInjector, parentInjector.appInjector,
+          node, nodeAttrs, eventHandler, scope, animate);
     }
 
     for(var i = 0; i < directiveRefs.length; i++) {
@@ -304,7 +299,7 @@ class ElementBinder {
 
     if (onEvents.isNotEmpty) {
       onEvents.forEach((event, value) {
-        parentEventHandler.register(EventHandler.attrNameToEventName(event));
+        view.registerEvent(EventHandler.attrNameToEventName(event));
       });
     }
     return nodeInjector;

@@ -30,9 +30,9 @@ main() => describe('ElementBinderBuilder', () {
       ..bind(_Structural);
   });
 
-  beforeEach((DirectiveMap d, ElementBinderFactory f, Injector i) {
+  beforeEach((DirectiveMap d, ElementBinderFactory f) {
     directives = d;
-    b = f.builder(null, null, i);
+    b = f.builder(null, null);
   });
 
   addDirective(selector) {

@@ -662,7 +662,7 @@ void main() {
           scope.context['logger'] = logger;
           scope.context['once'] = null;
           var elts = es('<attach-detach attr-value="{{isReady}}" expr-value="isReady" once-value="once">{{logger("inner")}}</attach-detach>');
-          compile(elts, _.injector.get(DirectiveMap))(scope, null, elts);
+          compile(elts, _.injector.get(DirectiveMap))(scope, _.directiveInjector, elts);
           expect(logger).toEqual(['new']);
 
           expect(logger).toEqual(['new']);
@@ -694,7 +694,7 @@ void main() {
           backend.whenGET('foo.html').respond('<div>WORKED</div>');
           var elts = es('<simple-attach></simple-attach>');
           var scope = _.rootScope.createChild({});
-          compile(elts, _.injector.get(DirectiveMap))(scope, null, elts);
+          compile(elts, _.injector.get(DirectiveMap))(scope, _.directiveInjector, elts);
           expect(logger).toEqual(['SimpleAttachComponent']);
           scope.destroy();
 
@@ -962,23 +962,6 @@ void main() {
         expect(decorator.valueDecorator).toEqual('worked');
       });
     });
-
-    describe('Injection accross application injection boundaries', () {
-      it('should create directive injectors for elements only',
-          async((TestBed _, Logger logger, CompilerConfig config) {
-        if (!config.elementProbeEnabled) return;
-        _.compile('<tab></tab>');
-        var directiveInjector = ngInjector(_.rootElement);
-        var lazyInjector = NgView.createChildInjectorWithReload(
-            _.injector,
-            [new Module()..bind(LazyPane)..bind(LazyPaneHelper)]);
-        var dirMap = lazyInjector.get(DirectiveMap);
-        ViewFactory viewFactory = _.compiler([new Element.tag('lazy-pane')], dirMap);
-        var childScope = _.rootScope.createChild({});
-        viewFactory(childScope, directiveInjector);
-        expect(logger).toContain('LazyPane-0');
-      }));
-    });
   }));
 }
 
@@ -1016,19 +999,6 @@ class TabComponent {
     local.ping();
   }
 }
-
-@Component(
-  selector: 'lazy-pane',
-  visibility: Directive.CHILDREN_VISIBILITY
-)
-class LazyPane {
-  int id = 0;
-  LazyPane(Logger logger, LazyPaneHelper lph, Scope scope) {
-    logger('LazyPane-${id++}');
-  }
-}
-
-class LazyPaneHelper {}
 
 @Component(selector: 'pane')
 class PaneComponent {
