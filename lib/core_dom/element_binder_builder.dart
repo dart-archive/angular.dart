@@ -15,17 +15,16 @@ class ElementBinderFactory {
       this.astParser, this.componentFactory, this.shadowDomComponentFactory, this.transcludingComponentFactory);
 
   // TODO: Optimize this to re-use a builder.
-  ElementBinderBuilder builder(FormatterMap formatters, DirectiveMap directives, Injector injector) =>
-    new ElementBinderBuilder(this, formatters, directives, injector);
+  ElementBinderBuilder builder(FormatterMap formatters, DirectiveMap directives) =>
+    new ElementBinderBuilder(this,formatters, directives);
 
   ElementBinder binder(ElementBinderBuilder b) =>
 
-      new ElementBinder(_perf, _expando, _parser, _config, b._injector,
+      new ElementBinder(_perf, _expando, _parser, _config,
           b.componentData, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
 
-  TemplateElementBinder templateBinder(
-      ElementBinderBuilder b, ElementBinder transclude) =>
-      new TemplateElementBinder(_perf, _expando, _parser, _config, b._injector,
+  TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
+      new TemplateElementBinder(_perf, _expando, _parser, _config,
           b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
 }
 
@@ -46,14 +45,13 @@ class ElementBinderBuilder {
   final bindAttrs = new HashMap<String, AST>();
 
   final decorators = <DirectiveRef>[];
-  final Injector _injector;
   DirectiveRef template;
   BoundComponentData componentData;
 
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   String childMode = Directive.COMPILE_CHILDREN;
 
-  ElementBinderBuilder(this._factory, this._formatters, this._directives, this._injector);
+  ElementBinderBuilder(this._factory, this._formatters, this._directives);
 
   /**
    * Adds [DirectiveRef]s to this [ElementBinderBuilder].
@@ -81,7 +79,7 @@ class ElementBinderBuilder {
         factory = _factory.componentFactory;
       }
 
-      componentData = new BoundComponentData(ref, () => factory.bind(ref, _directives, _injector));
+      componentData = new BoundComponentData(ref, () => factory.bind(ref, _directives));
     } else {
       decorators.add(ref);
     }

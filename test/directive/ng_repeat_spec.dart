@@ -23,9 +23,9 @@ main() {
         ViewFactory viewFactory = compiler([element], _directives);
         Injector blockInjector = injector;
         if (scope != null) {
-          viewFactory.bind(null)(scope);
+          viewFactory.bind(injector.get(DirectiveInjector))(scope);
         } else {
-          viewFactory(rootScope, null, [element]);
+          viewFactory(rootScope, injector.get(DirectiveInjector), [element]);
         }
         return element;
       };
@@ -35,7 +35,7 @@ main() {
     it(r'should set create a list of items', (Scope scope, Compiler compiler, Injector injector) {
       var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
-      View view = viewFactory(scope, null, element);
+      View view = viewFactory(scope, injector.get(DirectiveInjector), element);
       scope.context['items'] = ['a', 'b'];
       scope.apply();
       expect(element).toHaveText('ab');
@@ -50,7 +50,7 @@ main() {
       });
       var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
-      View view = viewFactory(scope, null, element);
+      View view = viewFactory(scope, injector.get(DirectiveInjector), element);
       scope.apply();
       expect(element).toHaveText('ab');
     });
@@ -60,7 +60,7 @@ main() {
         (Scope scope, Compiler compiler, Injector injector) {
       var element = es('<div><div ng-repeat="item in items">{{item}}</div></div>');
       ViewFactory viewFactory = compiler(element, directives);
-      View view = viewFactory(scope, null, element);
+      View view = viewFactory(scope, injector.get(DirectiveInjector), element);
       scope.context['items'] = ['a', 'b'].map((i) => i); // makes an iterable
       scope.apply();
       expect(element).toHaveText('ab');
@@ -550,7 +550,7 @@ main() {
       compile = (html) {
         element = e(html);
         var viewFactory = compiler([element], _directives);
-        viewFactory(scope, null, [element]);
+        viewFactory(scope, child.get(DirectiveInjector), [element]);
         return element;
       };
       directives = _directives;

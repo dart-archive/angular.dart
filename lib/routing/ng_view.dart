@@ -76,7 +76,7 @@ class NgView implements DetachAware, RouteProvider {
       : _dirInjector = dirInjector,
         _locationService = dirInjector.getByKey(NG_ROUTING_HELPER_KEY)
   {
-    RouteProvider routeProvider = dirInjector.parentGetByKey(NG_VIEW_KEY);
+    RouteProvider routeProvider = dirInjector.parent.getByKey(NG_VIEW_KEY);
     _route = routeProvider != null ?
         routeProvider.route.newHandle() :
         router.root.newHandle();
@@ -109,9 +109,11 @@ class NgView implements DetachAware, RouteProvider {
     });
 
     Injector viewInjector = _appInjector;
+    DirectiveInjector directiveInjector = _dirInjector;
 
     if (modules != null) {
-      viewInjector = createChildInjectorWithReload(_appInjector, modules);
+      viewInjector = forceNewDirectivesAndFormatters(_appInjector, _dirInjector, modules);
+      directiveInjector =  viewInjector.get(DirectiveInjector);
     }
 
     var newDirectives = viewInjector.getByKey(DIRECTIVE_MAP_KEY);
@@ -121,7 +123,7 @@ class NgView implements DetachAware, RouteProvider {
     viewFuture.then((ViewFactory viewFactory) {
       _cleanUp();
       _childScope = _scope.createChild(new PrototypeMap(_scope.context));
-      _view = viewFactory(_childScope, _dirInjector);
+      _view = viewFactory(_childScope, directiveInjector);
       _view.nodes.forEach((elm) => _element.append(elm));
     });
   }
@@ -147,18 +149,6 @@ class NgView implements DetachAware, RouteProvider {
       p = p.parent;
     }
     return res;
-  }
-  /**
-   * Creates a child injector that allows loading new directives, formatters and
-   * services from the provided modules.
-   */
-  static Injector createChildInjectorWithReload(Injector injector, List<Module> modules) {
-    var modulesToAdd = new List<Module>.from(modules);
-    modulesToAdd.add(new Module()
-        ..bind(DirectiveMap)
-        ..bind(FormatterMap));
-
-    return new ModuleInjector(modulesToAdd, injector);
   }
 }
 

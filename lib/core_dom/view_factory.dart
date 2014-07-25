@@ -46,12 +46,15 @@ class WalkingViewFactory implements ViewFactory {
       new BoundViewFactory(this, directiveInjector);
 
   View call(Scope scope, DirectiveInjector directiveInjector, [List<dom.Node> nodes]) {
+    assert(directiveInjector != null);
     if (nodes == null) nodes = cloneElements(templateElements);
     var timerId;
     try {
       assert((timerId = _perf.startTimer('ng.view')) != false);
-      var view = new View(nodes, scope);
-      _link(view, scope, nodes, elementBinders, directiveInjector);
+      EventHandler eventHandler =  directiveInjector.getByKey(EVENT_HANDLER_KEY);
+      Animate animate = directiveInjector.getByKey(ANIMATE_KEY);
+      var view = new View(nodes, scope, eventHandler);
+      _link(view, scope, nodes, elementBinders, eventHandler, animate, directiveInjector);
       return view;
     } finally {
       assert(_perf.stopTimer(timerId) != false);
@@ -59,6 +62,7 @@ class WalkingViewFactory implements ViewFactory {
   }
 
   View _link(View view, Scope scope, List<dom.Node> nodeList, List elementBinders,
+             EventHandler eventHandler, Animate animate,
              DirectiveInjector directiveInjector) {
 
     var preRenderedIndexOffset = 0;
@@ -95,7 +99,7 @@ class WalkingViewFactory implements ViewFactory {
         if (binder == null) {
           childInjector = directiveInjector;
         } else {
-          childInjector = binder.bind(view, scope, directiveInjector, node);
+          childInjector = binder.bind(view, scope, directiveInjector, node, eventHandler, animate);
 
           // TODO(misko): Remove this after we remove controllers. No controllers -> 1to1 Scope:View.
           if (childInjector != directiveInjector) scope = childInjector.scope;
@@ -106,7 +110,7 @@ class WalkingViewFactory implements ViewFactory {
         }
 
         if (tree.subtrees != null) {
-          _link(view, scope, node.nodes, tree.subtrees, childInjector);
+          _link(view, scope, node.nodes, tree.subtrees, eventHandler, animate, childInjector);
         }
       } finally {
         assert(_perf.stopTimer(timerId) != false);

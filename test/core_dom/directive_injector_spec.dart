@@ -33,8 +33,11 @@ void main() {
       });
 
       it('should return basic types', () {
+        expect(injector.parent is DefaultDirectiveInjector).toBe(true);
+        expect(injector.appInjector).toBe(appInjector);
         expect(injector.scope).toBe(scope);
         expect(injector.get(Injector)).toBe(appInjector);
+        expect(injector.get(DirectiveInjector)).toBe(injector);
         expect(injector.get(Scope)).toBe(scope);
         expect(injector.get(Node)).toBe(div);
         expect(injector.get(Element)).toBe(div);
