@@ -59,7 +59,8 @@ class TestBed {
    */
   List<Element> toNodeList(html) {
     var div = new DivElement();
-    div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
+    var sanitizedHtml = html.split('\n').map((line) => line.trim()).join(' ');
+    div.setInnerHtml(sanitizedHtml, treeSanitizer: new NullTreeSanitizer());
     var nodes = [];
     for (var node in div.nodes) {
       nodes.add(node);
