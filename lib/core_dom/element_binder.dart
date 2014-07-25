@@ -62,7 +62,7 @@ class ElementBinder {
   }
 
   bool get hasDirectivesOrEvents =>
-      _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
+      _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty || bindAttrs.isNotEmpty;
 
   void _bindTwoWay(tasks, AST ast, scope, directiveScope,
                    controller, AST dstAST) {
@@ -282,6 +282,14 @@ class ElementBinder {
     }
 
     _link(nodeInjector, scope, nodeAttrs);
+
+    var jsNode;
+    bindAttrs.forEach((String prop, ast) {
+      if (jsNode == null) jsNode = new js.JsObject.fromBrowserObject(node);
+      scope.watchAST(ast, (v, _) {
+        jsNode[prop] = v;
+      });
+    });
 
     if (onEvents.isNotEmpty) {
       onEvents.forEach((event, value) {
