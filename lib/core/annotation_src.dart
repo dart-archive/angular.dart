@@ -3,7 +3,12 @@ library angular.core.annotation_src;
 import "package:di/di.dart" show Injector, Visibility, Factory;
 
 abstract class DirectiveBinder {
-  bind(key, {Function toFactory, inject, Visibility visibility: Visibility.CHILDREN});
+ void bind(key, {dynamic toValue,
+                 Function toFactory,
+                 Type toImplementation,
+                 toInstanceOf,
+                 inject: const[],
+                 Visibility visibility: Visibility.LOCAL});
 }
 
 typedef void DirectiveBinderFn(DirectiveBinder module);

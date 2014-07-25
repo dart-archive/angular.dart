@@ -20,7 +20,7 @@ part of angular.directive;
     map: const { 'ng-form': '@name' })
 class NgForm extends NgControl {
   static module(DirectiveBinder binder) =>
-    binder.bind(NgControl, inject: NG_FORM_KEY, visibility: Visibility.CHILDREN);
+      binder.bind(NgControl, toInstanceOf: NG_FORM_KEY, visibility: Visibility.CHILDREN);
 
   final Scope _scope;
 

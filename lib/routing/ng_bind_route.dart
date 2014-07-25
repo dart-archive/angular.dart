@@ -31,8 +31,8 @@ class NgBindRoute implements RouteProvider {
   final Router _router;
   final DirectiveInjector _injector;
 
-  static void module(DirectiveBinder binder)
-      => binder.bind(RouteProvider, inject: NG_BIND_ROUTE_KEY, visibility: Visibility.CHILDREN);
+  static void module(DirectiveBinder binder) =>
+      binder.bind(RouteProvider, toInstanceOf: NG_BIND_ROUTE_KEY, visibility: Visibility.CHILDREN);
 
   // We inject NgRoutingHelper to force initialization of routing.
   NgBindRoute(this._router, this._injector, NgRoutingHelper _);
