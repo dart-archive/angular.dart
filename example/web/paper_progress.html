@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport"
+          content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <!-- 1. Load platform.js for polyfill support. -->
+    <script src="bower_components/platform/platform.js"></script>
+
+    <!-- 2. Use an HTML Import to bring in the element. -->
+    <link rel="import"
+          href="bower_components/paper-progress/paper-progress.html">
+    <script type="application/dart" src="paper_progress.dart"></script>
+    <script src="packages/browser/dart.js"></script>
+  </head>
+  <body>
+    <h2>A quick demo of the Polymer paper-progress widget in an AngularDart app.</h2>
+    <p>The max ({{max}}) and value ({{curValue}}) properties are bound through attribute intropolation</p>
+
+    <p>Text from Angular: <b>{{text}}</b></p>
+    
+    <div>
+      <paper-progress max={{max}} value={{curValue}}></paper-progress>
+    </div>
+     
+    <p>
+       Change the value through an ng-model bound input box:
+       <input type="text" ng-model="curValue">
+    </p>
+  </body>
+</html>
