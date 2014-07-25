@@ -99,7 +99,7 @@ class DirectiveInjector implements DirectiveBinder {
       , EVENT_HANDLER_KEY
       , KEEP_ME_LAST
       ];
-  
+
   final DirectiveInjector parent;
   final Injector appInjector;
   final Node _node;
@@ -138,7 +138,7 @@ class DirectiveInjector implements DirectiveBinder {
     }
   }
 
-  static Binding _temp_binding = new Binding();
+  static Binding _tempBinding = new Binding();
 
   DirectiveInjector(parent, appInjector, this._node, this._nodeAttrs, this._eventHandler,
                     this.scope, this._animate)
@@ -152,21 +152,23 @@ class DirectiveInjector implements DirectiveBinder {
         scope = null,
         _animate = null;
 
-  bind(key, {dynamic toValue: DEFAULT_VALUE,
+  void bind(key, {dynamic toValue: DEFAULT_VALUE,
             Function toFactory: DEFAULT_VALUE,
-            Type toImplementation, inject: const[],
+            Type toImplementation,
+            toInstanceOf,
+            inject: const[],
             Visibility visibility: Visibility.LOCAL}) {
     if (key == null) throw 'Key is required';
     if (key is! Key) key = new Key(key);
     if (inject is! List) inject = [inject];
 
-    _temp_binding.bind(key, Module.DEFAULT_REFLECTOR, toValue: toValue, toFactory: toFactory,
-              toImplementation: toImplementation, inject: inject);
+    _tempBinding.bind(key, Module.DEFAULT_REFLECTOR, toValue: toValue, toFactory: toFactory,
+        toImplementation: toImplementation, inject: inject, toInstanceOf: toInstanceOf);
 
-    bindByKey(key, _temp_binding.factory, _temp_binding.parameterKeys, visibility);
+    bindByKey(key, _tempBinding.factory, _tempBinding.parameterKeys, visibility);
   }
 
-  bindByKey(Key key, Function factory, List<Key> parameterKeys, [Visibility visibility]) {
+  void bindByKey(Key key, Function factory, List<Key> parameterKeys, [Visibility visibility]) {
     if (visibility == null) visibility = Visibility.CHILDREN;
     int visibilityId = _toVisId(visibility);
     int keyVisId = key.uid;
@@ -211,7 +213,7 @@ class DirectiveInjector implements DirectiveBinder {
     return isDirective ? _getDirectiveByKey(key, uid, appInjector) : _getById(uid);
   }
 
-  _getDirectiveByKey(Key k, int visType, Injector i) {
+  Object _getDirectiveByKey(Key k, int visType, Injector i) {
     do {
       if (_key0 == null) break; if (identical(_key0, k)) return _obj0 == null ?  _obj0 = _new(_pKeys0, _factory0) : _obj0;
       if (_key1 == null) break; if (identical(_key1, k)) return _obj1 == null ?  _obj1 = _new(_pKeys1, _factory1) : _obj1;
@@ -340,7 +342,7 @@ class TemplateDirectiveInjector extends DirectiveInjector {
   final ViewFactory _viewFactory;
   ViewPort _viewPort;
   BoundViewFactory _boundViewFactory;
-  
+
   TemplateDirectiveInjector(DirectiveInjector parent, Injector appInjector,
                        Node node, NodeAttrs nodeAttrs, EventHandler eventHandler,
                        Scope scope, Animate animate, this._viewFactory)
@@ -357,7 +359,7 @@ class TemplateDirectiveInjector extends DirectiveInjector {
       default: return super._getById(keyId);
     }
   }
-  
+
 }
 
 abstract class ComponentDirectiveInjector extends DirectiveInjector {

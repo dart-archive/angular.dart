@@ -1075,7 +1075,8 @@ class PublishModuleDirectiveSuperType {
     selector: '[publish-types]',
     module: PublishModuleAttrDirective.module)
 class PublishModuleAttrDirective implements PublishModuleDirectiveSuperType {
-  static module(i) => i.bind(PublishModuleDirectiveSuperType, inject: PublishModuleAttrDirective);
+  static module(i) =>
+      i.bind(PublishModuleDirectiveSuperType, toInstanceOf: PublishModuleAttrDirective);
 
   static DirectiveInjector _injector;
   PublishModuleAttrDirective(DirectiveInjector injector) {

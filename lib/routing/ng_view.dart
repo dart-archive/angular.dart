@@ -56,8 +56,8 @@ part of angular.routing;
     module: NgView.module,
     visibility: Visibility.CHILDREN)
 class NgView implements DetachAware, RouteProvider {
-  static void module(DirectiveBinder binder)
-      => binder.bind(RouteProvider, inject: NG_VIEW_KEY, visibility: Visibility.CHILDREN);
+  static void module(DirectiveBinder binder) =>
+      binder.bind(RouteProvider, toInstanceOf: NG_VIEW_KEY, visibility: Visibility.CHILDREN);
 
   final NgRoutingHelper _locationService;
   final ViewCache _viewCache;
