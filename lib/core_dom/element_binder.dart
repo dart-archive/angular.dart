@@ -23,20 +23,6 @@ class TemplateElementBinder extends ElementBinder {
   String toString() => "[TemplateElementBinder template:$template]";
 }
 
-// TODO: This class exists for forwards API compatibility only.
-//       Remove it after migration to DI 2.0.
-class _DirectiveBinderImpl implements DirectiveBinder {
-  final module = new Module();
-
-  _DirectiveBinderImpl();
-
-  bind(key, {Function toFactory: DEFAULT_VALUE, List inject: null,
-      Visibility visibility: Directive.LOCAL_VISIBILITY}) {
-    module.bind(key, toFactory: toFactory, inject: inject,
-        visibility: visibility);
-  }
-}
-
 /**
  * ElementBinder is created by the Selector and is responsible for instantiating
  * individual directives and binding element properties.
