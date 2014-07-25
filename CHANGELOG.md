@@ -1,3 +1,255 @@
+<a name="v0.13.0"></a>
+# v0.13.0 tempus-fugitification (2014-07-25)
+
+## Bug Fixes
+
+- **DynamicParser:** Correctly handle throwing exceptions from method.
+  ([82ca6bad](https://github.com/angular/angular.dart/commit/82ca6bad7d930d645e57e5d0f1d795e0b97501dc),
+   [#971](https://github.com/angular/angular.dart/issues/971), [#1064](https://github.com/angular/angular.dart/issues/1064))
+- **Http:**
+  - Auxiliary methods like get, put, post, etc. do not set type restriction on data being sent.
+  ([68c3e80a](https://github.com/angular/angular.dart/commit/68c3e80afa258f5307e1655beadcf85257b35b11),
+   [#1051](https://github.com/angular/angular.dart/issues/1051))
+  - Fix NoSuchMethodError in Http when cache set to true and update documentation about cache usage.
+  ([5b483324](https://github.com/angular/angular.dart/commit/5b483324bd73955ed799b9ba363dbc2557e2b09a),
+   [#1066](https://github.com/angular/angular.dart/issues/1066))
+- **NgModel:** Read the view value in the flush phase
+  ([75c2f170](https://github.com/angular/angular.dart/commit/75c2f170e1d4de3f40666835c176cff73b08ee82))
+- **WatchGroup:** Handle watching elements of array that were removed.
+  ([8c271f78](https://github.com/angular/angular.dart/commit/8c271f78941438059b0e71577e363fa48146441f),
+   [#1046](https://github.com/angular/angular.dart/issues/1046))
+- **benchmark:**
+  - typo in element tag names
+  ([86de17c2](https://github.com/angular/angular.dart/commit/86de17c2432fb92cdc8efcb7d671d1830649b300),
+   [#1220](https://github.com/angular/angular.dart/issues/1220))
+  - incorrect mirrors import
+  ([b74d5682](https://github.com/angular/angular.dart/commit/b74d5682b9437880029bdc456466ade9ba3e7722))
+  - fix standard deviation calculation
+  ([1f59d114](https://github.com/angular/angular.dart/commit/1f59d1149f962e6b4008fd7ab6a050f9a39108cd))
+- **cache:**
+  - Make UnboundedCache extend Cache
+  ([08e73054](https://github.com/angular/angular.dart/commit/08e73054a4efc06861ea85481e7bbd4c07f502d3),
+   [#1174](https://github.com/angular/angular.dart/issues/1174))
+  - Do not export the Cache symbol.
+  ([016d463c](https://github.com/angular/angular.dart/commit/016d463c1975e04e71139310c297399f5e6c14cb))
+- **change_detector:** fix NaN move detection in collections
+  ([f01e2867](https://github.com/angular/angular.dart/commit/f01e2867543cb439dd1ad1db41d9c616f418baab),
+   [#1136](https://github.com/angular/angular.dart/issues/1136), [#1149](https://github.com/angular/angular.dart/issues/1149))
+- **component factory:** Only create a single ShadowDomComponentFactory
+  ([707f701c](https://github.com/angular/angular.dart/commit/707f701c3cf8a96425888f61dd3d753dad5e28a7))
+- **dccd:**
+  - fix false positive for collection moves
+  ([ea3eb1e0](https://github.com/angular/angular.dart/commit/ea3eb1e03eea9033f9bc7177941e41bbb5a32c2a),
+   [#1105](https://github.com/angular/angular.dart/issues/1105))
+  - fix removals reporting
+  ([8dbeefc4](https://github.com/angular/angular.dart/commit/8dbeefc4abb412706991f99f5c8d21d1bebd8237))
+- **di:** Remove deprecated calls to DI bind(Type, inject[]).
+- **directive:** Support multiple directives with same selector.
+  ([01488977](https://github.com/angular/angular.dart/commit/014889771ae4a80f7f934b60f02cbb1d37d5ed41))
+- **directive-injector:** Pass the correct injector into nested views
+  ([59323dae](https://github.com/angular/angular.dart/commit/59323daea6ff36ccf44c32dc053e243e0b655896),
+   [#1244](https://github.com/angular/angular.dart/issues/1244))
+- **element binder:**
+  - New-style Module.bind for AttrMustache
+  ([cfa11e05](https://github.com/angular/angular.dart/commit/cfa11e050fcbc43539e37b51571c40e3270c999a))
+  - Use the new-style Module.bind(toFactory) syntax
+  ([bed6bcbe](https://github.com/angular/angular.dart/commit/bed6bcbec3a635b9193ac79a7d8249a13f67ea95))
+- **examples:** do not use shadow DOM
+  ([0cf209bb](https://github.com/angular/angular.dart/commit/0cf209bb091839b8e1192e2fd54a0ced1a057201))
+- **expression extractor:** Do not use implicit DI
+  ([105b41f4](https://github.com/angular/angular.dart/commit/105b41f4247dac8b59738ad740fff545320431a2))
+- **introspection:**
+  - getTestability should throw when ElementProbes are unavailable
+  ([158e9aa7](https://github.com/angular/angular.dart/commit/158e9aa70cf38141959a185b2c39e33ead09e543))
+  - work around http://dartbug.com/17752
+  ([384039a1](https://github.com/angular/angular.dart/commit/384039a1c07ee66ac2a886e58b3eb3c12bcba04d))
+- **karma:** remove saucelabs from default browser list.
+  ([989992de](https://github.com/angular/angular.dart/commit/989992deec9f5253ea9028eeb6b74022736fae36))
+- **ng-model:** Turn off failing test until Dart 1.6 is stable.
+  ([e8825165](https://github.com/angular/angular.dart/commit/e88251651fb466e48e6f1a208cd24df7fade59f1),
+   [#1234](https://github.com/angular/angular.dart/issues/1234))
+- **ng-view:** cleanup should not destroy an already destroyed scope
+  ([5cb46a16](https://github.com/angular/angular.dart/commit/5cb46a1608f41f8a1c7db1f473c7efccc265598f),
+   [#1182](https://github.com/angular/angular.dart/issues/1182))
+- **ng_repeat:** fix ng_repeat not moving views for elements that have not moved
+  ([559a685e](https://github.com/angular/angular.dart/commit/559a685e218c453eea158eee068d2e0afaf718eb),
+   [#1154](https://github.com/angular/angular.dart/issues/1154), [#1155](https://github.com/angular/angular.dart/issues/1155))
+- **parser:** ensure only one instance of dynamic parser
+  ([f2c45758](https://github.com/angular/angular.dart/commit/f2c457580de28eb250ddce455edd3ede4af6c847))
+- **pubspec:** Add missing upper bound version constraints
+  ([cee0d727](https://github.com/angular/angular.dart/commit/cee0d727d9b18e6d21350bf74e023565e3908f57))
+- **registry_dynamic:** Do not use HashMaps.
+  ([04624f21](https://github.com/angular/angular.dart/commit/04624f21813be8efc5bffaa8daf0029e777958a2))
+- **scope:**
+  - remove deprecation warning for scope.watch with context
+  ([1c7c0ba3](https://github.com/angular/angular.dart/commit/1c7c0ba3c8745a73a03c14845c70e83662c55d3e))
+  - Use runAsync for microtasks in digest.
+  ([d1e745e0](https://github.com/angular/angular.dart/commit/d1e745e04ba1c9fdf23b416d299e193b77e3cc53))
+- **transcluding component:** Perfer getByKey over get
+  ([6f3587d2](https://github.com/angular/angular.dart/commit/6f3587d21d00da296a40c4879c7e8c248c0b06a8))
+- **travis:** Work around Travis breakages
+  ([be76be4f](https://github.com/angular/angular.dart/commit/be76be4fde537bf9c52ae307541f045e8b06c8f3))
+- **various:** Use the new-style Module.bind(toFactory) syntax
+  ([a30c0a57](https://github.com/angular/angular.dart/commit/a30c0a5726e71491646506b9306ce53138c47c44))
+- **watch_group:** fix for NaN !== NaN
+  ([d24ff897](https://github.com/angular/angular.dart/commit/d24ff8979e3b2c6a72f388f478ea0aab655f35cb),
+   [#1146](https://github.com/angular/angular.dart/issues/1146))
+- **web platform:** Do not barf on attribute selectors.
+  ([f2b83930](https://github.com/angular/angular.dart/commit/f2b83930f2473f7d6b1f1796a8e1f07ec4e0422e))
+
+
+## Features
+
+- **animate:** Allowed property to turn off all animations
+  ([b3f2e6ca](https://github.com/angular/angular.dart/commit/b3f2e6caa5bc4047af59f730c17fcb5a34f1bc9f))
+- **benchmark:**
+  - improve layout of data by moving averages to dedicated row
+  ([3330d657](https://github.com/angular/angular.dart/commit/3330d657cd5c592924816a4a88876881de2460da))
+  - calculate coefficient of variation
+  ([fc09af2c](https://github.com/angular/angular.dart/commit/fc09af2c880bf741abe8c9284805a92bd63f8742))
+  - add standard deviation to report
+  ([13e87e06](https://github.com/angular/angular.dart/commit/13e87e06fb3972b7c0b6d35b08351a639a329eba))
+  - calculate relative margin of error and simplify report
+  ([4614cc06](https://github.com/angular/angular.dart/commit/4614cc061011b01809eb884d7ad127d89fe4e547))
+  - add confidence and stability info to averages
+  ([bd17bbe7](https://github.com/angular/angular.dart/commit/bd17bbe7e61b83789f4cc3f36d6d4222b37f0279))
+  - add statistical functions to calculate confidence interval
+  ([26f7defe](https://github.com/angular/angular.dart/commit/26f7defe4bc2b70c9fd746b42053e4fa9cefc63b))
+  - add ability to profile memory usage per iteration
+  ([afe55814](https://github.com/angular/angular.dart/commit/afe558141802f84f8cd34d61bfd4dd1e7ca9eba4))
+  - improve sampling UI
+  ([e1c17d90](https://github.com/angular/angular.dart/commit/e1c17d904177c186825d939742800d94e6bd6304))
+  - change samples input type from range to text
+  ([387933d0](https://github.com/angular/angular.dart/commit/387933d03fa908d7fe29fc8d673847cd18d824cc))
+  - record gc time for each test run
+  ([dfdf67b5](https://github.com/angular/angular.dart/commit/dfdf67b50921b6ff69d9fe2360fbb7b55bf6d1ec))
+  - add ability to adjust sample quantity
+  ([a98663d9](https://github.com/angular/angular.dart/commit/a98663d9bd148839d14e1f95d887560b58bc63f2))
+  - add automatic gc before each test
+  ([fe1f74d0](https://github.com/angular/angular.dart/commit/fe1f74d0d845bcfe3b416ada4bb8849a1ecba3ff),
+   [#1133](https://github.com/angular/angular.dart/issues/1133))
+- **cache:**
+  - Add a JS interface to CacheRegister
+  ([435d9987](https://github.com/angular/angular.dart/commit/435d9987beaf2965a75ed13a18f29bb672c32806),
+   [#1181](https://github.com/angular/angular.dart/issues/1181))
+  - Add existing caches to CacheRegister
+  ([59003705](https://github.com/angular/angular.dart/commit/59003705f7225760151136951361d1e71a453db4),
+   [#1165](https://github.com/angular/angular.dart/issues/1165))
+  - Move cache out of core, add a CacheRegister
+  ([be62c48e](https://github.com/angular/angular.dart/commit/be62c48e3b4c9dbe5a0b4cb7fcadec4e29255861))
+- **compiler:**
+  - Backport DirectiveBinder API from #1178 to allow gradual migration.
+  ([1f3cca42](https://github.com/angular/angular.dart/commit/1f3cca429e2074400ce7e0f476d972d6b54e2774))
+- **element binder:** Use a child scope instead of Scope.watch(context:o)
+  ([6051340b](https://github.com/angular/angular.dart/commit/6051340bb583382ff0157e255eafa537ab5564aa))
+- **form:** Add support for `input[type=color]`
+  ([0064ef5c](https://github.com/angular/angular.dart/commit/0064ef5c7db5ce2286cc7d626b2cc620429e4da3),
+   [#611](https://github.com/angular/angular.dart/issues/611), [#1080](https://github.com/angular/angular.dart/issues/1080))
+- **http:**
+  - support coalescing http requests
+  ([3e44a542](https://github.com/angular/angular.dart/commit/3e44a542faccd3f5e5f7861cff44e221279bcc42))
+  - run interceptors synchronously until first non-sync interceptor
+  ([38d3cfd6](https://github.com/angular/angular.dart/commit/38d3cfd6ff680dd92ce3b34018fdb7b148a29ea9))
+- **mock:** Add timer queue checks in mock zone
+  ([98e61b77](https://github.com/angular/angular.dart/commit/98e61b77d91a58fe13406ded2b94167b595701d5),
+   [#1157](https://github.com/angular/angular.dart/issues/1157))
+- **router:** added vetoable preLeave event
+  ([ddd9e414](https://github.com/angular/angular.dart/commit/ddd9e4147c0c88a374345bf8b32df6cf57740ac4),
+   [#1070](https://github.com/angular/angular.dart/issues/1070))
+- **scope:**
+  - Expose Scope.watchAST as a public API
+  ([ecd75ce7](https://github.com/angular/angular.dart/commit/ecd75ce71460a3bb1e87e0c9371c8d8ac892c512))
+  - Deprecate Scope.watch's context parameter.
+  ([e8a5ce73](https://github.com/angular/angular.dart/commit/e8a5ce734b00fd22f700e2fc1be5507dda195638))
+  - Instrument Scope to use User tags in Dart Obervatory
+  ([c21ac7ea](https://github.com/angular/angular.dart/commit/c21ac7eaec3fd15bba7a124fdfb3e9680092a0f2),
+   [#1138](https://github.com/angular/angular.dart/issues/1138))
+  - Use VmTurnZone.onScheduleMicrotask in Scope
+  ([81667aad](https://github.com/angular/angular.dart/commit/81667aad6a2da1efa39adaf333b8ebfe297c88b1),
+   [#984](https://github.com/angular/angular.dart/issues/984))
+- **testability:**
+  - whenStable replaces notifyWhenNoOutstandingRequests
+  ([5ef596d1](https://github.com/angular/angular.dart/commit/5ef596d10f50d2739eba6a7be9555f240f12abf6))
+  - implement the testability for ProtractorDart
+  ([f2d1f2e9](https://github.com/angular/angular.dart/commit/f2d1f2e9e64d18fe5407f67555eb1c30110bd419))
+
+
+## Performance Improvements
+
+- **ChangeDetector:**
+  - create _EvalWatchRecord#namedArgs lazily
+  ([42e53b86](https://github.com/angular/angular.dart/commit/42e53b8663936b3637b2d13de4f3f56db27e94cf))
+  - lazy initialize DuplicateMap
+  ([11629dee](https://github.com/angular/angular.dart/commit/11629deea92bb0f0b341ba6eb2f04a5072fbdcd2))
+- **View:** Improve View instantiation speed and memory consumption.
+  ([494deda5](https://github.com/angular/angular.dart/commit/494deda594f39b422e4c2f5def1a2cbaf749efba))
+- **cd:** fewer string concatenations (10% improvement)
+  ([a6526803](https://github.com/angular/angular.dart/commit/a6526803fb07f126414f0259d4d0baf8e89d70b1))
+- **compiler:**
+  - +6% Pre-compute ViewFactories, styles for components.
+  ([be3cdd41](https://github.com/angular/angular.dart/commit/be3cdd4147d7917dea5fcca301cb73057f0f604d),
+   [#1134](https://github.com/angular/angular.dart/issues/1134))
+  - An option to disable the ElementProbe.
+  ([9f0c7bca](https://github.com/angular/angular.dart/commit/9f0c7bcab2915ffa7509a28eaff1d1762f1d9bf0),
+   [#1118](https://github.com/angular/angular.dart/issues/1118), [#1131](https://github.com/angular/angular.dart/issues/1131))
+  - Pre-compile Scope.watch ASTs for attribute mustaches
+  ([90df4eb2](https://github.com/angular/angular.dart/commit/90df4eb2012a0bf21f33bf219be544bd535f765c),
+   [#1088](https://github.com/angular/angular.dart/issues/1088))
+  - Precompute Scope.watch AST for TextMustache
+  ([daf8d5af](https://github.com/angular/angular.dart/commit/daf8d5afdc8f0f0f66eed5de6eea4a5df2280a9f))
+- **element binder:** Do not create tasklists when not needed
+  ([a33891ea](https://github.com/angular/angular.dart/commit/a33891ea915a4faf98caf78725dfc093b213744b))
+- **scope:** Cache the Scope.watch AST.
+  ([05e2c576](https://github.com/angular/angular.dart/commit/05e2c57625f1cc2c56c3cc91534420d066e41389),
+   [#1173](https://github.com/angular/angular.dart/issues/1173))
+- **various:** Avoid putIfAbsent
+  ([57da29d7](https://github.com/angular/angular.dart/commit/57da29d7ea0e20aecde60ac42788b30aedcaa3b6))
+- **view cache:** Avoid http.get
+  ([db72a4fc](https://github.com/angular/angular.dart/commit/db72a4fc99e1d2b9921b361198e0c57d93091f5e),
+   [#1108](https://github.com/angular/angular.dart/issues/1108))
+- **view factory:** 14% Precompute linking information for nodes
+  ([eac36d1d](https://github.com/angular/angular.dart/commit/eac36d1d26a283560742b3555886f5db99ee9c65),
+   [#1194](https://github.com/angular/angular.dart/issues/1194), [#1196](https://github.com/angular/angular.dart/issues/1196))
+
+
+## Breaking Changes
+
+- **Scope:** due to [81667aad](https://github.com/angular/angular.dart/commit/81667aad6a2da1efa39adaf333b8ebfe297c88b1),
+
+
+Previously a micro task registered in flush phase would cause a new
+digest cycle after the current digest cycle. The new behavior
+will cause an error.
+
+Closes #984
+- **View:** due to [494deda5](https://github.com/angular/angular.dart/commit/494deda594f39b422e4c2f5def1a2cbaf749efba),
+
+
+- Injector no longer supports visibility
+- The Directive:module instead of returning Module now takes
+  DirectiveModule (which supports visibility)
+- Application Injector and DirectiveInjector now have separate trees.
+  (The root if DirectiveInjector is ApplicationInjector)
+- **scope:** due to [d1e745e0](https://github.com/angular/angular.dart/commit/d1e745e04ba1c9fdf23b416d299e193b77e3cc53),
+
+
+Microtasks scheduled in flush will process in current cycle, but they
+are not allowed to do model changes.
+
+Microtasks scheduled in digest will be executed in digest, counting
+towards the ScopeDigestTTL.
+- **testability:** due to [5ef596d1](https://github.com/angular/angular.dart/commit/5ef596d10f50d2739eba6a7be9555f240f12abf6),
+
+  NOTE: This only affects you if you are calling this API directly.  If
+  you are using ProtractorDart, then you are insulated from this change.
+
+  To update your code, rename all references to the
+  notifyWhenNoOutstandingRequests(callback) method on the testability
+  object to whenStable(callback).
+
+
+
+
 <a name="v0.12.0"></a>
 # v0.12.0 sprightly-argentinosaurus (2014-06-03)
 
