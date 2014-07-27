@@ -220,14 +220,12 @@ class NgRepeat {
       var changeFn = changeFunctions[targetIndex];
       if (changeFn == null) {
         rows[targetIndex] = _rows[targetIndex];
-        // The element has not moved but `$last` and `$middle` might still need
-        // to be updated
-        var childContext =  _updateContext(rows[targetIndex].scope.context, targetIndex, length);
         if (domIndex < 0 || leftInDom[domIndex] != targetIndex) {
           _viewPort.move(rows[targetIndex].view, moveAfter: previousView);
           leftInDom.remove(targetIndex);
         }
         domIndex--;
+        // The element has not moved but `$last` and `$middle` might still need to be updated
         _updateContext(rows[targetIndex].scope.context, targetIndex, length);
       } else {
         changeFn(targetIndex, previousView);
