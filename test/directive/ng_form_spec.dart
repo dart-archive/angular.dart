@@ -6,6 +6,38 @@ void main() {
   describe('form', () {
    TestBed _;
 
+    it('should publish the form on the context (by name)', (Scope scope, TestBed _) {
+      _.compile('<form name="myForm">'
+                '  <fieldset name="myFieldset">'
+                '    <input type="text" name="foo" ng-model="modelOne" />'
+                '  </fieldset>'
+                '</form>');
+      scope.apply();
+
+      var myForm = scope.context.myForm;
+
+      expect(myForm).toBeAnInstanceOf(NgForm);
+      expect(myForm['myFieldset']).toBeAnInstanceOf(NgForm);
+      expect(myForm['myFieldset'].parentControl).toBe(myForm);
+    });
+
+    it('should publish the form on the context (by ng-form attribute value)',
+        (Scope scope, TestBed _) {
+      _.compile('<div ng-form="myForm">'
+                '  <div ng-form="myFieldset">'
+                '    <input type="text" name="foo" ng-model="modelOne" />'
+                '  </fieldset>'
+                '</form>');
+      scope.apply();
+
+      var myForm = scope.context.myForm;
+
+      expect(myForm).toBeAnInstanceOf(NgForm);
+      expect(myForm['myFieldset']).toBeAnInstanceOf(NgForm);
+      expect(myForm['myFieldset'].parentControl).toBe(myForm);
+    });
+
+
     it('should return the first control with the given name when accessed using map notation',
       (Scope scope, TestBed _) {
       _.compile('<form probe="form">'
