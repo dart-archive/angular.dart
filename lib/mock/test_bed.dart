@@ -20,6 +20,10 @@ class TestBed {
 
   TestBed(this.injector, this.directiveInjector, this.rootScope, this.compiler, this._parser, this.expando);
 
+  TestBed.fromInjector(Injector i) :
+    this(i, i.get(DirectiveInjector), i.get(RootScope), i.get(Compiler),
+        i.get(Parser), i.get(Expando));
+
 
   /**
    * Use to compile HTML and activate its directives.
