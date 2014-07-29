@@ -5,11 +5,9 @@ import 'dart:mirrors';
 
 @Component(selector:'component')            class _Component{}
 @Decorator(selector:'[ignore-children]',
-             children: Directive.IGNORE_CHILDREN)
-                                              class _IgnoreChildren{}
-@Decorator(selector:'[structural]',
-             children: Directive.TRANSCLUDE_CHILDREN)
-                                              class _Structural{}
+           compileChildren: false)
+                                            class _IgnoreChildren{}
+@Template(selector:'[structural]')          class _Structural{}
 @Decorator(selector:'[directive]')          class _DirectiveAttr{}
 
 
@@ -50,7 +48,7 @@ main() => describe('ElementBinderBuilder', () {
 
     expect(b.decorators.length).toEqual(1);
     expect(b.componentData).toBeNull();
-    expect(b.childMode).toEqual(Directive.COMPILE_CHILDREN);
+    expect(b.compileChildren).toEqual(true);
 
   });
 
@@ -72,6 +70,6 @@ main() => describe('ElementBinderBuilder', () {
 
     expect(b.decorators.length).toEqual(1);
     expect(b.componentData).toBeNull();
-    expect(b.childMode).toEqual(Directive.IGNORE_CHILDREN);
+    expect(b.compileChildren).toEqual(false);
   });
 });

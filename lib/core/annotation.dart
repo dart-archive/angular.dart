@@ -17,6 +17,7 @@ export "package:angular/core/annotation_src.dart" show
     Directive,
     Component,
     Decorator,
+    Template,
     Visibility,
 
     DirectiveAnnotation,

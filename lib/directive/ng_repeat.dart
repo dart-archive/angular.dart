@@ -65,10 +65,9 @@ part of angular.directive;
  *     </ul>
  */
 
-@Decorator(
-    children: Directive.TRANSCLUDE_CHILDREN,
+@Template(
     selector: '[ng-repeat]',
-    map: const {'.': '@expression'})
+    map: const {'ng-repeat': '@expression'})
 class NgRepeat {
   static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(?:track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
   static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([$\w]+)|\(([$\w]+)\s*,\s*([$\w]+)\))$');
@@ -89,7 +88,7 @@ class NgRepeat {
 
   NgRepeat(this._viewPort, this._boundViewFactory, this._scope, this._parser, this.formatters);
 
-  set expression(value) {
+  void set expression(value) {
     assert(value != null);
     _expression = value;
     if (_watch != null) _watch.remove();

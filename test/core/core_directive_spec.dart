@@ -52,7 +52,7 @@ void main() {
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Mapping for attribute foo is already defined (while '
-        'processing annottation for field foo of Bad1Component)');
+                   'processing annotation for field foo of Bad1Component)');
       });
 
       it('should throw when annotated both getter and setter', () {
