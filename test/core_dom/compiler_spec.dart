@@ -944,10 +944,9 @@ class LocalAttrDirective {
   }
 }
 
-@Decorator(
+@Template(
     selector: '[simple-transclude-in-attach]',
-    visibility: Visibility.LOCAL,
-    children: Directive.TRANSCLUDE_CHILDREN)
+    visibility: Visibility.LOCAL)
 class SimpleTranscludeInAttachAttrDirective {
   SimpleTranscludeInAttachAttrDirective(ViewPort viewPort, BoundViewFactory boundViewFactory, Logger log, RootScope scope) {
     scope.runAsync(() {
@@ -981,8 +980,7 @@ class TwoOfTwoDirectives {
 
 @Decorator(
     selector: '[ignore-children]',
-    children: Directive.IGNORE_CHILDREN
-)
+    compileChildren: false)
 class IgnoreChildrenDirective {
   IgnoreChildrenDirective(Logger log) {
     log('Ignore');
@@ -1288,10 +1286,9 @@ class OneTimeDecorator {
   void set value(v) => log(v);
 }
 
-@Decorator(
+@Template(
   selector: '[same-name]',
-  children: Directive.TRANSCLUDE_CHILDREN,
-  map: const { '.': '@valueTransclude' })
+  map: const { 'same-name': '@valueTransclude' })
 class SameNameTransclude {
   var valueTransclude;
   SameNameTransclude(ViewPort port, ViewFactory factory, RootScope scope) {

@@ -42,17 +42,11 @@ class ElementBinder {
 
   final BoundComponentData componentData;
 
-  // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
-  final String childMode;
-
-  ElementBinder(this._perf, this._expando, this._parser, this._config,
-                this.componentData, this.decorators,
-                this.onEvents, this.bindAttrs, this.childMode);
-
+  final bool compileChildren;
   final bool hasTemplate = false;
 
-  bool get shouldCompileChildren =>
-      childMode == Directive.COMPILE_CHILDREN;
+  ElementBinder(this._perf, this._expando, this._parser, this._config, this.componentData,
+                this.decorators, this.onEvents, this.bindAttrs, this.compileChildren);
 
   var _directiveCache;
   List<DirectiveRef> get _usableDirectiveRefs {
@@ -112,6 +106,9 @@ class ElementBinder {
       var attrValueAST = p.attrValueAST;
       AST dstAST = p.dstAST;
 
+      var isTemplate = nodeAttrs == null;
+      var attrValue = isTemplate ? p.attrValue : nodeAttrs[attrName];
+
       if (!dstAST.parsedExp.isAssignable) {
         throw "Expression '${dstAST.expression}' is not assignable in mapping '${p.originalValue}' "
               "for attribute '$attrName'.";
@@ -134,25 +131,29 @@ class ElementBinder {
       switch (p.mode) {
         case '@': // string
           var taskId = (tasks != null) ? tasks.registerTask() : 0;
-          nodeAttrs.observe(attrName, (value) {
-            dstAST.parsedExp.assign(directive, value);
-            if (tasks != null) tasks.completeTask(taskId);
-          });
+          if (isTemplate) {
+              dstAST.parsedExp.assign(directive, attrValue);
+          } else {
+            nodeAttrs.observe(attrName, (value) {
+              dstAST.parsedExp.assign(directive, value);
+              if (tasks != null) tasks.completeTask(taskId);
+            });
+          }
           break;
 
         case '<=>': // two-way
-          if (nodeAttrs[attrName] == null) continue;
+          if (attrValue == null) continue;
           if (directiveScope == null) directiveScope = scope.createChild(directive);
           _bindTwoWay(tasks, attrValueAST, scope, directiveScope, directive, dstAST);
           break;
 
         case '=>': // one-way
-          if (nodeAttrs[attrName] == null) continue;
+          if (attrValue == null) continue;
           _bindOneWay(tasks, attrValueAST, scope, dstAST, directive);
           break;
 
         case '=>!': //  one-way, one-time
-          if (nodeAttrs[attrName] == null) continue;
+          if (attrValue == null) continue;
 
           var watch;
           var lastOneTimeValue;
@@ -173,7 +174,7 @@ class ElementBinder {
           break;
 
         case '&': // callback
-          _bindCallback(dstAST.parsedExp, directive, nodeAttrs[attrName], scope);
+          _bindCallback(dstAST.parsedExp, directive, attrValue, scope);
           break;
       }
     }
@@ -193,7 +194,6 @@ class ElementBinder {
         null;
 
       if (ref.mappings.isNotEmpty) {
-        if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
         _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, tasks);
       }
 

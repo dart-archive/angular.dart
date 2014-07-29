@@ -9,7 +9,7 @@ class Log {
   add(String msg) => log.add(msg);
 }
 
-@Decorator(children: Directive.TRANSCLUDE_CHILDREN, selector: 'foo')
+@Template(selector: 'foo')
 class LoggerViewDirective {
   LoggerViewDirective(ViewPort port, ViewFactory viewFactory,
       BoundViewFactory boundViewFactory, Logger logger) {

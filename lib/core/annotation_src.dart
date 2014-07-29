@@ -64,30 +64,8 @@ abstract class Directive {
    */
   final String selector;
 
-  /**
-   * Specifies the compiler action to be taken on the child nodes of the
-   * element which this currently being compiled.  The values are:
-   *
-   * * [COMPILE_CHILDREN] (*default*)
-   * * [TRANSCLUDE_CHILDREN]
-   * * [IGNORE_CHILDREN]
-   */
-  final String children;
-
-  /**
-   * Compile the child nodes of the element.  This is the default.
-   */
-  static const String COMPILE_CHILDREN = 'compile';
-  /**
-   * Compile the child nodes for transclusion and makes available
-   * [BoundViewFactory], [ViewFactory] and [ViewPort] for injection.
-   */
-  static const String TRANSCLUDE_CHILDREN = 'transclude';
-  /**
-   * Do not compile/visit the child nodes.  Angular markup on descendant nodes
-   * will not be processed.
-   */
-  static const String IGNORE_CHILDREN = 'ignore';
+  /// Whether to compile child nodes
+  final bool compileChildren;
 
   /**
    * A directive/component controller class can be injected into other directives/components. This
@@ -205,7 +183,7 @@ abstract class Directive {
 
   const Directive({
     this.selector,
-    this.children,
+    this.compileChildren: true,
     this.visibility,
     this.module,
     this.map: const {},
@@ -313,7 +291,7 @@ class Component extends Directive {
         _applyAuthorStyles = applyAuthorStyles,
         _resetStyleInheritance = resetStyleInheritance,
         super(selector: selector,
-             children: Directive.COMPILE_CHILDREN,
+             compileChildren: true,
              visibility: visibility,
              map: map,
              module: module,
@@ -355,7 +333,7 @@ class Component extends Directive {
  * * `detach()` - Called on when owning scope is destroyed.
  */
 class Decorator extends Directive {
-  const Decorator({children: Directive.COMPILE_CHILDREN,
+  const Decorator({compileChildren: true,
                     map,
                     selector,
                     DirectiveBinderFn module,
@@ -363,22 +341,57 @@ class Decorator extends Directive {
                     exportExpressions,
                     exportExpressionAttrs})
       : super(selector: selector,
-              children: children,
+              compileChildren: compileChildren,
               visibility: visibility,
               map: map,
               module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  Directive _cloneWithNewMap(newMap) =>
+  Decorator _cloneWithNewMap(newMap) =>
       new Decorator(
-          children: children,
+          compileChildren: compileChildren,
           map: newMap,
           module: module,
           selector: selector,
           visibility: visibility,
           exportExpressions: exportExpressions,
           exportExpressionAttrs: exportExpressionAttrs);
+}
+
+/**
+ * Meta-data marker placed on a class which should act as template.
+ *
+ * Angular templates are instantiated using dependency injection, and can ask for any injectable
+ * object in their constructor. Templates can also ask for other components or directives declared
+ * on the DOM element.
+ *
+ * Templates can implement [NgAttachAware], [NgDetachAware] and declare these optional methods:
+ *
+ * * `attach()` - Called on first [Scope.apply()].
+ * * `detach()` - Called on when owning scope is destroyed.
+ */
+class Template extends Directive {
+  const Template({map,
+                  selector,
+                  module,
+                  visibility,
+                  exportExpressions,
+                  exportExpressionAttrs})
+      : super(selector: selector,
+              compileChildren: true,
+              visibility: visibility,
+              map: map,
+              module: module,
+              exportExpressions: exportExpressions,
+              exportExpressionAttrs: exportExpressionAttrs);
+
+  Template _cloneWithNewMap(newMap) => new Template(map: newMap,
+                                                    module: module,
+                                                    selector: selector,
+                                                    visibility: visibility,
+                                                    exportExpressions: exportExpressions,
+                                                    exportExpressionAttrs: exportExpressionAttrs);
 }
 
 /**

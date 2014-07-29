@@ -25,29 +25,23 @@ class DynamicMetadataExtractor implements MetadataExtractor {
     if (metadata == null) {
       metadata = [];
     } else {
-      metadata =  metadata.map((InstanceMirror im) => map(type, im.reflectee));
+      metadata =  metadata.map((InstanceMirror im) => _mergeAnnotations(type, im.reflectee));
     }
     return metadata;
   }
 
-  map(Type type, obj) {
-    if (obj is Directive) {
-      return mapDirectiveAnnotation(type, obj);
-    } else {
-      return obj;
-    }
-  }
-
-  Directive mapDirectiveAnnotation(Type type, Directive annotation) {
+  /// Merges the field annotations with the [Directive.map] definitions
+  dynamic _mergeAnnotations(Type type, annotation) {
+    if (annotation is! Directive) return annotation;
     var match;
-    var fieldMetadata = fieldMetadataExtractor(type);
+    var fieldMetadata = _extractFieldMetadata(type);
     if (fieldMetadata.isNotEmpty) {
-      var newMap = annotation.map == null ? {} : new Map.from(annotation.map);
+      var newMap = annotation.map == null ? new HashMap() : new HashMap.from(annotation.map);
       fieldMetadata.forEach((String fieldName, DirectiveAnnotation ann) {
         var attrName = ann.attrName;
         if (newMap.containsKey(attrName)) {
           throw 'Mapping for attribute $attrName is already defined (while '
-          'processing annottation for field $fieldName of $type)';
+                'processing annotation for field $fieldName of $type)';
         }
         newMap[attrName] = '${mappingSpec(ann)}$fieldName';
       });
@@ -56,10 +50,10 @@ class DynamicMetadataExtractor implements MetadataExtractor {
     return annotation;
   }
 
-
-  Map<String, DirectiveAnnotation> fieldMetadataExtractor(Type type) =>
+  Map<String, DirectiveAnnotation> _extractFieldMetadata(Type type) =>
       _fieldMetadataCache.putIfAbsent(type, () => _fieldMetadataExtractor(reflectType(type)));
 
+  /// Extract [DirectiveAnnotation] field metadata
   Map<String, DirectiveAnnotation> _fieldMetadataExtractor(ClassMirror cm) {
     var fields = new HashMap<String, DirectiveAnnotation>();
     if(cm.superclass != null) fields.addAll(_fieldMetadataExtractor(cm.superclass));
