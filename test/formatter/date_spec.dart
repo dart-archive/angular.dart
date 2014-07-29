@@ -47,7 +47,7 @@ void main() {
     });
 
     it('should accept various locales', async(() {
-      expect(Intl.withLocale('de', () => date(noon, "medium"))).toEqual('3. Sep 2010 12:05:08');
+      expect(Intl.withLocale('sv', () => date(noon, "medium"))).toEqual('3 sep 2010 12:05:08');
       expect(Intl.withLocale('fr', () => date(noon, "medium"))).toEqual('3 sept. 2010 12:05:08');
     }));
   });
