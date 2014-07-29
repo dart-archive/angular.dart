@@ -21,6 +21,9 @@ part of angular.core.dom_internal;
  *  * [*=/abc/]
  */
 class DirectiveSelector {
+  static String BIND_PREFIX = "bind-";
+  static int BIND_PREFIX_LENGTH = 5;
+
   ElementBinderFactory _binderFactory;
   DirectiveMap _directives;
   Interpolate _interpolate;
@@ -86,8 +89,9 @@ class DirectiveSelector {
 
       if (attrName.startsWith("on-")) {
         builder.onEvents[attrName] = value;
-      } else if (attrName.startsWith("bind-")) {
-        builder.bindAttrs[attrName] = _astParser(value, formatters: _formatters);
+      } else if (attrName.startsWith(BIND_PREFIX)) {
+        builder.bindAttrs[attrName.substring(BIND_PREFIX_LENGTH)] =
+            _astParser(value, formatters: _formatters);
       }
 
       attrs[attrName] = value;

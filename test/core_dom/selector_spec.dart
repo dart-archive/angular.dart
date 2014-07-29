@@ -215,8 +215,8 @@ main() {
       it('should collect bind-* attributes', () {
         ElementBinder binder = selector(e('<input bind-x="y" bind-z="yy"></input>'));
         expect(binder.bindAttrs.keys.length).toEqual(2);
-        expect(binder.bindAttrs['bind-x'].expression).toEqual('y');
-        expect(binder.bindAttrs['bind-z'].expression).toEqual('yy');
+        expect(binder.bindAttrs['x'].expression).toEqual('y');
+        expect(binder.bindAttrs['z'].expression).toEqual('yy');
       });
     });
 
