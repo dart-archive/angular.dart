@@ -2,6 +2,7 @@ library directive_injector_spec;
 
 import '../_specs.dart';
 import 'package:angular/core_dom/directive_injector.dart';
+import 'package:angular/core_dom/static_keys.dart';
 
 void main() {
   describe('DirectiveInjector', () {
@@ -33,7 +34,6 @@ void main() {
       });
 
       it('should return basic types', () {
-        expect(injector.parent is DefaultDirectiveInjector).toBe(true);
         expect(injector.appInjector).toBe(appInjector);
         expect(injector.scope).toBe(scope);
         expect(injector.get(Injector)).toBe(appInjector);
@@ -45,6 +45,16 @@ void main() {
         expect(injector.get(EventHandler)).toBe(eventHandler);
         expect(injector.get(Animate)).toBe(animate);
         expect((injector.get(ElementProbe) as ElementProbe).element).toBe(div);
+      });
+
+      it('should support get from parent methods', () {
+        var newDiv = new DivElement();
+        var childInjector = new DirectiveInjector(
+            injector, appInjector, newDiv, new NodeAttrs(newDiv), eventHandler, scope, animate);
+
+        expect(childInjector.get(Node)).toBe(newDiv);
+        expect(childInjector.getFromParent(Node)).toBe(div);
+        expect(childInjector.getFromParentByKey(NODE_KEY)).toBe(div);
       });
 
       it('should instantiate types', () {
