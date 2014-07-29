@@ -11,21 +11,21 @@ class ElementBinderFactory {
   final ShadowDomComponentFactory shadowDomComponentFactory;
   final TranscludingComponentFactory transcludingComponentFactory;
 
-  ElementBinderFactory(this._parser, this._perf, this._config, this._expando,
-      this.astParser, this.componentFactory, this.shadowDomComponentFactory, this.transcludingComponentFactory);
+  ElementBinderFactory(this._parser, this._perf, this._config, this._expando, this.astParser,
+                       this.componentFactory, this.shadowDomComponentFactory,
+                       this.transcludingComponentFactory);
 
   // TODO: Optimize this to re-use a builder.
   ElementBinderBuilder builder(FormatterMap formatters, DirectiveMap directives) =>
-    new ElementBinderBuilder(this,formatters, directives);
+      new ElementBinderBuilder(this, formatters, directives);
 
   ElementBinder binder(ElementBinderBuilder b) =>
-
-      new ElementBinder(_perf, _expando, _parser, _config,
-          b.componentData, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
+      new ElementBinder(_perf, _expando, _parser, _config, b.componentData, b.decorators,
+                        b.onEvents, b.bindAttrs, b.childMode);
 
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
-      new TemplateElementBinder(_perf, _expando, _parser, _config,
-          b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
+      new TemplateElementBinder(_perf, _expando, _parser, _config, b.template, transclude,
+                                b.onEvents, b.bindAttrs, b.childMode);
 }
 
 /**
@@ -91,9 +91,7 @@ class ElementBinderBuilder {
     if (annotation.map != null) {
       annotation.map.forEach((attrName, mapping) {
         Match match = _MAPPING.firstMatch(mapping);
-        if (match == null) {
-          throw "Unknown mapping '$mapping' for attribute '$attrName'.";
-        }
+        if (match == null) throw "Unknown mapping '$mapping' for attribute '$attrName'.";
         var mode = match[1];
         var dstPath = match[2];
 

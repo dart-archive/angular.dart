@@ -8,9 +8,9 @@ import 'dart:collection';
 export 'package:angular/core/registry.dart' show
     MetadataExtractor;
 
-var _fieldMetadataCache = new HashMap<Type, Map<String, DirectiveAnnotation>>();
-
 class DynamicMetadataExtractor implements MetadataExtractor {
+  static final _fieldMetadataCache = new HashMap<Type, Map<String, DirectiveAnnotation>>();
+
   final _fieldAnnotations = [
         reflectType(NgAttr),
         reflectType(NgOneWay),
@@ -61,16 +61,12 @@ class DynamicMetadataExtractor implements MetadataExtractor {
       _fieldMetadataCache.putIfAbsent(type, () => _fieldMetadataExtractor(reflectType(type)));
 
   Map<String, DirectiveAnnotation> _fieldMetadataExtractor(ClassMirror cm) {
-    var fields = <String, DirectiveAnnotation>{};
-    if(cm.superclass != null) {
-      fields.addAll(_fieldMetadataExtractor(cm.superclass));
-    } else {
-      fields = {};
-    }
+    var fields = new HashMap<String, DirectiveAnnotation>();
+    if(cm.superclass != null) fields.addAll(_fieldMetadataExtractor(cm.superclass));
+
     Map<Symbol, DeclarationMirror> declarations = cm.declarations;
     declarations.forEach((symbol, dm) {
-      if(dm is VariableMirror ||
-          dm is MethodMirror && (dm.isGetter || dm.isSetter)) {
+      if(dm is VariableMirror || dm is MethodMirror && (dm.isGetter || dm.isSetter)) {
         var fieldName = MirrorSystem.getName(symbol);
         if (dm is MethodMirror && dm.isSetter) {
           // Remove "=" from the end of the setter.

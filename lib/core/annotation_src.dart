@@ -213,7 +213,8 @@ abstract class Directive {
     this.exportExpressionAttrs: const []
   });
 
-  toString() => selector;
+  String toString() => selector;
+
   Directive _cloneWithNewMap(newMap);
 }
 
@@ -348,7 +349,7 @@ class Component extends Directive {
       const [] :
       _cssUrls is List ?  _cssUrls : [_cssUrls];
 
-  Directive _cloneWithNewMap(newMap) =>
+  Component _cloneWithNewMap(newMap) =>
       new Component(
           template: template,
           templateUrl: templateUrl,
