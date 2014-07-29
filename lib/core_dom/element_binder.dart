@@ -119,7 +119,7 @@ class ElementBinder {
       }
 
       // Check if there is a bind attribute for this mapping.
-      var bindAttr = bindAttrs[p.bindAttrName];
+      var bindAttr = bindAttrs[p.attrName];
       if (bindAttr != null) {
         if (p.mode == '<=>') {
           if (directiveScope == null) {
