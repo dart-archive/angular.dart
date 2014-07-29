@@ -57,15 +57,15 @@ class ElementBinder {
   var _directiveCache;
   List<DirectiveRef> get _usableDirectiveRefs {
     if (_directiveCache != null) return _directiveCache;
-    if (componentData != null) return _directiveCache = new List.from(decorators)..add(componentData.ref);
+    if (componentData != null) {
+      return _directiveCache = new List.from(decorators)..add(componentData.ref);
+    }
     return _directiveCache = decorators;
   }
 
-  bool get hasDirectivesOrEvents =>
-      _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
+  bool get hasDirectivesOrEvents => _usableDirectiveRefs.isNotEmpty || onEvents.isNotEmpty;
 
-  void _bindTwoWay(tasks, AST ast, scope, directiveScope,
-                   controller, AST dstAST) {
+  void _bindTwoWay(tasks, AST ast, scope, directiveScope, controller, AST dstAST) {
     var taskId = (tasks != null) ? tasks.registerTask() : 0;
 
     var viewOutbound = false;
@@ -104,7 +104,6 @@ class ElementBinder {
     dstPathFn.assign(controller, _parser(expression).bind(scope.context, ContextLocals.wrapper));
   }
 
-
   void _createAttrMappings(directive, scope, List<MappingParts> mappings, nodeAttrs, tasks) {
     Scope directiveScope; // Only created if there is a two-way binding in the element.
     for(var i = 0; i < mappings.length; i++) {
@@ -122,11 +121,8 @@ class ElementBinder {
       var bindAttr = bindAttrs[p.attrName];
       if (bindAttr != null) {
         if (p.mode == '<=>') {
-          if (directiveScope == null) {
-            directiveScope = scope.createChild(directive);
-          }
-          _bindTwoWay(tasks, bindAttr, scope, directiveScope,
-              directive, dstAST);
+          if (directiveScope == null) directiveScope = scope.createChild(directive);
+          _bindTwoWay(tasks, bindAttr, scope, directiveScope, directive, dstAST);
         } else if (p.mode == '&') {
           throw "Callbacks do not support bind- syntax";
         } else {
@@ -146,11 +142,8 @@ class ElementBinder {
 
         case '<=>': // two-way
           if (nodeAttrs[attrName] == null) continue;
-          if (directiveScope == null) {
-            directiveScope = scope.createChild(directive);
-          }
-          _bindTwoWay(tasks, attrValueAST, scope, directiveScope,
-              directive, dstAST);
+          if (directiveScope == null) directiveScope = scope.createChild(directive);
+          _bindTwoWay(tasks, attrValueAST, scope, directiveScope, directive, dstAST);
           break;
 
         case '=>': // one-way
@@ -164,7 +157,8 @@ class ElementBinder {
           var watch;
           var lastOneTimeValue;
           watch = scope.watchAST(attrValueAST, (value, _) {
-            if ((lastOneTimeValue = dstAST.parsedExp.assign(directive, value)) != null && watch != null) {
+            if ((lastOneTimeValue = dstAST.parsedExp.assign(directive, value)) != null &&
+                 watch != null) {
                 var watchToRemove = watch;
                 watch = null;
                 scope.rootScope.domWrite(() {
