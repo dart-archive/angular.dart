@@ -16,8 +16,7 @@ part of animation;
       </div>
       </div>
     ''',
-    publishAs: 'ctrl',
-    useShadowDom: false)
+    publishAs: 'ctrl')
 class VisibilityDemo {
   bool visible = false;
 }

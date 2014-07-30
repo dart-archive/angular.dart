@@ -28,7 +28,11 @@ ElementProbe _findProbeWalkingUp(dom.Node node, [dom.Node ascendUntil]) {
   while (node != null && node != ascendUntil) {
     var probe = elementExpando[node];
     if (probe != null) return probe;
-    node = node.parent;
+    if (node is dom.ShadowRoot) {
+      node = (node as dom.ShadowRoot).host;
+    } else {
+      node = node.parentNode;
+    }
   }
   return null;
 }
@@ -39,6 +43,14 @@ _walkProbesInTree(dom.Node node, Function walker) {
   if (probe == null || walker(probe) != true) {
     for (var child in node.childNodes) {
       _walkProbesInTree(child, walker);
+    }
+    if (node is dom.Element) {
+      var shadowRoot = (node as dom.Element).shadowRoot;
+      if (shadowRoot != null) {
+        for (var child in shadowRoot.childNodes) {
+          _walkProbesInTree(child, walker);
+        }
+      }
     }
   }
 }
