@@ -13,7 +13,10 @@ module.exports = function(config) {
       'test/*.dart',
       'test/**/*_spec.dart',
       'test/config/init_guinness.dart',
-      {pattern: '**/*.dart', watched: true, included: false, served: true},
+      {pattern: 'packages/**/*.dart', watched: true, included: false, served: true},
+      {pattern: 'test/**/*.dart', watched: true, included: false, served: true},
+      {pattern: 'bin/**/*.dart', watched: true, included: false, served: true},
+      {pattern: 'lib/**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js'
     ],
 
