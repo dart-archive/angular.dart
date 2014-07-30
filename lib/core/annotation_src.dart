@@ -11,12 +11,11 @@ abstract class DirectiveBinder {
                  Visibility visibility: Visibility.LOCAL});
 }
 
-typedef void DirectiveBinderFn(DirectiveBinder module);
+typedef void DirectiveBinderFn(DirectiveBinder binder);
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
-Directive cloneWithNewMap(Directive annotation, map)
-    => annotation._cloneWithNewMap(map);
+Directive cloneWithNewMap(Directive annotation, map) => annotation._cloneWithNewMap(map);
 
 String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
@@ -27,27 +26,27 @@ class Visibility {
 
   final String name;
   const Visibility._(this.name);
-  toString() => 'Visibility: $name';
+  String toString() => 'Visibility: $name';
 }
 
 /**
- * Abstract supper class of [Controller], [Component], and [Decorator].
+ * Abstract supper class of [Component], and [Decorator].
  */
 abstract class Directive {
 
   /// The directive can only be injected to other directives on the same element.
-  @deprecated // ('Use Visibility.LOCAL instead')
+  @Deprecated('Use Visibility.LOCAL instead')
   static const Visibility LOCAL_VISIBILITY = Visibility.LOCAL;
 
   /// The directive can be injected to other directives on the same or child elements.
-  @deprecated// ('Use Visibility.CHILDREN instead')
+  @Deprecated('Use Visibility.CHILDREN instead')
   static const Visibility CHILDREN_VISIBILITY = Visibility.CHILDREN;
 
   /**
    * The directive on this element can only be injected to other directives
    * declared on elements which are direct children of the current element.
    */
-  @deprecated// ('Use Visibility.DIRECT_CHILD instead')
+  @Deprecated('Use Visibility.DIRECT_CHILD instead')
   static const Visibility DIRECT_CHILDREN_VISIBILITY = Visibility.DIRECT_CHILD;
 
   /**
@@ -65,52 +64,26 @@ abstract class Directive {
    */
   final String selector;
 
-  /**
-   * Specifies the compiler action to be taken on the child nodes of the
-   * element which this currently being compiled.  The values are:
-   *
-   * * [COMPILE_CHILDREN] (*default*)
-   * * [TRANSCLUDE_CHILDREN]
-   * * [IGNORE_CHILDREN]
-   */
-  final String children;
+  /// Whether to compile child nodes
+  final bool compileChildren;
 
   /**
-   * Compile the child nodes of the element.  This is the default.
-   */
-  static const String COMPILE_CHILDREN = 'compile';
-  /**
-   * Compile the child nodes for transclusion and makes available
-   * [BoundViewFactory], [ViewFactory] and [ViewPort] for injection.
-   */
-  static const String TRANSCLUDE_CHILDREN = 'transclude';
-  /**
-   * Do not compile/visit the child nodes.  Angular markup on descendant nodes
-   * will not be processed.
-   */
-  static const String IGNORE_CHILDREN = 'ignore';
-
-  /**
-   * A directive/component controller class can be injected into other
-   * directives/components. This attribute controls whether the
-   * controller is available to others.
+   * A directive/component controller class can be injected into other directives/components. This
+   * attribute controls whether the controller is available to others.
    *
-   * * `local` [Directive.LOCAL_VISIBILITY] - the controller can be injected
-   *   into other directives / components on the same DOM element.
-   * * `children` [Directive.CHILDREN_VISIBILITY] - the controller can be
-   *   injected into other directives / components on the same or child DOM
-   *   elements.
-   * * `direct_children` [Directive.DIRECT_CHILDREN_VISIBILITY] - the
-   *   controller can be injected into other directives / components on the
-   *   direct children of the current DOM element.
+   * * [Visibility.LOCAL] - the controller can be injected into other directives / components on the
+   *   same DOM element.
+   * * [Visibility.CHILDREN] - the controller can be injected into other directives / components on
+   *   the same or child DOM elements.
+   * * [Visibility.DIRECT_CHILD] - the controller can be injected into other directives / components
+   *   on the direct children of the current DOM element.
    */
   final Visibility visibility;
 
   /**
-   * A directive/component class can publish types by using a factory
-   * function to generate a module. The module is then installed into
-   * the injector at that element. Any types declared in the module then
-   * become available for injection.
+   * A directive/component class can publish types by using a factory function to generate a module.
+   * The module is then installed into the injector at that element. Any types declared in the
+   * module then become available for injection.
    *
    * Example:
    *
@@ -122,11 +95,10 @@ abstract class Directive {
    *          binder.bind(SomeTypeA, visibility: Directive.LOCAL_VISIBILITY);
    *     }
    *
-   * When specifying types, factories or values in the module, notice that
-   * `Visibility` maps to:
-   *  * [Directive.LOCAL_VISIBILITY]
-   *  * [Directive.CHILDREN_VISIBILITY]
-   *  * [Directive.DIRECT_CHILDREN_VISIBILITY]
+   * `visibility` is one of:
+   *  * [Visibility.LOCAL]
+   *  * [Visibility.CHILDREN] (default)
+   *  * [Visibility.DIRECT_CHILD]
    */
   final DirectiveBinderFn module;
 
@@ -211,7 +183,7 @@ abstract class Directive {
 
   const Directive({
     this.selector,
-    this.children,
+    this.compileChildren: true,
     this.visibility,
     this.module,
     this.map: const {},
@@ -219,10 +191,10 @@ abstract class Directive {
     this.exportExpressionAttrs: const []
   });
 
-  toString() => selector;
+  String toString() => selector;
+
   Directive _cloneWithNewMap(newMap);
 }
-
 
 bool _applyAuthorStylesDeprecationWarningPrinted = false;
 bool _resetStyleInheritanceDeprecationWarningPrinted = false;
@@ -264,10 +236,8 @@ class Component extends Directive {
   /**
    * Set the shadow root applyAuthorStyles property. See shadow-DOM
    * documentation for further details.
-   *
-   * This feature will be removed in Chrome 35.
    */
-  @deprecated
+  @Deprecated('in Chrome 35')
   bool get applyAuthorStyles {
     if (!_applyAuthorStylesDeprecationWarningPrinted && _applyAuthorStyles == true) {
       print("WARNING applyAuthorStyles is deprecated in component $selector");
@@ -280,10 +250,8 @@ class Component extends Directive {
   /**
    * Set the shadow root resetStyleInheritance property. See shadow-DOM
    * documentation for further details.
-   *
-   * This feature will be removed in Chrome 35.
    */
-  @deprecated
+  @Deprecated('in Chrome 35')
   bool get resetStyleInheritance {
     if (!_resetStyleInheritanceDeprecationWarningPrinted && _resetStyleInheritance == true) {
       print("WARNING resetStyleInheritance is deprecated in component $selector");
@@ -292,13 +260,6 @@ class Component extends Directive {
     return _resetStyleInheritance;
   }
   final bool _resetStyleInheritance;
-
-  /**
-   * An expression under which the component's controller instance will be
-   * published into. This allows the expressions in the template to be referring
-   * to controller instance and its properties.
-   */
-  final String publishAs;
 
   /**
    * If set to true, this component will always use shadow DOM.
@@ -318,7 +279,6 @@ class Component extends Directive {
     cssUrl,
     applyAuthorStyles,
     resetStyleInheritance,
-    this.publishAs,
     DirectiveBinderFn module,
     map,
     selector,
@@ -331,7 +291,7 @@ class Component extends Directive {
         _applyAuthorStyles = applyAuthorStyles,
         _resetStyleInheritance = resetStyleInheritance,
         super(selector: selector,
-             children: Directive.COMPILE_CHILDREN,
+             compileChildren: true,
              visibility: visibility,
              map: map,
              module: module,
@@ -342,14 +302,13 @@ class Component extends Directive {
       const [] :
       _cssUrls is List ?  _cssUrls : [_cssUrls];
 
-  Directive _cloneWithNewMap(newMap) =>
+  Component _cloneWithNewMap(newMap) =>
       new Component(
           template: template,
           templateUrl: templateUrl,
           cssUrl: cssUrls,
           applyAuthorStyles: applyAuthorStyles,
           resetStyleInheritance: resetStyleInheritance,
-          publishAs: publishAs,
           map: newMap,
           module: module,
           selector: selector,
@@ -374,7 +333,7 @@ class Component extends Directive {
  * * `detach()` - Called on when owning scope is destroyed.
  */
 class Decorator extends Directive {
-  const Decorator({children: Directive.COMPILE_CHILDREN,
+  const Decorator({compileChildren: true,
                     map,
                     selector,
                     DirectiveBinderFn module,
@@ -382,16 +341,16 @@ class Decorator extends Directive {
                     exportExpressions,
                     exportExpressionAttrs})
       : super(selector: selector,
-              children: children,
+              compileChildren: compileChildren,
               visibility: visibility,
               map: map,
               module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  Directive _cloneWithNewMap(newMap) =>
+  Decorator _cloneWithNewMap(newMap) =>
       new Decorator(
-          children: children,
+          compileChildren: compileChildren,
           map: newMap,
           module: module,
           selector: selector,
@@ -401,59 +360,38 @@ class Decorator extends Directive {
 }
 
 /**
- * Annotation placed on a class which should act as a controller for your
- * application.
+ * Meta-data marker placed on a class which should act as template.
  *
- * Controllers are essentially [Decorator]s with few key differences:
+ * Angular templates are instantiated using dependency injection, and can ask for any injectable
+ * object in their constructor. Templates can also ask for other components or directives declared
+ * on the DOM element.
  *
- * * Controllers create a new scope at the element.
- * * Controllers should not do any DOM manipulation.
- * * Controllers are meant for application-logic
- *   (rather then DOM manipulation logic which directives are meant for.)
- *
- * Controllers can implement [AttachAware], [DetachAware] and
- * declare these optional methods:
+ * Templates can implement [NgAttachAware], [NgDetachAware] and declare these optional methods:
  *
  * * `attach()` - Called on first [Scope.apply()].
  * * `detach()` - Called on when owning scope is destroyed.
  */
-@deprecated
-class Controller extends Decorator {
-  /**
-   * An expression under which the controller instance will be published into.
-   * This allows the expressions in the template to be referring to controller
-   * instance and its properties.
-   */
-  final String publishAs;
-
-  const Controller({
-                    children: Directive.COMPILE_CHILDREN,
-                    this.publishAs,
-                    map,
-                    DirectiveBinderFn module,
-                    selector,
-                    visibility,
-                    exportExpressions,
-                    exportExpressionAttrs
-                    })
+class Template extends Directive {
+  const Template({map,
+                  selector,
+                  module,
+                  visibility,
+                  exportExpressions,
+                  exportExpressionAttrs})
       : super(selector: selector,
-              children: children,
+              compileChildren: true,
               visibility: visibility,
               map: map,
               module: module,
               exportExpressions: exportExpressions,
               exportExpressionAttrs: exportExpressionAttrs);
 
-  Directive _cloneWithNewMap(newMap) =>
-      new Controller(
-          children: children,
-          publishAs: publishAs,
-          module: module,
-          map: newMap,
-          selector: selector,
-          visibility: visibility,
-          exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
+  Template _cloneWithNewMap(newMap) => new Template(map: newMap,
+                                                    module: module,
+                                                    selector: selector,
+                                                    visibility: visibility,
+                                                    exportExpressions: exportExpressions,
+                                                    exportExpressionAttrs: exportExpressionAttrs);
 }
 
 /**
@@ -547,8 +485,8 @@ abstract class DetachAware {
  * For more on formatters in Angular, see the documentation for the
  * [angular:formatter](#angular-formatter) library.
  *
- * A formatter class must have a call method with at least one parameter, which specifies the value to format. Any
- * additional parameters are treated as arguments of the formatter.
+ * A formatter class must have a call method with at least one parameter, which specifies the value
+ * to format. Any additional parameters are treated as arguments of the formatter.
  *
  * **Usage**
  *
@@ -574,5 +512,5 @@ class Formatter {
 
   const Formatter({this.name});
 
-  toString() => 'Formatter: $name';
+  String toString() => 'Formatter: $name';
 }

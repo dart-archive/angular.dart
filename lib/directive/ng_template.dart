@@ -23,7 +23,7 @@ part of angular.directive;
   map: const {'id': '@templateUrl'})
 @Decorator(
   selector: 'script[type=text/ng-template]',
-  children: Directive.IGNORE_CHILDREN,
+  compileChildren: false,
   map: const {'id': '@templateUrl'})
 class NgTemplate {
   final dom.Element element;

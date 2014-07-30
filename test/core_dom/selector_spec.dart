@@ -2,7 +2,7 @@ library angular.dom.selector_spec;
 
 import '../_specs.dart';
 
-const _aBElement               = const Decorator(selector:'b'); 
+const _aBElement               = const Decorator(selector:'b');
 const _aBClass                 = const Decorator(selector:'.b');
 const _aDirectiveAttr          = const Decorator(selector:'[directive]');
 const _aWildcardDirectiveAttr  = const Decorator(selector:'[wildcard-*]');
@@ -14,10 +14,9 @@ const _aContainsAbc            = const Decorator(selector:':contains(/abc/)');
 const _aAttributeContainsXyz   = const Decorator(selector:'[*=/xyz/]');
 const _aAttribute              = const Decorator(selector:'[attribute]');
 const _aCComponent             = const Component(selector:'component');
-const _aStructural             = const Decorator(selector:'[structural]',
-                                                 children: Directive.TRANSCLUDE_CHILDREN);
+const _aStructural             = const Template(selector:'[structural]');
 const _aIgnoreChildren         = const Decorator(selector:'[ignore-children]',
-                                                 children: Directive.IGNORE_CHILDREN);
+                                                 compileChildren: false);
 const _aTwoDirectives0         = const Decorator(selector: '[my-model][required]');
 const _aTwoDirectives1         = const Decorator(selector: '[my-model][my-required]');
 const _aOneOfTwoDirectives     = const Decorator(selector: '[two-directives]');
@@ -181,10 +180,9 @@ main() {
 
       it('should match ng-model + required on the same element', () {
         expect(
-            selector(element = e('<input type="text" ng-model="val" probe="i" required="true" />')),
+            selector(element = e('<input type="text" ng-model="val" required="true" />')),
             toEqualsDirectiveInfos([
                 { "selector": '[ng-model]',                 "value": 'val',   "element": element},
-                { "selector": '[probe]',                    "value": 'i',     "element": element},
                 { "selector": '[ng-model][required]',       "value": 'true',  "element": element},
                 { "selector": 'input[type=text][ng-model]', "value": 'val',   "element": element}
             ]));

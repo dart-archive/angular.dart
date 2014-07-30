@@ -65,10 +65,9 @@ part of angular.directive;
  *     </ul>
  */
 
-@Decorator(
-    children: Directive.TRANSCLUDE_CHILDREN,
+@Template(
     selector: '[ng-repeat]',
-    map: const {'.': '@expression'})
+    map: const {'ng-repeat': '@expression'})
 class NgRepeat {
   static RegExp _SYNTAX = new RegExp(r'^\s*(.+)\s+in\s+(.*?)\s*(?:track\s+by\s+(.+)\s*)?(\s+lazily\s*)?$');
   static RegExp _LHS_SYNTAX = new RegExp(r'^(?:([$\w]+)|\(([$\w]+)\s*,\s*([$\w]+)\))$');
@@ -89,7 +88,7 @@ class NgRepeat {
 
   NgRepeat(this._viewPort, this._boundViewFactory, this._scope, this._parser, this.formatters);
 
-  set expression(value) {
+  void set expression(value) {
     assert(value != null);
     _expression = value;
     if (_watch != null) _watch.remove();
@@ -111,8 +110,7 @@ class NgRepeat {
             ..[r'$index'] = index
             ..[r'$id'] = (obj) => obj;
         if (_keyIdentifier != null) context[_keyIdentifier] = key;
-        return relaxFnArgs(trackBy.eval)(new ScopeLocals(_scope.context,
-            context));
+        return relaxFnArgs(trackBy.eval)(new ContextLocals(_scope.context, context));
       });
     }
 
@@ -150,17 +148,12 @@ class NgRepeat {
     var domIndex;
 
     var addRow = (int index, value, View previousView) {
-      var childContext = _updateContext(new PrototypeMap(_scope.context), index,
-          length)..[_valueIdentifier] = value;
+      var childContext = new ContextLocals(_scope.context);
+      childContext = _updateContext(childContext, index, length);
+      childContext[_valueIdentifier] = value;
       var childScope = _scope.createChild(childContext);
       var view = _boundViewFactory(childScope);
-      var nodes = view.nodes;
-      rows[index] = new _Row(_generateId(index, value, index))
-          ..view = view
-          ..scope = childScope
-          ..nodes = nodes
-          ..startNode = nodes.first
-          ..endNode = nodes.last;
+      rows[index] = new _Row(_generateId(index, value, index), childScope, view);
       _viewPort.insert(view, insertAfter: previousView);
     };
 
@@ -236,9 +229,10 @@ class NgRepeat {
     _rows = rows;
   }
 
-  PrototypeMap _updateContext(PrototypeMap context, int index, int length) {
-    var first = (index == 0);
-    var last = (index == length - 1);
+  ContextLocals _updateContext(ContextLocals context, int index, int len) {
+    var first = index == 0;
+    var last = index == len - 1;
+
     return context
         ..[r'$index'] = index
         ..[r'$first'] = first
@@ -253,9 +247,6 @@ class _Row {
   final id;
   Scope scope;
   View view;
-  dom.Element startNode;
-  dom.Element endNode;
-  List<dom.Element> nodes;
 
-  _Row(this.id);
+  _Row(this.id, this.scope, this.view);
 }

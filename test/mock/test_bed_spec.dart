@@ -16,17 +16,11 @@ void main() {
 
     it('should allow for a scope-based compile', (Scope scope) {
       Scope childScope = scope.createChild({});
-
-      _.compile('<div my-directive probe="i"></div>', scope: childScope);
-
-      Probe probe = _.rootScope.context['i'];
-      var directiveInst = probe.directive(MyTestBedDirective);
-
+      var div = _.compile('<div my-directive></div>', scope: childScope);
+      var injector = ngInjector(div);
       childScope.destroy();
-
-      expect(directiveInst.destroyed).toBe(true);
+      expect(injector.get(MyTestBedDirective).destroyed).toBe(true);
     });
-
   });
 }
 

@@ -69,44 +69,34 @@ class ScopeDigestTTL {
   ScopeDigestTTL.value(this.ttl);
 }
 
-//TODO(misko): I don't think this should be in scope.
-class ScopeLocals implements Map {
-  static wrapper(scope, Map<String, Object> locals) =>
-      new ScopeLocals(scope, locals);
-
-  Map _scope;
-  Map<String, Object> _locals;
-
-  ScopeLocals(this._scope, this._locals);
-
-  void operator []=(String name, value) {
-    _scope[name] = value;
-  }
-  dynamic operator [](String name) {
-    // Map needed to clear Dart2js warning
-    Map map = _locals.containsKey(name) ? _locals : _scope;
-    return map[name];
-  }
-
-  bool get isEmpty => _scope.isEmpty && _locals.isEmpty;
-  bool get isNotEmpty => _scope.isNotEmpty || _locals.isNotEmpty;
-  List<String> get keys => _scope.keys;
-  List get values => _scope.values;
-  int get length => _scope.length;
-
-  void forEach(fn) {
-    _scope.forEach(fn);
-  }
-  dynamic remove(key) => _scope.remove(key);
-  void clear() {
-    _scope.clear;
-  }
-  bool containsKey(key) => _scope.containsKey(key);
-  bool containsValue(key) => _scope.containsValue(key);
-  void addAll(map) {
-    _scope.addAll(map);
-  }
-  dynamic putIfAbsent(key, fn) => _scope.putIfAbsent(key, fn);
+/**
+ * When a [Component] or the root context class implements [ScopeAware] the context setter will be
+ * called to set the [Scope] on this component.
+ *
+ * Typically classes implementing [ScopeAware] will declare a `Scope scope` property which will get
+ * initialized after the [Scope] is available. For this reason the `scope` property will not be
+ * initialized during the execution of the constructor - it will be immediately after.
+ *
+ * However if you need to execute some code as soon as the scope is available you should implement
+ * a `scope` setter:
+ *
+ *     @Component(...)
+ *     class MyComponent implements ScopeAware {
+ *       Watch watch;
+ *
+ *       MyComponent(Dependency myDep) {
+ *         // It is an error to add a Scope / RootScope argument to the ctor and will result in a DI
+ *         // circular dependency error - the scope is never accessible in the class constructor
+ *       }
+ *
+ *       void set scope(Scope scope) {
+ *          // This setter gets called to initialize the scope
+ *          watch = scope.rootScope.watch("expression", (v, p) => ...);
+ *       }
+ *     }
+ */
+abstract class ScopeAware {
+  void set scope(Scope scope);
 }
 
 /**
@@ -161,7 +151,10 @@ class Scope {
 
   Scope(Object this.context, this.rootScope, this._parentScope,
         this._readWriteGroup, this._readOnlyGroup, this.id,
-        this._stats);
+        this._stats)
+  {
+    if (context is ScopeAware) (context as ScopeAware).scope = this;
+  }
 
   /**
    * Use [watch] to set up change detection on an expression.
@@ -263,8 +256,8 @@ class Scope {
            expression is String ||
            expression is Function);
     if (expression is String && expression.isNotEmpty) {
-      var obj = locals == null ? context : new ScopeLocals(context, locals);
-      return rootScope._parser(expression).eval(obj);
+      var ctx = locals == null ? context : new ContextLocals(context, locals);
+      return rootScope._parser(expression).eval(ctx);
     }
 
     assert(locals == null);
@@ -334,8 +327,8 @@ class Scope {
     var child = new Scope(childContext, rootScope, this,
                           _readWriteGroup.newGroup(childContext),
                           _readOnlyGroup.newGroup(childContext),
-                         '$id:${_childScopeNextId++}',
-                         _stats);
+                          '$id:${_childScopeNextId++}',
+                          _stats);
 
     var prev = _childTail;
     child._prev = prev;
@@ -658,7 +651,7 @@ class RootScope extends Scope {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
     _zone.onScheduleMicrotask = runAsync;
-  cacheRegister.registerCache("ScopeWatchASTs", astCache);
+    cacheRegister.registerCache("ScopeWatchASTs", astCache);
   }
 
   RootScope get rootScope => this;

@@ -20,38 +20,36 @@ main() => describe('ngView', () {
       _ = tb;
       router = _router;
 
-      templates.put('foo.html', new HttpResponse(200,
-          '<h1 probe="p">Foo</h1>'));
-      templates.put('bar.html', new HttpResponse(200,
-          '<h1 probe="p">Bar</h1>'));
+      templates.put('foo.html', new HttpResponse(200, '<h1>Foo</h1>'));
+      templates.put('bar.html', new HttpResponse(200, '<h1>Bar</h1>'));
     });
 
 
     it('should switch template', async(() {
       Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
 
       router.route('/foo');
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root).toHaveText('Foo');
 
       router.route('/bar');
       microLeap();
-      expect(root.text).toEqual('Bar');
+      expect(root).toHaveText('Bar');
 
       router.route('/foo');
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root).toHaveText('Foo');
     }));
 
     it('should expose NgView as RouteProvider', async(() {
-      _.compile('<ng-view probe="m"></ng-view>');
+      _.compile('<ng-view></ng-view>');
       router.route('/foo');
       microLeap();
       _.rootScope.apply();
-      Probe probe = _.rootScope.context['p'];
+      Probe probe = _.rootScope.context.$probes['p'];
 
-      expect(probe.injector.get(RouteProvider) is NgView).toBeTruthy();
+      expect(ngInjector('h1', _.rootElement).get(RouteProvider) is NgView).toBeTruthy();
     }));
 
 
@@ -62,27 +60,26 @@ main() => describe('ngView', () {
       router.route('/foo');
       microLeap();
       Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
 
       _.rootScope.apply();
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root).toHaveText('Foo');
     }));
 
 
     it('should clear template when route is deactivated', async(() {
       Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
 
       router.route('/foo');
       microLeap();
-      expect(root.text).toEqual('Foo');
+      expect(root).toHaveText('Foo');
 
       router.route('/baz'); // route without a template
       microLeap();
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
     }));
-
   });
 
 
@@ -99,7 +96,7 @@ main() => describe('ngView', () {
     beforeEach((TestBed tb, Router _router, TemplateCache templates) {
       _ = tb;
       router = _router;
-      _.rootScope.context['flag'] = true;
+      _.rootScope.context.flag = true;
 
       templates.put('library.html', new HttpResponse(200,
           '<div><h1>Library</h1>'
@@ -116,25 +113,25 @@ main() => describe('ngView', () {
     it('should switch nested templates', async(() {
       Element root = _.compile('<ng-view></ng-view>');
       microLeap(); _.rootScope.apply(); microLeap();
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
 
       router.route('/library/all');
       microLeap(); _.rootScope.apply(); microLeap();
-      expect(root.text).toEqual('LibraryBooks');
+      expect(root).toHaveText('LibraryBooks');
 
       router.route('/library/1234');
       microLeap(); _.rootScope.apply(); microLeap();
-      expect(root.text).toEqual('LibraryBook 1234');
+      expect(root).toHaveText('LibraryBook 1234');
 
       // nothing should change here
       router.route('/library/1234/overview');
       microLeap(); _.rootScope.apply(); microLeap();
-      expect(root.text).toEqual('LibraryBook 1234');
+      expect(root).toHaveText('LibraryBook 1234');
 
       // nothing should change here
       router.route('/library/1234/read');
       microLeap(); _.rootScope.apply(); microLeap();
-      expect(root.text).toEqual('LibraryRead Book 1234');
+      expect(root).toHaveText('LibraryRead Book 1234');
     }));
 
     it('should not attempt to destroy and already destroyed childscope', async(() {
@@ -150,7 +147,7 @@ main() => describe('ngView', () {
 
       expect(root.text).toEqual('LibraryBook 1234');
 
-      _.rootScope.context['flag'] = false;
+      _.rootScope.context.flag = false;
       microLeap(); _.rootScope.apply(); microLeap();
       router.route('/alt');
       microLeap(); _.rootScope.apply(); microLeap();
@@ -182,11 +179,11 @@ main() => describe('ngView', () {
 
     it('should switch inline templates', async(() {
       Element root = _.compile('<ng-view></ng-view>');
-      expect(root.text).toEqual('');
+      expect(root).toHaveText('');
 
       router.route('/foo');
       microLeap();
-      expect(root.text).toEqual('Hello');
+      expect(root).toHaveText('Hello');
     }));
   });
 });

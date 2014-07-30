@@ -23,7 +23,6 @@ void main() {
       expect(annotation.template).toEqual('template');
       expect(annotation.templateUrl).toEqual('templateUrl');
       expect(annotation.cssUrls).toEqual(['cssUrls']);
-      expect(annotation.publishAs).toEqual('ctrl');
       expect(annotation.map).toEqual({
           'foo': '=>foo',
           'attr': '@attr',
@@ -53,7 +52,7 @@ void main() {
         expect(() {
           injector.get(DirectiveMap);
         }).toThrow('Mapping for attribute foo is already defined (while '
-        'processing annottation for field foo of Bad1Component)');
+                   'processing annotation for field foo of Bad1Component)');
       });
 
       it('should throw when annotated both getter and setter', () {
@@ -104,7 +103,6 @@ class NullParser implements Parser {
     template: 'template',
     templateUrl: 'templateUrl',
     cssUrl: const ['cssUrls'],
-    publishAs: 'ctrl',
     module: AnnotatedIoComponent.module,
     visibility: Directive.LOCAL_VISIBILITY,
     exportExpressions: const ['exportExpressions'],

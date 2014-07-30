@@ -11,21 +11,21 @@ class ElementBinderFactory {
   final ShadowDomComponentFactory shadowDomComponentFactory;
   final TranscludingComponentFactory transcludingComponentFactory;
 
-  ElementBinderFactory(this._parser, this._perf, this._config, this._expando,
-      this.astParser, this.componentFactory, this.shadowDomComponentFactory, this.transcludingComponentFactory);
+  ElementBinderFactory(this._parser, this._perf, this._config, this._expando, this.astParser,
+                       this.componentFactory, this.shadowDomComponentFactory,
+                       this.transcludingComponentFactory);
 
   // TODO: Optimize this to re-use a builder.
   ElementBinderBuilder builder(FormatterMap formatters, DirectiveMap directives) =>
-    new ElementBinderBuilder(this,formatters, directives);
+      new ElementBinderBuilder(this, formatters, directives);
 
   ElementBinder binder(ElementBinderBuilder b) =>
-
-      new ElementBinder(_perf, _expando, _parser, _config,
-          b.componentData, b.decorators, b.onEvents, b.bindAttrs, b.childMode);
+      new ElementBinder(_perf, _expando, _parser, _config, b.componentData, b.decorators,
+                        b.onEvents, b.bindAttrs, b.compileChildren);
 
   TemplateElementBinder templateBinder(ElementBinderBuilder b, ElementBinder transclude) =>
-      new TemplateElementBinder(_perf, _expando, _parser, _config,
-          b.template, transclude, b.onEvents, b.bindAttrs, b.childMode);
+      new TemplateElementBinder(_perf, _expando, _parser, _config, b.template, transclude,
+                                b.onEvents, b.bindAttrs, b.compileChildren);
 }
 
 /**
@@ -49,7 +49,7 @@ class ElementBinderBuilder {
   BoundComponentData componentData;
 
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
-  String childMode = Directive.COMPILE_CHILDREN;
+  bool compileChildren = true;
 
   ElementBinderBuilder(this._factory, this._formatters, this._directives);
 
@@ -62,11 +62,11 @@ class ElementBinderBuilder {
    * When the [Directive] annotation defines a `map`, the attribute mappings are added to the
    * [DirectiveRef].
    */
-  addDirective(DirectiveRef ref) {
+  void addDirective(DirectiveRef ref) {
     var annotation = ref.annotation;
-    var children = annotation.children;
+    compileChildren = compileChildren && annotation.compileChildren;
 
-    if (annotation.children == Directive.TRANSCLUDE_CHILDREN) {
+    if (annotation is Template) {
       template = ref;
     } else if (annotation is Component) {
       ComponentFactory factory;
@@ -78,37 +78,30 @@ class ElementBinderBuilder {
       } else {
         factory = _factory.componentFactory;
       }
-
       componentData = new BoundComponentData(ref, () => factory.bind(ref, _directives));
     } else {
       decorators.add(ref);
     }
 
-    if (annotation.children == Directive.IGNORE_CHILDREN) {
-      childMode = annotation.children;
-    }
-
     if (annotation.map != null) {
       annotation.map.forEach((attrName, mapping) {
         Match match = _MAPPING.firstMatch(mapping);
-        if (match == null) {
-          throw "Unknown mapping '$mapping' for attribute '$attrName'.";
-        }
+        if (match == null) throw "Unknown mapping '$mapping' for attribute '$attrName'.";
         var mode = match[1];
         var dstPath = match[2];
 
-        String dstExpression = dstPath.isEmpty ? attrName : dstPath;
-        AST dstAST = _factory.astParser(dstExpression); // no formatters
+        AST dstAST = _factory.astParser(dstPath.isEmpty ? attrName : dstPath); // no formatters
 
-        // Look up the value of attrName and compute an AST
+        // Look up the attribute value and compute an AST
+        var value = (ref.element as dom.Element).attributes[attrName];
         AST ast;
+
         if (mode != '@' && mode != '&') {
-          var value = attrName == "." ? ref.value : (ref.element as dom.Element).attributes[attrName];
-          if (value == null || value.isEmpty) { value = "''"; }
-          ast = _factory.astParser(value, formatters: _formatters);
+          ast = _factory.astParser(value == null || value.isEmpty ? "''" : value,
+                                   formatters: _formatters);
         }
 
-        ref.mappings.add(new MappingParts(attrName, ast, mode, dstAST, mapping));
+        ref.mappings.add(new MappingParts(attrName, ast, mode, dstAST, mapping, value));
       });
     }
   }
@@ -138,7 +131,6 @@ class BoundComponentData {
   @Deprecated('Use typeKey instead')
   Type get type => ref.type;
   Key get typeKey => ref.typeKey;
-
 
   /**
    * * [ref]: The components directive ref

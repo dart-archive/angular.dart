@@ -9,7 +9,7 @@ class Log {
   add(String msg) => log.add(msg);
 }
 
-@Decorator(children: Directive.TRANSCLUDE_CHILDREN, selector: 'foo')
+@Template(selector: 'foo')
 class LoggerViewDirective {
   LoggerViewDirective(ViewPort port, ViewFactory viewFactory,
       BoundViewFactory boundViewFactory, Logger logger) {
@@ -204,11 +204,12 @@ main() {
 
       it('should load directives/formatters from the child injector', (RootScope scope) {
         Module rootModule = new Module()
-          ..bind(Probe)
-          ..bind(Log)
-          ..bind(AFormatter)
-          ..bind(ADirective)
-          ..bind(Node, toFactory: () => document.body, inject: []);
+            ..bind(Probe)
+            ..bind(Log)
+            ..bind(AFormatter)
+            ..bind(ADirective)
+            ..bind(Node, toFactory: () => document.body, inject: [])
+            ..bind(Object, toImplementation: TestContext);
 
         Injector rootInjector = applicationFactory()
             .addModule(rootModule)
@@ -218,7 +219,8 @@ main() {
 
         Compiler compiler = rootInjector.get(Compiler);
         DirectiveMap directives = rootInjector.get(DirectiveMap);
-        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootScope, rootInjector.get(DirectiveInjector));
+        var els = es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>');
+        compiler(els, directives)(rootScope, rootInjector.get(DirectiveInjector));
         rootScope.apply();
 
         expect(log.log, equals(['AFormatter', 'ADirective']));
@@ -232,11 +234,12 @@ main() {
 
         DirectiveMap newDirectives = childInjector.get(DirectiveMap);
         var scope = childInjector.get(Scope);
-        compiler(es('<dir-a probe="dirA"></dir-a>{{\'a\' | formatterA}}'
-            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(scope, childInjector.get(DirectiveInjector));
+        els = es('<dir-a></dir-a>{{\'a\' | formatterA}}<dir-b></dir-b>{{\'b\' | formatterB}}');
+        compiler(els, newDirectives)(scope, childInjector.get(DirectiveInjector));
         rootScope.apply();
 
-        expect(log.log, equals(['AFormatter', 'ADirective', 'BFormatter', 'ADirective', 'BDirective']));
+        expect(log.log)
+            .toEqual(['AFormatter', 'ADirective', 'BFormatter', 'ADirective', 'BDirective']);
       });
 
     });

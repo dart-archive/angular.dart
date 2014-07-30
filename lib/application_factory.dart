@@ -50,7 +50,7 @@ import 'dart:html';
 metaTargets: const [
     Injectable,
     Decorator,
-    Controller,
+    Template,
     Component,
     Formatter
 ])

@@ -13,12 +13,12 @@ main() {
 
       var element = _.compile('<div ng-include="tpl.html"></div>');
 
-      expect(element.innerHtml).toEqual('');
+      expect(element).toHaveText('');
 
-      microLeap();  // load the template from cache.
-      scope.context['name'] = 'Vojta';
+      microLeap(); // load the template from cache.
+      scope.context.name = 'Vojta';
       scope.apply();
-      expect(element.text).toEqual('my name is Vojta');
+      expect(element).toHaveText('my name is Vojta');
     }));
 
     it('should fetch template from url using interpolation', async((Scope scope, TemplateCache cache) {
@@ -27,23 +27,22 @@ main() {
 
       var element = _.compile('<div ng-include="{{template}}"></div>');
 
-      expect(element.innerHtml).toEqual('');
+      expect(element).toHaveText('');
 
-      scope.context['name'] = 'Vojta';
-      scope.context['template'] = 'tpl1.html';
+      scope.context.name = 'Vojta';
+      scope.context.template = 'tpl1.html';
       microLeap();
       scope.apply();
       microLeap();
       scope.apply();
-      expect(element.text).toEqual('My name is Vojta');
+      expect(element).toHaveText('My name is Vojta');
 
-      scope.context['template'] = 'tpl2.html';
+      scope.context.template = 'tpl2.html';
       microLeap();
       scope.apply();
       microLeap();
       scope.apply();
-      expect(element.text).toEqual('I am Vojta');
+      expect(element).toHaveText('I am Vojta');
     }));
-
   });
 }

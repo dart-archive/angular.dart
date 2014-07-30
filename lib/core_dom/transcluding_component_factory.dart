@@ -12,7 +12,7 @@ class Content implements AttachAware, DetachAware {
     if (_port == null) return;
     _beginComment = _port.content(_element);
   }
-  
+
   void detach() {
     if (_port == null) return;
     _port.detachContent(_beginComment);
@@ -102,8 +102,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
                             DIRECTIVE_MAP_KEY, NG_BASE_CSS_KEY, EVENT_HANDLER_KEY];
   Function call(dom.Node node) {
     // CSS is not supported.
-    assert(_component.cssUrls == null ||
-           _component.cssUrls.isEmpty);
+    assert(_component.cssUrls == null || _component.cssUrls.isEmpty);
 
     var element = node as dom.Element;
     return (DirectiveInjector injector, Scope scope,
@@ -113,7 +112,6 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       DirectiveInjector childInjector;
       var childInjectorCompleter; // Used if the ViewFuture is available before the childInjector.
 
-      var component = _component;
       var contentPort = new ContentPort(element);
 
       // Append the component's template as children
@@ -140,21 +138,19 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       }
       TemplateLoader templateLoader = new TemplateLoader(elementFuture);
 
-      Scope shadowScope = scope.createChild(new HashMap());
-
       childInjector = new ShadowlessComponentDirectiveInjector(injector, injector.appInjector,
-          eventHandler, shadowScope, templateLoader, new ShadowlessShadowRoot(element),
-          contentPort);
+          eventHandler, templateLoader, new ShadowlessShadowRoot(element), contentPort,
+          _ref.typeKey);
+
       childInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 
-      if (childInjectorCompleter != null) {
-        childInjectorCompleter.complete(childInjector);
-      }
+      if (childInjectorCompleter != null) childInjectorCompleter.complete(childInjector);
 
-      var controller = childInjector.getByKey(_ref.typeKey);
-      shadowScope.context[component.publishAs] = controller;
-      BoundComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
-      return controller;
+      Scope shadowScope = childInjector.getByKey(SCOPE_KEY);
+      var component = childInjector.getByKey(_ref.typeKey);
+      BoundComponentFactory._setupOnShadowDomAttach(component, templateLoader, shadowScope);
+
+      return component;
     };
   }
 }

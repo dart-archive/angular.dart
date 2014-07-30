@@ -17,7 +17,7 @@ part of angular.directive;
 @Decorator(
     selector: '[ng-form]',
     module: NgForm.module,
-    map: const { 'ng-form': '@name' })
+    map: const { 'ng-form': '&name' })
 class NgForm extends NgControl {
   static module(DirectiveBinder binder) =>
       binder.bind(NgControl, toInstanceOf: NG_FORM_KEY, visibility: Visibility.CHILDREN);
@@ -52,26 +52,32 @@ class NgForm extends NgControl {
     * The name of the control. This is usually fetched via the name attribute that is
     * present on the element that the control is bound to.
     */
-  @NgAttr('name')
-  get name => _name;
-  set name(String value) {
-    if (value != null) {
-      super.name = value;
-      _scope.context[name] = this;
+  @NgCallback('name')
+  String get name => super.name;
+  void set name(exp) {
+    // The type could not be added on the parameter as the base setter takes a String
+    assert(exp is BoundExpression);
+    var name = exp.expression.toString();
+    if (name != null && name.isNotEmpty) {
+      super.name = name;
+      try {
+        exp.assign(this);
+      } catch (e) {
+        throw 'There must be a "$name" field on your component to store the form instance.';
+      }
     }
   }
 
   /**
     * The list of associated child controls.
     */
-  get controls => _controlByName;
+  Map<String, List<NgControl>> get controls => _controlByName;
 
   /**
     * Returns the child control that is associated with the given name. If multiple
     * child controls contain the same name then the first instance will be returned.
     */
-  NgControl operator[](String name) =>
-      controls.containsKey(name) ? controls[name][0] : null;
+  NgControl operator[](String name) => controls.containsKey(name) ? controls[name][0] : null;
 }
 
 class NgNullForm extends NgNullControl implements NgForm {

@@ -22,8 +22,7 @@ void main() {
       var sourceCrawler = new SourceCrawlerImpl(['packages/']);
       var sourceMetadataExtractor = new SourceMetadataExtractor();
       List<DirectiveInfo> directives =
-      sourceMetadataExtractor
-      .gatherDirectiveInfo(file, sourceCrawler);
+          sourceMetadataExtractor.gatherDirectiveInfo(file, sourceCrawler);
       var htmlExtractor = new HtmlExpressionExtractor(directives);
       htmlExtractor.crawl('test/io/test_files/', ioService);
 
@@ -34,19 +33,15 @@ void main() {
       var expressions = _extractExpressions('test/io/test_files/main.dart');
 
       expect(expressions, unorderedEquals([
-          'ctrl.expr',
-          'ctrl.anotherExpression',
-          'ctrl.callback',
-          'ctrl.twoWayStuff',
           'attr',
           'expr',
           'anotherExpression',
           'callback',
           'twoWayStuff',
           'exported + expression',
-          'ctrl.inline.template.expression',
+          'inline.template.expression',
           'ngIfCondition',
-          'ctrl.if'
+          'if'
       ]));
     });
 

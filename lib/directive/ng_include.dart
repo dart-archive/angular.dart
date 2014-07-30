@@ -27,30 +27,26 @@ class NgInclude {
   final DirectiveMap directives;
 
   View _view;
-  Scope _scope;
+  Scope _childScope;
 
-  NgInclude(this.element, this.scope, this.viewCache,
-            this.directiveInjector, this.directives);
+  NgInclude(this.element, this.scope, this.viewCache, this.directiveInjector, this.directives);
 
   _cleanUp() {
     if (_view == null) return;
-
     _view.nodes.forEach((node) => node.remove);
-    _scope.destroy();
+    _childScope.destroy();
+    _childScope = null;
     element.innerHtml = '';
-
     _view = null;
-    _scope = null;
   }
 
   _updateContent(ViewFactory viewFactory) {
     // create a new scope
-    _scope = scope.createChild(new PrototypeMap(scope.context));
-    _view = viewFactory(_scope, directiveInjector);
-
+    assert(_childScope == null);
+    _childScope = scope.createChild(scope.context);
+    _view = viewFactory(_childScope, directiveInjector);
     _view.nodes.forEach((node) => element.append(node));
   }
-
 
   set url(value) {
     _cleanUp();

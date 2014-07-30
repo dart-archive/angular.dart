@@ -228,10 +228,11 @@ class _SelectorPart {
       : element;
 }
 
-_addRefs(ElementBinderBuilder builder, List<_Directive> directives, dom.Node node,
-         [String attrValue]) {
+void _addRefs(ElementBinderBuilder builder, List<_Directive> directives, dom.Node node,
+              [String attrValue]) {
   directives.forEach((directive) {
-    builder.addDirective(new DirectiveRef(node, directive.type, directive.annotation, new Key(directive.type), attrValue));
+    builder.addDirective(new DirectiveRef(node, directive.type, directive.annotation,
+                                          new Key(directive.type), attrValue));
   });
 }
 

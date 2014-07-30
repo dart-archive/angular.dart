@@ -2,10 +2,9 @@ library test_files.main;
 
 import 'package:angular/core/annotation_src.dart';
 
-@Decorator(
-    children: Directive.TRANSCLUDE_CHILDREN,
+@Template(
     selector:'[ng-if]',
-    map: const {'.': '=>ngIfCondition'})
+    map: const {'ng-if': '=>ngIfCondition'})
 class NgIfDirective {
   bool ngIfCondition;
 }
@@ -16,7 +15,7 @@ class NgIfDirective {
       'attr': '@attr',
       'expr': '=>expr'
     },
-    template: '<div>{{ctrl.inline.template.expression}}</div>',
+    template: '<div>{{inline.template.expression}}</div>',
     exportExpressionAttrs: const ['exported-attr'],
     exportExpressions: const ['exported + expression'])
 class MyComponent {
@@ -32,9 +31,7 @@ class MyComponent {
 }
 
 class CssUrlsString {
-
 }
 
 class CssUrlsList {
-
 }

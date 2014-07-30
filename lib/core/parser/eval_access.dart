@@ -43,17 +43,17 @@ abstract class AccessFast {
   Getter get getter;
   Setter get setter;
 
-  _eval(holder) {
+  dynamic _eval(holder) {
     if (holder == null) return null;
-    return (holder is Map) ? holder[name] : getter(holder);
+    return getter(holder);
   }
 
-  _assign(scope, holder, value) {
+  dynamic _assign(scope, holder, value) {
     if (holder == null) {
       _assignToNonExisting(scope, value);
       return value;
     } else {
-      return (holder is Map) ? (holder[name] = value) : setter(holder, value);
+      return setter(holder, value);
     }
   }
 

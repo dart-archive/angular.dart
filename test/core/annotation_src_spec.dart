@@ -5,7 +5,8 @@ import 'dart:mirrors';
 import '../_specs.dart';
 
 var _SYMBOL_NAME = new RegExp('"([^@]*).*"');
-_getName(VariableMirror v) => _SYMBOL_NAME.firstMatch(v.simpleName.toString()).group(1);
+
+String _getName(VariableMirror v) => _SYMBOL_NAME.firstMatch(v.simpleName.toString())[1];
 
 Map<String, dynamic> variables(x) {
   Map variables = {};
@@ -39,11 +40,10 @@ void main() => describe('annotations', () {
         cssUrl: [''],
         applyAuthorStyles: true,
         resetStyleInheritance: true,
-        publishAs: '',
-        module: (i){},
+        module: (i) {},
         map: {},
         selector: '',
-        visibility: Directive.LOCAL_VISIBILITY,
+        visibility: Visibility.LOCAL,
         exportExpressions: [],
         exportExpressionAttrs: [],
         useShadowDom: true
@@ -60,11 +60,11 @@ void main() => describe('annotations', () {
   describe('decorator', () {
     it('should set all fields on clone when all the fields are set', () {
       var decorator = new Decorator(
-          children: 'xxx',
+          compileChildren: false,
           map: {},
           selector: '',
           module: (i){},
-          visibility: Directive.LOCAL_VISIBILITY,
+          visibility: Visibility.LOCAL,
           exportExpressions: [],
           exportExpressionAttrs: []
       );
@@ -77,24 +77,22 @@ void main() => describe('annotations', () {
     });
   });
 
-  describe('controller', () {
+  describe('template', () {
     it('should set all fields on clone when all the fields are set', () {
-      var controller = new Controller(
-          publishAs: '',
-          children: 'xxx',
+      var template = new Template(
           map: {},
           selector: '',
           module: (i){},
-          visibility: Directive.LOCAL_VISIBILITY,
+          visibility: Visibility.LOCAL,
           exportExpressions: [],
           exportExpressionAttrs: []
       );
 
       // Check that no fields are null
-      expect(nullFields(controller)).toEqual([]);
+      expect(nullFields(template)).toEqual([]);
 
       // Check that the clone is the same as the original.
-      expect(variables(cloneWithNewMap(controller, {}))).toEqual(variables(controller));
+      expect(variables(cloneWithNewMap(template, {}))).toEqual(variables(template));
     });
   });
 });

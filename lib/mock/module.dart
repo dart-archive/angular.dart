@@ -17,6 +17,7 @@ import 'dart:async' as dart_async;
 import 'dart:collection' show ListBase;
 import 'dart:html';
 import 'dart:js' as js;
+import 'dart:mirrors' as mirrors;
 
 import 'package:angular/angular.dart';
 import 'package:angular/core/module_internal.dart';
@@ -66,11 +67,50 @@ class AngularMockModule extends Module {
     bind(HttpBackend, toInstanceOf: MOCK_HTTP_BACKEND_KEY);
     bind(VmTurnZone, toFactory: () {
       return new VmTurnZone()
-        ..onError = (e, s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
+          ..onError = (e, s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
     }, inject: []);
     bind(Window, toImplementation: MockWindow);
     var mockPlatform = new MockWebPlatform();
     bind(MockWebPlatform, toValue: mockPlatform);
     bind(WebPlatform, toValue: mockPlatform);
+    bind(Object, toImplementation: TestContext);
   }
+}
+
+/**
+ * [DynamicObject] helps testing angular.dart.
+ *
+ * Setting the test context to an instance of [DynamicObject] avoid having to write a specific class
+ * for every new test by allowing the dynamic addition of properties through the use of
+ * [Object.noSuchMethod]
+ *
+ */
+@proxy
+class DynamicObject {
+  Map _locals = {};
+
+  void addProperties(Map<String, dynamic> locals) {
+    assert(locals != null);
+    _locals.addAll(locals);
+  }
+
+  noSuchMethod(Invocation invocation) {
+    var pArgs = invocation.positionalArguments;
+    var field = mirrors.MirrorSystem.getName(invocation.memberName);
+    if (invocation.isGetter) {
+      return _locals[field];
+    }
+    if (invocation.isSetter) {
+      field = field.substring(0, field.length - 1);
+      return _locals[field] = pArgs[0];
+    }
+    if (invocation.isMethod) {
+      return Function.apply(_locals[field], pArgs, invocation.namedArguments);
+    }
+    throw new UnimplementedError(field);
+  }
+}
+
+class TestContext extends DynamicObject {
+  final $probes = <String, Probe>{};
 }
