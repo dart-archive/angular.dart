@@ -14,9 +14,22 @@ main() {
   describe('WebComponent support', () {
     TestBed _;
 
-    customProp(String prop, [elt]) {
+    /**
+     * Returns the property [prop] as read through the JS interface.
+     * [elt] is optional and defaults to the [TestBed]'s rootElement.
+     */
+    customProp(String prop, [Element elt]) {
       if (elt == null) elt = _.rootElement;
       return (new js.JsObject.fromBrowserObject(elt))[prop];
+    }
+
+    /**
+     * Sets the property [prop] to [value] through the JS interface.
+     * [elt] is optional and defaults to the [TestBed]'s rootElement.
+     */
+    void setCustomProp(String prop, value, [Element elt]) {
+      if (elt == null) elt = _.rootElement;
+      (new js.JsObject.fromBrowserObject(_.rootElement))[prop] = value;
     }
 
     beforeEach((TestBed tb) {
@@ -57,6 +70,16 @@ main() {
       _.rootScope.apply();
       expect(customProp('ng-bind')).toEqual("hello");
       expect(_.rootElement).toHaveText('hello');
+    });
+
+    it('should support two-way bindings for components that trigger a change event', () {
+      registerElement('tests-twoway', {});
+      _.compile('<tests-twoway bind-prop="x"></tests-twoway>');
+
+      setCustomProp('prop', 6);
+      _.rootElement.dispatchEvent(new Event.eventType('CustomEvent', 'change'));
+
+      expect(_.rootScope.context['x']).toEqual(6);
     });
   });
 }
