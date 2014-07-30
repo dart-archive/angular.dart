@@ -42,8 +42,8 @@
     <p>AngularDart can listen to these events through the on-* syntax</p>
 
     <div>
-        <paper-checkbox on-change="curValue = (curValue * 1.02)"></paper-checkbox>
+        <paper-checkbox on-change="curValue = curValue == 5 ? 2 : curValue == 2 ? 10 : 5"></paper-checkbox>
     </div>
-    <p>Every the value changes, the curValue ({{curValue}}) scope variable is multiplied by 1.02</p>
+    <p>Every the value changes, the curValue ({{curValue}}) scope variable will update</p>
   </body>
 </html>
