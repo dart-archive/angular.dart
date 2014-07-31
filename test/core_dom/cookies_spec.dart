@@ -9,15 +9,15 @@ void main() {
       var cookies = document.cookie.split(";");
       var path = window.location.pathname;
 
-      for (var i = 0; i < cookies.length; i++) {
-        var cookie = cookies[i];
+      for (var cookie in cookies) {
         var eqPos = cookie.indexOf("=");
         var name = eqPos > -1 ? cookie.substring(0, eqPos) : '';
         var parts = path.split('/');
-        while (!parts.isEmpty) {
+        while (parts.isNotEmpty) {
           var joinedParts = parts.join('/');
-          document.cookie = name + "=;path=" + (joinedParts.isEmpty ? '/': joinedParts) +
-          ";expires=Thu, 01 Jan 1970 00:00:00 GMT";
+          document.cookie = name + "=;path=" +
+                                   (joinedParts.isEmpty ? '/': joinedParts) +
+                                   ";expires=Thu, 01 Jan 1970 00:00:00 GMT";
           parts.removeLast();
         }
       }
@@ -94,43 +94,37 @@ void main() {
         });
 
         it('should log warnings when 4kb per cookie storage limit is reached',
-        (ExceptionHandler exceptionHandler) {
-          var i, longVal = '', cookieStr;
+            (ExceptionHandler exceptionHandler) {
+          var i, cookieStr;
 
-          for (i=0; i<4083; i++) {
-            longVal += 'r';  // Can't do + due to dartbug.com/14281
-          }
+          var longVal = 'r' * 4083;
 
           cookieStr = document.cookie;
-          cookies['x'] = longVal; //total size 4093-4096, so it should go through
+          cookies['x'] = longVal;
           expect(document.cookie).not.toEqual(cookieStr);
           expect(cookies['x']).toEqual(longVal);
-          //expect(logs.warn).toEqual([]);
           var overflow = 'xxxxxxxxxxxxxxxxxxxx';
-          cookies['x'] = longVal + overflow; //total size 4097-4099, a warning should be logged
-          //expect(logs.warn).toEqual(
-          //    [[ "Cookie 'x' possibly not set or overflowed because it was too large (4097 > 4096 " +
-          //    "bytes)!" ]]);
-          expect(document.cookie).not.toContain(overflow);
+          cookies['x'] = longVal + overflow;
 
-          //force browser to dropped a cookie and make sure that the cache is not out of sync
           cookies['x'] = 'shortVal';
-          expect(cookies['x']).toEqual('shortVal'); //needed to prime the cache
+          expect(cookies['x']).toEqual('shortVal');
           cookieStr = document.cookie;
-          cookies['x'] = longVal + longVal + longVal; //should be too long for all browsers
+
+          // should be too long for all browsers
+          cookies['x'] = longVal * 3;
 
           if (document.cookie != cookieStr) {
             throw "browser didn't drop long cookie when it was expected. make the " +
-            "cookie in this test longer";
+                  "cookie in this test longer";
           }
 
           expect(cookies['x']).toEqual('shortVal');
           var errors = (exceptionHandler as LoggingExceptionHandler).errors;
           expect(errors.length).toEqual(2);
-          expect(errors[0].error).
-          toEqual("Cookie 'x' possibly not set or overflowed because it was too large (4113 > 4096 bytes)!");
-          expect(errors[1].error).
-          toEqual("Cookie 'x' possibly not set or overflowed because it was too large (12259 > 4096 bytes)!");
+          expect(errors[0].error).toEqual("Cookie 'x' possibly not set or overflowed because it was"
+                                          " too large (4113 > 4096 bytes)!");
+          expect(errors[1].error).toEqual("Cookie 'x' possibly not set or overflowed because it was"
+                                          " too large (12259 > 4096 bytes)!");
           errors.clear();
         });
       });
@@ -149,11 +143,9 @@ void main() {
       });
 
       describe('get via cookies[cookieName]', () {
-
         it('should return null for nonexistent cookie', () {
           expect(cookies['nonexistent']).toBe(null);
         });
-
 
         it ('should return a value for an existing cookie', () {
           document.cookie = "foo=bar=baz;path=/";
@@ -173,7 +165,6 @@ void main() {
           expect(cookies['cookie2=bar;baz']).toEqual('val=ue');
         });
 
-
         it('should preserve leading & trailing spaces in names and values', () {
           cookies[' cookie name '] = ' cookie value ';
           expect(cookies[' cookie name ']).toEqual(' cookie value ');
@@ -181,21 +172,17 @@ void main() {
         });
       });
 
-
       describe('getAll via cookies(', () {
-
         it('should return cookies as hash', () {
           document.cookie = "foo1=bar1;path=/";
           document.cookie = "foo2=bar2;path=/";
           expect(cookies.all).toEqual({'foo1':'bar1', 'foo2':'bar2'});
         });
 
-
         it('should return empty hash if no cookies exist', () {
           expect(cookies.all).toEqual({});
         });
       });
-
 
       it('should pick up external changes made to browser cookies', () {
         cookies['oatmealCookie'] = 'drool';
@@ -205,7 +192,6 @@ void main() {
         expect(cookies['oatmealCookie']).toEqual('changed');
       });
 
-
       it('should initialize cookie cache with existing cookies', () {
         document.cookie = "existingCookie=existingValue;path=/";
         expect(cookies.all).toEqual({'existingCookie':'existingValue'});
@@ -214,8 +200,8 @@ void main() {
 
     describe('cookies service', () {
       var cookiesService;
-      beforeEach((Cookies iCookies) {
-        cookiesService = iCookies;
+      beforeEach((Cookies cookies, BrowserCookies bc) {
+        cookiesService = cookies;
         document.cookie = 'oatmealCookie=fresh;path=/';
       });
 
@@ -233,11 +219,11 @@ void main() {
           cookiesService["oatmealCookie"] = "stale";
           expect(document.cookie).toContain("oatmealCookie=stale");
         });
-      });
 
-      it('should remove cookie', () {
-        cookiesService.remove("oatmealCookie");
-        expect(document.cookie).not.toContain("oatmealCookie");
+        it('should remove cookie', () {
+          cookiesService.remove("oatmealCookie");
+          expect(document.cookie).not.toContain("oatmealCookie");
+        });
       });
     });
   });

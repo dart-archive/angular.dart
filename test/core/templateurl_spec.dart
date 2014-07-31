@@ -87,7 +87,7 @@ _run({resolveUrls, staticMode}) {
   if (!resolveUrls) prefix = "";
   else if (staticMode) prefix = "packages/test.angular.core_dom/";
   else prefix = TEST_SERVER_BASE_PREFIX + "test/core/";
-  
+
   describe('template url resolveUrls=${resolveUrls}, mode=${staticMode ? 'static' : 'dynamic'}', () {
     TestBed _;
 
@@ -175,7 +175,6 @@ _run({resolveUrls, staticMode}) {
         expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
       }));
     });
-
 
     describe('css loading (shadow dom components)', () {
       beforeEachModule((Module module) {
