@@ -268,9 +268,9 @@ class ElementBinder {
         eventHandler(parentInjector);
     if (this is TemplateElementBinder) {
       nodeInjector = new TemplateDirectiveInjector(parentInjector, _appInjector,
-          node, nodeAttrs, parentEventHandler, scope, _animate, (this as TemplateElementBinder).templateViewFactory);
+          node, nodeAttrs, parentEventHandler, scope, _animate, (this as TemplateElementBinder).templateViewFactory, view);
     } else {
-      nodeInjector = new DirectiveInjector(parentInjector, _appInjector, node, nodeAttrs, parentEventHandler, scope, _animate);
+      nodeInjector = new DirectiveInjector(parentInjector, _appInjector, node, nodeAttrs, parentEventHandler, scope, _animate, view);
     }
 
     for(var i = 0; i < directiveRefs.length; i++) {

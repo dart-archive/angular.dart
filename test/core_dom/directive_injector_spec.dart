@@ -15,6 +15,7 @@ void main() {
     describe('base', () {
       DirectiveInjector injector;
       Scope scope;
+      View view;
       Animate animate;
 
       addDirective(Type type, [Visibility visibility]) {
@@ -30,13 +31,16 @@ void main() {
       beforeEach((Scope _scope, Animate _animate) {
         scope = _scope;
         animate = _animate;
-        injector = new DirectiveInjector(null, appInjector, div, new NodeAttrs(div), eventHandler, scope, animate);
+        view = new View([], scope);
+        injector = new DirectiveInjector(null, appInjector, div, new NodeAttrs(div), eventHandler,
+            scope, animate, view);
       });
 
       it('should return basic types', () {
         expect(injector.scope).toBe(scope);
         expect(injector.get(Injector)).toBe(appInjector);
         expect(injector.get(Scope)).toBe(scope);
+        expect((injector.get(View))).toBe(view);
         expect(injector.get(Node)).toBe(div);
         expect(injector.get(Element)).toBe(div);
         expect((injector.get(NodeAttrs) as NodeAttrs).element).toBe(div);
@@ -48,7 +52,8 @@ void main() {
       it('should support get from parent methods', () {
         var newDiv = new DivElement();
         var childInjector = new DirectiveInjector(
-            injector, appInjector, newDiv, new NodeAttrs(newDiv), eventHandler, scope, animate);
+            injector, appInjector, newDiv, new NodeAttrs(newDiv), eventHandler,
+            scope, animate, view);
 
         expect(childInjector.get(Node)).toBe(newDiv);
         expect(childInjector.getFromParent(Node)).toBe(div);
@@ -79,8 +84,8 @@ void main() {
         DirectiveInjector leafInjector;
 
         beforeEach(() {
-          childInjector = new DirectiveInjector(injector, appInjector, span, null, null, null, null);
-          leafInjector = new DirectiveInjector(childInjector, appInjector, span, null, null, null, null);
+          childInjector = new DirectiveInjector(injector, appInjector, span, null, null, null, null, null);
+          leafInjector = new DirectiveInjector(childInjector, appInjector, span, null, null, null, null, null);
         });
 
         it('should not allow reseting visibility', () {
