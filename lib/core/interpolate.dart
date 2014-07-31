@@ -61,8 +61,7 @@ class Interpolate implements Function {
           // formatter
           expParts.add(_wrapInQuotes(template.substring(index, startIdx)));
         }
-        expParts.add('(' + template.substring(startIdx + startLen, endIdx) +
-        '|stringify)');
+        expParts.add('(' + template.substring(startIdx + startLen, endIdx) + '|stringify)');
 
         index = endIdx + endLen;
         hasInterpolation = true;

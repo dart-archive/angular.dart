@@ -24,7 +24,7 @@ class FormatterMap {
     });
   }
 
-  call(String name) => _injector.get(this[name]);
+  Function call(String name) => _injector.get(this[name]);
 
   Type operator[](String name) {
     Type formatterType = _map[name];
