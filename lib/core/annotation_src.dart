@@ -15,8 +15,7 @@ typedef void DirectiveBinderFn(DirectiveBinder module);
 
 RegExp _ATTR_NAME = new RegExp(r'\[([^\]]+)\]$');
 
-Directive cloneWithNewMap(Directive annotation, map)
-    => annotation._cloneWithNewMap(map);
+Directive cloneWithNewMap(Directive annotation, map) => annotation._cloneWithNewMap(map);
 
 String mappingSpec(DirectiveAnnotation annotation) => annotation._mappingSpec;
 
@@ -219,7 +218,8 @@ abstract class Directive {
     this.exportExpressionAttrs: const []
   });
 
-  toString() => selector;
+  String toString() => selector;
+
   Directive _cloneWithNewMap(newMap);
 }
 

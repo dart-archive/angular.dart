@@ -91,7 +91,7 @@ class ElementBinder {
     }
   }
 
-  _bindOneWay(tasks, ast, scope, AST dstAST, controller) {
+  void _bindOneWay(tasks, ast, scope, AST dstAST, controller) {
     var taskId = (tasks != null) ? tasks.registerTask() : 0;
 
     scope.watchAST(ast, (v, _) {
