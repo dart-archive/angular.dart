@@ -19,6 +19,33 @@ fi
 AVAILABLE_DART_VERSION=$(curl "https://storage.googleapis.com/dart-archive/channels/$CHANNEL/release/latest/VERSION" | python -c \
     'import sys, json; print(json.loads(sys.stdin.read())["version"])')
 
+# g3v1x and Dart 1.5.8
+# --------------------
+# Skip tests for branches based on the g3v1x channel with Dart 1.5.8.
+# g3v1x uses dependency overrides that cannot be satisfied by the pub tool
+# shipper in Dart version 1.5.8.
+#
+# Ref: https://travis-ci.org/angular/angular.dart/jobs/33106780
+#
+#   Dart VM version: 1.5.8 (Tue Jul 29 07:05:41 2014) on "linux_x64"
+#   Resolving dependencies...
+#   Incompatible version constraints on barback:
+#   - angular 0.13.0 depends on version 0.14.1+3
+#   - pub itself depends on version >=0.13.0 <0.14.1
+if [[ "$G3V1X_LINEAGE" == "1" || "$USE_G3" == "YES" ]]; then
+  if [[ "$AVAILABLE_DART_VERSION" == "1.5.8" ]]; then
+    exec > >(tee SKIP_TRAVIS_TESTS)
+    echo '==================================================================='
+    echo '== SKIPPING script: The g3v1x branch cannot be tested with       =='
+    echo '== Dart version 1.5.8.  The dependency overrides require a       =='
+    echo '== newer version of Dart.                                        =='
+    echo '== Ref: https://travis-ci.org/angular/angular.dart/jobs/33106780 =='
+    echo '==================================================================='
+    exit 0
+  fi
+fi
+
+
 echo Fetch Dart channel: $CHANNEL
 
 SVN_REVISION=latest

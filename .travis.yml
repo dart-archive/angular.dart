@@ -46,13 +46,15 @@ env:
     TESTS=dart2js
     BROWSERS=SL_Chrome,SL_Firefox
   global:
-  - FIREFOX_VERSION="30.0"
-  - CHROME_VERSION="35.0"
   - secure: AKoqpZ699egF0i4uT/FQ5b4jIc0h+KVbhtVCql0uFxwFIl2HjOYgDayrUCAf6USfpW0LghZxJJhBamWOl/505eNSe9HvEd8JLg/to+1Fo9xi9llsu5ehmNH31/5pue4EvsrVuEap1qqL6/BNwI2cAryayU0p5tV0g8gL5h4IxG8=
   - LOGS_DIR=/tmp/angular-build/logs
+  # Sauce
   - BROWSER_PROVIDER_READY_FILE=/tmp/sauce-connect-ready
   - SAUCE_USERNAME=angular-ci
   - SAUCE_ACCESS_KEY=9b988f434ff8-fbca-8aa4-4ae3-35442987
+  # E2E tests
+  - SELENIUM_VERSION="2.42"
+  - CHROMEDRIVER_VERSION="2.10"
 
 branches:
   except:
