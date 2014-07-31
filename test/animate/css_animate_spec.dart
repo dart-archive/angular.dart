@@ -92,19 +92,17 @@ _run({bool animationsAllowed}) {
     it('should prevent child animations', async(() {
       _.compile('<div></div>');
       animate.addClass(_.rootElement, 'test');
-      runner.start();
       if (animationsAllowed) {
         expect(_.rootElement).toHaveClass('test-add');
       }
       var spans = es('<span>A</span><span>B</span>');
       animate.insert(spans, _.rootElement);
-      runner.start();
       expect(spans.first).not.toHaveClass('ng-add');
     }));
   });
 }
 
-class MockAnimationLoop extends Mock implements AnimationLoop {
+class MockAnimationLoop implements AnimationLoop {
   bool animationsAllowed;
   num time = 0.0;
 
