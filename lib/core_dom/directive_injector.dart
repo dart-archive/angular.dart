@@ -111,6 +111,7 @@ class DirectiveInjector implements DirectiveBinder {
   final Animate _animate;
   final EventHandler _eventHandler;
   Scope scope;  //TODO(misko): this should be final after we get rid of controller
+  final View _view;
 
   NgElement _ngElement;
   ElementProbe _elementProbe;
@@ -144,15 +145,18 @@ class DirectiveInjector implements DirectiveBinder {
 
   static Binding _tempBinding = new Binding();
 
-  DirectiveInjector(this._parent, appInjector, this._node, this._nodeAttrs,
-      this._eventHandler, this.scope, this._animate)
-      : _appInjector = appInjector;
+  DirectiveInjector(DirectiveInjector parent, appInjector, this._node, this._nodeAttrs,
+      this._eventHandler, this.scope, this._animate, [View view])
+      : _parent = parent,
+      _appInjector = appInjector,
+      _view = view == null && parent != null ? parent._view : view;
 
   DirectiveInjector._default(this._parent, this._appInjector)
       : _node = null,
         _nodeAttrs = null,
         _eventHandler = null,
         scope = null,
+        _view = null,
         _animate = null;
 
   void bind(key, {dynamic toValue: DEFAULT_VALUE,
@@ -295,6 +299,7 @@ class DirectiveInjector implements DirectiveBinder {
           currentInjector = currentInjector._parent;
         }
         return null;
+      case VIEW_KEY_ID:               return _view;
       default: new NoProviderError(_KEYS[keyId]);
     }
   }
@@ -375,8 +380,8 @@ class TemplateDirectiveInjector extends DirectiveInjector {
 
   TemplateDirectiveInjector(DirectiveInjector parent, Injector appInjector,
                        Node node, NodeAttrs nodeAttrs, EventHandler eventHandler,
-                       Scope scope, Animate animate, this._viewFactory)
-    : super(parent, appInjector, node, nodeAttrs, eventHandler, scope, animate);
+                       Scope scope, Animate animate, this._viewFactory, [View view])
+    : super(parent, appInjector, node, nodeAttrs, eventHandler, scope, animate, view);
 
 
   Object _getById(int keyId) {
@@ -400,9 +405,9 @@ class ComponentDirectiveInjector extends DirectiveInjector {
 
   ComponentDirectiveInjector(DirectiveInjector parent, Injector appInjector,
                         EventHandler eventHandler, Scope scope,
-                        this._templateLoader, this._shadowRoot, this._contentPort)
+                        this._templateLoader, this._shadowRoot, this._contentPort, [View view])
       : super(parent, appInjector, parent._node, parent._nodeAttrs, eventHandler, scope,
-              parent._animate) {
+              parent._animate, view) {
     // A single component creates a ComponentDirectiveInjector and its DirectiveInjector parent,
     // so parent should never be null.
     assert(parent != null);
