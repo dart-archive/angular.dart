@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -e -o pipefail
 
 #  If we're on the presubmit branch, the dev Dart release, and all unit
 #  tests pass, merge the presubmit branch into master and push it.

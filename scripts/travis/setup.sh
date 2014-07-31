@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -e -o pipefail
 
 
 echo Fetch Dart channel: $CHANNEL
