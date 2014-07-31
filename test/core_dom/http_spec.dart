@@ -1426,8 +1426,8 @@ void main() {
 
     describe('coalesce', () {
       beforeEachModule((Module module) {
-        var coalesceDuration = new Duration(milliseconds: 100);
-        module.bind(HttpConfig, toValue: new HttpConfig(coalesceDuration: coalesceDuration));
+        var duration = new Duration(milliseconds: 100);
+        module.bind(HttpConfig, toValue: new HttpConfig.withOptions(coalesceDuration: duration));
       });
 
       it('should coalesce requests', async((Http http) {
