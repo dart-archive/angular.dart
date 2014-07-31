@@ -764,5 +764,6 @@ class Http {
 class HttpConfig {
   final Duration coalesceDuration;
 
-  HttpConfig({this.coalesceDuration});
+  HttpConfig();
+  HttpConfig.withOptions({this.coalesceDuration});
 }
