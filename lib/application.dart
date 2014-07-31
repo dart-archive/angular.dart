@@ -166,6 +166,11 @@ abstract class Application {
     return this;
   }
 
+  Application rootContextType(Type rootContext) {
+    modules.add(new Module()..bind(Object, toImplementation: rootContext));
+    return this;
+  }
+
   Injector run() {
     publishToJavaScript();
     return zone.run(() {
