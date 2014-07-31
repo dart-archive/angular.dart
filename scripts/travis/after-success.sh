@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -o errexit pipefail
 
 echo '*******************'
 echo '** AFTER_SUCCESS **'

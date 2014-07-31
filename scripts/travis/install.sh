@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -o errexit pipefail
 
 sh -e /etc/init.d/xvfb start
 

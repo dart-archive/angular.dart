@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -o errexit pipefail
 
 # Setup and start Sauce Connect for your TravisCI build
 # This script requires your .travis.yml to include the following two private env variables:
