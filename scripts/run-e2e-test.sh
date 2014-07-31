@@ -2,7 +2,7 @@
 
 # Run E2E / Protractor tests.
 
-set -e
+set -e -o pipefail
 
 . $(dirname $0)/env.sh
 

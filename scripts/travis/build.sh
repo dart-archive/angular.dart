@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -e -o pipefail
 . "$(dirname $0)/../env.sh"
 
 echo '==========='

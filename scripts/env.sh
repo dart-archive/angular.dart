@@ -1,5 +1,5 @@
 #!/bin/false
-set -e
+set -e -o pipefail
 
 if [[ -z $ENV_SET ]]; then
   export ENV_SET=1
