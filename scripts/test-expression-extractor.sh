@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -o errexit pipefail
 
 . $(dirname $0)/env.sh
 
