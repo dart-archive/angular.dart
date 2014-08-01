@@ -203,6 +203,55 @@ _run({resolveUrls, staticMode}) {
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
       }));
+
+      it('should load a CSS file with a \$template', async(
+          (Http http, Compiler compile, Scope rootScope, Injector injector,
+           MockHttpBackend backend, DirectiveMap directives) {
+        var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
+        compile(element, directives)(rootScope, null, element);
+
+        backend.flushGET('${prefix}simple.css').respond(200, '.hello{}');
+        microLeap();
+
+        expect(element[0]).toHaveText('.hello{}inline!');
+      }));
+
+      it('should ignore CSS load errors ', async(
+          (Http http, Compiler compile, Scope rootScope, Injector injector,
+           MockHttpBackend backend, DirectiveMap directives) {
+        var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
+        compile(element, directives)(rootScope, null, element);
+
+        backend.flushGET('${prefix}simple.css').respond(500, 'some error');
+        microLeap();
+        expect(element.first).toHaveText('/*HTTP 500: some error*/inline!');
+      }));
+
+      it('should load a CSS with no template', async(
+          (Http http, Compiler compile, Scope rootScope, Injector injector,
+           MockHttpBackend backend, DirectiveMap directives) {
+        var element = es('<div><only-css log>ignore</only-css><div>');
+        compile(element, directives)(rootScope, null, element);
+
+        backend.flushGET('${prefix}simple.css').respond(200, '.hello{}');
+        microLeap();
+
+        expect(element[0]).toHaveText('.hello{}');
+      }));
+
+      it('should load the CSS before the template is loaded', async(
+          (Http http, Compiler compile, Scope rootScope, Injector injector,
+           MockHttpBackend backend, DirectiveMap directives) {
+        var element = es('<html-and-css>ignore</html-and-css>');
+        compile(element, directives)(rootScope, null, element);
+
+        backend
+            ..flushGET('${prefix}simple.css').respond(200, '.hello{}')
+            ..flushGET('${prefix}simple.html').respond(200, '<div>Simple!</div>');
+        microLeap();
+
+        expect(element.first).toHaveText('.hello{}Simple!');
+      }));
     });
 
     describe('css loading (transcluding components)', () {
