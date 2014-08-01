@@ -1,6 +1,28 @@
 <a name="v0.13.0"></a>
 # v0.13.0 tempus-fugitification (2014-07-25)
 
+## Highlights
+
+This release is focused on performance and significantly speeds up rendering.  We optimized our 
+entire rendering pipeline and now component rendering is 2.8 times (those with inlined templates) 
+to 6.3 times faster (those with template files) than the previous 0.12.0 release.
+
+To accomplish these performance improvements, we
+- fixed a number of performance bugs
+- moved more compilation work out of the ViewFactories, which stamps out DOM nodes, and into the 
+  Compiler, which sets up the ViewFactories.
+- implemented a custom "directive injector" to optimize Dependency Injection calls from the 
+  ViewFactories
+- optimized Dependency Injection, eliminating slow APIs
+
+Also, we have given apps more knobs to tune performance
+- The Http service now supports coalescing http requests. This means that all the HTTP responses 
+  that arrive within a particular interval can all be processed in a single digest.
+- The ElementProbe can be disabled for apps that do not use animation
+- Along with the existing ScopeStats, Angular now exposes cache statistics through the ngCaches 
+  global object. This also allows developers to clear the caches and measure memory usage
+- Along with these changes, we have also added support for ProtractorDart.
+
 ## Bug Fixes
 
 - **DynamicParser:** Correctly handle throwing exceptions from method.
@@ -244,11 +266,19 @@ towards the ScopeDigestTTL.
   notifyWhenNoOutstandingRequests(callback) method on the testability
   object to whenStable(callback).
 
-
-
-
 <a name="v0.12.0"></a>
 # v0.12.0 sprightly-argentinosaurus (2014-06-03)
+
+## Highlights
+
+- A 20% performance improvement from caching interpolated expressions.
+- Http service can make cross-site requests (get, post, put, etc.) which use credentials (such as 
+  cookies or authorization headers).
+- **Breaking change**: vetoing is no longer allowed on leave (RouteLeaveEvent). This change corrects 
+  an issue with routes unable to recover from another route vetoing a leave event.
+- **Breaking change**:  Zone.defaultOnScheduleMicrotask is now named Zone.onScheduleMicrotask
+- **Breaking change**: OneWayOneTime bindings will continue to accept value assignments until their 
+  stabilized value is non-null.
 
 ## Bug Fixes
 
@@ -339,13 +369,61 @@ towards the ScopeDigestTTL.
 
 - **VmTurnZone:** due to [a8699da0](https://github.com/angular/angular.dart/commit/a8699da016c754e08502ae24034a86bd8d6e0d8e),
  
-
 `Zone.defaultOnScheduleMicrotask` is now named `Zone.onScheduleMicrotask`
 
 
 <a name="v0.11.0"></a>
 # v0.11.0 ungulate-funambulism (2014-05-06)
 
+## Highlights
+
+### Breaking Change
+
+The breaking change first: `Http.getString()` is gone.
+
+If you said: `Http.getString('data.txt').then((String data) { ... })` before, now say
+`Http.get('data.txt').then((HttpResponse resp) { var data = resp.data; ... });`
+
+### New Features
+
+- Shadow DOM-less components
+
+Shadow DOM is still enabled by default for components. Now, its use can be controlled through the 
+new `useShadowDom` option in the Component annotation.
+
+For example:
+
+```dart
+@Component(
+  selector: 'my-comp',
+  templateUrl: 'my-comp.html',
+  useShadowDom: false)
+class MyComp {}
+```
+
+will disable Shadow DOM for that component and construct the template in the "light" DOM. Either 
+omitting the `useShadowDom` option or explicitly setting it to `true` will cause Angular to 
+construct the template in the component's shadow DOM.
+
+Adding cssUrls to Components with Shadow DOM disabled is not allowed. Since they aren't using Shadow 
+DOM, there is no style encapsulation and per-component CSS doesn't make sense. The component has 
+access to the styles in the `documentFragment` where it was created. Style encapsulation is a 
+feature we are thinking about, so this design will likely change in the future.
+
+- bind-* syntax
+
+We have shipped an early "preview" of the upcoming bind-* syntax. In 0.11.0, you may bind an 
+expression to any mapped attribute, even if that attribute is a `@NgAttr` mapping which typically 
+takes a string.
+
+### Performance improvements
+
+There are two significant performance improvements:
+- We now cache CSS as `StyleElement`s instead of string, saving a `setInnerHtml` call on each styled 
+  component instantiation. In a benchmark where components used unminified Bootstrap styles (124kB), 
+  this sped up component creation by 31%.
+- Changes in the DI package sped up View instantiation by 200%. This change makes AngularDart 
+  rendering significantly faster.
 
 ## Bug Fixes
 
