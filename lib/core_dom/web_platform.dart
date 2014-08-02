@@ -26,6 +26,12 @@ class WebPlatform {
     }
   }
 
+  /**
+   * Because this code uses `strictStyling` for the polymer css shim, it is required to add the
+   * custom element’s name as an attribute on all DOM nodes in the shadowRoot (e.g. <span x-foo>).
+   *
+   * See http://www.polymer-project.org/docs/polymer/styling.html#strictstyling
+   */
   String shimCss(String css, { String selector, String cssUrl }) {
     if (!cssShimRequired) return css;
 
@@ -38,11 +44,9 @@ class WebPlatform {
       // This adds an empty attribute with the name of the component tag onto
       // each element in the shadow root.
       //
-      // Remove the try-catch once https://github.com/angular/angular.dart/issues/1189 is
-      // fixed.
+      // TODO Remove the try-catch once https://github.com/angular/angular.dart/issues/1189 is fixed.
       try {
-        root.querySelectorAll("*")
-        .forEach((n) => n.attributes[selector] = "");
+        root.querySelectorAll("*").forEach((n) => n.attributes[selector] = "");
       } catch (e, s) {
         print("WARNING: Failed to set up Shadow DOM shim for $selector.\n$e\n$s");
       }
@@ -66,14 +70,10 @@ class PlatformViewCache implements ViewCache {
   ViewFactory fromHtml(String html, DirectiveMap directives) {
     ViewFactory viewFactory;
 
-    if (selector != null && selector != ""
-        && platform.shadowDomShimRequired) {
-
-      // By adding a comment with the tag name we ensure the template html is
-      // unique per selector name when used as a key in the view factory
-      // cache.
-      viewFactory = viewFactoryCache.get(
-          "<!-- Shimmed template for: <$selector> -->$html");
+    if (selector != null && selector != "" && platform.shadowDomShimRequired) {
+      // By adding a comment with the tag name we ensure the template html is unique per selector
+      // name when used as a key in the view factory cache.
+      viewFactory = viewFactoryCache.get("<!-- Shimmed template for: <$selector> -->$html");
     } else {
       viewFactory = viewFactoryCache.get(html);
     }
@@ -82,11 +82,9 @@ class PlatformViewCache implements ViewCache {
       var div = new dom.DivElement();
       div.setInnerHtml(html, treeSanitizer: treeSanitizer);
 
-      if (selector != null && selector != ""
-          && platform.shadowDomShimRequired) {
-        // This MUST happen before the compiler is called so that every dom
-        // element gets touched before the compiler removes them for
-        // transcluding directives like ng-if.
+      if (selector != null && selector != "" && platform.shadowDomShimRequired) {
+        // This MUST happen before the compiler is called so that every dom element gets touched
+        // before the compiler removes them for transcluding directives like `ng-if`
         platform.shimShadowDom(div, selector);
       }
 
