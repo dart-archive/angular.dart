@@ -9,20 +9,16 @@ part of angular.core.dom_internal;
  */
 @Injectable()
 class WebPlatform {
-  js.JsObject _platformJs;
   js.JsObject _shadowCss;
 
   bool get cssShimRequired => _shadowCss != null;
   bool get shadowDomShimRequired => _shadowCss != null;
 
   WebPlatform() {
-    var _platformJs = js.context['Platform'];
-    if (_platformJs != null) {
-      _shadowCss = _platformJs['ShadowCSS'];
-
-      if (_shadowCss != null) {
-        _shadowCss['strictStyling'] = true;
-      }
+    var platformJs = js.context['Platform'];
+    if (platformJs != null) {
+      _shadowCss = platformJs['ShadowCSS'];
+      if (_shadowCss != null) _shadowCss['strictStyling'] = true;
     }
   }
 
