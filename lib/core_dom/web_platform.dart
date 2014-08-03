@@ -58,38 +58,38 @@ class PlatformViewCache implements ViewCache {
   final ViewCache cache;
   final String selector;
   final WebPlatform platform;
+  bool _shimNeeded;
+  String _cacheKeyPrefix;
 
-  get viewFactoryCache => cache.viewFactoryCache;
+  Cache<String, ViewFactory> get viewFactoryCache => cache.viewFactoryCache;
   Http get http => cache.http;
   TemplateCache get templateCache => cache.templateCache;
   Compiler get compiler => cache.compiler;
   dom.NodeTreeSanitizer get treeSanitizer => cache.treeSanitizer;
 
-  PlatformViewCache(this.cache, this.selector, this.platform);
+  PlatformViewCache(this.cache, this.selector, this.platform) {
+    _shimNeeded = selector != null && selector != "" && platform.shadowDomShimRequired;
+    // By adding a comment with the tag name we ensure the template html is unique per selector
+    // name when used as a key in the view factory cache.
+    _cacheKeyPrefix = _shimNeeded ? '<!-- Shimmed template for: <$selector> -->' : '';
+  }
 
   ViewFactory fromHtml(String html, DirectiveMap directives) {
     ViewFactory viewFactory;
 
-    if (selector != null && selector != "" && platform.shadowDomShimRequired) {
-      // By adding a comment with the tag name we ensure the template html is unique per selector
-      // name when used as a key in the view factory cache.
-      viewFactory = viewFactoryCache.get("<!-- Shimmed template for: <$selector> -->$html");
-    } else {
-      viewFactory = viewFactoryCache.get(html);
-    }
+    String cacheKey = _cacheKeyPrefix + html;
+    viewFactory = viewFactoryCache.get(cacheKey);
 
     if (viewFactory == null) {
       var div = new dom.DivElement();
       div.setInnerHtml(html, treeSanitizer: treeSanitizer);
 
-      if (selector != null && selector != "" && platform.shadowDomShimRequired) {
-        // This MUST happen before the compiler is called so that every dom element gets touched
-        // before the compiler removes them for transcluding directives like `ng-if`
-        platform.shimShadowDom(div, selector);
-      }
+      // This MUST happen before the compiler is called so that every dom element gets touched
+      // before the compiler removes them for transcluding directives like `ng-if`
+      if (_shimNeeded) platform.shimShadowDom(div, selector);
 
       viewFactory = compiler(div.nodes, directives);
-      viewFactoryCache.put(html, viewFactory);
+      viewFactoryCache.put(cacheKey, viewFactory);
     }
     return viewFactory;
   }
