@@ -95,12 +95,13 @@ class PlatformViewCache implements ViewCache {
   }
 
   async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives) {
-    ViewFactory viewFactory = viewFactoryCache.get(url);
+    String cacheKey = _cacheKeyPrefix + url;
+    ViewFactory viewFactory = viewFactoryCache.get(cacheKey);
     if (viewFactory == null) {
       return http.get(url, cache: templateCache).then((resp) {
-        var viewFactoryFromHttp = fromHtml(resp.responseText, directives);
-        viewFactoryCache.put(url, viewFactoryFromHttp);
-        return viewFactoryFromHttp;
+        ViewFactory factory = fromHtml(resp.responseText, directives);
+        viewFactoryCache.put(cacheKey, factory);
+        return factory;
       });
     }
     return new async.Future.value(viewFactory);
