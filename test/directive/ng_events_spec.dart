@@ -3,10 +3,8 @@ library ng_events_spec;
 import '../_specs.dart';
 import 'dart:html' as dom;
 
-void addTest(String name, [String eventType='MouseEvent', String eventName, exclusive=false]) {
-  if (eventName == null) {
-    eventName = name;
-  }
+void addTest(String name, [String eventType='MouseEvent', String eventName, exclusive]) {
+  if (eventName == null) eventName = name;
 
   var describeBody = () {
     TestBed _;
@@ -21,7 +19,7 @@ void addTest(String name, [String eventType='MouseEvent', String eventName, excl
     });
   };
 
-  if (exclusive) {
+  if (exclusive == true) {
     ddescribe('ng-$name', describeBody);
   } else {
     describe('ng-$name', describeBody);
