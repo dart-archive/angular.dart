@@ -1,6 +1,7 @@
 library form_spec;
 
 import '../_specs.dart';
+import 'package:browser_detect/browser_detect.dart';
 
 void main() {
   describe('form', () {
@@ -425,7 +426,11 @@ void main() {
 
         expect(submissionEvent.defaultPrevented).toBe(false);
         element.dispatchEvent(submissionEvent);
-        expect(submissionEvent.defaultPrevented).toBe(true);
+        // TODO(vicb) - re-enable once the bug is fixed in Dart
+        // https://github.com/angular/angular.dart/issues/1309
+        if (!browser.isIe) {
+          expect(submissionEvent.defaultPrevented).toBe(true);
+        }
 
         Event fakeEvent = new Event.eventType('CustomEvent', 'running');
         expect(fakeEvent.defaultPrevented).toBe(false);
