@@ -1021,24 +1021,34 @@ void main() {
     });
 
     describe('type="color"', () {
+      // Default value in Chrome and firefox
+      var defaultValue = "#000000";
+      beforeEach(() {
+        if (browser.isIe || browser.isSafari) {
+          // IE and Safari have a different default value
+          defaultValue = "";
+        }
+      });
+
       it('should update input value from model', () {
         _.compile('<input type="color" ng-model="model">');
         _.rootScope.apply();
 
-        expect((_.rootElement as dom.InputElement).value).toEqual('#000000');
+        expect((_.rootElement as dom.InputElement).value).toEqual(defaultValue);
 
         _.rootScope.apply('model = "#123456"');
         expect((_.rootElement as dom.InputElement).value).toEqual('#123456');
       });
 
-      it('should render as #000000 on default and when a null value is present', () {
+      it(r'should render as "#000000"/"" on default and when a null value is present', () {
         _.compile('<input type="color" ng-model="model">');
         _.rootScope.apply();
 
-        expect((_.rootElement as dom.InputElement).value).toEqual('#000000');
+        expect((_.rootElement as dom.InputElement).value).toEqual(defaultValue);
+
 
         _.rootScope.apply('model = null');
-        expect((_.rootElement as dom.InputElement).value).toEqual('#000000');
+        expect((_.rootElement as dom.InputElement).value).toEqual(defaultValue);
       });
 
       it('should update model from the input value', () {
