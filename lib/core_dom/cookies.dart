@@ -6,7 +6,7 @@ part of angular.core.dom_internal;
  */
 @Injectable()
 class BrowserCookies {
-  String cookiePath;
+  String cookiePath = '/';
 
   ExceptionHandler _exceptionHandler;
   dom.Document _document;
