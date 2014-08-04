@@ -227,15 +227,10 @@ main() {
             _.rootScope.apply();
             expect(_.rootElement).toEqualSelect([['?'], 'c3p0', 'r2d2']);
 
-            _.rootScope.apply(() {
-              _.rootScope.context['robot'] = 'r2d2';
-            });
+            _.rootScope.apply('robot = "r2d2"');
             expect(_.rootElement).toEqualSelect(['c3p0', ['r2d2']]);
 
-
-            _.rootScope.apply(() {
-              _.rootScope.context['robot'] = "wallee";
-            });
+            _.rootScope.apply('robot = "wallee"');
             expect(_.rootElement).toEqualSelect([['?'], 'c3p0', 'r2d2']);
           });
 
