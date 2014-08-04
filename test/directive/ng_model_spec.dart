@@ -1025,20 +1025,33 @@ void main() {
         _.compile('<input type="color" ng-model="model">');
         _.rootScope.apply();
 
-        expect((_.rootElement as dom.InputElement).value).toEqual('#000000');
+        expect((_.rootElement as dom.InputElement).value, anyOf(
+            // Chrome, Firefox
+            equals('#000000'),
+            // IE11, Safari 7
+            equals('')));
 
         _.rootScope.apply('model = "#123456"');
         expect((_.rootElement as dom.InputElement).value).toEqual('#123456');
       });
 
-      it('should render as #000000 on default and when a null value is present', () {
+      it(r'should render as "#000000"/"" on default and when a null value is present', () {
         _.compile('<input type="color" ng-model="model">');
         _.rootScope.apply();
 
-        expect((_.rootElement as dom.InputElement).value).toEqual('#000000');
+        expect((_.rootElement as dom.InputElement).value, anyOf(
+            // Chrome, Firefox
+            equals('#000000'),
+            // IE11, Safari 7
+            equals('')));
+
 
         _.rootScope.apply('model = null');
-        expect((_.rootElement as dom.InputElement).value).toEqual('#000000');
+        expect((_.rootElement as dom.InputElement).value, anyOf(
+            // Chrome, Firefox
+            equals('#000000'),
+            // IE11, Safari 7
+            equals('')));
       });
 
       it('should update model from the input value', () {
