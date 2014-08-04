@@ -428,9 +428,8 @@ void main() {
         expect(submissionEvent.defaultPrevented).toBe(true);
 
         Event fakeEvent = new Event.eventType('CustomEvent', 'running');
-
         expect(fakeEvent.defaultPrevented).toBe(false);
-        element.dispatchEvent(submissionEvent);
+        element.dispatchEvent(fakeEvent);
         expect(fakeEvent.defaultPrevented).toBe(false);
       });
 
