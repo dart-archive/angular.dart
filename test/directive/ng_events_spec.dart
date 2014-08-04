@@ -2,6 +2,7 @@ library ng_events_spec;
 
 import '../_specs.dart';
 import 'dart:html' as dom;
+import 'package:browser_detect/browser_detect.dart';
 
 void addTest(String name, [String eventType='MouseEvent', String eventName, exclusive]) {
   if (eventName == null) eventName = name;
@@ -68,7 +69,11 @@ main() {
     addTest('mouseout');
     addTest('mouseover');
     addTest('mouseup');
-    addTest('mousewheel', 'MouseEvent', 'wheel');
+    if (browser.isIe || browser.isSafari) {
+      addTest('mousewheel', 'MouseEvent');
+    } else {
+      addTest('mousewheel', 'MouseEvent', 'wheel');
+    }
     addTest('paste');
     addTest('reset');
     addTest('scroll');
