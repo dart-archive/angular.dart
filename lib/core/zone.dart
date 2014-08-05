@@ -60,7 +60,6 @@ class VmTurnZone {
   /// an "inner" [Zone], which is a child of the outer [Zone].
   async.Zone _innerZone;
 
-
   /**
    * Associates with this
    *

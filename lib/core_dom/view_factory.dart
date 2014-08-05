@@ -127,7 +127,7 @@ class WalkingViewFactory implements ViewFactory {
  */
 @Injectable()
 class ViewCache {
-  // _viewFactoryCache is unbounded
+  // viewFactoryCache is unbounded
   // This cache contains both HTML and URL keys.
   final viewFactoryCache = new LruCache<String, ViewFactory>();
   final Http http;
