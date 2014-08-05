@@ -164,7 +164,7 @@ class _SingleSelectMode extends _SelectMode {
                     dom.SelectElement select,
                     NgModel model,
                     this._nullOption)
-      : _unknownOption = new dom.OptionElement(value: '?'),
+      : _unknownOption = new dom.OptionElement(value: '?', selected: true),
         super(options, select, model);
 
   void onViewChange(_) {
@@ -178,31 +178,37 @@ class _SingleSelectMode extends _SelectMode {
   }
 
   void onModelChange(value) {
-    bool found = false;
+    bool anySelected = false;
+    var optionsToUnselect =[];
     _forEachOption((option, i) {
-      if (option == _unknownOption) return;
+      if (identical(option, _unknownOption)) return;
       var selected;
       if (value == null) {
-        selected = option == _nullOption;
+        selected = identical(option, _nullOption);
       } else {
         OptionValue optionValue = options[option];
         selected = optionValue == null ? false : optionValue.ngValue == value;
       }
-      found = found || selected;
+      anySelected = anySelected || selected;
       option.selected = selected;
+      if (!selected) optionsToUnselect.add(option);
     });
 
-    if (!found) {
-      if (!_unknownOptionActive) {
-        select.insertBefore(_unknownOption, select.firstChild);
-        _unknownOption.selected = true;
-        _unknownOptionActive = true;
-      }
-    } else {
-      if (_unknownOptionActive) {
+    if (anySelected) {
+      if (_unknownOptionActive == true) {
         _unknownOption.remove();
         _unknownOptionActive = false;
       }
+    } else {
+      if (_unknownOptionActive == false) {
+        _unknownOptionActive = true;
+        select.insertBefore(_unknownOption, select.firstChild);
+      }
+      // It seems that IE do not allow having no option selected. It could then happen that an
+      // option remains selected after the previous loop. Also IE does not enforce that only one
+      // option is selected so we un-select options again to end up with a single selection.
+      _unknownOption.selected = true;
+      for (var option in optionsToUnselect) option.selected = false;
     }
   }
 }
