@@ -136,7 +136,7 @@ class ViewCache {
   final dom.NodeTreeSanitizer treeSanitizer;
 
   ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer, CacheRegister cacheRegister) {
-    cacheRegister.registerCache('viewCache', viewFactoryCache);
+    cacheRegister.registerCache('ViewCache', viewFactoryCache);
   }
 
   ViewFactory fromHtml(String html, DirectiveMap directives) {
