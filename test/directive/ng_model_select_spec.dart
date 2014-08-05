@@ -1,6 +1,7 @@
 library input_select_spec;
 
 import '../_specs.dart';
+import 'package:browser_detect/browser_detect.dart';
 
 //TODO(misko): re-enabled disabled tests once we have forms.
 
@@ -619,29 +620,26 @@ main() {
         it('should require', () {
           compile(
             '<select name="select" probe="i" ng-model="selection" multiple required>' +
-              '<option>A</option>' +
-              '<option>B</option>' +
+              '<option id=a-req>A</option>' +
+              '<option id=b-req>B</option>' +
             '</select>');
 
           var element = scope.context['i'].element;
-          scope.apply(() {
-            scope.context['selection'] = [];
-          });
-
+          scope.apply('selection = []');
           expect(scope.context['form']['select'].hasErrorState('ng-required')).toEqual(true);
           expect(scope.context['form']['select'].invalid).toEqual(true);
           expect(scope.context['form']['select'].pristine).toEqual(true);
 
-          scope.apply(() {
-            scope.context['selection'] = ['A'];
-          });
-
+          scope.apply('selection = ["A"]');
           expect(scope.context['form']['select'].valid).toEqual(true);
           expect(scope.context['form']['select'].pristine).toEqual(true);
 
           element.value = 'B';
+          if (browser.isIe) {
+            element.querySelector('#a-req').selected = true;
+            element.querySelector('#b-req').selected = true;
+          }
           _.triggerEvent(element, 'change');
-
           expect(scope.context['form']['select'].valid).toEqual(true);
           expect(scope.context['form']['select'].dirty).toEqual(true);
         });
