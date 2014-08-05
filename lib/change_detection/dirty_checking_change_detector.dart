@@ -1221,9 +1221,9 @@ class _CollectionChangeRecord<V> implements CollectionChangeRecord<V> {
   }
 
   ItemRecord<V> _addToRemovals(ItemRecord<V> record) {
-    record.currentIndex = null;
     if (_unlinkedRecords == null) _unlinkedRecords = new DuplicateMap();
     _unlinkedRecords.put(record);
+    record.currentIndex = null;
     record._nextRemoved = null;
 
     if (_removalsTail == null) {

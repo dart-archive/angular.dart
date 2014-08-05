@@ -99,7 +99,7 @@ class DirectiveInjector implements DirectiveBinder {
       , EVENT_HANDLER_KEY
       , KEEP_ME_LAST
       ];
-  
+
   final DirectiveInjector parent;
   final Injector appInjector;
   final Node _node;
