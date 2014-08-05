@@ -15,8 +15,7 @@ void main() {
       List<DirectiveInfo> directives = sourceMetadataExtractor
           .gatherDirectiveInfo('test/io/test_files/main.dart', sourceCrawler);
 
-      expect(directives.map((d) => d.selector),
-          unorderedEquals(['[ng-if]', 'my-component']));
+      expect(directives.map((d) => d.selector), unorderedEquals(['[ng-if]', 'my-component']));
 
       DirectiveInfo info = directives.elementAt(1);
       expect(info.expressionAttrs, unorderedEquals(['expr', 'another-expression',
@@ -31,12 +30,10 @@ void main() {
       List<DirectiveInfo> directives = sourceMetadataExtractor
           .gatherDirectiveInfo('test/io/test_files/routing.dart', sourceCrawler);
 
-      var templates = directives
-          .where((i) => i.selector == null)
-          .map((i) => i.template);
+      var templates = directives.where((i) => i.selector == null)
+                                .map((i) => i.template);
       expect(templates, hasLength(2));
-      expect(templates,
-          unorderedEquals(['<div ng-if="foo"></div>', '<div ng-if="bar"></div>']));
+      expect(templates, unorderedEquals(['<div ng-if="foo"></div>', '<div ng-if="bar"></div>']));
     });
   });
 }
