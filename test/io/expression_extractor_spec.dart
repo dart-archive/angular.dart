@@ -22,8 +22,7 @@ void main() {
       var sourceCrawler = new SourceCrawlerImpl(['packages/']);
       var sourceMetadataExtractor = new SourceMetadataExtractor();
       List<DirectiveInfo> directives =
-      sourceMetadataExtractor
-      .gatherDirectiveInfo(file, sourceCrawler);
+          sourceMetadataExtractor.gatherDirectiveInfo(file, sourceCrawler);
       var htmlExtractor = new HtmlExpressionExtractor(directives);
       htmlExtractor.crawl('test/io/test_files/', ioService);
 
