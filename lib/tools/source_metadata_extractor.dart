@@ -32,9 +32,8 @@ class SourceMetadataExtractor {
       dirInfo.selector = meta.selector;
       dirInfo.template = meta.template;
       meta.attributeMappings.forEach((attrName, mappingSpec) {
-        var spec = _specs
-            .firstWhere((specPrefix) => mappingSpec.startsWith(specPrefix),
-                orElse: () => throw '$mappingSpec no matching spec');
+        var spec = _specs.firstWhere((specPrefix) => mappingSpec.startsWith(specPrefix),
+                                      orElse: () => throw '$mappingSpec no matching spec');
         if (spec != '@') {
           dirInfo.expressionAttrs.add(attrName);
         }
@@ -103,14 +102,13 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
     if (node.methodName.name == 'ngRoute') {
       NamedExpression viewHtmlExpression =
           node.argumentList.arguments
-          .firstWhere((e) => e is NamedExpression &&
-              e.name.label.name == 'viewHtml', orElse: () => null);
+              .firstWhere((e) => e is NamedExpression && e.name.label.name == 'viewHtml',
+                          orElse: () => null);
       if (viewHtmlExpression != null) {
         if (viewHtmlExpression.expression is! StringLiteral) {
           throw 'viewHtml must be a string literal';
         }
-        templates.add(
-            (viewHtmlExpression.expression as StringLiteral).stringValue);
+        templates.add((viewHtmlExpression.expression as StringLiteral).stringValue);
       }
     }
     super.visitMethodInvocation(node);
@@ -161,8 +159,8 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
     return super.visitClassDeclaration(clazz);
   }
 
-  _walkSuperclassChain(ClassDeclaration clazz, DirectiveMetadata meta,
-                       metadataExtractor(ClassDeclaration clazz, DirectiveMetadata meta)) {
+  void _walkSuperclassChain(ClassDeclaration clazz, DirectiveMetadata meta,
+                            metadataExtractor(ClassDeclaration clazz, DirectiveMetadata meta)) {
     while (clazz != null) {
       metadataExtractor(clazz, meta);
       if (clazz.element != null && clazz.element.supertype != null) {
@@ -173,7 +171,7 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
     }
   }
 
-  _extractMappingsFromClass(ClassDeclaration clazz, DirectiveMetadata meta) {
+  void _extractMappingsFromClass(ClassDeclaration clazz, DirectiveMetadata meta) {
     // Check fields/getters/setter for presence of attr mapping annotations.
     clazz.members.forEach((ClassMember member) {
       if (member is FieldDeclaration ||
@@ -188,13 +186,12 @@ class DirectiveMetadataCollectingAstVisitor extends RecursiveAstVisitor {
               fieldName = (member as MethodDeclaration).name.name;
             }
             StringLiteral attNameLiteral = ann.arguments.arguments.first;
-            if (meta.attributeMappings
-            .containsKey(attNameLiteral.stringValue)) {
+            if (meta.attributeMappings.containsKey(attNameLiteral.stringValue)) {
               throw 'Attribute mapping already defined for '
-              '${clazz.name}.$fieldName';
+                    '${clazz.name}.$fieldName';
             }
             meta.attributeMappings[attNameLiteral.stringValue] =
-            _attrAnnotationsToSpec[ann.name.name] + fieldName;
+                _attrAnnotationsToSpec[ann.name.name] + fieldName;
           }
         });
       }
