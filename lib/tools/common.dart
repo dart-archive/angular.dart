@@ -28,21 +28,16 @@ class DirectiveInfo {
   }
 }
 
-const String DIRECTIVE = 'DIRECTIVE';
-const String COMPONENT = 'COMPONENT';
-
 class DirectiveMetadata {
   String className;
-  String type; // DIRECTIVE/COMPONENT
   String selector;
   String template;
   Map<String, String> attributeMappings;
   List<String> exportExpressionAttrs;
   List<String> exportExpressions;
 
-  DirectiveMetadata([this.className, this.type, this.selector,
-                     this.attributeMappings, this.exportExpressionAttrs,
-                     this.exportExpressions]) {
+  DirectiveMetadata([this.className, this.selector, this.attributeMappings,
+                     this.exportExpressionAttrs, this.exportExpressions]) {
     if (attributeMappings == null) {
       attributeMappings = <String, String>{};
     }

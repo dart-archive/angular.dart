@@ -285,6 +285,31 @@ main() {
           });
     });
 
+    it('should extract list arguments from Controllers', () {
+      return generates(phases,
+          inputs: {
+            'angular|lib/angular.dart': libAngular,
+            'a|web/main.dart': '''
+                import 'package:angular/angular.dart';
+
+                @Controller(exportExpressions: ['one', 'two'])
+                class Engine {}
+
+                main() {}
+                '''
+          },
+          imports: [
+            'import \'main.dart\' as import_0;',
+            'import \'package:angular/angular.dart\' as import_1;',
+          ],
+          classes: {
+            'import_0.Engine': [
+              "const import_1.Controller(exportExpressions: "
+                  "const ['one','two',])",
+            ]
+          });
+    });
+
     it('should extract primitive literals', () {
       return generates(phases,
           inputs: {
@@ -722,6 +747,11 @@ class Directive {
 }
 
 class Decorator extends Directive {
+  const Decorator({selector, module, map, visibility, exportExpressions}) :
+      super(map: map);
+}
+
+class Controller extends Directive {
   const Decorator({selector, module, map, visibility, exportExpressions}) :
       super(map: map);
 }
