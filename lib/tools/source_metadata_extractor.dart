@@ -4,9 +4,6 @@ import 'package:analyzer/src/generated/ast.dart';
 import 'package:angular/tools/source_crawler.dart';
 import 'package:angular/tools/common.dart';
 
-const String _COMPONENT = '-component';
-const String _DIRECTIVE = '-directive';
-String _ATTR_DIRECTIVE = '-attr' + _DIRECTIVE;
 RegExp _ATTR_SELECTOR_REGEXP = new RegExp(r'\[([^\]]+)\]');
 const List<String> _specs = const ['=>!', '=>', '<=>', '@', '&'];
 const Map<String, String> _attrAnnotationsToSpec = const {
@@ -70,27 +67,9 @@ class SourceMetadataExtractor {
 
       // No explicit selector specified on the directive, compute one.
       var className = meta.className;
+
       if (dirInfo.selector == null) {
-        if (meta.type == COMPONENT) {
-          if (className.endsWith(_COMPONENT)) {
-            dirInfo.selector = className.
-                substring(0, className.length - _COMPONENT.length);
-          } else {
-            throw "Directive name '$className' must end with $_DIRECTIVE, "
-            "$_ATTR_DIRECTIVE, $_COMPONENT or have a \$selector field.";
-          }
-        } else {
-          if (className.endsWith(_ATTR_DIRECTIVE)) {
-            var attrName = className.
-                substring(0, className.length - _ATTR_DIRECTIVE.length);
-            dirInfo.selector = '[$attrName]';
-          } else if (className.endsWith(_DIRECTIVE)) {
-            dirInfo.selector = className.
-                substring(0, className.length - _DIRECTIVE.length);
-          } else {
-            throw "Directive name '$className' must have a \$selector field.";
-          }
-        }
+        throw new ArgumentError('Missing selector annotation for $className');
       }
       var reprocessedAttrs = <String>[];
       dirInfo.expressionAttrs.forEach((String attr) {
