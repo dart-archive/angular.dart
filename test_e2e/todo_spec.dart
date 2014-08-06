@@ -102,7 +102,8 @@ main() {
       S.assertNewItem('a');
     });
 
-    it('should reflect new item text changes in model', () {
+    // TODO: Re-enable when issue 1316 is resolved correctly.
+    xit('should reflect new item text changes in model', () {
       expect(S.newItemText).toEqual('');
       var text = 'Typing something ...';
       S.newItemInput.sendKeys(text);
@@ -112,7 +113,8 @@ main() {
       S.assertTodos();
     });
 
-    it('should clear input with clear button', () {
+    // TODO: Re-enable when issue 1316 is resolved correctly.
+    xit('should clear input with clear button', () {
       S.newItemInput.sendKeys('Typing something ...');
       S.clearBtn.click();
       // input field should be clear.
@@ -120,7 +122,7 @@ main() {
       S.assertTodos();
     });
 
-    // TODO(chirayu): Disabled because this times out on Travis + SauceLabs.
+    // TODO: Re-enable when issue 1316 is resolved correctly.
     xit('should add a new item and clear the input field', () {
       var text = 'Test using Protractor';
       S.newItemInput.sendKeys(text);
