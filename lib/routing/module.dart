@@ -116,7 +116,7 @@
  *            'addRecipe': ngRoute(path: '/addRecipe', view: 'addRecipe.html'),
  *            'recipe': ngRoute(path: '/recipe/:recipeId', mount: {
  *                'view': ngRoute(path: '/view', view: 'viewRecipe.html'),
- *                'edit': ngRoute(path: '/edit', view: 'editRecipe.html')
+ *                'edit': ngRoute(path: '/edit', view: 'editRecipe.html'),
  *            })
  *        });
  */
