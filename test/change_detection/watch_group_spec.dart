@@ -273,7 +273,7 @@ void main() {
         var watch = watchGrp.watch(parse('user'), (v, p) => logger(v));
         var watchFirst = watchGrp.watch(parse('user.first'), (v, p) => logger(v));
         var watchLast = watchGrp.watch(parse('user.last'), (v, p) => logger(v));
-        expect(watchGrp.fieldCost).toEqual(3);
+        expect(watchGrp.fieldCost).toEqual(5);
 
         watchGrp.detectChanges();
         expect(logger).toEqual([user1, 'misko', 'hevery']);
@@ -285,7 +285,7 @@ void main() {
 
 
         watch.remove();
-        expect(watchGrp.fieldCost).toEqual(3);
+        expect(watchGrp.fieldCost).toEqual(4);
 
         watchFirst.remove();
         expect(watchGrp.fieldCost).toEqual(2);
@@ -863,8 +863,8 @@ void main() {
         expect(watchGrp.detectChanges()).toEqual(6);
         // expect(logger).toEqual(['0a', '0A', '1a', '1A', '2A', '1b']);
         expect(logger).toEqual(['0a', '1a', '1b', '0A', '1A', '2A']); // we go by registration order
-        expect(watchGrp.fieldCost).toEqual(1);
-        expect(watchGrp.totalFieldCost).toEqual(4);
+        expect(watchGrp.fieldCost).toEqual(2);
+        expect(watchGrp.totalFieldCost).toEqual(6);
         logger.clear();
 
         context['a'] = 1;
@@ -876,8 +876,8 @@ void main() {
         child1a.remove(); // should also remove child2
         expect(watchGrp.detectChanges()).toEqual(3);
         expect(logger).toEqual(['0a', '0A', '1b']);
-        expect(watchGrp.fieldCost).toEqual(1);
-        expect(watchGrp.totalFieldCost).toEqual(2);
+        expect(watchGrp.fieldCost).toEqual(2);
+        expect(watchGrp.totalFieldCost).toEqual(3);
       });
 
       it('should remove all method watches in group and group\'s children', () {
