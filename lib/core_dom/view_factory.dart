@@ -207,4 +207,6 @@ class ElementProbe {
   final modelExpressions = <String>[];
 
   ElementProbe(this.parent, this.element, this.injector, this.scope);
+
+  dynamic directive(Type type) => injector.get(type);
 }
