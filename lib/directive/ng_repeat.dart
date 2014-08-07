@@ -255,7 +255,7 @@ class _Row {
   View view;
   dom.Element startNode;
   dom.Element endNode;
-  List<dom.Element> nodes;
+  List<dom.Node> nodes;
 
   _Row(this.id);
 }
