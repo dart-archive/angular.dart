@@ -1,9 +1,5 @@
-import 'dart:html';
-
 import 'package:angular/angular.dart';
-import 'package:angular/animate/module.dart';
 import 'package:angular/application_factory.dart';
-import 'package:di/di.dart';
 
 main() {
   var app = applicationFactory();
