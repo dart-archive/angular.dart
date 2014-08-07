@@ -85,6 +85,10 @@ packages:
     description: source_maps
     source: hosted
     version: "0.9.0"
+  source_span:
+    description: source_span
+    source: hosted
+    version: "1.0.0"
   stack_trace:
     description: stack_trace
     source: hosted
