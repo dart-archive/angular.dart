@@ -1,6 +1,13 @@
 part of angular.core.dom_internal;
 
-List<dom.Node> cloneElements(elements) => elements.map((el) => el.clone(true)).toList();
+List<dom.Node> cloneElements(List<dom.Node> elements) {
+  int length = elements.length;
+  var clones = new List<dom.Node>(length);
+  for(var i=0; i < length; i++) {
+    clones[i] = elements[i].clone(true);
+  }
+  return clones;
+}
 
 class MappingParts {
   final String attrName;
