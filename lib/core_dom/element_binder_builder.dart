@@ -67,6 +67,11 @@ class ElementBinderBuilder {
     var children = annotation.children;
 
     if (annotation.children == Directive.TRANSCLUDE_CHILDREN) {
+      if (template != null) {
+        throw "There could be at most one transcluding directive on a node. The node "
+              "'${ref.element.outerHtml}' has both '${ref.annotation.selector}' and "
+              "'${template.annotation.selector}'.";
+      }
       template = ref;
     } else if (annotation is Component) {
       ComponentFactory factory;
