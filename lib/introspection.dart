@@ -13,6 +13,8 @@ import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/core_dom/directive_injector.dart' show DirectiveInjector;
 import 'package:angular/core/static_keys.dart';
 
+export 'package:angular/core_dom/module_internal.dart' show ElementProbe;
+
 
 /**
  * A global write only variable which keeps track of objects attached to the
