@@ -191,12 +191,26 @@ void main() {
         map[1] = 'foo';
 
         expect(map.remove(null)).toBe(null);
-        expect(map.count).toBe(1);
+        expect(map.length).toBe(1);
         expect(map[1]).toBe('foo');
 
         expect(map.remove(null)).toBe(null);
-        expect(map.count).toBe(1);
+        expect(map.length).toBe(1);
       });
+    });
+
+    describe('iterables', () {
+     it('should return iterables of the right size', () {
+       MicroMap map = new MicroMap();
+       map[2] = 3;
+       expect(map.keys).toEqual([2]);
+     });
+
+     it('should change mode when iterable is requested', () {
+       MicroMap map = new MicroMap();
+       var iter = map.keys;
+       expect(map.mode).toEqual(MODE_MAP);
+     });
     });
   });
 }

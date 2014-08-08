@@ -7,6 +7,6 @@ class PrototypeMap<K, V> extends MicroMap<K,V> {
 
   V operator [](name) => containsKey(name) ? super[name] : prototype[name];
 
-  bool get isEmpty => count == 0 && prototype.isEmpty;
-  bool get isNotEmpty => count != 0 || prototype.isNotEmpty;
+  bool get isEmpty => _count == 0 && prototype.isEmpty;
+  bool get isNotEmpty => _count != 0 || prototype.isNotEmpty;
 }
