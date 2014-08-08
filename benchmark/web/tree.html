@@ -1,6 +1,11 @@
 <html>
 <head>
    <title>TreeComponent Benchmark</title>
+
+    <!-- Uncomment to test in Firefox -->
+    <!--<script src="packages/web_components/platform.js"></script>-->
+    <!--<script src="packages/web_components/dart_support.js"></script>-->
+
     <script src="underscore.js"></script>
     <script src="bp.js"></script>
     <script src="tree.dart" type="application/dart"></script>
@@ -129,14 +134,18 @@
     </p>
 
     <div>Default: <input type=checkbox ng-model="useDefault"></div>
+    <div>Transcluding: <input type=checkbox ng-model="useTranscluding"></div>
     <div>From URL: <input type=checkbox ng-model="useUrl"></div>
+    <div>Transcluding from URL: <input type=checkbox ng-model="useTranscludingFromUrl"></div>
     <div>Baseline: <input type=checkbox ng-model="useBaseline"></div>
     <div>Baseline + scope: <input type=checkbox ng-model="useBaselineScoped"></div>
     <div>Baseline + class: <input type=checkbox ng-model="useBaselineClass"></div>
 
 
     <tree ng-if="useDefault" data=initData></tree>
+    <transcluding-tree ng-if="useTranscluding" data=initData></transcluding-tree>
     <tree-url ng-if="useUrl" data=initData></tree-url>
+    <transcluding-tree-url ng-if="useTranscludingFromUrl" data=initData></transcluding-tree-url>
 
     <ng-free-tree ng-if="useBaseline" data=initData></ng-free-tree>
     <ng-free-tree-scoped ng-if="useBaselineScoped" data=initData></ng-free-tree-scoped>
