@@ -133,12 +133,13 @@ bp.Runner.runTimedTest = function (bs) {
   if (typeof window.gc === 'function') {
     window.gc();
   }
+  var memory = performance.memory ? performance.memory : {usedJSHeapSize: NaN};
 
-  beforeHeap = performance.memory.usedJSHeapSize;
+  beforeHeap = memory.usedJSHeapSize;
   startTime = bp.Measure.numMilliseconds();
   bs.fn();
   endTime = bp.Measure.numMilliseconds() - startTime;
-  afterHeap = performance.memory.usedJSHeapSize;
+  afterHeap = memory.usedJSHeapSize;
 
   startGCTime = bp.Measure.numMilliseconds();
   if (typeof window.gc === 'function') {
@@ -146,7 +147,7 @@ bp.Runner.runTimedTest = function (bs) {
   }
   endGCTime = bp.Measure.numMilliseconds() - startGCTime;
 
-  finalHeap = performance.memory.usedJSHeapSize;
+  finalHeap = memory.usedJSHeapSize;
   garbage = Math.abs(finalHeap - afterHeap);
   retainedMemory = finalHeap - beforeHeap;
   return {
