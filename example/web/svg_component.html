@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Component test page</title>
+    <style>
+        body {
+            margin: 0;
+            /* Extra spacing at top and bottom */
+            padding: 20px 20px 0 20px;
+            min-height: 100%;
+            font-family: sans-serif;
+        }
+        [ng-cloak] {
+            display: none;
+        }
+    </style>
+
+    <script src="packages/web_components/platform.js"></script>
+    <script src="packages/web_components/dart_support.js"></script>
+</head>
+
+<body>
+    <p ng-if="false">Just waiting for this demo app to load...</p>
+    <div class="content" ng-cloak>
+        <h1>SVG based component</h1>
+
+        <p>There should be <strong>one</strong> component here. The AngularDart logo
+            rendered in SVG.</p>
+
+        <svg width="610px" height="125px">
+            <g angular-dart-logo></g>
+        </svg>
+    </div>
+    <script type="application/dart" src="svg_component.dart"></script>
+    <script src="packages/browser/dart.js"></script>
+</body>
+</html>

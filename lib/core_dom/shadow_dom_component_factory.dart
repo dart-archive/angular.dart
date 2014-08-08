@@ -14,10 +14,11 @@ abstract class BoundComponentFactory {
   static async.Future<ViewFactory> _viewFuture(
         Component component, ViewCache viewCache, DirectiveMap directives) {
     if (component.template != null) {
-      return new async.Future.value(viewCache.fromHtml(component.template, directives));
+      return new async.Future.value(viewCache.fromHtml(component.template, directives,
+                                                       component.wrapElement));
     }
     if (component.templateUrl != null) {
-      return viewCache.fromUrl(component.templateUrl, directives);
+      return viewCache.fromUrl(component.templateUrl, directives, component.wrapElement);
     }
     return null;
   }

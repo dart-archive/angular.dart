@@ -314,6 +314,12 @@ class Component extends Directive {
    */
   final bool useNgBaseCss;
 
+  /**
+   * Tag name of the element used for wrapping, defaults to div which works for all html
+   * elements but needs to be changed when other template types is used, for example SVG.
+   */
+  final String wrapElement;
+
   const Component({
     this.template,
     this.templateUrl,
@@ -328,7 +334,8 @@ class Component extends Directive {
     exportExpressions,
     exportExpressionAttrs,
     this.useShadowDom,
-    this.useNgBaseCss: true})
+    this.useNgBaseCss: true,
+    this.wrapElement: "div"})
       : _cssUrls = cssUrl,
         _applyAuthorStyles = applyAuthorStyles,
         _resetStyleInheritance = resetStyleInheritance,
@@ -359,7 +366,8 @@ class Component extends Directive {
           exportExpressions: exportExpressions,
           exportExpressionAttrs: exportExpressionAttrs,
           useShadowDom: useShadowDom,
-          useNgBaseCss: useNgBaseCss);
+          useNgBaseCss: useNgBaseCss,
+          wrapElement: wrapElement);
 }
 
 /**
