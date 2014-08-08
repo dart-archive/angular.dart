@@ -50,7 +50,6 @@ part 'transcluding_component_factory.dart';
 part 'tree_sanitizer.dart';
 part 'view.dart';
 part 'view_factory.dart';
-part 'walking_compiler.dart';
 part 'web_platform.dart';
 
 class CoreDomModule extends Module {
