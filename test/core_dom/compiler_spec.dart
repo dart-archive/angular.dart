@@ -5,14 +5,6 @@ import 'package:angular/core_dom/directive_injector.dart';
 
 
 forBothCompilers(fn) {
-  describe('walking compiler', () {
-    beforeEachModule((Module m) {
-      m.bind(Compiler, toImplementation: WalkingCompiler);
-      return m;
-    });
-    fn('walking');
-  });
-
   describe('tagging compiler', () {
     beforeEachModule((Module m) {
       m.bind(Compiler, toImplementation: TaggingCompiler);

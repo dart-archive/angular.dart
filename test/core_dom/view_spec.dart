@@ -2,6 +2,7 @@ library view_spec;
 
 import '../_specs.dart';
 import 'package:angular/application_factory.dart';
+import 'package:angular/core_dom/static_keys.dart';
 
 class Log {
   List<String> log = <String>[];
@@ -61,7 +62,6 @@ class BFormatter {
 
 
 main() {
-  var viewFactoryFactory = (a,b,c,d) => new WalkingViewFactory(a,b,c,d);
   describe('View', () {
     ViewPort viewPort;
     Element rootElement;
@@ -73,15 +73,20 @@ main() {
 
     describe('mutation', () {
       var a, b;
-      var expando = new Expando();
+
+      View createView(Injector injector, String html) {
+        final scope = injector.get(Scope);
+        final c = injector.get(Compiler);
+        return c(es(html), injector.get(DirectiveMap))(scope, injector.get(DirectiveInjector));
+      }
 
       beforeEach((Injector injector, Profiler perf) {
         rootElement.innerHtml = '<!-- anchor -->';
         var scope = injector.get(Scope);
         viewPort = new ViewPort(injector.get(DirectiveInjector), scope, rootElement.childNodes[0],
           injector.get(Animate));
-        a = (viewFactoryFactory(es('<span>A</span>a'), [], perf, expando))(scope, injector.get(DirectiveInjector));
-        b = (viewFactoryFactory(es('<span>B</span>b'), [], perf, expando))(scope, injector.get(DirectiveInjector));
+        a = createView(injector, "<span>A</span>a");
+        b = createView(injector, "<span>B</span>b");
       });
 
 
