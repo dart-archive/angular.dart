@@ -5,21 +5,19 @@ import 'package:angular/core_dom/directive_injector.dart';
 
 
 forBothCompilers(fn) {
-  describe('tagging compiler', () {
+  describe('with ElementProbe enabled', () {
     beforeEachModule((Module m) {
-      m.bind(Compiler, toImplementation: TaggingCompiler);
       return m;
     });
-    fn('tagging');
+    fn('elementProbe');
   });
 
-  describe('tagging compiler with ElementProbe disabled', () {
+  describe('with ElementProbe disabled', () {
     beforeEachModule((Module m) {
-      m.bind(Compiler, toImplementation: TaggingCompiler);
       m.bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
       return m;
     });
-    fn('tagging-no-elementProbe');
+    fn('no-elementProbe');
   });
 }
 
@@ -28,7 +26,6 @@ forAllCompilersAndComponentFactories(fn) {
 
   describe('transcluding components', () {
     beforeEachModule((Module m) {
-      m.bind(Compiler, toImplementation: TaggingCompiler);
       m.bind(ComponentFactory, toImplementation: TranscludingComponentFactory);
 
       return m;
@@ -362,7 +359,7 @@ void main() {
       }));
 
       it('should store ElementProbe with Elements', async(() {
-        if (compilerType == 'tagging-no-elementProbe') return;
+        if (compilerType == 'no-elementProbe') return;
 
         _.compile('<div><simple>innerText</simple></div>');
         microLeap();
@@ -772,7 +769,7 @@ void main() {
         }));
 
         describe('expando memory', () {
-          if (compilerType == 'tagging-no-elementProbe') return;
+          if (compilerType == 'no-elementProbe') return;
 
           Expando expando;
 
