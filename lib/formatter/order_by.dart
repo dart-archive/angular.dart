@@ -14,9 +14,9 @@ typedef dynamic _Mapper(dynamic e);
  * - **a string**: a string containing an expression, such as "user.lastName", used to order the list.
  * - **a custom callable expression**: an expression that will be called to transform the element
  *   before a sort.
- * - **a list**: the list may consist of either strings or callable expressions.  A list expression
- *   indicates a list of fallback expressions to use when a comparison results in the items
- *   being equal.
+ * - **an [Iterable]**: it may consist of either strings or callable expressions. A list expression
+ *   indicates a list of fallback expressions to use when a comparison results in the items being
+ *   equal.
  *
  * If the expression is explicitly empty(`orderBy:''`), the elements are sorted in
  * ascending order, using the default comparator, `+`.
@@ -26,8 +26,8 @@ typedef dynamic _Mapper(dynamic e);
  * - `+`: sort the elements in ascending order. This is the default.
  * - `-`: sort the elements in descending order.
  *
- * Alternately, by appending `true`, you can set "descending order" to true, which has the same effect as the `-`
- * prefix.
+ * Alternately, by appending `true`, you can set "descending order" to true, which has the same
+ * effect as the `-` prefix.
  *
  * # Examples
  *
@@ -174,6 +174,8 @@ class OrderBy implements Function {
       expressions = [expression];
     } else if (expression is List) {
       expressions = expression as List;
+    } else if (expression is Iterable) {
+      expressions = expression.toList();
     }
     if (expressions == null || expressions.length == 0) {
       // AngularJS behavior.  You must have an expression to get any work done.

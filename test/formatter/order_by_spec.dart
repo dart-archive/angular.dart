@@ -170,7 +170,16 @@ main() {
       ]);
     });
 
-
+    it('should support an Iterable of expressions',
+        (Scope scope, Parser parse, FormatterMap formatters) {
+      scope.context['exp'] = ["-a", "-b"].map((x) => x);
+      expect(parse('items | orderBy:exp').eval(scope.context, formatters)).toEqual([
+        {'a': 20, 'b': 20},
+        {'a': 20, 'b': 10},
+        {'a': 10, 'b': 20},
+        {'a': 10, 'b': 10},
+      ]);
+    });
 
     it('should support function expressions',
        (Scope scope, Parser parse, FormatterMap formatters) {
