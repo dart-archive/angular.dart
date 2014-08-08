@@ -1,6 +1,7 @@
 library angular.watch_group;
 
 import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/collection/micro_map.dart';
 import 'dart:collection';
 
 part 'linked_list.dart';
@@ -54,7 +55,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   final ChangeDetectorGroup<_Handler> _changeDetector;
   /** A cache for sharing sub expression watching. Watching `a` and `a.b` will
   * watch `a` only once. */
-  final Map<String, WatchRecord<_Handler>> _cache;
+  final MicroMap<String, WatchRecord<_Handler>> _cache;
   final RootWatchGroup _rootGroup;
 
   /// STATS: Number of field watchers which are in use.
@@ -120,7 +121,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
       : id = '',
         _rootGroup = null,
         _parentWatchGroup = null,
-        _cache = new HashMap<String, WatchRecord<_Handler>>()
+        _cache = new MicroMap<String, WatchRecord<_Handler>>()
   {
     _marker.watchGrp = this;
     _evalWatchTail = _evalWatchHead = _marker;
@@ -301,7 +302,7 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
         this,
         _changeDetector.newGroup(),
         context == null ? this.context : context,
-        new HashMap<String, WatchRecord<_Handler>>(),
+        new MicroMap<String, WatchRecord<_Handler>>(),
         _rootGroup == null ? this : _rootGroup);
     _WatchGroupList._add(this, childGroup);
     var marker = childGroup._marker;
