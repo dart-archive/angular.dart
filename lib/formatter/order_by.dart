@@ -3,7 +3,7 @@ part of angular.formatter_internal;
 typedef dynamic _Mapper(dynamic e);
 
 /**
- * Orders the the elements of a list using a predicate.
+ * Orders the the elements of an [Iterable] using a predicate.
  *
  * # Usage
  *
@@ -15,7 +15,7 @@ typedef dynamic _Mapper(dynamic e);
  * - **a custom callable expression**: an expression that will be called to transform the element
  *   before a sort.
  * - **a list**: the list may consist of either strings or callable expressions.  A list expression
- *   indicates a list of fallback expressions to use when a comparision results in the items
+ *   indicates a list of fallback expressions to use when a comparison results in the items
  *   being equal.
  *
  * If the expression is explicitly empty(`orderBy:''`), the elements are sorted in
@@ -166,10 +166,9 @@ class OrderBy implements Function {
    * - `expression`: String/Function or Array of String/Function.
    * - `descending`: When specified, use descending order. (The default is ascending order.)
    */
-  List call(List items, var expression, [bool descending=false]) {
-    if (items == null) {
-      return null;
-    }
+  List call(Iterable items, var expression, [bool descending=false]) {
+    if (items == null) return null;
+    if (items is! List) items = items.toList();
     List expressions = null;
     if (expression is String || expression is _Mapper) {
       expressions = [expression];
