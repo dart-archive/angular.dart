@@ -54,6 +54,11 @@ main() {
       expect(parse('list | orderBy:"-"').eval(scope.context, formatters)).toEqual([3, 2, 1]);
     });
 
+    it('should sort Iterables', (Scope scope, Parser parse, FormatterMap formatters) {
+      scope.context['iterable'] = [1, 3, 2].map((x) => x);
+      expect(parse('iterable | orderBy:""').eval(scope.context, formatters)).toEqual([1, 2, 3]);
+    });
+
     it('should sort by expression', (Scope scope, Parser parse, FormatterMap formatters) {
       expect(parse('authors | orderBy:"firstName"').eval(scope.context, formatters)).toEqual([
         Emily___Bronte,
@@ -164,6 +169,8 @@ main() {
         {'a': 10, 'b': 20},
       ]);
     });
+
+
 
     it('should support function expressions',
        (Scope scope, Parser parse, FormatterMap formatters) {
