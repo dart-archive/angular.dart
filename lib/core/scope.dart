@@ -157,6 +157,9 @@ class Scope {
 
   Scope _parentScope;
 
+  _FunctionChain _domReadHead, _domReadTail;
+  _FunctionChain _domWriteHead, _domWriteTail;
+
   Scope get parentScope => _parentScope;
 
   final ScopeStats _stats;
@@ -445,6 +448,72 @@ class Scope {
     }
     return counts;
   }
+
+  /**
+   * Internal. Use [View.domWrite] instead.
+   */
+  void domWrite(fn()) {
+    var chain = new _FunctionChain(fn);
+    if (_domWriteHead == null) {
+      _domWriteHead = _domWriteTail = chain;
+    } else {
+      _domWriteTail = _domWriteTail._next = chain;
+    }
+    rootScope._domWriteCounter ++;
+  }
+
+  /**
+   * Internal. Use [View.domRead] instead.
+   */
+  void domRead(fn()) {
+    var chain = new _FunctionChain(fn);
+    if (_domReadHead == null) {
+      _domReadHead = _domReadTail = chain;
+    } else {
+      _domReadTail = _domReadTail._next = chain;
+    }
+    rootScope._domReadCounter ++;
+  }
+
+  void _runDomWrites() {
+    Scope child = _childHead;
+    while (child != null) {
+      child._runDomWrites();
+      child = child._next;
+    }
+
+    while (_domWriteHead != null) {
+      try {
+        _domWriteHead.fn();
+      } catch (e, s) {
+        _exceptionHandler(e, s);
+      }
+      rootScope._domWriteCounter --;
+      _domWriteHead = _domWriteHead._next;
+    }
+    _domWriteTail = null;
+  }
+
+  void _runDomReads() {
+    Scope child = _childHead;
+    while (child != null) {
+      child._runDomReads();
+      child = child._next;
+    }
+
+    while (_domReadHead != null) {
+      try {
+        _domReadHead.fn();
+      } catch (e, s) {
+        _exceptionHandler(e, s);
+      }
+      rootScope._domReadCounter --;
+      _domReadHead = _domReadHead._next;
+    }
+  }
+
+
+  ExceptionHandler get _exceptionHandler => rootScope._exceptionHandler;
 }
 
 _mapEqual(Map a, Map b) => a.length == b.length &&
@@ -619,10 +688,10 @@ class RootScope extends Scope {
   final Map<String, AST> astCache = new HashMap<String, AST>();
 
   _FunctionChain _runAsyncHead, _runAsyncTail;
-  _FunctionChain _domWriteHead, _domWriteTail;
-  _FunctionChain _domReadHead, _domReadTail;
 
   final ScopeStats _scopeStats;
+  int _domWriteCounter = 0;
+  int _domReadCounter = 0;
 
   String _state;
   var _state_wtf_scope;
@@ -767,19 +836,13 @@ class RootScope extends Scope {
     bool runObservers = true;
     try {
       do {
-        if (_domWriteHead != null) _stats.domWriteStart();
-        var s = traceEnter(Scope_domWrite);
-        while (_domWriteHead != null) {
-          try {
-            _domWriteHead.fn();
-          } catch (e, s) {
-            _exceptionHandler(e, s);
-          }
-          _domWriteHead = _domWriteHead._next;
-          if (_domWriteHead == null) _stats.domWriteEnd();
+        if (_domWriteCounter > 0) {
+          _stats.domWriteStart();
+          var s = traceEnter(Scope_domWrite);
+          _runDomWrites();
+          traceLeave(s);
+          _stats.domWriteEnd();
         }
-        traceLeave(s);
-        _domWriteTail = null;
         if (runObservers) {
           runObservers = false;
           readOnlyGroup.detectChanges(exceptionHandler:_exceptionHandler,
@@ -787,21 +850,15 @@ class RootScope extends Scope {
               evalStopwatch: _scopeStats.evalStopwatch,
               processStopwatch: _scopeStats.processStopwatch);
         }
-        if (_domReadHead != null) _stats.domReadStart();
-        s = traceEnter(Scope_domRead);
-        while (_domReadHead != null) {
-          try {
-            _domReadHead.fn();
-          } catch (e, s) {
-            _exceptionHandler(e, s);
-          }
-          _domReadHead = _domReadHead._next;
-          if (_domReadHead == null) _stats.domReadEnd();
+        if (_domReadCounter > 0) {
+          _stats.domReadStart();
+          var s = traceEnter(Scope_domRead);
+          _runDomReads();
+          traceLeave(s);
+          _stats.domReadEnd();
         }
-        _domReadTail = null;
-        traceLeave(s);
         _runAsyncFns();
-      } while (_domWriteHead != null || _domReadHead != null || _runAsyncHead != null);
+      } while (_domWriteCounter > 0 || _domReadCounter > 0 || _runAsyncHead != null);
       _stats.flushEnd();
       assert((() {
         _stats.flushAssertStart();
@@ -859,24 +916,6 @@ class RootScope extends Scope {
     _runAsyncTail = null;
     traceLeave(s);
     return count;
-  }
-
-  void domWrite(fn()) {
-    var chain = new _FunctionChain(fn);
-    if (_domWriteHead == null) {
-      _domWriteHead = _domWriteTail = chain;
-    } else {
-      _domWriteTail = _domWriteTail._next = chain;
-    }
-  }
-
-  void domRead(fn()) {
-    var chain = new _FunctionChain(fn);
-    if (_domReadHead == null) {
-      _domReadHead = _domReadTail = chain;
-    } else {
-      _domReadTail = _domReadTail._next = chain;
-    }
   }
 
   void destroy() {}
