@@ -25,6 +25,14 @@ class View {
   void addContent(Content content) {
     insertionPoints.add(content);
   }
+
+  void domWrite(fn()) {
+    scope.domWrite(fn);
+  }
+
+  void domRead(fn()) {
+    scope.domRead(fn);
+  }
 }
 
 /**
