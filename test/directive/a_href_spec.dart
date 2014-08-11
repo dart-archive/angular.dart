@@ -1,4 +1,4 @@
-library ng_a_spec;
+library a_href_spec;
 
 import '../_specs.dart';
 import 'dart:html' as dom;
