@@ -1558,7 +1558,7 @@ void main() {
         module.bind(ExceptionHandler, toImplementation: LoggingExceptionHandler);
       });
 
-      it(r'should run writes before reads', (RootScope rootScope, Logger logger, ExceptionHandler e) {
+      it('should run writes before reads', (RootScope rootScope, Logger logger, ExceptionHandler e) {
         LoggingExceptionHandler exceptionHandler = e as LoggingExceptionHandler;
         rootScope.domWrite(() {
           logger('write1');
@@ -1578,6 +1578,40 @@ void main() {
         expect(exceptionHandler.errors.length).toEqual(2);
         expect(exceptionHandler.errors[0].error).toEqual('write1');
         expect(exceptionHandler.errors[1].error).toEqual('read1');
+      });
+
+      it("should run writes of child scopes first", (RootScope rootScope, Logger logger) {
+        final childScope = rootScope.createChild({});
+        childScope.domWrite(() {
+          logger("child1");
+        });
+        rootScope.domWrite(() {
+          logger("root");
+        });
+        childScope.domWrite(() {
+          logger("child2");
+        });
+
+        rootScope.flush();
+
+        expect(logger).toEqual(['child1', 'child2', 'root']);
+      });
+
+      it("should run reads of child scopes first", (RootScope rootScope, Logger logger) {
+        final childScope = rootScope.createChild({});
+        childScope.domRead(() {
+          logger("child1");
+        });
+        rootScope.domRead(() {
+          logger("root");
+        });
+        childScope.domRead(() {
+          logger("child2");
+        });
+
+        rootScope.flush();
+
+        expect(logger).toEqual(['child1', 'child2', 'root']);
       });
     });
 
