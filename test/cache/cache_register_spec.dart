@@ -3,6 +3,10 @@ library cache_register_spec;
 import '../_specs.dart';
 
 main() => describe('CacheRegister', () {
+  beforeEachModule((Module m) {
+    m.bind(CacheRegister);
+  });
+
   it('should clear caches', (CacheRegister register) {
     var map = {'a': 2};
     var map2 = {'b': 3};

@@ -47,8 +47,6 @@ class ViewFactory implements Function {
   BoundViewFactory bind(DirectiveInjector directiveInjector) =>
       new BoundViewFactory(this, directiveInjector);
 
-  static Key _EVENT_HANDLER_KEY = new Key(EventHandler);
-
   View call(Scope scope, DirectiveInjector directiveInjector,
             [List<dom.Node> nodes /* TODO: document fragment */]) {
     var s = traceEnter1(View_create, _debugHtml);

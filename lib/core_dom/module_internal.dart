@@ -8,7 +8,9 @@ import 'dart:js' as js;
 import 'package:di/di.dart';
 import 'package:di/annotations.dart';
 import 'package:perf_api/perf_api.dart';
+import 'package:logging/logging.dart';
 
+import 'package:angular/utils.dart';
 import 'package:angular/cache/module.dart';
 
 import 'package:angular/core/annotation.dart';
@@ -30,6 +32,8 @@ import 'package:angular/core/registry.dart';
 import 'package:angular/ng_tracing.dart';
 
 import 'package:angular/directive/module.dart' show NgBaseCss;
+import 'package:angular/core_dom/css_shim.dart' as cssShim;
+
 import 'dart:collection';
 
 part 'animation.dart';
@@ -42,6 +46,7 @@ part 'directive_map.dart';
 part 'element_binder.dart';
 part 'element_binder_builder.dart';
 part 'event_handler.dart';
+part 'shadow_boundary.dart';
 part 'http.dart';
 part 'mustache.dart';
 part 'ng_element.dart';
@@ -51,12 +56,13 @@ part 'shadow_dom_component_factory.dart';
 part 'emulated_shadow_root.dart';
 part 'template_cache.dart';
 part 'transcluding_component_factory.dart';
+part 'component_css_loader.dart';
 part 'light_dom.dart';
 part 'content_tag.dart';
 part 'tree_sanitizer.dart';
 part 'view.dart';
 part 'view_factory.dart';
-part 'web_platform.dart';
+part 'web_platform_shim.dart';
 
 class CoreDomModule extends Module {
   CoreDomModule() {
@@ -83,7 +89,8 @@ class CoreDomModule extends Module {
     bind(DestinationLightDom, toValue: null);
     bind(SourceLightDom, toValue: null);
     bind(ComponentCssRewriter);
-    bind(WebPlatform);
+    bind(PlatformJsBasedShim);
+    bind(DefaultPlatformShim);
 
     bind(ResourceUrlResolver);
     bind(Http);
@@ -106,6 +113,5 @@ class CoreDomModule extends Module {
     bind(EventHandler);
     // TODO(rkirov): remove this once clients have stopped relying on it.
     bind(DirectiveInjector, toValue: null);
-
   }
 }

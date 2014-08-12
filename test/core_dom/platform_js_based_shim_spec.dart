@@ -1,23 +1,22 @@
-library angular.dom.platform_spec;
+library angular.dom.platform_js_based_shim_spec;
 
 import '../_specs.dart';
 
 import 'dart:js' as js;
 
 main() {
-  describe('WebPlatform', () {
+  describe('PlatformJsBasedShim', () {
 
     beforeEachModule((Module module) {
       module
         ..bind(_WebPlatformTestComponent)
-        ..bind(_WebPlatformTestComponentWithAttribute)
         ..bind(_InnerComponent)
         ..bind(_OuterComponent)
-        ..bind(WebPlatform, toValue: new WebPlatform());
+        ..bind(PlatformJsBasedShim, toValue: new PlatformJsBasedShim());
     });
 
     it('should scope styles to shadow dom across browsers.',
-      async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
+      async((TestBed _, MockHttpBackend backend) {
 
       Element element = e('<span><test-wptc><span>ignore'
         '</span></test-wptc></span>');
@@ -50,21 +49,8 @@ main() {
       }
     }));
 
-    it('should not crash with an attribute selector; but wont work either..',
-       async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
-
-      Element element = e('<span><test-wptca a><span>ignore'
-      '</span></test-wptca></span>');
-
-      _.compile(element);
-
-      backend
-        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/style.css').respond(200, 'span{background-color: red}')
-        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/template.html').respond(200, '<span>foo</span>');
-    }));
-
     it('should scope :host styles to the primary element.',
-    async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
+        async((TestBed _, MockHttpBackend backend) {
 
       Element element = e('<span><test-wptc><span>ignore'
         '</span></test-wptc></span>');
@@ -92,7 +78,7 @@ main() {
     // safari and dartium browsers. Add back into the list of tests when firefox
     // pushes new version(s).
     xit('should scope ::content rules to component content.',
-    async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
+    async((TestBed _, MockHttpBackend backend) {
 
       Element element = e('<test-wptc><span>RED'
       '</span></test-wptc>');
@@ -126,7 +112,7 @@ main() {
     // NOTE: Chrome 34 does not work with this test. Uncomment when the dartium
     // base Chrome version is > 34
     xit('should style into child shadow dom with ::shadow.',
-    async((TestBed _, MockHttpBackend backend, WebPlatform platform) {
+    async((TestBed _, MockHttpBackend backend) {
 
       Element element = e('<my-outer></my-outer>');
 
@@ -172,14 +158,6 @@ main() {
     templateUrl: "template.html",
     cssUrl: "style.css")
 class _WebPlatformTestComponent {
-}
-
-@Component(
-    selector: "test-wptca[a]",
-    publishAs: "ctrl",
-    templateUrl: "template.html",
-    cssUrl: "style.css")
-class _WebPlatformTestComponentWithAttribute {
 }
 
 @Component(

@@ -45,23 +45,23 @@ abstract class BoundComponentFactory {
 @Injectable()
 class ShadowDomComponentFactory implements ComponentFactory {
   final ViewCache viewCache;
-  final Http http;
-  final TemplateCache templateCache;
-  final WebPlatform platform;
-  final ComponentCssRewriter componentCssRewriter;
-  final dom.NodeTreeSanitizer treeSanitizer;
+  final PlatformJsBasedShim platformShim;
   final Expando expando;
   final CompilerConfig config;
   final TypeToUriMapper uriMapper;
   final ResourceUrlResolver resourceResolver;
 
-  final Map<_ComponentAssetKey, async.Future<dom.StyleElement>> styleElementCache = {};
+  ComponentCssLoader cssLoader;
 
-  ShadowDomComponentFactory(this.viewCache, this.http, this.templateCache, this.platform,
-                            this.componentCssRewriter, this.treeSanitizer, this.expando,
-                            this.config, this.uriMapper, this.resourceResolver,
-                            CacheRegister cacheRegister) {
+  ShadowDomComponentFactory(this.viewCache, this.platformShim, this.expando, this.config,
+      this.uriMapper, this.resourceResolver, Http http, TemplateCache templateCache,
+      ComponentCssRewriter componentCssRewriter, dom.NodeTreeSanitizer treeSanitizer,
+      CacheRegister cacheRegister) {
+    final styleElementCache = new HashMap();
     cacheRegister.registerCache("ShadowDomComponentFactoryStyles", styleElementCache);
+
+    cssLoader = new ComponentCssLoader(http, templateCache, platformShim,
+        componentCssRewriter, treeSanitizer, styleElementCache, resourceResolver);
   }
 
   bind(DirectiveRef ref, directives, injector) =>
@@ -72,7 +72,6 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
 
   final ShadowDomComponentFactory _componentFactory;
   final DirectiveRef _ref;
-  final DirectiveMap _directives;
   final Injector _injector;
 
   Component get _component => _ref.annotation as Component;
@@ -81,111 +80,65 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   async.Future<Iterable<dom.StyleElement>> _styleElementsFuture;
   async.Future<ViewFactory> _viewFuture;
 
-  BoundShadowDomComponentFactory(this._componentFactory, this._ref, this._directives, this._injector) {
-    _tag = _component.selector.toLowerCase();
-    _styleElementsFuture = async.Future.wait(_component.cssUrls.map(_styleFuture));
+  BoundShadowDomComponentFactory(this._componentFactory, this._ref,
+      DirectiveMap directives, this._injector) {
+    _tag = _ref.annotation.selector.toLowerCase();
+    _styleElementsFuture = _componentFactory.cssLoader(_tag, _component.cssUrls, type: _ref.type);
 
-    _viewFuture = BoundComponentFactory._viewFuture(
-        _component,
-        new PlatformViewCache(_componentFactory.viewCache, _tag, _componentFactory.platform),
-        _directives,
-        _componentFactory.uriMapper,
-        _componentFactory.resourceResolver,
-        _ref.type);
-  }
-
-  async.Future<dom.StyleElement> _styleFuture(cssUrl, {resolveUri: true}) {
-    if (resolveUri)
-      cssUrl = _componentFactory.resourceResolver.combineWithType(_ref.type, cssUrl);
-
-    Http http = _componentFactory.http;
-    TemplateCache templateCache = _componentFactory.templateCache;
-    WebPlatform platform = _componentFactory.platform;
-    ComponentCssRewriter componentCssRewriter = _componentFactory.componentCssRewriter;
-    dom.NodeTreeSanitizer treeSanitizer = _componentFactory.treeSanitizer;
-
-    return _componentFactory.styleElementCache.putIfAbsent(
-        new _ComponentAssetKey(_tag, cssUrl), () =>
-        http.get(cssUrl, cache: templateCache)
-        .then((resp) => _componentFactory.resourceResolver.resolveCssText(resp.responseText, Uri.parse(cssUrl)),
-        onError: (e) => '/*\n$e\n*/\n')
-        .then((String css) {
-
-          // Shim CSS if required
-          if (platform.cssShimRequired) {
-            css = platform.shimCss(css, selector: _tag, cssUrl: cssUrl);
-          }
-
-          // If a css rewriter is installed, run the css through a rewriter
-          var styleElement = new dom.StyleElement()
-            ..appendText(componentCssRewriter(css, selector: _tag,
-          cssUrl: cssUrl));
-
-          // ensure there are no invalid tags or modifications
-          treeSanitizer.sanitizeTree(styleElement);
-
-          // If the css shim is required, it means that scoping does not
-          // work, and adding the style to the head of the document is
-          // preferrable.
-          if (platform.cssShimRequired) {
-            dom.document.head.append(styleElement);
-            return null;
-          }
-
-          return styleElement;
-        })
-    );
+    final viewCache = new ShimmingViewCache(_componentFactory.viewCache,
+        _tag, _componentFactory.platformShim);
+    _viewFuture = BoundComponentFactory._viewFuture(_component, viewCache, directives,
+        _componentFactory.uriMapper, _componentFactory.resourceResolver, _ref.type);
   }
 
   List<Key> get callArgs => _CALL_ARGS;
   static final _CALL_ARGS = [DIRECTIVE_INJECTOR_KEY, SCOPE_KEY, VIEW_KEY, NG_BASE_CSS_KEY,
-                             EVENT_HANDLER_KEY];
+      SHADOW_BOUNDARY_KEY];
   Function call(dom.Element element) {
     return (DirectiveInjector injector, Scope scope, View view, NgBaseCss baseCss,
-            EventHandler _) {
+        ShadowBoundary parentShadowBoundary) {
       var s = traceEnter(View_createComponent);
       try {
         var shadowDom = element.createShadowRoot()
           ..applyAuthorStyles = _component.applyAuthorStyles
           ..resetStyleInheritance = _component.resetStyleInheritance;
 
-        var shadowScope = scope.createChild(new HashMap()); // Isolate
-
-        async.Future<Iterable<dom.StyleElement>> cssFuture;
-        if (_component.useNgBaseCss == true) {
-          cssFuture = async.Future.wait([async.Future.wait(baseCss.urls.map(
-            (cssUrl) => _styleFuture(cssUrl, resolveUri: false))), _styleElementsFuture])
-          .then((twoLists) {
-            assert(twoLists.length == 2);return []
-              ..addAll(twoLists[0])
-              ..addAll(twoLists[1]);
-          });
+        var shadowBoundary;
+        if (_componentFactory.platformShim.shimRequired) {
+          shadowBoundary = parentShadowBoundary;
         } else {
-          cssFuture = _styleElementsFuture;
+          shadowBoundary = new ShadowRootBoundary(shadowDom);
         }
 
+        //_styleFuture(cssUrl, resolveUri: false)
+        var shadowScope = scope.createChild(new HashMap()); // Isolate
         ComponentDirectiveInjector shadowInjector;
 
-        TemplateLoader templateLoader = new TemplateLoader(cssFuture.then((Iterable<dom.StyleElement> cssList) {
-          cssList.where((styleElement) => styleElement != null).forEach((styleElement) {
-            shadowDom.append(styleElement.clone(true));
+        final baseUrls = (_component.useNgBaseCss) ? baseCss.urls : [];
+        final baseUrlsFuture = _componentFactory.cssLoader(_tag, baseUrls);
+        final cssFuture = mergeFutures(baseUrlsFuture, _styleElementsFuture);
+
+        async.Future<dom.Node> initShadowDom(_) {
+          if (_viewFuture == null) return new async.Future.value(shadowDom);
+          return _viewFuture.then((ViewFactory viewFactory) {
+            if (shadowScope.isAttached) {
+              shadowDom.nodes.addAll(
+                  viewFactory.call(shadowInjector.scope, shadowInjector).nodes);
+            }
+            return shadowDom;
           });
-          if (_viewFuture != null) {
-            return _viewFuture.then((ViewFactory viewFactory) {
-              if (shadowScope.isAttached) {
-                shadowDom.nodes.addAll(viewFactory.call(shadowInjector.scope, shadowInjector).nodes);
-              }
-              return shadowDom;
-            });
-          }
-          return shadowDom;
-        }));
+        }
+
+        TemplateLoader templateLoader = new TemplateLoader(
+            cssFuture.then(shadowBoundary.insertStyleElements).then(initShadowDom));
 
         var probe;
         var eventHandler = new ShadowRootEventHandler(
             shadowDom, injector.getByKey(EXPANDO_KEY), injector.getByKey(EXCEPTION_HANDLER_KEY));
         shadowInjector = new ComponentDirectiveInjector(injector, _injector, eventHandler, shadowScope,
-            templateLoader, shadowDom, null, view);
+            templateLoader, shadowDom, null, view, shadowBoundary);
+
+
         shadowInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 
         if (_componentFactory.config.elementProbeEnabled) {
@@ -204,29 +157,6 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
       }
     };
   }
-}
-
-class _ComponentAssetKey {
-  final String tag;
-  final String assetUrl;
-
-  final String _key;
-
-  _ComponentAssetKey(String tag, String assetUrl)
-      : _key = "$tag|$assetUrl",
-        this.tag = tag,
-        this.assetUrl = assetUrl;
-
-  @override
-  String toString() => _key;
-
-  @override
-  int get hashCode => _key.hashCode;
-
-  bool operator ==(key) =>
-      key is _ComponentAssetKey
-      && tag == key.tag
-      && assetUrl == key.assetUrl;
 }
 
 @Injectable()

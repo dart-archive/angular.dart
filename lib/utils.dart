@@ -1,5 +1,7 @@
 library angular.util;
 
+import 'dart:async';
+
 bool toBool(x) {
   if (x is bool) return x;
   if (x is num) return x != 0;
@@ -125,3 +127,11 @@ bool isNaN(Object o) => o is num && o.isNaN;
 
 /// Returns true iff o1 == o2 or both are [double.NAN].
 bool eqOrNaN(Object o1, Object o2) => o1 == o2 || (isNaN(o1) && isNaN(o2));
+
+/// Merges two futures of iterables into one.
+Future<Iterable> mergeFutures(Future<Iterable> f1, Future<Iterable> f2) {
+  return Future.wait([f1, f2]).then((twoLists) {
+    assert(twoLists.length == 2);
+    return []..addAll(twoLists[0])..addAll(twoLists[1]);
+  });
+}

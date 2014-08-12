@@ -101,4 +101,41 @@ main() => describe('NgBaseCss', () {
       );
     }));
   });
+
+  describe('transcluding components', () {
+    beforeEachModule((Module m) {
+      m.bind(ComponentFactory, toImplementation: TranscludingComponentFactory);
+    });
+
+    afterEach(() {
+      document.head.querySelectorAll("style").forEach((t) => t.remove());
+    });
+
+    it('should load css urls from ng-base-css', async((TestBed _, MockHttpBackend backend) {
+      var element = _.compile('<div ng-base-css="base.css"><html-and-css>ignore</html-and-css></div>');
+
+      microLeap();
+      backend
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html').respond(200, '<div>Simple!</div>')
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(200, '.simple{}')
+        ..flushGET('base.css').respond(200, '.base{}');
+      microLeap();
+
+      final styleTags = document.head.querySelectorAll("style");
+      expect(styleTags[styleTags.length - 2]).toHaveText(".base{}");
+      expect(styleTags.last).toHaveText(".simple{}");
+    }));
+
+    it('should respect useNgBaseCss', async((TestBed _, MockHttpBackend backend) {
+      var element = _.compile('<div><no-base-css>ignore</no-base-css></div>');
+
+      microLeap();
+      backend
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.html').respond(200, '<div>Simple!</div>')
+        ..flushGET('${TEST_SERVER_BASE_PREFIX}test/directive/simple.css').respond(200, '.simple{}');
+      microLeap();
+
+      expect(document.head.text).not.toContain(".base{}");
+    }));
+  });
 });

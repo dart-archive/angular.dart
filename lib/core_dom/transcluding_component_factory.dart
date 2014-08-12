@@ -6,11 +6,21 @@ class TranscludingComponentFactory implements ComponentFactory {
   final Expando expando;
   final ViewCache viewCache;
   final CompilerConfig config;
+  final DefaultPlatformShim platformShim;
   final TypeToUriMapper uriMapper;
   final ResourceUrlResolver resourceResolver;
+  ComponentCssLoader cssLoader;
 
-  TranscludingComponentFactory(this.expando, this.viewCache, this.config,
-      this.uriMapper, this.resourceResolver);
+  TranscludingComponentFactory(this.expando, this.viewCache, this.config, this.platformShim,
+      this.uriMapper, this.resourceResolver, Http http, TemplateCache templateCache,
+      ComponentCssRewriter componentCssRewriter, dom.NodeTreeSanitizer treeSanitizer,
+      CacheRegister cacheRegister) {
+    final styleElementCache = new HashMap();
+    cacheRegister.registerCache("TranscludingComponentFactoryStyles", styleElementCache);
+
+    cssLoader = new ComponentCssLoader(http, templateCache, platformShim,
+        componentCssRewriter, treeSanitizer, styleElementCache, resourceResolver);
+  }
 
   bind(DirectiveRef ref, directives, injector) =>
       new BoundTranscludingComponentFactory(this, ref, directives, injector);
@@ -21,6 +31,9 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
   final DirectiveRef _ref;
   final DirectiveMap _directives;
   final Injector _injector;
+
+  String _tag;
+  async.Future<Iterable<dom.StyleElement>> _styleElementsFuture;
 
   Component get _component => _ref.annotation as Component;
   async.Future<ViewFactory> _viewFuture;
@@ -33,21 +46,26 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
         _f.uriMapper,
         _f.resourceResolver,
         _ref.type);
+    
+    _tag = _ref.annotation.selector.toLowerCase();
+    _styleElementsFuture = _f.cssLoader(_tag, _component.cssUrls, type: _ref.type);
+
+    final viewCache = new ShimmingViewCache(_f.viewCache, _tag, _f.platformShim);
+    _viewFuture = BoundComponentFactory._viewFuture(_component, viewCache, _directives,
+        _f.uriMapper, _f.resourceResolver, _ref.type);
   }
 
   List<Key> get callArgs => _CALL_ARGS;
   static var _CALL_ARGS = [ DIRECTIVE_INJECTOR_KEY, SCOPE_KEY, VIEW_KEY,
                             VIEW_CACHE_KEY, HTTP_KEY, TEMPLATE_CACHE_KEY,
-                            DIRECTIVE_MAP_KEY, NG_BASE_CSS_KEY, EVENT_HANDLER_KEY];
+                            DIRECTIVE_MAP_KEY, NG_BASE_CSS_KEY, EVENT_HANDLER_KEY,
+                            SHADOW_BOUNDARY_KEY];
   Function call(dom.Node node) {
-    // CSS is not supported.
-    assert(_component.cssUrls == null ||
-           _component.cssUrls.isEmpty);
-
     var element = node as dom.Element;
     return (DirectiveInjector injector, Scope scope, View view,
             ViewCache viewCache, Http http, TemplateCache templateCache,
-            DirectiveMap directives, NgBaseCss baseCss, EventHandler eventHandler) {
+            DirectiveMap directives, NgBaseCss baseCss, EventHandler eventHandler,
+            ShadowBoundary shadowBoundary) {
 
       DirectiveInjector childInjector;
       var childInjectorCompleter; // Used if the ViewFuture is available before the childInjector.
@@ -55,27 +73,32 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       var component = _component;
       var lightDom = new LightDom(element, scope)..pullNodes();
 
-      // Append the component's template as children
-      var elementFuture;
+      final baseUrls = (_component.useNgBaseCss) ? baseCss.urls : [];
+      final baseUrlsFuture = _f.cssLoader(_tag, baseUrls);
+      final cssFuture = mergeFutures(baseUrlsFuture, _styleElementsFuture);
 
-      if (_viewFuture != null) {
-        elementFuture = _viewFuture.then((ViewFactory viewFactory) {
-          lightDom.clearComponentElement();
-          if (childInjector != null) {
-            lightDom.shadowDomView = viewFactory.call(childInjector.scope, childInjector);
-            return element;
-          } else {
-            childInjectorCompleter = new async.Completer();
-            return childInjectorCompleter.future.then((childInjector) {
+      initShadowDom(_) {
+        if (_viewFuture != null) {
+          return _viewFuture.then((ViewFactory viewFactory) {
+            lightDom.clearComponentElement();
+            if (childInjector != null) {
               lightDom.shadowDomView = viewFactory.call(childInjector.scope, childInjector);
               return element;
-            });
-          }
-        });
-      } else {
-        elementFuture = new async.Future.microtask(lightDom.clearComponentElement);
+            } else {
+              childInjectorCompleter = new async.Completer();
+              return childInjectorCompleter.future.then((childInjector) {
+                lightDom.shadowDomView = viewFactory.call(childInjector.scope, childInjector);
+                return element;
+              });
+            }
+          });
+        } else {
+          return new async.Future.microtask(lightDom.clearComponentElement);
+        }
       }
-      TemplateLoader templateLoader = new TemplateLoader(elementFuture);
+
+      TemplateLoader templateLoader = new TemplateLoader(
+          cssFuture.then(shadowBoundary.insertStyleElements).then(initShadowDom));
 
       Scope shadowScope = scope.createChild(new HashMap());
 
