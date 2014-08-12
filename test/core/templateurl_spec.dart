@@ -1,4 +1,4 @@
-library templateurl_spec;
+library component_template_and_css_spec;
 
 import '../_specs.dart';
 import 'package:angular/core_dom/type_to_uri_mapper.dart';
@@ -12,11 +12,11 @@ class StaticTypeToUriMapper extends TypeToUriMapper {
 
   // to be rewritten for dynamic and static cases
   Uri uriForType(Type type) {
-    if (type == SimpleUrlComponent ||
-        type == HtmlAndCssComponent ||
-        type == HtmlAndMultipleCssComponent ||
-        type == InlineWithCssComponent ||
-        type == OnlyCssComponent) {
+    if (type == _SimpleUrlComponent ||
+        type == _HtmlAndCssComponent ||
+        type == _ShadowComponentWithTranscludingComponent ||
+        type == _TranscludingComponent ||
+        type == _OnlyCssComponent) {
       return Uri.parse("package:test.angular.core_dom/templateUrlSpec.dart");
     }
     return dynamicMapper.uriForType(type);
@@ -26,38 +26,60 @@ class StaticTypeToUriMapper extends TypeToUriMapper {
 @Component(
     selector: 'simple-url',
     templateUrl: 'simple.html')
-class SimpleUrlComponent {
+class _SimpleUrlComponent {
 }
 
 @Component(
     selector: 'html-and-css',
     templateUrl: 'simple.html',
     cssUrl: 'simple.css')
-class HtmlAndCssComponent {
-}
-
-@Component(
-    selector: 'html-and-css',
-    templateUrl: 'simple.html',
-    cssUrl: const ['simple.css', 'another.css'])
-class HtmlAndMultipleCssComponent {
-}
-
-@Component(
-    selector: 'inline-with-css',
-    template: '<div>inline!</div>',
-    cssUrl: 'simple.css')
-class InlineWithCssComponent {
+class _HtmlAndCssComponent {
 }
 
 @Component(
     selector: 'only-css',
     cssUrl: 'simple.css')
-class OnlyCssComponent {
+class _OnlyCssComponent {
 }
+
+@Component(
+    selector: 'transcluding',
+    cssUrl: 'transcluding.css',
+    useShadowDom: false
+)
+class _TranscludingComponent {
+}
+
+@Component(
+    selector: 'shadow-with-transcluding',
+    template: "<transcluding/>",
+    cssUrl: 'shadow.css',
+    useShadowDom: true
+)
+class _ShadowComponentWithTranscludingComponent {
+}
+
 
 class PrefixedUrlRewriter extends UrlRewriter {
   call(url) => "PREFIX:$url";
+}
+
+void shadowDomAndTranscluding(name, fn) {
+  describe(name, (){
+    describe('transcluding components', () {
+      beforeEachModule((Module m) {
+        m.bind(ComponentFactory, toImplementation: TranscludingComponentFactory);
+      });
+      fn();
+    });
+
+    describe('shadow dom components', () {
+      beforeEachModule((Module m) {
+        m.bind(ComponentFactory, toImplementation: ShadowDomComponentFactory);
+      });
+      fn();
+    });
+  });
 }
 
 _run({resolveUrls, staticMode}) {
@@ -65,12 +87,15 @@ _run({resolveUrls, staticMode}) {
   if (!resolveUrls) prefix = "";
   else if (staticMode) prefix = "packages/test.angular.core_dom/";
   else prefix = TEST_SERVER_BASE_PREFIX + "test/core/";
-
+  
   describe('template url resolveUrls=${resolveUrls}, mode=${staticMode ? 'static' : 'dynamic'}', () {
+    TestBed _;
+
+    beforeEach((TestBed tb) => _ = tb);
 
     beforeEachModule((Module m) {
       m.bind(ResourceResolverConfig, toValue:
-        new ResourceResolverConfig.resolveRelativeUrls(resolveUrls));
+      new ResourceResolverConfig.resolveRelativeUrls(resolveUrls));
 
       if (staticMode) {
         m.bind(TypeToUriMapper, toImplementation: StaticTypeToUriMapper);
@@ -86,22 +111,17 @@ _run({resolveUrls, staticMode}) {
       cacheRegister.clear();
     });
 
+
     describe('loading with http rewriting', () {
       beforeEachModule((Module module) {
         module
-            ..bind(HtmlAndCssComponent)
-            ..bind(UrlRewriter, toImplementation: PrefixedUrlRewriter);
+          ..bind(_HtmlAndCssComponent)
+          ..bind(UrlRewriter, toImplementation: PrefixedUrlRewriter);
       });
 
-      it('should use the UrlRewriter for both HTML and CSS URLs', async(
-          (Http http, Compiler compile, Scope rootScope, Logger log,
-           Injector injector, VmTurnZone zone, MockHttpBackend backend,
-           DirectiveMap directives) {
-
-        var element = e('<div><html-and-css log>ignore</html-and-css><div>');
-        zone.run(() {
-          compile([element], directives)(rootScope, null, [element]);
-        });
+      it('should use the UrlRewriter for both HTML and CSS URLs', async((
+          MockHttpBackend backend) {
+        var element = _.compile('<div><html-and-css log>ignore</html-and-css><div>');
 
         backend
             ..flushGET('PREFIX:${prefix}simple.css').respond('.hello{}')
@@ -117,56 +137,57 @@ _run({resolveUrls, staticMode}) {
     });
 
 
-    describe('async template loading', () {
+    shadowDomAndTranscluding('template loading', () {
       beforeEachModule((Module module) {
         module
             ..bind(LogAttrDirective)
-            ..bind(SimpleUrlComponent)
-            ..bind(HtmlAndCssComponent)
-            ..bind(OnlyCssComponent)
-            ..bind(InlineWithCssComponent);
+            ..bind(_SimpleUrlComponent);
       });
 
-      it('should replace element with template from url', async(
-          (Http http, Compiler compile, Scope rootScope,  Logger log,
-           Injector injector, MockHttpBackend backend, DirectiveMap directives) {
-        var element = es('<div><simple-url log>ignore</simple-url><div>');
-        compile(element, directives)(rootScope, null, element);
+      it('should replace element with template from url', async((
+          Logger log, MockHttpBackend backend) {
+        var element = _.compile('<div><simple-url log>ignore</simple-url><div>');
 
         backend.flushGET('${prefix}simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
         microLeap();
 
-        expect(element[0]).toHaveText('Simple!');
-        rootScope.apply();
+        expect(element).toHaveText('Simple!');
+        _.rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
       }));
 
-      it('should load template from URL once', async(
-          (Http http, Compiler compile, Scope rootScope,  Logger log,
-           Injector injector, MockHttpBackend backend, DirectiveMap directives) {
-        var element = es(
+      it('should load template from URL once', async((
+          Logger log, MockHttpBackend backend) {
+        var element = _.compile(
             '<div>'
             '<simple-url log>ignore</simple-url>'
             '<simple-url log>ignore</simple-url>'
             '<div>');
-        compile(element, directives)(rootScope, null, element);
 
         backend.flushGET('${prefix}simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
         microLeap();
 
-        expect(element.first).toHaveText('Simple!Simple!');
-        rootScope.apply();
+        expect(element).toHaveText('Simple!Simple!');
+        _.rootScope.apply();
 
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; LOG; SIMPLE; SIMPLE');
       }));
+    });
 
-      it('should load a CSS file into a style', async(
-          (Http http, Compiler compile, Scope rootScope, Logger log,
-           Injector injector, MockHttpBackend backend, DirectiveMap directives) {
-        var element = e('<div><html-and-css log>ignore</html-and-css><div>');
-        compile([element], directives)(rootScope, null, [element]);
+
+    describe('css loading (shadow dom components)', () {
+      beforeEachModule((Module module) {
+        module
+          ..bind(LogAttrDirective)
+          ..bind(_HtmlAndCssComponent)
+          ..bind(_OnlyCssComponent);
+      });
+
+      it("should append the component's CSS to the shadow root", async((
+          Logger log, MockHttpBackend backend) {
+        var element = _.compile('<div><html-and-css log>ignore</html-and-css><div>');
 
         backend
             ..flushGET('${prefix}simple.css').respond(200, '.hello{}')
@@ -178,126 +199,47 @@ _run({resolveUrls, staticMode}) {
         expect(element.children[0].shadowRoot).toHaveHtml(
             '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
         );
-        rootScope.apply();
-        // Note: There is no ordering.  It is who ever comes off the wire first!
-        expect(log.result()).toEqual('LOG; SIMPLE');
-      }));
-
-      it('should load a CSS file with a \$template', async(
-          (Http http, Compiler compile, Scope rootScope, Injector injector,
-           MockHttpBackend backend, DirectiveMap directives) {
-        var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
-        compile(element, directives)(rootScope, null, element);
-
-        backend.flushGET('${prefix}simple.css').respond(200, '.hello{}');
-        microLeap();
-
-        expect(element[0]).toHaveText('.hello{}inline!');
-      }));
-
-      it('should ignore CSS load errors ', async(
-          (Http http, Compiler compile, Scope rootScope, Injector injector,
-           MockHttpBackend backend, DirectiveMap directives) {
-        var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
-        compile(element, directives)(rootScope, null, element);
-
-        backend.flushGET('${prefix}simple.css').respond(500, 'some error');
-        microLeap();
-
-        expect(element.first).toHaveText(
-            '/*\n'
-            'HTTP 500: some error\n'
-            '*/\n'
-            'inline!');
-      }));
-
-      it('should load a CSS with no template', async(
-          (Http http, Compiler compile, Scope rootScope, Injector injector,
-           MockHttpBackend backend, DirectiveMap directives) {
-        var element = es('<div><only-css log>ignore</only-css><div>');
-        compile(element, directives)(rootScope, null, element);
-
-        backend.flushGET('${prefix}simple.css').respond(200, '.hello{}');
-        microLeap();
-
-        expect(element[0]).toHaveText('.hello{}');
-      }));
-
-      it('should load the CSS before the template is loaded', async(
-          (Http http, Compiler compile, Scope rootScope, Injector injector,
-           MockHttpBackend backend, DirectiveMap directives) {
-        var element = es('<html-and-css>ignore</html-and-css>');
-        compile(element, directives)(rootScope, null, element);
-
-        backend
-            ..flushGET('${prefix}simple.css').respond(200, '.hello{}')
-            ..flushGET('${prefix}simple.html').respond(200, '<div>Simple!</div>');
-        microLeap();
-
-        expect(element.first).toHaveText('.hello{}Simple!');
-      }));
-    });
-
-    describe('multiple css loading', () {
-      beforeEachModule((Module module) {
-        module
-            ..bind(LogAttrDirective)
-            ..bind(HtmlAndMultipleCssComponent);
-      });
-
-      it('should load multiple CSS files into a style', async(
-          (Http http, Compiler compile, Scope rootScope, Logger log,
-           Injector injector, MockHttpBackend backend, DirectiveMap directives) {
-        var element = e('<div><html-and-css log>ignore</html-and-css><div>');
-        compile([element], directives)(rootScope, null, [element]);
-
-        backend
-            ..flushGET('${prefix}simple.css').respond(200, '.hello{}')
-            ..flushGET('${prefix}another.css').respond(200, '.world{}')
-            ..flushGET('${prefix}simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
-        microLeap();
-
-        expect(element).toHaveText('.hello{}.world{}Simple!');
-        expect(element.children[0].shadowRoot).toHaveHtml(
-            '<style>.hello{}</style><style>.world{}</style><div log="SIMPLE">Simple!</div>'
-        );
-        rootScope.apply();
+        _.rootScope.apply();
         // Note: There is no ordering.  It is who ever comes off the wire first!
         expect(log.result()).toEqual('LOG; SIMPLE');
       }));
     });
 
-    describe('style cache', () {
+    describe('css loading (transcluding components)', () {
       beforeEachModule((Module module) {
         module
-            ..bind(HtmlAndCssComponent)
-            ..bind(TemplateCache, toValue: new TemplateCache(capacity: 0));
+          ..bind(_TranscludingComponent)
+          ..bind(_ShadowComponentWithTranscludingComponent);
       });
 
-      // ckck
-      it('should load css from the style cache for the second component', async(
-          (Http http, Compiler compile, MockHttpBackend backend, RootScope rootScope,
-           DirectiveMap directives, Injector injector) {
-        var element = e('<div><html-and-css>ignore</html-and-css><div>');
-        compile([element], directives)(rootScope, null, [element]);
+      afterEach(() {
+        document.head.querySelectorAll("style").forEach((s) => s.remove());
+      });
 
+      it("should append the component's CSS to the closest shadow root", async((
+          MockHttpBackend backend) {
         backend
-            ..flushGET('${prefix}simple.css').respond(200, '.hello{}')
-            ..flushGET('${prefix}simple.html').respond(200, '<div log="SIMPLE">Simple!</div>');
-        microLeap();
+            ..whenGET('${prefix}shadow.css').respond(200, '.shadow{}')
+            ..whenGET('${prefix}transcluding.css').respond(200, '.transcluding{}');
 
-        expect(element.children[0].shadowRoot).toHaveHtml(
-            '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
+        final e = _.compile('<div><shadow-with-transcluding></shadow-with-transcluding><div>');
+        backend.flush(1); _.rootScope.apply(); microLeap();
+        backend.flush(1); _.rootScope.apply(); microLeap();
+
+        expect(e.children[0].shadowRoot).toHaveHtml(
+            '<style>.shadow{}</style><style>.transcluding{}</style><transcluding></transcluding>'
         );
+      }));
 
-        var element2 = e('<div><html-and-css>ignore</html-and-css><div>');
-        compile([element2], directives)(rootScope, null, [element2]);
+      it("should append the component's CSS to head when no enclosing shadow roots", async((
+           MockHttpBackend backend) {
+        backend
+            ..whenGET('${prefix}transcluding.css').respond(200, '.transcluding{}');
 
-        microLeap();
+        final e = _.compile('<div><transcluding/><div>');
+        backend.flush(); _.rootScope.apply(); microLeap();
 
-        expect(element2.children[0].shadowRoot).toHaveHtml(
-            '<style>.hello{}</style><div log="SIMPLE">Simple!</div>'
-        );
+        expect(document.head.text).toContain('.transcluding{}');
       }));
     });
   });

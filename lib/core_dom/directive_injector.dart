@@ -14,7 +14,8 @@ import 'package:angular/core/module.dart' show Scope, RootScope;
 import 'package:angular/core/annotation.dart' show Visibility, DirectiveBinder;
 import 'package:angular/core_dom/module_internal.dart'
   show Animate, View, ViewFactory, BoundViewFactory, ViewPort, NodeAttrs, ElementProbe,
-      NgElement, DestinationLightDom, SourceLightDom, LightDom, TemplateLoader, ShadowRootEventHandler, EventHandler;
+      NgElement, DestinationLightDom, SourceLightDom, LightDom, TemplateLoader, ShadowRootEventHandler,
+      EventHandler, ShadowBoundary, DefaultShadowBoundary;
 
 var _TAG_GET = new UserTag('DirectiveInjector.get()');
 var _TAG_INSTANTIATE = new UserTag('DirectiveInjector.instantiate()');
@@ -58,8 +59,9 @@ const int SHADOW_ROOT_KEY_ID            = 15;
 const int DESTINATION_LIGHT_DOM_KEY_ID  = 16;
 const int SOURCE_LIGHT_DOM_KEY_ID       = 17;
 const int EVENT_HANDLER_KEY_ID          = 18;
-const int COMPONENT_DIRECTIVE_INJECTOR_KEY_ID = 19;
-const int KEEP_ME_LAST                  = 20;
+const int SHADOW_BOUNDARY_KEY_ID        = 19;
+const int COMPONENT_DIRECTIVE_INJECTOR_KEY_ID = 20;
+const int KEEP_ME_LAST                  = 21;
 
 EventHandler eventHandler(DirectiveInjector di) => di._eventHandler;
 
@@ -68,25 +70,26 @@ class DirectiveInjector implements DirectiveBinder {
   static initUID() {
     if (_isInit) return;
     _isInit = true;
-    INJECTOR_KEY.uid               = INJECTOR_KEY_ID;
-    DIRECTIVE_INJECTOR_KEY.uid     = DIRECTIVE_INJECTOR_KEY_ID;
-    NODE_KEY.uid                   = NODE_KEY_ID;
-    ELEMENT_KEY.uid                = ELEMENT_KEY_ID;
-    NODE_ATTRS_KEY.uid             = NODE_ATTRS_KEY_ID;
-    SCOPE_KEY.uid                  = SCOPE_KEY_ID;
-    VIEW_KEY.uid                   = VIEW_KEY_ID;
-    VIEW_PORT_KEY.uid              = VIEW_PORT_KEY_ID;
-    VIEW_FACTORY_KEY.uid           = VIEW_FACTORY_KEY_ID;
-    NG_ELEMENT_KEY.uid             = NG_ELEMENT_KEY_ID;
-    BOUND_VIEW_FACTORY_KEY.uid     = BOUND_VIEW_FACTORY_KEY_ID;
-    ELEMENT_PROBE_KEY.uid          = ELEMENT_PROBE_KEY_ID;
-    TEMPLATE_LOADER_KEY.uid        = TEMPLATE_LOADER_KEY_ID;
-    SHADOW_ROOT_KEY.uid            = SHADOW_ROOT_KEY_ID;
-    DESTINATION_LIGHT_DOM_KEY.uid  = DESTINATION_LIGHT_DOM_KEY_ID;
-    SOURCE_LIGHT_DOM_KEY.uid       = SOURCE_LIGHT_DOM_KEY_ID;
-    EVENT_HANDLER_KEY.uid          = EVENT_HANDLER_KEY_ID;
-    ANIMATE_KEY.uid                = ANIMATE_KEY_ID;
+    INJECTOR_KEY.uid           = INJECTOR_KEY_ID;
+    DIRECTIVE_INJECTOR_KEY.uid = DIRECTIVE_INJECTOR_KEY_ID;
+    NODE_KEY.uid               = NODE_KEY_ID;
+    ELEMENT_KEY.uid            = ELEMENT_KEY_ID;
+    NODE_ATTRS_KEY.uid         = NODE_ATTRS_KEY_ID;
+    SCOPE_KEY.uid              = SCOPE_KEY_ID;
+    VIEW_KEY.uid               = VIEW_KEY_ID;
+    VIEW_PORT_KEY.uid          = VIEW_PORT_KEY_ID;
+    VIEW_FACTORY_KEY.uid       = VIEW_FACTORY_KEY_ID;
+    NG_ELEMENT_KEY.uid         = NG_ELEMENT_KEY_ID;
+    BOUND_VIEW_FACTORY_KEY.uid = BOUND_VIEW_FACTORY_KEY_ID;
+    ELEMENT_PROBE_KEY.uid      = ELEMENT_PROBE_KEY_ID;
+    TEMPLATE_LOADER_KEY.uid    = TEMPLATE_LOADER_KEY_ID;
+    SHADOW_ROOT_KEY.uid        = SHADOW_ROOT_KEY_ID;
+    DESTINATION_LIGHT_DOM_KEY.uid = DESTINATION_LIGHT_DOM_KEY_ID;
+    SOURCE_LIGHT_DOM_KEY.uid   = SOURCE_LIGHT_DOM_KEY_ID;
+    EVENT_HANDLER_KEY.uid    = EVENT_HANDLER_KEY_ID;
+    SHADOW_BOUNDARY_KEY.uid    = SHADOW_BOUNDARY_KEY_ID;
     COMPONENT_DIRECTIVE_INJECTOR_KEY.uid = COMPONENT_DIRECTIVE_INJECTOR_KEY_ID;
+    ANIMATE_KEY.uid            = ANIMATE_KEY_ID;
     for(var i = 1; i < KEEP_ME_LAST; i++) {
       if (_KEYS[i].uid != i) throw 'MISSORDERED KEYS ARRAY: ${_KEYS} at $i';
     }
@@ -111,6 +114,7 @@ class DirectiveInjector implements DirectiveBinder {
       , DESTINATION_LIGHT_DOM_KEY
       , SOURCE_LIGHT_DOM_KEY
       , EVENT_HANDLER_KEY
+      , SHADOW_BOUNDARY_KEY
       , COMPONENT_DIRECTIVE_INJECTOR_KEY
       , KEEP_ME_LAST
       ];
@@ -121,6 +125,7 @@ class DirectiveInjector implements DirectiveBinder {
   final NodeAttrs _nodeAttrs;
   final Animate _animate;
   final EventHandler _eventHandler;
+  final ShadowBoundary _shadowBoundary;
   LightDom lightDom;
   Scope scope;  //TODO(misko): this should be final after we get rid of controller
   final View _view;
@@ -164,20 +169,18 @@ class DirectiveInjector implements DirectiveBinder {
   static Binding _tempBinding = new Binding();
 
   DirectiveInjector(DirectiveInjector parent, appInjector, this._node, this._nodeAttrs,
-      this._eventHandler, this.scope, this._animate, [View view])
+      this._eventHandler, this.scope, this._animate, [View view, ShadowBoundary boundary])
       : _parent = parent,
-        _appInjector = appInjector,
-        _view = view == null && parent != null ? parent._view : view,
-        _constructionDepth = _NO_CONSTRUCTION;
+      _appInjector = appInjector,
+      _view = view == null && parent != null ? parent._view : view,
+      _constructionDepth = _NO_CONSTRUCTION,
+      _shadowBoundary = _getShadowBoundary(boundary, parent);
 
-  DirectiveInjector._default(this._parent, this._appInjector)
-      : _node = null,
-        _nodeAttrs = null,
-        _eventHandler = null,
-        scope = null,
-        _view = null,
-        _animate = null,
-        _constructionDepth = _NO_CONSTRUCTION;
+  static _getShadowBoundary(ShadowBoundary boundary, DirectiveInjector parent) {
+    if (boundary != null) return boundary;
+    if (parent != null) return parent._shadowBoundary;
+    return new DefaultShadowBoundary();
+  }
 
   void bind(key, {dynamic toValue: DEFAULT_VALUE,
             Function toFactory: DEFAULT_VALUE,
@@ -314,6 +317,7 @@ class DirectiveInjector implements DirectiveBinder {
       case ELEMENT_PROBE_KEY_ID:          return elementProbe;
       case NG_ELEMENT_KEY_ID:             return ngElement;
       case EVENT_HANDLER_KEY_ID:          return _eventHandler;
+      case SHADOW_BOUNDARY_KEY_ID:        return _shadowBoundary;
       case DESTINATION_LIGHT_DOM_KEY_ID:  return _destLightDom;
       case SOURCE_LIGHT_DOM_KEY_ID:       return _sourceLightDom;
       case VIEW_KEY_ID:                   return _view;
@@ -413,8 +417,10 @@ class TemplateDirectiveInjector extends DirectiveInjector {
 
   TemplateDirectiveInjector(DirectiveInjector parent, Injector appInjector,
                        Node node, NodeAttrs nodeAttrs, EventHandler eventHandler,
-                       Scope scope, Animate animate, this._viewFactory, [View view])
-    : super(parent, appInjector, node, nodeAttrs, eventHandler, scope, animate, view);
+                       Scope scope, Animate animate, this._viewFactory,
+                       [View view, ShadowBoundary shadowBoundary])
+    : super(parent, appInjector, node, nodeAttrs, eventHandler, scope, animate,
+        view, shadowBoundary);
 
 
   Object _getById(int keyId) {
@@ -443,9 +449,10 @@ class ComponentDirectiveInjector extends DirectiveInjector {
 
   ComponentDirectiveInjector(DirectiveInjector parent, Injector appInjector,
                         EventHandler eventHandler, Scope scope,
-                        this._templateLoader, this._shadowRoot, LightDom lightDom, [View view])
+                        this._templateLoader, this._shadowRoot, LightDom lightDom,
+                        [View view, ShadowBoundary shadowBoundary])
       : super(parent, appInjector, parent._node, parent._nodeAttrs, eventHandler, scope,
-              parent._animate, view) {
+              parent._animate, view, shadowBoundary) {
     // A single component creates a ComponentDirectiveInjector and its DirectiveInjector parent,
     // so parent should never be null.
     assert(parent != null);

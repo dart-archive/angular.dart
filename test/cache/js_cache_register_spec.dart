@@ -5,6 +5,10 @@ import 'dart:js' as js;
 import 'package:angular/application_factory.dart';
 
 main() => describe('JsCacheRegister', () {
+  beforeEachModule((Module m) {
+    m.bind(CacheRegister);
+  });
+
   s() => js.context['ngCaches']['sizes'].apply([]);
 
   // Create some caches in the system
