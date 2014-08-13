@@ -99,9 +99,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
         ShadowBoundary parentShadowBoundary) {
       var s = traceEnter(View_createComponent);
       try {
-        var shadowDom = element.createShadowRoot()
-          ..applyAuthorStyles = _component.applyAuthorStyles
-          ..resetStyleInheritance = _component.resetStyleInheritance;
+        var shadowDom = element.createShadowRoot();
 
         var shadowBoundary;
         if (_componentFactory.platformShim.shimRequired) {
