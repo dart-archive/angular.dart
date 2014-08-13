@@ -58,12 +58,23 @@ class TestBed {
     return rootElement;
   }
 
+  String _handleWhitespace(html) {
+    return html
+        .split('\n')
+        .map((line) {
+          var trimmed = line.trim();
+          return trimmed +
+              (trimmed.isEmpty || trimmed.endsWith('>') ? '' : ' ');
+        })
+        .join();
+  }
   /**
    * Convert an [html] String to a [List] of [Element]s.
    */
   List<Element> toNodeList(html) {
     var div = new DivElement();
-    div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
+    var sanitizedHtml = _handleWhitespace(html);
+    div.setInnerHtml(sanitizedHtml, treeSanitizer: new NullTreeSanitizer());
     var nodes = [];
     for (var node in div.nodes) {
       nodes.add(node);
