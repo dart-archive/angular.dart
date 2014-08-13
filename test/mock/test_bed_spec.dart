@@ -27,24 +27,6 @@ void main() {
       expect(directiveInst.destroyed).toBe(true);
     });
 
-    it('should handle whitespace cleanly', () {
-      var root = _.compile('''
-        <div>
-          <h1
-             attr="Hi">
-          </h1>
-        </div>
-      <span  
-       attr2="Bye"
-
-      ></span>
-      ''');
-
-      expect(root.runtimeType).toBe(DivElement);
-      expect(_.rootElements[1].runtimeType).toBe(SpanElement);
-      expect(_.rootElements.length).toBe(2);
-    });
-
   });
 }
 
