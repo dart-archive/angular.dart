@@ -217,9 +217,6 @@ abstract class Directive {
   Directive _cloneWithNewMap(newMap);
 }
 
-bool _applyAuthorStylesDeprecationWarningPrinted = false;
-bool _resetStyleInheritanceDeprecationWarningPrinted = false;
-
 /**
  * Annotation placed on a class which should act as a controller for the
  * component. Angular components are a light-weight version of web-components.
@@ -255,34 +252,6 @@ class Component extends Directive {
   final _cssUrls;
 
   /**
-   * Set the shadow root applyAuthorStyles property. See shadow-DOM
-   * documentation for further details.
-   */
-  @Deprecated('in Chrome 35')
-  bool get applyAuthorStyles {
-    if (!_applyAuthorStylesDeprecationWarningPrinted && _applyAuthorStyles == true) {
-      print("WARNING applyAuthorStyles is deprecated in component $selector");
-      _applyAuthorStylesDeprecationWarningPrinted = true;
-    }
-    return _applyAuthorStyles;
-  }
-  final bool _applyAuthorStyles;
-
-  /**
-   * Set the shadow root resetStyleInheritance property. See shadow-DOM
-   * documentation for further details.
-   */
-  @Deprecated('in Chrome 35')
-  bool get resetStyleInheritance {
-    if (!_resetStyleInheritanceDeprecationWarningPrinted && _resetStyleInheritance == true) {
-      print("WARNING resetStyleInheritance is deprecated in component $selector");
-      _resetStyleInheritanceDeprecationWarningPrinted = true;
-    }
-    return _resetStyleInheritance;
-  }
-  final bool _resetStyleInheritance;
-
-  /**
    * An expression under which the component's controller instance will be
    * published into. This allows the expressions in the template to be referring
    * to controller instance and its properties.
@@ -305,8 +274,6 @@ class Component extends Directive {
     this.template,
     this.templateUrl,
     cssUrl,
-    applyAuthorStyles,
-    resetStyleInheritance,
     this.publishAs,
     DirectiveBinderFn module,
     map,
@@ -317,8 +284,6 @@ class Component extends Directive {
     this.useShadowDom,
     this.useNgBaseCss: true})
       : _cssUrls = cssUrl,
-        _applyAuthorStyles = applyAuthorStyles,
-        _resetStyleInheritance = resetStyleInheritance,
         super(selector: selector,
              children: Directive.COMPILE_CHILDREN,
              visibility: visibility,
@@ -336,8 +301,6 @@ class Component extends Directive {
           template: template,
           templateUrl: templateUrl,
           cssUrl: cssUrls,
-          applyAuthorStyles: applyAuthorStyles,
-          resetStyleInheritance: resetStyleInheritance,
           publishAs: publishAs,
           map: newMap,
           module: module,

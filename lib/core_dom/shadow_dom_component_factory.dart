@@ -145,9 +145,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
             EventHandler _) {
       var s = traceEnter(View_createComponent);
       try {
-        var shadowDom = element.createShadowRoot()
-          ..applyAuthorStyles = _component.applyAuthorStyles
-          ..resetStyleInheritance = _component.resetStyleInheritance;
+        var shadowDom = element.createShadowRoot();
 
         var shadowScope = scope.createChild(new HashMap()); // Isolate
 

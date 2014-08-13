@@ -11,8 +11,7 @@ part of animation;
         </div>
       </div>
     ''',
-    publishAs: 'ctrl',
-    applyAuthorStyles: true)
+    publishAs: 'ctrl')
 class StressDemo {
   bool _visible = true;
   final numbers = <int>[1, 2];

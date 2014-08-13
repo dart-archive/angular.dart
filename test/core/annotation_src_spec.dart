@@ -37,8 +37,6 @@ void main() => describe('annotations', () {
         template: '',
         templateUrl: '',
         cssUrl: [''],
-        applyAuthorStyles: true,
-        resetStyleInheritance: true,
         publishAs: '',
         module: (i){},
         map: {},

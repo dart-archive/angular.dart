@@ -17,8 +17,7 @@ part of animation;
       </ul>
       </div>
     ''',
-    publishAs: 'ctrl',
-    applyAuthorStyles: true)
+    publishAs: 'ctrl')
 class RepeatDemo {
   var thing = 0;
   final items = [];
