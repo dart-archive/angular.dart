@@ -1,5 +1,7 @@
 library angular.core.parser.static_parser;
 
+import 'dart:collection';
+
 import 'package:angular/cache/module.dart' show CacheRegister;
 import 'package:angular/core/annotation_src.dart' show Injectable;
 import 'package:angular/core/module_internal.dart' show FormatterMap;

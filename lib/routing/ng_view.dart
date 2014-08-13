@@ -76,7 +76,7 @@ class NgView implements DetachAware, RouteProvider {
       : _dirInjector = dirInjector,
         _locationService = dirInjector.getByKey(NG_ROUTING_HELPER_KEY)
   {
-    RouteProvider routeProvider = dirInjector.parent.getByKey(NG_VIEW_KEY);
+    RouteProvider routeProvider = dirInjector.getFromParentByKey(NG_VIEW_KEY);
     _route = routeProvider != null ?
         routeProvider.route.newHandle() :
         router.root.newHandle();

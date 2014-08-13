@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Hello, World!</title>
+<link rel="stylesheet" type="text/css" href="./gumby.css" />
+<link rel="stylesheet" type="text/css" href="./forms.css" />
+<style>
+.error { color:red; }
+</style>
+</head>
+<body class="container" ng-cloak>
+
+<form class="page-grid form"
+      name="myForm"
+      novalidate
+      form-controller
+      ng-submit="form_ctrl.submit()"
+      ng-class="{submitted:submitted}">
+  <div class="grid-left">
+    <h2 class="page-header">AngularJS Wallpaper Designer</h2>
+    <section>
+      <h3>Wallpaper Resolution Size</h3>
+      <div class="field">
+        <div class="picker xwide resolution-picker" ng-class="{'ng-invalid':myForm['resolution'].invalid}">
+          <select ng-model="info.resolution" placeholder="Resolution Size" required name="resolution">
+            <option ng-repeat="resolution in form_ctrl.resolutions" ng-value="resolution">
+              {{ resolution }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h3>Account Details</h3>
+      <div class="field">
+        <input type="text" class="text input half" ng-model="info.first_name" name="first_name" required placeholder="First Name" />
+        <input type="text" class="text input half" ng-model="info.last_name" name="last_name" placeholder="Last Name" required />
+      </div>
+
+      <div class="field">
+        <input class="text input xnarrow" type="number" ng-model="info.age" name="age" required placeholder="Age" />
+        <input type="email" class="text input xwide" ng-model="info.email" name="email" required placeholder="Email Address" />
+      </div>
+
+      <div class="field">
+        <input class="text input xxwide" ng-model="info.city" name="city" required placeholder="What city do you live in?" />
+      </div>
+
+      <div class="error" ng-if="myForm['age'].invalid">You did not enter your age properly</div>
+
+      <div class="field">
+        <textarea class="textarea input" ng-model="info.about" name="about" required placeholder="Additional Info" minlength="10"></textarea>
+      </div>
+
+      <div class="error" ng-if="myForm['about'].invalid">You did not enter any additional info</div>
+    </section>
+
+    <section class="sub-section" ng-form="colorsForm">
+      <h3>Colors</h3>
+      <span class="medium secondary btn sub-action">
+        <a href="" ng-click="form_ctrl.newColor()">New Color</a>
+      </span>
+      <div ng-form="colorForm" ng-repeat="color in form_ctrl.colors" class="inline-row">
+        <div class="field">
+          <div class="picker">
+            <select ng-model="color.type">
+              <option ng-repeat="type in form_ctrl.color_types" ng-value="type">{{ type }}</option>
+            </select>
+          </div>
+        </div>
+        <div ng-switch="color.type" class="input-colors">
+          <div ng-switch-when="rgb" class="inputs-row field input-color-type">
+            <input class="text input" type="number" required ng-model="color.red" name="color_red" placeholder="red" min="0" max="255" />
+            <input class="text input" type="number" required ng-model="color.green" name="color_green" placeholder="green" min="0" max="255" />
+            <input class="text input" type="number" required ng-model="color.blue" name="color_blue" placeholder="blue" min="0" max="255" />
+          </div>
+          <div ng-switch-when="hsl" class="inputs-row field input-color-data">
+            <input class="text input" type="number" required ng-model="color.hue" name="color_hue" placeholder="hue" min="0" max="255" />
+            <input class="text input" type="number" required ng-model="color.saturation" name="color_saturation" placeholder="saturation" min="0" max="100" />
+            <input class="text input" type="number" required ng-model="color.luminance" name="color_luminance" placeholder="luminance" min="0" max="100" />
+          </div>
+          <div ng-switch-when="hex" class="inputs-row input-color-data">
+            <div class="field">
+              <input class="text input xwide" type="text" ng-model="color.hex" name="color_hex" placeholder="hex value" required pattern="^#[a-fA-F0-9]{3,6}$" maxlength="7" />
+            </div>
+          </div>
+          <div ng-switch-default class="inputs-row field input-color-data">
+            <input class="text input xwide" type="text" ng-model="color.name" name="color_name" placeholder="red, green, blue, purple, etc..." required />
+          </div>
+        </div>
+      </div>
+
+      <label>How many cells do you want?</label>
+      <input type="range" min="1" max="10" ng-model="info.squares" class="square-picker" />
+    </section>
+
+    <nav>
+      <span class="medium primary btn">
+        <input type="submit" value="Submit" />
+      </span>
+    </nav>
+  </div>
+
+  <div class="grid-right" preview-controller>
+    <div class="color-backdrop s-{{ form_ctrl.getTotalSquares(info.squares) }}">
+      <div class="color-cell"
+           ng-style="{'background-color': color}"
+           ng-repeat="color in preview.expandList(form_ctrl.formatColors(), form_ctrl.getTotalSquares(info.squares))">
+      </div>
+    </div>
+
+    <div class="color-logo"></div>
+
+    <div class="profile-badge" ng-if="myForm.submitted && myForm.valid">
+      <h3>Your data has been successfully submitted...</h3>
+    </div>
+
+    <div class="profile-badge" ng-if="myForm.submitted && myForm.invalid">
+      <h3>There was an error</h3>
+
+      <h4>Account Details &amp; Wallpaper</h4>
+      <ol class="errors-list clear-list">
+        <li class="bullet" ng-if="myForm['resolution'].invalid && myForm['resolution'].hasErrorState('ng-required')">
+          You did not select a wallpaper <strong>resolution size</strong>.
+        </li>
+
+        <li class="bullet" ng-if="myForm['first_name'].invalid && myForm['first_name'].hasErrorState('ng-required')">
+          You did not enter your <strong>first name</strong>.
+        </li>
+
+        <li class="bullet" ng-if="myForm['last_name'].invalid && myForm['last_name'].hasErrorState('ng-required')">
+          You did not enter your <strong>last name</strong>.
+        </li>
+
+        <li class="bullet" ng-if="myForm['email'].invalid && myForm['email'].hasErrorState('ng-required')">
+          You left your <strong>email address</strong> blank.
+        </li>
+        <li class="bullet" ng-if="myForm['email'].invalid && myForm['email'].hasErrorState('ng-email')">
+          You did not enter your <strong>email address</strong>correctly
+        </li>
+
+        <li class="bullet" ng-if="myForm['age'].invalid && myForm['age'].hasErrorState('ng-required')">
+          You did not select your <strong>age</strong>
+        </li>
+        <li class="bullet" ng-if="myForm['age'].invalid && myForm['age'].hasErrorState('ng-number')">
+          You have selected an invalid <strong>age</strong>
+        </li>
+
+        <li class="bullet" ng-if="myForm['city'].invalid && myForm['city'].hasErrorState('ng-required')">
+          You did not enter what <strong>city</strong> you live in
+        </li>
+
+        <li class="bullet" ng-if="myForm['about'].invalid && myForm['about'].hasErrorState('ng-required')">
+          You did not enter any <strong>additional info</strong> about yourself
+        </li>
+
+        <li class="bullet" ng-if="myForm['about'].invalid && myForm['about'].hasErrorState('ng-minlength')">
+          You did not input <strong>enough text</strong> for your additional info
+        </li>
+      </ol>
+
+      <div ng-if="myForm['colorsForm'].invalid">
+        <hr />
+        <h4>Colors</h4>
+        <p class="errors-list">One or more of the colors within the form is invalid...</p>
+        <ol class="clear-list errors-list">
+          <li ng-repeat="colorForm in myForm['colorsForm'].controls['colorForm']">
+            <div ng-if="colorForm.hasErrorState('ng-pattern')" class="bullet">
+              You did not set a valid color for one of the color inputs.
+            </div>
+            <div ng-if="colorForm.hasErrorState('ng-required')" class="bullet">
+              You left a color input empty.
+            </div>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</form>
+
+<script type="application/dart" src="form.dart"></script>
+<script src="packages/browser/dart.js"></script>
+</body>
+</html>

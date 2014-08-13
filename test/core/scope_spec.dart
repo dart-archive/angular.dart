@@ -1218,11 +1218,11 @@ void main() {
 
         expect(() {
           rootScope.digest();
-        }).toThrow('Model did not stabilize in 5 digests. '
-        'Last 3 iterations:\n'
-        'a: 2 <= 1, b: 2 <= 1\n'
-        'a: 3 <= 2, b: 3 <= 2\n'
-        'a: 4 <= 3, b: 4 <= 3');
+        }).toThrow('Model did not stabilize in 10 digests. '
+                   'Last 3 iterations:\n'
+                   'a: 7 <= 6, b: 7 <= 6\n'
+                   'a: 8 <= 7, b: 8 <= 7\n'
+                   'a: 9 <= 8, b: 9 <= 8');
       });
 
 
@@ -1232,7 +1232,7 @@ void main() {
 
         expect(() {
           rootScope.digest();
-        }).toThrow('Model did not stabilize in 5 digests. '
+        }).toThrow('Model did not stabilize in 10 digests. '
         'Last 3 iterations:\n'
         'async:1\n'
         'async:1\n'

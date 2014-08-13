@@ -127,7 +127,7 @@ class WalkingViewFactory implements ViewFactory {
  */
 @Injectable()
 class ViewCache {
-  // _viewFactoryCache is unbounded
+  // viewFactoryCache is unbounded
   // This cache contains both HTML and URL keys.
   final viewFactoryCache = new LruCache<String, ViewFactory>();
   final Http http;
@@ -136,7 +136,7 @@ class ViewCache {
   final dom.NodeTreeSanitizer treeSanitizer;
 
   ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer, CacheRegister cacheRegister) {
-    cacheRegister.registerCache('viewCache', viewFactoryCache);
+    cacheRegister.registerCache('ViewCache', viewFactoryCache);
   }
 
   ViewFactory fromHtml(String html, DirectiveMap directives) {
@@ -207,4 +207,6 @@ class ElementProbe {
   final modelExpressions = <String>[];
 
   ElementProbe(this.parent, this.element, this.injector, this.scope);
+
+  dynamic directive(Type type) => injector.get(type);
 }

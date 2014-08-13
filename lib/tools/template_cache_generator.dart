@@ -9,6 +9,7 @@ import 'package:analyzer/src/generated/source.dart';
 import 'package:analyzer/src/generated/element.dart';
 import 'package:args/args.dart';
 import 'package:di/generator.dart';
+import 'dart:convert';
 
 const String PACKAGE_PREFIX = 'package:';
 const String DART_PACKAGE_PREFIX = 'dart:';
@@ -56,7 +57,8 @@ main(List arguments) {
     sink = f.openWrite();
   }
   return printTemplateCache(
-      templates, options.urlRewrites, options.outputLibrary, sink)
+      templates, options.urlRewrites, options.outputLibrary, sink,
+          options.cssRewriter)
       .then((_) => sink.flush());
 }
 
@@ -70,6 +72,7 @@ class Options {
   Map<RegExp, String> urlRewrites;
   Set<String> skippedClasses;
   bool verbose;
+  String cssRewriter;
 }
 
 Options parseArgs(List arguments) {
@@ -89,6 +92,9 @@ Options parseArgs(List arguments) {
                 'patternUrl,rewriteTo')
       ..addOption('skip-classes', abbr: 'b',
           help: 'comma-separated list of classes to skip templating')
+      ..addOption('css-rewriter', defaultsTo: null,
+          help: 'application used to rewrite css. Each css file will be passed '
+                'to stdin and rewriten one is expected on stdout.')
       ..addFlag('verbose', abbr: 'v', help: 'verbose output')
       ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
@@ -142,31 +148,48 @@ Options parseArgs(List arguments) {
   if (args.rest.length != 2) {
     fail('unexpected arguments: ${args.rest.join(' ')}');
   }
+  options.cssRewriter = args['css-rewriter'];
   options.entryPoint = args.rest[0];
   options.outputLibrary = args.rest[1];
   return options;
 }
 
 printTemplateCache(Map<String, String> templateKeyMap,
-                        Map<RegExp, String> urlRewriters,
-                        String outputLibrary,
-                        IOSink outSink) {
+                   Map<RegExp, String> urlRewriters,
+                   String outputLibrary,
+                   IOSink outSink,
+                   String cssRewriter) {
 
   outSink.write(fileHeader(outputLibrary));
 
   Future future = new Future.value(0);
   List uris = templateKeyMap.keys.toList()..sort()..forEach((uri) {
     var templateFile = templateKeyMap[uri];
+    String resultUri = uri;
+    urlRewriters.forEach((regexp, replacement) {
+      resultUri = resultUri.replaceFirst(regexp, replacement);
+    });
+    var putToCache = (String content) {
+      var out = content.replaceAll('"""', r'\"\"\"');
+      outSink.write(
+        'tc.put("$resultUri", new HttpResponse(200, r"""$out"""));\n');
+    };
     future = future.then((_) {
-      return new File(templateFile).readAsString().then((fileStr) {
-        fileStr = fileStr.replaceAll('"""', r'\"\"\"');
-        String resultUri = uri;
-        urlRewriters.forEach((regexp, replacement) {
-          resultUri = resultUri.replaceFirst(regexp, replacement);
+      var fileContentFuture = new File(templateFile).readAsString();
+      if (templateFile.endsWith(".css") && cssRewriter != null) {
+        return fileContentFuture.then((fileStr) {
+          return Process.start(cssRewriter, []).then((process) {
+            process.stdin.write(fileStr);
+            process.stdin.close();
+            return process.stdout
+                          .transform(UTF8.decoder)
+                          .join("")
+                          .then(putToCache);
+          });
         });
-        outSink.write(
-            'tc.put("$resultUri", new HttpResponse(200, r"""$fileStr"""));\n');
-      });
+      } else {
+        return fileContentFuture.then(putToCache);
+      }
     });
   });
 

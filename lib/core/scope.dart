@@ -65,7 +65,7 @@ class ScopeEvent {
 @Injectable()
 class ScopeDigestTTL {
   final int ttl;
-  ScopeDigestTTL(): ttl = 5;
+  ScopeDigestTTL(): ttl = 10;
   ScopeDigestTTL.value(this.ttl);
 }
 
@@ -658,7 +658,7 @@ class RootScope extends Scope {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
     _zone.onScheduleMicrotask = runAsync;
-  cacheRegister.registerCache("ScopeWatchASTs", astCache);
+    cacheRegister.registerCache("ScopeWatchASTs", astCache);
   }
 
   RootScope get rootScope => this;
@@ -678,7 +678,7 @@ class RootScope extends Scope {
   * [digest] calls the associated [ReactionFn]. Since a [ReactionFn] may further change the model,
   * [digest] processes changes multiple times until no more changes are detected.
   *
-  * If the model does not stabilize within 5 iterations, an exception is thrown. See
+  * If the model does not stabilize within 10 iterations, an exception is thrown. See
   * [ScopeDigestTTL].
   */
   void digest() {
