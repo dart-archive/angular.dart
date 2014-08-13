@@ -61,7 +61,8 @@ class TestBed {
    */
   List<Element> toNodeList(html) {
     var div = new DivElement();
-    div.setInnerHtml(html, treeSanitizer: new NullTreeSanitizer());
+    var sanitizedHtml = _handleWhitespace(html);
+    div.setInnerHtml(sanitizedHtml, treeSanitizer: new NullTreeSanitizer());
     var nodes = [];
     for (var node in div.nodes) {
       nodes.add(node);
@@ -99,4 +100,12 @@ class TestBed {
   }
 
   getScope(Node node) => getProbe(node).scope;
+
+  String _handleWhitespace(html) {
+    return html.split('\n')
+               .map((line) {
+                 var trimmed = line.trim();
+                 return trimmed + (trimmed.isEmpty || trimmed.endsWith('>') ? '' : ' ');})
+               .join();
+  }
 }
