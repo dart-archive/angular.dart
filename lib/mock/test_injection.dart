@@ -10,7 +10,7 @@ _SpecInjector _currentSpecInjector = null;
 class _SpecInjector {
   Injector moduleInjector;
   Injector injector;
-  dynamic injectiorCreateLocation;
+  dynamic injectorCreateLocation;
   final modules = <Module>[];
   final initFns = <Function>[];
 
@@ -29,8 +29,8 @@ class _SpecInjector {
   }
 
   module(fnOrModule, [declarationStack]) {
-    if (injectiorCreateLocation != null) {
-      throw "Injector already created at:\n$injectiorCreateLocation";
+    if (injectorCreateLocation != null) {
+      throw "Injector already created at:\n$injectorCreateLocation";
     }
     try {
       if (fnOrModule is Function) {
@@ -49,7 +49,7 @@ class _SpecInjector {
   inject(Function fn, [declarationStack]) {
     try {
       if (injector == null) {
-        injectiorCreateLocation = declarationStack;
+        injectorCreateLocation = declarationStack;
         injector = new ModuleInjector(modules); // Implicit injection is disabled.
         initFns.forEach((fn) {
           _invoke(injector, fn);
@@ -63,7 +63,7 @@ class _SpecInjector {
 
   reset() {
     injector = null;
-    injectiorCreateLocation = null;
+    injectorCreateLocation = null;
   }
 
   _invoke(Injector injector, Function fn) {
