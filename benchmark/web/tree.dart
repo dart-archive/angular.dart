@@ -14,20 +14,40 @@ import 'dart:js' as js;
     '<span ng-if="ctrl.data.right != null"><tree data=ctrl.data.right></span>'
     '<span ng-if="ctrl.data.left != null"><tree data=ctrl.data.left></span>'
     '</span>',
-    publishAs: 'ctrl')
+    publishAs: 'ctrl',
+    useShadowDom: true)
 class TreeComponent {
   @NgOneWay('data')
   var data;
 }
 
 @Component(
+    selector: 'transcluding-tree',
+    template: '<span> {{ctrl.data.value}}'
+    '<span ng-if="ctrl.data.right != null"><transcluding-tree data=ctrl.data.right></span>'
+    '<span ng-if="ctrl.data.left != null"><transcluding-tree data=ctrl.data.left></span>'
+    '</span>',
+    publishAs: 'ctrl',
+    useShadowDom: false)
+class TranscludingTreeComponent extends TreeComponent {}
+  
+
+@Component(
     selector: 'tree-url',
     templateUrl: 'tree-tmpl.html',
-    publishAs: 'ctrl')
+    publishAs: 'ctrl',
+    useShadowDom: true)
 class TreeUrlComponent {
   @NgOneWay('data')
   var data;
 }
+
+@Component(
+    selector: 'transcluding-tree-url',
+    templateUrl: 'transcluding-tree-tmpl.html',
+    publishAs: 'ctrl',
+    useShadowDom: false)
+class TranscludingTreeUrlComponent extends TreeUrlComponent {}
 
 
 // This is a baseline implementation of TreeComponent.
@@ -250,7 +270,9 @@ main() {
 
   var module = new Module()
       ..bind(TreeComponent)
+      ..bind(TranscludingTreeComponent)
       ..bind(TreeUrlComponent)
+      ..bind(TranscludingTreeUrlComponent)
       ..bind(NgFreeTree)
       ..bind(NgFreeTreeScoped)
       ..bind(NgFreeTreeClass)

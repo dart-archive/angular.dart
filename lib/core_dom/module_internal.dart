@@ -43,14 +43,11 @@ part 'node_cursor.dart';
 part 'selector.dart';
 part 'shadow_dom_component_factory.dart';
 part 'shadowless_shadow_root.dart';
-part 'tagging_compiler.dart';
-part 'tagging_view_factory.dart';
 part 'template_cache.dart';
 part 'transcluding_component_factory.dart';
 part 'tree_sanitizer.dart';
 part 'view.dart';
 part 'view_factory.dart';
-part 'walking_compiler.dart';
 part 'web_platform.dart';
 
 class CoreDomModule extends Module {
@@ -69,7 +66,7 @@ class CoreDomModule extends Module {
     bind(TextMustache);
     bind(AttrMustache);
 
-    bind(Compiler, toImplementation: TaggingCompiler);
+    bind(Compiler);
     bind(CompilerConfig);
 
     bind(ComponentFactory, toInstanceOf: SHADOW_DOM_COMPONENT_FACTORY_KEY);
