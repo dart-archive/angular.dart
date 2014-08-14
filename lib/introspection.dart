@@ -277,7 +277,7 @@ class _Testability implements _JsObjectProxyable {
   _Testability(this.node, this.probe);
 
   whenStable(callback) {
-    probe.injector.get(VmTurnZone).run(
+    (probe.injector.get(VmTurnZone) as VmTurnZone).run(
         () => new async.Timer(Duration.ZERO, callback));
   }
 
