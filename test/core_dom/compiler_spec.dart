@@ -4,7 +4,7 @@ import '../_specs.dart';
 import 'package:angular/core_dom/directive_injector.dart';
 
 
-forBothCompilers(fn) {
+withElementProbeConfig(fn) {
   describe('with ElementProbe enabled', () {
     beforeEachModule((Module m) {
       return m;
@@ -22,7 +22,7 @@ forBothCompilers(fn) {
 }
 
 forAllCompilersAndComponentFactories(fn) {
-  forBothCompilers(fn);
+  withElementProbeConfig(fn);
 
   describe('transcluding components', () {
     beforeEachModule((Module m) {
@@ -35,7 +35,7 @@ forAllCompilersAndComponentFactories(fn) {
 }
 
 void main() {
-  forBothCompilers((compilerType) =>
+  withElementProbeConfig((compilerType) =>
   describe('TranscludingComponentFactory', () {
     TestBed _;
 
