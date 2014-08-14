@@ -152,10 +152,11 @@ abstract class Directive {
    *   watch on expression. Once the expression turns truthy it will no longer
    *   update. (cost: 1 watches until not null, then 0 watches)
    *
-   * * `&` - Treat the DOM attribute value as an expression. Assign a closure
-   *   function into the field. This allows the component to control
-   *   the invocation of the closure. This is useful for passing
-   *   expressions into controllers which act like callbacks. (cost: 0 watches)
+   * * `&` - Treat the DOM attribute value as an expression. The expression is compiled and bound
+   *   to the scope context. The resulting [BoundExpression] is assigned to the designated field.
+   *   The component can evaluate the expression by calling the [BoundExpression] when needed.
+   *   This is useful for passing expressions into controllers which act like callbacks. (cost:
+   *   0 watches)
    *
    * Example:
    *
@@ -172,25 +173,25 @@ abstract class Directive {
    *     class MyComponent {
    *       String title;
    *       var currentItem;
-   *       ParsedFn onChange;
+   *       BoundExpression onChange;
    *     }
    *
-   *  The above example shows how all three mapping modes are used.
+   *  The above example shows how all three mapping modes are used:
    *
-   *  * `@title` maps the title DOM attribute to the controller `title`
+   *  * `@title` maps the title DOM attribute to the component `title`
    *    field. Notice that this maps the content of the attribute, which
    *    means that it can be used with `{{}}` interpolation.
    *
    *  * `<=>currentItem` maps the expression (in this case the `selectedItem`
-   *    in the current scope into the `currentItem` in the controller. Notice
+   *    in the current scope into the `currentItem` in the component. Notice
    *    that mapping is bi-directional. A change either in field or on
    *    parent scope will result in change to the other.
    *
-   *  * `&onChange` maps the expression into the controller `onChange`
-   *    field. The result of mapping is a callable function which can be
-   *    invoked at any time by the controller. The invocation of the
-   *    callable function will result in the expression `doSomething()` to
-   *    be executed in the parent context.
+   *  * `&onChange` parse the expression (`doSomething()`), bind it to the parent context, the
+   *    resulting [BoundExpression] is assigned to the controller `onChange` field. The
+   *    [BoundExpression] is a callable object which can be invoked at any time by the component.
+   *    The invocation of `onChange` will result in the expression `doSomething()` to be
+   *    executed.
    */
   final Map<String, String> map;
 
@@ -512,10 +513,9 @@ class NgTwoWay extends DirectiveAnnotation {
 }
 
 /**
- * When applied as an annotation on a directive field specifies that
- * the field is to be mapped to DOM attribute with the provided [attrName].
- * The value of the attribute to be treated as a callback expression,
- * equivalent to `&` specification.
+ * When applied as an annotation on a directive field specifies that the field is to be mapped to
+ * DOM attribute with the provided [attrName]. The value of the attribute to be treated as a
+ * an expression, equivalent to `&` specification.
  */
 class NgCallback extends DirectiveAnnotation {
   final _mappingSpec = '&';
