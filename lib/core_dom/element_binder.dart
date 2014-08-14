@@ -1,5 +1,8 @@
 part of angular.core.dom_internal;
 
+var _ElementBinder_directive = traceCreateScope('ElementBinder#createDirective(ascii name)');
+var _ElementBinder_setupBindings = traceCreateScope('ElementBinder#setupBindings(ascii name)');
+
 class TemplateElementBinder extends ElementBinder {
   final DirectiveRef template;
   ViewFactory templateViewFactory;
@@ -186,39 +189,53 @@ class ElementBinder {
   }
 
   void _link(DirectiveInjector directiveInjector, Scope scope, nodeAttrs) {
+    var s;
     for(var i = 0; i < _usableDirectiveRefs.length; i++) {
       DirectiveRef ref = _usableDirectiveRefs[i];
       var key = ref.typeKey;
+      var wtfArgs = wtfEnabled ? [ref.typeKey.toString()] : null;
       if (identical(key, TEXT_MUSTACHE_KEY) || identical(key, ATTR_MUSTACHE_KEY)) continue;
-      var directive = directiveInjector.getByKey(ref.typeKey);
 
-      if (ref.annotation is Controller) {
-        scope.parentScope.context[(ref.annotation as Controller).publishAs] = directive;
+      s = traceEnter(_ElementBinder_directive, wtfArgs);
+      var directive;
+      try {
+        directive = directiveInjector.getByKey(ref.typeKey);
+      } finally {
+        traceLeave(s);
       }
 
-      var tasks = directive is AttachAware ? new _TaskList(() {
-        if (scope.isAttached) directive.attach();
-      }) : null;
+      s = traceEnter(_ElementBinder_setupBindings, wtfArgs);
+      try {
+        if (ref.annotation is Controller) {
+          scope.parentScope.context[(ref.annotation as Controller).publishAs] = directive;
+        }
 
-      if (ref.mappings.isNotEmpty) {
-        if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
-        _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, tasks);
-      }
+        var tasks = directive is AttachAware ? new _TaskList(() {
+          if (scope.isAttached) directive.attach();
+        }) : null;
 
-      if (directive is AttachAware) {
-        var taskId = (tasks != null) ? tasks.registerTask() : 0;
-        Watch watch;
-        watch = scope.watch('1', // Cheat a bit.
-            (_, __) {
-          watch.remove();
-          if (tasks != null) tasks.completeTask(taskId);
-        });
-      }
+        if (ref.mappings.isNotEmpty) {
+          if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
+          _createAttrMappings(directive, scope, ref.mappings, nodeAttrs, tasks);
+        }
 
-      if (tasks != null) tasks.doneRegistering();
+        if (directive is AttachAware) {
+          var taskId = (tasks != null) ? tasks.registerTask() : 0;
+          Watch watch;
+          watch = scope.watch('1', // Cheat a bit.
+              (_, __) {
+            watch.remove();
+            if (tasks != null) tasks.completeTask(taskId);
+          });
+        }
 
-      if (directive is DetachAware) {
-        scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
+        if (tasks != null) tasks.doneRegistering();
+
+        if (directive is DetachAware) {
+          scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
+        }
+      } finally {
+        traceLeave(s);
       }
     }
   }

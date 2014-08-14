@@ -1,5 +1,7 @@
 part of angular.core.dom_internal;
 
+var _ComponentFactory_call = traceCreateScope('ComponentFactory#call()');
+
 abstract class ComponentFactory {
   BoundComponentFactory bind(DirectiveRef ref, directives);
 }
@@ -58,7 +60,7 @@ class ShadowDomComponentFactory implements ComponentFactory {
 
 class BoundShadowDomComponentFactory implements BoundComponentFactory {
 
-  final ShadowDomComponentFactory _f;
+  final ShadowDomComponentFactory _componentFactory;
   final DirectiveRef _ref;
   final DirectiveMap _directives;
 
@@ -68,24 +70,24 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   async.Future<Iterable<dom.StyleElement>> _styleElementsFuture;
   async.Future<ViewFactory> _viewFuture;
 
-  BoundShadowDomComponentFactory(this._f, this._ref, this._directives) {
+  BoundShadowDomComponentFactory(this._componentFactory, this._ref, this._directives) {
     _tag = _component.selector.toLowerCase();
     _styleElementsFuture = async.Future.wait(_component.cssUrls.map(_styleFuture));
 
     _viewFuture = BoundComponentFactory._viewFuture(
         _component,
-        new PlatformViewCache(_f.viewCache, _tag, _f.platform),
+        new PlatformViewCache(_componentFactory.viewCache, _tag, _componentFactory.platform),
         _directives);
   }
 
   async.Future<dom.StyleElement> _styleFuture(cssUrl) {
-    Http http = _f.http;
-    TemplateCache templateCache = _f.templateCache;
-    WebPlatform platform = _f.platform;
-    ComponentCssRewriter componentCssRewriter = _f.componentCssRewriter;
-    dom.NodeTreeSanitizer treeSanitizer = _f.treeSanitizer;
+    Http http = _componentFactory.http;
+    TemplateCache templateCache = _componentFactory.templateCache;
+    WebPlatform platform = _componentFactory.platform;
+    ComponentCssRewriter componentCssRewriter = _componentFactory.componentCssRewriter;
+    dom.NodeTreeSanitizer treeSanitizer = _componentFactory.treeSanitizer;
 
-    return _f.styleElementCache.putIfAbsent(
+    return _componentFactory.styleElementCache.putIfAbsent(
         new _ComponentAssetKey(_tag, cssUrl), () =>
         http.get(cssUrl, cache: templateCache)
         .then((resp) => resp.responseText,
@@ -124,60 +126,59 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   Function call(dom.Element element) {
     return (DirectiveInjector injector, Scope scope, NgBaseCss baseCss,
             EventHandler eventHandler) {
-      var shadowDom = element.createShadowRoot()
-        ..applyAuthorStyles = _component.applyAuthorStyles
-        ..resetStyleInheritance = _component.resetStyleInheritance;
+      var s = traceEnter(_ComponentFactory_call);
+      try {
+        var shadowDom = element.createShadowRoot()
+          ..applyAuthorStyles = _component.applyAuthorStyles
+          ..resetStyleInheritance = _component.resetStyleInheritance;
 
-      var shadowScope = scope.createChild(new HashMap()); // Isolate
+        var shadowScope = scope.createChild(new HashMap()); // Isolate
 
-      async.Future<Iterable<dom.StyleElement>> cssFuture;
-      if (_component.useNgBaseCss == true) {
-        cssFuture = async.Future.wait(
-                [async.Future.wait(baseCss.urls.map(_styleFuture)), _styleElementsFuture])
-            .then((twoLists) {
-              assert(twoLists.length == 2);
-              return []..addAll(twoLists[0])..addAll(twoLists[1]);
+        async.Future<Iterable<dom.StyleElement>> cssFuture;
+        if (_component.useNgBaseCss == true) {
+          cssFuture = async.Future.wait([async.Future.wait(baseCss.urls.map(_styleFuture)), _styleElementsFuture]).then((twoLists) {
+            assert(twoLists.length == 2);return []
+              ..addAll(twoLists[0])
+              ..addAll(twoLists[1]);
+          });
+        } else {
+          cssFuture = _styleElementsFuture;
+        }
+
+        ComponentDirectiveInjector shadowInjector;
+
+        TemplateLoader templateLoader = new TemplateLoader(cssFuture.then((Iterable<dom.StyleElement> cssList) {
+          cssList.where((styleElement) => styleElement != null).forEach((styleElement) {
+            shadowDom.append(styleElement.clone(true));
+          });
+          if (_viewFuture != null) {
+            return _viewFuture.then((ViewFactory viewFactory) {
+              if (shadowScope.isAttached) {
+                shadowDom.nodes.addAll(viewFactory.call(shadowInjector.scope, shadowInjector).nodes);
+              }
+              return shadowDom;
             });
-      } else {
-        cssFuture = _styleElementsFuture;
+          }
+          return shadowDom;
+        }));
+
+        var probe;
+        shadowInjector = new ShadowDomComponentDirectiveInjector(injector, injector.appInjector, shadowScope, templateLoader, shadowDom);
+        shadowInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
+
+        if (_componentFactory.config.elementProbeEnabled) {
+          probe = _componentFactory.expando[shadowDom] = shadowInjector.elementProbe;
+          shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) => _componentFactory.expando[shadowDom] = null);
+        }
+
+        var controller = shadowInjector.getByKey(_ref.typeKey);
+        BoundComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
+        shadowScope.context[_component.publishAs] = controller;
+
+        return controller;
+      } finally {
+        traceLeave(s);
       }
-
-      ComponentDirectiveInjector shadowInjector;
-
-      TemplateLoader templateLoader = new TemplateLoader(
-          cssFuture.then((Iterable<dom.StyleElement> cssList) {
-            cssList
-              .where((styleElement) => styleElement != null)
-              .forEach((styleElement) {
-                shadowDom.append(styleElement.clone(true));
-              });
-            if (_viewFuture != null) {
-              return _viewFuture.then((ViewFactory viewFactory) {
-                if (shadowScope.isAttached) {
-                  shadowDom.nodes.addAll(
-                      viewFactory.call(shadowInjector.scope, shadowInjector).nodes);
-                }
-                return shadowDom;
-              });
-            }
-            return shadowDom;
-          }));
-
-      var probe;
-      shadowInjector = new ShadowDomComponentDirectiveInjector(injector, injector.appInjector,
-          shadowScope, templateLoader, shadowDom);
-      shadowInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
-
-      if (_f.config.elementProbeEnabled) {
-        probe = _f.expando[shadowDom] = shadowInjector.elementProbe;
-        shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) => _f.expando[shadowDom] = null);
-      }
-
-      var controller = shadowInjector.getByKey(_ref.typeKey);
-      BoundComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
-      shadowScope.context[_component.publishAs] = controller;
-
-      return controller;
     };
   }
 }
