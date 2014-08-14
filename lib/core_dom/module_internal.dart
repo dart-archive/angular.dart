@@ -22,6 +22,7 @@ export 'package:angular/core_dom/directive_injector.dart' show DirectiveInjector
 import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
 import 'package:angular/change_detection/ast_parser.dart';
 import 'package:angular/core/registry.dart';
+import 'package:angular/wtf.dart';
 
 import 'package:angular/directive/module.dart' show NgBaseCss;
 import 'dart:collection';

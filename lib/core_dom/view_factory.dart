@@ -1,5 +1,8 @@
 part of angular.core.dom_internal;
 
+var _ViewFactory_call = traceCreateScope('ViewFactory#call(ascii html)');
+var _ViewFactory_bind = traceCreateScope('ViewFactory#bind()');
+var _ViewFactory_querySelectorAll = traceCreateScope('ViewFactory#querySelectorAll()');
 
 /**
  * BoundViewFactory is a [ViewFactory] which does not need Injector because
@@ -24,10 +27,24 @@ class ViewFactory implements Function {
   final List<dom.Node> templateNodes;
   final List<NodeLinkingInfo> nodeLinkingInfos;
   final Profiler _perf;
+  List<String> _wtfArgs;
 
   ViewFactory(templateNodes, this.elementBinders, this._perf) :
       nodeLinkingInfos = computeNodeLinkingInfos(templateNodes),
-      templateNodes = templateNodes;
+      templateNodes = templateNodes
+  {
+    if (wtfEnabled) {
+      _wtfArgs = [templateNodes.map((dom.Node e) {
+        if (e is dom.Element) {
+          return (e as dom.Element).outerHtml;
+        } else if (e is dom.Comment) {
+          return '<!--${(e as dom.Comment).text}-->';
+        } else {
+          return e.text;
+        }
+      }).toList().join('')];
+    }
+  }
 
   @deprecated
   BoundViewFactory bind(DirectiveInjector directiveInjector) =>
@@ -37,21 +54,20 @@ class ViewFactory implements Function {
 
   View call(Scope scope, DirectiveInjector directiveInjector,
             [List<dom.Node> nodes /* TODO: document fragment */]) {
+    var s = traceEnter(_ViewFactory_call, _wtfArgs);
     assert(scope != null);
     if (nodes == null) {
       nodes = cloneElements(templateNodes);
     }
-    var timerId;
-    try {
-      assert((timerId = _perf.startTimer('ng.view')) != false);
-      Animate animate = directiveInjector.getByKey(ANIMATE_KEY);
-      EventHandler eventHandler = directiveInjector.getByKey(EVENT_HANDLER_KEY);
-      var view = new View(nodes, scope, eventHandler);
-      _link(view, scope, nodes, eventHandler, animate, directiveInjector);
-      return view;
-    } finally {
-      assert(_perf.stopTimer(timerId) != false);
-    }
+    Animate animate = directiveInjector.getByKey(ANIMATE_KEY);
+    EventHandler eventHandler = directiveInjector.getByKey(EVENT_HANDLER_KEY);
+    var view = new View(nodes, scope, eventHandler);
+    var sBind = traceEnter(_ViewFactory_bind);
+    _link(view, scope, nodes, eventHandler, animate, directiveInjector);
+    traceLeave(sBind);
+    traceLeave(s);
+
+    return view;
   }
 
   void _bindTagged(TaggedElementBinder tagged, int elementBinderIndex,
@@ -115,7 +131,9 @@ class ViewFactory implements Function {
         }
 
         if (linkingInfo.ngBindingChildren) {
+          var s = traceEnter(_ViewFactory_querySelectorAll);
           var elts = (node as dom.Element).querySelectorAll('.ng-binding');
+          traceLeave(s);
           for (int j = 0; j < elts.length; j++, elementBinderIndex++) {
             TaggedElementBinder tagged = elementBinders[elementBinderIndex];
             _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors,

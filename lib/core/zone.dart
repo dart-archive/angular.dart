@@ -39,6 +39,9 @@ class LongStackTrace {
   }
 }
 
+var _VmTurnZone_onRunBase = traceCreateScope('VmTurnZone#onRun()');
+var _VmTurnZone_onScheduleMicrotask = traceCreateScope('VmTurnZone#onScheduleMicrotask()');
+
 /**
  * A [Zone] wrapper that lets you schedule tasks after its private microtask
  * queue is exhausted but before the next "turn", i.e. event loop iteration.
@@ -90,6 +93,7 @@ class VmTurnZone {
   var _currentlyInTurn = false;
 
   dynamic _onRunBase(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
+    var scope = traceEnter(_VmTurnZone_onRunBase);
     _runningInTurn++;
     try {
       if (!_currentlyInTurn) {
@@ -104,6 +108,7 @@ class VmTurnZone {
     } finally {
       _runningInTurn--;
       if (_runningInTurn == 0) _finishTurn(zone, delegate);
+      traceLeave(scope);
     }
   }
 
@@ -116,8 +121,13 @@ class VmTurnZone {
       _onRunBase(self, delegate, zone, () => delegate.runUnary(zone, fn, args));
 
   void _onScheduleMicrotask(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, fn()) {
-    onScheduleMicrotask(() => delegate.run(zone, fn));
-    if (_runningInTurn == 0 && !_inFinishTurn)  _finishTurn(zone, delegate);
+    var s = traceEnter(_VmTurnZone_onScheduleMicrotask);
+    try {
+      onScheduleMicrotask(() => delegate.run(zone, fn));
+      if (_runningInTurn == 0 && !_inFinishTurn)  _finishTurn(zone, delegate);
+    } finally {
+      traceLeave(s);
+    }
   }
 
   void _uncaughtError(async.Zone self, async.ZoneDelegate delegate, async.Zone zone,
