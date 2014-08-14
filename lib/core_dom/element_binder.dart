@@ -190,8 +190,9 @@ class ElementBinder {
     }
   }
 
-  void _link(DirectiveInjector directiveInjector, Scope scope, nodeAttrs) {
+  void hydrate(DirectiveInjector directiveInjector, Scope scope) {
     var s;
+    var nodeAttrs = directiveInjector.get(NodeAttrs);
     for(var i = 0; i < _usableDirectiveRefs.length; i++) {
       DirectiveRef ref = _usableDirectiveRefs[i];
       var key = ref.typeKey;
@@ -254,13 +255,11 @@ class ElementBinder {
     }
   }
 
-  DirectiveInjector bind(View view, Scope scope,
+  DirectiveInjector setUp(View view, Scope scope,
                          DirectiveInjector parentInjector,
                          dom.Node node) {
     var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
-
     var directiveRefs = _usableDirectiveRefs;
-    if (!hasDirectivesOrEvents) return parentInjector;
 
     DirectiveInjector nodeInjector;
     var parentEventHandler = parentInjector == null ?
@@ -294,8 +293,6 @@ class ElementBinder {
       // TODO(misko): pretty sure that clearing Expando is not necessary. Remove?
       scope.on(ScopeEvent.DESTROY).listen((_) => _expando[node] = null);
     }
-
-    _link(nodeInjector, scope, nodeAttrs);
 
     var jsNode;
     List bindAssignableProps = [];
