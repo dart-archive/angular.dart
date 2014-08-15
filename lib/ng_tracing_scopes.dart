@@ -172,6 +172,13 @@ final View_create = traceCreateScope('View#create(ascii html)');
 final View_createComponent = traceCreateScope('View#createComponent()');
 
 /**
+ * Name: `View#styles()`
+ *
+ * Designates where styles are inserted into component.
+ */
+final View_styles = traceCreateScope('View#styles()');
+
+/**
  * Name: `Directive#create(ascii name)`
  *
  * Designates a particular directive is created. This includes the setting up of bindings for

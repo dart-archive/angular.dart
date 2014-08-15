@@ -11,10 +11,9 @@ abstract class BoundComponentFactory {
   List<Key> get callArgs;
   Function call(dom.Element element);
 
-  static async.Future<ViewFactory> _viewFuture(
+  static async.Future<ViewFactory> _viewFactoryFuture(
         Component component, ViewCache viewCache, DirectiveMap directives,
         TypeToUriMapper uriMapper, ResourceUrlResolver resourceResolver, Type type) {
-
     if (component.template != null) {
       // TODO(chirayu): Replace this line with
       //     var baseUri = uriMapper.uriForType(type);
@@ -77,71 +76,95 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   Component get _component => _ref.annotation as Component;
 
   String _tag;
-  async.Future<Iterable<dom.StyleElement>> _styleElementsFuture;
-  async.Future<ViewFactory> _viewFuture;
+  async.Future<List<dom.StyleElement>> _styleElementsFuture;
+  List<dom.StyleElement> _styleElements;
+  async.Future<ViewFactory> _shadowViewFactoryFuture;
+  ViewFactory _shadowViewFactory;
 
   BoundShadowDomComponentFactory(this._componentFactory, this._ref,
       DirectiveMap directives, this._injector) {
     _tag = _ref.annotation.selector.toLowerCase();
-    _styleElementsFuture = _componentFactory.cssLoader(_tag, _component.cssUrls, type: _ref.type);
+    _styleElementsFuture = _componentFactory.cssLoader(_tag, _component.cssUrls, type: _ref.type)
+        .then((styleElements) => _styleElements = styleElements);
 
     final viewCache = new ShimmingViewCache(_componentFactory.viewCache,
         _tag, _componentFactory.platformShim);
-    _viewFuture = BoundComponentFactory._viewFuture(_component, viewCache, directives,
-        _componentFactory.uriMapper, _componentFactory.resourceResolver, _ref.type);
+
+    _shadowViewFactoryFuture = BoundComponentFactory._viewFactoryFuture(_component,
+        viewCache, directives, _componentFactory.uriMapper,
+        _componentFactory.resourceResolver, _ref.type);
+
+    if (_shadowViewFactoryFuture != null) {
+      _shadowViewFactoryFuture.then((viewFactory) => _shadowViewFactory = viewFactory);
+    }
   }
 
   List<Key> get callArgs => _CALL_ARGS;
   static final _CALL_ARGS = [DIRECTIVE_INJECTOR_KEY, SCOPE_KEY, VIEW_KEY, NG_BASE_CSS_KEY,
       SHADOW_BOUNDARY_KEY];
+
   Function call(dom.Element element) {
     return (DirectiveInjector injector, Scope scope, View view, NgBaseCss baseCss,
         ShadowBoundary parentShadowBoundary) {
       var s = traceEnter(View_createComponent);
       try {
-        var shadowDom = element.createShadowRoot();
+        var shadowRoot = element.createShadowRoot();
 
         var shadowBoundary;
         if (_componentFactory.platformShim.shimRequired) {
           shadowBoundary = parentShadowBoundary;
         } else {
-          shadowBoundary = new ShadowRootBoundary(shadowDom);
+          shadowBoundary = new ShadowRootBoundary(shadowRoot);
         }
 
-        //_styleFuture(cssUrl, resolveUri: false)
         var shadowScope = scope.createChild(new HashMap()); // Isolate
-        ComponentDirectiveInjector shadowInjector;
-
-        final baseUrls = (_component.useNgBaseCss) ? baseCss.urls : [];
-        final baseUrlsFuture = _componentFactory.cssLoader(_tag, baseUrls);
-        final cssFuture = mergeFutures(baseUrlsFuture, _styleElementsFuture);
-
-        async.Future<dom.Node> initShadowDom(_) {
-          if (_viewFuture == null) return new async.Future.value(shadowDom);
-          return _viewFuture.then((ViewFactory viewFactory) {
-            if (shadowScope.isAttached) {
-              shadowDom.nodes.addAll(
-                  viewFactory.call(shadowInjector.scope, shadowInjector).nodes);
-            }
-            return shadowDom;
-          });
-        }
-
-        TemplateLoader templateLoader = new TemplateLoader(
-            cssFuture.then(shadowBoundary.insertStyleElements).then(initShadowDom));
+        List<async.Future> futures = <async.Future>[];
+        TemplateLoader templateLoader = new TemplateLoader(shadowRoot, futures);
 
         var probe;
         var eventHandler = new ShadowRootEventHandler(
-            shadowDom, injector.getByKey(EXPANDO_KEY), injector.getByKey(EXCEPTION_HANDLER_KEY));
-        shadowInjector = new ComponentDirectiveInjector(injector, _injector, eventHandler, shadowScope,
-            templateLoader, shadowDom, null, view, shadowBoundary);
-
-
+            shadowRoot, injector.getByKey(EXPANDO_KEY), injector.getByKey(EXCEPTION_HANDLER_KEY));
+        final shadowInjector = new ComponentDirectiveInjector(injector, _injector, eventHandler, shadowScope,
+            templateLoader, shadowRoot, null, view, shadowBoundary);
         shadowInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 
+        if (_component.useNgBaseCss && baseCss.urls.isNotEmpty) {
+          if (baseCss.styles == null) {
+            final f = _componentFactory.cssLoader(_tag, baseCss.urls).then((cssList) {
+              baseCss.styles = cssList;
+              shadowBoundary.insertStyleElements(cssList, prepend: true);
+            });
+            futures.add(f);
+          } else {
+            shadowBoundary.insertStyleElements(baseCss.styles, prepend: true);
+          }
+        }
+
+        if (_styleElementsFuture != null) {
+          if (_styleElements == null) {
+            final f = _styleElementsFuture.then(shadowBoundary.insertStyleElements);
+            futures.add(f);
+          } else {
+            shadowBoundary.insertStyleElements(_styleElements);
+          }
+        }
+
+        if (_shadowViewFactoryFuture != null) {
+          if (_shadowViewFactory == null) {
+            final f = _shadowViewFactoryFuture.then((ViewFactory viewFactory) =>
+                _insertView(viewFactory, shadowRoot, shadowScope, shadowInjector));
+            futures.add(f);
+          } else {
+            final f = new Future.microtask(() {
+              _insertView(_shadowViewFactory, shadowRoot, shadowScope, shadowInjector);
+            });
+            futures.add(f);
+          }
+        }
+
         if (_componentFactory.config.elementProbeEnabled) {
-          probe = _componentFactory.expando[shadowDom] = shadowInjector.elementProbe;
-          shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) => _componentFactory.expando[shadowDom] = null);
+          ElementProbe probe = _componentFactory.expando[shadowRoot] = shadowInjector.elementProbe;
+          shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) => _componentFactory.expando[shadowRoot] = null);
         }
 
         var controller = shadowInjector.getByKey(_ref.typeKey);
@@ -154,6 +177,16 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
         traceLeave(s);
       }
     };
+  }
+
+  dom.Node _insertView(ViewFactory viewFactory,
+              dom.ShadowRoot shadowRoot,
+              Scope shadowScope,
+              ComponentDirectiveInjector shadowInjector) {
+    if (shadowScope.isAttached) {
+      shadowRoot.nodes.addAll(
+          viewFactory.call(shadowInjector.scope, shadowInjector).nodes);
+    }
   }
 }
 
