@@ -3,7 +3,7 @@ library angular.core.parser.dynamic_parser;
 import 'package:di/annotations.dart';
 import 'package:angular/cache/module.dart';
 import 'package:angular/core/annotation_src.dart' hide Formatter;
-import 'package:angular/core/module_internal.dart' show FormatterMap;
+import 'package:angular/core/formatter.dart' show FormatterMap;
 
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';

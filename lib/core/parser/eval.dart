@@ -2,7 +2,7 @@ library angular.core.parser.eval;
 
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/utils.dart';
-import 'package:angular/core/module_internal.dart';
+import 'package:angular/core/formatter.dart' show FormatterMap;
 
 export 'package:angular/core/parser/eval_access.dart';
 export 'package:angular/core/parser/eval_calls.dart';
