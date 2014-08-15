@@ -78,7 +78,8 @@ void main() {
           ..bind(MyChildController)
           ..bind(MyScopeModifyingController)
           ..bind(SameNameDecorator)
-          ..bind(SameNameTransclude);
+          ..bind(SameNameTransclude)
+          ..bind(ScopeAwareComponent);
     });
 
     beforeEach((TestBed tb) => _ = tb);
@@ -928,6 +929,14 @@ void main() {
 
         expect(element.text).toContain('my data');
       });
+
+      it('should call scope setter on ScopeAware components', async((TestBed _, Logger log) {
+        var element = _.compile('<scope-aware-cmp></scope-aware-cmp>');
+
+        _.rootScope.apply();
+
+        expect(log.result()).toEqual('Scope set');
+      }));
     });
 
 
@@ -1390,5 +1399,16 @@ class SameNameDecorator {
   var valueDecorator;
   SameNameDecorator(RootScope scope) {
     scope.context['sameDecorator'] = this;
+  }
+}
+
+@Component(
+    selector: 'scope-aware-cmp'
+)
+class ScopeAwareComponent implements ScopeAware {
+  Logger log;
+  ScopeAwareComponent(this.log) {}
+  void set scope(Scope scope) {
+    log('Scope set');
   }
 }
