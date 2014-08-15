@@ -23,22 +23,35 @@ main() => describe('NgBaseCss', () {
       ..bind(_NoBaseCssComponent);
   });
 
-  it('should load css urls from ng-base-css', async((TestBed _, MockHttpBackend backend) {
+  it('should load css urls from ng-base-css', async((TestBed _, MockHttpBackend backend,
+                                                      DirectiveMap directiveMap) {
     backend
       ..expectGET('simple.css').respond(200, '.simple{}')
       ..expectGET('simple.html').respond(200, '<div>Simple!</div>')
       ..expectGET('base.css').respond(200, '.base{}');
 
-    var element = e('<div ng-base-css="base.css"><html-and-css>ignore</html-and-css></div>');
-    _.compile(element);
+    NgBaseCss ngBaseCss = new NgBaseCss();
+    ngBaseCss.urls = 'base.css';
+    DirectiveInjector directiveInjector = new DirectiveInjector(
+        _.directiveInjector, _.injector, null, null, null, null, null);
+    directiveInjector.bind(NgBaseCss, toValue: ngBaseCss, visibility: Visibility.CHILDREN);
+    var elements = es('<div><html-and-css>ignore</html-and-css></div>');
+    ViewFactory viewFactory = _.compiler(elements, directiveMap);
+    View view = viewFactory.call(_.rootScope, directiveInjector);
 
     microLeap();
     backend.flush();
     microLeap();
 
-    expect(element.children[0].shadowRoot).toHaveHtml(
-            '<style>.base{}</style><style>.simple{}</style><div>Simple!</div>'
-        );
+    expect((view.nodes[0].firstChild as Element).shadowRoot).toHaveHtml(
+            '<style>.base{}</style><style>.simple{}</style><div>Simple!</div>');
+    expect(ngBaseCss.styles.first.innerHtml).toEqual('.base{}');
+
+    // Now it should be sync
+    view = viewFactory.call(_.rootScope, directiveInjector);
+    expect((view.nodes[0].firstChild as Element).shadowRoot).toHaveHtml(
+            '<style>.base{}</style><style>.simple{}</style><div>Simple!</div>');
+
   }));
 
   it('ng-base-css should overwrite parent ng-base-csses', async((TestBed _, MockHttpBackend backend) {
