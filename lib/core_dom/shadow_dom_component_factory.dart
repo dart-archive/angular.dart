@@ -174,6 +174,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
       }
 
       var controller = shadowInjector.getByKey(_ref.typeKey);
+      if (controller is ScopeAware) controller.scope = shadowScope;
       BoundComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
       shadowScope.context[_component.publishAs] = controller;
 

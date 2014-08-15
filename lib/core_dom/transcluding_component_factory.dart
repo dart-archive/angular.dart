@@ -153,6 +153,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
 
       var controller = childInjector.getByKey(_ref.typeKey);
       shadowScope.context[component.publishAs] = controller;
+      if (controller is ScopeAware) controller.scope = shadowScope;
       BoundComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
       return controller;
     };
