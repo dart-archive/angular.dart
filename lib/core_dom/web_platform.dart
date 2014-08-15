@@ -42,7 +42,7 @@ class WebPlatform {
       //
       // TODO Remove the try-catch once https://github.com/angular/angular.dart/issues/1189 is fixed.
       try {
-        root.querySelectorAll("*").forEach((n) => n.attributes[selector] = "");
+        root.querySelectorAll("*").forEach((dom.Element n) => n.setAttribute(selector, ""));
       } catch (e, s) {
         print("WARNING: Failed to set up Shadow DOM shim for $selector.\n$e\n$s");
       }
@@ -72,6 +72,7 @@ class PlatformViewCache implements ViewCache {
     if (selector != null && selector != "" && platform.shadowDomShimRequired) {
       // By adding a comment with the tag name we ensure the template html is unique per selector
       // name when used as a key in the view factory cache.
+      //TODO(misko): This will always be miss, since we never put it in cache under such key.
       viewFactory = viewFactoryCache.get("<!-- Shimmed template for: <$selector> -->$html");
     } else {
       viewFactory = viewFactoryCache.get(html);

@@ -7,8 +7,29 @@ part of angular.core.dom_internal;
 */
 abstract class ShadowBoundary {
   Set<dom.StyleElement> _insertedStyles;
+  final dom.Node root;
+  dom.StyleElement _lastStyleElement;
 
-  void insertStyleElements(List<dom.StyleElement> elements);
+  ShadowBoundary(this.root);
+
+  void insertStyleElements(List<dom.StyleElement> elements, {bool prepend: false}) {
+    if (elements.isEmpty) return;
+
+    final newStyles = _newStyles(elements);
+    final cloned = newStyles.map((el) => el.clone(true));
+
+    cloned.forEach((style) {
+      if (_lastStyleElement != null && !prepend) {
+        _lastStyleElement = root.insertBefore(style, _lastStyleElement.nextNode);
+      } else if (root.hasChildNodes()) {
+        _lastStyleElement = root.insertBefore(style, root.firstChild);
+      } else {
+        _lastStyleElement = root.append(style);
+      }
+    });
+
+    _addInsertedStyles(newStyles);
+  }
 
   Iterable<dom.StyleElement> _newStyles(Iterable<dom.StyleElement> elements) {
     if (_insertedStyles == null) return elements;
@@ -23,37 +44,15 @@ abstract class ShadowBoundary {
 
 @Injectable()
 class DefaultShadowBoundary extends ShadowBoundary {
-  void insertStyleElements(List<dom.StyleElement> elements) {
-    final newStyles = _newStyles(elements);
-    final cloned = newStyles.map((el) => el.clone(true));
-    dom.document.head.nodes.addAll(cloned);
-    _addInsertedStyles(newStyles);
-  }
+  DefaultShadowBoundary()
+      : super(dom.document.head);
+
+  DefaultShadowBoundary.custom(dom.Node node)
+      : super(node);
 }
 
 @Injectable()
 class ShadowRootBoundary extends ShadowBoundary {
-  final dom.ShadowRoot shadowRoot;
-  dom.StyleElement _lastStyleElement;
-
-  ShadowRootBoundary(this.shadowRoot);
-
-  void insertStyleElements(List<dom.StyleElement> elements) {
-    if (elements.isEmpty) return;
-
-    final newStyles = _newStyles(elements);
-    final cloned = newStyles.map((el) => el.clone(true));
-
-    cloned.forEach((style) {
-      if (_lastStyleElement != null) {
-        _lastStyleElement = shadowRoot.insertBefore(style, _lastStyleElement.nextNode);
-      } else if (shadowRoot.hasChildNodes()) {
-        _lastStyleElement = shadowRoot.insertBefore(style, shadowRoot.firstChild);
-      } else {
-        _lastStyleElement = shadowRoot.append(style);
-      }
-    });
-
-    _addInsertedStyles(newStyles);
-  }
+  ShadowRootBoundary(dom.ShadowRoot shadowRoot)
+      : super(shadowRoot);
 }

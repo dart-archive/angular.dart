@@ -50,8 +50,8 @@ main() {
 
         microLeap();
         backend
-          ..flushGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/template.html').respond(200, '<span>foo</span>')
-          ..flushGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/style.css').respond(200, 'span { background-color: red; }');
+          ..flushGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/style.css').respond(200, 'span { background-color: red; }')
+          ..flushGET('${TEST_SERVER_BASE_PREFIX}test/core_dom/template.html').respond(200, '<span>foo</span>');
         microLeap();
 
         try {
