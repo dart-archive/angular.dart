@@ -110,6 +110,36 @@ class ScopeLocals implements Map {
 }
 
 /**
+ * When a [Component] or the root context class implements [ScopeAware] the scope setter will be
+ * called to set the [Scope] on this component.
+ *
+ * Typically classes implementing [ScopeAware] will declare a `Scope scope` property which will get
+ * initialized after the [Scope] is available. For this reason the `scope` property will not be
+ * initialized during the execution of the constructor - it will be immediately after.
+ *
+ * However, if you need to execute some code as soon as the scope is available you should implement
+ * a `scope` setter:
+ *
+ *     @Component(...)
+ *     class MyComponent implements ScopeAware {
+ *       Watch watch;
+ *
+ *       MyComponent(Dependency myDep) {
+ *         // It is an error to add a Scope / RootScope argument to the ctor and will result in a DI
+ *         // circular dependency error - the scope is never accessible in the class constructor
+ *       }
+ *
+ *       void set scope(Scope scope) {
+ *          // This setter gets called to initialize the scope
+ *          watch = scope.rootScope.watch("expression", (v, p) => ...);
+ *       }
+ *     }
+ */
+abstract class ScopeAware {
+  void set scope(Scope scope);
+}
+
+/**
  * [Scope] represents a collection of [watch]es [observer]s, and a [context] for the watchers,
  * observers and [eval]uations. Scopes structure loosely mimics the DOM structure. Scopes and
  * [View]s are bound to each other. As scopes are created and destroyed by [ViewFactory] they are

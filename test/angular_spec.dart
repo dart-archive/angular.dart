@@ -152,6 +152,7 @@ main() {
         "angular.core_internal.Interpolate",
         "angular.core_internal.RootScope",
         "angular.core_internal.Scope",
+        "angular.core_internal.ScopeAware",
         "angular.core_internal.ScopeDigestTTL",
         "angular.core_internal.ScopeEvent",
         "angular.core_internal.ScopeStats",

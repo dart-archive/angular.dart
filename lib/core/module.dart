@@ -77,6 +77,7 @@ export "package:angular/core/module_internal.dart" show
     PrototypeMap,
     RootScope,
     Scope,
+    ScopeAware,
     ScopeDigestTTL,
     ScopeEvent,
     ScopeStats,
