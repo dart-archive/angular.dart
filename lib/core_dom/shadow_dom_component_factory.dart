@@ -1,6 +1,7 @@
 part of angular.core.dom_internal;
 
 var _ComponentFactory_call = traceCreateScope('ComponentFactory#call()');
+var _ComponentFactory_styles = traceCreateScope('ComponentFactory#styles()');
 
 abstract class ComponentFactory {
   BoundComponentFactory bind(DirectiveRef ref, directives);
@@ -13,7 +14,7 @@ abstract class BoundComponentFactory {
   List<Key> get callArgs;
   Function call(dom.Element element);
 
-  static async.Future<ViewFactory> _viewFuture(
+  static async.Future<ViewFactory> _viewFactoryFuture(
         Component component, ViewCache viewCache, DirectiveMap directives) {
     if (component.template != null) {
       return new async.Future.value(viewCache.fromHtml(component.template, directives));
@@ -67,20 +68,27 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   Component get _component => _ref.annotation as Component;
 
   String _tag;
-  async.Future<Iterable<dom.StyleElement>> _styleElementsFuture;
-  async.Future<ViewFactory> _viewFuture;
+  async.Future<List<dom.StyleElement>> _styleElementsFuture;
+  List<dom.StyleElement> _styleElements;
+  async.Future<ViewFactory> _shadowViewFactoryFuture;
+  ViewFactory _shadowViewFactory;
 
   BoundShadowDomComponentFactory(this._componentFactory, this._ref, this._directives) {
     _tag = _component.selector.toLowerCase();
-    _styleElementsFuture = async.Future.wait(_component.cssUrls.map(_styleFuture));
+    _styleElementsFuture = async.Future.wait(_component.cssUrls.map(_urlToStyle))
+        ..then((stylesElements) => _styleElements = stylesElements);
 
-    _viewFuture = BoundComponentFactory._viewFuture(
+    _shadowViewFactoryFuture = BoundComponentFactory._viewFactoryFuture(
         _component,
+        // TODO(misko): Why do we create a new one per Component. This kind of defeats the caching.
         new PlatformViewCache(_componentFactory.viewCache, _tag, _componentFactory.platform),
         _directives);
+    if (_shadowViewFactoryFuture != null) {
+      _shadowViewFactoryFuture.then((viewFactory) => _shadowViewFactory = viewFactory);
+    }
   }
 
-  async.Future<dom.StyleElement> _styleFuture(cssUrl) {
+  async.Future<dom.StyleElement> _urlToStyle(cssUrl) {
     Http http = _componentFactory.http;
     TemplateCache templateCache = _componentFactory.templateCache;
     WebPlatform platform = _componentFactory.platform;
@@ -109,7 +117,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
 
           // If the css shim is required, it means that scoping does not
           // work, and adding the style to the head of the document is
-          // preferrable.
+          // preferable.
           if (platform.cssShimRequired) {
             dom.document.head.append(styleElement);
             return null;
@@ -128,47 +136,57 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
             EventHandler eventHandler) {
       var s = traceEnter(_ComponentFactory_call);
       try {
-        var shadowDom = element.createShadowRoot()
+        var shadowScope = scope.createChild(new HashMap()); // Isolate
+        ComponentDirectiveInjector shadowInjector;
+        dom.ShadowRoot shadowRoot = element.createShadowRoot();
+        shadowRoot
           ..applyAuthorStyles = _component.applyAuthorStyles
           ..resetStyleInheritance = _component.resetStyleInheritance;
 
-        var shadowScope = scope.createChild(new HashMap()); // Isolate
+        List<async.Future> futures = <async.Future>[];
+        TemplateLoader templateLoader = new TemplateLoader(shadowRoot, futures);
+        shadowInjector = new ShadowDomComponentDirectiveInjector(
+            injector, injector.appInjector, shadowScope, templateLoader, shadowRoot);
+        shadowInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys,
+            _ref.annotation.visibility);
+        dom.Node firstViewNode = null;
 
-        async.Future<Iterable<dom.StyleElement>> cssFuture;
-        if (_component.useNgBaseCss == true) {
-          cssFuture = async.Future.wait([async.Future.wait(baseCss.urls.map(_styleFuture)), _styleElementsFuture]).then((twoLists) {
-            assert(twoLists.length == 2);return []
-              ..addAll(twoLists[0])
-              ..addAll(twoLists[1]);
-          });
-        } else {
-          cssFuture = _styleElementsFuture;
+        // Load ngBase CSS
+        if (_component.useNgBaseCss == true && baseCss.urls.isNotEmpty) {
+          if (baseCss.styles == null) {
+            futures.add(async.Future
+                .wait(baseCss.urls.map(_urlToStyle))
+                .then((List<dom.StyleElement> cssList) {
+                  baseCss.styles = cssList;
+                  _insertCss(cssList, shadowRoot, shadowRoot.firstChild);
+                }));
+          } else {
+            _insertCss(baseCss.styles, shadowRoot, shadowRoot.firstChild);
+          }
         }
 
-        ComponentDirectiveInjector shadowInjector;
-
-        TemplateLoader templateLoader = new TemplateLoader(cssFuture.then((Iterable<dom.StyleElement> cssList) {
-          cssList.where((styleElement) => styleElement != null).forEach((styleElement) {
-            shadowDom.append(styleElement.clone(true));
-          });
-          if (_viewFuture != null) {
-            return _viewFuture.then((ViewFactory viewFactory) {
-              if (shadowScope.isAttached) {
-                shadowDom.nodes.addAll(viewFactory.call(shadowInjector.scope, shadowInjector).nodes);
-              }
-              return shadowDom;
-            });
+        if (_styleElementsFuture != null) {
+          if (_styleElements == null) {
+            futures.add(_styleElementsFuture .then((List<dom.StyleElement> styles) =>
+                _insertCss(styles, shadowRoot, firstViewNode)));
+          } else {
+            _insertCss(_styleElements, shadowRoot);
           }
-          return shadowDom;
-        }));
+        }
 
-        var probe;
-        shadowInjector = new ShadowDomComponentDirectiveInjector(injector, injector.appInjector, shadowScope, templateLoader, shadowDom);
-        shadowInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
+
+        if (_shadowViewFactoryFuture != null) {
+          if (_shadowViewFactory == null) {
+            futures.add(_shadowViewFactoryFuture.then((ViewFactory viewFactory) =>
+                firstViewNode = _insertView(viewFactory, shadowRoot, shadowScope, shadowInjector)));
+          } else {
+            _insertView(_shadowViewFactory, shadowRoot, shadowScope, shadowInjector);
+          }
+        }
 
         if (_componentFactory.config.elementProbeEnabled) {
-          probe = _componentFactory.expando[shadowDom] = shadowInjector.elementProbe;
-          shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) => _componentFactory.expando[shadowDom] = null);
+          ElementProbe probe = _componentFactory.expando[shadowRoot] = shadowInjector.elementProbe;
+          shadowScope.on(ScopeEvent.DESTROY).listen((ScopeEvent) => _componentFactory.expando[shadowRoot] = null);
         }
 
         var controller = shadowInjector.getByKey(_ref.typeKey);
@@ -180,6 +198,36 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
         traceLeave(s);
       }
     };
+  }
+
+  _insertCss(List<dom.StyleElement> cssList,
+             dom.ShadowRoot shadowRoot,
+             [dom.Node insertBefore = null]) {
+    var s = traceEnter(_ComponentFactory_styles);
+    for(int i = 0; i < cssList.length; i++) {
+      var styleElement = cssList[i];
+      if (styleElement != null) {
+        shadowRoot.insertBefore(styleElement.clone(true), insertBefore);
+      }
+    }
+    traceLeave(s);
+  }
+
+  dom.Node _insertView(ViewFactory viewFactory,
+              dom.ShadowRoot shadowRoot,
+              Scope shadowScope,
+              ShadowDomComponentDirectiveInjector shadowInjector) {
+    dom.Node first = null;
+    if (shadowScope.isAttached) {
+      View shadowView = viewFactory.call(shadowScope, shadowInjector);
+      List<dom.Node> shadowViewNodes = shadowView.nodes;
+      for (var j = 0; j < shadowViewNodes.length; j++) {
+        var node = shadowViewNodes[j];
+        if (j == 0) first = node;
+        shadowRoot.append(node);
+      }
+    }
+    return first;
   }
 }
 
