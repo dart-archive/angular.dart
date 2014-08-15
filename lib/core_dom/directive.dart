@@ -22,7 +22,7 @@ class NodeAttrs {
 
   NodeAttrs(this.element);
 
-  operator [](String attrName) => element.attributes[attrName];
+  operator [](String attrName) => element.getAttribute(attrName);
 
   void operator []=(String attrName, String value) {
     if (_mustacheAttrs.containsKey(attrName)) {
@@ -31,7 +31,7 @@ class NodeAttrs {
     if (value == null) {
       element.attributes.remove(attrName);
     } else {
-      element.attributes[attrName] = value;
+      element.setAttribute(attrName, value);
     }
 
     if (_observers != null && _observers.containsKey(attrName)) {
@@ -86,9 +86,18 @@ class NodeAttrs {
  * ShadowRoot is ready.
  */
 class TemplateLoader {
-  final async.Future<dom.Node> template;
+  async.Future<dom.Node> _template;
+  List<async.Future> _futures;
+  final dom.Node _shadowRoot;
 
-  TemplateLoader(this.template);
+  TemplateLoader(this._shadowRoot, this._futures);
+
+  async.Future<dom.Node> get template {
+    if (_template == null) {
+      _template = async.Future.wait(_futures).then((_) => _shadowRoot);
+    }
+    return _template;
+  }
 }
 
 class _MustacheAttr {
