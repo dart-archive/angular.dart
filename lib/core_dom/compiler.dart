@@ -1,7 +1,5 @@
 part of angular.core.dom_internal;
 
-var _Compiler_call = traceCreateScope('Compiler#call()');
-var _Compiler_subTemplate = traceCreateScope('Compiler#subTemplate()');
 
 @Injectable()
 class Compiler implements Function {
@@ -11,7 +9,7 @@ class Compiler implements Function {
   Compiler(this._perf, this._expando);
 
   ViewFactory call(List<dom.Node> elements, DirectiveMap directives) {
-    var s = traceEnter(_Compiler_call);
+    var s = traceEnter(Compiler_compile);
     var timerId;
     assert((timerId = _perf.startTimer('ng.compile', _html(elements))) != false);
     final elementBinders = <TaggedElementBinder>[];
@@ -141,7 +139,7 @@ class Compiler implements Function {
       DirectiveRef directiveRef,
       ElementBinder transcludedElementBinder,
       DirectiveMap directives) {
-    var s = traceEnter(_Compiler_subTemplate);
+    var s = traceEnter(Compiler_template);
     var anchorName = directiveRef.annotation.selector +
         (directiveRef.value != null ? '=' + directiveRef.value : '');
 
