@@ -1,7 +1,5 @@
 part of angular.core.dom_internal;
 
-var _ComponentFactory_call = traceCreateScope('ComponentFactory#call()');
-
 abstract class ComponentFactory {
   BoundComponentFactory bind(DirectiveRef ref, directives);
 }
@@ -126,7 +124,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   Function call(dom.Element element) {
     return (DirectiveInjector injector, Scope scope, NgBaseCss baseCss,
             EventHandler eventHandler) {
-      var s = traceEnter(_ComponentFactory_call);
+      var s = traceEnter(View_createComponent);
       try {
         var shadowDom = element.createShadowRoot()
           ..applyAuthorStyles = _component.applyAuthorStyles

@@ -1,7 +1,5 @@
 part of angular.core.dom_internal;
 
-var _ElementBinder_directive = traceCreateScope('ElementBinder#createDirective(ascii name)');
-var _ElementBinder_setupBindings = traceCreateScope('ElementBinder#setupBindings(ascii name)');
 
 class TemplateElementBinder extends ElementBinder {
   final DirectiveRef template;
@@ -193,19 +191,13 @@ class ElementBinder {
     for(var i = 0; i < _usableDirectiveRefs.length; i++) {
       DirectiveRef ref = _usableDirectiveRefs[i];
       var key = ref.typeKey;
-      var wtfArgs = wtfEnabled ? [ref.typeKey.toString()] : null;
+      var directiveName = traceEnabled ? ref.typeKey.toString() : null;
       if (identical(key, TEXT_MUSTACHE_KEY) || identical(key, ATTR_MUSTACHE_KEY)) continue;
 
-      s = traceEnter(_ElementBinder_directive, wtfArgs);
+      s = traceEnter1(Directive_create, directiveName);
       var directive;
       try {
         directive = directiveInjector.getByKey(ref.typeKey);
-      } finally {
-        traceLeave(s);
-      }
-
-      s = traceEnter(_ElementBinder_setupBindings, wtfArgs);
-      try {
         if (ref.annotation is Controller) {
           scope.parentScope.context[(ref.annotation as Controller).publishAs] = directive;
         }

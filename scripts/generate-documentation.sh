@@ -30,7 +30,9 @@ cat README-orig.md | sed "1s/^AngularDart.*/AngularDart/" > README.md
     lib/routing/module.dart \
     lib/mock/module.dart \
     lib/perf/module.dart \
-    lib/di/module.dart
+    lib/di/module.dart \
+    lib/tracing.dart \
+    lib/ng_tracing_scopes.dart
 )
 
 # Revert the temp copy of the README.md file

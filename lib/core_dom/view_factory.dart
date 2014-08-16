@@ -1,8 +1,5 @@
 part of angular.core.dom_internal;
 
-var _ViewFactory_call = traceCreateScope('ViewFactory#call(ascii html)');
-var _ViewFactory_bind = traceCreateScope('ViewFactory#bind()');
-var _ViewFactory_querySelectorAll = traceCreateScope('ViewFactory#querySelectorAll()');
 
 /**
  * BoundViewFactory is a [ViewFactory] which does not need Injector because
@@ -27,14 +24,14 @@ class ViewFactory implements Function {
   final List<dom.Node> templateNodes;
   final List<NodeLinkingInfo> nodeLinkingInfos;
   final Profiler _perf;
-  List<String> _wtfArgs;
+  String _debugHtml;
 
   ViewFactory(templateNodes, this.elementBinders, this._perf) :
       nodeLinkingInfos = computeNodeLinkingInfos(templateNodes),
       templateNodes = templateNodes
   {
-    if (wtfEnabled) {
-      _wtfArgs = [templateNodes.map((dom.Node e) {
+    if (traceEnabled) {
+      _debugHtml = templateNodes.map((dom.Node e) {
         if (e is dom.Element) {
           return (e as dom.Element).outerHtml;
         } else if (e is dom.Comment) {
@@ -42,7 +39,7 @@ class ViewFactory implements Function {
         } else {
           return e.text;
         }
-      }).toList().join('')];
+      }).toList().join('');
     }
   }
 
@@ -54,7 +51,7 @@ class ViewFactory implements Function {
 
   View call(Scope scope, DirectiveInjector directiveInjector,
             [List<dom.Node> nodes /* TODO: document fragment */]) {
-    var s = traceEnter(_ViewFactory_call, _wtfArgs);
+    var s = traceEnter1(View_create, _debugHtml);
     assert(scope != null);
     if (nodes == null) {
       nodes = cloneElements(templateNodes);
@@ -62,9 +59,7 @@ class ViewFactory implements Function {
     Animate animate = directiveInjector.getByKey(ANIMATE_KEY);
     EventHandler eventHandler = directiveInjector.getByKey(EVENT_HANDLER_KEY);
     var view = new View(nodes, scope, eventHandler);
-    var sBind = traceEnter(_ViewFactory_bind);
     _link(view, scope, nodes, eventHandler, animate, directiveInjector);
-    traceLeave(sBind);
     traceLeave(s);
 
     return view;
@@ -131,9 +126,7 @@ class ViewFactory implements Function {
         }
 
         if (linkingInfo.ngBindingChildren) {
-          var s = traceEnter(_ViewFactory_querySelectorAll);
           var elts = (node as dom.Element).querySelectorAll('.ng-binding');
-          traceLeave(s);
           for (int j = 0; j < elts.length; j++, elementBinderIndex++) {
             TaggedElementBinder tagged = elementBinders[elementBinderIndex];
             _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors,
