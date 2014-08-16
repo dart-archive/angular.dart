@@ -1,11 +1,11 @@
 library wtf_test_app;
 
-import 'package:angular/wtf.dart';
+import 'package:angular/tracing.dart';
 import 'dart:html';
 import 'dart:js' show context;
 
 main() {
-  traceInit(context);
+  traceDetectWTF(context);
   var _main = traceCreateScope('main()');
   var _querySelector = traceCreateScope('Node#querySelector()');
   var _DivElement = traceCreateScope('DivElement()');
@@ -21,7 +21,7 @@ main() {
     traceLeave(s);
 
     s = traceEnter(_ElementText);
-    div.text = 'Hello WTF! (enabled: ${wtfEnabled})';
+    div.text = 'Hello WTF! (enabled: ${traceEnabled})';
     traceLeave(s);
 
     s = traceEnter(_NodeAppend);

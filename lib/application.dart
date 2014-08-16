@@ -82,7 +82,7 @@ import 'package:angular/directive/module.dart';
 import 'package:angular/formatter/module_internal.dart';
 import 'package:angular/routing/module.dart';
 import 'package:angular/introspection.dart';
-import 'package:angular/wtf.dart';
+import 'package:angular/ng_tracing.dart';
 
 import 'package:angular/core_dom/static_keys.dart';
 import 'package:angular/core_dom/directive_injector.dart';
@@ -130,7 +130,6 @@ class AngularModule extends Module {
  * applicationFactory to bootstrap your Angular application.
  *
  */
-var _Application_run = traceCreateScope('Application#run()');
 abstract class Application {
   static _find(String selector, [dom.Element defaultElement]) {
     var element = dom.document.querySelector(selector);
@@ -152,7 +151,7 @@ abstract class Application {
   dom.Element selector(String selector) => element = _find(selector);
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
-    traceInit(context);
+    traceDetectWTF(context);
     modules.add(ngModule);
     ngModule..bind(VmTurnZone, toValue: zone)
             ..bind(Application, toValue: this)
@@ -175,7 +174,7 @@ abstract class Application {
   }
 
   Injector run() {
-    var scope = traceEnter(_Application_run);
+    var scope = traceEnter(Application_bootstrap);
     try {
       publishToJavaScript();
       return zone.run(() {

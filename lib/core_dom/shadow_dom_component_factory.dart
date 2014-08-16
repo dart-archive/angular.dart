@@ -1,8 +1,5 @@
 part of angular.core.dom_internal;
 
-var _ComponentFactory_call = traceCreateScope('ComponentFactory#call()');
-var _ComponentFactory_styles = traceCreateScope('ComponentFactory#styles()');
-
 abstract class ComponentFactory {
   BoundComponentFactory bind(DirectiveRef ref, directives);
 }
@@ -134,7 +131,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   Function call(dom.Element element) {
     return (DirectiveInjector injector, Scope scope, NgBaseCss baseCss,
             EventHandler eventHandler) {
-      var s = traceEnter(_ComponentFactory_call);
+      var s = traceEnter(View_createComponent);
       try {
         var shadowScope = scope.createChild(new HashMap()); // Isolate
         ComponentDirectiveInjector shadowInjector;
@@ -203,7 +200,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   _insertCss(List<dom.StyleElement> cssList,
              dom.ShadowRoot shadowRoot,
              [dom.Node insertBefore = null]) {
-    var s = traceEnter(_ComponentFactory_styles);
+    var s = traceEnter(View_styles);
     for(int i = 0; i < cssList.length; i++) {
       var styleElement = cssList[i];
       if (styleElement != null) {

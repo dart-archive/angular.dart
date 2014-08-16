@@ -2,17 +2,11 @@ library angular.watch_group;
 
 import 'package:angular/change_detection/change_detection.dart';
 import 'dart:collection';
-import 'package:angular/wtf.dart';
+import 'package:angular/ng_tracing.dart';
 
 part 'linked_list.dart';
 part 'ast.dart';
 part 'prototype_map.dart';
-
-var _WatchGroup_detect = traceCreateScope('WatchGroup#detect()');
-var _WatchGroup_fields = traceCreateScope('WatchGroup#field()');
-var _WatchGroup_field_handler = traceCreateScope('WatchGroup#field_handler()');
-var _WatchGroup_eval = traceCreateScope('WatchGroup#eval()');
-var _WatchGroup_reaction = traceCreateScope('WatchGroup#reaction()');
 
 /**
  * A function that is notified of changes to the model.
@@ -396,15 +390,13 @@ class RootWatchGroup extends WatchGroup {
                       AvgStopwatch evalStopwatch,
                       AvgStopwatch processStopwatch}) {
     // Process the Records from the change detector
-    var sDetect = traceEnter(_WatchGroup_detect);
-    var s = traceEnter(_WatchGroup_fields);
+    var sDetect = traceEnter(ChangeDetector_check);
+    var sFields = traceEnter(ChangeDetector_fields);
     Iterator<Record<_Handler>> changedRecordIterator =
         (_changeDetector as ChangeDetector<_Handler>).collectChanges(
             exceptionHandler:exceptionHandler,
             stopwatch: fieldStopwatch);
-    traceLeave(s);
     if (processStopwatch != null) processStopwatch.start();
-    s = traceEnter(_WatchGroup_field_handler);
     while (changedRecordIterator.moveNext()) {
       var record = changedRecordIterator.current;
       if (changeLog != null) changeLog(record.handler.expression,
@@ -412,13 +404,13 @@ class RootWatchGroup extends WatchGroup {
                                        record.previousValue);
       record.handler.onChange(record);
     }
-    traceLeave(s);
+    traceLeave(sFields);
     if (processStopwatch != null) processStopwatch.stop();
 
     if (evalStopwatch != null) evalStopwatch.start();
     // Process our own function evaluations
     _EvalWatchRecord evalRecord = _evalWatchHead;
-    s = traceEnter(_WatchGroup_eval);
+    var sEval = traceEnter(ChangeDetector_eval);
     int evalCount = 0;
     while (evalRecord != null) {
       try {
@@ -434,14 +426,14 @@ class RootWatchGroup extends WatchGroup {
       evalRecord = evalRecord._nextEvalWatch;
     }
 
-    traceLeave(s);
+    traceLeave(sEval);
     traceLeave(sDetect);
     if (evalStopwatch != null) evalStopwatch..stop()..increment(evalCount);
 
     // Because the handler can forward changes between each other synchronously
     // We need to call reaction functions asynchronously. This processes the
     // asynchronous reaction function queue.
-    s = traceEnter(_WatchGroup_reaction);
+    var sReaction = traceEnter(ChangeDetector_reaction);
     int count = 0;
     if (processStopwatch != null) processStopwatch.start();
     Watch dirtyWatch = _dirtyWatchHead;
@@ -465,7 +457,7 @@ class RootWatchGroup extends WatchGroup {
       _dirtyWatchTail = null;
       root._removeCount = 0;
     }
-    traceLeave(s);
+    traceLeaveVal(sReaction, count);
     if (processStopwatch != null) processStopwatch..stop()..increment(count);
     return count;
   }
@@ -511,7 +503,12 @@ class Watch {
   void invoke() {
     if (_deleted || !_dirty) return;
     _dirty = false;
-    reactionFn(_record.currentValue, _record.previousValue);
+    var s = traceEnabled ? traceEnter1(ChangeDetector_invoke, expression) : null;
+    try {
+      reactionFn(_record.currentValue, _record.previousValue);
+    } finally {
+      if (traceEnabled) traceLeave(s);
+    }
   }
 
   void remove() {
