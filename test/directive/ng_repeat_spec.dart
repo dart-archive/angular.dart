@@ -410,10 +410,10 @@ main() {
             '</ul>');
         scope.context['items'] = ['misko', 'shyam', 'frodo'];
         scope.apply();
-        expect(element.children.length).toEqual(3);
+        expect(element.querySelectorAll("li").length).toEqual(3);
         scope.context['items'].remove('misko');
         scope.apply();
-        expect(element.children.length).toEqual(2);
+        expect(element.querySelectorAll("li").length).toEqual(2);
       });
 
       it('should not error when the last watched item is removed', () {
@@ -425,10 +425,10 @@ main() {
             '</ul>');
         scope.context['items'] = ['misko', 'shyam', 'frodo'];
         scope.apply();
-        expect(element.children.length).toEqual(3);
+        expect(element.querySelectorAll("li").length).toEqual(3);
         scope.context['items'].remove('frodo');
         scope.apply();
-        expect(element.children.length).toEqual(2);
+        expect(element.querySelectorAll("li").length).toEqual(2);
       });
 
       it('should not error when multiple watched items are removed at the same time', () {
@@ -440,11 +440,11 @@ main() {
             '</ul>');
         scope.context['items'] = ['misko', 'shyam', 'frodo', 'igor'];
         scope.apply();
-        expect(element.children.length).toEqual(4);
+        expect(element.querySelectorAll("li").length).toEqual(4);
         scope.context['items'].remove('shyam');
         scope.context['items'].remove('frodo');
         scope.apply();
-        expect(element.children.length).toEqual(2);
+        expect(element.querySelectorAll("li").length).toEqual(2);
       });
     });
 
