@@ -35,6 +35,9 @@ forAllCompilersAndComponentFactories(fn) {
 }
 
 void main() {
+  String template(Type type, String value) =>
+      '<template type="ng/viewport" directive="$type" value="$value"></template>';
+
   withElementProbeConfig((compilerType) =>
   describe('TranscludingComponentFactory', () {
     TestBed _;
@@ -133,8 +136,11 @@ void main() {
 
       _.rootScope.context['items'] = [];
       _.rootScope.apply();
-      expect(element).toHaveHtml('<!--ANCHOR: [ng-repeat]=item in items-->');
+
+      expect(element).toHaveHtml(template(NgRepeat, 'item in items'));
     });
+
+
 
     it('should compile a text child of a basic repeater', () {
       var element = _.compile(
@@ -174,7 +180,7 @@ void main() {
 
       _.rootScope.context['items'] = [];
       _.rootScope.apply();
-      expect(element).toHaveHtml('<!--ANCHOR: [ng-repeat]=item in items-->');
+      expect(element).toHaveHtml(template(NgRepeat, 'item in items'));
     });
 
     it('should compile text', (Compiler compile) {

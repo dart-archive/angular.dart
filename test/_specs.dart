@@ -3,6 +3,7 @@ library ng_specs;
 import 'dart:html' hide Animation;
 
 import 'package:angular/angular.dart';
+import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/mock/module.dart';
 
 import 'package:guinness/guinness_html.dart' as gns;
@@ -104,9 +105,9 @@ void iit(String name, Function fn) {
 _removeNgBinding(node) {
   if (node is Element) {
     var el = node.clone(true) as Element;
-    el.classes.remove('ng-binding');
-    el.querySelectorAll(".ng-binding").forEach((Element e) {
-      e.classes.remove('ng-binding');
+    el.classes.remove(NG_BINDING);
+    el.querySelectorAll(NG_BINDING_SELECTOR).forEach((Element e) {
+      e.classes.remove(NG_BINDING);
     });
     return el;
   }

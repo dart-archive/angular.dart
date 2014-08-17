@@ -4,6 +4,10 @@ var _ViewFactory_call = traceCreateScope('ViewFactory#call(ascii html)');
 var _ViewFactory_bind = traceCreateScope('ViewFactory#bind()');
 var _ViewFactory_querySelectorAll = traceCreateScope('ViewFactory#querySelectorAll()');
 
+const NG_BINDING = 'ng-binding';
+const NG_BINDING_SELECTOR = '.$NG_BINDING';
+
+
 /**
  * BoundViewFactory is a [ViewFactory] which does not need Injector because
  * it is pre-bound to an injector from the parent. This means that this
@@ -125,7 +129,7 @@ class ViewFactory implements Function {
 
         if (linkingInfo.ngBindingChildren) {
           var s = traceEnter(_ViewFactory_querySelectorAll);
-          var elts = (node as dom.Element).querySelectorAll('.ng-binding');
+          var elts = (node as dom.Element).querySelectorAll(NG_BINDING_SELECTOR);
           traceLeave(s);
           for (int j = 0; j < elts.length; j++, elementBinderIndex++) {
             TaggedElementBinder tagged = elementBinders[elementBinderIndex];
@@ -182,9 +186,9 @@ computeNodeLinkingInfos(List<dom.Node> nodeList) {
     bool isElement = node.nodeType == dom.Node.ELEMENT_NODE;
 
     list[i] = new NodeLinkingInfo(
-        isElement && (node as dom.Element).classes.contains('ng-binding'),
+        isElement && (node as dom.Element).classes.contains(NG_BINDING),
         isElement,
-        isElement && (node as dom.Element).querySelectorAll('.ng-binding').length > 0);
+        isElement && (node as dom.Element).querySelector(NG_BINDING_SELECTOR) != null);
   }
   return list;
 }

@@ -261,7 +261,7 @@ class ElementBinder {
   DirectiveInjector bind(View view, Scope scope,
                          DirectiveInjector parentInjector,
                          dom.Node node, EventHandler eventHandler, Animate animate) {
-    var nodeAttrs = node is dom.Element ? new NodeAttrs(node) : null;
+    var nodeAttrs = (node is dom.Element && !_isViewPort(node)) ? new NodeAttrs(node) : null;
 
     var directiveRefs = _usableDirectiveRefs;
     if (!hasDirectivesOrEvents) return parentInjector;
@@ -328,6 +328,10 @@ class ElementBinder {
     }
     return nodeInjector;
   }
+
+  bool _isViewPort(dom.Node node) =>
+      node is dom.TemplateElement &&
+      node.attributes["type"] == VIEW_PORT_TYPE;
 
   String toString() => "[ElementBinder decorators:$decorators]";
 }
