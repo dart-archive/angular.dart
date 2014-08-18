@@ -59,8 +59,6 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
 
   /** [ChangeDetector] used for field watching */
   final ChangeDetectorGroup<_Handler> _changeDetector;
-  /** A cache for sharing sub expression watching. Watching `a` and `a.b` will
-  * watch `a` only once. */
   final RootWatchGroup _rootGroup;
 
   /// STATS: Number of field watchers which are in use.
@@ -277,9 +275,8 @@ class WatchGroup implements _EvalWatchList, _WatchGroupList {
   /**
    * Create a new child [WatchGroup].
    *
-   * - [context] if present the the child [WatchGroup] expressions will evaluate
-   * against the new [context]. If not present than child expressions will
-   * evaluate on same context allowing the reuse of the expression cache.
+   * - [context] if present the the child [WatchGroup] expressions will evaluate against the new
+   *   [context]. If not present than child expressions will evaluate on same context.
    */
   WatchGroup newGroup([Object context]) {
     _EvalWatchRecord prev = _childWatchGroupTail._evalWatchTail;
@@ -576,8 +573,6 @@ abstract class _Handler implements _LinkedList, _LinkedListItem, _WatchList {
   bool release() {
     if (_WatchList._isEmpty(this) && _LinkedList._isEmpty(this)) {
       _releaseWatch();
-      // Remove ourselves from cache, or else new registrations will go to us,
-      // but we are dead
 
       if (forwardingHandler != null) {
         // TODO(misko): why do we need this check?
