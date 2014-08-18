@@ -299,7 +299,7 @@ void main() {
       it('should eval pure FunctionApply', () {
         context['a'] = {'val': 1};
 
-        FunctionApply fn = new LoggingFunctionApply(logger);
+        FunctionApply fn = new _LoggingFunctionApply(logger);
         var watch = watchGrp.watch(
             new PureFunctionAST('add', fn, [parse('a.val')]),
             (v, p) => logger(v)
@@ -551,7 +551,7 @@ void main() {
       });
 
       it('should eval method', () {
-        var obj = new MyClass(logger);
+        var obj = new _MyClass(logger);
         obj.valA = 'A';
         context['obj'] = obj;
         context['arg0'] = 1;
@@ -594,8 +594,8 @@ void main() {
       });
 
       it('should eval method chain', () {
-        var obj1 = new MyClass(logger);
-        var obj2 = new MyClass(logger);
+        var obj1 = new _MyClass(logger);
+        var obj2 = new _MyClass(logger);
         obj1.valA = obj2;
         obj2.valA = 'A';
         context['obj'] = obj1;
@@ -881,7 +881,7 @@ void main() {
       });
 
       it('should remove all method watches in group and group\'s children', () {
-        context['my'] = new MyClass(logger);
+        context['my'] = new _MyClass(logger);
         AST countMethod = new MethodAST(parse('my'), 'count', []);
         watchGrp.watch(countMethod, (v, p) => logger('0a'));
         expectOrder(['0a']);
@@ -913,7 +913,7 @@ void main() {
       });
 
       it('should add watches within its own group', () {
-        context['my'] = new MyClass(logger);
+        context['my'] = new _MyClass(logger);
         AST countMethod = new MethodAST(parse('my'), 'count', []);
         var ra = watchGrp.watch(countMethod, (v, p) => logger('a'));
         var child = watchGrp.newGroup(new PrototypeMap(context));

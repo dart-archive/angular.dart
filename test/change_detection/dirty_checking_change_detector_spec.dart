@@ -544,7 +544,7 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
 
       it('should properly support objects with equality', () {
         FooBar.fooIds = 0;
-        var list = [new FooBar('a', 'a'), new FooBar('a', 'a')];
+        var list = [new _FooBar('a', 'a'), new _FooBar('a', 'a')];
         var record = detector.watch(list, null, 'handler');
         var iterator;
 
@@ -565,7 +565,7 @@ void testWithGetterFactory(FieldGetterFactory getterFactory) {
             moves: ['(1)a-a[1 -> 0]'],
             removals: ['(0)a-a[0 -> null]']));
 
-        list.insert(0, new FooBar('a', 'a'));
+        list.insert(0, new _FooBar('a', 'a'));
         iterator = detector.collectChanges()..moveNext();
         expect(iterator.current.currentValue, toEqualCollectionRecord(
             collection: ['(2)a-a[null -> 0]', '(1)a-a[0 -> 1]'],
