@@ -152,6 +152,7 @@ void clockTick({int days: 0,
         if (spec.duration <= Duration.ZERO) {
           microLeap();
           spec.fn();
+          spec.isActive = false;
         } else {
           remainingTimers.add(spec);
         }
