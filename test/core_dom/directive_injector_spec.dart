@@ -18,10 +18,11 @@ void main() {
       View view;
       Animate animate;
 
-      addDirective(Type type, [Visibility visibility]) {
+      addDirective(Type type, [Visibility visibility, DirectiveInjector targetInjector]) {
+        if (targetInjector == null) targetInjector = injector;
         if (visibility == null) visibility = Visibility.LOCAL;
         var reflector = Module.DEFAULT_REFLECTOR;
-        injector.bindByKey(
+        targetInjector.bindByKey(
             new Key(type),
             reflector.factoryFor(type),
             reflector.parameterKeysFor(type),
@@ -107,6 +108,27 @@ void main() {
         });
       });
 
+      describe('error handling', () {
+        it('should throw circular dependency error', () {
+          addDirective(_TypeC0);
+          addDirective(_TypeC1, Visibility.CHILDREN);
+          addDirective(_TypeC2, Visibility.CHILDREN);
+          expect(() => injector.get(_TypeC0)).toThrow(
+              'circular dependency (_TypeC0 -> _TypeC1 -> _TypeC2 -> _TypeC1)');
+        });
+
+        it('should throw circular dependency error accross injectors', () {
+          var childInjector =
+            new DirectiveInjector(injector, appInjector, null, null, null, null, null);
+
+          addDirective(_TypeC0, Visibility.LOCAL, childInjector);
+          addDirective(_TypeC1, Visibility.CHILDREN);
+          addDirective(_TypeC2, Visibility.CHILDREN);
+          expect(() => childInjector.get(_TypeC0)).toThrow(
+              'circular dependency (_TypeC0 -> _TypeC1 -> _TypeC2 -> _TypeC1)');
+        });
+      });
+
       describe('Visibility', () {
         DirectiveInjector childInjector;
         DirectiveInjector leafInjector;
@@ -161,3 +183,6 @@ class _Type8{ final _Type7 type7; _Type8(this.type7); }
 class _Type9{ final _Type8 type8; _Type9(this.type8); }
 class _TypeA{ final _Type9 type9; _TypeA(this.type9); }
 
+class _TypeC0 {final _TypeC1 t; _TypeC0(this.t);}
+class _TypeC1 {final _TypeC2 t; _TypeC1(this.t);}
+class _TypeC2 {final _TypeC1 t; _TypeC2(this.t);}

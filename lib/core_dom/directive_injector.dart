@@ -26,7 +26,14 @@ final SOURCE_LIGHT_DOM_KEY = new Key(SourceLightDom);
 final TEMPLATE_LOADER_KEY = new Key(TemplateLoader);
 final SHADOW_ROOT_KEY = new Key(ShadowRoot);
 
-final num MAX_DEPTH = 1 << 30;
+final int NO_CONSTRUCTION = 0;
+
+// Maximum parent directive injectors that would be traversed.
+final int MAX_TREE_DEPTH = 1 << 30;
+
+// Maximum number of concurrent constructions a directive injector would
+// support before throwing an error.
+final int MAX_CONSTRUCTION_DEPTH = 50;
 
 const int VISIBILITY_LOCAL                    = -1;
 const int VISIBILITY_DIRECT_CHILD             = -2;
@@ -132,6 +139,12 @@ class DirectiveInjector implements DirectiveBinder {
   Key _key8 = null; dynamic _obj8; List<Key> _pKeys8; Function _factory8;
   Key _key9 = null; dynamic _obj9; List<Key> _pKeys9; Function _factory9;
 
+  // Keeps track of how many dependent constructions are being performed
+  // in the directive injector.
+  // It should be NO_CONSTRUCTION, until first call into _new sets it to 1
+  // incremented on after each next call.
+  int _constructionDepth;
+
   @Deprecated("Deprecated. Use getFromParent instead.")
   Object get parent => this._parent;
 
@@ -153,8 +166,9 @@ class DirectiveInjector implements DirectiveBinder {
   DirectiveInjector(DirectiveInjector parent, appInjector, this._node, this._nodeAttrs,
       this._eventHandler, this.scope, this._animate, [View view])
       : _parent = parent,
-      _appInjector = appInjector,
-      _view = view == null && parent != null ? parent._view : view;
+        _appInjector = appInjector,
+        _view = view == null && parent != null ? parent._view : view,
+        _constructionDepth = NO_CONSTRUCTION;
 
   DirectiveInjector._default(this._parent, this._appInjector)
       : _node = null,
@@ -162,7 +176,8 @@ class DirectiveInjector implements DirectiveBinder {
         _eventHandler = null,
         scope = null,
         _view = null,
-        _animate = null;
+        _animate = null,
+        _constructionDepth = NO_CONSTRUCTION;
 
   void bind(key, {dynamic toValue: DEFAULT_VALUE,
             Function toFactory: DEFAULT_VALUE,
@@ -213,9 +228,6 @@ class DirectiveInjector implements DirectiveBinder {
     var oldTag = _TAG_GET.makeCurrent();
     try {
       return _getByKey(key, _appInjector);
-    } on ResolvingError catch (e, s) {
-      e.appendKey(key);
-      rethrow;
     } finally {
       oldTag.makeCurrent();
     }
@@ -230,42 +242,47 @@ class DirectiveInjector implements DirectiveBinder {
   }
 
   Object _getByKey(Key key, Injector appInjector) {
-    int uid = key.uid;
-    if (uid == null || uid == UNDEFINED_ID) return appInjector.getByKey(key);
-    bool isDirective = uid < 0;
-    return isDirective ? _getDirectiveByKey(key, uid, appInjector) : _getById(uid);
+    try {
+      int uid = key.uid;
+      if (uid == null || uid == UNDEFINED_ID) return appInjector.getByKey(key);
+      bool isDirective = uid < 0;
+      return isDirective ? _getDirectiveByKey(key, uid, appInjector) : _getById(uid);
+    } on ResolvingError catch (e) {
+      e.appendKey(key);
+      rethrow;
+    }
   }
 
   num _getDepth(int visType) {
     switch(visType) {
       case VISIBILITY_LOCAL:        return 0;
       case VISIBILITY_DIRECT_CHILD: return 1;
-      case VISIBILITY_CHILDREN:     return MAX_DEPTH;
+      case VISIBILITY_CHILDREN:     return MAX_TREE_DEPTH;
       default: throw null;
     }
   }
 
   _getDirectiveByKey(Key k, int visType, Injector appInjector) {
-    num depth = _getDepth(visType);
+    num treeDepth = _getDepth(visType);
     // ci stands for currentInjector, abbreviated for readability.
     var ci = this;
-    while (ci != null && depth >= 0) {
+    while (ci != null && treeDepth >= 0) {
       do {
-        if (ci._key0 == null) break; if (identical(ci._key0, k)) return ci._obj0 == null ?  ci._obj0 = ci._new(ci._pKeys0, ci._factory0) : ci._obj0;
-        if (ci._key1 == null) break; if (identical(ci._key1, k)) return ci._obj1 == null ?  ci._obj1 = ci._new(ci._pKeys1, ci._factory1) : ci._obj1;
-        if (ci._key2 == null) break; if (identical(ci._key2, k)) return ci._obj2 == null ?  ci._obj2 = ci._new(ci._pKeys2, ci._factory2) : ci._obj2;
-        if (ci._key3 == null) break; if (identical(ci._key3, k)) return ci._obj3 == null ?  ci._obj3 = ci._new(ci._pKeys3, ci._factory3) : ci._obj3;
-        if (ci._key4 == null) break; if (identical(ci._key4, k)) return ci._obj4 == null ?  ci._obj4 = ci._new(ci._pKeys4, ci._factory4) : ci._obj4;
-        if (ci._key5 == null) break; if (identical(ci._key5, k)) return ci._obj5 == null ?  ci._obj5 = ci._new(ci._pKeys5, ci._factory5) : ci._obj5;
-        if (ci._key6 == null) break; if (identical(ci._key6, k)) return ci._obj6 == null ?  ci._obj6 = ci._new(ci._pKeys6, ci._factory6) : ci._obj6;
-        if (ci._key7 == null) break; if (identical(ci._key7, k)) return ci._obj7 == null ?  ci._obj7 = ci._new(ci._pKeys7, ci._factory7) : ci._obj7;
-        if (ci._key8 == null) break; if (identical(ci._key8, k)) return ci._obj8 == null ?  ci._obj8 = ci._new(ci._pKeys8, ci._factory8) : ci._obj8;
-        if (ci._key9 == null) break; if (identical(ci._key9, k)) return ci._obj9 == null ?  ci._obj9 = ci._new(ci._pKeys9, ci._factory9) : ci._obj9;
+        if (ci._key0 == null) break; if (identical(ci._key0, k)) return ci._obj0 == null ?  ci._obj0 = ci._new(k, ci._pKeys0, ci._factory0) : ci._obj0;
+        if (ci._key1 == null) break; if (identical(ci._key1, k)) return ci._obj1 == null ?  ci._obj1 = ci._new(k, ci._pKeys1, ci._factory1) : ci._obj1;
+        if (ci._key2 == null) break; if (identical(ci._key2, k)) return ci._obj2 == null ?  ci._obj2 = ci._new(k, ci._pKeys2, ci._factory2) : ci._obj2;
+        if (ci._key3 == null) break; if (identical(ci._key3, k)) return ci._obj3 == null ?  ci._obj3 = ci._new(k, ci._pKeys3, ci._factory3) : ci._obj3;
+        if (ci._key4 == null) break; if (identical(ci._key4, k)) return ci._obj4 == null ?  ci._obj4 = ci._new(k, ci._pKeys4, ci._factory4) : ci._obj4;
+        if (ci._key5 == null) break; if (identical(ci._key5, k)) return ci._obj5 == null ?  ci._obj5 = ci._new(k, ci._pKeys5, ci._factory5) : ci._obj5;
+        if (ci._key6 == null) break; if (identical(ci._key6, k)) return ci._obj6 == null ?  ci._obj6 = ci._new(k, ci._pKeys6, ci._factory6) : ci._obj6;
+        if (ci._key7 == null) break; if (identical(ci._key7, k)) return ci._obj7 == null ?  ci._obj7 = ci._new(k, ci._pKeys7, ci._factory7) : ci._obj7;
+        if (ci._key8 == null) break; if (identical(ci._key8, k)) return ci._obj8 == null ?  ci._obj8 = ci._new(k, ci._pKeys8, ci._factory8) : ci._obj8;
+        if (ci._key9 == null) break; if (identical(ci._key9, k)) return ci._obj9 == null ?  ci._obj9 = ci._new(k, ci._pKeys9, ci._factory9) : ci._obj9;
       } while (false);
       // Future feature: Component Injectors fall-through only if directly called.
       // if ((ci is ComponentDirectiveInjector) && !identical(ci, this)) break;
       ci = ci._parent;
-      depth--;
+      treeDepth--;
     }
     return appInjector.getByKey(k);
   }
@@ -304,7 +321,12 @@ class DirectiveInjector implements DirectiveBinder {
     }
   }
 
-  dynamic _new(List<Key> paramKeys, Function fn) {
+  dynamic _new(Key k, List<Key> paramKeys, Function fn) {
+    if (_constructionDepth > MAX_CONSTRUCTION_DEPTH) {
+      _constructionDepth = NO_CONSTRUCTION;
+      throw new DiCircularDependencyError(key);
+    }
+    bool isFirstConstruction = (_constructionDepth++ == NO_CONSTRUCTION);
     var oldTag = _TAG_GET.makeCurrent();
     int size = paramKeys.length;
     var obj;
@@ -353,6 +375,7 @@ class DirectiveInjector implements DirectiveBinder {
       }
     }
     oldTag.makeCurrent();
+    if (isFirstConstruction) _constructionDepth = NO_CONSTRUCTION;
     return obj;
   }
 
@@ -450,4 +473,27 @@ class ComponentDirectiveInjector extends DirectiveInjector {
   // Add 1 to visibility to allow to skip over current component injector.
   // For example, a local directive is visible from its component injector children.
   num _getDepth(int visType) => super._getDepth(visType) + 1;
+}
+
+
+// For efficiency we run through the maximum resolving depth and unwind
+// instead of setting 'resolving' key per type.
+class DiCircularDependencyError extends ResolvingError {
+  DiCircularDependencyError(key) : super(key);
+
+  // strips the cyclical part of the chain.
+  List<Key> get stripCycle {
+    List<Key> rkeys = keys.reversed.toList();
+    for (num i = 0; i < rkeys.length; i++) {
+      // Skipping 'cycles' of length 1, which represent resolution
+      // switching injectors and not true cycles.
+      for (num j = i + 2; j < rkeys.length; j++) {
+        if (rkeys[i] == rkeys[j]) return rkeys.sublist(0, j + 1);
+      }
+    }
+    return rkeys;
+  }
+
+  String get resolveChain => stripCycle.join(' -> ');
+  String toString() => "circular dependency (${resolveChain})";
 }
