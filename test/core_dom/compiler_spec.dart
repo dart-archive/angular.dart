@@ -239,22 +239,40 @@ void main() {
         expect(element.text).toEqual('angular');
       });
 
-      xit('should work with attrs, one-way, two-way and callbacks', async(() {
-         _.compile('<div><io bind-attr="\'A\'" bind-expr="name" bind-ondone="done=true"></io></div>');
+      it('should work with attr bindings', async(() {
+        _.compile('<div><io bind-attr="\'A\'"></io></div>');
+        microLeap();
+        _.rootScope.apply();
+
+        var component = _.rootScope.context['ioComponent'];
+        expect(component.scope.context['attr']).toEqual('A');
+      }));
+
+      it('should work with one-way bindings', async(() {
+        _.compile('<div><io bind-oneway="name"></io></div>');
+        _.rootScope.context['name'] = 'misko';
+        microLeap();
+        _.rootScope.apply();
+        var component = _.rootScope.context['ioComponent'];
+        expect(component.scope.context['oneway']).toEqual('misko');
+
+        component.scope.context['oneway'] = 'angular';
+        _.rootScope.apply();
+        // Not two-way, did not change.
+        expect(_.rootScope.context['name']).toEqual('misko');
+      }));
+
+      it('should work with two-way bindings', async(() {
+        _.compile('<div><io bind-expr="name"></io></div>');
 
         _.rootScope.context['name'] = 'misko';
         microLeap();
         _.rootScope.apply();
         var component = _.rootScope.context['ioComponent'];
-        expect(component.scope.context['name']).toEqual(null);
-        expect(component.scope.context['attr']).toEqual('A');
         expect(component.scope.context['expr']).toEqual('misko');
         component.scope.context['expr'] = 'angular';
         _.rootScope.apply();
         expect(_.rootScope.context['name']).toEqual('angular');
-        expect(_.rootScope.context['done']).toEqual(null);
-        component.scope.context['ondone']();
-        expect(_.rootScope.context['done']).toEqual(true);
       }));
     });
 
@@ -1139,6 +1157,7 @@ class SometimesComponent {
     map: const {
         'attr': '@scope.context.attr',
         'expr': '<=>scope.context.expr',
+        'oneway': '=>scope.context.oneway',
         'ondone': '&scope.context.ondone',
     })
 class IoComponent {
