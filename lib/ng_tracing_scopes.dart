@@ -178,7 +178,6 @@ final View_createComponent = traceCreateScope('View#createComponent()');
  */
 final View_styles = traceCreateScope('View#styles()');
 
-
 /**
  * Name: `Directive#create(ascii name)`
  *
