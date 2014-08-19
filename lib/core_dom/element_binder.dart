@@ -214,7 +214,7 @@ class ElementBinder {
         if (directive is AttachAware) {
           var taskId = (tasks != null) ? tasks.registerTask() : 0;
           Watch watch;
-          watch = scope.watch('1', // Cheat a bit.
+          watch = scope.watch('"attach()"', // Cheat a bit.
               (_, __) {
             watch.remove();
             if (tasks != null) tasks.completeTask(taskId);
