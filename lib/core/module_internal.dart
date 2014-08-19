@@ -11,7 +11,7 @@ import 'package:di/annotations.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/lexer.dart';
 import 'package:angular/utils.dart';
-import 'package:angular/ng_tracing.dart';
+import 'package:angular/ng_tracing.dart' as trace;
 
 import 'package:angular/core/annotation_src.dart';
 

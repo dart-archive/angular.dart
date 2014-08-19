@@ -360,7 +360,7 @@ class Scope {
 
   /// Creates a child [Scope] with the given [childContext]
   Scope createChild(Object childContext) {
-    var s = traceEnter(Scope_createChild);
+    var s = trace.enter(trace.Scope.createChild);
     assert(isAttached);
     var child = new Scope(childContext, rootScope, this,
                           _readWriteGroup.newGroup(childContext),
@@ -372,7 +372,7 @@ class Scope {
     child._prev = prev;
     if (prev == null) _childHead = child; else prev._next = child;
     _childTail = child;
-    traceLeave(s);
+    trace.leave(s);
     return child;
   }
 
@@ -625,7 +625,7 @@ class RootScope extends Scope {
   final ScopeStats _scopeStats;
 
   String _state;
-  var _state_wtf_scope;
+  var _traceStateScope;
 
   /**
    * While processing data bindings, Angular passes through multiple states. When testing or
@@ -768,7 +768,7 @@ class RootScope extends Scope {
     try {
       do {
         if (_domWriteHead != null) _stats.domWriteStart();
-        var s = traceEnter(Scope_domWrite);
+        var s = trace.enter(trace.Scope.domWrite);
         while (_domWriteHead != null) {
           try {
             _domWriteHead.fn();
@@ -778,7 +778,7 @@ class RootScope extends Scope {
           _domWriteHead = _domWriteHead._next;
           if (_domWriteHead == null) _stats.domWriteEnd();
         }
-        traceLeave(s);
+        trace.leave(s);
         _domWriteTail = null;
         if (runObservers) {
           runObservers = false;
@@ -788,7 +788,7 @@ class RootScope extends Scope {
               processStopwatch: _scopeStats.processStopwatch);
         }
         if (_domReadHead != null) _stats.domReadStart();
-        s = traceEnter(Scope_domRead);
+        s = trace.enter(trace.Scope.domRead);
         while (_domReadHead != null) {
           try {
             _domReadHead.fn();
@@ -799,7 +799,7 @@ class RootScope extends Scope {
           if (_domReadHead == null) _stats.domReadEnd();
         }
         _domReadTail = null;
-        traceLeave(s);
+        trace.leave(s);
         _runAsyncFns();
       } while (_domWriteHead != null || _domReadHead != null || _runAsyncHead != null);
       _stats.flushEnd();
@@ -845,7 +845,7 @@ class RootScope extends Scope {
   }
 
   _runAsyncFns() {
-    var s = traceEnter(Scope_execAsync);
+    var s = trace.enter(trace.Scope.execAsync);
     var count = 0;
     while (_runAsyncHead != null) {
       try {
@@ -857,7 +857,7 @@ class RootScope extends Scope {
       _runAsyncHead = _runAsyncHead._next;
     }
     _runAsyncTail = null;
-    traceLeave(s);
+    trace.leave(s);
     return count;
   }
 
@@ -885,13 +885,16 @@ class RootScope extends Scope {
     assert(isAttached);
     if (_state != from) throw "$_state already in progress can not enter $to.";
     _state = to;
-    if (_state_wtf_scope != null) traceLeave(_state_wtf_scope);
-    var wtfScope = null;
-    if (to == STATE_APPLY) wtfScope = Scope_apply;
-    else if (to == STATE_DIGEST) wtfScope = Scope_digest;
-    else if (to == STATE_FLUSH) wtfScope = Scope_flush;
-    else if (to == STATE_FLUSH_ASSERT) wtfScope = Scope_assert;
-    _state_wtf_scope = wtfScope == null ? null : traceEnter(wtfScope);
+    if (_traceStateScope != null) {
+      trace.leave(_traceStateScope);
+      _traceStateScope = null;
+    }
+    if (to == STATE_APPLY) _traceStateScope = trace.Scope.apply;
+    else if (to == STATE_DIGEST) _traceStateScope = trace.Scope.digest;
+    else if (to == STATE_FLUSH) _traceStateScope = trace.Scope.flush;
+    else if (to == STATE_FLUSH_ASSERT) _traceStateScope = trace.Scope.assertChanges;
+
+    if (_traceStateScope != null) trace.enter(_traceStateScope);
   }
 }
 

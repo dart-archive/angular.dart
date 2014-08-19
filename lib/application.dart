@@ -82,7 +82,7 @@ import 'package:angular/directive/module.dart';
 import 'package:angular/formatter/module_internal.dart';
 import 'package:angular/routing/module.dart';
 import 'package:angular/introspection.dart';
-import 'package:angular/ng_tracing.dart';
+import 'package:angular/ng_tracing.dart' as trace;
 
 import 'package:angular/core_dom/static_keys.dart';
 import 'package:angular/core_dom/directive_injector.dart';
@@ -151,7 +151,7 @@ abstract class Application {
   dom.Element selector(String selector) => element = _find(selector);
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
-    traceDetectWTF(context);
+    trace.detectWTF(context);
     modules.add(ngModule);
     ngModule..bind(VmTurnZone, toValue: zone)
             ..bind(Application, toValue: this)
@@ -174,7 +174,7 @@ abstract class Application {
   }
 
   Injector run() {
-    var scope = traceEnter(Application_bootstrap);
+    var scope = trace.enter(trace.Application.bootstrap);
     try {
       publishToJavaScript();
       return zone.run(() {
@@ -197,7 +197,7 @@ abstract class Application {
         return injector;
       });
     } finally {
-      traceLeave(scope);
+      trace.leave(scope);
     }
   }
 

@@ -7,174 +7,145 @@ library angular.tracing.ng;
 
 import 'package:angular/tracing.dart';
 
-/**
- * Name: `Application#bootstrap()`
- *
- * Designates a bootstrapping of AngularDart application in response to [Application.run()].
- * It usually contains compilation of templates and initial [Scope.apply()]
- */
-final Application_bootstrap = traceCreateScope('Application#bootstrap()');
+abstract class Application {
+  /**
+   * Designates a bootstrapping of AngularDart application in response to [Application.run()].
+   * It usually contains compilation of templates and initial [Scope.apply()]
+   */
+  static final bootstrap = createScope('Application#bootstrap()');
+}
 
+abstract class ChangeDetector {
+  /**
+   * Designates where AngularDart detects changes in the model.
+   * The checking is further subdivided into these sections:
+   * - `ChangeDetector#fields()` looking for changes in object fields.
+   * - `ChangeDetector#eval()` looking for changes by invoking functions.
+   */
+  static final check = createScope('ChangeDetector#check()');
 
+  /**
+   * Designates where AngularDart looks for changes in the model by differencing fields in watch
+   * expressions.
+   */
+  static final fields = createScope('ChangeDetector#fields()');
 
+  /**
+   * Designates where AngularDart looks for changes in the model by invoking functions in watch
+   * expressions.
+   */
+  static final eval = createScope('ChangeDetector#eval()');
 
-/**
- * Name: `ChangeDetector#check()`
- *
- * Designates where AngularDart detects changes in the model.
- * The checking is further subdivided into these sections:
- * - `ChangeDetector#fields()` looking for changes in object fields.
- * - `ChangeDetector#eval()` looking for changes by invoking functions.
- */
-final ChangeDetector_check = traceCreateScope('ChangeDetector#check()');
+  /**
+   * Designates time spent processing the changes which were detected in `ChangeDetector#check()`.
+   */
+  static final reaction = createScope('ChangeDetector#reaction()');
 
-/**
- * Name: `ChangeDetector#fields()`
- *
- * Designates where AngularDart looks for changes in the model by differencing fields in watch
- * expressions.
- */
-final ChangeDetector_fields = traceCreateScope('ChangeDetector#fields()');
+  /**
+   * Designates time spent processing the individual expressions in `ChangeDetector#reaction()`.
+   */
+  static final invoke = createScope('ChangeDetector#invoke(ascii expression)');
+}
 
-/**
- * Name: `ChangeDetector#eval()`
- *
- * Designates where AngularDart looks for changes in the model by invoking functions in watch
- * expressions.
- */
-final ChangeDetector_eval = traceCreateScope('ChangeDetector#eval()');
+abstract class Scope {
+  /**
+   * When processing events angular transitions through stages in this sequence:
+   *
+   * - `Scope#apply()`
+   * - `Scope#digest()`
+   * - `Scope#flush()`
+   *   - `Scope#domWrite()`
+   *   - `Scope#domRead()`
+   * - `Scope#assert()`
+   */
+  static final apply = createScope('Scope#apply()');
 
-/**
- * Name: `ChangeDetector#reaction()`
- *
- * Designates time spent processing the changes which were detected in `ChangeDetector#check()`.
- */
-final ChangeDetector_reaction = traceCreateScope('ChangeDetector#reaction()');
+  /**
+   * Process non-DOM changes in the model.
+   */
+  static final digest = createScope('Scope#digest()');
 
-/**
- * Name: `ChangeDetector#reaction()`
- *
- * Designates time spent processing the individual expressions in `ChangeDetector#reaction()`.
- */
-final ChangeDetector_invoke = traceCreateScope('ChangeDetector#invoke(ascii expression)');
+  /**
+   * Process DOM changes in the model.
+   */
+  static final flush = createScope('Scope#flush()');
 
+  /**
+   * Process DOM write coalescence queue.
+   */
+  static final domWrite = createScope('Scope#domWrite()');
 
+  /**
+   * Process DOM read coalescence queue.
+   */
+  static final domRead = createScope('Scope#domRead()');
 
+  /**
+   * When asserts are enabled, verify that the `Scope#flush()` is idempotent, meaning it did
+   * not make any further model changes.
+   */
+  static final assertChanges = createScope('Scope#assert()');
 
-/**
- * Name: `Scope#apply()`
- *
- * When processing events angular transitions through stages in this sequence:
- *
- * - `Scope#apply()`
- * - `Scope#digest()`
- * - `Scope#flush()`
- *   - `Scope#domWrite()`
- *   - `Scope#domRead()`
- * - `Scope#assert()`
- */
-final Scope_apply = traceCreateScope('Scope#apply()');
+  /**
+   * Process asynchronous microtask queue.
+   */
+  static final execAsync = createScope('Scope#execAsync()');
 
-/**
- * Name: `Scope#digest()`
- *
- * Process non-DOM changes in the model.
- */
-final Scope_digest = traceCreateScope('Scope#digest()');
+  /**
+   * Create new Scope.
+   */
+  static final createChild = createScope('Scope#create()');
+}
 
-/**
- * Name: `Scope#flush()`
- *
- * Process DOM changes in the model.
- */
-final Scope_flush = traceCreateScope('Scope#flush()');
+abstract class VmTurnZone {
+  /**
+   * Designates VM turn boundary, which ensures that Model changes get processed.
+   */
+  static final run = createScope('VmTurnZone#run()');
 
-/**
- * Name: `Scope#domWrite()`
- *
- * Process DOM write coalescence queue.
- */
-final Scope_domWrite = traceCreateScope('Scope#domWrite()');
+  /**
+   * Designates where new microtasks are scheduled. This is usually in response to creating [Future]s.
+   */
+  static final scheduleMicrotask = createScope('VmTurnZone#scheduleMicrotask()');
 
-/**
- * Name: `Scope#domRead()`
- *
- * Process DOM read coalescence queue.
- */
-final Scope_domRead = traceCreateScope('Scope#domRead()');
+}
 
-/**
- * Name: `Scope#assert()`
- *
- * When asserts are enabled, verify that the `Scope#flush()` is idempotent, meaning it did
- * not make any further model changes.
- */
-final Scope_assert = traceCreateScope('Scope#assert()');
+abstract class Compiler {
+  /**
+   * Designates where template HTML is compiled. Compilation is a process of walking the DOM and
+   * finding all of the directives.
+   */
+  static final compile = createScope('Compiler#compile()');
 
+  /**
+   * Designates `@Template` directive needs to compile its children. For example `ng-repeat`.
+   */
+  static final template = createScope('Compiler#template()');
+}
 
-/**
- * Name: `Scope#execAsync()`
- *
- * Process asynchronous microtask queue.
- */
-final Scope_execAsync = traceCreateScope('Scope#execAsync()');
+abstract class View {
+  /**
+   * Designates new views are created.
+   */
+  static final create = createScope('View#create(ascii html)');
 
-/**
- * Name: `Scope#create()`
- *
- * Create new Scope.
- */
-final Scope_createChild = traceCreateScope('Scope#create()');
+  /**
+   * Designates components are created in a view. Components are treated differently than
+   * other directives because they require creation of shadow scope and shadow DOM.
+   */
+  static final createComponent = createScope('View#createComponent()');
 
-/**
- * Name: `VmTurnZone#run()`
- *
- * Designates VM turn boundary, which ensures that Model changes get processed.
- */
-final VmTurnZone_run = traceCreateScope('VmTurnZone#run()');
+  /**
+   * Designates where styles are inserted into component.
+   */
+  static final styles = createScope('View#styles()');
+}
 
-/**
- * Name: `VmTurnZone#scheduleMicrotask()`
- *
- * Designates where new microtasks are scheduled. This is usually in response to creating [Future]s.
- */
-final VmTurnZone_scheduleMicrotask = traceCreateScope('VmTurnZone#scheduleMicrotask()');
+abstract class Directive {
+  /**
+   * Designates a particular directive is created. This includes the setting up of bindings for
+   * the directive.
+   */
+  static final create = createScope('Directive#create(ascii name)');
+}
 
-
-/**
- * Name: `Compiler#compile()`
- *
- * Designates where template HTML is compiled. Compilation is a process of walking the DOM and
- * finding all of the directives.
- */
-final Compiler_compile = traceCreateScope('Compiler#compile()');
-
-/**
- * Name: `Compiler#template()`
- *
- * Designates `@Template` directive needs to compile its children. For example `ng-repeat`.
- */
-final Compiler_template = traceCreateScope('Compiler#template()');
-
-/**
- * Name: `View#create(ascii html)`
- *
- * Designates new views are created.
- */
-final View_create = traceCreateScope('View#create(ascii html)');
-
-/**
- * Name: `View#createComponent()`
- *
- * Designates components are created in a view. Components are treated differently than
- * other directives because they require creation of shadow scope and shadow DOM.
- */
-final View_createComponent = traceCreateScope('View#createComponent()');
-
-/**
- * Name: `Directive#create(ascii name)`
- *
- * Designates a particular directive is created. This includes the setting up of bindings for
- * the directive.
- */
-final Directive_create = traceCreateScope('Directive#create(ascii name)');
