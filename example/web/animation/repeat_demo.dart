@@ -2,7 +2,7 @@ part of animation;
 
 @Component(
     selector: 'repeat-demo',
-    useShadowDom: true,
+    useShadowDom: false,
     template: '''
       <div class="repeat-demo">
       <button ng-click="ctrl.addItem()">Add Thing</button>
