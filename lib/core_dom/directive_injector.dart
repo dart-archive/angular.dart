@@ -1,6 +1,5 @@
 library angular.node_injector;
 
-import 'dart:collection';
 import 'dart:html' show Node, Element, ShadowRoot;
 import 'dart:profiler';
 
