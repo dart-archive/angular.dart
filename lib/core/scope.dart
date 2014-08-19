@@ -3,14 +3,6 @@ part of angular.core_internal;
 typedef EvalFunction0();
 typedef EvalFunction1(context);
 
-var _Scope_apply = traceCreateScope('Scope#apply()');
-var _Scope_digest = traceCreateScope('Scope#digest()');
-var _Scope_flush = traceCreateScope('Scope#flush()');
-var _Scope_domWrite = traceCreateScope('Scope#domWrite()');
-var _Scope_domRead = traceCreateScope('Scope#domRead()');
-var _Scope_assert = traceCreateScope('Scope#assert()');
-var _Scope_runAsync = traceCreateScope('Scope#runAsync()');
-var _Scope_createChild = traceCreateScope('Scope#createChild()');
 /**
  * Injected into the listener function within [Scope.on] to provide event-specific details to the
  * scope listener.
@@ -338,7 +330,7 @@ class Scope {
 
   /// Creates a child [Scope] with the given [childContext]
   Scope createChild(Object childContext) {
-    var s = traceEnter(_Scope_createChild);
+    var s = traceEnter(Scope_createChild);
     assert(isAttached);
     var child = new Scope(childContext, rootScope, this,
                           _readWriteGroup.newGroup(childContext),
@@ -746,7 +738,7 @@ class RootScope extends Scope {
     try {
       do {
         if (_domWriteHead != null) _stats.domWriteStart();
-        var s = traceEnter(_Scope_domWrite);
+        var s = traceEnter(Scope_domWrite);
         while (_domWriteHead != null) {
           try {
             _domWriteHead.fn();
@@ -766,7 +758,7 @@ class RootScope extends Scope {
               processStopwatch: _scopeStats.processStopwatch);
         }
         if (_domReadHead != null) _stats.domReadStart();
-        s = traceEnter(_Scope_domRead);
+        s = traceEnter(Scope_domRead);
         while (_domReadHead != null) {
           try {
             _domReadHead.fn();
@@ -823,7 +815,7 @@ class RootScope extends Scope {
   }
 
   _runAsyncFns() {
-    var s = traceEnter(_Scope_runAsync);
+    var s = traceEnter(Scope_execAsync);
     var count = 0;
     while (_runAsyncHead != null) {
       try {
@@ -865,10 +857,10 @@ class RootScope extends Scope {
     _state = to;
     if (_state_wtf_scope != null) traceLeave(_state_wtf_scope);
     var wtfScope = null;
-    if (to == STATE_APPLY) wtfScope = _Scope_apply;
-    else if (to == STATE_DIGEST) wtfScope = _Scope_digest;
-    else if (to == STATE_FLUSH) wtfScope = _Scope_flush;
-    else if (to == STATE_FLUSH_ASSERT) wtfScope = _Scope_assert;
+    if (to == STATE_APPLY) wtfScope = Scope_apply;
+    else if (to == STATE_DIGEST) wtfScope = Scope_digest;
+    else if (to == STATE_FLUSH) wtfScope = Scope_flush;
+    else if (to == STATE_FLUSH_ASSERT) wtfScope = Scope_assert;
     _state_wtf_scope = wtfScope == null ? null : traceEnter(wtfScope);
   }
 }
