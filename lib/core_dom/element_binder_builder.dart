@@ -105,7 +105,7 @@ class ElementBinderBuilder {
         // Look up the value of attrName and compute an AST
         AST ast;
         if (mode != '@' && mode != '&') {
-          var value = attrName == "." ? ref.value : (ref.element as dom.Element).attributes[attrName];
+          var value = attrName == "." ? ref.value : dom.getAttribute(ref.element, attrName);
           if (value == null || value.isEmpty) { value = "''"; }
           ast = _factory.astParser(value, formatters: _formatters);
         }

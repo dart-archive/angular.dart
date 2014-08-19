@@ -22,16 +22,16 @@ class NodeAttrs {
 
   NodeAttrs(this.element);
 
-  operator [](String attrName) => element.attributes[attrName];
+  operator [](String attrName) => dom.getAttribute(element, attrName);
 
   void operator []=(String attrName, String value) {
     if (_mustacheAttrs.containsKey(attrName)) {
       _mustacheAttrs[attrName].isComputed = true;
     }
     if (value == null) {
-      element.attributes.remove(attrName);
+      dom.removeAttribute(element, attrName);
     } else {
-      element.attributes[attrName] = value;
+      dom.setAttribute(element, attrName, value);
     }
 
     if (_observers != null && _observers.containsKey(attrName)) {
@@ -62,12 +62,12 @@ class NodeAttrs {
   }
 
   void forEach(void f(String k, String v)) {
-    element.attributes.forEach(f);
+    dom.attributes(element).forEach(f);
   }
 
-  bool containsKey(String attrName) => element.attributes.containsKey(attrName);
+  bool containsKey(String attrName) => dom.attributes(element).containsKey(attrName);
 
-  Iterable<String> get keys => element.attributes.keys;
+  Iterable<String> get keys => dom.attributes(element).keys;
 
   /**
    * Registers a listener to be called when the attribute [attrName] becomes

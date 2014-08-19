@@ -42,7 +42,7 @@ class WebPlatform {
       //
       // TODO Remove the try-catch once https://github.com/angular/angular.dart/issues/1189 is fixed.
       try {
-        root.querySelectorAll("*").forEach((n) => n.attributes[selector] = "");
+        dom.querySelectorAll(root, "*").forEach((dom.Element n) => dom.setAttribute(n, selector, ""));
       } catch (e, s) {
         print("WARNING: Failed to set up Shadow DOM shim for $selector.\n$e\n$s");
       }

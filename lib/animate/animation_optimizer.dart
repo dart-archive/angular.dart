@@ -120,7 +120,7 @@ class AnimationOptimizer {
     // default, we assume that we can run.
     bool autoDecision = true;
 
-    node = node.parentNode;
+    node = dom.parentNode(node);
     while (node != null) {
       // Does this node give us animation information about our children?
       alwaysAnimate = _alwaysAnimateChildren[node];
@@ -139,7 +139,7 @@ class AnimationOptimizer {
       }
 
       // If we hit a null parent, try to break out of shadow dom.
-      if (node.parentNode == null) {
+      if (dom.parentNode(node) == null) {
         var probe = _findElementProbe(node);
         if (probe != null && probe.parent != null) {
           // Escape shadow dom!
@@ -150,7 +150,7 @@ class AnimationOptimizer {
           return autoDecision;
         }
       } else {
-        node = node.parentNode;
+        node = dom.parentNode(node);
       }
     }
 
@@ -163,7 +163,7 @@ class AnimationOptimizer {
       if (_expando[node] != null) {
         return _expando[node];
       }
-      node = node.parentNode;
+      node = dom.parentNode(node);
     }
     return null;
   }

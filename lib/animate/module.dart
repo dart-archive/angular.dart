@@ -99,8 +99,7 @@
 library angular.animate;
 
 import 'dart:async';
-import 'dart:html' as dom;
-
+import 'package:angular/dom/dom.dart' as dom;
 import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';

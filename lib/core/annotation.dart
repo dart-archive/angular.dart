@@ -3,7 +3,7 @@
  */
 library angular.core.annotation;
 
-import "dart:html" show ShadowRoot;
+import "package:angular/dom/dom.dart" show ShadowRoot;
 
 export "package:angular/core/annotation_src.dart" show
     AttachAware,

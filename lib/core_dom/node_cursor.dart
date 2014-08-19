@@ -12,7 +12,7 @@ class NodeCursor {
   dom.Node get current => index < elements.length ? elements[index] : null;
 
   bool descend() {
-    var childNodes = elements[index].nodes;
+    var childNodes = dom.nodes(elements[index]);
     var hasChildren = childNodes.isNotEmpty;
 
     if (hasChildren) {

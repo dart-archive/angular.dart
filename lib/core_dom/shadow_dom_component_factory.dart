@@ -100,10 +100,9 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
           }
 
           // If a css rewriter is installed, run the css through a rewriter
-          var styleElement = new dom.StyleElement()
-            ..appendText(componentCssRewriter(css, selector: _tag,
-          cssUrl: cssUrl));
-
+          var styleElement = new dom.StyleElement();
+          dom.appendText(styleElement, componentCssRewriter(css, selector: _tag, cssUrl: cssUrl));
+            
           // ensure there are no invalid tags or modifications
           treeSanitizer.sanitizeTree(styleElement);
 

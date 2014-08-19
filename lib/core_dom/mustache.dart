@@ -12,7 +12,7 @@ class TextMustache {
   }
 
   void _updateMarkup(text, previousText) {
-    _element.text = text;
+    dom.setText(_element, text);
   }
 }
 

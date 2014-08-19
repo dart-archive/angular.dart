@@ -57,9 +57,9 @@ class NgElement {
 
     _attributesToUpdate.forEach((String attrName, value) {
       if (value == _TO_BE_REMOVED) {
-        node.attributes.remove(attrName);
+        dom.removeAttribute(node, attrName);
       } else {
-        node.attributes[attrName] = value;
+        dom.setAttribute(node, attrName, value);
       }
     });
     _attributesToUpdate.clear();

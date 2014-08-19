@@ -1,6 +1,6 @@
 library angular.dom.util;
 
-import 'dart:html' as dom;
+import 'package:angular/dom/dom.dart' as dom;
 
 Iterable<dom.Element> getElements(Iterable<dom.Node> nodes) =>
     nodes.where((el) => el.nodeType == dom.Node.ELEMENT_NODE);
@@ -13,23 +13,23 @@ void domRemove(List<dom.Node> nodes) {
     dom.Node current = nodes[j];
     dom.Node next = j + 1 < nodes.length ? nodes[j + 1] : null;
 
-    while (next != null && current.nextNode != next) {
-      current.nextNode.remove();
+    while (next != null && dom.nextNode(current) != next) {
+      dom.removeNode(dom.nextNode(current));
     }
-    nodes[j].remove();
+    dom.removeNode(nodes[j]);
   }
 }
 
 void domInsert(Iterable<dom.Node> nodes, dom.Node parent,
                 { dom.Node insertBefore }) {
-  parent.insertAllBefore(nodes, insertBefore);
+  dom.insertAllBefore(parent, nodes, insertBefore);
 }
 
 void domMove(Iterable<dom.Node> nodes, dom.Node parent,
               { dom.Node insertBefore }) {
   nodes.forEach((n) {
-    if (n.parentNode == null) n.remove();
-    parent.insertBefore(n, insertBefore);
+    if (dom.parentNode(n) == null) dom.removeNode(n);
+    dom.insertBefore(parent, n, insertBefore);
   });
 }
 
@@ -42,9 +42,9 @@ List<dom.Node> allNodesBetween(List<dom.Node> nodes) {
     dom.Node current = nodes[j];
     dom.Node next = j + 1 < nodes.length ? nodes[j + 1] : null;
 
-    while (next != null && current.nextNode != next) {
-      result.add(current.nextNode);
-      current = current.nextNode;
+    while (next != null && dom.nextNode(current) != next) {
+      result.add(dom.nextNode(current));
+      current = dom.nextNode(current);
     }
     result.add(nodes[j]);
   }

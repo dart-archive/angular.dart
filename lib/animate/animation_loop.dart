@@ -104,7 +104,7 @@ class AnimationLoop {
 @Injectable()
 class AnimationFrame {
   final dom.Window _wnd;
-  Future<num> get animationFrame => _wnd.animationFrame;
+  Future<num> get animationFrame => dom.animationFrame(_wnd);
 
   AnimationFrame(this._wnd);
 }

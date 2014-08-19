@@ -16,10 +16,10 @@ class AHref {
   final dom.Element element;
 
   AHref(this.element, VmTurnZone zone) {
-    if (element.attributes["href"] == "") {
+    if (dom.getAttribute(element, "href") == "") {
       zone.runOutsideAngular(() {
         element.onClick.listen((event) {
-          if (element.attributes["href"] == "") {
+          if (dom.getAttribute(element, "href") == "") {
             event.preventDefault();
           }
         });

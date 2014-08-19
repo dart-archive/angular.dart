@@ -33,11 +33,11 @@ class ViewFactory implements Function {
     if (traceEnabled) {
       _debugHtml = templateNodes.map((dom.Node e) {
         if (e is dom.Element) {
-          return (e as dom.Element).outerHtml;
+          return dom.outerHtml(e);
         } else if (e is dom.Comment) {
-          return '<!--${(e as dom.Comment).text}-->';
+          return '<!--${dom.text(e)}-->';
         } else {
-          return e.text;
+          return dom.text(e);
         }
       }).toList().join('');
     }
@@ -122,7 +122,7 @@ class ViewFactory implements Function {
         }
 
         if (linkingInfo.ngBindingChildren) {
-          var elts = (node as dom.Element).querySelectorAll('.ng-binding');
+          var elts = dom.querySelectorAll(node, '.ng-binding');
           for (int j = 0; j < elts.length; j++, elementBinderIndex++) {
             TaggedElementBinder tagged = elementBinders[elementBinderIndex];
             _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors,
@@ -183,9 +183,9 @@ computeNodeLinkingInfos(List<dom.Node> nodeList) {
     bool isElement = node.nodeType == dom.Node.ELEMENT_NODE;
 
     list[i] = new NodeLinkingInfo(
-        isElement && (node as dom.Element).classes.contains('ng-binding'),
+        isElement && dom.classes(node).contains('ng-binding'),
         isElement,
-        isElement && (node as dom.Element).querySelectorAll('.ng-binding').length > 0);
+        isElement && dom.querySelectorAll(node, '.ng-binding').length > 0);
   }
   return list;
 }
@@ -254,7 +254,7 @@ String _html(obj) {
     return (obj as List).map((e) => _html(e)).join();
   }
   if (obj is dom.Element) {
-    var text = (obj as dom.Element).outerHtml;
+    var text = dom.outerHtml(obj);
     return text.substring(0, text.indexOf('>') + 1);
   }
   return obj.nodeName;

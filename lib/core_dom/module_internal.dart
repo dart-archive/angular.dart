@@ -2,7 +2,6 @@ library angular.core.dom_internal;
 
 import 'dart:async' as async;
 import 'dart:convert' show JSON;
-import 'dart:html' as dom;
 import 'dart:js' as js;
 
 import 'package:di/di.dart';
@@ -11,6 +10,7 @@ import 'package:perf_api/perf_api.dart';
 
 import 'package:angular/cache/module.dart';
 
+import 'package:angular/dom/dom.dart' as dom;
 import 'package:angular/core/annotation.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core/parser/parser.dart';

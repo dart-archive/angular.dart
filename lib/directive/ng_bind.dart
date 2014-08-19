@@ -23,9 +23,9 @@ class NgBind {
   NgBind(this.element, ElementProbe probe) {
     // TODO(chirayu): Generalize this.
     if (probe != null) {
-      probe.bindingExpressions.add(element.attributes['ng-bind']);
+      probe.bindingExpressions.add(dom.getAttribute(element, 'ng-bind'));
     }
   }
 
-  set value(value) => element.text = value == null ? '' : value.toString();
+  set value(value) => dom.setText(element, value == null ? '' : value.toString());
 }

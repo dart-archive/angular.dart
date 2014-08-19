@@ -32,7 +32,7 @@ class CssAnimate implements Animate {
 
   Animation addClass(dom.Element element, String cssClass) {
     if (!_optimizer.shouldAnimate(element)) {
-      element.classes.add(cssClass);
+      dom.addClass(element, cssClass);
       return _noOp;
     }
 
@@ -43,7 +43,7 @@ class CssAnimate implements Animate {
 
   Animation removeClass(dom.Element element, String cssClass) {
     if (!_optimizer.shouldAnimate(element)) {
-      element.classes.remove(cssClass);
+      dom.removeClass(element, cssClass);
       return _noOp;
     }
 
@@ -74,7 +74,7 @@ class CssAnimate implements Animate {
     });
 
     var result = _animationFromList(animations)..onCompleted.then((result) {
-      if (result.isCompleted) nodes.toList().forEach((n) => n.remove());
+      if (result.isCompleted) nodes.toList().forEach(dom.removeNode);
     });
 
     return result;

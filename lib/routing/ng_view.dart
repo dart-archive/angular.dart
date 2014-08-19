@@ -63,7 +63,7 @@ class NgView implements DetachAware, RouteProvider {
   final ViewCache _viewCache;
   final Injector _appInjector;
   final DirectiveInjector _dirInjector;
-  final Element _element;
+  final dom.Element _element;
   final Scope _scope;
   RouteHandle _route;
 
@@ -122,14 +122,14 @@ class NgView implements DetachAware, RouteProvider {
       _cleanUp();
       _childScope = _scope.createChild(new PrototypeMap(_scope.context));
       _view = viewFactory(_childScope, _dirInjector);
-      _view.nodes.forEach((elm) => _element.append(elm));
+      _view.nodes.forEach((elm) => dom.append(_element, elm));
     });
   }
 
   void _cleanUp() {
     if (_view == null) return;
 
-    _view.nodes.forEach((node) => node.remove());
+    _view.nodes.forEach((node) => dom.removeNode(node));
     _childScope.destroy();
     _view = null;
     _childScope = null;

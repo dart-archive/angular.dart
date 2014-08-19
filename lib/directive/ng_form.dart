@@ -37,7 +37,7 @@ class NgForm extends NgControl {
   NgForm(this._scope, NgElement element, DirectiveInjector injector, Animate animate) :
     super(element, injector, animate) {
 
-    if (!element.node.attributes.containsKey('action')) {
+    if (!dom.attributes(element.node).containsKey('action')) {
       element.node.onSubmit.listen((event) {
         event.preventDefault();
         onSubmit(valid == true);

@@ -123,11 +123,10 @@
 library angular.routing;
 
 import 'dart:async';
-import 'dart:html';
-
 import 'package:di/di.dart';
 import 'package:di/annotations.dart';
 import 'package:angular/application.dart';
+import 'package:angular/dom/dom.dart' as dom;
 import 'package:angular/core/annotation_src.dart';
 import 'package:angular/core/module_internal.dart';
 import 'package:angular/core_dom/module_internal.dart';
@@ -143,7 +142,7 @@ part 'ng_bind_route.dart';
 class RoutingModule extends Module {
   RoutingModule({bool usePushState: true}) {
     bind(NgRoutingUsePushState);
-    bind(Router, toFactory: (NgRoutingUsePushState state, Window window) {
+    bind(Router, toFactory: (NgRoutingUsePushState state, dom.Window window) {
       var useFragment = !state.usePushState;
       return new Router(useFragment: useFragment, windowImpl: window);
     }, inject: [NG_ROUTING_USE_PUSH_STATE_KEY, WINDOW_KEY]);

@@ -1,11 +1,12 @@
 library angular.node_injector;
 
-import 'dart:html' show Node, Element, ShadowRoot;
+
 import 'dart:profiler';
 
 import 'package:di/di.dart';
 import 'package:di/annotations.dart';
 import 'package:di/src/module.dart' show DEFAULT_VALUE, Binding;
+import 'package:angular/dom/dom.dart' as dom;
 import 'package:angular/core/static_keys.dart';
 import 'package:angular/core_dom/static_keys.dart';
 
@@ -22,7 +23,7 @@ final DIRECTIVE_INJECTOR_KEY = new Key(DirectiveInjector);
 final COMPONENT_DIRECTIVE_INJECTOR_KEY = new Key(ComponentDirectiveInjector);
 final CONTENT_PORT_KEY = new Key(ContentPort);
 final TEMPLATE_LOADER_KEY = new Key(TemplateLoader);
-final SHADOW_ROOT_KEY = new Key(ShadowRoot);
+final SHADOW_ROOT_KEY = new Key(dom.ShadowRoot);
 
 final num MAX_DEPTH = 1 << 30;
 
@@ -105,7 +106,7 @@ class DirectiveInjector implements DirectiveBinder {
   
   final DirectiveInjector _parent;
   final Injector _appInjector;
-  final Node _node;
+  final dom.Node _node;
   final NodeAttrs _nodeAttrs;
   final Animate _animate;
   final EventHandler _eventHandler;
@@ -373,7 +374,7 @@ class TemplateDirectiveInjector extends DirectiveInjector {
   BoundViewFactory _boundViewFactory;
 
   TemplateDirectiveInjector(DirectiveInjector parent, Injector appInjector,
-                       Node node, NodeAttrs nodeAttrs, EventHandler eventHandler,
+                       dom.Node node, NodeAttrs nodeAttrs, EventHandler eventHandler,
                        Scope scope, Animate animate, this._viewFactory)
     : super(parent, appInjector, node, nodeAttrs, eventHandler, scope, animate);
 
@@ -394,7 +395,7 @@ class TemplateDirectiveInjector extends DirectiveInjector {
 class ComponentDirectiveInjector extends DirectiveInjector {
 
   final TemplateLoader _templateLoader;
-  final ShadowRoot _shadowRoot;
+  final dom.ShadowRoot _shadowRoot;
   final ContentPort _contentPort;
 
   ComponentDirectiveInjector(DirectiveInjector parent, Injector appInjector,

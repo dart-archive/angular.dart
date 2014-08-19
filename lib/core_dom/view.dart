@@ -41,7 +41,7 @@ class ViewPort {
     scope.rootScope.domWrite(() {
       dom.Node previousNode = _lastNode(insertAfter);
       _viewsInsertAfter(view, insertAfter);
-      _animate.insert(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+      _animate.insert(view.nodes, dom.parentNode(placeholder), insertBefore: dom.nextNode(previousNode));
     });
     return view;
   }
@@ -60,7 +60,7 @@ class ViewPort {
     _views.remove(view);
     _viewsInsertAfter(view, moveAfter);
     scope.rootScope.domWrite(() {
-      _animate.move(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
+      _animate.move(view.nodes, dom.parentNode(placeholder), insertBefore: dom.nextNode(previousNode));
     });
     return view;
   }

@@ -112,17 +112,17 @@ class NgPluralize {
   };
 
   NgPluralize(this._scope, this._element, this._interpolate, this._formatters) {
-    var attrs = _element.attributes;
+    var attrs = dom.attributes(_element);
     final whens = attrs['when'] == null
         ? <String, String>{}
         : _scope.eval(attrs['when']);
     _offset = attrs['offset'] == null ? 0 : int.parse(attrs['offset']);
 
-    _element.attributes.keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
+    dom.attributes(_element).keys.where((k) => IS_WHEN.hasMatch(k)).forEach((k) {
       var ruleName = k
           .replaceFirst(new RegExp('^when-'), '')
           .replaceFirst(new RegExp('^minus-'), '-');
-      whens[ruleName] = _element.attributes[k];
+      whens[ruleName] = dom.getAttribute(_element, k);
     });
 
     if (whens['other'] == null) {
@@ -145,7 +145,7 @@ class NgPluralize {
       try {
         value = num.parse(value);
       } catch(e) {
-        _element.text = '';
+        dom.setText(_element, '');
         return;
       }
     }
@@ -173,6 +173,6 @@ class NgPluralize {
   }
 
   void _updateMarkup(text, previousText) {
-    if (text != previousText) _element.text = text;
+    if (text != previousText) dom.setText(_element, text);
   }
 }

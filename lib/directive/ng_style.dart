@@ -34,9 +34,9 @@ class NgStyle {
 
   _onStyleChange(MapChangeRecord mapChangeRecord, _) {
     if (mapChangeRecord != null) {
-      dom.CssStyleDeclaration css = _element.style;
+      dom.CssStyleDeclaration css = dom.style(_element);
       fn(MapKeyValue m) =>
-          css.setProperty(m.key, m.currentValue == null ? '' : m.currentValue);
+          dom.setCssProperty(css, m.key, m.currentValue == null ? '' : m.currentValue);
 
       mapChangeRecord..forEachRemoval(fn)
                      ..forEachChange(fn)

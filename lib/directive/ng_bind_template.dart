@@ -18,6 +18,6 @@ class NgBindTemplate {
   NgBindTemplate(this.element);
 
   void set bind(value) {
-    element.text = value;
+    dom.setText(element, value);
   }
 }

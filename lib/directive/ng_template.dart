@@ -32,8 +32,8 @@ class NgTemplate {
   NgTemplate(this.element, this.templateCache);
   set templateUrl(url) => templateCache.put(url, new HttpResponse(200,
       element is dom.TemplateElement
-          ? (element as dom.TemplateElement).content.innerHtml
-          : element.innerHtml));
+          ? dom.innerHtml(dom.content(element))
+          : dom.innerHtml(element)));
 }
 
 

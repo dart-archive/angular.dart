@@ -20,7 +20,7 @@ class Animate {
    * defined animations.
    */
   Animation addClass(dom.Element element, String cssClass) {
-    element.classes.add(cssClass);
+    dom.addClass(element, cssClass);
     return new NoOpAnimation();
   }
 
@@ -29,7 +29,7 @@ class Animate {
     * defined animations.
     */
   Animation removeClass(dom.Element element, String cssClass) {
-    element.classes.remove(cssClass);
+    dom.removeClass(element, cssClass);
     return new NoOpAnimation();
   }
 

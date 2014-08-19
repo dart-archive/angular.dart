@@ -37,7 +37,7 @@ class NgInclude {
 
     _view.nodes.forEach((node) => node.remove);
     _scope.destroy();
-    element.innerHtml = '';
+    dom.setInnerHtml(element, '');
 
     _view = null;
     _scope = null;
@@ -48,7 +48,7 @@ class NgInclude {
     _scope = scope.createChild(new PrototypeMap(scope.context));
     _view = viewFactory(_scope, directiveInjector);
 
-    _view.nodes.forEach((node) => element.append(node));
+    _view.nodes.forEach((node) => dom.append(element, node));
   }
 
 

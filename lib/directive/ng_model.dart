@@ -314,12 +314,12 @@ class InputCheckbox {
                 this.scope, this.ngTrueValue, this.ngFalseValue, this.ngModelOptions) {
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
-        inputElement.checked = ngTrueValue.isValue(value);
+        dom.setChecked(inputElement, ngTrueValue.isValue(value));
       });
     };
     inputElement
         ..onChange.listen((_) => ngModelOptions.executeChangeFunc(() {
-          ngModel.viewValue = inputElement.checked ? ngTrueValue.value : ngFalseValue.value;
+          ngModel.viewValue = dom.isChecked(inputElement) ? ngTrueValue.value : ngFalseValue.value;
         }))
         ..onBlur.listen((_) => ngModelOptions.executeBlurFunc(() {
           ngModel.markAsTouched();
@@ -424,7 +424,7 @@ class InputNumberLike {
 
 
   // We can't use [inputElement.valueAsNumber] due to http://dartbug.com/15788
-  num get typedValue => num.parse(inputElement.value, (v) => double.NAN);
+  num get typedValue => num.parse(dom.value(inputElement), (v) => double.NAN);
 
   void set typedValue(num value) {
     // [chalin, 2014-02-16] This post
@@ -433,10 +433,10 @@ class InputNumberLike {
     // it does not. [TODO: put BUG/ISSUE number here].  We implement a
     // workaround by setting `value`. Clean-up once the bug is fixed.
     if (value == null) {
-      inputElement.value = null;
+      dom.setValue(inputElement, null);
     } else {
       // We can't use inputElement.valueAsNumber due to http://dartbug.com/15788
-      inputElement.value = "$value";
+      dom.setValue(inputElement, "$value");
     }
   }
 
@@ -511,8 +511,8 @@ class NgBindTypeForDateLike {
   dynamic get inputTypedValue {
     switch (idlAttrKind) {
       case DATE:   return inputValueAsDate;
-      case NUMBER: return inputElement.valueAsNumber;
-      default:     return inputElement.value;
+      case NUMBER: return dom.valueAsNumber(inputElement);
+      default:     return dom.value(inputElement);
     }
   }
 
@@ -520,9 +520,9 @@ class NgBindTypeForDateLike {
     if (inputValue is DateTime) {
       inputValueAsDate = inputValue;
     } else if (inputValue is num) {
-      inputElement.valueAsNumber = inputValue;
+      dom.setValueAsNumber(inputElement, inputValue);
     } else {
-      inputElement.value = inputValue;
+      dom.setValue(inputElement, inputValue);
     }
   }
 
@@ -532,7 +532,7 @@ class NgBindTypeForDateLike {
     // Wrap in try-catch due to
     // https://code.google.com/p/dart/issues/detail?id=17625
     try {
-      dt = inputElement.valueAsDate;
+      dt = dom.valueAsDate(inputElement);
     } catch (e) {
       dt = null;
     }
@@ -542,7 +542,7 @@ class NgBindTypeForDateLike {
   /// Set input's `valueAsDate`. Argument is normalized to UTC if necessary
   /// (per HTML standard).
   void set inputValueAsDate(DateTime dt) {
-    inputElement.valueAsDate = (dt != null && !dt.isUtc) ? dt.toUtc() : dt;
+    dom.setValueAsDate(inputElement, (dt != null && !dt.isUtc) ? dt.toUtc() : dt);
   }
 }
 
@@ -799,12 +799,12 @@ class InputRadio {
     }
     ngModel.render = (value) {
       scope.rootScope.domWrite(() {
-        radioButtonElement.checked = (value == ngValue.value);
+        dom.setChecked(radioButtonElement, value == ngValue.value);
       });
     };
     radioButtonElement
         ..onClick.listen((_) {
-          if (radioButtonElement.checked) ngModel.viewValue = ngValue.value;
+          if (dom.isChecked(radioButtonElement)) ngModel.viewValue = ngValue.value;
         })
         ..onBlur.listen((event) {
           ngModel.markAsTouched();

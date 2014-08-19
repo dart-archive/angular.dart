@@ -73,21 +73,21 @@ class DirectiveSelector {
     String nodeName = element.tagName.toLowerCase();
 
     // Set default attribute
-    if (nodeName == 'input' && !element.attributes.containsKey('type')) {
-      element.attributes['type'] = 'text';
+    if (nodeName == 'input' && !dom.attributes(element).containsKey('type')) {
+      dom.setAttribute(element, 'type', 'text');
     }
 
     // Select node
     partialSelection = elementSelector.selectNode(builder, partialSelection, element, nodeName);
 
     // Select .name
-    for (var name in element.classes) {
+    for (var name in dom.classes(element)) {
       classes.add(name);
       partialSelection = elementSelector.selectClass(builder, partialSelection, element, name);
     }
 
     // Select [attributes]
-    element.attributes.forEach((attrName, value) {
+    dom.attributes(element).forEach((attrName, value) {
 
       if (attrName.startsWith("on-")) {
         builder.onEvents[attrName] = value;

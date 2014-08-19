@@ -67,11 +67,11 @@
  */
 library angular.app;
 
-import 'dart:html' as dom;
 import 'dart:js' show context;
 
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:di/di.dart';
+import 'package:angular/dom/dom.dart' as dom;
 import 'package:angular/angular.dart';
 import 'package:angular/perf/module.dart';
 import 'package:angular/cache/module.dart';

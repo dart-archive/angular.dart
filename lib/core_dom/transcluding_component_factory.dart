@@ -26,8 +26,8 @@ class ContentPort {
   ContentPort(this._element);
 
   void pullNodes() {
-    _childNodes.addAll(_element.nodes);
-    _element.nodes = [];
+    _childNodes.addAll(dom.nodes(_element));
+    dom.setNodes(_element, []);
   }
 
   content(dom.Element elt) {
@@ -36,13 +36,13 @@ class ContentPort {
 
     if (_childNodes.isNotEmpty) {
       beginComment = new dom.Comment("content $hash");
-      elt.parent.insertBefore(beginComment, elt);
-      elt.parent.insertAllBefore(_childNodes, elt);
-      elt.parent.insertBefore(new dom.Comment("end-content $hash"), elt);
+      dom.insertBefore(dom.parentNode(elt), beginComment, elt);
+      dom.insertAllBefore(dom.parentNode(elt), _childNodes, elt);
+      dom.insertBefore(dom.parentNode(elt), new dom.Comment("end-content $hash"), elt);
       _childNodes = [];
     }
 
-    elt.remove();
+    dom.removeNode(elt);
     return beginComment;
   }
 

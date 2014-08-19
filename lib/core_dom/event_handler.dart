@@ -52,7 +52,7 @@ class EventHandler {
     while (element != null && element != _rootNode) {
       var expression;
       if (element is dom.Element)
-        expression = (element as dom.Element).attributes[eventNameToAttrName(event.type)];
+        expression = dom.getAttribute(element, eventNameToAttrName(event.type));
       if (expression != null) {
         try {
           var scope = _getScope(element);
@@ -61,18 +61,18 @@ class EventHandler {
           _exceptionHandler(e, s);
         }
       }
-      element = element.parentNode;
+      element = dom.parentNode(element);
     }
   }
 
   Scope _getScope(dom.Node element) {
     // var topElement = (rootNode is dom.ShadowRoot) ? rootNode.parentNode : rootNode;
-    while (element != _rootNode.parentNode) {
+    while (element != dom.parentNode(_rootNode)) {
       ElementProbe probe = _expando[element];
       if (probe != null) {
         return probe.scope;
       }
-      element = element.parentNode;
+      element = dom.parentNode(element);
     }
     return null;
   }

@@ -25,6 +25,6 @@ class NgBindHtml {
    * The result of this expression is inserted into the containing element in the DOM according to the
    * rules specified in the documentation for the class.
    */
-  void set value(value) => element.setInnerHtml(
+  void set value(value) => dom.setInnerHtml(element,
       value == null ? '' : value.toString(), validator: validator);
 }

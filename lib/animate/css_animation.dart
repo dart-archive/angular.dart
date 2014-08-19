@@ -47,15 +47,16 @@ class CssAnimation extends LoopedAnimation {
   {
     if (_optimizer != null) _optimizer.track(this, element);
     if (_animationMap != null) _animationMap.track(this);
-    element.classes.add(eventClass);
-    if (addAtStart != null) element.classes.add(addAtStart);
-    if (removeAtStart != null) element.classes.remove(removeAtStart);
+
+    dom.addClass(element, eventClass);
+    if (addAtStart != null) dom.addClass(element, addAtStart);
+    if (removeAtStart != null) dom.removeClass(element, removeAtStart);
   }
 
   void read(num timeInMs) {
     if (_active && _startTime == null) {
       _startTime = timeInMs;
-      var style = element.getComputedStyle();
+      var style = dom.getComputedStyle(element);
       _isDisplayNone = style.display == "none";
       _duration = util.computeLongestTransition(style);
       if (_duration > 0.0) {
@@ -85,10 +86,10 @@ class CssAnimation extends LoopedAnimation {
       // will not run their enter animation.
 
       if (_isDisplayNone && removeAtEnd != null) {
-        element.classes.remove(removeAtEnd);
+        dom.removeClass(element, removeAtEnd);
       }
 
-      element.classes.add(activeClass);
+      dom.addClass(element, activeClass);
       _started = true;
     }
 
@@ -99,8 +100,8 @@ class CssAnimation extends LoopedAnimation {
   void cancel() {
     if (_active) {
       _detach();
-      if (addAtStart != null) element.classes.remove(addAtStart);
-      if (removeAtStart != null) element.classes.add(removeAtStart);
+      if (addAtStart != null) dom.removeClass(element, addAtStart);
+      if (removeAtStart != null) dom.addClass(element, removeAtStart);
       if (_completer != null) _completer.complete(AnimationResult.CANCELED);
     }
   }
@@ -114,8 +115,8 @@ class CssAnimation extends LoopedAnimation {
   void _complete(AnimationResult result) {
     if (_active) {
       _detach();
-      if (addAtEnd != null) element.classes.add(addAtEnd);
-      if (removeAtEnd != null) element.classes.remove(removeAtEnd);
+      if (addAtEnd != null) dom.addClass(element, addAtEnd);
+      if (removeAtEnd != null) dom.removeClass(element, removeAtEnd);
       _completer.complete(result);
     }
   }
@@ -127,6 +128,8 @@ class CssAnimation extends LoopedAnimation {
     if (_animationMap != null) _animationMap.forget(this);
     if (_optimizer != null) _optimizer.forget(this);
 
-    element.classes..remove(eventClass)..remove(activeClass);
+
+    dom.removeClass(element, eventClass);
+    dom.removeClass(element, activeClass);
   }
 }

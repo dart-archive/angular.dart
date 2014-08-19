@@ -4,7 +4,7 @@ List<dom.Node> cloneElements(List<dom.Node> elements) {
   int length = elements.length;
   var clones = new List(length);
   for(var i=0; i < length; i++) {
-    clones[i] = elements[i].clone(true);
+    clones[i] = dom.clone(elements[i]);
   }
   return clones;
 }
@@ -37,7 +37,7 @@ class DirectiveRef {
 
   String toString() {
     var html = element is dom.Element
-        ? (element as dom.Element).outerHtml
+        ? dom.outerHtml(element)
         : element.nodeValue;
     return '{ element: $html, selector: ${annotation.selector}, value: $value, '
            'ast: ${valueAST == null ? 'null' : '$valueAST'}, '

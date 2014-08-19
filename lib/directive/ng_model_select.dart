@@ -36,8 +36,8 @@ class InputSelect implements AttachAware {
 
   InputSelect(dom.Element this._selectElement, this._attrs, this._model,
               this._scope) {
-    _unknownOption.value = '?';
-    _nullOption = _selectElement.querySelectorAll('option')
+    dom.setValue(_unknownOption, '?');
+    _nullOption = dom.querySelectorAll(_selectElement, 'option')
         .firstWhere((o) => o.value == '', orElse: () => null);
   }
 
@@ -138,7 +138,7 @@ class _SelectMode {
   onModelChange(value) {}
   destroy() {}
 
-  get _options => select.querySelectorAll('option');
+  get _options => dom.querySelectorAll(select, 'option');
   _forEachOption(fn, [quitOnReturn = false]) {
     for (var i = 0; i < _options.length; i++) {
       var retValue = fn(_options[i], i);
@@ -193,13 +193,13 @@ class _SingleSelectMode extends _SelectMode {
 
     if (!found) {
       if (!_unknownOptionActive) {
-        select.insertBefore(_unknownOption, select.firstChild);
-        _unknownOption.selected = true;
+        dom.insertBefore(select, _unknownOption, dom.firstChild(select));
+        dom.setSelected(_unknownOption, true);
         _unknownOptionActive = true;
       }
     } else {
       if (_unknownOptionActive) {
-        _unknownOption.remove();
+        dom.removeNode(_unknownOption);
         _unknownOptionActive = false;
       }
     }
