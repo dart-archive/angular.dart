@@ -15,6 +15,8 @@ class View {
   final Scope scope;
   final List<dom.Node> nodes;
   final EventHandler eventHandler;
+  View _previous;
+  View _next;
 
   View(this.nodes, this.scope, this.eventHandler);
 
@@ -32,7 +34,7 @@ class ViewPort {
   final Scope scope;
   final dom.Node placeholder;
   final Animate _animate;
-  final _views = <View>[];
+  View head = new View(null, null, null);
 
   ViewPort(this.directiveInjector, this.scope, this.placeholder, this._animate);
 
@@ -51,9 +53,24 @@ class ViewPort {
     return view;
   }
 
+  View _remove(View view) {
+    View previous = view._previous;
+    View next = view._next;
+    view._previous = view._next = null;
+    if (next != null) {
+      next._previous = previous;
+    }
+    if (previous != null) {
+      previous._next = next;
+    } else {
+      head = next;
+    }
+    return view;
+  }
+
   View remove(View view) {
     view.scope.destroy();
-    _views.remove(view);
+    _remove(view);
     scope.rootScope.domWrite(() {
       _animate.remove(view.nodes);
     });
@@ -62,7 +79,7 @@ class ViewPort {
 
   View move(View view, { View moveAfter }) {
     dom.Node previousNode = _lastNode(moveAfter);
-    _views.remove(view);
+    _remove(view);
     _viewsInsertAfter(view, moveAfter);
     scope.rootScope.domWrite(() {
       _animate.move(view.nodes, placeholder.parentNode, insertBefore: previousNode.nextNode);
@@ -71,8 +88,18 @@ class ViewPort {
   }
 
   void _viewsInsertAfter(View view, View insertAfter) {
-    int index = insertAfter == null ? 0 : _views.indexOf(insertAfter) + 1;
-    _views.insert(index, view);
+    if (insertAfter == null) {
+      if (head != null) {
+        view._next = head;
+        head._previous  = view;
+      }
+      head = view;
+    } else {
+      view._next = insertAfter._next;
+      view._previous = insertAfter;
+      insertAfter._next = view;
+      view._next._previous = view;
+    }
   }
 
   dom.Node _lastNode(View insertAfter) =>
