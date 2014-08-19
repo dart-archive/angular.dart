@@ -29,10 +29,12 @@ class NodeCursor {
     index = stack.removeLast();
   }
 
-  NodeCursor replaceWithAnchor(String name) {
+  NodeCursor replaceWithAnchor(Map attrs) {
     var element = current;
     var parent = element.parentNode;
-    var anchor = new dom.Comment('ANCHOR: $name');
+    var anchor = new dom.TemplateElement()
+      ..classes.add(NG_BINDING)
+      ..attributes.addAll(attrs);
     if (parent != null) parent.insertBefore(anchor, element);
     element.remove();
     elements[index] = anchor;

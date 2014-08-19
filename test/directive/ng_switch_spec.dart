@@ -3,6 +3,9 @@ library ng_switch_spec;
 import '../_specs.dart';
 
 void main() {
+  String templates(Type type, List<String> values) =>
+      values.map((v) => '<template type="ng/ViewPort/$type" value="$v"></template>').join('');
+
   describe('ngSwitch', () {
     TestBed _;
 
@@ -15,8 +18,7 @@ void main() {
           '<div ng-switch-when="2">second:{{name}}</div>' +
           '<div ng-switch-when="true">true:{{name}}</div>' +
           '</div>');
-      expect(element.innerHtml).toEqual(
-          '<!--ANCHOR: [ng-switch-when]=1--><!--ANCHOR: [ng-switch-when]=2--><!--ANCHOR: [ng-switch-when]=true-->');
+      expect(element).toHaveHtml(templates(NgSwitchWhen, ['1', '2', 'true']));
       _.rootScope.context['select'] = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('first:');
@@ -43,10 +45,7 @@ void main() {
           '<li ng-switch-when="2">second:{{name}}</li>' +
           '<li ng-switch-when="true">true:{{name}}</li>' +
           '</ul>');
-      expect(element.innerHtml).toEqual('<!--ANCHOR: [ng-switch-when]=1-->'
-      '<!--ANCHOR: [ng-switch-when]=1-->'
-      '<!--ANCHOR: [ng-switch-when]=2-->'
-      '<!--ANCHOR: [ng-switch-when]=true-->');
+      expect(element).toHaveHtml(templates(NgSwitchWhen, ['1', '1', '2', 'true']));
       _.rootScope.context['select'] = 1;
       _.rootScope.apply();
       expect(element.text).toEqual('first:, first too:');

@@ -19,25 +19,25 @@ main() {
     it('should allow single level traversal', () {
       var cursor = new NodeCursor([a, b]);
 
-      expect(cursor.current, equals(a));
-      expect(cursor.moveNext(), equals(true));
-      expect(cursor.current, equals(b));
-      expect(cursor.moveNext(), equals(false));
+      expect(cursor.current).toEqual(a);
+      expect(cursor.moveNext()).toEqual(true);
+      expect(cursor.current).toEqual(b);
+      expect(cursor.moveNext()).toEqual(false);
     });
 
 
     it('should descend and ascend', () {
       var cursor = new NodeCursor([d, c]);
 
-      expect(cursor.descend(), equals(true));
-      expect(cursor.current, equals(a));
-      expect(cursor.moveNext(), equals(true));
-      expect(cursor.current, equals(b));
-      expect(cursor.moveNext(), equals(false));
+      expect(cursor.descend()).toEqual(true);
+      expect(cursor.current).toEqual(a);
+      expect(cursor.moveNext()).toEqual(true);
+      expect(cursor.current).toEqual(b);
+      expect(cursor.moveNext()).toEqual(false);
       cursor.ascend();
-      expect(cursor.moveNext(), equals(true));
-      expect(cursor.current, equals(c));
-      expect(cursor.moveNext(), equals(false));
+      expect(cursor.moveNext()).toEqual(true);
+      expect(cursor.current).toEqual(c);
+      expect(cursor.moveNext()).toEqual(false);
     });
 
     it('should descend and ascend two levels', () {
@@ -50,34 +50,36 @@ main() {
       l2.append(g);
       var cursor = new NodeCursor([l1, c]);
 
-      expect(cursor.descend(), equals(true));
-      expect(cursor.current, equals(l2));
-      expect(cursor.descend(), equals(true));
-      expect(cursor.current, equals(g));
+      expect(cursor.descend()).toEqual(true);
+      expect(cursor.current).toEqual(l2);
+      expect(cursor.descend()).toEqual(true);
+      expect(cursor.current).toEqual(g);
       cursor.ascend();
-      expect(cursor.moveNext(), equals(true));
-      expect(cursor.current, equals(f));
-      expect(cursor.moveNext(), equals(false));
+      expect(cursor.moveNext()).toEqual(true);
+      expect(cursor.current).toEqual(f);
+      expect(cursor.moveNext()).toEqual(false);
       cursor.ascend();
-      expect(cursor.moveNext(), equals(true));
-      expect(cursor.current, equals(c));
-      expect(cursor.moveNext(), equals(false));
+      expect(cursor.moveNext()).toEqual(true);
+      expect(cursor.current).toEqual(c);
+      expect(cursor.moveNext()).toEqual(false);
     });
 
 
     it('should create child cursor upon replace of top level', () {
       var parentCursor = new NodeCursor([a]);
-      var childCursor = parentCursor.replaceWithAnchor('child');
+      var childCursor = parentCursor.replaceWithAnchor({'k': 'v'});
 
-      expect(parentCursor.elements.length, equals(1));
-      expect(STRINGIFY(parentCursor.elements[0]), equals('<!--ANCHOR: child-->'));
-      expect(childCursor.elements, equals([a]));
+      expect(parentCursor.elements.length).toEqual(1);
+      expect(STRINGIFY(parentCursor.elements[0]))
+          .toEqual('<template class="ng-binding" k="v"></template>');
+      expect(childCursor.elements).toEqual([a]);
 
-      var leafCursor = childCursor.replaceWithAnchor('leaf');
+      var leafCursor = childCursor.replaceWithAnchor({'k2' : 'v2'});
 
-      expect(childCursor.elements.length, equals(1));
-      expect(STRINGIFY(childCursor.elements[0]), equals('<!--ANCHOR: leaf-->'));
-      expect(leafCursor.elements, equals([a]));
+      expect(childCursor.elements.length).toEqual(1);
+      expect(STRINGIFY(childCursor.elements[0]))
+          .toEqual('<template class="ng-binding" k2="v2"></template>');
+      expect(leafCursor.elements).toEqual([a]);
     });
 
 
@@ -86,20 +88,22 @@ main() {
       var parentCursor = new NodeCursor(dom);
       parentCursor.descend(); // <span>
 
-      var childCursor = parentCursor.replaceWithAnchor('child');
-      expect(STRINGIFY(dom), equals('[<div><!--ANCHOR: child--></div>]'));
+      var childCursor = parentCursor.replaceWithAnchor({'k': 'v'});
+      expect(STRINGIFY(dom))
+          .toEqual('[<div><template class="ng-binding" k="v"></template></div>]');
 
-      expect(STRINGIFY(childCursor.elements.first), equals('<span>text</span>'));
+      expect(STRINGIFY(childCursor.elements.first)).toEqual('<span>text</span>');
     });
 
     it('should preserve the top-level elements', () {
       var dom = es('<span>text</span>MoreText<div>other</div>');
       var parentCursor = new NodeCursor(dom);
 
-      var childCursor = parentCursor.replaceWithAnchor('child');
-      expect(STRINGIFY(dom), equals('[<!--ANCHOR: child-->, MoreText, <div>other</div>]'));
+      var childCursor = parentCursor.replaceWithAnchor({'k' : 'v'});
+      expect(STRINGIFY(dom))
+          .toEqual('[<template class="ng-binding" k="v"></template>, MoreText, <div>other</div>]');
 
-      expect(STRINGIFY(childCursor.elements.first), equals('<span>text</span>'));
+      expect(STRINGIFY(childCursor.elements.first)).toEqual('<span>text</span>');
     });
   });
 }

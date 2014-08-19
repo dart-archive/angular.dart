@@ -68,7 +68,7 @@ class Compiler implements Function {
         taggedElementBinder = _addBinder(elementBinders,
             new TaggedElementBinder(elementBinder, parentElementBinderOffset, isTopLevel));
         taggedElementBinderIndex = elementBinders.length - 1;
-        node.classes.add('ng-binding');
+        node.classes.add(NG_BINDING);
       } else {
         taggedElementBinder = null;
         taggedElementBinderIndex = parentElementBinderOffset;
@@ -93,7 +93,7 @@ class Compiler implements Function {
             //
             // To avoid array chrun, we remove all dummy binders at the
             // end of the compilation process.
-            node.classes.add('ng-binding');
+            node.classes.add(NG_BINDING);
           }
           domCursor.ascend();
         }
@@ -142,10 +142,7 @@ class Compiler implements Function {
       ElementBinder transcludedElementBinder,
       DirectiveMap directives) {
     var s = traceEnter(_Compiler_subTemplate);
-    var anchorName = directiveRef.annotation.selector +
-        (directiveRef.value != null ? '=' + directiveRef.value : '');
-
-    var transcludeCursor = templateCursor.replaceWithAnchor(anchorName);
+    var transcludeCursor = templateCursor.replaceWithAnchor(_anchorAttrs(directiveRef));
     var elementBinders = [];
     _compileView(transcludeCursor, transcludedElementBinder,
         directives, -1, null, elementBinders, true);
@@ -155,6 +152,9 @@ class Compiler implements Function {
     traceLeave(s);
     return viewFactory;
   }
+
+  Map<String, String> _anchorAttrs(DirectiveRef directiveRef) =>
+      {'type': 'ng/ViewPort/${directiveRef.type}', 'value' : directiveRef.value};
 
   List<TaggedElementBinder> _removeUnusedBinders(List<TaggedElementBinder> binders) {
     // In order to support text nodes with directiveless parents, we
