@@ -89,12 +89,10 @@ class ViewFactory implements Function {
     }
     elementInjectors[elementBinderIndex] = elementInjector;
 
-    var textBinders = tagged.textBinders;
-    if (textBinders != null && textBinders.length > 0) {
-      var childNodes = boundNode.childNodes;
-      for (var k = 0; k < textBinders.length; k++) {
-        TaggedTextBinder taggedText = textBinders[k];
-        var childNode = childNodes[taggedText.offsetIndex];
+    if (tagged.textBinders != null) {
+      for (var k = 0; k < tagged.textBinders.length; k++) {
+        TaggedTextBinder taggedText = tagged.textBinders[k];
+        var childNode = boundNode.childNodes[taggedText.offsetIndex];
         taggedText.binder.bind(view, scope, elementInjector, childNode, eventHandler, animate);
       }
     }
@@ -109,6 +107,15 @@ class ViewFactory implements Function {
     for (int i = 0; i < nodeList.length; i++) {
       dom.Node node = nodeList[i];
       NodeLinkingInfo linkingInfo = nodeLinkingInfos[i];
+
+      // if node isn't attached to the DOM, create a parent for it.
+      var parentNode = node.parentNode;
+      var fakeParent = false;
+      if (parentNode == null) {
+        fakeParent = true;
+        parentNode = new dom.DivElement();
+        parentNode.append(node);
+      }
 
       if (linkingInfo.isElement) {
         if (linkingInfo.containsNgBinding) {
@@ -134,6 +141,11 @@ class ViewFactory implements Function {
               elementInjectors, view, node, scope, eventHandler, animate);
         }
         elementBinderIndex++;
+      }
+
+      if (fakeParent) {
+        // extract the node from the parentNode.
+        nodeList[i] = parentNode.nodes[0];
       }
     }
     return view;

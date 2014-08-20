@@ -873,7 +873,7 @@ void main() {
       }));
 
       /*
-        This test is disabled because I (misko) thinks it has no real use case. It is easier
+        This test is dissabled becouse I (misko) thinks it has no real use case. It is easier
         to understand in terms of ng-repeat
 
           <tabs>
@@ -887,7 +887,7 @@ void main() {
           the DirectChild between tabs and pane.
 
           It is not clear to me (misko) that there is a use case for getting hold of the
-          transcluding directive such a ng-repeat.
+          tranrscluding directive such a ng-repeat.
        */
       xit('should reuse controllers for transclusions', async((Logger log) {
         _.compile('<div simple-transclude-in-attach include-transclude>view</div>');

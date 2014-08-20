@@ -87,14 +87,13 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
   final DirectiveMap _directives;
 
   Component get _component => _ref.annotation as Component;
-  async.Future<ViewFactory> _viewFactoryFuture;
-  ViewFactory _viewFactory;
+  async.Future<ViewFactory> _viewFuture;
 
   BoundTranscludingComponentFactory(this._f, this._ref, this._directives) {
-    _viewFactoryFuture = BoundComponentFactory._viewFactoryFuture(_component, _f.viewCache, _directives);
-    if (_viewFactoryFuture != null) {
-      _viewFactoryFuture.then((viewFactory) => _viewFactory = viewFactory);
-    }
+    _viewFuture = BoundComponentFactory._viewFuture(
+        _component,
+        _f.viewCache,
+        _directives);
   }
 
   List<Key> get callArgs => _CALL_ARGS;
@@ -111,40 +110,52 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
             ViewCache viewCache, Http http, TemplateCache templateCache,
             DirectiveMap directives, NgBaseCss baseCss, EventHandler eventHandler) {
 
-      List<async.Future> futures = [];
+      DirectiveInjector childInjector;
+      var childInjectorCompleter; // Used if the ViewFuture is available before the childInjector.
+
+      var component = _component;
       var contentPort = new ContentPort(element);
-      TemplateLoader templateLoader = new TemplateLoader(element, futures);
+
+      // Append the component's template as children
+      var elementFuture;
+
+      if (_viewFuture != null) {
+        elementFuture = _viewFuture.then((ViewFactory viewFactory) {
+          contentPort.pullNodes();
+          if (childInjector != null) {
+            element.nodes.addAll(
+                viewFactory.call(childInjector.scope, childInjector).nodes);
+            return element;
+          } else {
+            childInjectorCompleter = new async.Completer();
+            return childInjectorCompleter.future.then((childInjector) {
+              element.nodes.addAll(
+                  viewFactory.call(childInjector.scope, childInjector).nodes);
+              return element;
+            });
+          }
+        });
+      } else {
+        elementFuture = new async.Future.microtask(() => contentPort.pullNodes());
+      }
+      TemplateLoader templateLoader = new TemplateLoader(elementFuture);
+
       Scope shadowScope = scope.createChild(new HashMap());
-      DirectiveInjector childInjector = new ShadowlessComponentDirectiveInjector(
-          injector, injector.appInjector, eventHandler, shadowScope, templateLoader,
-          new ShadowlessShadowRoot(element), contentPort);
+
+      childInjector = new ShadowlessComponentDirectiveInjector(injector, injector.appInjector,
+          eventHandler, shadowScope, templateLoader, new ShadowlessShadowRoot(element),
+          contentPort);
       childInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 
+      if (childInjectorCompleter != null) {
+        childInjectorCompleter.complete(childInjector);
+      }
+
       var controller = childInjector.getByKey(_ref.typeKey);
-      shadowScope.context[_component.publishAs] = controller;
+      shadowScope.context[component.publishAs] = controller;
       if (controller is ScopeAware) controller.scope = shadowScope;
       BoundComponentFactory._setupOnShadowDomAttach(controller, templateLoader, shadowScope);
-
-      if (_viewFactoryFuture != null && _viewFactory == null) {
-        futures.add(_viewFactoryFuture.then((ViewFactory viewFactory) =>
-            _insert(viewFactory, element, childInjector, contentPort)));
-      } else {
-        scope.rootScope.runAsync(() {
-          _insert(_viewFactory, element, childInjector, contentPort);
-        });
-      }
       return controller;
     };
-  }
-
-  _insert(ViewFactory viewFactory, dom.Element element, DirectiveInjector childInjector,
-          ContentPort contentPort) {
-    contentPort.pullNodes();
-    if (viewFactory != null) {
-      var viewNodes = viewFactory.call(childInjector.scope, childInjector).nodes;
-      for(var i = 0; i < viewNodes.length; i++) {
-        element.append(viewNodes[i]);
-      }
-    }
   }
 }

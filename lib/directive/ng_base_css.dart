@@ -12,14 +12,10 @@ part of angular.directive;
     selector: '[ng-base-css]',
     visibility: Visibility.CHILDREN)
 class NgBaseCss {
-  List<dom.StyleElement> styles;
   List<String> _urls = const [];
 
   @NgAttr('ng-base-css')
-  set urls(v) {
-    _urls = v is List ? v : [v];
-    styles = null;
-  }
+  set urls(v) => _urls = v is List ? v : [v];
 
   List<String> get urls => _urls;
 }
