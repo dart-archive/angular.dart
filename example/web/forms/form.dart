@@ -12,10 +12,23 @@ class FormCtrl {
   static const String COLOR_RGB = "rgb";
   static const String COLOR_NAME = "name";
 
+  static const _COLOR_TYPES = const [COLOR_RGB, COLOR_HSL, COLOR_HEX, COLOR_NAME];
+
+  static const _RESOLUTIONS = const ['1024x600',
+                                     '1280x800',
+                                     '1366x768',
+                                     '1440x900',
+                                     '1600x900',
+                                     '1680x1050',
+                                     '1920x1080',
+                                     '1920x1200',
+                                     '2560x1440',
+                                     '2560x1600'];
+
   Scope scope;
   NgForm form;
-  List colors = [];
-  List lastFormattedColors = [];
+  final List colors = [];
+  final List formattedColors = [];
 
   FormCtrl(Scope this.scope, NgForm this.form) {
     newColor(COLOR_HEX, '#222');
@@ -23,19 +36,9 @@ class FormCtrl {
     newColor(COLOR_HEX, '#000');
   }
 
-  get color_types => [COLOR_RGB, COLOR_HSL, COLOR_HEX, COLOR_NAME];
-  get resolutions => [
-    '1024x600',
-    '1280x800',
-    '1366x768',
-    '1440x900',
-    '1600x900',
-    '1680x1050',
-    '1920x1080',
-    '1920x1200',
-    '2560x1440',
-    '2560x1600'
-  ];
+  List<String> get color_types => _COLOR_TYPES;
+
+  List<String> get resolutions => _RESOLUTIONS;
 
   submit() {
     this.form.reset();
@@ -56,7 +59,7 @@ class FormCtrl {
   }
 
   formatColors() {
-    var formatted = [];
+    formattedColors.clear();
     colors.forEach((color) {
       var value = null;
       switch(color['type']) {
@@ -84,11 +87,10 @@ class FormCtrl {
           break;
       }
       if(value != null) {
-        formatted.add(value);
+        formattedColors.add(value);
       }
     });
-    lastFormattedColors = formatted;
-    return formatted;
+    return formattedColors;
   }
 
   newColor([String type = COLOR_HEX, String color]) {
