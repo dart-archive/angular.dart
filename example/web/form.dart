@@ -5,13 +5,12 @@ import 'package:angular/application_factory.dart';
   selector: '[form-controller]',
   publishAs: 'form_ctrl')
 class FormCtrl {
+  static const String _COLOR_HEX = "hex";
+  static const String _COLOR_HSL = "hsl";
+  static const String _COLOR_RGB = "rgb";
+  static const String _COLOR_NAME = "name";
 
-  static const String COLOR_HEX = "hex";
-  static const String COLOR_HSL = "hsl";
-  static const String COLOR_RGB = "rgb";
-  static const String COLOR_NAME = "name";
-
-  static const _COLOR_TYPES = const [COLOR_RGB, COLOR_HSL, COLOR_HEX, COLOR_NAME];
+  static const _COLOR_TYPES = const [_COLOR_RGB, _COLOR_HSL, _COLOR_HEX, _COLOR_NAME];
 
   static const _RESOLUTIONS = const ['1024x600',
                                      '1280x800',
@@ -24,48 +23,45 @@ class FormCtrl {
                                      '2560x1440',
                                      '2560x1600'];
 
-  Scope scope;
-  NgForm form;
+  final Scope scope;
+  final NgForm form;
   final List colors = [];
   final List formattedColors = [];
 
-  FormCtrl(Scope this.scope, NgForm this.form) {
-    newColor(COLOR_HEX, '#222');
-    newColor(COLOR_HEX, '#444');
-    newColor(COLOR_HEX, '#000');
+  FormCtrl(this.scope, this.form) {
+    newColor(_COLOR_HEX, '#222');
+    newColor(_COLOR_HEX, '#444');
+    newColor(_COLOR_HEX, '#000');
   }
 
-  List<String> get color_types => _COLOR_TYPES;
+  List<String> get colorTypes => _COLOR_TYPES;
 
   List<String> get resolutions => _RESOLUTIONS;
 
-  submit() {
-    this.form.reset();
+  void submit() {
+    form.reset();
   }
 
-  getTotalSquares(value) {
-    int defaultValue = 4;
-    if(value != null) {
+  int getTotalSquares(inputValue) {
+    var value = 4;
+    if(inputValue != null) {
       try {
-        value = double.parse(value.toString());
+        value = double.parse(inputValue.toString());
       } catch(e) {
-        value = defaultValue;
       }
-    } else {
-      value = defaultValue;
     }
     return (value * value).toInt();
   }
 
-  formatColors() {
+  List<String> formatColors() {
     formattedColors.clear();
     colors.forEach((color) {
       var value = null;
       switch(color['type']) {
-        case COLOR_HEX:
+        case _COLOR_HEX:
           value = color['hex'];
           break;
-        case COLOR_HSL:
+        case _COLOR_HSL:
           var hue = color['hue'];
           var saturation = color['saturation'];
           var luminance = color['luminance'];
@@ -73,7 +69,7 @@ class FormCtrl {
             value = "hsl($hue, $saturation%, $luminance%)";
           }
           break;
-        case COLOR_RGB:
+        case _COLOR_RGB:
           var red = color['red'];
           var blue = color['blue'];
           var green = color['green'];
@@ -92,11 +88,11 @@ class FormCtrl {
     return formattedColors;
   }
 
-  newColor([String type = COLOR_HEX, String color]) {
-    var data = {
+  void newColor([String type = _COLOR_HEX, String color]) {
+    colors.add({
       'id' : colors.length,
       'type' : type,
-      'hex' : '',
+      'hex' : type == _COLOR_HEX ? color : '',
       'hue' : '',
       'saturation' : '',
       'luminance' : '',
@@ -104,11 +100,7 @@ class FormCtrl {
       'green' : '',
       'blue': '',
       'name': ''
-    };
-    if(type == COLOR_HEX) {
-      data['hex'] = color;
-    }
-    colors.add(data);
+    });
   }
 }
 
@@ -116,12 +108,11 @@ class FormCtrl {
   selector: '[preview-controller]',
   publishAs: 'preview')
 class PreviewCtrl {
-
-  static const DEFAULT_COLOR = '#555';
+  static const _DEFAULT_COLOR = '#555';
 
   List _collection = [];
 
-  expandList(items, limit) {
+  List expandList(items, limit) {
     _collection.clear();
     if(items != null && items.length > 0) {
       for (var i = 0; i < limit; i++) {

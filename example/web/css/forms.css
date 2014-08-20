@@ -227,3 +227,7 @@ form { margin:0; }
   display:list-item;
   list-style:disc outside;
 }
+
+.error {
+  color:red;
+}
