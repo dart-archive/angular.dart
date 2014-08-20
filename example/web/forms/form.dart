@@ -132,13 +132,10 @@ class PreviewCtrl {
   }
 }
 
-class FormModule extends Module {
-  FormModule() {
-    type(FormCtrl);
-    type(PreviewCtrl);
-  }
-}
-
 main() {
-  applicationFactory().addModule(new FormModule()).run();
+  applicationFactory()
+      ..addModule(new Module()
+          ..bind(FormCtrl)
+          ..bind(PreviewCtrl))
+      ..run();
 }
