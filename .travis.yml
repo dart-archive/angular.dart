@@ -60,6 +60,7 @@ branches:
 before_install:
 - export DISPLAY=:99.0
 - ./scripts/travis/install.sh
+- if [[ -e SKIP_TRAVIS_TESTS ]]; then { cat SKIP_TRAVIS_TESTS ; exit 0; } fi
 before_script:
 - mkdir -p $LOGS_DIR
 - ./scripts/travis/setup.sh
