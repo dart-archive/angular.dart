@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Hello, World!</title>
+<title>Form example</title>
 <link rel="stylesheet" type="text/css" href="css/gumby.css" />
 <link rel="stylesheet" type="text/css" href="css/forms.css" />
 <style>
-.error { color:red; }
+
 </style>
 </head>
 <body class="container" ng-cloak>
@@ -65,7 +65,7 @@
         <div class="field">
           <div class="picker">
             <select ng-model="color.type">
-              <option ng-repeat="type in form_ctrl.color_types" ng-value="type">{{ type }}</option>
+              <option ng-repeat="type in form_ctrl.colorTypes">{{ type }}</option>
             </select>
           </div>
         </div>
@@ -121,41 +121,41 @@
 
       <h4>Account Details &amp; Wallpaper</h4>
       <ol class="errors-list clear-list">
-        <li class="bullet" ng-if="myForm['resolution'].invalid && myForm['resolution'].hasErrorState('ng-required')">
+        <li class="bullet" ng-if="myForm['resolution'].hasErrorState('ng-required')">
           You did not select a wallpaper <strong>resolution size</strong>.
         </li>
 
-        <li class="bullet" ng-if="myForm['first_name'].invalid && myForm['first_name'].hasErrorState('ng-required')">
+        <li class="bullet" ng-if="myForm['first_name'].hasErrorState('ng-required')">
           You did not enter your <strong>first name</strong>.
         </li>
 
-        <li class="bullet" ng-if="myForm['last_name'].invalid && myForm['last_name'].hasErrorState('ng-required')">
+        <li class="bullet" ng-if="myForm['last_name'].hasErrorState('ng-required')">
           You did not enter your <strong>last name</strong>.
         </li>
 
-        <li class="bullet" ng-if="myForm['email'].invalid && myForm['email'].hasErrorState('ng-required')">
+        <li class="bullet" ng-if="myForm['email'].hasErrorState('ng-required')">
           You left your <strong>email address</strong> blank.
         </li>
-        <li class="bullet" ng-if="myForm['email'].invalid && myForm['email'].hasErrorState('ng-email')">
+        <li class="bullet" ng-if="myForm['email'].hasErrorState('ng-email')">
           You did not enter your <strong>email address</strong>correctly
         </li>
 
-        <li class="bullet" ng-if="myForm['age'].invalid && myForm['age'].hasErrorState('ng-required')">
+        <li class="bullet" ng-if="myForm['age'].hasErrorState('ng-required')">
           You did not select your <strong>age</strong>
         </li>
-        <li class="bullet" ng-if="myForm['age'].invalid && myForm['age'].hasErrorState('ng-number')">
+        <li class="bullet" ng-if="myForm['age'].hasErrorState('ng-number')">
           You have selected an invalid <strong>age</strong>
         </li>
 
-        <li class="bullet" ng-if="myForm['city'].invalid && myForm['city'].hasErrorState('ng-required')">
+        <li class="bullet" ng-if="myForm['city'].hasErrorState('ng-required')">
           You did not enter what <strong>city</strong> you live in
         </li>
 
-        <li class="bullet" ng-if="myForm['about'].invalid && myForm['about'].hasErrorState('ng-required')">
+        <li class="bullet" ng-if="myForm['about'].hasErrorState('ng-required')">
           You did not enter any <strong>additional info</strong> about yourself
         </li>
 
-        <li class="bullet" ng-if="myForm['about'].invalid && myForm['about'].hasErrorState('ng-minlength')">
+        <li class="bullet" ng-if="myForm['about'].hasErrorState('ng-minlength')">
           You did not input <strong>enough text</strong> for your additional info
         </li>
       </ol>
