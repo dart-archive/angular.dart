@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport"
+          content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCYWvwtZy5UZ_O_0mG4V-sq-fQ2_yy84-Y">
+    </script>
+    <script type="application/dart" src="maps.dart"></script>
+    <script src="packages/browser/dart.js"></script>
+    
+  </head>
+  <body ng-app>
+
+  <x-google-map bind-info="openInfo">
+     Hello from {{someText}}
+  </x-google-map>
+
+  Open InfoWindow: <input type="checkbox" ng-model="openInfo"></input>
+  Enter text: <input type="text" ng-model="someText"></input>
+  </body>
+</html>
