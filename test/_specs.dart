@@ -101,17 +101,33 @@ var _itCount = 0;
 
 _initSharding() {
   var window = js.context['window'];
+  print("ckck:1: $window");
   var karma = js.context['__karma__'];
+  print("ckck:2: $karma");
   if (karma == null) return;
+  print("ckck:3");
   var config = karma['config'];
+  print("ckck:4");
   if (config == null) return;
+  print("ckck:5");
   var args = config['args'];
-  if (args == null || args.length != 2) return;
+  print("ckck:6");
+  if (args == null) return;
+  print("ckck:7");
+  // args = _toDartArray(args);
+  print("ckck:8: $args");
+  if (args.length != 2) return;
+  print("ckck:9");
   _numShards = int.parse(args[0]);
+  print("ckck:10");
   _shardId = int.parse(args[1]);
+  print("ckck:11");
+  print("\n\nCKCK: Initted sharding: $_numShards and $_shardId");
+  print("ckck:12");
 }
 
 void _itFirstTime(String name, Function fn) {
+  print("CKCK: _itFirstTime");
   it = _it;
   _initSharding();
   _it(name, fn);
