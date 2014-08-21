@@ -70,11 +70,15 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.21"
+    version: "0.4.22"
   source_maps:
     description: source_maps
     source: hosted
     version: "0.9.0"
+  source_span:
+    description: source_span
+    source: hosted
+    version: "1.0.0"
   stack_trace:
     description: stack_trace
     source: hosted
