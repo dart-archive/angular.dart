@@ -19,11 +19,11 @@ env:
   - JOB=unit-stable
     CHANNEL=stable
     TESTS=dart2js
-    BROWSERS=SL_Chrome,SL_Firefox
+    BROWSERS=SL_Firefox
   - JOB=unit-dev
     CHANNEL=dev
     TESTS=dart2js
-    BROWSERS=SL_Chrome,SL_Firefox
+    BROWSERS=SL_Firefox
   - JOB=e2e-g3stable
     CHANNEL=stable
     TESTS=vm
@@ -40,11 +40,11 @@ env:
   - JOB=e2e-stable
     CHANNEL=stable
     TESTS=dart2js
-    BROWSERS=SL_Chrome,SL_Firefox
+    BROWSERS=SL_Firefox
   - JOB=e2e-dev
     CHANNEL=dev
     TESTS=dart2js
-    BROWSERS=SL_Chrome,SL_Firefox
+    BROWSERS=SL_Firefox
   global:
   - FIREFOX_VERSION="30.0"
   - CHROME_VERSION="35.0"
