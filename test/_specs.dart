@@ -95,35 +95,30 @@ void afterEach(Function fn) {
 }
 
 // For sharding across multiple instances of karma.
-var _numShards = 1;
-var _shardId = 0;
-var _itCount = 0;
+int _numShards = 1;
+int _shardId = 0;
+int _itCount = 0;
+bool _travisMode = false;
+
+_safeJsGet(dottedName) {
+  var result = js.context;
+  var parts = dottedName.split(".");
+  for (int i = 0; i < parts.length; i++) {
+    result = result[parts[i]];
+    if (result == null) break;
+  }
+  return result;
+}
 
 _initSharding() {
-  var window = js.context['window'];
-  print("ckck:1: $window");
-  var karma = js.context['__karma__'];
-  print("ckck:2: $karma");
-  if (karma == null) return;
-  print("ckck:3");
-  var config = karma['config'];
-  print("ckck:4");
-  if (config == null) return;
-  print("ckck:5");
-  var args = config['args'];
-  print("ckck:6");
-  if (args == null) return;
-  print("ckck:7");
-  // args = _toDartArray(args);
-  print("ckck:8: $args");
-  if (args.length != 2) return;
-  print("ckck:9");
-  _numShards = int.parse(args[0]);
-  print("ckck:10");
-  _shardId = int.parse(args[1]);
-  print("ckck:11");
+  _travisMode = (_safeJsGet("__karma__.config.clientArgs.travis") != null);
+  _numShards = _safeJsGet("__karma__.config.clientArgs.travis.numKarmaShards");
+  _shardId = _safeJsGet("__karma__.config.clientArgs.travis.karmaShardId");
+  if (_numShards == null || _shardId == null) {
+    _numShards = 1;
+    _shardId = 0;
+  }
   print("\n\nCKCK: Initted sharding: $_numShards and $_shardId");
-  print("ckck:12");
 }
 
 void _itFirstTime(String name, Function fn) {
@@ -143,7 +138,17 @@ void _it(String name, Function fn) {
 var it = _itFirstTime;
 
 void iit(String name, Function fn) {
+  if (_travisMode) {
+    throw "iit is not allowed when running under Travis";
+  }
   gns.iit(name, _injectify(fn));
+}
+
+void ddescribe(String name, Function fn) {
+  if (_travisMode) {
+    throw "ddescribe is not allowed when running under Travis";
+  }
+  gns.ddescribe(name, fn);
 }
 
 _removeNgBinding(node) {

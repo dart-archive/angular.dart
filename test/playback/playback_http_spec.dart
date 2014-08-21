@@ -4,7 +4,7 @@ import '../_specs.dart';
 import 'package:angular/playback/playback_http.dart';
 
 void main() {
-  describe('Playback HTTP', () {
+  xdescribe('Playback HTTP', () {
     MockHttpBackend backend;
     beforeEachModule((Module m) {
       backend = new MockHttpBackend();
