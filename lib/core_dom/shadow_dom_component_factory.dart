@@ -1,7 +1,7 @@
 part of angular.core.dom_internal;
 
 abstract class ComponentFactory {
-  BoundComponentFactory bind(DirectiveRef ref, directives);
+  BoundComponentFactory bind(DirectiveRef ref, directives, Injector injector);
 }
 
 /**
@@ -52,8 +52,8 @@ class ShadowDomComponentFactory implements ComponentFactory {
     cacheRegister.registerCache("ShadowDomComponentFactoryStyles", styleElementCache);
   }
 
-  bind(DirectiveRef ref, directives) =>
-      new BoundShadowDomComponentFactory(this, ref, directives);
+  bind(DirectiveRef ref, directives, injector) =>
+      new BoundShadowDomComponentFactory(this, ref, directives, injector);
 }
 
 class BoundShadowDomComponentFactory implements BoundComponentFactory {
@@ -61,6 +61,8 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   final ShadowDomComponentFactory _componentFactory;
   final DirectiveRef _ref;
   final DirectiveMap _directives;
+  final Injector _injector;
+  final DirectiveInjector _directive_injector;
 
   Component get _component => _ref.annotation as Component;
 
@@ -68,7 +70,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   async.Future<Iterable<dom.StyleElement>> _styleElementsFuture;
   async.Future<ViewFactory> _viewFuture;
 
-  BoundShadowDomComponentFactory(this._componentFactory, this._ref, this._directives) {
+  BoundShadowDomComponentFactory(this._componentFactory, this._ref, this._directives, this._injector) {
     _tag = _component.selector.toLowerCase();
     _styleElementsFuture = async.Future.wait(_component.cssUrls.map(_styleFuture));
 
@@ -123,7 +125,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
                              EVENT_HANDLER_KEY];
   Function call(dom.Element element) {
     return (DirectiveInjector injector, Scope scope, NgBaseCss baseCss,
-            EventHandler eventHandler) {
+            EventHandler _) {
       var s = traceEnter(View_createComponent);
       try {
         var shadowDom = element.createShadowRoot()
@@ -161,7 +163,10 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
         }));
 
         var probe;
-        shadowInjector = new ShadowDomComponentDirectiveInjector(injector, injector.appInjector, shadowScope, templateLoader, shadowDom);
+        var eventHandler = new ShadowRootEventHandler(
+            shadowDom, injector.getByKey(EXPANDO_KEY), injector.getByKey(EXCEPTION_HANDLER_KEY));
+        shadowInjector = new ComponentDirectiveInjector(injector, _injector, eventHandler, shadowScope,
+            templateLoader, shadowDom, null);
         shadowInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 
         if (_componentFactory.config.elementProbeEnabled) {

@@ -77,13 +77,13 @@ main() {
       View createView(Injector injector, String html) {
         final scope = injector.get(Scope);
         final c = injector.get(Compiler);
-        return c(es(html), injector.get(DirectiveMap))(scope, injector.get(DirectiveInjector));
+        return c(es(html), injector.get(DirectiveMap))(scope, null);
       }
 
       beforeEach((Injector injector, Profiler perf) {
         rootElement.innerHtml = '<!-- anchor -->';
         var scope = injector.get(Scope);
-        viewPort = new ViewPort(injector.get(DirectiveInjector), scope, rootElement.childNodes[0],
+        viewPort = new ViewPort(null, scope, rootElement.childNodes[0],
           injector.get(Animate));
         a = createView(injector, "<span>A</span>a");
         b = createView(injector, "<span>B</span>b");
@@ -223,7 +223,7 @@ main() {
 
         Compiler compiler = rootInjector.get(Compiler);
         DirectiveMap directives = rootInjector.get(DirectiveMap);
-        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootScope, rootInjector.get(DirectiveInjector));
+        compiler(es('<dir-a>{{\'a\' | formatterA}}</dir-a><dir-b></dir-b>'), directives)(rootScope, null);
         rootScope.apply();
 
         expect(log.log, equals(['AFormatter', 'ADirective']));
@@ -233,12 +233,12 @@ main() {
           ..bind(BFormatter)
           ..bind(BDirective);
 
-        var childInjector = forceNewDirectivesAndFormatters(rootInjector, null, [childModule]);
+        var childInjector = NgView.createChildInjectorWithReload(rootInjector, [childModule]);
 
         DirectiveMap newDirectives = childInjector.get(DirectiveMap);
         var scope = childInjector.get(Scope);
         compiler(es('<dir-a probe="dirA"></dir-a>{{\'a\' | formatterA}}'
-            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(scope, childInjector.get(DirectiveInjector));
+            '<dir-b probe="dirB"></dir-b>{{\'b\' | formatterB}}'), newDirectives)(scope, null);
         rootScope.apply();
 
         expect(log.log, equals(['AFormatter', 'ADirective', 'BFormatter', 'ADirective', 'BDirective']));

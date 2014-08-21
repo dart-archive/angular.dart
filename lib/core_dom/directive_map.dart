@@ -13,12 +13,13 @@ class DirectiveMap {
   final DirectiveSelectorFactory _directiveSelectorFactory;
   FormatterMap _formatters;
   DirectiveSelector _selector;
+  Injector _injector;
 
-  DirectiveMap(Injector injector,
+  DirectiveMap(Injector this._injector,
                this._formatters,
                MetadataExtractor metadataExtractor,
                this._directiveSelectorFactory) {
-    (injector as ModuleInjector).types.forEach((type) {
+    (_injector as ModuleInjector).types.forEach((type) {
       metadataExtractor(type)
           .where((annotation) => annotation is Directive)
           .forEach((Directive dir) {
@@ -29,7 +30,7 @@ class DirectiveMap {
 
   DirectiveSelector get selector {
     if (_selector != null) return _selector;
-    return _selector = _directiveSelectorFactory.selector(this, _formatters);
+    return _selector = _directiveSelectorFactory.selector(this, _injector, _formatters);
   }
 
   List<DirectiveTypeTuple> operator[](String key) {
