@@ -1,6 +1,7 @@
 library ng_specs;
 
 import 'dart:html' hide Animation;
+import 'dart:js' as js;
 
 import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
@@ -93,9 +94,60 @@ void afterEach(Function fn) {
    gns.afterEach(_injectify(fn));
 }
 
-void it(String name, Function fn) {
-  gns.it(name, _injectify(fn));
+// For sharding across multiple instances of karma.
+var _numShards = 1;
+var _shardId = 0;
+var _itCount = 0;
+
+// The js:Proxy object doesn't handle array indexing :(
+_toDartArray(var arr) {
+  List result = new List(arr.length);
+  arr.forEach((value, key, obj) => result[key] = value);
+  return result;
 }
+
+_initSharding() {
+  var window = js.context['window'];
+  print("ckck:1: $window");
+  var karma = js.context['__karma__'];
+  print("ckck:2: $karma");
+  if (karma == null) return;
+  print("ckck:3");
+  var config = karma['config'];
+  print("ckck:4");
+  if (config == null) return;
+  print("ckck:5");
+  var args = config['args'];
+  print("ckck:6");
+  if (args == null) return;
+  print("ckck:7");
+  args = _toDartArray(args);
+  print("ckck:8");
+  if (args.length != 2) return;
+  print("ckck:9");
+  _numShards = int.parse(args[0]);
+  print("ckck:10");
+  _shardId = int.parse(args[1]);
+  print("ckck:11");
+  print("\n\nCKCK: Initted sharding: $_numShards and $_shardId");
+  print("ckck:12");
+}
+
+void _itFirstTime(String name, Function fn) {
+  print("CKCK: _itFirstTime");
+  it = _it;
+  _initSharding();
+  _it(name, fn);
+}
+
+void _it(String name, Function fn) {
+  _itCount += 1;
+  if (_itCount % _numShards == _shardId) {
+    gns.it(name, _injectify(fn));
+  }
+}
+
+var it = _itFirstTime;
 
 void iit(String name, Function fn) {
   gns.iit(name, _injectify(fn));
