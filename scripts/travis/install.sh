@@ -61,6 +61,15 @@ fi
 
 parallel_get() {(
   _download_and_unzip() {
+    # TODO(chirayu): a hack to run npm in parallel.  should really run npm and
+    # pub install in parallel. both must be run AFTER any rebasing onto g3v1x.
+    # pub install can only happen after the dart sdk is unzipped and the path
+    # has been updated.
+    if [[ "$1" == "npm" ]]; then
+      npm install
+      return
+    fi
+
     ZIPFILE=${1/*\//}
     curl -O -L $1 && unzip -q $ZIPFILE && rm $ZIPFILE
   }
@@ -69,7 +78,7 @@ parallel_get() {(
   echo "$@" | xargs -d ' ' -n 1 -P 2 -I URL bash -c '_download_and_unzip URL'
 )}
 
-parallel_get $DART_SDK_URL $DARTIUM_URL
+parallel_get npm $DART_SDK_URL $DARTIUM_URL
 
 echo Fetched new dart version $(<dart-sdk/version)
 
