@@ -32,16 +32,17 @@ AVAILABLE_DART_VERSION=$(curl "https://storage.googleapis.com/dart-archive/chann
 #   Incompatible version constraints on barback:
 #   - angular 0.13.0 depends on version 0.14.1+3
 #   - pub itself depends on version >=0.13.0 <0.14.1
-if [[ "$USE_G3" == "YES" && "$AVAILABLE_DART_VERSION" == "1.5.8" ]]; then
-  exec > >(tee SKIP_TRAVIS_TESTS)
-  echo '==================================================================='
-  echo '== SKIPPING script: The g3stable job is rebased on the g3v1x     =='
-  echo '== branch.  The g3v1x branch cannot be tested with Dart          =='
-  echo '== version 1.5.8.  The dependency overrides require a newer      =='
-  echo '== version of Dart.                                              =='
-  echo '== Ref: https://travis-ci.org/angular/angular.dart/jobs/33106780 =='
-  echo '==================================================================='
-  exit 0
+if [[ "$G3V1X_LINEAGE" == "1" || "$USE_G3" == "YES" ]]; then
+  if [[ "$AVAILABLE_DART_VERSION" == "1.5.8" ]]; then
+    exec > >(tee SKIP_TRAVIS_TESTS)
+    echo '==================================================================='
+    echo '== SKIPPING script: The g3v1x branch cannot be tested with       =='
+    echo '== Dart version 1.5.8.  The dependency overrides require a       =='
+    echo '== newer version of Dart.                                        =='
+    echo '== Ref: https://travis-ci.org/angular/angular.dart/jobs/33106780 =='
+    echo '==================================================================='
+    exit 0
+  fi
 fi
 
 
