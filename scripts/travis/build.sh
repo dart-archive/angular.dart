@@ -37,72 +37,72 @@ if [[ $JOB == e2e-* ]]; then
 fi
 
 
-if [[ $TESTS == "dart2js" ]]; then
-  # skip auxiliary tests if we are only running dart2js
-  echo '------------------------'
-  echo '-- BUILDING: examples --'
-  echo '------------------------'
-
-  if [[ $CHANNEL == "DEV" ]]; then
-    $DART "$NGDART_BASE_DIR/bin/pub_build.dart" -p example \
-        -e "$NGDART_BASE_DIR/example/expected_warnings.json"
-  else
-    ( cd example; pub build )
-  fi
-
-  (
-    echo '-----------------------------------'
-    echo '-- BUILDING: verify dart2js size --'
-    echo '-----------------------------------'
-    cd $NGDART_BASE_DIR/example
-    checkSize build/web/animation.dart.js 208021
-    checkSize build/web/bouncing_balls.dart.js 202325
-    checkSize build/web/hello_world.dart.js 199919
-    checkSize build/web/todo.dart.js 203121
-    if ((SIZE_TOO_BIG_COUNT > 0)); then
-      exit 1
-    else
-      echo Generated JavaScript file size check OK.
-    fi
-  )
-else
-  echo '--------------'
-  echo '-- TEST: io --'
-  echo '--------------'
-  $DART --checked $NGDART_BASE_DIR/test/io/all.dart
-
-  echo '----------------------------'
-  echo '-- TEST: symbol extractor --'
-  echo '----------------------------'
-  $DART --checked $NGDART_BASE_DIR/test/tools/symbol_inspector/symbol_inspector_spec.dart
-
-  $NGDART_SCRIPT_DIR/generate-expressions.sh
-  $NGDART_SCRIPT_DIR/analyze.sh
-
-  echo '-----------------------'
-  echo '-- TEST: transformer --'
-  echo '-----------------------'
-  $DART --checked $NGDART_BASE_DIR/test/tools/transformer/all.dart
-
-  echo '---------------------'
-  echo '-- TEST: changelog --'
-  echo '---------------------'
-  $NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node \
-        $NGDART_SCRIPT_DIR/changelog/;
-
-  (
-    echo '---------------------'
-    echo '-- TEST: benchmark --'
-    echo '---------------------'
-    cd $NGDART_BASE_DIR/benchmark
-    $PUB install
-
-    for file in *_perf.dart; do
-      echo ======= $file ========
-      $DART $file
-    done
-  )
-fi
+#ckck# if [[ $TESTS == "dart2js" ]]; then
+#ckck#   # skip auxiliary tests if we are only running dart2js
+#ckck#   echo '------------------------'
+#ckck#   echo '-- BUILDING: examples --'
+#ckck#   echo '------------------------'
+#ckck# 
+#ckck#   if [[ $CHANNEL == "DEV" ]]; then
+#ckck#     $DART "$NGDART_BASE_DIR/bin/pub_build.dart" -p example \
+#ckck#         -e "$NGDART_BASE_DIR/example/expected_warnings.json"
+#ckck#   else
+#ckck#     ( cd example; pub build )
+#ckck#   fi
+#ckck# 
+#ckck#   (
+#ckck#     echo '-----------------------------------'
+#ckck#     echo '-- BUILDING: verify dart2js size --'
+#ckck#     echo '-----------------------------------'
+#ckck#     cd $NGDART_BASE_DIR/example
+#ckck#     checkSize build/web/animation.dart.js 208021
+#ckck#     checkSize build/web/bouncing_balls.dart.js 202325
+#ckck#     checkSize build/web/hello_world.dart.js 199919
+#ckck#     checkSize build/web/todo.dart.js 203121
+#ckck#     if ((SIZE_TOO_BIG_COUNT > 0)); then
+#ckck#       exit 1
+#ckck#     else
+#ckck#       echo Generated JavaScript file size check OK.
+#ckck#     fi
+#ckck#   )
+#ckck# else
+#ckck#   echo '--------------'
+#ckck#   echo '-- TEST: io --'
+#ckck#   echo '--------------'
+#ckck#   $DART --checked $NGDART_BASE_DIR/test/io/all.dart
+#ckck# 
+#ckck#   echo '----------------------------'
+#ckck#   echo '-- TEST: symbol extractor --'
+#ckck#   echo '----------------------------'
+#ckck#   $DART --checked $NGDART_BASE_DIR/test/tools/symbol_inspector/symbol_inspector_spec.dart
+#ckck# 
+#ckck#   $NGDART_SCRIPT_DIR/generate-expressions.sh
+#ckck#   $NGDART_SCRIPT_DIR/analyze.sh
+#ckck# 
+#ckck#   echo '-----------------------'
+#ckck#   echo '-- TEST: transformer --'
+#ckck#   echo '-----------------------'
+#ckck#   $DART --checked $NGDART_BASE_DIR/test/tools/transformer/all.dart
+#ckck# 
+#ckck#   echo '---------------------'
+#ckck#   echo '-- TEST: changelog --'
+#ckck#   echo '---------------------'
+#ckck#   $NGDART_BASE_DIR/node_modules/jasmine-node/bin/jasmine-node \
+#ckck#         $NGDART_SCRIPT_DIR/changelog/;
+#ckck# 
+#ckck#   (
+#ckck#     echo '---------------------'
+#ckck#     echo '-- TEST: benchmark --'
+#ckck#     echo '---------------------'
+#ckck#     cd $NGDART_BASE_DIR/benchmark
+#ckck#     $PUB install
+#ckck# 
+#ckck#     for file in *_perf.dart; do
+#ckck#       echo ======= $file ========
+#ckck#       $DART $file
+#ckck#     done
+#ckck#   )
+#ckck# fi
 
 echo '-----------------------'
 echo '-- TEST: AngularDart --'
