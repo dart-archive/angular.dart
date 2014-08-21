@@ -44,22 +44,8 @@ if [[ "$USE_G3" == "YES" && "$AVAILABLE_DART_VERSION" == "1.5.8" ]]; then
   exit 0
 fi
 
-DARTIUM_ZIP=http://storage.googleapis.com/dart-archive/channels/$CHANNEL/release/latest/dartium/dartium-linux-x64-release.zip
-
-shopt -s nocasematch
-
-if [[ $BROWSERS =~ "dartium" ]]; then
-  echo "Installing Dartium from $DARTIUM_ZIP"
-  curl -L $DARTIUM_ZIP > dartium.zip
-  unzip dartium.zip > /dev/null
-  rm -rf dartium
-  rm dartium.zip
-  mv dartium-* chromium
-fi
 
 echo Fetch Dart channel: $CHANNEL
-
-DART_SDK_ZIP=dartsdk-linux-x64-release.zip
 
 # TODO(chirayu): Remove this once issue 1350 is fixed.
 SVN_REVISION=latest
@@ -67,11 +53,28 @@ if [[ "$AVAILABLE_DART_VERSION" == "1.6.0-dev.8.0" ]]; then
   SVN_REVISION=38831  # Use prior working version (1.6.0-dev.7.0)
 fi
 
-URL=https://storage.googleapis.com/dart-archive/channels/$CHANNEL/release/$SVN_REVISION/sdk/$DART_SDK_ZIP
-echo $URL
-curl -L -O $URL
+URL_PREFIX=https://storage.googleapis.com/dart-archive/channels/$CHANNEL/release/$SVN_REVISION
+DART_SDK_URL=$URL_PREFIX/sdk/dartsdk-linux-x64-release.zip
+if [[ "${BROWSERS,,}" =~ "dartium" ]]; then
+  DARTIUM_URL=$URL_PREFIX/dartium/dartium-linux-x64-release.zip
+fi
 
-echo Fetched new dart version $(unzip -p $DART_SDK_ZIP dart-sdk/version)
-unzip -q $DART_SDK_ZIP
+parallel_get() {(
+  _download_and_unzip() {
+    ZIPFILE=${1/*\//}
+    curl -O -L $1 && unzip -q $ZIPFILE && rm $ZIPFILE
+  }
+  export -f _download_and_unzip
+
+  echo "$@" | xargs -d ' ' -n 1 -P 2 -I URL bash -c '_download_and_unzip URL'
+)}
+
+parallel_get $DART_SDK_URL $DARTIUM_URL
+
+echo Fetched new dart version $(<dart-sdk/version)
+
+if [[ -n $DARTIUM_URL ]]; then
+  mv dartium-* chromium
+fi
 
 sh -e /etc/init.d/xvfb start
