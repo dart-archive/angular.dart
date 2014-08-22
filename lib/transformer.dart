@@ -120,7 +120,7 @@ List<List<Transformer>> _createPhases(TransformOptions options) {
   var resolvers = new Resolvers(options.sdkDirectory);
   return [
     [ new HtmlDartReferencesGenerator(options) ],
-    [ new di.InjectorGenerator(options.diOptions, resolvers) ],
+    [ new di.InjectorGenerator(options.diOptions, new Resolvers(options.sdkDirectory)) ],
     [ new _SerialTransformer([
       new ExpressionGenerator(options, resolvers),
       new MetadataGenerator(options, resolvers),
