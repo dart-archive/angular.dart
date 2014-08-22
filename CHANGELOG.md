@@ -1,3 +1,123 @@
+<a name="v0.14.0"></a>
+# v0.14.0 symbiotic-meerkat (2014-08-22)
+
+## Highlights
+
+This release is focused on supporting Polymer web components inside Angular
+components, using the new on-* and bind-* syntax. Take a look at
+[example/web/paper.html](
+https://github.com/angular/angular.dart/blob/master/example/web/paper.html) for
+some [material
+design](http://www.google.com/design/spec/material-design/introduction.html)
+examples.
+                                                                                     
+Also, we have added instrumentation for [Web Tracing Framework]
+(http://google.github.io/tracing-framework/), so that you can visualize
+codepaths in your live apps (only browser plug-in required).
+                 
+At last we did plenty of bug fixing and performance improvements for an even
+smoother developer experience.
+
+
+## Bug Fixes
+
+- **HttpConfig:** Remove the optional argument to the default ctor
+  ([a84c0b87](https://github.com/angular/angular.dart/commit/a84c0b8780ac03eeb7579e8416c76096e625cee2),
+   [#1285](https://github.com/angular/angular.dart/issues/1285))
+- **NgRepeat:** remove duplicated call to _updateContext()
+  ([15570eea](https://github.com/angular/angular.dart/commit/15570eead275f572b3b6dc63620fdb19c3ebb81f))
+- **benchmark:** Remove obsolete DI call
+  ([4068e242](https://github.com/angular/angular.dart/commit/4068e242877353603658cc31192194bb46413263))
+- **directive-injector:** breaking changes and fixes
+  ([600113a8](https://github.com/angular/angular.dart/commit/600113a8e6bc1aff08f00513eb1b794ca28e54ee),
+   [#1111](https://github.com/angular/angular.dart/issues/1111))
+- **dom_util:** loosen typing of nodes list
+  ([f393a96d](https://github.com/angular/angular.dart/commit/f393a96deaf0c4c144ee8b1bc54efe0fb6af4abc),
+   [#1359](https://github.com/angular/angular.dart/issues/1359))
+- **example:** cleanup imports for ShadowDOM example
+  ([721eebab](https://github.com/angular/angular.dart/commit/721eebabc657534932b845929fd41aea61bcf253),
+   [#1323](https://github.com/angular/angular.dart/issues/1323))
+- **html_extractor:** correct handling of camelCased attributes
+  ([7e7c934b](https://github.com/angular/angular.dart/commit/7e7c934b52a944d22e473dd4597b71cbb419462a),
+   [#1301](https://github.com/angular/angular.dart/issues/1301))
+- **http:** always initialize final coalesceDuration
+  ([e5cf3784](https://github.com/angular/angular.dart/commit/e5cf37848984315b6af9b0819f53360b6f2d21f2))
+- **mock:** Timer.isActive should be false after running callback
+  ([75d40649](https://github.com/angular/angular.dart/commit/75d40649bd632bcc4724584bfadefc61e07dcb20))
+- **scope:** increase default ScopeDigestTTL to 10 iterations
+  ([5ff38bd5](https://github.com/angular/angular.dart/commit/5ff38bd5812077f28a09d916b1e1f0a2d6fc65ae))
+- **web components:** Support Polymer quirks
+  ([879772fa](https://github.com/angular/angular.dart/commit/879772fa28983a88d77a9624dceb5af6ce3dca98),
+   [#1292](https://github.com/angular/angular.dart/issues/1292))
+- **web_platform:** include selector in viewFactoryCache key
+  ([aa5abed2](https://github.com/angular/angular.dart/commit/aa5abed2613758dccd63d95fe2bf8b5094d3f753))
+- **transformer:** Don't share resolvers between parallel transformers as this will cause a deadlock
+  ([dba6727b](https://github.com/angular/angular.dart/commit/dba6727b90cd6dc0dbf8257061482e88b05939b9),
+   [#1276](https://github.com/angular/angular.dart/issues/1276), [#1382](https://github.com/angular/angular.dart/issues/1382))
+
+
+## Features
+
+- **Context:** Add ability to set the Type for the rootScope context
+  ([6a6a7feb](https://github.com/angular/angular.dart/commit/6a6a7febd47e55f3d1dc9d4345d8bee61d6e924d))
+- **DirectiveInjector:** add a toInstanceOf parameter to bind()
+  ([f8bbd35f](https://github.com/angular/angular.dart/commit/f8bbd35ffdfd21005be118e45ddc8d3dd6a265ce))
+- **OrderBy:**
+  - allow specifying an Iterable expression
+  ([a300adfc](https://github.com/angular/angular.dart/commit/a300adfccbc42d5a33c714d6d34a3798fc72f116),
+   [#1329](https://github.com/angular/angular.dart/issues/1329))
+  - allow ordering an Iterable
+  ([5cd74823](https://github.com/angular/angular.dart/commit/5cd74823aa6493b5b86cef4383366d94f154b412))
+- **ScopeAware:** introduce ScopeAware abstract class
+  ([181f0144](https://github.com/angular/angular.dart/commit/181f01448555c475869505491159045904e5dc89),
+   [#1360](https://github.com/angular/angular.dart/issues/1360))
+- **WTF:** Add support for WTF
+  ([23639c13](https://github.com/angular/angular.dart/commit/23639c138e1929931720619fef1e64b2fd6d92c7),
+   [#1354](https://github.com/angular/angular.dart/issues/1354))
+- **directive-injector:** introduce getFromParent[byKey] methods on DirectiveInjector
+  ([3b7b0d65](https://github.com/angular/angular.dart/commit/3b7b0d653831e3a150dc48947965c0848442e1e4))
+- **element binder:**
+  - Two way binding for Web Components
+  ([4633451f](https://github.com/angular/angular.dart/commit/4633451f2bb41fd1b2d70b26ada1cf1156bd94c8),
+   [#1282](https://github.com/angular/angular.dart/issues/1282))
+  - Bind to Web Component properties
+  ([c53dc779](https://github.com/angular/angular.dart/commit/c53dc779862c8a36fdb01a8032b99a03165a3ec9),
+   [#1277](https://github.com/angular/angular.dart/issues/1277))
+- **probe:** add directive getter and export ElementProbe type.
+  ([3ec5d753](https://github.com/angular/angular.dart/commit/3ec5d75300c8e5cb315783524a735c6a426ed6b0))
+- **routing:** add support for dontLeaveOnParamChanges
+  ([9f55fbfc](https://github.com/angular/angular.dart/commit/9f55fbfc7c98ca6c4a2b6a890032cb40cb161e02),
+   [#1252](https://github.com/angular/angular.dart/issues/1252), [#1254](https://github.com/angular/angular.dart/issues/1254))
+- **testability:** findBindings and findModels should descend into the ShadowDOM
+  ([60a1a21d](https://github.com/angular/angular.dart/commit/60a1a21d83cc5d30c7336dbcca46f3a8881e9dbd))
+- **template-cache** add option to use external css rewriter in template_cache_generator
+  ([25d85fb3](https://github.com/angular/angular.dart/commit/25d85fb3c940a6c499d93040e8bf421487149b0e),
+   [#1052](https://github.com/angular/angular.dart/issues/1052))
+- **WTF:** extracted scopes to separate file, add documentation
+  ([ef3fb7b2](https://github.com/angular/angular.dart/commit/ef3fb7b2b89d512e691c451140abc76d31039835),
+   [#1361](https://github.com/angular/angular.dart/issues/1361))
+
+
+## Performance Improvements
+
+- **dom:** improve dom cloning speed
+  ([dec8a972](https://github.com/angular/angular.dart/commit/dec8a972ba66e399309e89c675b822a7a0a97a20))
+- **nodecursor:** do not grow/shrink the nodes list
+  ([1ab510df](https://github.com/angular/angular.dart/commit/1ab510df4f644b97234b5a713a481d0c9e8fb19d))
+- **watch-group:** remove expression coalescing
+  ([3de00bd4](https://github.com/angular/angular.dart/commit/3de00bd4902d20137dad0b551312eceb9a599d98),
+   [#1328](https://github.com/angular/angular.dart/issues/1328))
+
+
+## Breaking Changes
+
+- **directive-injector:** due to [600113a8](https://github.com/angular/angular.dart/commit/600113a8e6bc1aff08f00513eb1b794ca28e54ee),
+ 
+
+Regular injectors (aka application injectors) can no longer be used to
+retrieve DirectiveInjectors.  The compiler creates the Directive
+Injector as part of view creation process.
+
 <a name="v0.13.0"></a>
 # v0.13.0 tempus-fugitification (2014-07-25)
 
