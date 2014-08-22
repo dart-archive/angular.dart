@@ -82,7 +82,8 @@ void main() {
           ..bind(ScopeAwareComponent)
           ..bind(Parent, toValue: null)
           ..bind(Child)
-          ..bind(ChildTemplateComponent);
+          ..bind(ChildTemplateComponent)
+          ..bind(InjectorDependentComponent);
     });
 
     beforeEach((TestBed tb) => _ = tb);
@@ -674,6 +675,13 @@ void main() {
         microLeap();
 
         expect(logger.length).toEqual(2);
+      }));
+
+      it('should inject the correct Injectors - Directive and ComponentDirective', async(() {
+        _.compile('<cmp-inj></cmp-inj>');
+        _.rootScope.apply();
+        microLeap();
+        // assertions are in the component constructor.
       }));
 
       describe('lifecycle', () {
@@ -1552,4 +1560,16 @@ class OnceInside {
   @NgAttr("v")
   set v(x) { log(x); ot = "($x)"; }
   OnceInside(Logger this.log) { log('!'); }
+}
+
+@Component(
+    selector: 'cmp-inj')
+class InjectorDependentComponent {
+  DirectiveInjector i;
+  ComponentDirectiveInjector cdi;
+  InjectorDependentComponent(this.i, this.cdi) {
+    expect(i).toBeAnInstanceOf(DirectiveInjector);
+    expect(cdi).toBeAnInstanceOf(ComponentDirectiveInjector);
+    expect(cdi.parent).toBe(i);
+  }
 }
