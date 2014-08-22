@@ -116,18 +116,21 @@ Map<String, String> _readStringMapValue(Map args, String name) {
   return value;
 }
 
-List<List<Transformer>> _createPhases(TransformOptions options) {
+Transformer _staticGenerator(TransformOptions options) {
   var resolvers = new Resolvers(options.sdkDirectory);
-  return [
-    [ new HtmlDartReferencesGenerator(options) ],
-    [ new di.InjectorGenerator(options.diOptions, resolvers) ],
-    [ new _SerialTransformer([
+  return new _SerialTransformer([
       new ExpressionGenerator(options, resolvers),
       new MetadataGenerator(options, resolvers),
       new StaticAngularGenerator(options, resolvers)
-    ])]
-  ];
+  ]);
 }
+
+List<List<Transformer>> _createPhases(TransformOptions options) =>
+  [
+    [ new HtmlDartReferencesGenerator(options) ],
+    [ new di.InjectorGenerator(options.diOptions, new Resolvers(options.sdkDirectory)) ],
+    [ _staticGenerator(options) ]
+  ];
 
 /// Helper which runs a group of transformers serially and ensures that
 /// transformers with shared data are always applied in a specific order.
