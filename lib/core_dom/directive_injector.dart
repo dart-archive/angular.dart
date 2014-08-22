@@ -20,6 +20,7 @@ var _TAG_GET = new UserTag('DirectiveInjector.get()');
 var _TAG_INSTANTIATE = new UserTag('DirectiveInjector.instantiate()');
 
 final DIRECTIVE_INJECTOR_KEY = new Key(DirectiveInjector);
+final COMPONENT_DIRECTIVE_INJECTOR_KEY = new Key(ComponentDirectiveInjector);
 final CONTENT_PORT_KEY = new Key(ContentPort);
 final TEMPLATE_LOADER_KEY = new Key(TemplateLoader);
 final SHADOW_ROOT_KEY = new Key(ShadowRoot);
@@ -48,7 +49,8 @@ const int TEMPLATE_LOADER_KEY_ID    = 14;
 const int SHADOW_ROOT_KEY_ID        = 15;
 const int CONTENT_PORT_KEY_ID       = 16;
 const int EVENT_HANDLER_KEY_ID      = 17;
-const int KEEP_ME_LAST              = 18;
+const int COMPONENT_DIRECTIVE_INJECTOR_KEY_ID = 18;
+const int KEEP_ME_LAST              = 19;
 
 EventHandler eventHandler(DirectiveInjector di) => di._eventHandler;
 
@@ -74,6 +76,7 @@ class DirectiveInjector implements DirectiveBinder {
     CONTENT_PORT_KEY.uid       = CONTENT_PORT_KEY_ID;
     EVENT_HANDLER_KEY.uid      = EVENT_HANDLER_KEY_ID;
     ANIMATE_KEY.uid            = ANIMATE_KEY_ID;
+    COMPONENT_DIRECTIVE_INJECTOR_KEY.uid = COMPONENT_DIRECTIVE_INJECTOR_KEY_ID;
     for(var i = 1; i < KEEP_ME_LAST; i++) {
       if (_KEYS[i].uid != i) throw 'MISSORDERED KEYS ARRAY: ${_KEYS} at $i';
     }
@@ -97,6 +100,7 @@ class DirectiveInjector implements DirectiveBinder {
       , SHADOW_ROOT_KEY
       , CONTENT_PORT_KEY
       , EVENT_HANDLER_KEY
+      , COMPONENT_DIRECTIVE_INJECTOR_KEY
       , KEEP_ME_LAST
       ];
   
@@ -398,12 +402,18 @@ class ComponentDirectiveInjector extends DirectiveInjector {
                         EventHandler eventHandler, Scope scope,
                         this._templateLoader, this._shadowRoot, this._contentPort)
       : super(parent, appInjector, parent._node, parent._nodeAttrs, eventHandler, scope,
-              parent._animate);
+              parent._animate) {
+    // A single component creates a ComponentDirectiveInjector and its DirectiveInjector parent,
+    // so parent should never be null.
+    assert(parent != null);
+  }
 
   Object _getById(int keyId) {
     switch(keyId) {
       case TEMPLATE_LOADER_KEY_ID: return _templateLoader;
       case SHADOW_ROOT_KEY_ID: return _shadowRoot;
+      case DIRECTIVE_INJECTOR_KEY_ID: return _parent;
+      case COMPONENT_DIRECTIVE_INJECTOR_KEY_ID: return this;
       default: return super._getById(keyId);
     }
   }
