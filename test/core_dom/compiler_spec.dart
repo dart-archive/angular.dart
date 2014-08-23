@@ -323,6 +323,7 @@ void main() {
           ..bind(LogElementComponent)
           ..bind(SayHelloFormatter)
           ..bind(OneTimeDecorator)
+          ..bind(OnceInside)
           ..bind(OuterShadowless)
           ..bind(InnerShadowy);
       });
@@ -463,6 +464,22 @@ void main() {
         microLeap();
         _.rootScope.apply();
         expect(element).toHaveText('inside ');
+      }));
+
+      it('should not pass null to a inner directives', async((Logger logger) {
+        _.compile('<div>'
+                    '<once-inside ng-repeat="x in nn" v="b"></once-inside>'
+                  '</div>');
+
+        _.rootScope.context['nn'] = [1];
+        _.rootScope.apply();
+        microLeap();
+
+        _.rootScope.context['nn'].add(2);
+        _.rootScope.apply();
+        microLeap();
+
+        expect(logger.contains(null)).toBeFalsy();
       }));
 
       it('should create a component with I/O', async(() {
@@ -880,6 +897,8 @@ void main() {
           _.rootScope.apply();
           expect(logger).toEqual([1, null, 8]);
         });
+
+
       });
     });
 
@@ -1520,3 +1539,17 @@ class OuterShadowless {}
   selector: 'inner-shadowy',
   template: '<content></content>')
 class InnerShadowy {}
+
+@Component(
+  selector: 'once-inside',
+  template: '<div one-time="ctrl.ot"></div>',
+  publishAs: 'ctrl'
+)
+class OnceInside {
+  var ot;
+
+  Logger log;
+  @NgAttr("v")
+  set v(x) { log(x); ot = "($x)"; }
+  OnceInside(Logger this.log) { log('!'); }
+}
