@@ -262,7 +262,7 @@ void main() {
         expect(logger).toEqual(['hello', 'hello2', 'bye']);
       });
 
-      it('should reuse handlers', () {
+      it('should not reuse handlers', () {
         var user1 = {'first': 'misko', 'last': 'hevery'};
         var user2 = {'first': 'misko', 'last': 'Hevery'};
 
