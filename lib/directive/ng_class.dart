@@ -193,9 +193,9 @@ abstract class _NgClassBase {
         var mod = idx % 2;
         if (previousIdx == null || mod != previousIdx % 2) {
           if (mod == _mode) {
-            _currentSet.forEach((cls) => _ngElement.addClass(cls));
+            _currentSet.forEach(_ngElement.addClass);
           } else {
-            _previousSet.forEach((cls) => _ngElement.removeClass(cls));
+            _previousSet.forEach(_ngElement.removeClass);
           }
         }
       }, canChangeModel: false);
@@ -269,10 +269,10 @@ abstract class _NgClassBase {
     if (_mode == null || (index != null && index % 2 == _mode)) {
       _previousSet
           .where((cls) => cls != null)
-          .forEach((cls) => _ngElement.removeClass(cls));
+          .forEach(_ngElement.removeClass);
       _currentSet
           .where((cls) => cls != null)
-          .forEach((cls) => _ngElement.addClass(cls));
+          .forEach(_ngElement.addClass);
     }
 
     _previousSet = _currentSet.toSet();
