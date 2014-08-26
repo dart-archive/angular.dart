@@ -57,8 +57,8 @@ part of angular.directive;
     },
     visibility: Directive.DIRECT_CHILDREN_VISIBILITY)
 class NgSwitch {
-  Map<String, List<_Case>> cases = new Map<String, List<_Case>>();
-  List<_ViewScopePair> currentViews = <_ViewScopePair>[];
+  var cases = new Map<String, List<_Case>>();
+  var currentViewPorts = <ViewPort>[];
   Function onChange;
   final Scope scope;
 
@@ -66,17 +66,14 @@ class NgSwitch {
     cases['?'] = <_Case>[];
   }
 
-  addCase(String value, ViewPort anchor, BoundViewFactory viewFactory) {
+  void addCase(String value, ViewPort anchor, BoundViewFactory viewFactory) {
     cases.putIfAbsent(value, () => <_Case>[]);
     cases[value].add(new _Case(anchor, viewFactory));
   }
 
-  set value(val) {
-    currentViews
-        ..forEach((_ViewScopePair pair) {
-          pair.port.remove(pair.view);
-        })
-        ..clear();
+  void set value(val) {
+    currentViewPorts..forEach((ViewPort vp) => vp.removeAll())
+                    ..clear();
 
     val = '!$val';
     (cases.containsKey(val) ? cases[val] : cases['?'])
@@ -84,21 +81,11 @@ class NgSwitch {
           Scope childScope = scope.createChild(new PrototypeMap(scope.context));
           var view = caze.viewFactory(childScope);
           caze.anchor.insert(view);
-          currentViews.add(new _ViewScopePair(view, caze.anchor,
-            childScope));
+          currentViewPorts.add(caze.anchor);
         });
-    if (onChange != null) {
-      onChange();
-    }
+
+    if (onChange != null) onChange();
   }
-}
-
-class _ViewScopePair {
-  final View view;
-  final ViewPort port;
-  final Scope scope;
-
-  _ViewScopePair(this.view, this.port, this.scope);
 }
 
 class _Case {
