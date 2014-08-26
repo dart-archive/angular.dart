@@ -128,7 +128,7 @@ fi
 echo '-------------------------'
 echo '-- DOCS: Generate Docs --'
 echo '-------------------------'
-if [[ $BUILD_LEADER == "YES" ]]; then
+if [[ ${TRAVIS_JOB_NUMBER:(-2)} == ".1" ]]; then
   echo $NGDART_SCRIPT_DIR/generate-documentation.sh;
   $NGDART_SCRIPT_DIR/generate-documentation.sh;
 fi
