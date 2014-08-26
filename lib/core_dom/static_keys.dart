@@ -3,6 +3,7 @@ library angular.core_dom.static_keys;
 import 'dart:html' as dom;
 import 'package:di/di.dart';
 import 'package:angular/cache/module.dart';
+import 'package:angular/core/static_keys.dart';
 import 'package:angular/core_dom/module_internal.dart';
 
 export 'package:angular/directive/static_keys.dart' show NG_BASE_CSS_KEY;

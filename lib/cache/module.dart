@@ -1,6 +1,7 @@
 library angular.cache;
 
 import 'dart:collection';
+import 'dart:async';
 
 import 'package:di/di.dart';
 import 'package:di/annotations.dart';

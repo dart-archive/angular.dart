@@ -1,5 +1,7 @@
 library angular.core.annotation_src;
 
+import "package:di/di.dart" show Injector, Visibility, Factory;
+
 abstract class DirectiveBinder {
  void bind(key, {dynamic toValue,
                  Function toFactory,

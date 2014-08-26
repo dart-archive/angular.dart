@@ -1,6 +1,7 @@
 library angular.transformer;
 
 import 'dart:async';
+import 'dart:io';
 import 'package:angular/tools/transformer/expression_generator.dart';
 import 'package:angular/tools/transformer/metadata_generator.dart';
 import 'package:angular/tools/transformer/static_angular_generator.dart';
@@ -9,6 +10,7 @@ import 'package:angular/tools/transformer/options.dart';
 import 'package:barback/barback.dart';
 import 'package:code_transformers/resolver.dart';
 import 'package:di/transformer.dart' as di;
+import 'package:path/path.dart' as path;
 
 
  /**
