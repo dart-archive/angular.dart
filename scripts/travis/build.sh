@@ -128,7 +128,7 @@ fi
 echo '-------------------------'
 echo '-- DOCS: Generate Docs --'
 echo '-------------------------'
-if [[ $TESTS == "dart2js" ]]; then
+if [[ $BUILD_LEADER == "YES" ]]; then
   echo $NGDART_SCRIPT_DIR/generate-documentation.sh;
   $NGDART_SCRIPT_DIR/generate-documentation.sh;
 fi
