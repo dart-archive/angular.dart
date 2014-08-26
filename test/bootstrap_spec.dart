@@ -30,5 +30,15 @@ void main() {
       applicationFactory()..selector('div[ng-bind]')..run();
       expect(body.text).toEqual('{{ignor me}}works');
     });
+
+    describe("run", () {
+      it("should set the injector property", () {
+        var body = setBody('<div>{{"works"}}</div>');
+        var application = applicationFactory();
+        application.run();
+
+        expect(application.injector).toBeNotNull();
+      });
+    });
   });
 }
