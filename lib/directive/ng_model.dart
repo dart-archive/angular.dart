@@ -174,28 +174,28 @@ class NgModel extends NgControl implements AttachAware {
     * Applies the given [error] to the model.
     */
   void addError(String error) {
-    this.addErrorState(this, error);
+    addErrorState(this, error);
   }
 
   /**
     * Removes the given [error] from the model.
     */
   void removeError(String error) {
-    this.removeErrorState(this, error);
+    removeErrorState(this, error);
   }
 
   /**
     * Adds the given [info] state to the model.
     */
   void addInfo(String info) {
-    this.addInfoState(this, info);
+    addInfoState(this, info);
   }
 
   /**
     * Removes the given [info] state from the model.
     */
   void removeInfo(String info) {
-    this.removeInfoState(this, info);
+    removeInfoState(this, info);
   }
 
   get viewValue => _viewValue;
