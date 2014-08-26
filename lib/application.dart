@@ -179,7 +179,7 @@ abstract class Application {
       publishToJavaScript();
       return zone.run(() {
         var rootElements = [element];
-        Injector injector = createInjector();
+        injector = createInjector();
         ExceptionHandler exceptionHandler = injector.getByKey(EXCEPTION_HANDLER_KEY);
         // Publish cache register interface
         injector.getByKey(JS_CACHE_REGISTER_KEY);
