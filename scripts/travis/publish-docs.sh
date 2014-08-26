@@ -11,7 +11,7 @@ echo Current branch is: $TRAVIS_BRANCH
 echo Test result is: $TRAVIS_TEST_RESULT
 
 if [ "$TRAVIS_REPO_SLUG" = "angular/angular.dart" ]; then
-  if [ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$TRAVIS_BRANCH" = "master" ]; then
+  if [ $TRAVIS_TEST_RESULT -eq 0 ] && [ "$TRAVIS_BRANCH" = "master" ] && [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
     echo "Gettting current docs from docs.angulardart.org repo on Github"
     rm -Rf docs.angulardart.org
     git clone https://github.com/angular/docs.angulardart.org.git
