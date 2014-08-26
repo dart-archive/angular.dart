@@ -1,3 +1,19 @@
+var env = process.env;
+
+function getClientArgs() {
+  if (env.TRAVIS == null || env.TESTS != "dart2js" ||
+      env.NUM_KARMA_SHARDS == null || env.KARMA_SHARD_ID == "") {
+    return null;
+  }
+  return {
+    travis: {
+      numKarmaShards: parseInt(env.NUM_KARMA_SHARDS),
+      karmaShardId: parseInt(env.KARMA_SHARD_ID)
+    }
+  };
+}
+
+
 module.exports = function(config) {
   config.set({
     //logLevel: config.LOG_DEBUG,
@@ -20,6 +36,11 @@ module.exports = function(config) {
       {pattern: 'lib/**/*.dart', watched: true, included: false, served: true},
       'packages/browser/dart.js'
     ],
+
+    client: {
+      args: [],
+      clientArgs: getClientArgs()
+    },
 
     exclude: [
       'test/io/**',

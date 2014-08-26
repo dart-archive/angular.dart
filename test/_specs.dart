@@ -1,6 +1,7 @@
 library ng_specs;
 
 import 'dart:html' hide Animation;
+import 'dart:js' as js;
 
 import 'package:angular/angular.dart';
 import 'package:angular/mock/module.dart';
@@ -93,12 +94,61 @@ void afterEach(Function fn) {
    gns.afterEach(_injectify(fn));
 }
 
-void it(String name, Function fn) {
-  gns.it(name, _injectify(fn));
+// For sharding across multiple instances of karma.
+int _numShards = 1;
+int _shardId = 0;
+int _itCount = 0;
+bool _travisMode = false;
+
+_safeJsGet(dottedName) {
+  var result = js.context;
+  var parts = dottedName.split(".");
+  for (int i = 0; i < parts.length; i++) {
+    result = result[parts[i]];
+    if (result == null) break;
+  }
+  return result;
 }
 
+_initSharding() {
+  _travisMode = (_safeJsGet("__karma__.config.clientArgs.travis") != null);
+  _numShards = _safeJsGet("__karma__.config.clientArgs.travis.numKarmaShards");
+  _shardId = _safeJsGet("__karma__.config.clientArgs.travis.karmaShardId");
+  if (_numShards == null || _shardId == null) {
+    _numShards = 1;
+    _shardId = 0;
+  }
+  print("\n\nCKCK: Initted sharding: $_numShards and $_shardId");
+}
+
+void _itFirstTime(String name, Function fn) {
+  print("CKCK: _itFirstTime");
+  it = _it;
+  _initSharding();
+  _it(name, fn);
+}
+
+void _it(String name, Function fn) {
+  _itCount += 1;
+  if (_itCount % _numShards == _shardId) {
+    gns.it(name, _injectify(fn));
+  }
+}
+
+var it = _itFirstTime;
+
 void iit(String name, Function fn) {
+  if (_travisMode) {
+    throw "iit is not allowed when running under Travis";
+  }
   gns.iit(name, _injectify(fn));
+}
+
+void ddescribe(String name, Function fn) {
+  if (_travisMode) {
+    throw "ddescribe is not allowed when running under Travis";
+  }
+  gns.ddescribe(name, fn);
 }
 
 _removeNgBinding(node) {
