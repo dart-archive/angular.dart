@@ -67,7 +67,7 @@ class AngularMockModule extends Module {
     bind(VmTurnZone, toFactory: () {
       return new VmTurnZone()
         ..onError = (e, s, LongStackTrace ls) => dump('EXCEPTION: $e\n$s\n$ls');
-    }, inject: []);
+    });
     bind(Window, toImplementation: MockWindow);
     var mockPlatform = new MockWebPlatform();
     bind(MockWebPlatform, toValue: mockPlatform);

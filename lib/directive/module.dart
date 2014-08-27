@@ -70,7 +70,7 @@ class DirectiveModule extends Module {
     bind(NgBind, toValue: null);
     bind(NgBindTemplate, toValue: null);
     bind(NgBindHtml, toValue: null);
-    bind(dom.NodeValidator, toFactory: () => new dom.NodeValidatorBuilder.common(), inject: []);
+    bind(dom.NodeValidator, toFactory: () => new dom.NodeValidatorBuilder.common());
     bind(NgClass, toValue: null);
     bind(NgClassOdd, toValue: null);
     bind(NgClassEven, toValue: null);
