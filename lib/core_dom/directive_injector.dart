@@ -26,14 +26,14 @@ final SOURCE_LIGHT_DOM_KEY = new Key(SourceLightDom);
 final TEMPLATE_LOADER_KEY = new Key(TemplateLoader);
 final SHADOW_ROOT_KEY = new Key(ShadowRoot);
 
-final int NO_CONSTRUCTION = 0;
+const int _NO_CONSTRUCTION = 0;
 
 // Maximum parent directive injectors that would be traversed.
-final int MAX_TREE_DEPTH = 1 << 30;
+const int _MAX_TREE_DEPTH = 1 << 30;
 
 // Maximum number of concurrent constructions a directive injector would
 // support before throwing an error.
-final int MAX_CONSTRUCTION_DEPTH = 50;
+const int _MAX_CONSTRUCTION_DEPTH = 50;
 
 const int VISIBILITY_LOCAL                    = -1;
 const int VISIBILITY_DIRECT_CHILD             = -2;
@@ -114,7 +114,7 @@ class DirectiveInjector implements DirectiveBinder {
       , COMPONENT_DIRECTIVE_INJECTOR_KEY
       , KEEP_ME_LAST
       ];
-  
+
   final DirectiveInjector _parent;
   final Injector _appInjector;
   final Node _node;
@@ -168,7 +168,7 @@ class DirectiveInjector implements DirectiveBinder {
       : _parent = parent,
         _appInjector = appInjector,
         _view = view == null && parent != null ? parent._view : view,
-        _constructionDepth = NO_CONSTRUCTION;
+        _constructionDepth = _NO_CONSTRUCTION;
 
   DirectiveInjector._default(this._parent, this._appInjector)
       : _node = null,
@@ -177,7 +177,7 @@ class DirectiveInjector implements DirectiveBinder {
         scope = null,
         _view = null,
         _animate = null,
-        _constructionDepth = NO_CONSTRUCTION;
+        _constructionDepth = _NO_CONSTRUCTION;
 
   void bind(key, {dynamic toValue: DEFAULT_VALUE,
             Function toFactory: DEFAULT_VALUE,
@@ -257,7 +257,7 @@ class DirectiveInjector implements DirectiveBinder {
     switch(visType) {
       case VISIBILITY_LOCAL:        return 0;
       case VISIBILITY_DIRECT_CHILD: return 1;
-      case VISIBILITY_CHILDREN:     return MAX_TREE_DEPTH;
+      case VISIBILITY_CHILDREN:     return _MAX_TREE_DEPTH;
       default: throw null;
     }
   }
@@ -322,11 +322,11 @@ class DirectiveInjector implements DirectiveBinder {
   }
 
   dynamic _new(Key k, List<Key> paramKeys, Function fn) {
-    if (_constructionDepth > MAX_CONSTRUCTION_DEPTH) {
-      _constructionDepth = NO_CONSTRUCTION;
-      throw new DiCircularDependencyError(k);
+    if (_constructionDepth > _MAX_CONSTRUCTION_DEPTH) {
+      _constructionDepth = _NO_CONSTRUCTION;
+      throw new _CircularDependencyError(k);
     }
-    bool isFirstConstruction = (_constructionDepth++ == NO_CONSTRUCTION);
+    bool isFirstConstruction = (_constructionDepth++ == _NO_CONSTRUCTION);
     var oldTag = _TAG_GET.makeCurrent();
     int size = paramKeys.length;
     var obj;
@@ -375,7 +375,7 @@ class DirectiveInjector implements DirectiveBinder {
       }
     }
     oldTag.makeCurrent();
-    if (isFirstConstruction) _constructionDepth = NO_CONSTRUCTION;
+    if (isFirstConstruction) _constructionDepth = _NO_CONSTRUCTION;
     return obj;
   }
 
@@ -433,7 +433,7 @@ class TemplateDirectiveInjector extends DirectiveInjector {
     if (_destLightDom != null) _destLightDom.addViewPort(viewPort);
     return viewPort;
   }
-  
+
 }
 
 class ComponentDirectiveInjector extends DirectiveInjector {
@@ -478,8 +478,8 @@ class ComponentDirectiveInjector extends DirectiveInjector {
 
 // For efficiency we run through the maximum resolving depth and unwind
 // instead of setting 'resolving' key per type.
-class DiCircularDependencyError extends ResolvingError {
-  DiCircularDependencyError(Key key) : super(key);
+class _CircularDependencyError extends CircularDependencyError {
+  _CircularDependencyError(key) : super(key);
 
   // strips the cyclical part of the chain.
   List<Key> get stripCycle {
@@ -494,6 +494,12 @@ class DiCircularDependencyError extends ResolvingError {
     return rkeys;
   }
 
-  String get resolveChain => stripCycle.join(' -> ');
-  String toString() => "circular dependency (${resolveChain})";
+  String get resolveChain {
+    StringBuffer buffer = new StringBuffer()
+        ..write("(resolving ")
+        ..write(stripCycle.join(' -> '))
+        ..write(")");
+    return buffer.toString();
+  }
+
 }
