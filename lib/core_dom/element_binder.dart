@@ -202,9 +202,6 @@ class ElementBinder {
       var directive;
       try {
         directive = directiveInjector.getByKey(ref.typeKey);
-        if (ref.annotation is Controller) {
-          scope.parentScope.context[(ref.annotation as Controller).publishAs] = directive;
-        }
 
         var tasks = directive is AttachAware ? new _TaskList(() {
           if (scope.isAttached) directive.attach();
@@ -276,9 +273,6 @@ class ElementBinder {
     for(var i = 0; i < directiveRefs.length; i++) {
       DirectiveRef ref = directiveRefs[i];
       Directive annotation = ref.annotation;
-      if (ref.annotation is Controller) {
-        scope = nodeInjector.scope = scope.createChild(new PrototypeMap(scope.context));
-      }
       _createDirectiveFactories(ref, nodeInjector, node, nodeAttrs);
       if (ref.annotation.module != null) {
         DirectiveBinderFn config = ref.annotation.module;

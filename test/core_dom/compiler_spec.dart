@@ -50,10 +50,6 @@ void main() {
           ..bind(LocalAttrDirective)
           ..bind(OneOfTwoDirectives)
           ..bind(TwoOfTwoDirectives)
-          ..bind(MyController)
-          ..bind(MyParentController)
-          ..bind(MyChildController)
-          ..bind(MyScopeModifyingController)
           ..bind(SameNameDecorator)
           ..bind(SameNameTransclude)
           ..bind(ScopeAwareComponent)
@@ -291,7 +287,6 @@ void main() {
           ..bind(NonAssignableMappingComponent)
           ..bind(ParentExpressionComponent)
           ..bind(PublishMeComponent)
-          ..bind(PublishMeDirective)
           ..bind(LogComponent)
           ..bind(AttachDetachComponent)
           ..bind(SimpleAttachComponent)
@@ -732,21 +727,6 @@ void main() {
         }
       }));
 
-      it('should publish component controller into the scope', async(() {
-        var element = _.compile(r'<div><publish-me></publish-me></div>');
-        microLeap();
-        _.rootScope.apply();
-        expect(element).toHaveText('WORKED');
-      }));
-
-      it('should publish directive controller into the scope', async((VmTurnZone zone) {
-        var element = _.compile(r'<div><div publish-me>{{ctrlName.value}}</div></div>');
-
-        microLeap();
-        _.rootScope.apply();
-        expect(element.text).toEqual('WORKED');
-      }));
-
       it('should "publish" controller to injector under provided module', () {
         _.compile(r'<div publish-types></div>');
         expect(PublishModuleAttrDirective._injector.get(PublishModuleAttrDirective)).
@@ -1054,39 +1034,6 @@ void main() {
         expect(log.result()).toEqual('IncludeTransclude; SimpleTransclude');
       }));
 
-      it('should expose a parent controller to the scope of its children', (TestBed _) {
-        var element = _.compile('<div my-parent-controller>'
-            '  <div my-child-controller>{{ my_parent.data() }}</div>'
-            '</div>');
-
-        _.rootScope.apply();
-
-        expect(element.text).toContain('my data');
-      });
-
-      it('should pass the right scope into inner mustache', (TestBed _) {
-        var element = _.compile('<div my-scope-modifying-controller>'
-        '  <div>{{ data }}</div>'
-        '</div>');
-
-        _.rootScope.apply();
-
-        expect(element.text).toContain('my data');
-      });
-
-      it('should expose a ancestor controller to the scope of its children thru a undecorated element', (TestBed _) {
-        var element = _.compile(
-            '<div my-parent-controller>'
-              '<div>'
-                '<div my-child-controller>{{ my_parent.data() }}</div>'
-              '</div>'
-            '</div>');
-
-        _.rootScope.apply();
-
-        expect(element.text).toContain('my data');
-      });
-
       it('should call scope setter on ScopeAware components', async((TestBed _, Logger log) {
         var element = _.compile('<scope-aware-cmp></scope-aware-cmp>');
 
@@ -1098,15 +1045,6 @@ void main() {
 
 
     describe('Decorator', () {
-      it('should allow creation of a new scope', () {
-        _.rootScope.context['name'] = 'cover me';
-        _.compile('<div><div my-controller>{{name}}</div></div>');
-        _.rootScope.apply();
-        expect(_.rootScope.context['name']).toEqual('cover me');
-        expect(_.rootScope.context['myCtrl'] is MyController).toEqual(true);
-        expect(_.rootElement.text).toEqual('MyController');
-      });
-
       it('should allow multiple directives with the same selector of different type', (DirectiveMap map) {
         _.compile('<div><div same-name="worked"></div></div>');
         _.rootScope.apply();
@@ -1136,28 +1074,6 @@ void main() {
     });
   }));
 }
-
-@Controller(
-    selector: '[my-scope-modifying-controller]')
-class MyScopeModifyingController {
-  MyScopeModifyingController(Scope s) {
-    s.context['data'] = 'my data';
-  }
-}
-
-@Controller(
-  selector: '[my-parent-controller]',
-  publishAs: 'my_parent')
-class MyParentController {
-  data() {
-    return "my data";
-  }
-}
-
-@Controller(
-  selector: '[my-child-controller]',
-  publishAs: 'my_child')
-class MyChildController {}
 
 @Component(
     selector: 'tab',
@@ -1451,14 +1367,6 @@ class PublishMeComponent {
   String value = 'WORKED';
 }
 
-@Controller (
-    selector: '[publish-me]',
-    publishAs: 'ctrlName')
-class PublishMeDirective {
-  String value = 'WORKED';
-}
-
-
 @Component(
     selector: 'log',
     template: r'<content></content>',
@@ -1498,15 +1406,6 @@ class AttachDetachComponent implements AttachAware, DetachAware, ShadowRootAware
   onShadowRoot(shadowRoot) {
     scope.rootScope.context['shadowRoot'] = shadowRoot;
     logger(shadowRoot);
-  }
-}
-
-@Controller(
-    selector: '[my-controller]',
-    publishAs: 'myCtrl')
-class MyController {
-  MyController(Scope scope) {
-    scope.context['name'] = 'MyController';
   }
 }
 

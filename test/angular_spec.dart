@@ -99,7 +99,6 @@ main() {
         "angular.core.annotation.ShadowRootAware",
         "angular.core.annotation_src.AttachAware",
         "angular.core.annotation_src.Component",
-        "angular.core.annotation_src.Controller",
         "angular.core.annotation_src.Decorator",
         "angular.core.annotation_src.DetachAware",
         "angular.core.annotation_src.Directive",
