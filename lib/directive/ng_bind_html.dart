@@ -17,7 +17,7 @@ class NgBindHtml {
   final dom.Element element;
   final dom.NodeValidator validator;
 
-  NgBindHtml(this.element, dom.NodeValidator this.validator);
+  NgBindHtml(this.element, this.validator);
 
   /**
    * Parsed expression from the `ng-bind-html` attribute. 

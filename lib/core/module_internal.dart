@@ -42,7 +42,7 @@ class CoreModule extends Module {
     bind(Interpolate);
     bind(RootScope);
     bind(Scope, toInstanceOf: RootScope);
-    bind(ClosureMap, toFactory: () => throw "Must provide dynamic/static ClosureMap.", inject: []);
+    bind(ClosureMap, toFactory: () => throw "Must provide dynamic/static ClosureMap.");
     bind(ScopeStats);
     bind(ScopeStatsEmitter);
     bind(ScopeStatsConfig);
