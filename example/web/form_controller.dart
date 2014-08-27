@@ -1,11 +1,10 @@
 import 'package:angular/angular.dart';
-import 'package:angular/application_factory.dart';
 
 @Component(
-    selector: '[form-controller]',
-    templateUrl: 'form_controller.html',
-    publishAs: 'form_ctrl',
-    useShadowDom: false)
+  selector: '[form-controller]',
+  templateUrl: 'form_controller.html',
+  publishAs: 'form_ctrl',
+  useShadowDom: false)
 class FormCtrl {
   static const String _COLOR_HEX = "hex";
   static const String _COLOR_HSL = "hsl";
@@ -43,6 +42,8 @@ class FormCtrl {
   void submit() {
     form.reset();
   }
+
+  int getTotalSquaresFromInput() => getTotalSquares(scope.context['squares']);
 
   int getTotalSquares(inputValue) {
     var value = 4;
@@ -107,7 +108,7 @@ class FormCtrl {
 }
 
 @Decorator(
-    selector: '[preview-controller]'
+  selector: '[preview-controller]'
 )
 class PreviewCtrl {
   PreviewCtrl(Scope scope) {
@@ -128,10 +129,3 @@ class PreviewCtrl {
   }
 }
 
-main() {
-  applicationFactory()
-      ..addModule(new Module()
-          ..bind(FormCtrl)
-          ..bind(PreviewCtrl))
-      ..run();
-}

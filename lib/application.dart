@@ -8,15 +8,9 @@
  *     import 'package:angular/angular.dart';
  *     import 'package:angular/application_factory.dart';
  *
- *     class MyModule extends Module {
- *       MyModule() {
- *         bind(HelloWorldController);
- *       }
- *     }
- *
  *     main() {
  *       applicationFactory()
- *           .addModule(new MyModule())
+ *           .rootContextType(HelloWorldController)
  *           .run();
  *     }
  *
@@ -151,7 +145,6 @@ abstract class Application {
   dom.Element selector(String selector) => element = _find(selector);
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
-    traceDetectWTF(context);
     modules.add(ngModule);
     ngModule..bind(VmTurnZone, toValue: zone)
             ..bind(Application, toValue: this)

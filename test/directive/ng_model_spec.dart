@@ -40,14 +40,14 @@ void main() {
 
     beforeEachModule((Module module) {
       module
-          ..bind(ControllerWithNoLove)
+          ..bind(ComponentWithNoLove)
           ..bind(MyCustomInputValidator)
           ..bind(CountingValidator);
     });
 
     beforeEach((TestBed tb) {
       _ = tb;
-      dirInjector = new DirectiveInjector(null, _.injector, null, null, null, null, null, null);
+      dirInjector = new DirectiveInjector(null, _.injector, null, null, null, null, null);
     });
 
     describe('type="text" like', () {
@@ -1425,16 +1425,13 @@ void main() {
 
     describe('error messages', () {
       it('should produce a useful error for bad ng-model expressions', () {
+        // On Dartium, this fails with "...no instance getter..."
+        // On dart2js, "...method not found..."
         expect(async(() {
-          _.compile('<div no-love><textarea ng-model=ctrl.love probe="loveProbe"></textarea></div');
-          Probe probe = _.rootScope.context['loveProbe'];
-          TextAreaElement inputElement = probe.element;
-
-          inputElement.value = 'xzy';
-          _.triggerEvent(inputElement, 'change');
+          _.compile('<div><no-love></no-love></div>');
+          microLeap();
           _.rootScope.apply();
-        })).toThrow('love');
-
+        })).toThrow();
       });
     });
 
@@ -1669,11 +1666,11 @@ void main() {
   });
 }
 
-@Controller(
-    selector: '[no-love]',
+@Component(
+    selector: 'no-love',
+    template: '<input type="text" ng-model="ctrl.love">',
     publishAs: 'ctrl')
-class ControllerWithNoLove {
-  var apathy = null;
+class ComponentWithNoLove {
 }
 
 class LowercaseValueParser implements NgModelConverter {

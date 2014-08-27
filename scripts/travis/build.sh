@@ -55,10 +55,10 @@ if [[ $TESTS == "dart2js" ]]; then
     echo '-- BUILDING: verify dart2js size --'
     echo '-----------------------------------'
     cd $NGDART_BASE_DIR/example
-    checkSize build/web/animation.dart.js 208021
-    checkSize build/web/bouncing_balls.dart.js 202325
-    checkSize build/web/hello_world.dart.js 210000
-    checkSize build/web/todo.dart.js 203121
+    checkSize build/web/animation.dart.js 224697
+    checkSize build/web/bouncing_balls.dart.js 223927
+    checkSize build/web/hello_world.dart.js 221838
+    checkSize build/web/todo.dart.js 224414
     if ((SIZE_TOO_BIG_COUNT > 0)); then
       exit 1
     else

@@ -1,0 +1,25 @@
+<div class="balls">
+    <div ng-repeat="ball in ctrl.balls"
+         class="{{ ctrl.ballClassName }}"
+         ball-position="ball"></div>
+</div>
+
+<div>
+    <div class="fps-bar">
+        <div class="fps" ng-style-width="ctrl.fps * 4 + 'px'"></div>
+    </div>
+</div>
+
+{{ ctrl.fps }} fps. ({{ ctrl.balls.length }} balls) [{{ 1000 / ctrl.fps }} ms] <br>
+Digest: {{ ctrl.digestTime }} ms<br>
+<a href ng-click="ctrl.changeCount(1)">+1</a>
+<a href ng-click="ctrl.changeCount(10)">+10</a>
+<a href ng-click="ctrl.changeCount(100)">+100</a>
+<br>
+<a href ng-click="ctrl.changeCount(-1)">-1</a>
+<a href ng-click="ctrl.changeCount(-10)">-10</a>
+<a href ng-click="ctrl.changeCount(-100)">-100</a>
+<br>
+<a href ng-click="ctrl.playPause()">&#x25B6;&#10073;&#10073;</a> <br>
+<a href ng-click="ctrl.toggleCSS()">Toggle CSS</a><br>
+<a href ng-click="ctrl.timeDigest()">noop</a><br>

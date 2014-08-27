@@ -11,15 +11,9 @@
  *     import 'package:angular/angular.dart';
  *     import 'package:angular/application_factory_static.dart';
  *
- *     class MyModule extends Module {
- *       MyModule() {
- *         bind(HelloWorldController);
- *       }
- *     }
- *
  *     main() {
  *       staticApplicationFactory()
- *           .addModule(new MyModule())
+ *           .rootContextType(HelloWorldController)
  *           .run();
  *     }
  *
@@ -32,9 +26,9 @@ library angular.app.factory.static;
 
 import 'package:angular/application.dart';
 import 'package:angular/core/registry.dart';
+import 'package:angular/core/parser/dynamic_parser.dart';
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/static_closure_map.dart';
-import 'package:angular/core/parser/dynamic_parser.dart';
 import 'package:angular/core/registry_static.dart';
 import 'package:angular/change_detection/change_detection.dart';
 import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
@@ -67,7 +61,7 @@ class _StaticApplication extends Application {
  *
  *     main() {
  *       applicationFactory()
- *       .addModule(new Module()..bind(HelloWorld))
+ *       .rootContextType(HelloWorld)
  *       .run();
  *       }
  *
@@ -79,7 +73,7 @@ class _StaticApplication extends Application {
  *           generated_static_expressions.getters,
  *           generated_static_expressions.setters,
  *           generated_static_expressions.symbols)
- *         .addModule(new Module()..bind(HelloWorldController))
+ *         .rootContextType(HelloWorld)
  *         .run();
  *
  */
