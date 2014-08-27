@@ -324,7 +324,7 @@ class DirectiveInjector implements DirectiveBinder {
   dynamic _new(Key k, List<Key> paramKeys, Function fn) {
     if (_constructionDepth > MAX_CONSTRUCTION_DEPTH) {
       _constructionDepth = NO_CONSTRUCTION;
-      throw new DiCircularDependencyError(key);
+      throw new CircularDependencyError(k);
     }
     bool isFirstConstruction = (_constructionDepth++ == NO_CONSTRUCTION);
     var oldTag = _TAG_GET.makeCurrent();
