@@ -22,12 +22,12 @@ abstract class BoundComponentFactory {
     return null;
   }
 
-  static void _setupOnShadowDomAttach(controller, TemplateLoader templateLoader,
+  static void _setupOnShadowDomAttach(component, TemplateLoader templateLoader,
                                       Scope shadowScope) {
-    if (controller is ShadowRootAware) {
+    if (component is ShadowRootAware) {
       templateLoader.template.then((shadowDom) {
         if (!shadowScope.isAttached) return;
-        (controller as ShadowRootAware).onShadowRoot(shadowDom);
+        (component as ShadowRootAware).onShadowRoot(shadowDom);
       });
     }
   }

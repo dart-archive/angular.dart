@@ -8,8 +8,8 @@ main() {
 
     beforeEach(() {
       protractor.getInstance().get('hello_world.html');
-      nameByModel = element(by.model('ctrl.name'));
-      nameByBinding = element(by.binding('ctrl.name'));
+      nameByModel = element(by.model('name'));
+      nameByBinding = element(by.binding('name'));
     });
 
     it('should set initial value for input element', () {
@@ -17,7 +17,7 @@ main() {
     });
 
     it('should set mustache value to initial value of model', () {
-      nameByBinding = element(by.binding('ctrl.name'));
+      nameByBinding = element(by.binding('name'));
       expect(nameByBinding.getText()).toEqual('Hello world!');
     });
 

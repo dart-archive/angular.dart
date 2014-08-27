@@ -5,7 +5,11 @@ dependencies:
     path: ../
   browser: any
   unittest: any
+  quiver: any
   web_components: any
 
 transformers:
-- angular
+- angular:
+    html_files:
+      - web/bouncing_controller.html
+      - web/form_controller.html
