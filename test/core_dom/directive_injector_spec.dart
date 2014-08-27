@@ -114,7 +114,7 @@ void main() {
           addDirective(_TypeC1, Visibility.CHILDREN);
           addDirective(_TypeC2, Visibility.CHILDREN);
           expect(() => injector.get(_TypeC0)).toThrow(
-              'circular dependency (_TypeC0 -> _TypeC1 -> _TypeC2 -> _TypeC1)');
+              'Cannot resolve a circular dependency! _TypeC0 -> _TypeC1 -> _TypeC2 -> _TypeC1');
         });
 
         it('should throw circular dependency error accross injectors', () {
@@ -125,7 +125,7 @@ void main() {
           addDirective(_TypeC1, Visibility.CHILDREN);
           addDirective(_TypeC2, Visibility.CHILDREN);
           expect(() => childInjector.get(_TypeC0)).toThrow(
-              'circular dependency (_TypeC0 -> _TypeC1 -> _TypeC2 -> _TypeC1)');
+              'Cannot resolve a circular dependency! _TypeC0 -> _TypeC1 -> _TypeC2 -> _TypeC1');
         });
       });
 
