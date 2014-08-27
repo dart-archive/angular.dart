@@ -324,7 +324,7 @@ class DirectiveInjector implements DirectiveBinder {
   dynamic _new(Key k, List<Key> paramKeys, Function fn) {
     if (_constructionDepth > MAX_CONSTRUCTION_DEPTH) {
       _constructionDepth = NO_CONSTRUCTION;
-      throw new DiCircularDependencyError(key);
+      throw new DiCircularDependencyError(k);
     }
     bool isFirstConstruction = (_constructionDepth++ == NO_CONSTRUCTION);
     var oldTag = _TAG_GET.makeCurrent();
@@ -479,7 +479,7 @@ class ComponentDirectiveInjector extends DirectiveInjector {
 // For efficiency we run through the maximum resolving depth and unwind
 // instead of setting 'resolving' key per type.
 class DiCircularDependencyError extends ResolvingError {
-  DiCircularDependencyError(key) : super(key);
+  DiCircularDependencyError(Key key) : super(key);
 
   // strips the cyclical part of the chain.
   List<Key> get stripCycle {
