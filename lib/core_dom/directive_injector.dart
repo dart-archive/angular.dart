@@ -4,7 +4,7 @@ import 'dart:collection';
 import 'dart:html' show Node, Element, ShadowRoot;
 import 'dart:profiler';
 
-import 'package:di/di.dart';
+import 'package:di/di.dart' as appDi;
 import 'package:di/annotations.dart';
 import 'package:di/src/module.dart' show DEFAULT_VALUE, Binding;
 import 'package:angular/core/static_keys.dart';
@@ -19,21 +19,21 @@ import 'package:angular/core_dom/module_internal.dart'
 var _TAG_GET = new UserTag('DirectiveInjector.get()');
 var _TAG_INSTANTIATE = new UserTag('DirectiveInjector.instantiate()');
 
-final DIRECTIVE_INJECTOR_KEY = new Key(DirectiveInjector);
-final COMPONENT_DIRECTIVE_INJECTOR_KEY = new Key(ComponentDirectiveInjector);
-final DESTINATION_LIGHT_DOM_KEY = new Key(DestinationLightDom);
-final SOURCE_LIGHT_DOM_KEY = new Key(SourceLightDom);
-final TEMPLATE_LOADER_KEY = new Key(TemplateLoader);
-final SHADOW_ROOT_KEY = new Key(ShadowRoot);
+final DIRECTIVE_INJECTOR_KEY = new appDi.Key(DirectiveInjector);
+final COMPONENT_DIRECTIVE_INJECTOR_KEY = new appDi.Key(ComponentDirectiveInjector);
+final DESTINATION_LIGHT_DOM_KEY = new appDi.Key(DestinationLightDom);
+final SOURCE_LIGHT_DOM_KEY = new appDi.Key(SourceLightDom);
+final TEMPLATE_LOADER_KEY = new appDi.Key(TemplateLoader);
+final SHADOW_ROOT_KEY = new appDi.Key(ShadowRoot);
 
-final int NO_CONSTRUCTION = 0;
+const int NO_CONSTRUCTION = 0;
 
 // Maximum parent directive injectors that would be traversed.
-final int MAX_TREE_DEPTH = 1 << 30;
+const int MAX_TREE_DEPTH = 1 << 30;
 
 // Maximum number of concurrent constructions a directive injector would
 // support before throwing an error.
-final int MAX_CONSTRUCTION_DEPTH = 50;
+const int MAX_CONSTRUCTION_DEPTH = 50;
 
 const int VISIBILITY_LOCAL                    = -1;
 const int VISIBILITY_DIRECT_CHILD             = -2;
@@ -91,7 +91,7 @@ class DirectiveInjector implements DirectiveBinder {
       if (_KEYS[i].uid != i) throw 'MISSORDERED KEYS ARRAY: ${_KEYS} at $i';
     }
   }
-  static List<Key> _KEYS =
+  static List<appDi.Key> _KEYS =
       [ UNDEFINED_ID
       , INJECTOR_KEY
       , DIRECTIVE_INJECTOR_KEY
@@ -114,9 +114,9 @@ class DirectiveInjector implements DirectiveBinder {
       , COMPONENT_DIRECTIVE_INJECTOR_KEY
       , KEEP_ME_LAST
       ];
-  
+
   final DirectiveInjector _parent;
-  final Injector _appInjector;
+  final appDi.Injector _appInjector;
   final Node _node;
   final NodeAttrs _nodeAttrs;
   final Animate _animate;
@@ -128,16 +128,16 @@ class DirectiveInjector implements DirectiveBinder {
   NgElement _ngElement;
   ElementProbe _elementProbe;
 
-  Key _key0 = null; dynamic _obj0; List<Key> _pKeys0; Function _factory0;
-  Key _key1 = null; dynamic _obj1; List<Key> _pKeys1; Function _factory1;
-  Key _key2 = null; dynamic _obj2; List<Key> _pKeys2; Function _factory2;
-  Key _key3 = null; dynamic _obj3; List<Key> _pKeys3; Function _factory3;
-  Key _key4 = null; dynamic _obj4; List<Key> _pKeys4; Function _factory4;
-  Key _key5 = null; dynamic _obj5; List<Key> _pKeys5; Function _factory5;
-  Key _key6 = null; dynamic _obj6; List<Key> _pKeys6; Function _factory6;
-  Key _key7 = null; dynamic _obj7; List<Key> _pKeys7; Function _factory7;
-  Key _key8 = null; dynamic _obj8; List<Key> _pKeys8; Function _factory8;
-  Key _key9 = null; dynamic _obj9; List<Key> _pKeys9; Function _factory9;
+  appDi.Key _key0 = null; dynamic _obj0; List<appDi.Key> _pKeys0; Function _factory0;
+  appDi.Key _key1 = null; dynamic _obj1; List<appDi.Key> _pKeys1; Function _factory1;
+  appDi.Key _key2 = null; dynamic _obj2; List<appDi.Key> _pKeys2; Function _factory2;
+  appDi.Key _key3 = null; dynamic _obj3; List<appDi.Key> _pKeys3; Function _factory3;
+  appDi.Key _key4 = null; dynamic _obj4; List<appDi.Key> _pKeys4; Function _factory4;
+  appDi.Key _key5 = null; dynamic _obj5; List<appDi.Key> _pKeys5; Function _factory5;
+  appDi.Key _key6 = null; dynamic _obj6; List<appDi.Key> _pKeys6; Function _factory6;
+  appDi.Key _key7 = null; dynamic _obj7; List<appDi.Key> _pKeys7; Function _factory7;
+  appDi.Key _key8 = null; dynamic _obj8; List<appDi.Key> _pKeys8; Function _factory8;
+  appDi.Key _key9 = null; dynamic _obj9; List<appDi.Key> _pKeys9; Function _factory9;
 
   // Keeps track of how many dependent constructions are being performed
   // in the directive injector.
@@ -186,16 +186,16 @@ class DirectiveInjector implements DirectiveBinder {
             inject: const[],
             Visibility visibility: Visibility.LOCAL}) {
     if (key == null) throw 'Key is required';
-    if (key is! Key) key = new Key(key);
+    if (key is! appDi.Key) key = new appDi.Key(key);
     if (inject is! List) inject = [inject];
 
-    _tempBinding.bind(key, Module.DEFAULT_REFLECTOR, toValue: toValue, toFactory: toFactory,
+    _tempBinding.bind(key, appDi.Module.DEFAULT_REFLECTOR, toValue: toValue, toFactory: toFactory,
         toImplementation: toImplementation, inject: inject, toInstanceOf: toInstanceOf);
 
     bindByKey(key, _tempBinding.factory, _tempBinding.parameterKeys, visibility);
   }
 
-  void bindByKey(Key key, Function factory, List<Key> parameterKeys, [Visibility visibility]) {
+  void bindByKey(appDi.Key key, Function factory, List<appDi.Key> parameterKeys, [Visibility visibility]) {
     if (visibility == null) visibility = Visibility.CHILDREN;
     int visibilityId = _toVisId(visibility);
     int keyVisId = key.uid;
@@ -221,10 +221,10 @@ class DirectiveInjector implements DirectiveBinder {
 
   // Get a key from the directive injector chain. When it is exhausted, get from
   // the current application injector chain.
-  Object get(Type type) => getByKey(new Key(type));
-  Object getFromParent(Type type) => getFromParentByKey(new Key(type));
+  Object get(Type type) => getByKey(new appDi.Key(type));
+  Object getFromParent(Type type) => getFromParentByKey(new appDi.Key(type));
 
-  Object getByKey(Key key) {
+  Object getByKey(appDi.Key key) {
     var oldTag = _TAG_GET.makeCurrent();
     try {
       return _getByKey(key, _appInjector);
@@ -233,7 +233,7 @@ class DirectiveInjector implements DirectiveBinder {
     }
   }
 
-  Object getFromParentByKey(Key key) {
+  Object getFromParentByKey(appDi.Key key) {
     if (_parent == null) {
       return _appInjector.getByKey(key);
     } else {
@@ -241,13 +241,13 @@ class DirectiveInjector implements DirectiveBinder {
     }
   }
 
-  Object _getByKey(Key key, Injector appInjector) {
+  Object _getByKey(appDi.Key key, appDi.Injector appInjector) {
     try {
       int uid = key.uid;
       if (uid == null || uid == UNDEFINED_ID) return appInjector.getByKey(key);
       bool isDirective = uid < 0;
       return isDirective ? _getDirectiveByKey(key, uid, appInjector) : _getById(uid);
-    } on ResolvingError catch (e) {
+    } on appDi.ResolvingError catch (e) {
       e.appendKey(key);
       rethrow;
     }
@@ -262,7 +262,7 @@ class DirectiveInjector implements DirectiveBinder {
     }
   }
 
-  _getDirectiveByKey(Key k, int visType, Injector appInjector) {
+  _getDirectiveByKey(appDi.Key k, int visType, appDi.Injector appInjector) {
     num treeDepth = _getDepth(visType);
     // ci stands for currentInjector, abbreviated for readability.
     var ci = this;
@@ -317,11 +317,11 @@ class DirectiveInjector implements DirectiveBinder {
       case DESTINATION_LIGHT_DOM_KEY_ID:  return _destLightDom;
       case SOURCE_LIGHT_DOM_KEY_ID:       return _sourceLightDom;
       case VIEW_KEY_ID:                   return _view;
-      default: new NoProviderError(_KEYS[keyId]);
+      default: new appDi.NoProviderError(_KEYS[keyId]);
     }
   }
 
-  dynamic _new(Key k, List<Key> paramKeys, Function fn) {
+  dynamic _new(appDi.Key k, List<appDi.Key> paramKeys, Function fn) {
     if (_constructionDepth > MAX_CONSTRUCTION_DEPTH) {
       _constructionDepth = NO_CONSTRUCTION;
       throw new CircularDependencyError(k);
@@ -411,7 +411,7 @@ class TemplateDirectiveInjector extends DirectiveInjector {
   ViewPort _viewPort;
   BoundViewFactory _boundViewFactory;
 
-  TemplateDirectiveInjector(DirectiveInjector parent, Injector appInjector,
+  TemplateDirectiveInjector(DirectiveInjector parent, appDi.Injector appInjector,
                        Node node, NodeAttrs nodeAttrs, EventHandler eventHandler,
                        Scope scope, Animate animate, this._viewFactory, [View view])
     : super(parent, appInjector, node, nodeAttrs, eventHandler, scope, animate, view);
@@ -433,7 +433,7 @@ class TemplateDirectiveInjector extends DirectiveInjector {
     if (_destLightDom != null) _destLightDom.addViewPort(viewPort);
     return viewPort;
   }
-  
+
 }
 
 class ComponentDirectiveInjector extends DirectiveInjector {
@@ -441,7 +441,7 @@ class ComponentDirectiveInjector extends DirectiveInjector {
   final TemplateLoader _templateLoader;
   final ShadowRoot _shadowRoot;
 
-  ComponentDirectiveInjector(DirectiveInjector parent, Injector appInjector,
+  ComponentDirectiveInjector(DirectiveInjector parent, appDi.Injector appInjector,
                         EventHandler eventHandler, Scope scope,
                         this._templateLoader, this._shadowRoot, LightDom lightDom, [View view])
       : super(parent, appInjector, parent._node, parent._nodeAttrs, eventHandler, scope,
@@ -478,12 +478,12 @@ class ComponentDirectiveInjector extends DirectiveInjector {
 
 // For efficiency we run through the maximum resolving depth and unwind
 // instead of setting 'resolving' key per type.
-class DiCircularDependencyError extends ResolvingError {
-  DiCircularDependencyError(key) : super(key);
+class CircularDependencyError extends appDi.CircularDependencyError {
+  CircularDependencyError(key) : super(key);
 
   // strips the cyclical part of the chain.
-  List<Key> get stripCycle {
-    List<Key> rkeys = keys.reversed.toList();
+  List<appDi.Key> get stripCycle {
+    List<appDi.Key> rkeys = keys.reversed.toList();
     for (num i = 0; i < rkeys.length; i++) {
       // Skipping 'cycles' of length 1, which represent resolution
       // switching injectors and not true cycles.
@@ -495,5 +495,4 @@ class DiCircularDependencyError extends ResolvingError {
   }
 
   String get resolveChain => stripCycle.join(' -> ');
-  String toString() => "circular dependency (${resolveChain})";
 }
