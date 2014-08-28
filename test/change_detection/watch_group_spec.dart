@@ -770,12 +770,12 @@ void main() {
         );
         var watch = watchGrp.watch(ast, (v, p) => logger(v));
 
-        expect(watchGrp.detectChanges()).not.toBe(null);
+        expect(watchGrp.detectChanges()).not.toBe(0);
         expect(logger).toEqual([-2]);
         logger.clear();
 
         context['a'] = 2;
-        expect(watchGrp.detectChanges()).not.toBe(null);
+        expect(watchGrp.detectChanges()).not.toBe(0);
         expect(logger).toEqual([-3]);
       });
     });
