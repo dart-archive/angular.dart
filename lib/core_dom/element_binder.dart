@@ -195,10 +195,10 @@ class ElementBinder {
     for(var i = 0; i < _usableDirectiveRefs.length; i++) {
       DirectiveRef ref = _usableDirectiveRefs[i];
       var key = ref.typeKey;
-      var directiveName = traceEnabled ? ref.typeKey.toString() : null;
+      var directiveName = trace.wtfEnabled ? ref.typeKey.toString() : null;
       if (identical(key, TEXT_MUSTACHE_KEY) || identical(key, ATTR_MUSTACHE_KEY)) continue;
 
-      s = traceEnter1(Directive_create, directiveName);
+      s = trace.enter1(trace.Directive.create, directiveName);
       var directive;
       try {
         directive = directiveInjector.getByKey(ref.typeKey);
@@ -231,7 +231,7 @@ class ElementBinder {
           scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
         }
       } finally {
-        traceLeave(s);
+        trace.leave(s);
       }
     }
   }

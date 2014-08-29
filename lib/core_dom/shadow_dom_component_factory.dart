@@ -125,7 +125,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
   Function call(dom.Element element) {
     return (DirectiveInjector injector, Scope scope, View view, NgBaseCss baseCss,
             EventHandler _) {
-      var s = traceEnter(View_createComponent);
+      var s = trace.enter(trace.View.createComponent);
       try {
         var shadowDom = element.createShadowRoot()
           ..applyAuthorStyles = _component.applyAuthorStyles
@@ -180,7 +180,7 @@ class BoundShadowDomComponentFactory implements BoundComponentFactory {
 
         return controller;
       } finally {
-        traceLeave(s);
+        trace.leave(s);
       }
     };
   }

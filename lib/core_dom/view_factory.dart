@@ -30,7 +30,7 @@ class ViewFactory implements Function {
       nodeLinkingInfos = computeNodeLinkingInfos(templateNodes),
       templateNodes = templateNodes
   {
-    if (traceEnabled) {
+    if (trace.wtfEnabled) {
       _debugHtml = templateNodes.map((dom.Node e) {
         if (e is dom.Element) {
           return (e as dom.Element).outerHtml;
@@ -51,14 +51,14 @@ class ViewFactory implements Function {
 
   View call(Scope scope, DirectiveInjector directiveInjector,
             [List<dom.Node> nodes /* TODO: document fragment */]) {
-    var s = traceEnter1(View_create, _debugHtml);
+    var s = trace.enter1(trace.View.create, _debugHtml);
     assert(scope != null);
     if (nodes == null) {
       nodes = cloneElements(templateNodes);
     }
     var view = new View(nodes, scope);
     _link(view, scope, nodes, directiveInjector);
-    traceLeave(s);
+    trace.leave(s);
 
     return view;
   }

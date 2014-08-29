@@ -445,7 +445,7 @@ class Http {
     cache,
     timeout
   }) {
-    var range = traceEnabled ? traceAsyncStart('http:$method', url) : null;
+    var range = trace.wtfEnabled ? trace.startAsync('http:$method', url) : null;
     if (timeout != null) {
       throw ['timeout not implemented'];
     }
@@ -545,9 +545,9 @@ class Http {
     var result = chainResult is async.Future
         ? chainResult
         : new async.Future.value(chainResult);
-    if (traceEnabled) {
+    if (trace.wtfEnabled) {
       return new async.Future(() {
-        traceAsyncEnd(range);
+        trace.endAsync(range);
         return result;
       });
     } else {
