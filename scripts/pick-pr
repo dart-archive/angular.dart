@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# Usage: pick-pr <pr-number>
+#
+# Takes a PR and cherry-picks it into the current branch.
+# Assumes you have an "upstream" remote pointing to GitHub.
+
+set -e
+
+PR=$1
+echo "Fetching PR $1 from upstream"
+
+git fetch upstream pull/$PR/head
+echo
+
+for sha in $(git rev-list --reverse FETCH_HEAD ^upstream/master); do
+	echo "Cherrypicking $(git log --oneline -n 1 $sha)"
+	git cherry-pick $sha;
+done
+
+export PR
+export GIT_EDITOR=$(dirname $0)/pick-pr-editor
+git commit --amend
