@@ -17,45 +17,33 @@ part of angular.directive;
  */
 @Decorator(
     selector: '[ng-include]',
-    map: const {'ng-include': '@url'})
+    map: const {'.': '@url'},
+    children: Directive.TRANSCLUDE_CHILDREN)
 class NgInclude {
-
-  final dom.Element element;
-  final Scope scope;
-  final ViewCache viewCache;
-  final DirectiveInjector directiveInjector;
-  final DirectiveMap directives;
-
+  final ViewCache _viewCache;
+  final DirectiveMap _directives;
+  final ViewPort _viewPort;
+  final Scope _scope;
   View _view;
-  Scope _scope;
 
-  NgInclude(this.element, this.scope, this.viewCache,
-            this.directiveInjector, this.directives);
+  NgInclude(this._scope, this._viewCache, this._directives, this._viewPort);
 
-  _cleanUp() {
-    if (_view == null) return;
-
-    _view.nodes.forEach((node) => node.remove);
-    _scope.destroy();
-    element.innerHtml = '';
-
-    _view = null;
-    _scope = null;
-  }
-
-  _updateContent(ViewFactory viewFactory) {
-    // create a new scope
-    _scope = scope.createChild(new PrototypeMap(scope.context));
-    _view = viewFactory(_scope, directiveInjector);
-
-    _view.nodes.forEach((node) => element.append(node));
-  }
-
-
-  set url(value) {
+  void set url(value) {
     _cleanUp();
     if (value != null && value != '') {
-      viewCache.fromUrl(value, directives).then(_updateContent);
+      _viewCache.fromUrl(value, _directives).then(_updateContent);
     }
+  }
+
+  void _cleanUp() {
+    if (_view != null) {
+      _viewPort.remove(_view);
+      _view = null;
+    }
+  }
+
+  void _updateContent(ViewFactory viewFactory) {
+    _view = _viewPort.insertNew(viewFactory);
+    print(_view.nodes);
   }
 }

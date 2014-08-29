@@ -3,7 +3,7 @@ library ng_include_spec;
 import '../_specs.dart';
 
 main() {
-  describe('NgInclude', () {
+  ddescribe('NgInclude', () {
     TestBed _;
 
     beforeEach((TestBed tb) => _ = tb);
@@ -11,23 +11,23 @@ main() {
     it('should fetch template from literal url', async((Scope scope, TemplateCache cache) {
       cache.put('tpl.html', new HttpResponse(200, 'my name is {{name}}'));
 
-      var element = _.compile('<div ng-include="tpl.html"></div>');
+      var element = _.compile('<div><div ng-include="tpl.html"></div></div>');
 
-      expect(element.innerHtml).toEqual('');
+      expect(element).toHaveText('');
 
       microLeap();  // load the template from cache.
       scope.context['name'] = 'Vojta';
       scope.apply();
-      expect(element.text).toEqual('my name is Vojta');
+      expect(element).toHaveText('my name is Vojta');
     }));
 
     it('should fetch template from url using interpolation', async((Scope scope, TemplateCache cache) {
       cache.put('tpl1.html', new HttpResponse(200, 'My name is {{name}}'));
       cache.put('tpl2.html', new HttpResponse(200, 'I am {{name}}'));
 
-      var element = _.compile('<div ng-include="{{template}}"></div>');
+      var element = _.compile('<div><div ng-include="{{template}}"></div></div>');
 
-      expect(element.innerHtml).toEqual('');
+      expect(element).toHaveText('');
 
       scope.context['name'] = 'Vojta';
       scope.context['template'] = 'tpl1.html';
@@ -35,14 +35,14 @@ main() {
       scope.apply();
       microLeap();
       scope.apply();
-      expect(element.text).toEqual('My name is Vojta');
+      expect(element).toHaveText('My name is Vojta');
 
       scope.context['template'] = 'tpl2.html';
       microLeap();
       scope.apply();
       microLeap();
       scope.apply();
-      expect(element.text).toEqual('I am Vojta');
+      expect(element).toHaveText('I am Vojta');
     }));
 
   });
