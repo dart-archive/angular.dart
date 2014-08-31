@@ -1279,6 +1279,11 @@ void main() {
               flush();
             }));
 
+            it('should transform DateTime into json', async((){
+              backend.expect('POST', '/url', '{"one":"two","date":"1970-01-01T00:00:00.000"}').respond('');
+              http(method: 'POST', url: '/url', data: {'one': 'two', 'date': new DateTime(1970, 01, 01)});
+              flush();
+            }));
 
             it('should ignore strings', async(() {
               backend.expect('POST', '/url', 'string-data').respond('');

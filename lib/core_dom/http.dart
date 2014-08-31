@@ -73,9 +73,15 @@ class HttpInterceptor {
 */
 class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   Function request = (HttpResponseConfig config) {
+    dynamic jsonEncodable(dynamic item) {
+      if(item is DateTime) {
+        return item.toIso8601String();
+      }
+      return item;
+    }
     if (config.data != null && config.data is! String &&
         config.data is! dom.File) {
-      config.data = JSON.encode(config.data);
+      config.data = JSON.encode(config.data, toEncodable: jsonEncodable );
     }
     return config;
   };
