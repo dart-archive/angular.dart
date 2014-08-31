@@ -2,7 +2,10 @@ library ng_element_spec;
 
 import '../_specs.dart';
 
-class _MockLightDom extends Mock implements DestinationLightDom {}
+class _MockLightDom extends Mock implements DestinationLightDom {
+  // Prevent analyzer from complaining about missing method impl
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 void main() {
   describe('ngElement', () {

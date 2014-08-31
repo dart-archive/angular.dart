@@ -1,11 +1,9 @@
 part of angular.core.dom_internal;
 
-@Injectable()
 abstract class SourceLightDom {
   void redistribute();
 }
 
-@Injectable()
 abstract class DestinationLightDom {
   void redistribute();
   void addViewPort(ViewPort viewPort);
