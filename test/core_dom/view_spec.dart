@@ -60,7 +60,10 @@ class BFormatter {
   call(value) => value;
 }
 
-class _MockLightDom extends Mock implements DestinationLightDom {}
+class _MockLightDom extends Mock implements DestinationLightDom {
+  // Prevent analyzer from complaining about missing method impl
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
 
 main() {
   describe('View', () {
@@ -73,7 +76,7 @@ main() {
     ViewPort createViewPort({Injector injector, DestinationLightDom lightDom}) {
       final scope = injector.get(Scope);
       final view = new View([], scope);
-      final di =new DirectiveInjector(null, injector, null, null, null, null, null, view);
+      final di = new DirectiveInjector(null, injector, null, null, null, null, null, view);
       return new ViewPort(di, scope, rootElement.childNodes[0], injector.get(Animate), lightDom);
     }
 

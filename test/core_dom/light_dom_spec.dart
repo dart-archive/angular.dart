@@ -9,6 +9,8 @@ class DummyContent extends Mock implements Content {
   List<Node> nodes = [];
   DummyContent(this.select);
   insert(nodes) => this.nodes = new List.from(nodes);
+  // Prevent analyzer from complaining about missing method impl
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 void main() {
