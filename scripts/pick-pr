@@ -3,7 +3,6 @@
 # Usage: pick-pr <pr-number>
 #
 # Takes a PR and cherry-picks it into the current branch.
-# Assumes you have an "upstream" remote pointing to GitHub.
 
 set -e
 
