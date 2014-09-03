@@ -31,6 +31,18 @@ main() {
 
         expect(root).toHaveText(".style1{}adiv");
       });
+
+      it("should not insert the same style element twice", () {
+        final root = new dom.DivElement().createShadowRoot();
+        final boundary = new ShadowRootBoundary(root);
+
+        final s = new dom.StyleElement()..text = ".style1{}";
+
+        boundary.insertStyleElements([s]);
+        boundary.insertStyleElements([s]);
+
+        expect(root).toHaveText(".style1{}");
+      });
     });
   });
 }

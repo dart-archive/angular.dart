@@ -169,18 +169,11 @@ class DirectiveInjector implements DirectiveBinder {
   static Binding _tempBinding = new Binding();
 
   DirectiveInjector(DirectiveInjector parent, appInjector, this._node, this._nodeAttrs,
-      this._eventHandler, this.scope, this._animate, [View view, ShadowBoundary boundary])
+      this._eventHandler, this.scope, this._animate, [View view, this._shadowBoundary])
       : _parent = parent,
       _appInjector = appInjector,
       _view = view == null && parent != null ? parent._view : view,
-      _constructionDepth = _NO_CONSTRUCTION,
-      _shadowBoundary = _getShadowBoundary(boundary, parent);
-
-  static _getShadowBoundary(ShadowBoundary boundary, DirectiveInjector parent) {
-    if (boundary != null) return boundary;
-    if (parent != null) return parent._shadowBoundary;
-    return new DefaultShadowBoundary();
-  }
+      _constructionDepth = _NO_CONSTRUCTION;
 
   void bind(key, {dynamic toValue: DEFAULT_VALUE,
             Function toFactory: DEFAULT_VALUE,
@@ -317,7 +310,7 @@ class DirectiveInjector implements DirectiveBinder {
       case ELEMENT_PROBE_KEY_ID:          return elementProbe;
       case NG_ELEMENT_KEY_ID:             return ngElement;
       case EVENT_HANDLER_KEY_ID:          return _eventHandler;
-      case SHADOW_BOUNDARY_KEY_ID:        return _shadowBoundary;
+      case SHADOW_BOUNDARY_KEY_ID:        return _findShadowBoundary();
       case DESTINATION_LIGHT_DOM_KEY_ID:  return _destLightDom;
       case SOURCE_LIGHT_DOM_KEY_ID:       return _sourceLightDom;
       case VIEW_KEY_ID:                   return _view;
@@ -408,6 +401,9 @@ class DirectiveInjector implements DirectiveBinder {
   }
 
   DestinationLightDom get _destLightDom => _parent == null ? null : _parent.lightDom;
+
+  ShadowBoundary _findShadowBoundary() =>
+      _shadowBoundary != null ? _shadowBoundary : getFromParentByKey(SHADOW_BOUNDARY_KEY);
 }
 
 class TemplateDirectiveInjector extends DirectiveInjector {

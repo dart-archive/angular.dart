@@ -3,6 +3,7 @@ library directive_injector_spec;
 import '../_specs.dart';
 import 'package:angular/core_dom/directive_injector.dart';
 import 'package:angular/core_dom/static_keys.dart';
+import 'dart:html' as dom;
 
 void main() {
   describe('DirectiveInjector', () {
@@ -105,6 +106,35 @@ void main() {
           final childInjector = new DirectiveInjector(injector, null, null, null, null, null, null, null);
 
           expect(childInjector.getByKey(DESTINATION_LIGHT_DOM_KEY)).toBe(lightDom);
+        });
+      });
+
+      describe("returning ShadowBoundary", () {
+        it('should return the shadow bounary of the injector', () {
+          final root = new dom.DivElement().createShadowRoot();
+          final boundary = new ShadowRootBoundary(root);
+          final childInjector = new DirectiveInjector(injector, null, null, null, null, null,
+              null, null, boundary);
+
+          expect(childInjector.getByKey(SHADOW_BOUNDARY_KEY)).toBe(boundary);
+        });
+
+        it('should return the shadow bounary of the parent injector', () {
+          final root = new dom.DivElement().createShadowRoot();
+          final boundary = new ShadowRootBoundary(root);
+          final parentInjector = new DirectiveInjector(injector, null, null, null, null, null,
+              null, null, boundary);
+          final childInjector = new DirectiveInjector(parentInjector, null, null, null, null, null,
+              null, null, null);
+
+          expect(childInjector.getByKey(SHADOW_BOUNDARY_KEY)).toBe(boundary);
+        });
+
+        it('should throw we cannot find a shadow boundary', () {
+          final childInjector = new DirectiveInjector(injector, null, null, null, null, null,
+              null, null, null);
+
+          expect(() => childInjector.getByKey(SHADOW_BOUNDARY_KEY)).toThrow("No provider found");
         });
       });
 
