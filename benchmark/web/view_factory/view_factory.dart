@@ -16,7 +16,13 @@ class ViewFactoryInvocaton {
   List<Node> elements;
 
   ViewFactoryInvocaton(String template) {
-    final injector = applicationFactory().run();
+    final m = new Module()
+        ..bind(ComponentWithCss)
+        ..bind(ComponentWithoutCss)
+        ..bind(ComponentWithEmulatedShadowDomComponent)
+        ..bind(EmulatedShadowDomComponentWithCss);
+
+    final injector = applicationFactory().addModule(m).run();
     final directiveMap = injector.get(DirectiveMap);
     final compiler = injector.get(Compiler);
 
@@ -59,13 +65,58 @@ final TEMPLATE_TEXT_WITH_NG_BINDING_3_TIMES = '<span>'
     '<span ng-if="1 != 2">right</span>'
     '</span>';
 
+final TEMPLATE_COMPONENT_NO_CSS = '<component-without-css></component-without-css>';
+
+final TEMPLATE_COMPONENT_WITH_CSS = '<component-with-css></component-with-css>';
+
+final TEMPLATE_CONTAINER_COMPONENT = '<component-with-emulated></component-with-emulated>';
+
+
+@Component(
+  selector: 'component-without-css',
+  template: 'empty',
+  useShadowDom: true
+)
+class ComponentWithoutCss {
+}
+
+@Component(
+  selector: 'component-with-css',
+  template: 'empty',
+  cssUrl: const ['css1.css', 'css2.css'],
+  useShadowDom: true
+)
+class ComponentWithCss {
+}
+
+@Component(
+  selector: 'emulated-with-css',
+  template: 'empty',
+  cssUrl: const ['css1.css', 'css2.css'],
+  useShadowDom: false
+)
+class EmulatedShadowDomComponentWithCss {
+}
+
+@Component(
+  selector: 'component-with-emulated',
+  template: '<emulated-with-css></emulated-with-css>'
+            '<emulated-with-css></emulated-with-css>'
+            '<emulated-with-css></emulated-with-css>',
+  useShadowDom: true
+)
+class ComponentWithEmulatedShadowDomComponent {
+}
 
 void main() {
   final templates = {
       "(text + ng-binding) * 3" : TEMPLATE_TEXT_WITH_NG_BINDING_3_TIMES,
       "text" : TEMPLATE_TEXT_NO_NG_BINDING,
       "text + ng-binding" : TEMPLATE_TEXT_WITH_NG_BINDING,
-      "ng-binding" : TEMPLATE_NO_TEXT_WITH_NG_BINDING
+      "ng-binding" : TEMPLATE_NO_TEXT_WITH_NG_BINDING,
+      "component without css" : TEMPLATE_COMPONENT_NO_CSS,
+      "component with css" : TEMPLATE_COMPONENT_WITH_CSS,
+      "component with emulated shadow dom component" : TEMPLATE_CONTAINER_COMPONENT
   };
 
   final t = document.querySelector("#templates");
