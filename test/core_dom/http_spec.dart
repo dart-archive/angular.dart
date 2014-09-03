@@ -1415,7 +1415,20 @@ void main() {
               expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('{{some}}');
             }));
           });
+          
+            describe('with custom JsonParser',(){
+              beforeEachModule((Module module) {
+              var duration = new Duration(milliseconds: 100);
+                module.bind(JsonParser, toValue: new CustomJsonParser());
+              });
 
+              it('should transform json using custom parser', async((){
+                backend.expect('POST', '/url', '{"one":"Yeah - two","date":"is a date, catch it!"}').respond('');
+                http(method: 'POST', url: '/url', data: {'one': 'two', 'date': new DateTime(1970, 01, 01)});
+                flush();
+              }));
+
+          });
 
           it('should have access to response headers', async(() {
             backend.expect('GET', '/url').respond(200, 'response', {'h1': 'header1'});
@@ -1491,4 +1504,14 @@ class FakeFile implements File {
   String get type => null;
   Blob slice([int start, int end, String contentType]) => null;
   int get lastModified => new DateTime.now().millisecondsSinceEpoch;
+}
+class CustomJsonParser implements JsonParser {
+  @override
+  dynamic toJson(dynamic item){
+    if(item is DateTime){
+      return "is a date, catch it!";
+    }else {
+      return "Yeah - $item";
+    }
+  }
 }

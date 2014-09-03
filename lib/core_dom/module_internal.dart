@@ -114,6 +114,7 @@ class CoreDomModule extends Module {
     bind(NgElement);
     bind(EventHandler);
     bind(ShadowBoundary, toImplementation: DefaultShadowBoundary);
+    bind(JsonParser);
     // TODO(rkirov): remove this once clients have stopped relying on it.
     bind(DirectiveInjector, toValue: null);
   }
