@@ -303,7 +303,8 @@ void main() {
           ..bind(OneTimeDecorator)
           ..bind(OnceInside)
           ..bind(OuterShadowless)
-          ..bind(InnerShadowy);
+          ..bind(InnerShadowy)
+          ..bind(TemplateUrlComponent);
       });
 
       describe("distribution", () {
@@ -467,8 +468,35 @@ void main() {
 
           expect(element).toHaveText('OUTER(INNER(INNERINNER(A,BC)))');
         }));
-      });
 
+        it("should not duplicate elements when using components with templateUrl", async((MockHttpBackend backend) {
+          backend.expectGET("${TEST_SERVER_BASE_PREFIX}test/core_dom/template.html").respond(200, "<content></content>");
+
+          _.rootScope.context["show"] = true;
+          var element = _.compile(r'<div>'
+            '<template-url-component>'
+              '<div ng-if="show">A</div>'
+              '<div>B</div>'
+            '<template-url-component>'
+          '</div>');
+          document.body.append(element);
+
+          microLeap();
+          _.rootScope.apply();
+
+          backend.flush();
+
+          _.rootScope.context["show"] = false;
+          microLeap();
+          _.rootScope.apply();
+
+          _.rootScope.context["show"] = true;
+          microLeap();
+          _.rootScope.apply();
+
+          expect(element).toHaveText('AB');
+        }));
+      });
 
       it('should store ElementProbe with Elements', async(() {
         if (compilerType == 'no-elementProbe') return;
@@ -1595,6 +1623,13 @@ class InnerComponent {
 )
 class InnerInnerComponent {
   InnerInnerComponent() {}
+}
+
+@Component(
+    selector: 'template-url-component',
+    templateUrl: 'template.html'
+)
+class TemplateUrlComponent {
 }
 
 _shadowScope(element){
