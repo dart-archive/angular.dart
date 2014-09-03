@@ -60,7 +60,18 @@ class HttpInterceptor {
   HttpInterceptor({this.request, this.response, this.requestError,
                   this.responseError});
 }
-
+/**
+* This parser is used for Http Service Interceptor to create and consume Json Serialization
+*/
+@Injectable()
+class JsonParser {
+  dynamic toJson(dynamic item){
+    if(item is DateTime) {
+        return item.toIso8601String();
+      }
+      return item;
+  }
+}
 
 /**
 * The default transform data interceptor.abstract
@@ -72,16 +83,20 @@ class HttpInterceptor {
 * parse them into [Map]s.
 */
 class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
-  Function request = (HttpResponseConfig config) {
-    dynamic jsonEncodable(dynamic item) {
-      if(item is DateTime) {
-        return item.toIso8601String();
-      }
-      return item;
+  static JsonParser _jsonParser;
+
+  DefaultTransformDataHttpInterceptor({JsonParser parser}){
+    if(parser != null){
+      _jsonParser = parser;
+    }else{
+      _jsonParser = new JsonParser();
     }
+  }
+  
+  Function request = (HttpResponseConfig config) {
     if (config.data != null && config.data is! String &&
         config.data is! dom.File) {
-      config.data = JSON.encode(config.data, toEncodable: jsonEncodable );
+      config.data = JSON.encode(config.data, toEncodable: _jsonParser.toJson );
     }
     return config;
   };
