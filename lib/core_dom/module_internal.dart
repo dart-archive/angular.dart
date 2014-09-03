@@ -111,6 +111,7 @@ class CoreDomModule extends Module {
     bind(ElementBinderFactory);
     bind(NgElement);
     bind(EventHandler);
+    bind(ShadowBoundary, toImplementation: DefaultShadowBoundary);
     // TODO(rkirov): remove this once clients have stopped relying on it.
     bind(DirectiveInjector, toValue: null);
   }

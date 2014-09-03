@@ -6,19 +6,33 @@ part of angular.core.dom_internal;
 * [ShadowBoundary] is responsible for inserting style elements.
 */
 abstract class ShadowBoundary {
-  void insertStyleElements(List<dom.StyleElement> elements);
-}
+  Set<dom.StyleElement> _insertedStyles;
 
-@Injectable()
-class DefaultShadowBoundary implements ShadowBoundary {
-  void insertStyleElements(List<dom.StyleElement> elements) {
-    final cloned = elements.map((el) => el.clone(true));
-    dom.document.head.nodes.addAll(cloned);
+  void insertStyleElements(List<dom.StyleElement> elements);
+
+  Iterable<dom.StyleElement> _newStyles(Iterable<dom.StyleElement> elements) {
+    if (_insertedStyles == null) return elements;
+    return elements.where((el) => !_insertedStyles.contains(el));
+  }
+
+  void _addInsertedStyles(Iterable<dom.StyleElement> elements) {
+    if (_insertedStyles == null) _insertedStyles = new Set();
+    _insertedStyles.addAll(elements);
   }
 }
 
 @Injectable()
-class ShadowRootBoundary implements ShadowBoundary {
+class DefaultShadowBoundary extends ShadowBoundary {
+  void insertStyleElements(List<dom.StyleElement> elements) {
+    final newStyles = _newStyles(elements);
+    final cloned = newStyles.map((el) => el.clone(true));
+    dom.document.head.nodes.addAll(cloned);
+    _addInsertedStyles(newStyles);
+  }
+}
+
+@Injectable()
+class ShadowRootBoundary extends ShadowBoundary {
   final dom.ShadowRoot shadowRoot;
   dom.StyleElement _lastStyleElement;
 
@@ -26,7 +40,9 @@ class ShadowRootBoundary implements ShadowBoundary {
 
   void insertStyleElements(List<dom.StyleElement> elements) {
     if (elements.isEmpty) return;
-    final cloned = elements.map((el) => el.clone(true));
+
+    final newStyles = _newStyles(elements);
+    final cloned = newStyles.map((el) => el.clone(true));
 
     cloned.forEach((style) {
       if (_lastStyleElement != null) {
@@ -37,5 +53,7 @@ class ShadowRootBoundary implements ShadowBoundary {
         _lastStyleElement = shadowRoot.append(style);
       }
     });
+
+    _addInsertedStyles(newStyles);
   }
 }
