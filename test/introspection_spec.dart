@@ -78,7 +78,7 @@ void main() {
             });
           } else {
             it('should throw an exception', () {
-              expect(() => getTestability(elt)).toThrow(
+              expect(() => getTestability(elt)).toThrowWith(message:
                   "Could not find an ElementProbe for div.  This might happen "
                   "either because there is no Angular directive for that node OR "
                   "because your application is running with ElementProbes "

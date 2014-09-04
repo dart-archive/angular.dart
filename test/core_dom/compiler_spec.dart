@@ -534,14 +534,14 @@ void main() {
           expect(simpleElement).toHaveText('INNER(innerText)');
 
           expect(() => ngProbe(simpleElement))
-              .toThrow("Could not find a probe for the node 'simple' nor its parents");
+              .toThrowWith(message: "Could not find a probe for the node 'simple' nor its parents");
 
           var shadowRoot = simpleElement.shadowRoot;
 
           // If there is no shadow root, skip this.
           if (compilerType != 'transcluding') {
             expect(() => ngProbe(shadowRoot))
-                .toThrow("Could not find a probe for the node 'Instance of 'ShadowRoot'' nor its parents");
+                .toThrowWith(message: "Could not find a probe for the node 'Instance of 'ShadowRoot'' nor its parents");
           }
         }));
       });
@@ -717,7 +717,7 @@ void main() {
       it('should error on incorrect mapping', async(() {
         expect(() {
           _.compile(r'<div><incorrect-mapping></incorrect-mapping</div>');
-        }).toThrow("Unknown mapping 'foo\' for attribute 'attr'.");
+        }).toThrowWith(message: "Unknown mapping 'foo\' for attribute 'attr'.");
       }));
 
       it('should support formatters in attribute expressions', async(() {
@@ -732,7 +732,7 @@ void main() {
       it('should error on non-asignable-mapping', async(() {
         expect(() {
           _.compile(r'<div><non-assignable-mapping></non-assignable-mapping</div>');
-        }).toThrow("Expression '+(1, 2)' is not assignable in mapping '@1+2' for attribute 'attr'.");
+        }).toThrowWith(message: "Expression '+(1, 2)' is not assignable in mapping '@1+2' for attribute 'attr'.");
       }));
 
       it('should expose mapped attributes as camel case', async(() {
@@ -873,7 +873,7 @@ void main() {
           var directives = injector.get(DirectiveMap);
           expect(() {
               c(es('<div></div>'), injector.get(DirectiveMap));
-          }).toThrow('Missing selector annotation for MissingSelector');
+          }).toThrowWith(message: 'Missing selector annotation for MissingSelector');
         });
 
 
@@ -887,7 +887,7 @@ void main() {
 
           expect(() {
             c(es('<div></div>'), directives);
-          }).toThrow('Unknown selector format \'buttonbar button\' for InvalidSelector');
+          }).toThrowWith(message: 'Unknown selector format \'buttonbar button\' for InvalidSelector');
         });
       });
 

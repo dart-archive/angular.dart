@@ -91,7 +91,7 @@ void main() {
         expect(() {
           http(url: '/url', method: 'POST');
           backend.flush();
-        }).toThrow('with different data');
+        }).toThrowWith(message: 'with different data');
 
         // satisfy the expectation for our afterEach's assert.
         http(url: '/url', method: 'POST', data: 'null');
