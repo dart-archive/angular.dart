@@ -1428,8 +1428,42 @@ void main() {
               expect(callback).toHaveBeenCalledOnce();
               expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('{{some}}');
             }));
+
+            it('should deserialize DateTime objects', async(() {
+              backend.expect('GET', '/url').respond('{"foo":"bar","date":"1970-01-01T00:00:00.000"}');
+              http(method: 'GET', url: '/url').then(callback);
+              flush();
+
+              expect(callback).toHaveBeenCalledOnce();
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual({'foo': 'bar', 'date': new DateTime(1970,1,1)});
+            }));
+
+            it('should deserialize DateTime objects with timezone', async((){
+              backend.expect('GET', '/url').respond('{"foo":"bar","date":"1970-01-01T00:00:00.000Z"}');
+              http(method: 'GET', url: '/url').then(callback);
+              flush();
+
+              expect(callback).toHaveBeenCalledOnce();
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual({'foo': 'bar', 'date': new DateTime.utc(1970,1,1)});
+            }));
           });
 
+          describe('with custom JsonParser',(){
+            beforeEachModule((Module module) {
+              var duration = new Duration(milliseconds: 100);
+              module.bind(JsonParser, toValue: new CustomJsonParser());
+            });
+
+            it('should deserialize objects using custom json reviver function', async(() {
+              backend.expect('GET', '/url').respond('{"foo":"bar","date":"1970-01-01T00:00:00.000"}');
+              http(method: 'GET', url: '/url').then(callback);
+              flush();
+
+              expect(callback).toHaveBeenCalledOnce();
+              expect(callback.mostRecentCall.positionalArguments[0].data).toEqual({'foo': 'value - bar', 'date': new DateTime(1970,1,1).millisecondsSinceEpoch});
+            }));
+
+          });
 
           it('should have access to response headers', async(() {
             backend.expect('GET', '/url').respond(200, 'response', {'h1': 'header1'});
@@ -1508,10 +1542,21 @@ class FakeFile implements File {
 }
 class CustomJsonParser implements JsonParser {
   @override
-  dynamic toJson(dynamic item){
+  dynamic toEncodable(dynamic item){
     if(item is DateTime){
       return "is a date, catch it!";
     }
     return item;
+  }
+  @override
+  dynamic reviver(var key, var value){
+    if(value is String){
+      RegExp dateIso8601  = new RegExp(r'^([+-]?\d?\d\d\d\d)-?(\d\d)-?(\d\d)(?:[ T](\d\d)(?::?(\d\d)(?::?(\d\d)(.\d{1,6})?)?)? ?([zZ])?)?$');
+      if(dateIso8601.hasMatch(value)){
+        return DateTime.parse(value).millisecondsSinceEpoch;
+      }
+      return "value - $value";
+    }
+    return value;
   }
 }
