@@ -1423,7 +1423,7 @@ void main() {
               });
 
               it('should transform json using custom parser', async((){
-                backend.expect('POST', '/url', '{"one":"Yeah - two","date":"is a date, catch it!"}').respond('');
+                backend.expect('POST', '/url', '{"one":"two","date":"is a date, catch it!"}').respond('');
                 http(method: 'POST', url: '/url', data: {'one': 'two', 'date': new DateTime(1970, 01, 01)});
                 flush();
               }));
@@ -1510,8 +1510,7 @@ class CustomJsonParser implements JsonParser {
   dynamic toJson(dynamic item){
     if(item is DateTime){
       return "is a date, catch it!";
-    }else {
-      return "Yeah - $item";
     }
+    return item;
   }
 }
