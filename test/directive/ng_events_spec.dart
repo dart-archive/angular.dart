@@ -4,7 +4,7 @@ import '../_specs.dart';
 import 'dart:html' as dom;
 import 'package:browser_detect/browser_detect.dart';
 
-void addTest(String name, [String eventType='MouseEvent', String eventName, exclusive]) {
+void addTest(String name, [String eventType='MouseEvent', String eventName, bool exclusive]) {
   if (eventName == null) eventName = name;
 
   var describeBody = () {
