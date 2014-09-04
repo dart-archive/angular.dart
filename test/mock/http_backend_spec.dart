@@ -81,7 +81,7 @@ void main() {
       expect(() {
         hb('GET', '/xxx', noop);
         hb.flush();
-      }).toThrow('Unexpected request: GET /xxx\nNo more requests expected');
+      }).toThrowWith(message: 'Unexpected request: GET /xxx\nNo more requests expected');
     });
 
 
@@ -94,7 +94,7 @@ void main() {
         });
         hb.flush();
         microLeap();
-      }).toThrow('exceptiona');
+      }).toThrowWith(message: 'exceptiona');
     }));
 
 
@@ -229,9 +229,8 @@ void main() {
       it('should require specified order', () {
         expect(() {
           hb('GET', '/url2', noop, headers: {});
-
           hb.flushExpected('GET', '/url1').respond(200, '');
-        }).toThrow('Unexpected request: GET /url2\nExpected GET /url1');
+        }).toThrowWith(message: 'Unexpected request: GET /url2\nExpected GET /url1');
       });
 
 
@@ -257,7 +256,7 @@ void main() {
         expect(() {
           hb('GET', '/match', noop, headers: {});
           hb.flush();
-        }).toThrow('Expected GET /match with different headers\n' +
+        }).toThrowWith(message: 'Expected GET /match with different headers\n' +
         'EXPECTED: {"Content-Type":"application/json"}\nGOT:      {}');
       });
 
@@ -269,7 +268,7 @@ void main() {
         expect(() {
           hb('GET', '/match', noop, data: 'different');
           hb.flush();
-        }).toThrow('Expected GET /match with different data\n' +
+        }).toThrowWith(message: 'Expected GET /match with different data\n' +
         'EXPECTED: some-data\nGOT:      different');
       });
 
@@ -320,19 +319,19 @@ void main() {
         hb.when('GET').respond(200, '');
         hb('GET', '/url', callback);
 
-        expect(() {hb.flush(2); }).toThrow('No more pending request to flush !');
+        expect(() {hb.flush(2); }).toThrowWith(message: 'No more pending request to flush !');
         expect(callback).toHaveBeenCalledOnce();
       });
 
 
       it('should throw exception when no request to flush', () {
-        expect(() {hb.flush();}).toThrow('No pending request to flush !');
+        expect(() {hb.flush();}).toThrowWith(message: 'No pending request to flush !');
 
         hb.when('GET').respond(200, '');
         hb('GET', '/some', callback);
         hb.flush();
 
-        expect(() {hb.flush();}).toThrow('No pending request to flush !');
+        expect(() {hb.flush();}).toThrowWith(message: 'No pending request to flush !');
       });
 
 
@@ -341,7 +340,7 @@ void main() {
         hb.expect('GET', '/url2').respond();
 
         hb('GET', '/url1', noop);
-        expect(() {hb.flush();}).toThrow('Unsatisfied requests: GET /url2');
+        expect(() {hb.flush();}).toThrowWith(message: 'Unsatisfied requests: GET /url2');
       });
     });
 
@@ -370,7 +369,7 @@ void main() {
       expect(() {
         hb('GET', '/test', callback);
         hb.flush();
-      }).toThrow('No response defined !');
+      }).toThrowWith(message: 'No response defined !');
     });
 
 
@@ -379,7 +378,7 @@ void main() {
       expect(() {
         hb('GET', '/url', callback);
         hb.flush();
-      }).toThrow('No response defined !');
+      }).toThrowWith(message: 'No response defined !');
     });
 
     it('should respond undefined when JSONP method', () {
@@ -403,7 +402,7 @@ void main() {
 
         expect(() {
           hb.verifyNoOutstandingExpectation();
-        }).toThrow('Unsatisfied requests: GET /u2, POST /u3');
+        }).toThrowWith(message: 'Unsatisfied requests: GET /u2, POST /u3');
       });
 
 
@@ -435,7 +434,7 @@ void main() {
 
         expect(() {
           hb.verifyNoOutstandingRequest();
-        }).toThrow('Unflushed requests: 1');
+        }).toThrowWith(message: 'Unflushed requests: 1');
       });
     });
 

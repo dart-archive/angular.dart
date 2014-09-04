@@ -74,11 +74,11 @@ void main() {
         addDirective(_Type3);
         addDirective(_Type4);
         expect(() => addDirective(_TypeA))
-            .toThrow('Maximum number of directives per element reached.');
+            .toThrowWith(message: 'Maximum number of directives per element reached.');
         var root = injector.get(_Root);
         expect((injector.get(_Type9) as _Type9).type8.type7.type6.type5.type4.type3.type2.type1.type0.root)
             .toBe(root);
-        expect(() => injector.get(_TypeA)).toThrow('No provider found for _TypeA');
+        expect(() => injector.get(_TypeA)).toThrowWith(message: 'No provider found for _TypeA');
       });
 
       describe("returning SourceLightDom", () {
@@ -178,8 +178,8 @@ void main() {
 
         it('should not allow reseting visibility', () {
           addDirective(_Type0, Visibility.LOCAL);
-          expect(() => addDirective(_Type0, Visibility.DIRECT_CHILD)).toThrow(
-              'Can not set Visibility: DIRECT_CHILD on _Type0, it alread has Visibility: LOCAL');
+          expect(() => addDirective(_Type0, Visibility.DIRECT_CHILD)).toThrowWith(
+              message: 'Can not set Visibility: DIRECT_CHILD on _Type0, it alread has Visibility: LOCAL');
         });
 
         it('should allow child injector to see types declared at parent injector', () {

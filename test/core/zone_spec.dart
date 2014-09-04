@@ -33,7 +33,7 @@ void main() {
           zone.run(() {
             throw ['hello'];
           });
-        }).toThrow('hello');
+        }).toThrowWith(message: 'hello');
         expect(error).toEqual(['hello']);
       });
 
@@ -74,7 +74,7 @@ void main() {
 
         expect(() {
           zone.run(() { });
-        }).toThrow('fromOnTurnDone');
+        }).toThrowWith(message: 'fromOnTurnDone');
 
         expect(exceptionHandler.errors.length).toEqual(1);
         expect(exceptionHandler.errors[0].error).toEqual(["fromOnTurnDone"]);
@@ -94,7 +94,7 @@ void main() {
               asyncRan = true;
             });
           });
-        }).toThrow('fromOnTurnDone');
+        }).toThrowWith(message: 'fromOnTurnDone');
 
         expect(asyncRan).toBeTruthy();
         expect(exceptionHandler.errors.length).toEqual(1);
@@ -339,7 +339,7 @@ void main() {
       expect(() => zone.run(() {
         log('zone run');
         throw 'zoneError';
-      })).toThrow('zoneError');
+      })).toThrowWith(message: 'zoneError');
       expect(() => zone.assertInTurn()).toThrow();
       expect(log.result()).toEqual('onTurnStart; zone run; onError; onTurnDone');
     }));
@@ -352,7 +352,7 @@ void main() {
       };
       expect(() => zone.run(() {
         log('zone run');
-      })).toThrow('zoneError');
+      })).toThrowWith(message: 'zoneError');
       expect(() => zone.assertInTurn()).toThrow();
       expect(log.result()).toEqual('onTurnStart; onError; onTurnDone');
     }));
@@ -433,7 +433,7 @@ void main() {
       expect(async(() {
         zone.assertInTurn();
         microLeap();
-      })).toThrow('ssertion');  // Support both dart2js and the VM with half a word.
+      })).toThrowWith(message: 'ssertion');  // Support both dart2js and the VM with half a word.
     });
 
     group('microtask scheduler', () {
