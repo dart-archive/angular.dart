@@ -61,14 +61,15 @@ class HttpInterceptor {
                   this.responseError});
 }
 /**
-* This parser is used for Http Service Interceptor to create and consume Json Serialization
+* This parser is used for Http Service Interceptor to create and consume
+* Json Serialization
 */
 @Injectable()
 class JsonParser {
   /**
    * This function is called for serialization. It follow dart SDK JSON.encode toEncodable function signature
    */
-  dynamic toEncodable(dynamic item){
+  dynamic toEncodable(dynamic item) {
     if(item is DateTime) {
         return item.toIso8601String();
       }
@@ -78,10 +79,10 @@ class JsonParser {
   /**
    * This function is called for deserialization. It follows dart SDK JSON.decode reviver function signature
    */
-  dynamic reviver(var key, var value){
-    if(value is String){
-      RegExp dateIso8601  = new RegExp(r'^([+-]?\d?\d\d\d\d)-?(\d\d)-?(\d\d)(?:[ T](\d\d)(?::?(\d\d)(?::?(\d\d)(.\d{1,6})?)?)? ?([zZ])?)?$');
-      if(dateIso8601.hasMatch(value)){
+  dynamic reviver(var key, var value) {
+    if(value is String) {
+      RegExp dateIso8601  = new RegExp(r'^([+-]?\d{4,5})-?(\d{2})-?(\d{2})(?:[ T](\d{2})(?::?(\d{2})(?::?(\d{2})(.\d{1,6})?)?)? ?([zZ])?)?$');
+      if(dateIso8601.hasMatch(value)) {
         return DateTime.parse(value);
       }
     }
@@ -94,8 +95,10 @@ class JsonParser {
 *
 * For requests, this interceptor will
 * automatically stringify any non-string non-file objects.
-* It also use JsonParser for serialization of objects that the SDK do not recognize, such as DateTime objects.
-* The default JsonParser simple do a serialization of DateTime to ISO8601. Note that the SDK only call the parser
+* It also use JsonParser for serialization of objects that the SDK do not recognize,
+* such as DateTime objects.
+* The default JsonParser simple do a serialization of DateTime to ISO8601. Note that
+* the SDK only call the parser
 * for unknow objects, or objects that do not implement toJson method.
 *
 * For responses, this interceptor will unwrap JSON objects and
@@ -104,10 +107,10 @@ class JsonParser {
 class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   static JsonParser _jsonParser;
 
-  DefaultTransformDataHttpInterceptor([JsonParser parser]){
-    if(parser != null){
+  DefaultTransformDataHttpInterceptor([JsonParser parser]) {
+    if(parser != null) {
       _jsonParser = parser;
-    }else{
+    }else {
       _jsonParser = new JsonParser();
     }
   }
