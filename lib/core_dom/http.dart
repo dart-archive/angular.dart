@@ -78,6 +78,9 @@ class JsonParser {
 *
 * For requests, this interceptor will
 * automatically stringify any non-string non-file objects.
+* It also use JsonParser for serialization of objects that the SDK do not recognize, such as DateTime objects.
+* The default JsonParser simple do a serialization of DateTime to ISO8601. Note that the SDK only call the parser
+* for unknow objects, or objects that do not implement toJson method.
 *
 * For responses, this interceptor will unwrap JSON objects and
 * parse them into [Map]s.
@@ -85,7 +88,7 @@ class JsonParser {
 class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   static JsonParser _jsonParser;
 
-  DefaultTransformDataHttpInterceptor({JsonParser parser}){
+  DefaultTransformDataHttpInterceptor([JsonParser parser]){
     if(parser != null){
       _jsonParser = parser;
     }else{
@@ -145,11 +148,11 @@ class HttpInterceptors {
     });
   }
 
- /**
-   * Default constructor.
+  /**
+   * Default constructor. Inject a JsonParser
    */
-  HttpInterceptors() {
-    _interceptors = [new DefaultTransformDataHttpInterceptor()];
+  HttpInterceptors([JsonParser parser]) {
+    _interceptors = [new DefaultTransformDataHttpInterceptor(parser)];
   }
 
   /**
