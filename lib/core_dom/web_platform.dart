@@ -63,7 +63,7 @@ class PlatformViewCache implements ViewCache {
 
   PlatformViewCache(this.cache, this.selector, this.platform);
 
-  ViewFactory fromHtml(String html, DirectiveMap directives) {
+  ViewFactory fromHtml(String html, DirectiveMap directives, [String wrapElement = "div"]) {
     ViewFactory viewFactory;
 
     if (selector != null && selector != "" && platform.shadowDomShimRequired) {
@@ -75,8 +75,11 @@ class PlatformViewCache implements ViewCache {
     }
 
     if (viewFactory == null) {
+      // We can't use new dom.Element.tag(wrapElement) here becouse it will create all
+      // elements in the default (HTML) namespace, by having it wrapped in innerHtml the
+      // browser will create the elements in the appropriate namespace.
       var div = new dom.DivElement();
-      div.setInnerHtml(html, treeSanitizer: treeSanitizer);
+      div.setInnerHtml("<$wrapElement>$html</$wrapElement>", treeSanitizer: treeSanitizer);
 
       if (selector != null && selector != "" && platform.shadowDomShimRequired) {
         // This MUST happen before the compiler is called so that every dom element gets touched
@@ -84,18 +87,19 @@ class PlatformViewCache implements ViewCache {
         platform.shimShadowDom(div, selector);
       }
 
-      viewFactory = compiler(div.nodes, directives);
+      viewFactory = compiler(div.nodes.first.nodes, directives);
       viewFactoryCache.put(html, viewFactory);
     }
     return viewFactory;
   }
 
-  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives) {
+  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives,
+                                    [String wrapElement = "div"]) {
     var key = "[$selector]$url";
     ViewFactory viewFactory = viewFactoryCache.get(key);
     if (viewFactory == null) {
       return http.get(url, cache: templateCache).then((resp) {
-        var viewFactoryFromHttp = fromHtml(resp.responseText, directives);
+        var viewFactoryFromHttp = fromHtml(resp.responseText, directives, wrapElement);
         viewFactoryCache.put(key, viewFactoryFromHttp);
         return viewFactoryFromHttp;
       });

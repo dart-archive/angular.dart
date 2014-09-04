@@ -13,6 +13,7 @@ main() {
         ..bind(_WebPlatformTestComponentWithAttribute)
         ..bind(_InnerComponent)
         ..bind(_OuterComponent)
+        ..bind(_SvgComponent)
         ..bind(WebPlatform, toValue: new WebPlatform());
     });
 
@@ -184,6 +185,26 @@ main() {
         element.remove();
       }
     }));
+
+    it('should support SVG using a wrapper element.',
+      async((TestBed _) {
+
+      Element element = e('<svg width="10" height="10"><my-circle></my-circle></svg>');
+
+      _.compile(element);
+
+      try {
+        document.body.append(element);
+        microLeap();
+
+        // Circle should have the SVG namespace
+        expect(element.querySelector('circle').namespaceUri)
+          .toEqual('http://www.w3.org/2000/svg');
+
+      } finally {
+        element.remove();
+      }
+    }));
   });
 }
 
@@ -217,4 +238,13 @@ class _InnerComponent {
     templateUrl: "outer-html.html",
     cssUrl: "outer-style.css")
 class _OuterComponent {
+}
+
+@Component(
+    selector: "my-circle",
+    publishAs: "ctrl",
+    template: '<circle cx="5" cy="5" r="5" />',
+    useShadowDom: false,
+    wrapElement: "svg")
+class _SvgComponent {
 }
