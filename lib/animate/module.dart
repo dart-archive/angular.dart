@@ -110,10 +110,6 @@ import 'package:perf_api/perf_api.dart';
 import 'package:di/di.dart';
 import 'package:di/annotations.dart';
 
-@MirrorsUsed(targets: const [
-    'angular.animate'
-])
-import 'dart:mirrors' show MirrorsUsed;
 import 'dart:collection';
 
 part 'animations.dart';
