@@ -65,11 +65,27 @@ class HttpInterceptor {
 */
 @Injectable()
 class JsonParser {
-  dynamic toJson(dynamic item){
+  /**
+   * This function is called for serialization. It follow dart SDK JSON.encode toEncodable function signature
+   */
+  dynamic toEncodable(dynamic item){
     if(item is DateTime) {
         return item.toIso8601String();
       }
       return item;
+  }
+
+  /**
+   * This function is called for deserialization. It follows dart SDK JSON.decode reviver function signature
+   */
+  dynamic reviver(var key, var value){
+    if(value is String){
+      RegExp dateIso8601  = new RegExp(r'^([+-]?\d?\d\d\d\d)-?(\d\d)-?(\d\d)(?:[ T](\d\d)(?::?(\d\d)(?::?(\d\d)(.\d{1,6})?)?)? ?([zZ])?)?$');
+      if(dateIso8601.hasMatch(value)){
+        return DateTime.parse(value);
+      }
+    }
+    return value;
   }
 }
 
@@ -99,7 +115,7 @@ class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
   Function request = (HttpResponseConfig config) {
     if (config.data != null && config.data is! String &&
         config.data is! dom.File) {
-      config.data = JSON.encode(config.data, toEncodable: _jsonParser.toJson );
+      config.data = JSON.encode(config.data, toEncodable: _jsonParser.toEncodable );
     }
     return config;
   };
@@ -111,7 +127,7 @@ class DefaultTransformDataHttpInterceptor implements HttpInterceptor {
     if (r.data is String) {
       var d = r.data.replaceFirst(_PROTECTION_PREFIX, '');
       if (d.contains(_JSON_START) && d.contains(_JSON_END)) {
-        d = JSON.decode(d);
+        d = JSON.decode(d, reviver: _jsonParser.reviver);
       }
       return new HttpResponse.copy(r, data: d);
     }
