@@ -1337,6 +1337,20 @@ void main() {
 
             expect(callback).toHaveBeenCalledOnce();
           }));
+
+          describe('with custom JsonParser',(){
+            beforeEachModule((Module module) {
+              var duration = new Duration(milliseconds: 100);
+              module.bind(JsonParser, toValue: new CustomJsonParser());
+            });
+
+            it('should transform json using custom parser', async((){
+              backend.expect('POST', '/url', '{"one":"two","date":"is a date, catch it!"}').respond('');
+              http(method: 'POST', url: '/url', data: {'one': 'two', 'date': new DateTime(1970, 01, 01)});
+              flush();
+            }));
+
+          });
         });
 
 
@@ -1415,20 +1429,7 @@ void main() {
               expect(callback.mostRecentCall.positionalArguments[0].data).toEqual('{{some}}');
             }));
           });
-          
-            describe('with custom JsonParser',(){
-              beforeEachModule((Module module) {
-              var duration = new Duration(milliseconds: 100);
-                module.bind(JsonParser, toValue: new CustomJsonParser());
-              });
 
-              it('should transform json using custom parser', async((){
-                backend.expect('POST', '/url', '{"one":"two","date":"is a date, catch it!"}').respond('');
-                http(method: 'POST', url: '/url', data: {'one': 'two', 'date': new DateTime(1970, 01, 01)});
-                flush();
-              }));
-
-          });
 
           it('should have access to response headers', async(() {
             backend.expect('GET', '/url').respond(200, 'response', {'h1': 'header1'});
