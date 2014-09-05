@@ -49,7 +49,7 @@ toBool(x) => (x is num) ? x != 0 : x == true;
 main() {
   describe('parse', () {
     Map<String, dynamic> context;
-    Parser<Expression> parser;
+    Parser parser;
     FormatterMap formatters;
 
     beforeEachModule((Module module) {
@@ -157,7 +157,7 @@ main() {
     });
 
     describe('error handling', () {
-      Parser<Expression> parser;
+      Parser parser;
 
       beforeEach((Parser p) {
         parser = p;
