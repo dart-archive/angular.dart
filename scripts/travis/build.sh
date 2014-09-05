@@ -7,7 +7,7 @@ echo '==========='
 echo '== BUILD =='
 echo '==========='
 
-SIZE_TOO_BIG_COUNT=0
+SIZE_UNEXPECTED_COUNT=0
 
 export SAUCE_ACCESS_KEY=`echo $SAUCE_ACCESS_KEY | rev`
 
@@ -15,13 +15,18 @@ function checkSize() {
   file=$1
   if [[ ! -e $file ]]; then
     echo Could not find file: $file
-    SIZE_TOO_BIG_COUNT=$((SIZE_TOO_BIG_COUNT + 1));
+    SIZE_UNEXPECTED_COUNT=$((SIZE_UNEXPECTED_COUNT + 1));
   else
     expected=$2
     actual=`cat $file | gzip | wc -c`
     if (( 100 * $actual >= 105 * $expected )); then
       echo ${file} is too large expecting ${expected} was ${actual}.
-      SIZE_TOO_BIG_COUNT=$((SIZE_TOO_BIG_COUNT + 1));
+      SIZE_UNEXPECTED_COUNT=$((SIZE_UNEXPECTED_COUNT + 1));
+    fi
+    if (( 100 * $actual <= 95 * $expected )); then
+      echo ${file} is too small expecting ${expected} was ${actual}.
+      echo Please update scripts/travis/build.sh with the correct value.
+      SIZE_UNEXPECTED_COUNT=$((SIZE_UNEXPECTED_COUNT + 1));
     fi
   fi
 }
@@ -35,7 +40,7 @@ function checkAllSizes() {(
     checkSize build/web/bouncing_balls.dart.js 223927
     checkSize build/web/hello_world.dart.js 221838
     checkSize build/web/todo.dart.js 224414
-    if ((SIZE_TOO_BIG_COUNT > 0)); then
+    if ((SIZE_UNEXPECTED_COUNT > 0)); then
       exit 1
     else
       echo Generated JavaScript file size check OK.
