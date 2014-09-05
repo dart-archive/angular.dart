@@ -9,6 +9,15 @@ if [ "$USE_G3" = "YES" ]; then
   git config --global user.name "AngularDart on Travis"
   git remote add upstream https://github.com/angular/angular.dart.git
   git fetch upstream
+  # Set up a custom merge driver so that top level pubspec.lock conflicts for
+  # do not fail the rebase.
+  echo $'pubspec.lock merge=merge_pubspec_lock\n' >> .git/info/attributes
+  cat >> .git/config <<"EOF"
+[merge "merge_pubspec_lock"]
+  name = "Auto merge pubspec.lock conflicts by ignoring changes"
+  driver = cp %O %A
+  recursive = text
+EOF
   git rebase --onto upstream/g3v1x upstream/g3v1x-master
 fi
 
