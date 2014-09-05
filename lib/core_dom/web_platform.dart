@@ -54,7 +54,10 @@ class PlatformViewCache implements ViewCache {
   final ViewCache cache;
   final String selector;
   final WebPlatform platform;
+  final dom.HtmlDocument parseDocument =
+      dom.document.implementation.createHtmlDocument('');
 
+  get resourceResolver => cache.resourceResolver;
   get viewFactoryCache => cache.viewFactoryCache;
   Http get http => cache.http;
   TemplateCache get templateCache => cache.templateCache;
@@ -63,7 +66,7 @@ class PlatformViewCache implements ViewCache {
 
   PlatformViewCache(this.cache, this.selector, this.platform);
 
-  ViewFactory fromHtml(String html, DirectiveMap directives) {
+  ViewFactory fromHtml(String html, DirectiveMap directives, [Uri baseUri]) {
     ViewFactory viewFactory;
 
     if (selector != null && selector != "" && platform.shadowDomShimRequired) {
@@ -74,29 +77,34 @@ class PlatformViewCache implements ViewCache {
       viewFactory = viewFactoryCache.get(html);
     }
 
+    if (baseUri != null)
+      html = resourceResolver.resolveHtml(html, baseUri);
+    else
+      html = resourceResolver.resolveHtml(html);
+
+    var div = parseDocument.createElement('div');
+    div.setInnerHtml(html, treeSanitizer: treeSanitizer);
+
+    if (selector != null && selector != "" && platform.shadowDomShimRequired) {
+      // This MUST happen before the compiler is called so that every dom element gets touched
+      // before the compiler removes them for transcluding directives like `ng-if`
+      platform.shimShadowDom(div, selector);
+    }
+
     if (viewFactory == null) {
-      var div = new dom.DivElement();
-      div.setInnerHtml(html, treeSanitizer: treeSanitizer);
-
-      if (selector != null && selector != "" && platform.shadowDomShimRequired) {
-        // This MUST happen before the compiler is called so that every dom element gets touched
-        // before the compiler removes them for transcluding directives like `ng-if`
-        platform.shimShadowDom(div, selector);
-      }
-
       viewFactory = compiler(div.nodes, directives);
       viewFactoryCache.put(html, viewFactory);
     }
     return viewFactory;
   }
 
-  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives) {
+  async.Future<ViewFactory> fromUrl(String url, DirectiveMap directives, [Uri baseUri]) {
     var key = "[$selector]$url";
     ViewFactory viewFactory = viewFactoryCache.get(key);
     if (viewFactory == null) {
       return http.get(url, cache: templateCache).then((resp) {
-        var viewFactoryFromHttp = fromHtml(resp.responseText, directives);
-        viewFactoryCache.put(key, viewFactoryFromHttp);
+        var viewFactoryFromHttp = fromHtml(resp.responseText, directives, baseUri);
+        viewFactoryCache.put(url, viewFactoryFromHttp);
         return viewFactoryFromHttp;
       });
     }
