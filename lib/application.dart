@@ -145,6 +145,7 @@ abstract class Application {
   dom.Element selector(String selector) => element = _find(selector);
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
+    traceDetectWTF(context);
     modules.add(ngModule);
     ngModule..bind(VmTurnZone, toValue: zone)
             ..bind(Application, toValue: this)
