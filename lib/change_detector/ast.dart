@@ -140,7 +140,7 @@ class CollectionAST extends AST {
   Record setupRecord(WatchGroup watchGroup) => watchGroup.addCollectionRecord(this);
 }
 
-String _fnToString(String name, List<AST> items) => name + items.join(', ');
+String _fnToString(String name, List<AST> items) => name + '(' + items.join(', ') + ')';
 
 
 

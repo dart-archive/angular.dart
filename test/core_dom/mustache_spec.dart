@@ -35,9 +35,8 @@ main() {
         expect(log).toEqual([]);
         expect(_.rootElement.attributes['dir-foo']).toEqual('');
 
-        _.rootScope.apply(() {
-          _.rootScope.context['val'] = 'value';
-        });
+        _.rootScope.apply('val = "value"');
+
         // _FooDirective should have observed exactly one change.
         expect(_.rootElement.attributes['dir-foo']).toEqual('value');
         expect(log).toEqual(['value']);

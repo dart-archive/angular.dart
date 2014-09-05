@@ -215,11 +215,12 @@ class ElementBinder {
         if (directive is AttachAware) {
           var taskId = (tasks != null) ? tasks.registerTask() : 0;
           Watch watch;
-          watch = scope.watch('"attach()"', // Cheat a bit.
+          watch = scope.watch('"attach($_count)"', // Cheat a bit.
               (_, __) {
             watch.remove();
             if (tasks != null) tasks.completeTask(taskId);
           });
+          _count++;
         }
 
         if (tasks != null) tasks.doneRegistering();
@@ -232,6 +233,8 @@ class ElementBinder {
       }
     }
   }
+
+  static int _count = 0;
 
   void _createDirectiveFactories(DirectiveRef ref, DirectiveInjector nodeInjector, node,
                                  nodeAttrs) {

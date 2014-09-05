@@ -2,36 +2,14 @@ library change_detector_spec;
 
 import '../_specs.dart';
 import 'package:angular/change_detector/change_detector.dart';
-
-// TODO: remove chd prefix once old arch is removed
-import 'package:angular/change_detector/change_detector.dart' as chd show
-    CollectionAST,
-    FunctionApply,
-    PureFunctionAST,
-    ClosureAST,
-    MethodAST,
-    ConstantAST
-;
-
-
-// TODO static version
-// import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
-import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart';
+import 'package:angular/change_detector/field_getter_factory_dynamic.dart';
 import 'package:angular/change_detector/ast_parser.dart';
 import 'dart:math';
 import 'dart:collection';
 
-// TODO  remove
-import 'package:angular/change_detection/change_detection.dart' show
-    FieldGetter,
-    MapChangeRecord,
-    CollectionChangeRecord,
-    CollectionChangeItem,
-    MapKeyValue;
-
 
 void main() {
-  ddescribe('Change detector', () {
+  describe('Change detector', () {
     ChangeDetector detector;
     Parser parser;
     ASTParser parse;
@@ -39,17 +17,13 @@ void main() {
     var context;
     var watchGrp;
 
-    beforeEach((Parser _parser, Logger _log, ClosureMap cm) {
+    beforeEach((Logger _log, ASTParser _parse) {
       context = {};
       log = _log;
       detector = new ChangeDetector(new DynamicFieldGetterFactory());
       watchGrp = detector.createWatchGroup(context);
-      parser = _parser;
-      // TODO bind the new ASTParser
-      parse = new ASTParser(parser, cm);
-
+      parse = _parse;
     });
-
 
     logReactionFn(v, p) => log('$p=>$v');
 
@@ -736,7 +710,6 @@ void main() {
         var group = detector.createWatchGroup(evalContext == null ? context : evalContext);
         var watch = group.watch(parse(expression), (v, _) => log.add(v));
         group.processChanges();
-        group.remove();
         if (log.isEmpty) {
           throw new StateError('Expression <$expression> was not evaluated');
         } else if (log.length > 1) {
@@ -812,8 +785,8 @@ void main() {
         describe('sequence mutations and ref changes', () {
           it('should handle a simultaneous map mutation and reference change', () {
             context['a'] = context['b'] = {1: 10, 2: 20};
-            watchGrp.watch(new chd.CollectionAST(parse('a')), (v, _) => log(v));
-            watchGrp.watch(new chd.CollectionAST(parse('b')), (v, _) => log(v));
+            watchGrp.watch(new CollectionAST(parse('a')), (v, _) => log(v));
+            watchGrp.watch(new CollectionAST(parse('b')), (v, _) => log(v));
             watchGrp.processChanges();
 
             expect(log.length).toEqual(2);
@@ -843,8 +816,8 @@ void main() {
 
           it('should handle a simultaneous list mutation and reference change', () {
             context['a'] = context['b'] = [0, 1];
-            var watchA = watchGrp.watch(new chd.CollectionAST(parse('a')), (v, _) => log(v));
-            var watchB = watchGrp.watch(new chd.CollectionAST(parse('b')), (v, p) => log(v));
+            var watchA = watchGrp.watch(new CollectionAST(parse('a')), (v, _) => log(v));
+            var watchB = watchGrp.watch(new CollectionAST(parse('b')), (v, p) => log(v));
 
             watchGrp.processChanges();
 
@@ -877,7 +850,7 @@ void main() {
 
           it('should work correctly with UnmodifiableListView', () {
             context['a'] = new UnmodifiableListView([0, 1]);
-            var watchA = watchGrp.watch(new chd.CollectionAST(parse('a')), (v, _) => log(v));
+            var watchA = watchGrp.watch(new CollectionAST(parse('a')), (v, _) => log(v));
 
             watchGrp.processChanges();
             expect(log.length).toEqual(1);
@@ -973,9 +946,9 @@ void main() {
         it('should eval pure FunctionApply', () {
           context['a'] = {'val': 1};
 
-          chd.FunctionApply fn = new _LoggingFunctionApply(log);
+          FunctionApply fn = new _LoggingFunctionApply(log);
           var watch = watchGrp.watch(
-              new chd.PureFunctionAST('add', fn, [parse('a.val')]),
+              new PureFunctionAST('add', fn, [parse('a.val')]),
               (v, _) => log(v)
           );
 
@@ -998,7 +971,7 @@ void main() {
           context['b'] = {'val': 2};
 
           var watch = watchGrp.watch(
-             new chd.PureFunctionAST(
+             new PureFunctionAST(
                  'add',
                  (a, b) { log('+'); return a+b; },
                  [parse('a.val'), parse('b.val')]
@@ -1042,7 +1015,7 @@ void main() {
           var innerState = 1;
 
           var watch = watchGrp.watch(
-              new chd.ClosureAST(
+              new ClosureAST(
                   'sum',
                   (a, b) { log('+'); return innerState+a+b; },
                   [parse('a.val'), parse('b.val')]
@@ -1099,7 +1072,7 @@ void main() {
           context['arg0'] = 1;
 
           var watch = watchGrp.watch(
-              new chd.MethodAST(parse('obj'), 'methodA', [parse('arg0')]), (v, _) => log(v));
+              new MethodAST(parse('obj'), 'methodA', [parse('arg0')]), (v, _) => log(v));
 
           // "obj", "arg0"
           expect(watchGrp.watchedFields).toEqual(2);
@@ -1135,12 +1108,12 @@ void main() {
           context['b'] = {'val': 2};
           context['c'] = {'val': 3};
 
-          var aPlusB = new chd.PureFunctionAST(
+          var aPlusB = new PureFunctionAST(
               'add1',
               (a, b) { log('$a+$b'); return a + b; },
               [parse('a.val'), parse('b.val')]);
 
-          var aPlusBPlusC = new chd.PureFunctionAST(
+          var aPlusBPlusC = new PureFunctionAST(
               'add2',
               (b, c) { log('$b+$c'); return b + c; },
               [aPlusB, parse('c.val')]);
@@ -1196,7 +1169,7 @@ void main() {
           context['arg0'] = 1;
 
           var watch = watchGrp.watch(
-              new chd.MethodAST(parse('obj'), 'methodA', [parse('arg0')]), (v, _) => log(v));
+              new MethodAST(parse('obj'), 'methodA', [parse('arg0')]), (v, _) => log(v));
 
           // "obj", "arg0"
           expect(watchGrp.watchedFields).toEqual(2);
@@ -1237,8 +1210,8 @@ void main() {
           context['arg1'] = 1;
 
           // obj.methodA(arg0)
-          var ast = new chd.MethodAST(parse('obj'), 'methodA', [parse('arg0')]);
-          ast = new chd.MethodAST(ast, 'methodA', [parse('arg1')]);
+          var ast = new MethodAST(parse('obj'), 'methodA', [parse('arg0')]);
+          ast = new MethodAST(ast, 'methodA', [parse('arg1')]);
           var watch = watchGrp.watch(ast, (v, _) => log(v));
 
           // "obj", "arg0", "arg1";
@@ -1274,7 +1247,7 @@ void main() {
 
         it('should not return null when evaling method first time', () {
           context['text'] ='abc';
-          var ast = new chd.MethodAST(parse('text'), 'toUpperCase', []);
+          var ast = new MethodAST(parse('text'), 'toUpperCase', []);
           var watch = watchGrp.watch(ast, (v, _) => log(v));
 
           watchGrp.processChanges();
@@ -1284,9 +1257,9 @@ void main() {
         it('should not eval a function if registered during reaction', () {
           context['text'] ='abc';
 
-          var ast = new chd.MethodAST(parse('text'), 'toLowerCase', []);
+          var ast = new MethodAST(parse('text'), 'toLowerCase', []);
           var watch = watchGrp.watch(ast, (v, _) {
-            var ast = new chd.MethodAST(parse('text'), 'toUpperCase', []);
+            var ast = new MethodAST(parse('text'), 'toUpperCase', []);
             watchGrp.watch(ast, (v, _) {
               log(v);
             });
@@ -1302,9 +1275,9 @@ void main() {
           context['obj'] = {'fn': (arg) { log('fn($arg)'); return arg; }};
           context['arg1'] = 'OUT';
           context['arg2'] = 'IN';
-          var ast = new chd.MethodAST(parse('obj'), 'fn', [parse('arg1')]);
+          var ast = new MethodAST(parse('obj'), 'fn', [parse('arg1')]);
           var watch = watchGrp.watch(ast, (v, _) {
-            var ast = new chd.MethodAST(parse('obj'), 'fn', [parse('arg2')]);
+            var ast = new MethodAST(parse('obj'), 'fn', [parse('arg2')]);
             watchGrp.watch(ast, (v, _) {
               log('reaction: $v');
             });
@@ -1319,7 +1292,7 @@ void main() {
         });
 
         it('should ignore NaN != NaN', () {
-          watchGrp.watch(new chd.ClosureAST('NaN', () => double.NAN, []), (_, __) => log('NaN'));
+          watchGrp.watch(new ClosureAST('NaN', () => double.NAN, []), (_, __) => log('NaN'));
 
           watchGrp.processChanges();
           expect(log).toEqual(['NaN']);
@@ -1330,7 +1303,7 @@ void main() {
         }) ;
 
         it('should test string by value', () {
-          watchGrp.watch(new chd.ClosureAST('String', () => 'value', []), (v, _) => log(v));
+          watchGrp.watch(new ClosureAST('String', () => 'value', []), (v, _) => log(v));
 
           watchGrp.processChanges();
           expect(log).toEqual(['value']);
@@ -1341,7 +1314,7 @@ void main() {
         });
 
         it('should read constant', () {
-          var watch = watchGrp.watch(new chd.ConstantAST(123), (v, _) => log(v));
+          var watch = watchGrp.watch(new ConstantAST(123), (v, _) => log(v));
           expect(watch.expression).toEqual('123');
           expect(watchGrp.watchedFields).toEqual(0);
           log.clear();
@@ -1356,7 +1329,7 @@ void main() {
 
         it('should wrap iterable in ObservableList', () {
           context['list'] = [];
-          var watch = watchGrp.watch(new chd.CollectionAST(parse('list')), (v, _) => log(v));
+          var watch = watchGrp.watch(new CollectionAST(parse('list')), (v, _) => log(v));
 
           expect(watchGrp.watchedFields).toEqual(1);
           expect(watchGrp.watchedCollections).toEqual(1);
@@ -1383,8 +1356,8 @@ void main() {
 
         it('should watch literal arrays made of expressions', () {
           context['a'] = 1;
-          var ast = new chd.CollectionAST(
-            new chd.PureFunctionAST('[a]', new ArrayFn(), [parse('a')])
+          var ast = new CollectionAST(
+            new PureFunctionAST('[a]', new ArrayFn(), [parse('a')])
           );
           var watch = watchGrp.watch(ast, (v, _) => log(v));
           watchGrp.processChanges();
@@ -1404,10 +1377,10 @@ void main() {
 
         it('should watch pure function whose result goes to pure function', () {
           context['a'] = 1;
-          var ast = new chd.PureFunctionAST(
+          var ast = new PureFunctionAST(
               '-',
               (v) => -v,
-              [new chd.PureFunctionAST('++', (v) => v + 1, [parse('a')])]
+              [new PureFunctionAST('++', (v) => v + 1, [parse('a')])]
           );
           var watch = watchGrp.watch(ast, (v, _) => log(v));
           expect(watchGrp.processChanges()).not.toBe(null);
@@ -1590,7 +1563,7 @@ void main() {
 
         it('should remove all method watches in group and group\'s children', () {
           context['my'] = new _MyClass(log);
-          var countMethod = new chd.MethodAST(parse('my'), 'count', []);
+          var countMethod = new MethodAST(parse('my'), 'count', []);
           watchGrp.watch(countMethod, (_, __) => log('0a'));
           expectOrder(['0a']);
 
@@ -1622,7 +1595,7 @@ void main() {
 
         it('should add watches within its own group', () {
           context['my'] = new _MyClass(log);
-          var countMethod = new chd.MethodAST(parse('my'), 'count', []);
+          var countMethod = new MethodAST(parse('my'), 'count', []);
           var ra = watchGrp.watch(countMethod, (_, __) => log('a'));
           var child = watchGrp.createChild(context);
           var cb = child.watch(countMethod, (_, __) => log('b'));
@@ -1977,7 +1950,7 @@ class _TestData {
   sub2({a: 0, b: 0}) => a - b;
 }
 
-class _LoggingFunctionApply extends chd.FunctionApply {
+class _LoggingFunctionApply extends FunctionApply {
   Logger logger;
   _LoggingFunctionApply(this.logger);
   apply(List args) => logger(args);

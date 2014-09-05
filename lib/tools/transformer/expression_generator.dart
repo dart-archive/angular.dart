@@ -140,7 +140,7 @@ void _writeStaticExpressionHeader(AssetId id, StringSink sink) {
   sink.write('''
 library ${id.package}.$libPath.generated_expressions;
 
-import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/change_detector/change_detector.dart';
 
 ''');
 }

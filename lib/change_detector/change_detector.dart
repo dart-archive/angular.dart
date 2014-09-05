@@ -6,21 +6,77 @@ library angular.change_detector;
 // Checked on 2014.09.04
 // -> disable coalescence (make it optional, add test for both cases)
 
-import 'dart:collection';
+// TODO:
+// - re-enable tracing
+// - re-enable stopwatches
 
-//////////// TODO: things needs to be moved & cleaned up
-import '../change_detection/change_detection.dart' show
-    FieldGetter,
-    FieldGetterFactory,
-    MapChangeRecord,
-    CollectionChangeRecord,
-    CollectionChangeItem,
-    MapKeyValue;
+// TODO:
+//
+// - It should no more be possible to add a watch during a rfn. This should allow simplifying the
+//   code (the processChanges() loop, and the logic to get the next checkable record).
+// - It should no more be possible to remove a watch group from inside a rfn. We should assert that
+//   the current watch group has not been detached when returning from a rfn.
+
+
+// TODO:
+// Currently the (H&T) markers participate in the checkable & releasable lists. The code could be
+// more efficient if the markers are not part of those lists.
+// Note: For efficiency when manipulating groups, the marker should still have their checkNext
+// field pointing to the first checkable record in the group (releaseNext/releasable Marker)
+//
+// Also each group has its own head & tail markers, it could be possible to coalesce head-tail
+// but that implies that the head/tail marker of a group could be updated when a group is removed
+// or added - this had been implemented but reverted for now until Proto are implemented
+
+
+// TODO:
+// replace _hasFreshListener by initializing _value with a unique value (ie this), should allow
+// avoiding to read the mode field
+
+// TODO: implement with ProtoWatchGroup / ProtoRecord
+// We need to talk about this more in depth. But my latest thinking is that we can not create
+// WatchGroup with context. The context needs to be something which we can assign later. The reason
+// for this is that we want to be able to reset the context at runtime. The benefit would be to be
+// able to reuse an instance of WatchGroup for performance reasons. Let's discus.
+
+import 'dart:collection';
 
 part 'ast.dart';
 part 'map_changes.dart';
 part 'collection_changes.dart';
+part 'prototype_map.dart';
 
+typedef void EvalExceptionHandler(error, stack);
+
+typedef dynamic FieldGetter(object);
+typedef void FieldSetter(object, value);
+
+typedef void ReactionFn(value, previousValue);
+typedef void ChangeLog(String expression, current, previous);
+
+abstract class FieldGetterFactory {
+  FieldGetter getter(Object object, String name);
+}
+
+class AvgStopwatch extends Stopwatch {
+  int _count = 0;
+
+  int get count => _count;
+
+  void reset() {
+    _count = 0;
+    super.reset();
+  }
+
+  int increment(int count) => _count += count;
+
+  double get ratePerMs => elapsedMicroseconds == 0
+      ? 0.0
+      : _count / elapsedMicroseconds * 1000;
+}
+
+
+// TODO: this should not be needed anymore
 /**
  * Extend this class if you wish to pretend to be a function, but you don't know
  * number of arguments with which the function will get called with.
@@ -30,13 +86,12 @@ abstract class FunctionApply {
   dynamic apply(List arguments);
 }
 
-///////////////////////////////////////////
-
-
 /**
  * [ChangeDetector] allows creating root watch groups holding the [Watch]es
  */
 class ChangeDetector {
+  static int _nextRootId = 0;
+
   final FieldGetterFactory _fieldGetterFactory;
 
   ChangeDetector(this._fieldGetterFactory);
@@ -70,6 +125,7 @@ class WatchGroup {
 
   final FieldGetterFactory _fieldGetterFactory;
 
+  // TODO: Do we really need this ? (keep the API simple)
   // Watches in this group
   int _watchedFields = 0;
   int _watchedCollections = 0;
@@ -140,29 +196,42 @@ class WatchGroup {
 
   WatchGroup(this._parent, this._context, this._fieldGetterFactory) {
     _tailMarker = new Record._marker(this);
+    _headMarker = new Record._marker(this);
+
+    // Cross link the head and tail markers
+    _headMarker._next = _tailMarker;
+    _headMarker._releasableNext = _tailMarker;
+    _headMarker._checkNext = _tailMarker;
+
+    _tailMarker._prev = _headMarker;
+    _tailMarker._checkPrev = _headMarker;
 
     if (_parent == null) {
       _root = this;
-      _id = '#';
-      // Create a head marker for the root group
-      _headMarker = new Record._marker(this);
+      _id = '${ChangeDetector._nextRootId++}';
     } else {
-      _id = '${_parent._id == null ? '#' : _parent._id}.${_parent._nextChildId++}';
+      _id = '${_parent._id}.${_parent._nextChildId++}';
       _root = _parent._root;
       // Re-use the previous group [_tailMarker] as our head
-      var previousGroupTail = _parent._tailMarkerIncludingChildren;
-      _headMarker = previousGroupTail;
+      var prevGroupTail = _parent._tailMarkerIncludingChildren;
 
-      // Put the tail markers in record, releasable and check lists
-      _tailMarker._next = previousGroupTail._next;
-      if (previousGroupTail._next != null) {
-        previousGroupTail._next._prev = _tailMarker;
-        // We have been inserted before a group which head was the tail of our previous group
-        // Change the head of this next group to be our own tail
-        previousGroupTail._next._watchGroup._headMarker = _tailMarker;
+      assert(prevGroupTail == null || prevGroupTail.isMarker);
+
+      _tailMarker._releasableNext = prevGroupTail._releasableNext;
+      _tailMarker._checkNext = prevGroupTail._checkNext;
+      _tailMarker._next = prevGroupTail._next;
+
+      _headMarker._prev = prevGroupTail;
+      _headMarker._checkPrev = prevGroupTail;
+
+      prevGroupTail._next = _headMarker;
+      prevGroupTail._checkNext = _headMarker;
+      prevGroupTail._releasableNext = _headMarker;
+
+      if (_tailMarker._next != null) {
+        _tailMarker._next._prev = _tailMarker;
+        _tailMarker._checkNext._checkPrev = _tailMarker;
       }
-      _tailMarker._releasableNext = previousGroupTail._releasableNext;
-      _tailMarker._checkNext = previousGroupTail._checkNext;
 
       // Link this group in the parent's group list
       if (_parent._childHead == null) {
@@ -175,13 +244,6 @@ class WatchGroup {
         _parent._childTail = this;
       }
     }
-
-    // Cross link the head and tail markers
-    _headMarker._next = _tailMarker;
-    _tailMarker._prev = _headMarker;
-    _headMarker._releasableNext = _tailMarker;
-    _headMarker._checkNext = _tailMarker;
-    _tailMarker._checkPrev = _headMarker;
   }
 
   /// Creates a child [WatchGroup]
@@ -196,7 +258,7 @@ class WatchGroup {
   }
 
   /// Calls reaction functions when a watched [AST] value has been modified since last call
-  int processChanges() {
+  int processChanges({EvalExceptionHandler exceptionHandler, ChangeLog changeLog}) {
     _processingChanges = true;
     int changes = 0;
     // We need to keep a reference on the previously checked record to find out the next one
@@ -204,11 +266,24 @@ class WatchGroup {
     for (Record record = _headMarker._checkNext;
          record != _tailMarkerIncludingChildren;
          record = checkPrev._checkNext) {
-      if (!record.isMarker) changes += record.processChange();
+
+      try {
+        changes += record.processChange(changeLog: changeLog);
+      } catch (e, s) {
+        if (exceptionHandler == null) {
+          rethrow;
+        } else {
+          exceptionHandler(e, s);
+        }
+      }
+
+      // TODO: It is no more possible to add a watch during a rfn so this code could be simplified
+
+      // TODO: assert that the watch group is not removed (only needed when returning from a rfn)
 
       if (record.removeFromCheckQueue) {
         // If the record gets removed from the check queue, do not update `checkPrev`
-        record.$removeFromCheckQueue();
+        if (record.isChecked) record.$removeFromCheckQueue();
       } else if (record._checkNext != null) {
         // Update `checkPrev` to be the current record unless it's no more checked (removed from
         // inside the reaction function)
@@ -230,35 +305,33 @@ class WatchGroup {
 
   /// De-activate the group and free any underlying resources
   void remove() {
+    if (this == _root) throw new StateError('Root ChangeDetector can not be removed');
+
     // Release the resources associated with the records
     for (Record record = _headMarker._releasableNext;
          record != _tailMarkerIncludingChildren;
          record = record._releasableNext) {
-      if (!record.isMarker) record.release();
+      record.release();
     }
 
     _recordCache.clear();
 
     // Unlink the records
-    if (this != _root) {
-      // Change the `nextGroupHead` to be the `previousGroupTail`
-      var nextGroupHead = _tailMarkerIncludingChildren;
-      var previousGroupTail = _headMarker;
-      previousGroupTail._next = nextGroupHead._next;
-      if (nextGroupHead._next != null) {
-        previousGroupTail._next._prev = previousGroupTail;
-        // The head of the next group was our tail, make it the tail of the previous group (which is
-        // our head)
-        previousGroupTail._next._watchGroup._headMarker = previousGroupTail;
-      }
-      previousGroupTail._checkNext = nextGroupHead._checkNext;
-      if (previousGroupTail._checkNext != null) {
-        previousGroupTail._checkNext._checkPrev = previousGroupTail;
-      }
-      previousGroupTail._releasableNext = nextGroupHead._releasableNext;
-      nextGroupHead._next = null;
-      nextGroupHead._releasableNext = null;
-      nextGroupHead._checkNext = null;
+    var nextGroupHead = _tailMarkerIncludingChildren._next;
+    var prevGroupTail = _headMarker._prev;
+
+    assert(nextGroupHead == null || nextGroupHead.isMarker);
+    assert(prevGroupTail == null || prevGroupTail.isMarker);
+
+    if (prevGroupTail != null) {
+      prevGroupTail._next = nextGroupHead;
+      prevGroupTail._checkNext = nextGroupHead;
+      prevGroupTail._releasableNext = nextGroupHead;
+    }
+
+    if (nextGroupHead != null) {
+      nextGroupHead._prev = prevGroupTail;
+      nextGroupHead._checkPrev = prevGroupTail;
     }
 
     // Unlink the group
@@ -387,8 +460,12 @@ class WatchGroup {
     // We can only share records for collection when they have not yet fired. After they have first
     // fired the underlying `CollectionChangeRecord` or `MapChangeRecord` is initialized and can
     // not be re-used.
-    if (record == null ||
-        ast is CollectionAST && record._hasFired) {
+    // TODO: should the following be optimized - see once Proto has been implemented
+    // Because a collection can be embedded in any AST (ie `|stringify(#collection(foo))`) it is not
+    // possible to re-use the record if it has already fired as the collection changes would not be
+    // detected properly. The current implementation only re-use the record when it has not fired
+    // yet (which is not optimal if the AST does not contain a collection).
+    if (record == null || record._hasFired) {
       record = ast.setupRecord(this);
       _recordCache[expression] = record;
     }
@@ -564,7 +641,8 @@ class Record extends ChangeListener {
   // The associated expression
   String _expression;
 
-  var _previousValue;
+  // The value observed during the last `processChange` call
+  var _value;
 
   // Whether listeners have been added since the [_processChange] last return.
   // When this is the case, we must ensure that the added listeners are triggered even if no changes
@@ -669,7 +747,7 @@ class Record extends ChangeListener {
   Record.constant(this._watchGroup, this._expression, value)
       : _args = null
   {
-    _previousValue = value;
+    _value = value;
     _$mode = _FLAG_IS_CONSTANT;
   }
 
@@ -691,8 +769,7 @@ class Record extends ChangeListener {
   }
 
   void release() {
-    assert(!isMarker);
-    assert(_$releaseFn != null);
+    assert(isMarker || _$releaseFn != null);
     if (!isMarker) _$releaseFn(this);
   }
 
@@ -746,24 +823,26 @@ class Record extends ChangeListener {
   }
 
   /// Returns the number of invoked reaction function
-  int processChange() {
+  int processChange({ChangeLog changeLog}) {
+    if (isMarker) return 0;
     assert(_mode != null);
-    assert(!isMarker);
 
     if (isConstant) {
        // Constant records should only get checked when they are added or when listeners are added
        // then they must be removed from the check queue as they can not change.
        assert(!_hasFired || _hasFreshListener);
-       int rfnCount = _notifyFreshListeners(_previousValue);
+       int rfnCount = _notifyFreshListeners(changeLog, _value);
        removeFromCheckQueue = true;
        return rfnCount;
     }
 
+    _hasFired = true;
+
     if (isFieldMode) {
-      return _processFieldChange();
+      return _processFieldChange(changeLog: changeLog);
     } else {
       assert(isEvalMode);
-      return _processEvalChange();
+      return _processEvalChange(changeLog: changeLog);
     }
   }
 
@@ -778,6 +857,7 @@ class Record extends ChangeListener {
       if (isConstant) attrs.add('type=constant');
       if (isCollectionMode) attrs.add('collection');
       if (_hasFreshListener) attrs.add('has fresh listeners');
+      if (_hasFired) attrs.add('has fired');
       if (isChecked) attrs.add('is Checked');
       attrs.add('mode=$_mode');
       asString = attrs.join(', ');
@@ -800,13 +880,13 @@ class Record extends ChangeListener {
         _$mode |= _FLAG_IS_COLLECTION;
         if (_mode != _MODE_MAP) {
           _mode =  _MODE_MAP;
-          _previousValue = new _MapChangeRecord();
+          _value = new MapChangeRecord();
         }
       } else if (context is Iterable) {
         _$mode |= _FLAG_IS_COLLECTION;
         if (_mode != _MODE_ITERABLE) {
           _mode = _MODE_ITERABLE;
-          _previousValue = new _CollectionChangeRecord();
+          _value = new CollectionChangeRecord();
         }
       } else {
         _mode = _MODE_IDENTITY;
@@ -842,7 +922,7 @@ class Record extends ChangeListener {
     }
   }
 
-  int _processFieldChange() {
+  int _processFieldChange({ChangeLog changeLog}) {
     var value;
     switch (_mode) {
       case _MODE_NULL_FIELD:
@@ -871,28 +951,28 @@ class Record extends ChangeListener {
         _mode = _MODE_NULL_FIELD;
         break;
       case _MODE_MAP:
-        return (_previousValue as _MapChangeRecord)._check(_context) ?
-            _notifyListeners(_previousValue, null):
-            _notifyFreshListeners(_previousValue);
+        return (_value as MapChangeRecord)._check(_context) ?
+            _notifyListeners(changeLog, _value, null):
+            _notifyFreshListeners(changeLog, _value);
       case _MODE_ITERABLE:
-        return (_previousValue as _CollectionChangeRecord)._check(_context) ?
-            _notifyListeners(_previousValue, null):
-            _notifyFreshListeners(_previousValue);
+        return (_value as CollectionChangeRecord)._check(_context) ?
+            _notifyListeners(changeLog, _value, null):
+            _notifyFreshListeners(changeLog, _value);
       default:
         assert(false);
     }
 
-    if (!_looseIdentical(value, _previousValue)) {
-      var previousValue = _previousValue;
-      _previousValue = value;
-      return _notifyListeners(value, previousValue);
+    if (!_looseIdentical(value, _value)) {
+      var previousValue = _value;
+      _value = value;
+      return _notifyListeners(changeLog, value, previousValue);
     } else {
-      return _notifyFreshListeners(value);
+      return _notifyFreshListeners(changeLog, value);
     }
     return 0;
   }
 
-  int _processEvalChange() {
+  int _processEvalChange({ChangeLog changeLog}) {
     var value;
     switch (_mode) {
       case _MODE_NULL_EVAL:
@@ -939,12 +1019,12 @@ class Record extends ChangeListener {
         throw ("$_mode is not supported in FunctionRecord.check()");
     }
 
-    if (!_looseIdentical(_previousValue, value)) {
-      var previousValue = _previousValue;
-      _previousValue = value;
-      return _notifyListeners(value, _previousValue);
+    if (!_looseIdentical(_value, value)) {
+      var previousValue = _value;
+      _value = value;
+      return _notifyListeners(changeLog, value, previousValue);
     } else {
-      return _notifyFreshListeners(value);
+      return _notifyFreshListeners(changeLog, value);
     }
     return 0;
   }
@@ -973,21 +1053,24 @@ class Record extends ChangeListener {
     _checkPrev._checkNext = this;
   }
 
-  int _notifyListeners(currentValue, previousValue) {
+  int _notifyListeners(ChangeLog changeLog, currentValue, previousValue) {
     int invokedWatches = 0;
+    if (changeLog != null) changeLog(_expression, currentValue, previousValue);
     for (ChangeListener listener = _listenerHead;
          listener != null;
          listener = listener._listenerNext) {
       listener._onChange(currentValue, previousValue);
       if (listener is Watch) invokedWatches++;
     }
+    _hasFreshListener = false;
     return invokedWatches;
   }
 
   /// Notify the listeners added after the last check and not fired yet
-  int _notifyFreshListeners(value) {
+  int _notifyFreshListeners(ChangeLog changeLog, value) {
     int invokedWatches = 0;
     if (_hasFreshListener) {
+      if (changeLog != null) changeLog(_expression, value, null);
       for (ChangeListener listener = _listenerHead;
            listener != null;
            listener = listener._listenerNext) {
@@ -1025,7 +1108,10 @@ class Record extends ChangeListener {
     // initialize the context until the next cycle which is achieved by setting
     // `_hasFreshListener = true`
     if (_watchGroup._processingChanges) {
-      if (listener is Record) listener.context = _previousValue;
+      if (listener is Record) listener.context = _value;
+      // Setting the context is a no-op for constant records we need to set the fresh listeners
+      // flag to true to make sure the listeners will be triggered
+      if (isConstant) _hasFreshListener = true;
     } else {
       _hasFreshListener = true;
     }

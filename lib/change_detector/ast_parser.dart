@@ -9,13 +9,6 @@ import 'package:angular/core/formatter.dart';
 import 'package:angular/change_detector/change_detector.dart';
 import 'package:angular/core/parser/utils.dart';
 
-
-// TODO
-import '../change_detection/change_detection.dart' show
-  CollectionChangeRecord,
-  MapChangeRecord;
-
-
 class _FunctionChain {
   final Function fn;
   _FunctionChain _next;

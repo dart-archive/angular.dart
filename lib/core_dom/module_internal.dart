@@ -24,8 +24,9 @@ import 'package:angular/core_dom/resource_url_resolver.dart';
 export 'package:angular/core_dom/resource_url_resolver.dart'
     show ResourceUrlResolver, ResourceResolverConfig;
 
-import 'package:angular/change_detection/watch_group.dart' show Watch, PrototypeMap;
-import 'package:angular/change_detection/ast_parser.dart';
+import 'package:angular/change_detector/change_detector.dart';
+export 'package:angular/change_detector/change_detector.dart' show PrototypeMap;
+import 'package:angular/change_detector/ast_parser.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/ng_tracing.dart';
 

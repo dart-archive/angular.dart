@@ -1,4 +1,4 @@
-part of angular.watch_group;
+part of angular.change_detector;
 
 class PrototypeMap<K, V> implements Map<K,V> {
   final Map<K, V> prototype;

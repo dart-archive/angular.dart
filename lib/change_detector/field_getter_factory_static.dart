@@ -1,6 +1,8 @@
-library dirty_checking_change_detector_static;
+library field_getter_factory.static;
 
-import 'package:angular/change_detection/change_detection.dart';
+import 'change_detector.dart' show
+    FieldGetter,
+    FieldGetterFactory;
 
 class StaticFieldGetterFactory implements FieldGetterFactory {
   Map<String, FieldGetter> getters;

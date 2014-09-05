@@ -1,22 +1,22 @@
 part of angular.change_detector;
 
-class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
-  final _records = new HashMap<dynamic, KeyValueRecord>();
+class MapChangeRecord<K, V> {
+  final _records = new HashMap<dynamic, MapKeyValue>();
   Map _map;
 
   Map get map => _map;
 
-  KeyValueRecord<K, V> _mapHead;
-  KeyValueRecord<K, V> _previousMapHead;
-  KeyValueRecord<K, V> _changesHead, _changesTail;
-  KeyValueRecord<K, V> _additionsHead, _additionsTail;
-  KeyValueRecord<K, V> _removalsHead, _removalsTail;
+  MapKeyValue<K, V> _mapHead;
+  MapKeyValue<K, V> _previousMapHead;
+  MapKeyValue<K, V> _changesHead, _changesTail;
+  MapKeyValue<K, V> _additionsHead, _additionsTail;
+  MapKeyValue<K, V> _removalsHead, _removalsTail;
 
   bool get isDirty => _additionsHead != null ||
                      _changesHead != null ||
                      _removalsHead != null;
 
-  KeyValueRecord<K, V> r;
+  MapKeyValue<K, V> r;
 
   void forEachItem(void f(MapKeyValue<K, V> change)) {
     for (r = _mapHead; r != null; r = r._next) {
@@ -52,9 +52,9 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     _reset();
     _map = map;
     Map records = _records;
-    KeyValueRecord oldSeqRecord = _mapHead;
-    KeyValueRecord lastOldSeqRecord;
-    KeyValueRecord lastNewSeqRecord;
+    MapKeyValue oldSeqRecord = _mapHead;
+    MapKeyValue lastOldSeqRecord;
+    MapKeyValue lastNewSeqRecord;
     var seqChanged = false;
     map.forEach((key, value) {
       var newSeqRecord;
@@ -75,7 +75,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
         if (records.containsKey(key)) {
           newSeqRecord = records[key];
         } else {
-          newSeqRecord = records[key] = new KeyValueRecord(key);
+          newSeqRecord = records[key] = new MapKeyValue(key);
           newSeqRecord._currentValue = value;
           _addToAdditions(newSeqRecord);
         }
@@ -102,7 +102,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   void _reset() {
     if (isDirty) {
       // Record the state of the mapping
-      for (KeyValueRecord record = _previousMapHead = _mapHead;
+      for (MapKeyValue record = _previousMapHead = _mapHead;
            record != null;
            record = record._next) {
         record._nextPrevious = record._next;
@@ -112,7 +112,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
   }
 
   void _undoDeltas() {
-    KeyValueRecord<K, V> r;
+    MapKeyValue<K, V> r;
 
     for (r = _changesHead; r != null; r = r._nextChanged) {
       r._previousValue = r._currentValue;
@@ -151,7 +151,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     _removalsHead = _removalsTail = null;
   }
 
-  void _truncate(KeyValueRecord lastRecord, KeyValueRecord record) {
+  void _truncate(MapKeyValue lastRecord, MapKeyValue record) {
     while (record != null) {
       if (lastRecord == null) {
         _mapHead = null;
@@ -175,12 +175,12 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     }
   }
 
-  bool _isInRemovals(KeyValueRecord record) =>
+  bool _isInRemovals(MapKeyValue record) =>
       record == _removalsHead ||
       record._nextRemoved != null ||
       record._prevRemoved != null;
 
-  void _addToRemovals(KeyValueRecord record) {
+  void _addToRemovals(MapKeyValue record) {
     assert(record._next == null);
     assert(record._nextAdded == null);
     assert(record._nextChanged == null);
@@ -195,8 +195,8 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     }
   }
 
-  void _removeFromSeq(KeyValueRecord prev, KeyValueRecord record) {
-    KeyValueRecord next = record._next;
+  void _removeFromSeq(MapKeyValue prev, MapKeyValue record) {
+    MapKeyValue next = record._next;
     if (prev == null) {
       _mapHead = next;
     } else {
@@ -208,7 +208,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     })());
   }
 
-  void _removeFromRemovals(KeyValueRecord record) {
+  void _removeFromRemovals(MapKeyValue record) {
     assert(record._next == null);
     assert(record._nextAdded == null);
     assert(record._nextChanged == null);
@@ -228,7 +228,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     record._prevRemoved = record._nextRemoved = null;
   }
 
-  void _addToAdditions(KeyValueRecord record) {
+  void _addToAdditions(MapKeyValue record) {
     assert(record._next == null);
     assert(record._nextAdded == null);
     assert(record._nextChanged == null);
@@ -242,7 +242,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
     }
   }
 
-  void _addToChanges(KeyValueRecord record) {
+  void _addToChanges(MapKeyValue record) {
     assert(record._nextAdded == null);
     assert(record._nextChanged == null);
     assert(record._nextRemoved == null);
@@ -257,7 +257,7 @@ class _MapChangeRecord<K, V> implements MapChangeRecord<K, V> {
 
   String toString() {
     List itemsList = [], previousList = [], changesList = [], additionsList = [], removalsList = [];
-    KeyValueRecord<K, V> r;
+    MapKeyValue<K, V> r;
     for (r = _mapHead; r != null; r = r._next) {
       itemsList.add("$r");
     }
@@ -283,20 +283,20 @@ removals: ${removalsList.join(", ")}
   }
 }
 
-class KeyValueRecord<K, V> implements MapKeyValue<K, V> {
+class MapKeyValue<K, V> {
   final K key;
   V _previousValue, _currentValue;
 
   V get previousValue => _previousValue;
   V get currentValue => _currentValue;
 
-  KeyValueRecord<K, V> _nextPrevious;
-  KeyValueRecord<K, V> _next;
-  KeyValueRecord<K, V> _nextAdded;
-  KeyValueRecord<K, V> _nextRemoved, _prevRemoved;
-  KeyValueRecord<K, V> _nextChanged;
+  MapKeyValue<K, V> _nextPrevious;
+  MapKeyValue<K, V> _next;
+  MapKeyValue<K, V> _nextAdded;
+  MapKeyValue<K, V> _nextRemoved, _prevRemoved;
+  MapKeyValue<K, V> _nextChanged;
 
-  KeyValueRecord(this.key);
+  MapKeyValue(this.key);
 
   String toString() => _previousValue == _currentValue
         ? "$key"

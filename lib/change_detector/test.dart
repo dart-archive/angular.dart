@@ -3,17 +3,9 @@ import 'package:angular/core/parser/dynamic_closure_map.dart';
 import 'package:angular/core/parser/dynamic_parser.dart';
 import 'package:angular/core/registry_dynamic.dart';
 
-// TODO
-import 'package:angular/change_detection/dirty_checking_change_detector_dynamic.dart' show
-    FieldGetterFactory,
-    DynamicFieldGetterFactory;
-
 import 'package:angular/change_detector/ast_parser.dart';
-
-
 import 'package:angular/change_detector/change_detector.dart';
-
-import 'package:angular/change_detector/change_detector.dart' as cd show ConstantAST;
+import 'package:angular/change_detector/field_getter_factory_dynamic.dart';
 
 import 'package:angular/core/parser/parser.dart';
 

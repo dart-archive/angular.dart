@@ -1,8 +1,7 @@
 library scope2_spec;
 
 import '../_specs.dart';
-import 'package:angular/change_detection/change_detection.dart' hide ExceptionHandler;
-import 'package:angular/change_detection/dirty_checking_change_detector.dart';
+import 'package:angular/change_detector/change_detector.dart' hide ExceptionHandler;
 import 'dart:async';
 import 'dart:math';
 
@@ -11,7 +10,6 @@ void main() {
     beforeEachModule((Module module) {
       Map context = {};
       module
-          ..bind(ChangeDetector, toImplementation: DirtyCheckingChangeDetector)
           ..bind(Object, toValue: context)
           ..bind(Map, toValue: context)
           ..bind(RootScope)
@@ -109,8 +107,9 @@ void main() {
         rootScope.watch('fn()', (value, previous) => logger('=> $value'));
         rootScope.watch('a.fn()', (value, previous) => logger('-> $value'));
         rootScope.digest();
-        expect(logger).toEqual(['fn', 'a.fn', '=> 1', '-> 2',
-        /* second loop*/ 'fn', 'a.fn']);
+        expect(logger).toEqual(['fn', '=> 1', 'a.fn', '-> 2',
+                                // Second loop
+                                'fn', 'a.fn']);
         logger.clear();
         rootScope.digest();
         expect(logger).toEqual(['fn', 'a.fn']);
@@ -884,7 +883,9 @@ void main() {
       it(r'should apply expression with full lifecycle', (RootScope rootScope) {
         var log = '';
         var child = rootScope.createChild({"parent": rootScope.context});
-        rootScope.watch('a', (a, _) { log += '1'; }, canChangeModel: false);
+        rootScope.watch('a', (_, __) {
+          log += '1';
+        }, canChangeModel: false);
         child.apply('parent.a = 0');
         expect(log).toEqual('1');
       });
@@ -963,9 +964,8 @@ void main() {
 
           retValue = 2;
           expect(rootScope.flush).
-          toThrow('Observer reaction functions should not change model. \n'
-          'These watch changes were detected: logger("watch"): 2 <= 1\n'
-          'These observe changes were detected: ');
+          toThrow('Observer reaction functions should not change model.\n'
+                  'These watch changes were detected: logger("watch"): 2 <= 1');
         });
       });
 
@@ -1314,8 +1314,8 @@ void main() {
       it('should watch closures both as a leaf and as method call', (RootScope rootScope, Logger log) {
         rootScope.context['foo'] = new Foo();
         rootScope.context['increment'] = null;
-        rootScope.watch('foo.increment', (v, _) => rootScope.context['increment'] = v);
         rootScope.watch('increment(1)', (v, o) => log([v, o]));
+        rootScope.watch('foo.increment', (v, _) => rootScope.context['increment'] = v);
         expect(log).toEqual([]);
         rootScope.apply();
         expect(log).toEqual([[null, null], [2, null]]);

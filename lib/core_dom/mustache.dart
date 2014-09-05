@@ -32,11 +32,10 @@ class AttrMustache {
     _updateMarkup('', 'INITIAL-VALUE');
 
     _attrs.listenObserverChanges(_attrName, (hasObservers) {
-    if (_hasObservers != hasObservers) {
-      _hasObservers = hasObservers;
-      if (_watch != null) _watch.remove();
-        _watch = scope.watchAST(valueAST, _updateMarkup,
-            canChangeModel: _hasObservers);
+      if (_hasObservers != hasObservers) {
+        _hasObservers = hasObservers;
+        if (_watch != null) _watch.remove();
+        _watch = scope.watchAST(valueAST, _updateMarkup, canChangeModel: _hasObservers);
       }
     });
   }
