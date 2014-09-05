@@ -15,7 +15,7 @@ if [ "$USE_G3" = "YES" ]; then
   cat >> .git/config <<"EOF"
 [merge "merge_pubspec_lock"]
   name = "Auto merge pubspec.lock conflicts by ignoring changes"
-  driver = cp %O %A
+  driver = true
   recursive = text
 EOF
   git rebase --onto upstream/g3v1x upstream/g3v1x-master
