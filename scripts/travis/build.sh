@@ -128,7 +128,7 @@ _run_karma_tests() {(
 
     # Run sharded karma tests.
     export NUM_KARMA_SHARDS=4
-    echo {0..3} | xargs -d ' ' -n 1 -P $NUM_KARMA_SHARDS -I SHARD_ID \
+    seq 0 $((NUM_KARMA_SHARDS-1)) | xargs -n 1 -P $NUM_KARMA_SHARDS -I SHARD_ID \
       bash -c '_run_once SHARD_ID'
   else
     _run_once
