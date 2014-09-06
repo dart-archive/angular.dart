@@ -24,7 +24,22 @@ fi
 echo =============================================================================
 . ./scripts/env.sh
 $DART --version
+PUBSPEC_HASH=$(shasum pubspec.lock)
 $PUB install
+if [[ $(shasum pubspec.lock) != "$PUBSPEC_HASH" ]]; then
+  if [ "$USE_G3" = "YES" ]; then
+    echo ERROR: This commit causes pubspec.lock for g3v1x to change.  g3v1x
+    echo uses dependency overrides to tests against specific versions of packages.
+    echo Please ensure that these updated packages are available for g3v1x, update
+    echo the dependency overrides and the pubspec.lock for g3v1x and push that.  You
+    echo may test this job again after that.  Until then, this is considered a
+    echo failure for the USE_G3=YES jobs.
+  else
+    echo ERROR: This commit causes pubspec.lock to change.  Please include the
+    echo pubspec.lock changes in this commit and re-run this test.
+  fi
+  exit 1
+fi
 
 # Record dart version for tests.
 echo $'import "dart:js";\n\nmain() {\n  context["DART_VERSION"] = \''"$($DART --version 2>&1)"$'\';\n}' > test/dart_version.dart
