@@ -97,7 +97,7 @@ module.exports = function(config) {
     },
     sauceLabs: {
         testName: 'AngularDart',
-        tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER,
+        tunnelIdentifier: env.TRAVIS_JOB_NUMBER,
         startConnect: false,
         options:  {
             'selenium-version': '2.41.0',
