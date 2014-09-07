@@ -133,6 +133,20 @@ void afterEach(Function fn) {
 }
 
 // For sharding across multiple instances of karma.
+// _numKarmaShards values:
+//   1:   (default) Use one shard. (i.e. there's no sharding.)
+//   0:   No shards!  So no tests are run.  However, the preprocessors are still
+//        executed and the browsers are launched.  This can be used to validate
+//        the configuration and browsers without running any tests.
+//        scripts/travis/build.sh uses this to run the preprocessors once to
+//        generate the dart2js output.  It then runs the tests with multiple
+//        shards knowing that these shards will all use the dart2js output
+//        generated from the dummy run.
+//   > 1: Specifies that there are this many number of total karma shards.  If
+//        there are N karma shards and T tests, then each shard runs about T/N
+//        tests.  In this case, the _shardId - which must be [0, N) - indicates
+//        the current karma shard so we can select the appropriate subset of
+//        tests to run.
 int _numShards = 1;
 int _shardId = 0;
 int _itCount = 0;
