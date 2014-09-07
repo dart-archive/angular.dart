@@ -45,20 +45,21 @@ main() {
         DateTime standardDateWithTime = new DateTime.utc(1970, 1, 1, 11, 43);
         JsonParser parser = new JsonParser();
         List<String> isoFormatLocalOffset = ['1970-01-01T12:43:00.000+01:00', '1970-01-01T12:43:00+01:00',
-          '1970-01-01T12:43+01:00', '1970-01-01T10:43-01:00', '1970-01-01T10:43-01', '1970-01-01T12:43+01','1970-01-01T10:43-0100'];
+         '1970-01-01T12:43+01:00', '1970-01-01T10:43-01:00', '1970-01-01T10:43-01', '1970-01-01T12:43+01',
+         '1970-01-01T10:43-0100'];
         isoFormatLocalOffset.forEach((format) {
           expect(parser.reviver(null, format)).toEqual(standardDateWithTime);
         });
       });
     });
 
-    describe('JsonParser toEncodable',(){
-      it('should use toIso8601String() for DateTime',(){
-        DateTime dateTime = new DateTime(1970,1,1);
+    describe('JsonParser toEncodable', () {
+      it('should use toIso8601String() for DateTime', () {
+        DateTime dateTime = new DateTime(1970, 1, 1);
         JsonParser parser = new JsonParser();
         expect(parser.toEncodable(dateTime)).toEqual(dateTime.toIso8601String());
       });
-      it('should use return the item if not date',(){
+      it('should use return the item if not date', () {
         String item = "Item";
         JsonParser parser = new JsonParser();
         expect(parser.toEncodable(item)).toEqual(item);
