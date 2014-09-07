@@ -149,20 +149,13 @@ void afterEach(Function fn) {
 int _numShards = 1;
 int _shardId = 0;
 int _itCount = 0;
-bool _travisMode = false;
+bool _failOnIit = false;
 
-_safeJsGet(dottedName) {
-  var result = js.context;
-  var parts = dottedName.split(".");
-  for (int i = 0; i < parts.length; i++) {
-    result = result[parts[i]];
-    if (result == null) break;
-  }
-  return result;
-}
+_safeJsGet(dottedName) => dottedName.split(".").fold(
+    js.context, (a, b) => (a == null ? a : a[b]));
 
 _initSharding() {
-  _travisMode = (_safeJsGet("__karma__.config.clientArgs.travis") != null);
+  _failOnIit = (_safeJsGet("__karma__.config.clientArgs.travis") != null);
   _numShards = _safeJsGet("__karma__.config.clientArgs.travis.numKarmaShards");
   _shardId = _safeJsGet("__karma__.config.clientArgs.travis.karmaShardId");
   if (_numShards == null || _shardId == null) {
@@ -194,15 +187,15 @@ void _it(String name, Function fn) {
 var it = _itFirstTime;
 
 void iit(String name, Function fn) {
-  if (_travisMode) {
-    throw "iit is not allowed when running under Travis";
+  if (_failOnIit) {
+    throw "iit is not allowed when running under a CI server";
   }
   gns.iit(name, _injectify(fn));
 }
 
 void ddescribe(String name, Function fn) {
-  if (_travisMode) {
-    throw "ddescribe is not allowed when running under Travis";
+  if (_failOnIit) {
+    throw "ddescribe is not allowed when running under a CI server";
   }
   gns.ddescribe(name, fn);
 }
