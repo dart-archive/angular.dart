@@ -35,6 +35,8 @@ import 'package:angular/ng_tracing.dart';
 import 'package:angular/directive/module.dart' show NgBaseCss;
 import 'package:angular/core_dom/css_shim.dart' as cssShim;
 
+import 'package:angular/converter/module.dart';
+
 import 'dart:collection';
 import 'dart:async';
 
@@ -114,7 +116,6 @@ class CoreDomModule extends Module {
     bind(NgElement);
     bind(EventHandler);
     bind(ShadowBoundary, toImplementation: DefaultShadowBoundary);
-    bind(JsonParser);
     // TODO(rkirov): remove this once clients have stopped relying on it.
     bind(DirectiveInjector, toValue: null);
   }

@@ -77,6 +77,7 @@ import 'package:angular/formatter/module_internal.dart';
 import 'package:angular/routing/module.dart';
 import 'package:angular/introspection.dart';
 import 'package:angular/ng_tracing.dart';
+import 'package:angular/converter/module.dart';
 
 import 'package:angular/core_dom/static_keys.dart';
 import 'package:angular/core_dom/directive_injector.dart';
@@ -101,6 +102,7 @@ class AngularModule extends Module {
     install(new JsCacheModule());
     install(new PerfModule());
     install(new RoutingModule());
+    install(new ConverterModule());
 
     bind(Expando, toValue: elementExpando);
   }
@@ -142,14 +144,16 @@ abstract class Application {
   /**
    * Creates a selector for a DOM element.
    */
+
   dom.Element selector(String selector) => element = _find(selector);
 
   Application(): element = _find('[ng-app]', dom.window.document.documentElement) {
     traceDetectWTF(context);
     modules.add(ngModule);
-    ngModule..bind(VmTurnZone, toValue: zone)
-            ..bind(Application, toValue: this)
-            ..bind(dom.Node, toFactory: (Application app) => app.element, inject: [Application]);
+    ngModule
+      ..bind(VmTurnZone, toValue: zone)
+      ..bind(Application, toValue: this)
+      ..bind(dom.Node, toFactory: (Application app) => app.element, inject: [Application]);
   }
 
   /**
@@ -199,5 +203,6 @@ abstract class Application {
    * Creates an injector function that can be used for retrieving services as well as for
    * dependency injection.
    */
+
   Injector createInjector() => new ModuleInjector(modules);
 }

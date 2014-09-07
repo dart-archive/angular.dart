@@ -3,6 +3,7 @@ library http_spec;
 import '../_specs.dart';
 
 import 'dart:async';
+import 'package:angular/converter/module.dart';
 
 var VALUE = 'val';
 var CACHED_VALUE = 'cached_value';

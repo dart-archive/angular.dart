@@ -60,35 +60,6 @@ class HttpInterceptor {
   HttpInterceptor({this.request, this.response, this.requestError,
                   this.responseError});
 }
-/**
-* This parser is used for Http Service Interceptor to create and consume
-* Json Serialization
-*/
-@Injectable()
-class JsonParser {
-  /**
-   * This function is called for serialization. It follow dart SDK JSON.encode toEncodable function signature
-   */
-  dynamic toEncodable(dynamic item) {
-    if(item is DateTime) {
-        return item.toIso8601String();
-      }
-      return item;
-  }
-
-  /**
-   * This function is called for deserialization. It follows dart SDK JSON.decode reviver function signature
-   */
-  dynamic reviver(var key, var value) {
-    if(value is String) {
-      RegExp dateIso8601  = new RegExp(r'^([+-]?\d{4,5})-?(\d{2})-?(\d{2})(?:[ T](\d{2})(?::?(\d{2})(?::?(\d{2})(.\d{1,6})?)?)? ?([zZ])?)?$');
-      if(dateIso8601.hasMatch(value)) {
-        return DateTime.parse(value);
-      }
-    }
-    return value;
-  }
-}
 
 /**
 * The default transform data interceptor.abstract
