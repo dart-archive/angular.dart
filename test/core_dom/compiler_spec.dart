@@ -816,9 +816,12 @@ void main() {
           expect(logger).toEqual(expected);
           logger.clear();
 
-          microLeap();
-          backend.flush();
-          microLeap();
+          expect(() {
+            microLeap();
+            backend.flush();
+            microLeap();
+          }).not.toThrow();
+
           expect(logger).toEqual(['templateLoaded', _.rootScope.context['shadowRoot']]);
           logger.clear();
 
@@ -1431,7 +1434,7 @@ class AttachDetachComponent implements AttachAware, DetachAware, ShadowRootAware
 
   attach() => logger('attach:@$attrValue; =>$exprValue; =>!$onceValue');
   detach() => logger('detach');
-  onShadowRoot(shadowRoot) {
+  onShadowRoot(ShadowRoot shadowRoot) {
     scope.rootScope.context['shadowRoot'] = shadowRoot;
     logger(shadowRoot);
   }
