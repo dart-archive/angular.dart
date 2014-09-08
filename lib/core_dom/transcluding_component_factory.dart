@@ -71,6 +71,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       var childInjectorCompleter; // Used if the ViewFuture is available before the childInjector.
 
       var component = _component;
+      final shadowRoot = new EmulatedShadowRoot(element);
       var lightDom = new LightDom(element, scope)..pullNodes();
 
       final baseUrls = (_component.useNgBaseCss) ? baseCss.urls : [];
@@ -83,12 +84,12 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
             lightDom.clearComponentElement();
             if (childInjector != null) {
               lightDom.shadowDomView = viewFactory.call(childInjector.scope, childInjector);
-              return element;
+              return shadowRoot;
             } else {
               childInjectorCompleter = new async.Completer();
               return childInjectorCompleter.future.then((childInjector) {
                 lightDom.shadowDomView = viewFactory.call(childInjector.scope, childInjector);
-                return element;
+                return shadowRoot;
               });
             }
           });
@@ -103,7 +104,7 @@ class BoundTranscludingComponentFactory implements BoundComponentFactory {
       Scope shadowScope = scope.createChild(new HashMap());
 
       childInjector = new ComponentDirectiveInjector(injector, this._injector,
-          eventHandler, shadowScope, templateLoader, new EmulatedShadowRoot(element), lightDom, view);
+          eventHandler, shadowScope, templateLoader, shadowRoot, lightDom, view);
 
       childInjector.bindByKey(_ref.typeKey, _ref.factory, _ref.paramKeys, _ref.annotation.visibility);
 
