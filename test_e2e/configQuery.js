@@ -44,27 +44,62 @@ function getDartiumBinary() {
 }
 
 
-function getChromeOptions() {
-    if (!runningOnTravis) {
-      return {'binary': getDartiumBinary()};
+function updateConfigForBrowsers(config, browsers, shards) {
+  shards = (shards == null) ? 1 : shards;
+  if (!browsers) {
+    throw new Error("updateConfigForBrowsers requires a list of browsers.");
+  }
+  if (browsers.length == 1 && browsers[0] == "DartiumWithWebPlatform") {
+    config.multiCapabilities = [{
+      browserName: 'chrome',
+      chromeOptions: {
+        binary: getDartiumBinary()
+      },
+      count: shards
+    }];
+    return;
+  }
+
+  // We can either test with local browsers or those on SauceLabs but not both.
+  var localBrowser = false, sauceBrowser = false;
+  config.multiCapabilities = [];
+  browsers.forEach(function(browser) {
+    if (browser.indexOf("SL_") == 0) {
+      sauceBrowser = true;
+      browser = browser.substr(3).toLowerCase();
+    } else {
+      localBrowser = true;
+      browser = browser.toLowerCase();
     }
-    // In Travis, the list of browsers to test is specified as a CSV in the
-    // BROWSERS environment variable.
-    // TODO(chirayu): Parse the BROWSERS csv so we also test on Firefox.
-    if (env.TESTS == "vm") {
-      return {'binary': env.DARTIUM_BIN};
+    if (localBrowser && sauceBrowser) {
+      throw new Error(
+          "You can either tests against local browsers or sauce " +
+          "browsers but not both.");
     }
-    if (env.TESTS == "dart2js") {
-      return {
-          'binary': env.CHROME_BIN,
-          // Ref: https://github.com/travis-ci/travis-ci/issues/938
-          //      https://sites.google.com/a/chromium.org/chromedriver/help/chrome-doesn-t-start
-          'args': ['no-sandbox=true']
+    var capability = { browserName: browser };
+    if (browser == "chrome") {
+      capability.chromeOptions = {
+        // Ref: https://github.com/travis-ci/travis-ci/issues/938
+        //      https://sites.google.com/a/chromium.org/chromedriver/help/chrome-doesn-t-start
+        args: ['no-sandbox=true']
       };
+      if (localBrowser && env.CHROME_BIN) {
+        capability.chromeOptions.binary = env.CHROME_BIN;
+      }
     }
-    throw new Error("Unknown Travis configuration specified by TESTS variable");
+    config.multiCapabilities.push(capability);
+  });
+
+  if (sauceBrowser) {
+    config.seleniumAddress = null;
+    config.sauceUser = env.SAUCE_USERNAME;
+    config.sauceKey = env.SAUCE_ACCESS_KEY;
+    config.multiCapabilities.forEach(function(capability) {
+      capability['tunnel-identifier'] = env.TRAVIS_JOB_NUMBER;
+      capability['build'] = env.TRAVIS_BUILD_NUMBER;
+    });
+  }
 }
 
-
 exports.getBaseUrl = getBaseUrl;
-exports.getChromeOptions = getChromeOptions;
+exports.updateConfigForBrowsers = updateConfigForBrowsers;

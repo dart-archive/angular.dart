@@ -154,7 +154,30 @@ fi
 run_protractor() {(
   local TEST_TYPE=$1
   local SPEC_FILE_VAR=TEST_${TEST_TYPE}_CONF
-  ./node_modules/.bin/protractor_dart ${!SPEC_FILE_VAR}
+  # Default browsers if none specified.
+  if [[ -z "$BROWSERS" ]]; then
+    export BROWSERS=DartiumWithWebPlatform
+  fi
+
+  # NOTE: Protractor can't test both sauce and local browsers in the same config.
+  #
+  # Local browsers only?
+  if [[ ! "$BROWSERS" =~ SL_ ]]; then
+    ./node_modules/.bin/protractor_dart ${!SPEC_FILE_VAR}
+  else
+    # Assume that we have only sauce browsers.  However, since
+    # DartiumWithWebPlatform isn't on Sauce yet, we'll also support this common
+    # use case by running twice - once for DartiumWithWebPlatform and again for
+    # the sauce browsers.
+    if [[ "$BROWSERS" =~ DartiumWithWebPlatform ]]; then
+      BROWSERS=DartiumWithWebPlatform ./node_modules/.bin/protractor_dart ${!SPEC_FILE_VAR}
+    fi
+    BROWSERS="${BROWSERS#DartiumWithWebPlatform}"
+    if [[ -n "$BROWSERS" ]]; then
+      BROWSERS="${BROWSERS#,}"
+      ./node_modules/.bin/protractor_dart ${!SPEC_FILE_VAR}
+    fi
+  fi
 )}
 export -f run_protractor
 

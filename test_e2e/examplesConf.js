@@ -23,12 +23,6 @@ var config = {
 
     splitTestsBetweenCapabilities: true,
 
-    multiCapabilities: [{
-      browserName: 'chrome',
-      chromeOptions: configQuery.getChromeOptions(),
-      count: 4
-    }],
-
     baseUrl: configQuery.getBaseUrl({
       envVar: "TEST_EXAMPLE_BASEURL"
     }),
@@ -41,17 +35,9 @@ var config = {
     },
 };
 
-// Saucelabs case.
-if (process.env.SAUCE_USERNAME != null) {
-  config.sauceUser = process.env.SAUCE_USERNAME;
-  config.sauceKey = process.env.SAUCE_ACCESS_KEY;
-  config.seleniumAddress = null;
-
-  config.multiCapabilities.forEach(function(capability) {
-    capability['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
-    capability['build'] = process.env.TRAVIS_BUILD_NUMBER;
-    capability['name'] = 'AngularDart E2E Suite';
-  });
-}
+configQuery.updateConfigForBrowsers(config, process.env.BROWSERS.split(","), 4);
+config.multiCapabilities.forEach(function(capability) {
+  capability['name'] = 'AngularDart E2E Suite';
+});
 
 exports.config = config;
