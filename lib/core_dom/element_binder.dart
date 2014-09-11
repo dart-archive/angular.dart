@@ -305,11 +305,16 @@ class ElementBinder {
     });
 
     if (bindAssignableProps.isNotEmpty) {
-      node.addEventListener('change', (_) {
-        bindAssignableProps.forEach((propAndExp) {
-          propAndExp[1].assign(scope.context, jsNode[propAndExp[0]]);
-        });
-      });
+      // due to https://code.google.com/p/dart/issues/detail?id=17406
+      // we have to manually run the zone.
+      var zone = Zone.current;
+      node.addEventListener('change', (_) =>
+        zone.run(() =>
+          bindAssignableProps.forEach((propAndExp) =>
+            propAndExp[1].assign(scope.context, jsNode[propAndExp[0]])
+          )
+        )
+      );
     }
 
     if (onEvents.isNotEmpty) {
