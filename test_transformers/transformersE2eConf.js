@@ -19,35 +19,35 @@ var config = {
     specs: ['relative_uris_spec.dart'],
 
     multiCapabilities: [{
-	'browserName': 'chrome',
-	'chromeOptions': configQuery.getChromeOptions(),
-	count: 1
+      browserName: 'chrome',
+      chromeOptions: configQuery.getChromeOptions(),
+      count: 1
     }],
 
     baseUrl: configQuery.getBaseUrl({
-	envVar: "TEST_TRANSFORMERS_BASEURL"
+      envVar: "TEST_TRANSFORMERS_BASEURL"
     }),
 
 
     jasmineNodeOpts: {
-	isVerbose: true, // display spec names.
-	showColors: true, // print colors to the terminal.
-	includeStackTrace: true, // include stack traces in failures.
-	defaultTimeoutInterval: 80000 // wait time in ms before failing a test.
+      isVerbose: true, // display spec names.
+      showColors: true, // print colors to the terminal.
+      includeStackTrace: true, // include stack traces in failures.
+      defaultTimeoutInterval: 80000 // wait time in ms before failing a test.
     },
 };
 
 // Saucelabs case.
 if (process.env.SAUCE_USERNAME != null) {
-    config.sauceUser = process.env.SAUCE_USERNAME;
-    config.sauceKey = process.env.SAUCE_ACCESS_KEY;
-    config.seleniumAddress = null;
+  config.sauceUser = process.env.SAUCE_USERNAME;
+  config.sauceKey = process.env.SAUCE_ACCESS_KEY;
+  config.seleniumAddress = null;
 
-    config.multiCapabilities.forEach(function(capability) {
-	capability['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
-	capability['build'] = process.env.TRAVIS_BUILD_NUMBER;
-	capability['name'] = 'AngularDart Transformers E2E Suite';
-    });
+  config.multiCapabilities.forEach(function(capability) {
+    capability['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
+    capability['build'] = process.env.TRAVIS_BUILD_NUMBER;
+    capability['name'] = 'AngularDart Transformers E2E Suite';
+  });
 }
 
 exports.config = config;
