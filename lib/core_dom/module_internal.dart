@@ -35,6 +35,7 @@ import 'package:angular/directive/module.dart' show NgBaseCss;
 import 'package:angular/core_dom/css_shim.dart' as cssShim;
 
 import 'dart:collection';
+import 'dart:async';
 
 part 'animation.dart';
 part 'cookies.dart';
