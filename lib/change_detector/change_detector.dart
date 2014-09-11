@@ -1,5 +1,8 @@
 library angular.change_detector;
 
+// TODO:
+// - Why do we need to watch "attach(count++)" in element_binder l218
+
 // TODO: check for recent changes in:
 //  - dccd
 //  - watch group
