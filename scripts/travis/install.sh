@@ -48,12 +48,7 @@ fi
 
 echo Fetch Dart channel: $CHANNEL
 
-# TODO(chirayu): Remove this once issue 1350 is fixed.
 SVN_REVISION=latest
-if [[ "$AVAILABLE_DART_VERSION" == "1.6.0-dev.8.0" ]]; then
-  SVN_REVISION=38831  # Use prior working version (1.6.0-dev.7.0)
-fi
-
 # TODO(chirayu): Remove this once issue 20896 is fixed.
 if [[ "$AVAILABLE_DART_VERSION" == "1.7.0-dev.1.0" ]]; then
   SVN_REVISION=39661  # Use prior working version (1.7.0-dev.0.1)
