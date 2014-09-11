@@ -33,8 +33,10 @@ library angular.change_detector;
 
 
 // TODO:
-// replace _hasFreshListener by initializing _value with a unique value (ie this), should allow
+// misko: replace _hasFreshListener by initializing _value with a unique value (ie this), should allow
 // avoiding to read the mode field
+// victor: only possible once Proto has been implemented, for now a listener can be added at any point
+// to a record and its `_value` could not be changed to something different from the current value
 
 // TODO: implement with ProtoWatchGroup / ProtoRecord
 // We need to talk about this more in depth. But my latest thinking is that we can not create
@@ -78,8 +80,6 @@ class AvgStopwatch extends Stopwatch {
       : _count / elapsedMicroseconds * 1000;
 }
 
-
-// TODO: this should not be needed anymore
 /**
  * Extend this class if you wish to pretend to be a function, but you don't know
  * number of arguments with which the function will get called with.
@@ -265,11 +265,9 @@ class WatchGroup {
     _processingChanges = true;
     int changes = 0;
     // We need to keep a reference on the previously checked record to find out the next one
-    Record checkPrev = _headMarker;
-    for (Record record = _headMarker._checkNext;
-         record != _tailMarkerIncludingChildren;
-         record = checkPrev._checkNext) {
-
+    List<Record> checkPrevs = [_headMarker];
+    Record record = _headMarker._checkNext;;
+    while(record != _tailMarkerIncludingChildren) {
       try {
         changes += record.processChange(changeLog: changeLog);
       } catch (e, s) {
@@ -290,9 +288,15 @@ class WatchGroup {
       } else if (record._checkNext != null) {
         // Update `checkPrev` to be the current record unless it's no more checked (removed from
         // inside the reaction function)
-        checkPrev = record;
+        checkPrevs.add(record);
       }
+
+      // To find the next checkable record, we get hold of the `_checkNext` of the previous
+      // checkable record - it is not always the last checked record as a checked record could be
+      // removed from the check queue
+      record = checkPrevs.reversed.firstWhere((record) => record._checkNext != null)._checkNext;
     }
+
     _processingChanges = false;
     return changes;
   }
