@@ -16,7 +16,7 @@ main() {
         ..bind(PlatformJsBasedShim, toValue: new PlatformJsBasedShim());
     });
 
-    it('should scope styles to shadow dom across browsers.',
+    xit('should scope styles to shadow dom across browsers.',
       async((TestBed _, MockHttpBackend backend) {
 
       // TODO(vicb) WebPlatform does not work with polyfills
@@ -54,7 +54,7 @@ main() {
       }
     }));
 
-    it('should scope :host styles to the primary element.',
+    xit('should scope :host styles to the primary element.',
         async((TestBed _, MockHttpBackend backend) {
 
       // TODO(vicb) WebPlatform does not work with polyfills

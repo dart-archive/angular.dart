@@ -204,29 +204,6 @@ _run({resolveUrls, staticMode}) {
         expect(log.result()).toEqual('LOG; SIMPLE');
       }));
 
-      it('should load a CSS file with a \$template', async(
-          (Http http, Compiler compile, Scope rootScope, Injector injector,
-           MockHttpBackend backend, DirectiveMap directives) {
-        var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
-        compile(element, directives)(rootScope, null, element);
-
-        backend.flushGET('${prefix}simple.css').respond(200, '.hello{}');
-        microLeap();
-
-        expect(element[0]).toHaveText('.hello{}inline!');
-      }));
-
-      it('should ignore CSS load errors ', async(
-          (Http http, Compiler compile, Scope rootScope, Injector injector,
-           MockHttpBackend backend, DirectiveMap directives) {
-        var element = es('<div><inline-with-css log>ignore</inline-with-css><div>');
-        compile(element, directives)(rootScope, null, element);
-
-        backend.flushGET('${prefix}simple.css').respond(500, 'some error');
-        microLeap();
-        expect(element.first).toHaveText('/*HTTP 500: some error*/inline!');
-      }));
-
       it('should load a CSS with no template', async(
           (Http http, Compiler compile, Scope rootScope, Injector injector,
            MockHttpBackend backend, DirectiveMap directives) {
