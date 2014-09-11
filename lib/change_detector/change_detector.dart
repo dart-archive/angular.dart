@@ -266,7 +266,7 @@ class WatchGroup {
     int changes = 0;
     // We need to keep a reference on the previously checked record to find out the next one
     List<Record> checkPrevs = [_headMarker];
-    Record record = _headMarker._checkNext;;
+    Record record = _headMarker._checkNext;
     while(record != _tailMarkerIncludingChildren) {
       try {
         changes += record.processChange(changeLog: changeLog);
