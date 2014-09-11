@@ -54,6 +54,11 @@ if [[ "$AVAILABLE_DART_VERSION" == "1.6.0-dev.8.0" ]]; then
   SVN_REVISION=38831  # Use prior working version (1.6.0-dev.7.0)
 fi
 
+# TODO(chirayu): Remove this once issue 20896 is fixed.
+if [[ "$AVAILABLE_DART_VERSION" == "1.7.0-dev.1.0" ]]; then
+  SVN_REVISION=39661  # Use prior working version (1.7.0-dev.0.1)
+fi
+
 URL_PREFIX=https://storage.googleapis.com/dart-archive/channels/$CHANNEL/release/$SVN_REVISION
 DART_SDK_URL=$URL_PREFIX/sdk/dartsdk-linux-x64-release.zip
 if [[ "${BROWSERS,,}" =~ "dartium" ]]; then
