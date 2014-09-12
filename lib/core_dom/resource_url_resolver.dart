@@ -15,6 +15,10 @@ import 'package:di/annotations.dart';
 
 import 'package:angular/core_dom/type_to_uri_mapper.dart';
 
+class _NullTreeSanitizer implements NodeTreeSanitizer {
+  void sanitizeTree(dom.Node node) {}
+}
+
 @Injectable()
 class ResourceUrlResolver {
   static final RegExp cssUrlRegexp = new RegExp(r'''(\burl\((?:[\s]+)?)(['"]?)([^]*)(\2(?:[\s]+)?\))''');
@@ -32,14 +36,27 @@ class ResourceUrlResolver {
 
   ResourceUrlResolver(this._uriMapper, this._config);
 
+  static final NodeTreeSanitizer _nullTreeSanitizer = new _NullTreeSanitizer();
+
+  static Node _parseHtmlString(String html) {
+    HtmlDocument doc = new DomParser().parseFromString(
+        "<!doctype html><html><body>$html</body></html>", "text/html");
+    if (doc != null) {
+      return doc.body;
+    }
+    // Workaround for Safari (can't parse HTML documents via the DomParser)
+    doc = document.implementation.createHtmlDocument("");
+    doc.body.setInnerHtml(html, treeSanitizer: _nullTreeSanitizer);
+    return doc.body;
+  }
+
   String resolveHtml(String html, [Uri baseUri]) {
     if (baseUri == null) {
       return html;
     }
-    HtmlDocument document = new DomParser().parseFromString(
-        "<!doctype html><html><body>$html</body></html>", "text/html");
-    _resolveDom(document.body, baseUri);
-    return document.body.innerHtml;
+    Node node = _parseHtmlString(html);
+    _resolveDom(node, baseUri);
+    return node.innerHtml;
   }
 
   /**
