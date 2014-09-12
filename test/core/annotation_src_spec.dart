@@ -44,7 +44,8 @@ void main() => describe('annotations', () {
         visibility: Directive.LOCAL_VISIBILITY,
         exportExpressions: [],
         exportExpressionAttrs: [],
-        useShadowDom: true
+        useShadowDom: true,
+        updateBoundElementPropertiesOnEvents: []
       );
 
       // Check that no fields are null
@@ -64,7 +65,8 @@ void main() => describe('annotations', () {
           module: (i){},
           visibility: Directive.LOCAL_VISIBILITY,
           exportExpressions: [],
-          exportExpressionAttrs: []
+          exportExpressionAttrs: [],
+          updateBoundElementPropertiesOnEvents: []
       );
 
       // Check that no fields are null
