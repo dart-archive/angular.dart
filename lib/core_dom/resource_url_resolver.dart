@@ -16,7 +16,7 @@ import 'package:di/annotations.dart';
 import 'package:angular/core_dom/type_to_uri_mapper.dart';
 
 class _NullTreeSanitizer implements NodeTreeSanitizer {
-  void sanitizeTree(dom.Node node) {}
+  void sanitizeTree(Node node) {}
 }
 
 @Injectable()
