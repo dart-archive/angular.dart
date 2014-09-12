@@ -5,7 +5,7 @@ class NgElement {
   static const _TO_BE_REMOVED = const Object();
 
   final dom.Element node;
-  final Scope _scope;
+  final RootScope _rootScope;
   final Animate _animate;
   final DestinationLightDom _lightDom;
 
@@ -14,7 +14,7 @@ class NgElement {
 
   bool _writeScheduled = false;
 
-  NgElement(this.node, this._scope, this._animate, [this._lightDom]);
+  NgElement(this.node, this._rootScope, this._animate, [this._lightDom]);
 
   void addClass(String className) {
     _scheduleDomWrite();
@@ -40,7 +40,7 @@ class NgElement {
   _scheduleDomWrite() {
     if (!_writeScheduled) {
       _writeScheduled = true;
-      _scope.rootScope.domWrite(() {
+      _rootScope.domWrite(() {
         _writeToDom();
         _notifyLightDom();
         _writeScheduled = false;
