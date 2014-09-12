@@ -22,8 +22,8 @@ function getDartiumBinary() {
       if (!condition) throw "Unable to locate Dartium.  Please set the DARTIUM environment variable.";
     };
 
-    if (env.DARTIUM) {
-      return env.DARTIUM;
+    if (env.DARTIUM_BIN) {
+      return env.DARTIUM_BIN;
     }
     var platform = require('os').platform();
     var DART_SDK = env.DART_SDK;
