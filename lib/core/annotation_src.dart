@@ -203,6 +203,19 @@ abstract class Directive {
    */
   final List<String> exportExpressions;
 
+  /**
+   * Event names to listen to during Web Component two-way binding.
+   *
+   * To support web components efficiently, Angular only reads element
+   * bindings when specific events are fired.  By default, Angular listens
+   * to 'change'.  Adding events names to this listen will cause Angular
+   * to listen to those events instead.
+   *
+   * The name is intentionally long: this should be rarely used and therefore
+   * it is important that it is self-documenting.
+   */
+  final List<String> updateBoundElementPropertiesOnEvents;
+
   const Directive({
     this.selector,
     this.children,
@@ -210,7 +223,8 @@ abstract class Directive {
     this.module,
     this.map: const {},
     this.exportExpressions: const [],
-    this.exportExpressionAttrs: const []
+    this.exportExpressionAttrs: const [],
+    this.updateBoundElementPropertiesOnEvents
   });
 
   toString() => selector;
@@ -282,15 +296,17 @@ class Component extends Directive {
     exportExpressions,
     exportExpressionAttrs,
     this.useShadowDom,
-    this.useNgBaseCss: true})
-      : _cssUrls = cssUrl,
+    this.useNgBaseCss: true,
+    updateBoundElementPropertiesOnEvents
+  }) : _cssUrls = cssUrl,
         super(selector: selector,
              children: Directive.COMPILE_CHILDREN,
              visibility: visibility,
              map: map,
              module: module,
              exportExpressions: exportExpressions,
-             exportExpressionAttrs: exportExpressionAttrs);
+             exportExpressionAttrs: exportExpressionAttrs,
+             updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
 
   List<String> get cssUrls => _cssUrls == null ?
       const [] :
@@ -309,7 +325,8 @@ class Component extends Directive {
           exportExpressions: exportExpressions,
           exportExpressionAttrs: exportExpressionAttrs,
           useShadowDom: useShadowDom,
-          useNgBaseCss: useNgBaseCss);
+          useNgBaseCss: useNgBaseCss,
+          updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
 }
 
 /**
@@ -332,14 +349,16 @@ class Decorator extends Directive {
                     DirectiveBinderFn module,
                     visibility,
                     exportExpressions,
-                    exportExpressionAttrs})
+                    exportExpressionAttrs,
+                    updateBoundElementPropertiesOnEvents})
       : super(selector: selector,
               children: children,
               visibility: visibility,
               map: map,
               module: module,
               exportExpressions: exportExpressions,
-              exportExpressionAttrs: exportExpressionAttrs);
+              exportExpressionAttrs: exportExpressionAttrs,
+              updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
 
   Directive _cloneWithNewMap(newMap) =>
       new Decorator(
@@ -349,7 +368,8 @@ class Decorator extends Directive {
           selector: selector,
           visibility: visibility,
           exportExpressions: exportExpressions,
-          exportExpressionAttrs: exportExpressionAttrs);
+          exportExpressionAttrs: exportExpressionAttrs,
+          updateBoundElementPropertiesOnEvents: updateBoundElementPropertiesOnEvents);
 }
 
 /**
