@@ -59,6 +59,20 @@ class ElementBinder {
   bool get shouldCompileChildren =>
       childMode == Directive.COMPILE_CHILDREN;
 
+  List<String> _bindAssignablePropsOnCache;
+  List<String> get _bindAssignablePropsOn {
+    if (_bindAssignablePropsOnCache != null) return _bindAssignablePropsOnCache;
+    _bindAssignablePropsOnCache = [];
+    _usableDirectiveRefs.forEach((DirectiveRef ref) {
+      var eventNames = ref.annotation.updateBoundElementPropertiesOnEvents;
+      if (eventNames != null) {
+        _bindAssignablePropsOnCache.addAll(eventNames);
+      }
+    });
+    if (_bindAssignablePropsOnCache.isEmpty) _bindAssignablePropsOnCache.add('change');
+    return _bindAssignablePropsOnCache;
+  }
+
   var _directiveCache;
   List<DirectiveRef> get _usableDirectiveRefs {
     if (_directiveCache != null) return _directiveCache;
@@ -308,13 +322,11 @@ class ElementBinder {
       // due to https://code.google.com/p/dart/issues/detail?id=17406
       // we have to manually run the zone.
       var zone = Zone.current;
-      node.addEventListener('change', (_) =>
-        zone.run(() =>
-          bindAssignableProps.forEach((propAndExp) =>
-            propAndExp[1].assign(scope.context, jsNode[propAndExp[0]])
-          )
-        )
-      );
+      _bindAssignablePropsOn.forEach((String eventName) =>
+	      node.addEventListener(eventName, (_) =>
+	        zone.run(() =>
+	          bindAssignableProps.forEach((propAndExp) =>
+	            propAndExp[1].assign(scope.context, jsNode[propAndExp[0]])))));
     }
 
     if (onEvents.isNotEmpty) {
