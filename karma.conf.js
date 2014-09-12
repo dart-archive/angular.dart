@@ -60,6 +60,7 @@ module.exports = function(config) {
       'karma-chrome-launcher',
       'karma-sauce-launcher',
       'karma-firefox-launcher',
+      'karma-safari-launcher',
       'karma-script-launcher',
       'karma-junit-reporter',
       '../../../karma-parser-getter-setter'
