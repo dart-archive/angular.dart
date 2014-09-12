@@ -15,15 +15,20 @@ class TranscludingComponentFactory implements ComponentFactory {
       this.uriMapper, this.resourceResolver, Http http, TemplateCache templateCache,
       ComponentCssRewriter componentCssRewriter, dom.NodeTreeSanitizer treeSanitizer,
       CacheRegister cacheRegister) {
-    final styleElementCache = new HashMap();
-    cacheRegister.registerCache("TranscludingComponentFactoryStyles", styleElementCache);
-
+    final styleElementCache = _registerCache(cacheRegister);
     cssLoader = new ComponentCssLoader(http, templateCache, platformShim,
         componentCssRewriter, treeSanitizer, styleElementCache, resourceResolver);
   }
 
   bind(DirectiveRef ref, directives, injector) =>
       new BoundTranscludingComponentFactory(this, ref, directives, injector);
+
+  Map _registerCache(CacheRegister cacheRegister) {
+    if (! cacheRegister.hasCache("TranscludingComponentFactoryStyles")) {
+      cacheRegister.registerCache("TranscludingComponentFactoryStyles", new HashMap());
+    }
+    return cacheRegister.getCache("TranscludingComponentFactoryStyles");
+  }
 }
 
 class BoundTranscludingComponentFactory implements BoundComponentFactory {

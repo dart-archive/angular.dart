@@ -27,6 +27,10 @@ class CacheRegister {
 
   }
 
+  dynamic getCache(String name) => _caches[name];
+
+  bool hasCache(String name) => _caches.containsKey(name);
+
   /**
    * A list of caches and their sizes.
    */
