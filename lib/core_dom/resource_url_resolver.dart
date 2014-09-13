@@ -50,7 +50,7 @@ class ResourceUrlResolver {
     return doc.body;
   }
 
-  String resolveHtml(String html, [Uri baseUri]) {
+  String __orig_resolveHtml(String html, [Uri baseUri]) {
     if (baseUri == null) {
       return html;
     }
@@ -58,6 +58,18 @@ class ResourceUrlResolver {
     _resolveDom(node, baseUri);
     return node.innerHtml;
   }
+
+  String resolveHtml(String html, [Uri baseUri]) {
+    Node node = _parseHtmlString("<div>a</div>");
+    print("ckck: node is ${node.innerHtml}");
+    print("ckck: node resolved is ${_resolveDom(node, baseUri).innerHtml}");
+    node = _parseHtmlString("<template>a</template>");
+    print("ckck: node resolved is ${_resolveDom(node, baseUri).innerHtml}");
+    node = _parseHtmlString("<template><div>a</div></template>");
+    print("ckck: node resolved is ${_resolveDom(node, baseUri).innerHtml}");
+    return __orig_resolveHtml(html, baseUri);
+  }
+
 
   /**
    * Resolves all relative URIs within the DOM from being relative to
