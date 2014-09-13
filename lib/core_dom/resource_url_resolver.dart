@@ -60,14 +60,27 @@ class ResourceUrlResolver {
   }
 
   String resolveHtml(String html, [Uri baseUri]) {
-    Node node = _parseHtmlString("<div>a</div>");
+    print("\n\nckck: html is $html with baseUri $baseUri");
+    Node node;
+
+    node = _parseHtmlString("<div>a</div>");
     print("ckck: node is ${node.innerHtml}");
-    print("ckck: node resolved is ${_resolveDom(node, baseUri).innerHtml}");
+    _resolveDom(node, baseUri);
+    print("ckck: node resolved is ${node.innerHtml}");
+
     node = _parseHtmlString("<template>a</template>");
-    print("ckck: node resolved is ${_resolveDom(node, baseUri).innerHtml}");
+    print("ckck: node is ${node.innerHtml}");
+    _resolveDom(node, baseUri);
+    print("ckck: node resolved is ${node.innerHtml}");
+
     node = _parseHtmlString("<template><div>a</div></template>");
-    print("ckck: node resolved is ${_resolveDom(node, baseUri).innerHtml}");
-    return __orig_resolveHtml(html, baseUri);
+    print("ckck: node is ${node.innerHtml}");
+    _resolveDom(node, baseUri);
+    print("ckck: node resolved is ${node.innerHtml}");
+
+    html = __orig_resolveHtml(html, baseUri);
+    print("ckck: resolved html is $html\n\n");
+    return html;
   }
 
 

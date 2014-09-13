@@ -7,7 +7,7 @@ import '../_specs.dart';
 
 
 _run_resolver({useRelativeUrls}) {
-  describe("resolveUrls=$useRelativeUrls", () {
+  ddescribe("resolveUrls=$useRelativeUrls", () {
     var prefix = useRelativeUrls ? "packages/angular/test/core_dom/" : "";
     var container;
     var resourceResolver;

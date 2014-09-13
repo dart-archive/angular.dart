@@ -122,7 +122,7 @@ _run_karma_tests() {(
   }
   export -f _run_once
 
-  if [[ $TESTS == "dart2js" ]]; then
+  if [[ $TESTS == "ckck_dart2js" ]]; then
     # Ref: test/_specs.dart: _numKarma shards.
     # Prime the dart2jsaas cache.
     NUM_KARMA_SHARDS=0 BROWSERS=SL_Chrome _run_once 0

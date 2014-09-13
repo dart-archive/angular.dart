@@ -165,7 +165,7 @@ _initSharding() {
 }
 
 void _itFirstTime(String name, Function fn) {
-  _initSharding();
+  // ckck _initSharding();
   if (_numShards > 0) {
     _it(name, fn);
     it = _it;
