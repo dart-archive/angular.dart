@@ -96,7 +96,7 @@ class ResourceUrlResolver {
   void _resolveDom(Node root, Uri baseUri) {
     print("ckck: _resolveDom: ENTER: node=${root.innerHtml}");
     _resolveAttributes(root, baseUri);
-    print("ckck: _resolveDom: after _resolveDom: node=${root.innerHtml}");
+    print("ckck: _resolveDom: after _resolveAttributes: node=${root.innerHtml}");
     _resolveStyles(root, baseUri);
     print("ckck: _resolveDom: after _resolveStyles: node=${root.innerHtml}");
 
@@ -137,22 +137,28 @@ class ResourceUrlResolver {
   }
 
   void _resolveAttributes(Node root, Uri baseUri) {
+    print("ckck: _resolveAttributes: ENTER: node=${root.innerHtml}");
     if (root is Element) {
       _resolveElementAttributes(root, baseUri);
+      print("ckck: _resolveAttributes: after _resolveElementAttributes: node=${root.innerHtml}");
     }
 
     for (var node in _querySelectorAll(root, urlAttrsSelector)) {
+      print("ckck: _resolveAttributes: before _resolveElementAttributes: element=${node.innerHtml}, node=${root.innerHtml}");
       _resolveElementAttributes(node, baseUri);
+      print("ckck: _resolveAttributes: after _resolveElementAttributes: element=${node.innerHtml}, node=${root.innerHtml}");
     }
   }
 
   void _resolveElementAttributes(Element element, Uri baseUri) {
+    print("ckck: _resolveElementAttributes: ENTER: element=${element.innerHtml}");
     var attrs = element.attributes;
     for (var attr in urlAttrs) {
       if (attrs.containsKey(attr)) {
         var value = attrs[attr];
         if (!value.contains(urlTemplateSearch)) {
           attrs[attr] = combine(baseUri, value).toString();
+          print("ckck: resolved $value to ${combine(baseUri, value).toString()}");
         }
       }
     }
