@@ -27,9 +27,8 @@ before_install:
 - if [[ -e SKIP_TRAVIS_TESTS ]]; then { cat SKIP_TRAVIS_TESTS ; exit 0; } fi
 before_script:
 - mkdir -p $LOGS_DIR
+- ./scripts/sauce/sauce_connect_setup.sh &
 - ./scripts/travis/setup.sh
-- ./scripts/sauce/sauce_connect_setup.sh
-- ./scripts/sauce/sauce_connect_block.sh
 script:
 - ./scripts/travis/build.sh
 after_success:
