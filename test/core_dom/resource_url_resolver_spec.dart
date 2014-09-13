@@ -68,7 +68,7 @@ _run_resolver({useRelativeUrls}) {
     }
 
     testOnHtmlTemplate(htmlEscapedUrl, htmlEscapedExpected, typeOrIncludeUri) {
-     xit('within an img src attribute', () {
+     iit('within an img src attribute', () {
        var html = resourceResolver.resolveHtml(urlInImgSrc(htmlEscapedUrl), typeOrIncludeUri);
        expect(html).toEqual(urlInImgSrc(htmlEscapedExpected));
      });

@@ -78,6 +78,11 @@ class ResourceUrlResolver {
     _resolveDom(node, baseUri);
     print("ckck: node resolved is ${node.innerHtml}");
 
+    node = _parseHtmlString(html);
+    print("ckck: PARSED node is ${node.innerHtml}");
+    _resolveDom(node, baseUri);
+    print("ckck: RESOLVED node is ${node.innerHtml}");
+
     html = __orig_resolveHtml(html, baseUri);
     print("ckck: resolved html is $html\n\n");
     return html;
