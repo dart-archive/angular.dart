@@ -203,9 +203,12 @@ class ElementBinder {
       try {
         directive = directiveInjector.getByKey(ref.typeKey);
 
-        var tasks = directive is AttachAware ? new _TaskList(() {
-          if (scope.isAttached) directive.attach();
-        }) : null;
+        var attached = false;
+
+        var tasks = new _TaskList(() {
+          attached = true;
+          if (directive is AttachAware && scope.isAttached) directive.attach();
+        });
 
         if (ref.mappings.isNotEmpty) {
           if (nodeAttrs == null) nodeAttrs = new _AnchorAttrs(ref);
@@ -215,23 +218,30 @@ class ElementBinder {
         if (directive is AttachAware) {
           var taskId = (tasks != null) ? tasks.registerTask() : 0;
           Watch watch;
-          watch = scope.watch('"attach()"', // Cheat a bit.
+          watch = scope.watch('"attach($_count)"', // Cheat a bit.
               (_, __) {
             watch.remove();
             if (tasks != null) tasks.completeTask(taskId);
           });
+          _count++;
         }
 
         if (tasks != null) tasks.doneRegistering();
 
         if (directive is DetachAware) {
-          scope.on(ScopeEvent.DESTROY).listen((_) => directive.detach());
+          scope.on(ScopeEvent.DESTROY).listen((_) {
+            // if the scope has been destroyed before the directive got a chance to be attached
+            // do not detach it
+            if (attached) directive.detach();
+          });
         }
       } finally {
         traceLeave(s);
       }
     }
   }
+
+  static int _count = 0;
 
   void _createDirectiveFactories(DirectiveRef ref, DirectiveInjector nodeInjector, node,
                                  nodeAttrs) {

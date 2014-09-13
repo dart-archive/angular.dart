@@ -210,7 +210,7 @@ Future generates(List<List<Transformer>> phases,
 const String header = '''
 library a.web.main.generated_expressions;
 
-import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/change_detector/change_detector.dart';
 
 ''';
 

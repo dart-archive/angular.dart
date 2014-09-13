@@ -30,10 +30,10 @@ import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/parser/static_closure_map.dart';
 import 'package:angular/core_dom/type_to_uri_mapper.dart';
 import 'package:angular/core/registry_static.dart';
-import 'package:angular/change_detection/change_detection.dart';
-import 'package:angular/change_detection/dirty_checking_change_detector_static.dart';
+import 'package:angular/change_detector/change_detector.dart';
+import 'package:angular/change_detector/field_getter_factory_static.dart';
 
-export 'package:angular/change_detection/change_detection.dart' show
+export 'package:angular/change_detector/change_detector.dart' show
     FieldGetter,
     FieldSetter;
 

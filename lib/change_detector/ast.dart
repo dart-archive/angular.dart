@@ -1,5 +1,4 @@
-part of angular.watch_group;
-
+part of angular.change_detector;
 
 /**
  * RULES:
@@ -10,14 +9,17 @@ abstract class AST {
   static final String _CONTEXT = '#';
   final String expression;
   var parsedExp; // The parsed version of expression.
+
   AST(expression)
       : expression = expression.startsWith('#.')
           ? expression.substring(2)
           : expression
   {
-    assert(expression!=null);
+    assert(expression != null);
   }
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup);
+
+  Record setupRecord(WatchGroup watchGroup);
+
   String toString() => expression;
 }
 
@@ -28,8 +30,9 @@ abstract class AST {
  */
 class ContextReferenceAST extends AST {
   ContextReferenceAST(): super(AST._CONTEXT);
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      new _ConstantWatchRecord(watchGroup, expression, watchGroup.context);
+
+  Record setupRecord(WatchGroup watchGroup) =>
+      watchGroup.addConstantRecord(expression, watchGroup._context);
 }
 
 /**
@@ -46,8 +49,7 @@ class ConstantAST extends AST {
             ? constant is String ? '"$constant"' : '$constant'
             : expression);
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      new _ConstantWatchRecord(watchGroup, expression, constant);
+  Record setupRecord(WatchGroup watchGroup) => watchGroup.addConstantRecord(expression, constant);
 }
 
 /**
@@ -56,16 +58,16 @@ class ConstantAST extends AST {
  * This is the '.' dot operator.
  */
 class FieldReadAST extends AST {
-  AST lhs;
+  AST lhsAST;
   final String name;
 
-  FieldReadAST(lhs, name)
-      : lhs = lhs,
+  FieldReadAST(lhsAST, name)
+      : lhsAST = lhsAST,
         name = name,
-        super('$lhs.$name');
+        super('$lhsAST.$name');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addFieldWatch(lhs, name, expression);
+  Record setupRecord(WatchGroup watchGroup) =>
+      watchGroup.addFieldRecord(lhsAST, name, expression);
 }
 
 /**
@@ -82,10 +84,10 @@ class PureFunctionAST extends AST {
   PureFunctionAST(name, this.fn, argsAST)
       : argsAST = argsAST,
         name = name,
-        super('$name(${_argList(argsAST)})');
+        super(_fnToString(name, argsAST));
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, true);
+  Record setupRecord(WatchGroup watchGroup) =>
+      watchGroup.addFunctionRecord(fn, argsAST, const {}, expression, true);
 }
 
 /**
@@ -101,10 +103,10 @@ class ClosureAST extends AST {
   ClosureAST(name, this.fn, argsAST)
       : argsAST = argsAST,
         name = name,
-        super('$name(${_argList(argsAST)})');
+        super(_fnToString(name, argsAST));
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addFunctionWatch(fn, argsAST, const {}, expression, false);
+  Record setupRecord(WatchGroup watchGroup) =>
+      watchGroup.addFunctionRecord(fn, argsAST, const {}, expression, false);
 }
 
 /**
@@ -122,46 +124,23 @@ class MethodAST extends AST {
       : lhsAST = lhsAST,
         name = name,
         argsAST = argsAST,
-        super('$lhsAST.$name(${_argList(argsAST)})');
+        super('$lhsAST.${_fnToString(name, argsAST)}');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addMethodWatch(lhsAST, name, argsAST, namedArgsAST, expression);
+  Record setupRecord(WatchGroup watchGroup) =>
+      watchGroup.addMethodRecord(lhsAST, name, argsAST, namedArgsAST, expression);
 }
-
 
 class CollectionAST extends AST {
   final AST valueAST;
+
   CollectionAST(valueAST)
       : valueAST = valueAST,
         super('#collection($valueAST)');
 
-  WatchRecord<_Handler> setupWatch(WatchGroup watchGroup) =>
-      watchGroup.addCollectionWatch(valueAST);
+  Record setupRecord(WatchGroup watchGroup) => watchGroup.addCollectionRecord(this);
 }
 
-String _argList(List<AST> items) => items.join(', ');
+String _fnToString(String name, List<AST> items) => name + '(' + items.join(', ') + ')';
 
-/**
- * The name is a bit oxymoron, but it is essentially the NullObject pattern.
- *
- * This allows children to set a handler on this Record and then let it write
- * the initial constant value to the forwarding Record.
- */
-class _ConstantWatchRecord extends WatchRecord<_Handler> {
-  final currentValue;
-  final _Handler handler;
 
-  _ConstantWatchRecord(WatchGroup watchGroup, String expression, currentValue)
-      : currentValue = currentValue,
-        handler = new _ConstantHandler(watchGroup, expression, currentValue);
-
-  bool check() => false;
-  void remove() => null;
-
-  get field => null;
-  get previousValue => null;
-  get object => null;
-  set object(_) => null;
-  get nextChange => null;
-}
 

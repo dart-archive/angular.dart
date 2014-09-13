@@ -13,9 +13,7 @@ part of angular.mock;
  */
 @Decorator(
     selector: '[log]',
-    map: const {
-        'log': '@logMessage'
-    })
+    map: const {'log': '@logMessage'})
 class LogAttrDirective implements AttachAware {
   final Logger log;
   String logMessage;

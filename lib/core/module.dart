@@ -9,13 +9,11 @@
  */
 library angular.core;
 
-export "package:angular/change_detection/watch_group.dart" show
-    ReactionFn;
-
 export "package:angular/core/parser/parser.dart" show
     Parser, ClosureMap;
 
-export "package:angular/change_detection/change_detection.dart" show
+export "package:angular/change_detector/change_detector.dart" show
+    ReactionFn,
     AvgStopwatch,
     FieldGetterFactory;
 

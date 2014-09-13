@@ -1,4 +1,4 @@
-library angular.change_detection.ast_parser;
+library angular.change_detector.ast_parser;
 
 import 'dart:collection';
 
@@ -6,9 +6,7 @@ import 'package:di/annotations.dart';
 import 'package:angular/core/parser/syntax.dart' as syntax;
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/core/formatter.dart';
-import 'package:angular/core/annotation_src.dart';
-import 'package:angular/change_detection/watch_group.dart';
-import 'package:angular/change_detection/change_detection.dart';
+import 'package:angular/change_detector/change_detector.dart';
 import 'package:angular/core/parser/utils.dart';
 
 class _FunctionChain {
@@ -193,8 +191,9 @@ _operation_bitwise_and(left, right)            => (left == null || right == null
 _operation_logical_and(left, right)            => toBool(left) && toBool(right);
 _operation_logical_or(left, right)             => toBool(left) || toBool(right);
 
-_operation_ternary(condition, yes, no) => toBool(condition) ? yes : no;
-_operation_bracket(obj, key) {
+dynamic _operation_ternary(condition, yes, no) => toBool(condition) ? yes : no;
+
+dynamic _operation_bracket(obj, key) {
   if (obj != null && (
       obj is! List || (key is int && key >= 0 && key < obj.length))) {
     return obj[key];

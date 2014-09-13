@@ -219,7 +219,7 @@ class Scope {
    *   [CollectionChangeItem] that lists all the changes.
    */
   Watch watch(String expression, ReactionFn reactionFn,  {context,
-      FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
+              FormatterMap formatters, bool canChangeModel: true, bool collection: false}) {
     assert(isAttached);
     assert(expression is String);
     assert(canChangeModel is bool);
@@ -255,13 +255,12 @@ class Scope {
       }
     }
 
-    String astKey =
-        "${collection ? "C" : "."}${formatters == null ? "." : formatters.hashCode}$expression";
+    String astKey = "${collection ? "C" : "."}"
+                    "${formatters == null ? "." : formatters.hashCode}$expression";
     AST ast = rootScope.astCache[astKey];
     if (ast == null) {
-      ast = rootScope.astCache[astKey] =
-          rootScope._astParser(expression,
-              formatters: formatters, collection: collection);
+      ast = rootScope._astParser(expression, formatters: formatters, collection: collection);
+      rootScope.astCache[astKey] = ast;
     }
 
     return watch = watchAST(ast, fn, canChangeModel: canChangeModel);
@@ -295,6 +294,7 @@ class Scope {
     assert(expression == null ||
            expression is String ||
            expression is Function);
+
     if (expression is String && expression.isNotEmpty) {
       var obj = locals == null ? context : new ScopeLocals(context, locals);
       return rootScope._parser(expression).eval(obj);
@@ -366,8 +366,8 @@ class Scope {
     var s = traceEnter(Scope_createChild);
     assert(isAttached);
     var child = new Scope(childContext, rootScope, this,
-                          _readWriteGroup.newGroup(childContext),
-                          _readOnlyGroup.newGroup(childContext),
+                          _readWriteGroup.createChild(childContext),
+                          _readOnlyGroup.createChild(childContext),
                          '$id:${_childScopeNextId++}',
                          _stats);
 
@@ -749,13 +749,13 @@ class RootScope extends Scope {
       : _scopeStats = _scopeStats,
         _parser = parser,
         _astParser = astParser,
-        super(context, null, null,
-            new RootWatchGroup(fieldGetterFactory,
-                new DirtyCheckingChangeDetector(fieldGetterFactory), context),
-            new RootWatchGroup(fieldGetterFactory,
-                new DirtyCheckingChangeDetector(fieldGetterFactory), context),
-            '',
-            _scopeStats)
+        super(context,
+              null,
+              null,
+              new WatchGroup(null, context, fieldGetterFactory),
+              new WatchGroup(null, context, fieldGetterFactory),
+              '',
+              _scopeStats)
   {
     _zone.onTurnDone = apply;
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
@@ -786,8 +786,6 @@ class RootScope extends Scope {
   void digest() {
     _transitionState(null, STATE_DIGEST);
     try {
-      var rootWatchGroup = _readWriteGroup as RootWatchGroup;
-
       int digestTTL = _ttl.ttl;
       const int LOG_COUNT = 3;
       List log;
@@ -796,16 +794,16 @@ class RootScope extends Scope {
       ChangeLog changeLog;
       _scopeStats.digestStart();
       do {
-
         int asyncCount = _runAsyncFns();
 
         digestTTL--;
-        count = rootWatchGroup.detectChanges(
+        count = _readWriteGroup.processChanges(
             exceptionHandler: _exceptionHandler,
-            changeLog: changeLog,
-            fieldStopwatch: _scopeStats.fieldStopwatch,
-            evalStopwatch: _scopeStats.evalStopwatch,
-            processStopwatch: _scopeStats.processStopwatch);
+            changeLog: changeLog);
+            // TODO
+            //fieldStopwatch: _scopeStats.fieldStopwatch,
+            //evalStopwatch: _scopeStats.evalStopwatch,
+            //processStopwatch: _scopeStats.processStopwatch);
 
         if (digestTTL <= LOG_COUNT) {
           if (changeLog == null) {
@@ -832,7 +830,7 @@ class RootScope extends Scope {
   void flush() {
     _stats.flushStart();
     _transitionState(null, STATE_FLUSH);
-    RootWatchGroup readOnlyGroup = this._readOnlyGroup as RootWatchGroup;
+    WatchGroup readOnlyGroup = _readOnlyGroup;
     bool runObservers = true;
     try {
       do {
@@ -845,10 +843,11 @@ class RootScope extends Scope {
         }
         if (runObservers) {
           runObservers = false;
-          readOnlyGroup.detectChanges(exceptionHandler:_exceptionHandler,
-              fieldStopwatch: _scopeStats.fieldStopwatch,
-              evalStopwatch: _scopeStats.evalStopwatch,
-              processStopwatch: _scopeStats.processStopwatch);
+          readOnlyGroup.processChanges(exceptionHandler:_exceptionHandler);
+              // TODO
+              //fieldStopwatch: _scopeStats.fieldStopwatch,
+              //evalStopwatch: _scopeStats.evalStopwatch,
+              //processStopwatch: _scopeStats.processStopwatch);
         }
         if (_domReadCounter > 0) {
           _stats.domReadStart();
@@ -864,20 +863,27 @@ class RootScope extends Scope {
         _stats.flushAssertStart();
         var digestLog = [];
         var flushLog = [];
-        (_readWriteGroup as RootWatchGroup).detectChanges(
-            changeLog: (s, c, p) => digestLog.add('$s: $c <= $p'),
-            fieldStopwatch: _scopeStats.fieldStopwatch,
-            evalStopwatch: _scopeStats.evalStopwatch,
-            processStopwatch: _scopeStats.processStopwatch);
-        (_readOnlyGroup as RootWatchGroup).detectChanges(
-            changeLog: (s, c, p) => flushLog.add('$s: $c <= $p'),
-            fieldStopwatch: _scopeStats.fieldStopwatch,
-            evalStopwatch: _scopeStats.evalStopwatch,
-            processStopwatch: _scopeStats.processStopwatch);
+        _readWriteGroup.processChanges(
+            changeLog: (s, c, p) => digestLog.add('$s: $c <= $p'));
+            // TODO
+            //fieldStopwatch: _scopeStats.fieldStopwatch,
+            //evalStopwatch: _scopeStats.evalStopwatch,
+            //processStopwatch: _scopeStats.processStopwatch);
+        _readOnlyGroup.processChanges(
+            changeLog: (s, c, p) => flushLog.add('$s: $c <= $p'));
+            // TODO
+            //fieldStopwatch: _scopeStats.fieldStopwatch,
+            //evalStopwatch: _scopeStats.evalStopwatch,
+            //processStopwatch: _scopeStats.processStopwatch);
         if (digestLog.isNotEmpty || flushLog.isNotEmpty) {
-          throw 'Observer reaction functions should not change model. \n'
-                'These watch changes were detected: ${digestLog.join('; ')}\n'
-                'These observe changes were detected: ${flushLog.join('; ')}';
+          var msgs = ['Observer reaction functions should not change model.'];
+          if (digestLog.isNotEmpty) {
+            msgs.add('These watch changes were detected: ${digestLog.join('; ')}');
+          }
+          if (flushLog.isNotEmpty) {
+            msgs.add('These observe changes were detected: ${flushLog.join('; ')}');
+          }
+          throw msgs.join('\n');
         }
         _stats.flushAssertEnd();
         return true;

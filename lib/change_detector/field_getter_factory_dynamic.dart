@@ -1,13 +1,13 @@
-library dirty_checking_change_detector_dynamic;
+library field_getter_factory.dynamic;
 
-import 'package:angular/change_detection/change_detection.dart';
-export 'package:angular/change_detection/change_detection.dart' show
+import 'change_detector.dart' show
+    FieldGetter,
     FieldGetterFactory;
 
 /**
  * We are using mirrors, but there is no need to import anything.
  */
-@MirrorsUsed(targets: const [ DynamicFieldGetterFactory ], metaTargets: const [] )
+@MirrorsUsed(targets: const [DynamicFieldGetterFactory], metaTargets: const [] )
 import 'dart:mirrors';
 
 class DynamicFieldGetterFactory implements FieldGetterFactory {
