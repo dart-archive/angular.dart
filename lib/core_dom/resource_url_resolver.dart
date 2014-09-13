@@ -94,13 +94,18 @@ class ResourceUrlResolver {
    * [originalBase] to being absolute.
    */
   void _resolveDom(Node root, Uri baseUri) {
+    print("ckck: _resolveDom: ENTER: node=${root.innerHtml}");
     _resolveAttributes(root, baseUri);
+    print("ckck: _resolveDom: after _resolveDom: node=${root.innerHtml}");
     _resolveStyles(root, baseUri);
+    print("ckck: _resolveDom: after _resolveStyles: node=${root.innerHtml}");
 
     // handle template.content
     for (var template in _querySelectorAll(root, 'template')) {
       if (template.content != null) {
+        print("ckck: _resolveDom: RECURSE on template content: ${template.content}");
         _resolveDom(template.content, baseUri);
+        print("ckck: _resolveDom: RECURSE on template content: AFTER: node=${root.innerHtml}");
       }
     }
   }
