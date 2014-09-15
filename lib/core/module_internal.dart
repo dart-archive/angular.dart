@@ -26,6 +26,8 @@ export 'package:angular/core/formatter.dart';
 import 'package:angular/core/parser/utils.dart';
 import 'package:angular/core/registry.dart';
 import 'package:angular/core/static_keys.dart';
+import 'package:angular/core/pending_async.dart';
+export 'package:angular/core/pending_async.dart';
 
 part "exception_handler.dart";
 part "interpolate.dart";
@@ -41,6 +43,7 @@ class CoreModule extends Module {
     bind(FormatterMap);
     bind(Interpolate);
     bind(RootScope);
+    bind(PendingAsync);
     bind(Scope, toInstanceOf: RootScope);
     bind(ClosureMap, toFactory: () => throw "Must provide dynamic/static ClosureMap.");
     bind(ScopeStats);

@@ -142,6 +142,14 @@ final VmTurnZone_scheduleMicrotask = traceCreateScope('VmTurnZone#scheduleMicrot
 
 
 /**
+ * Name: `VmTurnZone#createTimer()`
+ *
+ * Designates where new timers are scheduled.
+ */
+final VmTurnZone_createTimer = traceCreateScope('VmTurnZone#createTimer()');
+
+
+/**
  * Name: `Compiler#compile()`
  *
  * Designates where template HTML is compiled. Compilation is a process of walking the DOM and

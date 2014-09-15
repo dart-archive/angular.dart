@@ -68,6 +68,21 @@ void main() {
         callback = guinness.createSpy('callback');
       });
 
+      describe('PendingAsync', () {
+        it('should register requests with PendingAsync', async((
+            Http http, PendingAsync pendingAsync) {
+          var log = [];
+          http(url: '/url', method: 'GET');
+          pendingAsync.whenStable(() {
+            log.add('whenStable');
+          });
+          log.add(1);
+          backend.flushGET('/url').respond('');
+          microLeap();
+          log.add(2);
+          expect(log).toEqual([1, 'whenStable', 2]);
+        }));
+      });
 
       it('should do basic request', async(() {
         http(url: '/url', method: 'GET');

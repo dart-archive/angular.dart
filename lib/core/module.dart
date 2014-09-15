@@ -52,6 +52,7 @@ export "package:angular/core_dom/module_internal.dart" show
     NgElement,
     NoOpAnimation,
     NullTreeSanitizer,
+    PendingAsync,
     Animate,
     RequestErrorInterceptor,
     RequestInterceptor,

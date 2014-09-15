@@ -276,3 +276,15 @@ class _TimerSpec implements dart_async.Timer {
     isActive = false;
   }
 }
+
+
+class MockZone {
+  MockZone._internal();
+
+  MockZone get current => Zone.current['AngularMockZone'];
+
+  static Zone fork(Zone zone) {
+    MockZone mockZone = new MockZone._internal();
+    return zone.fork(zoneValues: { 'AngularMockZone': mockZone });
+  }
+}

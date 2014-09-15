@@ -750,9 +750,11 @@ class RootScope extends Scope {
    */
   String get state => _state;
 
+  PendingAsync _pendingAsync;
+
   RootScope(Object context, Parser parser, ASTParser astParser, FieldGetterFactory fieldGetterFactory,
             FormatterMap formatters, this._exceptionHandler, this._ttl, this._zone,
-            ScopeStats _scopeStats, CacheRegister cacheRegister)
+            ScopeStats _scopeStats, CacheRegister cacheRegister, this._pendingAsync)
       : _scopeStats = _scopeStats,
         _parser = parser,
         _astParser = astParser,
@@ -764,7 +766,19 @@ class RootScope extends Scope {
             '',
             _scopeStats)
   {
-    _zone.onTurnDone = apply;
+    _zone.countPendingAsync = _pendingAsync.increaseCount;
+    _zone.onTurnDone = () {
+      // NOTE: Ideally, we would just set _zone.onTurnStart = _pendingAsync.increaseCount.
+      // However, when the RootScope is constructed, we would have already executed the
+      // nop onTurnStart causing a count mismatch.  While we could adjust for it, our
+      // test set doesn't really enter/leave the VmTurnZone.  So for simplicity, we do the
+      // increaseCount here.
+      _pendingAsync.increaseCount();
+      apply();
+      _pendingAsync.decreaseCount();
+      _runAsyncFns();  // if any were scheduled by _pendingAsync.whenStable callbacks.
+    };
+
     _zone.onError = (e, s, ls) => _exceptionHandler(e, s);
     _zone.onScheduleMicrotask = runAsync;
     cacheRegister.registerCache("ScopeWatchASTs", astCache);
@@ -900,6 +914,7 @@ class RootScope extends Scope {
     if (_state == STATE_FLUSH_ASSERT) {
       throw "Scheduling microtasks not allowed in $state state.";
     }
+    _pendingAsync.increaseCount();
     var chain = new _FunctionChain(fn);
     if (_runAsyncHead == null) {
       _runAsyncHead = _runAsyncTail = chain;
@@ -918,6 +933,7 @@ class RootScope extends Scope {
       } catch (e, s) {
         _exceptionHandler(e, s);
       }
+      _pendingAsync.decreaseCount();
       _runAsyncHead = _runAsyncHead._next;
     }
     _runAsyncTail = null;
