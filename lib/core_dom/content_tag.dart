@@ -34,6 +34,8 @@ class _RenderedTranscludingContent implements _ContentStrategy {
   dom.ScriptElement _beginScript;
   dom.ScriptElement _endScript;
 
+  Iterable<dom.Node> _currNodes;
+
   _RenderedTranscludingContent(this._content, this._sourceLightDom);
 
   void attach(){
@@ -48,8 +50,14 @@ class _RenderedTranscludingContent implements _ContentStrategy {
 
   void insert(Iterable<dom.Node> nodes){
     final p = _endScript.parent;
-    if (p != null) p.insertAllBefore(nodes, _endScript);
+    if (p != null && ! _equalToCurrNodes(nodes)) {
+      _currNodes = nodes.toList();
+      p.insertAllBefore(nodes, _endScript);
+    }
   }
+
+  bool _equalToCurrNodes(Iterable<dom.Node> nodes) =>
+      const IterableEquality().equals(_currNodes, nodes);
 
   void _replaceContentElementWithScriptTags() {
     _beginScript = _beginScriptTemplate.clone(true);
