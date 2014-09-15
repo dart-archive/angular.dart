@@ -55,7 +55,7 @@ part 'mock_cache_register.dart';
  *   - [Logger]
  *   - [RethrowExceptionHandler] instead of [ExceptionHandler]
  *   - [VmTurnZone] which displays errors to console;
- *   - [MockCacheRegister
+ *   - [MockCacheRegister]
  */
 class AngularMockModule extends Module {
   AngularMockModule() {

@@ -5,6 +5,8 @@ part of angular.core_internal;
  */
 typedef void ZoneOnTurnDone();
 
+typedef void CountPendingAsync(int count);
+
 /**
  * Handles a [VmTurnZone] onTurnDone event.
  */
@@ -38,6 +40,7 @@ class LongStackTrace {
     return '${frames.join("\n    ")}\n$parent';
   }
 }
+
 
 /**
  * A [Zone] wrapper that lets you schedule tasks after its private microtask
@@ -75,12 +78,14 @@ class VmTurnZone {
         run: _onRun,
         runUnary: _onRunUnary,
         scheduleMicrotask: _onScheduleMicrotask,
+        createTimer: _onCreateTimer,
         handleUncaughtError: _uncaughtError
     ));
     onError = _defaultOnError;
     onTurnDone = _defaultOnTurnDone;
     onTurnStart = _defaultOnTurnStart;
     onScheduleMicrotask = _defaultOnScheduleMicrotask;
+    countPendingAsync = _defaultCountPendingAsync;
   }
 
   List _asyncQueue = [];
@@ -121,6 +126,15 @@ class VmTurnZone {
     try {
       onScheduleMicrotask(() => delegate.run(zone, fn));
       if (_runningInTurn == 0 && !_inFinishTurn)  _finishTurn(zone, delegate);
+    } finally {
+      traceLeave(s);
+    }
+  }
+
+  async.Timer _onCreateTimer(async.Zone self, async.ZoneDelegate delegate, async.Zone zone, Duration duration, fn()) {
+    var s = traceEnter(VmTurnZone_createTimer);
+    try {
+      return new _WrappedTimer(this, delegate, zone, duration, fn);
     } finally {
       traceLeave(s);
     }
@@ -199,7 +213,9 @@ class VmTurnZone {
    *   the turn will _never_ end.
    */
   ZoneOnTurnDone onTurnDone;
+  CountPendingAsync countPendingAsync;
   void _defaultOnTurnDone() => null;
+  void _defaultCountPendingAsync(int count) => null;
 
   /**
    * Called any time a microtask is scheduled. If you override [onScheduleMicrotask], you
@@ -274,5 +290,30 @@ class VmTurnZone {
    */
   void assertInZone() {
     assertInTurn();
+  }
+}
+
+
+// Automatically adjusts the pending async task count when the timer is
+// scheduled, canceled or fired.
+class _WrappedTimer implements async.Timer {
+  async.Timer _realTimer;
+  VmTurnZone _vmTurnZone;
+
+  _WrappedTimer(this._vmTurnZone, async.ZoneDelegate delegate, async.Zone zone, Duration duration, Function fn()) {
+    _vmTurnZone.countPendingAsync(1);
+    _realTimer = delegate.createTimer(zone, duration, () {
+      fn();
+      _vmTurnZone.countPendingAsync(-1);
+    });
+  }
+
+  bool get isActive => _realTimer.isActive;
+
+  void cancel() {
+    if (_realTimer.isActive) {
+      _vmTurnZone.countPendingAsync(-1);
+    }
+    _realTimer.cancel();
   }
 }

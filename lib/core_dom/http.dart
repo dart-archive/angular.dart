@@ -383,6 +383,7 @@ class Http {
   final RootScope _rootScope;
   final HttpConfig _httpConfig;
   final VmTurnZone _zone;
+  final PendingAsync _pendingAsync;
 
   final _responseQueue = <Function>[];
   async.Timer _responseQueueTimer;
@@ -396,7 +397,7 @@ class Http {
    * Constructor, useful for DI.
    */
   Http(this._cookies, this._location, this._rewriter, this._backend, this.defaults,
-       this._interceptors, this._rootScope, this._httpConfig, this._zone);
+       this._interceptors, this._rootScope, this._httpConfig, this._zone, this._pendingAsync);
 
   /**
    * Parse a [requestUrl] and determine whether this is a same-origin request as
@@ -494,14 +495,25 @@ class Http {
         return new async.Future.value(new HttpResponse.copy(cachedResponse));
       }
 
-      requestFromBackend(runCoalesced, onComplete, onError) => _backend.request(
+      requestFromBackend(runCoalesced, onComplete, onError) {
+        var request = _backend.request(
           url,
           method: method,
           requestHeaders: config.headers,
           sendData: config.data,
           withCredentials: withCredentials
-      ).then((dom.HttpRequest req) => _onResponse(req, runCoalesced, onComplete, config, cache, url),
-             onError: (e) => _onError(e, runCoalesced, onError, config, url));
+        );
+        _pendingAsync.increaseCount();
+        return request.then((dom.HttpRequest req) {
+                       _pendingAsync.decreaseCount();
+                       return _onResponse(req, runCoalesced, onComplete, config, cache, url);
+                     },
+                     onError: (e) {
+                       _pendingAsync.decreaseCount();
+                       return _onError(e, runCoalesced, onError, config, url);
+                     });
+        return request;
+      }
 
       async.Future responseFuture;
       if (_httpConfig.coalesceDuration != null) {

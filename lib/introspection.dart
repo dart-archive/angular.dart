@@ -264,12 +264,15 @@ typedef List<String> _GetExpressionsFromProbe(ElementProbe probe);
 class _Testability implements _JsObjectProxyable {
   final dom.Node node;
   final ElementProbe probe;
+  final PendingAsync _pendingAsync;
 
-  _Testability(this.node, this.probe);
+  _Testability(dom.Node node, ElementProbe probe):
+      node = node,
+      probe = probe,
+      _pendingAsync = probe.injector.get(PendingAsync);
 
   whenStable(callback) {
-    (probe.injector.get(VmTurnZone) as VmTurnZone).run(
-        () => new async.Timer(Duration.ZERO, callback));
+    _pendingAsync.whenStable(callback);
   }
 
   /**
