@@ -318,6 +318,28 @@ void main() {
           microLeap(); _.rootScope.apply();
         }));
 
+        it('should not lose focus', async(() {
+          if (compilerType != 'transcluding') return;
+
+          _.rootScope.context['showClass'] = false;
+          var element = _.compile(r'<simple>'
+              '''aaa <input type="text" id="focused-input" ng-class="{'aClass' : showClass}"> bbb'''
+            '</simple>');
+          document.body.append(element);
+          microLeap(); _.rootScope.apply();
+
+          InputElement input = element.querySelector("#focused-input");
+          input.focus();
+
+          expect(document.activeElement.id).toEqual("focused-input");
+
+          // trigger redistribution
+          _.rootScope.context['showClass'] = true;
+          microLeap(); _.rootScope.apply();
+
+          expect(document.activeElement.id).toEqual("focused-input");
+        }));
+
         it('should support multiple content tags', async(() {
           var element = _.compile(r'<div>'
             '<multiple-content-tags>'
