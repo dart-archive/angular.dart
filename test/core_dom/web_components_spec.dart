@@ -43,6 +43,10 @@ main() {
     beforeEach((TestBed tb) {
       _ = tb;
     });
+
+    beforeEachModule((Module m) {
+      m.bind(TestsTwoWayCustom);
+    });
     
     it('should create custom elements', () {
       registerElement('tests-basic', {'prop-x': 6});
@@ -89,5 +93,26 @@ main() {
 
       expect(_.rootScope.context['x']).toEqual(6);
     });
+
+    it('should support two-way bindings for components that trigger a defined event', () {
+      registerElement('tests-twoway-custom', {});
+      compileAndUpgrade('<tests-twoway-custom bind-prop="x"></tests-twoway-custom>');
+
+      setCustomProp('prop', 6);
+      _.rootElement.dispatchEvent(new Event.eventType('CustomEvent', 'x-change'));
+
+      expect(_.rootScope.context['x']).toEqual(6);
+
+      // The change event should not cause an update
+      setCustomProp('prop', 7);
+      _.rootElement.dispatchEvent(new Event.eventType('CustomEvent', 'change'));
+      expect(_.rootScope.context['x']).toEqual(6);
+    });
   });
 }
+
+@Decorator(
+  selector: 'tests-twoway-custom',
+  updateBoundElementPropertiesOnEvents: const ['x-change']
+)
+class TestsTwoWayCustom {}
