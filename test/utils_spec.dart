@@ -44,6 +44,10 @@ main() {
     it('should lowercase strings', () {
       expect(camelCase('Caps-first')).toEqual('capsFirst');
     });
+
+    it('should work on empty string', () {
+      expect(camelCase('')).toEqual('');
+    });
   });
 }
 
