@@ -30,8 +30,9 @@ class DirectiveRef {
   final AST valueAST;
   final mappings = <MappingParts>[];
 
-  DirectiveRef(this.element, type, this.annotation, this.typeKey, [ this.value, this.valueAST ])
+  DirectiveRef(this.element, type, this.annotation, [ this.value, this.valueAST ])
       : type = type,
+        typeKey = key(type),
         factory = Module.DEFAULT_REFLECTOR.factoryFor(type),
         paramKeys = Module.DEFAULT_REFLECTOR.parameterKeysFor(type);
 

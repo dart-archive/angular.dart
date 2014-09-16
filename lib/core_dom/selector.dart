@@ -108,7 +108,7 @@ class DirectiveSelector {
             String expression = _interpolate(value);
             AST valueAST = _astParser(expression, formatters: _formatters);
             builder.addDirective(new DirectiveRef(
-                node, tuple.type, tuple.directive, new Key(tuple.type), attrName, valueAST));
+                node, tuple.type, tuple.directive, attrName, valueAST));
           });
         }
       }
@@ -146,8 +146,8 @@ class DirectiveSelector {
           String expression = _interpolate(value);
           var valueAST = _astParser(expression, formatters: _formatters);
 
-          builder.addDirective(new DirectiveRef(node, tuple.type,
-              tuple.directive, new Key(tuple.type), value, valueAST));
+          builder.addDirective(new DirectiveRef(node, tuple.type, tuple.directive, value,
+                                                valueAST));
         });
       }
     }
@@ -234,13 +234,6 @@ class _SelectorPart {
       : element;
 }
 
-_addRefs(ElementBinderBuilder builder, List<_Directive> directives, dom.Node node,
-         [String attrValue]) {
-  directives.forEach((directive) {
-    builder.addDirective(new DirectiveRef(node, directive.type, directive.annotation, new Key(directive.type), attrValue));
-  });
-}
-
 class _ElementSelector {
   final String _name;
 
@@ -296,7 +289,7 @@ class _ElementSelector {
                                     List<_ElementSelector> partialSelection,
                                     dom.Node node, String nodeName) {
     if (_elementMap.containsKey(nodeName)) {
-      _addRefs(builder, _elementMap[nodeName], node);
+      builder.addAllDirectives(_elementMap[nodeName], node);
     }
     if (_elementPartialMap.containsKey(nodeName)) {
       if (partialSelection == null) {
@@ -311,7 +304,7 @@ class _ElementSelector {
                                      List<_ElementSelector> partialSelection,
                                      dom.Node node, String className) {
     if (_classMap.containsKey(className)) {
-      _addRefs(builder, _classMap[className], node);
+      builder.addAllDirectives(_classMap[className], node);
     }
     if (_classPartialMap.containsKey(className)) {
       if (partialSelection == null) {
@@ -332,10 +325,10 @@ class _ElementSelector {
     if (matchingKey != null) {
       Map<String, List<_Directive>> valuesMap = _attrValueMap[matchingKey];
       if (valuesMap.containsKey('')) {
-        _addRefs(builder, valuesMap[''], node, attrValue);
+        builder.addAllDirectives(valuesMap[''], node, attrValue);
       }
       if (attrValue != '' && valuesMap.containsKey(attrValue)) {
-        _addRefs(builder, valuesMap[attrValue], node, attrValue);
+        builder.addAllDirectives(valuesMap[attrValue], node, attrValue);
       }
     }
     if (_attrValuePartialMap.containsKey(attrName)) {
