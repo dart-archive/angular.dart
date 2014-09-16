@@ -103,7 +103,7 @@ module.exports = function(config) {
             'selenium-version': '2.41.0',
             'command-timeout': 600,
             'idle-timeout': 600,
-            'max-duration': 2700
+            'max-duration': 5400
         }
     }
   });
