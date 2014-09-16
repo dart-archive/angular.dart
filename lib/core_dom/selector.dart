@@ -205,9 +205,9 @@ class _ContainsSelector {
 }
 
 final _SELECTOR_REGEXP = new RegExp(
-    r'^(?:([-\w]+)|'                      // "tag"
-    r'(?:\.([-\w]+))|'                    // ".class"
-    r'(?:\[([-\w*]+)(?:=([^\]]*))?\]))'); // "[name]", "[name=value]" or "[name*=value]"
+    r'^([-\w]+)|'                     // "tag"
+    r'^\.([-\w]+)|'                   // ".class"
+    r'^\[([-\w*]+)=?([^\]]*)\]');     // "[name]", "[name=value]" or "[name*=value]"
 final _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$'); // ":contains(/text/)"
 final _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$');  // "[*=/value/]
 

@@ -9,7 +9,10 @@ class ContainsSelector {
   ContainsSelector(this.selector, String regexp): regexp = new RegExp(regexp);
 }
 
-RegExp _SELECTOR_REGEXP = new RegExp(r'^(?:([\w\-]+)|(?:\.([\w\-]+))|(?:\[([\w\-\*]+)(?:=([^\]]*))?\]))');
+RegExp _SELECTOR_REGEXP = new RegExp(
+    r'^([-\w]+)|'                     // "tag"
+    r'^\.([-\w]+)|'                   // ".class"
+    r'^\[([-\w*]+)=?([^\]]*)\]');     // "[name]", "[name=value]" or "[name*=value]"
 RegExp _CONTAINS_REGEXP = new RegExp(r'^:contains\(\/(.+)\/\)$');
 RegExp _ATTR_CONTAINS_REGEXP = new RegExp(r'^\[\*=\/(.+)\/\]$');
 
