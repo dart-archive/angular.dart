@@ -120,6 +120,12 @@ class ElementBinderBuilder {
     var elBinder = _factory.binder(this);
     return template == null ? elBinder : _factory.templateBinder(this, elBinder);
   }
+
+  void addAllDirectives(List<_Directive> directives, dom.Node node, [String attrValue]) {
+    directives.forEach((directive) {
+      addDirective(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
+    });
+  }
 }
 
 /**
