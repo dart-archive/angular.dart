@@ -21,8 +21,8 @@ part of angular.core.dom_internal;
  *  * [*=/abc/]
  */
 class DirectiveSelector {
-  static String BIND_PREFIX = "bind-";
-  static int BIND_PREFIX_LENGTH = 5;
+  static final String BIND_PREFIX = "bind-";
+  static final int BIND_PREFIX_LENGTH = 5;
 
   ElementBinderFactory _binderFactory;
   DirectiveMap _directives;
@@ -146,7 +146,6 @@ class DirectiveSelector {
           // Pre-compute the AST to watch this value.
           String expression = _interpolate(value);
           var valueAST = _astParser(expression, formatters: _formatters);
-
           builder.addDirective(new DirectiveRef(tuple.type, tuple.directive, value, valueAST));
         });
       }

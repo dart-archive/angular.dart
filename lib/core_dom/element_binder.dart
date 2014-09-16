@@ -375,21 +375,6 @@ class _TaskList {
   }
 }
 
-// Used for walking the DOM
-class ElementBinderTreeRef {
-  final int offsetIndex;
-  final ElementBinderTree subtree;
-
-  ElementBinderTreeRef(this.offsetIndex, this.subtree);
-}
-
-class ElementBinderTree {
-  final ElementBinder binder;
-  final List<ElementBinderTreeRef> subtrees;
-
-  ElementBinderTree(this.binder, this.subtrees);
-}
-
 class TaggedTextBinder {
   final ElementBinder binder;
   final int offsetIndex;
@@ -398,7 +383,6 @@ class TaggedTextBinder {
   String toString() => "[TaggedTextBinder binder:$binder offset:$offsetIndex]";
 }
 
-// Used for the tagging compiler
 class TaggedElementBinder {
   final ElementBinder binder;
   int parentBinderOffset;

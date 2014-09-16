@@ -2,7 +2,7 @@ library angular.dom.selector_spec;
 
 import '../_specs.dart';
 
-const _aBElement               = const Decorator(selector:'b'); 
+const _aBElement               = const Decorator(selector:'b');
 const _aBClass                 = const Decorator(selector:'.b');
 const _aDirectiveAttr          = const Decorator(selector:'[directive]');
 const _aWildcardDirectiveAttr  = const Decorator(selector:'[wildcard-*]');
