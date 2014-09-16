@@ -88,7 +88,7 @@ packages:
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.22"
+    version: "0.5.0"
   smoke:
     description: smoke
     source: hosted
