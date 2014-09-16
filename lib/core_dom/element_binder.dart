@@ -56,8 +56,7 @@ class ElementBinder {
 
   final bool hasTemplate = false;
 
-  bool get shouldCompileChildren =>
-      childMode == Directive.COMPILE_CHILDREN;
+  bool get shouldCompileChildren => childMode == Directive.COMPILE_CHILDREN;
 
   List<String> _bindAssignablePropsOnCache;
   List<String> get _bindAssignablePropsOn {
