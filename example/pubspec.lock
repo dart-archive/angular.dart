@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.18.0"
+    version: "0.15.7"
   angular:
     description:
       path: ".."
@@ -51,6 +51,10 @@ packages:
     description: matcher
     source: hosted
     version: "0.11.1"
+  observe:
+    description: observe
+    source: hosted
+    version: "0.10.1+2"
   path:
     description: path
     source: hosted
@@ -63,14 +67,14 @@ packages:
     description: pool
     source: hosted
     version: "1.0.1"
-  quiver:
-    description: quiver
-    source: hosted
-    version: "0.18.2"
   route_hierarchical:
     description: route_hierarchical
     source: hosted
-    version: "0.4.22"
+    version: "0.5.0"
+  smoke:
+    description: smoke
+    source: hosted
+    version: "0.1.0+1"
   source_maps:
     description: source_maps
     source: hosted
@@ -83,10 +87,6 @@ packages:
     description: stack_trace
     source: hosted
     version: "1.0.2"
-  typed_mock:
-    description: typed_mock
-    source: hosted
-    version: "0.0.4"
   unittest:
     description: unittest
     source: hosted
