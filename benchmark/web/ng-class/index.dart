@@ -4,8 +4,6 @@ import 'package:angular/core_dom/module_internal.dart';
 import 'package:angular/application_factory.dart';
 import 'package:angular/change_detection/ast_parser.dart';
 
-import 'dart:html';
-import 'dart:math';
 import 'dart:js' as js;
 
 @Component(
@@ -40,9 +38,9 @@ main() {
   var cleanup, createDom;
 
   var module = new Module()
-      ..type(Classy)
-      ..type(Baseline)
-      ..type(SillyClass)
+      ..bind(Classy)
+      ..bind(Baseline)
+      ..bind(SillyClass)
       ..bind(CompilerConfig, toValue: new CompilerConfig.withOptions(elementProbeEnabled: false));
 
   var injector = applicationFactory().addModule(module).run();
