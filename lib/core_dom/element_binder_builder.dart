@@ -39,6 +39,7 @@ class ElementBinderBuilder {
   final ElementBinderFactory _factory;
   final DirectiveMap _directives;
   final FormatterMap _formatters;
+  final dom.Node _node;
 
   /// "on-*" attribute names and values, added by a [DirectiveSelector]
   final onEvents = new HashMap<String, String>();
@@ -53,7 +54,8 @@ class ElementBinderBuilder {
   // Can be either COMPILE_CHILDREN or IGNORE_CHILDREN
   String childMode = Directive.COMPILE_CHILDREN;
 
-  ElementBinderBuilder(this._factory, this._formatters, this._directives, this._injector);
+  ElementBinderBuilder(this._factory, this._formatters, this._directives, this._injector,
+                       this._node);
 
   /**
    * Adds [DirectiveRef]s to this [ElementBinderBuilder].
@@ -105,8 +107,8 @@ class ElementBinderBuilder {
         // Look up the value of attrName and compute an AST
         AST ast;
         if (mode != '@' && mode != '&') {
-          var value = attrName == "." ? ref.value : (ref.element as dom.Element).attributes[attrName];
-          if (value == null || value.isEmpty) { value = "''"; }
+          var value = attrName == "." ? ref.value : (_node as dom.Element).attributes[attrName];
+          if (value == null || value.isEmpty) value = "''";
           ast = _factory.astParser(value, formatters: _formatters);
         }
 
@@ -121,9 +123,9 @@ class ElementBinderBuilder {
     return template == null ? elBinder : _factory.templateBinder(this, elBinder);
   }
 
-  void addAllDirectives(List<_Directive> directives, dom.Node node, [String attrValue]) {
+  void addAllDirectives(List<_Directive> directives, [String attrValue]) {
     directives.forEach((directive) {
-      addDirective(new DirectiveRef(node, directive.type, directive.annotation, attrValue));
+      addDirective(new DirectiveRef(directive.type, directive.annotation, attrValue));
     });
   }
 }

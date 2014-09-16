@@ -20,7 +20,6 @@ class MappingParts {
 }
 
 class DirectiveRef {
-  final dom.Node element;
   final Type type;
   final Function factory;
   final List<Key> paramKeys;
@@ -30,17 +29,14 @@ class DirectiveRef {
   final AST valueAST;
   final mappings = <MappingParts>[];
 
-  DirectiveRef(this.element, type, this.annotation, [ this.value, this.valueAST ])
+  DirectiveRef(type, this.annotation, [ this.value, this.valueAST ])
       : type = type,
         typeKey = key(type),
         factory = Module.DEFAULT_REFLECTOR.factoryFor(type),
         paramKeys = Module.DEFAULT_REFLECTOR.parameterKeysFor(type);
 
   String toString() {
-    var html = element is dom.Element
-        ? (element as dom.Element).outerHtml
-        : element.nodeValue;
-    return '{ element: $html, selector: ${annotation.selector}, value: $value, '
+    return '{selector: ${annotation.selector}, value: $value, '
            'ast: ${valueAST == null ? 'null' : '$valueAST'}, '
            'type: $type }';
   }
