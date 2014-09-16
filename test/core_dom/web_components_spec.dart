@@ -58,29 +58,36 @@ main() {
 
 
     it('should bind to Custom Element properties', () {
-      registerElement('tests-bound', {'prop-y': 10});
+      registerElement('tests-bound', {'propY': 10});
       compileAndUpgrade('<tests-bound bind-prop-y=27></tests-bound>');
 
       // Scope has not been digested yet
-      expect(customProp('prop-y')).toEqual(10);
+      expect(customProp('propY')).toEqual(10);
 
       _.rootScope.apply();
-      expect(customProp('prop-y')).toEqual(27);
+      expect(customProp('propY')).toEqual(27);
     });
 
 
     it('should bind to a non-existent property', () {
       registerElement('tests-empty', {});
-      compileAndUpgrade('<tests-empty bind-new-prop=27></tests-empty>');
+      compileAndUpgrade('<tests-empty bind-newprop=27></tests-empty>');
       _.rootScope.apply();
-      expect(customProp('new-prop')).toEqual(27);
+      expect(customProp('newprop')).toEqual(27);
+    });
+
+    it('should bind to a camelCase property', () {
+      registerElement('tests-camel', {});
+      compileAndUpgrade('<tests-camel bind-new-prop=27></tests-camel>');
+      _.rootScope.apply();
+      expect(customProp('newProp')).toEqual(27);
     });
     
     it('should bind to both directives and properties', () {
       registerElement('tests-double', {});
       compileAndUpgrade('<tests-double ng-bind bind-ng-bind="\'hello\'"></tests-double>');
       _.rootScope.apply();
-      expect(customProp('ng-bind')).toEqual("hello");
+      expect(customProp('ngBind')).toEqual("hello");
       expect(_.rootElement).toHaveText('hello');
     });
 

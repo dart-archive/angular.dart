@@ -308,6 +308,7 @@ class ElementBinder {
     var jsNode;
     List bindAssignableProps = [];
     bindAttrs.forEach((String prop, AST ast) {
+      prop = camelCase(prop);
       if (jsNode == null) jsNode = new js.JsObject.fromBrowserObject(node);
       scope.watchAST(ast, (v, _) {
         jsNode[prop] = v;
