@@ -31,5 +31,19 @@ main() {
       }).toThrowWith(message: 'Unknown function type, expecting 0 to 5 args.');
     });
   });
+
+  describe('camelCase', () {
+    it('should ignore non camelCase', () {
+      expect(camelCase('regular')).toEqual('regular');
+    });
+
+    it('should convert snake-case', () {
+      expect(camelCase('snake-case')).toEqual('snakeCase');
+    });
+
+    it('should lowercase strings', () {
+      expect(camelCase('Caps-first')).toEqual('capsFirst');
+    });
+  });
 }
 
