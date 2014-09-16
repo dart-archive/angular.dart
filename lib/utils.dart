@@ -83,8 +83,7 @@ capitalize(String s) => s.substring(0, 1).toUpperCase() + s.substring(1);
 
 String camelCase(String s) {
   var part = s.split('-').map((s) => s.toLowerCase());
-  if (part.length <= 1)
-    return part.join();
+  if (part.length <= 1) return part.join();
   return part.first + part.skip(1).map(capitalize).join();
 }
 
