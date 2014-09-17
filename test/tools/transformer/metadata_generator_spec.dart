@@ -505,7 +505,7 @@ main() {
             'a|web/main.dart': '''
                 import 'package:angular/angular.dart';
 
-                @Decorator(visibility: Directive.CHILDREN_VISIBILITY)
+                @Decorator(visibility: Visibility.CHILDREN)
                 @Decorator(visibility: CONST_VALUE)
                 class Engine {}
 
@@ -521,7 +521,7 @@ main() {
           classes: {
             'import_0.Engine': [
               'const import_1.Decorator(visibility: '
-                  'import_1.Directive.CHILDREN_VISIBILITY)',
+                  'import_1.Visibility.CHILDREN)',
               'const import_1.Decorator(visibility: import_0.CONST_VALUE)',
             ]
           });
@@ -743,7 +743,10 @@ class Formatter {};
 
 class Directive {
   Directive({map: const {}});
-  static const int CHILDREN_VISIBILITY = 1;
+}
+
+class Visibility {
+  static const int CHILDREN = 1;
 }
 
 class Decorator extends Directive {
