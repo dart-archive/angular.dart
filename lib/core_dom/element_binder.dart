@@ -9,17 +9,16 @@ class TemplateElementBinder extends ElementBinder {
 
   final ElementBinder templateBinder;
 
-  var _directiveCache;
-  List<DirectiveRef> get _usableDirectiveRefs {
-    if (_directiveCache != null) return _directiveCache;
-    return _directiveCache = [template];
-  }
+  final List<DirectiveRef> _directiveCache;
 
-  TemplateElementBinder(perf, expando, parser, config, appInjector,
-                        this.template, this.templateBinder,
-                        onEvents, bindAttrs, childMode)
-      : super(perf, expando, parser, config, appInjector,
-          null, null, onEvents, bindAttrs, childMode);
+  List<DirectiveRef> get _usableDirectiveRefs => _directiveCache;
+
+  TemplateElementBinder(perf, expando, parser, config, appInjector,  DirectiveRef template,
+                        this.templateBinder, onEvents, bindAttrs, childMode)
+      : template = template,
+        _directiveCache = [template],
+        super(perf, expando, parser, config, appInjector, null, null, onEvents, bindAttrs,
+              childMode);
 
   String toString() => "[TemplateElementBinder template:$template]";
 }
