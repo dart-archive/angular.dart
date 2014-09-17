@@ -17,7 +17,7 @@ void main() {
 
       Component annotation = tuples[0].directive;
       expect(annotation.selector).toEqual('annotated-io');
-      expect(annotation.visibility).toEqual(Directive.LOCAL_VISIBILITY);
+      expect(annotation.visibility).toEqual(Visibility.LOCAL);
       expect(annotation.exportExpressions).toEqual(['exportExpressions']);
       expect(annotation.module).toEqual(AnnotatedIoComponent.module);
       expect(annotation.template).toEqual('template');
@@ -106,14 +106,15 @@ class NullParser implements Parser {
     cssUrl: const ['cssUrls'],
     publishAs: 'ctrl',
     module: AnnotatedIoComponent.module,
-    visibility: Directive.LOCAL_VISIBILITY,
+    visibility: Visibility.LOCAL,
     exportExpressions: const ['exportExpressions'],
     map: const {
       'foo': '=>foo'
     })
 class AnnotatedIoComponent {
-  static module(i) => i.bind(String, toFactory: (i) => i.get(AnnotatedIoComponent),
-      visibility: Directive.LOCAL_VISIBILITY);
+  static module(i) => i.bind(String,
+                             toFactory: (i) => i.get(AnnotatedIoComponent),
+                             visibility: Visibility.LOCAL);
 
   AnnotatedIoComponent(Scope scope) {
     scope.rootScope.context['ioComponent'] = this;

@@ -1108,7 +1108,7 @@ void main() {
 
 @Component(
     selector: 'tab',
-    visibility: Directive.DIRECT_CHILDREN_VISIBILITY)
+    visibility: Visibility.DIRECT_CHILD)
 class TabComponent {
   int id = 0;
   Logger log;
@@ -1121,8 +1121,7 @@ class TabComponent {
 
 @Component(
   selector: 'lazy-pane',
-  visibility: Directive.CHILDREN_VISIBILITY
-)
+  visibility: Visibility.CHILDREN)
 class LazyPane {
   int id = 0;
   LazyPane(Logger logger, LazyPaneHelper lph, Scope scope) {
@@ -1145,7 +1144,7 @@ class PaneComponent {
 
 @Decorator(
     selector: '[local]',
-    visibility: Directive.LOCAL_VISIBILITY)
+    visibility: Visibility.LOCAL)
 class LocalAttrDirective {
   int id = 0;
   Logger log;
@@ -1157,8 +1156,7 @@ class LocalAttrDirective {
 
 @Decorator(
     selector: 'parent',
-    visibility: Directive.CHILDREN_VISIBILITY
-)
+    visibility: Visibility.CHILDREN)
 class Parent {
   Parent(Logger log) {}
 }
@@ -1166,8 +1164,7 @@ class Parent {
 
 @Decorator(
     selector: 'child',
-    visibility: Directive.CHILDREN_VISIBILITY
-)
+    visibility: Visibility.CHILDREN)
 class Child {
   Child(Parent p, Logger log) {
     log(p == null ? 'null parent' : 'got parent');

@@ -41,7 +41,7 @@ void main() => describe('annotations', () {
         module: (i){},
         map: {},
         selector: '',
-        visibility: Directive.LOCAL_VISIBILITY,
+        visibility: Visibility.LOCAL,
         exportExpressions: [],
         exportExpressionAttrs: [],
         useShadowDom: true,
@@ -63,7 +63,7 @@ void main() => describe('annotations', () {
           map: {},
           selector: '',
           module: (i){},
-          visibility: Directive.LOCAL_VISIBILITY,
+          visibility: Visibility.LOCAL,
           exportExpressions: [],
           exportExpressionAttrs: [],
           updateBoundElementPropertiesOnEvents: []
