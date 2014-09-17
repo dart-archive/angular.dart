@@ -31,15 +31,17 @@ class ViewFactory implements Function {
       templateNodes = templateNodes
   {
     if (traceEnabled) {
-      _debugHtml = templateNodes.map((dom.Node e) {
-        if (e is dom.Element) {
-          return (e as dom.Element).outerHtml;
-        } else if (e is dom.Comment) {
-          return '<!--${(e as dom.Comment).text}-->';
-        } else {
-          return e.text;
-        }
-      }).toList().join('');
+      _debugHtml = templateNodes
+          .map((dom.Node e) {
+            if (e is dom.Element) {
+              return (e as dom.Element).outerHtml;
+            } else if (e is dom.Comment) {
+              return '<!--${(e as dom.Comment).text}-->';
+            } else {
+              return e.text;
+            }
+          })
+          .join('');
     }
   }
 
@@ -65,8 +67,9 @@ class ViewFactory implements Function {
                    DirectiveInjector rootInjector,
                    List<DirectiveInjector> elementInjectors, View view, boundNode, Scope scope) {
     var binder = tagged.binder;
-    DirectiveInjector parentInjector =
-        tagged.parentBinderOffset == -1 ? rootInjector : elementInjectors[tagged.parentBinderOffset];
+    DirectiveInjector parentInjector = tagged.parentBinderOffset == -1 ?
+        rootInjector :
+        elementInjectors[tagged.parentBinderOffset];
 
     var elementInjector;
     if (binder == null) {
@@ -95,7 +98,6 @@ class ViewFactory implements Function {
 
   View _link(View view, Scope scope, List<dom.Node> nodeList, DirectiveInjector rootInjector) {
     var elementInjectors = new List<DirectiveInjector>(elementBinders.length);
-    var directiveDefsByName = {};
 
     var elementBinderIndex = 0;
     for (int i = 0; i < nodeList.length; i++) {
@@ -168,22 +170,22 @@ class NodeLinkingInfo {
   NodeLinkingInfo(this.containsNgBinding, this.isElement, this.ngBindingChildren);
 }
 
-computeNodeLinkingInfos(List<dom.Node> nodeList) {
+List<NodeLinkingInfo> computeNodeLinkingInfos(List<dom.Node> nodeList) {
   List<NodeLinkingInfo> list = new List<NodeLinkingInfo>(nodeList.length);
 
   for (int i = 0; i < nodeList.length; i++) {
     dom.Node node = nodeList[i];
 
     assert(node.nodeType == dom.Node.ELEMENT_NODE ||
-    node.nodeType == dom.Node.TEXT_NODE ||
-    node.nodeType == dom.Node.COMMENT_NODE);
+           node.nodeType == dom.Node.TEXT_NODE ||
+           node.nodeType == dom.Node.COMMENT_NODE);
 
     bool isElement = node.nodeType == dom.Node.ELEMENT_NODE;
 
     list[i] = new NodeLinkingInfo(
         isElement && (node as dom.Element).classes.contains('ng-binding'),
         isElement,
-        isElement && (node as dom.Element).querySelectorAll('.ng-binding').length > 0);
+        isElement && (node as dom.Element).querySelectorAll('.ng-binding').isNotEmpty);
   }
   return list;
 }
@@ -203,11 +205,11 @@ class ViewCache {
   final TemplateCache templateCache;
   final Compiler compiler;
   final dom.NodeTreeSanitizer treeSanitizer;
-  final dom.HtmlDocument parseDocument =
-      dom.document.implementation.createHtmlDocument('');
+  final dom.HtmlDocument parseDocument = dom.document.implementation.createHtmlDocument('');
   final ResourceUrlResolver resourceResolver;
 
-  ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer, this.resourceResolver, CacheRegister cacheRegister) {
+  ViewCache(this.http, this.templateCache, this.compiler, this.treeSanitizer, this.resourceResolver,
+            CacheRegister cacheRegister) {
     cacheRegister.registerCache('viewCache', viewFactoryCache);
   }
 
@@ -229,8 +231,8 @@ class ViewCache {
     ViewFactory viewFactory = viewFactoryCache.get(url);
     if (viewFactory == null) {
       return http.get(url, cache: templateCache).then((resp) {
-        var viewFactoryFromHttp = fromHtml(resourceResolver.resolveHtml(
-                                           resp.responseText, baseUri), directives);
+        var viewFactoryFromHttp = fromHtml(resourceResolver.resolveHtml(resp.responseText, baseUri),
+                                           directives);
         viewFactoryCache.put(url, viewFactoryFromHttp);
         return viewFactoryFromHttp;
       });
