@@ -71,20 +71,10 @@ class ViewFactory implements Function {
         rootInjector :
         elementInjectors[tagged.parentBinderOffset];
 
-    var elementInjector;
-    if (binder == null) {
-      elementInjector = parentInjector;
-    } else {
-      // TODO(misko): Remove this after we remove controllers. No controllers -> 1to1 Scope:View.
-      if (parentInjector != rootInjector && parentInjector.scope != null) {
-        scope = parentInjector.scope;
-      }
-      elementInjector = binder.bind(view, scope, parentInjector, boundNode);
-    }
-    // TODO(misko): Remove this after we remove controllers. No controllers -> 1to1 Scope:View.
-    if (elementInjector != rootInjector && elementInjector.scope != null) {
-      scope = elementInjector.scope;
-    }
+    var elementInjector = binder == null ?
+        parentInjector :
+        binder.bind(view, scope, parentInjector, boundNode);
+
     elementInjectors[elementBinderIndex] = elementInjector;
 
     if (tagged.textBinders != null) {
