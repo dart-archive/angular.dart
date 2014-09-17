@@ -55,7 +55,7 @@ part of angular.directive;
       'ng-switch': '=>value',
       'change': '&onChange'
     },
-    visibility: Directive.DIRECT_CHILDREN_VISIBILITY)
+    visibility: Visibility.DIRECT_CHILD)
 class NgSwitch {
   final _cases = <String, List<_Case>>{'?': <_Case>[]};
   final _currentViews = <_ViewScopePair>[];
