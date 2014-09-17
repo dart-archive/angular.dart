@@ -57,7 +57,7 @@ class ViewFactory implements Function {
       nodes = cloneElements(templateNodes);
     }
     var view = new View(nodes, scope);
-    _link(view, scope, nodes, directiveInjector);
+    _link(view, scope, directiveInjector);
     traceLeave(s);
 
     return view;
@@ -96,19 +96,17 @@ class ViewFactory implements Function {
     }
   }
 
-  View _link(View view, Scope scope, List<dom.Node> nodeList, DirectiveInjector rootInjector) {
+  View _link(View view, Scope scope, DirectiveInjector rootInjector) {
     var elementInjectors = new List<DirectiveInjector>(elementBinders.length);
 
     var elementBinderIndex = 0;
-    for (int i = 0; i < nodeList.length; i++) {
-      dom.Node node = nodeList[i];
+    for (int i = 0; i < view.nodes.length; i++) {
+      dom.Node node = view.nodes[i];
       NodeLinkingInfo linkingInfo = nodeLinkingInfos[i];
 
       // if node isn't attached to the DOM, create a parent for it.
       var parentNode = node.parentNode;
-      var fakeParent = false;
       if (parentNode == null) {
-        fakeParent = true;
         parentNode = new dom.DivElement();
         parentNode.append(node);
       }
@@ -137,11 +135,6 @@ class ViewFactory implements Function {
               elementInjectors, view, node, scope);
         }
         elementBinderIndex++;
-      }
-
-      if (fakeParent) {
-        // extract the node from the parentNode.
-        nodeList[i] = parentNode.nodes[0];
       }
     }
     return view;
