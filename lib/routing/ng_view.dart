@@ -177,7 +177,7 @@ class NgView implements DetachAware, RouteProvider {
  *         route.onEnter.listen((RouteEvent e) {
  *           // Do something when the route is activated.
  *         });
- *         route.onLeave.listen((RouteEvent e) {
+ *         route.onPreLeave.listen((RouteEvent e) {
  *           // Do something when the route is de-activated.
  *           e.allowLeave(allDataSaved());
  *         });
@@ -193,7 +193,7 @@ class NgView implements DetachAware, RouteProvider {
  *       }
  *     }
  *
- * If user component is used outside of ng-view directive then
+ * If user component is used outside of `ng-view` directive then
  * injected [RouteProvider] will be null.
  */
 abstract class RouteProvider {
