@@ -48,9 +48,11 @@ class ViewPort {
   final View _parentView;
   final views = <View>[];
 
-  ViewPort(DirectiveInjector directiveInjector, this.scope, this.placeholder, this._animate, [this._lightDom, View parentView])
+  ViewPort(DirectiveInjector directiveInjector, this.scope, this.placeholder, this._animate,
+           [this._lightDom, View parentView])
       : directiveInjector = directiveInjector,
-      _parentView = parentView != null ? parentView : directiveInjector.getByKey(VIEW_KEY) {
+        _parentView = parentView != null ? parentView : directiveInjector.getByKey(VIEW_KEY)
+  {
     _parentView.addViewPort(this);
   }
 
@@ -108,8 +110,7 @@ class ViewPort {
     if (_lightDom != null) _lightDom.redistribute();
   }
 
-  dom.Node _lastNode(View insertAfter) =>
-    insertAfter == null
-      ? placeholder
-      : insertAfter.nodes.last;
+  dom.Node _lastNode(View insertAfter) => insertAfter == null ?
+      placeholder :
+      insertAfter.nodes.last;
 }
