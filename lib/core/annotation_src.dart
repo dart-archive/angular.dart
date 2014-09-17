@@ -37,15 +37,6 @@ class Visibility {
  * Abstract supper class of [Component], and [Decorator].
  */
 abstract class Directive {
-  @Deprecated('Use Visibility.LOCAL instead')
-  static const Visibility LOCAL_VISIBILITY = Visibility.LOCAL;
-
-  @Deprecated('Use Visibility.CHILDREN instead')
-  static const Visibility CHILDREN_VISIBILITY = Visibility.CHILDREN;
-
-  @Deprecated('Use Visibility.DIRECT_CHILD instead')
-  static const Visibility DIRECT_CHILDREN_VISIBILITY = Visibility.DIRECT_CHILD;
-
   /**
    * CSS selector which will trigger this component/directive.
    * CSS Selectors are limited to a single element and can contain:
