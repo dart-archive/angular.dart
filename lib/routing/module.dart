@@ -80,29 +80,29 @@
  *        EditRecipe(RouteProvider routeProvider) {
  *          RouteHandle route = routeProvider.route.newHandle();
  *          _loadRecipe(route);
- *          route.onLeave.listen((RouteEvent event) {
+ *          route.onPreLeave.listen((RouteEvent event) {
  *            event.allowLeave(_checkIfOkToLeave());
  *          });
  *        }
  *
  *        /// Check if the editor has unsaved contents and if necessary ask
  *        /// the user if OK to leave this page.
- *        Future<bool> _checkIfOkToLeave() {/* ... */}
+ *        Future<bool> _checkIfOkToLeave() => /* ... */;
  *
  *        detach() {
  *          route.discard();
  *        }
  *      }
  *
- *  [Route.onLeave] event is triggered when the browser is routed from an
+ *  [Route.onPreLeave] event is triggered when the browser is routed from an
  *  active route to a different route. The active route can delay and
  *  potentially veto the navigation by passing a [Future<bool>] to
- *  [RouteEvent.allowLeave].
+ *  [RoutePreLeaveEvent.allowLeave].
  *
  *  Notice that we create a [RouteHandle] for our route. [RouteHandle] are
  *  a convenient wrapper around [Route] that makes unsubscribing route events
  *  easier. For example, notice that we didn't need to manually call
- *  [StreamSubscription.cancel] for subscription to [Route.onLeave]. Calling
+ *  [StreamSubscription.cancel] for subscription to [Route.onPreLeave]. Calling
  *  [RouteHandle.discard] unsubscribes all listeners created for the handle.
  *
  * ## Hierarchical Routes
