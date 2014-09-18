@@ -3,6 +3,7 @@ part of angular.mock;
 /**
  * Mock implementation of [ExceptionHandler] that rethrows exceptions.
  */
+@Injectable()
 class RethrowExceptionHandler extends ExceptionHandler {
   call(error, stack, [reason]){
     throw "$error $reason \nORIGINAL STACKTRACE:\n $stack";
@@ -20,6 +21,7 @@ class ExceptionWithStack {
  * Mock implementation of [ExceptionHandler] that logs all exceptions for
  * later processing.
  */
+@Injectable()
 class LoggingExceptionHandler implements ExceptionHandler {
   /**
    * All exceptions are stored here for later examining.

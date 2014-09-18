@@ -41,8 +41,7 @@ void main() {
       beforeEach(() {
         baseModule = new Module()
           ..bind(DirectiveMap)
-          ..bind(DirectiveSelectorFactory)
-          ..bind(MetadataExtractor);
+          ..bind(DirectiveSelectorFactory);
       });
 
       it('should throw when annotation is for existing mapping', () {
@@ -170,6 +169,7 @@ class Sub extends Base {
   String bar;
 }
 
+@Injectable()
 class Base {
   @NgOneWay('baz')
   String baz;

@@ -1,6 +1,8 @@
 import 'package:angular/core/parser/parser.dart';
 import 'package:angular/utils.dart' show isReservedWord;
+import 'package:di/annotations.dart';
 
+@Injectable()
 class DartGetterSetterGen extends ParserBackend {
   final properties = new Set<String>();
   final calls = new Set<String>();
@@ -27,6 +29,7 @@ class DartGetterSetterGen extends ParserBackend {
       registerCall(name, arguments);
 }
 
+@Injectable()
 class ParserGetterSetter {
   final Parser parser;
   final ParserBackend backend;

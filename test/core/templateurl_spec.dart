@@ -5,6 +5,7 @@ import 'package:angular/core_dom/type_to_uri_mapper.dart';
 import 'package:angular/core_dom/type_to_uri_mapper_dynamic.dart';
 import 'package:angular/core_dom/resource_url_resolver.dart';
 
+@Injectable()
 class StaticTypeToUriMapper extends TypeToUriMapper {
   DynamicTypeToUriMapper dynamicMapper;
 
@@ -60,6 +61,7 @@ class _ShadowComponentWithTranscludingComponent {
 }
 
 
+@Injectable()
 class PrefixedUrlRewriter extends UrlRewriter {
   call(url) => "PREFIX:$url";
 }

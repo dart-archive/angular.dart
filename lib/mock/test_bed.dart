@@ -6,6 +6,7 @@ part of angular.mock;
  * Simply inject [TestBed] into the test, then use [compile] to
  * match directives against the view.
  */
+@Injectable()
 class TestBed {
   final Injector injector;
   final Scope rootScope;

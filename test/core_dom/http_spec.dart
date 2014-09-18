@@ -14,6 +14,7 @@ class FakeCache extends UnboundedCache<String, HttpResponse> {
   int get length => 0;
 }
 
+@Injectable()
 class SubstringRewriter extends UrlRewriter {
   call(String x) => x.substring(0, 1);
 }

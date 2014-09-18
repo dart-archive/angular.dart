@@ -52,6 +52,7 @@ main() {
   });
 }
 
+@Injectable()
 class NestedRouteInitializer implements Function {
   void call(Router router, RouteViewFactory views) {
     views.configure({
