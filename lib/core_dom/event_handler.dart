@@ -78,26 +78,16 @@ class EventHandler {
   }
 
   /**
-  * Converts event name into attribute. Event named 'someCustomEvent' needs to
-  * be transformed into on-some-custom-event.
+  * Converts event name into attribute name.
   */
-  static String eventNameToAttrName(String eventName) {
-    var part = eventName.replaceAllMapped(new RegExp("([A-Z])"), (Match match) {
-      return '-${match.group(0).toLowerCase()}';
-    });
-    return 'on-${part}';
-  }
+  static String eventNameToAttrName(String eventName) => 'on-$eventName';
 
   /**
-  * Converts attribute into event name. Attribute 'on-some-custom-event'
-  * corresponds to event named 'someCustomEvent'.
+  * Converts attribute name into event name.
   */
   static String attrNameToEventName(String attrName) {
-    var part = attrName.startsWith("on-") ? attrName.substring(3) : attrName;
-    part = part.replaceAllMapped(new RegExp(r'\-(\w)'), (Match match) {
-      return match.group(0).toUpperCase();
-    });
-    return part.replaceAll("-", "");
+    assert(attrName.startsWith('on-'));
+    return attrName.substring(3);
   }
 }
 
