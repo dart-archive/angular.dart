@@ -62,8 +62,9 @@ class ViewFactory implements Function {
   }
 
   void _bindTagged(TaggedElementBinder tagged, int elementBinderIndex,
-                   DirectiveInjector rootInjector,
-                   List<DirectiveInjector> elementInjectors, View view, boundNode, Scope scope) {
+      DirectiveInjector rootInjector,
+      List<DirectiveInjector> elementInjectors, View view, boundNode,
+      Scope scope, _Hydrator hydrator) {
     var binder = tagged.binder;
     DirectiveInjector parentInjector =
         tagged.parentBinderOffset == -1 ? rootInjector : elementInjectors[tagged.parentBinderOffset];
@@ -76,7 +77,8 @@ class ViewFactory implements Function {
       if (parentInjector != rootInjector && parentInjector.scope != null) {
         scope = parentInjector.scope;
       }
-      elementInjector = binder.bind(view, scope, parentInjector, boundNode);
+      elementInjector = binder.setUp(view, scope, parentInjector, boundNode);
+      hydrator.addEntry(binder, elementInjector);
     }
     // TODO(misko): Remove this after we remove controllers. No controllers -> 1to1 Scope:View.
     if (elementInjector != rootInjector && elementInjector.scope != null) {
@@ -88,12 +90,14 @@ class ViewFactory implements Function {
       for (var k = 0; k < tagged.textBinders.length; k++) {
         TaggedTextBinder taggedText = tagged.textBinders[k];
         var childNode = boundNode.childNodes[taggedText.offsetIndex];
-        taggedText.binder.bind(view, scope, elementInjector, childNode);
+        final injector = taggedText.binder.setUp(view, scope, elementInjector, childNode);
+        hydrator.addEntry(taggedText.binder, injector);
       }
     }
   }
 
   View _link(View view, Scope scope, List<dom.Node> nodeList, DirectiveInjector rootInjector) {
+    final hydrator = new _Hydrator();
     var elementInjectors = new List<DirectiveInjector>(elementBinders.length);
     var directiveDefsByName = {};
 
@@ -115,7 +119,7 @@ class ViewFactory implements Function {
         if (linkingInfo.containsNgBinding) {
           var tagged = elementBinders[elementBinderIndex];
           _bindTagged(tagged, elementBinderIndex, rootInjector,
-              elementInjectors, view, node, scope);
+              elementInjectors, view, node, scope, hydrator);
           elementBinderIndex++;
         }
 
@@ -124,7 +128,7 @@ class ViewFactory implements Function {
           for (int j = 0; j < elts.length; j++, elementBinderIndex++) {
             TaggedElementBinder tagged = elementBinders[elementBinderIndex];
             _bindTagged(tagged, elementBinderIndex, rootInjector, elementInjectors,
-                        view, elts[j], scope);
+                        view, elts[j], scope, hydrator);
           }
         }
       } else {
@@ -132,7 +136,7 @@ class ViewFactory implements Function {
         assert(tagged.binder != null || tagged.isTopLevel);
         if (tagged.binder != null) {
           _bindTagged(tagged, elementBinderIndex, rootInjector,
-              elementInjectors, view, node, scope);
+              elementInjectors, view, node, scope, hydrator);
         }
         elementBinderIndex++;
       }
@@ -142,10 +146,31 @@ class ViewFactory implements Function {
         nodeList[i] = parentNode.nodes[0];
       }
     }
+    hydrator.hydrate();
     return view;
   }
 }
 
+
+class _Hydrator extends LinkedList<_HydratorEntry> {
+  void hydrate() {
+    forEach((entry) => entry.hydrate());
+  }
+
+  void addEntry(ElementBinder binder, DirectiveInjector injector) {
+    add(new _HydratorEntry(binder, injector));
+  }
+}
+
+class _HydratorEntry extends LinkedListEntry<_HydratorEntry> {
+  final ElementBinder binder;
+  final DirectiveInjector directiveInjector;
+  _HydratorEntry(this.binder, this.directiveInjector);
+
+  void hydrate() {
+    binder.hydrate(directiveInjector, directiveInjector.scope);
+  }
+}
 
 class NodeLinkingInfo {
   /**
