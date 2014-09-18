@@ -41,7 +41,6 @@ part 'probe.dart';
 part 'test_bed.dart';
 part 'mock_platform_shim.dart';
 part 'mock_window.dart';
-part 'mock_cache_register.dart';
 
 /**
  * Use in addition to [AngularModule] in your tests.
@@ -55,7 +54,6 @@ part 'mock_cache_register.dart';
  *   - [Logger]
  *   - [RethrowExceptionHandler] instead of [ExceptionHandler]
  *   - [VmTurnZone] which displays errors to console;
- *   - [MockCacheRegister
  */
 class AngularMockModule extends Module {
   AngularMockModule() {
@@ -64,7 +62,6 @@ class AngularMockModule extends Module {
     bind(Probe);
     bind(Logger);
     bind(MockHttpBackend);
-    bind(CacheRegister, toImplementation: MockCacheRegister);
     bind(Element, toValue: document.body);
     bind(Node, toValue: document.body);
     bind(HttpBackend, toInstanceOf: MOCK_HTTP_BACKEND_KEY);
